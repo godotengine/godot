@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, The Khronos Group Inc.
+// Copyright (c) 2017-2025 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -15,13 +15,13 @@
 
 #include "api_layer_interface.hpp"
 #include "hex_and_handles.h"
-#include "loader_interfaces.h"
 #include "loader_logger.hpp"
 #include "runtime_interface.hpp"
 #include "xr_generated_dispatch_table_core.h"
 #include "xr_generated_loader.hpp"
 
 #include <openxr/openxr.h>
+#include <openxr/openxr_loader_negotiation.h>
 
 #include <cstring>
 #include <memory>
@@ -60,14 +60,14 @@ XrResult Get(LoaderInstance** loader_instance, const char* log_function_name) {
 
 bool IsAvailable() { return GetSetCurrentLoaderInstance() != nullptr; }
 
-void Remove() { GetSetCurrentLoaderInstance().release(); }
+void Remove() { GetSetCurrentLoaderInstance().reset(nullptr); }
 }  // namespace ActiveLoaderInstance
 
 // Extensions that are supported by the loader, but may not be supported
 // the the runtime.
 const std::array<XrExtensionProperties, 1>& LoaderInstance::LoaderSpecificExtensions() {
-    static const std::array<XrExtensionProperties, 1> extensions = {XrExtensionProperties{
-        XR_TYPE_EXTENSION_PROPERTIES, nullptr, XR_EXT_DEBUG_UTILS_EXTENSION_NAME, XR_EXT_debug_utils_SPEC_VERSION}};
+    static const std::array<XrExtensionProperties, 1> extensions{{XrExtensionProperties{
+        XR_TYPE_EXTENSION_PROPERTIES, nullptr, {XR_EXT_DEBUG_UTILS_EXTENSION_NAME}, XR_EXT_debug_utils_SPEC_VERSION}}};
     return extensions;
 }
 
@@ -278,12 +278,12 @@ LoaderInstance::LoaderInstance(XrInstance instance, const XrInstanceCreateInfo* 
     : _runtime_instance(instance),
       _topmost_gipa(topmost_gipa),
       _api_layer_interfaces(std::move(api_layer_interfaces)),
-      _dispatch_table(new XrGeneratedDispatchTable{}) {
+      _dispatch_table(new XrGeneratedDispatchTableCore{}) {
     for (uint32_t ext = 0; ext < create_info->enabledExtensionCount; ++ext) {
         _enabled_extensions.push_back(create_info->enabledExtensionNames[ext]);
     }
 
-    GeneratedXrPopulateDispatchTable(_dispatch_table.get(), instance, topmost_gipa);
+    GeneratedXrPopulateDispatchTableCore(_dispatch_table.get(), instance, topmost_gipa);
 }
 
 LoaderInstance::~LoaderInstance() {

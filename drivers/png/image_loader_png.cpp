@@ -30,11 +30,7 @@
 
 #include "image_loader_png.h"
 
-#include "core/os/os.h"
-#include "core/string/print_string.h"
 #include "drivers/png/png_driver_common.h"
-
-#include <string.h>
 
 Error ImageLoaderPNG::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
 	const uint64_t buffer_size = f->get_length();
@@ -66,12 +62,14 @@ Ref<Image> ImageLoaderPNG::load_mem_png(const uint8_t *p_png, int p_size) {
 	return img;
 }
 
+Ref<Image> ImageLoaderPNG::unpack_mem_png(const uint8_t *p_png, int p_size) {
+	ERR_FAIL_COND_V(p_size < 4, Ref<Image>());
+	ERR_FAIL_COND_V(p_png[0] != 'P' || p_png[1] != 'N' || p_png[2] != 'G' || p_png[3] != ' ', Ref<Image>());
+	return load_mem_png(&p_png[4], p_size - 4);
+}
+
 Ref<Image> ImageLoaderPNG::lossless_unpack_png(const Vector<uint8_t> &p_data) {
-	const int len = p_data.size();
-	ERR_FAIL_COND_V(len < 4, Ref<Image>());
-	const uint8_t *r = p_data.ptr();
-	ERR_FAIL_COND_V(r[0] != 'P' || r[1] != 'N' || r[2] != 'G' || r[3] != ' ', Ref<Image>());
-	return load_mem_png(&r[4], len - 4);
+	return unpack_mem_png(p_data.ptr(), p_data.size());
 }
 
 Vector<uint8_t> ImageLoaderPNG::lossless_pack_png(const Ref<Image> &p_image) {
@@ -99,6 +97,7 @@ Vector<uint8_t> ImageLoaderPNG::lossless_pack_png(const Ref<Image> &p_image) {
 
 ImageLoaderPNG::ImageLoaderPNG() {
 	Image::_png_mem_loader_func = load_mem_png;
+	Image::_png_mem_unpacker_func = unpack_mem_png;
 	Image::png_unpacker = lossless_unpack_png;
 	Image::png_packer = lossless_pack_png;
 }

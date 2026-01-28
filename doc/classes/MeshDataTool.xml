@@ -14,11 +14,11 @@
 		var mdt = MeshDataTool.new()
 		mdt.create_from_surface(mesh, 0)
 		for i in range(mdt.get_vertex_count()):
-		    var vertex = mdt.get_vertex(i)
-		    # In this example we extend the mesh by one unit, which results in separated faces as it is flat shaded.
-		    vertex += mdt.get_vertex_normal(i)
-		    # Save your change.
-		    mdt.set_vertex(i, vertex)
+			var vertex = mdt.get_vertex(i)
+			# In this example we extend the mesh by one unit, which results in separated faces as it is flat shaded.
+			vertex += mdt.get_vertex_normal(i)
+			# Save your change.
+			mdt.set_vertex(i, vertex)
 		mesh.clear_surfaces()
 		mdt.commit_to_surface(mesh)
 		var mi = MeshInstance.new()
@@ -32,11 +32,11 @@
 		mdt.CreateFromSurface(mesh, 0);
 		for (var i = 0; i &lt; mdt.GetVertexCount(); i++)
 		{
-		    Vector3 vertex = mdt.GetVertex(i);
-		    // In this example we extend the mesh by one unit, which results in separated faces as it is flat shaded.
-		    vertex += mdt.GetVertexNormal(i);
-		    // Save your change.
-		    mdt.SetVertex(i, vertex);
+			Vector3 vertex = mdt.GetVertex(i);
+			// In this example we extend the mesh by one unit, which results in separated faces as it is flat shaded.
+			vertex += mdt.GetVertexNormal(i);
+			// Save your change.
+			mdt.SetVertex(i, vertex);
 		}
 		mesh.ClearSurfaces();
 		mdt.CommitToSurface(mesh);
@@ -100,8 +100,8 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="vertex" type="int" />
 			<description>
-				Returns index of specified vertex connected to given edge.
-				Vertex argument can only be 0 or 1 because edges are comprised of two vertices.
+				Returns the index of the specified [param vertex] connected to the edge at index [param idx].
+				[param vertex] can only be [code]0[/code] or [code]1[/code], as edges are composed of two vertices.
 			</description>
 		</method>
 		<method name="get_face_count" qualifiers="const">
@@ -115,8 +115,8 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="edge" type="int" />
 			<description>
-				Returns specified edge associated with given face.
-				Edge argument must be either 0, 1, or 2 because a face only has three edges.
+				Returns the edge associated with the face at index [param idx].
+				[param edge] argument must be either [code]0[/code], [code]1[/code], or [code]2[/code] because a face only has three edges.
 			</description>
 		</method>
 		<method name="get_face_meta" qualifiers="const">
@@ -139,8 +139,7 @@
 			<param index="1" name="vertex" type="int" />
 			<description>
 				Returns the specified vertex index of the given face.
-				Vertex argument must be either 0, 1, or 2 because faces contain three vertices.
-				[b]Example:[/b]
+				[param vertex] must be either [code]0[/code], [code]1[/code], or [code]2[/code] because faces contain three vertices.
 				[codeblocks]
 				[gdscript]
 				var index = mesh_data_tool.get_face_vertex(0, 1) # Gets the index of the second vertex of the first face.
@@ -158,8 +157,7 @@
 		<method name="get_format" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the [Mesh]'s format. Format is an integer made up of [Mesh] format flags combined together. For example, a mesh containing both vertices and normals would return a format of [code]3[/code] because [constant Mesh.ARRAY_FORMAT_VERTEX] is [code]1[/code] and [constant Mesh.ARRAY_FORMAT_NORMAL] is [code]2[/code].
-				See [enum Mesh.ArrayFormat] for a list of format flags.
+				Returns the [Mesh]'s format as a combination of the [enum Mesh.ArrayFormat] flags. For example, a mesh containing both vertices and normals would return a format of [code]3[/code] because [constant Mesh.ARRAY_FORMAT_VERTEX] is [code]1[/code] and [constant Mesh.ARRAY_FORMAT_NORMAL] is [code]2[/code].
 			</description>
 		</method>
 		<method name="get_material" qualifiers="const">
@@ -320,6 +318,7 @@
 			<param index="1" name="tangent" type="Plane" />
 			<description>
 				Sets the tangent of the given vertex.
+				[b]Note:[/b] Even though [param tangent] is a [Plane], it does not directly represent the tangent plane. Its [member Plane.x], [member Plane.y], and [member Plane.z] represent the tangent vector and [member Plane.d] should be either [code]-1[/code] or [code]1[/code]. See also [constant Mesh.ARRAY_TANGENT].
 			</description>
 		</method>
 		<method name="set_vertex_uv">

@@ -68,11 +68,26 @@
 				Register a reference for "undo" that will be erased if the "undo" history is lost. This is useful mostly for nodes removed with the "do" call (not the "undo" call!).
 			</description>
 		</method>
+		<method name="clear_history">
+			<return type="void" />
+			<param index="0" name="id" type="int" default="-99" />
+			<param index="1" name="increase_version" type="bool" default="true" />
+			<description>
+				Clears the given undo history. You can clear history for a specific scene, global history, or for all histories at once (except [constant REMOTE_HISTORY]) if [param id] is [constant INVALID_HISTORY].
+				If [param increase_version] is [code]true[/code], the undo history version will be increased, marking it as unsaved. Useful for operations that modify the scene, but don't support undo.
+				[codeblock]
+				var scene_root = EditorInterface.get_edited_scene_root()
+				var undo_redo = EditorInterface.get_editor_undo_redo()
+				undo_redo.clear_history(undo_redo.get_object_history_id(scene_root))
+				[/codeblock]
+				[b]Note:[/b] If you want to mark an edited scene as unsaved without clearing its history, use [method EditorInterface.mark_scene_as_unsaved] instead.
+			</description>
+		</method>
 		<method name="commit_action">
 			<return type="void" />
 			<param index="0" name="execute" type="bool" default="true" />
 			<description>
-				Commit the action. If [param execute] is true (default), all "do" methods/properties are called/set when this function is called.
+				Commits the action. If [param execute] is [code]true[/code] (default), all "do" methods/properties are called/set when this function is called.
 			</description>
 		</method>
 		<method name="create_action">
@@ -81,11 +96,20 @@
 			<param index="1" name="merge_mode" type="int" enum="UndoRedo.MergeMode" default="0" />
 			<param index="2" name="custom_context" type="Object" default="null" />
 			<param index="3" name="backward_undo_ops" type="bool" default="false" />
+			<param index="4" name="mark_unsaved" type="bool" default="true" />
 			<description>
 				Create a new action. After this is called, do all your calls to [method add_do_method], [method add_undo_method], [method add_do_property], and [method add_undo_property], then commit the action with [method commit_action].
-				The way actions are merged is dictated by the [param merge_mode] argument. See [enum UndoRedo.MergeMode] for details.
+				The way actions are merged is dictated by the [param merge_mode] argument.
 				If [param custom_context] object is provided, it will be used for deducing target history (instead of using the first operation).
 				The way undo operation are ordered in actions is dictated by [param backward_undo_ops]. When [param backward_undo_ops] is [code]false[/code] undo option are ordered in the same order they were added. Which means the first operation to be added will be the first to be undone.
+				If [param mark_unsaved] is [code]false[/code], the action will not mark the history as unsaved. This is useful for example for actions that change a selection, or a setting that will be saved automatically. Otherwise, this should be left to [code]true[/code] if the action requires saving by the user or if it can cause data loss when left unsaved.
+			</description>
+		</method>
+		<method name="force_fixed_history">
+			<return type="void" />
+			<description>
+				Forces the next operation (e.g. [method add_do_method]) to use the action's history rather than guessing it from the object. This is sometimes needed when a history can't be correctly determined, like for a nested resource that doesn't have a path yet.
+				This method should only be used when absolutely necessary, otherwise it might cause invalid history state. For most of complex cases, the [code]custom_context[/code] parameter of [method create_action] is sufficient.
 			</description>
 		</method>
 		<method name="get_history_undo_redo" qualifiers="const">

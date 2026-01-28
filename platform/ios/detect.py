@@ -1,11 +1,12 @@
 import os
 import sys
-from methods import detect_darwin_sdk_path
-
 from typing import TYPE_CHECKING
 
+from methods import detect_darwin_sdk_path, detect_darwin_toolchain_path, print_error, print_warning
+from platform_methods import validate_arch
+
 if TYPE_CHECKING:
-    from SCons import Environment
+    from SCons.Script.SConscript import SConsEnvironment
 
 
 def get_name():
@@ -23,14 +24,14 @@ def get_opts():
     from SCons.Variables import BoolVariable
 
     return [
-        (
-            "IOS_TOOLCHAIN_PATH",
-            "Path to iOS toolchain",
-            "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain",
-        ),
-        ("IOS_SDK_PATH", "Path to the iOS SDK", ""),
-        BoolVariable("ios_simulator", "Build for iOS Simulator", False),
-        ("ios_triple", "Triple for ios toolchain", ""),
+        ("vulkan_sdk_path", "Path to the Vulkan SDK", ""),
+        ("SWIFT_FRONTEND", "Path to the swift-frontend binary", ""),
+        # APPLE_TOOLCHAIN_PATH Example: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain
+        (("APPLE_TOOLCHAIN_PATH", "IOS_TOOLCHAIN_PATH"), "Path to the Apple toolchain", ""),
+        (("APPLE_SDK_PATH", "IOS_SDK_PATH"), "Path to the iOS SDK", ""),
+        (("apple_target_triple", "ios_triple"), "Triple for the corresponding target Apple platform toolchain", ""),
+        BoolVariable(("simulator", "ios_simulator"), "Build for Simulator", False),
+        BoolVariable("generate_bundle", "Generate an APP bundle after building iOS/macOS binaries", False),
     ]
 
 
@@ -45,22 +46,21 @@ def get_doc_path():
 
 
 def get_flags():
-    return [
-        ("arch", "arm64"),  # Default for convenience.
-        ("target", "template_debug"),
-        ("use_volk", False),
-    ]
+    return {
+        "arch": "arm64",
+        "target": "template_debug",
+        "use_volk": False,
+        "metal": True,
+        "supported": ["metal", "mono"],
+        "builtin_pcre2_with_jit": False,
+    }
 
 
-def configure(env: "Environment"):
+def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_64", "arm64"]
-    if env["arch"] not in supported_arches:
-        print(
-            'Unsupported CPU architecture "%s" for iOS. Supported architectures are: %s.'
-            % (env["arch"], ", ".join(supported_arches))
-        )
-        sys.exit()
+    validate_arch(env["arch"], get_name(), supported_arches)
+    detect_darwin_toolchain_path(env)
 
     ## LTO
 
@@ -81,9 +81,9 @@ def configure(env: "Environment"):
     if "OSXCROSS_IOS" in os.environ:
         env["osxcross"] = True
 
-    env["ENV"]["PATH"] = env["IOS_TOOLCHAIN_PATH"] + "/Developer/usr/bin/:" + env["ENV"]["PATH"]
+    env["ENV"]["PATH"] = env["APPLE_TOOLCHAIN_PATH"] + "/Developer/usr/bin/:" + env["ENV"]["PATH"]
 
-    compiler_path = "$IOS_TOOLCHAIN_PATH/usr/bin/${ios_triple}"
+    compiler_path = "$APPLE_TOOLCHAIN_PATH/usr/bin/${apple_target_triple}"
 
     ccache_path = os.environ.get("CCACHE")
     if ccache_path is None:
@@ -101,19 +101,21 @@ def configure(env: "Environment"):
 
     ## Compile flags
 
-    if env["ios_simulator"]:
-        detect_darwin_sdk_path("iossimulator", env)
-        env.Append(ASFLAGS=["-mios-simulator-version-min=12.0"])
-        env.Append(CCFLAGS=["-mios-simulator-version-min=12.0"])
+    if env["simulator"]:
+        env["APPLE_PLATFORM"] = "iossimulator"
+        env.Append(ASFLAGS=["-mios-simulator-version-min=14.0"])
+        env.Append(CCFLAGS=["-mios-simulator-version-min=14.0"])
+        env.Append(CPPDEFINES=["IOS_SIMULATOR"])
         env.extra_suffix = ".simulator" + env.extra_suffix
     else:
-        detect_darwin_sdk_path("ios", env)
-        env.Append(ASFLAGS=["-miphoneos-version-min=12.0"])
-        env.Append(CCFLAGS=["-miphoneos-version-min=12.0"])
+        env["APPLE_PLATFORM"] = "ios"
+        env.Append(ASFLAGS=["-miphoneos-version-min=14.0"])
+        env.Append(CCFLAGS=["-miphoneos-version-min=14.0"])
+    detect_darwin_sdk_path(env["APPLE_PLATFORM"], env)
 
     if env["arch"] == "x86_64":
-        if not env["ios_simulator"]:
-            print("ERROR: Building for iOS with 'arch=x86_64' requires 'ios_simulator=yes'.")
+        if not env["simulator"]:
+            print_error("Building for iOS with 'arch=x86_64' requires 'simulator=yes'.")
             sys.exit(255)
 
         env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
@@ -121,42 +123,61 @@ def configure(env: "Environment"):
             CCFLAGS=(
                 "-fobjc-arc -arch x86_64"
                 " -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks"
-                " -fasm-blocks -isysroot $IOS_SDK_PATH"
+                " -fasm-blocks -isysroot $APPLE_SDK_PATH"
             ).split()
         )
         env.Append(ASFLAGS=["-arch", "x86_64"])
     elif env["arch"] == "arm64":
         env.Append(
             CCFLAGS=(
-                "-fobjc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing"
+                "-fobjc-arc -arch arm64 -fmessage-length=0"
                 " -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits"
                 " -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies"
-                " -isysroot $IOS_SDK_PATH".split()
+                " -isysroot $APPLE_SDK_PATH".split()
             )
         )
         env.Append(ASFLAGS=["-arch", "arm64"])
-        env.Append(CPPDEFINES=["NEED_LONG_INT"])
 
     # Temp fix for ABS/MAX/MIN macros in iOS SDK blocking compilation
     env.Append(CCFLAGS=["-Wno-ambiguous-macro"])
 
     env.Prepend(
         CPPPATH=[
-            "$IOS_SDK_PATH/usr/include",
-            "$IOS_SDK_PATH/System/Library/Frameworks/AudioUnit.framework/Headers",
+            "$APPLE_SDK_PATH/usr/include",
+            "$APPLE_SDK_PATH/System/Library/Frameworks/AudioUnit.framework/Headers",
         ]
     )
 
     env.Prepend(CPPPATH=["#platform/ios"])
-    env.Append(CPPDEFINES=["IOS_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
+    env.Append(CPPDEFINES=["IOS_ENABLED", "APPLE_EMBEDDED_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
+
+    if env["metal"] and env["simulator"]:
+        print_warning("iOS Simulator does not support the Metal rendering driver")
+        env["metal"] = False
+
+    if env["metal"]:
+        env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
+        env.Prepend(
+            CPPPATH=[
+                "$APPLE_SDK_PATH/System/Library/Frameworks/Metal.framework/Headers",
+                "$APPLE_SDK_PATH/System/Library/Frameworks/MetalFX.framework/Headers",
+                "$APPLE_SDK_PATH/System/Library/Frameworks/QuartzCore.framework/Headers",
+            ]
+        )
+        env.Prepend(CPPPATH=["#thirdparty/spirv-cross"])
+
+    if env["vulkan"] and env["simulator"]:
+        print_warning("iOS Simulator does not support the Vulkan rendering driver")
+        env["vulkan"] = False
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED", "GLES_SILENCE_DEPRECATION"])
+        env.Append(CCFLAGS=["-Wno-module-import-in-extern-c"])
         env.Prepend(
             CPPPATH=[
-                "$IOS_SDK_PATH/System/Library/Frameworks/OpenGLES.framework/Headers",
+                "$APPLE_SDK_PATH/System/Library/Frameworks/OpenGLES.framework/Headers",
             ]
         )

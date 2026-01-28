@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef HTTP_REQUEST_H
-#define HTTP_REQUEST_H
+#pragma once
 
 #include "core/io/http_client.h"
 #include "core/io/stream_peer_gzip.h"
@@ -103,6 +102,10 @@ private:
 
 	void _redirect_request(const String &p_new_url);
 
+	bool _is_content_header(const String &p_header) const;
+	bool _is_method_safe() const;
+	Error _get_redirect_headers(Vector<String> *r_headers);
+
 	bool _handle_response(bool *ret_value);
 
 	Error _parse_url(const String &p_url);
@@ -167,5 +170,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(HTTPRequest::Result);
-
-#endif // HTTP_REQUEST_H

@@ -1,37 +1,46 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+from methods import print_error
 
 Import("env")
 
 # The HTTP server "targets". Run with "scons p=web serve", or "scons p=web run"
 if "serve" in COMMAND_LINE_TARGETS or "run" in COMMAND_LINE_TARGETS:
-    from serve import serve
     import os
+
+    from serve import serve
 
     port = os.environ.get("GODOT_WEB_TEST_PORT", 8060)
     try:
         port = int(port)
     except Exception:
-        print("GODOT_WEB_TEST_PORT must be a valid integer")
+        print_error("GODOT_WEB_TEST_PORT must be a valid integer")
         sys.exit(255)
-    serve(env.Dir("#bin/.web_zip").abspath, port, "run" in COMMAND_LINE_TARGETS)
+    serve(env.Dir(env.GetTemplateZipPath()).abspath, port, "run" in COMMAND_LINE_TARGETS)
     sys.exit(0)
 
 web_files = [
     "audio_driver_web.cpp",
+    "webmidi_driver.cpp",
     "display_server_web.cpp",
     "http_client_web.cpp",
     "javascript_bridge_singleton.cpp",
     "web_main.cpp",
     "os_web.cpp",
-    "api/web_tools_editor_plugin.cpp",
 ]
+
+if env["target"] == "editor":
+    env.add_source_files(web_files, "editor/*.cpp")
 
 sys_env = env.Clone()
 sys_env.AddJSLibraries(
     [
         "js/libs/library_godot_audio.js",
         "js/libs/library_godot_display.js",
+        "js/libs/library_godot_emscripten.js",
         "js/libs/library_godot_fetch.js",
+        "js/libs/library_godot_webmidi.js",
         "js/libs/library_godot_os.js",
         "js/libs/library_godot_runtime.js",
         "js/libs/library_godot_input.js",
@@ -44,6 +53,12 @@ sys_env.AddJSExterns(
     ]
 )
 
+sys_env.AddJSPost(
+    [
+        "js/patches/patch_em_gl.js",
+    ]
+)
+
 if env["javascript_eval"]:
     sys_env.AddJSLibraries(["js/libs/library_godot_javascript_singleton.js"])
 
@@ -51,30 +66,39 @@ for lib in sys_env["JS_LIBS"]:
     sys_env.Append(LINKFLAGS=["--js-library", lib.abspath])
 for js in sys_env["JS_PRE"]:
     sys_env.Append(LINKFLAGS=["--pre-js", js.abspath])
+for js in sys_env["JS_POST"]:
+    sys_env.Append(LINKFLAGS=["--post-js", js.abspath])
+
+# Add JS externs to Closure.
+sys_env["ENV"]["EMCC_CLOSURE_ARGS"] = sys_env["ENV"].get("EMCC_CLOSURE_ARGS", "")
 for ext in sys_env["JS_EXTERNS"]:
     sys_env["ENV"]["EMCC_CLOSURE_ARGS"] += " --externs " + ext.abspath
+sys_env["ENV"]["EMCC_CLOSURE_ARGS"] = sys_env["ENV"]["EMCC_CLOSURE_ARGS"].strip()
+
+if len(env["EXPORTED_FUNCTIONS"]):
+    sys_env.Append(LINKFLAGS=["-sEXPORTED_FUNCTIONS=" + repr(sorted(list(set(env["EXPORTED_FUNCTIONS"]))))])
+if len(env["EXPORTED_RUNTIME_METHODS"]):
+    sys_env.Append(LINKFLAGS=["-sEXPORTED_RUNTIME_METHODS=" + repr(sorted(list(set(env["EXPORTED_RUNTIME_METHODS"]))))])
 
 build = []
-build_targets = ["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm", "#bin/godot${PROGSUFFIX}.worker.js"]
+build_targets = ["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm"]
 if env["dlink_enabled"]:
     # Reset libraries. The main runtime will only link emscripten libraries, not godot ones.
     sys_env["LIBS"] = []
     # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
     sys_env.Append(LIBS=["idbfs.js"])
     # Configure it as a main module (dynamic linking support).
-    sys_env["CCFLAGS"].remove("SIDE_MODULE=2")
-    sys_env["LINKFLAGS"].remove("SIDE_MODULE=2")
+    sys_env["CCFLAGS"].remove("-sSIDE_MODULE=2")
+    sys_env["LINKFLAGS"].remove("-sSIDE_MODULE=2")
     sys_env.Append(CCFLAGS=["-s", "MAIN_MODULE=1"])
     sys_env.Append(LINKFLAGS=["-s", "MAIN_MODULE=1"])
     sys_env.Append(LINKFLAGS=["-s", "EXPORT_ALL=1"])
     sys_env.Append(LINKFLAGS=["-s", "WARN_ON_UNDEFINED_SYMBOLS=0"])
-    # Force exporting the standard library (printf, malloc, etc.)
-    sys_env["ENV"]["EMCC_FORCE_STDLIBS"] = "libc,libc++,libc++abi"
     sys_env["CCFLAGS"].remove("-fvisibility=hidden")
     sys_env["LINKFLAGS"].remove("-fvisibility=hidden")
 
     # The main emscripten runtime, with exported standard libraries.
-    sys = sys_env.Program(build_targets, ["web_runtime.cpp"])
+    sys = sys_env.add_program(build_targets, ["web_runtime.cpp"])
 
     # The side library, containing all Godot code.
     wasm = env.add_program("#bin/godot.side${PROGSUFFIX}.wasm", web_files)
@@ -82,10 +106,11 @@ if env["dlink_enabled"]:
 else:
     # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
     sys_env.Append(LIBS=["idbfs.js"])
-    build = sys_env.Program(build_targets, web_files + ["web_runtime.cpp"])
+    build = sys_env.add_program(build_targets, web_files + ["web_runtime.cpp"])
 
 sys_env.Depends(build[0], sys_env["JS_LIBS"])
 sys_env.Depends(build[0], sys_env["JS_PRE"])
+sys_env.Depends(build[0], sys_env["JS_POST"])
 sys_env.Depends(build[0], sys_env["JS_EXTERNS"])
 
 engine = [
@@ -95,17 +120,18 @@ engine = [
     "js/engine/engine.js",
 ]
 externs = [env.File("#platform/web/js/engine/engine.externs.js")]
-js_engine = env.CreateEngineFile("#bin/godot${PROGSUFFIX}.engine.js", engine, externs)
+js_engine = env.CreateEngineFile("#bin/godot${PROGSUFFIX}.engine.js", engine, externs, env["threads"])
 env.Depends(js_engine, externs)
 
 wrap_list = [
     build[0],
     js_engine,
 ]
-js_wrapped = env.Textfile("#bin/godot", [env.File(f) for f in wrap_list], TEXTFILESUFFIX="${PROGSUFFIX}.wrapped.js")
+js_wrapped = env.NoCache(
+    env.Textfile("#bin/godot", [env.File(f) for f in wrap_list], TEXTFILESUFFIX="${PROGSUFFIX}.wrapped.js")
+)
 
 # 0 - unwrapped js file (use wrapped one instead)
 # 1 - wasm file
-# 2 - worker file
-# 3 - wasm side (when dlink is enabled).
-env.CreateTemplateZip(js_wrapped, build[1], build[2], build[3] if len(build) > 3 else None)
+# 2 - wasm side (when dlink is enabled).
+env.CreateTemplateZip(js_wrapped, build[1], build[2] if len(build) > 2 else None)

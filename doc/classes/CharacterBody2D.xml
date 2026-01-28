@@ -8,10 +8,12 @@
 		For game objects that don't require complex movement or collision detection, such as moving platforms, [AnimatableBody2D] is simpler to configure.
 	</description>
 	<tutorials>
+		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
+		<link title="Troubleshooting physics issues">$DOCS_URL/tutorials/physics/troubleshooting_physics_issues.html</link>
 		<link title="Kinematic character (2D)">$DOCS_URL/tutorials/physics/kinematic_character_2d.html</link>
 		<link title="Using CharacterBody2D">$DOCS_URL/tutorials/physics/using_character_body_2d.html</link>
-		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
-		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2719</link>
+		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/2727</link>
 	</tutorials>
 	<methods>
 		<method name="apply_floor_snap">
@@ -30,7 +32,8 @@
 		<method name="get_floor_normal" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the surface normal of the floor at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
+				Returns the collision normal of the floor at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
+				[b]Warning:[/b] The collision normal is not always the same as the surface normal.
 			</description>
 		</method>
 		<method name="get_last_motion" qualifiers="const">
@@ -42,7 +45,7 @@
 		<method name="get_last_slide_collision">
 			<return type="KinematicCollision2D" />
 			<description>
-				Returns a [KinematicCollision2D], which contains information about the latest collision that occurred during the last call to [method move_and_slide].
+				Returns a [KinematicCollision2D] if a collision occurred. The returned value contains information about the latest collision that occurred during the last call to [method move_and_slide]. Returns [code]null[/code] if no collision occurred. See also [method get_slide_collision].
 			</description>
 		</method>
 		<method name="get_platform_velocity" qualifiers="const">
@@ -67,19 +70,19 @@
 			<return type="KinematicCollision2D" />
 			<param index="0" name="slide_idx" type="int" />
 			<description>
-				Returns a [KinematicCollision2D], which contains information about a collision that occurred during the last call to [method move_and_slide]. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_collision_count] - 1).
-				[b]Example usage:[/b]
+				Returns a [KinematicCollision2D], which contains information about a collision that occurred during the last call to [method move_and_slide]. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_collision_count] - 1). See also [method get_last_slide_collision].
+				[b]Example:[/b] Iterate through the collisions with a [code]for[/code] loop:
 				[codeblocks]
 				[gdscript]
 				for i in get_slide_collision_count():
-				    var collision = get_slide_collision(i)
-				    print("Collided with: ", collision.get_collider().name)
+					var collision = get_slide_collision(i)
+					print("Collided with: ", collision.get_collider().name)
 				[/gdscript]
 				[csharp]
 				for (int i = 0; i &lt; GetSlideCollisionCount(); i++)
 				{
-				    KinematicCollision2D collision = GetSlideCollision(i);
-				    GD.Print("Collided with: ", (collision.GetCollider() as Node).Name);
+					KinematicCollision2D collision = GetSlideCollision(i);
+					GD.Print("Collided with: ", (collision.GetCollider() as Node).Name);
 				}
 				[/csharp]
 				[/codeblocks]
@@ -94,7 +97,8 @@
 		<method name="get_wall_normal" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the surface normal of the wall at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_wall] returns [code]true[/code].
+				Returns the collision normal of the wall at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_wall] returns [code]true[/code].
+				[b]Warning:[/b] The collision normal is not always the same as the surface normal.
 			</description>
 		</method>
 		<method name="is_on_ceiling" qualifiers="const">
@@ -137,6 +141,7 @@
 			<return type="bool" />
 			<description>
 				Moves the body based on [member velocity]. If the body collides with another, it will slide along the other body (by default only on floor) rather than stop immediately. If the other body is a [CharacterBody2D] or [RigidBody2D], it will also be affected by the motion of the other body. You can use this to make moving and rotating platforms, or to make nodes push other nodes.
+				This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
 				Modifies [member velocity] if a slide collision occurred. To get the latest collision call [method get_last_slide_collision], for detailed information about collisions that occurred, use [method get_slide_collision].
 				When the body touches a moving platform, the platform's velocity is automatically added to the body motion. If a collision occurs due to the platform's motion, it will always be first in the slide collisions.
 				The general behavior and available properties change according to the [member motion_mode].
@@ -152,7 +157,7 @@
 			If [code]false[/code] (by default), the body will move faster on downward slopes and slower on upward slopes.
 			If [code]true[/code], the body will always move at the same speed on the ground no matter the slope. Note that you need to use [member floor_snap_length] to stick along a downward slope at constant speed.
 		</member>
-		<member name="floor_max_angle" type="float" setter="set_floor_max_angle" getter="get_floor_max_angle" default="0.785398">
+		<member name="floor_max_angle" type="float" setter="set_floor_max_angle" getter="get_floor_max_angle" default="0.7853982">
 			Maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall, when calling [method move_and_slide]. The default value equals 45 degrees.
 		</member>
 		<member name="floor_snap_length" type="float" setter="set_floor_snap_length" getter="get_floor_snap_length" default="1.0">
@@ -164,16 +169,16 @@
 			If [code]false[/code], the body will slide on floor's slopes when [member velocity] applies a downward force.
 		</member>
 		<member name="max_slides" type="int" setter="set_max_slides" getter="get_max_slides" default="4">
-			Maximum number of times the body can change direction before it stops when calling [method move_and_slide].
+			Maximum number of times the body can change direction before it stops when calling [method move_and_slide]. Must be greater than zero.
 		</member>
 		<member name="motion_mode" type="int" setter="set_motion_mode" getter="get_motion_mode" enum="CharacterBody2D.MotionMode" default="0">
-			Sets the motion mode which defines the behavior of [method move_and_slide]. See [enum MotionMode] constants for available modes.
+			Sets the motion mode which defines the behavior of [method move_and_slide].
 		</member>
 		<member name="platform_floor_layers" type="int" setter="set_platform_floor_layers" getter="get_platform_floor_layers" default="4294967295">
 			Collision layers that will be included for detecting floor bodies that will act as moving platforms to be followed by the [CharacterBody2D]. By default, all floor bodies are detected and propagate their velocity.
 		</member>
 		<member name="platform_on_leave" type="int" setter="set_platform_on_leave" getter="get_platform_on_leave" enum="CharacterBody2D.PlatformOnLeave" default="0">
-			Sets the behavior to apply when you leave a moving platform. By default, to be physically accurate, when you leave the last platform velocity is applied. See [enum PlatformOnLeave] constants for available behavior.
+			Sets the behavior to apply when you leave a moving platform. By default, to be physically accurate, when you leave the last platform velocity is applied.
 		</member>
 		<member name="platform_wall_layers" type="int" setter="set_platform_wall_layers" getter="get_platform_wall_layers" default="0">
 			Collision layers that will be included for detecting wall bodies that will act as moving platforms to be followed by the [CharacterBody2D]. By default, all wall bodies are ignored.
@@ -192,9 +197,10 @@
 		</member>
 		<member name="velocity" type="Vector2" setter="set_velocity" getter="get_velocity" default="Vector2(0, 0)">
 			Current velocity vector in pixels per second, used and modified during calls to [method move_and_slide].
+			[b]Note:[/b] A common mistake is setting this property to the desired velocity multiplied by [code]delta[/code], which produces a motion vector in pixels.
 		</member>
-		<member name="wall_min_slide_angle" type="float" setter="set_wall_min_slide_angle" getter="get_wall_min_slide_angle" default="0.261799">
-			Minimum angle (in radians) where the body is allowed to slide when it encounters a slope. The default value equals 15 degrees. This property only affects movement when [member motion_mode] is [constant MOTION_MODE_FLOATING].
+		<member name="wall_min_slide_angle" type="float" setter="set_wall_min_slide_angle" getter="get_wall_min_slide_angle" default="0.2617994">
+			Minimum angle (in radians) where the body is allowed to slide when it encounters a wall. The default value equals 15 degrees. This property only affects movement when [member motion_mode] is [constant MOTION_MODE_FLOATING].
 		</member>
 	</members>
 	<constants>

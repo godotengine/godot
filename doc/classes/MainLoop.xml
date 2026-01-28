@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[MainLoop] is the abstract base class for a Godot project's game loop. It is inherited by [SceneTree], which is the default game loop implementation used in Godot projects, though it is also possible to write and use one's own [MainLoop] subclass instead of the scene tree.
-		Upon the application start, a [MainLoop] implementation must be provided to the OS; otherwise, the application will exit. This happens automatically (and a [SceneTree] is created) unless a [MainLoop] [Script] is provided from the command line (with e.g. [code]godot -s my_loop.gd[/code] or the "Main Loop Type" project setting is overwritten.
+		Upon the application start, a [MainLoop] implementation must be provided to the OS; otherwise, the application will exit. This happens automatically (and a [SceneTree] is created) unless a [MainLoop] [Script] is provided from the command line (with e.g. [code]godot -s my_loop.gd[/code]) or the [member ProjectSettings.application/run/main_loop_type] project setting is overwritten.
 		Here is an example script implementing a simple [MainLoop]:
 		[codeblocks]
 		[gdscript]
@@ -15,43 +15,44 @@
 		var time_elapsed = 0
 
 		func _initialize():
-		    print("Initialized:")
-		    print("  Starting time: %s" % str(time_elapsed))
+			print("Initialized:")
+			print("  Starting time: %s" % str(time_elapsed))
 
 		func _process(delta):
-		    time_elapsed += delta
-		    # Return true to end the main loop.
-		    return Input.get_mouse_button_mask() != 0 || Input.is_key_pressed(KEY_ESCAPE)
+			time_elapsed += delta
+			# Return true to end the main loop.
+			return Input.get_mouse_button_mask() != 0 || Input.is_key_pressed(KEY_ESCAPE)
 
 		func _finalize():
-		    print("Finalized:")
-		    print("  End time: %s" % str(time_elapsed))
+			print("Finalized:")
+			print("  End time: %s" % str(time_elapsed))
 		[/gdscript]
 		[csharp]
 		using Godot;
 
+		[GlobalClass]
 		public partial class CustomMainLoop : MainLoop
 		{
-		    private double _timeElapsed = 0;
+			private double _timeElapsed = 0;
 
-		    public override void _Initialize()
-		    {
-		        GD.Print("Initialized:");
-		        GD.Print($"  Starting Time: {_timeElapsed}");
-		    }
+			public override void _Initialize()
+			{
+				GD.Print("Initialized:");
+				GD.Print($"  Starting Time: {_timeElapsed}");
+			}
 
-		    public override bool _Process(double delta)
-		    {
-		        _timeElapsed += delta;
-		        // Return true to end the main loop.
-		        return Input.GetMouseButtonMask() != 0 || Input.IsKeyPressed(Key.Escape);
-		    }
+			public override bool _Process(double delta)
+			{
+				_timeElapsed += delta;
+				// Return true to end the main loop.
+				return Input.GetMouseButtonMask() != 0 || Input.IsKeyPressed(Key.Escape);
+			}
 
-		    private void _Finalize()
-		    {
-		        GD.Print("Finalized:");
-		        GD.Print($"  End Time: {_timeElapsed}");
-		    }
+			private void _Finalize()
+			{
+				GD.Print("Finalized:");
+				GD.Print($"  End Time: {_timeElapsed}");
+			}
 		}
 		[/csharp]
 		[/codeblocks]
@@ -75,16 +76,21 @@
 			<return type="bool" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called each physics frame with the time since the last physics frame as argument ([param delta], in seconds). Equivalent to [method Node._physics_process].
-				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
+				Called each physics tick. [param delta] is the logical time between physics ticks in seconds and is equal to [member Engine.time_scale] / [member Engine.physics_ticks_per_second]. Equivalent to [method Node._physics_process].
+				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next step.
+				[b]Note:[/b] [method _physics_process] may be called up to [member Engine.max_physics_steps_per_frame] times per (idle) frame. This step limit may be reached when the engine is suffering performance issues.
+				[b]Note:[/b] Accumulated [param delta] may diverge from real world seconds.
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
 			<return type="bool" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called each process (idle) frame with the time since the last process frame as argument (in seconds). Equivalent to [method Node._process].
+				Called on each idle frame, prior to rendering, and after physics ticks have been processed. [param delta] is the time between frames in seconds. Equivalent to [method Node._process].
 				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
+				[b]Note:[/b] When the engine is struggling and the frame rate is lowered, [param delta] will increase. When [param delta] is increased, it's capped at a maximum of [member Engine.time_scale] * [member Engine.max_physics_steps_per_frame] / [member Engine.physics_ticks_per_second]. As a result, accumulated [param delta] may not represent real world time.
+				[b]Note:[/b] When [code]--fixed-fps[/code] is enabled or the engine is running in Movie Maker mode (see [MovieWriter]), process [param delta] will always be the same for every frame, regardless of how much time the frame took to render.
+				[b]Note:[/b] Frame delta may be post-processed by [member OS.delta_smoothing] if this is enabled for the project.
 			</description>
 		</method>
 	</methods>
@@ -115,23 +121,24 @@
 		</constant>
 		<constant name="NOTIFICATION_OS_IME_UPDATE" value="2013">
 			Notification received from the OS when an update of the Input Method Engine occurs (e.g. change of IME cursor position or composition string).
-			Specific to the macOS platform.
+			Implemented on desktop and web platforms.
 		</constant>
 		<constant name="NOTIFICATION_APPLICATION_RESUMED" value="2014">
 			Notification received from the OS when the application is resumed.
-			Specific to the Android platform.
+			Specific to the Android and iOS platforms.
 		</constant>
 		<constant name="NOTIFICATION_APPLICATION_PAUSED" value="2015">
 			Notification received from the OS when the application is paused.
-			Specific to the Android platform.
+			Specific to the Android and iOS platforms.
+			[b]Note:[/b] On iOS, you only have approximately 5 seconds to finish a task started by this signal. If you go over this allotment, iOS will kill the app instead of pausing it.
 		</constant>
 		<constant name="NOTIFICATION_APPLICATION_FOCUS_IN" value="2016">
 			Notification received from the OS when the application is focused, i.e. when changing the focus from the OS desktop or a thirdparty application to any open window of the Godot instance.
-			Implemented on desktop platforms.
+			Implemented on desktop and mobile platforms.
 		</constant>
 		<constant name="NOTIFICATION_APPLICATION_FOCUS_OUT" value="2017">
 			Notification received from the OS when the application is defocused, i.e. when changing the focus from any open window of the Godot instance to the OS desktop or a thirdparty application.
-			Implemented on desktop platforms.
+			Implemented on desktop and mobile platforms.
 		</constant>
 		<constant name="NOTIFICATION_TEXT_SERVER_CHANGED" value="2018">
 			Notification received when text server is changed.

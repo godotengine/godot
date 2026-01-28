@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,8 @@
  */
 
 #include "config.h"
+#include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <memory.h>
 #include "tvgMath.h"
@@ -182,7 +184,7 @@ float strToFloat(const char *nPtr, char **endPtr)
         auto scale = 1.0f;
 
         while (exponentPart >= 8U) {
-            scale *= 1E8;
+            scale *= 1E8f;
             exponentPart -= 8U;
         }
         while (exponentPart > 0U) {
@@ -197,21 +199,13 @@ float strToFloat(const char *nPtr, char **endPtr)
 
 success:
     if (endPtr) *endPtr = (char *)(a);
+    if (!std::isfinite(val)) return 0.0f;
+
     return minus * val;
 
 error:
     if (endPtr) *endPtr = (char *)(nPtr);
     return 0.0f;
-}
-
-
-int str2int(const char* str, size_t n)
-{
-    int ret = 0;
-    for(size_t i = 0; i < n; ++i) {
-        ret = ret * 10 + (str[i] - '0');
-    }
-    return ret;
 }
 
 char* strDuplicate(const char *str, size_t n)
@@ -226,13 +220,22 @@ char* strDuplicate(const char *str, size_t n)
     return (char *) memcpy(ret, str, n);
 }
 
+char* strAppend(char* lhs, const char* rhs, size_t n)
+{
+    if (!rhs) return lhs;
+    if (!lhs) return strDuplicate(rhs, n);
+    lhs = (char*)realloc(lhs, strlen(lhs) + n + 1);
+    return strncat(lhs, rhs, n);
+}
+
 char* strDirname(const char* path)
 {
-    const char *ptr = strrchr(path, '/');
+    auto ptr = strrchr(path, '/');
 #ifdef _WIN32
-    if (ptr) ptr = strrchr(ptr + 1, '\\');
+    auto ptr2 = strrchr(ptr ? ptr : path, '\\');
+    if (ptr2) ptr = ptr2;
 #endif
-    int len = int(ptr + 1 - path);  // +1 to include '/'
+    auto len = ptr ? size_t(ptr - path + 1) : SIZE_MAX;
     return strDuplicate(path, len);
 }
 

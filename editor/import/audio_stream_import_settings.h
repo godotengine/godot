@@ -28,20 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_IMPORT_SETTINGS_H
-#define AUDIO_STREAM_IMPORT_SETTINGS_H
+#pragma once
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/spin_box.h"
-#include "scene/resources/texture.h"
 
 class CheckBox;
 
-class AudioStreamImportSettings : public ConfirmationDialog {
-	GDCLASS(AudioStreamImportSettings, ConfirmationDialog);
+class AudioStreamImportSettingsDialog : public ConfirmationDialog {
+	GDCLASS(AudioStreamImportSettingsDialog, ConfirmationDialog);
 
 	CheckBox *bpm_enabled = nullptr;
 	SpinBox *bpm_edit = nullptr;
@@ -79,9 +77,18 @@ class AudioStreamImportSettings : public ConfirmationDialog {
 	String importer;
 	String path;
 
+	struct MasterState {
+		bool mute = false;
+		bool bypass = false;
+		float volume = 0;
+	} master_state;
+
+	void _reset_master();
+	void _load_master_state();
+
 	void _audio_changed();
 
-	static AudioStreamImportSettings *singleton;
+	static AudioStreamImportSettingsDialog *singleton;
 
 	void _settings_changed();
 
@@ -109,9 +116,7 @@ protected:
 public:
 	void edit(const String &p_path, const String &p_importer, const Ref<AudioStream> &p_stream);
 
-	static AudioStreamImportSettings *get_singleton() { return singleton; }
+	static AudioStreamImportSettingsDialog *get_singleton() { return singleton; }
 
-	AudioStreamImportSettings();
+	AudioStreamImportSettingsDialog();
 };
-
-#endif // AUDIO_STREAM_IMPORT_SETTINGS_H

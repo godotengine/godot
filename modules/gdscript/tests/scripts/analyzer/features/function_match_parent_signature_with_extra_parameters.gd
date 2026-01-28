@@ -2,11 +2,11 @@ func test():
 	var instance := Parent.new()
 	var result := instance.my_function(1)
 	print(result)
-	assert(result == 1)
+	Utils.check(result == 1)
 	instance = Child.new()
 	result = instance.my_function(2)
 	print(result)
-	assert(result == 0)
+	Utils.check(result == 0)
 
 class Parent:
 	func my_function(par1: int) -> int:

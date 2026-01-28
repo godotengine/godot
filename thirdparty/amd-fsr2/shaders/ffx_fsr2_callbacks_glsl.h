@@ -52,11 +52,9 @@
 		FfxFloat32    fDeltaTime;
 		FfxFloat32    fDynamicResChangeFactor;
 		FfxFloat32    fViewSpaceToMetersFactor;
-		
-		// -- GODOT start --
+
 		FfxFloat32    fPad;
 		mat4          mReprojectionMatrix;
-		// -- GODOT end --
 	} cbFSR2;
 #endif
 
@@ -322,13 +320,11 @@ FfxFloat32 LoadInputDepth(FfxInt32x2 iPxPos)
 #if defined(FSR2_BIND_SRV_REACTIVE_MASK) 
 FfxFloat32 LoadReactiveMask(FfxInt32x2 iPxPos)
 {
-// -- GODOT start --
 #if FFX_FSR2_OPTION_GODOT_REACTIVE_MASK_CLAMP
 	return min(texelFetch(r_reactive_mask, FfxInt32x2(iPxPos), 0).r, 0.9f);
 #else
 	return texelFetch(r_reactive_mask, FfxInt32x2(iPxPos), 0).r;
 #endif
-// -- GODOT end --
 }
 #endif
 
@@ -365,7 +361,6 @@ FfxFloat32x2 LoadInputMotionVector(FfxInt32x2 iPxDilatedMotionVectorPos)
 {
 	FfxFloat32x2 fSrcMotionVector = texelFetch(r_input_motion_vectors, iPxDilatedMotionVectorPos, 0).xy;
 
-// -- GODOT start --
 #if FFX_FSR2_OPTION_GODOT_DERIVE_INVALID_MOTION_VECTORS
 	bool bInvalidMotionVector = all(lessThanEqual(fSrcMotionVector, vec2(-1.0f, -1.0f)));
 	if (bInvalidMotionVector)
@@ -375,7 +370,6 @@ FfxFloat32x2 LoadInputMotionVector(FfxInt32x2 iPxDilatedMotionVectorPos)
 		fSrcMotionVector = FFX_FSR2_OPTION_GODOT_DERIVE_INVALID_MOTION_VECTORS_FUNCTION(fUv, fSrcDepth, cbFSR2.mReprojectionMatrix);
 	}
 #endif
-// -- GODOT end --
 
 	FfxFloat32x2 fUvMotionVector = fSrcMotionVector * MotionVectorScale();
 

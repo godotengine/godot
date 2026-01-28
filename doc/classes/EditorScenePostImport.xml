@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Imported scenes can be automatically modified right after import by setting their [b]Custom Script[/b] Import property to a [code]tool[/code] script that inherits from this class.
-		The [method _post_import] callback receives the imported scene's root node and returns the modified version of the scene. Usage example:
+		The [method _post_import] callback receives the imported scene's root node and returns the modified version of the scene:
 		[codeblocks]
 		[gdscript]
 		@tool # Needed so it runs in editor.
@@ -14,15 +14,15 @@
 		# This sample changes all node names.
 		# Called right after the scene is imported and gets the root node.
 		func _post_import(scene):
-		    # Change all node names to "modified_[oldnodename]"
-		    iterate(scene)
-		    return scene # Remember to return the imported scene
+			# Change all node names to "modified_[oldnodename]"
+			iterate(scene)
+			return scene # Remember to return the imported scene
 
 		func iterate(node):
-		    if node != null:
-		        node.name = "modified_" + node.name
-		        for child in node.get_children():
-		            iterate(child)
+			if node != null:
+				node.name = "modified_" + node.name
+				for child in node.get_children():
+					iterate(child)
 		[/gdscript]
 		[csharp]
 		using Godot;
@@ -32,24 +32,24 @@
 		[Tool]
 		public partial class NodeRenamer : EditorScenePostImport
 		{
-		    public override GodotObject _PostImport(Node scene)
-		    {
-		        // Change all node names to "modified_[oldnodename]"
-		        Iterate(scene);
-		        return scene; // Remember to return the imported scene
-		    }
+			public override GodotObject _PostImport(Node scene)
+			{
+				// Change all node names to "modified_[oldnodename]"
+				Iterate(scene);
+				return scene; // Remember to return the imported scene
+			}
 
-		    public void Iterate(Node node)
-		    {
-		        if (node != null)
-		        {
-		            node.Name = $"modified_{node.Name}";
-		            foreach (Node child in node.GetChildren())
-		            {
-		                Iterate(child);
-		            }
-		        }
-		    }
+			public void Iterate(Node node)
+			{
+				if (node != null)
+				{
+					node.Name = $"modified_{node.Name}";
+					foreach (Node child in node.GetChildren())
+					{
+						Iterate(child);
+					}
+				}
+			}
 		}
 		[/csharp]
 		[/codeblocks]

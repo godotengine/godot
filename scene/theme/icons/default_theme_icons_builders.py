@@ -1,75 +1,35 @@
-"""Functions used to generate source files during build time
-
-All such functions are invoked in a subprocess on Windows to prevent build flakiness.
-
-"""
+"""Functions used to generate source files during build time"""
 
 import os
-from io import StringIO
-from platform_methods import subprocess_main
+
+import methods
 
 
 # See also `editor/icons/editor_icons_builders.py`.
 def make_default_theme_icons_action(target, source, env):
-    dst = target[0]
-    svg_icons = source
+    icons_names = []
+    icons_raw = []
 
-    icons_string = StringIO()
+    for src in map(str, source):
+        with open(src, encoding="utf-8", newline="\n") as file:
+            icons_raw.append(methods.to_raw_cstring(file.read()))
 
-    for f in svg_icons:
-        fname = str(f)
+        name = os.path.splitext(os.path.basename(src))[0]
+        icons_names.append(f'"{name}"')
 
-        icons_string.write('\t"')
+    icons_names_str = ",\n\t".join(icons_names)
+    icons_raw_str = ",\n\t".join(icons_raw)
 
-        with open(fname, "rb") as svgf:
-            b = svgf.read(1)
-            while len(b) == 1:
-                icons_string.write("\\" + str(hex(ord(b)))[1:])
-                b = svgf.read(1)
+    with methods.generated_wrapper(str(target[0])) as file:
+        file.write(f"""\
+#include "modules/modules_enabled.gen.h"
 
-        icons_string.write('"')
-        if fname != svg_icons[-1]:
-            icons_string.write(",")
-        icons_string.write("\n")
+inline constexpr int default_theme_icons_count = {len(icons_names)};
+inline constexpr const char *default_theme_icons_sources[] = {{
+	{icons_raw_str}
+}};
 
-    s = StringIO()
-    s.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n\n")
-    s.write('#include "modules/modules_enabled.gen.h"\n\n')
-    s.write("#ifndef _DEFAULT_THEME_ICONS_H\n")
-    s.write("#define _DEFAULT_THEME_ICONS_H\n")
-    s.write("static const int default_theme_icons_count = {};\n\n".format(len(svg_icons)))
-    s.write("#ifdef MODULE_SVG_ENABLED\n")
-    s.write("static const char *default_theme_icons_sources[] = {\n")
-    s.write(icons_string.getvalue())
-    s.write("};\n")
-    s.write("#endif // MODULE_SVG_ENABLED\n\n")
-    s.write("static const char *default_theme_icons_names[] = {\n")
-
-    index = 0
-    for f in svg_icons:
-        fname = str(f)
-
-        # Trim the `.svg` extension from the string.
-        icon_name = os.path.basename(fname)[:-4]
-
-        s.write('\t"{0}"'.format(icon_name))
-
-        if fname != svg_icons[-1]:
-            s.write(",")
-        s.write("\n")
-
-        index += 1
-
-    s.write("};\n")
-
-    s.write("#endif\n")
-
-    with open(dst, "w") as f:
-        f.write(s.getvalue())
-
-    s.close()
-    icons_string.close()
-
-
-if __name__ == "__main__":
-    subprocess_main(globals())
+inline constexpr const char *default_theme_icons_names[] = {{
+	{icons_names_str}
+}};
+""")

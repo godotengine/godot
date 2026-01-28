@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +24,24 @@
 #define _TVG_SW_COMMON_H_
 
 #include "tvgCommon.h"
+#include "tvgMath.h"
 #include "tvgRender.h"
-
-#include <algorithm>
-
-#if 0
-#include <sys/time.h>
-static double timeStamp()
-{
-   struct timeval tv;
-   gettimeofday(&tv, NULL);
-   return (tv.tv_sec + tv.tv_usec / 1000000.0);
-}
-#endif
 
 #define SW_CURVE_TYPE_POINT 0
 #define SW_CURVE_TYPE_CUBIC 1
 #define SW_ANGLE_PI (180L << 16)
 #define SW_ANGLE_2PI (SW_ANGLE_PI << 1)
 #define SW_ANGLE_PI2 (SW_ANGLE_PI >> 1)
-#define SW_ANGLE_PI4 (SW_ANGLE_PI >> 2)
 
 using SwCoord = signed long;
 using SwFixed = signed long long;
+#define SW_COLOR_TABLE 1024
+
+
+static inline float TO_FLOAT(SwCoord val)
+{
+    return static_cast<float>(val) / 64.0f;
+}
 
 struct SwPoint
 {
@@ -92,6 +87,10 @@ struct SwPoint
         else return false;
     }
 
+    Point toPoint() const
+    {
+        return {TO_FLOAT(x),  TO_FLOAT(y)};
+    }
 };
 
 struct SwSize
@@ -115,7 +114,7 @@ struct SwSpan
     uint8_t coverage;
 };
 
-struct SwRleData
+struct SwRle
 {
     SwSpan *spans;
     uint32_t alloc;
@@ -130,13 +129,25 @@ struct SwBBox
     {
         min.x = min.y = max.x = max.y = 0;
     }
+
+    int32_t w() const { return max.x - min.x; }
+    int32_t h() const { return max.y - min.y; }
+};
+
+using Area = long;
+
+struct SwCell
+{
+    int32_t x;
+    int32_t cover;
+    Area area;
+    SwCell *next;
 };
 
 struct SwFill
 {
     struct SwLinear {
         float dx, dy;
-        float len;
         float offset;
     };
 
@@ -153,9 +164,10 @@ struct SwFill
         SwRadial radial;
     };
 
-    uint32_t* ctable;
+    uint32_t ctable[SW_COLOR_TABLE];
     FillSpread spread;
 
+    bool solid = false; //solid color fill with the last color from colorStops
     bool translucent;
 };
 
@@ -213,8 +225,8 @@ struct SwShape
     SwOutline*   outline = nullptr;
     SwStroke*    stroke = nullptr;
     SwFill*      fill = nullptr;
-    SwRleData*   rle = nullptr;
-    SwRleData*   strokeRle = nullptr;
+    SwRle*   rle = nullptr;
+    SwRle*   strokeRle = nullptr;
     SwBBox       bbox;           //Keep it boundary without stroke region. Using for optimal filling.
 
     bool         fastTrack = false;   //Fast Track: axis-aligned rectangle without any clips?
@@ -223,7 +235,7 @@ struct SwShape
 struct SwImage
 {
     SwOutline*   outline = nullptr;
-    SwRleData*   rle = nullptr;
+    SwRle*   rle = nullptr;
     union {
         pixel_t*  data;      //system based data pointer
         uint32_t* buf32;     //for explicit 32bits channels
@@ -246,22 +258,35 @@ typedef uint8_t(*SwAlpha)(uint8_t*);                                        //bl
 
 struct SwCompositor;
 
-struct SwSurface : Surface
+struct SwSurface : RenderSurface
 {
     SwJoin  join;
     SwAlpha alphas[4];                    //Alpha:2, InvAlpha:3, Luma:4, InvLuma:5
     SwBlender blender = nullptr;          //blender (optional)
     SwCompositor* compositor = nullptr;   //compositor (optional)
-    BlendMethod          blendMethod;     //blending method (uint8_t)
+    BlendMethod blendMethod = BlendMethod::Normal;
 
     SwAlpha alpha(CompositeMethod method)
     {
         auto idx = (int)(method) - 2;       //0: None, 1: ClipPath
         return alphas[idx > 3 ? 0 : idx];   //CompositeMethod has only four Matting methods.
     }
+
+    SwSurface()
+    {
+    }
+
+    SwSurface(const SwSurface* rhs) : RenderSurface(rhs)
+    {
+        join = rhs->join;
+        memcpy(alphas, rhs->alphas, sizeof(alphas));
+        blender = rhs->blender;
+        compositor = rhs->compositor;
+        blendMethod = rhs->blendMethod;
+    }
 };
 
-struct SwCompositor : Compositor
+struct SwCompositor : RenderCompositor
 {
     SwSurface* recoverSfc;                  //Recover surface when composition is started
     SwCompositor* recoverCmp;               //Recover compositor when composition is done
@@ -270,11 +295,22 @@ struct SwCompositor : Compositor
     bool valid;
 };
 
+struct SwCellPool
+{
+    #define DEFAULT_POOL_SIZE 16368
+
+    uint32_t size;
+    SwCell* buffer;
+
+    SwCellPool() : size(DEFAULT_POOL_SIZE), buffer((SwCell*)malloc(DEFAULT_POOL_SIZE)) {}
+    ~SwCellPool() { free(buffer); }
+};
+
 struct SwMpool
 {
     SwOutline* outline;
     SwOutline* strokeOutline;
-    SwOutline* dashOutline;
+    SwCellPool* cellPool;
     unsigned allocSize;
 };
 
@@ -290,8 +326,8 @@ static inline uint32_t JOIN(uint8_t c0, uint8_t c1, uint8_t c2, uint8_t c3)
 
 static inline uint32_t ALPHA_BLEND(uint32_t c, uint32_t a)
 {
-    return (((((c >> 8) & 0x00ff00ff) * a + 0x00ff00ff) & 0xff00ff00) +
-            ((((c & 0x00ff00ff) * a + 0x00ff00ff) >> 8) & 0x00ff00ff));
+    ++a;
+    return (((((c >> 8) & 0x00ff00ff) * a) & 0xff00ff00) + ((((c & 0x00ff00ff) * a) >> 8) & 0x00ff00ff));
 }
 
 static inline uint32_t INTERPOLATE(uint32_t s, uint32_t d, uint8_t a)
@@ -368,10 +404,13 @@ static inline uint32_t opBlendDifference(uint32_t s, uint32_t d, TVG_UNUSED uint
 
 static inline uint32_t opBlendExclusion(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
-    //A + B - 2AB
-    auto c1 = std::min(255, C1(s) + C1(d) - std::min(255, (C1(s) * C1(d)) << 1));
-    auto c2 = std::min(255, C2(s) + C2(d) - std::min(255, (C2(s) * C2(d)) << 1));
-    auto c3 = std::min(255, C3(s) + C3(d) - std::min(255, (C3(s) * C3(d)) << 1));
+    // (s + d) - (2 * s * d)
+    auto c1 = C1(s) + C1(d) - 2 * MULTIPLY(C1(s), C1(d));
+    tvg::clamp(c1, 0, 255);
+    auto c2 = C2(s) + C2(d) - 2 * MULTIPLY(C2(s), C2(d));
+    tvg::clamp(c2, 0, 255);
+    auto c3 = C3(s) + C3(d) - 2 * MULTIPLY(C3(s), C3(d));
+    tvg::clamp(c3, 0, 255);
     return JOIN(255, c1, c2, c3);
 }
 
@@ -393,7 +432,6 @@ static inline uint32_t opBlendScreen(uint32_t s, uint32_t d, TVG_UNUSED uint8_t 
     return JOIN(255, c1, c2, c3);
 }
 
-
 static inline uint32_t opBlendMultiply(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
     // s * d
@@ -402,7 +440,6 @@ static inline uint32_t opBlendMultiply(uint32_t s, uint32_t d, TVG_UNUSED uint8_
     auto c3 = MULTIPLY(C3(s), C3(d));
     return JOIN(255, c1, c2, c3);
 }
-
 
 static inline uint32_t opBlendOverlay(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
@@ -435,10 +472,10 @@ static inline uint32_t opBlendLighten(uint32_t s, uint32_t d, TVG_UNUSED uint8_t
 static inline uint32_t opBlendColorDodge(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
     // d / (1 - s)
-    auto is = 0xffffffff - s;
-    auto c1 = (C1(is) > 0) ? (C1(d) / C1(is)) : C1(d);
-    auto c2 = (C2(is) > 0) ? (C2(d) / C2(is)) : C2(d);
-    auto c3 = (C3(is) > 0) ? (C3(d) / C3(is)) : C3(d);
+    s = 0xffffffff - s;
+    auto c1 = C1(d) == 0 ? 0 : (C1(s) == 0 ? 255 : std::min(C1(d) * 255 / C1(s), 255));
+    auto c2 = C2(d) == 0 ? 0 : (C2(s) == 0 ? 255 : std::min(C2(d) * 255 / C2(s), 255));
+    auto c3 = C3(d) == 0 ? 0 : (C3(s) == 0 ? 255 : std::min(C3(d) * 255 / C3(s), 255));
     return JOIN(255, c1, c2, c3);
 }
 
@@ -446,14 +483,17 @@ static inline uint32_t opBlendColorBurn(uint32_t s, uint32_t d, TVG_UNUSED uint8
 {
     // 1 - (1 - d) / s
     auto id = 0xffffffff - d;
-    auto c1 = 255 - ((C1(s) > 0) ? (C1(id) / C1(s)) : C1(id));
-    auto c2 = 255 - ((C2(s) > 0) ? (C2(id) / C2(s)) : C2(id));
-    auto c3 = 255 - ((C3(s) > 0) ? (C3(id) / C3(s)) : C3(id));
+    auto c1 = C1(d) == 255 ? 255 : (C1(s) == 0 ? 0 : 255 - std::min(C1(id) * 255 / C1(s), 255));
+    auto c2 = C2(d) == 255 ? 255 : (C2(s) == 0 ? 0 : 255 - std::min(C2(id) * 255 / C2(s), 255));
+    auto c3 = C3(d) == 255 ? 255 : (C3(s) == 0 ? 0 : 255 - std::min(C3(id) * 255 / C3(s), 255));
+
     return JOIN(255, c1, c2, c3);
 }
 
 static inline uint32_t opBlendHardLight(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
+    // if (s < sa), (2 * s * d)
+    // else (sa * da) - 2 * (da - s) * (sa - d)
     auto c1 = (C1(s) < 128) ? std::min(255, 2 * MULTIPLY(C1(s), C1(d))) : (255 - std::min(255, 2 * MULTIPLY(255 - C1(s), 255 - C1(d))));
     auto c2 = (C2(s) < 128) ? std::min(255, 2 * MULTIPLY(C2(s), C2(d))) : (255 - std::min(255, 2 * MULTIPLY(255 - C2(s), 255 - C2(d))));
     auto c3 = (C3(s) < 128) ? std::min(255, 2 * MULTIPLY(C3(s), C3(d))) : (255 - std::min(255, 2 * MULTIPLY(255 - C3(s), 255 - C3(d))));
@@ -463,9 +503,9 @@ static inline uint32_t opBlendHardLight(uint32_t s, uint32_t d, TVG_UNUSED uint8
 static inline uint32_t opBlendSoftLight(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
     //(255 - 2 * s) * (d * d) + (2 * s * b)
-    auto c1 = std::min(255, MULTIPLY(255 - std::min(255, 2 * C1(s)), MULTIPLY(C1(d), C1(d))) + 2 * MULTIPLY(C1(s), C1(d)));
-    auto c2 = std::min(255, MULTIPLY(255 - std::min(255, 2 * C2(s)), MULTIPLY(C2(d), C2(d))) + 2 * MULTIPLY(C2(s), C2(d)));
-    auto c3 = std::min(255, MULTIPLY(255 - std::min(255, 2 * C3(s)), MULTIPLY(C3(d), C3(d))) + 2 * MULTIPLY(C3(s), C3(d)));
+    auto c1 = MULTIPLY(255 - std::min(255, 2 * C1(s)), MULTIPLY(C1(d), C1(d))) + std::min(255, 2 * MULTIPLY(C1(s), C1(d)));
+    auto c2 = MULTIPLY(255 - std::min(255, 2 * C2(s)), MULTIPLY(C2(d), C2(d))) + std::min(255, 2 * MULTIPLY(C2(s), C2(d)));
+    auto c3 = MULTIPLY(255 - std::min(255, 2 * C3(s)), MULTIPLY(C3(d), C3(d))) + std::min(255, 2 * MULTIPLY(C3(s), C3(d)));
     return JOIN(255, c1, c2, c3);
 }
 
@@ -479,42 +519,44 @@ SwFixed mathAtan(const SwPoint& pt);
 SwFixed mathCos(SwFixed angle);
 SwFixed mathSin(SwFixed angle);
 void mathSplitCubic(SwPoint* base);
+void mathSplitLine(SwPoint* base);
 SwFixed mathDiff(SwFixed angle1, SwFixed angle2);
 SwFixed mathLength(const SwPoint& pt);
-bool mathSmallCubic(const SwPoint* base, SwFixed& angleIn, SwFixed& angleMid, SwFixed& angleOut);
+int mathCubicAngle(const SwPoint* base, SwFixed& angleIn, SwFixed& angleMid, SwFixed& angleOut);
 SwFixed mathMean(SwFixed angle1, SwFixed angle2);
-SwPoint mathTransform(const Point* to, const Matrix* transform);
+SwPoint mathTransform(const Point* to, const Matrix& transform);
 bool mathUpdateOutlineBBox(const SwOutline* outline, const SwBBox& clipRegion, SwBBox& renderRegion, bool fastTrack);
-bool mathClipBBox(const SwBBox& clipper, SwBBox& clipee);
+bool mathClipBBox(const SwBBox& clipper, SwBBox& clippee);
 
 void shapeReset(SwShape* shape);
-bool shapePrepare(SwShape* shape, const RenderShape* rshape, const Matrix* transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid, bool hasComposite);
+bool shapePrepare(SwShape* shape, const RenderShape* rshape, const Matrix& transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid, bool hasComposite);
 bool shapePrepared(const SwShape* shape);
-bool shapeGenRle(SwShape* shape, const RenderShape* rshape, bool antiAlias);
+bool shapeGenRle(SwShape* shape, const RenderShape* rshape, SwMpool* mpool, unsigned tid, bool antiAlias);
 void shapeDelOutline(SwShape* shape, SwMpool* mpool, uint32_t tid);
-void shapeResetStroke(SwShape* shape, const RenderShape* rshape, const Matrix* transform);
-bool shapeGenStrokeRle(SwShape* shape, const RenderShape* rshape, const Matrix* transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid);
+void shapeResetStroke(SwShape* shape, const RenderShape* rshape, const Matrix& transform);
+bool shapeGenStrokeRle(SwShape* shape, const RenderShape* rshape, const Matrix& transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid);
 void shapeFree(SwShape* shape);
 void shapeDelStroke(SwShape* shape);
-bool shapeGenFillColors(SwShape* shape, const Fill* fill, const Matrix* transform, SwSurface* surface, uint8_t opacity, bool ctable);
-bool shapeGenStrokeFillColors(SwShape* shape, const Fill* fill, const Matrix* transform, SwSurface* surface, uint8_t opacity, bool ctable);
+bool shapeGenFillColors(SwShape* shape, const Fill* fill, const Matrix& transform, SwSurface* surface, uint8_t opacity, bool ctable);
+bool shapeGenStrokeFillColors(SwShape* shape, const Fill* fill, const Matrix& transform, SwSurface* surface, uint8_t opacity, bool ctable);
 void shapeResetFill(SwShape* shape);
 void shapeResetStrokeFill(SwShape* shape);
 void shapeDelFill(SwShape* shape);
 void shapeDelStrokeFill(SwShape* shape);
 
-void strokeReset(SwStroke* stroke, const RenderShape* shape, const Matrix* transform);
+void strokeReset(SwStroke* stroke, const RenderShape* shape, const Matrix& transform);
 bool strokeParseOutline(SwStroke* stroke, const SwOutline& outline);
 SwOutline* strokeExportOutline(SwStroke* stroke, SwMpool* mpool, unsigned tid);
 void strokeFree(SwStroke* stroke);
 
-bool imagePrepare(SwImage* image, const RenderMesh* mesh, const Matrix* transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid);
-bool imageGenRle(SwImage* image, const SwBBox& renderRegion, bool antiAlias);
+bool imagePrepare(SwImage* image, const Matrix& transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid);
+bool imageGenRle(SwImage* image, const SwBBox& renderRegion, SwMpool* mpool, unsigned tid, bool antiAlias);
 void imageDelOutline(SwImage* image, SwMpool* mpool, uint32_t tid);
 void imageReset(SwImage* image);
 void imageFree(SwImage* image);
 
-bool fillGenColorTable(SwFill* fill, const Fill* fdata, const Matrix* transform, SwSurface* surface, uint8_t opacity, bool ctable);
+bool fillGenColorTable(SwFill* fill, const Fill* fdata, const Matrix& transform, SwSurface* surface, uint8_t opacity, bool ctable);
+const Fill::ColorStop* fillFetchSolid(const SwFill* fill, const Fill* fdata);
 void fillReset(SwFill* fill);
 void fillFree(SwFill* fill);
 
@@ -531,13 +573,13 @@ void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
 void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlender op, SwBlender op2, uint8_t a);                          //blending + BlendingMethod(op2) ver.
 void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, uint8_t* cmp, SwAlpha alpha, uint8_t csize, uint8_t opacity);     //matting ver.
 
-SwRleData* rleRender(SwRleData* rle, const SwOutline* outline, const SwBBox& renderRegion, bool antiAlias);
-SwRleData* rleRender(const SwBBox* bbox);
-void rleFree(SwRleData* rle);
-void rleReset(SwRleData* rle);
-void rleMerge(SwRleData* rle, SwRleData* clip1, SwRleData* clip2);
-void rleClipPath(SwRleData* rle, const SwRleData* clip);
-void rleClipRect(SwRleData* rle, const SwBBox* clip);
+SwRle* rleRender(SwRle* rle, const SwOutline* outline, const SwBBox& renderRegion, SwMpool* mpool, unsigned tid, bool antiAlias);
+SwRle* rleRender(const SwBBox* bbox);
+void rleFree(SwRle* rle);
+void rleReset(SwRle* rle);
+void rleMerge(SwRle* rle, SwRle* clip1, SwRle* clip2);
+bool rleClip(SwRle* rle, const SwRle* clip);
+bool rleClip(SwRle* rle, const SwBBox* clip);
 
 SwMpool* mpoolInit(uint32_t threads);
 bool mpoolTerm(SwMpool* mpool);
@@ -548,18 +590,40 @@ SwOutline* mpoolReqStrokeOutline(SwMpool* mpool, unsigned idx);
 void mpoolRetStrokeOutline(SwMpool* mpool, unsigned idx);
 SwOutline* mpoolReqDashOutline(SwMpool* mpool, unsigned idx);
 void mpoolRetDashOutline(SwMpool* mpool, unsigned idx);
+SwCellPool* mpoolReqCellPool(SwMpool* mpool, unsigned idx);
 
 bool rasterCompositor(SwSurface* surface);
-bool rasterGradientShape(SwSurface* surface, SwShape* shape, unsigned id);
+bool rasterGradientShape(SwSurface* surface, SwShape* shape, const Fill* fdata, uint8_t opacity);
 bool rasterShape(SwSurface* surface, SwShape* shape, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-bool rasterImage(SwSurface* surface, SwImage* image, const RenderMesh* mesh, const Matrix* transform, const SwBBox& bbox, uint8_t opacity);
+bool rasterTexmapPolygon(SwSurface* surface, const SwImage& image, const Matrix& transform, const SwBBox& bbox, uint8_t opacity);
+bool rasterScaledImage(SwSurface* surface, const SwImage& image, const Matrix& transform, const SwBBox& bbox, uint8_t opacity);
+bool rasterDirectImage(SwSurface* surface, const SwImage& image, const SwBBox& bbox, uint8_t opacity);
+bool rasterScaledRleImage(SwSurface* surface, const SwImage& image, const Matrix& transform, const SwBBox& bbox, uint8_t opacity);
+bool rasterDirectRleImage(SwSurface* surface, const SwImage& image, uint8_t opacity);
 bool rasterStroke(SwSurface* surface, SwShape* shape, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-bool rasterGradientStroke(SwSurface* surface, SwShape* shape, unsigned id);
-bool rasterClear(SwSurface* surface, uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+bool rasterGradientStroke(SwSurface* surface, SwShape* shape, const Fill* fdata, uint8_t opacity);
+bool rasterClear(SwSurface* surface, uint32_t x, uint32_t y, uint32_t w, uint32_t h, pixel_t val = 0);
 void rasterPixel32(uint32_t *dst, uint32_t val, uint32_t offset, int32_t len);
+void rasterTranslucentPixel32(uint32_t* dst, uint32_t* src, uint32_t len, uint8_t opacity);
+void rasterPixel32(uint32_t* dst, uint32_t* src, uint32_t len, uint8_t opacity);
 void rasterGrayscale8(uint8_t *dst, uint8_t val, uint32_t offset, int32_t len);
-void rasterUnpremultiply(Surface* surface);
-void rasterPremultiply(Surface* surface);
-bool rasterConvertCS(Surface* surface, ColorSpace to);
+void rasterXYFlip(uint32_t* src, uint32_t* dst, int32_t stride, int32_t w, int32_t h, const SwBBox& bbox, bool flipped);
+void rasterUnpremultiply(RenderSurface* surface);
+void rasterPremultiply(RenderSurface* surface);
+bool rasterConvertCS(RenderSurface* surface, ColorSpace to);
+uint32_t rasterUnpremultiply(uint32_t data);
+
+bool effectGaussianBlur(SwCompositor* cmp, SwSurface* surface, const RenderEffectGaussianBlur* params);
+bool effectGaussianBlurRegion(RenderEffectGaussianBlur* effect);
+void effectGaussianBlurUpdate(RenderEffectGaussianBlur* effect, const Matrix& transform);
+bool effectDropShadow(SwCompositor* cmp, SwSurface* surfaces[2], const RenderEffectDropShadow* params, bool direct);
+bool effectDropShadowRegion(RenderEffectDropShadow* effect);
+void effectDropShadowUpdate(RenderEffectDropShadow* effect, const Matrix& transform);
+void effectFillUpdate(RenderEffectFill* effect);
+bool effectFill(SwCompositor* cmp, const RenderEffectFill* params, bool direct);
+void effectTintUpdate(RenderEffectTint* effect);
+bool effectTint(SwCompositor* cmp, const RenderEffectTint* params, bool direct);
+void effectTritoneUpdate(RenderEffectTritone* effect);
+bool effectTritone(SwCompositor* cmp, const RenderEffectTritone* params, bool direct);
 
 #endif /* _TVG_SW_COMMON_H_ */

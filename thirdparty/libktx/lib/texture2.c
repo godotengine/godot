@@ -8,20 +8,22 @@
 
 /**
  * @internal
- * @file texture2.c
+ * @file
  * @~English
  *
  * @brief ktxTexture2 implementation. Support for KTX2 format.
  *
- * @author Mark Callow, www.edgewise-consulting.com
+ * @author Mark Callow, github.com/MarkCallow
  */
 
 #if defined(_WIN32)
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <zstd.h>
 #include <zstd_errors.h>
 #include <KHR/khr_df.h>
@@ -33,11 +35,13 @@
 #include "memstream.h"
 #include "texture2.h"
 #include "unused.h"
-#include "vk_format.h"
 
 // FIXME: Test this #define and put it in a header somewhere.
 //#define IS_BIG_ENDIAN (1 == *(unsigned char *)&(const int){0x01000000ul})
 #define IS_BIG_ENDIAN 0
+
+extern uint32_t vkFormatTypeSize(VkFormat format);
+extern bool isProhibitedFormat(VkFormat format);
 
 struct ktxTexture_vtbl ktxTexture2_vtbl;
 struct ktxTexture_vtblInt ktxTexture2_vtblInt;
@@ -51,8 +55,11 @@ struct ktxTexture_vtblInt ktxTexture2_vtblInt;
 struct sampleType {
     uint32_t bitOffset: 16;
     uint32_t bitLength: 8;
-    uint32_t channelType: 8; // Includes qualifiers
-    uint32_t samplePosition0: 8;
+    // MSVC 14.44 introduced a warning when mixing enums of different types.
+    // To avoid doing that make separate channelId and qualifier fields.
+    uint32_t channelId : 4;
+    uint32_t datatypeQualifiers : 4;
+    uint32_t samplePosition0 : 8;
     uint32_t samplePosition1: 8;
     uint32_t samplePosition2: 8;
     uint32_t samplePosition3: 8;
@@ -111,7 +118,8 @@ struct BDFD e5b9g9r9_ufloat_comparator = {
     .samples[0] = {
         .bitOffset = 0,
         .bitLength = 8,
-        .channelType = KHR_DF_CHANNEL_RGBSDA_RED,
+        .channelId = KHR_DF_CHANNEL_RGBSDA_RED,
+        .datatypeQualifiers = 0,
         .samplePosition0 = 0,
         .samplePosition1 = 0,
         .samplePosition2 = 0,
@@ -122,7 +130,10 @@ struct BDFD e5b9g9r9_ufloat_comparator = {
     .samples[1] = {
         .bitOffset = 27,
         .bitLength = 4,
-        .channelType = KHR_DF_CHANNEL_RGBSDA_RED | KHR_DF_SAMPLE_DATATYPE_EXPONENT,
+        .channelId = KHR_DF_CHANNEL_RGBSDA_RED,
+        // The constant is defined to be ORed with a channelId into
+        // an 8-bit value. Shift to make it suitable for the 4-bit field.
+        .datatypeQualifiers = (KHR_DF_SAMPLE_DATATYPE_EXPONENT >> 4U),
         .samplePosition0 = 0,
         .samplePosition1 = 0,
         .samplePosition2 = 0,
@@ -133,7 +144,8 @@ struct BDFD e5b9g9r9_ufloat_comparator = {
     .samples[2] = {
         .bitOffset = 9,
         .bitLength = 8,
-        .channelType = KHR_DF_CHANNEL_RGBSDA_GREEN,
+        .channelId = KHR_DF_CHANNEL_RGBSDA_GREEN,
+        .datatypeQualifiers = 0,
         .samplePosition0 = 0,
         .samplePosition1 = 0,
         .samplePosition2 = 0,
@@ -144,7 +156,9 @@ struct BDFD e5b9g9r9_ufloat_comparator = {
     .samples[3] = {
         .bitOffset = 27,
         .bitLength = 4,
-        .channelType = KHR_DF_CHANNEL_RGBSDA_GREEN | KHR_DF_SAMPLE_DATATYPE_EXPONENT,
+        .channelId = KHR_DF_CHANNEL_RGBSDA_GREEN,
+        // Ditto comment in samples[1].
+        .datatypeQualifiers = (KHR_DF_SAMPLE_DATATYPE_EXPONENT >> 4U),
         .samplePosition0 = 0,
         .samplePosition1 = 0,
         .samplePosition2 = 0,
@@ -155,7 +169,8 @@ struct BDFD e5b9g9r9_ufloat_comparator = {
     .samples[4] = {
         .bitOffset = 18,
         .bitLength = 8,
-        .channelType = KHR_DF_CHANNEL_RGBSDA_BLUE,
+        .channelId = KHR_DF_CHANNEL_RGBSDA_BLUE,
+        .datatypeQualifiers = 0,
         .samplePosition0 = 0,
         .samplePosition1 = 0,
         .samplePosition2 = 0,
@@ -166,7 +181,9 @@ struct BDFD e5b9g9r9_ufloat_comparator = {
     .samples[5] = {
         .bitOffset = 27,
         .bitLength = 4,
-        .channelType = KHR_DF_CHANNEL_RGBSDA_BLUE | KHR_DF_SAMPLE_DATATYPE_EXPONENT,
+        .channelId = KHR_DF_CHANNEL_RGBSDA_BLUE,
+        // Ditto comment in samples[1].
+        .datatypeQualifiers = (KHR_DF_SAMPLE_DATATYPE_EXPONENT >> 4U),
         .samplePosition0 = 0,
         .samplePosition1 = 0,
         .samplePosition2 = 0,
@@ -215,29 +232,54 @@ ktx_uint32_t e5b9g9r9_ufloat_comparator[e5b9g9r9_bdbwordcount] = {
 };
 #endif
 
+/* Helper constant:
+   Minimal size of basic descriptor block to safely read its size */
+#define KHR_DFD_SIZEFOR_DESCRIPTORBLOCKSIZE \
+    ((KHR_DF_WORD_DESCRIPTORBLOCKSIZE + 1) * sizeof(uint32_t))
+
 /**
-* @private
-* @~English
-* @brief Initialize a ktxFormatSize object from the info in a DFD.
-*
-* This is used instead of referring to the DFD directly so code dealing
-* with format info can be common to KTX 1 & 2.
-*
-* @param[in] This   pointer the ktxTexture2 whose DFD to use.
-* @param[in] fi       pointer to the ktxFormatSize object to initialize.
-*
-* @return    KTX_TRUE on success, otherwise KTX_FALSE.
-*/
+ * @private
+ * @~English
+ * @brief Initialize a ktxFormatSize object from the info in a DFD.
+ *
+ * This is used instead of referring to the DFD directly so code dealing
+ * with format info can be common to KTX 1 & 2.
+ *
+ * @param[in] This   pointer the ktxFormatSize to initialize.
+ * @param[in] pDFD   pointer to the DFD whose data to use.
+ *
+ * @return    KTX_TRUE on success, otherwise KTX_FALSE.
+ */
 bool
 ktxFormatSize_initFromDfd(ktxFormatSize* This, ktx_uint32_t* pDfd)
 {
     uint32_t* pBdb = pDfd + 1;
-
-    // Check the DFD is of the expected type and version.
-    if (*pBdb != 0) {
+    // pDfd[0] contains totalSize in bytes, check if it has at least
+    // KHR_DFD_SIZEFOR_DESCRIPTORBLOCKSIZE bytes
+    if (pDfd[0] < KHR_DFD_SIZEFOR_DESCRIPTORBLOCKSIZE || *pBdb != 0) {
         // Either decriptorType or vendorId is not 0
         return false;
     }
+    // Iterate through all block descriptors and check if sum of their sizes
+    // is equal to the totalSize in pDfd[0]
+    uint32_t descriptorSize = pDfd[0] - sizeof(uint32_t);
+    while(descriptorSize > KHR_DFD_SIZEFOR_DESCRIPTORBLOCKSIZE) {
+        uint32_t descriptorBlockSize = KHR_DFDVAL(pBdb, DESCRIPTORBLOCKSIZE);
+        if (descriptorBlockSize <= descriptorSize) {
+            descriptorSize -= descriptorBlockSize;
+            pBdb += descriptorBlockSize / sizeof(uint32_t);
+        } else {
+            break;
+        }
+    }
+    if (descriptorSize != 0) {
+        return false;
+    }
+
+    // reset pBdb pointer to the first block descriptor
+    pBdb = pDfd + 1;
+
+    // Check the DFD is of the expected version.
     if (KHR_DFDVAL(pBdb, VERSIONNUMBER) != KHR_DF_VERSIONNUMBER_1_3) {
         return false;
     }
@@ -246,13 +288,24 @@ ktxFormatSize_initFromDfd(ktxFormatSize* This, ktx_uint32_t* pDfd)
     This->blockWidth = KHR_DFDVAL(pBdb, TEXELBLOCKDIMENSION0) + 1;
     This->blockHeight = KHR_DFDVAL(pBdb, TEXELBLOCKDIMENSION1) + 1;
     This->blockDepth = KHR_DFDVAL(pBdb, TEXELBLOCKDIMENSION2) + 1;
+    if (KHR_DFDVAL(pBdb, BYTESPLANE0) == 0) {
+        // The DFD uses the deprecated way of indicating a supercompressed
+        // texture. Reconstruct the original values.
+        reconstructDFDBytesPlanesFromSamples(pDfd);
+    }
     This->blockSizeInBits = KHR_DFDVAL(pBdb, BYTESPLANE0) * 8;
+    // Account for ETC1S with possible second slice.
+    This->blockSizeInBits += KHR_DFDVAL(pBdb, BYTESPLANE1) * 8;
     This->paletteSizeInBits = 0; // No paletted formats in ktx v2.
     This->flags = 0;
     This->minBlocksX = This->minBlocksY = 1;
     if (KHR_DFDVAL(pBdb, MODEL) >= KHR_DF_MODEL_DXT1A) {
         // A block compressed format. Entire block is a single sample.
         This->flags |= KTX_FORMAT_SIZE_COMPRESSED_BIT;
+        if (KHR_DFDVAL(pBdb, MODEL) == KHR_DF_MODEL_ETC1S) {
+            // Special case the only multi-plane format we handle.
+            This->blockSizeInBits += KHR_DFDVAL(pBdb, BYTESPLANE1) * 8;
+        }
         if (KHR_DFDVAL(pBdb, MODEL) == KHR_DF_MODEL_PVRTC) {
             This->minBlocksX = This->minBlocksY = 2;
         }
@@ -293,19 +346,11 @@ ktxFormatSize_initFromDfd(ktxFormatSize* This, ktx_uint32_t* pDfd)
                 return false;
             if (result & i_PACKED_FORMAT_BIT)
                 This->flags |= KTX_FORMAT_SIZE_PACKED_BIT;
+            if (result & i_COMPRESSED_FORMAT_BIT)
+                This->flags |= KTX_FORMAT_SIZE_COMPRESSED_BIT;
+            if (result & i_YUVSDA_FORMAT_BIT)
+                This->flags |= KTX_FORMAT_SIZE_YUVSDA_BIT;
         }
-    }
-    if (This->blockSizeInBits == 0) {
-        // The DFD shows a supercompressed texture. Complete the ktxFormatSize
-        // struct by figuring out the post inflation value for bytesPlane0.
-        // Setting it here simplifies stuff later in this file. Setting the
-        // post inflation block size here will not cause any problems for
-        // the following reasons. (1) in v2 files levelIndex is always used to
-        // calculate data size and, of course, for the level offsets. (2) Finer
-        // grain access to supercompressed data than levels is not possible.
-        uint32_t blockByteLength;
-        recreateBytesPlane0FromSampleInfo(pDfd, &blockByteLength);
-        This->blockSizeInBits = blockByteLength * 8;
     }
     return true;
 }
@@ -325,20 +370,7 @@ ktxFormatSize_initFromDfd(ktxFormatSize* This, ktx_uint32_t* pDfd)
 static uint32_t*
 ktxVk2dfd(ktx_uint32_t vkFormat)
 {
-    switch(vkFormat) {
-      case VK_FORMAT_D16_UNORM_S8_UINT:
-        // 2 16-bit words. D16 in the first. S8 in the 8 LSBs of the second.
-        return createDFDDepthStencil(16, 8, 4);
-      case VK_FORMAT_D24_UNORM_S8_UINT:
-        // 1 32-bit word. D24 in the MSBs. S8 in the LSBs.
-        return createDFDDepthStencil(24, 8, 4);
-      case VK_FORMAT_D32_SFLOAT_S8_UINT:
-        // 2 32-bit words. D32 float in the first word. S8 in LSBs of the
-        // second.
-        return createDFDDepthStencil(32, 8, 8);
-      default:
-        return vk2dfd(vkFormat);
-    }
+    return vk2dfd(vkFormat);
 }
 
 /**
@@ -373,6 +405,11 @@ ktxTexture2_constructCommon(ktxTexture2* This, ktx_uint32_t numLevels)
     return KTX_SUCCESS;
 }
 
+/*
+ * In hindsight this function should have been `#if KTX_FEATURE_WRITE`.
+ * In the interest of not breaking an app that may be using this via
+ * `ktxTexture2_Create` in `libktx_read` we won't change it.
+ */
 /**
  * @memberof ktxTexture2 @private
  * @~English
@@ -389,10 +426,12 @@ ktxTexture2_constructCommon(ktxTexture2* This, ktx_uint32_t numLevels)
  * @exception KTX_OUT_OF_MEMORY Not enough memory for the texture or image data.
  * @exception KTX_UNSUPPORTED_TEXTURE_TYPE
  *                              The request VkFormat is one of the
- *                              prohibited formats.
+ *                              prohibited formats or is otherwise
+ *                              unsupported.
  */
 static KTX_error_code
-ktxTexture2_construct(ktxTexture2* This, ktxTextureCreateInfo* createInfo,
+ktxTexture2_construct(ktxTexture2* This,
+                      const ktxTextureCreateInfo* const createInfo,
                       ktxTextureCreateStorageEnum storageAllocation)
 {
     ktxFormatSize formatSize;
@@ -401,6 +440,8 @@ ktxTexture2_construct(ktxTexture2* This, ktxTextureCreateInfo* createInfo,
     memset(This, 0, sizeof(*This));
 
     if (createInfo->vkFormat != VK_FORMAT_UNDEFINED) {
+        if (isProhibitedFormat(createInfo->vkFormat))
+            return KTX_UNSUPPORTED_TEXTURE_TYPE;
         This->pDfd = ktxVk2dfd(createInfo->vkFormat);
         if (!This->pDfd)
             return KTX_INVALID_VALUE;  // Format is unknown or unsupported.
@@ -419,7 +460,7 @@ ktxTexture2_construct(ktxTexture2* This, ktxTextureCreateInfo* createInfo,
         if (!This->pDfd)
             return KTX_OUT_OF_MEMORY;
         memcpy(This->pDfd, createInfo->pDfd, *createInfo->pDfd);
-        if (ktxFormatSize_initFromDfd(&formatSize, This->pDfd)) {
+        if (!ktxFormatSize_initFromDfd(&formatSize, This->pDfd)) {
             result = KTX_UNSUPPORTED_TEXTURE_TYPE;
             goto cleanup;
         }
@@ -435,23 +476,11 @@ ktxTexture2_construct(ktxTexture2* This, ktxTextureCreateInfo* createInfo,
 
     This->vkFormat = createInfo->vkFormat;
 
-    // Ideally we'd set all these things in ktxFormatSize_initFromDfd
-    // but This->_protected is not allocated until ktxTexture_construct;
-    if (This->isCompressed)
-        This->_protected->_typeSize = 1;
-    else if (formatSize.flags & KTX_FORMAT_SIZE_PACKED_BIT)
-        This->_protected->_typeSize = formatSize.blockSizeInBits / 8;
-    else if (formatSize.flags & (KTX_FORMAT_SIZE_DEPTH_BIT | KTX_FORMAT_SIZE_STENCIL_BIT)) {
-        if (createInfo->vkFormat == VK_FORMAT_D16_UNORM_S8_UINT)
-            This->_protected->_typeSize = 2;
-        else
-            This->_protected->_typeSize = 4;
-    } else {
-        // Unpacked and uncompressed
-        uint32_t numComponents;
-        getDFDComponentInfoUnpacked(This->pDfd, &numComponents,
-                                    &This->_protected->_typeSize);
-    }
+    // The typeSize cannot be reconstructed just from the DFD as the BDFD
+    // does not capture the packing expressed by the [m]PACK[n] layout
+    // information in the VkFormat, so we calculate the typeSize directly
+    // from the vkFormat
+    This->_protected->_typeSize = vkFormatTypeSize(createInfo->vkFormat);
 
     This->supercompressionScheme = KTX_SS_NONE;
 
@@ -503,7 +532,7 @@ cleanup:
  *
  * @exception KTX_OUT_OF_MEMORY Not enough memory for the texture data.
  */
-static KTX_error_code
+KTX_error_code
 ktxTexture2_constructCopy(ktxTexture2* This, ktxTexture2* orig)
 {
     KTX_error_code result;
@@ -591,6 +620,9 @@ cleanup:
     return result;
 }
 
+bool isSrgbFormat(VkFormat format);
+bool isNotSrgbFormatButHasSrgbVariant(VkFormat format);
+
 /**
  * @memberof ktxTexture2 @private
  * @~English
@@ -648,6 +680,7 @@ ktxTexture2_constructFromStreamAndHeader(ktxTexture2* This, ktxStream* pStream,
     KTX_error_code result;
     KTX_supplemental_info suppInfo;
     ktxStream* stream;
+    struct BDFD* pBDFD;
     ktx_size_t levelIndexSize;
 
     assert(pHeader != NULL && pStream != NULL);
@@ -721,9 +754,21 @@ ktxTexture2_constructFromStreamAndHeader(ktxTexture2* This, ktxStream* pStream,
     for (ktx_uint32_t level = 0; level < This->numLevels; level++) {
         private->_levelIndex[level].byteOffset
                                         -= private->_firstLevelFileOffset;
+        if (This->supercompressionScheme == KTX_SS_NONE &&
+            private->_levelIndex[level].byteLength != private->_levelIndex[level].uncompressedByteLength) {
+            // For non-supercompressed files the levels must have matching byte lengths
+            result = KTX_FILE_DATA_ERROR;
+        }
     }
+    if (result != KTX_SUCCESS)
+        goto cleanup;
 
     // Read DFD
+    if (pHeader->dataFormatDescriptor.byteOffset == 0 || pHeader->dataFormatDescriptor.byteLength < 16) {
+        // Missing or too small DFD
+        result = KTX_FILE_DATA_ERROR;
+        goto cleanup;
+    }
     This->pDfd =
             (ktx_uint32_t*)malloc(pHeader->dataFormatDescriptor.byteLength);
     if (!This->pDfd) {
@@ -735,17 +780,100 @@ ktxTexture2_constructFromStreamAndHeader(ktxTexture2* This, ktxStream* pStream,
     if (result != KTX_SUCCESS)
         goto cleanup;
 
+    if (pHeader->dataFormatDescriptor.byteLength != This->pDfd[0]) {
+        // DFD byteLength does not match dfdTotalSize
+        result = KTX_FILE_DATA_ERROR;
+        goto cleanup;
+    }
+    pBDFD = (struct BDFD*)(This->pDfd + 1);
+    if (pBDFD->descriptorBlockSize < 24 || (pBDFD->descriptorBlockSize - 24) % 16 != 0) {
+        // BDFD has invalid size
+        result = KTX_FILE_DATA_ERROR;
+        goto cleanup;
+    }
+    if (pBDFD->transfer > KHR_DF_TRANSFER_HLG_UNNORMALIZED_OETF) {
+          // Invalid transfer function
+          result = KTX_FILE_DATA_ERROR;
+          goto cleanup;
+    }
+    // No test for VK_FORMAT_UNDEFINED is needed here because:
+    // - any transfer function is allowed when vkFormat is UNDEFINED as with,
+    //   e.g., some Basis Universal formats;
+    // - the following tests return false for VK_FORMAT_UNDEFINED.
+    if (isSrgbFormat(This->vkFormat) && pBDFD->transfer != KHR_DF_TRANSFER_SRGB) {
+          // Invalid transfer function
+          result = KTX_FILE_DATA_ERROR;
+          goto cleanup;
+    }
+    if (isNotSrgbFormatButHasSrgbVariant(This->vkFormat)
+        && pBDFD->transfer == KHR_DF_TRANSFER_SRGB) {
+          // Invalid transfer function
+          result = KTX_FILE_DATA_ERROR;
+          goto cleanup;
+    }
+
     if (!ktxFormatSize_initFromDfd(&This->_protected->_formatSize, This->pDfd)) {
         result = KTX_UNSUPPORTED_TEXTURE_TYPE;
         goto cleanup;
     }
     This->isCompressed = (This->_protected->_formatSize.flags & KTX_FORMAT_SIZE_COMPRESSED_BIT);
 
-    if (This->supercompressionScheme == KTX_SS_BASIS_LZ
-        && KHR_DFDVAL(This->pDfd + 1, MODEL) != KHR_DF_MODEL_ETC1S)
-    {
+    if (This->supercompressionScheme == KTX_SS_BASIS_LZ && pBDFD->model != KHR_DF_MODEL_ETC1S) {
         result = KTX_FILE_DATA_ERROR;
         goto cleanup;
+    }
+
+    // Check compatibility with the KHR_texture_basisu glTF extension, if needed.
+    if (createFlags & KTX_TEXTURE_CREATE_CHECK_GLTF_BASISU_BIT) {
+        uint32_t max_dim = MAX(MAX(pHeader->pixelWidth, pHeader->pixelHeight), pHeader->pixelDepth);
+        uint32_t full_mip_pyramid_level_count = 1 + (uint32_t)log2(max_dim);
+        if (pHeader->levelCount != 1 && pHeader->levelCount != full_mip_pyramid_level_count) {
+            // KHR_texture_basisu requires full mip pyramid or single mip level
+            result = KTX_FILE_DATA_ERROR;
+            goto cleanup;
+        }
+        if (This->numDimensions != 2 || This->isArray || This->isCubemap) {
+            // KHR_texture_basisu requires 2D textures.
+            result = KTX_FILE_DATA_ERROR;
+            goto cleanup;
+        }
+        if ((This->baseWidth % 4) != 0 || (This->baseHeight % 4) != 0) {
+            // KHR_texture_basisu requires width and height to be a multiple of 4.
+            result = KTX_FILE_DATA_ERROR;
+            goto cleanup;
+        }
+        if (pBDFD->model != KHR_DF_MODEL_ETC1S && pBDFD->model != KHR_DF_MODEL_UASTC) {
+            // KHR_texture_basisu requires BasisLZ or UASTC
+            result = KTX_FILE_DATA_ERROR;
+            goto cleanup;
+        }
+        if (pBDFD->model == KHR_DF_MODEL_UASTC &&
+            This->supercompressionScheme != KTX_SS_NONE &&
+            This->supercompressionScheme != KTX_SS_ZSTD) {
+            // KHR_texture_basisu only allows NONE and ZSTD supercompression for UASTC
+            result = KTX_FILE_DATA_ERROR;
+            goto cleanup;
+        }
+    }
+
+    uint32_t sampleCount = KHR_DFDSAMPLECOUNT(This->pDfd + 1);
+    if (sampleCount == 0) {
+        // Invalid sample count
+        result = KTX_FILE_DATA_ERROR;
+        goto cleanup;
+    }
+    if (pBDFD->model == KHR_DF_MODEL_ETC1S || pBDFD->model == KHR_DF_MODEL_UASTC) {
+        if (sampleCount < 1 || sampleCount > 2 || (sampleCount == 2 && pBDFD->model == KHR_DF_MODEL_UASTC)) {
+            // Invalid sample count
+            result = KTX_FILE_DATA_ERROR;
+            goto cleanup;
+        }
+        if (pBDFD->texelBlockDimension0 != 3 || pBDFD->texelBlockDimension1 != 3 ||
+            pBDFD->texelBlockDimension2 != 0 || pBDFD->texelBlockDimension3 != 0) {
+            // Texel block dimension must be 4x4x1x1 (offset by one)
+            result = KTX_FILE_DATA_ERROR;
+            goto cleanup;
+        }
     }
 
     This->_private->_requiredLevelAlignment
@@ -755,6 +883,12 @@ ktxTexture2_constructFromStreamAndHeader(ktxTexture2* This, ktxStream* pStream,
     ktxHashList_Construct(&This->kvDataHead);
     // Load KVData.
     if (pHeader->keyValueData.byteLength > 0) {
+        uint32_t expectedOffset = pHeader->dataFormatDescriptor.byteOffset + pHeader->dataFormatDescriptor.byteLength;
+        expectedOffset = (expectedOffset + 3) & ~0x3; // 4 byte aligned
+        if (pHeader->keyValueData.byteOffset != expectedOffset) {
+            result = KTX_FILE_DATA_ERROR;
+            goto cleanup;
+        }
         if (!(createFlags & KTX_TEXTURE_CREATE_SKIP_KVDATA_BIT)) {
             ktx_uint32_t kvdLen = pHeader->keyValueData.byteLength;
             ktx_uint8_t* pKvd;
@@ -766,8 +900,10 @@ ktxTexture2_constructFromStreamAndHeader(ktxTexture2* This, ktxStream* pStream,
             }
 
             result = stream->read(stream, pKvd, kvdLen);
-            if (result != KTX_SUCCESS)
+            if (result != KTX_SUCCESS) {
+                free(pKvd);
                 goto cleanup;
+            }
 
             if (IS_BIG_ENDIAN) {
                 /* Swap the counts inside the key & value data. */
@@ -850,12 +986,35 @@ ktxTexture2_constructFromStreamAndHeader(ktxTexture2* This, ktxStream* pStream,
         } else {
             stream->skip(stream, pHeader->keyValueData.byteLength);
         }
+    } else if (pHeader->keyValueData.byteOffset != 0) {
+        // Non-zero KVD byteOffset with zero byteLength
+        result = KTX_FILE_DATA_ERROR;
+        goto cleanup;
     }
 
     if (pHeader->supercompressionGlobalData.byteLength > 0) {
+        switch (This->supercompressionScheme) {
+          case KTX_SS_BASIS_LZ:
+            break;
+          case KTX_SS_NONE:
+          case KTX_SS_ZSTD:
+          case KTX_SS_ZLIB:
+            // In these cases SGD is not allowed
+            result = KTX_FILE_DATA_ERROR;
+            break;
+          default:
+            // We don't support other supercompression schemes
+            result = KTX_UNSUPPORTED_FEATURE;
+            break;
+        }
+        if (result != KTX_SUCCESS)
+            goto cleanup;
+
         // There could be padding here so seek to the next item.
-        (void)stream->setpos(stream,
+        result = stream->setpos(stream,
                              pHeader->supercompressionGlobalData.byteOffset);
+        if (result != KTX_SUCCESS)
+            goto cleanup;
 
         // Read supercompressionGlobalData
         private->_supercompressionGlobalData =
@@ -871,6 +1030,14 @@ ktxTexture2_constructFromStreamAndHeader(ktxTexture2* This, ktxStream* pStream,
 
         if (result != KTX_SUCCESS)
             goto cleanup;
+    } else if (pHeader->supercompressionGlobalData.byteOffset != 0) {
+        // Non-zero SGD byteOffset with zero byteLength
+        result = KTX_FILE_DATA_ERROR;
+        goto cleanup;
+    } else if (This->supercompressionScheme == KTX_SS_BASIS_LZ) {
+        // SGD is required for BasisLZ
+        result = KTX_FILE_DATA_ERROR;
+        goto cleanup;
     }
 
     // Calculate size of the image data. Level 0 is the last level in the data.
@@ -982,6 +1149,9 @@ ktxTexture2_constructFromStdioStream(ktxTexture2* This, FILE* stdioStream,
  * @~English
  * @brief Construct a ktxTexture from a named KTX file.
  *
+ * The file name must be encoded in utf-8. On Windows convert unicode names
+ * to utf-8 with @c WideCharToMultiByte(CP_UTF8, ...) before calling.
+ *
  * See ktxTextureInt_constructFromStream for details.
  *
  * @param[in] This pointer to a ktxTextureInt-sized block of memory to
@@ -1008,7 +1178,7 @@ ktxTexture2_constructFromNamedFile(ktxTexture2* This,
     if (This == NULL || filename == NULL)
         return KTX_INVALID_VALUE;
 
-    file = fopen(filename, "rb");
+    file = ktxFOpenUTF8(filename, "rb");
     if (!file)
        return KTX_FILE_OPEN_FAILED;
 
@@ -1076,6 +1246,11 @@ ktxTexture2_destruct(ktxTexture2* This)
     ktxTexture_destruct(ktxTexture(This));
 }
 
+/*
+ * In hindsight this function should have been `#if KTX_FEATURE_WRITE`.
+ * In the interest of not breaking an app that may be using this in
+ * `libktx_read` we won't change it.
+ */
 /**
  * @memberof ktxTexture2
  * @ingroup writer
@@ -1120,7 +1295,7 @@ ktxTexture2_destruct(ktxTexture2* This)
  * @exception KTX_OUT_OF_MEMORY Not enough memory for the texture's images.
  */
 KTX_error_code
-ktxTexture2_Create(ktxTextureCreateInfo* createInfo,
+ktxTexture2_Create(const ktxTextureCreateInfo* const createInfo,
                   ktxTextureCreateStorageEnum storageAllocation,
                   ktxTexture2** newTex)
 {
@@ -1259,6 +1434,9 @@ ktxTexture2_CreateFromStdioStream(FILE* stdioStream,
  * The address of a newly created ktxTexture2 reflecting the contents of the
  * file is written to the location pointed at by @p newTex.
  *
+ * The file name must be encoded in utf-8. On Windows convert unicode names
+ * to utf-8 with @c WideCharToMultiByte(CP_UTF8, ...) before calling.
+ *
  * The create flag KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT should not be set,
  * if the ktxTexture is ultimately to be uploaded to OpenGL or Vulkan. This
  * will minimize memory usage by allowing, for example, loading the images
@@ -1278,7 +1456,7 @@ ktxTexture2_CreateFromStdioStream(FILE* stdioStream,
  * @exception KTX_FILE_OPEN_FAILED The file could not be opened.
  * @exception KTX_INVALID_VALUE @p filename is @c NULL.
  *
- * For other exceptions, see ktxTexture_CreateFromStdioStream().
+ * For other exceptions, see ktxTexture2_CreateFromStdioStream().
  */
 KTX_error_code
 ktxTexture2_CreateFromNamedFile(const char* const filename,
@@ -1331,7 +1509,7 @@ ktxTexture2_CreateFromNamedFile(const char* const filename,
  *
  * @exception KTX_INVALID_VALUE Either @p bytes is NULL or @p size is 0.
  *
- * For other exceptions, see ktxTexture_CreateFromStdioStream().
+ * For other exceptions, see ktxTexture2_CreateFromStdioStream().
  */
 KTX_error_code
 ktxTexture2_CreateFromMemory(const ktx_uint8_t* bytes, ktx_size_t size,
@@ -1383,7 +1561,7 @@ ktxTexture2_CreateFromMemory(const ktx_uint8_t* bytes, ktx_size_t size,
  *
  * @exception KTX_INVALID_VALUE Either @p bytes is NULL or @p size is 0.
  *
- * For other exceptions, see ktxTexture_CreateFromStdioStream().
+ * For other exceptions, see ktxTexture2_CreateFromStdioStream().
  */
 KTX_error_code
 ktxTexture2_CreateFromStream(ktxStream* stream,
@@ -1581,7 +1759,7 @@ ktxTexture2_calcPostInflationLevelAlignment(ktxTexture2* This)
 
     // Should actually work for none supercompressed but don't want to
     // encourage use of it.
-    assert(This->supercompressionScheme >= KTX_SS_ZSTD);
+    assert(This->supercompressionScheme != KTX_SS_NONE && This->supercompressionScheme != KTX_SS_BASIS_LZ);
 
     if (This->vkFormat != VK_FORMAT_UNDEFINED)
         alignment = lcm4(This->_protected->_formatSize.blockSizeInBits / 8);
@@ -1754,11 +1932,30 @@ ktxTexture2_GetImageOffset(ktxTexture2* This, ktx_uint32_t level,
 /**
  * @memberof ktxTexture2
  * @~English
- * @brief Retrieve the opto-electrical transfer function of the images.
+ * @brief Retrieve the transfer function of the images.
  *
  * @param[in]     This      pointer to the ktxTexture2 object of interest.
  *
- * @return A @c khr_df_transfer enum value specifying the OETF.
+ * @return A @c khr_df_transfer enum value specifying the transfer function.
+ */
+khr_df_transfer_e
+ktxTexture2_GetTransferFunction_e(ktxTexture2* This)
+{
+    return KHR_DFDVAL(This->pDfd+1, TRANSFER);
+}
+
+/**
+ * @memberof ktxTexture2
+ * @~English
+ * @brief Retrieve the transfer function of the images.
+ * @deprecated Use ktxTexture2\_GetTransferFunction\_e. Now that the KTX
+ * specification allows setting of non-linear transfer functions other than
+ * sRGB, it is possible for the transfer function to be an EOTF so this
+ * name is no longer appropriate.
+ *
+ * @param[in]     This      pointer to the ktxTexture2 object of interest.
+ *
+ * @return A @c khr_df_transfer enum value specifying the transfer function.
  */
 khr_df_transfer_e
 ktxTexture2_GetOETF_e(ktxTexture2* This)
@@ -1769,13 +1966,13 @@ ktxTexture2_GetOETF_e(ktxTexture2* This)
 /**
  * @memberof ktxTexture2
  * @~English
- * @brief Retrieve the opto-electrical transfer function of the images.
- * @deprecated Retained for backward compatibility. Use ktxTexture2\_GetOETF\_e()
+ * @brief Retrieve the transfer function of the images.
+ * @deprecated Use ktxTexture2\_GetTransferFunction\_e.
  *
  * @param[in]     This      pointer to the ktxTexture2 object of interest.
  *
- * @return A @c khr_df_transfer enum value specifying the OETF, returned as
- *         @c ktx_uint32_t.
+ * @return A @c khr_df_transfer enum value specifying the transfer function,
+ *         returned as @c ktx_uint32_t.
  */
 ktx_uint32_t
 ktxTexture2_GetOETF(ktxTexture2* This)
@@ -1816,6 +2013,21 @@ ktxTexture2_GetPremultipliedAlpha(ktxTexture2* This)
 /**
  * @memberof ktxTexture2
  * @~English
+ * @brief Retrieve the color primaries of the images.
+ *
+ * @param[in]     This      pointer to the ktxTexture2 object of interest.
+ *
+ * @return A @c khr_df_primaries enum value specifying the primaries.
+ */
+khr_df_primaries_e
+ktxTexture2_GetPrimaries_e(ktxTexture2* This)
+{
+    return KHR_DFDVAL(This->pDfd+1, PRIMARIES);
+}
+
+/**
+ * @memberof ktxTexture2
+ * @~English
  * @brief Query if the images are in a transcodable format.
  *
  * @param[in]     This     pointer to the ktxTexture2 object of interest.
@@ -1831,18 +2043,83 @@ ktxTexture2_NeedsTranscoding(ktxTexture2* This)
         return false;
 }
 
+#if KTX_FEATURE_WRITE
+/*
+ * @memberof ktxTexture2
+ * @ingroup writer
+ * @~English
+ * @brief Set the transfer function  for the images in a texture.
+ *
+ * @param[in]     This     pointer to the ktxTexture2
+ * @param[in]     tf       enumerator of the transfer function to set
+ *
+ * @return  KTX_SUCCESS on success, other KTX_* enum values on error.
+ *
+ * @exception KTX_INVALID_OPERATION The transfer function is not valid for the
+ *                                  vkFormat of the texture.
+ * @exception KTX_INVALID_VALUE The transfer function is not allowed by the
+ *                              KTX spec.
+ */
+ktx_error_code_e
+ktxTexture2_SetTransferFunction(ktxTexture2* This, khr_df_transfer_e tf)
+{
+    if (isSrgbFormat(This->vkFormat) && tf != KHR_DF_TRANSFER_SRGB)
+        return KTX_INVALID_OPERATION;
+
+    if (isNotSrgbFormatButHasSrgbVariant(This->vkFormat) && tf == KHR_DF_TRANSFER_SRGB)
+        return KTX_INVALID_OPERATION;
+
+    KHR_DFDSETVAL(This->pDfd + 1, TRANSFER, tf);
+    return KTX_SUCCESS;
+}
+
+/**
+ * @memberof ktxTexture2
+ * @ingroup writer
+ * @~English
+ * @brief Set the transfer function for the images in a texture.
+ * @deprecated Use ktxTexture2\_SetTransferFunction.
+ *
+ * @param[in]     This     pointer to the ktxTexture2
+ * @param[in]     tf       enumerator of the transfer function to set
+ */
+ktx_error_code_e
+ktxTexture2_SetOETF(ktxTexture2* This, khr_df_transfer_e tf)
+{
+    return ktxTexture2_SetTransferFunction(This, tf);
+}
+
+/**
+ * @memberof ktxTexture2
+ * @ingroup writer
+ * @~English
+ * @brief Set the primaries  for the images in a texture.
+ *
+ * @param[in]     This           pointer to the ktxTexture2
+ * @param[in]     primaries      enumerator of the primaries to set
+ */
+ktx_error_code_e
+ktxTexture2_SetPrimaries(ktxTexture2* This, khr_df_primaries_e primaries)
+{
+    KHR_DFDSETVAL(This->pDfd + 1, PRIMARIES, primaries);
+    return KTX_SUCCESS;
+}
+#endif
+
 /**
  * @memberof ktxTexture2
  * @~English
- * @brief Return the total size in bytes of the uncompressed data of a ktxTexture2.
+ * @brief Return the total size in bytes of the uncompressed data of a
+ *        ktxTexture2.
  *
- * If supercompressionScheme == KTX_SS_NONE or
- * KTX_SS_BASIS_LZ, returns the value of @c This->dataSize
- * else if supercompressionScheme == KTX_SS_ZSTD,  it returns the
- * sum of the uncompressed sizes of each mip level plus space for the level padding. With no
- * supercompression the data size and uncompressed data size are the same. For Basis
- * supercompression the uncompressed size cannot be known until the data is transcoded
- * so the compressed size is returned.
+ * If supercompressionScheme == @c KTX_SS_NONE or
+ * @c KTX_SS_BASIS_LZ, returns the value of @c This->dataSize
+ * else if supercompressionScheme == @c KTX_SS_ZSTD or @c KTX_SS_ZLIB, it
+ * returns the sum of the uncompressed sizes of each mip level plus space for
+ * the level padding. With no supercompression the data size and uncompressed
+ * data size are the same. For Basis supercompression the uncompressed size
+ * cannot be known until the data is transcoded so the compressed size is
+ * returned.
  *
  * @param[in]     This     pointer to the ktxTexture1 object of interest.
  */
@@ -1854,6 +2131,7 @@ ktxTexture2_GetDataSizeUncompressed(ktxTexture2* This)
       case KTX_SS_NONE:
         return This->dataSize;
       case KTX_SS_ZSTD:
+      case KTX_SS_ZLIB:
       {
             ktx_size_t uncompressedSize = 0;
             ktx_uint32_t uncompressedLevelAlignment;
@@ -1898,6 +2176,25 @@ ktx_size_t
 ktxTexture2_GetImageSize(ktxTexture2* This, ktx_uint32_t level)
 {
     return ktxTexture_calcImageSize(ktxTexture(This), level,
+                                    KTX_FORMAT_VERSION_TWO);
+}
+
+/**
+ * @memberof ktxTexture2
+ * @~English
+ * @brief Calculate & return the size in bytes of all the  images in the specified
+ *        mip level.
+ *
+ * For arrays, this is the size of all layers in the level, for cubemaps, the size of all
+ * faces in the level and for 3D textures, the size of all depth slices in the level.
+ *
+ * @param[in]     This     pointer to the ktxTexture2 object of interest.
+ * @param[in]     level    level of interest. *
+ */
+ktx_size_t
+ktxTexture2_GetLevelSize(ktxTexture2* This, ktx_uint32_t level)
+{
+    return ktxTexture_calcLevelSize(ktxTexture(This), level,
                                     KTX_FORMAT_VERSION_TWO);
 }
 
@@ -1984,7 +2281,7 @@ ktxTexture2_IterateLevels(ktxTexture2* This, PFNKTXITERCB iterCb, void* userdata
  *
  * This operates similarly to ktxTexture_IterateLevelFaces() except that it
  * loads the images from the ktxTexture2's source to a temporary buffer
- * while iterating. If supercompressionScheme == KTX_SS_ZSTD,
+ * while iterating. If supercompressionScheme == KTX_SS_ZSTD or KTX_SS_ZLIB,
  * it will inflate the data before passing it to the callback. The callback function
  * must copy the image data if it wishes to preserve it as the temporary buffer
  * is reused for each level and is freed when this function exits.
@@ -1992,8 +2289,8 @@ ktxTexture2_IterateLevels(ktxTexture2* This, PFNKTXITERCB iterCb, void* userdata
  * This function is helpful for reducing memory usage when uploading the data
  * to a graphics API.
  *
- * Intended for use only when supercompressionScheme == SUPERCOMPRESSION_NONE
- * or SUPERCOMPRESSION_ZSTD. As there is no access to the ktxTexture's data on
+ * Intended for use only when supercompressionScheme == KTX_SS_NONE,
+ * KTX_SS_ZSTD or KTX_SS_ZLIB. As there is no access to the ktxTexture's data on
  * conclusion of this function, destroying the texture on completion is recommended.
  *
  * @param[in]     This     pointer to the ktxTexture2 object of interest.
@@ -2013,8 +2310,9 @@ ktxTexture2_IterateLevels(ktxTexture2* This, PFNKTXITERCB iterCb, void* userdata
  *                                  this ktxTexture2's images have already
  *                                  been loaded.
  * @exception KTX_INVALID_OPERATION
- *                          supercompressionScheme != SUPERCOMPRESSION_NONE.
- *                          and supercompressionScheme != SUPERCOMPRESSION_ZSTD.
+ *                          supercompressionScheme != KTX_SS_NONE,
+ *                          supercompressionScheme != KTX_SS_ZSTD, and
+ *                          supercompressionScheme != KTX_SS_ZLIB.
  * @exception KTX_INVALID_VALUE     @p This is @c NULL or @p iterCb is @c NULL.
  * @exception KTX_OUT_OF_MEMORY     not enough memory to allocate a block to
  *                                  hold the base level image.
@@ -2040,7 +2338,8 @@ ktxTexture2_IterateLoadLevelFaces(ktxTexture2* This, PFNKTXITERCB iterCb,
         return KTX_INVALID_OPERATION;
 
     if (This->supercompressionScheme != KTX_SS_NONE &&
-        This->supercompressionScheme != KTX_SS_ZSTD)
+        This->supercompressionScheme != KTX_SS_ZSTD &&
+        This->supercompressionScheme != KTX_SS_ZLIB)
         return KTX_INVALID_OPERATION;
 
     if (iterCb == NULL)
@@ -2057,14 +2356,16 @@ ktxTexture2_IterateLoadLevelFaces(ktxTexture2* This, PFNKTXITERCB iterCb,
     dataBuf = malloc(dataSize);
     if (!dataBuf)
         return KTX_OUT_OF_MEMORY;
-    if (This->supercompressionScheme == KTX_SS_ZSTD) {
+    if (This->supercompressionScheme == KTX_SS_ZSTD || This->supercompressionScheme == KTX_SS_ZLIB) {
         uncompressedDataSize = levelIndex[0].uncompressedByteLength;
         uncompressedDataBuf = malloc(uncompressedDataSize);
         if (!uncompressedDataBuf) {
             result = KTX_OUT_OF_MEMORY;
             goto cleanup;
         }
-        dctx = ZSTD_createDCtx();
+        if (This->supercompressionScheme == KTX_SS_ZSTD) {
+            dctx = ZSTD_createDCtx();
+        }
         pData = uncompressedDataBuf;
     } else {
         pData = dataBuf;
@@ -2107,20 +2408,40 @@ ktxTexture2_IterateLoadLevelFaces(ktxTexture2* This, PFNKTXITERCB iterCb,
                 ZSTD_ErrorCode error = ZSTD_getErrorCode(levelSize);
                 switch(error) {
                   case ZSTD_error_dstSize_tooSmall:
-                    return KTX_INVALID_VALUE; // inflatedDataCapacity too small.
+                    result = KTX_DECOMPRESS_LENGTH_ERROR; // inflatedDataCapacity too small.
+                    goto cleanup;
+                  case ZSTD_error_checksum_wrong:
+                    result =  KTX_DECOMPRESS_CHECKSUM_ERROR;
+                    goto cleanup;
                   case ZSTD_error_memory_allocation:
-                    return KTX_OUT_OF_MEMORY;
+                    result = KTX_OUT_OF_MEMORY;
+                    goto cleanup;
                   default:
-                    return KTX_FILE_DATA_ERROR;
+                    result = KTX_FILE_DATA_ERROR;
+                    goto cleanup;
                 }
             }
+
             // We don't fix up the texture's dataSize, levelIndex or
             // _requiredAlignment because after this function completes there
             // is no way to get at the texture's data.
             //nindex[level].byteOffset = levelOffset;
             //nindex[level].uncompressedByteLength = nindex[level].byteLength =
                                                                 //levelByteLength;
+        } else if (This->supercompressionScheme == KTX_SS_ZLIB) {
+            result = ktxUncompressZLIBInt(uncompressedDataBuf,
+                                            &uncompressedDataSize,
+                                            dataBuf,
+                                            levelSize);
+            if (result != KTX_SUCCESS)
+                return result;
         }
+
+        if (levelIndex[level].uncompressedByteLength != levelSize) {
+            result = KTX_DECOMPRESS_LENGTH_ERROR;
+            goto cleanup;
+        }
+
 
 #if IS_BIG_ENDIAN
         switch (prtctd->_typeSize) {
@@ -2188,16 +2509,29 @@ KTX_error_code
 ktxTexture2_inflateZstdInt(ktxTexture2* This, ktx_uint8_t* pDeflatedData,
                            ktx_uint8_t* pInflatedData,
                            ktx_size_t inflatedDataCapacity);
+
+KTX_error_code
+ktxTexture2_inflateZLIBInt(ktxTexture2* This, ktx_uint8_t* pDeflatedData,
+                           ktx_uint8_t* pInflatedData,
+                           ktx_size_t inflatedDataCapacity);
+
+typedef enum {
+    LOADDATA_DONT_INFLATE_ON_LOAD,
+    LOADDATA_INFLATE_ON_LOAD
+} ktxTexture2InflateFlagEnum;
+
 /**
  * @memberof ktxTexture2
+ * @internal
  * @~English
  * @brief Load all the image data from the ktxTexture2's source.
  *
- * The data will be inflated if supercompressionScheme == SUPERCOMPRESSION_ZSTD.
+ * The data will be inflated if requested and supercompressionScheme == @c KTX_SS_ZSTD
+ * or @c KTX_SS_ZLIB.
  * The data is loaded into the provided buffer or to an internally allocated
  * buffer, if @p pBuffer is @c NULL. Callers providing their own buffer must
  * ensure the buffer large enough to hold the inflated data for files deflated
- * with Zstd. See ktxTexture2_GetDataSizeUncompressed().
+ * with Zstd or ZLIB. See ktxTexture2\_GetDataSizeUncompressed().
  *
  * The texture's levelIndex, dataSize, DFD  and supercompressionScheme will
  * all be updated after successful inflation to reflect the inflated data.
@@ -2205,6 +2539,8 @@ ktxTexture2_inflateZstdInt(ktxTexture2* This, ktx_uint8_t* pDeflatedData,
  * @param[in] This pointer to the ktxTexture object of interest.
  * @param[in] pBuffer pointer to the buffer in which to load the image data.
  * @param[in] bufSize size of the buffer pointed at by @p pBuffer.
+ * @param[in] inflateHandling enum indicating whether or not to inflate
+ *                            supercompressed data.
  *
  * @return      KTX_SUCCESS on success, other KTX_* enum values on error.
  *
@@ -2215,17 +2551,19 @@ ktxTexture2_inflateZstdInt(ktxTexture2* This, ktx_uint8_t* pDeflatedData,
  *                              ktxTexture was not created from a KTX source.
  * @exception KTX_OUT_OF_MEMORY Insufficient memory for the image data.
  */
-KTX_error_code
-ktxTexture2_LoadImageData(ktxTexture2* This,
-                          ktx_uint8_t* pBuffer, ktx_size_t bufSize)
+ktx_error_code_e
+ktxTexture2_loadImageDataInt(ktxTexture2* This,
+                             ktx_uint8_t* pBuffer, ktx_size_t bufSize,
+                             ktxTexture2InflateFlagEnum inflateHandling)
 {
     DECLARE_PROTECTED(ktxTexture);
     DECLARE_PRIVATE(ktxTexture2);
     ktx_uint8_t*    pDest;
-    ktx_uint8_t*    pDeflatedData = 0;
+    ktx_uint8_t*    pDeflatedData = NULL;
     ktx_uint8_t*    pReadBuf;
     KTX_error_code  result = KTX_SUCCESS;
-    ktx_size_t inflatedDataCapacity = ktxTexture2_GetDataSizeUncompressed(This);
+    ktx_size_t outputDataCapacity;
+    ktx_bool_t doInflate = false;
 
     if (This == NULL)
         return KTX_INVALID_VALUE;
@@ -2237,18 +2575,26 @@ ktxTexture2_LoadImageData(ktxTexture2* This,
         // This Texture not created from a stream or images already loaded;
         return KTX_INVALID_OPERATION;
 
+    if (inflateHandling == LOADDATA_INFLATE_ON_LOAD) {
+        outputDataCapacity = ktxTexture2_GetDataSizeUncompressed(This);
+        if (This->supercompressionScheme == KTX_SS_ZSTD || This->supercompressionScheme == KTX_SS_ZLIB)
+            doInflate = true;
+    } else {
+        outputDataCapacity = This->dataSize;
+    }
+
     if (pBuffer == NULL) {
-        This->pData = malloc(inflatedDataCapacity);
+        This->pData = malloc(outputDataCapacity);
         if (This->pData == NULL)
             return KTX_OUT_OF_MEMORY;
         pDest = This->pData;
-    } else if (bufSize < inflatedDataCapacity) {
+    } else if (bufSize < outputDataCapacity) {
         return KTX_INVALID_VALUE;
     } else {
         pDest = pBuffer;
     }
 
-    if (This->supercompressionScheme == KTX_SS_ZSTD) {
+    if (doInflate) {
         // Create buffer to hold deflated data.
         pDeflatedData = malloc(This->dataSize);
         if (pDeflatedData == NULL)
@@ -2264,24 +2610,28 @@ ktxTexture2_LoadImageData(ktxTexture2* This,
     result = prtctd->_stream.setpos(&prtctd->_stream,
                                     private->_firstLevelFileOffset);
     if (result != KTX_SUCCESS)
-        return result;
+        goto cleanup;
 
     result = prtctd->_stream.read(&prtctd->_stream, pReadBuf,
                                   This->dataSize);
     if (result != KTX_SUCCESS)
-        return result;
+        goto cleanup;
 
-    if (This->supercompressionScheme == KTX_SS_ZSTD) {
+    if (doInflate) {
         assert(pDeflatedData != NULL);
-        result = ktxTexture2_inflateZstdInt(This, pDeflatedData, pDest,
-                                            inflatedDataCapacity);
-        free(pDeflatedData);
+        if (This->supercompressionScheme == KTX_SS_ZSTD) {
+            result = ktxTexture2_inflateZstdInt(This, pDeflatedData, pDest,
+                                                outputDataCapacity);
+        } else if (This->supercompressionScheme == KTX_SS_ZLIB) {
+            result = ktxTexture2_inflateZLIBInt(This, pDeflatedData, pDest,
+                                                outputDataCapacity);
+        }
         if (result != KTX_SUCCESS) {
             if (pBuffer == NULL) {
                 free(This->pData);
                 This->pData = 0;
             }
-            return result;
+            goto cleanup;
         }
     }
 
@@ -2313,7 +2663,80 @@ ktxTexture2_LoadImageData(ktxTexture2* This,
     // No further need for stream or file offset.
     prtctd->_stream.destruct(&prtctd->_stream);
     private->_firstLevelFileOffset = 0;
+
+cleanup:
+    free(pDeflatedData);
+
     return result;
+}
+
+/**
+ * @memberof ktxTexture2
+ * @~English
+ * @brief Load all the image data from the ktxTexture2's source.
+ *
+ * The data will be inflated if supercompressionScheme == @c KTX_SS_ZSTD or
+ * @c KTX_SS_ZLIB.
+ * The data is loaded into the provided buffer or to an internally allocated
+ * buffer, if @p pBuffer is @c NULL. Callers providing their own buffer must
+ * ensure the buffer large enough to hold the inflated data for files deflated
+ * with Zstd or ZLIB. See ktxTexture2\_GetDataSizeUncompressed().
+ *
+ * The texture's levelIndex, dataSize, DFD  and supercompressionScheme will
+ * all be updated after successful inflation to reflect the inflated data.
+ *
+ * @param[in] This pointer to the ktxTexture object of interest.
+ * @param[in] pBuffer pointer to the buffer in which to load the image data.
+ * @param[in] bufSize size of the buffer pointed at by @p pBuffer.
+ *
+ * @return      KTX_SUCCESS on success, other KTX_* enum values on error.
+ *
+ * @exception KTX_INVALID_VALUE @p This is NULL.
+ * @exception KTX_INVALID_VALUE @p bufSize is less than the the image data size.
+ * @exception KTX_INVALID_OPERATION
+ *                              The data has already been loaded or the
+ *                              ktxTexture was not created from a KTX source.
+ * @exception KTX_OUT_OF_MEMORY Insufficient memory for the image data.
+ */
+ktx_error_code_e
+ktxTexture2_LoadImageData(ktxTexture2* This,
+                          ktx_uint8_t* pBuffer, ktx_size_t bufSize)
+{
+    return ktxTexture2_loadImageDataInt(This, pBuffer, bufSize, LOADDATA_INFLATE_ON_LOAD);
+}
+
+/**
+ * @memberof ktxTexture2
+ * @~English
+ * @brief Load all the image data from the ktxTexture2's source without inflatiion..
+ *
+ * The data will be not be inflated if supercompressionScheme == @c KTX_SS_ZSTD or
+ * @c KTX_SS_ZLIB. This function is provided to support some rare testing scenarios.
+ * Generally use of ktxTexture2\_LoadImageData is highly recommended. For supercompressionScheme
+ * values other than those mentioned, the result of this function is the same as
+ * ktxTexture2\_LoadImageData.
+ *
+ * The data is loaded into the provided buffer or to an internally allocated
+ * buffer, if @p pBuffer is @c NULL.
+ *
+ * @param[in] This pointer to the ktxTexture object of interest.
+ * @param[in] pBuffer pointer to the buffer in which to load the image data.
+ * @param[in] bufSize size of the buffer pointed at by @p pBuffer.
+ *
+ * @return      KTX_SUCCESS on success, other KTX_* enum values on error.
+ *
+ * @exception KTX_INVALID_VALUE @p This is NULL.
+ * @exception KTX_INVALID_VALUE @p bufSize is less than the the image data size.
+ * @exception KTX_INVALID_OPERATION
+ *                              The data has already been loaded or the
+ *                              ktxTexture was not created from a KTX source.
+ * @exception KTX_OUT_OF_MEMORY Insufficient memory for the image data.
+ */
+ktx_error_code_e
+ktxTexture2_LoadDeflatedImageData(ktxTexture2* This,
+                                  ktx_uint8_t* pBuffer, ktx_size_t bufSize)
+{
+    return ktxTexture2_loadImageDataInt(This, pBuffer, bufSize, LOADDATA_DONT_INFLATE_ON_LOAD);
 }
 
 /**
@@ -2334,7 +2757,7 @@ ktx_uint64_t ktxTexture2_levelDataOffset(ktxTexture2* This, ktx_uint32_t level)
  * @~English
  * @brief Inflate the data in a ktxTexture2 object using Zstandard.
  *
- * The texture's levelIndex, dataSize, DFD  and supercompressionScheme will
+ * The texture's levelIndex, dataSize, DFD, data pointer, and supercompressionScheme will
  * all be updated after successful inflation to reflect the inflated data.
  *
  * @param[in] This                    pointer to the ktxTexture2 object of interest.
@@ -2350,15 +2773,15 @@ ktxTexture2_inflateZstdInt(ktxTexture2* This, ktx_uint8_t* pDeflatedData,
                            ktx_uint8_t* pInflatedData,
                            ktx_size_t inflatedDataCapacity)
 {
-    DECLARE_PROTECTED(ktxTexture);
     ktx_uint32_t levelIndexByteLength =
                             This->numLevels * sizeof(ktxLevelIndexEntry);
     uint64_t levelOffset = 0;
     ktxLevelIndexEntry* cindex = This->_private->_levelIndex;
-    ktxLevelIndexEntry* nindex;
+    ktxLevelIndexEntry* nindex = NULL;
     ktx_uint32_t uncompressedLevelAlignment;
+    ktx_error_code_e result = KTX_SUCCESS;
 
-    ZSTD_DCtx* dctx;
+    ZSTD_DCtx* dctx = NULL;
 
     if (pDeflatedData == NULL)
         return KTX_INVALID_VALUE;
@@ -2378,6 +2801,10 @@ ktxTexture2_inflateZstdInt(ktxTexture2* This, ktx_uint8_t* pDeflatedData,
 
     ktx_size_t inflatedByteLength = 0;
     dctx = ZSTD_createDCtx();
+    if (dctx == NULL) {
+        result = KTX_OUT_OF_MEMORY;
+        goto cleanup;
+    }
     for (int32_t level = This->numLevels - 1; level >= 0; level--) {
         size_t levelByteLength =
             ZSTD_decompressDCtx(dctx, pInflatedData + levelOffset,
@@ -2388,13 +2815,25 @@ ktxTexture2_inflateZstdInt(ktxTexture2* This, ktx_uint8_t* pDeflatedData,
             ZSTD_ErrorCode error = ZSTD_getErrorCode(levelByteLength);
             switch(error) {
               case ZSTD_error_dstSize_tooSmall:
-                return KTX_INVALID_VALUE; // inflatedDataCapacity too small.
+                result = KTX_DECOMPRESS_LENGTH_ERROR; // inflatedDataCapacity too small.
+                goto cleanup;
+              case ZSTD_error_checksum_wrong:
+                result = KTX_DECOMPRESS_CHECKSUM_ERROR;
+                goto cleanup;
               case ZSTD_error_memory_allocation:
-                return KTX_OUT_OF_MEMORY;
-              default:
-                return KTX_FILE_DATA_ERROR;
+                result =  KTX_OUT_OF_MEMORY;
+                goto cleanup;
+             default:
+                result = KTX_FILE_DATA_ERROR;
+                goto cleanup;
             }
         }
+
+        if (This->_private->_levelIndex[level].uncompressedByteLength != levelByteLength) {
+            result = KTX_DECOMPRESS_LENGTH_ERROR;
+            goto cleanup;
+        }
+
         nindex[level].byteOffset = levelOffset;
         nindex[level].uncompressedByteLength = nindex[level].byteLength =
                                                             levelByteLength;
@@ -2404,7 +2843,90 @@ ktxTexture2_inflateZstdInt(ktxTexture2* This, ktx_uint8_t* pDeflatedData,
         levelOffset += paddedLevelByteLength;
         inflatedDataCapacity -= paddedLevelByteLength;
     }
+
+    // Now modify the texture.
+
+    This->dataSize = inflatedByteLength;
+    This->supercompressionScheme = KTX_SS_NONE;
+    memcpy(cindex, nindex, levelIndexByteLength); // Update level index
+    This->_private->_requiredLevelAlignment = uncompressedLevelAlignment;
+
+cleanup:
     ZSTD_freeDCtx(dctx);
+    free(nindex);
+    return result;
+}
+
+/**
+ * @memberof ktxTexture2 @private
+ * @~English
+ * @brief Inflate the data in a ktxTexture2 object using miniz (ZLIB).
+ *
+ * The texture's levelIndex, dataSize, DFD, data pointer, and supercompressionScheme will
+ * all be updated after successful inflation to reflect the inflated data.
+ *
+ * @param[in] This              pointer to the ktxTexture2 object of interest.
+ * @param[in] pDeflatedData     pointer to a buffer containing the deflated
+ *                              data of the entire texture.
+ * @param[in,out] pInflatedData pointer to a buffer in which to write the
+ *                              inflated data.
+ * @param[in] inflatedDataCapacity capacity of the buffer pointed at by
+ *                                @p pInflatedData.
+ */
+KTX_error_code
+ktxTexture2_inflateZLIBInt(ktxTexture2* This, ktx_uint8_t* pDeflatedData,
+                           ktx_uint8_t* pInflatedData,
+                           ktx_size_t inflatedDataCapacity)
+{
+    ktx_uint32_t levelIndexByteLength =
+                            This->numLevels * sizeof(ktxLevelIndexEntry);
+    uint64_t levelOffset = 0;
+    ktxLevelIndexEntry* cindex = This->_private->_levelIndex;
+    ktxLevelIndexEntry* nindex;
+    ktx_uint32_t uncompressedLevelAlignment;
+
+    if (pDeflatedData == NULL)
+        return KTX_INVALID_VALUE;
+
+    if (pInflatedData == NULL)
+        return KTX_INVALID_VALUE;
+
+    if (This->supercompressionScheme != KTX_SS_ZLIB)
+        return KTX_INVALID_OPERATION;
+
+    nindex = malloc(levelIndexByteLength);
+    if (nindex == NULL)
+        return KTX_OUT_OF_MEMORY;
+
+    uncompressedLevelAlignment =
+        ktxTexture2_calcPostInflationLevelAlignment(This);
+
+    ktx_size_t inflatedByteLength = 0;
+    for (int32_t level = This->numLevels - 1; level >= 0; level--) {
+        size_t levelByteLength = inflatedDataCapacity;
+        KTX_error_code result = ktxUncompressZLIBInt(pInflatedData + levelOffset,
+                                                    &levelByteLength,
+                                                    &pDeflatedData[cindex[level].byteOffset],
+                                                    cindex[level].byteLength);
+        if (result != KTX_SUCCESS) {
+            free(nindex);
+            return result;
+        }
+
+        if (This->_private->_levelIndex[level].uncompressedByteLength != levelByteLength) {
+            free(nindex);
+            return KTX_DECOMPRESS_LENGTH_ERROR;
+        }
+
+        nindex[level].byteOffset = levelOffset;
+        nindex[level].uncompressedByteLength = nindex[level].byteLength =
+                                                            levelByteLength;
+        ktx_size_t paddedLevelByteLength
+              = _KTX_PADN(uncompressedLevelAlignment, levelByteLength);
+        inflatedByteLength += paddedLevelByteLength;
+        levelOffset += paddedLevelByteLength;
+        inflatedDataCapacity -= paddedLevelByteLength;
+    }
 
     // Now modify the texture.
 
@@ -2413,10 +2935,6 @@ ktxTexture2_inflateZstdInt(ktxTexture2* This, ktx_uint8_t* pDeflatedData,
     memcpy(cindex, nindex, levelIndexByteLength); // Update level index
     free(nindex);
     This->_private->_requiredLevelAlignment = uncompressedLevelAlignment;
-    // Set bytesPlane as we're now sized.
-    uint32_t* bdb = This->pDfd + 1;
-    // blockSizeInBits was set to the inflated size on file load.
-    bdb[KHR_DF_WORD_BYTESPLANE0] = prtctd->_formatSize.blockSizeInBits / 8;
 
     return KTX_SUCCESS;
 }
@@ -2508,6 +3026,7 @@ struct ktxTexture_vtbl ktxTexture2_vtbl = {
     (PFNKTEXGETIMAGEOFFSET)ktxTexture2_GetImageOffset,
     (PFNKTEXGETDATASIZEUNCOMPRESSED)ktxTexture2_GetDataSizeUncompressed,
     (PFNKTEXGETIMAGESIZE)ktxTexture2_GetImageSize,
+    (PFNKTEXGETLEVELSIZE)ktxTexture2_GetLevelSize,
     (PFNKTEXITERATELEVELS)ktxTexture2_IterateLevels,
     (PFNKTEXITERATELOADLEVELFACES)ktxTexture2_IterateLoadLevelFaces,
     (PFNKTEXNEEDSTRANSCODING)ktxTexture2_NeedsTranscoding,

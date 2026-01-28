@@ -74,35 +74,18 @@
  *     Indic shaper may want to disallow recomposing of two matras.
  */
 
-static bool
-decompose_unicode (const hb_ot_shape_normalize_context_t *c,
-		   hb_codepoint_t  ab,
-		   hb_codepoint_t *a,
-		   hb_codepoint_t *b)
-{
-  return (bool) c->unicode->decompose (ab, a, b);
-}
-
-static bool
-compose_unicode (const hb_ot_shape_normalize_context_t *c,
-		 hb_codepoint_t  a,
-		 hb_codepoint_t  b,
-		 hb_codepoint_t *ab)
-{
-  return (bool) c->unicode->compose (a, b, ab);
-}
 
 static inline void
 set_glyph (hb_glyph_info_t &info, hb_font_t *font)
 {
-  (void) font->get_nominal_glyph (info.codepoint, &info.glyph_index());
+  (void) font->get_nominal_glyph (info.codepoint, &info.normalizer_glyph_index());
 }
 
 static inline void
 output_char (hb_buffer_t *buffer, hb_codepoint_t unichar, hb_codepoint_t glyph)
 {
   /* This is very confusing indeed. */
-  buffer->cur().glyph_index() = glyph;
+  buffer->cur().normalizer_glyph_index() = glyph;
   (void) buffer->output_glyph (unichar);
   _hb_glyph_info_set_unicode_props (&buffer->prev(), buffer);
 }
@@ -110,7 +93,7 @@ output_char (hb_buffer_t *buffer, hb_codepoint_t unichar, hb_codepoint_t glyph)
 static inline void
 next_char (hb_buffer_t *buffer, hb_codepoint_t glyph)
 {
-  buffer->cur().glyph_index() = glyph;
+  buffer->cur().normalizer_glyph_index() = glyph;
   (void) buffer->next_glyph ();
 }
 
@@ -170,7 +153,7 @@ decompose_current_character (const hb_ot_shape_normalize_context_t *c, bool shor
   hb_codepoint_t u = buffer->cur().codepoint;
   hb_codepoint_t glyph = 0;
 
-  if (shortest && c->font->get_nominal_glyph (u, &glyph, c->not_found))
+  if (shortest && c->font->get_nominal_glyph (u, &glyph, buffer->not_found))
   {
     next_char (buffer, glyph);
     return;
@@ -182,7 +165,7 @@ decompose_current_character (const hb_ot_shape_normalize_context_t *c, bool shor
     return;
   }
 
-  if (!shortest && c->font->get_nominal_glyph (u, &glyph, c->not_found))
+  if (!shortest && c->font->get_nominal_glyph (u, &glyph, buffer->not_found))
   {
     next_char (buffer, glyph);
     return;
@@ -227,7 +210,7 @@ handle_variation_selector_cluster (const hb_ot_shape_normalize_context_t *c,
   hb_font_t * const font = c->font;
   for (; buffer->idx < end - 1 && buffer->successful;) {
     if (unlikely (buffer->unicode->is_variation_selector (buffer->cur(+1).codepoint))) {
-      if (font->get_variation_glyph (buffer->cur().codepoint, buffer->cur(+1).codepoint, &buffer->cur().glyph_index()))
+      if (font->get_variation_glyph (buffer->cur().codepoint, buffer->cur(+1).codepoint, &buffer->cur().normalizer_glyph_index()))
       {
 	hb_codepoint_t unicode = buffer->cur().codepoint;
 	(void) buffer->replace_glyphs (2, 1, &unicode);
@@ -237,6 +220,12 @@ handle_variation_selector_cluster (const hb_ot_shape_normalize_context_t *c,
 	/* Just pass on the two characters separately, let GSUB do its magic. */
 	set_glyph (buffer->cur(), font);
 	(void) buffer->next_glyph ();
+
+        buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_VARIATION_SELECTOR_FALLBACK;
+	_hb_glyph_info_set_variation_selector (&buffer->cur(), true);
+	if (buffer->not_found_variation_selector != HB_CODEPOINT_INVALID)
+	  _hb_glyph_info_clear_default_ignorable (&buffer->cur());
+
 	set_glyph (buffer->cur(), font);
 	(void) buffer->next_glyph ();
       }
@@ -307,15 +296,15 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
       mode = HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS;
   }
 
-  const hb_ot_shape_normalize_context_t c = {
+  hb_ot_shape_normalize_context_t c = {
     plan,
     buffer,
     font,
     buffer->unicode,
-    buffer->not_found,
-    plan->shaper->decompose ? plan->shaper->decompose : decompose_unicode,
-    plan->shaper->compose   ? plan->shaper->compose   : compose_unicode
+    plan->shaper->decompose ? plan->shaper->decompose : hb_ot_shape_normalize_context_t::decompose_unicode,
+    plan->shaper->compose   ? plan->shaper->compose   : hb_ot_shape_normalize_context_t::compose_unicode
   };
+  c.override_decompose_and_compose (plan->shaper->decompose, plan->shaper->compose);
 
   bool always_short_circuit = mode == HB_OT_SHAPE_NORMALIZATION_MODE_NONE;
   bool might_short_circuit = always_short_circuit ||
@@ -353,7 +342,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
 	unsigned int done = font->get_nominal_glyphs (end - buffer->idx,
 						      &buffer->cur().codepoint,
 						      sizeof (buffer->info[0]),
-						      &buffer->cur().glyph_index(),
+						      &buffer->cur().normalizer_glyph_index(),
 						      sizeof (buffer->info[0]));
 	if (unlikely (!buffer->next_glyphs (done))) break;
       }
@@ -467,7 +456,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
 	  buffer->out_len--; /* Remove the second composable. */
 	  /* Modify starter and carry on. */
 	  buffer->out_info[starter].codepoint = composed;
-	  buffer->out_info[starter].glyph_index() = glyph;
+	  buffer->out_info[starter].normalizer_glyph_index() = glyph;
 	  _hb_glyph_info_set_unicode_props (&buffer->out_info[starter], buffer);
 
 	  continue;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationPolygon" inherits="Resource" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationPolygon" inherits="Resource" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A 2D navigation mesh that describes a traversable surface for pathfinding.
 	</brief_description>
@@ -16,7 +16,7 @@
 		[/gdscript]
 		[csharp]
 		var newNavigationMesh = new NavigationPolygon();
-		var boundingOutline = new Vector2[] { new Vector2(0, 0), new Vector2(0, 50), new Vector2(50, 50), new Vector2(50, 0) };
+		Vector2[] boundingOutline = [new Vector2(0, 0), new Vector2(0, 50), new Vector2(50, 50), new Vector2(50, 0)];
 		newNavigationMesh.AddOutline(boundingOutline);
 		NavigationServer2D.BakeFromSourceGeometryData(newNavigationMesh, new NavigationMeshSourceGeometryData2D());
 		GetNode&lt;NavigationRegion2D&gt;("NavigationRegion2D").NavigationPolygon = newNavigationMesh;
@@ -34,17 +34,17 @@
 		[/gdscript]
 		[csharp]
 		var newNavigationMesh = new NavigationPolygon();
-		var newVertices = new Vector2[] { new Vector2(0, 0), new Vector2(0, 50), new Vector2(50, 50), new Vector2(50, 0) };
+		Vector2[] newVertices = [new Vector2(0, 0), new Vector2(0, 50), new Vector2(50, 50), new Vector2(50, 0)];
 		newNavigationMesh.Vertices = newVertices;
-		var newPolygonIndices = new int[] { 0, 1, 2, 3 };
+		int[] newPolygonIndices = [0, 1, 2, 3];
 		newNavigationMesh.AddPolygon(newPolygonIndices);
 		GetNode&lt;NavigationRegion2D&gt;("NavigationRegion2D").NavigationPolygon = newNavigationMesh;
 		[/csharp]
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="2D Navigation Demo">https://godotengine.org/asset-library/asset/117</link>
 		<link title="Using NavigationMeshes">$DOCS_URL/tutorials/navigation/navigation_using_navigationmeshes.html</link>
+		<link title="Navigation Polygon 2D Demo">https://godotengine.org/asset-library/asset/2722</link>
 	</tutorials>
 	<methods>
 		<method name="add_outline">
@@ -90,7 +90,7 @@
 		<method name="get_navigation_mesh">
 			<return type="NavigationMesh" />
 			<description>
-				Returns the [NavigationMesh] resulting from this navigation polygon. This navigation mesh can be used to update the navigation mesh of a region with the [method NavigationServer3D.region_set_navigation_mesh] API directly (as 2D uses the 3D server behind the scene).
+				Returns the [NavigationMesh] resulting from this navigation polygon. This navigation mesh can be used to update the navigation mesh of a region with the [method NavigationServer3D.region_set_navigation_mesh] API directly.
 			</description>
 		</method>
 		<method name="get_outline" qualifiers="const">
@@ -132,11 +132,10 @@
 				Returns a [PackedVector2Array] containing all the vertices being used to create the polygons.
 			</description>
 		</method>
-		<method name="make_polygons_from_outlines" is_deprecated="true">
+		<method name="make_polygons_from_outlines" deprecated="Use [method NavigationServer2D.parse_source_geometry_data] and [method NavigationServer2D.bake_from_source_geometry_data] instead.">
 			<return type="void" />
 			<description>
 				Creates polygons from the outlines added in the editor or by script.
-				[i]Deprecated.[/i] This function is deprecated, and might be removed in a future release. Use [method NavigationServer2D.parse_source_geometry_data] and [method NavigationServer2D.bake_from_source_geometry_data] instead.
 			</description>
 		</method>
 		<method name="remove_outline">
@@ -173,6 +172,17 @@
 	<members>
 		<member name="agent_radius" type="float" setter="set_agent_radius" getter="get_agent_radius" default="10.0">
 			The distance to erode/shrink the walkable surface when baking the navigation mesh.
+			[b]Note:[/b] The radius must be equal or higher than [code]0.0[/code]. If the radius is [code]0.0[/code], it won't be possible to fix invalid outline overlaps and other precision errors during the baking process. As a result, some obstacles may be excluded incorrectly from the final navigation mesh, or may delete the navigation mesh's polygons.
+		</member>
+		<member name="baking_rect" type="Rect2" setter="set_baking_rect" getter="get_baking_rect" default="Rect2(0, 0, 0, 0)">
+			If the baking [Rect2] has an area the navigation mesh baking will be restricted to its enclosing area.
+		</member>
+		<member name="baking_rect_offset" type="Vector2" setter="set_baking_rect_offset" getter="get_baking_rect_offset" default="Vector2(0, 0)">
+			The position offset applied to the [member baking_rect] [Rect2].
+		</member>
+		<member name="border_size" type="float" setter="set_border_size" getter="get_border_size" default="0.0">
+			The size of the non-navigable border around the bake bounding area defined by the [member baking_rect] [Rect2].
+			In conjunction with the [member baking_rect] the border size can be used to bake tile aligned navigation meshes without the tile edges being shrunk by [member agent_radius].
 		</member>
 		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" default="1.0">
 			The cell size used to rasterize the navigation mesh vertices. Must match with the cell size on the navigation map.
@@ -182,17 +192,29 @@
 			Only used when [member parsed_geometry_type] is [constant PARSED_GEOMETRY_STATIC_COLLIDERS] or [constant PARSED_GEOMETRY_BOTH].
 		</member>
 		<member name="parsed_geometry_type" type="int" setter="set_parsed_geometry_type" getter="get_parsed_geometry_type" enum="NavigationPolygon.ParsedGeometryType" default="2">
-			Determines which type of nodes will be parsed as geometry. See [enum ParsedGeometryType] for possible values.
+			Determines which type of nodes will be parsed as geometry.
+		</member>
+		<member name="sample_partition_type" type="int" setter="set_sample_partition_type" getter="get_sample_partition_type" enum="NavigationPolygon.SamplePartitionType" default="0">
+			Partitioning algorithm for creating the navigation mesh polys.
 		</member>
 		<member name="source_geometry_group_name" type="StringName" setter="set_source_geometry_group_name" getter="get_source_geometry_group_name" default="&amp;&quot;navigation_polygon_source_geometry_group&quot;">
 			The group name of nodes that should be parsed for baking source geometry.
 			Only used when [member source_geometry_mode] is [constant SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN] or [constant SOURCE_GEOMETRY_GROUPS_EXPLICIT].
 		</member>
 		<member name="source_geometry_mode" type="int" setter="set_source_geometry_mode" getter="get_source_geometry_mode" enum="NavigationPolygon.SourceGeometryMode" default="0">
-			The source of the geometry used when baking. See [enum SourceGeometryMode] for possible values.
+			The source of the geometry used when baking.
 		</member>
 	</members>
 	<constants>
+		<constant name="SAMPLE_PARTITION_CONVEX_PARTITION" value="0" enum="SamplePartitionType">
+			Convex partitioning that results in a navigation mesh with convex polygons.
+		</constant>
+		<constant name="SAMPLE_PARTITION_TRIANGULATE" value="1" enum="SamplePartitionType">
+			Triangulation partitioning that results in a navigation mesh with triangle polygons.
+		</constant>
+		<constant name="SAMPLE_PARTITION_MAX" value="2" enum="SamplePartitionType">
+			Represents the size of the [enum SamplePartitionType] enum.
+		</constant>
 		<constant name="PARSED_GEOMETRY_MESH_INSTANCES" value="0" enum="ParsedGeometryType">
 			Parses mesh instances as obstruction geometry. This includes [Polygon2D], [MeshInstance2D], [MultiMeshInstance2D], and [TileMap] nodes.
 			Meshes are only parsed when they use a 2D vertices surface format.

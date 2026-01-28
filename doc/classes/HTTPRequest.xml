@@ -8,149 +8,149 @@
 		Can be used to make HTTP requests, i.e. download or upload files or web content via HTTP.
 		[b]Warning:[/b] See the notes and warnings on [HTTPClient] for limitations, especially regarding TLS security.
 		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
-		[b]Example of contacting a REST API and printing one of its returned fields:[/b]
+		[b]Example:[/b] Contact a REST API and print one of its returned fields:
 		[codeblocks]
 		[gdscript]
 		func _ready():
-		    # Create an HTTP request node and connect its completion signal.
-		    var http_request = HTTPRequest.new()
-		    add_child(http_request)
-		    http_request.request_completed.connect(self._http_request_completed)
+			# Create an HTTP request node and connect its completion signal.
+			var http_request = HTTPRequest.new()
+			add_child(http_request)
+			http_request.request_completed.connect(self._http_request_completed)
 
-		    # Perform a GET request. The URL below returns JSON as of writing.
-		    var error = http_request.request("https://httpbin.org/get")
-		    if error != OK:
-		        push_error("An error occurred in the HTTP request.")
+			# Perform a GET request. The URL below returns JSON as of writing.
+			var error = http_request.request("https://httpbin.org/get")
+			if error != OK:
+				push_error("An error occurred in the HTTP request.")
 
-		    # Perform a POST request. The URL below returns JSON as of writing.
-		    # Note: Don't make simultaneous requests using a single HTTPRequest node.
-		    # The snippet below is provided for reference only.
-		    var body = JSON.new().stringify({"name": "Godette"})
-		    error = http_request.request("https://httpbin.org/post", [], HTTPClient.METHOD_POST, body)
-		    if error != OK:
-		        push_error("An error occurred in the HTTP request.")
+			# Perform a POST request. The URL below returns JSON as of writing.
+			# Note: Don't make simultaneous requests using a single HTTPRequest node.
+			# The snippet below is provided for reference only.
+			var body = JSON.new().stringify({"name": "Godette"})
+			error = http_request.request("https://httpbin.org/post", [], HTTPClient.METHOD_POST, body)
+			if error != OK:
+				push_error("An error occurred in the HTTP request.")
 
 		# Called when the HTTP request is completed.
 		func _http_request_completed(result, response_code, headers, body):
-		    var json = JSON.new()
-		    json.parse(body.get_string_from_utf8())
-		    var response = json.get_data()
+			var json = JSON.new()
+			json.parse(body.get_string_from_utf8())
+			var response = json.get_data()
 
-		    # Will print the user agent string used by the HTTPRequest node (as recognized by httpbin.org).
-		    print(response.headers["User-Agent"])
+			# Will print the user agent string used by the HTTPRequest node (as recognized by httpbin.org).
+			print(response.headers["User-Agent"])
 		[/gdscript]
 		[csharp]
 		public override void _Ready()
 		{
-		    // Create an HTTP request node and connect its completion signal.
-		    var httpRequest = new HTTPRequest();
-		    AddChild(httpRequest);
-		    httpRequest.RequestCompleted += HttpRequestCompleted;
+			// Create an HTTP request node and connect its completion signal.
+			var httpRequest = new HttpRequest();
+			AddChild(httpRequest);
+			httpRequest.RequestCompleted += HttpRequestCompleted;
 
-		    // Perform a GET request. The URL below returns JSON as of writing.
-		    Error error = httpRequest.Request("https://httpbin.org/get");
-		    if (error != Error.Ok)
-		    {
-		        GD.PushError("An error occurred in the HTTP request.");
-		    }
+			// Perform a GET request. The URL below returns JSON as of writing.
+			Error error = httpRequest.Request("https://httpbin.org/get");
+			if (error != Error.Ok)
+			{
+				GD.PushError("An error occurred in the HTTP request.");
+			}
 
-		    // Perform a POST request. The URL below returns JSON as of writing.
-		    // Note: Don't make simultaneous requests using a single HTTPRequest node.
-		    // The snippet below is provided for reference only.
-		    string body = new Json().Stringify(new Godot.Collections.Dictionary
-		    {
-		        { "name", "Godette" }
-		    });
-		    error = httpRequest.Request("https://httpbin.org/post", null, HTTPClient.Method.Post, body);
-		    if (error != Error.Ok)
-		    {
-		        GD.PushError("An error occurred in the HTTP request.");
-		    }
+			// Perform a POST request. The URL below returns JSON as of writing.
+			// Note: Don't make simultaneous requests using a single HTTPRequest node.
+			// The snippet below is provided for reference only.
+			string body = new Json().Stringify(new Godot.Collections.Dictionary
+			{
+				{ "name", "Godette" }
+			});
+			error = httpRequest.Request("https://httpbin.org/post", null, HttpClient.Method.Post, body);
+			if (error != Error.Ok)
+			{
+				GD.PushError("An error occurred in the HTTP request.");
+			}
 		}
 
 		// Called when the HTTP request is completed.
 		private void HttpRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
 		{
-		    var json = new Json();
-		    json.Parse(body.GetStringFromUtf8());
-		    var response = json.GetData().AsGodotDictionary();
+			var json = new Json();
+			json.Parse(body.GetStringFromUtf8());
+			var response = json.GetData().AsGodotDictionary();
 
-		    // Will print the user agent string used by the HTTPRequest node (as recognized by httpbin.org).
-		    GD.Print((response["headers"].AsGodotDictionary())["User-Agent"]);
+			// Will print the user agent string used by the HTTPRequest node (as recognized by httpbin.org).
+			GD.Print((response["headers"].AsGodotDictionary())["User-Agent"]);
 		}
 		[/csharp]
 		[/codeblocks]
-		[b]Example of loading and displaying an image using HTTPRequest:[/b]
+		[b]Example:[/b] Load an image using [HTTPRequest] and display it:
 		[codeblocks]
 		[gdscript]
 		func _ready():
-		    # Create an HTTP request node and connect its completion signal.
-		    var http_request = HTTPRequest.new()
-		    add_child(http_request)
-		    http_request.request_completed.connect(self._http_request_completed)
+			# Create an HTTP request node and connect its completion signal.
+			var http_request = HTTPRequest.new()
+			add_child(http_request)
+			http_request.request_completed.connect(self._http_request_completed)
 
-		    # Perform the HTTP request. The URL below returns a PNG image as of writing.
-		    var error = http_request.request("https://via.placeholder.com/512")
-		    if error != OK:
-		        push_error("An error occurred in the HTTP request.")
+			# Perform the HTTP request. The URL below returns a PNG image as of writing.
+			var error = http_request.request("https://placehold.co/512.png")
+			if error != OK:
+				push_error("An error occurred in the HTTP request.")
 
 		# Called when the HTTP request is completed.
 		func _http_request_completed(result, response_code, headers, body):
-		    if result != HTTPRequest.RESULT_SUCCESS:
-		        push_error("Image couldn't be downloaded. Try a different image.")
+			if result != HTTPRequest.RESULT_SUCCESS:
+				push_error("Image couldn't be downloaded. Try a different image.")
 
-		    var image = Image.new()
-		    var error = image.load_png_from_buffer(body)
-		    if error != OK:
-		        push_error("Couldn't load the image.")
+			var image = Image.new()
+			var error = image.load_png_from_buffer(body)
+			if error != OK:
+				push_error("Couldn't load the image.")
 
-		    var texture = ImageTexture.create_from_image(image)
+			var texture = ImageTexture.create_from_image(image)
 
-		    # Display the image in a TextureRect node.
-		    var texture_rect = TextureRect.new()
-		    add_child(texture_rect)
-		    texture_rect.texture = texture
+			# Display the image in a TextureRect node.
+			var texture_rect = TextureRect.new()
+			add_child(texture_rect)
+			texture_rect.texture = texture
 		[/gdscript]
 		[csharp]
 		public override void _Ready()
 		{
-		    // Create an HTTP request node and connect its completion signal.
-		    var httpRequest = new HTTPRequest();
-		    AddChild(httpRequest);
-		    httpRequest.RequestCompleted += HttpRequestCompleted;
+			// Create an HTTP request node and connect its completion signal.
+			var httpRequest = new HttpRequest();
+			AddChild(httpRequest);
+			httpRequest.RequestCompleted += HttpRequestCompleted;
 
-		    // Perform the HTTP request. The URL below returns a PNG image as of writing.
-		    Error error = httpRequest.Request("https://via.placeholder.com/512");
-		    if (error != Error.Ok)
-		    {
-		        GD.PushError("An error occurred in the HTTP request.");
-		    }
+			// Perform the HTTP request. The URL below returns a PNG image as of writing.
+			Error error = httpRequest.Request("https://placehold.co/512.png");
+			if (error != Error.Ok)
+			{
+				GD.PushError("An error occurred in the HTTP request.");
+			}
 		}
 
 		// Called when the HTTP request is completed.
 		private void HttpRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
 		{
-		    if (result != (long)HTTPRequest.Result.Success)
-		    {
-		        GD.PushError("Image couldn't be downloaded. Try a different image.");
-		    }
-		    var image = new Image();
-		    Error error = image.LoadPngFromBuffer(body);
-		    if (error != Error.Ok)
-		    {
-		        GD.PushError("Couldn't load the image.");
-		    }
+			if (result != (long)HttpRequest.Result.Success)
+			{
+				GD.PushError("Image couldn't be downloaded. Try a different image.");
+			}
+			var image = new Image();
+			Error error = image.LoadPngFromBuffer(body);
+			if (error != Error.Ok)
+			{
+				GD.PushError("Couldn't load the image.");
+			}
 
-		    var texture = ImageTexture.CreateFromImage(image);
+			var texture = ImageTexture.CreateFromImage(image);
 
-		    // Display the image in a TextureRect node.
-		    var textureRect = new TextureRect();
-		    AddChild(textureRect);
-		    textureRect.Texture = texture;
+			// Display the image in a TextureRect node.
+			var textureRect = new TextureRect();
+			AddChild(textureRect);
+			textureRect.Texture = texture;
 		}
 		[/csharp]
 		[/codeblocks]
-		[b]Gzipped response bodies[/b]: HTTPRequest will automatically handle decompression of response bodies. A [code]Accept-Encoding[/code] header will be automatically added to each of your requests, unless one is already specified. Any response with a [code]Content-Encoding: gzip[/code] header will automatically be decompressed and delivered to you as uncompressed bytes.
+		[b]Note:[/b] [HTTPRequest] nodes will automatically handle decompression of response bodies. An [code]Accept-Encoding[/code] header will be automatically added to each of your requests, unless one is already specified. Any response with a [code]Content-Encoding: gzip[/code] header will automatically be decompressed and delivered to you as uncompressed bytes.
 	</description>
 	<tutorials>
 		<link title="Making HTTP requests">$DOCS_URL/tutorials/networking/http_request_class.html</link>
@@ -179,7 +179,7 @@
 		<method name="get_http_client_status" qualifiers="const">
 			<return type="int" enum="HTTPClient.Status" />
 			<description>
-				Returns the current status of the underlying [HTTPClient]. See [enum HTTPClient.Status].
+				Returns the current status of the underlying [HTTPClient].
 			</description>
 		</method>
 		<method name="request">
@@ -253,7 +253,8 @@
 			Maximum number of allowed redirects.
 		</member>
 		<member name="timeout" type="float" setter="set_timeout" getter="get_timeout" default="0.0">
-			The duration to wait in seconds before a request times out. If [member timeout] is set to [code]0.0[/code] then the request will never time out. For simple requests, such as communication with a REST API, it is recommended that [member timeout] is set to a value suitable for the server response time (e.g. between [code]1.0[/code] and [code]10.0[/code]). This will help prevent unwanted timeouts caused by variation in server response times while still allowing the application to detect when a request has timed out. For larger requests such as file downloads it is suggested the [member timeout] be set to [code]0.0[/code], disabling the timeout functionality. This will help to prevent large transfers from failing due to exceeding the timeout value.
+			The duration to wait before a request times out, in seconds (independent of [member Engine.time_scale]). If [member timeout] is set to [code]0.0[/code], the request will never time out.
+			For simple requests, such as communication with a REST API, it is recommended to set [member timeout] to a value suitable for the server response time (commonly between [code]1.0[/code] and [code]10.0[/code]). This will help prevent unwanted timeouts caused by variation in response times while still allowing the application to detect when a request has timed out. For larger requests such as file downloads, it is recommended to set [member timeout] to [code]0.0[/code], disabling the timeout functionality. This will help prevent large transfers from failing due to exceeding the timeout value.
 		</member>
 		<member name="use_threads" type="bool" setter="set_use_threads" getter="is_using_threads" default="false">
 			If [code]true[/code], multithreading is used to improve performance.
@@ -275,6 +276,7 @@
 			Request successful.
 		</constant>
 		<constant name="RESULT_CHUNKED_BODY_SIZE_MISMATCH" value="1" enum="Result">
+			Request failed due to a mismatch between the expected and actual chunked body size during transfer. Possible causes include network errors, server misconfiguration, or issues with chunked encoding.
 		</constant>
 		<constant name="RESULT_CANT_CONNECT" value="2" enum="Result">
 			Request failed while connecting.
@@ -295,6 +297,7 @@
 			Request exceeded its maximum size limit, see [member body_size_limit].
 		</constant>
 		<constant name="RESULT_BODY_DECOMPRESS_FAILED" value="8" enum="Result">
+			Request failed due to an error while decompressing the response body. Possible causes include unsupported or incorrect compression format, corrupted data, or incomplete transfer.
 		</constant>
 		<constant name="RESULT_REQUEST_FAILED" value="9" enum="Result">
 			Request failed (currently unused).

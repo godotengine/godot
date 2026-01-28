@@ -1,7 +1,6 @@
-
 /* pngrtran.c - transforms the data in a row for PNG readers
  *
- * Copyright (c) 2018-2019 Cosmin Truta
+ * Copyright (c) 2018-2025 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -26,6 +25,12 @@
 #    else
 #      include <arm_neon.h>
 #    endif
+#  endif
+#endif
+
+#ifdef PNG_RISCV_RVV_IMPLEMENTATION
+#  if PNG_RISCV_RVV_IMPLEMENTATION == 1
+#    define PNG_RISCV_RVV_INTRINSICS_AVAILABLE
 #  endif
 #endif
 
@@ -219,9 +224,59 @@ png_set_strip_alpha(png_structrp png_ptr)
 #endif
 
 #if defined(PNG_READ_ALPHA_MODE_SUPPORTED) || defined(PNG_READ_GAMMA_SUPPORTED)
+/* PNGv3 conformance: this private API exists to resolve the now mandatory error
+ * resolution when multiple conflicting sources of gamma or colour space
+ * information are available.
+ *
+ * Terminology (assuming power law, "gamma", encodings):
+ *    "screen" gamma: a power law imposed by the output device when digital
+ *    samples are converted to visible light output.  The EOTF - volage to
+ *    luminance on output.
+ *
+ *    "file" gamma: a power law used to encode luminance levels from the input
+ *    data (the scene or the mastering display system) into digital voltages.
+ *    The OETF - luminance to voltage on input.
+ *
+ *    gamma "correction": a power law matching the **inverse** of the overall
+ *    transfer function from input luminance levels to output levels.  The
+ *    **inverse** of the OOTF; the correction "corrects" for the OOTF by aiming
+ *    to make the overall OOTF (including the correction) linear.
+ *
+ * It is important to understand this terminology because the defined terms are
+ * scattered throughout the libpng code and it is very easy to end up with the
+ * inverse of the power law required.
+ *
+ * Variable and struct::member names:
+ *    file_gamma        OETF  how the PNG data was encoded
+ *
+ *    screen_gamma      EOTF  how the screen will decode digital levels
+ *
+ *    -- not used --    OOTF  the net effect OETF x EOTF
+ *    gamma_correction        the inverse of OOTF to make the result linear
+ *
+ * All versions of libpng require a call to "png_set_gamma" to establish the
+ * "screen" gamma, the power law representing the EOTF.  png_set_gamma may also
+ * set or default the "file" gamma; the OETF.  gamma_correction is calculated
+ * internally.
+ *
+ * The earliest libpng versions required file_gamma to be supplied to set_gamma.
+ * Later versions started allowing png_set_gamma and, later, png_set_alpha_mode,
+ * to cause defaulting from the file data.
+ *
+ * PNGv3 mandated a particular form for this defaulting, one that is compatible
+ * with what libpng did except that if libpng detected inconsistencies it marked
+ * all the chunks as "invalid".  PNGv3 effectively invalidates this prior code.
+ *
+ * Behaviour implemented below:
+ *    translate_gamma_flags(gamma, is_screen)
+ *       The libpng-1.6 API for the gamma parameters to libpng APIs
+ *       (png_set_gamma and png_set_alpha_mode at present).  This allows the
+ *       'gamma' value to be passed as a png_fixed_point number or as one of a
+ *       set of integral values for specific "well known" examples of transfer
+ *       functions.  This is compatible with PNGv3.
+ */
 static png_fixed_point
-translate_gamma_flags(png_structrp png_ptr, png_fixed_point output_gamma,
-    int is_screen)
+translate_gamma_flags(png_fixed_point output_gamma, int is_screen)
 {
    /* Check for flag values.  The main reason for having the old Mac value as a
     * flag is that it is pretty near impossible to work out what the correct
@@ -231,14 +286,6 @@ translate_gamma_flags(png_structrp png_ptr, png_fixed_point output_gamma,
    if (output_gamma == PNG_DEFAULT_sRGB ||
       output_gamma == PNG_FP_1 / PNG_DEFAULT_sRGB)
    {
-      /* If there is no sRGB support this just sets the gamma to the standard
-       * sRGB value.  (This is a side effect of using this function!)
-       */
-#     ifdef PNG_READ_sRGB_SUPPORTED
-         png_ptr->flags |= PNG_FLAG_ASSUME_sRGB;
-#     else
-         PNG_UNUSED(png_ptr)
-#     endif
       if (is_screen != 0)
          output_gamma = PNG_GAMMA_sRGB;
       else
@@ -280,6 +327,33 @@ convert_gamma_value(png_structrp png_ptr, double output_gamma)
    return (png_fixed_point)output_gamma;
 }
 #  endif
+
+static int
+unsupported_gamma(png_structrp png_ptr, png_fixed_point gamma, int warn)
+{
+   /* Validate a gamma value to ensure it is in a reasonable range.  The value
+    * is expected to be 1 or greater, but this range test allows for some
+    * viewing correction values.  The intent is to weed out the API users
+    * who might use the inverse of the gamma value accidentally!
+    *
+    * 1.6.47: apply the test in png_set_gamma as well but only warn and return
+    * false if it fires.
+    *
+    * TODO: 1.8: make this an app_error in png_set_gamma as well.
+    */
+   if (gamma < PNG_LIB_GAMMA_MIN || gamma > PNG_LIB_GAMMA_MAX)
+   {
+#     define msg "gamma out of supported range"
+      if (warn)
+         png_app_warning(png_ptr, msg);
+      else
+         png_app_error(png_ptr, msg);
+      return 1;
+#     undef msg
+   }
+
+   return 0;
+}
 #endif /* READ_ALPHA_MODE || READ_GAMMA */
 
 #ifdef PNG_READ_ALPHA_MODE_SUPPORTED
@@ -287,32 +361,29 @@ void PNGFAPI
 png_set_alpha_mode_fixed(png_structrp png_ptr, int mode,
     png_fixed_point output_gamma)
 {
-   int compose = 0;
    png_fixed_point file_gamma;
+   int compose = 0;
 
-   png_debug(1, "in png_set_alpha_mode");
+   png_debug(1, "in png_set_alpha_mode_fixed");
 
    if (png_rtran_ok(png_ptr, 0) == 0)
       return;
 
-   output_gamma = translate_gamma_flags(png_ptr, output_gamma, 1/*screen*/);
-
-   /* Validate the value to ensure it is in a reasonable range. The value
-    * is expected to be 1 or greater, but this range test allows for some
-    * viewing correction values.  The intent is to weed out users of this API
-    * who use the inverse of the gamma value accidentally!  Since some of these
-    * values are reasonable this may have to be changed:
-    *
-    * 1.6.x: changed from 0.07..3 to 0.01..100 (to accommodate the optimal 16-bit
-    * gamma of 36, and its reciprocal.)
-    */
-   if (output_gamma < 1000 || output_gamma > 10000000)
-      png_error(png_ptr, "output gamma out of expected range");
+   output_gamma = translate_gamma_flags(output_gamma, 1/*screen*/);
+   if (unsupported_gamma(png_ptr, output_gamma, 0/*error*/))
+      return;
 
    /* The default file gamma is the inverse of the output gamma; the output
-    * gamma may be changed below so get the file value first:
+    * gamma may be changed below so get the file value first.  The default_gamma
+    * is set here and from the simplified API (which uses a different algorithm)
+    * so don't overwrite a set value:
     */
-   file_gamma = png_reciprocal(output_gamma);
+   file_gamma = png_ptr->default_gamma;
+   if (file_gamma == 0)
+   {
+      file_gamma = png_reciprocal(output_gamma);
+      png_ptr->default_gamma = file_gamma;
+   }
 
    /* There are really 8 possibilities here, composed of any combination
     * of:
@@ -363,17 +434,7 @@ png_set_alpha_mode_fixed(png_structrp png_ptr, int mode,
          png_error(png_ptr, "invalid alpha mode");
    }
 
-   /* Only set the default gamma if the file gamma has not been set (this has
-    * the side effect that the gamma in a second call to png_set_alpha_mode will
-    * be ignored.)
-    */
-   if (png_ptr->colorspace.gamma == 0)
-   {
-      png_ptr->colorspace.gamma = file_gamma;
-      png_ptr->colorspace.flags |= PNG_COLORSPACE_HAVE_GAMMA;
-   }
-
-   /* But always set the output gamma: */
+   /* Set the screen gamma values: */
    png_ptr->screen_gamma = output_gamma;
 
    /* Finally, if pre-multiplying, set the background fields to achieve the
@@ -383,7 +444,7 @@ png_set_alpha_mode_fixed(png_structrp png_ptr, int mode,
    {
       /* And obtain alpha pre-multiplication by composing on black: */
       memset(&png_ptr->background, 0, (sizeof png_ptr->background));
-      png_ptr->background_gamma = png_ptr->colorspace.gamma; /* just in case */
+      png_ptr->background_gamma = file_gamma; /* just in case */
       png_ptr->background_gamma_type = PNG_BACKGROUND_GAMMA_FILE;
       png_ptr->transformations &= ~PNG_BACKGROUND_EXPAND;
 
@@ -440,9 +501,19 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
    {
       int i;
 
+      /* Initialize the array to index colors.
+       *
+       * Ensure quantize_index can fit 256 elements (PNG_MAX_PALETTE_LENGTH)
+       * rather than num_palette elements. This is to prevent buffer overflows
+       * caused by malformed PNG files with out-of-range palette indices.
+       *
+       * Be careful to avoid leaking memory. Applications are allowed to call
+       * this function more than once per png_struct.
+       */
+      png_free(png_ptr, png_ptr->quantize_index);
       png_ptr->quantize_index = (png_bytep)png_malloc(png_ptr,
-          (png_alloc_size_t)((png_uint_32)num_palette * (sizeof (png_byte))));
-      for (i = 0; i < num_palette; i++)
+          PNG_MAX_PALETTE_LENGTH);
+      for (i = 0; i < PNG_MAX_PALETTE_LENGTH; i++)
          png_ptr->quantize_index[i] = (png_byte)i;
    }
 
@@ -454,15 +525,14 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
           * Perhaps not the best solution, but good enough.
           */
 
-         int i;
+         png_bytep quantize_sort;
+         int i, j;
 
-         /* Initialize an array to sort colors */
-         png_ptr->quantize_sort = (png_bytep)png_malloc(png_ptr,
-             (png_alloc_size_t)((png_uint_32)num_palette * (sizeof (png_byte))));
-
-         /* Initialize the quantize_sort array */
+         /* Initialize the local array to sort colors. */
+         quantize_sort = (png_bytep)png_malloc(png_ptr,
+             (png_alloc_size_t)num_palette);
          for (i = 0; i < num_palette; i++)
-            png_ptr->quantize_sort[i] = (png_byte)i;
+            quantize_sort[i] = (png_byte)i;
 
          /* Find the least used palette entries by starting a
           * bubble sort, and running it until we have sorted
@@ -474,19 +544,18 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
          for (i = num_palette - 1; i >= maximum_colors; i--)
          {
             int done; /* To stop early if the list is pre-sorted */
-            int j;
 
             done = 1;
             for (j = 0; j < i; j++)
             {
-               if (histogram[png_ptr->quantize_sort[j]]
-                   < histogram[png_ptr->quantize_sort[j + 1]])
+               if (histogram[quantize_sort[j]]
+                   < histogram[quantize_sort[j + 1]])
                {
                   png_byte t;
 
-                  t = png_ptr->quantize_sort[j];
-                  png_ptr->quantize_sort[j] = png_ptr->quantize_sort[j + 1];
-                  png_ptr->quantize_sort[j + 1] = t;
+                  t = quantize_sort[j];
+                  quantize_sort[j] = quantize_sort[j + 1];
+                  quantize_sort[j + 1] = t;
                   done = 0;
                }
             }
@@ -498,18 +567,18 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
          /* Swap the palette around, and set up a table, if necessary */
          if (full_quantize != 0)
          {
-            int j = num_palette;
+            j = num_palette;
 
             /* Put all the useful colors within the max, but don't
              * move the others.
              */
             for (i = 0; i < maximum_colors; i++)
             {
-               if ((int)png_ptr->quantize_sort[i] >= maximum_colors)
+               if ((int)quantize_sort[i] >= maximum_colors)
                {
                   do
                      j--;
-                  while ((int)png_ptr->quantize_sort[j] >= maximum_colors);
+                  while ((int)quantize_sort[j] >= maximum_colors);
 
                   palette[i] = palette[j];
                }
@@ -517,7 +586,7 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
          }
          else
          {
-            int j = num_palette;
+            j = num_palette;
 
             /* Move all the used colors inside the max limit, and
              * develop a translation table.
@@ -525,13 +594,13 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
             for (i = 0; i < maximum_colors; i++)
             {
                /* Only move the colors we need to */
-               if ((int)png_ptr->quantize_sort[i] >= maximum_colors)
+               if ((int)quantize_sort[i] >= maximum_colors)
                {
                   png_color tmp_color;
 
                   do
                      j--;
-                  while ((int)png_ptr->quantize_sort[j] >= maximum_colors);
+                  while ((int)quantize_sort[j] >= maximum_colors);
 
                   tmp_color = palette[j];
                   palette[j] = palette[i];
@@ -569,8 +638,7 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
                }
             }
          }
-         png_free(png_ptr, png_ptr->quantize_sort);
-         png_ptr->quantize_sort = NULL;
+         png_free(png_ptr, quantize_sort);
       }
       else
       {
@@ -592,11 +660,9 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
 
          /* Initialize palette index arrays */
          png_ptr->index_to_palette = (png_bytep)png_malloc(png_ptr,
-             (png_alloc_size_t)((png_uint_32)num_palette *
-             (sizeof (png_byte))));
+             (png_alloc_size_t)num_palette);
          png_ptr->palette_to_index = (png_bytep)png_malloc(png_ptr,
-             (png_alloc_size_t)((png_uint_32)num_palette *
-             (sizeof (png_byte))));
+             (png_alloc_size_t)num_palette);
 
          /* Initialize the sort array */
          for (i = 0; i < num_palette; i++)
@@ -761,12 +827,11 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
       size_t num_entries = ((size_t)1 << total_bits);
 
       png_ptr->palette_lookup = (png_bytep)png_calloc(png_ptr,
-          (png_alloc_size_t)(num_entries * (sizeof (png_byte))));
+          (png_alloc_size_t)(num_entries));
 
-      distance = (png_bytep)png_malloc(png_ptr, (png_alloc_size_t)(num_entries *
-          (sizeof (png_byte))));
+      distance = (png_bytep)png_malloc(png_ptr, (png_alloc_size_t)num_entries);
 
-      memset(distance, 0xff, num_entries * (sizeof (png_byte)));
+      memset(distance, 0xff, num_entries);
 
       for (i = 0; i < num_palette; i++)
       {
@@ -824,8 +889,8 @@ png_set_gamma_fixed(png_structrp png_ptr, png_fixed_point scrn_gamma,
       return;
 
    /* New in libpng-1.5.4 - reserve particular negative values as flags. */
-   scrn_gamma = translate_gamma_flags(png_ptr, scrn_gamma, 1/*screen*/);
-   file_gamma = translate_gamma_flags(png_ptr, file_gamma, 0/*file*/);
+   scrn_gamma = translate_gamma_flags(scrn_gamma, 1/*screen*/);
+   file_gamma = translate_gamma_flags(file_gamma, 0/*file*/);
 
    /* Checking the gamma values for being >0 was added in 1.5.4 along with the
     * premultiplied alpha support; this actually hides an undocumented feature
@@ -839,17 +904,19 @@ png_set_gamma_fixed(png_structrp png_ptr, png_fixed_point scrn_gamma,
     * libpng-1.6.0.
     */
    if (file_gamma <= 0)
-      png_error(png_ptr, "invalid file gamma in png_set_gamma");
-
+      png_app_error(png_ptr, "invalid file gamma in png_set_gamma");
    if (scrn_gamma <= 0)
-      png_error(png_ptr, "invalid screen gamma in png_set_gamma");
+      png_app_error(png_ptr, "invalid screen gamma in png_set_gamma");
 
-   /* Set the gamma values unconditionally - this overrides the value in the PNG
-    * file if a gAMA chunk was present.  png_set_alpha_mode provides a
-    * different, easier, way to default the file gamma.
+   if (unsupported_gamma(png_ptr, file_gamma, 1/*warn*/) ||
+       unsupported_gamma(png_ptr, scrn_gamma, 1/*warn*/))
+      return;
+
+   /* 1.6.47: png_struct::file_gamma and png_struct::screen_gamma are now only
+    * written by this API.  This removes dependencies on the order of API calls
+    * and allows the complex gamma checks to be delayed until needed.
     */
-   png_ptr->colorspace.gamma = file_gamma;
-   png_ptr->colorspace.flags |= PNG_COLORSPACE_HAVE_GAMMA;
+   png_ptr->file_gamma = file_gamma;
    png_ptr->screen_gamma = scrn_gamma;
 }
 
@@ -970,7 +1037,7 @@ void PNGFAPI
 png_set_rgb_to_gray_fixed(png_structrp png_ptr, int error_action,
     png_fixed_point red, png_fixed_point green)
 {
-   png_debug(1, "in png_set_rgb_to_gray");
+   png_debug(1, "in png_set_rgb_to_gray_fixed");
 
    /* Need the IHDR here because of the check on color_type below. */
    /* TODO: fix this */
@@ -1027,26 +1094,9 @@ png_set_rgb_to_gray_fixed(png_structrp png_ptr, int error_action,
          png_ptr->rgb_to_gray_coefficients_set = 1;
       }
 
-      else
-      {
-         if (red >= 0 && green >= 0)
-            png_app_warning(png_ptr,
-                "ignoring out of range rgb_to_gray coefficients");
-
-         /* Use the defaults, from the cHRM chunk if set, else the historical
-          * values which are close to the sRGB/HDTV/ITU-Rec 709 values.  See
-          * png_do_rgb_to_gray for more discussion of the values.  In this case
-          * the coefficients are not marked as 'set' and are not overwritten if
-          * something has already provided a default.
-          */
-         if (png_ptr->rgb_to_gray_red_coeff == 0 &&
-             png_ptr->rgb_to_gray_green_coeff == 0)
-         {
-            png_ptr->rgb_to_gray_red_coeff   = 6968;
-            png_ptr->rgb_to_gray_green_coeff = 23434;
-            /* png_ptr->rgb_to_gray_blue_coeff  = 2366; */
-         }
-      }
+      else if (red >= 0 && green >= 0)
+         png_app_warning(png_ptr,
+               "ignoring out of range rgb_to_gray coefficients");
    }
 }
 
@@ -1287,6 +1337,80 @@ png_init_rgb_transformations(png_structrp png_ptr)
 #endif /* READ_EXPAND && READ_BACKGROUND */
 }
 
+#ifdef PNG_READ_GAMMA_SUPPORTED
+png_fixed_point /* PRIVATE */
+png_resolve_file_gamma(png_const_structrp png_ptr)
+{
+   png_fixed_point file_gamma;
+
+   /* The file gamma is determined by these precedence rules, in this order
+    * (i.e. use the first value found):
+    *
+    *    png_set_gamma; png_struct::file_gammma if not zero, then:
+    *    png_struct::chunk_gamma if not 0 (determined the PNGv3 rules), then:
+    *    png_set_gamma; 1/png_struct::screen_gamma if not zero
+    *
+    *    0 (i.e. do no gamma handling)
+    */
+   file_gamma = png_ptr->file_gamma;
+   if (file_gamma != 0)
+      return file_gamma;
+
+   file_gamma = png_ptr->chunk_gamma;
+   if (file_gamma != 0)
+      return file_gamma;
+
+   file_gamma = png_ptr->default_gamma;
+   if (file_gamma != 0)
+      return file_gamma;
+
+   /* If png_reciprocal oveflows it returns 0 which indicates to the caller that
+    * there is no usable file gamma.  (The checks added to png_set_gamma and
+    * png_set_alpha_mode should prevent a screen_gamma which would overflow.)
+    */
+   if (png_ptr->screen_gamma != 0)
+      file_gamma = png_reciprocal(png_ptr->screen_gamma);
+
+   return file_gamma;
+}
+
+static int
+png_init_gamma_values(png_structrp png_ptr)
+{
+   /* The following temporary indicates if overall gamma correction is
+    * required.
+    */
+   int gamma_correction = 0;
+   png_fixed_point file_gamma, screen_gamma;
+
+   /* Resolve the file_gamma.  See above: if png_ptr::screen_gamma is set
+    * file_gamma will always be set here:
+    */
+   file_gamma = png_resolve_file_gamma(png_ptr);
+   screen_gamma = png_ptr->screen_gamma;
+
+   if (file_gamma > 0) /* file has been set */
+   {
+      if (screen_gamma > 0) /* screen set too */
+         gamma_correction = png_gamma_threshold(file_gamma, screen_gamma);
+
+      else
+         /* Assume the output matches the input; a long time default behavior
+          * of libpng, although the standard has nothing to say about this.
+          */
+         screen_gamma = png_reciprocal(file_gamma);
+   }
+
+   else /* both unset, prevent corrections: */
+      file_gamma = screen_gamma = PNG_FP_1;
+
+   png_ptr->file_gamma = file_gamma;
+   png_ptr->screen_gamma = screen_gamma;
+   return gamma_correction;
+
+}
+#endif /* READ_GAMMA */
+
 void /* PRIVATE */
 png_init_read_transformations(png_structrp png_ptr)
 {
@@ -1306,59 +1430,22 @@ png_init_read_transformations(png_structrp png_ptr)
     * the test needs to be performed later - here.  In addition prior to 1.5.4
     * the tests were repeated for the PALETTE color type here - this is no
     * longer necessary (and doesn't seem to have been necessary before.)
+    *
+    * PNGv3: the new mandatory precedence/priority rules for colour space chunks
+    * are handled here (by calling the above function).
+    *
+    * Turn the gamma transformation on or off as appropriate.  Notice that
+    * PNG_GAMMA just refers to the file->screen correction.  Alpha composition
+    * may independently cause gamma correction because it needs linear data
+    * (e.g. if the file has a gAMA chunk but the screen gamma hasn't been
+    * specified.)  In any case this flag may get turned off in the code
+    * immediately below if the transform can be handled outside the row loop.
     */
-   {
-      /* The following temporary indicates if overall gamma correction is
-       * required.
-       */
-      int gamma_correction = 0;
+   if (png_init_gamma_values(png_ptr) != 0)
+      png_ptr->transformations |= PNG_GAMMA;
 
-      if (png_ptr->colorspace.gamma != 0) /* has been set */
-      {
-         if (png_ptr->screen_gamma != 0) /* screen set too */
-            gamma_correction = png_gamma_threshold(png_ptr->colorspace.gamma,
-                png_ptr->screen_gamma);
-
-         else
-            /* Assume the output matches the input; a long time default behavior
-             * of libpng, although the standard has nothing to say about this.
-             */
-            png_ptr->screen_gamma = png_reciprocal(png_ptr->colorspace.gamma);
-      }
-
-      else if (png_ptr->screen_gamma != 0)
-         /* The converse - assume the file matches the screen, note that this
-          * perhaps undesirable default can (from 1.5.4) be changed by calling
-          * png_set_alpha_mode (even if the alpha handling mode isn't required
-          * or isn't changed from the default.)
-          */
-         png_ptr->colorspace.gamma = png_reciprocal(png_ptr->screen_gamma);
-
-      else /* neither are set */
-         /* Just in case the following prevents any processing - file and screen
-          * are both assumed to be linear and there is no way to introduce a
-          * third gamma value other than png_set_background with 'UNIQUE', and,
-          * prior to 1.5.4
-          */
-         png_ptr->screen_gamma = png_ptr->colorspace.gamma = PNG_FP_1;
-
-      /* We have a gamma value now. */
-      png_ptr->colorspace.flags |= PNG_COLORSPACE_HAVE_GAMMA;
-
-      /* Now turn the gamma transformation on or off as appropriate.  Notice
-       * that PNG_GAMMA just refers to the file->screen correction.  Alpha
-       * composition may independently cause gamma correction because it needs
-       * linear data (e.g. if the file has a gAMA chunk but the screen gamma
-       * hasn't been specified.)  In any case this flag may get turned off in
-       * the code immediately below if the transform can be handled outside the
-       * row loop.
-       */
-      if (gamma_correction != 0)
-         png_ptr->transformations |= PNG_GAMMA;
-
-      else
-         png_ptr->transformations &= ~PNG_GAMMA;
-   }
+   else
+      png_ptr->transformations &= ~PNG_GAMMA;
 #endif
 
    /* Certain transformations have the effect of preventing other
@@ -1430,7 +1517,7 @@ png_init_read_transformations(png_structrp png_ptr)
     * appropriately.
     */
    if ((png_ptr->transformations & PNG_RGB_TO_GRAY) != 0)
-      png_colorspace_set_rgb_coefficients(png_ptr);
+      png_set_rgb_coefficients(png_ptr);
 #endif
 
 #ifdef PNG_READ_GRAY_TO_RGB_SUPPORTED
@@ -1573,10 +1660,10 @@ png_init_read_transformations(png_structrp png_ptr)
     */
    if ((png_ptr->transformations & PNG_GAMMA) != 0 ||
        ((png_ptr->transformations & PNG_RGB_TO_GRAY) != 0 &&
-        (png_gamma_significant(png_ptr->colorspace.gamma) != 0 ||
+        (png_gamma_significant(png_ptr->file_gamma) != 0 ||
          png_gamma_significant(png_ptr->screen_gamma) != 0)) ||
         ((png_ptr->transformations & PNG_COMPOSE) != 0 &&
-         (png_gamma_significant(png_ptr->colorspace.gamma) != 0 ||
+         (png_gamma_significant(png_ptr->file_gamma) != 0 ||
           png_gamma_significant(png_ptr->screen_gamma) != 0
 #  ifdef PNG_READ_BACKGROUND_SUPPORTED
          || (png_ptr->background_gamma_type == PNG_BACKGROUND_GAMMA_UNIQUE &&
@@ -1632,8 +1719,8 @@ png_init_read_transformations(png_structrp png_ptr)
                      break;
 
                   case PNG_BACKGROUND_GAMMA_FILE:
-                     g = png_reciprocal(png_ptr->colorspace.gamma);
-                     gs = png_reciprocal2(png_ptr->colorspace.gamma,
+                     g = png_reciprocal(png_ptr->file_gamma);
+                     gs = png_reciprocal2(png_ptr->file_gamma,
                          png_ptr->screen_gamma);
                      break;
 
@@ -1694,19 +1781,51 @@ png_init_read_transformations(png_structrp png_ptr)
                   }
                   else /* if (png_ptr->trans_alpha[i] != 0xff) */
                   {
-                     png_byte v, w;
+                     if ((png_ptr->flags & PNG_FLAG_OPTIMIZE_ALPHA) != 0)
+                     {
+                        /* Premultiply only:
+                         * component = round((component * alpha) / 255)
+                         */
+                        png_uint_32 component;
 
-                     v = png_ptr->gamma_to_1[palette[i].red];
-                     png_composite(w, v, png_ptr->trans_alpha[i], back_1.red);
-                     palette[i].red = png_ptr->gamma_from_1[w];
+                        component = png_ptr->gamma_to_1[palette[i].red];
+                        component =
+                            (component * png_ptr->trans_alpha[i] + 128) / 255;
+                        palette[i].red = png_ptr->gamma_from_1[component];
 
-                     v = png_ptr->gamma_to_1[palette[i].green];
-                     png_composite(w, v, png_ptr->trans_alpha[i], back_1.green);
-                     palette[i].green = png_ptr->gamma_from_1[w];
+                        component = png_ptr->gamma_to_1[palette[i].green];
+                        component =
+                            (component * png_ptr->trans_alpha[i] + 128) / 255;
+                        palette[i].green = png_ptr->gamma_from_1[component];
 
-                     v = png_ptr->gamma_to_1[palette[i].blue];
-                     png_composite(w, v, png_ptr->trans_alpha[i], back_1.blue);
-                     palette[i].blue = png_ptr->gamma_from_1[w];
+                        component = png_ptr->gamma_to_1[palette[i].blue];
+                        component =
+                            (component * png_ptr->trans_alpha[i] + 128) / 255;
+                        palette[i].blue = png_ptr->gamma_from_1[component];
+                     }
+                     else
+                     {
+                        /* Composite with background color:
+                         * component =
+                         *    alpha * component + (1 - alpha) * background
+                         */
+                        png_byte v, w;
+
+                        v = png_ptr->gamma_to_1[palette[i].red];
+                        png_composite(w, v,
+                            png_ptr->trans_alpha[i], back_1.red);
+                        palette[i].red = png_ptr->gamma_from_1[w];
+
+                        v = png_ptr->gamma_to_1[palette[i].green];
+                        png_composite(w, v,
+                            png_ptr->trans_alpha[i], back_1.green);
+                        palette[i].green = png_ptr->gamma_from_1[w];
+
+                        v = png_ptr->gamma_to_1[palette[i].blue];
+                        png_composite(w, v,
+                            png_ptr->trans_alpha[i], back_1.blue);
+                        palette[i].blue = png_ptr->gamma_from_1[w];
+                     }
                   }
                }
                else
@@ -1724,6 +1843,7 @@ png_init_read_transformations(png_structrp png_ptr)
              * transformations elsewhere.
              */
             png_ptr->transformations &= ~(PNG_COMPOSE | PNG_GAMMA);
+            png_ptr->flags &= ~PNG_FLAG_OPTIMIZE_ALPHA;
          } /* color_type == PNG_COLOR_TYPE_PALETTE */
 
          /* if (png_ptr->background_gamma_type!=PNG_BACKGROUND_GAMMA_UNKNOWN) */
@@ -1741,8 +1861,8 @@ png_init_read_transformations(png_structrp png_ptr)
                   break;
 
                case PNG_BACKGROUND_GAMMA_FILE:
-                  g = png_reciprocal(png_ptr->colorspace.gamma);
-                  gs = png_reciprocal2(png_ptr->colorspace.gamma,
+                  g = png_reciprocal(png_ptr->file_gamma);
+                  gs = png_reciprocal2(png_ptr->file_gamma,
                       png_ptr->screen_gamma);
                   break;
 
@@ -1992,11 +2112,11 @@ png_read_transform_info(png_structrp png_ptr, png_inforp info_ptr)
     * been called before this from png_read_update_info->png_read_start_row
     * sometimes does the gamma transform and cancels the flag.
     *
-    * TODO: this looks wrong; the info_ptr should end up with a gamma equal to
-    * the screen_gamma value.  The following probably results in weirdness if
-    * the info_ptr is used by the app after the rows have been read.
+    * TODO: this is confusing.  It only changes the result of png_get_gAMA and,
+    * yes, it does return the value that the transformed data effectively has
+    * but does any app really understand this?
     */
-   info_ptr->colorspace.gamma = png_ptr->colorspace.gamma;
+   info_ptr->gamma = png_ptr->file_gamma;
 #endif
 
    if (info_ptr->bit_depth == 16)
@@ -4929,13 +5049,8 @@ png_do_read_transformations(png_structrp png_ptr, png_row_infop row_info)
 
 #ifdef PNG_READ_QUANTIZE_SUPPORTED
    if ((png_ptr->transformations & PNG_QUANTIZE) != 0)
-   {
       png_do_quantize(row_info, png_ptr->row_buf + 1,
           png_ptr->palette_lookup, png_ptr->quantize_index);
-
-      if (row_info->rowbytes == 0)
-         png_error(png_ptr, "png_do_quantize returned rowbytes=0");
-   }
 #endif /* READ_QUANTIZE */
 
 #ifdef PNG_READ_EXPAND_16_SUPPORTED

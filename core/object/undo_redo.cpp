@@ -33,6 +33,7 @@
 #include "core/io/resource.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
+#include "core/variant/callable_bind.h"
 
 void UndoRedo::Operation::delete_reference() {
 	if (type != Operation::TYPE_REFERENCE) {
@@ -48,7 +49,7 @@ void UndoRedo::Operation::delete_reference() {
 	}
 }
 
-void UndoRedo::_discard_redo() {
+void UndoRedo::discard_redo() {
 	if (current_action == actions.size() - 1) {
 		return;
 	}
@@ -71,7 +72,14 @@ bool UndoRedo::_redo(bool p_execute) {
 	}
 
 	current_action++;
-	_process_operation_list(actions.write[current_action].do_ops.front(), p_execute);
+
+	List<Operation>::Element *start_doops_element = actions.write[current_action].do_ops.front();
+	while (merge_total > 0 && start_doops_element) {
+		start_doops_element = start_doops_element->next();
+		merge_total--;
+	}
+
+	_process_operation_list(start_doops_element, p_execute);
 	version++;
 	emit_signal(SNAME("version_changed"));
 
@@ -82,7 +90,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode, bool p_back
 	uint64_t ticks = OS::get_singleton()->get_ticks_msec();
 
 	if (action_level == 0) {
-		_discard_redo();
+		discard_redo();
 
 		// Check if the merge operation is valid
 		if (p_mode != MERGE_DISABLE && actions.size() && actions[actions.size() - 1].name == p_name && actions[actions.size() - 1].backward_undo_ops == p_backward_undo_ops && actions[actions.size() - 1].last_tick + 800 > ticks) {
@@ -104,6 +112,12 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode, bool p_back
 				}
 			}
 
+			if (p_mode == MERGE_ALL) {
+				merge_total = actions.write[current_action + 1].do_ops.size();
+			} else {
+				merge_total = 0;
+			}
+
 			actions.write[actions.size() - 1].last_tick = ticks;
 
 			// Revert reverse from previous commit.
@@ -121,6 +135,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode, bool p_back
 			actions.push_back(new_action);
 
 			merge_mode = MERGE_DISABLE;
+			merge_total = 0;
 		}
 	}
 
@@ -130,7 +145,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode, bool p_back
 }
 
 void UndoRedo::add_do_method(const Callable &p_callable) {
-	ERR_FAIL_COND(p_callable.is_null());
+	ERR_FAIL_COND(!p_callable.is_valid());
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
@@ -155,7 +170,7 @@ void UndoRedo::add_do_method(const Callable &p_callable) {
 }
 
 void UndoRedo::add_undo_method(const Callable &p_callable) {
-	ERR_FAIL_COND(p_callable.is_null());
+	ERR_FAIL_COND(!p_callable.is_valid());
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
@@ -274,7 +289,7 @@ void UndoRedo::end_force_keep_in_merge_ends() {
 }
 
 void UndoRedo::_pop_history_tail() {
-	_discard_redo();
+	discard_redo();
 
 	if (!actions.size()) {
 		return;
@@ -301,6 +316,8 @@ void UndoRedo::commit_action(bool p_execute) {
 		return; //still nested
 	}
 
+	bool add_message = !merging;
+
 	if (merging) {
 		version--;
 		merging = false;
@@ -314,7 +331,15 @@ void UndoRedo::commit_action(bool p_execute) {
 	_redo(p_execute); // perform action
 	committing--;
 
-	if (callback && actions.size() > 0) {
+	if (max_steps > 0) {
+		// Clear early steps.
+
+		while (actions.size() > max_steps) {
+			_pop_history_tail();
+		}
+	}
+
+	if (add_message && callback && actions.size() > 0) {
 		callback(callback_ud, actions[actions.size() - 1].name);
 	}
 }
@@ -340,7 +365,7 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E, bool p_execu
 					Variant ret;
 					op.callable.callp(nullptr, 0, ret, ce);
 					if (ce.error != Callable::CallError::CALL_OK) {
-						ERR_PRINT("Error calling UndoRedo method operation '" + String(op.name) + "': " + Variant::get_call_error_text(obj, op.name, nullptr, 0, ce));
+						ERR_PRINT(vformat("Error calling UndoRedo method operation '%s': %s.", String(op.name), Variant::get_call_error_text(obj, op.name, nullptr, 0, ce)));
 					}
 #ifdef TOOLS_ENABLED
 					Resource *res = Object::cast_to<Resource>(obj);
@@ -431,7 +456,7 @@ String UndoRedo::get_action_name(int p_id) {
 
 void UndoRedo::clear_history(bool p_increase_version) {
 	ERR_FAIL_COND(action_level > 0);
-	_discard_redo();
+	discard_redo();
 
 	while (actions.size()) {
 		_pop_history_tail();
@@ -463,8 +488,20 @@ bool UndoRedo::has_redo() const {
 	return (current_action + 1) < actions.size();
 }
 
+bool UndoRedo::is_merging() const {
+	return merging;
+}
+
 uint64_t UndoRedo::get_version() const {
 	return version;
+}
+
+void UndoRedo::set_max_steps(int p_max_steps) {
+	max_steps = p_max_steps;
+}
+
+int UndoRedo::get_max_steps() const {
+	return max_steps;
 }
 
 void UndoRedo::set_commit_notify_callback(CommitNotifyCallback p_callback, void *p_ud) {
@@ -511,8 +548,12 @@ void UndoRedo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_undo"), &UndoRedo::has_undo);
 	ClassDB::bind_method(D_METHOD("has_redo"), &UndoRedo::has_redo);
 	ClassDB::bind_method(D_METHOD("get_version"), &UndoRedo::get_version);
+	ClassDB::bind_method(D_METHOD("set_max_steps", "max_steps"), &UndoRedo::set_max_steps);
+	ClassDB::bind_method(D_METHOD("get_max_steps"), &UndoRedo::get_max_steps);
 	ClassDB::bind_method(D_METHOD("redo"), &UndoRedo::redo);
 	ClassDB::bind_method(D_METHOD("undo"), &UndoRedo::undo);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_steps", PROPERTY_HINT_RANGE, "0,50,1,or_greater"), "set_max_steps", "get_max_steps");
 
 	ADD_SIGNAL(MethodInfo("version_changed"));
 

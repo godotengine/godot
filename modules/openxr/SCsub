@@ -1,41 +1,43 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+import sys
 
 Import("env")
 Import("env_modules")
 
 env_openxr = env_modules.Clone()
 
-# Thirdparty source files
+# Thirdparty source files.
 
 thirdparty_obj = []
 
-# Khronos OpenXR loader
+# Khronos OpenXR loader.
 
 # Needs even for build against shared library, at least the defines used in public headers.
 if env["platform"] == "android":
-    # may need to set OPENXR_ANDROID_VERSION_SUFFIX
     env_openxr.AppendUnique(CPPDEFINES=["XR_OS_ANDROID", "XR_USE_PLATFORM_ANDROID"])
-    env_openxr.AppendUnique(CPPDEFINES=["JSON_USE_EXCEPTION=0"])
-
-    # may need to include java parts of the openxr loader
+    env_openxr.AppendUnique(CPPDEFINES=[("JSON_USE_EXCEPTION", 0)])
 elif env["platform"] == "linuxbsd":
     env_openxr.AppendUnique(CPPDEFINES=["XR_OS_LINUX"])
 
     if env["x11"]:
         env_openxr.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_XLIB"])
 
-    # FIXME: Review what needs to be set for Android and macOS.
-    env_openxr.AppendUnique(CPPDEFINES=["HAVE_SECURE_GETENV"])
+    if env["wayland"] and env["opengl3"]:
+        env_openxr.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_EGL", "XRDEPENDENCIES_USE_GLAD"])
+        env_openxr.Prepend(CPPPATH=["#thirdparty/glad"])
+
+    # FreeBSD uses non-standard getenv functions.
+    if not sys.platform.startswith("freebsd"):
+        env_openxr.AppendUnique(CPPDEFINES=["HAVE_SECURE_GETENV"])
 elif env["platform"] == "windows":
     env_openxr.AppendUnique(CPPDEFINES=["XR_OS_WINDOWS", "NOMINMAX", "XR_USE_PLATFORM_WIN32"])
 elif env["platform"] == "macos":
     env_openxr.AppendUnique(CPPDEFINES=["XR_OS_APPLE"])
 
-    # There does not seem to be a XR_USE_PLATFORM_XYZ for Apple
+    # There does not seem to be a XR_USE_PLATFORM_XYZ for Apple.
 
-
-# may need to check and set:
-# - XR_USE_TIMESPEC
 
 if env["builtin_openxr"]:
     thirdparty_dir = "#thirdparty/openxr"
@@ -59,18 +61,16 @@ if env["builtin_openxr"]:
 
     env_thirdparty.Append(CPPPATH=[thirdparty_dir + "/src/loader"])
 
-    # add in external jsoncpp dependency
+    # Add in external jsoncpp dependency.
     thirdparty_jsoncpp_dir = thirdparty_dir + "/src/external/jsoncpp/src/lib_json/"
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_jsoncpp_dir + "json_reader.cpp")
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_jsoncpp_dir + "json_value.cpp")
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_jsoncpp_dir + "json_writer.cpp")
 
-    # add in load
+    # Add in the OpenXR loader.
     if env["platform"] != "android":
-        # On Android the openxr_loader is provided by separate plugins for each device
-        # Build the engine using object files
+        # On Android the OpenXR loader is handled by the configuration in 'platform/android/java/app/build.gradle'.
         khrloader_obj = []
-        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/xr_generated_dispatch_table.c")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/xr_generated_dispatch_table_core.c")
 
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/common/filesystem_utils.cpp")
@@ -78,51 +78,30 @@ if env["builtin_openxr"]:
 
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/api_layer_interface.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_core.cpp")
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_init_data.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_instance.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_logger_recorders.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_logger.cpp")
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_properties.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/manifest_file.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/runtime_interface.cpp")
-        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/xr_generated_loader.cpp")
         env.modules_sources += khrloader_obj
 
     env.modules_sources += thirdparty_obj
 
 
-# Godot source files
+# Godot source files.
 
 module_obj = []
 
 env_openxr.add_source_files(module_obj, "*.cpp")
-env_openxr.add_source_files(module_obj, "action_map/*.cpp")
-env_openxr.add_source_files(module_obj, "scene/*.cpp")
-
-# We're a little more targeted with our extensions
-if env["platform"] == "android":
-    env_openxr.add_source_files(module_obj, "extensions/openxr_android_extension.cpp")
-if env["vulkan"]:
-    env_openxr.add_source_files(module_obj, "extensions/openxr_vulkan_extension.cpp")
-if env["opengl3"] and env["platform"] != "macos":
-    env_openxr.add_source_files(module_obj, "extensions/openxr_opengl_extension.cpp")
-
-env_openxr.add_source_files(module_obj, "extensions/openxr_palm_pose_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_composition_layer_depth_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_eye_gaze_interaction.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_htc_controller_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_htc_vive_tracker_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_huawei_controller_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_hand_tracking_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_fb_foveation_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_fb_update_swapchain_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_fb_passthrough_extension_wrapper.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_fb_display_refresh_rate_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_pico_controller_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_wmr_controller_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_ml2_controller_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_extension_wrapper_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_api_extension.cpp")
-
 env.modules_sources += module_obj
+
+Export("env_openxr")
+
+SConscript("action_map/SCsub")
+SConscript("extensions/SCsub")
+SConscript("scene/SCsub")
 
 if env.editor_build:
     SConscript("editor/SCsub")

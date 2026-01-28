@@ -21,6 +21,13 @@
 		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" enum="FlowContainer.AlignmentMode" default="0">
 			The alignment of the container's children (must be one of [constant ALIGNMENT_BEGIN], [constant ALIGNMENT_CENTER], or [constant ALIGNMENT_END]).
 		</member>
+		<member name="last_wrap_alignment" type="int" setter="set_last_wrap_alignment" getter="get_last_wrap_alignment" enum="FlowContainer.LastWrapAlignmentMode" default="0">
+			The wrap behavior of the last, partially filled row or column (must be one of [constant LAST_WRAP_ALIGNMENT_INHERIT], [constant LAST_WRAP_ALIGNMENT_BEGIN], [constant LAST_WRAP_ALIGNMENT_CENTER], or [constant LAST_WRAP_ALIGNMENT_END]).
+		</member>
+		<member name="reverse_fill" type="bool" setter="set_reverse_fill" getter="is_reverse_fill" default="false">
+			If [code]true[/code], reverses fill direction. Horizontal [FlowContainer]s will fill rows bottom to top, vertical [FlowContainer]s will fill columns right to left.
+			When using a vertical [FlowContainer] with a right to left [member Control.layout_direction], columns will fill left to right instead.
+		</member>
 		<member name="vertical" type="bool" setter="set_vertical" getter="is_vertical" default="false">
 			If [code]true[/code], the [FlowContainer] will arrange its children vertically, rather than horizontally.
 			Can't be changed when using [HFlowContainer] and [VFlowContainer].
@@ -36,13 +43,25 @@
 		<constant name="ALIGNMENT_END" value="2" enum="AlignmentMode">
 			The child controls will be arranged at the end of the container, i.e. bottom if orientation is vertical, right if orientation is horizontal (left for RTL layout).
 		</constant>
+		<constant name="LAST_WRAP_ALIGNMENT_INHERIT" value="0" enum="LastWrapAlignmentMode">
+			The last partially filled row or column will wrap aligned to the previous row or column in accordance with [member alignment].
+		</constant>
+		<constant name="LAST_WRAP_ALIGNMENT_BEGIN" value="1" enum="LastWrapAlignmentMode">
+			The last partially filled row or column will wrap aligned to the beginning of the previous row or column.
+		</constant>
+		<constant name="LAST_WRAP_ALIGNMENT_CENTER" value="2" enum="LastWrapAlignmentMode">
+			The last partially filled row or column will wrap aligned to the center of the previous row or column.
+		</constant>
+		<constant name="LAST_WRAP_ALIGNMENT_END" value="3" enum="LastWrapAlignmentMode">
+			The last partially filled row or column will wrap aligned to the end of the previous row or column.
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
-			The horizontal separation of children nodes.
+			The horizontal separation of child nodes.
 		</theme_item>
 		<theme_item name="v_separation" data_type="constant" type="int" default="4">
-			The vertical separation of children nodes.
+			The vertical separation of child nodes.
 		</theme_item>
 	</theme_items>
 </class>

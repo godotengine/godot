@@ -28,21 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VULKAN_HOOKS_H
-#define VULKAN_HOOKS_H
+#pragma once
 
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include "core/math/vector2i.h"
+#include "core/templates/local_vector.h"
+#include "drivers/vulkan/godot_vulkan.h"
 
 class VulkanHooks {
-public:
-	virtual bool create_vulkan_instance(const VkInstanceCreateInfo *p_vulkan_create_info, VkInstance *r_instance) { return false; };
-	virtual bool get_physical_device(VkPhysicalDevice *r_device) { return false; };
-	virtual bool create_vulkan_device(const VkDeviceCreateInfo *p_device_create_info, VkDevice *r_device) { return false; };
-	virtual ~VulkanHooks(){};
-};
+private:
+	static VulkanHooks *singleton;
 
-#endif // VULKAN_HOOKS_H
+public:
+	VulkanHooks();
+	virtual ~VulkanHooks();
+	virtual bool create_vulkan_instance(const VkInstanceCreateInfo *p_vulkan_create_info, VkInstance *r_instance) = 0;
+	virtual bool get_physical_device(VkPhysicalDevice *r_device) = 0;
+	virtual bool create_vulkan_device(const VkDeviceCreateInfo *p_device_create_info, VkDevice *r_device) = 0;
+	virtual void set_direct_queue_family_and_index(uint32_t p_queue_family_index, uint32_t p_queue_index) = 0;
+	virtual bool use_fragment_density_offsets() = 0;
+	virtual void get_fragment_density_offsets(LocalVector<VkOffset2D> &r_offsets, const Vector2i &p_granularity) = 0;
+	static VulkanHooks *get_singleton() { return singleton; }
+};

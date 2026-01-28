@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef UTILITIES_GLES3_H
-#define UTILITIES_GLES3_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
@@ -39,9 +38,24 @@
 
 namespace GLES3 {
 
+/* VISIBILITY NOTIFIER */
+
+struct VisibilityNotifier {
+	AABB aabb;
+	Callable enter_callback;
+	Callable exit_callback;
+	Dependency dependency;
+};
+
 class Utilities : public RendererUtilities {
 private:
 	static Utilities *singleton;
+
+	/* VISIBILITY NOTIFIER */
+
+	mutable RID_Owner<VisibilityNotifier> visibility_notifier_owner;
+
+	/* MISC */
 
 	struct ResourceAllocation {
 #ifdef DEV_ENABLED
@@ -50,9 +64,11 @@ private:
 		uint32_t size = 0;
 	};
 	HashMap<GLuint, ResourceAllocation> buffer_allocs_cache;
+	HashMap<GLuint, ResourceAllocation> render_buffer_allocs_cache;
 	HashMap<GLuint, ResourceAllocation> texture_allocs_cache;
 
 	uint64_t buffer_mem_cache = 0;
+	uint64_t render_buffer_mem_cache = 0;
 	uint64_t texture_mem_cache = 0;
 
 public:
@@ -88,7 +104,28 @@ public:
 		buffer_allocs_cache.erase(p_id);
 	}
 
+	_FORCE_INLINE_ void render_buffer_allocated_data(GLuint p_id, uint32_t p_size, String p_name = "") {
+		render_buffer_mem_cache += p_size;
+#ifdef DEV_ENABLED
+		ERR_FAIL_COND_MSG(render_buffer_allocs_cache.has(p_id), "trying to allocate render buffer with name " + p_name + " but ID already used by " + render_buffer_allocs_cache[p_id].name);
+#endif
+		ResourceAllocation resource_allocation;
+		resource_allocation.size = p_size;
+#ifdef DEV_ENABLED
+		resource_allocation.name = p_name + ": " + itos((uint64_t)p_id);
+#endif
+		render_buffer_allocs_cache[p_id] = resource_allocation;
+	}
+
+	_FORCE_INLINE_ void render_buffer_free_data(GLuint p_id) {
+		ERR_FAIL_COND(!render_buffer_allocs_cache.has(p_id));
+		glDeleteRenderbuffers(1, &p_id);
+		render_buffer_mem_cache -= render_buffer_allocs_cache[p_id].size;
+		render_buffer_allocs_cache.erase(p_id);
+	}
+
 	// Records that data was allocated for state tracking purposes.
+	// Size is measured in bytes.
 	_FORCE_INLINE_ void texture_allocated_data(GLuint p_id, uint32_t p_size, String p_name = "") {
 		texture_mem_cache += p_size;
 #ifdef DEV_ENABLED
@@ -126,6 +163,10 @@ public:
 	virtual void base_update_dependency(RID p_base, DependencyTracker *p_instance) override;
 
 	/* VISIBILITY NOTIFIER */
+
+	VisibilityNotifier *get_visibility_notifier(RID p_rid) { return visibility_notifier_owner.get_or_null(p_rid); }
+	bool owns_visibility_notifier(RID p_rid) const { return visibility_notifier_owner.owns(p_rid); }
+
 	virtual RID visibility_notifier_allocate() override;
 	virtual void visibility_notifier_initialize(RID p_notifier) override;
 	virtual void visibility_notifier_free(RID p_notifier) override;
@@ -184,10 +225,10 @@ public:
 	virtual String get_video_adapter_api_version() const override;
 
 	virtual Size2i get_maximum_viewport_size() const override;
+	virtual uint32_t get_maximum_shader_varyings() const override;
+	virtual uint64_t get_maximum_uniform_buffer_size() const override;
 };
 
 } // namespace GLES3
 
 #endif // GLES3_ENABLED
-
-#endif // UTILITIES_GLES3_H

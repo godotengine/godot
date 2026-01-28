@@ -4,14 +4,9 @@
 
 #VERSION_DEFINES
 
-/* Do not use subgroups here, seems there is not much advantage and causes glitches
-#if defined(has_GL_KHR_shader_subgroup_ballot) && defined(has_GL_KHR_shader_subgroup_arithmetic)
-#extension GL_KHR_shader_subgroup_ballot: enable
-#extension GL_KHR_shader_subgroup_arithmetic: enable
-
-#define USE_SUBGROUPS
+#ifdef USE_VULKAN_MEMORY_MODEL
+#pragma use_vulkan_memory_model
 #endif
-*/
 
 #ifdef MODE_DENSITY
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
@@ -21,6 +16,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 #include "../cluster_data_inc.glsl"
 #include "../light_data_inc.glsl"
+#include "../oct_inc.glsl"
 
 #define M_PI 3.14159265359
 
@@ -181,6 +177,9 @@ layout(set = 0, binding = 14, std140) uniform Params {
 	uint temporal_frame;
 	float temporal_blend;
 
+	vec2 sky_border_size;
+	vec2 pad;
+
 	mat3x4 cam_rotation;
 	mat4 to_prev_view;
 
@@ -190,7 +189,7 @@ params;
 #ifndef MODE_COPY
 layout(set = 0, binding = 15) uniform texture3D prev_density_texture;
 
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 layout(set = 0, binding = 16) buffer density_only_map_buffer {
 	uint density_only_map[];
 };
@@ -206,10 +205,10 @@ layout(r32ui, set = 0, binding = 17) uniform uimage3D light_only_map;
 layout(r32ui, set = 0, binding = 18) uniform uimage3D emissive_only_map;
 #endif
 
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
-layout(set = 0, binding = 19) uniform textureCubeArray sky_texture;
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
+layout(set = 0, binding = 19) uniform texture2DArray sky_texture;
 #else
-layout(set = 0, binding = 19) uniform textureCube sky_texture;
+layout(set = 0, binding = 19) uniform texture2D sky_texture;
 #endif
 #endif // MODE_COPY
 
@@ -287,7 +286,7 @@ void main() {
 	if (any(greaterThanEqual(pos, params.fog_volume_size))) {
 		return; //do not compute
 	}
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 	uint lpos = pos.z * params.fog_volume_size.x * params.fog_volume_size.y + pos.y * params.fog_volume_size.x + pos.x;
 #endif
 
@@ -353,7 +352,7 @@ void main() {
 	vec3 total_light = vec3(0.0);
 
 	float total_density = params.base_density;
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 	uint local_density = density_only_map[lpos];
 #else
 	uint local_density = imageLoad(density_only_map, pos).x;
@@ -362,7 +361,7 @@ void main() {
 	total_density += float(int(local_density)) / DENSITY_SCALE;
 	total_density = max(0.0, total_density);
 
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 	uint scattering_u = light_only_map[lpos];
 #else
 	uint scattering_u = imageLoad(light_only_map, pos).x;
@@ -370,7 +369,7 @@ void main() {
 	vec3 scattering = vec3(scattering_u >> 21, (scattering_u << 11) >> 21, scattering_u % 1024) / vec3(2047.0, 2047.0, 1023.0);
 	scattering += params.base_scattering * params.base_density;
 
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 	uint emission_u = emissive_only_map[lpos];
 #else
 	uint emission_u = imageLoad(emissive_only_map, pos).x;
@@ -416,7 +415,7 @@ void main() {
 					}
 
 					float depth = texture(sampler2D(directional_shadow_atlas, linear_sampler), pssm_coord.xy).r;
-					float shadow = exp(min(0.0, (depth - pssm_coord.z)) * z_range * INV_FOG_FADE);
+					float shadow = exp(min(0.0, (pssm_coord.z - depth)) * z_range * INV_FOG_FADE);
 
 					shadow = mix(shadow, 1.0, smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, view_pos.z)); //done with negative values for performance
 
@@ -434,13 +433,13 @@ void main() {
 			if (params.sky_contribution > 0.0) {
 				float mip_bias = 2.0 + total_density * (MAX_SKY_LOD - 2.0); // Not physically based, but looks nice
 				vec3 scatter_direction = (params.radiance_inverse_xform * normalize(view_pos)) * sign(params.phase_g);
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
-				isotropic = texture(samplerCubeArray(sky_texture, linear_sampler_with_mipmaps), vec4(0.0, 1.0, 0.0, mip_bias)).rgb;
-				anisotropic = texture(samplerCubeArray(sky_texture, linear_sampler_with_mipmaps), vec4(scatter_direction, mip_bias)).rgb;
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
+				isotropic = texture(sampler2DArray(sky_texture, linear_sampler_with_mipmaps), vec3(vec3_to_oct_with_border(vec3(0.0, 1.0, 0.0), params.sky_border_size), mip_bias)).rgb;
+				anisotropic = texture(sampler2DArray(sky_texture, linear_sampler_with_mipmaps), vec3(vec3_to_oct_with_border(scatter_direction, params.sky_border_size), mip_bias)).rgb;
 #else
-				isotropic = textureLod(samplerCube(sky_texture, linear_sampler_with_mipmaps), vec3(0.0, 1.0, 0.0), mip_bias).rgb;
-				anisotropic = textureLod(samplerCube(sky_texture, linear_sampler_with_mipmaps), vec3(scatter_direction), mip_bias).rgb;
-#endif //USE_RADIANCE_CUBEMAP_ARRAY
+				isotropic = textureLod(sampler2D(sky_texture, linear_sampler_with_mipmaps), vec3_to_oct_with_border(vec3(0.0, 1.0, 0.0), params.sky_border_size), mip_bias).rgb;
+				anisotropic = textureLod(sampler2D(sky_texture, linear_sampler_with_mipmaps), vec3_to_oct_with_border(scatter_direction, params.sky_border_size), mip_bias).rgb;
+#endif //USE_RADIANCE_OCTMAP_ARRAY
 			}
 
 			total_light += mix(params.ambient_color, mix(isotropic, anisotropic, abs(params.phase_g)), params.sky_contribution) * params.ambient_inject;
@@ -459,28 +458,15 @@ void main() {
 
 			cluster_get_item_range(cluster_omni_offset + params.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
 
-#ifdef USE_SUBGROUPS
-			item_from = subgroupBroadcastFirst(subgroupMin(item_from));
-			item_to = subgroupBroadcastFirst(subgroupMax(item_to));
-#endif
-
 			for (uint i = item_from; i < item_to; i++) {
 				uint mask = cluster_buffer.data[cluster_omni_offset + i];
 				mask &= cluster_get_range_clip_mask(i, item_min, item_max);
-#ifdef USE_SUBGROUPS
-				uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
-#else
 				uint merged_mask = mask;
-#endif
 
 				while (merged_mask != 0) {
 					uint bit = findMSB(merged_mask);
 					merged_mask &= ~(1 << bit);
-#ifdef USE_SUBGROUPS
-					if (((1 << bit) & mask) == 0) { //do not process if not originally here
-						continue;
-					}
-#endif
+
 					uint light_index = 32 * i + bit;
 
 					//if (!bool(omni_omni_lights.data[light_index].mask & draw_call.layer_mask)) {
@@ -513,13 +499,14 @@ void main() {
 							shadow_sample.z = 1.0 + abs(shadow_sample.z);
 							vec3 pos = vec3(shadow_sample.xy / shadow_sample.z, shadow_len - omni_lights.data[light_index].shadow_bias);
 							pos.z *= omni_lights.data[light_index].inv_radius;
+							pos.z = 1.0 - pos.z;
 
 							pos.xy = pos.xy * 0.5 + 0.5;
 							pos.xy = uv_rect.xy + pos.xy * uv_rect.zw;
 
 							float depth = texture(sampler2D(shadow_atlas, linear_sampler), pos.xy).r;
 
-							shadow_attenuation = mix(1.0 - omni_lights.data[light_index].shadow_opacity, 1.0, exp(min(0.0, (depth - pos.z)) / omni_lights.data[light_index].inv_radius * INV_FOG_FADE));
+							shadow_attenuation = mix(1.0 - omni_lights.data[light_index].shadow_opacity, 1.0, exp(min(0.0, (pos.z - depth)) / omni_lights.data[light_index].inv_radius * INV_FOG_FADE));
 						}
 						total_light += light * attenuation * shadow_attenuation * henyey_greenstein(dot(normalize(light_pos - view_pos), normalize(view_pos)), params.phase_g) * omni_lights.data[light_index].volumetric_fog_energy;
 					}
@@ -538,28 +525,14 @@ void main() {
 
 			cluster_get_item_range(cluster_spot_offset + params.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
 
-#ifdef USE_SUBGROUPS
-			item_from = subgroupBroadcastFirst(subgroupMin(item_from));
-			item_to = subgroupBroadcastFirst(subgroupMax(item_to));
-#endif
-
 			for (uint i = item_from; i < item_to; i++) {
 				uint mask = cluster_buffer.data[cluster_spot_offset + i];
 				mask &= cluster_get_range_clip_mask(i, item_min, item_max);
-#ifdef USE_SUBGROUPS
-				uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
-#else
 				uint merged_mask = mask;
-#endif
 
 				while (merged_mask != 0) {
 					uint bit = findMSB(merged_mask);
 					merged_mask &= ~(1 << bit);
-#ifdef USE_SUBGROUPS
-					if (((1 << bit) & mask) == 0) { //do not process if not originally here
-						continue;
-					}
-#endif
 
 					//if (!bool(omni_lights.data[light_index].mask & draw_call.layer_mask)) {
 					//	continue; //not masked
@@ -576,7 +549,7 @@ void main() {
 						float attenuation = get_omni_attenuation(d, spot_lights.data[light_index].inv_radius, spot_lights.data[light_index].attenuation);
 
 						vec3 spot_dir = spot_lights.data[light_index].direction;
-						highp float cone_angle = spot_lights.data[light_index].cone_angle;
+						float cone_angle = spot_lights.data[light_index].cone_angle;
 						float scos = max(dot(-normalize(light_rel_vec), spot_dir), cone_angle);
 						float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cone_angle));
 						attenuation *= 1.0 - pow(spot_rim, spot_lights.data[light_index].cone_attenuation);
@@ -590,14 +563,14 @@ void main() {
 							vec4 v = vec4(view_pos, 1.0);
 
 							vec4 splane = (spot_lights.data[light_index].shadow_matrix * v);
-							splane.z -= spot_lights.data[light_index].shadow_bias / (d * spot_lights.data[light_index].inv_radius);
+							splane.z -= spot_lights.data[light_index].shadow_bias;
 							splane /= splane.w;
 
 							vec3 pos = vec3(splane.xy * spot_lights.data[light_index].atlas_rect.zw + spot_lights.data[light_index].atlas_rect.xy, splane.z);
 
 							float depth = texture(sampler2D(shadow_atlas, linear_sampler), pos.xy).r;
 
-							shadow_attenuation = mix(1.0 - spot_lights.data[light_index].shadow_opacity, 1.0, exp(min(0.0, (depth - pos.z)) / spot_lights.data[light_index].inv_radius * INV_FOG_FADE));
+							shadow_attenuation = mix(1.0 - spot_lights.data[light_index].shadow_opacity, 1.0, exp(min(0.0, (pos.z - depth)) / spot_lights.data[light_index].inv_radius * INV_FOG_FADE));
 						}
 						total_light += light * attenuation * shadow_attenuation * henyey_greenstein(dot(normalize(light_rel_vec), normalize(view_pos)), params.phase_g) * spot_lights.data[light_index].volumetric_fog_energy;
 					}
@@ -710,7 +683,7 @@ void main() {
 	final_density = mix(final_density, reprojected_density, reproject_amount);
 
 	imageStore(density_map, pos, final_density);
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 	density_only_map[lpos] = 0;
 	light_only_map[lpos] = 0;
 	emissive_only_map[lpos] = 0;
@@ -750,7 +723,7 @@ void main() {
 
 		prev_z = z;
 
-		imageStore(fog_map, fog_pos, vec4(fog_accum.rgb, 1.0 - fog_accum.a));
+		imageStore(fog_map, fog_pos, vec4(fog_accum.rgb, fog_accum.a));
 	}
 
 #endif

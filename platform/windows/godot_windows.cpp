@@ -30,13 +30,14 @@
 
 #include "os_windows.h"
 
+#include "core/profiling/profiling.h"
 #include "main/main.h"
 
-#include <locale.h>
-#include <stdio.h>
+#include <clocale>
+#include <cstdio>
 
 // For export templates, add a section; the exporter will patch it to enclose
-// the data appended to the executable (bundled PCK)
+// the data appended to the executable (bundled PCK).
 #ifndef TOOLS_ENABLED
 #if defined _MSC_VER
 #pragma section("pck", read)
@@ -45,7 +46,7 @@ __declspec(allocate("pck")) static char dummy[8] = { 0 };
 // Dummy function to prevent LTO from discarding "pck" section.
 extern "C" char *__cdecl pck_section_dummy_call() {
 	return &dummy[0];
-};
+}
 #if defined _AMD64_
 #pragma comment(linker, "/include:pck_section_dummy_call")
 #elif defined _X86_
@@ -57,90 +58,6 @@ static const char dummy[8] __attribute__((section("pck"), used)) = { 0 };
 #endif
 #endif
 
-PCHAR *
-CommandLineToArgvA(
-		PCHAR CmdLine,
-		int *_argc) {
-	PCHAR *argv;
-	PCHAR _argv;
-	ULONG len;
-	ULONG argc;
-	CHAR a;
-	ULONG i, j;
-
-	BOOLEAN in_QM;
-	BOOLEAN in_TEXT;
-	BOOLEAN in_SPACE;
-
-	len = strlen(CmdLine);
-	i = ((len + 2) / 2) * sizeof(PVOID) + sizeof(PVOID);
-
-	argv = (PCHAR *)GlobalAlloc(GMEM_FIXED,
-			i + (len + 2) * sizeof(CHAR));
-
-	_argv = (PCHAR)(((PUCHAR)argv) + i);
-
-	argc = 0;
-	argv[argc] = _argv;
-	in_QM = FALSE;
-	in_TEXT = FALSE;
-	in_SPACE = TRUE;
-	i = 0;
-	j = 0;
-
-	a = CmdLine[i];
-	while (a) {
-		if (in_QM) {
-			if (a == '\"') {
-				in_QM = FALSE;
-			} else {
-				_argv[j] = a;
-				j++;
-			}
-		} else {
-			switch (a) {
-				case '\"':
-					in_QM = TRUE;
-					in_TEXT = TRUE;
-					if (in_SPACE) {
-						argv[argc] = _argv + j;
-						argc++;
-					}
-					in_SPACE = FALSE;
-					break;
-				case ' ':
-				case '\t':
-				case '\n':
-				case '\r':
-					if (in_TEXT) {
-						_argv[j] = '\0';
-						j++;
-					}
-					in_TEXT = FALSE;
-					in_SPACE = TRUE;
-					break;
-				default:
-					in_TEXT = TRUE;
-					if (in_SPACE) {
-						argv[argc] = _argv + j;
-						argc++;
-					}
-					_argv[j] = a;
-					j++;
-					in_SPACE = FALSE;
-					break;
-			}
-		}
-		i++;
-		a = CmdLine[i];
-	}
-	_argv[j] = '\0';
-	argv[argc] = nullptr;
-
-	(*_argc) = argc;
-	return argv;
-}
-
 char *wc_to_utf8(const wchar_t *wc) {
 	int ulen = WideCharToMultiByte(CP_UTF8, 0, wc, -1, nullptr, 0, nullptr, nullptr);
 	char *ubuf = new char[ulen + 1];
@@ -150,6 +67,8 @@ char *wc_to_utf8(const wchar_t *wc) {
 }
 
 int widechar_main(int argc, wchar_t **argv) {
+	godot_init_profiler();
+
 	OS_Windows os(nullptr);
 
 	setlocale(LC_CTYPE, "");
@@ -171,13 +90,15 @@ int widechar_main(int argc, wchar_t **argv) {
 		delete[] argv_utf8;
 
 		if (err == ERR_HELP) { // Returned by --help and --version, so success.
-			return 0;
+			return EXIT_SUCCESS;
 		}
-		return 255;
+		return EXIT_FAILURE;
 	}
 
-	if (Main::start()) {
+	if (Main::start() == EXIT_SUCCESS) {
 		os.run();
+	} else {
+		os.set_exit_code(EXIT_FAILURE);
 	}
 	Main::cleanup();
 
@@ -186,6 +107,7 @@ int widechar_main(int argc, wchar_t **argv) {
 	}
 	delete[] argv_utf8;
 
+	godot_cleanup_profiler();
 	return os.get_exit_code();
 }
 
@@ -213,7 +135,7 @@ int main(int argc, char **argv) {
 
 	// _argc and _argv are ignored
 	// we are going to use the WideChar version of them instead
-#ifdef CRASH_HANDLER_EXCEPTION
+#if defined(CRASH_HANDLER_EXCEPTION) && defined(_MSC_VER)
 	__try {
 		return _main();
 	} __except (CrashHandlerException(GetExceptionInformation())) {

@@ -8,7 +8,7 @@
 		[b]Note:[/b] This class has known issues and isn't designed to provide realistic 3D vehicle physics. If you want advanced vehicle physics, you may need to write your own physics integration using another [PhysicsBody3D] class.
 	</description>
 	<tutorials>
-		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
+		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/2752</link>
 	</tutorials>
 	<methods>
 		<method name="get_contact_body" qualifiers="const">
@@ -16,6 +16,18 @@
 			<description>
 				Returns the contacting body node if valid in the tree, as [Node3D]. At the moment, [GridMap] is not supported so the node will be always of type [PhysicsBody3D].
 				Returns [code]null[/code] if the wheel is not in contact with a surface, or the contact body is not a [PhysicsBody3D].
+			</description>
+		</method>
+		<method name="get_contact_normal" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the normal of the suspension's collision in world space if the wheel is in contact. If the wheel isn't in contact with anything, returns a vector pointing directly along the suspension axis toward the vehicle in world space.
+			</description>
+		</method>
+		<method name="get_contact_point" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the point of the suspension's collision in world space if the wheel is in contact. If the wheel isn't in contact with anything, returns the maximum point of the wheel's ray cast in world space, which is defined by [code]wheel_rest_length + wheel_radius[/code].
 			</description>
 		</method>
 		<method name="get_rpm" qualifiers="const">
@@ -42,16 +54,17 @@
 			Slows down the wheel by applying a braking force. The wheel is only slowed down if it is in contact with a surface. The force you need to apply to adequately slow down your vehicle depends on the [member RigidBody3D.mass] of the vehicle. For a vehicle with a mass set to 1000, try a value in the 25 - 30 range for hard braking.
 		</member>
 		<member name="damping_compression" type="float" setter="set_damping_compression" getter="get_damping_compression" default="0.83">
-			The damping applied to the spring when the spring is being compressed. This value should be between 0.0 (no damping) and 1.0. A value of 0.0 means the car will keep bouncing as the spring keeps its energy. A good value for this is around 0.3 for a normal car, 0.5 for a race car.
+			The damping applied to the suspension spring when being compressed, meaning when the wheel is moving up relative to the vehicle. It is measured in Newton-seconds per millimeter (N⋅s/mm), or megagrams per second (Mg/s). This value should be between 0.0 (no damping) and 1.0, but may be more. A value of 0.0 means the car will keep bouncing as the spring keeps its energy. A good value for this is around 0.3 for a normal car, 0.5 for a race car.
 		</member>
 		<member name="damping_relaxation" type="float" setter="set_damping_relaxation" getter="get_damping_relaxation" default="0.88">
-			The damping applied to the spring when relaxing. This value should be between 0.0 (no damping) and 1.0. This value should always be slightly higher than the [member damping_compression] property. For a [member damping_compression] value of 0.3, try a relaxation value of 0.5.
+			The damping applied to the suspension spring when rebounding or extending, meaning when the wheel is moving down relative to the vehicle. It is measured in Newton-seconds per millimeter (N⋅s/mm), or megagrams per second (Mg/s). This value should be between 0.0 (no damping) and 1.0, but may be more. This value should always be slightly higher than the [member damping_compression] property. For a [member damping_compression] value of 0.3, try a relaxation value of 0.5.
 		</member>
 		<member name="engine_force" type="float" setter="set_engine_force" getter="get_engine_force" default="0.0">
 			Accelerates the wheel by applying an engine force. The wheel is only sped up if it is in contact with a surface. The [member RigidBody3D.mass] of the vehicle has an effect on the acceleration of the vehicle. For a vehicle with a mass set to 1000, try a value in the 25 - 50 range for acceleration.
 			[b]Note:[/b] The simulation does not take the effect of gears into account, you will need to add logic for this if you wish to simulate gears.
 			A negative value will result in the wheel reversing.
 		</member>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
 		<member name="steering" type="float" setter="set_steering" getter="get_steering" default="0.0">
 			The steering angle for the wheel, in radians. Setting this to a non-zero value will result in the vehicle turning when it's moving.
 		</member>
@@ -59,7 +72,7 @@
 			The maximum force the spring can resist. This value should be higher than a quarter of the [member RigidBody3D.mass] of the [VehicleBody3D] or the spring will not carry the weight of the vehicle. Good results are often obtained by a value that is about 3× to 4× this number.
 		</member>
 		<member name="suspension_stiffness" type="float" setter="set_suspension_stiffness" getter="get_suspension_stiffness" default="5.88">
-			This value defines the stiffness of the suspension. Use a value lower than 50 for an off-road car, a value between 50 and 100 for a race car and try something around 200 for something like a Formula 1 car.
+			The stiffness of the suspension, measured in Newtons per millimeter (N/mm), or megagrams per second squared (Mg/s²). Use a value lower than 50 for an off-road car, a value between 50 and 100 for a race car and try something around 200 for something like a Formula 1 car.
 		</member>
 		<member name="suspension_travel" type="float" setter="set_suspension_travel" getter="get_suspension_travel" default="0.2">
 			This is the distance the suspension can travel. As Godot units are equivalent to meters, keep this setting relatively low. Try a value between 0.1 and 0.3 depending on the type of car.
@@ -81,7 +94,7 @@
 			This is the distance in meters the wheel is lowered from its origin point. Don't set this to 0.0 and move the wheel into position, instead move the origin point of your wheel (the gizmo in Godot) to the position the wheel will take when bottoming out, then use the rest length to move the wheel down to the position it should be in when the car is in rest.
 		</member>
 		<member name="wheel_roll_influence" type="float" setter="set_roll_influence" getter="get_roll_influence" default="0.1">
-			This value affects the roll of your vehicle. If set to 1.0 for all wheels, your vehicle will be prone to rolling over, while a value of 0.0 will resist body roll.
+			This value affects the roll of your vehicle. If set to 1.0 for all wheels, your vehicle will resist body roll, while a value of 0.0 will be prone to rolling over.
 		</member>
 	</members>
 </class>

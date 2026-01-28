@@ -41,10 +41,21 @@ using namespace OT;
 using objidx_t = hb_serialize_context_t::objidx_t;
 using whence_t = hb_serialize_context_t::whence_t;
 
-/* utility macro */
-template<typename Type>
-static inline const Type& StructAtOffsetOrNull (const void *P, unsigned int offset)
-{ return offset ? StructAtOffset<Type> (P, offset) : Null (Type); }
+/* CFF offsets can technically be negative */
+template<typename Type, typename ...Ts>
+static inline const Type& StructAtOffsetOrNull (const void *P, int offset, hb_sanitize_context_t &sc, Ts&&... ds)
+{
+  if (!offset) return Null (Type);
+
+  const char *p = (const char *) P + offset;
+  if (!sc.check_point (p)) return Null (Type);
+
+  const Type &obj = *reinterpret_cast<const Type *> (p);
+  if (!obj.sanitize (&sc, std::forward<Ts> (ds)...)) return Null (Type);
+
+  return obj;
+}
+
 
 struct code_pair_t
 {
@@ -57,241 +68,6 @@ using str_buff_t = hb_vector_t<unsigned char>;
 using str_buff_vec_t = hb_vector_t<str_buff_t>;
 using glyph_to_sid_map_t = hb_vector_t<code_pair_t>;
 
-struct length_f_t
-{
-  template <typename Iterable,
-	    hb_requires (hb_is_iterable (Iterable))>
-  unsigned operator () (const Iterable &_) const { return hb_len (hb_iter (_)); }
-
-  unsigned operator () (unsigned _) const { return _; }
-}
-HB_FUNCOBJ (length_f);
-
-/* CFF INDEX */
-template <typename COUNT>
-struct CFFIndex
-{
-  unsigned int offset_array_size () const
-  { return offSize * (count + 1); }
-
-  template <typename Iterable,
-	    hb_requires (hb_is_iterable (Iterable))>
-  bool serialize (hb_serialize_context_t *c,
-		  const Iterable &iterable,
-		  const unsigned *p_data_size = nullptr)
-  {
-    TRACE_SERIALIZE (this);
-    unsigned data_size;
-    if (p_data_size)
-      data_size = *p_data_size;
-    else
-      total_size (iterable, &data_size);
-
-    auto it = hb_iter (iterable);
-    if (unlikely (!serialize_header (c, +it, data_size))) return_trace (false);
-    unsigned char *ret = c->allocate_size<unsigned char> (data_size, false);
-    if (unlikely (!ret)) return_trace (false);
-    for (const auto &_ : +it)
-    {
-      unsigned len = _.length;
-      if (!len)
-	continue;
-      if (len <= 1)
-      {
-	*ret++ = *_.arrayZ;
-	continue;
-      }
-      hb_memcpy (ret, _.arrayZ, len);
-      ret += len;
-    }
-    return_trace (true);
-  }
-
-  template <typename Iterator,
-	    hb_requires (hb_is_iterator (Iterator))>
-  bool serialize_header (hb_serialize_context_t *c,
-			 Iterator it,
-			 unsigned data_size)
-  {
-    TRACE_SERIALIZE (this);
-
-    unsigned off_size = (hb_bit_storage (data_size + 1) + 7) / 8;
-
-    /* serialize CFFIndex header */
-    if (unlikely (!c->extend_min (this))) return_trace (false);
-    this->count = hb_len (it);
-    if (!this->count) return_trace (true);
-    if (unlikely (!c->extend (this->offSize))) return_trace (false);
-    this->offSize = off_size;
-    if (unlikely (!c->allocate_size<HBUINT8> (off_size * (this->count + 1), false)))
-      return_trace (false);
-
-    /* serialize indices */
-    unsigned int offset = 1;
-    if (HB_OPTIMIZE_SIZE_VAL)
-    {
-      unsigned int i = 0;
-      for (const auto &_ : +it)
-      {
-	set_offset_at (i++, offset);
-	offset += length_f (_);
-      }
-      set_offset_at (i, offset);
-    }
-    else
-      switch (off_size)
-      {
-	case 1:
-	{
-	  HBUINT8 *p = (HBUINT8 *) offsets;
-	  for (const auto &_ : +it)
-	  {
-	    *p++ = offset;
-	    offset += length_f (_);
-	  }
-	  *p = offset;
-	}
-	break;
-	case 2:
-	{
-	  HBUINT16 *p = (HBUINT16 *) offsets;
-	  for (const auto &_ : +it)
-	  {
-	    *p++ = offset;
-	    offset += length_f (_);
-	  }
-	  *p = offset;
-	}
-	break;
-	case 3:
-	{
-	  HBUINT24 *p = (HBUINT24 *) offsets;
-	  for (const auto &_ : +it)
-	  {
-	    *p++ = offset;
-	    offset += length_f (_);
-	  }
-	  *p = offset;
-	}
-	break;
-	case 4:
-	{
-	  HBUINT32 *p = (HBUINT32 *) offsets;
-	  for (const auto &_ : +it)
-	  {
-	    *p++ = offset;
-	    offset += length_f (_);
-	  }
-	  *p = offset;
-	}
-	break;
-	default:
-	break;
-      }
-
-    assert (offset == data_size + 1);
-    return_trace (true);
-  }
-
-  template <typename Iterable,
-	    hb_requires (hb_is_iterable (Iterable))>
-  static unsigned total_size (const Iterable &iterable, unsigned *data_size = nullptr)
-  {
-    auto it = + hb_iter (iterable);
-    if (!it)
-    {
-      if (data_size) *data_size = 0;
-      return min_size;
-    }
-
-    unsigned total = 0;
-    for (const auto &_ : +it)
-      total += length_f (_);
-
-    if (data_size) *data_size = total;
-
-    unsigned off_size = (hb_bit_storage (total + 1) + 7) / 8;
-
-    return min_size + HBUINT8::static_size + (hb_len (it) + 1) * off_size + total;
-  }
-
-  void set_offset_at (unsigned int index, unsigned int offset)
-  {
-    assert (index <= count);
-
-    unsigned int size = offSize;
-    const HBUINT8 *p = offsets;
-    switch (size)
-    {
-      case 1: ((HBUINT8  *) p)[index] = offset; break;
-      case 2: ((HBUINT16 *) p)[index] = offset; break;
-      case 3: ((HBUINT24 *) p)[index] = offset; break;
-      case 4: ((HBUINT32 *) p)[index] = offset; break;
-      default: return;
-    }
-  }
-
-  private:
-  unsigned int offset_at (unsigned int index) const
-  {
-    assert (index <= count);
-
-    unsigned int size = offSize;
-    const HBUINT8 *p = offsets;
-    switch (size)
-    {
-      case 1: return ((HBUINT8  *) p)[index];
-      case 2: return ((HBUINT16 *) p)[index];
-      case 3: return ((HBUINT24 *) p)[index];
-      case 4: return ((HBUINT32 *) p)[index];
-      default: return 0;
-    }
-  }
-
-  const unsigned char *data_base () const
-  { return (const unsigned char *) this + min_size + offSize.static_size - 1 + offset_array_size (); }
-  public:
-
-  hb_ubytes_t operator [] (unsigned int index) const
-  {
-    if (unlikely (index >= count)) return hb_ubytes_t ();
-    _hb_compiler_memory_r_barrier ();
-    unsigned offset0 = offset_at (index);
-    unsigned offset1 = offset_at (index + 1);
-    if (unlikely (offset1 < offset0 || offset1 > offset_at (count)))
-      return hb_ubytes_t ();
-    return hb_ubytes_t (data_base () + offset0, offset1 - offset0);
-  }
-
-  unsigned int get_size () const
-  {
-    if (count)
-      return min_size + offSize.static_size + offset_array_size () + (offset_at (count) - 1);
-    return min_size;  /* empty CFFIndex contains count only */
-  }
-
-  bool sanitize (hb_sanitize_context_t *c) const
-  {
-    TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this) &&
-			  (count == 0 || /* empty INDEX */
-			   (count < count + 1u &&
-			    c->check_struct (&offSize) && offSize >= 1 && offSize <= 4 &&
-			    c->check_array (offsets, offSize, count + 1u) &&
-			    c->check_array ((const HBUINT8*) data_base (), 1, offset_at (count))))));
-  }
-
-  public:
-  COUNT		count;		/* Number of object data. Note there are (count+1) offsets */
-  private:
-  HBUINT8	offSize;	/* The byte size of each offset in the offsets array. */
-  HBUINT8	offsets[HB_VAR_ARRAY];
-				/* The array of (count + 1) offsets into objects array (1-base). */
-  /* HBUINT8 data[HB_VAR_ARRAY];	Object data */
-  public:
-  DEFINE_SIZE_MIN (COUNT::static_size);
-};
-
 /* Top Dict, Font Dict, Private Dict */
 struct Dict : UnsizedByteStr
 {
@@ -303,7 +79,7 @@ struct Dict : UnsizedByteStr
   {
     TRACE_SERIALIZE (this);
     for (unsigned int i = 0; i < dictval.get_count (); i++)
-      if (unlikely (!opszr.serialize (c, dictval[i], std::forward<Ts> (ds)...)))
+      if (unlikely (!opszr.serialize (c, dictval[i], ds...)))
 	return_trace (false);
 
     return_trace (true);
@@ -412,6 +188,7 @@ struct FDSelect0 {
     TRACE_SANITIZE (this);
     if (unlikely (!(c->check_struct (this))))
       return_trace (false);
+    hb_barrier ();
     if (unlikely (!c->check_array (fds, c->get_num_glyphs ())))
       return_trace (false);
 
@@ -438,7 +215,9 @@ struct FDSelect3_4_Range
   bool sanitize (hb_sanitize_context_t *c, const void * /*nullptr*/, unsigned int fdcount) const
   {
     TRACE_SANITIZE (this);
-    return_trace (first < c->get_num_glyphs () && (fd < fdcount));
+    return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
+		  first < c->get_num_glyphs () && (fd < fdcount));
   }
 
   GID_TYPE    first;
@@ -456,15 +235,20 @@ struct FDSelect3_4
   bool sanitize (hb_sanitize_context_t *c, unsigned int fdcount) const
   {
     TRACE_SANITIZE (this);
-    if (unlikely (!c->check_struct (this) || !ranges.sanitize (c, nullptr, fdcount) ||
-		  (nRanges () == 0) || ranges[0].first != 0))
+    if (unlikely (!(c->check_struct (this) &&
+		    ranges.sanitize (c, nullptr, fdcount) &&
+		    hb_barrier () &&
+		    (nRanges () != 0) &&
+		    ranges[0].first == 0)))
       return_trace (false);
 
     for (unsigned int i = 1; i < nRanges (); i++)
       if (unlikely (ranges[i - 1].first >= ranges[i].first))
 	return_trace (false);
 
-    if (unlikely (!sentinel().sanitize (c) || (sentinel() != c->get_num_glyphs ())))
+    if (unlikely (!(sentinel().sanitize (c) &&
+		   hb_barrier () &&
+		   (sentinel() == c->get_num_glyphs ()))))
       return_trace (false);
 
     return_trace (true);
@@ -524,8 +308,8 @@ struct FDSelect
   {
     switch (format)
     {
-    case 0: return format.static_size + u.format0.get_size (num_glyphs);
-    case 3: return format.static_size + u.format3.get_size ();
+    case 0: hb_barrier (); return format.static_size + u.format0.get_size (num_glyphs);
+    case 3: hb_barrier (); return format.static_size + u.format3.get_size ();
     default:return 0;
     }
   }
@@ -536,8 +320,8 @@ struct FDSelect
 
     switch (format)
     {
-    case 0: return u.format0.get_fd (glyph);
-    case 3: return u.format3.get_fd (glyph);
+    case 0: hb_barrier (); return u.format0.get_fd (glyph);
+    case 3: hb_barrier (); return u.format3.get_fd (glyph);
     default:return 0;
     }
   }
@@ -548,8 +332,8 @@ struct FDSelect
 
     switch (format)
     {
-    case 0: return u.format0.get_fd_range (glyph);
-    case 3: return u.format3.get_fd_range (glyph);
+    case 0: hb_barrier (); return u.format0.get_fd_range (glyph);
+    case 3: hb_barrier (); return u.format3.get_fd_range (glyph);
     default:return {0, 1};
     }
   }
@@ -559,11 +343,12 @@ struct FDSelect
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this)))
       return_trace (false);
+    hb_barrier ();
 
     switch (format)
     {
-    case 0: return_trace (u.format0.sanitize (c, fdcount));
-    case 3: return_trace (u.format3.sanitize (c, fdcount));
+    case 0: hb_barrier (); return_trace (u.format0.sanitize (c, fdcount));
+    case 3: hb_barrier (); return_trace (u.format3.sanitize (c, fdcount));
     default:return_trace (false);
     }
   }

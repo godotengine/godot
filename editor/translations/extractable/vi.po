@@ -1,0 +1,118 @@
+# Vietnamese translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-02-14 08:02+0000\n"
+"Last-Translator: Trần Đức Minh Nhật <mncc8327@gmail.com>\n"
+"Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
+"godot/vi/>\n"
+"Language: vi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.4-dev\n"
+
+msgid "Save"
+msgstr "Lưu"
+
+msgid "Clear"
+msgstr "Xoá"
+
+msgid "Network"
+msgstr "Mạng"
+
+msgid "Open"
+msgstr "Mở"
+
+msgid "Select Current Folder"
+msgstr "Chọn thư mục hiện tại"
+
+msgid "Select This Folder"
+msgstr "Chọn thư mục này"
+
+msgid "All Recognized"
+msgstr "Đã nhận diện hết"
+
+msgid "Open a File"
+msgstr "Mở một Tệp tin"
+
+msgid "Open File(s)"
+msgstr "Mở Tệp tin"
+
+msgid "Open a Directory"
+msgstr "Mở một thư mục"
+
+msgid "Open a File or Directory"
+msgstr "Mở một tệp tin hoặc thư mục"
+
+msgid "Save a File"
+msgstr "Lưu thành tệp tin"
+
+msgid "Go to previous folder."
+msgstr "Quay lại thư mục trước."
+
+msgid "Go to next folder."
+msgstr "Đến thư mục tiếp theo."
+
+msgid "Go to parent folder."
+msgstr "Đến thư mục mẹ."
+
+msgid "Path:"
+msgstr "Đường dẫn:"
+
+msgid "Refresh files."
+msgstr "Làm mới các tệp."
+
+msgid "Directories & Files:"
+msgstr "Các Thư mục và Tệp tin:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Hiện/ẩn tệp ẩn."
+
+msgid "File:"
+msgstr "Tệp tin:"
+
+msgid "Create Folder"
+msgstr "Tạo thư mục"
+
+msgid "Name:"
+msgstr "Tên:"
+
+msgid "Could not create folder."
+msgstr "Không thể tạo folder."
+
+msgid "Zoom Out"
+msgstr "Thu nhỏ"
+
+msgid "Zoom Reset"
+msgstr "Đặt lại Thu phóng"
+
+msgid "Zoom In"
+msgstr "Phóng to"
+
+msgid "Cut"
+msgstr "Cắt"
+
+msgid "Copy"
+msgstr "Sao chép"
+
+msgid "Paste"
+msgstr "Dán"
+
+msgid "Select All"
+msgstr "Chọn Toàn Bộ"
+
+msgid "Undo"
+msgstr "Hoàn tác"
+
+msgid "Redo"
+msgstr "Làm lại"
+
+msgid "(Other)"
+msgstr "(Khác)"

@@ -52,7 +52,7 @@ void CanvasLayer::set_visible(bool p_visible) {
 	}
 
 	visible = p_visible;
-	emit_signal(SNAME("visibility_changed"));
+	emit_signal(SceneStringName(visibility_changed));
 
 	for (int i = 0; i < get_child_count(); i++) {
 		CanvasItem *c = Object::cast_to<CanvasItem>(get_child(i));
@@ -108,7 +108,7 @@ void CanvasLayer::_update_xform() {
 	}
 }
 
-void CanvasLayer::_update_locrotscale() {
+void CanvasLayer::_update_locrotscale() const {
 	ofs = transform.columns[2];
 	rot = transform.get_rotation();
 	scale = transform.get_scale();
@@ -126,7 +126,7 @@ void CanvasLayer::set_offset(const Vector2 &p_offset) {
 
 Vector2 CanvasLayer::get_offset() const {
 	if (locrotscale_dirty) {
-		const_cast<CanvasLayer *>(this)->_update_locrotscale();
+		_update_locrotscale();
 	}
 
 	return ofs;
@@ -143,7 +143,7 @@ void CanvasLayer::set_rotation(real_t p_radians) {
 
 real_t CanvasLayer::get_rotation() const {
 	if (locrotscale_dirty) {
-		const_cast<CanvasLayer *>(this)->_update_locrotscale();
+		_update_locrotscale();
 	}
 
 	return rot;
@@ -160,7 +160,7 @@ void CanvasLayer::set_scale(const Vector2 &p_scale) {
 
 Vector2 CanvasLayer::get_scale() const {
 	if (locrotscale_dirty) {
-		const_cast<CanvasLayer *>(this)->_update_locrotscale();
+		_update_locrotscale();
 	}
 
 	return scale;
@@ -277,7 +277,6 @@ void CanvasLayer::set_follow_viewport(bool p_enable) {
 
 	follow_viewport = p_enable;
 	_update_follow_viewport();
-	notify_property_list_changed();
 }
 
 bool CanvasLayer::is_following_viewport() const {
@@ -301,12 +300,6 @@ void CanvasLayer::_update_follow_viewport(bool p_force_exit) {
 		RS::get_singleton()->canvas_set_parent(canvas, RID(), 1.0);
 	} else {
 		RS::get_singleton()->canvas_set_parent(canvas, vp->get_world_2d()->get_canvas(), follow_viewport_scale);
-	}
-}
-
-void CanvasLayer::_validate_property(PropertyInfo &p_property) const {
-	if (!follow_viewport && p_property.name == "follow_viewport_scale") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 
@@ -344,7 +337,7 @@ void CanvasLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_canvas"), &CanvasLayer::get_canvas);
 
 	ADD_GROUP("Layer", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer", PROPERTY_HINT_RANGE, "-128,128,1"), "set_layer", "get_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer", PROPERTY_HINT_RANGE, itos(RS::CANVAS_LAYER_MIN) + "," + itos(RS::CANVAS_LAYER_MAX) + ",1"), "set_layer", "get_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
@@ -354,7 +347,7 @@ void CanvasLayer::_bind_methods() {
 	ADD_GROUP("", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, "Viewport", PROPERTY_USAGE_NONE), "set_custom_viewport", "get_custom_viewport");
 	ADD_GROUP("Follow Viewport", "follow_viewport");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_viewport_enabled"), "set_follow_viewport", "is_following_viewport");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_viewport_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_follow_viewport", "is_following_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "follow_viewport_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001,or_greater,or_less"), "set_follow_viewport_scale", "get_follow_viewport_scale");
 
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
@@ -366,5 +359,5 @@ CanvasLayer::CanvasLayer() {
 
 CanvasLayer::~CanvasLayer() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(canvas);
+	RS::get_singleton()->free_rid(canvas);
 }

@@ -48,11 +48,25 @@ Vector3i Vector3i::clamp(const Vector3i &p_min, const Vector3i &p_max) const {
 			CLAMP(z, p_min.z, p_max.z));
 }
 
+Vector3i Vector3i::clampi(int32_t p_min, int32_t p_max) const {
+	return Vector3i(
+			CLAMP(x, p_min, p_max),
+			CLAMP(y, p_min, p_max),
+			CLAMP(z, p_min, p_max));
+}
+
 Vector3i Vector3i::snapped(const Vector3i &p_step) const {
 	return Vector3i(
 			Math::snapped(x, p_step.x),
 			Math::snapped(y, p_step.y),
 			Math::snapped(z, p_step.z));
+}
+
+Vector3i Vector3i::snappedi(int32_t p_step) const {
+	return Vector3i(
+			Math::snapped(x, p_step),
+			Math::snapped(y, p_step),
+			Math::snapped(z, p_step));
 }
 
 Vector3i::operator String() const {

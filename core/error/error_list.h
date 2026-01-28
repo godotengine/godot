@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ERROR_LIST_H
-#define ERROR_LIST_H
+#pragma once
 
 /** Error List. Please never compare an error against FAILED
  * Either do result != OK , or !result. This way, Error fail
@@ -41,6 +40,7 @@
  * - Are added to the Error enum in core/error/error_list.h
  * - Have a description added to error_names in core/error/error_list.cpp
  * - Are bound with BIND_CORE_ENUM_CONSTANT() in core/core_constants.cpp
+ * - Have a matching Android version in platform/android/java/lib/src/main/java/org/godotengine/godot/error/Error.kt
  */
 
 enum Error {
@@ -97,5 +97,3 @@ enum Error {
 };
 
 extern const char *error_names[];
-
-#endif // ERROR_LIST_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXTURE_RD_H
-#define TEXTURE_RD_H
+#pragma once
 
 // Note, these classes are part of the Rendering Device based renderer.
 // They are included here to ensure the correct order of registration
@@ -59,6 +58,9 @@ public:
 
 	void set_texture_rd_rid(RID p_texture_rd_rid);
 	RID get_texture_rd_rid() const;
+
+	// Internal function that should only be called from the rendering thread.
+	void _set_texture_rd_rid(RID p_texture_rd_rid);
 
 	Texture2DRD();
 	~Texture2DRD();
@@ -93,6 +95,9 @@ public:
 
 	void set_texture_rd_rid(RID p_texture_rd_rid);
 	RID get_texture_rd_rid() const;
+
+	// Internal function that should only be called from the rendering thread.
+	void _set_texture_rd_rid(RID p_texture_rd_rid);
 
 	TextureLayeredRD(LayeredType p_layer_type);
 	~TextureLayeredRD();
@@ -146,8 +151,9 @@ public:
 	void set_texture_rd_rid(RID p_texture_rd_rid);
 	RID get_texture_rd_rid() const;
 
+	// Internal function that should only be called from the rendering thread.
+	void _set_texture_rd_rid(RID p_texture_rd_rid);
+
 	Texture3DRD();
 	~Texture3DRD();
 };
-
-#endif // TEXTURE_RD_H

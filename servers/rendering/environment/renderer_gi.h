@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_GI_H
-#define RENDERER_GI_H
+#pragma once
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class RendererGI {
 public:
@@ -79,6 +78,6 @@ public:
 	virtual bool voxel_gi_is_using_two_bounces(RID p_voxel_gi) const = 0;
 
 	virtual uint32_t voxel_gi_get_version(RID p_probe) const = 0;
-};
 
-#endif // RENDERER_GI_H
+	virtual void sdfgi_reset() = 0;
+};

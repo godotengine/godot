@@ -15,7 +15,7 @@ namespace embree
     __forceinline const float& operator [](size_t index) const { assert(index < N); return f[index]; }
     __forceinline       float& operator [](size_t index)       { assert(index < N); return f[index]; }
   };
-
+  
   template<int N>
   struct vdouble_impl
   {
@@ -31,7 +31,7 @@ namespace embree
     __forceinline const int& operator [](size_t index) const { assert(index < N); return i[index]; }
     __forceinline       int& operator [](size_t index)       { assert(index < N); return i[index]; }
   };
-
+  
   template<int N>
   struct vuint_impl
   {

@@ -1,8 +1,9 @@
 # See the below link for an explanation of this file's format
 # https://github.com/google/sanitizers/wiki/ThreadSanitizerSuppressions
 
-deadlock:tests/core/templates/test_command_queue.h
 deadlock:modules/text_server_adv/text_server_adv.cpp
 deadlock:modules/text_server_fb/text_server_fb.cpp
-race:modules/navigation/nav_map.cpp
-
+deadlock:tests/core/templates/test_command_queue.h
+race:modules/navigation_2d/nav_map_2d.cpp
+race:modules/navigation_3d/nav_map_3d.cpp
+race:thirdparty/thorvg/src/loaders/external_jpg/tvgJpgLoader.cpp

@@ -1,189 +1,169 @@
-"""Functions used to generate source files during build time
+"""Functions used to generate source files during build time"""
 
-All such functions are invoked in a subprocess on Windows to prevent build flakiness.
-"""
-import zlib
+from collections import OrderedDict
+from io import TextIOWrapper
 
-from platform_methods import subprocess_main
+import methods
 
 
-def escape_string(s):
-    def charcode_to_c_escapes(c):
-        rev_result = []
-        while c >= 256:
-            c, low = (c // 256, c % 256)
-            rev_result.append("\\%03o" % low)
-        rev_result.append("\\%03o" % c)
-        return "".join(reversed(rev_result))
+# Generate disabled classes
+def disabled_class_builder(target, source, env):
+    with methods.generated_wrapper(str(target[0])) as file:
+        for c in source[0].read():
+            if cs := c.strip():
+                file.write(f"class {cs}; template <> struct is_class_enabled<{cs}> : std::false_type {{}};\n")
 
-    result = ""
-    if isinstance(s, str):
-        s = s.encode("utf-8")
-    for c in s:
-        if not (32 <= c < 127) or c in (ord("\\"), ord('"')):
-            result += charcode_to_c_escapes(c)
-        else:
-            result += chr(c)
-    return result
+
+# Generate version info
+def version_info_builder(target, source, env):
+    with methods.generated_wrapper(str(target[0])) as file:
+        file.write(
+            """\
+#define GODOT_VERSION_SHORT_NAME "{short_name}"
+#define GODOT_VERSION_NAME "{name}"
+#define GODOT_VERSION_MAJOR {major}
+#define GODOT_VERSION_MINOR {minor}
+#define GODOT_VERSION_PATCH {patch}
+#define GODOT_VERSION_STATUS "{status}"
+#define GODOT_VERSION_BUILD "{build}"
+#define GODOT_VERSION_MODULE_CONFIG "{module_config}"
+#define GODOT_VERSION_WEBSITE "{website}"
+#define GODOT_VERSION_DOCS_BRANCH "{docs_branch}"
+#define GODOT_VERSION_DOCS_URL "https://docs.godotengine.org/en/" GODOT_VERSION_DOCS_BRANCH
+""".format(**source[0].read())
+        )
+
+
+def version_hash_builder(target, source, env):
+    with methods.generated_wrapper(str(target[0])) as file:
+        file.write(
+            """\
+#include "core/version.h"
+
+const char *const GODOT_VERSION_HASH = "{git_hash}";
+const uint64_t GODOT_VERSION_TIMESTAMP = {git_timestamp};
+""".format(**source[0].read())
+        )
+
+
+def encryption_key_builder(target, source, env):
+    src = source[0].read() or "0" * 64
+    try:
+        buffer = bytes.fromhex(src)
+        if len(buffer) != 32:
+            raise ValueError
+    except ValueError:
+        methods.print_error(
+            f'Invalid AES256 encryption key, not 64 hexadecimal characters: "{src}".\n'
+            "Unset `SCRIPT_AES256_ENCRYPTION_KEY` in your environment "
+            "or make sure that it contains exactly 64 hexadecimal characters."
+        )
+        raise
+
+    with methods.generated_wrapper(str(target[0])) as file:
+        file.write(
+            f"""\
+#include "core/config/project_settings.h"
+
+uint8_t script_encryption_key[32] = {{
+	{methods.format_buffer(buffer, 1)}
+}};"""
+        )
 
 
 def make_certs_header(target, source, env):
-    src = source[0]
-    dst = target[0]
-    f = open(src, "rb")
-    g = open(dst, "w", encoding="utf-8")
-    buf = f.read()
-    decomp_size = len(buf)
+    buffer = methods.get_buffer(str(source[0]))
+    decomp_size = len(buffer)
+    buffer = methods.compress_buffer(buffer)
 
-    # Use maximum zlib compression level to further reduce file size
-    # (at the cost of initial build times).
-    buf = zlib.compress(buf, zlib.Z_BEST_COMPRESSION)
+    with methods.generated_wrapper(str(target[0])) as file:
+        # System certs path. Editor will use them if defined. (for package maintainers)
+        file.write(f'#define _SYSTEM_CERTS_PATH "{source[2]}"\n')
+        if source[1].read():
+            # Defined here and not in env so changing it does not trigger a full rebuild.
+            file.write(f"""\
+#define BUILTIN_CERTS_ENABLED
 
-    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#ifndef CERTS_COMPRESSED_GEN_H\n")
-    g.write("#define CERTS_COMPRESSED_GEN_H\n")
-
-    # System certs path. Editor will use them if defined. (for package maintainers)
-    path = env["system_certs_path"]
-    g.write('#define _SYSTEM_CERTS_PATH "%s"\n' % str(path))
-    if env["builtin_certs"]:
-        # Defined here and not in env so changing it does not trigger a full rebuild.
-        g.write("#define BUILTIN_CERTS_ENABLED\n")
-        g.write("static const int _certs_compressed_size = " + str(len(buf)) + ";\n")
-        g.write("static const int _certs_uncompressed_size = " + str(decomp_size) + ";\n")
-        g.write("static const unsigned char _certs_compressed[] = {\n")
-        for i in range(len(buf)):
-            g.write("\t" + str(buf[i]) + ",\n")
-        g.write("};\n")
-    g.write("#endif // CERTS_COMPRESSED_GEN_H")
-
-    g.close()
-    f.close()
+inline constexpr int _certs_compressed_size = {len(buffer)};
+inline constexpr int _certs_uncompressed_size = {decomp_size};
+inline constexpr unsigned char _certs_compressed[] = {{
+	{methods.format_buffer(buffer, 1)}
+}};
+""")
 
 
 def make_authors_header(target, source, env):
-    sections = [
-        "Project Founders",
-        "Lead Developer",
-        "Project Manager",
-        "Developers",
-    ]
-    sections_id = [
-        "AUTHORS_FOUNDERS",
-        "AUTHORS_LEAD_DEVELOPERS",
-        "AUTHORS_PROJECT_MANAGERS",
-        "AUTHORS_DEVELOPERS",
-    ]
-
-    src = source[0]
-    dst = target[0]
-    f = open(src, "r", encoding="utf-8")
-    g = open(dst, "w", encoding="utf-8")
-
-    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#ifndef AUTHORS_GEN_H\n")
-    g.write("#define AUTHORS_GEN_H\n")
-
+    SECTIONS = {
+        "Project Founders": "AUTHORS_FOUNDERS",
+        "Lead Developer": "AUTHORS_LEAD_DEVELOPERS",
+        "Project Manager": "AUTHORS_PROJECT_MANAGERS",
+        "Developers": "AUTHORS_DEVELOPERS",
+    }
+    buffer = methods.get_buffer(str(source[0]))
     reading = False
 
-    def close_section():
-        g.write("\t0\n")
-        g.write("};\n")
+    with methods.generated_wrapper(str(target[0])) as file:
 
-    for line in f:
-        if reading:
-            if line.startswith("    "):
-                g.write('\t"' + escape_string(line.strip()) + '",\n')
-                continue
-        if line.startswith("## "):
-            if reading:
-                close_section()
-                reading = False
-            for section, section_id in zip(sections, sections_id):
-                if line.strip().endswith(section):
-                    current_section = escape_string(section_id)
+        def close_section():
+            file.write("\tnullptr,\n};\n\n")
+
+        for line in buffer.decode().splitlines():
+            if line.startswith("    ") and reading:
+                file.write(f'\t"{methods.to_escaped_cstring(line).strip()}",\n')
+            elif line.startswith("## "):
+                if reading:
+                    close_section()
+                    reading = False
+                section = SECTIONS[line[3:].strip()]
+                if section:
+                    file.write(f"inline constexpr const char *{section}[] = {{\n")
                     reading = True
-                    g.write("const char *const " + current_section + "[] = {\n")
-                    break
 
-    if reading:
-        close_section()
-
-    g.write("#endif // AUTHORS_GEN_H\n")
-
-    g.close()
-    f.close()
+        if reading:
+            close_section()
 
 
 def make_donors_header(target, source, env):
-    sections = [
-        "Platinum sponsors",
-        "Gold sponsors",
-        "Silver sponsors",
-        "Bronze sponsors",
-        "Mini sponsors",
-        "Gold donors",
-        "Silver donors",
-        "Bronze donors",
-    ]
-    sections_id = [
-        "DONORS_SPONSOR_PLATINUM",
-        "DONORS_SPONSOR_GOLD",
-        "DONORS_SPONSOR_SILVER",
-        "DONORS_SPONSOR_BRONZE",
-        "DONORS_SPONSOR_MINI",
-        "DONORS_GOLD",
-        "DONORS_SILVER",
-        "DONORS_BRONZE",
-    ]
-
-    src = source[0]
-    dst = target[0]
-    f = open(src, "r", encoding="utf-8")
-    g = open(dst, "w", encoding="utf-8")
-
-    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#ifndef DONORS_GEN_H\n")
-    g.write("#define DONORS_GEN_H\n")
-
+    SECTIONS = {
+        "Patrons": "DONORS_PATRONS",
+        "Platinum sponsors": "DONORS_SPONSORS_PLATINUM",
+        "Gold sponsors": "DONORS_SPONSORS_GOLD",
+        "Silver sponsors": "DONORS_SPONSORS_SILVER",
+        "Diamond members": "DONORS_MEMBERS_DIAMOND",
+        "Titanium members": "DONORS_MEMBERS_TITANIUM",
+        "Platinum members": "DONORS_MEMBERS_PLATINUM",
+        "Gold members": "DONORS_MEMBERS_GOLD",
+    }
+    buffer = methods.get_buffer(str(source[0]))
     reading = False
 
-    def close_section():
-        g.write("\t0\n")
-        g.write("};\n")
+    with methods.generated_wrapper(str(target[0])) as file:
 
-    for line in f:
-        if reading >= 0:
-            if line.startswith("    "):
-                g.write('\t"' + escape_string(line.strip()) + '",\n')
-                continue
-        if line.startswith("## "):
-            if reading:
-                close_section()
-                reading = False
-            for section, section_id in zip(sections, sections_id):
-                if line.strip().endswith(section):
-                    current_section = escape_string(section_id)
+        def close_section():
+            file.write("\tnullptr,\n};\n\n")
+
+        for line in buffer.decode().splitlines():
+            if line.startswith("    ") and reading:
+                file.write(f'\t"{methods.to_escaped_cstring(line).strip()}",\n')
+            elif line.startswith("## "):
+                if reading:
+                    close_section()
+                    reading = False
+                section = SECTIONS.get(line[3:].strip())
+                if section:
+                    file.write(f"inline constexpr const char *{section}[] = {{\n")
                     reading = True
-                    g.write("const char *const " + current_section + "[] = {\n")
-                    break
 
-    if reading:
-        close_section()
-
-    g.write("#endif // DONORS_GEN_H\n")
-
-    g.close()
-    f.close()
+        if reading:
+            close_section()
 
 
 def make_license_header(target, source, env):
-    src_copyright = source[0]
-    src_license = source[1]
-    dst = target[0]
+    src_copyright = str(source[0])
+    src_license = str(source[1])
 
     class LicenseReader:
-        def __init__(self, license_file):
+        def __init__(self, license_file: TextIOWrapper):
             self._license_file = license_file
             self.line_num = 0
             self.current = self.next_line()
@@ -198,7 +178,7 @@ def make_license_header(target, source, env):
             return line
 
         def next_tag(self):
-            if not ":" in self.current:
+            if ":" not in self.current:
                 return ("", [])
             tag, line = self.current.split(":", 1)
             lines = [line.strip()]
@@ -206,9 +186,7 @@ def make_license_header(target, source, env):
                 lines.append(self.current.strip())
             return (tag, lines)
 
-    from collections import OrderedDict
-
-    projects: dict = OrderedDict()
+    projects = OrderedDict()
     license_list = []
 
     with open(src_copyright, "r", encoding="utf-8") as copyright_file:
@@ -218,19 +196,19 @@ def make_license_header(target, source, env):
             tag, content = reader.next_tag()
             if tag in ("Files", "Copyright", "License"):
                 part[tag] = content[:]
-            elif tag == "Comment":
-                # attach part to named project
+            elif tag == "Comment" and part:
+                # attach non-empty part to named project
                 projects[content[0]] = projects.get(content[0], []) + [part]
 
             if not tag or not reader.current:
                 # end of a paragraph start a new part
-                if "License" in part and not "Files" in part:
+                if "License" in part and "Files" not in part:
                     # no Files tag in this one, so assume standalone license
                     license_list.append(part["License"])
                 part = {}
                 reader.next_line()
 
-    data_list: list = []
+    data_list = []
     for project in iter(projects.values()):
         for part in project:
             part["file_index"] = len(data_list)
@@ -238,100 +216,76 @@ def make_license_header(target, source, env):
             part["copyright_index"] = len(data_list)
             data_list += part["Copyright"]
 
-    with open(dst, "w", encoding="utf-8") as f:
-        f.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-        f.write("#ifndef LICENSE_GEN_H\n")
-        f.write("#define LICENSE_GEN_H\n")
-        f.write("const char *const GODOT_LICENSE_TEXT =")
+    with open(src_license, "r", encoding="utf-8") as file:
+        license_text = file.read()
 
-        with open(src_license, "r", encoding="utf-8") as license_file:
-            for line in license_file:
-                escaped_string = escape_string(line.strip())
-                f.write('\n\t\t"' + escaped_string + '\\n"')
-        f.write(";\n\n")
+    with methods.generated_wrapper(str(target[0])) as file:
+        file.write(f"""\
+inline constexpr const char *GODOT_LICENSE_TEXT = {{
+{methods.to_raw_cstring(license_text)}
+}};
 
-        f.write(
-            "struct ComponentCopyrightPart {\n"
-            "\tconst char *license;\n"
-            "\tconst char *const *files;\n"
-            "\tconst char *const *copyright_statements;\n"
-            "\tint file_count;\n"
-            "\tint copyright_count;\n"
-            "};\n\n"
-        )
+struct ComponentCopyrightPart {{
+	const char *license;
+	const char *const *files;
+	const char *const *copyright_statements;
+	int file_count;
+	int copyright_count;
+}};
 
-        f.write(
-            "struct ComponentCopyright {\n"
-            "\tconst char *name;\n"
-            "\tconst ComponentCopyrightPart *parts;\n"
-            "\tint part_count;\n"
-            "};\n\n"
-        )
+struct ComponentCopyright {{
+	const char *name;
+	const ComponentCopyrightPart *parts;
+	int part_count;
+}};
 
-        f.write("const char *const COPYRIGHT_INFO_DATA[] = {\n")
+""")
+
+        file.write("inline constexpr const char *COPYRIGHT_INFO_DATA[] = {\n")
         for line in data_list:
-            f.write('\t"' + escape_string(line) + '",\n')
-        f.write("};\n\n")
+            file.write(f'\t"{methods.to_escaped_cstring(line)}",\n')
+        file.write("};\n\n")
 
-        f.write("const ComponentCopyrightPart COPYRIGHT_PROJECT_PARTS[] = {\n")
+        file.write("inline constexpr ComponentCopyrightPart COPYRIGHT_PROJECT_PARTS[] = {\n")
         part_index = 0
         part_indexes = {}
         for project_name, project in iter(projects.items()):
             part_indexes[project_name] = part_index
             for part in project:
-                f.write(
-                    '\t{ "'
-                    + escape_string(part["License"][0])
-                    + '", '
-                    + "&COPYRIGHT_INFO_DATA["
-                    + str(part["file_index"])
-                    + "], "
-                    + "&COPYRIGHT_INFO_DATA["
-                    + str(part["copyright_index"])
-                    + "], "
-                    + str(len(part["Files"]))
-                    + ", "
-                    + str(len(part["Copyright"]))
-                    + " },\n"
+                file.write(
+                    f'\t{{ "{methods.to_escaped_cstring(part["License"][0])}", '
+                    + f"&COPYRIGHT_INFO_DATA[{part['file_index']}], "
+                    + f"&COPYRIGHT_INFO_DATA[{part['copyright_index']}], "
+                    + f"{len(part['Files'])}, {len(part['Copyright'])} }},\n"
                 )
                 part_index += 1
-        f.write("};\n\n")
+        file.write("};\n\n")
 
-        f.write("const int COPYRIGHT_INFO_COUNT = " + str(len(projects)) + ";\n")
+        file.write(f"inline constexpr int COPYRIGHT_INFO_COUNT = {len(projects)};\n")
 
-        f.write("const ComponentCopyright COPYRIGHT_INFO[] = {\n")
+        file.write("inline constexpr ComponentCopyright COPYRIGHT_INFO[] = {\n")
         for project_name, project in iter(projects.items()):
-            f.write(
-                '\t{ "'
-                + escape_string(project_name)
-                + '", '
-                + "&COPYRIGHT_PROJECT_PARTS["
-                + str(part_indexes[project_name])
-                + "], "
-                + str(len(project))
-                + " },\n"
+            file.write(
+                f'\t{{ "{methods.to_escaped_cstring(project_name)}", '
+                + f"&COPYRIGHT_PROJECT_PARTS[{part_indexes[project_name]}], "
+                + f"{len(project)} }},\n"
             )
-        f.write("};\n\n")
+        file.write("};\n\n")
 
-        f.write("const int LICENSE_COUNT = " + str(len(license_list)) + ";\n")
+        file.write(f"inline constexpr int LICENSE_COUNT = {len(license_list)};\n")
 
-        f.write("const char *const LICENSE_NAMES[] = {\n")
-        for l in license_list:
-            f.write('\t"' + escape_string(l[0]) + '",\n')
-        f.write("};\n\n")
+        file.write("inline constexpr const char *LICENSE_NAMES[] = {\n")
+        for license in license_list:
+            file.write(f'\t"{methods.to_escaped_cstring(license[0])}",\n')
+        file.write("};\n\n")
 
-        f.write("const char *const LICENSE_BODIES[] = {\n\n")
-        for l in license_list:
-            for line in l[1:]:
+        file.write("inline constexpr const char *LICENSE_BODIES[] = {\n\n")
+        for license in license_list:
+            to_raw = []
+            for line in license[1:]:
                 if line == ".":
-                    f.write('\t"\\n"\n')
+                    to_raw += [""]
                 else:
-                    f.write('\t"' + escape_string(line) + '\\n"\n')
-            f.write('\t"",\n\n')
-        f.write("};\n\n")
-
-        f.write("#endif // LICENSE_GEN_H\n")
-
-
-if __name__ == "__main__":
-    subprocess_main(globals())
+                    to_raw += [line]
+            file.write(f"{methods.to_raw_cstring(to_raw)},\n\n")
+        file.write("};\n\n")

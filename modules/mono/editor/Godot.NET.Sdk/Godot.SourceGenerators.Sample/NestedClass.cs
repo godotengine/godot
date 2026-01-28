@@ -11,8 +11,8 @@ public partial class NestedClass : GodotObject
             [Signal]
             public delegate void MySignalEventHandler(string str, int num);
 
-            [Export] private String field_String = "foo";
-            [Export] private String property_String { get; set; } = "foo";
+            [Export] private String _fieldString = "foo";
+            [Export] private String PropertyString { get; set; } = "foo";
 
             private void Method()
             {

@@ -53,7 +53,7 @@ int godot_unzip_get_current_file_info(unzFile p_zip_file, unz_file_info64 &r_fil
 	return err;
 }
 
-int godot_unzip_locate_file(unzFile p_zip_file, String p_filepath, bool p_case_sensitive) {
+int godot_unzip_locate_file(unzFile p_zip_file, const String &p_filepath, bool p_case_sensitive) {
 	int err = unzGoToFirstFile(p_zip_file);
 	while (err == UNZ_OK) {
 		unz_file_info64 current_file_info;
@@ -76,8 +76,7 @@ void *zipio_open(voidpf opaque, const char *p_fname, int mode) {
 	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
 	ERR_FAIL_NULL_V(fa, nullptr);
 
-	String fname;
-	fname.parse_utf8(p_fname);
+	String fname = String::utf8(p_fname);
 
 	int file_access_mode = 0;
 	if (mode & ZLIB_FILEFUNC_MODE_READ) {
@@ -162,8 +161,7 @@ int zipio_testerror(voidpf opaque, voidpf stream) {
 }
 
 voidpf zipio_alloc(voidpf opaque, uInt items, uInt size) {
-	voidpf ptr = memalloc((size_t)items * size);
-	memset(ptr, 0, items * size);
+	voidpf ptr = memalloc_zeroed((size_t)items * size);
 	return ptr;
 }
 

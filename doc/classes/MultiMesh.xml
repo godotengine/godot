@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MultiMesh" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="MultiMesh" inherits="Resource" keywords="batch" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides high-performance drawing of a mesh multiple times using GPU instancing.
 	</brief_description>
@@ -51,12 +51,38 @@
 				Returns the [Transform2D] of a specific instance.
 			</description>
 		</method>
+		<method name="reset_instance_physics_interpolation">
+			<return type="void" />
+			<param index="0" name="instance" type="int" />
+			<description>
+				When using [i]physics interpolation[/i], this function allows you to prevent interpolation on an instance in the current physics tick.
+				This allows you to move instances instantaneously, and should usually be used when initially placing an instance such as a bullet to prevent graphical glitches.
+			</description>
+		</method>
+		<method name="reset_instances_physics_interpolation">
+			<return type="void" />
+			<description>
+				When using [i]physics interpolation[/i], this function allows you to prevent interpolation for all instances in the current physics tick.
+				This allows you to move all instances instantaneously, and should usually be used when initially placing instances to prevent graphical glitches.
+			</description>
+		</method>
+		<method name="set_buffer_interpolated">
+			<return type="void" />
+			<param index="0" name="buffer_curr" type="PackedFloat32Array" />
+			<param index="1" name="buffer_prev" type="PackedFloat32Array" />
+			<description>
+				An alternative to setting the [member buffer] property, which can be used with [i]physics interpolation[/i]. This method takes two arrays, and can set the data for the current and previous tick in one go. The renderer will automatically interpolate the data at each frame.
+				This is useful for situations where the order of instances may change from physics tick to tick, such as particle systems.
+				When the order of instances is coherent, the simpler alternative of setting [member buffer] can still be used with interpolation.
+			</description>
+		</method>
 		<method name="set_instance_color">
 			<return type="void" />
 			<param index="0" name="instance" type="int" />
 			<param index="1" name="color" type="Color" />
 			<description>
 				Sets the color of a specific instance by [i]multiplying[/i] the mesh's existing vertex colors. This allows for different color tinting per instance.
+				[b]Note:[/b] Each component is stored in 32 bits in the Forward+ and Mobile rendering methods, but is packed into 16 bits in the Compatibility rendering method.
 				For the color to take effect, ensure that [member use_colors] is [code]true[/code] on the [MultiMesh] and [member BaseMaterial3D.vertex_color_use_as_albedo] is [code]true[/code] on the material. If you intend to set an absolute color instead of tinting, make sure the material's albedo color is set to pure white ([code]Color(1, 1, 1)[/code]).
 			</description>
 		</method>
@@ -65,7 +91,8 @@
 			<param index="0" name="instance" type="int" />
 			<param index="1" name="custom_data" type="Color" />
 			<description>
-				Sets custom data for a specific instance. Although [Color] is used, it is just a container for 4 floating point numbers.
+				Sets custom data for a specific instance. [param custom_data] is a [Color] type only to contain 4 floating-point numbers.
+				[b]Note:[/b] Each number is stored in 32 bits in the Forward+ and Mobile rendering methods, but is packed into 16 bits in the Compatibility rendering method.
 				For the custom data to be used, ensure that [member use_custom_data] is [code]true[/code].
 				This custom instance data has to be manually accessed in your custom shader using [code]INSTANCE_CUSTOM[/code].
 			</description>
@@ -90,11 +117,14 @@
 	<members>
 		<member name="buffer" type="PackedFloat32Array" setter="set_buffer" getter="get_buffer" default="PackedFloat32Array()">
 		</member>
-		<member name="color_array" type="PackedColorArray" setter="_set_color_array" getter="_get_color_array" is_deprecated="true">
-			See [method set_instance_color].
+		<member name="color_array" type="PackedColorArray" setter="_set_color_array" getter="_get_color_array" deprecated="Accessing this property is very slow. Use [method set_instance_color] and [method get_instance_color] instead.">
+			Array containing each [Color] used by all instances of this mesh.
 		</member>
-		<member name="custom_data_array" type="PackedColorArray" setter="_set_custom_data_array" getter="_get_custom_data_array" is_deprecated="true">
-			See [method set_instance_custom_data].
+		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb" default="AABB(0, 0, 0, 0, 0, 0)">
+			Custom AABB for this MultiMesh resource. Setting this manually prevents costly runtime AABB recalculations.
+		</member>
+		<member name="custom_data_array" type="PackedColorArray" setter="_set_custom_data_array" getter="_get_custom_data_array" deprecated="Accessing this property is very slow. Use [method set_instance_custom_data] and [method get_instance_custom_data] instead.">
+			Array containing each custom data value used by all instances of this mesh, as a [PackedColorArray].
 		</member>
 		<member name="instance_count" type="int" setter="set_instance_count" getter="get_instance_count" default="0">
 			Number of instances that will get drawn. This clears and (re)sizes the buffers. Setting data format or flags afterwards will have no effect.
@@ -104,11 +134,16 @@
 			[Mesh] resource to be instanced.
 			The looks of the individual instances can be modified using [method set_instance_color] and [method set_instance_custom_data].
 		</member>
-		<member name="transform_2d_array" type="PackedVector2Array" setter="_set_transform_2d_array" getter="_get_transform_2d_array" is_deprecated="true">
-			See [method set_instance_transform_2d].
+		<member name="physics_interpolation_quality" type="int" setter="set_physics_interpolation_quality" getter="get_physics_interpolation_quality" enum="MultiMesh.PhysicsInterpolationQuality" default="0">
+			Choose whether to use an interpolation method that favors speed or quality.
+			When using low physics tick rates (typically below 20) or high rates of object rotation, you may get better results from the high quality setting.
+			[b]Note:[/b] Fast quality does not equate to low quality. Except in the special cases mentioned above, the quality should be comparable to high quality.
 		</member>
-		<member name="transform_array" type="PackedVector3Array" setter="_set_transform_array" getter="_get_transform_array" is_deprecated="true">
-			See [method set_instance_transform].
+		<member name="transform_2d_array" type="PackedVector2Array" setter="_set_transform_2d_array" getter="_get_transform_2d_array" deprecated="Accessing this property is very slow. Use [method set_instance_transform_2d] and [method get_instance_transform_2d] instead.">
+			Array containing each [Transform2D] value used by all instances of this mesh, as a [PackedVector2Array]. Each transform is divided into 3 [Vector2] values corresponding to the transforms' [code]x[/code], [code]y[/code], and [code]origin[/code].
+		</member>
+		<member name="transform_array" type="PackedVector3Array" setter="_set_transform_array" getter="_get_transform_array" deprecated="Accessing this property is very slow. Use [method set_instance_transform] and [method get_instance_transform] instead.">
+			Array containing each [Transform3D] value used by all instances of this mesh, as a [PackedVector3Array]. Each transform is divided into 4 [Vector3] values corresponding to the transforms' [code]x[/code], [code]y[/code], [code]z[/code], and [code]origin[/code].
 		</member>
 		<member name="transform_format" type="int" setter="set_transform_format" getter="get_transform_format" enum="MultiMesh.TransformFormat" default="0">
 			Format of transform used to transform mesh, either 2D or 3D.
@@ -129,6 +164,12 @@
 		</constant>
 		<constant name="TRANSFORM_3D" value="1" enum="TransformFormat">
 			Use this when using 3D transforms.
+		</constant>
+		<constant name="INTERP_QUALITY_FAST" value="0" enum="PhysicsInterpolationQuality">
+			Always interpolate using Basis lerping, which can produce warping artifacts in some situations.
+		</constant>
+		<constant name="INTERP_QUALITY_HIGH" value="1" enum="PhysicsInterpolationQuality">
+			Attempt to interpolate using Basis slerping (spherical linear interpolation) where possible, otherwise fall back to lerping.
 		</constant>
 	</constants>
 </class>

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, The Khronos Group Inc.
+// Copyright (c) 2017-2025 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 // SPDX-License-Identifier: Apache-2.0 OR MIT
@@ -6,7 +6,7 @@
 //     See loader_source_generator.py for modifications
 // ************************************************************
 
-// Copyright (c) 2017-2023, The Khronos Group Inc.
+// Copyright (c) 2017-2025 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -692,6 +692,19 @@ extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrStopHapticFeedback(
     XrResult result = ActiveLoaderInstance::Get(&loader_instance, "xrStopHapticFeedback");
     if (XR_SUCCEEDED(result)) {
         result = loader_instance->DispatchTable()->StopHapticFeedback(session, hapticActionInfo);
+    }
+    return result;
+}
+XRLOADER_ABI_CATCH_FALLBACK
+
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrLocateSpaces(
+    XrSession                                   session,
+    const XrSpacesLocateInfo*                   locateInfo,
+    XrSpaceLocations*                           spaceLocations) XRLOADER_ABI_TRY {
+    LoaderInstance* loader_instance;
+    XrResult result = ActiveLoaderInstance::Get(&loader_instance, "xrLocateSpaces");
+    if (XR_SUCCEEDED(result)) {
+        result = loader_instance->DispatchTable()->LocateSpaces(session, locateInfo, spaceLocations);
     }
     return result;
 }

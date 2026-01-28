@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CSHARP_SCRIPT_H
-#define CSHARP_SCRIPT_H
+#pragma once
 
 #include "mono_gc_handle.h"
 #include "mono_gd/gd_mono.h"
@@ -38,10 +37,11 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/self_list.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #endif
 
 class CSharpScript;
@@ -61,12 +61,92 @@ class CSharpScript : public Script {
 	friend class CSharpInstance;
 	friend class CSharpLanguage;
 
-	bool tool = false;
-	bool global_class = false;
-	bool abstract_class = false;
+public:
+	struct TypeInfo {
+		/**
+		 * Name of the C# class.
+		 */
+		String class_name;
+
+		/**
+		 * Name of the native class this script derives from.
+		 */
+		StringName native_base_name;
+
+		/**
+		 * Path to the icon that will be used for this class by the editor.
+		 */
+		String icon_path;
+
+		/**
+		 * Script is marked as tool and runs in the editor.
+		 */
+		bool is_tool = false;
+
+		/**
+		 * Script is marked as global class and will be registered in the editor.
+		 * Registered classes can be created using certain editor dialogs and
+		 * can be referenced by name from other languages that support the feature.
+		 */
+		bool is_global_class = false;
+
+		/**
+		 * Script is declared abstract.
+		 */
+		bool is_abstract = false;
+
+		/**
+		 * The C# type that corresponds to this script is a constructed generic type.
+		 * E.g.: `Dictionary<int, string>`
+		 */
+		bool is_constructed_generic_type = false;
+
+		/**
+		 * The C# type that corresponds to this script is a generic type definition.
+		 * E.g.: `Dictionary<,>`
+		 */
+		bool is_generic_type_definition = false;
+
+		/**
+		 * The C# type that corresponds to this script contains generic type parameters,
+		 * regardless of whether the type parameters are bound or not.
+		 */
+		bool is_generic() const {
+			return is_constructed_generic_type || is_generic_type_definition;
+		}
+
+		/**
+		 * Check if the script can be instantiated.
+		 * C# types can't be instantiated if they are abstract or contain generic
+		 * type parameters, but a CSharpScript is still created for them.
+		 */
+		bool can_instantiate() const {
+			return !is_abstract && !is_generic_type_definition;
+		}
+	};
+
+private:
+	/**
+	 * Contains the C# type information for this script.
+	 */
+	TypeInfo type_info;
+
+	/**
+	 * Scripts are valid when the corresponding C# class is found and used
+	 * to extract the script info using the [update_script_class_info] method.
+	 */
 	bool valid = false;
+	/**
+	 * Scripts extract info from the C# class in the reload methods but,
+	 * if the reload is not invalidated, then the current extracted info
+	 * is still valid and there's no need to reload again.
+	 */
 	bool reload_invalidated = false;
 
+	/**
+	 * Base script that this script derives from, or null if it derives from a
+	 * native Godot class.
+	 */
 	Ref<CSharpScript> base_script;
 
 	HashSet<Object *> instances;
@@ -87,9 +167,10 @@ class CSharpScript : public Script {
 	HashSet<ObjectID> pending_replace_placeholders;
 #endif
 
+	/**
+	 * Script source code.
+	 */
 	String source;
-	String class_name;
-	String icon_path;
 
 	SelfList<CSharpScript> script_list = this;
 
@@ -139,6 +220,8 @@ class CSharpScript : public Script {
 	// Do not use unless you know what you are doing
 	static void update_script_class_info(Ref<CSharpScript> p_script);
 
+	void _get_script_signal_list(List<MethodInfo> *r_signals, bool p_include_base) const;
+
 protected:
 	static void _bind_methods();
 
@@ -160,13 +243,14 @@ public:
 	void set_source_code(const String &p_code) override;
 
 #ifdef TOOLS_ENABLED
+	virtual StringName get_doc_class_name() const override { return StringName(); } // TODO
 	virtual Vector<DocData::ClassDoc> get_documentation() const override {
 		// TODO
 		Vector<DocData::ClassDoc> docs;
 		return docs;
 	}
 	virtual String get_class_icon_path() const override {
-		return icon_path;
+		return type_info.icon_path;
 	}
 #endif // TOOLS_ENABLED
 
@@ -175,8 +259,6 @@ public:
 	bool has_script_signal(const StringName &p_signal) const override;
 	void get_script_signal_list(List<MethodInfo> *r_signals) const override;
 
-	Vector<EventSignalInfo> get_script_event_signals() const;
-
 	bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
 	void get_script_property_list(List<PropertyInfo> *r_list) const override;
 	void update_exports() override;
@@ -184,13 +266,13 @@ public:
 	void get_members(HashSet<StringName> *p_members) override;
 
 	bool is_tool() const override {
-		return tool;
+		return type_info.is_tool;
 	}
 	bool is_valid() const override {
 		return valid;
 	}
 	bool is_abstract() const override {
-		return abstract_class;
+		return type_info.is_abstract;
 	}
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
@@ -202,6 +284,7 @@ public:
 
 	void get_script_method_list(List<MethodInfo> *p_list) const override;
 	bool has_method(const StringName &p_method) const override;
+	virtual int get_script_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override;
 	MethodInfo get_method_info(const StringName &p_method) const override;
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
@@ -270,6 +353,7 @@ public:
 
 	void get_method_list(List<MethodInfo> *p_list) const override;
 	bool has_method(const StringName &p_method) const override;
+	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override;
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
 	void mono_object_disposed(GCHandleIntPtr p_gchandle_to_free);
@@ -350,6 +434,11 @@ class CSharpLanguage : public ScriptLanguage {
 	friend class GDMono;
 
 #ifdef TOOLS_ENABLED
+	Vector<String> pending_file_system_update_paths;
+	bool is_flushing_filesystem_updates = false;
+	void _queue_for_filesystem_update(String p_script_path);
+	void _flush_filesystem_updates();
+
 	EditorPlugin *godotsharp_editor = nullptr;
 
 	static void _editor_init_callback();
@@ -364,7 +453,7 @@ class CSharpLanguage : public ScriptLanguage {
 public:
 	static void *get_instance_binding(Object *p_object);
 	static void *get_existing_instance_binding(Object *p_object);
-	static void set_instance_binding(Object *p_object, void *p_binding);
+	static void *get_instance_binding_with_setup(Object *p_object);
 	static bool has_instance_binding(Object *p_object);
 
 	const Mutex &get_language_bind_mutex() {
@@ -416,35 +505,34 @@ public:
 	void finalize();
 
 	/* EDITOR FUNCTIONS */
-	void get_reserved_words(List<String> *p_words) const override;
-	bool is_control_flow_keyword(String p_keyword) const override;
-	void get_comment_delimiters(List<String> *p_delimiters) const override;
-	void get_doc_comment_delimiters(List<String> *p_delimiters) const override;
-	void get_string_delimiters(List<String> *p_delimiters) const override;
+	Vector<String> get_reserved_words() const override;
+	bool is_control_flow_keyword(const String &p_keyword) const override;
+	Vector<String> get_comment_delimiters() const override;
+	Vector<String> get_doc_comment_delimiters() const override;
+	Vector<String> get_string_delimiters() const override;
 	bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
-	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override;
+	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;
 	/* TODO */ bool validate(const String &p_script, const String &p_path, List<String> *r_functions,
 			List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override {
 		return true;
 	}
 	String validate_path(const String &p_path) const override;
 	Script *create_script() const override;
-#ifndef DISABLE_DEPRECATED
-	virtual bool has_named_classes() const override { return false; }
-#endif
 	bool supports_builtin_mode() const override;
 	/* TODO? */ int find_function(const String &p_function, const String &p_code) const override {
 		return -1;
 	}
 	String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;
+	virtual bool can_make_function() const override { return false; }
 	virtual String _get_indentation() const;
 	/* TODO? */ void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const override {}
 	/* TODO */ void add_global_constant(const StringName &p_variable, const Variant &p_value) override {}
+	virtual ScriptNameCasing preferred_file_name_casing() const override;
 
 	/* SCRIPT GLOBAL CLASS FUNCTIONS */
 	virtual bool handles_global_class_type(const String &p_type) const override;
-	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const override;
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr, bool *r_is_abstract = nullptr, bool *r_is_tool = nullptr) const override;
 
 	/* DEBUGGER FUNCTIONS */
 	String debug_get_error() const override;
@@ -463,6 +551,7 @@ public:
 	/* PROFILING FUNCTIONS */
 	/* TODO */ void profiling_start() override {}
 	/* TODO */ void profiling_stop() override {}
+	/* TODO */ void profiling_set_save_native_calls(bool p_enable) override {}
 	/* TODO */ int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override {
 		return 0;
 	}
@@ -477,6 +566,7 @@ public:
 	/* TODO? */ void get_public_annotations(List<MethodInfo> *p_annotations) const override {}
 
 	void reload_all_scripts() override;
+	void reload_scripts(const Array &p_scripts, bool p_soft_reload) override;
 	void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) override;
 
 	/* LOADER FUNCTIONS */
@@ -502,6 +592,8 @@ public:
 };
 
 class ResourceFormatLoaderCSharpScript : public ResourceFormatLoader {
+	GDSOFTCLASS(ResourceFormatLoaderCSharpScript, ResourceFormatLoader);
+
 public:
 	Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
 	void get_recognized_extensions(List<String> *p_extensions) const override;
@@ -510,10 +602,10 @@ public:
 };
 
 class ResourceFormatSaverCSharpScript : public ResourceFormatSaver {
+	GDSOFTCLASS(ResourceFormatSaverCSharpScript, ResourceFormatSaver);
+
 public:
 	Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
 	void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
 	bool recognize(const Ref<Resource> &p_resource) const override;
 };
-
-#endif // CSHARP_SCRIPT_H

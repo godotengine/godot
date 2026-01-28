@@ -30,6 +30,7 @@
 
 #include "gltf_light.h"
 
+#include "../structures/gltf_object_model_property.h"
 #include "scene/3d/light_3d.h"
 
 void GLTFLight::_bind_methods() {
@@ -51,6 +52,8 @@ void GLTFLight::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_inner_cone_angle", "inner_cone_angle"), &GLTFLight::set_inner_cone_angle);
 	ClassDB::bind_method(D_METHOD("get_outer_cone_angle"), &GLTFLight::get_outer_cone_angle);
 	ClassDB::bind_method(D_METHOD("set_outer_cone_angle", "outer_cone_angle"), &GLTFLight::set_outer_cone_angle);
+	ClassDB::bind_method(D_METHOD("get_additional_data", "extension_name"), &GLTFLight::get_additional_data);
+	ClassDB::bind_method(D_METHOD("set_additional_data", "extension_name", "additional_data"), &GLTFLight::set_additional_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color"); // Color
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "intensity"), "set_intensity", "get_intensity"); // float
@@ -58,6 +61,21 @@ void GLTFLight::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "range"), "set_range", "get_range"); // float
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "inner_cone_angle"), "set_inner_cone_angle", "get_inner_cone_angle"); // float
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "outer_cone_angle"), "set_outer_cone_angle", "get_outer_cone_angle"); // float
+}
+
+void GLTFLight::set_cone_inner_attenuation_conversion_expressions(Ref<GLTFObjectModelProperty> &r_obj_model_prop) {
+	// Expression to convert glTF innerConeAngle to Godot spot_angle_attenuation.
+	Ref<Expression> gltf_to_godot_expr;
+	gltf_to_godot_expr.instantiate();
+	PackedStringArray gltf_to_godot_args = { "inner_cone_angle" };
+	gltf_to_godot_expr->parse("0.2 / (1.0 - inner_cone_angle / spot_angle) - 0.1", gltf_to_godot_args);
+	r_obj_model_prop->set_gltf_to_godot_expression(gltf_to_godot_expr);
+	// Expression to convert Godot spot_angle_attenuation to glTF innerConeAngle.
+	Ref<Expression> godot_to_gltf_expr;
+	godot_to_gltf_expr.instantiate();
+	PackedStringArray godot_to_gltf_args = { "godot_spot_angle_att" };
+	godot_to_gltf_expr->parse("spot_angle * maxf(0.0, 1.0 - (0.2 / (0.1 + godot_spot_angle_att)))", godot_to_gltf_args);
+	r_obj_model_prop->set_godot_to_gltf_expression(godot_to_gltf_expr);
 }
 
 Color GLTFLight::get_color() {
@@ -112,7 +130,7 @@ Ref<GLTFLight> GLTFLight::from_node(const Light3D *p_light) {
 	Ref<GLTFLight> l;
 	l.instantiate();
 	ERR_FAIL_NULL_V_MSG(p_light, l, "Tried to create a GLTFLight from a Light3D node, but the given node was null.");
-	l->color = p_light->get_color();
+	l->color = p_light->get_color().srgb_to_linear();
 	if (cast_to<DirectionalLight3D>(p_light)) {
 		l->light_type = "directional";
 		const DirectionalLight3D *light = cast_to<const DirectionalLight3D>(p_light);
@@ -138,37 +156,38 @@ Ref<GLTFLight> GLTFLight::from_node(const Light3D *p_light) {
 }
 
 Light3D *GLTFLight::to_node() const {
+	Light3D *light = nullptr;
 	if (light_type == "directional") {
-		DirectionalLight3D *light = memnew(DirectionalLight3D);
-		light->set_param(Light3D::PARAM_ENERGY, intensity);
-		light->set_color(color);
-		return light;
-	}
-	if (light_type == "point") {
-		OmniLight3D *light = memnew(OmniLight3D);
-		light->set_param(OmniLight3D::PARAM_ENERGY, intensity);
-		light->set_param(OmniLight3D::PARAM_RANGE, CLAMP(range, 0, 4096));
-		light->set_color(color);
-		return light;
-	}
-	if (light_type == "spot") {
-		SpotLight3D *light = memnew(SpotLight3D);
-		light->set_param(SpotLight3D::PARAM_ENERGY, intensity);
-		light->set_param(SpotLight3D::PARAM_RANGE, CLAMP(range, 0, 4096));
-		light->set_param(SpotLight3D::PARAM_SPOT_ANGLE, Math::rad_to_deg(outer_cone_angle));
-		light->set_color(color);
+		DirectionalLight3D *dir_light = memnew(DirectionalLight3D);
+		dir_light->set_param(Light3D::PARAM_ENERGY, intensity);
+		light = dir_light;
+	} else if (light_type == "point") {
+		OmniLight3D *omni_light = memnew(OmniLight3D);
+		omni_light->set_param(OmniLight3D::PARAM_ENERGY, intensity);
+		omni_light->set_param(OmniLight3D::PARAM_RANGE, CLAMP(range, 0, 4096));
+		light = omni_light;
+	} else if (light_type == "spot") {
+		SpotLight3D *spot_light = memnew(SpotLight3D);
+		spot_light->set_param(SpotLight3D::PARAM_ENERGY, intensity);
+		spot_light->set_param(SpotLight3D::PARAM_RANGE, CLAMP(range, 0, 4096));
+		spot_light->set_param(SpotLight3D::PARAM_SPOT_ANGLE, Math::rad_to_deg(outer_cone_angle));
 		// Line of best fit derived from guessing, see https://www.desmos.com/calculator/biiflubp8b
 		// The points in desmos are not exact, except for (1, infinity).
 		float angle_ratio = inner_cone_angle / outer_cone_angle;
 		float angle_attenuation = 0.2 / (1 - angle_ratio) - 0.1;
-		light->set_param(SpotLight3D::PARAM_SPOT_ATTENUATION, angle_attenuation);
-		return light;
+		spot_light->set_param(SpotLight3D::PARAM_SPOT_ATTENUATION, angle_attenuation);
+		light = spot_light;
+	} else {
+		ERR_PRINT("Failed to create a Light3D node from GLTFLight, unknown light type '" + light_type + "'.");
+		return nullptr;
 	}
-	return memnew(Light3D);
+	light->set_color(color.linear_to_srgb());
+	light->set_param(Light3D::PARAM_ATTENUATION, 2.0);
+	return light;
 }
 
-Ref<GLTFLight> GLTFLight::from_dictionary(const Dictionary p_dictionary) {
-	ERR_FAIL_COND_V_MSG(!p_dictionary.has("type"), Ref<GLTFLight>(), "Failed to parse GLTF light, missing required field 'type'.");
+Ref<GLTFLight> GLTFLight::from_dictionary(const Dictionary &p_dictionary) {
+	ERR_FAIL_COND_V_MSG(!p_dictionary.has("type"), Ref<GLTFLight>(), "Failed to parse glTF light, missing required field 'type'.");
 	Ref<GLTFLight> light;
 	light.instantiate();
 	const String &type = p_dictionary["type"];
@@ -177,9 +196,9 @@ Ref<GLTFLight> GLTFLight::from_dictionary(const Dictionary p_dictionary) {
 	if (p_dictionary.has("color")) {
 		const Array &arr = p_dictionary["color"];
 		if (arr.size() == 3) {
-			light->color = Color(arr[0], arr[1], arr[2]).linear_to_srgb();
+			light->color = Color(arr[0], arr[1], arr[2]);
 		} else {
-			ERR_PRINT("Error parsing GLTF light: The color must have exactly 3 numbers.");
+			ERR_PRINT("Error parsing glTF light: The color must have exactly 3 numbers.");
 		}
 	}
 	if (p_dictionary.has("intensity")) {
@@ -193,30 +212,44 @@ Ref<GLTFLight> GLTFLight::from_dictionary(const Dictionary p_dictionary) {
 		light->inner_cone_angle = spot["innerConeAngle"];
 		light->outer_cone_angle = spot["outerConeAngle"];
 		if (light->inner_cone_angle >= light->outer_cone_angle) {
-			ERR_PRINT("Error parsing GLTF light: The inner angle must be smaller than the outer angle.");
+			ERR_PRINT("Error parsing glTF light: The inner angle must be smaller than the outer angle.");
 		}
 	} else if (type != "point" && type != "directional") {
-		ERR_PRINT("Error parsing GLTF light: Light type '" + type + "' is unknown.");
+		ERR_PRINT("Error parsing glTF light: Light type '" + type + "' is unknown.");
 	}
 	return light;
 }
 
 Dictionary GLTFLight::to_dictionary() const {
 	Dictionary d;
-	Array color_array;
-	color_array.resize(3);
-	color_array[0] = color.r;
-	color_array[1] = color.g;
-	color_array[2] = color.b;
-	d["color"] = color_array;
-	d["type"] = light_type;
+	if (color != Color(1.0f, 1.0f, 1.0f)) {
+		Array color_array;
+		color_array.resize(3);
+		color_array[0] = color.r;
+		color_array[1] = color.g;
+		color_array[2] = color.b;
+		d["color"] = color_array;
+	}
+	if (intensity != 1.0f) {
+		d["intensity"] = intensity;
+	}
+	if (light_type != "directional" && range != Math::INF) {
+		d["range"] = range;
+	}
 	if (light_type == "spot") {
 		Dictionary spot_dict;
 		spot_dict["innerConeAngle"] = inner_cone_angle;
 		spot_dict["outerConeAngle"] = outer_cone_angle;
 		d["spot"] = spot_dict;
 	}
-	d["intensity"] = intensity;
-	d["range"] = range;
+	d["type"] = light_type;
 	return d;
+}
+
+Variant GLTFLight::get_additional_data(const StringName &p_extension_name) {
+	return additional_data[p_extension_name];
+}
+
+void GLTFLight::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {
+	additional_data[p_extension_name] = p_additional_data;
 }

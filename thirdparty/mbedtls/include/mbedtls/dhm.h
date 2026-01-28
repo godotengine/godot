@@ -45,29 +45,14 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 #ifndef MBEDTLS_DHM_H
 #define MBEDTLS_DHM_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 #include "mbedtls/bignum.h"
 
 /*
@@ -91,13 +76,18 @@
 #define MBEDTLS_ERR_DHM_ALLOC_FAILED                      -0x3400
 /** Read or write of file failed. */
 #define MBEDTLS_ERR_DHM_FILE_IO_ERROR                     -0x3480
-
-/* MBEDTLS_ERR_DHM_HW_ACCEL_FAILED is deprecated and should not be used. */
-/** DHM hardware accelerator failed. */
-#define MBEDTLS_ERR_DHM_HW_ACCEL_FAILED                   -0x3500
-
 /** Setting the modulus and generator failed. */
 #define MBEDTLS_ERR_DHM_SET_GROUP_FAILED                  -0x3580
+
+/** Which parameter to access in mbedtls_dhm_get_value(). */
+typedef enum {
+    MBEDTLS_DHM_PARAM_P,  /*!<  The prime modulus. */
+    MBEDTLS_DHM_PARAM_G,  /*!<  The generator. */
+    MBEDTLS_DHM_PARAM_X,  /*!<  Our secret value. */
+    MBEDTLS_DHM_PARAM_GX, /*!<  Our public key = \c G^X mod \c P. */
+    MBEDTLS_DHM_PARAM_GY, /*!<  The public key of the peer = \c G^Y mod \c P. */
+    MBEDTLS_DHM_PARAM_K,  /*!<  The shared secret = \c G^(XY) mod \c P. */
+} mbedtls_dhm_parameter;
 
 #ifdef __cplusplus
 extern "C" {
@@ -109,17 +99,16 @@ extern "C" {
  * \brief          The DHM context structure.
  */
 typedef struct mbedtls_dhm_context {
-    size_t len;         /*!<  The size of \p P in Bytes. */
-    mbedtls_mpi P;      /*!<  The prime modulus. */
-    mbedtls_mpi G;      /*!<  The generator. */
-    mbedtls_mpi X;      /*!<  Our secret value. */
-    mbedtls_mpi GX;     /*!<  Our public key = \c G^X mod \c P. */
-    mbedtls_mpi GY;     /*!<  The public key of the peer = \c G^Y mod \c P. */
-    mbedtls_mpi K;      /*!<  The shared secret = \c G^(XY) mod \c P. */
-    mbedtls_mpi RP;     /*!<  The cached value = \c R^2 mod \c P. */
-    mbedtls_mpi Vi;     /*!<  The blinding value. */
-    mbedtls_mpi Vf;     /*!<  The unblinding value. */
-    mbedtls_mpi pX;     /*!<  The previous \c X. */
+    mbedtls_mpi MBEDTLS_PRIVATE(P);      /*!<  The prime modulus. */
+    mbedtls_mpi MBEDTLS_PRIVATE(G);      /*!<  The generator. */
+    mbedtls_mpi MBEDTLS_PRIVATE(X);      /*!<  Our secret value. */
+    mbedtls_mpi MBEDTLS_PRIVATE(GX);     /*!<  Our public key = \c G^X mod \c P. */
+    mbedtls_mpi MBEDTLS_PRIVATE(GY);     /*!<  The public key of the peer = \c G^Y mod \c P. */
+    mbedtls_mpi MBEDTLS_PRIVATE(K);      /*!<  The shared secret = \c G^(XY) mod \c P. */
+    mbedtls_mpi MBEDTLS_PRIVATE(RP);     /*!<  The cached value = \c R^2 mod \c P. */
+    mbedtls_mpi MBEDTLS_PRIVATE(Vi);     /*!<  The blinding value. */
+    mbedtls_mpi MBEDTLS_PRIVATE(Vf);     /*!<  The unblinding value. */
+    mbedtls_mpi MBEDTLS_PRIVATE(pX);     /*!<  The previous \c X. */
 }
 mbedtls_dhm_context;
 
@@ -194,7 +183,7 @@ int mbedtls_dhm_read_params(mbedtls_dhm_context *ctx,
  */
 int mbedtls_dhm_make_params(mbedtls_dhm_context *ctx, int x_size,
                             unsigned char *output, size_t *olen,
-                            int (*f_rng)(void *, unsigned char *, size_t),
+                            mbedtls_f_rng_t *f_rng,
                             void *p_rng);
 
 /**
@@ -261,7 +250,7 @@ int mbedtls_dhm_read_public(mbedtls_dhm_context *ctx,
  */
 int mbedtls_dhm_make_public(mbedtls_dhm_context *ctx, int x_size,
                             unsigned char *output, size_t olen,
-                            int (*f_rng)(void *, unsigned char *, size_t),
+                            mbedtls_f_rng_t *f_rng,
                             void *p_rng);
 
 /**
@@ -282,18 +271,54 @@ int mbedtls_dhm_make_public(mbedtls_dhm_context *ctx, int x_size,
  * \param output_size   The size of the destination buffer. This must be at
  *                      least the size of \c ctx->len (the size of \c P).
  * \param olen          On exit, holds the actual number of Bytes written.
- * \param f_rng         The RNG function, for blinding purposes. This may
- *                      b \c NULL if blinding isn't needed.
- * \param p_rng         The RNG context. This may be \c NULL if \p f_rng
- *                      doesn't need a context argument.
+ * \param f_rng         The RNG function. Must not be \c NULL. Used for
+ *                      blinding.
+ * \param p_rng         The RNG context to be passed to \p f_rng. This may be
+ *                      \c NULL if \p f_rng doesn't need a context parameter.
  *
  * \return              \c 0 on success.
  * \return              An \c MBEDTLS_ERR_DHM_XXX error code on failure.
  */
 int mbedtls_dhm_calc_secret(mbedtls_dhm_context *ctx,
                             unsigned char *output, size_t output_size, size_t *olen,
-                            int (*f_rng)(void *, unsigned char *, size_t),
+                            mbedtls_f_rng_t *f_rng,
                             void *p_rng);
+
+/**
+ * \brief          This function returns the size of the prime modulus in bits.
+ *
+ * \param ctx      The DHM context to query.
+ *
+ * \return         The size of the prime modulus in bits,
+ *                 i.e. the number n such that 2^(n-1) <= P < 2^n.
+ */
+size_t mbedtls_dhm_get_bitlen(const mbedtls_dhm_context *ctx);
+
+/**
+ * \brief          This function returns the size of the prime modulus in bytes.
+ *
+ * \param ctx      The DHM context to query.
+ *
+ * \return         The size of the prime modulus in bytes,
+ *                 i.e. the number n such that 2^(8*(n-1)) <= P < 2^(8*n).
+ */
+size_t mbedtls_dhm_get_len(const mbedtls_dhm_context *ctx);
+
+/**
+ * \brief          This function copies a parameter of a DHM key.
+ *
+ * \param ctx      The DHM context to query.
+ * \param param    The parameter to copy.
+ * \param dest     The MPI object to copy the value into. It must be
+ *                 initialized.
+ *
+ * \return         \c 0 on success.
+ * \return         #MBEDTLS_ERR_DHM_BAD_INPUT_DATA if \p param is invalid.
+ * \return         An \c MBEDTLS_ERR_MPI_XXX error code if the copy fails.
+ */
+int mbedtls_dhm_get_value(const mbedtls_dhm_context *ctx,
+                          mbedtls_dhm_parameter param,
+                          mbedtls_mpi *dest);
 
 /**
  * \brief          This function frees and clears the components
@@ -395,161 +420,6 @@ int mbedtls_dhm_self_test(int verbose);
  *   bit in the private exponent).
  *
  */
-
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-
-/**
- * \warning The origin of the primes in RFC 5114 is not documented and
- *          their use therefore constitutes a security risk!
- *
- * \deprecated The hex-encoded primes from RFC 5114 are deprecated and are
- *             likely to be removed in a future version of the library without
- *             replacement.
- */
-
-/**
- * The hexadecimal presentation of the prime underlying the
- * 2048-bit MODP Group with 224-bit Prime Order Subgroup, as defined
- * in <em>RFC-5114: Additional Diffie-Hellman Groups for Use with
- * IETF Standards</em>.
- */
-#define MBEDTLS_DHM_RFC5114_MODP_2048_P                         \
-    MBEDTLS_DEPRECATED_STRING_CONSTANT(                         \
-        "AD107E1E9123A9D0D660FAA79559C51FA20D64E5683B9FD1"      \
-        "B54B1597B61D0A75E6FA141DF95A56DBAF9A3C407BA1DF15"      \
-        "EB3D688A309C180E1DE6B85A1274A0A66D3F8152AD6AC212"      \
-        "9037C9EDEFDA4DF8D91E8FEF55B7394B7AD5B7D0B6C12207"      \
-        "C9F98D11ED34DBF6C6BA0B2C8BBC27BE6A00E0A0B9C49708"      \
-        "B3BF8A317091883681286130BC8985DB1602E714415D9330"      \
-        "278273C7DE31EFDC7310F7121FD5A07415987D9ADC0A486D"      \
-        "CDF93ACC44328387315D75E198C641A480CD86A1B9E587E8"      \
-        "BE60E69CC928B2B9C52172E413042E9B23F10B0E16E79763"      \
-        "C9B53DCF4BA80A29E3FB73C16B8E75B97EF363E2FFA31F71"      \
-        "CF9DE5384E71B81C0AC4DFFE0C10E64F")
-
-/**
- * The hexadecimal presentation of the chosen generator of the 2048-bit MODP
- * Group with 224-bit Prime Order Subgroup, as defined in <em>RFC-5114:
- * Additional Diffie-Hellman Groups for Use with IETF Standards</em>.
- */
-#define MBEDTLS_DHM_RFC5114_MODP_2048_G                         \
-    MBEDTLS_DEPRECATED_STRING_CONSTANT(                         \
-        "AC4032EF4F2D9AE39DF30B5C8FFDAC506CDEBE7B89998CAF"      \
-        "74866A08CFE4FFE3A6824A4E10B9A6F0DD921F01A70C4AFA"      \
-        "AB739D7700C29F52C57DB17C620A8652BE5E9001A8D66AD7"      \
-        "C17669101999024AF4D027275AC1348BB8A762D0521BC98A"      \
-        "E247150422EA1ED409939D54DA7460CDB5F6C6B250717CBE"      \
-        "F180EB34118E98D119529A45D6F834566E3025E316A330EF"      \
-        "BB77A86F0C1AB15B051AE3D428C8F8ACB70A8137150B8EEB"      \
-        "10E183EDD19963DDD9E263E4770589EF6AA21E7F5F2FF381"      \
-        "B539CCE3409D13CD566AFBB48D6C019181E1BCFE94B30269"      \
-        "EDFE72FE9B6AA4BD7B5A0F1C71CFFF4C19C418E1F6EC0179"      \
-        "81BC087F2A7065B384B890D3191F2BFA")
-
-/**
- * The hexadecimal presentation of the prime underlying the 2048-bit MODP
- * Group, as defined in <em>RFC-3526: More Modular Exponential (MODP)
- * Diffie-Hellman groups for Internet Key Exchange (IKE)</em>.
- *
- * \deprecated The hex-encoded primes from RFC 3625 are deprecated and
- *             superseded by the corresponding macros providing them as
- *             binary constants. Their hex-encoded constants are likely
- *             to be removed in a future version of the library.
- *
- */
-#define MBEDTLS_DHM_RFC3526_MODP_2048_P                         \
-    MBEDTLS_DEPRECATED_STRING_CONSTANT(                         \
-        "FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1"      \
-        "29024E088A67CC74020BBEA63B139B22514A08798E3404DD"      \
-        "EF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245"      \
-        "E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7ED"      \
-        "EE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3D"      \
-        "C2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F"      \
-        "83655D23DCA3AD961C62F356208552BB9ED529077096966D"      \
-        "670C354E4ABC9804F1746C08CA18217C32905E462E36CE3B"      \
-        "E39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9"      \
-        "DE2BCBF6955817183995497CEA956AE515D2261898FA0510"      \
-        "15728E5A8AACAA68FFFFFFFFFFFFFFFF")
-
-/**
- * The hexadecimal presentation of the chosen generator of the 2048-bit MODP
- * Group, as defined in <em>RFC-3526: More Modular Exponential (MODP)
- * Diffie-Hellman groups for Internet Key Exchange (IKE)</em>.
- */
-#define MBEDTLS_DHM_RFC3526_MODP_2048_G                         \
-    MBEDTLS_DEPRECATED_STRING_CONSTANT("02")
-
-/**
- * The hexadecimal presentation of the prime underlying the 3072-bit MODP
- * Group, as defined in <em>RFC-3072: More Modular Exponential (MODP)
- * Diffie-Hellman groups for Internet Key Exchange (IKE)</em>.
- */
-#define MBEDTLS_DHM_RFC3526_MODP_3072_P                         \
-    MBEDTLS_DEPRECATED_STRING_CONSTANT(                         \
-        "FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1"      \
-        "29024E088A67CC74020BBEA63B139B22514A08798E3404DD"      \
-        "EF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245"      \
-        "E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7ED"      \
-        "EE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3D"      \
-        "C2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F"      \
-        "83655D23DCA3AD961C62F356208552BB9ED529077096966D"      \
-        "670C354E4ABC9804F1746C08CA18217C32905E462E36CE3B"      \
-        "E39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9"      \
-        "DE2BCBF6955817183995497CEA956AE515D2261898FA0510"      \
-        "15728E5A8AAAC42DAD33170D04507A33A85521ABDF1CBA64"      \
-        "ECFB850458DBEF0A8AEA71575D060C7DB3970F85A6E1E4C7"      \
-        "ABF5AE8CDB0933D71E8C94E04A25619DCEE3D2261AD2EE6B"      \
-        "F12FFA06D98A0864D87602733EC86A64521F2B18177B200C"      \
-        "BBE117577A615D6C770988C0BAD946E208E24FA074E5AB31"      \
-        "43DB5BFCE0FD108E4B82D120A93AD2CAFFFFFFFFFFFFFFFF")
-
-/**
- * The hexadecimal presentation of the chosen generator of the 3072-bit MODP
- * Group, as defined in <em>RFC-3526: More Modular Exponential (MODP)
- * Diffie-Hellman groups for Internet Key Exchange (IKE)</em>.
- */
-#define MBEDTLS_DHM_RFC3526_MODP_3072_G                      \
-    MBEDTLS_DEPRECATED_STRING_CONSTANT("02")
-
-/**
- * The hexadecimal presentation of the prime underlying the 4096-bit MODP
- * Group, as defined in <em>RFC-3526: More Modular Exponential (MODP)
- * Diffie-Hellman groups for Internet Key Exchange (IKE)</em>.
- */
-#define MBEDTLS_DHM_RFC3526_MODP_4096_P                      \
-    MBEDTLS_DEPRECATED_STRING_CONSTANT(                      \
-        "FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1"   \
-        "29024E088A67CC74020BBEA63B139B22514A08798E3404DD"   \
-        "EF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245"   \
-        "E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7ED"   \
-        "EE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3D"   \
-        "C2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F"   \
-        "83655D23DCA3AD961C62F356208552BB9ED529077096966D"   \
-        "670C354E4ABC9804F1746C08CA18217C32905E462E36CE3B"   \
-        "E39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9"   \
-        "DE2BCBF6955817183995497CEA956AE515D2261898FA0510"   \
-        "15728E5A8AAAC42DAD33170D04507A33A85521ABDF1CBA64"   \
-        "ECFB850458DBEF0A8AEA71575D060C7DB3970F85A6E1E4C7"   \
-        "ABF5AE8CDB0933D71E8C94E04A25619DCEE3D2261AD2EE6B"   \
-        "F12FFA06D98A0864D87602733EC86A64521F2B18177B200C"   \
-        "BBE117577A615D6C770988C0BAD946E208E24FA074E5AB31"   \
-        "43DB5BFCE0FD108E4B82D120A92108011A723C12A787E6D7"   \
-        "88719A10BDBA5B2699C327186AF4E23C1A946834B6150BDA"   \
-        "2583E9CA2AD44CE8DBBBC2DB04DE8EF92E8EFC141FBECAA6"   \
-        "287C59474E6BC05D99B2964FA090C3A2233BA186515BE7ED"   \
-        "1F612970CEE2D7AFB81BDD762170481CD0069127D5B05AA9"   \
-        "93B4EA988D8FDDC186FFB7DC90A6C08F4DF435C934063199"   \
-        "FFFFFFFFFFFFFFFF")
-
-/**
- * The hexadecimal presentation of the chosen generator of the 4096-bit MODP
- * Group, as defined in <em>RFC-3526: More Modular Exponential (MODP)
- * Diffie-Hellman groups for Internet Key Exchange (IKE)</em>.
- */
-#define MBEDTLS_DHM_RFC3526_MODP_4096_G                      \
-    MBEDTLS_DEPRECATED_STRING_CONSTANT("02")
-
-#endif /* MBEDTLS_DEPRECATED_REMOVED */
 
 /*
  * Trustworthy DHM parameters in binary form

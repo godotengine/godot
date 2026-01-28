@@ -39,10 +39,10 @@ struct hb_bit_set_invertible_t
 
   hb_bit_set_invertible_t () = default;
   hb_bit_set_invertible_t (const hb_bit_set_invertible_t& o) = default;
-  hb_bit_set_invertible_t (hb_bit_set_invertible_t&& other) : hb_bit_set_invertible_t () { hb_swap (*this, other); }
+  hb_bit_set_invertible_t (hb_bit_set_invertible_t&& other)  noexcept : hb_bit_set_invertible_t () { hb_swap (*this, other); }
   hb_bit_set_invertible_t& operator= (const hb_bit_set_invertible_t& o) = default;
-  hb_bit_set_invertible_t& operator= (hb_bit_set_invertible_t&& other) { hb_swap (*this, other); return *this; }
-  friend void swap (hb_bit_set_invertible_t &a, hb_bit_set_invertible_t &b)
+  hb_bit_set_invertible_t& operator= (hb_bit_set_invertible_t&& other)  noexcept { hb_swap (*this, other); return *this; }
+  friend void swap (hb_bit_set_invertible_t &a, hb_bit_set_invertible_t &b) noexcept
   {
     if (likely (!a.s.successful || !b.s.successful))
       return;
@@ -126,6 +126,7 @@ struct hb_bit_set_invertible_t
   { unlikely (inverted) ? (void) s.add_range (a, b) : s.del_range (a, b); }
 
   bool get (hb_codepoint_t g) const { return s.get (g) ^ inverted; }
+  bool may_have (hb_codepoint_t g) const { return get (g); }
 
   /* Has interface. */
   bool operator [] (hb_codepoint_t k) const { return get (k); }
@@ -138,6 +139,9 @@ struct hb_bit_set_invertible_t
   { add (v); return *this; }
   hb_bit_set_invertible_t& operator << (const hb_codepoint_pair_t& range)
   { add_range (range.first, range.second); return *this; }
+
+  bool may_intersect (const hb_bit_set_invertible_t &other) const
+  { return inverted || other.inverted || s.intersects (other.s); }
 
   bool intersects (hb_codepoint_t first, hb_codepoint_t last) const
   {
@@ -359,12 +363,12 @@ struct hb_bit_set_invertible_t
     typedef hb_codepoint_t __item_t__;
     hb_codepoint_t __item__ () const { return v; }
     bool __more__ () const { return v != INVALID; }
-    void __next__ () { s->next (&v); if (l) l--; }
-    void __prev__ () { s->previous (&v); }
+    void __next__ () { s->next (&v); if (likely (l)) l--; }
+    void __prev__ () { s->previous (&v); l++; }
     unsigned __len__ () const { return l; }
     iter_t end () const { return iter_t (*s, false); }
     bool operator != (const iter_t& o) const
-    { return v != o.v || s != o.s; }
+    { return v != o.v; }
 
     protected:
     const hb_bit_set_invertible_t *s;

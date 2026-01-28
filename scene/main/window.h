@@ -28,13 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WINDOW_H
-#define WINDOW_H
+#pragma once
 
 #include "scene/main/viewport.h"
 #include "scene/resources/theme.h"
+#include "servers/display/display_server.h"
 
-class Control;
 class Font;
 class Shortcut;
 class StyleBox;
@@ -63,6 +62,11 @@ public:
 		FLAG_POPUP = DisplayServer::WINDOW_FLAG_POPUP,
 		FLAG_EXTEND_TO_TITLE = DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE,
 		FLAG_MOUSE_PASSTHROUGH = DisplayServer::WINDOW_FLAG_MOUSE_PASSTHROUGH,
+		FLAG_SHARP_CORNERS = DisplayServer::WINDOW_FLAG_SHARP_CORNERS,
+		FLAG_EXCLUDE_FROM_CAPTURE = DisplayServer::WINDOW_FLAG_EXCLUDE_FROM_CAPTURE,
+		FLAG_POPUP_WM_HINT = DisplayServer::WINDOW_FLAG_POPUP_WM_HINT,
+		FLAG_MINIMIZE_DISABLED = DisplayServer::WINDOW_FLAG_MINIMIZE_DISABLED,
+		FLAG_MAXIMIZE_DISABLED = DisplayServer::WINDOW_FLAG_MAXIMIZE_DISABLED,
 		FLAG_MAX = DisplayServer::WINDOW_FLAG_MAX,
 	};
 
@@ -87,16 +91,21 @@ public:
 
 	enum LayoutDirection {
 		LAYOUT_DIRECTION_INHERITED,
-		LAYOUT_DIRECTION_LOCALE,
+		LAYOUT_DIRECTION_APPLICATION_LOCALE,
 		LAYOUT_DIRECTION_LTR,
-		LAYOUT_DIRECTION_RTL
+		LAYOUT_DIRECTION_RTL,
+		LAYOUT_DIRECTION_SYSTEM_LOCALE,
+		LAYOUT_DIRECTION_MAX,
+#ifndef DISABLE_DEPRECATED
+		LAYOUT_DIRECTION_LOCALE = LAYOUT_DIRECTION_APPLICATION_LOCALE,
+#endif // DISABLE_DEPRECATED
 	};
 
 	enum {
 		DEFAULT_WINDOW_SIZE = 100,
 	};
 
-	// Keep synced with enum hint for `initial_position` property.
+	// Keep synced with enum hint for `initial_position` property and `display/window/size/initial_position_type` project setting.
 	enum WindowInitialPosition {
 		WINDOW_INITIAL_POSITION_ABSOLUTE,
 		WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN,
@@ -111,9 +120,9 @@ private:
 	bool initialized = false;
 
 	String title;
-	String tr_title;
+	String displayed_title;
 	mutable int current_screen = 0;
-	mutable Vector2i position;
+	mutable Point2i position;
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
 	mutable Size2i min_size;
 	mutable Size2i max_size;
@@ -123,9 +132,10 @@ private:
 	bool visible = true;
 	bool focused = false;
 	WindowInitialPosition initial_position = WINDOW_INITIAL_POSITION_ABSOLUTE;
+	bool force_native = false;
 
-	bool use_font_oversampling = false;
 	bool transient = false;
+	bool transient_to_focused = false;
 	bool exclusive = false;
 	bool wrap_controls = false;
 	bool updating_child_controls = false;
@@ -136,8 +146,6 @@ private:
 
 	LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
 
-	bool auto_translate = true;
-
 	void _update_child_controls();
 	void _update_embedded_window();
 
@@ -147,13 +155,23 @@ private:
 	ContentScaleStretch content_scale_stretch = CONTENT_SCALE_STRETCH_FRACTIONAL;
 	real_t content_scale_factor = 1.0;
 
+	RID accessibility_title_element;
+	RID accessibility_announcement_element;
+	String announcement;
+	String accessibility_name;
+	String accessibility_description;
+
 	void _make_window();
 	void _clear_window();
 	void _update_from_window();
+	void _accessibility_notify_enter(Node *p_node);
+	void _accessibility_notify_exit(Node *p_node);
 
 	bool _try_parent_dialog(Node *p_from_node);
 
 	Size2i max_size_used;
+
+	Rect2i nonclient_area;
 
 	Size2i _clamp_limit_size(const Size2i &p_limit_size);
 	Size2i _clamp_window_size(const Size2i &p_size);
@@ -172,6 +190,8 @@ private:
 	void _clear_transient();
 	void _make_transient();
 	void _set_transient_exclusive_child(bool p_clear_invalid = false);
+
+	static Window *focused_window;
 
 	ThemeOwner *theme_owner = nullptr;
 	Ref<Theme> theme;
@@ -215,6 +235,8 @@ private:
 		int resize_margin = 0;
 	} theme_cache;
 
+	void _settings_changed();
+
 	Viewport *embedder = nullptr;
 
 	Transform2D window_transform;
@@ -222,7 +244,7 @@ private:
 	friend class Viewport; //friend back, can call the methods below
 
 	void _window_input(const Ref<InputEvent> &p_ev);
-	void _window_input_text(const String &p_text);
+	void _window_input_text(const String &p_text, bool p_emit_signal = false);
 	void _window_drop_files(const Vector<String> &p_files);
 	void _rect_changed_callback(const Rect2i &p_callback);
 	void _event_callback(DisplayServer::WindowEvent p_event);
@@ -232,13 +254,18 @@ private:
 	void _update_mouse_over(Vector2 p_pos) override;
 	void _mouse_leave_viewport() override;
 
-	Ref<Shortcut> debugger_stop_shortcut;
+	void _update_displayed_title();
+
+	static int root_layout_direction;
 
 protected:
+	virtual void _popup_base(const Rect2i &p_screen_rect = Rect2i());
+	virtual void _pre_popup() {} // Called after "about_to_popup", but before window is shown.
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
 	virtual void _post_popup() {}
 
 	virtual void _update_theme_item_cache();
+	virtual void _input_from_window(const Ref<InputEvent> &p_event) {}
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -247,6 +274,10 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _validate_property(PropertyInfo &p_property) const;
+
+	void _accessibility_action_grab_focus(const Variant &p_data) {
+		grab_focus();
+	}
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
@@ -260,11 +291,21 @@ public:
 		NOTIFICATION_THEME_CHANGED = 32
 	};
 
+	static void set_root_layout_direction(int p_root_dir);
+	static Window *get_from_id(DisplayServer::WindowID p_window_id);
+
+	RID get_accessibility_element() const override;
+	virtual RID get_focused_accessibility_element() const override;
+
 	void set_title(const String &p_title);
 	String get_title() const;
+	String get_displayed_title() const;
 
 	void set_initial_position(WindowInitialPosition p_initial_position);
 	WindowInitialPosition get_initial_position() const;
+
+	void set_force_native(bool p_force_native);
+	bool get_force_native() const;
 
 	void set_current_screen(int p_screen);
 	int get_current_screen() const;
@@ -292,10 +333,14 @@ public:
 	void set_flag(Flags p_flag, bool p_enabled);
 	bool get_flag(Flags p_flag) const;
 
+	bool is_popup() const;
+
 	bool is_maximize_allowed() const;
 
 	void request_attention();
+#ifndef DISABLE_DEPRECATED
 	void move_to_foreground();
+#endif // DISABLE_DEPRECATED
 
 	virtual void set_visible(bool p_visible);
 	bool is_visible() const;
@@ -307,6 +352,9 @@ public:
 
 	void set_transient(bool p_transient);
 	bool is_transient() const;
+
+	void set_transient_to_focused(bool p_transient_to_focused);
+	bool is_transient_to_focused() const;
 
 	void set_exclusive(bool p_exclusive);
 	bool is_exclusive() const;
@@ -344,8 +392,8 @@ public:
 	void set_content_scale_factor(real_t p_factor);
 	real_t get_content_scale_factor() const;
 
-	void set_use_font_oversampling(bool p_oversampling);
-	bool is_using_font_oversampling() const;
+	void set_nonclient_area(const Rect2i &p_rect);
+	Rect2i get_nonclient_area() const;
 
 	void set_mouse_passthrough_polygon(const Vector<Vector2> &p_region);
 	Vector<Vector2> get_mouse_passthrough_polygon() const;
@@ -354,11 +402,13 @@ public:
 	bool is_wrapping_controls() const;
 	void child_controls_changed();
 
-	Window *get_exclusive_child() const { return exclusive_child; };
+	Window *get_exclusive_child() const { return exclusive_child; }
+	HashSet<Window *> get_transient_children() const { return transient_children; }
 	Window *get_parent_visible_window() const;
+	Window *get_non_popup_window() const;
 	Viewport *get_parent_viewport() const;
 
-	virtual void popup(const Rect2i &p_screen_rect = Rect2i());
+	void popup(const Rect2i &p_screen_rect = Rect2i());
 	void popup_on_parent(const Rect2i &p_parent_rect);
 	void popup_centered(const Size2i &p_minsize = Size2i());
 	void popup_centered_ratio(float p_ratio = 0.8);
@@ -376,16 +426,34 @@ public:
 
 	void grab_focus();
 	bool has_focus() const;
+	bool has_focus_or_active_popup() const;
+
+	void start_drag();
+	void start_resize(DisplayServer::WindowResizeEdge p_edge);
+
+	Rect2i get_usable_parent_rect() const;
+
+	void set_accessibility_name(const String &p_name);
+	String get_accessibility_name() const;
+
+	void set_accessibility_description(const String &p_description);
+	String get_accessibility_description() const;
+
+	void accessibility_announcement(const String &p_announcement);
+
+	// Internationalization.
 
 	void set_layout_direction(LayoutDirection p_direction);
 	LayoutDirection get_layout_direction() const;
 	bool is_layout_rtl() const;
 
+#ifndef DISABLE_DEPRECATED
+	void set_use_font_oversampling(bool p_oversampling);
+	bool is_using_font_oversampling() const;
+
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;
-	_FORCE_INLINE_ String atr(const String p_string) const { return is_auto_translating() ? tr(p_string) : p_string; };
-
-	Rect2i get_usable_parent_rect() const;
+#endif
 
 	// Theming.
 
@@ -447,16 +515,16 @@ public:
 	Ref<Font> get_theme_default_font() const;
 	int get_theme_default_font_size() const;
 
-	//
-
 	virtual Transform2D get_final_transform() const override;
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const override;
 	virtual Transform2D get_popup_base_transform() const override;
-	virtual bool is_directly_attached_to_screen() const override;
+	virtual Transform2D get_popup_base_transform_native() const override;
+	virtual Viewport *get_section_root_viewport() const override;
 	virtual bool is_attached_in_viewport() const override;
 
 	Rect2i get_parent_rect() const;
 	virtual DisplayServer::WindowID get_window_id() const override;
+	static Window *get_focused_window() { return focused_window; }
 
 	virtual Size2 _get_contents_minimum_size() const;
 
@@ -471,5 +539,3 @@ VARIANT_ENUM_CAST(Window::ContentScaleAspect);
 VARIANT_ENUM_CAST(Window::ContentScaleStretch);
 VARIANT_ENUM_CAST(Window::LayoutDirection);
 VARIANT_ENUM_CAST(Window::WindowInitialPosition);
-
-#endif // WINDOW_H

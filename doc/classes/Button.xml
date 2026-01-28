@@ -5,46 +5,52 @@
 	</brief_description>
 	<description>
 		[Button] is the standard themed button. It can contain text and an icon, and it will display them according to the current [Theme].
-		[b]Example of creating a button and assigning an action when pressed by code:[/b]
+		[b]Example:[/b] Create a button and connect a method that will be called when the button is pressed:
 		[codeblocks]
 		[gdscript]
 		func _ready():
-		    var button = Button.new()
-		    button.text = "Click me"
-		    button.pressed.connect(self._button_pressed)
-		    add_child(button)
+			var button = Button.new()
+			button.text = "Click me"
+			button.pressed.connect(_button_pressed)
+			add_child(button)
 
 		func _button_pressed():
-		    print("Hello world!")
+			print("Hello world!")
 		[/gdscript]
 		[csharp]
 		public override void _Ready()
 		{
-		    var button = new Button();
-		    button.Text = "Click me";
-		    button.Pressed += ButtonPressed;
-		    AddChild(button);
+			var button = new Button();
+			button.Text = "Click me";
+			button.Pressed += ButtonPressed;
+			AddChild(button);
 		}
 
 		private void ButtonPressed()
 		{
-		    GD.Print("Hello world!");
+			GD.Print("Hello world!");
 		}
 		[/csharp]
 		[/codeblocks]
 		See also [BaseButton] which contains common properties and methods associated with this node.
-		[b]Note:[/b] Buttons do not interpret touch input and therefore don't support multitouch, since mouse emulation can only press one button at a given time. Use [TouchScreenButton] for buttons that trigger gameplay movement or actions.
+		[b]Note:[/b] Buttons do not detect touch input and therefore don't support multitouch, since mouse emulation can only press one button at a given time. Use [TouchScreenButton] for buttons that trigger gameplay movement or actions.
 	</description>
 	<tutorials>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
-		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
+		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
 	</tutorials>
 	<members>
 		<member name="alignment" type="int" setter="set_text_alignment" getter="get_text_alignment" enum="HorizontalAlignment" default="1">
-			Text alignment policy for the button's text, use one of the [enum HorizontalAlignment] constants.
+			Text alignment policy for the button's text.
+		</member>
+		<member name="autowrap_mode" type="int" setter="set_autowrap_mode" getter="get_autowrap_mode" enum="TextServer.AutowrapMode" default="0">
+			If set to something other than [constant TextServer.AUTOWRAP_OFF], the text gets wrapped inside the node's bounding rectangle.
+		</member>
+		<member name="autowrap_trim_flags" type="int" setter="set_autowrap_trim_flags" getter="get_autowrap_trim_flags" enum="TextServer.LineBreakFlag" is_bitfield="true" default="128">
+			Autowrap space trimming flags. See [constant TextServer.BREAK_TRIM_START_EDGE_SPACES] and [constant TextServer.BREAK_TRIM_END_EDGE_SPACES] for more info.
 		</member>
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="get_clip_text" default="false">
-			When this property is enabled, text that is too large to fit the button is clipped, when disabled the Button will always be wide enough to hold the text.
+			If [code]true[/code], text that is too large to fit the button is clipped horizontally. If [code]false[/code], the button will always be wide enough to hold the text. The text is not vertically clipped, and the button's height is not affected by this property.
 		</member>
 		<member name="expand_icon" type="bool" setter="set_expand_icon" getter="is_expand_icon" default="false">
 			When enabled, the button's icon will expand/shrink to fit the button's size while keeping its aspect. See also [theme_item icon_max_width].
@@ -60,7 +66,7 @@
 			Specifies if the icon should be aligned horizontally to the left, right, or center of a button. Uses the same [enum HorizontalAlignment] constants as the text alignment. If centered horizontally and vertically, text will draw on top of the icon.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
-			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+			Language code used for line-breaking and text shaping algorithms. If left empty, the current locale is used instead.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The button's text that will be displayed inside the button's area.
@@ -69,7 +75,7 @@
 			Base text writing direction.
 		</member>
 		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="0">
-			Sets the clipping behavior when the text exceeds the node's bounding rectangle. See [enum TextServer.OverrunBehavior] for a description of all modes.
+			Sets the clipping behavior when the text exceeds the node's bounding rectangle.
 		</member>
 		<member name="vertical_icon_alignment" type="int" setter="set_vertical_icon_alignment" getter="get_vertical_icon_alignment" enum="VerticalAlignment" default="1">
 			Specifies if the icon should be aligned vertically to the top, bottom, or center of a button. Uses the same [enum VerticalAlignment] constants as the text alignment. If centered horizontally and vertically, text will draw on top of the icon.
@@ -91,7 +97,7 @@
 		<theme_item name="font_hover_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Text [Color] used when the [Button] is being hovered and pressed.
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the [Button].
 		</theme_item>
 		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
@@ -115,11 +121,17 @@
 		<theme_item name="icon_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Icon modulate [Color] used when the [Button] is being pressed.
 		</theme_item>
+		<theme_item name="align_to_largest_stylebox" data_type="constant" type="int" default="0">
+			This constant acts as a boolean. If [code]true[/code], the minimum size of the button and text/icon alignment is always based on the largest stylebox margins, otherwise it's based on the current button state stylebox margins.
+		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal space between [Button]'s icon and text. Negative values will be treated as [code]0[/code] when used.
 		</theme_item>
 		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
-			The maximum allowed width of the [Button]'s icon. This limit is applied on top of the default size of the icon, or its expanded size if [member expand_icon] is [code]true[/code]. The height is adjusted according to the icon's ratio.
+			The maximum allowed width of the [Button]'s icon. This limit is applied on top of the default size of the icon, or its expanded size if [member expand_icon] is [code]true[/code]. The height is adjusted according to the icon's ratio. If the button has additional icons (e.g. [CheckBox]), they will also be limited.
+		</theme_item>
+		<theme_item name="line_spacing" data_type="constant" type="int" default="0">
+			Additional vertical spacing between lines (in pixels), spacing is added to line descent. This value can be negative.
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
@@ -134,7 +146,7 @@
 		<theme_item name="icon" data_type="icon" type="Texture2D">
 			Default icon for the [Button]. Appears only if [member icon] is not assigned.
 		</theme_item>
-		<theme_item name="disabled" data_type="style" type="StyleBox">
+		<theme_item name="disabled" data_type="style" type="StyleBox" keywords="enabled">
 			[StyleBox] used when the [Button] is disabled.
 		</theme_item>
 		<theme_item name="disabled_mirrored" data_type="style" type="StyleBox">

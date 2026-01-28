@@ -6,17 +6,36 @@
 	<description>
 		RandomNumberGenerator is a class for generating pseudo-random numbers. It currently uses [url=https://www.pcg-random.org/]PCG32[/url].
 		[b]Note:[/b] The underlying algorithm is an implementation detail and should not be depended upon.
-		To generate a random float number (within a given range) based on a time-dependant seed:
+		To generate a random float number (within a given range) based on a time-dependent seed:
 		[codeblock]
 		var rng = RandomNumberGenerator.new()
 		func _ready():
-		    var my_random_number = rng.randf_range(-10.0, 10.0)
+			var my_random_number = rng.randf_range(-10.0, 10.0)
 		[/codeblock]
 	</description>
 	<tutorials>
 		<link title="Random number generation">$DOCS_URL/tutorials/math/random_number_generation.html</link>
 	</tutorials>
 	<methods>
+		<method name="rand_weighted">
+			<return type="int" />
+			<param index="0" name="weights" type="PackedFloat32Array" />
+			<description>
+				Returns a random index with non-uniform weights. Prints an error and returns [code]-1[/code] if the array is empty.
+				[codeblocks]
+				[gdscript]
+				var rng = RandomNumberGenerator.new()
+
+				var my_array = ["one", "two", "three", "four"]
+				var weights = PackedFloat32Array([0.5, 1, 1, 2])
+
+				# Prints one of the four elements in `my_array`.
+				# It is more likely to print "four", and less likely to print "one".
+				print(my_array[rng.rand_weighted(weights)])
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="randf">
 			<return type="float" />
 			<description>
@@ -36,7 +55,8 @@
 			<param index="0" name="mean" type="float" default="0.0" />
 			<param index="1" name="deviation" type="float" default="1.0" />
 			<description>
-				Returns a [url=https://en.wikipedia.org/wiki/Normal_distribution]normally-distributed[/url] pseudo-random number, using Box-Muller transform with the specified [param mean] and a standard [param deviation]. This is also called Gaussian distribution.
+				Returns a [url=https://en.wikipedia.org/wiki/Normal_distribution]normally-distributed[/url], pseudo-random floating-point number from the specified [param mean] and a standard [param deviation]. This is also known as a Gaussian distribution.
+				[b]Note:[/b] This method uses the [url=https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform]Box-Muller transform[/url] algorithm.
 			</description>
 		</method>
 		<method name="randi">
@@ -56,7 +76,7 @@
 		<method name="randomize">
 			<return type="void" />
 			<description>
-				Setups a time-based seed to for this [RandomNumberGenerator] instance. Unlike the [@GlobalScope] random number generation functions, different [RandomNumberGenerator] instances can use different seeds.
+				Sets up a time-based seed for this [RandomNumberGenerator] instance. Unlike the [@GlobalScope] random number generation functions, different [RandomNumberGenerator] instances can use different seeds.
 			</description>
 		</method>
 	</methods>
@@ -80,10 +100,10 @@
 			var saved_state = rng.state # Store current state.
 			print(rng.randf()) # Advance internal state.
 			rng.state = saved_state # Restore the state.
-			print(rng.randf()) # Prints the same value as in previous.
+			print(rng.randf()) # Prints the same value as previously.
 			[/codeblock]
 			[b]Note:[/b] Do not set state to arbitrary values, since the random number generator requires the state to have certain qualities to behave properly. It should only be set to values that came from the state property itself. To initialize the random number generator with arbitrary input, use [member seed] instead.
-			[b]Note:[/b] The default value of this property is pseudo-random, and changes when calling [method randomize]. The [code]0[/code] value documented here is a placeholder, and not the actual default seed.
+			[b]Note:[/b] The default value of this property is pseudo-random, and changes when calling [method randomize]. The [code]0[/code] value documented here is a placeholder, and not the actual default state.
 		</member>
 	</members>
 </class>

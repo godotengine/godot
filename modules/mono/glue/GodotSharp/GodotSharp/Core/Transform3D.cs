@@ -1,6 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
+
+#nullable enable
 
 namespace Godot
 {
@@ -465,8 +468,8 @@ namespace Godot
             {
                 for (int j = 0; j < 3; j++)
                 {
-                    real_t e = transform.Basis[i][j] * min[j];
-                    real_t f = transform.Basis[i][j] * max[j];
+                    real_t e = transform.Basis[j][i] * min[j];
+                    real_t f = transform.Basis[j][i] * max[j];
                     if (e < f)
                     {
                         tmin[i] += e;
@@ -630,7 +633,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the transform and the object are exactly equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Transform3D other && Equals(other);
         }
@@ -671,16 +674,13 @@ namespace Godot
         /// Converts this <see cref="Transform3D"/> to a string.
         /// </summary>
         /// <returns>A string representation of this transform.</returns>
-        public override readonly string ToString()
-        {
-            return $"[X: {Basis.X}, Y: {Basis.Y}, Z: {Basis.Z}, O: {Origin}]";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Transform3D"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this transform.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
             return $"[X: {Basis.X.ToString(format)}, Y: {Basis.Y.ToString(format)}, Z: {Basis.Z.ToString(format)}, O: {Origin.ToString(format)}]";
         }

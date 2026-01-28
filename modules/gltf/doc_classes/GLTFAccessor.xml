@@ -1,39 +1,135 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GLTFAccessor" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
+		Represents a glTF accessor.
 	</brief_description>
 	<description>
+		GLTFAccessor is a data structure representing a glTF [code]accessor[/code] that would be found in the [code]"accessors"[/code] array. A buffer is a blob of binary data. A buffer view is a slice of a buffer. An accessor is a typed interpretation of the data in a buffer view.
+		Most custom data stored in glTF does not need accessors, only buffer views (see [GLTFBufferView]). Accessors are for more advanced use cases such as interleaved mesh data encoded for the GPU.
 	</description>
 	<tutorials>
+		<link title="Buffers, BufferViews, and Accessors in Khronos glTF specification">https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_005_BuffersBufferViewsAccessors.md</link>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
+	<methods>
+		<method name="from_dictionary" qualifiers="static">
+			<return type="GLTFAccessor" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Creates a new GLTFAccessor instance by parsing the given [Dictionary].
+			</description>
+		</method>
+		<method name="to_dictionary" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Serializes this GLTFAccessor instance into a [Dictionary].
+			</description>
+		</method>
+	</methods>
 	<members>
+		<member name="accessor_type" type="int" setter="set_accessor_type" getter="get_accessor_type" enum="GLTFAccessor.GLTFAccessorType" default="0">
+			The glTF accessor type, as an enum.
+		</member>
 		<member name="buffer_view" type="int" setter="set_buffer_view" getter="get_buffer_view" default="-1">
+			The index of the buffer view this accessor is referencing. If [code]-1[/code], this accessor is not referencing any buffer view.
 		</member>
 		<member name="byte_offset" type="int" setter="set_byte_offset" getter="get_byte_offset" default="0">
+			The offset relative to the start of the buffer view in bytes.
 		</member>
-		<member name="component_type" type="int" setter="set_component_type" getter="get_component_type" default="0">
+		<member name="component_type" type="int" setter="set_component_type" getter="get_component_type" enum="GLTFAccessor.GLTFComponentType" default="0">
+			The glTF component type as an enum. See [enum GLTFComponentType] for possible values. Within the core glTF specification, a value of 5125 or "UNSIGNED_INT" must not be used for any accessor that is not referenced by mesh.primitive.indices.
 		</member>
 		<member name="count" type="int" setter="set_count" getter="get_count" default="0">
+			The number of elements referenced by this accessor.
 		</member>
 		<member name="max" type="PackedFloat64Array" setter="set_max" getter="get_max" default="PackedFloat64Array()">
+			Maximum value of each component in this accessor.
 		</member>
 		<member name="min" type="PackedFloat64Array" setter="set_min" getter="get_min" default="PackedFloat64Array()">
+			Minimum value of each component in this accessor.
 		</member>
 		<member name="normalized" type="bool" setter="set_normalized" getter="get_normalized" default="false">
+			Specifies whether integer data values are normalized before usage.
 		</member>
 		<member name="sparse_count" type="int" setter="set_sparse_count" getter="get_sparse_count" default="0">
+			Number of deviating accessor values stored in the sparse array.
 		</member>
 		<member name="sparse_indices_buffer_view" type="int" setter="set_sparse_indices_buffer_view" getter="get_sparse_indices_buffer_view" default="0">
+			The index of the buffer view with sparse indices. The referenced buffer view MUST NOT have its target or byteStride properties defined. The buffer view and the optional byteOffset MUST be aligned to the componentType byte length.
 		</member>
 		<member name="sparse_indices_byte_offset" type="int" setter="set_sparse_indices_byte_offset" getter="get_sparse_indices_byte_offset" default="0">
+			The offset relative to the start of the buffer view in bytes.
 		</member>
-		<member name="sparse_indices_component_type" type="int" setter="set_sparse_indices_component_type" getter="get_sparse_indices_component_type" default="0">
+		<member name="sparse_indices_component_type" type="int" setter="set_sparse_indices_component_type" getter="get_sparse_indices_component_type" enum="GLTFAccessor.GLTFComponentType" default="0">
+			The indices component data type as an enum. Possible values are 5121 for "UNSIGNED_BYTE", 5123 for "UNSIGNED_SHORT", and 5125 for "UNSIGNED_INT".
 		</member>
 		<member name="sparse_values_buffer_view" type="int" setter="set_sparse_values_buffer_view" getter="get_sparse_values_buffer_view" default="0">
+			The index of the bufferView with sparse values. The referenced buffer view MUST NOT have its target or byteStride properties defined.
 		</member>
 		<member name="sparse_values_byte_offset" type="int" setter="set_sparse_values_byte_offset" getter="get_sparse_values_byte_offset" default="0">
+			The offset relative to the start of the bufferView in bytes.
 		</member>
-		<member name="type" type="int" setter="set_type" getter="get_type" default="0">
+		<member name="type" type="int" setter="set_type" getter="get_type" deprecated="Use [member accessor_type] instead.">
+			The glTF accessor type, as an [int]. Possible values are [code]0[/code] for "SCALAR", [code]1[/code] for "VEC2", [code]2[/code] for "VEC3", [code]3[/code] for "VEC4", [code]4[/code] for "MAT2", [code]5[/code] for "MAT3", and [code]6[/code] for "MAT4".
 		</member>
 	</members>
+	<constants>
+		<constant name="TYPE_SCALAR" value="0" enum="GLTFAccessorType">
+			Accessor type "SCALAR". For the glTF object model, this can be used to map to a single float, int, or bool value, or a float array.
+		</constant>
+		<constant name="TYPE_VEC2" value="1" enum="GLTFAccessorType">
+			Accessor type "VEC2". For the glTF object model, this maps to "float2", represented in the glTF JSON as an array of two floats.
+		</constant>
+		<constant name="TYPE_VEC3" value="2" enum="GLTFAccessorType">
+			Accessor type "VEC3". For the glTF object model, this maps to "float3", represented in the glTF JSON as an array of three floats.
+		</constant>
+		<constant name="TYPE_VEC4" value="3" enum="GLTFAccessorType">
+			Accessor type "VEC4". For the glTF object model, this maps to "float4", represented in the glTF JSON as an array of four floats.
+		</constant>
+		<constant name="TYPE_MAT2" value="4" enum="GLTFAccessorType">
+			Accessor type "MAT2". For the glTF object model, this maps to "float2x2", represented in the glTF JSON as an array of four floats.
+		</constant>
+		<constant name="TYPE_MAT3" value="5" enum="GLTFAccessorType">
+			Accessor type "MAT3". For the glTF object model, this maps to "float3x3", represented in the glTF JSON as an array of nine floats.
+		</constant>
+		<constant name="TYPE_MAT4" value="6" enum="GLTFAccessorType">
+			Accessor type "MAT4". For the glTF object model, this maps to "float4x4", represented in the glTF JSON as an array of sixteen floats.
+		</constant>
+		<constant name="COMPONENT_TYPE_NONE" value="0" enum="GLTFComponentType">
+			Component type "NONE". This is not a valid component type, and is used to indicate that the component type is not set.
+		</constant>
+		<constant name="COMPONENT_TYPE_SIGNED_BYTE" value="5120" enum="GLTFComponentType">
+			Component type "BYTE". The value is [code]0x1400[/code] which comes from OpenGL. This indicates data is stored in 1-byte or 8-bit signed integers. This is a core part of the glTF specification.
+		</constant>
+		<constant name="COMPONENT_TYPE_UNSIGNED_BYTE" value="5121" enum="GLTFComponentType">
+			Component type "UNSIGNED_BYTE". The value is [code]0x1401[/code] which comes from OpenGL. This indicates data is stored in 1-byte or 8-bit unsigned integers. This is a core part of the glTF specification.
+		</constant>
+		<constant name="COMPONENT_TYPE_SIGNED_SHORT" value="5122" enum="GLTFComponentType">
+			Component type "SHORT". The value is [code]0x1402[/code] which comes from OpenGL. This indicates data is stored in 2-byte or 16-bit signed integers. This is a core part of the glTF specification.
+		</constant>
+		<constant name="COMPONENT_TYPE_UNSIGNED_SHORT" value="5123" enum="GLTFComponentType">
+			Component type "UNSIGNED_SHORT". The value is [code]0x1403[/code] which comes from OpenGL. This indicates data is stored in 2-byte or 16-bit unsigned integers. This is a core part of the glTF specification.
+		</constant>
+		<constant name="COMPONENT_TYPE_SIGNED_INT" value="5124" enum="GLTFComponentType">
+			Component type "INT". The value is [code]0x1404[/code] which comes from OpenGL. This indicates data is stored in 4-byte or 32-bit signed integers. This is NOT a core part of the glTF specification, and may not be supported by all glTF importers. May be used by some extensions including [code]KHR_interactivity[/code].
+		</constant>
+		<constant name="COMPONENT_TYPE_UNSIGNED_INT" value="5125" enum="GLTFComponentType">
+			Component type "UNSIGNED_INT". The value is [code]0x1405[/code] which comes from OpenGL. This indicates data is stored in 4-byte or 32-bit unsigned integers. This is a core part of the glTF specification.
+		</constant>
+		<constant name="COMPONENT_TYPE_SINGLE_FLOAT" value="5126" enum="GLTFComponentType">
+			Component type "FLOAT". The value is [code]0x1406[/code] which comes from OpenGL. This indicates data is stored in 4-byte or 32-bit floating-point numbers. This is a core part of the glTF specification.
+		</constant>
+		<constant name="COMPONENT_TYPE_DOUBLE_FLOAT" value="5130" enum="GLTFComponentType">
+			Component type "DOUBLE". The value is [code]0x140A[/code] which comes from OpenGL. This indicates data is stored in 8-byte or 64-bit floating-point numbers. This is NOT a core part of the glTF specification, and may not be supported by all glTF importers. May be used by some extensions including [code]KHR_interactivity[/code].
+		</constant>
+		<constant name="COMPONENT_TYPE_HALF_FLOAT" value="5131" enum="GLTFComponentType">
+			Component type "HALF_FLOAT". The value is [code]0x140B[/code] which comes from OpenGL. This indicates data is stored in 2-byte or 16-bit floating-point numbers. This is NOT a core part of the glTF specification, and may not be supported by all glTF importers. May be used by some extensions including [code]KHR_interactivity[/code].
+		</constant>
+		<constant name="COMPONENT_TYPE_SIGNED_LONG" value="5134" enum="GLTFComponentType">
+			Component type "LONG". The value is [code]0x140E[/code] which comes from OpenGL. This indicates data is stored in 8-byte or 64-bit signed integers. This is NOT a core part of the glTF specification, and may not be supported by all glTF importers. May be used by some extensions including [code]KHR_interactivity[/code].
+		</constant>
+		<constant name="COMPONENT_TYPE_UNSIGNED_LONG" value="5135" enum="GLTFComponentType">
+			Component type "UNSIGNED_LONG". The value is [code]0x140F[/code] which comes from OpenGL. This indicates data is stored in 8-byte or 64-bit unsigned integers. This is NOT a core part of the glTF specification, and may not be supported by all glTF importers. May be used by some extensions including [code]KHR_interactivity[/code].
+		</constant>
+	</constants>
 </class>

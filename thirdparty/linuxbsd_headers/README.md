@@ -9,43 +9,61 @@ readability.
 
 - Upstream: https://www.alsa-project.org/
 - Version: 1.1.3-5
-- License: LPGL-2.1+
+- License: LGPL-2.1+
 
-Patches in the `patches` directory should be re-applied after updates.
+Patches:
+
+- `0001-musl-standard-poll.patch` (GH-71934)
+- `0002-freebsd-sys-endian.patch` (GH-100047)
+
 
 ## dbus
 
-- Upstream: https://www.freedesktop.org/wiki/software/dbus/
+- Upstream: https://www.freedesktop.org/wiki/Software/dbus/
 - Version: 1.12.2
 - License: AFL-2.1
 
 
 ## fontconfig
 
-- Upstream: https://www.freedesktop.org/wiki/software/fontconfig/
+- Upstream: https://www.freedesktop.org/wiki/Software/fontconfig/
 - Version: 2.12.6
 - License: fontconfig
+
+
+## libdecor
+
+- Upstream: https://gitlab.freedesktop.org/libdecor/libdecor/
+- Version: 0.2.5
+- License: MIT
 
 
 ## pulse
 
 - Upstream: http://pulseaudio.org/
 - Version: 1.11.1
-- License: LPGL-2.1+
+- License: LGPL-2.1+
 
 
-# speechd
+## speechd
 
 - Upstream: https://www.freebsoft.org/pub/projects/speechd/
 - Version: 0.8.8
-- License: LPGL-2.1+
+- License: LGPL-2.1+
 
 
-# udev
+## udev
 
-- Upstream: https://www.freedesktop.org/wiki/software/systemd/
+- Upstream: https://www.freedesktop.org/wiki/Software/systemd/
 - Version: 237
-- License: LPGL-2.1+
+- License: LGPL-2.1+
+
+
+## wayland
+
+- Upstream: https://gitlab.freedesktop.org/wayland/wayland
+- Version: 1.21.0 (8135e856ebd79872f886466e9cee39affb7d9ee8, 2022)
+- License: MIT
 
 
 ## X11

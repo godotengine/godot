@@ -290,6 +290,12 @@ enum TBuiltInVariable {
     EbvLayerPerViewNV,
     EbvMeshViewCountNV,
     EbvMeshViewIndicesNV,
+
+    EbvMicroTrianglePositionNV,
+    EbvMicroTriangleBaryNV,
+    EbvHitKindFrontFacingMicroTriangleNV,
+    EbvHitKindBackFacingMicroTriangleNV,
+
     //GL_EXT_mesh_shader
     EbvPrimitivePointIndicesEXT,
     EbvPrimitiveLineIndicesEXT,
@@ -522,6 +528,9 @@ __inline const char* GetBuiltInVariableString(TBuiltInVariable v)
 
     case EbvShadingRateKHR:             return "ShadingRateKHR";
     case EbvPrimitiveShadingRateKHR:    return "PrimitiveShadingRateKHR";
+
+    case EbvHitKindFrontFacingMicroTriangleNV: return "HitKindFrontFacingMicroTriangleNV";
+    case EbvHitKindBackFacingMicroTriangleNV:  return "HitKindBackFacingMicroTriangleNV";
 
     default:                      return "unknown built-in variable";
     }

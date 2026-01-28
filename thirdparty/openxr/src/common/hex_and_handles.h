@@ -1,11 +1,11 @@
-// Copyright (c) 2017-2023, The Khronos Group Inc.
+// Copyright (c) 2017-2025 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 // Copyright (c) 2019 Collabora, Ltd.
 //
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 //
-// Initial Author: Ryan Pavlik <ryan.pavlik@collabora.com>
+// Initial Author: Rylie Pavlik <rylie.pavlik@collabora.com>
 //
 
 /*!
@@ -37,7 +37,12 @@ inline std::string to_hex(const uint8_t* const data, size_t bytes) {
 
 template <typename T>
 inline std::string to_hex(const T& data) {
-    return to_hex(reinterpret_cast<const uint8_t* const>(&data), sizeof(data));
+    return to_hex(reinterpret_cast<const uint8_t* const>(&data), sizeof(T));
+}
+
+template <typename T>
+inline std::string to_hex(T* const data) {
+    return to_hex(reinterpret_cast<const uint8_t* const>(&data), sizeof(T*));
 }
 
 #if XR_PTR_SIZE == 8

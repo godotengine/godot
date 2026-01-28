@@ -31,7 +31,9 @@
 #include "json.h"
 
 #include "core/config/engine.h"
-#include "core/string/print_string.h"
+#include "core/io/file_access.h"
+#include "core/object/script_language.h"
+#include "core/variant/container_type_validate.h"
 
 const char *JSON::tk_name[TK_MAX] = {
 	"'{'",
@@ -46,38 +48,66 @@ const char *JSON::tk_name[TK_MAX] = {
 	"EOF",
 };
 
-String JSON::_make_indent(const String &p_indent, int p_size) {
-	return p_indent.repeat(p_size);
+void JSON::_add_indent(String &r_result, const String &p_indent, int p_size) {
+	for (int i = 0; i < p_size; i++) {
+		r_result += p_indent;
+	}
 }
 
-String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, HashSet<const void *> &p_markers, bool p_full_precision) {
-	ERR_FAIL_COND_V_MSG(p_cur_indent > Variant::MAX_RECURSION_DEPTH, "...", "JSON structure is too deep. Bailing.");
-
-	String colon = ":";
-	String end_statement = "";
-
-	if (!p_indent.is_empty()) {
-		colon += " ";
-		end_statement += "\n";
+void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, HashSet<const void *> &p_markers, bool p_full_precision) {
+	if (p_cur_indent > Variant::MAX_RECURSION_DEPTH) {
+		r_result += "...";
+		ERR_FAIL_MSG("JSON structure is too deep. Bailing.");
 	}
+
+	const char *colon = p_indent.is_empty() ? ":" : ": ";
+	const char *end_statement = p_indent.is_empty() ? "" : "\n";
 
 	switch (p_var.get_type()) {
 		case Variant::NIL:
-			return "null";
+			r_result += "null";
+			return;
 		case Variant::BOOL:
-			return p_var.operator bool() ? "true" : "false";
+			r_result += p_var.operator bool() ? "true" : "false";
+			return;
 		case Variant::INT:
-			return itos(p_var);
+			r_result += itos(p_var);
+			return;
 		case Variant::FLOAT: {
-			double num = p_var;
-			if (p_full_precision) {
-				// Store unreliable digits (17) instead of just reliable
-				// digits (14) so that the value can be decoded exactly.
-				return String::num(num, 17 - (int)floor(log10(num)));
-			} else {
-				// Store only reliable digits (14) by default.
-				return String::num(num, 14 - (int)floor(log10(num)));
+			const double num = p_var;
+
+			// JSON does not support NaN or Infinity, so use extremely large numbers for infinity.
+			if (!Math::is_finite(num)) {
+				if (num == Math::INF) {
+					r_result += "1e99999";
+				} else if (num == -Math::INF) {
+					r_result += "-1e99999";
+				} else {
+					WARN_PRINT_ONCE("`NaN` (\"Not a Number\") found in argument passed to JSON.stringify(). `NaN` cannot be represented in JSON, so the value has been replaced with `null`. This warning will not be printed for any later NaN occurrences.");
+					r_result += "null";
+				}
+				return;
 			}
+			// Only for exactly 0. If we have approximately 0 let the user decide how much
+			// precision they want.
+			if (num == double(0.0)) {
+				r_result += "0.0";
+				return;
+			}
+
+			if (p_full_precision) {
+				const String num_sci = String::num_scientific(num);
+				if (num_sci.contains_char('.') || num_sci.contains_char('e')) {
+					r_result += num_sci;
+				} else {
+					r_result += num_sci + ".0";
+				}
+			} else {
+				const double magnitude = std::log10(Math::abs(num));
+				const int precision = MAX(1, 14 - (int)Math::floor(magnitude));
+				r_result += String::num(num, precision);
+			}
+			return;
 		}
 		case Variant::PACKED_INT32_ARRAY:
 		case Variant::PACKED_INT64_ARRAY:
@@ -86,60 +116,80 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 		case Variant::PACKED_STRING_ARRAY:
 		case Variant::ARRAY: {
 			Array a = p_var;
-			if (a.size() == 0) {
-				return "[]";
+			if (p_markers.has(a.id())) {
+				r_result += "\"[...]\"";
+				ERR_FAIL_MSG("Converting circular structure to JSON.");
 			}
-			String s = "[";
-			s += end_statement;
 
-			ERR_FAIL_COND_V_MSG(p_markers.has(a.id()), "\"[...]\"", "Converting circular structure to JSON.");
+			if (a.is_empty()) {
+				r_result += "[]";
+				return;
+			}
+
+			r_result += '[';
+			r_result += end_statement;
+
 			p_markers.insert(a.id());
 
-			for (int i = 0; i < a.size(); i++) {
-				if (i > 0) {
-					s += ",";
-					s += end_statement;
+			bool first = true;
+			for (const Variant &var : a) {
+				if (first) {
+					first = false;
+				} else {
+					r_result += ',';
+					r_result += end_statement;
 				}
-				s += _make_indent(p_indent, p_cur_indent + 1) + _stringify(a[i], p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
+				_add_indent(r_result, p_indent, p_cur_indent + 1);
+				_stringify(r_result, var, p_indent, p_cur_indent + 1, p_sort_keys, p_markers, p_full_precision);
 			}
-			s += end_statement + _make_indent(p_indent, p_cur_indent) + "]";
+			r_result += end_statement;
+			_add_indent(r_result, p_indent, p_cur_indent);
+			r_result += ']';
 			p_markers.erase(a.id());
-			return s;
+			return;
 		}
 		case Variant::DICTIONARY: {
-			String s = "{";
-			s += end_statement;
 			Dictionary d = p_var;
+			if (p_markers.has(d.id())) {
+				r_result += "\"{...}\"";
+				ERR_FAIL_MSG("Converting circular structure to JSON.");
+			}
 
-			ERR_FAIL_COND_V_MSG(p_markers.has(d.id()), "\"{...}\"", "Converting circular structure to JSON.");
+			r_result += '{';
+			r_result += end_statement;
 			p_markers.insert(d.id());
 
-			List<Variant> keys;
-			d.get_key_list(&keys);
+			LocalVector<Variant> keys = d.get_key_list();
 
 			if (p_sort_keys) {
-				keys.sort();
+				keys.sort_custom<StringLikeVariantOrder>();
 			}
 
 			bool first_key = true;
-			for (const Variant &E : keys) {
+			for (const Variant &key : keys) {
 				if (first_key) {
 					first_key = false;
 				} else {
-					s += ",";
-					s += end_statement;
+					r_result += ',';
+					r_result += end_statement;
 				}
-				s += _make_indent(p_indent, p_cur_indent + 1) + _stringify(String(E), p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
-				s += colon;
-				s += _stringify(d[E], p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
+				_add_indent(r_result, p_indent, p_cur_indent + 1);
+				_stringify(r_result, String(key), p_indent, p_cur_indent + 1, p_sort_keys, p_markers, p_full_precision);
+				r_result += colon;
+				_stringify(r_result, d[key], p_indent, p_cur_indent + 1, p_sort_keys, p_markers, p_full_precision);
 			}
 
-			s += end_statement + _make_indent(p_indent, p_cur_indent) + "}";
+			r_result += end_statement;
+			_add_indent(r_result, p_indent, p_cur_indent);
+			r_result += '}';
 			p_markers.erase(d.id());
-			return s;
+			return;
 		}
 		default:
-			return "\"" + String(p_var).json_escape() + "\"";
+			r_result += '"';
+			r_result += String(p_var).json_escape();
+			r_result += '"';
+			return;
 	}
 }
 
@@ -190,7 +240,7 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 				String str;
 				while (true) {
 					if (p_str[index] == 0) {
-						r_err_str = "Unterminated String";
+						r_err_str = "Unterminated string";
 						return ERR_PARSE_ERROR;
 					} else if (p_str[index] == '"') {
 						index++;
@@ -200,7 +250,7 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 						index++;
 						char32_t next = p_str[index];
 						if (next == 0) {
-							r_err_str = "Unterminated String";
+							r_err_str = "Unterminated string";
 							return ERR_PARSE_ERROR;
 						}
 						char32_t res = 0;
@@ -226,7 +276,7 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 								for (int j = 0; j < 4; j++) {
 									char32_t c = p_str[index + j + 1];
 									if (c == 0) {
-										r_err_str = "Unterminated String";
+										r_err_str = "Unterminated string";
 										return ERR_PARSE_ERROR;
 									}
 									if (!is_hex_digit(c)) {
@@ -262,7 +312,7 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 									for (int j = 0; j < 4; j++) {
 										char32_t c = p_str[index + j + 1];
 										if (c == 0) {
-											r_err_str = "Unterminated String";
+											r_err_str = "Unterminated string";
 											return ERR_PARSE_ERROR;
 										}
 										if (!is_hex_digit(c)) {
@@ -305,7 +355,7 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 								res = next;
 							} break;
 							default: {
-								r_err_str = "Invalid escape sequence.";
+								r_err_str = "Invalid escape sequence";
 								return ERR_PARSE_ERROR;
 							}
 						}
@@ -341,10 +391,10 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 					r_token.value = number;
 					return OK;
 
-				} else if (is_ascii_char(p_str[index])) {
+				} else if (is_ascii_alphabet_char(p_str[index])) {
 					String id;
 
-					while (is_ascii_char(p_str[index])) {
+					while (is_ascii_alphabet_char(p_str[index])) {
 						id += p_str[index];
 						index++;
 					}
@@ -353,19 +403,20 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 					r_token.value = id;
 					return OK;
 				} else {
-					r_err_str = "Unexpected character.";
+					r_err_str = "Unexpected character";
 					return ERR_PARSE_ERROR;
 				}
 			}
 		}
 	}
 
+	r_err_str = "Unknown error getting token";
 	return ERR_PARSE_ERROR;
 }
 
 Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str) {
 	if (p_depth > Variant::MAX_RECURSION_DEPTH) {
-		r_err_str = "JSON structure is too deep. Bailing.";
+		r_err_str = "JSON structure is too deep";
 		return ERR_OUT_OF_MEMORY;
 	}
 
@@ -392,7 +443,7 @@ Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, in
 		} else if (id == "null") {
 			value = Variant();
 		} else {
-			r_err_str = "Expected 'true','false' or 'null', got '" + id + "'.";
+			r_err_str = vformat("Expected 'true', 'false', or 'null', got '%s'", id);
 			return ERR_PARSE_ERROR;
 		}
 	} else if (token.type == TK_NUMBER) {
@@ -400,7 +451,7 @@ Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, in
 	} else if (token.type == TK_STRING) {
 		value = token.value;
 	} else {
-		r_err_str = "Expected value, got " + String(tk_name[token.type]) + ".";
+		r_err_str = vformat("Expected value, got '%s'", String(tk_name[token.type]));
 		return ERR_PARSE_ERROR;
 	}
 
@@ -560,18 +611,18 @@ String JSON::get_parsed_text() const {
 }
 
 String JSON::stringify(const Variant &p_var, const String &p_indent, bool p_sort_keys, bool p_full_precision) {
-	Ref<JSON> jason;
-	jason.instantiate();
+	String result;
 	HashSet<const void *> markers;
-	return jason->_stringify(p_var, p_indent, 0, p_sort_keys, markers, p_full_precision);
+	_stringify(result, p_var, p_indent, 0, p_sort_keys, markers, p_full_precision);
+	return result;
 }
 
 Variant JSON::parse_string(const String &p_json_string) {
-	Ref<JSON> jason;
-	jason.instantiate();
-	Error error = jason->parse(p_json_string);
-	ERR_FAIL_COND_V_MSG(error != Error::OK, Variant(), vformat("Parse JSON failed. Error at line %d: %s", jason->get_error_line(), jason->get_error_message()));
-	return jason->get_data();
+	Ref<JSON> json;
+	json.instantiate();
+	Error error = json->parse(p_json_string);
+	ERR_FAIL_COND_V_MSG(error != Error::OK, Variant(), vformat("Parse JSON failed. Error at line %d: %s", json->get_error_line(), json->get_error_message()));
+	return json->get_data();
 }
 
 void JSON::_bind_methods() {
@@ -585,10 +636,915 @@ void JSON::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_error_line"), &JSON::get_error_line);
 	ClassDB::bind_method(D_METHOD("get_error_message"), &JSON::get_error_message);
 
+	ClassDB::bind_static_method("JSON", D_METHOD("from_native", "variant", "full_objects"), &JSON::from_native, DEFVAL(false));
+	ClassDB::bind_static_method("JSON", D_METHOD("to_native", "json", "allow_objects"), &JSON::to_native, DEFVAL(false));
+
 	ADD_PROPERTY(PropertyInfo(Variant::NIL, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT), "set_data", "get_data"); // Ensures that it can be serialized as binary.
 }
 
-////
+#define TYPE "type"
+#define ELEM_TYPE "elem_type"
+#define KEY_TYPE "key_type"
+#define VALUE_TYPE "value_type"
+#define ARGS "args"
+#define PROPS "props"
+
+static bool _encode_container_type(Dictionary &r_dict, const String &p_key, const ContainerType &p_type, bool p_full_objects) {
+	if (p_type.builtin_type != Variant::NIL) {
+		if (p_type.script.is_valid()) {
+			ERR_FAIL_COND_V(!p_full_objects, false);
+			const String path = p_type.script->get_path();
+			ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://"), false, "Failed to encode a path to a custom script for a container type.");
+			r_dict[p_key] = path;
+		} else if (p_type.class_name != StringName()) {
+			ERR_FAIL_COND_V(!p_full_objects, false);
+			r_dict[p_key] = String(p_type.class_name);
+		} else {
+			// No need to check `p_full_objects` since `class_name` should be non-empty for `builtin_type == Variant::OBJECT`.
+			r_dict[p_key] = Variant::get_type_name(p_type.builtin_type);
+		}
+	}
+	return true;
+}
+
+Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_depth) {
+#define RETURN_ARGS                                           \
+	Dictionary ret;                                           \
+	ret[TYPE] = Variant::get_type_name(p_variant.get_type()); \
+	ret[ARGS] = args;                                         \
+	return ret
+
+	switch (p_variant.get_type()) {
+		case Variant::NIL:
+		case Variant::BOOL: {
+			return p_variant;
+		} break;
+
+		case Variant::INT: {
+			return "i:" + String(p_variant);
+		} break;
+		case Variant::FLOAT: {
+			return "f:" + String(p_variant);
+		} break;
+		case Variant::STRING: {
+			return "s:" + String(p_variant);
+		} break;
+		case Variant::STRING_NAME: {
+			return "sn:" + String(p_variant);
+		} break;
+		case Variant::NODE_PATH: {
+			return "np:" + String(p_variant);
+		} break;
+
+		case Variant::RID:
+		case Variant::CALLABLE:
+		case Variant::SIGNAL: {
+			Dictionary ret;
+			ret[TYPE] = Variant::get_type_name(p_variant.get_type());
+			return ret;
+		} break;
+
+		case Variant::VECTOR2: {
+			const Vector2 v = p_variant;
+			Array args = { v.x, v.y };
+			RETURN_ARGS;
+		} break;
+		case Variant::VECTOR2I: {
+			const Vector2i v = p_variant;
+			Array args = { v.x, v.y };
+			RETURN_ARGS;
+		} break;
+		case Variant::RECT2: {
+			const Rect2 r = p_variant;
+			Array args = { r.position.x, r.position.y, r.size.width, r.size.height };
+			RETURN_ARGS;
+		} break;
+		case Variant::RECT2I: {
+			const Rect2i r = p_variant;
+			Array args = { r.position.x, r.position.y, r.size.width, r.size.height };
+			RETURN_ARGS;
+		} break;
+		case Variant::VECTOR3: {
+			const Vector3 v = p_variant;
+			Array args = { v.x, v.y, v.z };
+			RETURN_ARGS;
+		} break;
+		case Variant::VECTOR3I: {
+			const Vector3i v = p_variant;
+			Array args = { v.x, v.y, v.z };
+			RETURN_ARGS;
+		} break;
+		case Variant::TRANSFORM2D: {
+			const Transform2D t = p_variant;
+			Array args = { t[0].x, t[0].y, t[1].x, t[1].y, t[2].x, t[2].y };
+			RETURN_ARGS;
+		} break;
+		case Variant::VECTOR4: {
+			const Vector4 v = p_variant;
+			Array args = { v.x, v.y, v.z, v.w };
+			RETURN_ARGS;
+		} break;
+		case Variant::VECTOR4I: {
+			const Vector4i v = p_variant;
+			Array args = { v.x, v.y, v.z, v.w };
+			RETURN_ARGS;
+		} break;
+		case Variant::PLANE: {
+			const Plane p = p_variant;
+			Array args = { p.normal.x, p.normal.y, p.normal.z, p.d };
+			RETURN_ARGS;
+		} break;
+		case Variant::QUATERNION: {
+			const Quaternion q = p_variant;
+			Array args = { q.x, q.y, q.z, q.w };
+			RETURN_ARGS;
+		} break;
+		case Variant::AABB: {
+			const AABB aabb = p_variant;
+			Array args = { aabb.position.x, aabb.position.y, aabb.position.z, aabb.size.x, aabb.size.y, aabb.size.z };
+			RETURN_ARGS;
+		} break;
+		case Variant::BASIS: {
+			const Basis b = p_variant;
+
+			Array args = { b.get_column(0).x, b.get_column(0).y, b.get_column(0).z,
+				b.get_column(1).x, b.get_column(1).y, b.get_column(1).z,
+				b.get_column(2).x, b.get_column(2).y, b.get_column(2).z };
+
+			RETURN_ARGS;
+		} break;
+		case Variant::TRANSFORM3D: {
+			const Transform3D t = p_variant;
+
+			Array args = { t.basis.get_column(0).x, t.basis.get_column(0).y, t.basis.get_column(0).z,
+				t.basis.get_column(1).x, t.basis.get_column(1).y, t.basis.get_column(1).z,
+				t.basis.get_column(2).x, t.basis.get_column(2).y, t.basis.get_column(2).z,
+				t.origin.x, t.origin.y, t.origin.z };
+
+			RETURN_ARGS;
+		} break;
+		case Variant::PROJECTION: {
+			const Projection p = p_variant;
+
+			Array args = { p[0].x, p[0].y, p[0].z, p[0].w,
+				p[1].x, p[1].y, p[1].z, p[1].w,
+				p[2].x, p[2].y, p[2].z, p[2].w,
+				p[3].x, p[3].y, p[3].z, p[3].w };
+
+			RETURN_ARGS;
+		} break;
+		case Variant::COLOR: {
+			const Color c = p_variant;
+			Array args = { c.r, c.g, c.b, c.a };
+			RETURN_ARGS;
+		} break;
+
+		case Variant::OBJECT: {
+			ERR_FAIL_COND_V(!p_full_objects, Variant());
+
+			ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, Variant(), "Variant is too deep. Bailing.");
+
+			const Object *obj = p_variant.get_validated_object();
+			if (obj == nullptr) {
+				return Variant();
+			}
+
+			ERR_FAIL_COND_V(!ClassDB::can_instantiate(obj->get_class()), Variant());
+
+			List<PropertyInfo> prop_list;
+			obj->get_property_list(&prop_list);
+
+			Array props;
+			for (const PropertyInfo &pi : prop_list) {
+				if (!(pi.usage & PROPERTY_USAGE_STORAGE)) {
+					continue;
+				}
+
+				Variant value;
+				if (pi.name == CoreStringName(script)) {
+					const Ref<Script> script = obj->get_script();
+					if (script.is_valid()) {
+						const String path = script->get_path();
+						ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://"), Variant(), "Failed to encode a path to a custom script.");
+						value = path;
+					}
+				} else {
+					value = obj->get(pi.name);
+				}
+
+				props.push_back(pi.name);
+				props.push_back(_from_native(value, p_full_objects, p_depth + 1));
+			}
+
+			Dictionary ret;
+			ret[TYPE] = obj->get_class();
+			ret[PROPS] = props;
+			return ret;
+		} break;
+
+		case Variant::DICTIONARY: {
+			const Dictionary dict = p_variant;
+
+			Array args;
+
+			Dictionary ret;
+			ret[TYPE] = Variant::get_type_name(p_variant.get_type());
+			if (!_encode_container_type(ret, KEY_TYPE, dict.get_key_type(), p_full_objects)) {
+				return Variant();
+			}
+			if (!_encode_container_type(ret, VALUE_TYPE, dict.get_value_type(), p_full_objects)) {
+				return Variant();
+			}
+			ret[ARGS] = args;
+
+			ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, ret, "Variant is too deep. Bailing.");
+
+			for (const KeyValue<Variant, Variant> &kv : dict) {
+				args.push_back(_from_native(kv.key, p_full_objects, p_depth + 1));
+				args.push_back(_from_native(kv.value, p_full_objects, p_depth + 1));
+			}
+
+			return ret;
+		} break;
+
+		case Variant::ARRAY: {
+			const Array arr = p_variant;
+
+			Variant ret;
+			Array args;
+
+			if (arr.is_typed()) {
+				Dictionary d;
+				d[TYPE] = Variant::get_type_name(p_variant.get_type());
+				if (!_encode_container_type(d, ELEM_TYPE, arr.get_element_type(), p_full_objects)) {
+					return Variant();
+				}
+				d[ARGS] = args;
+				ret = d;
+			} else {
+				ret = args;
+			}
+
+			ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, ret, "Variant is too deep. Bailing.");
+
+			for (int i = 0; i < arr.size(); i++) {
+				args.push_back(_from_native(arr[i], p_full_objects, p_depth + 1));
+			}
+
+			return ret;
+		} break;
+
+		case Variant::PACKED_BYTE_ARRAY: {
+			const PackedByteArray arr = p_variant;
+
+			Array args;
+			for (int i = 0; i < arr.size(); i++) {
+				args.push_back(arr[i]);
+			}
+
+			RETURN_ARGS;
+		} break;
+		case Variant::PACKED_INT32_ARRAY: {
+			const PackedInt32Array arr = p_variant;
+
+			Array args;
+			for (int i = 0; i < arr.size(); i++) {
+				args.push_back(arr[i]);
+			}
+
+			RETURN_ARGS;
+		} break;
+		case Variant::PACKED_INT64_ARRAY: {
+			const PackedInt64Array arr = p_variant;
+
+			Array args;
+			for (int i = 0; i < arr.size(); i++) {
+				args.push_back(arr[i]);
+			}
+
+			RETURN_ARGS;
+		} break;
+		case Variant::PACKED_FLOAT32_ARRAY: {
+			const PackedFloat32Array arr = p_variant;
+
+			Array args;
+			for (int i = 0; i < arr.size(); i++) {
+				args.push_back(arr[i]);
+			}
+
+			RETURN_ARGS;
+		} break;
+		case Variant::PACKED_FLOAT64_ARRAY: {
+			const PackedFloat64Array arr = p_variant;
+
+			Array args;
+			for (int i = 0; i < arr.size(); i++) {
+				args.push_back(arr[i]);
+			}
+
+			RETURN_ARGS;
+		} break;
+		case Variant::PACKED_STRING_ARRAY: {
+			const PackedStringArray arr = p_variant;
+
+			Array args;
+			for (int i = 0; i < arr.size(); i++) {
+				args.push_back(arr[i]);
+			}
+
+			RETURN_ARGS;
+		} break;
+		case Variant::PACKED_VECTOR2_ARRAY: {
+			const PackedVector2Array arr = p_variant;
+
+			Array args;
+			for (int i = 0; i < arr.size(); i++) {
+				Vector2 v = arr[i];
+				args.push_back(v.x);
+				args.push_back(v.y);
+			}
+
+			RETURN_ARGS;
+		} break;
+		case Variant::PACKED_VECTOR3_ARRAY: {
+			const PackedVector3Array arr = p_variant;
+
+			Array args;
+			for (int i = 0; i < arr.size(); i++) {
+				Vector3 v = arr[i];
+				args.push_back(v.x);
+				args.push_back(v.y);
+				args.push_back(v.z);
+			}
+
+			RETURN_ARGS;
+		} break;
+		case Variant::PACKED_COLOR_ARRAY: {
+			const PackedColorArray arr = p_variant;
+
+			Array args;
+			for (int i = 0; i < arr.size(); i++) {
+				Color v = arr[i];
+				args.push_back(v.r);
+				args.push_back(v.g);
+				args.push_back(v.b);
+				args.push_back(v.a);
+			}
+
+			RETURN_ARGS;
+		} break;
+		case Variant::PACKED_VECTOR4_ARRAY: {
+			const PackedVector4Array arr = p_variant;
+
+			Array args;
+			for (int i = 0; i < arr.size(); i++) {
+				Vector4 v = arr[i];
+				args.push_back(v.x);
+				args.push_back(v.y);
+				args.push_back(v.z);
+				args.push_back(v.w);
+			}
+
+			RETURN_ARGS;
+		} break;
+
+		case Variant::VARIANT_MAX: {
+			// Nothing to do.
+		} break;
+	}
+
+#undef RETURN_ARGS
+
+	ERR_FAIL_V_MSG(Variant(), vformat(R"(Unhandled Variant type "%s".)", Variant::get_type_name(p_variant.get_type())));
+}
+
+static bool _decode_container_type(const Dictionary &p_dict, const String &p_key, ContainerType &r_type, bool p_allow_objects) {
+	if (!p_dict.has(p_key)) {
+		return true;
+	}
+
+	const String type_name = p_dict[p_key];
+
+	const Variant::Type builtin_type = Variant::get_type_by_name(type_name);
+	if (builtin_type < Variant::VARIANT_MAX && builtin_type != Variant::OBJECT) {
+		r_type.builtin_type = builtin_type;
+		return true;
+	}
+
+	if (ClassDB::class_exists(type_name)) {
+		ERR_FAIL_COND_V(!p_allow_objects, false);
+
+		r_type.builtin_type = Variant::OBJECT;
+		r_type.class_name = type_name;
+		return true;
+	}
+
+	if (type_name.begins_with("res://")) {
+		ERR_FAIL_COND_V(!p_allow_objects, false);
+
+		ERR_FAIL_COND_V_MSG(!ResourceLoader::exists(type_name, "Script"), false, vformat(R"(Invalid script path "%s".)", type_name));
+		const Ref<Script> script = ResourceLoader::load(type_name, "Script");
+		ERR_FAIL_COND_V_MSG(script.is_null(), false, vformat(R"(Can't load script at path "%s".)", type_name));
+
+		r_type.builtin_type = Variant::OBJECT;
+		r_type.class_name = script->get_instance_base_type();
+		r_type.script = script;
+		return true;
+	}
+
+	ERR_FAIL_V_MSG(false, vformat(R"(Invalid type "%s".)", type_name));
+}
+
+Variant JSON::_to_native(const Variant &p_json, bool p_allow_objects, int p_depth) {
+	switch (p_json.get_type()) {
+		case Variant::NIL:
+		case Variant::BOOL: {
+			return p_json;
+		} break;
+
+		case Variant::STRING: {
+			const String s = p_json;
+
+			if (s.begins_with("i:")) {
+				return s.substr(2).to_int();
+			} else if (s.begins_with("f:")) {
+				const String sub = s.substr(2);
+				if (sub == "inf") {
+					return Math::INF;
+				} else if (sub == "-inf") {
+					return -Math::INF;
+				} else if (sub == "nan") {
+					return Math::NaN;
+				}
+				return sub.to_float();
+			} else if (s.begins_with("s:")) {
+				return s.substr(2);
+			} else if (s.begins_with("sn:")) {
+				return StringName(s.substr(3));
+			} else if (s.begins_with("np:")) {
+				return NodePath(s.substr(3));
+			}
+
+			ERR_FAIL_V_MSG(Variant(), "Invalid string, the type prefix is not recognized.");
+		} break;
+
+		case Variant::DICTIONARY: {
+			const Dictionary dict = p_json;
+
+			ERR_FAIL_COND_V(!dict.has(TYPE), Variant());
+
+#define LOAD_ARGS()                              \
+	ERR_FAIL_COND_V(!dict.has(ARGS), Variant()); \
+	const Array args = dict[ARGS]
+
+#define LOAD_ARGS_CHECK_SIZE(m_size)             \
+	ERR_FAIL_COND_V(!dict.has(ARGS), Variant()); \
+	const Array args = dict[ARGS];               \
+	ERR_FAIL_COND_V(args.size() != (m_size), Variant())
+
+#define LOAD_ARGS_CHECK_FACTOR(m_factor)         \
+	ERR_FAIL_COND_V(!dict.has(ARGS), Variant()); \
+	const Array args = dict[ARGS];               \
+	ERR_FAIL_COND_V(args.size() % (m_factor) != 0, Variant())
+
+			switch (Variant::get_type_by_name(dict[TYPE])) {
+				case Variant::NIL:
+				case Variant::BOOL: {
+					ERR_FAIL_V_MSG(Variant(), vformat(R"(Unexpected "%s": Variant type "%s" is JSON-compliant.)", TYPE, dict[TYPE]));
+				} break;
+
+				case Variant::INT:
+				case Variant::FLOAT:
+				case Variant::STRING:
+				case Variant::STRING_NAME:
+				case Variant::NODE_PATH: {
+					ERR_FAIL_V_MSG(Variant(), vformat(R"(Unexpected "%s": Variant type "%s" must be represented as a string.)", TYPE, dict[TYPE]));
+				} break;
+
+				case Variant::RID: {
+					return RID();
+				} break;
+				case Variant::CALLABLE: {
+					return Callable();
+				} break;
+				case Variant::SIGNAL: {
+					return Signal();
+				} break;
+
+				case Variant::VECTOR2: {
+					LOAD_ARGS_CHECK_SIZE(2);
+
+					Vector2 v;
+					v.x = args[0];
+					v.y = args[1];
+
+					return v;
+				} break;
+				case Variant::VECTOR2I: {
+					LOAD_ARGS_CHECK_SIZE(2);
+
+					Vector2i v;
+					v.x = args[0];
+					v.y = args[1];
+
+					return v;
+				} break;
+				case Variant::RECT2: {
+					LOAD_ARGS_CHECK_SIZE(4);
+
+					Rect2 r;
+					r.position = Point2(args[0], args[1]);
+					r.size = Size2(args[2], args[3]);
+
+					return r;
+				} break;
+				case Variant::RECT2I: {
+					LOAD_ARGS_CHECK_SIZE(4);
+
+					Rect2i r;
+					r.position = Point2i(args[0], args[1]);
+					r.size = Size2i(args[2], args[3]);
+
+					return r;
+				} break;
+				case Variant::VECTOR3: {
+					LOAD_ARGS_CHECK_SIZE(3);
+
+					Vector3 v;
+					v.x = args[0];
+					v.y = args[1];
+					v.z = args[2];
+
+					return v;
+				} break;
+				case Variant::VECTOR3I: {
+					LOAD_ARGS_CHECK_SIZE(3);
+
+					Vector3i v;
+					v.x = args[0];
+					v.y = args[1];
+					v.z = args[2];
+
+					return v;
+				} break;
+				case Variant::TRANSFORM2D: {
+					LOAD_ARGS_CHECK_SIZE(6);
+
+					Transform2D t;
+					t[0] = Vector2(args[0], args[1]);
+					t[1] = Vector2(args[2], args[3]);
+					t[2] = Vector2(args[4], args[5]);
+
+					return t;
+				} break;
+				case Variant::VECTOR4: {
+					LOAD_ARGS_CHECK_SIZE(4);
+
+					Vector4 v;
+					v.x = args[0];
+					v.y = args[1];
+					v.z = args[2];
+					v.w = args[3];
+
+					return v;
+				} break;
+				case Variant::VECTOR4I: {
+					LOAD_ARGS_CHECK_SIZE(4);
+
+					Vector4i v;
+					v.x = args[0];
+					v.y = args[1];
+					v.z = args[2];
+					v.w = args[3];
+
+					return v;
+				} break;
+				case Variant::PLANE: {
+					LOAD_ARGS_CHECK_SIZE(4);
+
+					Plane p;
+					p.normal = Vector3(args[0], args[1], args[2]);
+					p.d = args[3];
+
+					return p;
+				} break;
+				case Variant::QUATERNION: {
+					LOAD_ARGS_CHECK_SIZE(4);
+
+					Quaternion q;
+					q.x = args[0];
+					q.y = args[1];
+					q.z = args[2];
+					q.w = args[3];
+
+					return q;
+				} break;
+				case Variant::AABB: {
+					LOAD_ARGS_CHECK_SIZE(6);
+
+					AABB aabb;
+					aabb.position = Vector3(args[0], args[1], args[2]);
+					aabb.size = Vector3(args[3], args[4], args[5]);
+
+					return aabb;
+				} break;
+				case Variant::BASIS: {
+					LOAD_ARGS_CHECK_SIZE(9);
+
+					Basis b;
+					b.set_column(0, Vector3(args[0], args[1], args[2]));
+					b.set_column(1, Vector3(args[3], args[4], args[5]));
+					b.set_column(2, Vector3(args[6], args[7], args[8]));
+
+					return b;
+				} break;
+				case Variant::TRANSFORM3D: {
+					LOAD_ARGS_CHECK_SIZE(12);
+
+					Transform3D t;
+					t.basis.set_column(0, Vector3(args[0], args[1], args[2]));
+					t.basis.set_column(1, Vector3(args[3], args[4], args[5]));
+					t.basis.set_column(2, Vector3(args[6], args[7], args[8]));
+					t.origin = Vector3(args[9], args[10], args[11]);
+
+					return t;
+				} break;
+				case Variant::PROJECTION: {
+					LOAD_ARGS_CHECK_SIZE(16);
+
+					Projection p;
+					p[0] = Vector4(args[0], args[1], args[2], args[3]);
+					p[1] = Vector4(args[4], args[5], args[6], args[7]);
+					p[2] = Vector4(args[8], args[9], args[10], args[11]);
+					p[3] = Vector4(args[12], args[13], args[14], args[15]);
+
+					return p;
+				} break;
+				case Variant::COLOR: {
+					LOAD_ARGS_CHECK_SIZE(4);
+
+					Color c;
+					c.r = args[0];
+					c.g = args[1];
+					c.b = args[2];
+					c.a = args[3];
+
+					return c;
+				} break;
+
+				case Variant::OBJECT: {
+					// Nothing to do at this stage. `Object` should be treated as a class, not as a built-in type.
+				} break;
+
+				case Variant::DICTIONARY: {
+					LOAD_ARGS_CHECK_FACTOR(2);
+
+					ContainerType key_type;
+					if (!_decode_container_type(dict, KEY_TYPE, key_type, p_allow_objects)) {
+						return Variant();
+					}
+
+					ContainerType value_type;
+					if (!_decode_container_type(dict, VALUE_TYPE, value_type, p_allow_objects)) {
+						return Variant();
+					}
+
+					Dictionary ret;
+
+					if (key_type.builtin_type != Variant::NIL || value_type.builtin_type != Variant::NIL) {
+						ret.set_typed(key_type, value_type);
+					}
+
+					ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, ret, "Variant is too deep. Bailing.");
+
+					for (int i = 0; i < args.size() / 2; i++) {
+						ret[_to_native(args[i * 2 + 0], p_allow_objects, p_depth + 1)] = _to_native(args[i * 2 + 1], p_allow_objects, p_depth + 1);
+					}
+
+					return ret;
+				} break;
+
+				case Variant::ARRAY: {
+					LOAD_ARGS();
+
+					ContainerType elem_type;
+					if (!_decode_container_type(dict, ELEM_TYPE, elem_type, p_allow_objects)) {
+						return Variant();
+					}
+
+					Array ret;
+
+					if (elem_type.builtin_type != Variant::NIL) {
+						ret.set_typed(elem_type);
+					}
+
+					ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, ret, "Variant is too deep. Bailing.");
+
+					ret.resize(args.size());
+					for (int i = 0; i < args.size(); i++) {
+						ret[i] = _to_native(args[i], p_allow_objects, p_depth + 1);
+					}
+
+					return ret;
+				} break;
+
+				case Variant::PACKED_BYTE_ARRAY: {
+					LOAD_ARGS();
+
+					PackedByteArray arr;
+					arr.resize(args.size());
+					for (int i = 0; i < arr.size(); i++) {
+						arr.write[i] = args[i];
+					}
+
+					return arr;
+				} break;
+				case Variant::PACKED_INT32_ARRAY: {
+					LOAD_ARGS();
+
+					PackedInt32Array arr;
+					arr.resize(args.size());
+					for (int i = 0; i < arr.size(); i++) {
+						arr.write[i] = args[i];
+					}
+
+					return arr;
+				} break;
+				case Variant::PACKED_INT64_ARRAY: {
+					LOAD_ARGS();
+
+					PackedInt64Array arr;
+					arr.resize(args.size());
+					for (int i = 0; i < arr.size(); i++) {
+						arr.write[i] = args[i];
+					}
+
+					return arr;
+				} break;
+				case Variant::PACKED_FLOAT32_ARRAY: {
+					LOAD_ARGS();
+
+					PackedFloat32Array arr;
+					arr.resize(args.size());
+					for (int i = 0; i < arr.size(); i++) {
+						arr.write[i] = args[i];
+					}
+
+					return arr;
+				} break;
+				case Variant::PACKED_FLOAT64_ARRAY: {
+					LOAD_ARGS();
+
+					PackedFloat64Array arr;
+					arr.resize(args.size());
+					for (int i = 0; i < arr.size(); i++) {
+						arr.write[i] = args[i];
+					}
+
+					return arr;
+				} break;
+				case Variant::PACKED_STRING_ARRAY: {
+					LOAD_ARGS();
+
+					PackedStringArray arr;
+					arr.resize(args.size());
+					for (int i = 0; i < arr.size(); i++) {
+						arr.write[i] = args[i];
+					}
+
+					return arr;
+				} break;
+				case Variant::PACKED_VECTOR2_ARRAY: {
+					LOAD_ARGS_CHECK_FACTOR(2);
+
+					PackedVector2Array arr;
+					arr.resize(args.size() / 2);
+					for (int i = 0; i < arr.size(); i++) {
+						arr.write[i] = Vector2(args[i * 2 + 0], args[i * 2 + 1]);
+					}
+
+					return arr;
+				} break;
+				case Variant::PACKED_VECTOR3_ARRAY: {
+					LOAD_ARGS_CHECK_FACTOR(3);
+
+					PackedVector3Array arr;
+					arr.resize(args.size() / 3);
+					for (int i = 0; i < arr.size(); i++) {
+						arr.write[i] = Vector3(args[i * 3 + 0], args[i * 3 + 1], args[i * 3 + 2]);
+					}
+
+					return arr;
+				} break;
+				case Variant::PACKED_COLOR_ARRAY: {
+					LOAD_ARGS_CHECK_FACTOR(4);
+
+					PackedColorArray arr;
+					arr.resize(args.size() / 4);
+					for (int i = 0; i < arr.size(); i++) {
+						arr.write[i] = Color(args[i * 4 + 0], args[i * 4 + 1], args[i * 4 + 2], args[i * 4 + 3]);
+					}
+
+					return arr;
+				} break;
+				case Variant::PACKED_VECTOR4_ARRAY: {
+					LOAD_ARGS_CHECK_FACTOR(4);
+
+					PackedVector4Array arr;
+					arr.resize(args.size() / 4);
+					for (int i = 0; i < arr.size(); i++) {
+						arr.write[i] = Vector4(args[i * 4 + 0], args[i * 4 + 1], args[i * 4 + 2], args[i * 4 + 3]);
+					}
+
+					return arr;
+				} break;
+
+				case Variant::VARIANT_MAX: {
+					// Nothing to do.
+				} break;
+			}
+
+#undef LOAD_ARGS
+#undef LOAD_ARGS_CHECK_SIZE
+#undef LOAD_ARGS_CHECK_FACTOR
+
+			if (ClassDB::class_exists(dict[TYPE])) {
+				ERR_FAIL_COND_V(!p_allow_objects, Variant());
+
+				ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, Variant(), "Variant is too deep. Bailing.");
+
+				ERR_FAIL_COND_V(!dict.has(PROPS), Variant());
+				const Array props = dict[PROPS];
+				ERR_FAIL_COND_V(props.size() % 2 != 0, Variant());
+
+				ERR_FAIL_COND_V(!ClassDB::can_instantiate(dict[TYPE]), Variant());
+
+				Object *obj = ClassDB::instantiate(dict[TYPE]);
+				ERR_FAIL_NULL_V(obj, Variant());
+
+				// Avoid premature free `RefCounted`. This must be done before properties are initialized,
+				// since script functions (setters, implicit initializer) may be called. See GH-68666.
+				Variant variant;
+				if (Object::cast_to<RefCounted>(obj)) {
+					const Ref<RefCounted> ref = Ref<RefCounted>(Object::cast_to<RefCounted>(obj));
+					variant = ref;
+				} else {
+					variant = obj;
+				}
+
+				for (int i = 0; i < props.size() / 2; i++) {
+					const StringName name = props[i * 2 + 0];
+					const Variant value = _to_native(props[i * 2 + 1], p_allow_objects, p_depth + 1);
+
+					if (name == CoreStringName(script) && value.get_type() != Variant::NIL) {
+						const String path = value;
+						ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://") || !ResourceLoader::exists(path, "Script"),
+								Variant(),
+								vformat(R"(Invalid script path "%s".)", path));
+
+						const Ref<Script> script = ResourceLoader::load(path, "Script");
+						ERR_FAIL_COND_V_MSG(script.is_null(), Variant(), vformat(R"(Can't load script at path "%s".)", path));
+
+						obj->set_script(script);
+					} else {
+						obj->set(name, value);
+					}
+				}
+
+				return variant;
+			}
+
+			ERR_FAIL_V_MSG(Variant(), vformat(R"(Invalid type "%s".)", dict[TYPE]));
+		} break;
+
+		case Variant::ARRAY: {
+			ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, Array(), "Variant is too deep. Bailing.");
+
+			const Array arr = p_json;
+
+			Array ret;
+			ret.resize(arr.size());
+			for (int i = 0; i < arr.size(); i++) {
+				ret[i] = _to_native(arr[i], p_allow_objects, p_depth + 1);
+			}
+
+			return ret;
+		} break;
+
+		default: {
+			// Nothing to do.
+		} break;
+	}
+
+	ERR_FAIL_V_MSG(Variant(), vformat(R"(Variant type "%s" is not JSON-compliant.)", Variant::get_type_name(p_json.get_type())));
+}
+
+#undef TYPE
+#undef ELEM_TYPE
+#undef KEY_TYPE
+#undef VALUE_TYPE
+#undef ARGS
+#undef PROPS
 
 ////////////
 
@@ -598,7 +1554,9 @@ Ref<Resource> ResourceFormatLoaderJSON::load(const String &p_path, const String 
 	}
 
 	if (!FileAccess::exists(p_path)) {
-		*r_error = ERR_FILE_NOT_FOUND;
+		if (r_error) {
+			*r_error = ERR_FILE_NOT_FOUND;
+		}
 		return Ref<Resource>();
 	}
 
@@ -637,8 +1595,7 @@ bool ResourceFormatLoaderJSON::handles_type(const String &p_type) const {
 }
 
 String ResourceFormatLoaderJSON::get_resource_type(const String &p_path) const {
-	String el = p_path.get_extension().to_lower();
-	if (el == "json") {
+	if (p_path.has_extension("json")) {
 		return "JSON";
 	}
 	return "";
@@ -653,7 +1610,7 @@ Error ResourceFormatSaverJSON::save(const Ref<Resource> &p_resource, const Strin
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
-	ERR_FAIL_COND_V_MSG(err, err, "Cannot save json '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(err, err, vformat("Cannot save json '%s'.", p_path));
 
 	file->store_string(source);
 	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {

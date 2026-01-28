@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SKY_RD_H
-#define SKY_RD_H
+#pragma once
 
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/environment/sky.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_data_rd.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/shader_compiler.h"
@@ -74,9 +74,9 @@ private:
 		SKY_TEXTURE_SET_BACKGROUND,
 		SKY_TEXTURE_SET_HALF_RES,
 		SKY_TEXTURE_SET_QUARTER_RES,
-		SKY_TEXTURE_SET_CUBEMAP,
-		SKY_TEXTURE_SET_CUBEMAP_HALF_RES,
-		SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES,
+		SKY_TEXTURE_SET_OCTMAP,
+		SKY_TEXTURE_SET_OCTMAP_HALF_RES,
+		SKY_TEXTURE_SET_OCTMAP_QUARTER_RES,
 		SKY_TEXTURE_SET_MAX
 	};
 
@@ -84,9 +84,9 @@ private:
 		SKY_VERSION_BACKGROUND,
 		SKY_VERSION_HALF_RES,
 		SKY_VERSION_QUARTER_RES,
-		SKY_VERSION_CUBEMAP,
-		SKY_VERSION_CUBEMAP_HALF_RES,
-		SKY_VERSION_CUBEMAP_QUARTER_RES,
+		SKY_VERSION_OCTMAP,
+		SKY_VERSION_OCTMAP_HALF_RES,
+		SKY_VERSION_OCTMAP_QUARTER_RES,
 
 		SKY_VERSION_BACKGROUND_MULTIVIEW,
 		SKY_VERSION_HALF_RES_MULTIVIEW,
@@ -100,8 +100,9 @@ private:
 		float projection[4]; // 16 - 64
 		float position[3]; // 12 - 76
 		float time; // 4 - 80
-		float pad[3]; // 12 - 92
-		float luminance_multiplier; // 4 - 96
+		float border_size[2]; // 8 - 88
+		float luminance_multiplier; // 4 - 92
+		float brightness_multiplier; // 4 - 96
 		// 128 is the max size of a push constant. We can replace "pad" but we can't add any more.
 	};
 
@@ -127,12 +128,13 @@ private:
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 
 		SkyShaderData() {}
 		virtual ~SkyShaderData();
 	};
 
-	void _render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const Projection &p_projection, const Basis &p_orientation, const Vector3 &p_position, float p_luminance_multiplier);
+	void _render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const Projection &p_projection, const Basis &p_orientation, const Vector3 &p_position, float p_luminance_multiplier, float p_brightness_modifier, float p_border_size = 0.0);
 
 public:
 	struct SkySceneState {
@@ -184,12 +186,11 @@ public:
 	struct ReflectionData {
 		struct Layer {
 			struct Mipmap {
-				RID framebuffers[6];
-				RID views[6];
+				RID framebuffer;
+				RID view;
 				Size2i size;
 			};
-			Vector<Mipmap> mipmaps; //per-face view
-			Vector<RID> views; // per-cubemap view
+			LocalVector<Mipmap> mipmaps;
 		};
 
 		struct DownsampleLayer {
@@ -197,26 +198,27 @@ public:
 				RID view;
 				Size2i size;
 
-				// for mobile only
-				RID views[6];
-				RID framebuffers[6];
+				// Used only for the raster version.
+				RID octmap_view;
+				RID framebuffer;
 			};
-			Vector<Mipmap> mipmaps;
+			LocalVector<Mipmap> mipmaps;
 		};
 
-		RID radiance_base_cubemap; //cubemap for first layer, first cubemap
-		RID downsampled_radiance_cubemap;
+		RID radiance_base_octmap;
+		RID downsampled_radiance_octmap;
 		DownsampleLayer downsampled_layer;
 		RID coefficient_buffer;
 
 		bool dirty = true;
+		float uv_border_size = 0.0; // Border size in UV space.
 
-		Vector<Layer> layers;
+		LocalVector<Layer> layers;
 
 		void clear_reflection_data();
-		void update_reflection_data(int p_size, int p_mipmaps, bool p_use_array, RID p_base_cube, int p_base_layer, bool p_low_quality, int p_roughness_layers, RD::DataFormat p_texture_format);
+		void update_reflection_data(int p_size, int p_mipmaps, bool p_use_array, RID p_base_oct, int p_base_layer, bool p_low_quality, int p_roughness_layers, RD::DataFormat p_texture_format, float p_border_size);
 		void create_reflection_fast_filter(bool p_use_arrays);
-		void create_reflection_importance_sample(bool p_use_arrays, int p_cube_side, int p_base_layer, uint32_t p_sky_ggx_samples_quality);
+		void create_reflection_importance_sample(bool p_use_arrays, int p_base_layer, uint32_t p_sky_ggx_samples_quality);
 		void update_reflection_mipmaps(int p_start, int p_end);
 	};
 
@@ -243,6 +245,9 @@ public:
 	};
 
 	struct Sky {
+		static inline const int REAL_TIME_SIZE = 256;
+		static inline const int REAL_TIME_ROUGHNESS_LAYERS = 7;
+
 		RID radiance;
 		RID quarter_res_pass;
 		RID quarter_res_framebuffer;
@@ -253,7 +258,8 @@ public:
 		RID material;
 		RID uniform_buffer;
 
-		int radiance_size = 256;
+		int radiance_size = REAL_TIME_SIZE;
+		float uv_border_size = 0.0; // Border size in UV space.
 
 		RS::SkyMode mode = RS::SKY_MODE_AUTOMATIC;
 
@@ -263,7 +269,7 @@ public:
 		Sky *dirty_list = nullptr;
 		float baked_exposure = 1.0;
 
-		//State to track when radiance cubemap needs updating
+		// State to track when radiance octmap needs updating.
 		SkyMaterialData *prev_material = nullptr;
 		Vector3 prev_position;
 		float prev_time;
@@ -272,13 +278,15 @@ public:
 
 		RID get_textures(SkyTextureSetVersion p_version, RID p_default_shader_rd, Ref<RenderSceneBuffersRD> p_render_buffers);
 		bool set_radiance_size(int p_radiance_size);
+		int get_radiance_size() const;
 		bool set_mode(RS::SkyMode p_mode);
 		bool set_material(RID p_material);
 		Ref<Image> bake_panorama(float p_energy, int p_roughness_layers, const Size2i &p_size);
 	};
 
 	uint32_t sky_ggx_samples_quality;
-	bool sky_use_cubemap_array;
+	bool sky_use_octmap_array;
+
 	Sky *dirty_sky_list = nullptr;
 	mutable RID_Owner<Sky, true> sky_owner;
 	int roughness_layers;
@@ -294,10 +302,10 @@ public:
 	void set_texture_format(RD::DataFormat p_texture_format);
 	~SkyRD();
 
-	void setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const PagedArray<RID> &p_lights, RID p_camera_attributes, uint32_t p_view_count, const Projection *p_view_projections, const Vector3 *p_view_eye_offsets, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const Size2i p_screen_size, Vector2 p_jitter, RendererSceneRenderRD *p_scene_render);
-	void update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, const Vector3 &p_global_pos, double p_time, float p_luminance_multiplier = 1.0);
-	void update_res_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, double p_time, float p_luminance_multiplier = 1.0);
-	void draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, RID p_fb, double p_time, float p_luminance_multiplier = 1.0);
+	void setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_size);
+	void update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, const Vector3 &p_global_pos, double p_time, float p_luminance_multiplier = 1.0, float p_brightness_multiplier = 1.0);
+	void update_res_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, double p_time, float p_luminance_multiplier = 1.0, float p_brightness_multiplier = 1.0);
+	void draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, RID p_fb, double p_time, float p_luminance_multiplier = 1.0, float p_brightness_multiplier = 1.0);
 
 	void invalidate_sky(Sky *p_sky);
 	void update_dirty_skys();
@@ -311,11 +319,11 @@ public:
 	Sky *get_sky(RID p_sky) const;
 	void free_sky(RID p_sky);
 	void sky_set_radiance_size(RID p_sky, int p_radiance_size);
+	int sky_get_radiance_size(RID p_sky) const;
 	void sky_set_mode(RID p_sky, RS::SkyMode p_mode);
 	void sky_set_material(RID p_sky, RID p_material);
 	Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size);
+	float sky_get_uv_border_size(RID p_sky);
 };
 
 } // namespace RendererRD
-
-#endif // SKY_RD_H

@@ -31,6 +31,7 @@
 #include "local_debugger.h"
 
 #include "core/debugger/script_debugger.h"
+#include "core/os/main_loop.h"
 #include "core/os/os.h"
 
 struct LocalDebugger::ScriptsProfiler {
@@ -171,7 +172,7 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 			} else {
 				String key_value = line.get_slicec(' ', 1);
-				int value_pos = key_value.find("=");
+				int value_pos = key_value.find_char('=');
 
 				if (value_pos < 0) {
 					print_line("Error: Invalid set format. Use: set key=value");
@@ -208,10 +209,10 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			print_variables(members, values, variable_prefix);
 
 		} else if (line.begins_with("p") || line.begins_with("print")) {
-			if (line.get_slice_count(" ") <= 1) {
-				print_line("Usage: print <expre>");
+			if (line.find_char(' ') < 0) {
+				print_line("Usage: print <expression>");
 			} else {
-				String expr = line.get_slicec(' ', 2);
+				String expr = line.split(" ", true, 1)[1];
 				String res = script_lang->debug_parse_stack_level_expression(current_frame, expr);
 				print_line(res);
 			}
@@ -222,6 +223,10 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			break;
 		} else if (line == "n" || line == "next") {
 			script_debugger->set_depth(0);
+			script_debugger->set_lines_left(1);
+			break;
+		} else if (line == "o" || line == "out") {
+			script_debugger->set_depth(1);
 			script_debugger->set_lines_left(1);
 			break;
 		} else if (line == "fin" || line == "finish") {
@@ -242,7 +247,7 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		} else if (line.begins_with("br") || line.begins_with("break")) {
 			if (line.get_slice_count(" ") <= 1) {
 				const HashMap<int, HashSet<StringName>> &breakpoints = script_debugger->get_breakpoints();
-				if (breakpoints.size() == 0) {
+				if (breakpoints.is_empty()) {
 					print_line("No Breakpoints.");
 					continue;
 				}
@@ -344,7 +349,7 @@ Pair<String, int> LocalDebugger::to_breakpoint(const String &p_line) {
 	String breakpoint_part = p_line.get_slicec(' ', 1);
 	Pair<String, int> breakpoint;
 
-	int last_colon = breakpoint_part.rfind(":");
+	int last_colon = breakpoint_part.rfind_char(':');
 	if (last_colon < 0) {
 		print_line("Error: Invalid breakpoint format. Expected [source:line]");
 		return breakpoint;
@@ -362,7 +367,7 @@ void LocalDebugger::send_message(const String &p_message, const Array &p_args) {
 }
 
 void LocalDebugger::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type) {
-	print_line("ERROR: '" + (p_descr.is_empty() ? p_err : p_descr) + "'");
+	_err_print_error(p_func.utf8().get_data(), p_file.utf8().get_data(), p_line, p_err, p_descr, p_editor_notify, p_type);
 }
 
 LocalDebugger::LocalDebugger() {

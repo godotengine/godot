@@ -55,36 +55,36 @@
 			<return type="void" />
 			<param index="0" name="viewport_control" type="Control" />
 			<description>
-				Called by the engine when the 3D editor's viewport is updated. Use the [code]overlay[/code] [Control] for drawing. You can update the viewport manually by calling [method update_overlays].
+				Called by the engine when the 3D editor's viewport is updated. [param viewport_control] is an overlay on top of the viewport and it can be used for drawing. You can update the viewport manually by calling [method update_overlays].
 				[codeblocks]
 				[gdscript]
 				func _forward_3d_draw_over_viewport(overlay):
-				    # Draw a circle at cursor position.
-				    overlay.draw_circle(overlay.get_local_mouse_position(), 64)
+					# Draw a circle at the cursor's position.
+					overlay.draw_circle(overlay.get_local_mouse_position(), 64, Color.WHITE)
 
 				func _forward_3d_gui_input(camera, event):
-				    if event is InputEventMouseMotion:
-				        # Redraw viewport when cursor is moved.
-				        update_overlays()
-				        return EditorPlugin.AFTER_GUI_INPUT_STOP
-				    return EditorPlugin.AFTER_GUI_INPUT_PASS
+					if event is InputEventMouseMotion:
+						# Redraw the viewport when the cursor is moved.
+						update_overlays()
+						return EditorPlugin.AFTER_GUI_INPUT_STOP
+					return EditorPlugin.AFTER_GUI_INPUT_PASS
 				[/gdscript]
 				[csharp]
 				public override void _Forward3DDrawOverViewport(Control viewportControl)
 				{
-				    // Draw a circle at cursor position.
-				    viewportControl.DrawCircle(viewportControl.GetLocalMousePosition(), 64, Colors.White);
+					// Draw a circle at the cursor's position.
+					viewportControl.DrawCircle(viewportControl.GetLocalMousePosition(), 64, Colors.White);
 				}
 
 				public override EditorPlugin.AfterGuiInput _Forward3DGuiInput(Camera3D viewportCamera, InputEvent @event)
 				{
-				    if (@event is InputEventMouseMotion)
-				    {
-				        // Redraw viewport when cursor is moved.
-				        UpdateOverlays();
-				        return EditorPlugin.AfterGuiInput.Stop;
-				    }
-				    return EditorPlugin.AfterGuiInput.Pass;
+					if (@event is InputEventMouseMotion)
+					{
+						// Redraw the viewport when the cursor is moved.
+						UpdateOverlays();
+						return EditorPlugin.AfterGuiInput.Stop;
+					}
+					return EditorPlugin.AfterGuiInput.Pass;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -104,34 +104,32 @@
 			<param index="1" name="event" type="InputEvent" />
 			<description>
 				Called when there is a root node in the current edited scene, [method _handles] is implemented, and an [InputEvent] happens in the 3D viewport. The return value decides whether the [InputEvent] is consumed or forwarded to other [EditorPlugin]s. See [enum AfterGUIInput] for options.
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				# Prevents the InputEvent from reaching other Editor classes.
 				func _forward_3d_gui_input(camera, event):
-				    return EditorPlugin.AFTER_GUI_INPUT_STOP
+					return EditorPlugin.AFTER_GUI_INPUT_STOP
 				[/gdscript]
 				[csharp]
 				// Prevents the InputEvent from reaching other Editor classes.
 				public override EditorPlugin.AfterGuiInput _Forward3DGuiInput(Camera3D camera, InputEvent @event)
 				{
-				    return EditorPlugin.AfterGuiInput.Stop;
+					return EditorPlugin.AfterGuiInput.Stop;
 				}
 				[/csharp]
 				[/codeblocks]
-				Must [code]return EditorPlugin.AFTER_GUI_INPUT_PASS[/code] in order to forward the [InputEvent] to other Editor classes.
-				[b]Example:[/b]
+				This method must return [constant AFTER_GUI_INPUT_PASS] in order to forward the [InputEvent] to other Editor classes.
 				[codeblocks]
 				[gdscript]
 				# Consumes InputEventMouseMotion and forwards other InputEvent types.
 				func _forward_3d_gui_input(camera, event):
-				    return EditorPlugin.AFTER_GUI_INPUT_STOP if event is InputEventMouseMotion else EditorPlugin.AFTER_GUI_INPUT_PASS
+					return EditorPlugin.AFTER_GUI_INPUT_STOP if event is InputEventMouseMotion else EditorPlugin.AFTER_GUI_INPUT_PASS
 				[/gdscript]
 				[csharp]
 				// Consumes InputEventMouseMotion and forwards other InputEvent types.
 				public override EditorPlugin.AfterGuiInput _Forward3DGuiInput(Camera3D camera, InputEvent @event)
 				{
-				    return @event is InputEventMouseMotion ? EditorPlugin.AfterGuiInput.Stop : EditorPlugin.AfterGuiInput.Pass;
+					return @event is InputEventMouseMotion ? EditorPlugin.AfterGuiInput.Stop : EditorPlugin.AfterGuiInput.Pass;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -141,36 +139,36 @@
 			<return type="void" />
 			<param index="0" name="viewport_control" type="Control" />
 			<description>
-				Called by the engine when the 2D editor's viewport is updated. Use the [code]overlay[/code] [Control] for drawing. You can update the viewport manually by calling [method update_overlays].
+				Called by the engine when the 2D editor's viewport is updated. [param viewport_control] is an overlay on top of the viewport and it can be used for drawing. You can update the viewport manually by calling [method update_overlays].
 				[codeblocks]
 				[gdscript]
 				func _forward_canvas_draw_over_viewport(overlay):
-				    # Draw a circle at cursor position.
-				    overlay.draw_circle(overlay.get_local_mouse_position(), 64, Color.WHITE)
+					# Draw a circle at the cursor's position.
+					overlay.draw_circle(overlay.get_local_mouse_position(), 64, Color.WHITE)
 
 				func _forward_canvas_gui_input(event):
-				    if event is InputEventMouseMotion:
-				        # Redraw viewport when cursor is moved.
-				        update_overlays()
-				        return true
-				    return false
+					if event is InputEventMouseMotion:
+						# Redraw the viewport when the cursor is moved.
+						update_overlays()
+						return true
+					return false
 				[/gdscript]
 				[csharp]
 				public override void _ForwardCanvasDrawOverViewport(Control viewportControl)
 				{
-				    // Draw a circle at cursor position.
-				    viewportControl.DrawCircle(viewportControl.GetLocalMousePosition(), 64, Colors.White);
+					// Draw a circle at the cursor's position.
+					viewportControl.DrawCircle(viewportControl.GetLocalMousePosition(), 64, Colors.White);
 				}
 
 				public override bool _ForwardCanvasGuiInput(InputEvent @event)
 				{
-				    if (@event is InputEventMouseMotion)
-				    {
-				        // Redraw viewport when cursor is moved.
-				        UpdateOverlays();
-				        return true;
-				    }
-				    return false;
+					if (@event is InputEventMouseMotion)
+					{
+						// Redraw the viewport when the cursor is moved.
+						UpdateOverlays();
+						return true;
+					}
+					return false;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -188,41 +186,39 @@
 			<return type="bool" />
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Called when there is a root node in the current edited scene, [method _handles] is implemented and an [InputEvent] happens in the 2D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [param event], otherwise forwards [param event] to other Editor classes.
-				[b]Example:[/b]
+				Called when there is a root node in the current edited scene, [method _handles] is implemented, and an [InputEvent] happens in the 2D viewport. If this method returns [code]true[/code], [param event] is intercepted by this [EditorPlugin], otherwise [param event] is forwarded to other Editor classes.
 				[codeblocks]
 				[gdscript]
 				# Prevents the InputEvent from reaching other Editor classes.
 				func _forward_canvas_gui_input(event):
-				    return true
+					return true
 				[/gdscript]
 				[csharp]
 				// Prevents the InputEvent from reaching other Editor classes.
 				public override bool ForwardCanvasGuiInput(InputEvent @event)
 				{
-				    return true;
+					return true;
 				}
 				[/csharp]
 				[/codeblocks]
-				Must [code]return false[/code] in order to forward the [InputEvent] to other Editor classes.
-				[b]Example:[/b]
+				This method must return [code]false[/code] in order to forward the [InputEvent] to other Editor classes.
 				[codeblocks]
 				[gdscript]
 				# Consumes InputEventMouseMotion and forwards other InputEvent types.
 				func _forward_canvas_gui_input(event):
-				    if (event is InputEventMouseMotion):
-				        return true
-				    return false
+					if (event is InputEventMouseMotion):
+						return true
+					return false
 				[/gdscript]
 				[csharp]
 				// Consumes InputEventMouseMotion and forwards other InputEvent types.
 				public override bool _ForwardCanvasGuiInput(InputEvent @event)
 				{
-				    if (@event is InputEventMouseMotion)
-				    {
-				        return true;
-				    }
-				    return false;
+					if (@event is InputEventMouseMotion)
+					{
+						return true;
+					}
+					return false;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -238,23 +234,23 @@
 			<return type="Texture2D" />
 			<description>
 				Override this method in your plugin to return a [Texture2D] in order to give it an icon.
-				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", and "AssetLib" buttons.
-				Ideally, the plugin icon should be white with a transparent background and 16x16 pixels in size.
+				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", "Game", and "AssetLib" buttons.
+				Ideally, the plugin icon should be white with a transparent background and 16×16 pixels in size.
 				[codeblocks]
 				[gdscript]
 				func _get_plugin_icon():
-				    # You can use a custom icon:
-				    return preload("res://addons/my_plugin/my_plugin_icon.svg")
-				    # Or use a built-in icon:
-				    return EditorInterface.get_editor_theme().get_icon("Node", "EditorIcons")
+					# You can use a custom icon:
+					return preload("res://addons/my_plugin/my_plugin_icon.svg")
+					# Or use a built-in icon:
+					return EditorInterface.get_editor_theme().get_icon("Node", "EditorIcons")
 				[/gdscript]
 				[csharp]
 				public override Texture2D _GetPluginIcon()
 				{
-				    // You can use a custom icon:
-				    return ResourceLoader.Load&lt;Texture2D&gt;("res://addons/my_plugin/my_plugin_icon.svg");
-				    // Or use a built-in icon:
-				    return EditorInterface.Singleton.GetEditorTheme().GetIcon("Node", "EditorIcons");
+					// You can use a custom icon:
+					return ResourceLoader.Load&lt;Texture2D&gt;("res://addons/my_plugin/my_plugin_icon.svg");
+					// Or use a built-in icon:
+					return EditorInterface.Singleton.GetEditorTheme().GetIcon("Node", "EditorIcons");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -264,7 +260,7 @@
 			<return type="String" />
 			<description>
 				Override this method in your plugin to provide the name of the plugin when displayed in the Godot editor.
-				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", and "AssetLib" buttons.
+				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", "Game", and "AssetLib" buttons.
 			</description>
 		</method>
 		<method name="_get_state" qualifiers="virtual const">
@@ -276,8 +272,8 @@
 				[b]Note:[/b] You must implement [method _get_plugin_name] for the state to be stored and restored correctly.
 				[codeblock]
 				func _get_state():
-				    var state = {"zoom": zoom, "preferred_color": my_color}
-				    return state
+					var state = { "zoom": zoom, "preferred_color": my_color }
+					return state
 				[/codeblock]
 			</description>
 		</method>
@@ -290,22 +286,22 @@
 				If the user confirms saving, [method _save_external_data] will be called, before closing the editor.
 				[codeblock]
 				func _get_unsaved_status(for_scene):
-				    if not unsaved:
-				        return ""
+					if not unsaved:
+						return ""
 
-				    if for_scene.is_empty():
-				        return "Save changes in MyCustomPlugin before closing?"
-				    else:
-				        return "Scene %s has changes from MyCustomPlugin. Save before closing?" % for_scene.get_file()
+					if for_scene.is_empty():
+						return "Save changes in MyCustomPlugin before closing?"
+					else:
+						return "Scene %s has changes from MyCustomPlugin. Save before closing?" % for_scene.get_file()
 
 				func _save_external_data():
-				    unsaved = false
+					unsaved = false
 				[/codeblock]
 				If the plugin has no scene-specific changes, you can ignore the calls when closing scenes:
 				[codeblock]
 				func _get_unsaved_status(for_scene):
-				    if not for_scene.is_empty():
-				        return ""
+					if not for_scene.is_empty():
+						return ""
 				[/codeblock]
 			</description>
 		</method>
@@ -317,8 +313,8 @@
 				Use [method _set_window_layout] to restore your saved layout.
 				[codeblock]
 				func _get_window_layout(configuration):
-				    configuration.set_value("MyPlugin", "window_position", $Window.position)
-				    configuration.set_value("MyPlugin", "icon_color", $Icon.modulate)
+					configuration.set_value("MyPlugin", "window_position", $Window.position)
+					configuration.set_value("MyPlugin", "icon_color", $Icon.modulate)
 				[/codeblock]
 			</description>
 		</method>
@@ -327,34 +323,34 @@
 			<param index="0" name="object" type="Object" />
 			<description>
 				Implement this function if your plugin edits a specific type of object (Resource or Node). If you return [code]true[/code], then you will get the functions [method _edit] and [method _make_visible] called when the editor requests them. If you have declared the methods [method _forward_canvas_gui_input] and [method _forward_3d_gui_input] these will be called too.
-				[b]Note:[/b] Each plugin should handle only one type of objects at a time. If a plugin handes more types of objects and they are edited at the same time, it will result in errors.
+				[b]Note:[/b] Each plugin should handle only one type of objects at a time. If a plugin handles more types of objects and they are edited at the same time, it will result in errors.
 			</description>
 		</method>
 		<method name="_has_main_screen" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this is a main screen editor plugin (it goes in the workspace selector together with [b]2D[/b], [b]3D[/b], [b]Script[/b] and [b]AssetLib[/b]).
-				When the plugin's workspace is selected, other main screen plugins will be hidden, but your plugin will not appear automatically. It needs to be added as a child of [method EditorInterface.get_base_control] and made visible inside [method _make_visible].
+				Returns [code]true[/code] if this is a main screen editor plugin (it goes in the workspace selector together with [b]2D[/b], [b]3D[/b], [b]Script[/b], [b]Game[/b], and [b]AssetLib[/b]).
+				When the plugin's workspace is selected, other main screen plugins will be hidden, but your plugin will not appear automatically. It needs to be added as a child of [method EditorInterface.get_editor_main_screen] and made visible inside [method _make_visible].
 				Use [method _get_plugin_name] and [method _get_plugin_icon] to customize the plugin button's appearance.
 				[codeblock]
 				var plugin_control
 
 				func _enter_tree():
-				    plugin_control = preload("my_plugin_control.tscn").instantiate()
-				    EditorInterface.get_editor_main_screen().add_child(plugin_control)
-				    plugin_control.hide()
+					plugin_control = preload("my_plugin_control.tscn").instantiate()
+					EditorInterface.get_editor_main_screen().add_child(plugin_control)
+					plugin_control.hide()
 
 				func _has_main_screen():
-				    return true
+					return true
 
 				func _make_visible(visible):
-				    plugin_control.visible = visible
+					plugin_control.visible = visible
 
 				func _get_plugin_name():
-				    return "My Super Cool Plugin 3000"
+					return "My Super Cool Plugin 3000"
 
 				func _get_plugin_icon():
-				    return EditorInterface.get_editor_theme().get_icon("Node", "EditorIcons")
+					return EditorInterface.get_editor_theme().get_icon("Node", "EditorIcons")
 				[/codeblock]
 			</description>
 		</method>
@@ -364,6 +360,20 @@
 			<description>
 				This function will be called when the editor is requested to become visible. It is used for plugins that edit a specific object type.
 				Remember that you have to manage the visibility of all your editor controls manually.
+			</description>
+		</method>
+		<method name="_run_scene" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<param index="0" name="scene" type="String" />
+			<param index="1" name="args" type="PackedStringArray" />
+			<description>
+				This function is called when an individual scene is about to be played in the editor. [param args] is a list of command line arguments that will be passed to the new Godot instance, which will be replaced by the list returned by this function.
+				[codeblock]
+				func _run_scene(scene, args):
+					args.append("--an-extra-argument")
+					return args
+				[/codeblock]
+				[b]Note:[/b] Text that is printed in this method will not be visible in the editor's Output panel unless [member EditorSettings.run/output/always_clear_output_on_play] is [code]false[/code].
 			</description>
 		</method>
 		<method name="_save_external_data" qualifiers="virtual">
@@ -380,8 +390,8 @@
 				[b]Note:[/b] Your plugin must implement [method _get_plugin_name], otherwise it will not be recognized and this method will not be called.
 				[codeblock]
 				func _set_state(data):
-				    zoom = data.get("zoom", 1.0)
-				    preferred_color = data.get("my_color", Color.WHITE)
+					zoom = data.get("zoom", 1.0)
+					preferred_color = data.get("my_color", Color.WHITE)
 				[/codeblock]
 			</description>
 		</method>
@@ -392,8 +402,8 @@
 				Restore the plugin GUI layout and data saved by [method _get_window_layout]. This method is called for every plugin on editor startup. Use the provided [param configuration] file to read your saved data.
 				[codeblock]
 				func _set_window_layout(configuration):
-				    $Window.position = configuration.get_value("MyPlugin", "window_position", Vector2())
-				    $Icon.modulate = configuration.get_value("MyPlugin", "icon_color", Color.WHITE)
+					$Window.position = configuration.get_value("MyPlugin", "window_position", Vector2())
+					$Icon.modulate = configuration.get_value("MyPlugin", "icon_color", Color.WHITE)
 				[/codeblock]
 			</description>
 		</method>
@@ -405,12 +415,24 @@
 				Adds a script at [param path] to the Autoload list as [param name].
 			</description>
 		</method>
-		<method name="add_control_to_bottom_panel">
+		<method name="add_context_menu_plugin">
+			<return type="void" />
+			<param index="0" name="slot" type="int" enum="EditorContextMenuPlugin.ContextMenuSlot" />
+			<param index="1" name="plugin" type="EditorContextMenuPlugin" />
+			<description>
+				Adds a plugin to the context menu. [param slot] is the context menu where the plugin will be added.
+				[b]Note:[/b] A plugin instance can belong only to a single context menu slot.
+			</description>
+		</method>
+		<method name="add_control_to_bottom_panel" deprecated="Use [method add_dock] instead, with [member EditorDock.default_slot] set to [constant DOCK_SLOT_BOTTOM].">
 			<return type="Button" />
 			<param index="0" name="control" type="Control" />
 			<param index="1" name="title" type="String" />
+			<param index="2" name="shortcut" type="Shortcut" default="null" />
 			<description>
-				Adds a control to the bottom panel (together with Output, Debug, Animation, etc). Returns a reference to the button added. It's up to you to hide/show the button when needed. When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_bottom_panel] and free it with [method Node.queue_free].
+				Adds a control to the bottom panel (together with Output, Debug, Animation, etc.). Returns a reference to a button that is outside the scene tree. It's up to you to hide/show the button when needed. When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_bottom_panel] and free it with [method Node.queue_free].
+				[param shortcut] is a shortcut that, when activated, will toggle the bottom panel's visibility. The shortcut object is only set when this control is added to the bottom panel.
+				[b]Note[/b] See the default editor bottom panel shortcuts in the Editor Settings for inspiration. By convention, they all use [kbd]Alt[/kbd] modifier.
 			</description>
 		</method>
 		<method name="add_control_to_container">
@@ -418,19 +440,21 @@
 			<param index="0" name="container" type="int" enum="EditorPlugin.CustomControlContainer" />
 			<param index="1" name="control" type="Control" />
 			<description>
-				Adds a custom control to a container (see [enum CustomControlContainer]). There are many locations where custom controls can be added in the editor UI.
+				Adds a custom control to a container in the editor UI.
 				Please remember that you have to manage the visibility of your custom controls yourself (and likely hide it after adding it).
 				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_container] and free it with [method Node.queue_free].
 			</description>
 		</method>
-		<method name="add_control_to_dock">
+		<method name="add_control_to_dock" deprecated="Use [method add_dock] instead.">
 			<return type="void" />
 			<param index="0" name="slot" type="int" enum="EditorPlugin.DockSlot" />
 			<param index="1" name="control" type="Control" />
+			<param index="2" name="shortcut" type="Shortcut" default="null" />
 			<description>
-				Adds the control to a specific dock slot (see [enum DockSlot] for options).
+				Adds the control to a specific dock slot.
 				If the dock is repositioned and as long as the plugin is active, the editor will save the dock position on further sessions.
 				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_docks] and free it with [method Node.queue_free].
+				Optionally, you can specify a shortcut parameter. When pressed, this shortcut will open and focus the dock.
 			</description>
 		</method>
 		<method name="add_custom_type">
@@ -440,7 +464,7 @@
 			<param index="2" name="script" type="Script" />
 			<param index="3" name="icon" type="Texture2D" />
 			<description>
-				Adds a custom type, which will appear in the list of nodes or resources. An icon can be optionally passed.
+				Adds a custom type, which will appear in the list of nodes or resources.
 				When a given node or resource is selected, the base type will be instantiated (e.g. "Node3D", "Control", "Resource"), then the script will be loaded and set to this object.
 				[b]Note:[/b] The base type is the base engine class which this type's class hierarchy inherits, not any custom type parent classes.
 				You can use the virtual method [method _handles] to check if your custom object is being edited by checking the script or using the [code]is[/code] keyword.
@@ -453,6 +477,21 @@
 			<param index="0" name="script" type="EditorDebuggerPlugin" />
 			<description>
 				Adds a [Script] as debugger plugin to the Debugger. The script must extend [EditorDebuggerPlugin].
+			</description>
+		</method>
+		<method name="add_dock">
+			<return type="void" />
+			<param index="0" name="dock" type="EditorDock" />
+			<description>
+				Adds a new dock.
+				When your plugin is deactivated, make sure to remove your custom dock with [method remove_dock] and free it with [method Node.queue_free].
+			</description>
+		</method>
+		<method name="add_export_platform">
+			<return type="void" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<description>
+				Registers a new [EditorExportPlatform]. Export platforms provides functionality of exporting to the specific platform.
 			</description>
 		</method>
 		<method name="add_export_plugin">
@@ -486,10 +525,10 @@
 				var inspector_plugin = MyInspectorPlugin.new()
 
 				func _enter_tree():
-				    add_inspector_plugin(inspector_plugin)
+					add_inspector_plugin(inspector_plugin)
 
 				func _exit_tree():
-				    remove_inspector_plugin(inspector_plugin)
+					remove_inspector_plugin(inspector_plugin)
 				[/gdscript]
 				[/codeblocks]
 			</description>
@@ -524,7 +563,7 @@
 			<param index="0" name="scene_import_plugin" type="EditorScenePostImportPlugin" />
 			<param index="1" name="first_priority" type="bool" default="false" />
 			<description>
-				Add a [EditorScenePostImportPlugin]. These plugins allow customizing the import process of 3D assets by adding new options to the import dialogs.
+				Add an [EditorScenePostImportPlugin]. These plugins allow customizing the import process of 3D assets by adding new options to the import dialogs.
 				If [param first_priority] is [code]true[/code], the new import plugin is inserted first in the list and takes precedence over pre-existing plugins.
 			</description>
 		</method>
@@ -541,7 +580,7 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="submenu" type="PopupMenu" />
 			<description>
-				Adds a custom [PopupMenu] submenu under [b]Project &gt; Tools &gt;[/b] [param name]. Use [code]remove_tool_menu_item(name)[/code] on plugin clean up to remove the menu.
+				Adds a custom [PopupMenu] submenu under [b]Project &gt; Tools &gt;[/b] [param name]. Use [method remove_tool_menu_item] on plugin clean up to remove the menu.
 			</description>
 		</method>
 		<method name="add_translation_parser_plugin">
@@ -559,11 +598,10 @@
 				The callback should have 4 arguments: [Object] [code]undo_redo[/code], [Object] [code]modified_object[/code], [String] [code]property[/code] and [Variant] [code]new_value[/code]. They are, respectively, the [UndoRedo] object used by the inspector, the currently modified object, the name of the modified property and the new value the property is about to take.
 			</description>
 		</method>
-		<method name="get_editor_interface" is_deprecated="true">
+		<method name="get_editor_interface" deprecated="[EditorInterface] is a global singleton and can be accessed directly by its name.">
 			<return type="EditorInterface" />
 			<description>
 				Returns the [EditorInterface] singleton instance.
-				[i]Deprecated.[/i] [EditorInterface] is a global singleton and can be accessed directly by its name.
 			</description>
 		</method>
 		<method name="get_export_as_menu">
@@ -618,7 +656,14 @@
 				Removes an Autoload [param name] from the list.
 			</description>
 		</method>
-		<method name="remove_control_from_bottom_panel">
+		<method name="remove_context_menu_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="EditorContextMenuPlugin" />
+			<description>
+				Removes the specified context menu plugin.
+			</description>
+		</method>
+		<method name="remove_control_from_bottom_panel" deprecated="Use [method remove_dock] instead.">
 			<return type="void" />
 			<param index="0" name="control" type="Control" />
 			<description>
@@ -633,7 +678,7 @@
 				Removes the control from the specified container. You have to manually [method Node.queue_free] the control.
 			</description>
 		</method>
-		<method name="remove_control_from_docks">
+		<method name="remove_control_from_docks" deprecated="Use [method remove_dock] instead.">
 			<return type="void" />
 			<param index="0" name="control" type="Control" />
 			<description>
@@ -654,6 +699,20 @@
 				Removes the debugger plugin with given script from the Debugger.
 			</description>
 		</method>
+		<method name="remove_dock">
+			<return type="void" />
+			<param index="0" name="dock" type="EditorDock" />
+			<description>
+				Removes [param dock] from the available docks. You should manually call [method Node.queue_free] to free it.
+			</description>
+		</method>
+		<method name="remove_export_platform">
+			<return type="void" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<description>
+				Removes an export platform registered by [method add_export_platform].
+			</description>
+		</method>
 		<method name="remove_export_plugin">
 			<return type="void" />
 			<param index="0" name="plugin" type="EditorExportPlugin" />
@@ -672,7 +731,7 @@
 			<return type="void" />
 			<param index="0" name="plugin" type="EditorInspectorPlugin" />
 			<description>
-				Removes an inspector plugin registered by [method add_import_plugin]
+				Removes an inspector plugin registered by [method add_inspector_plugin].
 			</description>
 		</method>
 		<method name="remove_node_3d_gizmo_plugin">
@@ -724,6 +783,14 @@
 				Removes a callback previously added by [method add_undo_redo_inspector_hook_callback].
 			</description>
 		</method>
+		<method name="set_dock_tab_icon" deprecated="Use [member EditorDock.dock_icon] instead.">
+			<return type="void" />
+			<param index="0" name="control" type="Control" />
+			<param index="1" name="icon" type="Texture2D" />
+			<description>
+				Sets the tab icon for the given control in a dock slot. Setting to [code]null[/code] removes the icon.
+			</description>
+		</method>
 		<method name="set_force_draw_over_forwarding_enabled">
 			<return type="void" />
 			<description>
@@ -747,19 +814,18 @@
 		<signal name="main_screen_changed">
 			<param index="0" name="screen_name" type="String" />
 			<description>
-				Emitted when user changes the workspace ([b]2D[/b], [b]3D[/b], [b]Script[/b], [b]AssetLib[/b]). Also works with custom screens defined by plugins.
+				Emitted when user changes the workspace ([b]2D[/b], [b]3D[/b], [b]Script[/b], [b]Game[/b], [b]AssetLib[/b]). Also works with custom screens defined by plugins.
 			</description>
 		</signal>
-		<signal name="project_settings_changed" is_deprecated="true">
+		<signal name="project_settings_changed" deprecated="Use [signal ProjectSettings.settings_changed] instead.">
 			<description>
 				Emitted when any project setting has changed.
-				[i]Deprecated.[/i] Use [signal ProjectSettings.settings_changed] instead.
 			</description>
 		</signal>
 		<signal name="resource_saved">
 			<param index="0" name="resource" type="Resource" />
 			<description>
-				Emitted when the given [param resource] was saved on disc.
+				Emitted when the given [param resource] was saved on disc. See also [signal scene_saved].
 			</description>
 		</signal>
 		<signal name="scene_changed">
@@ -771,7 +837,13 @@
 		<signal name="scene_closed">
 			<param index="0" name="filepath" type="String" />
 			<description>
-				Emitted when user closes a scene. The argument is file path to a closed scene.
+				Emitted when user closes a scene. The argument is a file path to the closed scene.
+			</description>
+		</signal>
+		<signal name="scene_saved">
+			<param index="0" name="filepath" type="String" />
+			<description>
+				Emitted when a scene was saved on disc. The argument is a file path to the saved scene. See also [signal resource_saved].
 			</description>
 		</signal>
 	</signals>
@@ -812,6 +884,9 @@
 		<constant name="CONTAINER_PROJECT_SETTING_TAB_RIGHT" value="11" enum="CustomControlContainer">
 			Tab of Project Settings dialog, to the right of other tabs.
 		</constant>
+		<constant name="DOCK_SLOT_NONE" value="-1" enum="DockSlot">
+			The dock is closed.
+		</constant>
 		<constant name="DOCK_SLOT_LEFT_UL" value="0" enum="DockSlot">
 			Dock slot, left side, upper-left (empty in default layout).
 		</constant>
@@ -836,7 +911,10 @@
 		<constant name="DOCK_SLOT_RIGHT_BR" value="7" enum="DockSlot">
 			Dock slot, right side, bottom-right (empty in default layout).
 		</constant>
-		<constant name="DOCK_SLOT_MAX" value="8" enum="DockSlot">
+		<constant name="DOCK_SLOT_BOTTOM" value="8" enum="DockSlot">
+			Bottom panel.
+		</constant>
+		<constant name="DOCK_SLOT_MAX" value="9" enum="DockSlot">
 			Represents the size of the [enum DockSlot] enum.
 		</constant>
 		<constant name="AFTER_GUI_INPUT_PASS" value="0" enum="AfterGUIInput">

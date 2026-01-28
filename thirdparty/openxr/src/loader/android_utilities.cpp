@@ -1,9 +1,9 @@
-// Copyright (c) 2020-2023, The Khronos Group Inc.
+// Copyright (c) 2020-2025 The Khronos Group Inc.
 // Copyright (c) 2020-2021, Collabora, Ltd.
 //
 // SPDX-License-Identifier:  Apache-2.0 OR MIT
 //
-// Initial Author: Ryan Pavlik <ryan.pavlik@collabora.com>
+// Initial Author: Rylie Pavlik <rylie.pavlik@collabora.com>
 
 #include "android_utilities.h"
 
@@ -15,14 +15,13 @@
 
 #include <openxr/openxr.h>
 
+#include <dlfcn.h>
 #include <sstream>
 #include <vector>
 #include <android/log.h>
 
-#define ALOGE(...) __android_log_print(ANDROID_LOG_ERROR, "OpenXR-Loader", __VA_ARGS__)
-#define ALOGW(...) __android_log_print(ANDROID_LOG_WARN, "OpenXR-Loader", __VA_ARGS__)
-#define ALOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, "OpenXR-Loader", __VA_ARGS__)
-#define ALOGI(...) __android_log_print(ANDROID_LOG_INFO, "OpenXR-Loader", __VA_ARGS__)
+#define LOG_TAG "OpenXR-Loader"
+#include "android_logging.h"
 
 namespace openxr_android {
 using wrap::android::content::ContentUris;
@@ -82,7 +81,6 @@ static Uri makeContentUri(bool systemBroker, int majorVersion, const char *abi) 
         .appendPath(abi)
         .appendPath(RUNTIMES_PATH)
         .appendPath(TABLE_PATH);
-    ContentUris::appendId(builder, 0);
     return builder.build();
 }
 
@@ -175,7 +173,6 @@ static inline jni::Array<std::string> makeArray(std::initializer_list<const char
     }
     return ret;
 }
-static constexpr auto TAG = "OpenXR-Loader";
 
 #if defined(__arm__)
 static constexpr auto ABI = "armeabi-v7l";
@@ -245,18 +242,38 @@ static int populateFunctions(wrap::android::content::Context const &context, boo
     return 0;
 }
 
+// The current file relies on android-jni-wrappers and jnipp, which may throw on failure.
+// This is problematic when the loader is compiled with exception handling disabled - the consumers can reasonably
+// expect that the compilation with -fno-exceptions will succeed, but the compiler will not accept the code that
+// uses `try` & `catch` keywords. We cannot use the `exception_handling.hpp` here since we're not at an ABI boundary,
+// so we define helper macros here. This is fine for now since the only occurrence of exception-handling code is in this file.
+#ifdef XRLOADER_DISABLE_EXCEPTION_HANDLING
+
+#define ANDROID_UTILITIES_TRY
+#define ANDROID_UTILITIES_CATCH_FALLBACK(...)
+
+#else
+
+#define ANDROID_UTILITIES_TRY try
+#define ANDROID_UTILITIES_CATCH_FALLBACK(...) \
+    catch (const std::exception &e) {         \
+        __VA_ARGS__                           \
+    }
+
+#endif  // XRLOADER_DISABLE_EXCEPTION_HANDLING
+
 /// Get cursor for active runtime, parameterized by whether or not we use the system broker
 static bool getActiveRuntimeCursor(wrap::android::content::Context const &context, jni::Array<std::string> const &projection,
                                    bool systemBroker, Cursor &cursor) {
     auto uri = active_runtime::makeContentUri(systemBroker, XR_VERSION_MAJOR(XR_CURRENT_API_VERSION), ABI);
     ALOGI("getActiveRuntimeCursor: Querying URI: %s", uri.toString().c_str());
-    try {
-        cursor = context.getContentResolver().query(uri, projection);
-    } catch (const std::exception &e) {
+
+    ANDROID_UTILITIES_TRY { cursor = context.getContentResolver().query(uri, projection); }
+    ANDROID_UTILITIES_CATCH_FALLBACK({
         ALOGW("Exception when querying %s content resolver: %s", getBrokerTypeName(systemBroker), e.what());
         cursor = {};
         return false;
-    }
+    })
 
     if (cursor.isNull()) {
         ALOGW("Null cursor when querying %s content resolver.", getBrokerTypeName(systemBroker));
@@ -293,26 +310,41 @@ int getActiveRuntimeVirtualManifest(wrap::android::content::Context const &conte
 
     cursor.moveToFirst();
 
-    auto filename = cursor.getString(cursor.getColumnIndex(active_runtime::Columns::SO_FILENAME));
-    auto libDir = cursor.getString(cursor.getColumnIndex(active_runtime::Columns::NATIVE_LIB_DIR));
-    auto packageName = cursor.getString(cursor.getColumnIndex(active_runtime::Columns::PACKAGE_NAME));
+    do {
+        auto filename = cursor.getString(cursor.getColumnIndex(active_runtime::Columns::SO_FILENAME));
+        auto libDir = cursor.getString(cursor.getColumnIndex(active_runtime::Columns::NATIVE_LIB_DIR));
+        auto packageName = cursor.getString(cursor.getColumnIndex(active_runtime::Columns::PACKAGE_NAME));
 
-    auto hasFunctions = cursor.getInt(cursor.getColumnIndex(active_runtime::Columns::HAS_FUNCTIONS)) == 1;
-    __android_log_print(ANDROID_LOG_INFO, TAG, "Got runtime: package: %s, so filename: %s, native lib dir: %s, has functions: %s",
-                        packageName.c_str(), filename.c_str(), libDir.c_str(), (hasFunctions ? "yes" : "no"));
+        auto hasFunctions = cursor.getInt(cursor.getColumnIndex(active_runtime::Columns::HAS_FUNCTIONS)) == 1;
+        ALOGI("Got runtime: package: %s, so filename: %s, native lib dir: %s, has functions: %s", packageName.c_str(),
+              filename.c_str(), libDir.c_str(), (hasFunctions ? "yes" : "no"));
 
-    auto lib_path = libDir + "/" + filename;
-    cursor.close();
+        auto lib_path = libDir + "/" + filename;
+        auto *lib = dlopen(lib_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
+        if (lib) {
+            // we found a runtime that we can dlopen, use it.
+            dlclose(lib);
 
-    JsonManifestBuilder builder{"runtime", lib_path};
-    if (hasFunctions) {
-        int result = populateFunctions(context, systemBroker, packageName, builder);
-        if (result != 0) {
-            return result;
+            JsonManifestBuilder builder{"runtime", lib_path};
+            if (hasFunctions) {
+                int result = populateFunctions(context, systemBroker, packageName, builder);
+                if (result != 0) {
+                    ALOGW("Unable to populate functions from runtime: %s, checking for more records...", lib_path.c_str());
+                    continue;
+                }
+            }
+            virtualManifest = builder.build();
+            cursor.close();
+            return 0;
         }
-    }
-    virtualManifest = builder.build();
-    return 0;
+        // this runtime was not accessible, see if the broker has more runtimes on
+        // offer.
+        ALOGV("Unable to open broker provided runtime at %s, checking for more records...", lib_path.c_str());
+    } while (cursor.moveToNext());
+
+    ALOGE("Unable to open any of the broker provided runtimes.");
+    cursor.close();
+    return -1;
 }
 }  // namespace openxr_android
 

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SPRITE_2D_H
-#define SPRITE_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/texture.h"
@@ -38,8 +37,10 @@ class Sprite2D : public Node2D {
 	GDCLASS(Sprite2D, Node2D);
 
 	Ref<Texture2D> texture;
-	Color specular_color;
-	real_t shininess = 0.0;
+
+#ifdef TOOLS_ENABLED
+	bool dragging_to_resize_rect = false;
+#endif // TOOLS_ENABLED
 
 	bool centered = true;
 	Point2 offset;
@@ -56,8 +57,10 @@ class Sprite2D : public Node2D {
 	int hframes = 1;
 
 	void _get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_clip_enabled) const;
+	Point2 _get_rect_offset(const Size2i &p_size) const;
 
 	void _texture_changed();
+	void _emit_region_rect_enabled();
 
 protected:
 	void _notification(int p_what);
@@ -74,13 +77,24 @@ public:
 	virtual void _edit_set_pivot(const Point2 &p_pivot) override;
 	virtual Point2 _edit_get_pivot() const override;
 	virtual bool _edit_use_pivot() const override;
+
+	virtual void _edit_set_rect(const Rect2 &p_rect) override;
+#endif // TOOLS_ENABLED
+
+#ifdef DEBUG_ENABLED
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_use_rect() const override;
+#endif // DEBUG_ENABLED
+
+#ifdef TOOLS_ENABLED
+	void _editor_set_dragging_to_resize_rect(bool p_dragging_to_resize_rect);
+	bool _editor_is_dragging_to_resiz_rect() const;
 #endif
 
 	bool is_pixel_opaque(const Point2 &p_point) const;
+	bool is_editor_region_rect_draggable() const;
 
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
@@ -122,7 +136,4 @@ public:
 	virtual Rect2 get_anchorable_rect() const override;
 
 	Sprite2D();
-	~Sprite2D();
 };
-
-#endif // SPRITE_2D_H

@@ -28,21 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_HIGHLIGHTER_H
-#define GDSCRIPT_HIGHLIGHTER_H
+#pragma once
 
-#include "editor/plugins/script_editor_plugin.h"
-#include "scene/gui/text_edit.h"
+#include "editor/script/script_editor_plugin.h"
 
 class GDScriptSyntaxHighlighter : public EditorSyntaxHighlighter {
 	GDCLASS(GDScriptSyntaxHighlighter, EditorSyntaxHighlighter)
 
 private:
 	struct ColorRegion {
+		enum Type {
+			TYPE_NONE,
+			TYPE_STRING, // `"` and `'`, optional prefix `&`, `^`, or `r`.
+			TYPE_MULTILINE_STRING, // `"""` and `'''`, optional prefix `r`.
+			TYPE_COMMENT, // `#` and `##`.
+			TYPE_CODE_REGION, // `#region` and `#endregion`.
+		};
+
+		Type type = TYPE_NONE;
 		Color color;
 		String start_key;
 		String end_key;
 		bool line_only = false;
+		bool r_prefix = false;
+		bool is_string = false; // `TYPE_STRING` or `TYPE_MULTILINE_STRING`.
+		bool is_comment = false; // `TYPE_COMMENT` or `TYPE_CODE_REGION`.
 	};
 	Vector<ColorRegion> color_regions;
 	HashMap<int, int> color_region_cache;
@@ -77,8 +87,9 @@ private:
 	Color function_definition_color;
 	Color built_in_type_color;
 	Color number_color;
-	Color member_color;
+	Color member_variable_color;
 	Color string_color;
+	Color placeholder_color;
 	Color node_path_color;
 	Color node_ref_color;
 	Color annotation_color;
@@ -94,7 +105,7 @@ private:
 	Color comment_marker_colors[COMMENT_MARKER_MAX];
 	HashMap<String, CommentMarkerLevel> comment_markers;
 
-	void add_color_region(const String &p_start_key, const String &p_end_key, const Color &p_color, bool p_line_only = false);
+	void add_color_region(ColorRegion::Type p_type, const String &p_start_key, const String &p_end_key, const Color &p_color, bool p_line_only = false, bool p_r_prefix = false);
 
 public:
 	virtual void _update_cache() override;
@@ -105,5 +116,3 @@ public:
 
 	virtual Ref<EditorSyntaxHighlighter> _create() const override;
 };
-
-#endif // GDSCRIPT_HIGHLIGHTER_H

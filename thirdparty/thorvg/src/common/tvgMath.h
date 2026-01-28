@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,61 +26,87 @@
  #define _USE_MATH_DEFINES
 
 #include <float.h>
-#include <math.h>
+#include <cmath>
 #include "tvgCommon.h"
+
+namespace tvg
+{
 
 #define MATH_PI  3.14159265358979323846f
 #define MATH_PI2 1.57079632679489661923f
+#define FLOAT_EPSILON 1.0e-06f  //1.192092896e-07f
+#define PATH_KAPPA 0.552284f
 
-#define mathMin(x, y) (((x) < (y)) ? (x) : (y))
-#define mathMax(x, y) (((x) > (y)) ? (x) : (y))
+/************************************************************************/
+/* General functions                                                    */
+/************************************************************************/
 
-
-bool mathInverse(const Matrix* m, Matrix* out);
-Matrix mathMultiply(const Matrix* lhs, const Matrix* rhs);
-void mathRotate(Matrix* m, float degree);
-bool mathIdentity(const Matrix* m);
-void mathMultiply(Point* pt, const Matrix* transform);
+float atan2(float y, float x);
 
 
-static inline bool mathZero(float a)
+static inline float deg2rad(float degree)
 {
-    return (fabsf(a) < FLT_EPSILON) ? true : false;
+     return degree * (MATH_PI / 180.0f);
 }
 
 
-static inline bool mathEqual(float a, float b)
+static inline float rad2deg(float radian)
 {
-    return (fabsf(a - b) < FLT_EPSILON);
+    return radian * (180.0f / MATH_PI);
 }
 
 
-static inline bool mathEqual(const Matrix& a, const Matrix& b)
+static inline bool zero(float a)
 {
-    if (!mathEqual(a.e11, b.e11) || !mathEqual(a.e12, b.e12) || !mathEqual(a.e13, b.e13) ||
-        !mathEqual(a.e21, b.e21) || !mathEqual(a.e22, b.e22) || !mathEqual(a.e23, b.e23) ||
-        !mathEqual(a.e31, b.e31) || !mathEqual(a.e32, b.e32) || !mathEqual(a.e33, b.e33)) {
-       return false;
-    }
-    return true;
+    return (fabsf(a) <= FLOAT_EPSILON) ? true : false;
 }
 
 
-static inline bool mathRightAngle(const Matrix* m)
+static inline bool equal(float a, float b)
 {
-   auto radian = fabsf(atan2f(m->e21, m->e11));
-   if (radian < FLT_EPSILON || mathEqual(radian, float(M_PI_2)) || mathEqual(radian, float(M_PI))) return true;
+    return tvg::zero(a - b);
+}
+
+
+template <typename T>
+static inline void clamp(T& v, const T& min, const T& max)
+{
+    if (v < min) v = min;
+    else if (v > max) v = max;
+}
+
+/************************************************************************/
+/* Matrix functions                                                     */
+/************************************************************************/
+
+void rotate(Matrix* m, float degree);
+bool inverse(const Matrix* m, Matrix* out);
+bool identity(const Matrix* m);
+Matrix operator*(const Matrix& lhs, const Matrix& rhs);
+bool operator==(const Matrix& lhs, const Matrix& rhs);
+
+
+static inline float radian(const Matrix& m)
+{
+    return fabsf(tvg::atan2(m.e21, m.e11));
+}
+
+
+static inline bool rightAngle(const Matrix& m)
+{
+   auto radian = tvg::radian(m);
+   if (tvg::zero(radian) || tvg::zero(radian - MATH_PI2) || tvg::zero(radian - MATH_PI)) return true;
    return false;
 }
 
 
-static inline bool mathSkewed(const Matrix* m)
+static inline bool skewed(const Matrix& m)
 {
-    return (fabsf(m->e21 + m->e12) > FLT_EPSILON);
+    return !tvg::zero(m.e21 + m.e12);
 }
 
 
-static inline void mathIdentity(Matrix* m)
+static inline void identity(Matrix* m)
 {
     m->e11 = 1.0f;
     m->e12 = 0.0f;
@@ -94,23 +120,14 @@ static inline void mathIdentity(Matrix* m)
 }
 
 
-static inline void mathTransform(Matrix* transform, Point* coord)
-{
-    auto x = coord->x;
-    auto y = coord->y;
-    coord->x = x * transform->e11 + y * transform->e12 + transform->e13;
-    coord->y = x * transform->e21 + y * transform->e22 + transform->e23;
-}
-
-
-static inline void mathScale(Matrix* m, float sx, float sy)
+static inline void scale(Matrix* m, float sx, float sy)
 {
     m->e11 *= sx;
     m->e22 *= sy;
 }
 
 
-static inline void mathScaleR(Matrix* m, float x, float y)
+static inline void scaleR(Matrix* m, float x, float y)
 {
     if (x != 1.0f) {
         m->e11 *= x;
@@ -123,14 +140,14 @@ static inline void mathScaleR(Matrix* m, float x, float y)
 }
 
 
-static inline void mathTranslate(Matrix* m, float x, float y)
+static inline void translate(Matrix* m, float x, float y)
 {
     m->e13 += x;
     m->e23 += y;
 }
 
 
-static inline void mathTranslateR(Matrix* m, float x, float y)
+static inline void translateR(Matrix* m, float x, float y)
 {
     if (x == 0.0f && y == 0.0f) return;
     m->e13 += (x * m->e11 + y * m->e12);
@@ -138,13 +155,45 @@ static inline void mathTranslateR(Matrix* m, float x, float y)
 }
 
 
-static inline void mathLog(Matrix* m)
+static inline bool operator!=(const Matrix& lhs, const Matrix& rhs)
 {
-    TVGLOG("MATH", "Matrix: [%f %f %f] [%f %f %f] [%f %f %f]", m->e11, m->e12, m->e13, m->e21, m->e22, m->e23, m->e31, m->e32, m->e33);
+    return !(lhs == rhs);
 }
 
 
-static inline float mathLength(const Point* a, const Point* b)
+static inline void operator*=(Matrix& lhs, const Matrix& rhs)
+{
+    lhs = lhs * rhs;
+}
+
+
+static inline void log(const Matrix& m)
+{
+    TVGLOG("COMMON", "Matrix: [%f %f %f] [%f %f %f] [%f %f %f]", m.e11, m.e12, m.e13, m.e21, m.e22, m.e23, m.e31, m.e32, m.e33);
+}
+
+
+/************************************************************************/
+/* Point functions                                                      */
+/************************************************************************/
+
+void operator*=(Point& pt, const Matrix& m);
+Point operator*(const Point& pt, const Matrix& m);
+Point normal(const Point& p1, const Point& p2);
+
+static inline float cross(const Point& lhs, const Point& rhs)
+{
+    return lhs.x * rhs.y - rhs.x * lhs.y;
+}
+
+
+static inline bool zero(const Point& p)
+{
+    return tvg::zero(p.x) && tvg::zero(p.y);
+}
+
+
+static inline float length(const Point* a, const Point* b)
 {
     auto x = b->x - a->x;
     auto y = b->y - a->y;
@@ -153,6 +202,24 @@ static inline float mathLength(const Point* a, const Point* b)
     if (y < 0) y = -y;
 
     return (x > y) ? (x + 0.375f * y) : (y + 0.375f * x);
+}
+
+
+static inline float length(const Point& a)
+{
+    return sqrtf(a.x * a.x + a.y * a.y);
+}
+
+
+static inline bool operator==(const Point& lhs, const Point& rhs)
+{
+    return tvg::equal(lhs.x, rhs.x) && tvg::equal(lhs.y, rhs.y);
+}
+
+
+static inline bool operator!=(const Point& lhs, const Point& rhs)
+{
+    return !(lhs == rhs);
 }
 
 
@@ -174,11 +241,73 @@ static inline Point operator*(const Point& lhs, float rhs)
 }
 
 
+static inline Point operator*(const float& lhs, const Point& rhs)
+{
+    return {lhs * rhs.x, lhs * rhs.y};
+}
+
+
+static inline Point operator/(const Point& lhs, const float rhs)
+{
+    return {lhs.x / rhs, lhs.y / rhs};
+}
+
+
+static inline void log(const Point& pt)
+{
+    TVGLOG("COMMON", "Point: [%f %f]", pt.x, pt.y);
+}
+
+
+/************************************************************************/
+/* Line functions                                                       */
+/************************************************************************/
+
+struct Line
+{
+    Point pt1;
+    Point pt2;
+
+    void split(float at, Line& left, Line& right) const;
+    float length() const;
+};
+
+
+/************************************************************************/
+/* Bezier functions                                                     */
+/************************************************************************/
+
+struct Bezier
+{
+    Point start;
+    Point ctrl1;
+    Point ctrl2;
+    Point end;
+
+    void split(float t, Bezier& left);
+    void split(Bezier& left, Bezier& right) const;
+    void split(float at, Bezier& left, Bezier& right) const;
+    float length() const;
+    float lengthApprox() const;
+    float at(float at, float length) const;
+    float atApprox(float at, float length) const;
+    Point at(float t) const;
+    float angle(float t) const;
+};
+
+
+/************************************************************************/
+/* Interpolation functions                                              */
+/************************************************************************/
+
 template <typename T>
-static inline T mathLerp(const T &start, const T &end, float t)
+static inline T lerp(const T &start, const T &end, float t)
 {
     return static_cast<T>(start + (end - start) * t);
 }
 
+uint8_t lerp(const uint8_t &start, const uint8_t &end, float t);
+
+}
 
 #endif //_TVG_MATH_H_

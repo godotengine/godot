@@ -30,16 +30,13 @@ namespace Godot.SourceGenerators
                         {
                             if (x.cds.IsPartial())
                             {
-                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out var typeMissingPartial))
+                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out _))
                                 {
-                                    Common.ReportNonPartialGodotScriptOuterClass(context, typeMissingPartial!);
                                     return false;
                                 }
 
                                 return true;
                             }
-
-                            Common.ReportNonPartialGodotScriptClass(context, x.cds, x.symbol);
                             return false;
                         })
                         .Select(x => x.symbol)
@@ -117,13 +114,13 @@ namespace Godot.SourceGenerators
                     source.Append("partial ");
                     source.Append(containingType.GetDeclarationKeyword());
                     source.Append(" ");
-                    source.Append(containingType.NameWithTypeParameters());
+                    source.Append(containingType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
                     source.Append("\n{\n");
                 }
             }
 
             source.Append("partial class ");
-            source.Append(symbol.NameWithTypeParameters());
+            source.Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
             source.Append("\n{\n");
 
             var members = symbol.GetMembers();
@@ -144,7 +141,7 @@ namespace Godot.SourceGenerators
                 .Append("    /// </summary>\n");
 
             source.Append(
-                $"    public new class MethodName : {symbol.BaseType.FullQualifiedNameIncludeGlobal()}.MethodName {{\n");
+                $"    public new class MethodName : {symbol.BaseType!.FullQualifiedNameIncludeGlobal()}.MethodName {{\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
@@ -161,7 +158,7 @@ namespace Godot.SourceGenerators
                     .Append("' method.\n")
                     .Append("        /// </summary>\n");
 
-                source.Append("        public new static readonly global::Godot.StringName ");
+                source.Append("        public new static readonly global::Godot.StringName @");
                 source.Append(methodName);
                 source.Append(" = \"");
                 source.Append(methodName);
@@ -174,7 +171,7 @@ namespace Godot.SourceGenerators
 
             if (godotClassMethods.Length > 0)
             {
-                const string listType = "global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>";
+                const string ListType = "global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>";
 
                 source.Append("    /// <summary>\n")
                     .Append("    /// Get the method information for all the methods declared in this class.\n")
@@ -185,11 +182,11 @@ namespace Godot.SourceGenerators
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
 
                 source.Append("    internal new static ")
-                    .Append(listType)
+                    .Append(ListType)
                     .Append(" GetGodotMethodList()\n    {\n");
 
                 source.Append("        var methods = new ")
-                    .Append(listType)
+                    .Append(ListType)
                     .Append("(")
                     .Append(godotClassMethods.Length)
                     .Append(");\n");
@@ -256,11 +253,9 @@ namespace Godot.SourceGenerators
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
                 source.Append("    protected override bool HasGodotClassMethod(in godot_string_name method)\n    {\n");
 
-                bool isFirstEntry = true;
                 foreach (string methodName in distinctMethodNames)
                 {
-                    GenerateHasMethodEntry(methodName, source, isFirstEntry);
-                    isFirstEntry = false;
+                    GenerateHasMethodEntry(methodName, source);
                 }
 
                 source.Append("        return base.HasGodotClassMethod(method);\n");
@@ -292,7 +287,7 @@ namespace Godot.SourceGenerators
 
         private static void AppendMethodInfo(StringBuilder source, MethodInfo methodInfo)
         {
-            source.Append("        methods.Add(new(name: MethodName.")
+            source.Append("        methods.Add(new(name: MethodName.@")
                 .Append(methodInfo.Name)
                 .Append(", returnVal: ");
 
@@ -415,14 +410,11 @@ namespace Godot.SourceGenerators
 
         private static void GenerateHasMethodEntry(
             string methodName,
-            StringBuilder source,
-            bool isFirstEntry
+            StringBuilder source
         )
         {
             source.Append("        ");
-            if (!isFirstEntry)
-                source.Append("else ");
-            source.Append("if (method == MethodName.");
+            source.Append("if (method == MethodName.@");
             source.Append(methodName);
             source.Append(") {\n           return true;\n        }\n");
         }
@@ -434,7 +426,7 @@ namespace Godot.SourceGenerators
         {
             string methodName = method.Method.Name;
 
-            source.Append("        if (method == MethodName.");
+            source.Append("        if (method == MethodName.@");
             source.Append(methodName);
             source.Append(" && args.Count == ");
             source.Append(method.ParamTypes.Length);
@@ -445,6 +437,7 @@ namespace Godot.SourceGenerators
             else
                 source.Append("            ");
 
+            source.Append("@");
             source.Append(methodName);
             source.Append("(");
 

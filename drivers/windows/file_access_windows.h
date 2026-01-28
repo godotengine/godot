@@ -28,20 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FILE_ACCESS_WINDOWS_H
-#define FILE_ACCESS_WINDOWS_H
+#pragma once
 
 #ifdef WINDOWS_ENABLED
 
 #include "core/io/file_access.h"
 #include "core/os/memory.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 class FileAccessWindows : public FileAccess {
+	GDSOFTCLASS(FileAccessWindows, FileAccess);
 	FILE *f = nullptr;
 	int flags = 0;
-	void check_errors() const;
+	void check_errors(bool p_write = false) const;
 	mutable int prev_op = 0;
 	mutable Error last_error = OK;
 	String path;
@@ -50,10 +50,11 @@ class FileAccessWindows : public FileAccess {
 
 	void _close();
 
-	static bool is_path_invalid(const String &p_path);
 	static HashSet<String> invalid_files;
 
 public:
+	static bool is_path_invalid(const String &p_path);
+
 	virtual String fix_path(const String &p_path) const override;
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
 	virtual bool is_open() const override; ///< true when file is open
@@ -68,18 +69,19 @@ public:
 
 	virtual bool eof_reached() const override; ///< reading passed EOF
 
-	virtual uint8_t get_8() const override; ///< get a byte
 	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
 
 	virtual Error get_error() const override; ///< get last error
 
+	virtual Error resize(int64_t p_length) override;
 	virtual void flush() override;
-	virtual void store_8(uint8_t p_dest) override; ///< store a byte
-	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
+	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
 
 	virtual bool file_exists(const String &p_name) override; ///< return true if a file exists
 
 	uint64_t _get_modified_time(const String &p_file) override;
+	uint64_t _get_access_time(const String &p_file) override;
+	int64_t _get_size(const String &p_file) override;
 	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override;
 	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override;
 
@@ -87,6 +89,11 @@ public:
 	virtual Error _set_hidden_attribute(const String &p_file, bool p_hidden) override;
 	virtual bool _get_read_only_attribute(const String &p_file) override;
 	virtual Error _set_read_only_attribute(const String &p_file, bool p_ro) override;
+
+	virtual PackedByteArray _get_extended_attribute(const String &p_file, const String &p_attribute_name) override;
+	virtual Error _set_extended_attribute(const String &p_file, const String &p_attribute_name, const PackedByteArray &p_data) override;
+	virtual Error _remove_extended_attribute(const String &p_file, const String &p_attribute_name) override;
+	virtual PackedStringArray _get_extended_attributes_list(const String &p_file) override;
 
 	virtual void close() override;
 
@@ -98,5 +105,3 @@ public:
 };
 
 #endif // WINDOWS_ENABLED
-
-#endif // FILE_ACCESS_WINDOWS_H

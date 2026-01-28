@@ -1,49 +1,31 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+import os
+
+import editor_builders
 
 Import("env")
 
 env.editor_sources = []
 
-import os
-import glob
-import editor_builders
-
-
-def _make_doc_data_class_path(to_path):
-    # NOTE: It is safe to generate this file here, since this is still executed serially
-    g = open(os.path.join(to_path, "doc_data_class_path.gen.h"), "w", encoding="utf-8")
-    g.write("static const int _doc_data_class_path_count = " + str(len(env.doc_class_path)) + ";\n")
-    g.write("struct _DocDataClassPath { const char* name; const char* path; };\n")
-
-    g.write("static const _DocDataClassPath _doc_data_class_paths[" + str(len(env.doc_class_path) + 1) + "] = {\n")
-    for c in sorted(env.doc_class_path):
-        g.write('\t{"' + c + '", "' + env.doc_class_path[c] + '"},\n')
-    g.write("\t{nullptr, nullptr}\n")
-    g.write("};\n")
-
-    g.close()
-
-
 if env.editor_build:
+    # Generate doc data paths
+    env.CommandNoCache(
+        "doc/doc_data_class_path.gen.h",
+        env.Value(env.doc_class_path),
+        env.Run(editor_builders.doc_data_class_path_builder),
+    )
+
     # Register exporters
-    reg_exporters_inc = '#include "register_exporters.h"\n\n'
-    reg_exporters = "void register_exporters() {\n"
+    gen_exporters = env.CommandNoCache(
+        "export/register_exporters.gen.cpp",
+        env.Value(env.platform_exporters),
+        env.Run(editor_builders.register_exporters_builder),
+    )
     for e in env.platform_exporters:
         # Add all .cpp files in export folder
-        env.add_source_files(env.editor_sources, "../platform/" + e + "/export/" + "*.cpp")
-
-        reg_exporters += "\tregister_" + e + "_exporter();\n"
-        reg_exporters_inc += '#include "platform/' + e + '/export/export.h"\n'
-    reg_exporters += "}\n\n"
-    reg_exporters += "void register_exporter_types() {\n"
-    for e in env.platform_exporters:
-        reg_exporters += "\tregister_" + e + "_exporter_types();\n"
-    reg_exporters += "}\n"
-
-    # NOTE: It is safe to generate this file here, since this is still executed serially
-    with open("register_exporters.gen.cpp", "w", encoding="utf-8") as f:
-        f.write(reg_exporters_inc)
-        f.write(reg_exporters)
+        env.add_source_files(env.editor_sources, f"../platform/{e}/export/*.cpp")
 
     # Core API documentation.
     docs = []
@@ -61,14 +43,11 @@ if env.editor_build:
         else:
             docs += Glob(d + "/*.xml")  # Custom.
 
-    _make_doc_data_class_path(env.Dir("#editor").abspath)
-
     docs = sorted(docs)
-    env.Depends("#editor/doc_data_compressed.gen.h", docs)
     env.CommandNoCache(
-        "#editor/doc_data_compressed.gen.h",
+        "#editor/doc/doc_data_compressed.gen.h",
         docs,
-        env.Run(editor_builders.make_doc_header, "Generating documentation header."),
+        env.Run(editor_builders.make_doc_header),
     )
 
     # Editor interface and class reference translations incur a significant size
@@ -77,55 +56,47 @@ if env.editor_build:
     # ratio (20% for the editor UI, 10% for the class reference).
     # Generated with `make include-list` for each resource.
 
-    # Editor translations
-    tlist = glob.glob(env.Dir("#editor/translations/editor").abspath + "/*.po")
-    env.Depends("#editor/editor_translations.gen.h", tlist)
-    env.CommandNoCache(
-        "#editor/editor_translations.gen.h",
-        tlist,
-        env.Run(editor_builders.make_editor_translations_header, "Generating editor translations header."),
-    )
-
-    # Property translations
-    tlist = glob.glob(env.Dir("#editor/translations/properties").abspath + "/*.po")
-    env.Depends("#editor/property_translations.gen.h", tlist)
-    env.CommandNoCache(
-        "#editor/property_translations.gen.h",
-        tlist,
-        env.Run(editor_builders.make_property_translations_header, "Generating property translations header."),
-    )
-
-    # Documentation translations
-    tlist = glob.glob(env.Dir("#doc/translations").abspath + "/*.po")
-    env.Depends("#editor/doc_translations.gen.h", tlist)
-    env.CommandNoCache(
-        "#editor/doc_translations.gen.h",
-        tlist,
-        env.Run(editor_builders.make_doc_translations_header, "Generating translations header."),
-    )
-
-    # Fonts
-    flist = glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.ttf")
-    flist.extend(glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.otf"))
-    flist.extend(glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.woff"))
-    flist.extend(glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.woff2"))
-    flist.sort()
-    env.Depends("#editor/builtin_fonts.gen.h", flist)
-    env.CommandNoCache(
-        "#editor/builtin_fonts.gen.h",
-        flist,
-        env.Run(editor_builders.make_fonts_header, "Generating builtin fonts header."),
-    )
+    translation_targets = {
+        "#editor/translations/editor_translations.gen.cpp": Glob("#editor/translations/editor/*"),
+        "#editor/translations/property_translations.gen.cpp": Glob("#editor/translations/properties/*"),
+        "#editor/translations/doc_translations.gen.cpp": Glob("#doc/translations/*"),
+        "#editor/translations/extractable_translations.gen.cpp": Glob("#editor/translations/extractable/*"),
+    }
+    for target_cpp, sources in translation_targets.items():
+        target_h = os.path.splitext(target_cpp)[0] + ".h"
+        env.CommandNoCache(
+            [target_h, target_cpp],
+            sources,
+            env.Run(editor_builders.make_translations),
+        )
 
     env.add_source_files(env.editor_sources, "*.cpp")
-    env.add_source_files(env.editor_sources, "register_exporters.gen.cpp")
+    env.add_source_files(env.editor_sources, gen_exporters)
+    env.add_source_files(env.editor_sources, translation_targets.keys())
 
+    SConscript("animation/SCsub")
+    SConscript("asset_library/SCsub")
+    SConscript("audio/SCsub")
     SConscript("debugger/SCsub")
+    SConscript("doc/SCsub")
+    SConscript("docks/SCsub")
     SConscript("export/SCsub")
+    SConscript("file_system/SCsub")
     SConscript("gui/SCsub")
     SConscript("icons/SCsub")
+    SConscript("inspector/SCsub")
     SConscript("import/SCsub")
     SConscript("plugins/SCsub")
+    SConscript("project_manager/SCsub")
+    SConscript("project_upgrade/SCsub")
+    SConscript("run/SCsub")
+    SConscript("settings/SCsub")
+    SConscript("scene/SCsub")
+    SConscript("script/SCsub")
+    SConscript("shader/SCsub")
+    SConscript("themes/SCsub")
+    SConscript("translations/SCsub")
+    SConscript("version_control/SCsub")
 
     lib = env.add_library("editor", env.editor_sources)
     env.Prepend(LIBS=[lib])

@@ -28,18 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDER_SCENE_BUFFERS_RD_H
-#define RENDER_SCENE_BUFFERS_RD_H
+#pragma once
 
-#include "../effects/fsr2.h"
+#ifdef METAL_ENABLED
+#include "../effects/metal_fx.h"
+#endif
 #include "../effects/vrs.h"
-#include "../framebuffer_cache_rd.h"
 #include "core/templates/hash_map.h"
 #include "material_storage.h"
 #include "render_buffer_custom_data_rd.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_device_binds.h"
-#include "servers/rendering/rendering_method.h"
 #include "servers/rendering/storage/render_scene_buffers.h"
 
 #define RB_SCOPE_BUFFERS SNAME("render_buffers")
@@ -56,7 +55,6 @@
 
 #define RB_TEX_BLUR_0 SNAME("blur_0")
 #define RB_TEX_BLUR_1 SNAME("blur_1")
-#define RB_TEX_HALF_BLUR SNAME("half_blur") // only for raster!
 
 #define RB_TEX_BACK_COLOR SNAME("back_color")
 #define RB_TEX_BACK_DEPTH SNAME("back_depth")
@@ -66,10 +64,12 @@ class RenderSceneBuffersRD : public RenderSceneBuffers {
 
 private:
 	bool can_be_storage = true;
+	bool force_hdr = false;
 	uint32_t max_cluster_elements = 512;
-	RD::DataFormat base_data_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+	RD::DataFormat preferred_data_format = RD::DATA_FORMAT_MAX;
 	RendererRD::VRS *vrs = nullptr;
 	uint64_t auto_exposure_version = 1;
+	RS::ViewportVRSMode vrs_mode = RS::VIEWPORT_VRS_DISABLED;
 
 	// Our render target represents our final destination that we display on screen.
 	RID render_target;
@@ -81,8 +81,13 @@ private:
 	RS::ViewportScaling3DMode scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
 	float fsr_sharpness = 0.2f;
 	float texture_mipmap_bias = 0.0f;
+	RS::ViewportAnisotropicFiltering anisotropic_filtering_level = RS::VIEWPORT_ANISOTROPY_4X;
 
-	// Aliassing settings
+#ifdef METAL_ENABLED
+	RendererRD::MFXSpatialContext *mfx_spatial_context = nullptr;
+#endif
+
+	// Aliasing settings
 	RS::ViewportMSAA msaa_3d = RS::VIEWPORT_MSAA_DISABLED;
 	RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 	bool use_taa = false;
@@ -106,7 +111,7 @@ private:
 		}
 
 		NTKey() {}
-		NTKey(const StringName p_context, const StringName p_texture_name) {
+		NTKey(const StringName &p_context, const StringName &p_texture_name) {
 			context = p_context;
 			buffer_name = p_texture_name;
 		}
@@ -128,7 +133,7 @@ private:
 			h = hash_murmur3_one_32(p_val.layers, h);
 			h = hash_murmur3_one_32(p_val.mipmap, h);
 			h = hash_murmur3_one_32(p_val.mipmaps, h);
-			h = hash_murmur3_one_32(p_val.texture_view.format_override);
+			h = hash_murmur3_one_32(p_val.texture_view.format_override, h);
 			h = hash_murmur3_one_32(p_val.texture_view.swizzle_r, h);
 			h = hash_murmur3_one_32(p_val.texture_view.swizzle_g, h);
 			h = hash_murmur3_one_32(p_val.texture_view.swizzle_b, h);
@@ -178,25 +183,35 @@ public:
 
 	// info from our renderer
 	void set_can_be_storage(const bool p_can_be_storage) { can_be_storage = p_can_be_storage; }
+	bool get_can_be_storage() const { return can_be_storage; }
 	void set_max_cluster_elements(const uint32_t p_max_elements) { max_cluster_elements = p_max_elements; }
 	uint32_t get_max_cluster_elements() { return max_cluster_elements; }
-	void set_base_data_format(const RD::DataFormat p_base_data_format) { base_data_format = p_base_data_format; }
-	RD::DataFormat get_base_data_format() const { return base_data_format; }
+	void set_preferred_data_format(const RD::DataFormat p_preferred_data_format) { preferred_data_format = p_preferred_data_format; }
+	RD::DataFormat get_preferred_data_format() const { return preferred_data_format; }
+	RD::DataFormat get_base_data_format() const { return force_hdr ? RD::DATA_FORMAT_R16G16B16A16_SFLOAT : preferred_data_format; }
+	float get_luminance_multiplier() const;
 	void set_vrs(RendererRD::VRS *p_vrs) { vrs = p_vrs; }
+	RS::ViewportVRSMode get_vrs_mode() { return vrs_mode; }
 
 	void cleanup();
 	virtual void configure(const RenderSceneBuffersConfiguration *p_config) override;
 	void configure_for_reflections(const Size2i p_reflection_size);
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) override;
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override;
+	virtual void set_anisotropic_filtering_level(RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level) override;
 	virtual void set_use_debanding(bool p_use_debanding) override;
+
+#ifdef METAL_ENABLED
+	void ensure_mfx(RendererRD::MFXSpatialEffect *p_effect);
+	_FORCE_INLINE_ RendererRD::MFXSpatialContext *get_mfx_spatial_context() const { return mfx_spatial_context; }
+#endif
 
 	// Named Textures
 
 	bool has_texture(const StringName &p_context, const StringName &p_texture_name) const;
-	RID create_texture(const StringName &p_context, const StringName &p_texture_name, const RD::DataFormat p_data_format, const uint32_t p_usage_bits, const RD::TextureSamples p_texture_samples = RD::TEXTURE_SAMPLES_1, const Size2i p_size = Size2i(0, 0), const uint32_t p_layers = 0, const uint32_t p_mipmaps = 1, bool p_unique = true);
+	RID create_texture(const StringName &p_context, const StringName &p_texture_name, const RD::DataFormat p_data_format, const uint32_t p_usage_bits, const RD::TextureSamples p_texture_samples = RD::TEXTURE_SAMPLES_1, const Size2i p_size = Size2i(0, 0), const uint32_t p_layers = 0, const uint32_t p_mipmaps = 1, bool p_unique = true, bool p_discardable = false);
 	RID create_texture_from_format(const StringName &p_context, const StringName &p_texture_name, const RD::TextureFormat &p_texture_format, RD::TextureView p_view = RD::TextureView(), bool p_unique = true);
-	RID create_texture_view(const StringName &p_context, const StringName &p_texture_name, const StringName p_view_name, RD::TextureView p_view = RD::TextureView());
+	RID create_texture_view(const StringName &p_context, const StringName &p_texture_name, const StringName &p_view_name, RD::TextureView p_view = RD::TextureView());
 	RID get_texture(const StringName &p_context, const StringName &p_texture_name) const;
 	const RD::TextureFormat get_texture_format(const StringName &p_context, const StringName &p_texture_name) const;
 	RID get_texture_slice(const StringName &p_context, const StringName &p_texture_name, const uint32_t p_layer, const uint32_t p_mipmap, const uint32_t p_layers = 1, const uint32_t p_mipmaps = 1);
@@ -299,26 +314,57 @@ public:
 	RID get_velocity_buffer(bool p_get_msaa);
 	RID get_velocity_buffer(bool p_get_msaa, uint32_t p_layer);
 
+	RID get_velocity_depth_buffer();
+
 	// Samplers adjusted with the mipmap bias that is best fit for the configuration of these render buffers.
 
 	_FORCE_INLINE_ RendererRD::MaterialStorage::Samplers get_samplers() const {
 		return samplers;
 	}
 
+	_FORCE_INLINE_ static RD::TextureSamples msaa_to_samples(RS::ViewportMSAA p_msaa) {
+		switch (p_msaa) {
+			case RS::VIEWPORT_MSAA_DISABLED:
+				return RD::TEXTURE_SAMPLES_1;
+			case RS::VIEWPORT_MSAA_2X:
+				return RD::TEXTURE_SAMPLES_2;
+			case RS::VIEWPORT_MSAA_4X:
+				return RD::TEXTURE_SAMPLES_4;
+			case RS::VIEWPORT_MSAA_8X:
+				return RD::TEXTURE_SAMPLES_8;
+			default:
+				DEV_ASSERT(false && "Unknown MSAA option.");
+				return RD::TEXTURE_SAMPLES_1;
+		}
+	}
+
+	static uint32_t get_color_usage_bits(bool p_resolve, bool p_msaa, bool p_storage);
+	static RD::DataFormat get_depth_format(bool p_resolve, bool p_msaa, bool p_storage);
+	static uint32_t get_depth_usage_bits(bool p_resolve, bool p_msaa, bool p_storage);
+	static RD::DataFormat get_velocity_format();
+	static uint32_t get_velocity_usage_bits(bool p_resolve, bool p_msaa, bool p_storage);
+	static RD::DataFormat get_vrs_format();
+	static uint32_t get_vrs_usage_bits();
+
+private:
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Our classDB doesn't support calling our normal exposed functions
 
-private:
 	RID _create_texture_from_format(const StringName &p_context, const StringName &p_texture_name, const Ref<RDTextureFormat> &p_texture_format, const Ref<RDTextureView> &p_view = Ref<RDTextureView>(), bool p_unique = true);
-	RID _create_texture_view(const StringName &p_context, const StringName &p_texture_name, const StringName p_view_name, const Ref<RDTextureView> p_view = Ref<RDTextureView>());
+	RID _create_texture_view(const StringName &p_context, const StringName &p_texture_name, const StringName &p_view_name, const Ref<RDTextureView> p_view = Ref<RDTextureView>());
 	Ref<RDTextureFormat> _get_texture_format(const StringName &p_context, const StringName &p_texture_name) const;
 	RID _get_texture_slice_view(const StringName &p_context, const StringName &p_texture_name, const uint32_t p_layer, const uint32_t p_mipmap, const uint32_t p_layers = 1, const uint32_t p_mipmaps = 1, const Ref<RDTextureView> p_view = Ref<RDTextureView>());
 
-	// For color and depth as exposed to extensions, we return the buffer that we're rendering into.
-	// Resolving happens after effects etc. are run.
-	RID _get_color_texture() {
-		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED && has_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA)) {
-			return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA);
+	// For color and depth as exposed to extensions:
+	// - we need separately named functions to access the layer,
+	// - we don't output an error for missing buffers but just return an empty RID.
+	RID _get_color_texture(bool p_msaa = false) {
+		if (p_msaa) {
+			if (has_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA)) {
+				return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA);
+			} else {
+				return RID();
+			}
 		} else if (has_internal_texture()) {
 			return get_internal_texture();
 		} else {
@@ -326,9 +372,13 @@ private:
 		}
 	}
 
-	RID _get_color_layer(const uint32_t p_layer) {
-		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED && has_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA)) {
-			return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA, p_layer, 0);
+	RID _get_color_layer(const uint32_t p_layer, bool p_msaa = false) {
+		if (p_msaa) {
+			if (has_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA)) {
+				return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA, p_layer, 0);
+			} else {
+				return RID();
+			}
 		} else if (has_internal_texture()) {
 			return get_internal_texture(p_layer);
 		} else {
@@ -336,9 +386,13 @@ private:
 		}
 	}
 
-	RID _get_depth_texture() {
-		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED && has_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA)) {
-			return get_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA);
+	RID _get_depth_texture(bool p_msaa = false) {
+		if (p_msaa) {
+			if (has_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA)) {
+				return get_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA);
+			} else {
+				return RID();
+			}
 		} else if (has_depth_texture()) {
 			return get_depth_texture();
 		} else {
@@ -346,9 +400,13 @@ private:
 		}
 	}
 
-	RID _get_depth_layer(const uint32_t p_layer) {
-		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED && has_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA)) {
-			return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA, p_layer, 0);
+	RID _get_depth_layer(const uint32_t p_layer, bool p_msaa = false) {
+		if (p_msaa) {
+			if (has_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA)) {
+				return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA, p_layer, 0);
+			} else {
+				return RID();
+			}
 		} else if (has_depth_texture()) {
 			return get_depth_texture(p_layer);
 		} else {
@@ -356,25 +414,36 @@ private:
 		}
 	}
 
-	RID _get_velocity_texture() {
-		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED && has_velocity_buffer(true)) {
-			return get_velocity_buffer(true);
-		} else if (has_velocity_buffer(false)) {
-			return get_velocity_buffer(false);
+	RID _get_velocity_texture(bool p_msaa = false) {
+		if (has_velocity_buffer(p_msaa)) {
+			return get_velocity_buffer(p_msaa);
 		} else {
 			return RID();
 		}
 	}
 
-	RID _get_velocity_layer(const uint32_t p_layer) {
-		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED && has_velocity_buffer(true)) {
-			return get_velocity_buffer(true, p_layer);
-		} else if (has_velocity_buffer(false)) {
-			return get_velocity_buffer(false, p_layer);
+	RID _get_velocity_layer(const uint32_t p_layer, bool p_msaa = false) {
+		if (has_velocity_buffer(p_msaa)) {
+			return get_velocity_buffer(p_msaa, p_layer);
 		} else {
 			return RID();
 		}
 	}
+
+#ifndef DISABLE_DEPRECATED
+
+	RID _get_color_texture_compat_80214();
+	RID _get_color_layer_compat_80214(const uint32_t p_layer);
+	RID _get_depth_texture_compat_80214();
+	RID _get_depth_layer_compat_80214(const uint32_t p_layer);
+	RID _get_velocity_texture_compat_80214();
+	RID _get_velocity_layer_compat_80214(const uint32_t p_layer);
+
+	RID _create_texture_bind_compat_98670(const StringName &p_context, const StringName &p_texture_name, const RD::DataFormat p_data_format, const uint32_t p_usage_bits, const RD::TextureSamples p_texture_samples, const Size2i p_size, const uint32_t p_layers, const uint32_t p_mipmaps, bool p_unique);
+
+	static void _bind_compatibility_methods();
+
+#endif // DISABLE_DEPRECATED
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Everything after this needs to be re-evaluated, this is all old implementation
@@ -387,5 +456,3 @@ public:
 	// 2 full size, 2 half size
 	WeightBuffers weight_buffers[4]; // Only used in raster
 };
-
-#endif // RENDER_SCENE_BUFFERS_RD_H

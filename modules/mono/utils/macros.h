@@ -28,13 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MONO_MACROS_H
-#define MONO_MACROS_H
+#pragma once
 
-#define _GD_VARNAME_CONCAT_B_(m_ignore, m_name) m_name
-#define _GD_VARNAME_CONCAT_A_(m_a, m_b, m_c) _GD_VARNAME_CONCAT_B_(hello there, m_a##m_b##m_c)
-#define _GD_VARNAME_CONCAT_(m_a, m_b, m_c) _GD_VARNAME_CONCAT_A_(m_a, m_b, m_c)
-#define GD_UNIQUE_NAME(m_name) _GD_VARNAME_CONCAT_(m_name, _, __COUNTER__)
+#include "core/typedefs.h"
 
 // unreachable
 
@@ -68,5 +64,3 @@ public:
 
 #define SCOPE_EXIT \
 	auto GD_UNIQUE_NAME(gd_scope_exit) = gdmono::ScopeExitAux() + [=]() -> void
-
-#endif // MONO_MACROS_H

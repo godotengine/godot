@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_MATH_FUNCS_H
-#define TEST_MATH_FUNCS_H
+#pragma once
 
 #include "tests/test_macros.h"
 
@@ -47,47 +46,47 @@ TEST_CASE("[Math] C++ macros") {
 	// `max` is lower than `min`.
 	CHECK(CLAMP(620, 600, 50) == 50);
 
-	CHECK(ABS(-5) == 5);
-	CHECK(ABS(0) == 0);
-	CHECK(ABS(5) == 5);
+	CHECK(Math::abs(-5) == 5);
+	CHECK(Math::abs(0) == 0);
+	CHECK(Math::abs(5) == 5);
 
 	CHECK(SIGN(-5) == -1.0);
 	CHECK(SIGN(0) == 0.0);
 	CHECK(SIGN(5) == 1.0);
-	// Check that SIGN(NAN) returns 0.0.
-	CHECK(SIGN(NAN) == 0.0);
+	// Check that SIGN(Math::NaN) returns 0.0.
+	CHECK(SIGN(Math::NaN) == 0.0);
 }
 
 TEST_CASE("[Math] Power of two functions") {
-	CHECK(next_power_of_2(0) == 0);
-	CHECK(next_power_of_2(1) == 1);
-	CHECK(next_power_of_2(16) == 16);
-	CHECK(next_power_of_2(17) == 32);
-	CHECK(next_power_of_2(65535) == 65536);
+	CHECK(next_power_of_2((uint32_t)0) == 0);
+	CHECK(next_power_of_2((uint32_t)1) == 1);
+	CHECK(next_power_of_2((uint32_t)16) == 16);
+	CHECK(next_power_of_2((uint32_t)17) == 32);
+	CHECK(next_power_of_2((uint32_t)65535) == 65536);
 
-	CHECK(previous_power_of_2(0) == 0);
-	CHECK(previous_power_of_2(1) == 1);
-	CHECK(previous_power_of_2(16) == 16);
-	CHECK(previous_power_of_2(17) == 16);
-	CHECK(previous_power_of_2(65535) == 32768);
+	CHECK(previous_power_of_2((uint32_t)0) == 0);
+	CHECK(previous_power_of_2((uint32_t)1) == 1);
+	CHECK(previous_power_of_2((uint32_t)16) == 16);
+	CHECK(previous_power_of_2((uint32_t)17) == 16);
+	CHECK(previous_power_of_2((uint32_t)65535) == 32768);
 
-	CHECK(closest_power_of_2(0) == 0);
-	CHECK(closest_power_of_2(1) == 1);
-	CHECK(closest_power_of_2(16) == 16);
-	CHECK(closest_power_of_2(17) == 16);
-	CHECK(closest_power_of_2(65535) == 65536);
+	CHECK(closest_power_of_2((uint32_t)0) == 0);
+	CHECK(closest_power_of_2((uint32_t)1) == 1);
+	CHECK(closest_power_of_2((uint32_t)16) == 16);
+	CHECK(closest_power_of_2((uint32_t)17) == 16);
+	CHECK(closest_power_of_2((uint32_t)65535) == 65536);
 
-	CHECK(get_shift_from_power_of_2(0) == -1);
-	CHECK(get_shift_from_power_of_2(1) == 0);
-	CHECK(get_shift_from_power_of_2(16) == 4);
-	CHECK(get_shift_from_power_of_2(17) == -1);
-	CHECK(get_shift_from_power_of_2(65535) == -1);
+	CHECK(get_shift_from_power_of_2((uint32_t)0) == -1);
+	CHECK(get_shift_from_power_of_2((uint32_t)1) == 0);
+	CHECK(get_shift_from_power_of_2((uint32_t)16) == 4);
+	CHECK(get_shift_from_power_of_2((uint32_t)17) == -1);
+	CHECK(get_shift_from_power_of_2((uint32_t)65535) == -1);
 
-	CHECK(nearest_shift(0) == 0);
-	CHECK(nearest_shift(1) == 1);
-	CHECK(nearest_shift(16) == 5);
-	CHECK(nearest_shift(17) == 5);
-	CHECK(nearest_shift(65535) == 16);
+	CHECK(nearest_shift((uint32_t)0) == 0);
+	CHECK(nearest_shift((uint32_t)1) == 1);
+	CHECK(nearest_shift((uint32_t)16) == 5);
+	CHECK(nearest_shift((uint32_t)17) == 5);
+	CHECK(nearest_shift((uint32_t)65535) == 16);
 }
 
 TEST_CASE_TEMPLATE("[Math] abs", T, int, float, double) {
@@ -108,6 +107,29 @@ TEST_CASE_TEMPLATE("[Math] round/floor/ceil", T, float, double) {
 
 	CHECK(Math::ceil((T)1.5) == (T)2.0);
 	CHECK(Math::ceil((T)-1.9) == (T)-1.0);
+}
+
+TEST_CASE_TEMPLATE("[Math] integer division round up unsigned", T, uint32_t, uint64_t) {
+	CHECK(Math::division_round_up((T)0, (T)64) == 0);
+	CHECK(Math::division_round_up((T)1, (T)64) == 1);
+	CHECK(Math::division_round_up((T)63, (T)64) == 1);
+	CHECK(Math::division_round_up((T)64, (T)64) == 1);
+	CHECK(Math::division_round_up((T)65, (T)64) == 2);
+	CHECK(Math::division_round_up((T)65, (T)1) == 65);
+}
+
+TEST_CASE_TEMPLATE("[Math] integer division round up signed", T, int32_t, int64_t) {
+	CHECK(Math::division_round_up((T)0, (T)64) == 0);
+	CHECK(Math::division_round_up((T)1, (T)64) == 1);
+	CHECK(Math::division_round_up((T)63, (T)64) == 1);
+	CHECK(Math::division_round_up((T)64, (T)64) == 1);
+	CHECK(Math::division_round_up((T)65, (T)64) == 2);
+	CHECK(Math::division_round_up((T)65, (T)1) == 65);
+	CHECK(Math::division_round_up((T)-1, (T)64) == 0);
+	CHECK(Math::division_round_up((T)-1, (T)-1) == 1);
+	CHECK(Math::division_round_up((T)-1, (T)1) == -1);
+	CHECK(Math::division_round_up((T)-1, (T)-2) == 1);
+	CHECK(Math::division_round_up((T)-4, (T)-2) == 2);
 }
 
 TEST_CASE_TEMPLATE("[Math] sin/cos/tan", T, float, double) {
@@ -167,7 +189,7 @@ TEST_CASE_TEMPLATE("[Math] asin/acos/atan", T, float, double) {
 	CHECK(Math::acos((T)0.5) == doctest::Approx((T)1.0471975512));
 	CHECK(Math::acos((T)1.0) == doctest::Approx((T)0.0));
 	CHECK(Math::acos((T)2.0) == doctest::Approx((T)0.0));
-	CHECK(Math::acos((T)-2.0) == doctest::Approx((T)Math_PI));
+	CHECK(Math::acos((T)-2.0) == doctest::Approx((T)Math::PI));
 
 	CHECK(Math::atan((T)-0.1) == doctest::Approx((T)-0.0996686525));
 	CHECK(Math::atan((T)0.1) == doctest::Approx((T)0.0996686525));
@@ -269,10 +291,10 @@ TEST_CASE_TEMPLATE("[Math] pow/log/log2/exp/sqrt", T, float, double) {
 
 TEST_CASE_TEMPLATE("[Math] is_nan/is_inf", T, float, double) {
 	CHECK(!Math::is_nan((T)0.0));
-	CHECK(Math::is_nan((T)NAN));
+	CHECK(Math::is_nan((T)Math::NaN));
 
 	CHECK(!Math::is_inf((T)0.0));
-	CHECK(Math::is_inf((T)INFINITY));
+	CHECK(Math::is_inf((T)Math::INF));
 }
 
 TEST_CASE_TEMPLATE("[Math] linear_to_db", T, float, double) {
@@ -358,19 +380,22 @@ TEST_CASE_TEMPLATE("[Math] remap", T, float, double) {
 	CHECK(Math::remap((T)-100.0, (T)-100.0, (T)-200.0, (T)0.0, (T)-1000.0) == doctest::Approx((T)0.0));
 	CHECK(Math::remap((T)-200.0, (T)-100.0, (T)-200.0, (T)0.0, (T)-1000.0) == doctest::Approx((T)-1000.0));
 	CHECK(Math::remap((T)-250.0, (T)-100.0, (T)-200.0, (T)0.0, (T)-1000.0) == doctest::Approx((T)-1500.0));
+
+	// Note: undefined behavior can happen when `p_istart == p_istop`. We don't bother testing this as it will
+	// vary between hardware and compilers properly implementing IEEE 754.
 }
 
 TEST_CASE_TEMPLATE("[Math] angle_difference", T, float, double) {
 	// Loops around, should return 0.0.
-	CHECK(Math::angle_difference((T)0.0, (T)Math_TAU) == doctest::Approx((T)0.0));
-	CHECK(Math::angle_difference((T)Math_PI, (T)-Math_PI) == doctest::Approx((T)0.0));
-	CHECK(Math::angle_difference((T)0.0, (T)Math_TAU * (T)4.0) == doctest::Approx((T)0.0));
+	CHECK(Math::angle_difference((T)0.0, (T)Math::TAU) == doctest::Approx((T)0.0));
+	CHECK(Math::angle_difference((T)Math::PI, (T)-Math::PI) == doctest::Approx((T)0.0));
+	CHECK(Math::angle_difference((T)0.0, (T)Math::TAU * (T)4.0) == doctest::Approx((T)0.0));
 
 	// Rotation is clockwise, so it should return -PI.
-	CHECK(Math::angle_difference((T)0.0, (T)Math_PI) == doctest::Approx((T)-Math_PI));
-	CHECK(Math::angle_difference((T)0.0, (T)-Math_PI) == doctest::Approx((T)Math_PI));
-	CHECK(Math::angle_difference((T)Math_PI, (T)0.0) == doctest::Approx((T)Math_PI));
-	CHECK(Math::angle_difference((T)-Math_PI, (T)0.0) == doctest::Approx((T)-Math_PI));
+	CHECK(Math::angle_difference((T)0.0, (T)Math::PI) == doctest::Approx((T)-Math::PI));
+	CHECK(Math::angle_difference((T)0.0, (T)-Math::PI) == doctest::Approx((T)Math::PI));
+	CHECK(Math::angle_difference((T)Math::PI, (T)0.0) == doctest::Approx((T)Math::PI));
+	CHECK(Math::angle_difference((T)-Math::PI, (T)0.0) == doctest::Approx((T)-Math::PI));
 
 	CHECK(Math::angle_difference((T)0.0, (T)3.0) == doctest::Approx((T)3.0));
 	CHECK(Math::angle_difference((T)1.0, (T)-2.0) == doctest::Approx((T)-3.0));
@@ -381,23 +406,23 @@ TEST_CASE_TEMPLATE("[Math] angle_difference", T, float, double) {
 
 TEST_CASE_TEMPLATE("[Math] lerp_angle", T, float, double) {
 	// Counter-clockwise rotation.
-	CHECK(Math::lerp_angle((T)0.24 * Math_TAU, 0.75 * Math_TAU, 0.5) == doctest::Approx((T)-0.005 * Math_TAU));
+	CHECK(Math::lerp_angle((T)0.24 * Math::TAU, 0.75 * Math::TAU, 0.5) == doctest::Approx((T)-0.005 * Math::TAU));
 	// Counter-clockwise rotation.
-	CHECK(Math::lerp_angle((T)0.25 * Math_TAU, 0.75 * Math_TAU, 0.5) == doctest::Approx((T)0.0));
+	CHECK(Math::lerp_angle((T)0.25 * Math::TAU, 0.75 * Math::TAU, 0.5) == doctest::Approx((T)0.0));
 	// Clockwise rotation.
-	CHECK(Math::lerp_angle((T)0.26 * Math_TAU, 0.75 * Math_TAU, 0.5) == doctest::Approx((T)0.505 * Math_TAU));
+	CHECK(Math::lerp_angle((T)0.26 * Math::TAU, 0.75 * Math::TAU, 0.5) == doctest::Approx((T)0.505 * Math::TAU));
 
-	CHECK(Math::lerp_angle((T)-0.25 * Math_TAU, 1.25 * Math_TAU, 0.5) == doctest::Approx((T)-0.5 * Math_TAU));
-	CHECK(Math::lerp_angle((T)0.72 * Math_TAU, 1.44 * Math_TAU, 0.96) == doctest::Approx((T)0.4512 * Math_TAU));
-	CHECK(Math::lerp_angle((T)0.72 * Math_TAU, 1.44 * Math_TAU, 1.04) == doctest::Approx((T)0.4288 * Math_TAU));
+	CHECK(Math::lerp_angle((T)-0.25 * Math::TAU, 1.25 * Math::TAU, 0.5) == doctest::Approx((T)-0.5 * Math::TAU));
+	CHECK(Math::lerp_angle((T)0.72 * Math::TAU, 1.44 * Math::TAU, 0.96) == doctest::Approx((T)0.4512 * Math::TAU));
+	CHECK(Math::lerp_angle((T)0.72 * Math::TAU, 1.44 * Math::TAU, 1.04) == doctest::Approx((T)0.4288 * Math::TAU));
 
 	// Initial and final angles are effectively identical, so the value returned
 	// should always be the same regardless of the `weight` parameter.
-	CHECK(Math::lerp_angle((T)-4 * Math_TAU, 4 * Math_TAU, -1.0) == doctest::Approx((T)-4.0 * Math_TAU));
-	CHECK(Math::lerp_angle((T)-4 * Math_TAU, 4 * Math_TAU, 0.0) == doctest::Approx((T)-4.0 * Math_TAU));
-	CHECK(Math::lerp_angle((T)-4 * Math_TAU, 4 * Math_TAU, 0.5) == doctest::Approx((T)-4.0 * Math_TAU));
-	CHECK(Math::lerp_angle((T)-4 * Math_TAU, 4 * Math_TAU, 1.0) == doctest::Approx((T)-4.0 * Math_TAU));
-	CHECK(Math::lerp_angle((T)-4 * Math_TAU, 4 * Math_TAU, 500.0) == doctest::Approx((T)-4.0 * Math_TAU));
+	CHECK(Math::lerp_angle((T)-4 * Math::TAU, 4 * Math::TAU, -1.0) == doctest::Approx((T)-4.0 * Math::TAU));
+	CHECK(Math::lerp_angle((T)-4 * Math::TAU, 4 * Math::TAU, 0.0) == doctest::Approx((T)-4.0 * Math::TAU));
+	CHECK(Math::lerp_angle((T)-4 * Math::TAU, 4 * Math::TAU, 0.5) == doctest::Approx((T)-4.0 * Math::TAU));
+	CHECK(Math::lerp_angle((T)-4 * Math::TAU, 4 * Math::TAU, 1.0) == doctest::Approx((T)-4.0 * Math::TAU));
+	CHECK(Math::lerp_angle((T)-4 * Math::TAU, 4 * Math::TAU, 500.0) == doctest::Approx((T)-4.0 * Math::TAU));
 }
 
 TEST_CASE_TEMPLATE("[Math] move_toward", T, float, double) {
@@ -411,16 +436,16 @@ TEST_CASE_TEMPLATE("[Math] move_toward", T, float, double) {
 
 TEST_CASE_TEMPLATE("[Math] rotate_toward", T, float, double) {
 	// Rotate toward.
-	CHECK(Math::rotate_toward((T)0.0, (T)Math_PI * (T)0.75, (T)1.5) == doctest::Approx((T)1.5));
+	CHECK(Math::rotate_toward((T)0.0, (T)Math::PI * (T)0.75, (T)1.5) == doctest::Approx((T)1.5));
 	CHECK(Math::rotate_toward((T)-2.0, (T)1.0, (T)2.5) == doctest::Approx((T)0.5));
-	CHECK(Math::rotate_toward((T)-2.0, (T)Math_PI, (T)Math_PI) == doctest::Approx((T)-Math_PI));
-	CHECK(Math::rotate_toward((T)1.0, (T)Math_PI, (T)20.0) == doctest::Approx((T)Math_PI));
+	CHECK(Math::rotate_toward((T)-2.0, (T)Math::PI, (T)Math::PI) == doctest::Approx((T)-Math::PI));
+	CHECK(Math::rotate_toward((T)1.0, (T)Math::PI, (T)20.0) == doctest::Approx((T)Math::PI));
 
 	// Rotate away.
 	CHECK(Math::rotate_toward((T)0.0, (T)0.0, (T)-1.5) == doctest::Approx((T)-1.5));
-	CHECK(Math::rotate_toward((T)0.0, (T)0.0, (T)-Math_PI) == doctest::Approx((T)-Math_PI));
-	CHECK(Math::rotate_toward((T)3.0, (T)Math_PI, (T)-Math_PI) == doctest::Approx((T)0.0));
-	CHECK(Math::rotate_toward((T)2.0, (T)Math_PI, (T)-1.5) == doctest::Approx((T)0.5));
+	CHECK(Math::rotate_toward((T)0.0, (T)0.0, (T)-Math::PI) == doctest::Approx((T)-Math::PI));
+	CHECK(Math::rotate_toward((T)3.0, (T)Math::PI, (T)-Math::PI) == doctest::Approx((T)0.0));
+	CHECK(Math::rotate_toward((T)2.0, (T)Math::PI, (T)-1.5) == doctest::Approx((T)0.5));
 	CHECK(Math::rotate_toward((T)1.0, (T)2.0, (T)-0.5) == doctest::Approx((T)0.5));
 	CHECK(Math::rotate_toward((T)2.5, (T)2.0, (T)-0.5) == doctest::Approx((T)3.0));
 	CHECK(Math::rotate_toward((T)-1.0, (T)1.0, (T)-1.0) == doctest::Approx((T)-2.0));
@@ -560,10 +585,10 @@ TEST_CASE_TEMPLATE("[Math] pingpong", T, float, double) {
 }
 
 TEST_CASE_TEMPLATE("[Math] deg_to_rad/rad_to_deg", T, float, double) {
-	CHECK(Math::deg_to_rad((T)180.0) == doctest::Approx((T)Math_PI));
+	CHECK(Math::deg_to_rad((T)180.0) == doctest::Approx((T)Math::PI));
 	CHECK(Math::deg_to_rad((T)-27.0) == doctest::Approx((T)-0.471239));
 
-	CHECK(Math::rad_to_deg((T)Math_PI) == doctest::Approx((T)180.0));
+	CHECK(Math::rad_to_deg((T)Math::PI) == doctest::Approx((T)180.0));
 	CHECK(Math::rad_to_deg((T)-1.5) == doctest::Approx((T)-85.94366927));
 }
 
@@ -582,11 +607,11 @@ TEST_CASE_TEMPLATE("[Math] cubic_interpolate", T, float, double) {
 }
 
 TEST_CASE_TEMPLATE("[Math] cubic_interpolate_angle", T, float, double) {
-	CHECK(Math::cubic_interpolate_angle((T)(Math_PI * (1.0 / 6.0)), (T)(Math_PI * (5.0 / 6.0)), (T)0.0, (T)Math_PI, (T)0.0) == doctest::Approx((T)Math_PI * (1.0 / 6.0)));
-	CHECK(Math::cubic_interpolate_angle((T)(Math_PI * (1.0 / 6.0)), (T)(Math_PI * (5.0 / 6.0)), (T)0.0, (T)Math_PI, (T)0.25) == doctest::Approx((T)0.973566));
-	CHECK(Math::cubic_interpolate_angle((T)(Math_PI * (1.0 / 6.0)), (T)(Math_PI * (5.0 / 6.0)), (T)0.0, (T)Math_PI, (T)0.5) == doctest::Approx((T)Math_PI / 2.0));
-	CHECK(Math::cubic_interpolate_angle((T)(Math_PI * (1.0 / 6.0)), (T)(Math_PI * (5.0 / 6.0)), (T)0.0, (T)Math_PI, (T)0.75) == doctest::Approx((T)2.16803));
-	CHECK(Math::cubic_interpolate_angle((T)(Math_PI * (1.0 / 6.0)), (T)(Math_PI * (5.0 / 6.0)), (T)0.0, (T)Math_PI, (T)1.0) == doctest::Approx((T)Math_PI * (5.0 / 6.0)));
+	CHECK(Math::cubic_interpolate_angle((T)(Math::PI * (1.0 / 6.0)), (T)(Math::PI * (5.0 / 6.0)), (T)0.0, (T)Math::PI, (T)0.0) == doctest::Approx((T)Math::PI * (1.0 / 6.0)));
+	CHECK(Math::cubic_interpolate_angle((T)(Math::PI * (1.0 / 6.0)), (T)(Math::PI * (5.0 / 6.0)), (T)0.0, (T)Math::PI, (T)0.25) == doctest::Approx((T)0.973566));
+	CHECK(Math::cubic_interpolate_angle((T)(Math::PI * (1.0 / 6.0)), (T)(Math::PI * (5.0 / 6.0)), (T)0.0, (T)Math::PI, (T)0.5) == doctest::Approx((T)Math::PI / 2.0));
+	CHECK(Math::cubic_interpolate_angle((T)(Math::PI * (1.0 / 6.0)), (T)(Math::PI * (5.0 / 6.0)), (T)0.0, (T)Math::PI, (T)0.75) == doctest::Approx((T)2.16803));
+	CHECK(Math::cubic_interpolate_angle((T)(Math::PI * (1.0 / 6.0)), (T)(Math::PI * (5.0 / 6.0)), (T)0.0, (T)Math::PI, (T)1.0) == doctest::Approx((T)Math::PI * (5.0 / 6.0)));
 }
 
 TEST_CASE_TEMPLATE("[Math] cubic_interpolate_in_time", T, float, double) {
@@ -598,11 +623,11 @@ TEST_CASE_TEMPLATE("[Math] cubic_interpolate_in_time", T, float, double) {
 }
 
 TEST_CASE_TEMPLATE("[Math] cubic_interpolate_angle_in_time", T, float, double) {
-	CHECK(Math::cubic_interpolate_angle_in_time((T)(Math_PI * (1.0 / 6.0)), (T)(Math_PI * (5.0 / 6.0)), (T)0.0, (T)Math_PI, (T)0.0, (T)0.5, (T)0.0, (T)1.0) == doctest::Approx((T)0.0));
-	CHECK(Math::cubic_interpolate_angle_in_time((T)(Math_PI * (1.0 / 6.0)), (T)(Math_PI * (5.0 / 6.0)), (T)0.0, (T)Math_PI, (T)0.25, (T)0.5, (T)0.0, (T)1.0) == doctest::Approx((T)0.494964));
-	CHECK(Math::cubic_interpolate_angle_in_time((T)(Math_PI * (1.0 / 6.0)), (T)(Math_PI * (5.0 / 6.0)), (T)0.0, (T)Math_PI, (T)0.5, (T)0.5, (T)0.0, (T)1.0) == doctest::Approx((T)1.27627));
-	CHECK(Math::cubic_interpolate_angle_in_time((T)(Math_PI * (1.0 / 6.0)), (T)(Math_PI * (5.0 / 6.0)), (T)0.0, (T)Math_PI, (T)0.75, (T)0.5, (T)0.0, (T)1.0) == doctest::Approx((T)2.07394));
-	CHECK(Math::cubic_interpolate_angle_in_time((T)(Math_PI * (1.0 / 6.0)), (T)(Math_PI * (5.0 / 6.0)), (T)0.0, (T)Math_PI, (T)1.0, (T)0.5, (T)0.0, (T)1.0) == doctest::Approx((T)Math_PI * (5.0 / 6.0)));
+	CHECK(Math::cubic_interpolate_angle_in_time((T)(Math::PI * (1.0 / 6.0)), (T)(Math::PI * (5.0 / 6.0)), (T)0.0, (T)Math::PI, (T)0.0, (T)0.5, (T)0.0, (T)1.0) == doctest::Approx((T)0.0));
+	CHECK(Math::cubic_interpolate_angle_in_time((T)(Math::PI * (1.0 / 6.0)), (T)(Math::PI * (5.0 / 6.0)), (T)0.0, (T)Math::PI, (T)0.25, (T)0.5, (T)0.0, (T)1.0) == doctest::Approx((T)0.494964));
+	CHECK(Math::cubic_interpolate_angle_in_time((T)(Math::PI * (1.0 / 6.0)), (T)(Math::PI * (5.0 / 6.0)), (T)0.0, (T)Math::PI, (T)0.5, (T)0.5, (T)0.0, (T)1.0) == doctest::Approx((T)1.27627));
+	CHECK(Math::cubic_interpolate_angle_in_time((T)(Math::PI * (1.0 / 6.0)), (T)(Math::PI * (5.0 / 6.0)), (T)0.0, (T)Math::PI, (T)0.75, (T)0.5, (T)0.0, (T)1.0) == doctest::Approx((T)2.07394));
+	CHECK(Math::cubic_interpolate_angle_in_time((T)(Math::PI * (1.0 / 6.0)), (T)(Math::PI * (5.0 / 6.0)), (T)0.0, (T)Math::PI, (T)1.0, (T)0.5, (T)0.0, (T)1.0) == doctest::Approx((T)Math::PI * (5.0 / 6.0)));
 }
 
 TEST_CASE_TEMPLATE("[Math] bezier_interpolate", T, float, double) {
@@ -614,5 +639,3 @@ TEST_CASE_TEMPLATE("[Math] bezier_interpolate", T, float, double) {
 }
 
 } // namespace TestMath
-
-#endif // TEST_MATH_FUNCS_H

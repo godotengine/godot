@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_FB_DISPLAY_REFRESH_RATE_EXTENSION_H
-#define OPENXR_FB_DISPLAY_REFRESH_RATE_EXTENSION_H
+#pragma once
 
 // This extension gives us access to the possible display refresh rates
 // supported by the HMD.
@@ -41,16 +40,22 @@
 #include "openxr_extension_wrapper.h"
 
 class OpenXRDisplayRefreshRateExtension : public OpenXRExtensionWrapper {
+	GDCLASS(OpenXRDisplayRefreshRateExtension, OpenXRExtensionWrapper);
+
+protected:
+	static void _bind_methods() {}
+
 public:
 	static OpenXRDisplayRefreshRateExtension *get_singleton();
 
 	OpenXRDisplayRefreshRateExtension();
 	virtual ~OpenXRDisplayRefreshRateExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void on_instance_destroyed() override;
+	virtual bool on_event_polled(const XrEventDataBuffer &event) override;
 
 	float get_refresh_rate() const;
 	void set_refresh_rate(float p_refresh_rate);
@@ -67,5 +72,3 @@ private:
 	EXT_PROTO_XRRESULT_FUNC2(xrGetDisplayRefreshRateFB, (XrSession), session, (float *), display_refresh_rate);
 	EXT_PROTO_XRRESULT_FUNC2(xrRequestDisplayRefreshRateFB, (XrSession), session, (float), display_refresh_rate);
 };
-
-#endif // OPENXR_FB_DISPLAY_REFRESH_RATE_EXTENSION_H

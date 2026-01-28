@@ -85,7 +85,7 @@ using hb_null_size = _hb_null_size<T, void>;
 template <typename T, typename>
 struct _hb_static_size : hb_integral_constant<unsigned, sizeof (T)> {};
 template <typename T>
-struct _hb_static_size<T, hb_void_t<decltype (T::min_size)>> : hb_integral_constant<unsigned, T::static_size> {};
+struct _hb_static_size<T, hb_void_t<decltype (T::static_size)>> : hb_integral_constant<unsigned, T::static_size> {};
 template <typename T>
 using hb_static_size = _hb_static_size<T, void>;
 #define hb_static_size(T) hb_static_size<T>::value
@@ -176,7 +176,7 @@ template <typename Type>
 static inline Type& Crap () {
   static_assert (hb_null_size (Type) <= HB_NULL_POOL_SIZE, "Increase HB_NULL_POOL_SIZE.");
   Type *obj = reinterpret_cast<Type *> (_hb_CrapPool);
-  memcpy (obj, std::addressof (Null (Type)), sizeof (*obj));
+  memcpy (reinterpret_cast<void*>(obj), std::addressof (Null (Type)), sizeof (*obj));
   return *obj;
 }
 template <typename QType>

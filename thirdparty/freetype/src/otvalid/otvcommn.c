@@ -4,7 +4,7 @@
  *
  *   OpenType common tables validation (body).
  *
- * Copyright (C) 2004-2023 by
+ * Copyright (C) 2004-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -52,7 +52,7 @@
     OTV_LIMIT_CHECK( 4 );
     CoverageFormat = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (format %d)\n", CoverageFormat ));
+    OTV_TRACE(( " (format %u)\n", CoverageFormat ));
 
     switch ( CoverageFormat )
     {
@@ -64,7 +64,7 @@
 
         GlyphCount = FT_NEXT_USHORT( p );
 
-        OTV_TRACE(( " (GlyphCount = %d)\n", GlyphCount ));
+        OTV_TRACE(( " (GlyphCount = %u)\n", GlyphCount ));
 
         OTV_LIMIT_CHECK( GlyphCount * 2 );        /* GlyphArray */
 
@@ -90,7 +90,7 @@
 
         RangeCount = FT_NEXT_USHORT( p );
 
-        OTV_TRACE(( " (RangeCount = %d)\n", RangeCount ));
+        OTV_TRACE(( " (RangeCount = %u)\n", RangeCount ));
 
         OTV_LIMIT_CHECK( RangeCount * 6 );
 
@@ -233,7 +233,7 @@
     OTV_LIMIT_CHECK( 4 );
     ClassFormat = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (format %d)\n", ClassFormat ));
+    OTV_TRACE(( " (format %u)\n", ClassFormat ));
 
     switch ( ClassFormat )
     {
@@ -248,7 +248,7 @@
         StartGlyph = FT_NEXT_USHORT( p );
         GlyphCount = FT_NEXT_USHORT( p );
 
-        OTV_TRACE(( " (GlyphCount = %d)\n", GlyphCount ));
+        OTV_TRACE(( " (GlyphCount = %u)\n", GlyphCount ));
 
         OTV_LIMIT_CHECK( GlyphCount * 2 );    /* ClassValueArray */
 
@@ -265,7 +265,7 @@
 
         ClassRangeCount = FT_NEXT_USHORT( p );
 
-        OTV_TRACE(( " (ClassRangeCount = %d)\n", ClassRangeCount ));
+        OTV_TRACE(( " (ClassRangeCount = %u)\n", ClassRangeCount ));
 
         OTV_LIMIT_CHECK( ClassRangeCount * 6 );
 
@@ -368,14 +368,14 @@
     LookupFlag    = FT_NEXT_USHORT( p );
     SubTableCount = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (type %d)\n", LookupType ));
+    OTV_TRACE(( " (type %u)\n", LookupType ));
 
     if ( LookupType == 0 || LookupType > otvalid->type_count )
       FT_INVALID_DATA;
 
     validate = otvalid->type_funcs[LookupType - 1];
 
-    OTV_TRACE(( " (SubTableCount = %d)\n", SubTableCount ));
+    OTV_TRACE(( " (SubTableCount = %u)\n", SubTableCount ));
 
     OTV_LIMIT_CHECK( SubTableCount * 2 );
 
@@ -405,7 +405,7 @@
     OTV_LIMIT_CHECK( 2 );
     LookupCount = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (LookupCount = %d)\n", LookupCount ));
+    OTV_TRACE(( " (LookupCount = %u)\n", LookupCount ));
 
     OTV_LIMIT_CHECK( LookupCount * 2 );
 
@@ -450,7 +450,7 @@
     p           += 2;                   /* skip FeatureParams (unused) */
     LookupCount  = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (LookupCount = %d)\n", LookupCount ));
+    OTV_TRACE(( " (LookupCount = %u)\n", LookupCount ));
 
     OTV_LIMIT_CHECK( LookupCount * 2 );
 
@@ -486,7 +486,7 @@
     OTV_LIMIT_CHECK( 2 );
     FeatureCount = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (FeatureCount = %d)\n", FeatureCount ));
+    OTV_TRACE(( " (FeatureCount = %u)\n", FeatureCount ));
 
     OTV_LIMIT_CHECK( FeatureCount * 2 );
 
@@ -532,8 +532,8 @@
     ReqFeatureIndex = FT_NEXT_USHORT( p );
     FeatureCount    = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (ReqFeatureIndex = %d)\n", ReqFeatureIndex ));
-    OTV_TRACE(( " (FeatureCount = %d)\n",    FeatureCount    ));
+    OTV_TRACE(( " (ReqFeatureIndex = %u)\n", ReqFeatureIndex ));
+    OTV_TRACE(( " (FeatureCount = %u)\n",    FeatureCount    ));
 
     if ( ReqFeatureIndex != 0xFFFFU && ReqFeatureIndex >= otvalid->extra1 )
       FT_INVALID_DATA;
@@ -571,7 +571,7 @@
     DefaultLangSys = FT_NEXT_USHORT( p );
     LangSysCount   = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (LangSysCount = %d)\n", LangSysCount ));
+    OTV_TRACE(( " (LangSysCount = %u)\n", LangSysCount ));
 
     if ( DefaultLangSys != 0 )
       otv_LangSys_validate( table + DefaultLangSys, otvalid );
@@ -607,7 +607,7 @@
     OTV_LIMIT_CHECK( 2 );
     ScriptCount = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (ScriptCount = %d)\n", ScriptCount ));
+    OTV_TRACE(( " (ScriptCount = %u)\n", ScriptCount ));
 
     OTV_LIMIT_CHECK( ScriptCount * 6 );
 
@@ -665,7 +665,7 @@
     OTV_LIMIT_CHECK( 2 );
     Count = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (Count = %d)\n", Count ));
+    OTV_TRACE(( " (Count = %u)\n", Count ));
 
     OTV_LIMIT_CHECK( Count * 2 );
 
@@ -698,7 +698,7 @@
     Coverage = FT_NEXT_USHORT( p );
     Count    = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (Count = %d)\n", Count ));
+    OTV_TRACE(( " (Count = %u)\n", Count ));
 
     otv_Coverage_validate( table + Coverage, otvalid, (FT_Int)Count );
 
@@ -731,7 +731,7 @@
     OTV_LIMIT_CHECK( 2 );
     Count = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (Count = %d)\n", Count ));
+    OTV_TRACE(( " (Count = %u)\n", Count ));
 
     OTV_LIMIT_CHECK( Count * 2 );
 
@@ -765,8 +765,8 @@
     Count1 = FT_NEXT_USHORT( p );
     Count2 = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (Count1 = %d)\n", Count1 ));
-    OTV_TRACE(( " (Count2 = %d)\n", Count2 ));
+    OTV_TRACE(( " (Count1 = %u)\n", Count1 ));
+    OTV_TRACE(( " (Count2 = %u)\n", Count2 ));
 
     if ( Count1 == 0 )
       FT_INVALID_DATA;
@@ -806,7 +806,7 @@
     OTV_LIMIT_CHECK( 2 );
     BacktrackCount = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (BacktrackCount = %d)\n", BacktrackCount ));
+    OTV_TRACE(( " (BacktrackCount = %u)\n", BacktrackCount ));
 
     OTV_LIMIT_CHECK( BacktrackCount * 2 + 2 );
     p += BacktrackCount * 2;
@@ -815,21 +815,21 @@
     if ( InputCount == 0 )
       FT_INVALID_DATA;
 
-    OTV_TRACE(( " (InputCount = %d)\n", InputCount ));
+    OTV_TRACE(( " (InputCount = %u)\n", InputCount ));
 
     OTV_LIMIT_CHECK( InputCount * 2 );
     p += ( InputCount - 1 ) * 2;
 
     LookaheadCount = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (LookaheadCount = %d)\n", LookaheadCount ));
+    OTV_TRACE(( " (LookaheadCount = %u)\n", LookaheadCount ));
 
     OTV_LIMIT_CHECK( LookaheadCount * 2 + 2 );
     p += LookaheadCount * 2;
 
     Count = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (Count = %d)\n", Count ));
+    OTV_TRACE(( " (Count = %u)\n", Count ));
 
     OTV_LIMIT_CHECK( Count * 4 );
 
@@ -866,7 +866,7 @@
     ClassDef      = FT_NEXT_USHORT( p );
     ClassSetCount = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (ClassSetCount = %d)\n", ClassSetCount ));
+    OTV_TRACE(( " (ClassSetCount = %u)\n", ClassSetCount ));
 
     otv_Coverage_validate( table + Coverage, otvalid, -1 );
     otv_ClassDef_validate( table + ClassDef, otvalid );
@@ -910,8 +910,8 @@
     GlyphCount = FT_NEXT_USHORT( p );
     Count      = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (GlyphCount = %d)\n", GlyphCount ));
-    OTV_TRACE(( " (Count = %d)\n",      Count      ));
+    OTV_TRACE(( " (GlyphCount = %u)\n", GlyphCount ));
+    OTV_TRACE(( " (Count = %u)\n",      Count      ));
 
     OTV_LIMIT_CHECK( GlyphCount * 2 + Count * 4 );
 
@@ -955,7 +955,7 @@
     LookaheadClassDef  = FT_NEXT_USHORT( p );
     ChainClassSetCount = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (ChainClassSetCount = %d)\n", ChainClassSetCount ));
+    OTV_TRACE(( " (ChainClassSetCount = %u)\n", ChainClassSetCount ));
 
     otv_Coverage_validate( table + Coverage, otvalid, -1 );
 
@@ -1002,7 +1002,7 @@
     OTV_LIMIT_CHECK( 2 );
     BacktrackGlyphCount = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (BacktrackGlyphCount = %d)\n", BacktrackGlyphCount ));
+    OTV_TRACE(( " (BacktrackGlyphCount = %u)\n", BacktrackGlyphCount ));
 
     OTV_LIMIT_CHECK( BacktrackGlyphCount * 2 + 2 );
 
@@ -1011,7 +1011,7 @@
 
     InputGlyphCount = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (InputGlyphCount = %d)\n", InputGlyphCount ));
+    OTV_TRACE(( " (InputGlyphCount = %u)\n", InputGlyphCount ));
 
     OTV_LIMIT_CHECK( InputGlyphCount * 2 + 2 );
 
@@ -1020,7 +1020,7 @@
 
     LookaheadGlyphCount = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (LookaheadGlyphCount = %d)\n", LookaheadGlyphCount ));
+    OTV_TRACE(( " (LookaheadGlyphCount = %u)\n", LookaheadGlyphCount ));
 
     OTV_LIMIT_CHECK( LookaheadGlyphCount * 2 + 2 );
 
@@ -1029,7 +1029,7 @@
 
     count2 = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (Count = %d)\n", count2 ));
+    OTV_TRACE(( " (Count = %u)\n", count2 ));
 
     OTV_LIMIT_CHECK( count2 * 4 );
 

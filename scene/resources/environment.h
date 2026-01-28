@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ENVIRONMENT_H
-#define ENVIRONMENT_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "scene/resources/sky.h"
@@ -67,12 +66,18 @@ public:
 		TONE_MAPPER_REINHARDT,
 		TONE_MAPPER_FILMIC,
 		TONE_MAPPER_ACES,
+		TONE_MAPPER_AGX,
 	};
 
 	enum SDFGIYScale {
 		SDFGI_Y_SCALE_50_PERCENT,
 		SDFGI_Y_SCALE_75_PERCENT,
 		SDFGI_Y_SCALE_100_PERCENT,
+	};
+
+	enum FogMode {
+		FOG_MODE_EXPONENTIAL,
+		FOG_MODE_DEPTH,
 	};
 
 	enum GlowBlendMode {
@@ -110,6 +115,8 @@ private:
 	ToneMapper tone_mapper = TONE_MAPPER_LINEAR;
 	float tonemap_exposure = 1.0;
 	float tonemap_white = 1.0;
+	float tonemap_agx_white = 16.29; // Default to Blender's AgX white.
+	float tonemap_agx_contrast = 1.25; // Default to approximately Blender's AgX contrast.
 	void _update_tonemap();
 
 	// SSR
@@ -117,7 +124,7 @@ private:
 	int ssr_max_steps = 64;
 	float ssr_fade_in = 0.15;
 	float ssr_fade_out = 2.0;
-	float ssr_depth_tolerance = 0.2;
+	float ssr_depth_tolerance = 0.5;
 	void _update_ssr();
 
 	// SSAO
@@ -158,11 +165,11 @@ private:
 	bool glow_enabled = false;
 	Vector<float> glow_levels;
 	bool glow_normalize_levels = false;
-	float glow_intensity = 0.8;
+	float glow_intensity = 0.3;
 	float glow_strength = 1.0;
 	float glow_mix = 0.05;
 	float glow_bloom = 0.0;
-	GlowBlendMode glow_blend_mode = GLOW_BLEND_MODE_SOFTLIGHT;
+	GlowBlendMode glow_blend_mode = GLOW_BLEND_MODE_SCREEN;
 	float glow_hdr_bleed_threshold = 1.0;
 	float glow_hdr_bleed_scale = 2.0;
 	float glow_hdr_luminance_cap = 12.0;
@@ -172,6 +179,7 @@ private:
 
 	// Fog
 	bool fog_enabled = false;
+	FogMode fog_mode = FOG_MODE_EXPONENTIAL;
 	Color fog_light_color = Color(0.518, 0.553, 0.608);
 	float fog_light_energy = 1.0;
 	float fog_sun_scatter = 0.0;
@@ -182,6 +190,13 @@ private:
 	float fog_sky_affect = 1.0;
 
 	void _update_fog();
+
+	// Depth Fog
+	float fog_depth_curve = 1.0;
+	float fog_depth_begin = 10.0;
+	float fog_depth_end = 100.0;
+
+	void _update_fog_depth();
 
 	// Volumetric Fog
 	bool volumetric_fog_enabled = false;
@@ -258,6 +273,10 @@ public:
 	float get_tonemap_exposure() const;
 	void set_tonemap_white(float p_white);
 	float get_tonemap_white() const;
+	void set_tonemap_agx_white(float p_white);
+	float get_tonemap_agx_white() const;
+	void set_tonemap_agx_contrast(float p_agx_contrast);
+	float get_tonemap_agx_contrast() const;
 
 	// SSR
 	void set_ssr_enabled(bool p_enabled);
@@ -361,6 +380,8 @@ public:
 
 	void set_fog_enabled(bool p_enabled);
 	bool is_fog_enabled() const;
+	void set_fog_mode(FogMode p_mode);
+	FogMode get_fog_mode() const;
 	void set_fog_light_color(const Color &p_light_color);
 	Color get_fog_light_color() const;
 	void set_fog_light_energy(float p_amount);
@@ -378,6 +399,14 @@ public:
 	float get_fog_aerial_perspective() const;
 	void set_fog_sky_affect(float p_sky_affect);
 	float get_fog_sky_affect() const;
+
+	// Depth Fog
+	void set_fog_depth_curve(float p_curve);
+	float get_fog_depth_curve() const;
+	void set_fog_depth_begin(float p_begin);
+	float get_fog_depth_begin() const;
+	void set_fog_depth_end(float p_end);
+	float get_fog_depth_end() const;
 
 	// Volumetric Fog
 	void set_volumetric_fog_enabled(bool p_enable);
@@ -429,5 +458,4 @@ VARIANT_ENUM_CAST(Environment::ReflectionSource)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
 VARIANT_ENUM_CAST(Environment::SDFGIYScale)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
-
-#endif // ENVIRONMENT_H
+VARIANT_ENUM_CAST(Environment::FogMode)

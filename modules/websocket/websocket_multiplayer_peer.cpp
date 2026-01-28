@@ -30,6 +30,7 @@
 
 #include "websocket_multiplayer_peer.h"
 
+#include "core/io/stream_peer_tls.h"
 #include "core/os/os.h"
 
 WebSocketMultiplayerPeer::WebSocketMultiplayerPeer() {
@@ -124,7 +125,7 @@ Error WebSocketMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buff
 		current_packet.data = nullptr;
 	}
 
-	ERR_FAIL_COND_V(incoming_packets.size() == 0, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(incoming_packets.is_empty(), ERR_UNAVAILABLE);
 
 	current_packet = incoming_packets.front()->get();
 	incoming_packets.pop_front();
@@ -164,7 +165,7 @@ void WebSocketMultiplayerPeer::set_target_peer(int p_target_peer) {
 }
 
 int WebSocketMultiplayerPeer::get_packet_peer() const {
-	ERR_FAIL_COND_V(incoming_packets.size() == 0, 1);
+	ERR_FAIL_COND_V(incoming_packets.is_empty(), 1);
 
 	return incoming_packets.front()->get().source;
 }
@@ -177,7 +178,7 @@ int WebSocketMultiplayerPeer::get_max_packet_size() const {
 	return get_outbound_buffer_size() - PROTO_SIZE;
 }
 
-Error WebSocketMultiplayerPeer::create_server(int p_port, IPAddress p_bind_ip, Ref<TLSOptions> p_options) {
+Error WebSocketMultiplayerPeer::create_server(int p_port, IPAddress p_bind_ip, const Ref<TLSOptions> &p_options) {
 	ERR_FAIL_COND_V(get_connection_status() != CONNECTION_DISCONNECTED, ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(p_options.is_valid() && !p_options->is_server(), ERR_INVALID_PARAMETER);
 	_clear();
@@ -193,7 +194,7 @@ Error WebSocketMultiplayerPeer::create_server(int p_port, IPAddress p_bind_ip, R
 	return OK;
 }
 
-Error WebSocketMultiplayerPeer::create_client(const String &p_url, Ref<TLSOptions> p_options) {
+Error WebSocketMultiplayerPeer::create_client(const String &p_url, const Ref<TLSOptions> &p_options) {
 	ERR_FAIL_COND_V(get_connection_status() != CONNECTION_DISCONNECTED, ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(p_options.is_valid() && p_options->is_server(), ERR_INVALID_PARAMETER);
 	_clear();

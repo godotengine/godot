@@ -30,14 +30,13 @@
 
 #include "theme.h"
 
-#include "core/string/print_string.h"
 #include "scene/theme/theme_db.h"
 
 // Dynamic properties.
 bool Theme::_set(const StringName &p_name, const Variant &p_value) {
 	String sname = p_name;
 
-	if (sname.contains("/")) {
+	if (sname.contains_char('/')) {
 		String type = sname.get_slicec('/', 1);
 		String theme_type = sname.get_slicec('/', 0);
 		String prop_name = sname.get_slicec('/', 2);
@@ -69,7 +68,7 @@ bool Theme::_set(const StringName &p_name, const Variant &p_value) {
 bool Theme::_get(const StringName &p_name, Variant &r_ret) const {
 	String sname = p_name;
 
-	if (sname.contains("/")) {
+	if (sname.contains_char('/')) {
 		String type = sname.get_slicec('/', 1);
 		String theme_type = sname.get_slicec('/', 0);
 		String prop_name = sname.get_slicec('/', 2);
@@ -165,7 +164,7 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 	String prev_type;
 	for (const PropertyInfo &E : list) {
 		// Add groups for types so that their names are left unchanged in the inspector.
-		String current_type = E.name.get_slice("/", 0);
+		String current_type = E.name.get_slicec('/', 0);
 		if (prev_type != current_type) {
 			p_list->push_back(PropertyInfo(Variant::NIL, current_type, PROPERTY_HINT_NONE, current_type + "/", PROPERTY_USAGE_GROUP));
 			prev_type = current_type;
@@ -177,8 +176,10 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 
 // Static helpers.
 bool Theme::is_valid_type_name(const String &p_name) {
-	for (int i = 0; i < p_name.length(); i++) {
-		if (!is_ascii_identifier_char(p_name[i])) {
+	int len = p_name.length();
+	const char32_t *str = p_name.ptr();
+	for (int i = 0; i < len; i++) {
+		if (!is_ascii_identifier_char(str[i])) {
 			return false;
 		}
 	}
@@ -189,12 +190,26 @@ bool Theme::is_valid_item_name(const String &p_name) {
 	if (p_name.is_empty()) {
 		return false;
 	}
-	for (int i = 0; i < p_name.length(); i++) {
-		if (!is_ascii_identifier_char(p_name[i])) {
+	int len = p_name.length();
+	const char32_t *str = p_name.ptr();
+	for (int i = 0; i < len; i++) {
+		if (!is_ascii_identifier_char(str[i])) {
 			return false;
 		}
 	}
 	return true;
+}
+
+String Theme::validate_type_name(const String &p_name) {
+	String type_name = p_name.strip_edges();
+	int len = type_name.length();
+	char32_t *buffer = type_name.ptrw();
+	for (int i = 0; i < len; i++) {
+		if (!is_ascii_identifier_char(buffer[i])) {
+			buffer[i] = '_';
+		}
+	}
+	return type_name;
 }
 
 // Fallback values for theme item types, configurable per theme.
@@ -322,7 +337,7 @@ void Theme::clear_icon(const StringName &p_name, const StringName &p_theme_type)
 	_emit_theme_changed(true);
 }
 
-void Theme::get_icon_list(StringName p_theme_type, List<StringName> *p_list) const {
+void Theme::get_icon_list(const StringName &p_theme_type, List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
 	if (!icon_map.has(p_theme_type)) {
@@ -360,6 +375,17 @@ void Theme::remove_icon_type(const StringName &p_theme_type) {
 	icon_map.erase(p_theme_type);
 
 	_unfreeze_and_propagate_changes();
+}
+
+void Theme::rename_icon_type(const StringName &p_old_theme_type, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
+	if (!icon_map.has(p_old_theme_type) || icon_map.has(p_theme_type)) {
+		return;
+	}
+
+	icon_map[p_theme_type] = icon_map[p_old_theme_type];
+	icon_map.erase(p_old_theme_type);
 }
 
 void Theme::get_icon_type_list(List<StringName> *p_list) const {
@@ -432,7 +458,7 @@ void Theme::clear_stylebox(const StringName &p_name, const StringName &p_theme_t
 	_emit_theme_changed(true);
 }
 
-void Theme::get_stylebox_list(StringName p_theme_type, List<StringName> *p_list) const {
+void Theme::get_stylebox_list(const StringName &p_theme_type, List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
 	if (!style_map.has(p_theme_type)) {
@@ -470,6 +496,17 @@ void Theme::remove_stylebox_type(const StringName &p_theme_type) {
 	style_map.erase(p_theme_type);
 
 	_unfreeze_and_propagate_changes();
+}
+
+void Theme::rename_stylebox_type(const StringName &p_old_theme_type, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
+	if (!style_map.has(p_old_theme_type) || style_map.has(p_theme_type)) {
+		return;
+	}
+
+	style_map[p_theme_type] = style_map[p_old_theme_type];
+	style_map.erase(p_old_theme_type);
 }
 
 void Theme::get_stylebox_type_list(List<StringName> *p_list) const {
@@ -514,6 +551,10 @@ bool Theme::has_font(const StringName &p_name, const StringName &p_theme_type) c
 	return ((font_map.has(p_theme_type) && font_map[p_theme_type].has(p_name) && font_map[p_theme_type][p_name].is_valid()) || has_default_font());
 }
 
+bool Theme::has_font_no_default(const StringName &p_name, const StringName &p_theme_type) const {
+	return (font_map.has(p_theme_type) && font_map[p_theme_type].has(p_name) && font_map[p_theme_type][p_name].is_valid());
+}
+
 bool Theme::has_font_nocheck(const StringName &p_name, const StringName &p_theme_type) const {
 	return (font_map.has(p_theme_type) && font_map[p_theme_type].has(p_name));
 }
@@ -544,7 +585,7 @@ void Theme::clear_font(const StringName &p_name, const StringName &p_theme_type)
 	_emit_theme_changed(true);
 }
 
-void Theme::get_font_list(StringName p_theme_type, List<StringName> *p_list) const {
+void Theme::get_font_list(const StringName &p_theme_type, List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
 	if (!font_map.has(p_theme_type)) {
@@ -584,6 +625,17 @@ void Theme::remove_font_type(const StringName &p_theme_type) {
 	_unfreeze_and_propagate_changes();
 }
 
+void Theme::rename_font_type(const StringName &p_old_theme_type, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
+	if (!font_map.has(p_old_theme_type) || font_map.has(p_theme_type)) {
+		return;
+	}
+
+	font_map[p_theme_type] = font_map[p_old_theme_type];
+	font_map.erase(p_old_theme_type);
+}
+
 void Theme::get_font_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
@@ -617,6 +669,10 @@ bool Theme::has_font_size(const StringName &p_name, const StringName &p_theme_ty
 	return ((font_size_map.has(p_theme_type) && font_size_map[p_theme_type].has(p_name) && (font_size_map[p_theme_type][p_name] > 0)) || has_default_font_size());
 }
 
+bool Theme::has_font_size_no_default(const StringName &p_name, const StringName &p_theme_type) const {
+	return (font_size_map.has(p_theme_type) && font_size_map[p_theme_type].has(p_name) && (font_size_map[p_theme_type][p_name] > 0));
+}
+
 bool Theme::has_font_size_nocheck(const StringName &p_name, const StringName &p_theme_type) const {
 	return (font_size_map.has(p_theme_type) && font_size_map[p_theme_type].has(p_name));
 }
@@ -643,7 +699,7 @@ void Theme::clear_font_size(const StringName &p_name, const StringName &p_theme_
 	_emit_theme_changed(true);
 }
 
-void Theme::get_font_size_list(StringName p_theme_type, List<StringName> *p_list) const {
+void Theme::get_font_size_list(const StringName &p_theme_type, List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
 	if (!font_size_map.has(p_theme_type)) {
@@ -670,6 +726,17 @@ void Theme::remove_font_size_type(const StringName &p_theme_type) {
 	}
 
 	font_size_map.erase(p_theme_type);
+}
+
+void Theme::rename_font_size_type(const StringName &p_old_theme_type, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
+	if (!font_size_map.has(p_old_theme_type) || font_size_map.has(p_theme_type)) {
+		return;
+	}
+
+	font_size_map[p_theme_type] = font_size_map[p_old_theme_type];
+	font_size_map.erase(p_old_theme_type);
 }
 
 void Theme::get_font_size_type_list(List<StringName> *p_list) const {
@@ -729,7 +796,7 @@ void Theme::clear_color(const StringName &p_name, const StringName &p_theme_type
 	_emit_theme_changed(true);
 }
 
-void Theme::get_color_list(StringName p_theme_type, List<StringName> *p_list) const {
+void Theme::get_color_list(const StringName &p_theme_type, List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
 	if (!color_map.has(p_theme_type)) {
@@ -756,6 +823,17 @@ void Theme::remove_color_type(const StringName &p_theme_type) {
 	}
 
 	color_map.erase(p_theme_type);
+}
+
+void Theme::rename_color_type(const StringName &p_old_theme_type, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
+	if (!color_map.has(p_old_theme_type) || color_map.has(p_theme_type)) {
+		return;
+	}
+
+	color_map[p_theme_type] = color_map[p_old_theme_type];
+	color_map.erase(p_old_theme_type);
 }
 
 void Theme::get_color_type_list(List<StringName> *p_list) const {
@@ -815,7 +893,7 @@ void Theme::clear_constant(const StringName &p_name, const StringName &p_theme_t
 	_emit_theme_changed(true);
 }
 
-void Theme::get_constant_list(StringName p_theme_type, List<StringName> *p_list) const {
+void Theme::get_constant_list(const StringName &p_theme_type, List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
 	if (!constant_map.has(p_theme_type)) {
@@ -842,6 +920,17 @@ void Theme::remove_constant_type(const StringName &p_theme_type) {
 	}
 
 	constant_map.erase(p_theme_type);
+}
+
+void Theme::rename_constant_type(const StringName &p_old_theme_type, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
+	if (!constant_map.has(p_old_theme_type) || constant_map.has(p_theme_type)) {
+		return;
+	}
+
+	constant_map[p_theme_type] = constant_map[p_old_theme_type];
+	constant_map.erase(p_old_theme_type);
 }
 
 void Theme::get_constant_type_list(List<StringName> *p_list) const {
@@ -924,9 +1013,17 @@ bool Theme::has_theme_item(DataType p_data_type, const StringName &p_name, const
 		case DATA_TYPE_CONSTANT:
 			return has_constant(p_name, p_theme_type);
 		case DATA_TYPE_FONT:
-			return has_font(p_name, p_theme_type);
+			if (!variation_map.has(p_theme_type)) {
+				return has_font(p_name, p_theme_type);
+			} else {
+				return has_font_no_default(p_name, p_theme_type);
+			}
 		case DATA_TYPE_FONT_SIZE:
-			return has_font_size(p_name, p_theme_type);
+			if (!variation_map.has(p_theme_type)) {
+				return has_font_size(p_name, p_theme_type);
+			} else {
+				return has_font_size_no_default(p_name, p_theme_type);
+			}
 		case DATA_TYPE_ICON:
 			return has_icon(p_name, p_theme_type);
 		case DATA_TYPE_STYLEBOX:
@@ -1009,7 +1106,7 @@ void Theme::clear_theme_item(DataType p_data_type, const StringName &p_name, con
 	}
 }
 
-void Theme::get_theme_item_list(DataType p_data_type, StringName p_theme_type, List<StringName> *p_list) const {
+void Theme::get_theme_item_list(DataType p_data_type, const StringName &p_theme_type, List<StringName> *p_list) const {
 	switch (p_data_type) {
 		case DATA_TYPE_COLOR:
 			get_color_list(p_theme_type, p_list);
@@ -1084,6 +1181,31 @@ void Theme::remove_theme_item_type(DataType p_data_type, const StringName &p_the
 	}
 }
 
+void Theme::rename_theme_item_type(DataType p_data_type, const StringName &p_old_theme_type, const StringName &p_theme_type) {
+	switch (p_data_type) {
+		case DATA_TYPE_COLOR:
+			rename_color_type(p_old_theme_type, p_theme_type);
+			break;
+		case DATA_TYPE_CONSTANT:
+			rename_constant_type(p_old_theme_type, p_theme_type);
+			break;
+		case DATA_TYPE_FONT:
+			rename_font_type(p_old_theme_type, p_theme_type);
+			break;
+		case DATA_TYPE_FONT_SIZE:
+			rename_font_size_type(p_old_theme_type, p_theme_type);
+			break;
+		case DATA_TYPE_ICON:
+			rename_icon_type(p_old_theme_type, p_theme_type);
+			break;
+		case DATA_TYPE_STYLEBOX:
+			rename_stylebox_type(p_old_theme_type, p_theme_type);
+			break;
+		case DATA_TYPE_MAX:
+			break; // Can't happen, but silences warning.
+	}
+}
+
 void Theme::get_theme_item_type_list(DataType p_data_type, List<StringName> *p_list) const {
 	switch (p_data_type) {
 		case DATA_TYPE_COLOR:
@@ -1113,8 +1235,8 @@ void Theme::get_theme_item_type_list(DataType p_data_type, List<StringName> *p_l
 void Theme::set_type_variation(const StringName &p_theme_type, const StringName &p_base_type) {
 	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
 	ERR_FAIL_COND_MSG(!is_valid_type_name(p_base_type), vformat("Invalid type name: '%s'", p_base_type));
-	ERR_FAIL_COND_MSG(p_theme_type == StringName(), "An empty theme type cannot be marked as a variation of another type.");
-	ERR_FAIL_COND_MSG(ClassDB::class_exists(p_theme_type), "A type associated with a built-in class cannot be marked as a variation of another type.");
+	ERR_FAIL_COND_MSG(p_theme_type == StringName(), vformat("An empty theme type cannot be marked as a variation of another type (\"%s\").", p_base_type));
+	ERR_FAIL_COND_MSG(ClassDB::class_exists(p_theme_type), vformat("A type associated with a built-in class cannot be marked as a variation of another type (variation: \"%s\", base: \"%s\").", p_theme_type, p_base_type));
 	ERR_FAIL_COND_MSG(p_base_type == StringName(), "An empty theme type cannot be the base type of a variation. Use clear_type_variation() instead if you want to unmark '" + String(p_theme_type) + "' as a variation.");
 
 	if (variation_map.has(p_theme_type)) {
@@ -1202,6 +1324,35 @@ void Theme::remove_type(const StringName &p_theme_type) {
 	_emit_theme_changed(true);
 }
 
+void Theme::rename_type(const StringName &p_old_theme_type, const StringName &p_theme_type) {
+	// Gracefully rename the record in every data type map.
+	for (int i = 0; i < Theme::DATA_TYPE_MAX; i++) {
+		Theme::DataType dt = (Theme::DataType)i;
+		rename_theme_item_type(dt, p_old_theme_type, p_theme_type);
+	}
+
+	// If type is a variation, replace that connection.
+	const StringName base_type = get_type_variation_base(p_old_theme_type);
+	if (base_type != StringName()) {
+		clear_type_variation(p_old_theme_type);
+		if (p_theme_type != StringName() && !ClassDB::class_exists(p_theme_type)) {
+			set_type_variation(p_theme_type, base_type);
+		}
+	}
+
+	// If type is a variation base, replace all those connections.
+	List<StringName> names;
+	get_type_variation_list(p_old_theme_type, &names);
+	for (const StringName &E : names) {
+		clear_type_variation(E);
+		if (p_theme_type != StringName()) {
+			set_type_variation(E, p_theme_type);
+		}
+	}
+
+	_emit_theme_changed(true);
+}
+
 void Theme::get_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
@@ -1240,19 +1391,22 @@ void Theme::get_type_list(List<StringName> *p_list) const {
 		types.insert(E.key);
 	}
 
+	// Variations.
+	for (const KeyValue<StringName, StringName> &E : variation_map) {
+		types.insert(E.key);
+	}
+
 	for (const StringName &E : types) {
 		p_list->push_back(E);
 	}
 }
 
-void Theme::get_type_dependencies(const StringName &p_base_type, const StringName &p_type_variation, List<StringName> *p_list) {
-	ERR_FAIL_NULL(p_list);
-
+void Theme::get_type_dependencies(const StringName &p_base_type, const StringName &p_type_variation, Vector<StringName> &r_result) {
 	// Build the dependency chain for type variations.
 	if (p_type_variation != StringName()) {
 		StringName variation_name = p_type_variation;
 		while (variation_name != StringName()) {
-			p_list->push_back(variation_name);
+			r_result.push_back(variation_name);
 			variation_name = get_type_variation_base(variation_name);
 
 			// If we have reached the base type dependency, it's safe to stop (assuming no funny business was done to the Theme).
@@ -1263,7 +1417,7 @@ void Theme::get_type_dependencies(const StringName &p_base_type, const StringNam
 	}
 
 	// Continue building the chain using native class hierarchy.
-	ThemeDB::get_singleton()->get_native_type_dependencies(p_base_type, p_list);
+	ThemeDB::get_singleton()->get_native_type_dependencies(p_base_type, r_result);
 }
 
 // Internal methods for getting lists as a Vector of String (compatible with public API).
@@ -1608,6 +1762,17 @@ void Theme::merge_with(const Ref<Theme> &p_other) {
 		}
 	}
 
+	// Defaults.
+	if (p_other->has_default_font()) {
+		set_default_font(p_other->default_font);
+	}
+	if (p_other->has_default_font_size()) {
+		set_default_font_size(p_other->default_font_size);
+	}
+	if (p_other->has_default_base_scale()) {
+		set_default_base_scale(p_other->default_base_scale);
+	}
+
 	_unfreeze_and_propagate_changes();
 }
 
@@ -1740,6 +1905,7 @@ void Theme::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_type", "theme_type"), &Theme::add_type);
 	ClassDB::bind_method(D_METHOD("remove_type", "theme_type"), &Theme::remove_type);
+	ClassDB::bind_method(D_METHOD("rename_type", "old_theme_type", "theme_type"), &Theme::rename_type);
 	ClassDB::bind_method(D_METHOD("get_type_list"), &Theme::_get_type_list);
 
 	ClassDB::bind_method(D_METHOD("merge_with", "other"), &Theme::merge_with);

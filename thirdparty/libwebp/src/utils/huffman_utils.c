@@ -14,9 +14,11 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "src/utils/huffman_utils.h"
 #include "src/utils/utils.h"
 #include "src/webp/format_constants.h"
+#include "src/webp/types.h"
 
 // Huffman data read via DecodeImageStream is represented in two (red and green)
 // bytes.
@@ -122,6 +124,9 @@ static int BuildHuffmanTable(HuffmanCode* const root_table, int root_bits,
     const int symbol_code_length = code_lengths[symbol];
     if (code_lengths[symbol] > 0) {
       if (sorted != NULL) {
+        if(offset[symbol_code_length] >= code_lengths_size) {
+            return 0;
+        }
         sorted[offset[symbol_code_length]++] = symbol;
       } else {
         offset[symbol_code_length]++;
@@ -267,11 +272,11 @@ int VP8LHuffmanTablesAllocate(int size, HuffmanTables* huffman_tables) {
   // Have 'segment' point to the first segment for now, 'root'.
   HuffmanTablesSegment* const root = &huffman_tables->root;
   huffman_tables->curr_segment = root;
+  root->next = NULL;
   // Allocate root.
   root->start = (HuffmanCode*)WebPSafeMalloc(size, sizeof(*root->start));
   if (root->start == NULL) return 0;
   root->curr_table = root->start;
-  root->next = NULL;
   root->size = size;
   return 1;
 }

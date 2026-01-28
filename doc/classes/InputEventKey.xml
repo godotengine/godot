@@ -24,6 +24,12 @@
 				Returns a [String] representation of the event's [member keycode] and modifiers.
 			</description>
 		</method>
+		<method name="as_text_location" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a [String] representation of the event's [member location]. This will be a blank string if the event is not specific to a location.
+			</description>
+		</method>
 		<method name="as_text_physical_keycode" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -53,39 +59,66 @@
 		</method>
 	</methods>
 	<members>
-		<member name="echo" type="bool" setter="set_echo" getter="is_echo" default="false">
-			If [code]true[/code], the key was already pressed before this event. It means the user is holding the key down.
+		<member name="echo" type="bool" setter="set_echo" getter="is_echo" default="false" keywords="repeat">
+			If [code]true[/code], the key was already pressed before this event. An echo event is a repeated key event sent when the user is holding down the key.
+			[b]Note:[/b] The rate at which echo events are sent is typically around 20 events per second (after holding down the key for roughly half a second). However, the key repeat delay/speed can be changed by the user or disabled entirely in the operating system settings. To ensure your project works correctly on all configurations, do not assume the user has a specific key repeat configuration in your project's behavior.
 		</member>
 		<member name="key_label" type="int" setter="set_key_label" getter="get_key_label" enum="Key" default="0">
-			Represents the localized label printed on the key in the current keyboard layout, which corresponds to one of the [enum Key] constants or any valid Unicode character.
+			Represents the localized label printed on the key in the current keyboard layout, which corresponds to one of the [enum Key] constants or any valid Unicode character. Key labels are meant for key prompts.
 			For keyboard layouts with a single label on the key, it is equivalent to [member keycode].
 			To get a human-readable representation of the [InputEventKey], use [code]OS.get_keycode_string(event.key_label)[/code] where [code]event[/code] is the [InputEventKey].
-			[codeblock]
-			    +-----+ +-----+
-			    | Q   | | Q   | - "Q" - keycode
-			    |   Й | |  ض | - "Й" and "ض" - key_label
-			    +-----+ +-----+
+			[codeblock lang=text]
+			+-----+ +-----+
+			| Q   | | Q   | - "Q" - keycode
+			|   Й | |  ض | - "Й" and "ض" - key_label
+			+-----+ +-----+
 			[/codeblock]
 		</member>
 		<member name="keycode" type="int" setter="set_keycode" getter="get_keycode" enum="Key" default="0">
-			Latin label printed on the key in the current keyboard layout, which corresponds to one of the [enum Key] constants.
+			Latin label printed on the key in the current keyboard layout, which corresponds to one of the [enum Key] constants. Key codes are meant for shortcuts expressed with a standard Latin keyboard, such as [kbd]Ctrl + S[/kbd] for a "Save" shortcut.
 			To get a human-readable representation of the [InputEventKey], use [code]OS.get_keycode_string(event.keycode)[/code] where [code]event[/code] is the [InputEventKey].
-			[codeblock]
-			    +-----+ +-----+
-			    | Q   | | Q   | - "Q" - keycode
-			    |   Й | |  ض | - "Й" and "ض" - key_label
-			    +-----+ +-----+
+			[codeblock lang=text]
+			+-----+ +-----+
+			| Q   | | Q   | - "Q" - keycode
+			|   Й | |  ض | - "Й" and "ض" - key_label
+			+-----+ +-----+
 			[/codeblock]
 		</member>
+		<member name="location" type="int" setter="set_location" getter="get_location" enum="KeyLocation" default="0">
+			Represents the location of a key which has both left and right versions, such as [kbd]Shift[/kbd] or [kbd]Alt[/kbd].
+		</member>
 		<member name="physical_keycode" type="int" setter="set_physical_keycode" getter="get_physical_keycode" enum="Key" default="0">
-			Represents the physical location of a key on the 101/102-key US QWERTY keyboard, which corresponds to one of the [enum Key] constants.
-			To get a human-readable representation of the [InputEventKey], use [code]OS.get_keycode_string(event.keycode)[/code] where [code]event[/code] is the [InputEventKey].
+			Represents the physical location of a key on the 101/102-key US QWERTY keyboard, which corresponds to one of the [enum Key] constants. Physical key codes meant for game input, such as WASD movement, where only the location of the keys is important.
+			To get a human-readable representation of the [InputEventKey], use [method OS.get_keycode_string] in combination with [method DisplayServer.keyboard_get_keycode_from_physical] or [method DisplayServer.keyboard_get_label_from_physical]:
+			[codeblocks]
+			[gdscript]
+			func _input(event):
+				if event is InputEventKey:
+					var keycode = DisplayServer.keyboard_get_keycode_from_physical(event.physical_keycode)
+					var label = DisplayServer.keyboard_get_label_from_physical(event.physical_keycode)
+					print(OS.get_keycode_string(keycode))
+					print(OS.get_keycode_string(label))
+			[/gdscript]
+			[csharp]
+			public override void _Input(InputEvent @event)
+			{
+				if (@event is InputEventKey inputEventKey)
+				{
+					var keycode = DisplayServer.KeyboardGetKeycodeFromPhysical(inputEventKey.PhysicalKeycode);
+					var label = DisplayServer.KeyboardGetLabelFromPhysical(inputEventKey.PhysicalKeycode);
+					GD.Print(OS.GetKeycodeString(keycode));
+					GD.Print(OS.GetKeycodeString(label));
+				}
+			}
+			[/csharp]
+			[/codeblocks]
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
 			If [code]true[/code], the key's state is pressed. If [code]false[/code], the key's state is released.
 		</member>
 		<member name="unicode" type="int" setter="set_unicode" getter="get_unicode" default="0">
-			The key Unicode character code (when relevant), shifted by modifier keys. Unicode character codes for composite characters and complex scripts may not be available unless IME input mode is active. See [method Window.set_ime_active] for more information.
+			The key Unicode character code (when relevant), shifted by modifier keys. Unicode character codes for composite characters and complex scripts may not be available unless IME input mode is active. See [method Window.set_ime_active] for more information. Unicode character codes are meant for text input.
+			[b]Note:[/b] This property is set by the engine only for a pressed event. If the event is sent by an IME or a virtual keyboard, no corresponding key released event is sent.
 		</member>
 	</members>
 </class>

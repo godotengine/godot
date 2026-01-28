@@ -13,7 +13,7 @@
 			<return type="bool" />
 			<param index="0" name="stream" type="int" />
 			<description>
-				Return true whether the stream associated with an integer ID is still playing. Check [method play_stream] for information on when this ID becomes invalid.
+				Returns [code]true[/code] if the stream associated with the given integer ID is still playing. Check [method play_stream] for information on when this ID becomes invalid.
 			</description>
 		</method>
 		<method name="play_stream">
@@ -22,8 +22,10 @@
 			<param index="1" name="from_offset" type="float" default="0" />
 			<param index="2" name="volume_db" type="float" default="0" />
 			<param index="3" name="pitch_scale" type="float" default="1.0" />
+			<param index="4" name="playback_type" type="int" enum="AudioServer.PlaybackType" default="0" />
+			<param index="5" name="bus" type="StringName" default="&amp;&quot;Master&quot;" />
 			<description>
-				Play an [AudioStream] at a given offset, volume and pitch scale. Playback starts immediately.
+				Play an [AudioStream] at a given offset, volume, pitch scale, playback type, and bus. Playback starts immediately.
 				The return value is a unique integer ID that is associated to this playback stream and which can be used to control it.
 				This ID becomes invalid when the stream ends (if it does not loop), when the [AudioStreamPlaybackPolyphonic] is stopped, or when [method stop_stream] is called.
 				This function returns [constant INVALID_ID] if the amount of streams currently playing equals [member AudioStreamPolyphonic.polyphony]. If you need a higher amount of maximum polyphony, raise this value.

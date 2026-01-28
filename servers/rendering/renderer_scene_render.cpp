@@ -33,9 +33,10 @@
 /////////////////////////////////////////////////////////////////////////////
 // CameraData
 
-void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_vaspect, const Vector2 &p_taa_jitter, const uint32_t p_visible_layers) {
+void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect, const Vector2 &p_taa_jitter, float p_taa_frame_count, uint32_t p_visible_layers) {
 	view_count = 1;
 	is_orthogonal = p_is_orthogonal;
+	is_frustum = p_is_frustum;
 	vaspect = p_vaspect;
 
 	main_transform = p_transform;
@@ -45,14 +46,16 @@ void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, 
 	view_offset[0] = Transform3D();
 	view_projection[0] = p_projection;
 	taa_jitter = p_taa_jitter;
+	taa_frame_count = p_taa_frame_count;
 }
 
-void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_vaspect) {
+void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect, uint32_t p_visible_layers) {
 	ERR_FAIL_COND_MSG(p_view_count != 2, "Incorrect view count for stereoscopic view");
 
-	visible_layers = 0xFFFFFFFF;
+	visible_layers = p_visible_layers;
 	view_count = p_view_count;
 	is_orthogonal = p_is_orthogonal;
+	is_frustum = p_is_frustum;
 	vaspect = p_vaspect;
 	Vector<Plane> planes[2];
 
@@ -85,7 +88,7 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 
 	// 5. figure out far plane, this could use some improvement, we may have our far plane too close like this, not sure if this matters
 	Vector3 far_center = (planes[0][Projection::PLANE_FAR].get_center() + planes[1][Projection::PLANE_FAR].get_center()) * 0.5;
-	Plane far(-z, far_center);
+	Plane far_plane = Plane(-z, far_center);
 
 	/////////////////////////////////////////////////////////////////////////////
 	// Figure out our top/bottom planes
@@ -93,9 +96,9 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	// 6. Intersect far and left planes with top planes from both eyes, save the point with highest y as top_left.
 	Vector3 top_left, other;
 	ERR_FAIL_COND_MSG(
-			!far.intersect_3(planes[0][Projection::PLANE_LEFT], planes[0][Projection::PLANE_TOP], &top_left), "Can't determine left camera far/left/top vector");
+			!far_plane.intersect_3(planes[0][Projection::PLANE_LEFT], planes[0][Projection::PLANE_TOP], &top_left), "Can't determine left camera far/left/top vector");
 	ERR_FAIL_COND_MSG(
-			!far.intersect_3(planes[1][Projection::PLANE_LEFT], planes[1][Projection::PLANE_TOP], &other), "Can't determine right camera far/left/top vector");
+			!far_plane.intersect_3(planes[1][Projection::PLANE_LEFT], planes[1][Projection::PLANE_TOP], &other), "Can't determine right camera far/left/top vector");
 	if (y.dot(top_left) < y.dot(other)) {
 		top_left = other;
 	}
@@ -103,9 +106,9 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	// 7. Intersect far and left planes with bottom planes from both eyes, save the point with lowest y as bottom_left.
 	Vector3 bottom_left;
 	ERR_FAIL_COND_MSG(
-			!far.intersect_3(planes[0][Projection::PLANE_LEFT], planes[0][Projection::PLANE_BOTTOM], &bottom_left), "Can't determine left camera far/left/bottom vector");
+			!far_plane.intersect_3(planes[0][Projection::PLANE_LEFT], planes[0][Projection::PLANE_BOTTOM], &bottom_left), "Can't determine left camera far/left/bottom vector");
 	ERR_FAIL_COND_MSG(
-			!far.intersect_3(planes[1][Projection::PLANE_LEFT], planes[1][Projection::PLANE_BOTTOM], &other), "Can't determine right camera far/left/bottom vector");
+			!far_plane.intersect_3(planes[1][Projection::PLANE_LEFT], planes[1][Projection::PLANE_BOTTOM], &other), "Can't determine right camera far/left/bottom vector");
 	if (y.dot(other) < y.dot(bottom_left)) {
 		bottom_left = other;
 	}
@@ -113,9 +116,9 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	// 8. Intersect far and right planes with top planes from both eyes, save the point with highest y as top_right.
 	Vector3 top_right;
 	ERR_FAIL_COND_MSG(
-			!far.intersect_3(planes[0][Projection::PLANE_RIGHT], planes[0][Projection::PLANE_TOP], &top_right), "Can't determine left camera far/right/top vector");
+			!far_plane.intersect_3(planes[0][Projection::PLANE_RIGHT], planes[0][Projection::PLANE_TOP], &top_right), "Can't determine left camera far/right/top vector");
 	ERR_FAIL_COND_MSG(
-			!far.intersect_3(planes[1][Projection::PLANE_RIGHT], planes[1][Projection::PLANE_TOP], &other), "Can't determine right camera far/right/top vector");
+			!far_plane.intersect_3(planes[1][Projection::PLANE_RIGHT], planes[1][Projection::PLANE_TOP], &other), "Can't determine right camera far/right/top vector");
 	if (y.dot(top_right) < y.dot(other)) {
 		top_right = other;
 	}
@@ -123,9 +126,9 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	//  9. Intersect far and right planes with bottom planes from both eyes, save the point with lowest y as bottom_right.
 	Vector3 bottom_right;
 	ERR_FAIL_COND_MSG(
-			!far.intersect_3(planes[0][Projection::PLANE_RIGHT], planes[0][Projection::PLANE_BOTTOM], &bottom_right), "Can't determine left camera far/right/bottom vector");
+			!far_plane.intersect_3(planes[0][Projection::PLANE_RIGHT], planes[0][Projection::PLANE_BOTTOM], &bottom_right), "Can't determine left camera far/right/bottom vector");
 	ERR_FAIL_COND_MSG(
-			!far.intersect_3(planes[1][Projection::PLANE_RIGHT], planes[1][Projection::PLANE_BOTTOM], &other), "Can't determine right camera far/right/bottom vector");
+			!far_plane.intersect_3(planes[1][Projection::PLANE_RIGHT], planes[1][Projection::PLANE_BOTTOM], &other), "Can't determine right camera far/right/bottom vector");
 	if (y.dot(other) < y.dot(bottom_right)) {
 		bottom_right = other;
 	}
@@ -140,29 +143,29 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	// Figure out our near plane points
 
 	// 12. Create a near plane using -camera z and the eye further along in that axis.
-	Plane near;
+	Plane near_plane;
 	Vector3 neg_z = -z;
 	if (neg_z.dot(p_transforms[1].origin) < neg_z.dot(p_transforms[0].origin)) {
-		near = Plane(neg_z, p_transforms[0].origin);
+		near_plane = Plane(neg_z, p_transforms[0].origin);
 	} else {
-		near = Plane(neg_z, p_transforms[1].origin);
+		near_plane = Plane(neg_z, p_transforms[1].origin);
 	}
 
 	// 13. Intersect near plane with bottm/left planes, to obtain min_vec then top/right to obtain max_vec
 	Vector3 min_vec;
 	ERR_FAIL_COND_MSG(
-			!near.intersect_3(bottom, planes[0][Projection::PLANE_LEFT], &min_vec), "Can't determine left camera near/left/bottom vector");
+			!near_plane.intersect_3(bottom, planes[0][Projection::PLANE_LEFT], &min_vec), "Can't determine left camera near/left/bottom vector");
 	ERR_FAIL_COND_MSG(
-			!near.intersect_3(bottom, planes[1][Projection::PLANE_LEFT], &other), "Can't determine right camera near/left/bottom vector");
+			!near_plane.intersect_3(bottom, planes[1][Projection::PLANE_LEFT], &other), "Can't determine right camera near/left/bottom vector");
 	if (x.dot(other) < x.dot(min_vec)) {
 		min_vec = other;
 	}
 
 	Vector3 max_vec;
 	ERR_FAIL_COND_MSG(
-			!near.intersect_3(top, planes[0][Projection::PLANE_RIGHT], &max_vec), "Can't determine left camera near/right/top vector");
+			!near_plane.intersect_3(top, planes[0][Projection::PLANE_RIGHT], &max_vec), "Can't determine left camera near/right/top vector");
 	ERR_FAIL_COND_MSG(
-			!near.intersect_3(top, planes[1][Projection::PLANE_RIGHT], &other), "Can't determine right camera near/right/top vector");
+			!near_plane.intersect_3(top, planes[1][Projection::PLANE_RIGHT], &other), "Can't determine right camera near/right/top vector");
 	if (x.dot(max_vec) < x.dot(other)) {
 		max_vec = other;
 	}
@@ -171,9 +174,9 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	Vector3 local_min_vec = main_transform_inv.xform(min_vec);
 	Vector3 local_max_vec = main_transform_inv.xform(max_vec);
 
-	// 15. get x and y from these to obtain left, top, right bottom for the frustum. Get the distance from near plane to camera origin to obtain near, and the distance from the far plane to the camer origin to obtain far.
-	float z_near = -near.distance_to(main_transform.origin);
-	float z_far = -far.distance_to(main_transform.origin);
+	// 15. get x and y from these to obtain left, top, right bottom for the frustum. Get the distance from near plane to camera origin to obtain near, and the distance from the far plane to the camera origin to obtain far.
+	float z_near = -near_plane.distance_to(main_transform.origin);
+	float z_far = -far_plane.distance_to(main_transform.origin);
 
 	// 16. Use this to build the combined camera matrix.
 	main_projection.set_frustum(local_min_vec.x, local_max_vec.x, local_min_vec.y, local_max_vec.y, z_near, z_far);
@@ -184,6 +187,64 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 		view_offset[v] = main_transform_inv * p_transforms[v];
 		view_projection[v] = p_projections[v] * Projection(view_offset[v].inverse());
 	}
+}
+
+/* Compositor effect API */
+
+RID RendererSceneRender::compositor_effect_allocate() {
+	return compositor_storage.compositor_effect_allocate();
+}
+
+void RendererSceneRender::compositor_effect_initialize(RID p_rid) {
+	compositor_storage.compositor_effect_initialize(p_rid);
+}
+
+void RendererSceneRender::compositor_effect_free(RID p_rid) {
+	compositor_storage.compositor_effect_free(p_rid);
+}
+
+bool RendererSceneRender::is_compositor_effect(RID p_effect) const {
+	return compositor_storage.is_compositor_effect(p_effect);
+}
+
+void RendererSceneRender::compositor_effect_set_enabled(RID p_effect, bool p_enabled) {
+	compositor_storage.compositor_effect_set_enabled(p_effect, p_enabled);
+}
+
+void RendererSceneRender::compositor_effect_set_callback(RID p_effect, RS::CompositorEffectCallbackType p_callback_type, const Callable &p_callback) {
+	compositor_storage.compositor_effect_set_callback(p_effect, p_callback_type, p_callback);
+}
+
+void RendererSceneRender::compositor_effect_set_flag(RID p_effect, RS::CompositorEffectFlags p_flag, bool p_set) {
+	compositor_storage.compositor_effect_set_flag(p_effect, p_flag, p_set);
+}
+
+/* Compositor API */
+
+RID RendererSceneRender::compositor_allocate() {
+	return compositor_storage.compositor_allocate();
+}
+
+void RendererSceneRender::compositor_initialize(RID p_rid) {
+	compositor_storage.compositor_initialize(p_rid);
+}
+
+void RendererSceneRender::compositor_free(RID p_rid) {
+	compositor_storage.compositor_free(p_rid);
+}
+
+bool RendererSceneRender::is_compositor(RID p_rid) const {
+	return compositor_storage.is_compositor(p_rid);
+}
+
+void RendererSceneRender::compositor_set_compositor_effects(RID p_compositor, const TypedArray<RID> &p_effects) {
+	Vector<RID> rids;
+	for (int i = 0; i < p_effects.size(); i++) {
+		RID rid = p_effects[i];
+		rids.push_back(rid);
+	}
+
+	compositor_storage.compositor_set_compositor_effects(p_compositor, rids);
 }
 
 /* Environment API */
@@ -290,6 +351,14 @@ RS::EnvironmentReflectionSource RendererSceneRender::environment_get_reflection_
 	return environment_storage.environment_get_reflection_source(p_env);
 }
 
+void RendererSceneRender::environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) {
+	environment_storage.environment_set_camera_feed_id(p_env, p_camera_feed_id);
+}
+
+int RendererSceneRender::environment_get_camera_feed_id(RID p_env) const {
+	return environment_storage.environment_get_camera_feed_id(p_env);
+}
+
 // Tonemap
 
 void RendererSceneRender::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) {
@@ -304,18 +373,34 @@ float RendererSceneRender::environment_get_exposure(RID p_env) const {
 	return environment_storage.environment_get_exposure(p_env);
 }
 
-float RendererSceneRender::environment_get_white(RID p_env) const {
-	return environment_storage.environment_get_white(p_env);
+float RendererSceneRender::environment_get_white(RID p_env, bool p_limit_agx_white) const {
+	return environment_storage.environment_get_white(p_env, p_limit_agx_white);
+}
+
+void RendererSceneRender::environment_set_tonemap_agx_contrast(RID p_env, float p_agx_contrast) {
+	environment_storage.environment_set_tonemap_agx_contrast(p_env, p_agx_contrast);
+}
+
+float RendererSceneRender::environment_get_tonemap_agx_contrast(RID p_env) const {
+	return environment_storage.environment_get_tonemap_agx_contrast(p_env);
+}
+
+RendererEnvironmentStorage::TonemapParameters RendererSceneRender::environment_get_tonemap_parameters(RID p_env, bool p_limit_agx_white) const {
+	return environment_storage.environment_get_tonemap_parameters(p_env, p_limit_agx_white);
 }
 
 // Fog
 
-void RendererSceneRender::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect) {
-	environment_storage.environment_set_fog(p_env, p_enable, p_light_color, p_light_energy, p_sun_scatter, p_density, p_height, p_height_density, p_aerial_perspective, p_sky_affect);
+void RendererSceneRender::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect, RS::EnvironmentFogMode p_mode) {
+	environment_storage.environment_set_fog(p_env, p_enable, p_light_color, p_light_energy, p_sun_scatter, p_density, p_height, p_height_density, p_aerial_perspective, p_sky_affect, p_mode);
 }
 
 bool RendererSceneRender::environment_get_fog_enabled(RID p_env) const {
 	return environment_storage.environment_get_fog_enabled(p_env);
+}
+
+RS::EnvironmentFogMode RendererSceneRender::environment_get_fog_mode(RID p_env) const {
+	return environment_storage.environment_get_fog_mode(p_env);
 }
 
 Color RendererSceneRender::environment_get_fog_light_color(RID p_env) const {
@@ -348,6 +433,24 @@ float RendererSceneRender::environment_get_fog_height_density(RID p_env) const {
 
 float RendererSceneRender::environment_get_fog_aerial_perspective(RID p_env) const {
 	return environment_storage.environment_get_fog_aerial_perspective(p_env);
+}
+
+// Depth Fog
+
+void RendererSceneRender::environment_set_fog_depth(RID p_env, float p_curve, float p_begin, float p_end) {
+	environment_storage.environment_set_fog_depth(p_env, p_curve, p_begin, p_end);
+}
+
+float RendererSceneRender::environment_get_fog_depth_curve(RID p_env) const {
+	return environment_storage.environment_get_fog_depth_curve(p_env);
+}
+
+float RendererSceneRender::environment_get_fog_depth_begin(RID p_env) const {
+	return environment_storage.environment_get_fog_depth_begin(p_env);
+}
+
+float RendererSceneRender::environment_get_fog_depth_end(RID p_env) const {
+	return environment_storage.environment_get_fog_depth_end(p_env);
 }
 
 // Volumetric Fog

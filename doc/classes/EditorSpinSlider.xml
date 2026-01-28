@@ -5,21 +5,28 @@
 	</brief_description>
 	<description>
 		This [Control] node is used in the editor's Inspector dock to allow editing of numeric values. Can be used with [EditorInspectorPlugin] to recreate the same behavior.
+		If the [member Range.step] value is [code]1[/code], the [EditorSpinSlider] will display up/down arrows, similar to [SpinBox]. If the [member Range.step] value is not [code]1[/code], a slider will be displayed instead.
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="control_state" type="int" setter="set_control_state" getter="get_control_state" enum="EditorSpinSlider.ControlState" default="0">
+			The state in which the control used to manipulate the value will be.
+		</member>
+		<member name="editing_integer" type="bool" setter="set_editing_integer" getter="is_editing_integer" default="false">
+			If [code]true[/code], the [EditorSpinSlider] is considered to be editing an integer value. If [code]false[/code], the [EditorSpinSlider] is considered to be editing a floating-point value. This is used to determine whether a slider should be drawn by default. The slider is only drawn for floats; integers use up-down arrows similar to [SpinBox] instead, unless [member control_state] is set to [constant CONTROL_STATE_PREFER_SLIDER]. It will also use [member EditorSettings.interface/inspector/integer_drag_speed] instead of [member EditorSettings.interface/inspector/float_drag_speed] if the slider is available.
+		</member>
 		<member name="flat" type="bool" setter="set_flat" getter="is_flat" default="false">
 			If [code]true[/code], the slider will not draw background.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
-		<member name="hide_slider" type="bool" setter="set_hide_slider" getter="is_hiding_slider" default="false">
-			If [code]true[/code], the slider is hidden.
+		<member name="hide_slider" type="bool" setter="set_hide_slider" getter="is_hiding_slider" default="false" deprecated="Use [member control_state] instead.">
+			If [code]true[/code], the slider and up/down arrows are hidden.
 		</member>
 		<member name="label" type="String" setter="set_label" getter="get_label" default="&quot;&quot;">
 			The text that displays to the left of the value.
 		</member>
-		<member name="read_only" type="bool" setter="set_read_only" getter="is_read_only" default="false">
+		<member name="read_only" type="bool" setter="set_read_only" getter="is_read_only" default="false" keywords="enabled, disabled, editable">
 			If [code]true[/code], the slider can't be interacted with.
 		</member>
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" enum="Control.SizeFlags" is_bitfield="true" default="1" />
@@ -39,6 +46,11 @@
 				Emitted when the spinner/slider is ungrabbed.
 			</description>
 		</signal>
+		<signal name="updown_pressed">
+			<description>
+				Emitted when the updown button is pressed.
+			</description>
+		</signal>
 		<signal name="value_focus_entered">
 			<description>
 				Emitted when the value form gains focus.
@@ -50,4 +62,23 @@
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="CONTROL_STATE_DEFAULT" value="0" enum="ControlState">
+			The type of control used will depend on the value of [member editing_integer]. Up-down arrows if [code]true[/code], a slider if [code]false[/code].
+		</constant>
+		<constant name="CONTROL_STATE_PREFER_SLIDER" value="1" enum="ControlState">
+			A slider will always be used, even if [member editing_integer] is enabled.
+		</constant>
+		<constant name="CONTROL_STATE_HIDE" value="2" enum="ControlState">
+			Neither the up-down arrows nor the slider will be shown.
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="updown" data_type="icon" type="Texture2D">
+			Single texture representing both the up and down buttons.
+		</theme_item>
+		<theme_item name="updown_disabled" data_type="icon" type="Texture2D">
+			Single texture representing both the up and down buttons, when the control is readonly or disabled.
+		</theme_item>
+	</theme_items>
 </class>

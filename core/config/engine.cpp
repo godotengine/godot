@@ -36,23 +36,40 @@
 #include "core/license.gen.h"
 #include "core/variant/typed_array.h"
 #include "core/version.h"
+#include "servers/rendering/rendering_device.h"
+
+void Engine::_update_time_scale() {
+	_time_scale = _user_time_scale * _game_time_scale;
+	user_ips = MAX(1, ips * _user_time_scale);
+	max_user_physics_steps_per_frame = MAX(max_physics_steps_per_frame, max_physics_steps_per_frame * _user_time_scale);
+}
 
 void Engine::set_physics_ticks_per_second(int p_ips) {
 	ERR_FAIL_COND_MSG(p_ips <= 0, "Engine iterations per second must be greater than 0.");
 	ips = p_ips;
+	_update_time_scale();
 }
 
 int Engine::get_physics_ticks_per_second() const {
 	return ips;
 }
 
+int Engine::get_user_physics_ticks_per_second() const {
+	return user_ips;
+}
+
 void Engine::set_max_physics_steps_per_frame(int p_max_physics_steps) {
 	ERR_FAIL_COND_MSG(p_max_physics_steps <= 0, "Maximum number of physics steps per frame must be greater than 0.");
 	max_physics_steps_per_frame = p_max_physics_steps;
+	_update_time_scale();
 }
 
 int Engine::get_max_physics_steps_per_frame() const {
 	return max_physics_steps_per_frame;
+}
+
+int Engine::get_user_max_physics_steps_per_frame() const {
+	return max_user_physics_steps_per_frame;
 }
 
 void Engine::set_physics_jitter_fix(double p_threshold) {
@@ -68,6 +85,11 @@ double Engine::get_physics_jitter_fix() const {
 
 void Engine::set_max_fps(int p_fps) {
 	_max_fps = p_fps > 0 ? p_fps : 0;
+
+	RenderingDevice *rd = RenderingDevice::get_singleton();
+	if (rd) {
+		rd->_set_max_fps(_max_fps);
+	}
 }
 
 int Engine::get_max_fps() const {
@@ -80,6 +102,17 @@ void Engine::set_audio_output_latency(int p_msec) {
 
 int Engine::get_audio_output_latency() const {
 	return _audio_output_latency;
+}
+
+void Engine::increment_frames_drawn() {
+	if (frame_server_synced) {
+		server_syncs++;
+	} else {
+		server_syncs = 0;
+	}
+	frame_server_synced = false;
+
+	frames_drawn++;
 }
 
 uint64_t Engine::get_frames_drawn() {
@@ -95,25 +128,40 @@ uint32_t Engine::get_frame_delay() const {
 }
 
 void Engine::set_time_scale(double p_scale) {
-	_time_scale = p_scale;
+	_game_time_scale = p_scale;
+	_update_time_scale();
 }
 
 double Engine::get_time_scale() const {
+	return freeze_time_scale ? 0.0 : _game_time_scale;
+}
+
+void Engine::set_user_time_scale(double p_scale) {
+	_user_time_scale = p_scale;
+	_update_time_scale();
+}
+
+double Engine::get_effective_time_scale() const {
+	return freeze_time_scale ? 0.0 : _time_scale;
+}
+
+double Engine::get_unfrozen_time_scale() const {
 	return _time_scale;
 }
 
 Dictionary Engine::get_version_info() const {
 	Dictionary dict;
-	dict["major"] = VERSION_MAJOR;
-	dict["minor"] = VERSION_MINOR;
-	dict["patch"] = VERSION_PATCH;
-	dict["hex"] = VERSION_HEX;
-	dict["status"] = VERSION_STATUS;
-	dict["build"] = VERSION_BUILD;
-	dict["year"] = VERSION_YEAR;
+	dict["major"] = GODOT_VERSION_MAJOR;
+	dict["minor"] = GODOT_VERSION_MINOR;
+	dict["patch"] = GODOT_VERSION_PATCH;
+	dict["hex"] = GODOT_VERSION_HEX;
+	dict["status"] = GODOT_VERSION_STATUS;
+	dict["build"] = GODOT_VERSION_BUILD;
 
-	String hash = String(VERSION_HASH);
+	String hash = String(GODOT_VERSION_HASH);
 	dict["hash"] = hash.is_empty() ? String("unknown") : hash;
+
+	dict["timestamp"] = GODOT_VERSION_TIMESTAMP;
 
 	String stringver = String(dict["major"]) + "." + String(dict["minor"]);
 	if ((int)dict["patch"] != 0) {
@@ -176,14 +224,14 @@ TypedArray<Dictionary> Engine::get_copyright_info() const {
 
 Dictionary Engine::get_donor_info() const {
 	Dictionary donors;
-	donors["platinum_sponsors"] = array_from_info(DONORS_SPONSOR_PLATINUM);
-	donors["gold_sponsors"] = array_from_info(DONORS_SPONSOR_GOLD);
-	donors["silver_sponsors"] = array_from_info(DONORS_SPONSOR_SILVER);
-	donors["bronze_sponsors"] = array_from_info(DONORS_SPONSOR_BRONZE);
-	donors["mini_sponsors"] = array_from_info(DONORS_SPONSOR_MINI);
-	donors["gold_donors"] = array_from_info(DONORS_GOLD);
-	donors["silver_donors"] = array_from_info(DONORS_SILVER);
-	donors["bronze_donors"] = array_from_info(DONORS_BRONZE);
+	donors["patrons"] = array_from_info(DONORS_PATRONS);
+	donors["platinum_sponsors"] = array_from_info(DONORS_SPONSORS_PLATINUM);
+	donors["gold_sponsors"] = array_from_info(DONORS_SPONSORS_GOLD);
+	donors["silver_sponsors"] = array_from_info(DONORS_SPONSORS_SILVER);
+	donors["diamond_members"] = array_from_info(DONORS_MEMBERS_DIAMOND);
+	donors["titanium_members"] = array_from_info(DONORS_MEMBERS_TITANIUM);
+	donors["platinum_members"] = array_from_info(DONORS_MEMBERS_PLATINUM);
+	donors["gold_members"] = array_from_info(DONORS_MEMBERS_GOLD);
 	return donors;
 }
 
@@ -202,36 +250,22 @@ String Engine::get_license_text() const {
 String Engine::get_architecture_name() const {
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
 	return "x86_64";
-
 #elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
 	return "x86_32";
-
 #elif defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
 	return "arm64";
-
 #elif defined(__arm__) || defined(_M_ARM)
 	return "arm32";
-
 #elif defined(__riscv)
-#if __riscv_xlen == 8
 	return "rv64";
-#else
-	return "riscv";
-#endif
-
-#elif defined(__powerpc__)
-#if defined(__powerpc64__)
+#elif defined(__powerpc64__)
 	return "ppc64";
-#else
-	return "ppc";
-#endif
-
-#elif defined(__wasm__)
-#if defined(__wasm64__)
+#elif defined(__loongarch64)
+	return "loongarch64";
+#elif defined(__wasm64__)
 	return "wasm64";
 #elif defined(__wasm32__)
 	return "wasm32";
-#endif
 #endif
 }
 
@@ -251,12 +285,42 @@ bool Engine::is_generate_spirv_debug_info_enabled() const {
 	return generate_spirv_debug_info;
 }
 
+bool Engine::is_extra_gpu_memory_tracking_enabled() const {
+	return extra_gpu_memory_tracking;
+}
+
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+bool Engine::is_accurate_breadcrumbs_enabled() const {
+	return accurate_breadcrumbs;
+}
+#endif
+
+void Engine::set_print_to_stdout(bool p_enabled) {
+	CoreGlobals::print_line_enabled = p_enabled;
+}
+
+bool Engine::is_printing_to_stdout() const {
+	return CoreGlobals::print_line_enabled;
+}
+
 void Engine::set_print_error_messages(bool p_enabled) {
 	CoreGlobals::print_error_enabled = p_enabled;
 }
 
 bool Engine::is_printing_error_messages() const {
 	return CoreGlobals::print_error_enabled;
+}
+
+void Engine::print_header(const String &p_string) const {
+	if (_print_header) {
+		print_line(p_string);
+	}
+}
+
+void Engine::print_header_rich(const String &p_string) const {
+	if (_print_header) {
+		print_line_rich(p_string);
+	}
 }
 
 void Engine::add_singleton(const Singleton &p_singleton) {
@@ -345,14 +409,35 @@ String Engine::get_shader_cache_path() const {
 	return shader_cache_path;
 }
 
-Engine *Engine::singleton = nullptr;
-
 Engine *Engine::get_singleton() {
 	return singleton;
 }
 
+bool Engine::notify_frame_server_synced() {
+	frame_server_synced = true;
+	return server_syncs > SERVER_SYNC_FRAME_COUNT_WARNING;
+}
+
+void Engine::set_freeze_time_scale(bool p_frozen) {
+	freeze_time_scale = p_frozen;
+}
+
+void Engine::set_embedded_in_editor(bool p_enabled) {
+	embedded_in_editor = p_enabled;
+}
+
+bool Engine::is_embedded_in_editor() const {
+	return embedded_in_editor;
+}
+
 Engine::Engine() {
 	singleton = this;
+}
+
+Engine::~Engine() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 }
 
 Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr, const StringName &p_class_name) :

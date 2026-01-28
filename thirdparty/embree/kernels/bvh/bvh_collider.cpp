@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "bvh_collider.h"
+
 #include "../geometry/triangle_triangle_intersector.h"
+#include "../../common/algorithms/parallel_for.h"
 
 namespace embree
 { 

@@ -947,15 +947,15 @@ namespace jpgd {
 	// Finds the next marker.
 	int jpeg_decoder::next_marker()
 	{
-		uint c, bytes;
+		uint c;// , bytes;
 
-		bytes = 0;
+		//bytes = 0;
 
 		do
 		{
 			do
 			{
-				bytes++;
+				//bytes++;
 				c = get_bits(8);
 			} while (c != 0xFF);
 
@@ -1303,7 +1303,7 @@ namespace jpgd {
 		int i;
 		jpgd_block_t* p;
 		jpgd_quant_t* q;
-		int mcu_row, mcu_block, row_block = 0;
+		int mcu_row, mcu_block;// , row_block = 0;
 		int component_num, component_id;
 		int block_x_mcu[JPGD_MAX_COMPONENTS];
 
@@ -1338,7 +1338,7 @@ namespace jpgd {
 					if (p[g_ZAG[i]])
 						p[g_ZAG[i]] = static_cast<jpgd_block_t>(p[g_ZAG[i]] * q[i]);
 
-				row_block++;
+				//row_block++;
 
 				if (m_comps_in_scan == 1)
 					block_x_mcu[component_id]++;
@@ -1425,7 +1425,7 @@ namespace jpgd {
 	// Decodes and dequantizes the next row of coefficients.
 	void jpeg_decoder::decode_next_row()
 	{
-		int row_block = 0;
+		//int row_block = 0;
 
 		for (int mcu_row = 0; mcu_row < m_mcus_per_row; mcu_row++)
 		{
@@ -1528,7 +1528,7 @@ namespace jpgd {
 
 				m_mcu_block_max_zag[mcu_block] = k;
 
-				row_block++;
+				//row_block++;
 			}
 
 			transform_mcu(mcu_row);
@@ -3146,7 +3146,7 @@ namespace jpgd {
 
 		for (int y = 0; y < image_height; y++)
 		{
-			const uint8* pScan_line;
+			const uint8* pScan_line = nullptr;
 			uint scan_line_len;
 			if (decoder.decode((const void**)&pScan_line, &scan_line_len) != JPGD_SUCCESS)
 			{

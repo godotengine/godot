@@ -6,7 +6,7 @@
 	<description>
 		A list of global scope enumerated constants and built-in functions. This is all that resides in the globals, constants regarding error codes, keycodes, property hints, etc.
 		Singletons are also documented here, since they can be accessed from anywhere.
-		For the entries related to GDScript which can be accessed in any script see [@GDScript].
+		For the entries that can only be accessed from scripts written in GDScript, see [@GDScript].
 	</description>
 	<tutorials>
 		<link title="Random number generation">$DOCS_URL/tutorials/math/random_number_generation.html</link>
@@ -90,7 +90,7 @@
 			<param index="0" name="from" type="float" />
 			<param index="1" name="to" type="float" />
 			<description>
-				Returns the difference between the two angles, in the range of [code][-PI, +PI][/code]. When [param from] and [param to] are opposite, returns [code]-PI[/code] if [param from] is smaller than [param to], or [code]PI[/code] otherwise.
+				Returns the difference between the two angles (in radians), in the range of [code][-PI, +PI][/code]. When [param from] and [param to] are opposite, returns [code]-PI[/code] if [param from] is smaller than [param to], or [code]PI[/code] otherwise.
 			</description>
 		</method>
 		<method name="asin">
@@ -234,20 +234,9 @@
 
 				var b = clamp(8.1, 0.9, 5.5)
 				# b is 5.5
-
-				var c = clamp(Vector2(-3.5, -4), Vector2(-3.2, -2), Vector2(2, 6.5))
-				# c is (-3.2, -2)
-
-				var d = clamp(Vector2i(7, 8), Vector2i(-3, -2), Vector2i(2, 6))
-				# d is (2, 6)
-
-				var e = clamp(Vector3(-7, 8.5, -3.8), Vector3(-3, -2, 5.4), Vector3(-2, 6, -4.1))
-				# e is (-3, -2, 5.4)
-
-				var f = clamp(Vector3i(-7, -8, -9), Vector3i(-1, 2, 3), Vector3i(-4, -5, -6))
-				# f is (-4, -5, -6)
 				[/codeblock]
-				[b]Note:[/b] For better type safety, use [method clampf], [method clampi], [method Vector2.clamp], [method Vector2i.clamp], [method Vector3.clamp], [method Vector3i.clamp], [method Vector4.clamp], [method Vector4i.clamp], or [method Color.clamp].
+				[b]Note:[/b] For better type safety, use [method clampf], [method clampi], [method Vector2.clamp], [method Vector2i.clamp], [method Vector3.clamp], [method Vector3i.clamp], [method Vector4.clamp], [method Vector4i.clamp], or [method Color.clamp] (not currently supported by this method).
+				[b]Note:[/b] When using this on vectors it will [i]not[/i] perform component-wise clamping, and will pick [param min] if [code]value &lt; min[/code] or [param max] if [code]value &gt; max[/code]. To perform component-wise clamping use the methods listed above.
 			</description>
 		</method>
 		<method name="clampf">
@@ -373,15 +362,15 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="ease">
+		<method name="ease" keywords="smooth">
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<param index="1" name="curve" type="float" />
 			<description>
 				Returns an "eased" value of [param x] based on an easing function defined with [param curve]. This easing function is based on an exponent. The [param curve] can be any floating-point number, with specific values leading to the following behaviors:
-				[codeblock]
+				[codeblock lang=text]
 				- Lower than -1.0 (exclusive): Ease in-out
-				- 1.0: Linear
+				- -1.0: Linear
 				- Between -1.0 and 0.0 (exclusive): Ease out-in
 				- 0.0: Constant
 				- Between 0.0 to 1.0 (exclusive): Ease out
@@ -399,9 +388,9 @@
 				Returns a human-readable name for the given [enum Error] code.
 				[codeblock]
 				print(OK)                              # Prints 0
-				print(error_string(OK))                # Prints OK
-				print(error_string(ERR_BUSY))          # Prints Busy
-				print(error_string(ERR_OUT_OF_MEMORY)) # Prints Out of memory
+				print(error_string(OK))                # Prints "OK"
+				print(error_string(ERR_BUSY))          # Prints "Busy"
+				print(error_string(ERR_OUT_OF_MEMORY)) # Prints "Out of memory"
 				[/codeblock]
 			</description>
 		</method>
@@ -468,11 +457,11 @@
 				[codeblock]
 				print(" (x)  (fmod(x, 1.5))   (fposmod(x, 1.5))")
 				for i in 7:
-				    var x = i * 0.5 - 1.5
-				    print("%4.1f           %4.1f  | %4.1f" % [x, fmod(x, 1.5), fposmod(x, 1.5)])
+					var x = i * 0.5 - 1.5
+					print("%4.1f           %4.1f  | %4.1f" % [x, fmod(x, 1.5), fposmod(x, 1.5)])
 				[/codeblock]
-				Produces:
-				[codeblock]
+				Prints:
+				[codeblock lang=text]
 				 (x)  (fmod(x, 1.5))   (fposmod(x, 1.5))
 				-1.5           -0.0  |  0.0
 				-1.0           -1.0  |  0.5
@@ -506,30 +495,30 @@
 				Returns the [Object] that corresponds to [param instance_id]. All Objects have a unique instance ID. See also [method Object.get_instance_id].
 				[codeblocks]
 				[gdscript]
-				var foo = "bar"
+				var drink = "water"
 
 				func _ready():
-				    var id = get_instance_id()
-				    var inst = instance_from_id(id)
-				    print(inst.foo) # Prints bar
+					var id = get_instance_id()
+					var instance = instance_from_id(id)
+					print(instance.drink) # Prints "water"
 				[/gdscript]
 				[csharp]
 				public partial class MyNode : Node
 				{
-				    public string Foo { get; set; } = "bar";
+					public string Drink { get; set; } = "water";
 
-				    public override void _Ready()
-				    {
-				        ulong id = GetInstanceId();
-				        var inst = (MyNode)InstanceFromId(Id);
-				        GD.Print(inst.Foo); // Prints bar
-				    }
+					public override void _Ready()
+					{
+						ulong id = GetInstanceId();
+						var instance = (MyNode)InstanceFromId(Id);
+						GD.Print(instance.Drink); // Prints "water"
+					}
 				}
 				[/csharp]
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="inverse_lerp">
+		<method name="inverse_lerp" keywords="interpolate">
 			<return type="float" />
 			<param index="0" name="from" type="float" />
 			<param index="1" name="to" type="float" />
@@ -548,7 +537,7 @@
 				See also [method lerp], which performs the reverse of this operation, and [method remap] to map a continuous series of values to another.
 			</description>
 		</method>
-		<method name="is_equal_approx">
+		<method name="is_equal_approx" keywords="roughly">
 			<return type="bool" />
 			<param index="0" name="a" type="float" />
 			<param index="1" name="b" type="float" />
@@ -562,14 +551,14 @@
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns whether [param x] is a finite value, i.e. it is not [constant @GDScript.NAN], positive infinity, or negative infinity.
+				Returns whether [param x] is a finite value, i.e. it is not [constant @GDScript.NAN], positive infinity, or negative infinity. See also [method is_inf] and [method is_nan].
 			</description>
 		</method>
 		<method name="is_inf">
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns [code]true[/code] if [param x] is either positive infinity or negative infinity.
+				Returns [code]true[/code] if [param x] is either positive infinity or negative infinity. See also [method is_finite] and [method is_nan].
 			</description>
 		</method>
 		<method name="is_instance_id_valid">
@@ -590,7 +579,7 @@
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns [code]true[/code] if [param x] is a NaN ("Not a Number" or invalid) value.
+				Returns [code]true[/code] if [param x] is a NaN ("Not a Number" or invalid) value. This method is needed as [constant @GDScript.NAN] is not equal to itself, which means [code]x == NAN[/code] can't be used to check whether a value is a NaN.
 			</description>
 		</method>
 		<method name="is_same">
@@ -615,7 +604,7 @@
 				is_same(arr_a, arr_b)  # false
 				[/codeblock]
 				These are [Variant] value types: [code]null[/code], [bool], [int], [float], [String], [StringName], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i], [Rect2], [Rect2i], [Transform2D], [Transform3D], [Plane], [Quaternion], [AABB], [Basis], [Projection], [Color], [NodePath], [RID], [Callable] and [Signal].
-				These are [Variant] reference types: [Object], [Dictionary], [Array], [PackedByteArray], [PackedInt32Array], [PackedInt64Array], [PackedFloat32Array], [PackedFloat64Array], [PackedStringArray], [PackedVector2Array], [PackedVector3Array] and [PackedColorArray].
+				These are [Variant] reference types: [Object], [Dictionary], [Array], [PackedByteArray], [PackedInt32Array], [PackedInt64Array], [PackedFloat32Array], [PackedFloat64Array], [PackedStringArray], [PackedVector2Array], [PackedVector3Array], [PackedVector4Array], and [PackedColorArray].
 			</description>
 		</method>
 		<method name="is_zero_approx">
@@ -626,22 +615,22 @@
 				This function is faster than using [method is_equal_approx] with one value as zero.
 			</description>
 		</method>
-		<method name="lerp">
+		<method name="lerp" keywords="interpolate">
 			<return type="Variant" />
 			<param index="0" name="from" type="Variant" />
 			<param index="1" name="to" type="Variant" />
 			<param index="2" name="weight" type="Variant" />
 			<description>
-				Linearly interpolates between two values by the factor defined in [param weight]. To perform interpolation, [param weight] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i]. If this is not desired, use [method clamp] on the result of this function.
-				Both [param from] and [param to] must be the same type. Supported types: [int], [float], [Vector2], [Vector3], [Vector4], [Color], [Quaternion], [Basis].
+				Linearly interpolates between two values by the factor defined in [param weight]. To perform interpolation, [param weight] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i]. If this is not desired, use [method clampf] to limit [param weight].
+				Both [param from] and [param to] must be the same type. Supported types: [int], [float], [Vector2], [Vector3], [Vector4], [Color], [Quaternion], [Basis], [Transform2D], [Transform3D].
 				[codeblock]
 				lerp(0, 4, 0.75) # Returns 3.0
 				[/codeblock]
 				See also [method inverse_lerp] which performs the reverse of this operation. To perform eased interpolation with [method lerp], combine it with [method ease] or [method smoothstep]. See also [method remap] to map a continuous series of values to another.
-				[b]Note:[/b] For better type safety, use [method lerpf], [method Vector2.lerp], [method Vector3.lerp], [method Vector4.lerp], [method Color.lerp], [method Quaternion.slerp] or [method Basis.slerp].
+				[b]Note:[/b] For better type safety, use [method lerpf], [method Vector2.lerp], [method Vector3.lerp], [method Vector4.lerp], [method Color.lerp], [method Quaternion.slerp], [method Basis.slerp], [method Transform2D.interpolate_with], or [method Transform3D.interpolate_with].
 			</description>
 		</method>
-		<method name="lerp_angle">
+		<method name="lerp_angle" keywords="interpolate">
 			<return type="float" />
 			<param index="0" name="from" type="float" />
 			<param index="1" name="to" type="float" />
@@ -653,10 +642,10 @@
 				extends Sprite
 				var elapsed = 0.0
 				func _process(delta):
-				    var min_angle = deg_to_rad(0.0)
-				    var max_angle = deg_to_rad(90.0)
-				    rotation = lerp_angle(min_angle, max_angle, elapsed)
-				    elapsed += delta
+					var min_angle = deg_to_rad(0.0)
+					var max_angle = deg_to_rad(90.0)
+					rotation = lerp_angle(min_angle, max_angle, elapsed)
+					elapsed += delta
 				[/codeblock]
 				[b]Note:[/b] This function lerps through the shortest path between [param from] and [param to]. However, when these two angles are approximately [code]PI + k * TAU[/code] apart for any integer [code]k[/code], it's not obvious which way they lerp due to floating-point precision errors. For example, [code]lerp_angle(0, PI, weight)[/code] lerps counter-clockwise, while [code]lerp_angle(0, PI + 5 * TAU, weight)[/code] lerps clockwise.
 			</description>
@@ -678,12 +667,9 @@
 			<return type="float" />
 			<param index="0" name="lin" type="float" />
 			<description>
-				Converts from linear energy to decibels (audio). This can be used to implement volume sliders that behave as expected (since volume isn't linear).
-				[b]Example:[/b]
+				Converts from linear energy to decibels (audio). Since volume is not normally linear, this can be used to implement volume sliders that behave as expected.
+				[b]Example:[/b] Change the Master bus's volume through a [Slider] node, which ranges from [code]0.0[/code] to [code]1.0[/code]:
 				[codeblock]
-				# "Slider" refers to a node that inherits Range such as HSlider or VSlider.
-				# Its range must be configured to go from 0 to 1.
-				# Change the bus name if you'd like to change the volume of a specific bus only.
 				AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db($Slider.value))
 				[/codeblock]
 			</description>
@@ -707,6 +693,7 @@
 				[codeblock]
 				max(1, 7, 3, -6, 5) # Returns 7
 				[/codeblock]
+				[b]Note:[/b] When using this on vectors it will [i]not[/i] perform component-wise maximum, and will pick the largest value when compared using [code]x &lt; y[/code]. To perform component-wise maximum, use [method Vector2.max], [method Vector2i.max], [method Vector3.max], [method Vector3i.max], [method Vector4.max], and [method Vector4i.max].
 			</description>
 		</method>
 		<method name="maxf">
@@ -740,6 +727,7 @@
 				[codeblock]
 				min(1, 7, 3, -6, 5) # Returns -6
 				[/codeblock]
+				[b]Note:[/b] When using this on vectors it will [i]not[/i] perform component-wise minimum, and will pick the smallest value when compared using [code]x &lt; y[/code]. To perform component-wise minimum, use [method Vector2.min], [method Vector2i.min], [method Vector3.min], [method Vector3i.min], [method Vector4.min], and [method Vector4i.min].
 			</description>
 		</method>
 		<method name="minf">
@@ -827,10 +815,10 @@
 				[codeblock]
 				print("#(i)  (i % 3)   (posmod(i, 3))")
 				for i in range(-3, 4):
-				    print("%2d       %2d  | %2d" % [i, i % 3, posmod(i, 3)])
+					print("%2d       %2d  | %2d" % [i, i % 3, posmod(i, 3)])
 				[/codeblock]
-				Produces:
-				[codeblock]
+				Prints:
+				[codeblock lang=text]
 				(i)  (i % 3)   (posmod(i, 3))
 				-3        0  |  0
 				-2       -2  |  1
@@ -856,46 +844,49 @@
 			</description>
 		</method>
 		<method name="print" qualifiers="vararg">
+			<return type="void" />
 			<description>
 				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
 				[codeblocks]
 				[gdscript]
 				var a = [1, 2, 3]
-				print("a", "b", a) # Prints ab[1, 2, 3]
+				print("a", "b", a) # Prints "ab[1, 2, 3]"
 				[/gdscript]
 				[csharp]
-				var a = new Godot.Collections.Array { 1, 2, 3 };
-				GD.Print("a", "b", a); // Prints ab[1, 2, 3]
+				Godot.Collections.Array a = [1, 2, 3];
+				GD.Print("a", "b", a); // Prints "ab[1, 2, 3]"
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
+				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed. See also [member Engine.print_to_stdout] and [member ProjectSettings.application/run/disable_stdout].
 			</description>
 		</method>
 		<method name="print_rich" qualifiers="vararg">
+			<return type="void" />
 			<description>
 				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
 				The following BBCode tags are supported: [code]b[/code], [code]i[/code], [code]u[/code], [code]s[/code], [code]indent[/code], [code]code[/code], [code]url[/code], [code]center[/code], [code]right[/code], [code]color[/code], [code]bgcolor[/code], [code]fgcolor[/code].
-				Color tags only support the following named colors: [code]black[/code], [code]red[/code], [code]green[/code], [code]yellow[/code], [code]blue[/code], [code]magenta[/code], [code]pink[/code], [code]purple[/code], [code]cyan[/code], [code]white[/code], [code]orange[/code], [code]gray[/code]. Hexadecimal color codes are not supported.
 				URL tags only support URLs wrapped by a URL tag, not URLs with a different title.
 				When printing to standard output, the supported subset of BBCode is converted to ANSI escape codes for the terminal emulator to display. Support for ANSI escape codes varies across terminal emulators, especially for italic and strikethrough. In standard output, [code]code[/code] is represented with faint text but without any font change. Unsupported tags are left as-is in standard output.
 				[codeblocks]
 				[gdscript skip-lint]
-				print_rich("[color=green][b]Hello world![/b][/color]") # Prints out "Hello world!" in green with a bold font
+				print_rich("[color=green][b]Hello world![/b][/color]") # Prints "Hello world!", in green with a bold font.
 				[/gdscript]
 				[csharp skip-lint]
-				GD.PrintRich("[color=green][b]Hello world![/b][/color]"); // Prints out "Hello world!" in green with a bold font
+				GD.PrintRich("[color=green][b]Hello world![/b][/color]"); // Prints "Hello world!", in green with a bold font.
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
-				[b]Note:[/b] On Windows, only Windows 10 and later correctly displays ANSI escape codes in standard output.
+				[b]Note:[/b] Output displayed in the editor supports clickable [code skip-lint][url=address]text[/url][/code] tags. The [code skip-lint][url][/code] tag's [code]address[/code] value is handled by [method OS.shell_open] when clicked.
 			</description>
 		</method>
 		<method name="print_verbose" qualifiers="vararg">
+			<return type="void" />
 			<description>
 				If verbose mode is enabled ([method OS.is_stdout_verbose] returning [code]true[/code]), converts one or more arguments of any type to string in the best way possible and prints them to the console.
 			</description>
 		</method>
 		<method name="printerr" qualifiers="vararg">
+			<return type="void" />
 			<description>
 				Prints one or more arguments to strings in the best way possible to standard error line.
 				[codeblocks]
@@ -909,73 +900,79 @@
 			</description>
 		</method>
 		<method name="printraw" qualifiers="vararg">
+			<return type="void" />
 			<description>
 				Prints one or more arguments to strings in the best way possible to the OS terminal. Unlike [method print], no newline is automatically added at the end.
+				[b]Note:[/b] The OS terminal is [i]not[/i] the same as the editor's Output dock. The output sent to the OS terminal can be seen when running Godot from a terminal. On Windows, this requires using the [code]console.exe[/code] executable.
 				[codeblocks]
 				[gdscript]
+				# Prints "ABC" to terminal.
 				printraw("A")
 				printraw("B")
 				printraw("C")
-				# Prints ABC to terminal
 				[/gdscript]
 				[csharp]
+				// Prints "ABC" to terminal.
 				GD.PrintRaw("A");
 				GD.PrintRaw("B");
 				GD.PrintRaw("C");
-				// Prints ABC to terminal
 				[/csharp]
 				[/codeblocks]
 			</description>
 		</method>
 		<method name="prints" qualifiers="vararg">
+			<return type="void" />
 			<description>
 				Prints one or more arguments to the console with a space between each argument.
 				[codeblocks]
 				[gdscript]
-				prints("A", "B", "C") # Prints A B C
+				prints("A", "B", "C") # Prints "A B C"
 				[/gdscript]
 				[csharp]
-				GD.PrintS("A", "B", "C"); // Prints A B C
+				GD.PrintS("A", "B", "C"); // Prints "A B C"
 				[/csharp]
 				[/codeblocks]
 			</description>
 		</method>
 		<method name="printt" qualifiers="vararg">
+			<return type="void" />
 			<description>
 				Prints one or more arguments to the console with a tab between each argument.
 				[codeblocks]
 				[gdscript]
-				printt("A", "B", "C") # Prints A       B       C
+				printt("A", "B", "C") # Prints "A       B       C"
 				[/gdscript]
 				[csharp]
-				GD.PrintT("A", "B", "C"); // Prints A       B       C
+				GD.PrintT("A", "B", "C"); // Prints "A       B       C"
 				[/csharp]
 				[/codeblocks]
 			</description>
 		</method>
 		<method name="push_error" qualifiers="vararg">
+			<return type="void" />
 			<description>
 				Pushes an error message to Godot's built-in debugger and to the OS terminal.
 				[codeblocks]
 				[gdscript]
-				push_error("test error") # Prints "test error" to debugger and terminal as error call
+				push_error("test error") # Prints "test error" to debugger and terminal as an error.
 				[/gdscript]
 				[csharp]
-				GD.PushError("test error"); // Prints "test error" to debugger and terminal as error call
+				GD.PushError("test error"); // Prints "test error" to debugger and terminal as an error.
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] This function does not pause project execution. To print an error message and pause project execution in debug builds, use [code]assert(false, "test error")[/code] instead.
 			</description>
 		</method>
 		<method name="push_warning" qualifiers="vararg">
+			<return type="void" />
 			<description>
 				Pushes a warning message to Godot's built-in debugger and to the OS terminal.
 				[codeblocks]
 				[gdscript]
-				push_warning("test warning") # Prints "test warning" to debugger and terminal as warning call
+				push_warning("test warning") # Prints "test warning" to debugger and terminal as a warning.
 				[/gdscript]
 				[csharp]
-				GD.PushWarning("test warning"); // Prints "test warning" to debugger and terminal as warning call
+				GD.PushWarning("test warning"); // Prints "test warning" to debugger and terminal as a warning.
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -1001,15 +998,15 @@
 				[codeblock]
 				var a = rand_from_seed(4)
 
-				print(a[0])	# Prints 2879024997
-				print(a[1])	# Prints 4
+				print(a[0]) # Prints 2879024997
+				print(a[1]) # Prints 4
 				[/codeblock]
 			</description>
 		</method>
 		<method name="randf">
 			<return type="float" />
 			<description>
-				Returns a random floating point value between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+				Returns a random floating-point value between [code]0.0[/code] and [code]1.0[/code] (inclusive).
 				[codeblocks]
 				[gdscript]
 				randf() # Returns e.g. 0.375671
@@ -1025,7 +1022,7 @@
 			<param index="0" name="from" type="float" />
 			<param index="1" name="to" type="float" />
 			<description>
-				Returns a random floating point value between [param from] and [param to] (inclusive).
+				Returns a random floating-point value between [param from] and [param to] (inclusive).
 				[codeblocks]
 				[gdscript]
 				randf_range(0, 20.5) # Returns e.g. 7.45315
@@ -1043,7 +1040,8 @@
 			<param index="0" name="mean" type="float" />
 			<param index="1" name="deviation" type="float" />
 			<description>
-				Returns a normally-distributed pseudo-random floating point value using Box-Muller transform with the specified [param mean] and a standard [param deviation]. This is also called Gaussian distribution.
+				Returns a [url=https://en.wikipedia.org/wiki/Normal_distribution]normally-distributed[/url], pseudo-random floating-point value from the specified [param mean] and a standard [param deviation]. This is also known as a Gaussian distribution.
+				[b]Note:[/b] This method uses the [url=https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform]Box-Muller transform[/url] algorithm.
 			</description>
 		</method>
 		<method name="randi">
@@ -1085,12 +1083,13 @@
 			</description>
 		</method>
 		<method name="randomize">
+			<return type="void" />
 			<description>
 				Randomizes the seed (or the internal state) of the random number generator. The current implementation uses a number based on the device's time.
 				[b]Note:[/b] This function is called automatically when the project is run. If you need to fix the seed to have consistent, reproducible results, use [method seed] to initialize the random number generator.
 			</description>
 		</method>
-		<method name="remap">
+		<method name="remap" keywords="range, lerp, interpolate">
 			<return type="float" />
 			<param index="0" name="value" type="float" />
 			<param index="1" name="istart" type="float" />
@@ -1103,19 +1102,20 @@
 				remap(75, 0, 100, -1, 1) # Returns 0.5
 				[/codeblock]
 				For complex use cases where multiple ranges are needed, consider using [Curve] or [Gradient] instead.
+				[b]Note:[/b] If [code]istart == istop[/code], the return value is undefined (most likely NaN, INF, or -INF).
 			</description>
 		</method>
 		<method name="rid_allocate_id">
 			<return type="int" />
 			<description>
-				Allocates a unique ID which can be used by the implementation to construct a RID. This is used mainly from native extensions to implement servers.
+				Allocates a unique ID which can be used by the implementation to construct an RID. This is used mainly from native extensions to implement servers.
 			</description>
 		</method>
 		<method name="rid_from_int64">
 			<return type="RID" />
 			<param index="0" name="base" type="int" />
 			<description>
-				Creates a RID from a [param base]. This is used mainly from native extensions to build servers.
+				Creates an RID from a [param base]. This is used mainly from native extensions to build servers.
 			</description>
 		</method>
 		<method name="rotate_toward">
@@ -1160,6 +1160,7 @@
 			</description>
 		</method>
 		<method name="seed">
+			<return type="void" />
 			<param index="0" name="base" type="int" />
 			<description>
 				Sets the seed for the random number generator to [param base]. Setting the seed manually can ensure consistent, repeatable results for most random functions.
@@ -1217,7 +1218,7 @@
 			<return type="int" />
 			<param index="0" name="x" type="int" />
 			<description>
-				Returns [code]-1[/code] if [param x] is negative, [code]1[/code] if [param x] is positive, and [code]0[/code] if if [param x] is zero.
+				Returns [code]-1[/code] if [param x] is negative, [code]1[/code] if [param x] is positive, and [code]0[/code] if [param x] is zero.
 				[codeblock]
 				signi(-6) # Returns -1
 				signi(0)  # Returns 0
@@ -1253,8 +1254,9 @@
 			<param index="1" name="to" type="float" />
 			<param index="2" name="x" type="float" />
 			<description>
-				Returns the result of smoothly interpolating the value of [param x] between [code]0[/code] and [code]1[/code], based on the where [param x] lies with respect to the edges [param from] and [param to].
-				The return value is [code]0[/code] if [code]x &lt;= from[/code], and [code]1[/code] if [code]x &gt;= to[/code]. If [param x] lies between [param from] and [param to], the returned value follows an S-shaped curve that maps [param x] between [code]0[/code] and [code]1[/code].
+				Returns a smooth cubic Hermite interpolation between [code]0[/code] and [code]1[/code].
+				For positive ranges (when [code]from &lt;= to[/code]) the return value is [code]0[/code] when [code]x &lt;= from[/code], and [code]1[/code] when [code]x &gt;= to[/code]. If [param x] lies between [param from] and [param to], the return value follows an S-shaped curve that smoothly transitions from [code]0[/code] to [code]1[/code].
+				For negative ranges (when [code]from &gt; to[/code]) the function is mirrored and returns [code]1[/code] when [code]x &lt;= to[/code] and [code]0[/code] when [code]x &gt;= from[/code].
 				This S-shaped curve is the cubic Hermite interpolator, given by [code]f(y) = 3*y^2 - 2*y^3[/code] where [code]y = (x-from) / (to-from)[/code].
 				[codeblock]
 				smoothstep(0, 2, -5.0) # Returns 0.0
@@ -1264,6 +1266,7 @@
 				[/codeblock]
 				Compared to [method ease] with a curve value of [code]-1.6521[/code], [method smoothstep] returns the smoothest possible curve with no sudden changes in the derivative. If you need to perform more advanced transitions, use [Tween] or [AnimationPlayer].
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/smoothstep_ease_comparison.png]Comparison between smoothstep() and ease(x, -1.6521) return values[/url]
+				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/smoothstep_range.webp]Smoothstep() return values with positive, zero, and negative ranges[/url]
 			</description>
 		</method>
 		<method name="snapped">
@@ -1271,7 +1274,7 @@
 			<param index="0" name="x" type="Variant" />
 			<param index="1" name="step" type="Variant" />
 			<description>
-				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating-point number to an arbitrary number of decimals.
 				The returned value is the same type of [Variant] as [param step]. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				snapped(100, 32)  # Returns 96
@@ -1288,7 +1291,7 @@
 			<param index="0" name="x" type="float" />
 			<param index="1" name="step" type="float" />
 			<description>
-				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating-point number to an arbitrary number of decimals.
 				A type-safe version of [method snapped], returning a [float].
 				[codeblock]
 				snappedf(32.0, 2.5)  # Returns 32.5
@@ -1319,7 +1322,7 @@
 				sqrt(10.24) # Returns 3.2
 				sqrt(-1)    # Returns NaN
 				[/codeblock]
-				[b]Note:[/b] Negative values of [param x] return NaN ("Not a Number"). in C#, if you need negative inputs, use [code]System.Numerics.Complex[/code].
+				[b]Note:[/b] Negative values of [param x] return NaN ("Not a Number"). In C#, if you need negative inputs, use [code]System.Numerics.Complex[/code].
 			</description>
 		</method>
 		<method name="step_decimals">
@@ -1393,7 +1396,7 @@
 			<description>
 				Converts the given [param variant] to the given [param type], using the [enum Variant.Type] values. This method is generous with how it handles types, it can automatically convert between array types, convert numeric [String]s to [int], and converting most things to [String].
 				If the type conversion cannot be done, this method will return the default value for that type, for example converting [Rect2] to [Vector2] will always return [constant Vector2.ZERO]. This method will never show error messages as long as [param type] is a valid Variant type.
-				The returned value is a [Variant], but the data inside and the [enum Variant.Type] will be the same as the requested type.
+				The returned value is a [Variant], but the data inside and its type will be the same as the requested type.
 				[codeblock]
 				type_convert("Hi!", TYPE_INT) # Returns 0
 				type_convert("123", TYPE_INT) # Returns 123
@@ -1409,9 +1412,9 @@
 			<description>
 				Returns a human-readable name of the given [param type], using the [enum Variant.Type] values.
 				[codeblock]
-				print(TYPE_INT) # Prints 2.
-				print(type_string(TYPE_INT)) # Prints "int".
-				print(type_string(TYPE_STRING)) # Prints "String".
+				print(TYPE_INT) # Prints 2
+				print(type_string(TYPE_INT)) # Prints "int"
+				print(type_string(TYPE_STRING)) # Prints "String"
 				[/codeblock]
 				See also [method typeof].
 			</description>
@@ -1426,9 +1429,9 @@
 				json.parse('["a", "b", "c"]')
 				var result = json.get_data()
 				if typeof(result) == TYPE_ARRAY:
-				    print(result[0]) # Prints a
+					print(result[0]) # Prints "a"
 				else:
-				    print("Unexpected result")
+					print("Unexpected result!")
 				[/codeblock]
 				See also [method type_string].
 			</description>
@@ -1439,6 +1442,7 @@
 			<description>
 				Encodes a [Variant] value to a byte array, without encoding objects. Deserialization can be done with [method bytes_to_var].
 				[b]Note:[/b] If you need object serialization, see [method var_to_bytes_with_objects].
+				[b]Note:[/b] Encoding [Callable] is not supported and will result in an empty value, regardless of the data.
 			</description>
 		</method>
 		<method name="var_to_bytes_with_objects">
@@ -1446,6 +1450,7 @@
 			<param index="0" name="variable" type="Variant" />
 			<description>
 				Encodes a [Variant] value to a byte array. Encoding objects is allowed (and can potentially include executable code). Deserialization can be done with [method bytes_to_var_with_objects].
+				[b]Note:[/b] Encoding [Callable] is not supported and will result in an empty value, regardless of the data.
 			</description>
 		</method>
 		<method name="var_to_str">
@@ -1464,10 +1469,10 @@
 				[/csharp]
 				[/codeblocks]
 				Prints:
-				[codeblock]
+				[codeblock lang=text]
 				{
-				    "a": 1,
-				    "b": 2
+					"a": 1,
+					"b": 2
 				}
 				[/codeblock]
 				[b]Note:[/b] Converting [Signal] or [Callable] is not supported and will result in an empty value for these types, regardless of their data.
@@ -1477,7 +1482,7 @@
 			<return type="Variant" />
 			<param index="0" name="obj" type="Variant" />
 			<description>
-				Returns a weak reference to an object, or [code]null[/code] if [param obj] is invalid.
+				Returns a [WeakRef] instance holding a weak reference to [param obj]. Returns an empty [WeakRef] instance if [param obj] is [code]null[/code]. Prints an error and returns [code]null[/code] if [param obj] is neither [Object]-derived nor [code]null[/code].
 				A weak reference to an object is not enough to keep the object alive: when the only remaining references to a referent are weak references, garbage collection is free to destroy the referent and reuse its memory for something else. However, until the object is actually destroyed the weak reference may return the object even if there are no strong references to it.
 			</description>
 		</method>
@@ -1487,8 +1492,8 @@
 			<param index="1" name="min" type="Variant" />
 			<param index="2" name="max" type="Variant" />
 			<description>
-				Wraps the [Variant] [param value] between [param min] and [param max]. Can be used for creating loop-alike behavior or infinite surfaces.
-				Variant types [int] and [float] are supported. If any of the arguments is [float] this function returns a [float], otherwise it returns an [int].
+				Wraps the [Variant] [param value] between [param min] and [param max]. [param min] is [i]inclusive[/i] while [param max] is [i]exclusive[/i]. This can be used for creating loop-like behavior or infinite surfaces.
+				Variant types [int] and [float] are supported. If any of the arguments is [float], this function returns a [float], otherwise it returns an [int].
 				[codeblock]
 				var a = wrap(4, 5, 10)
 				# a is 9 (int)
@@ -1507,7 +1512,7 @@
 			<param index="1" name="min" type="float" />
 			<param index="2" name="max" type="float" />
 			<description>
-				Wraps the float [param value] between [param min] and [param max]. Can be used for creating loop-alike behavior or infinite surfaces.
+				Wraps the float [param value] between [param min] and [param max]. [param min] is [i]inclusive[/i] while [param max] is [i]exclusive[/i]. This can be used for creating loop-like behavior or infinite surfaces.
 				[codeblock]
 				# Infinite loop between 5.0 and 9.9
 				value = wrapf(value + 0.1, 5.0, 10.0)
@@ -1520,8 +1525,7 @@
 				# Infinite rotation (in radians)
 				angle = wrapf(angle + 0.1, -PI, PI)
 				[/codeblock]
-				[b]Note:[/b] If [param min] is [code]0[/code], this is equivalent to [method fposmod], so prefer using that instead.
-				[method wrapf] is more flexible than using the [method fposmod] approach by giving the user control over the minimum value.
+				[b]Note:[/b] If [param min] is [code]0[/code], this is equivalent to [method fposmod], so prefer using that instead. [method wrapf] is more flexible than using the [method fposmod] approach by giving the user control over the minimum value.
 			</description>
 		</method>
 		<method name="wrapi">
@@ -1530,7 +1534,7 @@
 			<param index="1" name="min" type="int" />
 			<param index="2" name="max" type="int" />
 			<description>
-				Wraps the integer [param value] between [param min] and [param max]. Can be used for creating loop-alike behavior or infinite surfaces.
+				Wraps the integer [param value] between [param min] and [param max]. [param min] is [i]inclusive[/i] while [param max] is [i]exclusive[/i]. This can be used for creating loop-like behavior or infinite surfaces.
 				[codeblock]
 				# Infinite loop between 5 and 9
 				frame = wrapi(frame + 1, 5, 10)
@@ -1574,9 +1578,6 @@
 		<member name="Geometry3D" type="Geometry3D" setter="" getter="">
 			The [Geometry3D] singleton.
 		</member>
-		<member name="GodotSharp" type="GodotSharp" setter="" getter="">
-			The [GodotSharp] singleton.
-		</member>
 		<member name="IP" type="IP" setter="" getter="">
 			The [IP] singleton.
 		</member>
@@ -1597,14 +1598,24 @@
 		<member name="Marshalls" type="Marshalls" setter="" getter="">
 			The [Marshalls] singleton.
 		</member>
+		<member name="NativeMenu" type="NativeMenu" setter="" getter="">
+			The [NativeMenu] singleton.
+			[b]Note:[/b] Only implemented on macOS.
+		</member>
 		<member name="NavigationMeshGenerator" type="NavigationMeshGenerator" setter="" getter="">
 			The [NavigationMeshGenerator] singleton.
 		</member>
 		<member name="NavigationServer2D" type="NavigationServer2D" setter="" getter="">
 			The [NavigationServer2D] singleton.
 		</member>
+		<member name="NavigationServer2DManager" type="NavigationServer2DManager" setter="" getter="">
+			The [NavigationServer2DManager] singleton.
+		</member>
 		<member name="NavigationServer3D" type="NavigationServer3D" setter="" getter="">
 			The [NavigationServer3D] singleton.
+		</member>
+		<member name="NavigationServer3DManager" type="NavigationServer3DManager" setter="" getter="">
+			The [NavigationServer3DManager] singleton.
 		</member>
 		<member name="OS" type="OS" setter="" getter="">
 			The [OS] singleton.
@@ -2023,16 +2034,16 @@
 			Help key.
 		</constant>
 		<constant name="KEY_BACK" value="4194376" enum="Key">
-			Media back key. Not to be confused with the Back button on an Android device.
+			Back key.
 		</constant>
 		<constant name="KEY_FORWARD" value="4194377" enum="Key">
-			Media forward key.
+			Forward key.
 		</constant>
 		<constant name="KEY_STOP" value="4194378" enum="Key">
 			Media stop key.
 		</constant>
 		<constant name="KEY_REFRESH" value="4194379" enum="Key">
-			Media refresh key.
+			Refresh key.
 		</constant>
 		<constant name="KEY_VOLUMEDOWN" value="4194380" enum="Key">
 			Volume down key.
@@ -2146,49 +2157,49 @@
 			Space key.
 		</constant>
 		<constant name="KEY_EXCLAM" value="33" enum="Key">
-			! key.
+			Exclamation mark ([code]![/code]) key.
 		</constant>
 		<constant name="KEY_QUOTEDBL" value="34" enum="Key">
-			" key.
+			Double quotation mark ([code]"[/code]) key.
 		</constant>
-		<constant name="KEY_NUMBERSIGN" value="35" enum="Key">
-			# key.
+		<constant name="KEY_NUMBERSIGN" value="35" enum="Key" keywords="pound, hash">
+			Number sign or [i]hash[/i] ([code]#[/code]) key.
 		</constant>
 		<constant name="KEY_DOLLAR" value="36" enum="Key">
-			$ key.
+			Dollar sign ([code]$[/code]) key.
 		</constant>
 		<constant name="KEY_PERCENT" value="37" enum="Key">
-			% key.
+			Percent sign ([code]%[/code]) key.
 		</constant>
 		<constant name="KEY_AMPERSAND" value="38" enum="Key">
-			&amp; key.
+			Ampersand ([code]&amp;[/code]) key.
 		</constant>
 		<constant name="KEY_APOSTROPHE" value="39" enum="Key">
-			' key.
+			Apostrophe ([code]'[/code]) key.
 		</constant>
-		<constant name="KEY_PARENLEFT" value="40" enum="Key">
-			( key.
+		<constant name="KEY_PARENLEFT" value="40" enum="Key" keywords="open round bracket">
+			Left parenthesis ([code]([/code]) key.
 		</constant>
-		<constant name="KEY_PARENRIGHT" value="41" enum="Key">
-			) key.
+		<constant name="KEY_PARENRIGHT" value="41" enum="Key" keywords="close round bracket">
+			Right parenthesis ([code])[/code]) key.
 		</constant>
 		<constant name="KEY_ASTERISK" value="42" enum="Key">
-			* key.
+			Asterisk ([code]*[/code]) key.
 		</constant>
 		<constant name="KEY_PLUS" value="43" enum="Key">
-			+ key.
+			Plus ([code]+[/code]) key.
 		</constant>
 		<constant name="KEY_COMMA" value="44" enum="Key">
-			, key.
+			Comma ([code],[/code]) key.
 		</constant>
-		<constant name="KEY_MINUS" value="45" enum="Key">
-			- key.
+		<constant name="KEY_MINUS" value="45" enum="Key" keywords="hyphen">
+			Minus ([code]-[/code]) key.
 		</constant>
-		<constant name="KEY_PERIOD" value="46" enum="Key">
-			. key.
+		<constant name="KEY_PERIOD" value="46" enum="Key" keywords="dot">
+			Period ([code].[/code]) key.
 		</constant>
 		<constant name="KEY_SLASH" value="47" enum="Key">
-			/ key.
+			Slash ([code]/[/code]) key.
 		</constant>
 		<constant name="KEY_0" value="48" enum="Key">
 			Number 0 key.
@@ -2221,25 +2232,25 @@
 			Number 9 key.
 		</constant>
 		<constant name="KEY_COLON" value="58" enum="Key">
-			: key.
+			Colon ([code]:[/code]) key.
 		</constant>
 		<constant name="KEY_SEMICOLON" value="59" enum="Key">
-			; key.
+			Semicolon ([code];[/code]) key.
 		</constant>
 		<constant name="KEY_LESS" value="60" enum="Key">
-			&lt; key.
+			Less-than sign ([code]&lt;[/code]) key.
 		</constant>
 		<constant name="KEY_EQUAL" value="61" enum="Key">
-			= key.
+			Equal sign ([code]=[/code]) key.
 		</constant>
 		<constant name="KEY_GREATER" value="62" enum="Key">
-			&gt; key.
+			Greater-than sign ([code]&gt;[/code]) key.
 		</constant>
 		<constant name="KEY_QUESTION" value="63" enum="Key">
-			? key.
+			Question mark ([code]?[/code]) key.
 		</constant>
-		<constant name="KEY_AT" value="64" enum="Key">
-			@ key.
+		<constant name="KEY_AT" value="64" enum="Key" keywords="commercial at">
+			At sign ([code]@[/code]) key.
 		</constant>
 		<constant name="KEY_A" value="65" enum="Key">
 			A key.
@@ -2319,46 +2330,46 @@
 		<constant name="KEY_Z" value="90" enum="Key">
 			Z key.
 		</constant>
-		<constant name="KEY_BRACKETLEFT" value="91" enum="Key">
-			[ key.
+		<constant name="KEY_BRACKETLEFT" value="91" enum="Key" keywords="open square bracket">
+			Left bracket ([code][lb][/code]) key.
 		</constant>
 		<constant name="KEY_BACKSLASH" value="92" enum="Key">
-			\ key.
+			Backslash ([code]\[/code]) key.
 		</constant>
-		<constant name="KEY_BRACKETRIGHT" value="93" enum="Key">
-			] key.
+		<constant name="KEY_BRACKETRIGHT" value="93" enum="Key" keywords="close square bracket">
+			Right bracket ([code][rb][/code]) key.
 		</constant>
-		<constant name="KEY_ASCIICIRCUM" value="94" enum="Key">
-			^ key.
+		<constant name="KEY_ASCIICIRCUM" value="94" enum="Key" keywords="caret">
+			Caret ([code]^[/code]) key.
 		</constant>
-		<constant name="KEY_UNDERSCORE" value="95" enum="Key">
-			_ key.
+		<constant name="KEY_UNDERSCORE" value="95" enum="Key" keywords="underline">
+			Underscore ([code]_[/code]) key.
 		</constant>
-		<constant name="KEY_QUOTELEFT" value="96" enum="Key">
-			` key.
+		<constant name="KEY_QUOTELEFT" value="96" enum="Key" keywords="backtick, backquote">
+			Backtick ([code]`[/code]) key.
 		</constant>
-		<constant name="KEY_BRACELEFT" value="123" enum="Key">
-			{ key.
+		<constant name="KEY_BRACELEFT" value="123" enum="Key" keywords="open curly bracket">
+			Left brace ([code]{[/code]) key.
 		</constant>
-		<constant name="KEY_BAR" value="124" enum="Key">
-			| key.
+		<constant name="KEY_BAR" value="124" enum="Key" keywords="pipe">
+			Vertical bar or [i]pipe[/i] ([code]|[/code]) key.
 		</constant>
-		<constant name="KEY_BRACERIGHT" value="125" enum="Key">
-			} key.
+		<constant name="KEY_BRACERIGHT" value="125" enum="Key" keywords="close curly bracket">
+			Right brace ([code]}[/code]) key.
 		</constant>
 		<constant name="KEY_ASCIITILDE" value="126" enum="Key">
-			~ key.
+			Tilde ([code]~[/code]) key.
 		</constant>
 		<constant name="KEY_YEN" value="165" enum="Key">
-			¥ key.
+			Yen symbol ([code]¥[/code]) key.
 		</constant>
-		<constant name="KEY_SECTION" value="167" enum="Key">
-			§ key.
+		<constant name="KEY_SECTION" value="167" enum="Key" keywords="silcrow">
+			Section sign ([code]§[/code]) key.
 		</constant>
 		<constant name="KEY_CODE_MASK" value="8388607" enum="KeyModifierMask" is_bitfield="true">
 			Key Code mask.
 		</constant>
-		<constant name="KEY_MODIFIER_MASK" value="532676608" enum="KeyModifierMask" is_bitfield="true">
+		<constant name="KEY_MODIFIER_MASK" value="2130706432" enum="KeyModifierMask" is_bitfield="true">
 			Modifier key mask.
 		</constant>
 		<constant name="KEY_MASK_CMD_OR_CTRL" value="16777216" enum="KeyModifierMask" is_bitfield="true">
@@ -2381,6 +2392,16 @@
 		</constant>
 		<constant name="KEY_MASK_GROUP_SWITCH" value="1073741824" enum="KeyModifierMask" is_bitfield="true">
 			Group Switch key mask.
+		</constant>
+		<constant name="KEY_LOCATION_UNSPECIFIED" value="0" enum="KeyLocation">
+			Used for keys which only appear once, or when a comparison doesn't need to differentiate the [code]LEFT[/code] and [code]RIGHT[/code] versions.
+			For example, when using [method InputEvent.is_match], an event which has [constant KEY_LOCATION_UNSPECIFIED] will match any [enum KeyLocation] on the passed event.
+		</constant>
+		<constant name="KEY_LOCATION_LEFT" value="1" enum="KeyLocation">
+			A key which is to the left of its twin.
+		</constant>
+		<constant name="KEY_LOCATION_RIGHT" value="2" enum="KeyLocation">
+			A key which is to the right of its twin.
 		</constant>
 		<constant name="MOUSE_BUTTON_NONE" value="0" enum="MouseButton">
 			Enum value which doesn't correspond to any mouse button. This is used to initialize [enum MouseButton] properties with a generic state.
@@ -2530,74 +2551,78 @@
 			The maximum number of game controller axes: OpenVR supports up to 5 Joysticks making a total of 10 axes.
 		</constant>
 		<constant name="MIDI_MESSAGE_NONE" value="0" enum="MIDIMessage">
-			Enum value which doesn't correspond to any MIDI message. This is used to initialize [enum MIDIMessage] properties with a generic state.
+			Does not correspond to any MIDI message. This is the default value of [member InputEventMIDI.message].
 		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MIDIMessage">
-			MIDI note OFF message. Not all MIDI devices send this event; some send [constant MIDI_MESSAGE_NOTE_ON] with zero velocity instead. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
+			MIDI message sent when a note is released.
+			[b]Note:[/b] Not all MIDI devices send this message; some may send [constant MIDI_MESSAGE_NOTE_ON] with [member InputEventMIDI.velocity] set to [code]0[/code].
 		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_ON" value="9" enum="MIDIMessage">
-			MIDI note ON message. Some MIDI devices send this event with velocity zero instead of [constant MIDI_MESSAGE_NOTE_OFF], but implementations vary. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
+			MIDI message sent when a note is pressed.
 		</constant>
 		<constant name="MIDI_MESSAGE_AFTERTOUCH" value="10" enum="MIDIMessage">
-			MIDI aftertouch message. This message is most often sent by pressing down on the key after it "bottoms out".
+			MIDI message sent to indicate a change in pressure while a note is being pressed down, also called aftertouch.
 		</constant>
 		<constant name="MIDI_MESSAGE_CONTROL_CHANGE" value="11" enum="MIDIMessage">
-			MIDI control change message. This message is sent when a controller value changes. Controllers include devices such as pedals and levers.
+			MIDI message sent when a controller value changes. In a MIDI device, a controller is any input that doesn't play notes. These may include sliders for volume, balance, and panning, as well as switches and pedals. See the [url=https://en.wikipedia.org/wiki/General_MIDI#Controller_events]General MIDI specification[/url] for a small list.
 		</constant>
 		<constant name="MIDI_MESSAGE_PROGRAM_CHANGE" value="12" enum="MIDIMessage">
-			MIDI program change message. This message sent when the program patch number changes.
+			MIDI message sent when the MIDI device changes its current instrument (also called [i]program[/i] or [i]preset[/i]).
 		</constant>
 		<constant name="MIDI_MESSAGE_CHANNEL_PRESSURE" value="13" enum="MIDIMessage">
-			MIDI channel pressure message. This message is most often sent by pressing down on the key after it "bottoms out". This message is different from polyphonic after-touch as it indicates the highest pressure across all keys.
+			MIDI message sent to indicate a change in pressure for the whole channel. Some MIDI devices may send this instead of [constant MIDI_MESSAGE_AFTERTOUCH].
 		</constant>
 		<constant name="MIDI_MESSAGE_PITCH_BEND" value="14" enum="MIDIMessage">
-			MIDI pitch bend message. This message is sent to indicate a change in the pitch bender (wheel or lever, typically).
+			MIDI message sent when the value of the pitch bender changes, usually a wheel on the MIDI device.
 		</constant>
 		<constant name="MIDI_MESSAGE_SYSTEM_EXCLUSIVE" value="240" enum="MIDIMessage">
-			MIDI system exclusive message. This has behavior exclusive to the device you're receiving input from. Getting this data is not implemented in Godot.
+			MIDI system exclusive (SysEx) message. This type of message is not standardized and it's highly dependent on the MIDI device sending it.
+			[b]Note:[/b] Getting this message's data from [InputEventMIDI] is not implemented.
 		</constant>
 		<constant name="MIDI_MESSAGE_QUARTER_FRAME" value="241" enum="MIDIMessage">
-			MIDI quarter frame message. Contains timing information that is used to synchronize MIDI devices. Getting this data is not implemented in Godot.
+			MIDI message sent every quarter frame to keep connected MIDI devices synchronized. Related to [constant MIDI_MESSAGE_TIMING_CLOCK].
+			[b]Note:[/b] Getting this message's data from [InputEventMIDI] is not implemented.
 		</constant>
 		<constant name="MIDI_MESSAGE_SONG_POSITION_POINTER" value="242" enum="MIDIMessage">
-			MIDI song position pointer message. Gives the number of 16th notes since the start of the song. Getting this data is not implemented in Godot.
+			MIDI message sent to jump onto a new position in the current sequence or song.
+			[b]Note:[/b] Getting this message's data from [InputEventMIDI] is not implemented.
 		</constant>
 		<constant name="MIDI_MESSAGE_SONG_SELECT" value="243" enum="MIDIMessage">
-			MIDI song select message. Specifies which sequence or song is to be played. Getting this data is not implemented in Godot.
+			MIDI message sent to select a sequence or song to play.
+			[b]Note:[/b] Getting this message's data from [InputEventMIDI] is not implemented.
 		</constant>
 		<constant name="MIDI_MESSAGE_TUNE_REQUEST" value="246" enum="MIDIMessage">
-			MIDI tune request message. Upon receiving a tune request, all analog synthesizers should tune their oscillators.
+			MIDI message sent to request a tuning calibration. Used on analog synthesizers. Most modern MIDI devices do not need this message.
 		</constant>
 		<constant name="MIDI_MESSAGE_TIMING_CLOCK" value="248" enum="MIDIMessage">
-			MIDI timing clock message. Sent 24 times per quarter note when synchronization is required.
+			MIDI message sent 24 times after [constant MIDI_MESSAGE_QUARTER_FRAME], to keep connected MIDI devices synchronized.
 		</constant>
 		<constant name="MIDI_MESSAGE_START" value="250" enum="MIDIMessage">
-			MIDI start message. Start the current sequence playing. This message will be followed with Timing Clocks.
+			MIDI message sent to start the current sequence or song from the beginning.
 		</constant>
 		<constant name="MIDI_MESSAGE_CONTINUE" value="251" enum="MIDIMessage">
-			MIDI continue message. Continue at the point the sequence was stopped.
+			MIDI message sent to resume from the point the current sequence or song was paused.
 		</constant>
 		<constant name="MIDI_MESSAGE_STOP" value="252" enum="MIDIMessage">
-			MIDI stop message. Stop the current sequence.
+			MIDI message sent to pause the current sequence or song.
 		</constant>
 		<constant name="MIDI_MESSAGE_ACTIVE_SENSING" value="254" enum="MIDIMessage">
-			MIDI active sensing message. This message is intended to be sent repeatedly to tell the receiver that a connection is alive.
+			MIDI message sent repeatedly while the MIDI device is idle, to tell the receiver that the connection is alive. Most MIDI devices do not send this message.
 		</constant>
 		<constant name="MIDI_MESSAGE_SYSTEM_RESET" value="255" enum="MIDIMessage">
-			MIDI system reset message. Reset all receivers in the system to power-up status. It should not be sent on power-up itself.
+			MIDI message sent to reset a MIDI device to its default state, as if it was just turned on. It should not be sent when the MIDI device is being turned on.
 		</constant>
 		<constant name="OK" value="0" enum="Error">
 			Methods that return [enum Error] return [constant OK] when no error occurred.
-			Since [constant OK] has value 0, and all other error constants are positive integers, it can also be used in boolean checks.
-			[b]Example:[/b]
+			Since [constant OK] has value [code]0[/code], and all other error constants are positive integers, it can also be used in boolean checks.
 			[codeblock]
 			var error = method_that_returns_error()
 			if error != OK:
-			    printerr("Failure!")
+				printerr("Failure!")
 
 			# Or, alternatively:
 			if error:
-			    printerr("Still failing!")
+				printerr("Still failing!")
 			[/codeblock]
 			[b]Note:[/b] Many functions do not return an error code, but will print error messages to standard output.
 		</constant>
@@ -2752,14 +2777,14 @@
 		<constant name="PROPERTY_HINT_RANGE" value="1" enum="PropertyHint">
 			Hints that an [int] or [float] property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_less"[/code] to allow manual input going respectively above the max or below the min values.
 			[b]Example:[/b] [code]"-360,360,1,or_greater,or_less"[/code].
-			Additionally, other keywords can be included: [code]"exp"[/code] for exponential range editing, [code]"radians_as_degrees"[/code] for editing radian angles in degrees (the range values are also in degrees), [code]"degrees"[/code] to hint at an angle and [code]"hide_slider"[/code] to hide the slider.
+			Additionally, other keywords can be included: [code]"exp"[/code] for exponential range editing, [code]"radians_as_degrees"[/code] for editing radian angles in degrees (the range values are also in degrees), [code]"degrees"[/code] to hint at an angle, [code]"prefer_slider"[/code] to show the slider for integers, [code]"hide_control"[/code] to hide the slider or up-down arrows, and [code]"suffix:px/s"[/code] to display a suffix indicating the value's unit (e.g. [code]px/s[/code] for pixels per second).
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="2" enum="PropertyHint">
-			Hints that an [int] or [String] property is an enumerated value to pick in a list specified via a hint string.
-			The hint string is a comma separated list of names such as [code]"Hello,Something,Else"[/code]. Whitespaces are [b]not[/b] removed from either end of a name. For integer properties, the first name in the list has value 0, the next 1, and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"Zero,One,Three:3,Four,Six:6"[/code].
+			Hints that an [int], [String], or [StringName] property is an enumerated value to pick in a list specified via a hint string.
+			The hint string is a comma separated list of names such as [code]"Hello,Something,Else"[/code]. Whitespace is [b]not[/b] removed from either end of a name. For integer properties, the first name in the list has value 0, the next 1, and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"Zero,One,Three:3,Four,Six:6"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM_SUGGESTION" value="3" enum="PropertyHint">
-			Hints that a [String] property can be an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
+			Hints that a [String] or [StringName] property can be an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code]. See [constant PROPERTY_HINT_ENUM] for details.
 			Unlike [constant PROPERTY_HINT_ENUM], a property with this hint still accepts arbitrary values and can be empty. The list of values serves to suggest possible values.
 		</constant>
 		<constant name="PROPERTY_HINT_EXP_EASING" value="4" enum="PropertyHint">
@@ -2770,7 +2795,7 @@
 		</constant>
 		<constant name="PROPERTY_HINT_FLAGS" value="6" enum="PropertyHint">
 			Hints that an [int] property is a bitmask with named bit flags.
-			The hint string is a comma separated list of names such as [code]"Bit0,Bit1,Bit2,Bit3"[/code]. Whitespaces are [b]not[/b] removed from either end of a name. The first name in the list has value 1, the next 2, then 4, 8, 16 and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"A:4,B:8,C:16"[/code]. You can also combine several flags ([code]"A:4,B:8,AB:12,C:16"[/code]).
+			The hint string is a comma separated list of names such as [code]"Bit0,Bit1,Bit2,Bit3"[/code]. Whitespace is [b]not[/b] removed from either end of a name. The first name in the list has value 1, the next 2, then 4, 8, 16 and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"A:4,B:8,C:16"[/code]. You can also combine several flags ([code]"A:4,B:8,AB:12,C:16"[/code]).
 			[b]Note:[/b] A flag value must be at least [code]1[/code] and at most [code]2 ** 32 - 1[/code].
 			[b]Note:[/b] Unlike [constant PROPERTY_HINT_ENUM], the previous explicit value is not taken into account. For the hint [code]"A:16,B,C"[/code], A is 16, B is 2, C is 4.
 		</constant>
@@ -2796,7 +2821,7 @@
 			Hints that an integer property is a bitmask using the optionally named avoidance layers.
 		</constant>
 		<constant name="PROPERTY_HINT_FILE" value="13" enum="PropertyHint">
-			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
+			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. By default the file will be stored as UID whenever available. You can use [ResourceUID] methods to convert it back to path. For storing a raw path, use [constant PROPERTY_HINT_FILE_PATH].
 		</constant>
 		<constant name="PROPERTY_HINT_DIR" value="14" enum="PropertyHint">
 			Hints that a [String] property is a path to a directory. Editing it will show a file dialog for picking the path.
@@ -2812,6 +2837,8 @@
 		</constant>
 		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="18" enum="PropertyHint">
 			Hints that a [String] property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
+			The hint string can be set to [code]"monospace"[/code] to force the input field to use a monospaced font.
+			If the hint string [code]"no_wrap"[/code] is set, the input field will not wrap lines at boundaries, instead resorting to making the area scrollable.
 		</constant>
 		<constant name="PROPERTY_HINT_EXPRESSION" value="19" enum="PropertyHint">
 			Hints that a [String] property is an [Expression].
@@ -2823,10 +2850,12 @@
 			Hints that a [Color] property should be edited without affecting its transparency ([member Color.a] is not editable).
 		</constant>
 		<constant name="PROPERTY_HINT_OBJECT_ID" value="22" enum="PropertyHint">
+			Hints that the property's value is an object encoded as object ID, with its type specified in the hint string. Used by the debugger.
 		</constant>
 		<constant name="PROPERTY_HINT_TYPE_STRING" value="23" enum="PropertyHint">
 			If a property is [String], hints that the property represents a particular type (class). This allows to select a type from the create dialog. The property will store the selected type as a string.
 			If a property is [Array], hints the editor how to show elements. The [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code].
+			If a property is [Dictionary], hints the editor how to show elements. The [code]hint_string[/code] is the same as [Array], with a [code]";"[/code] separating the key and value.
 			[codeblocks]
 			[gdscript]
 			# Array of elem_type.
@@ -2851,7 +2880,7 @@
 			hintString = $"{Variant.Type.Array:D}:{Variant.Type.Array:D}:{elemType:D}/{elemHint:D}:{elemHintString}";
 			[/csharp]
 			[/codeblocks]
-			Examples:
+			[b]Examples:[/b]
 			[codeblocks]
 			[gdscript]
 			hint_string = "%d:" % [TYPE_INT] # Array of integers.
@@ -2881,21 +2910,32 @@
 			[/codeblocks]
 			[b]Note:[/b] The trailing colon is required for properly detecting built-in types.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint" deprecated="This hint is not used by the engine.">
 		</constant>
 		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="25" enum="PropertyHint">
+			Hints that an object is too big to be sent via the debugger.
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="26" enum="PropertyHint">
+			Hints that the hint string specifies valid node types for property of type [NodePath].
 		</constant>
 		<constant name="PROPERTY_HINT_SAVE_FILE" value="27" enum="PropertyHint">
+			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path for the file to be saved at. The dialog has access to the project's directory. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. See also [member FileDialog.filters].
 		</constant>
 		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="28" enum="PropertyHint">
+			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path for the file to be saved at. The dialog has access to the entire filesystem. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. See also [member FileDialog.filters].
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="29" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="29" enum="PropertyHint" deprecated="This hint is not used by the engine.">
 		</constant>
 		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="30" enum="PropertyHint">
+			Hints that an [int] property is a pointer. Used by GDExtension.
 		</constant>
 		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="31" enum="PropertyHint">
+			Hints that a property is an [Array] with the stored type specified in the hint string. The hint string contains the type of the array (e.g. [code]"String"[/code]).
+			Use the hint string format from [constant PROPERTY_HINT_TYPE_STRING] for more control over the stored type.
+		</constant>
+		<constant name="PROPERTY_HINT_DICTIONARY_TYPE" value="38" enum="PropertyHint">
+			Hints that a property is a [Dictionary] with the stored types specified in the hint string. The hint string contains the key and value types separated by a semicolon (e.g. [code]"int;String"[/code]).
+			Use the hint string format from [constant PROPERTY_HINT_TYPE_STRING] for more control over the stored types.
 		</constant>
 		<constant name="PROPERTY_HINT_LOCALE_ID" value="32" enum="PropertyHint">
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
@@ -2904,6 +2944,7 @@
 			Hints that a dictionary property is string translation map. Dictionary keys are locale codes and, values are translated strings.
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_TYPE" value="34" enum="PropertyHint">
+			Hints that a property is an instance of a [Node]-derived type, optionally specified via the hint string (e.g. [code]"Node2D"[/code]). Editing it will show a dialog for picking a node from the scene.
 		</constant>
 		<constant name="PROPERTY_HINT_HIDE_QUATERNION_EDIT" value="35" enum="PropertyHint">
 			Hints that a quaternion property should disable the temporary euler editor.
@@ -2911,17 +2952,40 @@
 		<constant name="PROPERTY_HINT_PASSWORD" value="36" enum="PropertyHint">
 			Hints that a string property is a password, and every character is replaced with the secret character.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="38" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_TOOL_BUTTON" value="39" enum="PropertyHint">
+			Hints that a [Callable] property should be displayed as a clickable button. When the button is pressed, the callable is called. The hint string specifies the button text and optionally an icon from the [code]"EditorIcons"[/code] theme type.
+			[codeblock lang=text]
+			"Click me!" - A button with the text "Click me!" and the default "Callable" icon.
+			"Click me!,ColorRect" - A button with the text "Click me!" and the "ColorRect" icon.
+			[/codeblock]
+			[b]Note:[/b] A [Callable] cannot be properly serialized and stored in a file, so it is recommended to use [constant PROPERTY_USAGE_EDITOR] instead of [constant PROPERTY_USAGE_DEFAULT].
+		</constant>
+		<constant name="PROPERTY_HINT_ONESHOT" value="40" enum="PropertyHint">
+			Hints that a property will be changed on its own after setting, such as [member AudioStreamPlayer.playing] or [member GPUParticles3D.emitting].
+		</constant>
+		<constant name="PROPERTY_HINT_GROUP_ENABLE" value="42" enum="PropertyHint">
+			Hints that a boolean property will enable the feature associated with the group that it occurs in. The property will be displayed as a checkbox on the group header. Only works within a group or subgroup.
+			By default, disabling the property hides all properties in the group. Use the optional hint string [code]"checkbox_only"[/code] to disable this behavior.
+		</constant>
+		<constant name="PROPERTY_HINT_INPUT_NAME" value="43" enum="PropertyHint">
+			Hints that a [String] or [StringName] property is the name of an input action. This allows the selection of any action name from the Input Map in the Project Settings. The hint string may contain two options separated by commas:
+			- If it contains [code]"show_builtin"[/code], built-in input actions are included in the selection.
+			- If it contains [code]"loose_mode"[/code], loose mode is enabled. This allows inserting any action name even if it's not present in the input map.
+		</constant>
+		<constant name="PROPERTY_HINT_FILE_PATH" value="44" enum="PropertyHint">
+			Like [constant PROPERTY_HINT_FILE], but the property is stored as a raw path, not UID. That means the reference will be broken if you move the file. Consider using [constant PROPERTY_HINT_FILE] when possible.
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="45" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is not stored, and does not display in the editor. This is the default for non-exported properties.
 		</constant>
 		<constant name="PROPERTY_USAGE_STORAGE" value="2" enum="PropertyUsageFlags" is_bitfield="true">
-			The property is serialized and saved in the scene file (default).
+			The property is serialized and saved in the scene file (default for exported properties).
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR" value="4" enum="PropertyUsageFlags" is_bitfield="true">
-			The property is shown in the [EditorInspector] (default).
+			The property is shown in the [EditorInspector] (default for exported properties).
 		</constant>
 		<constant name="PROPERTY_USAGE_INTERNAL" value="8" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is excluded from the class reference.
@@ -2942,6 +3006,7 @@
 			Used to group properties together in the editor in a subgroup (under a group). See [EditorInspector].
 		</constant>
 		<constant name="PROPERTY_USAGE_CLASS_IS_BITFIELD" value="512" enum="PropertyUsageFlags" is_bitfield="true">
+			The property is a bitfield, i.e. it contains multiple flags represented as bits.
 		</constant>
 		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="1024" enum="PropertyUsageFlags" is_bitfield="true">
 			The property does not save its state in [PackedScene].
@@ -2950,20 +3015,32 @@
 			Editing the property prompts the user for restarting the editor.
 		</constant>
 		<constant name="PROPERTY_USAGE_SCRIPT_VARIABLE" value="4096" enum="PropertyUsageFlags" is_bitfield="true">
-			The property is a script variable which should be serialized and saved in the scene file.
+			The property is a script variable. [constant PROPERTY_USAGE_SCRIPT_VARIABLE] can be used to distinguish between exported script variables from built-in variables (which don't have this usage flag). By default, [constant PROPERTY_USAGE_SCRIPT_VARIABLE] is [b]not[/b] applied to variables that are created by overriding [method Object._get_property_list] in a script.
 		</constant>
 		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="8192" enum="PropertyUsageFlags" is_bitfield="true">
+			The property value of type [Object] will be stored even if its value is [code]null[/code].
 		</constant>
 		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="16384" enum="PropertyUsageFlags" is_bitfield="true">
+			If this property is modified, all inspector fields will be refreshed.
 		</constant>
-		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags" is_bitfield="true">
+		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags" is_bitfield="true" deprecated="This flag is not used by the engine.">
 		</constant>
 		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="65536" enum="PropertyUsageFlags" is_bitfield="true">
+			The property is a variable of enum type, i.e. it only takes named integer constants from its associated enumeration.
 		</constant>
 		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="131072" enum="PropertyUsageFlags" is_bitfield="true">
+			If property has [code]nil[/code] as default value, its type will be [Variant].
 		</constant>
 		<constant name="PROPERTY_USAGE_ARRAY" value="262144" enum="PropertyUsageFlags" is_bitfield="true">
-			The property is an array.
+			The property is the element count of a property array, i.e. a list of groups of related properties. Properties defined with this usage also need a specific [code]class_name[/code] field in the form of [code]label,prefix[/code]. The field may also include additional comma-separated options:
+			- [code]page_size=N[/code]: Overrides [member EditorSettings.interface/inspector/max_array_dictionary_items_per_page] for this array.
+			- [code]add_button_text=text[/code]: The text displayed by the "Add Element" button.
+			- [code]static[/code]: The elements can't be re-arranged.
+			- [code]const[/code]: New elements can't be added.
+			- [code]numbered[/code]: An index will appear next to each element.
+			- [code]unfoldable[/code]: The array can't be folded.
+			- [code]swap_method=method_name[/code]: The method that will be called when two elements switch places. The method should take 2 [int] parameters, which will be indices of the elements being swapped.
+			Note that making a full-fledged property array requires boilerplate code involving [method Object._get_property_list].
 		</constant>
 		<constant name="PROPERTY_USAGE_ALWAYS_DUPLICATE" value="524288" enum="PropertyUsageFlags" is_bitfield="true">
 			When duplicating a resource with [method Resource.duplicate], and this flag is set on a property of that resource, the property should always be duplicated, regardless of the [code]subresources[/code] bool parameter.
@@ -2975,16 +3052,21 @@
 			The property is only shown in the editor if modern renderers are supported (the Compatibility rendering method is excluded).
 		</constant>
 		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="4194304" enum="PropertyUsageFlags" is_bitfield="true">
+			The [NodePath] property will always be relative to the scene's root. Mostly useful for local resources.
 		</constant>
 		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="8388608" enum="PropertyUsageFlags" is_bitfield="true">
+			Use when a resource is created on the fly, i.e. the getter will always return a different instance. [ResourceSaver] needs this information to properly save such resources.
 		</constant>
 		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="16777216" enum="PropertyUsageFlags" is_bitfield="true">
+			Inserting an animation key frame of this property will automatically increment the value, allowing to easily keyframe multiple values in a row.
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="33554432" enum="PropertyUsageFlags" is_bitfield="true">
+		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="33554432" enum="PropertyUsageFlags" is_bitfield="true" deprecated="This flag is not used by the engine.">
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="67108864" enum="PropertyUsageFlags" is_bitfield="true">
+			When this property is a [Resource] and base object is a [Node], a resource instance will be automatically created whenever the node is created in the editor.
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="134217728" enum="PropertyUsageFlags" is_bitfield="true">
+			The property is considered a basic setting and will appear even when advanced mode is disabled. Used for project settings.
 		</constant>
 		<constant name="PROPERTY_USAGE_READ_ONLY" value="268435456" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is read-only in the [EditorInspector].
@@ -3018,6 +3100,9 @@
 		</constant>
 		<constant name="METHOD_FLAG_OBJECT_CORE" value="64" enum="MethodFlags" is_bitfield="true">
 			Used internally. Allows to not dump core virtual methods (such as [method Object._notification]) to the JSON API.
+		</constant>
+		<constant name="METHOD_FLAG_VIRTUAL_REQUIRED" value="128" enum="MethodFlags" is_bitfield="true">
+			Flag for a virtual method that is required. In GDScript, this flag is set for abstract functions.
 		</constant>
 		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags" is_bitfield="true">
 			Default method flags (normal).
@@ -3136,7 +3221,10 @@
 		<constant name="TYPE_PACKED_COLOR_ARRAY" value="37" enum="Variant.Type">
 			Variable is of type [PackedColorArray].
 		</constant>
-		<constant name="TYPE_MAX" value="38" enum="Variant.Type">
+		<constant name="TYPE_PACKED_VECTOR4_ARRAY" value="38" enum="Variant.Type">
+			Variable is of type [PackedVector4Array].
+		</constant>
+		<constant name="TYPE_MAX" value="39" enum="Variant.Type">
 			Represents the size of the [enum Variant.Type] enum.
 		</constant>
 		<constant name="OP_EQUAL" value="0" enum="Variant.Operator">

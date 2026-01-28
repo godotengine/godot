@@ -8,13 +8,47 @@
 		This class can also be used to store dynamically-generated PCM audio data. See also [AudioStreamGenerator] for procedural audio generation.
 	</description>
 	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
 	<methods>
+		<method name="load_from_buffer" qualifiers="static">
+			<return type="AudioStreamWAV" />
+			<param index="0" name="stream_data" type="PackedByteArray" />
+			<param index="1" name="options" type="Dictionary" default="{}" />
+			<description>
+				Creates a new [AudioStreamWAV] instance from the given buffer. The buffer must contain WAV data.
+				The keys and values of [param options] match the properties of [ResourceImporterWAV]. The usage of [param options] is identical to [method AudioStreamWAV.load_from_file].
+			</description>
+		</method>
+		<method name="load_from_file" qualifiers="static">
+			<return type="AudioStreamWAV" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="options" type="Dictionary" default="{}" />
+			<description>
+				Creates a new [AudioStreamWAV] instance from the given file path. The file must be in WAV format.
+				The keys and values of [param options] match the properties of [ResourceImporterWAV].
+				[b]Example:[/b] Load the first file dropped as a WAV and play it:
+				[codeblock]
+				@onready var audio_player = $AudioStreamPlayer
+
+				func _ready():
+					get_window().files_dropped.connect(_on_files_dropped)
+
+				func _on_files_dropped(files):
+					if files[0].get_extension() == "wav":
+						audio_player.stream = AudioStreamWAV.load_from_file(files[0], {
+								"force/max_rate": true,
+								"force/max_rate_hz": 11025
+							})
+						audio_player.play()
+				[/codeblock]
+			</description>
+		</method>
 		<method name="save_to_wav">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Saves the AudioStreamWAV as a WAV file to [param path]. Samples with IMA ADPCM format can't be saved.
+				Saves the AudioStreamWAV as a WAV file to [param path]. Samples with IMA ADPCM or Quite OK Audio formats can't be saved.
 				[b]Note:[/b] A [code].wav[/code] extension is automatically appended to [param path] if it is missing.
 			</description>
 		</method>
@@ -22,19 +56,20 @@
 	<members>
 		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
 			Contains the audio data in bytes.
-			[b]Note:[/b] This property expects signed PCM8 data. To convert unsigned PCM8 to signed PCM8, subtract 128 from each byte.
+			[b]Note:[/b] If [member format] is set to [constant FORMAT_8_BITS], this property expects signed 8-bit PCM data. To convert from unsigned 8-bit PCM, subtract 128 from each byte.
+			[b]Note:[/b] If [member format] is set to [constant FORMAT_QOA], this property expects data from a full QOA file.
 		</member>
 		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamWAV.Format" default="0">
-			Audio format. See [enum Format] constants for values.
+			Audio format.
 		</member>
 		<member name="loop_begin" type="int" setter="set_loop_begin" getter="get_loop_begin" default="0">
-			The loop start point (in number of samples, relative to the beginning of the sample). This information will be imported automatically from the WAV file if present.
+			The loop start point (in number of samples, relative to the beginning of the stream).
 		</member>
 		<member name="loop_end" type="int" setter="set_loop_end" getter="get_loop_end" default="0">
-			The loop end point (in number of samples, relative to the beginning of the sample). This information will be imported automatically from the WAV file if present.
+			The loop end point (in number of samples, relative to the beginning of the stream).
 		</member>
 		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="AudioStreamWAV.LoopMode" default="0">
-			The loop mode. This information will be imported automatically from the WAV file if present. See [enum LoopMode] constants for values.
+			The loop mode.
 		</member>
 		<member name="mix_rate" type="int" setter="set_mix_rate" getter="get_mix_rate" default="44100">
 			The sample rate for mixing this audio. Higher values require more storage space, but result in better quality.
@@ -44,16 +79,25 @@
 		<member name="stereo" type="bool" setter="set_stereo" getter="is_stereo" default="false">
 			If [code]true[/code], audio is stereo.
 		</member>
+		<member name="tags" type="Dictionary" setter="set_tags" getter="get_tags" default="{}">
+			Contains user-defined tags if found in the WAV data.
+			Commonly used tags include [code]title[/code], [code]artist[/code], [code]album[/code], [code]tracknumber[/code], and [code]date[/code] ([code]date[/code] does not have a standard date format).
+			[b]Note:[/b] No tag is [i]guaranteed[/i] to be present in every file, so make sure to account for the keys not always existing.
+			[b]Note:[/b] Only WAV files using a [code]LIST[/code] chunk with an identifier of [code]INFO[/code] to encode the tags are currently supported.
+		</member>
 	</members>
 	<constants>
 		<constant name="FORMAT_8_BITS" value="0" enum="Format">
-			8-bit audio codec.
+			8-bit PCM audio codec.
 		</constant>
 		<constant name="FORMAT_16_BITS" value="1" enum="Format">
-			16-bit audio codec.
+			16-bit PCM audio codec.
 		</constant>
 		<constant name="FORMAT_IMA_ADPCM" value="2" enum="Format">
-			Audio is compressed using IMA ADPCM.
+			Audio is lossily compressed as IMA ADPCM.
+		</constant>
+		<constant name="FORMAT_QOA" value="3" enum="Format">
+			Audio is lossily compressed as [url=https://qoaformat.org/]Quite OK Audio[/url].
 		</constant>
 		<constant name="LOOP_DISABLED" value="0" enum="LoopMode">
 			Audio does not loop.

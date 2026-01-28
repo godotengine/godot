@@ -7,6 +7,7 @@ func test():
 			var b
 			if true:
 				var c
+				@warning_ignore("unassigned_variable")
 				prints("Begin:", i, a, b, c)
 				a = 1
 				b = 1
@@ -20,6 +21,7 @@ func test():
 			var b
 			if true:
 				var c
+				@warning_ignore("unassigned_variable")
 				prints("Begin:", j, a, b, c)
 				a = 1
 				b = 1

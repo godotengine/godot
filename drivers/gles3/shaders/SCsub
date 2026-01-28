@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 
@@ -12,13 +13,22 @@ if "GLES3_GLSL" in env["BUILDERS"]:
     # make sure we recompile shaders if include files change
     env.Depends([f + ".gen.h" for f in glsl_files], gl_include_files + ["#gles3_builders.py"])
 
+    # compile shaders
+
+    # as we have a few, not yet, converted files we name the ones we want to include:
     env.GLES3_GLSL("canvas.glsl")
-    env.GLES3_GLSL("copy.glsl")
+    env.GLES3_GLSL("feed.glsl")
     env.GLES3_GLSL("scene.glsl")
     env.GLES3_GLSL("sky.glsl")
-    env.GLES3_GLSL("cubemap_filter.glsl")
     env.GLES3_GLSL("canvas_occlusion.glsl")
     env.GLES3_GLSL("canvas_sdf.glsl")
     env.GLES3_GLSL("particles.glsl")
     env.GLES3_GLSL("particles_copy.glsl")
     env.GLES3_GLSL("skeleton.glsl")
+
+    # once we finish conversion we can introduce this to cover all files:
+    # for glsl_file in glsl_files:
+    #     env.GLES3_GLSL(glsl_file)
+
+
+SConscript("effects/SCsub")

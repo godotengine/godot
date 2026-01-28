@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicalBone2D" inherits="RigidBody2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PhysicalBone2D" inherits="RigidBody2D" keywords="ragdoll" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A [RigidBody2D]-derived node used to make [Bone2D]s in a [Skeleton2D] react to physics.
 	</brief_description>

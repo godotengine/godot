@@ -37,17 +37,24 @@
 #include "core/string/print_string.h"
 #include "core/templates/list.h"
 
-#include <errno.h>
 #include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
+#ifdef __linux__
+#include <sys/statfs.h>
+#endif
 #include <sys/statvfs.h>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
 
-#ifdef HAVE_MNTENT
+#if __has_include(<mntent.h>)
 #include <mntent.h>
 #endif
+
+String DirAccessUnix::fix_path(const String &p_path) const {
+	return DirAccess::fix_path(p_path).simplify_path();
+}
 
 Error DirAccessUnix::list_dir_begin() {
 	list_dir_end(); //close any previous dir opening!
@@ -191,7 +198,7 @@ void DirAccessUnix::list_dir_end() {
 	_cisdir = false;
 }
 
-#if defined(HAVE_MNTENT) && defined(LINUXBSD_ENABLED)
+#if __has_include(<mntent.h>) && defined(LINUXBSD_ENABLED)
 static bool _filter_drive(struct mntent *mnt) {
 	// Ignore devices that don't point to /dev
 	if (strncmp(mnt->mnt_fsname, "/dev", 4) != 0) {
@@ -215,7 +222,7 @@ static void _get_drives(List<String> *list) {
 	// Add root.
 	list->push_back("/");
 
-#if defined(HAVE_MNTENT) && defined(LINUXBSD_ENABLED)
+#if __has_include(<mntent.h>) && defined(LINUXBSD_ENABLED)
 	// Check /etc/mtab for the list of mounted partitions.
 	FILE *mtab = setmntent("/etc/mtab", "r");
 	if (mtab) {
@@ -256,7 +263,7 @@ static void _get_drives(List<String> *list) {
 				// Parse only file:// links
 				if (strncmp(string, "file://", 7) == 0) {
 					// Strip any unwanted edges on the strings and push_back if it's not a duplicate.
-					String fpath = String::utf8(string + 7).strip_edges().split_spaces()[0].uri_decode();
+					String fpath = String::utf8(string + 7).strip_edges().split_spaces()[0].uri_file_decode();
 					if (!list->find(fpath)) {
 						list->push_back(fpath);
 					}
@@ -289,7 +296,7 @@ String DirAccessUnix::get_drive(int p_drive) {
 
 	ERR_FAIL_INDEX_V(p_drive, list.size(), "");
 
-	return list[p_drive];
+	return list.get(p_drive);
 }
 
 int DirAccessUnix::get_current_drive() {
@@ -342,7 +349,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	String prev_dir;
 	char real_current_dir_name[2048];
 	ERR_FAIL_NULL_V(getcwd(real_current_dir_name, 2048), ERR_BUG);
-	if (prev_dir.parse_utf8(real_current_dir_name) != OK) {
+	if (prev_dir.append_utf8(real_current_dir_name) != OK) {
 		prev_dir = real_current_dir_name; //no utf8, maybe latin?
 	}
 
@@ -365,7 +372,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	if (!base.is_empty() && !try_dir.begins_with(base)) {
 		ERR_FAIL_NULL_V(getcwd(real_current_dir_name, 2048), ERR_BUG);
 		String new_dir;
-		new_dir.parse_utf8(real_current_dir_name);
+		new_dir.append_utf8(real_current_dir_name);
 
 		if (!new_dir.begins_with(base)) {
 			try_dir = current_dir; //revert
@@ -383,7 +390,7 @@ String DirAccessUnix::get_current_dir(bool p_include_drive) const {
 	if (!base.is_empty()) {
 		String bd = current_dir.replace_first(base, "");
 		if (bd.begins_with("/")) {
-			return _get_root_string() + bd.substr(1, bd.length());
+			return _get_root_string() + bd.substr(1);
 		} else {
 			return _get_root_string() + bd;
 		}
@@ -397,14 +404,30 @@ Error DirAccessUnix::rename(String p_path, String p_new_path) {
 	}
 
 	p_path = fix_path(p_path);
+	if (p_path.ends_with("/")) {
+		p_path = p_path.left(-1);
+	}
 
 	if (p_new_path.is_relative_path()) {
 		p_new_path = get_current_dir().path_join(p_new_path);
 	}
 
 	p_new_path = fix_path(p_new_path);
+	if (p_new_path.ends_with("/")) {
+		p_new_path = p_new_path.left(-1);
+	}
 
-	return ::rename(p_path.utf8().get_data(), p_new_path.utf8().get_data()) == 0 ? OK : FAILED;
+	int res = ::rename(p_path.utf8().get_data(), p_new_path.utf8().get_data());
+	if (res != 0 && errno == EXDEV) { // Cross-device move, use copy and remove.
+		Error err = OK;
+		err = copy(p_path, p_new_path);
+		if (err != OK) {
+			return err;
+		}
+		return remove(p_path);
+	} else {
+		return (res == 0) ? OK : FAILED;
+	}
 }
 
 Error DirAccessUnix::remove(String p_path) {
@@ -413,17 +436,28 @@ Error DirAccessUnix::remove(String p_path) {
 	}
 
 	p_path = fix_path(p_path);
+	if (p_path.ends_with("/")) {
+		p_path = p_path.left(-1);
+	}
 
 	struct stat flags = {};
-	if ((stat(p_path.utf8().get_data(), &flags) != 0)) {
+	if (lstat(p_path.utf8().get_data(), &flags) != 0) {
 		return FAILED;
 	}
 
-	if (S_ISDIR(flags.st_mode)) {
-		return ::rmdir(p_path.utf8().get_data()) == 0 ? OK : FAILED;
+	int err;
+	if (S_ISDIR(flags.st_mode) && !is_link(p_path)) {
+		err = ::rmdir(p_path.utf8().get_data());
 	} else {
-		return ::unlink(p_path.utf8().get_data()) == 0 ? OK : FAILED;
+		err = ::unlink(p_path.utf8().get_data());
 	}
+	if (err != 0) {
+		return FAILED;
+	}
+	if (remove_notification_func != nullptr) {
+		remove_notification_func(p_path);
+	}
+	return OK;
 }
 
 bool DirAccessUnix::is_link(String p_file) {
@@ -432,10 +466,13 @@ bool DirAccessUnix::is_link(String p_file) {
 	}
 
 	p_file = fix_path(p_file);
+	if (p_file.ends_with("/")) {
+		p_file = p_file.left(-1);
+	}
 
 	struct stat flags = {};
-	if ((lstat(p_file.utf8().get_data(), &flags) != 0)) {
-		return FAILED;
+	if (lstat(p_file.utf8().get_data(), &flags) != 0) {
+		return false;
 	}
 
 	return S_ISLNK(flags.st_mode);
@@ -447,13 +484,16 @@ String DirAccessUnix::read_link(String p_file) {
 	}
 
 	p_file = fix_path(p_file);
+	if (p_file.ends_with("/")) {
+		p_file = p_file.left(-1);
+	}
 
-	char buf[256];
-	memset(buf, 0, 256);
+	char buf[PATH_MAX];
+	memset(buf, 0, PATH_MAX);
 	ssize_t len = readlink(p_file.utf8().get_data(), buf, sizeof(buf));
 	String link;
 	if (len > 0) {
-		link.parse_utf8(buf, len);
+		link.append_utf8(buf, len);
 	}
 	return link;
 }
@@ -483,7 +523,166 @@ uint64_t DirAccessUnix::get_space_left() {
 }
 
 String DirAccessUnix::get_filesystem_type() const {
+#ifdef __linux__
+	struct statfs fs;
+	if (statfs(current_dir.utf8().get_data(), &fs) != 0) {
+		return "";
+	}
+	switch (static_cast<unsigned int>(fs.f_type)) {
+		case 0x0000adf5:
+			return "ADFS";
+		case 0x0000adff:
+			return "AFFS";
+		case 0x5346414f:
+			return "AFS";
+		case 0x00000187:
+			return "AUTOFS";
+		case 0x00c36400:
+			return "CEPH";
+		case 0x73757245:
+			return "CODA";
+		case 0x28cd3d45:
+			return "CRAMFS";
+		case 0x453dcd28:
+			return "CRAMFS";
+		case 0x64626720:
+			return "DEBUGFS";
+		case 0x73636673:
+			return "SECURITYFS";
+		case 0xf97cff8c:
+			return "SELINUX";
+		case 0x43415d53:
+			return "SMACK";
+		case 0x858458f6:
+			return "RAMFS";
+		case 0x01021994:
+			return "TMPFS";
+		case 0x958458f6:
+			return "HUGETLBFS";
+		case 0x73717368:
+			return "SQUASHFS";
+		case 0x0000f15f:
+			return "ECRYPTFS";
+		case 0x00414a53:
+			return "EFS";
+		case 0xe0f5e1e2:
+			return "EROFS";
+		case 0x0000ef53:
+			return "EXTFS";
+		case 0xabba1974:
+			return "XENFS";
+		case 0x9123683e:
+			return "BTRFS";
+		case 0x00003434:
+			return "NILFS";
+		case 0xf2f52010:
+			return "F2FS";
+		case 0xf995e849:
+			return "HPFS";
+		case 0x00009660:
+			return "ISOFS";
+		case 0x000072b6:
+			return "JFFS2";
+		case 0x58465342:
+			return "XFS";
+		case 0x6165676c:
+			return "PSTOREFS";
+		case 0xde5e81e4:
+			return "EFIVARFS";
+		case 0x00c0ffee:
+			return "HOSTFS";
+		case 0x794c7630:
+			return "OVERLAYFS";
+		case 0x65735546:
+			return "FUSE";
+		case 0xca451a4e:
+			return "BCACHEFS";
+		case 0x00004d44:
+			return "FAT32";
+		case 0x2011bab0:
+			return "EXFAT";
+		case 0x0000564c:
+			return "NCP";
+		case 0x00006969:
+			return "NFS";
+		case 0x7461636f:
+			return "OCFS2";
+		case 0x00009fa1:
+			return "OPENPROM";
+		case 0x0000002f:
+			return "QNX4";
+		case 0x68191122:
+			return "QNX6";
+		case 0x6b414653:
+			return "AFS";
+		case 0x52654973:
+			return "REISERFS";
+		case 0x0000517b:
+			return "SMB";
+		case 0xff534d42:
+			return "CIFS";
+		case 0x0027e0eb:
+			return "CGROUP";
+		case 0x63677270:
+			return "CGROUP2";
+		case 0x07655821:
+			return "RDTGROUP";
+		case 0x74726163:
+			return "TRACEFS";
+		case 0x01021997:
+			return "V9FS";
+		case 0x62646576:
+			return "BDEVFS";
+		case 0x64646178:
+			return "DAXFS";
+		case 0x42494e4d:
+			return "BINFMTFS";
+		case 0x00001cd1:
+			return "DEVPTS";
+		case 0x6c6f6f70:
+			return "BINDERFS";
+		case 0x0bad1dea:
+			return "FUTEXFS";
+		case 0x50495045:
+			return "PIPEFS";
+		case 0x00009fa0:
+			return "PROC";
+		case 0x534f434b:
+			return "SOCKFS";
+		case 0x62656572:
+			return "SYSFS";
+		case 0x00009fa2:
+			return "USBDEVICE";
+		case 0x11307854:
+			return "MTD_INODE";
+		case 0x09041934:
+			return "ANON_INODE";
+		case 0x73727279:
+			return "BTRFS";
+		case 0x6e736673:
+			return "NSFS";
+		case 0xcafe4a11:
+			return "BPF_FS";
+		case 0x5a3c69f0:
+			return "AAFS";
+		case 0x5a4f4653:
+			return "ZONEFS";
+		case 0x15013346:
+			return "UDF";
+		case 0x444d4142:
+			return "DMA_BUF";
+		case 0x454d444d:
+			return "DEVMEM";
+		case 0x5345434d:
+			return "SECRETMEM";
+		case 0x50494446:
+			return "PID_FS";
+		default:
+			return "";
+	}
+#else
 	return ""; //TODO this should be implemented
+#endif
 }
 
 bool DirAccessUnix::is_hidden(const String &p_name) {
@@ -511,6 +710,24 @@ bool DirAccessUnix::is_case_sensitive(const String &p_path) const {
 	return true;
 }
 
+bool DirAccessUnix::is_equivalent(const String &p_path_a, const String &p_path_b) const {
+	String f1 = fix_path(p_path_a);
+	struct stat st1 = {};
+	int err = stat(f1.utf8().get_data(), &st1);
+	if (err) {
+		return DirAccess::is_equivalent(p_path_a, p_path_b);
+	}
+
+	String f2 = fix_path(p_path_b);
+	struct stat st2 = {};
+	err = stat(f2.utf8().get_data(), &st2);
+	if (err) {
+		return DirAccess::is_equivalent(p_path_a, p_path_b);
+	}
+
+	return (st1.st_dev == st2.st_dev) && (st1.st_ino == st2.st_ino);
+}
+
 DirAccessUnix::DirAccessUnix() {
 	dir_stream = nullptr;
 	_cisdir = false;
@@ -520,12 +737,15 @@ DirAccessUnix::DirAccessUnix() {
 	// set current directory to an absolute path of the current directory
 	char real_current_dir_name[2048];
 	ERR_FAIL_NULL(getcwd(real_current_dir_name, 2048));
-	if (current_dir.parse_utf8(real_current_dir_name) != OK) {
+	current_dir.clear();
+	if (current_dir.append_utf8(real_current_dir_name) != OK) {
 		current_dir = real_current_dir_name;
 	}
 
 	change_dir(current_dir);
 }
+
+DirAccessUnix::RemoveNotificationFunc DirAccessUnix::remove_notification_func = nullptr;
 
 DirAccessUnix::~DirAccessUnix() {
 	list_dir_end();

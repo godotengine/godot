@@ -32,11 +32,11 @@
 
 #include "core/config/engine.h"
 
-StreamPeerTLS *(*StreamPeerTLS::_create)() = nullptr;
+StreamPeerTLS *(*StreamPeerTLS::_create)(bool p_notify_postinitialize) = nullptr;
 
-StreamPeerTLS *StreamPeerTLS::create() {
+StreamPeerTLS *StreamPeerTLS::create(bool p_notify_postinitialize) {
 	if (_create) {
-		return _create();
+		return _create(p_notify_postinitialize);
 	}
 	return nullptr;
 }

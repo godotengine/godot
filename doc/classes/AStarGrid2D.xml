@@ -12,21 +12,22 @@
 		astar_grid.region = Rect2i(0, 0, 32, 32)
 		astar_grid.cell_size = Vector2(16, 16)
 		astar_grid.update()
-		print(astar_grid.get_id_path(Vector2i(0, 0), Vector2i(3, 4))) # prints (0, 0), (1, 1), (2, 2), (3, 3), (3, 4)
-		print(astar_grid.get_point_path(Vector2i(0, 0), Vector2i(3, 4))) # prints (0, 0), (16, 16), (32, 32), (48, 48), (48, 64)
+		print(astar_grid.get_id_path(Vector2i(0, 0), Vector2i(3, 4))) # Prints [(0, 0), (1, 1), (2, 2), (3, 3), (3, 4)]
+		print(astar_grid.get_point_path(Vector2i(0, 0), Vector2i(3, 4))) # Prints [(0, 0), (16, 16), (32, 32), (48, 48), (48, 64)]
 		[/gdscript]
 		[csharp]
 		AStarGrid2D astarGrid = new AStarGrid2D();
 		astarGrid.Region = new Rect2I(0, 0, 32, 32);
 		astarGrid.CellSize = new Vector2I(16, 16);
 		astarGrid.Update();
-		GD.Print(astarGrid.GetIdPath(Vector2I.Zero, new Vector2I(3, 4))); // prints (0, 0), (1, 1), (2, 2), (3, 3), (3, 4)
-		GD.Print(astarGrid.GetPointPath(Vector2I.Zero, new Vector2I(3, 4))); // prints (0, 0), (16, 16), (32, 32), (48, 48), (48, 64)
+		GD.Print(astarGrid.GetIdPath(Vector2I.Zero, new Vector2I(3, 4))); // Prints [(0, 0), (1, 1), (2, 2), (3, 3), (3, 4)]
+		GD.Print(astarGrid.GetPointPath(Vector2I.Zero, new Vector2I(3, 4))); // Prints [(0, 0), (16, 16), (32, 32), (48, 48), (48, 64)]
 		[/csharp]
 		[/codeblocks]
 		To remove a point from the pathfinding grid, it must be set as "solid" with [method set_point_solid].
 	</description>
 	<tutorials>
+		<link title="Grid-based Navigation with AStarGrid2D Demo">https://godotengine.org/asset-library/asset/2723</link>
 	</tutorials>
 	<methods>
 		<method name="_compute_cost" qualifiers="virtual const">
@@ -41,7 +42,7 @@
 		<method name="_estimate_cost" qualifiers="virtual const">
 			<return type="float" />
 			<param index="0" name="from_id" type="Vector2i" />
-			<param index="1" name="to_id" type="Vector2i" />
+			<param index="1" name="end_id" type="Vector2i" />
 			<description>
 				Called when estimating the cost between a point and the path's ending point.
 				Note that this function is hidden in the default [AStarGrid2D] class.
@@ -75,17 +76,32 @@
 			<return type="Vector2i[]" />
 			<param index="0" name="from_id" type="Vector2i" />
 			<param index="1" name="to_id" type="Vector2i" />
+			<param index="2" name="allow_partial_path" type="bool" default="false" />
 			<description>
 				Returns an array with the IDs of the points that form the path found by AStar2D between the given points. The array is ordered from the starting point to the ending point of the path.
+				If [param from_id] point is disabled, returns an empty array (even if [code]from_id == to_id[/code]).
+				If [param from_id] point is not disabled, there is no valid path to the target, and [param allow_partial_path] is [code]true[/code], returns a path to the point closest to the target that can be reached.
+				[b]Note:[/b] When [param allow_partial_path] is [code]true[/code] and [param to_id] is solid the search may take an unusually long time to finish.
+			</description>
+		</method>
+		<method name="get_point_data_in_region" qualifiers="const">
+			<return type="Dictionary[]" />
+			<param index="0" name="region" type="Rect2i" />
+			<description>
+				Returns an array of dictionaries with point data ([code]id[/code]: [Vector2i], [code]position[/code]: [Vector2], [code]solid[/code]: [bool], [code]weight_scale[/code]: [float]) within a [param region].
 			</description>
 		</method>
 		<method name="get_point_path">
 			<return type="PackedVector2Array" />
 			<param index="0" name="from_id" type="Vector2i" />
 			<param index="1" name="to_id" type="Vector2i" />
+			<param index="2" name="allow_partial_path" type="bool" default="false" />
 			<description>
 				Returns an array with the points that are in the path found by [AStarGrid2D] between the given points. The array is ordered from the starting point to the ending point of the path.
-				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty [PackedVector3Array] and will print an error message.
+				If [param from_id] point is disabled, returns an empty array (even if [code]from_id == to_id[/code]).
+				If [param from_id] point is not disabled, there is no valid path to the target, and [param allow_partial_path] is [code]true[/code], returns a path to the point closest to the target that can be reached.
+				[b]Note:[/b] This method is not thread-safe; it can only be used from a single [Thread] at a given time. Consider using [Mutex] to ensure exclusive access to one thread to avoid race conditions.
+				Additionally, when [param allow_partial_path] is [code]true[/code] and [param to_id] is solid the search may take an unusually long time to finish.
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">
@@ -157,6 +173,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="cell_shape" type="int" setter="set_cell_shape" getter="get_cell_shape" enum="AStarGrid2D.CellShape" default="0">
+			The cell shape. Affects how the positions are placed in the grid. If changed, [method update] needs to be called before finding the next path.
+		</member>
 		<member name="cell_size" type="Vector2" setter="set_cell_size" getter="get_cell_size" default="Vector2(1, 1)">
 			The size of the point cell which will be applied to calculate the resulting point position returned by [method get_point_path]. If changed, [method update] needs to be called before finding the next path.
 		</member>
@@ -179,9 +198,8 @@
 		<member name="region" type="Rect2i" setter="set_region" getter="get_region" default="Rect2i(0, 0, 0, 0)">
 			The region of grid cells available for pathfinding. If changed, [method update] needs to be called before finding the next path.
 		</member>
-		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(0, 0)" is_deprecated="true">
+		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(0, 0)" deprecated="Use [member region] instead.">
 			The size of the grid (number of cells of size [member cell_size] on each axis). If changed, [method update] needs to be called before finding the next path.
-			[i]Deprecated.[/i] Use [member region] instead.
 		</member>
 	</members>
 	<constants>
@@ -237,6 +255,18 @@
 		</constant>
 		<constant name="DIAGONAL_MODE_MAX" value="4" enum="DiagonalMode">
 			Represents the size of the [enum DiagonalMode] enum.
+		</constant>
+		<constant name="CELL_SHAPE_SQUARE" value="0" enum="CellShape">
+			Rectangular cell shape.
+		</constant>
+		<constant name="CELL_SHAPE_ISOMETRIC_RIGHT" value="1" enum="CellShape">
+			Diamond cell shape (for isometric look). Cell coordinates layout where the horizontal axis goes up-right, and the vertical one goes down-right.
+		</constant>
+		<constant name="CELL_SHAPE_ISOMETRIC_DOWN" value="2" enum="CellShape">
+			Diamond cell shape (for isometric look). Cell coordinates layout where the horizontal axis goes down-right, and the vertical one goes down-left.
+		</constant>
+		<constant name="CELL_SHAPE_MAX" value="3" enum="CellShape">
+			Represents the size of the [enum CellShape] enum.
 		</constant>
 	</constants>
 </class>

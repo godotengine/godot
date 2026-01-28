@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_openxr")
+
+module_obj = []
+
+env_openxr.add_source_files(module_obj, "*.cpp")
+env_openxr.add_source_files(module_obj, "spatial_entities/*.cpp")
+
+# These are platform dependent
+if env["platform"] == "android":
+    env_openxr.add_source_files(module_obj, "platform/openxr_android_extension.cpp")
+if env["vulkan"]:
+    env_openxr.add_source_files(module_obj, "platform/openxr_vulkan_extension.cpp")
+if env["metal"]:
+    env_openxr.add_source_files(module_obj, "platform/openxr_metal_extension.mm")
+if env["opengl3"] and env["platform"] != "macos":
+    env_openxr.add_source_files(module_obj, "platform/openxr_opengl_extension.cpp")
+if env["d3d12"]:
+    env_openxr.add_source_files(module_obj, "platform/openxr_d3d12_extension.cpp")
+
+env.modules_sources += module_obj

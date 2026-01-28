@@ -6,11 +6,11 @@
 #include "default.h"
 #include "device.h"
 #include "builder.h"
-#include "../../common/algorithms/parallel_any_of.h"
 #include "scene_triangle_mesh.h"
 #include "scene_quad_mesh.h"
 #include "scene_user_geometry.h"
 #include "scene_instance.h"
+#include "scene_instance_array.h"
 #include "scene_curves.h"
 #include "scene_line_segments.h"
 #include "scene_subdiv_mesh.h"
@@ -21,13 +21,22 @@
 #include "acceln.h"
 #include "geometry.h"
 
+#if defined(EMBREE_SYCL_SUPPORT)
+#include "../sycl/rthwif_embree_builder.h"
+#endif
+
+#if !defined(EMBREE_SYCL_SUPPORT)
+namespace sycl {
+  struct queue;
+}
+#endif
 namespace embree
 {
-  /*! Base class all scenes are derived from */
-  class Scene : public AccelN
-  {
-    ALIGNED_CLASS_(std::alignment_of<Scene>::value);
+  struct TaskGroup;
 
+  /*! Base class all scenes are derived from */
+  class __aligned(16) Scene : public AccelN
+  {
   public:
     template<typename Ty, bool mblur = false>
       class Iterator
@@ -53,10 +62,6 @@ namespace embree
         return at(i);
       }
 
-      __forceinline size_t size() const {
-        return scene->size();
-      }
-      
       __forceinline size_t numPrimitives() const {
         return scene->getNumPrimitives(Ty::geom_type,mblur);
       }
@@ -93,6 +98,11 @@ namespace embree
         }
         return ret;
       }
+
+      __forceinline size_t size() const {
+        return scene->size();
+      }
+      
       
     private:
       Scene* scene;
@@ -140,6 +150,7 @@ namespace embree
     ~Scene () noexcept;
 
   private:
+    
     /*! class is non-copyable */
     Scene (const Scene& other) DELETED; // do not implement
     Scene& operator= (const Scene& other) DELETED; // do not implement
@@ -159,6 +170,8 @@ namespace embree
     void createInstanceMBAccel();
     void createInstanceExpensiveAccel();
     void createInstanceExpensiveMBAccel();
+    void createInstanceArrayAccel();
+    void createInstanceArrayMBAccel();
     void createGridAccel();
     void createGridMBAccel();
 
@@ -176,15 +189,25 @@ namespace embree
     
     void setSceneFlags(RTCSceneFlags scene_flags);
     RTCSceneFlags getSceneFlags() const;
-    
+
+    void build_cpu_accels();
+    void build_gpu_accels();
+    void commit_internal (bool join);
+#if defined(EMBREE_SYCL_SUPPORT)
+    sycl::event commit (bool join, sycl::queue queue);
+#endif
     void commit (bool join);
     void commit_task ();
     void build () {}
 
-    void updateInterface();
+    Scene* getTraversable();
 
     /* return number of geometries */
+#if defined(__SYCL_DEVICE_ONLY__)
+    __forceinline size_t size() const { return num_geometries; }
+#else
     __forceinline size_t size() const { return geometries.size(); }
+#endif
     
     /* bind geometry to the scene */
     unsigned int bind (unsigned geomID, Ref<Geometry> geometry);
@@ -197,30 +220,46 @@ namespace embree
       modified = f; 
     }
 
+    __forceinline bool hasMotionBlur() const { return maxTimeSegments > 1; };
+
+    __forceinline uint32_t getMaxTimeSegments() const { return maxTimeSegments; };
+
+    #if !defined(__SYCL_DEVICE_ONLY__)
     __forceinline bool isGeometryModified(size_t geomID)
     {
       Ref<Geometry>& g = geometries[geomID];
       if (!g) return false;
       return g->getModCounter() > geometryModCounters_[geomID];
     }
+    #endif
 
   protected:
-    
-    __forceinline void checkIfModifiedAndSet () 
-    {
-      if (isModified ()) return;
-      
-      auto geometryIsModified = [this](size_t geomID)->bool {
-        return isGeometryModified(geomID);
-      };
 
-      if (parallel_any_of (size_t(0), geometries.size (), geometryIsModified)) {
-        setModified ();
-      }
-    }
-    
+    void checkIfModifiedAndSet ();
+
   public:
 
+#if defined(__SYCL_DEVICE_ONLY__)
+    /* get mesh by ID */
+    __forceinline       Geometry* get(size_t i)       { return geometries_device[i]; }
+    __forceinline const Geometry* get(size_t i) const { return geometries_device[i]; }
+
+    template<typename Mesh>
+      __forceinline       Mesh* get(size_t i)       { 
+      return (Mesh*)geometries_device[i]; 
+    }
+    template<typename Mesh>
+      __forceinline const Mesh* get(size_t i) const { 
+      return (Mesh*)geometries_device[i]; 
+    }
+
+    template<typename Mesh>
+    __forceinline Mesh* getSafe(size_t i) {
+      if (geometries_device[i] == nullptr) return nullptr;
+      if (!(geometries_device[i]->getTypeMask() & Mesh::geom_type)) return nullptr;
+      else return (Mesh*) geometries_device[i];
+    }
+#else
     /* get mesh by ID */
     __forceinline       Geometry* get(size_t i)       { assert(i < geometries.size()); return geometries[i].ptr; }
     __forceinline const Geometry* get(size_t i) const { assert(i < geometries.size()); return geometries[i].ptr; }
@@ -245,12 +284,16 @@ namespace embree
       if (!(geometries[i]->getTypeMask() & Mesh::geom_type)) return nullptr;
       else return (Mesh*) geometries[i].ptr;
     }
+#endif
 
+
+    #if !defined(__SYCL_DEVICE_ONLY__)
     __forceinline Ref<Geometry> get_locked(size_t i)  {
-      Lock<SpinLock> lock(geometriesMutex);
+      Lock<MutexSys> lock(geometriesMutex);
       assert(i < geometries.size()); 
       return geometries[i]; 
     }
+    #endif
 
     /* flag decoding */
     __forceinline bool isFastAccel() const { return !isCompactAccel() && !isRobustAccel(); }
@@ -259,8 +302,8 @@ namespace embree
     __forceinline bool isStaticAccel()  const { return !(scene_flags & RTC_SCENE_FLAG_DYNAMIC); }
     __forceinline bool isDynamicAccel() const { return scene_flags & RTC_SCENE_FLAG_DYNAMIC; }
     
-    __forceinline bool hasContextFilterFunction() const {
-      return scene_flags & RTC_SCENE_FLAG_CONTEXT_FILTER_FUNCTION;
+    __forceinline bool hasArgumentFilterFunction() const {
+      return scene_flags & RTC_SCENE_FLAG_FILTER_FUNCTION_IN_ARGUMENTS;
     }
     
     __forceinline bool hasGeometryFilterFunction() {
@@ -268,21 +311,28 @@ namespace embree
     }
       
     __forceinline bool hasFilterFunction() {
-      return hasContextFilterFunction() || hasGeometryFilterFunction();
+      return hasArgumentFilterFunction() || hasGeometryFilterFunction();
     }
     
-    /* test if scene got already build */
-    __forceinline bool isBuild() const { return is_build; }
+    void* createQBVH6Accel();
+    
+#if defined(EMBREE_SYCL_SUPPORT)
+  private:
+    void syncWithDevice();
+    sycl::event syncWithDevice(sycl::queue queue);
+#endif
+
+  public:
+    Device* device;
+    Scene* scene_device;
 
   public:
     IDPool<unsigned,0xFFFFFFFE> id_pool;
-    vector<Ref<Geometry>> geometries; //!< list of all user geometries
-    vector<unsigned int> geometryModCounters_;
-    vector<float*> vertices;
+    Device::vector<Ref<Geometry>> geometries = device; //!< list of all user geometries
+    avector<unsigned int> geometryModCounters_;
+    Device::vector<float*> vertices = device;
     
   public:
-    Device* device;
-
     /* these are to detect if we need to recreate the acceleration structures */
     bool flags_modified;
     unsigned int enabled_geometry_types;
@@ -290,24 +340,34 @@ namespace embree
     RTCSceneFlags scene_flags;
     RTCBuildQuality quality_flags;
     MutexSys buildMutex;
-    SpinLock geometriesMutex;
-    bool is_build;
+    MutexSys geometriesMutex;
+
+#if defined(EMBREE_SYCL_SUPPORT)
+  public:
+    AccelBuffer accelBuffer;
+#endif
+    
   private:
-    bool modified;                   //!< true if scene got modified
+    bool modified;            //!< true if scene got modified
+    uint32_t maxTimeSegments; //!< maximal number of motion blur time segments in scene
+
+#if defined(EMBREE_SYCL_SUPPORT)
+    Geometry** geometries_device; //!< list of all geometries on device
+    char* geometry_data_device; //!< data buffer of all geometries on device
+    size_t num_geometries;
+    size_t geometry_data_byte_size;
+
+    // host buffers used for creating representation of scene/geometry for device
+    // will be freed after scene commit if the scene is static, otherwise the
+    // buffers will stay for quicker rebuild.
+    size_t *offsets;
+    Geometry **geometries_host;
+    char *geometry_data_host;
+#endif
 
   public:
-    
-    /*! global lock step task scheduler */
-#if defined(TASKING_INTERNAL) 
-    MutexSys schedulerMutex;
-    Ref<TaskScheduler> scheduler;
-#elif defined(TASKING_TBB) && TASKING_TBB_USE_TASK_ISOLATION
-    tbb::isolated_task_group group;
-#elif defined(TASKING_TBB)
-    tbb::task_group group;
-#elif defined(TASKING_PPL)
-    concurrency::task_group group;
-#endif
+
+    std::unique_ptr<TaskGroup> taskGroup;
     
   public:
     struct BuildProgressMonitorInterface : public BuildProgressMonitor {
@@ -363,9 +423,25 @@ namespace embree
       
       if (mask & Geometry::MTY_INSTANCE_EXPENSIVE)
         count += mblur  ? world.numMBInstancesExpensive : world.numInstancesExpensive;
-      
+
+      if (mask & Geometry::MTY_INSTANCE_ARRAY)
+        count += mblur  ? world.numMBInstanceArrays : world.numInstanceArrays;
+
       if (mask & Geometry::MTY_GRID_MESH)
         count += mblur  ? world.numMBGrids : world.numGrids;
+      
+      return count;
+    }
+
+    __forceinline size_t getNumSubPrimitives(Geometry::GTypeMask mask, bool mblur) const
+    {
+      size_t count = 0;
+      
+      if (mask & Geometry::MTY_GRID_MESH)
+        count += mblur  ? world.numMBSubGrids : world.numSubGrids;
+
+      Geometry::GTypeMask new_mask = (Geometry::GTypeMask)(mask & ~Geometry::MTY_GRID_MESH);
+      count += getNumPrimitives(new_mask, mblur);
       
       return count;
     }

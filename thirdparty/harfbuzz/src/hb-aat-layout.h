@@ -40,7 +40,7 @@ HB_BEGIN_DECLS
  * @HB_AAT_LAYOUT_FEATURE_TYPE_INVALID: Initial, unset feature type
  * @HB_AAT_LAYOUT_FEATURE_TYPE_ALL_TYPOGRAPHIC: [All Typographic Features](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type0)
  * @HB_AAT_LAYOUT_FEATURE_TYPE_LIGATURES: [Ligatures](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type1)
- * @HB_AAT_LAYOUT_FEATURE_TYPE_CURISVE_CONNECTION: [Cursive Connection](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type2)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_CURSIVE_CONNECTION: [Cursive Connection](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type2)
  * @HB_AAT_LAYOUT_FEATURE_TYPE_LETTER_CASE: [Letter Case](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type3)
  * @HB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_SUBSTITUTION: [Vertical Substitution](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type4)
  * @HB_AAT_LAYOUT_FEATURE_TYPE_LINGUISTIC_REARRANGEMENT: [Linguistic Rearrangement](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type5)
@@ -88,7 +88,7 @@ typedef enum
 
   HB_AAT_LAYOUT_FEATURE_TYPE_ALL_TYPOGRAPHIC			= 0,
   HB_AAT_LAYOUT_FEATURE_TYPE_LIGATURES				= 1,
-  HB_AAT_LAYOUT_FEATURE_TYPE_CURISVE_CONNECTION			= 2,
+  HB_AAT_LAYOUT_FEATURE_TYPE_CURSIVE_CONNECTION			= 2,
   HB_AAT_LAYOUT_FEATURE_TYPE_LETTER_CASE			= 3,
   HB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_SUBSTITUTION		= 4,
   HB_AAT_LAYOUT_FEATURE_TYPE_LINGUISTIC_REARRANGEMENT		= 5,

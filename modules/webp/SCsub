@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 Import("env_modules")
@@ -63,7 +64,9 @@ if env["builtin_libwebp"]:
         "src/dsp/filters_neon.c",
         "src/dsp/filters_sse2.c",
         "src/dsp/lossless.c",
+        "src/dsp/lossless_avx2.c",
         "src/dsp/lossless_enc.c",
+        "src/dsp/lossless_enc_avx2.c",
         "src/dsp/lossless_enc_mips32.c",
         "src/dsp/lossless_enc_mips_dsp_r2.c",
         "src/dsp/lossless_enc_msa.c",
@@ -128,6 +131,7 @@ if env["builtin_libwebp"]:
         "src/utils/filters_utils.c",
         "src/utils/huffman_encode_utils.c",
         "src/utils/huffman_utils.c",
+        "src/utils/palette.c",
         "src/utils/quant_levels_dec_utils.c",
         "src/utils/quant_levels_utils.c",
         "src/utils/random_utils.c",

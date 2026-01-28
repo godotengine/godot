@@ -28,21 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TYPEDEFS_H
-#define TYPEDEFS_H
-
-#include <stddef.h>
+#pragma once
 
 /**
  * Basic definitions and simple functions to be used everywhere.
  */
+
+// IWYU pragma: always_keep
+
+// Ensure that C++ standard is at least C++17.
+// If on MSVC, also ensures that the `Zc:__cplusplus` flag is present.
+static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
+
+// IWYU pragma: begin_exports
 
 // Include first in case the platform needs to pre-define/include some things.
 #include "platform_config.h"
 
 // Should be available everywhere.
 #include "core/error/error_list.h"
+
+#include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <type_traits>
+#include <utility>
+
+// IWYU pragma: end_exports
 
 // Turn argument to string constant:
 // https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html#Stringizing
@@ -62,21 +74,28 @@
 #endif
 #endif
 
-// Should always inline, except in dev builds because it makes debugging harder.
+// Should always inline, except in dev builds because it makes debugging harder,
+// or `size_enabled` builds where inlining is actively avoided.
 #ifndef _FORCE_INLINE_
-#ifdef DEV_ENABLED
+#if defined(DEV_ENABLED) || defined(SIZE_EXTRA)
 #define _FORCE_INLINE_ inline
 #else
 #define _FORCE_INLINE_ _ALWAYS_INLINE_
 #endif
 #endif
 
-// No discard allows the compiler to flag warnings if we don't use the return value of functions / classes
-#ifndef _NO_DISCARD_
-#define _NO_DISCARD_ [[nodiscard]]
+// Should never inline.
+#ifndef _NO_INLINE_
+#if defined(__GNUC__)
+#define _NO_INLINE_ __attribute__((noinline))
+#elif defined(_MSC_VER)
+#define _NO_INLINE_ __declspec(noinline)
+#else
+#define _NO_INLINE_
+#endif
 #endif
 
-// In some cases _NO_DISCARD_ will get false positives,
+// In some cases [[nodiscard]] will get false positives,
 // we can prevent the warning in specific cases by preceding the call with a cast.
 #ifndef _ALLOW_DISCARD_
 #define _ALLOW_DISCARD_ (void)
@@ -92,20 +111,14 @@
 #undef Error
 #undef OK
 #undef CONNECT_DEFERRED // override from Windows SDK, clashes with Object enum
+#undef MONO_FONT
 #endif
 
 // Make room for our constexpr's below by overriding potential system-specific macros.
-#undef ABS
 #undef SIGN
 #undef MIN
 #undef MAX
 #undef CLAMP
-
-// Generic ABS function, for math uses please use Math::abs.
-template <typename T>
-constexpr T ABS(T m_v) {
-	return m_v < 0 ? -m_v : m_v;
-}
 
 template <typename T>
 constexpr const T SIGN(const T m_v) {
@@ -129,54 +142,92 @@ constexpr auto CLAMP(const T m_a, const T2 m_min, const T3 m_max) {
 
 // Generic swap template.
 #ifndef SWAP
-#define SWAP(m_x, m_y) __swap_tmpl((m_x), (m_y))
-template <class T>
-inline void __swap_tmpl(T &x, T &y) {
-	T aux = x;
-	x = y;
-	y = aux;
-}
+#define SWAP(m_x, m_y) std::swap((m_x), (m_y))
 #endif // SWAP
+
+// Like std::size, but without requiring any additional includes.
+template <typename T, size_t SIZE>
+constexpr size_t std_size(const T (&)[SIZE]) {
+	return SIZE;
+}
 
 /* Functions to handle powers of 2 and shifting. */
 
+// Returns `true` if a positive integer is a power of 2, `false` otherwise.
+template <typename T>
+inline bool is_power_of_2(const T x) {
+	return x && ((x & (x - 1)) == 0);
+}
+
 // Function to find the next power of 2 to an integer.
-static _FORCE_INLINE_ unsigned int next_power_of_2(unsigned int x) {
-	if (x == 0) {
+constexpr uint64_t next_power_of_2(uint64_t p_number) {
+	if (p_number == 0) {
 		return 0;
 	}
 
-	--x;
-	x |= x >> 1;
-	x |= x >> 2;
-	x |= x >> 4;
-	x |= x >> 8;
-	x |= x >> 16;
+	--p_number;
+	p_number |= p_number >> 1;
+	p_number |= p_number >> 2;
+	p_number |= p_number >> 4;
+	p_number |= p_number >> 8;
+	p_number |= p_number >> 16;
+	p_number |= p_number >> 32;
 
-	return ++x;
+	return ++p_number;
+}
+
+constexpr uint32_t next_power_of_2(uint32_t p_number) {
+	if (p_number == 0) {
+		return 0;
+	}
+
+	--p_number;
+	p_number |= p_number >> 1;
+	p_number |= p_number >> 2;
+	p_number |= p_number >> 4;
+	p_number |= p_number >> 8;
+	p_number |= p_number >> 16;
+
+	return ++p_number;
 }
 
 // Function to find the previous power of 2 to an integer.
-static _FORCE_INLINE_ unsigned int previous_power_of_2(unsigned int x) {
-	x |= x >> 1;
-	x |= x >> 2;
-	x |= x >> 4;
-	x |= x >> 8;
-	x |= x >> 16;
-	return x - (x >> 1);
+constexpr uint64_t previous_power_of_2(uint64_t p_number) {
+	p_number |= p_number >> 1;
+	p_number |= p_number >> 2;
+	p_number |= p_number >> 4;
+	p_number |= p_number >> 8;
+	p_number |= p_number >> 16;
+	p_number |= p_number >> 32;
+	return p_number - (p_number >> 1);
+}
+
+constexpr uint32_t previous_power_of_2(uint32_t p_number) {
+	p_number |= p_number >> 1;
+	p_number |= p_number >> 2;
+	p_number |= p_number >> 4;
+	p_number |= p_number >> 8;
+	p_number |= p_number >> 16;
+	return p_number - (p_number >> 1);
 }
 
 // Function to find the closest power of 2 to an integer.
-static _FORCE_INLINE_ unsigned int closest_power_of_2(unsigned int x) {
-	unsigned int nx = next_power_of_2(x);
-	unsigned int px = previous_power_of_2(x);
-	return (nx - x) > (x - px) ? px : nx;
+constexpr uint64_t closest_power_of_2(uint64_t p_number) {
+	uint64_t nx = next_power_of_2(p_number);
+	uint64_t px = previous_power_of_2(p_number);
+	return (nx - p_number) > (p_number - px) ? px : nx;
+}
+
+constexpr uint32_t closest_power_of_2(uint32_t p_number) {
+	uint32_t nx = next_power_of_2(p_number);
+	uint32_t px = previous_power_of_2(p_number);
+	return (nx - p_number) > (p_number - px) ? px : nx;
 }
 
 // Get a shift value from a power of 2.
-static inline int get_shift_from_power_of_2(unsigned int p_bits) {
-	for (unsigned int i = 0; i < 32; i++) {
-		if (p_bits == (unsigned int)(1 << i)) {
+constexpr int32_t get_shift_from_power_of_2(uint64_t p_bits) {
+	for (uint64_t i = 0; i < (uint64_t)64; i++) {
+		if (p_bits == (uint64_t)((uint64_t)1 << i)) {
 			return i;
 		}
 	}
@@ -184,31 +235,55 @@ static inline int get_shift_from_power_of_2(unsigned int p_bits) {
 	return -1;
 }
 
-template <class T>
-static _FORCE_INLINE_ T nearest_power_of_2_templated(T x) {
-	--x;
+constexpr int32_t get_shift_from_power_of_2(uint32_t p_bits) {
+	for (uint32_t i = 0; i < (uint32_t)32; i++) {
+		if (p_bits == (uint32_t)((uint32_t)1 << i)) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+template <typename T>
+static _FORCE_INLINE_ T nearest_power_of_2_templated(T p_number) {
+	--p_number;
 
 	// The number of operations on x is the base two logarithm
 	// of the number of bits in the type. Add three to account
 	// for sizeof(T) being in bytes.
-	size_t num = get_shift_from_power_of_2(sizeof(T)) + 3;
+	constexpr size_t shift_steps = get_shift_from_power_of_2((uint64_t)sizeof(T)) + 3;
 
 	// If the compiler is smart, it unrolls this loop.
 	// If it's dumb, this is a bit slow.
-	for (size_t i = 0; i < num; i++) {
-		x |= x >> (1 << i);
+	for (size_t i = 0; i < shift_steps; i++) {
+		p_number |= p_number >> (1 << i);
 	}
 
-	return ++x;
+	return ++p_number;
 }
 
 // Function to find the nearest (bigger) power of 2 to an integer.
-static inline unsigned int nearest_shift(unsigned int p_number) {
-	for (int i = 30; i >= 0; i--) {
-		if (p_number & (1 << i)) {
-			return i + 1;
+constexpr uint64_t nearest_shift(uint64_t p_number) {
+	uint64_t i = 63;
+	do {
+		i--;
+		if (p_number & ((uint64_t)1 << i)) {
+			return i + (uint64_t)1;
 		}
-	}
+	} while (i != 0);
+
+	return 0;
+}
+
+constexpr uint32_t nearest_shift(uint32_t p_number) {
+	uint32_t i = 31;
+	do {
+		i--;
+		if (p_number & ((uint32_t)1 << i)) {
+			return i + (uint32_t)1;
+		}
+	} while (i != 0);
 
 	return 0;
 }
@@ -232,6 +307,10 @@ constexpr T get_num_bits(T x) {
 #define BSWAP16(x) __builtin_bswap16(x)
 #define BSWAP32(x) __builtin_bswap32(x)
 #define BSWAP64(x) __builtin_bswap64(x)
+#elif defined(_MSC_VER)
+#define BSWAP16(x) _byteswap_ushort(x)
+#define BSWAP32(x) _byteswap_ulong(x)
+#define BSWAP64(x) _byteswap_uint64(x)
 #else
 static inline uint16_t BSWAP16(uint16_t x) {
 	return (x >> 8) | (x << 8);
@@ -250,7 +329,7 @@ static inline uint64_t BSWAP64(uint64_t x) {
 #endif
 
 // Generic comparator used in Map, List, etc.
-template <class T>
+template <typename T>
 struct Comparator {
 	_ALWAYS_INLINE_ bool operator()(const T &p_a, const T &p_b) const { return (p_a < p_b); }
 };
@@ -300,10 +379,6 @@ struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 // Limit the depth of recursive algorithms when dealing with Array/Dictionary
 #define MAX_RECURSION 100
 
-#ifdef DEBUG_ENABLED
-#define DEBUG_METHODS_ENABLED
-#endif
-
 // Macro GD_IS_DEFINED() allows to check if a macro is defined. It needs to be defined to anything (say 1) to work.
 #define __GDARG_PLACEHOLDER_1 false,
 #define __gd_take_second_arg(__ignored, val, ...) val
@@ -311,4 +386,88 @@ struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 #define ___gd_is_defined(val) ____gd_is_defined(__GDARG_PLACEHOLDER_##val)
 #define GD_IS_DEFINED(x) ___gd_is_defined(x)
 
-#endif // TYPEDEFS_H
+// Whether the default value of a type is just all-0 bytes.
+// This can most commonly be exploited by using memset for these types instead of loop-construct.
+// Trivially constructible types are also zero-constructible.
+template <typename T>
+struct is_zero_constructible : std::is_trivially_constructible<T> {};
+
+template <typename T>
+struct is_zero_constructible<const T> : is_zero_constructible<T> {};
+
+template <typename T>
+struct is_zero_constructible<volatile T> : is_zero_constructible<T> {};
+
+template <typename T>
+struct is_zero_constructible<const volatile T> : is_zero_constructible<T> {};
+
+template <typename T>
+inline constexpr bool is_zero_constructible_v = is_zero_constructible<T>::value;
+
+// Warning suppression helper macros.
+#if defined(__clang__)
+#define GODOT_CLANG_PRAGMA(m_content) _Pragma(#m_content)
+#define GODOT_CLANG_WARNING_PUSH GODOT_CLANG_PRAGMA(clang diagnostic push)
+#define GODOT_CLANG_WARNING_IGNORE(m_warning) GODOT_CLANG_PRAGMA(clang diagnostic ignored m_warning)
+#define GODOT_CLANG_WARNING_POP GODOT_CLANG_PRAGMA(clang diagnostic pop)
+#define GODOT_CLANG_WARNING_PUSH_AND_IGNORE(m_warning) GODOT_CLANG_WARNING_PUSH GODOT_CLANG_WARNING_IGNORE(m_warning)
+#else
+#define GODOT_CLANG_PRAGMA(m_content)
+#define GODOT_CLANG_WARNING_PUSH
+#define GODOT_CLANG_WARNING_IGNORE(m_warning)
+#define GODOT_CLANG_WARNING_POP
+#define GODOT_CLANG_WARNING_PUSH_AND_IGNORE(m_warning)
+#endif
+
+#if defined(__GNUC__) && !defined(__clang__)
+#define GODOT_GCC_PRAGMA(m_content) _Pragma(#m_content)
+#define GODOT_GCC_WARNING_PUSH GODOT_GCC_PRAGMA(GCC diagnostic push)
+#define GODOT_GCC_WARNING_IGNORE(m_warning) GODOT_GCC_PRAGMA(GCC diagnostic ignored m_warning)
+#define GODOT_GCC_WARNING_POP GODOT_GCC_PRAGMA(GCC diagnostic pop)
+#define GODOT_GCC_WARNING_PUSH_AND_IGNORE(m_warning) GODOT_GCC_WARNING_PUSH GODOT_GCC_WARNING_IGNORE(m_warning)
+#else
+#define GODOT_GCC_PRAGMA(m_content)
+#define GODOT_GCC_WARNING_PUSH
+#define GODOT_GCC_WARNING_IGNORE(m_warning)
+#define GODOT_GCC_WARNING_POP
+#define GODOT_GCC_WARNING_PUSH_AND_IGNORE(m_warning)
+#endif
+
+#if defined(_MSC_VER) && !defined(__clang__)
+#define GODOT_MSVC_PRAGMA(m_command) __pragma(m_command)
+#define GODOT_MSVC_WARNING_PUSH GODOT_MSVC_PRAGMA(warning(push))
+#define GODOT_MSVC_WARNING_IGNORE(m_warning) GODOT_MSVC_PRAGMA(warning(disable : m_warning))
+#define GODOT_MSVC_WARNING_POP GODOT_MSVC_PRAGMA(warning(pop))
+#define GODOT_MSVC_WARNING_PUSH_AND_IGNORE(m_warning) GODOT_MSVC_WARNING_PUSH GODOT_MSVC_WARNING_IGNORE(m_warning)
+#else
+#define GODOT_MSVC_PRAGMA(m_command)
+#define GODOT_MSVC_WARNING_PUSH
+#define GODOT_MSVC_WARNING_IGNORE(m_warning)
+#define GODOT_MSVC_WARNING_POP
+#define GODOT_MSVC_WARNING_PUSH_AND_IGNORE(m_warning)
+#endif
+
+template <typename T, typename = void>
+struct is_fully_defined : std::false_type {};
+
+template <typename T>
+struct is_fully_defined<T, std::void_t<decltype(sizeof(T))>> : std::true_type {};
+
+template <typename T>
+constexpr bool is_fully_defined_v = is_fully_defined<T>::value;
+
+#ifndef SCU_BUILD_ENABLED
+/// Enforces the requirement that a class is not fully defined.
+/// This can be used to reduce include coupling and keep compile times low.
+/// The check must be made at the top of the corresponding .cpp file of a header.
+#define STATIC_ASSERT_INCOMPLETE_TYPE(m_keyword, m_type) \
+	m_keyword m_type;                                    \
+	static_assert(!is_fully_defined_v<m_type>, #m_type " was unexpectedly fully defined. Please check the include hierarchy of '" __FILE__ "' and remove includes that resolve the " #m_keyword ".");
+#else
+#define STATIC_ASSERT_INCOMPLETE_TYPE(m_keyword, m_type)
+#endif
+
+#define _GD_VARNAME_CONCAT_B_(m_ignore, m_name) m_name
+#define _GD_VARNAME_CONCAT_A_(m_a, m_b, m_c) _GD_VARNAME_CONCAT_B_(hello there, m_a##m_b##m_c)
+#define _GD_VARNAME_CONCAT_(m_a, m_b, m_c) _GD_VARNAME_CONCAT_A_(m_a, m_b, m_c)
+#define GD_UNIQUE_NAME(m_name) _GD_VARNAME_CONCAT_(m_name, _, __COUNTER__)

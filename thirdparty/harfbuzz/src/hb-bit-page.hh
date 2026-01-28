@@ -78,6 +78,28 @@ struct hb_vector_size_t
   hb_vector_size_t operator ~ () const
   { return process (hb_bitwise_neg); }
 
+  operator bool () const
+  {
+    for (unsigned int i = 0; i < ARRAY_LENGTH (v); i++)
+      if (v[i])
+	return true;
+    return false;
+  }
+  operator unsigned int () const
+  {
+    unsigned int r = 0;
+    for (unsigned int i = 0; i < ARRAY_LENGTH (v); i++)
+      r += hb_popcount (v[i]);
+    return r;
+  }
+  bool operator == (const hb_vector_size_t &o) const
+  {
+    for (unsigned int i = 0; i < ARRAY_LENGTH (v); i++)
+      if (v[i] != o.v[i])
+	return false;
+    return true;
+  }
+
   hb_array_t<const elt_t> iter () const
   { return hb_array (v); }
 
@@ -89,6 +111,8 @@ struct hb_vector_size_t
 
 struct hb_bit_page_t
 {
+  hb_bit_page_t () { init0 (); }
+
   void init0 () { v.init0 (); population = 0; }
   void init1 () { v.init1 (); population = PAGE_BITS; }
 
@@ -97,13 +121,13 @@ struct hb_bit_page_t
   static inline constexpr unsigned len ()
   { return ARRAY_LENGTH_CONST (v); }
 
+  operator bool () const { return !is_empty (); }
   bool is_empty () const
   {
     if (has_population ()) return !population;
-    return
-    + hb_iter (v)
-    | hb_none
-    ;
+    bool empty = !v;
+    if (empty) population = 0;
+    return empty;
   }
   uint32_t hash () const
   {
@@ -114,6 +138,11 @@ struct hb_bit_page_t
   void del (hb_codepoint_t g) { elt (g) &= ~mask (g); dirty (); }
   void set (hb_codepoint_t g, bool value) { if (value) add (g); else del (g); }
   bool get (hb_codepoint_t g) const { return elt (g) & mask (g); }
+  bool may_have (hb_codepoint_t g) const { return get (g); }
+
+  bool operator [] (hb_codepoint_t g) const { return get (g); }
+  bool operator () (hb_codepoint_t g) const { return get (g); }
+  bool has (hb_codepoint_t g) const { return get (g); }
 
   void add_range (hb_codepoint_t a, hb_codepoint_t b)
   {
@@ -218,13 +247,19 @@ struct hb_bit_page_t
     return count;
   }
 
-  bool is_equal (const hb_bit_page_t &other) const
+  bool operator == (const hb_bit_page_t &other) const { return is_equal (other); }
+  bool is_equal (const hb_bit_page_t &other) const { return v == other.v; }
+  bool intersects (const hb_bit_page_t &other) const
   {
     for (unsigned i = 0; i < len (); i++)
-      if (v[i] != other.v[i])
-	return false;
-    return true;
+      if (v[i] & other.v[i])
+	return true;
+    return false;
   }
+  bool may_intersect (const hb_bit_page_t &other) const
+  { return intersects (other); }
+
+  bool operator <= (const hb_bit_page_t &larger_page) const { return is_subset (larger_page); }
   bool is_subset (const hb_bit_page_t &larger_page) const
   {
     if (has_population () && larger_page.has_population () &&
@@ -238,14 +273,10 @@ struct hb_bit_page_t
   }
 
   bool has_population () const { return population != UINT_MAX; }
-  unsigned int get_population () const
+  unsigned get_population () const
   {
     if (has_population ()) return population;
-    population =
-    + hb_iter (v)
-    | hb_reduce ([] (unsigned pop, const elt_t &_) { return pop + hb_popcount (_); }, 0u)
-    ;
-    return population;
+    return population = v;
   }
 
   bool next (hb_codepoint_t *codepoint) const
@@ -260,7 +291,7 @@ struct hb_bit_page_t
     unsigned int j = m & ELT_MASK;
 
     const elt_t vv = v[i] & ~((elt_t (1) << j) - 1);
-    for (const elt_t *p = &vv; i < len (); p = &v[++i])
+    for (const elt_t *p = &vv; i < len (); p = ((const elt_t *) &v[0]) + (++i))
       if (*p)
       {
 	*codepoint = i * ELT_BITS + elt_get_min (*p);
@@ -315,6 +346,36 @@ struct hb_bit_page_t
 	return i * ELT_BITS + elt_get_max (v[i]);
     return 0;
   }
+
+  /*
+   * Iterator implementation.
+   */
+  struct iter_t : hb_iter_with_fallback_t<iter_t, hb_codepoint_t>
+  {
+    static constexpr bool is_sorted_iterator = true;
+    iter_t (const hb_bit_page_t &s_ = Null (hb_bit_page_t), bool init = true) : s (&s_), v (INVALID)
+    {
+      if (init)
+	v = s->get_min ();
+    }
+
+    typedef hb_codepoint_t __item_t__;
+    hb_codepoint_t __item__ () const { return v; }
+    bool __more__ () const { return v != INVALID; }
+    void __next__ () {
+       s->next (&v);
+    }
+    void __prev__ () { s->previous (&v); }
+    iter_t end () const { return iter_t (*s, false); }
+    bool operator != (const iter_t& o) const
+    { return v != o.v; }
+
+    protected:
+    const hb_bit_page_t *s;
+    hb_codepoint_t v;
+  };
+  iter_t iter () const { return iter_t (*this); }
+  operator iter_t () const { return iter (); }
 
   static constexpr hb_codepoint_t INVALID = HB_SET_VALUE_INVALID;
 

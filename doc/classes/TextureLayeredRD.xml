@@ -5,11 +5,13 @@
 	</brief_description>
 	<description>
 		Base class for [Texture2DArrayRD], [TextureCubemapRD] and [TextureCubemapArrayRD]. Cannot be used directly, but contains all the functions necessary for accessing the derived resource types.
+		[b]Note:[/b] [TextureLayeredRD] is intended for low-level usage with [RenderingDevice]. For most use cases, use [TextureLayered] instead.
 	</description>
 	<tutorials>
+		<link title="Compute Texture demo">https://godotengine.org/asset-library/asset/2764</link>
 	</tutorials>
 	<members>
-		<member name="texture_rd_rid" type="RID" setter="set_texture_rd_rid" getter="get_texture_rd_rid" default="RID()">
+		<member name="texture_rd_rid" type="RID" setter="set_texture_rd_rid" getter="get_texture_rd_rid">
 			The RID of the texture object created on the [RenderingDevice].
 		</member>
 	</members>

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 
@@ -6,7 +7,13 @@ Import("env")
 
 thirdparty_obj = []
 
-thirdparty_sources = "#thirdparty/misc/mikktspace.c"
+thirdparty_dir = "#thirdparty/misc/"
+thirdparty_sources = [
+    "mikktspace.c",
+    "qoa.c",
+]
+
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
 env_thirdparty = env.Clone()
 env_thirdparty.disable_warnings()
@@ -22,3 +29,7 @@ env.scene_sources += scene_obj
 
 # Needed to force rebuilding the scene files when the thirdparty code is updated.
 env.Depends(scene_obj, thirdparty_obj)
+
+SConscript("2d/SCsub")
+if not env["disable_3d"]:
+    SConscript("3d/SCsub")

@@ -12,14 +12,14 @@
 	</tutorials>
 	<members>
 		<member name="apk_expansion/SALT" type="String" setter="" getter="">
-			Array of random bytes that the licensing Policy uses to create an [url=https://developer.android.com/google/play/licensing/adding-licensing#impl-Obfuscator]Obfuscator[/url].
+			Array of random bytes that the licensing policy uses to create an [url=https://developer.android.com/google/play/licensing/adding-licensing#impl-Obfuscator]Obfuscator[/url].
 		</member>
 		<member name="apk_expansion/enable" type="bool" setter="" getter="">
-			If [code]true[/code], project resources are stored in the separate APK expansion file, instead APK.
-			[b]Note:[/b] APK expansion should be enabled to use PCK encryption.
+			If [code]true[/code], project resources are stored in the separate APK expansion file, instead of the APK.
+			[b]Note:[/b] APK expansion should be enabled to use PCK encryption. See [url=https://developer.android.com/google/play/expansion-files]APK Expansion Files[/url]
 		</member>
 		<member name="apk_expansion/public_key" type="String" setter="" getter="">
-			Base64 encoded RSA public key for your publisher account, available from the profile page on the "Play Console".
+			Base64 encoded RSA public key for your publisher account, available from the profile page on the "Google Play Console".
 		</member>
 		<member name="architectures/arm64-v8a" type="bool" setter="" getter="">
 			If [code]true[/code], [code]arm64[/code] binaries are included into exported project.
@@ -34,22 +34,46 @@
 			If [code]true[/code], [code]x86_64[/code] binaries are included into exported project.
 		</member>
 		<member name="command_line/extra_args" type="String" setter="" getter="">
-			A list of additional command line arguments, exported project will receive when started.
+			A list of additional command line arguments, separated by space, which the exported project will receive when started.
 		</member>
 		<member name="custom_template/debug" type="String" setter="" getter="">
-			Path to the custom export template. If left empty, default template is used.
+			Path to an APK file to use as a custom export template for debug exports. If left empty, default template is used.
+			[b]Note:[/b] This is only used if [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] is disabled.
 		</member>
 		<member name="custom_template/release" type="String" setter="" getter="">
-			Path to the custom export template. If left empty, default template is used.
+			Path to an APK file to use as a custom export template for release exports. If left empty, default template is used.
+			[b]Note:[/b] This is only used if [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] is disabled.
+		</member>
+		<member name="gesture/swipe_to_dismiss" type="bool" setter="" getter="">
+			If [code]true[/code], [url=https://developer.android.com/design/ui/wear/guides/components/swipe-to-dismiss]Swipe to dismiss[/url] will be enabled.
+			This functionality is intended for smartwatches and is generally ignored on standard Android devices. However, some devices may not ignore it. Therefore, it is recommended to keep this feature disabled for standard Android apps to avoid unexpected behavior.
+			[b]Note:[/b] This is [code]false[/code] by default. To enable this behavior, [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] is required.
+		</member>
+		<member name="gradle_build/android_source_template" type="String" setter="" getter="">
+			Path to a ZIP file holding the source for the export template used in a Gradle build. If left empty, the default template is used.
+		</member>
+		<member name="gradle_build/compress_native_libraries" type="bool" setter="" getter="">
+			If [code]true[/code], native libraries are compressed when performing a Gradle build.
+			[b]Note:[/b] While enabling compression can reduce the size of the binary, it may result in slower application startup because the native libraries must be extracted before use, rather than being loaded directly.
+			If you're distributing your app via the Play Store, it's generally recommended to keep this option [code]false[/code], see [url=https://developer.android.com/build/releases/past-releases/agp-3-6-0-release-notes#extractNativeLibs]official documentation[/url].
+		</member>
+		<member name="gradle_build/custom_theme_attributes" type="Dictionary" setter="" getter="">
+			A dictionary of custom theme attributes to include in the exported Android project. Each entry defines a theme attribute name and its value, and will be added to the [b]GodotAppMainTheme[/b].
+			For example, the key [code]android:windowSwipeToDismiss[/code] with the value [code]false[/code] is resolved to [code]&lt;item name="android:windowSwipeToDismiss"&gt;false&lt;/item&gt;[/code].
+			[b]Note:[/b] To add a custom attribute to the [b]GodotAppSplashTheme[/b], prefix the attribute name with [code][splash][/code].
+			[b]Note:[/b] Reserved attributes configured via other export options or project settings cannot be overridden by [code]custom_theme_attributes[/code] and are skipped during export.
 		</member>
 		<member name="gradle_build/export_format" type="int" setter="" getter="">
-			Export format for Gradle build.
+			Application export format (*.apk or *.aab).
+		</member>
+		<member name="gradle_build/gradle_build_directory" type="String" setter="" getter="">
+			Path to the Gradle build directory. If left empty, then [code]res://android[/code] will be used.
 		</member>
 		<member name="gradle_build/min_sdk" type="String" setter="" getter="">
-			Minimal Android SDK version for Gradle build.
+			Minimum Android API level required for the application to run (used during Gradle build). See [url=https://developer.android.com/guide/topics/manifest/uses-sdk-element#uses]android:minSdkVersion[/url].
 		</member>
 		<member name="gradle_build/target_sdk" type="String" setter="" getter="">
-			Target Android SDK version for Gradle build.
+			The Android API level on which the application is designed to run (used during Gradle build). See [url=https://developer.android.com/guide/topics/manifest/uses-sdk-element#uses]android:targetSdkVersion[/url].
 		</member>
 		<member name="gradle_build/use_gradle_build" type="bool" setter="" getter="">
 			If [code]true[/code], Gradle build is used instead of pre-built APK.
@@ -85,25 +109,28 @@
 			Can be overridden with the environment variable [code]GODOT_ANDROID_KEYSTORE_RELEASE_USER[/code].
 		</member>
 		<member name="launcher_icons/adaptive_background_432x432" type="String" setter="" getter="">
-			Background layer of the application adaptive icon file.
+			Background layer of the application adaptive icon file. See [url=https://developer.android.com/develop/ui/views/launch/icon_design_adaptive#design-adaptive-icons]Design adaptive icons[/url].
 		</member>
 		<member name="launcher_icons/adaptive_foreground_432x432" type="String" setter="" getter="">
-			Foreground layer of the application adaptive icon file.
+			Foreground layer of the application adaptive icon file. See [url=https://developer.android.com/develop/ui/views/launch/icon_design_adaptive#design-adaptive-icons]Design adaptive icons[/url].
+		</member>
+		<member name="launcher_icons/adaptive_monochrome_432x432" type="String" setter="" getter="">
+			Monochrome layer of the application adaptive icon file. See [url=https://developer.android.com/develop/ui/views/launch/icon_design_adaptive#design-adaptive-icons]Design adaptive icons[/url].
 		</member>
 		<member name="launcher_icons/main_192x192" type="String" setter="" getter="">
 			Application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/icon].
 		</member>
 		<member name="package/app_category" type="int" setter="" getter="">
-			Application category for the Play Store.
+			Application category for the Google Play Store. Only define this if your application fits one of the categories well. See [url=https://developer.android.com/guide/topics/manifest/application-element#appCategory]android:appCategory[/url].
 		</member>
 		<member name="package/exclude_from_recents" type="bool" setter="" getter="">
-			If [code]true[/code], task initiated by main activity will be excluded from the list of recently used applications.
+			If [code]true[/code], task initiated by main activity will be excluded from the list of recently used applications. See [url=https://developer.android.com/guide/topics/manifest/activity-element#exclude]android:excludeFromRecents[/url].
 		</member>
 		<member name="package/name" type="String" setter="" getter="">
 			Name of the application.
 		</member>
 		<member name="package/retain_data_on_uninstall" type="bool" setter="" getter="">
-			If [code]true[/code], when the user uninstalls an app, a prompt to keep the app's data will be shown.
+			If [code]true[/code], when the user uninstalls an app, a prompt to keep the app's data will be shown. See [url=https://developer.android.com/guide/topics/manifest/application-element#fragileuserdata]android:hasFragileUserData[/url].
 		</member>
 		<member name="package/show_as_launcher_app" type="bool" setter="" getter="">
 			If [code]true[/code], the user will be able to set this app as the system launcher in Android preferences.
@@ -119,7 +146,10 @@
 			If [code]true[/code], package signing is enabled.
 		</member>
 		<member name="package/unique_name" type="String" setter="" getter="">
-			Unique application identifier in a reverse-DNS format, can only contain alphanumeric characters ([code]A-Z[/code], [code]a-z[/code], and [code]0-9[/code]), hyphens ([code]-[/code]), and periods ([code].[/code]).
+			Unique application identifier in a reverse-DNS format. The reverse DNS format should preferably match a domain name you control, but this is not strictly required. For instance, if you own [code]example.com[/code], your package unique name should preferably be of the form [code]com.example.mygame[/code]. This identifier can only contain lowercase alphanumeric characters ([code]a-z[/code], and [code]0-9[/code]), underscores ([code]_[/code]), and periods ([code].[/code]). Each component of the reverse DNS format must start with a letter: for instance, [code]com.example.8game[/code] is not valid.
+			If [code]$genname[/code] is present in the value, it will be replaced by the project name converted to lowercase. If there are invalid characters in the project name, they will be stripped. If all characters in the project name are stripped, [code]$genname[/code] is replaced by [code]noname[/code].
+			[b]Note:[/b] Changing the package name will cause the package to be considered as a new package, with its own installation and data paths. The new package won't be usable to update existing installations.
+			[b]Note:[/b] When publishing to Google Play, the package name must be [i]globally[/i] unique. This means no other apps published on Google Play must be using the same package name as yours. Otherwise, you'll be prevented from publishing your app on Google Play.
 		</member>
 		<member name="permissions/access_checkin_properties" type="bool" setter="" getter="">
 			Allows read/write access to the "properties" table in the checkin database. See [url=https://developer.android.com/reference/android/Manifest.permission#ACCESS_CHECKIN_PROPERTIES]ACCESS_CHECKIN_PROPERTIES[/url].
@@ -132,6 +162,9 @@
 		</member>
 		<member name="permissions/access_location_extra_commands" type="bool" setter="" getter="">
 			Allows access to the extra location provider commands. See [url=https://developer.android.com/reference/android/Manifest.permission#ACCESS_LOCATION_EXTRA_COMMANDS]ACCESS_LOCATION_EXTRA_COMMANDS[/url].
+		</member>
+		<member name="permissions/access_media_location" type="bool" setter="" getter="">
+			Allows an application to access any geographic locations persisted in the user's shared collection. See [url=https://developer.android.com/reference/android/Manifest.permission#ACCESS_MEDIA_LOCATION]ACCESS_MEDIA_LOCATION[/url].
 		</member>
 		<member name="permissions/access_mock_location" type="bool" setter="" getter="">
 			Allows an application to create mock location providers for testing.
@@ -259,8 +292,7 @@
 		<member name="permissions/custom_permissions" type="PackedStringArray" setter="" getter="">
 			Array of custom permission strings.
 		</member>
-		<member name="permissions/delete_cache_files" type="bool" setter="" getter="">
-			Deprecated.
+		<member name="permissions/delete_cache_files" type="bool" setter="" getter="" deprecated="">
 		</member>
 		<member name="permissions/delete_packages" type="bool" setter="" getter="">
 			Allows an application to delete packages. See [url=https://developer.android.com/reference/android/Manifest.permission#DELETE_PACKAGES]DELETE_PACKAGES[/url].
@@ -295,8 +327,7 @@
 		<member name="permissions/get_package_size" type="bool" setter="" getter="">
 			Allows an application to find out the space used by any package. See [url=https://developer.android.com/reference/android/Manifest.permission#GET_PACKAGE_SIZE]GET_PACKAGE_SIZE[/url].
 		</member>
-		<member name="permissions/get_tasks" type="bool" setter="" getter="">
-			Deprecated in API level 21.
+		<member name="permissions/get_tasks" type="bool" setter="" getter="" deprecated="Deprecated in API level 21.">
 		</member>
 		<member name="permissions/get_top_activity_info" type="bool" setter="" getter="">
 			Allows an application to retrieve private information about the current top activity.
@@ -343,6 +374,9 @@
 		<member name="permissions/manage_external_storage" type="bool" setter="" getter="">
 			Allows an application a broad access to external storage in scoped storage. See [url=https://developer.android.com/reference/android/Manifest.permission#MANAGE_EXTERNAL_STORAGE]MANAGE_EXTERNAL_STORAGE[/url].
 		</member>
+		<member name="permissions/manage_media" type="bool" setter="" getter="">
+			Allows an application to modify and delete media files on this device or any connected storage device without user confirmation. Applications must already be granted the [code]READ_EXTERNAL_STORAGE[/code] or [code]MANAGE_EXTERNAL_STORAGE[/code] permissions for this permission to take effect. See [url=https://developer.android.com/reference/android/Manifest.permission#MANAGE_MEDIA]MANAGE_MEDIA[/url].
+		</member>
 		<member name="permissions/master_clear" type="bool" setter="" getter="">
 			See [url=https://developer.android.com/reference/android/Manifest.permission#MASTER_CLEAR]MASTER_CLEAR[/url].
 		</member>
@@ -364,13 +398,14 @@
 		<member name="permissions/nfc" type="bool" setter="" getter="">
 			Allows applications to perform I/O operations over NFC. See [url=https://developer.android.com/reference/android/Manifest.permission#NFC]NFC[/url].
 		</member>
-		<member name="permissions/persistent_activity" type="bool" setter="" getter="">
-			Allow an application to make its activities persistent.
-			Deprecated in API level 15.
+		<member name="permissions/persistent_activity" type="bool" setter="" getter="" deprecated="Deprecated in API level 15.">
+			Allows an application to make its activities persistent.
 		</member>
-		<member name="permissions/process_outgoing_calls" type="bool" setter="" getter="">
+		<member name="permissions/post_notifications" type="bool" setter="" getter="">
+			Allows an application to post notifications. Added in API level 33. See [url=https://developer.android.com/develop/ui/views/notifications/notification-permission]Notification runtime permission[/url].
+		</member>
+		<member name="permissions/process_outgoing_calls" type="bool" setter="" getter="" deprecated="Deprecated in API level 29.">
 			Allows an application to see the number being dialed during an outgoing call with the option to redirect the call to a different number or abort the call altogether. See [url=https://developer.android.com/reference/android/Manifest.permission#PROCESS_OUTGOING_CALLS]PROCESS_OUTGOING_CALLS[/url].
-			Deprecated in API level 29.
 		</member>
 		<member name="permissions/read_calendar" type="bool" setter="" getter="">
 			Allows an application to read the user's calendar data. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_CALENDAR]READ_CALENDAR[/url].
@@ -381,9 +416,8 @@
 		<member name="permissions/read_contacts" type="bool" setter="" getter="">
 			Allows an application to read the user's contacts data. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_CONTACTS]READ_CONTACTS[/url].
 		</member>
-		<member name="permissions/read_external_storage" type="bool" setter="" getter="">
+		<member name="permissions/read_external_storage" type="bool" setter="" getter="" deprecated="Deprecated in API level 33.">
 			Allows an application to read from external storage. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_EXTERNAL_STORAGE]READ_EXTERNAL_STORAGE[/url].
-			Deprecated in API level 33.
 		</member>
 		<member name="permissions/read_frame_buffer" type="bool" setter="" getter="">
 			Allows an application to take screen shots and more generally get access to the frame buffer data.
@@ -391,11 +425,22 @@
 		<member name="permissions/read_history_bookmarks" type="bool" setter="" getter="">
 			Allows an application to read (but not write) the user's browsing history and bookmarks.
 		</member>
-		<member name="permissions/read_input_state" type="bool" setter="" getter="">
-			Deprecated in API level 16.
+		<member name="permissions/read_input_state" type="bool" setter="" getter="" deprecated="Deprecated in API level 16.">
 		</member>
 		<member name="permissions/read_logs" type="bool" setter="" getter="">
 			Allows an application to read the low-level system log files. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_LOGS]READ_LOGS[/url].
+		</member>
+		<member name="permissions/read_media_audio" type="bool" setter="" getter="">
+			Allows an application to read audio files from external storage. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_MEDIA_AUDIO]READ_MEDIA_AUDIO[/url].
+		</member>
+		<member name="permissions/read_media_images" type="bool" setter="" getter="">
+			Allows an application to read image files from external storage. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_MEDIA_IMAGES]READ_MEDIA_IMAGES[/url].
+		</member>
+		<member name="permissions/read_media_video" type="bool" setter="" getter="">
+			Allows an application to read video files from external storage. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_MEDIA_VIDEO]READ_MEDIA_VIDEO[/url].
+		</member>
+		<member name="permissions/read_media_visual_user_selected" type="bool" setter="" getter="">
+			Allows an application to read image or video files from external storage that a user has selected via the permission prompt photo picker. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_MEDIA_VISUAL_USER_SELECTED]READ_MEDIA_VISUAL_USER_SELECTED[/url].
 		</member>
 		<member name="permissions/read_phone_state" type="bool" setter="" getter="">
 			Allows read only access to phone state. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_PHONE_STATE]READ_PHONE_STATE[/url].
@@ -439,8 +484,7 @@
 		<member name="permissions/reorder_tasks" type="bool" setter="" getter="">
 			Allows an application to change the Z-order of tasks. See [url=https://developer.android.com/reference/android/Manifest.permission#REORDER_TASKS]REORDER_TASKS[/url].
 		</member>
-		<member name="permissions/restart_packages" type="bool" setter="" getter="">
-			Deprecated in API level 15.
+		<member name="permissions/restart_packages" type="bool" setter="" getter="" deprecated="Deprecated in API level 15.">
 		</member>
 		<member name="permissions/send_respond_via_message" type="bool" setter="" getter="">
 			Allows an application (Phone) to send a request to other applications to handle the respond-via-message action during incoming calls. See [url=https://developer.android.com/reference/android/Manifest.permission#SEND_RESPOND_VIA_MESSAGE]SEND_RESPOND_VIA_MESSAGE[/url].
@@ -469,8 +513,7 @@
 		<member name="permissions/set_pointer_speed" type="bool" setter="" getter="">
 			Allows low-level access to setting the pointer speed.
 		</member>
-		<member name="permissions/set_preferred_applications" type="bool" setter="" getter="">
-			Deprecated in API level 15.
+		<member name="permissions/set_preferred_applications" type="bool" setter="" getter="" deprecated="Deprecated in API level 15.">
 		</member>
 		<member name="permissions/set_process_limit" type="bool" setter="" getter="">
 			Allows an application to set the maximum number of (not needed) application processes that can be running. See [url=https://developer.android.com/reference/android/Manifest.permission#SET_PROCESS_LIMIT]SET_PROCESS_LIMIT[/url].
@@ -496,8 +539,7 @@
 		<member name="permissions/subscribed_feeds_read" type="bool" setter="" getter="">
 			Allows an application to allow access the subscribed feeds ContentProvider.
 		</member>
-		<member name="permissions/subscribed_feeds_write" type="bool" setter="" getter="">
-			Deprecated.
+		<member name="permissions/subscribed_feeds_write" type="bool" setter="" getter="" deprecated="">
 		</member>
 		<member name="permissions/system_alert_window" type="bool" setter="" getter="">
 			Allows an app to create windows using the type WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, shown on top of all other apps. See [url=https://developer.android.com/reference/android/Manifest.permission#SYSTEM_ALERT_WINDOW]SYSTEM_ALERT_WINDOW[/url].
@@ -505,8 +547,7 @@
 		<member name="permissions/transmit_ir" type="bool" setter="" getter="">
 			Allows using the device's IR transmitter, if available. See [url=https://developer.android.com/reference/android/Manifest.permission#TRANSMIT_IR]TRANSMIT_IR[/url].
 		</member>
-		<member name="permissions/uninstall_shortcut" type="bool" setter="" getter="">
-			Deprecated.
+		<member name="permissions/uninstall_shortcut" type="bool" setter="" getter="" deprecated="">
 		</member>
 		<member name="permissions/update_device_stats" type="bool" setter="" getter="">
 			Allows an application to update device statistics. See [url=https://developer.android.com/reference/android/Manifest.permission#UPDATE_DEVICE_STATS]UPDATE_DEVICE_STATS[/url].
@@ -565,8 +606,15 @@
 		<member name="permissions/write_user_dictionary" type="bool" setter="" getter="">
 			Allows an application to write to the user dictionary.
 		</member>
+		<member name="screen/background_color" type="Color" setter="" getter="">
+			The background color used for the root window. By default it's [constant Color.BLACK].
+		</member>
+		<member name="screen/edge_to_edge" type="bool" setter="" getter="">
+			If [code]true[/code], this makes the navigation and status bars translucent and allows the application content to extend edge to edge.
+			[b]Note:[/b] You should ensure that none of the application content is occluded by system elements by using the [method DisplayServer.get_display_safe_area] and [method DisplayServer.get_display_cutouts] methods.
+		</member>
 		<member name="screen/immersive_mode" type="bool" setter="" getter="">
-			If [code]true[/code], hides navigation and status bar.
+			If [code]true[/code], hides the navigation and status bar. Set [method DisplayServer.window_set_mode] to change this at runtime.
 		</member>
 		<member name="screen/support_large" type="bool" setter="" getter="">
 			Indicates whether the application supports larger screen form-factors.
@@ -580,6 +628,10 @@
 		<member name="screen/support_xlarge" type="bool" setter="" getter="">
 			Indicates whether the application supports extra large screen form-factors.
 		</member>
+		<member name="shader_baker/enabled" type="bool" setter="" getter="">
+			If [code]true[/code], shaders will be compiled and embedded in the application. This option is only supported when using the Forward+ or Mobile renderers.
+			[b]Note:[/b] When exporting as a dedicated server, the shader baker is always disabled since no rendering is performed.
+		</member>
 		<member name="user_data_backup/allow" type="bool" setter="" getter="">
 			If [code]true[/code], allows the application to participate in the backup and restore infrastructure.
 		</member>
@@ -590,6 +642,7 @@
 			Application version visible to the user. Falls back to [member ProjectSettings.application/config/version] if left empty.
 		</member>
 		<member name="xr_features/xr_mode" type="int" setter="" getter="">
+			The extended reality (XR) mode for this application.
 		</member>
 	</members>
 </class>

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_VALIDATE_TESTING_H
-#define TEST_VALIDATE_TESTING_H
+#pragma once
 
 #include "core/core_globals.h"
 #include "core/os/os.h"
@@ -125,9 +124,7 @@ TEST_SUITE("Validate tests") {
 		dict["color"] = color;
 		INFO(dict);
 
-		Array arr;
-		arr.push_back(string);
-		arr.push_back(color);
+		Array arr = { string, color };
 		INFO(arr);
 
 		PackedByteArray byte_arr;
@@ -181,6 +178,13 @@ TEST_SUITE("Validate tests") {
 		color_arr.push_back(Color(2, 2, 2));
 		INFO(color_arr);
 
+		PackedVector4Array vec4_arr;
+		vec4_arr.push_back(Vector4(0, 0, 0, 0));
+		vec4_arr.push_back(Vector4(1, 1, 1, 1));
+		vec4_arr.push_back(Vector4(2, 2, 2, 2));
+		vec4_arr.push_back(Vector4(3, 3, 3, 3));
+		INFO(vec4_arr);
+
 		// doctest string concatenation.
 		CHECK_MESSAGE(true, var, " ", vec2, " ", rect2, " ", color);
 	}
@@ -196,5 +200,3 @@ TEST_SUITE("Validate tests") {
 		REQUIRE(ed.has_error);
 	}
 }
-
-#endif // TEST_VALIDATE_TESTING_H

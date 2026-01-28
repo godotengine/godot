@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RASTERIZER_SCENE_DUMMY_H
-#define RASTERIZER_SCENE_DUMMY_H
+#pragma once
 
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/renderer_scene_render.h"
+#include "servers/rendering/rendering_server_globals.h"
 #include "storage/utilities.h"
 
 class RasterizerSceneDummy : public RendererSceneRender {
@@ -49,6 +49,7 @@ public:
 		virtual void set_surface_materials(const Vector<RID> &p_materials) override {}
 		virtual void set_mesh_instance(RID p_mesh_instance) override {}
 		virtual void set_transform(const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) override {}
+		virtual void reset_motion_vectors() override {}
 		virtual void set_pivot_data(float p_sorting_offset, bool p_use_aabb_center) override {}
 		virtual void set_lod_bias(float p_lod_bias) override {}
 		virtual void set_layer_mask(uint32_t p_layer_mask) override {}
@@ -94,6 +95,11 @@ public:
 
 	uint32_t geometry_instance_get_pair_mask() override { return 0; }
 
+	/* PIPELINES */
+
+	virtual void mesh_generate_pipelines(RID p_mesh, bool p_background_compilation) override {}
+	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source) override { return 0; }
+
 	/* SDFGI UPDATE */
 
 	void sdfgi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) override {}
@@ -114,6 +120,7 @@ public:
 
 	void environment_glow_set_use_bicubic_upscale(bool p_enable) override {}
 
+	void environment_set_ssr_half_size(bool p_half_size) override {}
 	void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override {}
 
 	void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override {}
@@ -145,7 +152,7 @@ public:
 
 	void voxel_gi_set_quality(RS::VoxelGIQuality) override {}
 
-	void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_info = nullptr) override {}
+	void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_info = nullptr) override {}
 	void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override {}
 	void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<RenderGeometryInstance *> &p_instances) override {}
 
@@ -168,6 +175,12 @@ public:
 		if (is_environment(p_rid)) {
 			environment_free(p_rid);
 			return true;
+		} else if (is_compositor(p_rid)) {
+			compositor_free(p_rid);
+			return true;
+		} else if (is_compositor_effect(p_rid)) {
+			compositor_effect_free(p_rid);
+			return true;
 		} else if (RSG::camera_attributes->owns_camera_attributes(p_rid)) {
 			RSG::camera_attributes->camera_attributes_free(p_rid);
 			return true;
@@ -180,9 +193,9 @@ public:
 
 	virtual void decals_set_filter(RS::DecalFilter p_filter) override {}
 	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override {}
+	virtual void lightmaps_set_bicubic_filter(bool p_enable) override {}
+	virtual void material_set_use_debanding(bool p_enable) override {}
 
 	RasterizerSceneDummy() {}
 	~RasterizerSceneDummy() {}
 };
-
-#endif // RASTERIZER_SCENE_DUMMY_H

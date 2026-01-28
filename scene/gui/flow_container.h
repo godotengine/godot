@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FLOW_CONTAINER_H
-#define FLOW_CONTAINER_H
+#pragma once
 
 #include "scene/gui/container.h"
 
@@ -42,13 +41,22 @@ public:
 		ALIGNMENT_CENTER,
 		ALIGNMENT_END
 	};
+	enum LastWrapAlignmentMode {
+		LAST_WRAP_ALIGNMENT_INHERIT,
+		LAST_WRAP_ALIGNMENT_BEGIN,
+		LAST_WRAP_ALIGNMENT_CENTER,
+		LAST_WRAP_ALIGNMENT_END
+	};
 
 private:
 	int cached_size = 0;
 	int cached_line_count = 0;
+	int cached_line_max_child_count = 0;
 
 	bool vertical = false;
+	bool reverse_fill = false;
 	AlignmentMode alignment = ALIGNMENT_BEGIN;
+	LastWrapAlignmentMode last_wrap_alignment = LAST_WRAP_ALIGNMENT_INHERIT;
 
 	struct ThemeCache {
 		int h_separation = 0;
@@ -66,12 +74,19 @@ protected:
 
 public:
 	int get_line_count() const;
+	int get_line_max_child_count() const;
 
 	void set_alignment(AlignmentMode p_alignment);
 	AlignmentMode get_alignment() const;
 
+	void set_last_wrap_alignment(LastWrapAlignmentMode p_last_wrap_alignment);
+	LastWrapAlignmentMode get_last_wrap_alignment() const;
+
 	void set_vertical(bool p_vertical);
 	bool is_vertical() const;
+
+	void set_reverse_fill(bool p_reverse_fill);
+	bool is_reverse_fill() const;
 
 	virtual Size2 get_minimum_size() const override;
 
@@ -98,5 +113,4 @@ public:
 };
 
 VARIANT_ENUM_CAST(FlowContainer::AlignmentMode);
-
-#endif // FLOW_CONTAINER_H
+VARIANT_ENUM_CAST(FlowContainer::LastWrapAlignmentMode);

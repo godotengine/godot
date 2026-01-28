@@ -35,7 +35,7 @@
 
 #define LINE_GRAB_WIDTH 8
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 OccluderPolygon2D::_edit_get_rect() const {
 	if (rect_cache_dirty) {
 		if (closed) {
@@ -51,7 +51,7 @@ Rect2 OccluderPolygon2D::_edit_get_rect() const {
 			}
 			rect_cache_dirty = false;
 		} else {
-			if (polygon.size() == 0) {
+			if (polygon.is_empty()) {
 				item_rect = Rect2();
 			} else {
 				Vector2 d = Vector2(LINE_GRAB_WIDTH, LINE_GRAB_WIDTH);
@@ -74,7 +74,7 @@ bool OccluderPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double
 		const real_t d = LINE_GRAB_WIDTH / 2 + p_tolerance;
 		const Vector2 *points = polygon.ptr();
 		for (int i = 0; i < polygon.size() - 1; i++) {
-			Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, &points[i]);
+			Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, points[i], points[i + 1]);
 			if (p.distance_to(p_point) <= d) {
 				return true;
 			}
@@ -83,13 +83,14 @@ bool OccluderPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double
 		return false;
 	}
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void OccluderPolygon2D::set_polygon(const Vector<Vector2> &p_polygon) {
 	polygon = p_polygon;
 	rect_cache_dirty = true;
 	RS::get_singleton()->canvas_occluder_polygon_set_shape(occ_polygon, p_polygon, closed);
 	emit_changed();
+	update_configuration_warning();
 }
 
 Vector<Vector2> OccluderPolygon2D::get_polygon() const {
@@ -149,13 +150,17 @@ OccluderPolygon2D::OccluderPolygon2D() {
 
 OccluderPolygon2D::~OccluderPolygon2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(occ_polygon);
+	RS::get_singleton()->free_rid(occ_polygon);
 }
 
 void LightOccluder2D::_poly_changed() {
 #ifdef DEBUG_ENABLED
 	queue_redraw();
-#endif
+#endif // DEBUG_ENABLED
+}
+
+void LightOccluder2D::_physics_interpolated_changed() {
+	RenderingServer::get_singleton()->canvas_light_occluder_set_interpolated(occluder, is_physics_interpolated());
 }
 
 void LightOccluder2D::_notification(int p_what) {
@@ -199,10 +204,21 @@ void LightOccluder2D::_notification(int p_what) {
 		case NOTIFICATION_EXIT_CANVAS: {
 			RS::get_singleton()->canvas_light_occluder_attach_to_canvas(occluder, RID());
 		} break;
+
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			if (is_visible_in_tree() && is_physics_interpolated_and_enabled()) {
+				// Explicitly make sure the transform is up to date in RenderingServer before
+				// resetting. This is necessary because NOTIFICATION_TRANSFORM_CHANGED
+				// is normally deferred, and a client change to transform will not always be sent
+				// before the reset, so we need to guarantee this.
+				RS::get_singleton()->canvas_light_occluder_set_transform(occluder, get_global_transform());
+				RS::get_singleton()->canvas_light_occluder_reset_physics_interpolation(occluder);
+			}
+		} break;
 	}
 }
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 LightOccluder2D::_edit_get_rect() const {
 	return occluder_polygon.is_valid() ? occluder_polygon->_edit_get_rect() : Rect2();
 }
@@ -210,14 +226,14 @@ Rect2 LightOccluder2D::_edit_get_rect() const {
 bool LightOccluder2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	return occluder_polygon.is_valid() ? occluder_polygon->_edit_is_selected_on_click(p_point, p_tolerance) : false;
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void LightOccluder2D::set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polygon) {
 #ifdef DEBUG_ENABLED
 	if (occluder_polygon.is_valid()) {
 		occluder_polygon->disconnect_changed(callable_mp(this, &LightOccluder2D::_poly_changed));
 	}
-#endif
+#endif // DEBUG_ENABLED
 	occluder_polygon = p_polygon;
 
 	if (occluder_polygon.is_valid()) {
@@ -231,7 +247,7 @@ void LightOccluder2D::set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polyg
 		occluder_polygon->connect_changed(callable_mp(this, &LightOccluder2D::_poly_changed));
 	}
 	queue_redraw();
-#endif
+#endif // DEBUG_ENABLED
 }
 
 Ref<OccluderPolygon2D> LightOccluder2D::get_occluder_polygon() const {
@@ -248,13 +264,13 @@ int LightOccluder2D::get_occluder_light_mask() const {
 }
 
 PackedStringArray LightOccluder2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
-	if (!occluder_polygon.is_valid()) {
+	if (occluder_polygon.is_null()) {
 		warnings.push_back(RTR("An occluder polygon must be set (or drawn) for this occluder to take effect."));
 	}
 
-	if (occluder_polygon.is_valid() && occluder_polygon->get_polygon().size() == 0) {
+	if (occluder_polygon.is_valid() && occluder_polygon->get_polygon().is_empty()) {
 		warnings.push_back(RTR("The occluder polygon for this occluder is empty. Please draw a polygon."));
 	}
 
@@ -294,5 +310,5 @@ LightOccluder2D::LightOccluder2D() {
 LightOccluder2D::~LightOccluder2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 
-	RS::get_singleton()->free(occluder);
+	RS::get_singleton()->free_rid(occluder);
 }

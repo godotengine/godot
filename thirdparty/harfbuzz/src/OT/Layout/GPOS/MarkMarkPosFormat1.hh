@@ -42,6 +42,7 @@ struct MarkMarkPosFormat1_2
                   mark1Coverage.sanitize (c, this) &&
                   mark2Coverage.sanitize (c, this) &&
                   mark1Array.sanitize (c, this) &&
+		  hb_barrier () &&
                   mark2Array.sanitize (c, this, (unsigned int) classCount));
   }
 
@@ -99,7 +100,7 @@ struct MarkMarkPosFormat1_2
     if (likely (mark1_index == NOT_COVERED)) return_trace (false);
 
     /* now we search backwards for a suitable mark glyph until a non-mark glyph */
-    hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
+    auto &skippy_iter = c->iter_input;
     skippy_iter.reset_fast (buffer->idx);
     skippy_iter.set_lookup_props (c->lookup_props & ~(uint32_t)LookupFlag::IgnoreFlags);
     unsigned unsafe_from;
@@ -183,9 +184,10 @@ struct MarkMarkPosFormat1_2
     if (!out->mark1Coverage.serialize_serialize (c->serializer, new_coverage.iter ()))
       return_trace (false);
 
-    out->mark1Array.serialize_subset (c, mark1Array, this,
-                                      (this+mark1Coverage).iter (),
-                                      &klass_mapping);
+    if (unlikely (!out->mark1Array.serialize_subset (c, mark1Array, this,
+						     (this+mark1Coverage).iter (),
+						     &klass_mapping)))
+      return_trace (false);
 
     unsigned mark2count = (this+mark2Array).rows;
     auto mark2_iter =
@@ -194,19 +196,23 @@ struct MarkMarkPosFormat1_2
     ;
 
     new_coverage.reset ();
-    + mark2_iter
-    | hb_map (hb_first)
-    | hb_map (glyph_map)
-    | hb_sink (new_coverage)
-    ;
-
-    if (!out->mark2Coverage.serialize_serialize (c->serializer, new_coverage.iter ()))
-      return_trace (false);
-
     hb_sorted_vector_t<unsigned> mark2_indexes;
-    for (const unsigned row : + mark2_iter
-                              | hb_map (hb_second))
+    auto &mark2_array = (this+mark2Array);
+    for (const auto _ : + mark2_iter)
     {
+      unsigned row = _.second;
+
+      bool non_empty = + hb_range ((unsigned) classCount)
+                       | hb_filter (klass_mapping)
+                       | hb_map ([&] (const unsigned col) { return !mark2_array.offset_is_null (row, col, (unsigned) classCount); })
+                       | hb_any
+                       ;
+
+      if (!non_empty) continue;
+
+      hb_codepoint_t new_g = glyph_map.get ( _.first);
+      new_coverage.push (new_g);
+
       + hb_range ((unsigned) classCount)
       | hb_filter (klass_mapping)
       | hb_map ([&] (const unsigned col) { return row * (unsigned) classCount + col; })
@@ -214,9 +220,14 @@ struct MarkMarkPosFormat1_2
       ;
     }
 
-    out->mark2Array.serialize_subset (c, mark2Array, this, mark2_iter.len (), mark2_indexes.iter ());
+    if (!new_coverage) return_trace (false);
+    if (!out->mark2Coverage.serialize_serialize (c->serializer, new_coverage.iter ()))
+      return_trace (false);
 
-    return_trace (true);
+    return_trace (out->mark2Array.serialize_subset (c, mark2Array, this,
+						    mark2_iter.len (),
+						    mark2_indexes.iter ()));
+
   }
 };
 

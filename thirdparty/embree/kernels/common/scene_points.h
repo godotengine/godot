@@ -30,12 +30,14 @@ namespace embree
                    size_t offset,
                    size_t stride,
                    unsigned int num);
-    void* getBuffer(RTCBufferType type, unsigned int slot);
+    void* getBufferData(RTCBufferType type, unsigned int slot, BufferDataPointerType pointerType);
     void updateBuffer(RTCBufferType type, unsigned int slot);
     void commit();
     bool verify();
     void setMaxRadiusScale(float s);
     void addElementsToCount (GeometryCounts & counts) const;
+    size_t getGeometryDataDeviceByteSize() const;
+    void convertToDeviceRepresentation(size_t offset, char* data_host, char* data_device) const;
 
    public:
     /*! returns the number of vertices */
@@ -68,6 +70,25 @@ namespace embree
       return vertices[itime][i];
     }
 
+    /*! returns i'th vertex of for specified time */
+    __forceinline Vec3ff vertex(size_t i, float time) const
+    {
+      float ftime;
+      const size_t itime = timeSegment(time, ftime);
+      const float t0 = 1.0f - ftime;
+      const float t1 = ftime;
+      Vec3ff v0 = vertex(i, itime+0);
+      Vec3ff v1 = vertex(i, itime+1);
+      return madd(Vec3ff(t0),v0,t1*v1);
+    }
+
+    /*! returns i'th vertex of for specified time */
+    __forceinline Vec3ff vertex_safe(size_t i, float time) const
+    {
+      if (hasMotionBlur()) return vertex(i,time);
+      else                 return vertex(i);
+    }
+
     /*! returns i'th vertex of itime'th timestep */
     __forceinline const char* vertexPtr(size_t i, size_t itime) const {
       return vertices[itime].getPtr(i);
@@ -78,9 +99,47 @@ namespace embree
       return normals[itime][i];
     }
 
+    /*! returns i'th normal of for specified time */
+    __forceinline Vec3fa normal(size_t i, float time) const
+    {
+      float ftime;
+      const size_t itime = timeSegment(time, ftime);
+      const float t0 = 1.0f - ftime;
+      const float t1 = ftime;
+      Vec3fa n0 = normal(i, itime+0);
+      Vec3fa n1 = normal(i, itime+1);
+      return madd(Vec3fa(t0),n0,t1*n1);
+    }
+
+    /*! returns i'th normal of for specified time */
+    __forceinline Vec3fa normal_safe(size_t i, float time) const
+    {
+      if (hasMotionBlur()) return normal(i,time);
+      else                 return normal(i);
+    }
+
     /*! returns i'th radius of itime'th timestep */
     __forceinline float radius(size_t i, size_t itime) const {
       return vertices[itime][i].w;
+    }
+
+    /*! returns i'th radius of for specified time */
+    __forceinline float radius(size_t i, float time) const
+    {
+      float ftime;
+      const size_t itime = timeSegment(time, ftime);
+      const float t0 = 1.0f - ftime;
+      const float t1 = ftime;
+      float r0 = radius(i, itime+0);
+      float r1 = radius(i, itime+1);
+      return madd(t0,r0,t1*r1);
+    }
+
+    /*! returns i'th radius of for specified time */
+    __forceinline float radius_safe(size_t i, float time) const
+    {
+      if (hasMotionBlur()) return radius(i,time);
+      else                 return radius(i);
     }
 
     /*! calculates bounding box of i'th line segment */
@@ -185,13 +244,18 @@ namespace embree
     __forceinline float * getCompactVertexArray () const {
       return (float*) vertices0.getPtr();
     }
+    
+    __forceinline float projectedPrimitiveArea(const size_t i) const {
+      const float R = radius(i);
+      return 1 + 2*M_PI*R*R;
+    }
 
    public:
     BufferView<Vec3ff> vertices0;            //!< fast access to first vertex buffer
     BufferView<Vec3fa> normals0;             //!< fast access to first normal buffer
-    vector<BufferView<Vec3ff>> vertices;     //!< vertex array for each timestep
-    vector<BufferView<Vec3fa>> normals;      //!< normal array for each timestep
-    vector<BufferView<char>> vertexAttribs;  //!< user buffers
+    Device::vector<BufferView<Vec3ff>> vertices = device;     //!< vertex array for each timestep
+    Device::vector<BufferView<Vec3fa>> normals = device;      //!< normal array for each timestep
+    Device::vector<BufferView<char>> vertexAttribs = device;  //!< user buffers
     float maxRadiusScale = 1.0;              //!< maximal min-width scaling of curve radii
   };
 
@@ -211,7 +275,7 @@ namespace embree
         return Vec3fa(1, 0, 0);
       }
 
-      PrimInfo createPrimRefArray(mvector<PrimRef>& prims, const range<size_t>& r, size_t k, unsigned int geomID) const
+      PrimInfo createPrimRefArray(PrimRef* prims, const range<size_t>& r, size_t k, unsigned int geomID) const
       {
         PrimInfo pinfo(empty);
         for (size_t j = r.begin(); j < r.end(); j++) {
@@ -233,6 +297,23 @@ namespace embree
           if (!buildBounds(j, itime, bounds))
             continue;
           const PrimRef prim(bounds, geomID, unsigned(j));
+          pinfo.add_center2(prim);
+          prims[k++] = prim;
+        }
+        return pinfo;
+      }
+
+      PrimInfo createPrimRefArrayMB(PrimRef* prims, const BBox1f& time_range, const range<size_t>& r, size_t k, unsigned int geomID) const
+      {
+        PrimInfo pinfo(empty);
+        const BBox1f t0t1 = BBox1f::intersect(getTimeRange(), time_range);
+        if (t0t1.empty()) return pinfo;
+        
+        for (size_t j = r.begin(); j < r.end(); j++) {
+          LBBox3fa lbounds = empty;
+          if (!linearBounds(j, t0t1, lbounds))
+            continue;
+          const PrimRef prim(lbounds.bounds(), geomID, unsigned(j));
           pinfo.add_center2(prim);
           prims[k++] = prim;
         }

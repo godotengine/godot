@@ -1,48 +1,47 @@
 extends Node
 
-@export_enum("A", "B", "C") var a0
-@export_enum("A", "B", "C",) var a1
+@export_enum("A", "B", "C") var test_1
+@export_enum("A", "B", "C",) var test_2
 
 @export_enum(
 	"A",
 	"B",
 	"C"
-) var a2
+) var test_3
 
 @export_enum(
 	"A",
 	"B",
 	"C",
-) var a3
+) var test_4
 
 @export
-var a4: int
+var test_5: int
 
 @export()
-var a5: int
+var test_6: int
 
-@export() var a6: int
-@warning_ignore("onready_with_export") @onready @export var a7: int
-@warning_ignore("onready_with_export") @onready() @export() var a8: int
+@export() var test_7: int = 42
+@warning_ignore("onready_with_export") @onready @export var test_8: int = 42
+@warning_ignore("onready_with_export") @onready() @export() var test_9: int = 42
 
 @warning_ignore("onready_with_export")
 @onready
 @export
-var a9: int
+var test_10: int = 42
 
 @warning_ignore("onready_with_export")
 @onready()
 @export()
-var a10: int
+var test_11: int = 42
 
 @warning_ignore("onready_with_export")
 @onready()
 @export()
 
-var a11: int
-
+var test_12: int = 42
 
 func test():
 	for property in get_property_list():
-		if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE:
-			print(property)
+		if str(property.name).begins_with("test_"):
+			Utils.print_property_extended_info(property, self)

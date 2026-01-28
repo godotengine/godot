@@ -462,6 +462,15 @@
 				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
 			</description>
 		</method>
+		<method name="rename_type">
+			<return type="void" />
+			<param index="0" name="old_theme_type" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Renames the theme type [param old_theme_type] to [param theme_type], if the old type exists and the new one doesn't exist.
+				[b]Note:[/b] Renaming a theme type to an empty name or a variation to a type associated with a built-in class removes type variation connections in a way that cannot be undone by reversing the rename alone.
+			</description>
+		</method>
 		<method name="set_color">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
@@ -551,7 +560,7 @@
 		</member>
 		<member name="default_font_size" type="int" setter="set_default_font_size" getter="get_default_font_size" default="-1">
 			The default font size of this theme resource. Used as the default value when trying to fetch a font size value that doesn't exist in this theme or is in invalid state. If the default font size is also missing or invalid, the engine fallback value is used (see [member ThemeDB.fallback_font_size]).
-			Values below [code]0[/code] are invalid and can be used to unset the property. Use [method has_default_font_size] to check if this value is valid.
+			Values below [code]1[/code] are invalid and can be used to unset the property. Use [method has_default_font_size] to check if this value is valid.
 		</member>
 	</members>
 	<constants>

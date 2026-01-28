@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_CLASS_DB_H
-#define TEST_CLASS_DB_H
+#pragma once
 
 #include "core/core_bind.h"
 #include "core/core_constants.h"
@@ -125,42 +124,44 @@ struct ExposedClass {
 };
 
 struct NamesCache {
-	StringName variant_type = StaticCString::create("Variant");
-	StringName object_class = StaticCString::create("Object");
-	StringName ref_counted_class = StaticCString::create("RefCounted");
-	StringName string_type = StaticCString::create("String");
-	StringName string_name_type = StaticCString::create("StringName");
-	StringName node_path_type = StaticCString::create("NodePath");
-	StringName bool_type = StaticCString::create("bool");
-	StringName int_type = StaticCString::create("int");
-	StringName float_type = StaticCString::create("float");
-	StringName void_type = StaticCString::create("void");
-	StringName vararg_stub_type = StaticCString::create("@VarArg@");
-	StringName vector2_type = StaticCString::create("Vector2");
-	StringName rect2_type = StaticCString::create("Rect2");
-	StringName vector3_type = StaticCString::create("Vector3");
+	StringName variant_type = StringName("Variant");
+	StringName object_class = StringName("Object");
+	StringName ref_counted_class = StringName("RefCounted");
+	StringName string_type = StringName("String");
+	StringName string_name_type = StringName("StringName");
+	StringName node_path_type = StringName("NodePath");
+	StringName bool_type = StringName("bool");
+	StringName int_type = StringName("int");
+	StringName float_type = StringName("float");
+	StringName void_type = StringName("void");
+	StringName vararg_stub_type = StringName("@VarArg@");
+	StringName vector2_type = StringName("Vector2");
+	StringName rect2_type = StringName("Rect2");
+	StringName vector3_type = StringName("Vector3");
+	StringName vector4_type = StringName("Vector4");
 
 	// Object not included as it must be checked for all derived classes
-	static constexpr int nullable_types_count = 17;
+	static constexpr int nullable_types_count = 18;
 	StringName nullable_types[nullable_types_count] = {
 		string_type,
 		string_name_type,
 		node_path_type,
 
-		StaticCString::create(_STR(Array)),
-		StaticCString::create(_STR(Dictionary)),
-		StaticCString::create(_STR(Callable)),
-		StaticCString::create(_STR(Signal)),
+		StringName(_STR(Array)),
+		StringName(_STR(Dictionary)),
+		StringName(_STR(Callable)),
+		StringName(_STR(Signal)),
 
-		StaticCString::create(_STR(PackedByteArray)),
-		StaticCString::create(_STR(PackedInt32Array)),
-		StaticCString::create(_STR(PackedInt64rray)),
-		StaticCString::create(_STR(PackedFloat32Array)),
-		StaticCString::create(_STR(PackedFloat64Array)),
-		StaticCString::create(_STR(PackedStringArray)),
-		StaticCString::create(_STR(PackedVector2Array)),
-		StaticCString::create(_STR(PackedVector3Array)),
-		StaticCString::create(_STR(PackedColorArray)),
+		StringName(_STR(PackedByteArray)),
+		StringName(_STR(PackedInt32Array)),
+		StringName(_STR(PackedInt64rray)),
+		StringName(_STR(PackedFloat32Array)),
+		StringName(_STR(PackedFloat64Array)),
+		StringName(_STR(PackedStringArray)),
+		StringName(_STR(PackedVector2Array)),
+		StringName(_STR(PackedVector3Array)),
+		StringName(_STR(PackedColorArray)),
+		StringName(_STR(PackedVector4Array)),
 	};
 
 	bool is_nullable_type(const StringName &p_type) const {
@@ -194,12 +195,12 @@ struct Context {
 	}
 
 	bool has_type(const TypeReference &p_type_ref) const {
-		if (builtin_types.find(p_type_ref.name) >= 0) {
+		if (builtin_types.has(p_type_ref.name)) {
 			return true;
 		}
 
 		if (p_type_ref.is_enum) {
-			if (enum_types.find(p_type_ref.name) >= 0) {
+			if (enum_types.has(p_type_ref.name)) {
 				return true;
 			}
 
@@ -246,6 +247,8 @@ bool arg_default_value_is_assignable_to_type(const Context &p_context, const Var
 		case Variant::VECTOR2:
 		case Variant::RECT2:
 		case Variant::VECTOR3:
+		case Variant::VECTOR4:
+		case Variant::PROJECTION:
 		case Variant::RID:
 		case Variant::ARRAY:
 		case Variant::DICTIONARY:
@@ -258,6 +261,7 @@ bool arg_default_value_is_assignable_to_type(const Context &p_context, const Var
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
 		case Variant::PACKED_COLOR_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY:
 		case Variant::CALLABLE:
 		case Variant::SIGNAL:
 			return p_arg_type.name == Variant::get_type_name(p_val.get_type());
@@ -272,11 +276,45 @@ bool arg_default_value_is_assignable_to_type(const Context &p_context, const Var
 		case Variant::VECTOR3I:
 			return p_arg_type.name == p_context.names_cache.vector3_type ||
 					p_arg_type.name == Variant::get_type_name(p_val.get_type());
-		default:
+		case Variant::VECTOR4I:
+			return p_arg_type.name == p_context.names_cache.vector4_type ||
+					p_arg_type.name == Variant::get_type_name(p_val.get_type());
+		case Variant::VARIANT_MAX:
+			break;
+	}
+	if (r_err_msg) {
+		*r_err_msg = "Unexpected Variant type: " + itos(p_val.get_type());
+	}
+	return false;
+}
+
+bool arg_default_value_is_valid_data(const Variant &p_val, String *r_err_msg = nullptr) {
+	switch (p_val.get_type()) {
+		case Variant::RID:
+		case Variant::ARRAY:
+		case Variant::DICTIONARY:
+		case Variant::PACKED_BYTE_ARRAY:
+		case Variant::PACKED_INT32_ARRAY:
+		case Variant::PACKED_INT64_ARRAY:
+		case Variant::PACKED_FLOAT32_ARRAY:
+		case Variant::PACKED_FLOAT64_ARRAY:
+		case Variant::PACKED_STRING_ARRAY:
+		case Variant::PACKED_VECTOR2_ARRAY:
+		case Variant::PACKED_VECTOR3_ARRAY:
+		case Variant::PACKED_COLOR_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY:
+		case Variant::CALLABLE:
+		case Variant::SIGNAL:
+		case Variant::OBJECT:
+			if (p_val.is_zero()) {
+				return true;
+			}
 			if (r_err_msg) {
-				*r_err_msg = "Unexpected Variant type: " + itos(p_val.get_type());
+				*r_err_msg = "Must be zero.";
 			}
 			break;
+		default:
+			return true;
 	}
 
 	return false;
@@ -321,11 +359,7 @@ void validate_property(const Context &p_context, const ExposedClass &p_class, co
 	if (getter && setter) {
 		const ArgumentData &setter_first_arg = setter->arguments.back()->get();
 		if (getter->return_type.name != setter_first_arg.type.name) {
-			// Special case for Node::set_name
-			bool whitelisted = getter->return_type.name == p_context.names_cache.string_name_type &&
-					setter_first_arg.type.name == p_context.names_cache.string_type;
-
-			TEST_FAIL_COND(!whitelisted,
+			TEST_FAIL(
 					"Return type from getter doesn't match first argument of setter, for property: '", p_class.name, ".", String(p_prop.name), "'.");
 		}
 	}
@@ -353,7 +387,7 @@ void validate_property(const Context &p_context, const ExposedClass &p_class, co
 			const ArgumentData &idx_arg = getter->arguments.front()->get();
 			if (idx_arg.type.name != p_context.names_cache.int_type) {
 				// If not an int, it can be an enum
-				TEST_COND(p_context.enum_types.find(idx_arg.type.name) < 0,
+				TEST_COND(!p_context.enum_types.has(idx_arg.type.name),
 						"Invalid type '", idx_arg.type.name, "' for index argument of property getter: '", p_class.name, ".", String(p_prop.name), "'.");
 			}
 		}
@@ -365,7 +399,7 @@ void validate_property(const Context &p_context, const ExposedClass &p_class, co
 			if (idx_arg.type.name != p_context.names_cache.int_type) {
 				// Assume the index parameter is an enum
 				// If not an int, it can be an enum
-				TEST_COND(p_context.enum_types.find(idx_arg.type.name) < 0,
+				TEST_COND(!p_context.enum_types.has(idx_arg.type.name),
 						"Invalid type '", idx_arg.type.name, "' for index argument of property setter: '", p_class.name, ".", String(p_prop.name), "'.");
 			}
 		}
@@ -373,8 +407,13 @@ void validate_property(const Context &p_context, const ExposedClass &p_class, co
 }
 
 void validate_argument(const Context &p_context, const ExposedClass &p_class, const String &p_owner_name, const String &p_owner_type, const ArgumentData &p_arg) {
+#ifdef DEBUG_ENABLED
 	TEST_COND((p_arg.name.is_empty() || p_arg.name.begins_with("_unnamed_arg")),
 			vformat("Unnamed argument in position %d of %s '%s.%s'.", p_arg.position, p_owner_type, p_class.name, p_owner_name));
+
+	TEST_FAIL_COND((p_arg.name != "@varargs@" && !p_arg.name.is_valid_ascii_identifier()),
+			vformat("Invalid argument name '%s' of %s '%s.%s'.", p_arg.name, p_owner_type, p_class.name, p_owner_name));
+#endif // DEBUG_ENABLED
 
 	const ExposedClass *arg_class = p_context.find_exposed_class(p_arg.type);
 	if (arg_class) {
@@ -401,7 +440,15 @@ void validate_argument(const Context &p_context, const ExposedClass &p_class, co
 			err_msg += " " + type_error_msg;
 		}
 
-		TEST_COND(!arg_defval_assignable_to_type, err_msg.utf8().get_data());
+		TEST_COND(!arg_defval_assignable_to_type, err_msg);
+
+		bool arg_defval_valid_data = arg_default_value_is_valid_data(p_arg.defval, &type_error_msg);
+
+		if (!type_error_msg.is_empty()) {
+			err_msg += " " + type_error_msg;
+		}
+
+		TEST_COND(!arg_defval_valid_data, err_msg);
 	}
 }
 
@@ -469,29 +516,25 @@ void validate_class(const Context &p_context, const ExposedClass &p_exposed_clas
 }
 
 void add_exposed_classes(Context &r_context) {
-	List<StringName> class_list;
-	ClassDB::get_class_list(&class_list);
-	class_list.sort_custom<StringName::AlphCompare>();
+	LocalVector<StringName> class_list;
+	ClassDB::get_class_list(class_list);
 
-	while (class_list.size()) {
-		StringName class_name = class_list.front()->get();
+	for (uint32_t class_list_idx = 0; class_list_idx < class_list.size(); class_list_idx++) {
+		StringName class_name = class_list[class_list_idx];
 
 		ClassDB::APIType api_type = ClassDB::get_api_type(class_name);
 
 		if (api_type == ClassDB::API_NONE) {
-			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_exposed(class_name)) {
 			INFO(vformat("Ignoring class '%s' because it's not exposed.", class_name));
-			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_enabled(class_name)) {
 			INFO(vformat("Ignoring class '%s' because it's not enabled.", class_name));
-			class_list.pop_front();
 			continue;
 		}
 
@@ -548,15 +591,13 @@ void add_exposed_classes(Context &r_context) {
 		for (const MethodInfo &E : method_list) {
 			const MethodInfo &method_info = E;
 
-			int argc = method_info.arguments.size();
-
 			if (method_info.name.is_empty()) {
 				continue;
 			}
 
 			MethodData method;
 			method.name = method_info.name;
-			TEST_FAIL_COND(!String(method.name).is_valid_identifier(),
+			TEST_FAIL_COND(!String(method.name).is_valid_ascii_identifier(),
 					"Method name is not a valid identifier: '", exposed_class.name, ".", method.name, "'.");
 
 			if (method_info.flags & METHOD_FLAG_VIRTUAL) {
@@ -588,7 +629,7 @@ void add_exposed_classes(Context &r_context) {
 						exposed_class.name, method.name);
 				TEST_FAIL_COND_WARN(
 						(exposed_class.name != r_context.names_cache.object_class || String(method.name) != "free"),
-						warn_msg.utf8().get_data());
+						warn_msg);
 
 			} else if (return_info.type == Variant::INT && return_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 				method.return_type.name = return_info.class_name;
@@ -611,8 +652,8 @@ void add_exposed_classes(Context &r_context) {
 				method.return_type.name = Variant::get_type_name(return_info.type);
 			}
 
-			for (int i = 0; i < argc; i++) {
-				PropertyInfo arg_info = method_info.arguments[i];
+			for (int64_t i = 0; i < method_info.arguments.size(); ++i) {
+				const PropertyInfo &arg_info = method_info.arguments[i];
 
 				String orig_arg_name = arg_info.name;
 
@@ -673,7 +714,7 @@ void add_exposed_classes(Context &r_context) {
 
 		// Add signals
 
-		const HashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
+		const AHashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
 
 		for (const KeyValue<StringName, MethodInfo> &K : signal_map) {
 			SignalData signal;
@@ -681,13 +722,11 @@ void add_exposed_classes(Context &r_context) {
 			const MethodInfo &method_info = signal_map.get(K.key);
 
 			signal.name = method_info.name;
-			TEST_FAIL_COND(!String(signal.name).is_valid_identifier(),
+			TEST_FAIL_COND(!String(signal.name).is_valid_ascii_identifier(),
 					"Signal name is not a valid identifier: '", exposed_class.name, ".", signal.name, "'.");
 
-			int argc = method_info.arguments.size();
-
-			for (int i = 0; i < argc; i++) {
-				PropertyInfo arg_info = method_info.arguments[i];
+			for (int64_t i = 0; i < method_info.arguments.size(); ++i) {
+				const PropertyInfo &arg_info = method_info.arguments[i];
 
 				String orig_arg_name = arg_info.name;
 
@@ -718,7 +757,7 @@ void add_exposed_classes(Context &r_context) {
 					"Signal name conflicts with %s: '%s.%s.",
 					method_conflict ? "method" : "property", class_name, signal.name);
 			TEST_FAIL_COND((method_conflict || exposed_class.find_method_by_name(signal.name)),
-					warn_msg.utf8().get_data());
+					warn_msg);
 
 			exposed_class.signals_.push_back(signal);
 		}
@@ -736,7 +775,7 @@ void add_exposed_classes(Context &r_context) {
 
 			for (const StringName &E : K.value.constants) {
 				const StringName &constant_name = E;
-				TEST_FAIL_COND(String(constant_name).find("::") != -1,
+				TEST_FAIL_COND(String(constant_name).contains("::"),
 						"Enum constant contains '::', check bindings to remove the scope: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
 				int64_t *value = class_info->constant_map.getptr(constant_name);
@@ -758,7 +797,7 @@ void add_exposed_classes(Context &r_context) {
 
 		for (const String &E : constants) {
 			const String &constant_name = E;
-			TEST_FAIL_COND(constant_name.find("::") != -1,
+			TEST_FAIL_COND(constant_name.contains("::"),
 					"Constant contains '::', check bindings to remove the scope: '",
 					String(class_name), ".", constant_name, "'.");
 			int64_t *value = class_info->constant_map.getptr(StringName(E));
@@ -772,7 +811,6 @@ void add_exposed_classes(Context &r_context) {
 		}
 
 		r_context.exposed_classes.insert(class_name, exposed_class);
-		class_list.pop_front();
 	}
 }
 
@@ -816,16 +854,19 @@ void add_global_enums(Context &r_context) {
 		}
 	}
 
-	// HARDCODED
-	List<StringName> hardcoded_enums;
-	hardcoded_enums.push_back("Vector2.Axis");
-	hardcoded_enums.push_back("Vector2i.Axis");
-	hardcoded_enums.push_back("Vector3.Axis");
-	hardcoded_enums.push_back("Vector3i.Axis");
-	for (const StringName &E : hardcoded_enums) {
-		// These enums are not generated and must be written manually (e.g.: Vector3.Axis)
-		// Here, we assume core types do not begin with underscore
-		r_context.enum_types.push_back(E);
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		if (i == Variant::OBJECT) {
+			continue;
+		}
+
+		const Variant::Type type = Variant::Type(i);
+
+		List<StringName> enum_names;
+		Variant::get_enums_for_type(type, &enum_names);
+
+		for (const StringName &enum_name : enum_names) {
+			r_context.enum_types.push_back(Variant::get_type_name(type) + "." + enum_name);
+		}
 	}
 }
 
@@ -850,5 +891,3 @@ TEST_SUITE("[ClassDB]") {
 	}
 }
 } // namespace TestClassDB
-
-#endif // TEST_CLASS_DB_H

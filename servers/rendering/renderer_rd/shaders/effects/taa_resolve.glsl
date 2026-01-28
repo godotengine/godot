@@ -19,6 +19,7 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////
 // File changes (yyyy-mm-dd)
+// 2025-11-05: Jakub Brzyski: Added dynamic variance, base variance value adjusted to reduce ghosting
 // 2022-05-06: Panos Karabelas: first commit
 // 2020-12-05: Joan Fons: convert to Vulkan and Godot
 ///////////////////////////////////////////////////////////////////////////////////
@@ -32,19 +33,15 @@
 // Based on Spartan Engine's TAA implementation (without TAA upscale).
 // <https://github.com/PanosK92/SpartanEngine/blob/a8338d0609b85dc32f3732a5c27fb4463816a3b9/Data/shaders/temporal_antialiasing.hlsl>
 
-#ifndef MOLTENVK_USED
-#define USE_SUBGROUPS
-#endif // MOLTENVK_USED
-
 #define GROUP_SIZE 8
 #define FLT_MIN 0.00000001
 #define FLT_MAX 32767.0
 #define RPC_9 0.11111111111
 #define RPC_16 0.0625
 
-#ifdef USE_SUBGROUPS
+#define DISOCCLUSION_SCALE 0.01 // Scale the weight of this pixel calculated as (change in velocity - threshold) * scale.
+
 layout(local_size_x = GROUP_SIZE, local_size_y = GROUP_SIZE, local_size_z = 1) in;
-#endif
 
 layout(rgba16f, set = 0, binding = 0) uniform restrict readonly image2D color_buffer;
 layout(set = 0, binding = 1) uniform sampler2D depth_buffer;
@@ -55,8 +52,8 @@ layout(rgba16f, set = 0, binding = 5) uniform restrict writeonly image2D output_
 
 layout(push_constant, std430) uniform Params {
 	vec2 resolution;
-	float disocclusion_threshold; // 0.1 / max(params.resolution.x, params.resolution.y
-	float disocclusion_scale;
+	float disocclusion_threshold; // 0.1 / max(params.resolution.x, params.resolution.y)
+	float variance_dynamic;
 }
 params;
 
@@ -92,7 +89,6 @@ float get_depth(ivec2 thread_id) {
 	return texelFetch(depth_buffer, thread_id, 0).r;
 }
 
-#ifdef USE_SUBGROUPS
 shared vec3 tile_color[kTileDimension][kTileDimension];
 shared float tile_depth[kTileDimension][kTileDimension];
 
@@ -141,15 +137,6 @@ void populate_group_shared_memory(uvec2 group_id, uint group_index) {
 	groupMemoryBarrier();
 	barrier();
 }
-#else
-vec3 load_color(uvec2 screen_pos) {
-	return imageLoad(color_buffer, ivec2(screen_pos)).rgb;
-}
-
-float load_depth(uvec2 screen_pos) {
-	return get_depth(ivec2(screen_pos));
-}
-#endif
 
 /*------------------------------------------------------------------------------
 								VELOCITY
@@ -250,19 +237,25 @@ vec3 clip_aabb(vec3 aabb_min, vec3 aabb_max, vec3 p, vec3 q) {
 	vec3 rmax = (aabb_max - p.xyz);
 	vec3 rmin = (aabb_min - p.xyz);
 
-	if (r.x > rmax.x + FLT_MIN)
+	if (r.x > rmax.x + FLT_MIN) {
 		r *= (rmax.x / r.x);
-	if (r.y > rmax.y + FLT_MIN)
+	}
+	if (r.y > rmax.y + FLT_MIN) {
 		r *= (rmax.y / r.y);
-	if (r.z > rmax.z + FLT_MIN)
+	}
+	if (r.z > rmax.z + FLT_MIN) {
 		r *= (rmax.z / r.z);
+	}
 
-	if (r.x < rmin.x - FLT_MIN)
+	if (r.x < rmin.x - FLT_MIN) {
 		r *= (rmin.x / r.x);
-	if (r.y < rmin.y - FLT_MIN)
+	}
+	if (r.y < rmin.y - FLT_MIN) {
 		r *= (rmin.y / r.y);
-	if (r.z < rmin.z - FLT_MIN)
+	}
+	if (r.z < rmin.z - FLT_MIN) {
 		r *= (rmin.z / r.z);
+	}
 
 	return p + r;
 }
@@ -283,7 +276,8 @@ vec3 clip_history_3x3(uvec2 group_pos, vec3 color_history, vec2 velocity_closest
 	// Compute min and max (with an adaptive box size, which greatly reduces ghosting)
 	vec3 color_avg = (s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9) * RPC_9;
 	vec3 color_avg2 = ((s1 * s1) + (s2 * s2) + (s3 * s3) + (s4 * s4) + (s5 * s5) + (s6 * s6) + (s7 * s7) + (s8 * s8) + (s9 * s9)) * RPC_9;
-	float box_size = mix(0.0f, 2.5f, smoothstep(0.02f, 0.0f, length(velocity_closest)));
+	// Use variance clipping as described in https://developer.download.nvidia.com/gameworks/events/GDC2016/msalvi_temporal_supersampling.pdf
+	float box_size = mix(0.0f, params.variance_dynamic, smoothstep(0.02f, 0.0f, length(velocity_closest)));
 	vec3 dev = sqrt(abs(color_avg2 - (color_avg * color_avg))) * box_size;
 	vec3 color_min = color_avg - dev;
 	vec3 color_max = color_avg + dev;
@@ -307,12 +301,14 @@ float luminance(vec3 color) {
 	return max(dot(color, lumCoeff), 0.0001f);
 }
 
+// This is "velocity disocclusion" as described by https://www.elopezr.com/temporal-aa-and-the-quest-for-the-holy-trail/.
+// We use texel space, so our scale and threshold differ.
 float get_factor_disocclusion(vec2 uv_reprojected, vec2 velocity) {
 	vec2 velocity_previous = imageLoad(last_velocity_buffer, ivec2(uv_reprojected * params.resolution)).xy;
 	vec2 velocity_texels = velocity * params.resolution;
 	vec2 prev_velocity_texels = velocity_previous * params.resolution;
 	float disocclusion = length(prev_velocity_texels - velocity_texels) - params.disocclusion_threshold;
-	return clamp(disocclusion * params.disocclusion_scale, 0.0, 1.0);
+	return clamp(disocclusion * DISOCCLUSION_SCALE, 0.0, 1.0);
 }
 
 vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_screen, vec2 uv, sampler2D tex_history) {
@@ -336,7 +332,7 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 	// Compute blend factor
 	float blend_factor = RPC_16; // We want to be able to accumulate as many jitter samples as we generated, that is, 16.
 	{
-		// If re-projected UV is out of screen, converge to current color immediatel
+		// If re-projected UV is out of screen, converge to current color immediately.
 		float factor_screen = any(lessThan(uv_reprojected, vec2(0.0))) || any(greaterThan(uv_reprojected, vec2(1.0))) ? 1.0 : 0.0;
 
 		// Increase blend factor when there is disocclusion (fixes a lot of the remaining ghosting).
@@ -372,22 +368,15 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 }
 
 void main() {
-#ifdef USE_SUBGROUPS
 	populate_group_shared_memory(gl_WorkGroupID.xy, gl_LocalInvocationIndex);
-#endif
 
 	// Out of bounds check
 	if (any(greaterThanEqual(vec2(gl_GlobalInvocationID.xy), params.resolution))) {
 		return;
 	}
 
-#ifdef USE_SUBGROUPS
 	const uvec2 pos_group = gl_LocalInvocationID.xy;
 	const uvec2 pos_group_top_left = gl_WorkGroupID.xy * kGroupSize - kBorderSize;
-#else
-	const uvec2 pos_group = gl_GlobalInvocationID.xy;
-	const uvec2 pos_group_top_left = uvec2(0, 0);
-#endif
 	const uvec2 pos_screen = gl_GlobalInvocationID.xy;
 	const vec2 uv = (gl_GlobalInvocationID.xy + 0.5f) / params.resolution;
 

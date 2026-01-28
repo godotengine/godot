@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -27,7 +28,7 @@ namespace GodotTools.IdeMessaging
 
         private readonly IMessageHandler messageHandler;
 
-        private Peer peer;
+        private Peer? peer;
         private readonly SemaphoreSlim connectionSem = new SemaphoreSlim(1);
 
         private readonly Queue<NotifyAwaiter<bool>> clientConnectedAwaiters = new Queue<NotifyAwaiter<bool>>();
@@ -53,6 +54,7 @@ namespace GodotTools.IdeMessaging
         public bool IsDisposed { get; private set; }
 
         // ReSharper disable once MemberCanBePrivate.Global
+        [MemberNotNullWhen(true, "peer")]
         public bool IsConnected => peer != null && !peer.IsDisposed && peer.IsTcpClientConnected;
 
         // ReSharper disable once EventNeverSubscribedTo.Global
@@ -111,7 +113,7 @@ namespace GodotTools.IdeMessaging
             if (disposing)
             {
                 peer?.Dispose();
-                fsWatcher?.Dispose();
+                fsWatcher.Dispose();
             }
         }
 
@@ -215,12 +217,12 @@ namespace GodotTools.IdeMessaging
             using (var fileStream = new FileStream(MetaFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             using (var reader = new StreamReader(fileStream))
             {
-                string portStr = reader.ReadLine();
+                string? portStr = reader.ReadLine();
 
                 if (portStr == null)
                     return null;
 
-                string editorExecutablePath = reader.ReadLine();
+                string? editorExecutablePath = reader.ReadLine();
 
                 if (editorExecutablePath == null)
                     return null;
@@ -333,7 +335,7 @@ namespace GodotTools.IdeMessaging
             }
         }
 
-        public async Task<TResponse> SendRequest<TResponse>(Request request)
+        public async Task<TResponse?> SendRequest<TResponse>(Request request)
             where TResponse : Response, new()
         {
             if (!IsConnected)
@@ -346,7 +348,7 @@ namespace GodotTools.IdeMessaging
             return await peer.SendRequest<TResponse>(request.Id, body);
         }
 
-        public async Task<TResponse> SendRequest<TResponse>(string id, string body)
+        public async Task<TResponse?> SendRequest<TResponse>(string id, string body)
             where TResponse : Response, new()
         {
             if (!IsConnected)

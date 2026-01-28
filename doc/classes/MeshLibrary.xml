@@ -7,8 +7,8 @@
 		A library of meshes. Contains a list of [Mesh] resources, each with a name and ID. Each item can also include collision and navigation shapes. This resource is used in [GridMap].
 	</description>
 	<tutorials>
-		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/126</link>
-		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2739</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
 	</tutorials>
 	<methods>
 		<method name="clear">
@@ -29,7 +29,7 @@
 			<return type="int" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Returns the first item with the given name.
+				Returns the first item with the given name, or [code]-1[/code] if no item is found.
 			</description>
 		</method>
 		<method name="get_item_list" qualifiers="const">
@@ -43,6 +43,13 @@
 			<param index="0" name="id" type="int" />
 			<description>
 				Returns the item's mesh.
+			</description>
+		</method>
+		<method name="get_item_mesh_cast_shadow" qualifiers="const">
+			<return type="int" enum="RenderingServer.ShadowCastingSetting" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the item's shadow casting mode.
 			</description>
 		</method>
 		<method name="get_item_mesh_transform" qualifiers="const">
@@ -114,6 +121,14 @@
 			<param index="1" name="mesh" type="Mesh" />
 			<description>
 				Sets the item's mesh.
+			</description>
+		</method>
+		<method name="set_item_mesh_cast_shadow">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="shadow_casting_setting" type="int" enum="RenderingServer.ShadowCastingSetting" />
+			<description>
+				Sets the item's shadow casting mode to [param shadow_casting_setting].
 			</description>
 		</method>
 		<method name="set_item_mesh_transform">

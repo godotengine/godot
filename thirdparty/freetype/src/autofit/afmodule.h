@@ -4,7 +4,7 @@
  *
  *   Auto-fitter module implementation (specification).
  *
- * Copyright (C) 2003-2023 by
+ * Copyright (C) 2003-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -22,6 +22,7 @@
 #include <freetype/internal/ftobjs.h>
 #include <freetype/ftmodapi.h>
 
+#include "ft-hb.h"
 
 FT_BEGIN_HEADER
 
@@ -39,6 +40,11 @@ FT_BEGIN_HEADER
     AF_Script     default_script;
     FT_Bool       no_stem_darkening;
     FT_Int        darken_params[8];
+
+#if defined( FT_CONFIG_OPTION_USE_HARFBUZZ )         && \
+    defined( FT_CONFIG_OPTION_USE_HARFBUZZ_DYNAMIC )
+    ft_hb_funcs_t*  hb_funcs;
+#endif
 
   } AF_ModuleRec, *AF_Module;
 

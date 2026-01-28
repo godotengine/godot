@@ -7,9 +7,11 @@
 		A singleton used to load resource files from the filesystem.
 		It uses the many [ResourceFormatLoader] classes registered in the engine (either built-in or from a plugin) to load files into memory and convert them to a format that can be used by the engine.
 		[b]Note:[/b] You have to import the files into the engine first to load them using [method load]. If you want to load [Image]s at run-time, you may use [method Image.load]. If you want to import audio files, you can use the snippet described in [member AudioStreamMP3.data].
+		[b]Note:[/b] Non-resource files such as plain text files cannot be read using [ResourceLoader]. Use [FileAccess] for those files instead, and be aware that non-resource files are not exported by default (see notes in the [FileAccess] class description for instructions on exporting them).
 	</description>
 	<tutorials>
-		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
+		<link title="Threaded Loading Demo">https://godotengine.org/asset-library/asset/2778</link>
+		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
 	</tutorials>
 	<methods>
 		<method name="add_resource_format_loader">
@@ -28,6 +30,15 @@
 			<description>
 				Returns whether a recognized resource exists for the given [param path].
 				An optional [param type_hint] can be used to further specify the [Resource] type that should be handled by the [ResourceFormatLoader]. Anything that inherits from [Resource] can be used as a type hint, for example [Image].
+				[b]Note:[/b] If you use [method Resource.take_over_path], this method will return [code]true[/code] for the taken path even if the resource wasn't saved (i.e. exists only in resource cache).
+			</description>
+		</method>
+		<method name="get_cached_ref">
+			<return type="Resource" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the cached resource reference for the given [param path].
+				[b]Note:[/b] If the resource is not cached, the returned [Resource] will be invalid.
 			</description>
 		</method>
 		<method name="get_dependencies">
@@ -35,11 +46,14 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns the dependencies for the resource at the given [param path].
-				[b]Note:[/b] The dependencies are returned with slices separated by [code]::[/code]. You can use [method String.get_slice] to get their components.
+				Each dependency is a string that can be divided into sections by [code]::[/code]. There can be either one section or three sections, with the second section always being empty. When there is one section, it contains the file path. When there are three sections, the first section contains the UID and the third section contains the fallback path.
 				[codeblock]
-				for dep in ResourceLoader.get_dependencies(path):
-				    print(dep.get_slice("::", 0)) # Prints UID.
-				    print(dep.get_slice("::", 2)) # Prints path.
+				for dependency in ResourceLoader.get_dependencies(path):
+					if dependency.contains("::"):
+						print(dependency.get_slice("::", 0)) # Prints the UID.
+						print(dependency.get_slice("::", 2)) # Prints the fallback path.
+					else:
+						print(dependency) # Prints the path.
 				[/codeblock]
 			</description>
 		</method>
@@ -65,6 +79,19 @@
 				Once a resource has been loaded by the engine, it is cached in memory for faster access, and future calls to the [method load] method will use the cached version. The cached resource can be overridden by using [method Resource.take_over_path] on a new resource for that same path.
 			</description>
 		</method>
+		<method name="list_directory">
+			<return type="PackedStringArray" />
+			<param index="0" name="directory_path" type="String" />
+			<description>
+				Lists a directory, returning all resources and subdirectories contained within. The resource files have the original file names as visible in the editor before exporting. The directories have [code]"/"[/code] appended.
+				[codeblock]
+				# Prints ["extra_data/", "model.gltf", "model.tscn", "model_slime.png"]
+				print(ResourceLoader.list_directory("res://assets/enemies/slime"))
+				[/codeblock]
+				[b]Note:[/b] The order of files and directories returned by this method is not deterministic, and can vary between operating systems.
+				[b]Note:[/b] To normally traverse the filesystem, see [DirAccess].
+			</description>
+		</method>
 		<method name="load">
 			<return type="Resource" />
 			<param index="0" name="path" type="String" />
@@ -74,10 +101,11 @@
 				Loads a resource at the given [param path], caching the result for further access.
 				The registered [ResourceFormatLoader]s are queried sequentially to find the first one which can handle the file's extension, and then attempt loading. If loading fails, the remaining ResourceFormatLoaders are also attempted.
 				An optional [param type_hint] can be used to further specify the [Resource] type that should be handled by the [ResourceFormatLoader]. Anything that inherits from [Resource] can be used as a type hint, for example [Image].
-				The [param cache_mode] property defines whether and how the cache should be used or updated when loading the resource. See [enum CacheMode] for details.
-				Returns an empty resource if no [ResourceFormatLoader] could handle the file.
+				The [param cache_mode] property defines whether and how the cache should be used or updated when loading the resource.
+				Returns an empty resource if no [ResourceFormatLoader] could handle the file, and prints an error if no file is found at the specified path.
 				GDScript has a simplified [method @GDScript.load] built-in method which can be used in most situations, leaving the use of [ResourceLoader] for more advanced scenarios.
 				[b]Note:[/b] If [member ProjectSettings.editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to read converted files in an exported project. If you rely on run-time loading of files present within the PCK, set [member ProjectSettings.editor/export/convert_text_resources_to_binary] to [code]false[/code].
+				[b]Note:[/b] Relative paths will be prefixed with [code]"res://"[/code] before loading, to avoid unexpected results make sure your paths are absolute.
 			</description>
 		</method>
 		<method name="load_threaded_get">
@@ -85,7 +113,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns the resource loaded by [method load_threaded_request].
-				If this is called before the loading thread is done (i.e. [method load_threaded_get_status] is not [constant THREAD_LOAD_LOADED]), the calling thread will be blocked until the resource has finished loading.
+				If this is called before the loading thread is done (i.e. [method load_threaded_get_status] is not [constant THREAD_LOAD_LOADED]), the calling thread will be blocked until the resource has finished loading. However, it's recommended to use [method load_threaded_get_status] to known when the load has actually completed.
 			</description>
 		</method>
 		<method name="load_threaded_get_status">
@@ -93,8 +121,9 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="progress" type="Array" default="[]" />
 			<description>
-				Returns the status of a threaded loading operation started with [method load_threaded_request] for the resource at [param path]. See [enum ThreadLoadStatus] for possible return values.
-				An array variable can optionally be passed via [param progress], and will return a one-element array containing the percentage of completion of the threaded loading.
+				Returns the status of a threaded loading operation started with [method load_threaded_request] for the resource at [param path].
+				An array variable can optionally be passed via [param progress], and will return a one-element array containing the ratio of completion of the threaded loading (between [code]0.0[/code] and [code]1.0[/code]).
+				[b]Note:[/b] The recommended way of using this method is to call it during different frames (e.g., in [method Node._process], instead of a loop).
 			</description>
 		</method>
 		<method name="load_threaded_request">
@@ -105,7 +134,7 @@
 			<param index="3" name="cache_mode" type="int" enum="ResourceLoader.CacheMode" default="1" />
 			<description>
 				Loads the resource using threads. If [param use_sub_threads] is [code]true[/code], multiple threads will be used to load the resource, which makes loading faster, but may affect the main thread (and thus cause game slowdowns).
-				The [param cache_mode] property defines whether and how the cache should be used or updated when loading the resource. See [enum CacheMode] for details.
+				The [param cache_mode] parameter defines whether and how the cache should be used or updated when loading the resource.
 			</description>
 		</method>
 		<method name="remove_resource_format_loader">
@@ -137,10 +166,19 @@
 			The resource was loaded successfully and can be accessed via [method load_threaded_get].
 		</constant>
 		<constant name="CACHE_MODE_IGNORE" value="0" enum="CacheMode">
+			Neither the main resource (the one requested to be loaded) nor any of its subresources are retrieved from cache nor stored into it. Dependencies (external resources) are loaded with [constant CACHE_MODE_REUSE].
 		</constant>
 		<constant name="CACHE_MODE_REUSE" value="1" enum="CacheMode">
+			The main resource (the one requested to be loaded), its subresources, and its dependencies (external resources) are retrieved from cache if present, instead of loaded. Those not cached are loaded and then stored into the cache. The same rules are propagated recursively down the tree of dependencies (external resources).
 		</constant>
 		<constant name="CACHE_MODE_REPLACE" value="2" enum="CacheMode">
+			Like [constant CACHE_MODE_REUSE], but the cache is checked for the main resource (the one requested to be loaded) as well as for each of its subresources. Those already in the cache, as long as the loaded and cached types match, have their data refreshed from storage into the already existing instances. Otherwise, they are recreated as completely new objects.
+		</constant>
+		<constant name="CACHE_MODE_IGNORE_DEEP" value="3" enum="CacheMode">
+			Like [constant CACHE_MODE_IGNORE], but propagated recursively down the tree of dependencies (external resources).
+		</constant>
+		<constant name="CACHE_MODE_REPLACE_DEEP" value="4" enum="CacheMode">
+			Like [constant CACHE_MODE_REPLACE], but propagated recursively down the tree of dependencies (external resources).
 		</constant>
 	</constants>
 </class>

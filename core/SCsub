@@ -1,44 +1,15 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
-Import("env")
+import os
 
 import core_builders
 
+import methods
+
+Import("env")
+
 env.core_sources = []
-
-
-# Generate AES256 script encryption key
-import os
-
-txt = "0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0"
-if "SCRIPT_AES256_ENCRYPTION_KEY" in os.environ:
-    key = os.environ["SCRIPT_AES256_ENCRYPTION_KEY"]
-    ec_valid = True
-    if len(key) != 64:
-        ec_valid = False
-    else:
-        txt = ""
-        for i in range(len(key) >> 1):
-            if i > 0:
-                txt += ","
-            txts = "0x" + key[i * 2 : i * 2 + 2]
-            try:
-                int(txts, 16)
-            except Exception:
-                ec_valid = False
-            txt += txts
-    if not ec_valid:
-        print("Error: Invalid AES256 encryption key, not 64 hexadecimal characters: '" + key + "'.")
-        print(
-            "Unset 'SCRIPT_AES256_ENCRYPTION_KEY' in your environment "
-            "or make sure that it contains exactly 64 hexadecimal characters."
-        )
-        Exit(255)
-
-# NOTE: It is safe to generate this file here, since this is still executed serially
-with open("script_encryption_key.gen.cpp", "w") as f:
-    f.write('#include "core/config/project_settings.h"\nuint8_t script_encryption_key[32]={' + txt + "};\n")
-
 
 # Add required thirdparty code.
 
@@ -58,7 +29,6 @@ thirdparty_misc_sources = [
     # C++ sources
     "pcg.cpp",
     "polypartition.cpp",
-    "clipper.cpp",
     "smolv.cpp",
 ]
 thirdparty_misc_sources = [thirdparty_misc_dir + file for file in thirdparty_misc_sources]
@@ -77,7 +47,9 @@ if env["brotli"] and env["builtin_brotli"]:
         "dec/bit_reader.c",
         "dec/decode.c",
         "dec/huffman.c",
+        "dec/prefix.c",
         "dec/state.c",
+        "dec/static_init.c",
     ]
     thirdparty_brotli_sources = [thirdparty_brotli_dir + file for file in thirdparty_brotli_sources]
 
@@ -129,6 +101,8 @@ if env["builtin_zlib"]:
     env.Prepend(CPPPATH=[thirdparty_zlib_dir])
     if env.dev_build:
         env_thirdparty.Append(CPPDEFINES=["ZLIB_DEBUG"])
+        # Affects headers so it should also be defined for Godot code
+        env.Append(CPPDEFINES=["ZLIB_DEBUG"])
 
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_zlib_sources)
 
@@ -139,9 +113,7 @@ thirdparty_minizip_sources = ["ioapi.c", "unzip.c", "zip.c"]
 thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdparty_minizip_sources]
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_minizip_sources)
 
-# Zstd library, can be unbundled in theory
-# though we currently use some private symbols
-# https://github.com/godotengine/godot/issues/17374
+# Zstd library, can be unbundled
 if env["builtin_zstd"]:
     thirdparty_zstd_dir = "#thirdparty/zstd/"
     thirdparty_zstd_sources = [
@@ -162,6 +134,7 @@ if env["builtin_zstd"]:
         "compress/zstd_lazy.c",
         "compress/zstd_ldm.c",
         "compress/zstd_opt.c",
+        "compress/zstd_preSplit.c",
         "compress/zstdmt_compress.c",
         "compress/zstd_compress_literals.c",
         "compress/zstd_compress_sequences.c",
@@ -171,7 +144,11 @@ if env["builtin_zstd"]:
         "decompress/zstd_decompress_block.c",
         "decompress/zstd_decompress.c",
     ]
-    if env["platform"] in ["android", "ios", "linuxbsd", "macos"]:
+    if (
+        env["platform"] in ["android", "ios", "linuxbsd", "macos", "windows"]
+        and env["arch"] == "x86_64"
+        and not env.msvc
+    ):
         # Match platforms with ZSTD_ASM_SUPPORTED in common/portability_macros.h
         thirdparty_zstd_sources.append("decompress/huf_decompress_amd64.S")
     thirdparty_zstd_sources = [thirdparty_zstd_dir + file for file in thirdparty_zstd_sources]
@@ -189,43 +166,60 @@ env.core_sources += thirdparty_obj
 
 
 # Godot source files
-
 env.add_source_files(env.core_sources, "*.cpp")
-env.add_source_files(env.core_sources, "script_encryption_key.gen.cpp")
-env.add_source_files(env.core_sources, "version_hash.gen.cpp")
+
+# Generate disabled classes
+env.CommandNoCache(
+    "disabled_classes.gen.h", env.Value(env.disabled_classes), env.Run(core_builders.disabled_class_builder)
+)
+
+# Generate version info
+env.CommandNoCache(
+    "version_generated.gen.h",
+    env.Value(methods.get_version_info(env.module_version_string)),
+    env.Run(core_builders.version_info_builder),
+)
+
+# Generate version hash
+gen_hash = env.CommandNoCache(
+    "version_hash.gen.cpp", env.Value(methods.get_git_info()), env.Run(core_builders.version_hash_builder)
+)
+env.add_source_files(env.core_sources, gen_hash)
+
+# Generate AES256 script encryption key
+encryption_key = os.environ.get("SCRIPT_AES256_ENCRYPTION_KEY")
+if encryption_key:
+    print(
+        "\n*** IMPORTANT: Compiling Godot with custom `SCRIPT_AES256_ENCRYPTION_KEY` set as environment variable."
+        "\n*** Make sure to use templates compiled with this key when exporting a project with encryption.\n"
+    )
+gen_encrypt = env.CommandNoCache(
+    "script_encryption_key.gen.cpp",
+    env.Value(encryption_key),
+    env.Run(core_builders.encryption_key_builder),
+)
+env.add_source_files(env.core_sources, gen_encrypt)
 
 # Certificates
-env.Depends(
-    "#core/io/certs_compressed.gen.h",
-    ["#thirdparty/certs/ca-certificates.crt", env.Value(env["builtin_certs"]), env.Value(env["system_certs_path"])],
-)
 env.CommandNoCache(
     "#core/io/certs_compressed.gen.h",
-    "#thirdparty/certs/ca-certificates.crt",
-    env.Run(core_builders.make_certs_header, "Building ca-certificates header."),
+    ["#thirdparty/certs/ca-bundle.crt", env.Value(env["builtin_certs"]), env.Value(env["system_certs_path"])],
+    env.Run(core_builders.make_certs_header),
 )
 
 # Authors
-env.Depends("#core/authors.gen.h", "../AUTHORS.md")
-env.CommandNoCache(
-    "#core/authors.gen.h", "../AUTHORS.md", env.Run(core_builders.make_authors_header, "Generating authors header.")
-)
+env.CommandNoCache("#core/authors.gen.h", "#AUTHORS.md", env.Run(core_builders.make_authors_header))
 
 # Donors
-env.Depends("#core/donors.gen.h", "../DONORS.md")
-env.CommandNoCache(
-    "#core/donors.gen.h", "../DONORS.md", env.Run(core_builders.make_donors_header, "Generating donors header.")
-)
+env.CommandNoCache("#core/donors.gen.h", "#DONORS.md", env.Run(core_builders.make_donors_header))
 
 # License
-env.Depends("#core/license.gen.h", ["../COPYRIGHT.txt", "../LICENSE.txt"])
 env.CommandNoCache(
-    "#core/license.gen.h",
-    ["../COPYRIGHT.txt", "../LICENSE.txt"],
-    env.Run(core_builders.make_license_header, "Generating license header."),
+    "#core/license.gen.h", ["#COPYRIGHT.txt", "#LICENSE.txt"], env.Run(core_builders.make_license_header)
 )
 
 # Chain load SCsubs
+SConscript("profiling/SCsub")
 SConscript("os/SCsub")
 SConscript("math/SCsub")
 SConscript("crypto/SCsub")

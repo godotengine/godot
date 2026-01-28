@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CONTAINER_H
-#define CONTAINER_H
+#pragma once
 
 #include "scene/gui/control.h"
 
@@ -37,11 +36,20 @@ class Container : public Control {
 	GDCLASS(Container, Control);
 
 	bool pending_sort = false;
+	bool accessibility_region = false;
 	void _sort_children();
 	void _child_minsize_changed();
 
 protected:
+	enum class SortableVisibilityMode {
+		VISIBLE,
+		VISIBLE_IN_TREE,
+		IGNORE,
+	};
+
 	void queue_sort();
+	Control *as_sortable_control(Node *p_node, SortableVisibilityMode p_visibility_mode = SortableVisibilityMode::VISIBLE_IN_TREE) const;
+
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
@@ -58,14 +66,15 @@ public:
 		NOTIFICATION_SORT_CHILDREN = 51,
 	};
 
-	void fit_child_in_rect(Control *p_child, const Rect2 &p_rect);
+	void fit_child_in_rect(RequiredParam<Control> rp_child, const Rect2 &p_rect);
 
 	virtual Vector<int> get_allowed_size_flags_horizontal() const;
 	virtual Vector<int> get_allowed_size_flags_vertical() const;
 
 	PackedStringArray get_configuration_warnings() const override;
 
+	void set_accessibility_region(bool p_region);
+	bool is_accessibility_region() const;
+
 	Container();
 };
-
-#endif // CONTAINER_H

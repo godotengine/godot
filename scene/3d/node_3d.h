@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NODE_3D_H
-#define NODE_3D_H
+#pragma once
 
 #include "scene/main/node.h"
-#include "scene/resources/world_3d.h"
+#include "scene/resources/3d/world_3d.h"
 
 class Node3DGizmo : public RefCounted {
 	GDCLASS(Node3DGizmo, RefCounted);
@@ -51,7 +50,12 @@ public:
 class Node3D : public Node {
 	GDCLASS(Node3D, Node);
 
+	friend class SceneTreeFTI;
+	friend class SceneTreeFTITests;
+
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::NODE_3D;
+
 	// Edit mode for the rotation.
 	// THIS MODE ONLY AFFECTS HOW DATA IS EDITED AND SAVED
 	// IT DOES _NOT_ AFFECT THE TRANSFORM LOGIC (see comment in TransformDirty).
@@ -82,16 +86,36 @@ private:
 		DIRTY_NONE = 0,
 		DIRTY_EULER_ROTATION_AND_SCALE = 1,
 		DIRTY_LOCAL_TRANSFORM = 2,
-		DIRTY_GLOBAL_TRANSFORM = 4
+		DIRTY_GLOBAL_TRANSFORM = 4,
+		DIRTY_GLOBAL_INTERPOLATED_TRANSFORM = 8,
+	};
+
+	struct ClientPhysicsInterpolationData {
+		Transform3D global_xform_curr;
+		Transform3D global_xform_prev;
+		uint64_t current_physics_tick = 0;
+		uint64_t timeout_physics_tick = 0;
 	};
 
 	mutable SelfList<Node> xform_change;
+	SelfList<Node3D> _client_physics_interpolation_node_3d_list;
 
 	// This Data struct is to avoid namespace pollution in derived classes.
 
 	struct Data {
+		// Interpolated global transform - correct on the frame only.
+		// Only used with FTI.
+		Transform3D global_transform_interpolated;
+
+		// Current xforms are either
+		// * Used for everything (when not using FTI)
+		// * Correct on the physics tick (when using FTI)
 		mutable Transform3D global_transform;
 		mutable Transform3D local_transform;
+
+		// Only used with FTI.
+		Transform3D local_transform_prev;
+
 		mutable EulerOrder euler_rotation_order = EulerOrder::YXZ;
 		mutable Vector3 euler_rotation;
 		mutable Vector3 scale = Vector3(1, 1, 1);
@@ -101,27 +125,48 @@ private:
 
 		Viewport *viewport = nullptr;
 
-		bool top_level = false;
-		bool inside_world = false;
+		bool top_level : 1;
+		bool inside_world : 1;
+
+		// This is cached, and only currently kept up to date in visual instances.
+		// This is set if a visual instance is (a) in the tree AND (b) visible via is_visible_in_tree() call.
+		bool vi_visible : 1;
+
+		bool ignore_notification : 1;
+		bool notify_local_transform : 1;
+		bool notify_transform : 1;
+
+		bool visible : 1;
+		bool disable_scale : 1;
+
+		// Scene tree interpolation.
+		bool fti_on_frame_xform_list : 1;
+		bool fti_on_frame_property_list : 1;
+		bool fti_on_tick_xform_list : 1;
+		bool fti_on_tick_property_list : 1;
+		bool fti_global_xform_interp_set : 1;
+		bool fti_frame_xform_force_update : 1;
+		bool fti_is_identity_xform : 1;
+		bool fti_processed : 1;
 
 		RID visibility_parent;
 
 		Node3D *parent = nullptr;
-		List<Node3D *> children;
-		List<Node3D *>::Element *C = nullptr;
 
-		bool ignore_notification = false;
-		bool notify_local_transform = false;
-		bool notify_transform = false;
+		// An unordered vector of `Spatial` children only.
+		// This is a subset of the `Node::children`, purely
+		// an optimization for faster traversal.
+		LocalVector<Node3D *> node3d_children;
+		uint32_t index_in_parent = UINT32_MAX;
 
-		bool visible = true;
-		bool disable_scale = false;
+		ClientPhysicsInterpolationData *client_physics_interpolation_data = nullptr;
 
 #ifdef TOOLS_ENABLED
 		Vector<Ref<Node3DGizmo>> gizmos;
-		bool gizmos_disabled = false;
-		bool gizmos_dirty = false;
-		bool transform_gizmo_visible = true;
+		bool gizmos_requested : 1;
+		bool gizmos_disabled : 1;
+		bool gizmos_dirty : 1;
+		bool transform_gizmo_visible : 1;
 #endif
 
 	} data;
@@ -149,6 +194,33 @@ protected:
 
 	_FORCE_INLINE_ void _update_local_transform() const;
 	_FORCE_INLINE_ void _update_rotation_and_scale() const;
+
+	void _set_vi_visible(bool p_visible) { data.vi_visible = p_visible; }
+	bool _is_vi_visible() const { return data.vi_visible; }
+	Transform3D _get_global_transform_interpolated(real_t p_interpolation_fraction);
+	const Transform3D &_get_cached_global_transform_interpolated() const { return data.global_transform_interpolated; }
+	void _disable_client_physics_interpolation();
+
+	// Calling this announces to the FTI system that a node has been moved,
+	// or requires an update in terms of interpolation
+	// (e.g. changing Camera zoom even if position hasn't changed).
+	void fti_notify_node_changed(bool p_transform_changed = true);
+
+	// Opportunity after FTI to update the servers
+	// with global_transform_interpolated,
+	// and any custom interpolated data in derived classes.
+	// Make sure to call the parent class fti_update_servers(),
+	// so all data is updated to the servers.
+	virtual void fti_update_servers_xform() {}
+	virtual void fti_update_servers_property() {}
+
+	// Pump the FTI data, also gives a chance for inherited classes
+	// to pump custom data, but they *must* call the base class here too.
+	// This is the opportunity for classes to move current values for
+	// transforms and properties to stored previous values,
+	// and this should take place both on ticks, and during resets.
+	virtual void fti_pump_xform();
+	virtual void fti_pump_property() {}
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -208,13 +280,16 @@ public:
 	Quaternion get_quaternion() const;
 	Transform3D get_global_transform() const;
 
+	Transform3D get_global_transform_interpolated();
+	bool update_client_physics_interpolation_data();
+
 #ifdef TOOLS_ENABLED
 	virtual Transform3D get_global_gizmo_transform() const;
 	virtual Transform3D get_local_gizmo_transform() const;
-	virtual void set_transform_gizmo_visible(bool p_enabled) { data.transform_gizmo_visible = p_enabled; };
-	virtual bool is_transform_gizmo_visible() const { return data.transform_gizmo_visible; };
+	virtual void set_transform_gizmo_visible(bool p_enabled) { data.transform_gizmo_visible = p_enabled; }
+	virtual bool is_transform_gizmo_visible() const { return data.transform_gizmo_visible; }
 #endif
-	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true) override;
+	virtual void reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform = true) override;
 
 	void set_disable_gizmos(bool p_enabled);
 	void update_gizmos();
@@ -227,6 +302,7 @@ public:
 	void clear_gizmos();
 
 	void set_as_top_level(bool p_enabled);
+	void set_as_top_level_keep_local(bool p_enabled);
 	bool is_set_as_top_level() const;
 
 	void set_disable_scale(bool p_enabled);
@@ -251,8 +327,8 @@ public:
 	void global_scale(const Vector3 &p_scale);
 	void global_translate(const Vector3 &p_offset);
 
-	void look_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0), bool p_use_model_front = false);
-	void look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0), bool p_use_model_front = false);
+	void look_at(const Vector3 &p_target, const Vector3 &p_up = Vector3::UP, bool p_use_model_front = false);
+	void look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up = Vector3::UP, bool p_use_model_front = false);
 
 	Vector3 to_local(Vector3 p_global) const;
 	Vector3 to_global(Vector3 p_local) const;
@@ -278,8 +354,7 @@ public:
 	NodePath get_visibility_parent() const;
 
 	Node3D();
+	~Node3D();
 };
 
 VARIANT_ENUM_CAST(Node3D::RotationEditMode)
-
-#endif // NODE_3D_H

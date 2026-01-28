@@ -86,6 +86,8 @@ const int32_t g_alpha[16][8] = {
     { -3, -5,  -7,  -9, 2, 4, 6,  8 }
 };
 
+const int32_t g_alpha11Mul[16] = { 1, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
+
 const int32_t g_alphaRange[16] = {
     0x100FF / ( 1 + g_alpha[0][7] - g_alpha[0][3] ),
     0x100FF / ( 1 + g_alpha[1][7] - g_alpha[1][3] ),

@@ -28,19 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_BLEND_TREE_H
-#define ANIMATION_BLEND_TREE_H
+#pragma once
 
 #include "scene/animation/animation_tree.h"
+#include "scene/resources/curve.h"
 
 class AnimationNodeAnimation : public AnimationRootNode {
 	GDCLASS(AnimationNodeAnimation, AnimationRootNode);
 
-	StringName animation;
-	StringName time = "time";
+	StringName backward = "backward"; // Only used by pingpong animation.
 
-	uint64_t last_version = 0;
-	bool skip = false;
+	StringName animation;
+
+	bool advance_on_start = false;
+
+	bool use_custom_timeline = false;
+	double timeline_length = 1.0;
+	Animation::LoopMode loop_mode = Animation::LOOP_NONE;
+	bool stretch_time_scale = true;
+	double start_offset = 0.0;
 
 public:
 	enum PlayMode {
@@ -49,11 +55,15 @@ public:
 	};
 
 	void get_parameter_list(List<PropertyInfo> *r_list) const override;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
+
+	virtual NodeTimeInfo get_node_time_info() const override; // Wrapper of get_parameter().
 
 	static Vector<String> (*get_editable_animation_list)();
 
 	virtual String get_caption() const override;
-	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 
 	void set_animation(const StringName &p_name);
 	StringName get_animation() const;
@@ -64,6 +74,24 @@ public:
 	void set_backward(bool p_backward);
 	bool is_backward() const;
 
+	void set_advance_on_start(bool p_advance_on_start);
+	bool is_advance_on_start() const;
+
+	void set_use_custom_timeline(bool p_use_custom_timeline);
+	bool is_using_custom_timeline() const;
+
+	void set_timeline_length(double p_length);
+	double get_timeline_length() const;
+
+	void set_stretch_time_scale(bool p_stretch_time_scale);
+	bool is_stretching_time_scale() const;
+
+	void set_start_offset(double p_offset);
+	double get_start_offset() const;
+
+	void set_loop_mode(Animation::LoopMode p_loop_mode);
+	Animation::LoopMode get_loop_mode() const;
+
 	AnimationNodeAnimation();
 
 protected:
@@ -72,7 +100,6 @@ protected:
 
 private:
 	PlayMode play_mode = PLAY_MODE_FORWARD;
-	bool backward = false; // Only used by pingpong animation.
 };
 
 VARIANT_ENUM_CAST(AnimationNodeAnimation::PlayMode)
@@ -118,12 +145,13 @@ private:
 	double auto_restart_delay = 1.0;
 	double auto_restart_random_delay = 0.0;
 	MixMode mix = MIX_MODE_BLEND;
+	bool break_loop_at_end = false;
+	bool abort_on_reset = false;
 
 	StringName request = PNAME("request");
 	StringName active = PNAME("active");
 	StringName internal_active = PNAME("internal_active");
-	StringName time = "time";
-	StringName remaining = "remaining";
+	StringName fade_in_remaining = "fade_in_remaining";
 	StringName fade_out_remaining = "fade_out_remaining";
 	StringName time_to_restart = "time_to_restart";
 
@@ -160,8 +188,14 @@ public:
 	void set_mix_mode(MixMode p_mix);
 	MixMode get_mix_mode() const;
 
+	void set_break_loop_at_end(bool p_enable);
+	bool is_loop_broken_at_end() const;
+
+	void set_abort_on_reset(bool p_enable);
+	bool is_aborted_on_reset() const;
+
 	virtual bool has_filter() const override;
-	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 
 	AnimationNodeOneShot();
 };
@@ -174,9 +208,6 @@ class AnimationNodeAdd2 : public AnimationNodeSync {
 
 	StringName add_amount = PNAME("add_amount");
 
-protected:
-	static void _bind_methods();
-
 public:
 	void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
@@ -184,7 +215,7 @@ public:
 	virtual String get_caption() const override;
 
 	virtual bool has_filter() const override;
-	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 
 	AnimationNodeAdd2();
 };
@@ -194,9 +225,6 @@ class AnimationNodeAdd3 : public AnimationNodeSync {
 
 	StringName add_amount = PNAME("add_amount");
 
-protected:
-	static void _bind_methods();
-
 public:
 	void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
@@ -204,7 +232,7 @@ public:
 	virtual String get_caption() const override;
 
 	virtual bool has_filter() const override;
-	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 
 	AnimationNodeAdd3();
 };
@@ -214,15 +242,12 @@ class AnimationNodeBlend2 : public AnimationNodeSync {
 
 	StringName blend_amount = PNAME("blend_amount");
 
-protected:
-	static void _bind_methods();
-
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	virtual String get_caption() const override;
-	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 
 	virtual bool has_filter() const override;
 	AnimationNodeBlend2();
@@ -233,16 +258,13 @@ class AnimationNodeBlend3 : public AnimationNodeSync {
 
 	StringName blend_amount = PNAME("blend_amount");
 
-protected:
-	static void _bind_methods();
-
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	virtual String get_caption() const override;
 
-	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 	AnimationNodeBlend3();
 };
 
@@ -251,9 +273,6 @@ class AnimationNodeSub2 : public AnimationNodeSync {
 
 	StringName sub_amount = PNAME("sub_amount");
 
-protected:
-	static void _bind_methods();
-
 public:
 	void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
@@ -261,7 +280,7 @@ public:
 	virtual String get_caption() const override;
 
 	virtual bool has_filter() const override;
-	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 
 	AnimationNodeSub2();
 };
@@ -271,16 +290,13 @@ class AnimationNodeTimeScale : public AnimationNode {
 
 	StringName scale = PNAME("scale");
 
-protected:
-	static void _bind_methods();
-
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	virtual String get_caption() const override;
 
-	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 
 	AnimationNodeTimeScale();
 };
@@ -289,6 +305,7 @@ class AnimationNodeTimeSeek : public AnimationNode {
 	GDCLASS(AnimationNodeTimeSeek, AnimationNode);
 
 	StringName seek_pos_request = PNAME("seek_request");
+	bool explicit_elapse = true;
 
 protected:
 	static void _bind_methods();
@@ -299,7 +316,10 @@ public:
 
 	virtual String get_caption() const override;
 
-	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+
+	void set_explicit_elapse(bool p_enable);
+	bool is_explicit_elapse() const;
 
 	AnimationNodeTimeSeek();
 };
@@ -309,19 +329,16 @@ class AnimationNodeTransition : public AnimationNodeSync {
 
 	struct InputData {
 		bool auto_advance = false;
+		bool break_loop_at_end = false;
 		bool reset = true;
 	};
-	Vector<InputData> input_data;
+	LocalVector<InputData> input_data;
 
-	StringName time = "time";
 	StringName prev_xfading = "prev_xfading";
 	StringName prev_index = "prev_index";
 	StringName current_index = PNAME("current_index");
 	StringName current_state = PNAME("current_state");
 	StringName transition_request = PNAME("transition_request");
-
-	StringName prev_frame_current = "pf_current";
-	StringName prev_frame_current_idx = "pf_current_idx";
 
 	double xfade_time = 0.0;
 	Ref<Curve> xfade_curve;
@@ -351,6 +368,9 @@ public:
 	void set_input_as_auto_advance(int p_input, bool p_enable);
 	bool is_input_set_as_auto_advance(int p_input) const;
 
+	void set_input_break_loop_at_end(int p_input, bool p_enable);
+	bool is_input_loop_broken_at_end(int p_input) const;
+
 	void set_input_reset(int p_input, bool p_enable);
 	bool is_input_reset(int p_input) const;
 
@@ -363,7 +383,7 @@ public:
 	void set_allow_transition_to_self(bool p_enable);
 	bool is_allow_transition_to_self() const;
 
-	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 
 	AnimationNodeTransition();
 };
@@ -373,7 +393,7 @@ class AnimationNodeOutput : public AnimationNode {
 
 public:
 	virtual String get_caption() const override;
-	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 	AnimationNodeOutput();
 };
 
@@ -388,7 +408,7 @@ class AnimationNodeBlendTree : public AnimationRootNode {
 		Vector<StringName> connections;
 	};
 
-	RBMap<StringName, Node, StringName::AlphCompare> nodes;
+	AHashMap<StringName, Node> nodes;
 
 	Vector2 graph_offset;
 
@@ -445,19 +465,22 @@ public:
 	void get_node_connections(List<NodeConnection> *r_connections) const;
 
 	virtual String get_caption() const override;
-	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 
-	void get_node_list(List<StringName> *r_list);
+	LocalVector<StringName> get_node_list() const;
+	TypedArray<StringName> get_node_list_as_typed_array() const;
 
 	void set_graph_offset(const Vector2 &p_graph_offset);
 	Vector2 get_graph_offset() const;
 
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) const override;
 
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
+
 	AnimationNodeBlendTree();
 	~AnimationNodeBlendTree();
 };
 
 VARIANT_ENUM_CAST(AnimationNodeBlendTree::ConnectionError)
-
-#endif // ANIMATION_BLEND_TREE_H

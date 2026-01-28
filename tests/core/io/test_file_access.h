@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_FILE_ACCESS_H
-#define TEST_FILE_ACCESS_H
+#pragma once
 
 #include "core/io/file_access.h"
 #include "tests/test_macros.h"
@@ -39,7 +38,7 @@ namespace TestFileAccess {
 
 TEST_CASE("[FileAccess] CSV read") {
 	Ref<FileAccess> f = FileAccess::open(TestUtils::get_data_path("testdata.csv"), FileAccess::READ);
-	REQUIRE(!f.is_null());
+	REQUIRE(f.is_valid());
 
 	Vector<String> header = f->get_csv_line(); // Default delimiter: ",".
 	REQUIRE(header.size() == 4);
@@ -83,30 +82,170 @@ TEST_CASE("[FileAccess] CSV read") {
 }
 
 TEST_CASE("[FileAccess] Get as UTF-8 String") {
-	Ref<FileAccess> f_lf = FileAccess::open(TestUtils::get_data_path("line_endings_lf.test.txt"), FileAccess::READ);
-	REQUIRE(!f_lf.is_null());
-	String s_lf = f_lf->get_as_utf8_string();
-	f_lf->seek(0);
-	String s_lf_nocr = f_lf->get_as_utf8_string(true);
-	CHECK(s_lf == "Hello darkness\nMy old friend\nI've come to talk\nWith you again\n");
-	CHECK(s_lf_nocr == "Hello darkness\nMy old friend\nI've come to talk\nWith you again\n");
+	SUBCASE("Newline == \\n (Unix)") {
+		Ref<FileAccess> f_lf = FileAccess::open(TestUtils::get_data_path("line_endings_lf.test.txt"), FileAccess::READ);
+		REQUIRE(f_lf.is_valid());
+		String s_lf = f_lf->get_as_utf8_string();
+		CHECK(s_lf == "Hello darkness\nMy old friend\nI've come to talk\nWith you again\n");
+		f_lf->seek(0);
+		CHECK(f_lf->get_line() == "Hello darkness");
+		CHECK(f_lf->get_line() == "My old friend");
+		CHECK(f_lf->get_line() == "I've come to talk");
+		CHECK(f_lf->get_line() == "With you again");
+		CHECK(f_lf->get_error() == Error::OK);
+	}
 
-	Ref<FileAccess> f_crlf = FileAccess::open(TestUtils::get_data_path("line_endings_crlf.test.txt"), FileAccess::READ);
-	REQUIRE(!f_crlf.is_null());
-	String s_crlf = f_crlf->get_as_utf8_string();
-	f_crlf->seek(0);
-	String s_crlf_nocr = f_crlf->get_as_utf8_string(true);
-	CHECK(s_crlf == "Hello darkness\r\nMy old friend\r\nI've come to talk\r\nWith you again\r\n");
-	CHECK(s_crlf_nocr == "Hello darkness\nMy old friend\nI've come to talk\nWith you again\n");
+	SUBCASE("Newline == \\r\\n (Windows)") {
+		Ref<FileAccess> f_crlf = FileAccess::open(TestUtils::get_data_path("line_endings_crlf.test.txt"), FileAccess::READ);
+		REQUIRE(f_crlf.is_valid());
+		String s_crlf = f_crlf->get_as_utf8_string();
+		CHECK(s_crlf == "Hello darkness\r\nMy old friend\r\nI've come to talk\r\nWith you again\r\n");
+		f_crlf->seek(0);
+		CHECK(f_crlf->get_line() == "Hello darkness");
+		CHECK(f_crlf->get_line() == "My old friend");
+		CHECK(f_crlf->get_line() == "I've come to talk");
+		CHECK(f_crlf->get_line() == "With you again");
+		CHECK(f_crlf->get_error() == Error::OK);
+	}
 
-	Ref<FileAccess> f_cr = FileAccess::open(TestUtils::get_data_path("line_endings_cr.test.txt"), FileAccess::READ);
-	REQUIRE(!f_cr.is_null());
-	String s_cr = f_cr->get_as_utf8_string();
-	f_cr->seek(0);
-	String s_cr_nocr = f_cr->get_as_utf8_string(true);
-	CHECK(s_cr == "Hello darkness\rMy old friend\rI've come to talk\rWith you again\r");
-	CHECK(s_cr_nocr == "Hello darknessMy old friendI've come to talkWith you again");
+	SUBCASE("Newline == \\r (Legacy macOS)") {
+		Ref<FileAccess> f_cr = FileAccess::open(TestUtils::get_data_path("line_endings_cr.test.txt"), FileAccess::READ);
+		REQUIRE(f_cr.is_valid());
+		String s_cr = f_cr->get_as_utf8_string();
+		CHECK(s_cr == "Hello darkness\rMy old friend\rI've come to talk\rWith you again\r");
+		f_cr->seek(0);
+		CHECK(f_cr->get_line() == "Hello darkness");
+		CHECK(f_cr->get_line() == "My old friend");
+		CHECK(f_cr->get_line() == "I've come to talk");
+		CHECK(f_cr->get_line() == "With you again");
+		CHECK(f_cr->get_error() == Error::OK);
+	}
+
+	SUBCASE("Newline == Mixed") {
+		Ref<FileAccess> f_mix = FileAccess::open(TestUtils::get_data_path("line_endings_mixed.test.txt"), FileAccess::READ);
+		REQUIRE(f_mix.is_valid());
+		String s_mix = f_mix->get_as_utf8_string();
+		CHECK(s_mix == "Hello darkness\nMy old friend\r\nI've come to talk\rWith you again");
+		f_mix->seek(0);
+		CHECK(f_mix->get_line() == "Hello darkness");
+		CHECK(f_mix->get_line() == "My old friend");
+		CHECK(f_mix->get_line() == "I've come to talk");
+		CHECK(f_mix->get_line() == "With you again");
+		CHECK(f_mix->get_error() == Error::ERR_FILE_EOF); // Not a bug; the file lacks a final newline.
+	}
 }
-} // namespace TestFileAccess
 
-#endif // TEST_FILE_ACCESS_H
+TEST_CASE("[FileAccess] Get/Store floating point values") {
+	// BigEndian Hex: 0x40490E56
+	// LittleEndian Hex: 0x560E4940
+	float value = 3.1415f;
+
+	SUBCASE("Little Endian") {
+		const String file_path = TestUtils::get_data_path("floating_point_little_endian.bin");
+		const String file_path_new = TestUtils::get_data_path("floating_point_little_endian_new.bin");
+
+		Ref<FileAccess> f = FileAccess::open(file_path, FileAccess::READ);
+		REQUIRE(f.is_valid());
+		CHECK_EQ(f->get_float(), value);
+
+		Ref<FileAccess> fw = FileAccess::open(file_path_new, FileAccess::WRITE);
+		REQUIRE(fw.is_valid());
+		fw->store_float(value);
+		fw->close();
+
+		CHECK_EQ(FileAccess::get_sha256(file_path_new), FileAccess::get_sha256(file_path));
+
+		DirAccess::remove_file_or_error(file_path_new);
+	}
+
+	SUBCASE("Big Endian") {
+		const String file_path = TestUtils::get_data_path("floating_point_big_endian.bin");
+		const String file_path_new = TestUtils::get_data_path("floating_point_big_endian_new.bin");
+
+		Ref<FileAccess> f = FileAccess::open(file_path, FileAccess::READ);
+		REQUIRE(f.is_valid());
+		f->set_big_endian(true);
+		CHECK_EQ(f->get_float(), value);
+
+		Ref<FileAccess> fw = FileAccess::open(file_path_new, FileAccess::WRITE);
+		REQUIRE(fw.is_valid());
+		fw->set_big_endian(true);
+		fw->store_float(value);
+		fw->close();
+
+		CHECK_EQ(FileAccess::get_sha256(file_path_new), FileAccess::get_sha256(file_path));
+
+		DirAccess::remove_file_or_error(file_path_new);
+	}
+}
+
+TEST_CASE("[FileAccess] Get/Store floating point half precision values") {
+	// IEEE 754 half-precision binary floating-point format:
+	// sign exponent (5 bits)    fraction (10 bits)
+	//  0        01101               0101010101
+	// BigEndian Hex: 0x3555
+	// LittleEndian Hex: 0x5535
+	float value = 0.33325195f;
+
+	SUBCASE("Little Endian") {
+		const String file_path = TestUtils::get_data_path("half_precision_floating_point_little_endian.bin");
+		const String file_path_new = TestUtils::get_data_path("half_precision_floating_point_little_endian_new.bin");
+
+		Ref<FileAccess> f = FileAccess::open(file_path, FileAccess::READ);
+		REQUIRE(f.is_valid());
+		CHECK_EQ(f->get_half(), value);
+
+		Ref<FileAccess> fw = FileAccess::open(file_path_new, FileAccess::WRITE);
+		REQUIRE(fw.is_valid());
+		fw->store_half(value);
+		fw->close();
+
+		CHECK_EQ(FileAccess::get_sha256(file_path_new), FileAccess::get_sha256(file_path));
+
+		DirAccess::remove_file_or_error(file_path_new);
+	}
+
+	SUBCASE("Big Endian") {
+		const String file_path = TestUtils::get_data_path("half_precision_floating_point_big_endian.bin");
+		const String file_path_new = TestUtils::get_data_path("half_precision_floating_point_big_endian_new.bin");
+
+		Ref<FileAccess> f = FileAccess::open(file_path, FileAccess::READ);
+		REQUIRE(f.is_valid());
+		f->set_big_endian(true);
+		CHECK_EQ(f->get_half(), value);
+
+		Ref<FileAccess> fw = FileAccess::open(file_path_new, FileAccess::WRITE);
+		REQUIRE(fw.is_valid());
+		fw->set_big_endian(true);
+		fw->store_half(value);
+		fw->close();
+
+		CHECK_EQ(FileAccess::get_sha256(file_path_new), FileAccess::get_sha256(file_path));
+
+		DirAccess::remove_file_or_error(file_path_new);
+	}
+
+	SUBCASE("4096 bytes fastlz compressed") {
+		const String file_path = TestUtils::get_data_path("exactly_4096_bytes_fastlz.bin");
+
+		Ref<FileAccess> f = FileAccess::open_compressed(file_path, FileAccess::READ, FileAccess::COMPRESSION_FASTLZ);
+		const Vector<uint8_t> full_data = f->get_buffer(4096 * 2);
+		CHECK(full_data.size() == 4096);
+		CHECK(f->eof_reached());
+
+		// Data should be empty.
+		PackedByteArray reference;
+		reference.resize_initialized(4096);
+		CHECK(reference == full_data);
+
+		f->seek(0);
+		const Vector<uint8_t> partial_data = f->get_buffer(4095);
+		CHECK(partial_data.size() == 4095);
+		CHECK(!f->eof_reached());
+
+		reference.resize_initialized(4095);
+		CHECK(reference == partial_data);
+	}
+}
+
+} // namespace TestFileAccess

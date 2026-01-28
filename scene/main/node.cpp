@@ -29,9 +29,16 @@
 /**************************************************************************/
 
 #include "node.h"
+#include "node.compat.inc"
+
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Mesh);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, DisplayServer);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Shader);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, OS);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Engine);
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
@@ -42,17 +49,45 @@
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/scene_string_names.h"
 #include "viewport.h"
 
-#include <stdint.h>
-
-int Node::orphan_node_count = 0;
+#ifdef DEBUG_ENABLED
+SafeNumeric<uint64_t> Node::total_node_count{ 0 };
+#endif
 
 thread_local Node *Node::current_process_thread_group = nullptr;
 
 void Node::_notification(int p_notification) {
 	switch (p_notification) {
+		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
+			if (data.accessibility_element.is_valid()) {
+				DisplayServer::get_singleton()->accessibility_free_element(data.accessibility_element);
+				data.accessibility_element = RID();
+			}
+		} break;
+
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_name(ae, get_name());
+
+			// Node children.
+			if (!accessibility_override_tree_hierarchy()) {
+				for (int i = 0; i < get_child_count(); i++) {
+					Node *child_node = get_child(i);
+					Window *child_wnd = Object::cast_to<Window>(child_node);
+					if (child_wnd && !(child_wnd->is_visible() && (child_wnd->is_embedded() || child_wnd->is_popup()))) {
+						continue;
+					}
+					if (child_node->is_part_of_edited_scene()) {
+						continue;
+					}
+					DisplayServer::get_singleton()->accessibility_update_add_child(ae, child_node->get_accessibility_element());
+				}
+			}
+		} break;
+
 		case NOTIFICATION_PROCESS: {
 			GDVIRTUAL_CALL(_process, get_process_delta_time());
 		} break;
@@ -63,7 +98,17 @@ void Node::_notification(int p_notification) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			ERR_FAIL_NULL(get_viewport());
-			ERR_FAIL_NULL(get_tree());
+			ERR_FAIL_NULL(data.tree);
+
+			if (data.tree->is_accessibility_supported() && !is_part_of_edited_scene()) {
+				data.tree->_accessibility_force_update();
+				data.tree->_accessibility_notify_change(this);
+				if (data.parent) {
+					data.tree->_accessibility_notify_change(data.parent);
+				} else {
+					data.tree->_accessibility_notify_change(get_window()); // Root node.
+				}
+			}
 
 			// Update process mode.
 			if (data.process_mode == PROCESS_MODE_INHERIT) {
@@ -99,6 +144,22 @@ void Node::_notification(int p_notification) {
 				}
 			}
 
+			if (data.physics_interpolation_mode == PHYSICS_INTERPOLATION_MODE_INHERIT) {
+				bool interpolate = true; // Root node default is for interpolation to be on.
+				if (data.parent) {
+					interpolate = data.parent->is_physics_interpolated();
+				}
+				_propagate_physics_interpolated(interpolate);
+			}
+
+			// Update auto translate mode.
+			if (data.auto_translate_mode == AUTO_TRANSLATE_MODE_INHERIT && !data.parent) {
+				ERR_PRINT("The root node can't be set to Inherit auto translate mode, reverting to Always instead.");
+				data.auto_translate_mode = AUTO_TRANSLATE_MODE_ALWAYS;
+			}
+			data.is_auto_translate_dirty = true;
+			data.is_translation_domain_dirty = true;
+
 			if (data.input) {
 				add_to_group("_vp_input" + itos(get_viewport()->get_instance_id()));
 			}
@@ -112,16 +173,34 @@ void Node::_notification(int p_notification) {
 				add_to_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_id()));
 			}
 
-			get_tree()->nodes_in_tree_count++;
-			orphan_node_count--;
+			data.tree->nodes_in_tree_count++;
+
+		} break;
+
+		case NOTIFICATION_POST_ENTER_TREE: {
+			if (data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
+				notification(NOTIFICATION_TRANSLATION_CHANGED);
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			ERR_FAIL_NULL(get_viewport());
-			ERR_FAIL_NULL(get_tree());
+			ERR_FAIL_NULL(data.tree);
 
-			get_tree()->nodes_in_tree_count--;
-			orphan_node_count++;
+			if (data.tree->is_accessibility_supported() && !is_part_of_edited_scene()) {
+				if (data.accessibility_element.is_valid()) {
+					DisplayServer::get_singleton()->accessibility_free_element(data.accessibility_element);
+					data.accessibility_element = RID();
+				}
+				data.tree->_accessibility_notify_change(this, true);
+				if (data.parent) {
+					data.tree->_accessibility_notify_change(data.parent);
+				} else {
+					data.tree->_accessibility_notify_change(get_window()); // Root node.
+				}
+			}
+
+			data.tree->nodes_in_tree_count--;
 
 			if (data.input) {
 				remove_from_group("_vp_input" + itos(get_viewport()->get_instance_id()));
@@ -136,11 +215,11 @@ void Node::_notification(int p_notification) {
 				remove_from_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_id()));
 			}
 
-			// Remove from processing first
+			// Remove from processing first.
 			if (_is_any_processing()) {
 				_remove_from_process_thread_group();
 			}
-			// Remove the process group
+			// Remove the process group.
 			if (data.process_thread_group_owner == this) {
 				_remove_process_group();
 			}
@@ -150,6 +229,13 @@ void Node::_notification(int p_notification) {
 			if (data.path_cache) {
 				memdelete(data.path_cache);
 				data.path_cache = nullptr;
+			}
+		} break;
+
+		case NOTIFICATION_SUSPENDED:
+		case NOTIFICATION_PAUSED: {
+			if (is_physics_interpolated_and_enabled() && is_inside_tree()) {
+				reset_physics_interpolation();
 			}
 		} break;
 
@@ -187,19 +273,26 @@ void Node::_notification(int p_notification) {
 			GDVIRTUAL_CALL(_ready);
 		} break;
 
-		case NOTIFICATION_POSTINITIALIZE: {
-			data.in_constructor = false;
-		} break;
-
 		case NOTIFICATION_PREDELETE: {
-			if (data.inside_tree && !Thread::is_main_thread()) {
+			if (data.tree && !Thread::is_main_thread()) {
 				cancel_free();
 				ERR_PRINT("Attempted to free a node that is currently added to the SceneTree from a thread. This is not permitted, use queue_free() instead. Node has not been freed.");
 				return;
 			}
-
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint() && data.tree && this == data.tree->get_edited_scene_root()) {
+				cancel_free();
+				ERR_PRINT(vformat("Something attempted to free the root Node of a scene (\"%s\"). This is not supported inside the editor, so the Node was not freed.", get_name()));
+				return;
+			}
+#endif
 			if (data.owner) {
 				_clean_up_owner();
+			}
+
+			while (!data.owned.is_empty()) {
+				Node *n = data.owned.back()->get();
+				n->_clean_up_owner(); // This will change data.owned. So it's impossible to loop over the list in the usual manner.
 			}
 
 			if (data.parent) {
@@ -210,6 +303,12 @@ void Node::_notification(int p_notification) {
 			while (data.children.size()) {
 				Node *child = data.children.last()->value; // begin from the end because its faster and more consistent with creation
 				memdelete(child);
+			}
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (data.tree) {
+				data.is_auto_translate_dirty = true;
 			}
 		} break;
 	}
@@ -229,7 +328,7 @@ void Node::_propagate_ready() {
 	if (data.ready_first) {
 		data.ready_first = false;
 		notification(NOTIFICATION_READY);
-		emit_signal(SceneStringNames::get_singleton()->ready);
+		emit_signal(SceneStringName(ready));
 	}
 }
 
@@ -248,8 +347,6 @@ void Node::_propagate_enter_tree() {
 		data.viewport = data.parent->data.viewport;
 	}
 
-	data.inside_tree = true;
-
 	for (KeyValue<StringName, GroupData> &E : data.grouped) {
 		E.value.group = data.tree->add_to_group(E.key, this);
 	}
@@ -258,7 +355,7 @@ void Node::_propagate_enter_tree() {
 
 	GDVIRTUAL_CALL(_enter_tree);
 
-	emit_signal(SceneStringNames::get_singleton()->tree_entered);
+	emit_signal(SceneStringName(tree_entered));
 
 	data.tree->node_added(this);
 
@@ -288,19 +385,7 @@ void Node::_propagate_enter_tree() {
 void Node::_propagate_after_exit_tree() {
 	// Clear owner if it was not part of the pruned branch
 	if (data.owner) {
-		bool found = false;
-		Node *parent = data.parent;
-
-		while (parent) {
-			if (parent == data.owner) {
-				found = true;
-				break;
-			}
-
-			parent = parent->data.parent;
-		}
-
-		if (!found) {
+		if (!data.owner->is_ancestor_of(this)) {
 			_clean_up_owner();
 		}
 	}
@@ -313,7 +398,7 @@ void Node::_propagate_after_exit_tree() {
 
 	data.blocked--;
 
-	emit_signal(SceneStringNames::get_singleton()->tree_exited);
+	emit_signal(SceneStringName(tree_exited));
 }
 
 void Node::_propagate_exit_tree() {
@@ -335,7 +420,7 @@ void Node::_propagate_exit_tree() {
 
 	GDVIRTUAL_CALL(_exit_tree);
 
-	emit_signal(SceneStringNames::get_singleton()->tree_exiting);
+	emit_signal(SceneStringName(tree_exiting));
 
 	notification(NOTIFICATION_EXIT_TREE, true);
 	if (data.tree) {
@@ -360,15 +445,58 @@ void Node::_propagate_exit_tree() {
 		data.tree->tree_changed();
 	}
 
-	data.inside_tree = false;
 	data.ready_notified = false;
 	data.tree = nullptr;
 	data.depth = -1;
 }
 
-void Node::move_child(Node *p_child, int p_index) {
-	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Moving child node positions inside the SceneTree is only allowed from the main thread. Use call_deferred(\"move_child\",child,index).");
-	ERR_FAIL_NULL(p_child);
+void Node::_propagate_physics_interpolated(bool p_interpolated) {
+	switch (data.physics_interpolation_mode) {
+		case PHYSICS_INTERPOLATION_MODE_INHERIT:
+			// Keep the parent p_interpolated.
+			break;
+		case PHYSICS_INTERPOLATION_MODE_OFF: {
+			p_interpolated = false;
+		} break;
+		case PHYSICS_INTERPOLATION_MODE_ON: {
+			p_interpolated = true;
+		} break;
+	}
+
+	// No change? No need to propagate further.
+	if (data.physics_interpolated == p_interpolated) {
+		return;
+	}
+
+	data.physics_interpolated = p_interpolated;
+
+	// Allow a call to the RenderingServer etc. in derived classes.
+	_physics_interpolated_changed();
+
+	update_configuration_warnings();
+
+	data.blocked++;
+	for (KeyValue<StringName, Node *> &K : data.children) {
+		K.value->_propagate_physics_interpolated(p_interpolated);
+	}
+	data.blocked--;
+}
+
+void Node::_propagate_physics_interpolation_reset_requested(bool p_requested) {
+	if (is_physics_interpolated()) {
+		data.physics_interpolation_reset_requested = p_requested;
+	}
+
+	data.blocked++;
+	for (KeyValue<StringName, Node *> &K : data.children) {
+		K.value->_propagate_physics_interpolation_reset_requested(p_requested);
+	}
+	data.blocked--;
+}
+
+void Node::move_child(RequiredParam<Node> rp_child, int p_index) {
+	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Moving child node positions inside the SceneTree is only allowed from the main thread. Use call_deferred(\"move_child\",child,index).");
+	EXTRACT_PARAM_OR_FAIL(p_child, rp_child);
 	ERR_FAIL_COND_MSG(p_child->data.parent != this, "Child is not a child of this node.");
 
 	_update_children_cache();
@@ -478,6 +606,8 @@ void Node::move_child_notify(Node *p_child) {
 void Node::owner_changed_notify() {
 }
 
+void Node::_physics_interpolated_changed() {}
+
 void Node::set_physics_process(bool p_process) {
 	ERR_THREAD_GUARD
 	if (data.physics_process == p_process) {
@@ -581,8 +711,10 @@ void Node::set_process_mode(ProcessMode p_mode) {
 	// This is required for the editor to update the visibility of disabled nodes
 	// It's very expensive during runtime to change, so editor-only
 	if (Engine::get_singleton()->is_editor_hint()) {
-		get_tree()->emit_signal(SNAME("tree_process_mode_changed"));
+		data.tree->emit_signal(SNAME("tree_process_mode_changed"));
 	}
+
+	_emit_editor_state_changed();
 #endif
 }
 
@@ -599,6 +731,16 @@ void Node::_propagate_pause_notification(bool p_enable) {
 	data.blocked++;
 	for (KeyValue<StringName, Node *> &K : data.children) {
 		K.value->_propagate_pause_notification(p_enable);
+	}
+	data.blocked--;
+}
+
+void Node::_propagate_suspend_notification(bool p_enable) {
+	notification(p_enable ? NOTIFICATION_SUSPENDED : NOTIFICATION_UNSUSPENDED);
+
+	data.blocked++;
+	for (KeyValue<StringName, Node *> &KV : data.children) {
+		KV.value->_propagate_suspend_notification(p_enable);
 	}
 	data.blocked--;
 }
@@ -679,8 +821,7 @@ Error Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallErro
 		return ERR_INVALID_PARAMETER;
 	}
 
-	Variant::Type type = p_args[0]->get_type();
-	if (type != Variant::STRING_NAME && type != Variant::STRING) {
+	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
@@ -708,8 +849,7 @@ Error Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallE
 		return ERR_INVALID_PARAMETER;
 	}
 
-	Variant::Type type = p_args[1]->get_type();
-	if (type != Variant::STRING_NAME && type != Variant::STRING) {
+	if (!p_args[1]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
 		r_error.expected = Variant::STRING_NAME;
@@ -738,7 +878,7 @@ Ref<MultiplayerAPI> Node::get_multiplayer() const {
 	if (!is_inside_tree()) {
 		return Ref<MultiplayerAPI>();
 	}
-	return get_tree()->get_multiplayer(get_path());
+	return data.tree->get_multiplayer(get_path());
 }
 
 //////////// end of rpc
@@ -760,7 +900,7 @@ bool Node::can_process_notification(int p_what) const {
 
 bool Node::can_process() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
-	return _can_process(get_tree()->is_paused());
+	return !data.tree->is_suspended() && _can_process(data.tree->is_paused());
 }
 
 bool Node::_can_process(bool p_paused) const {
@@ -789,6 +929,50 @@ bool Node::_can_process(bool p_paused) const {
 		return process_mode == PROCESS_MODE_WHEN_PAUSED;
 	} else {
 		return process_mode == PROCESS_MODE_PAUSABLE;
+	}
+}
+
+void Node::set_physics_interpolation_mode(PhysicsInterpolationMode p_mode) {
+	ERR_THREAD_GUARD
+	if (data.physics_interpolation_mode == p_mode) {
+		return;
+	}
+
+	data.physics_interpolation_mode = p_mode;
+
+	bool interpolate = true; // Default for root node.
+
+	switch (p_mode) {
+		case PHYSICS_INTERPOLATION_MODE_INHERIT: {
+			if (is_inside_tree() && data.parent) {
+				interpolate = data.parent->is_physics_interpolated();
+			}
+		} break;
+		case PHYSICS_INTERPOLATION_MODE_OFF: {
+			interpolate = false;
+		} break;
+		case PHYSICS_INTERPOLATION_MODE_ON: {
+			interpolate = true;
+		} break;
+	}
+
+	_propagate_physics_interpolated(interpolate);
+
+	// Auto-reset on changing interpolation mode.
+	if (is_physics_interpolated() && is_inside_tree()) {
+		propagate_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
+	}
+}
+
+void Node::reset_physics_interpolation() {
+	if (SceneTree::is_fti_enabled() && is_inside_tree()) {
+		propagate_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
+
+		// If `reset_physics_interpolation()` is called explicitly by the user
+		// (e.g. from scripts) then we prevent deferred auto-resets taking place.
+		// The user is trusted to call reset in the right order, and auto-reset
+		// will interfere with their control of prev / curr, so should be turned off.
+		_propagate_physics_interpolation_reset_requested(false);
 	}
 }
 
@@ -878,19 +1062,19 @@ void Node::set_process_internal(bool p_process_internal) {
 }
 
 void Node::_add_process_group() {
-	get_tree()->_add_process_group(this);
+	data.tree->_add_process_group(this);
 }
 
 void Node::_remove_process_group() {
-	get_tree()->_remove_process_group(this);
+	data.tree->_remove_process_group(this);
 }
 
 void Node::_remove_from_process_thread_group() {
-	get_tree()->_remove_node_from_process_group(this, data.process_thread_group_owner);
+	data.tree->_remove_node_from_process_group(this, data.process_thread_group_owner);
 }
 
 void Node::_add_to_process_thread_group() {
-	get_tree()->_add_node_to_process_group(this, data.process_thread_group_owner);
+	data.tree->_add_node_to_process_group(this, data.process_thread_group_owner);
 }
 
 void Node::_remove_tree_from_process_thread_group() {
@@ -948,7 +1132,7 @@ void Node::set_process_thread_group_order(int p_order) {
 		return;
 	}
 
-	get_tree()->process_groups_dirty = true;
+	data.tree->process_groups_dirty = true;
 }
 
 int Node::get_process_thread_group_order() const {
@@ -1008,7 +1192,7 @@ int Node::get_physics_process_priority() const {
 }
 
 void Node::set_process_thread_group(ProcessThreadGroup p_mode) {
-	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Changing the process thread group can only be done from the main thread. Use call_deferred(\"set_process_thread_group\",mode).");
+	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Changing the process thread group can only be done from the main thread. Use call_deferred(\"set_process_thread_group\",mode).");
 	if (data.process_thread_group == p_mode) {
 		return;
 	}
@@ -1144,6 +1328,97 @@ bool Node::is_processing_unhandled_key_input() const {
 	return data.unhandled_key_input;
 }
 
+void Node::set_auto_translate_mode(AutoTranslateMode p_mode) {
+	ERR_THREAD_GUARD
+	if (data.auto_translate_mode == p_mode) {
+		return;
+	}
+
+	if (p_mode == AUTO_TRANSLATE_MODE_INHERIT && data.tree && !data.parent) {
+		ERR_FAIL_MSG("The root node can't be set to Inherit auto translate mode.");
+	}
+
+	data.auto_translate_mode = p_mode;
+	data.is_auto_translating = p_mode != AUTO_TRANSLATE_MODE_DISABLED;
+	data.is_auto_translate_dirty = true;
+
+	propagate_notification(NOTIFICATION_TRANSLATION_CHANGED);
+}
+
+Node::AutoTranslateMode Node::get_auto_translate_mode() const {
+	return data.auto_translate_mode;
+}
+
+bool Node::can_auto_translate() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	if (!data.is_auto_translate_dirty || data.auto_translate_mode != AUTO_TRANSLATE_MODE_INHERIT) {
+		return data.is_auto_translating;
+	}
+
+	data.is_auto_translate_dirty = false;
+
+	Node *parent = data.parent;
+	while (parent) {
+		if (parent->data.auto_translate_mode == AUTO_TRANSLATE_MODE_INHERIT) {
+			parent = parent->data.parent;
+			continue;
+		}
+
+		data.is_auto_translating = parent->data.auto_translate_mode == AUTO_TRANSLATE_MODE_ALWAYS;
+		break;
+	}
+
+	return data.is_auto_translating;
+}
+
+StringName Node::get_translation_domain() const {
+	ERR_READ_THREAD_GUARD_V(StringName());
+
+	if (data.is_translation_domain_inherited && data.is_translation_domain_dirty) {
+		const_cast<Node *>(this)->_translation_domain = data.parent ? data.parent->get_translation_domain() : StringName();
+		data.is_translation_domain_dirty = false;
+	}
+	return _translation_domain;
+}
+
+void Node::set_translation_domain(const StringName &p_domain) {
+	ERR_THREAD_GUARD
+
+	if (!data.is_translation_domain_inherited && _translation_domain == p_domain) {
+		return;
+	}
+
+	_translation_domain = p_domain;
+	data.is_translation_domain_inherited = false;
+	data.is_translation_domain_dirty = false;
+	_propagate_translation_domain_dirty();
+}
+
+void Node::set_translation_domain_inherited() {
+	ERR_THREAD_GUARD
+
+	if (data.is_translation_domain_inherited) {
+		return;
+	}
+	data.is_translation_domain_inherited = true;
+	data.is_translation_domain_dirty = true;
+	_propagate_translation_domain_dirty();
+}
+
+void Node::_propagate_translation_domain_dirty() {
+	for (KeyValue<StringName, Node *> &K : data.children) {
+		Node *child = K.value;
+		if (child->data.is_translation_domain_inherited) {
+			child->data.is_translation_domain_dirty = true;
+			child->_propagate_translation_domain_dirty();
+		}
+	}
+
+	if (is_inside_tree() && data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
+		notification(NOTIFICATION_TRANSLATION_CHANGED);
+	}
+}
+
 StringName Node::get_name() const {
 	return data.name;
 }
@@ -1152,17 +1427,24 @@ void Node::_set_name_nocheck(const StringName &p_name) {
 	data.name = p_name;
 }
 
-void Node::set_name(const String &p_name) {
-	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Changing the name to nodes inside the SceneTree is only allowed from the main thread. Use `set_name.call_deferred(new_name)`.");
-	String name = p_name.validate_node_name();
+void Node::set_name(const StringName &p_name) {
+	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Changing the name to nodes inside the SceneTree is only allowed from the main thread. Use `set_name.call_deferred(new_name)`.");
+	ERR_FAIL_COND(p_name.is_empty());
 
-	ERR_FAIL_COND(name.is_empty());
-
+	const StringName old_name = data.name;
 	if (data.unique_name_in_owner && data.owner) {
 		_release_unique_name_in_owner();
 	}
-	String old_name = data.name;
-	data.name = name;
+
+	{
+		const String input_name_str = String(p_name);
+		const String validated_node_name_string = input_name_str.validate_node_name();
+		if (input_name_str == validated_node_name_string) {
+			data.name = p_name;
+		} else {
+			data.name = StringName(validated_node_name_string);
+		}
+	}
 
 	if (data.parent) {
 		data.parent->_validate_child_name(this, true);
@@ -1178,8 +1460,8 @@ void Node::set_name(const String &p_name) {
 
 	if (is_inside_tree()) {
 		emit_signal(SNAME("renamed"));
-		get_tree()->node_renamed(this);
-		get_tree()->tree_changed();
+		data.tree->node_renamed(this);
+		data.tree->tree_changed();
 	}
 }
 
@@ -1187,7 +1469,7 @@ void Node::set_name(const String &p_name) {
 String Node::get_description() const {
 	String description;
 	if (is_inside_tree()) {
-		description = get_path();
+		description = String(get_path());
 	} else {
 		description = get_name();
 		if (description.is_empty()) {
@@ -1209,6 +1491,11 @@ String Node::validate_child_name(Node *p_child) {
 	_generate_serial_child_name(p_child, name);
 	return name;
 }
+
+String Node::prevalidate_child_name(Node *p_child, StringName p_name) {
+	_generate_serial_child_name(p_child, p_name);
+	return p_name;
+}
 #endif
 
 String Node::adjust_name_casing(const String &p_name) {
@@ -1219,6 +1506,8 @@ String Node::adjust_name_casing(const String &p_name) {
 			return p_name.to_camel_case();
 		case NAME_CASING_SNAKE_CASE:
 			return p_name.to_snake_case();
+		case NAME_CASING_KEBAB_CASE:
+			return p_name.to_kebab_case();
 	}
 	return p_name;
 }
@@ -1367,22 +1656,29 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name, InternalM
 	data.children.insert(p_name, p_child);
 
 	p_child->data.internal_mode = p_internal_mode;
+
+	bool can_push_back = false;
 	switch (p_internal_mode) {
 		case INTERNAL_MODE_FRONT: {
 			p_child->data.index = data.internal_children_front_count_cache++;
+			// Safe to push back when ordinary and back children are empty.
+			can_push_back = (data.external_children_count_cache + data.internal_children_back_count_cache) == 0;
 		} break;
 		case INTERNAL_MODE_BACK: {
 			p_child->data.index = data.internal_children_back_count_cache++;
+			// Safe to push back when cache is valid.
+			can_push_back = true;
 		} break;
 		case INTERNAL_MODE_DISABLED: {
 			p_child->data.index = data.external_children_count_cache++;
+			// Safe to push back when back children are empty.
+			can_push_back = data.internal_children_back_count_cache == 0;
 		} break;
 	}
 
 	p_child->data.parent = this;
 
-	if (!data.children_cache_dirty && p_internal_mode == INTERNAL_MODE_DISABLED && data.internal_children_back_count_cache == 0) {
-		// Special case, also add to the cached children array since its cheap.
+	if (!data.children_cache_dirty && can_push_back) {
 		data.children_cache.push_back(p_child);
 	} else {
 		data.children_cache_dirty = true;
@@ -1395,18 +1691,16 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name, InternalM
 	}
 
 	/* Notify */
-	//recognize children created in this node constructor
-	p_child->data.parent_owned = data.in_constructor;
 	add_child_notify(p_child);
 	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
 	emit_signal(SNAME("child_order_changed"));
 }
 
-void Node::add_child(Node *p_child, bool p_force_readable_name, InternalMode p_internal) {
-	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Adding children to a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"add_child\",node).");
+void Node::add_child(RequiredParam<Node> rp_child, bool p_force_readable_name, InternalMode p_internal) {
+	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Adding children to a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"add_child\",node).");
 
 	ERR_THREAD_GUARD
-	ERR_FAIL_NULL(p_child);
+	EXTRACT_PARAM_OR_FAIL(p_child, rp_child);
 	ERR_FAIL_COND_MSG(p_child == this, vformat("Can't add child '%s' to itself.", p_child->get_name())); // adding to itself!
 	ERR_FAIL_COND_MSG(p_child->data.parent, vformat("Can't add child '%s' to '%s', already has a parent '%s'.", p_child->get_name(), get_name(), p_child->data.parent->get_name())); //Fail if node has a parent
 #ifdef DEBUG_ENABLED
@@ -1415,12 +1709,20 @@ void Node::add_child(Node *p_child, bool p_force_readable_name, InternalMode p_i
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `add_child()` failed. Consider using `add_child.call_deferred(child)` instead.");
 
 	_validate_child_name(p_child, p_force_readable_name);
+
+#ifdef DEBUG_ENABLED
+	if (p_child->data.owner && !p_child->data.owner->is_ancestor_of(p_child)) {
+		// Owner of p_child should be ancestor of p_child.
+		WARN_PRINT(vformat("Adding '%s' as child to '%s' will make owner '%s' inconsistent. Consider unsetting the owner beforehand.", p_child->get_name(), get_name(), p_child->data.owner->get_name()));
+	}
+#endif // DEBUG_ENABLED
+
 	_add_child_nocheck(p_child, p_child->data.name, p_internal);
 }
 
-void Node::add_sibling(Node *p_sibling, bool p_force_readable_name) {
-	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Adding a sibling to a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"add_sibling\",node).");
-	ERR_FAIL_NULL(p_sibling);
+void Node::add_sibling(RequiredParam<Node> rp_sibling, bool p_force_readable_name) {
+	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Adding a sibling to a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"add_sibling\",node).");
+	EXTRACT_PARAM_OR_FAIL(p_sibling, rp_sibling);
 	ERR_FAIL_COND_MSG(p_sibling == this, vformat("Can't add sibling '%s' to itself.", p_sibling->get_name())); // adding to itself!
 	ERR_FAIL_NULL(data.parent);
 	ERR_FAIL_COND_MSG(data.parent->data.blocked > 0, "Parent node is busy setting up children, `add_sibling()` failed. Consider using `add_sibling.call_deferred(sibling)` instead.");
@@ -1430,9 +1732,9 @@ void Node::add_sibling(Node *p_sibling, bool p_force_readable_name) {
 	data.parent->_move_child(p_sibling, get_index() + 1);
 }
 
-void Node::remove_child(Node *p_child) {
-	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Removing children from a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"remove_child\",node).");
-	ERR_FAIL_NULL(p_child);
+void Node::remove_child(RequiredParam<Node> rp_child) {
+	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Removing children from a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"remove_child\",node).");
+	EXTRACT_PARAM_OR_FAIL(p_child, rp_child);
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy adding/removing children, `remove_child()` can't be called at this time. Consider using `remove_child.call_deferred(child)` instead.");
 	ERR_FAIL_COND(p_child->data.parent != this);
 
@@ -1448,7 +1750,6 @@ void Node::remove_child(Node *p_child) {
 
 	data.blocked++;
 	p_child->_set_tree(nullptr);
-	//}
 
 	remove_child_notify(p_child);
 	p_child->notification(NOTIFICATION_UNPARENTED);
@@ -1465,7 +1766,7 @@ void Node::remove_child(Node *p_child) {
 	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
 	emit_signal(SNAME("child_order_changed"));
 
-	if (data.inside_tree) {
+	if (data.tree) {
 		p_child->_propagate_after_exit_tree();
 	}
 }
@@ -1501,15 +1802,34 @@ void Node::_update_children_cache_impl() const {
 	data.children_cache_dirty = false;
 }
 
+template <bool p_include_internal>
+Iterable<Node::ChildrenIterator> Node::iterate_children() const {
+	// The thread guard is omitted for performance reasons.
+	// ERR_THREAD_GUARD_V(Iterable<ChildrenIterator>(nullptr, nullptr));
+
+	_update_children_cache();
+	const uint32_t size = data.children_cache.size();
+	// Might be null, but then size and internal counts are also 0.
+	Node **ptr = data.children_cache.ptr();
+
+	if constexpr (p_include_internal) {
+		return Iterable(ChildrenIterator(ptr), ChildrenIterator(ptr + size));
+	} else {
+		return Iterable(ChildrenIterator(ptr + data.internal_children_front_count_cache), ChildrenIterator(ptr + size - data.internal_children_back_count_cache));
+	}
+}
+
+template Iterable<Node::ChildrenIterator> Node::iterate_children<true>() const;
+template Iterable<Node::ChildrenIterator> Node::iterate_children<false>() const;
+
 int Node::get_child_count(bool p_include_internal) const {
 	ERR_THREAD_GUARD_V(0);
-	_update_children_cache();
-
 	if (p_include_internal) {
-		return data.children_cache.size();
-	} else {
-		return data.children_cache.size() - data.internal_children_front_count_cache - data.internal_children_back_count_cache;
+		return data.children.size();
 	}
+
+	_update_children_cache();
+	return data.children_cache.size() - data.internal_children_front_count_cache - data.internal_children_back_count_cache;
 }
 
 Node *Node::get_child(int p_index, bool p_include_internal) const {
@@ -1534,14 +1854,30 @@ Node *Node::get_child(int p_index, bool p_include_internal) const {
 
 TypedArray<Node> Node::get_children(bool p_include_internal) const {
 	ERR_THREAD_GUARD_V(TypedArray<Node>());
-	TypedArray<Node> arr;
-	int cc = get_child_count(p_include_internal);
-	arr.resize(cc);
-	for (int i = 0; i < cc; i++) {
-		arr[i] = get_child(i, p_include_internal);
+	_update_children_cache();
+
+	TypedArray<Node> children;
+
+	if (p_include_internal) {
+		children.resize(data.children_cache.size());
+
+		Array::Iterator itr = children.begin();
+		for (const Node *child : data.children_cache) {
+			*itr = child;
+			++itr;
+		}
+	} else {
+		const int size = data.children_cache.size() - data.internal_children_back_count_cache;
+		children.resize(size - data.internal_children_front_count_cache);
+
+		Array::Iterator itr = children.begin();
+		for (int i = data.internal_children_front_count_cache; i < size; i++) {
+			*itr = data.children_cache[i];
+			++itr;
+		}
 	}
 
-	return arr;
+	return children;
 }
 
 Node *Node::_get_child_by_name(const StringName &p_name) const {
@@ -1559,7 +1895,7 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 		return nullptr;
 	}
 
-	ERR_FAIL_COND_V_MSG(!data.inside_tree && p_path.is_absolute(), nullptr, "Can't use get_node() with absolute paths from outside the active scene tree.");
+	ERR_FAIL_COND_V_MSG(!data.tree && p_path.is_absolute(), nullptr, "Can't use get_node() with absolute paths from outside the active scene tree.");
 
 	Node *current = nullptr;
 	Node *root = nullptr;
@@ -1577,12 +1913,10 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 		StringName name = p_path.get_name(i);
 		Node *next = nullptr;
 
-		if (name == SceneStringNames::get_singleton()->dot) { // .
-
+		if (name == SNAME(".")) {
 			next = current;
 
-		} else if (name == SceneStringNames::get_singleton()->doubledot) { // ..
-
+		} else if (name == SNAME("..")) {
 			if (current == nullptr || !current->data.parent) {
 				return nullptr;
 			}
@@ -1594,23 +1928,14 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 			}
 
 		} else if (name.is_node_unique_name()) {
-			if (current->data.owned_unique_nodes.size()) {
-				// Has unique nodes in ownership
-				Node **unique = current->data.owned_unique_nodes.getptr(name);
-				if (!unique) {
-					return nullptr;
-				}
-				next = *unique;
-			} else if (current->data.owner) {
-				Node **unique = current->data.owner->data.owned_unique_nodes.getptr(name);
-				if (!unique) {
-					return nullptr;
-				}
-				next = *unique;
-			} else {
+			Node **unique = current->data.owned_unique_nodes.getptr(name);
+			if (!unique && current->data.owner) {
+				unique = current->data.owner->data.owned_unique_nodes.getptr(name);
+			}
+			if (!unique) {
 				return nullptr;
 			}
-
+			next = *unique;
 		} else {
 			next = nullptr;
 			const Node *const *node = current->data.children.getptr(name);
@@ -1714,17 +2039,50 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 	return ret;
 }
 
-void Node::reparent(Node *p_parent, bool p_keep_global_transform) {
+void Node::reparent(RequiredParam<Node> rp_parent, bool p_keep_global_transform) {
 	ERR_THREAD_GUARD
-	ERR_FAIL_NULL(p_parent);
+	EXTRACT_PARAM_OR_FAIL(p_parent, rp_parent);
 	ERR_FAIL_NULL_MSG(data.parent, "Node needs a parent to be reparented.");
+	ERR_FAIL_COND_MSG(p_parent == this, vformat("Can't reparent '%s' to itself.", p_parent->get_name()));
 
 	if (p_parent == data.parent) {
 		return;
 	}
 
+	bool preserve_owner = data.owner && (data.owner == p_parent || data.owner->is_ancestor_of(p_parent));
+	Node *owner_temp = data.owner;
+	LocalVector<Node *> common_parents;
+
+	// If the new parent is related to the owner, find all children of the reparented node who have the same owner so that we can reassign them.
+	if (preserve_owner) {
+		LocalVector<Node *> to_visit;
+
+		to_visit.push_back(this);
+		common_parents.push_back(this);
+
+		while (to_visit.size() > 0) {
+			Node *check = to_visit[to_visit.size() - 1];
+			to_visit.resize(to_visit.size() - 1);
+
+			for (int i = 0; i < check->get_child_count(false); i++) {
+				Node *child = check->get_child(i, false);
+				to_visit.push_back(child);
+				if (child->data.owner == owner_temp) {
+					common_parents.push_back(child);
+				}
+			}
+		}
+	}
+
 	data.parent->remove_child(this);
 	p_parent->add_child(this);
+
+	// Reassign the old owner to those found nodes.
+	if (preserve_owner) {
+		for (Node *E : common_parents) {
+			E->set_owner(owner_temp);
+		}
+	}
 }
 
 Node *Node::get_parent() const {
@@ -1744,6 +2102,14 @@ Node *Node::find_parent(const String &p_pattern) const {
 	return nullptr;
 }
 
+void Node::set_unique_scene_id(int32_t p_unique_id) {
+	data.unique_scene_id = p_unique_id;
+}
+
+int32_t Node::get_unique_scene_id() const {
+	return data.unique_scene_id;
+}
+
 Window *Node::get_window() const {
 	ERR_THREAD_GUARD_V(nullptr);
 	Viewport *vp = get_viewport();
@@ -1751,6 +2117,14 @@ Window *Node::get_window() const {
 		return vp->get_base_window();
 	}
 	return nullptr;
+}
+
+Window *Node::get_non_popup_window() const {
+	Window *w = get_window();
+	while (w && w->is_popup()) {
+		w = w->get_parent_visible_window();
+	}
+	return w;
 }
 
 Window *Node::get_last_exclusive_window() const {
@@ -1762,8 +2136,8 @@ Window *Node::get_last_exclusive_window() const {
 	return w;
 }
 
-bool Node::is_ancestor_of(const Node *p_node) const {
-	ERR_FAIL_NULL_V(p_node, false);
+bool Node::is_ancestor_of(RequiredParam<const Node> rp_node) const {
+	EXTRACT_PARAM_OR_FAIL_V(p_node, rp_node, false);
 	Node *p = p_node->data.parent;
 	while (p) {
 		if (p == this) {
@@ -1775,60 +2149,41 @@ bool Node::is_ancestor_of(const Node *p_node) const {
 	return false;
 }
 
-bool Node::is_greater_than(const Node *p_node) const {
-	ERR_FAIL_NULL_V(p_node, false);
-	ERR_FAIL_COND_V(!data.inside_tree, false);
-	ERR_FAIL_COND_V(!p_node->data.inside_tree, false);
+bool Node::is_greater_than(RequiredParam<const Node> rp_node) const {
+	// parent->get_child(1) > parent->get_child(0) > parent
+
+	EXTRACT_PARAM_OR_FAIL_V(p_node, rp_node, false);
+	ERR_FAIL_COND_V(!data.tree, false);
+	ERR_FAIL_COND_V(p_node->data.tree != data.tree, false);
 
 	ERR_FAIL_COND_V(data.depth < 0, false);
 	ERR_FAIL_COND_V(p_node->data.depth < 0, false);
 
 	_update_children_cache();
 
-	int *this_stack = (int *)alloca(sizeof(int) * data.depth);
-	int *that_stack = (int *)alloca(sizeof(int) * p_node->data.depth);
+	bool this_is_deeper = this->data.depth > p_node->data.depth;
 
-	const Node *n = this;
-
-	int idx = data.depth - 1;
-	while (n) {
-		ERR_FAIL_INDEX_V(idx, data.depth, false);
-		this_stack[idx--] = n->get_index();
-		n = n->data.parent;
+	const Node *deep = this;
+	const Node *shallow = p_node;
+	if (!this_is_deeper) {
+		deep = p_node;
+		shallow = this;
 	}
 
-	ERR_FAIL_COND_V(idx != -1, false);
-	n = p_node;
-	idx = p_node->data.depth - 1;
-	while (n) {
-		ERR_FAIL_INDEX_V(idx, p_node->data.depth, false);
-		that_stack[idx--] = n->get_index();
-
-		n = n->data.parent;
-	}
-	ERR_FAIL_COND_V(idx != -1, false);
-	idx = 0;
-
-	bool res;
-	while (true) {
-		// using -2 since out-of-tree or nonroot nodes have -1
-		int this_idx = (idx >= data.depth) ? -2 : this_stack[idx];
-		int that_idx = (idx >= p_node->data.depth) ? -2 : that_stack[idx];
-
-		if (this_idx > that_idx) {
-			res = true;
-			break;
-		} else if (this_idx < that_idx) {
-			res = false;
-			break;
-		} else if (this_idx == -2) {
-			res = false; // equal
-			break;
-		}
-		idx++;
+	while (deep->data.depth > shallow->data.depth) {
+		deep = deep->data.parent;
 	}
 
-	return res;
+	if (deep == shallow) { // Shallow is ancestor of deep.
+		return this_is_deeper;
+	}
+
+	while (deep->data.parent != shallow->data.parent) {
+		deep = deep->data.parent;
+		shallow = shallow->data.parent;
+	}
+
+	return (deep->get_index() > shallow->get_index()) == this_is_deeper;
 }
 
 void Node::get_owned_by(Node *p_by, List<Node *> *p_owned) {
@@ -1869,8 +2224,8 @@ void Node::_acquire_unique_name_in_owner() {
 	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which != nullptr && *which != this) {
-		String which_path = is_inside_tree() ? (*which)->get_path() : data.owner->get_path_to(*which);
-		WARN_PRINT(vformat(RTR("Setting node name '%s' to be unique within scene for '%s', but it's already claimed by '%s'.\n'%s' is no longer set as having a unique name."),
+		String which_path = String(is_inside_tree() ? (*which)->get_path() : data.owner->get_path_to(*which));
+		WARN_PRINT(vformat("Setting node name '%s' to be unique within scene for '%s', but it's already claimed by '%s'.\n'%s' is no longer set as having a unique name.",
 				get_name(), is_inside_tree() ? get_path() : data.owner->get_path_to(this), which_path, which_path));
 		data.unique_name_in_owner = false;
 		return;
@@ -1894,6 +2249,7 @@ void Node::set_unique_name_in_owner(bool p_enabled) {
 	}
 
 	update_configuration_warnings();
+	_emit_editor_state_changed();
 }
 
 bool Node::is_unique_name_in_owner() const {
@@ -1912,17 +2268,7 @@ void Node::set_owner(Node *p_owner) {
 		return;
 	}
 
-	Node *check = this->get_parent();
-	bool owner_valid = false;
-
-	while (check) {
-		if (check == p_owner) {
-			owner_valid = true;
-			break;
-		}
-
-		check = check->data.parent;
-	}
+	bool owner_valid = p_owner->is_ancestor_of(this);
 
 	ERR_FAIL_COND_MSG(!owner_valid, "Invalid owner. Owner must be an ancestor in the tree.");
 
@@ -1931,6 +2277,8 @@ void Node::set_owner(Node *p_owner) {
 	if (data.unique_name_in_owner) {
 		_acquire_unique_name_in_owner();
 	}
+
+	_emit_editor_state_changed();
 }
 
 Node *Node::get_owner() const {
@@ -1978,8 +2326,8 @@ Node *Node::find_common_parent_with(const Node *p_node) const {
 	return const_cast<Node *>(common_parent);
 }
 
-NodePath Node::get_path_to(const Node *p_node, bool p_use_unique_path) const {
-	ERR_FAIL_NULL_V(p_node, NodePath());
+NodePath Node::get_path_to(RequiredParam<const Node> rp_node, bool p_use_unique_path) const {
+	EXTRACT_PARAM_OR_FAIL_V(p_node, rp_node, NodePath());
 
 	if (this == p_node) {
 		return NodePath(".");
@@ -2077,13 +2425,13 @@ NodePath Node::get_path() const {
 	const Node *n = this;
 
 	Vector<StringName> path;
+	path.resize(data.depth);
 
+	StringName *ptrw = path.ptrw();
 	while (n) {
-		path.push_back(n->get_name());
+		ptrw[n->data.depth - 1] = n->get_name();
 		n = n->data.parent;
 	}
-
-	path.reverse();
 
 	data.path_cache = memnew(NodePath(path, true));
 
@@ -2097,7 +2445,7 @@ bool Node::is_in_group(const StringName &p_identifier) const {
 
 void Node::add_to_group(const StringName &p_identifier, bool p_persistent) {
 	ERR_THREAD_GUARD
-	ERR_FAIL_COND(!p_identifier.operator String().length());
+	ERR_FAIL_COND_MSG(p_identifier.is_empty(), vformat("Cannot add node '%s' to a group with an empty name.", get_name()));
 
 	if (data.grouped.has(p_identifier)) {
 		return;
@@ -2114,6 +2462,9 @@ void Node::add_to_group(const StringName &p_identifier, bool p_persistent) {
 	gd.persistent = p_persistent;
 
 	data.grouped[p_identifier] = gd;
+	if (p_persistent) {
+		_emit_editor_state_changed();
+	}
 }
 
 void Node::remove_from_group(const StringName &p_identifier) {
@@ -2124,11 +2475,21 @@ void Node::remove_from_group(const StringName &p_identifier) {
 		return;
 	}
 
+#ifdef TOOLS_ENABLED
+	bool persistent = E->value.persistent;
+#endif
+
 	if (data.tree) {
 		data.tree->remove_from_group(E->key, this);
 	}
 
 	data.grouped.remove(E);
+
+#ifdef TOOLS_ENABLED
+	if (persistent) {
+		_emit_editor_state_changed();
+	}
+#endif
 }
 
 TypedArray<StringName> Node::_get_groups() const {
@@ -2274,10 +2635,16 @@ void Node::_propagate_replace_owner(Node *p_owner, Node *p_by_owner) {
 	data.blocked--;
 }
 
-Ref<Tween> Node::create_tween() {
+RequiredResult<Tween> Node::create_tween() {
 	ERR_THREAD_GUARD_V(Ref<Tween>());
-	ERR_FAIL_NULL_V_MSG(data.tree, nullptr, "Can't create Tween when not inside scene tree.");
-	Ref<Tween> tween = get_tree()->create_tween();
+
+	SceneTree *tree = data.tree;
+	if (!tree) {
+		tree = SceneTree::get_singleton();
+	}
+	ERR_FAIL_NULL_V_MSG(tree, Ref<Tween>(), "No available SceneTree to create the Tween.");
+
+	Ref<Tween> tween = tree->create_tween();
 	tween->bind_node(this);
 	return tween;
 }
@@ -2285,6 +2652,7 @@ Ref<Tween> Node::create_tween() {
 void Node::set_scene_file_path(const String &p_scene_file_path) {
 	ERR_THREAD_GUARD
 	data.scene_file_path = p_scene_file_path;
+	_emit_editor_state_changed();
 }
 
 String Node::get_scene_file_path() const {
@@ -2298,20 +2666,16 @@ void Node::set_editor_description(const String &p_editor_description) {
 	}
 
 	data.editor_description = p_editor_description;
-
-	if (Engine::get_singleton()->is_editor_hint() && is_inside_tree()) {
-		// Update tree so the tooltip in the Scene tree dock is also updated in the editor.
-		get_tree()->tree_changed();
-	}
+	emit_signal(SNAME("editor_description_changed"), this);
 }
 
 String Node::get_editor_description() const {
 	return data.editor_description;
 }
 
-void Node::set_editable_instance(Node *p_node, bool p_editable) {
+void Node::set_editable_instance(RequiredParam<Node> rp_node, bool p_editable) {
 	ERR_THREAD_GUARD
-	ERR_FAIL_NULL(p_node);
+	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
 	ERR_FAIL_COND(!is_ancestor_of(p_node));
 	if (!p_editable) {
 		p_node->data.editable_instance = false;
@@ -2321,6 +2685,8 @@ void Node::set_editable_instance(Node *p_node, bool p_editable) {
 	} else {
 		p_node->data.editable_instance = true;
 	}
+
+	p_node->_emit_editor_state_changed();
 }
 
 bool Node::is_editable_instance(const Node *p_node) const {
@@ -2384,33 +2750,20 @@ StringName Node::get_property_store_alias(const StringName &p_property) const {
 }
 
 bool Node::is_part_of_edited_scene() const {
-	return Engine::get_singleton()->is_editor_hint() && is_inside_tree() && get_tree()->get_edited_scene_root() &&
-			(get_tree()->get_edited_scene_root() == this || get_tree()->get_edited_scene_root()->is_ancestor_of(this));
+	return Engine::get_singleton()->is_editor_hint() && is_inside_tree() && data.tree->get_edited_scene_root() &&
+			data.tree->get_edited_scene_root()->get_parent()->is_ancestor_of(this);
 }
 #endif
 
 void Node::get_storable_properties(HashSet<StringName> &r_storable_properties) const {
 	ERR_THREAD_GUARD
-	List<PropertyInfo> pi;
-	get_property_list(&pi);
-	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
-		if ((E->get().usage & PROPERTY_USAGE_STORAGE)) {
-			r_storable_properties.insert(E->get().name);
+	List<PropertyInfo> property_list;
+	get_property_list(&property_list);
+	for (const PropertyInfo &pi : property_list) {
+		if ((pi.usage & PROPERTY_USAGE_STORAGE)) {
+			r_storable_properties.insert(pi.name);
 		}
 	}
-}
-
-String Node::to_string() {
-	ERR_THREAD_GUARD_V(String());
-	if (get_script_instance()) {
-		bool valid;
-		String ret = get_script_instance()->to_string(&valid);
-		if (valid) {
-			return ret;
-		}
-	}
-
-	return (get_name() ? String(get_name()) + ":" : "") + Object::to_string();
 }
 
 void Node::set_scene_instance_state(const Ref<SceneState> &p_state) {
@@ -2425,6 +2778,7 @@ Ref<SceneState> Node::get_scene_instance_state() const {
 void Node::set_scene_inherited_state(const Ref<SceneState> &p_state) {
 	ERR_THREAD_GUARD
 	data.inherited_state = p_state;
+	_emit_editor_state_changed();
 }
 
 Ref<SceneState> Node::get_scene_inherited_state() const {
@@ -2451,7 +2805,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		nip->set_instance_path(ip->get_instance_path());
 		node = nip;
 
-	} else if ((p_flags & DUPLICATE_USE_INSTANTIATION) && !get_scene_file_path().is_empty()) {
+	} else if ((p_flags & DUPLICATE_USE_INSTANTIATION) && is_instance()) {
 		Ref<PackedScene> res = ResourceLoader::load(get_scene_file_path());
 		ERR_FAIL_COND_V(res.is_null(), nullptr);
 		PackedScene::GenEditState edit_state = PackedScene::GEN_EDIT_STATE_DISABLED;
@@ -2476,12 +2830,10 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		ERR_FAIL_NULL_V(node, nullptr);
 	}
 
-	if (!get_scene_file_path().is_empty()) { //an instance
+	if (is_instance()) {
 		node->set_scene_file_path(get_scene_file_path());
 		node->data.editable_instance = data.editable_instance;
 	}
-
-	StringName script_property_name = CoreStringNames::get_singleton()->_script;
 
 	List<const Node *> hidden_roots;
 	List<const Node *> node_tree;
@@ -2495,8 +2847,9 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		instance_roots.push_back(this);
 
 		for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
-			for (int i = 0; i < N->get()->get_child_count(); ++i) {
-				Node *descendant = N->get()->get_child(i);
+			for (int i = 0; i < N->get()->get_child_count(false); ++i) {
+				Node *descendant = N->get()->get_child(i, false);
+
 				// Skip nodes not really belonging to the instantiated hierarchy; they'll be processed normally later
 				// but remember non-instantiated nodes that are hidden below instantiated ones
 				if (!instance_roots.has(descendant->get_owner())) {
@@ -2508,47 +2861,9 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 
 				node_tree.push_back(descendant);
 
-				if (!descendant->get_scene_file_path().is_empty() && instance_roots.has(descendant->get_owner())) {
+				if (descendant->is_instance() && instance_roots.has(descendant->get_owner())) {
 					instance_roots.push_back(descendant);
 				}
-			}
-		}
-	}
-
-	for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
-		Node *current_node = node->get_node(get_path_to(N->get()));
-		ERR_CONTINUE(!current_node);
-
-		if (p_flags & DUPLICATE_SCRIPTS) {
-			bool is_valid = false;
-			Variant scr = N->get()->get(script_property_name, &is_valid);
-			if (is_valid) {
-				current_node->set(script_property_name, scr);
-			}
-		}
-
-		List<PropertyInfo> plist;
-		N->get()->get_property_list(&plist);
-
-		for (const PropertyInfo &E : plist) {
-			if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
-				continue;
-			}
-			String name = E.name;
-			if (name == script_property_name) {
-				continue;
-			}
-
-			Variant value = N->get()->get(name).duplicate(true);
-
-			if (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE) {
-				Resource *res = Object::cast_to<Resource>(value);
-				if (res) { // Duplicate only if it's a resource
-					current_node->set(name, res->duplicate());
-				}
-
-			} else {
-				current_node->set(name, value);
 			}
 		}
 	}
@@ -2577,22 +2892,19 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		}
 	}
 
-	for (int i = 0; i < get_child_count(); i++) {
-		if (get_child(i)->data.parent_owned) {
-			continue;
-		}
-		if (instantiated && get_child(i)->data.owner == this) {
+	for (int i = 0; i < get_child_count(false); i++) {
+		if (instantiated && get_child(i, false)->data.owner == this) {
 			continue; //part of instance
 		}
 
-		Node *dup = get_child(i)->_duplicate(p_flags, r_duplimap);
+		Node *dup = get_child(i, false)->_duplicate(p_flags, r_duplimap);
 		if (!dup) {
 			memdelete(node);
 			return nullptr;
 		}
 
 		node->add_child(dup);
-		if (i < node->get_child_count() - 1) {
+		if (i < node->get_child_count(false) - 1) {
 			node->move_child(dup, i);
 		}
 	}
@@ -2611,13 +2923,12 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		}
 
 		parent->add_child(dup);
-		int pos = E->get_index();
+		int pos = E->get_index(false);
 
-		if (pos < parent->get_child_count() - 1) {
+		if (pos < parent->get_child_count(false) - 1) {
 			parent->move_child(dup, pos);
 		}
 	}
-
 	return node;
 }
 
@@ -2625,7 +2936,15 @@ Node *Node::duplicate(int p_flags) const {
 	ERR_THREAD_GUARD_V(nullptr);
 	Node *dupe = _duplicate(p_flags);
 
-	if (dupe && (p_flags & DUPLICATE_SIGNALS)) {
+	ERR_FAIL_NULL_V_MSG(dupe, nullptr, "Failed to duplicate node.");
+
+	if (p_flags & DUPLICATE_SCRIPTS) {
+		_duplicate_scripts(this, dupe);
+	}
+
+	_duplicate_properties(this, this, dupe, p_flags);
+
+	if (p_flags & DUPLICATE_SIGNALS) {
 		_duplicate_signals(this, dupe);
 	}
 
@@ -2634,15 +2953,25 @@ Node *Node::duplicate(int p_flags) const {
 
 #ifdef TOOLS_ENABLED
 Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap) const {
-	return duplicate_from_editor(r_duplimap, HashMap<Ref<Resource>, Ref<Resource>>());
+	HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> tmp;
+	return duplicate_from_editor(r_duplimap, nullptr, tmp);
 }
 
-Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
-	Node *dupe = _duplicate(DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANTIATION | DUPLICATE_FROM_EDITOR, &r_duplimap);
+Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, Node *p_scene_root, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resource_remap) const {
+	int flags = DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANTIATION | DUPLICATE_FROM_EDITOR;
+	Node *dupe = _duplicate(flags, &r_duplimap);
+
+	ERR_FAIL_NULL_V_MSG(dupe, nullptr, "Failed to duplicate node.");
+
+	if (flags & DUPLICATE_SCRIPTS) {
+		_duplicate_scripts(this, dupe);
+	}
+
+	_duplicate_properties(this, this, dupe, flags);
 
 	// This is used by SceneTreeDock's paste functionality. When pasting to foreign scene, resources are duplicated.
-	if (!p_resource_remap.is_empty()) {
-		remap_node_resources(dupe, p_resource_remap);
+	if (p_scene_root) {
+		remap_node_resources(dupe, p_scene_root, p_resource_remap);
 	}
 
 	// Duplication of signals must happen after all the node descendants have been copied,
@@ -2653,7 +2982,9 @@ Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, con
 	return dupe;
 }
 
-void Node::remap_node_resources(Node *p_node, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
+void Node::remap_node_resources(Node *p_node, Node *p_scene_root, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resource_remap) const {
+	Node *local_scene = p_node->is_instance() ? p_node : (p_node->get_owner() ? p_node->get_owner() : p_scene_root);
+
 	List<PropertyInfo> props;
 	p_node->get_property_list(&props);
 
@@ -2663,23 +2994,39 @@ void Node::remap_node_resources(Node *p_node, const HashMap<Ref<Resource>, Ref<R
 		}
 
 		Variant v = p_node->get(E.name);
-		if (v.is_ref_counted()) {
-			Ref<Resource> res = v;
-			if (res.is_valid()) {
-				if (p_resource_remap.has(res)) {
-					p_node->set(E.name, p_resource_remap[res]);
-					remap_nested_resources(res, p_resource_remap);
-				}
+		if (!v.is_ref_counted()) {
+			continue;
+		}
+		Ref<Resource> res = v;
+		if (res.is_null()) {
+			continue;
+		}
+
+		if (res->is_local_to_scene()) {
+			if (local_scene == res->get_local_scene()) {
+				continue;
+			}
+			Ref<Resource> dup = SceneState::get_remap_resource(res, p_resource_remap, nullptr, local_scene);
+			p_node->set(E.name, dup);
+			continue;
+		}
+
+		if (res->is_built_in()) {
+			// Use nullptr instead of a specific node (current scene root node) to represent the scene,
+			// as the Make Scene Root operation may be executed.
+			if (p_resource_remap[nullptr].has(res)) {
+				p_node->set(E.name, p_resource_remap[nullptr][res]);
+				remap_nested_resources(res, p_resource_remap[nullptr]);
 			}
 		}
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		remap_node_resources(p_node->get_child(i), p_resource_remap);
+		remap_node_resources(p_node->get_child(i), p_scene_root, p_resource_remap);
 	}
 }
 
-void Node::remap_nested_resources(Ref<Resource> p_resource, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
+void Node::remap_nested_resources(Ref<Resource> p_resource, HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
 	List<PropertyInfo> props;
 	p_resource->get_property_list(&props);
 
@@ -2700,7 +3047,89 @@ void Node::remap_nested_resources(Ref<Resource> p_resource, const HashMap<Ref<Re
 		}
 	}
 }
+
+void Node::_emit_editor_state_changed() {
+	// This is required for the SceneTreeEditor to properly keep track of when an update is needed.
+	// This signal might be expensive and not needed for anything outside of the editor.
+	if (Engine::get_singleton()->is_editor_hint()) {
+		emit_signal(SNAME("editor_state_changed"));
+	}
+}
 #endif
+
+void Node::_duplicate_scripts(const Node *p_original, Node *p_copy) const {
+	bool is_valid = false;
+	Variant scr = p_original->get(CoreStringName(script), &is_valid);
+	if (is_valid) {
+		p_copy->set(CoreStringName(script), scr);
+	}
+
+	for (int i = 0; i < p_original->get_child_count(false); i++) {
+		Node *copy_child = p_copy->get_child(i, false);
+		ERR_FAIL_NULL_MSG(copy_child, "Child node disappeared while duplicating.");
+		_duplicate_scripts(p_original->get_child(i, false), copy_child);
+	}
+}
+
+// Duplicate node's properties.
+// This has to be called after nodes have been duplicated since there might be properties
+// of type Node that can be updated properly only if duplicated node tree is complete.
+void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Node *p_copy, int p_flags) const {
+	List<PropertyInfo> props;
+	p_original->get_property_list(&props);
+	const StringName &script_property_name = CoreStringName(script);
+	for (const PropertyInfo &E : props) {
+		if (!(p_flags & DUPLICATE_INTERNAL_STATE) && !(E.usage & PROPERTY_USAGE_STORAGE)) {
+			continue;
+		}
+		const StringName name = E.name;
+
+		if (name == script_property_name) {
+			continue;
+		}
+
+		Variant value = p_original->get(name);
+		// To keep classic behavior, because, in contrast, nowadays a resource would be duplicated.
+		if (value.get_type() != Variant::OBJECT) {
+			value = value.duplicate(true);
+		}
+
+		if (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE) {
+			Resource *res = Object::cast_to<Resource>(value);
+			if (res) { // Duplicate only if it's a resource
+				p_copy->set(name, res->duplicate());
+			}
+		} else {
+			if (value.get_type() == Variant::OBJECT) {
+				Node *property_node = Object::cast_to<Node>(value);
+				Variant out_value = value;
+				if (property_node && (p_root == property_node || p_root->is_ancestor_of(property_node))) {
+					out_value = p_copy->get_node_or_null(p_original->get_path_to(property_node));
+				}
+				p_copy->set(name, out_value);
+			} else if (value.get_type() == Variant::ARRAY) {
+				Array arr = value;
+				if (arr.get_typed_builtin() == Variant::OBJECT) {
+					for (int i = 0; i < arr.size(); i++) {
+						Node *property_node = Object::cast_to<Node>(arr[i]);
+						if (property_node && (p_root == property_node || p_root->is_ancestor_of(property_node))) {
+							arr[i] = p_copy->get_node_or_null(p_original->get_path_to(property_node));
+						}
+					}
+				}
+				p_copy->set(name, arr);
+			} else {
+				p_copy->set(name, value);
+			}
+		}
+	}
+
+	for (int i = 0; i < p_original->get_child_count(false); i++) {
+		Node *copy_child = p_copy->get_child(i, false);
+		ERR_FAIL_NULL_MSG(copy_child, "Child node disappeared while duplicating.");
+		_duplicate_properties(p_root, p_original->get_child(i, false), copy_child, p_flags);
+	}
+}
 
 // Duplication of signals must happen after all the node descendants have been copied,
 // because re-targeting of connections from some descendant to another is not possible
@@ -2729,7 +3158,11 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 				if (!target) {
 					continue;
 				}
+
 				NodePath ptarget = p_original->get_path_to(target);
+				if (ptarget.is_empty()) {
+					continue;
+				}
 
 				Node *copytarget = target;
 
@@ -2744,11 +3177,12 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 				if (copy && copytarget && E.callable.get_method() != StringName()) {
 					Callable copy_callable = Callable(copytarget, E.callable.get_method());
 					if (!copy->is_connected(E.signal.get_name(), copy_callable)) {
-						int arg_count = E.callable.get_bound_arguments_count();
-						if (arg_count > 0) {
+						int unbound_arg_count = E.callable.get_unbound_arguments_count();
+						if (unbound_arg_count > 0) {
+							copy_callable = copy_callable.unbind(unbound_arg_count);
+						}
+						if (E.callable.get_bound_arguments_count() > 0) {
 							copy_callable = copy_callable.bindv(E.callable.get_bound_arguments());
-						} else if (arg_count < 0) {
-							copy_callable = copy_callable.unbind(-arg_count);
 						}
 						copy->connect(E.signal.get_name(), copy_callable, E.flags);
 					}
@@ -2772,9 +3206,9 @@ static void find_owned_by(Node *p_by, Node *p_node, List<Node *> *p_owned) {
 	}
 }
 
-void Node::replace_by(Node *p_node, bool p_keep_groups) {
+void Node::replace_by(RequiredParam<Node> rp_node, bool p_keep_groups) {
 	ERR_THREAD_GUARD
-	ERR_FAIL_NULL(p_node);
+	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
 	ERR_FAIL_COND(p_node->data.parent);
 
 	List<Node *> owned = data.owned;
@@ -2801,7 +3235,7 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 	}
 
 	Node *parent = data.parent;
-	int index_in_parent = get_index();
+	int index_in_parent = get_index(false);
 
 	if (data.parent) {
 		parent->remove_child(this);
@@ -2814,19 +3248,26 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 	while (get_child_count()) {
 		Node *child = get_child(0);
 		remove_child(child);
-		if (!child->is_owned_by_parent()) {
-			// add the custom children to the p_node
+		if (!child->is_internal()) {
+			// Add the custom children to the p_node.
+			Node *child_owner = child->get_owner() == this ? p_node : child->get_owner();
+			child->set_owner(nullptr);
 			p_node->add_child(child);
+			child->set_owner(child_owner);
 		}
 	}
 
 	p_node->set_owner(owner);
-	for (int i = 0; i < owned.size(); i++) {
-		owned[i]->set_owner(p_node);
+	for (Node *E : owned) {
+		if (E->data.owner != p_node) {
+			E->set_owner(p_node);
+		}
 	}
 
-	for (int i = 0; i < owned_by_owner.size(); i++) {
-		owned_by_owner[i]->set_owner(owner);
+	for (Node *E : owned_by_owner) {
+		if (E->data.owner != owner) {
+			E->set_owner(owner);
+		}
 	}
 
 	p_node->set_scene_file_path(get_scene_file_path());
@@ -2883,9 +3324,9 @@ Array Node::_get_node_and_resource(const NodePath &p_path) {
 
 Node *Node::get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property) const {
 	ERR_THREAD_GUARD_V(nullptr);
-	Node *node = get_node(p_path);
 	r_res = Ref<Resource>();
 	r_leftover_subpath = Vector<StringName>();
+	Node *node = get_node_or_null(p_path);
 	if (!node) {
 		return nullptr;
 	}
@@ -2952,7 +3393,7 @@ void Node::_set_tree(SceneTree *p_tree) {
 #ifdef DEBUG_ENABLED
 static HashMap<ObjectID, List<String>> _print_orphan_nodes_map;
 
-static void _print_orphan_nodes_routine(Object *p_obj) {
+static void _print_orphan_nodes_routine(Object *p_obj, void *p_user_data) {
 	Node *n = Object::cast_to<Node>(p_obj);
 	if (!n) {
 		return;
@@ -2971,12 +3412,20 @@ static void _print_orphan_nodes_routine(Object *p_obj) {
 	if (p == n) {
 		path = n->get_name();
 	} else {
-		path = String(p->get_name()) + "/" + p->get_path_to(n);
+		path = String(p->get_name()) + "/" + String(p->get_path_to(n));
+	}
+
+	String source;
+	Variant script = n->get_script();
+	if (!script.is_null()) {
+		Resource *obj = Object::cast_to<Resource>(script);
+		source = obj->get_path();
 	}
 
 	List<String> info_strings;
 	info_strings.push_back(path);
 	info_strings.push_back(n->get_class());
+	info_strings.push_back(source);
 
 	_print_orphan_nodes_map[p_obj->get_instance_id()] = info_strings;
 }
@@ -2988,22 +3437,40 @@ void Node::print_orphan_nodes() {
 	_print_orphan_nodes_map.clear();
 
 	// Collect and print information about orphan nodes.
-	ObjectDB::debug_objects(_print_orphan_nodes_routine);
+	ObjectDB::debug_objects(_print_orphan_nodes_routine, nullptr);
 
 	for (const KeyValue<ObjectID, List<String>> &E : _print_orphan_nodes_map) {
-		print_line(itos(E.key) + " - Stray Node: " + E.value[0] + " (Type: " + E.value[1] + ")");
+		print_line(itos(E.key) + " - Stray Node: " + E.value.get(0) + " (Type: " + E.value.get(1) + ") (Source:" + E.value.get(2) + ")");
 	}
 
 	// Flush it after use.
 	_print_orphan_nodes_map.clear();
 #endif
 }
+TypedArray<int> Node::get_orphan_node_ids() {
+	TypedArray<int> ret;
+#ifdef DEBUG_ENABLED
+	// Make sure it's empty.
+	_print_orphan_nodes_map.clear();
+
+	// Collect and return information about orphan nodes.
+	ObjectDB::debug_objects(_print_orphan_nodes_routine, nullptr);
+
+	for (const KeyValue<ObjectID, List<String>> &E : _print_orphan_nodes_map) {
+		ret.push_back(E.key);
+	}
+
+	// Flush it after use.
+	_print_orphan_nodes_map.clear();
+#endif
+	return ret;
+}
 
 void Node::queue_free() {
 	// There are users which instantiate multiple scene trees for their games.
 	// Use the node's own tree to handle its deletion when relevant.
-	if (is_inside_tree()) {
-		get_tree()->queue_delete(this);
+	if (data.tree) {
+		data.tree->queue_delete(this);
 	} else {
 		SceneTree *tree = SceneTree::get_singleton();
 		ERR_FAIL_NULL_MSG(tree, "Can't queue free a node when no SceneTree is available.");
@@ -3011,25 +3478,16 @@ void Node::queue_free() {
 	}
 }
 
-void Node::set_import_path(const NodePath &p_import_path) {
 #ifdef TOOLS_ENABLED
-	data.import_path = p_import_path;
-#endif
-}
-
-NodePath Node::get_import_path() const {
-#ifdef TOOLS_ENABLED
-	return data.import_path;
-#else
-	return NodePath();
-#endif
-}
-
 static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
 	if (p_node != p_base && !p_node->get_owner()) {
 		return;
 	}
-	String n = p_base->get_path_to(p_node);
+	if (p_node->is_unique_name_in_owner() && p_node->get_owner() == p_base) {
+		String n = "%" + p_node->get_name();
+		r_options->push_back(n.quote());
+	}
+	String n = String(p_base->get_path_to(p_node));
 	r_options->push_back(n.quote());
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_add_nodes_to_options(p_base, p_node->get_child(i), r_options);
@@ -3037,18 +3495,36 @@ static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<S
 }
 
 void Node::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	String pf = p_function;
-	if ((pf == "has_node" || pf == "get_node") && p_idx == 0) {
+	const String pf = p_function;
+	if (p_idx == 0 && (pf == "has_node" || pf == "get_node" || pf == "get_node_or_null")) {
 		_add_nodes_to_options(this, this, r_options);
+	} else if (p_idx == 0 && (pf == "add_to_group" || pf == "remove_from_group" || pf == "is_in_group")) {
+		HashMap<StringName, String> global_groups = ProjectSettings::get_singleton()->get_global_groups_list();
+		for (const KeyValue<StringName, String> &E : global_groups) {
+			r_options->push_back(E.key.operator String().quote());
+		}
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
+#endif
 
 void Node::clear_internal_tree_resource_paths() {
 	clear_internal_resource_paths();
 	for (KeyValue<StringName, Node *> &K : data.children) {
 		K.value->clear_internal_tree_resource_paths();
 	}
+}
+
+PackedStringArray Node::get_accessibility_configuration_warnings() const {
+	ERR_THREAD_GUARD_V(PackedStringArray());
+	PackedStringArray ret;
+
+	Vector<String> warnings;
+	if (GDVIRTUAL_CALL(_get_accessibility_configuration_warnings, warnings)) {
+		ret.append_array(warnings);
+	}
+
+	return ret;
 }
 
 PackedStringArray Node::get_configuration_warnings() const {
@@ -3063,34 +3539,16 @@ PackedStringArray Node::get_configuration_warnings() const {
 	return ret;
 }
 
-String Node::get_configuration_warnings_as_string() const {
-	PackedStringArray warnings = get_configuration_warnings();
-	String all_warnings;
-	for (int i = 0; i < warnings.size(); i++) {
-		if (i > 0) {
-			all_warnings += "\n\n";
-		}
-		// Format as a bullet point list to make multiple warnings easier to distinguish
-		// from each other.
-		all_warnings += String::utf8("•  ") + warnings[i];
-	}
-	return all_warnings;
-}
-
 void Node::update_configuration_warnings() {
 	ERR_THREAD_GUARD
 #ifdef TOOLS_ENABLED
-	if (!is_inside_tree()) {
+	if (!data.tree) {
 		return;
 	}
-	if (get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root() == this || get_tree()->get_edited_scene_root()->is_ancestor_of(this))) {
-		get_tree()->emit_signal(SceneStringNames::get_singleton()->node_configuration_warning_changed, this);
+	if (data.tree->get_edited_scene_root() && (data.tree->get_edited_scene_root() == this || data.tree->get_edited_scene_root()->is_ancestor_of(this))) {
+		data.tree->emit_signal(SceneStringName(node_configuration_warning_changed), this);
 	}
 #endif
-}
-
-bool Node::is_owned_by_parent() const {
-	return data.parent_owned;
 }
 
 void Node::set_display_folded(bool p_folded) {
@@ -3157,6 +3615,11 @@ void Node::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
+String Node::_to_string() {
+	ERR_THREAD_GUARD_V(String());
+	return (get_name() ? String(get_name()) + ":" : "") + Object::_to_string();
+}
+
 void Node::input(const Ref<InputEvent> &p_event) {
 }
 
@@ -3176,7 +3639,7 @@ Variant Node::_call_deferred_thread_group_bind(const Variant **p_args, int p_arg
 		return Variant();
 	}
 
-	if (p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING) {
+	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
@@ -3199,7 +3662,7 @@ Variant Node::_call_thread_safe_bind(const Variant **p_args, int p_argcount, Cal
 		return Variant();
 	}
 
-	if (p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING) {
+	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
@@ -3220,11 +3683,13 @@ void Node::call_deferred_thread_groupp(const StringName &p_method, const Variant
 	SceneTree::ProcessGroup *pg = (SceneTree::ProcessGroup *)data.process_group;
 	pg->call_queue.push_callp(this, p_method, p_args, p_argcount, p_show_error);
 }
+
 void Node::set_deferred_thread_group(const StringName &p_property, const Variant &p_value) {
 	ERR_FAIL_COND(!is_inside_tree());
 	SceneTree::ProcessGroup *pg = (SceneTree::ProcessGroup *)data.process_group;
 	pg->call_queue.push_set(this, p_property, p_value);
 }
+
 void Node::notify_deferred_thread_group(int p_notification) {
 	ERR_FAIL_COND(!is_inside_tree());
 	SceneTree::ProcessGroup *pg = (SceneTree::ProcessGroup *)data.process_group;
@@ -3242,6 +3707,7 @@ void Node::call_thread_safep(const StringName &p_method, const Variant **p_args,
 		call_deferred_thread_groupp(p_method, p_args, p_argcount, p_show_error);
 	}
 }
+
 void Node::set_thread_safe(const StringName &p_property, const Variant &p_value) {
 	if (is_accessible_from_caller_thread()) {
 		set(p_property, p_value);
@@ -3249,6 +3715,7 @@ void Node::set_thread_safe(const StringName &p_property, const Variant &p_value)
 		set_deferred_thread_group(p_property, p_value);
 	}
 }
+
 void Node::notify_thread_safe(int p_notification) {
 	if (is_accessible_from_caller_thread()) {
 		notification(p_notification);
@@ -3257,11 +3724,40 @@ void Node::notify_thread_safe(int p_notification) {
 	}
 }
 
+RID Node::get_focused_accessibility_element() const {
+	RID id;
+	if (GDVIRTUAL_CALL(_get_focused_accessibility_element, id)) {
+		return id;
+	} else {
+		return get_accessibility_element();
+	}
+}
+
+void Node::queue_accessibility_update() {
+	if (is_inside_tree() && !is_part_of_edited_scene()) {
+		data.tree->_accessibility_notify_change(this);
+	}
+}
+
+RID Node::get_accessibility_element() const {
+	if (is_part_of_edited_scene()) {
+		return RID();
+	}
+	if (unlikely(data.accessibility_element.is_null())) {
+		Window *w = get_non_popup_window();
+		if (w && w->get_window_id() != DisplayServer::INVALID_WINDOW_ID && get_window()->is_visible()) {
+			data.accessibility_element = DisplayServer::get_singleton()->accessibility_create_element(w->get_window_id(), DisplayServer::ROLE_CONTAINER);
+		}
+	}
+	return data.accessibility_element;
+}
+
 void Node::_bind_methods() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/node_name_num_separator", PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"), 0);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/node_name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case"), NAME_CASING_PASCAL_CASE);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/node_name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case,kebab-case"), NAME_CASING_PASCAL_CASE);
 
 	ClassDB::bind_static_method("Node", D_METHOD("print_orphan_nodes"), &Node::print_orphan_nodes);
+	ClassDB::bind_static_method("Node", D_METHOD("get_orphan_node_ids"), &Node::get_orphan_node_ids);
 	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "force_readable_name"), &Node::add_sibling, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
@@ -3283,6 +3779,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
 
 	ClassDB::bind_method(D_METHOD("is_inside_tree"), &Node::is_inside_tree);
+	ClassDB::bind_method(D_METHOD("is_part_of_edited_scene"), &Node::is_part_of_edited_scene);
 	ClassDB::bind_method(D_METHOD("is_ancestor_of", "node"), &Node::is_ancestor_of);
 	ClassDB::bind_method(D_METHOD("is_greater_than", "node"), &Node::is_greater_than);
 	ClassDB::bind_method(D_METHOD("get_path"), &Node::get_path);
@@ -3334,6 +3831,9 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_process_thread_group_order", "order"), &Node::set_process_thread_group_order);
 	ClassDB::bind_method(D_METHOD("get_process_thread_group_order"), &Node::get_process_thread_group_order);
 
+	ClassDB::bind_method(D_METHOD("queue_accessibility_update"), &Node::queue_accessibility_update);
+	ClassDB::bind_method(D_METHOD("get_accessibility_element"), &Node::get_accessibility_element);
+
 	ClassDB::bind_method(D_METHOD("set_display_folded", "fold"), &Node::set_display_folded);
 	ClassDB::bind_method(D_METHOD("is_displayed_folded"), &Node::is_displayed_folded);
 
@@ -3343,12 +3843,23 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_process_internal", "enable"), &Node::set_physics_process_internal);
 	ClassDB::bind_method(D_METHOD("is_physics_processing_internal"), &Node::is_physics_processing_internal);
 
+	ClassDB::bind_method(D_METHOD("set_physics_interpolation_mode", "mode"), &Node::set_physics_interpolation_mode);
+	ClassDB::bind_method(D_METHOD("get_physics_interpolation_mode"), &Node::get_physics_interpolation_mode);
+	ClassDB::bind_method(D_METHOD("is_physics_interpolated"), &Node::is_physics_interpolated);
+	ClassDB::bind_method(D_METHOD("is_physics_interpolated_and_enabled"), &Node::is_physics_interpolated_and_enabled);
+	ClassDB::bind_method(D_METHOD("reset_physics_interpolation"), &Node::reset_physics_interpolation);
+
+	ClassDB::bind_method(D_METHOD("set_auto_translate_mode", "mode"), &Node::set_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("get_auto_translate_mode"), &Node::get_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("can_auto_translate"), &Node::can_auto_translate);
+	ClassDB::bind_method(D_METHOD("set_translation_domain_inherited"), &Node::set_translation_domain_inherited);
+
 	ClassDB::bind_method(D_METHOD("get_window"), &Node::get_window);
 	ClassDB::bind_method(D_METHOD("get_last_exclusive_window"), &Node::get_last_exclusive_window);
 	ClassDB::bind_method(D_METHOD("get_tree"), &Node::get_tree);
 	ClassDB::bind_method(D_METHOD("create_tween"), &Node::create_tween);
 
-	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::duplicate, DEFVAL(DUPLICATE_USE_INSTANTIATION | DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS));
+	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::duplicate, DEFVAL(DUPLICATE_DEFAULT));
 	ClassDB::bind_method(D_METHOD("replace_by", "node", "keep_groups"), &Node::replace_by, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_scene_instance_load_placeholder", "load_placeholder"), &Node::set_scene_instance_load_placeholder);
@@ -3370,21 +3881,20 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_multiplayer"), &Node::get_multiplayer);
 	ClassDB::bind_method(D_METHOD("rpc_config", "method", "config"), &Node::rpc_config);
+	ClassDB::bind_method(D_METHOD("get_node_rpc_config"), &Node::_get_node_rpc_config_bind);
 
 	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
 	ClassDB::bind_method(D_METHOD("get_editor_description"), &Node::get_editor_description);
 
-	ClassDB::bind_method(D_METHOD("_set_import_path", "import_path"), &Node::set_import_path);
-	ClassDB::bind_method(D_METHOD("_get_import_path"), &Node::get_import_path);
-
 	ClassDB::bind_method(D_METHOD("set_unique_name_in_owner", "enable"), &Node::set_unique_name_in_owner);
 	ClassDB::bind_method(D_METHOD("is_unique_name_in_owner"), &Node::is_unique_name_in_owner);
+
+	ClassDB::bind_method(D_METHOD("atr", "message", "context"), &Node::atr, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("atr_n", "message", "plural_message", "n", "context"), &Node::atr_n, DEFVAL(""));
 
 #ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_set_property_pinned", "property", "pinned"), &Node::set_property_pinned);
 #endif
-
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "_import_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_import_path", "_get_import_path");
 
 	{
 		MethodInfo mi;
@@ -3393,8 +3903,13 @@ void Node::_bind_methods() {
 
 		mi.name = "rpc";
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc", &Node::_rpc_bind, mi);
+	}
 
-		mi.arguments.push_front(PropertyInfo(Variant::INT, "peer_id"));
+	{
+		MethodInfo mi;
+
+		mi.arguments.push_back(PropertyInfo(Variant::INT, "peer_id"));
+		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
 
 		mi.name = "rpc_id";
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc_id", &Node::_rpc_id_bind, mi);
@@ -3442,7 +3957,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_POST_ENTER_TREE);
 	BIND_CONSTANT(NOTIFICATION_DISABLED);
 	BIND_CONSTANT(NOTIFICATION_ENABLED);
-	BIND_CONSTANT(NOTIFICATION_NODE_RECACHE_REQUESTED);
+	BIND_CONSTANT(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 
 	BIND_CONSTANT(NOTIFICATION_EDITOR_PRE_SAVE);
 	BIND_CONSTANT(NOTIFICATION_EDITOR_POST_SAVE);
@@ -3457,6 +3972,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_WM_DPI_CHANGE);
 	BIND_CONSTANT(NOTIFICATION_VP_MOUSE_ENTER);
 	BIND_CONSTANT(NOTIFICATION_VP_MOUSE_EXIT);
+	BIND_CONSTANT(NOTIFICATION_WM_POSITION_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_OS_MEMORY_WARNING);
 	BIND_CONSTANT(NOTIFICATION_TRANSLATION_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_WM_ABOUT);
@@ -3467,6 +3983,9 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_APPLICATION_FOCUS_IN);
 	BIND_CONSTANT(NOTIFICATION_APPLICATION_FOCUS_OUT);
 	BIND_CONSTANT(NOTIFICATION_TEXT_SERVER_CHANGED);
+
+	BIND_CONSTANT(NOTIFICATION_ACCESSIBILITY_UPDATE);
+	BIND_CONSTANT(NOTIFICATION_ACCESSIBILITY_INVALIDATE);
 
 	BIND_ENUM_CONSTANT(PROCESS_MODE_INHERIT);
 	BIND_ENUM_CONSTANT(PROCESS_MODE_PAUSABLE);
@@ -3482,14 +4001,24 @@ void Node::_bind_methods() {
 	BIND_BITFIELD_FLAG(FLAG_PROCESS_THREAD_MESSAGES_PHYSICS);
 	BIND_BITFIELD_FLAG(FLAG_PROCESS_THREAD_MESSAGES_ALL);
 
+	BIND_ENUM_CONSTANT(PHYSICS_INTERPOLATION_MODE_INHERIT);
+	BIND_ENUM_CONSTANT(PHYSICS_INTERPOLATION_MODE_ON);
+	BIND_ENUM_CONSTANT(PHYSICS_INTERPOLATION_MODE_OFF);
+
 	BIND_ENUM_CONSTANT(DUPLICATE_SIGNALS);
 	BIND_ENUM_CONSTANT(DUPLICATE_GROUPS);
 	BIND_ENUM_CONSTANT(DUPLICATE_SCRIPTS);
 	BIND_ENUM_CONSTANT(DUPLICATE_USE_INSTANTIATION);
+	BIND_ENUM_CONSTANT(DUPLICATE_INTERNAL_STATE);
+	BIND_ENUM_CONSTANT(DUPLICATE_DEFAULT);
 
 	BIND_ENUM_CONSTANT(INTERNAL_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(INTERNAL_MODE_FRONT);
 	BIND_ENUM_CONSTANT(INTERNAL_MODE_BACK);
+
+	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_INHERIT);
+	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_ALWAYS);
+	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_DISABLED);
 
 	ADD_SIGNAL(MethodInfo("ready"));
 	ADD_SIGNAL(MethodInfo("renamed"));
@@ -3501,6 +4030,8 @@ void Node::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("child_order_changed"));
 	ADD_SIGNAL(MethodInfo("replacing_by", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+	ADD_SIGNAL(MethodInfo("editor_description_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+	ADD_SIGNAL(MethodInfo("editor_state_changed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");
@@ -3512,10 +4043,17 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Inherit,Pausable,When Paused,Always,Disabled"), "set_process_mode", "get_process_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_priority"), "set_process_priority", "get_process_priority");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_physics_priority"), "set_physics_process_priority", "get_physics_process_priority");
+
 	ADD_SUBGROUP("Thread Group", "process_thread");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_thread_group", PROPERTY_HINT_ENUM, "Inherit,Main Thread,Sub Thread"), "set_process_thread_group", "get_process_thread_group");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_thread_group_order"), "set_process_thread_group_order", "get_process_thread_group_order");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_thread_messages", PROPERTY_HINT_FLAGS, "Process,Physics Process"), "set_process_thread_messages", "get_process_thread_messages");
+
+	ADD_GROUP("Physics Interpolation", "physics_interpolation_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_interpolation_mode", PROPERTY_HINT_ENUM, "Inherit,On,Off"), "set_physics_interpolation_mode", "get_physics_interpolation_mode");
+
+	ADD_GROUP("Auto Translate", "auto_translate_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_auto_translate_mode", "get_auto_translate_mode");
 
 	ADD_GROUP("Editor Description", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT), "set_editor_description", "get_editor_description");
@@ -3526,10 +4064,12 @@ void Node::_bind_methods() {
 	GDVIRTUAL_BIND(_exit_tree);
 	GDVIRTUAL_BIND(_ready);
 	GDVIRTUAL_BIND(_get_configuration_warnings);
+	GDVIRTUAL_BIND(_get_accessibility_configuration_warnings);
 	GDVIRTUAL_BIND(_input, "event");
 	GDVIRTUAL_BIND(_shortcut_input, "event");
 	GDVIRTUAL_BIND(_unhandled_input, "event");
 	GDVIRTUAL_BIND(_unhandled_key_input, "event");
+	GDVIRTUAL_BIND(_get_focused_accessibility_element);
 }
 
 String Node::_get_name_num_separator() {
@@ -3547,7 +4087,45 @@ String Node::_get_name_num_separator() {
 }
 
 Node::Node() {
-	orphan_node_count++;
+	_define_ancestry(AncestralClass::NODE);
+#ifdef DEBUG_ENABLED
+	total_node_count.increment();
+#endif
+	// Default member initializer for bitfield is a C++20 extension, so:
+
+	data.process_mode = PROCESS_MODE_INHERIT;
+	data.physics_interpolation_mode = PHYSICS_INTERPOLATION_MODE_INHERIT;
+
+	data.physics_process = false;
+	data.process = false;
+
+	data.physics_process_internal = false;
+	data.process_internal = false;
+
+	data.input = false;
+	data.shortcut_input = false;
+	data.unhandled_input = false;
+	data.unhandled_key_input = false;
+
+	data.physics_interpolated = true;
+	data.physics_interpolation_reset_requested = false;
+	data.physics_interpolated_client_side = false;
+	data.use_identity_transform = false;
+
+	data.use_placeholder = false;
+
+	data.display_folded = false;
+	data.editable_instance = false;
+
+	data.ready_notified = false; // This is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification.
+	data.ready_first = true;
+
+	data.auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
+	data.is_auto_translating = true;
+	data.is_auto_translate_dirty = true;
+
+	data.is_translation_domain_inherited = true;
+	data.is_translation_domain_dirty = true;
 }
 
 Node::~Node() {
@@ -3559,7 +4137,9 @@ Node::~Node() {
 	ERR_FAIL_COND(data.parent);
 	ERR_FAIL_COND(data.children_cache.size());
 
-	orphan_node_count--;
+#ifdef DEBUG_ENABLED
+	total_node_count.decrement();
+#endif
 }
 
 ////////////////////////////////
@@ -3585,11 +4165,13 @@ bool Node::has_meta(const StringName &p_name) const {
 void Node::set_meta(const StringName &p_name, const Variant &p_value) {
 	ERR_THREAD_GUARD;
 	Object::set_meta(p_name, p_value);
+	_emit_editor_state_changed();
 }
 
 void Node::remove_meta(const StringName &p_name) {
 	ERR_THREAD_GUARD;
 	Object::remove_meta(p_name);
+	_emit_editor_state_changed();
 }
 
 Variant Node::get_meta(const StringName &p_name, const Variant &p_default) const {
@@ -3632,6 +4214,11 @@ int Node::get_persistent_signal_connection_count() const {
 	return Object::get_persistent_signal_connection_count();
 }
 
+uint32_t Node::get_signal_connection_flags(const StringName &p_signal, const Callable &p_callable) const {
+	ERR_THREAD_GUARD_V(0);
+	return Object::get_signal_connection_flags(p_signal, p_callable);
+}
+
 void Node::get_signals_connected_to_this(List<Connection> *p_connections) const {
 	ERR_THREAD_GUARD;
 	Object::get_signals_connected_to_this(p_connections);
@@ -3639,17 +4226,42 @@ void Node::get_signals_connected_to_this(List<Connection> *p_connections) const 
 
 Error Node::connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags) {
 	ERR_THREAD_GUARD_V(ERR_INVALID_PARAMETER);
-	return Object::connect(p_signal, p_callable, p_flags);
+
+	Error retval = Object::connect(p_signal, p_callable, p_flags);
+#ifdef TOOLS_ENABLED
+	if (p_flags & CONNECT_PERSIST) {
+		_emit_editor_state_changed();
+	}
+#endif
+
+	return retval;
 }
 
 void Node::disconnect(const StringName &p_signal, const Callable &p_callable) {
 	ERR_THREAD_GUARD;
-	Object::disconnect(p_signal, p_callable);
+
+#ifdef TOOLS_ENABLED
+	// Already under thread guard, don't check again.
+	uint32_t connection_flags = Object::get_signal_connection_flags(p_signal, p_callable);
+#endif
+
+	[[maybe_unused]] bool changed = Object::_disconnect(p_signal, p_callable);
+
+#ifdef TOOLS_ENABLED
+	if (changed && connection_flags & CONNECT_PERSIST) {
+		_emit_editor_state_changed();
+	}
+#endif
 }
 
 bool Node::is_connected(const StringName &p_signal, const Callable &p_callable) const {
 	ERR_THREAD_GUARD_V(false);
 	return Object::is_connected(p_signal, p_callable);
+}
+
+bool Node::has_connections(const StringName &p_signal) const {
+	ERR_THREAD_GUARD_V(false);
+	return Object::has_connections(p_signal);
 }
 
 #endif

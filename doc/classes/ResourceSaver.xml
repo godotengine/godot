@@ -26,6 +26,14 @@
 				Returns the list of extensions available for saving a resource of a given type.
 			</description>
 		</method>
+		<method name="get_resource_id_for_path">
+			<return type="int" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="generate" type="bool" default="false" />
+			<description>
+				Returns the resource ID for the given path. If [param generate] is [code]true[/code], a new resource ID will be generated if one for the path is not found. If [param generate] is [code]false[/code] and the path is not found, [constant ResourceUID.INVALID_ID] is returned.
+			</description>
+		</method>
 		<method name="remove_resource_format_saver">
 			<return type="void" />
 			<param index="0" name="format_saver" type="ResourceFormatSaver" />
@@ -40,8 +48,18 @@
 			<param index="2" name="flags" type="int" enum="ResourceSaver.SaverFlags" is_bitfield="true" default="0" />
 			<description>
 				Saves a resource to disk to the given path, using a [ResourceFormatSaver] that recognizes the resource object. If [param path] is empty, [ResourceSaver] will try to use [member Resource.resource_path].
-				The [param flags] bitmask can be specified to customize the save behavior using [enum SaverFlags] flags.
+				The [param flags] bitmask can be specified to customize the save behavior.
 				Returns [constant OK] on success.
+				[b]Note:[/b] When the project is running, any generated UID associated with the resource will not be saved as the required code is only executed in editor mode.
+			</description>
+		</method>
+		<method name="set_uid">
+			<return type="int" enum="Error" />
+			<param index="0" name="resource" type="String" />
+			<param index="1" name="uid" type="int" />
+			<description>
+				Sets the UID of the given [param resource] path to [param uid]. You can generate a new UID using [method ResourceUID.create_id].
+				Since resources will normally get a UID automatically, this method is only useful in very specific cases.
 			</description>
 		</method>
 	</methods>

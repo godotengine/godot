@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationMesh" inherits="Resource" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationMesh" inherits="Resource" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A navigation mesh that defines traversable areas and obstacles.
 	</brief_description>
@@ -8,7 +8,7 @@
 	</description>
 	<tutorials>
 		<link title="Using NavigationMeshes">$DOCS_URL/tutorials/navigation/navigation_using_navigationmeshes.html</link>
-		<link title="3D Navmesh Demo">https://godotengine.org/asset-library/asset/124</link>
+		<link title="3D Navigation Demo">https://godotengine.org/asset-library/asset/2743</link>
 	</tutorials>
 	<methods>
 		<method name="add_polygon">
@@ -95,6 +95,12 @@
 		<member name="agent_radius" type="float" setter="set_agent_radius" getter="get_agent_radius" default="0.5">
 			The distance to erode/shrink the walkable area of the heightfield away from obstructions.
 			[b]Note:[/b] While baking, this value will be rounded up to the nearest multiple of [member cell_size].
+			[b]Note:[/b] The radius must be equal or higher than [code]0.0[/code]. If the radius is [code]0.0[/code], it won't be possible to fix invalid outline overlaps and other precision errors during the baking process. As a result, some obstacles may be excluded incorrectly from the final navigation mesh, or may delete the navigation mesh's polygons.
+		</member>
+		<member name="border_size" type="float" setter="set_border_size" getter="get_border_size" default="0.0">
+			The size of the non-navigable border around the bake bounding area.
+			In conjunction with the [member filter_baking_aabb] and a [member edge_max_error] value at [code]1.0[/code] or below the border size can be used to bake tile aligned navigation meshes without the tile edges being shrunk by [member agent_radius].
+			[b]Note:[/b] If this value is not [code]0.0[/code], it will be rounded up to the nearest multiple of [member cell_size] during baking.
 		</member>
 		<member name="cell_height" type="float" setter="set_cell_height" getter="get_cell_height" default="0.25">
 			The cell height used to rasterize the navigation mesh vertices on the Y axis. Must match with the cell height on the navigation map.
@@ -134,11 +140,11 @@
 			The physics layers to scan for static colliders.
 			Only used when [member geometry_parsed_geometry_type] is [constant PARSED_GEOMETRY_STATIC_COLLIDERS] or [constant PARSED_GEOMETRY_BOTH].
 		</member>
-		<member name="geometry_parsed_geometry_type" type="int" setter="set_parsed_geometry_type" getter="get_parsed_geometry_type" enum="NavigationMesh.ParsedGeometryType" default="0">
-			Determines which type of nodes will be parsed as geometry. See [enum ParsedGeometryType] for possible values.
+		<member name="geometry_parsed_geometry_type" type="int" setter="set_parsed_geometry_type" getter="get_parsed_geometry_type" enum="NavigationMesh.ParsedGeometryType" default="2">
+			Determines which type of nodes will be parsed as geometry.
 		</member>
 		<member name="geometry_source_geometry_mode" type="int" setter="set_source_geometry_mode" getter="get_source_geometry_mode" enum="NavigationMesh.SourceGeometryMode" default="0">
-			The source of the geometry used when baking. See [enum SourceGeometryMode] for possible values.
+			The source of the geometry used when baking.
 		</member>
 		<member name="geometry_source_group_name" type="StringName" setter="set_source_group_name" getter="get_source_group_name" default="&amp;&quot;navigation_mesh_source_group&quot;">
 			The name of the group to scan for geometry.
@@ -153,7 +159,7 @@
 			[b]Note:[/b] This value will be squared to calculate the minimum number of cells allowed to form isolated island areas. For example, a value of 8 will set the number of cells to 64.
 		</member>
 		<member name="sample_partition_type" type="int" setter="set_sample_partition_type" getter="get_sample_partition_type" enum="NavigationMesh.SamplePartitionType" default="0">
-			Partitioning algorithm for creating the navigation mesh polys. See [enum SamplePartitionType] for possible values.
+			Partitioning algorithm for creating the navigation mesh polys.
 		</member>
 		<member name="vertices_per_polygon" type="float" setter="set_vertices_per_polygon" getter="get_vertices_per_polygon" default="6.0">
 			The maximum number of vertices allowed for polygons generated during the contour to polygon conversion process.

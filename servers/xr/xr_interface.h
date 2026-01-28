@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef XR_INTERFACE_H
-#define XR_INTERFACE_H
+#pragma once
 
 #include "core/math/projection.h"
 #include "core/os/thread_safe.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
+#include "xr_vrs.h"
 
 // forward declaration
 struct BlitToScreen;
@@ -43,7 +43,7 @@ struct BlitToScreen;
 	The idea is that we subclass this class, implement the logic, and then instantiate a singleton of each interface
 	when Godot starts. These instances do not initialize themselves but register themselves with the AR/VR server.
 
-	If the user wants to enable AR/VR the choose the interface they want to use and initialize it.
+	If the user wants to enable AR/VR, they can choose the interface they want to use and initialize it.
 
 	Note that we may make this into a fully instantiable class for GDExtension support.
 */
@@ -75,13 +75,20 @@ public:
 		XR_PLAY_AREA_3DOF, /* Only support orientation tracking, no positional tracking, area will center around player */
 		XR_PLAY_AREA_SITTING, /* Player is in seated position, limited positional tracking, fixed guardian around player */
 		XR_PLAY_AREA_ROOMSCALE, /* Player is free to move around, full positional tracking */
-		XR_PLAY_AREA_STAGE, /* Same as roomscale but origin point is fixed to the center of the physical space, XRServer.center_on_hmd disabled */
+		XR_PLAY_AREA_STAGE, /* Same as roomscale but origin point is fixed to the center of the physical space */
+		XR_PLAY_AREA_CUSTOM = 0x7FFFFFFF, /* Used to denote that a custom, possibly non-standard, play area is being used */
 	};
 
 	enum EnvironmentBlendMode {
 		XR_ENV_BLEND_MODE_OPAQUE, /* You cannot see the real world, VR like */
 		XR_ENV_BLEND_MODE_ADDITIVE, /* You can see the real world, AR like */
 		XR_ENV_BLEND_MODE_ALPHA_BLEND, /* Real world is passed through where alpha channel is 0.0 and gradually blends to opaque for value 1.0. */
+	};
+
+	enum VRSTextureFormat {
+		XR_VRS_TEXTURE_FORMAT_UNIFIED,
+		XR_VRS_TEXTURE_FORMAT_FRAGMENT_SHADING_RATE,
+		XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP,
 	};
 
 protected:
@@ -122,21 +129,27 @@ public:
 
 	/** rendering and internal **/
 
+	// These methods are called from the main thread.
+	virtual Transform3D get_camera_transform() = 0; /* returns the position of our camera, only used for updating reference frame. For monoscopic this is equal to the views transform, for stereoscopic this should be an average */
+	virtual void process() = 0;
+
+	// These methods can be called from both main and render thread.
 	virtual Size2 get_render_target_size() = 0; /* returns the recommended render target size per eye for this device */
 	virtual uint32_t get_view_count() = 0; /* returns the view count we need (1 is monoscopic, 2 is stereoscopic but can be more) */
-	virtual Transform3D get_camera_transform() = 0; /* returns the position of our camera for updating our camera node. For monoscopic this is equal to the views transform, for stereoscopic this should be an average */
+
+	// These methods are called from the rendering thread.
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) = 0; /* get each views transform */
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) = 0; /* get each view projection matrix */
-	virtual RID get_vrs_texture(); /* obtain VRS texture */
 	virtual RID get_color_texture(); /* obtain color output texture (if applicable) */
 	virtual RID get_depth_texture(); /* obtain depth output texture (if applicable, used for reprojection) */
 	virtual RID get_velocity_texture(); /* obtain velocity output texture (if applicable, used for spacewarp) */
-
-	virtual void process() = 0;
-	virtual void pre_render(){};
-	virtual bool pre_draw_viewport(RID p_render_target) { return true; }; /* inform XR interface we are about to start our viewport draw process */
+	virtual RID get_velocity_depth_texture();
+	virtual Size2i get_velocity_target_size();
+	virtual Rect2i get_render_region();
+	virtual void pre_render() {}
+	virtual bool pre_draw_viewport(RID p_render_target) { return true; } /* inform XR interface we are about to start our viewport draw process */
 	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) = 0; /* inform XR interface we finished our viewport draw process */
-	virtual void end_frame(){};
+	virtual void end_frame() {}
 
 	/** passthrough **/
 
@@ -145,24 +158,21 @@ public:
 	virtual bool start_passthrough() { return false; }
 	virtual void stop_passthrough() {}
 
-	/** environment blend mode. */
+	/** environment blend mode **/
 	virtual Array get_supported_environment_blend_modes();
 	virtual XRInterface::EnvironmentBlendMode get_environment_blend_mode() const { return XR_ENV_BLEND_MODE_OPAQUE; }
 	virtual bool set_environment_blend_mode(EnvironmentBlendMode mode) { return false; }
 
+	/** VRS **/
+	virtual RID get_vrs_texture(); /* obtain VRS texture */
+	virtual VRSTextureFormat get_vrs_texture_format() { return XR_VRS_TEXTURE_FORMAT_UNIFIED; }
+
 	XRInterface();
 	~XRInterface();
-
-private:
-	struct VRSData {
-		RID vrs_texture;
-		Size2i size;
-	} vrs;
 };
 
 VARIANT_ENUM_CAST(XRInterface::Capabilities);
 VARIANT_ENUM_CAST(XRInterface::TrackingStatus);
 VARIANT_ENUM_CAST(XRInterface::PlayAreaMode);
 VARIANT_ENUM_CAST(XRInterface::EnvironmentBlendMode);
-
-#endif // XR_INTERFACE_H
+VARIANT_ENUM_CAST(XRInterface::VRSTextureFormat);

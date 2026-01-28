@@ -28,13 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_RB_RESAMPLER_H
-#define AUDIO_RB_RESAMPLER_H
+#pragma once
 
-#include "core/os/memory.h"
+#include "core/math/audio_frame.h"
 #include "core/templates/safe_refcount.h"
 #include "core/typedefs.h"
-#include "servers/audio_server.h"
 
 struct AudioRBResampler {
 	uint32_t rb_bits;
@@ -44,6 +42,7 @@ struct AudioRBResampler {
 	uint32_t channels;
 	uint32_t src_mix_rate;
 	uint32_t target_mix_rate;
+	double playback_speed = 1.0;
 
 	SafeNumeric<int> rb_read_pos;
 	SafeNumeric<int> rb_write_pos;
@@ -87,7 +86,7 @@ public:
 		} else if (w < r) {
 			space = r - w - 1;
 		} else {
-			space = (rb_len - r) + w - 1;
+			space = (rb_len - w) + (r - 1);
 		}
 
 		return space;
@@ -154,6 +153,19 @@ public:
 					wp = (wp + 1) & rb_mask;
 				}
 			} break;
+			case 8: {
+				for (uint32_t i = 0; i < p_frames; i++) {
+					rb[(wp << 3) + 0] = read_buf[(i << 3) + 0];
+					rb[(wp << 3) + 1] = read_buf[(i << 3) + 1];
+					rb[(wp << 3) + 2] = read_buf[(i << 3) + 2];
+					rb[(wp << 3) + 3] = read_buf[(i << 3) + 3];
+					rb[(wp << 3) + 4] = read_buf[(i << 3) + 4];
+					rb[(wp << 3) + 5] = read_buf[(i << 3) + 5];
+					rb[(wp << 3) + 6] = read_buf[(i << 3) + 6];
+					rb[(wp << 3) + 7] = read_buf[(i << 3) + 7];
+					wp = (wp + 1) & rb_mask;
+				}
+			} break;
 		}
 
 		rb_write_pos.set(wp);
@@ -165,9 +177,9 @@ public:
 	void clear();
 	bool mix(AudioFrame *p_dest, int p_frames);
 	int get_num_of_ready_frames();
+	void set_playback_speed(double p_playback_speed);
+	double get_playback_speed() const;
 
 	AudioRBResampler();
 	~AudioRBResampler();
 };
-
-#endif // AUDIO_RB_RESAMPLER_H

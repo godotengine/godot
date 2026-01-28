@@ -11,7 +11,7 @@
 	<signals>
 		<signal name="finished">
 			<description>
-				Emitted when the [Tweener] has just finished its job.
+				Emitted when the [Tweener] has just finished its job or became invalid (e.g. due to a freed object).
 			</description>
 		</signal>
 	</signals>

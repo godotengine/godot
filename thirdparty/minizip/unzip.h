@@ -202,9 +202,7 @@ extern int ZEXPORT unzClose(unzFile file);
     these files MUST be closed with unzCloseCurrentFile before call unzClose.
   return UNZ_OK if there is no problem. */
 
-/* GODOT start */
 extern void* unzGetOpaque(unzFile file);
-/* GODOT end */
 
 extern int ZEXPORT unzGetGlobalInfo(unzFile file,
                                     unz_global_info *pglobal_info);
@@ -310,13 +308,17 @@ extern int ZEXPORT unzGetCurrentFileInfo(unzFile file,
   Get Info about the current file
   if pfile_info!=NULL, the *pfile_info structure will contain some info about
         the current file
-  if szFileName!=NULL, the filemane string will be copied in szFileName
+  if szFileName!=NULL, the filename string will be copied in szFileName
             (fileNameBufferSize is the size of the buffer)
   if extraField!=NULL, the extra field information will be copied in extraField
             (extraFieldBufferSize is the size of the buffer).
             This is the Central-header version of the extra field
   if szComment!=NULL, the comment string of the file will be copied in szComment
             (commentBufferSize is the size of the buffer)
+  The file name and comment will be zero-terminated if there is room in the
+  provided buffer. Otherwise the buffer will contain as much as will fit. If at
+  least 65537 bytes of room is provided, then the result will always be
+  complete and zero-terminated.
 */
 
 
@@ -394,12 +396,10 @@ extern int ZEXPORT unzReadCurrentFile(unzFile file,
     (UNZ_ERRNO for IO error, or zLib error for uncompress error)
 */
 
-/* GODOT start */
 extern int ZEXPORT unzSeekCurrentFile(unzFile file, int pos);
 /*
   Seek to position in uncompressed data
 */
-/* GODOT end */
 
 extern z_off_t ZEXPORT unztell(unzFile file);
 

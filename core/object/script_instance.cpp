@@ -32,6 +32,28 @@
 
 #include "core/object/script_language.h"
 
+int ScriptInstance::get_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
+	// Default implementation simply traverses hierarchy.
+	Ref<Script> script = get_script();
+	while (script.is_valid()) {
+		bool valid = false;
+		int ret = script->get_script_method_argument_count(p_method, &valid);
+		if (valid) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return ret;
+		}
+
+		script = script->get_base_script();
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return 0;
+}
+
 Variant ScriptInstance::call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	return callp(p_method, p_args, p_argcount, r_error);
 }
@@ -65,7 +87,4 @@ Variant ScriptInstance::property_get_fallback(const StringName &, bool *r_valid)
 
 const Variant ScriptInstance::get_rpc_config() const {
 	return get_script()->get_rpc_config();
-}
-
-ScriptInstance::~ScriptInstance() {
 }

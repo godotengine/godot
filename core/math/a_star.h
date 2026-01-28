@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef A_STAR_H
-#define A_STAR_H
+#pragma once
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
-#include "core/templates/oa_hash_map.h"
+#include "core/templates/a_hash_map.h"
 
 /**
 	A* pathfinding algorithm.
@@ -44,15 +43,13 @@ class AStar3D : public RefCounted {
 	friend class AStar2D;
 
 	struct Point {
-		Point() {}
-
 		int64_t id = 0;
 		Vector3 pos;
 		real_t weight_scale = 0;
 		bool enabled = false;
 
-		OAHashMap<int64_t, Point *> neighbors = 4u;
-		OAHashMap<int64_t, Point *> unlinked_neighbours = 4u;
+		AHashMap<int64_t, Point *> neighbors = 4u;
+		AHashMap<int64_t, Point *> unlinked_neighbours = 4u;
 
 		// Used for pathfinding.
 		Point *prev_point = nullptr;
@@ -60,6 +57,10 @@ class AStar3D : public RefCounted {
 		real_t f_score = 0;
 		uint64_t open_pass = 0;
 		uint64_t closed_pass = 0;
+
+		// Used for getting closest_point_of_last_pathing_call.
+		real_t abs_g_score = 0;
+		real_t abs_f_score = 0;
 	};
 
 	struct SortPoints {
@@ -86,7 +87,7 @@ class AStar3D : public RefCounted {
 		unsigned char direction = NONE;
 
 		static uint32_t hash(const Segment &p_seg) {
-			return PairHash<int64_t, int64_t>().hash(p_seg.key);
+			return HashMapHasherDefault::hash(p_seg.key);
 		}
 		bool operator==(const Segment &p_s) const { return key == p_s.key; }
 
@@ -104,22 +105,31 @@ class AStar3D : public RefCounted {
 		}
 	};
 
-	int64_t last_free_id = 0;
+	mutable int64_t last_free_id = 0;
 	uint64_t pass = 1;
 
-	OAHashMap<int64_t, Point *> points;
+	AHashMap<int64_t, Point *> points;
 	HashSet<Segment, Segment> segments;
+	Point *last_closest_point = nullptr;
+	bool neighbor_filter_enabled = false;
 
-	bool _solve(Point *begin_point, Point *end_point);
+	bool _solve(Point *p_begin_point, Point *p_end_point, bool p_allow_partial_path);
 
 protected:
 	static void _bind_methods();
 
-	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_to_id);
+	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_end_id);
 	virtual real_t _compute_cost(int64_t p_from_id, int64_t p_to_id);
 
+	GDVIRTUAL2RC(bool, _filter_neighbor, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
+
+#ifndef DISABLE_DEPRECATED
+	Vector<int64_t> _get_id_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id);
+	Vector<Vector3> _get_point_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id);
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	int64_t get_available_point_id() const;
@@ -133,6 +143,9 @@ public:
 	bool has_point(int64_t p_id) const;
 	Vector<int64_t> get_point_connections(int64_t p_id);
 	PackedInt64Array get_point_ids();
+
+	bool is_neighbor_filter_enabled() const;
+	void set_neighbor_filter_enabled(bool p_enabled);
 
 	void set_point_disabled(int64_t p_id, bool p_disabled = true);
 	bool is_point_disabled(int64_t p_id) const;
@@ -149,10 +162,9 @@ public:
 	int64_t get_closest_point(const Vector3 &p_point, bool p_include_disabled = false) const;
 	Vector3 get_closest_position_in_segment(const Vector3 &p_point) const;
 
-	Vector<Vector3> get_point_path(int64_t p_from_id, int64_t p_to_id);
-	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id);
+	Vector<Vector3> get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
+	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
 
-	AStar3D() {}
 	~AStar3D();
 };
 
@@ -160,16 +172,23 @@ class AStar2D : public RefCounted {
 	GDCLASS(AStar2D, RefCounted);
 	AStar3D astar;
 
-	bool _solve(AStar3D::Point *begin_point, AStar3D::Point *end_point);
+	bool _solve(AStar3D::Point *p_begin_point, AStar3D::Point *p_end_point, bool p_allow_partial_path);
 
 protected:
 	static void _bind_methods();
 
-	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_to_id);
+	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_end_id);
 	virtual real_t _compute_cost(int64_t p_from_id, int64_t p_to_id);
 
+	GDVIRTUAL2RC(bool, _filter_neighbor, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
+
+#ifndef DISABLE_DEPRECATED
+	Vector<int64_t> _get_id_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id);
+	Vector<Vector2> _get_point_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id);
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	int64_t get_available_point_id() const;
@@ -183,6 +202,9 @@ public:
 	bool has_point(int64_t p_id) const;
 	Vector<int64_t> get_point_connections(int64_t p_id);
 	PackedInt64Array get_point_ids();
+
+	bool is_neighbor_filter_enabled() const;
+	void set_neighbor_filter_enabled(bool p_enabled);
 
 	void set_point_disabled(int64_t p_id, bool p_disabled = true);
 	bool is_point_disabled(int64_t p_id) const;
@@ -199,11 +221,6 @@ public:
 	int64_t get_closest_point(const Vector2 &p_point, bool p_include_disabled = false) const;
 	Vector2 get_closest_position_in_segment(const Vector2 &p_point) const;
 
-	Vector<Vector2> get_point_path(int64_t p_from_id, int64_t p_to_id);
-	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id);
-
-	AStar2D() {}
-	~AStar2D() {}
+	Vector<Vector2> get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
+	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
 };
-
-#endif // A_STAR_H

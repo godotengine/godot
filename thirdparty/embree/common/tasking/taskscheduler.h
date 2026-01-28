@@ -3,7 +3,7 @@
 
 #pragma once
 
-#if defined(TASKING_INTERNAL)
+#if defined(TASKING_INTERNAL) && !defined(TASKING_TBB)
 #  include "taskschedulerinternal.h"
 #elif defined(TASKING_TBB)
 #  include "taskschedulertbb.h"

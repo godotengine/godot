@@ -28,22 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FILE_ACCESS_ENCRYPTED_H
-#define FILE_ACCESS_ENCRYPTED_H
+#pragma once
 
+#include "core/crypto/crypto_core.h"
 #include "core/io/file_access.h"
 
 #define ENCRYPTED_HEADER_MAGIC 0x43454447
 
 class FileAccessEncrypted : public FileAccess {
+	GDSOFTCLASS(FileAccessEncrypted, FileAccess);
+
 public:
-	enum Mode {
+	enum Mode : int32_t {
 		MODE_READ,
 		MODE_WRITE_AES256,
 		MODE_MAX
 	};
 
 private:
+	Vector<uint8_t> iv;
 	Vector<uint8_t> key;
 	bool writing = false;
 	Ref<FileAccess> file;
@@ -56,9 +59,13 @@ private:
 
 	void _close();
 
+	static CryptoCore::RandomGenerator *_fae_static_rng;
+
 public:
-	Error open_and_parse(Ref<FileAccess> p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic = true);
+	Error open_and_parse(Ref<FileAccess> p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic = true, const Vector<uint8_t> &p_iv = Vector<uint8_t>());
 	Error open_and_parse_password(Ref<FileAccess> p_base, const String &p_key, Mode p_mode);
+
+	Vector<uint8_t> get_iv() const { return iv; }
 
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
 	virtual bool is_open() const override; ///< true when file is open
@@ -73,18 +80,19 @@ public:
 
 	virtual bool eof_reached() const override; ///< reading passed EOF
 
-	virtual uint8_t get_8() const override; ///< get a byte
 	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
 
 	virtual Error get_error() const override; ///< get last error
 
+	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual void flush() override;
-	virtual void store_8(uint8_t p_dest) override; ///< store a byte
-	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
+	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
 
 	virtual bool file_exists(const String &p_name) override; ///< return true if a file exists
 
 	virtual uint64_t _get_modified_time(const String &p_file) override;
+	virtual uint64_t _get_access_time(const String &p_file) override;
+	virtual int64_t _get_size(const String &p_file) override;
 	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override;
 	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override;
 
@@ -95,8 +103,7 @@ public:
 
 	virtual void close() override;
 
-	FileAccessEncrypted() {}
+	static void deinitialize();
+
 	~FileAccessEncrypted();
 };
-
-#endif // FILE_ACCESS_ENCRYPTED_H

@@ -1,0 +1,628 @@
+# LANGUAGE translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md).
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+#
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8-bit\n"
+
+#: scene/gui/code_edit.cpp
+msgid "New Code Region"
+msgstr ""
+
+#: scene/gui/color_mode.h
+msgid "Linear"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Pick a color from the screen."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Pick a color from the application window."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Alpha"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Intensity"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Expr"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Hex"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Load Color Palette"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Save Color Palette"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "The changes to this palette have not been saved to a file."
+msgstr ""
+
+#: scene/gui/color_picker.cpp scene/gui/file_dialog.cpp
+msgid "Save"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Save the current color palette to reuse later."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Save As"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Save the current color palette as a new to reuse later."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Load"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Load existing color palette."
+msgstr ""
+
+#: scene/gui/color_picker.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Clear"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Clear the currently loaded color palettes in the picker."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Pick"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Select a picker shape."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Select a picker mode."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Colorized Sliders"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Hexadecimal Values"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Hex code or named color"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Swatches"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Show all options available."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Recent Colors"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Add current color as a preset."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Screen Recording permission missing!"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid ""
+"Screen Recording permission is required to pick colors from the other "
+"application windows.\n"
+"Click here to request access..."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid ""
+"Color: %s\n"
+"LMB: Apply color"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid ""
+"Color: %s\n"
+"LMB: Apply color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Color: %s"
+msgstr ""
+
+#: scene/gui/color_picker_shape.h
+msgid "HSV Rectangle"
+msgstr ""
+
+#: scene/gui/color_picker_shape.h
+msgid "OK HS Rectangle"
+msgstr ""
+
+#: scene/gui/color_picker_shape.h
+msgid "OK HL Rectangle"
+msgstr ""
+
+#: scene/gui/color_picker_shape.h
+msgid "HSV Wheel"
+msgstr ""
+
+#: scene/gui/color_picker_shape.h
+msgid "VHS Circle"
+msgstr ""
+
+#: scene/gui/color_picker_shape.h
+msgid "OKHSL Circle"
+msgstr ""
+
+#: scene/gui/dialogs.cpp
+msgid "Cancel"
+msgstr ""
+
+#: scene/gui/dialogs.cpp
+msgid "OK"
+msgstr ""
+
+#: scene/gui/dialogs.cpp
+msgid "Alert!"
+msgstr ""
+
+#: scene/gui/dialogs.cpp
+msgid "Please Confirm..."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Network"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Open"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Select Current Folder"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Select This Folder"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Copy Path"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Delete"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "New Folder..."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Refresh"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Open in File Manager"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Show in File Manager"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Show Package Contents"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "You don't have permission to access contents of this folder."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "All Recognized"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "All Files"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Open a File"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Open File(s)"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Open a Directory"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Open a File or Directory"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Save a File"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Go to previous folder."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Go to next folder."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Go to parent folder."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Path:"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Drive"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Refresh files."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "(Un)favorite current folder."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Create a new folder."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Favorites:"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Recent:"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Directories & Files:"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Toggle the visibility of hidden files."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "View items as a grid of thumbnails."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "View items as a list."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Toggle the visibility of the filter for file names."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Sort files"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Sort by Name (Ascending)"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Sort by Name (Descending)"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Sort by Type (Ascending)"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Sort by Type (Descending)"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Sort by Modified Time (Newest First)"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Sort by Modified Time (Oldest First)"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Filter:"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Filename Filter:"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "File:"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid ""
+"Delete the selected file?\n"
+"Depending on your filesystem configuration, the files will either be moved to "
+"the system trash or deleted permanently."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Create Folder"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Name:"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Could not create folder."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Invalid extension, or empty filename."
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "connection to %s (%s) port %d"
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "connection from %s (%s) port %d"
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "Zoom Out"
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "Zoom Reset"
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "Zoom In"
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "Toggle the visual grid."
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "Toggle snapping to the grid."
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "Change the snapping distance."
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "Toggle the graph minimap."
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "Automatically arrange selected nodes."
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "graph node %s (%s)"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "slot %d of %d"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "input port, type: %s"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "input port, type: %d"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "no connections"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "output port, type: %s"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "output port, type: %d"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "currently selecting target port"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "has %d slots"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "Edit Input Port Connection"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "Edit Output Port Connection"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "Follow Input Port Connection"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "Follow Output Port Connection"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid ", in slot %d of graph node %s (%s)"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Same as Layout Direction"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Auto-Detect Direction"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Left-to-Right"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Right-to-Left"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Left-to-Right Mark (LRM)"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Right-to-Left Mark (RLM)"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Start of Left-to-Right Embedding (LRE)"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Start of Right-to-Left Embedding (RLE)"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Start of Left-to-Right Override (LRO)"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Start of Right-to-Left Override (RLO)"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Pop Direction Formatting (PDF)"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Arabic Letter Mark (ALM)"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Left-to-Right Isolate (LRI)"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Right-to-Left Isolate (RLI)"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "First Strong Isolate (FSI)"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Pop Direction Isolate (PDI)"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Zero-Width Joiner (ZWJ)"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Zero-Width Non-Joiner (ZWNJ)"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Word Joiner (WJ)"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Soft Hyphen (SHY)"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Emoji & Symbols"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Cut"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/rich_text_label.cpp scene/gui/text_edit.cpp
+msgid "Copy"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Paste"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/rich_text_label.cpp scene/gui/text_edit.cpp
+msgid "Select All"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Undo"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Redo"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Text Writing Direction"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Display Control Characters"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Insert Control Character"
+msgstr ""
+
+#: scene/gui/tree.cpp
+msgid "(Other)"
+msgstr ""

@@ -1,5 +1,8 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace Godot
 {
@@ -66,7 +69,7 @@ namespace Godot
         public readonly Rect2I Abs()
         {
             Vector2I end = End;
-            Vector2I topLeft = new Vector2I(Mathf.Min(_position.X, end.X), Mathf.Min(_position.Y, end.Y));
+            Vector2I topLeft = end.Min(_position);
             return new Rect2I(topLeft, _size.Abs());
         }
 
@@ -88,14 +91,12 @@ namespace Godot
                 return new Rect2I();
             }
 
-            newRect._position.X = Mathf.Max(b._position.X, _position.X);
-            newRect._position.Y = Mathf.Max(b._position.Y, _position.Y);
+            newRect._position = b._position.Max(_position);
 
             Vector2I bEnd = b._position + b._size;
             Vector2I end = _position + _size;
 
-            newRect._size.X = Mathf.Min(bEnd.X, end.X) - newRect._position.X;
-            newRect._size.Y = Mathf.Min(bEnd.Y, end.Y) - newRect._position.Y;
+            newRect._size = bEnd.Min(end) - newRect._position;
 
             return newRect;
         }
@@ -110,8 +111,8 @@ namespace Godot
         public readonly bool Encloses(Rect2I b)
         {
             return b._position.X >= _position.X && b._position.Y >= _position.Y &&
-               b._position.X + b._size.X < _position.X + _size.X &&
-               b._position.Y + b._size.Y < _position.Y + _size.Y;
+               b._position.X + b._size.X <= _position.X + _size.X &&
+               b._position.Y + b._size.Y <= _position.Y + _size.Y;
         }
 
         /// <summary>
@@ -292,11 +293,9 @@ namespace Godot
         {
             Rect2I newRect;
 
-            newRect._position.X = Mathf.Min(b._position.X, _position.X);
-            newRect._position.Y = Mathf.Min(b._position.Y, _position.Y);
+            newRect._position = b._position.Min(_position);
 
-            newRect._size.X = Mathf.Max(b._position.X + b._size.X, _position.X + _size.X);
-            newRect._size.Y = Mathf.Max(b._position.Y + b._size.Y, _position.Y + _size.Y);
+            newRect._size = (b._position + b._size).Max(_position + _size);
 
             newRect._size -= newRect._position; // Make relative again
 
@@ -398,7 +397,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The other object to compare.</param>
         /// <returns>Whether or not the rect and the other object are equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Rect2I other && Equals(other);
         }
@@ -426,16 +425,13 @@ namespace Godot
         /// Converts this <see cref="Rect2I"/> to a string.
         /// </summary>
         /// <returns>A string representation of this rect.</returns>
-        public override readonly string ToString()
-        {
-            return $"{_position}, {_size}";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Rect2I"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this rect.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
             return $"{_position.ToString(format)}, {_size.ToString(format)}";
         }

@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+import methods
 
 Import("env")
 
@@ -14,6 +17,44 @@ thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
 env_effects.Prepend(CPPPATH=[thirdparty_dir])
 
+
+def areatex_builder(target, source, env):
+    buffer = methods.get_buffer(str(source[0]))
+
+    with methods.generated_wrapper(str(target[0])) as file:
+        file.write(f"""\
+#define AREATEX_WIDTH 160
+#define AREATEX_HEIGHT 560
+#define AREATEX_PITCH (AREATEX_WIDTH * 2)
+#define AREATEX_SIZE (AREATEX_HEIGHT * AREATEX_PITCH)
+
+inline constexpr const unsigned char area_tex_png[] = {{
+    {methods.format_buffer(buffer, 1)}
+}};
+""")
+
+
+env.CommandNoCache("smaa_area_tex.gen.h", "#thirdparty/smaa/AreaTex.png", env.Run(areatex_builder))
+
+
+def searchtex_builder(target, source, env):
+    buffer = methods.get_buffer(str(source[0]))
+
+    with methods.generated_wrapper(str(target[0])) as file:
+        file.write(f"""\
+#define SEARCHTEX_WIDTH 64
+#define SEARCHTEX_HEIGHT 16
+#define SEARCHTEX_PITCH SEARCHTEX_WIDTH
+#define SEARCHTEX_SIZE (SEARCHTEX_HEIGHT * SEARCHTEX_PITCH)
+
+inline constexpr const unsigned char search_tex_png[] = {{
+    {methods.format_buffer(buffer, 1)}
+}};
+""")
+
+
+env.CommandNoCache("smaa_search_tex.gen.h", "#thirdparty/smaa/SearchTex.png", env.Run(searchtex_builder))
+
 # This flag doesn't actually control anything GCC specific in FSR2. It determines
 # if symbols should be exported, which is not required for Godot.
 env_effects.Append(CPPDEFINES=["FFX_GCC"])
@@ -28,6 +69,8 @@ env.servers_sources += thirdparty_obj
 module_obj = []
 
 env_effects.add_source_files(module_obj, "*.cpp")
+if env["metal"]:
+    env_effects.add_source_files(module_obj, "metal_fx.mm")
 env.servers_sources += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.

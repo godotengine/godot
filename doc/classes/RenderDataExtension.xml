@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RenderDataExtension" inherits="RenderData" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		This class allows for a RenderData implementation to be made in GDExtension.
+	</brief_description>
+	<description>
+		This class allows for a RenderData implementation to be made in GDExtension.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_camera_attributes" qualifiers="virtual const">
+			<return type="RID" />
+			<description>
+				Implement this in GDExtension to return the [RID] for the implementation's camera attributes object.
+			</description>
+		</method>
+		<method name="_get_environment" qualifiers="virtual const">
+			<return type="RID" />
+			<description>
+				Implement this in GDExtension to return the [RID] of the implementation's environment object.
+			</description>
+		</method>
+		<method name="_get_render_scene_buffers" qualifiers="virtual const">
+			<return type="RenderSceneBuffers" />
+			<description>
+				Implement this in GDExtension to return the implementation's [RenderSceneBuffers] object.
+			</description>
+		</method>
+		<method name="_get_render_scene_data" qualifiers="virtual const">
+			<return type="RenderSceneData" />
+			<description>
+				Implement this in GDExtension to return the implementation's [RenderSceneDataExtension] object.
+			</description>
+		</method>
+	</methods>
+</class>

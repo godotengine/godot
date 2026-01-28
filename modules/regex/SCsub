@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 Import("env_modules")
@@ -19,7 +20,10 @@ if env["builtin_pcre2"]:
     thirdparty_sources = [
         "pcre2_auto_possess.c",
         "pcre2_chartables.c",
+        "pcre2_chkdint.c",
         "pcre2_compile.c",
+        "pcre2_compile_cgroup.c",
+        "pcre2_compile_class.c",
         "pcre2_config.c",
         "pcre2_context.c",
         "pcre2_convert.c",
@@ -28,10 +32,10 @@ if env["builtin_pcre2"]:
         "pcre2_extuni.c",
         "pcre2_find_bracket.c",
         "pcre2_jit_compile.c",
-        # "pcre2_jit_match.c", "pcre2_jit_misc.c", # these files are included in pcre2_jit_compile.c.
         "pcre2_maketables.c",
         "pcre2_match.c",
         "pcre2_match_data.c",
+        "pcre2_match_next.c",
         "pcre2_newline.c",
         "pcre2_ord2utf.c",
         "pcre2_pattern_info.c",

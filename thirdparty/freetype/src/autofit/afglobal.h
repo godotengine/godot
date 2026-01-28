@@ -5,7 +5,7 @@
  *   Auto-fitter routines to compute global hinting values
  *   (specification).
  *
- * Copyright (C) 2003-2023 by
+ * Copyright (C) 2003-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -73,15 +73,17 @@ FT_BEGIN_HEADER
   /* default script for OpenType; ignored if HarfBuzz isn't used */
 #define AF_SCRIPT_DEFAULT    AF_SCRIPT_LATN
 
-  /* a bit mask for AF_DIGIT and AF_NONBASE */
-#define AF_STYLE_MASK        0x3FFF
+  /* a bit mask for AF_DIGIT, AF_NONBASE, and AF_HAS_CMAP_ENTRY */
+#define AF_STYLE_MASK        0x1FFF
   /* an uncovered glyph      */
 #define AF_STYLE_UNASSIGNED  AF_STYLE_MASK
 
-  /* if this flag is set, we have an ASCII digit   */
+  /* if this flag is set, we have an ASCII digit */
 #define AF_DIGIT             0x8000U
   /* if this flag is set, we have a non-base character */
 #define AF_NONBASE           0x4000U
+  /* if this flag is set, the glyph has a (direct) cmap entry */
+#define AF_HAS_CMAP_ENTRY    0x2000U
 
   /* `increase-x-height' property */
 #define AF_PROP_INCREASE_X_HEIGHT_MIN  6
@@ -111,6 +113,11 @@ FT_BEGIN_HEADER
 #ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
     hb_font_t*       hb_font;
     hb_buffer_t*     hb_buf;           /* for feature comparison */
+
+    /* The GSUB table. */
+    FT_Byte*         gsub;
+    /* Lookup offsets, with only SingleSubst and AlternateSubst non-NULL. */
+    FT_UInt32*       gsub_lookups_single_alternate;
 #endif
 
     /* per-face auto-hinter properties */

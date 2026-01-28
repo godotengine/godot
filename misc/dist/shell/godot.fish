@@ -53,7 +53,6 @@ complete -c godot -l debug-server -d "Start the editor debug server (<protocol>:
 complete -c godot -l quit -d "Quit after the first iteration"
 complete -c godot -s l -l language -d "Use a specific locale (<locale> being a two-letter code)" -x
 complete -c godot -l path -d "Path to a project (<directory> must contain a 'project.godot' file)" -r
-complete -c godot -s u -l upwards -d "Scan folders upwards for project.godot file"
 complete -c godot -l main-pack -d "Path to a pack (.pck) file to load" -r
 complete -c godot -l render-thread -d "Set the render thread mode" -x -a "unsafe safe separate"
 complete -c godot -l remote-fs -d "Use a remote filesystem (<host/IP>[:<port>] address)" -x
@@ -67,7 +66,8 @@ complete -c godot -l gpu-index -d "Use a specific GPU (run with --verbose to get
 complete -c godot -l text-driver -d "Set the text driver" -x
 complete -c godot -l tablet-driver -d "Set the pen tablet input driver" -x
 complete -c godot -l headless -d "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script"
-complete -c godot -l write-movie -d "Writes a video to the specified path (usually with .avi or .png extension). --fixed-fps is forced when enabled" -x
+complete -c godot -l log-file -d "Write output/error log to the specified path instead of the default location defined by the project" -x
+complete -c godot -l write-movie -d "Write a video to the specified path (usually with .avi or .png extension). --fixed-fps is forced when enabled" -x
 
 # Display options:
 complete -c godot -s f -l fullscreen -d "Request fullscreen mode"

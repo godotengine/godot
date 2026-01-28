@@ -5,8 +5,7 @@
 	</brief_description>
 	<description>
 		A unit of execution in a process. Can run methods on [Object]s simultaneously. The use of synchronization via [Mutex] or [Semaphore] is advised if working with shared objects.
-		[b]Warning:[/b]
-		To ensure proper cleanup without crashes or deadlocks, when a [Thread]'s reference count reaches zero and it is therefore destroyed, the following conditions must be met:
+		[b]Warning:[/b] To ensure proper cleanup without crashes or deadlocks, when a [Thread]'s reference count reaches zero and it is therefore destroyed, the following conditions must be met:
 		- It must not have any [Mutex] objects locked.
 		- It must not be waiting on any [Semaphore] objects.
 		- [method wait_to_finish] should have been called on it.
@@ -14,7 +13,7 @@
 	<tutorials>
 		<link title="Using multiple threads">$DOCS_URL/tutorials/performance/using_multiple_threads.html</link>
 		<link title="Thread-safe APIs">$DOCS_URL/tutorials/performance/thread_safe_apis.html</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
 	</tutorials>
 	<methods>
 		<method name="get_id" qualifiers="const">
@@ -28,6 +27,13 @@
 			<description>
 				Returns [code]true[/code] if this [Thread] is currently running the provided function. This is useful for determining if [method wait_to_finish] can be called without blocking the calling thread.
 				To check if a [Thread] is joinable, use [method is_started].
+			</description>
+		</method>
+		<method name="is_main_thread" qualifiers="static">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the thread this method was called from is the main thread.
+				[b]Note:[/b] This is a static method and isn't associated with a specific [Thread] object.
 			</description>
 		</method>
 		<method name="is_started" qualifiers="const">

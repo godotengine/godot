@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 Import("env_modules")
@@ -11,6 +12,7 @@ thirdparty_obj = []
 
 if env["builtin_glslang"]:
     thirdparty_dir = "#thirdparty/glslang/"
+    thirdparty_spirv_headers_dir = "#thirdparty/spirv-headers/"
     thirdparty_sources = [
         "glslang/GenericCodeGen/CodeGen.cpp",
         "glslang/GenericCodeGen/Link.cpp",
@@ -43,7 +45,6 @@ if env["builtin_glslang"]:
         "glslang/MachineIndependent/SymbolTable.cpp",
         "glslang/MachineIndependent/Versions.cpp",
         "glslang/ResourceLimits/ResourceLimits.cpp",
-        "OGLCompilersDLL/InitializeDll.cpp",
         "SPIRV/disassemble.cpp",
         "SPIRV/doc.cpp",
         "SPIRV/GlslangToSpv.cpp",
@@ -62,15 +63,10 @@ if env["builtin_glslang"]:
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    # Treat glslang headers as system headers to avoid raising warnings. Not supported on MSVC.
-    # Include `#thirdparty` to workaround mismatch between location of `SPIRV` in library source
-    # and in installed public headers.
-    if not env.msvc:
-        env_glslang.Append(CPPFLAGS=["-isystem", Dir(thirdparty_dir).path, "-isystem", Dir("#thirdparty").path])
-    else:
-        env_glslang.Prepend(CPPPATH=[thirdparty_dir, "#thirdparty"])
+    env_glslang.Prepend(CPPPATH=[thirdparty_dir, "#thirdparty"])
+    env_glslang.Prepend(CPPPATH=[thirdparty_spirv_headers_dir + "include/spirv/unified1"])
 
-    env_glslang.Append(CPPDEFINES=["ENABLE_OPT=0"])
+    env_glslang.Append(CPPDEFINES=[("ENABLE_OPT", 0)])
 
     env_thirdparty = env_glslang.Clone()
     env_thirdparty.disable_warnings()

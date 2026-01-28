@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_INPUT_EVENT_H
-#define TEST_INPUT_EVENT_H
+#pragma once
 
 #include "core/input/input_event.h"
 #include "core/math/rect2.h"
@@ -43,17 +42,15 @@ TEST_CASE("[InputEvent] Signal is emitted when device is changed") {
 	Ref<InputEventKey> input_event;
 	input_event.instantiate();
 
-	SIGNAL_WATCH(*input_event, SNAME("changed"));
-	Array args1;
-	Array empty_args;
-	empty_args.push_back(args1);
+	SIGNAL_WATCH(*input_event, CoreStringName(changed));
 
+	Array empty_args = { {} };
 	input_event->set_device(1);
 
 	SIGNAL_CHECK("changed", empty_args);
 	CHECK(input_event->get_device() == 1);
 
-	SIGNAL_UNWATCH(*input_event, SNAME("changed"));
+	SIGNAL_UNWATCH(*input_event, CoreStringName(changed));
 }
 
 TEST_CASE("[InputEvent] Test accumulate") {
@@ -111,5 +108,3 @@ TEST_CASE("[InputEvent] Test xformed_by") {
 	CHECK(iemm2->get_position().is_equal_approx(Vector2(2.0f, 3.0f)));
 }
 } // namespace TestInputEvent
-
-#endif // TEST_INPUT_EVENT_H

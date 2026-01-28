@@ -32,6 +32,8 @@
 
 #include "noise.h"
 
+#include "servers/rendering/rendering_server.h"
+
 NoiseTexture2D::NoiseTexture2D() {
 	noise = Ref<Noise>();
 
@@ -41,7 +43,7 @@ NoiseTexture2D::NoiseTexture2D() {
 NoiseTexture2D::~NoiseTexture2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (texture.is_valid()) {
-		RS::get_singleton()->free(texture);
+		RS::get_singleton()->free_rid(texture);
 	}
 	if (noise_thread.is_started()) {
 		noise_thread.wait_to_finish();
@@ -49,12 +51,20 @@ NoiseTexture2D::~NoiseTexture2D() {
 }
 
 void NoiseTexture2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_texture"), &NoiseTexture2D::_update_texture);
-	ClassDB::bind_method(D_METHOD("_generate_texture"), &NoiseTexture2D::_generate_texture);
-	ClassDB::bind_method(D_METHOD("_thread_done", "image"), &NoiseTexture2D::_thread_done);
-
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &NoiseTexture2D::set_width);
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &NoiseTexture2D::set_height);
+
+	ClassDB::bind_method(D_METHOD("set_generate_mipmaps", "invert"), &NoiseTexture2D::set_generate_mipmaps);
+	ClassDB::bind_method(D_METHOD("is_generating_mipmaps"), &NoiseTexture2D::is_generating_mipmaps);
+
+	ClassDB::bind_method(D_METHOD("set_noise", "noise"), &NoiseTexture2D::set_noise);
+	ClassDB::bind_method(D_METHOD("get_noise"), &NoiseTexture2D::get_noise);
+
+	ClassDB::bind_method(D_METHOD("set_color_ramp", "gradient"), &NoiseTexture2D::set_color_ramp);
+	ClassDB::bind_method(D_METHOD("get_color_ramp"), &NoiseTexture2D::get_color_ramp);
+
+	ClassDB::bind_method(D_METHOD("set_seamless", "seamless"), &NoiseTexture2D::set_seamless);
+	ClassDB::bind_method(D_METHOD("get_seamless"), &NoiseTexture2D::get_seamless);
 
 	ClassDB::bind_method(D_METHOD("set_invert", "invert"), &NoiseTexture2D::set_invert);
 	ClassDB::bind_method(D_METHOD("get_invert"), &NoiseTexture2D::get_invert);
@@ -62,45 +72,36 @@ void NoiseTexture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_in_3d_space", "enable"), &NoiseTexture2D::set_in_3d_space);
 	ClassDB::bind_method(D_METHOD("is_in_3d_space"), &NoiseTexture2D::is_in_3d_space);
 
-	ClassDB::bind_method(D_METHOD("set_generate_mipmaps", "invert"), &NoiseTexture2D::set_generate_mipmaps);
-	ClassDB::bind_method(D_METHOD("is_generating_mipmaps"), &NoiseTexture2D::is_generating_mipmaps);
-
-	ClassDB::bind_method(D_METHOD("set_seamless", "seamless"), &NoiseTexture2D::set_seamless);
-	ClassDB::bind_method(D_METHOD("get_seamless"), &NoiseTexture2D::get_seamless);
-
-	ClassDB::bind_method(D_METHOD("set_seamless_blend_skirt", "seamless_blend_skirt"), &NoiseTexture2D::set_seamless_blend_skirt);
-	ClassDB::bind_method(D_METHOD("get_seamless_blend_skirt"), &NoiseTexture2D::get_seamless_blend_skirt);
-
 	ClassDB::bind_method(D_METHOD("set_as_normal_map", "as_normal_map"), &NoiseTexture2D::set_as_normal_map);
 	ClassDB::bind_method(D_METHOD("is_normal_map"), &NoiseTexture2D::is_normal_map);
-
-	ClassDB::bind_method(D_METHOD("set_bump_strength", "bump_strength"), &NoiseTexture2D::set_bump_strength);
-	ClassDB::bind_method(D_METHOD("get_bump_strength"), &NoiseTexture2D::get_bump_strength);
 
 	ClassDB::bind_method(D_METHOD("set_normalize", "normalize"), &NoiseTexture2D::set_normalize);
 	ClassDB::bind_method(D_METHOD("is_normalized"), &NoiseTexture2D::is_normalized);
 
-	ClassDB::bind_method(D_METHOD("set_color_ramp", "gradient"), &NoiseTexture2D::set_color_ramp);
-	ClassDB::bind_method(D_METHOD("get_color_ramp"), &NoiseTexture2D::get_color_ramp);
+	ClassDB::bind_method(D_METHOD("set_seamless_blend_skirt", "seamless_blend_skirt"), &NoiseTexture2D::set_seamless_blend_skirt);
+	ClassDB::bind_method(D_METHOD("get_seamless_blend_skirt"), &NoiseTexture2D::get_seamless_blend_skirt);
 
-	ClassDB::bind_method(D_METHOD("set_noise", "noise"), &NoiseTexture2D::set_noise);
-	ClassDB::bind_method(D_METHOD("get_noise"), &NoiseTexture2D::get_noise);
+	ClassDB::bind_method(D_METHOD("set_bump_strength", "bump_strength"), &NoiseTexture2D::set_bump_strength);
+	ClassDB::bind_method(D_METHOD("get_bump_strength"), &NoiseTexture2D::get_bump_strength);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,2048,1,or_greater,suffix:px"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "height", PROPERTY_HINT_RANGE, "1,2048,1,or_greater,suffix:px"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps"), "set_generate_mipmaps", "is_generating_mipmaps");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise", PROPERTY_HINT_RESOURCE_TYPE, "Noise"), "set_noise", "get_noise");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_ramp", "get_color_ramp");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "seamless"), "set_seamless", "get_seamless");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert"), "set_invert", "get_invert");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "in_3d_space"), "set_in_3d_space", "is_in_3d_space");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps"), "set_generate_mipmaps", "is_generating_mipmaps");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "seamless"), "set_seamless", "get_seamless");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "seamless_blend_skirt", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_seamless_blend_skirt", "get_seamless_blend_skirt");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "as_normal_map"), "set_as_normal_map", "is_normal_map");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bump_strength", PROPERTY_HINT_RANGE, "0,32,0.1,or_greater"), "set_bump_strength", "get_bump_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "normalize"), "set_normalize", "is_normalized");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_ramp", "get_color_ramp");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise", PROPERTY_HINT_RESOURCE_TYPE, "Noise"), "set_noise", "get_noise");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "seamless_blend_skirt", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_seamless_blend_skirt", "get_seamless_blend_skirt");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bump_strength", PROPERTY_HINT_RANGE, "0,32,0.1,or_greater"), "set_bump_strength", "get_bump_strength");
 }
 
 void NoiseTexture2D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "bump_strength") {
 		if (!as_normal_map) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
@@ -123,6 +124,7 @@ void NoiseTexture2D::_set_texture_image(const Ref<Image> &p_image) {
 		} else {
 			texture = RS::get_singleton()->texture_2d_create(p_image);
 		}
+		RS::get_singleton()->texture_set_path(texture, get_path());
 	}
 	emit_changed();
 }
@@ -138,7 +140,7 @@ void NoiseTexture2D::_thread_done(const Ref<Image> &p_image) {
 
 void NoiseTexture2D::_thread_function(void *p_ud) {
 	NoiseTexture2D *tex = static_cast<NoiseTexture2D *>(p_ud);
-	tex->call_deferred(SNAME("_thread_done"), tex->_generate_texture());
+	callable_mp(tex, &NoiseTexture2D::_thread_done).call_deferred(tex->_generate_texture());
 }
 
 void NoiseTexture2D::_queue_update() {
@@ -147,7 +149,7 @@ void NoiseTexture2D::_queue_update() {
 	}
 
 	update_queued = true;
-	call_deferred(SNAME("_update_texture"));
+	callable_mp(this, &NoiseTexture2D::_update_texture).call_deferred();
 }
 
 Ref<Image> NoiseTexture2D::_generate_texture() {
@@ -197,6 +199,9 @@ Ref<Image> NoiseTexture2D::_modulate_with_gradient(Ref<Image> p_image, Ref<Gradi
 
 void NoiseTexture2D::_update_texture() {
 	bool use_thread = true;
+#ifndef THREADS_ENABLED
+	use_thread = false;
+#endif
 	if (first_time) {
 		use_thread = false;
 		first_time = false;

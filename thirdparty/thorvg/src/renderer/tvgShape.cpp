@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 /************************************************************************/
 /* Internal Class Implementation                                        */
 /************************************************************************/
-constexpr auto PATH_KAPPA = 0.552284f;
+
 
 /************************************************************************/
 /* External Class Implementation                                        */
@@ -34,8 +34,6 @@ constexpr auto PATH_KAPPA = 0.552284f;
 
 Shape :: Shape() : pImpl(new Impl(this))
 {
-    Paint::pImpl->id = TVG_CLASS_ID_SHAPE;
-    Paint::pImpl->method(new PaintMethod<Shape::Impl>(pImpl));
 }
 
 
@@ -53,7 +51,13 @@ unique_ptr<Shape> Shape::gen() noexcept
 
 uint32_t Shape::identifier() noexcept
 {
-    return TVG_CLASS_ID_SHAPE;
+    return (uint32_t) Type::Shape;
+}
+
+
+Type Shape::type() const noexcept
+{
+    return Type::Shape;
 }
 
 
@@ -62,7 +66,7 @@ Result Shape::reset() noexcept
     pImpl->rs.path.cmds.clear();
     pImpl->rs.path.pts.clear();
 
-    pImpl->flag = RenderUpdateFlag::Path;
+    pImpl->rFlag |= RenderUpdateFlag::Path;
 
     return Result::Success;
 }
@@ -70,18 +74,14 @@ Result Shape::reset() noexcept
 
 uint32_t Shape::pathCommands(const PathCommand** cmds) const noexcept
 {
-    if (!cmds) return 0;
-
-    *cmds = pImpl->rs.path.cmds.data;
+    if (cmds) *cmds = pImpl->rs.path.cmds.data;
     return pImpl->rs.path.cmds.count;
 }
 
 
 uint32_t Shape::pathCoords(const Point** pts) const noexcept
 {
-    if (!pts) return 0;
-
-    *pts = pImpl->rs.path.pts.data;
+    if (pts) *pts = pImpl->rs.path.pts.data;
     return pImpl->rs.path.pts.count;
 }
 
@@ -92,6 +92,8 @@ Result Shape::appendPath(const PathCommand *cmds, uint32_t cmdCnt, const Point* 
 
     pImpl->grow(cmdCnt, ptsCnt);
     pImpl->append(cmds, cmdCnt, pts, ptsCnt);
+
+    pImpl->rFlag |= RenderUpdateFlag::Path;
 
     return Result::Success;
 }
@@ -109,6 +111,8 @@ Result Shape::lineTo(float x, float y) noexcept
 {
     pImpl->lineTo(x, y);
 
+    pImpl->rFlag |= RenderUpdateFlag::Path;
+
     return Result::Success;
 }
 
@@ -117,6 +121,8 @@ Result Shape::cubicTo(float cx1, float cy1, float cx2, float cy2, float x, float
 {
     pImpl->cubicTo(cx1, cy1, cx2, cy2, x, y);
 
+    pImpl->rFlag |= RenderUpdateFlag::Path;
+
     return Result::Success;
 }
 
@@ -124,6 +130,8 @@ Result Shape::cubicTo(float cx1, float cy1, float cx2, float cy2, float x, float
 Result Shape::close() noexcept
 {
     pImpl->close();
+
+    pImpl->rFlag |= RenderUpdateFlag::Path;
 
     return Result::Success;
 }
@@ -135,28 +143,33 @@ Result Shape::appendCircle(float cx, float cy, float rx, float ry) noexcept
     auto ryKappa = ry * PATH_KAPPA;
 
     pImpl->grow(6, 13);
-    pImpl->moveTo(cx, cy - ry);
-    pImpl->cubicTo(cx + rxKappa, cy - ry, cx + rx, cy - ryKappa, cx + rx, cy);
+    pImpl->moveTo(cx + rx, cy);
     pImpl->cubicTo(cx + rx, cy + ryKappa, cx + rxKappa, cy + ry, cx, cy + ry);
     pImpl->cubicTo(cx - rxKappa, cy + ry, cx - rx, cy + ryKappa, cx - rx, cy);
     pImpl->cubicTo(cx - rx, cy - ryKappa, cx - rxKappa, cy - ry, cx, cy - ry);
+    pImpl->cubicTo(cx + rxKappa, cy - ry, cx + rx, cy - ryKappa, cx + rx, cy);
     pImpl->close();
+
+    pImpl->rFlag |= RenderUpdateFlag::Path;
 
     return Result::Success;
 }
 
-Result Shape::appendArc(float cx, float cy, float radius, float startAngle, float sweep, bool pie) noexcept
+
+TVG_DEPRECATED Result Shape::appendArc(float cx, float cy, float radius, float startAngle, float sweep, bool pie) noexcept
 {
     //just circle
     if (sweep >= 360.0f || sweep <= -360.0f) return appendCircle(cx, cy, radius, radius);
 
-    startAngle = (startAngle * MATH_PI) / 180.0f;
-    sweep = sweep * MATH_PI / 180.0f;
+    const float arcPrecision = 1e-5f;
+    startAngle = deg2rad(startAngle);
+    sweep = deg2rad(sweep);
 
-    auto nCurves = ceil(fabsf(sweep / MATH_PI2));
+    auto nCurves = static_cast<int>(fabsf(sweep / MATH_PI2));
+    if (fabsf(sweep / MATH_PI2) - nCurves > arcPrecision) ++nCurves;
     auto sweepSign = (sweep < 0 ? -1 : 1);
     auto fract = fmodf(sweep, MATH_PI2);
-    fract = (mathZero(fract)) ? MATH_PI2 * sweepSign : fract;
+    fract = (fabsf(fract) < arcPrecision) ? MATH_PI2 * sweepSign : fract;
 
     //Start from here
     Point start = {radius * cosf(startAngle), radius * sinf(startAngle)};
@@ -169,7 +182,7 @@ Result Shape::appendArc(float cx, float cy, float radius, float startAngle, floa
     }
 
     for (int i = 0; i < nCurves; ++i) {
-        auto endAngle = startAngle + ((i != nCurves - 1) ? float(M_PI_2) * sweepSign : fract);
+        auto endAngle = startAngle + ((i != nCurves - 1) ? MATH_PI2 * sweepSign : fract);
         Point end = {radius * cosf(endAngle), radius * sinf(endAngle)};
 
         //variables needed to calculate bezier control points
@@ -199,6 +212,8 @@ Result Shape::appendArc(float cx, float cy, float radius, float startAngle, floa
 
     if (pie) pImpl->close();
 
+    pImpl->rFlag |= RenderUpdateFlag::Path;
+
     return Result::Success;
 }
 
@@ -220,12 +235,10 @@ Result Shape::appendRect(float x, float y, float w, float h, float rx, float ry)
         pImpl->lineTo(x + w, y + h);
         pImpl->lineTo(x, y + h);
         pImpl->close();
-    //circle
-    } else if (mathEqual(rx, halfW) && mathEqual(ry, halfH)) {
-        return appendCircle(x + (w * 0.5f), y + (h * 0.5f), rx, ry);
+    //rounded rectangle or circle
     } else {
-        auto hrx = rx * 0.5f;
-        auto hry = ry * 0.5f;
+        auto hrx = rx * PATH_KAPPA;
+        auto hry = ry * PATH_KAPPA;
         pImpl->grow(10, 17);
         pImpl->moveTo(x + rx, y);
         pImpl->lineTo(x + w - rx, y);
@@ -239,6 +252,8 @@ Result Shape::appendRect(float x, float y, float w, float h, float rx, float ry)
         pImpl->close();
     }
 
+    pImpl->rFlag |= RenderUpdateFlag::Path;
+
     return Result::Success;
 }
 
@@ -248,7 +263,7 @@ Result Shape::fill(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept
     if (pImpl->rs.fill) {
         delete(pImpl->rs.fill);
         pImpl->rs.fill = nullptr;
-        pImpl->flag |= RenderUpdateFlag::Gradient;
+        pImpl->rFlag |= RenderUpdateFlag::Gradient;
     }
 
     if (r == pImpl->rs.color[0] && g == pImpl->rs.color[1] && b == pImpl->rs.color[2] && a == pImpl->rs.color[3]) return Result::Success;
@@ -257,7 +272,7 @@ Result Shape::fill(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept
     pImpl->rs.color[1] = g;
     pImpl->rs.color[2] = b;
     pImpl->rs.color[3] = a;
-    pImpl->flag |= RenderUpdateFlag::Color;
+    pImpl->rFlag |= RenderUpdateFlag::Color;
 
     return Result::Success;
 }
@@ -270,7 +285,7 @@ Result Shape::fill(unique_ptr<Fill> f) noexcept
 
     if (pImpl->rs.fill && pImpl->rs.fill != p) delete(pImpl->rs.fill);
     pImpl->rs.fill = p;
-    pImpl->flag |= RenderUpdateFlag::Gradient;
+    pImpl->rFlag |= RenderUpdateFlag::Gradient;
 
     return Result::Success;
 }
@@ -292,16 +307,14 @@ const Fill* Shape::fill() const noexcept
 
 Result Shape::order(bool strokeFirst) noexcept
 {
-    if (!pImpl->strokeFirst(strokeFirst)) return Result::FailedAllocation;
-
+    pImpl->strokeFirst(strokeFirst);
     return Result::Success;
 }
 
 
 Result Shape::stroke(float width) noexcept
 {
-    if (!pImpl->strokeWidth(width)) return Result::FailedAllocation;
-
+    pImpl->strokeWidth(width);
     return Result::Success;
 }
 
@@ -314,8 +327,7 @@ float Shape::strokeWidth() const noexcept
 
 Result Shape::stroke(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept
 {
-    if (!pImpl->strokeColor(r, g, b, a)) return Result::FailedAllocation;
-
+    pImpl->strokeColor(r, g, b, a);
     return Result::Success;
 }
 
@@ -354,27 +366,25 @@ uint32_t Shape::strokeDash(const float** dashPattern) const noexcept
 
 Result Shape::stroke(StrokeCap cap) noexcept
 {
-    if (!pImpl->strokeCap(cap)) return Result::FailedAllocation;
-
+    pImpl->strokeCap(cap);
     return Result::Success;
 }
 
 
 Result Shape::stroke(StrokeJoin join) noexcept
 {
-    if (!pImpl->strokeJoin(join)) return Result::FailedAllocation;
-
+    pImpl->strokeJoin(join);
     return Result::Success;
 }
+
 
 Result Shape::strokeMiterlimit(float miterlimit) noexcept
 {
     // https://www.w3.org/TR/SVG2/painting.html#LineJoin
     // - A negative value for stroke-miterlimit must be treated as an illegal value.
-    if (miterlimit < 0.0f) return Result::NonSupport;
+    if (miterlimit < 0.0f) return Result::InvalidArguments;
     // TODO Find out a reasonable max value.
-    if (!pImpl->strokeMiterlimit(miterlimit)) return Result::FailedAllocation;
-
+    pImpl->strokeMiterlimit(miterlimit);
     return Result::Success;
 }
 
@@ -390,9 +400,17 @@ StrokeJoin Shape::strokeJoin() const noexcept
     return pImpl->rs.strokeJoin();
 }
 
+
 float Shape::strokeMiterlimit() const noexcept
 {
     return pImpl->rs.strokeMiterlimit();
+}
+
+
+Result Shape::strokeTrim(float begin, float end, bool simultaneous) noexcept
+{
+    pImpl->strokeTrim(begin, end, simultaneous);
+    return Result::Success;
 }
 
 

@@ -24,6 +24,27 @@
 				Returns the script directly inherited by this script.
 			</description>
 		</method>
+		<method name="get_global_name" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the class name associated with the script, if there is one. Returns an empty string otherwise.
+				To give the script a global name, you can use the [code]class_name[/code] keyword in GDScript and the [code][GlobalClass][/code] attribute in C#.
+				[codeblocks]
+				[gdscript]
+				class_name MyNode
+				extends Node
+				[/gdscript]
+				[csharp]
+				using Godot;
+
+				[GlobalClass]
+				public partial class MyNode : Node
+				{
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="get_instance_base_type" qualifiers="const">
 			<return type="StringName" />
 			<description>
@@ -37,6 +58,12 @@
 				Returns the default value of the specified property.
 			</description>
 		</method>
+		<method name="get_rpc_config" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns a [Dictionary] mapping method names to their RPC configuration defined by this script.
+			</description>
+		</method>
 		<method name="get_script_constant_map">
 			<return type="Dictionary" />
 			<description>
@@ -47,18 +74,21 @@
 			<return type="Dictionary[]" />
 			<description>
 				Returns the list of methods in this [Script].
+				[b]Note:[/b] The dictionaries returned by this method are formatted identically to those returned by [method Object.get_method_list].
 			</description>
 		</method>
 		<method name="get_script_property_list">
 			<return type="Dictionary[]" />
 			<description>
 				Returns the list of properties in this [Script].
+				[b]Note:[/b] The dictionaries returned by this method are formatted identically to those returned by [method Object.get_property_list].
 			</description>
 		</method>
 		<method name="get_script_signal_list">
 			<return type="Dictionary[]" />
 			<description>
-				Returns the list of user signals defined in this [Script].
+				Returns the list of signals defined in this [Script].
+				[b]Note:[/b] The dictionaries returned by this method are formatted identically to those returned by [method Object.get_signal_list].
 			</description>
 		</method>
 		<method name="has_script_signal" qualifiers="const">
@@ -72,6 +102,7 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the script contains non-empty source code.
+				[b]Note:[/b] If a script does not have source code, this does not mean that it is invalid or unusable. For example, a [GDScript] that was exported with binary tokenization has no source code, but still behaves as expected and could be instantiated. This can be checked with [method can_instantiate].
 			</description>
 		</method>
 		<method name="instance_has" qualifiers="const">

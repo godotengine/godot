@@ -4,7 +4,7 @@
  *
  *   FreeType API for controlling driver modules (specification only).
  *
- * Copyright (C) 2017-2023 by
+ * Copyright (C) 2017-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -282,7 +282,7 @@ FT_BEGIN_HEADER
    *   minimize hinting techniques that were problematic with the extra
    *   resolution of ClearType; see
    *   http://rastertragedy.com/RTRCh4.htm#Sec1 and
-   *   https://www.microsoft.com/typography/cleartype/truetypecleartype.aspx.
+   *   https://learn.microsoft.com/typography/cleartype/truetypecleartype.
    *   This technique is not to be confused with ClearType compatible widths.
    *   ClearType backward compatibility has no direct impact on changing
    *   advance widths, but there might be an indirect impact on disabling
@@ -784,7 +784,7 @@ FT_BEGIN_HEADER
    *
    *   Details on subpixel hinting and some of the necessary tweaks can be
    *   found in Greg Hitchcock's whitepaper at
-   *   'https://www.microsoft.com/typography/cleartype/truetypecleartype.aspx'.
+   *   'https://learn.microsoft.com/typography/cleartype/truetypecleartype'.
    *   Note that FreeType currently doesn't really 'subpixel hint' (6x1, 6x2,
    *   or 6x5 supersampling) like discussed in the paper.  Depending on the
    *   chosen interpreter, it simply ignores instructions on vertical stems
@@ -816,6 +816,80 @@ FT_BEGIN_HEADER
    * @since:
    *   2.5
    */
+
+
+  /**************************************************************************
+   *
+   * @property:
+   *   spread
+   *
+   * @description:
+   *   This property of the 'sdf' and 'bsdf' renderers defines how the signed
+   *   distance field (SDF) is represented in the output bitmap.  The output
+   *   values are calculated as follows, '128 * ( SDF / spread + 1 )', with
+   *   the result clamped to the 8-bit range [0..255].  Therefore, 'spread'
+   *   is also the maximum euclidean distance from the edge after which the
+   *   values are clamped.  The spread is specified in pixels with the
+   *   default value of 8.  For accurate SDF texture mapping (interpolation),
+   *   the spread should be large enough to accommodate the target grid unit.
+   *
+   * @example:
+   *   The following example code demonstrates how to set the SDF spread
+   *   (omitting the error handling).
+   *
+   *   ```
+   *     FT_Library  library;
+   *     FT_Int      spread = 2;
+   *
+   *
+   *     FT_Init_FreeType( &library );
+   *
+   *     FT_Property_Set( library, "sdf", "spread", &spread );
+   *   ```
+   *
+   * @note:
+   *   FreeType has two rasterizers for generating SDF, namely:
+   *
+   *   1. `sdf` for generating SDF directly from glyph's outline, and
+   *
+   *   2. `bsdf` for generating SDF from rasterized bitmaps.
+   *
+   *   Depending on the glyph type (i.e., outline or bitmap), one of the two
+   *   rasterizers is chosen at runtime and used for generating SDFs.  To
+   *   force the use of `bsdf` you should render the glyph with any of the
+   *   FreeType's other rendering modes (e.g., `FT_RENDER_MODE_NORMAL`) and
+   *   then re-render with `FT_RENDER_MODE_SDF`.
+   *
+   *   There are some issues with stability and possible failures of the SDF
+   *   renderers (specifically `sdf`).
+   *
+   *   1. The `sdf` rasterizer is sensitive to really small features (e.g.,
+   *      sharp turns that are less than 1~pixel) and imperfections in the
+   *      glyph's outline, causing artifacts in the final output.
+   *
+   *   2. The `sdf` rasterizer has limited support for handling intersecting
+   *      contours and *cannot* handle self-intersecting contours whatsoever.
+   *      Self-intersection happens when a single connected contour
+   *      intersects itself at some point; having these in your font
+   *      definitely poses a problem to the rasterizer and cause artifacts,
+   *      too.
+   *
+   *   3. Generating SDF for really small glyphs may result in undesirable
+   *      output; the pixel grid (which stores distance information) becomes
+   *      too coarse.
+   *
+   *   4. Since the output buffer is normalized, precision at smaller spreads
+   *      is greater than precision at larger spread values because the
+   *      output range of [0..255] gets mapped to a smaller SDF range.  A
+   *      spread of~2 should be sufficient in most cases.
+   *
+   *   Points (1) and (2) can be avoided by using the `bsdf` rasterizer,
+   *   which is more stable than the `sdf` rasterizer in general.
+   *
+   * @since:
+   *   2.11
+   */
+
 
   /**************************************************************************
    *

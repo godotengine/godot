@@ -28,11 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#pragma once
+
 // Names from https://en.wikipedia.org/wiki/X11_color_names
 
 // So this in a way that does not require memory allocation
 // the old way leaked memory
 // this is not used as often as for more performance to make sense
+
+#include "core/math/color.h"
 
 struct NamedColor {
 	const char *name;
@@ -189,5 +193,4 @@ static NamedColor named_colors[] = {
 	{ "WHITE_SMOKE", Color::hex(0xF5F5F5FF) },
 	{ "YELLOW", Color::hex(0xFFFF00FF) },
 	{ "YELLOW_GREEN", Color::hex(0x9ACD32FF) },
-	{ nullptr, Color() },
 };

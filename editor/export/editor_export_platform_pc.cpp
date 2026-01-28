@@ -31,20 +31,22 @@
 #include "editor_export_platform_pc.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/os/shared_object.h"
 #include "scene/resources/image_texture.h"
 
 void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
-	if (p_preset->get("texture_format/bptc")) {
+	if (p_preset->get("texture_format/s3tc_bptc")) {
+		r_features->push_back("s3tc");
 		r_features->push_back("bptc");
 	}
-	if (p_preset->get("texture_format/s3tc")) {
-		r_features->push_back("s3tc");
-	}
-	if (p_preset->get("texture_format/etc")) {
-		r_features->push_back("etc");
-	}
-	if (p_preset->get("texture_format/etc2")) {
+	if (p_preset->get("texture_format/etc2_astc")) {
 		r_features->push_back("etc2");
+		r_features->push_back("astc");
+	}
+	if (!p_preset->is_dedicated_server() && p_preset->get("shader_baker/enabled")) {
+		// Don't use the shader baker if exporting as a dedicated server, as no rendering is performed.
+		r_features->push_back("shader_baker");
 	}
 	// PC platforms only have one architecture per export, since
 	// we export a single executable instead of a bundle.
@@ -60,10 +62,23 @@ void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) c
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/embed_pck"), false));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/bptc"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc_bptc"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2_astc"), false));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "shader_baker/enabled"), false));
+}
+
+String EditorExportPlatformPC::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
+	if (p_name == "shader_baker/enabled" && bool(p_preset->get("shader_baker/enabled"))) {
+		String export_renderer = GLOBAL_GET("rendering/renderer/rendering_method");
+		if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+			return TTR("\"Shader Baker\" is not supported when using the Compatibility renderer.");
+		} else if (OS::get_singleton()->get_current_rendering_method() != export_renderer) {
+			return vformat(TTR("The editor is currently using a different renderer than what the target platform will use. \"Shader Baker\" won't be able to include core shaders. Switch to the \"%s\" renderer temporarily to fix this."), export_renderer);
+		}
+	}
+
+	return String();
 }
 
 String EditorExportPlatformPC::get_name() const {
@@ -103,6 +118,14 @@ bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExpo
 	valid = dvalid || rvalid;
 	r_missing_templates = !valid;
 
+	bool uses_s3tc_bptc = p_preset->get("texture_format/s3tc_bptc");
+	bool uses_etc2_astc = p_preset->get("texture_format/etc2_astc");
+
+	if (!uses_s3tc_bptc && !uses_etc2_astc) {
+		valid = false;
+		err += TTR("A texture format must be selected to export the project. Please select at least one texture format.");
+	}
+
 	if (!err.is_empty()) {
 		r_error = err;
 	}
@@ -113,7 +136,7 @@ bool EditorExportPlatformPC::has_valid_project_configuration(const Ref<EditorExp
 	return true;
 }
 
-Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 	Error err = prepare_template(p_preset, p_debug, p_path, p_flags);
@@ -127,7 +150,7 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 	return err;
 }
 
-Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	if (!DirAccess::exists(p_path.get_base_dir())) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), TTR("The given export path doesn't exist."));
 		return ERR_FILE_BAD_PATH;
@@ -149,24 +172,38 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	String wrapper_template_path = template_path.get_basename() + "_console.exe";
+	// Matching the extensions in platform/windows/console_wrapper_windows.cpp
+	static const char *const wrapper_extensions[] = {
+		".console.exe",
+		"_console.exe",
+		" console.exe",
+		"console.exe",
+		nullptr,
+	};
 	int con_wrapper_mode = p_preset->get("debug/export_console_wrapper");
 	bool copy_wrapper = (con_wrapper_mode == 1 && p_debug) || (con_wrapper_mode == 2);
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	da->make_dir_recursive(p_path.get_base_dir());
 	Error err = da->copy(template_path, p_path, get_chmod_flags());
-	if (err == OK && copy_wrapper && FileAccess::exists(wrapper_template_path)) {
-		err = da->copy(wrapper_template_path, p_path.get_basename() + ".console.exe", get_chmod_flags());
+	if (err == OK && copy_wrapper) {
+		for (int i = 0; wrapper_extensions[i]; ++i) {
+			const String wrapper_path = template_path.get_basename() + wrapper_extensions[i];
+			if (FileAccess::exists(wrapper_path)) {
+				err = da->copy(wrapper_path, p_path.get_basename() + ".console.exe", get_chmod_flags());
+				break;
+			}
+		}
 	}
 	if (err != OK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), TTR("Failed to copy export template."));
+		return err;
 	}
 
 	return err;
 }
 
-Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	String pck_path;
 	if (p_preset->get("binary_format/embed_pck")) {
 		pck_path = p_path;
@@ -178,7 +215,7 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 
 	int64_t embedded_pos;
 	int64_t embedded_size;
-	Error err = save_pack(p_preset, p_debug, pck_path, &so_files, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size);
+	Error err = save_pack(p_preset, p_debug, pck_path, &so_files, nullptr, nullptr, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size);
 	if (err == OK && p_preset->get("binary_format/embed_pck")) {
 		if (embedded_size >= 0x100000000 && String(p_preset->get("binary_format/architecture")).contains("32")) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."));
@@ -206,9 +243,15 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 				err = da->make_dir_recursive(target_path);
 				if (err == OK) {
 					err = da->copy_dir(src_path, target_path, -1, true);
+					if (err != OK) {
+						add_message(EXPORT_MESSAGE_ERROR, TTR("GDExtension"), vformat(TTR("Failed to copy shared object \"%s\"."), src_path));
+					}
 				}
 			} else {
 				err = da->copy(src_path, target_path);
+				if (err != OK) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("GDExtension"), vformat(TTR("Failed to copy shared object \"%s\"."), src_path));
+				}
 				if (err == OK) {
 					err = sign_shared_object(p_preset, p_debug, target_path);
 				}
@@ -236,9 +279,8 @@ void EditorExportPlatformPC::set_logo(const Ref<Texture2D> &p_logo) {
 }
 
 void EditorExportPlatformPC::get_platform_features(List<String> *r_features) const {
-	r_features->push_back("pc"); //all pcs support "pc"
-	r_features->push_back("s3tc"); //all pcs support "s3tc" compression
-	r_features->push_back(get_os_name().to_lower()); //OS name is a feature
+	r_features->push_back("pc"); // Identify PC platforms as such.
+	r_features->push_back(get_os_name().to_lower()); // OS name is a feature.
 }
 
 void EditorExportPlatformPC::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {

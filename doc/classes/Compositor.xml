@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Compositor" inherits="Resource" experimental="More customization of the rendering pipeline will be added in the future." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Stores attributes used to customize how a Viewport is rendered.
+	</brief_description>
+	<description>
+		The compositor resource stores attributes used to customize how a [Viewport] is rendered.
+	</description>
+	<tutorials>
+		<link title="The Compositor">$DOCS_URL/tutorials/rendering/compositor.html</link>
+	</tutorials>
+	<members>
+		<member name="compositor_effects" type="CompositorEffect[]" setter="set_compositor_effects" getter="get_compositor_effects" default="[]">
+			The custom [CompositorEffect]s that are applied during rendering of viewports using this compositor.
+		</member>
+	</members>
+</class>

@@ -35,8 +35,8 @@
 #include "core/io/stream_peer_tls.h"
 #include "core/version.h"
 
-HTTPClient *HTTPClientTCP::_create_func() {
-	return memnew(HTTPClientTCP);
+HTTPClient *HTTPClientTCP::_create_func(bool p_notify_postinitialize) {
+	return static_cast<HTTPClient *>(ClassDB::creator<HTTPClientTCP>(p_notify_postinitialize));
 }
 
 Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, Ref<TLSOptions> p_options) {
@@ -50,13 +50,13 @@ Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, Ref<TLSOp
 
 	String host_lower = conn_host.to_lower();
 	if (host_lower.begins_with("http://")) {
-		conn_host = conn_host.substr(7, conn_host.length() - 7);
+		conn_host = conn_host.substr(7);
 		tls_options.unref();
 	} else if (host_lower.begins_with("https://")) {
 		if (tls_options.is_null()) {
 			tls_options = TLSOptions::client();
 		}
-		conn_host = conn_host.substr(8, conn_host.length() - 8);
+		conn_host = conn_host.substr(8);
 	}
 
 	ERR_FAIL_COND_V(tls_options.is_valid() && tls_options->is_server(), ERR_INVALID_PARAMETER);
@@ -196,7 +196,7 @@ Error HTTPClientTCP::request(Method p_method, const String &p_url, const Vector<
 		// Should it add utf8 encoding?
 	}
 	if (add_uagent) {
-		request += "User-Agent: GodotEngine/" + String(VERSION_FULL_BUILD) + " (" + OS::get_singleton()->get_name() + ")\r\n";
+		request += "User-Agent: GodotEngine/" + String(GODOT_VERSION_FULL_BUILD) + " (" + OS::get_singleton()->get_name() + ")\r\n";
 	}
 	if (add_accept) {
 		request += "Accept: */*\r\n";
@@ -483,8 +483,7 @@ Error HTTPClientTCP::poll() {
 						(rs >= 4 && response_str[rs - 4] == '\r' && response_str[rs - 3] == '\n' && response_str[rs - 2] == '\r' && response_str[rs - 1] == '\n')) {
 					// End of response, parse.
 					response_str.push_back(0);
-					String response;
-					response.parse_utf8((const char *)response_str.ptr());
+					String response = String::utf8((const char *)response_str.ptr(), response_str.size());
 					Vector<String> responses = response.split("\n");
 					body_size = -1;
 					chunked = false;
@@ -508,11 +507,11 @@ Error HTTPClientTCP::poll() {
 							continue;
 						}
 						if (s.begins_with("content-length:")) {
-							body_size = s.substr(s.find(":") + 1, s.length()).strip_edges().to_int();
+							body_size = s.substr(s.find_char(':') + 1).strip_edges().to_int();
 							body_left = body_size;
 
 						} else if (s.begins_with("transfer-encoding:")) {
-							String encoding = header.substr(header.find(":") + 1, header.length()).strip_edges();
+							String encoding = header.substr(header.find_char(':') + 1).strip_edges();
 							if (encoding == "chunked") {
 								chunked = true;
 							}
@@ -662,15 +661,16 @@ PackedByteArray HTTPClientTCP::read_response_body_chunk() {
 				chunk_left -= rec;
 
 				if (chunk_left == 0) {
-					if (chunk[chunk.size() - 2] != '\r' || chunk[chunk.size() - 1] != '\n') {
+					const int chunk_size = chunk.size();
+					if (chunk[chunk_size - 2] != '\r' || chunk[chunk_size - 1] != '\n') {
 						ERR_PRINT("HTTP Invalid chunk terminator (not \\r\\n)");
 						status = STATUS_CONNECTION_ERROR;
 						break;
 					}
 
-					ret.resize(chunk.size() - 2);
+					ret.resize(chunk_size - 2);
 					uint8_t *w = ret.ptrw();
-					memcpy(w, chunk.ptr(), chunk.size() - 2);
+					memcpy(w, chunk.ptr(), chunk_size - 2);
 					chunk.clear();
 				}
 
@@ -792,6 +792,6 @@ HTTPClientTCP::HTTPClientTCP() {
 	request_buffer.instantiate();
 }
 
-HTTPClient *(*HTTPClient::_create)() = HTTPClientTCP::_create_func;
+HTTPClient *(*HTTPClient::_create)(bool p_notify_postinitialize) = HTTPClientTCP::_create_func;
 
 #endif // WEB_ENABLED

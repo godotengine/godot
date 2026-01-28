@@ -8,6 +8,7 @@
 		After instantiating the playback information data within the extended class, the blending is processed by the [AnimationMixer].
 	</description>
 	<tutorials>
+		<link title="Migrating Animations from Godot 4.0 to 4.3">https://godotengine.org/article/migrating-animations-from-godot-4-0-to-4-3/</link>
 	</tutorials>
 	<methods>
 		<method name="_post_process_key_value" qualifiers="virtual const">
@@ -15,10 +16,10 @@
 			<param index="0" name="animation" type="Animation" />
 			<param index="1" name="track" type="int" />
 			<param index="2" name="value" type="Variant" />
-			<param index="3" name="object" type="Object" />
-			<param index="4" name="object_idx" type="int" />
+			<param index="3" name="object_id" type="int" />
+			<param index="4" name="object_sub_idx" type="int" />
 			<description>
-				A virtual function for processing after key getting during playback.
+				A virtual function for processing after getting a key during playback.
 			</description>
 		</method>
 		<method name="add_animation_library">
@@ -27,6 +28,13 @@
 			<param index="1" name="library" type="AnimationLibrary" />
 			<description>
 				Adds [param library] to the animation player, under the key [param name].
+				AnimationMixer has a global library by default with an empty string as key. For adding an animation to the global library:
+				[codeblocks]
+				[gdscript]
+				var global_library = mixer.get_animation_library("")
+				global_library.add_animation("animation_name", animation_resource)
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="advance">
@@ -34,6 +42,18 @@
 			<param index="0" name="delta" type="float" />
 			<description>
 				Manually advance the animations by the specified time (in seconds).
+			</description>
+		</method>
+		<method name="capture">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="duration" type="float" />
+			<param index="2" name="trans_type" type="int" enum="Tween.TransitionType" default="0" />
+			<param index="3" name="ease_type" type="int" enum="Tween.EaseType" default="0" />
+			<description>
+				If the animation track specified by [param name] has an option [constant Animation.UPDATE_CAPTURE], stores current values of the objects indicated by the track path as a cache. If there is already a captured cache, the old cache is discarded.
+				After this it will interpolate with current animation blending result during the playback process for the time specified by [param duration], working like a crossfade.
+				You can specify [param trans_type] as the curve for the interpolation. For better results, it may be appropriate to specify [constant Tween.TRANS_LINEAR] for cases where the first key of the track begins with a non-zero value or where the key value does not change, and [constant Tween.TRANS_QUAD] for cases where the key value changes linearly.
 			</description>
 		</method>
 		<method name="clear_caches">
@@ -68,7 +88,7 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns the first [AnimationLibrary] with key [param name] or [code]null[/code] if not found.
-				To get the [AnimationPlayer]'s global animation library, use [code]get_animation_library("")[/code].
+				To get the [AnimationMixer]'s global animation library, use [code]get_animation_library("")[/code].
 			</description>
 		</method>
 		<method name="get_animation_library_list" qualifiers="const">
@@ -92,27 +112,40 @@
 				The most basic example is applying position to [CharacterBody3D]:
 				[codeblocks]
 				[gdscript]
-				var current_rotation: Quaternion
+				var current_rotation
 
 				func _process(delta):
-				    if Input.is_action_just_pressed("animate"):
-				        current_rotation = get_quaternion()
-				        state_machine.travel("Animate")
-				    var velocity: Vector3 = current_rotation * animation_tree.get_root_motion_position() / delta
-				    set_velocity(velocity)
-				    move_and_slide()
+					if Input.is_action_just_pressed("animate"):
+						current_rotation = get_quaternion()
+						state_machine.travel("Animate")
+					var velocity = current_rotation * animation_tree.get_root_motion_position() / delta
+					set_velocity(velocity)
+					move_and_slide()
 				[/gdscript]
 				[/codeblocks]
-				By using this in combination with [method get_root_motion_position_accumulator], you can apply the root motion position more correctly to account for the rotation of the node.
+				By using this in combination with [method get_root_motion_rotation_accumulator], you can apply the root motion position more correctly to account for the rotation of the node.
 				[codeblocks]
 				[gdscript]
 				func _process(delta):
-				    if Input.is_action_just_pressed("animate"):
-				        state_machine.travel("Animate")
-				    set_quaternion(get_quaternion() * animation_tree.get_root_motion_rotation())
-				    var velocity: Vector3 = (animation_tree.get_root_motion_rotation_accumulator().inverse() * get_quaternion()) * animation_tree.get_root_motion_position() / delta
-				    set_velocity(velocity)
-				    move_and_slide()
+					if Input.is_action_just_pressed("animate"):
+						state_machine.travel("Animate")
+					set_quaternion(get_quaternion() * animation_tree.get_root_motion_rotation())
+					var velocity = (animation_tree.get_root_motion_rotation_accumulator().inverse() * get_quaternion()) * animation_tree.get_root_motion_position() / delta
+					set_velocity(velocity)
+					move_and_slide()
+				[/gdscript]
+				[/codeblocks]
+				If [member root_motion_local] is [code]true[/code], returns the pre-multiplied translation value with the inverted rotation.
+				In this case, the code can be written as follows:
+				[codeblocks]
+				[gdscript]
+				func _process(delta):
+					if Input.is_action_just_pressed("animate"):
+						state_machine.travel("Animate")
+					set_quaternion(get_quaternion() * animation_tree.get_root_motion_rotation())
+					var velocity = get_quaternion() * animation_tree.get_root_motion_position() / delta
+					set_velocity(velocity)
+					move_and_slide()
 				[/gdscript]
 				[/codeblocks]
 			</description>
@@ -125,15 +158,15 @@
 				For example, if an animation with only one key [code]Vector3(0, 0, 0)[/code] is played in the previous frame and then an animation with only one key [code]Vector3(1, 0, 1)[/code] is played in the next frame, the difference can be calculated as follows:
 				[codeblocks]
 				[gdscript]
-				var prev_root_motion_position_accumulator: Vector3
+				var prev_root_motion_position_accumulator
 
 				func _process(delta):
-				    if Input.is_action_just_pressed("animate"):
-				        state_machine.travel("Animate")
-				    var current_root_motion_position_accumulator: Vector3 = animation_tree.get_root_motion_position_accumulator()
-				    var difference: Vector3 = current_root_motion_position_accumulator - prev_root_motion_position_accumulator
-				    prev_root_motion_position_accumulator = current_root_motion_position_accumulator
-				    transform.origin += difference
+					if Input.is_action_just_pressed("animate"):
+						state_machine.travel("Animate")
+					var current_root_motion_position_accumulator = animation_tree.get_root_motion_position_accumulator()
+					var difference = current_root_motion_position_accumulator - prev_root_motion_position_accumulator
+					prev_root_motion_position_accumulator = current_root_motion_position_accumulator
+					transform.origin += difference
 				[/gdscript]
 				[/codeblocks]
 				However, if the animation loops, an unintended discrete change may occur, so this is only useful for some simple use cases.
@@ -149,9 +182,9 @@
 				[codeblocks]
 				[gdscript]
 				func _process(delta):
-				    if Input.is_action_just_pressed("animate"):
-				        state_machine.travel("Animate")
-				    set_quaternion(get_quaternion() * animation_tree.get_root_motion_rotation())
+					if Input.is_action_just_pressed("animate"):
+						state_machine.travel("Animate")
+					set_quaternion(get_quaternion() * animation_tree.get_root_motion_rotation())
 				[/gdscript]
 				[/codeblocks]
 			</description>
@@ -165,15 +198,15 @@
 				For example, if an animation with only one key [code]Quaternion(0, 0, 0, 1)[/code] is played in the previous frame and then an animation with only one key [code]Quaternion(0, 0.707, 0, 0.707)[/code] is played in the next frame, the difference can be calculated as follows:
 				[codeblocks]
 				[gdscript]
-				var prev_root_motion_rotation_accumulator: Quaternion
+				var prev_root_motion_rotation_accumulator
 
 				func _process(delta):
-				    if Input.is_action_just_pressed("animate"):
-				        state_machine.travel("Animate")
-				    var current_root_motion_rotation_accumulator: Quaternion = animation_tree.get_root_motion_Quaternion_accumulator()
-				    var difference: Quaternion = prev_root_motion_rotation_accumulator.inverse() * current_root_motion_rotation_accumulator
-				    prev_root_motion_rotation_accumulator = current_root_motion_rotation_accumulator
-				    transform.basis *= difference
+					if Input.is_action_just_pressed("animate"):
+						state_machine.travel("Animate")
+					var current_root_motion_rotation_accumulator = animation_tree.get_root_motion_rotation_accumulator()
+					var difference = prev_root_motion_rotation_accumulator.inverse() * current_root_motion_rotation_accumulator
+					prev_root_motion_rotation_accumulator = current_root_motion_rotation_accumulator
+					transform.basis *=  Basis(difference)
 				[/gdscript]
 				[/codeblocks]
 				However, if the animation loops, an unintended discrete change may occur, so this is only useful for some simple use cases.
@@ -188,16 +221,16 @@
 				The most basic example is applying scale to [CharacterBody3D]:
 				[codeblocks]
 				[gdscript]
-				var current_scale: Vector3 = Vector3(1, 1, 1)
-				var scale_accum: Vector3 = Vector3(1, 1, 1)
+				var current_scale = Vector3(1, 1, 1)
+				var scale_accum = Vector3(1, 1, 1)
 
 				func _process(delta):
-				    if Input.is_action_just_pressed("animate"):
-				        current_scale = get_scale()
-				        scale_accum = Vector3(1, 1, 1)
-				        state_machine.travel("Animate")
-				    scale_accum += animation_tree.get_root_motion_scale()
-				    set_scale(current_scale * scale_accum)
+					if Input.is_action_just_pressed("animate"):
+						current_scale = get_scale()
+						scale_accum = Vector3(1, 1, 1)
+						state_machine.travel("Animate")
+					scale_accum += animation_tree.get_root_motion_scale()
+					set_scale(current_scale * scale_accum)
 				[/gdscript]
 				[/codeblocks]
 			</description>
@@ -209,15 +242,15 @@
 				For example, if an animation with only one key [code]Vector3(1, 1, 1)[/code] is played in the previous frame and then an animation with only one key [code]Vector3(2, 2, 2)[/code] is played in the next frame, the difference can be calculated as follows:
 				[codeblocks]
 				[gdscript]
-				var prev_root_motion_scale_accumulator: Vector3
+				var prev_root_motion_scale_accumulator
 
 				func _process(delta):
-				    if Input.is_action_just_pressed("animate"):
-				        state_machine.travel("Animate")
-				    var current_root_motion_scale_accumulator: Vector3 = animation_tree.get_root_motion_scale_accumulator()
-				    var difference: Vector3 = current_root_motion_scale_accumulator - prev_root_motion_scale_accumulator
-				    prev_root_motion_scale_accumulator = current_root_motion_scale_accumulator
-				    transform.basis = transform.basis.scaled(difference)
+					if Input.is_action_just_pressed("animate"):
+						state_machine.travel("Animate")
+					var current_root_motion_scale_accumulator = animation_tree.get_root_motion_scale_accumulator()
+					var difference = current_root_motion_scale_accumulator - prev_root_motion_scale_accumulator
+					prev_root_motion_scale_accumulator = current_root_motion_scale_accumulator
+					transform.basis = transform.basis.scaled(difference)
 				[/gdscript]
 				[/codeblocks]
 				However, if the animation loops, an unintended discrete change may occur, so this is only useful for some simple use cases.
@@ -227,14 +260,14 @@
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the [AnimationPlayer] stores an [Animation] with key [param name].
+				Returns [code]true[/code] if the [AnimationMixer] stores an [Animation] with key [param name].
 			</description>
 		</method>
 		<method name="has_animation_library" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the [AnimationPlayer] stores an [AnimationLibrary] with key [param name].
+				Returns [code]true[/code] if the [AnimationMixer] stores an [AnimationLibrary] with key [param name].
 			</description>
 		</method>
 		<method name="remove_animation_library">
@@ -261,8 +294,13 @@
 			The number of possible simultaneous sounds for each of the assigned AudioStreamPlayers.
 			For example, if this value is [code]32[/code] and the animation has two audio tracks, the two [AudioStreamPlayer]s assigned can play simultaneously up to [code]32[/code] voices each.
 		</member>
+		<member name="callback_mode_discrete" type="int" setter="set_callback_mode_discrete" getter="get_callback_mode_discrete" enum="AnimationMixer.AnimationCallbackModeDiscrete" default="1">
+			Ordinarily, tracks can be set to [constant Animation.UPDATE_DISCRETE] to update infrequently, usually when using nearest interpolation.
+			However, when blending with [constant Animation.UPDATE_CONTINUOUS] several results are considered. The [member callback_mode_discrete] specify it explicitly. See also [enum AnimationCallbackModeDiscrete].
+			To make the blended results look good, it is recommended to set this to [constant ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS] to update every frame during blending. Other values exist for compatibility and they are fine if there is no blending, but not so, may produce artifacts.
+		</member>
 		<member name="callback_mode_method" type="int" setter="set_callback_mode_method" getter="get_callback_mode_method" enum="AnimationMixer.AnimationCallbackModeMethod" default="0">
-			The call mode to use for Call Method tracks.
+			The call mode used for "Call Method" tracks.
 		</member>
 		<member name="callback_mode_process" type="int" setter="set_callback_mode_process" getter="get_callback_mode_process" enum="AnimationMixer.AnimationCallbackModeProcess" default="1">
 			The process notification in which to update animations.
@@ -279,12 +317,15 @@
 			This is used by the editor. If set to [code]true[/code], the scene will be saved with the effects of the reset animation (the animation with the key [code]"RESET"[/code]) applied as if it had been seeked to time 0, with the editor keeping the values that the scene had before saving.
 			This makes it more convenient to preview and edit animations in the editor, as changes to the scene will not be saved as long as they are set in the reset animation.
 		</member>
+		<member name="root_motion_local" type="bool" setter="set_root_motion_local" getter="is_root_motion_local" default="false">
+			If [code]true[/code], [method get_root_motion_position] value is extracted as a local translation value before blending. In other words, it is treated like the translation is done after the rotation.
+		</member>
 		<member name="root_motion_track" type="NodePath" setter="set_root_motion_track" getter="get_root_motion_track" default="NodePath(&quot;&quot;)">
-			The path to the Animation track used for root motion. Paths must be valid scene-tree paths to a node, and must be specified starting from the parent node of the node that will reproduce the animation. To specify a track that controls properties or bones, append its name after the path, separated by [code]":"[/code]. For example, [code]"character/skeleton:ankle"[/code] or [code]"character/mesh:transform/local"[/code].
-			If the track has type [constant Animation.TYPE_POSITION_3D], [constant Animation.TYPE_ROTATION_3D] or [constant Animation.TYPE_SCALE_3D] the transformation will be canceled visually, and the animation will appear to stay in place. See also [method get_root_motion_position], [method get_root_motion_rotation], [method get_root_motion_scale] and [RootMotionView].
+			The path to the Animation track used for root motion. Paths must be valid scene-tree paths to a node, and must be specified starting from the parent node of the node that will reproduce the animation. The [member root_motion_track] uses the same format as [method Animation.track_set_path], but note that a bone must be specified.
+			If the track has type [constant Animation.TYPE_POSITION_3D], [constant Animation.TYPE_ROTATION_3D], or [constant Animation.TYPE_SCALE_3D] the transformation will be canceled visually, and the animation will appear to stay in place. See also [method get_root_motion_position], [method get_root_motion_rotation], [method get_root_motion_scale], and [RootMotionView].
 		</member>
 		<member name="root_node" type="NodePath" setter="set_root_node" getter="get_root_node" default="NodePath(&quot;..&quot;)">
-			The node from which node path references will travel.
+			The node which node path references will travel from.
 		</member>
 	</members>
 	<signals>
@@ -309,6 +350,7 @@
 			<param index="0" name="anim_name" type="StringName" />
 			<description>
 				Notifies when an animation starts playing.
+				[b]Note:[/b] This signal is not emitted if an animation is looping.
 			</description>
 		</signal>
 		<signal name="caches_cleared">
@@ -316,9 +358,14 @@
 				Notifies when the caches have been cleared, either automatically, or manually via [method clear_caches].
 			</description>
 		</signal>
+		<signal name="mixer_applied">
+			<description>
+				Notifies when the blending result related have been applied to the target objects.
+			</description>
+		</signal>
 		<signal name="mixer_updated">
 			<description>
-				Editor only. Notifies when the property have been updated to update dummy [AnimationPlayer] in animation player editor.
+				Notifies when the property related process have been updated.
 			</description>
 		</signal>
 	</signals>
@@ -337,6 +384,28 @@
 		</constant>
 		<constant name="ANIMATION_CALLBACK_MODE_METHOD_IMMEDIATE" value="1" enum="AnimationCallbackModeMethod">
 			Make method calls immediately when reached in the animation.
+		</constant>
+		<constant name="ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT" value="0" enum="AnimationCallbackModeDiscrete">
+			An [constant Animation.UPDATE_DISCRETE] track value takes precedence when blending [constant Animation.UPDATE_CONTINUOUS] or [constant Animation.UPDATE_CAPTURE] track values and [constant Animation.UPDATE_DISCRETE] track values.
+		</constant>
+		<constant name="ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE" value="1" enum="AnimationCallbackModeDiscrete">
+			An [constant Animation.UPDATE_CONTINUOUS] or [constant Animation.UPDATE_CAPTURE] track value takes precedence when blending the [constant Animation.UPDATE_CONTINUOUS] or [constant Animation.UPDATE_CAPTURE] track values and the [constant Animation.UPDATE_DISCRETE] track values. This is the default behavior for [AnimationPlayer].
+		</constant>
+		<constant name="ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS" value="2" enum="AnimationCallbackModeDiscrete">
+			Always treat the [constant Animation.UPDATE_DISCRETE] track value as [constant Animation.UPDATE_CONTINUOUS] with [constant Animation.INTERPOLATION_NEAREST]. This is the default behavior for [AnimationTree].
+			If a value track has un-interpolatable type key values, it is internally converted to use [constant ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE] with [constant Animation.UPDATE_DISCRETE].
+			Un-interpolatable type list:
+			- [constant @GlobalScope.TYPE_NIL]
+			- [constant @GlobalScope.TYPE_NODE_PATH]
+			- [constant @GlobalScope.TYPE_RID]
+			- [constant @GlobalScope.TYPE_OBJECT]
+			- [constant @GlobalScope.TYPE_CALLABLE]
+			- [constant @GlobalScope.TYPE_SIGNAL]
+			- [constant @GlobalScope.TYPE_DICTIONARY]
+			- [constant @GlobalScope.TYPE_PACKED_BYTE_ARRAY]
+			[constant @GlobalScope.TYPE_BOOL] and [constant @GlobalScope.TYPE_INT] are treated as [constant @GlobalScope.TYPE_FLOAT] during blending and rounded when the result is retrieved.
+			It is same for arrays and vectors with them such as [constant @GlobalScope.TYPE_PACKED_INT32_ARRAY] or [constant @GlobalScope.TYPE_VECTOR2I], they are treated as [constant @GlobalScope.TYPE_PACKED_FLOAT32_ARRAY] or [constant @GlobalScope.TYPE_VECTOR2]. Also note that for arrays, the size is also interpolated.
+			[constant @GlobalScope.TYPE_STRING] and [constant @GlobalScope.TYPE_STRING_NAME] are interpolated between character codes and lengths, but note that there is a difference in algorithm between interpolation between keys and interpolation by blending.
 		</constant>
 	</constants>
 </class>

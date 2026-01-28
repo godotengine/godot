@@ -69,25 +69,32 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_scope">
+		<method name="set_method">
 			<return type="void" />
-			<param index="0" name="scope" type="String" />
-			<param index="1" name="target" type="Object" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="callback" type="Callable" />
 			<description>
+				Registers a callback for the given method name.
+				- [param name]: The name that clients can use to access the callback.
+				- [param callback]: The callback which will handle the specified method.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="PARSE_ERROR" value="-32700" enum="ErrorCode">
+			The request could not be parsed as it was not valid by JSON standard ([method JSON.parse] failed).
 		</constant>
 		<constant name="INVALID_REQUEST" value="-32600" enum="ErrorCode">
+			A method call was requested but the request's format is not valid.
 		</constant>
 		<constant name="METHOD_NOT_FOUND" value="-32601" enum="ErrorCode">
 			A method call was requested but no function of that name existed in the JSONRPC subclass.
 		</constant>
 		<constant name="INVALID_PARAMS" value="-32602" enum="ErrorCode">
+			A method call was requested but the given method parameters are not valid. Not used by the built-in JSONRPC.
 		</constant>
 		<constant name="INTERNAL_ERROR" value="-32603" enum="ErrorCode">
+			An internal error occurred while processing the request. Not used by the built-in JSONRPC.
 		</constant>
 	</constants>
 </class>

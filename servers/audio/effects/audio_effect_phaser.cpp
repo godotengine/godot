@@ -29,8 +29,7 @@
 /**************************************************************************/
 
 #include "audio_effect_phaser.h"
-#include "core/math/math_funcs.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 void AudioEffectPhaserInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	float sampling_rate = AudioServer::get_singleton()->get_mix_rate();
@@ -38,16 +37,16 @@ void AudioEffectPhaserInstance::process(const AudioFrame *p_src_frames, AudioFra
 	float dmin = base->range_min / (sampling_rate / 2.0);
 	float dmax = base->range_max / (sampling_rate / 2.0);
 
-	float increment = Math_TAU * (base->rate / sampling_rate);
+	float increment = Math::TAU * (base->rate / sampling_rate);
 
 	for (int i = 0; i < p_frame_count; i++) {
 		phase += increment;
 
-		while (phase >= Math_TAU) {
-			phase -= Math_TAU;
+		while (phase >= Math::TAU) {
+			phase -= Math::TAU;
 		}
 
-		float d = dmin + (dmax - dmin) * ((sin(phase) + 1.f) / 2.f);
+		float d = dmin + (dmax - dmin) * ((std::sin(phase) + 1.f) / 2.f);
 
 		//update filter coeffs
 		for (int j = 0; j < 6; j++) {
@@ -61,20 +60,20 @@ void AudioEffectPhaserInstance::process(const AudioFrame *p_src_frames, AudioFra
 						allpass[0][2].update(
 								allpass[0][3].update(
 										allpass[0][4].update(
-												allpass[0][5].update(p_src_frames[i].l + h.l * base->feedback))))));
-		h.l = y;
+												allpass[0][5].update(p_src_frames[i].left + h.left * base->feedback))))));
+		h.left = y;
 
-		p_dst_frames[i].l = p_src_frames[i].l + y * base->depth;
+		p_dst_frames[i].left = p_src_frames[i].left + y * base->depth;
 
 		y = allpass[1][0].update(
 				allpass[1][1].update(
 						allpass[1][2].update(
 								allpass[1][3].update(
 										allpass[1][4].update(
-												allpass[1][5].update(p_src_frames[i].r + h.r * base->feedback))))));
-		h.r = y;
+												allpass[1][5].update(p_src_frames[i].right + h.right * base->feedback))))));
+		h.right = y;
 
-		p_dst_frames[i].r = p_src_frames[i].r + y * base->depth;
+		p_dst_frames[i].right = p_src_frames[i].right + y * base->depth;
 	}
 }
 

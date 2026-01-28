@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="MenuBar" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A horizontal menu bar that creates a [MenuButton] for each [PopupMenu] child.
+		A horizontal menu bar that creates a menu for each [PopupMenu] child.
 	</brief_description>
 	<description>
-		A horizontal menu bar that creates a [MenuButton] for each [PopupMenu] child. New items are created by adding [PopupMenu]s to this node.
+		A horizontal menu bar that creates a menu for each [PopupMenu] child. New items are created by adding [PopupMenu]s to this node. Item title is determined by [member Window.title], or node name if [member Window.title] is empty. Item title can be overridden using [method set_menu_title].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -40,20 +40,20 @@
 			<return type="bool" />
 			<param index="0" name="menu" type="int" />
 			<description>
-				Returns [code]true[/code], if menu item is disabled.
+				Returns [code]true[/code] if the menu item is disabled.
 			</description>
 		</method>
 		<method name="is_menu_hidden" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="menu" type="int" />
 			<description>
-				Returns [code]true[/code], if menu item is hidden.
+				Returns [code]true[/code] if the menu item is hidden.
 			</description>
 		</method>
 		<method name="is_native_menu" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code], if system global menu is supported and used by this [MenuBar].
+				Returns [code]true[/code] if the current system's global menu is supported and used by this [MenuBar].
 			</description>
 		</method>
 		<method name="set_disable_shortcuts">
@@ -100,14 +100,17 @@
 		<member name="flat" type="bool" setter="set_flat" getter="is_flat" default="false">
 			Flat [MenuBar] don't display item decoration.
 		</member>
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="3" />
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
-			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+			Language code used for line-breaking and text shaping algorithms. If left empty, the current locale is used instead.
 		</member>
 		<member name="prefer_global_menu" type="bool" setter="set_prefer_global_menu" getter="is_prefer_global_menu" default="true">
 			If [code]true[/code], [MenuBar] will use system global menu when supported.
+			[b]Note:[/b] If [code]true[/code] and global menu is supported, this node is not displayed, has zero size, and all its child nodes except [PopupMenu]s are inaccessible.
+			[b]Note:[/b] This property overrides the value of the [member PopupMenu.prefer_native_menu] property of the child nodes.
 		</member>
 		<member name="start_index" type="int" setter="set_start_index" getter="get_start_index" default="-1">
-			Position in the global menu to insert first [MenuBar] item at.
+			Position order in the global menu to insert [MenuBar] items at. All menu items in the [MenuBar] are always inserted as a continuous range. Menus with lower [member start_index] are inserted first. Menus with [member start_index] equal to [code]-1[/code] are inserted last.
 		</member>
 		<member name="switch_on_hover" type="bool" setter="set_switch_on_hover" getter="is_switch_on_hover" default="true">
 			If [code]true[/code], when the cursor hovers above menu item, it will close the current [PopupMenu] and open the other one.
@@ -132,7 +135,7 @@
 		<theme_item name="font_hover_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Text [Color] used when the menu item is being hovered and pressed.
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the menu item.
 		</theme_item>
 		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
@@ -151,7 +154,7 @@
 		<theme_item name="font_size" data_type="font_size" type="int">
 			Font size of the menu item's text.
 		</theme_item>
-		<theme_item name="disabled" data_type="style" type="StyleBox">
+		<theme_item name="disabled" data_type="style" type="StyleBox" keywords="enabled">
 			[StyleBox] used when the menu item is disabled.
 		</theme_item>
 		<theme_item name="disabled_mirrored" data_type="style" type="StyleBox">

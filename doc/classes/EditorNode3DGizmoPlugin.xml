@@ -11,6 +11,14 @@
 		<link title="Node3D gizmo plugins">$DOCS_URL/tutorials/plugins/editor/3d_gizmos.html</link>
 	</tutorials>
 	<methods>
+		<method name="_begin_handle_action" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="gizmo" type="EditorNode3DGizmo" />
+			<param index="1" name="handle_id" type="int" />
+			<param index="2" name="secondary" type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="_can_be_hidden" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
@@ -46,7 +54,7 @@
 			<return type="EditorNode3DGizmo" />
 			<param index="0" name="for_node_3d" type="Node3D" />
 			<description>
-				Override this method to return a custom [EditorNode3DGizmo] for the spatial nodes of your choice, return [code]null[/code] for the rest of nodes. See also [method _has_gizmo].
+				Override this method to return a custom [EditorNode3DGizmo] for the 3D nodes of your choice, return [code]null[/code] for the rest of nodes. See also [method _has_gizmo].
 			</description>
 		</method>
 		<method name="_get_gizmo_name" qualifiers="virtual const">

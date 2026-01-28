@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VIEWPORT_H
-#define VIEWPORT_H
+#pragma once
 
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
+#include "servers/display/display_server.h"
 
 #ifndef _3D_DISABLED
 class Camera3D;
@@ -63,6 +63,7 @@ class ViewportTexture : public Texture2D {
 	bool vp_changed = false;
 
 	void _setup_local_to_scene(const Node *p_loc_scene);
+	void _err_print_viewport_not_set() const;
 
 	mutable RID proxy_ph;
 	mutable RID proxy;
@@ -99,6 +100,8 @@ public:
 		SCALING_3D_MODE_BILINEAR,
 		SCALING_3D_MODE_FSR,
 		SCALING_3D_MODE_FSR2,
+		SCALING_3D_MODE_METALFX_SPATIAL,
+		SCALING_3D_MODE_METALFX_TEMPORAL,
 		SCALING_3D_MODE_MAX
 	};
 
@@ -122,9 +125,19 @@ public:
 		MSAA_MAX
 	};
 
+	enum AnisotropicFiltering {
+		ANISOTROPY_DISABLED,
+		ANISOTROPY_2X,
+		ANISOTROPY_4X,
+		ANISOTROPY_8X,
+		ANISOTROPY_16X,
+		ANISOTROPY_MAX
+	};
+
 	enum ScreenSpaceAA {
 		SCREEN_SPACE_AA_DISABLED,
 		SCREEN_SPACE_AA_FXAA,
+		SCREEN_SPACE_AA_SMAA,
 		SCREEN_SPACE_AA_MAX
 	};
 
@@ -138,6 +151,7 @@ public:
 	enum RenderInfoType {
 		RENDER_INFO_TYPE_VISIBLE,
 		RENDER_INFO_TYPE_SHADOW,
+		RENDER_INFO_TYPE_CANVAS,
 		RENDER_INFO_TYPE_MAX
 	};
 
@@ -212,81 +226,75 @@ public:
 		VRS_MAX
 	};
 
+	enum VRSUpdateMode {
+		VRS_UPDATE_DISABLED,
+		VRS_UPDATE_ONCE,
+		VRS_UPDATE_ALWAYS,
+		VRS_UPDATE_MAX
+	};
+
 private:
 	friend class ViewportTexture;
 
 	Viewport *parent = nullptr;
 	Viewport *gui_parent = nullptr; // Whose gui.tooltip_popup it is.
 
-	AudioListener2D *audio_listener_2d = nullptr;
-	Camera2D *camera_2d = nullptr;
 	HashSet<CanvasLayer *> canvas_layers;
+
+	bool use_font_oversampling = true;
+	float font_oversampling = 1.0;
+	float font_oversampling_override = 0.0;
 
 	RID viewport;
 	RID current_canvas;
 	RID subwindow_canvas;
 
-	bool is_audio_listener_2d_enabled = false;
-	RID internal_audio_listener_2d;
-
-	bool override_canvas_transform = false;
-
-	Transform2D canvas_transform_override;
 	Transform2D canvas_transform;
 	Transform2D global_canvas_transform;
 	Transform2D stretch_transform;
 
 	Size2i size = Size2i(512, 512);
-	Size2i size_2d_override;
+	Size2 size_2d_override;
 	bool size_allocated = false;
 
 	RID contact_2d_debug;
 	RID contact_3d_debug_multimesh;
 	RID contact_3d_debug_instance;
 
-	Rect2 last_vp_rect;
-
 	bool transparent_bg = false;
 	bool use_hdr_2d = false;
-	bool gen_mipmaps = false;
 
 	bool snap_controls_to_pixels = true;
 	bool snap_2d_transforms_to_pixel = false;
 	bool snap_2d_vertices_to_pixel = false;
 
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	bool physics_object_picking = false;
 	bool physics_object_picking_sort = false;
+	bool physics_object_picking_first_only = false;
 	List<Ref<InputEvent>> physics_picking_events;
 	ObjectID physics_object_capture;
 	ObjectID physics_object_over;
 	Transform3D physics_last_object_transform;
 	Transform3D physics_last_camera_transform;
 	ObjectID physics_last_id;
+#endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 
 	bool handle_input_locally = true;
 	bool local_input_handled = false;
 
-	// Collider to frame
-	HashMap<ObjectID, uint64_t> physics_2d_mouseover;
-	// Collider & shape to frame
-	HashMap<Pair<ObjectID, int>, uint64_t, PairHash<ObjectID, int>> physics_2d_shape_mouseover;
-	// Cleans up colliders corresponding to old frames or all of them.
-	void _cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference = 0);
-
 	Ref<World2D> world_2d;
 
 	StringName input_group;
-	StringName gui_input_group;
 	StringName shortcut_input_group;
 	StringName unhandled_input_group;
 	StringName unhandled_key_input_group;
 
 	void _update_audio_listener_2d();
 
-	bool disable_2d = false;
 	bool disable_3d = false;
 
-	void _propagate_viewport_notification(Node *p_node, int p_what);
+	static void _propagate_drag_notification(Node *p_node, int p_what);
 
 	void _update_global_transform();
 
@@ -307,6 +315,7 @@ private:
 	float scaling_3d_scale = 1.0;
 	float fsr_sharpness = 0.2f;
 	float texture_mipmap_bias = 0.0f;
+	AnisotropicFiltering anisotropic_filtering_level = ANISOTROPY_4X;
 	bool use_debanding = false;
 	float mesh_lod_threshold = 1.0;
 	bool use_occlusion_culling = false;
@@ -315,6 +324,9 @@ private:
 	HashSet<ViewportTexture *> viewport_textures;
 
 	void _update_viewport_path();
+
+	bool _can_hide_focus_state();
+	void _on_settings_changed();
 
 	SDFOversize sdf_oversize = SDF_OVERSIZE_120_PERCENT;
 	SDFScale sdf_scale = SDF_SCALE_50_PERCENT;
@@ -345,27 +357,28 @@ private:
 		Window *window = nullptr;
 		RID canvas_item;
 		Rect2i parent_safe_rect;
+		bool pending_window_update = false;
 	};
 
 	// VRS
 	VRSMode vrs_mode = VRS_DISABLED;
+	VRSUpdateMode vrs_update_mode = VRS_UPDATE_ONCE;
 	Ref<Texture2D> vrs_texture;
 
 	struct GUI {
-		bool forced_mouse_focus = false; //used for menu buttons
-		bool mouse_in_viewport = true;
-		bool key_event_accepted = false;
+		bool mouse_in_viewport = false;
 		HashMap<int, ObjectID> touch_focus;
 		Control *mouse_focus = nullptr;
-		Control *last_mouse_focus = nullptr;
 		Control *mouse_click_grabber = nullptr;
-		BitField<MouseButtonMask> mouse_focus_mask;
+		BitField<MouseButtonMask> mouse_focus_mask = MouseButtonMask::NONE;
 		Control *key_focus = nullptr;
-		Control *mouse_over = nullptr;
+		bool hide_focus = false;
+		ObjectID mouse_over;
+		LocalVector<ObjectID> mouse_over_hierarchy;
+		bool sending_mouse_enter_exit_notifications = false;
 		Window *subwindow_over = nullptr; // mouse_over and subwindow_over are mutually exclusive. At all times at least one of them is nullptr.
 		Window *windowmanager_window_over = nullptr; // Only used in root Viewport.
 		Control *drag_mouse_over = nullptr;
-		Vector2 drag_mouse_over_pos;
 		Control *tooltip_control = nullptr;
 		Window *tooltip_popup = nullptr;
 		Label *tooltip_label = nullptr;
@@ -374,17 +387,21 @@ private:
 		Point2 last_mouse_pos;
 		Point2 drag_accum;
 		bool drag_attempted = false;
-		Variant drag_data;
+		Variant drag_data; // Only used in root-Viewport and SubViewports, that are not children of a SubViewportContainer.
 		ObjectID drag_preview_id;
+		String drag_description;
 		Ref<SceneTreeTimer> tooltip_timer;
 		double tooltip_delay = 0.0;
 		bool roots_order_dirty = false;
 		List<Control *> roots;
 		HashSet<ObjectID> canvas_parents_with_dirty_order;
 		int canvas_sort_index = 0; //for sorting items with canvas as root
-		bool dragging = false;
+		bool dragging = false; // Is true in the viewport in which dragging started while dragging is active.
+		bool global_dragging = false; // Is true while dragging is active. Only used in root-Viewport and SubViewports that are not children of a SubViewportContainer.
 		bool drag_successful = false;
+		Control *target_control = nullptr; // Control that the mouse is over in the innermost nested Viewport. Only used in root-Viewport and SubViewports, that are not children of a SubViewportContainer.
 		bool embed_subwindows_hint = false;
+		int drag_threshold = 10;
 
 		Window *subwindow_focused = nullptr;
 		Window *currently_dragged_subwindow = nullptr;
@@ -403,15 +420,16 @@ private:
 	DefaultCanvasItemTextureRepeat default_canvas_item_texture_repeat = DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 
 	bool disable_input = false;
+	bool disable_input_override = false;
 
-	bool _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
+	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
 	void _gui_call_notification(Control *p_control, int p_what);
 
 	void _gui_sort_roots();
 	Control *_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform);
 
 	void _gui_input_event(Ref<InputEvent> p_event);
-	void _perform_drop(Control *p_control = nullptr, Point2 p_pos = Point2());
+	void _perform_drop(Control *p_control = nullptr);
 	void _gui_cleanup_internal_state(Ref<InputEvent> p_event);
 
 	void _push_unhandled_input_internal(const Ref<InputEvent> &p_event);
@@ -427,36 +445,33 @@ private:
 	String _gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_tooltip_owner = nullptr);
 	void _gui_cancel_tooltip();
 	void _gui_show_tooltip();
+	void _gui_show_tooltip_at(const Point2i &p_pos);
 
 	void _gui_remove_control(Control *p_control);
 	void _gui_hide_control(Control *p_control);
+	void _gui_update_mouse_over();
 
+	void _gui_force_drag_start();
+	void _gui_force_drag_cancel();
 	void _gui_force_drag(Control *p_base, const Variant &p_data, Control *p_control);
 	void _gui_set_drag_preview(Control *p_base, Control *p_control);
 	Control *_gui_get_drag_preview();
 
 	void _gui_remove_focus_for_window(Node *p_window);
 	void _gui_unfocus_control(Control *p_control);
-	bool _gui_control_has_focus(const Control *p_control);
-	void _gui_control_grab_focus(Control *p_control);
+	bool _gui_control_has_focus(const Control *p_control, bool p_ignore_hidden_focus = false);
+	void _gui_control_grab_focus(Control *p_control, bool p_hide_focus = false);
 	void _gui_grab_click_focus(Control *p_control);
 	void _post_gui_grab_click_focus();
 	void _gui_accept_event();
 
 	bool _gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_check);
 
-	friend class AudioListener2D;
-	void _audio_listener_2d_set(AudioListener2D *p_listener);
-	void _audio_listener_2d_remove(AudioListener2D *p_listener);
-
-	friend class Camera2D;
-	void _camera_2d_set(Camera2D *p_camera_2d);
-
 	friend class CanvasLayer;
 	void _canvas_layer_add(CanvasLayer *p_canvas_layer);
 	void _canvas_layer_remove(CanvasLayer *p_canvas_layer);
 
-	void _drop_mouse_over();
+	void _drop_mouse_over(Control *p_until_control = nullptr);
 	void _drop_mouse_focus();
 	void _drop_physics_mouseover(bool p_paused_only = false);
 
@@ -473,7 +488,7 @@ private:
 	bool _sub_windows_forward_input(const Ref<InputEvent> &p_event);
 	SubWindowResize _sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point);
 
-	void _update_mouse_over();
+	void _update_mouse_over(const Ref<InputEventMouse> &p_mm);
 	virtual void _update_mouse_over(Vector2 p_pos);
 	virtual void _mouse_leave_viewport();
 
@@ -481,27 +496,33 @@ private:
 	uint64_t event_count = 0;
 
 	void _process_dirty_canvas_parent_orders();
+	void _propagate_world_2d_changed(Node *p_node);
+
+	void _window_start_drag(Window *p_window);
+	void _window_start_resize(SubWindowResize p_edge, Window *p_window);
 
 protected:
-	void _set_size(const Size2i &p_size, const Size2i &p_size_2d_override, bool p_allocated);
+	bool _set_size(const Size2i &p_size, const Size2 &p_size_2d_override, bool p_allocated);
 
 	Size2i _get_size() const;
-	Size2i _get_size_2d_override() const;
+	Size2 _get_size_2d_override() const;
 	bool _is_size_allocated() const;
 
 	void _notification(int p_what);
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	void _process_picking();
+#endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void canvas_parent_mark_dirty(Node *p_node);
+	void canvas_item_top_level_changed();
 
 	uint64_t get_processed_events_count() const { return event_count; }
 
-	AudioListener2D *get_audio_listener_2d() const;
-	Camera2D *get_camera_2d() const;
-	void set_as_audio_listener_2d(bool p_enable);
-	bool is_audio_listener_2d() const;
+	void cancel_tooltip();
+	void show_tooltip(Control *p_control);
 
 	void update_canvas_items();
 
@@ -512,20 +533,14 @@ public:
 	Ref<World2D> get_world_2d() const;
 	Ref<World2D> find_world_2d() const;
 
-	void enable_canvas_transform_override(bool p_enable);
-	bool is_canvas_transform_override_enabled() const;
-
-	void set_canvas_transform_override(const Transform2D &p_transform);
-	Transform2D get_canvas_transform_override() const;
-
 	void set_canvas_transform(const Transform2D &p_transform);
 	Transform2D get_canvas_transform() const;
 
 	void set_global_canvas_transform(const Transform2D &p_transform);
 	Transform2D get_global_canvas_transform() const;
 
+	Transform2D get_stretch_transform() const;
 	virtual Transform2D get_final_transform() const;
-	void assign_next_enabled_camera_2d(const StringName &p_camera_group);
 
 	void gui_set_root_order_dirty();
 
@@ -558,6 +573,14 @@ public:
 	void set_use_taa(bool p_use_taa);
 	bool is_using_taa() const;
 
+	void set_use_oversampling(bool p_oversampling);
+	bool is_using_oversampling() const;
+
+	void set_oversampling_override(float p_oversampling);
+	float get_oversampling_override() const;
+
+	float get_oversampling() const { return font_oversampling; }
+
 	void set_scaling_3d_mode(Scaling3DMode p_scaling_3d_mode);
 	Scaling3DMode get_scaling_3d_mode() const;
 
@@ -569,6 +592,9 @@ public:
 
 	void set_texture_mipmap_bias(float p_texture_mipmap_bias);
 	float get_texture_mipmap_bias() const;
+
+	void set_anisotropic_filtering_level(AnisotropicFiltering p_anisotropic_filtering_level);
+	AnisotropicFiltering get_anisotropic_filtering_level() const;
 
 	void set_use_debanding(bool p_use_debanding);
 	bool is_using_debanding() const;
@@ -582,31 +608,45 @@ public:
 	Vector2 get_camera_coords(const Vector2 &p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;
 
+	void _push_text_input(const String &p_text, bool p_emit_text_changed_signal = false);
 	void push_text_input(const String &p_text);
-	void push_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
+	void push_input(RequiredParam<InputEvent> rp_event, bool p_local_coords = false);
 #ifndef DISABLE_DEPRECATED
-	void push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
+	void push_unhandled_input(RequiredParam<InputEvent> rp_event, bool p_local_coords = false);
 #endif // DISABLE_DEPRECATED
+	void notify_mouse_entered();
+	void notify_mouse_exited();
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
 
+	void set_disable_input_override(bool p_disable);
+
 	Vector2 get_mouse_position() const;
 	void warp_mouse(const Vector2 &p_position);
+	Point2 wrap_mouse_in_rect(const Vector2 &p_relative, const Rect2 &p_rect);
 	virtual void update_mouse_cursor_state();
 
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	void set_physics_object_picking(bool p_enable);
 	bool get_physics_object_picking();
 	void set_physics_object_picking_sort(bool p_enable);
 	bool get_physics_object_picking_sort();
+	void set_physics_object_picking_first_only(bool p_enable);
+	bool get_physics_object_picking_first_only();
+#endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 
 	Variant gui_get_drag_data() const;
+	String gui_get_drag_description() const;
+	void gui_set_drag_description(const String &p_description);
 
 	void gui_reset_canvas_sort_index();
 	int gui_get_canvas_sort_index();
 
 	void gui_release_focus();
 	Control *gui_get_focus_owner() const;
+	Control *gui_get_hovered_control() const;
+	Window *get_focused_subwindow() const { return gui.subwindow_focused; }
 
 	PackedStringArray get_configuration_warnings() const override;
 
@@ -632,6 +672,8 @@ public:
 
 	bool gui_is_dragging() const;
 	bool gui_is_drag_successful() const;
+	void gui_cancel_drag();
+	void gui_perform_drop_at(const Point2 &p_pos, Control *p_control = nullptr);
 
 	Control *gui_find_control(const Point2 &p_global);
 
@@ -652,6 +694,9 @@ public:
 	void set_vrs_mode(VRSMode p_vrs_mode);
 	VRSMode get_vrs_mode() const;
 
+	void set_vrs_update_mode(VRSUpdateMode p_vrs_update_mode);
+	VRSUpdateMode get_vrs_update_mode() const;
+
 	void set_vrs_texture(Ref<Texture2D> p_texture);
 	Ref<Texture2D> get_vrs_texture() const;
 
@@ -663,10 +708,11 @@ public:
 	void subwindow_set_popup_safe_rect(Window *p_window, const Rect2i &p_rect);
 	Rect2i subwindow_get_popup_safe_rect(Window *p_window) const;
 
-	Viewport *get_parent_viewport() const;
-	Window *get_base_window() const;
+	void set_drag_threshold(int p_threshold);
+	int get_drag_threshold() const;
 
-	void pass_mouse_focus_to(Viewport *p_viewport, Control *p_control);
+	Viewport *get_parent_viewport() const;
+	Window *get_base_window();
 
 	void set_canvas_cull_mask(uint32_t p_layers);
 	uint32_t get_canvas_cull_mask() const;
@@ -674,25 +720,88 @@ public:
 	void set_canvas_cull_mask_bit(uint32_t p_layer, bool p_enable);
 	bool get_canvas_cull_mask_bit(uint32_t p_layer) const;
 
+#ifdef TOOLS_ENABLED
+	bool is_visible_subviewport() const;
+#endif // TOOLS_ENABLED
+
 	virtual bool is_size_2d_override_stretch_enabled() const { return true; }
 
 	Transform2D get_screen_transform() const;
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const;
+	virtual Transform2D get_popup_base_transform_native() const { return Transform2D(); }
 	virtual Transform2D get_popup_base_transform() const { return Transform2D(); }
-	virtual bool is_directly_attached_to_screen() const { return false; };
-	virtual bool is_attached_in_viewport() const { return false; };
-	virtual bool is_sub_viewport() const { return false; };
+	virtual Viewport *get_section_root_viewport() const { return nullptr; }
+	virtual bool is_attached_in_viewport() const { return false; }
+	virtual bool is_sub_viewport() const { return false; }
+
+private:
+#if DEBUG_ENABLED
+	template <class T>
+	class CameraOverride {
+	private:
+		bool enabled = false;
+		ObjectID overridden_camera_id;
+
+	public:
+		bool is_enabled() const;
+		void enable(Viewport *p_viewport, const T *p_current_camera);
+		void disable(T *p_current_camera);
+
+		void set_overridden_camera(const T *p_camera);
+		T *get_overridden_camera() const;
+	};
+#endif // DEBUG_ENABLED
+
+	// 2D audio, camera, and physics. (don't put World2D here because World2D is needed for Control nodes).
+	friend class AudioListener2D; // Needs _audio_listener_2d_set and _audio_listener_2d_remove
+	AudioListener2D *audio_listener_2d = nullptr;
+	void _audio_listener_2d_set(AudioListener2D *p_audio_listener);
+	void _audio_listener_2d_remove(AudioListener2D *p_audio_listener);
+	bool is_audio_listener_2d_enabled = false;
+	RID internal_audio_listener_2d;
+
+	friend class Camera2D; // Needs _camera_2d_set
+	Camera2D *camera_2d = nullptr;
+	void _camera_2d_set(Camera2D *p_camera_2d);
+#if DEBUG_ENABLED
+	CameraOverride<Camera2D> camera_2d_override;
+
+public:
+	void enable_camera_2d_override(bool p_enable);
+	bool is_camera_2d_override_enabled() const;
+	Camera2D *get_overridden_camera_2d() const;
+	Camera2D *get_override_camera_2d() const;
+#endif // DEBUG_ENABLED
+
+private:
+#ifndef PHYSICS_2D_DISABLED
+	// Collider to frame
+	HashMap<ObjectID, uint64_t> physics_2d_mouseover;
+	// Collider & shape to frame
+	HashMap<Pair<ObjectID, int>, uint64_t> physics_2d_shape_mouseover;
+	// Cleans up colliders corresponding to old frames or all of them.
+	void _cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference = 0);
+#endif // PHYSICS_2D_DISABLED
+
+public:
+	AudioListener2D *get_audio_listener_2d() const;
+	void set_as_audio_listener_2d(bool p_enable);
+	bool is_audio_listener_2d() const;
+
+	Camera2D *get_camera_2d() const;
+	void assign_next_enabled_camera_2d(const StringName &p_camera_group);
 
 #ifndef _3D_DISABLED
+private:
+	// 3D audio, camera, physics, and world.
+#ifndef XR_DISABLED
 	bool use_xr = false;
+#endif // XR_DISABLED
 	friend class AudioListener3D;
 	AudioListener3D *audio_listener_3d = nullptr;
 	HashSet<AudioListener3D *> audio_listener_3d_set;
 	bool is_audio_listener_3d_enabled = false;
 	RID internal_audio_listener_3d;
-	AudioListener3D *get_audio_listener_3d() const;
-	void set_as_audio_listener_3d(bool p_enable);
-	bool is_audio_listener_3d() const;
 	void _update_audio_listener_3d();
 	void _listener_transform_3d_changed_notify();
 	void _audio_listener_3d_set(AudioListener3D *p_listener);
@@ -700,69 +809,57 @@ public:
 	void _audio_listener_3d_remove(AudioListener3D *p_listener);
 	void _audio_listener_3d_make_next_current(AudioListener3D *p_exclude);
 
+#ifndef PHYSICS_3D_DISABLED
 	void _collision_object_3d_input_event(CollisionObject3D *p_object, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
-
-	struct Camera3DOverrideData {
-		Transform3D transform;
-		enum Projection {
-			PROJECTION_PERSPECTIVE,
-			PROJECTION_ORTHOGONAL
-		};
-		Projection projection = Projection::PROJECTION_PERSPECTIVE;
-		real_t fov = 0.0;
-		real_t size = 0.0;
-		real_t z_near = 0.0;
-		real_t z_far = 0.0;
-		RID rid;
-
-		operator bool() const {
-			return rid != RID();
-		}
-	} camera_3d_override;
+#endif // PHYSICS_3D_DISABLED
 
 	friend class Camera3D;
 	Camera3D *camera_3d = nullptr;
+#if DEBUG_ENABLED
+	CameraOverride<Camera3D> camera_3d_override;
+#endif // DEBUG_ENABLED
 	HashSet<Camera3D *> camera_3d_set;
-	Camera3D *get_camera_3d() const;
 	void _camera_3d_transform_changed_notify();
 	void _camera_3d_set(Camera3D *p_camera);
 	bool _camera_3d_add(Camera3D *p_camera); //true if first
 	void _camera_3d_remove(Camera3D *p_camera);
 	void _camera_3d_make_next_current(Camera3D *p_exclude);
 
+	Ref<World3D> world_3d;
+	Ref<World3D> own_world_3d;
+	void _own_world_3d_changed();
+	void _propagate_enter_world_3d(Node *p_node);
+	void _propagate_exit_world_3d(Node *p_node);
+
+public:
+	AudioListener3D *get_audio_listener_3d() const;
+	void set_as_audio_listener_3d(bool p_enable);
+	bool is_audio_listener_3d() const;
+
+	Camera3D *get_camera_3d() const;
+
+#if DEBUG_ENABLED
 	void enable_camera_3d_override(bool p_enable);
 	bool is_camera_3d_override_enabled() const;
-
-	void set_camera_3d_override_transform(const Transform3D &p_transform);
-	Transform3D get_camera_3d_override_transform() const;
-
-	void set_camera_3d_override_perspective(real_t p_fovy_degrees, real_t p_z_near, real_t p_z_far);
-	void set_camera_3d_override_orthogonal(real_t p_size, real_t p_z_near, real_t p_z_far);
-
-	void set_disable_2d(bool p_disable);
-	bool is_2d_disabled() const;
+	Camera3D *get_overridden_camera_3d() const;
+	Camera3D *get_override_camera_3d() const;
+#endif // DEBUG_ENABLED
 
 	void set_disable_3d(bool p_disable);
 	bool is_3d_disabled() const;
 
-	Ref<World3D> world_3d;
-	Ref<World3D> own_world_3d;
 	void set_world_3d(const Ref<World3D> &p_world_3d);
 	Ref<World3D> get_world_3d() const;
 	Ref<World3D> find_world_3d() const;
-	void _own_world_3d_changed();
 	void set_use_own_world_3d(bool p_use_own_world_3d);
 	bool is_using_own_world_3d() const;
-	void _propagate_enter_world_3d(Node *p_node);
-	void _propagate_exit_world_3d(Node *p_node);
 
+#ifndef XR_DISABLED
 	void set_use_xr(bool p_use_xr);
 	bool is_using_xr();
+#endif // XR_DISABLED
 #endif // _3D_DISABLED
 
-	void _propagate_world_2d_changed(Node *p_node);
-
-	void _validate_property(PropertyInfo &p_property) const;
 	Viewport();
 	~Viewport();
 };
@@ -816,27 +913,26 @@ public:
 
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const override;
 	virtual Transform2D get_popup_base_transform() const override;
-	virtual bool is_directly_attached_to_screen() const override;
+	virtual Viewport *get_section_root_viewport() const override;
 	virtual bool is_attached_in_viewport() const override;
-	virtual bool is_sub_viewport() const override { return true; };
+	virtual bool is_sub_viewport() const override { return true; }
 
 	void _validate_property(PropertyInfo &p_property) const;
 	SubViewport();
-	~SubViewport();
 };
 VARIANT_ENUM_CAST(Viewport::Scaling3DMode);
 VARIANT_ENUM_CAST(SubViewport::UpdateMode);
 VARIANT_ENUM_CAST(Viewport::PositionalShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);
+VARIANT_ENUM_CAST(Viewport::AnisotropicFiltering);
 VARIANT_ENUM_CAST(Viewport::ScreenSpaceAA);
 VARIANT_ENUM_CAST(Viewport::DebugDraw);
 VARIANT_ENUM_CAST(Viewport::SDFScale);
 VARIANT_ENUM_CAST(Viewport::SDFOversize);
 VARIANT_ENUM_CAST(Viewport::VRSMode);
+VARIANT_ENUM_CAST(Viewport::VRSUpdateMode);
 VARIANT_ENUM_CAST(SubViewport::ClearMode);
 VARIANT_ENUM_CAST(Viewport::RenderInfo);
 VARIANT_ENUM_CAST(Viewport::RenderInfoType);
 VARIANT_ENUM_CAST(Viewport::DefaultCanvasItemTextureFilter);
 VARIANT_ENUM_CAST(Viewport::DefaultCanvasItemTextureRepeat);
-
-#endif // VIEWPORT_H

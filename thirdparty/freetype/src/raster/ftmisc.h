@@ -5,7 +5,7 @@
  *   Miscellaneous macros for stand-alone rasterizer (specification
  *   only).
  *
- * Copyright (C) 2005-2023 by
+ * Copyright (C) 2005-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used
@@ -90,27 +90,6 @@
   typedef int64_t  FT_Int64;
 
 #endif
-
-
-  static FT_Long
-  FT_MulDiv( FT_Long  a,
-             FT_Long  b,
-             FT_Long  c )
-  {
-    FT_Int   s;
-    FT_Long  d;
-
-
-    s = 1;
-    if ( a < 0 ) { a = -a; s = -1; }
-    if ( b < 0 ) { b = -b; s = -s; }
-    if ( c < 0 ) { c = -c; s = -s; }
-
-    d = (FT_Long)( c > 0 ? ( (FT_Int64)a * b + ( c >> 1 ) ) / c
-                         : 0x7FFFFFFFL );
-
-    return ( s > 0 ) ? d : -d;
-  }
 
 
   static FT_Long

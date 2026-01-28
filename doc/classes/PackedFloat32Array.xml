@@ -6,6 +6,7 @@
 	<description>
 		An array specifically designed to hold 32-bit floating-point values (float). Packs data tightly, so it saves memory for large array sizes.
 		If you need to pack 64-bit floats tightly, see [PackedFloat64Array].
+		[b]Note:[/b] Packed arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate]. This is [i]not[/i] the case for built-in properties and methods. In these cases the returned packed array is a copy, and changing it will [i]not[/i] affect the original value. To update a built-in property of this type, modify the returned array and then assign it to the property again.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -46,7 +47,7 @@
 				Appends a [PackedFloat32Array] at the end of this array.
 			</description>
 		</method>
-		<method name="bsearch">
+		<method name="bsearch" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="value" type="float" />
 			<param index="1" name="before" type="bool" default="true" />
@@ -70,10 +71,18 @@
 				[b]Note:[/b] [constant @GDScript.NAN] doesn't behave the same as other numbers. Therefore, the results from this method may not be accurate if NaNs are included.
 			</description>
 		</method>
-		<method name="duplicate">
+		<method name="duplicate" qualifiers="const">
 			<return type="PackedFloat32Array" />
 			<description>
 				Creates a copy of the array, and returns it.
+			</description>
+		</method>
+		<method name="erase">
+			<return type="bool" />
+			<param index="0" name="value" type="float" />
+			<description>
+				Removes the first occurrence of a value from the array and returns [code]true[/code]. If the value does not exist in the array, nothing happens and [code]false[/code] is returned. To remove an element by index, use [method remove_at] instead.
+				[b]Note:[/b] [constant @GDScript.NAN] doesn't behave the same as other numbers. Therefore, the results from this method may not be accurate if NaNs are included.
 			</description>
 		</method>
 		<method name="fill">
@@ -90,6 +99,14 @@
 			<description>
 				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
 				[b]Note:[/b] [constant @GDScript.NAN] doesn't behave the same as other numbers. Therefore, the results from this method may not be accurate if NaNs are included.
+			</description>
+		</method>
+		<method name="get" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the 32-bit float at the given [param index] in the array. If [param index] is out-of-bounds or negative, this method fails and returns [code]0.0[/code].
+				This method is similar (but not identical) to the [code][][/code] operator. Most notably, when this method fails, it doesn't pause project execution if run from the editor.
 			</description>
 		</method>
 		<method name="has" qualifiers="const">
@@ -132,7 +149,8 @@
 			<return type="int" />
 			<param index="0" name="new_size" type="int" />
 			<description>
-				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size.
+				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size. Calling [method resize] once and assigning the new values is faster than adding new elements one by one.
+				Returns [constant OK] on success, or one of the following [enum Error] constants if this method fails: [constant ERR_INVALID_PARAMETER] if the size is negative, or [constant ERR_OUT_OF_MEMORY] if allocations fail. Use [method size] to find the actual size of the array after resize.
 			</description>
 		</method>
 		<method name="reverse">
@@ -184,7 +202,7 @@
 		<method name="to_byte_array" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Returns a copy of the data converted to a [PackedByteArray], where each element have been encoded as 4 bytes.
+				Returns a copy of the data converted to a [PackedByteArray], where each element has been encoded as 4 bytes.
 				The size of the new array will be [code]float32_array.size() * 4[/code].
 			</description>
 		</method>

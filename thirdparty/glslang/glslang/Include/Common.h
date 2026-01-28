@@ -159,6 +159,11 @@ template<class T> inline T* NewPoolObject(T, int instances)
     return new(GetThreadPoolAllocator().allocate(instances * sizeof(T))) T[instances];
 }
 
+inline bool StartsWith(TString const &str, const char *prefix)
+{
+    return str.compare(0, strlen(prefix), prefix) == 0;
+}
+
 //
 // Pool allocator versions of vectors, lists, and maps
 //
@@ -290,34 +295,6 @@ template <class T> int IntLog2(T n)
       result++;
     }
     return result;
-}
-
-inline bool IsInfinity(double x) {
-#ifdef _MSC_VER
-    switch (_fpclass(x)) {
-    case _FPCLASS_NINF:
-    case _FPCLASS_PINF:
-        return true;
-    default:
-        return false;
-    }
-#else
-    return std::isinf(x);
-#endif
-}
-
-inline bool IsNan(double x) {
-#ifdef _MSC_VER
-    switch (_fpclass(x)) {
-    case _FPCLASS_SNAN:
-    case _FPCLASS_QNAN:
-        return true;
-    default:
-        return false;
-    }
-#else
-  return std::isnan(x);
-#endif
 }
 
 } // end namespace glslang

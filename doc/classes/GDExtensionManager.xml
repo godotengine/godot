@@ -1,65 +1,104 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GDExtensionManager" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Provides access to GDExtension functionality.
 	</brief_description>
 	<description>
+		The GDExtensionManager loads, initializes, and keeps track of all available [GDExtension] libraries in the project.
+		[b]Note:[/b] Do not worry about GDExtension unless you know what you are doing.
 	</description>
 	<tutorials>
+		<link title="GDExtension overview">$DOCS_URL/tutorials/scripting/gdextension/what_is_gdextension.html</link>
+		<link title="GDExtension example in C++">$DOCS_URL/tutorials/scripting/cpp/gdextension_cpp_example.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_extension">
 			<return type="GDExtension" />
 			<param index="0" name="path" type="String" />
 			<description>
+				Returns the [GDExtension] at the given file [param path], or [code]null[/code] if it has not been loaded or does not exist.
 			</description>
 		</method>
 		<method name="get_loaded_extensions" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
+				Returns the file paths of all currently loaded extensions.
 			</description>
 		</method>
 		<method name="is_extension_loaded" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="path" type="String" />
 			<description>
+				Returns [code]true[/code] if the extension at the given file [param path] has already been loaded successfully. See also [method get_loaded_extensions].
 			</description>
 		</method>
 		<method name="load_extension">
 			<return type="int" enum="GDExtensionManager.LoadStatus" />
 			<param index="0" name="path" type="String" />
 			<description>
+				Loads an extension by absolute file path. The [param path] needs to point to a valid [GDExtension]. Returns [constant LOAD_STATUS_OK] if successful.
+			</description>
+		</method>
+		<method name="load_extension_from_function">
+			<return type="int" enum="GDExtensionManager.LoadStatus" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="init_func" type="const GDExtensionInitializationFunction*" />
+			<description>
+				Loads the extension already in address space via the given path and initialization function. The [param path] needs to be unique and start with [code]"libgodot://"[/code]. Returns [constant LOAD_STATUS_OK] if successful.
 			</description>
 		</method>
 		<method name="reload_extension">
 			<return type="int" enum="GDExtensionManager.LoadStatus" />
 			<param index="0" name="path" type="String" />
 			<description>
+				Reloads the extension at the given file path. The [param path] needs to point to a valid [GDExtension], otherwise this method may return either [constant LOAD_STATUS_NOT_LOADED] or [constant LOAD_STATUS_FAILED].
+				[b]Note:[/b] You can only reload extensions in the editor. In release builds, this method always fails and returns [constant LOAD_STATUS_FAILED].
 			</description>
 		</method>
 		<method name="unload_extension">
 			<return type="int" enum="GDExtensionManager.LoadStatus" />
 			<param index="0" name="path" type="String" />
 			<description>
+				Unloads an extension by file path. The [param path] needs to point to an already loaded [GDExtension], otherwise this method returns [constant LOAD_STATUS_NOT_LOADED].
 			</description>
 		</method>
 	</methods>
 	<signals>
+		<signal name="extension_loaded">
+			<param index="0" name="extension" type="GDExtension" />
+			<description>
+				Emitted after the editor has finished loading a new extension.
+				[b]Note:[/b] This signal is only emitted in editor builds.
+			</description>
+		</signal>
+		<signal name="extension_unloading">
+			<param index="0" name="extension" type="GDExtension" />
+			<description>
+				Emitted before the editor starts unloading an extension.
+				[b]Note:[/b] This signal is only emitted in editor builds.
+			</description>
+		</signal>
 		<signal name="extensions_reloaded">
 			<description>
-				Emitted after the editor has automatically reloaded any extensions.
+				Emitted after the editor has finished reloading one or more extensions.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="LOAD_STATUS_OK" value="0" enum="LoadStatus">
+			The extension has loaded successfully.
 		</constant>
 		<constant name="LOAD_STATUS_FAILED" value="1" enum="LoadStatus">
+			The extension has failed to load, possibly because it does not exist or has missing dependencies.
 		</constant>
 		<constant name="LOAD_STATUS_ALREADY_LOADED" value="2" enum="LoadStatus">
+			The extension has already been loaded.
 		</constant>
 		<constant name="LOAD_STATUS_NOT_LOADED" value="3" enum="LoadStatus">
+			The extension has not been loaded.
 		</constant>
 		<constant name="LOAD_STATUS_NEEDS_RESTART" value="4" enum="LoadStatus">
+			The extension requires the application to restart to fully load.
 		</constant>
 	</constants>
 </class>

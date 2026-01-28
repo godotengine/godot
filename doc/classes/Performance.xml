@@ -18,52 +18,53 @@
 			<param index="0" name="id" type="StringName" />
 			<param index="1" name="callable" type="Callable" />
 			<param index="2" name="arguments" type="Array" default="[]" />
+			<param index="3" name="type" type="int" enum="Performance.MonitorType" default="0" />
 			<description>
 				Adds a custom monitor with the name [param id]. You can specify the category of the monitor using slash delimiters in [param id] (for example: [code]"Game/NumberOfNPCs"[/code]). If there is more than one slash delimiter, then the default category is used. The default category is [code]"Custom"[/code]. Prints an error if given [param id] is already present.
 				[codeblocks]
 				[gdscript]
 				func _ready():
-				    var monitor_value = Callable(self, "get_monitor_value")
+					var monitor_value = Callable(self, "get_monitor_value")
 
-				    # Adds monitor with name "MyName" to category "MyCategory".
-				    Performance.add_custom_monitor("MyCategory/MyMonitor", monitor_value)
+					# Adds monitor with name "MyName" to category "MyCategory".
+					Performance.add_custom_monitor("MyCategory/MyMonitor", monitor_value)
 
-				    # Adds monitor with name "MyName" to category "Custom".
-				    # Note: "MyCategory/MyMonitor" and "MyMonitor" have same name but different IDs, so the code is valid.
-				    Performance.add_custom_monitor("MyMonitor", monitor_value)
+					# Adds monitor with name "MyName" to category "Custom".
+					# Note: "MyCategory/MyMonitor" and "MyMonitor" have same name but different IDs, so the code is valid.
+					Performance.add_custom_monitor("MyMonitor", monitor_value)
 
-				    # Adds monitor with name "MyName" to category "Custom".
-				    # Note: "MyMonitor" and "Custom/MyMonitor" have same name and same category but different IDs, so the code is valid.
-				    Performance.add_custom_monitor("Custom/MyMonitor", monitor_value)
+					# Adds monitor with name "MyName" to category "Custom".
+					# Note: "MyMonitor" and "Custom/MyMonitor" have same name and same category but different IDs, so the code is valid.
+					Performance.add_custom_monitor("Custom/MyMonitor", monitor_value)
 
-				    # Adds monitor with name "MyCategoryOne/MyCategoryTwo/MyMonitor" to category "Custom".
-				    Performance.add_custom_monitor("MyCategoryOne/MyCategoryTwo/MyMonitor", monitor_value)
+					# Adds monitor with name "MyCategoryOne/MyCategoryTwo/MyMonitor" to category "Custom".
+					Performance.add_custom_monitor("MyCategoryOne/MyCategoryTwo/MyMonitor", monitor_value)
 
 				func get_monitor_value():
-				    return randi() % 25
+					return randi() % 25
 				[/gdscript]
 				[csharp]
 				public override void _Ready()
 				{
-				    var monitorValue = new Callable(this, MethodName.GetMonitorValue);
+					var monitorValue = new Callable(this, MethodName.GetMonitorValue);
 
-				    // Adds monitor with name "MyName" to category "MyCategory".
-				    Performance.AddCustomMonitor("MyCategory/MyMonitor", monitorValue);
-				    // Adds monitor with name "MyName" to category "Custom".
-				    // Note: "MyCategory/MyMonitor" and "MyMonitor" have same name but different ids so the code is valid.
-				    Performance.AddCustomMonitor("MyMonitor", monitorValue);
+					// Adds monitor with name "MyName" to category "MyCategory".
+					Performance.AddCustomMonitor("MyCategory/MyMonitor", monitorValue);
+					// Adds monitor with name "MyName" to category "Custom".
+					// Note: "MyCategory/MyMonitor" and "MyMonitor" have same name but different ids so the code is valid.
+					Performance.AddCustomMonitor("MyMonitor", monitorValue);
 
-				    // Adds monitor with name "MyName" to category "Custom".
-				    // Note: "MyMonitor" and "Custom/MyMonitor" have same name and same category but different ids so the code is valid.
-				    Performance.AddCustomMonitor("Custom/MyMonitor", monitorValue);
+					// Adds monitor with name "MyName" to category "Custom".
+					// Note: "MyMonitor" and "Custom/MyMonitor" have same name and same category but different ids so the code is valid.
+					Performance.AddCustomMonitor("Custom/MyMonitor", monitorValue);
 
-				    // Adds monitor with name "MyCategoryOne/MyCategoryTwo/MyMonitor" to category "Custom".
-				    Performance.AddCustomMonitor("MyCategoryOne/MyCategoryTwo/MyMonitor", monitorValue);
+					// Adds monitor with name "MyCategoryOne/MyCategoryTwo/MyMonitor" to category "Custom".
+					Performance.AddCustomMonitor("MyCategoryOne/MyCategoryTwo/MyMonitor", monitorValue);
 				}
 
 				public int GetMonitorValue()
 				{
-				    return GD.Randi() % 25;
+					return GD.Randi() % 25;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -82,6 +83,12 @@
 			<return type="StringName[]" />
 			<description>
 				Returns the names of active custom monitors in an [Array].
+			</description>
+		</method>
+		<method name="get_custom_monitor_types">
+			<return type="PackedInt32Array" />
+			<description>
+				Returns the [enum MonitorType] values of active custom monitors in an [Array].
 			</description>
 		</method>
 		<method name="get_monitor" qualifiers="const">
@@ -154,6 +161,7 @@
 		</constant>
 		<constant name="OBJECT_ORPHAN_NODE_COUNT" value="10" enum="Monitor">
 			Number of orphan nodes, i.e. nodes which are not parented to a node of the scene tree. [i]Lower is better.[/i]
+			[b]Note:[/b] This is only available in debug mode and will always return [code]0[/code] when used in a project exported in release mode.
 		</constant>
 		<constant name="RENDER_TOTAL_OBJECTS_IN_FRAME" value="11" enum="Monitor">
 			The total number of objects in the last rendered frame. This metric doesn't include culled objects (either via hiding nodes, frustum culling or occlusion culling). [i]Lower is better.[/i]
@@ -195,34 +203,124 @@
 			Output latency of the [AudioServer]. Equivalent to calling [method AudioServer.get_output_latency], it is not recommended to call this every frame.
 		</constant>
 		<constant name="NAVIGATION_ACTIVE_MAPS" value="24" enum="Monitor">
-			Number of active navigation maps in the [NavigationServer3D]. This also includes the two empty default navigation maps created by World2D and World3D.
+			Number of active navigation maps in [NavigationServer2D] and [NavigationServer3D]. This also includes the empty default navigation maps created by [World2D] and [World3D] instances.
 		</constant>
 		<constant name="NAVIGATION_REGION_COUNT" value="25" enum="Monitor">
-			Number of active navigation regions in the [NavigationServer3D].
+			Number of active navigation regions in [NavigationServer2D] and [NavigationServer3D].
 		</constant>
 		<constant name="NAVIGATION_AGENT_COUNT" value="26" enum="Monitor">
-			Number of active navigation agents processing avoidance in the [NavigationServer3D].
+			Number of active navigation agents processing avoidance in [NavigationServer2D] and [NavigationServer3D].
 		</constant>
 		<constant name="NAVIGATION_LINK_COUNT" value="27" enum="Monitor">
-			Number of active navigation links in the [NavigationServer3D].
+			Number of active navigation links in [NavigationServer2D] and [NavigationServer3D].
 		</constant>
 		<constant name="NAVIGATION_POLYGON_COUNT" value="28" enum="Monitor">
-			Number of navigation mesh polygons in the [NavigationServer3D].
+			Number of navigation mesh polygons in [NavigationServer2D] and [NavigationServer3D].
 		</constant>
 		<constant name="NAVIGATION_EDGE_COUNT" value="29" enum="Monitor">
-			Number of navigation mesh polygon edges in the [NavigationServer3D].
+			Number of navigation mesh polygon edges in [NavigationServer2D] and [NavigationServer3D].
 		</constant>
 		<constant name="NAVIGATION_EDGE_MERGE_COUNT" value="30" enum="Monitor">
-			Number of navigation mesh polygon edges that were merged due to edge key overlap in the [NavigationServer3D].
+			Number of navigation mesh polygon edges that were merged due to edge key overlap in [NavigationServer2D] and [NavigationServer3D].
 		</constant>
 		<constant name="NAVIGATION_EDGE_CONNECTION_COUNT" value="31" enum="Monitor">
-			Number of polygon edges that are considered connected by edge proximity [NavigationServer3D].
+			Number of polygon edges that are considered connected by edge proximity [NavigationServer2D] and [NavigationServer3D].
 		</constant>
 		<constant name="NAVIGATION_EDGE_FREE_COUNT" value="32" enum="Monitor">
+			Number of navigation mesh polygon edges that could not be merged in [NavigationServer2D] and [NavigationServer3D]. The edges still may be connected by edge proximity or with links.
+		</constant>
+		<constant name="NAVIGATION_OBSTACLE_COUNT" value="33" enum="Monitor">
+			Number of active navigation obstacles in the [NavigationServer2D] and [NavigationServer3D].
+		</constant>
+		<constant name="PIPELINE_COMPILATIONS_CANVAS" value="34" enum="Monitor">
+			Number of pipeline compilations that were triggered by the 2D canvas renderer.
+		</constant>
+		<constant name="PIPELINE_COMPILATIONS_MESH" value="35" enum="Monitor">
+			Number of pipeline compilations that were triggered by loading meshes. These compilations will show up as longer loading times the first time a user runs the game and the pipeline is required.
+		</constant>
+		<constant name="PIPELINE_COMPILATIONS_SURFACE" value="36" enum="Monitor">
+			Number of pipeline compilations that were triggered by building the surface cache before rendering the scene. These compilations will show up as a stutter when loading a scene the first time a user runs the game and the pipeline is required.
+		</constant>
+		<constant name="PIPELINE_COMPILATIONS_DRAW" value="37" enum="Monitor">
+			Number of pipeline compilations that were triggered while drawing the scene. These compilations will show up as stutters during gameplay the first time a user runs the game and the pipeline is required.
+		</constant>
+		<constant name="PIPELINE_COMPILATIONS_SPECIALIZATION" value="38" enum="Monitor">
+			Number of pipeline compilations that were triggered to optimize the current scene. These compilations are done in the background and should not cause any stutters whatsoever.
+		</constant>
+		<constant name="NAVIGATION_2D_ACTIVE_MAPS" value="39" enum="Monitor">
+			Number of active navigation maps in the [NavigationServer2D]. This also includes the empty default navigation maps created by [World2D] instances.
+		</constant>
+		<constant name="NAVIGATION_2D_REGION_COUNT" value="40" enum="Monitor">
+			Number of active navigation regions in the [NavigationServer2D].
+		</constant>
+		<constant name="NAVIGATION_2D_AGENT_COUNT" value="41" enum="Monitor">
+			Number of active navigation agents processing avoidance in the [NavigationServer2D].
+		</constant>
+		<constant name="NAVIGATION_2D_LINK_COUNT" value="42" enum="Monitor">
+			Number of active navigation links in the [NavigationServer2D].
+		</constant>
+		<constant name="NAVIGATION_2D_POLYGON_COUNT" value="43" enum="Monitor">
+			Number of navigation mesh polygons in the [NavigationServer2D].
+		</constant>
+		<constant name="NAVIGATION_2D_EDGE_COUNT" value="44" enum="Monitor">
+			Number of navigation mesh polygon edges in the [NavigationServer2D].
+		</constant>
+		<constant name="NAVIGATION_2D_EDGE_MERGE_COUNT" value="45" enum="Monitor">
+			Number of navigation mesh polygon edges that were merged due to edge key overlap in the [NavigationServer2D].
+		</constant>
+		<constant name="NAVIGATION_2D_EDGE_CONNECTION_COUNT" value="46" enum="Monitor">
+			Number of polygon edges that are considered connected by edge proximity [NavigationServer2D].
+		</constant>
+		<constant name="NAVIGATION_2D_EDGE_FREE_COUNT" value="47" enum="Monitor">
+			Number of navigation mesh polygon edges that could not be merged in the [NavigationServer2D]. The edges still may be connected by edge proximity or with links.
+		</constant>
+		<constant name="NAVIGATION_2D_OBSTACLE_COUNT" value="48" enum="Monitor">
+			Number of active navigation obstacles in the [NavigationServer2D].
+		</constant>
+		<constant name="NAVIGATION_3D_ACTIVE_MAPS" value="49" enum="Monitor">
+			Number of active navigation maps in the [NavigationServer3D]. This also includes the empty default navigation maps created by [World3D] instances.
+		</constant>
+		<constant name="NAVIGATION_3D_REGION_COUNT" value="50" enum="Monitor">
+			Number of active navigation regions in the [NavigationServer3D].
+		</constant>
+		<constant name="NAVIGATION_3D_AGENT_COUNT" value="51" enum="Monitor">
+			Number of active navigation agents processing avoidance in the [NavigationServer3D].
+		</constant>
+		<constant name="NAVIGATION_3D_LINK_COUNT" value="52" enum="Monitor">
+			Number of active navigation links in the [NavigationServer3D].
+		</constant>
+		<constant name="NAVIGATION_3D_POLYGON_COUNT" value="53" enum="Monitor">
+			Number of navigation mesh polygons in the [NavigationServer3D].
+		</constant>
+		<constant name="NAVIGATION_3D_EDGE_COUNT" value="54" enum="Monitor">
+			Number of navigation mesh polygon edges in the [NavigationServer3D].
+		</constant>
+		<constant name="NAVIGATION_3D_EDGE_MERGE_COUNT" value="55" enum="Monitor">
+			Number of navigation mesh polygon edges that were merged due to edge key overlap in the [NavigationServer3D].
+		</constant>
+		<constant name="NAVIGATION_3D_EDGE_CONNECTION_COUNT" value="56" enum="Monitor">
+			Number of polygon edges that are considered connected by edge proximity [NavigationServer3D].
+		</constant>
+		<constant name="NAVIGATION_3D_EDGE_FREE_COUNT" value="57" enum="Monitor">
 			Number of navigation mesh polygon edges that could not be merged in the [NavigationServer3D]. The edges still may be connected by edge proximity or with links.
 		</constant>
-		<constant name="MONITOR_MAX" value="33" enum="Monitor">
+		<constant name="NAVIGATION_3D_OBSTACLE_COUNT" value="58" enum="Monitor">
+			Number of active navigation obstacles in the [NavigationServer3D].
+		</constant>
+		<constant name="MONITOR_MAX" value="59" enum="Monitor">
 			Represents the size of the [enum Monitor] enum.
+		</constant>
+		<constant name="MONITOR_TYPE_QUANTITY" value="0" enum="MonitorType">
+			Monitor output is formatted as an integer value.
+		</constant>
+		<constant name="MONITOR_TYPE_MEMORY" value="1" enum="MonitorType">
+			Monitor output is formatted as computer memory. Submitted values should represent a number of bytes.
+		</constant>
+		<constant name="MONITOR_TYPE_TIME" value="2" enum="MonitorType">
+			Monitor output is formatted as time in milliseconds. Submitted values should represent a time in seconds (not milliseconds).
+		</constant>
+		<constant name="MONITOR_TYPE_PERCENTAGE" value="3" enum="MonitorType">
+			Monitor output is formatted as a percentage. Submitted values should represent a fractional value rather than the percentage directly, e.g. [code]0.5[/code] for [code]50.00%[/code].
 		</constant>
 	</constants>
 </class>

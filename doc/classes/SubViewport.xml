@@ -6,16 +6,17 @@
 	<description>
 		[SubViewport] Isolates a rectangular region of a scene to be displayed independently. This can be used, for example, to display UI in 3D space.
 		[b]Note:[/b] [SubViewport] is a [Viewport] that isn't a [Window], i.e. it doesn't draw anything by itself. To display anything, [SubViewport] must have a non-zero size and be either put inside a [SubViewportContainer] or assigned to a [ViewportTexture].
+		[b]Note:[/b] [InputEvent]s are not passed to a standalone [SubViewport] by default. To ensure [InputEvent] propagation, a [SubViewport] can be placed inside of a [SubViewportContainer].
 	</description>
 	<tutorials>
 		<link title="Using Viewports">$DOCS_URL/tutorials/rendering/viewports.html</link>
 		<link title="Viewport and canvas transforms">$DOCS_URL/tutorials/2d/2d_transforms.html</link>
-		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>
-		<link title="3D in 2D Demo">https://godotengine.org/asset-library/asset/128</link>
-		<link title="2D in 3D Demo">https://godotengine.org/asset-library/asset/129</link>
-		<link title="Screen Capture Demo">https://godotengine.org/asset-library/asset/130</link>
-		<link title="Dynamic Split Screen Demo">https://godotengine.org/asset-library/asset/541</link>
-		<link title="3D Viewport Scaling Demo">https://godotengine.org/asset-library/asset/586</link>
+		<link title="GUI in 3D Viewport Demo">https://godotengine.org/asset-library/asset/2807</link>
+		<link title="3D in 2D Viewport Demo">https://godotengine.org/asset-library/asset/2804</link>
+		<link title="2D in 3D Viewport Demo">https://godotengine.org/asset-library/asset/2803</link>
+		<link title="Screen Capture Demo">https://godotengine.org/asset-library/asset/2808</link>
+		<link title="Dynamic Split Screen Demo">https://godotengine.org/asset-library/asset/2806</link>
+		<link title="3D Resolution Scaling Demo">https://godotengine.org/asset-library/asset/2805</link>
 	</tutorials>
 	<members>
 		<member name="render_target_clear_mode" type="int" setter="set_clear_mode" getter="get_clear_mode" enum="SubViewport.ClearMode" default="0">

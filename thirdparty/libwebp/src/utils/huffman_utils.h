@@ -15,6 +15,7 @@
 #define WEBP_UTILS_HUFFMAN_UTILS_H_
 
 #include <assert.h>
+
 #include "src/webp/format_constants.h"
 #include "src/webp/types.h"
 
@@ -63,7 +64,8 @@ typedef struct HuffmanTables {
 
 // Allocates a HuffmanTables with 'size' contiguous HuffmanCodes. Returns 0 on
 // memory allocation error, 1 otherwise.
-int VP8LHuffmanTablesAllocate(int size, HuffmanTables* huffman_tables);
+WEBP_NODISCARD int VP8LHuffmanTablesAllocate(int size,
+                                             HuffmanTables* huffman_tables);
 void VP8LHuffmanTablesDeallocate(HuffmanTables* const huffman_tables);
 
 #define HUFFMAN_PACKED_BITS 6
@@ -91,7 +93,7 @@ struct HTreeGroup {
 };
 
 // Creates the instance of HTreeGroup with specified number of tree-groups.
-HTreeGroup* VP8LHtreeGroupsNew(int num_htree_groups);
+WEBP_NODISCARD HTreeGroup* VP8LHtreeGroupsNew(int num_htree_groups);
 
 // Releases the memory allocated for HTreeGroup.
 void VP8LHtreeGroupsFree(HTreeGroup* const htree_groups);
@@ -101,8 +103,10 @@ void VP8LHtreeGroupsFree(HTreeGroup* const htree_groups);
 // the huffman table.
 // Returns built table size or 0 in case of error (invalid tree or
 // memory error).
-int VP8LBuildHuffmanTable(HuffmanTables* const root_table, int root_bits,
-                          const int code_lengths[], int code_lengths_size);
+WEBP_NODISCARD int VP8LBuildHuffmanTable(HuffmanTables* const root_table,
+                                         int root_bits,
+                                         const int code_lengths[],
+                                         int code_lengths_size);
 
 #ifdef __cplusplus
 }    // extern "C"

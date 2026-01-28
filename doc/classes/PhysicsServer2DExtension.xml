@@ -10,301 +10,344 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_area_add_shape" qualifiers="virtual">
+		<method name="_area_add_shape" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="shape" type="RID" />
 			<param index="2" name="transform" type="Transform2D" />
 			<param index="3" name="disabled" type="bool" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_add_shape].
 			</description>
 		</method>
-		<method name="_area_attach_canvas_instance_id" qualifiers="virtual">
+		<method name="_area_attach_canvas_instance_id" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="id" type="int" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_attach_canvas_instance_id].
 			</description>
 		</method>
-		<method name="_area_attach_object_instance_id" qualifiers="virtual">
+		<method name="_area_attach_object_instance_id" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="id" type="int" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_attach_object_instance_id].
 			</description>
 		</method>
-		<method name="_area_clear_shapes" qualifiers="virtual">
+		<method name="_area_clear_shapes" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_clear_shapes].
 			</description>
 		</method>
-		<method name="_area_create" qualifiers="virtual">
+		<method name="_area_create" qualifiers="virtual required">
 			<return type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_create].
 			</description>
 		</method>
-		<method name="_area_get_canvas_instance_id" qualifiers="virtual const">
+		<method name="_area_get_canvas_instance_id" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="area" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_get_canvas_instance_id].
 			</description>
 		</method>
-		<method name="_area_get_collision_layer" qualifiers="virtual const">
+		<method name="_area_get_collision_layer" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="area" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_get_collision_layer].
 			</description>
 		</method>
-		<method name="_area_get_collision_mask" qualifiers="virtual const">
+		<method name="_area_get_collision_mask" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="area" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_get_collision_mask].
 			</description>
 		</method>
-		<method name="_area_get_object_instance_id" qualifiers="virtual const">
+		<method name="_area_get_object_instance_id" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="area" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_get_object_instance_id].
 			</description>
 		</method>
-		<method name="_area_get_param" qualifiers="virtual const">
+		<method name="_area_get_param" qualifiers="virtual required const">
 			<return type="Variant" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.AreaParameter" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_get_param].
 			</description>
 		</method>
-		<method name="_area_get_shape" qualifiers="virtual const">
+		<method name="_area_get_shape" qualifiers="virtual required const">
 			<return type="RID" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_get_shape].
 			</description>
 		</method>
-		<method name="_area_get_shape_count" qualifiers="virtual const">
+		<method name="_area_get_shape_count" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="area" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_get_shape_count].
 			</description>
 		</method>
-		<method name="_area_get_shape_transform" qualifiers="virtual const">
+		<method name="_area_get_shape_transform" qualifiers="virtual required const">
 			<return type="Transform2D" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_get_shape_transform].
 			</description>
 		</method>
-		<method name="_area_get_space" qualifiers="virtual const">
+		<method name="_area_get_space" qualifiers="virtual required const">
 			<return type="RID" />
 			<param index="0" name="area" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_get_space].
 			</description>
 		</method>
-		<method name="_area_get_transform" qualifiers="virtual const">
+		<method name="_area_get_transform" qualifiers="virtual required const">
 			<return type="Transform2D" />
 			<param index="0" name="area" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_get_transform].
 			</description>
 		</method>
-		<method name="_area_remove_shape" qualifiers="virtual">
+		<method name="_area_remove_shape" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_remove_shape].
 			</description>
 		</method>
-		<method name="_area_set_area_monitor_callback" qualifiers="virtual">
+		<method name="_area_set_area_monitor_callback" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="callback" type="Callable" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_set_area_monitor_callback].
 			</description>
 		</method>
-		<method name="_area_set_collision_layer" qualifiers="virtual">
+		<method name="_area_set_collision_layer" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="layer" type="int" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_set_collision_layer].
 			</description>
 		</method>
-		<method name="_area_set_collision_mask" qualifiers="virtual">
+		<method name="_area_set_collision_mask" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="mask" type="int" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_set_collision_mask].
 			</description>
 		</method>
-		<method name="_area_set_monitor_callback" qualifiers="virtual">
+		<method name="_area_set_monitor_callback" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="callback" type="Callable" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_set_monitor_callback].
 			</description>
 		</method>
-		<method name="_area_set_monitorable" qualifiers="virtual">
+		<method name="_area_set_monitorable" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="monitorable" type="bool" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_set_monitorable].
 			</description>
 		</method>
-		<method name="_area_set_param" qualifiers="virtual">
+		<method name="_area_set_param" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.AreaParameter" />
 			<param index="2" name="value" type="Variant" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_set_param].
 			</description>
 		</method>
-		<method name="_area_set_pickable" qualifiers="virtual">
+		<method name="_area_set_pickable" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="pickable" type="bool" />
 			<description>
+				If set to [code]true[/code], allows the area with the given [RID] to detect mouse inputs when the mouse cursor is hovering on it.
+				Overridable version of [PhysicsServer2D]'s internal [code]area_set_pickable[/code] method. Corresponds to [member CollisionObject2D.input_pickable].
 			</description>
 		</method>
-		<method name="_area_set_shape" qualifiers="virtual">
+		<method name="_area_set_shape" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<param index="2" name="shape" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_set_shape].
 			</description>
 		</method>
-		<method name="_area_set_shape_disabled" qualifiers="virtual">
+		<method name="_area_set_shape_disabled" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<param index="2" name="disabled" type="bool" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_set_shape_disabled].
 			</description>
 		</method>
-		<method name="_area_set_shape_transform" qualifiers="virtual">
+		<method name="_area_set_shape_transform" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<param index="2" name="transform" type="Transform2D" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_set_shape_transform].
 			</description>
 		</method>
-		<method name="_area_set_space" qualifiers="virtual">
+		<method name="_area_set_space" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="space" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_set_space].
 			</description>
 		</method>
-		<method name="_area_set_transform" qualifiers="virtual">
+		<method name="_area_set_transform" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
+				Overridable version of [method PhysicsServer2D.area_set_transform].
 			</description>
 		</method>
-		<method name="_body_add_collision_exception" qualifiers="virtual">
+		<method name="_body_add_collision_exception" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="excepted_body" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_add_collision_exception].
 			</description>
 		</method>
-		<method name="_body_add_constant_central_force" qualifiers="virtual">
+		<method name="_body_add_constant_central_force" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="force" type="Vector2" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_add_constant_central_force].
 			</description>
 		</method>
-		<method name="_body_add_constant_force" qualifiers="virtual">
+		<method name="_body_add_constant_force" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="force" type="Vector2" />
 			<param index="2" name="position" type="Vector2" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_add_constant_force].
 			</description>
 		</method>
-		<method name="_body_add_constant_torque" qualifiers="virtual">
+		<method name="_body_add_constant_torque" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="torque" type="float" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_add_constant_torque].
 			</description>
 		</method>
-		<method name="_body_add_shape" qualifiers="virtual">
+		<method name="_body_add_shape" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape" type="RID" />
 			<param index="2" name="transform" type="Transform2D" />
 			<param index="3" name="disabled" type="bool" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_add_shape].
 			</description>
 		</method>
-		<method name="_body_apply_central_force" qualifiers="virtual">
+		<method name="_body_apply_central_force" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="force" type="Vector2" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_apply_central_force].
 			</description>
 		</method>
-		<method name="_body_apply_central_impulse" qualifiers="virtual">
+		<method name="_body_apply_central_impulse" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="impulse" type="Vector2" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_apply_central_impulse].
 			</description>
 		</method>
-		<method name="_body_apply_force" qualifiers="virtual">
+		<method name="_body_apply_force" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="force" type="Vector2" />
 			<param index="2" name="position" type="Vector2" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_apply_force].
 			</description>
 		</method>
-		<method name="_body_apply_impulse" qualifiers="virtual">
+		<method name="_body_apply_impulse" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="impulse" type="Vector2" />
 			<param index="2" name="position" type="Vector2" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_apply_impulse].
 			</description>
 		</method>
-		<method name="_body_apply_torque" qualifiers="virtual">
+		<method name="_body_apply_torque" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="torque" type="float" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_apply_torque].
 			</description>
 		</method>
-		<method name="_body_apply_torque_impulse" qualifiers="virtual">
+		<method name="_body_apply_torque_impulse" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="impulse" type="float" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_apply_torque_impulse].
 			</description>
 		</method>
-		<method name="_body_attach_canvas_instance_id" qualifiers="virtual">
+		<method name="_body_attach_canvas_instance_id" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="id" type="int" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_attach_canvas_instance_id].
 			</description>
 		</method>
-		<method name="_body_attach_object_instance_id" qualifiers="virtual">
+		<method name="_body_attach_object_instance_id" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="id" type="int" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_attach_object_instance_id].
 			</description>
 		</method>
-		<method name="_body_clear_shapes" qualifiers="virtual">
+		<method name="_body_clear_shapes" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_clear_shapes].
 			</description>
 		</method>
-		<method name="_body_collide_shape" qualifiers="virtual">
+		<method name="_body_collide_shape" qualifiers="virtual required">
 			<return type="bool" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="body_shape" type="int" />
@@ -315,313 +358,365 @@
 			<param index="6" name="result_max" type="int" />
 			<param index="7" name="result_count" type="int32_t*" />
 			<description>
+				Given a [param body], a [param shape], and their respective parameters, this method should return [code]true[/code] if a collision between the two would occur, with additional details passed in [param results].
+				Overridable version of [PhysicsServer2D]'s internal [code]shape_collide[/code] method. Corresponds to [method PhysicsDirectSpaceState2D.collide_shape].
 			</description>
 		</method>
-		<method name="_body_create" qualifiers="virtual">
+		<method name="_body_create" qualifiers="virtual required">
 			<return type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_create].
 			</description>
 		</method>
-		<method name="_body_get_canvas_instance_id" qualifiers="virtual const">
+		<method name="_body_get_canvas_instance_id" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_get_canvas_instance_id].
 			</description>
 		</method>
-		<method name="_body_get_collision_exceptions" qualifiers="virtual const">
+		<method name="_body_get_collision_exceptions" qualifiers="virtual required const">
 			<return type="RID[]" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Returns the [RID]s of all bodies added as collision exceptions for the given [param body]. See also [method _body_add_collision_exception] and [method _body_remove_collision_exception].
+				Overridable version of [PhysicsServer2D]'s internal [code]body_get_collision_exceptions[/code] method. Corresponds to [method PhysicsBody2D.get_collision_exceptions].
 			</description>
 		</method>
-		<method name="_body_get_collision_layer" qualifiers="virtual const">
+		<method name="_body_get_collision_layer" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_get_collision_layer].
 			</description>
 		</method>
-		<method name="_body_get_collision_mask" qualifiers="virtual const">
+		<method name="_body_get_collision_mask" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_get_collision_mask].
 			</description>
 		</method>
-		<method name="_body_get_collision_priority" qualifiers="virtual const">
+		<method name="_body_get_collision_priority" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_get_collision_priority].
 			</description>
 		</method>
-		<method name="_body_get_constant_force" qualifiers="virtual const">
+		<method name="_body_get_constant_force" qualifiers="virtual required const">
 			<return type="Vector2" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_get_constant_force].
 			</description>
 		</method>
-		<method name="_body_get_constant_torque" qualifiers="virtual const">
+		<method name="_body_get_constant_torque" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_get_constant_torque].
 			</description>
 		</method>
-		<method name="_body_get_contacts_reported_depth_threshold" qualifiers="virtual const">
+		<method name="_body_get_contacts_reported_depth_threshold" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Overridable version of [PhysicsServer2D]'s internal [code]body_get_contacts_reported_depth_threshold[/code] method.
+				[b]Note:[/b] This method is currently unused by Godot's default physics implementation.
 			</description>
 		</method>
-		<method name="_body_get_continuous_collision_detection_mode" qualifiers="virtual const">
+		<method name="_body_get_continuous_collision_detection_mode" qualifiers="virtual required const">
 			<return type="int" enum="PhysicsServer2D.CCDMode" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_get_continuous_collision_detection_mode].
 			</description>
 		</method>
-		<method name="_body_get_direct_state" qualifiers="virtual">
+		<method name="_body_get_direct_state" qualifiers="virtual required">
 			<return type="PhysicsDirectBodyState2D" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_get_direct_state].
 			</description>
 		</method>
-		<method name="_body_get_max_contacts_reported" qualifiers="virtual const">
+		<method name="_body_get_max_contacts_reported" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_get_max_contacts_reported].
 			</description>
 		</method>
-		<method name="_body_get_mode" qualifiers="virtual const">
+		<method name="_body_get_mode" qualifiers="virtual required const">
 			<return type="int" enum="PhysicsServer2D.BodyMode" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_get_mode].
 			</description>
 		</method>
-		<method name="_body_get_object_instance_id" qualifiers="virtual const">
+		<method name="_body_get_object_instance_id" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_get_object_instance_id].
 			</description>
 		</method>
-		<method name="_body_get_param" qualifiers="virtual const">
+		<method name="_body_get_param" qualifiers="virtual required const">
 			<return type="Variant" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.BodyParameter" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_get_param].
 			</description>
 		</method>
-		<method name="_body_get_shape" qualifiers="virtual const">
+		<method name="_body_get_shape" qualifiers="virtual required const">
 			<return type="RID" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_get_shape].
 			</description>
 		</method>
-		<method name="_body_get_shape_count" qualifiers="virtual const">
+		<method name="_body_get_shape_count" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_get_shape_count].
 			</description>
 		</method>
-		<method name="_body_get_shape_transform" qualifiers="virtual const">
+		<method name="_body_get_shape_transform" qualifiers="virtual required const">
 			<return type="Transform2D" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_get_shape_transform].
 			</description>
 		</method>
-		<method name="_body_get_space" qualifiers="virtual const">
+		<method name="_body_get_space" qualifiers="virtual required const">
 			<return type="RID" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_get_space].
 			</description>
 		</method>
-		<method name="_body_get_state" qualifiers="virtual const">
+		<method name="_body_get_state" qualifiers="virtual required const">
 			<return type="Variant" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="state" type="int" enum="PhysicsServer2D.BodyState" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_get_state].
 			</description>
 		</method>
-		<method name="_body_is_omitting_force_integration" qualifiers="virtual const">
+		<method name="_body_is_omitting_force_integration" qualifiers="virtual required const">
 			<return type="bool" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_is_omitting_force_integration].
 			</description>
 		</method>
-		<method name="_body_remove_collision_exception" qualifiers="virtual">
+		<method name="_body_remove_collision_exception" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="excepted_body" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_remove_collision_exception].
 			</description>
 		</method>
-		<method name="_body_remove_shape" qualifiers="virtual">
+		<method name="_body_remove_shape" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_remove_shape].
 			</description>
 		</method>
-		<method name="_body_reset_mass_properties" qualifiers="virtual">
+		<method name="_body_reset_mass_properties" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_reset_mass_properties].
 			</description>
 		</method>
-		<method name="_body_set_axis_velocity" qualifiers="virtual">
+		<method name="_body_set_axis_velocity" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="axis_velocity" type="Vector2" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_set_axis_velocity].
 			</description>
 		</method>
-		<method name="_body_set_collision_layer" qualifiers="virtual">
+		<method name="_body_set_collision_layer" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="layer" type="int" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_set_collision_layer].
 			</description>
 		</method>
-		<method name="_body_set_collision_mask" qualifiers="virtual">
+		<method name="_body_set_collision_mask" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="mask" type="int" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_set_collision_mask].
 			</description>
 		</method>
-		<method name="_body_set_collision_priority" qualifiers="virtual">
+		<method name="_body_set_collision_priority" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="priority" type="float" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_set_collision_priority].
 			</description>
 		</method>
-		<method name="_body_set_constant_force" qualifiers="virtual">
+		<method name="_body_set_constant_force" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="force" type="Vector2" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_set_constant_force].
 			</description>
 		</method>
-		<method name="_body_set_constant_torque" qualifiers="virtual">
+		<method name="_body_set_constant_torque" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="torque" type="float" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_set_constant_torque].
 			</description>
 		</method>
-		<method name="_body_set_contacts_reported_depth_threshold" qualifiers="virtual">
+		<method name="_body_set_contacts_reported_depth_threshold" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="threshold" type="float" />
 			<description>
+				Overridable version of [PhysicsServer2D]'s internal [code]body_set_contacts_reported_depth_threshold[/code] method.
+				[b]Note:[/b] This method is currently unused by Godot's default physics implementation.
 			</description>
 		</method>
-		<method name="_body_set_continuous_collision_detection_mode" qualifiers="virtual">
+		<method name="_body_set_continuous_collision_detection_mode" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="mode" type="int" enum="PhysicsServer2D.CCDMode" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_set_continuous_collision_detection_mode].
 			</description>
 		</method>
-		<method name="_body_set_force_integration_callback" qualifiers="virtual">
+		<method name="_body_set_force_integration_callback" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="callable" type="Callable" />
 			<param index="2" name="userdata" type="Variant" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_set_force_integration_callback].
 			</description>
 		</method>
-		<method name="_body_set_max_contacts_reported" qualifiers="virtual">
+		<method name="_body_set_max_contacts_reported" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="amount" type="int" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_set_max_contacts_reported].
 			</description>
 		</method>
-		<method name="_body_set_mode" qualifiers="virtual">
+		<method name="_body_set_mode" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="mode" type="int" enum="PhysicsServer2D.BodyMode" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_set_mode].
 			</description>
 		</method>
-		<method name="_body_set_omit_force_integration" qualifiers="virtual">
+		<method name="_body_set_omit_force_integration" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_set_omit_force_integration].
 			</description>
 		</method>
-		<method name="_body_set_param" qualifiers="virtual">
+		<method name="_body_set_param" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.BodyParameter" />
 			<param index="2" name="value" type="Variant" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_set_param].
 			</description>
 		</method>
-		<method name="_body_set_pickable" qualifiers="virtual">
+		<method name="_body_set_pickable" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="pickable" type="bool" />
 			<description>
+				If set to [code]true[/code], allows the body with the given [RID] to detect mouse inputs when the mouse cursor is hovering on it.
+				Overridable version of [PhysicsServer2D]'s internal [code]body_set_pickable[/code] method. Corresponds to [member CollisionObject2D.input_pickable].
 			</description>
 		</method>
-		<method name="_body_set_shape" qualifiers="virtual">
+		<method name="_body_set_shape" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<param index="2" name="shape" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_set_shape].
 			</description>
 		</method>
-		<method name="_body_set_shape_as_one_way_collision" qualifiers="virtual">
+		<method name="_body_set_shape_as_one_way_collision" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<param index="2" name="enable" type="bool" />
 			<param index="3" name="margin" type="float" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_set_shape_as_one_way_collision].
 			</description>
 		</method>
-		<method name="_body_set_shape_disabled" qualifiers="virtual">
+		<method name="_body_set_shape_disabled" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<param index="2" name="disabled" type="bool" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_set_shape_disabled].
 			</description>
 		</method>
-		<method name="_body_set_shape_transform" qualifiers="virtual">
+		<method name="_body_set_shape_transform" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<param index="2" name="transform" type="Transform2D" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_set_shape_transform].
 			</description>
 		</method>
-		<method name="_body_set_space" qualifiers="virtual">
+		<method name="_body_set_space" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="space" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_set_space].
 			</description>
 		</method>
-		<method name="_body_set_state" qualifiers="virtual">
+		<method name="_body_set_state" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="state" type="int" enum="PhysicsServer2D.BodyState" />
 			<param index="2" name="value" type="Variant" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_set_state].
 			</description>
 		</method>
-		<method name="_body_set_state_sync_callback" qualifiers="virtual">
+		<method name="_body_set_state_sync_callback" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="callable" type="Callable" />
 			<description>
+				Assigns the [param body] to call the given [param callable] during the synchronization phase of the loop, before [method _step] is called. See also [method _sync].
+				Overridable version of [method PhysicsServer2D.body_set_state_sync_callback].
 			</description>
 		</method>
-		<method name="_body_test_motion" qualifiers="virtual const">
+		<method name="_body_test_motion" qualifiers="virtual required const">
 			<return type="bool" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="from" type="Transform2D" />
@@ -631,118 +726,143 @@
 			<param index="5" name="recovery_as_collision" type="bool" />
 			<param index="6" name="result" type="PhysicsServer2DExtensionMotionResult*" />
 			<description>
+				Overridable version of [method PhysicsServer2D.body_test_motion]. Unlike the exposed implementation, this method does not receive all of the arguments inside a [PhysicsTestMotionParameters2D].
 			</description>
 		</method>
-		<method name="_capsule_shape_create" qualifiers="virtual">
+		<method name="_capsule_shape_create" qualifiers="virtual required">
 			<return type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.capsule_shape_create].
 			</description>
 		</method>
-		<method name="_circle_shape_create" qualifiers="virtual">
+		<method name="_circle_shape_create" qualifiers="virtual required">
 			<return type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.circle_shape_create].
 			</description>
 		</method>
-		<method name="_concave_polygon_shape_create" qualifiers="virtual">
+		<method name="_concave_polygon_shape_create" qualifiers="virtual required">
 			<return type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.concave_polygon_shape_create].
 			</description>
 		</method>
-		<method name="_convex_polygon_shape_create" qualifiers="virtual">
+		<method name="_convex_polygon_shape_create" qualifiers="virtual required">
 			<return type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.convex_polygon_shape_create].
 			</description>
 		</method>
-		<method name="_damped_spring_joint_get_param" qualifiers="virtual const">
+		<method name="_damped_spring_joint_get_param" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.DampedSpringParam" />
 			<description>
+				Overridable version of [method PhysicsServer2D.damped_spring_joint_get_param].
 			</description>
 		</method>
-		<method name="_damped_spring_joint_set_param" qualifiers="virtual">
+		<method name="_damped_spring_joint_set_param" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.DampedSpringParam" />
 			<param index="2" name="value" type="float" />
 			<description>
+				Overridable version of [method PhysicsServer2D.damped_spring_joint_set_param].
 			</description>
 		</method>
-		<method name="_end_sync" qualifiers="virtual">
+		<method name="_end_sync" qualifiers="virtual required">
 			<return type="void" />
 			<description>
+				Called to indicate that the physics server has stopped synchronizing. It is in the loop's iteration/physics phase, and can access physics objects even if running on a separate thread. See also [method _sync].
+				Overridable version of [PhysicsServer2D]'s internal [code]end_sync[/code] method.
 			</description>
 		</method>
-		<method name="_finish" qualifiers="virtual">
+		<method name="_finish" qualifiers="virtual required">
 			<return type="void" />
 			<description>
+				Called when the main loop finalizes to shut down the physics server. See also [method MainLoop._finalize] and [method _init].
+				Overridable version of [PhysicsServer2D]'s internal [code]finish[/code] method.
 			</description>
 		</method>
-		<method name="_flush_queries" qualifiers="virtual">
+		<method name="_flush_queries" qualifiers="virtual required">
 			<return type="void" />
 			<description>
+				Called every physics step before [method _step] to process all remaining queries.
+				Overridable version of [PhysicsServer2D]'s internal [code]flush_queries[/code] method.
 			</description>
 		</method>
-		<method name="_free_rid" qualifiers="virtual">
+		<method name="_free_rid" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="rid" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.free_rid].
 			</description>
 		</method>
-		<method name="_get_process_info" qualifiers="virtual">
+		<method name="_get_process_info" qualifiers="virtual required">
 			<return type="int" />
 			<param index="0" name="process_info" type="int" enum="PhysicsServer2D.ProcessInfo" />
 			<description>
+				Overridable version of [method PhysicsServer2D.get_process_info].
 			</description>
 		</method>
-		<method name="_init" qualifiers="virtual">
+		<method name="_init" qualifiers="virtual required">
 			<return type="void" />
 			<description>
+				Called when the main loop is initialized and creates a new instance of this physics server. See also [method MainLoop._initialize] and [method _finish].
+				Overridable version of [PhysicsServer2D]'s internal [code]init[/code] method.
 			</description>
 		</method>
-		<method name="_is_flushing_queries" qualifiers="virtual const">
+		<method name="_is_flushing_queries" qualifiers="virtual required const">
 			<return type="bool" />
 			<description>
+				Overridable method that should return [code]true[/code] when the physics server is processing queries. See also [method _flush_queries].
+				Overridable version of [PhysicsServer2D]'s internal [code]is_flushing_queries[/code] method.
 			</description>
 		</method>
-		<method name="_joint_clear" qualifiers="virtual">
+		<method name="_joint_clear" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="joint" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.joint_clear].
 			</description>
 		</method>
-		<method name="_joint_create" qualifiers="virtual">
+		<method name="_joint_create" qualifiers="virtual required">
 			<return type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.joint_create].
 			</description>
 		</method>
-		<method name="_joint_disable_collisions_between_bodies" qualifiers="virtual">
+		<method name="_joint_disable_collisions_between_bodies" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="disable" type="bool" />
 			<description>
+				Overridable version of [method PhysicsServer2D.joint_disable_collisions_between_bodies].
 			</description>
 		</method>
-		<method name="_joint_get_param" qualifiers="virtual const">
+		<method name="_joint_get_param" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.JointParam" />
 			<description>
+				Overridable version of [method PhysicsServer2D.joint_get_param].
 			</description>
 		</method>
-		<method name="_joint_get_type" qualifiers="virtual const">
+		<method name="_joint_get_type" qualifiers="virtual required const">
 			<return type="int" enum="PhysicsServer2D.JointType" />
 			<param index="0" name="joint" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.joint_get_type].
 			</description>
 		</method>
-		<method name="_joint_is_disabled_collisions_between_bodies" qualifiers="virtual const">
+		<method name="_joint_is_disabled_collisions_between_bodies" qualifiers="virtual required const">
 			<return type="bool" />
 			<param index="0" name="joint" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.joint_is_disabled_collisions_between_bodies].
 			</description>
 		</method>
-		<method name="_joint_make_damped_spring" qualifiers="virtual">
+		<method name="_joint_make_damped_spring" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="anchor_a" type="Vector2" />
@@ -750,9 +870,10 @@
 			<param index="3" name="body_a" type="RID" />
 			<param index="4" name="body_b" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.joint_make_damped_spring].
 			</description>
 		</method>
-		<method name="_joint_make_groove" qualifiers="virtual">
+		<method name="_joint_make_groove" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="a_groove1" type="Vector2" />
@@ -761,77 +882,88 @@
 			<param index="4" name="body_a" type="RID" />
 			<param index="5" name="body_b" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.joint_make_groove].
 			</description>
 		</method>
-		<method name="_joint_make_pin" qualifiers="virtual">
+		<method name="_joint_make_pin" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="anchor" type="Vector2" />
 			<param index="2" name="body_a" type="RID" />
 			<param index="3" name="body_b" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.joint_make_pin].
 			</description>
 		</method>
-		<method name="_joint_set_param" qualifiers="virtual">
+		<method name="_joint_set_param" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.JointParam" />
 			<param index="2" name="value" type="float" />
 			<description>
+				Overridable version of [method PhysicsServer2D.joint_set_param].
 			</description>
 		</method>
-		<method name="_pin_joint_get_flag" qualifiers="virtual const">
+		<method name="_pin_joint_get_flag" qualifiers="virtual required const">
 			<return type="bool" />
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="flag" type="int" enum="PhysicsServer2D.PinJointFlag" />
 			<description>
+				Overridable version of [method PhysicsServer2D.pin_joint_get_flag].
 			</description>
 		</method>
-		<method name="_pin_joint_get_param" qualifiers="virtual const">
+		<method name="_pin_joint_get_param" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.PinJointParam" />
 			<description>
+				Overridable version of [method PhysicsServer2D.pin_joint_get_param].
 			</description>
 		</method>
-		<method name="_pin_joint_set_flag" qualifiers="virtual">
+		<method name="_pin_joint_set_flag" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="flag" type="int" enum="PhysicsServer2D.PinJointFlag" />
 			<param index="2" name="enabled" type="bool" />
 			<description>
+				Overridable version of [method PhysicsServer2D.pin_joint_set_flag].
 			</description>
 		</method>
-		<method name="_pin_joint_set_param" qualifiers="virtual">
+		<method name="_pin_joint_set_param" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.PinJointParam" />
 			<param index="2" name="value" type="float" />
 			<description>
+				Overridable version of [method PhysicsServer2D.pin_joint_set_param].
 			</description>
 		</method>
-		<method name="_rectangle_shape_create" qualifiers="virtual">
+		<method name="_rectangle_shape_create" qualifiers="virtual required">
 			<return type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.rectangle_shape_create].
 			</description>
 		</method>
-		<method name="_segment_shape_create" qualifiers="virtual">
+		<method name="_segment_shape_create" qualifiers="virtual required">
 			<return type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.segment_shape_create].
 			</description>
 		</method>
-		<method name="_separation_ray_shape_create" qualifiers="virtual">
+		<method name="_separation_ray_shape_create" qualifiers="virtual required">
 			<return type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.separation_ray_shape_create].
 			</description>
 		</method>
-		<method name="_set_active" qualifiers="virtual">
+		<method name="_set_active" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="active" type="bool" />
 			<description>
+				Overridable version of [method PhysicsServer2D.set_active].
 			</description>
 		</method>
-		<method name="_shape_collide" qualifiers="virtual">
+		<method name="_shape_collide" qualifiers="virtual required">
 			<return type="bool" />
 			<param index="0" name="shape_A" type="RID" />
 			<param index="1" name="xform_A" type="Transform2D" />
@@ -843,124 +975,152 @@
 			<param index="7" name="result_max" type="int" />
 			<param index="8" name="result_count" type="int32_t*" />
 			<description>
+				Given two shapes and their parameters, should return [code]true[/code] if a collision between the two would occur, with additional details passed in [param results].
+				Overridable version of [PhysicsServer2D]'s internal [code]shape_collide[/code] method. Corresponds to [method PhysicsDirectSpaceState2D.collide_shape].
 			</description>
 		</method>
-		<method name="_shape_get_custom_solver_bias" qualifiers="virtual const">
+		<method name="_shape_get_custom_solver_bias" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="shape" type="RID" />
 			<description>
+				Should return the custom solver bias of the given [param shape], which defines how much bodies are forced to separate on contact when this shape is involved.
+				Overridable version of [PhysicsServer2D]'s internal [code]shape_get_custom_solver_bias[/code] method. Corresponds to [member Shape2D.custom_solver_bias].
 			</description>
 		</method>
-		<method name="_shape_get_data" qualifiers="virtual const">
+		<method name="_shape_get_data" qualifiers="virtual required const">
 			<return type="Variant" />
 			<param index="0" name="shape" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.shape_get_data].
 			</description>
 		</method>
-		<method name="_shape_get_type" qualifiers="virtual const">
+		<method name="_shape_get_type" qualifiers="virtual required const">
 			<return type="int" enum="PhysicsServer2D.ShapeType" />
 			<param index="0" name="shape" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.shape_get_type].
 			</description>
 		</method>
-		<method name="_shape_set_custom_solver_bias" qualifiers="virtual">
+		<method name="_shape_set_custom_solver_bias" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="shape" type="RID" />
 			<param index="1" name="bias" type="float" />
 			<description>
+				Should set the custom solver bias for the given [param shape]. It defines how much bodies are forced to separate on contact.
+				Overridable version of [PhysicsServer2D]'s internal [code]shape_get_custom_solver_bias[/code] method. Corresponds to [member Shape2D.custom_solver_bias].
 			</description>
 		</method>
-		<method name="_shape_set_data" qualifiers="virtual">
+		<method name="_shape_set_data" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="shape" type="RID" />
 			<param index="1" name="data" type="Variant" />
 			<description>
+				Overridable version of [method PhysicsServer2D.shape_set_data].
 			</description>
 		</method>
-		<method name="_space_create" qualifiers="virtual">
+		<method name="_space_create" qualifiers="virtual required">
 			<return type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.space_create].
 			</description>
 		</method>
-		<method name="_space_get_contact_count" qualifiers="virtual const">
+		<method name="_space_get_contact_count" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="space" type="RID" />
 			<description>
+				Should return how many contacts have occurred during the last physics step in the given [param space]. See also [method _space_get_contacts] and [method _space_set_debug_contacts].
+				Overridable version of [PhysicsServer2D]'s internal [code]space_get_contact_count[/code] method.
 			</description>
 		</method>
-		<method name="_space_get_contacts" qualifiers="virtual const">
+		<method name="_space_get_contacts" qualifiers="virtual required const">
 			<return type="PackedVector2Array" />
 			<param index="0" name="space" type="RID" />
 			<description>
+				Should return the positions of all contacts that have occurred during the last physics step in the given [param space]. See also [method _space_get_contact_count] and [method _space_set_debug_contacts].
+				Overridable version of [PhysicsServer2D]'s internal [code]space_get_contacts[/code] method.
 			</description>
 		</method>
-		<method name="_space_get_direct_state" qualifiers="virtual">
+		<method name="_space_get_direct_state" qualifiers="virtual required">
 			<return type="PhysicsDirectSpaceState2D" />
 			<param index="0" name="space" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.space_get_direct_state].
 			</description>
 		</method>
-		<method name="_space_get_param" qualifiers="virtual const">
+		<method name="_space_get_param" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="space" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.SpaceParameter" />
 			<description>
+				Overridable version of [method PhysicsServer2D.space_get_param].
 			</description>
 		</method>
-		<method name="_space_is_active" qualifiers="virtual const">
+		<method name="_space_is_active" qualifiers="virtual required const">
 			<return type="bool" />
 			<param index="0" name="space" type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.space_is_active].
 			</description>
 		</method>
-		<method name="_space_set_active" qualifiers="virtual">
+		<method name="_space_set_active" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="space" type="RID" />
 			<param index="1" name="active" type="bool" />
 			<description>
+				Overridable version of [method PhysicsServer2D.space_set_active].
 			</description>
 		</method>
-		<method name="_space_set_debug_contacts" qualifiers="virtual">
+		<method name="_space_set_debug_contacts" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="space" type="RID" />
 			<param index="1" name="max_contacts" type="int" />
 			<description>
+				Used internally to allow the given [param space] to store contact points, up to [param max_contacts]. This is automatically set for the main [World2D]'s space when [member SceneTree.debug_collisions_hint] is [code]true[/code], or by checking "Visible Collision Shapes" in the editor. Only works in debug builds.
+				Overridable version of [PhysicsServer2D]'s internal [code]space_set_debug_contacts[/code] method.
 			</description>
 		</method>
-		<method name="_space_set_param" qualifiers="virtual">
+		<method name="_space_set_param" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="space" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.SpaceParameter" />
 			<param index="2" name="value" type="float" />
 			<description>
+				Overridable version of [method PhysicsServer2D.space_set_param].
 			</description>
 		</method>
-		<method name="_step" qualifiers="virtual">
+		<method name="_step" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="step" type="float" />
 			<description>
+				Called every physics step to process the physics simulation. [param step] is the time elapsed since the last physics step, in seconds. It is usually the same as the value returned by [method Node.get_physics_process_delta_time].
+				Overridable version of [PhysicsServer2D]'s internal [code skip-lint]step[/code] method.
 			</description>
 		</method>
-		<method name="_sync" qualifiers="virtual">
+		<method name="_sync" qualifiers="virtual required">
 			<return type="void" />
 			<description>
+				Called to indicate that the physics server is synchronizing and cannot access physics states if running on a separate thread. See also [method _end_sync].
+				Overridable version of [PhysicsServer2D]'s internal [code]sync[/code] method.
 			</description>
 		</method>
-		<method name="_world_boundary_shape_create" qualifiers="virtual">
+		<method name="_world_boundary_shape_create" qualifiers="virtual required">
 			<return type="RID" />
 			<description>
+				Overridable version of [method PhysicsServer2D.world_boundary_shape_create].
 			</description>
 		</method>
 		<method name="body_test_motion_is_excluding_body" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="body" type="RID" />
 			<description>
+				Returns [code]true[/code] if the body with the given [RID] is being excluded from [method _body_test_motion]. See also [method Object.get_instance_id].
 			</description>
 		</method>
 		<method name="body_test_motion_is_excluding_object" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="object" type="int" />
 			<description>
+				Returns [code]true[/code] if the object with the given instance ID is being excluded from [method _body_test_motion]. See also [method Object.get_instance_id].
 			</description>
 		</method>
 	</methods>

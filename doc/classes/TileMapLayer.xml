@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TileMapLayer" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Node for 2D tile-based maps.
+	</brief_description>
+	<description>
+		Node for 2D tile-based maps. A [TileMapLayer] uses a [TileSet] which contain a list of tiles which are used to create grid-based maps. Unlike the [TileMap] node, which is deprecated, [TileMapLayer] has only one layer of tiles. You can use several [TileMapLayer] to achieve the same result as a [TileMap] node.
+		For performance reasons, all TileMap updates are batched at the end of a frame. Notably, this means that scene tiles from a [TileSetScenesCollectionSource] are initialized after their parent. This is only queued when inside the scene tree.
+		To force an update earlier on, call [method update_internals].
+		[b]Note:[/b] For performance and compatibility reasons, the coordinates serialized by [TileMapLayer] are limited to 16-bit signed integers, i.e. the range for X and Y coordinates is from [code]-32768[/code] to [code]32767[/code]. When saving tile data, tiles outside this range are wrapped.
+	</description>
+	<tutorials>
+		<link title="Using Tilemaps">$DOCS_URL/tutorials/2d/using_tilemaps.html</link>
+		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/2727</link>
+		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/2718</link>
+		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/2717</link>
+		<link title="2D Grid-based Navigation with AStarGrid2D Demo">https://godotengine.org/asset-library/asset/2723</link>
+		<link title="2D Role Playing Game (RPG) Demo">https://godotengine.org/asset-library/asset/2729</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2719</link>
+		<link title="2D Dynamic TileMap Layers Demo">https://godotengine.org/asset-library/asset/2713</link>
+	</tutorials>
+	<methods>
+		<method name="_tile_data_runtime_update" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="coords" type="Vector2i" />
+			<param index="1" name="tile_data" type="TileData" />
+			<description>
+				Called with a [TileData] object about to be used internally by the [TileMapLayer], allowing its modification at runtime.
+				This method is only called if [method _use_tile_data_runtime_update] is implemented and returns [code]true[/code] for the given tile [param coords].
+				[b]Warning:[/b] The [param tile_data] object's sub-resources are the same as the one in the TileSet. Modifying them might impact the whole TileSet. Instead, make sure to duplicate those resources.
+				[b]Note:[/b] If the properties of [param tile_data] object should change over time, use [method notify_runtime_tile_data_update] to notify the [TileMapLayer] it needs an update.
+			</description>
+		</method>
+		<method name="_update_cells" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="coords" type="Vector2i[]" />
+			<param index="1" name="forced_cleanup" type="bool" />
+			<description>
+				Called when this [TileMapLayer]'s cells need an internal update. This update may be caused from individual cells being modified or by a change in the [member tile_set] (causing all cells to be queued for an update). The first call to this function is always for initializing all the [TileMapLayer]'s cells. [param coords] contains the coordinates of all modified cells, roughly in the order they were modified. [param forced_cleanup] is [code]true[/code] when the [TileMapLayer]'s internals should be fully cleaned up. This is the case when:
+				- The layer is disabled;
+				- The layer is not visible;
+				- [member tile_set] is set to [code]null[/code];
+				- The node is removed from the tree;
+				- The node is freed.
+				Note that any internal update happening while one of these conditions is verified is considered to be a "cleanup". See also [method update_internals].
+				[b]Warning:[/b] Implementing this method may degrade the [TileMapLayer]'s performance.
+			</description>
+		</method>
+		<method name="_use_tile_data_runtime_update" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Should return [code]true[/code] if the tile at coordinates [param coords] requires a runtime update.
+				[b]Warning:[/b] Make sure this function only returns [code]true[/code] when needed. Any tile processed at runtime without a need for it will imply a significant performance penalty.
+				[b]Note:[/b] If the result of this function should change, use [method notify_runtime_tile_data_update] to notify the [TileMapLayer] it needs an update.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears all cells.
+			</description>
+		</method>
+		<method name="erase_cell">
+			<return type="void" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Erases the cell at coordinates [param coords].
+			</description>
+		</method>
+		<method name="fix_invalid_tiles">
+			<return type="void" />
+			<description>
+				Clears cells containing tiles that do not exist in the [member tile_set].
+			</description>
+		</method>
+		<method name="get_cell_alternative_tile" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Returns the tile alternative ID of the cell at coordinates [param coords].
+			</description>
+		</method>
+		<method name="get_cell_atlas_coords" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Returns the tile atlas coordinates ID of the cell at coordinates [param coords]. Returns [code]Vector2i(-1, -1)[/code] if the cell does not exist.
+			</description>
+		</method>
+		<method name="get_cell_source_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Returns the tile source ID of the cell at coordinates [param coords]. Returns [code]-1[/code] if the cell does not exist.
+			</description>
+		</method>
+		<method name="get_cell_tile_data" qualifiers="const">
+			<return type="TileData" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Returns the [TileData] object associated with the given cell, or [code]null[/code] if the cell does not exist or is not a [TileSetAtlasSource].
+				[codeblock]
+				func get_clicked_tile_power():
+					var clicked_cell = tile_map_layer.local_to_map(tile_map_layer.get_local_mouse_position())
+					var data = tile_map_layer.get_cell_tile_data(clicked_cell)
+					if data:
+						return data.get_custom_data("power")
+					else:
+						return 0
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_coords_for_body_rid" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns the coordinates of the physics quadrant (see [member physics_quadrant_size]) for given physics body [RID]. Such an [RID] can be retrieved from [method KinematicCollision2D.get_collider_rid], when colliding with a tile.
+				[b]Note:[/b] Higher values of [member physics_quadrant_size] will make this function less precise. To get the exact cell coordinates, you need to set [member physics_quadrant_size] to [code]1[/code], which disables physics chunking.
+			</description>
+		</method>
+		<method name="get_navigation_map" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the [NavigationServer2D] navigation used by this [TileMapLayer].
+				By default this returns the default [World2D] navigation map, unless a custom map was provided using [method set_navigation_map].
+			</description>
+		</method>
+		<method name="get_neighbor_cell" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="coords" type="Vector2i" />
+			<param index="1" name="neighbor" type="int" enum="TileSet.CellNeighbor" />
+			<description>
+				Returns the neighboring cell to the one at coordinates [param coords], identified by the [param neighbor] direction. This method takes into account the different layouts a TileMap can take.
+			</description>
+		</method>
+		<method name="get_pattern">
+			<return type="TileMapPattern" />
+			<param index="0" name="coords_array" type="Vector2i[]" />
+			<description>
+				Creates and returns a new [TileMapPattern] from the given array of cells. See also [method set_pattern].
+			</description>
+		</method>
+		<method name="get_surrounding_cells">
+			<return type="Vector2i[]" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Returns the list of all neighboring cells to the one at [param coords]. Any neighboring cell is one that is touching edges, so for a square cell 4 cells would be returned, for a hexagon 6 cells are returned.
+			</description>
+		</method>
+		<method name="get_used_cells" qualifiers="const">
+			<return type="Vector2i[]" />
+			<description>
+				Returns a [Vector2i] array with the positions of all cells containing a tile. A cell is considered empty if its source identifier equals [code]-1[/code], its atlas coordinate identifier is [code]Vector2(-1, -1)[/code] and its alternative identifier is [code]-1[/code].
+			</description>
+		</method>
+		<method name="get_used_cells_by_id" qualifiers="const">
+			<return type="Vector2i[]" />
+			<param index="0" name="source_id" type="int" default="-1" />
+			<param index="1" name="atlas_coords" type="Vector2i" default="Vector2i(-1, -1)" />
+			<param index="2" name="alternative_tile" type="int" default="-1" />
+			<description>
+				Returns a [Vector2i] array with the positions of all cells containing a tile. Tiles may be filtered according to their source ([param source_id]), their atlas coordinates ([param atlas_coords]), or alternative id ([param alternative_tile]).
+				If a parameter has its value set to the default one, this parameter is not used to filter a cell. Thus, if all parameters have their respective default values, this method returns the same result as [method get_used_cells].
+				A cell is considered empty if its source identifier equals [code]-1[/code], its atlas coordinate identifier is [code]Vector2(-1, -1)[/code] and its alternative identifier is [code]-1[/code].
+			</description>
+		</method>
+		<method name="get_used_rect" qualifiers="const">
+			<return type="Rect2i" />
+			<description>
+				Returns a rectangle enclosing the used (non-empty) tiles of the map.
+			</description>
+		</method>
+		<method name="has_body_rid" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns whether the provided [param body] [RID] belongs to one of this [TileMapLayer]'s cells.
+			</description>
+		</method>
+		<method name="is_cell_flipped_h" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Returns [code]true[/code] if the cell at coordinates [param coords] is flipped horizontally. The result is valid only for atlas sources.
+			</description>
+		</method>
+		<method name="is_cell_flipped_v" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Returns [code]true[/code] if the cell at coordinates [param coords] is flipped vertically. The result is valid only for atlas sources.
+			</description>
+		</method>
+		<method name="is_cell_transposed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Returns [code]true[/code] if the cell at coordinates [param coords] is transposed. The result is valid only for atlas sources.
+			</description>
+		</method>
+		<method name="local_to_map" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="local_position" type="Vector2" />
+			<description>
+				Returns the map coordinates of the cell containing the given [param local_position]. If [param local_position] is in global coordinates, consider using [method Node2D.to_local] before passing it to this method. See also [method map_to_local].
+			</description>
+		</method>
+		<method name="map_pattern">
+			<return type="Vector2i" />
+			<param index="0" name="position_in_tilemap" type="Vector2i" />
+			<param index="1" name="coords_in_pattern" type="Vector2i" />
+			<param index="2" name="pattern" type="TileMapPattern" />
+			<description>
+				Returns for the given coordinates [param coords_in_pattern] in a [TileMapPattern] the corresponding cell coordinates if the pattern was pasted at the [param position_in_tilemap] coordinates (see [method set_pattern]). This mapping is required as in half-offset tile shapes, the mapping might not work by calculating [code]position_in_tile_map + coords_in_pattern[/code].
+			</description>
+		</method>
+		<method name="map_to_local" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="map_position" type="Vector2i" />
+			<description>
+				Returns the centered position of a cell in the [TileMapLayer]'s local coordinate space. To convert the returned value into global coordinates, use [method Node2D.to_global]. See also [method local_to_map].
+				[b]Note:[/b] This may not correspond to the visual position of the tile, i.e. it ignores the [member TileData.texture_origin] property of individual tiles.
+			</description>
+		</method>
+		<method name="notify_runtime_tile_data_update">
+			<return type="void" />
+			<description>
+				Notifies the [TileMapLayer] node that calls to [method _use_tile_data_runtime_update] or [method _tile_data_runtime_update] will lead to different results. This will thus trigger a [TileMapLayer] update.
+				[b]Warning:[/b] Updating the [TileMapLayer] is computationally expensive and may impact performance. Try to limit the number of calls to this function to avoid unnecessary update.
+				[b]Note:[/b] This does not trigger a direct update of the [TileMapLayer], the update will be done at the end of the frame as usual (unless you call [method update_internals]).
+			</description>
+		</method>
+		<method name="set_cell">
+			<return type="void" />
+			<param index="0" name="coords" type="Vector2i" />
+			<param index="1" name="source_id" type="int" default="-1" />
+			<param index="2" name="atlas_coords" type="Vector2i" default="Vector2i(-1, -1)" />
+			<param index="3" name="alternative_tile" type="int" default="0" />
+			<description>
+				Sets the tile identifiers for the cell at coordinates [param coords]. Each tile of the [TileSet] is identified using three parts:
+				- The source identifier [param source_id] identifies a [TileSetSource] identifier. See [method TileSet.set_source_id],
+				- The atlas coordinate identifier [param atlas_coords] identifies a tile coordinates in the atlas (if the source is a [TileSetAtlasSource]). For [TileSetScenesCollectionSource] it should always be [code]Vector2i(0, 0)[/code],
+				- The alternative tile identifier [param alternative_tile] identifies a tile alternative in the atlas (if the source is a [TileSetAtlasSource]), and the scene for a [TileSetScenesCollectionSource].
+				If [param source_id] is set to [code]-1[/code], [param atlas_coords] to [code]Vector2i(-1, -1)[/code], or [param alternative_tile] to [code]-1[/code], the cell will be erased. An erased cell gets [b]all[/b] its identifiers automatically set to their respective invalid values, namely [code]-1[/code], [code]Vector2i(-1, -1)[/code] and [code]-1[/code].
+			</description>
+		</method>
+		<method name="set_cells_terrain_connect">
+			<return type="void" />
+			<param index="0" name="cells" type="Vector2i[]" />
+			<param index="1" name="terrain_set" type="int" />
+			<param index="2" name="terrain" type="int" />
+			<param index="3" name="ignore_empty_terrains" type="bool" default="true" />
+			<description>
+				Update all the cells in the [param cells] coordinates array so that they use the given [param terrain] for the given [param terrain_set]. If an updated cell has the same terrain as one of its neighboring cells, this function tries to join the two. This function might update neighboring tiles if needed to create correct terrain transitions.
+				If [param ignore_empty_terrains] is [code]true[/code], empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
+				[b]Note:[/b] To work correctly, this method requires the [TileMapLayer]'s TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
+			</description>
+		</method>
+		<method name="set_cells_terrain_path">
+			<return type="void" />
+			<param index="0" name="path" type="Vector2i[]" />
+			<param index="1" name="terrain_set" type="int" />
+			<param index="2" name="terrain" type="int" />
+			<param index="3" name="ignore_empty_terrains" type="bool" default="true" />
+			<description>
+				Update all the cells in the [param path] coordinates array so that they use the given [param terrain] for the given [param terrain_set]. The function will also connect two successive cell in the path with the same terrain. This function might update neighboring tiles if needed to create correct terrain transitions.
+				If [param ignore_empty_terrains] is [code]true[/code], empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
+				[b]Note:[/b] To work correctly, this method requires the [TileMapLayer]'s TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
+			</description>
+		</method>
+		<method name="set_navigation_map">
+			<return type="void" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Sets a custom [param map] as a [NavigationServer2D] navigation map. If not set, uses the default [World2D] navigation map instead.
+			</description>
+		</method>
+		<method name="set_pattern">
+			<return type="void" />
+			<param index="0" name="position" type="Vector2i" />
+			<param index="1" name="pattern" type="TileMapPattern" />
+			<description>
+				Pastes the [TileMapPattern] at the given [param position] in the tile map. See also [method get_pattern].
+			</description>
+		</method>
+		<method name="update_internals">
+			<return type="void" />
+			<description>
+				Triggers a direct update of the [TileMapLayer]. Usually, calling this function is not needed, as [TileMapLayer] node updates automatically when one of its properties or cells is modified.
+				However, for performance reasons, those updates are batched and delayed to the end of the frame. Calling this function will force the [TileMapLayer] to update right away instead.
+				[b]Warning:[/b] Updating the [TileMapLayer] is computationally expensive and may impact performance. Try to limit the number of updates and how many tiles they impact.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="collision_enabled" type="bool" setter="set_collision_enabled" getter="is_collision_enabled" default="true">
+			Enable or disable collisions.
+		</member>
+		<member name="collision_visibility_mode" type="int" setter="set_collision_visibility_mode" getter="get_collision_visibility_mode" enum="TileMapLayer.DebugVisibilityMode" default="0">
+			Show or hide the [TileMapLayer]'s collision shapes. If set to [constant DEBUG_VISIBILITY_MODE_DEFAULT], this depends on the show collision debug settings.
+		</member>
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
+			If [code]false[/code], disables this [TileMapLayer] completely (rendering, collision, navigation, scene tiles, etc.)
+		</member>
+		<member name="navigation_enabled" type="bool" setter="set_navigation_enabled" getter="is_navigation_enabled" default="true">
+			If [code]true[/code], navigation regions are enabled.
+		</member>
+		<member name="navigation_visibility_mode" type="int" setter="set_navigation_visibility_mode" getter="get_navigation_visibility_mode" enum="TileMapLayer.DebugVisibilityMode" default="0">
+			Show or hide the [TileMapLayer]'s navigation meshes. If set to [constant DEBUG_VISIBILITY_MODE_DEFAULT], this depends on the show navigation debug settings.
+		</member>
+		<member name="occlusion_enabled" type="bool" setter="set_occlusion_enabled" getter="is_occlusion_enabled" default="true">
+			Enable or disable light occlusion.
+		</member>
+		<member name="physics_quadrant_size" type="int" setter="set_physics_quadrant_size" getter="get_physics_quadrant_size" default="16">
+			The [TileMapLayer]'s physics quadrant size. Within a physics quadrant, cells with similar physics properties are grouped together and their collision shapes get merged. [member physics_quadrant_size] defines the length of a square's side, in the map's coordinate system, that forms the quadrant. Thus, the default quadrant size groups together [code]16 * 16 = 256[/code] tiles.
+			[b]Note:[/b] As quadrants are created according to the map's coordinate system, the quadrant's "square shape" might not look like square in the [TileMapLayer]'s local coordinate system.
+			[b]Note:[/b] This impacts the value returned by [method get_coords_for_body_rid]. Higher values will make that function less precise. To get the exact cell coordinates, you need to set [member physics_quadrant_size] to [code]1[/code], which disables physics chunking.
+		</member>
+		<member name="rendering_quadrant_size" type="int" setter="set_rendering_quadrant_size" getter="get_rendering_quadrant_size" default="16">
+			The [TileMapLayer]'s rendering quadrant size. A quadrant is a group of tiles to be drawn together on a single canvas item, for optimization purposes. [member rendering_quadrant_size] defines the length of a square's side, in the map's coordinate system, that forms the quadrant. Thus, the default quadrant size groups together [code]16 * 16 = 256[/code] tiles.
+			The quadrant size does not apply on a Y-sorted [TileMapLayer], as tiles are grouped by Y position instead in that case.
+			[b]Note:[/b] As quadrants are created according to the map's coordinate system, the quadrant's "square shape" might not look like square in the [TileMapLayer]'s local coordinate system.
+		</member>
+		<member name="tile_map_data" type="PackedByteArray" setter="set_tile_map_data_from_array" getter="get_tile_map_data_as_array" default="PackedByteArray()">
+			The raw tile map data as a byte array.
+		</member>
+		<member name="tile_set" type="TileSet" setter="set_tile_set" getter="get_tile_set">
+			The [TileSet] used by this layer. The textures, collisions, and additional behavior of all available tiles are stored here.
+		</member>
+		<member name="use_kinematic_bodies" type="bool" setter="set_use_kinematic_bodies" getter="is_using_kinematic_bodies" default="false">
+			If [code]true[/code], this [TileMapLayer] collision shapes will be instantiated as kinematic bodies. This can be needed for moving [TileMapLayer] nodes (i.e. moving platforms).
+		</member>
+		<member name="x_draw_order_reversed" type="bool" setter="set_x_draw_order_reversed" getter="is_x_draw_order_reversed" default="false">
+			If [member CanvasItem.y_sort_enabled] is enabled, setting this to [code]true[/code] will reverse the order the tiles are drawn on the X-axis.
+		</member>
+		<member name="y_sort_origin" type="int" setter="set_y_sort_origin" getter="get_y_sort_origin" default="0">
+			This Y-sort origin value is added to each tile's Y-sort origin value. This allows, for example, to fake a different height level. This can be useful for top-down view games.
+		</member>
+	</members>
+	<signals>
+		<signal name="changed">
+			<description>
+				Emitted when this [TileMapLayer]'s properties changes. This includes modified cells, properties, or changes made to its assigned [TileSet].
+				[b]Note:[/b] This signal may be emitted very often when batch-modifying a [TileMapLayer]. Avoid executing complex processing in a connected function, and consider delaying it to the end of the frame instead (i.e. calling [method Object.call_deferred]).
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="DEBUG_VISIBILITY_MODE_DEFAULT" value="0" enum="DebugVisibilityMode">
+			Hide the collisions or navigation debug shapes in the editor, and use the debug settings to determine their visibility in game (i.e. [member SceneTree.debug_collisions_hint] or [member SceneTree.debug_navigation_hint]).
+		</constant>
+		<constant name="DEBUG_VISIBILITY_MODE_FORCE_HIDE" value="2" enum="DebugVisibilityMode">
+			Always hide the collisions or navigation debug shapes.
+		</constant>
+		<constant name="DEBUG_VISIBILITY_MODE_FORCE_SHOW" value="1" enum="DebugVisibilityMode">
+			Always show the collisions or navigation debug shapes.
+		</constant>
+	</constants>
+</class>

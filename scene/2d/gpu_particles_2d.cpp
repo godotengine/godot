@@ -29,21 +29,21 @@
 /**************************************************************************/
 
 #include "gpu_particles_2d.h"
+#include "gpu_particles_2d.compat.inc"
 
 #include "scene/2d/cpu_particles_2d.h"
 #include "scene/resources/atlas_texture.h"
+#include "scene/resources/canvas_item_material.h"
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/particle_process_material.h"
-#include "scene/scene_string_names.h"
-
-#ifdef TOOLS_ENABLED
-#include "core/config/engine.h"
-#endif
 
 void GPUParticles2D::set_emitting(bool p_emitting) {
 	// Do not return even if `p_emitting == emitting` because `emitting` is just an approximation.
 
+	if (p_emitting && p_emitting != emitting && !use_fixed_seed && one_shot) {
+		set_seed(Math::rand());
+	}
 	if (p_emitting && one_shot) {
 		if (!active && !emitting) {
 			// Last cycle ended.
@@ -144,7 +144,22 @@ void GPUParticles2D::_update_particle_emission_transform() {
 }
 
 void GPUParticles2D::set_process_material(const Ref<Material> &p_material) {
+	if (process_material == p_material) {
+		return;
+	}
+
+	if (process_material.is_valid() && process_material->is_class("ParticleProcessMaterial")) {
+		process_material->disconnect("emission_shape_changed", callable_mp((CanvasItem *)this, &GPUParticles2D::queue_redraw));
+	}
+
 	process_material = p_material;
+
+	if (process_material.is_valid() && process_material->is_class("ParticleProcessMaterial")) {
+		process_material->connect("emission_shape_changed", callable_mp((CanvasItem *)this, &GPUParticles2D::queue_redraw));
+	}
+
+	queue_redraw();
+
 	Ref<ParticleProcessMaterial> pm = p_material;
 	if (pm.is_valid() && !pm->get_particle_flag(ParticleProcessMaterial::PARTICLE_FLAG_DISABLE_Z) && pm->get_gravity() == Vector3(0, -9.8, 0)) {
 		// Likely a new (3D) material, modify it to match 2D space
@@ -170,7 +185,7 @@ void GPUParticles2D::set_trail_enabled(bool p_enabled) {
 }
 
 void GPUParticles2D::set_trail_lifetime(double p_seconds) {
-	ERR_FAIL_COND(p_seconds < 0.01);
+	ERR_FAIL_COND(p_seconds < 0.01 - CMP_EPSILON);
 	trail_lifetime = p_seconds;
 	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_lifetime);
 	queue_redraw();
@@ -198,8 +213,11 @@ void GPUParticles2D::set_interp_to_end(float p_interp) {
 }
 
 #ifdef TOOLS_ENABLED
-void GPUParticles2D::set_show_visibility_rect(bool p_show_visibility_rect) {
-	show_visibility_rect = p_show_visibility_rect;
+void GPUParticles2D::set_show_gizmos(bool p_show_gizmos) {
+	if (show_gizmos == p_show_gizmos) {
+		return;
+	}
+	show_gizmos = p_show_gizmos;
 	queue_redraw();
 }
 #endif
@@ -327,6 +345,31 @@ float GPUParticles2D::get_interp_to_end() const {
 	return interp_to_end_factor;
 }
 
+void GPUParticles2D::set_use_fixed_seed(bool p_use_fixed_seed) {
+	if (p_use_fixed_seed == use_fixed_seed) {
+		return;
+	}
+	use_fixed_seed = p_use_fixed_seed;
+	notify_property_list_changed();
+}
+
+bool GPUParticles2D::get_use_fixed_seed() const {
+	return use_fixed_seed;
+}
+
+void GPUParticles2D::set_seed(uint32_t p_seed) {
+	seed = p_seed;
+	RS::get_singleton()->particles_set_seed(particles, p_seed);
+}
+
+uint32_t GPUParticles2D::get_seed() const {
+	return seed;
+}
+
+void GPUParticles2D::request_particles_process(real_t p_requested_process_time) {
+	RS::get_singleton()->particles_request_process_time(particles, p_requested_process_time);
+}
+
 PackedStringArray GPUParticles2D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
@@ -345,12 +388,12 @@ PackedStringArray GPUParticles2D::get_configuration_warnings() const {
 		}
 	}
 
-	if (trail_enabled && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-		warnings.push_back(RTR("Particle trails are only available when using the Forward+ or Mobile rendering backends."));
+	if (trail_enabled && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
+		warnings.push_back(RTR("Particle trails are only available when using the Forward+ or Mobile renderer."));
 	}
 
-	if (sub_emitter != NodePath() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-		warnings.push_back(RTR("Particle sub-emitters are not available when using the GL Compatibility rendering backend."));
+	if (sub_emitter != NodePath() && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
+		warnings.push_back(RTR("Particle sub-emitters are not available when using the Compatibility renderer."));
 	}
 
 	return warnings;
@@ -385,6 +428,12 @@ Ref<Texture2D> GPUParticles2D::get_texture() const {
 }
 
 void GPUParticles2D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "seed" && !use_fixed_seed) {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "emitting") {
+		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
+	}
 }
 
 void GPUParticles2D::emit_particle(const Transform2D &p_transform2d, const Vector2 &p_velocity2d, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
@@ -441,7 +490,10 @@ float GPUParticles2D::get_amount_ratio() const {
 	return amount_ratio;
 }
 
-void GPUParticles2D::restart() {
+void GPUParticles2D::restart(bool p_keep_seed) {
+	if (!p_keep_seed && !use_fixed_seed) {
+		set_seed(Math::rand());
+	}
 	RS::get_singleton()->particles_restart(particles);
 	RS::get_singleton()->particles_set_emitting(particles, true);
 
@@ -504,6 +556,9 @@ void GPUParticles2D::convert_from_particles(Node *p_particles) {
 
 	proc_mat->set_emission_shape(ParticleProcessMaterial::EmissionShape(cpu_particles->get_emission_shape()));
 	proc_mat->set_emission_sphere_radius(cpu_particles->get_emission_sphere_radius());
+
+	proc_mat->set_emission_ring_radius(cpu_particles->get_emission_ring_radius());
+	proc_mat->set_emission_ring_inner_radius(cpu_particles->get_emission_ring_inner_radius());
 
 	Vector2 rect_extents = cpu_particles->get_emission_rect_extents();
 	proc_mat->set_emission_box_extents(Vector3(rect_extents.x, rect_extents.y, 0));
@@ -644,10 +699,10 @@ void GPUParticles2D::_notification(int p_what) {
 				};
 
 				Vector<Vector2> uvs;
-				AtlasTexture *atlas_texure = Object::cast_to<AtlasTexture>(*texture);
-				if (atlas_texure && atlas_texure->get_atlas().is_valid()) {
-					Rect2 region_rect = atlas_texure->get_region();
-					Size2 atlas_size = atlas_texure->get_atlas()->get_size();
+				AtlasTexture *atlas_texture = Object::cast_to<AtlasTexture>(*texture);
+				if (atlas_texture && atlas_texture->get_atlas().is_valid()) {
+					Rect2 region_rect = atlas_texture->get_region();
+					Size2 atlas_size = atlas_texture->get_atlas()->get_size();
 					uvs.push_back(Vector2(region_rect.position.x / atlas_size.x, region_rect.position.y / atlas_size.y));
 					uvs.push_back(Vector2((region_rect.position.x + region_rect.size.x) / atlas_size.x, region_rect.position.y / atlas_size.y));
 					uvs.push_back(Vector2((region_rect.position.x + region_rect.size.x) / atlas_size.x, (region_rect.position.y + region_rect.size.y) / atlas_size.y));
@@ -673,8 +728,9 @@ void GPUParticles2D::_notification(int p_what) {
 			RS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid);
 
 #ifdef TOOLS_ENABLED
-			if (show_visibility_rect) {
+			if (show_gizmos) {
 				draw_rect(visibility_rect, Color(0, 0.7, 0.9, 0.4), false);
+				_draw_emission_gizmo();
 			}
 #endif
 		} break;
@@ -689,6 +745,7 @@ void GPUParticles2D::_notification(int p_what) {
 				RS::get_singleton()->particles_set_speed_scale(particles, 0);
 			}
 			set_process_internal(true);
+			set_physics_process_internal(true);
 			previous_position = get_global_position();
 		} break;
 
@@ -696,6 +753,8 @@ void GPUParticles2D::_notification(int p_what) {
 			RS::get_singleton()->particles_set_subemitter(particles, RID());
 		} break;
 
+		case NOTIFICATION_SUSPENDED:
+		case NOTIFICATION_UNSUSPENDED:
 		case NOTIFICATION_PAUSED:
 		case NOTIFICATION_UNPAUSED: {
 			if (is_inside_tree()) {
@@ -712,12 +771,6 @@ void GPUParticles2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			RS::get_singleton()->particles_set_emitter_velocity(particles,
-					Vector3((get_global_position() - previous_position).x,
-							(get_global_position() - previous_position).y,
-							0.0) /
-							get_process_delta_time());
-			previous_position = get_global_position();
 			if (one_shot) {
 				time += get_process_delta_time();
 				if (time > emission_time) {
@@ -728,7 +781,7 @@ void GPUParticles2D::_notification(int p_what) {
 				}
 				if (time > active_time) {
 					if (active && !signal_canceled) {
-						emit_signal(SceneStringNames::get_singleton()->finished);
+						emit_signal(SceneStringName(finished));
 					}
 					active = false;
 					if (!emitting) {
@@ -737,8 +790,75 @@ void GPUParticles2D::_notification(int p_what) {
 				}
 			}
 		} break;
+
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			// Update velocity in physics process, so that velocity calculations remain correct
+			// if the physics tick rate is lower than the rendered framerate (especially without physics interpolation).
+			const Vector3 velocity = Vector3((get_global_position() - previous_position).x, (get_global_position() - previous_position).y, 0.0) /
+					get_physics_process_delta_time();
+
+			if (velocity != previous_velocity) {
+				RS::get_singleton()->particles_set_emitter_velocity(particles, velocity);
+				previous_velocity = velocity;
+			}
+			previous_position = get_global_position();
+		} break;
 	}
 }
+
+#ifdef TOOLS_ENABLED
+void GPUParticles2D::_draw_emission_gizmo() {
+	Ref<ParticleProcessMaterial> pm = process_material;
+	Color emission_ring_color = Color(0.8, 0.7, 0.4, 0.4);
+	if (pm.is_null()) {
+		return;
+	}
+	draw_set_transform(
+			Vector2(pm->get_emission_shape_offset().x, pm->get_emission_shape_offset().y),
+			0.0,
+			Vector2(pm->get_emission_shape_scale().x, pm->get_emission_shape_scale().y));
+
+	switch (pm->get_emission_shape()) {
+		case ParticleProcessMaterial::EmissionShape::EMISSION_SHAPE_BOX: {
+			Vector2 extents2d = Vector2(pm->get_emission_box_extents().x, pm->get_emission_box_extents().y);
+			draw_rect(Rect2(-extents2d, extents2d * 2.0), emission_ring_color, false);
+			break;
+		}
+		case ParticleProcessMaterial::EmissionShape::EMISSION_SHAPE_SPHERE:
+		case ParticleProcessMaterial::EmissionShape::EMISSION_SHAPE_SPHERE_SURFACE: {
+			draw_circle(Vector2(), pm->get_emission_sphere_radius(), emission_ring_color, false);
+			break;
+		}
+		case ParticleProcessMaterial::EmissionShape::EMISSION_SHAPE_RING: {
+			Vector3 ring_axis = pm->get_emission_ring_axis();
+			if (ring_axis.is_equal_approx(Vector3(0.0, 0.0, 1.0)) || ring_axis.is_zero_approx()) {
+				draw_circle(Vector2(), pm->get_emission_ring_inner_radius(), emission_ring_color, false);
+				draw_circle(Vector2(), pm->get_emission_ring_radius(), emission_ring_color, false);
+			} else {
+				Vector2 a = Vector2(pm->get_emission_ring_height() / -2.0, pm->get_emission_ring_radius() / -1.0);
+				Vector2 b = Vector2(-a.x, MIN(a.y + std::tan((90.0 - pm->get_emission_ring_cone_angle()) * 0.01745329) * pm->get_emission_ring_height(), 0.0));
+				Vector2 c = Vector2(b.x, -b.y);
+				Vector2 d = Vector2(a.x, -a.y);
+				if (ring_axis.is_equal_approx(Vector3(1.0, 0.0, 0.0))) {
+					Vector<Vector2> pos = { a, b, b, c, c, d, d, a };
+					draw_multiline(pos, emission_ring_color);
+				} else if (ring_axis.is_equal_approx(Vector3(0.0, 1.0, 0.0))) {
+					a = Vector2(a.y, a.x);
+					b = Vector2(b.y, b.x);
+					c = Vector2(c.y, c.x);
+					d = Vector2(d.y, d.x);
+					Vector<Vector2> pos = { a, b, b, c, c, d, d, a };
+					draw_multiline(pos, emission_ring_color);
+				}
+			}
+			break;
+		}
+		default: {
+			break;
+		}
+	}
+}
+#endif
 
 void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &GPUParticles2D::set_emitting);
@@ -757,6 +877,8 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &GPUParticles2D::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("set_collision_base_size", "size"), &GPUParticles2D::set_collision_base_size);
 	ClassDB::bind_method(D_METHOD("set_interp_to_end", "interp"), &GPUParticles2D::set_interp_to_end);
+
+	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time"), &GPUParticles2D::request_particles_process);
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &GPUParticles2D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &GPUParticles2D::get_amount);
@@ -783,7 +905,7 @@ void GPUParticles2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("capture_rect"), &GPUParticles2D::capture_rect);
 
-	ClassDB::bind_method(D_METHOD("restart"), &GPUParticles2D::restart);
+	ClassDB::bind_method(D_METHOD("restart", "keep_seed"), &GPUParticles2D::restart, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_sub_emitter", "path"), &GPUParticles2D::set_sub_emitter);
 	ClassDB::bind_method(D_METHOD("get_sub_emitter"), &GPUParticles2D::get_sub_emitter);
@@ -807,26 +929,33 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_amount_ratio", "ratio"), &GPUParticles2D::set_amount_ratio);
 	ClassDB::bind_method(D_METHOD("get_amount_ratio"), &GPUParticles2D::get_amount_ratio);
 
+	ClassDB::bind_method(D_METHOD("set_use_fixed_seed", "use_fixed_seed"), &GPUParticles2D::set_use_fixed_seed);
+	ClassDB::bind_method(D_METHOD("get_use_fixed_seed"), &GPUParticles2D::get_use_fixed_seed);
+
+	ClassDB::bind_method(D_METHOD("set_seed", "seed"), &GPUParticles2D::set_seed);
+	ClassDB::bind_method(D_METHOD("get_seed"), &GPUParticles2D::get_seed);
+
 	ADD_SIGNAL(MethodInfo("finished"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting", PROPERTY_HINT_ONESHOT), "set_emitting", "is_emitting");
 	ADD_PROPERTY_DEFAULT("emitting", true); // Workaround for doctool in headless mode, as dummy rasterizer always returns false.
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount"); // FIXME: Evaluate support for `exp` in integer properties, or remove this.
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "amount_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001"), "set_amount_ratio", "get_amount_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "sub_emitter", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GPUParticles2D"), "set_sub_emitter", "get_sub_emitter");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,ParticleProcessMaterial"), "set_process_material", "get_process_material");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_GROUP("Time", "");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater,suffix:s"), "set_lifetime", "get_lifetime");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater,exp,suffix:s"), "set_lifetime", "get_lifetime");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "interp_to_end", PROPERTY_HINT_RANGE, "0.00,1.0,0.001"), "set_interp_to_end", "get_interp_to_end");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "get_one_shot");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "preprocess", PROPERTY_HINT_RANGE, "0.00,600.0,0.01,suffix:s"), "set_pre_process_time", "get_pre_process_time");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "preprocess", PROPERTY_HINT_RANGE, "0.00,10.0,0.01,or_greater,exp,suffix:s"), "set_pre_process_time", "get_pre_process_time");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "explosiveness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_explosiveness_ratio", "get_explosiveness_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_randomness_ratio", "get_randomness_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_fixed_seed", PROPERTY_HINT_ENUM), "set_use_fixed_seed", "get_use_fixed_seed");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed", PROPERTY_HINT_RANGE, "0," + itos(UINT32_MAX) + ",1"), "set_seed", "get_seed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1,suffix:FPS"), "set_fixed_fps", "get_fixed_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interpolate"), "set_interpolate", "get_interpolate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fract_delta"), "set_fractional_delta", "get_fractional_delta");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "interp_to_end", PROPERTY_HINT_RANGE, "0.00,1.0,0.001"), "set_interp_to_end", "get_interp_to_end");
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_base_size", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater"), "set_collision_base_size", "get_collision_base_size");
 	ADD_GROUP("Drawing", "");
@@ -834,11 +963,12 @@ void GPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime,Reverse Lifetime"), "set_draw_order", "get_draw_order");
 	ADD_GROUP("Trails", "trail_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled"), "set_trail_enabled", "is_trail_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_trail_enabled", "is_trail_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_lifetime", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater,suffix:s"), "set_trail_lifetime", "get_trail_lifetime");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_sections", PROPERTY_HINT_RANGE, "2,128,1"), "set_trail_sections", "get_trail_sections");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_section_subdivisions", PROPERTY_HINT_RANGE, "1,1024,1"), "set_trail_section_subdivisions", "get_trail_section_subdivisions");
-
+	ADD_GROUP("Process Material", "");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ParticleProcessMaterial,ShaderMaterial"), "set_process_material", "get_process_material");
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_REVERSE_LIFETIME);
@@ -848,6 +978,8 @@ void GPUParticles2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(EMIT_FLAG_VELOCITY);
 	BIND_ENUM_CONSTANT(EMIT_FLAG_COLOR);
 	BIND_ENUM_CONSTANT(EMIT_FLAG_CUSTOM);
+
+	ADD_PROPERTY_DEFAULT("seed", 0);
 }
 
 GPUParticles2D::GPUParticles2D() {
@@ -861,6 +993,8 @@ GPUParticles2D::GPUParticles2D() {
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
 	set_emitting(true);
 	set_one_shot(false);
+	set_seed(Math::rand());
+	set_use_fixed_seed(false);
 	set_amount(8);
 	set_amount_ratio(1.0);
 	set_lifetime(1);
@@ -880,6 +1014,6 @@ GPUParticles2D::GPUParticles2D() {
 
 GPUParticles2D::~GPUParticles2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(particles);
-	RS::get_singleton()->free(mesh);
+	RS::get_singleton()->free_rid(particles);
+	RS::get_singleton()->free_rid(mesh);
 }

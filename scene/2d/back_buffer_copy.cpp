@@ -45,7 +45,7 @@ void BackBufferCopy::_update_copy_mode() {
 	}
 }
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 BackBufferCopy::_edit_get_rect() const {
 	return rect;
 }
@@ -53,7 +53,7 @@ Rect2 BackBufferCopy::_edit_get_rect() const {
 bool BackBufferCopy::_edit_use_rect() const {
 	return true;
 }
-#endif
+#endif // DEBUG_ENABLED
 
 Rect2 BackBufferCopy::get_anchorable_rect() const {
 	return rect;
@@ -80,6 +80,9 @@ BackBufferCopy::CopyMode BackBufferCopy::get_copy_mode() const {
 }
 
 void BackBufferCopy::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (copy_mode != COPY_MODE_RECT && p_property.name == "rect") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}

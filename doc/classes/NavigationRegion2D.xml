@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationRegion2D" inherits="Node2D" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationRegion2D" inherits="Node2D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A traversable 2D region that [NavigationAgent2D]s can use for pathfinding.
 	</brief_description>
@@ -23,11 +23,10 @@
 				Bakes the [NavigationPolygon]. If [param on_thread] is set to [code]true[/code] (default), the baking is done on a separate thread.
 			</description>
 		</method>
-		<method name="get_avoidance_layer_value" qualifiers="const">
-			<return type="bool" />
-			<param index="0" name="layer_number" type="int" />
+		<method name="get_bounds" qualifiers="const">
+			<return type="Rect2" />
 			<description>
-				Returns whether or not the specified layer of the [member avoidance_layers] bitmask is enabled, given a [param layer_number] between 1 and 32.
+				Returns the axis-aligned rectangle for the region's transformed navigation mesh.
 			</description>
 		</method>
 		<method name="get_navigation_layer_value" qualifiers="const">
@@ -43,18 +42,22 @@
 				Returns the current navigation map [RID] used by this region.
 			</description>
 		</method>
-		<method name="get_region_rid" qualifiers="const">
+		<method name="get_region_rid" qualifiers="const" deprecated="Use [method get_rid] instead.">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of this region on the [NavigationServer2D].
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
 				Returns the [RID] of this region on the [NavigationServer2D]. Combined with [method NavigationServer2D.map_get_closest_point_owner] can be used to identify the [NavigationRegion2D] closest to a point on the merged navigation map.
 			</description>
 		</method>
-		<method name="set_avoidance_layer_value">
-			<return type="void" />
-			<param index="0" name="layer_number" type="int" />
-			<param index="1" name="value" type="bool" />
+		<method name="is_baking" qualifiers="const">
+			<return type="bool" />
 			<description>
-				Based on [param value], enables or disables the specified layer in the [member avoidance_layers] bitmask, given a [param layer_number] between 1 and 32.
+				Returns [code]true[/code] when the [NavigationPolygon] is being baked on a background thread.
 			</description>
 		</method>
 		<method name="set_navigation_layer_value">
@@ -74,13 +77,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="avoidance_layers" type="int" setter="set_avoidance_layers" getter="get_avoidance_layers" default="1">
-			A bitfield determining all avoidance layers for the avoidance constrain.
-		</member>
-		<member name="constrain_avoidance" type="bool" setter="set_constrain_avoidance" getter="get_constrain_avoidance" default="false">
-			If [code]true[/code] constraints avoidance agent's with an avoidance mask bit that matches with a bit of the [member avoidance_layers] to the navigation polygon. Due to each navigation polygon outline creating an obstacle and each polygon edge creating an avoidance line constrain keep the navigation polygon shape as simple as possible for performance.
-			[b]Experimental:[/b] This is an experimental feature and should not be used in production as agent's can get stuck on the navigation polygon corners and edges especially at high frame rate.
-		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			Determines if the [NavigationRegion2D] is enabled or disabled.
 		</member>

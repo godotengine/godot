@@ -28,13 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_MENU_ITEM_H
-#define GODOT_MENU_ITEM_H
+#pragma once
 
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
+
+#define MENU_TAG_START 0x00004447
+#define MENU_TAG_END 0xFFFF4447
 
 enum GlobalMenuCheckType {
 	CHECKABLE_TYPE_NONE,
@@ -48,12 +50,13 @@ enum GlobalMenuCheckType {
 	Callable key_callback;
 	Callable hover_callback;
 	Variant meta;
+	Key accel;
 	GlobalMenuCheckType checkable_type;
+	bool checked;
+	bool enabled;
 	int max_states;
 	int state;
 	Ref<Image> img;
 }
 
 @end
-
-#endif // GODOT_MENU_ITEM_H

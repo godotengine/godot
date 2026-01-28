@@ -33,7 +33,7 @@
 				Override this method to define the actual shader code of the associated custom node. The shader code should be returned as a string, which can have multiple lines (the [code]"""[/code] multiline string construct can be used for convenience).
 				The [param input_vars] and [param output_vars] arrays contain the string names of the various input and output variables, as defined by [code]_get_input_*[/code] and [code]_get_output_*[/code] virtual methods in this class.
 				The output ports can be assigned values in the shader code. For example, [code]return output_vars[0] + " = " + input_vars[0] + ";"[/code].
-				You can customize the generated code based on the shader [param mode] (see [enum Shader.Mode]) and/or [param type] (see [enum VisualShader.Type]).
+				You can customize the generated code based on the shader [param mode] and/or [param type].
 				Defining this method is [b]required[/b].
 			</description>
 		</method>
@@ -59,7 +59,7 @@
 			<description>
 				Override this method to add a shader code to the beginning of each shader function (once). The shader code should be returned as a string, which can have multiple lines (the [code]"""[/code] multiline string construct can be used for convenience).
 				If there are multiple custom nodes of different types which use this feature the order of each insertion is undefined.
-				You can customize the generated code based on the shader [param mode] (see [enum Shader.Mode]) and/or [param type] (see [enum VisualShader.Type]).
+				You can customize the generated code based on the shader [param mode] and/or [param type].
 				Defining this method is [b]optional[/b].
 			</description>
 		</method>
@@ -69,7 +69,7 @@
 			<description>
 				Override this method to add shader code on top of the global shader, to define your own standard library of reusable methods, varyings, constants, uniforms, etc. The shader code should be returned as a string, which can have multiple lines (the [code]"""[/code] multiline string construct can be used for convenience).
 				Be careful with this functionality as it can cause name conflicts with other custom nodes, so be sure to give the defined entities unique names.
-				You can customize the generated code based on the shader [param mode] (see [enum Shader.Mode]).
+				You can customize the generated code based on the shader [param mode].
 				Defining this method is [b]optional[/b].
 			</description>
 		</method>
@@ -100,7 +100,7 @@
 			<return type="int" enum="VisualShaderNode.PortType" />
 			<param index="0" name="port" type="int" />
 			<description>
-				Override this method to define the returned type of each input port of the associated custom node (see [enum VisualShaderNode.PortType] for possible types).
+				Override this method to define the returned type of each input port of the associated custom node.
 				Defining this method is [b]optional[/b], but recommended. If not overridden, input ports will return the [constant VisualShaderNode.PORT_TYPE_SCALAR] type.
 			</description>
 		</method>
@@ -130,7 +130,7 @@
 			<return type="int" enum="VisualShaderNode.PortType" />
 			<param index="0" name="port" type="int" />
 			<description>
-				Override this method to define the returned type of each output port of the associated custom node (see [enum VisualShaderNode.PortType] for possible types).
+				Override this method to define the returned type of each output port of the associated custom node.
 				Defining this method is [b]optional[/b], but recommended. If not overridden, output ports will return the [constant VisualShaderNode.PORT_TYPE_SCALAR] type.
 			</description>
 		</method>
@@ -177,15 +177,15 @@
 			<param index="0" name="mode" type="int" enum="Shader.Mode" />
 			<param index="1" name="type" type="int" enum="VisualShader.Type" />
 			<description>
-				Override this method to prevent the node to be visible in the member dialog for the certain [param mode] (see [enum Shader.Mode]) and/or [param type] (see [enum VisualShader.Type]).
+				Override this method to prevent the node to be visible in the member dialog for the certain [param mode] and/or [param type].
 				Defining this method is [b]optional[/b]. If not overridden, it's [code]true[/code].
 			</description>
 		</method>
 		<method name="_is_highend" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
-				Override this method to enable high-end mark in the Visual Shader Editor's members dialog.
-				Defining this method is [b]optional[/b]. If not overridden, it's [code]false[/code].
+				Override this method to enable the high-end mark in the Visual Shader Editor's members dialog. This should return [code]true[/code] for nodes that only work when using the Forward+ and Mobile renderers.
+				Defining this method is [b]optional[/b]. If not overridden, it's [code]false[/code], which indicates this node works with all renderers (including Compatibility).
 			</description>
 		</method>
 		<method name="get_option_index" qualifiers="const">

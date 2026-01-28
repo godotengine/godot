@@ -29,7 +29,8 @@
 /**************************************************************************/
 
 #include "http_request.h"
-#include "core/io/compression.h"
+
+#include "core/io/file_access.h"
 #include "scene/main/timer.h"
 
 Error HTTPRequest::_request() {
@@ -49,13 +50,16 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 	redirections = 0;
 
 	String scheme;
-	Error err = p_url.parse_url(scheme, url, port, request_string);
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Error parsing URL: " + p_url + ".");
+	String fragment;
+	Error err = p_url.parse_url(scheme, url, port, request_string, fragment);
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Error parsing URL: '%s'.", p_url));
+
 	if (scheme == "https://") {
 		use_tls = true;
 	} else if (scheme != "http://") {
-		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Invalid URL scheme: " + scheme + ".");
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, vformat("Invalid URL scheme: '%s'.", scheme));
 	}
+
 	if (port == 0) {
 		port = use_tls ? 443 : 80;
 	}
@@ -84,7 +88,7 @@ String HTTPRequest::get_header_value(const PackedStringArray &p_headers, const S
 
 	String lowwer_case_header_name = p_header_name.to_lower();
 	for (int i = 0; i < p_headers.size(); i++) {
-		if (p_headers[i].find(":") > 0) {
+		if (p_headers[i].find_char(':') > 0) {
 			Vector<String> parts = p_headers[i].split(":", false, 1);
 			if (parts.size() > 1 && parts[0].strip_edges().to_lower() == lowwer_case_header_name) {
 				value = parts[1].strip_edges();
@@ -205,6 +209,26 @@ void HTTPRequest::cancel_request() {
 	requesting = false;
 }
 
+bool HTTPRequest::_is_content_header(const String &p_header) const {
+	return (p_header.begins_with("content-type:") || p_header.begins_with("content-length:") || p_header.begins_with("content-location:") || p_header.begins_with("content-encoding:") ||
+			p_header.begins_with("transfer-encoding:") || p_header.begins_with("connection:") || p_header.begins_with("authorization:"));
+}
+
+bool HTTPRequest::_is_method_safe() const {
+	return (method == HTTPClient::METHOD_GET || method == HTTPClient::METHOD_HEAD || method == HTTPClient::METHOD_OPTIONS || method == HTTPClient::METHOD_TRACE);
+}
+
+Error HTTPRequest::_get_redirect_headers(Vector<String> *r_headers) {
+	for (const String &E : headers) {
+		const String h = E.to_lower();
+		// We strip content headers when changing a redirect to GET.
+		if (!_is_content_header(h)) {
+			r_headers->push_back(E);
+		}
+	}
+	return OK;
+}
+
 bool HTTPRequest::_handle_response(bool *ret_value) {
 	if (!client->has_response()) {
 		_defer_done(RESULT_NO_RESPONSE, 0, PackedStringArray(), PackedByteArray());
@@ -237,8 +261,8 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 		String new_request;
 
 		for (const String &E : rheaders) {
-			if (E.findn("Location: ") != -1) {
-				new_request = E.substr(9, E.length()).strip_edges();
+			if (E.to_lower().begins_with("location: ")) {
+				new_request = E.substr(9).strip_edges();
 			}
 		}
 
@@ -264,6 +288,16 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 				final_body_size.set(0);
 				redirections = new_redirs;
 				*ret_value = false;
+				if (!_is_method_safe()) {
+					// 301, 302, and 303 are changed to GET for unsafe methods.
+					// See: https://www.rfc-editor.org/rfc/rfc9110#section-15.4-3.1
+					method = HTTPClient::METHOD_GET;
+					// Content headers should be dropped if changing method.
+					// See: https://www.rfc-editor.org/rfc/rfc9110#section-15.4-6.2.1
+					Vector<String> req_headers;
+					_get_redirect_headers(&req_headers);
+					headers = req_headers;
+				}
 				return true;
 			}
 		}
@@ -472,7 +506,7 @@ bool HTTPRequest::_update_connection() {
 }
 
 void HTTPRequest::_defer_done(int p_status, int p_code, const PackedStringArray &p_headers, const PackedByteArray &p_data) {
-	call_deferred(SNAME("_request_done"), p_status, p_code, p_headers, p_data);
+	callable_mp(this, &HTTPRequest::_request_done).call_deferred(p_status, p_code, p_headers, p_data);
 }
 
 void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArray &p_headers, const PackedByteArray &p_data) {
@@ -503,7 +537,9 @@ void HTTPRequest::_notification(int p_what) {
 
 void HTTPRequest::set_use_threads(bool p_use) {
 	ERR_FAIL_COND(get_http_client_status() != HTTPClient::STATUS_DISCONNECTED);
+#ifdef THREADS_ENABLED
 	use_threads.set_to(p_use);
+#endif
 }
 
 bool HTTPRequest::is_using_threads() const {
@@ -621,8 +657,6 @@ void HTTPRequest::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_downloaded_bytes"), &HTTPRequest::get_downloaded_bytes);
 	ClassDB::bind_method(D_METHOD("get_body_size"), &HTTPRequest::get_body_size);
 
-	ClassDB::bind_method(D_METHOD("_request_done"), &HTTPRequest::_request_done);
-
 	ClassDB::bind_method(D_METHOD("set_timeout", "timeout"), &HTTPRequest::set_timeout);
 	ClassDB::bind_method(D_METHOD("get_timeout"), &HTTPRequest::get_timeout);
 
@@ -632,7 +666,7 @@ void HTTPRequest::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_http_proxy", "host", "port"), &HTTPRequest::set_http_proxy);
 	ClassDB::bind_method(D_METHOD("set_https_proxy", "host", "port"), &HTTPRequest::set_https_proxy);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_FILE), "set_download_file", "get_download_file");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_FILE_PATH), "set_download_file", "get_download_file");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "download_chunk_size", PROPERTY_HINT_RANGE, "256,16777216,suffix:B"), "set_download_chunk_size", "get_download_chunk_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_threads"), "set_use_threads", "is_using_threads");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "accept_gzip"), "set_accept_gzip", "is_accepting_gzip");
@@ -663,6 +697,7 @@ HTTPRequest::HTTPRequest() {
 	tls_options = TLSOptions::client();
 	timer = memnew(Timer);
 	timer->set_one_shot(true);
+	timer->set_ignore_time_scale(true);
 	timer->connect("timeout", callable_mp(this, &HTTPRequest::_timeout));
 	add_child(timer);
 }

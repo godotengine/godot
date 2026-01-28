@@ -23,14 +23,18 @@
 #endif
 
 #include <emmintrin.h>
-#include "src/dsp/common_sse2.h"
+
 #include "src/dec/vp8i_dec.h"
+#include "src/dsp/common_sse2.h"
+#include "src/dsp/cpu.h"
 #include "src/utils/utils.h"
+#include "src/webp/types.h"
 
 //------------------------------------------------------------------------------
 // Transforms (Paragraph 14.4)
 
-static void Transform_SSE2(const int16_t* in, uint8_t* dst, int do_two) {
+static void Transform_SSE2(const int16_t* WEBP_RESTRICT in,
+                           uint8_t* WEBP_RESTRICT dst, int do_two) {
   // This implementation makes use of 16-bit fixed point versions of two
   // multiply constants:
   //    K1 = sqrt(2) * cos (pi/8) ~= 85627 / 2^16
@@ -196,15 +200,14 @@ static void Transform_SSE2(const int16_t* in, uint8_t* dst, int do_two) {
 }
 
 #if (USE_TRANSFORM_AC3 == 1)
-#define MUL(a, b) (((a) * (b)) >> 16)
-static void TransformAC3(const int16_t* in, uint8_t* dst) {
-  static const int kC1 = 20091 + (1 << 16);
-  static const int kC2 = 35468;
+
+static void TransformAC3_SSE2(const int16_t* WEBP_RESTRICT in,
+                              uint8_t* WEBP_RESTRICT dst) {
   const __m128i A = _mm_set1_epi16(in[0] + 4);
-  const __m128i c4 = _mm_set1_epi16(MUL(in[4], kC2));
-  const __m128i d4 = _mm_set1_epi16(MUL(in[4], kC1));
-  const int c1 = MUL(in[1], kC2);
-  const int d1 = MUL(in[1], kC1);
+  const __m128i c4 = _mm_set1_epi16(WEBP_TRANSFORM_AC3_MUL2(in[4]));
+  const __m128i d4 = _mm_set1_epi16(WEBP_TRANSFORM_AC3_MUL1(in[4]));
+  const int c1 = WEBP_TRANSFORM_AC3_MUL2(in[1]);
+  const int d1 = WEBP_TRANSFORM_AC3_MUL1(in[1]);
   const __m128i CD = _mm_set_epi16(0, 0, 0, 0, -d1, -c1, c1, d1);
   const __m128i B = _mm_adds_epi16(A, CD);
   const __m128i m0 = _mm_adds_epi16(B, d4);
@@ -238,7 +241,7 @@ static void TransformAC3(const int16_t* in, uint8_t* dst) {
   WebPInt32ToMem(dst + 2 * BPS, _mm_cvtsi128_si32(dst2));
   WebPInt32ToMem(dst + 3 * BPS, _mm_cvtsi128_si32(dst3));
 }
-#undef MUL
+
 #endif   // USE_TRANSFORM_AC3
 
 //------------------------------------------------------------------------------
@@ -259,15 +262,15 @@ static WEBP_INLINE void SignedShift8b_SSE2(__m128i* const x) {
   *x = _mm_packs_epi16(lo_1, hi_1);
 }
 
-#define FLIP_SIGN_BIT2(a, b) {                                                 \
+#define FLIP_SIGN_BIT2(a, b) do {                                              \
   (a) = _mm_xor_si128(a, sign_bit);                                            \
   (b) = _mm_xor_si128(b, sign_bit);                                            \
-}
+} while (0)
 
-#define FLIP_SIGN_BIT4(a, b, c, d) {                                           \
+#define FLIP_SIGN_BIT4(a, b, c, d) do {                                        \
   FLIP_SIGN_BIT2(a, b);                                                        \
   FLIP_SIGN_BIT2(c, d);                                                        \
-}
+} while (0)
 
 // input/output is uint8_t
 static WEBP_INLINE void GetNotHEV_SSE2(const __m128i* const p1,
@@ -645,12 +648,12 @@ static void SimpleHFilter16i_SSE2(uint8_t* p, int stride, int thresh) {
   (m) = _mm_max_epu8(m, MM_ABS(p2, p1));                                       \
 } while (0)
 
-#define LOAD_H_EDGES4(p, stride, e1, e2, e3, e4) {                             \
+#define LOAD_H_EDGES4(p, stride, e1, e2, e3, e4) do {                          \
   (e1) = _mm_loadu_si128((__m128i*)&(p)[0 * (stride)]);                        \
   (e2) = _mm_loadu_si128((__m128i*)&(p)[1 * (stride)]);                        \
   (e3) = _mm_loadu_si128((__m128i*)&(p)[2 * (stride)]);                        \
   (e4) = _mm_loadu_si128((__m128i*)&(p)[3 * (stride)]);                        \
-}
+} while (0)
 
 #define LOADUV_H_EDGE(p, u, v, stride) do {                                    \
   const __m128i U = _mm_loadl_epi64((__m128i*)&(u)[(stride)]);                 \
@@ -658,18 +661,18 @@ static void SimpleHFilter16i_SSE2(uint8_t* p, int stride, int thresh) {
   (p) = _mm_unpacklo_epi64(U, V);                                              \
 } while (0)
 
-#define LOADUV_H_EDGES4(u, v, stride, e1, e2, e3, e4) {                        \
+#define LOADUV_H_EDGES4(u, v, stride, e1, e2, e3, e4) do {                     \
   LOADUV_H_EDGE(e1, u, v, 0 * (stride));                                       \
   LOADUV_H_EDGE(e2, u, v, 1 * (stride));                                       \
   LOADUV_H_EDGE(e3, u, v, 2 * (stride));                                       \
   LOADUV_H_EDGE(e4, u, v, 3 * (stride));                                       \
-}
+} while (0)
 
-#define STOREUV(p, u, v, stride) {                                             \
+#define STOREUV(p, u, v, stride) do {                                          \
   _mm_storel_epi64((__m128i*)&(u)[(stride)], p);                               \
   (p) = _mm_srli_si128(p, 8);                                                  \
   _mm_storel_epi64((__m128i*)&(v)[(stride)], p);                               \
-}
+} while (0)
 
 static WEBP_INLINE void ComplexMask_SSE2(const __m128i* const p1,
                                          const __m128i* const p0,
@@ -794,8 +797,8 @@ static void HFilter16i_SSE2(uint8_t* p, int stride,
 }
 
 // 8-pixels wide variant, for chroma filtering
-static void VFilter8_SSE2(uint8_t* u, uint8_t* v, int stride,
-                          int thresh, int ithresh, int hev_thresh) {
+static void VFilter8_SSE2(uint8_t* WEBP_RESTRICT u, uint8_t* WEBP_RESTRICT v,
+                          int stride, int thresh, int ithresh, int hev_thresh) {
   __m128i mask;
   __m128i t1, p2, p1, p0, q0, q1, q2;
 
@@ -819,8 +822,8 @@ static void VFilter8_SSE2(uint8_t* u, uint8_t* v, int stride,
   STOREUV(q2, u, v, 2 * stride);
 }
 
-static void HFilter8_SSE2(uint8_t* u, uint8_t* v, int stride,
-                          int thresh, int ithresh, int hev_thresh) {
+static void HFilter8_SSE2(uint8_t* WEBP_RESTRICT u, uint8_t* WEBP_RESTRICT v,
+                          int stride, int thresh, int ithresh, int hev_thresh) {
   __m128i mask;
   __m128i p3, p2, p1, p0, q0, q1, q2, q3;
 
@@ -839,7 +842,8 @@ static void HFilter8_SSE2(uint8_t* u, uint8_t* v, int stride,
   Store16x4_SSE2(&q0, &q1, &q2, &q3, u, v, stride);
 }
 
-static void VFilter8i_SSE2(uint8_t* u, uint8_t* v, int stride,
+static void VFilter8i_SSE2(uint8_t* WEBP_RESTRICT u, uint8_t* WEBP_RESTRICT v,
+                           int stride,
                            int thresh, int ithresh, int hev_thresh) {
   __m128i mask;
   __m128i t1, t2, p1, p0, q0, q1;
@@ -865,7 +869,8 @@ static void VFilter8i_SSE2(uint8_t* u, uint8_t* v, int stride,
   STOREUV(q1, u, v, 1 * stride);
 }
 
-static void HFilter8i_SSE2(uint8_t* u, uint8_t* v, int stride,
+static void HFilter8i_SSE2(uint8_t* WEBP_RESTRICT u, uint8_t* WEBP_RESTRICT v,
+                           int stride,
                            int thresh, int ithresh, int hev_thresh) {
   __m128i mask;
   __m128i t1, t2, p1, p0, q0, q1;

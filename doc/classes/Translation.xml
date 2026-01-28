@@ -4,10 +4,12 @@
 		A language translation that maps a collection of strings to their individual translations.
 	</brief_description>
 	<description>
-		[Translation]s are resources that can be loaded and unloaded on demand. They map a collection of strings to their individual translations, and they also provide convenience methods for pluralization.
+		[Translation] maps a collection of strings to their individual translations, and also provides convenience methods for pluralization.
+		A [Translation] consists of messages. A message is identified by its context and untranslated string. Unlike [url=https://www.gnu.org/software/gettext/]gettext[/url], using an empty context string in Godot means not using any context.
 	</description>
 	<tutorials>
 		<link title="Internationalizing games">$DOCS_URL/tutorials/i18n/internationalizing_games.html</link>
+		<link title="Localization using gettext">$DOCS_URL/tutorials/i18n/localization_using_gettext.html</link>
 		<link title="Locales">$DOCS_URL/tutorials/i18n/locales.html</link>
 	</tutorials>
 	<methods>
@@ -33,7 +35,7 @@
 			<return type="void" />
 			<param index="0" name="src_message" type="StringName" />
 			<param index="1" name="xlated_message" type="StringName" />
-			<param index="2" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="2" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Adds a message if nonexistent, followed by its translation.
 				An additional context could be used to specify the translation context or differentiate polysemic words.
@@ -43,7 +45,7 @@
 			<return type="void" />
 			<param index="0" name="src_message" type="StringName" />
 			<param index="1" name="xlated_messages" type="PackedStringArray" />
-			<param index="2" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="2" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Adds a message involving plural translation if nonexistent, followed by its translation.
 				An additional context could be used to specify the translation context or differentiate polysemic words.
@@ -52,7 +54,7 @@
 		<method name="erase_message">
 			<return type="void" />
 			<param index="0" name="src_message" type="StringName" />
-			<param index="1" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Erases a message.
 			</description>
@@ -60,7 +62,7 @@
 		<method name="get_message" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="src_message" type="StringName" />
-			<param index="1" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a message's translation.
 			</description>
@@ -74,7 +76,19 @@
 		<method name="get_message_list" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				Returns all the messages (keys).
+				Returns the keys of all messages, that is, the context and untranslated strings of each message.
+				[b]Note:[/b] If a message does not use a context, the corresponding element is the untranslated string. Otherwise, the corresponding element is the context and untranslated string separated by the EOT character ([code]U+0004[/code]). This is done for compatibility purposes.
+				[codeblock]
+				for key in translation.get_message_list():
+					var p = key.find("\u0004")
+					if p == -1:
+						var untranslated = key
+						print("Message %s" % untranslated)
+					else:
+						var context = key.substr(0, p)
+						var untranslated = key.substr(p + 1)
+						print("Message %s with context %s" % [untranslated, context])
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_plural_message" qualifiers="const">
@@ -82,22 +96,27 @@
 			<param index="0" name="src_message" type="StringName" />
 			<param index="1" name="src_plural_message" type="StringName" />
 			<param index="2" name="n" type="int" />
-			<param index="3" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="3" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a message's translation involving plurals.
 				The number [param n] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
+				[b]Note:[/b] Plurals are only supported in [url=$DOCS_URL/tutorials/i18n/localization_using_gettext.html]gettext-based translations (PO)[/url], not CSV.
 			</description>
 		</method>
 		<method name="get_translated_message_list" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				Returns all the messages (translated text).
+				Returns all the translated strings.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="locale" type="String" setter="set_locale" getter="get_locale" default="&quot;en&quot;">
 			The locale of the translation.
+		</member>
+		<member name="plural_rules_override" type="String" setter="set_plural_rules_override" getter="get_plural_rules_override" default="&quot;&quot;">
+			The plural rules string to enforce. See [url=https://www.gnu.org/software/gettext/manual/html_node/Plural-forms.html]GNU gettext[/url] for examples and more info.
+			If empty or invalid, default plural rules from [method TranslationServer.get_plural_rules] are used. The English plural rules are used as a fallback.
 		</member>
 	</members>
 </class>

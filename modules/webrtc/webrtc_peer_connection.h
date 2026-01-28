@@ -28,12 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WEBRTC_PEER_CONNECTION_H
-#define WEBRTC_PEER_CONNECTION_H
+#pragma once
 
 #include "webrtc_data_channel.h"
-
-#include "core/io/packet_peer.h"
 
 class WebRTCPeerConnection : public RefCounted {
 	GDCLASS(WebRTCPeerConnection, RefCounted);
@@ -76,16 +73,16 @@ public:
 	virtual GatheringState get_gathering_state() const = 0;
 	virtual SignalingState get_signaling_state() const = 0;
 
-	virtual Error initialize(Dictionary p_config = Dictionary()) = 0;
-	virtual Ref<WebRTCDataChannel> create_data_channel(String p_label, Dictionary p_options = Dictionary()) = 0;
+	virtual Error initialize(const Dictionary &p_config = Dictionary()) = 0;
+	virtual Ref<WebRTCDataChannel> create_data_channel(const String &p_label, const Dictionary &p_options = Dictionary()) = 0;
 	virtual Error create_offer() = 0;
-	virtual Error set_remote_description(String type, String sdp) = 0;
-	virtual Error set_local_description(String type, String sdp) = 0;
-	virtual Error add_ice_candidate(String sdpMidName, int sdpMlineIndexName, String sdpName) = 0;
+	virtual Error set_remote_description(const String &p_type, const String &p_sdp) = 0;
+	virtual Error set_local_description(const String &p_type, const String &p_sdp) = 0;
+	virtual Error add_ice_candidate(const String &p_sdp_mid_name, int p_sdp_mline_index_name, const String &p_sdp_name) = 0;
 	virtual Error poll() = 0;
 	virtual void close() = 0;
 
-	static WebRTCPeerConnection *create();
+	static WebRTCPeerConnection *create(bool p_notify_postinitialize = true);
 
 	WebRTCPeerConnection();
 	~WebRTCPeerConnection();
@@ -94,5 +91,3 @@ public:
 VARIANT_ENUM_CAST(WebRTCPeerConnection::ConnectionState);
 VARIANT_ENUM_CAST(WebRTCPeerConnection::GatheringState);
 VARIANT_ENUM_CAST(WebRTCPeerConnection::SignalingState);
-
-#endif // WEBRTC_PEER_CONNECTION_H

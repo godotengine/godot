@@ -1,8 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace GodotTools.IdeMessaging
 {
     public interface IHandshake
     {
-        string GetHandshakeLine(string identity);
-        bool IsValidPeerHandshake(string handshake, out string identity, ILogger logger);
+        public string GetHandshakeLine(string identity);
+        public bool IsValidPeerHandshake(string handshake, [NotNullWhen(true)] out string? identity, ILogger logger);
     }
 }

@@ -28,8 +28,20 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="add_types" type="bool" />
 			<description>
-				If implemented, gets the dependencies of a given resource. If [param add_types] is [code]true[/code], paths should be appended [code]::TypeName[/code], where [code]TypeName[/code] is the class name of the dependency.
-				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just return [code]"Resource"[/code] for them.
+				Should return the dependencies for the resource at the given [param path]. Each dependency is a string composed of one to three sections separated by [code]::[/code], with trailing empty sections omitted:
+				- The first section should contain the UID if the resource has one. Otherwise, it should contain the file path.
+				- The second section should contain the class name of the dependency if [param add_types] is [code]true[/code]. Otherwise, it should be empty.
+				- The third section should contain the fallback path if the resource has a UID. Otherwise, it should be empty.
+				[codeblock]
+				func _get_dependencies(path, add_types):
+					return [
+						"uid://fqgvuwrkuixh::Script::res://script.gd",
+						"uid://fqgvuwrkuixh::::res://script.gd",
+						"res://script.gd::Script",
+						"res://script.gd",
+					]
+				[/codeblock]
+				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so [code]"Resource"[/code] can be used for the class name.
 			</description>
 		</method>
 		<method name="_get_recognized_extensions" qualifiers="virtual const">
@@ -57,6 +69,7 @@
 			<return type="int" />
 			<param index="0" name="path" type="String" />
 			<description>
+				Should return the unique ID for the resource associated with the given path. If this method is not overridden, a [code].uid[/code] file is generated along with the resource file, containing the unique ID.
 			</description>
 		</method>
 		<method name="_handles_type" qualifiers="virtual const">
@@ -67,7 +80,7 @@
 				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just handle [code]"Resource"[/code] for them.
 			</description>
 		</method>
-		<method name="_load" qualifiers="virtual const">
+		<method name="_load" qualifiers="virtual required const">
 			<return type="Variant" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="original_path" type="String" />
@@ -99,10 +112,19 @@
 	</methods>
 	<constants>
 		<constant name="CACHE_MODE_IGNORE" value="0" enum="CacheMode">
+			Neither the main resource (the one requested to be loaded) nor any of its subresources are retrieved from cache nor stored into it. Dependencies (external resources) are loaded with [constant CACHE_MODE_REUSE].
 		</constant>
 		<constant name="CACHE_MODE_REUSE" value="1" enum="CacheMode">
+			The main resource (the one requested to be loaded), its subresources, and its dependencies (external resources) are retrieved from cache if present, instead of loaded. Those not cached are loaded and then stored into the cache. The same rules are propagated recursively down the tree of dependencies (external resources).
 		</constant>
 		<constant name="CACHE_MODE_REPLACE" value="2" enum="CacheMode">
+			Like [constant CACHE_MODE_REUSE], but the cache is checked for the main resource (the one requested to be loaded) as well as for each of its subresources. Those already in the cache, as long as the loaded and cached types match, have their data refreshed from storage into the already existing instances. Otherwise, they are recreated as completely new objects.
+		</constant>
+		<constant name="CACHE_MODE_IGNORE_DEEP" value="3" enum="CacheMode">
+			Like [constant CACHE_MODE_IGNORE], but propagated recursively down the tree of dependencies (external resources).
+		</constant>
+		<constant name="CACHE_MODE_REPLACE_DEEP" value="4" enum="CacheMode">
+			Like [constant CACHE_MODE_REPLACE], but propagated recursively down the tree of dependencies (external resources).
 		</constant>
 	</constants>
 </class>

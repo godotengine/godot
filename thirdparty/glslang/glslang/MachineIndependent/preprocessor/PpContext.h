@@ -86,11 +86,6 @@ NVIDIA HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../ParseHelper.h"
 #include "PpTokens.h"
 
-/* windows only pragma */
-#ifdef _MSC_VER
-    #pragma warning(disable : 4127)
-#endif
-
 namespace glslang {
 
 class TPpToken {
@@ -220,6 +215,7 @@ public:
         virtual bool peekContinuedPasting(int) { return false; } // true when non-spaced tokens can paste
         virtual bool endOfReplacementList() { return false; } // true when at the end of a macro replacement list (RHS of #define)
         virtual bool isMacroInput() { return false; }
+        virtual bool isStringInput() { return false; }
 
         // Will be called when we start reading tokens from this instance
         virtual void notifyActivated() {}
@@ -360,7 +356,8 @@ protected:
     // Scanner data:
     int previous_token;
     TParseContextBase& parseContext;
-
+    std::vector<int> lastLineTokens;
+    std::vector<TSourceLoc> lastLineTokenLocs;
     // Get the next token from *stack* of input sources, popping input sources
     // that are out of tokens, down until an input source is found that has a token.
     // Return EndOfInput when there are no more tokens to be found by doing this.
@@ -374,7 +371,31 @@ protected:
                 break;
             popInput();
         }
-
+        if (!inputStack.empty() && inputStack.back()->isStringInput()) {
+            if (token == '\n') {
+                bool seenNumSign = false;
+                for (int i = 0; i < (int)lastLineTokens.size() - 1;) {
+                    int curPos = i;
+                    int curToken = lastLineTokens[i++];
+                    if (curToken == '#' && lastLineTokens[i] == '#') {
+                        curToken = PpAtomPaste;
+                        i++;
+                    }
+                    if (curToken == '#') {
+                        if (seenNumSign) {
+                            parseContext.ppError(lastLineTokenLocs[curPos], "(#) can be preceded in its line only by spaces or horizontal tabs", "#", "");
+                        } else {
+                            seenNumSign = true;
+                        }
+                    }
+                }
+                lastLineTokens.clear();
+                lastLineTokenLocs.clear();
+            } else {
+                lastLineTokens.push_back(token);
+                lastLineTokenLocs.push_back(ppToken->loc);
+            }
+        }
         return token;
     }
     int  getChar() { return inputStack.back()->getch(); }
@@ -527,7 +548,7 @@ protected:
     public:
         tStringInput(TPpContext* pp, TInputScanner& i) : tInput(pp), input(&i) { }
         virtual int scan(TPpToken*) override;
-
+        bool isStringInput() override { return true; }
         // Scanner used to get source stream characters.
         //  - Escaped newlines are handled here, invisibly to the caller.
         //  - All forms of newline are handled, and turned into just a '\n'.

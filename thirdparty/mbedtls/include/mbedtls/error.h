@@ -5,35 +5,14 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_ERROR_H
 #define MBEDTLS_ERROR_H
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include <stddef.h>
-
-#if (defined(__ARMCC_VERSION) || defined(_MSC_VER)) && \
-    !defined(inline) && !defined(__cplusplus)
-#define inline __inline
-#endif
 
 /**
  * Error code layout.
@@ -60,12 +39,10 @@
  * Module   Nr  Codes assigned
  * ERROR     2  0x006E          0x0001
  * MPI       7  0x0002-0x0010
- * GCM       3  0x0012-0x0014   0x0013-0x0013
- * BLOWFISH  3  0x0016-0x0018   0x0017-0x0017
+ * GCM       3  0x0012-0x0016   0x0013-0x0013
  * THREADING 3  0x001A-0x001E
  * AES       5  0x0020-0x0022   0x0021-0x0025
  * CAMELLIA  3  0x0024-0x0026   0x0027-0x0027
- * XTEA      2  0x0028-0x0028   0x0029-0x0029
  * BASE64    2  0x002A-0x002C
  * OID       1  0x002E-0x002E   0x000B-0x000B
  * PADLOCK   1  0x0030-0x0030
@@ -79,18 +56,17 @@
  * PBKDF2    1  0x007C-0x007C
  * HMAC_DRBG 4                  0x0003-0x0009
  * CCM       3                  0x000D-0x0011
- * ARC4      1                  0x0019-0x0019
- * MD2       1                  0x002B-0x002B
- * MD4       1                  0x002D-0x002D
  * MD5       1                  0x002F-0x002F
  * RIPEMD160 1                  0x0031-0x0031
  * SHA1      1                  0x0035-0x0035 0x0073-0x0073
  * SHA256    1                  0x0037-0x0037 0x0074-0x0074
  * SHA512    1                  0x0039-0x0039 0x0075-0x0075
+ * SHA-3     1                  0x0076-0x0076
  * CHACHA20  3                  0x0051-0x0055
  * POLY1305  3                  0x0057-0x005B
  * CHACHAPOLY 2 0x0054-0x0056
  * PLATFORM  2  0x0070-0x0072
+ * LMS       5  0x0011-0x0019
  *
  * High-level module nr (3 bits - 0x0...-0x7...)
  * Name      ID  Nr of Errors
@@ -104,10 +80,12 @@
  * ECP       4   10 (Started from top)
  * MD        5   5
  * HKDF      5   1 (Started from top)
- * SSL       5   2 (Started from 0x5F00)
+ * PKCS7     5   12 (Started from 0x5300)
+ * SSL       5   3 (Started from 0x5F00)
  * CIPHER    6   8 (Started from 0x6080)
- * SSL       6   24 (Started from top, plus 0x6000)
- * SSL       7   32
+ * SSL       6   22 (Started from top, plus 0x6000)
+ * SSL       7   20 (Started from 0x7000, gaps at
+ *                   0x7380, 0x7900-0x7980, 0x7A80-0x7E80)
  *
  * Module dependent error code (5 bits 0x.00.-0x.F8.)
  */
@@ -120,6 +98,11 @@ extern "C" {
 #define MBEDTLS_ERR_ERROR_GENERIC_ERROR       -0x0001
 /** This is a bug in the library */
 #define MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED -0x006E
+
+/** Hardware accelerator failed */
+#define MBEDTLS_ERR_PLATFORM_HW_ACCEL_FAILED     -0x0070
+/** The requested feature is not supported by the platform */
+#define MBEDTLS_ERR_PLATFORM_FEATURE_UNSUPPORTED -0x0072
 
 /**
  * \brief Combines a high-level and low-level error code together.

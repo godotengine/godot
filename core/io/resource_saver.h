@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_SAVER_H
-#define RESOURCE_SAVER_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
@@ -70,7 +69,7 @@ class ResourceSaver {
 	static ResourceSavedCallback save_callback;
 	static ResourceSaverGetResourceIDForPath save_get_id_for_path;
 
-	static Ref<ResourceFormatSaver> _find_custom_resource_format_saver(String path);
+	static Ref<ResourceFormatSaver> _find_custom_resource_format_saver(const String &path);
 
 public:
 	enum SaverFlags {
@@ -84,7 +83,7 @@ public:
 		FLAG_REPLACE_SUBRESOURCE_PATHS = 64,
 	};
 
-	static Error save(const Ref<Resource> &p_resource, const String &p_path = "", uint32_t p_flags = (uint32_t)FLAG_NONE);
+	static Error save(RequiredParam<Resource> rp_resource, const String &p_path = "", uint32_t p_flags = (uint32_t)FLAG_NONE);
 	static void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions);
 	static void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front = false);
 	static void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
@@ -99,9 +98,7 @@ public:
 	static void set_save_callback(ResourceSavedCallback p_callback);
 	static void set_get_resource_id_for_path(ResourceSaverGetResourceIDForPath p_callback);
 
-	static bool add_custom_resource_format_saver(String script_path);
+	static bool add_custom_resource_format_saver(const String &script_path);
 	static void add_custom_savers();
 	static void remove_custom_savers();
 };
-
-#endif // RESOURCE_SAVER_H

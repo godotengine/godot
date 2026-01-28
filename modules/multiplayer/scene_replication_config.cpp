@@ -30,9 +30,6 @@
 
 #include "scene_replication_config.h"
 
-#include "scene/main/multiplayer_api.h"
-#include "scene/main/node.h"
-
 bool SceneReplicationConfig::_set(const StringName &p_name, const Variant &p_value) {
 	String prop_name = p_name;
 
@@ -48,7 +45,7 @@ bool SceneReplicationConfig::_set(const StringName &p_name, const Variant &p_val
 			return true;
 		}
 		ERR_FAIL_INDEX_V(idx, properties.size(), false);
-		ReplicationProperty &prop = properties[idx];
+		const ReplicationProperty &prop = properties.get(idx);
 		if (what == "replication_mode") {
 			ERR_FAIL_COND_V(p_value.get_type() != Variant::INT, false);
 			ReplicationMode mode = (ReplicationMode)p_value.operator int();
@@ -80,7 +77,7 @@ bool SceneReplicationConfig::_get(const StringName &p_name, Variant &r_ret) cons
 		int idx = prop_name.get_slicec('/', 1).to_int();
 		String what = prop_name.get_slicec('/', 2);
 		ERR_FAIL_INDEX_V(idx, properties.size(), false);
-		const ReplicationProperty &prop = properties[idx];
+		const ReplicationProperty &prop = properties.get(idx);
 		if (what == "path") {
 			r_ret = prop.name;
 			return true;
@@ -101,6 +98,14 @@ void SceneReplicationConfig::_get_property_list(List<PropertyInfo> *p_list) cons
 		p_list->push_back(PropertyInfo(Variant::STRING, "properties/" + itos(i) + "/spawn", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::INT, "properties/" + itos(i) + "/replication_mode", PROPERTY_HINT_ENUM, "Never,Always,On Change", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 	}
+}
+
+void SceneReplicationConfig::reset_state() {
+	dirty = false;
+	properties.clear();
+	sync_props.clear();
+	spawn_props.clear();
+	watch_props.clear();
 }
 
 TypedArray<NodePath> SceneReplicationConfig::get_properties() const {
@@ -139,8 +144,8 @@ void SceneReplicationConfig::remove_property(const NodePath &p_path) {
 }
 
 bool SceneReplicationConfig::has_property(const NodePath &p_path) const {
-	for (int i = 0; i < properties.size(); i++) {
-		if (properties[i].name == p_path) {
+	for (const ReplicationProperty &property : properties) {
+		if (property.name == p_path) {
 			return true;
 		}
 	}
@@ -148,8 +153,9 @@ bool SceneReplicationConfig::has_property(const NodePath &p_path) const {
 }
 
 int SceneReplicationConfig::property_get_index(const NodePath &p_path) const {
-	for (int i = 0; i < properties.size(); i++) {
-		if (properties[i].name == p_path) {
+	int i = 0;
+	for (List<ReplicationProperty>::ConstIterator itr = properties.begin(); itr != properties.end(); ++itr, ++i) {
+		if (itr->name == p_path) {
 			return i;
 		}
 	}

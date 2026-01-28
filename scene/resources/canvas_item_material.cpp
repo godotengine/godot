@@ -33,13 +33,11 @@
 #include "core/version.h"
 
 Mutex CanvasItemMaterial::material_mutex;
-SelfList<CanvasItemMaterial>::List *CanvasItemMaterial::dirty_materials = nullptr;
+SelfList<CanvasItemMaterial>::List CanvasItemMaterial::dirty_materials;
 HashMap<CanvasItemMaterial::MaterialKey, CanvasItemMaterial::ShaderData, CanvasItemMaterial::MaterialKey> CanvasItemMaterial::shader_map;
 CanvasItemMaterial::ShaderNames *CanvasItemMaterial::shader_names = nullptr;
 
 void CanvasItemMaterial::init_shaders() {
-	dirty_materials = memnew(SelfList<CanvasItemMaterial>::List);
-
 	shader_names = memnew(ShaderNames);
 
 	shader_names->particles_anim_h_frames = "particles_anim_h_frames";
@@ -48,14 +46,13 @@ void CanvasItemMaterial::init_shaders() {
 }
 
 void CanvasItemMaterial::finish_shaders() {
-	memdelete(dirty_materials);
+	dirty_materials.clear();
+
 	memdelete(shader_names);
-	dirty_materials = nullptr;
+	shader_names = nullptr;
 }
 
 void CanvasItemMaterial::_update_shader() {
-	dirty_materials->remove(&element);
-
 	MaterialKey mk = _compute_key();
 	if (mk.key == current_key.key) {
 		return; //no update required in the end
@@ -65,7 +62,7 @@ void CanvasItemMaterial::_update_shader() {
 		shader_map[current_key].users--;
 		if (shader_map[current_key].users == 0) {
 			//deallocate shader, as it's no longer in use
-			RS::get_singleton()->free(shader_map[current_key].shader);
+			RS::get_singleton()->free_rid(shader_map[current_key].shader);
 			shader_map.erase(current_key);
 		}
 	}
@@ -81,7 +78,7 @@ void CanvasItemMaterial::_update_shader() {
 	//must create a shader!
 
 	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
-	String code = "// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s CanvasItemMaterial.\n\n";
+	String code = "// NOTE: Shader automatically converted from " GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG "'s CanvasItemMaterial.\n\n";
 
 	code += "shader_type canvas_item;\nrender_mode ";
 	switch (blend_mode) {
@@ -153,23 +150,22 @@ void CanvasItemMaterial::_update_shader() {
 void CanvasItemMaterial::flush_changes() {
 	MutexLock lock(material_mutex);
 
-	while (dirty_materials->first()) {
-		dirty_materials->first()->self()->_update_shader();
+	while (dirty_materials.first()) {
+		dirty_materials.first()->self()->_update_shader();
+		dirty_materials.first()->remove_from_list();
 	}
 }
 
 void CanvasItemMaterial::_queue_shader_change() {
-	MutexLock lock(material_mutex);
-
-	if (_is_initialized() && !element.in_list()) {
-		dirty_materials->add(&element);
+	if (!_is_initialized()) {
+		return;
 	}
-}
 
-bool CanvasItemMaterial::_is_shader_dirty() const {
 	MutexLock lock(material_mutex);
 
-	return element.in_list();
+	if (!element.in_list()) {
+		dirty_materials.add(&element);
+	}
 }
 
 void CanvasItemMaterial::set_blend_mode(BlendMode p_blend_mode) {
@@ -282,13 +278,15 @@ void CanvasItemMaterial::_bind_methods() {
 
 CanvasItemMaterial::CanvasItemMaterial() :
 		element(this) {
+	_set_material(RS::get_singleton()->material_create());
+
 	set_particles_anim_h_frames(1);
 	set_particles_anim_v_frames(1);
 	set_particles_anim_loop(false);
 
 	current_key.invalid_key = 1;
 
-	_mark_initialized(callable_mp(this, &CanvasItemMaterial::_queue_shader_change));
+	_mark_initialized(callable_mp(this, &CanvasItemMaterial::_queue_shader_change), callable_mp(this, &CanvasItemMaterial::_update_shader));
 }
 
 CanvasItemMaterial::~CanvasItemMaterial() {
@@ -300,7 +298,7 @@ CanvasItemMaterial::~CanvasItemMaterial() {
 		shader_map[current_key].users--;
 		if (shader_map[current_key].users == 0) {
 			//deallocate shader, as it's no longer in use
-			RS::get_singleton()->free(shader_map[current_key].shader);
+			RS::get_singleton()->free_rid(shader_map[current_key].shader);
 			shader_map.erase(current_key);
 		}
 

@@ -30,8 +30,7 @@
 
 #include "visual_instance_3d.h"
 
-#include "core/core_string_names.h"
-#include "scene/scene_string_names.h"
+#include "core/config/project_settings.h"
 
 AABB VisualInstance3D::get_aabb() const {
 	AABB ret;
@@ -44,7 +43,40 @@ void VisualInstance3D::_update_visibility() {
 		return;
 	}
 
-	RS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree());
+	bool already_visible = _is_vi_visible();
+	bool visible = is_visible_in_tree();
+	_set_vi_visible(visible);
+
+	// If making visible, make sure the rendering server is up to date with the transform.
+	if (visible && !already_visible) {
+		if (!_is_using_identity_transform()) {
+			Transform3D gt = get_global_transform();
+			RS::get_singleton()->instance_set_transform(instance, gt);
+		}
+	}
+
+	RS::get_singleton()->instance_set_visible(instance, visible);
+}
+
+void VisualInstance3D::set_instance_use_identity_transform(bool p_enable) {
+	// Prevent sending instance transforms when using global coordinates.
+	_set_use_identity_transform(p_enable);
+
+	if (is_inside_tree()) {
+		if (p_enable) {
+			// Want to make sure instance is using identity transform.
+			RS::get_singleton()->instance_set_transform(instance, Transform3D());
+		} else {
+			// Want to make sure instance is up to date.
+			RS::get_singleton()->instance_set_transform(instance, get_global_transform());
+		}
+	}
+}
+
+void VisualInstance3D::fti_update_servers_xform() {
+	if (!_is_using_identity_transform()) {
+		RS::get_singleton()->instance_set_transform(get_instance(), _get_cached_global_transform_interpolated());
+	}
 }
 
 void VisualInstance3D::_notification(int p_what) {
@@ -56,13 +88,26 @@ void VisualInstance3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			Transform3D gt = get_global_transform();
-			RenderingServer::get_singleton()->instance_set_transform(instance, gt);
+			// ToDo : Can we turn off notify transform for physics interpolated cases?
+			if (_is_vi_visible() && !(is_inside_tree() && get_tree()->is_physics_interpolation_enabled()) && !_is_using_identity_transform()) {
+				// Physics interpolation global off, always send.
+				RenderingServer::get_singleton()->instance_set_transform(instance, get_global_transform());
+			}
+		} break;
+
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			if (_is_vi_visible() && is_inside_tree()) {
+				// Allow resetting motion vectors etc
+				// at the same time as resetting physics interpolation,
+				// giving users one common interface.
+				RenderingServer::get_singleton()->instance_teleport(instance);
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_WORLD: {
 			RenderingServer::get_singleton()->instance_set_scenario(instance, RID());
 			RenderingServer::get_singleton()->instance_attach_skeleton(instance, RID());
+			_set_vi_visible(false);
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -120,12 +165,6 @@ bool VisualInstance3D::is_sorting_use_aabb_center() const {
 	return sorting_use_aabb_center;
 }
 
-void VisualInstance3D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "sorting_offset" || p_property.name == "sorting_use_aabb_center") {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-}
-
 void VisualInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_base", "base"), &VisualInstance3D::set_base);
 	ClassDB::bind_method(D_METHOD("get_base"), &VisualInstance3D::get_base);
@@ -143,8 +182,8 @@ void VisualInstance3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");
 
 	ADD_GROUP("Sorting", "sorting_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sorting_offset"), "set_sorting_offset", "get_sorting_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sorting_use_aabb_center"), "set_sorting_use_aabb_center", "is_sorting_use_aabb_center");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sorting_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_sorting_offset", "get_sorting_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sorting_use_aabb_center", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_sorting_use_aabb_center", "is_sorting_use_aabb_center");
 }
 
 void VisualInstance3D::set_base(const RID &p_base) {
@@ -157,6 +196,8 @@ RID VisualInstance3D::get_base() const {
 }
 
 VisualInstance3D::VisualInstance3D() {
+	_define_ancestry(AncestralClass::VISUAL_INSTANCE_3D);
+
 	instance = RenderingServer::get_singleton()->instance_create();
 	RenderingServer::get_singleton()->instance_attach_object_instance_id(instance, get_instance_id());
 	set_notify_transform(true);
@@ -164,16 +205,16 @@ VisualInstance3D::VisualInstance3D() {
 
 VisualInstance3D::~VisualInstance3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(instance);
+	RenderingServer::get_singleton()->free_rid(instance);
 }
 
 void GeometryInstance3D::set_material_override(const Ref<Material> &p_material) {
 	if (material_override.is_valid()) {
-		material_override->disconnect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
+		material_override->disconnect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
 	}
 	material_override = p_material;
 	if (material_override.is_valid()) {
-		material_override->connect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
+		material_override->connect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
 	}
 	RS::get_singleton()->instance_geometry_set_material_override(get_instance(), p_material.is_valid() ? p_material->get_rid() : RID());
 }
@@ -194,6 +235,7 @@ Ref<Material> GeometryInstance3D::get_material_overlay() const {
 void GeometryInstance3D::set_transparency(float p_transparency) {
 	transparency = CLAMP(p_transparency, 0.0f, 1.0f);
 	RS::get_singleton()->instance_geometry_set_transparency(get_instance(), transparency);
+	update_configuration_warnings();
 }
 
 float GeometryInstance3D::get_transparency() const {
@@ -250,7 +292,7 @@ GeometryInstance3D::VisibilityRangeFadeMode GeometryInstance3D::get_visibility_r
 	return visibility_range_fade_mode;
 }
 
-const StringName *GeometryInstance3D::_instance_uniform_get_remap(const StringName p_name) const {
+const StringName *GeometryInstance3D::_instance_uniform_get_remap(const StringName &p_name) const {
 	StringName *r = instance_shader_parameter_property_remap.getptr(p_name);
 	if (!r) {
 		String s = p_name;
@@ -278,12 +320,12 @@ bool GeometryInstance3D::_set(const StringName &p_name, const Variant &p_value) 
 		return true;
 	}
 #ifndef DISABLE_DEPRECATED
-	if (p_name == SceneStringNames::get_singleton()->use_in_baked_light && bool(p_value)) {
+	if (p_name == SNAME("use_in_baked_light") && bool(p_value)) {
 		set_gi_mode(GI_MODE_STATIC);
 		return true;
 	}
 
-	if (p_name == SceneStringNames::get_singleton()->use_dynamic_gi && bool(p_value)) {
+	if (p_name == SNAME("use_dynamic_gi") && bool(p_value)) {
 		set_gi_mode(GI_MODE_DYNAMIC);
 		return true;
 	}
@@ -377,20 +419,55 @@ void GeometryInstance3D::set_custom_aabb(AABB p_aabb) {
 	}
 	custom_aabb = p_aabb;
 	RS::get_singleton()->instance_set_custom_aabb(get_instance(), custom_aabb);
+	update_gizmos();
 }
 
 AABB GeometryInstance3D::get_custom_aabb() const {
 	return custom_aabb;
 }
 
+void GeometryInstance3D::set_lightmap_texel_scale(float p_scale) {
+	lightmap_texel_scale = p_scale;
+}
+
+float GeometryInstance3D::get_lightmap_texel_scale() const {
+	return lightmap_texel_scale;
+}
+
+#ifndef DISABLE_DEPRECATED
 void GeometryInstance3D::set_lightmap_scale(LightmapScale p_scale) {
 	ERR_FAIL_INDEX(p_scale, LIGHTMAP_SCALE_MAX);
-	lightmap_scale = p_scale;
+	switch (p_scale) {
+		case GeometryInstance3D::LIGHTMAP_SCALE_1X:
+			lightmap_texel_scale = 1.0f;
+			break;
+		case GeometryInstance3D::LIGHTMAP_SCALE_2X:
+			lightmap_texel_scale = 2.0f;
+			break;
+		case GeometryInstance3D::LIGHTMAP_SCALE_4X:
+			lightmap_texel_scale = 4.0f;
+			break;
+		case GeometryInstance3D::LIGHTMAP_SCALE_8X:
+			lightmap_texel_scale = 8.0f;
+			break;
+		case GeometryInstance3D::LIGHTMAP_SCALE_MAX:
+			break; // Can't happen, but silences warning.
+	}
 }
 
 GeometryInstance3D::LightmapScale GeometryInstance3D::get_lightmap_scale() const {
-	return lightmap_scale;
+	// Return closest approximation.
+	if (lightmap_texel_scale < 1.5f) {
+		return GeometryInstance3D::LIGHTMAP_SCALE_1X;
+	} else if (lightmap_texel_scale < 3.0f) {
+		return GeometryInstance3D::LIGHTMAP_SCALE_2X;
+	} else if (lightmap_texel_scale < 6.0f) {
+		return GeometryInstance3D::LIGHTMAP_SCALE_4X;
+	}
+
+	return GeometryInstance3D::LIGHTMAP_SCALE_8X;
 }
+#endif // DISABLE_DEPRECATED
 
 void GeometryInstance3D::set_gi_mode(GIMode p_mode) {
 	switch (p_mode) {
@@ -425,8 +502,12 @@ bool GeometryInstance3D::is_ignoring_occlusion_culling() {
 	return ignore_occlusion_culling;
 }
 
+Ref<TriangleMesh> GeometryInstance3D::generate_triangle_mesh() const {
+	return Ref<TriangleMesh>();
+}
+
 PackedStringArray GeometryInstance3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
 	if (!Math::is_zero_approx(visibility_range_end) && visibility_range_end <= visibility_range_begin) {
 		warnings.push_back(RTR("The GeometryInstance3D visibility range's End distance is set to a non-zero value, but is lower than the Begin distance.\nThis means the GeometryInstance3D will never be visible.\nTo resolve this, set the End distance to 0 or to a value greater than the Begin distance."));
@@ -438,6 +519,14 @@ PackedStringArray GeometryInstance3D::get_configuration_warnings() const {
 
 	if ((visibility_range_fade_mode == VISIBILITY_RANGE_FADE_SELF || visibility_range_fade_mode == VISIBILITY_RANGE_FADE_DEPENDENCIES) && !Math::is_zero_approx(visibility_range_end) && Math::is_zero_approx(visibility_range_end_margin)) {
 		warnings.push_back(RTR("The GeometryInstance3D is configured to fade out smoothly over distance, but the fade transition distance is set to 0.\nTo resolve this, increase Visibility Range End Margin above 0."));
+	}
+
+	if (!Math::is_zero_approx(transparency) && OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
+		warnings.push_back(RTR("GeometryInstance3D transparency is only available when using the Forward+ renderer."));
+	}
+
+	if ((visibility_range_fade_mode == VISIBILITY_RANGE_FADE_SELF || visibility_range_fade_mode == VISIBILITY_RANGE_FADE_DEPENDENCIES) && OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
+		warnings.push_back(RTR("GeometryInstance3D visibility range transparency fade is only available when using the Forward+ renderer."));
 	}
 
 	return warnings;
@@ -486,8 +575,13 @@ void GeometryInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extra_cull_margin", "margin"), &GeometryInstance3D::set_extra_cull_margin);
 	ClassDB::bind_method(D_METHOD("get_extra_cull_margin"), &GeometryInstance3D::get_extra_cull_margin);
 
+	ClassDB::bind_method(D_METHOD("set_lightmap_texel_scale", "scale"), &GeometryInstance3D::set_lightmap_texel_scale);
+	ClassDB::bind_method(D_METHOD("get_lightmap_texel_scale"), &GeometryInstance3D::get_lightmap_texel_scale);
+
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_lightmap_scale", "scale"), &GeometryInstance3D::set_lightmap_scale);
 	ClassDB::bind_method(D_METHOD("get_lightmap_scale"), &GeometryInstance3D::get_lightmap_scale);
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("set_gi_mode", "mode"), &GeometryInstance3D::set_gi_mode);
 	ClassDB::bind_method(D_METHOD("get_gi_mode"), &GeometryInstance3D::get_gi_mode);
@@ -501,8 +595,8 @@ void GeometryInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_aabb"), &GeometryInstance3D::get_aabb);
 
 	ADD_GROUP("Geometry", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE), "set_material_override", "get_material_override");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_overlay", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE), "set_material_overlay", "get_material_overlay");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT), "set_material_override", "get_material_override");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_overlay", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT), "set_material_overlay", "get_material_overlay");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "transparency", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_transparency", "get_transparency");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows_setting", "get_cast_shadows_setting");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0.01,suffix:m"), "set_extra_cull_margin", "get_extra_cull_margin");
@@ -511,8 +605,11 @@ void GeometryInstance3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_occlusion_culling"), "set_ignore_occlusion_culling", "is_ignoring_occlusion_culling");
 
 	ADD_GROUP("Global Illumination", "gi_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_mode", PROPERTY_HINT_ENUM, "Disabled,Static (VoxelGI/SDFGI/LightmapGI),Dynamic (VoxelGI only)"), "set_gi_mode", "get_gi_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_lightmap_scale", PROPERTY_HINT_ENUM, String::utf8("1×,2×,4×,8×")), "set_lightmap_scale", "get_lightmap_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_mode", PROPERTY_HINT_ENUM, "Disabled,Static,Dynamic"), "set_gi_mode", "get_gi_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gi_lightmap_texel_scale", PROPERTY_HINT_RANGE, "0.01,10,0.0001,or_greater"), "set_lightmap_texel_scale", "get_lightmap_texel_scale");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_lightmap_scale", PROPERTY_HINT_ENUM, String::utf8("1×,2×,4×,8×"), PROPERTY_USAGE_NONE), "set_lightmap_scale", "get_lightmap_scale");
+#endif // DISABLE_DEPRECATED
 
 	ADD_GROUP("Visibility Range", "visibility_range_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_begin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_visibility_range_begin", "get_visibility_range_begin");
@@ -542,6 +639,7 @@ void GeometryInstance3D::_bind_methods() {
 }
 
 GeometryInstance3D::GeometryInstance3D() {
+	_define_ancestry(AncestralClass::GEOMETRY_INSTANCE_3D);
 }
 
 GeometryInstance3D::~GeometryInstance3D() {

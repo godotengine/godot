@@ -10,7 +10,7 @@
 namespace embree
 {
   __thread FastAllocator::ThreadLocal2* FastAllocator::thread_local_allocator2 = nullptr;
-  SpinLock FastAllocator::s_thread_local_allocators_lock;
+  MutexSys FastAllocator::s_thread_local_allocators_lock;
   std::vector<std::unique_ptr<FastAllocator::ThreadLocal2>> FastAllocator::s_thread_local_allocators;
    
   struct fast_allocator_regression_test : public RegressionTest

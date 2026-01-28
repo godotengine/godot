@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VARIANT_H
-#define VARIANT_H
+#pragma once
 
+#include "core/core_string_names.h"
 #include "core/input/input_enums.h"
 #include "core/io/ip_address.h"
 #include "core/math/aabb.h"
@@ -54,13 +54,26 @@
 #include "core/os/keyboard.h"
 #include "core/string/node_path.h"
 #include "core/string/ustring.h"
+#include "core/templates/bit_field.h"
+#include "core/templates/list.h"
 #include "core/templates/paged_allocator.h"
 #include "core/templates/rid.h"
 #include "core/variant/array.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
+#include "core/variant/variant_deep_duplicate.h"
 
 class Object;
+class RefCounted;
+
+template <typename T>
+class Ref;
+template <typename T>
+class BitField;
+template <typename T>
+class TypedArray;
+template <typename K, typename V>
+class TypedDictionary;
 
 struct PropertyInfo;
 struct MethodInfo;
@@ -70,10 +83,12 @@ typedef Vector<int32_t> PackedInt32Array;
 typedef Vector<int64_t> PackedInt64Array;
 typedef Vector<float> PackedFloat32Array;
 typedef Vector<double> PackedFloat64Array;
+typedef Vector<real_t> PackedRealArray;
 typedef Vector<String> PackedStringArray;
 typedef Vector<Vector2> PackedVector2Array;
 typedef Vector<Vector3> PackedVector3Array;
 typedef Vector<Color> PackedColorArray;
+typedef Vector<Vector4> PackedVector4Array;
 
 class Variant {
 public:
@@ -125,6 +140,7 @@ public:
 		PACKED_VECTOR2_ARRAY,
 		PACKED_VECTOR3_ARRAY,
 		PACKED_COLOR_ARRAY,
+		PACKED_VECTOR4_ARRAY,
 
 		VARIANT_MAX
 	};
@@ -161,21 +177,43 @@ private:
 
 	friend struct _VariantCall;
 	friend class VariantInternal;
-	// Variant takes 20 bytes when real_t is float, and 36 if double
-	// it only allocates extra memory for aabb/matrix.
+	template <typename>
+	friend struct _VariantInternalAccessorLocal;
+	template <typename>
+	friend struct _VariantInternalAccessorElsewhere;
+	template <typename>
+	friend struct _VariantInternalAccessorPackedArrayRef;
+	// Variant takes 24 bytes when real_t is float, and 40 bytes if double.
+	// It only allocates extra memory for AABB/Transform2D (24, 48 if double),
+	// Basis/Transform3D (48, 96 if double), Projection (64, 128 if double),
+	// and PackedArray/Array/Dictionary (platform-dependent).
 
 	Type type = NIL;
 
 	struct ObjData {
 		ObjectID id;
 		Object *obj = nullptr;
+
+		void ref(const ObjData &p_from);
+		void ref_pointer(Object *p_object);
+		void ref_pointer(RefCounted *p_object);
+		void unref();
+
+		template <typename T>
+		_ALWAYS_INLINE_ void ref(const Ref<T> &p_from) {
+			if (p_from.is_valid()) {
+				ref(ObjData{ p_from->get_instance_id(), p_from.ptr() });
+			} else {
+				unref();
+			}
+		}
 	};
 
 	/* array helpers */
 	struct PackedArrayRefBase {
 		SafeRefCount refcount;
 		_FORCE_INLINE_ PackedArrayRefBase *reference() {
-			if (this->refcount.ref()) {
+			if (refcount.ref()) {
 				return this;
 			} else {
 				return nullptr;
@@ -203,7 +241,7 @@ private:
 		_FORCE_INLINE_ virtual ~PackedArrayRefBase() {} //needs virtual destructor, but make inline
 	};
 
-	template <class T>
+	template <typename T>
 	struct PackedArrayRef : public PackedArrayRefBase {
 		Vector<T> array;
 		static _FORCE_INLINE_ PackedArrayRef<T> *create() {
@@ -248,56 +286,56 @@ private:
 	} _data alignas(8);
 
 	void reference(const Variant &p_variant);
-	static bool initialize_ref(Object *p_object);
 
 	void _clear_internal();
 
+	static constexpr bool needs_deinit[Variant::VARIANT_MAX] = {
+		false, //NIL,
+		false, //BOOL,
+		false, //INT,
+		false, //FLOAT,
+		true, //STRING,
+		false, //VECTOR2,
+		false, //VECTOR2I,
+		false, //RECT2,
+		false, //RECT2I,
+		false, //VECTOR3,
+		false, //VECTOR3I,
+		true, //TRANSFORM2D,
+		false, //VECTOR4,
+		false, //VECTOR4I,
+		false, //PLANE,
+		false, //QUATERNION,
+		true, //AABB,
+		true, //BASIS,
+		true, //TRANSFORM,
+		true, //PROJECTION,
+
+		// misc types
+		false, //COLOR,
+		true, //STRING_NAME,
+		true, //NODE_PATH,
+		false, //RID,
+		true, //OBJECT,
+		true, //CALLABLE,
+		true, //SIGNAL,
+		true, //DICTIONARY,
+		true, //ARRAY,
+
+		// typed arrays
+		true, //PACKED_BYTE_ARRAY,
+		true, //PACKED_INT32_ARRAY,
+		true, //PACKED_INT64_ARRAY,
+		true, //PACKED_FLOAT32_ARRAY,
+		true, //PACKED_FLOAT64_ARRAY,
+		true, //PACKED_STRING_ARRAY,
+		true, //PACKED_VECTOR2_ARRAY,
+		true, //PACKED_VECTOR3_ARRAY,
+		true, //PACKED_COLOR_ARRAY,
+		true, //PACKED_VECTOR4_ARRAY,
+	};
+
 	_FORCE_INLINE_ void clear() {
-		static const bool needs_deinit[Variant::VARIANT_MAX] = {
-			false, //NIL,
-			false, //BOOL,
-			false, //INT,
-			false, //FLOAT,
-			true, //STRING,
-			false, //VECTOR2,
-			false, //VECTOR2I,
-			false, //RECT2,
-			false, //RECT2I,
-			false, //VECTOR3,
-			false, //VECTOR3I,
-			true, //TRANSFORM2D,
-			false, //VECTOR4,
-			false, //VECTOR4I,
-			false, //PLANE,
-			false, //QUATERNION,
-			true, //AABB,
-			true, //BASIS,
-			true, //TRANSFORM,
-			true, //PROJECTION,
-
-			// misc types
-			false, //COLOR,
-			true, //STRING_NAME,
-			true, //NODE_PATH,
-			false, //RID,
-			true, //OBJECT,
-			true, //CALLABLE,
-			true, //SIGNAL,
-			true, //DICTIONARY,
-			true, //ARRAY,
-
-			// typed arrays
-			true, //PACKED_BYTE_ARRAY,
-			true, //PACKED_INT32_ARRAY,
-			true, //PACKED_INT64_ARRAY,
-			true, //PACKED_FLOAT32_ARRAY,
-			true, //PACKED_FLOAT64_ARRAY,
-			true, //PACKED_STRING_ARRAY,
-			true, //PACKED_VECTOR2_ARRAY,
-			true, //PACKED_VECTOR3_ARRAY,
-			true, //PACKED_COLOR_ARRAY,
-		};
-
 		if (unlikely(needs_deinit[type])) { // Make it fast for types that don't need deinit.
 			_clear_internal();
 		}
@@ -319,6 +357,44 @@ private:
 
 	void _variant_call_error(const String &p_method, Callable::CallError &error);
 
+	template <typename T>
+	_ALWAYS_INLINE_ T _to_int() const {
+		switch (get_type()) {
+			case NIL:
+				return 0;
+			case BOOL:
+				return _data._bool ? 1 : 0;
+			case INT:
+				return T(_data._int);
+			case FLOAT:
+				return T(_data._float);
+			case STRING:
+				return reinterpret_cast<const String *>(_data._mem)->to_int();
+			default: {
+				return 0;
+			}
+		}
+	}
+
+	template <typename T>
+	_ALWAYS_INLINE_ T _to_float() const {
+		switch (type) {
+			case NIL:
+				return 0;
+			case BOOL:
+				return _data._bool ? 1 : 0;
+			case INT:
+				return T(_data._int);
+			case FLOAT:
+				return T(_data._float);
+			case STRING:
+				return reinterpret_cast<const String *>(_data._mem)->to_float();
+			default: {
+				return 0;
+			}
+		}
+	}
+
 	// Avoid accidental conversion. If you reached this point, it's because you most likely forgot to dereference
 	// a Variant pointer (so add * like this: *variant_pointer).
 
@@ -330,6 +406,7 @@ public:
 		return type;
 	}
 	static String get_type_name(Variant::Type p_type);
+	static Variant::Type get_type_by_name(const String &p_type_name);
 	static bool can_convert(Type p_type_from, Type p_type_to);
 	static bool can_convert_strict(Type p_type_from, Type p_type_to);
 	static bool is_type_shared(Variant::Type p_type);
@@ -338,6 +415,9 @@ public:
 	_FORCE_INLINE_ bool is_num() const {
 		return type == INT || type == FLOAT;
 	}
+	_FORCE_INLINE_ bool is_string() const {
+		return type == STRING || type == STRING_NAME;
+	}
 	_FORCE_INLINE_ bool is_array() const {
 		return type >= ARRAY;
 	}
@@ -345,25 +425,21 @@ public:
 	bool is_zero() const;
 	bool is_one() const;
 	bool is_null() const;
+	bool is_read_only() const;
 
 	// Make sure Variant is not implicitly cast when accessing it with bracket notation (GH-49469).
 	Variant &operator[](const Variant &p_key) = delete;
 	const Variant &operator[](const Variant &p_key) const = delete;
 
 	operator bool() const;
-	operator signed int() const;
-	operator unsigned int() const; // this is the real one
-	operator signed short() const;
-	operator unsigned short() const;
-	operator signed char() const;
-	operator unsigned char() const;
-	//operator long unsigned int() const;
 	operator int64_t() const;
+	operator int32_t() const;
+	operator int16_t() const;
+	operator int8_t() const;
 	operator uint64_t() const;
-#ifdef NEED_LONG_INT
-	operator signed long() const;
-	operator unsigned long() const;
-#endif
+	operator uint32_t() const;
+	operator uint16_t() const;
+	operator uint8_t() const;
 
 	operator ObjectID() const;
 
@@ -400,44 +476,46 @@ public:
 	operator Dictionary() const;
 	operator Array() const;
 
-	operator Vector<uint8_t>() const;
-	operator Vector<int32_t>() const;
-	operator Vector<int64_t>() const;
-	operator Vector<float>() const;
-	operator Vector<double>() const;
-	operator Vector<String>() const;
-	operator Vector<Vector3>() const;
-	operator Vector<Color>() const;
+	operator PackedByteArray() const;
+	operator PackedInt32Array() const;
+	operator PackedInt64Array() const;
+	operator PackedFloat32Array() const;
+	operator PackedFloat64Array() const;
+	operator PackedStringArray() const;
+	operator PackedVector3Array() const;
+	operator PackedVector2Array() const;
+	operator PackedColorArray() const;
+	operator PackedVector4Array() const;
+
+	operator Vector<::RID>() const;
 	operator Vector<Plane>() const;
 	operator Vector<Face3>() const;
-
 	operator Vector<Variant>() const;
 	operator Vector<StringName>() const;
-	operator Vector<::RID>() const;
-	operator Vector<Vector2>() const;
-
-	// some core type enums to convert to
-	operator Side() const;
-	operator Orientation() const;
 
 	operator IPAddress() const;
+
+	template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
+	_FORCE_INLINE_ operator T() const { return static_cast<T>(operator int64_t()); }
+	template <typename T>
+	_FORCE_INLINE_ operator BitField<T>() const { return static_cast<T>(operator uint64_t()); }
+	template <typename T>
+	_FORCE_INLINE_ operator TypedArray<T>() const { return operator Array(); }
+	template <typename K, typename V>
+	_FORCE_INLINE_ operator TypedDictionary<K, V>() const { return operator Dictionary(); }
 
 	Object *get_validated_object() const;
 	Object *get_validated_object_with_check(bool &r_previously_freed) const;
 
 	Variant(bool p_bool);
-	Variant(signed int p_int); // real one
-	Variant(unsigned int p_int);
-#ifdef NEED_LONG_INT
-	Variant(signed long p_long); // real one
-	Variant(unsigned long p_long);
-#endif
-	Variant(signed short p_short); // real one
-	Variant(unsigned short p_short);
-	Variant(signed char p_char); // real one
-	Variant(unsigned char p_char);
-	Variant(int64_t p_int); // real one
-	Variant(uint64_t p_int);
+	Variant(int64_t p_int64);
+	Variant(int32_t p_int32);
+	Variant(int16_t p_int16);
+	Variant(int8_t p_int8);
+	Variant(uint64_t p_uint64);
+	Variant(uint32_t p_uint32);
+	Variant(uint16_t p_uint16);
+	Variant(uint8_t p_uint8);
 	Variant(float p_float);
 	Variant(double p_double);
 	Variant(const ObjectID &p_id);
@@ -468,40 +546,39 @@ public:
 	Variant(const Signal &p_signal);
 	Variant(const Dictionary &p_dictionary);
 
+	Variant(std::initializer_list<Variant> p_init);
 	Variant(const Array &p_array);
-	Variant(const Vector<Plane> &p_array); // helper
-	Variant(const Vector<uint8_t> &p_byte_array);
-	Variant(const Vector<int32_t> &p_int32_array);
-	Variant(const Vector<int64_t> &p_int64_array);
-	Variant(const Vector<float> &p_float32_array);
-	Variant(const Vector<double> &p_float64_array);
-	Variant(const Vector<String> &p_string_array);
-	Variant(const Vector<Vector3> &p_vector3_array);
-	Variant(const Vector<Color> &p_color_array);
-	Variant(const Vector<Face3> &p_face_array);
+	Variant(const PackedByteArray &p_byte_array);
+	Variant(const PackedInt32Array &p_int32_array);
+	Variant(const PackedInt64Array &p_int64_array);
+	Variant(const PackedFloat32Array &p_float32_array);
+	Variant(const PackedFloat64Array &p_float64_array);
+	Variant(const PackedStringArray &p_string_array);
+	Variant(const PackedVector2Array &p_vector2_array);
+	Variant(const PackedVector3Array &p_vector3_array);
+	Variant(const PackedColorArray &p_color_array);
+	Variant(const PackedVector4Array &p_vector4_array);
 
+	Variant(const Vector<::RID> &p_array); // helper
+	Variant(const Vector<Plane> &p_array); // helper
+	Variant(const Vector<Face3> &p_face_array);
 	Variant(const Vector<Variant> &p_array);
 	Variant(const Vector<StringName> &p_array);
-	Variant(const Vector<::RID> &p_array); // helper
-	Variant(const Vector<Vector2> &p_array); // helper
 
 	Variant(const IPAddress &p_address);
 
-#define VARIANT_ENUM_CLASS_CONSTRUCTOR(m_enum) \
-	Variant(m_enum p_value) {                  \
-		type = INT;                            \
-		_data._int = (int64_t)p_value;         \
-	}
-
-	// Only enum classes that need to be bound need this to be defined.
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(EulerOrder)
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyAxis)
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyButton)
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(Key)
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(MIDIMessage)
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(MouseButton)
-
-#undef VARIANT_ENUM_CLASS_CONSTRUCTOR
+	template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
+	_FORCE_INLINE_ Variant(T p_enum) :
+			Variant(static_cast<int64_t>(p_enum)) {}
+	template <typename T>
+	_FORCE_INLINE_ Variant(BitField<T> p_bitfield) :
+			Variant(static_cast<uint64_t>(p_bitfield)) {}
+	template <typename T>
+	_FORCE_INLINE_ Variant(const TypedArray<T> &p_typed_array) :
+			Variant(static_cast<const Array &>(p_typed_array)) {}
+	template <typename K, typename V>
+	_FORCE_INLINE_ Variant(const TypedDictionary<K, V> &p_typed_dictionary) :
+			Variant(static_cast<const Dictionary &>(p_typed_dictionary)) {}
 
 	// If this changes the table in variant_op must be updated
 	enum Operator {
@@ -556,7 +633,8 @@ public:
 
 	void zero();
 	Variant duplicate(bool p_deep = false) const;
-	Variant recursive_duplicate(bool p_deep, int recursion_count) const;
+	Variant duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode = RESOURCE_DEEP_DUPLICATE_INTERNAL) const;
+	Variant recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const;
 
 	/* Built-In Methods */
 
@@ -567,7 +645,9 @@ public:
 
 	static ValidatedBuiltInMethod get_validated_builtin_method(Variant::Type p_type, const StringName &p_method);
 	static PTRBuiltInMethod get_ptr_builtin_method(Variant::Type p_type, const StringName &p_method);
+	static PTRBuiltInMethod get_ptr_builtin_method_with_compatibility(Variant::Type p_type, const StringName &p_method, uint32_t p_hash);
 
+	static MethodInfo get_builtin_method_info(Variant::Type p_type, const StringName &p_method);
 	static int get_builtin_method_argument_count(Variant::Type p_type, const StringName &p_method);
 	static Variant::Type get_builtin_method_argument_type(Variant::Type p_type, const StringName &p_method, int p_argument);
 	static String get_builtin_method_argument_name(Variant::Type p_type, const StringName &p_method, int p_argument);
@@ -580,6 +660,7 @@ public:
 	static void get_builtin_method_list(Variant::Type p_type, List<StringName> *p_list);
 	static int get_builtin_method_count(Variant::Type p_type);
 	static uint32_t get_builtin_method_hash(Variant::Type p_type, const StringName &p_method);
+	static Vector<uint32_t> get_builtin_method_compatibility_hashes(Variant::Type p_type, const StringName &p_method);
 
 	void callp(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
 
@@ -703,9 +784,20 @@ public:
 	bool has_key(const Variant &p_key, bool &r_valid) const;
 
 	/* Generic */
-
-	void set(const Variant &p_index, const Variant &p_value, bool *r_valid = nullptr);
-	Variant get(const Variant &p_index, bool *r_valid = nullptr) const;
+	enum VariantSetError {
+		SET_OK,
+		SET_KEYED_ERR,
+		SET_NAMED_ERR,
+		SET_INDEXED_ERR
+	};
+	enum VariantGetError {
+		GET_OK,
+		GET_KEYED_ERR,
+		GET_NAMED_ERR,
+		GET_INDEXED_ERR
+	};
+	void set(const Variant &p_index, const Variant &p_value, bool *r_valid = nullptr, VariantSetError *err_code = nullptr);
+	Variant get(const Variant &p_index, bool *r_valid = nullptr, VariantGetError *err_code = nullptr) const;
 	bool in(const Variant &p_index, bool *r_valid = nullptr) const;
 
 	bool iter_init(Variant &r_iter, bool &r_valid) const;
@@ -758,15 +850,16 @@ public:
 	String stringify(int recursion_count = 0) const;
 	String to_json_string() const;
 
-	void static_assign(const Variant &p_variant);
 	static void get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
 	static int get_constants_count_for_type(Variant::Type p_type);
 	static bool has_constant(Variant::Type p_type, const StringName &p_value);
 	static Variant get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = nullptr);
 
 	static void get_enums_for_type(Variant::Type p_type, List<StringName> *p_enums);
-	static void get_enumerations_for_enum(Variant::Type p_type, StringName p_enum_name, List<StringName> *p_enumerations);
-	static int get_enum_value(Variant::Type p_type, StringName p_enum_name, StringName p_enumeration, bool *r_valid = nullptr);
+	static void get_enumerations_for_enum(Variant::Type p_type, const StringName &p_enum_name, List<StringName> *p_enumerations);
+	static int get_enum_value(Variant::Type p_type, const StringName &p_enum_name, const StringName &p_enumeration, bool *r_valid = nullptr);
+	static bool has_enum(Variant::Type p_type, const StringName &p_enum_name);
+	static StringName get_enum_for_enumeration(Variant::Type p_type, const StringName &p_enumeration);
 
 	typedef String (*ObjectDeConstruct)(const Variant &p_object, void *ud);
 	typedef void (*ObjectConstruct)(const String &p_text, void *ud, Variant &r_value);
@@ -775,37 +868,53 @@ public:
 	static void construct_from_string(const String &p_string, Variant &r_value, ObjectConstruct p_obj_construct = nullptr, void *p_construct_ud = nullptr);
 
 	void operator=(const Variant &p_variant); // only this is enough for all the other types
+	void operator=(Variant &&p_variant) {
+		if (unlikely(this == &p_variant)) {
+			return;
+		}
+		clear();
+		type = p_variant.type;
+		_data = p_variant._data;
+		p_variant.type = NIL;
+	}
 
 	static void register_types();
 	static void unregister_types();
 
 	Variant(const Variant &p_variant);
+	Variant(Variant &&p_variant) {
+		type = p_variant.type;
+		_data = p_variant._data;
+		p_variant.type = NIL;
+	}
 	_FORCE_INLINE_ Variant() {}
 	_FORCE_INLINE_ ~Variant() {
-		clear();
+		if (unlikely(needs_deinit[type])) { // Make it fast for types that don't need deinit.
+			_clear_internal();
+		}
 	}
 };
 
-//typedef Dictionary Dictionary; no
-//typedef Array Array;
+template <typename... VarArgs>
+Vector<Variant> varray(VarArgs... p_args) {
+	return Vector<Variant>{ p_args... };
+}
 
-Vector<Variant> varray();
-Vector<Variant> varray(const Variant &p_arg1);
-Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2);
-Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3);
-Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4);
-Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5);
-
-struct VariantHasher {
-	static _FORCE_INLINE_ uint32_t hash(const Variant &p_variant) { return p_variant.hash(); }
-};
-
-struct VariantComparator {
-	static _FORCE_INLINE_ bool compare(const Variant &p_lhs, const Variant &p_rhs) { return p_lhs.hash_compare(p_rhs); }
+template <>
+struct HashMapComparatorDefault<Variant> {
+	static bool compare(const Variant &p_lhs, const Variant &p_rhs) { return p_lhs.hash_compare(p_rhs); }
 };
 
 struct StringLikeVariantComparator {
 	static bool compare(const Variant &p_lhs, const Variant &p_rhs);
+};
+
+struct StringLikeVariantOrder {
+	static bool compare(const Variant &p_lhs, const Variant &p_rhs);
+
+	_ALWAYS_INLINE_ bool operator()(const Variant &p_lhs, const Variant &p_rhs) const {
+		return compare(p_lhs, p_rhs);
+	}
 };
 
 Variant::ObjData &Variant::_get_obj() {
@@ -819,16 +928,11 @@ const Variant::ObjData &Variant::_get_obj() const {
 template <typename... VarArgs>
 String vformat(const String &p_text, const VarArgs... p_args) {
 	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-	Array args_array;
-	args_array.resize(sizeof...(p_args));
-	for (uint32_t i = 0; i < sizeof...(p_args); i++) {
-		args_array[i] = args[i];
-	}
 
 	bool error = false;
-	String fmt = p_text.sprintf(args_array, &error);
+	String fmt = p_text.sprintf(Span(args, sizeof...(p_args)), &error);
 
-	ERR_FAIL_COND_V_MSG(error, String(), fmt);
+	ERR_FAIL_COND_V_MSG(error, String(), String("Formatting error in string \"") + p_text + "\": " + fmt + ".");
 
 	return fmt;
 }
@@ -848,7 +952,7 @@ Variant Callable::call(VarArgs... p_args) const {
 }
 
 template <typename... VarArgs>
-Callable Callable::bind(VarArgs... p_args) {
+Callable Callable::bind(VarArgs... p_args) const {
 	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
 	const Variant *argptrs[sizeof...(p_args) + 1];
 	for (uint32_t i = 0; i < sizeof...(p_args); i++) {
@@ -857,4 +961,42 @@ Callable Callable::bind(VarArgs... p_args) {
 	return bindp(sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 }
 
-#endif // VARIANT_H
+Variant &Array::Iterator::operator*() const {
+	if (unlikely(read_only)) {
+		*read_only = *element_ptr;
+		return *read_only;
+	}
+	return *element_ptr;
+}
+
+Variant *Array::Iterator::operator->() const {
+	if (unlikely(read_only)) {
+		*read_only = *element_ptr;
+		return read_only;
+	}
+	return element_ptr;
+}
+
+Array::Iterator &Array::Iterator::operator++() {
+	element_ptr++;
+	return *this;
+}
+
+Array::Iterator &Array::Iterator::operator--() {
+	element_ptr--;
+	return *this;
+}
+
+Array::ConstIterator &Array::ConstIterator::operator++() {
+	element_ptr++;
+	return *this;
+}
+
+Array::ConstIterator &Array::ConstIterator::operator--() {
+	element_ptr--;
+	return *this;
+}
+
+// Zero-constructing Variant results in NULL.
+template <>
+struct is_zero_constructible<Variant> : std::true_type {};

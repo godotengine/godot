@@ -44,7 +44,7 @@ OpenXRCompositionLayerDepthExtension::~OpenXRCompositionLayerDepthExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRCompositionLayerDepthExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRCompositionLayerDepthExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME] = &available;
@@ -56,8 +56,15 @@ bool OpenXRCompositionLayerDepthExtension::is_available() {
 	return available;
 }
 
-XrCompositionLayerBaseHeader *OpenXRCompositionLayerDepthExtension::get_composition_layer() {
-	// Seems this is all done in our base layer... Just in case this changes...
+int OpenXRCompositionLayerDepthExtension::get_composition_layer_count() {
+	return 0;
+}
 
+XrCompositionLayerBaseHeader *OpenXRCompositionLayerDepthExtension::get_composition_layer(int p_index) {
+	// Seems this is all done in our base layer... Just in case this changes...
 	return nullptr;
+}
+
+int OpenXRCompositionLayerDepthExtension::get_composition_layer_order(int p_index) {
+	return 0;
 }

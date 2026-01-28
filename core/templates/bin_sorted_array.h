@@ -28,13 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BIN_SORTED_ARRAY_H
-#define BIN_SORTED_ARRAY_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 #include "core/templates/paged_array.h"
 
-template <class T>
+template <typename T>
 class BinSortedArray {
 	PagedArray<T> array;
 	LocalVector<uint64_t> bin_limits;
@@ -177,5 +176,3 @@ public:
 		reset();
 	}
 };
-
-#endif // BIN_SORTED_ARRAY_H

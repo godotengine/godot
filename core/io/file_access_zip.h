@@ -28,44 +28,38 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FILE_ACCESS_ZIP_H
-#define FILE_ACCESS_ZIP_H
+#pragma once
 
 #ifdef MINIZIP_ENABLED
 
 #include "core/io/file_access_pack.h"
-#include "core/templates/rb_map.h"
 
 #include "thirdparty/minizip/unzip.h"
-
-#include <stdlib.h>
 
 class ZipArchive : public PackSource {
 public:
 	struct File {
 		int package = -1;
 		unz_file_pos file_pos;
-		File() {}
 	};
 
 private:
 	struct Package {
 		String filename;
-		unzFile zfile = nullptr;
 	};
 	Vector<Package> packages;
 
 	HashMap<String, File> files;
 
-	static ZipArchive *instance;
+	static inline ZipArchive *instance = nullptr;
 
 public:
 	void close_handle(unzFile p_file) const;
-	unzFile get_file_handle(String p_file) const;
+	unzFile get_file_handle(const String &p_file) const;
 
-	Error add_package(String p_name);
+	Error add_package(const String &p_name);
 
-	bool file_exists(String p_name) const;
+	bool file_exists(const String &p_name) const;
 
 	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) override;
 	Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file) override;
@@ -77,6 +71,7 @@ public:
 };
 
 class FileAccessZip : public FileAccess {
+	GDSOFTCLASS(FileAccessZip, FileAccess);
 	unzFile zfile = nullptr;
 	unz_file_info64 file_info;
 
@@ -95,17 +90,19 @@ public:
 
 	virtual bool eof_reached() const override; ///< reading passed EOF
 
-	virtual uint8_t get_8() const override; ///< get a byte
 	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
 
 	virtual Error get_error() const override; ///< get last error
 
+	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual void flush() override;
-	virtual void store_8(uint8_t p_dest) override; ///< store a byte
+	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override;
 
 	virtual bool file_exists(const String &p_name) override; ///< return true if a file exists
 
-	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; } // todo
+	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; }
+	virtual uint64_t _get_access_time(const String &p_file) override { return 0; }
+	virtual int64_t _get_size(const String &p_file) override { return -1; }
 	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override { return 0; }
 	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override { return FAILED; }
 
@@ -121,5 +118,3 @@ public:
 };
 
 #endif // MINIZIP_ENABLED
-
-#endif // FILE_ACCESS_ZIP_H

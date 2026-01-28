@@ -78,6 +78,16 @@ XRSession.prototype.frameRate;
 XRSession.prototype.supportedFrameRates;
 
 /**
+ * @type {Array<string>}
+ */
+XRSession.prototype.enabledFeatures;
+
+/**
+ * @type {string}
+ */
+XRSession.prototype.environmentBlendMode;
+
+/**
  * @type {?function (Event)}
  */
 XRSession.prototype.onend;
@@ -229,12 +239,26 @@ XRFrame.prototype.session;
 XRFrame.prototype.getViewerPose = function (referenceSpace) {};
 
 /**
- *
  * @param {XRSpace} space
  * @param {XRSpace} baseSpace
  * @return {XRPose}
  */
 XRFrame.prototype.getPose = function (space, baseSpace) {};
+
+/**
+ * @param {Array<XRSpace>} spaces
+ * @param {XRSpace} baseSpace
+ * @param {Float32Array} transforms
+ * @return {boolean}
+ */
+XRFrame.prototype.fillPoses = function (spaces, baseSpace, transforms) {};
+
+/**
+ * @param {Array<XRJointSpace>} jointSpaces
+ * @param {Float32Array} radii
+ * @return {boolean}
+ */
+XRFrame.prototype.fillJointRadii = function (jointSpaces, radii) {};
 
 /**
  * @constructor
@@ -499,9 +523,49 @@ XRInputSource.prototype.targetRayMode;
 XRInputSource.prototype.targetRaySpace;
 
 /**
+ * @type {?XRHand}
+ */
+XRInputSource.prototype.hand;
+
+/**
+ * @constructor
+ */
+function XRHand() {};
+
+/**
+ * Note: In fact, XRHand acts like a Map<string, XRJointSpace>, but I don't know
+ * how to represent that here. So, we're just giving the one method we call.
+ *
+ * @return {Array<XRJointSpace>}
+ */
+XRHand.prototype.values = function () {};
+
+/**
+ * @type {number}
+ */
+XRHand.prototype.size;
+
+/**
+ * @param {string} key
+ * @return {XRJointSpace}
+ */
+XRHand.prototype.get = function (key) {};
+
+/**
  * @constructor
  */
 function XRSpace() {};
+
+/**
+ * @constructor
+ * @extends {XRSpace}
+ */
+function XRJointSpace() {};
+
+/**
+ * @type {string}
+ */
+XRJointSpace.prototype.jointName;
 
 /**
  * @constructor

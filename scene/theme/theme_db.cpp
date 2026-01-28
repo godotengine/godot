@@ -39,7 +39,7 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 #include "scene/theme/default_theme.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 // Default engine theme creation and configuration.
 
@@ -49,18 +49,15 @@ void ThemeDB::initialize_theme() {
 	// Allow creating the default theme at a different scale to suit higher/lower base resolutions.
 	float default_theme_scale = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "gui/theme/default_theme_scale", PROPERTY_HINT_RANGE, "0.5,8,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), 1.0);
 
-	String project_theme_path = GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "gui/theme/custom", PROPERTY_HINT_FILE, "*.tres,*.res,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), "");
-	String project_font_path = GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res,*.otf,*.ttf,*.woff,*.woff2,*.fnt,*.font,*.pfb,*.pfm", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), "");
+	String project_theme_path = GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "gui/theme/custom", PROPERTY_HINT_FILE, "*.tres,*.res,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), "");
+	String project_font_path = GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res,*.otf,*.ttf,*.woff,*.woff2,*.fnt,*.font,*.pfb,*.pfm", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), "");
 
-	TextServer::FontAntialiasing font_antialiasing = (TextServer::FontAntialiasing)(int)GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "gui/theme/default_font_antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), 1);
-	TextServer::Hinting font_hinting = (TextServer::Hinting)(int)GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "gui/theme/default_font_hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), TextServer::HINTING_LIGHT);
-	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "gui/theme/default_font_subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), TextServer::SUBPIXEL_POSITIONING_AUTO);
+	TextServer::FontAntialiasing font_antialiasing = (TextServer::FontAntialiasing)(int)GLOBAL_GET("gui/theme/default_font_antialiasing");
+	TextServer::Hinting font_hinting = (TextServer::Hinting)(int)GLOBAL_GET("gui/theme/default_font_hinting");
+	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)GLOBAL_GET("gui/theme/default_font_subpixel_positioning");
 
-	const bool font_msdf = GLOBAL_DEF_RST("gui/theme/default_font_multichannel_signed_distance_field", false);
-	const bool font_generate_mipmaps = GLOBAL_DEF_RST("gui/theme/default_font_generate_mipmaps", false);
-
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "gui/theme/lcd_subpixel_layout", PROPERTY_HINT_ENUM, "Disabled,Horizontal RGB,Horizontal BGR,Vertical RGB,Vertical BGR"), 1);
-	ProjectSettings::get_singleton()->set_restart_if_changed("gui/theme/lcd_subpixel_layout", false);
+	const bool font_msdf = GLOBAL_GET("gui/theme/default_font_multichannel_signed_distance_field");
+	const bool font_generate_mipmaps = GLOBAL_GET("gui/theme/default_font_generate_mipmaps");
 
 	// Attempt to load custom project theme and font.
 
@@ -198,21 +195,21 @@ Ref<StyleBox> ThemeDB::get_fallback_stylebox() {
 	return fallback_stylebox;
 }
 
-void ThemeDB::get_native_type_dependencies(const StringName &p_base_type, List<StringName> *p_list) {
-	ERR_FAIL_NULL(p_list);
+void ThemeDB::get_native_type_dependencies(const StringName &p_base_type, Vector<StringName> &r_result) {
+	if (p_base_type == StringName()) {
+		return;
+	}
 
 	// TODO: It may make sense to stop at Control/Window, because their parent classes cannot be used in
 	// a meaningful way.
-	StringName class_name = p_base_type;
-	while (class_name != StringName()) {
-		p_list->push_back(class_name);
-		class_name = ClassDB::get_parent_class_nocheck(class_name);
+	if (!ClassDB::get_inheritance_chain_nocheck(p_base_type, r_result)) {
+		r_result.push_back(p_base_type);
 	}
 }
 
 // Global theme contexts.
 
-ThemeContext *ThemeDB::create_theme_context(Node *p_node, List<Ref<Theme>> &p_themes) {
+ThemeContext *ThemeDB::create_theme_context(Node *p_node, Vector<Ref<Theme>> &p_themes) {
 	ERR_FAIL_COND_V(!p_node->is_inside_tree(), nullptr);
 	ERR_FAIL_COND_V(theme_contexts.has(p_node), nullptr);
 	ERR_FAIL_COND_V(p_themes.is_empty(), nullptr);
@@ -225,7 +222,7 @@ ThemeContext *ThemeDB::create_theme_context(Node *p_node, List<Ref<Theme>> &p_th
 	theme_contexts[p_node] = context;
 	_propagate_theme_context(p_node, context);
 
-	p_node->connect("tree_exited", callable_mp(this, &ThemeDB::destroy_theme_context).bind(p_node));
+	p_node->connect(SceneStringName(tree_exited), callable_mp(this, &ThemeDB::destroy_theme_context).bind(p_node));
 
 	return context;
 }
@@ -233,7 +230,7 @@ ThemeContext *ThemeDB::create_theme_context(Node *p_node, List<Ref<Theme>> &p_th
 void ThemeDB::destroy_theme_context(Node *p_node) {
 	ERR_FAIL_COND(!theme_contexts.has(p_node));
 
-	p_node->disconnect("tree_exited", callable_mp(this, &ThemeDB::destroy_theme_context));
+	p_node->disconnect(SceneStringName(tree_exited), callable_mp(this, &ThemeDB::destroy_theme_context));
 
 	ThemeContext *context = theme_contexts[p_node];
 
@@ -270,7 +267,7 @@ void ThemeDB::_propagate_theme_context(Node *p_from_node, ThemeContext *p_contex
 void ThemeDB::_init_default_theme_context() {
 	default_theme_context = memnew(ThemeContext);
 
-	List<Ref<Theme>> themes;
+	Vector<Ref<Theme>> themes;
 
 	// Only add the project theme to the default context when running projects.
 
@@ -337,6 +334,7 @@ void ThemeDB::bind_class_item(Theme::DataType p_data_type, const StringName &p_c
 	bind.setter = p_setter;
 
 	theme_item_binds[p_class_name][p_prop_name] = bind;
+	theme_item_binds_list[p_class_name].push_back(bind);
 }
 
 void ThemeDB::bind_class_external_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, const StringName &p_type_name, ThemeItemSetter p_setter) {
@@ -351,6 +349,7 @@ void ThemeDB::bind_class_external_item(Theme::DataType p_data_type, const String
 	bind.setter = p_setter;
 
 	theme_item_binds[p_class_name][p_prop_name] = bind;
+	theme_item_binds_list[p_class_name].push_back(bind);
 }
 
 void ThemeDB::update_class_instance_items(Node *p_instance) {
@@ -363,7 +362,7 @@ void ThemeDB::update_class_instance_items(Node *p_instance) {
 		HashMap<StringName, HashMap<StringName, ThemeItemBind>>::Iterator E = theme_item_binds.find(class_name);
 		if (E) {
 			for (const KeyValue<StringName, ThemeItemBind> &F : E->value) {
-				F.value.setter(p_instance);
+				F.value.setter(p_instance, F.value.item_name, F.value.type_name);
 			}
 		}
 
@@ -371,7 +370,7 @@ void ThemeDB::update_class_instance_items(Node *p_instance) {
 	}
 }
 
-void ThemeDB::get_class_own_items(const StringName &p_class_name, List<ThemeItemBind> *r_list) {
+void ThemeDB::get_class_items(const StringName &p_class_name, List<ThemeItemBind> *r_list, bool p_include_inherited, Theme::DataType p_filter_type) {
 	List<StringName> class_hierarchy;
 	StringName class_name = p_class_name;
 	while (class_name != StringName()) {
@@ -381,20 +380,32 @@ void ThemeDB::get_class_own_items(const StringName &p_class_name, List<ThemeItem
 
 	HashSet<StringName> inherited_props;
 	for (const StringName &theme_type : class_hierarchy) {
-		HashMap<StringName, HashMap<StringName, ThemeItemBind>>::Iterator E = theme_item_binds.find(theme_type);
+		HashMap<StringName, List<ThemeItemBind>>::Iterator E = theme_item_binds_list.find(theme_type);
 		if (E) {
-			for (const KeyValue<StringName, ThemeItemBind> &F : E->value) {
-				if (inherited_props.has(F.value.item_name)) {
+			for (const ThemeItemBind &F : E->value) {
+				if (p_filter_type != Theme::DATA_TYPE_MAX && F.data_type != p_filter_type) {
+					continue;
+				}
+				if (inherited_props.has(F.item_name)) {
 					continue; // Skip inherited properties.
 				}
-				if (F.value.external || F.value.class_name != p_class_name) {
-					inherited_props.insert(F.value.item_name);
-					continue; // Track properties defined in parent classes, and skip them.
+				if (F.external || F.class_name != p_class_name) {
+					inherited_props.insert(F.item_name);
+
+					if (!p_include_inherited) {
+						continue; // Track properties defined in parent classes, and skip them.
+					}
 				}
 
-				r_list->push_back(F.value);
+				r_list->push_back(F);
 			}
 		}
+	}
+}
+
+void ThemeDB::_sort_theme_items() {
+	for (KeyValue<StringName, List<ThemeDB::ThemeItemBind>> &E : theme_item_binds_list) {
+		E.value.sort_custom<ThemeItemBind::SortByType>();
 	}
 }
 
@@ -435,6 +446,9 @@ ThemeDB *ThemeDB::get_singleton() {
 
 ThemeDB::ThemeDB() {
 	singleton = this;
+	if (MessageQueue::get_singleton()) { // May not exist in tests etc.
+		callable_mp(this, &ThemeDB::_sort_theme_items).call_deferred();
+	}
 }
 
 ThemeDB::~ThemeDB() {
@@ -455,10 +469,10 @@ ThemeDB::~ThemeDB() {
 }
 
 void ThemeContext::_emit_changed() {
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
-void ThemeContext::set_themes(List<Ref<Theme>> &p_themes) {
+void ThemeContext::set_themes(Vector<Ref<Theme>> &p_themes) {
 	for (const Ref<Theme> &theme : themes) {
 		theme->disconnect_changed(callable_mp(this, &ThemeContext::_emit_changed));
 	}
@@ -477,17 +491,17 @@ void ThemeContext::set_themes(List<Ref<Theme>> &p_themes) {
 	_emit_changed();
 }
 
-List<Ref<Theme>> ThemeContext::get_themes() const {
+const Vector<Ref<Theme>> ThemeContext::get_themes() const {
 	return themes;
 }
 
 Ref<Theme> ThemeContext::get_fallback_theme() const {
 	// We expect all contexts to be valid and non-empty, but just in case...
-	if (themes.size() == 0) {
+	if (themes.is_empty()) {
 		return ThemeDB::get_singleton()->get_default_theme();
 	}
 
-	return themes.back()->get();
+	return themes[themes.size() - 1];
 }
 
 void ThemeContext::_bind_methods() {

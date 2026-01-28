@@ -9,11 +9,13 @@ func four_parameters(_a, callable : Callable, b=func(): print(10)):
 
 func test():
     var v
+    @warning_ignore("confusable_capture_reassignment")
     v=func():v=1
     if true: v=1
     print(v)
     print()
 
+    @warning_ignore("standalone_ternary")
     v=func(): print(2) if false else print(3)
     @warning_ignore("unsafe_cast")
     (v as Callable).call()

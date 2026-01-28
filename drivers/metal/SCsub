@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+
+env_metal = env.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+thirdparty_spirv_headers_dir = "#thirdparty/spirv-headers/"
+thirdparty_dir = "#thirdparty/spirv-cross/"
+thirdparty_sources = [
+    "spirv_cfg.cpp",
+    "spirv_cross.cpp",
+    "spirv_parser.cpp",
+    "spirv_msl.cpp",
+    "spirv_reflect.cpp",
+    "spirv_glsl.cpp",
+    "spirv_cross_parsed_ir.cpp",
+]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+env_metal.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include"])
+env_metal.Prepend(CPPPATH=[thirdparty_spirv_headers_dir + "include/spirv/unified1"])
+
+# Must enable exceptions for SPIRV-Cross; otherwise, it will abort the process on errors.
+if "-fno-exceptions" in env_metal["CXXFLAGS"]:
+    env_metal["CXXFLAGS"].remove("-fno-exceptions")
+env_metal.Append(CXXFLAGS=["-fexceptions"])
+
+env_thirdparty = env_metal.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env_metal.drivers_sources += thirdparty_obj
+
+# Enable C++20 for the Objective-C++ Metal code, which uses C++20 concepts.
+if "-std=gnu++17" in env_metal["CXXFLAGS"]:
+    env_metal["CXXFLAGS"].remove("-std=gnu++17")
+env_metal.Append(CXXFLAGS=["-std=gnu++20"])
+
+# Enable module support
+env_metal.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+
+# Driver source files
+
+driver_obj = []
+
+env_metal.add_source_files(driver_obj, "*.mm")
+env_metal.add_source_files(driver_obj, "*.cpp")
+env.drivers_sources += driver_obj
+
+# Needed to force rebuilding the driver files when the thirdparty library is updated.
+env.Depends(driver_obj, thirdparty_obj)

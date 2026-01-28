@@ -30,6 +30,8 @@
 
 #include "bone_map.h"
 
+#include "core/config/engine.h"
+
 bool BoneMap::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 	if (path.begins_with("bone_map/")) {
@@ -37,7 +39,7 @@ bool BoneMap::_set(const StringName &p_path, const Variant &p_value) {
 		set_skeleton_bone_name(which, p_value);
 		return true;
 	}
-	return true;
+	return false;
 }
 
 bool BoneMap::_get(const StringName &p_path, Variant &r_ret) const {
@@ -47,7 +49,7 @@ bool BoneMap::_get(const StringName &p_path, Variant &r_ret) const {
 		r_ret = get_skeleton_bone_name(which);
 		return true;
 	}
-	return true;
+	return false;
 }
 
 void BoneMap::_get_property_list(List<PropertyInfo> *p_list) const {
@@ -65,11 +67,11 @@ Ref<SkeletonProfile> BoneMap::get_profile() const {
 void BoneMap::set_profile(const Ref<SkeletonProfile> &p_profile) {
 	bool is_changed = profile != p_profile;
 	if (is_changed) {
-		if (!profile.is_null() && profile->is_connected("profile_updated", callable_mp(this, &BoneMap::_update_profile))) {
+		if (profile.is_valid() && profile->is_connected("profile_updated", callable_mp(this, &BoneMap::_update_profile))) {
 			profile->disconnect("profile_updated", callable_mp(this, &BoneMap::_update_profile));
 		}
 		profile = p_profile;
-		if (!profile.is_null()) {
+		if (profile.is_valid()) {
 			profile->connect("profile_updated", callable_mp(this, &BoneMap::_update_profile));
 		}
 		_update_profile();
@@ -77,22 +79,22 @@ void BoneMap::set_profile(const Ref<SkeletonProfile> &p_profile) {
 	notify_property_list_changed();
 }
 
-StringName BoneMap::get_skeleton_bone_name(StringName p_profile_bone_name) const {
+StringName BoneMap::get_skeleton_bone_name(const StringName &p_profile_bone_name) const {
 	ERR_FAIL_COND_V(!bone_map.has(p_profile_bone_name), StringName());
 	return bone_map.get(p_profile_bone_name);
 }
 
-void BoneMap::_set_skeleton_bone_name(StringName p_profile_bone_name, const StringName p_skeleton_bone_name) {
+void BoneMap::_set_skeleton_bone_name(const StringName &p_profile_bone_name, const StringName &p_skeleton_bone_name) {
 	ERR_FAIL_COND(!bone_map.has(p_profile_bone_name));
 	bone_map.insert(p_profile_bone_name, p_skeleton_bone_name);
 }
 
-void BoneMap::set_skeleton_bone_name(StringName p_profile_bone_name, const StringName p_skeleton_bone_name) {
+void BoneMap::set_skeleton_bone_name(const StringName &p_profile_bone_name, const StringName &p_skeleton_bone_name) {
 	_set_skeleton_bone_name(p_profile_bone_name, p_skeleton_bone_name);
 	emit_signal("bone_map_updated");
 }
 
-StringName BoneMap::find_profile_bone_name(StringName p_skeleton_bone_name) const {
+StringName BoneMap::find_profile_bone_name(const StringName &p_skeleton_bone_name) const {
 	StringName profile_bone_name;
 	HashMap<StringName, StringName>::ConstIterator E = bone_map.begin();
 	while (E) {
@@ -105,7 +107,7 @@ StringName BoneMap::find_profile_bone_name(StringName p_skeleton_bone_name) cons
 	return profile_bone_name;
 }
 
-int BoneMap::get_skeleton_bone_name_count(const StringName p_skeleton_bone_name) const {
+int BoneMap::get_skeleton_bone_name_count(const StringName &p_skeleton_bone_name) const {
 	int count = 0;
 	HashMap<StringName, StringName>::ConstIterator E = bone_map.begin();
 	while (E) {
@@ -171,6 +173,9 @@ void BoneMap::_bind_methods() {
 }
 
 void BoneMap::_validate_property(PropertyInfo &property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (property.name == "bonemap" || property.name == "profile") {
 		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}

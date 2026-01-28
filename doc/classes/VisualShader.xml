@@ -29,6 +29,15 @@
 				Adds a new varying value node to the shader.
 			</description>
 		</method>
+		<method name="attach_node_to_frame">
+			<return type="void" />
+			<param index="0" name="type" type="int" enum="VisualShader.Type" />
+			<param index="1" name="id" type="int" />
+			<param index="2" name="frame" type="int" />
+			<description>
+				Attaches the given node to the given frame.
+			</description>
+		</method>
 		<method name="can_connect_nodes" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="type" type="int" enum="VisualShader.Type" />
@@ -60,6 +69,14 @@
 			<param index="4" name="to_port" type="int" />
 			<description>
 				Connects the specified nodes and ports, even if they can't be connected. Such connection is invalid and will not function properly.
+			</description>
+		</method>
+		<method name="detach_node_from_frame">
+			<return type="void" />
+			<param index="0" name="type" type="int" enum="VisualShader.Type" />
+			<param index="1" name="id" type="int" />
+			<description>
+				Detaches the given node from the frame it is attached to.
 			</description>
 		</method>
 		<method name="disconnect_nodes">
@@ -170,8 +187,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="graph_offset" type="Vector2" setter="set_graph_offset" getter="get_graph_offset" default="Vector2(0, 0)">
-			The offset vector of the whole graph.
+		<member name="graph_offset" type="Vector2" setter="set_graph_offset" getter="get_graph_offset" deprecated="This property does nothing and always equals to zero.">
+			Deprecated.
 		</member>
 	</members>
 	<constants>
@@ -245,10 +262,10 @@
 			Represents the size of the [enum VaryingType] enum.
 		</constant>
 		<constant name="NODE_ID_INVALID" value="-1">
-			Denotes invalid [VisualShader] node.
+			Indicates an invalid [VisualShader] node.
 		</constant>
 		<constant name="NODE_ID_OUTPUT" value="0">
-			Denotes output node of [VisualShader].
+			Indicates an output node of [VisualShader].
 		</constant>
 	</constants>
 </class>

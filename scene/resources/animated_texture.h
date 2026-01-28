@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATED_TEXTURE_H
-#define ANIMATED_TEXTURE_H
+#pragma once
 
 #include "scene/resources/texture.h"
 
@@ -65,6 +64,7 @@ private:
 	uint64_t prev_ticks = 0;
 
 	void _update_proxy();
+	void _finish_non_thread_safe_setup();
 
 protected:
 	static void _bind_methods();
@@ -105,5 +105,3 @@ public:
 	AnimatedTexture();
 	~AnimatedTexture();
 };
-
-#endif // ANIMATED_TEXTURE_H

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SpinBox" inherits="Range" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SpinBox" inherits="Range" keywords="number, numeric, input" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An input field for numbers.
 	</brief_description>
 	<description>
-		[SpinBox] is a numerical input text field. It allows entering integers and floating point numbers.
-		[b]Example:[/b]
+		[SpinBox] is a numerical input text field. It allows entering integers and floating-point numbers. The [SpinBox] also has up and down buttons that can be clicked increase or decrease the value. The value can also be changed by dragging the mouse up or down over the [SpinBox]'s arrows.
+		Additionally, mathematical expressions can be entered. These are evaluated when the user presses [kbd]Enter[/kbd] while editing the [SpinBox]'s text field. This uses the [Expression] class to parse and evaluate the expression. The result of the expression is then set as the value of the [SpinBox]. Some examples of valid expressions are [code]5 + 2 * 3[/code], [code]pow(2, 4)[/code], and [code]PI + sin(0.5)[/code]. Expressions are case-sensitive.
+		[b]Example:[/b] Create a [SpinBox], disable its context menu and set its text alignment to right.
 		[codeblocks]
 		[gdscript]
 		var spin_box = SpinBox.new()
@@ -22,10 +23,9 @@
 		spinBox.AlignHorizontal = LineEdit.HorizontalAlignEnum.Right;
 		[/csharp]
 		[/codeblocks]
-		The above code will create a [SpinBox], disable context menu on it and set the text alignment to right.
 		See [Range] class for more options over the [SpinBox].
 		[b]Note:[/b] With the [SpinBox]'s context menu disabled, you can right-click the bottom half of the spinbox to set the value to its minimum, while right-clicking the top half sets the value to its maximum.
-		[b]Note:[/b] [SpinBox] relies on an underlying [LineEdit] node. To theme a [SpinBox]'s background, add theme items for [LineEdit] and customize them.
+		[b]Note:[/b] [SpinBox] relies on an underlying [LineEdit] node. To theme a [SpinBox]'s background, add theme items for [LineEdit] and customize them. The [LineEdit] has the [code]SpinBoxInnerLineEdit[/code] theme variation, so that you can give it a distinct appearance from regular [LineEdit]s.
 		[b]Note:[/b] If you want to implement drag and drop for the underlying [LineEdit], you can use [method Control.set_drag_forwarding] on the node returned by [method get_line_edit].
 	</description>
 	<tutorials>
@@ -34,7 +34,7 @@
 		<method name="apply">
 			<return type="void" />
 			<description>
-				Applies the current value of this [SpinBox].
+				Applies the current value of this [SpinBox]. This is equivalent to pressing [kbd]Enter[/kbd] while editing the [LineEdit] used by the [SpinBox]. This will cause [signal LineEdit.text_submitted] to be emitted and its currently contained expression to be evaluated.
 			</description>
 		</method>
 		<method name="get_line_edit">
@@ -49,10 +49,14 @@
 		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
 			Changes the alignment of the underlying [LineEdit].
 		</member>
-		<member name="custom_arrow_step" type="float" setter="set_custom_arrow_step" getter="get_custom_arrow_step" default="0.0">
-			If not [code]0[/code], [member Range.value] will always be rounded to a multiple of [member custom_arrow_step] when interacting with the arrow buttons of the [SpinBox].
+		<member name="custom_arrow_round" type="bool" setter="set_custom_arrow_round" getter="is_custom_arrow_rounding" default="false">
+			If [code]true[/code], the value will be rounded to a multiple of [member custom_arrow_step] when interacting with the arrow buttons. Otherwise, increments the value by [member custom_arrow_step] and then rounds it according to [member Range.step].
 		</member>
-		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true">
+		<member name="custom_arrow_step" type="float" setter="set_custom_arrow_step" getter="get_custom_arrow_step" default="0.0">
+			If not [code]0[/code], sets the step when interacting with the arrow buttons of the [SpinBox].
+			[b]Note:[/b] [member Range.value] will still be rounded to a multiple of [member Range.step].
+		</member>
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
 			If [code]true[/code], the [SpinBox] will be editable. Otherwise, it will be read only.
 		</member>
 		<member name="prefix" type="String" setter="set_prefix" getter="get_prefix" default="&quot;&quot;">
@@ -68,11 +72,102 @@
 		</member>
 		<member name="update_on_text_changed" type="bool" setter="set_update_on_text_changed" getter="get_update_on_text_changed" default="false">
 			Sets the value of the [Range] for this [SpinBox] when the [LineEdit] text is [i]changed[/i] instead of [i]submitted[/i]. See [signal LineEdit.text_changed] and [signal LineEdit.text_submitted].
+			[b]Note:[/b] If set to [code]true[/code], this will interfere with entering mathematical expressions in the [SpinBox]. The [SpinBox] will try to evaluate the expression as you type, which means symbols like a trailing [code]+[/code] are removed immediately by the expression being evaluated.
 		</member>
 	</members>
 	<theme_items>
-		<theme_item name="updown" data_type="icon" type="Texture2D">
-			Sets a custom [Texture2D] for up and down arrows of the [SpinBox].
+		<theme_item name="down_disabled_icon_modulate" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
+			Down button icon modulation color, when the button is disabled.
+		</theme_item>
+		<theme_item name="down_hover_icon_modulate" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			Down button icon modulation color, when the button is hovered.
+		</theme_item>
+		<theme_item name="down_icon_modulate" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
+			Down button icon modulation color.
+		</theme_item>
+		<theme_item name="down_pressed_icon_modulate" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			Down button icon modulation color, when the button is being pressed.
+		</theme_item>
+		<theme_item name="up_disabled_icon_modulate" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
+			Up button icon modulation color, when the button is disabled.
+		</theme_item>
+		<theme_item name="up_hover_icon_modulate" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			Up button icon modulation color, when the button is hovered.
+		</theme_item>
+		<theme_item name="up_icon_modulate" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
+			Up button icon modulation color.
+		</theme_item>
+		<theme_item name="up_pressed_icon_modulate" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			Up button icon modulation color, when the button is being pressed.
+		</theme_item>
+		<theme_item name="buttons_vertical_separation" data_type="constant" type="int" default="0">
+			Vertical separation between the up and down buttons.
+		</theme_item>
+		<theme_item name="buttons_width" data_type="constant" type="int" default="16">
+			Width of the up and down buttons. If smaller than any icon set on the buttons, the respective icon may overlap neighboring elements. If smaller than [code]0[/code], the width is automatically adjusted from the icon size.
+		</theme_item>
+		<theme_item name="field_and_buttons_separation" data_type="constant" type="int" default="2">
+			Width of the horizontal separation between the text input field ([LineEdit]) and the buttons.
+		</theme_item>
+		<theme_item name="set_min_buttons_width_from_icons" data_type="constant" type="int" default="1" deprecated="This property exists only for compatibility with older themes. Setting [theme_item buttons_width] to a negative value has the same effect.">
+			If not [code]0[/code], the minimum button width corresponds to the widest of all icons set on those buttons, even if [theme_item buttons_width] is smaller.
+		</theme_item>
+		<theme_item name="down" data_type="icon" type="Texture2D">
+			Down button icon, displayed in the middle of the down (value-decreasing) button.
+		</theme_item>
+		<theme_item name="down_disabled" data_type="icon" type="Texture2D">
+			Down button icon when the button is disabled.
+		</theme_item>
+		<theme_item name="down_hover" data_type="icon" type="Texture2D">
+			Down button icon when the button is hovered.
+		</theme_item>
+		<theme_item name="down_pressed" data_type="icon" type="Texture2D">
+			Down button icon when the button is being pressed.
+		</theme_item>
+		<theme_item name="up" data_type="icon" type="Texture2D">
+			Up button icon, displayed in the middle of the up (value-increasing) button.
+		</theme_item>
+		<theme_item name="up_disabled" data_type="icon" type="Texture2D">
+			Up button icon when the button is disabled.
+		</theme_item>
+		<theme_item name="up_hover" data_type="icon" type="Texture2D">
+			Up button icon when the button is hovered.
+		</theme_item>
+		<theme_item name="up_pressed" data_type="icon" type="Texture2D">
+			Up button icon when the button is being pressed.
+		</theme_item>
+		<theme_item name="updown" data_type="icon" type="Texture2D" deprecated="Use [theme_item up] and [theme_item down] instead.">
+			Single texture representing both the up and down buttons icons. It is displayed in the middle of the buttons and does not change upon interaction. If a valid icon is assigned, it will replace [theme_item up] and [theme_item down].
+		</theme_item>
+		<theme_item name="down_background" data_type="style" type="StyleBox">
+			Background style of the down button.
+		</theme_item>
+		<theme_item name="down_background_disabled" data_type="style" type="StyleBox">
+			Background style of the down button when disabled.
+		</theme_item>
+		<theme_item name="down_background_hovered" data_type="style" type="StyleBox">
+			Background style of the down button when hovered.
+		</theme_item>
+		<theme_item name="down_background_pressed" data_type="style" type="StyleBox">
+			Background style of the down button when being pressed.
+		</theme_item>
+		<theme_item name="field_and_buttons_separator" data_type="style" type="StyleBox">
+			[StyleBox] drawn in the space occupied by the separation between the input field and the buttons.
+		</theme_item>
+		<theme_item name="up_background" data_type="style" type="StyleBox">
+			Background style of the up button.
+		</theme_item>
+		<theme_item name="up_background_disabled" data_type="style" type="StyleBox">
+			Background style of the up button when disabled.
+		</theme_item>
+		<theme_item name="up_background_hovered" data_type="style" type="StyleBox">
+			Background style of the up button when hovered.
+		</theme_item>
+		<theme_item name="up_background_pressed" data_type="style" type="StyleBox">
+			Background style of the up button when being pressed.
+		</theme_item>
+		<theme_item name="up_down_buttons_separator" data_type="style" type="StyleBox">
+			[StyleBox] drawn in the space occupied by the separation between the up and down buttons.
 		</theme_item>
 	</theme_items>
 </class>

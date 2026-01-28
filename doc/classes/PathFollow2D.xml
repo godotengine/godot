@@ -26,6 +26,7 @@
 		</member>
 		<member name="progress_ratio" type="float" setter="set_progress_ratio" getter="get_progress_ratio" default="0.0">
 			The distance along the path as a number in the range 0.0 (for the first vertex) to 1.0 (for the last). This is just another way of expressing the progress within the path, as the offset supplied is multiplied internally by the path's length.
+			It can be set or get only if the [PathFollow2D] is the child of a [Path2D] which is part of the scene tree, and that this [Path2D] has a [Curve2D] with a non-zero length. Otherwise, trying to set this field will print an error, and getting this field will return [code]0.0[/code].
 		</member>
 		<member name="rotates" type="bool" setter="set_rotates" getter="is_rotating" default="true">
 			If [code]true[/code], this node rotates to follow the path, with the +X direction facing forward on the path.

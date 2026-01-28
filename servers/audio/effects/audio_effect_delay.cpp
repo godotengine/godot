@@ -31,7 +31,7 @@
 #include "audio_effect_delay.h"
 
 #include "core/math/math_funcs.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 void AudioEffectDelayInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	int todo = p_frame_count;
@@ -64,16 +64,16 @@ void AudioEffectDelayInstance::_process_chunk(const AudioFrame *p_src_frames, Au
 
 	AudioFrame tap1_vol = AudioFrame(tap_1_level_f, tap_1_level_f);
 
-	tap1_vol.l *= CLAMP(1.0 - base->tap_1_pan, 0, 1);
-	tap1_vol.r *= CLAMP(1.0 + base->tap_1_pan, 0, 1);
+	tap1_vol.left *= CLAMP(1.0 - base->tap_1_pan, 0, 1);
+	tap1_vol.right *= CLAMP(1.0 + base->tap_1_pan, 0, 1);
 
 	AudioFrame tap2_vol = AudioFrame(tap_2_level_f, tap_2_level_f);
 
-	tap2_vol.l *= CLAMP(1.0 - base->tap_2_pan, 0, 1);
-	tap2_vol.r *= CLAMP(1.0 + base->tap_2_pan, 0, 1);
+	tap2_vol.left *= CLAMP(1.0 - base->tap_2_pan, 0, 1);
+	tap2_vol.right *= CLAMP(1.0 + base->tap_2_pan, 0, 1);
 
 	// feedback lowpass here
-	float lpf_c = expf(-Math_TAU * base->feedback_lowpass / mix_rate); // 0 .. 10khz
+	float lpf_c = std::exp(-Math::TAU * base->feedback_lowpass / mix_rate); // 0 .. 10khz
 	float lpf_ic = 1.0 - lpf_c;
 
 	const AudioFrame *src = p_src_frames;

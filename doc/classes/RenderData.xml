@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RenderData" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract render data object, holds frame data related to rendering a single frame of a viewport.
+	</brief_description>
+	<description>
+		Abstract render data object, exists for the duration of rendering a single viewport. See also [RenderDataRD], [RenderSceneData], and [RenderSceneDataRD].
+		[b]Note:[/b] This is an internal rendering server object. Do not instantiate this class from a script.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_camera_attributes" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the camera attributes object in the [RenderingServer] being used to render this viewport.
+			</description>
+		</method>
+		<method name="get_environment" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the environment object in the [RenderingServer] being used to render this viewport.
+			</description>
+		</method>
+		<method name="get_render_scene_buffers" qualifiers="const">
+			<return type="RenderSceneBuffers" />
+			<description>
+				Returns the [RenderSceneBuffers] object managing the scene buffers for rendering this viewport.
+			</description>
+		</method>
+		<method name="get_render_scene_data" qualifiers="const">
+			<return type="RenderSceneData" />
+			<description>
+				Returns the [RenderSceneData] object managing this frames scene data.
+			</description>
+		</method>
+	</methods>
+</class>

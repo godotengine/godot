@@ -56,6 +56,7 @@
 #include <memory>
 #include <vector>
 #include <set>
+#include <optional>
 
 namespace spv {
 
@@ -96,6 +97,10 @@ public:
     Instruction(Id resultId, Id typeId, Op opCode) : resultId(resultId), typeId(typeId), opCode(opCode), block(nullptr) { }
     explicit Instruction(Op opCode) : resultId(NoResult), typeId(NoType), opCode(opCode), block(nullptr) { }
     virtual ~Instruction() {}
+    void reserveOperands(size_t count) {
+        operands.reserve(count);
+        idOperand.reserve(count);
+    }
     void addIdOperand(Id id) {
         // ids can't be 0
         assert(id);
@@ -190,6 +195,12 @@ protected:
 // SPIR-V IR block.
 //
 
+struct DebugSourceLocation {
+    int line;
+    int column;
+    spv::Id fileId;
+};
+
 class Block {
 public:
     Block(Id id, Function& parent);
@@ -200,6 +211,28 @@ public:
     Id getId() { return instructions.front()->getResultId(); }
 
     Function& getParent() const { return parent; }
+    // Returns true if the source location is actually updated.
+    // Note we still need the builder to insert the line marker instruction. This is just a tracker.
+    bool updateDebugSourceLocation(int line, int column, spv::Id fileId) {
+        if (currentSourceLoc && currentSourceLoc->line == line && currentSourceLoc->column == column &&
+            currentSourceLoc->fileId == fileId) {
+            return false;
+        }
+
+        currentSourceLoc = DebugSourceLocation{line, column, fileId};
+        return true;
+    }
+    // Returns true if the scope is actually updated.
+    // Note we still need the builder to insert the debug scope instruction. This is just a tracker.
+    bool updateDebugScope(spv::Id scopeId) {
+        assert(scopeId);
+        if (currentDebugScope && *currentDebugScope == scopeId) {
+            return false;
+        }
+
+        currentDebugScope = scopeId;
+        return true;
+    }
     void addInstruction(std::unique_ptr<Instruction> inst);
     void addPredecessor(Block* pred) { predecessors.push_back(pred); pred->successors.push_back(this);}
     void addLocalVariable(std::unique_ptr<Instruction> inst) { localVariables.push_back(std::move(inst)); }
@@ -292,6 +325,12 @@ protected:
     std::vector<std::unique_ptr<Instruction> > localVariables;
     Function& parent;
 
+    // Track source location of the last source location marker instruction.
+    std::optional<DebugSourceLocation> currentSourceLoc;
+
+    // Track scope of the last debug scope instruction.
+    std::optional<spv::Id> currentDebugScope;
+
     // track whether this block is known to be uncreachable (not necessarily
     // true for all unreachable blocks, but should be set at least
     // for the extraneous ones introduced by the builder).
@@ -323,7 +362,7 @@ void inReadableOrder(Block* root, std::function<void(Block*, ReachReason, Block*
 
 class Function {
 public:
-    Function(Id id, Id resultType, Id functionType, Id firstParam, Module& parent);
+    Function(Id id, Id resultType, Id functionType, Id firstParam, LinkageType linkage, const std::string& name, Module& parent);
     virtual ~Function()
     {
         for (int i = 0; i < (int)parameterInstructions.size(); ++i)
@@ -352,6 +391,7 @@ public:
     void addLocalVariable(std::unique_ptr<Instruction> inst);
     Id getReturnType() const { return functionInstruction.getTypeId(); }
     Id getFuncId() const { return functionInstruction.getResultId(); }
+    Id getFuncTypeId() const { return functionInstruction.getIdOperand(1); }
     void setReturnPrecision(Decoration precision)
     {
         if (precision == DecorationRelaxedPrecision)
@@ -362,6 +402,7 @@ public:
 
     void setDebugLineInfo(Id fileName, int line, int column) {
         lineInstruction = std::unique_ptr<Instruction>{new Instruction(OpLine)};
+        lineInstruction->reserveOperands(3);
         lineInstruction->addIdOperand(fileName);
         lineInstruction->addImmediateOperand(line);
         lineInstruction->addImmediateOperand(column);
@@ -402,6 +443,9 @@ public:
         end.dump(out);
     }
 
+    LinkageType getLinkType() const { return linkType; }
+    const char* getExportName() const { return exportName.c_str(); }
+
 protected:
     Function(const Function&);
     Function& operator=(Function&);
@@ -414,6 +458,8 @@ protected:
     bool implicitThis;  // true if this is a member function expecting to be passed a 'this' as the first argument
     bool reducedPrecisionReturn;
     std::set<int> reducedPrecisionParams;  // list of parameter indexes that need a relaxed precision arg
+    LinkageType linkType;
+    std::string exportName;
 };
 
 //
@@ -473,12 +519,14 @@ protected:
 // Add both
 // - the OpFunction instruction
 // - all the OpFunctionParameter instructions
-__inline Function::Function(Id id, Id resultType, Id functionType, Id firstParamId, Module& parent)
+__inline Function::Function(Id id, Id resultType, Id functionType, Id firstParamId, LinkageType linkage, const std::string& name, Module& parent)
     : parent(parent), lineInstruction(nullptr),
       functionInstruction(id, resultType, OpFunction), implicitThis(false),
-      reducedPrecisionReturn(false)
+      reducedPrecisionReturn(false),
+      linkType(linkage)
 {
     // OpFunction
+    functionInstruction.reserveOperands(2);
     functionInstruction.addImmediateOperand(FunctionControlMaskNone);
     functionInstruction.addIdOperand(functionType);
     parent.mapInstruction(&functionInstruction);
@@ -491,6 +539,11 @@ __inline Function::Function(Id id, Id resultType, Id functionType, Id firstParam
         Instruction* param = new Instruction(firstParamId + p, typeInst->getIdOperand(p + 1), OpFunctionParameter);
         parent.mapInstruction(param);
         parameterInstructions.push_back(param);
+    }
+
+    // If importing/exporting, save the function name (without the mangled parameters) for the linkage decoration
+    if (linkType != LinkageTypeMax) {
+        exportName = name.substr(0, name.find_first_of('('));
     }
 }
 

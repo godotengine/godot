@@ -37,7 +37,7 @@ struct hb_utf8_t
   typedef uint8_t codepoint_t;
   static constexpr unsigned max_len = 4;
 
-  static const codepoint_t *
+  static inline const codepoint_t *
   next (const codepoint_t *text,
 	const codepoint_t *end,
 	hb_codepoint_t *unicode,
@@ -106,7 +106,7 @@ struct hb_utf8_t
     return text;
   }
 
-  static const codepoint_t *
+  static inline const codepoint_t *
   prev (const codepoint_t *text,
 	const codepoint_t *start,
 	hb_codepoint_t *unicode,
@@ -185,7 +185,7 @@ struct hb_utf16_xe_t
   typedef TCodepoint codepoint_t;
   static constexpr unsigned max_len = 2;
 
-  static const codepoint_t *
+  static inline const codepoint_t *
   next (const codepoint_t *text,
 	const codepoint_t *end,
 	hb_codepoint_t *unicode,
@@ -217,7 +217,7 @@ struct hb_utf16_xe_t
     return text;
   }
 
-  static const codepoint_t *
+  static inline const codepoint_t *
   prev (const codepoint_t *text,
 	const codepoint_t *start,
 	hb_codepoint_t *unicode,
@@ -294,7 +294,7 @@ struct hb_utf32_xe_t
   typedef TCodepoint codepoint_t;
   static constexpr unsigned max_len = 1;
 
-  static const TCodepoint *
+  static inline const TCodepoint *
   next (const TCodepoint *text,
 	const TCodepoint *end HB_UNUSED,
 	hb_codepoint_t *unicode,
@@ -306,7 +306,7 @@ struct hb_utf32_xe_t
     return text;
   }
 
-  static const TCodepoint *
+  static inline const TCodepoint *
   prev (const TCodepoint *text,
 	const TCodepoint *start HB_UNUSED,
 	hb_codepoint_t *unicode,
@@ -353,7 +353,7 @@ struct hb_latin1_t
   typedef uint8_t codepoint_t;
   static constexpr unsigned max_len = 1;
 
-  static const codepoint_t *
+  static inline const codepoint_t *
   next (const codepoint_t *text,
 	const codepoint_t *end HB_UNUSED,
 	hb_codepoint_t *unicode,
@@ -363,7 +363,7 @@ struct hb_latin1_t
     return text;
   }
 
-  static const codepoint_t *
+  static inline const codepoint_t *
   prev (const codepoint_t *text,
 	const codepoint_t *start HB_UNUSED,
 	hb_codepoint_t *unicode,
@@ -405,7 +405,7 @@ struct hb_ascii_t
   typedef uint8_t codepoint_t;
   static constexpr unsigned max_len = 1;
 
-  static const codepoint_t *
+  static inline const codepoint_t *
   next (const codepoint_t *text,
 	const codepoint_t *end HB_UNUSED,
 	hb_codepoint_t *unicode,
@@ -417,7 +417,7 @@ struct hb_ascii_t
     return text;
   }
 
-  static const codepoint_t *
+  static inline const codepoint_t *
   prev (const codepoint_t *text,
 	const codepoint_t *start HB_UNUSED,
 	hb_codepoint_t *unicode,
@@ -458,19 +458,21 @@ struct hb_ascii_t
 template <typename utf_t>
 static inline const typename utf_t::codepoint_t *
 hb_utf_offset_to_pointer (const typename utf_t::codepoint_t *start,
+			  const typename utf_t::codepoint_t *text,
+			  unsigned text_len,
 			  signed offset)
 {
   hb_codepoint_t unicode;
 
   while (offset-- > 0)
     start = utf_t::next (start,
-			 start + utf_t::max_len,
+			 text + text_len,
 			 &unicode,
 			 HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT);
 
   while (offset++ < 0)
     start = utf_t::prev (start,
-			 start - utf_t::max_len,
+			 text,
 			 &unicode,
 			 HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT);
 

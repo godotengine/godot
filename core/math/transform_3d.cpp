@@ -30,7 +30,6 @@
 
 #include "transform_3d.h"
 
-#include "core/math/math_funcs.h"
 #include "core/string/ustring.h"
 
 void Transform3D::affine_invert() {
@@ -174,16 +173,12 @@ bool Transform3D::is_equal_approx(const Transform3D &p_transform) const {
 	return basis.is_equal_approx(p_transform.basis) && origin.is_equal_approx(p_transform.origin);
 }
 
+bool Transform3D::is_same(const Transform3D &p_transform) const {
+	return basis.is_same(p_transform.basis) && origin.is_same(p_transform.origin);
+}
+
 bool Transform3D::is_finite() const {
 	return basis.is_finite() && origin.is_finite();
-}
-
-bool Transform3D::operator==(const Transform3D &p_transform) const {
-	return (basis == p_transform.basis && origin == p_transform.origin);
-}
-
-bool Transform3D::operator!=(const Transform3D &p_transform) const {
-	return (basis != p_transform.basis || origin != p_transform.origin);
 }
 
 void Transform3D::operator*=(const Transform3D &p_transform) {
@@ -197,37 +192,9 @@ Transform3D Transform3D::operator*(const Transform3D &p_transform) const {
 	return t;
 }
 
-void Transform3D::operator*=(const real_t p_val) {
-	origin *= p_val;
-	basis *= p_val;
-}
-
-Transform3D Transform3D::operator*(const real_t p_val) const {
-	Transform3D ret(*this);
-	ret *= p_val;
-	return ret;
-}
-
 Transform3D::operator String() const {
 	return "[X: " + basis.get_column(0).operator String() +
 			", Y: " + basis.get_column(1).operator String() +
 			", Z: " + basis.get_column(2).operator String() +
 			", O: " + origin.operator String() + "]";
-}
-
-Transform3D::Transform3D(const Basis &p_basis, const Vector3 &p_origin) :
-		basis(p_basis),
-		origin(p_origin) {
-}
-
-Transform3D::Transform3D(const Vector3 &p_x, const Vector3 &p_y, const Vector3 &p_z, const Vector3 &p_origin) :
-		origin(p_origin) {
-	basis.set_column(0, p_x);
-	basis.set_column(1, p_y);
-	basis.set_column(2, p_z);
-}
-
-Transform3D::Transform3D(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz, real_t ox, real_t oy, real_t oz) {
-	basis = Basis(xx, xy, xz, yx, yy, yz, zx, zy, zz);
-	origin = Vector3(ox, oy, oz);
 }

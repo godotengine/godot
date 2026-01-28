@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WEB_EXPORT_PLUGIN_H
-#define WEB_EXPORT_PLUGIN_H
+#pragma once
 
 #include "editor_http_server.h"
 
@@ -43,23 +42,32 @@
 #include "editor/export/editor_export_platform.h"
 #include "main/splash.gen.h"
 
+class ImageTexture;
+
 class EditorExportPlatformWeb : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformWeb, EditorExportPlatform);
+
+	enum RemoteDebugState {
+		REMOTE_DEBUG_STATE_UNAVAILABLE,
+		REMOTE_DEBUG_STATE_AVAILABLE,
+		REMOTE_DEBUG_STATE_SERVING,
+	};
 
 	Ref<ImageTexture> logo;
 	Ref<ImageTexture> run_icon;
 	Ref<ImageTexture> stop_icon;
-	int menu_options = 0;
+	Ref<ImageTexture> restart_icon;
+	RemoteDebugState remote_debug_state = REMOTE_DEBUG_STATE_UNAVAILABLE;
 
 	Ref<EditorHTTPServer> server;
-	bool server_quit = false;
-	Mutex server_lock;
-	Thread server_thread;
 
-	String _get_template_name(bool p_extension, bool p_debug) const {
+	String _get_template_name(bool p_extension, bool p_thread_support, bool p_debug) const {
 		String name = "web";
 		if (p_extension) {
 			name += "_dlink";
+		}
+		if (!p_thread_support) {
+			name += "_nothreads";
 		}
 		if (p_debug) {
 			name += "_debug.zip";
@@ -69,39 +77,51 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 		return name;
 	}
 
-	Ref<Image> _get_project_icon() const {
+	Ref<Image> _get_project_icon(const Ref<EditorExportPreset> &p_preset) const {
+		Error err = OK;
 		Ref<Image> icon;
 		icon.instantiate();
-		const String icon_path = String(GLOBAL_GET("application/config/icon")).strip_edges();
-		if (icon_path.is_empty() || ImageLoader::load_image(icon_path, icon) != OK) {
+		const String icon_path = String(get_project_setting(p_preset, "application/config/icon")).strip_edges();
+		if (!icon_path.is_empty()) {
+			icon = _load_icon_or_splash_image(icon_path, &err);
+		}
+		if (icon_path.is_empty() || err != OK || icon.is_null() || icon->is_empty()) {
 			return EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("DefaultProjectIcon"), EditorStringName(EditorIcons))->get_image();
 		}
 		return icon;
 	}
 
-	Ref<Image> _get_project_splash() const {
+	Ref<Image> _get_project_splash(const Ref<EditorExportPreset> &p_preset) const {
+		Error err = OK;
 		Ref<Image> splash;
 		splash.instantiate();
-		const String splash_path = String(GLOBAL_GET("application/boot_splash/image")).strip_edges();
-		if (splash_path.is_empty() || ImageLoader::load_image(splash_path, splash) != OK) {
+		const String splash_path = String(get_project_setting(p_preset, "application/boot_splash/image")).strip_edges();
+		if (!splash_path.is_empty()) {
+			splash = _load_icon_or_splash_image(splash_path, &err);
+		}
+		if (splash_path.is_empty() || err != OK || splash.is_null() || splash->is_empty()) {
 			return Ref<Image>(memnew(Image(boot_splash_png)));
 		}
 		return splash;
 	}
 
 	Error _extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa);
-	void _replace_strings(HashMap<String, String> p_replaces, Vector<uint8_t> &r_template);
-	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes);
-	Error _add_manifest_icon(const String &p_path, const String &p_icon, int p_size, Array &r_arr);
+	void _replace_strings(const HashMap<String, String> &p_replaces, Vector<uint8_t> &r_template);
+	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, BitField<EditorExportPlatform::DebugFlags> p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes);
+	Error _add_manifest_icon(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_icon, int p_size, Array &r_arr);
 	Error _build_pwa(const Ref<EditorExportPreset> &p_preset, const String p_path, const Vector<SharedObject> &p_shared_objects);
 	Error _write_or_error(const uint8_t *p_content, int p_len, String p_path);
 
-	static void _server_thread_poll(void *data);
+	Error _export_project(const Ref<EditorExportPreset> &p_preset, int p_debug_flags);
+	Error _launch_browser(const String &p_bind_host, uint16_t p_bind_port, bool p_use_tls);
+	Error _start_server(const String &p_bind_host, uint16_t p_bind_port, bool p_use_tls);
+	Error _stop_server();
 
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
+	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
 
 	virtual String get_name() const override;
 	virtual String get_os_name() const override;
@@ -110,14 +130,14 @@ public:
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
-	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0) override;
 
 	virtual bool poll_export() override;
 	virtual int get_options_count() const override;
-	virtual String get_option_label(int p_index) const override { return p_index ? TTR("Stop HTTP Server") : TTR("Run in Browser"); }
-	virtual String get_option_tooltip(int p_index) const override { return p_index ? TTR("Stop HTTP Server") : TTR("Run exported HTML in the system's default browser."); }
-	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
-	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_option, int p_debug_flags) override;
+	virtual String get_option_label(int p_index) const override;
+	virtual String get_option_tooltip(int p_index) const override;
+	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
+	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_option, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;
 	virtual Ref<Texture2D> get_run_icon() const override;
 
 	virtual void get_platform_features(List<String> *r_features) const override {
@@ -130,8 +150,6 @@ public:
 
 	String get_debug_protocol() const override { return "ws://"; }
 
-	EditorExportPlatformWeb();
+	virtual void initialize() override;
 	~EditorExportPlatformWeb();
 };
-
-#endif // WEB_EXPORT_PLUGIN_H

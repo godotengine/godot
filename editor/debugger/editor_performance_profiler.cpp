@@ -30,43 +30,20 @@
 
 #include "editor_performance_profiler.h"
 
-#include "editor/editor_property_name_processor.h"
-#include "editor/editor_scale.h"
-#include "editor/editor_settings.h"
+#include "core/string/translation_server.h"
 #include "editor/editor_string_names.h"
+#include "editor/inspector/editor_property_name_processor.h"
+#include "editor/settings/editor_settings.h"
+#include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "main/performance.h"
 
-EditorPerformanceProfiler::Monitor::Monitor() {}
-
-EditorPerformanceProfiler::Monitor::Monitor(String p_name, String p_base, int p_frame_index, Performance::MonitorType p_type, TreeItem *p_item) {
+EditorPerformanceProfiler::Monitor::Monitor(const String &p_name, const String &p_base, int p_frame_index, Performance::MonitorType p_type, TreeItem *p_item) {
 	type = p_type;
 	item = p_item;
 	frame_index = p_frame_index;
 	name = p_name;
 	base = p_base;
-}
-
-void EditorPerformanceProfiler::Monitor::update_value(float p_value) {
-	ERR_FAIL_NULL(item);
-	String label = EditorPerformanceProfiler::_create_label(p_value, type);
-	String tooltip = label;
-	switch (type) {
-		case Performance::MONITOR_TYPE_MEMORY: {
-			tooltip = label;
-		} break;
-		case Performance::MONITOR_TYPE_TIME: {
-			tooltip = label;
-		} break;
-		default: {
-			tooltip += " " + item->get_text(0);
-		} break;
-	}
-	item->set_text(1, label);
-	item->set_tooltip_text(1, tooltip);
-
-	if (p_value > max) {
-		max = p_value;
-	}
 }
 
 void EditorPerformanceProfiler::Monitor::reset() {
@@ -78,17 +55,50 @@ void EditorPerformanceProfiler::Monitor::reset() {
 	}
 }
 
-String EditorPerformanceProfiler::_create_label(float p_value, Performance::MonitorType p_type) {
+String EditorPerformanceProfiler::_format_label(float p_value, Performance::MonitorType p_type) const {
+	const String &lang = _get_locale();
+	const TranslationServer *ts = TranslationServer::get_singleton();
+
 	switch (p_type) {
+		case Performance::MONITOR_TYPE_QUANTITY: {
+			return ts->format_number(itos(p_value), lang);
+		}
 		case Performance::MONITOR_TYPE_MEMORY: {
 			return String::humanize_size(p_value);
 		}
 		case Performance::MONITOR_TYPE_TIME: {
-			return TS->format_number(rtos(p_value * 1000).pad_decimals(2)) + " " + RTR("ms");
+			return ts->format_number(rtos(p_value * 1000).pad_decimals(2), lang) + " " + TTR("ms");
+		}
+		case Performance::MONITOR_TYPE_PERCENTAGE: {
+			return ts->format_number(rtos(p_value * 100).pad_decimals(2), lang) + "%";
 		}
 		default: {
-			return TS->format_number(rtos(p_value));
+			return ts->format_number(rtos(p_value), lang);
 		}
+	}
+}
+
+void EditorPerformanceProfiler::_update_monitor_value(Monitor *p_monitor, float p_value) {
+	TreeItem *item = p_monitor->item;
+	ERR_FAIL_NULL(item);
+
+	const String label = EditorPerformanceProfiler::_format_label(p_value, p_monitor->type);
+	item->set_text(1, label);
+
+	String tooltip;
+	switch (p_monitor->type) {
+		case Performance::MONITOR_TYPE_MEMORY:
+		case Performance::MONITOR_TYPE_TIME: {
+			item->set_tooltip_text(1, label);
+		} break;
+
+		default: {
+			item->set_tooltip_text(1, label + " " + item->get_text(0));
+		} break;
+	}
+
+	if (p_value > p_monitor->max) {
+		p_monitor->max = p_value;
 	}
 }
 
@@ -111,9 +121,9 @@ void EditorPerformanceProfiler::_monitor_draw() {
 
 	info_message->hide();
 
-	Ref<StyleBox> graph_style_box = get_theme_stylebox(SNAME("normal"), SNAME("TextEdit"));
-	Ref<Font> graph_font = get_theme_font(SNAME("font"), SNAME("TextEdit"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("TextEdit"));
+	Ref<StyleBox> graph_style_box = get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit"));
+	Ref<Font> graph_font = get_theme_font(SceneStringName(font), SNAME("TextEdit"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("TextEdit"));
 
 	int columns = int(Math::ceil(Math::sqrt(float(active.size()))));
 	int rows = int(Math::ceil(float(active.size()) / float(columns)));
@@ -122,7 +132,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 	}
 	Size2i cell_size = Size2i(monitor_draw->get_size()) / Size2i(columns, rows);
 	float spacing = float(POINT_SEPARATION) / float(columns);
-	float value_multiplier = EditorSettings::get_singleton()->is_dark_theme() ? 1.4f : 0.55f;
+	float value_multiplier = EditorThemeManager::is_dark_theme() ? 1.4f : 0.55f;
 	float hue_shift = 1.0f / float(monitors.size());
 
 	for (int i = 0; i < active.size(); i++) {
@@ -154,12 +164,12 @@ void EditorPerformanceProfiler::_monitor_draw() {
 			Color horizontal_line_color;
 			horizontal_line_color.set_hsv(draw_color.get_h(), draw_color.get_s() * 0.5f, draw_color.get_v() * 0.5f, 0.3f);
 			monitor_draw->draw_line(rect.position, rect.position + Vector2(rect.size.width, 0), horizontal_line_color, Math::round(EDSCALE));
-			monitor_draw->draw_string(graph_font, rect.position + Vector2(0, graph_font->get_ascent(font_size)), _create_label(current.max, current.type), HORIZONTAL_ALIGNMENT_LEFT, rect.size.width, font_size, horizontal_line_color);
+			monitor_draw->draw_string(graph_font, rect.position + Vector2(0, graph_font->get_ascent(font_size)), _format_label(current.max, current.type), HORIZONTAL_ALIGNMENT_LEFT, rect.size.width, font_size, horizontal_line_color);
 
 			for (int j = 0; j < line_count; j++) {
 				Vector2 y_offset = Vector2(0, rect.size.height * (1.0f - float(j) / float(line_count)));
 				monitor_draw->draw_line(rect.position + y_offset, rect.position + Vector2(rect.size.width, 0) + y_offset, horizontal_line_color, Math::round(EDSCALE));
-				monitor_draw->draw_string(graph_font, rect.position - Vector2(0, graph_font->get_descent(font_size)) + y_offset, _create_label(current.max * float(j) / float(line_count), current.type), HORIZONTAL_ALIGNMENT_LEFT, rect.size.width, font_size, horizontal_line_color);
+				monitor_draw->draw_string(graph_font, rect.position - Vector2(0, graph_font->get_descent(font_size)) + y_offset, _format_label(current.max * float(j) / float(line_count), current.type), HORIZONTAL_ALIGNMENT_LEFT, rect.size.width, font_size, horizontal_line_color);
 			}
 		}
 
@@ -184,7 +194,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 				line_color.set_hsv(draw_color.get_h(), draw_color.get_s() * 0.8f, draw_color.get_v(), 0.5f);
 				monitor_draw->draw_line(rect.position + Point2(from, 0), rect.position + Point2(from, rect.size.y), line_color, Math::round(EDSCALE));
 
-				String label = _create_label(e->get(), current.type);
+				String label = _format_label(e->get(), current.type);
 				Size2 size = graph_font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 				Vector2 text_top_left_position = Vector2(from, h2) - (size + Vector2(MARKER_MARGIN, MARKER_MARGIN));
 				if (text_top_left_position.x < 0) {
@@ -220,7 +230,7 @@ void EditorPerformanceProfiler::_build_monitor_tree() {
 		item->set_checked(0, monitor_checked.has(E.key));
 		E.value.item = item;
 		if (!E.value.history.is_empty()) {
-			E.value.update_value(E.value.history.front()->get());
+			_update_monitor_value(&E.value, E.value.history.front()->get());
 		}
 	}
 }
@@ -231,7 +241,8 @@ TreeItem *EditorPerformanceProfiler::_get_monitor_base(const StringName &p_base_
 	}
 
 	TreeItem *base = monitor_tree->create_item(monitor_tree->get_root());
-	base->set_text(0, p_base_name);
+	base->set_text(0, EditorPropertyNameProcessor::get_singleton()->process_name(p_base_name, EditorPropertyNameProcessor::get_settings_style()));
+	base->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 	base->set_editable(0, false);
 	base->set_selectable(0, false);
 	base->set_expand_right(0, true);
@@ -248,7 +259,7 @@ TreeItem *EditorPerformanceProfiler::_create_monitor_item(const StringName &p_mo
 	item->set_editable(0, true);
 	item->set_selectable(0, false);
 	item->set_selectable(1, false);
-	item->set_text(0, p_monitor_name);
+	item->set_text(0, EditorPropertyNameProcessor::get_singleton()->process_name(p_monitor_name, EditorPropertyNameProcessor::get_settings_style()));
 	return item;
 }
 
@@ -276,7 +287,7 @@ void EditorPerformanceProfiler::_marker_input(const Ref<InputEvent> &p_event) {
 				} else {
 					marker_key = "";
 				}
-				Ref<StyleBox> graph_style_box = get_theme_stylebox(SNAME("normal"), SNAME("TextEdit"));
+				Ref<StyleBox> graph_style_box = get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit"));
 				rect.position += graph_style_box->get_offset();
 				rect.size -= graph_style_box->get_minimum_size();
 				Vector2 point = mb->get_position() - rect.position;
@@ -315,7 +326,7 @@ void EditorPerformanceProfiler::reset() {
 	monitor_draw->queue_redraw();
 }
 
-void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_names) {
+void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_names, const PackedInt32Array &p_types) {
 	HashMap<StringName, int> names;
 	for (int i = 0; i < p_names.size(); i++) {
 		names.insert("custom:" + p_names[i], Performance::MONITOR_MAX + i);
@@ -338,6 +349,7 @@ void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_name
 		}
 	}
 
+	int index = 0;
 	for (const KeyValue<StringName, int> &E : names) {
 		String name = String(E.key).replace_first("custom:", "");
 		String base = "Custom";
@@ -345,7 +357,9 @@ void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_name
 			base = name.get_slicec('/', 0);
 			name = name.get_slicec('/', 1);
 		}
-		monitors.insert(E.key, Monitor(name, base, E.value, Performance::MONITOR_TYPE_QUANTITY, nullptr));
+		Performance::MonitorType type = Performance::MonitorType(p_types[index]);
+		monitors.insert(E.key, Monitor(name, base, E.value, type, nullptr));
+		index++;
 	}
 
 	_build_monitor_tree();
@@ -358,7 +372,7 @@ void EditorPerformanceProfiler::add_profile_frame(const Vector<float> &p_values)
 			value = p_values[E.value.frame_index];
 		}
 		E.value.history.push_front(value);
-		E.value.update_value(value);
+		_update_monitor_value(&E.value, value);
 	}
 	marker_frame++;
 	monitor_draw->queue_redraw();
@@ -373,36 +387,58 @@ List<float> *EditorPerformanceProfiler::get_monitor_data(const StringName &p_nam
 
 void EditorPerformanceProfiler::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (is_ready()) {
+				_build_monitor_tree();
+				if (monitor_draw->is_visible_in_tree()) {
+					monitor_draw->queue_redraw();
+				}
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			for (KeyValue<StringName, TreeItem *> &E : base_map) {
 				E.value->set_custom_font(0, get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+			}
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
+				_build_monitor_tree();
 			}
 		} break;
 	}
 }
 
 EditorPerformanceProfiler::EditorPerformanceProfiler() {
-	set_name(TTR("Monitors"));
+	set_name(TTRC("Monitors"));
 	set_split_offset(340 * EDSCALE);
 
 	monitor_tree = memnew(Tree);
+	monitor_tree->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
 	monitor_tree->set_columns(2);
-	monitor_tree->set_column_title(0, TTR("Monitor"));
-	monitor_tree->set_column_title(1, TTR("Value"));
+	monitor_tree->set_column_title(0, TTRC("Monitor"));
+	monitor_tree->set_column_expand(0, true);
+	monitor_tree->set_column_title(1, TTRC("Value"));
+	monitor_tree->set_column_custom_minimum_width(1, 100 * EDSCALE);
+	monitor_tree->set_column_expand(1, false);
 	monitor_tree->set_column_titles_visible(true);
 	monitor_tree->connect("item_edited", callable_mp(this, &EditorPerformanceProfiler::_monitor_select));
 	monitor_tree->create_item();
 	monitor_tree->set_hide_root(true);
+	monitor_tree->set_theme_type_variation("TreeSecondary");
 	add_child(monitor_tree);
 
 	monitor_draw = memnew(Control);
+	monitor_draw->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
 	monitor_draw->set_clip_contents(true);
-	monitor_draw->connect("draw", callable_mp(this, &EditorPerformanceProfiler::_monitor_draw));
-	monitor_draw->connect("gui_input", callable_mp(this, &EditorPerformanceProfiler::_marker_input));
+	monitor_draw->connect(SceneStringName(draw), callable_mp(this, &EditorPerformanceProfiler::_monitor_draw));
+	monitor_draw->connect(SceneStringName(gui_input), callable_mp(this, &EditorPerformanceProfiler::_marker_input));
 	add_child(monitor_draw);
 
 	info_message = memnew(Label);
-	info_message->set_text(TTR("Pick one or more items from the list to display the graph."));
+	info_message->set_focus_mode(FOCUS_ACCESSIBILITY);
+	info_message->set_text(TTRC("Pick one or more items from the list to display the graph."));
 	info_message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	info_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	info_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -411,9 +447,11 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	monitor_draw->add_child(info_message);
 
 	for (int i = 0; i < Performance::MONITOR_MAX; i++) {
-		String base = EditorPropertyNameProcessor::get_singleton()->process_name(Performance::get_singleton()->get_monitor_name(Performance::Monitor(i)).get_slicec('/', 0), EditorPropertyNameProcessor::STYLE_CAPITALIZED);
-		String name = EditorPropertyNameProcessor::get_singleton()->process_name(Performance::get_singleton()->get_monitor_name(Performance::Monitor(i)).get_slicec('/', 1), EditorPropertyNameProcessor::STYLE_CAPITALIZED);
-		monitors.insert(Performance::get_singleton()->get_monitor_name(Performance::Monitor(i)), Monitor(name, base, i, Performance::get_singleton()->get_monitor_type(Performance::Monitor(i)), nullptr));
+		const Performance::Monitor monitor = Performance::Monitor(i);
+		const String path = Performance::get_singleton()->get_monitor_name(monitor);
+		const String base = path.get_slicec('/', 0);
+		const String name = path.get_slicec('/', 1);
+		monitors.insert(path, Monitor(name, base, i, Performance::get_singleton()->get_monitor_type(monitor), nullptr));
 	}
 
 	_build_monitor_tree();

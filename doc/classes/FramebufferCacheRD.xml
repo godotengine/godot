@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FramebufferCacheRD" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Framebuffer cache manager for Rendering Device based renderers.
+	</brief_description>
+	<description>
+		Framebuffer cache manager for [RenderingDevice]-based renderers. Provides a way to create a framebuffer and reuse it in subsequent calls for as long as the used textures exists. Framebuffers will automatically be cleaned up when dependent objects are freed.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_cache_multipass" qualifiers="static">
+			<return type="RID" />
+			<param index="0" name="textures" type="RID[]" />
+			<param index="1" name="passes" type="RDFramebufferPass[]" />
+			<param index="2" name="views" type="int" />
+			<description>
+				Creates, or obtains a cached, framebuffer. [param textures] lists textures accessed. [param passes] defines the subpasses and texture allocation, if left empty a single pass is created and textures are allocated depending on their usage flags. [param views] defines the number of views used when rendering.
+			</description>
+		</method>
+	</methods>
+</class>

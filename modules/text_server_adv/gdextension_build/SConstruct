@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-import atexit
-import os
-import sys
+# ruff: noqa: F821
+
 import methods
-import time
 
 # For the reference:
 # - CCFLAGS are compilation flags shared between C and C++
@@ -12,8 +10,6 @@ import time
 # - CPPFLAGS are for pre-processor flags
 # - CPPDEFINES are for pre-processor defines
 # - LINKFLAGS are for linking flags
-
-time_at_start = time.time()
 
 env = SConscript("./godot-cpp/SConstruct")
 env.__class__.disable_warnings = methods.disable_warnings
@@ -29,9 +25,6 @@ opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", Fa
 
 opts.Update(env)
 
-if not env["verbose"]:
-    methods.no_verbose(sys, env)
-
 if env["platform"] == "windows" and not env["use_mingw"]:
     env.AppendUnique(CCFLAGS=["/utf-8"])  # Force to use Unicode encoding.
 
@@ -43,8 +36,8 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
     thirdparty_tvg_dir = "../../../thirdparty/thorvg/"
     thirdparty_tvg_sources = [
         # common
-        "src/common/tvgBezier.cpp",
         "src/common/tvgCompressor.cpp",
+        "src/common/tvgLines.cpp",
         "src/common/tvgMath.cpp",
         "src/common/tvgStr.cpp",
         # SVG parser
@@ -55,6 +48,7 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
         "src/loaders/svg/tvgSvgUtil.cpp",
         "src/loaders/svg/tvgXmlParser.cpp",
         "src/loaders/raw/tvgRawLoader.cpp",
+        # image loaders
         "src/loaders/external_png/tvgPngLoader.cpp",
         "src/loaders/jpg/tvgJpgd.cpp",
         "src/loaders/jpg/tvgJpgLoader.cpp",
@@ -74,6 +68,8 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
         "src/renderer/tvgShape.cpp",
         "src/renderer/tvgSwCanvas.cpp",
         "src/renderer/tvgTaskScheduler.cpp",
+        "src/renderer/tvgText.cpp",
+        # "src/renderer/tvgWgCanvas.cpp",
         # renderer sw_engine
         "src/renderer/sw_engine/tvgSwFill.cpp",
         "src/renderer/sw_engine/tvgSwImage.cpp",
@@ -97,6 +93,7 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
             "../../../thirdparty/thorvg/src/loaders/raw",
             "../../../thirdparty/thorvg/src/loaders/external_png",
             "../../../thirdparty/thorvg/src/loaders/jpg",
+            "../../../thirdparty/libpng",
         ]
     )
 
@@ -113,7 +110,7 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
     env.Append(CPPDEFINES=["MODULE_SVG_ENABLED"])
 
     lib = env_tvg.Library(
-        f'tvg_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
+        f"tvg_builtin{env['suffix']}{env['LIBSUFFIX']}",
         thirdparty_tvg_sources,
     )
     env.Append(LIBS=[lib])
@@ -126,33 +123,40 @@ if env["msdfgen_enabled"] and env["freetype_enabled"]:
     thirdparty_msdfgen_dir = "../../../thirdparty/msdfgen/"
     thirdparty_msdfgen_sources = [
         "core/Contour.cpp",
+        "core/DistanceMapping.cpp",
         "core/EdgeHolder.cpp",
         "core/MSDFErrorCorrection.cpp",
         "core/Projection.cpp",
         "core/Scanline.cpp",
         "core/Shape.cpp",
-        "core/SignedDistance.cpp",
-        "core/Vector2.cpp",
         "core/contour-combiners.cpp",
+        "core/convergent-curve-ordering.cpp",
         "core/edge-coloring.cpp",
         "core/edge-segments.cpp",
         "core/edge-selectors.cpp",
         "core/equation-solver.cpp",
+        # "core/export-svg.cpp",
         "core/msdf-error-correction.cpp",
         "core/msdfgen.cpp",
         "core/rasterization.cpp",
         "core/render-sdf.cpp",
+        # "core/save-bmp.cpp",
+        # "core/save-fl32.cpp",
+        # "core/save-rgba.cpp",
+        # "core/save-tiff.cpp",
         "core/sdf-error-estimation.cpp",
         "core/shape-description.cpp",
     ]
     thirdparty_msdfgen_sources = [thirdparty_msdfgen_dir + file for file in thirdparty_msdfgen_sources]
 
+    env_msdfgen.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     env_msdfgen.Append(CPPPATH=["../../../thirdparty/freetype/include", "../../../thirdparty/msdfgen"])
     env.Append(CPPPATH=["../../../thirdparty/msdfgen"])
+    env.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     env.Append(CPPDEFINES=["MODULE_MSDFGEN_ENABLED"])
 
     lib = env_msdfgen.Library(
-        f'msdfgen_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
+        f"msdfgen_builtin{env['suffix']}{env['LIBSUFFIX']}",
         thirdparty_msdfgen_sources,
     )
     env.Append(LIBS=[lib])
@@ -281,7 +285,7 @@ if env["freetype_enabled"]:
     env.Append(CPPDEFINES=["MODULE_FREETYPE_ENABLED"])
 
     lib = env_freetype.Library(
-        f'freetype_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
+        f"freetype_builtin{env['suffix']}{env['LIBSUFFIX']}",
         thirdparty_freetype_sources,
     )
     env.Append(LIBS=[lib])
@@ -301,7 +305,8 @@ thirdparty_harfbuzz_sources = [
     # "src/hb-cairo-utils.cc",
     # "src/hb-cairo.cc",
     "src/hb-common.cc",
-    # "src/hb-coretext.cc",
+    # "src/hb-coretext-font.cc",
+    # "src/hb-coretext-shape.cc",
     # "src/hb-directwrite.cc",
     "src/hb-draw.cc",
     "src/hb-face-builder.cc",
@@ -343,6 +348,7 @@ thirdparty_harfbuzz_sources = [
     "src/hb-ot-tag.cc",
     "src/hb-ot-var.cc",
     "src/hb-outline.cc",
+    "src/hb-paint-bounded.cc",
     "src/hb-paint-extents.cc",
     "src/hb-paint.cc",
     "src/hb-set.cc",
@@ -355,13 +361,15 @@ thirdparty_harfbuzz_sources = [
     "src/hb-subset-cff1.cc",
     "src/hb-subset-cff2.cc",
     "src/hb-subset-input.cc",
+    "src/hb-subset-instancer-iup.cc",
     "src/hb-subset-instancer-solver.cc",
     "src/hb-subset-plan.cc",
-    "src/hb-subset-repacker.cc",
+    "src/hb-subset-serialize.cc",
     "src/hb-subset.cc",
     "src/hb-ucd.cc",
     "src/hb-unicode.cc",
     # "src/hb-uniscribe.cc",
+    "src/OT/Var/VARC/VARC.cc",
 ]
 
 if env["freetype_enabled"]:
@@ -388,30 +396,31 @@ if env["freetype_enabled"]:
     )
 
 if env["platform"] == "android" or env["platform"] == "linuxbsd":
-    env_harfbuzz.Append(CCFLAGS=["-DHAVE_PTHREAD"])
+    env_harfbuzz.Append(CPPDEFINES=["HAVE_PTHREAD"])
 
 env_harfbuzz.Append(
-    CCFLAGS=[
-        "-DU_HAVE_LIB_SUFFIX=1",
-        "-DU_LIB_SUFFIX_C_NAME=_godot",
-        "-DHAVE_ICU_BUILTIN",
-        "-DHAVE_ICU",
+    CPPDEFINES=[
+        "U_STATIC_IMPLEMENTATION",
+        ("U_HAVE_LIB_SUFFIX", 1),
+        ("U_LIB_SUFFIX_C_NAME", "_godot"),
+        "HAVE_ICU_BUILTIN",
+        "HAVE_ICU",
     ]
 )
 
 if env["freetype_enabled"]:
     env_harfbuzz.Append(
-        CCFLAGS=[
-            "-DHAVE_FREETYPE",
-            "-DHAVE_GRAPHITE2",
-            "-DGRAPHITE2_STATIC",
+        CPPDEFINES=[
+            "HAVE_FREETYPE",
+            "HAVE_GRAPHITE2",
+            "GRAPHITE2_STATIC",
         ]
     )
 
 env.Append(CPPPATH=["../../../thirdparty/harfbuzz/src"])
 
 lib = env_harfbuzz.Library(
-    f'harfbuzz_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
+    f"harfbuzz_builtin{env['suffix']}{env['LIBSUFFIX']}",
     thirdparty_harfbuzz_sources,
 )
 env.Prepend(LIBS=[lib])
@@ -463,15 +472,15 @@ if env["graphite_enabled"] and env["freetype_enabled"]:
 
     env_graphite.Append(CPPPATH=["../../../thirdparty/graphite/src", "../../../thirdparty/graphite/include"])
     env_graphite.Append(
-        CCFLAGS=[
-            "-DGRAPHITE2_STATIC",
-            "-DGRAPHITE2_NTRACING",
-            "-DGRAPHITE2_NFILEFACE",
+        CPPDEFINES=[
+            "GRAPHITE2_STATIC",
+            "GRAPHITE2_NTRACING",
+            "GRAPHITE2_NFILEFACE",
         ]
     )
 
     lib = env_graphite.Library(
-        f'graphite_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
+        f"graphite_builtin{env['suffix']}{env['LIBSUFFIX']}",
         thirdparty_graphite_sources,
     )
     env.Append(LIBS=[lib])
@@ -507,6 +516,7 @@ thirdparty_icu_sources = [
     "common/errorcode.cpp",
     "common/filteredbrk.cpp",
     "common/filterednormalizer2.cpp",
+    "common/fixedstring.cpp",
     "common/icudataver.cpp",
     "common/icuplug.cpp",
     "common/loadednormalizer2impl.cpp",
@@ -623,6 +633,8 @@ thirdparty_icu_sources = [
     "common/uloc.cpp",
     "common/uloc_keytype.cpp",
     "common/uloc_tag.cpp",
+    "common/ulocale.cpp",
+    "common/ulocbuilder.cpp",
     "common/umapfile.cpp",
     "common/umath.cpp",
     "common/umutablecptrie.cpp",
@@ -688,42 +700,39 @@ thirdparty_icu_sources = [
 ]
 thirdparty_icu_sources = [thirdparty_icu_dir + file for file in thirdparty_icu_sources]
 
-icu_data_name = "icudt73l.dat"
-
 if env["static_icu_data"]:
-    env_icu.Depends("../../../thirdparty/icu4c/icudata.gen.h", "../../../thirdparty/icu4c/" + icu_data_name)
+    env_icu.Depends("../../../thirdparty/icu4c/icudata.gen.h", "../../../thirdparty/icu4c/icudt_godot.dat")
     env_icu.Command(
-        "../../../thirdparty/icu4c/icudata.gen.h", "../../../thirdparty/icu4c/" + icu_data_name, methods.make_icu_data
+        "../../../thirdparty/icu4c/icudata.gen.h", "../../../thirdparty/icu4c/icudt_godot.dat", methods.make_icu_data
     )
-    env.Append(CXXFLAGS=["-DICU_STATIC_DATA"])
+    env.Append(CPPDEFINES=["ICU_STATIC_DATA"])
     env.Append(CPPPATH=["../../../thirdparty/icu4c/"])
 else:
-    thirdparty_sources += ["../icu_data/icudata_stub.cpp"]
+    thirdparty_icu_sources += ["../icu_data/icudata_stub.cpp"]
 
 env_icu.Append(CPPPATH=["../../../thirdparty/icu4c/common/", "../../../thirdparty/icu4c/i18n/"])
 env_icu.Append(
-    CXXFLAGS=[
-        "-DU_STATIC_IMPLEMENTATION",
-        "-DU_COMMON_IMPLEMENTATION",
-        "-DUCONFIG_NO_COLLATION",
-        "-DUCONFIG_NO_CONVERSION",
-        "-DUCONFIG_NO_FORMATTING",
-        "-DUCONFIG_NO_SERVICE",
-        "-DUCONFIG_NO_IDNA",
-        "-DUCONFIG_NO_FILE_IO",
-        "-DUCONFIG_NO_TRANSLITERATION",
-        "-DPKGDATA_MODE=static",
-        "-DU_ENABLE_DYLOAD=0",
-        "-DU_HAVE_LIB_SUFFIX=1",
-        "-DU_LIB_SUFFIX_C_NAME=_godot",
-        "-DICU_DATA_NAME=" + icu_data_name,
+    CPPDEFINES=[
+        "U_STATIC_IMPLEMENTATION",
+        "U_COMMON_IMPLEMENTATION",
+        "UCONFIG_NO_COLLATION",
+        "UCONFIG_NO_CONVERSION",
+        "UCONFIG_NO_FORMATTING",
+        "UCONFIG_NO_SERVICE",
+        "UCONFIG_NO_IDNA",
+        "UCONFIG_NO_FILE_IO",
+        "UCONFIG_NO_TRANSLITERATION",
+        ("PKGDATA_MODE", "static"),
+        ("U_ENABLE_DYLOAD", 0),
+        ("U_HAVE_LIB_SUFFIX", 1),
+        ("U_LIB_SUFFIX_C_NAME", "_godot"),
     ]
 )
 env.Append(
-    CXXFLAGS=[
-        "-DU_HAVE_LIB_SUFFIX=1",
-        "-DU_LIB_SUFFIX_C_NAME=_godot",
-        "-DICU_DATA_NAME=" + icu_data_name,
+    CPPDEFINES=[
+        "U_STATIC_IMPLEMENTATION",
+        ("U_HAVE_LIB_SUFFIX", 1),
+        ("U_LIB_SUFFIX_C_NAME", "_godot"),
     ]
 )
 env.Append(CPPPATH=["../../../thirdparty/icu4c/common/", "../../../thirdparty/icu4c/i18n/"])
@@ -731,7 +740,7 @@ env.Append(CPPPATH=["../../../thirdparty/icu4c/common/", "../../../thirdparty/ic
 if env["platform"] == "windows":
     env.Append(LIBS=["advapi32"])
 
-lib = env_icu.Library(f'icu_builtin{env["suffix"]}{env["LIBSUFFIX"]}', thirdparty_icu_sources)
+lib = env_icu.Library(f"icu_builtin{env['suffix']}{env['LIBSUFFIX']}", thirdparty_icu_sources)
 env.Append(LIBS=[lib])
 
 env.Append(CPPDEFINES=["GDEXTENSION"])
@@ -740,28 +749,21 @@ sources = Glob("../*.cpp")
 
 if env["platform"] == "macos":
     methods.write_macos_plist(
-        f'./bin/libtextserver_advanced.macos.{env["target"]}.framework',
-        f'libtextserver_advanced.macos.{env["target"]}',
+        f"./bin/libtextserver_advanced.macos.{env['target']}.framework",
+        f"libtextserver_advanced.macos.{env['target']}",
         "org.godotengine.textserver_advanced",
         "ICU / HarfBuzz / Graphite Text Server",
     )
     library = env.SharedLibrary(
-        f'./bin/libtextserver_advanced.macos.{env["target"]}.framework/libtextserver_advanced.macos.{env["target"]}',
+        f"./bin/libtextserver_advanced.macos.{env['target']}.framework/libtextserver_advanced.macos.{env['target']}",
         source=sources,
     )
 else:
     library = env.SharedLibrary(
-        f'./bin/libtextserver_advanced{env["suffix"]}{env["SHLIBSUFFIX"]}',
+        f"./bin/libtextserver_advanced{env['suffix']}{env['SHLIBSUFFIX']}",
         source=sources,
     )
 
 Default(library)
 
-
-def print_elapsed_time():
-    elapsed_time_sec = round(time.time() - time_at_start, 3)
-    time_ms = round((elapsed_time_sec % 1) * 1000)
-    print("[Time elapsed: {}.{:03}]".format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)), time_ms))
-
-
-atexit.register(print_elapsed_time)
+methods.prepare_timer()

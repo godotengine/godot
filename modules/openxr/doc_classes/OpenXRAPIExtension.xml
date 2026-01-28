@@ -17,10 +17,38 @@
 		<link title="XrPosef documentation">https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrPosef.html</link>
 	</tutorials>
 	<methods>
+		<method name="action_get_handle">
+			<return type="int" />
+			<param index="0" name="action" type="RID" />
+			<description>
+				Returns the corresponding [code]XrAction[/code] OpenXR handle for the given action RID.
+			</description>
+		</method>
+		<method name="begin_debug_label_region">
+			<return type="void" />
+			<param index="0" name="label_name" type="String" />
+			<description>
+				Begins a new debug label region, this label will be reported in debug messages for any calls following this until [method end_debug_label_region] is called. Debug labels can be stacked.
+			</description>
+		</method>
 		<method name="can_render">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if OpenXR is initialized for rendering with an XR viewport.
+			</description>
+		</method>
+		<method name="end_debug_label_region">
+			<return type="void" />
+			<description>
+				Marks the end of a debug label region. Removes the latest debug label region added by calling [method begin_debug_label_region].
+			</description>
+		</method>
+		<method name="find_action">
+			<return type="RID" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="action_set" type="RID" />
+			<description>
+				Returns the [RID] corresponding to an [code]Action[/code] of a matching name, optionally limited to a specified action set.
 			</description>
 		</method>
 		<method name="get_error_string">
@@ -28,6 +56,13 @@
 			<param index="0" name="result" type="int" />
 			<description>
 				Returns an error string for the given [url=https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrResult.html]XrResult[/url].
+			</description>
+		</method>
+		<method name="get_hand_tracker">
+			<return type="int" />
+			<param index="0" name="hand_index" type="int" />
+			<description>
+				Returns the corresponding [code]XRHandTrackerEXT[/code] handle for the given hand index value.
 			</description>
 		</method>
 		<method name="get_instance">
@@ -47,7 +82,13 @@
 		<method name="get_next_frame_time">
 			<return type="int" />
 			<description>
-				Returns the timing for the next frame.
+				Returns the predicted display timing for the next frame.
+			</description>
+		</method>
+		<method name="get_openxr_version">
+			<return type="int" />
+			<description>
+				Returns the version of OpenXR that was initialized. Only valid after the OpenXR instance has been created. See [url=https://registry.khronos.org/OpenXR/specs/1.1/html/xrspec.html#XR_MAKE_VERSION]XR_MAKE_VERSION[/url] for how the version is calculated.
 			</description>
 		</method>
 		<method name="get_play_space">
@@ -56,10 +97,43 @@
 				Returns the play space, which is an [url=https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrSpace.html]XrSpace[/url] cast to an integer.
 			</description>
 		</method>
+		<method name="get_predicted_display_time">
+			<return type="int" />
+			<description>
+				Returns the predicted display timing for the current frame.
+			</description>
+		</method>
+		<method name="get_projection_layer">
+			<return type="int" />
+			<description>
+				Returns a pointer to the render state's [code]XrCompositionLayerProjection[/code] struct.
+				[b]Note:[/b] This method should only be called from the rendering thread.
+			</description>
+		</method>
+		<method name="get_render_state_z_far">
+			<return type="float" />
+			<description>
+				Returns the far boundary value of the camera frustum.
+				[b]Note:[/b] This is only accessible in the render thread.
+			</description>
+		</method>
+		<method name="get_render_state_z_near">
+			<return type="float" />
+			<description>
+				Returns the near boundary value of the camera frustum.
+				[b]Note:[/b] This is only accessible in the render thread.
+			</description>
+		</method>
 		<method name="get_session">
 			<return type="int" />
 			<description>
 				Returns the OpenXR session, which is an [url=https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrSession.html]XrSession[/url] cast to an integer.
+			</description>
+		</method>
+		<method name="get_supported_swapchain_formats">
+			<return type="PackedInt64Array" />
+			<description>
+				Returns an array of supported swapchain formats.
 			</description>
 		</method>
 		<method name="get_swapchain_format_name">
@@ -72,7 +146,20 @@
 		<method name="get_system_id">
 			<return type="int" />
 			<description>
-				Returns the id of the system, which is a [url=https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrSystemId.html]XrSystemId[/url] cast to an integer.
+				Returns the ID of the system, which is an [url=https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrSystemId.html]XrSystemId[/url] cast to an integer.
+			</description>
+		</method>
+		<method name="insert_debug_label">
+			<return type="void" />
+			<param index="0" name="label_name" type="String" />
+			<description>
+				Inserts a debug label, this label is reported in any debug message resulting from the OpenXR calls that follows, until any of [method begin_debug_label_region], [method end_debug_label_region], or [method insert_debug_label] is called.
+			</description>
+		</method>
+		<method name="is_environment_blend_mode_alpha_supported">
+			<return type="int" enum="OpenXRAPIExtension.OpenXRAlphaBlendModeSupport" />
+			<description>
+				Returns [enum OpenXRAPIExtension.OpenXRAlphaBlendModeSupport] denoting if [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] is really supported, emulated or not supported at all.
 			</description>
 		</method>
 		<method name="is_initialized">
@@ -94,11 +181,164 @@
 				Returns [code]true[/code] if OpenXR is enabled.
 			</description>
 		</method>
+		<method name="openxr_swapchain_acquire">
+			<return type="void" />
+			<param index="0" name="swapchain" type="int" />
+			<description>
+				Acquires the image of the provided swapchain.
+			</description>
+		</method>
+		<method name="openxr_swapchain_create">
+			<return type="int" />
+			<param index="0" name="create_flags" type="int" />
+			<param index="1" name="usage_flags" type="int" />
+			<param index="2" name="swapchain_format" type="int" />
+			<param index="3" name="width" type="int" />
+			<param index="4" name="height" type="int" />
+			<param index="5" name="sample_count" type="int" />
+			<param index="6" name="array_size" type="int" />
+			<description>
+				Returns a pointer to a new swapchain created using the provided parameters.
+			</description>
+		</method>
+		<method name="openxr_swapchain_free">
+			<return type="void" />
+			<param index="0" name="swapchain" type="int" />
+			<description>
+				Destroys the provided swapchain and frees it from memory.
+			</description>
+		</method>
+		<method name="openxr_swapchain_get_image">
+			<return type="RID" />
+			<param index="0" name="swapchain" type="int" />
+			<description>
+				Returns the RID of the provided swapchain's image.
+			</description>
+		</method>
+		<method name="openxr_swapchain_get_swapchain">
+			<return type="int" />
+			<param index="0" name="swapchain" type="int" />
+			<description>
+				Returns the [code]XrSwapchain[/code] handle of the provided swapchain.
+			</description>
+		</method>
+		<method name="openxr_swapchain_release">
+			<return type="void" />
+			<param index="0" name="swapchain" type="int" />
+			<description>
+				Releases the image of the provided swapchain.
+			</description>
+		</method>
+		<method name="register_composition_layer_provider">
+			<return type="void" />
+			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
+			<description>
+				Registers the given extension as a composition layer provider.
+				[b]Note:[/b] This cannot be called after the OpenXR session has started. However, it can be called in [method OpenXRExtensionWrapper._on_session_created].
+			</description>
+		</method>
+		<method name="register_frame_info_extension">
+			<return type="void" />
+			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
+			<description>
+				Registers the given extension as modifying frame info via the [method OpenXRExtensionWrapper._set_frame_wait_info_and_get_next_pointer], [method OpenXRExtensionWrapper._set_view_locate_info_and_get_next_pointer], or [method OpenXRExtensionWrapper._set_frame_end_info_and_get_next_pointer] virtual methods.
+				[b]Note:[/b] This cannot be called after the OpenXR session has started. However, it can be called in [method OpenXRExtensionWrapper._on_session_created].
+			</description>
+		</method>
+		<method name="register_projection_views_extension">
+			<return type="void" />
+			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
+			<description>
+				Registers the given extension as a provider of additional data structures to projections views.
+				[b]Note:[/b] This cannot be called after the OpenXR session has started. However, it can be called in [method OpenXRExtensionWrapper._on_session_created].
+			</description>
+		</method>
+		<method name="set_custom_play_space">
+			<return type="void" />
+			<param index="0" name="space" type="const void*" />
+			<description>
+				Sets the reference space used by OpenXR to the given [url=https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrSpace.html]XrSpace[/url] (cast to a [code]void *[/code]).
+			</description>
+		</method>
+		<method name="set_emulate_environment_blend_mode_alpha_blend">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				If set to [code]true[/code], an OpenXR extension is loaded which is capable of emulating the [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] blend mode.
+			</description>
+		</method>
+		<method name="set_object_name">
+			<return type="void" />
+			<param index="0" name="object_type" type="int" />
+			<param index="1" name="object_handle" type="int" />
+			<param index="2" name="object_name" type="String" />
+			<description>
+				Set the object name of an OpenXR object, used for debug output. [param object_type] must be a valid OpenXR [code]XrObjectType[/code] enum and [param object_handle] must be a valid OpenXR object handle.
+			</description>
+		</method>
+		<method name="set_render_region">
+			<return type="void" />
+			<param index="0" name="render_region" type="Rect2i" />
+			<description>
+				Sets the render region to [param render_region], overriding the normal render target's rect.
+			</description>
+		</method>
+		<method name="set_velocity_depth_texture">
+			<return type="void" />
+			<param index="0" name="render_target" type="RID" />
+			<description>
+				Sets the render target of the velocity depth texture.
+			</description>
+		</method>
+		<method name="set_velocity_target_size">
+			<return type="void" />
+			<param index="0" name="target_size" type="Vector2i" />
+			<description>
+				Sets the target size of the velocity and velocity depth textures.
+			</description>
+		</method>
+		<method name="set_velocity_texture">
+			<return type="void" />
+			<param index="0" name="render_target" type="RID" />
+			<description>
+				Sets the render target of the velocity texture.
+			</description>
+		</method>
 		<method name="transform_from_pose">
 			<return type="Transform3D" />
 			<param index="0" name="pose" type="const void*" />
 			<description>
 				Creates a [Transform3D] from an [url=https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrPosef.html]XrPosef[/url].
+			</description>
+		</method>
+		<method name="unregister_composition_layer_provider">
+			<return type="void" />
+			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
+			<description>
+				Unregisters the given extension as a composition layer provider.
+				[b]Note:[/b] This cannot be called while the OpenXR session is still running.
+			</description>
+		</method>
+		<method name="unregister_frame_info_extension">
+			<return type="void" />
+			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
+			<description>
+				Unregisters the given extension as modifying frame info.
+				[b]Note:[/b] This cannot be called while the OpenXR session is still running.
+			</description>
+		</method>
+		<method name="unregister_projection_views_extension">
+			<return type="void" />
+			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
+			<description>
+				Unregisters the given extension as a provider of additional data structures to projections views.
+				[b]Note:[/b] This cannot be called while the OpenXR session is still running.
+			</description>
+		</method>
+		<method name="update_main_swapchain_size">
+			<return type="void" />
+			<description>
+				Request the recommended resolution from the OpenXR runtime and update the main swapchain size if it has changed.
 			</description>
 		</method>
 		<method name="xr_result">
@@ -111,4 +351,15 @@
 			</description>
 		</method>
 	</methods>
+	<constants>
+		<constant name="OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE" value="0" enum="OpenXRAlphaBlendModeSupport">
+			Means that [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] isn't supported at all.
+		</constant>
+		<constant name="OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL" value="1" enum="OpenXRAlphaBlendModeSupport">
+			Means that [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] is really supported.
+		</constant>
+		<constant name="OPENXR_ALPHA_BLEND_MODE_SUPPORT_EMULATING" value="2" enum="OpenXRAlphaBlendModeSupport">
+			Means that [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] is emulated.
+		</constant>
+	</constants>
 </class>

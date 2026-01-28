@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CODE_EDIT_H
-#define CODE_EDIT_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "scene/gui/text_edit.h"
@@ -112,7 +111,11 @@ private:
 	/* Line numbers */
 	int line_number_gutter = -1;
 	int line_number_digits = 1;
+	int line_numbers_min_digits = 3;
 	String line_number_padding = " ";
+	HashMap<int, RID> line_number_text_cache;
+	void _clear_line_number_text_cache();
+	void _update_line_number_gutter_width();
 	void _line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region);
 
 	/* Fold Gutter */
@@ -130,6 +133,8 @@ private:
 	String code_region_start_tag = "region";
 	String code_region_end_tag = "endregion";
 	void _update_code_region_tags();
+	bool _fold_line(int p_line);
+	bool _unfold_line(int p_line);
 
 	/* Delimiters */
 	enum DelimiterType {
@@ -214,6 +219,7 @@ private:
 	int code_completion_longest_line = 0;
 	Rect2i code_completion_rect;
 	Rect2i code_completion_scroll_rect;
+	float code_completion_pan_offset = 0.0f;
 
 	HashSet<char32_t> code_completion_prefixes;
 	List<ScriptLanguage::CodeCompletionOption> code_completion_option_submitted;
@@ -229,10 +235,16 @@ private:
 
 	/* Symbol lookup */
 	bool symbol_lookup_on_click_enabled = false;
+	Point2i symbol_lookup_pos; // Column and line.
+	String symbol_lookup_new_word;
+	String symbol_lookup_word;
 
-	String symbol_lookup_new_word = "";
-	String symbol_lookup_word = "";
-	Point2i symbol_lookup_pos;
+	/* Symbol tooltip */
+	bool symbol_tooltip_on_hover_enabled = false;
+	Point2i symbol_tooltip_pos; // Column and line.
+	String symbol_tooltip_word;
+	Timer *symbol_tooltip_timer = nullptr;
+	void _on_symbol_tooltip_timer_timeout();
 
 	/* Visual */
 	struct ThemeCache {
@@ -244,15 +256,16 @@ private:
 		Ref<Texture2D> can_fold_code_region_icon;
 		Ref<Texture2D> folded_code_region_icon;
 		Ref<Texture2D> folded_eol_icon;
+		Ref<Texture2D> completion_color_bg;
 
 		Color breakpoint_color = Color(1, 1, 1);
-		Ref<Texture2D> breakpoint_icon = Ref<Texture2D>();
+		Ref<Texture2D> breakpoint_icon;
 
 		Color bookmark_color = Color(1, 1, 1);
-		Ref<Texture2D> bookmark_icon = Ref<Texture2D>();
+		Ref<Texture2D> bookmark_icon;
 
 		Color executing_line_color = Color(1, 1, 1);
-		Ref<Texture2D> executing_line_icon = Ref<Texture2D>();
+		Ref<Texture2D> executing_line_icon;
 
 		Color line_number_color = Color(1, 1, 1);
 
@@ -278,6 +291,7 @@ private:
 
 		/* Other visuals */
 		Ref<StyleBox> style_normal;
+		Ref<StyleBox> style_readonly;
 
 		Color brace_mismatch_color;
 
@@ -299,20 +313,28 @@ private:
 	void _text_set();
 	void _text_changed();
 
+	void _apply_project_settings();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
 	String _get_text_for_symbol_lookup_bind_compat_73196();
+	void _add_code_completion_option_compat_84906(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant::NIL, int p_location = LOCATION_OTHER);
 	static void _bind_compatibility_methods();
 #endif
+
+	virtual void _unhide_carets() override;
+
+	virtual void _draw_guidelines() override;
 
 	/* Text manipulation */
 
 	// Overridable actions
 	virtual void _handle_unicode_input_internal(const uint32_t p_unicode, int p_caret) override;
 	virtual void _backspace_internal(int p_caret) override;
+	virtual void _cut_internal(int p_caret) override;
 
 	GDVIRTUAL1(_confirm_code_completion, bool)
 	GDVIRTUAL1(_request_code_completion, bool)
@@ -392,6 +414,8 @@ public:
 	bool is_draw_line_numbers_enabled() const;
 	void set_line_numbers_zero_padded(bool p_zero_padded);
 	bool is_line_numbers_zero_padded() const;
+	void set_line_numbers_min_digits(int p_count);
+	int get_line_numbers_min_digits() const;
 
 	/* Fold gutter */
 	void set_draw_fold_gutter(bool p_draw);
@@ -408,9 +432,12 @@ public:
 	void fold_all_lines();
 	void unfold_all_lines();
 	void toggle_foldable_line(int p_line);
+	void toggle_foldable_lines_at_carets();
 
+	int get_folded_line_header(int p_line) const;
 	bool is_line_folded(int p_line) const;
-	TypedArray<int> get_folded_lines() const;
+	TypedArray<int> get_folded_lines_bind() const;
+	PackedInt32Array get_folded_lines() const;
 
 	/* Code region */
 	void create_code_region();
@@ -462,7 +489,7 @@ public:
 
 	void request_code_completion(bool p_force = false);
 
-	void add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant::NIL, int p_location = LOCATION_OTHER);
+	void add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant(), int p_location = LOCATION_OTHER);
 	void update_code_completion_options(bool p_forced = false);
 
 	TypedArray<Dictionary> get_code_completion_options() const;
@@ -484,10 +511,19 @@ public:
 
 	String get_text_for_symbol_lookup() const;
 	String get_text_with_cursor_char(int p_line, int p_column) const;
+	String get_lookup_word(int p_line, int p_column) const;
 
 	void set_symbol_lookup_word_as_valid(bool p_valid);
 
+	/* Symbol tooltip */
+	void set_symbol_tooltip_on_hover_enabled(bool p_enabled);
+	bool is_symbol_tooltip_on_hover_enabled() const;
+
 	/* Text manipulation */
+	void move_lines_up();
+	void move_lines_down();
+	void delete_lines();
+	void duplicate_selection();
 	void duplicate_lines();
 
 	CodeEdit();
@@ -501,5 +537,3 @@ VARIANT_ENUM_CAST(CodeEdit::CodeCompletionLocation);
 struct CodeCompletionOptionCompare {
 	_FORCE_INLINE_ bool operator()(const ScriptLanguage::CodeCompletionOption &l, const ScriptLanguage::CodeCompletionOption &r) const;
 };
-
-#endif // CODE_EDIT_H

@@ -28,10 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CPU_PARTICLES_3D_H
-#define CPU_PARTICLES_3D_H
+#pragma once
 
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/gradient.h"
+
+class RandomNumberGenerator;
 
 class CPUParticles3D : public GeometryInstance3D {
 private:
@@ -134,13 +136,17 @@ private:
 
 	double lifetime = 1.0;
 	double pre_process_time = 0.0;
+	double _requested_process_time = 0.0;
 	real_t explosiveness_ratio = 0.0;
 	real_t randomness_ratio = 0.0;
 	double lifetime_randomness = 0.0;
 	double speed_scale = 1.0;
+	AABB visibility_aabb;
 	bool local_coords = false;
 	int fixed_fps = 0;
 	bool fractional_delta = true;
+	uint32_t seed = 0;
+	bool use_fixed_seed = false;
 
 	Transform3D inv_emission_transform;
 
@@ -172,11 +178,11 @@ private:
 	Vector<Vector3> emission_points;
 	Vector<Vector3> emission_normals;
 	Vector<Color> emission_colors;
-	int emission_point_count = 0;
 	Vector3 emission_ring_axis;
 	real_t emission_ring_height = 0.0;
 	real_t emission_ring_radius = 0.0;
 	real_t emission_ring_inner_radius = 0.0;
+	real_t emission_ring_cone_angle = 0.0;
 
 	Ref<Curve> scale_curve_x;
 	Ref<Curve> scale_curve_y;
@@ -185,9 +191,12 @@ private:
 
 	Vector3 gravity = Vector3(0, -9.8, 0);
 
+	Ref<RandomNumberGenerator> rng;
+
 	void _update_internal();
 	void _particles_process(double p_delta);
 	void _update_particle_data_buffer();
+	void _set_emitting();
 
 	Mutex update_mutex;
 
@@ -200,6 +209,11 @@ protected:
 	void _notification(int p_what);
 	void _validate_property(PropertyInfo &p_property) const;
 
+#ifndef DISABLE_DEPRECATED
+	void _restart_bind_compat_92089();
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	AABB get_aabb() const override;
 
@@ -210,6 +224,7 @@ public:
 	void set_pre_process_time(double p_time);
 	void set_explosiveness_ratio(real_t p_ratio);
 	void set_randomness_ratio(real_t p_ratio);
+	void set_visibility_aabb(const AABB &p_aabb);
 	void set_lifetime_randomness(double p_random);
 	void set_use_local_coordinates(bool p_enable);
 	void set_speed_scale(double p_scale);
@@ -221,6 +236,7 @@ public:
 	double get_pre_process_time() const;
 	real_t get_explosiveness_ratio() const;
 	real_t get_randomness_ratio() const;
+	AABB get_visibility_aabb() const;
 	double get_lifetime_randomness() const;
 	bool get_use_local_coordinates() const;
 	double get_speed_scale() const;
@@ -236,6 +252,14 @@ public:
 
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
+
+	void set_use_fixed_seed(bool p_use_fixed_seed = false);
+	bool get_use_fixed_seed() const;
+
+	void set_seed(uint32_t p_seed);
+	uint32_t get_seed() const;
+
+	void request_particles_process(real_t p_requested_process_time);
 
 	///////////////////
 
@@ -279,6 +303,7 @@ public:
 	void set_emission_ring_height(real_t p_height);
 	void set_emission_ring_radius(real_t p_radius);
 	void set_emission_ring_inner_radius(real_t p_radius);
+	void set_emission_ring_cone_angle(real_t p_angle);
 	void set_scale_curve_x(Ref<Curve> p_scale_curve);
 	void set_scale_curve_y(Ref<Curve> p_scale_curve);
 	void set_scale_curve_z(Ref<Curve> p_scale_curve);
@@ -294,6 +319,7 @@ public:
 	real_t get_emission_ring_height() const;
 	real_t get_emission_ring_radius() const;
 	real_t get_emission_ring_inner_radius() const;
+	real_t get_emission_ring_cone_angle() const;
 	Ref<Curve> get_scale_curve_x() const;
 	Ref<Curve> get_scale_curve_y() const;
 	Ref<Curve> get_scale_curve_z() const;
@@ -304,9 +330,11 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
-	void restart();
+	void restart(bool p_keep_seed = false);
 
 	void convert_from_particles(Node *p_particles);
+
+	AABB capture_aabb() const;
 
 	CPUParticles3D();
 	~CPUParticles3D();
@@ -316,5 +344,3 @@ VARIANT_ENUM_CAST(CPUParticles3D::DrawOrder)
 VARIANT_ENUM_CAST(CPUParticles3D::Parameter)
 VARIANT_ENUM_CAST(CPUParticles3D::ParticleFlags)
 VARIANT_ENUM_CAST(CPUParticles3D::EmissionShape)
-
-#endif // CPU_PARTICLES_3D_H

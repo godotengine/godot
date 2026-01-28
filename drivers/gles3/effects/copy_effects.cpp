@@ -115,21 +115,78 @@ CopyEffects::~CopyEffects() {
 	copy.shader.version_free(copy.shader_version);
 }
 
-void CopyEffects::copy_to_rect(const Rect2 &p_rect) {
-	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION);
+void CopyEffects::copy_to_rect(const Rect2 &p_rect, bool p_linear_to_srgb) {
+	uint64_t specializations = p_linear_to_srgb ? CopyShaderGLES3::CONVERT_LINEAR_TO_SRGB : 0;
+
+	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION, specializations);
 	if (!success) {
 		return;
 	}
 
-	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION);
+	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION, specializations);
 	draw_screen_quad();
 }
 
-void CopyEffects::copy_screen() {
-	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_DEFAULT);
+void CopyEffects::copy_to_rect_3d(const Rect2 &p_rect, float p_layer, int p_type, float p_lod, bool p_linear_to_srgb) {
+	ERR_FAIL_COND(p_type != Texture::TYPE_LAYERED && p_type != Texture::TYPE_3D);
+
+	CopyShaderGLES3::ShaderVariant variant = p_type == Texture::TYPE_LAYERED
+			? CopyShaderGLES3::MODE_COPY_SECTION_2D_ARRAY
+			: CopyShaderGLES3::MODE_COPY_SECTION_3D;
+	uint64_t specializations = p_linear_to_srgb ? CopyShaderGLES3::CONVERT_LINEAR_TO_SRGB : 0;
+
+	bool success = copy.shader.version_bind_shader(copy.shader_version, variant, specializations);
 	if (!success) {
 		return;
 	}
+
+	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::LAYER, p_layer, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::LOD, p_lod, copy.shader_version, variant, specializations);
+	draw_screen_quad();
+}
+
+void CopyEffects::copy_with_lens_distortion(const Rect2 &p_rect, float p_layer, const Vector2 &p_eye_center, float p_k1, float p_k2, float p_upscale, float p_aspect_ration, bool p_linear_to_srgb) {
+	CopyShaderGLES3::ShaderVariant variant = CopyShaderGLES3::MODE_LENS_DISTORTION;
+
+	uint64_t specializations = p_linear_to_srgb ? CopyShaderGLES3::CONVERT_LINEAR_TO_SRGB : 0;
+
+	bool success = copy.shader.version_bind_shader(copy.shader_version, variant, specializations);
+	if (!success) {
+		return;
+	}
+
+	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::LAYER, p_layer, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::LOD, 0.0, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::EYE_CENTER, p_eye_center.x, p_eye_center.y, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::K1, p_k1, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::K2, p_k1, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::UPSCALE, p_upscale, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::ASPECT_RATIO, p_aspect_ration, copy.shader_version, variant, specializations);
+
+	draw_screen_quad();
+}
+
+void CopyEffects::copy_to_and_from_rect(const Rect2 &p_rect) {
+	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION_SOURCE);
+	if (!success) {
+		return;
+	}
+
+	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION_SOURCE);
+	copy.shader.version_set_uniform(CopyShaderGLES3::SOURCE_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION_SOURCE);
+
+	draw_screen_quad();
+}
+
+void CopyEffects::copy_screen(float p_multiply) {
+	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_SCREEN);
+	if (!success) {
+		return;
+	}
+
+	copy.shader.version_set_uniform(CopyShaderGLES3::MULTIPLY, p_multiply, copy.shader_version, CopyShaderGLES3::MODE_SCREEN);
 
 	draw_screen_triangle();
 }
@@ -140,7 +197,17 @@ void CopyEffects::copy_cube_to_rect(const Rect2 &p_rect) {
 		return;
 	}
 
-	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION);
+	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, CopyShaderGLES3::MODE_CUBE_TO_OCTAHEDRAL);
+	draw_screen_quad();
+}
+
+void CopyEffects::copy_cube_to_panorama(float p_mip_level) {
+	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_CUBE_TO_PANORAMA);
+	if (!success) {
+		return;
+	}
+
+	copy.shader.version_set_uniform(CopyShaderGLES3::MIP_LEVEL, p_mip_level, copy.shader_version, CopyShaderGLES3::MODE_CUBE_TO_PANORAMA);
 	draw_screen_quad();
 }
 
@@ -156,8 +223,7 @@ void CopyEffects::bilinear_blur(GLuint p_source_texture, int p_mipmap_count, con
 	for (int i = 1; i < p_mipmap_count; i++) {
 		dest_region.position.x >>= 1;
 		dest_region.position.y >>= 1;
-		dest_region.size.x = MAX(1, dest_region.size.x >> 1);
-		dest_region.size.y = MAX(1, dest_region.size.y >> 1);
+		dest_region.size = Size2i(dest_region.size.x >> 1, dest_region.size.y >> 1).maxi(1);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffers[i % 2]);
 		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_source_texture, i);
 		glBlitFramebuffer(source_region.position.x, source_region.position.y, source_region.position.x + source_region.size.x, source_region.position.y + source_region.size.y,
@@ -165,8 +231,8 @@ void CopyEffects::bilinear_blur(GLuint p_source_texture, int p_mipmap_count, con
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffers[i % 2]);
 		source_region = dest_region;
 	}
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	glDeleteFramebuffers(2, framebuffers);
 }
 
@@ -196,14 +262,13 @@ void CopyEffects::gaussian_blur(GLuint p_source_texture, int p_mipmap_count, con
 	for (int i = 1; i < p_mipmap_count; i++) {
 		dest_region.position.x >>= 1;
 		dest_region.position.y >>= 1;
-		dest_region.size.x = MAX(1, dest_region.size.x >> 1);
-		dest_region.size.y = MAX(1, dest_region.size.y >> 1);
+		dest_region.size = Size2i(dest_region.size.x >> 1, dest_region.size.y >> 1).maxi(1);
 		base_size.x >>= 1;
 		base_size.y >>= 1;
 
 		glBindTexture(GL_TEXTURE_2D, p_source_texture);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, i - 1);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, i - 1);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, i);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_source_texture, i);
 #ifdef DEV_ENABLED
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -232,7 +297,7 @@ void CopyEffects::gaussian_blur(GLuint p_source_texture, int p_mipmap_count, con
 		source_region = dest_region;
 		normalized_source_region = normalized_dest_region;
 	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	glDeleteFramebuffers(1, &framebuffer);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

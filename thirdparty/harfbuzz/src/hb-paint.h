@@ -137,6 +137,26 @@ typedef void (*hb_paint_pop_transform_func_t) (hb_paint_funcs_t *funcs,
                                                void *user_data);
 
 /**
+ * hb_paint_color_glyph_func_t:
+ * @funcs: paint functions object
+ * @paint_data: The data accompanying the paint functions in hb_font_paint_glyph()
+ * @glyph: the glyph ID
+ * @font: the font
+ * @user_data: User data pointer passed to hb_paint_funcs_set_color_glyph_func()
+ *
+ * A virtual method for the #hb_paint_funcs_t to render a color glyph by glyph index.
+ *
+ * Return value: `true` if the glyph was painted, `false` otherwise.
+ *
+ * Since: 8.2.0
+ */
+typedef hb_bool_t (*hb_paint_color_glyph_func_t) (hb_paint_funcs_t *funcs,
+                                                  void *paint_data,
+                                                  hb_codepoint_t glyph,
+                                                  hb_font_t *font,
+                                                  void *user_data);
+
+/**
  * hb_paint_push_clip_glyph_func_t:
  * @funcs: paint functions object
  * @paint_data: The data accompanying the paint functions in hb_font_paint_glyph()
@@ -147,8 +167,10 @@ typedef void (*hb_paint_pop_transform_func_t) (hb_paint_funcs_t *funcs,
  * A virtual method for the #hb_paint_funcs_t to clip
  * subsequent paint calls to the outline of a glyph.
  *
- * The coordinates of the glyph outline are interpreted according
- * to the current transform.
+ * The coordinates of the glyph outline are expected in the
+ * current @font scale (ie. the results of calling
+ * hb_font_draw_glyph() with @font). The outline is
+ * transformed by the current transform.
  *
  * This clip is applied in addition to the current clip,
  * and remains in effect until a matching call to
@@ -261,7 +283,7 @@ typedef void (*hb_paint_color_func_t) (hb_paint_funcs_t *funcs,
  * @width: width of the raster image in pixels, or 0
  * @height: height of the raster image in pixels, or 0
  * @format: the image format as a tag
- * @slant: the synthetic slant ratio to be applied to the image during rendering
+ * @slant: Deprecated. Always set to 0.0.
  * @extents: (nullable): glyph extents for desired rendering
  * @user_data: User data pointer passed to hb_paint_funcs_set_image_func()
  *
@@ -724,6 +746,23 @@ hb_paint_funcs_set_pop_transform_func (hb_paint_funcs_t              *funcs,
                                        hb_destroy_func_t              destroy);
 
 /**
+ * hb_paint_funcs_set_color_glyph_func:
+ * @funcs: A paint functions struct
+ * @func: (closure user_data) (destroy destroy) (scope notified): The color-glyph callback
+ * @user_data: Data to pass to @func
+ * @destroy: (nullable): Function to call when @user_data is no longer needed
+ *
+ * Sets the color-glyph callback on the paint functions struct.
+ *
+ * Since: 8.2.0
+ */
+HB_EXTERN void
+hb_paint_funcs_set_color_glyph_func (hb_paint_funcs_t                *funcs,
+				     hb_paint_color_glyph_func_t     func,
+				     void                            *user_data,
+				     hb_destroy_func_t                destroy);
+
+/**
  * hb_paint_funcs_set_push_clip_glyph_func:
  * @funcs: A paint functions struct
  * @func: (closure user_data) (destroy destroy) (scope notified): The push-clip-glyph callback
@@ -920,7 +959,20 @@ hb_paint_push_transform (hb_paint_funcs_t *funcs, void *paint_data,
                          float dx, float dy);
 
 HB_EXTERN void
+hb_paint_push_font_transform (hb_paint_funcs_t *funcs, void *paint_data,
+                              const hb_font_t *font);
+
+HB_EXTERN void
+hb_paint_push_inverse_font_transform (hb_paint_funcs_t *funcs, void *paint_data,
+                                      const hb_font_t *font);
+
+HB_EXTERN void
 hb_paint_pop_transform (hb_paint_funcs_t *funcs, void *paint_data);
+
+HB_EXTERN hb_bool_t
+hb_paint_color_glyph (hb_paint_funcs_t *funcs, void *paint_data,
+                      hb_codepoint_t glyph,
+                      hb_font_t *font);
 
 HB_EXTERN void
 hb_paint_push_clip_glyph (hb_paint_funcs_t *funcs, void *paint_data,

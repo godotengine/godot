@@ -28,14 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_IMPORTER_TEXTURE_H
-#define RESOURCE_IMPORTER_TEXTURE_H
+#pragma once
 
 #include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "core/io/resource_importer.h"
-#include "scene/resources/texture.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class CompressedTexture2D;
 
@@ -49,6 +47,20 @@ public:
 		COMPRESS_VRAM_COMPRESSED,
 		COMPRESS_VRAM_UNCOMPRESSED,
 		COMPRESS_BASIS_UNIVERSAL
+	};
+
+	enum ChannelRemap {
+		REMAP_R,
+		REMAP_G,
+		REMAP_B,
+		REMAP_A,
+		REMAP_INV_R,
+		REMAP_INV_G,
+		REMAP_INV_B,
+		REMAP_INV_A,
+		REMAP_UNUSED,
+		REMAP_0,
+		REMAP_1,
 	};
 
 protected:
@@ -74,12 +86,16 @@ protected:
 	static ResourceImporterTexture *singleton;
 	static const char *compression_formats[];
 
-	void _save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_srgb, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel);
+	void _save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_srgb, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel);
 	void _save_editor_meta(const Dictionary &p_metadata, const String &p_to_path);
 	Dictionary _load_editor_meta(const String &p_to_path) const;
 
+	static inline void _remap_channels(Ref<Image> &r_image, ChannelRemap p_options[4]);
+	static inline void _clamp_hdr_exposure(Ref<Image> &r_image);
+	static inline void _invert_y_channel(Ref<Image> &r_image);
+
 public:
-	static void save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality);
+	static void save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params);
 
 	static ResourceImporterTexture *get_singleton() { return singleton; }
 	virtual String get_importer_name() const override;
@@ -100,15 +116,15 @@ public:
 	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
 	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
+	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
+
+	virtual bool can_import_threaded() const override { return true; }
 
 	void update_imports();
 
-	virtual bool are_import_settings_valid(const String &p_path) const override;
+	virtual bool are_import_settings_valid(const String &p_path, const Dictionary &p_meta) const override;
 	virtual String get_import_settings_string() const override;
 
 	ResourceImporterTexture(bool p_singleton = false);
 	~ResourceImporterTexture();
 };
-
-#endif // RESOURCE_IMPORTER_TEXTURE_H

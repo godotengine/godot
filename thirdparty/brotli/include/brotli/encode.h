@@ -14,7 +14,7 @@
 
 #include <brotli/port.h>
 #include <brotli/shared_dictionary.h>
-#include <brotli/types.h>
+#include <brotli/types.h>  /* IWYU pragma: export */
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
@@ -283,6 +283,10 @@ typedef struct BrotliEncoderPreparedDictionaryStruct
  * passed to @p alloc_func and @p free_func when they are called. @p free_func
  * has to return without doing anything when asked to free a NULL pointer.
  *
+ * @warning Created instance is "lean"; it does not contain copy of @p data,
+ *          rather it contains only pointer to it; therefore,
+ *          @p data @b MUST outlive the created instance.
+ *
  * @param type type of dictionary stored in data
  * @param data_size size of @p data buffer
  * @param data pointer to the dictionary data
@@ -490,7 +494,7 @@ BROTLI_ENC_EXTRA_API size_t BrotliEncoderGetPreparedDictionarySize(
 /**
  * Gets an encoder library version.
  *
- * Look at BROTLI_VERSION for more information.
+ * Look at BROTLI_MAKE_HEX_VERSION for more information.
  */
 BROTLI_ENC_API uint32_t BrotliEncoderVersion(void);
 

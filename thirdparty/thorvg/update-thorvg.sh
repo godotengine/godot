@@ -1,16 +1,22 @@
 #!/bin/bash -e
 
-VERSION=0.11.2
+VERSION=0.15.16
+# Uncomment and set a git hash to use specific commit instead of tag.
+#GIT_COMMIT=
 
-cd thirdparty/thorvg/ || true
+pushd "$(dirname "$0")"
 rm -rf AUTHORS LICENSE inc/ src/ *.zip *.tar.gz tmp/
 
 mkdir tmp/ && pushd tmp/
 
 # Release
-curl -L -O https://github.com/thorvg/thorvg/archive/v$VERSION.tar.gz
-# Current Github main branch tip
-#curl -L -O https://github.com/thorvg/thorvg/archive/refs/heads/main.tar.gz
+if [ ! -z "$GIT_COMMIT" ]; then
+    echo "Updating ThorVG to commit:" $GIT_COMMIT
+    curl -L -O https://github.com/thorvg/thorvg/archive/$GIT_COMMIT.tar.gz
+else
+    echo "Updating ThorVG to tagged release:" $VERSION
+    curl -L -O https://github.com/thorvg/thorvg/archive/v$VERSION.tar.gz
+fi
 
 tar --strip-components=1 -xvf *.tar.gz
 rm *.tar.gz
@@ -37,7 +43,13 @@ cat << EOF > ../inc/config.h
 #define THORVG_SW_RASTER_SUPPORT
 #define THORVG_SVG_LOADER_SUPPORT
 #define THORVG_PNG_LOADER_SUPPORT
-#define THORVG_JPG_LOADER_SUPPORT
+#ifndef WEB_ENABLED
+#define THORVG_THREAD_SUPPORT
+#endif
+
+// Added conditionally if respective modules are enabled.
+//#define THORVG_WEBP_LOADER_SUPPORT
+//#define THORVG_JPG_LOADER_SUPPORT
 
 // For internal debugging:
 //#define THORVG_LOG_ENABLED
@@ -52,14 +64,15 @@ cp -rv src/renderer ../src/
 
 # Only sw_engine is enabled.
 rm -rfv ../src/renderer/gl_engine
+rm -rfv ../src/renderer/wg_engine
 
-# Enabled embedded loaders: raw, JPEG, PNG.
+# Enabled embedded loaders: raw, JPEG, PNG, WebP.
 mkdir ../src/loaders
 cp -rv src/loaders/svg src/loaders/raw  ../src/loaders/
-cp -rv src/loaders/svg src/loaders/jpg  ../src/loaders/
-cp -rv src/loaders/svg src/loaders/png  ../src/loaders/
-cp -rv src/loaders/svg src/loaders/external_png  ../src/loaders/
+cp -rv src/loaders/external_png ../src/loaders/
+cp -rv src/loaders/external_webp ../src/loaders/
+cp -rv src/loaders/external_jpg ../src/loaders/
 
 popd
 rm -rf tmp
-
+popd

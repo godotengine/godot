@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 
@@ -10,29 +11,29 @@ env_main = env.Clone()
 
 env_main.add_source_files(env.main_sources, "*.cpp")
 
+if env["steamapi"] and env.editor_build:
+    env_main.Append(CPPDEFINES=["STEAMAPI_ENABLED"])
+
 if env["tests"]:
     env_main.Append(CPPDEFINES=["TESTS_ENABLED"])
 
-env_main.Depends("#main/splash.gen.h", "#main/splash.png")
 env_main.CommandNoCache(
     "#main/splash.gen.h",
     "#main/splash.png",
-    env.Run(main_builders.make_splash, "Building splash screen header."),
+    env.Run(main_builders.make_splash),
 )
 
-if not env_main["no_editor_splash"]:
-    env_main.Depends("#main/splash_editor.gen.h", "#main/splash_editor.png")
+if env_main.editor_build and not env_main["no_editor_splash"]:
     env_main.CommandNoCache(
         "#main/splash_editor.gen.h",
         "#main/splash_editor.png",
-        env.Run(main_builders.make_splash_editor, "Building editor splash screen header."),
+        env.Run(main_builders.make_splash_editor),
     )
 
-env_main.Depends("#main/app_icon.gen.h", "#main/app_icon.png")
 env_main.CommandNoCache(
     "#main/app_icon.gen.h",
     "#main/app_icon.png",
-    env.Run(main_builders.make_app_icon, "Building application icon."),
+    env.Run(main_builders.make_app_icon),
 )
 
 lib = env_main.add_library("main", env.main_sources)

@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2018 University of Cambridge
+          New API code Copyright (c) 2016-2024 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -38,10 +38,6 @@ POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------------
 */
 
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include "pcre2_internal.h"
 
@@ -126,7 +122,7 @@ PCRE2_SIZE size;
 rc = pcre2_substring_length_bynumber(match_data, stringnumber, &size);
 if (rc < 0) return rc;
 if (size + 1 > *sizeptr) return PCRE2_ERROR_NOMEMORY;
-memcpy(buffer, match_data->subject + match_data->ovector[stringnumber*2],
+if (size != 0) memcpy(buffer, match_data->subject + match_data->ovector[stringnumber*2],
   CU2BYTES(size));
 buffer[size] = 0;
 *sizeptr = size;
@@ -218,7 +214,7 @@ yield = PRIV(memctl_malloc)(sizeof(pcre2_memctl) +
   (size + 1)*PCRE2_CODE_UNIT_WIDTH, (pcre2_memctl *)match_data);
 if (yield == NULL) return PCRE2_ERROR_NOMEMORY;
 yield = (PCRE2_UCHAR *)(((char *)yield) + sizeof(pcre2_memctl));
-memcpy(yield, match_data->subject + match_data->ovector[stringnumber*2],
+if (size != 0) memcpy(yield, match_data->subject + match_data->ovector[stringnumber*2],
   CU2BYTES(size));
 yield[size] = 0;
 *stringptr = yield;
@@ -259,7 +255,7 @@ permits duplicate names, the first substring that is set is chosen.
 Arguments:
   match_data      pointer to match data
   stringname      the name of the required substring
-  sizeptr         where to put the length
+  sizeptr         where to put the length, if not NULL
 
 Returns:          0 if successful, else a negative error number
 */
@@ -309,6 +305,7 @@ Returns:         if successful: 0
                    PCRE2_ERROR_NOSUBSTRING: no such substring
                    PCRE2_ERROR_UNAVAILABLE: ovector is too small
                    PCRE2_ERROR_UNSET: substring is not set
+                   PCRE2_ERROR_INVALIDOFFSET: internal error, should not occur
 */
 
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
@@ -341,6 +338,15 @@ else  /* Matched using pcre2_dfa_match() */
 
 left = match_data->ovector[stringnumber*2];
 right = match_data->ovector[stringnumber*2+1];
+/* LCOV_EXCL_START - this appears to be unreachable, as the ovector and
+subject_length should always be set consistently, no matter what misbehaviour
+the caller has committed. */
+if (left > match_data->subject_length || right > match_data->subject_length)
+  {
+  PCRE2_DEBUG_UNREACHABLE();
+  return PCRE2_ERROR_INVALIDOFFSET;
+  }
+/* LCOV_EXCL_STOP */
 if (sizeptr != NULL) *sizeptr = (left > right)? 0 : right - left;
 return 0;
 }
@@ -442,7 +448,7 @@ Returns:      nothing
 */
 
 PCRE2_EXP_DEFN void PCRE2_CALL_CONVENTION
-pcre2_substring_list_free(PCRE2_SPTR *list)
+pcre2_substring_list_free(PCRE2_UCHAR **list)
 {
 if (list != NULL)
   {
@@ -483,7 +489,7 @@ pcre2_substring_nametable_scan(const pcre2_code *code, PCRE2_SPTR stringname,
 uint16_t bot = 0;
 uint16_t top = code->name_count;
 uint16_t entrysize = code->name_entry_size;
-PCRE2_SPTR nametable = (PCRE2_SPTR)((char *)code + sizeof(pcre2_real_code));
+PCRE2_SPTR nametable = (PCRE2_SPTR)((const char *)code + sizeof(pcre2_real_code));
 
 while (top > bot)
   {

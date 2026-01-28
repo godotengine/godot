@@ -32,14 +32,15 @@
 
 #include "core/math/geometry_2d.h"
 #include "scene/main/timer.h"
+#include "scene/resources/mesh.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_scale.h"
+#include "editor/themes/editor_scale.h"
 #endif
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 Path2D::_edit_get_rect() const {
-	if (!curve.is_valid() || curve->get_point_count() == 0) {
+	if (curve.is_null() || curve->get_point_count() == 0) {
 		return Rect2(0, 0, 0, 0);
 	}
 
@@ -66,19 +67,18 @@ bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 	}
 
 	for (int i = 0; i < curve->get_point_count(); i++) {
-		Vector2 s[2];
-		s[0] = curve->get_point_position(i);
+		Vector2 segment_a = curve->get_point_position(i);
 
 		for (int j = 1; j <= 8; j++) {
 			real_t frac = j / 8.0;
-			s[1] = curve->sample(i, frac);
+			const Vector2 segment_b = curve->sample(i, frac);
 
-			Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, s);
+			Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, segment_a, segment_b);
 			if (p.distance_to(p_point) <= p_tolerance) {
 				return true;
 			}
 
-			s[0] = s[1];
+			segment_a = segment_b;
 		}
 	}
 
@@ -88,95 +88,183 @@ bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 
 void Path2D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+#ifdef DEBUG_ENABLED
+			_debug_create();
+#endif
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+#ifdef DEBUG_ENABLED
+			_debug_free();
+#endif
+		} break;
 		// Draw the curve if path debugging is enabled.
 		case NOTIFICATION_DRAW: {
-			if (!curve.is_valid()) {
-				break;
-			}
-
-			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_paths_hint()) {
-				return;
-			}
-
-			if (curve->get_point_count() < 2) {
-				return;
-			}
-
-#ifdef TOOLS_ENABLED
-			const real_t line_width = get_tree()->get_debug_paths_width() * EDSCALE;
-#else
-			const real_t line_width = get_tree()->get_debug_paths_width();
+#ifdef DEBUG_ENABLED
+			_debug_update();
 #endif
-			real_t interval = 10;
-			const real_t length = curve->get_baked_length();
-
-			if (length > CMP_EPSILON) {
-				const int sample_count = int(length / interval) + 2;
-				interval = length / (sample_count - 1); // Recalculate real interval length.
-
-				Vector<Transform2D> frames;
-				frames.resize(sample_count);
-
-				{
-					Transform2D *w = frames.ptrw();
-
-					for (int i = 0; i < sample_count; i++) {
-						w[i] = curve->sample_baked_with_rotation(i * interval, false);
-					}
-				}
-
-				const Transform2D *r = frames.ptr();
-				// Draw curve segments
-				{
-					PackedVector2Array v2p;
-					v2p.resize(sample_count);
-					Vector2 *w = v2p.ptrw();
-
-					for (int i = 0; i < sample_count; i++) {
-						w[i] = r[i].get_origin();
-					}
-					draw_polyline(v2p, get_tree()->get_debug_paths_color(), line_width, false);
-				}
-
-				// Draw fish bones
-				{
-					PackedVector2Array v2p;
-					v2p.resize(3);
-					Vector2 *w = v2p.ptrw();
-
-					for (int i = 0; i < sample_count; i++) {
-						const Vector2 p = r[i].get_origin();
-						const Vector2 side = r[i].columns[0];
-						const Vector2 forward = r[i].columns[1];
-
-						// Fish Bone.
-						w[0] = p + (side - forward) * 5;
-						w[1] = p;
-						w[2] = p + (-side - forward) * 5;
-
-						draw_polyline(v2p, get_tree()->get_debug_paths_color(), line_width * 0.5, false);
-					}
-				}
-			}
 		} break;
 	}
 }
+
+#ifdef DEBUG_ENABLED
+void Path2D::_debug_create() {
+	ERR_FAIL_NULL(RS::get_singleton());
+
+	if (debug_mesh_rid.is_null()) {
+		debug_mesh_rid = RS::get_singleton()->mesh_create();
+	}
+
+	if (debug_instance.is_null()) {
+		debug_instance = RS::get_singleton()->instance_create();
+	}
+
+	RS::get_singleton()->instance_set_base(debug_instance, debug_mesh_rid);
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(debug_instance, RS::SHADOW_CASTING_SETTING_OFF);
+}
+
+void Path2D::_debug_free() {
+	ERR_FAIL_NULL(RS::get_singleton());
+
+	if (debug_instance.is_valid()) {
+		RS::get_singleton()->free_rid(debug_instance);
+		debug_instance = RID();
+	}
+	if (debug_mesh_rid.is_valid()) {
+		RS::get_singleton()->free_rid(debug_mesh_rid);
+		debug_mesh_rid = RID();
+	}
+}
+
+void Path2D::_debug_update() {
+	ERR_FAIL_NULL(RS::get_singleton());
+
+	RenderingServer *rs = RS::get_singleton();
+
+	ERR_FAIL_NULL(SceneTree::get_singleton());
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+
+	const bool path_debug_enabled = (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_paths_hint());
+
+	if (!path_debug_enabled) {
+		_debug_free();
+		return;
+	}
+
+	if (debug_mesh_rid.is_null() || debug_instance.is_null()) {
+		_debug_create();
+	}
+
+	rs->mesh_clear(debug_mesh_rid);
+
+	if (curve.is_null()) {
+		return;
+	}
+	if (curve->get_point_count() < 2) {
+		return;
+	}
+
+	const real_t baked_length = curve->get_baked_length();
+
+	if (baked_length <= CMP_EPSILON) {
+		return;
+	}
+
+	const Color debug_color = get_tree()->get_debug_paths_color();
+
+	bool debug_paths_show_fish_bones = true;
+
+	real_t sample_interval = 10.0;
+
+	const int sample_count = int(baked_length / sample_interval) + 2;
+	sample_interval = baked_length / (sample_count - 1); // Recalculate real interval length.
+
+	Vector<Transform2D> samples;
+	samples.resize(sample_count);
+	Transform2D *samples_ptrw = samples.ptrw();
+
+	for (int i = 0; i < sample_count; i++) {
+		samples_ptrw[i] = curve->sample_baked_with_rotation(i * sample_interval, false);
+	}
+
+	const Transform2D *samples_ptr = samples.ptr();
+
+	// Draw curve segments
+	{
+		Vector<Vector2> ribbon;
+		ribbon.resize(sample_count);
+		Vector2 *ribbon_ptrw = ribbon.ptrw();
+
+		for (int i = 0; i < sample_count; i++) {
+			ribbon_ptrw[i] = samples_ptr[i].get_origin();
+		}
+
+		Array ribbon_array;
+		ribbon_array.resize(Mesh::ARRAY_MAX);
+		ribbon_array[Mesh::ARRAY_VERTEX] = ribbon;
+		Vector<Color> ribbon_color;
+		ribbon_color.resize(ribbon.size());
+		ribbon_color.fill(debug_color);
+		ribbon_array[Mesh::ARRAY_COLOR] = ribbon_color;
+
+		rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_LINE_STRIP, ribbon_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+	}
+
+	// Render path fish bones.
+	if (debug_paths_show_fish_bones) {
+		int fish_bones_interval = 4;
+
+		const int vertex_per_bone = 4;
+		Vector<Vector2> bones;
+		bones.resize(sample_count * vertex_per_bone);
+		Vector2 *bones_ptrw = bones.ptrw();
+
+		for (int i = 0; i < sample_count; i += fish_bones_interval) {
+			const Transform2D &sample_transform = samples_ptr[i];
+
+			const Vector2 point = sample_transform.get_origin();
+			const Vector2 &side = sample_transform.columns[1];
+			const Vector2 &forward = sample_transform.columns[0];
+
+			const int bone_idx = i * vertex_per_bone;
+
+			bones_ptrw[bone_idx] = point;
+			bones_ptrw[bone_idx + 1] = point + (side - forward) * 5;
+			bones_ptrw[bone_idx + 2] = point;
+			bones_ptrw[bone_idx + 3] = point + (-side - forward) * 5;
+		}
+
+		Array bone_array;
+		bone_array.resize(Mesh::ARRAY_MAX);
+		bone_array[Mesh::ARRAY_VERTEX] = bones;
+		Vector<Color> bones_color;
+		bones_color.resize(bones.size());
+		bones_color.fill(debug_color);
+		bone_array[Mesh::ARRAY_COLOR] = bones_color;
+
+		rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_LINES, bone_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+	}
+
+	rs->canvas_item_clear(get_canvas_item());
+	rs->canvas_item_add_mesh(get_canvas_item(), debug_mesh_rid, Transform2D());
+}
+#endif // DEBUG_ENABLED
 
 void Path2D::_curve_changed() {
 	if (!is_inside_tree()) {
 		return;
 	}
 
-	if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_paths_hint()) {
-		return;
-	}
-
-	queue_redraw();
 	for (int i = 0; i < get_child_count(); i++) {
 		PathFollow2D *follow = Object::cast_to<PathFollow2D>(get_child(i));
 		if (follow) {
 			follow->path_changed();
 		}
+	}
+
+	if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_paths_hint()) {
+		queue_redraw();
 	}
 }
 
@@ -221,7 +309,7 @@ void PathFollow2D::_update_transform() {
 	}
 
 	Ref<Curve2D> c = path->get_curve();
-	if (!c.is_valid()) {
+	if (c.is_null()) {
 		return;
 	}
 
@@ -232,8 +320,8 @@ void PathFollow2D::_update_transform() {
 
 	if (rotates) {
 		Transform2D xform = c->sample_baked_with_rotation(progress, cubic);
-		xform.translate_local(v_offset, h_offset);
-		set_rotation(xform[1].angle());
+		xform.translate_local(h_offset, v_offset);
+		set_rotation(xform[0].angle());
 		set_position(xform[2]);
 	} else {
 		Vector2 pos = c->sample_baked(progress, cubic);
@@ -277,6 +365,9 @@ bool PathFollow2D::is_cubic_interpolation_enabled() const {
 }
 
 void PathFollow2D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "offset") {
 		real_t max = 10000.0;
 		if (path && path->get_curve().is_valid()) {
@@ -288,7 +379,7 @@ void PathFollow2D::_validate_property(PropertyInfo &p_property) const {
 }
 
 PackedStringArray PathFollow2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (!Object::cast_to<Path2D>(get_parent())) {
@@ -331,7 +422,7 @@ void PathFollow2D::_bind_methods() {
 }
 
 void PathFollow2D::set_progress(real_t p_progress) {
-	ERR_FAIL_COND(!isfinite(p_progress));
+	ERR_FAIL_COND(!std::isfinite(p_progress));
 	progress = p_progress;
 	if (path) {
 		if (path->get_curve().is_valid()) {
@@ -378,9 +469,10 @@ real_t PathFollow2D::get_progress() const {
 }
 
 void PathFollow2D::set_progress_ratio(real_t p_ratio) {
-	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
-		set_progress(p_ratio * path->get_curve()->get_baked_length());
-	}
+	ERR_FAIL_NULL_MSG(path, "Can only set progress ratio on a PathFollow2D that is the child of a Path2D which is itself part of the scene tree.");
+	ERR_FAIL_COND_MSG(path->get_curve().is_null(), "Can't set progress ratio on a PathFollow2D that does not have a Curve.");
+	ERR_FAIL_COND_MSG(!path->get_curve()->get_baked_length(), "Can't set progress ratio on a PathFollow2D that has a 0 length curve.");
+	set_progress(p_ratio * path->get_curve()->get_baked_length());
 }
 
 real_t PathFollow2D::get_progress_ratio() const {

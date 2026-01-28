@@ -35,8 +35,8 @@ void AudioEffectPannerInstance::process(const AudioFrame *p_src_frames, AudioFra
 	float rvol = CLAMP(1.0 + base->pan, 0, 1);
 
 	for (int i = 0; i < p_frame_count; i++) {
-		p_dst_frames[i].l = p_src_frames[i].l * lvol + p_src_frames[i].r * (1.0 - rvol);
-		p_dst_frames[i].r = p_src_frames[i].r * rvol + p_src_frames[i].l * (1.0 - lvol);
+		p_dst_frames[i].left = p_src_frames[i].left * lvol + p_src_frames[i].right * (1.0 - rvol);
+		p_dst_frames[i].right = p_src_frames[i].right * rvol + p_src_frames[i].left * (1.0 - lvol);
 	}
 }
 

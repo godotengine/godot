@@ -1,6 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
+
+#nullable enable
 
 namespace Godot
 {
@@ -209,7 +212,7 @@ namespace Godot
 
         private void Rotate(Quaternion quaternion)
         {
-            this *= new Basis(quaternion);
+            this = new Basis(quaternion) * this;
         }
 
         private void SetDiagonal(Vector3 diagonal)
@@ -649,12 +652,10 @@ namespace Godot
                 column2 = -column2;
             }
             Vector3 column0 = up.Value.Cross(column2);
-#if DEBUG
             if (column0.IsZeroApprox())
             {
-                throw new ArgumentException("The target vector and up vector can't be parallel to each other.");
+                throw new ArgumentException("Target and up vectors are colinear. This is not advised as it may cause unwanted rotation around local Z axis.");
             }
-#endif
             column0.Normalize();
             Vector3 column1 = column2.Cross(column0);
             return new Basis(column0, column1, column2);
@@ -711,6 +712,20 @@ namespace Godot
             b.Row0 *= scale.X;
             b.Row1 *= scale.Y;
             b.Row2 *= scale.Z;
+            return b;
+        }
+
+        /// <summary>
+        /// Returns this basis with each axis scaled by the corresponding component in the given <paramref name="scale"/>. The basis matrix's columns are multiplied by <paramref name="scale"/>'s components. This operation is a local scale (relative to self).
+        /// </summary>
+        /// <param name="scale">The scale to introduce.</param>
+        /// <returns>The scaled basis matrix.</returns>
+        public readonly Basis ScaledLocal(Vector3 scale)
+        {
+            Basis b = this;
+            b.Row0 *= scale;
+            b.Row1 *= scale;
+            b.Row2 *= scale;
             return b;
         }
 
@@ -1090,7 +1105,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the basis matrix and the object are exactly equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Basis other && Equals(other);
         }
@@ -1131,16 +1146,13 @@ namespace Godot
         /// Converts this <see cref="Basis"/> to a string.
         /// </summary>
         /// <returns>A string representation of this basis.</returns>
-        public override readonly string ToString()
-        {
-            return $"[X: {X}, Y: {Y}, Z: {Z}]";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Basis"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this basis.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
             return $"[X: {X.ToString(format)}, Y: {Y.ToString(format)}, Z: {Z.ToString(format)}]";
         }

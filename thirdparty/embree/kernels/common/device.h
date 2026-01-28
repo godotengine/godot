@@ -11,10 +11,57 @@ namespace embree
 {
   class BVH4Factory;
   class BVH8Factory;
+  struct TaskArena;
 
   class Device : public State, public MemoryMonitorInterface
   {
     ALIGNED_CLASS_(16);
+    
+  public:
+    
+    /*! allocator that performs unified shared memory allocations */
+    template<typename T, size_t alignment>
+    struct allocator
+    {
+      typedef T value_type;
+      typedef T* pointer;
+      typedef const T* const_pointer;
+      typedef T& reference;
+      typedef const T& const_reference;
+      typedef std::size_t size_type;
+      typedef std::ptrdiff_t difference_type;
+      
+      allocator() {}
+      
+      allocator(Device* device)
+        : device(device) {}
+      
+      __forceinline pointer allocate( size_type n ) {
+        assert(device);
+        return (pointer) device->malloc(n*sizeof(T),alignment,EmbreeMemoryType::MALLOC);
+      }
+      
+      __forceinline void deallocate( pointer p, size_type n ) {
+        if (device) device->free(p);
+      }
+      
+      __forceinline void construct( pointer p, const_reference val ) {
+        new (p) T(val);
+      }
+      
+      __forceinline void destroy( pointer p ) {
+        p->~T();
+      }
+      
+      Device* device = nullptr;
+    };
+
+    /*! vector class that performs aligned allocations from Device object */
+    template<typename T>
+    using vector = vector_t<T,allocator<T,std::alignment_of<T>::value>>;
+
+    template<typename T, size_t alignment>
+    using avector = vector_t<T,allocator<T,alignment>>;
 
   public:
 
@@ -28,16 +75,26 @@ namespace embree
     void print();
 
     /*! sets the error code */
-    void setDeviceErrorCode(RTCError error);
+    void setDeviceErrorCode(RTCError error, std::string const& msg = "");
 
     /*! returns and clears the error code */
     RTCError getDeviceErrorCode();
 
+    /*! Returns the string representation for the error code. For example, for RTC_ERROR_UNKNOWN the string "RTC_ERROR_UNKNOWN" will be returned. */
+    static char* getDeviceErrorString();
+
+    /*! returns the last error message */
+    const char* getDeviceLastErrorMessage();
+
     /*! sets the error code */
-    static void setThreadErrorCode(RTCError error);
+    static void setThreadErrorCode(RTCError error, std::string const& msg = "");
 
     /*! returns and clears the error code */
     static RTCError getThreadErrorCode();
+
+
+    /*! returns the last error message */
+    static const char* getThreadLastErrorMessage();
 
     /*! processes error codes, do not call directly */
     static void process_error(Device* device, RTCError error, const char* str);
@@ -54,6 +111,29 @@ namespace embree
     /*! gets a property */
     ssize_t getProperty(const RTCDeviceProperty prop);
 
+    /*! enter device by setting up some global state */
+    virtual void enter() {}
+
+    /*! leave device by setting up some global state */
+    virtual void leave() {}
+
+    /*! buffer allocation - using USM shared */
+    virtual void* malloc(size_t size, size_t align);
+
+    /*! buffer allocation */
+    virtual void* malloc(size_t size, size_t align, EmbreeMemoryType type);
+
+    /*! buffer deallocation */
+    virtual void free(void* ptr);
+
+    /*! returns true if device is of type DeviceGPU */
+    virtual bool is_gpu() const { return false; }
+
+    /*! returns true if device and host have shared memory system (e.g., integrated GPU) */
+    virtual bool has_unified_memory() const { return true; }
+
+    virtual EmbreeMemoryType get_memory_type(void* ptr) const { return EmbreeMemoryType::MALLOC; }
+
   private:
 
     /*! initializes the tasking system */
@@ -61,6 +141,13 @@ namespace embree
 
     /*! shuts down the tasking system */
     void exitTaskingSystem();
+
+    std::unique_ptr<TaskArena> arena;
+
+  public:
+
+    // use tasking system arena to execute func
+    void execute(bool join, const std::function<void()>& func);
 
     /*! some variables that can be set via rtcSetParameter1i for debugging purposes */
   public:
@@ -74,12 +161,78 @@ namespace embree
 #if defined(EMBREE_TARGET_SIMD8)
     std::unique_ptr<BVH8Factory> bvh8_factory;
 #endif
-    
-#if USE_TASK_ARENA
-    std::unique_ptr<tbb::task_arena> arena;
+
+  private:
+    static const std::vector<std::string> error_strings;
+
+  public:
+    static const char* getErrorString(RTCError error);
+
+  };
+
+#if defined(EMBREE_SYCL_SUPPORT)
+     
+  class DeviceGPU : public Device
+  {
+  public:
+
+    DeviceGPU(sycl::context sycl_context, const char* cfg);
+    ~DeviceGPU();
+
+    virtual void enter() override;
+    virtual void leave() override;
+    virtual void* malloc(size_t size, size_t align) override;
+    virtual void* malloc(size_t size, size_t align, EmbreeMemoryType type) override;
+    virtual void free(void* ptr) override;
+
+    /* set SYCL device */
+    void setSYCLDevice(const sycl::device sycl_device);
+
+    /*! returns true if device is of type DeviceGPU */
+    virtual bool is_gpu() const override { return true; }
+
+    /*! returns true if device and host have shared memory system (e.g., integrated GPU) */
+    virtual bool has_unified_memory() const override;
+
+    virtual EmbreeMemoryType get_memory_type(void* ptr) const override {
+      switch(sycl::get_pointer_type(ptr, gpu_context)) {
+        case sycl::usm::alloc::host: return EmbreeMemoryType::USM_HOST;
+        case sycl::usm::alloc::device: return EmbreeMemoryType::USM_DEVICE;
+        case sycl::usm::alloc::shared: return EmbreeMemoryType::USM_SHARED;
+        default: return EmbreeMemoryType::MALLOC;
+      }
+    }
+
+  private:
+    sycl::context gpu_context;
+    sycl::device  gpu_device;
+        
+    unsigned int gpu_maxWorkGroupSize;
+    unsigned int gpu_maxComputeUnits;
+
+  public:
+    void* dispatchGlobalsPtr = nullptr;
+
+  public:
+    inline sycl::device  &getGPUDevice()  { return gpu_device; }        
+    inline sycl::context &getGPUContext() { return gpu_context; }    
+
+    inline unsigned int getGPUMaxWorkGroupSize() { return gpu_maxWorkGroupSize; }
+
+    void init_rthw_level_zero();
+    void init_rthw_opencl();
+  };
+
 #endif
-    
-    /* ray streams filter */
-    RayStreamFilterFuncs rayStreamFilters;
+
+  struct DeviceEnterLeave
+  {
+    DeviceEnterLeave (RTCDevice hdevice);
+    DeviceEnterLeave (RTCScene hscene);
+    DeviceEnterLeave (RTCGeometry hgeometry);
+    DeviceEnterLeave (RTCBuffer hbuffer);
+    ~DeviceEnterLeave();
+  private:
+    Device* device;
   };
 }

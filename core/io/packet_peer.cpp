@@ -38,7 +38,7 @@
 void PacketPeer::set_encode_buffer_max_size(int p_max_size) {
 	ERR_FAIL_COND_MSG(p_max_size < 1024, "Max encode buffer must be at least 1024 bytes");
 	ERR_FAIL_COND_MSG(p_max_size > 256 * 1024 * 1024, "Max encode buffer cannot exceed 256 MiB");
-	encode_buffer_max_size = next_power_of_2(p_max_size);
+	encode_buffer_max_size = next_power_of_2((uint32_t)p_max_size);
 	encode_buffer.clear();
 }
 
@@ -103,7 +103,7 @@ Error PacketPeer::put_var(const Variant &p_packet, bool p_full_objects) {
 
 	if (unlikely(encode_buffer.size() < len)) {
 		encode_buffer.resize(0); // Avoid realloc
-		encode_buffer.resize(next_power_of_2(len));
+		encode_buffer.resize(next_power_of_2((uint32_t)len));
 	}
 
 	uint8_t *w = encode_buffer.ptrw();
@@ -299,10 +299,10 @@ Ref<StreamPeer> PacketPeerStream::get_stream_peer() const {
 
 void PacketPeerStream::set_input_buffer_max_size(int p_max_size) {
 	ERR_FAIL_COND_MSG(p_max_size < 0, "Max size of input buffer size cannot be smaller than 0.");
-	//warning may lose packets
+	// WARNING: May lose packets.
 	ERR_FAIL_COND_MSG(ring_buffer.data_left(), "Buffer in use, resizing would cause loss of data.");
-	ring_buffer.resize(nearest_shift(next_power_of_2(p_max_size + 4)) - 1);
-	input_buffer.resize(next_power_of_2(p_max_size + 4));
+	ring_buffer.resize(nearest_shift(next_power_of_2((uint32_t)p_max_size + (uint32_t)4)) - 1);
+	input_buffer.resize(next_power_of_2((uint32_t)p_max_size + (uint32_t)4));
 }
 
 int PacketPeerStream::get_input_buffer_max_size() const {
@@ -310,7 +310,7 @@ int PacketPeerStream::get_input_buffer_max_size() const {
 }
 
 void PacketPeerStream::set_output_buffer_max_size(int p_max_size) {
-	output_buffer.resize(next_power_of_2(p_max_size + 4));
+	output_buffer.resize(next_power_of_2((uint32_t)p_max_size + (uint32_t)4));
 }
 
 int PacketPeerStream::get_output_buffer_max_size() const {
@@ -318,9 +318,9 @@ int PacketPeerStream::get_output_buffer_max_size() const {
 }
 
 PacketPeerStream::PacketPeerStream() {
-	int rbsize = GLOBAL_GET("network/limits/packet_peer_stream/max_buffer_po2");
+	int64_t rbsize = GLOBAL_GET("network/limits/packet_peer_stream/max_buffer_po2");
 
 	ring_buffer.resize(rbsize);
-	input_buffer.resize(1 << rbsize);
-	output_buffer.resize(1 << rbsize);
+	input_buffer.resize(int64_t(1) << rbsize);
+	output_buffer.resize(int64_t(1) << rbsize);
 }

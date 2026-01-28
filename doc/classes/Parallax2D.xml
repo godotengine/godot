@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Parallax2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node used to create a parallax scrolling background.
+	</brief_description>
+	<description>
+		A [Parallax2D] is used to create a parallax effect. It can move at a different speed relative to the camera movement using [member scroll_scale]. This creates an illusion of depth in a 2D game. If manual scrolling is desired, the [Camera2D] position can be ignored with [member ignore_camera_scroll].
+		[b]Note:[/b] Any changes to this node's position made after it enters the scene tree will be overridden if [member ignore_camera_scroll] is [code]false[/code] or [member screen_offset] is modified.
+	</description>
+	<tutorials>
+		<link title="2D Parallax">$DOCS_URL/tutorials/2d/2d_parallax.html</link>
+	</tutorials>
+	<members>
+		<member name="autoscroll" type="Vector2" setter="set_autoscroll" getter="get_autoscroll" default="Vector2(0, 0)">
+			Velocity at which the offset scrolls automatically, in pixels per second.
+		</member>
+		<member name="follow_viewport" type="bool" setter="set_follow_viewport" getter="get_follow_viewport" default="true">
+			If [code]true[/code], this [Parallax2D] is offset by the current camera's position. If the [Parallax2D] is in a [CanvasLayer] separate from the current camera, it may be desired to match the value with [member CanvasLayer.follow_viewport_enabled].
+		</member>
+		<member name="ignore_camera_scroll" type="bool" setter="set_ignore_camera_scroll" getter="is_ignore_camera_scroll" default="false">
+			If [code]true[/code], [Parallax2D]'s position is not affected by the position of the camera.
+		</member>
+		<member name="limit_begin" type="Vector2" setter="set_limit_begin" getter="get_limit_begin" default="Vector2(-10000000, -10000000)">
+			Top-left limits for scrolling to begin. If the camera is outside of this limit, the [Parallax2D] stops scrolling. Must be lower than [member limit_end] minus the viewport size to work.
+		</member>
+		<member name="limit_end" type="Vector2" setter="set_limit_end" getter="get_limit_end" default="Vector2(10000000, 10000000)">
+			Bottom-right limits for scrolling to end. If the camera is outside of this limit, the [Parallax2D] will stop scrolling. Must be higher than [member limit_begin] and the viewport size combined to work.
+		</member>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
+		<member name="repeat_size" type="Vector2" setter="set_repeat_size" getter="get_repeat_size" default="Vector2(0, 0)">
+			Repeats the [Texture2D] of each of this node's children and offsets them by this value. When scrolling, the node's position loops, giving the illusion of an infinite scrolling background if the values are larger than the screen size. If an axis is set to [code]0[/code], the [Texture2D] will not be repeated.
+		</member>
+		<member name="repeat_times" type="int" setter="set_repeat_times" getter="get_repeat_times" default="1">
+			Overrides the amount of times the texture repeats. Each texture copy spreads evenly from the original by [member repeat_size]. Useful for when zooming out with a camera.
+		</member>
+		<member name="screen_offset" type="Vector2" setter="set_screen_offset" getter="get_screen_offset" default="Vector2(0, 0)">
+			Offset used to scroll this [Parallax2D]. This value is updated automatically unless [member ignore_camera_scroll] is [code]true[/code].
+		</member>
+		<member name="scroll_offset" type="Vector2" setter="set_scroll_offset" getter="get_scroll_offset" default="Vector2(0, 0)">
+			The [Parallax2D]'s offset. Similar to [member screen_offset] and [member Node2D.position], but will not be overridden.
+			[b]Note:[/b] Values will loop if [member repeat_size] is set higher than [code]0[/code].
+		</member>
+		<member name="scroll_scale" type="Vector2" setter="set_scroll_scale" getter="get_scroll_scale" default="Vector2(1, 1)">
+			Multiplier to the final [Parallax2D]'s offset. Can be used to simulate distance from the camera.
+			For example, a value of [code]1[/code] scrolls at the same speed as the camera. A value greater than [code]1[/code] scrolls faster, making objects appear closer. Less than [code]1[/code] scrolls slower, making objects appear further, and a value of [code]0[/code] stops the objects completely.
+		</member>
+	</members>
+</class>

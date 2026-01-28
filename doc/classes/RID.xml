@@ -6,6 +6,7 @@
 	<description>
 		The RID [Variant] type is used to access a low-level resource by its unique ID. RIDs are opaque, which means they do not grant access to the resource by themselves. They are used by the low-level server classes, such as [DisplayServer], [RenderingServer], [TextServer], etc.
 		A low-level resource may correspond to a high-level [Resource], such as [Texture] or [Mesh].
+		[b]Note:[/b] RIDs are only useful during the current session. It won't correspond to a similar resource if sent over a network, or loaded from a file at a later time.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -20,7 +21,7 @@
 			<return type="RID" />
 			<param index="0" name="from" type="RID" />
 			<description>
-				Constructs a [RID] as a copy of the given [RID].
+				Constructs an [RID] as a copy of the given [RID].
 			</description>
 		</constructor>
 	</constructors>

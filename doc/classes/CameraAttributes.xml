@@ -25,7 +25,9 @@
 			Multiplier for the exposure amount. A higher value results in a brighter image.
 		</member>
 		<member name="exposure_sensitivity" type="float" setter="set_exposure_sensitivity" getter="get_exposure_sensitivity" default="100.0">
-			Sensitivity of camera sensors, measured in ISO. A higher sensitivity results in a brighter image. Only available when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is enabled. When [member auto_exposure_enabled] this can be used as a method of exposure compensation, doubling the value will increase the exposure value (measured in EV100) by 1 stop.
+			Sensitivity of camera sensors, measured in ISO. A higher sensitivity results in a brighter image.
+			If [member auto_exposure_enabled] is [code]true[/code], this can be used as a method of exposure compensation, doubling the value will increase the exposure value (measured in EV100) by 1 stop.
+			[b]Note:[/b] Only available when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is enabled.
 		</member>
 	</members>
 </class>

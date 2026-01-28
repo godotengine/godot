@@ -29,7 +29,7 @@
 	</description>
 	<tutorials>
 		<link title="Using the SurfaceTool">$DOCS_URL/tutorials/3d/procedural_geometry/surfacetool.html</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
 	</tutorials>
 	<methods>
 		<method name="add_index">
@@ -87,13 +87,13 @@
 			<param index="1" name="flags" type="int" default="0" />
 			<description>
 				Returns a constructed [ArrayMesh] from current information passed in. If an existing [ArrayMesh] is passed in as an argument, will add an extra surface to the existing [ArrayMesh].
-				[b]FIXME:[/b] Document possible values for [param flags], it changed in 4.0. Likely some combinations of [enum Mesh.ArrayFormat].
+				The [param flags] argument can be the bitwise OR of [constant Mesh.ARRAY_FLAG_USE_DYNAMIC_UPDATE], [constant Mesh.ARRAY_FLAG_USE_8_BONE_WEIGHTS], or [constant Mesh.ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY].
 			</description>
 		</method>
 		<method name="commit_to_arrays">
 			<return type="Array" />
 			<description>
-				Commits the data to the same format used by [method ArrayMesh.add_surface_from_arrays]. This way you can further process the mesh data using the [ArrayMesh] API.
+				Commits the data to the same format used by [method ArrayMesh.add_surface_from_arrays], [method ImporterMesh.add_surface], and [method create_from_arrays]. This way you can further process the mesh data using the [ArrayMesh] or [ImporterMesh] APIs.
 			</description>
 		</method>
 		<method name="create_from">
@@ -102,6 +102,14 @@
 			<param index="1" name="surface" type="int" />
 			<description>
 				Creates a vertex array from an existing [Mesh].
+			</description>
+		</method>
+		<method name="create_from_arrays">
+			<return type="void" />
+			<param index="0" name="arrays" type="Array" />
+			<param index="1" name="primitive_type" type="int" enum="Mesh.PrimitiveType" default="3" />
+			<description>
+				Creates this SurfaceTool from existing vertex arrays such as returned by [method commit_to_arrays], [method Mesh.surface_get_arrays], [method Mesh.surface_get_blend_shape_arrays], [method ImporterMesh.get_surface_arrays], and [method ImporterMesh.get_surface_blend_shape_arrays]. [param primitive_type] controls the type of mesh data, defaulting to [constant Mesh.PRIMITIVE_TRIANGLES].
 			</description>
 		</method>
 		<method name="create_from_blend_shape">
@@ -119,13 +127,12 @@
 				Removes the index array by expanding the vertex array.
 			</description>
 		</method>
-		<method name="generate_lod" is_deprecated="true">
+		<method name="generate_lod" deprecated="This method is unused internally, as it does not preserve normals or UVs. Consider using [method ImporterMesh.generate_lods] instead.">
 			<return type="PackedInt32Array" />
 			<param index="0" name="nd_threshold" type="float" />
 			<param index="1" name="target_index_count" type="int" default="3" />
 			<description>
-				Generates a LOD for a given [param nd_threshold] in linear units (square root of quadric error metric), using at most [param target_index_count] indices.
-				[i]Deprecated.[/i] Unused internally and neglects to preserve normals or UVs. Consider using [method ImporterMesh.generate_lods] instead.
+				Generates an LOD for a given [param nd_threshold] in linear units (square root of quadric error metric), using at most [param target_index_count] indices.
 			</description>
 		</method>
 		<method name="generate_normals">
@@ -133,14 +140,14 @@
 			<param index="0" name="flip" type="bool" default="false" />
 			<description>
 				Generates normals from vertices so you do not have to do it manually. If [param flip] is [code]true[/code], the resulting normals will be inverted. [method generate_normals] should be called [i]after[/i] generating geometry and [i]before[/i] committing the mesh using [method commit] or [method commit_to_arrays]. For correct display of normal-mapped surfaces, you will also have to generate tangents using [method generate_tangents].
-				[b]Note:[/b] [method generate_normals] only works if the primitive type to be set to [constant Mesh.PRIMITIVE_TRIANGLES].
+				[b]Note:[/b] [method generate_normals] only works if the primitive type is set to [constant Mesh.PRIMITIVE_TRIANGLES].
 				[b]Note:[/b] [method generate_normals] takes smooth groups into account. To generate smooth normals, set the smooth group to a value greater than or equal to [code]0[/code] using [method set_smooth_group] or leave the smooth group at the default of [code]0[/code]. To generate flat normals, set the smooth group to [code]-1[/code] using [method set_smooth_group] prior to adding vertices.
 			</description>
 		</method>
 		<method name="generate_tangents">
 			<return type="void" />
 			<description>
-				Generates a tangent vector for each vertex. Requires that each vertex have UVs and normals set already (see [method generate_normals]).
+				Generates a tangent vector for each vertex. Requires that each vertex already has UVs and normals set (see [method generate_normals]).
 			</description>
 		</method>
 		<method name="get_aabb" qualifiers="const">
@@ -234,7 +241,7 @@
 			<param index="0" name="count" type="int" enum="SurfaceTool.SkinWeightCount" />
 			<description>
 				Set to [constant SKIN_8_WEIGHTS] to indicate that up to 8 bone influences per vertex may be used.
-				By default, only 4 bone influences are used ([constant SKIN_4_WEIGHTS])
+				By default, only 4 bone influences are used ([constant SKIN_4_WEIGHTS]).
 				[b]Note:[/b] This function takes an enum, not the exact number of weights.
 			</description>
 		</method>
@@ -251,6 +258,7 @@
 			<param index="0" name="tangent" type="Plane" />
 			<description>
 				Specifies a tangent to use for the [i]next[/i] vertex. If every vertex needs to have this information set and you fail to submit it for the first vertex, this information may not be used at all.
+				[b]Note:[/b] Even though [param tangent] is a [Plane], it does not directly represent the tangent plane. Its [member Plane.x], [member Plane.y], and [member Plane.z] represent the tangent vector and [member Plane.d] should be either [code]-1[/code] or [code]1[/code]. See also [constant Mesh.ARRAY_TANGENT].
 			</description>
 		</method>
 		<method name="set_uv">

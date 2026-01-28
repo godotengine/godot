@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PARALLAX_BACKGROUND_H
-#define PARALLAX_BACKGROUND_H
+#pragma once
 
 #include "scene/main/canvas_layer.h"
 
@@ -50,7 +49,7 @@ class ParallaxBackground : public CanvasLayer {
 	void _update_scroll();
 
 protected:
-	void _camera_moved(const Transform2D &p_transform, const Point2 &p_screen_offset);
+	void _camera_moved(const Transform2D &p_transform, const Point2 &p_screen_offset, const Point2 &p_adj_screen_offset);
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -81,5 +80,3 @@ public:
 
 	ParallaxBackground();
 };
-
-#endif // PARALLAX_BACKGROUND_H

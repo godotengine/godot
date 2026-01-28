@@ -7,52 +7,137 @@
 		Can play, loop, pause a scroll through audio. See [AudioStream] and [AudioStreamOggVorbis] for usage.
 	</description>
 	<tutorials>
-		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/526</link>
+		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/2759</link>
 	</tutorials>
 	<methods>
 		<method name="_get_loop_count" qualifiers="virtual const">
 			<return type="int" />
 			<description>
+				Overridable method. Should return how many times this audio stream has looped. Most built-in playbacks always return [code]0[/code].
 			</description>
 		</method>
-		<method name="_get_playback_position" qualifiers="virtual const">
+		<method name="_get_parameter" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Return the current value of a playback parameter by name (see [method AudioStream._get_parameter_list]).
+			</description>
+		</method>
+		<method name="_get_playback_position" qualifiers="virtual required const">
 			<return type="float" />
 			<description>
+				Overridable method. Should return the current progress along the audio stream, in seconds.
 			</description>
 		</method>
-		<method name="_is_playing" qualifiers="virtual const">
+		<method name="_is_playing" qualifiers="virtual required const">
 			<return type="bool" />
 			<description>
+				Overridable method. Should return [code]true[/code] if this playback is active and playing its audio stream.
 			</description>
 		</method>
-		<method name="_mix" qualifiers="virtual">
+		<method name="_mix" qualifiers="virtual required">
 			<return type="int" />
 			<param index="0" name="buffer" type="AudioFrame*" />
 			<param index="1" name="rate_scale" type="float" />
 			<param index="2" name="frames" type="int" />
 			<description>
+				Override this method to customize how the audio stream is mixed. This method is called even if the playback is not active.
+				[b]Note:[/b] It is not useful to override this method in GDScript or C#. Only GDExtension can take advantage of it.
 			</description>
 		</method>
 		<method name="_seek" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="position" type="float" />
 			<description>
+				Override this method to customize what happens when seeking this audio stream at the given [param position], such as by calling [method AudioStreamPlayer.seek].
 			</description>
 		</method>
-		<method name="_start" qualifiers="virtual">
+		<method name="_set_parameter" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Set the current value of a playback parameter by name (see [method AudioStream._get_parameter_list]).
+			</description>
+		</method>
+		<method name="_start" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="from_pos" type="float" />
 			<description>
+				Override this method to customize what happens when the playback starts at the given position, such as by calling [method AudioStreamPlayer.play].
 			</description>
 		</method>
-		<method name="_stop" qualifiers="virtual">
+		<method name="_stop" qualifiers="virtual required">
 			<return type="void" />
 			<description>
+				Override this method to customize what happens when the playback is stopped, such as by calling [method AudioStreamPlayer.stop].
 			</description>
 		</method>
 		<method name="_tag_used_streams" qualifiers="virtual">
 			<return type="void" />
 			<description>
+				Overridable method. Called whenever the audio stream is mixed if the playback is active and [method AudioServer.set_enable_tagging_used_audio_streams] has been set to [code]true[/code]. Editor plugins may use this method to "tag" the current position along the audio stream and display it in a preview.
+			</description>
+		</method>
+		<method name="get_loop_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of times the stream has looped.
+			</description>
+		</method>
+		<method name="get_playback_position" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the current position in the stream, in seconds.
+			</description>
+		</method>
+		<method name="get_sample_playback" qualifiers="const" experimental="">
+			<return type="AudioSamplePlayback" />
+			<description>
+				Returns the [AudioSamplePlayback] associated with this [AudioStreamPlayback] for playing back the audio sample of this stream.
+			</description>
+		</method>
+		<method name="is_playing" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the stream is playing.
+			</description>
+		</method>
+		<method name="mix_audio">
+			<return type="PackedVector2Array" />
+			<param index="0" name="rate_scale" type="float" />
+			<param index="1" name="frames" type="int" />
+			<description>
+				Mixes up to [param frames] of audio from the stream from the current position, at a rate of [param rate_scale], advancing the stream.
+				Returns a [PackedVector2Array] where each element holds the left and right channel volume levels of each frame.
+				[b]Note:[/b] Can return fewer frames than requested, make sure to use the size of the return value.
+			</description>
+		</method>
+		<method name="seek">
+			<return type="void" />
+			<param index="0" name="time" type="float" default="0.0" />
+			<description>
+				Seeks the stream at the given [param time], in seconds.
+			</description>
+		</method>
+		<method name="set_sample_playback" experimental="">
+			<return type="void" />
+			<param index="0" name="playback_sample" type="AudioSamplePlayback" />
+			<description>
+				Associates [AudioSamplePlayback] to this [AudioStreamPlayback] for playing back the audio sample of this stream.
+			</description>
+		</method>
+		<method name="start">
+			<return type="void" />
+			<param index="0" name="from_pos" type="float" default="0.0" />
+			<description>
+				Starts the stream from the given [param from_pos], in seconds.
+			</description>
+		</method>
+		<method name="stop">
+			<return type="void" />
+			<description>
+				Stops the stream.
 			</description>
 		</method>
 	</methods>

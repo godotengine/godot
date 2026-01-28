@@ -54,10 +54,7 @@
 #ifdef DEBUG_ENABLED
 _FORCE_INLINE_ void SceneRPCInterface::_profile_node_data(const String &p_what, ObjectID p_id, int p_size) {
 	if (EngineDebugger::is_profiling("multiplayer:rpc")) {
-		Array values;
-		values.push_back(p_what);
-		values.push_back(p_id);
-		values.push_back(p_size);
+		Array values = { p_what, p_id, p_size };
 		EngineDebugger::profiler_add_frame_data("multiplayer:rpc", values);
 	}
 }
@@ -80,13 +77,14 @@ void SceneRPCInterface::_parse_rpc_config(const Variant &p_config, bool p_for_no
 	ERR_FAIL_COND(p_config.get_type() != Variant::DICTIONARY);
 	const Dictionary config = p_config;
 	Array names = config.keys();
-	names.sort(); // Ensure ID order
+	names.sort_custom(callable_mp_static(&StringLikeVariantOrder::compare)); // Ensure ID order
 	for (int i = 0; i < names.size(); i++) {
-		ERR_CONTINUE(names[i].get_type() != Variant::STRING && names[i].get_type() != Variant::STRING_NAME);
+		ERR_CONTINUE(!names[i].is_string());
 		String name = names[i].operator String();
 		ERR_CONTINUE(config[name].get_type() != Variant::DICTIONARY);
 		ERR_CONTINUE(!config[name].operator Dictionary().has("rpc_mode"));
 		Dictionary dict = config[name];
+		// Default values should match GDScript `@rpc` annotation registration and `rpc_annotation()`.
 		RPCConfig cfg;
 		cfg.name = name;
 		cfg.rpc_mode = ((MultiplayerAPI::RPCMode)dict.get("rpc_mode", MultiplayerAPI::RPC_MODE_AUTHORITY).operator int());
@@ -138,8 +136,7 @@ Node *SceneRPCInterface::_process_get_node(int p_from, const uint8_t *p_packet, 
 
 		ERR_FAIL_COND_V_MSG(ofs >= p_packet_len, nullptr, "Invalid packet received. Size smaller than declared.");
 
-		String paths;
-		paths.parse_utf8((const char *)&p_packet[ofs], p_packet_len - ofs);
+		String paths = String::utf8((const char *)&p_packet[ofs], p_packet_len - ofs);
 
 		NodePath np = paths;
 
@@ -228,6 +225,18 @@ void SceneRPCInterface::process_rpc(int p_from, const uint8_t *p_packet, int p_p
 	_process_rpc(node, name_id, p_from, p_packet, packet_len, packet_min_size);
 }
 
+static String _get_rpc_mode_string(MultiplayerAPI::RPCMode p_mode) {
+	switch (p_mode) {
+		case MultiplayerAPI::RPC_MODE_DISABLED:
+			return "disabled";
+		case MultiplayerAPI::RPC_MODE_ANY_PEER:
+			return "any_peer";
+		case MultiplayerAPI::RPC_MODE_AUTHORITY:
+			return "authority";
+	}
+	ERR_FAIL_V_MSG(String(), "Invalid RPC mode.");
+}
+
 void SceneRPCInterface::_process_rpc(Node *p_node, const uint16_t p_rpc_method_id, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset) {
 	ERR_FAIL_COND_MSG(p_offset > p_packet_len, "Invalid packet received. Size too small.");
 
@@ -249,7 +258,7 @@ void SceneRPCInterface::_process_rpc(Node *p_node, const uint16_t p_rpc_method_i
 		} break;
 	}
 
-	ERR_FAIL_COND_MSG(!can_call, "RPC '" + String(config.name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)config.rpc_mode) + ", authority is " + itos(p_node->get_multiplayer_authority()) + ".");
+	ERR_FAIL_COND_MSG(!can_call, "RPC '" + String(config.name) + "' is not allowed on node " + String(p_node->get_path()) + " from: " + itos(p_from) + ". Mode is \"" + _get_rpc_mode_string(config.rpc_mode) + "\", authority is " + itos(p_node->get_multiplayer_authority()) + ".");
 
 	int argc = 0;
 
@@ -301,7 +310,7 @@ void SceneRPCInterface::_send_rpc(Node *p_node, int p_to, uint16_t p_rpc_id, con
 
 	ERR_FAIL_COND_MSG(p_argcount > 255, "Too many arguments (>255).");
 
-	if (p_to != 0 && !multiplayer->get_connected_peers().has(ABS(p_to))) {
+	if (p_to != 0 && !multiplayer->get_connected_peers().has(Math::abs(p_to))) {
 		ERR_FAIL_COND_MSG(p_to == multiplayer->get_unique_id(), "Attempt to call RPC on yourself! Peer unique ID: " + itos(multiplayer->get_unique_id()) + ".");
 
 		ERR_FAIL_MSG("Attempt to call RPC with unknown peer ID: " + itos(p_to) + ".");
@@ -461,7 +470,7 @@ void SceneRPCInterface::_send_rpc(Node *p_node, int p_to, uint16_t p_rpc_id, con
 
 Error SceneRPCInterface::rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) {
 	Ref<MultiplayerPeer> peer = multiplayer->get_multiplayer_peer();
-	ERR_FAIL_COND_V_MSG(!peer.is_valid(), ERR_UNCONFIGURED, "Trying to call an RPC while no multiplayer peer is active.");
+	ERR_FAIL_COND_V_MSG(peer.is_null(), ERR_UNCONFIGURED, "Trying to call an RPC while no multiplayer peer is active.");
 	Node *node = Object::cast_to<Node>(p_obj);
 	ERR_FAIL_COND_V_MSG(!node || !node->is_inside_tree(), ERR_INVALID_PARAMETER, "The object must be a valid Node inside the SceneTree");
 	ERR_FAIL_COND_V_MSG(peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED, ERR_CONNECTION_ERROR, "Trying to call an RPC via a multiplayer peer which is not connected.");

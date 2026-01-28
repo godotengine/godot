@@ -4,7 +4,7 @@
 		A custom effect for a [RichTextLabel].
 	</brief_description>
 	<description>
-		A custom effect for a [RichTextLabel].
+		A custom effect for a [RichTextLabel], which can be loaded in the [RichTextLabel] inspector or using [method RichTextLabel.install_effect].
 		[b]Note:[/b] For a [RichTextEffect] to be usable, a BBCode tag must be defined as a member variable called [code]bbcode[/code] in the script.
 		[codeblocks]
 		[gdscript skip-lint]

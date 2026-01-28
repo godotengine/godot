@@ -54,7 +54,7 @@
 		<method name="_play" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Called in response to [member VideoStreamPlayer.autoplay] or [method VideoStreamPlayer.play]. Note that manual playback may also invoke [method _stop] multiple times before this method is called. [method _is_playing] should return true once playing.
+				Called in response to [member VideoStreamPlayer.autoplay] or [method VideoStreamPlayer.play]. Note that manual playback may also invoke [method _stop] multiple times before this method is called. [method _is_playing] should return [code]true[/code] once playing.
 			</description>
 		</method>
 		<method name="_seek" qualifiers="virtual">
@@ -81,14 +81,14 @@
 		<method name="_stop" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Stops playback. May be called multiple times before [method _play], or in response to [method VideoStreamPlayer.stop]. [method _is_playing] should return false once stopped.
+				Stops playback. May be called multiple times before [method _play], or in response to [method VideoStreamPlayer.stop]. [method _is_playing] should return [code]false[/code] once stopped.
 			</description>
 		</method>
-		<method name="_update" qualifiers="virtual">
+		<method name="_update" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Ticks video playback for [param delta] seconds. Called every frame as long as [method _is_paused] and [method _is_playing] return true.
+				Ticks video playback for [param delta] seconds. Called every frame as long as both [method _is_paused] and [method _is_playing] return [code]true[/code].
 			</description>
 		</method>
 		<method name="mix_audio">

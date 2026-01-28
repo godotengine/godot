@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CALLABLE_BIND_H
-#define CALLABLE_BIND_H
+#pragma once
 
 #include "core/variant/callable.h"
 #include "core/variant/variant.h"
@@ -53,13 +52,14 @@ public:
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 	virtual Error rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const override;
 	virtual const Callable *get_base_comparator() const override;
+	virtual int get_argument_count(bool &r_is_valid) const override;
 	virtual int get_bound_arguments_count() const override;
-	virtual void get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const override;
+	virtual void get_bound_arguments(Vector<Variant> &r_arguments) const override;
+	virtual int get_unbound_arguments_count() const override;
 	Callable get_callable() { return callable; }
 	Vector<Variant> get_binds() { return binds; }
 
 	CallableCustomBind(const Callable &p_callable, const Vector<Variant> &p_binds);
-	virtual ~CallableCustomBind();
 };
 
 class CallableCustomUnbind : public CallableCustom {
@@ -81,14 +81,13 @@ public:
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 	virtual Error rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const override;
 	virtual const Callable *get_base_comparator() const override;
+	virtual int get_argument_count(bool &r_is_valid) const override;
 	virtual int get_bound_arguments_count() const override;
-	virtual void get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const override;
+	virtual void get_bound_arguments(Vector<Variant> &r_arguments) const override;
+	virtual int get_unbound_arguments_count() const override;
 
 	Callable get_callable() { return callable; }
 	int get_unbinds() { return argcount; }
 
 	CallableCustomUnbind(const Callable &p_callable, int p_argcount);
-	virtual ~CallableCustomUnbind();
 };
-
-#endif // CALLABLE_BIND_H

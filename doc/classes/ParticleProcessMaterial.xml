@@ -9,6 +9,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_param" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="param" type="int" enum="ParticleProcessMaterial.Parameter" />
+			<description>
+				Returns the minimum and maximum values of the given [param param] as a vector.
+				The [code]x[/code] component of the returned vector corresponds to minimum and the [code]y[/code] component corresponds to maximum.
+			</description>
+		</method>
 		<method name="get_param_max" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="param" type="int" enum="ParticleProcessMaterial.Parameter" />
@@ -34,7 +42,16 @@
 			<return type="bool" />
 			<param index="0" name="particle_flag" type="int" enum="ParticleProcessMaterial.ParticleFlags" />
 			<description>
-				Returns [code]true[/code] if the specified particle flag is enabled. See [enum ParticleFlags] for options.
+				Returns [code]true[/code] if the specified particle flag is enabled.
+			</description>
+		</method>
+		<method name="set_param">
+			<return type="void" />
+			<param index="0" name="param" type="int" enum="ParticleProcessMaterial.Parameter" />
+			<param index="1" name="value" type="Vector2" />
+			<description>
+				Sets the minimum and maximum values of the given [param param].
+				The [code]x[/code] component of the argument vector corresponds to minimum and the [code]y[/code] component corresponds to maximum.
 			</description>
 		</method>
 		<method name="set_param_max">
@@ -66,13 +83,14 @@
 			<param index="0" name="particle_flag" type="int" enum="ParticleProcessMaterial.ParticleFlags" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], enables the specified particle flag. See [enum ParticleFlags] for options.
+				Sets the [param particle_flag] to [param enable].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="alpha_curve" type="Texture2D" setter="set_alpha_curve" getter="get_alpha_curve">
 			The alpha value of each particle's color will be multiplied by this [CurveTexture] over its lifetime.
+			[b]Note:[/b] [member alpha_curve] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALPHA *= COLOR.a;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member alpha_curve] will have no visible effect.
 		</member>
 		<member name="angle_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's rotation will be animated along this [CurveTexture].
@@ -114,7 +132,7 @@
 			Minimum equivalent of [member anim_speed_max].
 		</member>
 		<member name="attractor_interaction_enabled" type="bool" setter="set_attractor_interaction_enabled" getter="is_attractor_interaction_enabled" default="true">
-			True if the interaction with particle attractors is enabled.
+			If [code]true[/code], interaction with particle attractors is enabled. In 3D, attraction only occurs within the area defined by the [GPUParticles3D] node's [member GPUParticles3D.visibility_aabb].
 		</member>
 		<member name="collision_bounce" type="float" setter="set_collision_bounce" getter="get_collision_bounce">
 			The particles' bounciness. Values range from [code]0[/code] (no bounce) to [code]1[/code] (full bounciness). Only effective if [member collision_mode] is [constant COLLISION_RIGID].
@@ -124,13 +142,13 @@
 		</member>
 		<member name="collision_mode" type="int" setter="set_collision_mode" getter="get_collision_mode" enum="ParticleProcessMaterial.CollisionMode" default="0">
 			The particles' collision mode.
-			[b]Note:[/b] 3D Particles can only collide with [GPUParticlesCollision3D] nodes, not [PhysicsBody3D] nodes. To make particles collide with various objects, you can add [GPUParticlesCollision3D] nodes as children of [PhysicsBody3D] nodes.
+			[b]Note:[/b] 3D Particles can only collide with [GPUParticlesCollision3D] nodes, not [PhysicsBody3D] nodes. To make particles collide with various objects, you can add [GPUParticlesCollision3D] nodes as children of [PhysicsBody3D] nodes. In 3D, collisions only occur within the area defined by the [GPUParticles3D] node's [member GPUParticles3D.visibility_aabb].
 			[b]Note:[/b] 2D Particles can only collide with [LightOccluder2D] nodes, not [PhysicsBody2D] nodes.
 		</member>
 		<member name="collision_use_scale" type="bool" setter="set_collision_use_scale" getter="is_collision_using_scale" default="false">
-			Should collision take scale into account.
+			If [code]true[/code], [member GPUParticles3D.collision_base_size] is multiplied by the particle's effective scale (see [member scale_min], [member scale_max], [member scale_curve], and [member scale_over_velocity_curve]).
 		</member>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)" keywords="colour">
 			Each particle's initial color. If the [GPUParticles2D]'s [code]texture[/code] is defined, it will be multiplied by this color.
 			[b]Note:[/b] [member color] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member color] will have no visible effect.
 		</member>
@@ -168,6 +186,7 @@
 		</member>
 		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents">
 			The box's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_BOX].
+			[b]Note:[/b] [member emission_box_extents] starts from the center point and applies the X, Y, and Z values in both directions. The size is twice the area of the extents.
 		</member>
 		<member name="emission_color_texture" type="Texture2D" setter="set_emission_color_texture" getter="get_emission_color_texture">
 			Particle color will be modulated by color determined by sampling this texture at the same point as the [member emission_point_texture].
@@ -175,7 +194,7 @@
 		</member>
 		<member name="emission_curve" type="Texture2D" setter="set_emission_curve" getter="get_emission_curve">
 			Each particle's color will be multiplied by this [CurveTexture] over its lifetime.
-			[b]Note:[/b] This property won't have a visible effect unless the render material is marked as unshaded.
+			[b]Note:[/b] [member emission_curve] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member emission_curve] will have no visible effect.
 		</member>
 		<member name="emission_normal_texture" type="Texture2D" setter="set_emission_normal_texture" getter="get_emission_normal_texture">
 			Particle velocity and rotation will be set by sampling this texture at the same point as the [member emission_point_texture]. Used only in [constant EMISSION_SHAPE_DIRECTED_POINTS]. Can be created automatically from mesh or node by selecting "Create Emission Points from Mesh/Node" under the "Particles" tool in the toolbar.
@@ -189,6 +208,10 @@
 		<member name="emission_ring_axis" type="Vector3" setter="set_emission_ring_axis" getter="get_emission_ring_axis">
 			The axis of the ring when using the emitter [constant EMISSION_SHAPE_RING].
 		</member>
+		<member name="emission_ring_cone_angle" type="float" setter="set_emission_ring_cone_angle" getter="get_emission_ring_cone_angle">
+			The angle of the cone when using the emitter [constant EMISSION_SHAPE_RING]. The default angle of 90 degrees results in a ring, while an angle of 0 degrees results in a cone. Intermediate values will result in a ring where one end is larger than the other.
+			[b]Note:[/b] Depending on [member emission_ring_height], the angle may be clamped if the ring's end is reached to form a perfect cone.
+		</member>
 		<member name="emission_ring_height" type="float" setter="set_emission_ring_height" getter="get_emission_ring_height">
 			The height of the ring when using the emitter [constant EMISSION_SHAPE_RING].
 		</member>
@@ -199,7 +222,7 @@
 			The radius of the ring when using the emitter [constant EMISSION_SHAPE_RING].
 		</member>
 		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="ParticleProcessMaterial.EmissionShape" default="0">
-			Particles will be emitted inside this region. Use [enum EmissionShape] constants for values.
+			Particles will be emitted inside this region.
 		</member>
 		<member name="emission_shape_offset" type="Vector3" setter="set_emission_shape_offset" getter="get_emission_shape_offset" default="Vector3(0, 0, 0)">
 			The offset for the [member emission_shape], in local space.
@@ -293,7 +316,7 @@
 			[b]Note:[/b] Animated velocities will not be affected by damping, use [member velocity_limit_curve] instead.
 		</member>
 		<member name="scale_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
-			Each particle's scale will vary along this [CurveTexture]. If a [CurveXYZTexture] is supplied instead, the scale will be separated per-axis.
+			Each particle's scale will vary along this [CurveTexture] over its lifetime. If a [CurveXYZTexture] is supplied instead, the scale will be separated per-axis.
 		</member>
 		<member name="scale_max" type="float" setter="set_param_max" getter="get_param_max" default="1.0">
 			Maximum initial scale applied to each particle.
@@ -316,16 +339,26 @@
 			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees.
 		</member>
 		<member name="sub_emitter_amount_at_collision" type="int" setter="set_sub_emitter_amount_at_collision" getter="get_sub_emitter_amount_at_collision">
-			Sub particle amount on collision.
-			Maximum amount set in the sub particles emitter.
+			The amount of particles to spawn from the subemitter node when a collision occurs. When combined with [constant COLLISION_HIDE_ON_CONTACT] on the main particles material, this can be used to achieve effects such as raindrops hitting the ground.
+			[b]Note:[/b] This value shouldn't exceed [member GPUParticles2D.amount] or [member GPUParticles3D.amount] defined on the [i]subemitter node[/i] (not the main node), relative to the subemitter's particle lifetime. If the number of particles is exceeded, no new particles will spawn from the subemitter until enough particles have expired.
 		</member>
 		<member name="sub_emitter_amount_at_end" type="int" setter="set_sub_emitter_amount_at_end" getter="get_sub_emitter_amount_at_end">
+			The amount of particles to spawn from the subemitter node when the particle expires.
+			[b]Note:[/b] This value shouldn't exceed [member GPUParticles2D.amount] or [member GPUParticles3D.amount] defined on the [i]subemitter node[/i] (not the main node), relative to the subemitter's particle lifetime. If the number of particles is exceeded, no new particles will spawn from the subemitter until enough particles have expired.
+		</member>
+		<member name="sub_emitter_amount_at_start" type="int" setter="set_sub_emitter_amount_at_start" getter="get_sub_emitter_amount_at_start">
+			The amount of particles to spawn from the subemitter node when the particle spawns.
+			[b]Note:[/b] This value shouldn't exceed [member GPUParticles2D.amount] or [member GPUParticles3D.amount] defined on the [i]subemitter node[/i] (not the main node), relative to the subemitter's particle lifetime. If the number of particles is exceeded, no new particles will spawn from the subemitter until enough particles have expired.
 		</member>
 		<member name="sub_emitter_frequency" type="float" setter="set_sub_emitter_frequency" getter="get_sub_emitter_frequency">
+			The frequency at which particles should be emitted from the subemitter node. One particle will be spawned every [member sub_emitter_frequency] seconds.
+			[b]Note:[/b] This value shouldn't exceed [member GPUParticles2D.amount] or [member GPUParticles3D.amount] defined on the [i]subemitter node[/i] (not the main node), relative to the subemitter's particle lifetime. If the number of particles is exceeded, no new particles will spawn from the subemitter until enough particles have expired.
 		</member>
 		<member name="sub_emitter_keep_velocity" type="bool" setter="set_sub_emitter_keep_velocity" getter="get_sub_emitter_keep_velocity" default="false">
+			If [code]true[/code], the subemitter inherits the parent particle's velocity when it spawns.
 		</member>
 		<member name="sub_emitter_mode" type="int" setter="set_sub_emitter_mode" getter="get_sub_emitter_mode" enum="ParticleProcessMaterial.SubEmitterMode" default="0">
+			The particle subemitter mode (see [member GPUParticles2D.sub_emitter] and [member GPUParticles3D.sub_emitter]).
 		</member>
 		<member name="tangential_accel_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's tangential acceleration will vary along this [CurveTexture].
@@ -378,8 +411,17 @@
 			A [CurveTexture] that defines the maximum velocity of a particle during its lifetime.
 		</member>
 		<member name="velocity_pivot" type="Vector3" setter="set_velocity_pivot" getter="get_velocity_pivot" default="Vector3(0, 0, 0)">
+			A pivot point used to calculate radial and orbital velocity of particles.
 		</member>
 	</members>
+	<signals>
+		<signal name="emission_shape_changed">
+			<description>
+				Emitted when this material's emission shape is changed in any way. This includes changes to [member emission_shape], [member emission_shape_scale], or [member emission_sphere_radius], and any other property that affects the emission shape's offset, size, scale, or orientation.
+				[b]Note:[/b] This signal is only emitted inside the editor for performance reasons.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="PARAM_INITIAL_LINEAR_VELOCITY" value="0" enum="Parameter">
 			Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set initial velocity properties.
@@ -484,7 +526,9 @@
 		</constant>
 		<constant name="SUB_EMITTER_AT_COLLISION" value="3" enum="SubEmitterMode">
 		</constant>
-		<constant name="SUB_EMITTER_MAX" value="4" enum="SubEmitterMode">
+		<constant name="SUB_EMITTER_AT_START" value="4" enum="SubEmitterMode">
+		</constant>
+		<constant name="SUB_EMITTER_MAX" value="5" enum="SubEmitterMode">
 			Represents the size of the [enum SubEmitterMode] enum.
 		</constant>
 		<constant name="COLLISION_DISABLED" value="0" enum="CollisionMode">

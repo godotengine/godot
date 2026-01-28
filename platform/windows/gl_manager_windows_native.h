@@ -28,15 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GL_MANAGER_WINDOWS_NATIVE_H
-#define GL_MANAGER_WINDOWS_NATIVE_H
+#pragma once
 
 #if defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
 
-#include "core/error/error_list.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #include <windows.h>
 
@@ -68,9 +66,6 @@ private:
 
 	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = nullptr;
 
-	// funcs
-	void _internal_set_current_window(GLWindow *p_win);
-
 	GLWindow &get_window(unsigned int id) { return _windows[id]; }
 	const GLWindow &get_window(unsigned int id) const { return _windows[id]; }
 
@@ -81,7 +76,7 @@ private:
 	int glx_minor, glx_major;
 
 private:
-	void _nvapi_disable_threaded_optimization();
+	void _nvapi_setup_profile();
 	int _find_or_create_display(GLWindow &win);
 	Error _create_context(GLWindow &win, GLDisplay &gl_display);
 
@@ -91,7 +86,6 @@ public:
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {}
 
 	void release_current();
-	void make_current();
 	void swap_buffers();
 
 	void window_make_current(DisplayServer::WindowID p_window_id);
@@ -109,5 +103,3 @@ public:
 };
 
 #endif // WINDOWS_ENABLED && GLES3_ENABLED
-
-#endif // GL_MANAGER_WINDOWS_NATIVE_H

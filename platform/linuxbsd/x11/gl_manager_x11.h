@@ -28,14 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GL_MANAGER_X11_H
-#define GL_MANAGER_X11_H
+#pragma once
 
 #if defined(X11_ENABLED) && defined(GLES3_ENABLED)
 
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #ifdef SOWRAP_ENABLED
 #include "dynwrappers/xlib-so_wrap.h"
@@ -117,7 +116,6 @@ public:
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 
 	void release_current();
-	void make_current();
 	void swap_buffers();
 
 	void window_make_current(DisplayServer::WindowID p_window_id);
@@ -129,10 +127,9 @@ public:
 
 	void *get_glx_context(DisplayServer::WindowID p_window_id);
 
+	Error open_display(Display *p_display);
 	GLManager_X11(const Vector2i &p_size, ContextType p_context_type);
 	~GLManager_X11();
 };
 
 #endif // X11_ENABLED && GLES3_ENABLED
-
-#endif // GL_MANAGER_X11_H

@@ -36,64 +36,99 @@
 #include "scene/main/node.h"
 #include "scene/main/window.h"
 
+SceneCacheInterface::NodeCache &SceneCacheInterface::_track(Node *p_node) {
+	const ObjectID oid = p_node->get_instance_id();
+	NodeCache *nc = nodes_cache.getptr(oid);
+	if (!nc) {
+		nodes_cache[oid] = NodeCache();
+		p_node->connect(SceneStringName(tree_exited), callable_mp(this, &SceneCacheInterface::_remove_node_cache).bind(oid), Object::CONNECT_ONE_SHOT);
+	}
+	return nodes_cache[oid];
+}
+
+void SceneCacheInterface::_remove_node_cache(ObjectID p_oid) {
+	NodeCache *nc = nodes_cache.getptr(p_oid);
+	if (!nc) {
+		return;
+	}
+	if (nc->cache_id) {
+		assigned_ids.erase(nc->cache_id);
+	}
+#if 0
+	// TODO: Find a way to cleanup recv_nodes without breaking visibility and RPCs interactions.
+	for (KeyValue<int, int> &E : nc->recv_ids) {
+		PeerInfo *pinfo = peers_info.getptr(E.key);
+		ERR_CONTINUE(!pinfo);
+		pinfo->recv_nodes.erase(E.value);
+	}
+#endif
+	for (KeyValue<int, bool> &E : nc->confirmed_peers) {
+		PeerInfo *pinfo = peers_info.getptr(E.key);
+		ERR_CONTINUE(!pinfo);
+		pinfo->sent_nodes.erase(p_oid);
+	}
+	nodes_cache.erase(p_oid);
+}
+
 void SceneCacheInterface::on_peer_change(int p_id, bool p_connected) {
 	if (p_connected) {
-		path_get_cache.insert(p_id, PathGetCache());
+		peers_info.insert(p_id, PeerInfo());
 	} else {
-		// Cleanup get cache.
-		path_get_cache.erase(p_id);
-		// Cleanup sent cache.
-		// Some refactoring is needed to make this faster and do paths GC.
-		for (KeyValue<ObjectID, PathSentCache> &E : path_send_cache) {
-			E.value.confirmed_peers.erase(p_id);
+		PeerInfo *pinfo = peers_info.getptr(p_id);
+		ERR_FAIL_NULL(pinfo); // Bug.
+		for (KeyValue<int, RecvNode> E : pinfo->recv_nodes) {
+			NodeCache *nc = nodes_cache.getptr(E.value.oid);
+			if (!nc) {
+				// Node might have already been deleted locally.
+				continue;
+			}
+			nc->recv_ids.erase(p_id);
 		}
+		for (const ObjectID &oid : pinfo->sent_nodes) {
+			NodeCache *nc = nodes_cache.getptr(oid);
+			ERR_CONTINUE(!nc);
+			nc->confirmed_peers.erase(p_id);
+		}
+		peers_info.erase(p_id);
 	}
 }
 
 void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_packet, int p_packet_len) {
+	ERR_FAIL_COND(!peers_info.has(p_from)); // Bug.
+	ERR_FAIL_COND_MSG(p_packet_len < 38, "Invalid packet received. Size too small.");
 	Node *root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
 	ERR_FAIL_NULL(root_node);
-	ERR_FAIL_COND_MSG(p_packet_len < 38, "Invalid packet received. Size too small.");
 	int ofs = 1;
 
-	String methods_md5;
-	methods_md5.parse_utf8((const char *)(p_packet + ofs), 32);
+	String methods_md5 = String::utf8((const char *)(p_packet + ofs), 32);
 	ofs += 33;
 
 	int id = decode_uint32(&p_packet[ofs]);
 	ofs += 4;
 
-	String paths;
-	paths.parse_utf8((const char *)(p_packet + ofs), p_packet_len - ofs);
+	ERR_FAIL_COND_MSG(peers_info[p_from].recv_nodes.has(id), vformat("Duplicate remote cache ID %d for peer %d", id, p_from));
+
+	String paths = String::utf8((const char *)(p_packet + ofs), p_packet_len - ofs);
 
 	const NodePath path = paths;
-
-	if (!path_get_cache.has(p_from)) {
-		path_get_cache[p_from] = PathGetCache();
-	}
 
 	Node *node = root_node->get_node(path);
 	ERR_FAIL_NULL(node);
 	const bool valid_rpc_checksum = multiplayer->get_rpc_md5(node) == methods_md5;
 	if (valid_rpc_checksum == false) {
-		ERR_PRINT("The rpc node checksum failed. Make sure to have the same methods on both nodes. Node path: " + path);
+		ERR_PRINT("The rpc node checksum failed. Make sure to have the same methods on both nodes. Node path: " + String(path));
 	}
 
-	PathGetCache::NodeInfo ni;
-	ni.path = node->get_path();
+	peers_info[p_from].recv_nodes.insert(id, RecvNode(node->get_instance_id(), path));
+	NodeCache &cache = _track(node);
+	cache.recv_ids.insert(p_from, id);
 
-	path_get_cache[p_from].nodes[id] = ni;
-
-	// Encode path to send ack.
-	CharString pname = String(path).utf8();
-	int len = encode_cstring(pname.get_data(), nullptr);
-
+	// Send ack.
 	Vector<uint8_t> packet;
-
-	packet.resize(1 + 1 + len);
+	packet.resize(1 + 1 + 4);
 	packet.write[0] = SceneMultiplayer::NETWORK_COMMAND_CONFIRM_PATH;
 	packet.write[1] = valid_rpc_checksum;
-	encode_cstring(pname.get_data(), &packet.write[2]);
+	encode_uint32(id, &packet.write[2]);
 
 	Ref<MultiplayerPeer> multiplayer_peer = multiplayer->get_multiplayer_peer();
 	ERR_FAIL_COND(multiplayer_peer.is_null());
@@ -104,33 +139,33 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 }
 
 void SceneCacheInterface::process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len) {
-	ERR_FAIL_COND_MSG(p_packet_len < 3, "Invalid packet received. Size too small.");
+	ERR_FAIL_COND_MSG(p_packet_len != 6, "Invalid packet received. Size too small.");
 	Node *root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
 	ERR_FAIL_NULL(root_node);
 
 	const bool valid_rpc_checksum = p_packet[1];
+	int id = decode_uint32(&p_packet[2]);
 
-	String paths;
-	paths.parse_utf8((const char *)&p_packet[2], p_packet_len - 2);
-
-	const NodePath path = paths;
-
-	if (valid_rpc_checksum == false) {
-		ERR_PRINT("The rpc node checksum failed. Make sure to have the same methods on both nodes. Node path: " + path);
+	const ObjectID *oid = assigned_ids.getptr(id);
+	if (oid == nullptr) {
+		return; // May be trying to confirm a node that was removed.
 	}
 
-	Node *node = root_node->get_node(path);
-	ERR_FAIL_NULL(node);
+	if (valid_rpc_checksum == false) {
+		const Node *node = ObjectDB::get_instance<Node>(*oid);
+		ERR_FAIL_NULL(node); // Bug.
+		ERR_PRINT("The rpc node checksum failed. Make sure to have the same methods on both nodes. Node path: " + String(node->get_path()));
+	}
 
-	PathSentCache *psc = path_send_cache.getptr(node->get_instance_id());
-	ERR_FAIL_NULL_MSG(psc, "Invalid packet received. Tries to confirm a path which was not found in cache.");
+	NodeCache *cache = nodes_cache.getptr(*oid);
+	ERR_FAIL_NULL(cache); // Bug.
 
-	HashMap<int, bool>::Iterator E = psc->confirmed_peers.find(p_from);
-	ERR_FAIL_COND_MSG(!E, "Invalid packet received. Source peer was not found in cache for the given path.");
-	E->value = true;
+	bool *confirmed = cache->confirmed_peers.getptr(p_from);
+	ERR_FAIL_NULL_MSG(confirmed, "Invalid packet received. Tries to confirm a node which was not requested.");
+	*confirmed = true;
 }
 
-Error SceneCacheInterface::_send_confirm_path(Node *p_node, PathSentCache *psc, const List<int> &p_peers) {
+Error SceneCacheInterface::_send_confirm_path(Node *p_node, NodeCache &p_cache, const List<int> &p_peers) {
 	// Encode function name.
 	const CharString path = String(multiplayer->get_root_path().rel_path_to(p_node->get_path())).utf8();
 	const int path_len = encode_cstring(path.get_data(), nullptr);
@@ -148,7 +183,7 @@ Error SceneCacheInterface::_send_confirm_path(Node *p_node, PathSentCache *psc, 
 
 	ofs += encode_cstring(methods_md5.utf8().get_data(), &packet.write[ofs]);
 
-	ofs += encode_uint32(psc->id, &packet.write[ofs]);
+	ofs += encode_uint32(p_cache.cache_id, &packet.write[ofs]);
 
 	ofs += encode_cstring(path.get_data(), &packet.write[ofs]);
 
@@ -162,104 +197,109 @@ Error SceneCacheInterface::_send_confirm_path(Node *p_node, PathSentCache *psc, 
 		err = multiplayer->send_command(peer_id, packet.ptr(), packet.size());
 		ERR_FAIL_COND_V(err != OK, err);
 		// Insert into confirmed, but as false since it was not confirmed.
-		psc->confirmed_peers.insert(peer_id, false);
+		p_cache.confirmed_peers.insert(peer_id, false);
+		ERR_CONTINUE(!peers_info.has(peer_id));
+		peers_info[peer_id].sent_nodes.insert(p_node->get_instance_id());
 	}
 	return err;
 }
 
 bool SceneCacheInterface::is_cache_confirmed(Node *p_node, int p_peer) {
 	ERR_FAIL_NULL_V(p_node, false);
-	const PathSentCache *psc = path_send_cache.getptr(p_node->get_instance_id());
-	ERR_FAIL_NULL_V(psc, false);
-	HashMap<int, bool>::ConstIterator F = psc->confirmed_peers.find(p_peer);
-	ERR_FAIL_COND_V(!F, false); // Should never happen.
-	return F->value;
+	const ObjectID oid = p_node->get_instance_id();
+	NodeCache *cache = nodes_cache.getptr(oid);
+	bool *confirmed = cache ? cache->confirmed_peers.getptr(p_peer) : nullptr;
+	return confirmed && *confirmed;
 }
 
 int SceneCacheInterface::make_object_cache(Object *p_obj) {
 	Node *node = Object::cast_to<Node>(p_obj);
 	ERR_FAIL_NULL_V(node, -1);
-	const ObjectID oid = node->get_instance_id();
-	// See if the path is cached.
-	PathSentCache *psc = path_send_cache.getptr(oid);
-	if (!psc) {
-		// Path is not cached, create.
-		path_send_cache[oid] = PathSentCache();
-		psc = path_send_cache.getptr(oid);
-		psc->id = last_send_cache_id++;
+	NodeCache &cache = _track(node);
+	if (cache.cache_id == 0) {
+		cache.cache_id = last_send_cache_id++;
+		assigned_ids[cache.cache_id] = p_obj->get_instance_id();
 	}
-	return psc->id;
+	return cache.cache_id;
 }
 
 bool SceneCacheInterface::send_object_cache(Object *p_obj, int p_peer_id, int &r_id) {
 	Node *node = Object::cast_to<Node>(p_obj);
 	ERR_FAIL_NULL_V(node, false);
-	const ObjectID oid = node->get_instance_id();
 	// See if the path is cached.
-	PathSentCache *psc = path_send_cache.getptr(oid);
-	if (!psc) {
-		// Path is not cached, create.
-		path_send_cache[oid] = PathSentCache();
-		psc = path_send_cache.getptr(oid);
-		psc->id = last_send_cache_id++;
+	NodeCache &cache = _track(node);
+	if (cache.cache_id == 0) {
+		cache.cache_id = last_send_cache_id++;
+		assigned_ids[cache.cache_id] = p_obj->get_instance_id();
 	}
-	r_id = psc->id;
+	r_id = cache.cache_id;
 
 	bool has_all_peers = true;
 	List<int> peers_to_add; // If one is missing, take note to add it.
 
 	if (p_peer_id > 0) {
 		// Fast single peer check.
-		HashMap<int, bool>::Iterator F = psc->confirmed_peers.find(p_peer_id);
-		if (!F) {
+		ERR_FAIL_COND_V_MSG(!peers_info.has(p_peer_id), false, "Peer doesn't exist: " + itos(p_peer_id));
+
+		bool *confirmed = cache.confirmed_peers.getptr(p_peer_id);
+		if (!confirmed) {
 			peers_to_add.push_back(p_peer_id); // Need to also be notified.
 			has_all_peers = false;
-		} else if (!F->value) {
+		} else if (!(*confirmed)) {
 			has_all_peers = false;
 		}
 	} else {
 		// Long and painful.
-		for (const int &E : multiplayer->get_connected_peers()) {
-			if (p_peer_id < 0 && E == -p_peer_id) {
+		for (KeyValue<int, PeerInfo> &E : peers_info) {
+			if (p_peer_id < 0 && E.key == -p_peer_id) {
 				continue; // Continue, excluded.
 			}
 
-			HashMap<int, bool>::Iterator F = psc->confirmed_peers.find(E);
-			if (!F) {
-				peers_to_add.push_back(E); // Need to also be notified.
+			bool *confirmed = cache.confirmed_peers.getptr(E.key);
+			if (!confirmed) {
+				peers_to_add.push_back(E.key); // Need to also be notified.
 				has_all_peers = false;
-			} else if (!F->value) {
+			} else if (!(*confirmed)) {
 				has_all_peers = false;
 			}
 		}
 	}
 
 	if (peers_to_add.size()) {
-		_send_confirm_path(node, psc, peers_to_add);
+		_send_confirm_path(node, cache, peers_to_add);
 	}
 
 	return has_all_peers;
 }
 
 Object *SceneCacheInterface::get_cached_object(int p_from, uint32_t p_cache_id) {
-	Node *root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
-	ERR_FAIL_NULL_V(root_node, nullptr);
-	HashMap<int, PathGetCache>::Iterator E = path_get_cache.find(p_from);
-	ERR_FAIL_COND_V_MSG(!E, nullptr, vformat("No cache found for peer %d.", p_from));
+	PeerInfo *pinfo = peers_info.getptr(p_from);
+	ERR_FAIL_NULL_V(pinfo, nullptr);
 
-	HashMap<int, PathGetCache::NodeInfo>::Iterator F = E->value.nodes.find(p_cache_id);
-	ERR_FAIL_COND_V_MSG(!F, nullptr, vformat("ID %d not found in cache of peer %d.", p_cache_id, p_from));
-
-	PathGetCache::NodeInfo *ni = &F->value;
-	Node *node = root_node->get_node(ni->path);
+	RecvNode *recv_node = pinfo->recv_nodes.getptr(p_cache_id);
+	ERR_FAIL_NULL_V_MSG(recv_node, nullptr, vformat("ID %d not found in cache of peer %d.", p_cache_id, p_from));
+	Node *node = ObjectDB::get_instance<Node>(recv_node->oid);
 	if (!node) {
-		ERR_PRINT("Failed to get cached path: " + String(ni->path) + ".");
+		// Fallback to path lookup.
+		Node *root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
+		ERR_FAIL_NULL_V(root_node, nullptr);
+		node = root_node->get_node(recv_node->path);
+		if (node) {
+			recv_node->oid = node->get_instance_id();
+		}
 	}
+	ERR_FAIL_NULL_V_MSG(node, nullptr, vformat("Failed to get cached node from peer %d with cache ID %d.", p_from, p_cache_id));
 	return node;
 }
 
 void SceneCacheInterface::clear() {
-	path_get_cache.clear();
-	path_send_cache.clear();
+	for (KeyValue<ObjectID, NodeCache> &E : nodes_cache) {
+		Object *obj = ObjectDB::get_instance(E.key);
+		ERR_CONTINUE(!obj);
+		obj->disconnect(SceneStringName(tree_exited), callable_mp(this, &SceneCacheInterface::_remove_node_cache));
+	}
+	peers_info.clear();
+	nodes_cache.clear();
+	assigned_ids.clear();
 	last_send_cache_id = 1;
 }

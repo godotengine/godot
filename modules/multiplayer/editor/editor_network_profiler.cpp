@@ -30,10 +30,14 @@
 
 #include "editor_network_profiler.h"
 
-#include "core/os/os.h"
-#include "editor/editor_scale.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/run/editor_run_bar.h"
+#include "editor/settings/editor_settings.h"
+#include "editor/themes/editor_scale.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/flow_container.h"
+#include "scene/gui/line_edit.h"
+#include "scene/main/timer.h"
 
 void EditorNetworkProfiler::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("enable_profiling", PropertyInfo(Variant::BOOL, "enable")));
@@ -42,13 +46,26 @@ void EditorNetworkProfiler::_bind_methods() {
 
 void EditorNetworkProfiler::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			// TRANSLATORS: This is the label for the network profiler's incoming bandwidth.
+			down_label->set_text(TTR("Down", "Network"));
+			// TRANSLATORS: This is the label for the network profiler's outgoing bandwidth.
+			up_label->set_text(TTR("Up", "Network"));
+
+			set_bandwidth(incoming_bandwidth, outgoing_bandwidth);
+
+			if (is_ready()) {
+				refresh_rpc_data();
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			if (activate->is_pressed()) {
-				activate->set_icon(theme_cache.stop_icon);
+				activate->set_button_icon(theme_cache.stop_icon);
 			} else {
-				activate->set_icon(theme_cache.play_icon);
+				activate->set_button_icon(theme_cache.play_icon);
 			}
-			clear_button->set_icon(theme_cache.clear_icon);
+			clear_button->set_button_icon(theme_cache.clear_icon);
 
 			incoming_bandwidth_text->set_right_icon(theme_cache.incoming_bandwidth_icon);
 			outgoing_bandwidth_text->set_right_icon(theme_cache.outgoing_bandwidth_icon);
@@ -74,8 +91,8 @@ void EditorNetworkProfiler::_update_theme_item_cache() {
 	theme_cache.incoming_bandwidth_icon = get_theme_icon(SNAME("ArrowDown"), EditorStringName(EditorIcons));
 	theme_cache.outgoing_bandwidth_icon = get_theme_icon(SNAME("ArrowUp"), EditorStringName(EditorIcons));
 
-	theme_cache.incoming_bandwidth_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
-	theme_cache.outgoing_bandwidth_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
+	theme_cache.incoming_bandwidth_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
+	theme_cache.outgoing_bandwidth_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 }
 
 void EditorNetworkProfiler::_refresh() {
@@ -170,15 +187,46 @@ void EditorNetworkProfiler::add_node_data(const NodeInfo &p_info) {
 }
 
 void EditorNetworkProfiler::_activate_pressed() {
+	_update_button_text();
+
 	if (activate->is_pressed()) {
 		refresh_timer->start();
-		activate->set_icon(theme_cache.stop_icon);
-		activate->set_text(TTR("Stop"));
 	} else {
 		refresh_timer->stop();
-		activate->set_icon(theme_cache.play_icon);
-		activate->set_text(TTR("Start"));
 	}
+
+	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
+}
+
+void EditorNetworkProfiler::_update_button_text() {
+	if (activate->is_pressed()) {
+		activate->set_button_icon(theme_cache.stop_icon);
+		activate->set_text(TTRC("Stop"));
+	} else {
+		activate->set_button_icon(theme_cache.play_icon);
+		activate->set_text(TTRC("Start"));
+	}
+}
+
+void EditorNetworkProfiler::started() {
+	_clear_pressed();
+	activate->set_disabled(false);
+
+	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_network_profiler", false)) {
+		set_profiling(true);
+		refresh_timer->start();
+	}
+}
+
+void EditorNetworkProfiler::stopped() {
+	activate->set_disabled(true);
+	set_profiling(false);
+	refresh_timer->stop();
+}
+
+void EditorNetworkProfiler::set_profiling(bool p_pressed) {
+	activate->set_pressed(p_pressed);
+	_update_button_text();
 	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
@@ -190,6 +238,12 @@ void EditorNetworkProfiler::_clear_pressed() {
 	set_bandwidth(0, 0);
 	refresh_rpc_data();
 	refresh_replication_data();
+	clear_button->set_disabled(true);
+}
+
+void EditorNetworkProfiler::_autostart_toggled(bool p_toggled_on) {
+	EditorSettings::get_singleton()->set_project_metadata("debug_options", "autostart_network_profiler", p_toggled_on);
+	EditorRunBar::get_singleton()->update_profiler_autostart_indicator();
 }
 
 void EditorNetworkProfiler::_replication_button_clicked(TreeItem *p_item, int p_column, int p_idx, MouseButton p_button) {
@@ -203,6 +257,9 @@ void EditorNetworkProfiler::_replication_button_clicked(TreeItem *p_item, int p_
 }
 
 void EditorNetworkProfiler::add_rpc_frame_data(const RPCNodeInfo &p_frame) {
+	if (clear_button->is_disabled()) {
+		clear_button->set_disabled(false);
+	}
 	dirty = true;
 	if (!rpc_data.has(p_frame.node)) {
 		rpc_data.insert(p_frame.node, p_frame);
@@ -219,6 +276,9 @@ void EditorNetworkProfiler::add_rpc_frame_data(const RPCNodeInfo &p_frame) {
 }
 
 void EditorNetworkProfiler::add_sync_frame_data(const SyncInfo &p_frame) {
+	if (clear_button->is_disabled()) {
+		clear_button->set_disabled(false);
+	}
 	dirty = true;
 	if (!sync_data.has(p_frame.synchronizer)) {
 		sync_data[p_frame.synchronizer] = p_frame;
@@ -227,15 +287,18 @@ void EditorNetworkProfiler::add_sync_frame_data(const SyncInfo &p_frame) {
 		sync_data[p_frame.synchronizer].outgoing_syncs += p_frame.outgoing_syncs;
 	}
 	SyncInfo &info = sync_data[p_frame.synchronizer];
-	if (info.incoming_syncs) {
+	if (p_frame.incoming_syncs) {
 		info.incoming_size = p_frame.incoming_size / p_frame.incoming_syncs;
 	}
-	if (info.outgoing_syncs) {
+	if (p_frame.outgoing_syncs) {
 		info.outgoing_size = p_frame.outgoing_size / p_frame.outgoing_syncs;
 	}
 }
 
 void EditorNetworkProfiler::set_bandwidth(int p_incoming, int p_outgoing) {
+	incoming_bandwidth = p_incoming;
+	outgoing_bandwidth = p_outgoing;
+
 	incoming_bandwidth_text->set_text(vformat(TTR("%s/s"), String::humanize_size(p_incoming)));
 	outgoing_bandwidth_text->set_text(vformat(TTR("%s/s"), String::humanize_size(p_outgoing)));
 
@@ -253,51 +316,65 @@ bool EditorNetworkProfiler::is_profiling() {
 }
 
 EditorNetworkProfiler::EditorNetworkProfiler() {
-	HBoxContainer *hb = memnew(HBoxContainer);
-	hb->add_theme_constant_override("separation", 8 * EDSCALE);
-	add_child(hb);
+	FlowContainer *container = memnew(FlowContainer);
+	container->add_theme_constant_override(SNAME("h_separation"), 8 * EDSCALE);
+	container->add_theme_constant_override(SNAME("v_separation"), 2 * EDSCALE);
+	add_child(container);
 
 	activate = memnew(Button);
 	activate->set_toggle_mode(true);
-	activate->set_text(TTR("Start"));
-	activate->connect("pressed", callable_mp(this, &EditorNetworkProfiler::_activate_pressed));
-	hb->add_child(activate);
+	activate->set_text(TTRC("Start"));
+	activate->set_disabled(true);
+	activate->connect(SceneStringName(pressed), callable_mp(this, &EditorNetworkProfiler::_activate_pressed));
+	container->add_child(activate);
 
 	clear_button = memnew(Button);
-	clear_button->set_text(TTR("Clear"));
-	clear_button->connect("pressed", callable_mp(this, &EditorNetworkProfiler::_clear_pressed));
-	hb->add_child(clear_button);
+	clear_button->set_text(TTRC("Clear"));
+	clear_button->set_disabled(true);
+	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorNetworkProfiler::_clear_pressed));
+	container->add_child(clear_button);
 
-	hb->add_spacer();
+	CheckBox *autostart_checkbox = memnew(CheckBox);
+	autostart_checkbox->set_text(TTRC("Autostart"));
+	autostart_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_network_profiler", false));
+	autostart_checkbox->connect(SceneStringName(toggled), callable_mp(this, &EditorNetworkProfiler::_autostart_toggled));
+	container->add_child(autostart_checkbox);
 
-	Label *lb = memnew(Label);
-	// TRANSLATORS: This is the label for the network profiler's incoming bandwidth.
-	lb->set_text(TTR("Down", "Network"));
-	hb->add_child(lb);
+	Control *c = memnew(Control);
+	c->set_h_size_flags(SIZE_EXPAND_FILL);
+	container->add_child(c);
+
+	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->add_theme_constant_override(SNAME("separation"), 8 * EDSCALE);
+	container->add_child(hb);
+
+	down_label = memnew(Label);
+	down_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	down_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	hb->add_child(down_label);
 
 	incoming_bandwidth_text = memnew(LineEdit);
 	incoming_bandwidth_text->set_editable(false);
 	incoming_bandwidth_text->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
 	incoming_bandwidth_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+	incoming_bandwidth_text->set_accessibility_name(TTRC("Incoming Bandwidth"));
 	hb->add_child(incoming_bandwidth_text);
 
 	Control *down_up_spacer = memnew(Control);
 	down_up_spacer->set_custom_minimum_size(Size2(30, 0) * EDSCALE);
 	hb->add_child(down_up_spacer);
 
-	lb = memnew(Label);
-	// TRANSLATORS: This is the label for the network profiler's outgoing bandwidth.
-	lb->set_text(TTR("Up", "Network"));
-	hb->add_child(lb);
+	up_label = memnew(Label);
+	up_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	up_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	hb->add_child(up_label);
 
 	outgoing_bandwidth_text = memnew(LineEdit);
 	outgoing_bandwidth_text->set_editable(false);
 	outgoing_bandwidth_text->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
 	outgoing_bandwidth_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+	outgoing_bandwidth_text->set_accessibility_name(TTRC("Outgoing Bandwidth"));
 	hb->add_child(outgoing_bandwidth_text);
-
-	// Set initial texts in the incoming/outgoing bandwidth labels
-	set_bandwidth(0, 0);
 
 	HSplitContainer *sc = memnew(HSplitContainer);
 	add_child(sc);
@@ -307,56 +384,58 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 
 	// RPC
 	counters_display = memnew(Tree);
-	counters_display->set_custom_minimum_size(Size2(320, 0) * EDSCALE);
+	counters_display->set_custom_minimum_size(Size2(280, 0) * EDSCALE);
 	counters_display->set_v_size_flags(SIZE_EXPAND_FILL);
 	counters_display->set_h_size_flags(SIZE_EXPAND_FILL);
 	counters_display->set_hide_folding(true);
 	counters_display->set_hide_root(true);
 	counters_display->set_columns(3);
 	counters_display->set_column_titles_visible(true);
-	counters_display->set_column_title(0, TTR("Node"));
+	counters_display->set_column_title(0, TTRC("Node"));
 	counters_display->set_column_expand(0, true);
 	counters_display->set_column_clip_content(0, true);
 	counters_display->set_column_custom_minimum_width(0, 60 * EDSCALE);
-	counters_display->set_column_title(1, TTR("Incoming RPC"));
+	counters_display->set_column_title(1, TTRC("Incoming RPC"));
 	counters_display->set_column_expand(1, false);
 	counters_display->set_column_clip_content(1, true);
 	counters_display->set_column_custom_minimum_width(1, 120 * EDSCALE);
-	counters_display->set_column_title(2, TTR("Outgoing RPC"));
+	counters_display->set_column_title(2, TTRC("Outgoing RPC"));
 	counters_display->set_column_expand(2, false);
 	counters_display->set_column_clip_content(2, true);
+	counters_display->set_theme_type_variation("TreeSecondary");
 	counters_display->set_column_custom_minimum_width(2, 120 * EDSCALE);
 	sc->add_child(counters_display);
 
 	// Replication
 	replication_display = memnew(Tree);
-	replication_display->set_custom_minimum_size(Size2(320, 0) * EDSCALE);
+	replication_display->set_custom_minimum_size(Size2(280, 0) * EDSCALE);
 	replication_display->set_v_size_flags(SIZE_EXPAND_FILL);
 	replication_display->set_h_size_flags(SIZE_EXPAND_FILL);
 	replication_display->set_hide_folding(true);
 	replication_display->set_hide_root(true);
 	replication_display->set_columns(5);
 	replication_display->set_column_titles_visible(true);
-	replication_display->set_column_title(0, TTR("Root"));
+	replication_display->set_column_title(0, TTRC("Root"));
 	replication_display->set_column_expand(0, true);
 	replication_display->set_column_clip_content(0, true);
 	replication_display->set_column_custom_minimum_width(0, 80 * EDSCALE);
-	replication_display->set_column_title(1, TTR("Synchronizer"));
+	replication_display->set_column_title(1, TTRC("Synchronizer"));
 	replication_display->set_column_expand(1, true);
 	replication_display->set_column_clip_content(1, true);
 	replication_display->set_column_custom_minimum_width(1, 80 * EDSCALE);
-	replication_display->set_column_title(2, TTR("Config"));
+	replication_display->set_column_title(2, TTRC("Config"));
 	replication_display->set_column_expand(2, true);
 	replication_display->set_column_clip_content(2, true);
 	replication_display->set_column_custom_minimum_width(2, 80 * EDSCALE);
-	replication_display->set_column_title(3, TTR("Count"));
+	replication_display->set_column_title(3, TTRC("Count"));
 	replication_display->set_column_expand(3, false);
 	replication_display->set_column_clip_content(3, true);
 	replication_display->set_column_custom_minimum_width(3, 80 * EDSCALE);
-	replication_display->set_column_title(4, TTR("Size"));
+	replication_display->set_column_title(4, TTRC("Size"));
 	replication_display->set_column_expand(4, false);
 	replication_display->set_column_clip_content(4, true);
 	replication_display->set_column_custom_minimum_width(4, 80 * EDSCALE);
+	replication_display->set_theme_type_variation("TreeSecondary");
 	replication_display->connect("button_clicked", callable_mp(this, &EditorNetworkProfiler::_replication_button_clicked));
 	sc->add_child(replication_display);
 

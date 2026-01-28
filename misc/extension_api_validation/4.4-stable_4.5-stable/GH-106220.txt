@@ -1,0 +1,43 @@
+GH-106220
+---------
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_accessor_type': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_buffer_view': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_byte_offset': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_byte_offset/return_value': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_component_type': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_component_type': meta was removed.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_component_type/return_value': type changed value in new API, from "int" to "enum::GLTFAccessor.GLTFComponentType".
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_count': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_count/return_value': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_max': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_min': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_normalized': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_sparse_count': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_sparse_count/return_value': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_sparse_indices_buffer_view': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_sparse_indices_byte_offset': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_sparse_indices_byte_offset/return_value': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_sparse_indices_component_type': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_sparse_indices_component_type': meta was removed.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_sparse_indices_component_type/return_value': type changed value in new API, from "int" to "enum::GLTFAccessor.GLTFComponentType".
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_sparse_values_buffer_view': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_sparse_values_byte_offset': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_sparse_values_byte_offset/return_value': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/get_type': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/set_byte_offset/arguments/0': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/set_component_type/arguments': meta was removed.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/set_component_type/arguments/0': type changed value in new API, from "int" to "enum::GLTFAccessor.GLTFComponentType".
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/set_count/arguments/0': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/set_sparse_count/arguments/0': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/set_sparse_indices_byte_offset/arguments/0': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/set_sparse_indices_component_type/arguments': meta was removed.
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/set_sparse_indices_component_type/arguments/0': type changed value in new API, from "int" to "enum::GLTFAccessor.GLTFComponentType".
+Validate extension JSON: Error: Field 'classes/GLTFAccessor/methods/set_sparse_values_byte_offset/arguments/0': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_byte_length/return_value': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_byte_offset/return_value': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_byte_stride/return_value': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/set_byte_length/arguments/0': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/set_byte_offset/arguments/0': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/set_byte_stride/arguments/0': meta changed value in new API, from "int32" to "int64".
+
+GLTFBufferView and GLTFAccessor now use int64 for offsets and lengths. Compatibility methods registered.

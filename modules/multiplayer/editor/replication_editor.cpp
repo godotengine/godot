@@ -33,14 +33,15 @@
 #include "../multiplayer_synchronizer.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/scene_tree_editor.h"
-#include "editor/inspector_dock.h"
-#include "editor/property_selector.h"
+#include "editor/inspector/property_selector.h"
+#include "editor/scene/scene_tree_editor.h"
+#include "editor/settings/editor_settings.h"
+#include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 
@@ -80,7 +81,7 @@ void ReplicationEditor::_pick_node_select_recursive(TreeItem *p_item, const Stri
 	NodePath np = p_item->get_metadata(0);
 	Node *node = get_node(np);
 
-	if (!p_filter.is_empty() && ((String)node->get_name()).findn(p_filter) != -1) {
+	if (!p_filter.is_empty() && ((String)node->get_name()).containsn(p_filter)) {
 		p_select_candidates.push_back(node);
 	}
 
@@ -89,24 +90,6 @@ void ReplicationEditor::_pick_node_select_recursive(TreeItem *p_item, const Stri
 	while (c) {
 		_pick_node_select_recursive(c, p_filter, p_select_candidates);
 		c = c->get_next();
-	}
-}
-
-void ReplicationEditor::_pick_node_filter_input(const Ref<InputEvent> &p_ie) {
-	Ref<InputEventKey> k = p_ie;
-
-	if (k.is_valid()) {
-		switch (k->get_keycode()) {
-			case Key::UP:
-			case Key::DOWN:
-			case Key::PAGEUP:
-			case Key::PAGEDOWN: {
-				pick_node->get_scene_tree()->get_scene_tree()->gui_input(k);
-				pick_node->get_filter_line_edit()->accept_event();
-			} break;
-			default:
-				break;
-		}
 	}
 }
 
@@ -122,15 +105,15 @@ void ReplicationEditor::_pick_node_selected(NodePath p_path) {
 
 void ReplicationEditor::_pick_new_property() {
 	if (current == nullptr) {
-		EditorNode::get_singleton()->show_warning(TTR("Select a replicator node in order to pick a property to add to it."));
+		EditorNode::get_singleton()->show_warning(TTRC("Select a replicator node in order to pick a property to add to it."));
 		return;
 	}
 	Node *root = current->get_node(current->get_root_path());
 	if (!root) {
-		EditorNode::get_singleton()->show_warning(TTR("Not possible to add a new property to synchronize without a root."));
+		EditorNode::get_singleton()->show_warning(TTRC("Not possible to add a new property to synchronize without a root."));
 		return;
 	}
-	pick_node->popup_scenetree_dialog();
+	pick_node->popup_scenetree_dialog(nullptr, current);
 	pick_node->get_filter_line_edit()->clear();
 	pick_node->get_filter_line_edit()->grab_focus();
 }
@@ -139,7 +122,7 @@ void ReplicationEditor::_add_sync_property(String p_path) {
 	config = current->get_replication_config();
 
 	if (config.is_valid() && config->has_property(p_path)) {
-		EditorNode::get_singleton()->show_warning(TTR("Property is already being synchronized."));
+		EditorNode::get_singleton()->show_warning(TTRC("Property is already being synchronized."));
 		return;
 	}
 
@@ -174,7 +157,7 @@ ReplicationEditor::ReplicationEditor() {
 
 	delete_dialog = memnew(ConfirmationDialog);
 	delete_dialog->connect("canceled", callable_mp(this, &ReplicationEditor::_dialog_closed).bind(false));
-	delete_dialog->connect("confirmed", callable_mp(this, &ReplicationEditor::_dialog_closed).bind(true));
+	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ReplicationEditor::_dialog_closed).bind(true));
 	add_child(delete_dialog);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
@@ -183,11 +166,9 @@ ReplicationEditor::ReplicationEditor() {
 
 	pick_node = memnew(SceneTreeDialog);
 	add_child(pick_node);
-	pick_node->register_text_enter(pick_node->get_filter_line_edit());
-	pick_node->set_title(TTR("Pick a node to synchronize:"));
+	pick_node->set_title(TTRC("Pick a node to synchronize:"));
 	pick_node->connect("selected", callable_mp(this, &ReplicationEditor::_pick_node_selected));
-	pick_node->get_filter_line_edit()->connect("text_changed", callable_mp(this, &ReplicationEditor::_pick_node_filter_text_changed));
-	pick_node->get_filter_line_edit()->connect("gui_input", callable_mp(this, &ReplicationEditor::_pick_node_filter_input));
+	pick_node->get_filter_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &ReplicationEditor::_pick_node_filter_text_changed));
 
 	prop_selector = memnew(PropertySelector);
 	add_child(prop_selector);
@@ -233,7 +214,8 @@ ReplicationEditor::ReplicationEditor() {
 		Variant::PACKED_STRING_ARRAY,
 		Variant::PACKED_VECTOR2_ARRAY,
 		Variant::PACKED_VECTOR3_ARRAY,
-		Variant::PACKED_COLOR_ARRAY
+		Variant::PACKED_COLOR_ARRAY,
+		Variant::PACKED_VECTOR4_ARRAY,
 	};
 	prop_selector->set_type_filter(types);
 	prop_selector->connect("selected", callable_mp(this, &ReplicationEditor::_pick_node_property_selected));
@@ -241,25 +223,24 @@ ReplicationEditor::ReplicationEditor() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	vb->add_child(hb);
 
-	add_pick_button = memnew(Button);
-	add_pick_button->connect("pressed", callable_mp(this, &ReplicationEditor::_pick_new_property));
-	add_pick_button->set_text(TTR("Add property to sync..."));
+	add_pick_button = memnew(Button(TTRC("Add property to sync...")));
+	add_pick_button->connect(SceneStringName(pressed), callable_mp(this, &ReplicationEditor::_pick_new_property));
 	hb->add_child(add_pick_button);
 
 	VSeparator *vs = memnew(VSeparator);
 	vs->set_custom_minimum_size(Size2(30 * EDSCALE, 0));
 	hb->add_child(vs);
-	hb->add_child(memnew(Label(TTR("Path:"))));
+	hb->add_child(memnew(Label(TTRC("Path:"))));
 
 	np_line_edit = memnew(LineEdit);
 	np_line_edit->set_placeholder(":property");
+	np_line_edit->set_accessibility_name(TTRC("Path:"));
 	np_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
-	np_line_edit->connect("text_submitted", callable_mp(this, &ReplicationEditor::_np_text_submitted));
+	np_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &ReplicationEditor::_np_text_submitted));
 	hb->add_child(np_line_edit);
 
-	add_from_path_button = memnew(Button);
-	add_from_path_button->connect("pressed", callable_mp(this, &ReplicationEditor::_add_pressed));
-	add_from_path_button->set_text(TTR("Add from path"));
+	add_from_path_button = memnew(Button(TTRC("Add from path")));
+	add_from_path_button->connect(SceneStringName(pressed), callable_mp(this, &ReplicationEditor::_add_pressed));
 	hb->add_child(add_from_path_button);
 
 	vs = memnew(VSeparator);
@@ -267,20 +248,21 @@ ReplicationEditor::ReplicationEditor() {
 	hb->add_child(vs);
 
 	pin = memnew(Button);
-	pin->set_theme_type_variation("FlatButton");
+	pin->set_theme_type_variation(SceneStringName(FlatButton));
 	pin->set_toggle_mode(true);
+	pin->set_tooltip_text(TTRC("Pin replication editor"));
 	hb->add_child(pin);
 
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
 	tree->set_columns(4);
 	tree->set_column_titles_visible(true);
-	tree->set_column_title(0, TTR("Properties"));
+	tree->set_column_title(0, TTRC("Properties"));
 	tree->set_column_expand(0, true);
-	tree->set_column_title(1, TTR("Spawn"));
+	tree->set_column_title(1, TTRC("Spawn"));
 	tree->set_column_expand(1, false);
 	tree->set_column_custom_minimum_width(1, 100);
-	tree->set_column_title(2, TTR("Replicate"));
+	tree->set_column_title(2, TTRC("Replicate"));
 	tree->set_column_custom_minimum_width(2, 100);
 	tree->set_column_expand(2, false);
 	tree->set_column_expand(3, false);
@@ -290,8 +272,8 @@ ReplicationEditor::ReplicationEditor() {
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	vb->add_child(tree);
 
-	drop_label = memnew(Label);
-	drop_label->set_text(TTR("Add properties using the options above, or\ndrag them them from the inspector and drop them here."));
+	drop_label = memnew(Label(TTRC("Add properties using the options above, or\ndrag them from the inspector and drop them here.")));
+	drop_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	drop_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	drop_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	tree->add_child(drop_label);
@@ -328,12 +310,12 @@ bool ReplicationEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &
 
 void ReplicationEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	if (current == nullptr) {
-		EditorNode::get_singleton()->show_warning(TTR("Select a replicator node in order to pick a property to add to it."));
+		EditorNode::get_singleton()->show_warning(TTRC("Select a replicator node in order to pick a property to add to it."));
 		return;
 	}
 	Node *root = current->get_node(current->get_root_path());
 	if (!root) {
-		EditorNode::get_singleton()->show_warning(TTR("Not possible to add a new property to synchronize without a root."));
+		EditorNode::get_singleton()->show_warning(TTRC("Not possible to add a new property to synchronize without a root."));
 		return;
 	}
 
@@ -354,40 +336,58 @@ void ReplicationEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		return;
 	}
 
-	String path = root->get_path_to(node);
+	String path = String(root->get_path_to(node));
 	path += ":" + String(d["property"]);
 
 	_add_sync_property(path);
 }
 
+void _set_replication_mode_options(TreeItem *p_item) {
+	p_item->set_text(2, TTR("Never", "Replication Mode") + "," + TTR("Always", "Replication Mode") + "," + TTR("On Change", "Replication Mode"));
+}
+
 void ReplicationEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			TreeItem *root = tree->get_root();
+			if (root) {
+				for (TreeItem *ti = root->get_first_child(); ti; ti = ti->get_next()) {
+					_set_replication_mode_options(ti);
+				}
+			}
+		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
-			add_pick_button->set_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
-			pin->set_icon(get_theme_icon(SNAME("Pin"), EditorStringName(EditorIcons)));
+			if (!EditorThemeManager::is_generated_theme_outdated()) {
+				break;
+			}
+			[[fallthrough]];
+		}
+		case NOTIFICATION_ENTER_TREE: {
+			add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
+			add_pick_button->set_button_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
+			pin->set_button_icon(get_theme_icon(SNAME("Pin"), EditorStringName(EditorIcons)));
 		} break;
 	}
 }
 
 void ReplicationEditor::_add_pressed() {
 	if (!current) {
-		EditorNode::get_singleton()->show_warning(TTR("Please select a MultiplayerSynchronizer first."));
+		EditorNode::get_singleton()->show_warning(TTRC("Please select a MultiplayerSynchronizer first."));
 		return;
 	}
 	if (current->get_root_path().is_empty()) {
-		EditorNode::get_singleton()->show_warning(TTR("The MultiplayerSynchronizer needs a root path."));
+		EditorNode::get_singleton()->show_warning(TTRC("The MultiplayerSynchronizer needs a root path."));
 		return;
 	}
 	String np_text = np_line_edit->get_text();
 
 	if (np_text.is_empty()) {
-		EditorNode::get_singleton()->show_warning(TTR("Property/path must not be empty."));
+		EditorNode::get_singleton()->show_warning(TTRC("Property/path must not be empty."));
 		return;
 	}
 
-	int idx = np_text.find(":");
+	int idx = np_text.find_char(':');
 	if (idx == -1) {
 		np_text = ".:" + np_text;
 	} else if (idx == 0) {
@@ -399,7 +399,7 @@ void ReplicationEditor::_add_pressed() {
 		return;
 	}
 
-	_add_sync_property(path);
+	_add_sync_property(String(path));
 }
 
 void ReplicationEditor::_np_text_submitted(const String &p_newtext) {
@@ -422,7 +422,7 @@ void ReplicationEditor::_tree_item_edited() {
 		undo_redo->add_do_method(config.ptr(), "property_set_spawn", prop, value);
 		undo_redo->add_undo_method(config.ptr(), "property_set_spawn", prop, !value);
 		undo_redo->add_do_method(this, "_update_value", prop, column, value ? 1 : 0);
-		undo_redo->add_undo_method(this, "_update_value", prop, column, value ? 1 : 0);
+		undo_redo->add_undo_method(this, "_update_value", prop, column, value ? 0 : 1);
 		undo_redo->commit_action();
 	} else if (column == 2) {
 		undo_redo->create_action(TTR("Set sync property"));
@@ -430,7 +430,7 @@ void ReplicationEditor::_tree_item_edited() {
 		int old_value = config->property_get_replication_mode(prop);
 		// We have a hard limit of 64 watchable properties per synchronizer.
 		if (value == SceneReplicationConfig::REPLICATION_MODE_ON_CHANGE && config->get_watch_properties().size() >= 64) {
-			EditorNode::get_singleton()->show_warning(TTR("Each MultiplayerSynchronizer can have no more than 64 watched properties."));
+			EditorNode::get_singleton()->show_warning(TTRC("Each MultiplayerSynchronizer can have no more than 64 watched properties."));
 			ti->set_range(column, old_value);
 			return;
 		}
@@ -503,7 +503,7 @@ void ReplicationEditor::_update_config() {
 	tree->clear();
 	tree->create_item();
 	drop_label->set_visible(true);
-	if (!config.is_valid()) {
+	if (config.is_null()) {
 		return;
 	}
 	TypedArray<NodePath> props = config->get_properties();
@@ -562,11 +562,12 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 	item->set_selectable(2, false);
 	item->set_selectable(3, false);
 	item->set_text(0, prop);
+	item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 	item->set_metadata(0, prop);
 	Node *root_node = current && !current->get_root_path().is_empty() ? current->get_node(current->get_root_path()) : nullptr;
 	Ref<Texture2D> icon = _get_class_icon(root_node);
 	if (root_node) {
-		String path = prop.substr(0, prop.find(":"));
+		String path = prop.substr(0, prop.find_char(':'));
 		String subpath = prop.substr(path.size());
 		Node *node = root_node->get_node_or_null(path);
 		if (!node) {
@@ -578,7 +579,7 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 		Variant value = node->get(subpath, &valid);
 		if (valid && !can_sync(value)) {
 			item->set_icon(0, get_theme_icon(SNAME("StatusWarning"), EditorStringName(EditorIcons)));
-			item->set_tooltip_text(0, TTR("Property of this type not supported."));
+			item->set_tooltip_text(0, TTRC("Property of this type not supported."));
 		} else {
 			item->set_icon(0, icon);
 		}
@@ -593,7 +594,8 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 	item->set_text_alignment(2, HORIZONTAL_ALIGNMENT_CENTER);
 	item->set_cell_mode(2, TreeItem::CELL_MODE_RANGE);
 	item->set_range_config(2, 0, 2, 1);
-	item->set_text(2, "Never,Always,On Change");
+	item->set_auto_translate_mode(2, AUTO_TRANSLATE_MODE_DISABLED);
+	_set_replication_mode_options(item);
 	item->set_range(2, (int)p_mode);
 	item->set_editable(2, true);
 }

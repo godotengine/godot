@@ -138,21 +138,20 @@ Error AudioDriverPulseAudio::detect_channels(bool input) {
 		}
 	}
 
-	char dev[1024];
 	if (device == "Default") {
-		strcpy(dev, input ? default_input_device.utf8().get_data() : default_output_device.utf8().get_data());
-	} else {
-		strcpy(dev, device.utf8().get_data());
+		device = input ? default_input_device : default_output_device;
 	}
-	print_verbose("PulseAudio: Detecting channels for device: " + String(dev));
+	print_verbose("PulseAudio: Detecting channels for device: " + device);
+
+	CharString device_utf8 = device.utf8();
 
 	// Now using the device name get the amount of channels
 	pa_status = 0;
 	pa_operation *pa_op;
 	if (input) {
-		pa_op = pa_context_get_source_info_by_name(pa_ctx, dev, &AudioDriverPulseAudio::pa_source_info_cb, (void *)this);
+		pa_op = pa_context_get_source_info_by_name(pa_ctx, device_utf8.get_data(), &AudioDriverPulseAudio::pa_source_info_cb, (void *)this);
 	} else {
-		pa_op = pa_context_get_sink_info_by_name(pa_ctx, dev, &AudioDriverPulseAudio::pa_sink_info_cb, (void *)this);
+		pa_op = pa_context_get_sink_info_by_name(pa_ctx, device_utf8.get_data(), &AudioDriverPulseAudio::pa_sink_info_cb, (void *)this);
 	}
 
 	if (pa_op) {
@@ -183,7 +182,7 @@ Error AudioDriverPulseAudio::init_output_device() {
 	// If there is a specified output device, check that it is really present
 	if (output_device_name != "Default") {
 		PackedStringArray list = get_output_device_list();
-		if (list.find(output_device_name) == -1) {
+		if (!list.has(output_device_name)) {
 			output_device_name = "Default";
 			new_output_device = "Default";
 		}
@@ -312,11 +311,11 @@ Error AudioDriverPulseAudio::init() {
 
 	String context_name;
 	if (Engine::get_singleton()->is_editor_hint()) {
-		context_name = VERSION_NAME " Editor";
+		context_name = GODOT_VERSION_NAME " Editor";
 	} else {
 		context_name = GLOBAL_GET("application/config/name");
 		if (context_name.is_empty()) {
-			context_name = VERSION_NAME " Project";
+			context_name = GODOT_VERSION_NAME " Project";
 		}
 	}
 
@@ -556,6 +555,8 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 			}
 
 			// User selected a new input device, finish the current one so we'll init the new input device
+			// (If `AudioServer.set_input_device()` did not set the value when the microphone was running,
+			//  this section with its problematic error handling could be deleted.)
 			if (ad->input_device_name != ad->new_input_device) {
 				ad->input_device_name = ad->new_input_device;
 				ad->finish_input_device();
@@ -692,10 +693,14 @@ void AudioDriverPulseAudio::finish() {
 }
 
 Error AudioDriverPulseAudio::init_input_device() {
+	if (pa_rec_str) {
+		return ERR_ALREADY_IN_USE;
+	}
+
 	// If there is a specified input device, check that it is really present
 	if (input_device_name != "Default") {
 		PackedStringArray list = get_input_device_list();
-		if (list.find(input_device_name) == -1) {
+		if (!list.has(input_device_name)) {
 			input_device_name = "Default";
 			new_input_device = "Default";
 		}
@@ -725,7 +730,8 @@ Error AudioDriverPulseAudio::init_input_device() {
 	int input_buffer_frames = closest_power_of_2(input_latency * mix_rate / 1000);
 	int input_buffer_size = input_buffer_frames * spec.channels;
 
-	pa_buffer_attr attr;
+	pa_buffer_attr attr = {};
+	attr.maxlength = (uint32_t)-1;
 	attr.fragsize = input_buffer_size * sizeof(int16_t);
 
 	pa_rec_str = pa_stream_new(pa_ctx, "Record", &spec, &pa_rec_map);

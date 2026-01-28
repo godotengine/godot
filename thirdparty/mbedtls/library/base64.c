@@ -2,27 +2,19 @@
  *  RFC 1521 base64 encoding/decoding
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
+
+#include <limits.h>
 
 #include "common.h"
 
 #if defined(MBEDTLS_BASE64_C)
 
 #include "mbedtls/base64.h"
+#include "base64_internal.h"
 #include "constant_time_internal.h"
+#include "mbedtls/error.h"
 
 #include <stdint.h>
 
@@ -31,7 +23,38 @@
 #include "mbedtls/platform.h"
 #endif /* MBEDTLS_SELF_TEST */
 
-#define BASE64_SIZE_T_MAX   ((size_t) -1)   /* SIZE_T_MAX is not standard */
+MBEDTLS_STATIC_TESTABLE
+unsigned char mbedtls_ct_base64_enc_char(unsigned char value)
+{
+    unsigned char digit = 0;
+    /* For each range of values, if value is in that range, mask digit with
+     * the corresponding value. Since value can only be in a single range,
+     * only at most one masking will change digit. */
+    digit |= mbedtls_ct_uchar_in_range_if(0, 25, value, 'A' + value);
+    digit |= mbedtls_ct_uchar_in_range_if(26, 51, value, 'a' + value - 26);
+    digit |= mbedtls_ct_uchar_in_range_if(52, 61, value, '0' + value - 52);
+    digit |= mbedtls_ct_uchar_in_range_if(62, 62, value, '+');
+    digit |= mbedtls_ct_uchar_in_range_if(63, 63, value, '/');
+    return digit;
+}
+
+MBEDTLS_STATIC_TESTABLE
+signed char mbedtls_ct_base64_dec_value(unsigned char c)
+{
+    unsigned char val = 0;
+    /* For each range of digits, if c is in that range, mask val with
+     * the corresponding value. Since c can only be in a single range,
+     * only at most one masking will change val. Set val to one plus
+     * the desired value so that it stays 0 if c is in none of the ranges. */
+    val |= mbedtls_ct_uchar_in_range_if('A', 'Z', c, c - 'A' +  0 + 1);
+    val |= mbedtls_ct_uchar_in_range_if('a', 'z', c, c - 'a' + 26 + 1);
+    val |= mbedtls_ct_uchar_in_range_if('0', '9', c, c - '0' + 52 + 1);
+    val |= mbedtls_ct_uchar_in_range_if('+', '+', c, c - '+' + 62 + 1);
+    val |= mbedtls_ct_uchar_in_range_if('/', '/', c, c - '/' + 63 + 1);
+    /* At this point, val is 0 if c is an invalid digit and v+1 if c is
+     * a digit with the value v. */
+    return val - 1;
+}
 
 /*
  * Encode a buffer into base64 format
@@ -50,8 +73,8 @@ int mbedtls_base64_encode(unsigned char *dst, size_t dlen, size_t *olen,
 
     n = slen / 3 + (slen % 3 != 0);
 
-    if (n > (BASE64_SIZE_T_MAX - 1) / 4) {
-        *olen = BASE64_SIZE_T_MAX;
+    if (n > (SIZE_MAX - 1) / 4) {
+        *olen = SIZE_MAX;
         return MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL;
     }
 
@@ -94,7 +117,7 @@ int mbedtls_base64_encode(unsigned char *dst, size_t dlen, size_t *olen,
         *p++ = '=';
     }
 
-    *olen = p - dst;
+    *olen = (size_t) (p - dst);
     *p = 0;
 
     return 0;
@@ -161,49 +184,72 @@ int mbedtls_base64_decode(unsigned char *dst, size_t dlen, size_t *olen,
         n++;
     }
 
-    if (n == 0) {
-        *olen = 0;
-        return 0;
+    /* In valid base64, the number of digits (n-equals) is always of the form
+     * 4*k, 4*k+2 or *4k+3. Also, the number n of digits plus the number of
+     * equal signs at the end is always a multiple of 4. */
+    if ((n - equals) % 4 == 1) {
+        return MBEDTLS_ERR_BASE64_INVALID_CHARACTER;
+    }
+    if (n % 4 != 0) {
+        return MBEDTLS_ERR_BASE64_INVALID_CHARACTER;
     }
 
-    /* The following expression is to calculate the following formula without
-     * risk of integer overflow in n:
-     *     n = ( ( n * 6 ) + 7 ) >> 3;
+    /* We've determined that the input is valid, and that it contains
+     * exactly k blocks of digits-or-equals, with n = 4 * k,
+     * and equals only present at the end of the last block if at all.
+     * Now we can calculate the length of the output.
+     *
+     * Each block of 4 digits in the input map to 3 bytes of output.
+     * For the last block:
+     * - abcd (where abcd are digits) is a full 3-byte block;
+     * - abc= means 1 byte less than a full 3-byte block of output;
+     * - ab== means 2 bytes less than a full 3-byte block of output;
+     * - a==== and ==== is rejected above.
      */
-    n = (6 * (n >> 3)) + ((6 * (n & 0x7) + 7) >> 3);
-    n -= equals;
+    *olen = (n / 4) * 3 - equals;
 
-    if (dst == NULL || dlen < n) {
-        *olen = n;
+    /* If the output buffer is too small, signal this and stop here.
+     * Also, as documented, stop here if `dst` is null, independently of
+     * `dlen`.
+     *
+     * There is an edge case when the output is empty: in this case,
+     * `dlen == 0` with `dst == NULL` is valid (on some platforms,
+     * `malloc(0)` returns `NULL`). Since the call is valid, we return
+     * 0 in this case.
+     */
+    if ((*olen != 0 && dst == NULL) || dlen < *olen) {
         return MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL;
     }
 
-    equals = 0;
     for (x = 0, p = dst; i > 0; i--, src++) {
         if (*src == '\r' || *src == '\n' || *src == ' ') {
             continue;
         }
-
-        x = x << 6;
         if (*src == '=') {
-            ++equals;
-        } else {
-            x |= mbedtls_ct_base64_dec_value(*src);
+            /* We already know from the first loop that equal signs are
+             * only at the end. */
+            break;
         }
+        x = x << 6;
+        x |= mbedtls_ct_base64_dec_value(*src);
 
         if (++accumulated_digits == 4) {
             accumulated_digits = 0;
             *p++ = MBEDTLS_BYTE_2(x);
-            if (equals <= 1) {
-                *p++ = MBEDTLS_BYTE_1(x);
-            }
-            if (equals <= 0) {
-                *p++ = MBEDTLS_BYTE_0(x);
-            }
+            *p++ = MBEDTLS_BYTE_1(x);
+            *p++ = MBEDTLS_BYTE_0(x);
         }
     }
+    if (accumulated_digits == 3) {
+        *p++ = MBEDTLS_BYTE_2(x << 6);
+        *p++ = MBEDTLS_BYTE_1(x << 6);
+    } else if (accumulated_digits == 2) {
+        *p++ = MBEDTLS_BYTE_2(x << 12);
+    }
 
-    *olen = p - dst;
+    if (*olen != (size_t) (p - dst)) {
+        return MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    }
 
     return 0;
 }

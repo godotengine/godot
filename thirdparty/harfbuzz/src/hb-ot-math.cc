@@ -87,6 +87,20 @@ hb_position_t
 hb_ot_math_get_constant (hb_font_t *font,
 			 hb_ot_math_constant_t constant)
 {
+  /* https://github.com/harfbuzz/harfbuzz/issues/4653
+   * Cambria Math has incorrect value for displayOperatorMinHeight, and
+   * apparently Microsoft implementation swaps displayOperatorMinHeight and
+   * delimitedSubFormulaMinHeight, so we do the same if we detect Cambria Math
+   * with the swapped values. */
+  if ((constant == HB_OT_MATH_CONSTANT_DISPLAY_OPERATOR_MIN_HEIGHT ||
+       constant == HB_OT_MATH_CONSTANT_DELIMITED_SUB_FORMULA_MIN_HEIGHT) &&
+      font->face->table.MATH->is_bad_cambria (font))
+  {
+    if (constant == HB_OT_MATH_CONSTANT_DISPLAY_OPERATOR_MIN_HEIGHT)
+      constant = HB_OT_MATH_CONSTANT_DELIMITED_SUB_FORMULA_MIN_HEIGHT;
+    else
+      constant = HB_OT_MATH_CONSTANT_DISPLAY_OPERATOR_MIN_HEIGHT;
+  }
   return font->face->table.MATH->get_constant(constant, font);
 }
 

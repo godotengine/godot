@@ -52,7 +52,8 @@
 		<method name="area_create">
 			<return type="RID" />
 			<description>
-				Creates a 2D area object in the physics server, and returns the [RID] that identifies it. Use [method area_add_shape] to add shapes to it, use [method area_set_transform] to set its transform, and use [method area_set_space] to add the area to a space.
+				Creates a 2D area object in the physics server, and returns the [RID] that identifies it. The default settings for the created area include a collision layer and mask set to [code]1[/code], and [code]monitorable[/code] set to [code]false[/code].
+				Use [method area_add_shape] to add shapes to it, use [method area_set_transform] to set its transform, and use [method area_set_space] to add the area to a space. If you want the area to be detectable use [method area_set_monitorable].
 			</description>
 		</method>
 		<method name="area_get_canvas_instance_id" qualifiers="const">
@@ -88,7 +89,7 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.AreaParameter" />
 			<description>
-				Returns the value of the given area parameter. See [enum AreaParameter] for the list of available parameters.
+				Returns the value of the given area parameter.
 			</description>
 		</method>
 		<method name="area_get_shape" qualifiers="const">
@@ -194,7 +195,7 @@
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.AreaParameter" />
 			<param index="2" name="value" type="Variant" />
 			<description>
-				Sets the value of the given area parameter. See [enum AreaParameter] for the list of available parameters.
+				Sets the value of the given area parameter.
 			</description>
 		</method>
 		<method name="area_set_shape">
@@ -369,7 +370,8 @@
 		<method name="body_create">
 			<return type="RID" />
 			<description>
-				Creates a 2D body object in the physics server, and returns the [RID] that identifies it. Use [method body_add_shape] to add shapes to it, use [method body_set_state] to set its transform, and use [method body_set_space] to add the body to a space.
+				Creates a 2D body object in the physics server, and returns the [RID] that identifies it. The default settings for the created area include a collision layer and mask set to [code]1[/code], and body mode set to [constant BODY_MODE_RIGID].
+				Use [method body_add_shape] to add shapes to it, use [method body_set_state] to set its transform, and use [method body_set_space] to add the body to a space.
 			</description>
 		</method>
 		<method name="body_get_canvas_instance_id" qualifiers="const">
@@ -420,7 +422,7 @@
 			<return type="int" enum="PhysicsServer2D.CCDMode" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Returns the body's continuous collision detection mode (see [enum CCDMode]).
+				Returns the body's continuous collision detection mode.
 			</description>
 		</method>
 		<method name="body_get_direct_state">
@@ -441,7 +443,7 @@
 			<return type="int" enum="PhysicsServer2D.BodyMode" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Returns the body's mode (see [enum BodyMode]).
+				Returns the body's mode.
 			</description>
 		</method>
 		<method name="body_get_object_instance_id" qualifiers="const">
@@ -456,7 +458,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.BodyParameter" />
 			<description>
-				Returns the value of the given body parameter. See [enum BodyParameter] for the list of available parameters.
+				Returns the value of the given body parameter.
 			</description>
 		</method>
 		<method name="body_get_shape" qualifiers="const">
@@ -494,14 +496,14 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="state" type="int" enum="PhysicsServer2D.BodyState" />
 			<description>
-				Returns the value of the given state of the body. See [enum BodyState] for the list of available states.
+				Returns the value of the given state of the body.
 			</description>
 		</method>
 		<method name="body_is_omitting_force_integration" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Returns [code]true[/code] if the body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
+				Returns [code]true[/code] if the body is omitting the standard force integration. See [method body_set_omit_force_integration].
 			</description>
 		</method>
 		<method name="body_remove_collision_exception">
@@ -582,7 +584,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="mode" type="int" enum="PhysicsServer2D.CCDMode" />
 			<description>
-				Sets the continuous collision detection mode using one of the [enum CCDMode] constants.
+				Sets the continuous collision detection mode.
 				Continuous collision detection tries to predict where a moving body would collide in between physics updates, instead of moving it and correcting its movement if it collided.
 			</description>
 		</method>
@@ -592,11 +594,12 @@
 			<param index="1" name="callable" type="Callable" />
 			<param index="2" name="userdata" type="Variant" default="null" />
 			<description>
-				Sets the function used to calculate physics for the body, if that body allows it (see [method body_set_omit_force_integration]).
-				The force integration function takes the following two parameters:
-				1. a [PhysicsDirectBodyState2D] [code]state[/code]: used to retrieve and modify the body's state,
-				2. a [Variant] [param userdata]: optional user data.
-				[b]Note:[/b] This callback is currently not called in Godot Physics.
+				Sets the body's custom force integration callback function to [param callable]. Use an empty [Callable] ([code skip-lint]Callable()[/code]) to clear the custom callback.
+				The function [param callable] will be called every physics tick, before the standard force integration (see [method body_set_omit_force_integration]). It can be used for example to update the body's linear and angular velocity based on contact with other bodies.
+				If [param userdata] is not [code]null[/code], the function [param callable] must take the following two parameters:
+				1. [code]state[/code]: a [PhysicsDirectBodyState2D] used to retrieve and modify the body's state,
+				2. [code skip-lint]userdata[/code]: a [Variant]; its value will be the [param userdata] passed into this method.
+				If [param userdata] is [code]null[/code], then [param callable] must take only the [code]state[/code] parameter.
 			</description>
 		</method>
 		<method name="body_set_max_contacts_reported">
@@ -612,7 +615,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="mode" type="int" enum="PhysicsServer2D.BodyMode" />
 			<description>
-				Sets the body's mode. See [enum BodyMode] for the list of available modes.
+				Sets the body's mode.
 			</description>
 		</method>
 		<method name="body_set_omit_force_integration">
@@ -620,7 +623,8 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				Sets whether the body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
+				Sets whether the body omits the standard force integration. If [param enable] is [code]true[/code], the body will not automatically use applied forces, torques, and damping to update the body's linear and angular velocity. In this case, [method body_set_force_integration_callback] can be used to manually update the linear and angular velocity instead.
+				This method is called when the property [member RigidBody2D.custom_integrator] is set.
 			</description>
 		</method>
 		<method name="body_set_param">
@@ -629,7 +633,7 @@
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.BodyParameter" />
 			<param index="2" name="value" type="Variant" />
 			<description>
-				Sets the value of the given body parameter. See [enum BodyParameter] for the list of available parameters.
+				Sets the value of the given body parameter.
 			</description>
 		</method>
 		<method name="body_set_shape">
@@ -686,8 +690,19 @@
 			<param index="1" name="state" type="int" enum="PhysicsServer2D.BodyState" />
 			<param index="2" name="value" type="Variant" />
 			<description>
-				Sets the value of a body's state. See [enum BodyState] for the list of available states.
+				Sets the value of a body's state.
 				[b]Note:[/b] The state change doesn't take effect immediately. The state will change on the next physics frame.
+			</description>
+		</method>
+		<method name="body_set_state_sync_callback">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="callable" type="Callable" />
+			<description>
+				Sets the body's state synchronization callback function to [param callable]. Use an empty [Callable] ([code skip-lint]Callable()[/code]) to clear the callback.
+				The function [param callable] will be called every physics frame, assuming that the body was active during the previous physics tick, and can be used to fetch the latest state from the physics server.
+				The function [param callable] must take the following parameters:
+				1. [code]state[/code]: a [PhysicsDirectBodyState2D], used to retrieve the body's state.
 			</description>
 		</method>
 		<method name="body_test_motion">
@@ -728,7 +743,7 @@
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.DampedSpringParam" />
 			<description>
-				Returns the value of the given damped spring joint parameter. See [enum DampedSpringParam] for the list of available parameters.
+				Returns the value of the given damped spring joint parameter.
 			</description>
 		</method>
 		<method name="damped_spring_joint_set_param">
@@ -737,7 +752,7 @@
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.DampedSpringParam" />
 			<param index="2" name="value" type="float" />
 			<description>
-				Sets the value of the given damped spring joint parameter. See [enum DampedSpringParam] for the list of available parameters.
+				Sets the value of the given damped spring joint parameter.
 			</description>
 		</method>
 		<method name="free_rid">
@@ -751,7 +766,7 @@
 			<return type="int" />
 			<param index="0" name="process_info" type="int" enum="PhysicsServer2D.ProcessInfo" />
 			<description>
-				Returns information about the current state of the 2D physics engine. See [enum ProcessInfo] for the list of available states.
+				Returns the value of a physics engine state specified by [param process_info].
 			</description>
 		</method>
 		<method name="joint_clear">
@@ -780,14 +795,14 @@
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.JointParam" />
 			<description>
-				Returns the value of the given joint parameter. See [enum JointParam] for the list of available parameters.
+				Returns the value of the given joint parameter.
 			</description>
 		</method>
 		<method name="joint_get_type" qualifiers="const">
 			<return type="int" enum="PhysicsServer2D.JointType" />
 			<param index="0" name="joint" type="RID" />
 			<description>
-				Returns the joint's type (see [enum JointType]).
+				Returns the joint's type.
 			</description>
 		</method>
 		<method name="joint_is_disabled_collisions_between_bodies" qualifiers="const">
@@ -836,7 +851,7 @@
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.JointParam" />
 			<param index="2" name="value" type="float" />
 			<description>
-				Sets the value of the given joint parameter. See [enum JointParam] for the list of available parameters.
+				Sets the value of the given joint parameter.
 			</description>
 		</method>
 		<method name="pin_joint_get_flag" qualifiers="const">
@@ -844,7 +859,7 @@
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="flag" type="int" enum="PhysicsServer2D.PinJointFlag" />
 			<description>
-				Gets a pin joint flag (see [enum PinJointFlag] constants).
+				Gets a pin joint flag.
 			</description>
 		</method>
 		<method name="pin_joint_get_param" qualifiers="const">
@@ -852,7 +867,7 @@
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.PinJointParam" />
 			<description>
-				Returns the value of a pin joint parameter. See [enum PinJointParam] for a list of available parameters.
+				Returns the value of a pin joint parameter.
 			</description>
 		</method>
 		<method name="pin_joint_set_flag">
@@ -861,7 +876,7 @@
 			<param index="1" name="flag" type="int" enum="PhysicsServer2D.PinJointFlag" />
 			<param index="2" name="enabled" type="bool" />
 			<description>
-				Sets a pin joint flag (see [enum PinJointFlag] constants).
+				Sets a pin joint flag.
 			</description>
 		</method>
 		<method name="pin_joint_set_param">
@@ -870,7 +885,7 @@
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.PinJointParam" />
 			<param index="2" name="value" type="float" />
 			<description>
-				Sets a pin joint parameter. See [enum PinJointParam] for a list of available parameters.
+				Sets a pin joint parameter.
 			</description>
 		</method>
 		<method name="rectangle_shape_create">
@@ -909,7 +924,7 @@
 			<return type="int" enum="PhysicsServer2D.ShapeType" />
 			<param index="0" name="shape" type="RID" />
 			<description>
-				Returns the shape's type (see [enum ShapeType]).
+				Returns the shape's type.
 			</description>
 		</method>
 		<method name="shape_set_data">
@@ -947,7 +962,7 @@
 			<param index="0" name="space" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.SpaceParameter" />
 			<description>
-				Returns the value of the given space parameter. See [enum SpaceParameter] for the list of available parameters.
+				Returns the value of the given space parameter.
 			</description>
 		</method>
 		<method name="space_is_active" qualifiers="const">
@@ -971,7 +986,7 @@
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.SpaceParameter" />
 			<param index="2" name="value" type="float" />
 			<description>
-				Sets the value of the given space parameter. See [enum SpaceParameter] for the list of available parameters.
+				Sets the value of the given space parameter.
 			</description>
 		</method>
 		<method name="world_boundary_shape_create">
@@ -1109,7 +1124,7 @@
 			Constant to set/get a body's inertia. The default value of this parameter is [code]0.0[/code]. If the body's inertia is set to a value [code]&lt;= 0.0[/code], then the inertia will be recalculated based on the body's shapes, mass, and center of mass.
 		</constant>
 		<constant name="BODY_PARAM_CENTER_OF_MASS" value="4" enum="BodyParameter">
-			Constant to set/get a body's center of mass position in the body's local coordinate system. The default value of this parameter is [code]Vector2(0,0)[/code]. If this parameter is never set explicitly, then it is recalculated based on the body's shapes when setting the parameter [constant BODY_PARAM_MASS] or when calling [method body_set_space].
+			Constant to set/get a body's center of mass position in the body's local coordinate system. The default value of this parameter is [code]Vector2(0, 0)[/code]. If this parameter is never set explicitly, then it is recalculated based on the body's shapes when setting the parameter [constant BODY_PARAM_MASS] or when calling [method body_set_space].
 		</constant>
 		<constant name="BODY_PARAM_GRAVITY_SCALE" value="5" enum="BodyParameter">
 			Constant to set/get a body's gravity multiplier. The default value of this parameter is [code]1.0[/code].

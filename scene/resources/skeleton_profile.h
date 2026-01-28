@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SKELETON_PROFILE_H
-#define SKELETON_PROFILE_H
+#pragma once
 
 #include "texture.h"
 
@@ -61,7 +60,7 @@ protected:
 		Transform3D reference_pose;
 		Vector2 handle_offset;
 		StringName group;
-		bool require = false;
+		bool required = false;
 	};
 
 	StringName root_bone;
@@ -78,16 +77,16 @@ protected:
 
 public:
 	StringName get_root_bone();
-	void set_root_bone(StringName p_bone_name);
+	void set_root_bone(const StringName &p_bone_name);
 
 	StringName get_scale_base_bone();
-	void set_scale_base_bone(StringName p_bone_name);
+	void set_scale_base_bone(const StringName &p_bone_name);
 
 	int get_group_size();
 	void set_group_size(int p_size);
 
 	StringName get_group_name(int p_group_idx) const;
-	void set_group_name(int p_group_idx, const StringName p_group_name);
+	void set_group_name(int p_group_idx, const StringName &p_group_name);
 
 	Ref<Texture2D> get_texture(int p_group_idx) const;
 	void set_texture(int p_group_idx, const Ref<Texture2D> &p_texture);
@@ -95,33 +94,34 @@ public:
 	int get_bone_size();
 	void set_bone_size(int p_size);
 
-	int find_bone(const StringName p_bone_name) const;
+	int find_bone(const StringName &p_bone_name) const;
 
+	PackedStringArray get_bone_names();
 	StringName get_bone_name(int p_bone_idx) const;
-	void set_bone_name(int p_bone_idx, const StringName p_bone_name);
+	void set_bone_name(int p_bone_idx, const StringName &p_bone_name);
 
 	StringName get_bone_parent(int p_bone_idx) const;
-	void set_bone_parent(int p_bone_idx, const StringName p_bone_parent);
+	void set_bone_parent(int p_bone_idx, const StringName &p_bone_parent);
 
 	TailDirection get_tail_direction(int p_bone_idx) const;
-	void set_tail_direction(int p_bone_idx, const TailDirection p_tail_direction);
+	void set_tail_direction(int p_bone_idx, TailDirection p_tail_direction);
 
 	StringName get_bone_tail(int p_bone_idx) const;
-	void set_bone_tail(int p_bone_idx, const StringName p_bone_tail);
+	void set_bone_tail(int p_bone_idx, const StringName &p_bone_tail);
 
 	Transform3D get_reference_pose(int p_bone_idx) const;
-	void set_reference_pose(int p_bone_idx, const Transform3D p_reference_pose);
+	void set_reference_pose(int p_bone_idx, const Transform3D &p_reference_pose);
 
 	Vector2 get_handle_offset(int p_bone_idx) const;
-	void set_handle_offset(int p_bone_idx, const Vector2 p_handle_offset);
+	void set_handle_offset(int p_bone_idx, const Vector2 &p_handle_offset);
 
 	StringName get_group(int p_bone_idx) const;
-	void set_group(int p_bone_idx, const StringName p_group);
+	void set_group(int p_bone_idx, const StringName &p_group);
 
-	bool is_require(int p_bone_idx) const;
-	void set_require(int p_bone_idx, const bool p_require);
+	bool is_required(int p_bone_idx) const;
+	void set_required(int p_bone_idx, bool p_required);
 
-	bool has_bone(StringName p_bone_name);
+	bool has_bone(const StringName &p_bone_name);
 
 	SkeletonProfile();
 	~SkeletonProfile();
@@ -136,5 +136,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(SkeletonProfile::TailDirection);
-
-#endif // SKELETON_PROFILE_H

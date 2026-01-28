@@ -13,7 +13,7 @@
 			<return type="void" />
 			<param index="0" name="highlighter" type="EditorSyntaxHighlighter" />
 			<description>
-				Adds a [EditorSyntaxHighlighter] to the open script.
+				Adds an [EditorSyntaxHighlighter] to the open script.
 			</description>
 		</method>
 		<method name="get_base_editor" qualifiers="const">
@@ -69,6 +69,12 @@
 		<signal name="request_save_history">
 			<description>
 				Emitted when the user contextual goto and the item is in the same script.
+			</description>
+		</signal>
+		<signal name="request_save_previous_state">
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Emitted when the user changes current script or moves caret by 10 or more columns within the same script.
 			</description>
 		</signal>
 		<signal name="search_in_files_requested">

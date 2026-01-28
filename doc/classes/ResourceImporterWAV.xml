@@ -4,29 +4,32 @@
 		Imports a WAV audio file for playback.
 	</brief_description>
 	<description>
-		WAV is an uncompressed format, which can provide higher quality compared to Ogg Vorbis and MP3. It also has the lowest CPU cost to decode. This means high numbers of WAV sounds can be played at the same time, even on low-end deviceS.
+		WAV is an uncompressed format, which can provide higher quality compared to Ogg Vorbis and MP3. It also has the lowest CPU cost to decode. This means high numbers of WAV sounds can be played at the same time, even on low-end devices.
+		By default, Godot imports WAV files using the lossy Quite OK Audio compression. You may change this by setting the [member compress/mode] property.
 	</description>
 	<tutorials>
 		<link title="Importing audio samples">$DOCS_URL/tutorials/assets_pipeline/importing_audio_samples.html</link>
 	</tutorials>
 	<members>
-		<member name="compress/mode" type="int" setter="" getter="" default="0">
+		<member name="compress/mode" type="int" setter="" getter="" default="2">
 			The compression mode to use on import.
-			[b]Disabled:[/b] Imports audio data without any compression. This results in the highest possible quality.
-			[b]RAM (Ima-ADPCM):[/b] Performs fast lossy compression on import. Low CPU cost, but quality is noticeably decreased compared to Ogg Vorbis or even MP3.
+			- [b]PCM (Uncompressed):[/b] Imports audio data without any form of compression, preserving the highest possible quality. It has the lowest CPU cost, but the highest memory usage.
+			- [b]IMA ADPCM:[/b] Applies fast, lossy compression during import, noticeably decreasing the quality, but with low CPU cost and memory usage. Does not support seeking and only Forward loop mode is supported.
+			- [b][url=https://qoaformat.org/]Quite OK Audio[/url]:[/b] Also applies lossy compression on import, having a slightly higher CPU cost compared to IMA ADPCM, but much higher quality and the lowest memory usage.
 		</member>
 		<member name="edit/loop_begin" type="int" setter="" getter="" default="0">
-			The begin loop point to use when [member edit/loop_mode] is [b]Forward[/b], [b]Ping-Pong[/b] or [b]Backward[/b]. This is set in seconds after the beginning of the audio file.
+			The begin loop point to use when [member edit/loop_mode] is [b]Forward[/b], [b]Ping-Pong[/b], or [b]Backward[/b]. This is set in samples after the beginning of the audio file.
 		</member>
 		<member name="edit/loop_end" type="int" setter="" getter="" default="-1">
-			The end loop point to use when [member edit/loop_mode] is [b]Forward[/b], [b]Ping-Pong[/b] or [b]Backward[/b]. This is set in seconds after the beginning of the audio file. A value of [code]-1[/code] uses the end of the audio file as the end loop point.
+			The end loop point to use when [member edit/loop_mode] is [b]Forward[/b], [b]Ping-Pong[/b], or [b]Backward[/b]. This is set in samples after the beginning of the audio file. A value of [code]-1[/code] uses the end of the audio file as the end loop point.
 		</member>
 		<member name="edit/loop_mode" type="int" setter="" getter="" default="0">
-			Controls how audio should loop. This is automatically read from the WAV metadata on import.
-			[b]Disabled:[/b] Don't loop audio, even if metadata indicates the file should be played back looping.
-			[b]Forward:[/b] Standard audio looping.
-			[b]Ping-Pong:[/b] Play audio forward until it's done playing, then play it backward and repeat. This is similar to mirrored texture repeat, but for audio.
-			[b]Backward:[/b] Play audio in reverse and loop back to the end when done playing.
+			Controls how audio should loop.
+			- [b]Detect From WAV:[/b] Uses loop information from the WAV metadata.
+			- [b]Disabled:[/b] Don't loop audio, even if the metadata indicates the file playback should loop.
+			- [b]Forward:[/b] Standard audio looping. Plays the audio forward from the beginning to [member edit/loop_end], then returns to [member edit/loop_begin] and repeats.
+			- [b]Ping-Pong:[/b] Plays the audio forward until [member edit/loop_end], then backwards to [member edit/loop_begin], repeating this cycle.
+			- [b]Backward:[/b] Plays the audio backwards from [member edit/loop_end] to [member edit/loop_begin], then repeats.
 			[b]Note:[/b] In [AudioStreamPlayer], the [signal AudioStreamPlayer.finished] signal won't be emitted for looping audio when it reaches the end of the audio file, as the audio will keep playing indefinitely.
 		</member>
 		<member name="edit/normalize" type="bool" setter="" getter="" default="false">

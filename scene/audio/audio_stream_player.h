@@ -28,13 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_PLAYER_H
-#define AUDIO_STREAM_PLAYER_H
+#pragma once
 
-#include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
-#include "scene/scene_string_names.h"
-#include "servers/audio/audio_stream.h"
+#include "servers/audio/audio_server.h"
+
+struct AudioFrame;
+class AudioStream;
+class AudioStreamPlayback;
+class AudioStreamPlayerInternal;
 
 class AudioStreamPlayer : public Node {
 	GDCLASS(AudioStreamPlayer, Node);
@@ -47,24 +49,12 @@ public:
 	};
 
 private:
-	Vector<Ref<AudioStreamPlayback>> stream_playbacks;
-	Ref<AudioStream> stream;
-
-	SafeFlag active;
-
-	float pitch_scale = 1.0;
-	float volume_db = 0.0;
-	bool autoplay = false;
-	StringName bus = SceneStringNames::get_singleton()->Master;
-	int max_polyphony = 1;
+	AudioStreamPlayerInternal *internal = nullptr;
 
 	MixTarget mix_target = MIX_TARGET_STEREO;
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
-
-	void _on_bus_layout_changed();
-	void _on_bus_renamed(int p_bus_index, const StringName &p_old_name, const StringName &p_new_name);
 
 	Vector<AudioFrame> _get_volume_vector();
 
@@ -73,12 +63,24 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+#ifndef DISABLE_DEPRECATED
+	bool _is_autoplay_enabled_bind_compat_86907();
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 public:
 	void set_stream(Ref<AudioStream> p_stream);
 	Ref<AudioStream> get_stream() const;
 
 	void set_volume_db(float p_volume);
 	float get_volume_db() const;
+
+	void set_volume_linear(float p_volume);
+	float get_volume_linear() const;
 
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
@@ -96,7 +98,7 @@ public:
 	StringName get_bus() const;
 
 	void set_autoplay(bool p_enable);
-	bool is_autoplay_enabled();
+	bool is_autoplay_enabled() const;
 
 	void set_mix_target(MixTarget p_target);
 	MixTarget get_mix_target() const;
@@ -107,10 +109,11 @@ public:
 	bool has_stream_playback();
 	Ref<AudioStreamPlayback> get_stream_playback();
 
+	AudioServer::PlaybackType get_playback_type() const;
+	void set_playback_type(AudioServer::PlaybackType p_playback_type);
+
 	AudioStreamPlayer();
 	~AudioStreamPlayer();
 };
 
 VARIANT_ENUM_CAST(AudioStreamPlayer::MixTarget)
-
-#endif // AUDIO_STREAM_PLAYER_H

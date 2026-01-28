@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<!-- GodotAppMainTheme is auto-generated during export. Manual changes will be overwritten.
+		 To add custom attributes, use the "gradle_build/custom_theme_attributes" Android export option. -->
+	<style name="GodotAppMainTheme" parent="@android:style/Theme.DeviceDefault.NoActionBar">
+		<item name="android:windowSwipeToDismiss">false</item>
+		<item name="android:windowIsTranslucent">false</item>
+	</style>
 
-	<style name="GodotAppMainTheme" parent="@android:style/Theme.Black.NoTitleBar"/>
-
-	<style name="GodotAppSplashTheme" parent="@android:style/Theme.Black.NoTitleBar.Fullscreen">
-		<item name="android:windowBackground">@drawable/splash_drawable</item>
-		<item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+	<!-- GodotAppSplashTheme is auto-generated during export. Manual changes will be overwritten.
+		 To add custom attributes, use the "gradle_build/custom_theme_attributes" Android export option. -->
+	<style name="GodotAppSplashTheme" parent="Theme.SplashScreen">
+		<item name="android:windowSplashScreenBackground">@mipmap/icon_background</item>
+		<item name="windowSplashScreenAnimatedIcon">@mipmap/icon_foreground</item>
+		<item name="postSplashScreenTheme">@style/GodotAppMainTheme</item>
+		<item name="android:windowIsTranslucent">false</item>
 	</style>
 </resources>

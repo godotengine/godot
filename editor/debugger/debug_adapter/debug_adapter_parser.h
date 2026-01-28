@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DEBUG_ADAPTER_PARSER_H
-#define DEBUG_ADAPTER_PARSER_H
+#pragma once
 
 #include "core/config/project_settings.h"
-#include "debug_adapter_protocol.h"
-#include "debug_adapter_types.h"
+#include "core/debugger/remote_debugger.h"
+#include "editor/debugger/debug_adapter/debug_adapter_types.h"
 
 struct DAPeer;
 class DebugAdapterProtocol;
@@ -46,10 +45,10 @@ private:
 
 	_FORCE_INLINE_ bool is_valid_path(const String &p_path) const {
 		// If path contains \, it's a Windows path, so we need to convert it to /, and check as case-insensitive.
-		if (p_path.contains("\\")) {
+		if (p_path.contains_char('\\')) {
 			String project_path = ProjectSettings::get_singleton()->get_resource_path();
-			String path = p_path.replace("\\", "/");
-			return path.findn(project_path) != -1;
+			String path = p_path.replace_char('\\', '/');
+			return path.containsn(project_path);
 		}
 		return p_path.begins_with(ProjectSettings::get_singleton()->get_resource_path());
 	}
@@ -71,6 +70,7 @@ public:
 	Dictionary req_attach(const Dictionary &p_params) const;
 	Dictionary req_restart(const Dictionary &p_params) const;
 	Dictionary req_terminate(const Dictionary &p_params) const;
+	Dictionary req_configurationDone(const Dictionary &p_params) const;
 	Dictionary req_pause(const Dictionary &p_params) const;
 	Dictionary req_continue(const Dictionary &p_params) const;
 	Dictionary req_threads(const Dictionary &p_params) const;
@@ -84,6 +84,10 @@ public:
 	Dictionary req_evaluate(const Dictionary &p_params) const;
 	Dictionary req_godot_put_msg(const Dictionary &p_params) const;
 
+	// Internal requests
+	Vector<String> _extract_play_arguments(const Dictionary &p_args) const;
+	Dictionary _launch_process(const Dictionary &p_params) const;
+
 	// Events
 	Dictionary ev_initialized() const;
 	Dictionary ev_process(const String &p_command) const;
@@ -94,9 +98,7 @@ public:
 	Dictionary ev_stopped_breakpoint(const int &p_id) const;
 	Dictionary ev_stopped_step() const;
 	Dictionary ev_continued() const;
-	Dictionary ev_output(const String &p_message) const;
+	Dictionary ev_output(const String &p_message, RemoteDebugger::MessageType p_type) const;
 	Dictionary ev_custom_data(const String &p_msg, const Array &p_data) const;
 	Dictionary ev_breakpoint(const DAP::Breakpoint &p_breakpoint, const bool &p_enabled) const;
 };
-
-#endif // DEBUG_ADAPTER_PARSER_H

@@ -32,11 +32,24 @@
 
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/os/main_loop.h"
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
+#include "core/profiling/profiling.h"
 #include "main/main.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef X11_ENABLED
+#include "x11/detect_prime_x11.h"
 #include "x11/display_server_x11.h"
+#endif
+
+#ifdef WAYLAND_ENABLED
+#include "wayland/detect_prime_egl.h"
+#include "wayland/display_server_wayland.h"
 #endif
 
 #include "modules/modules_enabled.gen.h" // For regex.
@@ -44,17 +57,36 @@
 #include "modules/regex/regex.h"
 #endif
 
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_device.h"
+#endif
+
+#if defined(VULKAN_ENABLED)
+#ifdef X11_ENABLED
+#include "x11/rendering_context_driver_vulkan_x11.h"
+#endif
+#ifdef WAYLAND_ENABLED
+#include "wayland/rendering_context_driver_vulkan_wayland.h"
+#endif
+#endif
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
+#endif
+
 #include <dlfcn.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <unistd.h>
+#include <cstdio>
+#include <cstdlib>
 
-#ifdef HAVE_MNTENT
+#if __has_include(<mntent.h>)
 #include <mntent.h>
+#endif
+
+#if defined(__FreeBSD__)
+#include <sys/sysctl.h>
 #endif
 
 void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
@@ -65,7 +97,7 @@ void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	String program;
 
 	for (int i = 0; i < path_elems.size(); i++) {
-		for (uint64_t k = 0; k < sizeof(message_programs) / sizeof(char *); k++) {
+		for (uint64_t k = 0; k < std_size(message_programs); k++) {
 			String tested_path = path_elems[i].path_join(message_programs[k]);
 
 			if (FileAccess::exists(tested_path)) {
@@ -132,36 +164,61 @@ void OS_LinuxBSD::initialize() {
 }
 
 void OS_LinuxBSD::initialize_joypads() {
-#ifdef JOYDEV_ENABLED
-	joypad = memnew(JoypadLinux(Input::get_singleton()));
+#ifdef SDL_ENABLED
+	joypad_sdl = memnew(JoypadSDL());
+	if (joypad_sdl->initialize() != OK) {
+		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
+		memdelete(joypad_sdl);
+		joypad_sdl = nullptr;
+	}
 #endif
 }
 
 String OS_LinuxBSD::get_unique_id() const {
 	static String machine_id;
 	if (machine_id.is_empty()) {
+#if defined(__FreeBSD__)
+		const int mib[2] = { CTL_KERN, KERN_HOSTUUID };
+		char buf[4096];
+		memset(buf, 0, sizeof(buf));
+		size_t len = sizeof(buf) - 1;
+		if (sysctl(mib, 2, buf, &len, 0x0, 0) != -1) {
+			machine_id = String::utf8(buf).remove_char('-');
+		}
+#else
 		Ref<FileAccess> f = FileAccess::open("/etc/machine-id", FileAccess::READ);
 		if (f.is_valid()) {
 			while (machine_id.is_empty() && !f->eof_reached()) {
 				machine_id = f->get_line().strip_edges();
 			}
 		}
+#endif
 	}
 	return machine_id;
 }
 
 String OS_LinuxBSD::get_processor_name() const {
+#if defined(__FreeBSD__)
+	const int mib[2] = { CTL_HW, HW_MODEL };
+	char buf[4096];
+	memset(buf, 0, sizeof(buf));
+	size_t len = sizeof(buf) - 1;
+	if (sysctl(mib, 2, buf, &len, 0x0, 0) != -1) {
+		return String::utf8(buf);
+	}
+#else
 	Ref<FileAccess> f = FileAccess::open("/proc/cpuinfo", FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), "", String("Couldn't open `/proc/cpuinfo` to get the CPU model name. Returning an empty string."));
 
 	while (!f->eof_reached()) {
 		const String line = f->get_line();
-		if (line.find("model name") != -1) {
-			return line.split(":")[1].strip_edges();
+		if (line.to_lower().contains("model name")) {
+			return line.get_slicec(':', 1).strip_edges();
 		}
 	}
+#endif
 
-	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name from `/proc/cpuinfo`. Returning an empty string."));
+	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model. Returning an empty string."));
 }
 
 bool OS_LinuxBSD::is_sandboxed() const {
@@ -195,9 +252,9 @@ void OS_LinuxBSD::finalize() {
 	driver_alsamidi.close();
 #endif
 
-#ifdef JOYDEV_ENABLED
-	if (joypad) {
-		memdelete(joypad);
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		memdelete(joypad_sdl);
 	}
 #endif
 }
@@ -240,8 +297,8 @@ String OS_LinuxBSD::get_systemd_os_release_info_value(const String &key) const {
 	if (f.is_valid()) {
 		while (!f->eof_reached()) {
 			const String line = f->get_line();
-			if (line.find(key) != -1) {
-				String value = line.split("=")[1].strip_edges();
+			if (line.contains(key)) {
+				String value = line.get_slicec('=', 1).strip_edges();
 				value = value.trim_prefix("\"");
 				return value.trim_suffix("\"");
 			}
@@ -316,7 +373,7 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 			continue;
 		}
 		String device_class = columns[1].trim_suffix(":");
-		String vendor_device_id_mapping = columns[2];
+		const String &vendor_device_id_mapping = columns[2];
 
 #ifdef MODULE_REGEX_ENABLED
 		if (regex_id_format.search(vendor_device_id_mapping).is_null()) {
@@ -474,7 +531,7 @@ Vector<String> OS_LinuxBSD::lspci_get_device_value(Vector<String> vendor_device_
 	return values;
 }
 
-Error OS_LinuxBSD::shell_open(String p_uri) {
+Error OS_LinuxBSD::shell_open(const String &p_uri) {
 	Error ok;
 	int err_code;
 	List<String> args;
@@ -508,7 +565,15 @@ Error OS_LinuxBSD::shell_open(String p_uri) {
 		return OK;
 	}
 	ok = execute("kde-open", args, nullptr, &err_code);
-	return !err_code ? ok : FAILED;
+	if (ok == OK && !err_code) {
+		return OK;
+	}
+	// XFCE
+	ok = execute("exo-open", args, nullptr, &err_code);
+	if (ok == OK && !err_code) {
+		return OK;
+	}
+	return FAILED;
 }
 
 bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
@@ -722,7 +787,7 @@ Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_n
 
 	Vector<String> ret;
 	static const char *allowed_formats[] = { "TrueType", "CFF" };
-	for (size_t i = 0; i < sizeof(allowed_formats) / sizeof(const char *); i++) {
+	for (size_t i = 0; i < std_size(allowed_formats); i++) {
 		FcPattern *pattern = FcPatternCreate();
 		if (pattern) {
 			FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
@@ -742,11 +807,11 @@ Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_n
 			FcLangSetAdd(lang_set, reinterpret_cast<const FcChar8 *>(p_locale.utf8().get_data()));
 			FcPatternAddLangSet(pattern, FC_LANG, lang_set);
 
-			FcConfigSubstitute(0, pattern, FcMatchPattern);
+			FcConfigSubstitute(nullptr, pattern, FcMatchPattern);
 			FcDefaultSubstitute(pattern);
 
 			FcResult result;
-			FcPattern *match = FcFontMatch(0, pattern, &result);
+			FcPattern *match = FcFontMatch(nullptr, pattern, &result);
 			if (match) {
 				char *file_name = nullptr;
 				if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
@@ -787,11 +852,11 @@ String OS_LinuxBSD::get_system_font_path(const String &p_font_name, int p_weight
 			FcPatternAddInteger(pattern, FC_WIDTH, _stretch_to_fc(p_stretch));
 			FcPatternAddInteger(pattern, FC_SLANT, p_italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
 
-			FcConfigSubstitute(0, pattern, FcMatchPattern);
+			FcConfigSubstitute(nullptr, pattern, FcMatchPattern);
 			FcDefaultSubstitute(pattern);
 
 			FcResult result;
-			FcPattern *match = FcFontMatch(0, pattern, &result);
+			FcPattern *match = FcFontMatch(nullptr, pattern, &result);
 			if (match) {
 				if (!allow_substitutes) {
 					char *family_name = nullptr;
@@ -926,9 +991,13 @@ void OS_LinuxBSD::run() {
 	//uint64_t frame=0;
 
 	while (true) {
+		GodotProfileFrameMark;
+		GodotProfileZone("OS_LinuxBSD::run");
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
-#ifdef JOYDEV_ENABLED
-		joypad->process_joypads();
+#ifdef SDL_ENABLED
+		if (joypad_sdl) {
+			joypad_sdl->process_events();
+		}
 #endif
 		if (Main::iteration()) {
 			break;
@@ -952,7 +1021,7 @@ static String get_mountpoint(const String &p_path) {
 		return "";
 	}
 
-#ifdef HAVE_MNTENT
+#if __has_include(<mntent.h>)
 	dev_t dev = s.st_dev;
 	FILE *fd = setmntent("/proc/mounts", "r");
 	if (!fd) {
@@ -1151,6 +1220,75 @@ String OS_LinuxBSD::get_system_ca_certificates() {
 	return f->get_as_text();
 }
 
+#ifdef TOOLS_ENABLED
+bool OS_LinuxBSD::_test_create_rendering_device(const String &p_display_driver) const {
+	// Tests Rendering Device creation.
+
+	bool ok = false;
+#if defined(RD_ENABLED)
+	Error err;
+	RenderingContextDriver *rcd = nullptr;
+
+#if defined(VULKAN_ENABLED)
+#ifdef X11_ENABLED
+	if (p_display_driver == "x11" || p_display_driver.is_empty()) {
+		rcd = memnew(RenderingContextDriverVulkanX11);
+	}
+#endif
+#ifdef WAYLAND_ENABLED
+	if (p_display_driver == "wayland") {
+		rcd = memnew(RenderingContextDriverVulkanWayland);
+	}
+#endif
+#endif
+	if (rcd != nullptr) {
+		err = rcd->initialize();
+		if (err == OK) {
+			RenderingDevice *rd = memnew(RenderingDevice);
+			err = rd->initialize(rcd);
+			memdelete(rd);
+			rd = nullptr;
+			if (err == OK) {
+				ok = true;
+			}
+		}
+		memdelete(rcd);
+		rcd = nullptr;
+	}
+#endif
+	return ok;
+}
+
+bool OS_LinuxBSD::_test_create_rendering_device_and_gl(const String &p_display_driver) const {
+	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some drivers.
+
+#ifdef GLES3_ENABLED
+#ifdef X11_ENABLED
+	if (p_display_driver == "x11" || p_display_driver.is_empty()) {
+#ifdef SOWRAP_ENABLED
+		if (initialize_xlib(0) != 0) {
+			return false;
+		}
+#endif
+		DetectPrimeX11::create_context();
+	}
+#endif
+#ifdef WAYLAND_ENABLED
+	if (p_display_driver == "wayland") {
+#ifdef SOWRAP_ENABLED
+		if (initialize_wayland_egl(0) != 0) {
+			return false;
+		}
+#endif
+		DetectPrimeEGL::create_context(EGL_PLATFORM_WAYLAND_KHR);
+	}
+#endif
+	RasterizerGLES3::make_current(true);
+#endif
+	return _test_create_rendering_device(p_display_driver);
+}
+#endif
+
 OS_LinuxBSD::OS_LinuxBSD() {
 	main_loop = nullptr;
 
@@ -1164,6 +1302,10 @@ OS_LinuxBSD::OS_LinuxBSD() {
 
 #ifdef X11_ENABLED
 	DisplayServerX11::register_x11_driver();
+#endif
+
+#ifdef WAYLAND_ENABLED
+	DisplayServerWayland::register_wayland_driver();
 #endif
 
 #ifdef FONTCONFIG_ENABLED

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 Import("env_modules")
@@ -12,24 +13,24 @@ thirdparty_obj = []
 if env["builtin_mbedtls"]:
     thirdparty_sources = [
         "aes.c",
+        "aesce.c",
         "aesni.c",
-        "arc4.c",
         "aria.c",
         "asn1parse.c",
         "asn1write.c",
         "base64.c",
         "bignum.c",
-        "blowfish.c",
+        "bignum_core.c",
+        "bignum_mod_raw.c",
         "camellia.c",
         "ccm.c",
-        "certs.c",
         "chacha20.c",
         "chachapoly.c",
         "cipher.c",
         "cipher_wrap.c",
         "cmac.c",
-        "ctr_drbg.c",
         "constant_time.c",
+        "ctr_drbg.c",
         "debug.c",
         "des.c",
         "dhm.c",
@@ -42,13 +43,10 @@ if env["builtin_mbedtls"]:
         "entropy_poll.c",
         "error.c",
         "gcm.c",
-        "havege.c",
         "hkdf.c",
         "hmac_drbg.c",
-        "md2.c",
-        "md4.c",
-        "md5.c",
         "md.c",
+        "md5.c",
         "memory_buffer_alloc.c",
         "mps_reader.c",
         "mps_trace.c",
@@ -58,30 +56,53 @@ if env["builtin_mbedtls"]:
         "padlock.c",
         "pem.c",
         "pk.c",
-        "pkcs11.c",
+        "pk_ecc.c",
+        "pk_wrap.c",
         "pkcs12.c",
         "pkcs5.c",
+        "pkcs7.c",
         "pkparse.c",
-        "pk_wrap.c",
         "pkwrite.c",
         "platform.c",
         "platform_util.c",
         "poly1305.c",
+        "psa_crypto.c",
+        "psa_crypto_aead.c",
+        "psa_crypto_cipher.c",
+        "psa_crypto_client.c",
+        "psa_crypto_driver_wrappers_no_static.c",
+        "psa_crypto_ecp.c",
+        "psa_crypto_ffdh.c",
+        "psa_crypto_hash.c",
+        "psa_crypto_mac.c",
+        "psa_crypto_pake.c",
+        "psa_crypto_rsa.c",
+        "psa_crypto_se.c",
+        "psa_crypto_slot_management.c",
+        "psa_crypto_storage.c",
+        "psa_its_file.c",
+        "psa_util.c",
         "ripemd160.c",
         "rsa.c",
-        "rsa_internal.c",
+        "rsa_alt_helpers.c",
         "sha1.c",
+        "sha3.c",
         "sha256.c",
         "sha512.c",
         "ssl_cache.c",
         "ssl_ciphersuites.c",
-        "ssl_cli.c",
+        "ssl_client.c",
         "ssl_cookie.c",
+        "ssl_debug_helpers_generated.c",
         "ssl_msg.c",
-        "ssl_srv.c",
         "ssl_ticket.c",
         "ssl_tls.c",
+        "ssl_tls12_client.c",
+        "ssl_tls12_server.c",
+        "ssl_tls13_client.c",
+        "ssl_tls13_generic.c",
         "ssl_tls13_keys.c",
+        "ssl_tls13_server.c",
         "threading.c",
         "timing.c",
         "version.c",
@@ -91,18 +112,18 @@ if env["builtin_mbedtls"]:
         "x509_crl.c",
         "x509_crt.c",
         "x509_csr.c",
+        "x509write.c",
         "x509write_crt.c",
         "x509write_csr.c",
-        "xtea.c",
     ]
 
     thirdparty_dir = "#thirdparty/mbedtls/library/"
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
     env_mbed_tls.Prepend(CPPPATH=["#thirdparty/mbedtls/include/"])
-    env_mbed_tls.Append(
-        CPPDEFINES=[("MBEDTLS_CONFIG_FILE", '\\"thirdparty/mbedtls/include/godot_module_mbedtls_config.h\\"')]
-    )
+    config_path = "thirdparty/mbedtls/include/godot_module_mbedtls_config.h"
+    config_path = f"<{config_path}>" if env_mbed_tls["ninja"] and env_mbed_tls.msvc else f'\\"{config_path}\\"'
+    env_mbed_tls.Append(CPPDEFINES=[("MBEDTLS_CONFIG_FILE", config_path)])
 
     env_thirdparty = env_mbed_tls.Clone()
     env_thirdparty.disable_warnings()
@@ -120,6 +141,9 @@ env_mbed_tls.add_source_files(module_obj, "*.cpp")
 if env["tests"]:
     env_mbed_tls.Append(CPPDEFINES=["TESTS_ENABLED"])
     env_mbed_tls.add_source_files(module_obj, "./tests/*.cpp")
+
+    if env["disable_exceptions"]:
+        env_mbed_tls.Append(CPPDEFINES=["DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS"])
 
 env.modules_sources += module_obj
 

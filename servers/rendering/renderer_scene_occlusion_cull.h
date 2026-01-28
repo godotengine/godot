@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_SCENE_OCCLUSION_CULL_H
-#define RENDERER_SCENE_OCCLUSION_CULL_H
+#pragma once
 
 #include "core/math/projection.h"
 #include "core/templates/local_vector.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class RendererSceneOcclusionCull {
 protected:
@@ -42,8 +41,6 @@ protected:
 public:
 	class HZBuffer {
 	protected:
-		static const Vector3 corners[8];
-
 		LocalVector<float> data;
 		LocalVector<Size2i> sizes;
 		LocalVector<float *> mips;
@@ -53,19 +50,15 @@ public:
 		PackedByteArray debug_data;
 		float debug_tex_range = 0.0f;
 
-	public:
-		bool is_empty() const;
-		virtual void clear();
-		virtual void resize(const Size2i &p_size);
+		uint64_t occlusion_frame = 0;
+		Size2i occlusion_buffer_size;
 
-		void update_mips();
-
-		_FORCE_INLINE_ bool is_occluded(const real_t p_bounds[6], const Vector3 &p_cam_position, const Transform3D &p_cam_inv_transform, const Projection &p_cam_projection, real_t p_near) const {
+		_FORCE_INLINE_ bool _is_occluded(const real_t p_bounds[6], const Vector3 &p_cam_position, const Transform3D &p_cam_inv_transform, const Projection &p_cam_projection, real_t p_near, bool p_is_orthogonal) const {
 			if (is_empty()) {
 				return false;
 			}
 
-			Vector3 closest_point = Vector3(CLAMP(p_cam_position.x, p_bounds[0], p_bounds[3]), CLAMP(p_cam_position.y, p_bounds[1], p_bounds[4]), CLAMP(p_cam_position.z, p_bounds[2], p_bounds[5]));
+			Vector3 closest_point = p_cam_position.clamp(Vector3(p_bounds[0], p_bounds[1], p_bounds[2]), Vector3(p_bounds[3], p_bounds[4], p_bounds[5]));
 
 			if (closest_point == p_cam_position) {
 				return false;
@@ -76,34 +69,41 @@ public:
 				return false;
 			}
 
-			float min_depth = -closest_point_view.z * 0.95f;
+			// Force distance calculation to use double precision to avoid floating-point overflow for distant objects.
+			closest_point = closest_point - p_cam_position;
+			float min_depth = Math::sqrt((double)closest_point.x * (double)closest_point.x + (double)closest_point.y * (double)closest_point.y + (double)closest_point.z * (double)closest_point.z);
 
 			Vector2 rect_min = Vector2(FLT_MAX, FLT_MAX);
 			Vector2 rect_max = Vector2(FLT_MIN, FLT_MIN);
 
 			for (int j = 0; j < 8; j++) {
-				const Vector3 &c = RendererSceneOcclusionCull::HZBuffer::corners[j];
-				Vector3 nc = Vector3(1, 1, 1) - c;
-				Vector3 corner = Vector3(p_bounds[0] * c.x + p_bounds[3] * nc.x, p_bounds[1] * c.y + p_bounds[4] * nc.y, p_bounds[2] * c.z + p_bounds[5] * nc.z);
+				// Bitmask to cycle through the corners of the AABB.
+				Vector3 corner = Vector3(
+						j & 4 ? p_bounds[0] : p_bounds[3],
+						j & 2 ? p_bounds[1] : p_bounds[4],
+						j & 1 ? p_bounds[2] : p_bounds[5]);
 				Vector3 view = p_cam_inv_transform.xform(corner);
 
-				Plane vp = Plane(view, 1.0);
-				Plane projected = p_cam_projection.xform4(vp);
+				// When using an orthogonal camera, the closest point of an AABB to the camera is guaranteed to be a corner.
+				if (p_is_orthogonal) {
+					min_depth = MIN(min_depth, -view.z);
+				}
 
-				float w = projected.d;
-				if (w < 1.0) {
+				Vector3 projected = p_cam_projection.xform(view);
+
+				if (-view.z < 0.0) {
 					rect_min = Vector2(0.0f, 0.0f);
 					rect_max = Vector2(1.0f, 1.0f);
 					break;
 				}
 
-				Vector2 normalized = Vector2(projected.normal.x / w * 0.5f + 0.5f, projected.normal.y / w * 0.5f + 0.5f);
+				Vector2 normalized = Vector2(projected.x * 0.5f + 0.5f, projected.y * 0.5f + 0.5f);
 				rect_min = rect_min.min(normalized);
 				rect_max = rect_max.max(normalized);
 			}
 
-			rect_max = rect_max.min(Vector2(1, 1));
-			rect_min = rect_min.max(Vector2(0, 0));
+			rect_max = rect_max.minf(1);
+			rect_min = rect_min.maxf(0);
 
 			int mip_count = mips.size();
 
@@ -154,9 +154,52 @@ public:
 			return !visible;
 		}
 
-		RID get_debug_texture();
+	public:
+		static bool occlusion_jitter_enabled;
 
-		virtual ~HZBuffer(){};
+		_FORCE_INLINE_ bool is_empty() const {
+			return sizes.is_empty();
+		}
+
+		virtual void clear();
+		virtual void resize(const Size2i &p_size);
+
+		void update_mips();
+
+		// Thin wrapper around _is_occluded(),
+		// allowing occlusion timers to delay the disappearance
+		// of objects to prevent flickering when using jittering.
+		_FORCE_INLINE_ bool is_occluded(const real_t p_bounds[6], const Vector3 &p_cam_position, const Transform3D &p_cam_inv_transform, const Projection &p_cam_projection, real_t p_near, bool p_is_orthogonal, uint64_t &r_occlusion_timeout) const {
+			bool occluded = _is_occluded(p_bounds, p_cam_position, p_cam_inv_transform, p_cam_projection, p_near, p_is_orthogonal);
+
+			// Special case, temporal jitter disabled,
+			// so we don't use occlusion timers.
+			if (!occlusion_jitter_enabled) {
+				return occluded;
+			}
+
+			if (!occluded) {
+//#define DEBUG_RASTER_OCCLUSION_JITTER
+#ifdef DEBUG_RASTER_OCCLUSION_JITTER
+				r_occlusion_timeout = occlusion_frame + 1;
+#else
+				r_occlusion_timeout = occlusion_frame + 9;
+#endif
+			} else if (r_occlusion_timeout) {
+				// Regular timeout, allow occlusion culling
+				// to proceed as normal after the delay.
+				if (occlusion_frame >= r_occlusion_timeout) {
+					r_occlusion_timeout = 0;
+				}
+			}
+
+			return occluded && !r_occlusion_timeout;
+		}
+
+		RID get_debug_texture();
+		const Size2i &get_occlusion_buffer_size() const { return occlusion_buffer_size; }
+
+		virtual ~HZBuffer() {}
 	};
 
 	static RendererSceneOcclusionCull *get_singleton() { return singleton; }
@@ -194,11 +237,9 @@ public:
 
 	RendererSceneOcclusionCull() {
 		singleton = this;
-	};
+	}
 
 	virtual ~RendererSceneOcclusionCull() {
 		singleton = nullptr;
-	};
+	}
 };
-
-#endif // RENDERER_SCENE_OCCLUSION_CULL_H

@@ -13,7 +13,7 @@ namespace GodotTools.Ides.MonoDevelop
         private readonly string _solutionFile;
         private readonly EditorId _editorId;
 
-        private Process _process;
+        private Process? _process;
 
         public bool IsRunning => _process != null && !_process.HasExited;
         public bool IsDisposed { get; private set; }
@@ -24,7 +24,7 @@ namespace GodotTools.Ides.MonoDevelop
 
             var args = new List<string>();
 
-            string command;
+            string? command;
 
             if (OS.IsMacOS)
             {
@@ -136,6 +136,8 @@ namespace GodotTools.Ides.MonoDevelop
                     {EditorId.MonoDevelop, "monodevelop"}
                 };
             }
+            ExecutableNames ??= new Dictionary<EditorId, string>();
+            BundleIds ??= new Dictionary<EditorId, string>();
         }
     }
 }

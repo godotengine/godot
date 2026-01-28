@@ -17,7 +17,7 @@
 			<description>
 				Returns the absolute path to the user's cache folder. This folder should be used for temporary data that can be removed safely whenever the editor is closed (such as generated resource thumbnails).
 				[b]Default paths per platform:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				- Windows: %LOCALAPPDATA%\Godot\
 				- macOS: ~/Library/Caches/Godot/
 				- Linux: ~/.cache/godot/
@@ -29,7 +29,7 @@
 			<description>
 				Returns the absolute path to the user's configuration folder. This folder should be used for [i]persistent[/i] user configuration files.
 				[b]Default paths per platform:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				- Windows: %APPDATA%\Godot\                    (same as `get_data_dir()`)
 				- macOS: ~/Library/Application Support/Godot/  (same as `get_data_dir()`)
 				- Linux: ~/.config/godot/
@@ -41,7 +41,7 @@
 			<description>
 				Returns the absolute path to the user's data folder. This folder should be used for [i]persistent[/i] user data files such as installed export templates.
 				[b]Default paths per platform:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				- Windows: %APPDATA%\Godot\                    (same as `get_config_dir()`)
 				- macOS: ~/Library/Application Support/Godot/  (same as `get_config_dir()`)
 				- Linux: ~/.local/share/godot/
@@ -51,7 +51,7 @@
 		<method name="get_project_settings_dir" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the project-specific editor settings path. Projects all have a unique subdirectory inside the settings path where project-specific editor settings are saved.
+				Returns the relative path to the editor settings for this project. This is usually [code]"res://.godot/editor"[/code]. Projects all have a unique subdirectory inside the settings path where project-specific editor settings are saved.
 			</description>
 		</method>
 		<method name="get_self_contained_file" qualifiers="const">

@@ -28,16 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VOXELIZER_H
-#define VOXELIZER_H
+#pragma once
 
 #include "scene/resources/multimesh.h"
 
 class Voxelizer {
-private:
-	enum {
-		CHILD_EMPTY = 0xFFFFFFFF
+public:
+	enum BakeResult {
+		BAKE_RESULT_OK,
+		BAKE_RESULT_INVALID_PARAMETER,
+		BAKE_RESULT_CANCELLED,
+	};
 
+	typedef bool (*BakeStepFunc)(int, int);
+
+private:
+	enum : uint32_t {
+		CHILD_EMPTY = 0xFFFFFFFF
 	};
 
 	struct Cell {
@@ -45,7 +52,6 @@ private:
 		float albedo[3] = {}; //albedo in RGB24
 		float emission[3] = {}; //accumulated light in 16:16 fixed point (needs to be integer for moving lights fast)
 		float normal[3] = {};
-		uint32_t used_sides = 0;
 		float alpha = 0.0; //used for upsampling
 		uint16_t x = 0;
 		uint16_t y = 0;
@@ -64,13 +70,13 @@ private:
 
 	struct CellSort {
 		union {
+			uint64_t key = 0;
 			struct {
 				uint64_t z : 16;
 				uint64_t y : 16;
 				uint64_t x : 16;
 				uint64_t level : 16;
 			};
-			uint64_t key = 0;
 		};
 
 		int32_t index = 0;
@@ -113,7 +119,8 @@ private:
 
 public:
 	void begin_bake(int p_subdiv, const AABB &p_bounds, float p_exposure_normalization);
-	void plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material);
+	int get_bake_steps(Ref<Mesh> &p_mesh) const;
+	BakeResult plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material, BakeStepFunc p_bake_step_function);
 	void end_bake();
 
 	int get_voxel_gi_octree_depth() const;
@@ -122,12 +129,10 @@ public:
 	Vector<uint8_t> get_voxel_gi_octree_cells() const;
 	Vector<uint8_t> get_voxel_gi_data_cells() const;
 	Vector<int> get_voxel_gi_level_cell_count() const;
-	Vector<uint8_t> get_sdf_3d_image() const;
+	BakeResult get_sdf_3d_image(Vector<uint8_t> &r_image, BakeStepFunc p_bake_step_function) const;
 
 	Ref<MultiMesh> create_debug_multimesh();
 
 	Transform3D get_to_cell_space_xform() const;
 	Voxelizer();
 };
-
-#endif // VOXELIZER_H

@@ -42,8 +42,9 @@
 			<param index="0" name="canvas" type="RID" />
 			<param index="1" name="pos" type="Vector2" />
 			<param index="2" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="3" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draw text into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
+				Draw text into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_outline" qualifiers="const">
@@ -52,8 +53,21 @@
 			<param index="1" name="pos" type="Vector2" />
 			<param index="2" name="outline_size" type="int" default="1" />
 			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="4" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draw text into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
+				Draw text into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+			</description>
+		</method>
+		<method name="duplicate" qualifiers="const">
+			<return type="TextLine" />
+			<description>
+				Duplicates this [TextLine].
+			</description>
+		</method>
+		<method name="get_inferred_direction" qualifiers="const">
+			<return type="int" enum="TextServer.Direction" />
+			<description>
+				Returns the text writing direction inferred by the BiDi algorithm.
 			</description>
 		</method>
 		<method name="get_line_ascent" qualifiers="const">
@@ -111,6 +125,13 @@
 				Returns size of the bounding box of the text.
 			</description>
 		</method>
+		<method name="has_object" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="key" type="Variant" />
+			<description>
+				Returns [code]true[/code] if an object with [param key] is embedded in this line.
+			</description>
+		</method>
 		<method name="hit_test" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="coords" type="float" />
@@ -151,6 +172,9 @@
 		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="TextServer.Direction" default="0">
 			Text writing direction.
 		</member>
+		<member name="ellipsis_char" type="String" setter="set_ellipsis_char" getter="get_ellipsis_char" default="&quot;…&quot;">
+			Ellipsis character used for text clipping.
+		</member>
 		<member name="flags" type="int" setter="set_flags" getter="get_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="3">
 			Line alignment rules. For more info see [TextServer].
 		</member>
@@ -164,7 +188,7 @@
 			If set to [code]true[/code] text will display invalid characters.
 		</member>
 		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="3">
-			Sets the clipping behavior when the text exceeds the text line's set width. See [enum TextServer.OverrunBehavior] for a description of all modes.
+			The clipping behavior when the text exceeds the text line's set width.
 		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width" default="-1.0">
 			Text line width.

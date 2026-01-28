@@ -32,6 +32,8 @@
 
 #include "noise.h"
 
+#include "servers/rendering/rendering_server.h"
+
 NoiseTexture3D::NoiseTexture3D() {
 	noise = Ref<Noise>();
 
@@ -41,7 +43,7 @@ NoiseTexture3D::NoiseTexture3D() {
 NoiseTexture3D::~NoiseTexture3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (texture.is_valid()) {
-		RS::get_singleton()->free(texture);
+		RS::get_singleton()->free_rid(texture);
 	}
 	if (noise_thread.is_started()) {
 		noise_thread.wait_to_finish();
@@ -49,44 +51,43 @@ NoiseTexture3D::~NoiseTexture3D() {
 }
 
 void NoiseTexture3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_texture"), &NoiseTexture3D::_update_texture);
-	ClassDB::bind_method(D_METHOD("_generate_texture"), &NoiseTexture3D::_generate_texture);
-	ClassDB::bind_method(D_METHOD("_thread_done", "image"), &NoiseTexture3D::_thread_done);
-
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &NoiseTexture3D::set_width);
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &NoiseTexture3D::set_height);
 	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &NoiseTexture3D::set_depth);
 
-	ClassDB::bind_method(D_METHOD("set_invert", "invert"), &NoiseTexture3D::set_invert);
-	ClassDB::bind_method(D_METHOD("get_invert"), &NoiseTexture3D::get_invert);
-
-	ClassDB::bind_method(D_METHOD("set_seamless", "seamless"), &NoiseTexture3D::set_seamless);
-	ClassDB::bind_method(D_METHOD("get_seamless"), &NoiseTexture3D::get_seamless);
-
-	ClassDB::bind_method(D_METHOD("set_seamless_blend_skirt", "seamless_blend_skirt"), &NoiseTexture3D::set_seamless_blend_skirt);
-	ClassDB::bind_method(D_METHOD("get_seamless_blend_skirt"), &NoiseTexture3D::get_seamless_blend_skirt);
-
-	ClassDB::bind_method(D_METHOD("set_normalize", "normalize"), &NoiseTexture3D::set_normalize);
-	ClassDB::bind_method(D_METHOD("is_normalized"), &NoiseTexture3D::is_normalized);
+	ClassDB::bind_method(D_METHOD("set_noise", "noise"), &NoiseTexture3D::set_noise);
+	ClassDB::bind_method(D_METHOD("get_noise"), &NoiseTexture3D::get_noise);
 
 	ClassDB::bind_method(D_METHOD("set_color_ramp", "gradient"), &NoiseTexture3D::set_color_ramp);
 	ClassDB::bind_method(D_METHOD("get_color_ramp"), &NoiseTexture3D::get_color_ramp);
 
-	ClassDB::bind_method(D_METHOD("set_noise", "noise"), &NoiseTexture3D::set_noise);
-	ClassDB::bind_method(D_METHOD("get_noise"), &NoiseTexture3D::get_noise);
+	ClassDB::bind_method(D_METHOD("set_seamless", "seamless"), &NoiseTexture3D::set_seamless);
+	ClassDB::bind_method(D_METHOD("get_seamless"), &NoiseTexture3D::get_seamless);
+
+	ClassDB::bind_method(D_METHOD("set_invert", "invert"), &NoiseTexture3D::set_invert);
+	ClassDB::bind_method(D_METHOD("get_invert"), &NoiseTexture3D::get_invert);
+
+	ClassDB::bind_method(D_METHOD("set_normalize", "normalize"), &NoiseTexture3D::set_normalize);
+	ClassDB::bind_method(D_METHOD("is_normalized"), &NoiseTexture3D::is_normalized);
+
+	ClassDB::bind_method(D_METHOD("set_seamless_blend_skirt", "seamless_blend_skirt"), &NoiseTexture3D::set_seamless_blend_skirt);
+	ClassDB::bind_method(D_METHOD("get_seamless_blend_skirt"), &NoiseTexture3D::get_seamless_blend_skirt);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,2048,1,or_greater,suffix:px"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "height", PROPERTY_HINT_RANGE, "1,2048,1,or_greater,suffix:px"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth", PROPERTY_HINT_RANGE, "1,2048,1,or_greater,suffix:px"), "set_depth", "get_depth");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert"), "set_invert", "get_invert");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "seamless"), "set_seamless", "get_seamless");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "seamless_blend_skirt", PROPERTY_HINT_RANGE, "0.05,1,0.001"), "set_seamless_blend_skirt", "get_seamless_blend_skirt");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "normalize"), "set_normalize", "is_normalized");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_ramp", "get_color_ramp");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise", PROPERTY_HINT_RESOURCE_TYPE, "Noise"), "set_noise", "get_noise");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_ramp", "get_color_ramp");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "seamless"), "set_seamless", "get_seamless");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert"), "set_invert", "get_invert");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "normalize"), "set_normalize", "is_normalized");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "seamless_blend_skirt", PROPERTY_HINT_RANGE, "0.05,1,0.001"), "set_seamless_blend_skirt", "get_seamless_blend_skirt");
 }
 
 void NoiseTexture3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "seamless_blend_skirt") {
 		if (!seamless) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
@@ -126,7 +127,7 @@ void NoiseTexture3D::_thread_done(const TypedArray<Image> &p_data) {
 
 void NoiseTexture3D::_thread_function(void *p_ud) {
 	NoiseTexture3D *tex = static_cast<NoiseTexture3D *>(p_ud);
-	tex->call_deferred(SNAME("_thread_done"), tex->_generate_texture());
+	callable_mp(tex, &NoiseTexture3D::_thread_done).call_deferred(tex->_generate_texture());
 }
 
 void NoiseTexture3D::_queue_update() {
@@ -135,7 +136,7 @@ void NoiseTexture3D::_queue_update() {
 	}
 
 	update_queued = true;
-	call_deferred(SNAME("_update_texture"));
+	callable_mp(this, &NoiseTexture3D::_update_texture).call_deferred();
 }
 
 TypedArray<Image> NoiseTexture3D::_generate_texture() {
@@ -145,6 +146,8 @@ TypedArray<Image> NoiseTexture3D::_generate_texture() {
 	if (ref_noise.is_null()) {
 		return TypedArray<Image>();
 	}
+
+	ERR_FAIL_COND_V_MSG((int64_t)width * height * depth > Image::MAX_PIXELS, TypedArray<Image>(), "The NoiseTexture3D is too big, consider lowering its width, height, or depth.");
 
 	Vector<Ref<Image>> images;
 
@@ -189,6 +192,9 @@ Ref<Image> NoiseTexture3D::_modulate_with_gradient(Ref<Image> p_image, Ref<Gradi
 
 void NoiseTexture3D::_update_texture() {
 	bool use_thread = true;
+#ifndef THREADS_ENABLED
+	use_thread = false;
+#endif
 	if (first_time) {
 		use_thread = false;
 		first_time = false;
@@ -331,6 +337,10 @@ int NoiseTexture3D::get_height() const {
 
 int NoiseTexture3D::get_depth() const {
 	return depth;
+}
+
+bool NoiseTexture3D::has_mipmaps() const {
+	return false;
 }
 
 RID NoiseTexture3D::get_rid() const {

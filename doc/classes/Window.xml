@@ -97,7 +97,7 @@
 		<method name="get_contents_minimum_size" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the combined minimum size from the child [Control] nodes of the window. Use [method child_controls_changed] to update it when children nodes have changed.
+				Returns the combined minimum size from the child [Control] nodes of the window. Use [method child_controls_changed] to update it when child nodes have changed.
 				The value returned by this method can be overridden with [method _get_contents_minimum_size].
 			</description>
 		</method>
@@ -106,6 +106,12 @@
 			<param index="0" name="flag" type="int" enum="Window.Flags" />
 			<description>
 				Returns [code]true[/code] if the [param flag] is set.
+			</description>
+		</method>
+		<method name="get_focused_window" qualifiers="static">
+			<return type="Window" />
+			<description>
+				Returns the focused window.
 			</description>
 		</method>
 		<method name="get_layout_direction" qualifiers="const">
@@ -118,18 +124,20 @@
 			<return type="Vector2i" />
 			<description>
 				Returns the window's position including its border.
+				[b]Note:[/b] If [member visible] is [code]false[/code], this method returns the same value as [member position].
 			</description>
 		</method>
 		<method name="get_size_with_decorations" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
 				Returns the window's size including its border.
+				[b]Note:[/b] If [member visible] is [code]false[/code], this method returns the same value as [member size].
 			</description>
 		</method>
 		<method name="get_theme_color" qualifiers="const">
 			<return type="Color" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a [Color] from the first matching [Theme] in the tree if that [Theme] has a color item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for more details.
@@ -138,7 +146,7 @@
 		<method name="get_theme_constant" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a constant from the first matching [Theme] in the tree if that [Theme] has a constant item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for more details.
@@ -168,7 +176,7 @@
 		<method name="get_theme_font" qualifiers="const">
 			<return type="Font" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a [Font] from the first matching [Theme] in the tree if that [Theme] has a font item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -177,7 +185,7 @@
 		<method name="get_theme_font_size" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a font size from the first matching [Theme] in the tree if that [Theme] has a font size item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -186,7 +194,7 @@
 		<method name="get_theme_icon" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns an icon from the first matching [Theme] in the tree if that [Theme] has an icon item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -195,7 +203,7 @@
 		<method name="get_theme_stylebox" qualifiers="const">
 			<return type="StyleBox" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a [StyleBox] from the first matching [Theme] in the tree if that [Theme] has a stylebox item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -222,7 +230,7 @@
 		<method name="has_theme_color" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a color item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -239,7 +247,7 @@
 		<method name="has_theme_constant" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a constant item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -256,7 +264,7 @@
 		<method name="has_theme_font" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -273,7 +281,7 @@
 		<method name="has_theme_font_size" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font size item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -290,7 +298,7 @@
 		<method name="has_theme_icon" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has an icon item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -307,7 +315,7 @@
 		<method name="has_theme_stylebox" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a stylebox item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -336,7 +344,7 @@
 		<method name="is_layout_rtl" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if layout is right-to-left.
+				Returns [code]true[/code] if the layout is right-to-left.
 			</description>
 		</method>
 		<method name="is_maximize_allowed" qualifiers="const">
@@ -354,13 +362,13 @@
 		<method name="move_to_center">
 			<return type="void" />
 			<description>
-				Centers a native window on the current screen and an embedded window on its embedder [Viewport].
+				Centers the window in the current screen. If the window is embedded, it is centered in the embedder [Viewport] instead.
 			</description>
 		</method>
-		<method name="move_to_foreground">
+		<method name="move_to_foreground" deprecated="Use [method Window.grab_focus] instead.">
 			<return type="void" />
 			<description>
-				Moves the [Window] on top of other windows and focuses it.
+				Causes the window to grab focus, allowing it to receive user input.
 			</description>
 		</method>
 		<method name="popup">
@@ -368,6 +376,9 @@
 			<param index="0" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
 			<description>
 				Shows the [Window] and makes it transient (see [member transient]). If [param rect] is provided, it will be set as the [Window]'s size. Fails if called on the main window.
+				If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]true[/code] (single-window mode), [param rect]'s coordinates are global and relative to the main window's top-left corner (excluding window decorations). If [param rect]'s position coordinates are negative, the window will be located outside the main window and may not be visible as a result.
+				If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]false[/code] (multi-window mode), [param rect]'s coordinates are global and relative to the top-left corner of the leftmost screen. If [param rect]'s position coordinates are negative, the window will be placed at the top-left corner of the screen.
+				[b]Note:[/b] [param rect] must be in global coordinates if specified.
 			</description>
 		</method>
 		<method name="popup_centered">
@@ -378,7 +389,7 @@
 				[b]Note:[/b] Calling it with the default value of [param minsize] is equivalent to calling it with [member size].
 			</description>
 		</method>
-		<method name="popup_centered_clamped">
+		<method name="popup_centered_clamped" keywords="minsize">
 			<return type="void" />
 			<param index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
 			<param index="1" name="fallback_ratio" type="float" default="0.75" />
@@ -413,7 +424,7 @@
 				See also [method set_unparent_when_invisible] and [method Node.get_last_exclusive_window].
 			</description>
 		</method>
-		<method name="popup_exclusive_centered_clamped">
+		<method name="popup_exclusive_centered_clamped" keywords="minsize">
 			<return type="void" />
 			<param index="0" name="from_node" type="Node" />
 			<param index="1" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
@@ -552,12 +563,31 @@
 				Makes the [Window] appear. This enables interactions with the [Window] and doesn't change any of its property other than visibility (unlike e.g. [method popup]).
 			</description>
 		</method>
+		<method name="start_drag">
+			<return type="void" />
+			<description>
+				Starts an interactive drag operation on the window, using the current mouse position. Call this method when handling a mouse button being pressed to simulate a pressed event on the window's title bar. Using this method allows the window to participate in space switching, tiling, and other system features.
+			</description>
+		</method>
+		<method name="start_resize">
+			<return type="void" />
+			<param index="0" name="edge" type="int" enum="DisplayServer.WindowResizeEdge" />
+			<description>
+				Starts an interactive resize operation on the window, using the current mouse position. Call this method when handling a mouse button being pressed to simulate a pressed event on the window's edge.
+			</description>
+		</method>
 	</methods>
 	<members>
+		<member name="accessibility_description" type="String" setter="set_accessibility_description" getter="get_accessibility_description" default="&quot;&quot;">
+			The human-readable node description that is reported to assistive apps.
+		</member>
+		<member name="accessibility_name" type="String" setter="set_accessibility_name" getter="get_accessibility_name" default="&quot;&quot;">
+			The human-readable node name that is reported to assistive apps.
+		</member>
 		<member name="always_on_top" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the window will be on top of all other windows. Does not work if [member transient] is enabled.
 		</member>
-		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" default="true">
+		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" deprecated="Use [member Node.auto_translate_mode] and [method Node.can_auto_translate] instead.">
 			Toggles if any text should automatically change to its translated version depending on the current locale.
 		</member>
 		<member name="borderless" type="bool" setter="set_flag" getter="get_flag" default="false">
@@ -567,19 +597,26 @@
 			Specifies how the content's aspect behaves when the [Window] is resized. The base aspect is determined by [member content_scale_size].
 		</member>
 		<member name="content_scale_factor" type="float" setter="set_content_scale_factor" getter="get_content_scale_factor" default="1.0">
-			Specifies the base scale of [Window]'s content when its [member size] is equal to [member content_scale_size].
+			Specifies the base scale of [Window]'s content when its [member size] is equal to [member content_scale_size]. See also [method Viewport.get_stretch_transform].
 		</member>
 		<member name="content_scale_mode" type="int" setter="set_content_scale_mode" getter="get_content_scale_mode" enum="Window.ContentScaleMode" default="0">
 			Specifies how the content is scaled when the [Window] is resized.
 		</member>
 		<member name="content_scale_size" type="Vector2i" setter="set_content_scale_size" getter="get_content_scale_size" default="Vector2i(0, 0)">
-			Base size of the content (i.e. nodes that are drawn inside the window). If non-zero, [Window]'s content will be scaled when the window is resized to a different size.
+			The content's base size in "virtual" pixels. Not to be confused with [member size], which sets the actual window's physical size in pixels. If set to a value greater than [code]0[/code] and [member content_scale_mode] is set to a value other than [constant CONTENT_SCALE_MODE_DISABLED], the [Window]'s content will be scaled when the window is resized to a different size. Higher values will make the content appear [i]smaller[/i], as it will be able to fit more of the project in view. On the root [Window], this is set to match [member ProjectSettings.display/window/size/viewport_width] and [member ProjectSettings.display/window/size/viewport_height] by default.
+			For example, when using [constant CONTENT_SCALE_MODE_CANVAS_ITEMS] and [member content_scale_size] set to [code]Vector2i(1280, 720)[/code], using a window size of [code]2560×1440[/code] will make 2D elements appear at double their original size, as the content is scaled by a factor of [code]2.0[/code] ([code]2560.0 / 1280.0 = 2.0[/code], [code]1440.0 / 720.0 = 2.0[/code]).
+			See [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html#base-size]the Base size section of the Multiple resolutions documentation[/url] for details.
 		</member>
 		<member name="content_scale_stretch" type="int" setter="set_content_scale_stretch" getter="get_content_scale_stretch" enum="Window.ContentScaleStretch" default="0">
 			The policy to use to determine the final scale factor for 2D elements. This affects how [member content_scale_factor] is applied, in addition to the automatic scale factor determined by [member content_scale_size].
 		</member>
 		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen">
 			The screen the window is currently on.
+		</member>
+		<member name="exclude_from_capture" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the [Window] is excluded from screenshots taken by [method DisplayServer.screen_get_image], [method DisplayServer.screen_get_image_rect], and [method DisplayServer.screen_get_pixel].
+			[b]Note:[/b] This property is implemented on macOS and Windows.
+			[b]Note:[/b] Enabling this setting will prevent standard screenshot methods from capturing a window image, but does [b]NOT[/b] guarantee that other apps won't be able to capture an image. It should not be used as a DRM or security measure.
 		</member>
 		<member name="exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" default="false">
 			If [code]true[/code], the [Window] will be in exclusive mode. Exclusive windows are always on top of their parent and will block all input going to the parent [Window].
@@ -590,8 +627,11 @@
 			[b]Note:[/b] This property is implemented only on macOS.
 			[b]Note:[/b] This property only works with native windows.
 		</member>
+		<member name="force_native" type="bool" setter="set_force_native" getter="get_force_native" default="false">
+			If [code]true[/code], native window will be used regardless of parent viewport and project settings.
+		</member>
 		<member name="initial_position" type="int" setter="set_initial_position" getter="get_initial_position" enum="Window.WindowInitialPosition" default="0">
-			Specifies the initial type of position for the [Window]. See [enum WindowInitialPosition] constants.
+			Specifies the initial type of position for the [Window].
 		</member>
 		<member name="keep_title_visible" type="bool" setter="set_keep_title_visible" getter="get_keep_title_visible" default="false">
 			If [code]true[/code], the [Window] width is expanded to keep the title bar text fully visible.
@@ -600,9 +640,19 @@
 			If non-zero, the [Window] can't be resized to be bigger than this size.
 			[b]Note:[/b] This property will be ignored if the value is lower than [member min_size].
 		</member>
+		<member name="maximize_disabled" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the [Window]'s maximize button is disabled.
+			[b]Note:[/b] If both minimize and maximize buttons are disabled, buttons are fully hidden, and only close button is visible.
+			[b]Note:[/b] This property is implemented only on macOS and Windows.
+		</member>
 		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" default="Vector2i(0, 0)">
 			If non-zero, the [Window] can't be resized to be smaller than this size.
 			[b]Note:[/b] This property will be ignored in favor of [method get_contents_minimum_size] if [member wrap_controls] is enabled and if its size is bigger.
+		</member>
+		<member name="minimize_disabled" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the [Window]'s minimize button is disabled.
+			[b]Note:[/b] If both minimize and maximize buttons are disabled, buttons are fully hidden, and only close button is visible.
+			[b]Note:[/b] This property is implemented only on macOS and Windows.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Window.Mode" default="0">
 			Set's the window's current mode.
@@ -630,29 +680,40 @@
 			[/gdscript]
 			[csharp]
 			// Set region, using Path2D node.
-			GetNode&lt;Window&gt;("Window").MousePassthrough = GetNode&lt;Path2D&gt;("Path2D").Curve.GetBakedPoints();
+			GetNode&lt;Window&gt;("Window").MousePassthroughPolygon = GetNode&lt;Path2D&gt;("Path2D").Curve.GetBakedPoints();
 
 			// Set region, using Polygon2D node.
-			GetNode&lt;Window&gt;("Window").MousePassthrough = GetNode&lt;Polygon2D&gt;("Polygon2D").Polygon;
+			GetNode&lt;Window&gt;("Window").MousePassthroughPolygon = GetNode&lt;Polygon2D&gt;("Polygon2D").Polygon;
 
 			// Reset region to default.
-			GetNode&lt;Window&gt;("Window").MousePassthrough = new Vector2[] {};
+			GetNode&lt;Window&gt;("Window").MousePassthroughPolygon = [];
 			[/csharp]
 			[/codeblocks]
 			[b]Note:[/b] This property is ignored if [member mouse_passthrough] is set to [code]true[/code].
 			[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux (X11) and macOS it is.
 			[b]Note:[/b] This property is implemented on Linux (X11), macOS and Windows.
 		</member>
+		<member name="nonclient_area" type="Rect2i" setter="set_nonclient_area" getter="get_nonclient_area" default="Rect2i(0, 0, 0, 0)">
+			If set, defines the window's custom decoration area which will receive mouse input, even if normal input to the window is blocked (such as when it has an exclusive child opened). See also [signal nonclient_window_input].
+		</member>
 		<member name="popup_window" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] will be considered a popup. Popups are sub-windows that don't show as separate windows in system's window manager's window list and will send close request when anything is clicked outside of them (unless [member exclusive] is enabled).
+		</member>
+		<member name="popup_wm_hint" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the [Window] will signal to the window manager that it is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable and immovable child window).
 		</member>
 		<member name="position" type="Vector2i" setter="set_position" getter="get_position" default="Vector2i(0, 0)">
 			The window's position in pixels.
 			If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]false[/code], the position is in absolute screen coordinates. This typically applies to editor plugins. If the setting is [code]true[/code], the window's position is in the coordinates of its parent [Viewport].
 			[b]Note:[/b] This property only works if [member initial_position] is set to [constant WINDOW_INITIAL_POSITION_ABSOLUTE].
 		</member>
+		<member name="sharp_corners" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the [Window] will override the OS window style to display sharp corners.
+			[b]Note:[/b] This property is implemented only on Windows (11).
+			[b]Note:[/b] This property only works with native windows.
+		</member>
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(100, 100)">
-			The window's size in pixels.
+			The window's size in pixels. See also [member content_scale_size], which doesn't set the window's physical size but affects how scaling works relative to the current [member content_scale_mode].
 		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
 			The [Theme] resource this node and all its [Control] and [Window] children use. If a child node has its own [Theme] resource set, theme items are merged with child's definitions having higher priority.
@@ -668,16 +729,19 @@
 			If [code]true[/code], the [Window] is transient, i.e. it's considered a child of another [Window]. The transient window will be destroyed with its transient parent and will return focus to their parent when closed. The transient window is displayed on top of a non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
 			Note that behavior might be different depending on the platform.
 		</member>
+		<member name="transient_to_focused" type="bool" setter="set_transient_to_focused" getter="is_transient_to_focused" default="false">
+			If [code]true[/code], and the [Window] is [member transient], this window will (at the time of becoming visible) become transient to the currently focused window instead of the immediate parent window in the hierarchy. Note that the transient parent is assigned at the time this window becomes visible, so changing it afterwards has no effect until re-shown.
+		</member>
 		<member name="transparent" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window]'s background can be transparent. This is best used with embedded windows.
 			[b]Note:[/b] Transparency support is implemented on Linux, macOS and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
-			[b]Note:[/b] This property has no effect if either [member ProjectSettings.display/window/per_pixel_transparency/allowed], or the window's [member Viewport.transparent_bg] is set to [code]false[/code].
+			[b]Note:[/b] This property has no effect if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
 		</member>
 		<member name="unfocusable" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] can't be focused nor interacted with. It can still be visible.
 		</member>
 		<member name="unresizable" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], the window can't be resized. Minimize and maximize buttons are disabled.
+			If [code]true[/code], the window can't be resized.
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
 			If [code]true[/code], the window is visible.
@@ -702,22 +766,21 @@
 		<signal name="dpi_changed">
 			<description>
 				Emitted when the [Window]'s DPI changes as a result of OS-level changes (e.g. moving the window from a Retina display to a lower resolution one).
-				[b]Note:[/b] Only implemented on macOS.
+				[b]Note:[/b] Only implemented on macOS and Linux (Wayland).
 			</description>
 		</signal>
 		<signal name="files_dropped">
 			<param index="0" name="files" type="PackedStringArray" />
 			<description>
 				Emitted when files are dragged from the OS file manager and dropped in the game window. The argument is a list of file paths.
-				Note that this method only works with native windows, i.e. the main window and [Window]-derived nodes when [member Viewport.gui_embed_subwindows] is disabled in the main viewport.
-				Example usage:
 				[codeblock]
 				func _ready():
-				    get_viewport().files_dropped.connect(on_files_dropped)
+					get_window().files_dropped.connect(on_files_dropped)
 
 				func on_files_dropped(files):
-				    print(files)
+					print(files)
 				[/codeblock]
+				[b]Note:[/b] This signal only works with native windows, i.e. the main window and [Window]-derived nodes when [member Viewport.gui_embed_subwindows] is disabled in the main viewport.
 			</description>
 		</signal>
 		<signal name="focus_entered">
@@ -745,9 +808,20 @@
 				Emitted when the mouse cursor leaves the [Window]'s visible area, that is not occluded behind other [Control]s or windows, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
 			</description>
 		</signal>
+		<signal name="nonclient_window_input">
+			<param index="0" name="event" type="InputEvent" />
+			<description>
+				Emitted when the mouse event is received by the custom decoration area defined by [member nonclient_area], and normal input to the window is blocked (such as when it has an exclusive child opened). [param event]'s position is in the embedder's coordinate system.
+			</description>
+		</signal>
 		<signal name="theme_changed">
 			<description>
 				Emitted when the [constant NOTIFICATION_THEME_CHANGED] notification is sent.
+			</description>
+		</signal>
+		<signal name="title_changed">
+			<description>
+				Emitted when window title bar text is changed.
 			</description>
 		</signal>
 		<signal name="titlebar_changed">
@@ -790,16 +864,19 @@
 		<constant name="MODE_FULLSCREEN" value="3" enum="Mode">
 			Full screen mode with full multi-window support.
 			Full screen window covers the entire display area of a screen and has no decorations. The display's video mode is not changed.
-			[b]On Windows:[/b] Multi-window full-screen mode has a 1px border of the [member ProjectSettings.rendering/environment/defaults/default_clear_color] color.
+			[b]On Android:[/b] This enables immersive mode.
 			[b]On macOS:[/b] A new desktop is used to display the running project.
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="Mode">
 			A single window full screen mode. This mode has less overhead, but only one window can be open on a given screen at a time (opening a child window or application switching will trigger a full screen transition).
 			Full screen window covers the entire display area of a screen and has no border or decorations. The display's video mode is not changed.
+			[b]Note:[/b] This mode might not work with screen recording software.
+			[b]On Android:[/b] This enables immersive mode.
 			[b]On Windows:[/b] Depending on video driver, full screen transition might cause screens to go black for a moment.
 			[b]On macOS:[/b] A new desktop is used to display the running project. Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
 			[b]On Linux (X11):[/b] Exclusive full screen mode bypasses compositor.
+			[b]On Linux (Wayland):[/b] Equivalent to [constant MODE_FULLSCREEN].
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="FLAG_RESIZE_DISABLED" value="0" enum="Flags">
@@ -831,11 +908,33 @@
 			All mouse events are passed to the underlying window of the same application.
 			[b]Note:[/b] This flag has no effect in embedded windows.
 		</constant>
-		<constant name="FLAG_MAX" value="8" enum="Flags">
+		<constant name="FLAG_SHARP_CORNERS" value="8" enum="Flags">
+			Window style is overridden, forcing sharp corners.
+			[b]Note:[/b] This flag has no effect in embedded windows.
+			[b]Note:[/b] This flag is implemented only on Windows (11).
+		</constant>
+		<constant name="FLAG_EXCLUDE_FROM_CAPTURE" value="9" enum="Flags">
+			Windows is excluded from screenshots taken by [method DisplayServer.screen_get_image], [method DisplayServer.screen_get_image_rect], and [method DisplayServer.screen_get_pixel].
+			[b]Note:[/b] This flag has no effect in embedded windows.
+			[b]Note:[/b] This flag is implemented on macOS and Windows (10, 20H1).
+			[b]Note:[/b] Setting this flag will prevent standard screenshot methods from capturing a window image, but does [b]NOT[/b] guarantee that other apps won't be able to capture an image. It should not be used as a DRM or security measure.
+		</constant>
+		<constant name="FLAG_POPUP_WM_HINT" value="10" enum="Flags">
+			Signals the window manager that this window is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable and immovable child window).
+		</constant>
+		<constant name="FLAG_MINIMIZE_DISABLED" value="11" enum="Flags">
+			Window minimize button is disabled.
+			[b]Note:[/b] This flag is implemented on macOS and Windows.
+		</constant>
+		<constant name="FLAG_MAXIMIZE_DISABLED" value="12" enum="Flags">
+			Window maximize button is disabled.
+			[b]Note:[/b] This flag is implemented on macOS and Windows.
+		</constant>
+		<constant name="FLAG_MAX" value="13" enum="Flags">
 			Max value of the [enum Flags].
 		</constant>
 		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">
-			The content will not be scaled to match the [Window]'s size.
+			The content will not be scaled to match the [Window]'s size ([member content_scale_size] is ignored).
 		</constant>
 		<constant name="CONTENT_SCALE_MODE_CANVAS_ITEMS" value="1" enum="ContentScaleMode">
 			The content will be rendered at the target size. This is more performance-expensive than [constant CONTENT_SCALE_MODE_VIEWPORT], but provides better results.
@@ -867,7 +966,7 @@
 		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
 			Automatic layout direction, determined from the parent window layout direction.
 		</constant>
-		<constant name="LAYOUT_DIRECTION_LOCALE" value="1" enum="LayoutDirection">
+		<constant name="LAYOUT_DIRECTION_APPLICATION_LOCALE" value="1" enum="LayoutDirection">
 			Automatic layout direction, determined from the current locale.
 		</constant>
 		<constant name="LAYOUT_DIRECTION_LTR" value="2" enum="LayoutDirection">
@@ -875,6 +974,14 @@
 		</constant>
 		<constant name="LAYOUT_DIRECTION_RTL" value="3" enum="LayoutDirection">
 			Right-to-left layout direction.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_SYSTEM_LOCALE" value="4" enum="LayoutDirection">
+			Automatic layout direction, determined from the system locale.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_MAX" value="5" enum="LayoutDirection">
+			Represents the size of the [enum LayoutDirection] enum.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_LOCALE" value="1" enum="LayoutDirection" deprecated="Use [constant LAYOUT_DIRECTION_APPLICATION_LOCALE] instead.">
 		</constant>
 		<constant name="WINDOW_INITIAL_POSITION_ABSOLUTE" value="0" enum="WindowInitialPosition">
 			Initial window position is determined by [member position].
@@ -899,14 +1006,14 @@
 		<theme_item name="title_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			The color of the title's text.
 		</theme_item>
-		<theme_item name="title_outline_modulate" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="title_outline_modulate" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The color of the title's text outline.
 		</theme_item>
 		<theme_item name="close_h_offset" data_type="constant" type="int" default="18">
-			Horizontal position offset of the close button.
+			Horizontal position offset of the close button, relative to the end of the title bar, towards the beginning of the title bar.
 		</theme_item>
 		<theme_item name="close_v_offset" data_type="constant" type="int" default="24">
-			Vertical position offset of the close button.
+			Vertical position offset of the close button, relative to the bottom of the title bar, towards the top of the title bar.
 		</theme_item>
 		<theme_item name="resize_margin" data_type="constant" type="int" default="4">
 			Defines the outside margin at which the window border can be grabbed with mouse and resized.

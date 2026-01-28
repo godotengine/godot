@@ -90,7 +90,7 @@ int ENetPacketPeer::get_available_packet_count() const {
 
 Error ENetPacketPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	ERR_FAIL_NULL_V(peer, ERR_UNCONFIGURED);
-	ERR_FAIL_COND_V(!packet_queue.size(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(packet_queue.is_empty(), ERR_UNAVAILABLE);
 	if (last_packet) {
 		enet_packet_destroy(last_packet);
 		last_packet = nullptr;
@@ -175,8 +175,16 @@ int ENetPacketPeer::get_channels() const {
 	return peer->channelCount;
 }
 
+int ENetPacketPeer::get_packet_flags() const {
+	ERR_FAIL_COND_V(packet_queue.is_empty(), 0);
+	return packet_queue.front()->get()->flags;
+}
+
 void ENetPacketPeer::_on_disconnect() {
 	if (peer) {
+#ifdef GODOT_ENET
+		enet_peer_socket_destroy(peer);
+#endif
 		peer->data = nullptr;
 	}
 	peer = nullptr;
@@ -206,6 +214,7 @@ void ENetPacketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("send", "channel", "packet", "flags"), &ENetPacketPeer::_send);
 	ClassDB::bind_method(D_METHOD("throttle_configure", "interval", "acceleration", "deceleration"), &ENetPacketPeer::throttle_configure);
 	ClassDB::bind_method(D_METHOD("set_timeout", "timeout", "timeout_min", "timeout_max"), &ENetPacketPeer::set_timeout);
+	ClassDB::bind_method(D_METHOD("get_packet_flags"), &ENetPacketPeer::get_packet_flags);
 	ClassDB::bind_method(D_METHOD("get_remote_address"), &ENetPacketPeer::get_remote_address);
 	ClassDB::bind_method(D_METHOD("get_remote_port"), &ENetPacketPeer::get_remote_port);
 	ClassDB::bind_method(D_METHOD("get_statistic", "statistic"), &ENetPacketPeer::get_statistic);
@@ -250,6 +259,9 @@ void ENetPacketPeer::_bind_methods() {
 ENetPacketPeer::ENetPacketPeer(ENetPeer *p_peer) {
 	peer = p_peer;
 	peer->data = this;
+#ifdef GODOT_ENET
+	enet_peer_socket_bind(peer);
+#endif
 }
 
 ENetPacketPeer::~ENetPacketPeer() {

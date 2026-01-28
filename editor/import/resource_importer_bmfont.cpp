@@ -30,6 +30,7 @@
 
 #include "resource_importer_bmfont.h"
 
+#include "core/io/config_file.h"
 #include "core/io/resource_saver.h"
 
 String ResourceImporterBMFont::get_importer_name() const {
@@ -66,7 +67,7 @@ void ResourceImporterBMFont::get_import_options(const String &p_path, List<Impor
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "scaling_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled (Integer),Enabled (Fractional)"), TextServer::FIXED_SIZE_SCALE_ENABLED));
 }
 
-Error ResourceImporterBMFont::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterBMFont::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	print_verbose("Importing BMFont font from: " + p_source_file);
 
 	Array fallbacks = p_options["fallbacks"];
@@ -75,8 +76,23 @@ Error ResourceImporterBMFont::import(const String &p_source_file, const String &
 	Ref<FontFile> font;
 	font.instantiate();
 
-	Error err = font->load_bitmap_font(p_source_file);
+	List<String> image_files;
+	Error err = font->_load_bitmap_font(p_source_file, &image_files);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot load font to file \"" + p_source_file + "\".");
+
+	// Update import settings for the image files used by font.
+	for (const String &file : image_files) {
+		Ref<ConfigFile> config;
+		config.instantiate();
+
+		err = config->load(file + ".import");
+		if (err == OK) {
+			config->clear();
+			config->set_value("remap", "importer", "skip");
+
+			config->save(file + ".import");
+		}
+	}
 
 	font->set_allow_system_fallback(false);
 	font->set_fallbacks(fallbacks);
@@ -92,7 +108,4 @@ Error ResourceImporterBMFont::import(const String &p_source_file, const String &
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save font to file \"" + p_save_path + ".res\".");
 	print_verbose("Done saving to: " + p_save_path + ".fontdata");
 	return OK;
-}
-
-ResourceImporterBMFont::ResourceImporterBMFont() {
 }
