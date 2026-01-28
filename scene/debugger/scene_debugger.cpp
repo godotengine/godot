@@ -37,6 +37,7 @@
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/math/geometry_3d.h"
 #include "core/math/math_fieldwise.h"
 #include "core/object/script_language.h"
 #include "core/os/time.h"

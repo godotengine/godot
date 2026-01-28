@@ -33,20 +33,11 @@
 #include "core/variant/variant.h"
 
 void NodePath::_update_hash_cache() const {
-	uint32_t h = data->absolute ? 1 : 0;
-	int pc = data->path.size();
-	const StringName *sn = data->path.ptr();
-	for (int i = 0; i < pc; i++) {
-		h = h ^ sn[i].hash();
-	}
-	int spc = data->subpath.size();
-	const StringName *ssn = data->subpath.ptr();
-	for (int i = 0; i < spc; i++) {
-		h = h ^ ssn[i].hash();
-	}
-
+	StringName path = get_concatenated_names();
+	StringName subpath = get_concatenated_subnames();
+	uint32_t hash = HashMapHasherDefault::hash(Pair<const StringName &, const StringName &>(path, subpath));
+	data->hash_cache = is_absolute() ? hash : ~hash;
 	data->hash_cache_valid = true;
-	data->hash_cache = h;
 }
 
 void NodePath::prepend_period() {
