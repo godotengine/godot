@@ -62,6 +62,9 @@ Size2 EditorSpinSlider::get_minimum_size() const {
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
 
 	Size2 ms = sb->get_minimum_size();
+	Ref<Texture2D> updown = read_only ? theme_cache.updown_disabled_icon : theme_cache.updown_icon;
+	ms.width += updown->get_width();
+
 	ms.height += font->get_height(font_size);
 	ms.height = MAX(ms.height, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor)));
 
@@ -351,8 +354,6 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 	int label_width = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 	int number_width = size.width - sb->get_minimum_size().width - label_width - sep;
-
-	Ref<Texture2D> updown = get_theme_icon(read_only ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
 
 	String numstr = get_text_value();
 
