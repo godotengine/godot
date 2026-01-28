@@ -933,7 +933,7 @@ void EditorPropertyArray::_reorder_button_down(int p_slot_index) {
 	reorder_to_index = reorder_slot.index;
 	// Ideally it'd to be able to show the mouse but I had issues with
 	// Control's `mouse_exit()`/`mouse_entered()` signals not getting called.
-	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+	Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
 }
 
 void EditorPropertyArray::_reorder_button_up() {
@@ -954,7 +954,7 @@ void EditorPropertyArray::_reorder_button_up() {
 		emit_changed(get_edited_property(), array);
 	}
 
-	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+	Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 
 	ERR_FAIL_NULL(reorder_slot.reorder_button);
 	reorder_slot.reorder_button->warp_mouse(reorder_slot.reorder_button->get_size() / 2.0f);

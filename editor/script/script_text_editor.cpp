@@ -31,6 +31,7 @@
 #include "script_text_editor.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "core/math/expression.h"

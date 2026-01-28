@@ -30,7 +30,8 @@
 
 #pragma once
 
-#include "core/input/input.h"
+#include "core/input/input_event.h"
+#include "core/templates/rb_map.h"
 
 // This class encapsulates all the handling of input events that come from the Android UI thread.
 // Remarks:

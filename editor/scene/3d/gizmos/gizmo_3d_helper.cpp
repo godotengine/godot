@@ -30,6 +30,7 @@
 
 #include "gizmo_3d_helper.h"
 
+#include "core/input/input.h"
 #include "core/math/geometry_3d.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"

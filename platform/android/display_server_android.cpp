@@ -36,6 +36,7 @@
 #include "tts_android.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"

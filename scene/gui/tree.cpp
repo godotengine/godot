@@ -4042,7 +4042,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 					range_drag_enabled = true;
 					range_drag_capture_pos = cpos;
 					range_drag_base = popup_edited_item->get_range(popup_edited_item_col);
-					Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+					Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
 				}
 			} else {
 				const TreeItem::Cell &c = popup_edited_item->cells[popup_edited_item_col];
@@ -4102,7 +4102,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 				if (pressing_for_editor) {
 					if (range_drag_enabled) {
 						range_drag_enabled = false;
-						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+						Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 						warp_mouse(range_drag_capture_pos);
 					} else {
 						Rect2 rect = _get_item_focus_rect(get_selected());
@@ -5462,7 +5462,7 @@ void Tree::clear() {
 	if (pressing_for_editor) {
 		if (range_drag_enabled) {
 			range_drag_enabled = false;
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 			warp_mouse(range_drag_capture_pos);
 		}
 		pressing_for_editor = false;

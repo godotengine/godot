@@ -30,6 +30,7 @@
 
 #include "slider.h"
 
+#include "core/input/input.h"
 #include "scene/theme/theme_db.h"
 
 Size2 Slider::get_minimum_size() const {

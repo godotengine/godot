@@ -195,8 +195,8 @@ void ViewportNavigationControl::_process_click(int p_index, Vector2 p_position, 
 		}
 	} else {
 		focused_index = -1;
-		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
+			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 			Input::get_singleton()->warp_mouse(focused_mouse_start);
 		}
 	}
@@ -204,8 +204,8 @@ void ViewportNavigationControl::_process_click(int p_index, Vector2 p_position, 
 
 void ViewportNavigationControl::_process_drag(int p_index, Vector2 p_position, Vector2 p_relative_position) {
 	if (focused_index == p_index) {
-		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_VISIBLE) {
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_VISIBLE) {
+			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
 			focused_mouse_start = p_position;
 		}
 		focused_pos += p_relative_position;
@@ -455,8 +455,8 @@ void ViewportRotationControl::_process_click(int p_index, Vector2 p_position, bo
 			_update_focus();
 		}
 		orbiting_index = -1;
-		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
+			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 			Input::get_singleton()->warp_mouse(orbiting_mouse_start);
 		}
 	}
@@ -466,8 +466,8 @@ void ViewportRotationControl::_process_drag(Ref<InputEventWithModifiers> p_event
 	Point2 mouse_pos = get_local_mouse_position();
 	const bool movement_threshold_passed = original_mouse_pos.distance_to(mouse_pos) > 4 * EDSCALE;
 	if (orbiting_index == p_index && gizmo_activated && movement_threshold_passed) {
-		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_VISIBLE) {
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_VISIBLE) {
+			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
 			orbiting_mouse_start = p_position;
 			viewport->previous_cursor = viewport->cursor;
 		}
@@ -485,8 +485,8 @@ void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
-		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
+			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 			Input::get_singleton()->warp_mouse(orbiting_mouse_start);
 			viewport->cursor = viewport->previous_cursor;
 			gizmo_activated = false;
@@ -504,8 +504,8 @@ void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 				grab_focus();
 			}
 		} else if (mb->get_button_index() == MouseButton::RIGHT) {
-			if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
-				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+			if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
+				Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 				Input::get_singleton()->warp_mouse(orbiting_mouse_start);
 				viewport->cursor = viewport->previous_cursor;
 				gizmo_activated = false;
@@ -1692,7 +1692,7 @@ void Node3DEditorViewport::_reset_transform(TransformType p_type) {
 }
 
 void Node3DEditorViewport::_surface_mouse_enter() {
-	if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
+	if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
 		return;
 	}
 
@@ -1804,7 +1804,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 
 // Helper function to redirect mouse events to the active freelook viewport
 static bool _redirect_freelook_input(const Ref<InputEvent> &p_event, Node3DEditorViewport *p_exclude_viewport = nullptr) {
-	if (Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED) {
+	if (Input::get_singleton()->get_mouse_mode() != Input::MouseMode::MOUSE_MODE_CAPTURED) {
 		return false;
 	}
 
@@ -2291,7 +2291,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 	Vector<ShortcutCheckSet> shortcut_check_sets;
 
-	if (Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED) {
+	if (Input::get_singleton()->get_mouse_mode() != Input::MouseMode::MOUSE_MODE_CAPTURED) {
 		ViewportNavMouseButton orbit_mouse_preference = (ViewportNavMouseButton)EDITOR_GET("editors/3d/navigation/orbit_mouse_button").operator int();
 		ViewportNavMouseButton pan_mouse_preference = (ViewportNavMouseButton)EDITOR_GET("editors/3d/navigation/pan_mouse_button").operator int();
 		ViewportNavMouseButton zoom_mouse_preference = (ViewportNavMouseButton)EDITOR_GET("editors/3d/navigation/zoom_mouse_button").operator int();
@@ -3009,7 +3009,7 @@ void Node3DEditorViewport::set_freelook_active(bool active_now) {
 		spatial_editor->set_freelook_viewport(this);
 
 		// Hide mouse like in an FPS (warping doesn't work)
-		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+		Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
 
 	} else if (freelook_active && !active_now) {
 		// Sync camera cursor to cursor to "cut" interpolation jumps due to changing referential
@@ -3018,7 +3018,7 @@ void Node3DEditorViewport::set_freelook_active(bool active_now) {
 		spatial_editor->set_freelook_viewport(nullptr);
 
 		// Restore mouse
-		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+		Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 
 		// Restore the previous mouse position when leaving freelook mode.
 		// This is done because leaving `Input.MOUSE_MODE_CAPTURED` will center the cursor
@@ -6678,7 +6678,7 @@ void Node3DEditorViewportContainer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (mouseover && Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED) {
+			if (mouseover && Input::get_singleton()->get_mouse_mode() != Input::MouseMode::MOUSE_MODE_CAPTURED) {
 				Ref<Texture2D> h_grabber = get_theme_icon(SNAME("grabber"), SNAME("HSplitContainer"));
 				Ref<Texture2D> v_grabber = get_theme_icon(SNAME("grabber"), SNAME("VSplitContainer"));
 

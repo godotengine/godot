@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/input/input.h"
 #include "servers/display/display_server.h"
 
 #include "servers/rendering/dummy/rasterizer_dummy.h"

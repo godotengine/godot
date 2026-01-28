@@ -30,6 +30,7 @@
 
 #include "tab_bar.h"
 
+#include "core/input/input.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"

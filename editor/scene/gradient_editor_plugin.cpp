@@ -30,6 +30,7 @@
 
 #include "gradient_editor_plugin.h"
 
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"

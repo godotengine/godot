@@ -32,6 +32,7 @@
 #include "line_edit.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"

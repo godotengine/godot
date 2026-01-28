@@ -30,6 +30,7 @@
 
 #include "color_picker.h"
 
+#include "core/input/input.h"
 #include "core/io/image.h"
 #include "core/math/expression.h"
 #include "scene/gui/color_mode.h"

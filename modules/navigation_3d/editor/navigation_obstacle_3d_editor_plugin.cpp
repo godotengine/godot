@@ -30,6 +30,7 @@
 
 #include "navigation_obstacle_3d_editor_plugin.h"
 
+#include "core/input/input.h"
 #include "core/math/geometry_2d.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"

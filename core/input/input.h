@@ -40,6 +40,40 @@
 
 class GamepadMotion;
 
+namespace InputClassEnums {
+// Keep synced with "DisplayServer::MouseMode" enum.
+enum MouseMode : int {
+	MOUSE_MODE_VISIBLE,
+	MOUSE_MODE_HIDDEN,
+	MOUSE_MODE_CAPTURED,
+	MOUSE_MODE_CONFINED,
+	MOUSE_MODE_CONFINED_HIDDEN,
+	MOUSE_MODE_MAX,
+};
+
+#undef CursorShape
+enum CursorShape : int {
+	CURSOR_ARROW,
+	CURSOR_IBEAM,
+	CURSOR_POINTING_HAND,
+	CURSOR_CROSS,
+	CURSOR_WAIT,
+	CURSOR_BUSY,
+	CURSOR_DRAG,
+	CURSOR_CAN_DROP,
+	CURSOR_FORBIDDEN,
+	CURSOR_VSIZE,
+	CURSOR_HSIZE,
+	CURSOR_BDIAGSIZE,
+	CURSOR_FDIAGSIZE,
+	CURSOR_MOVE,
+	CURSOR_VSPLIT,
+	CURSOR_HSPLIT,
+	CURSOR_HELP,
+	CURSOR_MAX
+};
+} //namespace InputClassEnums
+
 class Input : public Object {
 	GDCLASS(Input, Object);
 	_THREAD_SAFE_CLASS_
@@ -49,37 +83,9 @@ class Input : public Object {
 	static constexpr uint64_t MAX_EVENT = 32;
 
 public:
-	// Keep synced with "DisplayServer::MouseMode" enum.
-	enum MouseMode {
-		MOUSE_MODE_VISIBLE,
-		MOUSE_MODE_HIDDEN,
-		MOUSE_MODE_CAPTURED,
-		MOUSE_MODE_CONFINED,
-		MOUSE_MODE_CONFINED_HIDDEN,
-		MOUSE_MODE_MAX,
-	};
-
-#undef CursorShape
-	enum CursorShape {
-		CURSOR_ARROW,
-		CURSOR_IBEAM,
-		CURSOR_POINTING_HAND,
-		CURSOR_CROSS,
-		CURSOR_WAIT,
-		CURSOR_BUSY,
-		CURSOR_DRAG,
-		CURSOR_CAN_DROP,
-		CURSOR_FORBIDDEN,
-		CURSOR_VSIZE,
-		CURSOR_HSIZE,
-		CURSOR_BDIAGSIZE,
-		CURSOR_FDIAGSIZE,
-		CURSOR_MOVE,
-		CURSOR_VSPLIT,
-		CURSOR_HSPLIT,
-		CURSOR_HELP,
-		CURSOR_MAX
-	};
+	// TODO: When we migrate to C++20, replace these with "using enum" and skip prefixing MouseMode and CursorShape in other files.
+	using MouseMode = InputClassEnums::MouseMode;
+	using CursorShape = InputClassEnums::CursorShape;
 
 	class JoypadFeatures {
 	public:
@@ -217,7 +223,7 @@ private:
 
 	int fallback_mapping = -1; // Index of the guid in map_db.
 
-	CursorShape default_shape = CURSOR_ARROW;
+	CursorShape default_shape = CursorShape::CURSOR_ARROW;
 
 	enum JoyType {
 		TYPE_BUTTON,
@@ -426,7 +432,7 @@ public:
 	CursorShape get_default_cursor_shape() const;
 	void set_default_cursor_shape(CursorShape p_shape);
 	CursorShape get_current_cursor_shape() const;
-	void set_custom_mouse_cursor(const Ref<Resource> &p_cursor, CursorShape p_shape = Input::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
+	void set_custom_mouse_cursor(const Ref<Resource> &p_cursor, CursorShape p_shape = Input::CursorShape::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
 
 	void parse_mapping(const String &p_mapping);
 	void joy_button(int p_device, JoyButton p_button, bool p_pressed);

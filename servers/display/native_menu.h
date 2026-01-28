@@ -30,7 +30,8 @@
 
 #pragma once
 
-#include "core/input/input.h"
+#include "core/input/input_event.h"
+#include "core/templates/rb_map.h"
 #include "core/variant/callable.h"
 
 class Texture2D;

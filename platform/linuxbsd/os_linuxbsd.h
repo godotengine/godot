@@ -32,7 +32,8 @@
 
 #include "crash_handler_linuxbsd.h"
 
-#include "core/input/input.h"
+#include "core/input/input_event.h"
+#include "core/templates/rb_map.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"

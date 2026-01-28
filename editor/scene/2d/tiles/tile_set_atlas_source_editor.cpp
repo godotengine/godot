@@ -45,6 +45,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
 
+#include "core/input/input.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 
