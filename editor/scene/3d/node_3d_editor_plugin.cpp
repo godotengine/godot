@@ -72,6 +72,7 @@
 #include "editor/scene/3d/gizmos/physics/joint_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/physics/physics_bone_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/physics/ray_cast_3d_gizmo_plugin.h"
+#include "editor/scene/3d/gizmos/physics/rigid_body_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/physics/shape_cast_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/physics/soft_body_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/physics/spring_arm_3d_gizmo_plugin.h"
@@ -2875,6 +2876,7 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<CollisionShape3DGizmoPlugin>(memnew(CollisionShape3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<CollisionPolygon3DGizmoPlugin>(memnew(CollisionPolygon3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Joint3DGizmoPlugin>(memnew(Joint3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<RigidBody3DGizmoPlugin>(memnew(RigidBody3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SoftBody3DGizmoPlugin>(memnew(SoftBody3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<ShapeCast3DGizmoPlugin>(memnew(ShapeCast3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SpringArm3DGizmoPlugin>(memnew(SpringArm3DGizmoPlugin)));
