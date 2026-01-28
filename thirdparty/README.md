@@ -992,6 +992,7 @@ Patches:
 - `0004-errno-include.patch` ([GH-108354](https://github.com/godotengine/godot/pull/108354))
 - `0005-fix-libudev-dbus.patch` ([GH-108373](https://github.com/godotengine/godot/pull/108373))
 - `0006-fix-cs-environ.patch` ([GH-109283](https://github.com/godotengine/godot/pull/109283))
+- `0007-shield-duplicate-macos.patch` ([GH-115510](https://github.com/godotengine/godot/pull/115510))
 
 
 ## spirv-cross
