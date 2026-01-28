@@ -130,7 +130,6 @@ void ProjectListItemControl::_notification(int p_what) {
 				if (idx >= 0) {
 					// has_focus(true) is false on mouse-initiated focus, true on keyboard navigation.
 					pl->select_project(idx, !has_focus(true));
-					pl->ensure_project_visible(idx);
 
 					pl->emit_signal(SNAME(ProjectList::SIGNAL_SELECTION_CHANGED));
 				}
@@ -1210,7 +1209,7 @@ void ProjectList::_open_menu(const Vector2 &p_at, Control *p_hb) {
 		project_context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectList::_menu_option));
 		_update_menu_icons();
 	}
-	select_project(clicked_index, true);
+	clicked_project.control->grab_focus(true);
 
 	for (int id : Vector<int>{
 				 MENU_EDIT,
@@ -1296,9 +1295,6 @@ void ProjectList::_select_project_range(int p_begin, int p_end) {
 void ProjectList::select_project(int p_index, bool p_hide_focus) {
 	// This method keeps only one project selected.
 	_clear_project_selection();
-
-	Item &item = _projects.write[p_index];
-	item.control->grab_focus(p_hide_focus);
 	_select_project_nocheck(p_index, p_hide_focus);
 }
 
