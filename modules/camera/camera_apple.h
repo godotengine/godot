@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  camera_macos.h                                                        */
+/*  camera_apple.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -35,11 +35,11 @@
 
 #include "servers/camera/camera_server.h"
 
-class CameraMacOS : public CameraServer {
-	GDSOFTCLASS(CameraMacOS, CameraServer);
+class CameraApple : public CameraServer {
+	GDSOFTCLASS(CameraApple, CameraServer);
 
 public:
-	CameraMacOS() = default;
+	CameraApple() = default;
 
 	void update_feeds();
 	void set_monitoring_feeds(bool p_monitoring_feeds) override;

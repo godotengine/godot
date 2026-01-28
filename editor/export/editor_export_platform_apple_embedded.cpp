@@ -284,6 +284,8 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/export_project_only"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/delete_old_export_files_unconditionally"), false));
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "modules/camera"), false));
+
 	Vector<PluginConfigAppleEmbedded> found_plugins = get_plugins(get_platform_name());
 	for (int i = 0; i < found_plugins.size(); i++) {
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("plugins"), found_plugins[i].name)), false));
@@ -1423,7 +1425,7 @@ Vector<String> EditorExportPlatformAppleEmbedded::_get_preset_architectures(cons
 	return enabled_archs;
 }
 
-Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Ref<EditorExportPreset> &p_preset, AppleEmbeddedConfigData &p_config_data, const String &dest_dir, Vector<AppleEmbeddedExportAsset> &r_exported_assets, bool p_debug) {
+Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Ref<EditorExportPreset> &p_preset, AppleEmbeddedConfigData &p_config_data, const String &p_dest_dir, const Vector<String> &p_module_libs, Vector<AppleEmbeddedExportAsset> &r_exported_assets, bool p_debug) {
 	String plugin_definition_cpp_code;
 	String plugin_initialization_cpp_code;
 	String plugin_deinitialization_cpp_code;
@@ -1450,7 +1452,7 @@ Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Re
 		String plugin_binary_result_file = plugin.binary.get_file();
 		// We shouldn't embed .xcframework that contains static libraries.
 		// Static libraries are not embedded anyway.
-		err = _copy_asset(p_preset, dest_dir, plugin_main_binary, &plugin_binary_result_file, true, false, r_exported_assets);
+		err = _copy_asset(p_preset, p_dest_dir, plugin_main_binary, &plugin_binary_result_file, true, false, r_exported_assets);
 		ERR_FAIL_COND_V(err != OK, err);
 
 		// Adding dependencies.
@@ -1554,6 +1556,23 @@ Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Re
 		plugin_deinitialization_cpp_code += "\t" + deinitialization_method;
 	}
 
+	for (const String &lib_name : p_module_libs) {
+		String definition_comment = "// Module: " + lib_name + "\n";
+		String initialization_method = "register_" + lib_name + "_external_module();\n";
+		String deinitialization_method = "unregister_" + lib_name + "_external_module();\n";
+
+		plugin_definition_cpp_code += definition_comment +
+				"extern void " + initialization_method +
+				"extern void " + deinitialization_method + "\n";
+
+		plugin_initialization_cpp_code += "\t" + initialization_method;
+		plugin_deinitialization_cpp_code += "\t" + deinitialization_method;
+
+		String binary_name = p_dest_dir.get_file().get_basename();
+		AppleEmbeddedExportAsset exported_asset = { binary_name + "_" + lib_name + ".xcframework", true, false };
+		r_exported_assets.push_back(exported_asset);
+	}
+
 	// Updating `Info.plist`
 	{
 		for (const KeyValue<String, String> &E : plist_values) {
@@ -1571,15 +1590,15 @@ Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Re
 	// Export files
 	{
 		// Export linked plugin dependency
-		err = _export_additional_assets(p_preset, dest_dir, plugin_linked_dependencies, true, false, r_exported_assets);
+		err = _export_additional_assets(p_preset, p_dest_dir, plugin_linked_dependencies, true, false, r_exported_assets);
 		ERR_FAIL_COND_V(err != OK, err);
 
 		// Export embedded plugin dependency
-		err = _export_additional_assets(p_preset, dest_dir, plugin_embedded_dependencies, true, true, r_exported_assets);
+		err = _export_additional_assets(p_preset, p_dest_dir, plugin_embedded_dependencies, true, true, r_exported_assets);
 		ERR_FAIL_COND_V(err != OK, err);
 
 		// Export plugin files
-		err = _export_additional_assets(p_preset, dest_dir, plugin_files, false, false, r_exported_assets);
+		err = _export_additional_assets(p_preset, p_dest_dir, plugin_files, false, false, r_exported_assets);
 		ERR_FAIL_COND_V(err != OK, err);
 	}
 
@@ -1766,6 +1785,10 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 	}
 
 	String library_to_use = "libgodot." + get_platform_name() + "." + String(p_debug ? "debug" : "release") + ".xcframework";
+	Vector<String> module_libs;
+	if (p_preset->get("modules/camera").operator bool()) {
+		module_libs.push_back("camera");
+	}
 
 	print_line("Static framework: " + library_to_use);
 	String pkg_name;
@@ -1775,7 +1798,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		pkg_name = "Unnamed";
 	}
 
-	bool found_library = false;
+	int found_libraries = 0;
 
 	HashSet<String> files_to_parse;
 	const String project_file = "godot_apple_embedded.xcodeproj/project.pbxproj";
@@ -1822,7 +1845,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		return ERR_CANT_OPEN;
 	}
 
-	err = _export_apple_embedded_plugins(p_preset, config_data, binary_dir, assets, p_debug);
+	err = _export_apple_embedded_plugins(p_preset, config_data, binary_dir, module_libs, assets, p_debug);
 	if (err != OK) {
 		// TODO: Improve error reporting by using `add_message` throughout all methods called via `_export_apple_embedded_plugins`.
 		// For now a generic top level message would be fine, but we're ought to use proper reporting here instead of
@@ -1862,16 +1885,32 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 
 		if (files_to_parse.has(file)) {
 			_fix_config_file(p_preset, data, config_data, p_debug);
-		} else if (file.begins_with("libgodot." + get_platform_name())) {
-			if (!file.begins_with(library_to_use) || file.ends_with(String("/empty"))) {
+		} else if (file.begins_with("libgodot") && file.contains(get_platform_name())) {
+			String prefix_lib = library_to_use;
+			String suffix_lib = binary_name;
+			bool is_lib = file.begins_with(library_to_use);
+			if (!is_lib) {
+				for (const String &lib_name : module_libs) {
+					String prefix = "libgodot_" + lib_name + "." + get_platform_name() + "." + String(p_debug ? "debug" : "release") + ".xcframework";
+					if (file.begins_with(prefix)) {
+						is_lib = true;
+						prefix_lib = prefix;
+						suffix_lib = binary_name + "_" + lib_name;
+						break;
+					}
+				}
+			}
+			if (!is_lib || file.ends_with(String("/empty"))) {
 				ret = unzGoToNextFile(src_pkg_zip);
 				continue; //ignore!
 			}
-			found_library = true;
+			if (file.ends_with("Info.plist")) {
+				found_libraries++;
+			}
 #if defined(MACOS_ENABLED) || defined(LINUXBSD_ENABLED)
 			is_execute = true;
 #endif
-			file = file.replace(library_to_use, binary_name + ".xcframework");
+			file = file.replace(prefix_lib, suffix_lib + ".xcframework");
 		}
 
 		if (file == project_file) {
@@ -1925,7 +1964,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 	// We're done with our source zip.
 	unzClose(src_pkg_zip);
 
-	if (!found_library) {
+	if (found_libraries < module_libs.size() + 1) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Requested template library '%s' not found. It might be missing from your template archive."), library_to_use));
 		return ERR_FILE_NOT_FOUND;
 	}
@@ -2194,6 +2233,14 @@ bool EditorExportPlatformAppleEmbedded::has_valid_export_configuration(const Ref
 
 	valid = dvalid || rvalid;
 	r_missing_templates = !valid;
+
+	if (p_preset->get("modules/camera").operator bool()) {
+		String description = p_preset->get("privacy/camera_usage_description");
+		if (description.is_empty()) {
+			valid = false;
+			err += TTR("Camera module enabled, but camera usage description is not set.") + "\n";
+		}
+	}
 
 	const String &additional_plist_content = p_preset->get("application/additional_plist_content");
 	if (!additional_plist_content.is_empty()) {
