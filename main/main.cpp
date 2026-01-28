@@ -1274,6 +1274,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--rendering-method") {
 			if (N) {
 				rendering_method = N->get();
+				// Alias the names visible in the editor for convenience.
+				if (rendering_method == "forward+") {
+					rendering_method = "forward_plus";
+				} else if (rendering_method == "compatibility") {
+					rendering_method = "gl_compatibility";
+				}
 				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing renderer name argument, aborting.\n");
