@@ -710,8 +710,7 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 	int64_t frames = 0;
 
 	Vector<float> data;
-
-	HashMap<String, String> tag_map;
+	Dictionary tags;
 
 	while (!file->eof_reached()) {
 		/* chunk */
@@ -880,6 +879,39 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 			if (list_id[0] == 'I' && list_id[1] == 'N' && list_id[2] == 'F' && list_id[3] == 'O') {
 				// 'INFO' list type.
 				// The size of an entry can be arbitrary.
+
+				// Used to make the metadata tags more unified across different AudioStreams.
+				// See https://www.recordingblogs.com/wiki/list-chunk-of-a-wave-file
+				// https://wiki.hydrogenaudio.org/index.php?title=Tag_Mapping#Mapping_Tables
+				AHashMap<String, String> tag_id_remaps;
+				tag_id_remaps.reserve(26);
+				tag_id_remaps["IARL"] = "location";
+				tag_id_remaps["IART"] = "artist";
+				tag_id_remaps["ICMS"] = "organization";
+				tag_id_remaps["ICMT"] = "comment";
+				tag_id_remaps["ICNT"] = "releasecountry";
+				tag_id_remaps["ICOP"] = "copyright";
+				tag_id_remaps["ICRD"] = "date";
+				tag_id_remaps["IENC"] = "encodedby";
+				tag_id_remaps["IENG"] = "engineer";
+				tag_id_remaps["IFRM"] = "tracktotal";
+				tag_id_remaps["IGNR"] = "genre";
+				tag_id_remaps["IKEY"] = "keywords";
+				tag_id_remaps["ILNG"] = "language";
+				tag_id_remaps["IMED"] = "media";
+				tag_id_remaps["IMUS"] = "composer";
+				tag_id_remaps["INAM"] = "title";
+				tag_id_remaps["IPRD"] = "album";
+				tag_id_remaps["IPRO"] = "producer";
+				tag_id_remaps["IPRT"] = "tracknumber";
+				tag_id_remaps["ISBJ"] = "description";
+				tag_id_remaps["ISFT"] = "encoder";
+				tag_id_remaps["ISRF"] = "media";
+				tag_id_remaps["ITCH"] = "encodedby";
+				tag_id_remaps["ITRK"] = "tracknumber";
+				tag_id_remaps["IWRI"] = "author";
+				tag_id_remaps["TLEN"] = "length";
+
 				while (file->get_position() < end_of_chunk) {
 					char info_id[4];
 					file->get_buffer((uint8_t *)&info_id, 4);
@@ -905,7 +937,10 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 					String tag_value;
 					tag_value.append_utf8(&text[0], text_size);
 
-					tag_map[tag] = tag_value;
+					AHashMap<String, String>::ConstIterator remap = tag_id_remaps.find(tag);
+					if (remap != tag_id_remaps.end()) {
+						tags[remap->value] = tag_value;
+					}
 				}
 			}
 		}
@@ -1149,51 +1184,7 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 	sample->set_loop_begin(loop_begin);
 	sample->set_loop_end(loop_end);
 	sample->set_stereo(format_channels == 2);
-
-	if (!tag_map.is_empty()) {
-		// Used to make the metadata tags more unified across different AudioStreams.
-		// See https://www.recordingblogs.com/wiki/list-chunk-of-a-wave-file
-		// https://wiki.hydrogenaudio.org/index.php?title=Tag_Mapping#Mapping_Tables
-		HashMap<String, String> tag_id_remaps;
-		tag_id_remaps.reserve(15);
-		tag_id_remaps["IARL"] = "location";
-		tag_id_remaps["IART"] = "artist";
-		tag_id_remaps["ICMS"] = "organization";
-		tag_id_remaps["ICMT"] = "comment";
-		tag_id_remaps["ICNT"] = "releasecountry";
-		tag_id_remaps["ICOP"] = "copyright";
-		tag_id_remaps["ICRD"] = "date";
-		tag_id_remaps["IENC"] = "encodedby";
-		tag_id_remaps["IENG"] = "engineer";
-		tag_id_remaps["IFRM"] = "tracktotal";
-		tag_id_remaps["IGNR"] = "genre";
-		tag_id_remaps["IKEY"] = "keywords";
-		tag_id_remaps["ILNG"] = "language";
-		tag_id_remaps["IMED"] = "media";
-		tag_id_remaps["IMUS"] = "composer";
-		tag_id_remaps["INAM"] = "title";
-		tag_id_remaps["IPRD"] = "album";
-		tag_id_remaps["IPRO"] = "producer";
-		tag_id_remaps["IPRT"] = "tracknumber";
-		tag_id_remaps["ISBJ"] = "description";
-		tag_id_remaps["ISFT"] = "encoder";
-		tag_id_remaps["ISRF"] = "media";
-		tag_id_remaps["ITCH"] = "encodedby";
-		tag_id_remaps["ITRK"] = "tracknumber";
-		tag_id_remaps["IWRI"] = "author";
-		tag_id_remaps["TLEN"] = "length";
-		Dictionary tag_dictionary;
-		for (const KeyValue<String, String> &E : tag_map) {
-			HashMap<String, String>::ConstIterator remap = tag_id_remaps.find(E.key);
-			String tag_key = E.key;
-			if (remap) {
-				tag_key = remap->value;
-			}
-
-			tag_dictionary[tag_key] = E.value;
-		}
-		sample->set_tags(tag_dictionary);
-	}
+	sample->set_tags(tags);
 
 	return sample;
 }
