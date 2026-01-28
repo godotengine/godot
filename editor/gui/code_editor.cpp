@@ -546,7 +546,7 @@ bool FindReplaceBar::search_prev() {
 	 * For now, i'll leave it like this since unfortunately i can't figure out what the problem is in that method.
 	 *
 	 * @Gabrunken
-	*/
+	 */
 	col = text_editor->get_line(line).length();
 
 	/*
