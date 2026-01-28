@@ -3595,7 +3595,6 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		if (rt->msaa != RS::VIEWPORT_MSAA_DISABLED) {
 			rd_color_attachment_format.is_resolve_buffer = true;
 		}
-		rd_color_attachment_format.is_discardable = true;
 	}
 
 	// TODO see if we can lazy create this once we actually use it as we may not need to create this if we have an overridden color buffer...
