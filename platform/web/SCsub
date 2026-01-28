@@ -80,13 +80,44 @@ if len(env["EXPORTED_FUNCTIONS"]):
 if len(env["EXPORTED_RUNTIME_METHODS"]):
     sys_env.Append(LINKFLAGS=["-sEXPORTED_RUNTIME_METHODS=" + repr(sorted(list(set(env["EXPORTED_RUNTIME_METHODS"]))))])
 
+# We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
+sys_env.Append(LIBS=["idbfs.js"])
+
+# Actually build the program.
+main_js_file = sys_env.File("#bin/godot${PROGSUFFIX}.js")
+main_wasm_file = sys_env.File("#bin/godot${PROGSUFFIX}.wasm")
+side_wasm_file = None
+main_wasm_dwarf_file = None
+main_wasm_dwarf_package_file = None
+side_wasm_dwarf_file = None
+side_wasm_dwarf_package_file = None
+
 build = []
-build_targets = ["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm"]
+build_targets = [main_js_file, main_wasm_file]
+
+
+def separate_debug_symbols(target_env, wasm_file):
+    wasm_dwarf_file = target_env.File(f"{str(wasm_file).removesuffix('.wasm')}.dwarf.wasm")
+    target_env.Append(LINKFLAGS=[f"-gseparate-dwarf={wasm_dwarf_file}"])
+    target_env.Append(CCFLAGS=["-gsplit-dwarf"])
+    target_env.Append(LINKFLAGS=["-gsplit-dwarf"])
+    target_env.Append(LINKFLAGS=[f"-sSEPARATE_DWARF_URL=./{wasm_dwarf_file.name}"])
+    wasm_dwarf_package_file = target_env.File(f"{wasm_dwarf_file}.dwp")
+    target_env.Command(
+        action=f"{env.Detect('emdwp')} -e {wasm_dwarf_file} -o {wasm_dwarf_package_file}",
+        target=wasm_dwarf_package_file,
+        source=wasm_dwarf_file,
+    )
+    return wasm_dwarf_file, wasm_dwarf_package_file
+
+
+if env["debug_symbols"] and env["separate_debug_symbols"]:
+    main_wasm_dwarf_file, main_wasm_dwarf_package_file = separate_debug_symbols(sys_env, main_wasm_file)
+    build_targets.append(main_wasm_dwarf_file)
+
 if env["dlink_enabled"]:
     # Reset libraries. The main runtime will only link emscripten libraries, not godot ones.
     sys_env["LIBS"] = []
-    # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
-    sys_env.Append(LIBS=["idbfs.js"])
     # Configure it as a main module (dynamic linking support).
     sys_env["CCFLAGS"].remove("-sSIDE_MODULE=2")
     sys_env["LINKFLAGS"].remove("-sSIDE_MODULE=2")
@@ -101,11 +132,14 @@ if env["dlink_enabled"]:
     sys = sys_env.add_program(build_targets, ["web_runtime.cpp"])
 
     # The side library, containing all Godot code.
-    wasm = env.add_program("#bin/godot.side${PROGSUFFIX}.wasm", web_files)
+    side_wasm_file = env.File("#bin/godot.side${PROGSUFFIX}.wasm")
+    side_wasm_build = [side_wasm_file]
+    if env["debug_symbols"] and env["separate_debug_symbols"]:
+        side_wasm_dwarf_file, side_wasm_dwarf_package_file = separate_debug_symbols(env, side_wasm_file)
+        side_wasm_build.append(side_wasm_dwarf_file)
+    wasm = env.add_program(side_wasm_build, web_files)
     build = sys + [wasm[0]]
 else:
-    # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
-    sys_env.Append(LIBS=["idbfs.js"])
     build = sys_env.add_program(build_targets, web_files + ["web_runtime.cpp"])
 
 sys_env.Depends(build[0], sys_env["JS_LIBS"])
@@ -131,7 +165,12 @@ js_wrapped = env.NoCache(
     env.Textfile("#bin/godot", [env.File(f) for f in wrap_list], TEXTFILESUFFIX="${PROGSUFFIX}.wrapped.js")
 )
 
-# 0 - unwrapped js file (use wrapped one instead)
-# 1 - wasm file
-# 2 - wasm side (when dlink is enabled).
-env.CreateTemplateZip(js_wrapped, build[1], build[2] if len(build) > 2 else None)
+env.CreateTemplateZip(
+    js=js_wrapped,
+    main_wasm=main_wasm_file,
+    side_wasm=side_wasm_file,
+    main_wasm_dwarf=main_wasm_dwarf_file,
+    main_wasm_dwarf_package=main_wasm_dwarf_package_file,
+    side_wasm_dwarf=side_wasm_dwarf_file,
+    side_wasm_dwarf_package=side_wasm_dwarf_package_file,
+)
