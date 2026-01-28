@@ -172,13 +172,93 @@ def combine_libs_apple_embedded(target, source, env):
     )
 
 
-def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, use_mkv, target, source, env):
+def lipo_and_copy_apple_embedded(
+    platform, framework_dir, framework_dir_sim, rel_prefix, dbg_prefix, module_prefix, app_dir, env
+):
     bin_dir = env.Dir("#bin").abspath
 
+    # Lipo template libraries.
+    #
+    # env.extra_suffix contains ".simulator" when building for simulator,
+    # but it's undesired when calling lipo()
+    extra_suffix = env.extra_suffix.replace(".simulator", "")
+    rel_target_bin = lipo(bin_dir + "/libgodot" + module_prefix + "." + rel_prefix, extra_suffix + ".a")
+    dbg_target_bin = lipo(bin_dir + "/libgodot" + module_prefix + "." + dbg_prefix, extra_suffix + ".a")
+    rel_target_bin_sim = lipo(
+        bin_dir + "/libgodot" + module_prefix + "." + rel_prefix, ".simulator" + extra_suffix + ".a"
+    )
+    dbg_target_bin_sim = lipo(
+        bin_dir + "/libgodot" + module_prefix + "." + dbg_prefix, ".simulator" + extra_suffix + ".a"
+    )
+    # Assemble Xcode project bundle.
+    if rel_target_bin != "":
+        print(f' Copying "{platform}" release framework')
+        shutil.copy(
+            rel_target_bin,
+            app_dir
+            + "/libgodot"
+            + module_prefix
+            + "."
+            + platform
+            + ".release.xcframework/"
+            + framework_dir
+            + "/libgodot"
+            + module_prefix
+            + ".a",
+        )
+    if dbg_target_bin != "":
+        print(f' Copying "{platform}" debug framework')
+        shutil.copy(
+            dbg_target_bin,
+            app_dir
+            + "/libgodot"
+            + module_prefix
+            + "."
+            + platform
+            + ".debug.xcframework/"
+            + framework_dir
+            + "/libgodot"
+            + module_prefix
+            + ".a",
+        )
+    if rel_target_bin_sim != "":
+        print(f' Copying "{platform}" (simulator) release framework')
+        shutil.copy(
+            rel_target_bin_sim,
+            app_dir
+            + "/libgodot"
+            + module_prefix
+            + "."
+            + platform
+            + ".release.xcframework/"
+            + framework_dir_sim
+            + "/libgodot"
+            + module_prefix
+            + ".a",
+        )
+    if dbg_target_bin_sim != "":
+        print(f' Copying "{platform}" (simulator) debug framework')
+        shutil.copy(
+            dbg_target_bin_sim,
+            app_dir
+            + "/libgodot"
+            + module_prefix
+            + "."
+            + platform
+            + ".debug.xcframework/"
+            + framework_dir_sim
+            + "/libgodot"
+            + module_prefix
+            + ".a",
+        )
+
+
+def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, use_mkv, target, source, env):
     # Template bundle.
+    extra_suffix = env.extra_suffix.replace(".simulator", "")
     app_prefix = "godot." + platform
-    rel_prefix = "libgodot." + platform + "." + "template_release"
-    dbg_prefix = "libgodot." + platform + "." + "template_debug"
+    rel_prefix = platform + "." + "template_release"
+    dbg_prefix = platform + "." + "template_debug"
     if env.dev_build:
         app_prefix += ".dev"
         rel_prefix += ".dev"
@@ -188,43 +268,18 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
         rel_prefix += ".double"
         dbg_prefix += ".double"
 
-    # Lipo template libraries.
-    #
-    # env.extra_suffix contains ".simulator" when building for simulator,
-    # but it's undesired when calling lipo()
-    extra_suffix = env.extra_suffix.replace(".simulator", "")
-    rel_target_bin = lipo(bin_dir + "/" + rel_prefix, extra_suffix + ".a")
-    dbg_target_bin = lipo(bin_dir + "/" + dbg_prefix, extra_suffix + ".a")
-    rel_target_bin_sim = lipo(bin_dir + "/" + rel_prefix, ".simulator" + extra_suffix + ".a")
-    dbg_target_bin_sim = lipo(bin_dir + "/" + dbg_prefix, ".simulator" + extra_suffix + ".a")
-    # Assemble Xcode project bundle.
     app_dir = env.Dir("#bin/" + platform + "_xcode").abspath
     templ = env.Dir("#misc/dist/apple_embedded_xcode").abspath
     if os.path.exists(app_dir):
         shutil.rmtree(app_dir)
     shutil.copytree(templ, app_dir)
-    if rel_target_bin != "":
-        print(f' Copying "{platform}" release framework')
-        shutil.copy(
-            rel_target_bin, app_dir + "/libgodot." + platform + ".release.xcframework/" + framework_dir + "/libgodot.a"
-        )
-    if dbg_target_bin != "":
-        print(f' Copying "{platform}" debug framework')
-        shutil.copy(
-            dbg_target_bin, app_dir + "/libgodot." + platform + ".debug.xcframework/" + framework_dir + "/libgodot.a"
-        )
-    if rel_target_bin_sim != "":
-        print(f' Copying "{platform}" (simulator) release framework')
-        shutil.copy(
-            rel_target_bin_sim,
-            app_dir + "/libgodot." + platform + ".release.xcframework/" + framework_dir_sim + "/libgodot.a",
-        )
-    if dbg_target_bin_sim != "":
-        print(f' Copying "{platform}" (simulator) debug framework')
-        shutil.copy(
-            dbg_target_bin_sim,
-            app_dir + "/libgodot." + platform + ".debug.xcframework/" + framework_dir_sim + "/libgodot.a",
-        )
+
+    lipo_and_copy_apple_embedded(platform, framework_dir, framework_dir_sim, rel_prefix, dbg_prefix, "", app_dir, env)
+    if "MODULES_EXTERNAL" in env:
+        for mod in env["MODULES_EXTERNAL"]:
+            lipo_and_copy_apple_embedded(
+                platform, framework_dir, framework_dir_sim, rel_prefix, dbg_prefix, mod, app_dir, env
+            )
 
     # Remove other platform xcframeworks
     for entry in os.listdir(app_dir):

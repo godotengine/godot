@@ -21,6 +21,9 @@ visionos_lib = env_visionos.add_library("visionos", visionos_lib)
 # Enable module support
 env_visionos.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
 
+if "LIBS_EXTERNAL" in env_visionos:
+    env_visionos.Depends(visionos_lib, env_visionos["LIBS_EXTERNAL"])
+
 combine_command = env_visionos.Command(
     "#bin/libgodot" + env_visionos["LIBSUFFIX"], [visionos_lib] + env_visionos["LIBS"], combine_libs_apple_embedded
 )
