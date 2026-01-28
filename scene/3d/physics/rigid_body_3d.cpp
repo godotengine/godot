@@ -375,6 +375,7 @@ void RigidBody3D::set_center_of_mass_mode(CenterOfMassMode p_mode) {
 	}
 
 	notify_property_list_changed();
+	update_gizmos();
 }
 
 RigidBody3D::CenterOfMassMode RigidBody3D::get_center_of_mass_mode() const {
@@ -390,10 +391,23 @@ void RigidBody3D::set_center_of_mass(const Vector3 &p_center_of_mass) {
 	center_of_mass = p_center_of_mass;
 
 	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_CENTER_OF_MASS, center_of_mass);
+	update_gizmos();
 }
 
 const Vector3 &RigidBody3D::get_center_of_mass() const {
 	return center_of_mass;
+}
+
+void RigidBody3D::set_show_center_of_mass(bool p_show) {
+	if (show_center_of_mass == p_show) {
+		return;
+	}
+	show_center_of_mass = p_show;
+	update_gizmos();
+}
+
+bool RigidBody3D::is_showing_center_of_mass() const {
+	return show_center_of_mass;
 }
 
 void RigidBody3D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
@@ -683,6 +697,9 @@ void RigidBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_center_of_mass", "center_of_mass"), &RigidBody3D::set_center_of_mass);
 	ClassDB::bind_method(D_METHOD("get_center_of_mass"), &RigidBody3D::get_center_of_mass);
 
+	ClassDB::bind_method(D_METHOD("set_show_center_of_mass", "show"), &RigidBody3D::set_show_center_of_mass);
+	ClassDB::bind_method(D_METHOD("is_showing_center_of_mass"), &RigidBody3D::is_showing_center_of_mass);
+
 	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &RigidBody3D::set_physics_material_override);
 	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &RigidBody3D::get_physics_material_override);
 
@@ -767,6 +784,7 @@ void RigidBody3D::_bind_methods() {
 	ADD_GROUP("Mass Distribution", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "center_of_mass_mode", PROPERTY_HINT_ENUM, "Auto,Custom"), "set_center_of_mass_mode", "get_center_of_mass_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "center_of_mass", PROPERTY_HINT_RANGE, "-10,10,0.01,or_less,or_greater,suffix:m"), "set_center_of_mass", "get_center_of_mass");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_center_of_mass"), "set_show_center_of_mass", "is_showing_center_of_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "inertia", PROPERTY_HINT_RANGE, U"0,1000,0.01,or_greater,exp,suffix:kg\u22C5m\u00B2"), "set_inertia", "get_inertia");
 	ADD_GROUP("Deactivation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sleeping"), "set_sleeping", "is_sleeping");

@@ -356,6 +356,7 @@ void RigidBody2D::set_center_of_mass_mode(CenterOfMassMode p_mode) {
 	}
 
 	notify_property_list_changed();
+	queue_redraw();
 }
 
 RigidBody2D::CenterOfMassMode RigidBody2D::get_center_of_mass_mode() const {
@@ -371,10 +372,23 @@ void RigidBody2D::set_center_of_mass(const Vector2 &p_center_of_mass) {
 	center_of_mass = p_center_of_mass;
 
 	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_CENTER_OF_MASS, center_of_mass);
+	queue_redraw();
 }
 
 const Vector2 &RigidBody2D::get_center_of_mass() const {
 	return center_of_mass;
+}
+
+void RigidBody2D::set_show_center_of_mass(bool p_show) {
+	if (show_center_of_mass == p_show) {
+		return;
+	}
+	show_center_of_mass = p_show;
+	queue_redraw();
+}
+
+bool RigidBody2D::is_showing_center_of_mass() const {
+	return show_center_of_mass;
 }
 
 void RigidBody2D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
@@ -635,6 +649,27 @@ void RigidBody2D::_notification(int p_what) {
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			update_configuration_warnings();
 		} break;
+
+		case NOTIFICATION_DRAW: {
+			if (!show_center_of_mass) {
+				break;
+			}
+			if (!is_inside_tree()) {
+				break;
+			}
+			if (!Engine::get_singleton()->is_editor_hint()) {
+				break;
+			}
+
+			// Draw a crosshair at the center of mass position
+			const Vector2 com = get_center_of_mass();
+			const float extents = 5.0;
+			const Color com_color = Color(1.0, 0.6, 0.0, 0.8);
+			const float line_width = 0.5;
+
+			draw_line(com + Vector2(-extents, 0), com + Vector2(extents, 0), com_color, line_width);
+			draw_line(com + Vector2(0, -extents), com + Vector2(0, extents), com_color, line_width);
+		} break;
 	}
 #endif
 }
@@ -663,6 +698,9 @@ void RigidBody2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_center_of_mass", "center_of_mass"), &RigidBody2D::set_center_of_mass);
 	ClassDB::bind_method(D_METHOD("get_center_of_mass"), &RigidBody2D::get_center_of_mass);
+
+	ClassDB::bind_method(D_METHOD("set_show_center_of_mass", "show"), &RigidBody2D::set_show_center_of_mass);
+	ClassDB::bind_method(D_METHOD("is_showing_center_of_mass"), &RigidBody2D::is_showing_center_of_mass);
 
 	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &RigidBody2D::set_physics_material_override);
 	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &RigidBody2D::get_physics_material_override);
@@ -745,6 +783,7 @@ void RigidBody2D::_bind_methods() {
 	ADD_GROUP("Mass Distribution", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "center_of_mass_mode", PROPERTY_HINT_ENUM, "Auto,Custom"), "set_center_of_mass_mode", "get_center_of_mass_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "center_of_mass", PROPERTY_HINT_RANGE, "-1000,1000,0.01,or_less,or_greater,suffix:px"), "set_center_of_mass", "get_center_of_mass");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_center_of_mass"), "set_show_center_of_mass", "is_showing_center_of_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "inertia", PROPERTY_HINT_RANGE, U"0,1000,0.01,or_greater,exp,suffix:kg\u22C5px\u00B2"), "set_inertia", "get_inertia");
 	ADD_GROUP("Deactivation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sleeping"), "set_sleeping", "is_sleeping");

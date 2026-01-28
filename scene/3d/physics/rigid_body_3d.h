@@ -62,6 +62,7 @@ private:
 	Vector3 inertia;
 	CenterOfMassMode center_of_mass_mode = CENTER_OF_MASS_MODE_AUTO;
 	Vector3 center_of_mass;
+	bool show_center_of_mass = false;
 
 	Ref<PhysicsMaterial> physics_material_override;
 
@@ -164,6 +165,9 @@ public:
 
 	void set_center_of_mass(const Vector3 &p_center_of_mass);
 	const Vector3 &get_center_of_mass() const;
+
+	void set_show_center_of_mass(bool p_show);
+	bool is_showing_center_of_mass() const;
 
 	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
 	Ref<PhysicsMaterial> get_physics_material_override() const;
