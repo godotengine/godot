@@ -538,14 +538,14 @@ bool FindReplaceBar::search_prev() {
 	_get_search_from(line, col, SEARCH_PREV);
 
 	/*
-	* In some cases (issue #115370) the commented snippet of code results in a bug where a line is skipped.
-	* The reason is unknown.
-	* Removing this will stop the "Previous Match" button to work as intended, by not actually moving to the previous match.
-	* By adding the line below, so by recalculating the "col" parameter, everything seems to work.
-	* My intuition is that "_get_search_from()" does not work well with "SEARCH_PREV" argument.
-	* For now, i'll leave it like this since unfortunately i can't figure out what the problem is in that method.
-	*
-	* @Gabrunken
+	 * In some cases (issue #115370) the commented snippet of code results in a bug where a line is skipped.
+	 * The reason is unknown.
+	 * Removing this will stop the "Previous Match" button to work as intended, by not actually moving to the previous match.
+	 * By adding the line below, so by recalculating the "col" parameter, everything seems to work.
+	 * My intuition is that "_get_search_from()" does not work well with "SEARCH_PREV" argument.
+	 * For now, i'll leave it like this since unfortunately i can't figure out what the problem is in that method.
+	 *
+	 * @Gabrunken
 	*/
 	col = text_editor->get_line(line).length();
 
