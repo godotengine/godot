@@ -33,6 +33,12 @@ msgstr ""
 "19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
 "X-Generator: Weblate 5.15-dev\n"
 
+msgid "OK"
+msgstr "Labi"
+
+msgid "Help"
+msgstr "Palīdzība"
+
 msgid "Physical"
 msgstr "Fizisks"
 
@@ -1786,9 +1792,6 @@ msgstr ""
 msgid "Spins when the editor window redraws."
 msgstr "Griežas, kad redaktora logs atjauninas."
 
-msgid "OK"
-msgstr "Labi"
-
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
@@ -2098,9 +2101,6 @@ msgstr "Atvērt iepriekšējo redaktoru"
 
 msgid "Project"
 msgstr "Projekts"
-
-msgid "Help"
-msgstr "Palīdzība"
 
 msgid "Update Continuously"
 msgstr "Nepārtraukti Atjaunot"

@@ -30,6 +30,15 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.14-dev\n"
 
+msgid "OK"
+msgstr "OK"
+
+msgid "Locked"
+msgstr "Terkunci"
+
+msgid "Help"
+msgstr "Bantuan"
+
 msgid "Physical"
 msgstr "Fizikal"
 
@@ -2238,9 +2247,6 @@ msgstr ""
 msgid "Spins when the editor window redraws."
 msgstr "Berputar apabila tingkap editor dilukis semula."
 
-msgid "OK"
-msgstr "OK"
-
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
@@ -2544,9 +2550,6 @@ msgstr "Buka Editor sebelumnya"
 
 msgid "Project"
 msgstr "Projek"
-
-msgid "Help"
-msgstr "Bantuan"
 
 msgid "Update Continuously"
 msgstr "Kemas Kini Secara Berterusan"
@@ -3245,9 +3248,6 @@ msgstr "Mesh kosong!"
 
 msgid "Amount:"
 msgstr "Jumlah:"
-
-msgid "Locked"
-msgstr "Terkunci"
 
 msgid "Grouped"
 msgstr "Terkumpul"

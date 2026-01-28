@@ -20,7 +20,7 @@
 # Mitja <mitja.leino@hotmail.com>, 2023.
 # Aku <akulaku.ap@gmail.com>, 2023.
 # Jonni Lehtiranta <jonni.lehtiranta@gmail.com>, 2024.
-# Viljami Lokasaari <v.lokasaari13@gmail.com>, 2024.
+# Viljami Lokasaari <v.lokasaari13@gmail.com>, 2024, 2025.
 # Hideri <foreheadchann@googlemail.com>, 2024.
 # Emil Hakala <emil.hakala44@gmail.com>, 2024.
 # Ricky Tigg <ricky.tigg@gmail.com>, 2025.
@@ -37,8 +37,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-08 15:51+0000\n"
-"Last-Translator: sevonj <100710152+sevonj@users.noreply.github.com>\n"
+"PO-Revision-Date: 2025-12-23 01:00+0000\n"
+"Last-Translator: Viljami Lokasaari <v.lokasaari13@gmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
@@ -46,7 +46,19 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.15.1\n"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Locked"
+msgstr "Lukittu"
+
+msgid "Help"
+msgstr "Ohje"
+
+msgid "unset"
+msgstr "Asettamaton"
 
 msgid "Physical"
 msgstr "Fyysinen"
@@ -235,6 +247,9 @@ msgstr "Valitse"
 msgid "Cancel"
 msgstr "Peruuta"
 
+msgid "Close Dialog"
+msgstr "Sulje Dialogi"
+
 msgid "Focus Next"
 msgstr "Kohdista seuraavaan"
 
@@ -408,6 +423,9 @@ msgstr "Päivitä"
 
 msgid "Show Hidden"
 msgstr "Näytä Piilotetut"
+
+msgid "Find"
+msgstr "Etsi"
 
 msgid "Focus Path"
 msgstr "Kohdista polkuun"
@@ -666,6 +684,18 @@ msgstr "Poista pisteet ja kolmiot."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Luo sulautuskolmiot automaattisesti (manuaalisen sijaan)"
 
+msgid "Grid X Step"
+msgstr "Ruudukko X Askel"
+
+msgid "Grid Y Step"
+msgstr "Ruudukko Y Askel"
+
+msgid "Blend X Value"
+msgstr "Blend X Arvot"
+
+msgid "Blend Y Value"
+msgstr "Blend Y arvot"
+
 msgid "Max Y"
 msgstr "Max Y"
 
@@ -680,6 +710,9 @@ msgstr "Min x"
 
 msgid "X Value"
 msgstr "X Arvo"
+
+msgid "Max X"
+msgstr "Max X"
 
 msgid "Parameter Changed: %s"
 msgstr "Parametri Muutettu: %s"
@@ -817,6 +850,9 @@ msgstr "Tällä nimellä löytyy jo kirjasto."
 msgid "Animation name is valid."
 msgstr "Animaation nimi kelpaa."
 
+msgid "Global library will be created."
+msgstr "Globaali kirjasto luodaan."
+
 msgid "Library name is valid."
 msgstr "Kirjaston nimi kelpaa."
 
@@ -874,6 +910,30 @@ msgstr "Tallenna Animaatio kirjasto Tiedostoon: %s"
 
 msgid "Save Animation to File: %s"
 msgstr "Tallenna Animaatio Tiedostoon: %s"
+
+msgid ""
+"The file you selected is an imported scene from a 3D model such as glTF or "
+"FBX.\n"
+"\n"
+"In Godot, 3D models can be imported as either scenes or animation libraries, "
+"which is why they show up here.\n"
+"\n"
+"If you want to use animations from this 3D model, open the Advanced Import "
+"Settings\n"
+"dialog and save the animations using Actions... → Set Animation Save Paths,\n"
+"or import the whole scene as a single AnimationLibrary in the Import dock."
+msgstr ""
+"Valitsemasi tiedosto on tuotu kohtaus 3D-mallista, kuten esimerkiksi glTF- "
+"tai FBX-mallista.\n"
+"\n"
+"Godotissa 3D-mallit voidaan tuoda kohtauksina tai animaatiokirjastoina, minkä "
+"takia ne näkyvät täällä.\n"
+"\n"
+"Jos haluat käyttää animaatioita tästä 3D mallista, avaa Edistyneet "
+"Tuontiasetukset\n"
+"ja tallenna animaatiot käyttämällä Toimenpiteet... -> Aseta animaation "
+"tallennuspolku\n"
+"tai tuo koko kohtaus yksittäisenä Animaatiokirjastona Tuontitelakassa."
 
 msgid ""
 "The file you selected is not a valid AnimationLibrary.\n"
@@ -1060,6 +1120,9 @@ msgstr "Onion skinning vaatii RESET animaation."
 msgid "Animation"
 msgstr "Animaatio"
 
+msgid "Toggle Animation Dock"
+msgstr "Näytä/piilota animaation alapaneeli"
+
 msgid "Animation position (in seconds)."
 msgstr "Animaation kohta (sekunneissa)."
 
@@ -1153,6 +1216,18 @@ msgstr "Siirrä solmua"
 msgid "Transition exists!"
 msgstr "Siirtymä on olemassa!"
 
+msgid "Cannot transition to self!"
+msgstr "Ei voi siirtyä itseensä!"
+
+msgid "Cannot transition to \"Start\"!"
+msgstr "Ei voi siirtyä \"alulle\"!"
+
+msgid "Cannot transition from \"End\"!"
+msgstr "Ei voi siirtyä \"loppuun\"!"
+
+msgid "Transition from \"%s\" to \"%s\" already exists!"
+msgstr "Siirtyminen \"%s\" \"%s\" on jo olemassa!"
+
 msgid "Play/Travel to %s"
 msgstr "Toista/Matkusta kohtaan %s"
 
@@ -1161,6 +1236,9 @@ msgstr "Muokkaa %s"
 
 msgid "Add Node and Transition"
 msgstr "Lisää Solmu ja Siirtymä"
+
+msgid "Transition already exists!"
+msgstr "Siirtymä on olemassa!"
 
 msgid "Add Transition"
 msgstr "Lisää siirtymä"
@@ -1399,6 +1477,22 @@ msgstr "Sisään Käsittelijä:"
 
 msgid "Out-Handle:"
 msgstr "Ulos Käsittelijä:"
+
+msgctxt "Bezier Handle Mode"
+msgid "Free"
+msgstr "Vapauta"
+
+msgctxt "Bezier Handle Mode"
+msgid "Linear"
+msgstr "Lineaarinen"
+
+msgctxt "Bezier Handle Mode"
+msgid "Balanced"
+msgstr "Tasapainotetut"
+
+msgctxt "Bezier Handle Mode"
+msgid "Mirrored"
+msgstr "Peilatut"
 
 msgid "Stream:"
 msgstr "Virta:"
@@ -4529,9 +4623,6 @@ msgstr "Pyörii kun editorin ikkuna päivittyy."
 msgid "Imported resources can't be saved."
 msgstr "Tuotuja resursseja ei voi tallentaa."
 
-msgid "OK"
-msgstr "OK"
-
 msgid "Error saving resource!"
 msgstr "Virhe resurssin tallentamisessa!"
 
@@ -5279,9 +5370,6 @@ msgstr "Avaa edellinen editori"
 
 msgid "Project"
 msgstr "Projekti"
-
-msgid "Help"
-msgstr "Ohje"
 
 msgid "Update Mode"
 msgstr "Päivitystila"
@@ -7296,6 +7384,9 @@ msgstr "Käynnistä uudelleen nyt"
 msgid "Language"
 msgstr "Kieli"
 
+msgid "Style"
+msgstr "Tyyli"
+
 msgid "Play a custom scene."
 msgstr "Toista mukautettu kohtaus."
 
@@ -8001,9 +8092,6 @@ msgstr "Takaortogonaalinen"
 msgid "Rear Perspective"
 msgstr "Takaperspektiivi"
 
-msgid "Locked"
-msgstr "Lukittu"
-
 msgid "Grouped"
 msgstr "Ryhmitetty"
 
@@ -8024,24 +8112,6 @@ msgstr "Animaation avainnus on pois päältä (avainta ei lisätty)."
 
 msgid "Animation Key Inserted."
 msgstr "Animaatioavain lisätty."
-
-msgid "X: %s\n"
-msgstr "X: %s\n"
-
-msgid "Y: %s\n"
-msgstr "Y: %s\n"
-
-msgid "Z: %s\n"
-msgstr "Z: %s\n"
-
-msgid "Size: %s (%.1fMP)\n"
-msgstr "Koko: %s (%.1fMP)\n"
-
-msgid "Objects: %d\n"
-msgstr "Objektit: %d\n"
-
-msgid "Primitives: %d\n"
-msgstr "Alkeiskappaleet: %d\n"
 
 msgid "Draw Calls: %d"
 msgstr "Piirtokutsuja: %d"
@@ -9614,9 +9684,6 @@ msgstr ""
 
 msgid "Post-Process"
 msgstr "Jälkikäsittely"
-
-msgid "Style"
-msgstr "Tyyli"
 
 msgid "PascalCase to snake_case"
 msgstr "PascalCase ala_viivoiksi"
@@ -12358,7 +12425,7 @@ msgid "Invalid arguments to unary operator '%s': %s."
 msgstr "Virheelliset argumentit unary-operaattorille '%s': %s."
 
 msgid "Invalid arguments to operator '%s': '%s'."
-msgstr "Virheelliset argumentit operaattorille '%s': '%s'"
+msgstr "Virheelliset argumentit operaattorille '%s': '%s'."
 
 msgid "Duplicated case label: %d."
 msgstr "Monistettu tapausnimiö: %d."
@@ -12376,7 +12443,7 @@ msgid "A '%s' data type is not allowed here."
 msgstr "Data tyyppi '%s' ei ole sallittu tässä."
 
 msgid "Duplicated hint: '%s'."
-msgstr "Monistettu vihje: '%s'"
+msgstr "Monistettu vihje: '%s'."
 
 msgid "Can only specify '%s' once."
 msgstr "'%s' voidaan määrittää vain kerran."

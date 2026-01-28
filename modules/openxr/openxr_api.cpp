@@ -659,12 +659,21 @@ XrResult OpenXRAPI::attempt_create_instance(XrVersion p_version) {
 bool OpenXRAPI::create_instance() {
 	// Create our OpenXR instance, this will query any registered extension wrappers for extensions we need to enable.
 
-	XrResult result = attempt_create_instance(XR_API_VERSION_1_1);
-	if (result == XR_ERROR_API_VERSION_UNSUPPORTED) {
-		// Couldn't initialize OpenXR 1.1, try 1.0
+	XrVersion init_version = XR_API_VERSION_1_1;
+
+	String custom_version = GLOBAL_GET("xr/openxr/target_api_version");
+	if (!custom_version.is_empty()) {
+		Vector<int> ints = custom_version.split_ints(".", false);
+		ERR_FAIL_COND_V_MSG(ints.size() != 3, false, "OpenXR target API version must be major.minor.patch.");
+		init_version = XR_MAKE_VERSION(ints[0], ints[1], ints[2]);
+	}
+
+	XrResult result = attempt_create_instance(init_version);
+	if (result == XR_ERROR_API_VERSION_UNSUPPORTED && init_version == XR_API_VERSION_1_1) {
 		print_verbose("OpenXR: Falling back to OpenXR 1.0");
 
-		result = attempt_create_instance(XR_API_VERSION_1_0);
+		init_version = XR_API_VERSION_1_0;
+		result = attempt_create_instance(init_version);
 	}
 	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "Failed to create XR instance [" + get_error_string(result) + "].");
 
@@ -1345,8 +1354,6 @@ bool OpenXRAPI::create_main_swapchains(const Size2i &p_size) {
 		render_state.projection_views[i].subImage.imageRect.extent.height = render_state.main_swapchain_size.height;
 
 		if (render_state.submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available() && !render_state.depth_views.is_empty()) {
-			render_state.projection_views[i].next = &render_state.depth_views[i];
-
 			render_state.depth_views[i].subImage.swapchain = render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].get_swapchain();
 			render_state.depth_views[i].subImage.imageArrayIndex = i;
 			render_state.depth_views[i].subImage.imageRect.offset.x = 0;
@@ -2672,17 +2679,21 @@ void OpenXRAPI::end_frame() {
 	render_state.projection_layer.viewCount = (uint32_t)render_state.projection_views.size();
 	render_state.projection_layer.views = render_state.projection_views.ptr();
 
-	if (projection_views_extensions.size() > 0) {
-		for (uint32_t v = 0; v < render_state.projection_views.size(); v++) {
-			void *next_pointer = nullptr;
-			for (OpenXRExtensionWrapper *wrapper : projection_views_extensions) {
-				void *np = wrapper->set_projection_views_and_get_next_pointer(v, next_pointer);
-				if (np != nullptr) {
-					next_pointer = np;
-				}
-			}
-			render_state.projection_views[v].next = next_pointer;
+	const bool submit_depth_views = render_state.submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available() && !render_state.depth_views.is_empty();
+	for (uint32_t v = 0; v < render_state.projection_views.size(); v++) {
+		void *next_pointer = nullptr;
+		// Start next chain with depth_views if submitting the depth buffer since this is handled here as a special case currently.
+		// TODO: Depth composition logic should be moved out into OpenXRCompositionLayerDepthExtension and register as a projection views extension.
+		if (submit_depth_views) {
+			next_pointer = &render_state.depth_views[v];
 		}
+		for (OpenXRExtensionWrapper *wrapper : projection_views_extensions) {
+			void *np = wrapper->set_projection_views_and_get_next_pointer(v, next_pointer);
+			if (np != nullptr) {
+				next_pointer = np;
+			}
+		}
+		render_state.projection_views[v].next = next_pointer;
 	}
 
 	ordered_layers_list.push_back({ (const XrCompositionLayerBaseHeader *)&render_state.projection_layer, 0 });

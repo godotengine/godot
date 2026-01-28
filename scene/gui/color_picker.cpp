@@ -152,6 +152,7 @@ void ColorPicker::_notification(int p_what) {
 			for (int i = 0; i < MODE_BUTTON_COUNT; i++) {
 				mode_btns[i]->begin_bulk_theme_override();
 				mode_btns[i]->add_theme_style_override(SceneStringName(pressed), theme_cache.mode_button_pressed);
+				mode_btns[i]->add_theme_style_override("hover_pressed", theme_cache.mode_button_hover_pressed);
 				mode_btns[i]->add_theme_style_override(CoreStringName(normal), theme_cache.mode_button_normal);
 				mode_btns[i]->add_theme_style_override(SceneStringName(hover), theme_cache.mode_button_hover);
 				mode_btns[i]->end_bulk_theme_override();
@@ -2059,6 +2060,7 @@ void ColorPicker::_bind_methods() {
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_normal, "tab_unselected", "TabContainer");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_pressed, "tab_selected", "TabContainer");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_hover, "tab_selected", "TabContainer");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_hover_pressed, "tab_selected", "TabContainer");
 
 	ADD_CLASS_DEPENDENCY("LineEdit");
 	ADD_CLASS_DEPENDENCY("MenuButton");
@@ -2092,6 +2094,7 @@ ColorPicker::ColorPicker() {
 
 	btn_shape = memnew(MenuButton);
 	btn_shape->set_flat(false);
+	btn_shape->set_theme_type_variation("FlatMenuButton");
 	sample_hbc->add_child(btn_shape);
 	btn_shape->set_toggle_mode(true);
 	btn_shape->set_tooltip_text(ETR("Select a picker shape."));
@@ -2142,10 +2145,12 @@ ColorPicker::ColorPicker() {
 
 	btn_mode = memnew(MenuButton);
 	btn_mode->set_flat(false);
+	btn_mode->set_theme_type_variation("FlatMenuButton");
 	mode_hbc->add_child(btn_mode);
 	btn_mode->set_toggle_mode(true);
 	btn_mode->set_accessibility_name(ETR("Select a picker mode."));
 	btn_mode->set_tooltip_text(ETR("Select a picker mode."));
+	btn_mode->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	btn_mode->set_focus_mode(FOCUS_ALL);
 
 	mode_popup = btn_mode->get_popup();
@@ -2247,6 +2252,7 @@ ColorPicker::ColorPicker() {
 
 	menu_btn = memnew(MenuButton);
 	menu_btn->set_flat(false);
+	menu_btn->set_theme_type_variation("FlatMenuButton");
 	menu_btn->set_focus_mode(FOCUS_ALL);
 	menu_btn->set_tooltip_text(ETR("Show all options available."));
 	menu_btn->connect("about_to_popup", callable_mp(this, &ColorPicker::_update_menu_items));

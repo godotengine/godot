@@ -5182,6 +5182,8 @@ void RichTextLabel::set_scroll_active(bool p_active) {
 
 	scroll_active = p_active;
 	vscroll->set_drag_node_enabled(p_active);
+	vscroll->set_visible(p_active);
+	_apply_translation(); // without this, RichLabelText is not updated in the editor/game.
 	queue_redraw();
 }
 
@@ -7853,6 +7855,9 @@ void RichTextLabel::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, RichTextLabel, table_border);
 
 	ADD_CLASS_DEPENDENCY("PopupMenu");
+#ifdef MODULE_REGEX_ENABLED
+	ADD_CLASS_DEPENDENCY("RegEx");
+#endif
 }
 
 TextServer::VisibleCharactersBehavior RichTextLabel::get_visible_characters_behavior() const {

@@ -164,8 +164,8 @@ public:
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
+	void open_editor();
 
-	void make_visible_no_focus();
 	ObjectID get_edited_tileset() const;
 
 	TileSetEditorPlugin();

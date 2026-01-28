@@ -38,6 +38,8 @@
 #include "core/templates/rb_set.h"
 #include "core/variant/typed_array.h"
 
+class GamepadMotion;
+
 class Input : public Object {
 	GDCLASS(Input, Object);
 	_THREAD_SAFE_CLASS_
@@ -84,7 +86,10 @@ public:
 		virtual ~JoypadFeatures() {}
 
 		virtual bool has_joy_light() const { return false; }
-		virtual bool set_joy_light(const Color &p_color) { return false; }
+		virtual void set_joy_light(const Color &p_color) {}
+
+		virtual bool has_joy_motion_sensors() const { return false; }
+		virtual void set_joy_motion_sensors_enabled(bool p_enable) {}
 	};
 
 	static constexpr int32_t JOYPADS_MAX = 16;
@@ -156,6 +161,23 @@ private:
 	};
 
 	HashMap<int, VibrationInfo> joy_vibration;
+
+	struct MotionInfo {
+		bool sensors_enabled : 1;
+		bool calibrating : 1;
+		bool calibrated : 1;
+		float sensor_data_rate = 0.0f;
+		uint64_t last_timestamp = 0;
+		GamepadMotion *gamepad_motion = nullptr;
+
+		MotionInfo() {
+			sensors_enabled = false;
+			calibrating = false;
+			calibrated = false;
+		}
+	};
+
+	HashMap<int, MotionInfo> joy_motion;
 
 	struct VelocityTrack {
 		uint64_t last_tick = 0;
@@ -360,8 +382,30 @@ public:
 
 	void set_joy_features(int p_device, JoypadFeatures *p_features);
 
-	bool set_joy_light(int p_device, const Color &p_color);
+	void set_joy_light(int p_device, const Color &p_color);
 	bool has_joy_light(int p_device) const;
+
+	Vector3 get_joy_accelerometer(int p_device) const;
+	Vector3 get_joy_gravity(int p_device) const;
+	Vector3 get_joy_gyroscope(int p_device) const;
+
+	void set_joy_motion_sensors_enabled(int p_device, bool p_enable);
+	bool is_joy_motion_sensors_enabled(int p_device) const;
+
+	bool has_joy_motion_sensors(int p_device) const;
+	float get_joy_motion_sensors_rate(int p_device) const;
+
+	void start_joy_motion_sensors_calibration(int p_device);
+	void stop_joy_motion_sensors_calibration(int p_device);
+	void clear_joy_motion_sensors_calibration(int p_device);
+
+	Dictionary get_joy_motion_sensors_calibration(int p_device) const;
+	void set_joy_motion_sensors_calibration(int p_device, const Dictionary &p_calibration_info);
+
+	bool is_joy_motion_sensors_calibrating(int p_device) const;
+	bool is_joy_motion_sensors_calibrated(int p_device) const;
+
+	void set_joy_motion_sensors_rate(int p_device, float p_rate);
 
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
@@ -388,6 +432,7 @@ public:
 	void joy_button(int p_device, JoyButton p_button, bool p_pressed);
 	void joy_axis(int p_device, JoyAxis p_axis, float p_value);
 	void joy_hat(int p_device, BitField<HatMask> p_val);
+	void joy_motion_sensors(int p_device, const Vector3 &p_accelerometer, const Vector3 &p_gyroscope);
 
 	void add_joy_mapping(const String &p_mapping, bool p_update_existing = false);
 	void remove_joy_mapping(const String &p_guid);

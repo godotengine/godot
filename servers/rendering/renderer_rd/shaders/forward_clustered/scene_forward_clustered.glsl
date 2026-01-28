@@ -12,6 +12,12 @@
 #define SHADER_IS_SRGB false
 #define SHADER_SPACE_FAR 0.0
 
+#ifdef USE_MULTIVIEW
+#define OUTPUT_IS_MULTIVIEW true
+#else
+#define OUTPUT_IS_MULTIVIEW false
+#endif
+
 /* INPUT ATTRIBS */
 
 // Always contains vertex position in XYZ, can contain tangent angle in W.
@@ -709,7 +715,7 @@ void vertex_shader(vec3 vertex_input,
 				vec2(1, 1));
 
 		vec2 point_coord = point_coords[gl_VertexIndex % 6];
-		gl_Position.xy += (point_coord * 2.0 - 1.0) * point_size * scene_data.screen_pixel_size * gl_Position.w;
+		gl_Position.xy += (point_coord * 2.0 - 1.0) * (point_size / scene_data.viewport_size) * gl_Position.w;
 
 #ifdef POINT_COORD_USED
 		point_coord_interp = point_coord;
@@ -862,6 +868,12 @@ void main() {
 
 #define SHADER_IS_SRGB false
 #define SHADER_SPACE_FAR 0.0
+
+#ifdef USE_MULTIVIEW
+#define OUTPUT_IS_MULTIVIEW true
+#else
+#define OUTPUT_IS_MULTIVIEW false
+#endif
 
 /* Include half precision types. */
 #include "../half_inc.glsl"
@@ -1225,9 +1237,7 @@ void fragment_shader(in SceneData scene_data) {
 	float anisotropy = 0.0;
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
 	vec3 energy_compensation = vec3(1.0);
-#ifndef FOG_DISABLED
 	vec4 fog = vec4(0.0, 0.0, 0.0, 1.0);
-#endif // !FOG_DISABLED
 #if defined(CUSTOM_RADIANCE_USED)
 	vec4 custom_radiance = vec4(0.0);
 #endif
@@ -2098,39 +2108,6 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 	}
 
-	//process ssr
-	if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR)) {
-		bool resolve_ssr = bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR);
-
-		float ssr_mip_level = 0.0;
-		if (resolve_ssr) {
-#ifdef USE_MULTIVIEW
-			ssr_mip_level = textureLod(sampler2DArray(ssr_mip_level_buffer, SAMPLER_NEAREST_CLAMP), vec3(screen_uv, ViewIndex), 0.0).x;
-#else
-			ssr_mip_level = textureLod(sampler2D(ssr_mip_level_buffer, SAMPLER_NEAREST_CLAMP), screen_uv, 0.0).x;
-#endif // USE_MULTIVIEW
-
-			ssr_mip_level *= 14.0;
-		}
-
-#ifdef USE_MULTIVIEW
-		vec4 ssr = textureLod(sampler2DArray(ssr_buffer, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(screen_uv, ViewIndex), ssr_mip_level);
-#else
-		vec4 ssr = textureLod(sampler2D(ssr_buffer, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), screen_uv, ssr_mip_level);
-#endif // USE_MULTIVIEW
-
-		if (resolve_ssr) {
-			const vec3 rec709_luminance_weights = vec3(0.2126, 0.7152, 0.0722);
-			ssr.rgb /= 1.0 - dot(ssr.rgb, rec709_luminance_weights);
-		}
-
-		// Apply fade when approaching 0.7 roughness to smoothen the harsh cutoff in the main SSR trace pass.
-		ssr *= smoothstep(0.0, 1.0, 1.0 - clamp((roughness - 0.6) / (0.7 - 0.6), 0.0, 1.0));
-
-		// Alpha is premultiplied.
-		indirect_specular_light = indirect_specular_light * (1.0 - ssr.a) + ssr.rgb;
-	}
-
 	//finalize ambient light here
 	{
 		ambient_light *= ao;
@@ -2187,6 +2164,39 @@ void fragment_shader(in SceneData scene_data) {
 #endif // USE_MULTIVIEW
 			ambient_light *= 1.0 - ssil.a;
 			ambient_light += ssil.rgb * albedo.rgb;
+		}
+
+		//process ssr
+		if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR)) {
+			bool resolve_ssr = bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR);
+
+			float ssr_mip_level = 0.0;
+			if (resolve_ssr) {
+#ifdef USE_MULTIVIEW
+				ssr_mip_level = textureLod(sampler2DArray(ssr_mip_level_buffer, SAMPLER_NEAREST_CLAMP), vec3(screen_uv, ViewIndex), 0.0).x;
+#else
+				ssr_mip_level = textureLod(sampler2D(ssr_mip_level_buffer, SAMPLER_NEAREST_CLAMP), screen_uv, 0.0).x;
+#endif // USE_MULTIVIEW
+
+				ssr_mip_level *= 14.0;
+			}
+
+#ifdef USE_MULTIVIEW
+			vec4 ssr = textureLod(sampler2DArray(ssr_buffer, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(screen_uv, ViewIndex), ssr_mip_level);
+#else
+			vec4 ssr = textureLod(sampler2D(ssr_buffer, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), screen_uv, ssr_mip_level);
+#endif // USE_MULTIVIEW
+
+			if (resolve_ssr) {
+				const vec3 rec709_luminance_weights = vec3(0.2126, 0.7152, 0.0722);
+				ssr.rgb /= 1.0 - dot(ssr.rgb, rec709_luminance_weights);
+			}
+
+			// Apply fade when approaching 0.7 roughness to smoothen the harsh cutoff in the main SSR trace pass.
+			ssr *= smoothstep(0.0, 1.0, 1.0 - clamp((roughness - 0.6) / (0.7 - 0.6), 0.0, 1.0));
+
+			// Alpha is premultiplied.
+			indirect_specular_light = indirect_specular_light * (1.0 - ssr.a) + ssr.rgb;
 		}
 	}
 #endif // AMBIENT_LIGHT_DISABLED

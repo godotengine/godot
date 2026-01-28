@@ -220,11 +220,15 @@ void EmbeddedProcess::reset() {
 	embedding_completed = false;
 	start_embedding_time = 0;
 	embedding_grab_focus = false;
-	timer_embedding->stop();
-	timer_update_embedded_process->stop();
+	reset_timers();
 	set_process(false);
 	set_notify_transform(false);
 	queue_redraw();
+}
+
+void EmbeddedProcess::reset_timers() {
+	timer_embedding->stop();
+	timer_update_embedded_process->stop();
 }
 
 void EmbeddedProcess::request_close() {

@@ -91,6 +91,7 @@ public:
 	int get_file_count() const;
 	String get_file(int p_idx) const;
 	String get_file_path(int p_idx) const;
+	ResourceUID::ID get_file_uid(int p_idx) const;
 	StringName get_file_type(int p_idx) const;
 	StringName get_file_resource_script_class(int p_idx) const;
 	Vector<String> get_file_deps(int p_idx) const;

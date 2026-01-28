@@ -275,6 +275,7 @@ private:
 	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_scroll_to_selected = true);
 	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false, bool p_grab_focus = false);
 	bool _update_filtered_items(TreeItem *p_tree_item = nullptr);
+	void _append_favorite_items();
 
 	void _file_list_gui_input(Ref<InputEvent> p_event);
 	void _tree_gui_input(Ref<InputEvent> p_event);

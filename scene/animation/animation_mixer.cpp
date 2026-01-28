@@ -123,7 +123,7 @@ bool AnimationMixer::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 uint32_t AnimationMixer::_get_libraries_property_usage() const {
-	return PROPERTY_USAGE_DEFAULT;
+	return PROPERTY_USAGE_STORAGE;
 }
 
 void AnimationMixer::_get_property_list(List<PropertyInfo> *p_list) const {
@@ -280,16 +280,6 @@ bool AnimationMixer::has_animation_library(const StringName &p_name) const {
 	}
 
 	return false;
-}
-
-StringName AnimationMixer::get_animation_library_name(const Ref<AnimationLibrary> &p_animation_library) const {
-	ERR_FAIL_COND_V(p_animation_library.is_null(), StringName());
-	for (const AnimationLibraryData &lib : animation_libraries) {
-		if (lib.library == p_animation_library) {
-			return lib.name;
-		}
-	}
-	return StringName();
 }
 
 StringName AnimationMixer::find_animation_library(const Ref<Animation> &p_animation) const {
@@ -1004,11 +994,13 @@ void AnimationMixer::_process_animation(double p_delta, bool p_update_only) {
 		_blend_capture(p_delta);
 		_blend_calc_total_weight();
 		_blend_process(p_delta, p_update_only);
+		clear_animation_instances();
 		_blend_apply();
 		_blend_post_process();
 		emit_signal(SNAME("mixer_applied"));
-	};
-	clear_animation_instances();
+	} else {
+		clear_animation_instances();
+	}
 }
 
 Variant AnimationMixer::_post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant &p_value, ObjectID p_object_id, int p_object_sub_idx) {

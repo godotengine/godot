@@ -47,6 +47,7 @@
 void EditorBottomPanel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
+			set_accessibility_region(true);
 			layout_popup = get_popup();
 		} break;
 
@@ -60,6 +61,9 @@ void EditorBottomPanel::_notification(int p_what) {
 void EditorBottomPanel::_on_tab_changed(int p_idx) {
 	_update_center_split_offset();
 	_repaint();
+	if (p_idx >= 0 && p_idx < get_tab_count()) {
+		set_accessibility_name(get_tab_title(p_idx));
+	}
 }
 
 void EditorBottomPanel::_theme_changed() {
@@ -207,7 +211,7 @@ Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Sh
 	dock->set_dock_shortcut(p_shortcut);
 	dock->set_global(false);
 	dock->set_transient(true);
-	dock->set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	dock->set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	dock->set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL);
 	EditorDockManager::get_singleton()->add_dock(dock);
 	bottom_docks.push_back(dock);

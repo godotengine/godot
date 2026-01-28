@@ -5,8 +5,10 @@
 	</brief_description>
 	<description>
 		This texture class allows you to use a 3D texture created directly on the [RenderingDevice] as a texture for materials, meshes, etc.
+		[b]Note:[/b] [Texture3DRD] is intended for low-level usage with [RenderingDevice]. For most use cases, use [Texture3D] instead.
 	</description>
 	<tutorials>
+		<link title="Compute Texture demo">https://godotengine.org/asset-library/asset/2764</link>
 	</tutorials>
 	<members>
 		<member name="texture_rd_rid" type="RID" setter="set_texture_rd_rid" getter="get_texture_rd_rid">

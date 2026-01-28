@@ -3595,6 +3595,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		if (rt->msaa != RS::VIEWPORT_MSAA_DISABLED) {
 			rd_color_attachment_format.is_resolve_buffer = true;
 		}
+		rd_color_attachment_format.is_discardable = true;
 	}
 
 	// TODO see if we can lazy create this once we actually use it as we may not need to create this if we have an overridden color buffer...
@@ -3614,6 +3615,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		rd_color_multisample_format.usage_bits = render_target_get_color_usage_bits(true);
 		RD::TextureView rd_view_multisample;
 		rd_color_multisample_format.is_resolve_buffer = false;
+		rd_color_multisample_format.is_discardable = true;
 		rt->color_multisample = RD::get_singleton()->texture_create(rd_color_multisample_format, rd_view_multisample);
 		ERR_FAIL_COND(rt->color_multisample.is_null());
 	}
@@ -3674,6 +3676,7 @@ void TextureStorage::_create_render_target_backbuffer(RenderTarget *rt) {
 	tf.texture_type = RD::TEXTURE_TYPE_2D;
 	tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 	tf.mipmaps = mipmaps_required;
+	tf.is_discardable = true;
 
 	rt->backbuffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
 	RD::get_singleton()->set_resource_name(rt->backbuffer, "Render Target Back Buffer");
@@ -4159,6 +4162,7 @@ void TextureStorage::_render_target_allocate_sdf(RenderTarget *rt) {
 	tformat.height = size.height;
 	tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 	tformat.texture_type = RD::TEXTURE_TYPE_2D;
+	tformat.is_discardable = true;
 
 	rt->sdf_buffer_write = RD::get_singleton()->texture_create(tformat, RD::TextureView());
 

@@ -24,6 +24,15 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.14.1-dev\n"
 
+msgid "OK"
+msgstr "დიახ"
+
+msgid "Locked"
+msgstr "დაბლოკილი"
+
+msgid "Help"
+msgstr "დახმარება"
+
 msgid "Physical"
 msgstr "ფიზიკური"
 
@@ -2101,9 +2110,6 @@ msgstr "გაფრთხილებები"
 msgid "%s (Overridden)"
 msgstr "%s (გადაფარულია)"
 
-msgid "OK"
-msgstr "დიახ"
-
 msgid "Error saving resource!"
 msgstr "რესურსის შენახვის შეცდომა!"
 
@@ -2235,9 +2241,6 @@ msgstr "შეცდომის პატაკი"
 
 msgid "Project"
 msgstr "პროექტი"
-
-msgid "Help"
-msgstr "დახმარება"
 
 msgid "Update Continuously"
 msgstr "უწყვეტი განახლება"
@@ -3007,6 +3010,9 @@ msgstr "ახლა გადატვირთვა"
 msgid "Language"
 msgstr "ენა"
 
+msgid "Style"
+msgstr "სტილი"
+
 msgid "Re-saving scene:"
 msgstr "სცენის თავიდან ჩაწერა:"
 
@@ -3453,9 +3459,6 @@ msgstr "ორთოგონალური"
 
 msgid "Perspective"
 msgstr "პერსპექტივა"
-
-msgid "Locked"
-msgstr "დაბლოკილი"
 
 msgid "Grouped"
 msgstr "დაჯგუფებული"
@@ -4124,9 +4127,6 @@ msgstr "ბიჯი"
 
 msgid "Padding"
 msgstr "შევსება"
-
-msgid "Style"
-msgstr "სტილი"
 
 msgid "Case"
 msgstr "რეგისტრი"

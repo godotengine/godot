@@ -52,6 +52,7 @@
 #include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/panel.h"
 #include "scene/gui/separator.h"
 
 void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
@@ -573,10 +574,10 @@ void GameView::_update_debugger_buttons() {
 	if (empty) {
 		suspend_button->set_pressed(false);
 		camera_override_button->set_pressed(false);
+		_reset_time_scales();
 	}
-	next_frame_button->set_disabled(!suspend_button->is_pressed());
 
-	_reset_time_scales();
+	next_frame_button->set_disabled(!suspend_button->is_pressed());
 }
 
 void GameView::_handle_shortcut_requested(int p_embed_action) {
@@ -1160,6 +1161,9 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 
 void GameView::_window_close_request() {
 	if (window_wrapper->get_window_enabled()) {
+		// Stop the embedded process timer before closing the window wrapper,
+		// so the signal to focus EDITOR_GAME isn't sent when the window is not enabled.
+		embedded_process->reset_timers();
 		window_wrapper->set_window_enabled(false);
 	}
 
@@ -1169,9 +1173,9 @@ void GameView::_window_close_request() {
 		// When the embedding is not complete, we need to kill the process.
 		// If the game is paused, the close request will not be processed by the game, so it's better to kill the process.
 		if (paused || embedded_process->is_embedding_in_progress()) {
-			embedded_process->reset();
 			// Call deferred to prevent the _stop_pressed callback to be executed before the wrapper window
 			// actually closes.
+			embedded_process->reset();
 			callable_mp(EditorRunBar::get_singleton(), &EditorRunBar::stop_playing).call_deferred();
 		} else {
 			// Try to gracefully close the window. That way, the NOTIFICATION_WM_CLOSE_REQUEST
@@ -1271,7 +1275,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_text(TTRC("Input"));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_toggle_mode(true);
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_pressed(true);
-	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_theme_type_variation(SceneStringName(FlatButton));
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_theme_type_variation("FlatButtonNoIconTint");
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_NONE));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_tooltip_text(TTRC("Allow game input."));
 
@@ -1279,7 +1283,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	input_hb->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]);
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_text(TTRC("2D"));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_toggle_mode(true);
-	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_theme_type_variation(SceneStringName(FlatButton));
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_theme_type_variation("FlatButtonNoIconTint");
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_2D));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_tooltip_text(TTRC("Disable game input and allow to select Node2Ds, Controls, and manipulate the 2D camera."));
 
@@ -1287,7 +1291,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	input_hb->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]);
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_text(TTRC("3D"));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_toggle_mode(true);
-	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_theme_type_variation(SceneStringName(FlatButton));
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_theme_type_variation("FlatButtonNoIconTint");
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_3D));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_tooltip_text(TTRC("Disable game input and allow to select Node3Ds and manipulate the 3D camera."));
 
@@ -1421,13 +1425,10 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	game_size_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	game_size_label->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_RIGHT);
 
-	panel = memnew(PanelContainer);
+	panel = memnew(Panel);
 	add_child(panel);
 	panel->set_theme_type_variation("GamePanel");
 	panel->set_v_size_flags(SIZE_EXPAND_FILL);
-#ifdef MACOS_ENABLED
-	panel->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-#endif
 
 	panel->add_child(embedded_process);
 	embedded_process->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
@@ -1437,8 +1438,17 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	embedded_process->connect("embedded_process_focused", callable_mp(this, &GameView::_embedded_process_focused));
 	embedded_process->set_custom_minimum_size(Size2i(100, 100));
 
+	MarginContainer *state_container = memnew(MarginContainer);
+	state_container->add_theme_constant_override("margin_left", 8 * EDSCALE);
+	state_container->add_theme_constant_override("margin_right", 8 * EDSCALE);
+	state_container->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+#ifdef MACOS_ENABLED
+	state_container->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+#endif
+
+	panel->add_child(state_container);
 	state_label = memnew(Label());
-	panel->add_child(state_label);
+	state_container->add_child(state_label);
 	state_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	state_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	state_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
