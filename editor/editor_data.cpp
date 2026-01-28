@@ -1133,6 +1133,10 @@ Ref<Texture2D> EditorData::_load_script_icon(const String &p_path) const {
 }
 
 Ref<Texture2D> EditorData::get_script_icon(const String &p_script_path) {
+	if (p_script_path.is_empty()) {
+		return Ref<Texture2D>();
+	}
+
 	// Take from the local cache, if available.
 	{
 		Ref<Texture2D> *icon = _script_icon_cache.getptr(p_script_path);
