@@ -86,6 +86,7 @@ private:
 	};
 
 	HashMap<Thread::ID, List<Message>> messages;
+	HashSet<Thread::ID> threads_in_break;
 
 	void _poll_messages();
 	bool _has_messages();
@@ -106,9 +107,6 @@ private:
 
 	Error _profiler_capture(const String &p_cmd, const Array &p_data, bool &r_captured);
 	Error _core_capture(const String &p_cmd, const Array &p_data, bool &r_captured);
-
-	template <typename T>
-	void _bind_profiler(const String &p_name, T *p_prof);
 	Error _try_capture(const String &p_name, const Array &p_data, bool &r_captured);
 
 public:
