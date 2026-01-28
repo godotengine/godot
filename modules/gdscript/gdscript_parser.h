@@ -1395,6 +1395,8 @@ private:
 	bool in_lambda = false;
 	bool lambda_ended = false; // Marker for when a lambda ends, to apply an end of statement if needed.
 
+	bool identifier_is_expression = true;
+
 	typedef bool (GDScriptParser::*AnnotationAction)(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	struct AnnotationInfo {
 		enum TargetKind {

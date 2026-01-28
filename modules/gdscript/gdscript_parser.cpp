@@ -2788,7 +2788,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_expression(bool p_can_assi
 }
 
 GDScriptParser::IdentifierNode *GDScriptParser::parse_identifier() {
+	identifier_is_expression = false;
 	IdentifierNode *identifier = static_cast<IdentifierNode *>(parse_identifier(nullptr, false));
+	identifier_is_expression = true;
 #ifdef DEBUG_ENABLED
 	// Check for spoofing here (if available in TextServer) since this isn't called inside expressions. This is only relevant for declarations.
 	if (identifier && TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier->name)) {
@@ -2810,7 +2812,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode 
 	}
 	identifier->suite = current_suite;
 
-	if (current_suite != nullptr && current_suite->has_local(identifier->name)) {
+	if (identifier_is_expression && current_suite != nullptr && current_suite->has_local(identifier->name)) {
 		const SuiteNode::Local &declaration = current_suite->get_local(identifier->name);
 
 		identifier->source_function = declaration.source_function;
