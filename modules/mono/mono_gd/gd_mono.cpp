@@ -537,13 +537,8 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 			initialize_hostfxr_for_config(get_data(config_path));
 
 	if (load_assembly_and_get_function_pointer == nullptr) {
-		// Show a message box to the user to make the problem explicit (and explain a potential crash).
-#ifdef TOOLS_ENABLED
-		OS::get_singleton()->alert(TTR("Unable to load .NET runtime, no compatible version was found.\nAttempting to create/edit a project will lead to a crash.\n\nPlease install the .NET SDK 8.0 or later from https://get.dot.net and restart Godot."), TTR("Failed to load .NET runtime"));
-#else
-		OS::get_singleton()->alert("Unable to load .NET runtime, no compatible version was found.\n\nPlease install the .NET SDK 8.0 or later from https://get.dot.net and restart.", "Failed to load .NET runtime");
-#endif
-		ERR_FAIL_V_MSG(nullptr, ".NET: Failed to load compatible .NET runtime");
+		// Log the error and fail - no modal dialog to avoid blocking in headless/test scenarios
+		ERR_FAIL_V_MSG(nullptr, ".NET: Failed to load compatible .NET runtime. Please install the .NET SDK 8.0 or later from https://get.dot.net");
 	}
 
 	r_runtime_initialized = true;
@@ -747,8 +742,8 @@ void GDMono::initialize() {
 #if !defined(APPLE_EMBEDDED_ENABLED)
 	// Check that the .NET assemblies directory exists before trying to use it.
 	if (!DirAccess::exists(GodotSharpDirs::get_api_assemblies_dir())) {
-		OS::get_singleton()->alert(vformat(RTR("Unable to find the .NET assemblies directory.\nMake sure the '%s' directory exists and contains the .NET assemblies."), GodotSharpDirs::get_api_assemblies_dir()), RTR(".NET assemblies not found"));
-		ERR_FAIL_MSG(".NET: Assemblies not found");
+		// Log the error and fail - no modal dialog to avoid blocking in headless/test scenarios
+		ERR_FAIL_MSG(".NET: Assemblies not found. Make sure the '" + GodotSharpDirs::get_api_assemblies_dir() + "' directory exists and contains the .NET assemblies.");
 	}
 #endif
 
@@ -771,13 +766,11 @@ void GDMono::initialize() {
 			ERR_FAIL_MSG(".NET: Failed to load hostfxr");
 		}
 #elif defined(LIBGODOT_HOSTFXR)
-		// Show a message box for libgodot builds (non-editor)
-		OS::get_singleton()->alert("Unable to load .NET runtime, specifically hostfxr.\n\nPlease install the .NET SDK 8.0 or later from https://get.dot.net and restart.", "Failed to load .NET runtime");
-		ERR_FAIL_MSG(".NET: Failed to load hostfxr");
+		// Log the error and fail - no modal dialog to avoid blocking in headless/test scenarios
+		ERR_FAIL_MSG(".NET: Failed to load hostfxr. Please install the .NET SDK 8.0 or later from https://get.dot.net");
 #else
-		// Show a message box to the user to make the problem explicit (and explain a potential crash).
-		OS::get_singleton()->alert(TTR("Unable to load .NET runtime, specifically hostfxr.\nAttempting to create/edit a project will lead to a crash.\n\nPlease install the .NET SDK 8.0 or later from https://get.dot.net and restart Godot."), TTR("Failed to load .NET runtime"));
-		ERR_FAIL_MSG(".NET: Failed to load hostfxr");
+		// Log the error and fail - no modal dialog to avoid blocking in headless/test scenarios
+		ERR_FAIL_MSG(".NET: Failed to load hostfxr. Please install the .NET SDK 8.0 or later from https://get.dot.net");
 #endif
 	}
 

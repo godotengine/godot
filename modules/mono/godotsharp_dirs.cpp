@@ -169,11 +169,23 @@ private:
 		String arch = Engine::get_singleton()->get_architecture_name();
 		String appname_safe = Path::get_csharp_project_name();
 		String packed_path = "res://.godot/mono/publish/" + arch;
+		
+		// HIGHEST PRIORITY: Check GODOT_ASSEMBLY_DIR environment variable first.
+		// This is critical for libgodot embedding scenarios where the host application
+		// (e.g., a .NET test runner) sets this variable to point to the assembly directory.
+		// Must be checked before any other path resolution to ensure it takes effect.
+		String env_assembly_dir = OS::get_singleton()->get_environment("GODOT_ASSEMBLY_DIR");
+		if (!env_assembly_dir.is_empty() && FileAccess::exists(env_assembly_dir.path_join("GodotPlugins.dll"))) {
+			api_assemblies_dir = env_assembly_dir;
+			print_verbose(".NET: Using GODOT_ASSEMBLY_DIR environment variable (highest priority): " + env_assembly_dir);
+		}
 #ifdef ANDROID_ENABLED
-		api_assemblies_dir = packed_path;
-		print_verbose(".NET: Android platform detected. Setting api_assemblies_dir directly to pck path: " + api_assemblies_dir);
+		else {
+			api_assemblies_dir = packed_path;
+			print_verbose(".NET: Android platform detected. Setting api_assemblies_dir directly to pck path: " + api_assemblies_dir);
+		}
 #else
-		if (DirAccess::exists(packed_path)) {
+		else if (DirAccess::exists(packed_path)) {
 			// The dotnet publish data is packed in the pck/zip.
 			String data_dir_root = OS::get_singleton()->get_cache_path().path_join("data_" + appname_safe + "_" + platform + "_" + arch);
 			bool has_data = false;
@@ -224,18 +236,11 @@ private:
 				// exe_dir points to dotnet's location but cwd is the test output dir
 				String cwd = OS::get_singleton()->get_cwd();
 				
-				// Also check GODOT_ASSEMBLY_DIR environment variable for explicit override
-				String env_assembly_dir = OS::get_singleton()->get_environment("GODOT_ASSEMBLY_DIR");
-				
 				// Try GodotSharp/Api/Debug/ structure (like editor builds) - first in exe_dir, then cwd
 				String api_debug_path = exe_dir.path_join("GodotSharp").path_join("Api").path_join("Debug");
 				String cwd_api_debug_path = cwd.path_join("GodotSharp").path_join("Api").path_join("Debug");
 				
-				if (!env_assembly_dir.is_empty() && FileAccess::exists(env_assembly_dir.path_join("GodotPlugins.dll"))) {
-					// Environment variable override takes priority
-					data_dir_root = env_assembly_dir;
-					print_verbose(".NET: Using GODOT_ASSEMBLY_DIR environment variable: " + env_assembly_dir);
-				} else if (FileAccess::exists(cwd.path_join("GodotPlugins.dll"))) {
+				if (FileAccess::exists(cwd.path_join("GodotPlugins.dll"))) {
 					// Try flat structure in cwd first - this is the most common case for NuGet package consumers
 					// where MSBuild copies GodotPlugins.dll to the output directory
 					data_dir_root = cwd;
