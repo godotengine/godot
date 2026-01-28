@@ -527,13 +527,15 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 #endif
 
 	_initial_set("interface/editor/keep_screen_on", false, true);
-	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/low_processor_mode_sleep_usec", 6900, "1,100000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
-	// Default unfocused usec sleep is for 10 FPS. Allow an unfocused FPS limit
-	// as low as 1 FPS for those who really need low power usage (but don't need
-	// to preview particles or shaders while the editor is unfocused). With very
-	// low FPS limits, the editor can take a small while to become usable after
-	// being focused again, so this should be used at the user's discretion.
-	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/unfocused_low_processor_mode_sleep_usec", 100000, "1,1000000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	// Automatic (VRR) option is not relevant for non-game applications such as the editor so it's not the default.
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/low_processor_mode_max_fps_mode", OS::LowProcessorModeSleepUsecMode::LOW_PROCESSOR_SLEEP_USEC_MODE_AUTOMATIC, "Automatic,Custom")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/custom_low_processor_mode_max_fps", 145, "30,1000,1")
+	// Allow an unfocused FPS limit as low as 1 FPS for those who really need
+	// low power usage (but don't need to preview particles or shaders while the
+	// editor is unfocused). With very low FPS limits, the editor can take a
+	// small while to become usable after being focused again, so this should be
+	// used at the user's discretion.
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/unfocused_low_processor_mode_max_fps", 10, "1,1000,1")
 
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/import_resources_when_unfocused", false, "")
 

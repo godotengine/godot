@@ -894,7 +894,6 @@ void EditorNode::_notification(int p_what) {
 			// Theme has already been created in the constructor, so we can skip that step.
 			_update_theme(true);
 
-			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
 			get_tree()->get_root()->set_as_audio_listener_3d(false);
 			get_tree()->get_root()->set_as_audio_listener_2d(false);
 			get_tree()->get_root()->set_snap_2d_transforms_to_pixel(false);
@@ -1005,7 +1004,8 @@ void EditorNode::_notification(int p_what) {
 
 		case NOTIFICATION_APPLICATION_FOCUS_IN: {
 			// Restore the original FPS cap after focusing back on the editor.
-			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
+			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec_mode(EDITOR_GET("interface/editor/low_processor_mode_max_fps_mode"));
+			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(1'000'000.0 / int(EDITOR_GET("interface/editor/custom_low_processor_mode_max_fps")));
 
 			if (_is_project_data_missing()) {
 				project_data_missing->popup_centered();
@@ -1026,7 +1026,8 @@ void EditorNode::_notification(int p_what) {
 
 			// Set a low FPS cap to decrease CPU/GPU usage while the editor is unfocused.
 			if (unfocused_low_processor_usage_mode_enabled) {
-				OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/unfocused_low_processor_mode_sleep_usec")));
+				OS::get_singleton()->set_low_processor_usage_mode_sleep_usec_mode(OS::LowProcessorModeSleepUsecMode::LOW_PROCESSOR_SLEEP_USEC_MODE_CUSTOM);
+				OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(1'000'000.0 / int(EDITOR_GET("interface/editor/unfocused_low_processor_mode_max_fps"))));
 			}
 		} break;
 
@@ -1056,6 +1057,9 @@ void EditorNode::_notification(int p_what) {
 				DisplayServer::get_singleton()->tablet_set_current_driver(tablet_driver);
 				print_verbose("Using \"" + DisplayServer::get_singleton()->tablet_get_current_driver() + "\" pen tablet driver...");
 			}
+
+			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec_mode(EDITOR_GET("interface/editor/low_processor_mode_max_fps_mode"));
+			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(1'000'000.0 / int(EDITOR_GET("interface/editor/custom_low_processor_mode_max_fps")));
 
 			if (EDITOR_GET("interface/editor/import_resources_when_unfocused")) {
 				scan_changes_timer->start();
