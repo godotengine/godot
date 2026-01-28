@@ -36,10 +36,10 @@ class RigidBody3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(RigidBody3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Node3D *p_spatial) override;
-	String get_gizmo_name() const override;
-	int get_priority() const override;
-	void redraw(EditorNode3DGizmo *p_gizmo) override;
+	virtual bool has_gizmo(Node3D *p_spatial) override;
+	virtual String get_gizmo_name() const override;
+	virtual int get_priority() const override;
+	virtual void redraw(EditorNode3DGizmo *p_gizmo) override;
 
 	RigidBody3DGizmoPlugin();
 };
