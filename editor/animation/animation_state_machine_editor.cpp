@@ -42,6 +42,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/separator.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"

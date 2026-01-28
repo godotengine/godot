@@ -145,6 +145,8 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	Ref<AnimationNode> file_loaded;
 	void _file_opened(const String &p_file);
 
+	Ref<EditorInspectorPluginAnimationNodeAnimation> animation_node_inspector_plugin;
+
 	Vector2 popup_menu_point;
 
 	struct CopyItem {
@@ -154,11 +156,11 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	};
 
 	List<CopyItem> copy_items_buffer;
-	List<GraphEdit::Connection> copy_connections_buffer;
+	List<Ref<GraphEdit::Connection>> copy_connections_buffer;
 	bool drag_copy = false;
 
-	void _dup_copy_nodes(List<CopyItem> &r_items, List<GraphEdit::Connection> &r_connections);
-	void _dup_paste_nodes(List<CopyItem> &p_items, const List<GraphEdit::Connection> &p_connections, const Vector2 &p_position, bool p_duplicate);
+	void _dup_copy_nodes(List<CopyItem> &r_items, List<Ref<GraphEdit::Connection>> &r_connections);
+	void _dup_paste_nodes(List<CopyItem> &p_items, const List<Ref<GraphEdit::Connection>> &p_connections, const Vector2 &p_position, bool p_duplicate);
 	void _duplicate_nodes(const Vector2 &p_position);
 	void _copy_nodes(bool p_cut);
 	void _paste_nodes(const Vector2 &p_position);

@@ -38,10 +38,12 @@
 #include "editor/editor_node.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
 

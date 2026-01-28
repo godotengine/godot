@@ -149,9 +149,6 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
 	Vector2 add_node_pos;
 
-	ConfirmationDialog *delete_window = nullptr;
-	Tree *delete_tree = nullptr;
-
 	bool box_selecting = false;
 	Point2 box_selecting_from;
 	Point2 box_selecting_to;
@@ -294,6 +291,11 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	EditorFileDialog *open_file = nullptr;
 	Ref<AnimationNode> file_loaded;
 	void _file_opened(const String &p_file);
+
+	HashSet<StringName> connected_nodes;
+	void _update_connected_nodes(const StringName &p_node);
+
+	Ref<StyleBox> _adjust_stylebox_opacity(Ref<StyleBox> p_style, float p_opacity);
 
 	Vector2 popup_menu_point;
 

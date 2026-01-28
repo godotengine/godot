@@ -31,6 +31,7 @@
 #include "animation_blend_tree_editor_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -348,7 +349,7 @@ void AnimationNodeBlendTreeEditor::_file_opened(const String &p_file) {
 	}
 }
 
-void AnimationNodeBlendTreeEditor::_dup_copy_nodes(List<CopyItem> &r_items, List<GraphEdit::Connection> &r_connections) {
+void AnimationNodeBlendTreeEditor::_dup_copy_nodes(List<CopyItem> &r_items, List<Ref<GraphEdit::Connection>> &r_connections) {
 	Vector2 top_left = {
 		std::numeric_limits<real_t>::max(),
 		std::numeric_limits<real_t>::max()
@@ -407,18 +408,15 @@ void AnimationNodeBlendTreeEditor::_dup_copy_nodes(List<CopyItem> &r_items, List
 		nodes.insert(graph_element->get_name());
 	}
 
-	List<GraphEdit::Connection> node_connections;
-	//blend_tree->get_node_connections(&node_connections);
-	graph->get_connection_list(&node_connections);
-
-	for (const GraphEdit::Connection &E : node_connections) {
-		if (nodes.has(E.from_node) && nodes.has(E.to_node)) {
-			r_connections.push_back(E);
+	Vector<Ref<GraphEdit::Connection>> node_connections = graph->get_connections();
+	for (const Ref<GraphEdit::Connection> &E : node_connections) {
+		if (nodes.has(E->from_node) && nodes.has(E->to_node)) {
+			r_connections.push_back(*E);
 		}
 	}
 }
 
-void AnimationNodeBlendTreeEditor::_dup_paste_nodes(List<CopyItem> &p_items, const List<GraphEdit::Connection> &p_connections, const Vector2 &p_position, bool p_duplicate) {
+void AnimationNodeBlendTreeEditor::_dup_paste_nodes(List<CopyItem> &p_items, const List<Ref<GraphEdit::Connection>> &p_connections, const Vector2 &p_position, bool p_duplicate) {
 	if (p_items.is_empty()) {
 		return;
 	}
@@ -444,9 +442,9 @@ void AnimationNodeBlendTreeEditor::_dup_paste_nodes(List<CopyItem> &p_items, con
 		added_set.insert(name);
 	}
 
-	for (const GraphEdit::Connection &E : p_connections) {
-		undo_redo->add_do_method(blend_tree.ptr(), "connect_node", String(connection_remap[E.to_node]), E.to_port, String(connection_remap[E.from_node]));
-		undo_redo->add_undo_method(blend_tree.ptr(), "disconnect_node", connection_remap[E.to_node], E.to_port);
+	for (const Ref<GraphEdit::Connection> &E : p_connections) {
+		undo_redo->add_do_method(blend_tree.ptr(), "connect_node", String(connection_remap[E->to_node]), E->to_port, String(connection_remap[E->from_node]));
+		undo_redo->add_undo_method(blend_tree.ptr(), "disconnect_node", connection_remap[E->to_node], E->to_port);
 	}
 
 	for (const CopyItem &item : p_items) {
@@ -469,7 +467,7 @@ void AnimationNodeBlendTreeEditor::_dup_paste_nodes(List<CopyItem> &p_items, con
 
 void AnimationNodeBlendTreeEditor::_duplicate_nodes(const Vector2 &p_position) {
 	List<CopyItem> items;
-	List<GraphEdit::Connection> node_connections;
+	List<Ref<GraphEdit::Connection>> node_connections;
 	_dup_copy_nodes(items, node_connections);
 
 	if (items.is_empty()) {
