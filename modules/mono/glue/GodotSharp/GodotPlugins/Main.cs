@@ -12,6 +12,30 @@ namespace GodotPlugins
 {
     public static class Main
     {
+        // Flag to track if initialization has already been completed (for embedding scenarios)
+        private static bool _isInitialized = false;
+        private static readonly object _initLock = new object();
+
+        /// <summary>
+        /// Safely attempts to set a DllImportResolver for an assembly.
+        /// Returns true if the resolver was set, false if one was already registered.
+        /// </summary>
+        private static bool TrySetDllImportResolver(Assembly assembly, DllImportResolver resolver)
+        {
+            try
+            {
+                NativeLibrary.SetDllImportResolver(assembly, resolver);
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                // A resolver is already registered for this assembly.
+                // This can happen when running in an embedding scenario where
+                // the host application has already set up resolvers.
+                Console.WriteLine($"GodotPlugins: DllImportResolver already set for {assembly.GetName().Name}, skipping.");
+                return false;
+            }
+        }
         // IMPORTANT:
         // Keeping strong references to the AssemblyLoadContext (our PluginLoadContext) prevents
         // it from being unloaded. To avoid issues, we wrap the reference in this class, and mark
@@ -93,21 +117,54 @@ namespace GodotPlugins
         {
             try
             {
+                // Check if already initialized (embedding scenario protection)
+                lock (_initLock)
+                {
+                    if (_isInitialized)
+                    {
+                        Console.WriteLine("GodotPlugins: Already initialized, skipping re-initialization.");
+                        // Still need to provide the callbacks
+                        *pluginsCallbacks = new()
+                        {
+                            LoadProjectAssemblyCallback = &LoadProjectAssembly,
+                            LoadToolsAssemblyCallback = &LoadToolsAssembly,
+                            UnloadProjectPluginCallback = &UnloadProjectPlugin,
+                        };
+                        *managedCallbacks = ManagedCallbacks.Create();
+                        return godot_bool.True;
+                    }
+                }
+
+                Console.WriteLine("GodotPlugins: Initializing from engine...");
+
                 _editorHint = editorHint.ToBool();
 
                 _dllImportResolver = new GodotDllImportResolver(godotDllHandle).OnResolveDllImport;
 
                 SharedAssemblies.Add(CoreApiAssembly.GetName());
-                NativeLibrary.SetDllImportResolver(CoreApiAssembly, _dllImportResolver);
+                
+                // Use safe resolver registration for embedding scenarios
+                TrySetDllImportResolver(CoreApiAssembly, _dllImportResolver);
 
                 AlcReloadCfg.Configure(alcReloadEnabled: _editorHint);
-                NativeFuncs.Initialize(unmanagedCallbacks, unmanagedCallbacksSize);
+                
+                // Wrap NativeFuncs.Initialize in try-catch for embedding scenarios
+                // where it might already be initialized by the host
+                try
+                {
+                    NativeFuncs.Initialize(unmanagedCallbacks, unmanagedCallbacksSize);
+                    Console.WriteLine("GodotPlugins: NativeFuncs initialized.");
+                }
+                catch (InvalidOperationException ex) when (ex.Message.Contains("Already initialized"))
+                {
+                    Console.WriteLine("GodotPlugins: NativeFuncs already initialized (embedding scenario).");
+                }
 
                 if (_editorHint)
                 {
                     _editorApiAssembly = Assembly.Load("GodotSharpEditor");
                     SharedAssemblies.Add(_editorApiAssembly.GetName());
-                    NativeLibrary.SetDllImportResolver(_editorApiAssembly, _dllImportResolver);
+                    TrySetDllImportResolver(_editorApiAssembly, _dllImportResolver);
                 }
 
                 *pluginsCallbacks = new()
@@ -119,11 +176,17 @@ namespace GodotPlugins
 
                 *managedCallbacks = ManagedCallbacks.Create();
 
+                lock (_initLock)
+                {
+                    _isInitialized = true;
+                }
+
+                Console.WriteLine("GodotPlugins: Initialization complete.");
                 return godot_bool.True;
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine(e);
+                Console.Error.WriteLine($"GodotPlugins: Initialization failed: {e}");
                 return godot_bool.False;
             }
         }
@@ -175,7 +238,7 @@ namespace GodotPlugins
 
                 var (assembly, _) = LoadPlugin(assemblyPath, isCollectible: false);
 
-                NativeLibrary.SetDllImportResolver(assembly, _dllImportResolver!);
+                TrySetDllImportResolver(assembly, _dllImportResolver!);
 
                 var method = assembly.GetType("GodotTools.GodotSharpEditor")?
                     .GetMethod("InternalCreateInstance",

@@ -42,6 +42,12 @@
 #undef CRASH_HANDLER_ENABLED
 #endif
 
+// Disable crash handler when libgodot is enabled, as Godot's signal handlers
+// conflict with .NET runtime requirements in embedding scenarios.
+#ifdef LIBGODOT_ENABLED
+#undef CRASH_HANDLER_ENABLED
+#endif
+
 #ifdef CRASH_HANDLER_ENABLED
 #include <cxxabi.h>
 #include <dlfcn.h>

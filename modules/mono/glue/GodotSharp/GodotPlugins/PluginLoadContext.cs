@@ -51,6 +51,17 @@ namespace GodotPlugins
             if (_sharedAssemblies.Contains(assemblyName.Name))
                 return _mainLoadContext.LoadFromAssemblyName(assemblyName);
 
+            // Check if the assembly is already loaded in the Default context.
+            // This prevents double-loading in embedding scenarios where libgodot
+            // is loaded into an existing .NET host application.
+            foreach (var loadedAssembly in AssemblyLoadContext.Default.Assemblies)
+            {
+                if (loadedAssembly.GetName().Name == assemblyName.Name)
+                {
+                    return loadedAssembly;
+                }
+            }
+
             string? assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
             if (assemblyPath != null)
             {

@@ -40,6 +40,15 @@
 
 #ifdef CRASH_HANDLER_EXCEPTION
 
+// Disable crash handler when libgodot is enabled, as Godot's exception handlers
+// conflict with .NET runtime requirements in embedding scenarios.
+#ifdef LIBGODOT_ENABLED
+#undef CRASH_HANDLER_EXCEPTION
+#endif
+#endif
+
+#ifdef CRASH_HANDLER_EXCEPTION
+
 // Backtrace code based on: https://stackoverflow.com/questions/6205981/windows-c-stack-trace-from-a-running-app
 
 #include <algorithm>

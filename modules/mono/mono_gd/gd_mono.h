@@ -44,7 +44,7 @@
 
 namespace gdmono {
 
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
 struct PluginCallbacks {
 	using FuncLoadProjectAssemblyCallback = bool(GD_CLR_STDCALL *)(const char16_t *, String *);
 	using FuncLoadToolsAssemblyCallback = Object *(GD_CLR_STDCALL *)(const char16_t *, const void **, int32_t);
@@ -53,7 +53,7 @@ struct PluginCallbacks {
 	FuncLoadToolsAssemblyCallback LoadToolsAssemblyCallback = nullptr;
 	FuncUnloadProjectPluginCallback UnloadProjectPluginCallback = nullptr;
 };
-#endif
+#endif // defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
 
 } // namespace gdmono
 
@@ -71,7 +71,7 @@ class GDMono {
 	int project_load_failure_count = 0;
 #endif
 
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
 	bool _load_project_assembly();
 	void _try_load_project_assembly();
 #endif
@@ -84,7 +84,7 @@ class GDMono {
 #endif
 	void _init_godot_api_hashes();
 
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
 	gdmono::PluginCallbacks plugin_callbacks;
 #endif
 
@@ -110,7 +110,7 @@ public:
 #endif // DEBUG_ENABLED
 
 	_FORCE_INLINE_ static String get_expected_api_build_config() {
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
 		return "Debug";
 #else
 #ifdef DEBUG_ENABLED
@@ -142,7 +142,7 @@ public:
 		return project_assembly_modified_time;
 	}
 
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
 	const gdmono::PluginCallbacks &get_plugin_callbacks() {
 		return plugin_callbacks;
 	}

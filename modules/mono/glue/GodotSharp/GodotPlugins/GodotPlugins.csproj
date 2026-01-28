@@ -9,6 +9,10 @@
     <!-- To generate the .runtimeconfig.json file-->
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <RollForward>LatestMajor</RollForward>
+
+    <!-- Trimming support for libgodot embedding scenarios -->
+    <IsTrimmable>true</IsTrimmable>
+    <VerifyReferenceTrimCompatibility>true</VerifyReferenceTrimCompatibility>
   </PropertyGroup>
 
   <ItemGroup>

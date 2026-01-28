@@ -45,7 +45,7 @@
 namespace GodotSharpDirs {
 
 String _get_expected_build_config() {
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
 	return "Debug";
 #else
 
@@ -216,6 +216,44 @@ private:
 				data_dir_root = res_dir.path_join("data_" + appname_safe + "_" + platform + "_" + arch);
 			}
 #endif
+			// Fallback paths for libgodot embedding scenarios.
+			// When Godot is embedded via libgodot in a .NET host application,
+			// the assemblies may be in simpler locations.
+			if (!DirAccess::exists(data_dir_root) || !FileAccess::exists(data_dir_root.path_join("GodotPlugins.dll"))) {
+				// Get the current working directory - when running via dotnet test,
+				// exe_dir points to dotnet's location but cwd is the test output dir
+				String cwd = OS::get_singleton()->get_cwd();
+				
+				// Also check GODOT_ASSEMBLY_DIR environment variable for explicit override
+				String env_assembly_dir = OS::get_singleton()->get_environment("GODOT_ASSEMBLY_DIR");
+				
+				// Try GodotSharp/Api/Debug/ structure (like editor builds) - first in exe_dir, then cwd
+				String api_debug_path = exe_dir.path_join("GodotSharp").path_join("Api").path_join("Debug");
+				String cwd_api_debug_path = cwd.path_join("GodotSharp").path_join("Api").path_join("Debug");
+				
+				if (!env_assembly_dir.is_empty() && FileAccess::exists(env_assembly_dir.path_join("GodotPlugins.dll"))) {
+					// Environment variable override takes priority
+					data_dir_root = env_assembly_dir;
+					print_verbose(".NET: Using GODOT_ASSEMBLY_DIR environment variable: " + env_assembly_dir);
+				} else if (FileAccess::exists(cwd.path_join("GodotPlugins.dll"))) {
+					// Try flat structure in cwd first - this is the most common case for NuGet package consumers
+					// where MSBuild copies GodotPlugins.dll to the output directory
+					data_dir_root = cwd;
+					print_verbose(".NET: Using flat cwd for assemblies (libgodot embedding): " + cwd);
+				} else if (FileAccess::exists(cwd_api_debug_path.path_join("GodotPlugins.dll"))) {
+					// Try nested structure in cwd
+					data_dir_root = cwd_api_debug_path;
+					print_verbose(".NET: Using cwd GodotSharp/Api/Debug/ path for assemblies (libgodot embedding)");
+				} else if (FileAccess::exists(api_debug_path.path_join("GodotPlugins.dll"))) {
+					// Try nested structure in exe_dir
+					data_dir_root = api_debug_path;
+					print_verbose(".NET: Using GodotSharp/Api/Debug/ path for assemblies (libgodot embedding)");
+				} else if (FileAccess::exists(exe_dir.path_join("GodotPlugins.dll"))) {
+					// Try flat structure in exe_dir
+					data_dir_root = exe_dir;
+					print_verbose(".NET: Using flat exe directory for assemblies (libgodot embedding)");
+				}
+			}
 			api_assemblies_dir = data_dir_root;
 		}
 #endif // ANDROID_ENABLED

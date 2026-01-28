@@ -20,3 +20,8 @@ def configure(env, env_mono):
         if not module_supports_tools_on(env["platform"]):
             raise RuntimeError("This module does not currently support building for this platform for editor builds.")
         env_mono.Append(CPPDEFINES=["GD_MONO_HOT_RELOAD"])
+
+    # Add LIBGODOT_HOSTFXR define for shared library builds to enable
+    # editor-like .NET initialization when embedding libgodot in a .NET host
+    if env["library_type"] == "shared_library":
+        env_mono.Append(CPPDEFINES=["LIBGODOT_HOSTFXR"])

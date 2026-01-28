@@ -38,7 +38,7 @@
 #include "../utils/path_utils.h"
 #include "gd_mono_cache.h"
 
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
 #include "../editor/hostfxr_resolver.h"
 #include "../editor/semver.h"
 #endif
@@ -63,6 +63,22 @@
 GDMono *GDMono::singleton = nullptr;
 
 namespace {
+
+// hostfxr success return codes
+// See: https://github.com/dotnet/runtime/blob/main/docs/design/features/native-hosting.md
+constexpr int32_t HOSTFXR_SUCCESS = 0;
+constexpr int32_t HOSTFXR_SUCCESS_HOST_ALREADY_INITIALIZED = 1;
+constexpr int32_t HOSTFXR_SUCCESS_DIFFERENT_RUNTIME_PROPERTIES = 2;
+
+// Helper function to check if a hostfxr return code indicates success.
+// This is important for embedding scenarios where a .NET runtime may already be running
+// (e.g., when libgodot is loaded into an existing .NET host application).
+bool is_hostfxr_success(int32_t rc) {
+	return rc == HOSTFXR_SUCCESS ||
+		   rc == HOSTFXR_SUCCESS_HOST_ALREADY_INITIALIZED ||
+		   rc == HOSTFXR_SUCCESS_DIFFERENT_RUNTIME_PROPERTIES;
+}
+
 hostfxr_initialize_for_dotnet_command_line_fn hostfxr_initialize_for_dotnet_command_line = nullptr;
 hostfxr_initialize_for_runtime_config_fn hostfxr_initialize_for_runtime_config = nullptr;
 hostfxr_get_runtime_delegate_fn hostfxr_get_runtime_delegate = nullptr;
@@ -106,7 +122,7 @@ const char_t *get_data(const HostFxrCharString &p_char_str) {
 	return (const char_t *)p_char_str.get_data();
 }
 
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
 bool try_get_dotnet_root_from_command_line(String &r_dotnet_root) {
 	String pipe;
 	List<String> args;
@@ -161,7 +177,7 @@ bool try_get_dotnet_root_from_command_line(String &r_dotnet_root) {
 #endif
 
 String find_hostfxr() {
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
 	String dotnet_root;
 	String fxr_path;
 	if (godotsharp::hostfxr_resolver::try_get_path(dotnet_root, fxr_path)) {
@@ -202,7 +218,7 @@ String find_hostfxr() {
 
 	return String();
 
-#endif
+#endif // defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
 }
 
 #ifndef TOOLS_ENABLED
@@ -358,28 +374,71 @@ bool load_coreclr(void *&r_coreclr_dll_handle) {
 }
 #endif
 
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
 load_assembly_and_get_function_pointer_fn initialize_hostfxr_for_config(const char_t *p_config_path) {
 	hostfxr_handle cxt = nullptr;
 	int rc = hostfxr_initialize_for_runtime_config(p_config_path, nullptr, &cxt);
-	if (rc != 0 || cxt == nullptr) {
-		hostfxr_close(cxt);
+
+	if (!is_hostfxr_success(rc)) {
+		if (cxt != nullptr) {
+			hostfxr_close(cxt);
+		}
 		ERR_FAIL_V_MSG(nullptr, "hostfxr_initialize_for_runtime_config failed with code: " + itos(rc));
 	}
 
-	void *load_assembly_and_get_function_pointer = nullptr;
+	// Track if we're in an embedding scenario where the .NET runtime is already running
+	// (e.g., libgodot loaded into an existing .NET host application like `dotnet run`)
+	bool host_already_initialized = (rc == HOSTFXR_SUCCESS_HOST_ALREADY_INITIALIZED ||
+									  rc == HOSTFXR_SUCCESS_DIFFERENT_RUNTIME_PROPERTIES);
 
-	rc = hostfxr_get_runtime_delegate(cxt,
-			hdt_load_assembly_and_get_function_pointer, &load_assembly_and_get_function_pointer);
-	if (rc != 0 || load_assembly_and_get_function_pointer == nullptr) {
-		ERR_FAIL_V_MSG(nullptr, "hostfxr_get_runtime_delegate failed with code: " + itos(rc));
+	if (rc == HOSTFXR_SUCCESS_HOST_ALREADY_INITIALIZED) {
+		print_verbose(".NET: Detected existing .NET runtime (host already initialized) - embedding mode");
+	} else if (rc == HOSTFXR_SUCCESS_DIFFERENT_RUNTIME_PROPERTIES) {
+		print_verbose(".NET: Detected existing .NET runtime (different runtime properties) - embedding mode");
 	}
 
-	hostfxr_close(cxt);
+	void *load_assembly_and_get_function_pointer = nullptr;
+	int delegate_rc = 0;
+
+	if (host_already_initialized) {
+		// When the host is already initialized, try using nullptr to get delegates from
+		// the active host context first. This is the recommended approach for embedding scenarios.
+		print_verbose(".NET: Trying to get runtime delegate from active host context (nullptr)");
+		delegate_rc = hostfxr_get_runtime_delegate(nullptr,
+				hdt_load_assembly_and_get_function_pointer, &load_assembly_and_get_function_pointer);
+		
+		if (delegate_rc != 0 || load_assembly_and_get_function_pointer == nullptr) {
+			// Fallback: try with the returned context handle
+			print_verbose(".NET: Active context failed (code: " + itos(delegate_rc) + "), trying returned context handle");
+			if (cxt != nullptr) {
+				delegate_rc = hostfxr_get_runtime_delegate(cxt,
+						hdt_load_assembly_and_get_function_pointer, &load_assembly_and_get_function_pointer);
+			}
+		}
+	} else {
+		// Normal initialization: we created the runtime, use the context handle
+		delegate_rc = hostfxr_get_runtime_delegate(cxt,
+				hdt_load_assembly_and_get_function_pointer, &load_assembly_and_get_function_pointer);
+	}
+
+	if (delegate_rc != 0 || load_assembly_and_get_function_pointer == nullptr) {
+		if (cxt != nullptr && !host_already_initialized) {
+			hostfxr_close(cxt);
+		}
+		ERR_FAIL_V_MSG(nullptr, "hostfxr_get_runtime_delegate failed with code: " + itos(delegate_rc));
+	}
+
+	// Only close the context if we created the runtime ourselves.
+	// In embedding scenarios, we don't own the runtime context.
+	if (cxt != nullptr && !host_already_initialized) {
+		hostfxr_close(cxt);
+	}
 
 	return (load_assembly_and_get_function_pointer_fn)load_assembly_and_get_function_pointer;
 }
-#else
+#endif // defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
+
+#if !defined(TOOLS_ENABLED) && !defined(LIBGODOT_HOSTFXR)
 load_assembly_and_get_function_pointer_fn initialize_hostfxr_self_contained(
 		const char_t *p_main_assembly_path) {
 	hostfxr_handle cxt = nullptr;
@@ -400,32 +459,71 @@ load_assembly_and_get_function_pointer_fn initialize_hostfxr_self_contained(
 	}
 
 	int rc = hostfxr_initialize_for_dotnet_command_line(argv.size(), argv.ptrw(), nullptr, &cxt);
-	if (rc != 0 || cxt == nullptr) {
-		hostfxr_close(cxt);
+	if (!is_hostfxr_success(rc)) {
+		if (cxt != nullptr) {
+			hostfxr_close(cxt);
+		}
 		ERR_FAIL_V_MSG(nullptr, "hostfxr_initialize_for_dotnet_command_line failed with code: " + itos(rc));
 	}
 
-	void *load_assembly_and_get_function_pointer = nullptr;
+	// Track if we're in an embedding scenario where the .NET runtime is already running
+	bool host_already_initialized = (rc == HOSTFXR_SUCCESS_HOST_ALREADY_INITIALIZED ||
+									  rc == HOSTFXR_SUCCESS_DIFFERENT_RUNTIME_PROPERTIES);
 
-	rc = hostfxr_get_runtime_delegate(cxt,
-			hdt_load_assembly_and_get_function_pointer, &load_assembly_and_get_function_pointer);
-	if (rc != 0 || load_assembly_and_get_function_pointer == nullptr) {
-		ERR_FAIL_V_MSG(nullptr, "hostfxr_get_runtime_delegate failed with code: " + itos(rc));
+	if (rc == HOSTFXR_SUCCESS_HOST_ALREADY_INITIALIZED) {
+		print_verbose(".NET: Detected existing .NET runtime (host already initialized) - embedding mode");
+	} else if (rc == HOSTFXR_SUCCESS_DIFFERENT_RUNTIME_PROPERTIES) {
+		print_verbose(".NET: Detected existing .NET runtime (different runtime properties) - embedding mode");
 	}
 
-	hostfxr_close(cxt);
+	void *load_assembly_and_get_function_pointer = nullptr;
+	int delegate_rc = 0;
+
+	if (host_already_initialized) {
+		// When the host is already initialized, try using nullptr to get delegates from
+		// the active host context first. This is the recommended approach for embedding scenarios.
+		print_verbose(".NET: Trying to get runtime delegate from active host context (nullptr)");
+		delegate_rc = hostfxr_get_runtime_delegate(nullptr,
+				hdt_load_assembly_and_get_function_pointer, &load_assembly_and_get_function_pointer);
+		
+		if (delegate_rc != 0 || load_assembly_and_get_function_pointer == nullptr) {
+			// Fallback: try with the returned context handle
+			print_verbose(".NET: Active context failed (code: " + itos(delegate_rc) + "), trying returned context handle");
+			if (cxt != nullptr) {
+				delegate_rc = hostfxr_get_runtime_delegate(cxt,
+						hdt_load_assembly_and_get_function_pointer, &load_assembly_and_get_function_pointer);
+			}
+		}
+	} else {
+		// Normal initialization: we created the runtime, use the context handle
+		delegate_rc = hostfxr_get_runtime_delegate(cxt,
+				hdt_load_assembly_and_get_function_pointer, &load_assembly_and_get_function_pointer);
+	}
+
+	if (delegate_rc != 0 || load_assembly_and_get_function_pointer == nullptr) {
+		if (cxt != nullptr && !host_already_initialized) {
+			hostfxr_close(cxt);
+		}
+		ERR_FAIL_V_MSG(nullptr, "hostfxr_get_runtime_delegate failed with code: " + itos(delegate_rc));
+	}
+
+	// Only close the context if we created the runtime ourselves.
+	// In embedding scenarios, we don't own the runtime context.
+	if (cxt != nullptr && !host_already_initialized) {
+		hostfxr_close(cxt);
+	}
 
 	return (load_assembly_and_get_function_pointer_fn)load_assembly_and_get_function_pointer;
 }
-#endif
+#endif // !defined(TOOLS_ENABLED) && !defined(LIBGODOT_HOSTFXR)
 
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
 using godot_plugins_initialize_fn = bool (*)(void *, bool, gdmono::PluginCallbacks *, GDMonoCache::ManagedCallbacks *, const void **, int32_t);
 #else
 using godot_plugins_initialize_fn = bool (*)(void *, GDMonoCache::ManagedCallbacks *, const void **, int32_t);
 #endif
 
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
 godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
@@ -440,7 +538,11 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 
 	if (load_assembly_and_get_function_pointer == nullptr) {
 		// Show a message box to the user to make the problem explicit (and explain a potential crash).
+#ifdef TOOLS_ENABLED
 		OS::get_singleton()->alert(TTR("Unable to load .NET runtime, no compatible version was found.\nAttempting to create/edit a project will lead to a crash.\n\nPlease install the .NET SDK 8.0 or later from https://get.dot.net and restart Godot."), TTR("Failed to load .NET runtime"));
+#else
+		OS::get_singleton()->alert("Unable to load .NET runtime, no compatible version was found.\n\nPlease install the .NET SDK 8.0 or later from https://get.dot.net and restart.", "Failed to load .NET runtime");
+#endif
 		ERR_FAIL_V_MSG(nullptr, ".NET: Failed to load compatible .NET runtime");
 	}
 
@@ -458,7 +560,9 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 
 	return godot_plugins_initialize;
 }
-#else
+#endif // defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
+
+#if !defined(TOOLS_ENABLED) && !defined(LIBGODOT_HOSTFXR)
 godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
@@ -517,7 +621,7 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
 }
 #endif
 
-#ifndef TOOLS_ENABLED
+#if !defined(TOOLS_ENABLED) && !defined(LIBGODOT_HOSTFXR)
 #ifdef ANDROID_ENABLED
 MonoAssembly *load_assembly_from_pck(MonoAssemblyName *p_assembly_name, char **p_assemblies_path, void *p_user_data) {
 	constexpr bool ref_only = false;
@@ -603,13 +707,13 @@ godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime
 
 	return godot_plugins_initialize;
 }
-#endif
+#endif // !defined(TOOLS_ENABLED) && !defined(LIBGODOT_HOSTFXR)
 
 } // namespace
 
 bool GDMono::should_initialize() {
-#ifdef TOOLS_ENABLED
-	// The editor always needs to initialize the .NET module for now.
+#if defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
+	// The editor and libgodot shared library builds always need to initialize the .NET module.
 	return true;
 #else
 	return OS::get_singleton()->has_feature("dotnet");
@@ -652,7 +756,7 @@ void GDMono::initialize() {
 		godot_plugins_initialize = initialize_hostfxr_and_godot_plugins(runtime_initialized);
 		ERR_FAIL_NULL(godot_plugins_initialize);
 	} else {
-#if !defined(TOOLS_ENABLED)
+#if !defined(TOOLS_ENABLED) && !defined(LIBGODOT_HOSTFXR)
 		if (load_coreclr(coreclr_dll_handle)) {
 			godot_plugins_initialize = initialize_coreclr_and_godot_plugins(runtime_initialized);
 		} else {
@@ -666,8 +770,11 @@ void GDMono::initialize() {
 		if (godot_plugins_initialize == nullptr) {
 			ERR_FAIL_MSG(".NET: Failed to load hostfxr");
 		}
+#elif defined(LIBGODOT_HOSTFXR)
+		// Show a message box for libgodot builds (non-editor)
+		OS::get_singleton()->alert("Unable to load .NET runtime, specifically hostfxr.\n\nPlease install the .NET SDK 8.0 or later from https://get.dot.net and restart.", "Failed to load .NET runtime");
+		ERR_FAIL_MSG(".NET: Failed to load hostfxr");
 #else
-
 		// Show a message box to the user to make the problem explicit (and explain a potential crash).
 		OS::get_singleton()->alert(TTR("Unable to load .NET runtime, specifically hostfxr.\nAttempting to create/edit a project will lead to a crash.\n\nPlease install the .NET SDK 8.0 or later from https://get.dot.net and restart Godot."), TTR("Failed to load .NET runtime"));
 		ERR_FAIL_MSG(".NET: Failed to load hostfxr");
@@ -686,7 +793,7 @@ void GDMono::initialize() {
 	godot_dll_handle = dlopen(nullptr, RTLD_NOW);
 #endif
 
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
 	gdmono::PluginCallbacks plugin_callbacks_res;
 	bool init_ok = godot_plugins_initialize(godot_dll_handle,
 			Engine::get_singleton()->is_editor_hint(),
@@ -707,14 +814,14 @@ void GDMono::initialize() {
 
 	_on_core_api_assembly_loaded();
 
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
 	_try_load_project_assembly();
 #endif
 
 	initialized = true;
 }
 
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
 void GDMono::_try_load_project_assembly() {
 	if (Engine::get_singleton()->is_project_manager_hint()) {
 		return;
@@ -741,7 +848,7 @@ void GDMono::_init_godot_api_hashes() {
 #endif // DEBUG_ENABLED
 }
 
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) || defined(LIBGODOT_HOSTFXR)
 bool GDMono::_load_project_assembly() {
 	String assembly_name = Path::get_csharp_project_name();
 

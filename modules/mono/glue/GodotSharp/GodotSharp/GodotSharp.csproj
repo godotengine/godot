@@ -12,6 +12,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <AnalysisMode>Recommended</AnalysisMode>
+
+    <!-- Trimming support for libgodot embedding scenarios -->
+    <IsTrimmable>true</IsTrimmable>
+    <VerifyReferenceTrimCompatibility>true</VerifyReferenceTrimCompatibility>
   </PropertyGroup>
 
   <PropertyGroup>
