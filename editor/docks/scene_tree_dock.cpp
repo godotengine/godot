@@ -3941,25 +3941,37 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	}
 
 	if (profile_allow_editing) {
-		bool is_foreign = false;
+		bool can_rename = true;
+		bool can_replace = true;
+
 		for (Node *E : selection) {
 			if (E != edited_scene && (E->get_owner() != edited_scene || E->is_instance())) {
-				is_foreign = true;
-				break;
+				can_replace = false;
+				if (!E->is_instance()) {
+					can_rename = false;
+				}
 			}
 
 			if (edited_scene->get_scene_inherited_state().is_valid()) {
 				if (E == edited_scene || edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E)) >= 0) {
-					is_foreign = true;
-					break;
+					can_replace = false;
+					can_rename = false;
 				}
+			}
+
+			if (!can_rename && !can_replace) {
+				break;
 			}
 		}
 
-		if (!is_foreign) {
+		if (can_rename || can_replace) {
 			BEGIN_SECTION()
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Reload")), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_REPLACE);
+			if (can_rename) {
+				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
+			}
+			if (can_replace) {
+				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Reload")), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_REPLACE);
+			}
 			END_SECTION()
 		}
 
