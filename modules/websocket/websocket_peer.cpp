@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "websocket_peer.h"
+#include "websocket_peer.compat.inc"
 
 #include "core/object/class_db.h"
 
