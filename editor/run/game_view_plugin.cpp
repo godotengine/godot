@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
-#include "core/debugger/engine_debugger.h"
 #include "core/string/translation_server.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"

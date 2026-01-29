@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  snapshot_collector.h                                                  */
+/*  scene_debugger_object.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,24 +30,63 @@
 
 #pragma once
 
-#include "scene/debugger/scene_debugger_object.h"
+#ifdef DEBUG_ENABLED
 
-struct SnapshotDataTransportObject : public SceneDebuggerObject {
-	SnapshotDataTransportObject() :
-			SceneDebuggerObject() {}
-	SnapshotDataTransportObject(Object *p_obj) :
-			SceneDebuggerObject(p_obj) {}
+#include "scene/main/node.h"
 
-	Dictionary extra_debug_data;
-};
-
-class SnapshotCollector {
-	inline static HashMap<int, Vector<uint8_t>> pending_snapshots;
+class SceneDebuggerObject {
+private:
+	void _parse_script_properties(Script *p_script, ScriptInstance *p_instance);
 
 public:
-	static void snapshot_objects(Array *p_arr, Dictionary &p_snapshot_context);
-	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
-	static void initialize();
-	static void deinitialize();
-	static String get_godot_version_string();
+	typedef Pair<PropertyInfo, Variant> SceneDebuggerProperty;
+	ObjectID id;
+	String class_name;
+	List<SceneDebuggerProperty> properties;
+
+	SceneDebuggerObject(ObjectID p_id);
+	SceneDebuggerObject(Object *p_obj);
+	SceneDebuggerObject() {}
+
+	void serialize(Array &r_arr, int p_max_size = 1 << 20);
+	void deserialize(const Array &p_arr);
+	void deserialize(uint64_t p_id, const String &p_class_name, const Array &p_props);
 };
+
+class SceneDebuggerTree {
+public:
+	struct RemoteNode {
+		int child_count = 0;
+		String name;
+		String type_name;
+		ObjectID id;
+		String scene_file_path;
+		uint8_t view_flags = 0;
+
+		enum ViewFlags {
+			VIEW_HAS_VISIBLE_METHOD = 1 << 1,
+			VIEW_VISIBLE = 1 << 2,
+			VIEW_VISIBLE_IN_TREE = 1 << 3,
+		};
+
+		RemoteNode(int p_child, const String &p_name, const String &p_type, ObjectID p_id, const String p_scene_file_path, int p_view_flags) {
+			child_count = p_child;
+			name = p_name;
+			type_name = p_type;
+			id = p_id;
+
+			scene_file_path = p_scene_file_path;
+			view_flags = p_view_flags;
+		}
+
+		RemoteNode() {}
+	};
+
+	List<RemoteNode> nodes;
+
+	void serialize(Array &r_arr);
+	void deserialize(const Array &p_arr);
+	SceneDebuggerTree(Node *p_root);
+	SceneDebuggerTree() {}
+};
+#endif // DEBUG_ENABLED
