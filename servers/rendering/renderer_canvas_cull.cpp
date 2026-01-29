@@ -1828,6 +1828,15 @@ void RendererCanvasCull::canvas_item_add_animation_slice(RID p_item, double p_an
 	as->offset = p_offset;
 }
 
+void RendererCanvasCull::canvas_item_add_rendering_callback(RID p_item, const Callable &p_callback) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+
+	Item::CommandCallback *callback = canvas_item->alloc_command<Item::CommandCallback>();
+	ERR_FAIL_NULL(callback);
+	callback->callback = p_callback;
+}
+
 void RendererCanvasCull::canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);

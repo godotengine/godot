@@ -1033,6 +1033,7 @@ public:
 	FUNC2(canvas_item_add_set_transform, RID, const Transform2D &)
 	FUNC2(canvas_item_add_clip_ignore, RID, bool)
 	FUNC5(canvas_item_add_animation_slice, RID, double, double, double, double)
+	FUNC2(canvas_item_add_rendering_callback, RID, const Callable &)
 
 	FUNC2(canvas_item_set_sort_children_by_y, RID, bool)
 	FUNC2(canvas_item_set_z_index, RID, int)

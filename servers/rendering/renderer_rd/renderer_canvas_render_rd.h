@@ -37,6 +37,7 @@
 #include "servers/rendering/renderer_rd/shaders/canvas.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_occlusion.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_canvas_data_rd.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/shader_compiler.h"
 
@@ -644,6 +645,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	} state;
 
 	Item *items[MAX_RENDER_ITEMS];
+	RenderCanvasDataRD *render_data = nullptr;
 
 	TextureInfo default_texture_info;
 

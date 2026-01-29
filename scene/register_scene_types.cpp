@@ -176,6 +176,7 @@
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/canvas_group.h"
 #include "scene/2d/canvas_modulate.h"
+#include "scene/2d/compositor_2d.h"
 #include "scene/2d/cpu_particles_2d.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/2d/light_2d.h"
@@ -935,6 +936,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(LightOccluder2D);
 	GDREGISTER_CLASS(OccluderPolygon2D);
 	GDREGISTER_CLASS(BackBufferCopy);
+	GDREGISTER_CLASS(Compositor2D);
 	GDREGISTER_CLASS(CanvasModulate);
 
 	OS::get_singleton()->yield(); // may take time to init

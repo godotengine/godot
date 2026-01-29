@@ -61,6 +61,7 @@
 #include "movie_writer/movie_writer.h"
 #include "movie_writer/movie_writer_pngwav.h"
 #include "rendering/renderer_rd/framebuffer_cache_rd.h"
+#include "rendering/renderer_rd/storage_rd/render_canvas_data_rd.h"
 #include "rendering/renderer_rd/storage_rd/render_data_rd.h"
 #include "rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "rendering/renderer_rd/storage_rd/render_scene_data_rd.h"
@@ -245,6 +246,8 @@ void register_server_types() {
 	GDREGISTER_ABSTRACT_CLASS(RenderSceneData);
 	GDREGISTER_CLASS(RenderSceneDataExtension);
 	GDREGISTER_CLASS(RenderSceneDataRD);
+
+	GDREGISTER_CLASS(RenderCanvasDataRD);
 
 	GDREGISTER_CLASS(RenderSceneBuffersConfiguration);
 	GDREGISTER_ABSTRACT_CLASS(RenderSceneBuffers);
