@@ -1886,8 +1886,12 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 					drag_type = DRAG_ROTATE;
 					drag_from = transform.affine_inverse().xform(b->get_position());
 					CanvasItem *ci = drag_selection.front()->get();
+					CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
 					if (!Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y)) {
 						drag_rotation_center = temp_pivot;
+					} else if (se && se->gizmo.is_valid()) {
+						// if subgizmos are selected, the rotation center is the position of the first subgizmo
+						drag_rotation_center = ci->get_screen_transform().xform(se->subgizmos.begin()->value.get_origin());
 					} else if (_use_edit_pivot(ci)) {
 						drag_rotation_center = ci->get_screen_transform().xform(_get_edit_pivot(ci));
 					} else {
@@ -1918,12 +1922,20 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 					real_t angle = (opposite ? -1 : 1) * snap_angle((drag_from - drag_rotation_center).angle_to(drag_to - drag_rotation_center));
 
 					for (KeyValue<int, Transform2D> &entry : se->subgizmos) {
-						// since we rotate around the drag rotation center, we move there, rotate and move back
-						Transform2D new_xform = entry.value.translated(-drag_rotation_center).rotated(angle).translated(drag_rotation_center);
+						Transform2D new_xform;
+						if (!temp_pivot.is_finite()) {
+							// if we have no temp pivot, just rotate around their individual centers, similar to how it is done
+							// for multiple canvas item selections.
+							Vector2 origin = entry.value.get_origin();
+							new_xform = entry.value.translated(-origin).rotated(angle).translated(origin);
+						} else {
+							// Rotate around the temp pivot. The temp pivot is in global space, so we need to transform into local space as
+							// gizmo transforms are local.
+							Vector2 local_temp_pivot = selected_canvas_item->get_global_transform().affine_inverse().xform(temp_pivot);
+							new_xform = entry.value.translated(-local_temp_pivot).rotated(angle).translated(local_temp_pivot);
+						}
 						se->gizmo->_set_subgizmo_transform(entry.key, new_xform);
 					}
-					// need a redraw here because moving subgizmos needs to re-draw the canvas item
-					// we modified to view effects.
 					viewport->queue_redraw();
 					return true;
 				}
@@ -4381,13 +4393,33 @@ void CanvasItemEditor::_draw_selection() {
 	if (!selection.is_empty() && transform_tool && show_transformation_gizmos) {
 		CanvasItem *ci = selection.front()->get();
 
+		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
+
+		Transform2D subgizmo_xform;
+		// If subgizmos are selected, we use the subgizmo's transform(s) for positioning the scale/rotate/move handles
+		// similar to the dedicated transform gizmo in 3D.
+		if (se && se->gizmo.is_valid()) {
+			if (se->subgizmos.size() == 1) {
+				// single transform, keep offset/rotation, ignore scale
+				subgizmo_xform = se->subgizmos.begin()->value.orthonormalized();
+			} else {
+				// multiple transforms, calculate average offset, ignore scale/rotation
+				Vector2 offset;
+				for (const KeyValue<int, Transform2D> &kv : se->subgizmos) {
+					offset += kv.value.orthonormalized().get_origin();
+				}
+				offset /= static_cast<real_t>(se->subgizmos.size());
+				subgizmo_xform = Transform2D().translated(offset);
+			}
+		}
+
 		Transform2D xform = transform * ci->get_screen_transform();
 		bool is_ctrl = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 		bool is_alt = Input::get_singleton()->is_key_pressed(Key::ALT);
 
 		// Draw the move handles.
 		if ((tool == TOOL_SELECT && is_alt && !is_ctrl) || tool == TOOL_MOVE) {
-			Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * ci->_edit_get_transform()).orthonormalized();
+			Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * ci->_edit_get_transform() * subgizmo_xform).orthonormalized();
 			Transform2D simple_xform;
 			if (use_local_space) {
 				simple_xform = viewport->get_transform() * unscaled_transform;
@@ -4427,7 +4459,7 @@ void CanvasItemEditor::_draw_selection() {
 			} else {
 				edit_transform = ci->_edit_get_transform();
 			}
-			Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * edit_transform).orthonormalized();
+			Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * edit_transform * subgizmo_xform).orthonormalized();
 			Transform2D simple_xform;
 			if (use_local_space) {
 				simple_xform = viewport->get_transform() * unscaled_transform;
@@ -5277,11 +5309,25 @@ void CanvasItemEditor::_button_tool_select(int p_index) {
 		// Special action that places temporary rotation pivot in the middle of the selection.
 		List<CanvasItem *> selection = _get_edited_canvas_items();
 		if (!selection.is_empty()) {
+			// if we have subgizmos selected, put the temp pivot in the middle of the subgizmos
 			Vector2 center;
-			for (const CanvasItem *ci : selection) {
-				center += ci->get_viewport()->get_popup_base_transform().xform(ci->_edit_get_position());
+			bool use_subgizmo_center = false;
+			if (selected_canvas_item) {
+				CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(selected_canvas_item);
+				if (se && se->gizmo.is_valid()) {
+					use_subgizmo_center = true;
+					for (const KeyValue<int, Transform2D> &subgizmo : se->subgizmos) {
+						center += (selected_canvas_item->get_transform() * subgizmo.value).get_origin();
+					}
+					temp_pivot = selected_canvas_item->get_viewport()->get_popup_base_transform().xform(center / se->subgizmos.size());
+				}
 			}
-			temp_pivot = center / selection.size();
+			if (!use_subgizmo_center) {
+				for (const CanvasItem *ci : selection) {
+					center += ci->get_viewport()->get_popup_base_transform().xform(ci->_edit_get_position());
+				}
+				temp_pivot = center / selection.size();
+			}
 		}
 	}
 

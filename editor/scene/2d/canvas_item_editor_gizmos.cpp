@@ -601,8 +601,6 @@ void EditorCanvasItemGizmo::free() {
 	ERR_FAIL_NULL(canvas_item);
 	ERR_FAIL_COND(!valid);
 
-	// TODO: GIZMOS - i'm not sure why the 3D variant doesn't just call clear
-	//  and repeats the freeing loop.
 	clear();
 	valid = false;
 }
