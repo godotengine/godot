@@ -998,6 +998,7 @@ void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 		update_minimum_size();
 	}
 	callable_mp(this, &TabContainer::_repaint).call_deferred();
+	queue_redraw();
 }
 
 bool TabContainer::is_tab_hidden(int p_tab) const {
