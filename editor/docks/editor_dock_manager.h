@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/docks/dock_constants.h"
+#include "editor/docks/editor_dock.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/split_container.h"
 
@@ -91,10 +91,10 @@ private:
 	struct DockSlot {
 		TabContainer *container = nullptr;
 		EditorDockDragHint *drag_hint = nullptr;
-		DockConstants::DockLayout layout = DockConstants::DOCK_LAYOUT_VERTICAL;
+		EditorDock::DockLayout layout = EditorDock::DOCK_LAYOUT_VERTICAL;
 	};
 
-	DockSlot dock_slots[DockConstants::DOCK_SLOT_MAX];
+	DockSlot dock_slots[EditorDock::DOCK_SLOT_MAX];
 	Vector<WindowWrapper *> dock_windows;
 	LocalVector<EditorDock *> all_docks;
 	HashSet<EditorDock *> dirty_docks;
@@ -121,6 +121,7 @@ private:
 	void _open_dock_in_window(EditorDock *p_dock, bool p_show_window = true, bool p_reset_size = false);
 	void _restore_dock_to_saved_window(EditorDock *p_dock, const Dictionary &p_window_dump);
 
+	void _make_dock_visible(EditorDock *p_dock, bool p_grab_focus);
 	void _move_dock_tab_index(EditorDock *p_dock, int p_tab_index, bool p_set_current);
 	void _move_dock(EditorDock *p_dock, Control *p_target, int p_tab_index = -1, bool p_set_current = true);
 
@@ -137,7 +138,7 @@ public:
 
 	void add_vsplit(DockSplitContainer *p_split);
 	void set_hsplit(DockSplitContainer *p_split);
-	void register_dock_slot(DockConstants::DockSlot p_dock_slot, TabContainer *p_tab_container, DockConstants::DockLayout p_layout);
+	void register_dock_slot(EditorDock::DockSlot p_dock_slot, TabContainer *p_tab_container, EditorDock::DockLayout p_layout);
 	int get_vsplit_count() const;
 	PopupMenu *get_docks_menu();
 
@@ -166,7 +167,7 @@ class EditorDockDragHint : public Control {
 
 private:
 	EditorDockManager *dock_manager = nullptr;
-	DockConstants::DockSlot occupied_slot = DockConstants::DOCK_SLOT_MAX;
+	EditorDock::DockSlot occupied_slot = EditorDock::DOCK_SLOT_MAX;
 	TabBar *drop_tabbar = nullptr;
 
 	Color valid_drop_color;
@@ -186,7 +187,7 @@ protected:
 	void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
 public:
-	void set_slot(DockConstants::DockSlot p_slot);
+	void set_slot(EditorDock::DockSlot p_slot);
 
 	EditorDockDragHint();
 };
@@ -203,7 +204,7 @@ private:
 	Button *close_button = nullptr;
 
 	Control *dock_select = nullptr;
-	Rect2 dock_select_rects[DockConstants::DOCK_SLOT_MAX];
+	Rect2 dock_select_rects[EditorDock::DOCK_SLOT_MAX];
 	int dock_select_rect_over_idx = -1;
 
 	EditorDock *context_dock = nullptr;

@@ -1274,7 +1274,7 @@
 		</member>
 		<member name="gui/theme/default_theme_scale" type="float" setter="" getter="" default="1.0">
 			The default scale factor for [Control]s, when not overridden by a [Theme].
-			[b]Note:[/b] This property is only read when the project starts. To change the default scale at runtime, set [member ThemeDB.fallback_base_scale] instead.
+			[b]Note:[/b] This property is only read when the project starts. To change the default theme scale at runtime, set [member ThemeDB.fallback_base_scale] instead. However, to adjust the scale of all 2D elements at runtime, it's preferable to use [member Window.content_scale_factor] on the root [Window] node instead (as this also affects overridden [Theme]s). See [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]Multiple resolutions[/url] in the documentation for details.
 		</member>
 		<member name="gui/theme/lcd_subpixel_layout" type="int" setter="" getter="" default="1">
 			LCD subpixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
@@ -3591,6 +3591,9 @@
 			If [code]true[/code], support for the spatial entity extension is requested. If supported, you will be able to access spatial information about the real environment around you. What information is available is dependent on additional extensions.
 			[b]Note:[/b] This requires that the OpenXR spatial entities extension is supported by the XR runtime. If not supported this setting will be ignored.
 		</member>
+		<member name="xr/openxr/extensions/user_presence" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the user presence extension is enabled if available.
+		</member>
 		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify whether OpenXR should be configured for an HMD or a hand held device.
 		</member>
@@ -3609,6 +3612,9 @@
 		</member>
 		<member name="xr/openxr/submit_depth_buffer" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], OpenXR will manage the depth buffer and use the depth buffer for advanced reprojection provided this is supported by the XR runtime. Note that some rendering features in Godot can't be used with this feature.
+		</member>
+		<member name="xr/openxr/target_api_version" type="String" setter="" getter="" default="&quot;&quot;">
+			Optionally sets a specific API version of OpenXR to initialize in [code]major.minor.patch[/code] notation. Some XR runtimes gate old behavior behind version checks. This is non-standard OpenXR behavior.
 		</member>
 		<member name="xr/openxr/view_configuration" type="int" setter="" getter="" default="&quot;1&quot;" keywords="mono, stereo">
 			Specify the view configuration with which to configure OpenXR setting up either Mono or Stereo rendering.

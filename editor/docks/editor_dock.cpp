@@ -34,13 +34,22 @@
 #include "core/io/config_file.h"
 #include "editor/docks/editor_dock_manager.h"
 
-void EditorDock::_set_default_slot_bind(EditorPlugin::DockSlot p_slot) {
-	ERR_FAIL_COND(p_slot < EditorPlugin::DOCK_SLOT_NONE || p_slot >= EditorPlugin::DOCK_SLOT_MAX);
-	default_slot = (DockConstants::DockSlot)p_slot;
+void EditorDock::_set_default_slot_bind(DockSlot p_slot) {
+	ERR_FAIL_COND(p_slot < DOCK_SLOT_NONE || p_slot >= DOCK_SLOT_MAX);
+	default_slot = p_slot;
 }
 
 void EditorDock::_emit_changed() {
 	emit_signal(SNAME("_tab_style_changed"));
+}
+
+void EditorDock::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			set_accessibility_region(true);
+			set_accessibility_name(get_display_title());
+		} break;
+	}
 }
 
 void EditorDock::_bind_methods() {
@@ -104,6 +113,18 @@ void EditorDock::_bind_methods() {
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_FLOATING);
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_ALL);
 
+	BIND_ENUM_CONSTANT(DOCK_SLOT_NONE);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_UL);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_BL);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_UR);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_BR);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_UL);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_BL);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_UR);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_BR);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_BOTTOM);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_MAX);
+
 	GDVIRTUAL_BIND(_update_layout, "layout");
 	GDVIRTUAL_BIND(_save_layout_to_config, "config", "section");
 	GDVIRTUAL_BIND(_load_layout_from_config, "config", "section");
@@ -116,7 +137,7 @@ void EditorDock::open() {
 }
 
 void EditorDock::make_visible() {
-	EditorDockManager::get_singleton()->focus_dock(this);
+	EditorDockManager::get_singleton()->open_dock(this, true);
 }
 
 void EditorDock::close() {
@@ -130,6 +151,7 @@ void EditorDock::set_title(const String &p_title) {
 		return;
 	}
 	title = p_title;
+	set_accessibility_name(get_display_title());
 	_emit_changed();
 }
 
@@ -191,8 +213,12 @@ void EditorDock::set_dock_shortcut(const Ref<Shortcut> &p_shortcut) {
 	_emit_changed();
 }
 
-void EditorDock::set_default_slot(DockConstants::DockSlot p_slot) {
-	ERR_FAIL_INDEX(p_slot, DockConstants::DOCK_SLOT_MAX);
+Ref<Shortcut> EditorDock::get_dock_shortcut() const {
+	return shortcut;
+}
+
+void EditorDock::set_default_slot(DockSlot p_slot) {
+	ERR_FAIL_INDEX(p_slot, DOCK_SLOT_MAX);
 	default_slot = p_slot;
 }
 

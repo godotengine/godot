@@ -64,6 +64,12 @@ private:
 		INSTALL_PATH,
 	};
 
+	enum InvalidStateFlag {
+		INVALID_STATE_FLAG_NONE = 0,
+		INVALID_STATE_FLAG_PATH_INPUT = 1 << 0,
+		INVALID_STATE_FLAG_RENDERER_SELECT = 1 << 1,
+	};
+
 	Mode mode = MODE_NEW;
 	bool is_folder_empty = true;
 	ConfirmationDialog *nonempty_confirmation = nullptr;
@@ -104,7 +110,10 @@ private:
 	String original_project_path;
 	bool duplicate_can_edit = false;
 
+	BitField<InvalidStateFlag> invalid_state_flags = INVALID_STATE_FLAG_NONE;
+
 	void _set_message(const String &p_msg, MessageType p_type, InputType input_type = PROJECT_PATH);
+	void _update_ok_button();
 	void _validate_path();
 
 	// Project path for MODE_NEW and MODE_INSTALL. Install path for MODE_IMPORT.

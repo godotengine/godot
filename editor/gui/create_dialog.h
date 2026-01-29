@@ -117,6 +117,7 @@ protected:
 public:
 	Variant instantiate_selected();
 	String get_selected_type();
+	String get_selected_type_name();
 
 	void set_base_type(const String &p_base);
 	String get_base_type() const { return base_type; }
