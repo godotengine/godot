@@ -150,35 +150,48 @@ private:
 		String exe_dir = OS::get_singleton()->get_executable_path().get_base_dir();
 		String res_dir = OS::get_singleton()->get_bundle_resource_dir();
 
+		// HIGHEST PRIORITY: Check GODOT_ASSEMBLY_DIR environment variable first.
+		// This is critical for libgodot embedding scenarios where the host application
+		// (e.g., a .NET test runner) sets this variable to point to the assembly directory.
+		// NOTE: We use DirAccess::open() instead of FileAccess::exists() because
+		// FileAccess uses Godot's VFS which may not be fully initialized at this point.
+		String env_assembly_dir = OS::get_singleton()->get_environment("GODOT_ASSEMBLY_DIR");
+		print_line(".NET DEBUG: GODOT_ASSEMBLY_DIR = '" + env_assembly_dir + "'");
+		if (!env_assembly_dir.is_empty()) {
+			Ref<DirAccess> da = DirAccess::open(env_assembly_dir);
+			print_line(".NET DEBUG: DirAccess::open() valid = " + String(da.is_valid() ? "true" : "false"));
+			if (da.is_valid()) {
+				bool has_plugins = da->file_exists("GodotPlugins.dll");
+				print_line(".NET DEBUG: file_exists('GodotPlugins.dll') = " + String(has_plugins ? "true" : "false"));
+				if (has_plugins) {
+					api_assemblies_dir = env_assembly_dir;
+					print_verbose(".NET: Using GODOT_ASSEMBLY_DIR environment variable (highest priority): " + env_assembly_dir);
+				}
+			}
+		}
+
 #ifdef TOOLS_ENABLED
-		String data_dir_root = exe_dir.path_join("GodotSharp");
-		data_editor_tools_dir = data_dir_root.path_join("Tools");
-		String api_assemblies_base_dir = data_dir_root.path_join("Api");
-		build_logs_dir = mono_user_dir.path_join("build_logs");
+		// Only use default paths if GODOT_ASSEMBLY_DIR wasn't set or was invalid
+		if (api_assemblies_dir.is_empty()) {
+			String data_dir_root = exe_dir.path_join("GodotSharp");
+			data_editor_tools_dir = data_dir_root.path_join("Tools");
+			String api_assemblies_base_dir = data_dir_root.path_join("Api");
+			build_logs_dir = mono_user_dir.path_join("build_logs");
 #ifdef MACOS_ENABLED
-		if (!DirAccess::exists(data_editor_tools_dir)) {
-			data_editor_tools_dir = res_dir.path_join("GodotSharp").path_join("Tools");
-		}
-		if (!DirAccess::exists(api_assemblies_base_dir)) {
-			api_assemblies_base_dir = res_dir.path_join("GodotSharp").path_join("Api");
-		}
+			if (!DirAccess::exists(data_editor_tools_dir)) {
+				data_editor_tools_dir = res_dir.path_join("GodotSharp").path_join("Tools");
+			}
+			if (!DirAccess::exists(api_assemblies_base_dir)) {
+				api_assemblies_base_dir = res_dir.path_join("GodotSharp").path_join("Api");
+			}
 #endif
-		api_assemblies_dir = api_assemblies_base_dir.path_join(GDMono::get_expected_api_build_config());
-#else // TOOLS_ENABLED
+			api_assemblies_dir = api_assemblies_base_dir.path_join(GDMono::get_expected_api_build_config());
+		}
+#elif !defined(LIBGODOT_HOSTFXR) // Not TOOLS_ENABLED and not LIBGODOT_HOSTFXR - template builds
 		String platform = _get_platform_name();
 		String arch = Engine::get_singleton()->get_architecture_name();
 		String appname_safe = Path::get_csharp_project_name();
 		String packed_path = "res://.godot/mono/publish/" + arch;
-		
-		// HIGHEST PRIORITY: Check GODOT_ASSEMBLY_DIR environment variable first.
-		// This is critical for libgodot embedding scenarios where the host application
-		// (e.g., a .NET test runner) sets this variable to point to the assembly directory.
-		// Must be checked before any other path resolution to ensure it takes effect.
-		String env_assembly_dir = OS::get_singleton()->get_environment("GODOT_ASSEMBLY_DIR");
-		if (!env_assembly_dir.is_empty() && FileAccess::exists(env_assembly_dir.path_join("GodotPlugins.dll"))) {
-			api_assemblies_dir = env_assembly_dir;
-			print_verbose(".NET: Using GODOT_ASSEMBLY_DIR environment variable (highest priority): " + env_assembly_dir);
-		}
 #ifdef ANDROID_ENABLED
 		else {
 			api_assemblies_dir = packed_path;
