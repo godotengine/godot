@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/string/fuzzy_search.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 
@@ -114,6 +115,7 @@ class SceneTreeEditor : public Control {
 	Tree *tree = nullptr;
 	Node *selected = nullptr;
 
+	FuzzySearch fuzzy_search;
 	String filter;
 	String filter_term_warning;
 	bool show_all_nodes = false;
