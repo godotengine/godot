@@ -70,8 +70,8 @@
 			Maximum distance from which audio is still hearable.
 		</member>
 		<member name="max_polyphony" type="int" setter="set_max_polyphony" getter="get_max_polyphony" default="1">
-			The maximum number of simultaneous sounds this node can play. 
-			Increasing this value allows multiple sounds to overlap (e.g., rapid gunfire or echoes), but at a higher CPU cost. 
+			The maximum number of simultaneous sounds this node can play.
+			Increasing this value allows multiple sounds to overlap (e.g., rapid gunfire or echoes), but at a higher CPU cost.
 			When the limit is reached, playing a new sound will instantly terminate the oldest active sound to stay within the limit.
 		</member>
 		<member name="panning_strength" type="float" setter="set_panning_strength" getter="get_panning_strength" default="1.0">
