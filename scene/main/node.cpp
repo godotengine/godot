@@ -899,10 +899,7 @@ bool Node::can_process_notification(int p_what) const {
 }
 
 bool Node::can_process() const {
-	if (!is_inside_tree()) {
-		return false;
-	}
-	return !data.tree->is_suspended() && _can_process(data.tree->is_paused());
+	return is_inside_tree() && !data.tree->is_suspended() && _can_process(data.tree->is_paused());
 }
 
 bool Node::_can_process(bool p_paused) const {
