@@ -183,6 +183,7 @@ public:
 	Vector<Face3> get_surface_faces(int p_surface) const;
 	Ref<TriangleMesh> generate_triangle_mesh() const;
 	Ref<TriangleMesh> generate_surface_triangle_mesh(int p_surface) const;
+	Ref<TriangleMesh> get_triangle_mesh();
 	void generate_debug_mesh_lines(Vector<Vector3> &r_lines);
 	void generate_debug_mesh_indices(Vector<Vector3> &r_points);
 

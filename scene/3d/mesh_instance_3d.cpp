@@ -863,6 +863,81 @@ Ref<TriangleMesh> MeshInstance3D::generate_triangle_mesh() const {
 	return Ref<TriangleMesh>();
 }
 
+Dictionary MeshInstance3D::intersect_ray(const Vector3& p_from, const Vector3& p_dir)
+{
+	Dictionary result;
+
+	result["success"] = false;
+
+	if (!mesh.is_valid())
+	{
+		return result;
+	}
+
+	Transform3D gl_tform = get_global_transform();
+	Transform3D in_tform = gl_tform.affine_inverse();
+
+	Vector3 local_from = in_tform.xform(p_from);
+	Vector3 local_dir = in_tform.basis.xform(p_dir).normalized();
+	
+	Vector3 local_point;
+	Vector3 local_normal;
+	int32_t surf_index, face_index;
+
+	bool intersected = mesh->get_triangle_mesh()->intersect_ray(local_from, local_dir, local_point, local_normal, &surf_index, &face_index);
+
+	if (intersected) {
+		Vector3 global_point = gl_tform.xform(local_point);
+		Vector3 global_normal = gl_tform.basis.xform(local_normal).normalized();
+		Ref<Material> material = mesh->surface_get_material(surf_index);
+
+		result["position"] = global_point;
+		result["normal"] = global_normal;
+		result["surface"] = surf_index;
+		result["face"] = face_index;
+		result["material"] = material;
+		result["success"] = true;
+	}
+
+	return result;
+}
+
+Dictionary MeshInstance3D::intersect_segment(const Vector3& p_from, const Vector3& p_to) {
+	Dictionary result;
+
+	result["success"] = false;
+
+	if (!mesh.is_valid()) {
+		return result;
+	}
+
+	Transform3D gl_tform = get_global_transform();
+	Transform3D in_tform = gl_tform.affine_inverse();
+
+	Vector3 local_from = in_tform.xform(p_from);
+	Vector3 local_to = in_tform.xform(p_to);
+
+	Vector3 local_point;
+	Vector3 local_normal;
+	int32_t surf_index, face_index;
+
+	bool intersected = mesh->get_triangle_mesh()->intersect_segment(local_from, local_to, local_point, local_normal, &surf_index, &face_index);
+
+	if (intersected) {
+		Vector3 global_point = gl_tform.xform(local_point);
+		Vector3 global_normal = gl_tform.basis.xform(local_normal).normalized();
+		Ref<Material> material = mesh->surface_get_material(surf_index);
+
+		result["position"] = global_point;
+		result["normal"] = global_normal;
+		result["surface"] = surf_index;
+		result["face"] = face_index;
+		result["success"] = true;
+	}
+
+	return result;
+}
+
 #ifndef NAVIGATION_3D_DISABLED
 void MeshInstance3D::navmesh_parse_init() {
 	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
@@ -923,6 +998,9 @@ void MeshInstance3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("bake_mesh_from_current_blend_shape_mix", "existing"), &MeshInstance3D::bake_mesh_from_current_blend_shape_mix, DEFVAL(Ref<ArrayMesh>()));
 	ClassDB::bind_method(D_METHOD("bake_mesh_from_current_skeleton_pose", "existing"), &MeshInstance3D::bake_mesh_from_current_skeleton_pose, DEFVAL(Ref<ArrayMesh>()));
+
+	ClassDB::bind_method(D_METHOD("intersect_ray", "from", "dir"), &MeshInstance3D::intersect_ray);
+	ClassDB::bind_method(D_METHOD("intersect_segment", "from", "to"), &MeshInstance3D::intersect_segment);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
 	ADD_GROUP("Skeleton", "");

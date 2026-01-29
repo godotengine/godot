@@ -463,6 +463,15 @@ Ref<TriangleMesh> Mesh::generate_surface_triangle_mesh(int p_surface) const {
 	return tr_mesh;
 }
 
+Ref<TriangleMesh> Mesh::get_triangle_mesh() {
+	if (!triangle_mesh.is_valid())
+	{
+		this->generate_triangle_mesh();
+	}
+
+	return triangle_mesh;
+}
+
 void Mesh::generate_debug_mesh_lines(Vector<Vector3> &r_lines) {
 	if (debug_lines.size() > 0) {
 		r_lines = debug_lines;

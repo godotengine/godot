@@ -120,6 +120,9 @@ public:
 
 	virtual Ref<TriangleMesh> generate_triangle_mesh() const override;
 
+	Dictionary intersect_ray(const Vector3 &p_from, const Vector3 &p_dir);
+	Dictionary intersect_segment(const Vector3 &p_from, const Vector3 &p_to);
+
 #ifndef NAVIGATION_3D_DISABLED
 private:
 	static Callable _navmesh_source_geometry_parsing_callback;
