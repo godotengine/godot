@@ -8572,6 +8572,7 @@ EditorNode::EditorNode() {
 	right_r_vsplit->add_child(dock_slot[EditorDock::DOCK_SLOT_RIGHT_BR]);
 
 	editor_dock_manager = memnew(EditorDockManager);
+	gui_base->add_child(editor_dock_manager);
 
 	// Save the splits for easier access.
 	editor_dock_manager->add_vsplit(left_l_vsplit);
@@ -9394,7 +9395,6 @@ EditorNode::~EditorNode() {
 	memdelete(editor_plugins_force_input_forwarding);
 	memdelete(progress_hb);
 	memdelete(project_upgrade_tool);
-	memdelete(editor_dock_manager);
 
 	EditorSettings::destroy();
 	EditorThemeManager::finalize();
