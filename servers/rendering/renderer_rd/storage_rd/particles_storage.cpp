@@ -1675,7 +1675,12 @@ bool ParticlesStorage::particles_is_inactive(RID p_particles) const {
 
 /* Particles SHADER */
 
-void ParticlesStorage::ParticlesShaderData::set_code(const String &p_code) {
+void ParticlesStorage::ParticlesShaderData::set_code(const String &p_code, RID p_shader_template) {
+	// Shader template isn't supported here yet.
+	if (p_shader_template.is_valid()) {
+		WARN_PRINT_ONCE("Shader templates are not supported for particle shaders.");
+	}
+
 	ParticlesStorage *particles_storage = ParticlesStorage::get_singleton();
 	//compile
 
