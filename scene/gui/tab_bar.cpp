@@ -394,15 +394,6 @@ void TabBar::_accessibility_action_focus(const Variant &p_data, int p_index) {
 	set_current_tab(p_index);
 }
 
-bool TabBar::_are_all_tabs_hidden() const {
-	for (const Tab &tab : tabs) {
-		if (!tab.hidden) {
-			return false;
-		}
-	}
-	return true;
-}
-
 void TabBar::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -1093,8 +1084,9 @@ void TabBar::set_tab_hidden(int p_tab, bool p_hidden) {
 
 	tabs.write[p_tab].hidden = p_hidden;
 
-	if (p_hidden && _are_all_tabs_hidden()) {
-		current = -1;
+	if (p_hidden && !select_next_available() && !select_previous_available()) {
+		// No available tabs, deselect.
+		set_current_tab(-1);
 	}
 
 	_update_cache();
