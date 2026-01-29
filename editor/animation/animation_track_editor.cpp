@@ -2228,7 +2228,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 					Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node);
 					const Vector2 icon_size = Vector2(1, 1) * get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
-					icon_rect = Rect2(Point2(ofs, (get_size().height - check->get_height()) / 2).round(), icon->get_size());
+					icon_rect = Rect2(Point2(ofs, (get_size().height - check->get_height()) / 2).round(), icon_size);
 					draw_texture_rect(icon, icon_rect);
 					icon_cache = icon;
 
