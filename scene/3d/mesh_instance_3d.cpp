@@ -884,19 +884,23 @@ Dictionary MeshInstance3D::intersect_ray(const Vector3& p_from, const Vector3& p
 	Vector3 local_normal;
 	int32_t surf_index, face_index;
 
-	bool intersected = mesh->get_triangle_mesh()->intersect_ray(local_from, local_dir, local_point, local_normal, &surf_index, &face_index);
+	Ref<TriangleMesh> tri_mesh = mesh->get_triangle_mesh();
 
-	if (intersected) {
-		Vector3 global_point = gl_tform.xform(local_point);
-		Vector3 global_normal = gl_tform.basis.xform(local_normal).normalized();
-		Ref<Material> material = mesh->surface_get_material(surf_index);
+	if (tri_mesh.is_valid()) {
+		bool intersected = tri_mesh->intersect_ray(local_from, local_dir, local_point, local_normal, &surf_index, &face_index);
 
-		result["position"] = global_point;
-		result["normal"] = global_normal;
-		result["surface"] = surf_index;
-		result["face"] = face_index;
-		result["material"] = material;
-		result["success"] = true;
+		if (intersected) {
+			Vector3 global_point = gl_tform.xform(local_point);
+			Vector3 global_normal = gl_tform.basis.xform(local_normal).normalized();
+			Ref<Material> material = mesh->surface_get_material(surf_index);
+
+			result["position"] = global_point;
+			result["normal"] = global_normal;
+			result["surface"] = surf_index;
+			result["face"] = face_index;
+			result["material"] = material;
+			result["success"] = true;
+		}
 	}
 
 	return result;
@@ -921,18 +925,22 @@ Dictionary MeshInstance3D::intersect_segment(const Vector3& p_from, const Vector
 	Vector3 local_normal;
 	int32_t surf_index, face_index;
 
-	bool intersected = mesh->get_triangle_mesh()->intersect_segment(local_from, local_to, local_point, local_normal, &surf_index, &face_index);
+	Ref<TriangleMesh> tri_mesh = mesh->get_triangle_mesh();
 
-	if (intersected) {
-		Vector3 global_point = gl_tform.xform(local_point);
-		Vector3 global_normal = gl_tform.basis.xform(local_normal).normalized();
-		Ref<Material> material = mesh->surface_get_material(surf_index);
+	if (tri_mesh.is_valid()) {
+		bool intersected = tri_mesh->intersect_segment(local_from, local_to, local_point, local_normal, &surf_index, &face_index);
 
-		result["position"] = global_point;
-		result["normal"] = global_normal;
-		result["surface"] = surf_index;
-		result["face"] = face_index;
-		result["success"] = true;
+		if (intersected) {
+			Vector3 global_point = gl_tform.xform(local_point);
+			Vector3 global_normal = gl_tform.basis.xform(local_normal).normalized();
+			Ref<Material> material = mesh->surface_get_material(surf_index);
+
+			result["position"] = global_point;
+			result["normal"] = global_normal;
+			result["surface"] = surf_index;
+			result["face"] = face_index;
+			result["success"] = true;
+		}
 	}
 
 	return result;
