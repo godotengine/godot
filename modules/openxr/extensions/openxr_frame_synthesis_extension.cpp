@@ -79,25 +79,29 @@ HashMap<String, bool *> OpenXRFrameSynthesisExtension::get_requested_extensions(
 }
 
 void OpenXRFrameSynthesisExtension::on_instance_created(const XrInstance p_instance) {
+	// Register this as a projection view extension
+	if (frame_synthesis_ext) {
+		OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+		ERR_FAIL_NULL(openxr_api);
+		openxr_api->register_projection_views_extension(this);
+	}
+
 	// Enable this if our extension was successfully enabled
 	enabled = frame_synthesis_ext;
 	render_state.enabled = frame_synthesis_ext;
-
-	// Register this as a projection view extension
-	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
-	ERR_FAIL_NULL(openxr_api);
-	openxr_api->register_projection_views_extension(this);
 }
 
 void OpenXRFrameSynthesisExtension::on_instance_destroyed() {
+	// Unregister this as a projection view extension.
+	if (frame_synthesis_ext) {
+		OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+		ERR_FAIL_NULL(openxr_api);
+		openxr_api->unregister_projection_views_extension(this);
+	}
+
 	frame_synthesis_ext = false;
 	enabled = false;
 	render_state.enabled = false;
-
-	// Unregister this as a projection view extension.
-	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
-	ERR_FAIL_NULL(openxr_api);
-	openxr_api->unregister_projection_views_extension(this);
 }
 
 void OpenXRFrameSynthesisExtension::prepare_view_configuration(uint32_t p_view_count) {
@@ -193,11 +197,13 @@ void OpenXRFrameSynthesisExtension::on_main_swapchains_created() {
 		} else {
 			WARN_PRINT("OpenXR: Frame synthesis not supported for this rendering method!");
 			frame_synthesis_ext = false;
+			openxr_api->unregister_projection_views_extension(this);
 			return;
 		}
 	} else {
 		WARN_PRINT("OpenXR: Frame synthesis not supported for this rendering driver!");
 		frame_synthesis_ext = false;
+		openxr_api->unregister_projection_views_extension(this);
 		return;
 	}
 
