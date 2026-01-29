@@ -323,7 +323,8 @@
 			[b]Note:[/b] As quadrants are created according to the map's coordinate system, the quadrant's "square shape" might not look like square in the [TileMapLayer]'s local coordinate system.
 		</member>
 		<member name="tile_map_data" type="PackedByteArray" setter="set_tile_map_data_from_array" getter="get_tile_map_data_as_array" default="PackedByteArray()">
-			The raw tile map data as a byte array.
+			The raw data of the [TileMapLayer] stored as a [PackedByteArray]. 
+			This property is useful for saving or transmitting the entire layer's state at once, rather than modifying individual cells.
 		</member>
 		<member name="tile_set" type="TileSet" setter="set_tile_set" getter="get_tile_set">
 			The [TileSet] used by this layer. The textures, collisions, and additional behavior of all available tiles are stored here.
