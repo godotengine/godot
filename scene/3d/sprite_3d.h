@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/material.h"
 #include "scene/resources/sprite_frames.h"
 
 class SpriteBase3D : public GeometryInstance3D {

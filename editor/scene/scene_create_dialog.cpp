@@ -31,6 +31,7 @@
 #include "scene_create_dialog.h"
 
 #include "core/io/dir_access.h"
+#include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/create_dialog.h"

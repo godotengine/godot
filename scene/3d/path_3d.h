@@ -32,6 +32,7 @@
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/curve.h"
+#include "scene/resources/material.h"
 
 class Path3D : public Node3D {
 	GDCLASS(Path3D, Node3D);

@@ -104,6 +104,7 @@
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/3d/sky_material.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/sky.h"
 #include "scene/resources/surface_tool.h"
 
 constexpr real_t DISTANCE_DEFAULT = 4;

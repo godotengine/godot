@@ -31,6 +31,7 @@
 #include "visual_instance_3d.h"
 
 #include "core/config/project_settings.h"
+#include "scene/resources/material.h"
 
 AABB VisualInstance3D::get_aabb() const {
 	AABB ret;

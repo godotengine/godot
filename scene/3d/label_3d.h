@@ -32,6 +32,7 @@
 
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/font.h"
+#include "scene/resources/material.h"
 
 #include "servers/text/text_server.h"
 

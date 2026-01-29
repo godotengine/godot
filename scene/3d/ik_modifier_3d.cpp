@@ -30,6 +30,8 @@
 
 #include "ik_modifier_3d.h"
 
+#include "core/config/engine.h"
+
 void IKModifier3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {

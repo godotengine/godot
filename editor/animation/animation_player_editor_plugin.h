@@ -40,6 +40,7 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_button.h"
 #include "scene/gui/tree.h"
+#include "scene/resources/material.h"
 
 class AnimationPlayerEditorPlugin;
 class ImageTexture;

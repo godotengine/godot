@@ -45,6 +45,7 @@
 #include "scene/resources/blit_material.h"
 #include "scene/resources/canvas_item_material.h"
 #include "scene/resources/particle_process_material.h"
+#include "scene/resources/sky.h"
 
 // 3D.
 #include "scene/3d/camera_3d.h"

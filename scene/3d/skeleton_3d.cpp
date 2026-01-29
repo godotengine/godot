@@ -35,6 +35,7 @@
 #if !defined(DISABLE_DEPRECATED) && !defined(PHYSICS_3D_DISABLED)
 #include "scene/3d/physics/physical_bone_simulator_3d.h"
 #endif // _DISABLE_DEPRECATED && PHYSICS_3D_DISABLED
+#include "servers/rendering/rendering_server.h"
 
 void SkinReference::_skin_changed() {
 	if (skeleton_node) {
