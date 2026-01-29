@@ -171,6 +171,9 @@ private:
 	void _accessibility_notify_enter(Node *p_node);
 	void _accessibility_notify_exit(Node *p_node);
 
+	void _accessibility_activate();
+	void _accessibility_deactivate();
+
 	bool _try_parent_dialog(Node *p_from_node);
 
 	Size2i max_size_used;

@@ -73,6 +73,7 @@ bool AccessibilityDriverAccessKit::window_create(DisplayServer::WindowID p_windo
 #ifdef LINUXBSD_ENABLED
 	wd.adapter = accesskit_unix_adapter_new(&_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, &_accessibility_action_callback, (void *)(size_t)p_window_id, &_accessibility_deactivation_callback, (void *)(size_t)p_window_id);
 #endif
+	print_verbose(vformat("Accessibility: window %d adapter created.", p_window_id));
 
 	if (wd.adapter == nullptr) {
 		memdelete(ae);
@@ -89,6 +90,8 @@ void AccessibilityDriverAccessKit::window_destroy(DisplayServer::WindowID p_wind
 	WindowData *wd = windows.getptr(p_window_id);
 	ERR_FAIL_NULL(wd);
 
+	print_verbose(vformat("Accessibility: window %d adapter destroyed.", p_window_id));
+
 #ifdef WINDOWS_ENABLED
 	accesskit_windows_subclassing_adapter_free(wd->adapter);
 #endif
@@ -104,7 +107,22 @@ void AccessibilityDriverAccessKit::window_destroy(DisplayServer::WindowID p_wind
 }
 
 void AccessibilityDriverAccessKit::_accessibility_deactivation_callback(void *p_user_data) {
-	// NOP
+	DisplayServer::WindowID window_id = (DisplayServer::WindowID)(size_t)p_user_data;
+	WindowData *wd = singleton->windows.getptr(window_id);
+	ERR_FAIL_NULL(wd);
+
+	print_verbose(vformat("Accessibility: window %d adapter deactivated.", window_id));
+
+	if (singleton->focus.is_valid()) {
+		AccessibilityElement *ae = singleton->rid_owner.get_or_null(singleton->focus);
+		if (ae && ae->window_id == window_id) {
+			singleton->focus = RID();
+		}
+	}
+	if (wd->deactivate.is_valid()) {
+		wd->deactivate.call_deferred(); // Should be called on main thread only.
+	}
+	wd->update.clear();
 }
 
 void AccessibilityDriverAccessKit::_accessibility_action_callback(struct accesskit_action_request *p_request, void *p_user_data) {
@@ -215,7 +233,56 @@ accesskit_tree_update *AccessibilityDriverAccessKit::_accessibility_initial_tree
 	accesskit_tree_update_set_tree(tree_update, accesskit_tree_new(win_id));
 	accesskit_tree_update_push_node(tree_update, win_id, win_node);
 
+	print_verbose(vformat("Accessibility: window %d adapter activated.", window_id));
+
+	if (wd->activate.is_valid()) {
+		wd->activate.call_deferred(); // Should be called on main thread only.
+	}
+
 	return tree_update;
+}
+
+void AccessibilityDriverAccessKit::accessibility_set_window_callbacks(DisplayServer::WindowID p_window_id, const Callable &p_activate_callable, const Callable &p_deativate_callable) {
+	WindowData *wd = singleton->windows.getptr(p_window_id);
+	ERR_FAIL_NULL(wd);
+
+	wd->activate = p_activate_callable;
+	wd->deactivate = p_deativate_callable;
+}
+
+void AccessibilityDriverAccessKit::accessibility_window_activation_completed(DisplayServer::WindowID p_window_id) {
+	WindowData *wd = singleton->windows.getptr(p_window_id);
+	if (!wd) {
+		return;
+	}
+
+	print_verbose(vformat("Accessibility: window %d adapter initial update completed.", p_window_id));
+
+	wd->initial_update_completed = true;
+}
+
+void AccessibilityDriverAccessKit::accessibility_window_deactivation_completed(DisplayServer::WindowID p_window_id) {
+	WindowData *wd = singleton->windows.getptr(p_window_id);
+	if (!wd) {
+		return;
+	}
+
+	print_verbose(vformat("Accessibility: window %d adapter deactivation completed.", p_window_id));
+
+#ifdef DEV_ENABLED
+	LocalVector<RID> to_delete;
+	for (const RID &rid : rid_owner.get_owned_list()) {
+		AccessibilityElement *ae = rid_owner.get_or_null(rid);
+		if (rid != wd->root_id && ae && ae->window_id == p_window_id) {
+			ERR_PRINT(vformat("Accessibility/BUG: Accessibility element %d was not deleted on window %d adapter deactivation.", rid.get_id(), p_window_id));
+			to_delete.push_back(rid);
+		}
+	}
+	for (const RID &rid : to_delete) {
+		_free_recursive(wd, rid);
+	}
+#endif
+	wd->initial_update_completed = false;
 }
 
 RID AccessibilityDriverAccessKit::accessibility_create_element(DisplayServer::WindowID p_window_id, DisplayServer::AccessibilityRole p_role) {
