@@ -990,6 +990,10 @@ void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 		return;
 	}
 
+	if (!get_deselect_enabled() && p_hidden == false && get_current_tab() == -1) {
+		set_current_tab(p_tab);
+	}
+
 	tab_bar->set_tab_hidden(p_tab, p_hidden);
 	child->hide();
 
