@@ -284,6 +284,9 @@
 		<member name="docks/filesystem/automatically_open_created_scripts" type="bool" setter="" getter="">
 			If [code]true[/code], scripts created in FileSystem dock will be automatically edited.
 		</member>
+		<member name="docks/filesystem/enable_fuzzy_search" type="bool" setter="" getter="">
+			If [code]true[/code], the file system search bar will use fuzzy search.
+		</member>
 		<member name="docks/filesystem/other_file_extensions" type="String" setter="" getter="">
 			A comma separated list of unsupported file extensions to show in the FileSystem dock, e.g. [code]"ico,icns"[/code].
 		</member>
@@ -313,6 +316,9 @@
 		</member>
 		<member name="docks/scene_tree/center_node_on_reparent" type="bool" setter="" getter="">
 			If [code]true[/code], new node created when reparenting node(s) will be positioned at the average position of the selected node(s).
+		</member>
+		<member name="docks/scene_tree/enable_fuzzy_search" type="bool" setter="" getter="">
+			If [code]true[/code], the scene tree search bar will use fuzzy search.
 		</member>
 		<member name="docks/scene_tree/hide_filtered_out_parents" type="bool" setter="" getter="">
 			If [code]true[/code], the scene tree dock will only show nodes that match the filter, without showing parents that don't. This settings can also be changed in the Scene dock's top menu.

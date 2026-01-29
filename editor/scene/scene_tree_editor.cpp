@@ -1171,6 +1171,11 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, const PackedStri
 		return true;
 	}
 
+	bool use_fuzzy_search = true;
+	if (EditorSettings::get_singleton()->has_setting("docks/scene_tree/enable_fuzzy_search")) {
+		use_fuzzy_search = EDITOR_GET("docks/scene_tree/enable_fuzzy_search");
+	}
+
 	for (int i = 0; i < p_terms.size(); i++) {
 		const String &term = p_terms[i];
 
@@ -1218,8 +1223,14 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, const PackedStri
 			}
 		} else {
 			// Default.
-			if (!p_item->get_text(0).to_lower().contains(term)) {
-				return false;
+			if (use_fuzzy_search) {
+				if (!term.is_subsequence_ofn(p_item->get_text(0))) {
+					return false;
+				}
+			} else {
+				if (!p_item->get_text(0).to_lower().contains(term)) {
+					return false;
+				}
 			}
 		}
 	}

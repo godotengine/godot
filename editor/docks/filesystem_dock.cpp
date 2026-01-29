@@ -2872,10 +2872,22 @@ bool FileSystemDock::_matches_all_search_tokens(const String &p_text) {
 	if (searched_tokens.is_empty()) {
 		return false;
 	}
+
+	bool use_fuzzy_search = true;
+	if (EditorSettings::get_singleton()->has_setting("docks/filesystem/enable_fuzzy_search")) {
+		use_fuzzy_search = EDITOR_GET("docks/filesystem/enable_fuzzy_search");
+	}
+
 	const String s = p_text.to_lower();
 	for (const String &t : searched_tokens) {
-		if (!s.contains(t)) {
-			return false;
+		if (use_fuzzy_search) {
+			if (!t.is_subsequence_of(s)) {
+				return false;
+			}
+		} else {
+			if (!s.contains(t)) {
+				return false;
+			}
 		}
 	}
 	return true;
