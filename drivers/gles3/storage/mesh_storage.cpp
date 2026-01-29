@@ -28,12 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "mesh_storage.h"
+
 #ifdef GLES3_ENABLED
 
-#include "mesh_storage.h"
-#include "config.h"
-#include "texture_storage.h"
-#include "utilities.h"
+#include "drivers/gles3/storage/config.h"
+#include "drivers/gles3/storage/texture_storage.h"
+#include "drivers/gles3/storage/utilities.h"
 
 using namespace GLES3;
 

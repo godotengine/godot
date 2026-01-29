@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef GLES3_ENABLED
-
 #include "config.h"
 
-#include "../rasterizer_gles3.h"
+#ifdef GLES3_ENABLED
+
+#include "drivers/gles3/rasterizer_gles3.h"
 
 #ifdef WEB_ENABLED
 #include <emscripten/html5_webgl.h>

@@ -30,23 +30,22 @@
 
 #include "rasterizer_scene_gles3.h"
 
-#include "drivers/gles3/effects/copy_effects.h"
-#include "drivers/gles3/effects/feed_effects.h"
-#include "drivers/gles3/storage/material_storage.h"
-#include "rasterizer_gles3.h"
-#include "storage/config.h"
-#include "storage/mesh_storage.h"
-#include "storage/particles_storage.h"
-#include "storage/texture_storage.h"
+#ifdef GLES3_ENABLED
 
 #include "core/config/project_settings.h"
 #include "core/templates/sort_array.h"
+#include "drivers/gles3/effects/copy_effects.h"
+#include "drivers/gles3/effects/feed_effects.h"
+#include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/gles3/storage/config.h"
+#include "drivers/gles3/storage/material_storage.h"
+#include "drivers/gles3/storage/mesh_storage.h"
+#include "drivers/gles3/storage/particles_storage.h"
+#include "drivers/gles3/storage/texture_storage.h"
 #include "servers/camera/camera_feed.h"
 #include "servers/camera/camera_server.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/rendering/rendering_server_globals.h"
-
-#ifdef GLES3_ENABLED
 
 RasterizerSceneGLES3 *RasterizerSceneGLES3::singleton = nullptr;
 

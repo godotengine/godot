@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef GLES3_ENABLED
-
 #include "texture_storage.h"
 
-#include "../effects/copy_effects.h"
-#include "../rasterizer_gles3.h"
-#include "config.h"
-#include "utilities.h"
+#ifdef GLES3_ENABLED
+
+#include "drivers/gles3/effects/copy_effects.h"
+#include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/gles3/storage/material_storage.h"
+#include "drivers/gles3/storage/utilities.h"
 
 using namespace GLES3;
 

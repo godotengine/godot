@@ -32,18 +32,17 @@
 
 #ifdef GLES3_ENABLED
 
-#include "rasterizer_gles3.h"
-#include "rasterizer_scene_gles3.h"
-
 #include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/transform_interpolator.h"
+#include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/gles3/rasterizer_scene_gles3.h"
+#include "drivers/gles3/storage/config.h"
+#include "drivers/gles3/storage/material_storage.h"
+#include "drivers/gles3/storage/mesh_storage.h"
+#include "drivers/gles3/storage/particles_storage.h"
+#include "drivers/gles3/storage/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
-#include "storage/config.h"
-#include "storage/material_storage.h"
-#include "storage/mesh_storage.h"
-#include "storage/particles_storage.h"
-#include "storage/texture_storage.h"
 
 void RasterizerCanvasGLES3::_update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4) {
 	p_mat4[0] = p_transform.columns[0][0];

@@ -28,14 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "light_storage.h"
+
 #ifdef GLES3_ENABLED
 
-#include "light_storage.h"
-#include "../rasterizer_gles3.h"
-#include "../rasterizer_scene_gles3.h"
 #include "core/config/project_settings.h"
 #include "core/math/geometry_3d.h"
-#include "texture_storage.h"
+#include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/gles3/rasterizer_scene_gles3.h"
+#include "drivers/gles3/storage/texture_storage.h"
 
 using namespace GLES3;
 

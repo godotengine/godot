@@ -28,17 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef GLES3_ENABLED
-
 #include "utilities.h"
 
-#include "../rasterizer_gles3.h"
-#include "config.h"
-#include "light_storage.h"
-#include "material_storage.h"
-#include "mesh_storage.h"
-#include "particles_storage.h"
-#include "texture_storage.h"
+#ifdef GLES3_ENABLED
+
+#include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/gles3/storage/config.h"
+#include "drivers/gles3/storage/light_storage.h"
+#include "drivers/gles3/storage/material_storage.h"
+#include "drivers/gles3/storage/mesh_storage.h"
+#include "drivers/gles3/storage/particles_storage.h"
+#include "drivers/gles3/storage/texture_storage.h"
 
 using namespace GLES3;
 
