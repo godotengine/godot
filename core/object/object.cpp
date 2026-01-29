@@ -235,6 +235,7 @@ void ObjectGDExtension::create_gdtype() {
 	ERR_FAIL_COND(gdtype);
 
 	gdtype = memnew(GDType(ClassDB::get_gdtype(parent_class_name), class_name));
+	gdtype->initialize();
 }
 
 void ObjectGDExtension::destroy_gdtype() {
@@ -1441,6 +1442,10 @@ void Object::_reset_gdtype() const {
 	}
 }
 
+void Object::autorelease_gdtype(GDType **r_type) {
+	ClassDB::gdtype_autorelease_pool.push_back(r_type);
+}
+
 void Object::_add_user_signal(const String &p_name, const Array &p_args) {
 	// this version of add_user_signal is meant to be used from scripts or external apis
 	// without access to ADD_SIGNAL in bind_methods
@@ -1793,10 +1798,18 @@ Variant Object::_get_indexed_bind(const NodePath &p_name) const {
 
 void Object::initialize_class() {
 	static bool initialized = false;
-	if (initialized) {
+	if (likely(initialized)) {
 		return;
 	}
-	_add_class_to_classdb(get_gdtype_static(), nullptr);
+
+	static BinaryMutex __init_mutex;
+	MutexLock lock(__init_mutex);
+	if (initialized) {
+		// Initialized on another thread while we were waiting.
+		return;
+	}
+	_add_class_to_classdb(get_gdtype_static_mutable(), nullptr);
+	get_gdtype_static_mutable().initialize();
 	_bind_methods();
 	_bind_compatibility_methods();
 	initialized = true;
@@ -1872,7 +1885,7 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 	}
 }
 
-void Object::_add_class_to_classdb(const GDType &p_type, const GDType *p_inherits) {
+void Object::_add_class_to_classdb(GDType &p_type, const GDType *p_inherits) {
 	ClassDB::_add_class(p_type, p_inherits);
 }
 
@@ -2405,20 +2418,6 @@ void Object::detach_from_objectdb() {
 		ObjectDB::remove_instance(this);
 		_instance_id = ObjectID();
 	}
-}
-
-void Object::assign_type_static(GDType **type_ptr, const char *p_name, const GDType *super_type) {
-	static BinaryMutex _mutex;
-	MutexLock lock(_mutex);
-	GDType *type = *type_ptr;
-	if (type) {
-		// Assigned while we were waiting.
-		return;
-	}
-	type = memnew(GDType(super_type, StringName(p_name)));
-	*type_ptr = type;
-
-	ClassDB::gdtype_autorelease_pool.push_back(type_ptr);
 }
 
 Object::~Object() {
