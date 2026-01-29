@@ -260,5 +260,10 @@ Error ResourceImporterCSVTranslation::import(ResourceUID::ID p_source_id, const 
 		}
 	}
 
+	if (r_metadata) {
+		// Store the MD5 hash of the source file to allow the editor to detect changes and trigger reimports.
+		*r_metadata = FileAccess::get_md5(p_source_file);
+	}
+
 	return OK;
 }
