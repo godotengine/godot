@@ -2834,6 +2834,12 @@ void FileSystemDock::_search_changed(const String &p_text, const Control *p_from
 	}
 
 	searched_tokens = searched_string.split(" ", false);
+	fuzzy_search.set_query(searched_string);
+
+	bool use_fuzzy_search = EDITOR_GET("editors/fuzzy_matching/enable_for/filesystem_dock");
+	int max_fuzzy_misses = EDITOR_GET("editors/fuzzy_matching/max_fuzzy_misses");
+	fuzzy_search.allow_subsequences = use_fuzzy_search;
+	fuzzy_search.max_misses = max_fuzzy_misses;
 
 	if (p_from == tree_search_box) {
 		file_list_search_box->set_text(searched_string);
@@ -2854,6 +2860,13 @@ bool FileSystemDock::_matches_all_search_tokens(const String &p_text) {
 	if (searched_tokens.is_empty()) {
 		return false;
 	}
+
+	bool use_fuzzy_search = EDITOR_GET("editors/fuzzy_matching/enable_for/filesystem_dock");
+	if (use_fuzzy_search) {
+		FuzzySearchResult result;
+		return fuzzy_search.search(p_text, result);
+	}
+
 	const String s = p_text.to_lower();
 	for (const String &t : searched_tokens) {
 		if (!s.contains(t)) {

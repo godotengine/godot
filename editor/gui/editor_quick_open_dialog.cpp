@@ -469,7 +469,7 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 	}
 
 	const bool do_instant_preview = EDITOR_GET("filesystem/quick_open_dialog/instant_preview");
-	const bool fuzzy_matching = EDITOR_GET("filesystem/quick_open_dialog/enable_fuzzy_matching");
+	const bool fuzzy_matching = EDITOR_GET("editors/fuzzy_matching/enable_for/quick_open_dialog");
 	const bool include_addons = EDITOR_GET("filesystem/quick_open_dialog/include_addons");
 	instant_preview_toggle->set_pressed_no_signal(do_instant_preview);
 	fuzzy_search_toggle->set_pressed_no_signal(fuzzy_matching);
@@ -758,8 +758,8 @@ void QuickOpenResultContainer::_update_fuzzy_search_results() {
 	fuzzy_search.start_offset = 6; // Don't match against "res://" at the start of each filepath.
 	fuzzy_search.set_query(query);
 	fuzzy_search.max_results = max_total_results;
-	bool fuzzy_matching = EDITOR_GET("filesystem/quick_open_dialog/enable_fuzzy_matching");
-	int max_misses = EDITOR_GET("filesystem/quick_open_dialog/max_fuzzy_misses");
+	bool fuzzy_matching = EDITOR_GET("editors/fuzzy_matching/enable_for/quick_open_dialog");
+	int max_misses = EDITOR_GET("editors/fuzzy_matching/max_fuzzy_misses");
 	fuzzy_search.allow_subsequences = fuzzy_matching;
 	fuzzy_search.max_misses = fuzzy_matching ? max_misses : 0;
 
@@ -947,7 +947,7 @@ void QuickOpenResultContainer::_toggle_instant_preview(bool p_pressed) {
 }
 
 void QuickOpenResultContainer::_toggle_fuzzy_search(bool p_pressed) {
-	EditorSettings::get_singleton()->set("filesystem/quick_open_dialog/enable_fuzzy_matching", p_pressed);
+	EditorSettings::get_singleton()->set("editors/fuzzy_matching/enable_for/quick_open_dialog", p_pressed);
 	update_results();
 }
 

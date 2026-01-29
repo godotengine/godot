@@ -1175,6 +1175,7 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, const PackedStri
 		return true;
 	}
 
+	bool use_fuzzy_search = EDITOR_GET("editors/fuzzy_matching/enable_for/scene_tree_dock");
 	for (int i = 0; i < p_terms.size(); i++) {
 		const String &term = p_terms[i];
 
@@ -1222,10 +1223,15 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, const PackedStri
 			}
 		} else {
 			// Default.
-			if (!p_item->get_text(0).to_lower().contains(term)) {
+			if (!use_fuzzy_search && !p_item->get_text(0).to_lower().contains(term)) {
 				return false;
 			}
 		}
+	}
+
+	if (use_fuzzy_search) {
+		FuzzySearchResult result;
+		return fuzzy_search.search(p_item->get_text(0), result);
 	}
 
 	return true;
@@ -1729,6 +1735,23 @@ void SceneTreeEditor::set_marked(Node *p_marked, bool p_selectable, bool p_child
 
 void SceneTreeEditor::set_filter(const String &p_filter) {
 	filter = p_filter;
+
+	String fuzzy_query = "";
+	for (const String &term : filter.to_lower().split_spaces()) {
+		if (!(term.contains_char(':') && !term.get_slicec(':', 0).is_empty())) {
+			if (!fuzzy_query.is_empty()) {
+				fuzzy_query += " ";
+			}
+			fuzzy_query += term;
+		}
+	}
+
+	fuzzy_search.set_query(fuzzy_query);
+	bool use_fuzzy_search = EDITOR_GET("editors/fuzzy_matching/enable_for/scene_tree_dock");
+	int max_fuzzy_misses = EDITOR_GET("editors/fuzzy_matching/max_fuzzy_misses");
+	fuzzy_search.allow_subsequences = use_fuzzy_search;
+	fuzzy_search.max_misses = max_fuzzy_misses;
+
 	_update_filter(nullptr, true);
 }
 

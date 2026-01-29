@@ -685,10 +685,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "filesystem/quick_open_dialog/max_results", 100, "0,10000,1", PROPERTY_USAGE_DEFAULT)
 	_initial_set("filesystem/quick_open_dialog/instant_preview", false);
 	_initial_set("filesystem/quick_open_dialog/show_search_highlight", true);
-	_initial_set("filesystem/quick_open_dialog/enable_fuzzy_matching", true);
-	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "filesystem/quick_open_dialog/max_fuzzy_misses", 2, "0,10,1", PROPERTY_USAGE_DEFAULT)
 	_initial_set("filesystem/quick_open_dialog/include_addons", false);
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "filesystem/quick_open_dialog/default_display_mode", 0, "Adaptive,Last Used")
+
+	// Fuzzy Matching
+	_initial_set("editors/fuzzy_matching/enable_for/filesystem_dock", true);
+	_initial_set("editors/fuzzy_matching/enable_for/quick_open_dialog", true);
+	_initial_set("editors/fuzzy_matching/enable_for/scene_tree_dock", true);
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "editors/fuzzy_matching/max_fuzzy_misses", 2, "0,10,1", PROPERTY_USAGE_DEFAULT)
 
 	// Import (for glft module)
 	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "filesystem/import/blender/blender_path", "", "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
@@ -1308,6 +1312,8 @@ void EditorSettings::_handle_setting_compatibility() {
 	_rename_setting("interface/editor/vsync_mode", "interface/editor/display/vsync_mode");
 	_rename_setting("interface/editor/update_continuously", "interface/editor/display/update_continuously");
 	_rename_setting("interface/editor/collapse_main_menu", "interface/editor/appearance/collapse_main_menu");
+	_rename_setting("filesystem/quick_open_dialog/enable_fuzzy_matching", "editors/fuzzy_matching/enable_for/quick_open_dialog");
+	_rename_setting("filesystem/quick_open_dialog/max_fuzzy_misses", "editors/fuzzy_matching/max_fuzzy_misses");
 }
 
 void EditorSettings::_rename_setting(const String &p_old_name, const String &p_new_name) {
