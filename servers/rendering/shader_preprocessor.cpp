@@ -403,6 +403,8 @@ void ShaderPreprocessor::process_directive(Tokenizer *p_tokenizer) {
 		process_include(p_tokenizer);
 	} else if (directive == "pragma") {
 		process_pragma(p_tokenizer);
+	} else if (directive == "unsafe") {
+		process_unsafe(p_tokenizer);
 	} else {
 		set_error(RTR("Unknown directive."), p_tokenizer->get_line());
 	}
@@ -825,6 +827,44 @@ void ShaderPreprocessor::process_undef(Tokenizer *p_tokenizer) {
 		memdelete(state->defines[label]);
 		state->defines.erase(label);
 	}
+}
+
+void ShaderPreprocessor::process_unsafe(Tokenizer *p_tokenizer) {
+	// Parse: #unsafe <type> <identifier>
+	// Example: #unsafe vec3 fog_cell_size
+	// This registers 'fog_cell_size' as an unsafe identifier that references native shader code
+	const int line = p_tokenizer->get_line();
+
+	p_tokenizer->skip_whitespace();
+
+	// Get the type (e.g., vec3, float, mat4, etc.)
+	const String type = p_tokenizer->get_identifier();
+	if (type.is_empty()) {
+		set_error(RTR("Expected a type in '#unsafe' directive."), line);
+		return;
+	}
+
+	p_tokenizer->skip_whitespace();
+
+	// Get the identifier name
+	const String identifier = p_tokenizer->get_identifier();
+	if (identifier.is_empty()) {
+		set_error(RTR("Expected an identifier in '#unsafe' directive."), line);
+		return;
+	}
+
+	if (!p_tokenizer->consume_empty_line()) {
+		set_error(RTR("Expected end of line after '#unsafe' directive."), line);
+		return;
+	}
+
+	// Register the unsafe identifier with its type
+	state->unsafe_identifiers[identifier] = type;
+
+	// Output a comment for documentation
+	add_to_output(vformat("// UNSAFE: %s %s\n", type, identifier));
+	// Output the actual uniform declaration so the shader compiler recognizes it
+	add_to_output(vformat("uniform %s %s;\n", type, identifier));
 }
 
 void ShaderPreprocessor::add_region(int p_line, bool p_enabled, Region *p_parent_region) {
@@ -1332,7 +1372,7 @@ Error ShaderPreprocessor::preprocess(State *p_state, const String &p_code, Strin
 	return OK;
 }
 
-Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filename, String &r_result, String *r_error_text, List<FilePosition> *r_error_position, List<Region> *r_regions, HashSet<Ref<ShaderInclude>> *r_includes, List<ScriptLanguage::CodeCompletionOption> *r_completion_options, List<ScriptLanguage::CodeCompletionOption> *r_completion_defines, IncludeCompletionFunction p_include_completion_func) {
+Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filename, String &r_result, String *r_error_text, List<FilePosition> *r_error_position, List<Region> *r_regions, HashSet<Ref<ShaderInclude>> *r_includes, List<ScriptLanguage::CodeCompletionOption> *r_completion_options, List<ScriptLanguage::CodeCompletionOption> *r_completion_defines, IncludeCompletionFunction p_include_completion_func, RBMap<String, String> *r_unsafe_identifiers) {
 	State pp_state;
 	if (!p_filename.is_empty()) {
 		pp_state.current_filename = p_filename;
@@ -1370,6 +1410,9 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 	}
 	if (r_includes) {
 		*r_includes = pp_state.shader_includes;
+	}
+	if (r_unsafe_identifiers) {
+		*r_unsafe_identifiers = pp_state.unsafe_identifiers;
 	}
 
 	if (r_completion_defines) {

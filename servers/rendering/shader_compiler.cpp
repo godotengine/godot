@@ -172,7 +172,14 @@ static String _opstr(SL::Operator p_op) {
 	return SL::get_operator_text(p_op);
 }
 
+// Global set to track unsafe identifiers that should not be prefixed
+static HashSet<String> _unsafe_identifiers;
+
 static String _mkid(const String &p_id) {
+	// If this is an unsafe identifier, don't add the m_ prefix
+	if (_unsafe_identifiers.has(p_id)) {
+		return p_id;
+	}
 	String id = "m_" + p_id.replace("__", "_dus_");
 	return id.replace("__", "_dus_"); //doubleunderscore is reserved in glsl
 }
@@ -1495,7 +1502,13 @@ ShaderLanguage::DataType ShaderCompiler::_get_global_shader_uniform_type(const S
 	return (ShaderLanguage::DataType)RS::global_shader_uniform_type_get_shader_datatype(gvt);
 }
 
-Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
+Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code, const RBMap<String, String> &p_unsafe_identifiers) {
+	// Set up unsafe identifiers for _mkid
+	_unsafe_identifiers.clear();
+	for (const KeyValue<String, String> &E : p_unsafe_identifiers) {
+		_unsafe_identifiers.insert(E.key);
+	}
+
 	SL::ShaderCompileInfo info;
 	info.functions = ShaderTypes::get_singleton()->get_functions(p_mode);
 	info.render_modes = ShaderTypes::get_singleton()->get_modes(p_mode);
