@@ -367,25 +367,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			}
 		}
 
-		// VERY hacky... but couldn't come up with anything better.
-		if (j > 0 && (str[j] == '&' || str[j] == '^' || str[j] == '%' || str[j] == '+' || str[j] == '-' || str[j] == '~' || str[j] == '.')) {
-			int to = j - 1;
-			// Find what the last text was (prev_text won't work if there's no whitespace, so we need to do it manually).
-			while (to > 0 && is_whitespace(str[to])) {
-				to--;
-			}
-			int from = to;
-			while (from > 0 && !is_symbol(str[from])) {
-				from--;
-			}
-			String word = str.substr(from + 1, to - from);
-			// Keywords need to be exceptions, except for keywords that represent a value.
-			if (word == "true" || word == "false" || word == "null" || word == "PI" || word == "TAU" || word == "INF" || word == "NAN" || word == "self" || word == "super" || !reserved_keywords.has(word)) {
-				if (!is_symbol(str[to]) || str[to] == '"' || str[to] == '\'' || str[to] == ')' || str[to] == ']' || str[to] == '}') {
-					is_binary_op = true;
-				}
-			}
-		}
+		is_binary_op |= is_binary_operation(str, j, p_line);
 
 		if (!is_char) {
 			in_keyword = false;
@@ -738,6 +720,68 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		}
 	}
 	return color_map;
+}
+
+static constexpr bool _is_binary_operator_symbol(char32_t p_symbol) {
+	return p_symbol == '&' || p_symbol == '^' || p_symbol == '%' || p_symbol == '+' || p_symbol == '-' || p_symbol == '~' || p_symbol == '.';
+}
+
+bool GDScriptSyntaxHighlighter::is_binary_operation(const String &p_line, int p_position, int p_line_index) const {
+	if (p_position <= 0) {
+		return false;
+	}
+
+	if (!_is_binary_operator_symbol(p_line[p_position])) {
+		return false;
+	}
+
+	return has_left_operand(p_line, p_position) || has_left_operand_on_previous_lines(p_line_index);
+}
+
+bool GDScriptSyntaxHighlighter::has_left_operand(const String &p_line, int p_position) const {
+	// VERY hacky... but couldn't come up with anything better.
+	int to = p_position - 1;
+	// Find what the last text was (prev_text won't work if there's no whitespace, so we need to do it manually).
+	while (to > 0 && is_whitespace(p_line[to])) {
+		to--;
+	}
+	int from = to;
+	while (from > 0 && !is_symbol(p_line[from])) {
+		from--;
+	}
+	String word = p_line.substr(from + 1, to - from);
+	// Keywords need to be exceptions, except for keywords that represent a value.
+	if (word == "true" || word == "false" || word == "null" || word == "PI" || word == "TAU" || word == "INF" || word == "NAN" || word == "self" || word == "super" || !reserved_keywords.has(word)) {
+		if (!is_symbol(p_line[to]) || p_line[to] == '"' || p_line[to] == '\'' || p_line[to] == ')' || p_line[to] == ']' || p_line[to] == '}') {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool GDScriptSyntaxHighlighter::has_left_operand_on_previous_lines(int p_line_index) const {
+	int target_line_index = p_line_index;
+
+	while (target_line_index > 0) {
+		const String &prev_line = text_edit->get_line_with_ime(target_line_index - 1);
+		const int last_index = prev_line.length() - 1;
+
+		target_line_index--;
+
+		if (prev_line.strip_edges().is_empty()) {
+			continue;
+		}
+
+		if (prev_line[last_index] != '\\') {
+			return false;
+		}
+
+		if (has_left_operand(prev_line, last_index)) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 String GDScriptSyntaxHighlighter::_get_name() const {
