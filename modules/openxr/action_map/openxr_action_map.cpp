@@ -553,17 +553,13 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
 	profile->add_new_binding(palm_pose, "/user/hand/left/input/grip_surface/pose,/user/hand/right/input/grip_surface/pose");
 
-	// Use pinch as primary.
-	profile->add_new_binding(primary, "/user/hand/left/input/pinch_ext/value,/user/hand/right/input/pinch_ext/value");
-	profile->add_new_binding(primary_click, "/user/hand/left/input/pinch_ext/ready_ext,/user/hand/right/input/pinch_ext/ready_ext");
+	// Use pinch as trigger.
+	profile->add_new_binding(trigger, "/user/hand/left/input/pinch_ext/value,/user/hand/right/input/pinch_ext/value");
+	profile->add_new_binding(trigger_click, "/user/hand/left/input/pinch_ext/value,/user/hand/right/input/pinch_ext/value");
 
-	// Use activation as secondary.
-	profile->add_new_binding(secondary, "/user/hand/left/input/aim_activate_ext/value,/user/hand/right/input/aim_activate_ext/value");
-	profile->add_new_binding(secondary_click, "/user/hand/left/input/aim_activate_ext/ready_ext,/user/hand/right/input/aim_activate_ext/ready_ext");
-
-	// We link grasp to our grip.
+	// Use grasp as grip.
 	profile->add_new_binding(grip, "/user/hand/left/input/grasp_ext/value,/user/hand/right/input/grasp_ext/value");
-	profile->add_new_binding(grip_click, "/user/hand/left/input/grasp_ext/ready_ext,/user/hand/right/input/grasp_ext/ready_ext");
+	profile->add_new_binding(grip_click, "/user/hand/left/input/grasp_ext/value,/user/hand/right/input/grasp_ext/value");
 	add_interaction_profile(profile);
 }
 
