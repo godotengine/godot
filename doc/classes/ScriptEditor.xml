@@ -99,6 +99,12 @@
 				[b]Note:[/b] Does not apply to scripts that are already opened.
 			</description>
 		</method>
+		<method name="save_all_scripts">
+			<return type="void" />
+			<description>
+				Saves all open scripts.
+			</description>
+		</method>
 		<method name="unregister_syntax_highlighter">
 			<return type="void" />
 			<param index="0" name="syntax_highlighter" type="EditorSyntaxHighlighter" />

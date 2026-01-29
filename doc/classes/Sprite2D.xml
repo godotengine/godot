@@ -44,8 +44,7 @@
 			<return type="bool" />
 			<param index="0" name="pos" type="Vector2" />
 			<description>
-				Returns [code]true[/code], if the pixel at the given position is opaque and [code]false[/code] in other case. The position is in local coordinates.
-				[b]Note:[/b] It also returns [code]false[/code], if the sprite's texture is [code]null[/code] or if the given position is invalid.
+				Returns [code]true[/code] if the pixel at the given position is opaque, [code]false[/code] otherwise. Also returns [code]false[/code] if the given position is out of bounds or this sprite's [member texture] is [code]null[/code]. [param pos] is in local coordinates.
 			</description>
 		</method>
 	</methods>

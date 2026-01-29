@@ -261,7 +261,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
+	profile->add_new_binding(palm_pose, "/user/hand/left/input/grip_surface/pose,/user/hand/right/input/grip_surface/pose");
 	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click,/user/hand/right/input/menu/click");
 	profile->add_new_binding(select_button, "/user/hand/left/input/select/click,/user/hand/right/input/select/click");
 	// generic has no support for triggers, grip, A/B buttons, nor joystick/trackpad inputs.
@@ -273,7 +273,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
+	profile->add_new_binding(palm_pose, "/user/hand/left/input/grip_surface/pose,/user/hand/right/input/grip_surface/pose");
 	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click,/user/hand/right/input/menu/click");
 	profile->add_new_binding(select_button, "/user/hand/left/input/system/click,/user/hand/right/input/system/click");
 	// wmr controller has no a/b/x/y buttons.
@@ -294,7 +294,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
+	profile->add_new_binding(palm_pose, "/user/hand/left/input/grip_surface/pose,/user/hand/right/input/grip_surface/pose");
 	// wmr controllers have no select button we can use.
 	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click,/user/hand/right/input/menu/click");
 	// wmr controller has no a/b/x/y buttons.
@@ -317,7 +317,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
+	profile->add_new_binding(palm_pose, "/user/hand/left/input/grip_surface/pose,/user/hand/right/input/grip_surface/pose");
 	// touch controllers have no select button we can use.
 	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click,/user/hand/right/input/system/click"); // right hand system click may not be available.
 	profile->add_new_binding(ax_button, "/user/hand/left/input/x/click,/user/hand/right/input/a/click"); // x on left hand, a on right hand.
@@ -342,7 +342,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
+	profile->add_new_binding(palm_pose, "/user/hand/left/input/grip_surface/pose,/user/hand/right/input/grip_surface/pose");
 	profile->add_new_binding(select_button, "/user/hand/left/input/system/click,/user/hand/right/input/system/click"); // system click may not be available.
 	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click");
 	profile->add_new_binding(ax_button, "/user/hand/left/input/x/click,/user/hand/right/input/a/click"); // x on left hand, a on right hand.
@@ -367,7 +367,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
+	profile->add_new_binding(palm_pose, "/user/hand/left/input/grip_surface/pose,/user/hand/right/input/grip_surface/pose");
 	// index controllers have no select button we can use.
 	profile->add_new_binding(menu_button, "/user/hand/left/input/system/click,/user/hand/right/input/system/click");
 	profile->add_new_binding(ax_button, "/user/hand/left/input/a/click,/user/hand/right/input/a/click"); // a on both controllers.
@@ -396,7 +396,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
+	profile->add_new_binding(palm_pose, "/user/hand/left/input/grip_surface/pose,/user/hand/right/input/grip_surface/pose");
 	// hpmr controllers have no select button we can use.
 	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click,/user/hand/right/input/menu/click");
 	// hpmr controllers only register click, not touch, on our a/b/x/y buttons.
@@ -419,7 +419,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
+	profile->add_new_binding(palm_pose, "/user/hand/left/input/grip_surface/pose,/user/hand/right/input/grip_surface/pose");
 	// Odyssey controllers have no select button we can use.
 	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click,/user/hand/right/input/menu/click");
 	// Odyssey controller has no a/b/x/y buttons.
@@ -442,7 +442,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
+	profile->add_new_binding(palm_pose, "/user/hand/left/input/grip_surface/pose,/user/hand/right/input/grip_surface/pose");
 	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click");
 	profile->add_new_binding(select_button, "/user/hand/right/input/system/click"); // we'll map system to select.
 	profile->add_new_binding(ax_button, "/user/hand/left/input/x/click,/user/hand/right/input/a/click"); // x on left hand, a on right hand.
@@ -466,7 +466,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
+	profile->add_new_binding(palm_pose, "/user/hand/left/input/grip_surface/pose,/user/hand/right/input/grip_surface/pose");
 	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click");
 	profile->add_new_binding(select_button, "/user/hand/right/input/system/click"); // we'll map system to select.
 	profile->add_new_binding(ax_button, "/user/hand/left/input/x/click,/user/hand/right/input/a/click"); // x on left hand, a on right hand.
@@ -490,7 +490,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
+	profile->add_new_binding(palm_pose, "/user/hand/left/input/grip_surface/pose,/user/hand/right/input/grip_surface/pose");
 	profile->add_new_binding(menu_button, "/user/hand/left/input/home/click,/user/hand/right/input/home/click");
 	profile->add_new_binding(trigger, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value");
 	profile->add_new_binding(trigger_click, "/user/hand/left/input/trigger/click,/user/hand/right/input/trigger/click");
@@ -551,7 +551,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
+	profile->add_new_binding(palm_pose, "/user/hand/left/input/grip_surface/pose,/user/hand/right/input/grip_surface/pose");
 
 	// Use pinch as primary.
 	profile->add_new_binding(primary, "/user/hand/left/input/pinch_ext/value,/user/hand/right/input/pinch_ext/value");

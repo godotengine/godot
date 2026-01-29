@@ -105,7 +105,7 @@ public:
 	virtual real_t get_step() const override { return 0; }
 	virtual void integrate_forces() override {}
 
-	virtual PhysicsDirectSpaceState3D *get_space_state() override { return space_state_dummy; }
+	virtual RequiredResult<PhysicsDirectSpaceState3D> get_space_state() override { return space_state_dummy; }
 
 	PhysicsDirectBodyState3DDummy(PhysicsDirectSpaceState3D *p_space_state_dummy) {
 		space_state_dummy = p_space_state_dummy;
@@ -312,7 +312,7 @@ public:
 
 	virtual RID soft_body_create() override { return RID(); }
 
-	virtual void soft_body_update_rendering_server(RID p_body, PhysicsServer3DRenderingServerHandler *p_rendering_server_handler) override {}
+	virtual void soft_body_update_rendering_server(RID p_body, RequiredParam<PhysicsServer3DRenderingServerHandler> rp_rendering_server_handler) override {}
 
 	virtual void soft_body_set_space(RID p_body, RID p_space) override {}
 	virtual RID soft_body_get_space(RID p_body) const override { return RID(); }

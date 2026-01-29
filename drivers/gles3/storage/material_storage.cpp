@@ -1328,6 +1328,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data_block.data.camera_visible_layers";
 		actions.renames["NODE_POSITION_VIEW"] = "(scene_data_block.data.view_matrix * model_matrix)[3].xyz";
 
+		actions.renames["IS_MULTIVIEW"] = "OUTPUT_IS_MULTIVIEW";
 		actions.renames["VIEW_INDEX"] = "ViewIndex";
 		actions.renames["VIEW_MONO_LEFT"] = "uint(0)";
 		actions.renames["VIEW_RIGHT"] = "uint(1)";
@@ -2288,6 +2289,7 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 	}
 
 	if (shader->data) {
+		shader->data->set_path_hint(shader->path_hint);
 		shader->data->set_code(p_code);
 	}
 
@@ -3117,7 +3119,7 @@ void SceneShaderData::set_code(const String &p_code) {
 
 #ifdef DEBUG_ENABLED
 	if (uses_particle_trails) {
-		WARN_PRINT_ONCE_ED("Particle trails are only available when using the Forward+ or Mobile renderers.");
+		WARN_PRINT_ONCE_ED("Particle trails are only available when using the Forward+ or Mobile renderer.");
 	}
 
 	if (uses_sss) {
@@ -3129,7 +3131,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	}
 
 	if (uses_normal_texture) {
-		WARN_PRINT_ONCE_ED("Reading from the normal-roughness texture is only available when using the Forward+ or Mobile renderers.");
+		WARN_PRINT_ONCE_ED("Reading from the normal-roughness texture is only available when using the Forward+ or Mobile renderer.");
 	}
 #endif
 

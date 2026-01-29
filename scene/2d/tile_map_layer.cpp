@@ -1266,16 +1266,16 @@ void TileMapLayer::_physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQ
 
 			if (face_index_array.size() > 2) {
 				Array face_mesh_array;
-				face_mesh_array.resize(Mesh::ARRAY_MAX);
-				face_mesh_array[Mesh::ARRAY_VERTEX] = Vector<Vector2>(face_vertex_array);
-				face_mesh_array[Mesh::ARRAY_INDEX] = Vector<int32_t>(face_index_array);
-				face_mesh_array[Mesh::ARRAY_COLOR] = Vector<Color>(face_color_array);
+				face_mesh_array.resize(RS::ARRAY_MAX);
+				face_mesh_array[RS::ARRAY_VERTEX] = Vector<Vector2>(face_vertex_array);
+				face_mesh_array[RS::ARRAY_INDEX] = Vector<int32_t>(face_index_array);
+				face_mesh_array[RS::ARRAY_COLOR] = Vector<Color>(face_color_array);
 				rs->mesh_add_surface_from_arrays(r_debug_quadrant.physics_mesh, RS::PRIMITIVE_TRIANGLES, face_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
 
 				Array line_mesh_array;
-				line_mesh_array.resize(Mesh::ARRAY_MAX);
-				line_mesh_array[Mesh::ARRAY_VERTEX] = Vector<Vector2>(line_vertex_array);
-				line_mesh_array[Mesh::ARRAY_COLOR] = Vector<Color>(line_color_array);
+				line_mesh_array.resize(RS::ARRAY_MAX);
+				line_mesh_array[RS::ARRAY_VERTEX] = Vector<Vector2>(line_vertex_array);
+				line_mesh_array[RS::ARRAY_COLOR] = Vector<Color>(line_color_array);
 
 				rs->mesh_add_surface_from_arrays(r_debug_quadrant.physics_mesh, RS::PRIMITIVE_LINES, line_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
 			}
@@ -3565,16 +3565,7 @@ void TileMapLayer::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 						continue;
 					}
 
-					Vector<Vector2> traversable_outline;
-					traversable_outline.resize(navigation_polygon_outline.size());
-
-					const Vector2 *navigation_polygon_outline_ptr = navigation_polygon_outline.ptr();
-					Vector2 *traversable_outline_ptrw = traversable_outline.ptrw();
-
-					for (int traversable_outline_index = 0; traversable_outline_index < traversable_outline.size(); traversable_outline_index++) {
-						traversable_outline_ptrw[traversable_outline_index] = tile_transform_offset.xform(navigation_polygon_outline_ptr[traversable_outline_index]);
-					}
-
+					Vector<Vector2> traversable_outline = tile_transform_offset.xform(navigation_polygon_outline);
 					p_source_geometry_data->_add_traversable_outline(traversable_outline);
 				}
 			}
@@ -3598,16 +3589,7 @@ void TileMapLayer::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 						collision_polygon_points = TileData::get_transformed_vertices(collision_polygon_points, flip_h, flip_v, transpose);
 					}
 
-					Vector<Vector2> obstruction_outline;
-					obstruction_outline.resize(collision_polygon_points.size());
-
-					const Vector2 *collision_polygon_points_ptr = collision_polygon_points.ptr();
-					Vector2 *obstruction_outline_ptrw = obstruction_outline.ptrw();
-
-					for (int obstruction_outline_index = 0; obstruction_outline_index < obstruction_outline.size(); obstruction_outline_index++) {
-						obstruction_outline_ptrw[obstruction_outline_index] = tile_transform_offset.xform(collision_polygon_points_ptr[obstruction_outline_index]);
-					}
-
+					Vector<Vector2> obstruction_outline = tile_transform_offset.xform(collision_polygon_points);
 					p_source_geometry_data->_add_obstruction_outline(obstruction_outline);
 				}
 			}

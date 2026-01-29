@@ -26,12 +26,10 @@
 
   <interface name="zwp_linux_dmabuf_v1" version="5">
     <description summary="factory for creating dmabuf-based wl_buffers">
-      Following the interfaces from:
-      https://www.khronos.org/registry/egl/extensions/EXT/EGL_EXT_image_dma_buf_import.txt
-      https://www.khronos.org/registry/EGL/extensions/EXT/EGL_EXT_image_dma_buf_import_modifiers.txt
-      and the Linux DRM sub-system's AddFb2 ioctl.
-
       This interface offers ways to create generic dmabuf-based wl_buffers.
+
+      For more information about dmabuf, see:
+      https://www.kernel.org/doc/html/next/userspace-api/dma-buf-alloc-exchange.html
 
       Clients can use the get_surface_feedback request to get dmabuf feedback
       for a particular surface. If the client wants to retrieve feedback not
@@ -110,7 +108,7 @@
            summary="the new temporary"/>
     </request>
 
-    <event name="format">
+    <event name="format" deprecated-since="4">
       <description summary="supported buffer format">
         This event advertises one buffer format that the server supports.
         All the supported formats are advertised once when the client
@@ -127,7 +125,7 @@
       <arg name="format" type="uint" summary="DRM_FORMAT code"/>
     </event>
 
-    <event name="modifier" since="3">
+    <event name="modifier" since="3" deprecated-since="4">
       <description summary="supported buffer format modifier">
         This event advertises the formats that the server supports, along with
         the modifiers supported for each format. All the supported modifiers
@@ -201,7 +199,9 @@
       You must use consecutive plane indices ('plane_idx' argument for 'add')
       from zero to the number of planes used by the drm_fourcc format code.
       All planes required by the format must be given exactly once, but can
-      be given in any order. Each plane index can be set only once.
+      be given in any order. Each plane index can only be set once; subsequent
+      calls with a plane index which has already been set will result in a
+      plane_set error being generated.
     </description>
 
     <enum name="error">
@@ -378,7 +378,7 @@
             of planes and the format, bad format, non-positive width or
             height, or bad offset or stride.
           - INVALID_WL_BUFFER, in case the cause for failure is unknown or
-            plaform specific.
+            platform specific.
         - the server creates an invalid wl_buffer, marks it as failed and
           sends a 'failed' event to the client. The result of using this
           invalid wl_buffer as an argument in any request by the client is

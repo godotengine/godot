@@ -45,7 +45,6 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/event_listener_line_edit.h"
 #include "editor/settings/input_event_configuration_dialog.h"
-#include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/check_button.h"
@@ -65,8 +64,13 @@ void EditorSettingsDialog::_settings_changed() {
 	timer->start();
 }
 
-void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
-	String full_name = inspector->get_full_item_path(p_name);
+void EditorSettingsDialog::_settings_property_edited() {
+	Vector<String> changed = EditorSettings::get_singleton()->get_changed_settings();
+	if (changed.is_empty()) {
+		return;
+	}
+
+	const String full_name = changed[changed.size() - 1];
 
 	// Set theme presets to Custom when controlled settings change.
 
@@ -349,36 +353,52 @@ void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Ar
 		old_input_array = _event_list_to_array_helper(defaults);
 	}
 
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Edit Built-in Action: %s"), p_name));
-	undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
-	undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
-	undo_redo->add_do_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, p_events);
-	undo_redo->add_undo_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, old_input_array);
-	undo_redo->add_do_method(this, "_update_shortcuts");
-	undo_redo->add_undo_method(this, "_update_shortcuts");
-	undo_redo->add_do_method(this, "_settings_changed");
-	undo_redo->add_undo_method(this, "_settings_changed");
-	undo_redo->commit_action();
+	if (_is_in_project_manager()) {
+		// Project Manager doesn't have EditorUndoRedoManager, so apply changes directly.
+		EditorSettings::get_singleton()->mark_setting_changed("builtin_action_overrides");
+		EditorSettings::get_singleton()->set_builtin_action_override(p_name, p_events);
+		_update_shortcuts();
+		_settings_changed();
+	} else {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(vformat(TTR("Edit Built-in Action: %s"), p_name));
+		undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
+		undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
+		undo_redo->add_do_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, p_events);
+		undo_redo->add_undo_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, old_input_array);
+		undo_redo->add_do_method(this, "_update_shortcuts");
+		undo_redo->add_undo_method(this, "_update_shortcuts");
+		undo_redo->add_do_method(this, "_settings_changed");
+		undo_redo->add_undo_method(this, "_settings_changed");
+		undo_redo->commit_action();
+	}
 }
 
 void EditorSettingsDialog::_update_shortcut_events(const String &p_path, const Array &p_events) {
 	Ref<Shortcut> current_sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Edit Shortcut: %s"), p_path), UndoRedo::MERGE_DISABLE, EditorSettings::get_singleton());
-	// History must be fixed based on the EditorSettings object because current_sc would
-	// incorrectly make this action use the scene history.
-	undo_redo->force_fixed_history();
-	undo_redo->add_do_method(current_sc.ptr(), "set_events", p_events);
-	undo_redo->add_undo_method(current_sc.ptr(), "set_events", current_sc->get_events());
-	undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
-	undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
-	undo_redo->add_do_method(this, "_update_shortcuts");
-	undo_redo->add_undo_method(this, "_update_shortcuts");
-	undo_redo->add_do_method(this, "_settings_changed");
-	undo_redo->add_undo_method(this, "_settings_changed");
-	undo_redo->commit_action();
+	if (_is_in_project_manager()) {
+		// Project Manager doesn't have EditorUndoRedoManager, so apply changes directly.
+		current_sc->set_events(p_events);
+		EditorSettings::get_singleton()->mark_setting_changed("shortcuts");
+		_update_shortcuts();
+		_settings_changed();
+	} else {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(vformat(TTR("Edit Shortcut: %s"), p_path), UndoRedo::MERGE_DISABLE, EditorSettings::get_singleton());
+		// History must be fixed based on the EditorSettings object because current_sc would
+		// incorrectly make this action use the scene history.
+		undo_redo->force_fixed_history();
+		undo_redo->add_do_method(current_sc.ptr(), "set_events", p_events);
+		undo_redo->add_undo_method(current_sc.ptr(), "set_events", current_sc->get_events());
+		undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
+		undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
+		undo_redo->add_do_method(this, "_update_shortcuts");
+		undo_redo->add_undo_method(this, "_update_shortcuts");
+		undo_redo->add_do_method(this, "_settings_changed");
+		undo_redo->add_undo_method(this, "_settings_changed");
+		undo_redo->commit_action();
+	}
 
 	bool path_is_orbit_mod = p_path == "spatial_editor/viewport_orbit_modifier_1" || p_path == "spatial_editor/viewport_orbit_modifier_2";
 	bool path_is_pan_mod = p_path == "spatial_editor/viewport_pan_modifier_1" || p_path == "spatial_editor/viewport_pan_modifier_2";
@@ -768,7 +788,7 @@ Variant EditorSettingsDialog::get_drag_data_fw(const Point2 &p_point, Control *p
 		return Variant();
 	}
 
-	String label_text = vformat(TTRC("Event %d"), selected->get_meta("event_index"));
+	String label_text = vformat(TTR("Event %d"), selected->get_meta("event_index"));
 	Label *label = memnew(Label(label_text));
 	label->set_modulate(Color(1, 1, 1, 1.0f));
 	shortcuts->set_drag_preview(label);
@@ -947,7 +967,6 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	inspector->register_advanced_toggle(advanced_switch);
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_general->add_child(inspector);
-	inspector->get_inspector()->connect("property_edited", callable_mp(this, &EditorSettingsDialog::_settings_property_edited));
 	inspector->get_inspector()->connect("restart_requested", callable_mp(this, &EditorSettingsDialog::_editor_restart_request));
 
 	if (EDITOR_GET("interface/touchscreen/enable_touch_optimizations")) {
@@ -981,6 +1000,9 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	restart_hb->add_child(restart_close_button);
 	restart_container->hide();
 
+	// Needs to be done via the signal instead of the notification, otherwise it happens too late.
+	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorSettingsDialog::_settings_property_edited));
+
 	// Shortcuts Tab
 
 	tab_shortcuts = memnew(VBoxContainer);
@@ -992,9 +1014,14 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcut_search_bar->connect(SceneStringName(value_changed), callable_mp(this, &EditorSettingsDialog::_update_shortcuts));
 	tab_shortcuts->add_child(shortcut_search_bar);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	tab_shortcuts->add_child(mc);
+
 	shortcuts = memnew(Tree);
 	shortcuts->set_accessibility_name(TTRC("Shortcuts"));
-	shortcuts->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	shortcuts->set_theme_type_variation("TreeTable");
 	shortcuts->set_columns(2);
 	shortcuts->set_hide_root(true);
 	shortcuts->set_column_titles_visible(true);
@@ -1002,7 +1029,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcuts->set_column_title(1, TTRC("Binding"));
 	shortcuts->connect("button_clicked", callable_mp(this, &EditorSettingsDialog::_shortcut_button_pressed));
 	shortcuts->connect("item_activated", callable_mp(this, &EditorSettingsDialog::_shortcut_cell_double_clicked));
-	tab_shortcuts->add_child(shortcuts);
+	mc->add_child(shortcuts);
 
 	SET_DRAG_FORWARDING_GCD(shortcuts, EditorSettingsDialog);
 
@@ -1066,7 +1093,7 @@ void EditorSettingsPropertyWrapper::_setup_override_info() {
 void EditorSettingsPropertyWrapper::_update_override() {
 	// Don't allow overriding theme properties, because it causes problems. Overriding Project Manager settings makes no sense.
 	// TODO: Find a better way to define exception prefixes (if the list happens to grow).
-	if (property.begins_with("interface/theme") || property.begins_with("project_manager")) {
+	if (property.begins_with("interface/theme") || property.begins_with("project_manager") || Engine::get_singleton()->is_project_manager_hint()) {
 		can_override = false;
 		return;
 	}

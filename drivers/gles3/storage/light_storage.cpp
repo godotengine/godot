@@ -34,6 +34,7 @@
 #include "../rasterizer_gles3.h"
 #include "../rasterizer_scene_gles3.h"
 #include "core/config/project_settings.h"
+#include "core/math/geometry_3d.h"
 #include "texture_storage.h"
 
 using namespace GLES3;
@@ -983,6 +984,10 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 	rpi->dirty = false;
 	rpi->processing_layer = 0;
 
+	return true;
+}
+
+bool LightStorage::reflection_probe_instance_end_render(RID p_instance, RID p_reflection_atlas) {
 	return true;
 }
 

@@ -40,6 +40,10 @@
 #include "core/os/thread.h"
 #endif
 
+#include "thirdparty/gamepadmotionhelpers/GamepadMotion.hpp"
+
+#define STANDARD_GRAVITY 9.80665f
+
 static const char *_joy_buttons[(size_t)JoyButton::SDL_MAX] = {
 	"a",
 	"b",
@@ -114,6 +118,8 @@ bool Input::is_mouse_mode_override_enabled() {
 }
 
 void Input::_bind_methods() {
+	using namespace InputClassEnums;
+
 	ClassDB::bind_method(D_METHOD("is_anything_pressed"), &Input::is_anything_pressed);
 	ClassDB::bind_method(D_METHOD("is_key_pressed", "keycode"), &Input::is_key_pressed);
 	ClassDB::bind_method(D_METHOD("is_physical_key_pressed", "keycode"), &Input::is_physical_key_pressed);
@@ -147,6 +153,20 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
 	ClassDB::bind_method(D_METHOD("get_magnetometer"), &Input::get_magnetometer);
 	ClassDB::bind_method(D_METHOD("get_gyroscope"), &Input::get_gyroscope);
+	ClassDB::bind_method(D_METHOD("get_joy_accelerometer", "device"), &Input::get_joy_accelerometer);
+	ClassDB::bind_method(D_METHOD("get_joy_gravity", "device"), &Input::get_joy_gravity);
+	ClassDB::bind_method(D_METHOD("get_joy_gyroscope", "device"), &Input::get_joy_gyroscope);
+	ClassDB::bind_method(D_METHOD("get_joy_motion_sensors_rate", "device"), &Input::get_joy_motion_sensors_rate);
+	ClassDB::bind_method(D_METHOD("is_joy_motion_sensors_enabled", "device"), &Input::is_joy_motion_sensors_enabled);
+	ClassDB::bind_method(D_METHOD("set_joy_motion_sensors_enabled", "device", "enable"), &Input::set_joy_motion_sensors_enabled);
+	ClassDB::bind_method(D_METHOD("has_joy_motion_sensors", "device"), &Input::has_joy_motion_sensors);
+	ClassDB::bind_method(D_METHOD("start_joy_motion_sensors_calibration", "device"), &Input::start_joy_motion_sensors_calibration);
+	ClassDB::bind_method(D_METHOD("stop_joy_motion_sensors_calibration", "device"), &Input::stop_joy_motion_sensors_calibration);
+	ClassDB::bind_method(D_METHOD("clear_joy_motion_sensors_calibration", "device"), &Input::clear_joy_motion_sensors_calibration);
+	ClassDB::bind_method(D_METHOD("get_joy_motion_sensors_calibration", "device"), &Input::get_joy_motion_sensors_calibration);
+	ClassDB::bind_method(D_METHOD("set_joy_motion_sensors_calibration", "device", "calibration_info"), &Input::set_joy_motion_sensors_calibration);
+	ClassDB::bind_method(D_METHOD("is_joy_motion_sensors_calibrated", "device"), &Input::is_joy_motion_sensors_calibrated);
+	ClassDB::bind_method(D_METHOD("is_joy_motion_sensors_calibrating", "device"), &Input::is_joy_motion_sensors_calibrating);
 	ClassDB::bind_method(D_METHOD("set_gravity", "value"), &Input::set_gravity);
 	ClassDB::bind_method(D_METHOD("set_accelerometer", "value"), &Input::set_accelerometer);
 	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
@@ -415,9 +435,9 @@ bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) con
 	}
 }
 
-bool Input::is_action_just_pressed_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact) const {
+bool Input::is_action_just_pressed_by_event(const StringName &p_action, RequiredParam<InputEvent> rp_event, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
-	ERR_FAIL_COND_V(p_event.is_null(), false);
+	EXTRACT_PARAM_OR_FAIL_V(p_event, rp_event, false);
 
 	if (disable_input) {
 		return false;
@@ -472,9 +492,9 @@ bool Input::is_action_just_released(const StringName &p_action, bool p_exact) co
 	}
 }
 
-bool Input::is_action_just_released_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact) const {
+bool Input::is_action_just_released_by_event(const StringName &p_action, RequiredParam<InputEvent> rp_event, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
-	ERR_FAIL_COND_V(p_event.is_null(), false);
+	EXTRACT_PARAM_OR_FAIL_V(p_event, rp_event, false);
 
 	if (disable_input) {
 		return false;
@@ -684,6 +704,11 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 		for (int i = 0; i < (int)JoyAxis::MAX; i++) {
 			set_joy_axis(p_idx, (JoyAxis)i, 0.0f);
 		}
+		MotionInfo *motion = joy_motion.getptr(p_idx);
+		if (motion != nullptr && motion->gamepad_motion != nullptr) {
+			delete motion->gamepad_motion;
+		}
+		joy_motion.erase(p_idx);
 	}
 	joy_names[p_idx] = js;
 
@@ -795,6 +820,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			touch_event->set_canceled(mb->is_canceled());
 			touch_event->set_position(mb->get_position());
 			touch_event->set_double_tap(mb->is_double_click());
+			touch_event->set_window_id(mb->get_window_id());
 			touch_event->set_device(InputEvent::DEVICE_ID_EMULATION);
 			_THREAD_SAFE_UNLOCK_
 			event_dispatch_function(touch_event);
@@ -1003,17 +1029,208 @@ void Input::set_joy_features(int p_device, JoypadFeatures *p_features) {
 	_update_joypad_features(p_device);
 }
 
-bool Input::set_joy_light(int p_device, const Color &p_color) {
+void Input::set_joy_light(int p_device, const Color &p_color) {
 	Joypad *joypad = joy_names.getptr(p_device);
-	if (!joypad || joypad->features == nullptr) {
-		return false;
+	if (!joypad || !joypad->has_light || joypad->features == nullptr) {
+		return;
 	}
-	return joypad->features->set_joy_light(p_color);
+	Color linear = p_color.srgb_to_linear();
+	joypad->features->set_joy_light(linear);
 }
 
 bool Input::has_joy_light(int p_device) const {
 	const Joypad *joypad = joy_names.getptr(p_device);
 	return joypad && joypad->has_light;
+}
+
+Vector3 Input::get_joy_accelerometer(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return Vector3();
+	}
+
+	float joy_acceleration_data[3];
+	motion->gamepad_motion->GetProcessedAcceleration(joy_acceleration_data[0], joy_acceleration_data[1], joy_acceleration_data[2]);
+	Vector3 joy_acceleration(joy_acceleration_data[0], joy_acceleration_data[1], joy_acceleration_data[2]);
+
+	float joy_gravity_data[3];
+	motion->gamepad_motion->GetGravity(joy_gravity_data[0], joy_gravity_data[1], joy_gravity_data[2]);
+	Vector3 joy_gravity(joy_gravity_data[0], joy_gravity_data[1], joy_gravity_data[2]);
+
+	return (-joy_acceleration + joy_gravity) * STANDARD_GRAVITY;
+}
+
+Vector3 Input::get_joy_gravity(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return Vector3();
+	}
+
+	float joy_gravity_data[3];
+	motion->gamepad_motion->GetGravity(joy_gravity_data[0], joy_gravity_data[1], joy_gravity_data[2]);
+	Vector3 joy_gravity(joy_gravity_data[0], joy_gravity_data[1], joy_gravity_data[2]);
+
+	return joy_gravity.normalized() * STANDARD_GRAVITY;
+}
+
+Vector3 Input::get_joy_gyroscope(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return Vector3();
+	}
+
+	float joy_gyro_data[3];
+	motion->gamepad_motion->GetCalibratedGyro(joy_gyro_data[0], joy_gyro_data[1], joy_gyro_data[2]);
+	Vector3 joy_gyro(joy_gyro_data[0], joy_gyro_data[1], joy_gyro_data[2]);
+
+	return joy_gyro * M_PI / 180.0;
+}
+
+void Input::set_joy_motion_sensors_enabled(int p_device, bool p_enable) {
+	_THREAD_SAFE_METHOD_
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr || joypad->features == nullptr) {
+		return;
+	}
+	MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return;
+	}
+	joypad->features->set_joy_motion_sensors_enabled(p_enable);
+	motion->sensors_enabled = p_enable;
+}
+
+bool Input::is_joy_motion_sensors_enabled(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const MotionInfo *motion = joy_motion.getptr(p_device);
+	return motion != nullptr && motion->sensors_enabled;
+}
+
+bool Input::has_joy_motion_sensors(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	return joy_motion.has(p_device);
+}
+
+float Input::get_joy_motion_sensors_rate(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return 0.0f;
+	}
+	return motion->sensor_data_rate;
+}
+
+void Input::start_joy_motion_sensors_calibration(int p_device) {
+	_THREAD_SAFE_METHOD_
+	MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return;
+	}
+
+	ERR_FAIL_COND_MSG(!motion->sensors_enabled, "Motion sensors are not enabled on the joypad.");
+	ERR_FAIL_COND_MSG(motion->calibrating, "Calibration already in progress.");
+
+	motion->gamepad_motion->ResetContinuousCalibration();
+	motion->gamepad_motion->StartContinuousCalibration();
+
+	motion->calibrating = true;
+	motion->calibrated = false;
+}
+
+void Input::stop_joy_motion_sensors_calibration(int p_device) {
+	_THREAD_SAFE_METHOD_
+	MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return;
+	}
+
+	ERR_FAIL_COND_MSG(!motion->sensors_enabled, "Motion sensors are not enabled on the joypad.");
+	ERR_FAIL_COND_MSG(!motion->calibrating, "Calibration hasn't been started.");
+
+	motion->gamepad_motion->PauseContinuousCalibration();
+
+	motion->calibrating = false;
+	motion->calibrated = true;
+}
+
+void Input::clear_joy_motion_sensors_calibration(int p_device) {
+	_THREAD_SAFE_METHOD_
+	MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return;
+	}
+
+	// Calibration might be in progress and the developer or the user might want to reset it,
+	// so no need to stop the calibration.
+
+	motion->gamepad_motion->ResetContinuousCalibration();
+}
+
+Dictionary Input::get_joy_motion_sensors_calibration(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return Dictionary();
+	}
+
+	if (!motion->calibrated) {
+		return Dictionary();
+	}
+
+	float joy_gyro_offset_data[3];
+	motion->gamepad_motion->GetCalibrationOffset(joy_gyro_offset_data[0], joy_gyro_offset_data[1], joy_gyro_offset_data[2]);
+	Vector3 joy_gyro_offset(joy_gyro_offset_data[0], joy_gyro_offset_data[1], joy_gyro_offset_data[2]);
+
+	Dictionary result;
+	result["gyroscope_offset"] = joy_gyro_offset * M_PI / 180.0;
+	return result;
+}
+
+void Input::set_joy_motion_sensors_calibration(int p_device, const Dictionary &p_calibration_info) {
+	_THREAD_SAFE_METHOD_
+	MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return;
+	}
+
+	ERR_FAIL_COND_MSG(motion->calibrating, "Calibration is currently in progress.");
+
+	Vector3 gyro_offset = p_calibration_info.get("gyroscope_offset", Vector3()).operator Vector3() * 180.0 / M_PI;
+
+	motion->gamepad_motion->SetCalibrationOffset(gyro_offset.x, gyro_offset.y, gyro_offset.z, 1);
+	motion->calibrating = false;
+	motion->calibrated = true;
+}
+
+bool Input::is_joy_motion_sensors_calibrating(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return false;
+	}
+	return motion->calibrating;
+}
+
+bool Input::is_joy_motion_sensors_calibrated(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return false;
+	}
+	return motion->calibrated;
+}
+
+void Input::set_joy_motion_sensors_rate(int p_device, float p_rate) {
+	_THREAD_SAFE_METHOD_
+	MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return;
+	}
+
+	motion->sensor_data_rate = p_rate;
 }
 
 void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration) {
@@ -1227,10 +1444,10 @@ void Input::set_custom_mouse_cursor(const Ref<Resource> &p_cursor, CursorShape p
 	set_custom_mouse_cursor_func(p_cursor, p_shape, p_hotspot);
 }
 
-void Input::parse_input_event(const Ref<InputEvent> &p_event) {
+void Input::parse_input_event(RequiredParam<InputEvent> rp_event) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(p_event.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_event, rp_event);
 
 #ifdef DEBUG_ENABLED
 	uint64_t curr_frame = Engine::get_singleton()->get_process_frames();
@@ -1414,10 +1631,12 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	if (map.type == TYPE_AXIS) {
 		JoyAxis axis = JoyAxis(map.index);
 		float value = map.value;
+#ifndef ANDROID_ENABLED // Android trigger values are already between 0.0f and 1.0f.
 		if (range == FULL_AXIS && (axis == JoyAxis::TRIGGER_LEFT || axis == JoyAxis::TRIGGER_RIGHT)) {
 			// Convert to a value between 0.0f and 1.0f.
 			value = 0.5f + value / 2.0f;
 		}
+#endif
 		_axis_event(p_device, axis, value);
 		return;
 	}
@@ -1463,6 +1682,22 @@ void Input::joy_hat(int p_device, BitField<HatMask> p_val) {
 	}
 
 	joy_names[p_device].hat_current = (int)p_val;
+}
+
+void Input::joy_motion_sensors(int p_device, const Vector3 &p_accelerometer, const Vector3 &p_gyroscope) {
+	_THREAD_SAFE_METHOD_
+	// TODO: events
+	MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return;
+	}
+
+	Vector3 gyro_degrees = p_gyroscope * 180.0 / M_PI;
+	Vector3 accel_g = -p_accelerometer / STANDARD_GRAVITY;
+	uint64_t new_timestamp = OS::get_singleton()->get_ticks_msec();
+	float delta_time = (new_timestamp - motion->last_timestamp) / 1000.0f;
+	motion->last_timestamp = new_timestamp;
+	motion->gamepad_motion->ProcessMotion(gyro_degrees.x, gyro_degrees.y, gyro_degrees.z, accel_g.x, accel_g.y, accel_g.z, delta_time);
 }
 
 void Input::_button_event(int p_device, JoyButton p_index, bool p_pressed) {
@@ -1515,6 +1750,16 @@ void Input::_update_joypad_features(int p_device) {
 	}
 	if (joypad->features->has_joy_light()) {
 		joypad->has_light = true;
+	}
+	if (joypad->features->has_joy_motion_sensors()) {
+		MotionInfo &motion = joy_motion[p_device];
+
+		if (!motion.gamepad_motion) {
+			motion.gamepad_motion = new GamepadMotion();
+		} else {
+			motion.gamepad_motion->Reset();
+		}
+		motion.last_timestamp = OS::get_singleton()->get_ticks_msec();
 	}
 }
 

@@ -77,6 +77,7 @@ void Translation::_set_messages(const Dictionary &p_messages) {
 	for (const KeyValue<Variant, Variant> &kv : p_messages) {
 		switch (kv.key.get_type()) {
 			// Old version, no context or plural support.
+			case Variant::STRING:
 			case Variant::STRING_NAME: {
 				const MessageKey msg_key = { StringName(), kv.key };
 				_check_for_incompatibility(msg_key.msgctxt, msg_key.msgid);

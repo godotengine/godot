@@ -109,7 +109,7 @@ public:
 	EXBIND0RC(real_t, get_step)
 	EXBIND0(integrate_forces)
 
-	EXBIND0R(PhysicsDirectSpaceState2D *, get_space_state)
+	EXBIND0R(RequiredResult<PhysicsDirectSpaceState2D>, get_space_state)
 
 	PhysicsDirectBodyState2DExtension();
 };

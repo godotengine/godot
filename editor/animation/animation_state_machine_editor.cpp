@@ -758,7 +758,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			if (closest_for_tooltip >= 0) {
 				String from = transition_lines[closest_for_tooltip].from_node;
 				String to = transition_lines[closest_for_tooltip].to_node;
-				String tooltip = from + " -> " + to;
+				String tooltip = from + U" → " + to;
 				state_machine_draw->set_tooltip_text(tooltip);
 			} else {
 				state_machine_draw->set_tooltip_text("");
@@ -1010,8 +1010,20 @@ void AnimationNodeStateMachineEditor::_connect_to(int p_index) {
 
 void AnimationNodeStateMachineEditor::_add_transition(const bool p_nested_action) {
 	if (connecting_from != StringName() && connecting_to_node != StringName()) {
+		if (connecting_to_node == SceneStringName(Start)) {
+			EditorNode::get_singleton()->show_warning(TTR("Cannot transition to \"Start\"!"));
+			connecting = false;
+			return;
+		}
+
+		if (connecting_from == SceneStringName(End)) {
+			EditorNode::get_singleton()->show_warning(TTR("Cannot transition from \"End\"!"));
+			connecting = false;
+			return;
+		}
+
 		if (state_machine->has_transition(connecting_from, connecting_to_node)) {
-			EditorNode::get_singleton()->show_warning("Transition exists!");
+			EditorNode::get_singleton()->show_warning(TTR("Transition already exists!"));
 			connecting = false;
 			return;
 		}
@@ -1039,11 +1051,13 @@ void AnimationNodeStateMachineEditor::_add_transition(const bool p_nested_action
 
 		_select_transition(connecting_from, connecting_to_node);
 
-		if (!state_machine->is_transition_across_group(selected_transition_index)) {
-			EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
-		} else {
-			EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
-			EditorNode::get_singleton()->push_item(nullptr, "", true);
+		if (selected_transition_index >= 0) {
+			if (!state_machine->is_transition_across_group(selected_transition_index)) {
+				EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
+			} else {
+				EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
+				EditorNode::get_singleton()->push_item(nullptr, "", true);
+			}
 		}
 		_update_mode();
 	}
@@ -2222,7 +2236,7 @@ bool EditorAnimationMultiTransitionEdit::_get(const StringName &p_name, Variant 
 	StringName prop = String(p_name).get_slicec('/', 1);
 
 	if (prop == "transition_path") {
-		r_property = String(transitions[index].from) + " -> " + transitions[index].to;
+		r_property = String(transitions[index].from) + U" → " + transitions[index].to;
 		return true;
 	}
 

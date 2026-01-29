@@ -87,15 +87,13 @@ void EditorResourcePreviewGenerator::_bind_methods() {
 	GDVIRTUAL_BIND(_generate_from_path, "path", "size", "metadata");
 	GDVIRTUAL_BIND(_generate_small_preview_automatically);
 	GDVIRTUAL_BIND(_can_generate_small_preview);
+
+	ClassDB::bind_method(D_METHOD("request_draw_and_wait", "viewport"), &EditorResourcePreviewGenerator::request_draw_and_wait);
 }
 
 void EditorResourcePreviewGenerator::DrawRequester::request_and_wait(RID p_viewport) {
-	Callable request_vp_update_once = callable_mp(RS::get_singleton(), &RS::viewport_set_update_mode).bind(p_viewport, RS::VIEWPORT_UPDATE_ONCE);
-
 	if (EditorResourcePreview::get_singleton()->is_threaded()) {
-		RS::get_singleton()->connect(SNAME("frame_pre_draw"), request_vp_update_once, Object::CONNECT_ONE_SHOT);
-		RS::get_singleton()->request_frame_drawn_callback(callable_mp(this, &EditorResourcePreviewGenerator::DrawRequester::_post_semaphore));
-
+		RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(this, &EditorResourcePreviewGenerator::DrawRequester::_prepare_draw).bind(p_viewport), Object::CONNECT_ONE_SHOT);
 		semaphore.wait();
 	} else {
 		// Avoid the main viewport and children being redrawn.
@@ -104,7 +102,7 @@ void EditorResourcePreviewGenerator::DrawRequester::request_and_wait(RID p_viewp
 		RID root_vp = st->get_root()->get_viewport_rid();
 		RenderingServer::get_singleton()->viewport_set_active(root_vp, false);
 
-		request_vp_update_once.call();
+		RS::get_singleton()->viewport_set_update_mode(p_viewport, RS::VIEWPORT_UPDATE_ONCE);
 		RS::get_singleton()->draw(false);
 
 		// Let main viewport and children be drawn again.
@@ -118,9 +116,18 @@ void EditorResourcePreviewGenerator::DrawRequester::abort() {
 	}
 }
 
-Variant EditorResourcePreviewGenerator::DrawRequester::_post_semaphore() {
+void EditorResourcePreviewGenerator::request_draw_and_wait(RID viewport) const {
+	DrawRequester draw_requester;
+	draw_requester.request_and_wait(viewport);
+}
+
+void EditorResourcePreviewGenerator::DrawRequester::_prepare_draw(RID p_viewport) {
+	RS::get_singleton()->viewport_set_update_mode(p_viewport, RS::VIEWPORT_UPDATE_ONCE);
+	RS::get_singleton()->request_frame_drawn_callback(callable_mp(this, &EditorResourcePreviewGenerator::DrawRequester::_post_semaphore));
+}
+
+void EditorResourcePreviewGenerator::DrawRequester::_post_semaphore() {
 	semaphore.post();
-	return Variant(); // Needed because of how the callback is used.
 }
 
 bool EditorResourcePreview::is_threaded() const {

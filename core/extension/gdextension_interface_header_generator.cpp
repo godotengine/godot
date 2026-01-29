@@ -97,7 +97,7 @@ void GDExtensionInterfaceHeaderGenerator::generate_gdextension_interface_header(
 		}
 		String kind = type_dict["kind"];
 		if (kind == "handle") {
-			type_dict["type"] = type_dict.get("const", false) ? "const void*" : "void*";
+			type_dict["type"] = type_dict.get("is_const", false) ? "const void*" : "void*";
 			write_simple_type(fa, type_dict);
 		} else if (kind == "alias") {
 			write_simple_type(fa, type_dict);
@@ -145,7 +145,7 @@ void GDExtensionInterfaceHeaderGenerator::write_doc(const Ref<FileAccess> &p_fa,
 
 void GDExtensionInterfaceHeaderGenerator::write_simple_type(const Ref<FileAccess> &p_fa, const Dictionary &p_type) {
 	String type_and_name = format_type_and_name(p_type["type"], p_type["name"]);
-	p_fa->store_string(vformat("typedef %s;%s\n", type_and_name, make_deprecated_note(p_type)));
+	p_fa->store_string(vformat("typedef %s;%s\n", type_and_name, make_deprecated_comment_for_type(p_type)));
 }
 
 void GDExtensionInterfaceHeaderGenerator::write_enum_type(const Ref<FileAccess> &p_fa, const Dictionary &p_enum) {
@@ -157,14 +157,20 @@ void GDExtensionInterfaceHeaderGenerator::write_enum_type(const Ref<FileAccess> 
 		}
 		p_fa->store_string(vformat("\t%s = %s,\n", value_dict["name"], (int)value_dict["value"]));
 	}
-	p_fa->store_string(vformat("} %s;%s\n\n", p_enum["name"], make_deprecated_note(p_enum)));
+	p_fa->store_string(vformat("} %s;%s\n\n", p_enum["name"], make_deprecated_comment_for_type(p_enum)));
 }
 
 void GDExtensionInterfaceHeaderGenerator::write_function_type(const Ref<FileAccess> &p_fa, const Dictionary &p_func) {
 	String args_text = p_func.has("arguments") ? make_args_text(p_func["arguments"]) : "";
 	String name_and_args = vformat("(*%s)(%s)", p_func["name"], args_text);
-	Dictionary ret = p_func["return_value"];
-	p_fa->store_string(vformat("typedef %s;%s\n", format_type_and_name(ret["type"], name_and_args), make_deprecated_note(p_func)));
+	String return_type;
+	if (p_func.has("return_value")) {
+		Dictionary ret = p_func["return_value"];
+		return_type = ret["type"];
+	} else {
+		return_type = "void";
+	}
+	p_fa->store_string(vformat("typedef %s;%s\n", format_type_and_name(return_type, name_and_args), make_deprecated_comment_for_type(p_func)));
 }
 
 void GDExtensionInterfaceHeaderGenerator::write_struct_type(const Ref<FileAccess> &p_fa, const Dictionary &p_struct) {
@@ -176,7 +182,7 @@ void GDExtensionInterfaceHeaderGenerator::write_struct_type(const Ref<FileAccess
 		}
 		p_fa->store_string(vformat("\t%s;\n", format_type_and_name(member_dict["type"], member_dict["name"])));
 	}
-	p_fa->store_string(vformat("} %s;%s\n\n", p_struct["name"], make_deprecated_note(p_struct)));
+	p_fa->store_string(vformat("} %s;%s\n\n", p_struct["name"], make_deprecated_comment_for_type(p_struct)));
 }
 
 String GDExtensionInterfaceHeaderGenerator::format_type_and_name(const String &p_type, const String &p_name) {
@@ -196,11 +202,23 @@ String GDExtensionInterfaceHeaderGenerator::format_type_and_name(const String &p
 	return ret;
 }
 
-String GDExtensionInterfaceHeaderGenerator::make_deprecated_note(const Dictionary &p_type) {
+String GDExtensionInterfaceHeaderGenerator::make_deprecated_message(const Dictionary &p_data) {
+	PackedStringArray parts;
+	parts.push_back(vformat("Deprecated in Godot %s.", p_data["since"]));
+	if (p_data.has("message")) {
+		parts.push_back(p_data["message"]);
+	}
+	if (p_data.has("replace_with")) {
+		parts.push_back(vformat("Use `%s` instead.", p_data["replace_with"]));
+	}
+	return String(" ").join(parts);
+}
+
+String GDExtensionInterfaceHeaderGenerator::make_deprecated_comment_for_type(const Dictionary &p_type) {
 	if (!p_type.has("deprecated")) {
 		return "";
 	}
-	return vformat(" /* %s */", p_type["deprecated"]);
+	return vformat(" /* %s */", make_deprecated_message(p_type["deprecated"]));
 }
 
 String GDExtensionInterfaceHeaderGenerator::make_args_text(const Array &p_args) {
@@ -218,12 +236,7 @@ void GDExtensionInterfaceHeaderGenerator::write_interface(const Ref<FileAccess> 
 	doc.push_back(String("@since ") + (String)p_interface["since"]);
 
 	if (p_interface.has("deprecated")) {
-		String deprecated = p_interface["deprecated"];
-		if (deprecated.to_lower().begins_with("deprecated")) {
-			Vector<String> parts = deprecated.split_spaces(1);
-			deprecated = parts[1];
-		}
-		doc.push_back(String("@deprecated ") + deprecated);
+		doc.push_back(String("@deprecated ") + make_deprecated_message(p_interface["deprecated"]));
 	}
 
 	Array orig_doc = p_interface["description"];
@@ -254,17 +267,15 @@ void GDExtensionInterfaceHeaderGenerator::write_interface(const Ref<FileAccess> 
 
 	if (p_interface.has("return_value")) {
 		Dictionary ret = p_interface["return_value"];
-		if (ret["type"] != "void") {
-			String ret_string = String("@return");
-			if (ret.has("description")) {
-				Array arg_doc = ret["description"];
-				for (const Variant &d : arg_doc) {
-					ret_string += String(" ") + (String)d;
-				}
+		String ret_string = String("@return");
+		if (ret.has("description")) {
+			Array arg_doc = ret["description"];
+			for (const Variant &d : arg_doc) {
+				ret_string += String(" ") + (String)d;
 			}
-			doc.push_back("");
-			doc.push_back(ret_string);
 		}
+		doc.push_back("");
+		doc.push_back(ret_string);
 	}
 
 	if (p_interface.has("see")) {

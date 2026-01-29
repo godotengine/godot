@@ -459,7 +459,7 @@ void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
 		file_browse->set_title(TTR("Open Script"));
 	}
 
-	file_browse->set_disable_overwrite_warning(true);
+	file_browse->set_customization_flag_enabled(FileDialog::CUSTOMIZATION_OVERWRITE_WARNING, false);
 	file_browse->clear_filters();
 	List<String> extensions;
 
@@ -492,7 +492,7 @@ void ScriptCreateDialog::_file_selected(const String &p_file) {
 }
 
 void ScriptCreateDialog::_create() {
-	parent_name->set_text(select_class->get_selected_type().get_slicec(' ', 0));
+	parent_name->set_text(select_class->get_selected_type());
 	_parent_name_changed(parent_name->get_text());
 }
 

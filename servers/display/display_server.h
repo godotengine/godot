@@ -30,15 +30,23 @@
 
 #pragma once
 
-#include "core/input/input.h"
+#include "core/input/input_event.h"
 #include "core/io/image.h"
 #include "core/io/resource.h"
 #include "core/os/os.h"
+#include "core/templates/rb_map.h"
+#include "core/templates/rb_set.h"
 #include "core/variant/callable.h"
+#include "core/variant/typed_array.h"
 #include "servers/display/native_menu.h"
 
 class Texture2D;
 class AccessibilityDriver;
+
+namespace InputClassEnums {
+enum MouseMode : int;
+enum CursorShape : int;
+} //namespace InputClassEnums
 
 class DisplayServer : public Object {
 	GDCLASS(DisplayServer, Object)
@@ -50,6 +58,7 @@ class DisplayServer : public Object {
 	mutable HashMap<String, RID> menu_names;
 
 	RID _get_rid_from_name(NativeMenu *p_nmenu, const String &p_menu_root) const;
+	RID _accessibility_create_sub_text_edit_elements_bind_compat_113459(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1);
 #endif
 
 	LocalVector<ObjectID> additional_outputs;
@@ -95,15 +104,15 @@ public:
 	typedef Vector<String> (*GetRenderingDriversFunction)();
 
 private:
-	static void _input_set_mouse_mode(Input::MouseMode p_mode);
-	static Input::MouseMode _input_get_mouse_mode();
-	static void _input_set_mouse_mode_override(Input::MouseMode p_mode);
-	static Input::MouseMode _input_get_mouse_mode_override();
+	static void _input_set_mouse_mode(InputClassEnums::MouseMode p_mode);
+	static InputClassEnums::MouseMode _input_get_mouse_mode();
+	static void _input_set_mouse_mode_override(InputClassEnums::MouseMode p_mode);
+	static InputClassEnums::MouseMode _input_get_mouse_mode_override();
 	static void _input_set_mouse_mode_override_enabled(bool p_enabled);
 	static bool _input_is_mouse_mode_override_enabled();
 	static void _input_warp(const Vector2 &p_to_pos);
-	static Input::CursorShape _input_get_current_cursor_shape();
-	static void _input_set_custom_mouse_cursor_func(const Ref<Resource> &, Input::CursorShape, const Vector2 &p_hotspot);
+	static InputClassEnums::CursorShape _input_get_current_cursor_shape();
+	static void _input_set_custom_mouse_cursor_func(const Ref<Resource> &, InputClassEnums::CursorShape, const Vector2 &p_hotspot);
 
 protected:
 	static void _bind_methods();
@@ -286,12 +295,12 @@ public:
 	static void set_early_window_clear_color_override(bool p_enabled, Color p_color = Color(0, 0, 0, 0));
 
 	enum MouseMode {
-		MOUSE_MODE_VISIBLE = Input::MOUSE_MODE_VISIBLE,
-		MOUSE_MODE_HIDDEN = Input::MOUSE_MODE_HIDDEN,
-		MOUSE_MODE_CAPTURED = Input::MOUSE_MODE_CAPTURED,
-		MOUSE_MODE_CONFINED = Input::MOUSE_MODE_CONFINED,
-		MOUSE_MODE_CONFINED_HIDDEN = Input::MOUSE_MODE_CONFINED_HIDDEN,
-		MOUSE_MODE_MAX = Input::MOUSE_MODE_MAX,
+		MOUSE_MODE_VISIBLE, // Input::MouseMode::MOUSE_MODE_VISIBLE
+		MOUSE_MODE_HIDDEN, // Input::MouseMode::MOUSE_MODE_HIDDEN
+		MOUSE_MODE_CAPTURED, // Input::MouseMode::MOUSE_MODE_CAPTURED
+		MOUSE_MODE_CONFINED, // Input::MouseMode::MOUSE_MODE_CONFINED
+		MOUSE_MODE_CONFINED_HIDDEN, // Input::MouseMode::MOUSE_MODE_CONFINED_HIDDEN
+		MOUSE_MODE_MAX, // Input::MouseMode::MOUSE_MODE_MAX
 	};
 
 	virtual void mouse_set_mode(MouseMode p_mode);
@@ -492,6 +501,11 @@ public:
 	virtual Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 	virtual Size2i window_get_size_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
+	virtual float window_get_scale(WindowID p_window = MAIN_WINDOW_ID) const {
+		int screen = window_get_current_screen(p_window);
+		return screen_get_scale(screen);
+	}
+
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
@@ -600,6 +614,7 @@ public:
 		ROLE_TITLE_BAR,
 		ROLE_DIALOG,
 		ROLE_TOOLTIP,
+		ROLE_REGION,
 	};
 
 	enum AccessibilityPopupType {
@@ -678,7 +693,7 @@ public:
 
 	virtual RID accessibility_create_element(WindowID p_window_id, DisplayServer::AccessibilityRole p_role);
 	virtual RID accessibility_create_sub_element(const RID &p_parent_rid, DisplayServer::AccessibilityRole p_role, int p_insert_pos = -1);
-	virtual RID accessibility_create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1);
+	virtual RID accessibility_create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1, bool p_is_last_line = false);
 	virtual bool accessibility_has_element(const RID &p_id) const;
 	virtual void accessibility_free_element(const RID &p_id);
 
@@ -910,7 +925,7 @@ public:
 
 	virtual RID accessibility_create_element(DisplayServer::WindowID p_window_id, DisplayServer::AccessibilityRole p_role) = 0;
 	virtual RID accessibility_create_sub_element(const RID &p_parent_rid, DisplayServer::AccessibilityRole p_role, int p_insert_pos = -1) = 0;
-	virtual RID accessibility_create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1) = 0;
+	virtual RID accessibility_create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1, bool p_is_last_line = false) = 0;
 	virtual bool accessibility_has_element(const RID &p_id) const = 0;
 	virtual void accessibility_free_element(const RID &p_id) = 0;
 

@@ -87,7 +87,7 @@
 		<method name="get_script_signal_list">
 			<return type="Dictionary[]" />
 			<description>
-				Returns the list of user signals defined in this [Script].
+				Returns the list of signals defined in this [Script].
 				[b]Note:[/b] The dictionaries returned by this method are formatted identically to those returned by [method Object.get_signal_list].
 			</description>
 		</method>

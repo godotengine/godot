@@ -332,6 +332,120 @@ void MDCommandBuffer::clear_color_texture(RDD::TextureID p_texture, RDD::Texture
 	}
 }
 
+void MDCommandBuffer::clear_depth_stencil_texture(RDD::TextureID p_texture, RDD::TextureLayout p_texture_layout, float p_depth, uint8_t p_stencil, const RDD::TextureSubresourceRange &p_subresources) {
+	id<MTLTexture> src_tex = rid::get(p_texture);
+
+	if (src_tex.parentTexture) {
+		// Clear via the parent texture rather than the view.
+		src_tex = src_tex.parentTexture;
+	}
+
+	PixelFormats &pf = device_driver->get_pixel_formats();
+
+	bool is_depth_format = pf.isDepthFormat(src_tex.pixelFormat);
+	bool is_stencil_format = pf.isStencilFormat(src_tex.pixelFormat);
+
+	if (!is_depth_format && !is_stencil_format) {
+		ERR_FAIL_MSG("invalid: color texture format");
+	}
+
+	bool clear_depth = is_depth_format && p_subresources.aspect.has_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT);
+	bool clear_stencil = is_stencil_format && p_subresources.aspect.has_flag(RDD::TEXTURE_ASPECT_STENCIL_BIT);
+
+	if (clear_depth || clear_stencil) {
+		MTLRenderPassDescriptor *desc = MTLRenderPassDescriptor.renderPassDescriptor;
+
+		MTLRenderPassDepthAttachmentDescriptor *daDesc = desc.depthAttachment;
+		if (clear_depth) {
+			daDesc.texture = src_tex;
+			daDesc.loadAction = MTLLoadActionClear;
+			daDesc.storeAction = MTLStoreActionStore;
+			daDesc.clearDepth = p_depth;
+		}
+
+		MTLRenderPassStencilAttachmentDescriptor *saDesc = desc.stencilAttachment;
+		if (clear_stencil) {
+			saDesc.texture = src_tex;
+			saDesc.loadAction = MTLLoadActionClear;
+			saDesc.storeAction = MTLStoreActionStore;
+			saDesc.clearStencil = p_stencil;
+		}
+
+		// Extract the mipmap levels that are to be updated.
+		uint32_t mipLvlStart = p_subresources.base_mipmap;
+		uint32_t mipLvlCnt = p_subresources.mipmap_count;
+		uint32_t mipLvlEnd = mipLvlStart + mipLvlCnt;
+
+		uint32_t levelCount = src_tex.mipmapLevelCount;
+
+		// Extract the cube or array layers (slices) that are to be updated.
+		bool is3D = src_tex.textureType == MTLTextureType3D;
+		uint32_t layerStart = is3D ? 0 : p_subresources.base_layer;
+		uint32_t layerCnt = p_subresources.layer_count;
+		uint32_t layerEnd = layerStart + layerCnt;
+
+		MetalFeatures const &features = device_driver->get_device_properties().features;
+
+		// Iterate across mipmap levels and layers, and perform and empty render to clear each.
+		for (uint32_t mipLvl = mipLvlStart; mipLvl < mipLvlEnd; mipLvl++) {
+			ERR_FAIL_INDEX_MSG(mipLvl, levelCount, "mip level out of range");
+
+			if (clear_depth) {
+				daDesc.level = mipLvl;
+			}
+			if (clear_stencil) {
+				saDesc.level = mipLvl;
+			}
+
+			// If a 3D image, we need to get the depth for each level.
+			if (is3D) {
+				layerCnt = mipmapLevelSizeFromTexture(src_tex, mipLvl).depth;
+				layerEnd = layerStart + layerCnt;
+			}
+
+			if ((features.layeredRendering && src_tex.sampleCount == 1) || features.multisampleLayeredRendering) {
+				// We can clear all layers at once.
+				if (is3D) {
+					if (clear_depth) {
+						daDesc.depthPlane = layerStart;
+					}
+					if (clear_stencil) {
+						saDesc.depthPlane = layerStart;
+					}
+				} else {
+					if (clear_depth) {
+						daDesc.slice = layerStart;
+					}
+					if (clear_stencil) {
+						saDesc.slice = layerStart;
+					}
+				}
+				desc.renderTargetArrayLength = layerCnt;
+				encodeRenderCommandEncoderWithDescriptor(desc, @"Clear Image");
+			} else {
+				for (uint32_t layer = layerStart; layer < layerEnd; layer++) {
+					if (is3D) {
+						if (clear_depth) {
+							daDesc.depthPlane = layer;
+						}
+						if (clear_stencil) {
+							saDesc.depthPlane = layer;
+						}
+					} else {
+						if (clear_depth) {
+							daDesc.slice = layer;
+						}
+						if (clear_stencil) {
+							saDesc.slice = layer;
+						}
+					}
+					encodeRenderCommandEncoderWithDescriptor(desc, @"Clear Image");
+				}
+			}
+		}
+	}
+}
+
 void MDCommandBuffer::clear_buffer(RDD::BufferID p_buffer, uint64_t p_offset, uint64_t p_size) {
 	id<MTLBlitCommandEncoder> blit_enc = _ensure_blit_encoder();
 	const RDM::BufferInfo *buffer = (const RDM::BufferInfo *)p_buffer.id;
@@ -519,7 +633,7 @@ void MDCommandBuffer::_copy_texture_buffer(CopySource p_source,
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
 		RDD::BufferTextureCopyRegion region = p_regions[i];
 
-		uint32_t mip_level = region.texture_subresources.mipmap;
+		uint32_t mip_level = region.texture_subresource.mipmap;
 		MTLOrigin txt_origin = MTLOriginMake(region.texture_offset.x, region.texture_offset.y, region.texture_offset.z);
 		MTLSize src_extent = mipmapLevelSizeFromTexture(texture, mip_level);
 		MTLSize txt_size = clampMTLSize(MTLSizeMake(region.texture_region_size.x, region.texture_region_size.y, region.texture_region_size.z),
@@ -535,18 +649,15 @@ void MDCommandBuffer::_copy_texture_buffer(CopySource p_source,
 		MTLBlitOption blit_options = options;
 
 		if (pf.isDepthFormat(mtlPixFmt) && pf.isStencilFormat(mtlPixFmt)) {
-			bool want_depth = flags::all(region.texture_subresources.aspect, RDD::TEXTURE_ASPECT_DEPTH_BIT);
-			bool want_stencil = flags::all(region.texture_subresources.aspect, RDD::TEXTURE_ASPECT_STENCIL_BIT);
-
-			// The stencil component is always 1 byte per pixel.
 			// Don't reduce depths of 32-bit depth/stencil formats.
-			if (want_depth && !want_stencil) {
+			if (region.texture_subresource.aspect == RDD::TEXTURE_ASPECT_DEPTH) {
 				if (pf.getBytesPerTexel(mtlPixFmt) != 4) {
 					bytesPerRow -= buffImgWd;
 					bytesPerImg -= buffImgWd * buffImgHt;
 				}
 				blit_options |= MTLBlitOptionDepthFromDepthStencil;
-			} else if (want_stencil && !want_depth) {
+			} else if (region.texture_subresource.aspect == RDD::TEXTURE_ASPECT_STENCIL) {
+				// The stencil component is always 1 byte per pixel.
 				bytesPerRow = buffImgWd;
 				bytesPerImg = buffImgWd * buffImgHt;
 				blit_options |= MTLBlitOptionStencilFromDepthStencil;
@@ -558,31 +669,27 @@ void MDCommandBuffer::_copy_texture_buffer(CopySource p_source,
 		}
 
 		if (p_source == CopySource::Buffer) {
-			for (uint32_t lyrIdx = 0; lyrIdx < region.texture_subresources.layer_count; lyrIdx++) {
-				[enc copyFromBuffer:buffer->metal_buffer
-							   sourceOffset:region.buffer_offset + (bytesPerImg * lyrIdx)
-						  sourceBytesPerRow:bytesPerRow
-						sourceBytesPerImage:bytesPerImg
-								 sourceSize:txt_size
-								  toTexture:texture
-						   destinationSlice:region.texture_subresources.base_layer + lyrIdx
-						   destinationLevel:mip_level
-						  destinationOrigin:txt_origin
-									options:blit_options];
-			}
+			[enc copyFromBuffer:buffer->metal_buffer
+						   sourceOffset:region.buffer_offset
+					  sourceBytesPerRow:bytesPerRow
+					sourceBytesPerImage:bytesPerImg
+							 sourceSize:txt_size
+							  toTexture:texture
+					   destinationSlice:region.texture_subresource.layer
+					   destinationLevel:mip_level
+					  destinationOrigin:txt_origin
+								options:blit_options];
 		} else {
-			for (uint32_t lyrIdx = 0; lyrIdx < region.texture_subresources.layer_count; lyrIdx++) {
-				[enc copyFromTexture:texture
-									 sourceSlice:region.texture_subresources.base_layer + lyrIdx
-									 sourceLevel:mip_level
-									sourceOrigin:txt_origin
-									  sourceSize:txt_size
-										toBuffer:buffer->metal_buffer
-							   destinationOffset:region.buffer_offset + (bytesPerImg * lyrIdx)
-						  destinationBytesPerRow:bytesPerRow
-						destinationBytesPerImage:bytesPerImg
-										 options:blit_options];
-			}
+			[enc copyFromTexture:texture
+								 sourceSlice:region.texture_subresource.layer
+								 sourceLevel:mip_level
+								sourceOrigin:txt_origin
+								  sourceSize:txt_size
+									toBuffer:buffer->metal_buffer
+						   destinationOffset:region.buffer_offset
+					  destinationBytesPerRow:bytesPerRow
+					destinationBytesPerImage:bytesPerImg
+									 options:blit_options];
 		}
 	}
 }
@@ -615,8 +722,6 @@ void MDCommandBuffer::encodeRenderCommandEncoderWithDescriptor(MTLRenderPassDesc
 void MDCommandBuffer::render_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Render);
 
-	render.dynamic_offsets |= p_dynamic_offsets;
-
 	if (uint32_t new_size = p_first_set_index + p_set_count; render.uniform_sets.size() < new_size) {
 		uint32_t s = render.uniform_sets.size();
 		render.uniform_sets.resize(new_size);
@@ -626,6 +731,20 @@ void MDCommandBuffer::render_bind_uniform_sets(VectorView<RDD::UniformSetID> p_u
 
 	const MDShader *shader = (const MDShader *)p_shader.id;
 	DynamicOffsetLayout layout = shader->dynamic_offset_layout;
+
+	// Clear bits for sets being rebound before OR'ing new values.
+	// This prevents corruption when the same set is bound multiple times
+	// with different frame indices (e.g., OPAQUE pass then ALPHA pass).
+	for (uint32_t i = 0; i < p_set_count && render.dynamic_offsets != 0; i++) {
+		uint32_t set_index = p_first_set_index + i;
+		uint32_t count = layout.get_count(set_index);
+		if (count > 0) {
+			uint32_t shift = layout.get_offset_index_shift(set_index);
+			uint32_t mask = ((1u << (count * 4u)) - 1u) << shift;
+			render.dynamic_offsets &= ~mask;
+		}
+	}
+	render.dynamic_offsets |= p_dynamic_offsets;
 
 	for (size_t i = 0; i < p_set_count; ++i) {
 		MDUniformSet *set = (MDUniformSet *)(p_uniform_sets[i].id);
@@ -1513,8 +1632,6 @@ void MDCommandBuffer::ComputeState::reset() {
 void MDCommandBuffer::compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Compute);
 
-	compute.dynamic_offsets |= p_dynamic_offsets;
-
 	if (uint32_t new_size = p_first_set_index + p_set_count; compute.uniform_sets.size() < new_size) {
 		uint32_t s = compute.uniform_sets.size();
 		compute.uniform_sets.resize(new_size);
@@ -1524,6 +1641,20 @@ void MDCommandBuffer::compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_
 
 	const MDShader *shader = (const MDShader *)p_shader.id;
 	DynamicOffsetLayout layout = shader->dynamic_offset_layout;
+
+	// Clear bits for sets being rebound before OR'ing new values.
+	// This prevents corruption when the same set is bound multiple times
+	// with different frame indices.
+	for (uint32_t i = 0; i < p_set_count && compute.dynamic_offsets != 0; i++) {
+		uint32_t set_index = p_first_set_index + i;
+		uint32_t count = layout.get_count(set_index);
+		if (count > 0) {
+			uint32_t shift = layout.get_offset_index_shift(set_index);
+			uint32_t mask = ((1u << (count * 4u)) - 1u) << shift;
+			compute.dynamic_offsets &= ~mask;
+		}
+	}
+	compute.dynamic_offsets |= p_dynamic_offsets;
 
 	for (size_t i = 0; i < p_set_count; ++i) {
 		MDUniformSet *set = (MDUniformSet *)(p_uniform_sets[i].id);

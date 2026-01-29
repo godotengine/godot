@@ -134,7 +134,10 @@ ResourceUID::ID ResourceUID::create_id_for_path(const String &p_path) {
 	RandomPCG rng;
 
 	const String project_name = GLOBAL_GET("application/config/name");
-	rng.seed(project_name.hash64() * p_path.hash64() * FileAccess::get_md5(p_path).hash64());
+	// Use lowercase file name as random seed.
+	// This ensures that case differences don't cause UIDs to shift on case-insensitive filesystems. The downside is that identical files with different case
+	// (but otherwise identical name) will run into a hash collision, but this is a very rare scenario.
+	rng.seed(project_name.hash64() * p_path.to_lower().hash64() * FileAccess::get_md5(p_path).hash64());
 
 	while (true) {
 		int64_t num1 = rng.rand();
@@ -160,6 +163,9 @@ void ResourceUID::add_id(ID p_id, const String &p_path) {
 	Cache c;
 	c.cs = p_path.utf8();
 	unique_ids[p_id] = c;
+	if (use_reverse_cache) {
+		reverse_cache[c.cs] = p_id;
+	}
 	changed = true;
 }
 
@@ -175,6 +181,9 @@ void ResourceUID::set_id(ID p_id, const String &p_path) {
 	if ((update_ptr == nullptr) != (cached_ptr == nullptr) || strcmp(update_ptr, cached_ptr) != 0) {
 		unique_ids[p_id].cs = cs;
 		unique_ids[p_id].saved_to_cache = false; //changed
+		if (use_reverse_cache) {
+			reverse_cache[cs] = p_id;
+		}
 		changed = true;
 	}
 }
@@ -201,9 +210,20 @@ String ResourceUID::get_id_path(ID p_id) const {
 	return String::utf8(cs.ptr());
 }
 
+ResourceUID::ID ResourceUID::get_path_id(const String &p_path) const {
+	const ID *id = reverse_cache.getptr(p_path.utf8());
+	if (id) {
+		return *id;
+	}
+	return INVALID_ID;
+}
+
 void ResourceUID::remove_id(ID p_id) {
 	MutexLock l(mutex);
 	ERR_FAIL_COND(!unique_ids.has(p_id));
+	if (use_reverse_cache) {
+		reverse_cache.erase(unique_ids[p_id].cs);
+	}
 	unique_ids.erase(p_id);
 }
 
@@ -265,6 +285,9 @@ Error ResourceUID::load_from_cache(bool p_reset) {
 
 	MutexLock l(mutex);
 	if (p_reset) {
+		if (use_reverse_cache) {
+			reverse_cache.clear();
+		}
 		unique_ids.clear();
 	}
 
@@ -281,6 +304,9 @@ Error ResourceUID::load_from_cache(bool p_reset) {
 
 		c.saved_to_cache = true;
 		unique_ids[id] = c;
+		if (use_reverse_cache) {
+			reverse_cache[c.cs] = id;
+		}
 	}
 
 	cache_entries = entry_count;
@@ -351,6 +377,9 @@ String ResourceUID::get_path_from_cache(Ref<FileAccess> &p_cache_file, const Str
 
 void ResourceUID::clear() {
 	cache_entries = 0;
+	if (use_reverse_cache) {
+		reverse_cache.clear();
+	}
 	unique_ids.clear();
 	changed = false;
 }

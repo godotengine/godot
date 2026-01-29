@@ -47,7 +47,6 @@ class EventListenerLineEdit : public LineEdit {
 
 	int allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
 	bool ignore_next_event = true;
-	bool share_keycodes = false;
 	Ref<InputEvent> event;
 
 	bool _is_event_allowed(const Ref<InputEvent> &p_event) const;

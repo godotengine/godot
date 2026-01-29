@@ -100,7 +100,7 @@ class SceneTreeEditor : public Control {
 		SceneTreeEditor *editor;
 		HashMap<Node *, CachedNode> cache;
 		HashSet<CachedNode *> to_delete;
-		Node *current_scene_node = nullptr;
+		ObjectID current_scene_id;
 		Node *current_pinned_node = nullptr;
 		bool current_has_pin = false;
 		bool force_update = false;
@@ -111,7 +111,6 @@ class SceneTreeEditor : public Control {
 
 	Tree *tree = nullptr;
 	Node *selected = nullptr;
-	ObjectID instance_node;
 
 	String filter;
 	String filter_term_warning;
@@ -146,6 +145,7 @@ class SceneTreeEditor : public Control {
 
 	void _test_update_tree();
 	bool _update_filter(TreeItem *p_parent = nullptr, bool p_scroll_to_selected = false);
+	bool _update_filter_helper(TreeItem *p_parent, bool p_scroll_to_selected, TreeItem *&r_last_selected);
 	bool _node_matches_class_term(const Node *p_item_node, const String &p_term);
 	bool _item_matches_all_terms(TreeItem *p_item, const PackedStringArray &p_terms);
 	void _tree_changed();

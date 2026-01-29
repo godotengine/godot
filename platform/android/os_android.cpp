@@ -40,6 +40,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/extension/gdextension_manager.h"
+#include "core/input/input.h"
 #include "core/io/xml_parser.h"
 #include "core/os/main_loop.h"
 #include "core/profiling/profiling.h"
@@ -878,7 +879,7 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	}
 #endif
 
-	if (godot_java->has_feature(p_feature)) {
+	if (godot_java->check_internal_feature_support(p_feature)) {
 		return true;
 	}
 

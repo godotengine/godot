@@ -253,6 +253,9 @@ void SkeletonModification2DCCDIK::_draw_editor_gizmo() {
 		if (!ccdik_data_chain[i].editor_draw_gizmo) {
 			continue;
 		}
+		if (ccdik_data_chain[i].bone_idx < 0) {
+			continue;
+		}
 
 		Bone2D *operation_bone = stack->skeleton->get_bone(ccdik_data_chain[i].bone_idx);
 		editor_draw_angle_constraints(operation_bone, ccdik_data_chain[i].constraint_angle_min, ccdik_data_chain[i].constraint_angle_max,

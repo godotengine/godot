@@ -38,7 +38,6 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
-#include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
@@ -793,6 +792,14 @@ void TextShaderEditor::_prepare_edit_menu() {
 
 void TextShaderEditor::_notification(int p_what) {
 	switch (p_what) {
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorThemeManager::is_generated_theme_outdated() ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor")) {
+				_apply_editor_settings();
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			site_search->set_button_icon(get_editor_theme_icon(SNAME("ExternalLink")));
 		} break;
@@ -801,16 +808,6 @@ void TextShaderEditor::_notification(int p_what) {
 			_check_for_external_edit();
 		} break;
 	}
-}
-
-void TextShaderEditor::_editor_settings_changed() {
-	if (!EditorThemeManager::is_generated_theme_outdated() &&
-			!EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor") &&
-			!EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor")) {
-		return;
-	}
-
-	_apply_editor_settings();
 }
 
 void TextShaderEditor::_apply_editor_settings() {
@@ -972,11 +969,10 @@ void TextShaderEditor::edit_shader_include(const Ref<ShaderInclude> &p_shader_in
 	code_editor->set_edited_shader_include(p_shader_inc);
 }
 
-void TextShaderEditor::use_menu_bar_items(MenuButton *p_file_menu, Button *p_make_floating) {
+void TextShaderEditor::use_menu_bar(MenuButton *p_file_menu) {
 	p_file_menu->set_switch_on_hover(true);
 	menu_bar_hbox->add_child(p_file_menu);
 	menu_bar_hbox->move_child(p_file_menu, 0);
-	menu_bar_hbox->add_child(p_make_floating);
 }
 
 void TextShaderEditor::save_external_data(const String &p_str) {
@@ -1186,12 +1182,10 @@ TextShaderEditor::TextShaderEditor() {
 	code_editor->connect("script_validated", callable_mp(this, &TextShaderEditor::_script_validated));
 
 	code_editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	code_editor->add_theme_constant_override("separation", 0);
 	code_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
 	code_editor->connect("show_warnings_panel", callable_mp(this, &TextShaderEditor::_show_warnings_panel));
 	code_editor->connect(CoreStringName(script_changed), callable_mp(this, &TextShaderEditor::apply_shaders));
-	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextShaderEditor::_editor_settings_changed));
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextShaderEditor::_project_settings_changed));
 
 	code_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
@@ -1283,7 +1277,6 @@ TextShaderEditor::TextShaderEditor() {
 	site_search->set_text(TTR("Online Docs"));
 	site_search->set_tooltip_text(TTR("Open Godot online documentation."));
 	menu_bar_hbox->add_child(site_search);
-	menu_bar_hbox->add_child(memnew(VSeparator));
 
 	menu_bar_hbox->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
 
@@ -1331,6 +1324,6 @@ TextShaderEditor::TextShaderEditor() {
 
 	add_child(disk_changed);
 
-	_editor_settings_changed();
+	_apply_editor_settings();
 	code_editor->show_toggle_files_button(); // TODO: Disabled for now, because it doesn't work properly.
 }

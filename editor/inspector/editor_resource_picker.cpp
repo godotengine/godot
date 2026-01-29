@@ -30,6 +30,7 @@
 
 #include "editor_resource_picker.h"
 
+#include "core/input/input.h"
 #include "editor/audio/audio_stream_preview.h"
 #include "editor/doc/editor_help.h"
 #include "editor/docks/filesystem_dock.h"
@@ -46,6 +47,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/property_utils.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
 
@@ -93,41 +95,7 @@ void EditorResourcePicker::_update_resource() {
 			assign_button->set_button_icon(Ref<Texture2D>());
 			assign_button->set_text(TTR("<empty>"));
 			assign_button->set_tooltip_text("");
-			make_unique_button->set_disabled(true);
-			make_unique_button->set_visible(false);
 		} else {
-			Ref<Resource> parent_res = _has_parent_resource();
-			bool unique_enable = _is_uniqueness_enabled();
-			bool unique_recursive_enabled = _is_uniqueness_enabled(true);
-			bool is_internal = EditorNode::get_singleton()->is_resource_internal_to_scene(edited_resource);
-			int num_of_copies = EditorNode::get_singleton()->get_resource_count(edited_resource);
-			make_unique_button->set_button_icon(get_editor_theme_icon(SNAME("Instance")));
-			make_unique_button->set_visible((num_of_copies > 1 || !is_internal) && !Object::cast_to<Script>(edited_resource.ptr()));
-			make_unique_button->set_disabled((!unique_enable && !unique_recursive_enabled) || !editable);
-
-			String tooltip;
-
-			if (num_of_copies > 1) {
-				tooltip = vformat(TTR("This Resource is used in (%d) places."), num_of_copies);
-			} else if (!is_internal) {
-				tooltip = TTR("This Resource is external to scene.");
-			}
-
-			if (!editable) {
-				tooltip += "\n" + TTR("The Resource cannot be edited in the inspector and can't be made unique directly.") + "\n";
-			} else {
-				tooltip += unique_enable ? TTR(" Left-click to make it unique.") + "\n" : "\n";
-
-				if (unique_recursive_enabled) {
-					tooltip += TTR("It is possible to make its subresources unique. Right-click to make them unique.") + "\n";
-				}
-
-				if (!unique_enable && EditorNode::get_singleton()->get_editor_selection()->get_full_selected_node_list().size() == 1) {
-					tooltip += TTR("In order to duplicate it, make its parent Resource unique.") + "\n";
-				}
-			}
-
-			make_unique_button->set_tooltip_text(tooltip);
 			assign_button->set_button_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->()));
 
 			if (!edited_resource->get_name().is_empty()) {
@@ -148,6 +116,60 @@ void EditorResourcePicker::_update_resource() {
 		}
 	} else if (edited_resource.is_valid()) {
 		assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + edited_resource->get_class());
+	}
+
+	if (edited_resource.is_null()) {
+		make_unique_button->set_visible(false);
+	} else {
+		Ref<Resource> parent_res = _has_parent_resource();
+		bool unique_enable = _is_uniqueness_enabled();
+		bool unique_recursive_enabled = _is_uniqueness_enabled(true);
+		bool is_internal = EditorNode::get_singleton()->is_resource_internal_to_scene(edited_resource);
+		int num_of_copies = EditorNode::get_singleton()->get_resource_count(edited_resource);
+		make_unique_button->set_button_icon(get_editor_theme_icon(SNAME("Instance")));
+		make_unique_button->set_visible(num_of_copies > 1 || (!is_internal && !Object::cast_to<Script>(edited_resource.ptr())));
+		make_unique_button->set_disabled((!unique_enable && !unique_recursive_enabled) || !editable);
+
+		String tooltip;
+
+		String resource_name = "resource";
+		if (edited_resource.is_valid()) {
+			resource_name = edited_resource->get_class();
+
+			if (edited_resource->has_meta(SceneStringName(_custom_type_script))) {
+				const Ref<Script> custom_script = PropertyUtils::get_custom_type_script(edited_resource.ptr());
+				if (custom_script.is_valid()) {
+					const String global_name = custom_script->get_global_name();
+					if (!global_name.is_empty()) {
+						resource_name = global_name;
+					}
+				}
+			}
+		}
+
+		if (num_of_copies > 1) {
+			tooltip = vformat(TTRN("This %s is used in %d place.", "This %s is used in %d places.", num_of_copies), resource_name, num_of_copies);
+		} else if (!is_internal) {
+			tooltip = vformat(TTR("This %s is external to scene."), resource_name);
+		}
+
+		if (!editable) {
+			tooltip += "\n" + vformat(TTR("The %s cannot be edited in the inspector and can't be made unique directly."), resource_name) + "\n";
+		} else {
+			if (unique_enable) {
+				tooltip += "\n" + TTR("Left-click to make it unique.") + "\n";
+			}
+
+			if (unique_recursive_enabled) {
+				tooltip += TTR("It is possible to make its subresources unique.") + "\n" + TTR("Right-click to make them unique.");
+			}
+
+			if (!unique_enable && EditorNode::get_singleton()->get_editor_selection()->get_full_selected_node_list().size() == 1) {
+				tooltip += TTR("In order to duplicate it, make its parent Resource unique.") + "\n";
+			}
+		}
+
+		make_unique_button->set_tooltip_text(tooltip);
 	}
 
 	assign_button->set_disabled(!editable && edited_resource.is_null());
@@ -277,7 +299,7 @@ void EditorResourcePicker::_update_menu_items() {
 		set_create_options(edit_menu);
 
 		// Add an option to load a resource from a file using the QuickOpen dialog.
-		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Quick Load..."), OBJ_MENU_QUICKLOAD);
+		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("LoadQuick")), TTR("Quick Load..."), OBJ_MENU_QUICKLOAD);
 		edit_menu->set_item_tooltip(-1, TTR("Opens a quick menu to select from a list of allowed Resource files."));
 
 		// Add an option to load a resource from a file using the regular file dialog.
@@ -310,7 +332,7 @@ void EditorResourcePicker::_update_menu_items() {
 			if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
 				modifier = "Cmd";
 			}
-			const String drag_and_drop_text = vformat(TTRC("Hold %s while drag-and-dropping from the FileSystem dock or another resource picker to automatically make a dropped resource unique."), modifier);
+			const String drag_and_drop_text = vformat(TTR("Hold %s while drag-and-dropping from the FileSystem dock or another resource picker to automatically make a dropped resource unique."), modifier);
 
 			if (!unique_enabled) {
 				if (EditorNode::get_singleton()->is_resource_internal_to_scene(edited_resource) && EditorNode::get_singleton()->get_resource_count(edited_resource) == 1) {
@@ -698,8 +720,8 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 void EditorResourcePicker::_on_unique_button_pressed() {
 	if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
 		_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
-	} else if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::RIGHT)) {
-		_edit_menu_cbk(_is_uniqueness_enabled(true) ? OBJ_MENU_MAKE_UNIQUE_RECURSIVE : OBJ_MENU_MAKE_UNIQUE);
+	} else if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::RIGHT) && _is_uniqueness_enabled(true)) {
+		_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
 	}
 }
 
@@ -843,45 +865,26 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 		return true;
 	}
 
-	Dictionary drag_data = p_drag_data;
-
-	Ref<Resource> res;
-	if (drag_data.has("type") && String(drag_data["type"]) == "script_list_element") {
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(drag_data["script_list_element"]);
-		if (se) {
-			res = se->get_edited_resource();
-		}
-	} else if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
-		res = drag_data["resource"];
-	} else if (drag_data.has("type") && String(drag_data["type"]) == "files") {
-		Vector<String> files = drag_data["files"];
-
-		if (files.size() == 1) {
-			if (ResourceLoader::exists(files[0])) {
-				// TODO: Extract the typename of the dropped filepath's resource in a more performant way, without fully loading it.
-				res = ResourceLoader::load(files[0]);
-			}
-		}
+	Ref<Resource> res = _get_dropped_resource(p_drag_data);
+	if (res.is_null()) {
+		return false;
 	}
 
 	_ensure_allowed_types();
 	HashSet<StringName> allowed_types = allowed_types_with_convert;
 
-	if (res.is_valid()) {
-		String res_type = _get_resource_type(res);
+	String res_type = _get_resource_type(res);
 
-		if (_is_type_valid(res_type, allowed_types)) {
-			return true;
-		}
-
-		if (res->get_script()) {
-			StringName custom_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script());
-			if (_is_type_valid(custom_class, allowed_types)) {
-				return true;
-			}
-		}
+	if (_is_type_valid(res_type, allowed_types)) {
+		return true;
 	}
 
+	if (res->get_script()) {
+		StringName custom_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script());
+		if (_is_type_valid(custom_class, allowed_types)) {
+			return true;
+		}
+	}
 	return false;
 }
 
@@ -915,6 +918,36 @@ bool EditorResourcePicker::_is_custom_type_script() const {
 	return false;
 }
 
+Ref<Resource> EditorResourcePicker::_get_dropped_resource(const Variant &p_data) const {
+	Dictionary drag_data = p_data;
+	const String type = drag_data.get("type", "");
+	if (type.is_empty()) {
+		return Ref<Resource>();
+	}
+
+	Ref<Resource> res;
+	if (type == "script_list_element") {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(drag_data["script_list_element"]);
+		if (se) {
+			return se->get_edited_resource();
+		}
+	} else if (type == "shader_list_element") {
+		return ResourceCache::get_ref(drag_data["file_path"]);
+	} else if (type == "resource") {
+		return drag_data["resource"];
+	} else if (type == "files") {
+		Vector<String> files = drag_data["files"];
+
+		if (files.size() == 1) {
+			if (ResourceLoader::exists(files[0])) {
+				// TODO: Extract the typename of the dropped filepath's resource in a more performant way, without fully loading it.
+				return ResourceLoader::load(files[0]);
+			}
+		}
+	}
+	return Ref<Resource>();
+}
+
 Variant EditorResourcePicker::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	if (edited_resource.is_valid()) {
 		Dictionary drag_data = EditorNode::get_singleton()->drag_resource(edited_resource, p_from);
@@ -930,28 +963,7 @@ bool EditorResourcePicker::can_drop_data_fw(const Point2 &p_point, const Variant
 }
 
 void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
-	ERR_FAIL_COND(!_is_drop_valid(p_data));
-
-	Dictionary drag_data = p_data;
-
-	Ref<Resource> dropped_resource;
-	if (drag_data.has("type") && String(drag_data["type"]) == "script_list_element") {
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(drag_data["script_list_element"]);
-		if (se) {
-			dropped_resource = se->get_edited_resource();
-		}
-	} else if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
-		dropped_resource = drag_data["resource"];
-	}
-
-	if (dropped_resource.is_null() && drag_data.has("type") && String(drag_data["type"]) == "files") {
-		Vector<String> files = drag_data["files"];
-
-		if (files.size() == 1) {
-			dropped_resource = ResourceLoader::load(files[0]);
-		}
-	}
-
+	Ref<Resource> dropped_resource = _get_dropped_resource(p_data);
 	if (dropped_resource.is_valid()) {
 		_ensure_allowed_types();
 		HashSet<StringName> allowed_types = allowed_types_without_convert;
@@ -1047,7 +1059,7 @@ void EditorResourcePicker::_notification(int p_what) {
 				edit_menu->add_theme_constant_override("icon_max_width", icon_width);
 			}
 
-			quick_load_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
+			quick_load_button->set_button_icon(get_editor_theme_icon(SNAME("LoadQuick")));
 			edit_button->set_button_icon(get_theme_icon(SNAME("select_arrow"), SNAME("Tree")));
 		} break;
 
@@ -1055,7 +1067,7 @@ void EditorResourcePicker::_notification(int p_what) {
 			draw_style_box(get_theme_stylebox(SceneStringName(panel), SNAME("Tree")), Rect2(Point2(), get_size()));
 		} break;
 
-		case NOTIFICATION_RESIZED: {
+		case NOTIFICATION_SORT_CHILDREN: {
 			_update_resource();
 		} break;
 
@@ -1135,11 +1147,9 @@ Vector<String> EditorResourcePicker::get_allowed_types() const {
 	return types;
 }
 
-void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
+bool EditorResourcePicker::is_resource_allowed(const Ref<Resource> &p_resource) {
 	if (p_resource.is_null()) {
-		edited_resource = Ref<Resource>();
-		_update_resource();
-		return;
+		return true;
 	}
 
 	if (!base_type.is_empty()) {
@@ -1154,9 +1164,20 @@ void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 		}
 
 		if (!is_custom && !_is_type_valid(p_resource->get_class(), allowed_types)) {
-			String class_str = (custom_class == StringName() ? p_resource->get_class() : vformat("%s (%s)", custom_class, p_resource->get_class()));
-			ERR_FAIL_MSG(vformat("Failed to set a resource of the type '%s' because this EditorResourcePicker only accepts '%s' and its derivatives.", class_str, base_type));
+			return false;
 		}
+	}
+	return true;
+}
+
+void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
+	if (!is_resource_allowed(p_resource)) {
+		StringName custom_class;
+		if (p_resource->get_script()) {
+			custom_class = EditorNode::get_singleton()->get_object_custom_type_name(p_resource->get_script());
+		}
+		const String class_str = (custom_class.is_empty() ? p_resource->get_class() : vformat("%s (%s)", custom_class, p_resource->get_class()));
+		ERR_FAIL_MSG(vformat("Failed to set a resource of the type '%s' because this EditorResourcePicker only accepts '%s' and its derivatives.", class_str, base_type));
 	}
 	set_edited_resource_no_check(p_resource);
 }
@@ -1378,7 +1399,7 @@ bool EditorResourcePicker::_is_uniqueness_enabled(bool p_check_recursive) {
 	}
 	Ref<Resource> parent_resource = _has_parent_resource();
 	EditorNode *en = EditorNode::get_singleton();
-	bool internal_to_scene = en->is_resource_internal_to_scene(edited_resource);
+	bool internal_to_scene = edited_resource->is_built_in();
 	List<Node *> node_list = en->get_editor_selection()->get_full_selected_node_list();
 
 	// Todo: Implement a more elegant solution for multiple selected Nodes. This should suffice for the time being.
@@ -1387,7 +1408,7 @@ bool EditorResourcePicker::_is_uniqueness_enabled(bool p_check_recursive) {
 	}
 
 	if (!internal_to_scene) {
-		if (parent_resource.is_valid() && (!EditorNode::get_singleton()->is_resource_internal_to_scene(parent_resource) || en->get_resource_count(parent_resource) > 1)) {
+		if (parent_resource.is_valid() && parent_resource->is_built_in() && (!EditorNode::get_singleton()->is_resource_internal_to_scene(parent_resource) || en->get_resource_count(parent_resource) > 1)) {
 			return false;
 		} else if (!p_check_recursive) {
 			return true;
@@ -1434,6 +1455,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	make_unique_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	make_unique_button->set_button_mask(MouseButtonMask::LEFT | MouseButtonMask::RIGHT);
 	make_unique_button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
+	make_unique_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	add_child(make_unique_button);
 	make_unique_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_on_unique_button_pressed));
 
@@ -1443,6 +1465,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button->set_accessibility_name(TTRC("Assign Resource"));
 	assign_button->set_expand_icon(true);
 	assign_button->set_clip_text(true);
+	assign_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	assign_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	SET_DRAG_FORWARDING_GCD(assign_button, EditorResourcePicker);
 	add_child(assign_button);
@@ -1462,13 +1485,13 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	}
 
 	quick_load_button = memnew(Button);
-	quick_load_button->set_theme_type_variation(SceneStringName(FlatButton));
+	quick_load_button->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 	quick_load_button->set_tooltip_text(TTRC("Quick Load"));
 	add_child(quick_load_button);
 	quick_load_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_edit_menu_cbk).bind(OBJ_MENU_QUICKLOAD));
 
 	edit_button = memnew(Button);
-	edit_button->set_theme_type_variation(SceneStringName(FlatButton));
+	edit_button->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 	edit_button->set_toggle_mode(true);
 	edit_button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
 	edit_button->set_accessibility_name(TTRC("Edit"));

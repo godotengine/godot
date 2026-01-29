@@ -14,8 +14,7 @@
 			A [Curve3D] describing the path.
 		</member>
 		<member name="debug_custom_color" type="Color" setter="set_debug_custom_color" getter="get_debug_custom_color" default="Color(0, 0, 0, 1)">
-			The custom color to use to draw the shape in the editor.
-			If set to [code]Color(0.0, 0.0, 0.0)[/code] (by default), the color set in EditorSettings is used.
+			The custom color used to draw the path in the editor. If set to [constant Color.BLACK] (as by default), the color set in [member ProjectSettings.debug/shapes/paths/geometry_color] is used.
 		</member>
 	</members>
 	<signals>

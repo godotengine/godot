@@ -34,13 +34,27 @@
 #include "core/io/config_file.h"
 #include "editor/docks/editor_dock_manager.h"
 
-void EditorDock::_set_default_slot_bind(EditorPlugin::DockSlot p_slot) {
-	ERR_FAIL_COND(p_slot < EditorPlugin::DOCK_SLOT_NONE || p_slot >= EditorPlugin::DOCK_SLOT_MAX);
-	default_slot = (DockConstants::DockSlot)p_slot;
+void EditorDock::_set_default_slot_bind(DockSlot p_slot) {
+	ERR_FAIL_COND(p_slot < DOCK_SLOT_NONE || p_slot >= DOCK_SLOT_MAX);
+	default_slot = p_slot;
+}
+
+void EditorDock::_emit_changed() {
+	emit_signal(SNAME("_tab_style_changed"));
+}
+
+void EditorDock::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			set_accessibility_region(true);
+			set_accessibility_name(get_display_title());
+		} break;
+	}
 }
 
 void EditorDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open"), &EditorDock::open);
+	ClassDB::bind_method(D_METHOD("make_visible"), &EditorDock::make_visible);
 	ClassDB::bind_method(D_METHOD("close"), &EditorDock::close);
 
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &EditorDock::set_title);
@@ -58,6 +72,10 @@ void EditorDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transient", "transient"), &EditorDock::set_transient);
 	ClassDB::bind_method(D_METHOD("is_transient"), &EditorDock::is_transient);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transient"), "set_transient", "is_transient");
+
+	ClassDB::bind_method(D_METHOD("set_closable", "closable"), &EditorDock::set_closable);
+	ClassDB::bind_method(D_METHOD("is_closable"), &EditorDock::is_closable);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "closable"), "set_closable", "is_closable");
 
 	ClassDB::bind_method(D_METHOD("set_icon_name", "icon_name"), &EditorDock::set_icon_name);
 	ClassDB::bind_method(D_METHOD("get_icon_name"), &EditorDock::get_icon_name);
@@ -77,7 +95,7 @@ void EditorDock::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_dock_shortcut", "shortcut"), &EditorDock::set_dock_shortcut);
 	ClassDB::bind_method(D_METHOD("get_dock_shortcut"), &EditorDock::get_dock_shortcut);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "dock_shortcut", PROPERTY_HINT_RESOURCE_TYPE, "ShortCut"), "set_dock_shortcut", "get_dock_shortcut");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "dock_shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_dock_shortcut", "get_dock_shortcut");
 
 	ClassDB::bind_method(D_METHOD("set_default_slot", "slot"), &EditorDock::_set_default_slot_bind);
 	ClassDB::bind_method(D_METHOD("get_default_slot"), &EditorDock::_get_default_slot_bind);
@@ -85,27 +103,41 @@ void EditorDock::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_available_layouts", "layouts"), &EditorDock::set_available_layouts);
 	ClassDB::bind_method(D_METHOD("get_available_layouts"), &EditorDock::get_available_layouts);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "available_layouts", PROPERTY_HINT_FLAGS, "Vertical:1,Horizontal:2,Floating:3"), "set_available_layouts", "get_available_layouts");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "available_layouts", PROPERTY_HINT_FLAGS, "Vertical:1,Horizontal:2,Floating:4"), "set_available_layouts", "get_available_layouts");
+
+	ADD_SIGNAL(MethodInfo("closed"));
+	ADD_SIGNAL(MethodInfo("_tab_style_changed"));
 
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_VERTICAL);
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_HORIZONTAL);
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_FLOATING);
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_ALL);
 
+	BIND_ENUM_CONSTANT(DOCK_SLOT_NONE);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_UL);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_BL);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_UR);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_BR);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_UL);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_BL);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_UR);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_BR);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_BOTTOM);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_MAX);
+
 	GDVIRTUAL_BIND(_update_layout, "layout");
 	GDVIRTUAL_BIND(_save_layout_to_config, "config", "section");
 	GDVIRTUAL_BIND(_load_layout_from_config, "config", "section");
 }
 
-EditorDock::EditorDock() {
-	set_clip_contents(true);
-	add_user_signal(MethodInfo("tab_style_changed"));
-}
-
 void EditorDock::open() {
 	if (!is_open) {
-		EditorDockManager::get_singleton()->open_dock(this);
+		EditorDockManager::get_singleton()->open_dock(this, false);
 	}
+}
+
+void EditorDock::make_visible() {
+	EditorDockManager::get_singleton()->open_dock(this, true);
 }
 
 void EditorDock::close() {
@@ -119,7 +151,8 @@ void EditorDock::set_title(const String &p_title) {
 		return;
 	}
 	title = p_title;
-	emit_signal("tab_style_changed");
+	set_accessibility_name(get_display_title());
+	_emit_changed();
 }
 
 void EditorDock::set_global(bool p_global) {
@@ -137,7 +170,7 @@ void EditorDock::set_icon_name(const StringName &p_name) {
 		return;
 	}
 	icon_name = p_name;
-	emit_signal("tab_style_changed");
+	_emit_changed();
 }
 
 void EditorDock::set_dock_icon(const Ref<Texture2D> &p_icon) {
@@ -145,7 +178,7 @@ void EditorDock::set_dock_icon(const Ref<Texture2D> &p_icon) {
 		return;
 	}
 	dock_icon = p_icon;
-	emit_signal("tab_style_changed");
+	_emit_changed();
 }
 
 void EditorDock::set_force_show_icon(bool p_force) {
@@ -153,7 +186,7 @@ void EditorDock::set_force_show_icon(bool p_force) {
 		return;
 	}
 	force_show_icon = p_force;
-	emit_signal("tab_style_changed");
+	_emit_changed();
 }
 
 void EditorDock::set_title_color(const Color &p_color) {
@@ -161,18 +194,31 @@ void EditorDock::set_title_color(const Color &p_color) {
 		return;
 	}
 	title_color = p_color;
-	emit_signal("tab_style_changed");
+	_emit_changed();
 }
 
 void EditorDock::set_dock_shortcut(const Ref<Shortcut> &p_shortcut) {
-	shortcut = p_shortcut;
-	if (global && is_inside_tree()) {
-		EditorDockManager::get_singleton()->update_docks_menu();
+	if (shortcut == p_shortcut) {
+		return;
 	}
+
+	const Callable changed_callback = callable_mp(this, &EditorDock::_emit_changed);
+	if (shortcut.is_valid()) {
+		shortcut->disconnect_changed(changed_callback);
+	}
+	shortcut = p_shortcut;
+	if (shortcut.is_valid()) {
+		shortcut->connect_changed(changed_callback);
+	}
+	_emit_changed();
 }
 
-void EditorDock::set_default_slot(DockConstants::DockSlot p_slot) {
-	ERR_FAIL_INDEX(p_slot, DockConstants::DOCK_SLOT_MAX);
+Ref<Shortcut> EditorDock::get_dock_shortcut() const {
+	return shortcut;
+}
+
+void EditorDock::set_default_slot(DockSlot p_slot) {
+	ERR_FAIL_INDEX(p_slot, DOCK_SLOT_MAX);
 	default_slot = p_slot;
 }
 

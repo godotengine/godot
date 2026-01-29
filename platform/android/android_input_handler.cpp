@@ -30,6 +30,8 @@
 
 #include "android_input_handler.h"
 
+#include "core/input/input.h"
+
 #include "android_keys_utils.h"
 #include "display_server_android.h"
 

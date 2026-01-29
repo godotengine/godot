@@ -14,21 +14,21 @@
 			<return type="bool" />
 			<param index="0" name="feature" type="int" enum="BaseMaterial3D.Feature" />
 			<description>
-				Returns [code]true[/code], if the specified [enum Feature] is enabled.
+				Returns [code]true[/code] if the specified [param feature] is enabled.
 			</description>
 		</method>
 		<method name="get_flag" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="flag" type="int" enum="BaseMaterial3D.Flags" />
 			<description>
-				Returns [code]true[/code] if the specified flag is enabled.
+				Returns [code]true[/code] if the specified [param flag] is enabled.
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="param" type="int" enum="BaseMaterial3D.TextureParam" />
 			<description>
-				Returns the [Texture2D] associated with the specified [enum TextureParam].
+				Returns the [Texture2D] associated with the specified texture [param param].
 			</description>
 		</method>
 		<method name="set_feature">
@@ -36,7 +36,7 @@
 			<param index="0" name="feature" type="int" enum="BaseMaterial3D.Feature" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], enables the specified [enum Feature]. Many features that are available in [BaseMaterial3D]s need to be enabled before use. This way the cost for using the feature is only incurred when specified. Features can also be enabled by setting the corresponding member to [code]true[/code].
+				If [param enable] is [code]true[/code], enables the specified [param feature]. Many features that are available in [BaseMaterial3D] need to be enabled before use. This way, the cost for using the feature is only incurred when specified. Features can also be enabled by setting their corresponding property to [code]true[/code].
 			</description>
 		</method>
 		<method name="set_flag">
@@ -44,7 +44,7 @@
 			<param index="0" name="flag" type="int" enum="BaseMaterial3D.Flags" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], enables the specified flag. Flags are optional behavior that can be turned on and off. Only one flag can be enabled at a time with this function, the flag enumerators cannot be bit-masked together to enable or disable multiple flags at once. Flags can also be enabled by setting the corresponding member to [code]true[/code].
+				If [param enable] is [code]true[/code], enables the specified [param flag]. Flags are optional behavior that can be turned on and off. Only one flag can be enabled at a time with this function, the flag enumerators cannot be bit-masked together to enable or disable multiple flags at once. Flags can also be enabled by setting their corresponding property to [code]true[/code].
 			</description>
 		</method>
 		<method name="set_texture">
@@ -160,7 +160,7 @@
 			Determines when depth rendering takes place. See also [member transparency].
 		</member>
 		<member name="depth_test" type="int" setter="set_depth_test" getter="get_depth_test" enum="BaseMaterial3D.DepthTest" default="0" experimental="May be affected by future rendering pipeline changes.">
-			Determines which comparison operator is used when testing depth. See [enum DepthTest].
+			Determines which comparison operator is used when testing depth.
 			[b]Note:[/b] Changing [member depth_test] to a non-default value only has a visible effect when used on a transparent material, or a material that has [member depth_draw_mode] set to [constant DEPTH_DRAW_DISABLED].
 		</member>
 		<member name="detail_albedo" type="Texture2D" setter="set_texture" getter="get_texture">
@@ -382,13 +382,13 @@
 			The primary color of the stencil effect.
 		</member>
 		<member name="stencil_compare" type="int" setter="set_stencil_compare" getter="get_stencil_compare" enum="BaseMaterial3D.StencilCompare" default="0" experimental="May be affected by future rendering pipeline changes.">
-			The comparison operator to use for stencil masking operations. See [enum StencilCompare].
+			The comparison operator to use for stencil masking operations.
 		</member>
 		<member name="stencil_flags" type="int" setter="set_stencil_flags" getter="get_stencil_flags" default="0" experimental="May be affected by future rendering pipeline changes.">
-			The flags dictating how the stencil operation behaves. See [enum StencilFlags].
+			The flags dictating how the stencil operation behaves.
 		</member>
 		<member name="stencil_mode" type="int" setter="set_stencil_mode" getter="get_stencil_mode" enum="BaseMaterial3D.StencilMode" default="0" experimental="May be affected by future rendering pipeline changes.">
-			The stencil effect mode. See [enum StencilMode].
+			The stencil effect mode.
 		</member>
 		<member name="stencil_outline_thickness" type="float" setter="set_stencil_effect_outline_thickness" getter="get_stencil_effect_outline_thickness" default="0.01" experimental="May be affected by future rendering pipeline changes.">
 			The outline thickness for [constant STENCIL_MODE_OUTLINE].
@@ -862,7 +862,7 @@
 			Enables stencil operations without a preset.
 		</constant>
 		<constant name="STENCIL_FLAG_READ" value="1" enum="StencilFlags">
-			The material will only be rendered where it passes a stencil comparison with existing stencil buffer values. See [enum StencilCompare].
+			The material will only be rendered where it passes a stencil comparison with existing stencil buffer values.
 		</constant>
 		<constant name="STENCIL_FLAG_WRITE" value="2" enum="StencilFlags">
 			The material will write the reference value to the stencil buffer where it passes the depth test.

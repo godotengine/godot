@@ -1,0 +1,10 @@
+GH-84113
+--------
+Validate extension JSON: Error: Field 'classes/Decal/properties/texture_albedo': type changed value in new API, from "Texture" to "Texture2D".
+Validate extension JSON: Error: Field 'classes/Decal/properties/texture_emission': type changed value in new API, from "Texture" to "Texture2D".
+Validate extension JSON: Error: Field 'classes/Decal/properties/texture_normal': type changed value in new API, from "Texture" to "Texture2D".
+Validate extension JSON: Error: Field 'classes/Decal/properties/texture_orm': type changed value in new API, from "Texture" to "Texture2D".
+Validate extension JSON: Error: Field 'classes/LineEdit/properties/right_icon': type changed value in new API, from "Texture" to "Texture2D".
+Validate extension JSON: Error: Field 'classes/Sprite3D/properties/texture': type changed value in new API, from "Texture" to "Texture2D".
+
+Changed the hint types of some nodes' properties from Texture to Texture2D. No adjustments should be necessary.

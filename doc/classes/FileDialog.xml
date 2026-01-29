@@ -107,7 +107,7 @@
 		<method name="invalidate">
 			<return type="void" />
 			<description>
-				Invalidate and update the current dialog content list.
+				Invalidates and updates this dialog's content list.
 				[b]Note:[/b] This method does nothing on native file dialogs.
 			</description>
 		</method>
@@ -118,12 +118,18 @@
 				Returns [code]true[/code] if the provided [param flag] is enabled.
 			</description>
 		</method>
+		<method name="popup_file_dialog">
+			<return type="void" />
+			<description>
+				Shows the [FileDialog] using the default size and position for file dialogs, and selects the file name if there is a current file.
+			</description>
+		</method>
 		<method name="set_customization_flag_enabled">
 			<return type="void" />
 			<param index="0" name="flag" type="int" enum="FileDialog.Customization" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				Toggles the specified customization [param flag], allowing to customize features available in this [FileDialog]. See [enum Customization] for options.
+				Sets the specified customization [param flag], allowing to customize the features available in this [FileDialog].
 			</description>
 		</method>
 		<method name="set_favorite_list" qualifiers="static">
@@ -270,10 +276,11 @@
 		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Save a File&quot;" />
 		<member name="use_native_dialog" type="bool" setter="set_use_native_dialog" getter="get_use_native_dialog" default="false">
 			If [code]true[/code], and if supported by the current [DisplayServer], OS native dialog will be used instead of custom one.
-			[b]Note:[/b] On Android, it is only supported for Android 10+ devices and when using [constant ACCESS_FILESYSTEM]. For access mode [constant ACCESS_RESOURCES] and [constant ACCESS_USERDATA], the system will fall back to custom FileDialog.
+			[b]Note:[/b] On Android, it is only supported when using [constant ACCESS_FILESYSTEM]. For access mode [constant ACCESS_RESOURCES] and [constant ACCESS_USERDATA], the system will fall back to custom FileDialog.
 			[b]Note:[/b] On Linux and macOS, sandboxed apps always use native dialogs to access the host file system.
 			[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
 			[b]Note:[/b] Native dialogs are isolated from the base process, file dialog properties can't be modified once the dialog is shown.
+			[b]Note:[/b] This property is ignored in [EditorFileDialog].
 		</member>
 	</members>
 	<signals>

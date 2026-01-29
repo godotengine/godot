@@ -41,6 +41,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_bottom_panel.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
@@ -60,7 +61,7 @@ void VersionControlEditorPlugin::_bind_methods() {
 
 void VersionControlEditorPlugin::_create_vcs_metadata_files() {
 	String dir = "res://";
-	EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(metadata_selection->get_selected()), dir);
+	EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(metadata_selection->get_selected_id()), dir);
 }
 
 void VersionControlEditorPlugin::_notification(int p_what) {
@@ -74,6 +75,19 @@ void VersionControlEditorPlugin::_notification(int p_what) {
 			}
 		}
 	}
+}
+
+void VersionControlEditorPlugin::_update_theme() {
+	select_public_path_button->set_button_icon(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon("Folder"));
+	select_private_path_button->set_button_icon(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon("Folder"));
+	refresh_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Reload"), EditorStringName(EditorIcons)));
+	discard_all_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Close"), EditorStringName(EditorIcons)));
+	stage_all_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MoveDown"), EditorStringName(EditorIcons)));
+	unstage_all_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MoveUp"), EditorStringName(EditorIcons)));
+	fetch_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Reload"), EditorStringName(EditorIcons)));
+	pull_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MoveDown"), EditorStringName(EditorIcons)));
+	push_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MoveUp"), EditorStringName(EditorIcons)));
+	extra_options->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GuiTabMenuHl"), EditorStringName(EditorIcons)));
 }
 
 void VersionControlEditorPlugin::_populate_available_vcs_names() {
@@ -958,9 +972,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	metadata_selection = memnew(OptionButton);
 	metadata_selection->set_custom_minimum_size(Size2(100, 20));
-	metadata_selection->add_item("None", (int)EditorVCSInterface::VCSMetadata::NONE);
 	metadata_selection->add_item("Git", (int)EditorVCSInterface::VCSMetadata::GIT);
-	metadata_selection->select((int)EditorVCSInterface::VCSMetadata::GIT);
+	metadata_selection->select(metadata_selection->get_item_index((int)EditorVCSInterface::VCSMetadata::GIT));
 	metadata_hb->add_child(metadata_selection);
 
 	l = memnew(Label);
@@ -1074,7 +1087,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_ssh_public_key_path->connect(SceneStringName(text_changed), callable_mp(this, &VersionControlEditorPlugin::_update_set_up_warning));
 	set_up_ssh_public_key_input_hbc->add_child(set_up_ssh_public_key_path);
 
-	set_up_ssh_public_key_file_dialog = memnew(FileDialog);
+	set_up_ssh_public_key_file_dialog = memnew(EditorFileDialog);
 	set_up_ssh_public_key_file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
 	set_up_ssh_public_key_file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
 	set_up_ssh_public_key_file_dialog->set_show_hidden_files(true);
@@ -1082,8 +1095,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_ssh_public_key_file_dialog->connect(SNAME("file_selected"), callable_mp(this, &VersionControlEditorPlugin::_ssh_public_key_selected));
 	set_up_ssh_public_key_input_hbc->add_child(set_up_ssh_public_key_file_dialog);
 
-	Button *select_public_path_button = memnew(Button);
-	select_public_path_button->set_button_icon(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon("Folder"));
+	select_public_path_button = memnew(Button);
 	select_public_path_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_popup_file_dialog).bind(set_up_ssh_public_key_file_dialog));
 	select_public_path_button->set_tooltip_text(TTR("Select SSH public key path"));
 	select_public_path_button->set_accessibility_name(TTRC("Select SSH public key path"));
@@ -1109,7 +1121,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_ssh_private_key_path->set_accessibility_name(TTRC("SSH Private Key Path"));
 	set_up_ssh_private_key_input_hbc->add_child(set_up_ssh_private_key_path);
 
-	set_up_ssh_private_key_file_dialog = memnew(FileDialog);
+	set_up_ssh_private_key_file_dialog = memnew(EditorFileDialog);
 	set_up_ssh_private_key_file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
 	set_up_ssh_private_key_file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
 	set_up_ssh_private_key_file_dialog->set_show_hidden_files(true);
@@ -1117,8 +1129,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_ssh_private_key_file_dialog->connect("file_selected", callable_mp(this, &VersionControlEditorPlugin::_ssh_private_key_selected));
 	set_up_ssh_private_key_input_hbc->add_child(set_up_ssh_private_key_file_dialog);
 
-	Button *select_private_path_button = memnew(Button);
-	select_private_path_button->set_button_icon(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon("Folder"));
+	select_private_path_button = memnew(Button);
 	select_private_path_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_popup_file_dialog).bind(set_up_ssh_private_key_file_dialog));
 	select_private_path_button->set_tooltip_text(TTR("Select SSH private key path"));
 	set_up_ssh_private_key_input_hbc->add_child(select_private_path_button);
@@ -1151,7 +1162,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	version_commit_dock->set_layout_key("VersionCommit");
 	version_commit_dock->set_icon_name("VcsBranches");
 	version_commit_dock->set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_version_control", TTRC("Open Version Control Dock")));
-	version_commit_dock->set_default_slot(DockConstants::DOCK_SLOT_RIGHT_UL);
+	version_commit_dock->set_default_slot(EditorDock::DOCK_SLOT_RIGHT_UL);
 
 	VBoxContainer *dock_vb = memnew(VBoxContainer);
 	version_commit_dock->add_child(dock_vb);
@@ -1172,7 +1183,6 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	refresh_button = memnew(Button);
 	refresh_button->set_tooltip_text(TTR("Detect new changes"));
 	refresh_button->set_theme_type_variation(SceneStringName(FlatButton));
-	refresh_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Reload"), EditorStringName(EditorIcons)));
 	refresh_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_refresh_stage_area));
 	refresh_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_refresh_commit_list));
 	refresh_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_refresh_branch_list));
@@ -1192,7 +1202,6 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	discard_all_button = memnew(Button);
 	discard_all_button->set_tooltip_text(TTR("Discard all changes"));
-	discard_all_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Close"), EditorStringName(EditorIcons)));
 	discard_all_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_confirm_discard_all));
 	discard_all_button->set_theme_type_variation(SceneStringName(FlatButton));
 	unstage_title->add_child(discard_all_button);
@@ -1200,7 +1209,6 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	stage_all_button = memnew(Button);
 	stage_all_button->set_accessibility_name(TTRC("Stage all changes"));
 	stage_all_button->set_theme_type_variation(SceneStringName(FlatButton));
-	stage_all_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MoveDown"), EditorStringName(EditorIcons)));
 	stage_all_button->set_tooltip_text(TTR("Stage all changes"));
 	unstage_title->add_child(stage_all_button);
 
@@ -1231,7 +1239,6 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	unstage_all_button = memnew(Button);
 	unstage_all_button->set_accessibility_name(TTRC("Unstage all changes"));
 	unstage_all_button->set_theme_type_variation(SceneStringName(FlatButton));
-	unstage_all_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MoveUp"), EditorStringName(EditorIcons)));
 	unstage_all_button->set_tooltip_text(TTR("Unstage all changes"));
 	stage_title->add_child(unstage_all_button);
 
@@ -1433,27 +1440,23 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	fetch_button = memnew(Button);
 	fetch_button->set_theme_type_variation(SceneStringName(FlatButton));
 	fetch_button->set_tooltip_text(TTR("Fetch"));
-	fetch_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Reload"), EditorStringName(EditorIcons)));
 	fetch_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_fetch));
 	menu_bar->add_child(fetch_button);
 
 	pull_button = memnew(Button);
 	pull_button->set_theme_type_variation(SceneStringName(FlatButton));
 	pull_button->set_tooltip_text(TTR("Pull"));
-	pull_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MoveDown"), EditorStringName(EditorIcons)));
 	pull_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_pull));
 	menu_bar->add_child(pull_button);
 
 	push_button = memnew(Button);
 	push_button->set_theme_type_variation(SceneStringName(FlatButton));
 	push_button->set_tooltip_text(TTR("Push"));
-	push_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MoveUp"), EditorStringName(EditorIcons)));
 	push_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_push));
 	menu_bar->add_child(push_button);
 
 	extra_options = memnew(MenuButton);
 	extra_options->set_accessibility_name(TTRC("Extra options"));
-	extra_options->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GuiTabMenuHl"), EditorStringName(EditorIcons)));
 	extra_options->get_popup()->connect(SNAME("about_to_popup"), callable_mp(this, &VersionControlEditorPlugin::_update_extra_options));
 	extra_options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &VersionControlEditorPlugin::_extra_option_selected));
 	menu_bar->add_child(extra_options);
@@ -1529,6 +1532,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	version_control_dock->add_child(diff);
 
 	_update_set_up_warning("");
+	EditorNode::get_singleton()->get_gui_base()->connect(SceneStringName(theme_changed), callable_mp(this, &VersionControlEditorPlugin::_update_theme));
 }
 
 VersionControlEditorPlugin::~VersionControlEditorPlugin() {

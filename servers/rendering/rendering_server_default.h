@@ -74,7 +74,7 @@ class RenderingServerDefault : public RenderingServer {
 	uint64_t print_frame_profile_ticks_from = 0;
 	uint32_t print_frame_profile_frame_count = 0;
 
-	mutable CommandQueueMT command_queue = CommandQueueMT(true);
+	mutable CommandQueueMT command_queue;
 
 	Thread::ID server_thread = Thread::MAIN_ID;
 	WorkerThreadPool::TaskID server_task_id = WorkerThreadPool::INVALID_TASK_ID;
@@ -263,8 +263,8 @@ public:
 			}
 
 			RSG::material_storage->shader_initialize(shader, false);
-			RSG::material_storage->shader_set_code(shader, p_code);
 			RSG::material_storage->shader_set_path_hint(shader, p_path_hint);
+			RSG::material_storage->shader_set_code(shader, p_code);
 		} else {
 			command_queue.push(RSG::material_storage, &RendererMaterialStorage::shader_initialize, shader, false);
 			command_queue.push(RSG::material_storage, &RendererMaterialStorage::shader_set_code, shader, p_code);
@@ -831,6 +831,7 @@ public:
 	FUNC1(environment_glow_set_use_bicubic_upscale, bool)
 
 	FUNC4(environment_set_tonemap, RID, EnvironmentToneMapper, float, float)
+	FUNC2(environment_set_tonemap_agx_contrast, RID, float)
 
 	FUNC7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
 

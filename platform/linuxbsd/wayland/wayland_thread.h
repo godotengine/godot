@@ -45,6 +45,7 @@
 #ifdef GLES3_ENABLED
 #include <wayland-egl-core.h>
 #endif
+#include <xkbcommon/xkbcommon-compose.h>
 #include <xkbcommon/xkbcommon.h>
 #endif // SOWRAP_ENABLED
 
@@ -85,6 +86,7 @@
 #endif // SOWRAP_ENABLED
 #endif // LIBDECOR_ENABLED
 
+#include "core/input/input_event.h"
 #include "core/os/thread.h"
 #include "servers/display/display_server.h"
 
@@ -246,15 +248,25 @@ public:
 
 		Rect2i rect;
 		DisplayServer::WindowMode mode = DisplayServer::WINDOW_MODE_WINDOWED;
-		bool suspended = false;
+
+		// Toplevel states.
+		bool maximized = false; // MUST obey configure size.
+		bool fullscreen = false; // Can be smaller than configure size.
+		bool resizing = false; // Configure size is a max.
+		// No need for `activated` (yet)
+		bool tiled_left = false;
+		bool tiled_right = false;
+		bool tiled_top = false;
+		bool tiled_bottom = false;
+		bool suspended = false; // We can stop drawing.
 
 		// These are true by default as it isn't guaranteed that we'll find an
 		// xdg-shell implementation with wm_capabilities available. If and once we
 		// receive a wm_capabilities event these will get reset and updated with
 		// whatever the compositor says.
-		bool can_minimize = false;
-		bool can_maximize = false;
-		bool can_fullscreen = false;
+		bool can_minimize = true;
+		bool can_maximize = true;
+		bool can_fullscreen = true;
 
 		HashSet<struct wl_output *> wl_outputs;
 
@@ -293,6 +305,9 @@ public:
 
 		// NOTE: The preferred buffer scale is currently only dynamically calculated.
 		// It can be accessed by calling `window_state_get_preferred_buffer_scale`.
+
+		// NOTE: Popups manually inherit the parent's scale on creation. Make sure to
+		// sync them up with any new fields.
 
 		// Override used by the fractional scale add-on object. If less or equal to 0
 		// (default) then the normal output-based scale is used instead.
@@ -479,8 +494,11 @@ public:
 
 		xkb_layout_index_t current_layout_index = 0;
 
-		int32_t repeat_key_delay_msec = 0;
-		int32_t repeat_start_delay_msec = 0;
+		// Clients with `wl_seat`s older than version 4 do not support
+		// `wl_keyboard::repeat_info`, so we'll provide a reasonable default of 25
+		// keys per second, with a start delay of 600 milliseconds.
+		int32_t repeat_key_delay_msec = 1000 / 25;
+		int32_t repeat_start_delay_msec = 600;
 
 		xkb_keycode_t repeating_keycode = XKB_KEYCODE_INVALID;
 		uint64_t last_repeat_start_msec = 0;
@@ -1036,6 +1054,8 @@ private:
 	static Ref<InputEventKey> _seat_state_get_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed);
 	static Ref<InputEventKey> _seat_state_get_unstuck_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed, Key p_key);
 
+	static void _seat_state_handle_xkb_keycode(SeatState *p_ss, xkb_keycode_t p_xkb_keycode, bool p_pressed, bool p_echo = false);
+
 	static void _wayland_state_update_cursor();
 
 	void _set_current_seat(struct wl_seat *p_seat);
@@ -1073,7 +1093,7 @@ public:
 	void seat_state_echo_keys(SeatState *p_ss);
 
 	static int window_state_get_preferred_buffer_scale(WindowState *p_ws);
-	static double window_state_get_scale_factor(WindowState *p_ws);
+	static double window_state_get_scale_factor(const WindowState *p_ws);
 	static void window_state_update_size(WindowState *p_ws, int p_width, int p_height);
 
 	static Vector2i scale_vector2i(const Vector2i &p_vector, double p_amount);
@@ -1094,6 +1114,8 @@ public:
 
 	struct wl_surface *window_get_wl_surface(DisplayServer::WindowID p_window_id) const;
 	WindowState *window_get_state(DisplayServer::WindowID p_window_id);
+	const WindowState *window_get_state(DisplayServer::WindowID p_window_id) const;
+	Size2i window_set_size(DisplayServer::WindowID p_window_id, const Size2i &p_size);
 
 	void window_start_resize(DisplayServer::WindowResizeEdge p_edge, DisplayServer::WindowID p_window);
 
@@ -1145,6 +1167,7 @@ public:
 	String keyboard_get_layout_name(int p_index) const;
 
 	Key keyboard_get_key_from_physical(Key p_key) const;
+	Key keyboard_get_label_from_physical(Key p_key) const;
 
 	void keyboard_echo_keys();
 

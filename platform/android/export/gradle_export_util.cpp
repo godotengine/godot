@@ -170,19 +170,24 @@ Error store_string_at_path(const String &p_path, const String &p_data) {
 // It is used by the export_project_files method to save all the asset files into the gradle project.
 // It's functionality mirrors that of the method save_apk_file.
 // This method will be called ONLY when gradle build is enabled.
-Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
+Error rename_and_store_file_in_gradle_project(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta) {
 	CustomExportData *export_data = static_cast<CustomExportData *>(p_userdata);
 
 	const String simplified_path = EditorExportPlatform::simplify_path(p_path);
 
 	Vector<uint8_t> enc_data;
 	EditorExportPlatform::SavedData sd;
-	Error err = _store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, enc_data, sd);
+	Error err = _store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, p_delta, enc_data, sd);
 	if (err != OK) {
 		return err;
 	}
 
-	const String dst_path = export_data->assets_directory + String("/") + simplified_path.trim_prefix("res://");
+	String dst_path;
+	if (export_data->pd.salt.length() == 32) {
+		dst_path = export_data->assets_directory + String("/") + (simplified_path + export_data->pd.salt).sha256_text();
+	} else {
+		dst_path = export_data->assets_directory + String("/") + simplified_path.trim_prefix("res://");
+	}
 	print_verbose("Saving project files from " + simplified_path + " into " + dst_path);
 	err = store_file_at_path(dst_path, enc_data);
 
@@ -291,8 +296,11 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 		if (export_plugins[i]->supports_platform(p_export_platform)) {
 			const String contents = export_plugins[i]->get_android_manifest_activity_element_contents(p_export_platform, p_debug);
 			if (!contents.is_empty()) {
+				const String export_plugin_name = export_plugins[i]->get_name();
+				export_plugins_activity_element_contents += "<!-- Start of manifest activity element contents from " + export_plugin_name + " -->\n";
 				export_plugins_activity_element_contents += contents;
 				export_plugins_activity_element_contents += "\n";
+				export_plugins_activity_element_contents += "<!-- End of manifest activity element contents from " + export_plugin_name + " -->\n";
 			}
 		}
 	}
@@ -387,8 +395,11 @@ String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, 
 		if (export_plugins[i]->supports_platform(p_export_platform)) {
 			const String contents = export_plugins[i]->get_android_manifest_application_element_contents(p_export_platform, p_debug);
 			if (!contents.is_empty()) {
+				const String export_plugin_name = export_plugins[i]->get_name();
+				manifest_application_text += "<!-- Start of manifest application element contents from " + export_plugin_name + " -->\n";
 				manifest_application_text += contents;
 				manifest_application_text += "\n";
+				manifest_application_text += "<!-- End of manifest application element contents from " + export_plugin_name + " -->\n";
 			}
 		}
 	}
@@ -398,7 +409,7 @@ String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, 
 	return manifest_application_text;
 }
 
-Error _store_temp_file(const String &p_simplified_path, const Vector<uint8_t> &p_data, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, Vector<uint8_t> &r_enc_data, EditorExportPlatform::SavedData &r_sd) {
+Error _store_temp_file(const String &p_simplified_path, const Vector<uint8_t> &p_data, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta, Vector<uint8_t> &r_enc_data, EditorExportPlatform::SavedData &r_sd) {
 	Error err = OK;
 	Ref<FileAccess> ftmp = FileAccess::create_temp(FileAccess::WRITE_READ, "export", "tmp", false, &err);
 	if (err != OK) {
@@ -407,6 +418,7 @@ Error _store_temp_file(const String &p_simplified_path, const Vector<uint8_t> &p
 	r_sd.path_utf8 = p_simplified_path.trim_prefix("res://").utf8();
 	r_sd.ofs = 0;
 	r_sd.size = p_data.size();
+	r_sd.delta = p_delta;
 	err = EditorExportPlatform::_encrypt_and_store_data(ftmp, p_simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, r_sd.encrypted);
 	if (err != OK) {
 		return err;

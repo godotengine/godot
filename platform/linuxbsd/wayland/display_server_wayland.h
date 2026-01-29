@@ -58,7 +58,8 @@
 #endif
 
 #include "core/config/project_settings.h"
-#include "core/input/input.h"
+#include "core/input/input_event.h"
+#include "core/templates/rb_map.h"
 #include "servers/display/display_server.h"
 
 #include <climits>
@@ -290,6 +291,8 @@ public:
 	virtual Size2i window_get_size(WindowID p_window_id = MAIN_WINDOW_ID) const override;
 	virtual Size2i window_get_size_with_decorations(WindowID p_window_id = MAIN_WINDOW_ID) const override;
 
+	virtual float window_get_scale(WindowID p_window_id = MAIN_WINDOW_ID) const override;
+
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window_id = MAIN_WINDOW_ID) override;
 	virtual WindowMode window_get_mode(WindowID p_window_id = MAIN_WINDOW_ID) const override;
 
@@ -339,6 +342,7 @@ public:
 	virtual String keyboard_get_layout_language(int p_index) const override;
 	virtual String keyboard_get_layout_name(int p_index) const override;
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
+	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
 
 	virtual bool color_picker(const Callable &p_callback) override;
 

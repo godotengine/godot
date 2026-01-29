@@ -35,9 +35,10 @@
 #include "tts_windows.h"
 
 #include "core/config/project_settings.h"
-#include "core/input/input.h"
+#include "core/input/input_event.h"
 #include "core/io/image.h"
 #include "core/os/os.h"
+#include "core/templates/rb_map.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/midi_driver_winmidi.h"
 #include "servers/audio/audio_server.h"
@@ -274,6 +275,11 @@ class DisplayServerWindows : public DisplayServer {
 
 	RBMap<int, Vector2> touch_state;
 
+	Vector<BYTE> icon_buffer_big;
+	HICON icon_big = nullptr;
+	Vector<BYTE> icon_buffer_small;
+	HICON icon_small = nullptr;
+
 	int pressrc;
 	HINSTANCE hInstance; // Holds The Instance Of The Application
 	String rendering_driver;
@@ -387,13 +393,12 @@ class DisplayServerWindows : public DisplayServer {
 	HHOOK mouse_monitor = nullptr;
 	List<WindowID> popup_list;
 	uint64_t time_since_popup = 0;
-	Ref<Image> icon;
 
 	Error _create_window(WindowID p_window_id, WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent, HWND p_parent_hwnd, bool p_no_redirection_bitmap);
 	void _destroy_window(WindowID p_window_id); // Destroys only what was needed to be created for the main window. Does not destroy transient parent dependencies or GL/rendering context windows.
 
 #ifdef RD_ENABLED
-	Error _create_rendering_context_window(WindowID p_window_id);
+	Error _create_rendering_context_window(WindowID p_window_id, const String &p_rendering_driver);
 	void _destroy_rendering_context_window(WindowID p_window_id);
 #endif
 
@@ -413,6 +418,8 @@ class DisplayServerWindows : public DisplayServer {
 	struct IndicatorData {
 		RID menu_rid;
 		Callable callback;
+		Vector<BYTE> icon_buffer;
+		HICON icon = nullptr;
 	};
 
 	IndicatorID indicator_id_counter = 0;
@@ -505,6 +512,8 @@ class DisplayServerWindows : public DisplayServer {
 
 	LRESULT _handle_early_window_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	Point2i _get_screens_origin() const;
+
+	Vector2i _get_screen_expand_offset(int p_screen) const;
 
 	enum class WinKeyModifierMask {
 		ALT_GR = (1 << 1),

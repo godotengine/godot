@@ -442,14 +442,9 @@ void AudioStreamPlaybackMicrophone::start(double p_from_pos) {
 		return;
 	}
 
-	if (!GLOBAL_GET_CACHED(bool, "audio/driver/enable_input")) {
-		WARN_PRINT("You must enable the project setting \"audio/driver/enable_input\" to use audio capture.");
-		return;
-	}
-
 	input_ofs = 0;
 
-	if (AudioDriver::get_singleton()->input_start() == OK) {
+	if (AudioServer::get_singleton()->set_input_device_active(true) == OK) {
 		active = true;
 		begin_resample();
 	}
@@ -457,7 +452,7 @@ void AudioStreamPlaybackMicrophone::start(double p_from_pos) {
 
 void AudioStreamPlaybackMicrophone::stop() {
 	if (active) {
-		AudioDriver::get_singleton()->input_stop();
+		AudioServer::get_singleton()->set_input_device_active(false);
 		active = false;
 	}
 }

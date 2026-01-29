@@ -129,6 +129,11 @@ String EditorFileSystemDirectory::get_file_path(int p_idx) const {
 	return get_path().path_join(get_file(p_idx));
 }
 
+ResourceUID::ID EditorFileSystemDirectory::get_file_uid(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, files.size(), ResourceUID::INVALID_ID);
+	return files[p_idx]->uid;
+}
+
 Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, files.size(), Vector<String>());
 	Vector<String> deps;
@@ -3285,7 +3290,12 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	// Emit the resource_reimporting signal for the single file before the actual importation.
 	emit_signal(SNAME("resources_reimporting"), reloads);
 
-#ifdef THREADS_ENABLED
+#ifdef WEB_ENABLED
+	// On web, busy-wait loops on the main thread block the JavaScript event loop,
+	// causing the browser tab to appear frozen. Disable threaded imports entirely.
+	// See GH-112072 for details.
+	bool use_multiple_threads = false;
+#elif defined(THREADS_ENABLED)
 	bool use_multiple_threads = GLOBAL_GET("editor/import/use_multiple_threads");
 #else
 	bool use_multiple_threads = false;
@@ -3555,7 +3565,10 @@ Error EditorFileSystem::make_dir_recursive(const String &p_path, const String &p
 }
 
 Error EditorFileSystem::copy_file(const String &p_from, const String &p_to) {
-	_copy_file(p_from, p_to);
+	Error err = _copy_file(p_from, p_to);
+	if (err != OK) {
+		return err;
+	}
 
 	EditorFileSystemDirectory *parent = get_filesystem_path(p_to.get_base_dir());
 	ERR_FAIL_NULL_V(parent, ERR_FILE_NOT_FOUND);
@@ -3747,7 +3760,9 @@ void EditorFileSystem::remove_import_format_support_query(Ref<EditorFileSystemIm
 }
 
 EditorFileSystem::EditorFileSystem() {
-#ifdef THREADS_ENABLED
+#if defined(THREADS_ENABLED) && !defined(WEB_ENABLED)
+	// On web, threaded scanning blocks the browser's event loop, causing freezes.
+	// See GH-112072 for details.
 	use_threads = true;
 #endif
 

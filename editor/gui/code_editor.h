@@ -172,7 +172,6 @@ class CodeTextEditor : public VBoxContainer {
 	Label *line_and_col_txt = nullptr;
 	Label *indentation_txt = nullptr;
 
-	Label *info = nullptr;
 	Timer *idle = nullptr;
 	float idle_time = 0.0f;
 	float idle_time_with_errors = 0.0f;

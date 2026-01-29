@@ -1,0 +1,8 @@
+GH-76026
+--------
+Validate extension JSON: Error: Hash changed for 'classes/EditorScript/methods/get_editor_interface', from FBC1084A to 75D179CC. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorScript/methods/get_scene', from 6C6B0707 to BC5DCFF4. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'classes/EditorScript/methods/get_editor_interface': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorScript/methods/get_scene': is_const changed value in new API, from false to true.
+
+Functions were made `const`. No adjustments should be necessary.

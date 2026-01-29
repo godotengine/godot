@@ -987,15 +987,23 @@ void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
 void RendererViewport::viewport_set_scaling_3d_mode(RID p_viewport, RS::ViewportScaling3DMode p_mode) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
+#ifdef DEBUG_ENABLED
 	const String rendering_method = OS::get_singleton()->get_current_rendering_method();
 	if (rendering_method != "forward_plus") {
-		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR, "FSR1 is only available when using the Forward+ renderer.");
-		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2, "FSR2 is only available when using the Forward+ renderer.");
-		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL, "MetalFX Temporal is only available when using the Forward+ renderer.");
+		if (p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR) {
+			WARN_PRINT_ONCE_ED("FSR1 3D scaling is only available when using the Forward+ renderer.");
+		}
+		if (p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2) {
+			WARN_PRINT_ONCE_ED("FSR2 3D scaling is only available when using the Forward+ renderer.");
+		}
+		if (p_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL) {
+			WARN_PRINT_ONCE_ED("MetalFX Temporal 3D scaling is only available when using the Forward+ renderer.");
+		}
 	}
-	if (rendering_method == "gl_compatibility") {
-		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL, "MetalFX Spatial is only available when using the Forward+ and Mobile renderers.");
+	if (rendering_method == "gl_compatibility" && p_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
+		WARN_PRINT_ONCE_ED("MetalFX Spatial 3D scaling is only available when using the Forward+ or Mobile renderer.");
 	}
+#endif
 
 	if (viewport->scaling_3d_mode == p_mode) {
 		return;
@@ -1387,7 +1395,11 @@ bool RendererViewport::viewport_is_using_hdr_2d(RID p_viewport) const {
 void RendererViewport::viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
-	ERR_FAIL_COND_EDMSG(p_mode != RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility", "Screen space AA is currently unavailable on the Compatibility renderer.");
+#ifdef DEBUG_ENABLED
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" && p_mode != RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED) {
+		WARN_PRINT_ONCE_ED("Screen-space AA is only available when using the Forward+ or Mobile renderer.");
+	}
+#endif
 
 	if (viewport->screen_space_aa == p_mode) {
 		return;
@@ -1399,7 +1411,11 @@ void RendererViewport::viewport_set_screen_space_aa(RID p_viewport, RS::Viewport
 void RendererViewport::viewport_set_use_taa(RID p_viewport, bool p_use_taa) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
-	ERR_FAIL_COND_EDMSG(OS::get_singleton()->get_current_rendering_method() != "forward_plus", "TAA is only available when using the Forward+ renderer.");
+#ifdef DEBUG_ENABLED
+	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
+		WARN_PRINT_ONCE_ED("TAA is only available when using the Forward+ renderer.");
+	}
+#endif
 
 	if (viewport->use_taa == p_use_taa) {
 		return;

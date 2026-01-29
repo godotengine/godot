@@ -115,8 +115,8 @@ class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
 	}
 
 	@Override
-	public void onActivityDestroyed() {
-		requestRenderThreadExitAndWait();
+	public boolean blockingExitRenderer(long blockingTimeInMs) {
+		return requestRenderThreadExitAndWait(blockingTimeInMs);
 	}
 
 	@Override
@@ -151,6 +151,11 @@ class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
 		return mInputHandler.onGenericMotionEvent(event);
 	}
 
+	@Override
+	public boolean canCapturePointer() {
+		// Pointer capture is not supported on XR devices.
+		return !godot.isXrRuntime() && mInputHandler.canCapturePointer();
+	}
 	@Override
 	public void requestPointerCapture() {
 		if (canCapturePointer()) {

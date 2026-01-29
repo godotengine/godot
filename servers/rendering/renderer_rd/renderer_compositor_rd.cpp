@@ -219,6 +219,8 @@ void RendererCompositorRD::set_boot_image_with_stretch(const Ref<Image> &p_image
 	screenrect.position /= window_size;
 	screenrect.size /= window_size;
 
+	// p_color never needs to be converted to linear encoding because HDR 2D is always disabled for the boot image.
+	// If HDR 2D can ever be enabled during the boot image, p_color must be converted to linear encoding for this case.
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(DisplayServer::MAIN_WINDOW_ID, p_color);
 
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blit.pipelines[BLIT_MODE_NORMAL_ALPHA]);

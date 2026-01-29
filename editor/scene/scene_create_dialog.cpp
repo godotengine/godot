@@ -90,7 +90,7 @@ void SceneCreateDialog::browse_types() {
 }
 
 void SceneCreateDialog::on_type_picked() {
-	other_type_display->set_text(select_node_dialog->get_selected_type().get_slicec(' ', 0));
+	other_type_display->set_text(select_node_dialog->get_selected_type());
 	if (node_type_other->is_pressed()) {
 		validation_panel->update();
 	} else {
@@ -212,6 +212,7 @@ SceneCreateDialog::SceneCreateDialog() {
 		node_type_2d = memnew(CheckBox);
 		vb->add_child(node_type_2d);
 		node_type_2d->set_text(TTR("2D Scene"));
+		node_type_2d->set_theme_type_variation("CheckBoxNoIconTint");
 		node_type_2d->set_button_group(node_type_group);
 		node_type_2d->set_meta(type_meta, ROOT_2D_SCENE);
 		node_type_2d->set_pressed(true);
@@ -219,12 +220,14 @@ SceneCreateDialog::SceneCreateDialog() {
 		node_type_3d = memnew(CheckBox);
 		vb->add_child(node_type_3d);
 		node_type_3d->set_text(TTR("3D Scene"));
+		node_type_3d->set_theme_type_variation("CheckBoxNoIconTint");
 		node_type_3d->set_button_group(node_type_group);
 		node_type_3d->set_meta(type_meta, ROOT_3D_SCENE);
 
 		node_type_gui = memnew(CheckBox);
 		vb->add_child(node_type_gui);
 		node_type_gui->set_text(TTR("User Interface"));
+		node_type_gui->set_theme_type_variation("CheckBoxNoIconTint");
 		node_type_gui->set_button_group(node_type_group);
 		node_type_gui->set_meta(type_meta, ROOT_USER_INTERFACE);
 
@@ -234,6 +237,7 @@ SceneCreateDialog::SceneCreateDialog() {
 		node_type_other = memnew(CheckBox);
 		hb->add_child(node_type_other);
 		node_type_other->set_accessibility_name(TTRC("Other Type"));
+		node_type_other->set_theme_type_variation("CheckBoxNoIconTint");
 		node_type_other->set_button_group(node_type_group);
 		node_type_other->set_meta(type_meta, ROOT_OTHER);
 

@@ -123,7 +123,7 @@ bool AnimationMixer::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 uint32_t AnimationMixer::_get_libraries_property_usage() const {
-	return PROPERTY_USAGE_DEFAULT;
+	return PROPERTY_USAGE_STORAGE;
 }
 
 void AnimationMixer::_get_property_list(List<PropertyInfo> *p_list) const {
@@ -280,16 +280,6 @@ bool AnimationMixer::has_animation_library(const StringName &p_name) const {
 	}
 
 	return false;
-}
-
-StringName AnimationMixer::get_animation_library_name(const Ref<AnimationLibrary> &p_animation_library) const {
-	ERR_FAIL_COND_V(p_animation_library.is_null(), StringName());
-	for (const AnimationLibraryData &lib : animation_libraries) {
-		if (lib.library == p_animation_library) {
-			return lib.name;
-		}
-	}
-	return StringName();
 }
 
 StringName AnimationMixer::find_animation_library(const Ref<Animation> &p_animation) const {
@@ -660,6 +650,7 @@ bool AnimationMixer::_update_caches() {
 
 	Node *parent = get_node_or_null(root_node);
 	if (!parent) {
+		WARN_PRINT_ONCE(vformat("'%s' is an invalid root_node path, caches will not be built, please check the root_node assignment on: %s", root_node, get_path()));
 		cache_valid = false;
 		return false;
 	}
@@ -685,6 +676,9 @@ bool AnimationMixer::_update_caches() {
 	for (const StringName &E : sname_list) {
 		Ref<Animation> anim = get_animation(E);
 		for (int i = 0; i < anim->get_track_count(); i++) {
+			if (!anim->track_is_enabled(i)) {
+				continue;
+			}
 			NodePath path = anim->track_get_path(i);
 			Animation::TypeHash thash = anim->track_get_type_hash(i);
 			Animation::TrackType track_src_type = anim->track_get_type(i);
@@ -749,15 +743,11 @@ bool AnimationMixer::_update_caches() {
 						// If there is a Reset Animation, it takes precedence by overwriting.
 						if (has_reset_anim) {
 							int rt = reset_anim->find_track(path, track_src_type);
-							if (rt >= 0) {
+							if (rt >= 0 && reset_anim->track_is_enabled(rt) && reset_anim->track_get_key_count(rt) > 0) {
 								if (is_value) {
-									if (reset_anim->track_get_key_count(rt) > 0) {
-										track_value->init_value = reset_anim->track_get_key_value(rt, 0);
-									}
+									track_value->init_value = reset_anim->track_get_key_value(rt, 0);
 								} else {
-									if (reset_anim->track_get_key_count(rt) > 0) {
-										track_value->init_value = (reset_anim->track_get_key_value(rt, 0).operator Array())[0];
-									}
+									track_value->init_value = (reset_anim->track_get_key_value(rt, 0).operator Array())[0];
 								}
 							}
 						}
@@ -824,7 +814,7 @@ bool AnimationMixer::_update_caches() {
 						// For non Skeleton3D bone animation.
 						if (has_reset_anim && !has_rest) {
 							int rt = reset_anim->find_track(path, track_src_type);
-							if (rt >= 0 && reset_anim->track_get_key_count(rt) > 0) {
+							if (rt >= 0 && reset_anim->track_is_enabled(rt) && reset_anim->track_get_key_count(rt) > 0) {
 								switch (track_src_type) {
 									case Animation::TYPE_POSITION_3D: {
 										track_xform->init_loc = reset_anim->track_get_key_value(rt, 0);
@@ -870,7 +860,7 @@ bool AnimationMixer::_update_caches() {
 
 						if (has_reset_anim) {
 							int rt = reset_anim->find_track(path, track_src_type);
-							if (rt >= 0 && reset_anim->track_get_key_count(rt) > 0) {
+							if (rt >= 0 && reset_anim->track_is_enabled(rt) && reset_anim->track_get_key_count(rt) > 0) {
 								track_bshape->init_value = reset_anim->track_get_key_value(rt, 0);
 							}
 						}
@@ -1000,15 +990,17 @@ bool AnimationMixer::_update_caches() {
 
 void AnimationMixer::_process_animation(double p_delta, bool p_update_only) {
 	_blend_init();
-	if (_blend_pre_process(p_delta, track_count, track_map)) {
+	if (cache_valid && _blend_pre_process(p_delta, track_count, track_map)) {
 		_blend_capture(p_delta);
 		_blend_calc_total_weight();
 		_blend_process(p_delta, p_update_only);
+		clear_animation_instances();
 		_blend_apply();
 		_blend_post_process();
 		emit_signal(SNAME("mixer_applied"));
-	};
-	clear_animation_instances();
+	} else {
+		clear_animation_instances();
+	}
 }
 
 Variant AnimationMixer::_post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant &p_value, ObjectID p_object_id, int p_object_sub_idx) {

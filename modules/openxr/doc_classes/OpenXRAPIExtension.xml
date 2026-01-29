@@ -85,6 +85,12 @@
 				Returns the predicted display timing for the next frame.
 			</description>
 		</method>
+		<method name="get_openxr_version">
+			<return type="int" />
+			<description>
+				Returns the version of OpenXR that was initialized. Only valid after the OpenXR instance has been created. See [url=https://registry.khronos.org/OpenXR/specs/1.1/html/xrspec.html#XR_MAKE_VERSION]XR_MAKE_VERSION[/url] for how the version is calculated.
+			</description>
+		</method>
 		<method name="get_play_space">
 			<return type="int" />
 			<description>

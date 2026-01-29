@@ -39,7 +39,7 @@
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 
-HashMap<String, bool *> OpenXRVulkanExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRVulkanExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME] = nullptr; // must be available
@@ -203,21 +203,30 @@ void OpenXRVulkanExtension::set_direct_queue_family_and_index(uint32_t p_queue_f
 	vulkan_queue_index = p_queue_index;
 }
 
-LocalVector<VkOffset2D> OpenXRVulkanExtension::get_fragment_density_offsets() {
-	LocalVector<VkOffset2D> ret;
+bool OpenXRVulkanExtension::use_fragment_density_offsets() {
 	OpenXRFBFoveationExtension *fb_foveation = OpenXRFBFoveationExtension::get_singleton();
 	if (fb_foveation == nullptr) {
-		return ret;
+		return false;
 	}
 
-	LocalVector<Vector2i> offsets = fb_foveation->get_fragment_density_offsets();
+	return fb_foveation->is_foveation_eye_tracked_enabled();
+}
 
-	ret.reserve(offsets.size());
-	for (const Vector2i &offset : offsets) {
-		ret.push_back(VkOffset2D{ offset.x, offset.y });
+void OpenXRVulkanExtension::get_fragment_density_offsets(LocalVector<VkOffset2D> &r_vk_offsets, const Vector2i &p_granularity) {
+	OpenXRFBFoveationExtension *fb_foveation = OpenXRFBFoveationExtension::get_singleton();
+	if (fb_foveation == nullptr) {
+		return;
 	}
 
-	return ret;
+	LocalVector<Vector2i> offsets;
+	fb_foveation->get_fragment_density_offsets(offsets);
+
+	r_vk_offsets.reserve(offsets.size());
+	for (Vector2i offset : offsets) {
+		offset = ((offset + p_granularity / 2) / p_granularity) * p_granularity;
+
+		r_vk_offsets.push_back(VkOffset2D{ offset.x, offset.y });
+	}
 }
 
 XrGraphicsBindingVulkanKHR OpenXRVulkanExtension::graphics_binding_vulkan;

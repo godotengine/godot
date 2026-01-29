@@ -563,33 +563,21 @@ uint64_t RenderingDeviceDriverMetal::texture_get_allocation_size(TextureID p_tex
 
 void RenderingDeviceDriverMetal::texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) {
 	id<MTLTexture> __unsafe_unretained obj = rid::get(p_texture);
-	*r_layout = {};
 
 	PixelFormats &pf = *pixel_formats;
 	DataFormat format = pf.getDataFormat(obj.pixelFormat);
 
-	MTLSize sz = MTLSizeMake(obj.width, obj.height, obj.depth);
-
-	if (p_subresource.mipmap > 0) {
-		r_layout->offset = get_image_format_required_size(format, sz.width, sz.height, sz.depth, p_subresource.mipmap);
-	}
-
-	sz = mipmapLevelSizeFromSize(sz, p_subresource.mipmap);
+	uint32_t w = MAX(1u, obj.width >> p_subresource.mipmap);
+	uint32_t h = MAX(1u, obj.height >> p_subresource.mipmap);
+	uint32_t d = MAX(1u, obj.depth >> p_subresource.mipmap);
 
 	uint32_t bw = 0, bh = 0;
 	get_compressed_image_format_block_dimensions(format, bw, bh);
-	uint32_t sbw = 0, sbh = 0;
-	r_layout->size = get_image_format_required_size(format, sz.width, sz.height, sz.depth, 1, &sbw, &sbh);
-	r_layout->row_pitch = r_layout->size / ((sbh / bh) * sz.depth);
-	r_layout->depth_pitch = r_layout->size / sz.depth;
 
-	uint32_t array_length = obj.arrayLength;
-	if (obj.textureType == MTLTextureTypeCube) {
-		array_length = 6;
-	} else if (obj.textureType == MTLTextureTypeCubeArray) {
-		array_length *= 6;
-	}
-	r_layout->layer_pitch = r_layout->size / array_length;
+	uint32_t sbw = 0, sbh = 0;
+	*r_layout = {};
+	r_layout->size = get_image_format_required_size(format, w, h, d, 1, &sbw, &sbh);
+	r_layout->row_pitch = r_layout->size / ((sbh / bh) * d);
 }
 
 Vector<uint8_t> RenderingDeviceDriverMetal::texture_get_data(TextureID p_texture, uint32_t p_layer) {
@@ -652,20 +640,6 @@ Vector<uint8_t> RenderingDeviceDriverMetal::texture_get_data(TextureID p_texture
 	DEV_ASSERT(dest_ptr - image_data.ptr() == image_data.size());
 
 	return image_data;
-}
-
-uint8_t *RenderingDeviceDriverMetal::texture_map(TextureID p_texture, const TextureSubresource &p_subresource) {
-	id<MTLTexture> obj = rid::get(p_texture);
-	ERR_FAIL_COND_V_MSG(obj.storageMode != MTLStorageModeShared, nullptr, "Texture must be created with TEXTURE_USAGE_CPU_READ_BIT set.");
-	ERR_FAIL_COND_V_MSG(obj.buffer, nullptr, "Texture mapping is not supported for non-linear textures in Metal.");
-	ERR_FAIL_COND_V_MSG(p_subresource.layer > 0, nullptr, "A linear texture should have a single layer.");
-	ERR_FAIL_COND_V_MSG(p_subresource.mipmap > 0, nullptr, "A linear texture should have a single mipmap.");
-
-	return (uint8_t *)obj.buffer.contents;
-}
-
-void RenderingDeviceDriverMetal::texture_unmap(TextureID p_texture) {
-	// Nothing to do.
 }
 
 BitField<RDD::TextureUsageBits> RenderingDeviceDriverMetal::texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) {
@@ -871,7 +845,8 @@ void RenderingDeviceDriverMetal::command_pipeline_barrier(
 		BitField<PipelineStageBits> p_dst_stages,
 		VectorView<MemoryAccessBarrier> p_memory_barriers,
 		VectorView<BufferBarrier> p_buffer_barriers,
-		VectorView<TextureBarrier> p_texture_barriers) {
+		VectorView<TextureBarrier> p_texture_barriers,
+		VectorView<AccelerationStructureBarrier> p_acceleration_structure_barriers) {
 	WARN_PRINT_ONCE("not implemented");
 }
 
@@ -1199,14 +1174,14 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 
 	HashMap<RD::ShaderStage, MDLibrary *> libraries;
 
-	bool is_compute = false;
+	PipelineType pipeline_type = PIPELINE_TYPE_RASTERIZATION;
 	Vector<uint8_t> decompressed_code;
 	for (uint32_t shader_index = 0; shader_index < shaders.size(); shader_index++) {
 		const RenderingShaderContainer::Shader &shader = shaders[shader_index];
 		const RSCM::StageData &shader_data = mtl_shaders[shader_index];
 
 		if (shader.shader_stage == RD::ShaderStage::SHADER_STAGE_COMPUTE) {
-			is_compute = true;
+			pipeline_type = PIPELINE_TYPE_COMPUTE;
 		}
 
 		if (ShaderCacheEntry **p = _shader_cache.getptr(shader_data.hash); p != nullptr) {
@@ -1318,7 +1293,7 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 	}
 
 	MDShader *shader = nullptr;
-	if (is_compute) {
+	if (pipeline_type == PIPELINE_TYPE_COMPUTE) {
 		MDComputeShader *cs = new MDComputeShader(
 				shader_name,
 				uniform_sets,
@@ -1567,6 +1542,11 @@ void RenderingDeviceDriverMetal::command_resolve_texture(CommandBufferID p_cmd_b
 void RenderingDeviceDriverMetal::command_clear_color_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, const Color &p_color, const TextureSubresourceRange &p_subresources) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
 	cb->clear_color_texture(p_texture, p_texture_layout, p_color, p_subresources);
+}
+
+void RenderingDeviceDriverMetal::command_clear_depth_stencil_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, float p_depth, uint8_t p_stencil, const TextureSubresourceRange &p_subresources) {
+	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
+	cb->clear_depth_stencil_texture(p_texture, p_texture_layout, p_depth, p_stencil, p_subresources);
 }
 
 void RenderingDeviceDriverMetal::command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) {
@@ -2293,6 +2273,62 @@ RDD::PipelineID RenderingDeviceDriverMetal::compute_pipeline_create(ShaderID p_s
 	return PipelineID(pipeline);
 }
 
+#pragma mark - Raytracing
+
+// ----- ACCELERATION STRUCTURE -----
+
+RDD::AccelerationStructureID RenderingDeviceDriverMetal::blas_create(BufferID p_vertex_buffer, uint64_t p_vertex_offset, VertexFormatID p_vertex_format, uint32_t p_vertex_count, uint32_t p_position_attribute_location, BufferID p_index_buffer, IndexBufferFormat p_index_format, uint64_t p_index_offset_bytes, uint32_t p_index_coun, BitField<AccelerationStructureGeometryBits> p_geometry_bits) {
+	ERR_FAIL_V_MSG(AccelerationStructureID(), "Ray tracing is not currently supported by the Metal driver.");
+}
+
+uint32_t RenderingDeviceDriverMetal::tlas_instances_buffer_get_size_bytes(uint32_t p_instance_count) {
+	ERR_FAIL_V_MSG(0, "Ray tracing is not currently supported by the Metal driver.");
+}
+
+void RenderingDeviceDriverMetal::tlas_instances_buffer_fill(BufferID p_instances_buffer, VectorView<AccelerationStructureID> p_blases, VectorView<Transform3D> p_transforms) {
+	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
+}
+
+RDD::AccelerationStructureID RenderingDeviceDriverMetal::tlas_create(BufferID p_instance_buffer) {
+	ERR_FAIL_V_MSG(AccelerationStructureID(), "Ray tracing is not currently supported by the Metal driver.");
+}
+
+void RenderingDeviceDriverMetal::acceleration_structure_free(RDD::AccelerationStructureID p_acceleration_structure) {
+	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
+}
+
+uint32_t RenderingDeviceDriverMetal::acceleration_structure_get_scratch_size_bytes(AccelerationStructureID p_acceleration_structure) {
+	ERR_FAIL_V_MSG(0, "Ray tracing is not currently supported by the Metal driver.");
+}
+
+// ----- PIPELINE -----
+
+RDD::RaytracingPipelineID RenderingDeviceDriverMetal::raytracing_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) {
+	ERR_FAIL_V_MSG(RaytracingPipelineID(), "Ray tracing is not currently supported by the Metal driver.");
+}
+
+void RenderingDeviceDriverMetal::raytracing_pipeline_free(RDD::RaytracingPipelineID p_pipeline) {
+	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
+}
+
+// ----- COMMANDS -----
+
+void RenderingDeviceDriverMetal::command_build_acceleration_structure(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) {
+	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
+}
+
+void RenderingDeviceDriverMetal::command_bind_raytracing_pipeline(CommandBufferID p_cmd_buffer, RaytracingPipelineID p_pipeline) {
+	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
+}
+
+void RenderingDeviceDriverMetal::command_bind_raytracing_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
+	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
+}
+
+void RenderingDeviceDriverMetal::command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height) {
+	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
+}
+
 #pragma mark - Queries
 
 // ----- TIMESTAMP -----
@@ -2589,6 +2625,8 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 		case SUPPORTS_IMAGE_ATOMIC_32_BIT:
 			return device_properties->features.supports_native_image_atomics;
 		case SUPPORTS_VULKAN_MEMORY_MODEL:
+			return true;
+		case SUPPORTS_POINT_SIZE:
 			return true;
 		default:
 			return false;

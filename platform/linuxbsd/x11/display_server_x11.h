@@ -32,10 +32,11 @@
 
 #ifdef X11_ENABLED
 
-#include "core/input/input.h"
+#include "core/input/input_event.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/rb_map.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
@@ -379,7 +380,7 @@ class DisplayServerX11 : public DisplayServer {
 	SafeFlag events_thread_done;
 	LocalVector<XEvent> polled_events;
 	static void _poll_events_thread(void *ud);
-	bool _wait_for_events() const;
+	bool _wait_for_events(int timeout_seconds = 1, int timeout_microseconds = 0) const;
 	void _poll_events();
 	void _check_pending_events(LocalVector<XEvent> &r_events);
 

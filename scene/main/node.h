@@ -432,10 +432,10 @@ protected:
 	GDVIRTUAL0RC(Vector<String>, _get_accessibility_configuration_warnings)
 	GDVIRTUAL0RC(Vector<String>, _get_configuration_warnings)
 
-	GDVIRTUAL1(_input, Ref<InputEvent>)
-	GDVIRTUAL1(_shortcut_input, Ref<InputEvent>)
-	GDVIRTUAL1(_unhandled_input, Ref<InputEvent>)
-	GDVIRTUAL1(_unhandled_key_input, Ref<InputEvent>)
+	GDVIRTUAL1(_input, RequiredParam<InputEvent>)
+	GDVIRTUAL1(_shortcut_input, RequiredParam<InputEvent>)
+	GDVIRTUAL1(_unhandled_input, RequiredParam<InputEvent>)
+	GDVIRTUAL1(_unhandled_key_input, RequiredParam<InputEvent>)
 
 	GDVIRTUAL0RC(RID, _get_focused_accessibility_element)
 
@@ -513,8 +513,8 @@ public:
 	InternalMode get_internal_mode() const;
 
 	void add_child(RequiredParam<Node> rp_child, bool p_force_readable_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED);
-	void add_sibling(Node *p_sibling, bool p_force_readable_name = false);
-	void remove_child(Node *p_child);
+	void add_sibling(RequiredParam<Node> rp_sibling, bool p_force_readable_name = false);
+	void remove_child(RequiredParam<Node> rp_child);
 
 	/// Optimal way to iterate the children of this node.
 	/// The caller is responsible to ensure:
@@ -534,7 +534,7 @@ public:
 	bool has_node_and_resource(const NodePath &p_path) const;
 	Node *get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
 
-	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true);
+	virtual void reparent(RequiredParam<Node> rp_parent, bool p_keep_global_transform = true);
 	Node *get_parent() const;
 	Node *find_parent(const String &p_pattern) const;
 
@@ -553,11 +553,11 @@ public:
 	_FORCE_INLINE_ bool is_inside_tree() const { return data.tree; }
 	bool is_internal() const { return data.internal_mode != INTERNAL_MODE_DISABLED; }
 
-	bool is_ancestor_of(const Node *p_node) const;
-	bool is_greater_than(const Node *p_node) const;
+	bool is_ancestor_of(RequiredParam<const Node> rp_node) const;
+	bool is_greater_than(RequiredParam<const Node> rp_node) const;
 
 	NodePath get_path() const;
-	NodePath get_path_to(const Node *p_node, bool p_use_unique_path = false) const;
+	NodePath get_path_to(RequiredParam<const Node> rp_node, bool p_use_unique_path = false) const;
 	Node *find_common_parent_with(const Node *p_node) const;
 
 	void add_to_group(const StringName &p_identifier, bool p_persistent = false);
@@ -572,7 +572,7 @@ public:
 	void get_groups(List<GroupInfo> *p_groups) const;
 	int get_persistent_group_count() const;
 
-	void move_child(Node *p_child, int p_index);
+	void move_child(RequiredParam<Node> rp_child, int p_index);
 	void _move_child(Node *p_child, int p_index, bool p_ignore_end = false);
 
 	void set_owner(Node *p_owner);
@@ -621,7 +621,7 @@ public:
 	void set_editor_description(const String &p_editor_description);
 	String get_editor_description() const;
 
-	void set_editable_instance(Node *p_node, bool p_editable);
+	void set_editable_instance(RequiredParam<Node> rp_node, bool p_editable);
 	bool is_editable_instance(const Node *p_node) const;
 	Node *get_deepest_editable_node(Node *p_start_node) const;
 
@@ -721,9 +721,9 @@ public:
 	Node *duplicate(int p_flags = DUPLICATE_GROUPS | DUPLICATE_SIGNALS | DUPLICATE_SCRIPTS) const;
 #ifdef TOOLS_ENABLED
 	Node *duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap) const;
-	Node *duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const;
-	void remap_node_resources(Node *p_node, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const;
-	void remap_nested_resources(Ref<Resource> p_resource, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const;
+	Node *duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, Node *p_scene_root, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resource_remap) const;
+	void remap_node_resources(Node *p_node, Node *p_scene_root, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resource_remap) const;
+	void remap_nested_resources(Ref<Resource> p_resource, HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const;
 #endif
 
 	// used by editors, to save what has changed only
@@ -742,7 +742,7 @@ public:
 		return binds;
 	}
 
-	void replace_by(Node *p_node, bool p_keep_groups = false);
+	void replace_by(RequiredParam<Node> rp_node, bool p_keep_groups = false);
 
 	void set_process_mode(ProcessMode p_mode);
 	ProcessMode get_process_mode() const;
@@ -919,12 +919,12 @@ Error Node::rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args)
 }
 
 #ifdef DEBUG_ENABLED
-#define ERR_THREAD_GUARD ERR_FAIL_COND_MSG(!is_accessible_from_caller_thread(), vformat("Caller thread can't call this function in this node (%s). Use call_deferred() or call_deferred_thread_group() instead.", get_description()));
-#define ERR_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(!is_accessible_from_caller_thread(), (m_ret), vformat("Caller thread can't call this function in this node (%s). Use call_deferred() or call_deferred_thread_group() instead.", get_description()));
-#define ERR_MAIN_THREAD_GUARD ERR_FAIL_COND_MSG(is_inside_tree() && !is_current_thread_safe_for_nodes(), vformat("This function in this node (%s) can only be accessed from the main thread. Use call_deferred() instead.", get_description()));
-#define ERR_MAIN_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(is_inside_tree() && !is_current_thread_safe_for_nodes(), (m_ret), vformat("This function in this node (%s) can only be accessed from the main thread. Use call_deferred() instead.", get_description()));
-#define ERR_READ_THREAD_GUARD ERR_FAIL_COND_MSG(!is_readable_from_caller_thread(), vformat("This function in this node (%s) can only be accessed from either the main thread or a thread group. Use call_deferred() instead.", get_description()));
-#define ERR_READ_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(!is_readable_from_caller_thread(), (m_ret), vformat("This function in this node (%s) can only be accessed from either the main thread or a thread group. Use call_deferred() instead.", get_description()));
+#define ERR_THREAD_GUARD ERR_FAIL_COND_MSG(!is_accessible_from_caller_thread(), vformat("%s: The caller thread can't call the function `%s()` on this node. Use `call_deferred()` or `call_deferred_thread_group()` instead.", get_description(), FUNCTION_STR));
+#define ERR_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(!is_accessible_from_caller_thread(), (m_ret), vformat("%s: The caller thread can't call the function `%s()` on this node. Use `call_deferred()` or `call_deferred_thread_group()` instead.", get_description(), FUNCTION_STR));
+#define ERR_MAIN_THREAD_GUARD ERR_FAIL_COND_MSG(is_inside_tree() && !is_current_thread_safe_for_nodes(), vformat("%s: The function `%s()` on this node can only be accessed from the main thread. Use `call_deferred()` instead.", get_description(), FUNCTION_STR));
+#define ERR_MAIN_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(is_inside_tree() && !is_current_thread_safe_for_nodes(), (m_ret), vformat("%s: The function `%s()` on this node can only be accessed from the main thread. Use `call_deferred()` instead.", get_description(), FUNCTION_STR));
+#define ERR_READ_THREAD_GUARD ERR_FAIL_COND_MSG(!is_readable_from_caller_thread(), vformat("%s: The function `%s()` on this node can only be accessed from either the main thread or a thread group. Use `call_deferred()` instead.", get_description(), FUNCTION_STR));
+#define ERR_READ_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(!is_readable_from_caller_thread(), (m_ret), vformat("%s: The function `%s()` on this node can only be accessed from either the main thread or a thread group. Use `call_deferred()` instead.", get_description(), FUNCTION_STR));
 #else
 #define ERR_THREAD_GUARD
 #define ERR_THREAD_GUARD_V(m_ret)
