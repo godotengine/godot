@@ -255,10 +255,17 @@
 		<method name="get_connected_midi_inputs">
 			<return type="PackedStringArray" />
 			<description>
-				Returns an array of connected MIDI device names, if they exist. Returns an empty array if the system MIDI driver has not previously been initialized with [method open_midi_inputs]. See also [method close_midi_inputs].
+				Returns an array of connected MIDI input device names, if they exist. Returns an empty array if the system MIDI driver has not previously been initialized with [method open_midi_inputs]. See also [method close_midi_inputs].
 				[b]Note:[/b] This method is implemented on Linux, macOS, Windows, and Web.
 				[b]Note:[/b] On the Web platform, Web MIDI needs to be supported by the browser. [url=https://caniuse.com/midi]For the time being[/url], it is currently supported by all major browsers, except Safari.
 				[b]Note:[/b] On the Web platform, using MIDI input requires a browser permission to be granted first. This permission request is performed when calling [method open_midi_inputs]. The browser will refrain from processing MIDI input until the user accepts the permission request.
+			</description>
+		</method>
+		<method name="get_connected_midi_outputs">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array of connected MIDI output device names, if they exist. Returns an empty array if the system MIDI driver has not previously been initialized with [method open_midi_inputs]. See also [method close_midi_inputs].
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_data_dir" qualifiers="const">
@@ -823,6 +830,14 @@
 			<return type="void" />
 			<description>
 				On macOS (sandboxed applications only), this function clears list of user selected folders accessible to the application.
+			</description>
+		</method>
+		<method name="send_midi">
+			<return type="void" />
+			<param index="0" name="event" type="InputEventMIDI" />
+			<description>
+				Send the MIDI [param event] to the device specieid in the events device_id.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="set_environment" qualifiers="const">

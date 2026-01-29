@@ -1849,6 +1849,46 @@ int InputEventMIDI::get_controller_value() const {
 	return controller_value;
 }
 
+PackedByteArray InputEventMIDI::get_midi_bytes() const {
+	PackedByteArray result;
+	result.append(static_cast<uint8_t>(static_cast<int>(message) << 4 | (channel & 0xF)));
+	switch (message) {
+		case MIDIMessage::NOTE_OFF:
+		case MIDIMessage::NOTE_ON:
+			result.append(pitch);
+			result.append(velocity);
+			break;
+		case MIDIMessage::AFTERTOUCH:
+			result.append(pitch);
+			result.append(pressure);
+			break;
+		case MIDIMessage::CONTROL_CHANGE:
+			result.append(controller_number);
+			result.append(controller_value);
+			break;
+		case MIDIMessage::PITCH_BEND:
+			result.append(pitch | 0x80);
+			result.append(pitch >> 7);
+			break;
+		case MIDIMessage::SONG_POSITION_POINTER:
+			result.resize(3);
+			break;
+		case MIDIMessage::PROGRAM_CHANGE:
+			result.append(instrument);
+			break;
+		case MIDIMessage::CHANNEL_PRESSURE:
+			result.append(pressure);
+			break;
+		case MIDIMessage::QUARTER_FRAME:
+		case MIDIMessage::SONG_SELECT:
+			result.resize(2);
+			break;
+		default:
+			break;
+	}
+	return result;
+}
+
 String InputEventMIDI::as_text() const {
 	return vformat(RTR("MIDI Input on Channel=%s Message=%s"), itos(channel), itos((int64_t)message));
 }

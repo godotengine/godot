@@ -43,12 +43,14 @@
 
 class MIDIDriverWinMidi : public MIDIDriver {
 	Vector<HMIDIIN> connected_sources;
+	Vector<HMIDIOUT> connected_sinks;
 
 	static void CALLBACK read(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
 
 public:
 	virtual Error open() override;
 	virtual void close() override;
+	virtual Error send(Ref<InputEventMIDI> p_event) override;
 
 	MIDIDriverWinMidi() = default;
 	virtual ~MIDIDriverWinMidi();
