@@ -35,7 +35,7 @@
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "scene/gui/graph_element.h"
+#include "scene/gui/graph_edit.h"
 #include "scene/gui/menu_bar.h"
 #include "scene/gui/panel_container.h"
 #include "scene/main/timer.h"
@@ -3435,22 +3435,37 @@ bool PopupMenu::get_shrink_width() const {
 void PopupMenu::_pre_popup() {
 	real_t popup_scale = 1.0;
 	bool scale_with_parent = true;
+	Node *parent_node = get_parent();
 
-	// Disable content scaling to avoid too tiny or too big menus when using GraphEdit zoom, applied only if menu is a child of GraphElement.
-	Node *p = get_parent();
-	while (p) {
-		GraphElement *ge = Object::cast_to<GraphElement>(p);
-		if (ge) {
-			scale_with_parent = ge->is_scaling_menus();
-			break;
+	// Use parent GraphEdit content scale to avoid too tiny or too big menus when using GraphEdit zoom, applied only if menu is a child of GraphElement.
+	{
+		Node *p = parent_node;
+		while (p) {
+			GraphElement *gelement = Object::cast_to<GraphElement>(p);
+			if (gelement) {
+				scale_with_parent = gelement->is_scaling_menus();
+				if (!scale_with_parent) {
+					parent_node = nullptr;
+					p = gelement->get_parent();
+					while (p) {
+						GraphEdit *gedit = Object::cast_to<GraphEdit>(p);
+						if (gedit) {
+							parent_node = gedit;
+							break;
+						}
+						p = p->get_parent();
+					}
+				}
+				break;
+			}
+			p = p->get_parent();
 		}
-		p = p->get_parent();
 	}
 
 	Viewport *vp = get_parent_viewport();
-	if (scale_with_parent && vp) {
+	if (vp && parent_node) {
 		Size2 scale = is_embedded() ? vp->get_popup_base_transform().get_scale() : vp->get_popup_base_transform_native().get_scale();
-		CanvasItem *c = Object::cast_to<CanvasItem>(get_parent());
+		CanvasItem *c = Object::cast_to<CanvasItem>(parent_node);
 		if (c) {
 			scale *= c->get_global_transform_with_canvas().get_scale();
 		}
