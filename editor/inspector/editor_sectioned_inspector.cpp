@@ -53,22 +53,18 @@ static bool _property_path_matches(const String &p_property_path, const String &
 }
 
 static String _get_filter_property_path(const String &p_property_path) {
-	String path = p_property_path;
-	String name_override = path.contains_char('/') ? path.substr(path.rfind_char('/') + 1) : path;
-	const int dot = name_override.find_char('.');
-	if (dot != -1) {
-		name_override = name_override.substr(0, dot);
-	}
-	name_override = name_override.uri_decode();
+	const int last_slash = p_property_path.rfind_char('/');
+	String dir = (last_slash >= 0) ? p_property_path.left(last_slash) : String();
+	String property_name = (last_slash >= 0) ? p_property_path.substr(last_slash + 1) : p_property_path;
 
-	const int last_slash = path.rfind_char('/');
-	if (last_slash > -1) {
-		path = path.left(last_slash);
-	} else {
-		path = "";
+	property_name = property_name.uri_decode();
+
+	const int dot = property_name.find_char('.');
+	if (dot >= 0) {
+		property_name = property_name.left(dot);
 	}
 
-	return (path.is_empty() ? "" : path + "/") + name_override;
+	return dir.is_empty() ? property_name : dir + "/" + property_name;
 }
 
 class SectionedInspectorFilter : public Object {
