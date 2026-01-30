@@ -1078,8 +1078,10 @@ void TReflectionTraverser::visitSymbol(TIntermSymbol* base)
         }
     }
 
-    // #TODO add std140/layout active rules for ssbo, same with ubo.
-    // Storage buffer blocks will be collected and expanding in this part.
+  // TODO: Implement std140/std430 layout active rules for SSBOs and UBOs.
+	// Currently only basic storage buffer blocks are collected and expanded here,
+	// which may result in incorrect offsets and strides for complex layouts.
+	// See GLSL 4.60 specification, section 7.6.2 (Uniform Buffer Layout).
     if((reflection.options & EShReflectionSharedStd140SSBO) &&
        (base->getQualifier().storage == EvqBuffer && base->getBasicType() == EbtBlock &&
         (base->getQualifier().layoutPacking == ElpStd140 || base->getQualifier().layoutPacking == ElpShared)))
