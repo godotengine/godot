@@ -34,6 +34,7 @@
 
 #include "drivers/gles3/effects/copy_effects.h"
 #include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/gles3/rasterizer_util_gles3.h"
 #include "drivers/gles3/storage/material_storage.h"
 #include "drivers/gles3/storage/utilities.h"
 
@@ -283,7 +284,7 @@ TextureStorage::TextureStorage() {
 	}
 
 #ifdef GL_API_ENABLED
-	if (RasterizerGLES3::is_gles_over_gl()) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		glEnable(GL_PROGRAM_POINT_SIZE);
 	}
 #endif // GL_API_ENABLED
@@ -453,7 +454,7 @@ static inline Error _get_gl_uncompressed_format(const Ref<Image> &p_image, Image
 
 	switch (p_format) {
 		case Image::FORMAT_L8: {
-			if (RasterizerGLES3::is_gles_over_gl()) {
+			if (RasterizerUtilGLES3::is_gles_over_gl()) {
 				r_gl_internal_format = GL_R8;
 				r_gl_format = GL_RED;
 				r_gl_type = GL_UNSIGNED_BYTE;
@@ -464,7 +465,7 @@ static inline Error _get_gl_uncompressed_format(const Ref<Image> &p_image, Image
 			}
 		} break;
 		case Image::FORMAT_LA8: {
-			if (RasterizerGLES3::is_gles_over_gl()) {
+			if (RasterizerUtilGLES3::is_gles_over_gl()) {
 				r_gl_internal_format = GL_RG8;
 				r_gl_format = GL_RG;
 				r_gl_type = GL_UNSIGNED_BYTE;
@@ -1521,7 +1522,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 
 	Ref<Image> image;
 #ifdef GL_API_ENABLED
-	if (RasterizerGLES3::is_gles_over_gl()) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		// OpenGL 3.3 supports glGetTexImage which is faster and simpler than glReadPixels.
 		// It also allows for reading compressed textures, mipmaps, and more formats.
 		Vector<uint8_t> data;
@@ -1564,7 +1565,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 	}
 #endif // GL_API_ENABLED
 #ifdef GLES_API_ENABLED
-	if (!RasterizerGLES3::is_gles_over_gl()) {
+	if (!RasterizerUtilGLES3::is_gles_over_gl()) {
 		Vector<uint8_t> data;
 
 		// On web and mobile we always read an RGBA8 image with no mipmaps.
@@ -2001,7 +2002,7 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 	bool needs_decompress = texture->resize_to_po2;
 
 	// Support for RGTC-compressed Texture Arrays isn't mandated by GLES3/WebGL.
-	if (!RasterizerGLES3::is_gles_over_gl() && texture->target == GL_TEXTURE_2D_ARRAY) {
+	if (!RasterizerUtilGLES3::is_gles_over_gl() && texture->target == GL_TEXTURE_2D_ARRAY) {
 		if (p_image->get_format() == Image::FORMAT_RGTC_R || p_image->get_format() == Image::FORMAT_RGTC_RG) {
 			needs_decompress = true;
 		}
@@ -2173,7 +2174,7 @@ void TextureStorage::_texture_set_swizzle(GLES3::Texture *p_texture, Image::Form
 #ifndef WEB_ENABLED
 	switch (p_texture->format) {
 		case Image::FORMAT_L8: {
-			if (RasterizerGLES3::is_gles_over_gl()) {
+			if (RasterizerUtilGLES3::is_gles_over_gl()) {
 				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
 				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
 				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
@@ -2186,7 +2187,7 @@ void TextureStorage::_texture_set_swizzle(GLES3::Texture *p_texture, Image::Form
 			}
 		} break;
 		case Image::FORMAT_LA8: {
-			if (RasterizerGLES3::is_gles_over_gl()) {
+			if (RasterizerUtilGLES3::is_gles_over_gl()) {
 				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
 				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
 				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);

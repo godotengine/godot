@@ -41,6 +41,7 @@
 #include "drivers/gles3/environment/gi.h"
 #include "drivers/gles3/rasterizer_canvas_gles3.h"
 #include "drivers/gles3/rasterizer_scene_gles3.h"
+#include "drivers/gles3/rasterizer_util_gles3.h"
 #include "drivers/gles3/storage/config.h"
 #include "drivers/gles3/storage/light_storage.h"
 #include "drivers/gles3/storage/material_storage.h"
@@ -60,8 +61,6 @@ private:
 #ifdef WINDOWS_ENABLED
 	static bool screen_flipped_y;
 #endif
-
-	static bool gles_over_gl;
 
 protected:
 	GLES3::Config *config = nullptr;
@@ -113,13 +112,9 @@ public:
 		return memnew(RasterizerGLES3);
 	}
 
-	static bool is_gles_over_gl() { return gles_over_gl; }
-	static void clear_depth(float p_depth);
-	static void clear_stencil(int32_t p_stencil);
-
 	static void make_current(bool p_gles_over_gl) {
-		gles_over_gl = p_gles_over_gl;
-		OS::get_singleton()->set_gles_over_gl(gles_over_gl);
+		RasterizerUtilGLES3::set_gles_over_gl(p_gles_over_gl);
+		OS::get_singleton()->set_gles_over_gl(p_gles_over_gl);
 		_create_func = _create_current;
 		low_end = true;
 	}
