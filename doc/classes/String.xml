@@ -925,6 +925,30 @@
 				Returns the [url=https://en.wikipedia.org/wiki/SHA-2]SHA-256[/url] hash of the string as another [String].
 			</description>
 		</method>
+		<method name="xxh32_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Returns the [url=https://xxhash.com/]XXH32[/url] hash of the string as a [PackedByteArray].
+			</description>
+		</method>
+		<method name="xxh32_text" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the [url=https://xxhash.com/]XXH32[/url] hash of the string as another [String].
+			</description>
+		</method>
+		<method name="xxh64_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Returns the [url=https://xxhash.com/]XXH64[/url] hash of the string as a [PackedByteArray].
+			</description>
+		</method>
+		<method name="xxh64_text" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the [url=https://xxhash.com/]XXH64[/url] hash of the string as another [String].
+			</description>
+		</method>
 		<method name="similarity" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="text" type="String" />

@@ -36,7 +36,7 @@
 
 namespace TestHashingContext {
 
-TEST_CASE("[HashingContext] Default - MD5/SHA1/SHA256") {
+TEST_CASE("[HashingContext] Default - MD5/SHA1/SHA256/XXH32/XXH64") {
 	HashingContext ctx;
 
 	static const uint8_t md5_expected[] = {
@@ -49,6 +49,12 @@ TEST_CASE("[HashingContext] Default - MD5/SHA1/SHA256") {
 	static const uint8_t sha256_expected[] = {
 		0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14, 0x9a, 0xfb, 0xf4, 0xc8, 0x99, 0x6f, 0xb9, 0x24,
 		0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b, 0x93, 0x4c, 0xa4, 0x95, 0x99, 0x1b, 0x78, 0x52, 0xb8, 0x55
+	};
+	static const uint8_t xxh32_expected[] = {
+		0x05, 0x5d, 0xcc, 0x02
+	};
+	static const uint8_t xxh64_expected[] = {
+		0x99, 0xe9, 0xd8, 0x51, 0x37, 0xdb, 0x46, 0xef
 	};
 
 	CHECK(ctx.start(HashingContext::HASH_MD5) == OK);
@@ -65,6 +71,16 @@ TEST_CASE("[HashingContext] Default - MD5/SHA1/SHA256") {
 	result = ctx.finish();
 	REQUIRE(result.size() == 32);
 	CHECK(memcmp(result.ptr(), sha256_expected, 32) == 0);
+
+	CHECK(ctx.start(HashingContext::HASH_XXH32) == OK);
+	result = ctx.finish();
+	REQUIRE(result.size() == 4);
+	CHECK(memcmp(result.ptr(), xxh32_expected, 4) == 0);
+
+	CHECK(ctx.start(HashingContext::HASH_XXH64) == OK);
+	result = ctx.finish();
+	REQUIRE(result.size() == 8);
+	CHECK(memcmp(result.ptr(), xxh64_expected, 8) == 0);
 }
 
 TEST_CASE("[HashingContext] Multiple updates - MD5/SHA1/SHA256") {
@@ -88,6 +104,12 @@ TEST_CASE("[HashingContext] Multiple updates - MD5/SHA1/SHA256") {
 		0x36, 0x08, 0xbc, 0xa1, 0xe4, 0x4e, 0xa6, 0xc4, 0xd2, 0x68, 0xeb, 0x6d, 0xb0, 0x22, 0x60, 0x26,
 		0x98, 0x92, 0xc0, 0xb4, 0x2b, 0x86, 0xbb, 0xf1, 0xe7, 0x7a, 0x6f, 0xa1, 0x6c, 0x3c, 0x92, 0x82
 	};
+	static const uint8_t xxh32_expected[] = {
+		0xd3, 0x2f, 0x93, 0xf1
+	};
+	static const uint8_t xxh64_expected[] = {
+		0xa1, 0x3c, 0x83, 0x5b, 0x46, 0x48, 0xba, 0xfe
+	};
 
 	CHECK(ctx.start(HashingContext::HASH_MD5) == OK);
 	CHECK(ctx.update(s_byte_parts[0]) == OK);
@@ -112,6 +134,22 @@ TEST_CASE("[HashingContext] Multiple updates - MD5/SHA1/SHA256") {
 	result = ctx.finish();
 	REQUIRE(result.size() == 32);
 	CHECK(memcmp(result.ptr(), sha256_expected, 32) == 0);
+
+	CHECK(ctx.start(HashingContext::HASH_XXH32) == OK);
+	CHECK(ctx.update(s_byte_parts[0]) == OK);
+	CHECK(ctx.update(s_byte_parts[1]) == OK);
+	CHECK(ctx.update(s_byte_parts[2]) == OK);
+	result = ctx.finish();
+	REQUIRE(result.size() == 4);
+	CHECK(memcmp(result.ptr(), xxh32_expected, 4) == 0);
+
+	CHECK(ctx.start(HashingContext::HASH_XXH64) == OK);
+	CHECK(ctx.update(s_byte_parts[0]) == OK);
+	CHECK(ctx.update(s_byte_parts[1]) == OK);
+	CHECK(ctx.update(s_byte_parts[2]) == OK);
+	result = ctx.finish();
+	REQUIRE(result.size() == 8);
+	CHECK(memcmp(result.ptr(), xxh64_expected, 8) == 0);
 }
 
 TEST_CASE("[HashingContext] Invalid use of start") {

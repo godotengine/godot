@@ -6,6 +6,7 @@
 	<description>
 		The HashingContext class provides an interface for computing cryptographic hashes over multiple iterations. Useful for computing hashes of big files (so you don't have to load them all in memory), network streams, and data streams in general (so you don't have to hold buffers).
 		The [enum HashType] enum shows the supported hashing algorithms.
+		[b]Note:[/b] The XXH32 and XXH64 hashes are [i]not[/i] suitable for cryptographic purposes.
 		[codeblocks]
 		[gdscript]
 		const CHUNK_SIZE = 1024
@@ -83,13 +84,19 @@
 	</methods>
 	<constants>
 		<constant name="HASH_MD5" value="0" enum="HashType">
-			Hashing algorithm: MD5.
+			Hashing algorithm: MD5. Produces a 128-bit digest.
 		</constant>
 		<constant name="HASH_SHA1" value="1" enum="HashType">
-			Hashing algorithm: SHA-1.
+			Hashing algorithm: SHA-1. Produces a 160-bit digest.
 		</constant>
 		<constant name="HASH_SHA256" value="2" enum="HashType">
-			Hashing algorithm: SHA-256.
+			Hashing algorithm: SHA-256. Produces a 256-bit digest.
+		</constant>
+		<constant name="HASH_SHAXXH32" value="3" enum="HashType">
+			Hashing algorithm: XXH32. Fast, produces a 32-bit digest.
+		</constant>
+		<constant name="HASH_SHAXXH64" value="4" enum="HashType">
+			Hashing algorithm: XXH64. Fast, produces a 64-bit digest.
 		</constant>
 	</constants>
 </class>

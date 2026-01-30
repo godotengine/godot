@@ -88,6 +88,32 @@ public:
 		Error finish(unsigned char r_hash[32]);
 	};
 
+	class XXH32Context {
+	private:
+		void *ctx = nullptr;
+
+	public:
+		XXH32Context();
+		~XXH32Context();
+
+		Error start();
+		Error update(const uint8_t *p_src, size_t p_len);
+		Error finish(unsigned char r_hash[4]);
+	};
+
+	class XXH64Context {
+	private:
+		void *ctx = nullptr;
+
+	public:
+		XXH64Context();
+		~XXH64Context();
+
+		Error start();
+		Error update(const uint8_t *p_src, size_t p_len);
+		Error finish(unsigned char r_hash[8]);
+	};
+
 	class AESContext {
 	private:
 		void *ctx = nullptr;
@@ -113,4 +139,7 @@ public:
 	static Error md5(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[16]);
 	static Error sha1(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[20]);
 	static Error sha256(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[32]);
+
+	static Error xxh32(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[4]);
+	static Error xxh64(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[8]);
 };

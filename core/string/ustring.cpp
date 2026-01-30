@@ -2794,6 +2794,20 @@ String String::sha256_text() const {
 	return String::hex_encode_buffer(hash, 32);
 }
 
+String String::xxh32_text() const {
+	CharString cs = utf8();
+	unsigned char hash[4];
+	CryptoCore::xxh32((unsigned char *)cs.ptr(), cs.length(), hash);
+	return String::hex_encode_buffer(hash, 4);
+}
+
+String String::xxh64_text() const {
+	CharString cs = utf8();
+	unsigned char hash[8];
+	CryptoCore::xxh64((unsigned char *)cs.ptr(), cs.length(), hash);
+	return String::hex_encode_buffer(hash, 8);
+}
+
 Vector<uint8_t> String::md5_buffer() const {
 	CharString cs = utf8();
 	unsigned char hash[16];
@@ -2832,6 +2846,34 @@ Vector<uint8_t> String::sha256_buffer() const {
 	ret.resize_uninitialized(32);
 	uint8_t *ret_ptrw = ret.ptrw();
 	for (int i = 0; i < 32; i++) {
+		ret_ptrw[i] = hash[i];
+	}
+	return ret;
+}
+
+Vector<uint8_t> String::xxh32_buffer() const {
+	CharString cs = utf8();
+	unsigned char hash[4];
+	CryptoCore::xxh32((unsigned char *)cs.ptr(), cs.length(), hash);
+
+	Vector<uint8_t> ret;
+	ret.resize_uninitialized(4);
+	uint8_t *ret_ptrw = ret.ptrw();
+	for (int i = 0; i < 4; i++) {
+		ret_ptrw[i] = hash[i];
+	}
+	return ret;
+}
+
+Vector<uint8_t> String::xxh64_buffer() const {
+	CharString cs = utf8();
+	unsigned char hash[8];
+	CryptoCore::xxh64((unsigned char *)cs.ptr(), cs.length(), hash);
+
+	Vector<uint8_t> ret;
+	ret.resize_uninitialized(8);
+	uint8_t *ret_ptrw = ret.ptrw();
+	for (int i = 0; i < 8; i++) {
 		ret_ptrw[i] = hash[i];
 	}
 	return ret;

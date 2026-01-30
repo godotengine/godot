@@ -601,9 +601,13 @@ public:
 	String md5_text() const;
 	String sha1_text() const;
 	String sha256_text() const;
+	String xxh32_text() const;
+	String xxh64_text() const;
 	Vector<uint8_t> md5_buffer() const;
 	Vector<uint8_t> sha1_buffer() const;
 	Vector<uint8_t> sha256_buffer() const;
+	Vector<uint8_t> xxh32_buffer() const;
+	Vector<uint8_t> xxh64_buffer() const;
 
 	_FORCE_INLINE_ bool contains(const char *p_str) const { return find(p_str) != -1; }
 	_FORCE_INLINE_ bool contains(const String &p_str) const { return find(p_str) != -1; }

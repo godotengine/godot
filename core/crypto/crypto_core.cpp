@@ -43,6 +43,10 @@
 #include <mbedtls/compat-2.x.h>
 #endif
 
+#define XXH_INLINE_ALL 1
+#define XXH_NO_XXH3 1
+#include "xxhash.h"
+
 // RandomGenerator
 CryptoCore::RandomGenerator::RandomGenerator() {
 	entropy = memalloc(sizeof(mbedtls_entropy_context));
@@ -160,6 +164,56 @@ Error CryptoCore::SHA256Context::finish(unsigned char r_hash[32]) {
 	return ret ? FAILED : OK;
 }
 
+// XXH32
+CryptoCore::XXH32Context::XXH32Context() {
+	ctx = XXH32_createState();
+}
+
+CryptoCore::XXH32Context::~XXH32Context() {
+	XXH32_freeState((XXH32_state_t *)ctx);
+}
+
+Error CryptoCore::XXH32Context::start() {
+	XXH_errorcode err = XXH32_reset((XXH32_state_t *)ctx, 0);
+	return err == XXH_ERROR ? FAILED : OK;
+}
+
+Error CryptoCore::XXH32Context::update(const uint8_t *p_src, size_t p_len) {
+	XXH_errorcode err = XXH32_update((XXH32_state_t *)ctx, p_src, p_len);
+	return err == XXH_ERROR ? FAILED : OK;
+}
+
+Error CryptoCore::XXH32Context::finish(unsigned char r_hash[4]) {
+	XXH32_hash_t digest = XXH32_digest((XXH32_state_t *)ctx);
+	memcpy(r_hash, &digest, 4);
+	return OK;
+}
+
+// XXH64
+CryptoCore::XXH64Context::XXH64Context() {
+	ctx = XXH64_createState();
+}
+
+CryptoCore::XXH64Context::~XXH64Context() {
+	XXH64_freeState((XXH64_state_t *)ctx);
+}
+
+Error CryptoCore::XXH64Context::start() {
+	XXH_errorcode err = XXH64_reset((XXH64_state_t *)ctx, 0);
+	return err == XXH_ERROR ? FAILED : OK;
+}
+
+Error CryptoCore::XXH64Context::update(const uint8_t *p_src, size_t p_len) {
+	XXH_errorcode err = XXH64_update((XXH64_state_t *)ctx, p_src, p_len);
+	return err == XXH_ERROR ? FAILED : OK;
+}
+
+Error CryptoCore::XXH64Context::finish(unsigned char r_hash[8]) {
+	XXH64_hash_t digest = XXH64_digest((XXH64_state_t *)ctx);
+	memcpy(r_hash, &digest, 8);
+	return OK;
+}
+
 // AES256
 CryptoCore::AESContext::AESContext() {
 	ctx = memalloc(sizeof(mbedtls_aes_context));
@@ -248,4 +302,24 @@ Error CryptoCore::sha1(const uint8_t *p_src, size_t p_src_len, unsigned char r_h
 Error CryptoCore::sha256(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[32]) {
 	int ret = mbedtls_sha256_ret(p_src, p_src_len, r_hash, 0);
 	return ret ? FAILED : OK;
+}
+
+Error CryptoCore::xxh32(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[4]) {
+	if(p_src == NULL && p_src_len != 0) {
+		return FAILED;
+	}
+
+	XXH32_hash_t digest = XXH32(p_src, p_src_len, 0);
+	memcpy(r_hash, &digest, 4);
+	return OK;
+}
+
+Error CryptoCore::xxh64(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[8]) {
+	if(p_src == NULL && p_src_len != 0) {
+		return FAILED;
+	}
+
+	XXH64_hash_t digest = XXH64(p_src, p_src_len, 0);
+	memcpy(r_hash, &digest, 8);
+	return OK;
 }

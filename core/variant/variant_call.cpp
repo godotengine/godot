@@ -2076,9 +2076,13 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(md5_text, sarray(), varray());
 	bind_string_method(sha1_text, sarray(), varray());
 	bind_string_method(sha256_text, sarray(), varray());
+	bind_string_method(xxh32_text, sarray(), varray());
+	bind_string_method(xxh64_text, sarray(), varray());
 	bind_string_method(md5_buffer, sarray(), varray());
 	bind_string_method(sha1_buffer, sarray(), varray());
 	bind_string_method(sha256_buffer, sarray(), varray());
+	bind_string_method(xxh32_buffer, sarray(), varray());
+	bind_string_method(xxh64_buffer, sarray(), varray());
 	bind_string_method(is_empty, sarray(), varray());
 	bind_string_methodv(contains, static_cast<bool (String::*)(const String &) const>(&String::contains), sarray("what"), varray());
 	bind_string_methodv(containsn, static_cast<bool (String::*)(const String &) const>(&String::containsn), sarray("what"), varray());

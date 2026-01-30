@@ -39,7 +39,9 @@ public:
 	enum HashType : int32_t {
 		HASH_MD5,
 		HASH_SHA1,
-		HASH_SHA256
+		HASH_SHA256,
+		HASH_XXH32,
+		HASH_XXH64
 	};
 
 private:

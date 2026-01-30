@@ -1986,7 +1986,7 @@ TEST_CASE("[String] Reverse") {
 	CHECK(s.reverse() == "dcbA");
 }
 
-TEST_CASE("[String] SHA1/SHA256/MD5") {
+TEST_CASE("[String] SHA1/SHA256/MD5/XXH32/XXH64") {
 	String s = "Godot";
 	String sha1 = "a1e91f39b9fce6a9998b14bdbe2aa2b39dc2d201";
 	static uint8_t sha1_buf[20] = {
@@ -2002,6 +2002,14 @@ TEST_CASE("[String] SHA1/SHA256/MD5") {
 	static uint8_t md5_buf[16] = {
 		0x4A, 0x33, 0x6D, 0x08, 0x7A, 0xEB, 0x03, 0x90, 0xDA, 0x10, 0xEE, 0x2E, 0xA7, 0xCB, 0x87, 0xF8
 	};
+	String xxh32 = "cf08a1f8";
+	static uint8_t xxh32_buf[4] = {
+		0xcf, 0x08, 0xa1, 0xf8
+	};
+	String xxh64 = "9285c4b81843abf8";
+	static uint8_t xxh64_buf[8] = {
+		0x92, 0x85, 0xc4, 0xb8, 0x18, 0x43, 0xab, 0xf8
+	};
 
 	PackedByteArray buf = s.sha1_buffer();
 	CHECK(memcmp(sha1_buf, buf.ptr(), 20) == 0);
@@ -2014,6 +2022,14 @@ TEST_CASE("[String] SHA1/SHA256/MD5") {
 	buf = s.md5_buffer();
 	CHECK(memcmp(md5_buf, buf.ptr(), 16) == 0);
 	CHECK(s.md5_text() == md5);
+
+	buf = s.xxh32_buffer();
+	CHECK(memcmp(xxh32_buf, buf.ptr(), 4) == 0);
+	CHECK(s.xxh32_text() == xxh32);
+
+	buf = s.xxh64_buffer();
+	CHECK(memcmp(xxh64_buf, buf.ptr(), 8) == 0);
+	CHECK(s.xxh64_text() == xxh64);
 }
 
 TEST_CASE("[String] Join") {

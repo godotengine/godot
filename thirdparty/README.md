@@ -1255,6 +1255,18 @@ Files extracted from upstream source:
 - `LICENSE`
 
 
+## xxhash
+
+- Upstream: https://github.com/Cyan4973/xxHash
+- Version: 0.8.3 (e626a72bc2321cd320e953a0ccf1584cad60f363, 2024-12-29)
+- License: BSD-2-Clause
+
+Files extract from upstream source:
+
+- `xxhash.h`
+- `LICENSE`
+
+
 ## zlib
 
 - Upstream: https://github.com/madler/zlib

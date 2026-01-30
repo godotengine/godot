@@ -43,6 +43,10 @@ Error HashingContext::start(HashType p_type) {
 			return ((CryptoCore::SHA1Context *)ctx)->start();
 		case HASH_SHA256:
 			return ((CryptoCore::SHA256Context *)ctx)->start();
+		case HASH_XXH32:
+			return ((CryptoCore::XXH32Context *)ctx)->start();
+		case HASH_XXH64:
+			return ((CryptoCore::XXH64Context *)ctx)->start();
 	}
 	return ERR_UNAVAILABLE;
 }
@@ -59,6 +63,10 @@ Error HashingContext::update(const PackedByteArray &p_chunk) {
 			return ((CryptoCore::SHA1Context *)ctx)->update(&r[0], len);
 		case HASH_SHA256:
 			return ((CryptoCore::SHA256Context *)ctx)->update(&r[0], len);
+		case HASH_XXH32:
+			return ((CryptoCore::XXH32Context *)ctx)->update(&r[0], len);
+		case HASH_XXH64:
+			return ((CryptoCore::XXH64Context *)ctx)->update(&r[0], len);
 	}
 	return ERR_UNAVAILABLE;
 }
@@ -80,6 +88,14 @@ PackedByteArray HashingContext::finish() {
 			out.resize(32);
 			err = ((CryptoCore::SHA256Context *)ctx)->finish(out.ptrw());
 			break;
+		case HASH_XXH32:
+			out.resize(4);
+			err = ((CryptoCore::XXH32Context *)ctx)->finish(out.ptrw());
+			break;
+		case HASH_XXH64:
+			out.resize(8);
+			err = ((CryptoCore::XXH64Context *)ctx)->finish(out.ptrw());
+			break;
 	}
 	_delete_ctx();
 	ERR_FAIL_COND_V(err != OK, PackedByteArray());
@@ -98,6 +114,12 @@ void HashingContext::_create_ctx(HashType p_type) {
 		case HASH_SHA256:
 			ctx = memnew(CryptoCore::SHA256Context);
 			break;
+		case HASH_XXH32:
+			ctx = memnew(CryptoCore::XXH32Context);
+			break;
+		case HASH_XXH64:
+			ctx = memnew(CryptoCore::XXH64Context);
+			break;
 		default:
 			ctx = nullptr;
 	}
@@ -114,6 +136,12 @@ void HashingContext::_delete_ctx() {
 		case HASH_SHA256:
 			memdelete((CryptoCore::SHA256Context *)ctx);
 			break;
+		case HASH_XXH32:
+			memdelete((CryptoCore::XXH32Context *)ctx);
+			break;
+		case HASH_XXH64:
+			memdelete((CryptoCore::XXH64Context *)ctx);
+			break;
 	}
 	ctx = nullptr;
 }
@@ -125,6 +153,8 @@ void HashingContext::_bind_methods() {
 	BIND_ENUM_CONSTANT(HASH_MD5);
 	BIND_ENUM_CONSTANT(HASH_SHA1);
 	BIND_ENUM_CONSTANT(HASH_SHA256);
+	BIND_ENUM_CONSTANT(HASH_XXH32);
+	BIND_ENUM_CONSTANT(HASH_XXH64);
 }
 
 HashingContext::~HashingContext() {
