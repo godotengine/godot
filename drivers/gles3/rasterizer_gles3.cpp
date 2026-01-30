@@ -79,17 +79,20 @@
 #endif
 #endif
 
-#if !defined(IOS_ENABLED) && !defined(WEB_ENABLED)
-// We include EGL below to get debug callback on GLES2 platforms,
-// but EGL is not available on iOS or the web.
-#define CAN_DEBUG
+#include <platform_gl.h>
+
+#if defined(EGL_ENABLED) || defined(ANDROID_ENABLED)
+#include <platform_egl.h>
 #endif
 
-#include "platform_gl.h"
+#if defined(GLAD_ENABLED) || defined(EGL_ENABLED) || defined(ANDROID_ENABLED)
+// We can debug GL if we use GLAD or EGL, so not on iOS or Web.
+#define GL_DEBUG_CALLBACK
 
-#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+#ifdef _WIN32
 #define strcpy strcpy_s
 #endif
+#endif // GLAD_ENABLED || EGL_ENABLED || ANDROID_ENABLED
 
 #ifdef WINDOWS_ENABLED
 bool RasterizerGLES3::screen_flipped_y = false;
@@ -126,7 +129,7 @@ void RasterizerGLES3::gl_end_frame(bool p_swap_buffers) {
 	}
 }
 
-#ifdef CAN_DEBUG
+#ifdef GL_DEBUG_CALLBACK
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
 	// These are ultimately annoying, so removing for now.
 	if (type == _EXT_DEBUG_TYPE_OTHER_ARB || type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB || type == _EXT_DEBUG_TYPE_MARKER_ARB) {
@@ -177,7 +180,7 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 
 	ERR_PRINT(output);
 }
-#endif
+#endif // GL_DEBUG_CALLBACK
 
 typedef void(GLAPIENTRY *DEBUGPROCARB)(GLenum source,
 		GLenum type,
@@ -223,7 +226,7 @@ void RasterizerGLES3::make_current(bool p_gles_over_gl) {
 
 RasterizerGLES3 *RasterizerGLES3::singleton = nullptr;
 
-#ifdef EGL_ENABLED
+#if defined(GLAD_ENABLED) && defined(EGL_ENABLED)
 void *_egl_load_function_wrapper(const char *p_name) {
 	return (void *)eglGetProcAddress(p_name);
 }
@@ -273,7 +276,12 @@ RasterizerGLES3::RasterizerGLES3() {
 	// the members of this instance are initialized, so this just makes debugging harder.  It should either crash here intentionally,
 	// or we need to actually test for this situation before constructing this.
 	ERR_FAIL_COND_MSG(!glad_loaded, "Error initializing GLAD.");
+#endif // GLAD_ENABLED
 
+#ifdef GL_DEBUG_CALLBACK
+	// Setup OpenGL debug callback, via DebugMessageCallbackARB (GLAD or EGL).
+
+#ifdef GLAD_ENABLED
 	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			if (GLAD_GL_ARB_debug_output) {
@@ -285,10 +293,7 @@ RasterizerGLES3::RasterizerGLES3() {
 			}
 		}
 	}
-#endif // GLAD_ENABLED
 
-	// For debugging
-#ifdef CAN_DEBUG
 #ifdef GL_API_ENABLED
 	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		if (OS::get_singleton()->is_stdout_verbose() && GLAD_GL_ARB_debug_output) {
@@ -301,6 +306,9 @@ RasterizerGLES3::RasterizerGLES3() {
 		}
 	}
 #endif // GL_API_ENABLED
+#endif // GLAD_ENABLED
+
+#if defined(EGL_ENABLED) || defined(ANDROID_ENABLED)
 #ifdef GLES_API_ENABLED
 	if (!RasterizerUtilGLES3::is_gles_over_gl()) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
@@ -318,9 +326,13 @@ RasterizerGLES3::RasterizerGLES3() {
 		}
 	}
 #endif // GLES_API_ENABLED
-#endif // CAN_DEBUG
+#endif // EGL_ENABLED || ANDROID_ENABLED
+
+#endif // GL_DEBUG_CALLBACK
 
 	{
+		// Setup shader cache.
+
 		String shader_cache_dir = Engine::get_singleton()->get_shader_cache_path();
 		if (shader_cache_dir.is_empty()) {
 			shader_cache_dir = "user://";

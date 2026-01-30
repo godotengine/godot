@@ -35,10 +35,11 @@
 @class CAContext;
 @class CALayer;
 class InputEvent;
-class GLManagerEmbedded;
 class NativeMenu;
-class RenderingContextDriver;
-class RenderingDevice;
+
+#ifdef GLES3_ENABLED
+class GLManagerEmbedded;
+#endif
 
 struct DisplayServerMacOSEmbeddedState {
 	/*! Default to a scale of 2.0, which is the most common. */
