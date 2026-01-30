@@ -52,6 +52,25 @@ static bool _property_path_matches(const String &p_property_path, const String &
 	return false;
 }
 
+static String _get_filter_property_path(const String &p_property_path) {
+	String path = p_property_path;
+	String name_override = path.contains_char('/') ? path.substr(path.rfind_char('/') + 1) : path;
+	const int dot = name_override.find_char('.');
+	if (dot != -1) {
+		name_override = name_override.substr(0, dot);
+	}
+	name_override = name_override.uri_decode();
+
+	const int last_slash = path.rfind_char('/');
+	if (last_slash > -1) {
+		path = path.left(last_slash);
+	} else {
+		path = "";
+	}
+
+	return (path.is_empty() ? "" : path + "/") + name_override;
+}
+
 class SectionedInspectorFilter : public Object {
 	GDCLASS(SectionedInspectorFilter, Object);
 
@@ -255,7 +274,7 @@ void SectionedInspector::update_category_list() {
 			continue;
 		}
 
-		if (!filter_text.is_empty() && !_property_path_matches(pi.name, filter_text, name_style)) {
+		if (!filter_text.is_empty() && !_property_path_matches(_get_filter_property_path(pi.name), filter_text, name_style)) {
 			continue;
 		}
 
