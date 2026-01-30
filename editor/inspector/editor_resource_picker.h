@@ -34,6 +34,7 @@
 #include "scene/resources/material.h"
 
 class Button;
+class CheckBox;
 class ConfirmationDialog;
 class EditorFileDialog;
 class PopupMenu;
@@ -63,6 +64,8 @@ class EditorResourcePicker : public HBoxContainer {
 	EditorFileDialog *file_dialog = nullptr;
 
 	ConfirmationDialog *duplicate_resources_dialog = nullptr;
+	ConfirmationDialog *make_unique_dialog = nullptr;
+	CheckBox *ask_before_make_unique_checkbox = nullptr;
 	Tree *duplicate_resources_tree = nullptr;
 
 	Size2i assign_button_min_size = Size2i(1, 1);
@@ -104,6 +107,7 @@ class EditorResourcePicker : public HBoxContainer {
 
 	void _button_draw();
 	void _button_input(const Ref<InputEvent> &p_event);
+	void _make_external_resource_unique();
 	void _on_unique_button_pressed();
 
 	String _get_owner_path() const;

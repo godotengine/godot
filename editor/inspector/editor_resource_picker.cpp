@@ -717,9 +717,44 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void EditorResourcePicker::_make_external_resource_unique() {
+	if (ask_before_make_unique_checkbox->is_pressed()) {
+		EditorSettings::get_singleton()->set("interface/inspector/ask_before_making_external_resources_unique", false);
+		ask_before_make_unique_checkbox->set_pressed(false);
+	}
+	_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
+}
+
 void EditorResourcePicker::_on_unique_button_pressed() {
 	if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
-		_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
+		bool ask_before_make_unique = EDITOR_GET("interface/inspector/ask_before_making_external_resources_unique");
+		if (edited_resource->is_built_in() || !ask_before_make_unique || Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
+			_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
+		} else {
+			if (!make_unique_dialog) {
+				make_unique_dialog = memnew(ConfirmationDialog);
+				make_unique_dialog->set_title(TTRC("Make Unique"));
+				add_child(make_unique_dialog);
+				make_unique_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorResourcePicker::_make_external_resource_unique));
+
+				VBoxContainer *vb = memnew(VBoxContainer);
+				vb->set_alignment(AlignmentMode::ALIGNMENT_CENTER);
+				make_unique_dialog->add_child(vb);
+
+				Label *label = memnew(Label(TTRC("This resource is an external resource.\nMake it unique and embed it into its parent resource?\n\nHold Shift when clicking the button to skip this dialog.")));
+				label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+				vb->add_child(label);
+
+				ask_before_make_unique_checkbox = memnew(CheckBox(TTRC("Don't Ask Again")));
+				ask_before_make_unique_checkbox->set_tooltip_text(TTRC("This dialog can also be enabled/disabled in the Editor Settings: Interface > Inspector > Ask Before Making External Resources Unique."));
+				ask_before_make_unique_checkbox->set_h_size_flags(SIZE_SHRINK_CENTER);
+				vb->add_child(ask_before_make_unique_checkbox);
+			}
+
+			ask_before_make_unique_checkbox->set_pressed(!ask_before_make_unique);
+			make_unique_dialog->reset_size();
+			make_unique_dialog->popup_centered(Vector2(500, 100) * EDSCALE);
+		}
 	} else if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::RIGHT) && _is_uniqueness_enabled(true)) {
 		_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
 	}
@@ -1450,12 +1485,11 @@ Ref<Resource> EditorResourcePicker::_has_parent_resource() {
 
 EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	make_unique_button = memnew(Button);
-	make_unique_button->set_flat(true);
 	make_unique_button->set_accessibility_name(TTRC("Number of Linked Resources."));
 	make_unique_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	make_unique_button->set_button_mask(MouseButtonMask::LEFT | MouseButtonMask::RIGHT);
 	make_unique_button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
-	make_unique_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
+	make_unique_button->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 	add_child(make_unique_button);
 	make_unique_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_on_unique_button_pressed));
 
