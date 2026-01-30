@@ -9350,6 +9350,9 @@ TextEdit::TextEdit(const String &p_placeholder) {
 	h_scroll = memnew(HScrollBar);
 	v_scroll = memnew(VScrollBar);
 
+	h_scroll->set_use_parent_material(true);
+	v_scroll->set_use_parent_material(true);
+
 	add_child(h_scroll, false, INTERNAL_MODE_FRONT);
 	add_child(v_scroll, false, INTERNAL_MODE_FRONT);
 
