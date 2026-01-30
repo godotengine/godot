@@ -32,25 +32,7 @@
 
 #include "display_server_macos_base.h"
 
-#if defined(GLES3_ENABLED)
-#if defined(ANGLE_ENABLED)
-#include "gl_manager_macos_angle.h"
-#endif
-#include "gl_manager_macos_legacy.h"
-#endif // GLES3_ENABLED
-
 #include "core/os/process_id.h"
-
-#if defined(RD_ENABLED)
-#include "servers/rendering/rendering_device.h"
-
-#if defined(VULKAN_ENABLED)
-#import "rendering_context_driver_vulkan_macos.h"
-#endif // VULKAN_ENABLED
-#if defined(METAL_ENABLED)
-#import "drivers/metal/rendering_context_driver_metal.h"
-#endif
-#endif // RD_ENABLED
 
 #define FontVariation __FontVariation
 #define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
@@ -62,26 +44,29 @@
 #import <Foundation/Foundation.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
 
+#undef BitMap
+#undef FontVariation
+
 @class GodotWindow;
 @class GodotContentView;
 @class GodotWindowDelegate;
 @class GodotButtonView;
 @class GodotProgressView;
-#ifdef TOOLS_ENABLED
-@class GodotEmbeddedView;
-@class CALayerHost;
-#endif
 
-#undef BitMap
-#undef FontVariation
+class InputEvent;
+class InputEventWithModifiers;
+class NativeMenuMacOS;
 
 #ifdef TOOLS_ENABLED
 class EmbeddedProcessMacOS;
 #endif
 
-class InputEvent;
-class InputEventWithModifiers;
-class NativeMenuMacOS;
+#ifdef GLES3_ENABLED
+class GLManagerLegacy_MacOS;
+#ifdef ANGLE_ENABLED
+class GLManagerANGLE_MacOS;
+#endif
+#endif
 
 class DisplayServerMacOS : public DisplayServerMacOSBase {
 	GDSOFTCLASS(DisplayServerMacOS, DisplayServerMacOSBase);
