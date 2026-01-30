@@ -34,6 +34,7 @@
 #include "../glue/runtime_interop.h"
 #include "../godotsharp_dirs.h"
 #include "../thirdparty/coreclr_delegates.h"
+#include "../thirdparty/error_codes.h"
 #include "../thirdparty/hostfxr.h"
 #include "../utils/path_utils.h"
 #include "gd_mono_cache.h"
@@ -362,7 +363,7 @@ bool load_coreclr(void *&r_coreclr_dll_handle) {
 load_assembly_and_get_function_pointer_fn initialize_hostfxr_for_config(const char_t *p_config_path) {
 	hostfxr_handle cxt = nullptr;
 	int rc = hostfxr_initialize_for_runtime_config(p_config_path, nullptr, &cxt);
-	if (rc != 0 || cxt == nullptr) {
+	if (!STATUS_CODE_SUCCEEDED(rc) || cxt == nullptr) {
 		hostfxr_close(cxt);
 		ERR_FAIL_V_MSG(nullptr, "hostfxr_initialize_for_runtime_config failed with code: " + itos(rc));
 	}
@@ -400,7 +401,7 @@ load_assembly_and_get_function_pointer_fn initialize_hostfxr_self_contained(
 	}
 
 	int rc = hostfxr_initialize_for_dotnet_command_line(argv.size(), argv.ptrw(), nullptr, &cxt);
-	if (rc != 0 || cxt == nullptr) {
+	if (!STATUS_CODE_SUCCEEDED(rc) || cxt == nullptr) {
 		hostfxr_close(cxt);
 		ERR_FAIL_V_MSG(nullptr, "hostfxr_initialize_for_dotnet_command_line failed with code: " + itos(rc));
 	}
