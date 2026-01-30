@@ -76,17 +76,19 @@
 #endif
 #endif
 
-#if !defined(IOS_ENABLED) && !defined(WEB_ENABLED)
-// We include EGL below to get debug callback on GLES2 platforms,
-// but EGL is not available on iOS or the web.
-#define CAN_DEBUG
-#endif
-
 #include "platform_gl.h"
 
-#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+#if defined(EGL_ENABLED) || defined(ANDROID_ENABLED)
+// We include EGL below to get a debug callback, but EGL is not
+// available on iOS or the web.
+#define EGL_DEBUG_CALLBACK
+
+#ifdef _WIN32
 #define strcpy strcpy_s
 #endif
+
+#include "platform_egl.h"
+#endif // EGL_ENABLED || ANDROID_ENABLED
 
 #ifdef WINDOWS_ENABLED
 bool RasterizerGLES3::screen_flipped_y = false;
@@ -123,7 +125,7 @@ void RasterizerGLES3::gl_end_frame(bool p_swap_buffers) {
 	}
 }
 
-#ifdef CAN_DEBUG
+#ifdef EGL_DEBUG_CALLBACK
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
 	// These are ultimately annoying, so removing for now.
 	if (type == _EXT_DEBUG_TYPE_OTHER_ARB || type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB || type == _EXT_DEBUG_TYPE_MARKER_ARB) {
@@ -174,7 +176,7 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 
 	ERR_PRINT(output);
 }
-#endif
+#endif // EGL_DEBUG_CALLBACK
 
 typedef void(GLAPIENTRY *DEBUGPROCARB)(GLenum source,
 		GLenum type,
@@ -276,7 +278,7 @@ RasterizerGLES3::RasterizerGLES3() {
 #endif // GLAD_ENABLED
 
 	// For debugging
-#ifdef CAN_DEBUG
+#ifdef EGL_DEBUG_CALLBACK
 #ifdef GL_API_ENABLED
 	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		if (OS::get_singleton()->is_stdout_verbose() && GLAD_GL_ARB_debug_output) {
@@ -306,7 +308,7 @@ RasterizerGLES3::RasterizerGLES3() {
 		}
 	}
 #endif // GLES_API_ENABLED
-#endif // CAN_DEBUG
+#endif // EGL_DEBUG_CALLBACK
 
 	{
 		String shader_cache_dir = Engine::get_singleton()->get_shader_cache_path();

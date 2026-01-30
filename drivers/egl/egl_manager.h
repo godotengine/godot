@@ -32,11 +32,15 @@
 
 #ifdef EGL_ENABLED
 
-// These must come first to avoid windows.h mess.
-#include "platform_gl.h"
-
 #include "core/templates/local_vector.h"
 #include "servers/display/display_server.h"
+
+// EGL includes platform-specific headers, so should come last.
+#include "platform_egl.h"
+#ifdef MACOS_ENABLED
+// FIXME: macOS relies on GL being included at this stage for some reason.
+#include "platform_gl.h"
+#endif
 
 class EGLManager {
 private:
