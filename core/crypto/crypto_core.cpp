@@ -305,7 +305,7 @@ Error CryptoCore::sha256(const uint8_t *p_src, size_t p_src_len, unsigned char r
 }
 
 Error CryptoCore::xxh32(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[4]) {
-	if(p_src == NULL && p_src_len != 0) {
+	if (p_src == NULL && p_src_len != 0) {
 		return FAILED;
 	}
 
@@ -315,7 +315,7 @@ Error CryptoCore::xxh32(const uint8_t *p_src, size_t p_src_len, unsigned char r_
 }
 
 Error CryptoCore::xxh64(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[8]) {
-	if(p_src == NULL && p_src_len != 0) {
+	if (p_src == NULL && p_src_len != 0) {
 		return FAILED;
 	}
 
