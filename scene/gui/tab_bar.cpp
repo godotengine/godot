@@ -1084,7 +1084,7 @@ void TabBar::set_tab_hidden(int p_tab, bool p_hidden) {
 
 	tabs.write[p_tab].hidden = p_hidden;
 
-	if (p_hidden && !select_next_available() && !select_previous_available()) {
+	if (p_hidden && get_next_available() == -1 && get_previous_available() == -1) {
 		// No available tabs, deselect.
 		set_current_tab(-1);
 	}
