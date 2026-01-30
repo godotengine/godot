@@ -239,7 +239,7 @@ List<String> DependencyEditor::_filter_deps(const List<String> &p_deps) {
 	const String filter_text = filter->get_text();
 
 	if (filter_text.is_empty()) {
-		return p_deps;
+		return List<String>(p_deps);
 	}
 
 	List<String> filtered;

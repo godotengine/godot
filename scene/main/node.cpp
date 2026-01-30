@@ -3211,7 +3211,7 @@ void Node::replace_by(RequiredParam<Node> rp_node, bool p_keep_groups) {
 	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
 	ERR_FAIL_COND(p_node->data.parent);
 
-	List<Node *> owned = data.owned;
+	List<Node *> owned(data.owned);
 	List<Node *> owned_by_owner;
 	Node *owner = (data.owner == this) ? p_node : data.owner;
 

@@ -4465,7 +4465,7 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 }
 
 List<Node *> SceneTreeDock::get_node_clipboard() const {
-	return node_clipboard;
+	return List<Node *>(node_clipboard);
 }
 
 void SceneTreeDock::add_remote_tree_editor(Tree *p_remote) {

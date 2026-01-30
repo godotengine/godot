@@ -1945,7 +1945,7 @@ int EditorNode::get_resource_count(Ref<Resource> p_res) {
 
 List<Node *> EditorNode::get_resource_node_list(Ref<Resource> p_res) {
 	List<Node *> *L = resource_count.getptr(p_res);
-	return L == nullptr ? List<Node *>() : *L;
+	return L == nullptr ? List<Node *>() : List<Node *>(*L);
 }
 
 void EditorNode::update_node_reference(const Variant &p_value, Node *p_node, bool p_remove) {

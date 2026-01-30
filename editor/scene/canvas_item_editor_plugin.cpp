@@ -360,7 +360,7 @@ void CanvasItemEditor::_snap_other_nodes(
 		}
 	}
 	for (int i = 0; i < p_current->get_child_count(); i++) {
-		_snap_other_nodes(p_value, p_transform_to_snap, r_current_snap, r_current_snap_target, p_snap_target, p_exceptions, p_current->get_child(i));
+		_snap_other_nodes(p_value, p_transform_to_snap, r_current_snap, r_current_snap_target, p_snap_target, List<const CanvasItem *>(p_exceptions), p_current->get_child(i));
 	}
 }
 
@@ -447,7 +447,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 				p_target, to_snap_transform,
 				output, snap_target,
 				SNAP_TARGET_OTHER_NODE,
-				exceptions,
+				List<const CanvasItem *>(exceptions),
 				get_tree()->get_edited_scene_root());
 	}
 
