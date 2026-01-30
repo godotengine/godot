@@ -364,6 +364,15 @@ static void _apply_max_volume_from_vector(Vector<AudioFrame> &r_tgt_volume_vecto
 	}
 }
 
+static float _get_max_volume(const Vector<AudioFrame> &p_src_volume_vector) {
+	float max_vol = 0.0;
+	for (int64_t i = 0; i < p_src_volume_vector.size(); i++) {
+		max_vol = MAX(max_vol, p_src_volume_vector[i].left);
+		max_vol = MAX(max_vol, p_src_volume_vector[i].right);
+	}
+	return max_vol;
+}
+
 // Interacts with PhysicsServer3D, so can only be called during _physics_process.
 Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	static constexpr int64_t volume_vector_size = AudioServer::MAX_CHANNELS_PER_BUS;
@@ -397,7 +406,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	Area3D *area = _get_overriding_area();
 #endif // PHYSICS_3D_DISABLED
 
-	// set picth to default value
+	// set pitch to default value
 	// this will only change if the Doppler effect is activated
 	actual_pitch_scale = internal->pitch_scale;
 
@@ -412,6 +421,10 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 
 	Vector<AudioFrame> tmp_reverb_vector;
 	tmp_reverb_vector.resize(volume_vector_size);
+
+	// keep track of a weighted average of the pitch on a logarithmic scale
+	float log_pitch_scale = 0.0F;
+	float log_pitch_weight = 0.0F;
 
 	bool has_any_listener_in_range = false;
 	linear_attenuation = 0;
@@ -519,14 +532,22 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			if (local_velocity != Vector3()) {
 				const float approaching = local_pos.normalized().dot(local_velocity.normalized());
 				const float velocity = local_velocity.length();
-				static constexpr float speed_of_sound = 343.0;
+				static constexpr float speed_of_sound = 343.0F;
 
 				float doppler_pitch_scale = internal->pitch_scale * speed_of_sound / (speed_of_sound + velocity * approaching);
-				doppler_pitch_scale = CLAMP(doppler_pitch_scale, (1 / 8.0), 8.0); //avoid crazy stuff
+				doppler_pitch_scale = CLAMP(doppler_pitch_scale, (1.0F / 8.0F), 8.0F); //avoid crazy stuff
 
-				actual_pitch_scale = MAX(actual_pitch_scale, doppler_pitch_scale);
+				// just use the maximum volume of the current volume vector as weight
+				// so the pitch effect fades out with lower volumes
+				float weight = _get_max_volume(tmp_volume_vector);
+				log_pitch_scale += weight * std::log2(doppler_pitch_scale);
+				log_pitch_weight += weight;
 			}
 		}
+	}
+
+	if (log_pitch_weight > 0.0F) {
+		actual_pitch_scale = std::pow(2.0F, log_pitch_scale / log_pitch_weight);
 	}
 
 	for (Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
