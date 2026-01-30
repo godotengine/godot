@@ -2416,6 +2416,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	default_renderer_mobile = "mobile";
 #endif
 
+#ifdef MACOS_ENABLED
+	// Default to Forward+ when using the project manager on macOS, since OpenGL will crash in virtual machines (GH-115580).
+	if (rendering_method.is_empty() && project_manager) {
+		rendering_method = "forward_plus";
+	}
+#endif
+
 	// And Compatibility next, or first if Vulkan is disabled.
 #ifdef GLES3_ENABLED
 	if (!renderer_hints.is_empty()) {
