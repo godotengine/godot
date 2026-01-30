@@ -46,10 +46,6 @@
 #import "native_menu_macos.h"
 #import "os_macos.h"
 
-#ifdef TOOLS_ENABLED
-#import "macos_quartz_core_spi.h"
-#endif
-
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/file_access.h"
@@ -71,13 +67,34 @@
 #import "editor/embedded_process_macos.h"
 #endif
 
+// Rendering drivers - include after general Godot deps as they imply system includes
+// which may need precise ordering.
+
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
+#include "gl_manager_macos_angle.h"
+#endif
+#include "gl_manager_macos_legacy.h"
+
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/rendering_device.h"
+
+#if defined(VULKAN_ENABLED)
+#import "rendering_context_driver_vulkan_macos.h"
+#endif
+#if defined(METAL_ENABLED)
+#import "drivers/metal/rendering_context_driver_metal.h"
+#endif
+#endif // RD_ENABLED
+
+// Keep Quartz after rendering includes, as it includes system GL.h
+// which clashes with GLAD.
+#ifdef TOOLS_ENABLED
+#import "macos_quartz_core_spi.h"
 #endif
 
 #include <AppKit/AppKit.h>

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  platform_gl.h                                                         */
+/*  platform_egl.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,16 +30,11 @@
 
 #pragma once
 
-#ifndef GL_API_ENABLED
-#define GL_API_ENABLED // Allow using desktop GL.
+#if defined(ANGLE_ENABLED) && defined(EGL_STATIC)
+#define KHRONOS_STATIC 1
+// IWYU pragma: begin_exports.
+#include <thirdparty/angle/include/EGL/egl.h>
+#include <thirdparty/angle/include/EGL/eglext.h>
+// IWYU pragma: end_exports.
+#undef KHRONOS_STATIC
 #endif
-
-#ifndef GLES_API_ENABLED
-#define GLES_API_ENABLED // Allow using GLES.
-#endif
-
-#ifndef GLAD_GLES2
-#define GLAD_GLES2
-#endif
-
-#include <thirdparty/glad/glad/gl.h> // IWYU pragma: export.
