@@ -84,8 +84,9 @@
 			If [code]true[/code], this wheel transfers engine force to the ground to propel the vehicle forward. This value is used in conjunction with [member VehicleBody3D.engine_force] and ignored if you are using the per-wheel [member engine_force] value instead.
 		</member>
 		<member name="wheel_friction_slip" type="float" setter="set_friction_slip" getter="get_friction_slip" default="10.5">
-			This determines how much grip this wheel has. It is combined with the friction setting of the surface the wheel is in contact with. 0.0 means no grip, 1.0 is normal grip. For a drift car setup, try setting the grip of the rear wheels slightly lower than the front wheels, or use a lower value to simulate tire wear.
-			It's best to set this to 1.0 when starting out.
+			This determines how much grip this wheel has. This value is combined with the friction setting of the surface the wheel is in contact with. 
+			Higher values increase grip, while lower values make the wheel slip more easily.
+			For a drift car setup, try setting the grip of the rear wheels slightly lower than the front wheels.
 		</member>
 		<member name="wheel_radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
 			The radius of the wheel in meters.
