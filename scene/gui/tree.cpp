@@ -4126,7 +4126,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 				int current_column, current_index, current_section;
 				_find_button_at_pos(mb->get_position(), current_item, current_column, current_index, current_section);
 				if (current_item == cache.click_item && current_column == cache.click_column && current_index == cache.click_index) {
-					emit_signal("button_clicked", cache.click_item, cache.click_column, cache.click_id, mb->get_button_index());
+					emit_signal(SNAME("button_clicked"), cache.click_item, cache.click_column, cache.click_id, mb->get_button_index());
 				}
 			}
 
@@ -4749,7 +4749,7 @@ void Tree::_accessibility_action_set_dec(const Variant &p_data, TreeItem *p_item
 }
 
 void Tree::_accessibility_action_button_press(const Variant &p_data, TreeItem *p_item, int p_col, int p_btn) {
-	emit_signal("button_clicked", p_item, p_col, p_btn, MouseButton::LEFT);
+	emit_signal(SNAME("button_clicked"), p_item, p_col, p_btn, MouseButton::LEFT);
 }
 
 RID Tree::get_focused_accessibility_element() const {
