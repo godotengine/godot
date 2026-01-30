@@ -3188,6 +3188,7 @@ GraphEdit::GraphEdit() {
 	add_child(top_layer, false, INTERNAL_MODE_BACK);
 	top_layer->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	top_layer->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	top_layer->set_use_parent_material(true);
 	top_layer->connect(SceneStringName(draw), callable_mp(this, &GraphEdit::_top_layer_draw));
 	top_layer->connect(SceneStringName(focus_exited), callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
 
@@ -3197,8 +3198,10 @@ GraphEdit::GraphEdit() {
 	connections_layer->set_name("_connection_layer");
 	connections_layer->set_disable_visibility_clip(true); // Necessary, so it can draw freely and be offset.
 	connections_layer->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	connections_layer->set_use_parent_material(true);
 
 	top_connection_layer = memnew(GraphEditFilter(this));
+	top_connection_layer->set_use_parent_material(true);
 	add_child(top_connection_layer, false, INTERNAL_MODE_BACK);
 
 	connections_shader = default_connections_shader;
@@ -3209,14 +3212,17 @@ GraphEdit::GraphEdit() {
 
 	dragged_connection_line = memnew(Line2D);
 	dragged_connection_line->set_texture_mode(Line2D::LINE_TEXTURE_STRETCH);
+	dragged_connection_line->set_use_parent_material(true);
 	top_connection_layer->add_child(dragged_connection_line);
 
 	h_scrollbar = memnew(HScrollBar);
 	h_scrollbar->set_name("_h_scroll");
+	h_scrollbar->set_use_parent_material(true);
 	top_layer->add_child(h_scrollbar);
 
 	v_scrollbar = memnew(VScrollBar);
 	v_scrollbar->set_name("_v_scroll");
+	v_scrollbar->set_use_parent_material(true);
 	top_layer->add_child(v_scrollbar);
 
 	// Set large minmax so it can scroll even if not resized yet.
@@ -3233,6 +3239,7 @@ GraphEdit::GraphEdit() {
 
 	menu_panel = memnew(PanelContainer);
 	menu_panel->set_visible(show_menu);
+	menu_panel->set_use_parent_material(true);
 	top_layer->add_child(menu_panel);
 	menu_panel->set_position(Vector2(10, 10));
 
@@ -3246,6 +3253,7 @@ GraphEdit::GraphEdit() {
 	zoom_label->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	zoom_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	zoom_label->set_custom_minimum_size(Size2(48, 0));
+	zoom_label->set_use_parent_material(true);
 	menu_hbox->add_child(zoom_label);
 	_update_zoom_label();
 
@@ -3254,6 +3262,7 @@ GraphEdit::GraphEdit() {
 	zoom_minus_button->set_visible(show_zoom_buttons);
 	zoom_minus_button->set_tooltip_text(ETR("Zoom Out"));
 	zoom_minus_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	zoom_minus_button->set_use_parent_material(true);
 	menu_hbox->add_child(zoom_minus_button);
 	zoom_minus_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_minus));
 
@@ -3262,6 +3271,7 @@ GraphEdit::GraphEdit() {
 	zoom_reset_button->set_visible(show_zoom_buttons);
 	zoom_reset_button->set_tooltip_text(ETR("Zoom Reset"));
 	zoom_reset_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	zoom_reset_button->set_use_parent_material(true);
 	menu_hbox->add_child(zoom_reset_button);
 	zoom_reset_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_reset));
 
@@ -3270,6 +3280,7 @@ GraphEdit::GraphEdit() {
 	zoom_plus_button->set_visible(show_zoom_buttons);
 	zoom_plus_button->set_tooltip_text(ETR("Zoom In"));
 	zoom_plus_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	zoom_plus_button->set_use_parent_material(true);
 	menu_hbox->add_child(zoom_plus_button);
 	zoom_plus_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_plus));
 
@@ -3282,6 +3293,7 @@ GraphEdit::GraphEdit() {
 	toggle_grid_button->set_pressed(true);
 	toggle_grid_button->set_tooltip_text(ETR("Toggle the visual grid."));
 	toggle_grid_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	toggle_grid_button->set_use_parent_material(true);
 	menu_hbox->add_child(toggle_grid_button);
 	toggle_grid_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_show_grid_toggled));
 
@@ -3302,6 +3314,7 @@ GraphEdit::GraphEdit() {
 	snapping_distance_spinbox->set_step(1);
 	snapping_distance_spinbox->set_value(snapping_distance);
 	snapping_distance_spinbox->set_tooltip_text(ETR("Change the snapping distance."));
+	snapping_distance_spinbox->set_use_parent_material(true);
 	menu_hbox->add_child(snapping_distance_spinbox);
 	snapping_distance_spinbox->connect(SceneStringName(value_changed), callable_mp(this, &GraphEdit::_snapping_distance_changed));
 
@@ -3314,6 +3327,7 @@ GraphEdit::GraphEdit() {
 	minimap_button->set_tooltip_text(ETR("Toggle the graph minimap."));
 	minimap_button->set_pressed(show_grid);
 	minimap_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	minimap_button->set_use_parent_material(true);
 	menu_hbox->add_child(minimap_button);
 	minimap_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_minimap_toggled));
 
@@ -3323,6 +3337,7 @@ GraphEdit::GraphEdit() {
 	arrange_button->set_tooltip_text(ETR("Automatically arrange selected nodes."));
 	arrange_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::arrange_nodes));
 	arrange_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	arrange_button->set_use_parent_material(true);
 	menu_hbox->add_child(arrange_button);
 
 	// Minimap.
@@ -3342,6 +3357,7 @@ GraphEdit::GraphEdit() {
 	minimap->set_offset(Side::SIDE_TOP, -minimap_size.height - MINIMAP_OFFSET);
 	minimap->set_offset(Side::SIDE_RIGHT, -MINIMAP_OFFSET);
 	minimap->set_offset(Side::SIDE_BOTTOM, -MINIMAP_OFFSET);
+	minimap->set_use_parent_material(true);
 	minimap->connect(SceneStringName(draw), callable_mp(this, &GraphEdit::_minimap_draw));
 
 	set_clip_contents(true);
