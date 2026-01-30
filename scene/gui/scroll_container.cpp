@@ -966,23 +966,27 @@ ScrollContainer::ScrollContainer() {
 	scroll_hint_top_left = memnew(TextureRect);
 	scroll_hint_top_left->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	scroll_hint_top_left->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	scroll_hint_top_left->set_use_parent_material(true);
 	scroll_hint_top_left->hide();
 	add_child(scroll_hint_top_left, false, INTERNAL_MODE_BACK);
 
 	scroll_hint_bottom_right = memnew(TextureRect);
 	scroll_hint_bottom_right->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	scroll_hint_bottom_right->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	scroll_hint_bottom_right->set_use_parent_material(true);
 	scroll_hint_bottom_right->hide();
 	add_child(scroll_hint_bottom_right, false, INTERNAL_MODE_BACK);
 
 	h_scroll = memnew(HScrollBar);
 	h_scroll->set_name("_h_scroll");
+	h_scroll->set_use_parent_material(true);
 	add_child(h_scroll, false, INTERNAL_MODE_BACK);
 	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &ScrollContainer::_scroll_moved));
 	h_scroll->set_focus_mode(FOCUS_NONE);
 
 	v_scroll = memnew(VScrollBar);
 	v_scroll->set_name("_v_scroll");
+	v_scroll->set_use_parent_material(true);
 	add_child(v_scroll, false, INTERNAL_MODE_BACK);
 	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &ScrollContainer::_scroll_moved));
 	v_scroll->set_focus_mode(FOCUS_NONE);
