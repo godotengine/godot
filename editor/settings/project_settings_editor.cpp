@@ -613,6 +613,11 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 		String display_name = property_name.substr(String("input/").size() - 1);
 		Dictionary action = GLOBAL_GET(property_name);
 
+		if (!action.has("events")) {
+			WARN_PRINT_ONCE_ED(vformat("Attempted to load invalid input action from setting at \"%s\". The `input/` prefix should only be used for input actions, and cannot be changed in the settings editor. Consider changing the category.", property_name));
+			continue;
+		}
+
 		ActionMapEditor::ActionInfo action_info;
 		action_info.action = action;
 		action_info.editable = true;
