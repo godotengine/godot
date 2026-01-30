@@ -36,8 +36,6 @@
 #include "core/io/dir_access.h"
 #include "core/io/image.h"
 #include "core/os/os.h"
-#include "drivers/gles3/storage/texture_storage.h"
-#include "drivers/gles3/storage/utilities.h"
 
 #define _EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB 0x8242
 #define _EXT_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_ARB 0x8243

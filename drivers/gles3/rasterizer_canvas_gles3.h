@@ -32,15 +32,10 @@
 
 #ifdef GLES3_ENABLED
 
-#include "drivers/gles3/rasterizer_scene_gles3.h"
 #include "drivers/gles3/shaders/canvas.glsl.gen.h"
 #include "drivers/gles3/shaders/canvas_occlusion.glsl.gen.h"
 #include "drivers/gles3/storage/material_storage.h"
-#include "drivers/gles3/storage/texture_storage.h"
 #include "servers/rendering/renderer_canvas_render.h"
-#include "servers/rendering/renderer_compositor.h"
-
-class RasterizerSceneGLES3;
 
 class RasterizerCanvasGLES3 : public RendererCanvasRender {
 	static RasterizerCanvasGLES3 *singleton;

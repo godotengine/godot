@@ -32,6 +32,8 @@
 
 #ifdef GLES3_ENABLED
 
+#include "core/config/project_settings.h"
+#include "core/string/ustring.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 
 #ifdef WEB_ENABLED

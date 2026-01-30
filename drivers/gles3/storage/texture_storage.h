@@ -33,11 +33,10 @@
 #ifdef GLES3_ENABLED
 
 #include "core/io/image.h"
-#include "core/os/os.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
 #include "drivers/gles3/shaders/canvas_sdf.glsl.gen.h"
 #include "drivers/gles3/storage/config.h"
-#include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/storage/texture_storage.h"
 
 #include "platform_gl.h"

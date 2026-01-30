@@ -36,7 +36,7 @@
 #include "core/math/geometry_3d.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/gles3/rasterizer_scene_gles3.h"
-#include "drivers/gles3/storage/texture_storage.h"
+#include "drivers/gles3/storage/render_scene_buffers_gles3.h"
 
 using namespace GLES3;
 

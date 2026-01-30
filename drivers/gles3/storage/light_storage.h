@@ -34,12 +34,13 @@
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
-#include "drivers/gles3/storage/render_scene_buffers_gles3.h"
 #include "drivers/gles3/storage/texture_storage.h"
 #include "servers/rendering/storage/light_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
 #include "platform_gl.h"
+
+class RenderSceneBuffersGLES3;
 
 namespace GLES3 {
 

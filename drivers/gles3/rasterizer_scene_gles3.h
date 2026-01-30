@@ -36,19 +36,12 @@
 #include "core/templates/paged_allocator.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "drivers/gles3/shader_gles3.h"
-#include "drivers/gles3/shaders/effects/cubemap_filter.glsl.gen.h"
-#include "drivers/gles3/shaders/sky.glsl.gen.h"
 #include "drivers/gles3/storage/light_storage.h"
 #include "drivers/gles3/storage/material_storage.h"
-#include "drivers/gles3/storage/render_scene_buffers_gles3.h"
-#include "drivers/gles3/storage/utilities.h"
-#include "scene/resources/mesh.h"
-#include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_server.h"
 
-#include "platform_gl.h"
+class RenderSceneBuffersGLES3;
 
 enum RenderListType {
 	RENDER_LIST_OPAQUE, //used for opaque objects
