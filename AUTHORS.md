@@ -89,7 +89,6 @@ name is available.
     ChocolaMint (chocola-mint)
     Chris Bradfield (cbscribe)
     Chris Cranford (Naros)
-    Chris Herborth (Taffer)
     Christian Kaiser (ckaiser)
     Clay John (clayjohn)
     ConteZero
