@@ -3940,7 +3940,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			}
 			if (selected_item && selected_col != -1 && selected_button != -1) {
 				const TreeItem::Cell &c = selected_item->cells[selected_col];
-				emit_signal("button_clicked", selected_item, selected_col, c.buttons[selected_button].id, MouseButton::LEFT);
+				emit_signal(SNAME("button_clicked"), selected_item, selected_col, c.buttons[selected_button].id, MouseButton::LEFT);
 			} else if (selected_item->is_selected(selected_col)) {
 				selected_item->deselect(selected_col);
 				emit_signal(SNAME("multi_selected"), selected_item, selected_col, false);
@@ -3950,7 +3950,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		} else if (selected_item && selected_col != -1 && selected_button != -1) {
 			const TreeItem::Cell &c = selected_item->cells[selected_col];
-			emit_signal("button_clicked", selected_item, selected_col, c.buttons[selected_button].id, MouseButton::LEFT);
+			emit_signal(SNAME("button_clicked"), selected_item, selected_col, c.buttons[selected_button].id, MouseButton::LEFT);
 		}
 		accept_event();
 	} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
@@ -3958,7 +3958,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			// Bring up editor if possible.
 			if (selected_item && selected_col != -1 && selected_button != -1) {
 				const TreeItem::Cell &c = selected_item->cells[selected_col];
-				emit_signal("button_clicked", selected_item, selected_col, c.buttons[selected_button].id, MouseButton::LEFT);
+				emit_signal(SNAME("button_clicked"), selected_item, selected_col, c.buttons[selected_button].id, MouseButton::LEFT);
 			} else if (!edit_selected()) {
 				emit_signal(SNAME("item_activated"));
 				incr_search.clear();

@@ -1176,7 +1176,7 @@ void AnimatedSprite3D::_notification(int p_what) {
 						if (frame <= 0) {
 							if (frames->get_animation_loop(animation)) {
 								frame = last_frame;
-								emit_signal("animation_looped");
+								emit_signal(SNAME("animation_looped"));
 							} else {
 								frame = 0;
 								pause();
