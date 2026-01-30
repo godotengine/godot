@@ -197,6 +197,7 @@ def run(target, source, env):
 #pragma once
 
 #include "core/object/script_instance.h"
+#include "core/variant/binder_common.h"
 
 inline constexpr uintptr_t _INVALID_GDVIRTUAL_FUNC_ADDR = static_cast<uintptr_t>(-1);
 

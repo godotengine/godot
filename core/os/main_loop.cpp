@@ -30,6 +30,8 @@
 
 #include "main_loop.h"
 
+#include "core/object/class_db.h"
+
 void MainLoop::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_OS_MEMORY_WARNING);
 	BIND_CONSTANT(NOTIFICATION_TRANSLATION_CHANGED);
