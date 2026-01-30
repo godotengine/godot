@@ -80,6 +80,10 @@ typedef struct hb_subset_plan_t hb_subset_plan_t;
  * @HB_SUBSET_FLAGS_IFTB_REQUIREMENTS: If set enforce requirements on the output subset
  * to allow it to be used with incremental font transfer IFTB patches. Primarily,
  * this forces all outline data to use long (32 bit) offsets. Since: EXPERIMENTAL
+ * @HB_SUBSET_FLAGS_RETAIN_NUM_GLYPHS: If this flag is set along side
+ * HB_SUBSET_FLAGS_RETAIN_GIDS then the number of glyphs in the font won't
+ * be reduced as a result of subsetting. If necessary empty glyphs will be
+ * included at the end of the font to keep the number of glyphs unchanged.
  *
  * List of boolean properties that can be configured on the subset input.
  *
@@ -101,6 +105,7 @@ typedef enum { /*< flags >*/
   HB_SUBSET_FLAGS_NO_BIDI_CLOSURE         =  0x00000800u,
 #ifdef HB_EXPERIMENTAL_API
   HB_SUBSET_FLAGS_IFTB_REQUIREMENTS       =  0x00001000u,
+  HB_SUBSET_FLAGS_RETAIN_NUM_GLYPHS  =  0x00002000u,
 #endif
 } hb_subset_flags_t;
 

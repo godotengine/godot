@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/string/print_string.h"
 #include "core/string/ustring.h"
 
 template <int SHORT_BUFFER_SIZE = 64>
@@ -117,8 +118,10 @@ StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(const c
 
 template <int SHORT_BUFFER_SIZE>
 StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::reserve(int p_size) {
-	ERR_FAIL_COND_V_MSG(p_size < length(), *this, "reserve() called with a capacity smaller than the current size. This is likely a mistake.");
 	if (p_size <= SHORT_BUFFER_SIZE || p_size <= buffer.size()) {
+		if (p_size < length()) {
+			WARN_VERBOSE("reserve() called with a capacity smaller than the current size. This is likely a mistake.");
+		}
 		return *this;
 	}
 

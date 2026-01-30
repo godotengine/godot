@@ -439,6 +439,31 @@ void meshopt_generateShadowIndexBufferMulti(unsigned int* destination, const uns
 	generateShadowBuffer(destination, indices, index_count, vertex_count, hasher, allocator);
 }
 
+void meshopt_generatePositionRemap(unsigned int* destination, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride)
+{
+	using namespace meshopt;
+
+	assert(vertex_positions_stride >= 12 && vertex_positions_stride <= 256);
+	assert(vertex_positions_stride % sizeof(float) == 0);
+
+	meshopt_Allocator allocator;
+	VertexCustomHasher hasher = {vertex_positions, vertex_positions_stride / sizeof(float), NULL, NULL};
+
+	size_t table_size = hashBuckets(vertex_count);
+	unsigned int* table = allocator.allocate<unsigned int>(table_size);
+	memset(table, -1, table_size * sizeof(unsigned int));
+
+	for (size_t i = 0; i < vertex_count; ++i)
+	{
+		unsigned int* entry = hashLookup(table, table_size, hasher, unsigned(i), ~0u);
+
+		if (*entry == ~0u)
+			*entry = unsigned(i);
+
+		destination[i] = *entry;
+	}
+}
+
 void meshopt_generateAdjacencyIndexBuffer(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride)
 {
 	using namespace meshopt;

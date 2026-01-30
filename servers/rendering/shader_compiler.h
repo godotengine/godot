@@ -31,8 +31,8 @@
 #pragma once
 
 #include "core/templates/pair.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_language.h"
-#include "servers/rendering_server.h"
 
 class ShaderCompiler {
 public:
@@ -40,6 +40,11 @@ public:
 		STAGE_VERTEX,
 		STAGE_FRAGMENT,
 		STAGE_COMPUTE,
+		STAGE_RAYGEN,
+		STAGE_ANY_HIT,
+		STAGE_CLOSEST_HIT,
+		STAGE_MISS,
+		STAGE_INTERSECTION,
 		STAGE_MAX
 	};
 

@@ -85,6 +85,12 @@
 				Returns the predicted display timing for the next frame.
 			</description>
 		</method>
+		<method name="get_openxr_version">
+			<return type="int" />
+			<description>
+				Returns the version of OpenXR that was initialized. Only valid after the OpenXR instance has been created. See [url=https://registry.khronos.org/OpenXR/specs/1.1/html/xrspec.html#XR_MAKE_VERSION]XR_MAKE_VERSION[/url] for how the version is calculated.
+			</description>
+		</method>
 		<method name="get_play_space">
 			<return type="int" />
 			<description>
@@ -140,7 +146,7 @@
 		<method name="get_system_id">
 			<return type="int" />
 			<description>
-				Returns the id of the system, which is an [url=https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrSystemId.html]XrSystemId[/url] cast to an integer.
+				Returns the ID of the system, which is an [url=https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrSystemId.html]XrSystemId[/url] cast to an integer.
 			</description>
 		</method>
 		<method name="insert_debug_label">
@@ -228,6 +234,7 @@
 			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
 			<description>
 				Registers the given extension as a composition layer provider.
+				[b]Note:[/b] This cannot be called after the OpenXR session has started. However, it can be called in [method OpenXRExtensionWrapper._on_session_created].
 			</description>
 		</method>
 		<method name="register_frame_info_extension">
@@ -235,6 +242,7 @@
 			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
 			<description>
 				Registers the given extension as modifying frame info via the [method OpenXRExtensionWrapper._set_frame_wait_info_and_get_next_pointer], [method OpenXRExtensionWrapper._set_view_locate_info_and_get_next_pointer], or [method OpenXRExtensionWrapper._set_frame_end_info_and_get_next_pointer] virtual methods.
+				[b]Note:[/b] This cannot be called after the OpenXR session has started. However, it can be called in [method OpenXRExtensionWrapper._on_session_created].
 			</description>
 		</method>
 		<method name="register_projection_views_extension">
@@ -242,6 +250,7 @@
 			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
 			<description>
 				Registers the given extension as a provider of additional data structures to projections views.
+				[b]Note:[/b] This cannot be called after the OpenXR session has started. However, it can be called in [method OpenXRExtensionWrapper._on_session_created].
 			</description>
 		</method>
 		<method name="set_custom_play_space">
@@ -307,6 +316,7 @@
 			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
 			<description>
 				Unregisters the given extension as a composition layer provider.
+				[b]Note:[/b] This cannot be called while the OpenXR session is still running.
 			</description>
 		</method>
 		<method name="unregister_frame_info_extension">
@@ -314,6 +324,7 @@
 			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
 			<description>
 				Unregisters the given extension as modifying frame info.
+				[b]Note:[/b] This cannot be called while the OpenXR session is still running.
 			</description>
 		</method>
 		<method name="unregister_projection_views_extension">
@@ -321,6 +332,13 @@
 			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
 			<description>
 				Unregisters the given extension as a provider of additional data structures to projections views.
+				[b]Note:[/b] This cannot be called while the OpenXR session is still running.
+			</description>
+		</method>
+		<method name="update_main_swapchain_size">
+			<return type="void" />
+			<description>
+				Request the recommended resolution from the OpenXR runtime and update the main swapchain size if it has changed.
 			</description>
 		</method>
 		<method name="xr_result">

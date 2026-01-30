@@ -31,8 +31,8 @@
 #pragma once
 
 #include "core/templates/hash_map.h"
+#include "editor/docks/editor_dock.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/margin_container.h"
 
 // Performs the actual search
 class FindInFiles : public Node {
@@ -161,6 +161,7 @@ private:
 };
 
 class Button;
+class CheckButton;
 class Tree;
 class TreeItem;
 class ProgressBar;
@@ -180,9 +181,13 @@ public:
 
 	void set_with_replace(bool with_replace);
 	void set_replace_text(const String &text);
+	bool is_keep_results() const;
+	void set_search_labels_visibility(bool p_visible);
 
 	void start_search();
 	void stop_search();
+
+	void update_layout(EditorDock::DockLayout p_layout);
 
 protected:
 	static void _bind_methods();
@@ -192,6 +197,7 @@ protected:
 private:
 	void _on_button_clicked(TreeItem *p_item, int p_column, int p_id, int p_mouse_button_index);
 	void _on_result_found(const String &fpath, int line_number, int begin, int end, String text);
+	void _on_theme_changed();
 	void _on_finished();
 	void _on_refresh_button_clicked();
 	void _on_cancel_button_clicked();
@@ -200,6 +206,11 @@ private:
 	void _on_item_edited();
 	void _on_replace_text_changed(const String &text);
 	void _on_replace_all_clicked();
+
+	enum {
+		FIND_BUTTON_REPLACE,
+		FIND_BUTTON_REMOVE,
+	};
 
 	struct Result {
 		int line_number = 0;
@@ -218,18 +229,71 @@ private:
 	void clear();
 
 	FindInFiles *_finder = nullptr;
+	Label *_find_label = nullptr;
 	Label *_search_text_label = nullptr;
 	Tree *_results_display = nullptr;
 	Label *_status_label = nullptr;
+	CheckButton *_keep_results_button = nullptr;
 	Button *_refresh_button = nullptr;
 	Button *_cancel_button = nullptr;
 	Button *_close_button = nullptr;
 	ProgressBar *_progress_bar = nullptr;
 	HashMap<String, TreeItem *> _file_items;
+	HashMap<TreeItem *, int> _file_items_results_count;
 	HashMap<TreeItem *, Result> _result_items;
 	bool _with_replace = false;
 
 	HBoxContainer *_replace_container = nullptr;
 	LineEdit *_replace_line_edit = nullptr;
 	Button *_replace_all_button = nullptr;
+
+	bool _floating = false;
+	MarginContainer *_results_mc = nullptr;
+};
+
+class PopupMenu;
+class TabContainer;
+
+// Contains several FindInFilesPanels. A FindInFilesPanel contains the results of a
+// `Find in Files` search or a `Replace in Files` search, while a
+// FindInFilesContainer can contain several FindInFilesPanels so that multiple search
+// results can remain at the same time.
+class FindInFilesContainer : public EditorDock {
+	GDCLASS(FindInFilesContainer, EditorDock);
+
+	enum {
+		PANEL_CLOSE,
+		PANEL_CLOSE_OTHERS,
+		PANEL_CLOSE_RIGHT,
+		PANEL_CLOSE_ALL,
+	};
+
+	void _on_theme_changed();
+	void _on_tab_close_pressed(int p_tab);
+	void _update_bar_visibility();
+	void _bar_menu_option(int p_option);
+	void _bar_input(const Ref<InputEvent> &p_input);
+	void _on_dock_closed();
+
+	TabContainer *_tabs = nullptr;
+	bool _update_bar = true;
+	PopupMenu *_tabs_context_menu = nullptr;
+
+	FindInFilesPanel *_create_new_panel();
+	FindInFilesPanel *_get_current_panel();
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
+	void _on_find_in_files_result_selected(const String &p_fpath, int p_line_number, int p_begin, int p_end);
+	void _on_find_in_files_modified_files(const PackedStringArray &p_paths);
+	void _on_find_in_files_close_button_clicked(FindInFilesPanel *p_panel);
+
+	virtual void update_layout(EditorDock::DockLayout p_layout) override;
+
+public:
+	FindInFilesContainer();
+
+	FindInFilesPanel *get_panel_for_results(const String &p_label);
 };

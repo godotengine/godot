@@ -204,7 +204,7 @@
 			<param index="0" name="tab_idx" type="int" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Sets language code of tab title used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+				Sets the language code of the title for the tab at index [param tab_idx] to [param language]. This is used for line-breaking and text shaping algorithms. If [param language] is empty, the current locale is used.
 			</description>
 		</method>
 		<method name="set_tab_metadata">
@@ -246,7 +246,7 @@
 			If [code]true[/code], tabs overflowing this node's width will be hidden, displaying two navigation buttons instead. Otherwise, this node's minimum size is updated so that all tabs are visible.
 		</member>
 		<member name="close_with_middle_mouse" type="bool" setter="set_close_with_middle_mouse" getter="get_close_with_middle_mouse" default="true">
-			If [code]true[/code], middle clicking on the mouse will fire the [signal tab_close_pressed] signal.
+			If [code]true[/code], middle-clicking on a tab will emit the [signal tab_close_pressed] signal.
 		</member>
 		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="-1">
 			The index of the current selected tab. A value of [code]-1[/code] means that no tab is selected and can only be set when [member deselect_enabled] is [code]true[/code] or if all tabs are hidden or disabled.
@@ -270,8 +270,11 @@
 		<member name="select_with_rmb" type="bool" setter="set_select_with_rmb" getter="get_select_with_rmb" default="false">
 			If [code]true[/code], enables selecting a tab with the right mouse button.
 		</member>
+		<member name="switch_on_drag_hover" type="bool" setter="set_switch_on_drag_hover" getter="get_switch_on_drag_hover" default="true">
+			If [code]true[/code], hovering over a tab while dragging something will switch to that tab. Does not have effect when hovering another tab to rearrange. The delay for when this happens is dictated by [theme_item hover_switch_wait_msec].
+		</member>
 		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="0">
-			The position at which tabs will be placed.
+			The horizontal alignment of the tabs.
 		</member>
 		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="TabBar.CloseButtonDisplayPolicy" default="0">
 			When the close button will appear on the tabs.
@@ -312,8 +315,8 @@
 		<signal name="tab_close_pressed">
 			<param index="0" name="tab" type="int" />
 			<description>
-				Emitted when a tab's close button is pressed or when middle-clicking on a tab, if [member close_with_middle_mouse] is enabled.
-				[b]Note:[/b] Tabs are not removed automatically once the close button is pressed, this behavior needs to be programmed manually. For example:
+				Emitted when a tab's close button is pressed or, if [member close_with_middle_mouse] is [code]true[/code], when middle-clicking on a tab.
+				[b]Note:[/b] Tabs are not removed automatically; this behavior needs to be coded manually. For example:
 				[codeblocks]
 				[gdscript]
 				$TabBar.tab_close_pressed.connect($TabBar.remove_tab)
@@ -333,7 +336,7 @@
 		<signal name="tab_rmb_clicked">
 			<param index="0" name="tab" type="int" />
 			<description>
-				Emitted when a tab is right-clicked. [member select_with_rmb] must be enabled.
+				Emitted when a tab is right-clicked.
 			</description>
 		</signal>
 		<signal name="tab_selected">
@@ -345,13 +348,13 @@
 	</signals>
 	<constants>
 		<constant name="ALIGNMENT_LEFT" value="0" enum="AlignmentMode">
-			Places tabs to the left.
+			Aligns tabs to the left.
 		</constant>
 		<constant name="ALIGNMENT_CENTER" value="1" enum="AlignmentMode">
-			Places tabs in the middle.
+			Aligns tabs in the middle.
 		</constant>
 		<constant name="ALIGNMENT_RIGHT" value="2" enum="AlignmentMode">
-			Places tabs to the right.
+			Aligns tabs to the right.
 		</constant>
 		<constant name="ALIGNMENT_MAX" value="3" enum="AlignmentMode">
 			Represents the size of the [enum AlignmentMode] enum.
@@ -388,8 +391,23 @@
 		<theme_item name="font_unselected_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 1)">
 			Font color of the other, unselected tabs.
 		</theme_item>
+		<theme_item name="icon_disabled_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon color of disabled tabs.
+		</theme_item>
+		<theme_item name="icon_hovered_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon color of the currently hovered tab. Does not apply to the selected tab.
+		</theme_item>
+		<theme_item name="icon_selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon color of the currently selected tab.
+		</theme_item>
+		<theme_item name="icon_unselected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon color of the other, unselected tabs.
+		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal separation between the elements inside tabs.
+		</theme_item>
+		<theme_item name="hover_switch_wait_msec" data_type="constant" type="int" default="500">
+			During a drag-and-drop, this is how many milliseconds to wait before switching the tab.
 		</theme_item>
 		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
 			The maximum allowed width of the tab's icon. This limit is applied on top of the default size of the icon, but before the value set with [method set_tab_icon_max_width]. The height is adjusted according to the icon's ratio.

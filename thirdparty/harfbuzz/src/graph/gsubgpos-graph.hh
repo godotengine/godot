@@ -87,6 +87,12 @@ struct Lookup : public OT::Lookup
     return lookupType == extension_type (table_tag);
   }
 
+  bool use_mark_filtering_set () const
+  {
+    unsigned flag = lookupFlag;
+    return flag & 0x0010u;
+  }
+
   bool make_extension (gsubgpos_graph_context_t& c,
                        unsigned this_index)
   {
@@ -132,10 +138,8 @@ struct Lookup : public OT::Lookup
     for (unsigned i = 0; i < subTable.len; i++)
     {
       unsigned subtable_index = c.graph.index_for_offset (this_index, &subTable[i]);
-      unsigned parent_index = this_index;
       if (is_ext) {
         unsigned ext_subtable_index = subtable_index;
-        parent_index = ext_subtable_index;
         ExtensionFormat1<OT::Layout::GSUB_impl::ExtensionSubst>* extension =
             (ExtensionFormat1<OT::Layout::GSUB_impl::ExtensionSubst>*)
             c.graph.object (ext_subtable_index).head;
@@ -148,33 +152,43 @@ struct Lookup : public OT::Lookup
           continue;
       }
 
-      hb_vector_t<unsigned> new_sub_tables;
-
-      if (c.table_tag == HB_OT_TAG_GPOS) {
-        switch (type)
-        {
-        case 2:
-          new_sub_tables = split_subtable<PairPos> (c, parent_index, subtable_index); break;
-        case 4:
-          new_sub_tables = split_subtable<MarkBasePos> (c, parent_index, subtable_index); break;
-        default:
-          break;
-        }
-      } else if (c.table_tag == HB_OT_TAG_GSUB) {
-        switch (type)
-        {
-        case 4:
-          new_sub_tables = split_subtable<graph::LigatureSubst> (c, parent_index, subtable_index); break;
-        default:
-          break;
-        }
+      hb_vector_t<unsigned>* split_result;
+      if (c.split_subtables.has (subtable_index, &split_result))
+      {
+        if (split_result->length == 0)
+          continue;
+        all_new_subtables.push (hb_pair(i, *split_result));
       }
+      else
+      {
+        hb_vector_t<unsigned> new_sub_tables;
 
-      if (new_sub_tables.in_error ()) return false;
-      if (!new_sub_tables) continue;
-      hb_pair_t<unsigned, hb_vector_t<unsigned>>* entry = all_new_subtables.push ();
-      entry->first = i;
-      entry->second = std::move (new_sub_tables);
+        if (c.table_tag == HB_OT_TAG_GPOS) {
+          switch (type)
+          {
+          case 2:
+            new_sub_tables = split_subtable<PairPos> (c, subtable_index); break;
+          case 4:
+            new_sub_tables = split_subtable<MarkBasePos> (c, subtable_index); break;
+          default:
+            break;
+          }
+        } else if (c.table_tag == HB_OT_TAG_GSUB) {
+          switch (type)
+          {
+          case 4:
+            new_sub_tables = split_subtable<graph::LigatureSubst> (c, subtable_index); break;
+          default:
+            break;
+          }
+        }
+
+        if (new_sub_tables.in_error ()) return false;
+
+        c.split_subtables.set (subtable_index, new_sub_tables);
+        if (new_sub_tables)
+          all_new_subtables.push (hb_pair (i, std::move (new_sub_tables)));
+      }
     }
 
     if (all_new_subtables) {
@@ -186,20 +200,19 @@ struct Lookup : public OT::Lookup
 
   template<typename T>
   hb_vector_t<unsigned> split_subtable (gsubgpos_graph_context_t& c,
-                                        unsigned parent_idx,
                                         unsigned objidx)
   {
     T* sub_table = (T*) c.graph.object (objidx).head;
     if (!sub_table || !sub_table->sanitize (c.graph.vertices_[objidx]))
       return hb_vector_t<unsigned> ();
 
-    return sub_table->split_subtables (c, parent_idx, objidx);
+    return sub_table->split_subtables (c, objidx);
   }
 
   bool add_sub_tables (gsubgpos_graph_context_t& c,
                        unsigned this_index,
                        unsigned type,
-                       hb_vector_t<hb_pair_t<unsigned, hb_vector_t<unsigned>>>& subtable_ids)
+                       const hb_vector_t<hb_pair_t<unsigned, hb_vector_t<unsigned>>>& subtable_ids)
   {
     bool is_ext = is_extension (c.table_tag);
     auto* v = &c.graph.vertices_[this_index];
@@ -219,6 +232,9 @@ struct Lookup : public OT::Lookup
      return false;
     }
     hb_memcpy (buffer, v->obj.head, v->table_size());
+
+    if (use_mark_filtering_set ())
+      hb_memcpy (buffer + new_size - 2, v->obj.tail - 2, 2);
 
     v->obj.head = buffer;
     v->obj.tail = buffer + new_size;
@@ -263,17 +279,15 @@ struct Lookup : public OT::Lookup
 
   void fix_existing_subtable_links (gsubgpos_graph_context_t& c,
                                     unsigned this_index,
-                                    hb_vector_t<hb_pair_t<unsigned, hb_vector_t<unsigned>>>& subtable_ids)
+                                    const hb_vector_t<hb_pair_t<unsigned, hb_vector_t<unsigned>>>& subtable_ids)
   {
     auto& v = c.graph.vertices_[this_index];
-    Lookup* lookup = (Lookup*) v.obj.head;
-
     unsigned shift = 0;
     for (const auto& p : subtable_ids)
     {
       unsigned insert_index = p.first + shift;
       unsigned pos_offset = p.second.length * OT::Offset16::static_size;
-      unsigned insert_offset = (char*) &lookup->subTable[insert_index] - (char*) lookup;
+      unsigned insert_offset = Lookup::min_size + insert_index * OT::Offset16::static_size;
       shift += p.second.length;
 
       for (auto& l : v.obj.all_links_writer ())
@@ -317,7 +331,7 @@ struct Lookup : public OT::Lookup
     unsigned* existing_ext_index = nullptr;
     if (c.subtable_to_extension.has(subtable_index, &existing_ext_index)) {
       ext_index = *existing_ext_index;
-    } else {    
+    } else {
       ext_index = create_extension_subtable(c, subtable_index, type);
       c.subtable_to_extension.set(subtable_index, ext_index);
     }

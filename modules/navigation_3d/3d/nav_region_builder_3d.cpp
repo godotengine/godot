@@ -34,6 +34,8 @@
 #include "../nav_region_3d.h"
 #include "nav_region_iteration_3d.h"
 
+#include "core/config/project_settings.h"
+
 using namespace Nav3D;
 
 void NavRegionBuilder3D::build_iteration(NavRegionIterationBuild3D &r_build) {
@@ -180,6 +182,7 @@ void NavRegionBuilder3D::_build_step_find_edge_connection_pairs(NavRegionIterati
 	region_iteration->external_edges.clear();
 
 	int free_edges_count = 0;
+	int edge_merge_error_count = 0;
 
 	for (Polygon &poly : region_iteration->navmesh_polygons) {
 		for (uint32_t p = 0; p < poly.vertices.size(); p++) {
@@ -209,9 +212,13 @@ void NavRegionBuilder3D::_build_step_find_edge_connection_pairs(NavRegionIterati
 
 			} else {
 				// The edge is already connected with another edge, skip.
-				ERR_FAIL_COND_MSG(pair.size >= 2, "Navigation region synchronization error. More than 2 edges tried to occupy the same map rasterization space. This is a logical error in the navigation mesh caused by overlap or too densely placed edges.");
+				edge_merge_error_count++;
 			}
 		}
+	}
+
+	if (edge_merge_error_count > 0 && GLOBAL_GET_CACHED(bool, "navigation/3d/warnings/navmesh_edge_merge_errors")) {
+		WARN_PRINT("Navigation region synchronization had " + itos(edge_merge_error_count) + " edge error(s).\nMore than 2 edges tried to occupy the same map rasterization space.\nThis causes a logical error in the navigation mesh geometry and is commonly caused by overlap or too densely placed edges.\nConsider baking with a higher 'cell_size', greater geometry margin, and less detailed bake objects to cause fewer edges.\nConsider lowering the 'navigation/3d/merge_rasterizer_cell_scale' in the project settings.\nThis warning can be toggled under 'navigation/3d/warnings/navmesh_edge_merge_errors' in the project settings.");
 	}
 
 	performance_data.pm_edge_free_count = free_edges_count;

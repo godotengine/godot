@@ -30,6 +30,7 @@
 
 #include "jolt_joint_3d.h"
 
+#include "../jolt_physics_server_3d.h"
 #include "../jolt_project_settings.h"
 #include "../misc/jolt_type_conversions.h"
 #include "../objects/jolt_body_3d.h"
@@ -209,7 +210,7 @@ void JoltJoint3D::set_collision_disabled(bool p_disabled) {
 		return;
 	}
 
-	PhysicsServer3D *physics_server = PhysicsServer3D::get_singleton();
+	JoltPhysicsServer3D *physics_server = JoltPhysicsServer3D::get_singleton();
 
 	if (collision_disabled) {
 		physics_server->body_add_collision_exception(body_a->get_rid(), body_b->get_rid());

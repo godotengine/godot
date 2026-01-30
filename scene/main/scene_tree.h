@@ -35,11 +35,14 @@
 #include "core/templates/paged_allocator.h"
 #include "core/templates/self_list.h"
 #include "scene/main/scene_tree_fti.h"
-#include "scene/resources/mesh.h"
+
+#include <cstdlib>
 
 #undef Window
 
+class ArrayMesh;
 class PackedScene;
+class InputEvent;
 class Node;
 #ifndef _3D_DISABLED
 class Node3D;
@@ -336,7 +339,7 @@ public:
 	void _accessibility_force_update();
 	void _accessibility_notify_change(const Node *p_node, bool p_remove = false);
 	void _flush_accessibility_changes();
-	void _process_accessibility_changes(DisplayServer::WindowID p_window_id);
+	void _process_accessibility_changes(int p_window_id); // Effectively DisplayServer::WindowID
 
 	virtual void initialize() override;
 
@@ -406,9 +409,9 @@ public:
 
 	int get_node_count() const;
 
-	void queue_delete(Object *p_object);
+	void queue_delete(RequiredParam<Object> rp_object);
 
-	void get_nodes_in_group(const StringName &p_group, List<Node *> *p_list);
+	Vector<Node *> get_nodes_in_group(const StringName &p_group);
 	Node *get_first_node_in_group(const StringName &p_group);
 	bool has_group(const StringName &p_identifier) const;
 	int get_node_count_in_group(const StringName &p_group) const;
@@ -422,12 +425,13 @@ public:
 	void set_current_scene(Node *p_scene);
 	Node *get_current_scene() const;
 	Error change_scene_to_file(const String &p_path);
-	Error change_scene_to_packed(const Ref<PackedScene> &p_scene);
+	Error change_scene_to_packed(RequiredParam<PackedScene> rp_scene);
+	Error change_scene_to_node(RequiredParam<Node> rp_node);
 	Error reload_current_scene();
 	void unload_current_scene();
 
-	Ref<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true, bool p_process_in_physics = false, bool p_ignore_time_scale = false);
-	Ref<Tween> create_tween();
+	RequiredResult<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true, bool p_process_in_physics = false, bool p_ignore_time_scale = false);
+	RequiredResult<Tween> create_tween();
 	void remove_tween(const Ref<Tween> &p_tween);
 	TypedArray<Tween> get_processed_tweens();
 

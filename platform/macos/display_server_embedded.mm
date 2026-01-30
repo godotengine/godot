@@ -55,6 +55,7 @@
 #import "core/config/project_settings.h"
 #import "core/debugger/engine_debugger.h"
 #import "core/io/marshalls.h"
+#import "core/os/main_loop.h"
 
 DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	EmbeddedDebugger::initialize(this);
@@ -77,7 +78,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 	// Metal rendering driver not available on Intel.
 	if (rendering_driver == "metal") {
 		rendering_driver = "vulkan";
-		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 	}
 #endif
 	if (rendering_driver == "vulkan") {
@@ -99,8 +100,8 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
 				WARN_PRINT("Your device does not seem to support MoltenVK or Metal, switching to OpenGL 3.");
 				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility", OS::RENDERING_SOURCE_FALLBACK);
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else
 #endif
 			{
@@ -115,7 +116,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 	if (rendering_driver == "opengl3_angle") {
 		WARN_PRINT("ANGLE not supported for embedded display, switching to native OpenGL.");
 		rendering_driver = "opengl3";
-		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 	}
 
 	if (rendering_driver == "opengl3") {
@@ -620,6 +621,10 @@ Size2i DisplayServerEmbedded::window_get_min_size(WindowID p_window) const {
 }
 
 void DisplayServerEmbedded::window_set_size(const Size2i p_size, WindowID p_window) {
+	print_line("Embedded window can't be resized.");
+}
+
+void DisplayServerEmbedded::_window_set_size(const Size2i p_size, WindowID p_window) {
 	[CATransaction begin];
 	[CATransaction setDisableActions:YES];
 

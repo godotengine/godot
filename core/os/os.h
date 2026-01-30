@@ -40,7 +40,35 @@
 
 #include <cstdlib>
 
+class MainLoop;
+
 class OS {
+public:
+	typedef void (*ImeCallback)(void *p_inp, const String &p_text, Point2 p_selection);
+	typedef bool (*HasServerFeatureCallback)(const String &p_feature);
+
+	enum RenderThreadMode {
+		RENDER_THREAD_UNSAFE,
+		RENDER_THREAD_SAFE,
+		RENDER_SEPARATE_THREAD,
+	};
+
+	enum StdHandleType {
+		STD_HANDLE_INVALID,
+		STD_HANDLE_CONSOLE,
+		STD_HANDLE_FILE,
+		STD_HANDLE_PIPE,
+		STD_HANDLE_UNKNOWN,
+	};
+
+	enum RenderingSource {
+		RENDERING_SOURCE_DEFAULT,
+		RENDERING_SOURCE_PROJECT_SETTING,
+		RENDERING_SOURCE_COMMANDLINE,
+		RENDERING_SOURCE_FALLBACK
+	};
+
+private:
 	static OS *singleton;
 	static uint64_t target_ticks;
 	String _execpath;
@@ -69,7 +97,9 @@ class OS {
 	List<String> restart_commandline;
 
 	String _current_rendering_driver_name;
+	RenderingSource _current_rendering_driver_name_source = RENDERING_SOURCE_DEFAULT;
 	String _current_rendering_method;
+	RenderingSource _current_rendering_method_source = RENDERING_SOURCE_DEFAULT;
 	bool _is_gles_over_gl = false;
 
 	RemoteFilesystemClient default_rfs;
@@ -83,25 +113,6 @@ class OS {
 protected:
 	void _set_logger(CompositeLogger *p_logger);
 
-public:
-	typedef void (*ImeCallback)(void *p_inp, const String &p_text, Point2 p_selection);
-	typedef bool (*HasServerFeatureCallback)(const String &p_feature);
-
-	enum RenderThreadMode {
-		RENDER_THREAD_UNSAFE,
-		RENDER_THREAD_SAFE,
-		RENDER_SEPARATE_THREAD,
-	};
-
-	enum StdHandleType {
-		STD_HANDLE_INVALID,
-		STD_HANDLE_CONSOLE,
-		STD_HANDLE_FILE,
-		STD_HANDLE_PIPE,
-		STD_HANDLE_UNKNOWN,
-	};
-
-protected:
 	friend class Main;
 	// Needed by tests to setup command-line args.
 	friend int test_main(int argc, char *argv[]);
@@ -130,12 +141,22 @@ public:
 
 	static OS *get_singleton();
 
-	void set_current_rendering_driver_name(const String &p_driver_name) { _current_rendering_driver_name = p_driver_name; }
-	void set_current_rendering_method(const String &p_name) { _current_rendering_method = p_name; }
+	static bool prefer_meta_over_ctrl();
+
+	void set_current_rendering_driver_name(const String &p_driver_name, RenderingSource p_source) {
+		_current_rendering_driver_name = p_driver_name;
+		_current_rendering_driver_name_source = p_source;
+	}
+	void set_current_rendering_method(const String &p_name, RenderingSource p_source) {
+		_current_rendering_method = p_name;
+		_current_rendering_method_source = p_source;
+	}
 	void set_gles_over_gl(bool p_enabled) { _is_gles_over_gl = p_enabled; }
 
 	String get_current_rendering_driver_name() const { return _current_rendering_driver_name; }
 	String get_current_rendering_method() const { return _current_rendering_method; }
+	RenderingSource get_current_rendering_driver_name_source() const { return _current_rendering_driver_name_source; }
+	RenderingSource get_current_rendering_method_source() const { return _current_rendering_method_source; }
 	bool get_gles_over_gl() const { return _is_gles_over_gl; }
 
 	virtual Vector<String> get_video_adapter_driver_info() const = 0;
@@ -201,6 +222,7 @@ public:
 	virtual Error shell_open(const String &p_uri);
 	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder = true);
 	virtual Error set_cwd(const String &p_cwd);
+	virtual String get_cwd() const;
 
 	virtual bool has_environment(const String &p_var) const = 0;
 	virtual String get_environment(const String &p_var) const = 0;
@@ -223,6 +245,7 @@ public:
 
 	void ensure_user_data_dir();
 
+	// NOTE: MainLoop is forward-declared in OS and should be included to use this.
 	virtual MainLoop *get_main_loop() const = 0;
 
 	virtual void yield();
@@ -294,6 +317,7 @@ public:
 	virtual String get_temp_path() const;
 	virtual String get_bundle_resource_dir() const;
 	virtual String get_bundle_icon_path() const;
+	virtual String get_bundle_icon_name() const;
 
 	virtual String get_user_data_dir(const String &p_user_dir) const;
 	virtual String get_user_data_dir() const;

@@ -64,13 +64,13 @@ Mesh::BlendShapeMode ImporterMesh::get_blend_shape_mode() const {
 	return blend_shape_mode;
 }
 
-void ImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes, const Dictionary &p_lods, const Ref<Material> &p_material, const String &p_name, const uint64_t p_flags) {
+void ImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes, const Dictionary &p_lods, const Ref<Material> &p_material, const String &p_surface_name, const uint64_t p_flags) {
 	ERR_FAIL_COND(p_blend_shapes.size() != blend_shapes.size());
 	ERR_FAIL_COND(p_arrays.size() != Mesh::ARRAY_MAX);
 	Surface s;
 	s.primitive = p_primitive;
 	s.arrays = p_arrays;
-	s.name = p_name;
+	s.name = p_surface_name;
 	s.flags = p_flags;
 
 	Vector<Vector3> vertex_array = p_arrays[Mesh::ARRAY_VERTEX];
@@ -341,6 +341,8 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 			}
 		}
 
+		bool deformable = bones.size() > 0 || blend_shapes.size() > 0;
+
 		if (bones.size() > 0 && weights.size() && bone_transform_vector.size() > 0) {
 			Vector3 *vertices_ptrw = vertices.ptrw();
 
@@ -427,7 +429,6 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 
 		unsigned int merged_vertex_count = merged_vertices.size();
 		const Vector3 *merged_vertices_ptr = merged_vertices.ptr();
-		const int32_t *merged_indices_ptr = merged_indices.ptr();
 		Vector3 *merged_normals_ptr = merged_normals.ptr();
 
 		{
@@ -472,50 +473,80 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 			}
 		}
 
-		unsigned int index_target = 12; // Start with the smallest target, 4 triangles
-		unsigned int last_index_count = 0;
+		print_verbose("LOD Generation: Triangles " + itos(index_count / 3) + ", vertices " + itos(vertex_count) + " (merged " + itos(merged_vertex_count) + ")" + (deformable ? ", deformable" : ""));
 
-		const float max_mesh_error = 1.0f; // we only need LODs that can be selected by error threshold
-		float mesh_error = 0.0f;
+		const float max_mesh_error = 1.0f; // We only need LODs that can be selected by error threshold.
+		const unsigned min_target_indices = 12;
 
-		while (index_target < index_count) {
+		LocalVector<int> current_indices = merged_indices;
+		float current_error = 0.0f;
+		bool allow_prune = true;
+
+		while (current_indices.size() > min_target_indices * 2) {
+			unsigned int current_index_count = current_indices.size();
+			unsigned int target_index_count = MAX(((current_index_count / 3) / 2) * 3, min_target_indices);
+
 			PackedInt32Array new_indices;
-			new_indices.resize(index_count);
+			new_indices.resize(current_index_count);
 
-			const int simplify_options = SurfaceTool::SIMPLIFY_LOCK_BORDER;
+			int simplify_options = SurfaceTool::SIMPLIFY_SPARSE; // Does not change appearance, but speeds up subsequent iterations.
 
+			// Lock geometric boundary in case the mesh is composed of multiple material subsets.
+			simplify_options |= SurfaceTool::SIMPLIFY_LOCK_BORDER;
+
+			if (allow_prune) {
+				// Remove small disconnected components.
+				simplify_options |= SurfaceTool::SIMPLIFY_PRUNE;
+			}
+
+			if (deformable) {
+				// Improves appearance of deformable objects after deformation by using more regular tessellation.
+				simplify_options |= SurfaceTool::SIMPLIFY_REGULARIZE;
+			}
+
+			float step_error = 0.0f;
 			size_t new_index_count = SurfaceTool::simplify_with_attrib_func(
 					(unsigned int *)new_indices.ptrw(),
-					(const uint32_t *)merged_indices_ptr, index_count,
+					(const uint32_t *)current_indices.ptr(), current_index_count,
 					merged_vertices_f32.ptr(), merged_vertex_count,
 					sizeof(float) * 3, // Vertex stride
 					merged_attribs_ptr,
 					sizeof(float) * attrib_count, // Attribute stride
 					attrib_weights, attrib_count,
 					nullptr, // Vertex lock
-					index_target,
+					target_index_count,
 					max_mesh_error,
 					simplify_options,
-					&mesh_error);
+					&step_error);
 
-			if (new_index_count < last_index_count * 1.5f) {
-				index_target = index_target * 1.5f;
+			if (new_index_count == 0 && allow_prune) {
+				// If the best result the simplifier could arrive at with pruning enabled is 0 triangles, there might still be an opportunity
+				// to reduce the number of triangles further *without* completely decimating the mesh. It will be impossible to reach the target
+				// this way - if the target was reachable without going down to 0, the simplifier would have done it! - but we might still be able
+				// to get one more slightly lower level if we retry without pruning.
+				allow_prune = false;
 				continue;
 			}
 
-			if (new_index_count == 0 || (new_index_count >= (index_count * 0.75f))) {
-				break;
-			}
-			if (new_index_count > 5000000) {
-				// This limit theoretically shouldn't be needed, but it's here
-				// as an ad-hoc fix to prevent a crash with complex meshes.
-				// The crash still happens with limit of 6000000, but 5000000 works.
-				// In the future, identify what's causing that crash and fix it.
-				WARN_PRINT("Mesh LOD generation failed for mesh " + get_name() + " surface " + itos(i) + ", mesh is too complex. Some automatic LODs were not generated.");
+			// Accumulate error over iterations. Usually, it's correct to use step_error as is; however, on coarse LODs, we may start
+			// getting *smaller* relative error compared to the previous LOD. To make sure the error is monotonic and strictly increasing,
+			// and to limit the switching (pop) distance, we ensure the error grows by an arbitrary factor each iteration.
+			current_error = MAX(current_error * 1.5f, step_error);
+
+			new_indices.resize(new_index_count);
+			current_indices = new_indices;
+
+			if (new_index_count == 0 || (new_index_count >= current_index_count * 0.75f)) {
+				print_verbose("  LOD stop: got " + itos(new_index_count / 3) + " triangles when asking for " + itos(target_index_count / 3));
 				break;
 			}
 
-			new_indices.resize(new_index_count);
+			if (current_error > max_mesh_error) {
+				print_verbose("  LOD stop: reached " + rtos(current_error) + " cumulative error (step error " + rtos(step_error) + ")");
+				break;
+			}
+
+			// We need to remap the LOD indices back to the original vertex array; note that we already copied new_indices into current_indices for subsequent iteration.
 			{
 				int *ptrw = new_indices.ptrw();
 				for (unsigned int j = 0; j < new_index_count; j++) {
@@ -524,15 +555,11 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 			}
 
 			Surface::LOD lod;
-			lod.distance = MAX(mesh_error * scale, CMP_EPSILON2);
+			lod.distance = MAX(current_error * scale, CMP_EPSILON2);
 			lod.indices = new_indices;
 			surfaces.write[i].lods.push_back(lod);
-			index_target = MAX(new_index_count, index_target) * 2;
-			last_index_count = new_index_count;
 
-			if (mesh_error == 0.0f) {
-				break;
-			}
+			print_verbose("  LOD " + itos(surfaces.write[i].lods.size()) + ": " + itos(new_index_count / 3) + " triangles, error " + rtos(current_error) + " (step error " + rtos(step_error) + ")");
 		}
 
 		surfaces.write[i].lods.sort_custom<Surface::LODComparator>();
@@ -598,6 +625,44 @@ Ref<ArrayMesh> ImporterMesh::get_mesh(const Ref<ArrayMesh> &p_base) {
 	}
 
 	return mesh;
+}
+
+Ref<ImporterMesh> ImporterMesh::from_mesh(const Ref<Mesh> &p_mesh) {
+	Ref<ImporterMesh> importer_mesh;
+	importer_mesh.instantiate();
+	if (p_mesh.is_null()) {
+		return importer_mesh;
+	}
+	Ref<ArrayMesh> array_mesh = p_mesh;
+	// Convert blend shape mode and names if any.
+	if (p_mesh->get_blend_shape_count() > 0) {
+		ArrayMesh::BlendShapeMode shape_mode = ArrayMesh::BLEND_SHAPE_MODE_NORMALIZED;
+		if (array_mesh.is_valid()) {
+			shape_mode = array_mesh->get_blend_shape_mode();
+		}
+		importer_mesh->set_blend_shape_mode(shape_mode);
+		for (int morph_i = 0; morph_i < p_mesh->get_blend_shape_count(); morph_i++) {
+			importer_mesh->add_blend_shape(p_mesh->get_blend_shape_name(morph_i));
+		}
+	}
+	// Add surfaces one by one.
+	for (int32_t surface_i = 0; surface_i < p_mesh->get_surface_count(); surface_i++) {
+		Ref<Material> mat = p_mesh->surface_get_material(surface_i);
+		String surface_name;
+		if (array_mesh.is_valid()) {
+			surface_name = array_mesh->surface_get_name(surface_i);
+		}
+		if (surface_name.is_empty() && mat.is_valid()) {
+			surface_name = mat->get_name();
+		}
+		importer_mesh->add_surface(p_mesh->surface_get_primitive_type(surface_i), p_mesh->surface_get_arrays(surface_i),
+				p_mesh->surface_get_blend_shape_arrays(surface_i), p_mesh->surface_get_lods(surface_i),
+				mat, surface_name, p_mesh->surface_get_format(surface_i));
+	}
+	// Merge metadata.
+	importer_mesh->merge_meta_from(*p_mesh);
+	importer_mesh->set_name(p_mesh->get_name());
+	return importer_mesh;
 }
 
 void ImporterMesh::clear() {
@@ -886,7 +951,7 @@ Ref<ConvexPolygonShape3D> ImporterMesh::create_convex_shape(bool p_clean, bool p
 		Geometry3D::MeshData md;
 		Error err = ConvexHullComputer::convex_hull(vertices, md);
 		if (err == OK) {
-			shape->set_points(md.vertices);
+			shape->set_points(Vector<Vector3>(md.vertices));
 			return shape;
 		} else {
 			ERR_PRINT("Convex shape cleaning failed, falling back to simpler process.");
@@ -1228,6 +1293,7 @@ void ImporterMesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("generate_lods", "normal_merge_angle", "normal_split_angle", "bone_transform_array"), &ImporterMesh::_generate_lods_bind);
 	ClassDB::bind_method(D_METHOD("get_mesh", "base_mesh"), &ImporterMesh::get_mesh, DEFVAL(Ref<ArrayMesh>()));
+	ClassDB::bind_static_method("ImporterMesh", D_METHOD("from_mesh", "mesh"), &ImporterMesh::from_mesh);
 	ClassDB::bind_method(D_METHOD("clear"), &ImporterMesh::clear);
 
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &ImporterMesh::_set_data);

@@ -30,6 +30,7 @@
 
 #include "gpu_particles_collision_3d.h"
 
+#include "core/math/geometry_3d.h"
 #include "core/object/worker_thread_pool.h"
 #include "mesh_instance_3d.h"
 #include "scene/3d/camera_3d.h"
@@ -59,7 +60,7 @@ GPUParticlesCollision3D::GPUParticlesCollision3D(RS::ParticlesCollisionType p_ty
 
 GPUParticlesCollision3D::~GPUParticlesCollision3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(collision);
+	RS::get_singleton()->free_rid(collision);
 }
 
 /////////////////////////////////
@@ -910,7 +911,7 @@ GPUParticlesAttractor3D::GPUParticlesAttractor3D(RS::ParticlesCollisionType p_ty
 }
 GPUParticlesAttractor3D::~GPUParticlesAttractor3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(collision);
+	RS::get_singleton()->free_rid(collision);
 }
 
 /////////////////////////////////

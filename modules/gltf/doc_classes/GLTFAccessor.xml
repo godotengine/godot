@@ -11,6 +11,21 @@
 		<link title="Buffers, BufferViews, and Accessors in Khronos glTF specification">https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_005_BuffersBufferViewsAccessors.md</link>
 		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
+	<methods>
+		<method name="from_dictionary" qualifiers="static">
+			<return type="GLTFAccessor" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Creates a new GLTFAccessor instance by parsing the given [Dictionary].
+			</description>
+		</method>
+		<method name="to_dictionary" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Serializes this GLTFAccessor instance into a [Dictionary].
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="accessor_type" type="int" setter="set_accessor_type" getter="get_accessor_type" enum="GLTFAccessor.GLTFAccessorType" default="0">
 			The glTF accessor type, as an enum.

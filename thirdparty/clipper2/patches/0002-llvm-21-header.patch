@@ -1,0 +1,12 @@
+diff --git a/thirdparty/clipper2/include/clipper2/clipper.core.h b/thirdparty/clipper2/include/clipper2/clipper.core.h
+index 5a698e96f4..a68e87225e 100644
+--- a/thirdparty/clipper2/include/clipper2/clipper.core.h
++++ b/thirdparty/clipper2/include/clipper2/clipper.core.h
+@@ -13,6 +13,7 @@
+ #include "clipper2/clipper.version.h"
+ #include <cstdint>
+ #include <vector>
++#include <iterator>
+ #include <string>
+ #include <iostream>
+ #include <algorithm>

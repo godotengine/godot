@@ -41,6 +41,9 @@ void NativeMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_system_menu", "menu_id"), &NativeMenu::get_system_menu);
 	ClassDB::bind_method(D_METHOD("get_system_menu_name", "menu_id"), &NativeMenu::get_system_menu_name);
 
+	ClassDB::bind_method(D_METHOD("get_system_menu_text", "menu_id"), &NativeMenu::get_system_menu_text);
+	ClassDB::bind_method(D_METHOD("set_system_menu_text", "menu_id", "name"), &NativeMenu::set_system_menu_text);
+
 	ClassDB::bind_method(D_METHOD("create_menu"), &NativeMenu::create_menu);
 	ClassDB::bind_method(D_METHOD("has_menu", "rid"), &NativeMenu::has_menu);
 	ClassDB::bind_method(D_METHOD("free_menu", "rid"), &NativeMenu::free_menu);
@@ -106,6 +109,7 @@ void NativeMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_max_states", "rid", "idx", "max_states"), &NativeMenu::set_item_max_states);
 	ClassDB::bind_method(D_METHOD("set_item_icon", "rid", "idx", "icon"), &NativeMenu::set_item_icon);
 	ClassDB::bind_method(D_METHOD("set_item_indentation_level", "rid", "idx", "level"), &NativeMenu::set_item_indentation_level);
+	ClassDB::bind_method(D_METHOD("set_item_index", "rid", "idx", "target_idx"), &NativeMenu::set_item_index);
 
 	ClassDB::bind_method(D_METHOD("get_item_count", "rid"), &NativeMenu::get_item_count);
 	ClassDB::bind_method(D_METHOD("is_system_menu", "rid"), &NativeMenu::is_system_menu);
@@ -155,6 +159,15 @@ String NativeMenu::get_system_menu_name(SystemMenus p_menu_id) const {
 		default:
 			return "Invalid";
 	}
+}
+
+String NativeMenu::get_system_menu_text(SystemMenus p_menu_id) const {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return String();
+}
+
+void NativeMenu::set_system_menu_text(SystemMenus p_menu_id, const String &p_name) {
+	WARN_PRINT("Global menus are not supported on this platform.");
 }
 
 RID NativeMenu::create_menu() {
@@ -430,6 +443,11 @@ void NativeMenu::set_item_icon(const RID &p_rid, int p_idx, const Ref<Texture2D>
 
 void NativeMenu::set_item_indentation_level(const RID &p_rid, int p_idx, int p_level) {
 	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+int NativeMenu::set_item_index(const RID &p_rid, int p_idx, int p_target_idx) {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return -1;
 }
 
 int NativeMenu::get_item_count(const RID &p_rid) const {

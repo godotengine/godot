@@ -68,6 +68,10 @@ Error GDScriptParserRef::raise_status(Status p_new_status) {
 	ERR_FAIL_COND_V(clearing, ERR_BUG);
 	ERR_FAIL_COND_V(parser == nullptr && status != EMPTY, ERR_BUG);
 
+	if (p_new_status < status) {
+		return OK;
+	}
+
 	while (result == OK && p_new_status > status) {
 		switch (status) {
 			case EMPTY: {
@@ -76,7 +80,7 @@ Error GDScriptParserRef::raise_status(Status p_new_status) {
 				get_parser()->clear();
 				status = PARSED;
 				String remapped_path = ResourceLoader::path_remap(path);
-				if (remapped_path.get_extension().to_lower() == "gdc") {
+				if (remapped_path.has_extension("gdc")) {
 					Vector<uint8_t> tokens = GDScriptCache::get_binary_tokens(remapped_path);
 					source_hash = hash_djb2_buffer(tokens.ptr(), tokens.size());
 					result = get_parser()->parse_binary(tokens, path);
@@ -153,7 +157,7 @@ thread_local SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG>::TLSData SafeBinar
 SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG> GDScriptCache::mutex;
 
 void GDScriptCache::move_script(const String &p_from, const String &p_to) {
-	if (singleton == nullptr || p_from == p_to) {
+	if (singleton == nullptr || p_from == p_to || p_from.is_empty()) {
 		return;
 	}
 
@@ -212,7 +216,7 @@ void GDScriptCache::remove_script(const String &p_path) {
 Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptParserRef::Status p_status, Error &r_error, const String &p_owner) {
 	MutexLock lock(singleton->mutex);
 	Ref<GDScriptParserRef> ref;
-	if (!p_owner.is_empty()) {
+	if (!p_owner.is_empty() && p_path != p_owner) {
 		singleton->dependencies[p_owner].insert(p_path);
 		singleton->parser_inverse_dependencies[p_path].insert(p_owner);
 	}
@@ -298,7 +302,7 @@ Vector<uint8_t> GDScriptCache::get_binary_tokens(const String &p_path) {
 Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_error, const String &p_owner) {
 	MutexLock lock(singleton->mutex);
 
-	if (!p_owner.is_empty()) {
+	if (!p_owner.is_empty() && p_path != p_owner) {
 		singleton->dependencies[p_owner].insert(p_path);
 	}
 	if (singleton->full_gdscript_cache.has(p_path)) {
@@ -312,8 +316,9 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_e
 
 	Ref<GDScript> script;
 	script.instantiate();
-	script->set_path(p_path, true);
-	if (remapped_path.get_extension().to_lower() == "gdc") {
+
+	script->set_path_cache(p_path);
+	if (remapped_path.has_extension("gdc")) {
 		Vector<uint8_t> buffer = get_binary_tokens(remapped_path);
 		if (buffer.is_empty()) {
 			r_error = ERR_FILE_CANT_READ;
@@ -340,7 +345,7 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_e
 Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_error, const String &p_owner, bool p_update_from_disk) {
 	MutexLock lock(singleton->mutex);
 
-	if (!p_owner.is_empty()) {
+	if (!p_owner.is_empty() && p_path != p_owner) {
 		singleton->dependencies[p_owner].insert(p_path);
 	}
 
@@ -364,32 +369,38 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 	const String remapped_path = ResourceLoader::path_remap(p_path);
 
 	if (p_update_from_disk) {
-		if (remapped_path.get_extension().to_lower() == "gdc") {
+		if (remapped_path.has_extension("gdc")) {
 			Vector<uint8_t> buffer = get_binary_tokens(remapped_path);
 			if (buffer.is_empty()) {
 				r_error = ERR_FILE_CANT_READ;
-				return script;
+				goto finish;
 			}
 			script->set_binary_tokens_source(buffer);
 		} else {
 			r_error = script->load_source_code(remapped_path);
 			if (r_error) {
-				return script;
+				goto finish;
 			}
 		}
 	}
 
 	// Allowing lifting the lock might cause a script to be reloaded multiple times,
 	// which, as a last resort deadlock prevention strategy, is a good tradeoff.
-	uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(singleton->mutex);
-	r_error = script->reload(true);
-	WorkerThreadPool::thread_exit_unlock_allowance_zone(allowance_id);
-	if (r_error) {
-		return script;
+	{
+		uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(singleton->mutex);
+		r_error = script->reload(true);
+		WorkerThreadPool::thread_exit_unlock_allowance_zone(allowance_id);
 	}
 
+finish:
 	singleton->full_gdscript_cache[p_path] = script;
 	singleton->shallow_gdscript_cache.erase(p_path);
+
+	// Add the script to the resource cache. Usually ResourceLoader would take care of it, but cyclic references can break that sometimes so we do it ourselves.
+	// Resources don't know whether they are cached, so using `set_path()` after `set_path_cache()` does not add the resource to the cache if the path is the same.
+	// We reset the cached path from `get_shallow_script()` so that the subsequent call to `set_path()` caches everything correctly.
+	script->set_path_cache(String());
+	script->set_path(p_path, true);
 
 	return script;
 }

@@ -56,14 +56,19 @@ class OpenXRExtensionWrapper : public Object {
 protected:
 	static void _bind_methods();
 
+	Ref<OpenXRAPIExtension> openxr_api_extension;
+
 public:
 	// `get_requested_extensions` should return a list of OpenXR extensions related to this extension.
+	// This function can be called multiple times.
+	// p_xr_version is the OpenXR version which we're attempting to initialize.
+	// Note: when called from the editor, p_xr_version will be 0 and we should return any extension we may initialize.
 	// If the bool * is a nullptr this extension is mandatory
 	// If the bool * points to a boolean, the boolean will be updated
 	// to true if the extension is enabled.
-	virtual HashMap<String, bool *> get_requested_extensions();
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_xr_version);
 
-	GDVIRTUAL0R(Dictionary, _get_requested_extensions);
+	GDVIRTUAL1R(Dictionary, _get_requested_extensions, uint64_t);
 
 	// These functions allow an extension to add entries to a struct chain.
 	// `p_next_pointer` points to the last struct that was created for this chain
@@ -71,8 +76,8 @@ public:
 	// You should return the pointer to the last struct you define as your result.
 	// If you are not adding any structs, just return `p_next_pointer`.
 	// See existing extensions for examples of this implementation.
-	virtual void *set_system_properties_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when we interrogate OpenXRS system abilities.
-	virtual void *set_instance_create_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when we create our OpenXR instance.
+	virtual void *set_system_properties_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when we interrogate OpenXR's system abilities.
+	virtual void *set_instance_create_info_and_get_next_pointer(XrVersion p_xr_version, void *p_next_pointer); // Add additional data structures when we create our OpenXR instance.
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when we create our OpenXR session.
 	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when creating OpenXR swap chains.
 	virtual void *set_hand_joint_locations_and_get_next_pointer(int p_hand_index, void *p_next_pointer);
@@ -83,9 +88,13 @@ public:
 	virtual void *set_view_locate_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when calling xrLocateViews
 	virtual void *set_frame_end_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when calling xrEndFrame
 
+	virtual void prepare_view_configuration(uint32_t p_view_count);
+	virtual void *set_view_configuration_and_get_next_pointer(uint32_t p_view, void *p_next_pointer); // Add additional data structures when calling xrEnumerateViewConfiguration
+	virtual void print_view_configuration_info(uint32_t p_view) const;
+
 	//TODO workaround as GDExtensionPtr<void> return type results in build error in godot-cpp
 	GDVIRTUAL1R(uint64_t, _set_system_properties_and_get_next_pointer, GDExtensionPtr<void>);
-	GDVIRTUAL1R(uint64_t, _set_instance_create_info_and_get_next_pointer, GDExtensionPtr<void>);
+	GDVIRTUAL2R(uint64_t, _set_instance_create_info_and_get_next_pointer, uint64_t, GDExtensionPtr<void>);
 	GDVIRTUAL1R(uint64_t, _set_session_create_and_get_next_pointer, GDExtensionPtr<void>);
 	GDVIRTUAL1R(uint64_t, _set_swapchain_create_info_and_get_next_pointer, GDExtensionPtr<void>);
 	GDVIRTUAL2R(uint64_t, _set_hand_joint_locations_and_get_next_pointer, int, GDExtensionPtr<void>);
@@ -97,6 +106,14 @@ public:
 	GDVIRTUAL0R(int, _get_composition_layer_count);
 	GDVIRTUAL1R(uint64_t, _get_composition_layer, int);
 	GDVIRTUAL1R(int, _get_composition_layer_order, int);
+	GDVIRTUAL1(_prepare_view_configuration, int);
+	GDVIRTUAL2R(uint64_t, _set_view_configuration_and_get_next_pointer, uint32_t, GDExtensionPtr<void>);
+	GDVIRTUAL1C(_print_view_configuration_info, int);
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL0R_COMPAT(_get_requested_extensions_bind_compat_109302, Dictionary, _get_requested_extensions);
+	GDVIRTUAL1R_COMPAT(_set_instance_create_info_and_get_next_pointer_bind_compat_109302, uint64_t, _set_instance_create_info_and_get_next_pointer, GDExtensionPtr<void>);
+#endif
 
 	virtual PackedStringArray get_suggested_tracker_names();
 
@@ -180,8 +197,8 @@ public:
 
 	GDVIRTUAL1R(bool, _on_event_polled, GDExtensionConstPtr<void>);
 
-	OpenXRExtensionWrapper() = default;
-	virtual ~OpenXRExtensionWrapper() = default;
+	OpenXRExtensionWrapper();
+	virtual ~OpenXRExtensionWrapper() override;
 };
 
 // `OpenXRGraphicsExtensionWrapper` implements specific logic for each supported graphics API.

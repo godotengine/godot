@@ -565,8 +565,7 @@ void AnimatedSprite2D::set_animation(const StringName &p_name) {
 		ERR_FAIL_MSG(vformat("There is no animation with name '%s'.", p_name));
 	}
 
-	int frame_count = frames->get_frame_count(animation);
-	if (animation == StringName() || frame_count == 0) {
+	if (animation == StringName() || frames->get_frame_count(animation) == 0) {
 		stop();
 		return;
 	} else if (!frames->get_animation_names().has(animation)) {
@@ -576,7 +575,7 @@ void AnimatedSprite2D::set_animation(const StringName &p_name) {
 	}
 
 	if (std::signbit(get_playing_speed())) {
-		set_frame_and_progress(frame_count - 1, 1.0);
+		set_frame_and_progress(frames->get_frame_count(animation) - 1, 1.0);
 	} else {
 		set_frame_and_progress(0, 0.0);
 	}

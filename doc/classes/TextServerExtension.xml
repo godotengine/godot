@@ -561,14 +561,14 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Returns [code]true[/code], if font supports given language ([url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
+				Returns [code]true[/code] if the font supports the given language (as a [url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
 			</description>
 		</method>
 		<method name="_font_is_modulate_color_glyphs" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Returns [code]true[/code], if color modulation is applied when drawing colored glyphs.
+				Returns [code]true[/code] if color modulation is applied when drawing the font's colored glyphs.
 			</description>
 		</method>
 		<method name="_font_is_multichannel_signed_distance_field" qualifiers="virtual const">
@@ -583,7 +583,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="script" type="String" />
 			<description>
-				Returns [code]true[/code], if font supports given script (ISO 15924 code).
+				Returns [code]true[/code] if the font supports the given script (as a [url=https://en.wikipedia.org/wiki/ISO_15924]ISO 15924[/url] code).
 			</description>
 		</method>
 		<method name="_font_remove_glyph" qualifiers="virtual required">
@@ -1054,12 +1054,13 @@
 				Returns the dictionary of the supported OpenType variation coordinates.
 			</description>
 		</method>
-		<method name="_format_number" qualifiers="virtual const">
+		<method name="_format_number" qualifiers="virtual const" deprecated="Use [method TranslationServer.format_number] instead.">
 			<return type="String" />
 			<param index="0" name="number" type="String" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Converts a number from the Western Arabic (0..9) to the numeral systems used in [param language].
+				Converts a number from Western Arabic (0..9) to the numeral system used in the given [param language].
+				If [param language] is an empty string, the active locale will be used.
 			</description>
 		</method>
 		<method name="_free_rid" qualifiers="virtual required">
@@ -1136,6 +1137,13 @@
 				Returns [code]true[/code] if locale is right-to-left.
 			</description>
 		</method>
+		<method name="_is_locale_using_support_data" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="locale" type="String" />
+			<description>
+				Returns [code]true[/code] if the locale requires text server support data for line/word breaking.
+			</description>
+		</method>
 		<method name="_is_valid_identifier" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="string" type="String" />
@@ -1160,15 +1168,16 @@
 			<return type="int" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Converts readable feature, variation, script, or language name to OpenType tag.
+				Converts the given readable name of a feature, variation, script, or language to an OpenType tag.
 			</description>
 		</method>
-		<method name="_parse_number" qualifiers="virtual const">
+		<method name="_parse_number" qualifiers="virtual const" deprecated="Use [method TranslationServer.parse_number] instead.">
 			<return type="String" />
 			<param index="0" name="number" type="String" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Converts [param number] from the numeral systems used in [param language] to Western Arabic (0..9).
+				Converts [param number] from the numeral system used in the given [param language] to Western Arabic (0..9).
+				If [param language] is an empty string, the active locale will be used.
 			</description>
 		</method>
 		<method name="_parse_structured_text" qualifiers="virtual const">
@@ -1180,11 +1189,11 @@
 				Default implementation of the BiDi algorithm override function.
 			</description>
 		</method>
-		<method name="_percent_sign" qualifiers="virtual const">
+		<method name="_percent_sign" qualifiers="virtual const" deprecated="Use [method TranslationServer.get_percent_sign] instead.">
 			<return type="String" />
 			<param index="0" name="language" type="String" />
 			<description>
-				Returns percent sign used in the [param language].
+				Returns percent sign used in the given [param language].
 			</description>
 		</method>
 		<method name="_reference_oversampling_level" qualifiers="virtual">
@@ -1386,6 +1395,13 @@
 			<param index="7" name="oversampling" type="float" />
 			<description>
 				Draw the outline of the shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout). If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+			</description>
+		</method>
+		<method name="_shaped_text_duplicate" qualifiers="virtual required">
+			<return type="RID" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Duplicates shaped text buffer.
 			</description>
 		</method>
 		<method name="_shaped_text_fit_to_width" qualifiers="virtual">
@@ -1655,6 +1671,14 @@
 				Breaks text into words and returns array of character ranges. Use [param grapheme_flags] to set what characters are used for breaking.
 			</description>
 		</method>
+		<method name="_shaped_text_has_object" qualifiers="virtual required const">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="key" type="Variant" />
+			<description>
+				Returns [code]true[/code] if an object with [param key] is embedded in this shaped text buffer.
+			</description>
+		</method>
 		<method name="_shaped_text_hit_test_grapheme" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="shaped" type="RID" />
@@ -1869,7 +1893,7 @@
 			<param index="0" name="string" type="String" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Returns the string converted to lowercase.
+				Returns the string converted to [code]lowercase[/code].
 			</description>
 		</method>
 		<method name="_string_to_title" qualifiers="virtual const">
@@ -1877,7 +1901,7 @@
 			<param index="0" name="string" type="String" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Returns the string converted to title case.
+				Returns the string converted to [code]Title Case[/code].
 			</description>
 		</method>
 		<method name="_string_to_upper" qualifiers="virtual const">
@@ -1885,7 +1909,7 @@
 			<param index="0" name="string" type="String" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Returns the string converted to uppercase.
+				Returns the string converted to [code]UPPERCASE[/code].
 			</description>
 		</method>
 		<method name="_strip_diacritics" qualifiers="virtual const">
@@ -1899,7 +1923,7 @@
 			<return type="String" />
 			<param index="0" name="tag" type="int" />
 			<description>
-				Converts OpenType tag to readable feature, variation, script, or language name.
+				Converts the given OpenType tag to the readable name of a feature, variation, script, or language.
 			</description>
 		</method>
 		<method name="_unreference_oversampling_level" qualifiers="virtual">

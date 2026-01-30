@@ -389,7 +389,7 @@ PackedStringArray GPUParticles2D::get_configuration_warnings() const {
 	}
 
 	if (trail_enabled && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
-		warnings.push_back(RTR("Particle trails are only available when using the Forward+ or Mobile renderers."));
+		warnings.push_back(RTR("Particle trails are only available when using the Forward+ or Mobile renderer."));
 	}
 
 	if (sub_emitter != NodePath() && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
@@ -556,6 +556,9 @@ void GPUParticles2D::convert_from_particles(Node *p_particles) {
 
 	proc_mat->set_emission_shape(ParticleProcessMaterial::EmissionShape(cpu_particles->get_emission_shape()));
 	proc_mat->set_emission_sphere_radius(cpu_particles->get_emission_sphere_radius());
+
+	proc_mat->set_emission_ring_radius(cpu_particles->get_emission_ring_radius());
+	proc_mat->set_emission_ring_inner_radius(cpu_particles->get_emission_ring_inner_radius());
 
 	Vector2 rect_extents = cpu_particles->get_emission_rect_extents();
 	proc_mat->set_emission_box_extents(Vector3(rect_extents.x, rect_extents.y, 0));
@@ -1011,6 +1014,6 @@ GPUParticles2D::GPUParticles2D() {
 
 GPUParticles2D::~GPUParticles2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(particles);
-	RS::get_singleton()->free(mesh);
+	RS::get_singleton()->free_rid(particles);
+	RS::get_singleton()->free_rid(mesh);
 }

@@ -69,10 +69,15 @@
 			Controls how this AudioStreamRandomizer picks which AudioStream to play next.
 		</member>
 		<member name="random_pitch" type="float" setter="set_random_pitch" getter="get_random_pitch" default="1.0">
-			The intensity of random pitch variation. A value of 1 means no variation.
+			The largest possible frequency multiplier of the random pitch variation. Pitch will be randomly chosen within a range of [code skip-lint]1.0 / random_pitch[/code] and [code skip-lint]random_pitch[/code]. A value of [code]1.0[/code] means no variation. A value of [code]2.0[/code] means pitch will be randomized between double and half.
+			[b]Note:[/b] Setting this property also sets [member random_pitch_semitones].
+		</member>
+		<member name="random_pitch_semitones" type="float" setter="set_random_pitch_semitones" getter="get_random_pitch_semitones" default="0.0">
+			The largest possible distance, in semitones, of the random pitch variation. A value of [code]0.0[/code] means no variation.
+			[b]Note:[/b] Setting this property also sets [member random_pitch].
 		</member>
 		<member name="random_volume_offset_db" type="float" setter="set_random_volume_offset_db" getter="get_random_volume_offset_db" default="0.0">
-			The intensity of random volume variation. A value of 0 means no variation.
+			The intensity of random volume variation. Volume will be increased or decreased by a random value up to [code skip-lint]random_volume_offset_db[/code]. A value of [code]0.0[/code] means no variation. A value of [code]3.0[/code] means volume will be randomized between [code]-3.0 dB[/code] and [code]+3.0 dB[/code].
 		</member>
 		<member name="streams_count" type="int" setter="set_streams_count" getter="get_streams_count" default="0">
 			The number of streams in the stream pool.

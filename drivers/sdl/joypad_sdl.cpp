@@ -36,8 +36,6 @@
 #include "core/os/time.h"
 #include "core/variant/dictionary.h"
 
-#include <iterator>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
@@ -57,19 +55,6 @@ JoypadSDL *JoypadSDL::singleton = nullptr;
 JoypadSDL::JoypadSDL() {
 	singleton = this;
 }
-
-#ifdef WINDOWS_ENABLED
-extern "C" {
-HWND SDL_HelperWindow;
-}
-
-// Required for DInput joypads to work
-// TODO: remove this workaround when we update to newer version of SDL
-JoypadSDL::JoypadSDL(HWND p_helper_window) :
-		JoypadSDL() {
-	SDL_HelperWindow = p_helper_window;
-}
-#endif
 
 JoypadSDL::~JoypadSDL() {
 	// Process any remaining input events
@@ -122,13 +107,19 @@ void JoypadSDL::process_events() {
 				SDL_Joystick *sdl_joy = SDL_GetJoystickFromID(joypads[i].sdl_instance_idx);
 				Vector2 strength = Input::get_singleton()->get_joy_vibration_strength(i);
 
-				// If the vibration was requested to start, SDL_RumbleJoystick will start it.
-				// If the vibration was requested to stop, strength and duration will be 0, so SDL will stop the rumble.
+				/*
+					If the vibration was requested to start, SDL_RumbleJoystick will start it.
+					If the vibration was requested to stop, strength and duration will be 0, so SDL will stop the rumble.
+
+					Here strength.y goes first and then strength.x, because Input.get_joy_vibration_strength().x
+					is vibration's weak magnitude (high frequency rumble), and .y is strong magnitude (low frequency rumble),
+					SDL_RumbleJoystick takes low frequency rumble first and then high frequency rumble.
+				*/
 				SDL_RumbleJoystick(
 						sdl_joy,
 						// Rumble strength goes from 0 to 0xFFFF
-						strength.x * UINT16_MAX,
 						strength.y * UINT16_MAX,
+						strength.x * UINT16_MAX,
 						Input::get_singleton()->get_joy_vibration_duration(i) * 1000);
 			}
 		}
@@ -170,20 +161,22 @@ void JoypadSDL::process_events() {
 
 				const int MAX_GUID_SIZE = 64;
 				char guid[MAX_GUID_SIZE] = {};
-
-				SDL_GUIDToString(SDL_GetJoystickGUID(joy), guid, MAX_GUID_SIZE);
+				SDL_GUID joy_guid = SDL_GetJoystickGUID(joy);
+				SDL_GUIDToString(joy_guid, guid, MAX_GUID_SIZE);
 				SDL_PropertiesID propertiesID = SDL_GetJoystickProperties(joy);
 
 				joypads[joy_id].attached = true;
 				joypads[joy_id].sdl_instance_idx = sdl_event.jdevice.which;
 				joypads[joy_id].supports_force_feedback = SDL_GetBooleanProperty(propertiesID, SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, false);
 				joypads[joy_id].guid = StringName(String(guid));
+				joypads[joy_id].supports_motion_sensors = SDL_GamepadHasSensor(gamepad, SDL_SENSOR_ACCEL) && SDL_GamepadHasSensor(gamepad, SDL_SENSOR_GYRO);
 
 				sdl_instance_id_to_joypad_id.insert(sdl_event.jdevice.which, joy_id);
 
 				Dictionary joypad_info;
-				joypad_info["mapping_handled"] = true; // Skip Godot's mapping system because SDL already handles the joypad's mapping.
-				joypad_info["raw_name"] = String(SDL_GetJoystickName(joy));
+				// Skip Godot's mapping system if SDL already handles the joypad's mapping.
+				joypad_info["mapping_handled"] = SDL_IsGamepad(sdl_event.jdevice.which);
+				joypad_info["raw_name"] = String::utf8(SDL_GetJoystickName(joy));
 				joypad_info["vendor_id"] = itos(SDL_GetJoystickVendor(joy));
 				joypad_info["product_id"] = itos(SDL_GetJoystickProduct(joy));
 
@@ -192,11 +185,13 @@ void JoypadSDL::process_events() {
 					joypad_info["steam_input_index"] = itos(steam_handle);
 				}
 
+#ifdef WINDOWS_ENABLED
 				const int player_index = SDL_GetJoystickPlayerIndex(joy);
-				if (player_index >= 0) {
+				if (player_index >= 0 && joy_guid.data[14] == 'x') { // See also "SDL_IsJoystickXInput" in "thirdparty/sdl/joystick/SDL_joystick.c".
 					// For XInput controllers SDL_GetJoystickPlayerIndex returns the XInput user index.
 					joypad_info["xinput_index"] = itos(player_index);
 				}
+#endif
 
 				Input::get_singleton()->joy_connection_changed(
 						joy_id,
@@ -204,6 +199,13 @@ void JoypadSDL::process_events() {
 						device_name,
 						joypads[joy_id].guid,
 						joypad_info);
+
+				Input::get_singleton()->set_joy_features(joy_id, &joypads[joy_id]);
+
+				if (joypads[joy_id].supports_motion_sensors) {
+					// Data rate for all sensors should be the same.
+					Input::get_singleton()->set_joy_motion_sensors_rate(joy_id, SDL_GetGamepadSensorDataRate(gamepad, SDL_SENSOR_ACCEL));
+				}
 			}
 			// An event for an attached joypad
 		} else if (sdl_event.type >= SDL_EVENT_JOYSTICK_AXIS_MOTION && sdl_event.type < SDL_EVENT_FINGER_DOWN && sdl_instance_id_to_joypad_id.has(sdl_event.jdevice.which)) {
@@ -227,6 +229,12 @@ void JoypadSDL::process_events() {
 				case SDL_EVENT_JOYSTICK_BUTTON_UP:
 				case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
 					SKIP_EVENT_FOR_GAMEPAD;
+
+					// Some devices report pressing buttons with indices like 232+, 241+, etc. that are not valid,
+					// so we ignore them here.
+					if (sdl_event.jbutton.button >= (int)JoyButton::MAX) {
+						continue;
+					}
 
 					Input::get_singleton()->joy_button(
 							joy_id,
@@ -272,6 +280,25 @@ void JoypadSDL::process_events() {
 			}
 		}
 	}
+
+	for (int i = 0; i < Input::JOYPADS_MAX; i++) {
+		Joypad &joy = joypads[i];
+		if (!joy.attached || !joy.supports_motion_sensors) {
+			continue;
+		}
+		SDL_Gamepad *gamepad = SDL_GetGamepadFromID(joy.sdl_instance_idx);
+		// gamepad should not be NULL since joy.supports_motion_sensors is true here.
+
+		float accel_data[3];
+		float gyro_data[3];
+		SDL_GetGamepadSensorData(gamepad, SDL_SENSOR_ACCEL, accel_data, 3);
+		SDL_GetGamepadSensorData(gamepad, SDL_SENSOR_GYRO, gyro_data, 3);
+
+		Input::get_singleton()->joy_motion_sensors(
+				i,
+				Vector3(-accel_data[0], -accel_data[1], -accel_data[2]),
+				Vector3(gyro_data[0], gyro_data[1], gyro_data[2]));
+	}
 }
 
 void JoypadSDL::close_joypad(int p_pad_idx) {
@@ -287,6 +314,37 @@ void JoypadSDL::close_joypad(int p_pad_idx) {
 		SDL_Joystick *joy = SDL_GetJoystickFromID(sdl_instance_idx);
 		SDL_CloseJoystick(joy);
 	}
+}
+
+bool JoypadSDL::Joypad::has_joy_light() const {
+	SDL_Joystick *joystick = get_sdl_joystick();
+	SDL_PropertiesID properties_id = SDL_GetJoystickProperties(joystick);
+	if (properties_id == 0) {
+		return false;
+	}
+	return SDL_GetBooleanProperty(properties_id, SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, false) || SDL_GetBooleanProperty(properties_id, SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN, false);
+}
+
+void JoypadSDL::Joypad::set_joy_light(const Color &p_color) {
+	SDL_SetJoystickLED(get_sdl_joystick(), p_color.get_r8(), p_color.get_g8(), p_color.get_b8());
+}
+
+bool JoypadSDL::Joypad::has_joy_motion_sensors() const {
+	return supports_motion_sensors;
+}
+
+void JoypadSDL::Joypad::set_joy_motion_sensors_enabled(bool p_enable) {
+	SDL_Gamepad *gamepad = get_sdl_gamepad();
+	SDL_SetGamepadSensorEnabled(gamepad, SDL_SENSOR_ACCEL, p_enable);
+	SDL_SetGamepadSensorEnabled(gamepad, SDL_SENSOR_GYRO, p_enable);
+}
+
+SDL_Joystick *JoypadSDL::Joypad::get_sdl_joystick() const {
+	return SDL_GetJoystickFromID(sdl_instance_idx);
+}
+
+SDL_Gamepad *JoypadSDL::Joypad::get_sdl_gamepad() const {
+	return SDL_GetGamepadFromID(sdl_instance_idx);
 }
 
 #endif // SDL_ENABLED

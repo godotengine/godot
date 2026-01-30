@@ -861,6 +861,10 @@ Vector3 JoltPhysicsDirectSpaceState3D::get_closest_point_to_object_volume(RID p_
 bool JoltPhysicsDirectSpaceState3D::body_test_motion(const JoltBody3D &p_body, const PhysicsServer3D::MotionParameters &p_parameters, PhysicsServer3D::MotionResult *r_result) const {
 	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "body_test_motion (maybe from move_and_slide?) must not be called while the physics space is being stepped.");
 
+	if (!p_body.in_space()) {
+		return false;
+	}
+
 	space->flush_pending_objects();
 
 	const float margin = MAX((float)p_parameters.margin, 0.0001f);

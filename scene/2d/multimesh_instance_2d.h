@@ -43,7 +43,10 @@ class MultiMeshInstance2D : public Node2D {
 
 	Ref<Texture2D> texture;
 
+	void _refresh_interpolated();
+
 protected:
+	virtual void _physics_interpolated_changed() override;
 	void _notification(int p_what);
 	static void _bind_methods();
 

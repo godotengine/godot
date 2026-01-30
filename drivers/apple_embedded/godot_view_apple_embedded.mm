@@ -60,6 +60,8 @@ static const float earth_gravity = 9.80665;
 
 @property(strong, nonatomic) CMMotionManager *motionManager;
 
+@property(assign, nonatomic) BOOL delegateDidFinishSetUp;
+
 @end
 
 @implementation GDTView
@@ -117,6 +119,9 @@ static const float earth_gravity = 9.80665;
 }
 
 - (void)godot_commonInit {
+	self.preferredFrameRate = 60;
+	self.useCADisplayLink = bool(GLOBAL_DEF("display.AppleEmbedded/use_cadisplaylink", true)) ? YES : NO;
+
 #if !defined(VISIONOS_ENABLED)
 	self.contentScaleFactor = [UIScreen mainScreen].scale;
 #endif
@@ -197,17 +202,12 @@ static const float earth_gravity = 9.80665;
 
 	if (self.useCADisplayLink) {
 		self.displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawView)];
-
-		if (GLOBAL_GET("display/window/ios/allow_high_refresh_rate")) {
-			self.displayLink.preferredFramesPerSecond = 120;
-		} else {
-			self.displayLink.preferredFramesPerSecond = 60;
-		}
+		self.displayLink.preferredFramesPerSecond = self.preferredFrameRate;
 
 		// Setup DisplayLink in main thread
 		[self.displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
 	} else {
-		self.animationTimer = [NSTimer scheduledTimerWithTimeInterval:(1.0 / 60) target:self selector:@selector(drawView) userInfo:nil repeats:YES];
+		self.animationTimer = [NSTimer scheduledTimerWithTimeInterval:(1.0 / self.preferredFrameRate) target:self selector:@selector(drawView) userInfo:nil repeats:YES];
 	}
 }
 
@@ -240,10 +240,10 @@ static const float earth_gravity = 9.80665;
 		return;
 	}
 
-	if (self.delegate) {
-		BOOL delegateFinishedSetup = [self.delegate godotViewFinishedSetup:self];
-
-		if (!delegateFinishedSetup) {
+	if (self.delegate && !self.delegateDidFinishSetUp) {
+		[self layoutRenderingLayer]; // Trigger DisplayServerVisionOS::resize_window after Main::start()
+		self.delegateDidFinishSetUp = [self.delegate godotViewFinishedSetup:self];
+		if (!_delegateDidFinishSetUp) {
 			return;
 		}
 	}
@@ -262,8 +262,8 @@ static const float earth_gravity = 9.80665;
 	}
 }
 
-- (void)setRenderingInterval:(NSTimeInterval)renderingInterval {
-	_renderingInterval = renderingInterval;
+- (void)setPreferredFrameRate:(float)preferredFrameRate {
+	_preferredFrameRate = preferredFrameRate;
 
 	if (self.canRender) {
 		[self stopRendering];
@@ -272,6 +272,11 @@ static const float earth_gravity = 9.80665;
 }
 
 - (void)layoutSubviews {
+	[super layoutSubviews];
+	[self layoutRenderingLayer];
+}
+
+- (void)layoutRenderingLayer {
 	if (self.renderingLayer) {
 		self.renderingLayer.frame = self.bounds;
 		[self.renderingLayer layoutDisplayLayer];
@@ -280,8 +285,6 @@ static const float earth_gravity = 9.80665;
 			DisplayServerAppleEmbedded::get_singleton()->resize_window(self.bounds.size);
 		}
 	}
-
-	[super layoutSubviews];
 }
 
 // MARK: - Input
@@ -415,28 +418,10 @@ static const float earth_gravity = 9.80665;
 	// our orientation which is not a good thing when you're trying to get
 	// your user to move the screen in all directions and want consistent
 	// output
-
-	///@TODO Using [[UIApplication sharedApplication] statusBarOrientation]
-	/// is a bit of a hack. Godot obviously knows the orientation so maybe
-	/// we
-	// can use that instead? (note that left and right seem swapped)
-
-	UIInterfaceOrientation interfaceOrientation = UIInterfaceOrientationUnknown;
-
-#if !defined(VISIONOS_ENABLED)
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < 140000
-	interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+#if defined(VISIONOS_ENABLED)
+	UIInterfaceOrientation interfaceOrientation = [UIApplication sharedApplication].delegate.window.windowScene.effectiveGeometry.interfaceOrientation;
 #else
-	if (@available(iOS 13, *)) {
-		interfaceOrientation = [UIApplication sharedApplication].delegate.window.windowScene.interfaceOrientation;
-#if !defined(TARGET_OS_SIMULATOR) || !TARGET_OS_SIMULATOR
-	} else {
-		interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
-#endif
-	}
-#endif
-#else
-	interfaceOrientation = [UIApplication sharedApplication].delegate.window.windowScene.interfaceOrientation;
+	UIInterfaceOrientation interfaceOrientation = [UIApplication sharedApplication].delegate.window.windowScene.interfaceOrientation;
 #endif
 
 	switch (interfaceOrientation) {

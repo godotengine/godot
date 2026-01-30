@@ -846,7 +846,8 @@ static void add_pkcs_padding(unsigned char *output, size_t output_len,
  */
 MBEDTLS_STATIC_TESTABLE int mbedtls_get_pkcs_padding(unsigned char *input,
                                                      size_t input_len,
-                                                     size_t *data_len)
+                                                     size_t *data_len,
+                                                     size_t *invalid_padding)
 {
     size_t i, pad_idx;
     unsigned char padding_len;
@@ -872,7 +873,8 @@ MBEDTLS_STATIC_TESTABLE int mbedtls_get_pkcs_padding(unsigned char *input,
     /* If the padding is invalid, set the output length to 0 */
     *data_len = mbedtls_ct_if(bad, 0, input_len - padding_len);
 
-    return mbedtls_ct_error_if_else_0(bad, MBEDTLS_ERR_CIPHER_INVALID_PADDING);
+    *invalid_padding = mbedtls_ct_size_if_else_0(bad, SIZE_MAX);
+    return 0;
 }
 #endif /* MBEDTLS_CIPHER_PADDING_PKCS7 */
 
@@ -893,7 +895,7 @@ static void add_one_and_zeros_padding(unsigned char *output,
 }
 
 static int get_one_and_zeros_padding(unsigned char *input, size_t input_len,
-                                     size_t *data_len)
+                                     size_t *data_len, size_t *invalid_padding)
 {
     if (NULL == input || NULL == data_len) {
         return MBEDTLS_ERR_CIPHER_BAD_INPUT_DATA;
@@ -916,7 +918,8 @@ static int get_one_and_zeros_padding(unsigned char *input, size_t input_len,
         in_padding = mbedtls_ct_bool_and(in_padding, mbedtls_ct_bool_not(is_nonzero));
     }
 
-    return mbedtls_ct_error_if_else_0(bad, MBEDTLS_ERR_CIPHER_INVALID_PADDING);
+    *invalid_padding = mbedtls_ct_size_if_else_0(bad, SIZE_MAX);
+    return 0;
 }
 #endif /* MBEDTLS_CIPHER_PADDING_ONE_AND_ZEROS */
 
@@ -937,7 +940,7 @@ static void add_zeros_and_len_padding(unsigned char *output,
 }
 
 static int get_zeros_and_len_padding(unsigned char *input, size_t input_len,
-                                     size_t *data_len)
+                                     size_t *data_len, size_t *invalid_padding)
 {
     size_t i, pad_idx;
     unsigned char padding_len;
@@ -963,7 +966,8 @@ static int get_zeros_and_len_padding(unsigned char *input, size_t input_len,
         bad = mbedtls_ct_bool_or(bad, nonzero_pad_byte);
     }
 
-    return mbedtls_ct_error_if_else_0(bad, MBEDTLS_ERR_CIPHER_INVALID_PADDING);
+    *invalid_padding = mbedtls_ct_size_if_else_0(bad, SIZE_MAX);
+    return 0;
 }
 #endif /* MBEDTLS_CIPHER_PADDING_ZEROS_AND_LEN */
 
@@ -978,7 +982,7 @@ static void add_zeros_padding(unsigned char *output,
 }
 
 static int get_zeros_padding(unsigned char *input, size_t input_len,
-                             size_t *data_len)
+                             size_t *data_len, size_t *invalid_padding)
 {
     size_t i;
     mbedtls_ct_condition_t done = MBEDTLS_CT_FALSE, prev_done;
@@ -994,6 +998,7 @@ static int get_zeros_padding(unsigned char *input, size_t input_len,
         *data_len = mbedtls_ct_size_if(mbedtls_ct_bool_ne(done, prev_done), i, *data_len);
     }
 
+    *invalid_padding = 0;
     return 0;
 }
 #endif /* MBEDTLS_CIPHER_PADDING_ZEROS */
@@ -1005,20 +1010,21 @@ static int get_zeros_padding(unsigned char *input, size_t input_len,
  * but a trivial get_padding function
  */
 static int get_no_padding(unsigned char *input, size_t input_len,
-                          size_t *data_len)
+                          size_t *data_len, size_t *invalid_padding)
 {
     if (NULL == input || NULL == data_len) {
         return MBEDTLS_ERR_CIPHER_BAD_INPUT_DATA;
     }
 
     *data_len = input_len;
-
+    *invalid_padding = 0;
     return 0;
 }
 #endif /* MBEDTLS_CIPHER_MODE_WITH_PADDING */
 
-int mbedtls_cipher_finish(mbedtls_cipher_context_t *ctx,
-                          unsigned char *output, size_t *olen)
+int mbedtls_cipher_finish_padded(mbedtls_cipher_context_t *ctx,
+                                 unsigned char *output, size_t *olen,
+                                 size_t *invalid_padding)
 {
     if (ctx->cipher_info == NULL) {
         return MBEDTLS_ERR_CIPHER_BAD_INPUT_DATA;
@@ -1034,6 +1040,7 @@ int mbedtls_cipher_finish(mbedtls_cipher_context_t *ctx,
 #endif /* MBEDTLS_USE_PSA_CRYPTO && !MBEDTLS_DEPRECATED_REMOVED */
 
     *olen = 0;
+    *invalid_padding = 0;
 
 #if defined(MBEDTLS_CIPHER_MODE_WITH_PADDING)
     /* CBC mode requires padding so we make sure a call to
@@ -1110,7 +1117,7 @@ int mbedtls_cipher_finish(mbedtls_cipher_context_t *ctx,
         /* Set output size for decryption */
         if (MBEDTLS_DECRYPT == ctx->operation) {
             return ctx->get_padding(output, mbedtls_cipher_get_block_size(ctx),
-                                    olen);
+                                    olen, invalid_padding);
         }
 
         /* Set output size for encryption */
@@ -1122,6 +1129,19 @@ int mbedtls_cipher_finish(mbedtls_cipher_context_t *ctx,
 #endif /* MBEDTLS_CIPHER_MODE_CBC */
 
     return MBEDTLS_ERR_CIPHER_FEATURE_UNAVAILABLE;
+}
+
+int mbedtls_cipher_finish(mbedtls_cipher_context_t *ctx,
+                          unsigned char *output, size_t *olen)
+{
+    size_t invalid_padding = 0;
+    int ret = mbedtls_cipher_finish_padded(ctx, output, olen,
+                                           &invalid_padding);
+    if (ret == 0) {
+        ret = mbedtls_ct_error_if_else_0(invalid_padding,
+                                         MBEDTLS_ERR_CIPHER_INVALID_PADDING);
+    }
+    return ret;
 }
 
 #if defined(MBEDTLS_CIPHER_MODE_WITH_PADDING)
@@ -1393,14 +1413,17 @@ int mbedtls_cipher_crypt(mbedtls_cipher_context_t *ctx,
         return ret;
     }
 
-    if ((ret = mbedtls_cipher_finish(ctx, output + *olen,
-                                     &finish_olen)) != 0) {
+    size_t invalid_padding = 0;
+    if ((ret = mbedtls_cipher_finish_padded(ctx, output + *olen,
+                                            &finish_olen,
+                                            &invalid_padding)) != 0) {
         return ret;
     }
-
     *olen += finish_olen;
 
-    return 0;
+    ret = mbedtls_ct_error_if_else_0(invalid_padding,
+                                     MBEDTLS_ERR_CIPHER_INVALID_PADDING);
+    return ret;
 }
 
 #if defined(MBEDTLS_CIPHER_MODE_AEAD)

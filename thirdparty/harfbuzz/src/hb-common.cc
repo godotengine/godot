@@ -40,43 +40,6 @@
  **/
 
 
-/* hb_options_t */
-
-hb_atomic_t<unsigned> _hb_options;
-
-void
-_hb_options_init ()
-{
-  hb_options_union_t u;
-  u.i = 0;
-  u.opts.initialized = true;
-
-  const char *c = getenv ("HB_OPTIONS");
-  if (c)
-  {
-    while (*c)
-    {
-      const char *p = strchr (c, ':');
-      if (!p)
-	p = c + strlen (c);
-
-#define OPTION(name, symbol) \
-	if (0 == strncmp (c, name, p - c) && strlen (name) == static_cast<size_t>(p - c)) do { u.opts.symbol = true; } while (0)
-
-      OPTION ("uniscribe-bug-compatible", uniscribe_bug_compatible);
-
-#undef OPTION
-
-      c = *p ? p + 1 : p;
-    }
-
-  }
-
-  /* This is idempotent and threadsafe. */
-  _hb_options = u.i;
-}
-
-
 /* hb_tag_t */
 
 /**
@@ -630,6 +593,9 @@ hb_script_get_horizontal_direction (hb_script_t script)
 
     /* Unicode-16.0 additions */
     case HB_SCRIPT_GARAY:
+
+    /* Unicode-17.0 additions */
+    case HB_SCRIPT_SIDETIC:
 
       return HB_DIRECTION_RTL;
 

@@ -39,19 +39,14 @@
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
 
-void EditorResourceTooltipPlugin::_thumbnail_ready(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
-	ObjectID trid = p_udata;
-	TextureRect *tr = ObjectDB::get_instance<TextureRect>(trid);
-
-	if (!tr) {
-		return;
+void EditorResourceTooltipPlugin::_thumbnail_ready(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_trect_id) {
+	TextureRect *tr = ObjectDB::get_instance<TextureRect>(p_trect_id);
+	if (tr) {
+		tr->set_texture(p_preview);
 	}
-
-	tr->set_texture(p_preview);
 }
 
 void EditorResourceTooltipPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_thumbnail_ready"), &EditorResourceTooltipPlugin::_thumbnail_ready);
 	ClassDB::bind_method(D_METHOD("request_thumbnail", "path", "control"), &EditorResourceTooltipPlugin::request_thumbnail);
 
 	GDVIRTUAL_BIND(_handles, "type");
@@ -90,12 +85,18 @@ VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p
 		Label *label = memnew(Label(vformat(TTR("Type: %s"), type)));
 		vb->add_child(label);
 	}
+
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	if (da->is_link(p_resource_path)) {
+		Label *link = memnew(Label(vformat(TTR("Link to: %s"), da->read_link(p_resource_path))));
+		vb->add_child(link);
+	}
 	return vb;
 }
 
 void EditorResourceTooltipPlugin::request_thumbnail(const String &p_path, TextureRect *p_for_control) const {
 	ERR_FAIL_NULL(p_for_control);
-	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, const_cast<EditorResourceTooltipPlugin *>(this), "_thumbnail_ready", p_for_control->get_instance_id());
+	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, callable_mp(const_cast<EditorResourceTooltipPlugin *>(this), &EditorResourceTooltipPlugin::_thumbnail_ready).bind(p_for_control->get_instance_id()));
 }
 
 bool EditorResourceTooltipPlugin::handles(const String &p_resource_type) const {

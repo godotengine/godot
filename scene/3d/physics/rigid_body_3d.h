@@ -135,7 +135,7 @@ protected:
 
 	void _validate_property(PropertyInfo &p_property) const;
 
-	GDVIRTUAL1(_integrate_forces, PhysicsDirectBodyState3D *)
+	GDVIRTUAL1(_integrate_forces, RequiredParam<PhysicsDirectBodyState3D>)
 
 	virtual void _body_state_changed(PhysicsDirectBodyState3D *p_state);
 

@@ -78,7 +78,7 @@ void ModifierBoneTarget3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "bone_name") {
 		Skeleton3D *skeleton = get_skeleton();
 		if (skeleton) {
-			p_property.hint = PROPERTY_HINT_ENUM;
+			p_property.hint = PROPERTY_HINT_ENUM_SUGGESTION;
 			p_property.hint_string = skeleton->get_concatenated_bone_names();
 		} else {
 			p_property.hint = PROPERTY_HINT_NONE;
@@ -98,10 +98,6 @@ void ModifierBoneTarget3D::_bind_methods() {
 }
 
 void ModifierBoneTarget3D::_process_modification(double p_delta) {
-	if (!is_inside_tree()) {
-		return;
-	}
-
 	Skeleton3D *skeleton = get_skeleton();
 	if (!skeleton || bone < 0 || bone >= skeleton->get_bone_count()) {
 		return;

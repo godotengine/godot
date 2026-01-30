@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/templates/lru.h"
+#include "servers/rendering/multi_uma_buffer.h"
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_rd/pipeline_hash_map_rd.h"
 #include "servers/rendering/renderer_rd/shaders/canvas.glsl.gen.h"
@@ -66,8 +67,6 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 		INSTANCE_FLAGS_CLIP_RECT_UV = (1 << 4),
 		INSTANCE_FLAGS_TRANSPOSE_RECT = (1 << 5),
-		INSTANCE_FLAGS_USE_MSDF = (1 << 6),
-		INSTANCE_FLAGS_USE_LCD = (1 << 7),
 
 		INSTANCE_FLAGS_NINEPACH_DRAW_CENTER = (1 << 8),
 		INSTANCE_FLAGS_NINEPATCH_H_MODE_SHIFT = 9,
@@ -119,6 +118,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 			struct {
 				uint32_t use_lighting : 1;
+				uint32_t use_msdf : 1;
+				uint32_t use_lcd : 1;
 			};
 		};
 	};
@@ -185,6 +186,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		RID default_version_rd_shader;
 		RID quad_index_buffer;
 		RID quad_index_array;
+		RD::VertexFormatID quad_vertex_format_id;
+		RD::VertexFormatID primitive_vertex_format_id;
 		ShaderCompiler compiler;
 		uint32_t pipeline_compilations[RS::PIPELINE_SOURCE_MAX] = {};
 		Mutex mutex;
@@ -351,16 +354,12 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	struct InstanceData {
 		float world[6];
-		uint32_t flags;
-		uint32_t instance_uniforms_ofs;
+		float ninepatch_pixel_size[2];
 		union {
 			//rect
 			struct {
 				float modulation[4];
-				union {
-					float msdf[4];
-					float ninepatch_margins[4];
-				};
+				float ninepatch_margins[4];
 				float dst_rect[4];
 				float src_rect[4];
 				float pad[2];
@@ -372,15 +371,35 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 				uint32_t colors[6]; // colors encoded as half
 			};
 		};
-		float color_texture_pixel_size[2];
+		uint32_t flags;
+		uint32_t instance_uniforms_ofs;
 		uint32_t lights[4];
 	};
 
+	static_assert(sizeof(InstanceData) == 128, "2D instance data struct size must be 128 bytes");
+
 	struct PushConstant {
-		uint32_t base_instance_index;
 		ShaderSpecialization shader_specialization;
 		uint32_t specular_shininess;
 		uint32_t batch_flags;
+		uint32_t pad0;
+
+		float msdf[2];
+		float color_texture_pixel_size[2];
+	};
+
+	struct PushConstantAttributes {
+		PushConstant base;
+
+		float world[6];
+		uint32_t flags;
+		uint32_t instance_uniforms_ofs;
+		float modulation[4];
+		uint32_t lights[4];
+
+		operator PushConstant &() {
+			return base;
+		}
 	};
 
 	// TextureState is used to determine when a new batch is required due to a change of texture state.
@@ -458,18 +477,16 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	/// A key used to uniquely identify a distinct BATCH_UNIFORM_SET
 	struct RIDSetKey {
 		TextureState state;
-		RID instance_data;
 
 		RIDSetKey() {
 		}
 
-		RIDSetKey(TextureState p_state, RID p_instance_data) :
-				state(p_state),
-				instance_data(p_instance_data) {
+		RIDSetKey(TextureState p_state) :
+				state(p_state) {
 		}
 
 		_ALWAYS_INLINE_ bool operator==(const RIDSetKey &p_val) const {
-			return state == p_val.state && instance_data == p_val.instance_data;
+			return state == p_val.state;
 		}
 
 		_ALWAYS_INLINE_ bool operator!=(const RIDSetKey &p_val) const {
@@ -477,9 +494,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		}
 
 		_ALWAYS_INLINE_ uint32_t hash() const {
-			uint32_t h = state.hash();
-			h = hash_murmur3_one_64(instance_data.get_id(), h);
-			return hash_fmix32(h);
+			return state.hash();
 		}
 	};
 
@@ -487,22 +502,31 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	static void _uniform_set_invalidation_callback(void *p_userdata);
 	static void _canvas_texture_invalidation_callback(bool p_deleted, void *p_userdata);
 
-	typedef LRUCache<RIDSetKey, RID, HashableHasher<RIDSetKey>, HashMapComparatorDefault<RIDSetKey>, _before_evict> RIDCache;
+	typedef LRUCache<RIDSetKey, RID, HashMapHasherDefault, HashMapComparatorDefault<RIDSetKey>, _before_evict> RIDCache;
 	RIDCache rid_set_to_uniform_set;
 	/// Maps a CanvasTexture to its associated uniform sets, which must
 	/// be invalidated when the CanvasTexture is updated, such as changing the
 	/// diffuse texture.
 	HashMap<RID, TightLocalVector<RID>> canvas_texture_to_uniform_set;
 
+	static constexpr uint32_t PUSH_DATA_INSTANCE_COUNT = 0x8000'0000; // Use high bit to indicate instance data comes from push_data.
+	static constexpr uint32_t INSTANCE_COUNT_MASK = 0x7fff'ffff;
+
 	struct Batch {
-		// Position in the UBO measured in bytes
+		/// First instance index into the instance buffer for this batch.
 		uint32_t start = 0;
+		/// Number of instances in this batch.
 		uint32_t instance_count = 0;
-		uint32_t instance_buffer_index = 0;
+		/// Resource ID of the instance buffer for this batch.
+		RID instance_buffer; // UMA
+		/// Push-constant payload for non-VAO draws.
+		InstanceData push_data = {};
 
 		TextureInfo *tex_info;
 
 		Color modulate = Color(1.0, 1.0, 1.0, 1.0);
+		float msdf_pix_range = 0.0;
+		float msdf_outline = 0.0;
 
 		Item *clip = nullptr;
 
@@ -514,6 +538,9 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		ShaderVariant shader_variant = SHADER_VARIANT_QUAD;
 		RD::RenderPrimitive render_primitive = RD::RENDER_PRIMITIVE_TRIANGLES;
 		bool use_lighting = false;
+		bool use_msdf = false;
+		bool use_lcd = false;
+		bool has_blend = false;
 
 		// batch-specific data
 		union {
@@ -522,16 +549,34 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 			// TYPE_PARTICLES
 			uint32_t mesh_instance_count;
 		};
-		bool has_blend = false;
 		uint32_t flags = 0;
+
+		_FORCE_INLINE_ PushConstant push_constant() const {
+			PushConstant pc;
+			pc.specular_shininess = tex_info->specular_shininess;
+			pc.batch_flags = tex_info->flags | flags;
+			pc.pad0 = 0;
+
+			pc.msdf[0] = msdf_pix_range;
+			pc.msdf[1] = msdf_outline;
+			pc.color_texture_pixel_size[0] = tex_info->texpixel_size.x;
+			pc.color_texture_pixel_size[1] = tex_info->texpixel_size.y;
+			return pc;
+		}
+
+		_FORCE_INLINE_ PushConstantAttributes push_constant_attributes() const {
+			PushConstantAttributes pc;
+			pc.base = push_constant();
+			memcpy(pc.world, push_data.world, sizeof(pc.world));
+			memcpy(pc.modulation, push_data.modulation, sizeof(pc.modulation));
+			memcpy(pc.lights, push_data.lights, sizeof(pc.lights));
+			pc.flags = push_data.flags;
+			pc.instance_uniforms_ofs = push_data.instance_uniforms_ofs;
+			return pc;
+		}
 	};
 
-	HashMap<TextureState, TextureInfo, HashableHasher<TextureState>, HashMapComparatorDefault<TextureState>, PagedAllocator<HashMapElement<TextureState, TextureInfo>>> texture_info_map;
-
-	// per-frame buffers
-	struct DataBuffer {
-		LocalVector<RID> instance_buffers;
-	};
+	HashMap<TextureState, TextureInfo, HashMapHasherDefault, HashMapComparatorDefault<TextureState>, PagedAllocator<HashMapElement<TextureState, TextureInfo>>> texture_info_map;
 
 	struct State {
 		//state buffer
@@ -555,13 +600,20 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 			uint32_t flags;
 		};
 
-		DataBuffer canvas_instance_data_buffers[BATCH_DATA_BUFFER_COUNT];
 		LocalVector<Batch> canvas_instance_batches;
-		uint32_t current_data_buffer_index = 0;
-		uint32_t current_instance_buffer_index = 0;
 		uint32_t current_batch_index = 0;
-		uint32_t last_instance_index = 0;
-		InstanceData *instance_data_array = nullptr;
+
+		static_assert(std::is_trivially_destructible_v<InstanceData>);
+		static_assert(std::is_trivially_constructible_v<InstanceData>);
+
+		MultiUmaBuffer<1u> instance_buffers = MultiUmaBuffer<1u>("CANVAS_INSTANCE_DATA");
+		/// A pointer to the current instance buffer retrieved from <c>instance_buffers</c>.
+		InstanceData *instance_data = nullptr;
+		/// The index of the next instance to be added to <c>instance_data</c>.
+		uint32_t instance_data_index = 0;
+		/// Save the previous instance data to allow us to append .
+		InstanceData *prev_instance_data = nullptr;
+		uint32_t prev_instance_data_index = 0;
 
 		uint32_t max_instances_per_buffer = 16384;
 		uint32_t max_instance_buffer_size = 16384 * sizeof(InstanceData);
@@ -619,12 +671,14 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	inline RID _get_pipeline_specialization_or_ubershader(CanvasShaderData *p_shader_data, PipelineKey &r_pipeline_key, PushConstant &r_push_constant, RID p_mesh_instance = RID(), void *p_surface = nullptr, uint32_t p_surface_index = 0, RID *r_vertex_array = nullptr);
 	void _render_batch_items(RenderTarget p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer = false, RenderingMethod::RenderInfo *r_render_info = nullptr);
-	void _record_item_commands(const Item *p_item, RenderTarget p_render_target, const Transform2D &p_base_transform, Item *&r_current_clip, Light *p_lights, uint32_t &r_index, bool &r_batch_broken, bool &r_sdf_used, Batch *&r_current_batch);
+	void _record_item_commands(const Item *p_item, RenderTarget p_render_target, const Transform2D &p_base_transform, Item *&r_current_clip, Light *p_lights, bool &r_batch_broken, bool &r_sdf_used, Batch *&r_current_batch);
 	void _render_batch(RD::DrawListID p_draw_list, CanvasShaderData *p_shader_data, RenderingDevice::FramebufferFormatID p_framebuffer_format, Light *p_lights, Batch const *p_batch, RenderingMethod::RenderInfo *r_render_info = nullptr);
 	void _prepare_batch_texture_info(RID p_texture, TextureState &p_state, TextureInfo *p_info);
-	InstanceData *new_instance_data(float *p_world, uint32_t *p_lights, uint32_t p_base_flags, uint32_t p_index, uint32_t p_uniforms_ofs, TextureInfo *p_info);
+
+	// non-UMA
+	InstanceData *new_instance_data(Batch &p_current_batch, const InstanceData &template_instance, bool p_use_push_data = false);
 	[[nodiscard]] Batch *_new_batch(bool &r_batch_broken);
-	void _add_to_batch(uint32_t &r_index, bool &r_batch_broken, Batch *&r_current_batch);
+	void _add_to_batch(bool &r_batch_broken, Batch *&r_current_batch);
 	void _allocate_instance_buffer();
 
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4);

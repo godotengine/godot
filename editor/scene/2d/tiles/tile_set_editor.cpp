@@ -38,6 +38,7 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector/editor_inspector.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 
@@ -370,7 +371,7 @@ void TileSetEditor::_notification(int p_what) {
 			source_sort_button->set_button_icon(get_editor_theme_icon(SNAME("Sort")));
 			sources_advanced_menu_button->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			missing_texture_texture = get_editor_theme_icon(SNAME("TileSet"));
-			expanded_area->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), "Tree"));
+			expanded_area->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("expand_panel"), SNAME("TileSetEditor")));
 			_update_sources_list();
 		} break;
 
@@ -457,7 +458,7 @@ void TileSetEditor::_tile_set_changed() {
 
 void TileSetEditor::_tab_changed(int p_tab_changed) {
 	split_container->set_visible(p_tab_changed == 0);
-	patterns_item_list->set_visible(p_tab_changed == 1);
+	patterns_mc->set_visible(p_tab_changed == 1);
 }
 
 void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_edited, const String &p_array_prefix, int p_from_index, int p_to_pos) {
@@ -728,6 +729,7 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 
 	// Change the edited object.
 	tile_set = p_tile_set;
+	sources_list->tile_set = p_tile_set;
 
 	// Read-only status is false by default
 	read_only = new_read_only_state;
@@ -806,6 +808,13 @@ void TileSetEditor::register_split(SplitContainer *p_split) {
 
 TileSetEditor::TileSetEditor() {
 	singleton = this;
+	set_name(TTRC("TileSet"));
+	set_icon_name("TileSet");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_tile_set_bottom_panel", TTRC("Open TileSet Dock")));
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_global(false);
+	set_transient(true);
 
 	set_process_internal(true);
 
@@ -815,6 +824,7 @@ TileSetEditor::TileSetEditor() {
 
 	// TabBar.
 	tabs_bar = memnew(TabBar);
+	tabs_bar->set_theme_type_variation("TabBarInner");
 	tabs_bar->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	tabs_bar->set_clip_tabs(false);
 	tabs_bar->add_tab(TTR("Tile Sources"));
@@ -823,7 +833,11 @@ TileSetEditor::TileSetEditor() {
 
 	tile_set_toolbar = memnew(HBoxContainer);
 	tile_set_toolbar->set_h_size_flags(SIZE_EXPAND_FILL);
-	tile_set_toolbar->add_child(tabs_bar);
+
+	PanelContainer *tabs_panel = memnew(PanelContainer);
+	tabs_panel->set_theme_type_variation("PanelContainerTabbarInner");
+	tabs_panel->add_child(tabs_bar);
+	tile_set_toolbar->add_child(tabs_panel);
 	main_vb->add_child(tile_set_toolbar);
 
 	//// Tiles ////
@@ -855,18 +869,11 @@ TileSetEditor::TileSetEditor() {
 	p->add_radio_check_item(TTR("Sort by Name (Descending)"), TilesEditorUtils::SOURCE_SORT_NAME_REVERSE);
 	p->set_item_checked(TilesEditorUtils::SOURCE_SORT_ID, true);
 
-	sources_list = memnew(ItemList);
-	sources_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
-	sources_list->set_h_size_flags(SIZE_EXPAND_FILL);
-	sources_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	sources_list->set_theme_type_variation("ItemListSecondary");
+	sources_list = memnew(TileSetSourceItemList);
 	sources_list->connect(SceneStringName(item_selected), callable_mp(this, &TileSetEditor::_source_selected));
 	sources_list->connect(SceneStringName(item_selected), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_sources_lists_current));
 	sources_list->connect(SceneStringName(visibility_changed), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::synchronize_sources_list).bind(sources_list, source_sort_button));
-	sources_list->add_user_signal(MethodInfo("sort_request"));
 	sources_list->connect("sort_request", callable_mp(this, &TileSetEditor::_update_sources_list).bind(-1));
-	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	SET_DRAG_FORWARDING_CDU(sources_list, TileSetEditor);
 	split_container_left_side->add_child(sources_list);
 
@@ -940,6 +947,12 @@ TileSetEditor::TileSetEditor() {
 	split_container_right_side->add_child(tile_set_scenes_collection_source_editor);
 	tile_set_scenes_collection_source_editor->hide();
 
+	patterns_mc = memnew(MarginContainer);
+	patterns_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	patterns_mc->set_theme_type_variation("NoBorderBottomPanel");
+	main_vb->add_child(patterns_mc);
+	patterns_mc->hide();
+
 	//// Patterns ////
 	int thumbnail_size = 64;
 	patterns_item_list = memnew(ItemList);
@@ -949,11 +962,10 @@ TileSetEditor::TileSetEditor() {
 	patterns_item_list->set_fixed_column_width(thumbnail_size * 3 / 2);
 	patterns_item_list->set_max_text_lines(2);
 	patterns_item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
+	patterns_item_list->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
 	patterns_item_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	patterns_item_list->set_theme_type_variation("ItemListSecondary");
 	patterns_item_list->connect(SceneStringName(gui_input), callable_mp(this, &TileSetEditor::_patterns_item_list_gui_input));
-	main_vb->add_child(patterns_item_list);
-	patterns_item_list->hide();
+	patterns_mc->add_child(patterns_item_list);
 
 	patterns_help_label = memnew(Label);
 	patterns_help_label->set_focus_mode(FOCUS_ACCESSIBILITY);
@@ -997,7 +1009,7 @@ void TileSourceInspectorPlugin::_show_id_edit_dialog(Object *p_for_source) {
 	edited_source = p_for_source;
 	id_input->set_value(p_for_source->get("id"));
 	id_edit_dialog->popup_centered(Vector2i(400, 0) * EDSCALE);
-	callable_mp((Control *)id_input->get_line_edit(), &Control::grab_focus).call_deferred();
+	callable_mp((Control *)id_input->get_line_edit(), &Control::grab_focus).call_deferred(false);
 }
 
 void TileSourceInspectorPlugin::_confirm_change_id() {

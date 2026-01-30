@@ -215,6 +215,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] If you just want to know whether the string contains [param what], use [method contains]. In GDScript, you may also use the [code]in[/code] operator.
+				[b]Note:[/b] A negative value of [param from] is converted to a starting index by counting back from the last possible index with enough space to find [param what].
 			</description>
 		</method>
 		<method name="findn" qualifiers="const">
@@ -682,7 +683,7 @@
 			<return type="String" />
 			<param index="0" name="chars" type="String" />
 			<description>
-				Removes any occurrence of the characters in [param chars]. See also [method remove_char].
+				Removes all occurrences of the characters in [param chars]. See also [method remove_char].
 			</description>
 		</method>
 		<method name="repeat" qualifiers="const">
@@ -736,6 +737,8 @@
 			<param index="1" name="from" type="int" default="-1" />
 			<description>
 				Returns the index of the [b]last[/b] occurrence of [param what] in this string, or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the beginning of the string. This method is the reverse of [method find].
+				[b]Note:[/b] A negative value of [param from] is converted to a starting index by counting back from the last possible index with enough space to find [param what].
+				[b]Note:[/b] A value of [param from] that is greater than the last possible index with enough space to find [param what] is considered out-of-bounds, and returns [code]-1[/code].
 			</description>
 		</method>
 		<method name="rfindn" qualifiers="const">

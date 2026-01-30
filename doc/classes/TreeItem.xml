@@ -94,6 +94,13 @@
 				Returns the text autowrap mode in the given [param column]. By default it is [constant TextServer.AUTOWRAP_OFF].
 			</description>
 		</method>
+		<method name="get_autowrap_trim_flags" qualifiers="const">
+			<return type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the autowrap trim flags for the given [param column]. By default, both [constant TextServer.BREAK_TRIM_START_EDGE_SPACES] and [constant TextServer.BREAK_TRIM_END_EDGE_SPACES] are enabled.
+			</description>
+		</method>
 		<method name="get_button" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="column" type="int" />
@@ -201,6 +208,13 @@
 			<param index="0" name="column" type="int" />
 			<description>
 				Returns custom font size used to draw text in the column [param column].
+			</description>
+		</method>
+		<method name="get_custom_stylebox" qualifiers="const">
+			<return type="StyleBox" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the given column's custom [StyleBox] used to draw the background.
 			</description>
 		</method>
 		<method name="get_description" qualifiers="const">
@@ -531,6 +545,14 @@
 				Sets the autowrap mode in the given [param column]. If set to something other than [constant TextServer.AUTOWRAP_OFF], the text gets wrapped inside the cell's bounding rectangle.
 			</description>
 		</method>
+		<method name="set_autowrap_trim_flags">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" />
+			<description>
+				Sets the autowrap trim flags for the given [param column]. These flags control whether leading and trailing spaces are trimmed on wrapped lines. Set to [code]0[/code] to disable all trimming.
+			</description>
+		</method>
 		<method name="set_button">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
@@ -614,6 +636,7 @@
 			<param index="2" name="just_outline" type="bool" default="false" />
 			<description>
 				Sets the given column's custom background color and whether to just use it as an outline.
+				[b]Note:[/b] If a custom [StyleBox] is set, the background color will be drawn behind it.
 			</description>
 		</method>
 		<method name="set_custom_color">
@@ -657,6 +680,15 @@
 			<param index="1" name="font_size" type="int" />
 			<description>
 				Sets custom font size used to draw text in the given [param column].
+			</description>
+		</method>
+		<method name="set_custom_stylebox">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="stylebox" type="StyleBox" />
+			<description>
+				Sets the given column's custom [StyleBox] used to draw the background.
+				[b]Note:[/b] If a custom background color is set, the [StyleBox] will be drawn in front of it.
 			</description>
 		</method>
 		<method name="set_description">
@@ -746,7 +778,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Sets language code of item's text used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+				Sets the language code of the given [param column]'s text to [param language]. This is used for line-breaking and text shaping algorithms. If [param language] is empty, the current locale is used.
 			</description>
 		</method>
 		<method name="set_metadata">

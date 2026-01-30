@@ -44,6 +44,7 @@
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/view_panner.h"
+#include "scene/resources/material.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
 
@@ -249,14 +250,6 @@ Control::CursorShape GraphEdit::get_cursor_shape(const Point2 &p_pos) const {
 	}
 
 	return Control::get_cursor_shape(p_pos);
-}
-
-PackedStringArray GraphEdit::get_configuration_warnings() const {
-	PackedStringArray warnings = Control::get_configuration_warnings();
-
-	warnings.push_back(RTR("Please be aware that GraphEdit and GraphNode will undergo extensive refactoring in a future 4.x version involving compatibility-breaking API changes."));
-
-	return warnings;
 }
 
 Error GraphEdit::connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, bool p_keep_alive) {
@@ -729,7 +722,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		}
 		graph_element->connect("raise_request", callable_mp(this, &GraphEdit::_ensure_node_order_from).bind(graph_element));
 		graph_element->connect("resize_request", callable_mp(this, &GraphEdit::_graph_element_resize_request).bind(graph_element));
-		if (connections_layer != nullptr && connections_layer->is_inside_tree()) {
+		if (connections_layer != nullptr) {
 			graph_element->connect(SceneStringName(item_rect_changed), callable_mp((CanvasItem *)connections_layer, &CanvasItem::queue_redraw));
 		}
 		graph_element->connect(SceneStringName(item_rect_changed), callable_mp((CanvasItem *)minimap, &GraphEditMinimap::queue_redraw));
@@ -861,7 +854,7 @@ void GraphEdit::_notification(int p_what) {
 			// Draw background fill.
 			draw_style_box(theme_cache.panel, Rect2(Point2(), get_size()));
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				draw_style_box(theme_cache.panel_focus, Rect2(Point2(), get_size()));
 			}
 
@@ -1615,7 +1608,7 @@ void GraphEdit::_draw_minimap_connection_line(const Vector2 &p_from_graph_positi
 		colors.push_back(p_from_color.lerp(p_to_color, normalized_curve_position));
 	}
 
-	minimap->draw_polyline_colors(points, colors, 0.5, lines_antialiased);
+	minimap->draw_polyline_colors(points, Vector<Color>(colors), 0.5, lines_antialiased);
 }
 
 void GraphEdit::_update_connections() {
@@ -3096,7 +3089,7 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom_step"), "set_zoom_step", "get_zoom_step");
 
 	ADD_GROUP("Minimap", "minimap_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_enabled"), "set_minimap_enabled", "is_minimap_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_minimap_enabled", "is_minimap_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "minimap_size", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_size", "get_minimap_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "minimap_opacity"), "set_minimap_opacity", "get_minimap_opacity");
 

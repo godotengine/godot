@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 # This script makes RST files from the XML class reference for use with the online docs.
+from __future__ import annotations
 
 import argparse
 import os
@@ -8,7 +9,7 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
-from typing import Any, Dict, List, Optional, TextIO, Tuple, Union
+from typing import Any, TextIO
 
 sys.path.insert(0, root_directory := os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
 
@@ -87,11 +88,13 @@ BASE_STRINGS = [
     "This method may be changed or removed in future versions.",
     "This operator may be changed or removed in future versions.",
     "This theme property may be changed or removed in future versions.",
+    # See also `make_rst_class()` and `editor/doc/editor_help.cpp`.
     "[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details.",
 ]
-strings_l10n: Dict[str, str] = {}
+strings_l10n: dict[str, str] = {}
+writing_translation = False
 
-CLASS_GROUPS: Dict[str, str] = {
+CLASS_GROUPS: dict[str, str] = {
     "global": "Globals",
     "node": "Nodes",
     "resource": "Resources",
@@ -99,21 +102,21 @@ CLASS_GROUPS: Dict[str, str] = {
     "editor": "Editor-only",
     "variant": "Variant types",
 }
-CLASS_GROUPS_BASE: Dict[str, str] = {
+CLASS_GROUPS_BASE: dict[str, str] = {
     "node": "Node",
     "resource": "Resource",
     "object": "Object",
     "variant": "Variant",
 }
 # Sync with editor\register_editor_types.cpp
-EDITOR_CLASSES: List[str] = [
+EDITOR_CLASSES: list[str] = [
     "FileSystemDock",
     "ScriptCreateDialog",
     "ScriptEditor",
     "ScriptEditorBase",
 ]
 # Sync with the types mentioned in https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_differences.html
-CLASSES_WITH_CSHARP_DIFFERENCES: List[str] = [
+CLASSES_WITH_CSHARP_DIFFERENCES: list[str] = [
     "@GlobalScope",
     "String",
     "StringName",
@@ -145,7 +148,7 @@ CLASSES_WITH_CSHARP_DIFFERENCES: List[str] = [
     "Variant",
 ]
 
-PACKED_ARRAY_TYPES: List[str] = [
+PACKED_ARRAY_TYPES: list[str] = [
     "PackedByteArray",
     "PackedColorArray",
     "PackedFloat32Array",
@@ -423,7 +426,7 @@ class State:
 
         self.current_class = ""
 
-    def parse_params(self, root: ET.Element, context: str) -> List["ParameterDef"]:
+    def parse_params(self, root: ET.Element, context: str) -> list[ParameterDef]:
         param_elements = root.findall("param")
         params: Any = [None] * len(param_elements)
 
@@ -441,7 +444,7 @@ class State:
 
             params[index] = ParameterDef(param_name, type_name, default)
 
-        cast: List[ParameterDef] = params
+        cast: list[ParameterDef] = params
 
         return cast
 
@@ -459,7 +462,7 @@ class TagState:
 
 
 class TypeName:
-    def __init__(self, type_name: str, enum: Optional[str] = None, is_bitfield: bool = False) -> None:
+    def __init__(self, type_name: str, enum: str | None = None, is_bitfield: bool = False) -> None:
         self.type_name = type_name
         self.enum = enum
         self.is_bitfield = is_bitfield
@@ -473,7 +476,7 @@ class TypeName:
             return make_type(self.type_name, state)
 
     @classmethod
-    def from_element(cls, element: ET.Element) -> "TypeName":
+    def from_element(cls, element: ET.Element) -> TypeName:
         return cls(element.attrib["type"], element.get("enum"), element.get("is_bitfield") == "true")
 
 
@@ -485,8 +488,8 @@ class DefinitionBase:
     ) -> None:
         self.definition_name = definition_name
         self.name = name
-        self.deprecated: Optional[str] = None
-        self.experimental: Optional[str] = None
+        self.deprecated: str | None = None
+        self.experimental: str | None = None
 
 
 class PropertyDef(DefinitionBase):
@@ -494,11 +497,11 @@ class PropertyDef(DefinitionBase):
         self,
         name: str,
         type_name: TypeName,
-        setter: Optional[str],
-        getter: Optional[str],
-        text: Optional[str],
-        default_value: Optional[str],
-        overrides: Optional[str],
+        setter: str | None,
+        getter: str | None,
+        text: str | None,
+        default_value: str | None,
+        overrides: str | None,
     ) -> None:
         super().__init__("property", name)
 
@@ -511,7 +514,7 @@ class PropertyDef(DefinitionBase):
 
 
 class ParameterDef(DefinitionBase):
-    def __init__(self, name: str, type_name: TypeName, default_value: Optional[str]) -> None:
+    def __init__(self, name: str, type_name: TypeName, default_value: str | None) -> None:
         super().__init__("parameter", name)
 
         self.type_name = type_name
@@ -519,7 +522,7 @@ class ParameterDef(DefinitionBase):
 
 
 class SignalDef(DefinitionBase):
-    def __init__(self, name: str, parameters: List[ParameterDef], description: Optional[str]) -> None:
+    def __init__(self, name: str, parameters: list[ParameterDef], description: str | None) -> None:
         super().__init__("signal", name)
 
         self.parameters = parameters
@@ -530,9 +533,9 @@ class AnnotationDef(DefinitionBase):
     def __init__(
         self,
         name: str,
-        parameters: List[ParameterDef],
-        description: Optional[str],
-        qualifiers: Optional[str],
+        parameters: list[ParameterDef],
+        description: str | None,
+        qualifiers: str | None,
     ) -> None:
         super().__init__("annotation", name)
 
@@ -546,9 +549,9 @@ class MethodDef(DefinitionBase):
         self,
         name: str,
         return_type: TypeName,
-        parameters: List[ParameterDef],
-        description: Optional[str],
-        qualifiers: Optional[str],
+        parameters: list[ParameterDef],
+        description: str | None,
+        qualifiers: str | None,
     ) -> None:
         super().__init__("method", name)
 
@@ -559,7 +562,7 @@ class MethodDef(DefinitionBase):
 
 
 class ConstantDef(DefinitionBase):
-    def __init__(self, name: str, value: str, text: Optional[str], bitfield: bool) -> None:
+    def __init__(self, name: str, value: str, text: str | None, bitfield: bool) -> None:
         super().__init__("constant", name)
 
         self.value = value
@@ -578,7 +581,7 @@ class EnumDef(DefinitionBase):
 
 class ThemeItemDef(DefinitionBase):
     def __init__(
-        self, name: str, type_name: TypeName, data_name: str, text: Optional[str], default_value: Optional[str]
+        self, name: str, type_name: TypeName, data_name: str, text: str | None, default_value: str | None
     ) -> None:
         super().__init__("theme property", name)
 
@@ -598,17 +601,17 @@ class ClassDef(DefinitionBase):
         self.constants: OrderedDict[str, ConstantDef] = OrderedDict()
         self.enums: OrderedDict[str, EnumDef] = OrderedDict()
         self.properties: OrderedDict[str, PropertyDef] = OrderedDict()
-        self.constructors: OrderedDict[str, List[MethodDef]] = OrderedDict()
-        self.methods: OrderedDict[str, List[MethodDef]] = OrderedDict()
-        self.operators: OrderedDict[str, List[MethodDef]] = OrderedDict()
+        self.constructors: OrderedDict[str, list[MethodDef]] = OrderedDict()
+        self.methods: OrderedDict[str, list[MethodDef]] = OrderedDict()
+        self.operators: OrderedDict[str, list[MethodDef]] = OrderedDict()
         self.signals: OrderedDict[str, SignalDef] = OrderedDict()
-        self.annotations: OrderedDict[str, List[AnnotationDef]] = OrderedDict()
+        self.annotations: OrderedDict[str, list[AnnotationDef]] = OrderedDict()
         self.theme_items: OrderedDict[str, ThemeItemDef] = OrderedDict()
-        self.inherits: Optional[str] = None
-        self.brief_description: Optional[str] = None
-        self.description: Optional[str] = None
-        self.tutorials: List[Tuple[str, str]] = []
-        self.keywords: Optional[str] = None
+        self.inherits: str | None = None
+        self.brief_description: str | None = None
+        self.description: str | None = None
+        self.tutorials: list[tuple[str, str]] = []
+        self.keywords: str | None = None
 
         # Used to match the class with XML source for output filtering purposes.
         self.filepath: str = ""
@@ -654,7 +657,7 @@ class ClassDef(DefinitionBase):
 # which don't necessarily need C# examples.
 class ScriptLanguageParityCheck:
     def __init__(self) -> None:
-        self.hit_map: OrderedDict[str, List[Tuple[DefinitionBase, str]]] = OrderedDict()
+        self.hit_map: OrderedDict[str, list[tuple[DefinitionBase, str]]] = OrderedDict()
         self.hit_count = 0
 
     def add_hit(self, class_name: str, context: DefinitionBase, error: str, state: State) -> None:
@@ -704,6 +707,8 @@ def main() -> None:
 
     # Retrieve heading translations for the given language.
     if not args.dry_run and args.lang != "en":
+        global writing_translation
+        writing_translation = True
         lang_file = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "..", "translations", "{}.po".format(args.lang)
         )
@@ -723,7 +728,7 @@ def main() -> None:
 
     print("Checking for errors in the XML class reference...")
 
-    file_list: List[str] = []
+    file_list: list[str] = []
 
     for path in args.path:
         # Cut off trailing slashes so os.path.basename doesn't choke.
@@ -747,7 +752,7 @@ def main() -> None:
 
             file_list.append(path)
 
-    classes: Dict[str, Tuple[ET.Element, str]] = {}
+    classes: dict[str, tuple[ET.Element, str]] = {}
     state = State()
 
     for cur_file in file_list:
@@ -780,7 +785,7 @@ def main() -> None:
 
     print("Generating the RST class reference...")
 
-    grouped_classes: Dict[str, List[str]] = {}
+    grouped_classes: dict[str, list[str]] = {}
 
     for class_name, class_def in state.classes.items():
         if args.filter and not pattern.search(class_def.filepath):
@@ -898,18 +903,18 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         if class_def.keywords is not None and class_def.keywords != "":
             f.write(f".. meta::\n\t:keywords: {class_def.keywords}\n\n")
 
-        # Warn contributors not to edit this file directly.
-        # Also provide links to the source files for reference.
+        if not writing_translation:  # Skip for translations to reduce diff.
+            # Warn contributors not to edit this file directly.
+            # Also provide links to the source files for reference.
+            git_branch = get_git_branch()
+            source_xml_path = os.path.relpath(class_def.filepath, root_directory).replace("\\", "/")
+            source_github_url = f"https://github.com/godotengine/godot/tree/{git_branch}/{source_xml_path}"
+            generator_github_url = f"https://github.com/godotengine/godot/tree/{git_branch}/doc/tools/make_rst.py"
 
-        git_branch = get_git_branch()
-        source_xml_path = os.path.relpath(class_def.filepath, root_directory).replace("\\", "/")
-        source_github_url = f"https://github.com/godotengine/godot/tree/{git_branch}/{source_xml_path}"
-        generator_github_url = f"https://github.com/godotengine/godot/tree/{git_branch}/doc/tools/make_rst.py"
-
-        f.write(".. DO NOT EDIT THIS FILE!!!\n")
-        f.write(".. Generated automatically from Godot engine sources.\n")
-        f.write(f".. Generator: {generator_github_url}.\n")
-        f.write(f".. XML source: {source_github_url}.\n\n")
+            f.write(".. DO NOT EDIT THIS FILE!!!\n")
+            f.write(".. Generated automatically from Godot engine sources.\n")
+            f.write(f".. Generator: {generator_github_url}.\n")
+            f.write(f".. XML source: {source_github_url}.\n\n")
 
         # Document reference id and header.
         f.write(f".. _class_{sanitize_class_name(class_name)}:\n\n")
@@ -943,7 +948,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             f.write("\n\n")
 
         # Descendants
-        inherited: List[str] = []
+        inherited: list[str] = []
         for c in state.classes.values():
             if c.inherits and c.inherits.strip() == class_name:
                 inherited.append(c.name)
@@ -1004,7 +1009,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         ### REFERENCE TABLES ###
 
         # Reused container for reference tables.
-        ml: List[Tuple[Optional[str], ...]] = []
+        ml: list[tuple[str | None, ...]] = []
 
         # Properties reference table
         if len(class_def.properties) > 0:
@@ -1199,6 +1204,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         # Annotation descriptions
         if len(class_def.annotations) > 0:
             f.write(make_separator(True))
+            f.write(".. rst-class:: classref-descriptions-group\n\n")
             f.write(make_heading("Annotations", "-"))
 
             index = 0
@@ -1299,6 +1305,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 # Add copy note to built-in properties returning `Packed*Array`.
                 if property_def.type_name.type_name in PACKED_ARRAY_TYPES:
+                    # See also `BASE_STRINGS` and `editor/doc/editor_help.cpp`.
                     copy_note = f"[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [{property_def.type_name.type_name}] for more details."
                     f.write(f"{format_text_block(copy_note, property_def, state)}\n\n")
 
@@ -1538,8 +1545,8 @@ def make_enum(t: str, is_bitfield: bool, state: State) -> str:
 
 
 def make_method_signature(
-    class_def: ClassDef, definition: Union[AnnotationDef, MethodDef, SignalDef], ref_type: str, state: State
-) -> Tuple[str, str]:
+    class_def: ClassDef, definition: AnnotationDef | MethodDef | SignalDef, ref_type: str, state: State
+) -> tuple[str, str]:
     ret_type = ""
 
     if isinstance(definition, MethodDef):
@@ -1605,7 +1612,7 @@ def make_setter_signature(class_def: ClassDef, property_def: PropertyDef, state:
         setter = class_def.methods[property_def.setter][0]
     # Otherwise we fake it with the information we have available.
     else:
-        setter_params: List[ParameterDef] = []
+        setter_params: list[ParameterDef] = []
         setter_params.append(ParameterDef("value", property_def.type_name, None))
         setter = MethodDef(property_def.setter, TypeName("void"), setter_params, None, None)
 
@@ -1622,7 +1629,7 @@ def make_getter_signature(class_def: ClassDef, property_def: PropertyDef, state:
         getter = class_def.methods[property_def.getter][0]
     # Otherwise we fake it with the information we have available.
     else:
-        getter_params: List[ParameterDef] = []
+        getter_params: list[ParameterDef] = []
         getter = MethodDef(property_def.getter, property_def.type_name, getter_params, None, None)
 
     ret_type, signature = make_method_signature(class_def, getter, "", state)
@@ -1721,7 +1728,7 @@ def make_link(url: str, title: str) -> str:
     return f"`{url} <{url}>`__"
 
 
-def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_dir: str) -> None:
+def make_rst_index(grouped_classes: dict[str, list[str]], dry_run: bool, output_dir: str) -> None:
     with open(
         os.devnull if dry_run else os.path.join(output_dir, "index.rst"), "w", encoding="utf-8", newline="\n"
     ) as f:
@@ -1786,7 +1793,7 @@ RESERVED_CROSSLINK_TAGS = [
 ]
 
 
-def is_in_tagset(tag_text: str, tagset: List[str]) -> bool:
+def is_in_tagset(tag_text: str, tagset: list[str]) -> bool:
     for tag in tagset:
         # Complete match.
         if tag_text == tag:
@@ -1828,7 +1835,7 @@ def get_tag_and_args(tag_text: str) -> TagState:
     return TagState(tag_text, tag_name, arguments, closing)
 
 
-def parse_link_target(link_target: str, state: State, context_name: str) -> List[str]:
+def parse_link_target(link_target: str, state: State, context_name: str) -> list[str]:
     if link_target.find(".") != -1:
         return link_target.split(".")
     else:
@@ -2076,7 +2083,7 @@ def format_text_block(
 
                     valid_param_context = isinstance(context, (MethodDef, SignalDef, AnnotationDef))
                     if valid_param_context:
-                        context_params: List[ParameterDef] = context.parameters  # type: ignore
+                        context_params: list[ParameterDef] = context.parameters  # type: ignore
                         for param_def in context_params:
                             if param_def.name == inside_code_text:
                                 print_warning(
@@ -2236,7 +2243,7 @@ def format_text_block(
                                 state,
                             )
                         else:
-                            context_params: List[ParameterDef] = context.parameters  # type: ignore
+                            context_params: list[ParameterDef] = context.parameters  # type: ignore
                             found = False
                             for param_def in context_params:
                                 if param_def.name == link_target:
@@ -2401,7 +2408,7 @@ def format_text_block(
     return text
 
 
-def preformat_text_block(text: str, state: State) -> Optional[str]:
+def preformat_text_block(text: str, state: State) -> str | None:
     result = ""
     codeblock_tag = ""
     indent_level = 0
@@ -2451,7 +2458,7 @@ def preformat_text_block(text: str, state: State) -> Optional[str]:
     return result
 
 
-def format_context_name(context: Union[DefinitionBase, None]) -> str:
+def format_context_name(context: DefinitionBase | None) -> str:
     context_name: str = "unknown context"
     if context is not None:
         context_name = f'{context.definition_name} "{context.name}" description'
@@ -2493,7 +2500,7 @@ def escape_rst(text: str, until_pos: int = -1) -> str:
     return text
 
 
-def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_columns: bool = False) -> None:
+def format_table(f: TextIO, data: list[tuple[str | None, ...]], remove_empty_columns: bool = False) -> None:
     if len(data) == 0:
         return
 
@@ -2538,7 +2545,7 @@ def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_
     f.write("\n")
 
 
-def sanitize_class_name(dirty_name: str, is_file_name=False) -> str:
+def sanitize_class_name(dirty_name: str, is_file_name: bool = False) -> str:
     if is_file_name:
         return dirty_name.lower().replace('"', "").replace("/", "--")
     else:

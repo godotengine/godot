@@ -39,6 +39,7 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector/editor_inspector.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/translations/editor_locale_dialog.h"
 #include "scene/gui/split_container.h"
@@ -100,8 +101,7 @@ void DynamicFontImportSettingsDialog::_add_glyph_range_item(int32_t p_start, int
 		TreeItem *item = glyph_tree->create_item(glyph_root);
 		ERR_FAIL_NULL(item);
 		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-		item->set_text(0, _pad_zeros(String::num_int64(start, 16)) + " - " + _pad_zeros(String::num_int64(start + page_size, 16)));
-		item->set_text(1, p_name);
+		item->set_text(0, p_name + " (" + _pad_zeros(String::num_int64(start, 16)) + "-" + _pad_zeros(String::num_int64(start + page_size, 16)) + ")");
 		item->set_metadata(0, Vector2i(start, start + page_size));
 		start += page_size;
 	}
@@ -109,8 +109,7 @@ void DynamicFontImportSettingsDialog::_add_glyph_range_item(int32_t p_start, int
 		TreeItem *item = glyph_tree->create_item(glyph_root);
 		ERR_FAIL_NULL(item);
 		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-		item->set_text(0, _pad_zeros(String::num_int64(start, 16)) + " - " + _pad_zeros(String::num_int64(p_end, 16)));
-		item->set_text(1, p_name);
+		item->set_text(0, p_name + " (" + _pad_zeros(String::num_int64(start, 16)) + "-" + _pad_zeros(String::num_int64(p_end, 16)) + ")");
 		item->set_metadata(0, Vector2i(start, p_end));
 	}
 }
@@ -145,7 +144,21 @@ void DynamicFontImportSettingsDialog::_main_prop_changed(const String &p_edited_
 		} else if (p_edited_property == "modulate_color_glyphs") {
 			font_preview->set_modulate_color_glyphs(import_settings_data->get("modulate_color_glyphs"));
 		} else if (p_edited_property == "hinting") {
-			font_preview->set_hinting((TextServer::Hinting)import_settings_data->get("hinting").operator int());
+			int hinting = import_settings_data->get("hinting").operator int();
+			if (hinting == 3) { // Light (Except Pixel Fonts)
+				if (is_pixel) {
+					hinting = TextServer::HINTING_NONE;
+				} else {
+					hinting = TextServer::HINTING_LIGHT;
+				}
+			} else if (hinting == 4) { // Normal (Except Pixel Fonts)
+				if (is_pixel) {
+					hinting = TextServer::HINTING_NONE;
+				} else {
+					hinting = TextServer::HINTING_NORMAL;
+				}
+			}
+			font_preview->set_hinting((TextServer::Hinting)hinting);
 		} else if (p_edited_property == "subpixel_positioning") {
 			int font_subpixel_positioning = import_settings_data->get("subpixel_positioning").operator int();
 			if (font_subpixel_positioning == 4 /* Auto (Except Pixel Fonts) */) {
@@ -501,10 +514,11 @@ void DynamicFontImportSettingsDialog::_edit_range(int32_t p_start, int32_t p_end
 			ERR_FAIL_NULL(item);
 			item->set_text(0, _pad_zeros(String::num_int64(c, 16)));
 			item->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
+			item->set_text_overrun_behavior(0, TextServer::OVERRUN_NO_TRIMMING);
 			item->set_selectable(0, false);
 			item->set_custom_bg_color(0, glyph_table->get_theme_color(SNAME("dark_color_3"), EditorStringName(Editor)));
 		}
-		if (font_main->has_char(c)) {
+		if (c != 0 && font_main->has_char(c)) {
 			item->set_text(col + 1, String::chr(c));
 			item->set_custom_color(col + 1, Color(1, 1, 1));
 			if (import_variation_data->selected_chars.has(c) || import_variation_data->selected_glyphs.has(font_main->get_glyph_index(16, c))) {
@@ -613,8 +627,14 @@ void DynamicFontImportSettingsDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			const String theme_style = EDITOR_GET("interface/theme/style");
+			const String type_variation = theme_style == "Classic" ? "TabContainerOdd" : "TabContainerInner";
+			main_pages->set_theme_type_variation(type_variation);
+			preload_pages->set_theme_type_variation(type_variation);
+
 			add_var->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			label_warn->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			glyph_tree->add_theme_color_override(SNAME("font_disabled_color"), glyph_tree->get_theme_color(SceneStringName(font_color)));
 		} break;
 	}
 }
@@ -833,9 +853,6 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 	text_settings_data->options = options_text;
 
 	inspector_text->edit(text_settings_data.ptr());
-
-	int gww = get_theme_font(SceneStringName(font))->get_string_size("00000").x + 50;
-	glyph_table->set_column_custom_minimum_width(0, gww);
 	glyph_table->clear();
 	vars_list->clear();
 
@@ -936,7 +953,21 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 		font_preview->set_allow_system_fallback(import_settings_data->get("allow_system_fallback"));
 		font_preview->set_force_autohinter(import_settings_data->get("force_autohinter"));
 		font_preview->set_modulate_color_glyphs(import_settings_data->get("modulate_color_glyphs"));
-		font_preview->set_hinting((TextServer::Hinting)import_settings_data->get("hinting").operator int());
+		int hinting = import_settings_data->get("hinting").operator int();
+		if (hinting == 3) { // Light (Except Pixel Fonts)
+			if (is_pixel) {
+				hinting = TextServer::HINTING_NONE;
+			} else {
+				hinting = TextServer::HINTING_LIGHT;
+			}
+		} else if (hinting == 4) { // Normal (Except Pixel Fonts)
+			if (is_pixel) {
+				hinting = TextServer::HINTING_NONE;
+			} else {
+				hinting = TextServer::HINTING_NORMAL;
+			}
+		}
+		font_preview->set_hinting((TextServer::Hinting)hinting);
 		int font_subpixel_positioning = import_settings_data->get("subpixel_positioning").operator int();
 		if (font_subpixel_positioning == 4 /* Auto (Except Pixel Fonts) */) {
 			if (is_pixel) {
@@ -978,7 +1009,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "allow_system_fallback"), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "modulate_color_glyphs"), false));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal,Light (Except Pixel Fonts),Normal (Except Pixel Fonts)"), 3));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel,Auto (Except Pixel Fonts)"), 4));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), 0.0));
@@ -1014,7 +1045,6 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	main_pages->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	main_pages->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	main_pages->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	main_pages->set_theme_type_variation("TabContainerOdd");
 	root_vb->add_child(main_pages);
 
 	label_warn = memnew(Label);
@@ -1065,6 +1095,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	inspector_general = memnew(EditorInspector);
 	inspector_general->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector_general->set_custom_minimum_size(Size2(300 * EDSCALE, 250 * EDSCALE));
+	inspector_general->set_theme_type_variation("ScrollContainerSecondary");
 	page1_hb->add_child(inspector_general);
 	inspector_general->connect("property_edited", callable_mp(this, &DynamicFontImportSettingsDialog::_main_prop_changed));
 
@@ -1114,12 +1145,14 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	vars_list->set_column_expand(1, false);
 	vars_list->set_column_custom_minimum_width(1, 50 * EDSCALE);
 	vars_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vars_list->set_theme_type_variation("TreeSecondary");
 	page2_side_vb->add_child(vars_list);
 	vars_list->connect(SceneStringName(item_selected), callable_mp(this, &DynamicFontImportSettingsDialog::_variation_selected));
 	vars_list->connect("button_clicked", callable_mp(this, &DynamicFontImportSettingsDialog::_variation_remove));
 
 	inspector_vars = memnew(EditorInspector);
 	inspector_vars->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	inspector_vars->set_theme_type_variation("ScrollContainerSecondary");
 	page2_side_vb->add_child(inspector_vars);
 	inspector_vars->connect("property_edited", callable_mp(this, &DynamicFontImportSettingsDialog::_variation_changed));
 
@@ -1166,6 +1199,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	locale_tree->set_column_expand(0, true);
 	locale_tree->set_column_custom_minimum_width(0, 120 * EDSCALE);
 	locale_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	locale_tree->set_theme_type_variation("TreeSecondary");
 	page2_0_vb->add_child(locale_tree);
 	locale_tree->connect("item_activated", callable_mp(this, &DynamicFontImportSettingsDialog::_locale_edited));
 
@@ -1199,9 +1233,9 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	page2_1_vb->add_child(page2_1_hb);
 
 	inspector_text = memnew(EditorInspector);
-
 	inspector_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector_text->set_custom_minimum_size(Size2(300 * EDSCALE, 250 * EDSCALE));
+	inspector_text->set_theme_type_variation("ScrollContainerSecondary");
 	page2_1_hb->add_child(inspector_text);
 	inspector_text->connect("property_edited", callable_mp(this, &DynamicFontImportSettingsDialog::_change_text_opts));
 
@@ -1240,9 +1274,11 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	glyph_table = memnew(Tree);
 	glyph_table->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	glyph_table->set_custom_minimum_size(Size2((30 * 16 + 100) * EDSCALE, 0));
+	glyph_table->set_theme_type_variation("TreeTable");
 	glyph_table->set_columns(17);
 	glyph_table->set_column_expand(0, false);
 	glyph_table->set_hide_root(true);
+	glyph_table->set_hide_folding(true);
 	glyph_table->set_allow_reselect(true);
 	glyph_table->set_select_mode(Tree::SELECT_SINGLE);
 	glyph_table->set_column_titles_visible(true);
@@ -1252,6 +1288,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	glyph_table->add_theme_style_override("selected", glyph_table->get_theme_stylebox(SceneStringName(panel)));
 	glyph_table->add_theme_style_override("selected_focus", glyph_table->get_theme_stylebox(SceneStringName(panel)));
 	glyph_table->add_theme_constant_override("h_separation", 0);
+	glyph_table->set_theme_type_variation("TreeSecondary");
 	glyph_table->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	glyph_table->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	glyphs_split->add_child(glyph_table);
@@ -1260,12 +1297,12 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	glyph_tree = memnew(Tree);
 	glyph_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	glyph_tree->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
-	glyph_tree->set_columns(2);
+	glyph_tree->set_columns(1);
 	glyph_tree->set_hide_root(true);
-	glyph_tree->set_column_expand(0, false);
-	glyph_tree->set_column_expand(1, true);
-	glyph_tree->set_column_custom_minimum_width(0, 120 * EDSCALE);
+	glyph_tree->set_column_expand(0, true);
+	glyph_tree->set_hide_folding(true);
 	glyph_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	glyph_tree->set_theme_type_variation("TreeSecondary");
 	glyph_root = glyph_tree->create_item();
 	for (int i = 0; !unicode_ranges[i].name.is_empty(); i++) {
 		_add_glyph_range_item(unicode_ranges[i].start, unicode_ranges[i].end, unicode_ranges[i].name);

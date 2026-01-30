@@ -187,7 +187,12 @@
 		<method name="get_cmdline_args">
 			<return type="PackedStringArray" />
 			<description>
-				Returns the command-line arguments passed to the engine.
+				Returns the command-line arguments passed to the engine, excluding arguments processed by the engine, such as [code]--headless[/code] and [code]--fullscreen[/code].
+				[codeblock]
+				# Godot has been executed with the following command:
+				# godot --headless --verbose --scene my_scene.tscn --custom
+				OS.get_cmdline_args() # Returns ["--scene", "my_scene.tscn", "--custom"]
+				[/codeblock]
 				Command-line arguments can be written in any form, including both [code]--key value[/code] and [code]--key=value[/code] forms so they can be properly parsed, as long as custom command-line arguments do not conflict with engine arguments.
 				You can also incorporate environment variables using the [method get_environment] method.
 				You can set [member ProjectSettings.editor/run/main_run_args] to define command-line arguments to be passed by the editor when running the project.
@@ -231,12 +236,12 @@
 				Returns the command-line user arguments passed to the engine. User arguments are ignored by the engine and reserved for the user. They are passed after the double dash [code]--[/code] argument. [code]++[/code] may be used when [code]--[/code] is intercepted by another program (such as [code]startx[/code]).
 				[codeblock]
 				# Godot has been executed with the following command:
-				# godot --fullscreen -- --level=2 --hardcore
+				# godot --fullscreen --custom -- --level=2 --hardcore
 
-				OS.get_cmdline_args()      # Returns ["--fullscreen", "--level=2", "--hardcore"]
+				OS.get_cmdline_args()      # Returns ["--custom"]
 				OS.get_cmdline_user_args() # Returns ["--level=2", "--hardcore"]
 				[/codeblock]
-				To get all passed arguments, use [method get_cmdline_args].
+				To get arguments passed before [code]--[/code] or [code]++[/code], use [method get_cmdline_args].
 			</description>
 		</method>
 		<method name="get_config_dir" qualifiers="const">
@@ -905,13 +910,13 @@
 	</members>
 	<constants>
 		<constant name="RENDERING_DRIVER_VULKAN" value="0" enum="RenderingDriver">
-			The Vulkan rendering driver. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1 and 1.2 if available.
+			The Vulkan rendering driver. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1, 1.2, and 1.3 if available.
 		</constant>
 		<constant name="RENDERING_DRIVER_OPENGL3" value="1" enum="RenderingDriver">
 			The OpenGL 3 rendering driver. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on Web.
 		</constant>
 		<constant name="RENDERING_DRIVER_D3D12" value="2" enum="RenderingDriver">
-			The Direct3D 12 rendering driver.
+			The Direct3D 12 rendering driver. It requires the 12_0 feature level and Shader Model 6.0 support.
 		</constant>
 		<constant name="RENDERING_DRIVER_METAL" value="3" enum="RenderingDriver">
 			The Metal rendering driver.

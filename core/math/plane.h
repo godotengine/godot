@@ -35,6 +35,10 @@
 class Variant;
 
 struct [[nodiscard]] Plane {
+	static const Plane PLANE_YZ;
+	static const Plane PLANE_XZ;
+	static const Plane PLANE_XY;
+
 	Vector3 normal;
 	real_t d = 0;
 
@@ -89,6 +93,10 @@ struct [[nodiscard]] Plane {
 	_FORCE_INLINE_ Plane(const Vector3 &p_normal, const Vector3 &p_point);
 	_FORCE_INLINE_ Plane(const Vector3 &p_point1, const Vector3 &p_point2, const Vector3 &p_point3, ClockDirection p_dir = CLOCKWISE);
 };
+
+inline constexpr Plane Plane::PLANE_YZ = { 1, 0, 0, 0 };
+inline constexpr Plane Plane::PLANE_XZ = { 0, 1, 0, 0 };
+inline constexpr Plane Plane::PLANE_XY = { 0, 0, 1, 0 };
 
 bool Plane::is_point_over(const Vector3 &p_point) const {
 	return (normal.dot(p_point) > d);

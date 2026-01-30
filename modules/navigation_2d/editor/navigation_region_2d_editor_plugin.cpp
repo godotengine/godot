@@ -35,6 +35,7 @@
 #include "editor/settings/editor_settings.h"
 #include "scene/2d/navigation/navigation_region_2d.h"
 #include "scene/gui/dialogs.h"
+#include "scene/main/timer.h"
 
 Ref<NavigationPolygon> NavigationRegion2DEditor::_ensure_navpoly() const {
 	Ref<NavigationPolygon> navpoly = node->get_navigation_polygon();

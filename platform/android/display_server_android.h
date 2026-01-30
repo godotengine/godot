@@ -30,7 +30,8 @@
 
 #pragma once
 
-#include "servers/display_server.h"
+#include "core/input/input_event.h"
+#include "servers/display/display_server.h"
 
 #if defined(RD_ENABLED)
 class RenderingContextDriver;
@@ -76,7 +77,6 @@ class DisplayServerAndroid : public DisplayServer {
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 
 #if defined(RD_ENABLED)
-	RenderingContextDriver *rendering_context = nullptr;
 	RenderingDevice *rendering_device = nullptr;
 #endif
 	NativeMenu *native_menu = nullptr;
@@ -96,7 +96,8 @@ class DisplayServerAndroid : public DisplayServer {
 
 	Callable file_picker_callback;
 
-	void _window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred = false) const;
+	template <typename... Args>
+	void _window_callback(const Callable &p_callable, bool p_deferred, const Args &...p_rest_args) const;
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
 
@@ -110,7 +111,7 @@ public:
 	virtual bool tts_is_paused() const override;
 	virtual TypedArray<Dictionary> tts_get_voices() const override;
 
-	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int64_t p_utterance_id = 0, bool p_interrupt = false) override;
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
@@ -220,6 +221,8 @@ public:
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
 
+	virtual void window_set_color(const Color &p_color) override;
+
 	virtual void process_events() override;
 
 	void process_accelerometer(const Vector3 &p_accelerometer);
@@ -243,8 +246,14 @@ public:
 	static Vector<String> get_rendering_drivers_func();
 	static void register_android_driver();
 
+#ifdef VULKAN_ENABLED
+	static bool check_vulkan_global_context(bool p_vulkan_requirements_met);
+	static void free_vulkan_global_context();
+#endif
+
 	void reset_window();
 	void notify_surface_changed(int p_width, int p_height);
+	void notify_application_paused();
 
 	virtual Point2i mouse_get_position() const override;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;

@@ -430,13 +430,6 @@ cleanup:
     return ret;
 }
 
-/*
- * Return the number of less significant zero-bits
- */
-size_t mbedtls_mpi_lsb(const mbedtls_mpi *X)
-{
-    size_t i;
-
 #if defined(__has_builtin)
 #if (MBEDTLS_MPI_UINT_MAX == UINT_MAX) && __has_builtin(__builtin_ctz)
     #define mbedtls_mpi_uint_ctz __builtin_ctz
@@ -447,22 +440,34 @@ size_t mbedtls_mpi_lsb(const mbedtls_mpi *X)
 #endif
 #endif
 
-#if defined(mbedtls_mpi_uint_ctz)
+#if !defined(mbedtls_mpi_uint_ctz)
+static size_t mbedtls_mpi_uint_ctz(mbedtls_mpi_uint x)
+{
+    size_t count = 0;
+    mbedtls_ct_condition_t done = MBEDTLS_CT_FALSE;
+
+    for (size_t i = 0; i < biL; i++) {
+        mbedtls_ct_condition_t non_zero = mbedtls_ct_bool((x >> i) & 1);
+        done = mbedtls_ct_bool_or(done, non_zero);
+        count = mbedtls_ct_size_if(done, count, i + 1);
+    }
+
+    return count;
+}
+#endif
+
+/*
+ * Return the number of less significant zero-bits
+ */
+size_t mbedtls_mpi_lsb(const mbedtls_mpi *X)
+{
+    size_t i;
+
     for (i = 0; i < X->n; i++) {
         if (X->p[i] != 0) {
             return i * biL + mbedtls_mpi_uint_ctz(X->p[i]);
         }
     }
-#else
-    size_t count = 0;
-    for (i = 0; i < X->n; i++) {
-        for (size_t j = 0; j < biL; j++, count++) {
-            if (((X->p[i] >> j) & 1) != 0) {
-                return count;
-            }
-        }
-    }
-#endif
 
     return 0;
 }
@@ -1743,104 +1748,122 @@ int mbedtls_mpi_exp_mod_unsafe(mbedtls_mpi *X, const mbedtls_mpi *A,
     return mbedtls_mpi_exp_mod_optionally_safe(X, A, E, MBEDTLS_MPI_IS_PUBLIC, N, prec_RR);
 }
 
+/* Constant-time GCD and/or modinv with odd modulus and A <= N */
+int mbedtls_mpi_gcd_modinv_odd(mbedtls_mpi *G,
+                               mbedtls_mpi *I,
+                               const mbedtls_mpi *A,
+                               const mbedtls_mpi *N)
+{
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    mbedtls_mpi local_g;
+    mbedtls_mpi_uint *T = NULL;
+    const size_t T_factor = I != NULL ? 5 : 4;
+    const mbedtls_mpi_uint zero = 0;
+
+    /* Check requirements on A and N */
+    if (mbedtls_mpi_cmp_int(A, 0) < 0 ||
+        mbedtls_mpi_cmp_mpi(A, N) > 0 ||
+        mbedtls_mpi_get_bit(N, 0) != 1 ||
+        (I != NULL && mbedtls_mpi_cmp_int(N, 1) == 0)) {
+        return MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
+    }
+
+    /* Check aliasing requirements */
+    if (A == N || (I != NULL && (I == N || G == N))) {
+        return MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
+    }
+
+    mbedtls_mpi_init(&local_g);
+
+    if (G == NULL) {
+        G = &local_g;
+    }
+
+    /* We can't modify the values of G or I before use in the main function,
+     * as they could be aliased to A or N. */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(G, N->n));
+    if (I != NULL) {
+        MBEDTLS_MPI_CHK(mbedtls_mpi_grow(I, N->n));
+    }
+
+    T = mbedtls_calloc(sizeof(mbedtls_mpi_uint) * N->n, T_factor);
+    if (T == NULL) {
+        ret = MBEDTLS_ERR_MPI_ALLOC_FAILED;
+        goto cleanup;
+    }
+
+    mbedtls_mpi_uint *Ip = I != NULL ? I->p : NULL;
+    /* If A is 0 (null), then A->p would be null, and A->n would be 0,
+     * which would be an issue if A->p and A->n were passed to
+     * mbedtls_mpi_core_gcd_modinv_odd below. */
+    const mbedtls_mpi_uint *Ap = A->p != NULL ? A->p : &zero;
+    size_t An = A->n >= N->n ? N->n : A->p != NULL ? A->n : 1;
+    mbedtls_mpi_core_gcd_modinv_odd(G->p, Ip, Ap, An, N->p, N->n, T);
+
+    G->s = 1;
+    if (I != NULL) {
+        I->s = 1;
+    }
+
+    if (G->n > N->n) {
+        memset(G->p + N->n, 0, ciL * (G->n - N->n));
+    }
+    if (I != NULL && I->n > N->n) {
+        memset(I->p + N->n, 0, ciL * (I->n - N->n));
+    }
+
+cleanup:
+    mbedtls_mpi_free(&local_g);
+    mbedtls_free(T);
+    return ret;
+}
+
 /*
- * Greatest common divisor: G = gcd(A, B)  (HAC 14.54)
+ * Greatest common divisor: G = gcd(A, B)
+ * Wrapper around mbedtls_mpi_gcd_modinv() that removes its restrictions.
  */
 int mbedtls_mpi_gcd(mbedtls_mpi *G, const mbedtls_mpi *A, const mbedtls_mpi *B)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    size_t lz, lzt;
     mbedtls_mpi TA, TB;
 
     mbedtls_mpi_init(&TA); mbedtls_mpi_init(&TB);
 
+    /* Make copies and take absolute values */
     MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&TA, A));
     MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&TB, B));
+    TA.s = TB.s = 1;
 
-    lz = mbedtls_mpi_lsb(&TA);
-    lzt = mbedtls_mpi_lsb(&TB);
+    /* Make the two values the same (non-zero) number of limbs.
+     * This is needed to use mbedtls_mpi_core functions below. */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(&TA, TB.n != 0 ? TB.n : 1));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(&TB, TA.n)); // non-zero from above
 
-    /* The loop below gives the correct result when A==0 but not when B==0.
-     * So have a special case for B==0. Leverage the fact that we just
-     * calculated the lsb and lsb(B)==0 iff B is odd or 0 to make the test
-     * slightly more efficient than cmp_int(). */
-    if (lzt == 0 && mbedtls_mpi_get_bit(&TB, 0) == 0) {
-        ret = mbedtls_mpi_copy(G, A);
+    /* Handle special cases (that don't happen in crypto usage) */
+    if (mbedtls_mpi_core_check_zero_ct(TA.p, TA.n) == MBEDTLS_CT_FALSE) {
+        MBEDTLS_MPI_CHK(mbedtls_mpi_copy(G, &TB)); // GCD(0, B) = abs(B)
+        goto cleanup;
+    }
+    if (mbedtls_mpi_core_check_zero_ct(TB.p, TB.n) == MBEDTLS_CT_FALSE) {
+        MBEDTLS_MPI_CHK(mbedtls_mpi_copy(G, &TA)); // GCD(A, 0) = abs(A)
         goto cleanup;
     }
 
-    if (lzt < lz) {
-        lz = lzt;
-    }
+    /* Make boths inputs odd by putting powers of 2 on the side */
+    const size_t za = mbedtls_mpi_lsb(&TA);
+    const size_t zb = mbedtls_mpi_lsb(&TB);
+    MBEDTLS_MPI_CHK(mbedtls_mpi_shift_r(&TA, za));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_shift_r(&TB, zb));
 
-    TA.s = TB.s = 1;
+    /* Ensure A <= B: if B < A, swap them */
+    mbedtls_ct_condition_t swap = mbedtls_mpi_core_lt_ct(TB.p, TA.p, TA.n);
+    mbedtls_mpi_core_cond_swap(TA.p, TB.p, TA.n, swap);
 
-    /* We mostly follow the procedure described in HAC 14.54, but with some
-     * minor differences:
-     * - Sequences of multiplications or divisions by 2 are grouped into a
-     *   single shift operation.
-     * - The procedure in HAC assumes that 0 < TB <= TA.
-     *     - The condition TB <= TA is not actually necessary for correctness.
-     *       TA and TB have symmetric roles except for the loop termination
-     *       condition, and the shifts at the beginning of the loop body
-     *       remove any significance from the ordering of TA vs TB before
-     *       the shifts.
-     *     - If TA = 0, the loop goes through 0 iterations and the result is
-     *       correctly TB.
-     *     - The case TB = 0 was short-circuited above.
-     *
-     * For the correctness proof below, decompose the original values of
-     * A and B as
-     *   A = sa * 2^a * A' with A'=0 or A' odd, and sa = +-1
-     *   B = sb * 2^b * B' with B'=0 or B' odd, and sb = +-1
-     * Then gcd(A, B) = 2^{min(a,b)} * gcd(A',B'),
-     * and gcd(A',B') is odd or 0.
-     *
-     * At the beginning, we have TA = |A| and TB = |B| so gcd(A,B) = gcd(TA,TB).
-     * The code maintains the following invariant:
-     *     gcd(A,B) = 2^k * gcd(TA,TB) for some k   (I)
-     */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(G, NULL, &TA, &TB));
 
-    /* Proof that the loop terminates:
-     * At each iteration, either the right-shift by 1 is made on a nonzero
-     * value and the nonnegative integer bitlen(TA) + bitlen(TB) decreases
-     * by at least 1, or the right-shift by 1 is made on zero and then
-     * TA becomes 0 which ends the loop (TB cannot be 0 if it is right-shifted
-     * since in that case TB is calculated from TB-TA with the condition TB>TA).
-     */
-    while (mbedtls_mpi_cmp_int(&TA, 0) != 0) {
-        /* Divisions by 2 preserve the invariant (I). */
-        MBEDTLS_MPI_CHK(mbedtls_mpi_shift_r(&TA, mbedtls_mpi_lsb(&TA)));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_shift_r(&TB, mbedtls_mpi_lsb(&TB)));
-
-        /* Set either TA or TB to |TA-TB|/2. Since TA and TB are both odd,
-         * TA-TB is even so the division by 2 has an integer result.
-         * Invariant (I) is preserved since any odd divisor of both TA and TB
-         * also divides |TA-TB|/2, and any odd divisor of both TA and |TA-TB|/2
-         * also divides TB, and any odd divisor of both TB and |TA-TB|/2 also
-         * divides TA.
-         */
-        if (mbedtls_mpi_cmp_mpi(&TA, &TB) >= 0) {
-            MBEDTLS_MPI_CHK(mbedtls_mpi_sub_abs(&TA, &TA, &TB));
-            MBEDTLS_MPI_CHK(mbedtls_mpi_shift_r(&TA, 1));
-        } else {
-            MBEDTLS_MPI_CHK(mbedtls_mpi_sub_abs(&TB, &TB, &TA));
-            MBEDTLS_MPI_CHK(mbedtls_mpi_shift_r(&TB, 1));
-        }
-        /* Note that one of TA or TB is still odd. */
-    }
-
-    /* By invariant (I), gcd(A,B) = 2^k * gcd(TA,TB) for some k.
-     * At the loop exit, TA = 0, so gcd(TA,TB) = TB.
-     * - If there was at least one loop iteration, then one of TA or TB is odd,
-     *   and TA = 0, so TB is odd and gcd(TA,TB) = gcd(A',B'). In this case,
-     *   lz = min(a,b) so gcd(A,B) = 2^lz * TB.
-     * - If there was no loop iteration, then A was 0, and gcd(A,B) = B.
-     *   In this case, lz = 0 and B = TB so gcd(A,B) = B = 2^lz * TB as well.
-     */
-
-    MBEDTLS_MPI_CHK(mbedtls_mpi_shift_l(&TB, lz));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(G, &TB));
+    /* Re-inject the power of 2 we had previously put aside */
+    size_t zg = za > zb ? zb : za; // zg = min(za, zb)
+    MBEDTLS_MPI_CHK(mbedtls_mpi_shift_l(G, zg));
 
 cleanup:
 
@@ -1899,91 +1922,139 @@ int mbedtls_mpi_random(mbedtls_mpi *X,
 }
 
 /*
- * Modular inverse: X = A^-1 mod N  (HAC 14.61 / 14.64)
+ * Modular inverse: X = A^-1 mod N with N odd (and A any range)
  */
-int mbedtls_mpi_inv_mod(mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *N)
+int mbedtls_mpi_inv_mod_odd(mbedtls_mpi *X,
+                            const mbedtls_mpi *A,
+                            const mbedtls_mpi *N)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    mbedtls_mpi G, TA, TU, U1, U2, TB, TV, V1, V2;
+    mbedtls_mpi T, G;
 
-    if (mbedtls_mpi_cmp_int(N, 1) <= 0) {
-        return MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
-    }
+    mbedtls_mpi_init(&T);
+    mbedtls_mpi_init(&G);
 
-    mbedtls_mpi_init(&TA); mbedtls_mpi_init(&TU); mbedtls_mpi_init(&U1); mbedtls_mpi_init(&U2);
-    mbedtls_mpi_init(&G); mbedtls_mpi_init(&TB); mbedtls_mpi_init(&TV);
-    mbedtls_mpi_init(&V1); mbedtls_mpi_init(&V2);
-
-    MBEDTLS_MPI_CHK(mbedtls_mpi_gcd(&G, A, N));
-
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&T, A, N));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(&G, &T, &T, N));
     if (mbedtls_mpi_cmp_int(&G, 1) != 0) {
         ret = MBEDTLS_ERR_MPI_NOT_ACCEPTABLE;
         goto cleanup;
     }
 
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&TA, A, N));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&TU, &TA));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&TB, N));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&TV, N));
-
-    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&U1, 1));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&U2, 0));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&V1, 0));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&V2, 1));
-
-    do {
-        while ((TU.p[0] & 1) == 0) {
-            MBEDTLS_MPI_CHK(mbedtls_mpi_shift_r(&TU, 1));
-
-            if ((U1.p[0] & 1) != 0 || (U2.p[0] & 1) != 0) {
-                MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(&U1, &U1, &TB));
-                MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&U2, &U2, &TA));
-            }
-
-            MBEDTLS_MPI_CHK(mbedtls_mpi_shift_r(&U1, 1));
-            MBEDTLS_MPI_CHK(mbedtls_mpi_shift_r(&U2, 1));
-        }
-
-        while ((TV.p[0] & 1) == 0) {
-            MBEDTLS_MPI_CHK(mbedtls_mpi_shift_r(&TV, 1));
-
-            if ((V1.p[0] & 1) != 0 || (V2.p[0] & 1) != 0) {
-                MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(&V1, &V1, &TB));
-                MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&V2, &V2, &TA));
-            }
-
-            MBEDTLS_MPI_CHK(mbedtls_mpi_shift_r(&V1, 1));
-            MBEDTLS_MPI_CHK(mbedtls_mpi_shift_r(&V2, 1));
-        }
-
-        if (mbedtls_mpi_cmp_mpi(&TU, &TV) >= 0) {
-            MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&TU, &TU, &TV));
-            MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&U1, &U1, &V1));
-            MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&U2, &U2, &V2));
-        } else {
-            MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&TV, &TV, &TU));
-            MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&V1, &V1, &U1));
-            MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&V2, &V2, &U2));
-        }
-    } while (mbedtls_mpi_cmp_int(&TU, 0) != 0);
-
-    while (mbedtls_mpi_cmp_int(&V1, 0) < 0) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(&V1, &V1, N));
-    }
-
-    while (mbedtls_mpi_cmp_mpi(&V1, N) >= 0) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&V1, &V1, N));
-    }
-
-    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(X, &V1));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(X, &T));
 
 cleanup:
-
-    mbedtls_mpi_free(&TA); mbedtls_mpi_free(&TU); mbedtls_mpi_free(&U1); mbedtls_mpi_free(&U2);
-    mbedtls_mpi_free(&G); mbedtls_mpi_free(&TB); mbedtls_mpi_free(&TV);
-    mbedtls_mpi_free(&V1); mbedtls_mpi_free(&V2);
+    mbedtls_mpi_free(&T);
+    mbedtls_mpi_free(&G);
 
     return ret;
+}
+
+/*
+ * Compute X = A^-1 mod N with N even, A odd and 1 < A < N.
+ *
+ * This is not obvious because our constant-time modinv function only works with
+ * an odd modulus, and here the modulus is even. The idea is that computing a
+ * a^-1 mod b is really just computing the u coefficient in the Bézout relation
+ * a*u + b*v = 1 (assuming gcd(a,b) = 1, i.e. the inverse exists). But if we know
+ * one of u, v in this relation then the other is easy to find. So we can
+ * actually start by computing N^-1 mod A with gives us "the wrong half" of the
+ * Bézout relation, from which we'll deduce the interesting half A^-1 mod N.
+ *
+ * Return MBEDTLS_ERR_MPI_NOT_ACCEPTABLE if the inverse doesn't exist.
+ */
+int mbedtls_mpi_inv_mod_even_in_range(mbedtls_mpi *X,
+                                      mbedtls_mpi const *A,
+                                      mbedtls_mpi const *N)
+{
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    mbedtls_mpi I, G;
+
+    mbedtls_mpi_init(&I);
+    mbedtls_mpi_init(&G);
+
+    /* Set I = N^-1 mod A */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&I, N, A));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(&G, &I, &I, A));
+    if (mbedtls_mpi_cmp_int(&G, 1) != 0) {
+        ret = MBEDTLS_ERR_MPI_NOT_ACCEPTABLE;
+        goto cleanup;
+    }
+
+    /* We know N * I = 1 + k * A for some k, which we can easily compute
+     * as k = (N*I - 1) / A (we know there will be no remainder). */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&I, &I, N));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&I, &I, 1));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_div_mpi(&G, NULL, &I, A));
+
+    /* Now we have a Bézout relation N * (previous value of I) - G * A = 1,
+     * so A^-1 mod N is -G mod N, which is N - G.
+     * Note that 0 < k < N since 0 < I < A, so G (k) is already in range. */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(X, N, &G));
+
+cleanup:
+    mbedtls_mpi_free(&I);
+    mbedtls_mpi_free(&G);
+    return ret;
+}
+
+/*
+ * Compute X = A^-1 mod N with N even and A odd (but in any range).
+ *
+ * Return MBEDTLS_ERR_MPI_NOT_ACCEPTABLE if the inverse doesn't exist.
+ */
+static int mbedtls_mpi_inv_mod_even(mbedtls_mpi *X,
+                                    mbedtls_mpi const *A,
+                                    mbedtls_mpi const *N)
+{
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    mbedtls_mpi AA;
+
+    mbedtls_mpi_init(&AA);
+
+    /* Bring A in the range [0, N). */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&AA, A, N));
+
+    /* We know A >= 0 but the next function wants A > 1 */
+    int cmp = mbedtls_mpi_cmp_int(&AA, 1);
+    if (cmp < 0) { // AA == 0
+        ret = MBEDTLS_ERR_MPI_NOT_ACCEPTABLE;
+        goto cleanup;
+    }
+    if (cmp == 0) { // AA = 1
+        MBEDTLS_MPI_CHK(mbedtls_mpi_lset(X, 1));
+        goto cleanup;
+    }
+
+    /* Now we know 1 < A < N, N is even and AA is still odd */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_inv_mod_even_in_range(X, &AA, N));
+
+cleanup:
+    mbedtls_mpi_free(&AA);
+    return ret;
+}
+
+/*
+ * Modular inverse: X = A^-1 mod N
+ *
+ * Wrapper around mbedtls_mpi_gcd_modinv_odd() that lifts its limitations.
+ */
+int mbedtls_mpi_inv_mod(mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *N)
+{
+    if (mbedtls_mpi_cmp_int(N, 1) <= 0) {
+        return MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
+    }
+
+    if (mbedtls_mpi_get_bit(N, 0) == 1) {
+        return mbedtls_mpi_inv_mod_odd(X, A, N);
+    }
+
+    if (mbedtls_mpi_get_bit(A, 0) == 1) {
+        return mbedtls_mpi_inv_mod_even(X, A, N);
+    }
+
+    /* If A and N are both even, 2 divides their GCD, so no inverse. */
+    return MBEDTLS_ERR_MPI_NOT_ACCEPTABLE;
 }
 
 #if defined(MBEDTLS_GENPRIME)

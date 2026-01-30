@@ -16,7 +16,8 @@
 			If set to something other than [constant TextServer.AUTOWRAP_OFF], the text gets wrapped inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text.
 		</member>
 		<member name="curve_step" type="float" setter="set_curve_step" getter="get_curve_step" default="0.5">
-			Step (in pixels) used to approximate Bézier curves.
+			Step (in pixels) used to approximate Bézier curves. Lower values result in smoother curves, but is slower to generate and render. Consider adjusting this according to the font size and the typical viewing distance.
+			[b]Note:[/b] Changing this property will regenerate the mesh, which is a slow operation, especially with large font sizes and long texts.
 		</member>
 		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="0.05">
 			Depths of the mesh, if set to [code]0.0[/code] only front surface, is generated, and UV layout is changed to use full texture for the front face only.
@@ -25,25 +26,28 @@
 			Font configuration used to display text.
 		</member>
 		<member name="font_size" type="int" setter="set_font_size" getter="get_font_size" default="16">
-			Font size of the [TextMesh]'s text.
+			Font size of the [TextMesh]'s text. This property works in tandem with [member pixel_size]. Higher values will result in a more detailed font, regardless of [member curve_step] and [member pixel_size]. Consider keeping this value below 63 (inclusive) for good performance, and adjust [member pixel_size] as needed to enlarge text.
+			[b]Note:[/b] Changing this property will regenerate the mesh, which is a slow operation, especially with large font sizes and long texts. To change the text's size in real-time efficiently, change the node's [member Node3D.scale] instead.
 		</member>
 		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="1">
-			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify.
+			Controls the text's horizontal alignment. Supports left, center, right, and fill (also known as justify).
 		</member>
 		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
 			Line fill alignment rules.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
-			Language code used for text shaping algorithms, if left empty current locale is used instead.
+			Language code used for line-breaking and text shaping algorithms. If left empty, the current locale is used instead.
 		</member>
 		<member name="line_spacing" type="float" setter="set_line_spacing" getter="get_line_spacing" default="0.0">
 			Additional vertical spacing between lines (in pixels), spacing is added to line descent. This value can be negative.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The text drawing offset (in pixels).
+			[b]Note:[/b] Changing this property will regenerate the mesh, which is a slow operation. To change the text's position in real-time efficiently, change the node's [member Node3D.position] instead.
 		</member>
 		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size" default="0.01">
-			The size of one pixel's width on the text to scale it in 3D.
+			The size of one pixel's width on the text to scale it in 3D. This property works in tandem with [member font_size].
+			[b]Note:[/b] Changing this property will regenerate the mesh, which is a slow operation, especially with large font sizes and long texts. To change the text's size in real-time efficiently, change the node's [member Node3D.scale] instead.
 		</member>
 		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="TextServer.StructuredTextParser" default="0">
 			Set BiDi algorithm override for the structured text.

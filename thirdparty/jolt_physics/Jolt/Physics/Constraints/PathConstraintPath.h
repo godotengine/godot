@@ -60,6 +60,11 @@ public:
 	static PathResult	sRestoreFromBinaryState(StreamIn &inStream);
 
 protected:
+	/// Don't allow (copy) constructing this base class, but allow derived classes to (copy) construct themselves
+						PathConstraintPath() = default;
+						PathConstraintPath(const PathConstraintPath &) = default;
+	PathConstraintPath &operator = (const PathConstraintPath &) = default;
+
 	/// This function should not be called directly, it is used by sRestoreFromBinaryState.
 	virtual void		RestoreBinaryState(StreamIn &inStream);
 

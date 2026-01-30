@@ -59,7 +59,7 @@ EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_tooltip_styl
 }
 
 bool EditorPropertyNameProcessor::is_localization_available() {
-	return EditorSettings::get_singleton() && EDITOR_GET("interface/editor/editor_language") != "en";
+	return EditorSettings::get_singleton() && EditorSettings::get_singleton()->get_language() != "en";
 }
 
 String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const {
@@ -120,7 +120,7 @@ String EditorPropertyNameProcessor::process_name(const String &p_name, Style p_s
 		case STYLE_LOCALIZED: {
 			const String capitalized = _capitalize_name(p_name);
 			if (TranslationServer::get_singleton()) {
-				return TranslationServer::get_singleton()->property_translate(capitalized, _get_context(p_name, p_property, p_class));
+				return TranslationServer::get_singleton()->get_property_domain()->translate(capitalized, _get_context(p_name, p_property, p_class));
 			}
 			return capitalized;
 		} break;
@@ -130,7 +130,7 @@ String EditorPropertyNameProcessor::process_name(const String &p_name, Style p_s
 
 String EditorPropertyNameProcessor::translate_group_name(const String &p_name) const {
 	if (TranslationServer::get_singleton()) {
-		return TranslationServer::get_singleton()->property_translate(p_name);
+		return TranslationServer::get_singleton()->get_property_domain()->translate(p_name, StringName());
 	}
 	return p_name;
 }
@@ -148,6 +148,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["aa"] = "AA";
 	capitalize_string_remaps["aabb"] = "AABB";
 	capitalize_string_remaps["adb"] = "ADB";
+	capitalize_string_remaps["actool"] = "actool";
 	capitalize_string_remaps["ao"] = "AO";
 	capitalize_string_remaps["api"] = "API";
 	capitalize_string_remaps["apk"] = "APK";
@@ -215,6 +216,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["ik"] = "IK";
 	capitalize_string_remaps["image@2x"] = "Image @2x";
 	capitalize_string_remaps["image@3x"] = "Image @3x";
+	capitalize_string_remaps["ime"] = "IME";
 	capitalize_string_remaps["iod"] = "IOD";
 	capitalize_string_remaps["ios"] = "iOS";
 	capitalize_string_remaps["ip"] = "IP";
@@ -253,6 +255,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["opentype"] = "OpenType";
 	capitalize_string_remaps["openxr"] = "OpenXR";
 	capitalize_string_remaps["osslsigncode"] = "osslsigncode";
+	capitalize_string_remaps["path3d"] = "Path3D";
 	capitalize_string_remaps["pck"] = "PCK";
 	capitalize_string_remaps["png"] = "PNG";
 	capitalize_string_remaps["po2"] = "(Power of 2)"; // Unit.
@@ -268,6 +271,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["rv64"] = "rv64";
 	capitalize_string_remaps["s3tc"] = "S3TC";
 	capitalize_string_remaps["scp"] = "SCP";
+	capitalize_string_remaps["scrcpy"] = "scrcpy";
 	capitalize_string_remaps["sdf"] = "SDF";
 	capitalize_string_remaps["sdfgi"] = "SDFGI";
 	capitalize_string_remaps["sdk"] = "SDK";
@@ -327,8 +331,8 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["yz"] = "YZ";
 
 	// Articles, conjunctions, prepositions.
-	// The following initialization is parsed in `editor/translations/scripts/common.py` with a regex.
-	// The word definition format should be kept synced with the regex.
+	// The following initialization is parsed in https://github.com/godotengine/godot-editor-l10n/blob/main/scripts/common.py
+	// with a regex. The word definition format should be kept synced with the regex.
 	stop_words = LocalVector<String>({
 			"a",
 			"an",
@@ -347,6 +351,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 			"the",
 			"then",
 			"to",
+			"with",
 	});
 
 	// Translation context associated with a name.
@@ -355,8 +360,8 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	// - `Class::full/property/path`
 	// In case a class name is needed to distinguish between usages, all usages should use the second format.
 	//
-	// The following initialization is parsed in `editor/translations/scripts/common.py` with a regex.
-	// The map name and value definition format should be kept synced with the regex.
+	// The following initialization is parsed in https://github.com/godotengine/godot-editor-l10n/blob/main/scripts/common.py
+	// with a regex. The map name and value definition format should be kept synced with the regex.
 	translation_contexts["force"]["constant_force"] = "Physics";
 	translation_contexts["force"]["force/8_bit"] = "Enforce";
 	translation_contexts["force"]["force/mono"] = "Enforce";

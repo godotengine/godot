@@ -34,11 +34,12 @@
 #include "key_mapping_windows.h"
 
 #include "core/config/project_settings.h"
-#include "core/input/input.h"
+#include "core/input/input_event.h"
 #include "core/os/os.h"
+#include "core/templates/rb_map.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/midi_driver_winmidi.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
@@ -145,6 +146,9 @@ class OS_Windows : public OS {
 	HashMap<String, int> encodings;
 	void _init_encodings();
 
+	Vector<String> _get_video_adapter_driver_info_reg(const String &p_name) const;
+	Vector<String> _get_video_adapter_driver_info_wmi(const String &p_name) const;
+
 	// functions used by main to initialize/deinitialize the OS
 protected:
 	virtual void initialize() override;
@@ -198,6 +202,7 @@ public:
 	virtual double get_unix_time() const override;
 
 	virtual Error set_cwd(const String &p_cwd) override;
+	virtual String get_cwd() const override;
 
 	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
 	virtual void delay_usec(uint32_t p_usec) const override;

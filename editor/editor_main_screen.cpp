@@ -41,6 +41,7 @@
 void EditorMainScreen::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
+			set_accessibility_region(true);
 			if (EDITOR_3D < buttons.size() && buttons[EDITOR_3D]->is_visible()) {
 				// If the 3D editor is enabled, use this as the default.
 				select(EDITOR_3D);
@@ -194,6 +195,7 @@ void EditorMainScreen::select(int p_index) {
 	selected_plugin = new_editor;
 	selected_plugin->make_visible(true);
 	selected_plugin->selected_notify();
+	set_accessibility_name(selected_plugin->get_plugin_name());
 
 	EditorData &editor_data = EditorNode::get_editor_data();
 	int plugin_count = editor_data.get_editor_plugin_count();
@@ -262,6 +264,11 @@ void EditorMainScreen::add_main_plugin(EditorPlugin *p_editor) {
 	tb->set_theme_type_variation("MainScreenButton");
 	tb->set_name(p_editor->get_plugin_name());
 	tb->set_text(p_editor->get_plugin_name());
+
+	Ref<Shortcut> shortcut = EditorSettings::get_singleton()->get_shortcut("editor/editor_" + p_editor->get_plugin_name().to_lower());
+	if (shortcut.is_valid()) {
+		tb->set_shortcut(shortcut);
+	}
 
 	Ref<Texture2D> icon = p_editor->get_plugin_icon();
 	if (icon.is_null() && has_theme_icon(p_editor->get_plugin_name(), EditorStringName(EditorIcons))) {

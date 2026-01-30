@@ -57,73 +57,39 @@ String Button::_get_translated_text(const String &p_text) const {
 void Button::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
+	theme_cache.max_style_size = Vector2();
+	theme_cache.style_margin_left = 0;
+	theme_cache.style_margin_right = 0;
+	theme_cache.style_margin_top = 0;
+	theme_cache.style_margin_bottom = 0;
+
 	const bool rtl = is_layout_rtl();
 	if (rtl && has_theme_stylebox(SNAME("normal_mirrored"))) {
-		theme_cache.max_style_size = theme_cache.normal_mirrored->get_minimum_size();
-		theme_cache.style_margin_left = theme_cache.normal_mirrored->get_margin(SIDE_LEFT);
-		theme_cache.style_margin_right = theme_cache.normal_mirrored->get_margin(SIDE_RIGHT);
-		theme_cache.style_margin_top = theme_cache.normal_mirrored->get_margin(SIDE_TOP);
-		theme_cache.style_margin_bottom = theme_cache.normal_mirrored->get_margin(SIDE_BOTTOM);
+		_update_style_margins(theme_cache.normal_mirrored);
 	} else {
-		theme_cache.max_style_size = theme_cache.normal->get_minimum_size();
-		theme_cache.style_margin_left = theme_cache.normal->get_margin(SIDE_LEFT);
-		theme_cache.style_margin_right = theme_cache.normal->get_margin(SIDE_RIGHT);
-		theme_cache.style_margin_top = theme_cache.normal->get_margin(SIDE_TOP);
-		theme_cache.style_margin_bottom = theme_cache.normal->get_margin(SIDE_BOTTOM);
+		_update_style_margins(theme_cache.normal);
 	}
 	if (has_theme_stylebox("hover_pressed")) {
 		if (rtl && has_theme_stylebox(SNAME("hover_pressed_mirrored"))) {
-			theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.hover_pressed_mirrored->get_minimum_size());
-			theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.hover_pressed_mirrored->get_margin(SIDE_LEFT));
-			theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.hover_pressed_mirrored->get_margin(SIDE_RIGHT));
-			theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.hover_pressed_mirrored->get_margin(SIDE_TOP));
-			theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.hover_pressed_mirrored->get_margin(SIDE_BOTTOM));
+			_update_style_margins(theme_cache.hover_pressed_mirrored);
 		} else {
-			theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.hover_pressed->get_minimum_size());
-			theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.hover_pressed->get_margin(SIDE_LEFT));
-			theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.hover_pressed->get_margin(SIDE_RIGHT));
-			theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.hover_pressed->get_margin(SIDE_TOP));
-			theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.hover_pressed->get_margin(SIDE_BOTTOM));
+			_update_style_margins(theme_cache.hover_pressed);
 		}
 	}
 	if (rtl && has_theme_stylebox(SNAME("pressed_mirrored"))) {
-		theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.pressed_mirrored->get_minimum_size());
-		theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.pressed_mirrored->get_margin(SIDE_LEFT));
-		theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.pressed_mirrored->get_margin(SIDE_RIGHT));
-		theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.pressed_mirrored->get_margin(SIDE_TOP));
-		theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.pressed_mirrored->get_margin(SIDE_BOTTOM));
+		_update_style_margins(theme_cache.pressed_mirrored);
 	} else {
-		theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.pressed->get_minimum_size());
-		theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.pressed->get_margin(SIDE_LEFT));
-		theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.pressed->get_margin(SIDE_RIGHT));
-		theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.pressed->get_margin(SIDE_TOP));
-		theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.pressed->get_margin(SIDE_BOTTOM));
+		_update_style_margins(theme_cache.pressed);
 	}
 	if (rtl && has_theme_stylebox(SNAME("hover_mirrored"))) {
-		theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.hover_mirrored->get_minimum_size());
-		theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.hover_mirrored->get_margin(SIDE_LEFT));
-		theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.hover_mirrored->get_margin(SIDE_RIGHT));
-		theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.hover_mirrored->get_margin(SIDE_TOP));
-		theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.hover_mirrored->get_margin(SIDE_BOTTOM));
+		_update_style_margins(theme_cache.hover_mirrored);
 	} else {
-		theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.hover->get_minimum_size());
-		theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.hover->get_margin(SIDE_LEFT));
-		theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.hover->get_margin(SIDE_RIGHT));
-		theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.hover->get_margin(SIDE_TOP));
-		theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.hover->get_margin(SIDE_BOTTOM));
+		_update_style_margins(theme_cache.hover);
 	}
 	if (rtl && has_theme_stylebox(SNAME("disabled_mirrored"))) {
-		theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.disabled_mirrored->get_minimum_size());
-		theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.disabled_mirrored->get_margin(SIDE_LEFT));
-		theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.disabled_mirrored->get_margin(SIDE_RIGHT));
-		theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.disabled_mirrored->get_margin(SIDE_TOP));
-		theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.disabled_mirrored->get_margin(SIDE_BOTTOM));
+		_update_style_margins(theme_cache.disabled_mirrored);
 	} else {
-		theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.disabled->get_minimum_size());
-		theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.disabled->get_margin(SIDE_LEFT));
-		theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.disabled->get_margin(SIDE_RIGHT));
-		theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.disabled->get_margin(SIDE_TOP));
-		theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.disabled->get_margin(SIDE_BOTTOM));
+		_update_style_margins(theme_cache.disabled);
 	}
 	theme_cache.max_style_size = theme_cache.max_style_size.max(Vector2(theme_cache.style_margin_left + theme_cache.style_margin_right, theme_cache.style_margin_top + theme_cache.style_margin_bottom));
 }
@@ -251,7 +217,7 @@ void Button::_notification(int p_what) {
 				style->draw(ci, Rect2(Point2(), size));
 			}
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				theme_cache.focus->draw(ci, Rect2(Point2(), size));
 			}
 
@@ -315,7 +281,7 @@ void Button::_notification(int p_what) {
 			switch (get_draw_mode()) {
 				case DRAW_NORMAL: {
 					// Focus colors only take precedence over normal state.
-					if (has_focus()) {
+					if (has_focus(true)) {
 						font_color = theme_cache.font_focus_color;
 						if (has_theme_color(SNAME("icon_focus_color"))) {
 							icon_modulate_color = theme_cache.icon_focus_color;
@@ -600,7 +566,8 @@ void Button::_shape(Ref<TextParagraph> p_paragraph, String p_text) const {
 	} else {
 		p_paragraph->set_direction((TextServer::Direction)text_direction);
 	}
-	p_paragraph->add_string(p_text, font, font_size, language);
+	const String &lang = language.is_empty() ? _get_locale() : language;
+	p_paragraph->add_string(p_text, font, font_size, lang);
 	p_paragraph->set_text_overrun_behavior(overrun_behavior);
 }
 
@@ -715,6 +682,14 @@ void Button::set_button_icon(const Ref<Texture2D> &p_icon) {
 void Button::_texture_changed() {
 	queue_redraw();
 	update_minimum_size();
+}
+
+void Button::_update_style_margins(const Ref<StyleBox> &p_stylebox) {
+	theme_cache.max_style_size = theme_cache.max_style_size.max(p_stylebox->get_minimum_size());
+	theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, p_stylebox->get_margin(SIDE_LEFT));
+	theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, p_stylebox->get_margin(SIDE_RIGHT));
+	theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, p_stylebox->get_margin(SIDE_TOP));
+	theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, p_stylebox->get_margin(SIDE_BOTTOM));
 }
 
 Ref<Texture2D> Button::get_button_icon() const {

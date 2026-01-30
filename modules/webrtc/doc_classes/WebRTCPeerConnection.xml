@@ -4,14 +4,16 @@
 		Interface to a WebRTC peer connection.
 	</brief_description>
 	<description>
-		A WebRTC connection between the local computer and a remote peer. Provides an interface to connect, maintain and monitor the connection.
+		A WebRTC connection between the local computer and a remote peer. Provides an interface to connect, maintain, and monitor the connection.
 		Setting up a WebRTC connection between two peers may not seem a trivial task, but it can be broken down into 3 main steps:
-		- The peer that wants to initiate the connection ([code]A[/code] from now on) creates an offer and send it to the other peer ([code]B[/code] from now on).
-		- [code]B[/code] receives the offer, generate and answer, and sends it to [code]A[/code]).
-		- [code]A[/code] and [code]B[/code] then generates and exchange ICE candidates with each other.
-		After these steps, the connection should become connected. Keep on reading or look into the tutorial for more information.
+		- The peer that wants to initiate the connection ([code]A[/code] from now on) creates an offer and sends it to the other peer ([code]B[/code] from now on).
+		- [code]B[/code] receives the offer, generates an answer, and sends it to [code]A[/code].
+		- [code]A[/code] and [code]B[/code] then generate and exchange ICE candidates with each other.
+		After these steps, the connection should be established. Refer to the linked tutorials for details.
 	</description>
 	<tutorials>
+		<link title="WebRTC documentation">$DOCS_URL/tutorials/networking/webrtc.html</link>
+		<link title="High-level multiplayer">$DOCS_URL/tutorials/networking/high_level_multiplayer.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_ice_candidate">

@@ -114,7 +114,7 @@ void OptionButton::_notification(int p_what) {
 						clr = theme_cache.font_disabled_color;
 						break;
 					default:
-						if (has_focus()) {
+						if (has_focus(true)) {
 							clr = theme_cache.font_focus_color;
 						} else {
 							clr = theme_cache.font_color;
@@ -547,6 +547,7 @@ void OptionButton::show_popup() {
 		rect = xform.xform(rect);
 	}
 	rect.size.height = 0;
+	popup->set_min_size(Size2(0, 0));
 	popup->popup(rect);
 }
 
@@ -654,6 +655,7 @@ OptionButton::OptionButton(const String &p_text) :
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 
 	popup = memnew(PopupMenu);
+	popup->set_shrink_width(false);
 	popup->hide();
 	add_child(popup, false, INTERNAL_MODE_FRONT);
 	popup->connect("index_pressed", callable_mp(this, &OptionButton::_selected));

@@ -859,7 +859,7 @@ MaterialStorage::MaterialData::~MaterialData() {
 
 	for (int i = 0; i < 2; i++) {
 		if (uniform_buffer[i].is_valid()) {
-			RD::get_singleton()->free(uniform_buffer[i]);
+			RD::get_singleton()->free_rid(uniform_buffer[i]);
 		}
 	}
 }
@@ -994,25 +994,58 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
 							rd_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
 						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
+							rd_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_TRANSPARENT);
+						} break;
 						default: {
 							rd_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_WHITE);
 						} break;
 					}
 				} break;
 				case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
-					rd_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK);
+					switch (p_texture_uniforms[i].hint) {
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_WHITE: {
+							rd_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_WHITE);
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
+							rd_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_TRANSPARENT);
+						} break;
+						default: { // previously this only had the black texture available. Keeping black as the default to minimize breaking anything.
+							rd_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK);
+						} break;
+					}
 				} break;
 
 				case ShaderLanguage::TYPE_ISAMPLER3D:
 				case ShaderLanguage::TYPE_USAMPLER3D:
 				case ShaderLanguage::TYPE_SAMPLER3D: {
-					rd_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE);
+					switch (p_texture_uniforms[i].hint) {
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
+							rd_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_3D_BLACK);
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
+							rd_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_3D_TRANSPARENT);
+						} break;
+						default: {
+							rd_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE);
+						} break;
+					}
 				} break;
 
 				case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
 				case ShaderLanguage::TYPE_USAMPLER2DARRAY:
 				case ShaderLanguage::TYPE_SAMPLER2DARRAY: {
-					rd_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
+					switch (p_texture_uniforms[i].hint) {
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
+							rd_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK);
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
+							rd_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_TRANSPARENT);
+						} break;
+						default: {
+							rd_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
+						} break;
+					}
 				} break;
 
 				default: {
@@ -1104,7 +1137,7 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 void MaterialStorage::MaterialData::free_parameters_uniform_set(RID p_uniform_set) {
 	if (p_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(p_uniform_set)) {
 		RD::get_singleton()->uniform_set_set_invalidation_callback(p_uniform_set, nullptr, nullptr);
-		RD::get_singleton()->free(p_uniform_set);
+		RD::get_singleton()->free_rid(p_uniform_set);
 	}
 }
 
@@ -1112,7 +1145,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 	if ((uint32_t)ubo_data[p_use_linear_color].size() != p_ubo_size) {
 		p_uniform_dirty = true;
 		if (uniform_buffer[p_use_linear_color].is_valid()) {
-			RD::get_singleton()->free(uniform_buffer[p_use_linear_color]);
+			RD::get_singleton()->free_rid(uniform_buffer[p_use_linear_color]);
 			uniform_buffer[p_use_linear_color] = RID();
 		}
 
@@ -1125,7 +1158,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 		//clear previous uniform set
 		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
 			RD::get_singleton()->uniform_set_set_invalidation_callback(uniform_set, nullptr, nullptr);
-			RD::get_singleton()->free(uniform_set);
+			RD::get_singleton()->free_rid(uniform_set);
 			uniform_set = RID();
 		}
 	}
@@ -1149,7 +1182,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 		//clear previous uniform set
 		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
 			RD::get_singleton()->uniform_set_set_invalidation_callback(uniform_set, nullptr, nullptr);
-			RD::get_singleton()->free(uniform_set);
+			RD::get_singleton()->free_rid(uniform_set);
 			uniform_set = RID();
 		}
 	}
@@ -1295,11 +1328,11 @@ MaterialStorage::~MaterialStorage() {
 	memdelete_arr(global_shader_uniforms.buffer_values);
 	memdelete_arr(global_shader_uniforms.buffer_usage);
 	memdelete_arr(global_shader_uniforms.buffer_dirty_regions);
-	RD::get_singleton()->free(global_shader_uniforms.buffer);
+	RD::get_singleton()->free_rid(global_shader_uniforms.buffer);
 
 	// buffers
 
-	RD::get_singleton()->free(quad_index_buffer); //array gets freed as dependency
+	RD::get_singleton()->free_rid(quad_index_buffer); //array gets freed as dependency
 
 	//def samplers
 	samplers_rd_free(default_samplers);
@@ -2506,7 +2539,7 @@ void MaterialStorage::samplers_rd_free(Samplers &p_samplers) const {
 	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
 		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
 			if (p_samplers.rids[i][j].is_valid()) {
-				RD::get_singleton()->free(p_samplers.rids[i][j]);
+				RD::get_singleton()->free_rid(p_samplers.rids[i][j]);
 				p_samplers.rids[i][j] = RID();
 			}
 		}

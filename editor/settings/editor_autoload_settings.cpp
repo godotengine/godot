@@ -95,7 +95,7 @@ void EditorAutoloadSettings::_notification(int p_what) {
 bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, String *r_error) {
 	if (!p_name.is_valid_unicode_identifier()) {
 		if (r_error) {
-			*r_error = TTR("Invalid name.") + " " + TTR("Must be a valid Unicode identifier.");
+			*r_error = TTR("Must be a valid Unicode identifier.");
 		}
 
 		return false;
@@ -103,7 +103,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 
 	if (ClassDB::class_exists(p_name)) {
 		if (r_error) {
-			*r_error = TTR("Invalid name.") + " " + TTR("Must not collide with an existing engine class name.");
+			*r_error = TTR("Must not collide with an existing engine class name.");
 		}
 
 		return false;
@@ -111,7 +111,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 
 	if (ScriptServer::is_global_class(p_name)) {
 		if (r_error) {
-			*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing global script class name.");
+			*r_error = TTR("Must not collide with an existing global script class name.");
 		}
 
 		return false;
@@ -119,7 +119,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 
 	if (Variant::get_type_by_name(p_name) < Variant::VARIANT_MAX) {
 		if (r_error) {
-			*r_error = TTR("Invalid name.") + " " + TTR("Must not collide with an existing built-in type name.");
+			*r_error = TTR("Must not collide with an existing built-in type name.");
 		}
 
 		return false;
@@ -128,7 +128,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 	for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
 		if (CoreConstants::get_global_constant_name(i) == p_name) {
 			if (r_error) {
-				*r_error = TTR("Invalid name.") + " " + TTR("Must not collide with an existing global constant name.");
+				*r_error = TTR("Must not collide with an existing global constant name.");
 			}
 
 			return false;
@@ -139,7 +139,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 		for (const String &keyword : ScriptServer::get_language(i)->get_reserved_words()) {
 			if (keyword == p_name) {
 				if (r_error) {
-					*r_error = TTR("Invalid name.") + " " + TTR("Keyword cannot be used as an Autoload name.");
+					*r_error = TTR("Keyword cannot be used as an Autoload name.");
 				}
 
 				return false;
@@ -393,16 +393,16 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 		// Cache the scene reference before loading it (for cyclic references)
 		Ref<PackedScene> scn;
 		scn.instantiate();
-		scn->set_path(p_path);
+		scn->set_path(ResourceUID::ensure_path(p_path));
 		scn->reload_from_file();
-		ERR_FAIL_COND_V_MSG(scn.is_null(), nullptr, vformat("Failed to create an autoload, can't load from path: %s.", p_path));
+		ERR_FAIL_COND_V_MSG(scn.is_null(), nullptr, vformat("Failed to create an autoload, can't load from UID or path: %s.", p_path));
 
 		if (scn.is_valid()) {
 			n = scn->instantiate();
 		}
 	} else {
 		Ref<Resource> res = ResourceLoader::load(p_path);
-		ERR_FAIL_COND_V_MSG(res.is_null(), nullptr, vformat("Failed to create an autoload, can't load from path: %s.", p_path));
+		ERR_FAIL_COND_V_MSG(res.is_null(), nullptr, vformat("Failed to create an autoload, can't load from UID or path: %s.", p_path));
 
 		Ref<Script> scr = res;
 		if (scr.is_valid()) {
@@ -427,7 +427,7 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 
 void EditorAutoloadSettings::init_autoloads() {
 	for (AutoloadInfo &info : autoload_cache) {
-		info.node = _create_autoload(info.path);
+		info.node = _create_autoload(ResourceUID::ensure_path(info.path));
 
 		if (info.node) {
 			Ref<Script> scr = info.node->get_script();
@@ -498,7 +498,7 @@ void EditorAutoloadSettings::update_autoload() {
 		}
 
 		info.name = name;
-		info.path = scr_path;
+		info.path = ResourceUID::get_singleton()->path_to_uid(scr_path);
 		info.order = ProjectSettings::get_singleton()->get_order(pi.name);
 
 		bool need_to_add = true;
@@ -530,7 +530,7 @@ void EditorAutoloadSettings::update_autoload() {
 		item->set_text(0, name);
 		item->set_editable(0, true);
 
-		item->set_text(1, scr_path);
+		item->set_text(1, ResourceUID::ensure_path(scr_path));
 		item->set_selectable(1, true);
 
 		item->set_cell_mode(2, TreeItem::CELL_MODE_CHECK);
@@ -780,7 +780,7 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 
 	String error;
 	if (!_autoload_name_is_valid(name, &error)) {
-		EditorNode::get_singleton()->show_warning(TTR("Can't add Autoload:") + "\n" + error);
+		EditorNode::get_singleton()->show_warning(TTR("Can't add Autoload:") + "\n" + vformat(TTR("%s is an invalid name."), p_name) + " " + error);
 		return false;
 	}
 
@@ -800,7 +800,7 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 
 	undo_redo->create_action(TTR("Add Autoload"));
 	// Singleton autoloads are represented with a leading "*" in their path.
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, "*" + p_path);
+	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, "*" + ResourceUID::get_singleton()->path_to_uid(p_path));
 
 	if (ProjectSettings::get_singleton()->has_setting(name)) {
 		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, GLOBAL_GET(name));
@@ -876,7 +876,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		}
 
 		info.name = name;
-		info.path = scr_path;
+		info.path = ResourceUID::get_singleton()->path_to_uid(scr_path);
 		info.order = ProjectSettings::get_singleton()->get_order(pi.name);
 
 		if (info.is_singleton) {
@@ -945,6 +945,11 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	add_autoload->set_disabled(true);
 	hbc->add_child(add_autoload);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
+	add_child(mc);
+
 	tree = memnew(Tree);
 	tree->set_accessibility_name(TTRC("Autoloads"));
 	tree->set_hide_root(true);
@@ -953,6 +958,8 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	SET_DRAG_FORWARDING_GCD(tree, EditorAutoloadSettings);
 
+	tree->set_theme_type_variation("TreeTable");
+	tree->set_hide_folding(true);
 	tree->set_columns(4);
 	tree->set_column_titles_visible(true);
 
@@ -976,9 +983,8 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->connect("item_edited", callable_mp(this, &EditorAutoloadSettings::_autoload_edited));
 	tree->connect("button_clicked", callable_mp(this, &EditorAutoloadSettings::_autoload_button_pressed));
 	tree->connect("item_activated", callable_mp(this, &EditorAutoloadSettings::_autoload_activated));
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	add_child(tree, true);
+	mc->add_child(tree, true);
 }
 
 EditorAutoloadSettings::~EditorAutoloadSettings() {

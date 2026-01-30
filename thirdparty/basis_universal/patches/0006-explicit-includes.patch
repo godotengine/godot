@@ -1,0 +1,14 @@
+diff --git a/thirdparty/basis_universal/transcoder/basisu_containers_impl.h b/thirdparty/basis_universal/transcoder/basisu_containers_impl.h
+index 3d7aaddcad..db3a567450 100644
+--- a/thirdparty/basis_universal/transcoder/basisu_containers_impl.h
++++ b/thirdparty/basis_universal/transcoder/basisu_containers_impl.h
+@@ -1,6 +1,9 @@
+ // basisu_containers_impl.h
+ // Do not include directly
+ 
++#include <ctype.h>
++#include <exception>
++
+ #ifdef _MSC_VER
+ #pragma warning (disable:4127) // warning C4127: conditional expression is constant
+ #endif

@@ -153,17 +153,19 @@ void EditorPropertyVectorN::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyVectorN::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_link, const String &p_suffix, bool p_radians_as_degrees, bool p_is_int) {
-	radians_as_degrees = p_radians_as_degrees;
+void EditorPropertyVectorN::setup(const EditorPropertyRangeHint &p_range_hint, bool p_link, bool p_is_int) {
+	radians_as_degrees = p_range_hint.radians_as_degrees;
 
 	for (EditorSpinSlider *spin : spin_sliders) {
-		spin->set_min(p_min);
-		spin->set_max(p_max);
-		spin->set_step(p_step);
-		spin->set_hide_slider(p_hide_slider);
+		spin->set_min(p_range_hint.min);
+		spin->set_max(p_range_hint.max);
+		spin->set_step(p_range_hint.step);
+		if (p_range_hint.hide_control) {
+			spin->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
+		}
 		spin->set_allow_greater(true);
 		spin->set_allow_lesser(true);
-		spin->set_suffix(p_suffix);
+		spin->set_suffix(p_range_hint.suffix);
 		spin->set_editing_integer(p_is_int);
 	}
 

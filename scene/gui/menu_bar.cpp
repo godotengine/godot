@@ -249,11 +249,13 @@ void MenuBar::bind_global_menu() {
 		if (!popups[i]->is_system_menu()) {
 			int index = nmenu->add_submenu_item(main_menu, menu_cache[i].name, submenu_rid, global_menu_tag + "#" + itos(i), global_start_idx + i);
 			menu_cache.write[i].submenu_rid = submenu_rid;
+			menu_cache.write[i].sysmenu_id = NativeMenu::INVALID_MENU_ID;
 			nmenu->set_item_hidden(main_menu, index, menu_cache[i].hidden);
 			nmenu->set_item_disabled(main_menu, index, menu_cache[i].disabled);
 			nmenu->set_item_tooltip(main_menu, index, menu_cache[i].tooltip);
 		} else {
 			menu_cache.write[i].submenu_rid = RID();
+			menu_cache.write[i].sysmenu_id = popups[i]->get_system_menu();
 		}
 	}
 }
@@ -278,6 +280,7 @@ void MenuBar::unbind_global_menu() {
 			popups[i]->unbind_global_menu();
 			menu_cache.write[i].submenu_rid = RID();
 		}
+		menu_cache.write[i].sysmenu_id = NativeMenu::INVALID_MENU_ID;
 	}
 
 	global_menu_tag = String();
@@ -313,10 +316,14 @@ void MenuBar::_notification(int p_what) {
 			RID main_menu = is_global ? nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID) : RID();
 			for (int i = 0; i < menu_cache.size(); i++) {
 				shape(menu_cache.write[i]);
-				if (is_global && menu_cache[i].submenu_rid.is_valid()) {
-					int item_idx = nmenu->find_item_index_with_submenu(main_menu, menu_cache[i].submenu_rid);
-					if (item_idx >= 0) {
-						nmenu->set_item_text(main_menu, item_idx, atr(menu_cache[i].name));
+				if (is_global) {
+					if (menu_cache[i].submenu_rid.is_valid()) {
+						int item_idx = nmenu->find_item_index_with_submenu(main_menu, menu_cache[i].submenu_rid);
+						if (item_idx >= 0) {
+							nmenu->set_item_text(main_menu, item_idx, atr(menu_cache[i].name));
+						}
+					} else if (menu_cache[i].sysmenu_id != NativeMenu::INVALID_MENU_ID) {
+						nmenu->set_system_menu_text(menu_cache[i].sysmenu_id, atr(menu_cache[i].name));
 					}
 				}
 			}
@@ -493,7 +500,7 @@ void MenuBar::_draw_menu_item(int p_index) {
 			style->draw(ci, item_rect);
 		}
 		// Focus colors only take precedence over normal state.
-		if (has_focus()) {
+		if (has_focus(true)) {
 			color = theme_cache.font_focus_color;
 		} else {
 			color = theme_cache.font_color;
@@ -517,7 +524,8 @@ void MenuBar::shape(Menu &p_menu) {
 	} else {
 		p_menu.text_buf->set_direction((TextServer::Direction)text_direction);
 	}
-	p_menu.text_buf->add_string(atr(p_menu.name), theme_cache.font, theme_cache.font_size, language);
+	const String &lang = language.is_empty() ? _get_locale() : language;
+	p_menu.text_buf->add_string(atr(p_menu.name), theme_cache.font, theme_cache.font_size, lang);
 }
 
 void MenuBar::_refresh_menu_names() {
@@ -618,6 +626,10 @@ void MenuBar::add_child_notify(Node *p_child) {
 		if (!pm->is_system_menu()) {
 			nmenu->add_submenu_item(main_menu, atr(menu.name), submenu_rid, global_menu_tag + "#" + itos(menu_cache.size() - 1), _find_global_start_index() + menu_cache.size() - 1);
 			menu_cache.write[menu_cache.size() - 1].submenu_rid = submenu_rid;
+			menu_cache.write[menu_cache.size() - 1].sysmenu_id = NativeMenu::INVALID_MENU_ID;
+		} else {
+			menu_cache.write[menu_cache.size() - 1].submenu_rid = RID();
+			menu_cache.write[menu_cache.size() - 1].sysmenu_id = pm->get_system_menu();
 		}
 	}
 	update_minimum_size();

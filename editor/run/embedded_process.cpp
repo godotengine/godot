@@ -31,7 +31,9 @@
 #include "embedded_process.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "editor/editor_string_names.h"
+#include "scene/main/timer.h"
 #include "scene/main/window.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
@@ -219,11 +221,15 @@ void EmbeddedProcess::reset() {
 	embedding_completed = false;
 	start_embedding_time = 0;
 	embedding_grab_focus = false;
-	timer_embedding->stop();
-	timer_update_embedded_process->stop();
+	reset_timers();
 	set_process(false);
 	set_notify_transform(false);
 	queue_redraw();
+}
+
+void EmbeddedProcess::reset_timers() {
+	timer_embedding->stop();
+	timer_update_embedded_process->stop();
 }
 
 void EmbeddedProcess::request_close() {

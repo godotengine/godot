@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 class GodotBody3D;
 
@@ -104,7 +104,7 @@ public:
 	virtual int get_contact_collider_shape(int p_contact_idx) const override;
 	virtual Vector3 get_contact_collider_velocity_at_position(int p_contact_idx) const override;
 
-	virtual PhysicsDirectSpaceState3D *get_space_state() override;
+	virtual RequiredResult<PhysicsDirectSpaceState3D> get_space_state() override;
 
 	virtual real_t get_step() const override;
 };

@@ -316,12 +316,12 @@ RID TileAtlasView::_get_canvas_item_to_draw(const TileData *p_for_data, const Ca
 
 void TileAtlasView::_clear_material_canvas_items() {
 	for (KeyValue<Ref<Material>, RID> kv : material_tiles_draw) {
-		RS::get_singleton()->free(kv.value);
+		RS::get_singleton()->free_rid(kv.value);
 	}
 	material_tiles_draw.clear();
 
 	for (KeyValue<Ref<Material>, RID> kv : material_alternatives_draw) {
-		RS::get_singleton()->free(kv.value);
+		RS::get_singleton()->free_rid(kv.value);
 	}
 	material_alternatives_draw.clear();
 }

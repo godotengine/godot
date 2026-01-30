@@ -364,6 +364,8 @@ public:
 		using Base = IteratorBase<HashTable, iterator>;
 
 	public:
+		using IteratorBase<HashTable, iterator>::operator ==;
+
 		/// Properties
 		using reference = typename Base::value_type &;
 		using pointer = typename Base::value_type *;
@@ -401,6 +403,8 @@ public:
 		using Base = IteratorBase<const HashTable, const_iterator>;
 
 	public:
+		using IteratorBase<const HashTable, const_iterator>::operator ==;
+
 		/// Properties
 		using reference = const typename Base::value_type &;
 		using pointer = const typename Base::value_type *;

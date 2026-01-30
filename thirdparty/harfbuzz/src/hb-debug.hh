@@ -38,48 +38,6 @@
 
 
 /*
- * Global runtime options.
- */
-
-struct hb_options_t
-{
-  bool unused : 1; /* In-case sign bit is here. */
-  bool initialized : 1;
-  bool uniscribe_bug_compatible : 1;
-};
-
-union hb_options_union_t {
-  unsigned i;
-  hb_options_t opts;
-};
-static_assert ((sizeof (hb_atomic_t<unsigned>) >= sizeof (hb_options_union_t)), "");
-
-HB_INTERNAL void
-_hb_options_init ();
-
-extern HB_INTERNAL hb_atomic_t<unsigned> _hb_options;
-
-static inline hb_options_t
-hb_options ()
-{
-#ifdef HB_NO_GETENV
-  return hb_options_t ();
-#endif
-  /* Make a local copy, so we can access bitfield threadsafely. */
-  hb_options_union_t u;
-  u.i = _hb_options;
-
-  if (unlikely (!u.i))
-  {
-    _hb_options_init ();
-    u.i = _hb_options;
-  }
-
-  return u.opts;
-}
-
-
-/*
  * Debug output (needs enabling at compile time.)
  */
 
@@ -394,6 +352,10 @@ struct hb_no_trace_t {
 #define HB_DEBUG_WASM (HB_DEBUG+0)
 #endif
 
+#ifndef HB_DEBUG_KBTS
+#define HB_DEBUG_KBTS (HB_DEBUG+0)
+#endif
+
 /*
  * With tracing.
  */
@@ -484,7 +446,7 @@ struct hb_no_trace_t {
 
 
 #ifndef HB_BUFFER_MESSAGE_MORE
-#define HB_BUFFER_MESSAGE_MORE (HB_DEBUG+1)
+#define HB_BUFFER_MESSAGE_MORE (HB_DEBUG+0)
 #endif
 
 

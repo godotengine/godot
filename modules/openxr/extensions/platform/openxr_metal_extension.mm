@@ -35,7 +35,7 @@
 #import "drivers/metal/rendering_device_driver_metal.h"
 #include "servers/rendering/rendering_server_globals.h"
 
-HashMap<String, bool *> OpenXRMetalExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRMetalExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_KHR_METAL_ENABLE_EXTENSION_NAME] = nullptr;
@@ -289,7 +289,7 @@ void OpenXRMetalExtension::cleanup_swapchain_graphics_data(void **p_swapchain_gr
 	ERR_FAIL_NULL(rendering_device);
 
 	for (const RID &texture_rid : data->texture_rids) {
-		rendering_device->free(texture_rid);
+		rendering_device->free_rid(texture_rid);
 	}
 	data->texture_rids.clear();
 
@@ -298,9 +298,8 @@ void OpenXRMetalExtension::cleanup_swapchain_graphics_data(void **p_swapchain_gr
 }
 
 bool OpenXRMetalExtension::create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) {
-	// Even though this is a Metal renderer we're using OpenGL coordinate systems.
 	OpenXRUtil::XrMatrix4x4f matrix;
-	OpenXRUtil::XrMatrix4x4f_CreateProjectionFov(&matrix, OpenXRUtil::GRAPHICS_OPENGL, p_fov, (float)p_z_near, (float)p_z_far);
+	OpenXRUtil::XrMatrix4x4f_CreateProjectionFov(&matrix, p_fov, (float)p_z_near, (float)p_z_far);
 
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {

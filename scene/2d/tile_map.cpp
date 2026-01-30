@@ -34,7 +34,7 @@
 #include "core/io/marshalls.h"
 #ifndef NAVIGATION_2D_DISABLED
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 #endif // NAVIGATION_2D_DISABLED
 
 #define TILEMAP_CALL_FOR_LAYER(layer, function, ...) \
@@ -571,23 +571,19 @@ void TileMap::set_pattern(int p_layer, const Vector2i &p_position, const Ref<Til
 }
 
 HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_constraints(int p_layer, const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> &p_constraints) {
-	HashMap<Vector2i, TileSet::TerrainsPattern> err_value;
-	TILEMAP_CALL_FOR_LAYER_V(p_layer, err_value, terrain_fill_constraints, p_to_replace, p_terrain_set, p_constraints);
+	TILEMAP_CALL_FOR_LAYER_V(p_layer, (HashMap<Vector2i, TileSet::TerrainsPattern>()), terrain_fill_constraints, p_to_replace, p_terrain_set, p_constraints);
 }
 
 HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_connect(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains) {
-	HashMap<Vector2i, TileSet::TerrainsPattern> err_value;
-	TILEMAP_CALL_FOR_LAYER_V(p_layer, err_value, terrain_fill_connect, p_coords_array, p_terrain_set, p_terrain, p_ignore_empty_terrains);
+	TILEMAP_CALL_FOR_LAYER_V(p_layer, (HashMap<Vector2i, TileSet::TerrainsPattern>()), terrain_fill_connect, p_coords_array, p_terrain_set, p_terrain, p_ignore_empty_terrains);
 }
 
 HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_path(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains) {
-	HashMap<Vector2i, TileSet::TerrainsPattern> err_value;
-	TILEMAP_CALL_FOR_LAYER_V(p_layer, err_value, terrain_fill_path, p_coords_array, p_terrain_set, p_terrain, p_ignore_empty_terrains);
+	TILEMAP_CALL_FOR_LAYER_V(p_layer, (HashMap<Vector2i, TileSet::TerrainsPattern>()), terrain_fill_path, p_coords_array, p_terrain_set, p_terrain, p_ignore_empty_terrains);
 }
 
 HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_pattern(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern, bool p_ignore_empty_terrains) {
-	HashMap<Vector2i, TileSet::TerrainsPattern> err_value;
-	TILEMAP_CALL_FOR_LAYER_V(p_layer, err_value, terrain_fill_pattern, p_coords_array, p_terrain_set, p_terrains_pattern, p_ignore_empty_terrains);
+	TILEMAP_CALL_FOR_LAYER_V(p_layer, (HashMap<Vector2i, TileSet::TerrainsPattern>()), terrain_fill_pattern, p_coords_array, p_terrain_set, p_terrains_pattern, p_ignore_empty_terrains);
 }
 
 void TileMap::set_cells_terrain_connect(int p_layer, TypedArray<Vector2i> p_cells, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains) {

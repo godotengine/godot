@@ -6,228 +6,271 @@
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
-layout(rgba16f, set = 0, binding = 0) uniform restrict readonly image2D source_diffuse;
-layout(r32f, set = 0, binding = 1) uniform restrict readonly image2D source_depth;
-layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly image2D ssr_image;
-#ifdef MODE_ROUGH
-layout(r8, set = 1, binding = 1) uniform restrict writeonly image2D blur_radius_image;
-#endif
-layout(rgba8, set = 2, binding = 0) uniform restrict readonly image2D source_normal_roughness;
-layout(set = 3, binding = 0) uniform sampler2D source_metallic;
+layout(set = 0, binding = 0) uniform sampler2D source_last_frame;
+layout(set = 0, binding = 1) uniform sampler2D source_hiz;
+layout(set = 0, binding = 2) uniform sampler2D source_normal_roughness;
+layout(rgba16f, set = 0, binding = 3) uniform restrict writeonly image2D output_color;
+layout(r8, set = 0, binding = 4) uniform restrict writeonly image2D output_mip_level;
+
+layout(set = 0, binding = 5, std140) uniform SceneData {
+	mat4 projection[2];
+	mat4 inv_projection[2];
+	mat4 reprojection[2];
+	vec4 eye_offset[2];
+}
+scene_data;
 
 layout(push_constant, std430) uniform Params {
-	vec4 proj_info;
-
 	ivec2 screen_size;
-	float camera_z_near;
-	float camera_z_far;
-
+	int mipmaps;
 	int num_steps;
-	float depth_tolerance;
 	float distance_fade;
 	float curve_fade_in;
-
+	float depth_tolerance;
 	bool orthogonal;
-	float filter_mipmap_levels;
-	bool use_half_res;
-	uint view_index;
+	int view_index;
 }
 params;
 
-#include "screen_space_reflection_inc.glsl"
+vec2 compute_cell_count(int level) {
+	int cell_count_x = max(1, params.screen_size.x >> level);
+	int cell_count_y = max(1, params.screen_size.y >> level);
+	return vec2(cell_count_x, cell_count_y);
+}
 
-vec2 view_to_screen(vec3 view_pos, out float w) {
-	vec4 projected = scene_data.projection[params.view_index] * vec4(view_pos, 1.0);
-	projected.xyz /= projected.w;
-	projected.xy = projected.xy * 0.5 + 0.5;
-	w = projected.w;
-	return projected.xy;
+float linearize_depth(float depth) {
+	vec4 pos = vec4(0.0, 0.0, depth, 1.0);
+	pos = scene_data.inv_projection[params.view_index] * pos;
+	return pos.z / pos.w;
+}
+
+vec3 compute_view_pos(vec3 screen_pos) {
+	vec4 pos;
+	pos.xy = screen_pos.xy * 2.0 - 1.0;
+	pos.z = screen_pos.z;
+	pos.w = 1.0;
+	pos = scene_data.inv_projection[params.view_index] * pos;
+	return pos.xyz / pos.w;
+}
+
+vec3 compute_screen_pos(vec3 pos) {
+	vec4 screen_pos = scene_data.projection[params.view_index] * vec4(pos, 1.0);
+	screen_pos.xyz /= screen_pos.w;
+	screen_pos.xy = screen_pos.xy * 0.5 + 0.5;
+	return screen_pos.xyz;
+}
+
+// https://habr.com/ru/articles/744336/
+vec3 compute_geometric_normal(ivec2 pixel_pos, float depth_c, vec3 view_c, float pixel_offset) {
+	vec4 H = vec4(
+			texelFetch(source_hiz, pixel_pos + ivec2(-1, 0), 0).x,
+			texelFetch(source_hiz, pixel_pos + ivec2(-2, 0), 0).x,
+			texelFetch(source_hiz, pixel_pos + ivec2(1, 0), 0).x,
+			texelFetch(source_hiz, pixel_pos + ivec2(2, 0), 0).x);
+
+	vec4 V = vec4(
+			texelFetch(source_hiz, pixel_pos + ivec2(0, -1), 0).x,
+			texelFetch(source_hiz, pixel_pos + ivec2(0, -2), 0).x,
+			texelFetch(source_hiz, pixel_pos + ivec2(0, 1), 0).x,
+			texelFetch(source_hiz, pixel_pos + ivec2(0, 2), 0).x);
+
+	vec2 he = abs((2.0 * H.xz - H.yw) - depth_c);
+	vec2 ve = abs((2.0 * V.xz - V.yw) - depth_c);
+
+	int h_sign = he.x < he.y ? -1 : 1;
+	int v_sign = ve.x < ve.y ? -1 : 1;
+
+	vec3 view_h = compute_view_pos(vec3((pixel_pos + vec2(h_sign, 0) + pixel_offset) / params.screen_size, H[1 + int(h_sign)]));
+	vec3 view_v = compute_view_pos(vec3((pixel_pos + vec2(0, v_sign) + pixel_offset) / params.screen_size, V[1 + int(v_sign)]));
+
+	vec3 h_der = h_sign * (view_h - view_c);
+	vec3 v_der = v_sign * (view_v - view_c);
+
+	return cross(v_der, h_der);
 }
 
 #define M_PI 3.14159265359
 
 void main() {
-	// Pixel being shaded
-	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
+	ivec2 pixel_pos = ivec2(gl_GlobalInvocationID.xy);
 
-	if (any(greaterThanEqual(ssC.xy, params.screen_size))) { //too large, do nothing
+	if (any(greaterThanEqual(pixel_pos, params.screen_size))) {
 		return;
 	}
 
-	vec2 pixel_size = 1.0 / vec2(params.screen_size);
-	vec2 uv = vec2(ssC.xy) * pixel_size;
+	vec4 color = vec4(0.0);
+	float mip_level = 0.0;
 
-	uv += pixel_size * 0.5;
+	vec3 screen_pos;
+	screen_pos.xy = vec2(pixel_pos + 0.5) / params.screen_size;
+	screen_pos.z = texelFetch(source_hiz, pixel_pos, 0).x;
 
-	float base_depth = imageLoad(source_depth, ssC).r;
+	bool should_trace = screen_pos.z != 0.0;
+	if (should_trace) {
+		vec3 pos = compute_view_pos(screen_pos);
 
-	// World space point being shaded
-	vec3 vertex = reconstructCSPosition(uv * vec2(params.screen_size), base_depth);
-
-	vec4 normal_roughness = imageLoad(source_normal_roughness, ssC);
-	vec3 normal = normalize(normal_roughness.xyz * 2.0 - 1.0);
-	float roughness = normal_roughness.w;
-	if (roughness > 0.5) {
-		roughness = 1.0 - roughness;
-	}
-	roughness /= (127.0 / 255.0);
-
-	// The roughness cutoff of 0.6 is chosen to match the roughness fadeout from GH-69828.
-	if (roughness > 0.6) {
-		// Do not compute SSR for rough materials to improve performance at the cost of
-		// subtle artifacting.
-#ifdef MODE_ROUGH
-		imageStore(blur_radius_image, ssC, vec4(0.0));
-#endif
-		imageStore(ssr_image, ssC, vec4(0.0));
-		return;
-	}
-
-	normal = normalize(normal);
-	normal.y = -normal.y; //because this code reads flipped
-
-	vec3 view_dir;
-	if (sc_multiview) {
-		view_dir = normalize(vertex + scene_data.eye_offset[params.view_index].xyz);
-	} else {
-		view_dir = params.orthogonal ? vec3(0.0, 0.0, -1.0) : normalize(vertex);
-	}
-	vec3 ray_dir = normalize(reflect(view_dir, normal));
-
-	if (dot(ray_dir, normal) < 0.001) {
-		imageStore(ssr_image, ssC, vec4(0.0));
-		return;
-	}
-
-	////////////////
-
-	// make ray length and clip it against the near plane (don't want to trace beyond visible)
-	float ray_len = (vertex.z + ray_dir.z * params.camera_z_far) > -params.camera_z_near ? (-params.camera_z_near - vertex.z) / ray_dir.z : params.camera_z_far;
-	vec3 ray_end = vertex + ray_dir * ray_len;
-
-	float w_begin;
-	vec2 vp_line_begin = view_to_screen(vertex, w_begin);
-	float w_end;
-	vec2 vp_line_end = view_to_screen(ray_end, w_end);
-	vec2 vp_line_dir = vp_line_end - vp_line_begin;
-
-	// we need to interpolate w along the ray, to generate perspective correct reflections
-	w_begin = 1.0 / w_begin;
-	w_end = 1.0 / w_end;
-
-	float z_begin = vertex.z * w_begin;
-	float z_end = ray_end.z * w_end;
-
-	vec2 line_begin = vp_line_begin / pixel_size;
-	vec2 line_dir = vp_line_dir / pixel_size;
-	float z_dir = z_end - z_begin;
-	float w_dir = w_end - w_begin;
-
-	// clip the line to the viewport edges
-
-	float scale_max_x = min(1.0, 0.99 * (1.0 - vp_line_begin.x) / max(1e-5, vp_line_dir.x));
-	float scale_max_y = min(1.0, 0.99 * (1.0 - vp_line_begin.y) / max(1e-5, vp_line_dir.y));
-	float scale_min_x = min(1.0, 0.99 * vp_line_begin.x / max(1e-5, -vp_line_dir.x));
-	float scale_min_y = min(1.0, 0.99 * vp_line_begin.y / max(1e-5, -vp_line_dir.y));
-	float line_clip = min(scale_max_x, scale_max_y) * min(scale_min_x, scale_min_y);
-	line_dir *= line_clip;
-	z_dir *= line_clip;
-	w_dir *= line_clip;
-
-	// clip z and w advance to line advance
-	vec2 line_advance = normalize(line_dir); // down to pixel
-	float step_size = 1.0 / length(line_dir);
-	float z_advance = z_dir * step_size; // adapt z advance to line advance
-	float w_advance = w_dir * step_size; // adapt w advance to line advance
-
-	// make line advance faster if direction is closer to pixel edges (this avoids sampling the same pixel twice)
-	float advance_angle_adj = 1.0 / max(abs(line_advance.x), abs(line_advance.y));
-	line_advance *= advance_angle_adj; // adapt z advance to line advance
-	z_advance *= advance_angle_adj;
-	w_advance *= advance_angle_adj;
-
-	vec2 pos = line_begin;
-	float z = z_begin;
-	float w = w_begin;
-	float z_from = z / w;
-	float z_to = z_from;
-	float depth;
-	vec2 prev_pos = pos;
-
-	if (ivec2(pos + line_advance - 0.5) == ssC) {
-		// It is possible for rounding to cause our first pixel to check to be the pixel we're reflecting.
-		// Make sure we skip it
-		pos += line_advance;
-		z += z_advance;
-		w += w_advance;
-	}
-
-	bool found = false;
-
-	float steps_taken = 0.0;
-
-	for (int i = 0; i < params.num_steps; i++) {
-		pos += line_advance;
-		z += z_advance;
-		w += w_advance;
-
-		// convert to linear depth
-		ivec2 test_pos = ivec2(pos - 0.5);
-		depth = imageLoad(source_depth, test_pos).r;
-		if (sc_multiview) {
-			depth = depth * 2.0 - 1.0;
-			depth = 2.0 * params.camera_z_near * params.camera_z_far / (params.camera_z_far + params.camera_z_near - depth * (params.camera_z_far - params.camera_z_near));
-			depth = -depth;
+		vec4 normal_roughness = texelFetch(source_normal_roughness, pixel_pos, 0);
+		vec3 normal = normalize(normal_roughness.xyz * 2.0 - 1.0);
+		float roughness = normal_roughness.w;
+		if (roughness > 0.5) {
+			roughness = 1.0 - roughness;
 		}
+		roughness /= (127.0 / 255.0);
 
-		z_from = z_to;
-		z_to = z / w;
-
-		if (depth > z_to) {
-			// Test if our ray is hitting the "right" side of the surface, if not we're likely self reflecting and should skip.
-			vec4 test_normal_roughness = imageLoad(source_normal_roughness, test_pos);
-			vec3 test_normal = test_normal_roughness.xyz * 2.0 - 1.0;
-			test_normal = normalize(test_normal);
-			test_normal.y = -test_normal.y; // Because this code reads flipped.
-
-			if (dot(ray_dir, test_normal) < 0.001) {
-				// if depth was surpassed
-				if (depth <= max(z_to, z_from) + params.depth_tolerance && -depth < params.camera_z_far * 0.95) {
-					// check the depth tolerance and far clip
-					// check that normal is valid
-					found = true;
-				}
-				break;
-			}
-		}
-
-		steps_taken += 1.0;
-		prev_pos = pos;
-	}
-
-	if (found) {
-		float margin_blend = 1.0;
-		vec2 final_pos = pos;
-
-		vec2 margin = vec2((params.screen_size.x + params.screen_size.y) * 0.05); // make a uniform margin
-		if (any(bvec4(lessThan(pos, vec2(0.0, 0.0)), greaterThan(pos, params.screen_size)))) {
-			// clip at the screen edges
-			imageStore(ssr_image, ssC, vec4(0.0));
+		// Do not compute SSR for rough materials to improve
+		// performance at the cost of subtle artifacting.
+		if (roughness >= 0.7) {
+			imageStore(output_color, pixel_pos, vec4(0.0));
+			imageStore(output_mip_level, pixel_pos, vec4(0.0));
 			return;
 		}
 
-		{
-			//blend fading out towards inner margin
-			// 0.5 = midpoint of reflection
-			vec2 margin_grad = mix(params.screen_size - pos, pos, lessThan(pos, params.screen_size * 0.5));
-			margin_blend = smoothstep(0.0, margin.x * margin.y, margin_grad.x * margin_grad.y);
-			//margin_blend = 1.0;
+		vec3 geom_normal = normalize(compute_geometric_normal(pixel_pos, screen_pos.z, pos, 0.5));
+
+		// Add a small bias towards the geometry normal to prevent self intersections.
+		pos += geom_normal * (1.0 - pow(clamp(dot(normal, geom_normal), 0.0, 1.0), 8.0));
+		screen_pos = compute_screen_pos(pos);
+
+		vec3 view_dir = params.orthogonal ? vec3(0.0, 0.0, -1.0) : normalize(pos + scene_data.eye_offset[params.view_index].xyz);
+		vec3 ray_dir = normalize(reflect(view_dir, normal));
+
+		// Check if the ray is immediately intersecting with itself. If so, bounce!
+		if (dot(ray_dir, geom_normal) < 0.0) {
+			ray_dir = normalize(reflect(ray_dir, geom_normal));
 		}
 
+		vec3 end_pos = pos + ray_dir;
+
+		// Clip to near plane. Add a small bias so we don't go to infinity.
+		if (end_pos.z > 0.0) {
+			end_pos -= ray_dir / ray_dir.z * (end_pos.z + 0.00001);
+		}
+
+		vec3 screen_end_pos = compute_screen_pos(end_pos);
+
+		// Normalize Z to -1.0 or +1.0 and do parametric T tracing as suggested here:
+		// https://hacksoflife.blogspot.com/2020/10/a-tip-for-hiz-ssr-parametric-t-tracing.html
+		vec3 screen_ray_dir = screen_end_pos - screen_pos;
+		screen_ray_dir /= abs(screen_ray_dir.z);
+
+		bool facing_camera = screen_ray_dir.z >= 0.0;
+
+		// Find the screen edge point where we will stop tracing.
+		vec2 t0 = (vec2(0.0) - screen_pos.xy) / screen_ray_dir.xy;
+		vec2 t1 = (vec2(1.0) - screen_pos.xy) / screen_ray_dir.xy;
+		vec2 t2 = max(t0, t1);
+		float t_max = min(t2.x, t2.y);
+
+		vec2 cell_step = vec2(screen_ray_dir.x < 0.0 ? -1.0 : 1.0, screen_ray_dir.y < 0.0 ? -1.0 : 1.0);
+
+		int cur_level = 0;
+		int cur_iteration = params.num_steps;
+
+		// Advance the start point to the closest next cell to prevent immediate self intersection.
+		float t;
+		{
+			vec2 cell_index = floor(screen_pos.xy * params.screen_size);
+			vec2 new_cell_index = cell_index + clamp(cell_step, vec2(0.0), vec2(1.0));
+			vec2 new_cell_pos = (new_cell_index / params.screen_size) + cell_step * 0.000001;
+			vec2 pos_t = (new_cell_pos - screen_pos.xy) / screen_ray_dir.xy;
+			float edge_t = min(pos_t.x, pos_t.y);
+
+			t = edge_t;
+		}
+
+		while (cur_level >= 0 && cur_iteration > 0 && t < t_max) {
+			vec3 cur_screen_pos = screen_pos + screen_ray_dir * t;
+
+			vec2 cell_count = compute_cell_count(cur_level);
+			vec2 cell_index = floor(cur_screen_pos.xy * cell_count);
+			float cell_depth = texelFetch(source_hiz, ivec2(cell_index), cur_level).x;
+			float depth_t = (cell_depth - screen_pos.z) * screen_ray_dir.z; // Z is either -1.0 or 1.0 so we don't need to do a divide.
+
+			vec2 new_cell_index = cell_index + clamp(cell_step, vec2(0.0), vec2(1.0));
+			vec2 new_cell_pos = (new_cell_index / cell_count) + cell_step * 0.000001;
+			vec2 pos_t = (new_cell_pos - screen_pos.xy) / screen_ray_dir.xy;
+			float edge_t = min(pos_t.x, pos_t.y);
+
+			bool hit = facing_camera ? (t <= depth_t) : (depth_t <= edge_t);
+			int mip_offset = hit ? -1 : +1;
+
+			if (cur_level == 0) {
+				float z0 = linearize_depth(cell_depth);
+				float z1 = linearize_depth(cur_screen_pos.z);
+
+				if ((z0 - z1) > params.depth_tolerance) {
+					hit = false;
+					mip_offset = 0; // Keep the mip index the same to prevent it from decreasing and increasing in repeat.
+				}
+			}
+
+			if (hit) {
+				if (!facing_camera) {
+					t = max(t, depth_t);
+				}
+			} else {
+				t = edge_t;
+			}
+
+			cur_level = min(cur_level + mip_offset, params.mipmaps - 1);
+			--cur_iteration;
+		}
+
+		vec3 cur_screen_pos = screen_pos + screen_ray_dir * t;
+
+		vec4 reprojected_pos;
+		reprojected_pos.xy = cur_screen_pos.xy * 2.0 - 1.0;
+		reprojected_pos.z = cur_screen_pos.z;
+		reprojected_pos.w = 1.0;
+		reprojected_pos = scene_data.reprojection[params.view_index] * reprojected_pos;
+		reprojected_pos.xy = reprojected_pos.xy / reprojected_pos.w * 0.5 + 0.5;
+
+		// Instead of hard rejecting samples, write sample validity to the alpha channel.
+		// This allows invalid samples to write mip levels to let valid samples have smoother roughness transitions.
+		float validity = 1.0;
+
+		// Hit validation logic is referenced from here:
+		// https://github.com/GPUOpen-Effects/FidelityFX-SSSR/blob/master/ffx-sssr/ffx_sssr.h
+
+		ivec2 cur_pixel_pos = ivec2(cur_screen_pos.xy * params.screen_size);
+
+		float hit_depth = texelFetch(source_hiz, cur_pixel_pos, 0).x;
+		if (t >= t_max || hit_depth == 0.0) {
+			validity = 0.0;
+		}
+
+		if (all(lessThan(abs(screen_ray_dir.xy * t), 2.0 / params.screen_size))) {
+			vec3 hit_normal = texelFetch(source_normal_roughness, cur_pixel_pos, 0).xyz * 2.0 - 1.0;
+			if (dot(ray_dir, hit_normal) >= 0.0) {
+				validity = 0.0;
+			}
+		}
+
+		vec3 cur_pos = compute_view_pos(cur_screen_pos);
+		vec3 hit_pos = compute_view_pos(vec3(cur_screen_pos.xy, hit_depth));
+
+		float delta = length(cur_pos - hit_pos);
+		float confidence = 1.0 - smoothstep(0.0, params.depth_tolerance, delta);
+		validity *= clamp(confidence * confidence, 0.0, 1.0);
+
+		float margin_blend = 1.0;
+		vec2 reprojected_pixel_pos = reprojected_pos.xy * params.screen_size;
+
+		vec2 margin = vec2((params.screen_size.x + params.screen_size.y) * 0.05); // Make a uniform margin.
+		{
+			// Blend fading out towards inner margin.
+			// 0.5 = midpoint of reflection
+			vec2 margin_grad = mix(params.screen_size - reprojected_pixel_pos, reprojected_pixel_pos, lessThan(reprojected_pixel_pos, params.screen_size * 0.5));
+			margin_blend = smoothstep(0.0, margin.x * margin.y, margin_grad.x * margin_grad.y);
+		}
+
+		float ray_len = length(screen_ray_dir.xy * t);
+
 		// Fade In / Fade Out
-		float grad = (steps_taken + 1.0) / float(params.num_steps);
-		float initial_fade = params.curve_fade_in == 0.0 ? 1.0 : pow(clamp(grad, 0.0, 1.0), params.curve_fade_in);
-		float fade = pow(clamp(1.0 - grad, 0.0, 1.0), params.distance_fade) * initial_fade;
+		float grad = ray_len;
+		float fade_in = params.curve_fade_in == 0.0 ? 1.0 : pow(clamp(grad, 0.0, 1.0), params.curve_fade_in);
+		float fade_out = params.distance_fade == 0.0 ? 1.0 : pow(clamp(1.0 - grad, 0.0, 1.0), params.distance_fade);
+		float fade = fade_in * fade_out;
 
 		// Ensure that precision errors do not introduce any fade. Even if it is just slightly below 1.0,
 		// strong specular light can leak through the reflection.
@@ -235,41 +278,23 @@ void main() {
 			fade = 1.0;
 		}
 
-		// This is an ad-hoc term to fade out the SSR as roughness increases. Values used
-		// are meant to match the visual appearance of a ReflectionProbe.
-		float roughness_fade = smoothstep(0.4, 0.7, 1.0 - roughness);
+		validity *= fade * margin_blend;
 
-		// Schlick term.
-		float metallic = texelFetch(source_metallic, ssC << 1, 0).w;
+		if (validity > 0.0) {
+			color = vec4(textureLod(source_last_frame, reprojected_pos.xy, 0).xyz, 1.0) * validity;
 
-		// F0 is the reflectance of normally incident light (perpendicular to the surface).
-		// Dielectric materials have a widely accepted default value of 0.04. We assume that metals reflect all light, so their F0 is 1.0.
-		float f0 = mix(0.04, 1.0, metallic);
-		float m = clamp(1.0 - dot(normal, -view_dir), 0.0, 1.0);
-		float m2 = m * m;
-		m = m2 * m2 * m; // pow(m,5)
-		float fresnel_term = f0 + (1.0 - f0) * m; // Fresnel Schlick term.
-
-		// The alpha value of final_color controls the blending with specular light in specular_merge.glsl.
-		// Note that the Fresnel term is multiplied with the RGB color instead of being a part of the alpha value.
-		// There is a key difference:
-		// - multiplying a term with RGB darkens the SSR light without introducing/taking away specular light.
-		// - combining a term into the Alpha value introduces specular light at the expense of the SSR light.
-		vec4 final_color = vec4(imageLoad(source_diffuse, ivec2(final_pos - 0.5)).rgb * fresnel_term, fade * margin_blend * roughness_fade);
-
-		imageStore(ssr_image, ssC, final_color);
-
-#ifdef MODE_ROUGH
-
-		// if roughness is enabled, do screen space cone tracing
-		float blur_radius = 0.0;
+			// Tone map the SSR color to have smoother roughness filtering across samples with varying luminance.
+			const vec3 rec709_luminance_weights = vec3(0.2126, 0.7152, 0.0722);
+			color.rgb /= 1.0 + dot(color.rgb, rec709_luminance_weights);
+		}
 
 		if (roughness > 0.001) {
 			float cone_angle = min(roughness, 0.999) * M_PI * 0.5;
-			float cone_len = length(final_pos - line_begin);
-			float op_len = 2.0 * tan(cone_angle) * cone_len; // opposite side of iso triangle
+			float cone_len = ray_len;
+			float op_len = 2.0 * tan(cone_angle) * cone_len; // Opposite side of iso triangle.
+			float blur_radius;
 			{
-				// fit to sphere inside cone (sphere ends at end of cone), something like this:
+				// Fit to sphere inside cone (sphere ends at end of cone), something like this:
 				// ___
 				// \O/
 				//  V
@@ -279,19 +304,19 @@ void main() {
 				float a = op_len;
 				float h = cone_len;
 				float a2 = a * a;
-				float fh2 = 4.0f * h * h;
-				blur_radius = (a * (sqrt(a2 + fh2) - a)) / (4.0f * h);
+				float fh2 = 4.0 * h * h;
+				blur_radius = (a * (sqrt(a2 + fh2) - a)) / (4.0 * h);
 			}
+
+			mip_level = clamp(log2(blur_radius * max(params.screen_size.x, params.screen_size.y) / 16.0), 0, params.mipmaps - 1);
 		}
 
-		imageStore(blur_radius_image, ssC, vec4(blur_radius / 255.0)); //stored in r8
-
-#endif // MODE_ROUGH
-
-	} else {
-#ifdef MODE_ROUGH
-		imageStore(blur_radius_image, ssC, vec4(0.0));
-#endif
-		imageStore(ssr_image, ssC, vec4(0.0));
+		// Because we still write mip level for invalid pixels to allow for smooth roughness transitions,
+		// this sometimes ends up creating a pyramid-like shape at very rough levels.
+		// We can fade the mip level near the end to make it significantly less visible.
+		mip_level *= pow(clamp(1.25 - ray_len, 0.0, 1.0), 0.2);
 	}
+
+	imageStore(output_color, pixel_pos, color);
+	imageStore(output_mip_level, pixel_pos, vec4(mip_level / 14.0, 0.0, 0.0, 0.0));
 }

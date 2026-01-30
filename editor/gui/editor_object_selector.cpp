@@ -33,7 +33,6 @@
 #include "editor/editor_data.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/gui/margin_container.h"
 
 Size2 EditorObjectSelector::get_minimum_size() const {
@@ -95,11 +94,12 @@ void EditorObjectSelector::_show_popup() {
 
 	sub_objects_menu->clear();
 
-	Size2 size = get_size();
-	Point2 gp = get_screen_position();
-	gp.y += size.y;
+	Rect2 rect = get_screen_rect();
+	rect.position.y += rect.size.height;
+	rect.size.height = 0;
 
-	sub_objects_menu->popup(Rect2(gp, Size2(size.width, 0)));
+	sub_objects_menu->set_min_size(Size2(0, 0));
+	sub_objects_menu->popup(rect);
 }
 
 void EditorObjectSelector::_about_to_show() {
@@ -208,9 +208,8 @@ EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	history = p_history;
 
 	MarginContainer *main_mc = memnew(MarginContainer);
+	main_mc->set_theme_type_variation("ObjectSelectorMargin");
 	main_mc->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	main_mc->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	main_mc->add_theme_constant_override("margin_right", 6 * EDSCALE);
 	add_child(main_mc);
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
@@ -219,6 +218,7 @@ EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	current_object_icon = memnew(TextureRect);
 	current_object_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 	current_object_icon->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+	current_object_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
 	main_hb->add_child(current_object_icon);
 
 	current_object_label = memnew(Label);
@@ -235,6 +235,7 @@ EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	main_hb->add_child(sub_objects_icon);
 
 	sub_objects_menu = memnew(PopupMenu);
+	sub_objects_menu->set_shrink_width(false);
 	sub_objects_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(sub_objects_menu);
 	sub_objects_menu->connect("about_to_popup", callable_mp(this, &EditorObjectSelector::_about_to_show));

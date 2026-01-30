@@ -533,7 +533,11 @@ struct Glyph
   bool get_extents_without_var_scaled (hb_font_t *font, const glyf_accelerator_t &glyf_accelerator,
 				       hb_glyph_extents_t *extents) const
   {
-    if (type == EMPTY) return true; /* Empty glyph; zero extents. */
+    if (type == EMPTY)
+    {
+      *extents = {0, 0, 0, 0};
+      return true; /* Empty glyph; zero extents. */
+    }
     return header->get_extents_without_var_scaled (font, glyf_accelerator, gid, extents);
   }
 

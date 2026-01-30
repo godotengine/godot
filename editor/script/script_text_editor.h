@@ -62,6 +62,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	RichTextLabel *errors_panel = nullptr;
 
 	Ref<Script> script;
+	Variant pending_state;
 	bool script_is_valid = false;
 	bool editor_enabled = false;
 
@@ -72,8 +73,6 @@ class ScriptTextEditor : public ScriptEditorBase {
 	HashSet<int> safe_lines;
 
 	List<Connection> missing_connections;
-
-	Vector<String> member_keywords;
 
 	HBoxContainer *edit_hb = nullptr;
 
@@ -180,6 +179,18 @@ class ScriptTextEditor : public ScriptEditorBase {
 	};
 
 	void _enable_code_editor();
+
+	struct DraggedExport {
+		ObjectID obj_id;
+		String variable_name;
+		Variant value;
+		String class_name;
+	};
+
+	LocalVector<DraggedExport> pending_dragged_exports;
+	Vector<ObjectID> _get_objects_for_export_assignment() const;
+	String _get_dropped_resource_as_exported_member(const Ref<Resource> &p_resource, const Vector<ObjectID> &p_script_instance_obj_ids);
+	void _assign_dragged_export_variables();
 
 protected:
 	void _update_breakpoint_list();

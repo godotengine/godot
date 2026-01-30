@@ -40,9 +40,11 @@ class TranslationServer : public Object {
 	String fallback;
 
 	Ref<TranslationDomain> main_domain;
+#ifdef TOOLS_ENABLED
 	Ref<TranslationDomain> editor_domain;
 	Ref<TranslationDomain> property_domain;
 	Ref<TranslationDomain> doc_domain;
+#endif // TOOLS_ENABLED
 	HashMap<StringName, Ref<TranslationDomain>> custom_domains;
 
 	mutable HashMap<String, int> locale_compare_cache;
@@ -62,7 +64,7 @@ class TranslationServer : public Object {
 		String default_country;
 		HashSet<String> supported_countries;
 	};
-	static Vector<LocaleScriptInfo> locale_script_info;
+	static inline Vector<LocaleScriptInfo> locale_script_info;
 
 	struct Locale {
 		String language;
@@ -82,26 +84,42 @@ class TranslationServer : public Object {
 		Locale(const TranslationServer &p_server, const String &p_locale, bool p_add_defaults);
 	};
 
-	static HashMap<String, String> language_map;
-	static HashMap<String, String> script_map;
-	static HashMap<String, String> locale_rename_map;
-	static HashMap<String, String> country_name_map;
-	static HashMap<String, String> country_rename_map;
-	static HashMap<String, String> variant_map;
+	static inline HashMap<String, String> language_map;
+	static inline HashMap<String, String> script_map;
+	static inline HashMap<String, String> locale_rename_map;
+	static inline HashMap<String, String> country_name_map;
+	static inline HashMap<String, String> country_rename_map;
+	static inline HashMap<String, String> variant_map;
+	static inline HashMap<String, String> plural_rules_map;
+	static inline HashMap<String, int> num_system_map;
+	static inline HashMap<String, HashSet<String>> language_script_map;
 
 	void init_locale_info();
 
 public:
 	_FORCE_INLINE_ static TranslationServer *get_singleton() { return singleton; }
 
+	// Built-in domain accessors. For engine code only, user code should use `get_or_add_domain()` instead.
 	Ref<TranslationDomain> get_main_domain() const { return main_domain; }
+#ifdef TOOLS_ENABLED
 	Ref<TranslationDomain> get_editor_domain() const { return editor_domain; }
+	Ref<TranslationDomain> get_property_domain() const { return property_domain; }
+	Ref<TranslationDomain> get_doc_domain() const { return doc_domain; }
+#endif // TOOLS_ENABLED
 
 	void set_locale(const String &p_locale);
 	String get_locale() const;
 	void set_fallback_locale(const String &p_locale);
 	String get_fallback_locale() const;
+
+#ifndef DISABLE_DEPRECATED
 	Ref<Translation> get_translation_object(const String &p_locale);
+#endif
+
+	bool has_translation(const Ref<Translation> &p_translation) const;
+	TypedArray<Translation> get_translations() const;
+	TypedArray<Translation> find_translations(const String &p_locale, bool p_exact) const;
+	bool has_translation_for_locale(const String &p_locale, bool p_exact) const;
 
 	Vector<String> get_all_languages() const;
 	String get_language_name(const String &p_language) const;
@@ -113,6 +131,9 @@ public:
 	String get_country_name(const String &p_country) const;
 
 	String get_locale_name(const String &p_locale) const;
+	String get_plural_rules(const String &p_locale) const;
+
+	bool is_script_suppored_by_locale(const String &p_locale, const String &p_script) const;
 
 	PackedStringArray get_loaded_locales() const;
 
@@ -128,16 +149,15 @@ public:
 	void set_pseudolocalization_enabled(bool p_enabled);
 	void reload_pseudolocalization();
 
+	String format_number(const String &p_string, const String &p_locale) const;
+	String parse_number(const String &p_string, const String &p_locale) const;
+	String get_percent_sign(const String &p_locale) const;
+
 	String standardize_locale(const String &p_locale, bool p_add_defaults = false) const;
 
 	int compare_locales(const String &p_locale_a, const String &p_locale_b) const;
 
 	String get_tool_locale();
-	StringName tool_translate(const StringName &p_message, const StringName &p_context = "") const;
-	StringName tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
-	StringName property_translate(const StringName &p_message, const StringName &p_context = "") const;
-	StringName doc_translate(const StringName &p_message, const StringName &p_context = "") const;
-	StringName doc_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 
 	bool has_domain(const StringName &p_domain) const;
 	Ref<TranslationDomain> get_or_add_domain(const StringName &p_domain);
@@ -147,7 +167,7 @@ public:
 
 	void clear();
 
-	void load_translations();
+	void load_project_translations(Ref<TranslationDomain> p_domain);
 
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;

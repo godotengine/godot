@@ -40,11 +40,12 @@
 #include "drivers/unix/file_access_unix_pipe.h"
 #include "drivers/unix/net_socket_unix.h"
 #include "drivers/unix/thread_posix.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
 #include <mach/host_info.h>
+#include <mach/mach.h>
 #include <mach/mach_host.h>
 #include <mach/mach_time.h>
 #include <sys/sysctl.h>
@@ -409,14 +410,8 @@ Dictionary OS_Unix::get_memory_info() const {
 	meminfo["stack"] = -1;
 
 #if defined(__APPLE__)
-	int pagesize = 0;
-	size_t len = sizeof(pagesize);
-	if (sysctlbyname("vm.pagesize", &pagesize, &len, nullptr, 0) < 0) {
-		ERR_PRINT(vformat("Could not get vm.pagesize, error code: %d - %s", errno, strerror(errno)));
-	}
-
 	int64_t phy_mem = 0;
-	len = sizeof(phy_mem);
+	size_t len = sizeof(phy_mem);
 	if (sysctlbyname("hw.memsize", &phy_mem, &len, nullptr, 0) < 0) {
 		ERR_PRINT(vformat("Could not get hw.memsize, error code: %d - %s", errno, strerror(errno)));
 	}
@@ -426,21 +421,30 @@ Dictionary OS_Unix::get_memory_info() const {
 	if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&vmstat, &count) != KERN_SUCCESS) {
 		ERR_PRINT("Could not get host vm statistics.");
 	}
-	struct xsw_usage swap_used;
+	int64_t used = (vmstat.active_count + vmstat.inactive_count + vmstat.speculative_count + vmstat.wire_count + vmstat.compressor_page_count - vmstat.purgeable_count - vmstat.external_page_count) * (int64_t)vm_page_size;
+
+#if !defined(APPLE_EMBEDDED_ENABLED)
+	struct xsw_usage swap_used = {};
 	len = sizeof(swap_used);
 	if (sysctlbyname("vm.swapusage", &swap_used, &len, nullptr, 0) < 0) {
 		ERR_PRINT(vformat("Could not get vm.swapusage, error code: %d - %s", errno, strerror(errno)));
 	}
+#endif
 
 	if (phy_mem != 0) {
 		meminfo["physical"] = phy_mem;
 	}
-	if (vmstat.free_count * (int64_t)pagesize != 0) {
-		meminfo["free"] = vmstat.free_count * (int64_t)pagesize;
+	if (used != 0) {
+		meminfo["free"] = phy_mem - used;
 	}
-	if (swap_used.xsu_avail + vmstat.free_count * (int64_t)pagesize != 0) {
-		meminfo["available"] = swap_used.xsu_avail + vmstat.free_count * (int64_t)pagesize;
+#if defined(APPLE_EMBEDDED_ENABLED)
+	meminfo["available"] = meminfo["free"];
+#else
+	if (swap_used.xsu_avail + (phy_mem - used) != 0) {
+		meminfo["available"] = swap_used.xsu_avail + (phy_mem - used);
 	}
+#endif
+
 #elif defined(__FreeBSD__)
 	int pagesize = 0;
 	size_t len = sizeof(pagesize);
@@ -756,6 +760,11 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 	}
 
 	if (pid == 0) {
+		// The new process
+		// Create a new session-ID so parent won't wait for it.
+		// This ensures the process won't go zombie at the end.
+		setsid();
+
 		// The child process.
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
@@ -815,7 +824,7 @@ int OS_Unix::_wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_op
 	while (true) {
 		pid_t pid = waitpid(p_pid, r_status, p_options);
 		if (pid != -1) {
-			// Thread exited normally.
+			// When `p_options` has `WNOHANG`, 0 can be returned if the process is still running.
 			if (r_pid) {
 				*r_pid = pid;
 			}
@@ -845,24 +854,19 @@ bool OS_Unix::_check_pid_is_running(const pid_t p_pid, int *r_status) const {
 	pid_t pid = -1;
 	int status = 0;
 	const int result = _wait_for_pid_completion(p_pid, &status, WNOHANG, &pid);
-	if (result == 0) {
+	if (result == 0 && pid == 0) {
 		// Thread is still running.
-		if (pi && pid == p_pid) {
-			pi->exit_code = WIFEXITED(status) ? WEXITSTATUS(status) : status;
-		}
 		return true;
 	}
 
-	ERR_FAIL_COND_V_MSG(result == -1, false, vformat("Thread %d exited with errno: %d", (int)p_pid, errno));
-	// Thread exited normally.
+	ERR_FAIL_COND_V_MSG(result != 0, false, vformat("Thread %d exited with errno: %d", (int)p_pid, errno));
 
+	// Thread exited normally.
 	status = WIFEXITED(status) ? WEXITSTATUS(status) : status;
 
 	if (pi) {
 		pi->is_running = false;
-		if (pid == p_pid) {
-			pi->exit_code = status;
-		}
+		pi->exit_code = status;
 	}
 
 	if (r_status) {
@@ -1094,6 +1098,16 @@ Error OS_Unix::set_cwd(const String &p_cwd) {
 	}
 
 	return OK;
+}
+
+String OS_Unix::get_cwd() const {
+	String dir;
+	char real_current_dir_name[2048];
+	ERR_FAIL_NULL_V(getcwd(real_current_dir_name, 2048), ".");
+	if (dir.append_utf8(real_current_dir_name) != OK) {
+		dir = real_current_dir_name;
+	}
+	return dir;
 }
 
 bool OS_Unix::has_environment(const String &p_var) const {

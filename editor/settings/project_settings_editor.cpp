@@ -306,7 +306,7 @@ void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 			handled = true;
 		}
 
-		if (ED_IS_SHORTCUT("file_dialog/focus_path", p_event)) {
+		if (ED_IS_SHORTCUT("filesystem_dock/focus_path", p_event)) {
 			_focus_current_path_box();
 			handled = true;
 		}
@@ -685,6 +685,7 @@ void ProjectSettingsEditor::_bind_methods() {
 ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	singleton = this;
 	set_title(TTRC("Project Settings (project.godot)"));
+	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	set_clamp_to_embedder(true);
 
 	ps = ProjectSettings::get_singleton();
@@ -758,6 +759,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	general_settings_inspector->connect("category_changed", callable_mp(this, &ProjectSettingsEditor::_on_category_changed));
 	general_settings_inspector->get_inspector()->set_use_filter(true);
 	general_settings_inspector->get_inspector()->set_mark_unsaved(false);
+	general_settings_inspector->get_inspector()->remap_doc_property_class(ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX, "EditorSettings");
 	general_settings_inspector->get_inspector()->connect("property_selected", callable_mp(this, &ProjectSettingsEditor::_setting_selected));
 	general_settings_inspector->get_inspector()->connect("property_edited", callable_mp(this, &ProjectSettingsEditor::_setting_edited));
 	general_settings_inspector->get_inspector()->connect("property_deleted", callable_mp(this, &ProjectSettingsEditor::_on_editor_override_deleted));
@@ -811,6 +813,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	tab_container->add_child(localization_editor);
 
 	TabContainer *globals_container = memnew(TabContainer);
+	globals_container->set_theme_type_variation("TabContainerInner");
 	globals_container->set_name(TTRC("Globals"));
 	tab_container->add_child(globals_container);
 

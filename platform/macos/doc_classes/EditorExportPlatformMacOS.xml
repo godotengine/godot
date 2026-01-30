@@ -38,6 +38,11 @@
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.
 		</member>
+		<member name="application/liquid_glass_icon" type="String" setter="" getter="">
+			macOS 26 Liquid Glass icon source file. Use [url=https://developer.apple.com/icon-composer/]Icon Composer[/url] to create Liquid Glass icons.
+			[b]Note:[/b] Supported when exporting from macOS only, Xcode 26+ required.
+			[b]Note:[/b] Liquid Glass icons are supported on macOS 26 only, use [member application/icon] to set the icon for older macOS versions.
+		</member>
 		<member name="application/min_macos_version_arm64" type="String" setter="" getter="">
 			Minimum version of macOS required for this application to run on Apple Silicon Macs, in the [code]major.minor.patch[/code] or [code]major.minor[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
 		</member>
@@ -607,16 +612,16 @@
 		<member name="privacy/collected_data/purchase_history/used_for_tracking" type="bool" setter="" getter="">
 			Indicates whether your app uses purchase history for tracking.
 		</member>
-		<member name="privacy/collected_data/search_hhistory/collected" type="bool" setter="" getter="">
+		<member name="privacy/collected_data/search_history/collected" type="bool" setter="" getter="">
 			Indicates whether your app collects search history.
 		</member>
-		<member name="privacy/collected_data/search_hhistory/collection_purposes" type="int" setter="" getter="">
+		<member name="privacy/collected_data/search_history/collection_purposes" type="int" setter="" getter="">
 			The reasons your app collects search history. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
 		</member>
-		<member name="privacy/collected_data/search_hhistory/linked_to_user" type="bool" setter="" getter="">
+		<member name="privacy/collected_data/search_history/linked_to_user" type="bool" setter="" getter="">
 			Indicates whether your app links search history to the user's identity.
 		</member>
-		<member name="privacy/collected_data/search_hhistory/used_for_tracking" type="bool" setter="" getter="">
+		<member name="privacy/collected_data/search_history/used_for_tracking" type="bool" setter="" getter="">
 			Indicates whether your app uses search history for tracking.
 		</member>
 		<member name="privacy/collected_data/sensitive_info/collected" type="bool" setter="" getter="">
@@ -699,6 +704,7 @@
 		</member>
 		<member name="shader_baker/enabled" type="bool" setter="" getter="">
 			If [code]true[/code], shaders will be compiled and embedded in the application. This option is only supported when using the Forward+ or Mobile renderers.
+			[b]Note:[/b] When exporting as a dedicated server, the shader baker is always disabled since no rendering is performed.
 		</member>
 		<member name="ssh_remote_deploy/cleanup_script" type="String" setter="" getter="">
 			Script code to execute on the remote host when app is finished.

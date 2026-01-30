@@ -1,33 +1,23 @@
-/*
- * Copyright © 2009, 2023  Red Hat, Inc.
- * Copyright © 2015  Google, Inc.
+/****************************************************************************
  *
- * Permission is hereby granted, without written agreement and without
- * license or royalty fees, to use, copy, modify, and distribute this
- * software and its documentation for any purpose, provided that the
- * above copyright notice and the following two paragraphs appear in
- * all copies of this software.
+ * ft-hb.h
  *
- * IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE TO ANY PARTY FOR
- * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
- * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN
- * IF THE COPYRIGHT HOLDER HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
- * DAMAGE.
+ *   FreeType-HarfBuzz bridge (specification).
  *
- * THE COPYRIGHT HOLDER SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING,
- * BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
- * ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+ * Copyright (C) 2025 by
+ * Behdad Esfahbod.
  *
- * Red Hat Author(s): Behdad Esfahbod, Matthias Clasen
- * Google Author(s): Behdad Esfahbod
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
  */
+
 
 #ifndef FT_HB_H
 #define FT_HB_H
-
-#include <hb.h>
 
 #include <freetype/internal/compiler-macros.h>
 #include <freetype/freetype.h>
@@ -35,9 +25,53 @@
 
 FT_BEGIN_HEADER
 
-FT_LOCAL(hb_font_t *)
-hb_ft_font_create_ (FT_Face           ft_face,
-                    hb_destroy_func_t destroy);
+#ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
+
+#  include "ft-hb-types.h"
+
+#  ifdef FT_CONFIG_OPTION_USE_HARFBUZZ_DYNAMIC
+
+#    define HB_EXTERN( ret, name, args ) \
+              typedef ret (*ft_ ## name ## _func_t) args;
+#    include "ft-hb-decls.h"
+#    undef HB_EXTERN
+
+  typedef struct ft_hb_funcs_t
+  {
+#    define HB_EXTERN( ret, name, args ) \
+              ft_ ## name ## _func_t  name;
+#    include "ft-hb-decls.h"
+#    undef HB_EXTERN
+  } ft_hb_funcs_t;
+
+  struct  AF_ModuleRec_;
+
+  FT_LOCAL( void )
+  ft_hb_funcs_init( struct AF_ModuleRec_  *af_module );
+
+  FT_LOCAL( void )
+  ft_hb_funcs_done( struct AF_ModuleRec_  *af_module );
+
+#    define hb( x )  globals->module->hb_funcs->hb_ ## x
+
+#  else /* !FT_CONFIG_OPTION_USE_HARFBUZZ_DYNAMIC */
+
+#    define HB_EXTERN( ret, name, args ) \
+              ret name args;
+#    include "ft-hb-decls.h"
+#    undef HB_EXTERN
+
+#    define hb( x )  hb_ ## x
+
+#  endif /* !FT_CONFIG_OPTION_USE_HARFBUZZ_DYNAMIC */
+
+#endif /* FT_CONFIG_OPTION_USE_HARFBUZZ */
+
+
+  struct AF_FaceGlobalsRec_;
+
+  FT_LOCAL( FT_Bool )
+  ft_hb_enabled( struct AF_FaceGlobalsRec_  *globals );
 
 
 FT_END_HEADER

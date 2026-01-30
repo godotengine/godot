@@ -235,6 +235,7 @@ class VisualShaderEditor : public ShaderEditor {
 	CheckBox *custom_mode_box = nullptr;
 	bool custom_mode_enabled = false;
 
+	bool theme_dirty = false;
 	bool pending_update_preview = false;
 	bool shader_error = false;
 	AcceptDialog *code_preview_window = nullptr;
@@ -288,6 +289,8 @@ class VisualShaderEditor : public ShaderEditor {
 	HashMap<String, PropertyInfo> parameter_props;
 	VBoxContainer *param_vbox = nullptr;
 	VBoxContainer *param_vbox2 = nullptr;
+
+	float cached_theme_base_scale = 1.0f;
 
 	enum ShaderModeFlags {
 		MODE_FLAGS_SPATIAL_CANVASITEM = 1,
@@ -651,7 +654,7 @@ protected:
 
 public:
 	virtual void edit_shader(const Ref<Shader> &p_shader) override;
-	virtual void use_menu_bar_items(MenuButton *p_file_menu, Button *p_make_floating) override;
+	virtual void use_menu_bar(MenuButton *p_file_menu) override;
 	virtual void apply_shaders() override;
 	virtual bool is_unsaved() const override;
 	virtual void save_external_data(const String &p_str = "") override;
@@ -669,13 +672,13 @@ public:
 
 	void clear_custom_types();
 	void add_custom_type(const String &p_name, const String &p_type, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, bool p_highend);
-	void set_toggle_list_control(Control *p_control);
+	virtual void set_toggle_list_control(Control *p_toggle_list_control) override;
 
 	Dictionary get_custom_node_data(Ref<VisualShaderNodeCustom> &p_custom_node);
 	void update_custom_type(const Ref<Resource> &p_resource);
 
 	virtual Size2 get_minimum_size() const override;
-	void update_toggle_files_button();
+	virtual void update_toggle_files_button() override;
 
 	Ref<VisualShader> get_visual_shader() const { return visual_shader; }
 

@@ -57,7 +57,8 @@ private:
 	ColorRect *bg_rect = nullptr;
 	TextureRect *checkerboard = nullptr;
 	Label *metadata_label = nullptr;
-	Ref<ShaderMaterial> material;
+
+	static inline Ref<ShaderMaterial> texture_material;
 
 	ColorChannelSelector *channel_selector = nullptr;
 
@@ -71,6 +72,9 @@ protected:
 	void on_selected_channels_changed();
 
 public:
+	static void init_shaders();
+	static void finish_shaders();
+
 	TextureRect *get_texture_display();
 	TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata);
 };

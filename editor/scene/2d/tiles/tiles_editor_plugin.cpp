@@ -34,10 +34,10 @@
 
 #include "core/os/mutex.h"
 
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/inspector/multi_node_edit.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
@@ -280,7 +280,6 @@ bool TilesEditorUtils::SourceNameComparator::operator()(const int &p_a, const in
 }
 
 void TilesEditorUtils::display_tile_set_editor_panel() {
-	tile_map_plugin_singleton->hide_editor();
 	tile_set_plugin_singleton->make_visible(true);
 }
 
@@ -325,6 +324,32 @@ TilesEditorUtils::~TilesEditorUtils() {
 		pattern_preview_thread.wait_to_finish();
 	}
 	singleton = nullptr;
+}
+
+String TileSetSourceItemList::get_tooltip(const Point2 &p_pos) const {
+	int idx = get_item_at_position(p_pos);
+	if (tile_set.is_null() || idx == -1) {
+		return ItemList::get_tooltip(p_pos);
+	}
+	idx = get_item_metadata(idx);
+
+	Ref<TileSetAtlasSource> atlas = tile_set->get_source(idx);
+	if (atlas.is_valid() && atlas->get_texture().is_valid()) {
+		return vformat(TTR("Source ID: %d\nTexture path: %s"), idx, atlas->get_texture()->get_path());
+	}
+	return vformat(TTR("Source ID: %d"), idx);
+}
+
+TileSetSourceItemList::TileSetSourceItemList() {
+	set_fixed_icon_size(Size2(60, 60) * EDSCALE);
+	set_h_size_flags(SIZE_EXPAND_FILL);
+	set_v_size_flags(SIZE_EXPAND_FILL);
+	set_stretch_ratio(0.25);
+	set_custom_minimum_size(Size2(70, 0) * EDSCALE);
+	set_theme_type_variation("ItemListSecondary");
+	set_texture_filter(TEXTURE_FILTER_NEAREST);
+	set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	add_user_signal(MethodInfo("sort_request"));
 }
 
 void TileMapEditorPlugin::_tile_map_layer_changed() {
@@ -386,7 +411,7 @@ void TileMapEditorPlugin::_edit_tile_map_layer(TileMapLayer *p_tile_map_layer, b
 	Ref<TileSet> tile_set = p_tile_map_layer->get_tile_set();
 	if (tile_set.is_valid()) {
 		tile_set_plugin_singleton->edit(tile_set.ptr());
-		tile_set_plugin_singleton->make_visible(true);
+		tile_set_plugin_singleton->open_editor();
 		tile_set_id = tile_set->get_instance_id();
 	} else {
 		tile_set_plugin_singleton->edit(nullptr);
@@ -455,13 +480,10 @@ bool TileMapEditorPlugin::handles(Object *p_object) const {
 
 void TileMapEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		button->show();
-		EditorNode::get_bottom_panel()->make_item_visible(editor);
+		editor->make_visible();
 	} else {
-		button->hide();
-		if (editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
-		}
+		editor->close();
+		TileSetEditor::get_singleton()->close();
 	}
 }
 
@@ -471,12 +493,6 @@ bool TileMapEditorPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_even
 
 void TileMapEditorPlugin::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	editor->forward_canvas_draw_over_viewport(p_overlay);
-}
-
-void TileMapEditorPlugin::hide_editor() {
-	if (editor->is_visible_in_tree()) {
-		EditorNode::get_bottom_panel()->hide_bottom_panel();
-	}
 }
 
 bool TileMapEditorPlugin::is_editor_visible() const {
@@ -495,8 +511,8 @@ TileMapEditorPlugin::TileMapEditorPlugin() {
 	editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	editor->hide();
 
-	button = EditorNode::get_bottom_panel()->add_item(TTRC("TileMap"), editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_tile_map_bottom_panel", TTRC("Toggle TileMap Bottom Panel")));
-	button->hide();
+	EditorDockManager::get_singleton()->add_dock(editor);
+	editor->close();
 }
 
 TileMapEditorPlugin::~TileMapEditorPlugin() {
@@ -518,16 +534,14 @@ bool TileSetEditorPlugin::handles(Object *p_object) const {
 
 void TileSetEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		button->show();
-		if (!tile_map_plugin_singleton->is_editor_visible()) {
-			EditorNode::get_bottom_panel()->make_item_visible(editor);
-		}
+		editor->make_visible();
 	} else {
-		button->hide();
-		if (editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
-		}
+		editor->close();
 	}
+}
+
+void TileSetEditorPlugin::open_editor() {
+	editor->open();
 }
 
 ObjectID TileSetEditorPlugin::get_edited_tileset() const {
@@ -546,8 +560,8 @@ TileSetEditorPlugin::TileSetEditorPlugin() {
 	editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	editor->hide();
 
-	button = EditorNode::get_bottom_panel()->add_item(TTRC("TileSet"), editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_tile_set_bottom_panel", TTRC("Toggle TileSet Bottom Panel")));
-	button->hide();
+	EditorDockManager::get_singleton()->add_dock(editor);
+	editor->close();
 }
 
 TileSetEditorPlugin::~TileSetEditorPlugin() {

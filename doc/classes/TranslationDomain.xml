@@ -23,17 +23,46 @@
 				Removes all translations.
 			</description>
 		</method>
+		<method name="find_translations" qualifiers="const">
+			<return type="Translation[]" />
+			<param index="0" name="locale" type="String" />
+			<param index="1" name="exact" type="bool" />
+			<description>
+				Returns the [Translation] instances that match [param locale] (see [method TranslationServer.compare_locales]). If [param exact] is [code]true[/code], only instances whose locale exactly equals [param locale] will be returned.
+			</description>
+		</method>
 		<method name="get_locale_override" qualifiers="const">
 			<return type="String" />
 			<description>
 				Returns the locale override of the domain. Returns an empty string if locale override is disabled.
 			</description>
 		</method>
-		<method name="get_translation_object" qualifiers="const">
+		<method name="get_translation_object" qualifiers="const" deprecated="Use [method find_translations] instead.">
 			<return type="Translation" />
 			<param index="0" name="locale" type="String" />
 			<description>
 				Returns the [Translation] instance that best matches [param locale]. Returns [code]null[/code] if there are no matches.
+			</description>
+		</method>
+		<method name="get_translations" qualifiers="const">
+			<return type="Translation[]" />
+			<description>
+				Returns all available [Translation] instances as added by [method add_translation].
+			</description>
+		</method>
+		<method name="has_translation" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="translation" type="Translation" />
+			<description>
+				Returns [code]true[/code] if this translation domain contains the given [param translation].
+			</description>
+		</method>
+		<method name="has_translation_for_locale" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="locale" type="String" />
+			<param index="1" name="exact" type="bool" />
+			<description>
+				Returns [code]true[/code] if there are any [Translation] instances that match [param locale] (see [method TranslationServer.compare_locales]). If [param exact] is [code]true[/code], only instances whose locale exactly equals [param locale] are considered.
 			</description>
 		</method>
 		<method name="pseudolocalize" qualifiers="const">

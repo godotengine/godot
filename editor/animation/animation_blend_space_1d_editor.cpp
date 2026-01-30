@@ -123,7 +123,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 		}
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && tool_select->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && tool_select->is_pressed() && !mb->is_shift_pressed() && !mb->is_command_or_control_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		blend_space_draw->queue_redraw(); // why not
 
 		// try to see if a point can be selected
@@ -136,12 +136,23 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 
 				Ref<AnimationNode> node = blend_space->get_blend_point_node(i);
 				EditorNode::get_singleton()->push_item(node.ptr(), "", true);
+
+				if (mb->is_double_click() && AnimationTreeEditor::get_singleton()->can_edit(node)) {
+					_open_editor();
+					return;
+				}
+
 				dragging_selected_attempt = true;
 				drag_from = mb->get_position();
 				_update_tool_erase();
 				_update_edited_point_pos();
 				return;
 			}
+		}
+
+		// If no point was selected, select host BlendSpace1D node.
+		if (selected_point == -1) {
+			EditorNode::get_singleton()->push_item(blend_space.ptr(), "", true);
 		}
 	}
 
@@ -176,13 +187,19 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 	}
 
 	// *set* the blend
-	if (mb.is_valid() && !mb->is_pressed() && tool_blend->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && !dragging_selected_attempt && ((tool_select->is_pressed() && mb->is_shift_pressed()) || tool_blend->is_pressed()) && mb->get_button_index() == MouseButton::LEFT) {
 		float blend_pos = mb->get_position().x / blend_space_draw->get_size().x;
 		blend_pos *= blend_space->get_max_space() - blend_space->get_min_space();
 		blend_pos += blend_space->get_min_space();
 
 		tree->set(get_blend_position_path(), blend_pos);
+
+		dragging_blend_position = true;
 		blend_space_draw->queue_redraw();
+	}
+
+	if (mb.is_valid() && !mb->is_pressed() && dragging_blend_position && mb->get_button_index() == MouseButton::LEFT) {
+		dragging_blend_position = false;
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -194,7 +211,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 		_update_edited_point_pos();
 	}
 
-	if (mm.is_valid() && tool_blend->is_pressed() && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
+	if (mm.is_valid() && dragging_blend_position && !dragging_selected_attempt && ((tool_select->is_pressed() && mm->is_shift_pressed()) || tool_blend->is_pressed()) && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 		float blend_pos = mm->get_position().x / blend_space_draw->get_size().x;
 		blend_pos *= blend_space->get_max_space() - blend_space->get_min_space();
 		blend_pos += blend_space->get_min_space();
@@ -529,7 +546,11 @@ void AnimationNodeBlendSpace1DEditor::_erase_selected() {
 		undo_redo->add_undo_method(this, "_update_space");
 		undo_redo->commit_action();
 
+		// Return selection to host BlendSpace1D node.
+		EditorNode::get_singleton()->push_item(blend_space.ptr(), "", true);
+
 		updating = false;
+		_update_tool_erase();
 
 		blend_space_draw->queue_redraw();
 	}
@@ -589,11 +610,7 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 
 			String error;
 
-			if (!tree->is_active()) {
-				error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
-			} else if (tree->is_state_invalid()) {
-				error = tree->get_invalid_state_reason();
-			}
+			error = tree->get_editor_error_message();
 
 			if (error != error_label->get_text()) {
 				error_label->set_text(error);
@@ -653,21 +670,13 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	Ref<ButtonGroup> bg;
 	bg.instantiate();
 
-	tool_blend = memnew(Button);
-	tool_blend->set_theme_type_variation(SceneStringName(FlatButton));
-	tool_blend->set_toggle_mode(true);
-	tool_blend->set_button_group(bg);
-	top_hb->add_child(tool_blend);
-	tool_blend->set_pressed(true);
-	tool_blend->set_tooltip_text(TTR("Set the blending position within the space"));
-	tool_blend->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(3));
-
 	tool_select = memnew(Button);
 	tool_select->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_select->set_toggle_mode(true);
 	tool_select->set_button_group(bg);
 	top_hb->add_child(tool_select);
-	tool_select->set_tooltip_text(TTR("Select and move points, create points with RMB."));
+	tool_select->set_pressed(true);
+	tool_select->set_tooltip_text(TTR("Select and move points.\nRMB: Create point at position clicked.\nShift+LMB+Drag: Set the blending position within the space."));
 	tool_select->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(0));
 
 	tool_create = memnew(Button);
@@ -677,6 +686,14 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	top_hb->add_child(tool_create);
 	tool_create->set_tooltip_text(TTR("Create points."));
 	tool_create->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(1));
+
+	tool_blend = memnew(Button);
+	tool_blend->set_theme_type_variation(SceneStringName(FlatButton));
+	tool_blend->set_toggle_mode(true);
+	tool_blend->set_button_group(bg);
+	top_hb->add_child(tool_blend);
+	tool_blend->set_tooltip_text(TTR("Set the blending position within the space."));
+	tool_blend->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(2));
 
 	tool_erase_sep = memnew(VSeparator);
 	top_hb->add_child(tool_erase_sep);

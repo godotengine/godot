@@ -46,6 +46,7 @@ AddMetadataDialog::AddMetadataDialog() {
 	add_meta_name = memnew(LineEdit);
 	add_meta_name->set_accessibility_name(TTRC("Name:"));
 	add_meta_name->set_custom_minimum_size(Size2(200 * EDSCALE, 1));
+	add_meta_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(add_meta_name);
 	hbc->add_child(memnew(Label(TTR("Type:"))));
 

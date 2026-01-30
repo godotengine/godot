@@ -249,8 +249,8 @@ public:
 typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const Ref<Resource> &p_resource);
 
 class EditorScriptCodeCompletionCache;
+class FindInFilesContainer;
 class FindInFilesDialog;
-class FindInFilesPanel;
 
 class ScriptEditor : public PanelContainer {
 	GDCLASS(ScriptEditor, PanelContainer);
@@ -327,7 +327,6 @@ class ScriptEditor : public PanelContainer {
 	MenuButton *debug_menu = nullptr;
 	PopupMenu *context_menu = nullptr;
 	Timer *autosave_timer = nullptr;
-	uint64_t idle = 0;
 
 	PopupMenu *recent_scripts = nullptr;
 	PopupMenu *theme_submenu = nullptr;
@@ -346,7 +345,6 @@ class ScriptEditor : public PanelContainer {
 	VBoxContainer *scripts_vbox = nullptr;
 	VBoxContainer *overview_vbox = nullptr;
 	HBoxContainer *buttons_hbox = nullptr;
-	Label *filename = nullptr;
 	Button *members_overview_alphabeta_sort_button = nullptr;
 	bool members_overview_enabled;
 	ItemList *help_overview = nullptr;
@@ -357,22 +355,28 @@ class ScriptEditor : public PanelContainer {
 	AcceptDialog *error_dialog = nullptr;
 	ConfirmationDialog *erase_tab_confirm = nullptr;
 	ScriptCreateDialog *script_create_dialog = nullptr;
-	Button *scripts_visible = nullptr;
 	FindReplaceBar *find_replace_bar = nullptr;
 
 	float zoom_factor = 1.0f;
 
-	TextureRect *script_icon = nullptr;
-	Label *script_name_label = nullptr;
+	HBoxContainer *script_name_button_hbox = nullptr;
+	Control *script_name_button_left_spacer = nullptr;
+	Control *script_name_button_right_spacer = nullptr;
+	Button *script_name_button = nullptr;
+	int script_name_width = 0;
 
 	Button *script_back = nullptr;
 	Button *script_forward = nullptr;
 
 	FindInFilesDialog *find_in_files_dialog = nullptr;
-	FindInFilesPanel *find_in_files = nullptr;
-	Button *find_in_files_button = nullptr;
+	FindInFilesContainer *find_in_files = nullptr;
 
 	WindowWrapper *window_wrapper = nullptr;
+
+#ifdef ANDROID_ENABLED
+	Control *virtual_keyboard_spacer = nullptr;
+	int last_kb_height = -1;
+#endif
 
 	enum {
 		SCRIPT_EDITOR_FUNC_MAX = 32,
@@ -411,6 +415,7 @@ class ScriptEditor : public PanelContainer {
 	void _resave_scripts(const String &p_str);
 
 	bool _test_script_times_on_disk(Ref<Resource> p_for_script = Ref<Resource>());
+	bool _script_exists(const String &p_path) const;
 
 	void _add_recent_script(const String &p_path);
 	void _update_recent_scripts();
@@ -438,7 +443,6 @@ class ScriptEditor : public PanelContainer {
 
 	bool pending_auto_reload;
 	bool auto_reload_running_scripts;
-	bool reload_all_scripts = false;
 	Vector<String> script_paths_to_reload;
 	void _live_auto_reload_running_scripts();
 
@@ -453,7 +457,6 @@ class ScriptEditor : public PanelContainer {
 	void _scene_saved_callback(const String &p_path);
 	void _mark_built_in_scripts_as_saved(const String &p_parent_path);
 
-	bool open_textfile_after_create = true;
 	bool trim_trailing_whitespace_on_save;
 	bool trim_final_newlines_on_save;
 	bool convert_indent_on_save;
@@ -476,7 +479,6 @@ class ScriptEditor : public PanelContainer {
 	Ref<ConfigFile> script_editor_cache;
 	void _save_editor_state(ScriptEditorBase *p_editor);
 	void _save_layout();
-	void _editor_settings_changed();
 	void _apply_editor_settings();
 	void _filesystem_changed();
 	void _files_moved(const String &p_old_file, const String &p_new_file);
@@ -518,6 +520,9 @@ class ScriptEditor : public PanelContainer {
 	void _script_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index);
 	void _make_script_list_context_menu();
 
+	void _calculate_script_name_button_size();
+	void _calculate_script_name_button_ratio();
+
 	void _help_search(const String &p_text);
 
 	void _history_forward();
@@ -525,6 +530,7 @@ class ScriptEditor : public PanelContainer {
 
 	bool waiting_update_names;
 	bool lock_history = false;
+	void _unlock_history();
 
 	void _help_class_open(const String &p_class);
 	void _help_class_goto(const String &p_desc);
@@ -552,7 +558,6 @@ class ScriptEditor : public PanelContainer {
 	void _on_find_in_files_result_selected(const String &fpath, int line_number, int begin, int end);
 	void _start_find_in_files(bool with_replace);
 	void _on_find_in_files_modified_files(const PackedStringArray &paths);
-	void _on_find_in_files_close_button_clicked();
 
 	void _set_script_zoom_factor(float p_zoom_factor);
 	void _update_code_editor_zoom_factor(CodeTextEditor *p_code_text_editor);
@@ -614,7 +619,6 @@ public:
 	void update_docs_from_script(const Ref<Script> &p_script);
 
 	void trigger_live_script_reload(const String &p_script_path);
-	void trigger_live_script_reload_all();
 
 	VSplitContainer *get_left_list_split() { return list_split; }
 
@@ -645,6 +649,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static bool open_in_external_editor(const String &p_path, int p_line, int p_col, bool p_ignore_project = false);
+
 	virtual String get_plugin_name() const override { return TTRC("Script"); }
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override;

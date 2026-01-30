@@ -150,6 +150,8 @@ typedef struct SDL_joylist_item
 {
     SDL_JoystickID device_instance;
     char *path; // "/dev/input/event2" or whatever
+    Uint16 vendor;
+    Uint16 product;
     char *name; // "SideWinder 3D Pro" or whatever
     SDL_GUID guid;
     dev_t devnum;
@@ -486,6 +488,8 @@ static void MaybeAddDevice(const char *path)
         item->devnum = sb.st_rdev;
         item->steam_virtual_gamepad_slot = -1;
         item->path = SDL_strdup(path);
+        item->vendor = vendor;
+        item->product = product;
         item->name = name;
         item->guid = guid;
 
@@ -1844,6 +1848,20 @@ static void PollAllValues(Uint64 timestamp, SDL_Joystick *joystick)
     // Joyballs are relative input, so there's no poll state. Events only!
 }
 
+static void CorrectSensorData(struct joystick_hwdata *hwdata, float *values, float *data)
+{
+    if (hwdata->item->vendor == USB_VENDOR_NINTENDO) {
+        // The Nintendo driver uses a different axis order than SDL
+        data[0] = -values[1];
+        data[1] = values[2];
+        data[2] = -values[0];
+    } else {
+        data[0] = values[0];
+        data[1] = values[1];
+        data[2] = values[2];
+    }
+}
+
 static void PollAllSensors(Uint64 timestamp, SDL_Joystick *joystick)
 {
     struct input_absinfo absinfo;
@@ -1854,27 +1872,31 @@ static void PollAllSensors(Uint64 timestamp, SDL_Joystick *joystick)
     SDL_assert(joystick->hwdata->fd_sensor >= 0);
 
     if (joystick->hwdata->has_gyro) {
-        float data[3] = {0.0f, 0.0f, 0.0f};
+        float values[3] = {0.0f, 0.0f, 0.0f};
         for (i = 0; i < 3; i++) {
             if (ioctl(joystick->hwdata->fd_sensor, EVIOCGABS(ABS_RX + i), &absinfo) >= 0) {
-                data[i] = absinfo.value * (SDL_PI_F / 180.f) / joystick->hwdata->gyro_scale[i];
+                values[i] = absinfo.value * (SDL_PI_F / 180.f) / joystick->hwdata->gyro_scale[i];
 #ifdef DEBUG_INPUT_EVENTS
                 SDL_Log("Joystick : Re-read Gyro (axis %d) val= %f", i, data[i]);
 #endif
             }
         }
+        float data[3];
+        CorrectSensorData(joystick->hwdata, values, data);
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, SDL_US_TO_NS(joystick->hwdata->sensor_tick), data, 3);
     }
     if (joystick->hwdata->has_accelerometer) {
-        float data[3] = {0.0f, 0.0f, 0.0f};
+        float values[3] = {0.0f, 0.0f, 0.0f};
         for (i = 0; i < 3; i++) {
             if (ioctl(joystick->hwdata->fd_sensor, EVIOCGABS(ABS_X + i), &absinfo) >= 0) {
-                data[i] = absinfo.value * SDL_STANDARD_GRAVITY / joystick->hwdata->accelerometer_scale[i];
+                values[i] = absinfo.value * SDL_STANDARD_GRAVITY / joystick->hwdata->accelerometer_scale[i];
 #ifdef DEBUG_INPUT_EVENTS
                 SDL_Log("Joystick : Re-read Accelerometer (axis %d) val= %f", i, data[i]);
 #endif
             }
         }
+        float data[3];
+        CorrectSensorData(joystick->hwdata, values, data);
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, SDL_US_TO_NS(joystick->hwdata->sensor_tick), data, 3);
     }
 }
@@ -2058,12 +2080,15 @@ static void HandleInputEvents(SDL_Joystick *joystick)
                             PollAllSensors(SDL_GetTicksNS(), joystick); // try to sync up to current state now
                         } else {
                             Uint64 timestamp = SDL_EVDEV_GetEventTimestamp(event);
+                            float data[3];
+                            CorrectSensorData(joystick->hwdata, joystick->hwdata->gyro_data, data);
                             SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO,
                                                    SDL_US_TO_NS(joystick->hwdata->sensor_tick),
-                                                   joystick->hwdata->gyro_data, 3);
+                                                   data, 3);
+                            CorrectSensorData(joystick->hwdata, joystick->hwdata->accel_data, data);
                             SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL,
                                                    SDL_US_TO_NS(joystick->hwdata->sensor_tick),
-                                                   joystick->hwdata->accel_data, 3);
+                                                   data, 3);
                         }
                         break;
                     default:

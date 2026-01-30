@@ -30,6 +30,8 @@
 
 #include "shader_types.h"
 
+#include "scene/resources/shader.h"
+
 const HashMap<StringName, ShaderLanguage::FunctionInfo> &ShaderTypes::get_functions(RS::ShaderMode p_mode) const {
 	return shader_modes[p_mode].functions;
 }
@@ -82,6 +84,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["constants"].built_ins["E"] = constvt(ShaderLanguage::TYPE_FLOAT, { e_scalar });
 	shader_modes[RS::SHADER_SPATIAL].functions["constants"].built_ins["OUTPUT_IS_SRGB"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RS::SHADER_SPATIAL].functions["constants"].built_ins["CLIP_SPACE_FAR"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_SPATIAL].functions["constants"].built_ins["IS_MULTIVIEW"] = constt(ShaderLanguage::TYPE_BOOL);
 
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["VERTEX"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["NORMAL"] = ShaderLanguage::TYPE_VEC3;
@@ -516,11 +519,13 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_FOG].functions["fog"].built_ins["EMISSION"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[RS::SHADER_FOG].functions["fog"].main_function = true;
 
+	// Must be kept in sync with the Shader::Mode enum.
 	shader_types_list.push_back("spatial");
 	shader_types_list.push_back("canvas_item");
 	shader_types_list.push_back("particles");
 	shader_types_list.push_back("sky");
 	shader_types_list.push_back("fog");
+	DEV_ASSERT(shader_types_list.size() == Shader::MODE_MAX);
 
 	for (const String &type : shader_types_list) {
 		shader_types.insert(type);

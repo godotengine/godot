@@ -47,7 +47,7 @@ public:
 		HTC_MAX_CONTROLLERS
 	};
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	PackedStringArray get_suggested_tracker_names() override;
 

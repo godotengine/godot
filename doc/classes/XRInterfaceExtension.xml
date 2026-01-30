@@ -108,7 +108,7 @@
 		<method name="_get_tracking_status" qualifiers="virtual const">
 			<return type="int" enum="XRInterface.TrackingStatus" />
 			<description>
-				Returns an [enum XRInterface.TrackingStatus] specifying the current status of our tracking.
+				Returns the current status of our tracking.
 			</description>
 		</method>
 		<method name="_get_transform_for_view" qualifiers="virtual">

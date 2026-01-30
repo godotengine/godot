@@ -128,7 +128,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitS
 
 	for (int i = 0; i < count; i++) {
 		jobject j_param = env->GetObjectArrayElement(j_signal_params, i);
-		ERR_FAIL_NULL(j_param);
 		memnew_placement(&variant_params[i], Variant(_jobject_to_variant(env, j_param)));
 		args[i] = &variant_params[i];
 		env->DeleteLocalRef(j_param);

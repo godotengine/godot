@@ -47,11 +47,15 @@ const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
 	TTRC("Script Editor"),
 	TTRC("Asset Library"),
 	TTRC("Scene Tree Editing"),
-	TTRC("Node Dock"),
+#ifndef DISABLE_DEPRECATED
+	TTRC("Node Dock (deprecated)"),
+#endif
 	TTRC("FileSystem Dock"),
 	TTRC("Import Dock"),
 	TTRC("History Dock"),
 	TTRC("Game View"),
+	TTRC("Signals Dock"),
+	TTRC("Groups Dock"),
 };
 
 const char *EditorFeatureProfile::feature_descriptions[FEATURE_MAX] = {
@@ -59,11 +63,15 @@ const char *EditorFeatureProfile::feature_descriptions[FEATURE_MAX] = {
 	TTRC("Allows to edit scripts using the integrated script editor."),
 	TTRC("Provides built-in access to the Asset Library."),
 	TTRC("Allows editing the node hierarchy in the Scene dock."),
+#ifndef DISABLE_DEPRECATED
 	TTRC("Allows to work with signals and groups of the node selected in the Scene dock."),
+#endif
 	TTRC("Allows to browse the local file system via a dedicated dock."),
 	TTRC("Allows to configure import settings for individual assets. Requires the FileSystem dock to function."),
 	TTRC("Provides an overview of the editor's and each scene's undo history."),
 	TTRC("Provides tools for selecting and debugging nodes at runtime."),
+	TTRC("Allows to work with signals of the node selected in the Scene dock."),
+	TTRC("Allows to manage groups of the node selected in the Scene dock."),
 };
 
 const char *EditorFeatureProfile::feature_identifiers[FEATURE_MAX] = {
@@ -71,11 +79,15 @@ const char *EditorFeatureProfile::feature_identifiers[FEATURE_MAX] = {
 	"script",
 	"asset_lib",
 	"scene_tree",
+#ifndef DISABLE_DEPRECATED
 	"node_dock",
+#endif
 	"filesystem_dock",
 	"import_dock",
 	"history_dock",
 	"game",
+	"signals_dock",
+	"groups_dock",
 };
 
 void EditorFeatureProfile::set_disable_class(const StringName &p_class, bool p_disabled) {
@@ -308,11 +320,15 @@ void EditorFeatureProfile::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_SCRIPT);
 	BIND_ENUM_CONSTANT(FEATURE_ASSET_LIB);
 	BIND_ENUM_CONSTANT(FEATURE_SCENE_TREE);
+#ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(FEATURE_NODE_DOCK);
+#endif
 	BIND_ENUM_CONSTANT(FEATURE_FILESYSTEM_DOCK);
 	BIND_ENUM_CONSTANT(FEATURE_IMPORT_DOCK);
 	BIND_ENUM_CONSTANT(FEATURE_HISTORY_DOCK);
 	BIND_ENUM_CONSTANT(FEATURE_GAME);
+	BIND_ENUM_CONSTANT(FEATURE_SIGNALS_DOCK);
+	BIND_ENUM_CONSTANT(FEATURE_GROUPS_DOCK);
 	BIND_ENUM_CONSTANT(FEATURE_MAX);
 }
 
@@ -1012,6 +1028,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	property_list->set_hide_folding(true);
 	property_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	property_list->connect("item_edited", callable_mp(this, &EditorFeatureProfileManager::_property_item_edited), CONNECT_DEFERRED);
+	property_list->set_theme_type_variation("TreeSecondary");
 	// It will be displayed once the user creates or chooses a profile.
 	property_list_vbc->hide();
 
@@ -1062,6 +1079,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	export_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
 	set_title(TTR("Manage Editor Feature Profiles"));
+	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	EDITOR_DEF("_default_feature_profile", "");
 
 	update_timer = memnew(Timer);

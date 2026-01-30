@@ -40,15 +40,15 @@
 #include "scene/resources/animated_texture.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/compressed_texture.h"
+#include "scene/resources/dpi_texture.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/portable_compressed_texture.h"
-#include "scene/resources/style_box_flat.h"
 
-constexpr const char *texture_2d_shader = R"(
+constexpr const char *texture_2d_shader_code = R"(
 shader_type canvas_item;
 render_mode blend_mix;
 
-uniform vec4 u_channel_factors = vec4(1.0);
+instance uniform vec4 u_channel_factors = vec4(1.0);
 
 vec4 filter_preview_colors(vec4 input_color, vec4 factors) {
 	// Filter RGB.
@@ -72,6 +72,20 @@ void fragment() {
 	COLOR = filter_preview_colors(texture(TEXTURE, UV), u_channel_factors);
 }
 )";
+
+void TexturePreview::init_shaders() {
+	texture_material.instantiate();
+
+	Ref<Shader> texture_shader;
+	texture_shader.instantiate();
+	texture_shader->set_code(texture_2d_shader_code);
+
+	texture_material->set_shader(texture_shader);
+}
+
+void TexturePreview::finish_shaders() {
+	texture_material.unref();
+}
 
 TextureRect *TexturePreview::get_texture_display() {
 	return texture_display;
@@ -212,7 +226,7 @@ void TexturePreview::_update_metadata_label_text() {
 }
 
 void TexturePreview::on_selected_channels_changed() {
-	material->set_shader_parameter("u_channel_factors", channel_selector->get_selected_channel_factors());
+	texture_display->set_instance_shader_parameter("u_channel_factors", channel_selector->get_selected_channel_factors());
 }
 
 TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
@@ -239,21 +253,12 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 	checkerboard->set_texture_repeat(CanvasItem::TEXTURE_REPEAT_ENABLED);
 	centering_container->add_child(checkerboard);
 
-	{
-		Ref<Shader> shader;
-		shader.instantiate();
-		shader->set_code(texture_2d_shader);
-
-		material.instantiate();
-		material->set_shader(shader);
-		material->set_shader_parameter("u_channel_factors", Vector4(1, 1, 1, 1));
-	}
-
 	texture_display = memnew(TextureRect);
 	texture_display->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 	texture_display->set_texture(p_texture);
 	texture_display->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
-	texture_display->set_material(material);
+	texture_display->set_material(texture_material);
+	texture_display->set_instance_shader_parameter("u_channel_factors", Vector4(1, 1, 1, 1));
 	centering_container->add_child(texture_display);
 
 	// Creating a separate control so it is not affected by the filtering shader.
@@ -306,7 +311,7 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 }
 
 bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
-	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr || Object::cast_to<Image>(p_object) != nullptr;
+	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr || Object::cast_to<DPITexture>(p_object) != nullptr || Object::cast_to<Image>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginTexture::parse_begin(Object *p_object) {

@@ -66,7 +66,7 @@ String EventListenerLineEdit::get_event_text(const Ref<InputEvent> &p_event, boo
 		String mods_text = key->InputEventWithModifiers::as_text();
 		mods_text = mods_text.is_empty() ? mods_text : mods_text + "+";
 		if (key->is_command_or_control_autoremap()) {
-			if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+			if (OS::prefer_meta_over_ctrl()) {
 				mods_text = mods_text.replace("Command", "Command/Ctrl");
 			} else {
 				mods_text = mods_text.replace("Ctrl", "Command/Ctrl");
@@ -94,7 +94,7 @@ String EventListenerLineEdit::get_event_text(const Ref<InputEvent> &p_event, boo
 		}
 
 		if (text.is_empty()) {
-			text = "(" + TTR("Unset") + ")";
+			text = "(" + TTR("unset") + ")";
 		}
 	} else {
 		text = p_event->as_text();

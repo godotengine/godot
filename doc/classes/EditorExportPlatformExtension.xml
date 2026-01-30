@@ -15,8 +15,8 @@
 			<param index="0" name="preset" type="EditorExportPreset" />
 			<param index="1" name="debug" type="bool" />
 			<description>
-				Returns [code]true[/code], if specified [param preset] is valid and can be exported. Use [method set_config_error] and [method set_config_missing_templates] to set error details.
-				Usual implementation can call [method _has_valid_export_configuration] and [method _has_valid_project_configuration] to determine if export is possible.
+				Returns [code]true[/code] if the specified [param preset] is valid and can be exported. Use [method set_config_error] and [method set_config_missing_templates] to set error details.
+				Usual implementations call [method _has_valid_export_configuration] and [method _has_valid_project_configuration] to determine if exporting is possible.
 			</description>
 		</method>
 		<method name="_cleanup" qualifiers="virtual">
@@ -219,6 +219,12 @@
 			<param index="0" name="preset" type="EditorExportPreset" />
 			<description>
 				Returns [code]true[/code] if project configuration is valid.
+			</description>
+		</method>
+		<method name="_initialize" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Initializes the plugin. Called by the editor when platform is registered.
 			</description>
 		</method>
 		<method name="_is_executable" qualifiers="virtual const">

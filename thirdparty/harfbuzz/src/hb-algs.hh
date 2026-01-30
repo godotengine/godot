@@ -92,16 +92,25 @@ template <typename Type>
 struct __attribute__((packed)) hb_packed_t { Type v; };
 
 #ifndef HB_FAST_NUM_ACCESS
+
 #if defined(__OPTIMIZE__) && \
     defined(__BYTE_ORDER) && \
     (__BYTE_ORDER == __BIG_ENDIAN || \
      (__BYTE_ORDER == __LITTLE_ENDIAN && \
       hb_has_builtin(__builtin_bswap16) && \
-      hb_has_builtin(__builtin_bswap32)))
+      hb_has_builtin(__builtin_bswap32) && \
+      hb_has_builtin(__builtin_bswap64)))
 #define HB_FAST_NUM_ACCESS 1
 #else
 #define HB_FAST_NUM_ACCESS 0
 #endif
+
+// https://github.com/harfbuzz/harfbuzz/issues/5456
+#if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ <= 12)
+#undef HB_FAST_NUM_ACCESS
+#define HB_FAST_NUM_ACCESS 0
+#endif
+
 #endif
 
 template <bool BE, typename Type, int Bytes = sizeof (Type)>
@@ -214,6 +223,14 @@ struct HBInt<BE, Type, 8>
   HBInt () = default;
 
   HBInt (Type V)
+#if HB_FAST_NUM_ACCESS
+  {
+    if (BE == (__BYTE_ORDER == __BIG_ENDIAN))
+      ((hb_packed_t<uint64_t> *) v)->v = V;
+    else
+      ((hb_packed_t<uint64_t> *) v)->v = __builtin_bswap64 (V);
+  }
+#else
     : v {BE ? uint8_t ((V >> 56) & 0xFF) : uint8_t ((V      ) & 0xFF),
 	 BE ? uint8_t ((V >> 48) & 0xFF) : uint8_t ((V >>  8) & 0xFF),
 	 BE ? uint8_t ((V >> 40) & 0xFF) : uint8_t ((V >> 16) & 0xFF),
@@ -222,8 +239,16 @@ struct HBInt<BE, Type, 8>
 	 BE ? uint8_t ((V >> 16) & 0xFF) : uint8_t ((V >> 40) & 0xFF),
 	 BE ? uint8_t ((V >>  8) & 0xFF) : uint8_t ((V >> 48) & 0xFF),
 	 BE ? uint8_t ((V      ) & 0xFF) : uint8_t ((V >> 56) & 0xFF)} {}
+#endif
 
   constexpr operator Type () const {
+#if HB_FAST_NUM_ACCESS
+    return (BE == (__BYTE_ORDER == __BIG_ENDIAN)) ?
+      ((const hb_packed_t<uint64_t> *) v)->v
+    :
+      __builtin_bswap64 (((const hb_packed_t<uint64_t> *) v)->v)
+    ;
+#else
     return (BE ? (uint64_t (v[0]) << 56) : (uint64_t (v[0])      ))
 	 + (BE ? (uint64_t (v[1]) << 48) : (uint64_t (v[1]) <<  8))
 	 + (BE ? (uint64_t (v[2]) << 40) : (uint64_t (v[2]) << 16))
@@ -232,6 +257,7 @@ struct HBInt<BE, Type, 8>
 	 + (BE ? (uint64_t (v[5]) << 16) : (uint64_t (v[5]) << 40))
 	 + (BE ? (uint64_t (v[6]) <<  8) : (uint64_t (v[6]) << 48))
 	 + (BE ? (uint64_t (v[7])      ) : (uint64_t (v[7]) << 56));
+#endif
   }
   private: uint8_t v[8];
 };
@@ -845,6 +871,17 @@ HB_FUNCOBJ (hb_clamp);
 /*
  * Bithacks.
  */
+
+/* Return the number of 1 bits in a uint8_t; faster than hb_popcount() */
+static inline unsigned
+hb_popcount8 (uint8_t v)
+{
+  static const uint8_t popcount4[16] = {
+    0, 1, 1, 2, 1, 2, 2, 3,
+    1, 2, 2, 3, 2, 3, 3, 4
+  };
+  return popcount4[v & 0xF] + popcount4[v >> 4];
+}
 
 /* Return the number of 1 bits in v. */
 template <typename T>

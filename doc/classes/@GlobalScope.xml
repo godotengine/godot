@@ -500,7 +500,7 @@
 				func _ready():
 					var id = get_instance_id()
 					var instance = instance_from_id(id)
-					print(instance.foo) # Prints "water"
+					print(instance.drink) # Prints "water"
 				[/gdscript]
 				[csharp]
 				public partial class MyNode : Node
@@ -1428,7 +1428,7 @@
 				var json = JSON.new()
 				json.parse('["a", "b", "c"]')
 				var result = json.get_data()
-				if result is Array:
+				if typeof(result) == TYPE_ARRAY:
 					print(result[0]) # Prints "a"
 				else:
 					print("Unexpected result!")
@@ -1608,8 +1608,14 @@
 		<member name="NavigationServer2D" type="NavigationServer2D" setter="" getter="">
 			The [NavigationServer2D] singleton.
 		</member>
+		<member name="NavigationServer2DManager" type="NavigationServer2DManager" setter="" getter="">
+			The [NavigationServer2DManager] singleton.
+		</member>
 		<member name="NavigationServer3D" type="NavigationServer3D" setter="" getter="">
 			The [NavigationServer3D] singleton.
+		</member>
+		<member name="NavigationServer3DManager" type="NavigationServer3DManager" setter="" getter="">
+			The [NavigationServer3DManager] singleton.
 		</member>
 		<member name="OS" type="OS" setter="" getter="">
 			The [OS] singleton.
@@ -2771,14 +2777,14 @@
 		<constant name="PROPERTY_HINT_RANGE" value="1" enum="PropertyHint">
 			Hints that an [int] or [float] property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_less"[/code] to allow manual input going respectively above the max or below the min values.
 			[b]Example:[/b] [code]"-360,360,1,or_greater,or_less"[/code].
-			Additionally, other keywords can be included: [code]"exp"[/code] for exponential range editing, [code]"radians_as_degrees"[/code] for editing radian angles in degrees (the range values are also in degrees), [code]"degrees"[/code] to hint at an angle and [code]"hide_slider"[/code] to hide the slider.
+			Additionally, other keywords can be included: [code]"exp"[/code] for exponential range editing, [code]"radians_as_degrees"[/code] for editing radian angles in degrees (the range values are also in degrees), [code]"degrees"[/code] to hint at an angle, [code]"prefer_slider"[/code] to show the slider for integers, [code]"hide_control"[/code] to hide the slider or up-down arrows, and [code]"suffix:px/s"[/code] to display a suffix indicating the value's unit (e.g. [code]px/s[/code] for pixels per second).
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="2" enum="PropertyHint">
-			Hints that an [int] or [String] property is an enumerated value to pick in a list specified via a hint string.
-			The hint string is a comma separated list of names such as [code]"Hello,Something,Else"[/code]. Whitespaces are [b]not[/b] removed from either end of a name. For integer properties, the first name in the list has value 0, the next 1, and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"Zero,One,Three:3,Four,Six:6"[/code].
+			Hints that an [int], [String], or [StringName] property is an enumerated value to pick in a list specified via a hint string.
+			The hint string is a comma separated list of names such as [code]"Hello,Something,Else"[/code]. Whitespace is [b]not[/b] removed from either end of a name. For integer properties, the first name in the list has value 0, the next 1, and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"Zero,One,Three:3,Four,Six:6"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM_SUGGESTION" value="3" enum="PropertyHint">
-			Hints that a [String] property can be an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
+			Hints that a [String] or [StringName] property can be an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code]. See [constant PROPERTY_HINT_ENUM] for details.
 			Unlike [constant PROPERTY_HINT_ENUM], a property with this hint still accepts arbitrary values and can be empty. The list of values serves to suggest possible values.
 		</constant>
 		<constant name="PROPERTY_HINT_EXP_EASING" value="4" enum="PropertyHint">
@@ -2789,7 +2795,7 @@
 		</constant>
 		<constant name="PROPERTY_HINT_FLAGS" value="6" enum="PropertyHint">
 			Hints that an [int] property is a bitmask with named bit flags.
-			The hint string is a comma separated list of names such as [code]"Bit0,Bit1,Bit2,Bit3"[/code]. Whitespaces are [b]not[/b] removed from either end of a name. The first name in the list has value 1, the next 2, then 4, 8, 16 and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"A:4,B:8,C:16"[/code]. You can also combine several flags ([code]"A:4,B:8,AB:12,C:16"[/code]).
+			The hint string is a comma separated list of names such as [code]"Bit0,Bit1,Bit2,Bit3"[/code]. Whitespace is [b]not[/b] removed from either end of a name. The first name in the list has value 1, the next 2, then 4, 8, 16 and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"A:4,B:8,C:16"[/code]. You can also combine several flags ([code]"A:4,B:8,AB:12,C:16"[/code]).
 			[b]Note:[/b] A flag value must be at least [code]1[/code] and at most [code]2 ** 32 - 1[/code].
 			[b]Note:[/b] Unlike [constant PROPERTY_HINT_ENUM], the previous explicit value is not taken into account. For the hint [code]"A:16,B,C"[/code], A is 16, B is 2, C is 4.
 		</constant>
@@ -2831,6 +2837,8 @@
 		</constant>
 		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="18" enum="PropertyHint">
 			Hints that a [String] property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
+			The hint string can be set to [code]"monospace"[/code] to force the input field to use a monospaced font.
+			If the hint string [code]"no_wrap"[/code] is set, the input field will not wrap lines at boundaries, instead resorting to making the area scrollable.
 		</constant>
 		<constant name="PROPERTY_HINT_EXPRESSION" value="19" enum="PropertyHint">
 			Hints that a [String] property is an [Expression].
@@ -3024,7 +3032,15 @@
 			If property has [code]nil[/code] as default value, its type will be [Variant].
 		</constant>
 		<constant name="PROPERTY_USAGE_ARRAY" value="262144" enum="PropertyUsageFlags" is_bitfield="true">
-			The property is an array.
+			The property is the element count of a property array, i.e. a list of groups of related properties. Properties defined with this usage also need a specific [code]class_name[/code] field in the form of [code]label,prefix[/code]. The field may also include additional comma-separated options:
+			- [code]page_size=N[/code]: Overrides [member EditorSettings.interface/inspector/max_array_dictionary_items_per_page] for this array.
+			- [code]add_button_text=text[/code]: The text displayed by the "Add Element" button.
+			- [code]static[/code]: The elements can't be re-arranged.
+			- [code]const[/code]: New elements can't be added.
+			- [code]numbered[/code]: An index will appear next to each element.
+			- [code]unfoldable[/code]: The array can't be folded.
+			- [code]swap_method=method_name[/code]: The method that will be called when two elements switch places. The method should take 2 [int] parameters, which will be indices of the elements being swapped.
+			Note that making a full-fledged property array requires boilerplate code involving [method Object._get_property_list].
 		</constant>
 		<constant name="PROPERTY_USAGE_ALWAYS_DUPLICATE" value="524288" enum="PropertyUsageFlags" is_bitfield="true">
 			When duplicating a resource with [method Resource.duplicate], and this flag is set on a property of that resource, the property should always be duplicated, regardless of the [code]subresources[/code] bool parameter.

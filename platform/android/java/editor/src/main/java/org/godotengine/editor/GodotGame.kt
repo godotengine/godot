@@ -43,11 +43,8 @@ import org.godotengine.editor.embed.GameMenuFragment
 import org.godotengine.godot.GodotLib
 import org.godotengine.godot.editor.utils.GameMenuUtils
 import org.godotengine.godot.utils.ProcessPhoenix
-import org.godotengine.godot.utils.isHorizonOSDevice
-import org.godotengine.godot.utils.isNativeXRDevice
-import org.godotengine.godot.xr.HYBRID_APP_PANEL_FEATURE
 import org.godotengine.godot.xr.XRMode
-import org.godotengine.godot.xr.isHybridAppEnabled
+import org.godotengine.openxr.vendors.utils.*
 
 /**
  * Drives the 'run project' window of the Godot Editor.
@@ -226,6 +223,21 @@ open class GodotGame : BaseGodotGame() {
 		val actionBundle = Bundle().apply {
 			putString(KEY_GAME_MENU_ACTION, GAME_MENU_ACTION_SET_DEBUG_MUTE_AUDIO)
 			putBoolean(KEY_GAME_MENU_ACTION_PARAM1, enabled)
+		}
+		editorMessageDispatcher.dispatchGameMenuAction(EDITOR_MAIN_INFO, actionBundle)
+	}
+
+	override fun resetTimeScale() {
+		val actionBundle = Bundle().apply {
+			putString(KEY_GAME_MENU_ACTION, GAME_MENU_ACTION_RESET_TIME_SCALE)
+		}
+		editorMessageDispatcher.dispatchGameMenuAction(EDITOR_MAIN_INFO, actionBundle)
+	}
+
+	override fun setTimeScale(scale: Double) {
+		val actionBundle = Bundle().apply {
+			putString(KEY_GAME_MENU_ACTION, GAME_MENU_ACTION_SET_TIME_SCALE)
+			putDouble(KEY_GAME_MENU_ACTION_PARAM1, scale)
 		}
 		editorMessageDispatcher.dispatchGameMenuAction(EDITOR_MAIN_INFO, actionBundle)
 	}

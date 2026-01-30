@@ -55,6 +55,16 @@ OS *OS::get_singleton() {
 	return singleton;
 }
 
+bool OS::prefer_meta_over_ctrl() {
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+	return true;
+#elif defined(WEB_ENABLED)
+	return singleton->has_feature("web_macos") || singleton->has_feature("web_ios");
+#else
+	return false;
+#endif
+}
+
 uint64_t OS::get_ticks_msec() const {
 	return get_ticks_usec() / 1000ULL;
 }
@@ -309,8 +319,13 @@ String OS::get_bundle_resource_dir() const {
 	return ".";
 }
 
-// Path to macOS .app bundle embedded icon
+// Path to macOS .app bundle embedded icon (.icns file).
 String OS::get_bundle_icon_path() const {
+	return String();
+}
+
+// Name of macOS .app bundle embedded icon (Liquid Glass asset name).
+String OS::get_bundle_icon_name() const {
 	return String();
 }
 
@@ -391,6 +406,10 @@ uint64_t OS::get_static_memory_peak_usage() const {
 
 Error OS::set_cwd(const String &p_cwd) {
 	return ERR_CANT_OPEN;
+}
+
+String OS::get_cwd() const {
+	return ".";
 }
 
 Dictionary OS::get_memory_info() const {

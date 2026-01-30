@@ -56,7 +56,6 @@ public:
 	Error update(const PackedByteArray &p_chunk);
 	PackedByteArray finish();
 
-	HashingContext() {}
 	~HashingContext();
 };
 

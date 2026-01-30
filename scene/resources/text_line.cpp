@@ -33,6 +33,7 @@
 
 void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TextLine::clear);
+	ClassDB::bind_method(D_METHOD("duplicate"), &TextLine::duplicate);
 
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &TextLine::set_direction);
 	ClassDB::bind_method(D_METHOD("get_direction"), &TextLine::get_direction);
@@ -64,6 +65,7 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_string", "text", "font", "font_size", "language", "meta"), &TextLine::add_string, DEFVAL(""), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length", "baseline"), &TextLine::add_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(1), DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align", "baseline"), &TextLine::resize_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("has_object", "key"), &TextLine::has_object);
 
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &TextLine::set_width);
 	ClassDB::bind_method(D_METHOD("get_width"), &TextLine::get_width);
@@ -123,37 +125,7 @@ void TextLine::_shape() const {
 
 		BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::OVERRUN_NO_TRIM;
 		if (overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
-			switch (overrun_behavior) {
-				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS_FORCE: {
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
-				} break;
-				case TextServer::OVERRUN_TRIM_ELLIPSIS_FORCE: {
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
-				} break;
-				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					break;
-				case TextServer::OVERRUN_TRIM_ELLIPSIS:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					break;
-				case TextServer::OVERRUN_TRIM_WORD:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-					break;
-				case TextServer::OVERRUN_TRIM_CHAR:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					break;
-				case TextServer::OVERRUN_NO_TRIMMING:
-					break;
-			}
+			overrun_flags = TextServer::get_overrun_flags_from_behavior(overrun_behavior);
 
 			if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
 				TS->shaped_text_fit_to_width(rid, width, flags);
@@ -177,6 +149,24 @@ RID TextLine::get_rid() const {
 
 void TextLine::clear() {
 	TS->shaped_text_clear(rid);
+}
+
+Ref<TextLine> TextLine::duplicate() const {
+	Ref<TextLine> copy;
+	copy.instantiate();
+	if (rid.is_valid()) {
+		TS->free_rid(copy->rid);
+		copy->rid = TS->shaped_text_duplicate(rid);
+	}
+	copy->dirty = true;
+	copy->width = width;
+	copy->flags = flags;
+	copy->alignment = alignment;
+	copy->el_char = el_char;
+	copy->overrun_behavior = overrun_behavior;
+	copy->tab_stops = tab_stops;
+
+	return copy;
 }
 
 void TextLine::set_preserve_invalid(bool p_enabled) {
@@ -240,6 +230,11 @@ bool TextLine::add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_
 bool TextLine::resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align, float p_baseline) {
 	_shape();
 	return TS->shaped_text_resize_object(rid, p_key, p_size, p_inline_align, p_baseline);
+}
+
+bool TextLine::has_object(Variant p_key) const {
+	_shape();
+	return TS->shaped_text_has_object(rid, p_key);
 }
 
 Array TextLine::get_objects() const {
@@ -351,6 +346,9 @@ String TextLine::get_ellipsis_char() const {
 }
 
 void TextLine::set_width(float p_width) {
+	if (width == p_width) {
+		return;
+	}
 	width = p_width;
 	if (alignment == HORIZONTAL_ALIGNMENT_FILL || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		dirty = true;

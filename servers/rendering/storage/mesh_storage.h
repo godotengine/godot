@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "utilities.h"
 
 class RendererMeshStorage {
@@ -152,6 +152,7 @@ public:
 	virtual void multimesh_set_physics_interpolated(RID p_multimesh, bool p_interpolated);
 	virtual void multimesh_set_physics_interpolation_quality(RID p_multimesh, RS::MultimeshPhysicsInterpolationQuality p_quality);
 	virtual void multimesh_instance_reset_physics_interpolation(RID p_multimesh, int p_index);
+	virtual void multimesh_instances_reset_physics_interpolation(RID p_multimesh);
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible);
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const;

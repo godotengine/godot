@@ -34,6 +34,7 @@
 #include "scene_replication_config.h"
 
 #include "core/debugger/engine_debugger.h"
+#include "core/os/os.h"
 #include "scene/main/node.h"
 
 List<Ref<EngineProfiler>> multiplayer_profilers;

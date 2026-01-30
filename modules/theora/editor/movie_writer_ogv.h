@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 #include "servers/movie_writer/movie_writer.h"
 
 #include <theora/theoraenc.h>

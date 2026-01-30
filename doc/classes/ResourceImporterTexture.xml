@@ -12,7 +12,7 @@
 	<members>
 		<member name="compress/channel_pack" type="int" setter="" getter="" default="0">
 			Controls how color channels should be used in the imported texture.
-			[b]sRGB Friendly:[/b] Prevents the RG color format from being used, as it does not support sRGB color.
+			[b]sRGB Friendly:[/b] Prevents the R and RG color formats from being used, as they do not support nonlinear sRGB encoding.
 			[b]Optimized:[/b] Allows the RG color format to be used if the texture does not use the blue channel. This reduces memory usage if the texture's blue channel can be discarded (all pixels must have a blue value of [code]0[/code]).
 		</member>
 		<member name="compress/hdr_compression" type="int" setter="" getter="" default="1">
@@ -134,7 +134,7 @@
 			It's recommended to leave this enabled (as it is by default), unless this causes issues for a particular image.
 		</member>
 		<member name="process/hdr_as_srgb" type="bool" setter="" getter="" default="false">
-			Some HDR images you can find online may be broken and contain sRGB color data (instead of linear color data). It is advised not to use those files. If you absolutely have to, enabling [member process/hdr_as_srgb] will make them look correct.
+			Some HDR images you can find online may be broken and contain data that is encoded using the nonlinear sRGB transfer function (instead of using linear encoding). It is advised not to use those files. If you absolutely have to, enabling [member process/hdr_as_srgb] will make them look correct.
 			[b]Warning:[/b] Enabling [member process/hdr_as_srgb] on well-formatted HDR images will cause the resulting image to look too dark, so leave this on [code]false[/code] if unsure.
 		</member>
 		<member name="process/hdr_clamp_exposure" type="bool" setter="" getter="" default="false">

@@ -34,6 +34,7 @@
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "servers/rendering/renderer_rd/effects/sort_effects.h"
+#include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
 #include "servers/rendering/renderer_rd/shaders/particles.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/particles_copy.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
@@ -329,7 +330,7 @@ private:
 
 		ParticlesCopyShaderRD copy_shader;
 		RID copy_shader_version;
-		RID copy_pipelines[COPY_MODE_MAX * (MAX_USERDATAS + 1)];
+		PipelineDeferredRD copy_pipelines[MAX_USERDATAS + 1][COPY_MODE_MAX];
 
 		LocalVector<float> pose_update_buffer;
 
@@ -353,7 +354,7 @@ private:
 
 		String code;
 
-		RID pipeline;
+		PipelineDeferredRD pipeline;
 
 		bool uses_time = false;
 

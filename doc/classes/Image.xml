@@ -6,6 +6,7 @@
 	<description>
 		Native image datatype. Contains image data which can be converted to an [ImageTexture] and provides commonly used [i]image processing[/i] methods. The maximum width and height for an [Image] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
 		An [Image] cannot be assigned to a texture property of an object directly (such as [member Sprite2D.texture]), and has to be converted manually to an [ImageTexture] first.
+		[b]Note:[/b] Methods that modify the image data cannot be used on VRAM-compressed images. Use [method decompress] to convert the image to an uncompressed format first.
 		[b]Note:[/b] The maximum image size is 16384×16384 pixels due to graphics hardware limitations. Larger images may fail to import.
 	</description>
 	<tutorials>
@@ -80,9 +81,10 @@
 			<param index="1" name="source" type="int" enum="Image.CompressSource" default="0" />
 			<param index="2" name="astc_format" type="int" enum="Image.ASTCFormat" default="0" />
 			<description>
-				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available.
+				Compresses the image with a VRAM-compressed format to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available.
 				The [param source] parameter helps to pick the best compression method for DXT and ETC2 formats. It is ignored for ASTC compression.
-				For ASTC compression, the [param astc_format] parameter must be supplied.
+				The [param astc_format] parameter is only taken into account when using ASTC compression; it is ignored for all other formats.
+				[b]Note:[/b] [method compress] is only supported in editor builds. When run in an exported project, this method always returns [constant ERR_UNAVAILABLE].
 			</description>
 		</method>
 		<method name="compress_from_channels">
@@ -91,9 +93,10 @@
 			<param index="1" name="channels" type="int" enum="Image.UsedChannels" />
 			<param index="2" name="astc_format" type="int" enum="Image.ASTCFormat" default="0" />
 			<description>
-				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available.
+				Compresses the image with a VRAM-compressed format to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available.
 				This is an alternative to [method compress] that lets the user supply the channels used in order for the compressor to pick the best DXT and ETC2 formats. For other formats (non DXT or ETC2), this argument is ignored.
-				For ASTC compression, the [param astc_format] parameter must be supplied.
+				The [param astc_format] parameter is only taken into account when using ASTC compression; it is ignored for all other formats.
+				[b]Note:[/b] [method compress_from_channels] is only supported in editor builds. When run in an exported project, this method always returns [constant ERR_UNAVAILABLE].
 			</description>
 		</method>
 		<method name="compute_image_metrics">
@@ -101,7 +104,7 @@
 			<param index="0" name="compared_image" type="Image" />
 			<param index="1" name="use_luma" type="bool" />
 			<description>
-				Compute image metrics on the current image and the compared image.
+				Compute image metrics on the current image and the compared image. This can be used to calculate the similarity between two images.
 				The dictionary contains [code]max[/code], [code]mean[/code], [code]mean_squared[/code], [code]root_mean_squared[/code] and [code]peak_snr[/code].
 			</description>
 		</method>
@@ -126,7 +129,7 @@
 			<param index="2" name="use_mipmaps" type="bool" />
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<description>
-				Creates an empty image of the given size and format. If [param use_mipmaps] is [code]true[/code], generates mipmaps for this image. See the [method generate_mipmaps].
+				Creates an empty image of the given size and format. If [param use_mipmaps] is [code]true[/code], generates mipmaps for this image (see [method generate_mipmaps]).
 			</description>
 		</method>
 		<method name="create_empty" qualifiers="static">
@@ -136,7 +139,7 @@
 			<param index="2" name="use_mipmaps" type="bool" />
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<description>
-				Creates an empty image of the given size and format. If [param use_mipmaps] is [code]true[/code], generates mipmaps for this image. See the [method generate_mipmaps].
+				Creates an empty image of the given size and format. If [param use_mipmaps] is [code]true[/code], generates mipmaps for this image (see [method generate_mipmaps]).
 			</description>
 		</method>
 		<method name="create_from_data" qualifiers="static">
@@ -161,8 +164,7 @@
 		<method name="decompress">
 			<return type="int" enum="Error" />
 			<description>
-				Decompresses the image if it is VRAM compressed in a supported format. Returns [constant OK] if the format is supported, otherwise [constant ERR_UNAVAILABLE].
-				[b]Note:[/b] The following formats can be decompressed: DXT, RGTC, BPTC. The formats ETC1 and ETC2 are not supported.
+				Decompresses the image if it is VRAM-compressed in a supported format. This increases memory utilization, but allows modifying the image. Returns [constant OK] if the format is supported, otherwise [constant ERR_UNAVAILABLE]. All VRAM-compressed formats supported by Godot can be decompressed with this method, except [constant FORMAT_ETC2_R11S], [constant FORMAT_ETC2_RG11S], and [constant FORMAT_ETC2_RGB8A1].
 			</description>
 		</method>
 		<method name="detect_alpha" qualifiers="const">
@@ -325,7 +327,7 @@
 		<method name="linear_to_srgb">
 			<return type="void" />
 			<description>
-				Converts the entire image from the linear colorspace to the sRGB colorspace. Only works on images with [constant FORMAT_RGB8] or [constant FORMAT_RGBA8] formats.
+				Converts the entire image from linear encoding to nonlinear sRGB encoding by using a lookup table. Only works on images with [constant FORMAT_RGB8] or [constant FORMAT_RGBA8] formats.
 			</description>
 		</method>
 		<method name="load">
@@ -352,6 +354,13 @@
 			<description>
 				Loads an image from the binary contents of a DDS file.
 				[b]Note:[/b] This method is only available in engine builds with the DDS module enabled. By default, the DDS module is enabled, but it can be disabled at build-time using the [code]module_dds_enabled=no[/code] SCons option.
+			</description>
+		</method>
+		<method name="load_exr_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<description>
+				Loads an image from the binary contents of an OpenEXR file.
 			</description>
 		</method>
 		<method name="load_from_file" qualifiers="static">
@@ -450,7 +459,7 @@
 		<method name="rgbe_to_srgb">
 			<return type="Image" />
 			<description>
-				Converts a standard RGBE (Red Green Blue Exponent) image to an sRGB image.
+				Converts a standard linear RGBE (Red Green Blue Exponent) image to an image that uses nonlinear sRGB encoding.
 			</description>
 		</method>
 		<method name="rotate_90">
@@ -487,7 +496,6 @@
 			<param index="1" name="grayscale" type="bool" default="false" />
 			<description>
 				Saves the image as an EXR file to [param path]. If [param grayscale] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return [constant ERR_UNAVAILABLE] if Godot was compiled without the TinyEXR module.
-				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return [constant ERR_UNAVAILABLE] when it is called from an exported project.
 			</description>
 		</method>
 		<method name="save_exr_to_buffer" qualifiers="const">
@@ -495,7 +503,6 @@
 			<param index="0" name="grayscale" type="bool" default="false" />
 			<description>
 				Saves the image as an EXR file to a byte array. If [param grayscale] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return an empty byte array if Godot was compiled without the TinyEXR module.
-				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr_to_buffer] will return an empty byte array when it is called from an exported project.
 			</description>
 		</method>
 		<method name="save_jpg" qualifiers="const">
@@ -582,6 +589,8 @@
 				[/csharp]
 				[/codeblocks]
 				This is the same as [method set_pixelv], but with a two integer arguments instead of a [Vector2i] argument.
+				[b]Note:[/b] Depending on the image's format, the color set here may be clamped or lose precision. Do not assume the color returned by [method get_pixel] to be identical to the one set here; any comparisons will likely need to use an approximation like [method Color.is_equal_approx].
+				[b]Note:[/b] On grayscale image formats, only the red channel of [param color] is used (and alpha if relevant). The green and blue channels are ignored.
 			</description>
 		</method>
 		<method name="set_pixelv">
@@ -607,6 +616,8 @@
 				[/csharp]
 				[/codeblocks]
 				This is the same as [method set_pixel], but with a [Vector2i] argument instead of two integer arguments.
+				[b]Note:[/b] Depending on the image's format, the color set here may be clamped or lose precision. Do not assume the color returned by [method get_pixelv] to be identical to the one set here; any comparisons will likely need to use an approximation like [method Color.is_equal_approx].
+				[b]Note:[/b] On grayscale image formats, only the red channel of [param color] is used (and alpha if relevant). The green and blue channels are ignored.
 			</description>
 		</method>
 		<method name="shrink_x2">
@@ -618,7 +629,8 @@
 		<method name="srgb_to_linear">
 			<return type="void" />
 			<description>
-				Converts the raw data from the sRGB colorspace to a linear scale. Only works on images with [constant FORMAT_RGB8] or [constant FORMAT_RGBA8] formats.
+				Converts the raw data from nonlinear sRGB encoding to linear encoding using a lookup table. Only works on images with [constant FORMAT_RGB8] or [constant FORMAT_RGBA8] formats.
+				[b]Note:[/b] The 8-bit formats required by this method are not suitable for storing linearly encoded values; a significant amount of color information will be lost in darker values. To maintain image quality, this method should not be used.
 			</description>
 		</method>
 	</methods>
@@ -648,11 +660,11 @@
 		</constant>
 		<constant name="FORMAT_RGB8" value="4" enum="Format">
 			OpenGL texture format [code]RGB[/code] with three components, each with a bitdepth of 8.
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
 		</constant>
 		<constant name="FORMAT_RGBA8" value="5" enum="Format">
 			OpenGL texture format [code]RGBA[/code] with four components, each with a bitdepth of 8.
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
 		</constant>
 		<constant name="FORMAT_RGBA4444" value="6" enum="Format">
 			OpenGL texture format [code]RGBA[/code] with four components, each with a bitdepth of 4.
@@ -689,15 +701,15 @@
 		</constant>
 		<constant name="FORMAT_DXT1" value="17" enum="Format">
 			The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format that uses Block Compression 1, and is the smallest variation of S3TC, only providing 1 bit of alpha and color data being premultiplied with alpha.
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
 		</constant>
 		<constant name="FORMAT_DXT3" value="18" enum="Format">
 			The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format that uses Block Compression 2, and color data is interpreted as not having been premultiplied by alpha. Well suited for images with sharp alpha transitions between translucent and opaque areas.
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
 		</constant>
 		<constant name="FORMAT_DXT5" value="19" enum="Format">
 			The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format also known as Block Compression 3 or BC3 that contains 64 bits of alpha channel data followed by 64 bits of DXT1-encoded color data. Color data is not premultiplied by alpha, same as DXT3. DXT5 generally produces superior results for transparent gradients compared to DXT3.
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
 		</constant>
 		<constant name="FORMAT_RGTC_R" value="20" enum="Format">
 			Texture format that uses [url=https://www.khronos.org/opengl/wiki/Red_Green_Texture_Compression]Red Green Texture Compression[/url], normalizing the red channel data using the same compression algorithm that DXT5 uses for the alpha channel.
@@ -707,7 +719,7 @@
 		</constant>
 		<constant name="FORMAT_BPTC_RGBA" value="22" enum="Format">
 			Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with unsigned normalized RGBA components.
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
 		</constant>
 		<constant name="FORMAT_BPTC_RGBF" value="23" enum="Format">
 			Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with signed floating-point RGB components.
@@ -732,15 +744,15 @@
 		</constant>
 		<constant name="FORMAT_ETC2_RGB8" value="30" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGB8[/code] variant), which is a follow-up of ETC1 and compresses RGB888 data.
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
 		</constant>
 		<constant name="FORMAT_ETC2_RGBA8" value="31" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGBA8[/code]variant), which compresses RGBA8888 data with full alpha support.
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
 		</constant>
 		<constant name="FORMAT_ETC2_RGB8A1" value="32" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGB8_PUNCHTHROUGH_ALPHA1[/code] variant), which compresses RGBA data to make alpha either fully transparent or fully opaque.
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
 		</constant>
 		<constant name="FORMAT_ETC2_RA_AS_RG" value="33" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGBA8[/code] variant), which compresses RA data and interprets it as two channels (red and green). See also [constant FORMAT_ETC2_RGBA8].
@@ -760,7 +772,43 @@
 		<constant name="FORMAT_ASTC_8x8_HDR" value="38" enum="Format">
 			Same format as [constant FORMAT_ASTC_8x8], but with the hint to let the GPU know it is used for HDR.
 		</constant>
-		<constant name="FORMAT_MAX" value="39" enum="Format">
+		<constant name="FORMAT_R16" value="39" enum="Format">
+			OpenGL texture format [code]GL_R16[/code] where there's one component, a 16-bit unsigned normalized integer value. Since the value is normalized, each component is clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+			[b]Note:[/b] Due to limited hardware support, it is mainly recommended to be used on desktop or console devices. It may be unsupported on mobile or web, and will consequently be converted to [constant FORMAT_RF].
+		</constant>
+		<constant name="FORMAT_RG16" value="40" enum="Format">
+			OpenGL texture format [code]GL_RG16[/code] where there are two components, each a 16-bit unsigned normalized integer value. Since the value is normalized, each component is clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+			[b]Note:[/b] Due to limited hardware support, it is mainly recommended to be used on desktop or console devices. It may be unsupported on mobile or web, and will consequently be converted to [constant FORMAT_RGF].
+		</constant>
+		<constant name="FORMAT_RGB16" value="41" enum="Format">
+			OpenGL texture format [code]GL_RGB16[/code] where there are three components, each a 16-bit unsigned normalized integer value. Since the value is normalized, each component is clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+			[b]Note:[/b] Due to limited hardware support, it is mainly recommended to be used on desktop or console devices. It may be unsupported on mobile or web, and will consequently be converted to [constant FORMAT_RGBF].
+		</constant>
+		<constant name="FORMAT_RGBA16" value="42" enum="Format">
+			OpenGL texture format [code]GL_RGBA16[/code] where there are four components, each a 16-bit unsigned normalized integer value. Since the value is normalized, each component is clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+			[b]Note:[/b] Due to limited hardware support, it is mainly recommended to be used on desktop or console devices. It may be unsupported on mobile or web, and will consequently be converted to [constant FORMAT_RGBAF].
+		</constant>
+		<constant name="FORMAT_R16I" value="43" enum="Format">
+			OpenGL texture format [code]GL_R16UI[/code] where there's one component, a 16-bit unsigned integer value. Each component is clamped between [code]0[/code] and [code]65535[/code] (inclusive).
+			[b]Note:[/b] When used in a shader, the texture requires usage of [code]usampler[/code] samplers. Additionally, it only supports nearest-neighbor filtering under the Compatibility renderer.
+			[b]Note:[/b] When sampling using [method Image.get_pixel], returned [Color]s have to be divided by [code]65535[/code] to get the correct color value.
+		</constant>
+		<constant name="FORMAT_RG16I" value="44" enum="Format">
+			OpenGL texture format [code]GL_RG16UI[/code] where there are two components, each a 16-bit unsigned integer value. Each component is clamped between [code]0[/code] and [code]65535[/code] (inclusive).
+			[b]Note:[/b] When used in a shader, the texture requires usage of [code]usampler[/code] samplers. Additionally, it only supports nearest-neighbor filtering under the Compatibility renderer.
+			[b]Note:[/b] When sampling using [method Image.get_pixel], returned [Color]s have to be divided by [code]65535[/code] to get the correct color value.
+		</constant>
+		<constant name="FORMAT_RGB16I" value="45" enum="Format">
+			OpenGL texture format [code]GL_RGB16UI[/code] where there are three components, each a 16-bit unsigned integer value. Each component is clamped between [code]0[/code] and [code]65535[/code] (inclusive).
+			[b]Note:[/b] When used in a shader, the texture requires usage of [code]usampler[/code] samplers. Additionally, it only supports nearest-neighbor filtering under the Compatibility renderer.
+			[b]Note:[/b] When sampling using [method Image.get_pixel], returned [Color]s have to be divided by [code]65535[/code] to get the correct color value.
+		</constant>
+		<constant name="FORMAT_RGBA16I" value="46" enum="Format">
+			OpenGL texture format [code]GL_RGBA16UI[/code] where there are four components, each a 16-bit unsigned integer value. Each component is clamped between [code]0[/code] and [code]65535[/code] (inclusive).
+			[b]Note:[/b] When used in a shader, the texture requires usage of [code]usampler[/code] samplers. Additionally, it only supports nearest-neighbor filtering under the Compatibility renderer.
+			[b]Note:[/b] When sampling using [method Image.get_pixel], returned [Color]s have to be divided by [code]65535[/code] to get the correct color value.
+		</constant>
+		<constant name="FORMAT_MAX" value="47" enum="Format">
 			Represents the size of the [enum Format] enum.
 		</constant>
 		<constant name="INTERPOLATE_NEAREST" value="0" enum="Interpolation">
@@ -783,13 +831,13 @@
 			Performs Lanczos interpolation. This is the slowest image resizing mode, but it typically gives the best results, especially when downscaling images.
 		</constant>
 		<constant name="ALPHA_NONE" value="0" enum="AlphaMode">
-			Image does not have alpha.
+			Image is fully opaque. It does not store alpha data.
 		</constant>
 		<constant name="ALPHA_BIT" value="1" enum="AlphaMode">
-			Image stores alpha in a single bit.
+			Image stores either fully opaque or fully transparent pixels. Also known as punchthrough alpha.
 		</constant>
 		<constant name="ALPHA_BLEND" value="2" enum="AlphaMode">
-			Image uses alpha.
+			Image stores alpha data with values varying between [code]0.0[/code] and [code]1.0[/code].
 		</constant>
 		<constant name="COMPRESS_S3TC" value="0" enum="CompressMode">
 			Use S3TC compression.
@@ -831,7 +879,7 @@
 			Source texture (before compression) is a regular texture. Default for all textures.
 		</constant>
 		<constant name="COMPRESS_SOURCE_SRGB" value="1" enum="CompressSource">
-			Source texture (before compression) is in sRGB space.
+			Source texture (before compression) uses nonlinear sRGB encoding.
 		</constant>
 		<constant name="COMPRESS_SOURCE_NORMAL" value="2" enum="CompressSource">
 			Source texture (before compression) is a normal texture (e.g. it can be compressed into two channels).

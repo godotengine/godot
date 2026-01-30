@@ -43,8 +43,6 @@ class AStar3D : public RefCounted {
 	friend class AStar2D;
 
 	struct Point {
-		Point() {}
-
 		int64_t id = 0;
 		Vector3 pos;
 		real_t weight_scale = 0;
@@ -115,7 +113,7 @@ class AStar3D : public RefCounted {
 	Point *last_closest_point = nullptr;
 	bool neighbor_filter_enabled = false;
 
-	bool _solve(Point *begin_point, Point *end_point, bool p_allow_partial_path);
+	bool _solve(Point *p_begin_point, Point *p_end_point, bool p_allow_partial_path);
 
 protected:
 	static void _bind_methods();
@@ -167,7 +165,6 @@ public:
 	Vector<Vector3> get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
 	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
 
-	AStar3D() {}
 	~AStar3D();
 };
 
@@ -175,7 +172,7 @@ class AStar2D : public RefCounted {
 	GDCLASS(AStar2D, RefCounted);
 	AStar3D astar;
 
-	bool _solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, bool p_allow_partial_path);
+	bool _solve(AStar3D::Point *p_begin_point, AStar3D::Point *p_end_point, bool p_allow_partial_path);
 
 protected:
 	static void _bind_methods();
@@ -226,7 +223,4 @@ public:
 
 	Vector<Vector2> get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
 	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
-
-	AStar2D() {}
-	~AStar2D() {}
 };

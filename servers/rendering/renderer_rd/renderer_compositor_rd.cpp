@@ -159,11 +159,6 @@ void RendererCompositorRD::initialize() {
 
 		blit.sampler = RD::get_singleton()->sampler_create(RD::SamplerState());
 	}
-#if defined(MACOS_ENABLED) && defined(__x86_64__)
-	if (scene) {
-		scene->get_sky()->check_cubemap_array();
-	}
-#endif
 }
 
 uint64_t RendererCompositorRD::frame = 1;
@@ -181,11 +176,11 @@ void RendererCompositorRD::finalize() {
 
 	//only need to erase these, the rest are erased by cascade
 	blit.shader.version_free(blit.shader_version);
-	RD::get_singleton()->free(blit.index_buffer);
-	RD::get_singleton()->free(blit.sampler);
+	RD::get_singleton()->free_rid(blit.index_buffer);
+	RD::get_singleton()->free_rid(blit.sampler);
 }
 
-void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+void RendererCompositorRD::set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter) {
 	if (p_image.is_null() || p_image->is_empty()) {
 		return;
 	}
@@ -220,18 +215,12 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 
 	Size2 window_size = DisplayServer::get_singleton()->window_get_size();
 
-	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
-	Rect2 screenrect;
-	if (p_scale) {
-		screenrect = OS::get_singleton()->calculate_boot_screen_rect(window_size, imgrect.size);
-	} else {
-		screenrect = imgrect;
-		screenrect.position += ((window_size - screenrect.size) / 2.0).floor();
-	}
-
+	Rect2 screenrect = RenderingServer::get_splash_stretched_screen_rect(p_image->get_size(), window_size, p_stretch_mode);
 	screenrect.position /= window_size;
 	screenrect.size /= window_size;
 
+	// p_color never needs to be converted to linear encoding because HDR 2D is always disabled for the boot image.
+	// If HDR 2D can ever be enabled during the boot image, p_color must be converted to linear encoding for this case.
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(DisplayServer::MAIN_WINDOW_ID, p_color);
 
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blit.pipelines[BLIT_MODE_NORMAL_ALPHA]);
@@ -268,7 +257,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	RD::get_singleton()->swap_buffers(true);
 
 	texture_storage->texture_free(texture);
-	RD::get_singleton()->free(sampler);
+	RD::get_singleton()->free_rid(sampler);
 }
 
 RendererCompositorRD *RendererCompositorRD::singleton = nullptr;

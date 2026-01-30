@@ -32,7 +32,7 @@
 
 #include "core/math/projection.h"
 #include "core/templates/local_vector.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class RendererSceneOcclusionCull {
 protected:
@@ -41,8 +41,6 @@ protected:
 public:
 	class HZBuffer {
 	protected:
-		static const Vector3 corners[8];
-
 		LocalVector<float> data;
 		LocalVector<Size2i> sizes;
 		LocalVector<float *> mips;
@@ -55,7 +53,7 @@ public:
 		uint64_t occlusion_frame = 0;
 		Size2i occlusion_buffer_size;
 
-		_FORCE_INLINE_ bool _is_occluded(const real_t p_bounds[6], const Vector3 &p_cam_position, const Transform3D &p_cam_inv_transform, const Projection &p_cam_projection, real_t p_near) const {
+		_FORCE_INLINE_ bool _is_occluded(const real_t p_bounds[6], const Vector3 &p_cam_position, const Transform3D &p_cam_inv_transform, const Projection &p_cam_projection, real_t p_near, bool p_is_orthogonal) const {
 			if (is_empty()) {
 				return false;
 			}
@@ -79,27 +77,27 @@ public:
 			Vector2 rect_max = Vector2(FLT_MIN, FLT_MIN);
 
 			for (int j = 0; j < 8; j++) {
-				const Vector3 &c = RendererSceneOcclusionCull::HZBuffer::corners[j];
-				Vector3 nc = Vector3(1, 1, 1) - c;
-				Vector3 corner = Vector3(p_bounds[0] * c.x + p_bounds[3] * nc.x, p_bounds[1] * c.y + p_bounds[4] * nc.y, p_bounds[2] * c.z + p_bounds[5] * nc.z);
+				// Bitmask to cycle through the corners of the AABB.
+				Vector3 corner = Vector3(
+						j & 4 ? p_bounds[0] : p_bounds[3],
+						j & 2 ? p_bounds[1] : p_bounds[4],
+						j & 1 ? p_bounds[2] : p_bounds[5]);
 				Vector3 view = p_cam_inv_transform.xform(corner);
 
 				// When using an orthogonal camera, the closest point of an AABB to the camera is guaranteed to be a corner.
-				if (p_cam_projection.is_orthogonal()) {
+				if (p_is_orthogonal) {
 					min_depth = MIN(min_depth, -view.z);
 				}
 
-				Plane vp = Plane(view, 1.0);
-				Plane projected = p_cam_projection.xform4(vp);
+				Vector3 projected = p_cam_projection.xform(view);
 
-				float w = projected.d;
-				if (w < 1.0) {
+				if (-view.z < 0.0) {
 					rect_min = Vector2(0.0f, 0.0f);
 					rect_max = Vector2(1.0f, 1.0f);
 					break;
 				}
 
-				Vector2 normalized = Vector2(projected.normal.x / w * 0.5f + 0.5f, projected.normal.y / w * 0.5f + 0.5f);
+				Vector2 normalized = Vector2(projected.x * 0.5f + 0.5f, projected.y * 0.5f + 0.5f);
 				rect_min = rect_min.min(normalized);
 				rect_max = rect_max.max(normalized);
 			}
@@ -159,7 +157,10 @@ public:
 	public:
 		static bool occlusion_jitter_enabled;
 
-		bool is_empty() const;
+		_FORCE_INLINE_ bool is_empty() const {
+			return sizes.is_empty();
+		}
+
 		virtual void clear();
 		virtual void resize(const Size2i &p_size);
 
@@ -168,8 +169,8 @@ public:
 		// Thin wrapper around _is_occluded(),
 		// allowing occlusion timers to delay the disappearance
 		// of objects to prevent flickering when using jittering.
-		_FORCE_INLINE_ bool is_occluded(const real_t p_bounds[6], const Vector3 &p_cam_position, const Transform3D &p_cam_inv_transform, const Projection &p_cam_projection, real_t p_near, uint64_t &r_occlusion_timeout) const {
-			bool occluded = _is_occluded(p_bounds, p_cam_position, p_cam_inv_transform, p_cam_projection, p_near);
+		_FORCE_INLINE_ bool is_occluded(const real_t p_bounds[6], const Vector3 &p_cam_position, const Transform3D &p_cam_inv_transform, const Projection &p_cam_projection, real_t p_near, bool p_is_orthogonal, uint64_t &r_occlusion_timeout) const {
+			bool occluded = _is_occluded(p_bounds, p_cam_position, p_cam_inv_transform, p_cam_projection, p_near, p_is_orthogonal);
 
 			// Special case, temporal jitter disabled,
 			// so we don't use occlusion timers.

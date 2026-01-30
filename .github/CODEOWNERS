@@ -45,8 +45,6 @@
 # Editor
 
 /editor/                                      @godotengine/docks
-/editor/script/                               @godotengine/script-editor
-/editor/shader/                               @godotengine/script-editor @godotengine/shaders
 /editor/animation/                            @godotengine/animation
 /editor/audio/                                @godotengine/audio
 /editor/debugger/                             @godotengine/debugger
@@ -57,10 +55,12 @@
 /editor/import/                               @godotengine/import
 /editor/inspector/                            @godotengine/docks
 /editor/scene/2d/                             @godotengine/2d-editor
-/editor/scene/2d/physics                      @godotengine/2d-editor @godotengine/physics
+/editor/scene/2d/physics/                     @godotengine/2d-editor @godotengine/physics
 /editor/scene/3d/                             @godotengine/3d-editor
-/editor/scene/3d/physics                      @godotengine/3d-editor @godotengine/physics
+/editor/scene/3d/physics/                     @godotengine/3d-editor @godotengine/physics
 /editor/scene/gui/                            @godotengine/gui-nodes
+/editor/script/                               @godotengine/script-editor
+/editor/shader/                               @godotengine/script-editor @godotengine/shaders
 /editor/themes/                               @godotengine/usability @godotengine/gui-nodes
 /editor/translations/                         @godotengine/usability
 
@@ -78,8 +78,8 @@
 ## Audio (+ video)
 /modules/interactive_music/                   @godotengine/audio
 /modules/interactive_music/doc_classes/       @godotengine/audio @godotengine/documentation
-/modules/minimp3/                             @godotengine/audio
-/modules/minimp3/doc_classes/                 @godotengine/audio @godotengine/documentation
+/modules/mp3/                                 @godotengine/audio
+/modules/mp3/doc_classes/                     @godotengine/audio @godotengine/documentation
 /modules/ogg/                                 @godotengine/audio
 /modules/ogg/doc_classes/                     @godotengine/audio @godotengine/documentation
 /modules/theora/                              @godotengine/audio
@@ -205,15 +205,19 @@
 # Scene
 
 /scene/2d/                                    @godotengine/2d-nodes
+/scene/2d/navigation/                         @godotengine/2d-nodes @godotengine/navigation
 /scene/2d/physics/                            @godotengine/2d-nodes @godotengine/physics
 /scene/3d/                                    @godotengine/3d-nodes
+/scene/3d/navigation/                         @godotengine/3d-nodes @godotengine/navigation
 /scene/3d/physics/                            @godotengine/3d-nodes @godotengine/physics
+/scene/3d/xr/                                 @godotengine/3d-nodes @godotengine/xr
 /scene/animation/                             @godotengine/animation
 /scene/audio/                                 @godotengine/audio
 /scene/debugger/                              @godotengine/debugger
 /scene/gui/                                   @godotengine/gui-nodes
 /scene/main/                                  @godotengine/core
 /scene/resources/2d/                          @godotengine/2d-nodes
+/scene/resources/2d/skeleton/                 @godotengine/2d-nodes @godotengine/animation
 /scene/resources/3d/                          @godotengine/3d-nodes
 /scene/resources/animated*                    @godotengine/animation
 /scene/resources/animation*                   @godotengine/animation
@@ -227,18 +231,13 @@
 
 # Servers
 
-/servers/**/audio_*                           @godotengine/audio
-/servers/**/camera_*                          @godotengine/xr
-/servers/**/debugger_*                        @godotengine/debugger
-/servers/**/navigation_*                      @godotengine/navigation
-/servers/**/physics_*                         @godotengine/physics
-/servers/**/rendering_*                       @godotengine/rendering
-/servers/**/text_*                            @godotengine/gui-nodes
-/servers/**/xr_*                              @godotengine/xr
 /servers/audio/                               @godotengine/audio
 /servers/camera/                              @godotengine/xr
 /servers/debugger/                            @godotengine/debugger
-/servers/navigation/                          @godotengine/navigation
+/servers/navigation_2d/                       @godotengine/navigation
+/servers/navigation_3d/                       @godotengine/navigation
+/servers/physics_2d/                          @godotengine/physics
+/servers/physics_3d/                          @godotengine/physics
 /servers/rendering/                           @godotengine/rendering
 /servers/text/                                @godotengine/gui-nodes
 /servers/xr/                                  @godotengine/xr

@@ -34,7 +34,7 @@
 #include "core/string/char_utils.h"
 
 #ifdef DEBUG_ENABLED
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 #endif
 
 #ifdef TOOLS_ENABLED
@@ -158,7 +158,7 @@ static const char *token_names[] = {
 };
 
 // Avoid desync.
-static_assert(std::size(token_names) == GDScriptTokenizer::Token::TK_MAX, "Amount of token names don't match the amount of token types.");
+static_assert(std_size(token_names) == GDScriptTokenizer::Token::TK_MAX, "Amount of token names don't match the amount of token types.");
 
 const char *GDScriptTokenizer::Token::get_name() const {
 	ERR_FAIL_INDEX_V_MSG(type, TK_MAX, "<error>", "Using token type out of the enum.");
@@ -372,7 +372,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_token(Token::Type p_type) {
 		if (start_line == line) {
 			// Single line token.
 			if (cursor_line == start_line && cursor_column >= start_column && cursor_column <= last_column) {
-				token.cursor_position = cursor_column - start_column;
 				if (cursor_column == start_column) {
 					token.cursor_place = CURSOR_BEGINNING;
 				} else if (cursor_column < column) {
@@ -385,7 +384,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_token(Token::Type p_type) {
 			// Multi line token.
 			if (cursor_line == start_line && cursor_column >= start_column) {
 				// Is in first line.
-				token.cursor_position = cursor_column - start_column;
 				if (cursor_column == start_column) {
 					token.cursor_place = CURSOR_BEGINNING;
 				} else {
@@ -393,7 +391,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_token(Token::Type p_type) {
 				}
 			} else if (cursor_line == line && cursor_column <= last_column) {
 				// Is in last line.
-				token.cursor_position = cursor_column - start_column;
 				if (cursor_column < column) {
 					token.cursor_place = CURSOR_MIDDLE;
 				} else {
@@ -401,7 +398,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_token(Token::Type p_type) {
 				}
 			} else if (cursor_line > start_line && cursor_line < line) {
 				// Is in middle line.
-				token.cursor_position = CURSOR_MIDDLE;
+				token.cursor_place = CURSOR_MIDDLE;
 			}
 		}
 	}

@@ -36,9 +36,9 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/tree.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
-void EditorDirDialog::_update_dir(const Color &p_default_folder_color, const Dictionary &p_assigned_folder_colors, const HashMap<String, Color> &p_folder_colors, bool p_is_dark_theme, TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path) {
+void EditorDirDialog::_update_dir(const Color &p_default_folder_color, const Dictionary &p_assigned_folder_colors, const HashMap<String, Color> &p_folder_colors, bool p_is_dark_icon_and_font, TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path) {
 	updating = true;
 
 	const String path = p_dir->get_path();
@@ -58,8 +58,8 @@ void EditorDirDialog::_update_dir(const Color &p_default_folder_color, const Dic
 
 		if (p_assigned_folder_colors.has(path)) {
 			const Color &folder_color = p_folder_colors[p_assigned_folder_colors[path]];
-			p_item->set_icon_modulate(0, p_is_dark_theme ? folder_color : folder_color * FileSystemDock::ITEM_COLOR_SCALE);
-			p_item->set_custom_bg_color(0, Color(folder_color, p_is_dark_theme ? FileSystemDock::ITEM_ALPHA_MIN : FileSystemDock::ITEM_ALPHA_MAX));
+			p_item->set_icon_modulate(0, p_is_dark_icon_and_font ? folder_color : folder_color * FileSystemDock::ITEM_COLOR_SCALE);
+			p_item->set_custom_bg_color(0, Color(folder_color, p_is_dark_icon_and_font ? FileSystemDock::ITEM_ALPHA_MIN : FileSystemDock::ITEM_ALPHA_MAX));
 		} else {
 			TreeItem *parent_item = p_item->get_parent();
 			Color parent_bg_color = parent_item->get_custom_bg_color(0);
@@ -79,7 +79,7 @@ void EditorDirDialog::_update_dir(const Color &p_default_folder_color, const Dic
 	updating = false;
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 		TreeItem *ti = tree->create_item(p_item);
-		_update_dir(p_default_folder_color, p_assigned_folder_colors, p_folder_colors, p_is_dark_theme, ti, p_dir->get_subdir(i));
+		_update_dir(p_default_folder_color, p_assigned_folder_colors, p_folder_colors, p_is_dark_icon_and_font, ti, p_dir->get_subdir(i));
 	}
 }
 
@@ -107,7 +107,7 @@ void EditorDirDialog::reload(const String &p_path) {
 
 	tree->clear();
 	TreeItem *root = tree->create_item();
-	_update_dir(tree->get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")), FileSystemDock::get_singleton()->get_assigned_folder_colors(), FileSystemDock::get_singleton()->get_folder_colors(), EditorThemeManager::is_dark_theme(), root, EditorFileSystem::get_singleton()->get_filesystem(), p_path);
+	_update_dir(tree->get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")), FileSystemDock::get_singleton()->get_assigned_folder_colors(), FileSystemDock::get_singleton()->get_folder_colors(), EditorThemeManager::is_dark_icon_and_font(), root, EditorFileSystem::get_singleton()->get_filesystem(), p_path);
 	_item_collapsed(root);
 	new_dir_path.clear();
 	must_reload = false;

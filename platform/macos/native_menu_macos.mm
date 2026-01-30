@@ -238,6 +238,47 @@ RID NativeMenuMacOS::get_system_menu(SystemMenus p_menu_id) const {
 	}
 }
 
+String NativeMenuMacOS::get_system_menu_text(SystemMenus p_menu_id) const {
+	NSMenu *menu = nullptr;
+	switch (p_menu_id) {
+		case WINDOW_MENU_ID: {
+			menu = window_menu_ns;
+		} break;
+		case HELP_MENU_ID: {
+			menu = help_menu_ns;
+		} break;
+		default:
+			return String();
+	}
+	if (!menu) {
+		return String();
+	}
+	return String::utf8([[menu title] UTF8String]);
+}
+
+void NativeMenuMacOS::set_system_menu_text(SystemMenus p_menu_id, const String &p_name) {
+	NSMenu *menu = nullptr;
+	switch (p_menu_id) {
+		case WINDOW_MENU_ID: {
+			menu = window_menu_ns;
+		} break;
+		case HELP_MENU_ID: {
+			menu = help_menu_ns;
+		} break;
+		default:
+			return;
+	}
+	if (!menu || !main_menu_ns) {
+		return;
+	}
+	[menu setTitle:[NSString stringWithUTF8String:p_name.utf8().get_data()]];
+	int idx = [main_menu_ns indexOfItemWithSubmenu:(NSMenu *)menu];
+	NSMenuItem *menu_item = [main_menu_ns itemAtIndex:idx];
+	if (menu_item) {
+		[menu_item setTitle:[NSString stringWithUTF8String:p_name.utf8().get_data()]];
+	}
+}
+
 RID NativeMenuMacOS::create_menu() {
 	MenuData *md = memnew(MenuData);
 	md->menu = [[NSMenu alloc] initWithTitle:@""];
@@ -1163,6 +1204,8 @@ void NativeMenuMacOS::set_item_disabled(const RID &p_rid, int p_idx, bool p_disa
 	ERR_FAIL_COND(p_idx >= item_start + item_count);
 	NSMenuItem *menu_item = [md->menu itemAtIndex:p_idx];
 	if (menu_item) {
+		GodotMenuItem *obj = [menu_item representedObject];
+		obj->enabled = !p_disabled;
 		[menu_item setEnabled:(!p_disabled)];
 	}
 }
@@ -1274,6 +1317,29 @@ void NativeMenuMacOS::set_item_indentation_level(const RID &p_rid, int p_idx, in
 	if (menu_item) {
 		[menu_item setIndentationLevel:p_level];
 	}
+}
+
+int NativeMenuMacOS::set_item_index(const RID &p_rid, int p_idx, int p_target_idx) {
+	ERR_FAIL_COND_V(p_idx < 0, -1);
+
+	MenuData *md = menus.get_or_null(p_rid);
+	ERR_FAIL_NULL_V(md, -1);
+	int item_start = _get_system_menu_start(md->menu);
+	int item_count = _get_system_menu_count(md->menu);
+	p_idx += item_start;
+	ERR_FAIL_COND_V(p_idx >= item_start + item_count, -1);
+	ERR_FAIL_INDEX_V(p_target_idx, item_count, -1);
+	p_target_idx += item_start;
+
+	NSMenuItem *menu_item = [md->menu itemAtIndex:p_idx];
+	if ([menu_item submenu] && _is_menu_opened([menu_item submenu])) {
+		ERR_FAIL_V_MSG(-1, "Can't move open menu!");
+	}
+	if (menu_item) {
+		[md->menu removeItemAtIndex:p_idx];
+		[md->menu insertItem:menu_item atIndex:p_target_idx];
+	}
+	return p_target_idx - item_start;
 }
 
 int NativeMenuMacOS::get_item_count(const RID &p_rid) const {

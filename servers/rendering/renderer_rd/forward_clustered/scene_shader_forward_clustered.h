@@ -217,7 +217,7 @@ public:
 
 		RID version;
 
-		static const uint32_t VERTEX_INPUT_MASKS_SIZE = ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL + ShaderVersion::SHADER_VERSION_COLOR_PASS + SHADER_COLOR_PASS_FLAG_COUNT;
+		static const uint32_t VERTEX_INPUT_MASKS_SIZE = ShaderVersion::SHADER_VERSION_COLOR_PASS * 2 + SHADER_COLOR_PASS_FLAG_COUNT;
 		std::atomic<uint64_t> vertex_input_masks[VERTEX_INPUT_MASKS_SIZE] = {};
 
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
@@ -342,6 +342,7 @@ public:
 
 	SceneForwardClusteredShaderRD shader;
 	ShaderCompiler compiler;
+	bool emulate_point_size = false;
 
 	RID default_shader;
 	RID default_material;

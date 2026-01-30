@@ -932,11 +932,11 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				// LSM_FP_NEAR
 				{
 						// LSM_FP_NEAR
-						PT_NEAR_LEFT_TOP, PT_NEAR_RIGHT_TOP, // Invalid combination.
+						PT_NEAR_LEFT_TOP, PT_NEAR_RIGHT_TOP // Invalid combination.
 				},
 				{
 						// LSM_FP_FAR
-						PT_FAR_RIGHT_TOP, PT_FAR_LEFT_TOP, // Invalid combination.
+						PT_FAR_RIGHT_TOP, PT_FAR_LEFT_TOP // Invalid combination.
 				},
 				{
 						// LSM_FP_LEFT
@@ -964,11 +964,11 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				// LSM_FP_FAR
 				{
 						// LSM_FP_NEAR
-						PT_FAR_LEFT_TOP, PT_FAR_RIGHT_TOP, // Invalid combination.
+						PT_FAR_LEFT_TOP, PT_FAR_RIGHT_TOP // Invalid combination.
 				},
 				{
 						// LSM_FP_FAR
-						PT_FAR_RIGHT_TOP, PT_FAR_LEFT_TOP, // Invalid combination.
+						PT_FAR_RIGHT_TOP, PT_FAR_LEFT_TOP // Invalid combination.
 				},
 				{
 						// LSM_FP_LEFT
@@ -1006,7 +1006,7 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				},
 				{
 						// LSM_FP_LEFT
-						PT_FAR_LEFT_BOTTOM, PT_FAR_LEFT_BOTTOM, // Invalid combination.
+						PT_FAR_LEFT_BOTTOM, PT_FAR_LEFT_BOTTOM // Invalid combination.
 				},
 				{
 						// LSM_FP_TOP
@@ -1015,7 +1015,7 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				},
 				{
 						// LSM_FP_RIGHT
-						PT_FAR_LEFT_BOTTOM, PT_FAR_LEFT_BOTTOM, // Invalid combination.
+						PT_FAR_LEFT_BOTTOM, PT_FAR_LEFT_BOTTOM // Invalid combination.
 				},
 				{
 						// LSM_FP_BOTTOM
@@ -1043,7 +1043,7 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				},
 				{
 						// LSM_FP_TOP
-						PT_NEAR_LEFT_TOP, PT_FAR_LEFT_TOP, // Invalid combination.
+						PT_NEAR_LEFT_TOP, PT_FAR_LEFT_TOP // Invalid combination.
 				},
 				{
 						// LSM_FP_RIGHT
@@ -1052,7 +1052,7 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				},
 				{
 						// LSM_FP_BOTTOM
-						PT_FAR_LEFT_BOTTOM, PT_NEAR_LEFT_BOTTOM, // Invalid combination.
+						PT_FAR_LEFT_BOTTOM, PT_NEAR_LEFT_BOTTOM // Invalid combination.
 				},
 		},
 
@@ -1070,7 +1070,7 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				},
 				{
 						// LSM_FP_LEFT
-						PT_FAR_RIGHT_BOTTOM, PT_FAR_RIGHT_BOTTOM, // Invalid combination.
+						PT_FAR_RIGHT_BOTTOM, PT_FAR_RIGHT_BOTTOM // Invalid combination.
 				},
 				{
 						// LSM_FP_TOP
@@ -1079,7 +1079,7 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				},
 				{
 						// LSM_FP_RIGHT
-						PT_FAR_RIGHT_BOTTOM, PT_FAR_RIGHT_BOTTOM, // Invalid combination.
+						PT_FAR_RIGHT_BOTTOM, PT_FAR_RIGHT_BOTTOM // Invalid combination.
 				},
 				{
 						// LSM_FP_BOTTOM
@@ -1116,7 +1116,7 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				},
 				{
 						// LSM_FP_TOP
-						PT_NEAR_LEFT_BOTTOM, PT_FAR_LEFT_BOTTOM, // Invalid combination.
+						PT_NEAR_LEFT_BOTTOM, PT_FAR_LEFT_BOTTOM // Invalid combination.
 				},
 				{
 						// LSM_FP_RIGHT
@@ -1125,7 +1125,7 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				},
 				{
 						// LSM_FP_BOTTOM
-						PT_FAR_LEFT_BOTTOM, PT_NEAR_LEFT_BOTTOM, // Invalid combination.
+						PT_FAR_LEFT_BOTTOM, PT_NEAR_LEFT_BOTTOM // Invalid combination.
 				},
 		},
 

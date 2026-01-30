@@ -18,6 +18,7 @@
 			<param index="0" name="id" type="StringName" />
 			<param index="1" name="callable" type="Callable" />
 			<param index="2" name="arguments" type="Array" default="[]" />
+			<param index="3" name="type" type="int" enum="Performance.MonitorType" default="0" />
 			<description>
 				Adds a custom monitor with the name [param id]. You can specify the category of the monitor using slash delimiters in [param id] (for example: [code]"Game/NumberOfNPCs"[/code]). If there is more than one slash delimiter, then the default category is used. The default category is [code]"Custom"[/code]. Prints an error if given [param id] is already present.
 				[codeblocks]
@@ -82,6 +83,12 @@
 			<return type="StringName[]" />
 			<description>
 				Returns the names of active custom monitors in an [Array].
+			</description>
+		</method>
+		<method name="get_custom_monitor_types">
+			<return type="PackedInt32Array" />
+			<description>
+				Returns the [enum MonitorType] values of active custom monitors in an [Array].
 			</description>
 		</method>
 		<method name="get_monitor" qualifiers="const">
@@ -154,6 +161,7 @@
 		</constant>
 		<constant name="OBJECT_ORPHAN_NODE_COUNT" value="10" enum="Monitor">
 			Number of orphan nodes, i.e. nodes which are not parented to a node of the scene tree. [i]Lower is better.[/i]
+			[b]Note:[/b] This is only available in debug mode and will always return [code]0[/code] when used in a project exported in release mode.
 		</constant>
 		<constant name="RENDER_TOTAL_OBJECTS_IN_FRAME" value="11" enum="Monitor">
 			The total number of objects in the last rendered frame. This metric doesn't include culled objects (either via hiding nodes, frustum culling or occlusion culling). [i]Lower is better.[/i]
@@ -195,7 +203,7 @@
 			Output latency of the [AudioServer]. Equivalent to calling [method AudioServer.get_output_latency], it is not recommended to call this every frame.
 		</constant>
 		<constant name="NAVIGATION_ACTIVE_MAPS" value="24" enum="Monitor">
-			Number of active navigation maps in [NavigationServer2D] and [NavigationServer3D]. This also includes the two empty default navigation maps created by World2D and World3D.
+			Number of active navigation maps in [NavigationServer2D] and [NavigationServer3D]. This also includes the empty default navigation maps created by [World2D] and [World3D] instances.
 		</constant>
 		<constant name="NAVIGATION_REGION_COUNT" value="25" enum="Monitor">
 			Number of active navigation regions in [NavigationServer2D] and [NavigationServer3D].
@@ -240,7 +248,7 @@
 			Number of pipeline compilations that were triggered to optimize the current scene. These compilations are done in the background and should not cause any stutters whatsoever.
 		</constant>
 		<constant name="NAVIGATION_2D_ACTIVE_MAPS" value="39" enum="Monitor">
-			Number of active navigation maps in the [NavigationServer2D]. This also includes the two empty default navigation maps created by World2D.
+			Number of active navigation maps in the [NavigationServer2D]. This also includes the empty default navigation maps created by [World2D] instances.
 		</constant>
 		<constant name="NAVIGATION_2D_REGION_COUNT" value="40" enum="Monitor">
 			Number of active navigation regions in the [NavigationServer2D].
@@ -270,7 +278,7 @@
 			Number of active navigation obstacles in the [NavigationServer2D].
 		</constant>
 		<constant name="NAVIGATION_3D_ACTIVE_MAPS" value="49" enum="Monitor">
-			Number of active navigation maps in the [NavigationServer3D]. This also includes the two empty default navigation maps created by World3D.
+			Number of active navigation maps in the [NavigationServer3D]. This also includes the empty default navigation maps created by [World3D] instances.
 		</constant>
 		<constant name="NAVIGATION_3D_REGION_COUNT" value="50" enum="Monitor">
 			Number of active navigation regions in the [NavigationServer3D].
@@ -301,6 +309,18 @@
 		</constant>
 		<constant name="MONITOR_MAX" value="59" enum="Monitor">
 			Represents the size of the [enum Monitor] enum.
+		</constant>
+		<constant name="MONITOR_TYPE_QUANTITY" value="0" enum="MonitorType">
+			Monitor output is formatted as an integer value.
+		</constant>
+		<constant name="MONITOR_TYPE_MEMORY" value="1" enum="MonitorType">
+			Monitor output is formatted as computer memory. Submitted values should represent a number of bytes.
+		</constant>
+		<constant name="MONITOR_TYPE_TIME" value="2" enum="MonitorType">
+			Monitor output is formatted as time in milliseconds. Submitted values should represent a time in seconds (not milliseconds).
+		</constant>
+		<constant name="MONITOR_TYPE_PERCENTAGE" value="3" enum="MonitorType">
+			Monitor output is formatted as a percentage. Submitted values should represent a fractional value rather than the percentage directly, e.g. [code]0.5[/code] for [code]50.00%[/code].
 		</constant>
 	</constants>
 </class>

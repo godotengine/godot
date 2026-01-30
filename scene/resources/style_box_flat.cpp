@@ -30,9 +30,9 @@
 
 #include "style_box_flat.h"
 
-#include "scene/main/scene_tree.h"
-#include "scene/main/window.h"
-#include "servers/rendering_server.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/viewport.h"
+#include "servers/rendering/rendering_server.h"
 
 float StyleBoxFlat::get_style_margin(Side p_side) const {
 	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
@@ -496,18 +496,15 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 	real_t aa_size_scaled = 1.0f;
 	if (aa_on) {
-		real_t scale_factor = 1.0f;
-		const SceneTree *tree = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
-		if (tree) {
-			const Window *window = tree->get_root();
-			const Vector2 stretch_scale = window->get_stretch_transform().get_scale();
-			scale_factor = MIN(stretch_scale.x, stretch_scale.y);
+		real_t scale_factor = TextServer::get_current_drawn_item_oversampling();
+		if (scale_factor == 0.0) {
+			scale_factor = 1.0;
 		}
 
 		// Adjust AA feather size to account for the 2D scale factor, so that
 		// antialiasing doesn't become blurry at viewport resolutions higher
 		// than the default when using the `canvas_items` stretch mode
-		// (or when using `content_scale_factor` values different than `1.0`).
+		// (or when using `oversampling` values different than `1.0`).
 		aa_size_scaled = aa_size / scale_factor;
 	}
 

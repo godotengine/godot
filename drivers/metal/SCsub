@@ -9,6 +9,7 @@ env_metal = env.Clone()
 
 thirdparty_obj = []
 
+thirdparty_spirv_headers_dir = "#thirdparty/spirv-headers/"
 thirdparty_dir = "#thirdparty/spirv-cross/"
 thirdparty_sources = [
     "spirv_cfg.cpp",
@@ -21,7 +22,8 @@ thirdparty_sources = [
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-env_metal.Prepend(CPPEXTPATH=[thirdparty_dir, thirdparty_dir + "/include"])
+env_metal.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include"])
+env_metal.Prepend(CPPPATH=[thirdparty_spirv_headers_dir + "include/spirv/unified1"])
 
 # Must enable exceptions for SPIRV-Cross; otherwise, it will abort the process on errors.
 if "-fno-exceptions" in env_metal["CXXFLAGS"]:
@@ -46,6 +48,7 @@ env_metal.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
 driver_obj = []
 
 env_metal.add_source_files(driver_obj, "*.mm")
+env_metal.add_source_files(driver_obj, "*.cpp")
 env.drivers_sources += driver_obj
 
 # Needed to force rebuilding the driver files when the thirdparty library is updated.

@@ -217,11 +217,17 @@ bool _try_isolating_subgraphs (const hb_vector_t<graph::overflow_record_t>& over
   unsigned maximum_to_move = hb_max ((sorted_graph.num_roots_for_space (space) / 2u), 1u);
   if (roots_to_isolate.get_population () > maximum_to_move) {
     // Only move at most half of the roots in a space at a time.
-    unsigned extra = roots_to_isolate.get_population () - maximum_to_move;
-    while (extra--) {
-      uint32_t root = HB_SET_VALUE_INVALID;
-      roots_to_isolate.previous (&root);
-      roots_to_isolate.del (root);
+    //
+    // Note: this was ported from non-stable ids to stable ids. So to retain the same behaviour
+    // with regards to which roots are removed from the set we need to remove them in the topological
+    // order, not the object id order.
+    int extra = roots_to_isolate.get_population () - maximum_to_move;
+    for (unsigned id : sorted_graph.ordering_) {
+      if (!extra) break;
+      if (roots_to_isolate.has(id)) {
+        roots_to_isolate.del(id);
+        extra--;
+      }
     }
   }
 

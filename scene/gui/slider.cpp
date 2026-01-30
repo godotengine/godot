@@ -30,6 +30,7 @@
 
 #include "slider.h"
 
+#include "core/input/input.h"
 #include "scene/theme/theme_db.h"
 
 Size2 Slider::get_minimum_size() const {
@@ -56,7 +57,7 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				Ref<Texture2D> grabber;
-				if (mouse_inside || has_focus()) {
+				if (mouse_inside || has_focus(true)) {
 					grabber = theme_cache.grabber_hl_icon;
 				} else {
 					grabber = theme_cache.grabber_icon;
@@ -275,7 +276,7 @@ void Slider::_notification(int p_what) {
 			Ref<StyleBox> style = theme_cache.slider_style;
 			Ref<Texture2D> tick = theme_cache.tick_icon;
 
-			bool highlighted = editable && (mouse_inside || has_focus());
+			bool highlighted = editable && (mouse_inside || has_focus(true));
 			Ref<Texture2D> grabber;
 			if (editable) {
 				if (highlighted) {

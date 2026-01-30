@@ -295,6 +295,50 @@ void TextureRegionEditor::_set_grid_parameters_clamping(bool p_enabled) {
 	sb_sep_y->set_allow_greater(!p_enabled);
 }
 
+void TextureRegionEditor::_commit_drag() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	if (edited_margin >= 0) {
+		undo_redo->create_action(TTR("Set Margin"));
+		static Side side[4] = { SIDE_TOP, SIDE_BOTTOM, SIDE_LEFT, SIDE_RIGHT };
+		if (node_ninepatch) {
+			undo_redo->add_do_method(node_ninepatch, "set_patch_margin", side[edited_margin], node_ninepatch->get_patch_margin(side[edited_margin]));
+			undo_redo->add_undo_method(node_ninepatch, "set_patch_margin", side[edited_margin], prev_margin);
+		} else if (res_stylebox.is_valid()) {
+			undo_redo->add_do_method(res_stylebox.ptr(), "set_texture_margin", side[edited_margin], res_stylebox->get_texture_margin(side[edited_margin]));
+			undo_redo->add_undo_method(res_stylebox.ptr(), "set_texture_margin", side[edited_margin], prev_margin);
+			res_stylebox->emit_changed();
+		}
+		edited_margin = -1;
+	} else {
+		undo_redo->create_action(TTR("Set Region Rect"));
+		if (node_sprite_2d) {
+			undo_redo->add_do_method(node_sprite_2d, "set_region_rect", node_sprite_2d->get_region_rect());
+			undo_redo->add_undo_method(node_sprite_2d, "set_region_rect", rect_prev);
+		} else if (node_sprite_3d) {
+			undo_redo->add_do_method(node_sprite_3d, "set_region_rect", node_sprite_3d->get_region_rect());
+			undo_redo->add_undo_method(node_sprite_3d, "set_region_rect", rect_prev);
+		} else if (node_ninepatch) {
+			undo_redo->add_do_method(node_ninepatch, "set_region_rect", node_ninepatch->get_region_rect());
+			undo_redo->add_undo_method(node_ninepatch, "set_region_rect", rect_prev);
+		} else if (res_stylebox.is_valid()) {
+			undo_redo->add_do_method(res_stylebox.ptr(), "set_region_rect", res_stylebox->get_region_rect());
+			undo_redo->add_undo_method(res_stylebox.ptr(), "set_region_rect", rect_prev);
+		} else if (res_atlas_texture.is_valid()) {
+			undo_redo->add_do_method(res_atlas_texture.ptr(), "set_region", res_atlas_texture->get_region());
+			undo_redo->add_undo_method(res_atlas_texture.ptr(), "set_region", rect_prev);
+		}
+		drag_index = -1;
+	}
+
+	undo_redo->add_do_method(this, "_update_rect");
+	undo_redo->add_undo_method(this, "_update_rect");
+	undo_redo->add_do_method(texture_overlay, "queue_redraw");
+	undo_redo->add_undo_method(texture_overlay, "queue_redraw");
+	undo_redo->commit_action();
+	drag = false;
+	creating = false;
+}
+
 void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input) {
 	if (panner->gui_input(p_input, texture_overlay->get_global_rect())) {
 		return;
@@ -304,7 +348,8 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 	mtx.columns[2] = -draw_ofs * draw_zoom;
 	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
 
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	bool cancel_drag = false;
+
 	Ref<InputEventMouseButton> mb = p_input;
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::LEFT) {
@@ -392,6 +437,7 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 						// We didn't hit anything, but we're in the autoslice mode. Handle it.
 
 						Vector2 point = mtx.affine_inverse().xform(mb->get_position());
+						EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 						for (const Rect2 &E : autoslice_cache) {
 							if (E.has_point(point)) {
 								rect = E;
@@ -449,74 +495,41 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 				}
 
 			} else if (!mb->is_pressed() && drag) {
-				if (edited_margin >= 0) {
-					undo_redo->create_action(TTR("Set Margin"));
-					static Side side[4] = { SIDE_TOP, SIDE_BOTTOM, SIDE_LEFT, SIDE_RIGHT };
-					if (node_ninepatch) {
-						undo_redo->add_do_method(node_ninepatch, "set_patch_margin", side[edited_margin], node_ninepatch->get_patch_margin(side[edited_margin]));
-						undo_redo->add_undo_method(node_ninepatch, "set_patch_margin", side[edited_margin], prev_margin);
-					} else if (res_stylebox.is_valid()) {
-						undo_redo->add_do_method(res_stylebox.ptr(), "set_texture_margin", side[edited_margin], res_stylebox->get_texture_margin(side[edited_margin]));
-						undo_redo->add_undo_method(res_stylebox.ptr(), "set_texture_margin", side[edited_margin], prev_margin);
-						res_stylebox->emit_changed();
-					}
-					edited_margin = -1;
-				} else {
-					undo_redo->create_action(TTR("Set Region Rect"));
-					if (node_sprite_2d) {
-						undo_redo->add_do_method(node_sprite_2d, "set_region_rect", node_sprite_2d->get_region_rect());
-						undo_redo->add_undo_method(node_sprite_2d, "set_region_rect", rect_prev);
-					} else if (node_sprite_3d) {
-						undo_redo->add_do_method(node_sprite_3d, "set_region_rect", node_sprite_3d->get_region_rect());
-						undo_redo->add_undo_method(node_sprite_3d, "set_region_rect", rect_prev);
-					} else if (node_ninepatch) {
-						undo_redo->add_do_method(node_ninepatch, "set_region_rect", node_ninepatch->get_region_rect());
-						undo_redo->add_undo_method(node_ninepatch, "set_region_rect", rect_prev);
-					} else if (res_stylebox.is_valid()) {
-						undo_redo->add_do_method(res_stylebox.ptr(), "set_region_rect", res_stylebox->get_region_rect());
-						undo_redo->add_undo_method(res_stylebox.ptr(), "set_region_rect", rect_prev);
-					} else if (res_atlas_texture.is_valid()) {
-						undo_redo->add_do_method(res_atlas_texture.ptr(), "set_region", res_atlas_texture->get_region());
-						undo_redo->add_undo_method(res_atlas_texture.ptr(), "set_region", rect_prev);
-					}
-					drag_index = -1;
-				}
-				undo_redo->add_do_method(this, "_update_rect");
-				undo_redo->add_undo_method(this, "_update_rect");
-				undo_redo->add_do_method(texture_overlay, "queue_redraw");
-				undo_redo->add_undo_method(texture_overlay, "queue_redraw");
-				undo_redo->commit_action();
-				drag = false;
-				creating = false;
+				_commit_drag();
 			}
+		} else if (drag && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
+			cancel_drag = true;
+		}
+	}
 
-		} else if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
-			if (drag) {
-				drag = false;
-				if (edited_margin >= 0) {
-					static Side side[4] = { SIDE_TOP, SIDE_BOTTOM, SIDE_LEFT, SIDE_RIGHT };
-					if (node_ninepatch) {
-						node_ninepatch->set_patch_margin(side[edited_margin], prev_margin);
-					}
-					if (res_stylebox.is_valid()) {
-						res_stylebox->set_texture_margin(side[edited_margin], prev_margin);
-					}
-					edited_margin = -1;
-				} else {
-					_apply_rect(rect_prev);
-					rect = rect_prev;
-					texture_preview->queue_redraw();
-					texture_overlay->queue_redraw();
-					drag_index = -1;
-				}
+	if (drag && p_input.is_valid() && p_input->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+		cancel_drag = true;
+	}
+
+	if (cancel_drag) {
+		drag = false;
+		if (edited_margin >= 0) {
+			static Side side[4] = { SIDE_TOP, SIDE_BOTTOM, SIDE_LEFT, SIDE_RIGHT };
+			if (node_ninepatch) {
+				node_ninepatch->set_patch_margin(side[edited_margin], prev_margin);
 			}
+			if (res_stylebox.is_valid()) {
+				res_stylebox->set_texture_margin(side[edited_margin], prev_margin);
+			}
+			edited_margin = -1;
+		} else {
+			_apply_rect(rect_prev);
+			rect = rect_prev;
+			texture_preview->queue_redraw();
+			texture_overlay->queue_redraw();
+			drag_index = -1;
 		}
 	}
 
 	Ref<InputEventMouseMotion> mm = p_input;
 
-	if (mm.is_valid()) {
-		if (drag) {
+	if (drag && mm.is_valid()) {
+		if (mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 			if (edited_margin >= 0) {
 				float new_margin = 0;
 
@@ -633,6 +646,8 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 			}
 			texture_preview->queue_redraw();
 			texture_overlay->queue_redraw();
+		} else {
+			_commit_drag();
 		}
 	}
 
@@ -656,6 +671,12 @@ void TextureRegionEditor::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_
 
 void TextureRegionEditor::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
 	_zoom_on_position(draw_zoom * p_zoom_factor, p_origin);
+}
+
+void TextureRegionEditor::_input_from_window(const Ref<InputEvent> &p_event) {
+	if (!drag && p_event.is_valid() && p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+		hide();
+	}
 }
 
 void TextureRegionEditor::_scroll_changed(float) {
@@ -859,6 +880,12 @@ void TextureRegionEditor::_notification(int p_what) {
 				EditorSettings::get_singleton()->set_project_metadata("texture_region_editor", "snap_step", snap_step);
 				EditorSettings::get_singleton()->set_project_metadata("texture_region_editor", "snap_separation", snap_separation);
 				EditorSettings::get_singleton()->set_project_metadata("texture_region_editor", "snap_mode", snap_mode);
+			}
+		} break;
+
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			if (drag) {
+				_commit_drag();
 			}
 		} break;
 
@@ -1133,8 +1160,11 @@ void TextureRegionEditor::_bind_methods() {
 
 TextureRegionEditor::TextureRegionEditor() {
 	set_title(TTR("Region Editor"));
+	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	set_process_shortcut_input(true);
 	set_ok_button_text(TTR("Close"));
+	// Handled manually, to allow canceling dragging.
+	set_close_on_escape(false);
 
 	// A power-of-two value works better as a default grid size.
 	snap_offset = EditorSettings::get_singleton()->get_project_metadata("texture_region_editor", "snap_offset", Vector2());

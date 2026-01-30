@@ -37,6 +37,7 @@
 #include "editor/settings/input_event_configuration_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 
@@ -423,6 +424,13 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 		actions_cache = p_action_infos;
 	}
 
+	Pair<String, int> selected_item;
+	TreeItem *ti = action_tree->get_selected();
+	if (ti) {
+		selected_item.first = ti->get_text(0);
+		selected_item.second = action_tree->get_selected_column();
+	}
+
 	HashSet<String> collapsed_actions;
 	TreeItem *root = action_tree->get_root();
 	if (root) {
@@ -458,6 +466,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 
 		// First Column - Action Name
 		action_item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
+		action_item->set_cell_mode(0, TreeItem::CELL_MODE_STRING);
 		action_item->set_text(0, action_info.name);
 		action_item->set_editable(0, action_info.editable);
 		action_item->set_icon(0, action_info.icon);
@@ -481,6 +490,12 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 
 		action_item->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 		action_item->set_custom_bg_color(1, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+		action_item->set_custom_stylebox(0, get_theme_stylebox(SNAME("prop_subsection_stylebox_left"), EditorStringName(Editor)));
+		action_item->set_custom_stylebox(1, get_theme_stylebox(SNAME("prop_subsection_stylebox_right"), EditorStringName(Editor)));
+
+		if (selected_item.first == action_info.name) {
+			action_item->select(selected_item.second);
+		}
 
 		for (int evnt_idx = 0; evnt_idx < events.size(); evnt_idx++) {
 			Ref<InputEvent> event = events[evnt_idx];
@@ -530,6 +545,10 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			event_item->add_button(2, get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_EVENT, false, TTRC("Remove Event"), TTRC("Remove Event"));
 			event_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
 			event_item->set_button_color(2, 1, Color(1, 1, 1, 0.75));
+
+			if (selected_item.first == event_item->get_text(0)) {
+				event_item->select(selected_item.second);
+			}
 		}
 	}
 }
@@ -582,10 +601,15 @@ ActionMapEditor::ActionMapEditor() {
 
 	main_vbox->add_child(add_hbox);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	main_vbox->add_child(mc);
+
 	// Action Editor Tree
 	action_tree = memnew(Tree);
-	action_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	action_tree->set_accessibility_name(TTRC("Action Map"));
+	action_tree->set_theme_type_variation("TreeTable");
 	action_tree->set_columns(3);
 	action_tree->set_hide_root(true);
 	action_tree->set_column_titles_visible(true);
@@ -599,7 +623,7 @@ ActionMapEditor::ActionMapEditor() {
 	action_tree->connect("item_edited", callable_mp(this, &ActionMapEditor::_action_edited), CONNECT_DEFERRED);
 	action_tree->connect("item_activated", callable_mp(this, &ActionMapEditor::_tree_item_activated));
 	action_tree->connect("button_clicked", callable_mp(this, &ActionMapEditor::_tree_button_pressed));
-	main_vbox->add_child(action_tree);
+	mc->add_child(action_tree);
 
 	SET_DRAG_FORWARDING_GCD(action_tree, ActionMapEditor);
 

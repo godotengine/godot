@@ -244,16 +244,64 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 						int region_end_index = -1;
 						int end_key_length = color_regions[in_region].end_key.length();
 						const char32_t *end_key = color_regions[in_region].end_key.get_data();
+						int placeholder_end = from;
 						for (; from < line_length; from++) {
 							if (line_length - from < end_key_length) {
-								// Don't break if '\' to highlight esc chars.
-								if (str.find_char('\\', from) < 0) {
+								// Don't break if '\' to highlight escape sequences,
+								// and '%' and '{' to highlight placeholders.
+								if (str.find_char('\\', from) == -1 && str.find_char('%', from) == -1 && str.find_char('{', from) == -1) {
 									break;
 								}
 							}
 
-							if (!is_symbol(str[from])) {
+							if (!is_symbol(str[from]) && str[from] != '%') {
 								continue;
+							}
+
+							if (str[from] == '%' || str[from] == '{') {
+								int placeholder_start = from;
+								bool is_percent = str[from] == '%';
+
+								from++;
+
+								if (is_percent) {
+									if (str[from] == '%') {
+										placeholder_end = from + 1;
+									} else {
+										const String allowed_chars = "+.-*0123456789";
+										const String placeholder_types = "cdfosvxX";
+										for (int i = 0; i < line_length - from; i++) {
+											if (allowed_chars.contains_char(str[from + i]) &&
+													!placeholder_types.contains_char(str[from + i]) &&
+													(str[from + i] != end_key[0] || (str[from + i] == end_key[0] && str[from + i - 1] == '\\'))) {
+												continue;
+											}
+											if (placeholder_types.contains_char(str[from + i])) {
+												placeholder_end = from + i + 1;
+											}
+											break;
+										}
+									}
+								} else {
+									for (int i = 0; i < line_length - from; i++) {
+										if (str[from + i] != '}' && (str[from + i] != end_key[0] || (str[from + i] == end_key[0] && str[from + i - 1] == '\\'))) {
+											continue;
+										}
+										if (str[from + i] == '}') {
+											placeholder_end = from + i + 1;
+										}
+										break;
+									}
+								}
+
+								if (placeholder_end > placeholder_start) {
+									Dictionary placeholder_highlighter_info;
+									placeholder_highlighter_info["color"] = placeholder_color;
+									color_map[placeholder_start] = placeholder_highlighter_info;
+									Dictionary region_continue_highlighter_info;
+									region_continue_highlighter_info["color"] = region_color;
+									color_map[placeholder_end] = region_continue_highlighter_info;
+								}
 							}
 
 							if (str[from] == '\\') {
@@ -280,7 +328,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 									}
 
 									Dictionary region_continue_highlighter_info;
-									region_continue_highlighter_info["color"] = region_color;
+									region_continue_highlighter_info["color"] = from < placeholder_end ? placeholder_color : region_color;
 									color_map[from + 1] = region_continue_highlighter_info;
 								}
 
@@ -315,6 +363,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 					prev_is_binary_op = false;
 					continue;
 				}
+				color_map.sort(); // Prevents e.g. escape sequences from being overridden by string placeholders.
 			}
 		}
 
@@ -437,7 +486,9 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			if (col != Color()) {
 				for (int k = j - 1; k >= 0; k--) {
 					if (str[k] == '.') {
-						col = Color(); // Keyword, member & global func indexing not allowed.
+						// Keyword, member, & global func indexing not allowed,
+						// but don't reset color if prev was a number like "5."
+						col = (prev_type == NUMBER) ? col : Color();
 						break;
 					} else if (str[k] > 32) {
 						break;
@@ -715,11 +766,11 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 	/* Engine types. */
 	const Color types_color = EDITOR_GET("text_editor/theme/highlighting/engine_type_color");
-	List<StringName> types;
-	ClassDB::get_class_list(&types);
-	for (const StringName &E : types) {
-		if (ClassDB::is_class_exposed(E)) {
-			class_names[E] = types_color;
+	LocalVector<StringName> types;
+	ClassDB::get_class_list(types);
+	for (const StringName &type : types) {
+		if (ClassDB::is_class_exposed(type)) {
+			class_names[type] = types_color;
 		}
 	}
 
@@ -732,10 +783,10 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 	/* User types. */
 	const Color usertype_color = EDITOR_GET("text_editor/theme/highlighting/user_type_color");
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
-	for (const StringName &E : global_classes) {
-		class_names[E] = usertype_color;
+	LocalVector<StringName> global_classes;
+	ScriptServer::get_global_class_list(global_classes);
+	for (const StringName &class_name : global_classes) {
+		class_names[class_name] = usertype_color;
 	}
 
 	/* Autoloads. */
@@ -811,6 +862,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 	/* Strings */
 	string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
+	placeholder_color = EDITOR_GET("text_editor/theme/highlighting/string_placeholder_color");
 	add_color_region(ColorRegion::TYPE_STRING, "\"", "\"", string_color);
 	add_color_region(ColorRegion::TYPE_STRING, "'", "'", string_color);
 	add_color_region(ColorRegion::TYPE_MULTILINE_STRING, "\"\"\"", "\"\"\"", string_color);

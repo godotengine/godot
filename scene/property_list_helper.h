@@ -48,7 +48,9 @@ class PropertyListHelper {
 	HashMap<String, Property> property_list;
 	Object *object = nullptr;
 
-	const Property *_get_property(const String &p_property, int *r_index) const;
+	bool allow_oob_assign = false;
+
+	const Property *_get_property(const String &p_property, int *r_index, bool p_allow_oob = false) const;
 	void _call_setter(const MethodBind *p_setter, int p_index, const Variant &p_value) const;
 	Variant _call_getter(const Property *p_property, int p_index) const;
 	int _call_array_length_getter() const;
@@ -86,6 +88,8 @@ public:
 	bool property_set_value(const String &p_property, const Variant &p_value) const;
 	bool property_can_revert(const String &p_property) const;
 	bool property_get_revert(const String &p_property, Variant &r_value) const;
+
+	void enable_out_of_bounds_assign() { allow_oob_assign = true; }
 
 	void clear();
 };

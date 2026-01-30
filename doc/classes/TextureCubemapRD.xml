@@ -5,7 +5,9 @@
 	</brief_description>
 	<description>
 		This texture class allows you to use a cubemap texture created directly on the [RenderingDevice] as a texture for materials, meshes, etc.
+		[b]Note:[/b] [TextureCubemapRD] is intended for low-level usage with [RenderingDevice]. For most use cases, use [Cubemap] instead.
 	</description>
 	<tutorials>
+		<link title="Compute Texture demo">https://godotengine.org/asset-library/asset/2764</link>
 	</tutorials>
 </class>

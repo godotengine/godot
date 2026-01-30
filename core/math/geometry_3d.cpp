@@ -186,13 +186,11 @@ struct _FaceClassify {
 			face = -1;
 			edge = -1;
 		}
-		_Link() {}
 	};
 	bool valid = false;
 	int group = -1;
 	_Link links[3];
 	Face3 face;
-	_FaceClassify() {}
 };
 
 /*** GEOMETRY WRAPPER ***/
