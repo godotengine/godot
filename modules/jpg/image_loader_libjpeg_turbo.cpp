@@ -30,6 +30,7 @@
 
 #include "image_loader_libjpeg_turbo.h"
 
+#include <cmyk.h>
 #include <turbojpeg.h>
 
 Error jpeg_turbo_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len) {
@@ -48,33 +49,83 @@ Error jpeg_turbo_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer,
 	const TJCS colorspace = (TJCS)tj3Get(tj_instance, TJPARAM_COLORSPACE);
 
 	if (tj3Get(tj_instance, TJPARAM_PRECISION) > 8) {
-		// Proceed anyway and convert to rgb8?
+		// TODO: Proceed anyway and convert to rgb8?
+		ERR_PRINT("JPEGTurbo: JPEG files with precision > 8 are not currently supported.");
 		tj3Destroy(tj_instance);
 		return ERR_UNAVAILABLE;
 	}
 
 	TJPF tj_pixel_format;
 	Image::Format gd_pixel_format;
+
 	if (colorspace == TJCS_GRAY) {
 		tj_pixel_format = TJPF_GRAY;
 		gd_pixel_format = Image::FORMAT_L8;
+		Vector<uint8_t> data;
+		data.resize(width * height * tjPixelSize[tj_pixel_format]);
+
+		if (tj3Decompress8(tj_instance, p_buffer, p_buffer_len, data.ptrw(), 0, tj_pixel_format) < 0) {
+			tj3Destroy(tj_instance);
+			return ERR_FILE_CORRUPT;
+		}
+
+		tj3Destroy(tj_instance);
+		p_image->set_data(width, height, false, gd_pixel_format, data);
+		return OK;
+	} else if (colorspace == TJCS_CMYK || colorspace == TJCS_YCCK) {
+		// Decompress into CMYK (4 components) then convert to RGB with TJ's cmyk.h helper.
+		// This function is clearly documented as quick and dirty, but this is a best effort
+		// conversion anyway, and results on game assets might be serviceable.
+		tj_pixel_format = TJPF_CMYK; // TJ automatically converts YCCK to CMYK.
+		gd_pixel_format = Image::FORMAT_RGB8;
+
+		Vector<uint8_t> cmyk_data;
+		cmyk_data.resize(width * height * tjPixelSize[tj_pixel_format]);
+
+		if (tj3Decompress8(tj_instance, p_buffer, p_buffer_len, cmyk_data.ptrw(), 0, tj_pixel_format) < 0) {
+			tj3Destroy(tj_instance);
+			return ERR_FILE_CORRUPT;
+		}
+
+		tj3Destroy(tj_instance);
+
+		Vector<uint8_t> rgb_data;
+		rgb_data.resize(width * height * 3);
+		uint8_t *rgb_data_w = rgb_data.ptrw();
+
+		for (unsigned int i = 0; i < width * height; i++) {
+			uint8_t c = cmyk_data[i * 4 + 0];
+			uint8_t m = cmyk_data[i * 4 + 1];
+			uint8_t y = cmyk_data[i * 4 + 2];
+			uint8_t k = cmyk_data[i * 4 + 3];
+
+			_JSAMPLE rr, gg, bb;
+			cmyk_to_rgb(255, c, m, y, k, &rr, &gg, &bb);
+
+			rgb_data_w[i * 3 + 0] = (uint8_t)rr;
+			rgb_data_w[i * 3 + 1] = (uint8_t)gg;
+			rgb_data_w[i * 3 + 2] = (uint8_t)bb;
+		}
+
+		p_image->set_data(width, height, false, gd_pixel_format, rgb_data);
+		return OK;
 	} else {
-		// Force everything else (RGB, CMYK etc) into RGB8.
+		// Other color spaces should be RGB.
 		tj_pixel_format = TJPF_RGB;
 		gd_pixel_format = Image::FORMAT_RGB8;
-	}
 
-	Vector<uint8_t> data;
-	data.resize(width * height * tjPixelSize[tj_pixel_format]);
+		Vector<uint8_t> data;
+		data.resize(width * height * tjPixelSize[tj_pixel_format]);
 
-	if (tj3Decompress8(tj_instance, p_buffer, p_buffer_len, data.ptrw(), 0, tj_pixel_format) < 0) {
+		if (tj3Decompress8(tj_instance, p_buffer, p_buffer_len, data.ptrw(), 0, tj_pixel_format) < 0) {
+			tj3Destroy(tj_instance);
+			return ERR_FILE_CORRUPT;
+		}
+
 		tj3Destroy(tj_instance);
-		return ERR_FILE_CORRUPT;
+		p_image->set_data(width, height, false, gd_pixel_format, data);
+		return OK;
 	}
-
-	tj3Destroy(tj_instance);
-	p_image->set_data(width, height, false, gd_pixel_format, data);
-	return OK;
 }
 
 Error ImageLoaderLibJPEGTurbo::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
