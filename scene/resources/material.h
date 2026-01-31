@@ -358,6 +358,7 @@ private:
 	struct MaterialKey {
 		// enum values
 		uint64_t texture_filter : get_num_bits(TEXTURE_FILTER_MAX - 1);
+		uint64_t ao_texture_filter : get_num_bits(TEXTURE_FILTER_MAX - 1);
 		uint64_t detail_uv : get_num_bits(DETAIL_UV_MAX - 1);
 		uint64_t transparency : get_num_bits(TRANSPARENCY_MAX - 1);
 		uint64_t alpha_antialiasing_mode : get_num_bits(ALPHA_ANTIALIASING_MAX - 1);
@@ -426,6 +427,7 @@ private:
 		mk.depth_test = depth_test;
 		mk.cull_mode = cull_mode;
 		mk.texture_filter = texture_filter;
+		mk.ao_texture_filter = ao_texture_filter;
 		mk.transparency = transparency;
 		mk.shading_mode = shading_mode;
 		mk.roughness_channel = roughness_texture_channel;
@@ -570,6 +572,7 @@ private:
 	ShadingMode shading_mode = SHADING_MODE_PER_PIXEL;
 
 	TextureFilter texture_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
+	TextureFilter ao_texture_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
 
 	Vector3 uv1_scale;
 	Vector3 uv1_offset;
@@ -770,6 +773,9 @@ public:
 	void set_texture_filter(TextureFilter p_filter);
 	TextureFilter get_texture_filter() const;
 
+	void set_ao_texture_filter(TextureFilter p_filter);
+	TextureFilter get_ao_texture_filter() const;
+
 	void set_feature(Feature p_feature, bool p_enabled);
 	bool get_feature(Feature p_feature) const;
 
@@ -876,7 +882,7 @@ public:
 	static void finish_shaders();
 	static void flush_changes();
 
-	static Ref<Material> get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard = false, bool p_billboard_y = false, bool p_msdf = false, bool p_no_depth = false, bool p_fixed_size = false, TextureFilter p_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, AlphaAntiAliasing p_alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF, bool p_texture_repeat = false, RID *r_shader_rid = nullptr);
+	static Ref<Material> get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard = false, bool p_billboard_y = false, bool p_msdf = false, bool p_no_depth = false, bool p_fixed_size = false, TextureFilter p_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, TextureFilter p_ao_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, AlphaAntiAliasing p_alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF, bool p_texture_repeat = false, RID *r_shader_rid = nullptr);
 
 	virtual RID get_rid() const override;
 	virtual RID get_shader_rid() const override;

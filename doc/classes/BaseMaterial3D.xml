@@ -111,6 +111,9 @@
 		<member name="ao_texture_channel" type="int" setter="set_ao_texture_channel" getter="get_ao_texture_channel" enum="BaseMaterial3D.TextureChannel" default="0">
 			Specifies the channel of the [member ao_texture] in which the ambient occlusion information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
 		</member>
+		<member name="ao_texture_filter" type="int" setter="set_ao_texture_filter" getter="get_ao_texture_filter" enum="BaseMaterial3D.TextureFilter" default="3">
+			Filter flags for the ambient occlusion texture.
+		</member>
 		<member name="backlight" type="Color" setter="set_backlight" getter="get_backlight" default="Color(0, 0, 0, 1)">
 			The color used by the backlight effect. Represents the light passing through an object.
 		</member>
