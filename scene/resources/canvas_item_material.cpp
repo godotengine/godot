@@ -97,6 +97,12 @@ void CanvasItemMaterial::_update_shader() {
 		case BLEND_MODE_PREMULT_ALPHA:
 			code += "blend_premul_alpha";
 			break;
+		case BLEND_MODE_MINIMUM:
+			code += "blend_min";
+			break;
+		case BLEND_MODE_MAXIMUM:
+			code += "blend_max";
+			break;
 		case BLEND_MODE_DISABLED:
 			code += "blend_disabled";
 			break;
@@ -257,7 +263,7 @@ void CanvasItemMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_particles_anim_loop", "loop"), &CanvasItemMaterial::set_particles_anim_loop);
 	ClassDB::bind_method(D_METHOD("get_particles_anim_loop"), &CanvasItemMaterial::get_particles_anim_loop);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Subtract,Multiply,Premultiplied Alpha"), "set_blend_mode", "get_blend_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Subtract,Multiply,Premultiplied Alpha,Minimum,Maximum"), "set_blend_mode", "get_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mode", PROPERTY_HINT_ENUM, "Normal,Unshaded,Light Only"), "set_light_mode", "get_light_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "particles_animation"), "set_particles_animation", "get_particles_animation");
 
@@ -270,6 +276,8 @@ void CanvasItemMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_MODE_SUB);
 	BIND_ENUM_CONSTANT(BLEND_MODE_MUL);
 	BIND_ENUM_CONSTANT(BLEND_MODE_PREMULT_ALPHA);
+	BIND_ENUM_CONSTANT(BLEND_MODE_MINIMUM);
+	BIND_ENUM_CONSTANT(BLEND_MODE_MAXIMUM);
 
 	BIND_ENUM_CONSTANT(LIGHT_MODE_NORMAL);
 	BIND_ENUM_CONSTANT(LIGHT_MODE_UNSHADED);

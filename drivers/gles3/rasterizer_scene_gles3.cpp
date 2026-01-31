@@ -3283,6 +3283,22 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 							glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 						} break;
+						case GLES3::SceneShaderData::BLEND_MODE_MINIMUM: {
+							glBlendEquation(GL_MIN);
+							if (p_render_data->transparent_bg) {
+								glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE);
+							} else {
+								glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE);
+							}
+						} break;
+						case GLES3::SceneShaderData::BLEND_MODE_MAXIMUM: {
+							glBlendEquation(GL_MAX);
+							if (p_render_data->transparent_bg) {
+								glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE);
+							} else {
+								glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE);
+							}
+						} break;
 						case GLES3::SceneShaderData::BLEND_MODE_ALPHA_TO_COVERAGE: {
 							// Do nothing for now.
 						} break;
