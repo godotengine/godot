@@ -341,7 +341,12 @@ void GDScriptLanguage::debug_get_stack_level_locals(int p_level, List<String> *p
 	f->debug_get_stack_member_state(*cl->line, &locals);
 	for (const Pair<StringName, int> &E : locals) {
 		p_locals->push_back(E.first);
-		p_values->push_back(cl->stack[E.second]);
+
+		if (f->constant_map.has(E.first)) {
+			p_values->push_back(f->constant_map[E.first]);
+		} else {
+			p_values->push_back(cl->stack[E.second]);
+		}
 	}
 }
 
