@@ -202,13 +202,15 @@ public:
 			uint16_t flags;
 			float outline;
 			float px_range;
+			float msdf_rounded_outline;
 
 			RID texture;
 
 			CommandRect() {
 				flags = 0;
-				outline = 0;
-				px_range = 1;
+				outline = 0.0;
+				px_range = 1.0;
+				msdf_rounded_outline = 1.0;
 				type = TYPE_RECT;
 			}
 		};

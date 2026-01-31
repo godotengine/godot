@@ -191,6 +191,11 @@ public:
 	GDVIRTUAL2(_font_set_baseline_offset, const RID &, double);
 	GDVIRTUAL1RC(double, _font_get_baseline_offset, const RID &);
 
+	virtual void font_set_msdf_rounded_outline(const RID &p_font_rid, double p_msdf_rounded_outline) override;
+	virtual double font_get_msdf_rounded_outline(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_msdf_rounded_outline, const RID &, double);
+	GDVIRTUAL1RC(double, _font_get_msdf_rounded_outline, const RID &);
+
 	virtual void font_set_transform(const RID &p_font_rid, const Transform2D &p_transform) override;
 	virtual Transform2D font_get_transform(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_transform, RID, Transform2D);

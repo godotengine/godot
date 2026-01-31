@@ -323,6 +323,7 @@ class TextServerAdvanced : public TextServerExtension {
 		RID base_font;
 		int extra_spacing[4] = { 0, 0, 0, 0 };
 		double baseline_offset = 0.0;
+		double msdf_rounded_outline = 1.0;
 	};
 
 	struct FontAdvanced {
@@ -354,6 +355,7 @@ class TextServerAdvanced : public TextServerExtension {
 		int stretch = 100;
 		int extra_spacing[4] = { 0, 0, 0, 0 };
 		double baseline_offset = 0.0;
+		double msdf_rounded_outline = 1.0;
 
 		HashMap<Vector2i, FontForSizeAdvanced *> cache;
 
@@ -620,9 +622,10 @@ class TextServerAdvanced : public TextServerExtension {
 		Transform2D transform;
 		int extra_spacing[4] = { 0, 0, 0, 0 };
 		double baseline_offset = 0.0;
+		double msdf_rounded_outline = 1.0;
 
 		bool operator==(const SystemFontKey &p_b) const {
-			return (font_name == p_b.font_name) && (antialiasing == p_b.antialiasing) && (italic == p_b.italic) && (disable_embedded_bitmaps == p_b.disable_embedded_bitmaps) && (mipmaps == p_b.mipmaps) && (msdf == p_b.msdf) && (force_autohinter == p_b.force_autohinter) && (weight == p_b.weight) && (stretch == p_b.stretch) && (msdf_range == p_b.msdf_range) && (msdf_source_size == p_b.msdf_source_size) && (fixed_size == p_b.fixed_size) && (hinting == p_b.hinting) && (subpixel_positioning == p_b.subpixel_positioning) && (keep_rounding_remainders == p_b.keep_rounding_remainders) && (variation_coordinates == p_b.variation_coordinates) && (embolden == p_b.embolden) && (transform == p_b.transform) && (extra_spacing[SPACING_TOP] == p_b.extra_spacing[SPACING_TOP]) && (extra_spacing[SPACING_BOTTOM] == p_b.extra_spacing[SPACING_BOTTOM]) && (extra_spacing[SPACING_SPACE] == p_b.extra_spacing[SPACING_SPACE]) && (extra_spacing[SPACING_GLYPH] == p_b.extra_spacing[SPACING_GLYPH]) && (baseline_offset == p_b.baseline_offset);
+			return (font_name == p_b.font_name) && (antialiasing == p_b.antialiasing) && (italic == p_b.italic) && (disable_embedded_bitmaps == p_b.disable_embedded_bitmaps) && (mipmaps == p_b.mipmaps) && (msdf == p_b.msdf) && (force_autohinter == p_b.force_autohinter) && (weight == p_b.weight) && (stretch == p_b.stretch) && (msdf_range == p_b.msdf_range) && (msdf_source_size == p_b.msdf_source_size) && (fixed_size == p_b.fixed_size) && (hinting == p_b.hinting) && (subpixel_positioning == p_b.subpixel_positioning) && (keep_rounding_remainders == p_b.keep_rounding_remainders) && (variation_coordinates == p_b.variation_coordinates) && (embolden == p_b.embolden) && (transform == p_b.transform) && (extra_spacing[SPACING_TOP] == p_b.extra_spacing[SPACING_TOP]) && (extra_spacing[SPACING_BOTTOM] == p_b.extra_spacing[SPACING_BOTTOM]) && (extra_spacing[SPACING_SPACE] == p_b.extra_spacing[SPACING_SPACE]) && (extra_spacing[SPACING_GLYPH] == p_b.extra_spacing[SPACING_GLYPH]) && (baseline_offset == p_b.baseline_offset) && (msdf_rounded_outline == p_b.msdf_rounded_outline);
 		}
 
 		SystemFontKey(const String &p_font_name, bool p_italic, int p_weight, int p_stretch, RID p_font, const TextServerAdvanced *p_fb) {
@@ -649,6 +652,7 @@ class TextServerAdvanced : public TextServerExtension {
 			extra_spacing[SPACING_SPACE] = p_fb->_font_get_spacing(p_font, SPACING_SPACE);
 			extra_spacing[SPACING_GLYPH] = p_fb->_font_get_spacing(p_font, SPACING_GLYPH);
 			baseline_offset = p_fb->_font_get_baseline_offset(p_font);
+			msdf_rounded_outline = p_fb->_font_get_msdf_rounded_outline(p_font);
 		}
 	};
 
@@ -681,6 +685,7 @@ class TextServerAdvanced : public TextServerExtension {
 			hash = hash_murmur3_one_32(p_a.extra_spacing[SPACING_SPACE], hash);
 			hash = hash_murmur3_one_32(p_a.extra_spacing[SPACING_GLYPH], hash);
 			hash = hash_murmur3_one_double(p_a.baseline_offset, hash);
+			hash = hash_murmur3_one_double(p_a.msdf_rounded_outline, hash);
 			return hash_fmix32(hash_murmur3_one_32(((int)p_a.mipmaps) | ((int)p_a.msdf << 1) | ((int)p_a.italic << 2) | ((int)p_a.force_autohinter << 3) | ((int)p_a.hinting << 4) | ((int)p_a.subpixel_positioning << 8) | ((int)p_a.antialiasing << 12) | ((int)p_a.disable_embedded_bitmaps << 14) | ((int)p_a.keep_rounding_remainders << 15), hash));
 		}
 	};
@@ -919,6 +924,9 @@ public:
 
 	MODBIND2(font_set_baseline_offset, const RID &, double);
 	MODBIND1RC(double, font_get_baseline_offset, const RID &);
+
+	MODBIND2(font_set_msdf_rounded_outline, const RID &, double);
+	MODBIND1RC(double, font_get_msdf_rounded_outline, const RID &);
 
 	MODBIND2(font_set_transform, const RID &, const Transform2D &);
 	MODBIND1RC(Transform2D, font_get_transform, const RID &);
