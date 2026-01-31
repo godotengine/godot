@@ -110,6 +110,11 @@ constexpr bool is_ascii_identifier_char(char32_t p_char) {
 	return (p_char >= 'a' && p_char <= 'z') || (p_char >= 'A' && p_char <= 'Z') || (p_char >= '0' && p_char <= '9') || p_char == '_';
 }
 
+// See https://www.rfc-editor.org/rfc/rfc3986#section-3.1
+constexpr bool is_uri_scheme_char(char32_t p_char) {
+	return (p_char >= 'a' && p_char <= 'z') || (p_char >= 'A' && p_char <= 'Z') || (p_char >= '0' && p_char <= '9') || p_char == '+' || p_char == '-' || p_char == '.';
+}
+
 constexpr bool is_symbol(char32_t p_char) {
 	return p_char != '_' && ((p_char >= '!' && p_char <= '/') || (p_char >= ':' && p_char <= '@') || (p_char >= '[' && p_char <= '`') || (p_char >= '{' && p_char <= '~') || p_char == '\t' || p_char == ' ');
 }
