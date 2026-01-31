@@ -3079,7 +3079,15 @@ void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
 #ifdef DEBUG_ENABLED
 	GDScriptParser::DataType to_await_type = p_await->to_await->get_datatype();
 	if (!to_await_type.is_coroutine && !to_await_type.is_variant() && to_await_type.builtin_type != Variant::SIGNAL) {
-		parser->push_warning(p_await, GDScriptWarning::REDUNDANT_AWAIT);
+		if (p_await->to_await->type != GDScriptParser::Node::CALL) {
+			parser->push_warning(p_await, GDScriptWarning::REDUNDANT_AWAIT);
+		} else {
+			GDScriptParser::CallNode *call = static_cast<GDScriptParser::CallNode *>(p_await->to_await);
+
+			if (!call->is_abstract) {
+				parser->push_warning(p_await, GDScriptWarning::REDUNDANT_AWAIT);
+			}
+		}
 	}
 #endif // DEBUG_ENABLED
 }
@@ -3615,6 +3623,8 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			} else if (method_flags.has_flag(METHOD_FLAG_VIRTUAL_REQUIRED)) {
 				push_error(vformat(R"*(Cannot call the parent class' abstract function "%s()" because it hasn't been defined.)*", p_call->function_name), p_call);
 			}
+		} else {
+			p_call->is_abstract = method_flags.has_flag(METHOD_FLAG_VIRTUAL_REQUIRED);
 		}
 
 		// If the function requires typed arrays we must make literals be typed.
