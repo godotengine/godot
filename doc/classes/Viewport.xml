@@ -512,6 +512,13 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="camera_3d_changed">
+			<param index="0" name="old_camera" type="Camera3D" />
+			<param index="1" name="new_camera" type="Camera3D" />
+			<description>
+				Emitted when the active 3D camera is changed. If there are no active 3D cameras, the corresponding argument will be [code]null[/code].
+			</description>
+		</signal>
 		<signal name="gui_focus_changed">
 			<param index="0" name="node" type="Control" />
 			<description>
