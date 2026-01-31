@@ -1508,13 +1508,15 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 						base_size = 16;
 					}
 					uint8_t flags = f->get_8();
-					if (flags & (1 << 3)) {
+					//fixed_height = flags & (1 << 3);
+					if (flags & (1 << 4)) {
 						st_flags.set_flag(TextServer::FONT_BOLD);
 					}
-					if (flags & (1 << 2)) {
+					if (flags & (1 << 5)) {
 						st_flags.set_flag(TextServer::FONT_ITALIC);
 					}
-					unicode = (flags & 0x02);
+					unicode = flags & (1 << 6);
+					//smooth = flags & (1 << 7);
 					uint8_t encoding_id = f->get_8(); // non-unicode charset
 					if (!unicode) {
 						switch (encoding_id) {

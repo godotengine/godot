@@ -527,7 +527,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				if (SL::is_sampler_type(E.value.type)) {
 					if (E.value.hint == SL::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
 							E.value.hint == SL::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
-							E.value.hint == SL::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+							E.value.hint == SL::ShaderNode::Uniform::HINT_DEPTH_TEXTURE ||
+							E.value.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE0 ||
+							E.value.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE1 ||
+							E.value.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE2 ||
+							E.value.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE3) {
 						continue; // Don't create uniforms in the generated code for these.
 					}
 					max_texture_uniforms++;
@@ -572,7 +576,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 				if (uniform.hint == SL::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
 						uniform.hint == SL::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
-						uniform.hint == SL::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+						uniform.hint == SL::ShaderNode::Uniform::HINT_DEPTH_TEXTURE ||
+						uniform.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE0 ||
+						uniform.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE1 ||
+						uniform.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE2 ||
+						uniform.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE3) {
 					continue; // Don't create uniforms in the generated code for these.
 				}
 
@@ -937,6 +945,14 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
 							name = "depth_buffer";
 							r_gen_code.uses_depth_texture = true;
+						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLIT_SOURCE0) {
+							name = "source0";
+						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLIT_SOURCE1) {
+							name = "source1";
+						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLIT_SOURCE2) {
+							name = "source2";
+						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLIT_SOURCE3) {
+							name = "source3";
 						} else {
 							name = _mkid(vnode->name); //texture, use as is
 						}
@@ -1168,6 +1184,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 					bool is_texture_func = false;
 					bool is_screen_texture = false;
+					bool is_radiance_texture = false;
 					bool texture_func_no_uv = false;
 					bool texture_func_returns_data = false;
 
@@ -1314,10 +1331,16 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 									}
 								}
 
+								if (texture_uniform == SNAME("RADIANCE")) {
+									is_radiance_texture = true;
+								}
+
 								String data_type_name = "";
 								if (actions.check_multiview_samplers && (is_screen_texture || is_depth_texture || is_normal_roughness_texture)) {
 									data_type_name = "multiviewSampler";
 									multiview_uv_needed = true;
+								} else if (is_radiance_texture) {
+									data_type_name = "sampler2D";
 								} else {
 									data_type_name = ShaderLanguage::get_datatype_name(onode->arguments[i]->get_datatype());
 								}
@@ -1349,6 +1372,10 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						} else if (multiview_uv_needed && !texture_func_no_uv && i == 2) {
 							// UV coordinate after using color, depth or normal roughness texture.
 							node_code = "multiview_uv(" + node_code + ".xy)";
+
+							code += node_code;
+						} else if (is_radiance_texture && !texture_func_no_uv && i == 2) {
+							node_code = "vec3_to_oct_with_border(" + node_code + ", params.border_size)";
 
 							code += node_code;
 						} else {

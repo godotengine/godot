@@ -1056,6 +1056,7 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 		[panel setCanCreateDirectories:YES];
 		[panel setCanChooseFiles:(p_mode != FILE_DIALOG_MODE_OPEN_DIR)];
 		[panel setCanChooseDirectories:(p_mode == FILE_DIALOG_MODE_OPEN_DIR || p_mode == FILE_DIALOG_MODE_OPEN_ANY)];
+		[panel setTreatsFilePackagesAsDirectories:YES];
 		[panel setShowsHiddenFiles:p_show_hidden];
 		[panel setDelegate:panel_delegate];
 		if (p_filename != "") {
@@ -1788,7 +1789,14 @@ void DisplayServerMacOS::show_window(WindowID p_id) {
 	if ([wd.window_object isMiniaturized]) {
 		return;
 	} else if (wd.no_focus) {
-		[wd.window_object orderFront:nil];
+		if (wd.transient_parent != INVALID_WINDOW_ID) {
+			WindowData &wd_parent = windows[wd.transient_parent];
+			[wd.window_object orderWindow:NSWindowAbove relativeTo:[wd_parent.window_object windowNumber]];
+		} else if (p_id != MAIN_WINDOW_ID) {
+			[wd.window_object orderWindow:NSWindowAbove relativeTo:[windows[MAIN_WINDOW_ID].window_object windowNumber]];
+		} else {
+			[wd.window_object orderFront:nil];
+		}
 	} else {
 		[wd.window_object makeKeyAndOrderFront:nil];
 	}
@@ -1980,7 +1988,14 @@ void DisplayServerMacOS::reparent_check(WindowID p_window) {
 			if ([[wd_parent.window_object childWindows] containsObject:wd.window_object]) {
 				[wd_parent.window_object removeChildWindow:wd.window_object];
 				[wd.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-				[wd.window_object orderFront:nil];
+				if (wd.transient_parent != INVALID_WINDOW_ID) {
+					WindowData &wd_parent = windows[wd.transient_parent];
+					[wd.window_object orderWindow:NSWindowAbove relativeTo:[wd_parent.window_object windowNumber]];
+				} else if (p_window != MAIN_WINDOW_ID) {
+					[wd.window_object orderWindow:NSWindowAbove relativeTo:[windows[MAIN_WINDOW_ID].window_object windowNumber]];
+				} else {
+					[wd.window_object orderFront:nil];
+				}
 			}
 		}
 	}
@@ -2577,7 +2592,14 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 				if ([wd.window_object isMiniaturized]) {
 					return;
 				} else if (wd.no_focus) {
-					[wd.window_object orderFront:nil];
+					if (wd.transient_parent != INVALID_WINDOW_ID) {
+						WindowData &wd_parent = windows[wd.transient_parent];
+						[wd.window_object orderWindow:NSWindowAbove relativeTo:[wd_parent.window_object windowNumber]];
+					} else if (p_window != MAIN_WINDOW_ID) {
+						[wd.window_object orderWindow:NSWindowAbove relativeTo:[windows[MAIN_WINDOW_ID].window_object windowNumber]];
+					} else {
+						[wd.window_object orderFront:nil];
+					}
 				} else {
 					[wd.window_object makeKeyAndOrderFront:nil];
 				}
@@ -2700,7 +2722,14 @@ void DisplayServerMacOS::window_move_to_foreground(WindowID p_window) {
 
 	[[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 	if (wd.no_focus || wd.is_popup) {
-		[wd.window_object orderFront:nil];
+		if (wd.transient_parent != INVALID_WINDOW_ID) {
+			WindowData &wd_parent = windows[wd.transient_parent];
+			[wd.window_object orderWindow:NSWindowAbove relativeTo:[wd_parent.window_object windowNumber]];
+		} else if (p_window != MAIN_WINDOW_ID) {
+			[wd.window_object orderWindow:NSWindowAbove relativeTo:[windows[MAIN_WINDOW_ID].window_object windowNumber]];
+		} else {
+			[wd.window_object orderFront:nil];
+		}
 	} else {
 		[wd.window_object makeKeyAndOrderFront:nil];
 	}
@@ -3781,7 +3810,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	// Metal rendering driver not available on Intel.
 	if (rendering_driver == "metal") {
 		rendering_driver = "vulkan";
-		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 	}
 #endif
 	if (rendering_driver == "vulkan") {
@@ -3803,8 +3832,8 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
 				WARN_PRINT("Your device does not seem to support MoltenVK or Metal, switching to OpenGL 3.");
 				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility", OS::RENDERING_SOURCE_FALLBACK);
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else
 #endif
 			{
@@ -3829,7 +3858,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE or ANGLE dynamic libraries (libEGL.dylib and libGLESv2.dylib) are missing, switching to native OpenGL.");
 #endif
 				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else {
 				r_error = ERR_UNAVAILABLE;
 				ERR_FAIL_MSG("Could not initialize ANGLE OpenGL.");

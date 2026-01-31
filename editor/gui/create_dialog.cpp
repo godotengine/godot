@@ -30,6 +30,7 @@
 
 #include "create_dialog.h"
 
+#include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -499,7 +500,7 @@ void CreateDialog::_cleanup() {
 }
 
 void CreateDialog::_confirmed() {
-	String selected_item = get_selected_type();
+	String selected_item = get_selected_type_name();
 	if (selected_item.is_empty()) {
 		return;
 	}
@@ -632,6 +633,14 @@ String CreateDialog::get_selected_type() {
 	return String(selected->get_meta("_script_path", "")); // Script types
 }
 
+String CreateDialog::get_selected_type_name() {
+	TreeItem *selected = search_options->get_selected();
+	if (!selected) {
+		return String();
+	}
+	return selected->get_text(0).get_slicec(' ', 0);
+}
+
 void CreateDialog::set_base_type(const String &p_base) {
 	base_type = p_base;
 	is_base_type_node = ClassDB::is_parent_class(p_base, "Node");
@@ -669,8 +678,7 @@ Variant CreateDialog::instantiate_selected() {
 }
 
 void CreateDialog::_item_selected() {
-	String name = get_selected_type();
-	select_type(name, false);
+	select_type(get_selected_type_name(), false);
 }
 
 void CreateDialog::_hide_requested() {
@@ -687,7 +695,7 @@ void CreateDialog::_favorite_toggled() {
 		return;
 	}
 
-	String name = item->get_text(0).get_slicec(' ', 0);
+	String name = get_selected_type_name();
 
 	if (favorite_list.has(name)) {
 		favorite_list.erase(name);

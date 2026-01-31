@@ -239,7 +239,7 @@
 
 // MARK: Orientation
 
-#if TARGET_OS_IPHONE
+#ifdef IOS_ENABLED
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
 	[super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
 
@@ -253,9 +253,20 @@
 									 if (camera_server) {
 										 camera_server->handle_display_rotation_change((int)orientation);
 									 }
+
+									 DisplayServer *display_server = DisplayServer::get_singleton();
+									 if (display_server) {
+										 int out = 0;
+										 if (UIInterfaceOrientationIsPortrait(orientation)) {
+											 out = 1;
+										 } else if (UIInterfaceOrientationIsLandscape(orientation)) {
+											 out = 2;
+										 }
+										 display_server->emit_signal("orientation_changed", out);
+									 }
 								 }];
 }
-#endif // TARGET_OS_IPHONE
+#endif
 
 - (UIRectEdge)preferredScreenEdgesDeferringSystemGestures {
 	if (GLOBAL_GET("display/window/ios/suppress_ui_gesture")) {

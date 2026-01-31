@@ -35,7 +35,7 @@
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "scene/gui/graph_element.h"
+#include "scene/gui/graph_edit.h"
 #include "scene/gui/menu_bar.h"
 #include "scene/gui/panel_container.h"
 #include "scene/main/timer.h"
@@ -2108,9 +2108,7 @@ void PopupMenu::set_item_id(int p_idx, int p_id) {
 
 	items.write[p_idx].id = p_id;
 
-	if (global_menu.is_valid()) {
-		NativeMenu::get_singleton()->set_item_tag(global_menu, p_idx, p_id);
-	}
+	// `global_menu` does not know about IDs so there is no need to update it.
 
 	control->queue_redraw();
 	child_controls_changed();
@@ -2629,6 +2627,39 @@ void PopupMenu::set_item_shortcut_disabled(int p_idx, bool p_disabled) {
 		}
 	}
 
+	control->queue_redraw();
+	_menu_changed();
+}
+
+void PopupMenu::set_item_index(int p_idx, int p_target_idx) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (p_target_idx < 0) {
+		p_target_idx += get_item_count();
+	}
+	ERR_FAIL_INDEX(p_target_idx, items.size());
+
+	if (p_idx == p_target_idx) {
+		return;
+	}
+
+	Item item = items[p_idx];
+	items.remove_at(p_idx);
+	items.insert(p_target_idx, item);
+
+	if (global_menu.is_valid()) {
+		NativeMenu *nmenu = NativeMenu::get_singleton();
+		nmenu->set_item_index(global_menu, p_idx, p_target_idx);
+		// Update tags of all affected items to their new index.
+		for (int i = MIN(p_idx, p_target_idx); i <= MAX(p_idx, p_target_idx); i++) {
+			nmenu->set_item_tag(global_menu, i, i);
+		}
+	}
+
+	queue_accessibility_update();
 	control->queue_redraw();
 	_menu_changed();
 }
@@ -3189,6 +3220,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_multistate", "index", "state"), &PopupMenu::set_item_multistate);
 	ClassDB::bind_method(D_METHOD("set_item_multistate_max", "index", "max_states"), &PopupMenu::set_item_max_states);
 	ClassDB::bind_method(D_METHOD("set_item_shortcut_disabled", "index", "disabled"), &PopupMenu::set_item_shortcut_disabled);
+	ClassDB::bind_method(D_METHOD("set_item_index", "index", "target_index"), &PopupMenu::set_item_index);
 
 	ClassDB::bind_method(D_METHOD("toggle_item_checked", "index"), &PopupMenu::toggle_item_checked);
 	ClassDB::bind_method(D_METHOD("toggle_item_multistate", "index"), &PopupMenu::toggle_item_multistate);
@@ -3250,6 +3282,12 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_system_menu", "system_menu_id"), &PopupMenu::set_system_menu);
 	ClassDB::bind_method(D_METHOD("get_system_menu"), &PopupMenu::get_system_menu);
 
+	ClassDB::bind_method(D_METHOD("set_shrink_height", "shrink"), &PopupMenu::set_shrink_height);
+	ClassDB::bind_method(D_METHOD("get_shrink_height"), &PopupMenu::get_shrink_height);
+
+	ClassDB::bind_method(D_METHOD("set_shrink_width", "shrink"), &PopupMenu::set_shrink_width);
+	ClassDB::bind_method(D_METHOD("get_shrink_width"), &PopupMenu::get_shrink_width);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_item_selection"), "set_hide_on_item_selection", "is_hide_on_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_checkable_item_selection"), "set_hide_on_checkable_item_selection", "is_hide_on_checkable_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_state_item_selection"), "set_hide_on_state_item_selection", "is_hide_on_state_item_selection");
@@ -3257,6 +3295,8 @@ void PopupMenu::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "system_menu_id", PROPERTY_HINT_ENUM, "None:0,Application Menu:2,Window Menu:3,Help Menu:4,Dock:5"), "set_system_menu", "get_system_menu");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "prefer_native_menu"), "set_prefer_native_menu", "is_prefer_native_menu");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shrink_height"), "set_shrink_height", "get_shrink_height");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shrink_width"), "set_shrink_width", "get_shrink_width");
 
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");
 
@@ -3376,25 +3416,56 @@ void PopupMenu::_popup_base(const Rect2i &p_bounds) {
 		Popup::_popup_base(p_bounds);
 	}
 }
+void PopupMenu::set_shrink_height(bool p_shrink) {
+	shrink_height = p_shrink;
+}
+
+bool PopupMenu::get_shrink_height() const {
+	return shrink_height;
+}
+
+void PopupMenu::set_shrink_width(bool p_shrink) {
+	shrink_width = p_shrink;
+}
+
+bool PopupMenu::get_shrink_width() const {
+	return shrink_width;
+}
 
 void PopupMenu::_pre_popup() {
 	real_t popup_scale = 1.0;
 	bool scale_with_parent = true;
+	Node *parent_node = get_parent();
 
-	// Disable content scaling to avoid too tiny or too big menus when using GraphEdit zoom, applied only if menu is a child of GraphElement.
-	Node *p = get_parent();
-	while (p) {
-		GraphElement *ge = Object::cast_to<GraphElement>(p);
-		if (ge) {
-			scale_with_parent = ge->is_scaling_menus();
-			break;
+	// Use parent GraphEdit content scale to avoid too tiny or too big menus when using GraphEdit zoom, applied only if menu is a child of GraphElement.
+	{
+		Node *p = parent_node;
+		while (p) {
+			GraphElement *gelement = Object::cast_to<GraphElement>(p);
+			if (gelement) {
+				scale_with_parent = gelement->is_scaling_menus();
+				if (!scale_with_parent) {
+					parent_node = nullptr;
+					p = gelement->get_parent();
+					while (p) {
+						GraphEdit *gedit = Object::cast_to<GraphEdit>(p);
+						if (gedit) {
+							parent_node = gedit;
+							break;
+						}
+						p = p->get_parent();
+					}
+				}
+				break;
+			}
+			p = p->get_parent();
 		}
-		p = p->get_parent();
 	}
 
-	if (scale_with_parent && p) {
-		Size2 scale = get_force_native() ? get_parent_viewport()->get_popup_base_transform_native().get_scale() : get_parent_viewport()->get_popup_base_transform().get_scale();
-		CanvasItem *c = Object::cast_to<CanvasItem>(get_parent());
+	Viewport *vp = get_parent_viewport();
+	if (vp && parent_node) {
+		Size2 scale = is_embedded() ? vp->get_popup_base_transform().get_scale() : vp->get_popup_base_transform_native().get_scale();
+		CanvasItem *c = Object::cast_to<CanvasItem>(parent_node);
 		if (c) {
 			scale *= c->get_global_transform_with_canvas().get_scale();
 		}
@@ -3413,7 +3484,8 @@ void PopupMenu::_pre_popup() {
 		}
 		minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
 		set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
-		reset_size(); // Shrinkwraps to min size.
+		Size2i sz = get_size(); // Shrinkwraps to min size.
+		set_size(Vector2i(shrink_width ? 0 : sz.x, shrink_height ? 0 : sz.y));
 	}
 }
 

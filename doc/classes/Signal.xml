@@ -146,6 +146,7 @@
 		}
 		[/csharp]
 		[/codeblocks]
+		[b]Note:[/b] In a boolean context, a signal will evaluate to [code]false[/code] if it's null (see [method is_null]). Otherwise, a signal will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
 		<link title="Using Signals">$DOCS_URL/getting_started/step_by_step/signals.html</link>

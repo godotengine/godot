@@ -36,6 +36,7 @@
 #include "wgl_detect_version.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/xml_parser.h"
@@ -1989,7 +1990,7 @@ Size2i DisplayServerWindows::window_get_title_size(const String &p_title, Window
 			size.y = MAX(size.y, rect.bottom - rect.top);
 		}
 	}
-	if (icon.is_valid()) {
+	if (icon_big) {
 		size.x += 32;
 	} else {
 		size.x += 16;
@@ -2451,8 +2452,16 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
 
-	if (icon.is_valid()) {
-		set_icon(icon);
+	if (icon_big && !icon_small) {
+		SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+		SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_big);
+	} else {
+		if (icon_big) {
+			SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+		}
+		if (icon_small) {
+			SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_small);
+		}
 	}
 
 	SetWindowPos(wd.hWnd, _is_always_on_top_recursive(p_window) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
@@ -3922,6 +3931,17 @@ void DisplayServerWindows::swap_buffers() {
 void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	_THREAD_SAFE_METHOD_
 
+	if (icon_big) {
+		DestroyIcon(icon_big);
+		icon_buffer_big.clear();
+		icon_big = nullptr;
+	}
+	if (icon_small) {
+		DestroyIcon(icon_small);
+		icon_buffer_small.clear();
+		icon_small = nullptr;
+	}
+
 	Ref<FileAccess> f = FileAccess::open(p_filename, FileAccess::READ);
 	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file with icon '" + p_filename + "'.");
 
@@ -3979,59 +3999,60 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 
 	// Read the big icon.
 	DWORD bytecount_big = icon_dir->idEntries[big_icon_index].dwBytesInRes;
-	Vector<uint8_t> data_big;
-	data_big.resize(bytecount_big);
+	icon_buffer_big.resize(bytecount_big);
 	pos = icon_dir->idEntries[big_icon_index].dwImageOffset;
 	f->seek(pos);
-	f->get_buffer((uint8_t *)&data_big.write[0], bytecount_big);
-	HICON icon_big = CreateIconFromResource((PBYTE)&data_big.write[0], bytecount_big, TRUE, 0x00030000);
+	f->get_buffer((uint8_t *)&icon_buffer_big.write[0], bytecount_big);
+	icon_big = CreateIconFromResourceEx((PBYTE)&icon_buffer_big.write[0], bytecount_big, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
 	ERR_FAIL_NULL_MSG(icon_big, "Could not create " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Read the small icon.
 	DWORD bytecount_small = icon_dir->idEntries[small_icon_index].dwBytesInRes;
-	Vector<uint8_t> data_small;
-	data_small.resize(bytecount_small);
+	icon_buffer_small.resize(bytecount_small);
 	pos = icon_dir->idEntries[small_icon_index].dwImageOffset;
 	f->seek(pos);
-	f->get_buffer((uint8_t *)&data_small.write[0], bytecount_small);
-	HICON icon_small = CreateIconFromResource((PBYTE)&data_small.write[0], bytecount_small, TRUE, 0x00030000);
+	f->get_buffer((uint8_t *)&icon_buffer_small.write[0], bytecount_small);
+	icon_small = CreateIconFromResourceEx((PBYTE)&icon_buffer_small.write[0], bytecount_small, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
 	ERR_FAIL_NULL_MSG(icon_small, "Could not create 16x16 @" + itos(small_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Online tradition says to be sure last error is cleared and set the small icon first.
 	int err = 0;
 	SetLastError(err);
 
-	SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_small);
-	err = GetLastError();
-	ERR_FAIL_COND_MSG(err, "Error setting ICON_SMALL: " + format_error_message(err) + ".");
-
-	SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
-	err = GetLastError();
-	ERR_FAIL_COND_MSG(err, "Error setting ICON_BIG: " + format_error_message(err) + ".");
-
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_small);
+		SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+	}
 	memdelete(icon_dir);
 }
 
 void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 	_THREAD_SAFE_METHOD_
 
+	if (icon_big) {
+		DestroyIcon(icon_big);
+		icon_buffer_big.clear();
+		icon_big = nullptr;
+	}
+	if (icon_small) {
+		DestroyIcon(icon_small);
+		icon_buffer_small.clear();
+		icon_small = nullptr;
+	}
+
 	if (p_icon.is_valid()) {
 		ERR_FAIL_COND(p_icon->get_width() <= 0 || p_icon->get_height() <= 0);
 
-		Ref<Image> img = p_icon;
-		if (img != icon) {
-			img = img->duplicate();
-			img->convert(Image::FORMAT_RGBA8);
-		}
+		Ref<Image> img = p_icon->duplicate();
+		img->convert(Image::FORMAT_RGBA8);
 
 		int w = img->get_width();
 		int h = img->get_height();
 
 		// Create temporary bitmap buffer.
 		int icon_len = 40 + h * w * 4;
-		Vector<BYTE> v;
-		v.resize(icon_len);
-		BYTE *icon_bmp = v.ptrw();
+		icon_buffer_big.resize(icon_len);
+		BYTE *icon_bmp = icon_buffer_big.ptrw();
 
 		encode_uint32(40, &icon_bmp[0]);
 		encode_uint32(w, &icon_bmp[4]);
@@ -4058,26 +4079,23 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 				wpx[3] = rpx[3];
 			}
 		}
+		icon_big = CreateIconFromResourceEx(icon_bmp, icon_len, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
+		ERR_FAIL_NULL(icon_big);
 
-		HICON hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
-		ERR_FAIL_NULL(hicon);
-
-		icon = img;
-
-		// Set the icon for the window.
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
-
-		// Set the icon in the task manager (should we do this?).
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
+		for (const KeyValue<WindowID, WindowData> &E : windows) {
+			SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_big);
+			SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+		}
 	} else {
-		icon = Ref<Image>();
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, 0);
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, 0);
+		for (const KeyValue<WindowID, WindowData> &E : windows) {
+			SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, 0);
+			SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, 0);
+		}
 	}
 }
 
 DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) {
-	HICON hicon = nullptr;
+	IndicatorData idat;
 	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 		Ref<Image> img = p_icon->get_image();
 		img = img->duplicate();
@@ -4091,9 +4109,8 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 
 		// Create temporary bitmap buffer.
 		int icon_len = 40 + h * w * 4;
-		Vector<BYTE> v;
-		v.resize(icon_len);
-		BYTE *icon_bmp = v.ptrw();
+		idat.icon_buffer.resize(icon_len);
+		BYTE *icon_bmp = idat.icon_buffer.ptrw();
 
 		encode_uint32(40, &icon_bmp[0]);
 		encode_uint32(w, &icon_bmp[4]);
@@ -4121,10 +4138,9 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 			}
 		}
 
-		hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+		idat.icon = CreateIconFromResourceEx(icon_bmp, icon_len, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
 	}
 
-	IndicatorData idat;
 	idat.callback = p_callback;
 
 	NOTIFYICONDATAW ndat;
@@ -4134,7 +4150,7 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 	ndat.uID = indicator_id_counter;
 	ndat.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
 	ndat.uCallbackMessage = WM_INDICATOR_CALLBACK_MESSAGE;
-	ndat.hIcon = hicon;
+	ndat.hIcon = idat.icon;
 	memcpy(ndat.szTip, p_tooltip.utf16().get_data(), MIN(p_tooltip.utf16().length(), 127) * sizeof(WCHAR));
 	ndat.uVersion = NOTIFYICON_VERSION;
 
@@ -4150,7 +4166,14 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_COND(!indicators.has(p_id));
 
-	HICON hicon = nullptr;
+	IndicatorData &idat = indicators[p_id];
+
+	if (idat.icon) {
+		DestroyIcon(idat.icon);
+		idat.icon_buffer.clear();
+		idat.icon = nullptr;
+	}
+
 	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 		Ref<Image> img = p_icon->get_image();
 		img = img->duplicate();
@@ -4164,9 +4187,8 @@ void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref
 
 		// Create temporary bitmap buffer.
 		int icon_len = 40 + h * w * 4;
-		Vector<BYTE> v;
-		v.resize(icon_len);
-		BYTE *icon_bmp = v.ptrw();
+		idat.icon_buffer.resize(icon_len);
+		BYTE *icon_bmp = idat.icon_buffer.ptrw();
 
 		encode_uint32(40, &icon_bmp[0]);
 		encode_uint32(w, &icon_bmp[4]);
@@ -4194,7 +4216,7 @@ void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref
 			}
 		}
 
-		hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+		idat.icon = CreateIconFromResourceEx(icon_bmp, icon_len, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
 	}
 
 	NOTIFYICONDATAW ndat;
@@ -4203,7 +4225,7 @@ void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref
 	ndat.hWnd = windows[MAIN_WINDOW_ID].hWnd;
 	ndat.uID = p_id;
 	ndat.uFlags = NIF_ICON;
-	ndat.hIcon = hicon;
+	ndat.hIcon = idat.icon;
 	ndat.uVersion = NOTIFYICON_VERSION;
 
 	Shell_NotifyIconW(NIM_MODIFY, &ndat);
@@ -4262,6 +4284,13 @@ Rect2 DisplayServerWindows::status_indicator_get_rect(IndicatorID p_id) const {
 
 void DisplayServerWindows::delete_status_indicator(IndicatorID p_id) {
 	ERR_FAIL_COND(!indicators.has(p_id));
+
+	IndicatorData &idat = indicators[p_id];
+	if (idat.icon) {
+		DestroyIcon(idat.icon);
+		idat.icon_buffer.clear();
+		idat.icon = nullptr;
+	}
 
 	NOTIFYICONDATAW ndat;
 	ZeroMemory(&ndat, sizeof(NOTIFYICONDATAW));
@@ -7125,6 +7154,11 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	OleInitialize(nullptr);
 
+	HICON default_icon = LoadIconW(GetModuleHandle(nullptr), L"GODOT_ICON");
+	if (default_icon == nullptr) {
+		default_icon = LoadIcon(nullptr, IDI_WINLOGO);
+	}
+
 	memset(&wc, 0, sizeof(WNDCLASSEXW));
 	wc.cbSize = sizeof(WNDCLASSEXW);
 	wc.style = CS_OWNDC | CS_DBLCLKS;
@@ -7132,7 +7166,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
 	wc.hInstance = hInstance ? hInstance : GetModuleHandle(nullptr);
-	wc.hIcon = LoadIcon(nullptr, IDI_WINLOGO);
+	wc.hIcon = default_icon;
 	wc.hCursor = nullptr;
 	wc.hbrBackground = nullptr;
 	wc.lpszMenuName = nullptr;
@@ -7282,7 +7316,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 						}
 #endif
 						rendering_driver = tested_rendering_driver;
-						OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+						OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, i > 0 ? OS::RENDERING_SOURCE_FALLBACK : OS::get_singleton()->get_current_rendering_driver_name_source());
 
 						break;
 					}
@@ -7308,8 +7342,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
 			WARN_PRINT("Your video card drivers seem not to support Direct3D 12 or Vulkan, switching to OpenGL 3.");
 			rendering_driver = "opengl3";
-			OS::get_singleton()->set_current_rendering_method("gl_compatibility");
-			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			OS::get_singleton()->set_current_rendering_method("gl_compatibility", OS::RENDERING_SOURCE_FALLBACK);
+			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			rendering_driver_failed = false;
 		}
 	}
@@ -7391,7 +7425,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 				}
 			}
 			rendering_driver = "opengl3_angle";
-			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 		}
 	}
 
@@ -7654,6 +7688,12 @@ DisplayServerWindows::~DisplayServerWindows() {
 		ndat.uID = E->key;
 		ndat.uVersion = NOTIFYICON_VERSION;
 
+		if (E->value.icon) {
+			DestroyIcon(E->value.icon);
+			E->value.icon_buffer.clear();
+			E->value.icon = nullptr;
+		}
+
 		Shell_NotifyIconW(NIM_DELETE, &ndat);
 	}
 
@@ -7702,6 +7742,17 @@ DisplayServerWindows::~DisplayServerWindows() {
 		rendering_context = nullptr;
 	}
 #endif
+
+	if (icon_big) {
+		DestroyIcon(icon_big);
+		icon_buffer_big.clear();
+		icon_big = nullptr;
+	}
+	if (icon_small) {
+		DestroyIcon(icon_small);
+		icon_buffer_small.clear();
+		icon_small = nullptr;
+	}
 
 	if (restore_mouse_trails > 1) {
 		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, nullptr, 0);

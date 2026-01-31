@@ -45,6 +45,7 @@
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/timer.h"
 #include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/sky.h"
 #include "scene/resources/surface_tool.h"
 
 class SceneImportSettingsData : public Object {
@@ -1375,12 +1376,6 @@ void SceneImportSettingsDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			action_menu->begin_bulk_theme_override();
-			action_menu->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), "Button"));
-			action_menu->add_theme_style_override(SceneStringName(hover), get_theme_stylebox(SceneStringName(hover), "Button"));
-			action_menu->add_theme_style_override(SceneStringName(pressed), get_theme_stylebox(SceneStringName(pressed), "Button"));
-			action_menu->end_bulk_theme_override();
-
 			if (animation_player != nullptr && animation_player->is_playing()) {
 				animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 			} else {

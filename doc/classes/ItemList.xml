@@ -32,6 +32,15 @@
 				If [param selectable] is [code]true[/code], the list item will be selectable.
 			</description>
 		</method>
+		<method name="center_on_current">
+			<return type="void" />
+			<param index="0" name="center_verically" type="bool" default="true" />
+			<param index="1" name="center_horizontally" type="bool" default="true" />
+			<description>
+				Ensures the currently selected item (the first selected item if multiple selection is enabled) is visible, adjusting the scroll position as necessary to place the item at the center of the list if possible. See also [method ensure_current_is_visible].
+				Fails and prints an error if both arguments are [code]false[/code].
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
@@ -54,7 +63,7 @@
 		<method name="ensure_current_is_visible">
 			<return type="void" />
 			<description>
-				Ensure current selection is visible, adjusting the scroll position as necessary.
+				Ensures the currently selected item (the first selected item if multiple selection is enabled) is visible, adjusting the scroll position as necessary. See also [method center_on_current].
 			</description>
 		</method>
 		<method name="force_update_list_size">
@@ -240,7 +249,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="single" type="bool" default="true" />
 			<description>
-				Select the item at the specified index.
+				Selects the item at the specified index.
 				[b]Note:[/b] This method does not trigger the item selection signal.
 			</description>
 		</method>
@@ -524,6 +533,9 @@
 		</theme_item>
 		<theme_item name="guide_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 0.25)">
 			[Color] of the guideline. The guideline is a line drawn between each row of items.
+		</theme_item>
+		<theme_item name="scroll_hint_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			[Color] used to modulate the [theme_item scroll_hint] texture.
 		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal spacing between items.

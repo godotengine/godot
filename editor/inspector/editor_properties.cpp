@@ -59,6 +59,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
+#include "scene/resources/sky.h"
 #include "scene/resources/visual_shader_nodes.h"
 
 ///////////////////// NIL /////////////////////////
@@ -445,7 +446,7 @@ void EditorPropertyTextEnum::_option_selected(int p_which) {
 void EditorPropertyTextEnum::_edit_custom_value() {
 	default_layout->hide();
 	edit_custom_layout->show();
-	custom_value_edit->grab_focus();
+	custom_value_edit->grab_focus(true);
 }
 
 void EditorPropertyTextEnum::_custom_value_submitted(const String &p_value) {
@@ -1017,6 +1018,10 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 		Vector<String> text_split = option.split(":");
 		if (text_split.size() != 1) {
 			current_val = text_split[1].to_int();
+			// Skip entries like "None:0" (it's not an actual flag).
+			if (current_val == 0) {
+				continue;
+			}
 		} else {
 			current_val = 1u << i;
 		}
@@ -1051,8 +1056,10 @@ void EditorPropertyLayersGrid::_rename_pressed(int p_menu) {
 	// Show rename popup for active layer.
 	ERR_FAIL_INDEX(renamed_layer_index, names.size());
 	String name = names[renamed_layer_index];
-	rename_dialog->set_title(vformat(TTR("Renaming layer %d:"), renamed_layer_index + 1));
+	rename_dialog->set_title(vformat(TTR("Renaming Layer %d:"), renamed_layer_index + 1));
 	rename_dialog_text->set_text(name);
+	// Indicate that leaving it blank reverts back to "Layer [Number]".
+	rename_dialog_text->set_placeholder(vformat(TTR("Layer %d"), renamed_layer_index + 1));
 	rename_dialog_text->select(0, name.length());
 	rename_dialog->popup_centered(Size2(300, 80) * EDSCALE);
 	rename_dialog_text->grab_focus();
@@ -1060,15 +1067,13 @@ void EditorPropertyLayersGrid::_rename_pressed(int p_menu) {
 
 void EditorPropertyLayersGrid::_rename_operation_confirm() {
 	String new_name = rename_dialog_text->get_text().strip_edges();
-	if (new_name.length() == 0) {
-		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
-		return;
-	} else if (new_name.contains_char('/') || new_name.contains_char('\\') || new_name.contains_char(':')) {
+	if (new_name.contains_char('/') || new_name.contains_char('\\') || new_name.contains_char(':')) {
 		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
 		return;
 	}
+
 	names.set(renamed_layer_index, new_name);
-	tooltips.set(renamed_layer_index, new_name + "\n" + vformat(TTR("Bit %d, value %d"), renamed_layer_index, 1u << renamed_layer_index));
+	tooltips.set(renamed_layer_index, new_name + "\n" + vformat(TTR("Bit %d, Value %d"), renamed_layer_index, 1u << renamed_layer_index));
 	emit_signal(SNAME("rename_confirmed"), renamed_layer_index, new_name);
 }
 
@@ -1083,7 +1088,7 @@ EditorPropertyLayersGrid::EditorPropertyLayersGrid() {
 	rename_dialog->register_text_enter(rename_dialog_text);
 	rename_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorPropertyLayersGrid::_rename_operation_confirm));
 	layer_rename = memnew(PopupMenu);
-	layer_rename->add_item(TTR("Rename layer"), 0);
+	layer_rename->add_item(TTR("Rename Layer"), 0);
 	add_child(layer_rename);
 	layer_rename->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyLayersGrid::_rename_pressed));
 }
@@ -1227,15 +1232,6 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 
 void EditorPropertyLayersGrid::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
-			RID ae = get_accessibility_element();
-			ERR_FAIL_COND(ae.is_null());
-
-			//TODO
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, TTR(vformat("The %s is not accessible at this time.", "Layers grid property editor")));
-		} break;
-
 		case NOTIFICATION_DRAW: {
 			Size2 grid_size = get_grid_size();
 			grid_size.x = get_size().x;
@@ -1548,6 +1544,7 @@ EditorPropertyLayers::EditorPropertyLayers() {
 
 	layers = memnew(PopupMenu);
 	add_child(layers);
+	layers->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	layers->set_hide_on_checkable_item_selection(false);
 	layers->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyLayers::_menu_pressed));
 	layers->connect("popup_hide", callable_mp((BaseButton *)button, &BaseButton::set_pressed).bind(false));
@@ -3176,13 +3173,17 @@ void EditorPropertyNodePath::update_property() {
 	const Node *target_node = base_node->get_node(p);
 	ERR_FAIL_NULL(target_node);
 
-	if (String(target_node->get_name()).contains_char('@')) {
+	String new_text = target_node->get_name();
+	if (new_text.contains_char('@')) {
 		assign->set_button_icon(Ref<Texture2D>());
 		assign->set_text(String(p));
 		return;
 	}
 
-	assign->set_text(target_node->get_name());
+	if (p.get_subname_count() > 0) {
+		new_text += ":" + p.get_concatenated_subnames();
+	}
+	assign->set_text(new_text);
 	assign->set_button_icon(EditorNode::get_singleton()->get_object_icon(target_node));
 }
 
@@ -3338,82 +3339,15 @@ void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource,
 	}
 }
 
-static bool _find_recursive_resources(const Variant &v, HashSet<Resource *> &resources_found) {
-	switch (v.get_type()) {
-		case Variant::ARRAY: {
-			Array a = v;
-			for (int i = 0; i < a.size(); i++) {
-				Variant v2 = a[i];
-				if (v2.get_type() != Variant::ARRAY && v2.get_type() != Variant::DICTIONARY && v2.get_type() != Variant::OBJECT) {
-					continue;
-				}
-				if (_find_recursive_resources(v2, resources_found)) {
-					return true;
-				}
-			}
-		} break;
-		case Variant::DICTIONARY: {
-			Dictionary d = v;
-			for (const KeyValue<Variant, Variant> &kv : d) {
-				const Variant &k = kv.key;
-				const Variant &v2 = kv.value;
-				if (k.get_type() == Variant::ARRAY || k.get_type() == Variant::DICTIONARY || k.get_type() == Variant::OBJECT) {
-					if (_find_recursive_resources(k, resources_found)) {
-						return true;
-					}
-				}
-				if (v2.get_type() == Variant::ARRAY || v2.get_type() == Variant::DICTIONARY || v2.get_type() == Variant::OBJECT) {
-					if (_find_recursive_resources(v2, resources_found)) {
-						return true;
-					}
-				}
-			}
-		} break;
-		case Variant::OBJECT: {
-			Ref<Resource> r = v;
-
-			if (r.is_null()) {
-				return false;
-			}
-
-			if (resources_found.has(r.ptr())) {
-				return true;
-			}
-
-			resources_found.insert(r.ptr());
-
-			List<PropertyInfo> plist;
-			r->get_property_list(&plist);
-			for (const PropertyInfo &pinfo : plist) {
-				if (!(pinfo.usage & PROPERTY_USAGE_STORAGE)) {
-					continue;
-				}
-
-				if (pinfo.type != Variant::ARRAY && pinfo.type != Variant::DICTIONARY && pinfo.type != Variant::OBJECT) {
-					continue;
-				}
-				if (_find_recursive_resources(r->get(pinfo.name), resources_found)) {
-					return true;
-				}
-			}
-
-			resources_found.erase(r.ptr());
-		} break;
-		default: {
-		}
-	}
-	return false;
-}
-
 void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) {
 	Resource *r = Object::cast_to<Resource>(get_edited_object());
 	if (r) {
 		// Check for recursive setting of resource
 		HashSet<Resource *> resources_found;
 		resources_found.insert(r);
-		bool found = _find_recursive_resources(p_resource, resources_found);
+		bool found = EditorNode::find_recursive_resources(p_resource, resources_found);
 		if (found) {
-			EditorNode::get_singleton()->show_warning(TTR("Recursion detected, unable to assign resource to property."));
+			callable_mp(EditorNode::get_singleton(), &EditorNode::show_warning).call_deferred(TTR("Recursion detected, unable to assign resource to property."), TTR("Warning!"));
 			emit_changed(get_edited_property(), Ref<Resource>());
 			update_property();
 			return;
@@ -4105,7 +4039,6 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::BASIS: {
 			EditorPropertyBasis *editor = memnew(EditorPropertyBasis);
-			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
 			editor->setup(_parse_range_hint(p_hint, p_hint_text, default_float_step));
 			return editor;
 		} break;

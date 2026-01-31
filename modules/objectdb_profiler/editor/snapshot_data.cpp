@@ -33,7 +33,7 @@
 #include "core/core_bind.h"
 #include "core/io/compression.h"
 #include "core/object/script_language.h"
-#include "scene/debugger/scene_debugger.h"
+#include "scene/debugger/scene_debugger_object.h"
 
 #if defined(MODULE_GDSCRIPT_ENABLED) && defined(DEBUG_ENABLED)
 #include "modules/gdscript/gdscript.h"
@@ -58,14 +58,18 @@ SnapshotDataObject::SnapshotDataObject(SceneDebuggerObject &p_obj, GameStateSnap
 				// Built-in resource.
 				String base_path = path.get_slice("::", 0);
 				if (!resource_cache.cache.has(base_path)) {
-					resource_cache.cache[base_path] = ResourceLoader::load(base_path);
+					if (ResourceLoader::exists(path)) {
+						resource_cache.cache[base_path] = ResourceLoader::load(base_path);
+					}
 					resource_cache.misses++;
 				} else {
 					resource_cache.hits++;
 				}
 			}
 			if (!resource_cache.cache.has(path)) {
-				resource_cache.cache[path] = ResourceLoader::load(path);
+				if (ResourceLoader::exists(path)) {
+					resource_cache.cache[path] = ResourceLoader::load(path);
+				}
 				resource_cache.misses++;
 			} else {
 				resource_cache.hits++;

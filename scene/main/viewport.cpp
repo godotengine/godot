@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/input/input.h"
 #include "core/templates/pair.h"
 #include "core/templates/sort_array.h"
 #include "scene/gui/control.h"
@@ -754,7 +755,7 @@ void Viewport::_process_picking() {
 	if (!physics_object_picking) {
 		return;
 	}
-	if (Object::cast_to<Window>(this) && Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
+	if (Object::cast_to<Window>(this) && Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
 		return;
 	}
 	if (!gui.mouse_in_viewport || gui.subwindow_over) {
@@ -2828,16 +2829,22 @@ void Viewport::_post_gui_grab_click_focus() {
 
 ///////////////////////////////
 
-void Viewport::push_text_input(const String &p_text) {
+void Viewport::_push_text_input(const String &p_text, bool p_emit_signal) {
 	ERR_MAIN_THREAD_GUARD;
 	if (gui.subwindow_focused) {
 		gui.subwindow_focused->push_text_input(p_text);
 		return;
 	}
 
-	if (gui.key_focus) {
-		gui.key_focus->call("set_text", p_text);
+	StringName set_text_method = SNAME("_set_text");
+	if (!gui.key_focus || !gui.key_focus->has_method(set_text_method)) {
+		return;
 	}
+	gui.key_focus->call(set_text_method, p_text, p_emit_signal);
+}
+
+void Viewport::push_text_input(const String &p_text) {
+	_push_text_input(p_text, false);
 }
 
 Viewport::SubWindowResize Viewport::_sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point) {
@@ -3570,7 +3577,7 @@ void Viewport::_push_unhandled_input_internal(const Ref<InputEvent> &p_event) {
 
 #if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	if (physics_object_picking && !is_input_handled()) {
-		if (Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED &&
+		if (Input::get_singleton()->get_mouse_mode() != Input::MouseMode::MOUSE_MODE_CAPTURED &&
 				(Object::cast_to<InputEventMouse>(*p_event) ||
 						Object::cast_to<InputEventScreenDrag>(*p_event) ||
 						Object::cast_to<InputEventScreenTouch>(*p_event)

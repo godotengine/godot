@@ -480,11 +480,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/project_manager_screen", EditorSettings::InitialScreen::INITIAL_SCREEN_PRIMARY, project_manager_screen_hints)
 
 	{
-		EngineUpdateLabel::UpdateMode default_update_mode = EngineUpdateLabel::UpdateMode::NEWEST_UNSTABLE;
-		if (String(GODOT_VERSION_STATUS) == String("stable")) {
-			default_update_mode = EngineUpdateLabel::UpdateMode::NEWEST_STABLE;
-		}
-		EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "network/connection/check_for_updates", int(default_update_mode), "Disable Update Checks,Check Newest Preview,Check Newest Stable,Check Newest Patch"); // Uses EngineUpdateLabel::UpdateMode.
+		const String update_hint = vformat("Disable Update Checks,Auto (%s),Check Newest Preview,Check Newest Stable,Check Newest Patch", (str_compare(GODOT_VERSION_STATUS, "stable") == 0) ? "Stable" : "Preview");
+		EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "network/connection/check_for_updates", EngineUpdateLabel::UpdateMode::AUTO, update_hint);
 	}
 
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/use_embedded_menu", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
@@ -907,6 +904,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d_gizmos/gizmo_settings/bone_shape", 1, "Wire,Octahedron");
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size", 0.8, "0.01,4.0,0.001,or_greater", PROPERTY_USAGE_DEFAULT)
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d_gizmos/gizmo_settings/lightmap_gi_probe_size", 0.4, "0.0,1.0,0.001,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	_initial_set("editors/3d_gizmos/gizmo_settings/show_collision_shapes_only_when_selected", false);
 
 	// If a line is a multiple of this, it uses the primary grid color.
 	// Use a power of 2 value by default as it's more common to use powers of 2 in level design.
@@ -964,7 +962,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// 3D: Manipulator
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "editors/3d/manipulator_gizmo_size", 80, "16,160,1");
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/manipulator_gizmo_opacity", 0.9, "0,1,0.01")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/manipulator_gizmo_opacity", 0.9, "0,1,0.01");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_FLAGS, "editors/3d/show_gizmo_during_rotation", 2, "Global,Local");
 
 	// 2D
 	_initial_set("editors/2d/grid_color", Color(1.0, 1.0, 1.0, 0.07), true);
@@ -981,6 +980,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/use_integer_zoom_by_default", false, true);
 	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/2d/zoom_speed_factor", 1.1, "1.01,2,0.01")
 	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/2d/ruler_width", 16.0, "12.0,30.0,1.0")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/2d/auto_resample_delay", 0.3, "0.1,2,0.1")
 
 	// Bone mapper (BoneMapEditorPlugin)
 	_initial_set("editors/bone_mapper/handle_colors/unset", Color(0.3, 0.3, 0.3));
@@ -1593,13 +1593,11 @@ void EditorSettings::save_project_metadata() {
 }
 
 void EditorSettings::set_favorites(const Vector<String> &p_favorites, bool p_update_file_dialog) {
-	if (p_update_file_dialog) {
-		FileDialog::set_favorite_list(p_favorites);
-	} else if (p_favorites == favorites) {
-		// If the list came from EditorFileDialog, it may be the same as before.
-		return;
-	}
 	set_favorites_bind(p_favorites);
+	if (p_update_file_dialog) {
+		FileDialog::set_favorite_list(get_favorite_folders());
+	}
+	emit_signal(SNAME("_favorites_changed"));
 }
 
 void EditorSettings::set_favorites_bind(const Vector<String> &p_favorites) {
@@ -1634,6 +1632,22 @@ Vector<String> EditorSettings::get_favorites() const {
 	return favorites;
 }
 
+Vector<String> EditorSettings::get_favorite_folders() const {
+	Vector<String> folder_favorites;
+	folder_favorites.resize(favorites.size());
+	String *folder_write = folder_favorites.ptrw();
+
+	int i = 0;
+	for (const String &fav : favorites) {
+		if (fav.ends_with("/")) {
+			folder_write[i] = fav;
+			i++;
+		}
+	}
+	folder_favorites.resize(i);
+	return folder_favorites;
+}
+
 HashMap<String, PackedStringArray> EditorSettings::get_favorite_properties() const {
 	return favorite_properties;
 }
@@ -1641,9 +1655,6 @@ HashMap<String, PackedStringArray> EditorSettings::get_favorite_properties() con
 void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs, bool p_update_file_dialog) {
 	if (p_update_file_dialog) {
 		FileDialog::set_recent_list(p_recent_dirs);
-	} else if (p_recent_dirs == recent_dirs) {
-		// If the list came from EditorFileDialog, it may be the same as before.
-		return;
 	}
 	set_recent_dirs_bind(p_recent_dirs);
 }
@@ -1692,7 +1703,7 @@ void EditorSettings::load_favorites_and_recent_dirs() {
 			line = f->get_line().strip_edges();
 		}
 	}
-	FileDialog::set_favorite_list(favorites);
+	FileDialog::set_favorite_list(get_favorite_folders());
 
 	/// Inspector Favorites
 
@@ -1928,6 +1939,8 @@ void EditorSettings::_add_shortcut_default(const String &p_path, const Ref<Short
 }
 
 void EditorSettings::add_shortcut(const String &p_path, const Ref<Shortcut> &p_shortcut) {
+	ERR_FAIL_COND_MSG(p_shortcut.is_null(), "Cannot add a null shortcut for path: " + p_path);
+
 	Array use_events = p_shortcut->get_events();
 	if (shortcuts.has(p_path)) {
 		Ref<Shortcut> existing = shortcuts.get(p_path);
@@ -1951,7 +1964,6 @@ void EditorSettings::add_shortcut(const String &p_path, const Ref<Shortcut> &p_s
 		p_shortcut->set_name(shortcut_name);
 	}
 	shortcuts[p_path] = p_shortcut;
-	shortcuts[p_path]->set_meta("customized", true);
 }
 
 void EditorSettings::remove_shortcut(const String &p_path) {
@@ -2080,7 +2092,7 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 	}
 
 	// Override the existing shortcut only if it wasn't customized by the user.
-	if (!sc->has_meta("customized")) {
+	if (Shortcut::is_event_array_equal(sc->get_events(), sc->get_meta("original"))) {
 		sc->set_events(events);
 	}
 
@@ -2279,6 +2291,7 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mark_setting_changed", "setting"), &EditorSettings::mark_setting_changed);
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
+	ADD_SIGNAL(MethodInfo("_favorites_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_EDITOR_SETTINGS_CHANGED);
 }

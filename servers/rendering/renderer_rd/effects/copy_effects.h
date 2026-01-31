@@ -256,9 +256,10 @@ private:
 	};
 
 	enum OctmapDownsamplerMode {
-		DOWNSAMPLER_MODE_LOW_QUALITY,
-		DOWNSAMPLER_MODE_HIGH_QUALITY,
-		DOWNSAMPLER_MODE_MAX
+		DOWNSAMPLER_MODE_FLAG_RGB10_A2 = (1 << 0),
+
+		DOWNSAMPLER_MODE_COMPUTE_MAX = (DOWNSAMPLER_MODE_FLAG_RGB10_A2 + 1),
+		DOWNSAMPLER_MODE_RASTER_MAX = 1,
 	};
 
 	struct OctmapDownsampler {
@@ -266,16 +267,17 @@ private:
 		OctmapDownsamplerShaderRD compute_shader;
 		OctmapDownsamplerRasterShaderRD raster_shader;
 		RID shader_version;
-		PipelineDeferredRD compute_pipelines[DOWNSAMPLER_MODE_MAX];
-		PipelineCacheRD raster_pipelines[DOWNSAMPLER_MODE_MAX];
+		PipelineDeferredRD compute_pipelines[DOWNSAMPLER_MODE_COMPUTE_MAX];
+		PipelineCacheRD raster_pipeline;
 	} octmap_downsampler;
 
 	enum OctmapFilterMode {
-		FILTER_MODE_HIGH_QUALITY,
-		FILTER_MODE_LOW_QUALITY,
-		FILTER_MODE_HIGH_QUALITY_ARRAY,
-		FILTER_MODE_LOW_QUALITY_ARRAY,
-		FILTER_MODE_MAX,
+		FILTER_MODE_FLAG_HIGH_QUALITY = (1 << 0),
+		FILTER_MODE_FLAG_ARRAY = (1 << 1),
+		FILTER_MODE_FLAG_RGB10_A2 = (1 << 2),
+
+		FILTER_MODE_COMPUTE_MAX = ((FILTER_MODE_FLAG_HIGH_QUALITY | FILTER_MODE_FLAG_ARRAY | FILTER_MODE_FLAG_RGB10_A2) + 1),
+		FILTER_MODE_RASTER_MAX = (FILTER_MODE_FLAG_HIGH_QUALITY + 1),
 	};
 
 	struct OctmapFilterPushConstant {
@@ -294,8 +296,8 @@ private:
 		OctmapFilterShaderRD compute_shader;
 		OctmapFilterRasterShaderRD raster_shader;
 		RID shader_version;
-		PipelineDeferredRD compute_pipelines[FILTER_MODE_MAX];
-		PipelineCacheRD raster_pipelines[FILTER_MODE_MAX];
+		PipelineDeferredRD compute_pipelines[FILTER_MODE_COMPUTE_MAX];
+		PipelineCacheRD raster_pipelines[FILTER_MODE_RASTER_MAX];
 
 		RID uniform_set;
 		RID image_uniform_set;
@@ -303,6 +305,12 @@ private:
 		bool use_high_quality;
 
 	} filter;
+
+	enum OctmapRoughnessMode {
+		ROUGHNESS_MODE_RGBA16F,
+		ROUGHNESS_MODE_RGB10_A2,
+		ROUGHNESS_MODE_MAX,
+	};
 
 	struct OctmapRoughnessPushConstant {
 		uint32_t sample_count;
@@ -320,7 +328,7 @@ private:
 		OctmapRoughnessShaderRD compute_shader;
 		OctmapRoughnessRasterShaderRD raster_shader;
 		RID shader_version;
-		PipelineDeferredRD compute_pipeline;
+		PipelineDeferredRD compute_pipelines[ROUGHNESS_MODE_MAX];
 		PipelineCacheRD raster_pipeline;
 	} roughness;
 
@@ -384,8 +392,8 @@ public:
 
 	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffer, const Rect2 &p_rect, const Vector2 &p_dst_size, float p_z_near, float p_z_far, bool p_dp_flip);
 	void copy_cubemap_to_octmap(RID p_source_rd_texture, RID p_dst_framebuffer, float p_border_size);
-	void octmap_downsample(RID p_source_octmap, RID p_dest_octmap, const Size2i &p_size, bool p_use_filter_quality, float p_border_size);
-	void octmap_downsample_raster(RID p_source_octmap, RID p_dest_framebuffer, const Size2i &p_size, bool p_use_filter_quality, float p_border_size);
+	void octmap_downsample(RID p_source_octmap, RID p_dest_octmap, const Size2i &p_size, float p_border_size);
+	void octmap_downsample_raster(RID p_source_octmap, RID p_dest_framebuffer, const Size2i &p_size, float p_border_size);
 	void octmap_filter(RID p_source_octmap, const Vector<RID> &p_dest_octmap, bool p_use_array, float p_border_size);
 	void octmap_filter_raster(RID p_source_octmap, RID p_dest_framebuffer, uint32_t p_mip_level, float p_border_size);
 	void octmap_roughness(RID p_source_rd_texture, RID p_dest_texture, uint32_t p_sample_count, float p_roughness, uint32_t p_source_size, uint32_t p_dest_size, float p_border_size);

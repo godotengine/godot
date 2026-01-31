@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
+#include "core/math/geometry_3d.h"
 #include "core/math/math_funcs.h"
 #include "core/math/projection.h"
 #include "core/os/keyboard.h"
@@ -103,6 +104,7 @@
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/3d/sky_material.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/sky.h"
 #include "scene/resources/surface_tool.h"
 
 constexpr real_t DISTANCE_DEFAULT = 4;
@@ -115,6 +117,13 @@ constexpr real_t GIZMO_CIRCLE_SIZE = 1.1;
 constexpr real_t GIZMO_VIEW_ROTATION_SIZE = 1.25;
 constexpr real_t GIZMO_SCALE_OFFSET = GIZMO_CIRCLE_SIZE + 0.3;
 constexpr real_t GIZMO_ARROW_OFFSET = GIZMO_CIRCLE_SIZE + 0.3;
+
+constexpr real_t TRACKBALL_SENSITIVITY = 0.005;
+constexpr int TRACKBALL_SPHERE_RINGS = 16;
+constexpr int TRACKBALL_SPHERE_SECTORS = 32;
+constexpr real_t TRACKBALL_HIGHLIGHT_ALPHA = 0.01;
+constexpr int GIZMO_HIGHLIGHT_AXIS_VIEW_ROTATION = 15;
+constexpr int GIZMO_HIGHLIGHT_AXIS_TRACKBALL = 16;
 
 constexpr real_t ZOOM_FREELOOK_MIN = 0.01;
 constexpr real_t ZOOM_FREELOOK_MULTIPLIER = 1.08;
@@ -187,8 +196,8 @@ void ViewportNavigationControl::_process_click(int p_index, Vector2 p_position, 
 		}
 	} else {
 		focused_index = -1;
-		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
+			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 			Input::get_singleton()->warp_mouse(focused_mouse_start);
 		}
 	}
@@ -196,8 +205,8 @@ void ViewportNavigationControl::_process_click(int p_index, Vector2 p_position, 
 
 void ViewportNavigationControl::_process_drag(int p_index, Vector2 p_position, Vector2 p_relative_position) {
 	if (focused_index == p_index) {
-		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_VISIBLE) {
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_VISIBLE) {
+			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
 			focused_mouse_start = p_position;
 		}
 		focused_pos += p_relative_position;
@@ -346,7 +355,7 @@ void ViewportRotationControl::_draw() {
 
 void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 	const bool focused = focused_axis == p_axis.axis;
-	const bool positive = p_axis.axis < 3;
+	const bool positive = p_axis.is_positive;
 	const int direction = p_axis.axis % 3;
 
 	const Color axis_color = axis_colors[direction];
@@ -404,24 +413,28 @@ void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
 		Vector3 axis_3d = camera_basis.get_column(i);
 		Vector2 axis_vector = Vector2(axis_3d.x, -axis_3d.y) * radius;
 
-		if (Math::abs(axis_3d.z) <= 1.0) {
+		if (Math::abs(axis_3d.z) < 1.0) {
 			Axis2D pos_axis;
 			pos_axis.axis = i;
 			pos_axis.screen_point = center + axis_vector;
 			pos_axis.z_axis = axis_3d.z;
+			pos_axis.is_positive = true;
 			r_axis.push_back(pos_axis);
 
 			Axis2D neg_axis;
 			neg_axis.axis = i + 3;
 			neg_axis.screen_point = center - axis_vector;
 			neg_axis.z_axis = -axis_3d.z;
+			neg_axis.is_positive = false;
 			r_axis.push_back(neg_axis);
 		} else {
-			// Special case when the camera is aligned with one axis
+			// Special case when the camera is aligned with one axis.
 			Axis2D axis;
 			axis.axis = i + (axis_3d.z <= 0 ? 0 : 3);
 			axis.screen_point = center;
 			axis.z_axis = 1.0;
+			// Invert display style to fix aligned axis rendering.
+			axis.is_positive = (axis_3d.z > 0);
 			r_axis.push_back(axis);
 		}
 	}
@@ -443,8 +456,8 @@ void ViewportRotationControl::_process_click(int p_index, Vector2 p_position, bo
 			_update_focus();
 		}
 		orbiting_index = -1;
-		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
+			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 			Input::get_singleton()->warp_mouse(orbiting_mouse_start);
 		}
 	}
@@ -454,8 +467,8 @@ void ViewportRotationControl::_process_drag(Ref<InputEventWithModifiers> p_event
 	Point2 mouse_pos = get_local_mouse_position();
 	const bool movement_threshold_passed = original_mouse_pos.distance_to(mouse_pos) > 4 * EDSCALE;
 	if (orbiting_index == p_index && gizmo_activated && movement_threshold_passed) {
-		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_VISIBLE) {
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_VISIBLE) {
+			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
 			orbiting_mouse_start = p_position;
 			viewport->previous_cursor = viewport->cursor;
 		}
@@ -473,8 +486,8 @@ void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
-		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
+			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 			Input::get_singleton()->warp_mouse(orbiting_mouse_start);
 			viewport->cursor = viewport->previous_cursor;
 			gizmo_activated = false;
@@ -492,8 +505,8 @@ void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 				grab_focus();
 			}
 		} else if (mb->get_button_index() == MouseButton::RIGHT) {
-			if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
-				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+			if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
+				Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 				Input::get_singleton()->warp_mouse(orbiting_mouse_start);
 				viewport->cursor = viewport->previous_cursor;
 				gizmo_activated = false;
@@ -1400,6 +1413,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) {
 		int col_axis = -1;
 		bool view_rotation_selected = false;
+		bool trackball_selected = false;
 
 		Vector3 hit_position;
 		Vector3 hit_normal;
@@ -1451,12 +1465,14 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 			if (Math::abs(distance_ray_to_center - view_rotation_radius) < circumference_tolerance &&
 					ray_length_to_center > 0) {
 				view_rotation_selected = true;
+			} else if (distance_ray_to_center < gizmo_scale * (GIZMO_CIRCLE_SIZE - GIZMO_RING_HALF_WIDTH) && ray_length_to_center > 0) {
+				trackball_selected = true;
 			}
 		}
 
 		if (view_rotation_selected) {
 			if (p_highlight_only) {
-				spatial_editor->select_gizmo_highlight_axis(15);
+				spatial_editor->select_gizmo_highlight_axis(GIZMO_HIGHLIGHT_AXIS_VIEW_ROTATION);
 			} else {
 				_edit.mode = TRANSFORM_ROTATE;
 				_compute_edit(p_screenpos);
@@ -1465,6 +1481,21 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 				_edit.rotation_axis = _get_camera_normal();
 				_edit.view_axis_local = spatial_editor->get_gizmo_transform().basis.xform_inv(_get_camera_normal()).normalized();
 				_edit.gizmo_initiated = true;
+			}
+			return true;
+		} else if (trackball_selected) {
+			if (p_highlight_only) {
+				spatial_editor->select_gizmo_highlight_axis(GIZMO_HIGHLIGHT_AXIS_TRACKBALL);
+			} else {
+				_edit.mode = TRANSFORM_ROTATE;
+				_compute_edit(p_screenpos);
+				_edit.plane = TRANSFORM_VIEW;
+				_edit.is_trackball = true;
+				_edit.show_rotation_line = false;
+				_edit.accumulated_rotation_angle = 0.0;
+				_edit.rotation_axis = _get_camera_normal();
+				_edit.gizmo_initiated = true;
+				spatial_editor->select_gizmo_highlight_axis(-1);
 			}
 			return true;
 		} else if (col_axis != -1) {
@@ -1662,7 +1693,7 @@ void Node3DEditorViewport::_reset_transform(TransformType p_type) {
 }
 
 void Node3DEditorViewport::_surface_mouse_enter() {
-	if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
+	if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
 		return;
 	}
 
@@ -1727,6 +1758,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 	} else if (!selection_results.is_empty()) {
 		NodePath root_path = get_tree()->get_edited_scene_root()->get_path();
 		StringName root_name = root_path.get_name(root_path.get_name_count() - 1);
+		int icon_max_width = EditorNode::get_singleton()->get_editor_theme()->get_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
 		for (int i = 0; i < selection_results.size(); i++) {
 			Node3D *spat = selection_results[i];
@@ -1759,6 +1791,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 			}
 			selection_menu->add_item((String)spat->get_name() + suffix);
 			selection_menu->set_item_icon(i, icon);
+			selection_menu->set_item_icon_max_width(i, icon_max_width);
 			selection_menu->set_item_metadata(i, node_path);
 			selection_menu->set_item_tooltip(i, String(spat->get_name()) + "\nType: " + spat->get_class() + "\nPath: " + node_path);
 		}
@@ -1772,7 +1805,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 
 // Helper function to redirect mouse events to the active freelook viewport
 static bool _redirect_freelook_input(const Ref<InputEvent> &p_event, Node3DEditorViewport *p_exclude_viewport = nullptr) {
-	if (Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED) {
+	if (Input::get_singleton()->get_mouse_mode() != Input::MouseMode::MOUSE_MODE_CAPTURED) {
 		return false;
 	}
 
@@ -2204,8 +2237,10 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						if (_edit.original_mouse_pos != _edit.mouse_pos || _edit.gizmo->get_plugin()->can_commit_handle_on_click()) {
 							_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, false);
 						}
-
-						spatial_editor->get_single_selected_node()->update_gizmos();
+						Node3D *selected_node = spatial_editor->get_single_selected_node();
+						if (selected_node) {
+							selected_node->update_gizmos();
+						}
 						_edit.gizmo = Ref<EditorNode3DGizmo>();
 						break;
 					}
@@ -2257,7 +2292,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 	Vector<ShortcutCheckSet> shortcut_check_sets;
 
-	if (Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED) {
+	if (Input::get_singleton()->get_mouse_mode() != Input::MouseMode::MOUSE_MODE_CAPTURED) {
 		ViewportNavMouseButton orbit_mouse_preference = (ViewportNavMouseButton)EDITOR_GET("editors/3d/navigation/orbit_mouse_button").operator int();
 		ViewportNavMouseButton pan_mouse_preference = (ViewportNavMouseButton)EDITOR_GET("editors/3d/navigation/pan_mouse_button").operator int();
 		ViewportNavMouseButton zoom_mouse_preference = (ViewportNavMouseButton)EDITOR_GET("editors/3d/navigation/zoom_mouse_button").operator int();
@@ -2975,7 +3010,7 @@ void Node3DEditorViewport::set_freelook_active(bool active_now) {
 		spatial_editor->set_freelook_viewport(this);
 
 		// Hide mouse like in an FPS (warping doesn't work)
-		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+		Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
 
 	} else if (freelook_active && !active_now) {
 		// Sync camera cursor to cursor to "cut" interpolation jumps due to changing referential
@@ -2984,7 +3019,7 @@ void Node3DEditorViewport::set_freelook_active(bool active_now) {
 		spatial_editor->set_freelook_viewport(nullptr);
 
 		// Restore mouse
-		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+		Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 
 		// Restore the previous mouse position when leaving freelook mode.
 		// This is done because leaving `Input.MOUSE_MODE_CAPTURED` will center the cursor
@@ -3437,18 +3472,18 @@ void Node3DEditorViewport::_notification(int p_what) {
 			if (show_info) {
 				const String viewport_size = vformat(U"%d × %d", viewport->get_size().x * viewport->get_scaling_3d_scale(), viewport->get_size().y * viewport->get_scaling_3d_scale());
 				String text;
-				text += vformat(TTR("X: %s\n"), rtos(current_camera->get_position().x).pad_decimals(1));
-				text += vformat(TTR("Y: %s\n"), rtos(current_camera->get_position().y).pad_decimals(1));
-				text += vformat(TTR("Z: %s\n"), rtos(current_camera->get_position().z).pad_decimals(1));
+				text += vformat(TTR("X: %s"), rtos(current_camera->get_position().x).pad_decimals(1)) + "\n";
+				text += vformat(TTR("Y: %s"), rtos(current_camera->get_position().y).pad_decimals(1)) + "\n";
+				text += vformat(TTR("Z: %s"), rtos(current_camera->get_position().z).pad_decimals(1)) + "\n";
 				text += "\n";
 				text += vformat(
-						TTR("Size: %s (%.1fMP)\n"),
+						TTR("Size: %s (%.1fMP)") + "\n",
 						viewport_size,
 						viewport->get_size().x * viewport->get_size().y * Math::pow(viewport->get_scaling_3d_scale(), 2) * 0.000001);
 
 				text += "\n";
-				text += vformat(TTR("Objects: %d\n"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_OBJECTS_IN_FRAME));
-				text += vformat(TTR("Primitives: %d\n"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_PRIMITIVES_IN_FRAME));
+				text += vformat(TTR("Objects: %d"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_OBJECTS_IN_FRAME)) + "\n";
+				text += vformat(TTR("Primitives: %d"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_PRIMITIVES_IN_FRAME)) + "\n";
 				text += vformat(TTR("Draw Calls: %d"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_DRAW_CALLS_IN_FRAME));
 
 				info_label->set_text(text);
@@ -3747,7 +3782,7 @@ void Node3DEditorViewport::_draw() {
 				break;
 		}
 
-		if (_is_rotation_arc_visible() && !_edit.initial_click_vector.is_zero_approx()) {
+		if (!_edit.is_trackball && _is_rotation_arc_visible() && !_edit.initial_click_vector.is_zero_approx()) {
 			Vector3 up = _edit.rotation_axis;
 			Vector3 right = _edit.initial_click_vector;
 
@@ -4454,6 +4489,16 @@ void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
 		RS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i], RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 		RS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i], RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 	}
+
+	// Create trackball sphere instance
+	trackball_sphere_instance = RS::get_singleton()->instance_create();
+	RS::get_singleton()->instance_set_base(trackball_sphere_instance, spatial_editor->get_trackball_sphere_gizmo()->get_rid());
+	RS::get_singleton()->instance_set_scenario(trackball_sphere_instance, get_tree()->get_root()->get_world_3d()->get_scenario());
+	RS::get_singleton()->instance_set_visible(trackball_sphere_instance, false);
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(trackball_sphere_instance, RS::SHADOW_CASTING_SETTING_OFF);
+	RS::get_singleton()->instance_set_layer_mask(trackball_sphere_instance, layer);
+	RS::get_singleton()->instance_geometry_set_flag(trackball_sphere_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	RS::get_singleton()->instance_geometry_set_flag(trackball_sphere_instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 }
 
 void Node3DEditorViewport::_finish_gizmo_instances() {
@@ -4468,6 +4513,8 @@ void Node3DEditorViewport::_finish_gizmo_instances() {
 	}
 	// Rotation white outline
 	RS::get_singleton()->free_rid(rotate_gizmo_instance[3]);
+
+	RS::get_singleton()->free_rid(trackball_sphere_instance);
 }
 
 void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
@@ -4600,9 +4647,35 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		return;
 	}
 
-	bool hide_during_rotation = _is_rotation_arc_visible();
+	bool local_coords = spatial_editor->are_local_coords_enabled();
+	bool arc_visible = _is_rotation_arc_visible();
+	int show_gizmo_flags = EDITOR_GET("editors/3d/show_gizmo_during_rotation");
 
-	bool show_gizmo = spatial_editor->is_gizmo_visible() && !_edit.instant && transform_gizmo_visible && !collision_reposition && !hide_during_rotation;
+	bool keep_gizmo_visible = arc_visible && ((local_coords && (show_gizmo_flags & Node3DEditor::TRANSFORM_MODE_LOCAL)) || (!local_coords && (show_gizmo_flags & Node3DEditor::TRANSFORM_MODE_GLOBAL)));
+	bool hide_gizmo_during_rotation = arc_visible && !keep_gizmo_visible;
+	bool hide_gizmo_during_trackball = (_edit.mode == TRANSFORM_ROTATE && _edit.is_trackball);
+
+	int arc_replaces_ring = -1;
+	if (keep_gizmo_visible) {
+		switch (_edit.plane) {
+			case TRANSFORM_X_AXIS:
+				arc_replaces_ring = 0;
+				break;
+			case TRANSFORM_Y_AXIS:
+				arc_replaces_ring = 1;
+				break;
+			case TRANSFORM_Z_AXIS:
+				arc_replaces_ring = 2;
+				break;
+			case TRANSFORM_VIEW:
+				arc_replaces_ring = 3;
+				break;
+			default:
+				break;
+		}
+	}
+
+	bool show_gizmo = spatial_editor->is_gizmo_visible() && !_edit.instant && transform_gizmo_visible && !collision_reposition && !hide_gizmo_during_rotation && !hide_gizmo_during_trackball;
 	bool show_rotate_gizmo = show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE);
 
 	for (int i = 0; i < 3; i++) {
@@ -4617,7 +4690,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		RenderingServer::get_singleton()->instance_set_transform(move_plane_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
 		RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[i], axis_angle);
-		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], show_rotate_gizmo);
+		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], show_rotate_gizmo && i != arc_replaces_ring);
 		RenderingServer::get_singleton()->instance_set_transform(scale_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
 		RenderingServer::get_singleton()->instance_set_transform(scale_plane_gizmo_instance[i], axis_angle);
@@ -4627,11 +4700,18 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 
 	Transform3D view_rotation_xform = xform;
 	view_rotation_xform.orthonormalize();
-	view_rotation_xform.basis.scale(scale);
+	bool shrink_view_ring = arc_replaces_ring >= 0 && arc_replaces_ring < 3;
+	Vector3 view_ring_scale = shrink_view_ring ? scale * (GIZMO_CIRCLE_SIZE / GIZMO_VIEW_ROTATION_SIZE) : scale;
+	view_rotation_xform.basis.scale(view_ring_scale);
 	RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[3], view_rotation_xform);
-	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], show_rotate_gizmo);
+	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], show_rotate_gizmo && arc_replaces_ring != 3);
 
-	bool show_axes = spatial_editor->is_gizmo_visible() && _edit.mode != TRANSFORM_NONE;
+	bool can_show_trackball = spatial_editor->is_gizmo_visible() && !_edit.instant && transform_gizmo_visible && !collision_reposition && !hide_gizmo_during_rotation;
+	bool show_trackball_sphere = can_show_trackball && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) && !hide_gizmo_during_trackball;
+	RenderingServer::get_singleton()->instance_set_transform(trackball_sphere_instance, view_rotation_xform);
+	RenderingServer::get_singleton()->instance_set_visible(trackball_sphere_instance, show_trackball_sphere);
+
+	bool show_axes = spatial_editor->is_gizmo_visible() && _edit.mode != TRANSFORM_NONE && !hide_gizmo_during_trackball;
 	RenderingServer *rs = RenderingServer::get_singleton();
 	rs->instance_set_visible(axis_gizmo_instance[0], show_axes && (_edit.plane == TRANSFORM_X_AXIS || _edit.plane == TRANSFORM_XY || _edit.plane == TRANSFORM_XZ));
 	rs->instance_set_visible(axis_gizmo_instance[1], show_axes && (_edit.plane == TRANSFORM_Y_AXIS || _edit.plane == TRANSFORM_XY || _edit.plane == TRANSFORM_YZ));
@@ -4955,7 +5035,7 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 		const Basis bb_basis = Basis(bb_basis_x, bb_basis_y, bb_basis_z);
 
 		// This normal-aligned Basis allows us to create an AABB that can fit on the surface plane as snugly as possible.
-		const Transform3D bb_transform = Transform3D(bb_basis, p_node->get_transform().origin);
+		const Transform3D bb_transform = Transform3D(bb_basis, p_node->get_global_transform().origin);
 		const AABB p_node_bb = _calculate_spatial_bounds(p_node, true, &bb_transform);
 		// The x-axis's alignment with the surface normal also makes it trivial to get the distance from `p_node`'s origin at (0, 0, 0) to the correct AABB face.
 		const float offset_distance = -p_node_bb.position.x;
@@ -5838,6 +5918,36 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 				plane = Plane(_get_camera_normal(), _edit.center);
 			}
 
+			if (_edit.is_trackball) {
+				Vector2 motion_delta = _edit.mouse_pos - _edit.original_mouse_pos;
+				real_t sensitivity = TRACKBALL_SENSITIVITY * EDSCALE;
+				Vector2 rotation_input = motion_delta * sensitivity;
+
+				Transform3D cam_transform = to_camera_transform(cursor);
+				Vector3 cam_right = cam_transform.basis.get_column(0).normalized();
+				Vector3 cam_up = cam_transform.basis.get_column(1).normalized();
+				Vector3 rotation_axis = cam_up * rotation_input.x + cam_right * rotation_input.y;
+
+				real_t rotation_angle = rotation_axis.length();
+				if (rotation_angle > 0.0f) {
+					rotation_axis /= rotation_angle;
+
+					bool snapping = _edit.snap || spatial_editor->is_snap_enabled();
+					if (snapping) {
+						double snap_step = spatial_editor->get_rotate_snap();
+						double angle_deg = Math::rad_to_deg(rotation_angle);
+						angle_deg = Math::snapped(angle_deg, snap_step);
+						rotation_angle = Math::deg_to_rad(angle_deg);
+					}
+
+					double angle_deg = Math::rad_to_deg(rotation_angle);
+					set_message(vformat(TTR("Rotating %s degrees."), String::num(angle_deg, 2)));
+
+					apply_transform(rotation_axis, rotation_angle);
+				}
+				break;
+			}
+
 			Vector3 local_axis;
 			Vector3 global_axis;
 			switch (_edit.plane) {
@@ -5877,7 +5987,13 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 			Vector3 current_rotation_vector = (intersection - _edit.center).normalized();
 
 			if (_edit.initial_click_vector == Vector3()) {
-				_edit.initial_click_vector = (click - _edit.center).normalized();
+				Plane rotation_plane(global_axis, _edit.center);
+				Vector3 click_on_rotation_plane;
+				if (rotation_plane.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click_on_rotation_plane)) {
+					_edit.initial_click_vector = (click_on_rotation_plane - _edit.center).normalized();
+				} else {
+					_edit.initial_click_vector = (click - _edit.center).normalized();
+				}
 				_edit.previous_rotation_vector = current_rotation_vector;
 				_edit.accumulated_rotation_angle = 0.0;
 				_edit.display_rotation_angle = 0.0;
@@ -5994,6 +6110,7 @@ void Node3DEditorViewport::finish_transform() {
 	_edit.numeric_input = 0;
 	_edit.numeric_next_decimal = 0;
 	_edit.numeric_negate = false;
+	_edit.is_trackball = false;
 	_edit.initial_click_vector = Vector3();
 	_edit.previous_rotation_vector = Vector3();
 	_edit.accumulated_rotation_angle = 0.0;
@@ -6224,8 +6341,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	register_shortcut_action("spatial_editor/viewport_orbit_snap_modifier_2", TTRC("Viewport Orbit Snap Modifier 2"), Key::NONE);
 	register_shortcut_action("spatial_editor/viewport_pan_modifier_1", TTRC("Viewport Pan Modifier 1"), Key::SHIFT);
 	register_shortcut_action("spatial_editor/viewport_pan_modifier_2", TTRC("Viewport Pan Modifier 2"), Key::NONE);
-	register_shortcut_action("spatial_editor/viewport_zoom_modifier_1", TTRC("Viewport Zoom Modifier 1"), Key::SHIFT);
-	register_shortcut_action("spatial_editor/viewport_zoom_modifier_2", TTRC("Viewport Zoom Modifier 2"), Key::CTRL);
+	register_shortcut_action("spatial_editor/viewport_zoom_modifier_1", TTRC("Viewport Zoom Modifier 1"), Key::CTRL);
+	register_shortcut_action("spatial_editor/viewport_zoom_modifier_2", TTRC("Viewport Zoom Modifier 2"), Key::NONE);
 
 	register_shortcut_action("spatial_editor/freelook_left", TTRC("Freelook Left"), Key::A, true);
 	register_shortcut_action("spatial_editor/freelook_right", TTRC("Freelook Right"), Key::D, true);
@@ -6562,7 +6679,7 @@ void Node3DEditorViewportContainer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (mouseover && Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED) {
+			if (mouseover && Input::get_singleton()->get_mouse_mode() != Input::MouseMode::MOUSE_MODE_CAPTURED) {
 				Ref<Texture2D> h_grabber = get_theme_icon(SNAME("grabber"), SNAME("HSplitContainer"));
 				Ref<Texture2D> v_grabber = get_theme_icon(SNAME("grabber"), SNAME("VSplitContainer"));
 
@@ -6805,12 +6922,15 @@ void Node3DEditor::select_gizmo_highlight_axis(int p_axis) {
 	for (int i = 0; i < 4; i++) {
 		bool highlight;
 		if (i == 3) {
-			highlight = (p_axis == 15);
+			highlight = (p_axis == GIZMO_HIGHLIGHT_AXIS_VIEW_ROTATION);
 		} else {
 			highlight = (i + 3) == p_axis;
 		}
 		rotate_gizmo[i]->surface_set_material(0, highlight ? rotate_gizmo_color_hl[i] : rotate_gizmo_color[i]);
 	}
+
+	bool highlight_trackball = (p_axis == GIZMO_HIGHLIGHT_AXIS_TRACKBALL);
+	trackball_sphere_gizmo->surface_set_material(0, highlight_trackball ? trackball_sphere_material_hl : trackball_sphere_material);
 }
 
 void Node3DEditor::update_transform_gizmo() {
@@ -8193,6 +8313,62 @@ void fragment() {
 		}
 	}
 
+	// Create trackball sphere
+	{
+		trackball_sphere_gizmo.instantiate();
+		Ref<SurfaceTool> surftool;
+		surftool.instantiate();
+		surftool->begin(Mesh::PRIMITIVE_TRIANGLES);
+
+		const int sphere_rings = TRACKBALL_SPHERE_RINGS;
+		const int sphere_sectors = TRACKBALL_SPHERE_SECTORS;
+		const real_t sphere_radius = GIZMO_CIRCLE_SIZE;
+
+		for (int r = 0; r <= sphere_rings; ++r) {
+			for (int s = 0; s <= sphere_sectors; ++s) {
+				real_t ring_angle = Math::PI * r / sphere_rings;
+				real_t sector_angle = 2.0 * Math::PI * s / sphere_sectors;
+
+				Vector3 vertex(
+						sphere_radius * Math::sin(ring_angle) * Math::cos(sector_angle),
+						sphere_radius * Math::cos(ring_angle),
+						sphere_radius * Math::sin(ring_angle) * Math::sin(sector_angle));
+
+				surftool->set_normal(vertex.normalized());
+				surftool->add_vertex(vertex);
+			}
+		}
+
+		for (int r = 0; r < sphere_rings; ++r) {
+			for (int s = 0; s < sphere_sectors; ++s) {
+				int current = r * (sphere_sectors + 1) + s;
+				int next = current + sphere_sectors + 1;
+
+				surftool->add_index(current);
+				surftool->add_index(next);
+				surftool->add_index(current + 1);
+
+				surftool->add_index(current + 1);
+				surftool->add_index(next);
+				surftool->add_index(next + 1);
+			}
+		}
+
+		trackball_sphere_material.instantiate();
+		trackball_sphere_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		trackball_sphere_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+		trackball_sphere_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+		trackball_sphere_material->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
+		trackball_sphere_material->set_albedo(Color(1.0, 1.0, 1.0, 0.0));
+		trackball_sphere_material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
+
+		trackball_sphere_material_hl = trackball_sphere_material->duplicate();
+		trackball_sphere_material_hl->set_albedo(Color(1.0, 1.0, 1.0, TRACKBALL_HIGHLIGHT_ALPHA));
+
+		surftool->set_material(trackball_sphere_material);
+		surftool->commit(trackball_sphere_gizmo);
+	}
+
 	_generate_selection_boxes();
 }
 
@@ -8932,15 +9108,6 @@ void Node3DEditor::_notification(int p_what) {
 			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditor::update_all_gizmos).bind(Variant()));
 		} break;
 
-		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
-			RID ae = get_accessibility_element();
-			ERR_FAIL_COND(ae.is_null());
-
-			//TODO
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, TTR(vformat("The %s is not accessible at this time.", "3D editor")));
-		} break;
-
 		case NOTIFICATION_ENTER_TREE: {
 			_update_theme();
 			_register_all_gizmos();
@@ -8982,6 +9149,10 @@ void Node3DEditor::_notification(int p_what) {
 					viewports[i]->update_transform_gizmo_view();
 				}
 				update_gizmo_opacity();
+			}
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/3d_gizmos/gizmo_settings")) {
+				CollisionShape3DGizmoPlugin::set_show_only_when_selected(EDITOR_GET("editors/3d_gizmos/gizmo_settings/show_collision_shapes_only_when_selected"));
+				update_all_gizmos();
 			}
 		} break;
 

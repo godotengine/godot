@@ -41,6 +41,7 @@
 void EditorMainScreen::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
+			set_accessibility_region(true);
 			if (EDITOR_3D < buttons.size() && buttons[EDITOR_3D]->is_visible()) {
 				// If the 3D editor is enabled, use this as the default.
 				select(EDITOR_3D);
@@ -194,6 +195,7 @@ void EditorMainScreen::select(int p_index) {
 	selected_plugin = new_editor;
 	selected_plugin->make_visible(true);
 	selected_plugin->selected_notify();
+	set_accessibility_name(selected_plugin->get_plugin_name());
 
 	EditorData &editor_data = EditorNode::get_editor_data();
 	int plugin_count = editor_data.get_editor_plugin_count();

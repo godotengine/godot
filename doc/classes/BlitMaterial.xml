@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BlitMaterial" inherits="Material" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A material that processes blit calls to a DrawableTexture.
+	</brief_description>
+	<description>
+		A material resource that can be used by DrawableTextures when processing blit calls to draw.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="BlitMaterial.BlendMode" default="0">
+			The manner in which the newly blitted texture is blended with the original DrawableTexture.
+		</member>
+	</members>
+	<constants>
+		<constant name="BLEND_MODE_MIX" value="0" enum="BlendMode">
+			Mix blending mode. Colors are assumed to be independent of the alpha (opacity) value.
+		</constant>
+		<constant name="BLEND_MODE_ADD" value="1" enum="BlendMode">
+			Additive blending mode.
+		</constant>
+		<constant name="BLEND_MODE_SUB" value="2" enum="BlendMode">
+			Subtractive blending mode.
+		</constant>
+		<constant name="BLEND_MODE_MUL" value="3" enum="BlendMode">
+			Multiplicative blending mode.
+		</constant>
+		<constant name="BLEND_MODE_DISABLED" value="4" enum="BlendMode">
+			No blending mode, direct color copy.
+		</constant>
+	</constants>
+</class>

@@ -30,6 +30,7 @@
 
 #include "color_picker.h"
 
+#include "core/input/input.h"
 #include "core/io/image.h"
 #include "core/math/expression.h"
 #include "scene/gui/color_mode.h"
@@ -152,6 +153,7 @@ void ColorPicker::_notification(int p_what) {
 			for (int i = 0; i < MODE_BUTTON_COUNT; i++) {
 				mode_btns[i]->begin_bulk_theme_override();
 				mode_btns[i]->add_theme_style_override(SceneStringName(pressed), theme_cache.mode_button_pressed);
+				mode_btns[i]->add_theme_style_override("hover_pressed", theme_cache.mode_button_hover_pressed);
 				mode_btns[i]->add_theme_style_override(CoreStringName(normal), theme_cache.mode_button_normal);
 				mode_btns[i]->add_theme_style_override(SceneStringName(hover), theme_cache.mode_button_hover);
 				mode_btns[i]->end_bulk_theme_override();
@@ -169,6 +171,8 @@ void ColorPicker::_notification(int p_what) {
 			hex_label->set_custom_minimum_size(Size2(38 * theme_cache.base_scale, 0));
 			// Adjust for the width of the "script" icon.
 			text_type->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
+			text_copy->set_button_icon(theme_cache.color_copy);
+			text_copy->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
 
 			_update_controls();
 			// HACK: Deferring updating presets to ensure their size is correct when creating ColorPicker at runtime.
@@ -840,6 +844,10 @@ void ColorPicker::_text_type_toggled() {
 	_update_color();
 }
 #endif // TOOLS_ENABLED
+
+void ColorPicker::_text_copy_pressed() {
+	DisplayServer::get_singleton()->clipboard_set(c_text->get_text());
+}
 
 Color ColorPicker::get_pick_color() const {
 	return color;
@@ -2055,10 +2063,12 @@ void ColorPicker::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_hue);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_script);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_copy);
 
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_normal, "tab_unselected", "TabContainer");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_pressed, "tab_selected", "TabContainer");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_hover, "tab_selected", "TabContainer");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_hover_pressed, "tab_selected", "TabContainer");
 
 	ADD_CLASS_DEPENDENCY("LineEdit");
 	ADD_CLASS_DEPENDENCY("MenuButton");
@@ -2092,6 +2102,7 @@ ColorPicker::ColorPicker() {
 
 	btn_shape = memnew(MenuButton);
 	btn_shape->set_flat(false);
+	btn_shape->set_theme_type_variation("FlatMenuButton");
 	sample_hbc->add_child(btn_shape);
 	btn_shape->set_toggle_mode(true);
 	btn_shape->set_tooltip_text(ETR("Select a picker shape."));
@@ -2142,10 +2153,12 @@ ColorPicker::ColorPicker() {
 
 	btn_mode = memnew(MenuButton);
 	btn_mode->set_flat(false);
+	btn_mode->set_theme_type_variation("FlatMenuButton");
 	mode_hbc->add_child(btn_mode);
 	btn_mode->set_toggle_mode(true);
 	btn_mode->set_accessibility_name(ETR("Select a picker mode."));
 	btn_mode->set_tooltip_text(ETR("Select a picker mode."));
+	btn_mode->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	btn_mode->set_focus_mode(FOCUS_ALL);
 
 	mode_popup = btn_mode->get_popup();
@@ -2218,6 +2231,13 @@ ColorPicker::ColorPicker() {
 	c_text->connect(SceneStringName(text_changed), callable_mp(this, &ColorPicker::_text_changed));
 	c_text->connect(SceneStringName(focus_exited), callable_mp(this, &ColorPicker::_html_focus_exit));
 
+	text_copy = memnew(Button);
+	hex_hbc->add_child(text_copy);
+	text_copy->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	text_copy->set_tooltip_text(ETR("Copy the color value."));
+	text_type->set_accessibility_name(ETR("Copy Color"));
+	text_copy->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_text_copy_pressed));
+
 	_update_controls();
 	updating = false;
 
@@ -2247,6 +2267,7 @@ ColorPicker::ColorPicker() {
 
 	menu_btn = memnew(MenuButton);
 	menu_btn->set_flat(false);
+	menu_btn->set_theme_type_variation("FlatMenuButton");
 	menu_btn->set_focus_mode(FOCUS_ALL);
 	menu_btn->set_tooltip_text(ETR("Show all options available."));
 	menu_btn->connect("about_to_popup", callable_mp(this, &ColorPicker::_update_menu_items));

@@ -40,6 +40,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/extension/gdextension_manager.h"
+#include "core/input/input.h"
 #include "core/io/xml_parser.h"
 #include "core/os/main_loop.h"
 #include "core/profiling/profiling.h"

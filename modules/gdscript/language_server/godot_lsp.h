@@ -1761,7 +1761,7 @@ struct ServerCapabilities {
 	/**
 	 * The server provides document highlight support.
 	 */
-	bool documentHighlightProvider = false;
+	bool documentHighlightProvider = true;
 
 	/**
 	 * The server provides document symbol support.
@@ -2118,4 +2118,26 @@ static String marked_documentation(const String &p_bbcode) {
 	}
 	return markdown;
 }
+
+/**
+ * A document highlight is a range inside a text document which deserves
+ * special attention. Usually a document highlight is visualized by changing
+ * the background color of its range.
+ */
+struct DocumentHighlight {
+	/**
+	 * The range this highlight applies to.
+	 */
+	Range range;
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+		dict["range"] = range.to_json();
+		return dict;
+	}
+
+	_FORCE_INLINE_ void load(const Dictionary &p_params) {
+		range.load(p_params["range"]);
+	}
+};
 } // namespace LSP

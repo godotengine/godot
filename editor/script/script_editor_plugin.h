@@ -359,7 +359,11 @@ class ScriptEditor : public PanelContainer {
 
 	float zoom_factor = 1.0f;
 
-	Label *script_name_label = nullptr;
+	HBoxContainer *script_name_button_hbox = nullptr;
+	Control *script_name_button_left_spacer = nullptr;
+	Control *script_name_button_right_spacer = nullptr;
+	Button *script_name_button = nullptr;
+	int script_name_width = 0;
 
 	Button *script_back = nullptr;
 	Button *script_forward = nullptr;
@@ -475,7 +479,6 @@ class ScriptEditor : public PanelContainer {
 	Ref<ConfigFile> script_editor_cache;
 	void _save_editor_state(ScriptEditorBase *p_editor);
 	void _save_layout();
-	void _editor_settings_changed();
 	void _apply_editor_settings();
 	void _filesystem_changed();
 	void _files_moved(const String &p_old_file, const String &p_new_file);
@@ -516,6 +519,9 @@ class ScriptEditor : public PanelContainer {
 
 	void _script_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index);
 	void _make_script_list_context_menu();
+
+	void _calculate_script_name_button_size();
+	void _calculate_script_name_button_ratio();
 
 	void _help_search(const String &p_text);
 

@@ -133,14 +133,6 @@ void EditorAudioBus::_notification(int p_what) {
 			set_process(true);
 		} break;
 
-		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
-			RID ae = get_accessibility_element();
-			ERR_FAIL_COND(ae.is_null());
-
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, TTR(vformat("The %s is not accessible at this time.", "Audio bus editor")));
-		} break;
-
 		case NOTIFICATION_DRAW: {
 			if (is_master) {
 				draw_style_box(get_theme_stylebox(SNAME("master"), SNAME("EditorAudioBus")), Rect2(Vector2(), get_size()));
@@ -1373,7 +1365,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	set_name(TTRC("Audio"));
 	set_icon_name("AudioStreamPlayer");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_audio_bottom_panel", TTRC("Toggle Audio Dock"), KeyModifierMask::ALT | Key::A));
-	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);

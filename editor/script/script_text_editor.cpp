@@ -31,6 +31,7 @@
 #include "script_text_editor.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "core/math/expression.h"
@@ -112,6 +113,8 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 
 	tree = memnew(Tree);
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	tree->set_theme_type_variation("TreeTable");
+	tree->set_hide_folding(true);
 	tree->set_columns(3);
 	tree->set_hide_root(true);
 	tree->set_column_titles_visible(true);
@@ -2440,14 +2443,13 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 				String variable_name = String(node->get_name()).to_snake_case().validate_unicode_identifier();
 				if (use_type) {
-					StringName class_name = node->get_class_name();
+					StringName custom_class_name;
 					Ref<Script> node_script = node->get_script();
-					if (node_script.is_valid()) {
-						StringName global_node_script_name = node_script->get_global_name();
-						if (!global_node_script_name.is_empty()) {
-							class_name = global_node_script_name;
-						}
+					while (node_script.is_valid() && custom_class_name.is_empty()) {
+						custom_class_name = node_script->get_global_name();
+						node_script = node_script->get_base_script();
 					}
+					const StringName class_name = custom_class_name.is_empty() ? node->get_class_name() : custom_class_name;
 					text_to_drop += vformat("@onready var %s: %s = %c%s", variable_name, class_name, is_unique ? '%' : '$', path);
 				} else {
 					text_to_drop += vformat("@onready var %s = %c%s", variable_name, is_unique ? '%' : '$', path);

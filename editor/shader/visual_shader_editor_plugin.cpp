@@ -31,6 +31,7 @@
 #include "visual_shader_editor_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
@@ -68,6 +69,7 @@
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
 #include "scene/resources/curve_texture.h"
+#include "scene/resources/sky.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/visual_shader_particle_nodes.h"
@@ -1057,7 +1059,9 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		}
 
 		if (vsnode->is_port_separator(i)) {
-			node->add_child(memnew(HSeparator));
+			HSeparator *separator = memnew(HSeparator);
+			separator->add_theme_style_override("separator", editor->get_theme_stylebox("separator", "GraphNode"));
+			node->add_child(separator);
 			port_offset++;
 		}
 
@@ -1729,6 +1733,10 @@ void VisualShaderEditor::_get_current_mode_limits(int &r_begin_type, int &r_end_
 		} break;
 		case Shader::MODE_FOG: {
 			r_begin_type = VisualShader::TYPE_FOG;
+			r_end_type = VisualShader::TYPE_TEXTURE_BLIT;
+		} break;
+		case Shader::MODE_TEXTURE_BLIT: {
+			r_begin_type = VisualShader::TYPE_TEXTURE_BLIT;
 			r_end_type = VisualShader::TYPE_MAX;
 		} break;
 		default: {
@@ -2467,6 +2475,7 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		edit_type_particles->set_visible(false);
 		edit_type_sky->set_visible(true);
 		edit_type_fog->set_visible(false);
+		edit_type_texture_blit->set_visible(false);
 		edit_type = edit_type_sky;
 		custom_mode_box->set_visible(false);
 		varying_button->hide();
@@ -2476,6 +2485,7 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		edit_type_particles->set_visible(false);
 		edit_type_sky->set_visible(false);
 		edit_type_fog->set_visible(true);
+		edit_type_texture_blit->set_visible(false);
 		edit_type = edit_type_fog;
 		custom_mode_box->set_visible(false);
 		varying_button->hide();
@@ -2485,6 +2495,7 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		edit_type_particles->set_visible(true);
 		edit_type_sky->set_visible(false);
 		edit_type_fog->set_visible(false);
+		edit_type_texture_blit->set_visible(false);
 		edit_type = edit_type_particles;
 		if ((edit_type->get_selected() + 3) > VisualShader::TYPE_PROCESS) {
 			custom_mode_box->set_visible(false);
@@ -2493,11 +2504,26 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		}
 		varying_button->hide();
 		mode = MODE_FLAGS_PARTICLES;
+	} else if (p_which == VisualShader::MODE_TEXTURE_BLIT) {
+		edit_type_standard->set_visible(false);
+		edit_type_particles->set_visible(false);
+		edit_type_sky->set_visible(false);
+		edit_type_fog->set_visible(false);
+		edit_type_texture_blit->set_visible(true);
+		edit_type = edit_type_texture_blit;
+		if ((edit_type->get_selected() + 3) > VisualShader::TYPE_PROCESS) {
+			custom_mode_box->set_visible(false);
+		} else {
+			custom_mode_box->set_visible(true);
+		}
+		varying_button->hide();
+		mode = MODE_FLAGS_TEXTURE_BLIT;
 	} else {
 		edit_type_particles->set_visible(false);
 		edit_type_standard->set_visible(true);
 		edit_type_sky->set_visible(false);
 		edit_type_fog->set_visible(false);
+		edit_type_texture_blit->set_visible(false);
 		edit_type = edit_type_standard;
 		custom_mode_box->set_visible(false);
 		varying_button->show();
@@ -2516,6 +2542,9 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		upper_type = VisualShader::TYPE_FOG;
 	} else if (mode & MODE_FLAGS_FOG) {
 		default_type = VisualShader::TYPE_FOG;
+		upper_type = VisualShader::TYPE_TEXTURE_BLIT;
+	} else if (mode & MODE_FLAGS_TEXTURE_BLIT) {
+		default_type = VisualShader::TYPE_TEXTURE_BLIT;
 		upper_type = VisualShader::TYPE_MAX;
 	}
 
@@ -3764,6 +3793,17 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		if (remap_func) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
 			remap_func->set_op_type((VisualShaderNodeRemap::OpType)(int)p_ops[0]);
+		}
+	}
+
+	// REFRACT
+	{
+		VisualShaderNodeVectorRefract *refract = Object::cast_to<VisualShaderNodeVectorRefract>(p_node);
+
+		if (refract) {
+			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			refract->set_op_type((VisualShaderNodeVectorRefract::OpType)(int)p_ops[0]);
+			return;
 		}
 	}
 }
@@ -5665,13 +5705,15 @@ void VisualShaderEditor::_type_selected(int p_id) {
 		offset = VisualShader::TYPE_SKY;
 	} else if (mode & MODE_FLAGS_FOG) {
 		offset = VisualShader::TYPE_FOG;
+	} else if (mode & MODE_FLAGS_TEXTURE_BLIT) {
+		offset = VisualShader::TYPE_TEXTURE_BLIT;
 	}
 
 	set_current_shader_type(VisualShader::Type(p_id + offset));
 	_update_nodes();
 	_update_graph();
 
-	graph->grab_focus();
+	graph->grab_focus(true);
 }
 
 void VisualShaderEditor::_custom_mode_toggled(bool p_enabled) {
@@ -6672,6 +6714,11 @@ VisualShaderEditor::VisualShaderEditor() {
 	edit_type_fog->select(0);
 	edit_type_fog->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderEditor::_type_selected));
 
+	edit_type_texture_blit = memnew(OptionButton);
+	edit_type_texture_blit->add_item(TTR("Blit"));
+	edit_type_texture_blit->select(0);
+	edit_type_texture_blit->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderEditor::_type_selected));
+
 	edit_type = edit_type_standard;
 
 	toolbar_hflow->add_child(custom_mode_box);
@@ -6684,6 +6731,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	toolbar_hflow->move_child(edit_type_sky, 0);
 	toolbar_hflow->add_child(edit_type_fog);
 	toolbar_hflow->move_child(edit_type_fog, 0);
+	toolbar_hflow->add_child(edit_type_texture_blit);
+	toolbar_hflow->move_child(edit_type_texture_blit, 0);
 
 	add_node = memnew(Button);
 	add_node->set_theme_type_variation(SceneStringName(FlatButton));
@@ -7132,6 +7181,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	add_options.push_back(AddOption("ClipSpaceFar", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "clip_space_far", "CLIP_SPACE_FAR"), { "clip_space_far" }, VisualShaderNode::PORT_TYPE_SCALAR, -1, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Exposure", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "exposure", "EXPOSURE"), { "exposure" }, VisualShaderNode::PORT_TYPE_SCALAR, -1, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("InShadowPass", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "in_shadow_pass", "IN_SHADOW_PASS"), { "in_shadow_pass" }, VisualShaderNode::PORT_TYPE_BOOLEAN, -1, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("InvProjectionMatrix", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "inv_projection_matrix", "INV_PROJECTION_MATRIX"), { "inv_projection_matrix" }, VisualShaderNode::PORT_TYPE_TRANSFORM, -1, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("InvViewMatrix", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "inv_view_matrix", "INV_VIEW_MATRIX"), { "inv_view_matrix" }, VisualShaderNode::PORT_TYPE_TRANSFORM, -1, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("ModelMatrix", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "model_matrix", "MODEL_MATRIX"), { "model_matrix" }, VisualShaderNode::PORT_TYPE_TRANSFORM, -1, Shader::MODE_SPATIAL));
@@ -7177,6 +7227,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	const String input_param_for_fragment_shader_mode = TTR("'%s' input parameter for fragment shader mode.") + translation_gdsl;
 	const String input_param_for_sky_shader_mode = TTR("'%s' input parameter for sky shader mode.") + translation_gdsl;
 	const String input_param_for_fog_shader_mode = TTR("'%s' input parameter for fog shader mode.") + translation_gdsl;
+	const String input_param_for_texture_blit_shader_mode = TTR("'%s' input parameter for blit shader mode.") + translation_gdsl;
 	const String input_param_for_light_shader_mode = TTR("'%s' input parameter for light shader mode.") + translation_gdsl;
 	const String input_param_for_vertex_shader_mode = TTR("'%s' input parameter for vertex shader mode.") + translation_gdsl;
 	const String input_param_for_start_shader_mode = TTR("'%s' input parameter for start shader mode.") + translation_gdsl;
@@ -7242,6 +7293,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Roughness", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_light_shader_mode, "roughness", "ROUGHNESS"), { "roughness" }, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("ScreenUV", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_fragment_and_light_shader_modes, "screen_uv", "SCREEN_UV"), { "screen_uv" }, VisualShaderNode::PORT_TYPE_VECTOR_2D, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Specular", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_light_shader_mode, "specular", "SPECULAR_LIGHT"), { "specular" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("SpecularAmount", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_light_shader_mode, "specular_amount", "SPECULAR_AMOUNT"), { "specular_amount" }, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("View", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_fragment_and_light_shader_modes, "view", "VIEW"), { "view" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 
 	// CANVASITEM INPUTS
@@ -7324,6 +7376,15 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Time", "Input/Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "time", "TIME"), { "time" }, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
 	add_options.push_back(AddOption("UVW", "Input/Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "uvw", "UVW"), { "uvw" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FOG, Shader::MODE_FOG));
 	add_options.push_back(AddOption("WorldPosition", "Input/Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "world_position", "WORLD_POSITION"), { "world_position" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FOG, Shader::MODE_FOG));
+
+	// TEXTURE BLIT INPUTS
+	add_options.push_back(AddOption("UV", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "uv", "UV"), { "uv" }, VisualShaderNode::PORT_TYPE_VECTOR_2D, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Modulate", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Modulate", "MODULATE"), { "Modulate" }, VisualShaderNode::PORT_TYPE_VECTOR_4D, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Fragcoord", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Fragcoord", "FRAGCOORD"), { "Fragcoord" }, VisualShaderNode::PORT_TYPE_VECTOR_4D, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Source Texture", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture", "source_texture"), { "Source Texture" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Source Texture 2", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture 2", "source_texture2"), { "Source Texture 2" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Source Texture 3", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture 3", "source_texture3"), { "Source Texture 3" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Source Texture 4", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture 4", "source_texture4"), { "Source Texture 4" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
 
 	// PARTICLES INPUTS
 
@@ -7658,9 +7719,9 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Reflect", "Vector/Functions", "VisualShaderNodeVectorOp", TTR("Returns the vector that points in the direction of reflection ( a : incident vector, b : normal vector )."), { VisualShaderNodeVectorOp::OP_REFLECT, VisualShaderNodeVectorFunc::OP_TYPE_VECTOR_2D }, VisualShaderNode::PORT_TYPE_VECTOR_2D));
 	add_options.push_back(AddOption("Reflect", "Vector/Functions", "VisualShaderNodeVectorOp", TTR("Returns the vector that points in the direction of reflection ( a : incident vector, b : normal vector )."), { VisualShaderNodeVectorOp::OP_REFLECT, VisualShaderNodeVectorFunc::OP_TYPE_VECTOR_3D }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption("Reflect", "Vector/Functions", "VisualShaderNodeVectorOp", TTR("Returns the vector that points in the direction of reflection ( a : incident vector, b : normal vector )."), { VisualShaderNodeVectorOp::OP_REFLECT, VisualShaderNodeVectorFunc::OP_TYPE_VECTOR_4D }, VisualShaderNode::PORT_TYPE_VECTOR_4D));
-	add_options.push_back(AddOption("Refract", "Vector/Functions", "VisualShaderNodeVectorRefract", TTR("Returns the vector that points in the direction of refraction."), {}, VisualShaderNode::PORT_TYPE_VECTOR_2D));
-	add_options.push_back(AddOption("Refract", "Vector/Functions", "VisualShaderNodeVectorRefract", TTR("Returns the vector that points in the direction of refraction."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption("Refract", "Vector/Functions", "VisualShaderNodeVectorRefract", TTR("Returns the vector that points in the direction of refraction."), {}, VisualShaderNode::PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption("Refract", "Vector/Functions", "VisualShaderNodeVectorRefract", TTR("Returns the vector that points in the direction of refraction."), { VisualShaderNodeVectorRefract::OP_TYPE_VECTOR_2D }, VisualShaderNode::PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption("Refract", "Vector/Functions", "VisualShaderNodeVectorRefract", TTR("Returns the vector that points in the direction of refraction."), { VisualShaderNodeVectorRefract::OP_TYPE_VECTOR_3D }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption("Refract", "Vector/Functions", "VisualShaderNodeVectorRefract", TTR("Returns the vector that points in the direction of refraction."), { VisualShaderNodeVectorRefract::OP_TYPE_VECTOR_4D }, VisualShaderNode::PORT_TYPE_VECTOR_4D));
 	add_options.push_back(AddOption("Remap", "Vector/Functions", "VisualShaderNodeRemap", TTR("Remaps a vector from the input range to the output range."), { VisualShaderNodeRemap::OP_TYPE_VECTOR_2D }, VisualShaderNode::PORT_TYPE_VECTOR_2D));
 	add_options.push_back(AddOption("Remap", "Vector/Functions", "VisualShaderNodeRemap", TTR("Remaps a vector from the input range to the output range."), { VisualShaderNodeRemap::OP_TYPE_VECTOR_3D }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption("Remap", "Vector/Functions", "VisualShaderNodeRemap", TTR("Remaps a vector from the input range to the output range."), { VisualShaderNodeRemap::OP_TYPE_VECTOR_4D }, VisualShaderNode::PORT_TYPE_VECTOR_4D));
@@ -8272,7 +8333,7 @@ void EditorPropertyVisualShaderMode::_option_selected(int p_which) {
 	}
 
 	//4. delete varyings (if needed)
-	if (p_which == VisualShader::MODE_PARTICLES || p_which == VisualShader::MODE_SKY || p_which == VisualShader::MODE_FOG) {
+	if (p_which == VisualShader::MODE_PARTICLES || p_which == VisualShader::MODE_SKY || p_which == VisualShader::MODE_FOG || p_which == VisualShader::MODE_TEXTURE_BLIT) {
 		int var_count = visual_shader->get_varyings_count();
 
 		if (var_count > 0) {

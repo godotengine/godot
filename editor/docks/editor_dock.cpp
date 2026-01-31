@@ -32,15 +32,33 @@
 
 #include "core/input/shortcut.h"
 #include "core/io/config_file.h"
+#include "editor/docks/dock_tab_container.h"
 #include "editor/docks/editor_dock_manager.h"
 
-void EditorDock::_set_default_slot_bind(EditorPlugin::DockSlot p_slot) {
-	ERR_FAIL_COND(p_slot < EditorPlugin::DOCK_SLOT_NONE || p_slot >= EditorPlugin::DOCK_SLOT_MAX);
-	default_slot = (DockConstants::DockSlot)p_slot;
+void EditorDock::_set_default_slot_bind(DockSlot p_slot) {
+	ERR_FAIL_COND(p_slot < DOCK_SLOT_NONE || p_slot >= DOCK_SLOT_MAX);
+	default_slot = p_slot;
 }
 
 void EditorDock::_emit_changed() {
 	emit_signal(SNAME("_tab_style_changed"));
+}
+
+void EditorDock::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			set_accessibility_region(true);
+			set_accessibility_name(get_display_title());
+		} break;
+
+		case NOTIFICATION_PARENTED: {
+			parent_dock_container = Object::cast_to<DockTabContainer>(get_parent());
+		} break;
+
+		case NOTIFICATION_UNPARENTED: {
+			parent_dock_container = nullptr;
+		} break;
+	}
 }
 
 void EditorDock::_bind_methods() {
@@ -104,6 +122,18 @@ void EditorDock::_bind_methods() {
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_FLOATING);
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_ALL);
 
+	BIND_ENUM_CONSTANT(DOCK_SLOT_NONE);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_UL);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_BL);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_UR);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_BR);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_UL);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_BL);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_UR);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_BR);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_BOTTOM);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_MAX);
+
 	GDVIRTUAL_BIND(_update_layout, "layout");
 	GDVIRTUAL_BIND(_save_layout_to_config, "config", "section");
 	GDVIRTUAL_BIND(_load_layout_from_config, "config", "section");
@@ -116,7 +146,11 @@ void EditorDock::open() {
 }
 
 void EditorDock::make_visible() {
-	EditorDockManager::get_singleton()->focus_dock(this);
+	EditorDockManager::get_singleton()->open_dock(this, true);
+}
+
+void EditorDock::make_floating() {
+	EditorDockManager::get_singleton()->make_dock_floating(this);
 }
 
 void EditorDock::close() {
@@ -130,6 +164,7 @@ void EditorDock::set_title(const String &p_title) {
 		return;
 	}
 	title = p_title;
+	set_accessibility_name(get_display_title());
 	_emit_changed();
 }
 
@@ -191,8 +226,12 @@ void EditorDock::set_dock_shortcut(const Ref<Shortcut> &p_shortcut) {
 	_emit_changed();
 }
 
-void EditorDock::set_default_slot(DockConstants::DockSlot p_slot) {
-	ERR_FAIL_INDEX(p_slot, DockConstants::DOCK_SLOT_MAX);
+Ref<Shortcut> EditorDock::get_dock_shortcut() const {
+	return shortcut;
+}
+
+void EditorDock::set_default_slot(DockSlot p_slot) {
+	ERR_FAIL_INDEX(p_slot, DOCK_SLOT_MAX);
 	default_slot = p_slot;
 }
 
@@ -215,4 +254,63 @@ String EditorDock::get_display_title() const {
 
 String EditorDock::get_effective_layout_key() const {
 	return layout_key.is_empty() ? get_display_title() : layout_key;
+}
+
+void EditorDock::set_tab_index(int p_index, bool p_set_current) {
+	parent_dock_container->move_dock_index(this, p_index, p_set_current);
+	previous_tab_index = parent_dock_container->get_tab_idx_from_control(this);
+}
+
+void EditorDock::update_tab_style() {
+	if (!enabled || !is_open) {
+		return; // Disabled by feature profile or manually closed by user.
+	}
+	if (dock_window) {
+		return; // Floating.
+	}
+
+	ERR_FAIL_NULL(parent_dock_container);
+
+	int index = parent_dock_container->get_tab_idx_from_control(this);
+	ERR_FAIL_COND(index == -1);
+
+	parent_dock_container->get_tab_bar()->set_font_color_override_all(index, title_color);
+
+	const Ref<Texture2D> icon = get_effective_icon(callable_mp((Control *)this, &Control::get_editor_theme_icon));
+	bool assign_icon = force_show_icon;
+	String tooltip;
+	switch (parent_dock_container->get_tab_style()) {
+		case DockTabContainer::TabStyle::TEXT_ONLY: {
+			parent_dock_container->set_tab_title(index, get_display_title());
+		} break;
+		case DockTabContainer::TabStyle::ICON_ONLY: {
+			parent_dock_container->set_tab_title(index, icon.is_valid() ? String() : get_display_title());
+			tooltip = TTR(get_display_title());
+			assign_icon = true;
+		} break;
+		case DockTabContainer::TabStyle::TEXT_AND_ICON: {
+			parent_dock_container->set_tab_title(index, get_display_title());
+			parent_dock_container->set_tab_tooltip(index, String());
+			assign_icon = true;
+		} break;
+	}
+
+	if (shortcut.is_valid() && shortcut->has_valid_event()) {
+		tooltip += (tooltip.is_empty() ? "" : "\n") + TTR(shortcut->get_name()) + " (" + shortcut->get_as_text() + ")";
+	}
+	parent_dock_container->set_tab_tooltip(index, tooltip);
+
+	if (assign_icon) {
+		parent_dock_container->set_tab_icon(index, icon);
+	} else {
+		parent_dock_container->set_tab_icon(index, Ref<Texture2D>());
+	}
+}
+
+Ref<Texture2D> EditorDock::get_effective_icon(const Callable &p_icon_fetch) {
+	Ref<Texture2D> icon = dock_icon;
+	if (icon.is_null() && !icon_name.is_empty()) {
+		icon = p_icon_fetch.call(icon_name);
+	}
+	return icon;
 }

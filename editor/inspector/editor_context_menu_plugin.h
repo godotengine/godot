@@ -103,7 +103,7 @@ public:
 	void remove_plugin(const Ref<EditorContextMenuPlugin> &p_plugin);
 
 	bool has_plugins_for_slot(ContextMenuSlot p_slot);
-	void add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const Vector<String> &p_paths);
+	void add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const Vector<String> &p_paths, int p_id_offset = 0);
 	Callable match_custom_shortcut(ContextMenuSlot p_slot, const Ref<InputEvent> &p_event);
 	bool activate_custom_option(ContextMenuSlot p_slot, int p_option, const Variant &p_arg);
 

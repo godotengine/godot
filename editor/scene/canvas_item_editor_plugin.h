@@ -46,6 +46,7 @@ class HSplitContainer;
 class MenuButton;
 class PanelContainer;
 class StyleBoxTexture;
+class Timer;
 class ViewPanner;
 class VScrollBar;
 class VSeparator;
@@ -145,7 +146,8 @@ private:
 		VIEW_FRAME_TO_SELECTION,
 		PREVIEW_CANVAS_SCALE,
 		SKELETON_MAKE_BONES,
-		SKELETON_SHOW_BONES
+		SKELETON_SHOW_BONES,
+		AUTO_RESAMPLE_CANVAS_ITEMS,
 	};
 
 	enum DragType {
@@ -226,6 +228,10 @@ private:
 	real_t zoom = 1.0;
 	Point2 view_offset;
 	Point2 previous_update_view_offset;
+
+	Timer *resample_timer = nullptr;
+	bool auto_resampling_enabled = true;
+	real_t resample_delay = 0.3;
 
 	bool selected_from_canvas = false;
 
@@ -432,6 +438,7 @@ private:
 	void _prepare_grid_menu();
 	void _on_grid_menu_id_pressed(int p_id);
 	void _reset_transform(TransformType p_type);
+	void _update_oversampling();
 
 public:
 	enum ThemePreviewMode {

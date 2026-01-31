@@ -10,19 +10,18 @@ static func check(condition: Variant) -> void:
 		return
 
 	printerr("Check failed. Backtrace (most recent call first):")
-	for stack: ScriptBacktrace in Engine.capture_script_backtraces():
-		if stack.get_language_name() == "GDScript":
-			var dir: String
-			for i: int in stack.get_frame_count():
-				if i == 0:
-					dir = stack.get_frame_file(i).trim_suffix("utils.notest.gd")
-				else:
-					printerr("  %s:%d @ %s()" % [
-						stack.get_frame_file(i).trim_prefix(dir),
-						stack.get_frame_line(i),
-						stack.get_frame_function(i),
-					])
-			break
+	var stack: Array = get_stack()
+	var dir: String
+	for i: int in stack.size():
+		var frame: Dictionary = stack[i]
+		if i == 0:
+			dir = str(frame.source).trim_suffix("utils.notest.gd")
+		else:
+			printerr("  %s:%d @ %s()" % [
+				str(frame.source).trim_prefix(dir),
+				frame.line,
+				frame.function,
+			])
 
 
 static func get_type(property: Dictionary, is_return: bool = false) -> String:

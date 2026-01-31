@@ -424,12 +424,12 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	}
 	send_message("debug_enter", msg);
 
-	Input::MouseMode mouse_mode = Input::MOUSE_MODE_VISIBLE;
+	Input::MouseMode mouse_mode = Input::MouseMode::MOUSE_MODE_VISIBLE;
 
 	if (Thread::get_caller_id() == Thread::get_main_id()) {
 		mouse_mode = Input::get_singleton()->get_mouse_mode();
-		if (mouse_mode != Input::MOUSE_MODE_VISIBLE) {
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+		if (mouse_mode != Input::MouseMode::MOUSE_MODE_VISIBLE) {
+			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 		}
 	} else {
 		MutexLock mutex_lock(mutex);
@@ -630,7 +630,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	send_message("debug_exit", Array());
 
 	if (Thread::get_caller_id() == Thread::get_main_id()) {
-		if (mouse_mode != Input::MOUSE_MODE_VISIBLE) {
+		if (mouse_mode != Input::MouseMode::MOUSE_MODE_VISIBLE) {
 			Input::get_singleton()->set_mouse_mode(mouse_mode);
 		}
 	} else {

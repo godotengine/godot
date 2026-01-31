@@ -30,6 +30,8 @@
 
 #include "mesh_library.h"
 
+#include "scene/resources/texture.h"
+
 #ifndef PHYSICS_3D_DISABLED
 #include "box_shape_3d.h"
 #endif // PHYSICS_3D_DISABLED

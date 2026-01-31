@@ -107,6 +107,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 
 		// Response
 		String output = GDScriptLanguageProtocol::get_singleton()->process_message(msg);
+		clear_stale_parsers();
 		if (!output.is_empty()) {
 			res_queue.push_back(output.utf8());
 		}
@@ -238,7 +239,6 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 
 	if (!_initialized) {
 		workspace->initialize();
-		text_document->initialize();
 		_initialized = true;
 	}
 
@@ -397,11 +397,16 @@ ExtendGDScriptParser *GDScriptLanguageProtocol::LSPeer::parse_script(const Strin
 		GDScriptLanguageProtocol::get_singleton()->get_workspace()->publish_diagnostics(p_path);
 	} else {
 		// Don't keep cached for further requests since we can't invalidate the cache properly.
-		parse_results.erase(p_path);
-		stale_parsers[p_path] = parser;
+		stale_parsers.insert(p_path);
 	}
 
 	return parser;
+}
+
+void GDScriptLanguageProtocol::LSPeer::clear_stale_parsers() {
+	while (!stale_parsers.is_empty()) {
+		remove_cached_parser(*stale_parsers.begin());
+	}
 }
 
 void GDScriptLanguageProtocol::LSPeer::remove_cached_parser(const String &p_path) {
@@ -411,11 +416,7 @@ void GDScriptLanguageProtocol::LSPeer::remove_cached_parser(const String &p_path
 		parse_results.remove(cached);
 	}
 
-	HashMap<String, ExtendGDScriptParser *>::Iterator stale = stale_parsers.find(p_path);
-	if (stale) {
-		memdelete(stale->value);
-		stale_parsers.remove(stale);
-	}
+	stale_parsers.erase(p_path);
 }
 
 ExtendGDScriptParser *GDScriptLanguageProtocol::get_parse_result(const String &p_path) {
@@ -531,11 +532,10 @@ void GDScriptLanguageProtocol::resolve_related_symbols(const LSP::TextDocumentPo
 
 GDScriptLanguageProtocol::LSPeer::~LSPeer() {
 	while (!parse_results.is_empty()) {
-		remove_cached_parser(parse_results.begin()->key);
+		String path = parse_results.begin()->key;
+		remove_cached_parser(path);
 	}
-	while (!stale_parsers.is_empty()) {
-		remove_cached_parser(stale_parsers.begin()->key);
-	}
+	stale_parsers.clear();
 }
 
 // clang-format off
@@ -557,6 +557,7 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	SET_DOCUMENT_METHOD(didSave);
 
 	SET_DOCUMENT_METHOD(documentSymbol);
+	SET_DOCUMENT_METHOD(documentHighlight);
 	SET_DOCUMENT_METHOD(completion);
 	SET_DOCUMENT_METHOD(rename);
 	SET_DOCUMENT_METHOD(prepareRename);

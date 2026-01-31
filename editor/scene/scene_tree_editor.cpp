@@ -984,6 +984,17 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 }
 
 bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_selected) {
+	TreeItem *last_selected = nullptr;
+	bool result = _update_filter_helper(p_parent, p_scroll_to_selected, last_selected);
+	if (p_scroll_to_selected && last_selected) {
+		// Scrolling to the first selected in the _update_filter call above followed by the last
+		// selected here is enough to frame all selected items as well as possible.
+		callable_mp(tree, &Tree::scroll_to_item).call_deferred(last_selected, false);
+	}
+	return result;
+}
+
+bool SceneTreeEditor::_update_filter_helper(TreeItem *p_parent, bool p_scroll_to_selected, TreeItem *&r_last_selected) {
 	if (!p_parent) {
 		p_parent = tree->get_root();
 		filter_term_warning.clear();
@@ -1038,7 +1049,8 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 	bool keep_for_children = false;
 	for (TreeItem *child = p_parent->get_first_child(); child; child = child->get_next()) {
 		// Always keep if at least one of the children are kept.
-		keep_for_children = _update_filter(child, p_scroll_to_selected) || keep_for_children;
+		// Only scroll if we haven't already found a child to scroll to.
+		keep_for_children = _update_filter_helper(child, p_scroll_to_selected && !keep_for_children, r_last_selected) || keep_for_children;
 	}
 
 	if (!is_root) {
@@ -1098,7 +1110,6 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 		} else {
 			p_parent->set_custom_color(0, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 			p_parent->set_selectable(0, false);
-			p_parent->deselect(0);
 		}
 	}
 	if (is_root) {
@@ -1111,13 +1122,14 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 	if (editor_selection) {
 		Node *n = get_node(p_parent->get_metadata(0));
 		if (selectable) {
-			if (p_scroll_to_selected && n && editor_selection->is_selected(n)) {
-				// Needs to be deferred to account for possible root visibility change.
-				callable_mp(tree, &Tree::scroll_to_item).call_deferred(p_parent, false);
+			if (n && editor_selection->is_selected(n)) {
+				if (p_scroll_to_selected) {
+					// Needs to be deferred to account for possible root visibility change.
+					callable_mp(tree, &Tree::scroll_to_item).call_deferred(p_parent, false);
+				} else {
+					r_last_selected = p_parent;
+				}
 			}
-		} else if (n) {
-			editor_selection->remove_node(n);
-			p_parent->deselect(0);
 		}
 	}
 
@@ -2398,14 +2410,19 @@ SceneTreeDialog::SceneTreeDialog() {
 	show_all_nodes->hide();
 	filter_hbc->add_child(show_all_nodes);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	content->add_child(mc);
+
 	tree = memnew(SceneTreeEditor(false, false, true));
 	tree->set_update_when_invisible(false);
-	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tree->get_scene_tree()->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &SceneTreeDialog::_select));
 	// Initialize button state, must be done after the tree has been created to update its 'show_all_nodes' flag.
 	// This is also done before adding the tree to the content to avoid triggering unnecessary tree filtering.
 	show_all_nodes->set_pressed(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "show_all_nodes_for_node_selection", false));
-	content->add_child(tree);
+	mc->add_child(tree);
 
 	// Disable the OK button when no node is selected.
 	get_ok_button()->set_disabled(!tree->get_selected());

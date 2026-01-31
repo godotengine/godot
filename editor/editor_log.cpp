@@ -30,6 +30,7 @@
 
 #include "editor_log.h"
 
+#include "core/io/resource_loader.h"
 #include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
@@ -413,7 +414,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 			Ref<Texture2D> icon = theme_cache.error_icon;
 			log->add_image(icon);
 			log->push_bold();
-			log->add_text(" ERROR: ");
+			log->add_text(U" ERROR: ");
 			log->pop(); // bold
 			_set_dock_tab_icon(icon);
 		} break;
@@ -422,7 +423,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 			Ref<Texture2D> icon = theme_cache.warning_icon;
 			log->add_image(icon);
 			log->push_bold();
-			log->add_text(" WARNING: ");
+			log->add_text(U" WARNING: ");
 			log->pop(); // bold
 			_set_dock_tab_icon(icon);
 		} break;
@@ -490,7 +491,7 @@ EditorLog::EditorLog() {
 	set_name(TTRC("Output"));
 	set_icon_name("Output");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_output_bottom_panel", TTRC("Toggle Output Dock"), KeyModifierMask::ALT | Key::O));
-	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 
 	save_state_timer = memnew(Timer);

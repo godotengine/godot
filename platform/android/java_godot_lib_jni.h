@@ -60,7 +60,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_gyroscope(JNIEnv *env
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusin(JNIEnv *env, jclass clazz);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusout(JNIEnv *env, jclass clazz);
 JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getGlobal(JNIEnv *env, jclass clazz, jstring path);
-JNIEXPORT jobjectArray JNICALL Java_org_godotengine_godot_GodotLib_getRendererInfo(JNIEnv *env, jclass clazz);
+JNIEXPORT jobjectArray JNICALL Java_org_godotengine_godot_GodotLib_getRendererInfo(JNIEnv *env, jclass clazz, jboolean p_vulkan_requirements_met);
 JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getEditorSetting(JNIEnv *env, jclass clazz, jstring p_setting_key);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setEditorSetting(JNIEnv *env, jclass clazz, jstring p_key, jobject p_data);
 JNIEXPORT jobject JNICALL Java_org_godotengine_godot_GodotLib_getEditorProjectMetadata(JNIEnv *env, jclass clazz, jstring p_section, jstring p_key, jobject p_default_value);
@@ -72,7 +72,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_hardwareKeyboardConne
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_filePickerCallback(JNIEnv *env, jclass clazz, jboolean p_ok, jobjectArray p_selected_paths);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererResumed(JNIEnv *env, jclass clazz);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererPaused(JNIEnv *env, jclass clazz);
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onScreenRotationChange(JNIEnv *env, jclass clazz, jint p_orientation);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onOrientationChange(JNIEnv *env, jclass clazz, jint p_orientation);
 JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_shouldDispatchInputToRenderThread(JNIEnv *env, jclass clazz);
 JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getProjectResourceDir(JNIEnv *env, jclass clazz);
 JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_isEditorHint(JNIEnv *env, jclass clazz);
