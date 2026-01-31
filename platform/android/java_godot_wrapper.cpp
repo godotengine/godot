@@ -89,6 +89,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance) {
 	_is_in_immersive_mode = p_env->GetMethodID(godot_class, "isInImmersiveMode", "()Z");
 	_set_window_color = p_env->GetMethodID(godot_class, "setWindowColor", "(Ljava/lang/String;)V");
 	_on_editor_workspace_selected = p_env->GetMethodID(godot_class, "nativeOnEditorWorkspaceSelected", "(Ljava/lang/String;)V");
+	_on_distraction_free_mode_changed = p_env->GetMethodID(godot_class, "nativeOnDistractionFreeModeChanged", "(Z)V");
 	_get_activity = p_env->GetMethodID(godot_class, "getActivity", "()Landroid/app/Activity;");
 	_build_env_connect = p_env->GetMethodID(godot_class, "nativeBuildEnvConnect", "(Lorg/godotengine/godot/variant/Callable;)Z");
 	_build_env_disconnect = p_env->GetMethodID(godot_class, "nativeBuildEnvDisconnect", "()V");
@@ -612,6 +613,15 @@ void GodotJavaWrapper::on_editor_workspace_selected(const String &p_workspace) {
 
 		jstring j_workspace = env->NewStringUTF(p_workspace.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _on_editor_workspace_selected, j_workspace);
+	}
+}
+
+void GodotJavaWrapper::on_distraction_free_mode_changed(bool p_enabled) {
+	if (_on_distraction_free_mode_changed) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+
+		env->CallVoidMethod(godot_instance, _on_distraction_free_mode_changed, p_enabled);
 	}
 }
 
