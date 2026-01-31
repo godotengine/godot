@@ -278,7 +278,7 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 
 		for (int i = 0; i < to_mix; i++) {
 			*p_buffer = mix_buffer[i];
-			stream_todo -= time_dec;
+			stream_todo -= time_dec * p_rate_scale;
 			if (stream_todo < 0) {
 				//find next stream.
 				int prev = play_order[play_index];
