@@ -3451,16 +3451,22 @@ void DisplayServerWindows::_update_hdr_output_for_window(DisplayServerEnums::Win
 	if (rendering_context) {
 		bool current_hdr_enabled = rendering_context->window_get_hdr_output_enabled(p_window);
 		bool desired_hdr_enabled = p_window_data.hdr_output_requested && p_screen_data.hdr_supported;
+		bool hdr_state_changed = false;
 
 		if (current_hdr_enabled != desired_hdr_enabled) {
 			rendering_context->window_set_hdr_output_enabled(p_window, desired_hdr_enabled);
 			rendering_context->window_set_hdr_output_linear_luminance_scale(p_window, 80.0f);
+			hdr_state_changed = true;
 		}
 
 		// If auto reference luminance is enabled, update it based on the current SDR white level.
 		if (p_window_data.hdr_output_reference_luminance < 0.0f) {
 			if (p_screen_data.sdr_white_level > 0.0f) {
-				rendering_context->window_set_hdr_output_reference_luminance(p_window, p_screen_data.sdr_white_level);
+				float current_ref_luminance = rendering_context->window_get_hdr_output_reference_luminance(p_window);
+				if (!Math::is_equal_approx(current_ref_luminance, p_screen_data.sdr_white_level)) {
+					rendering_context->window_set_hdr_output_reference_luminance(p_window, p_screen_data.sdr_white_level);
+					hdr_state_changed = true;
+				}
 			}
 			// If we cannot get the SDR white level, leave the previous value unchanged.
 		}
@@ -3468,9 +3474,18 @@ void DisplayServerWindows::_update_hdr_output_for_window(DisplayServerEnums::Win
 		// If auto max luminance is enabled, update it based on the screen's max luminance.
 		if (p_window_data.hdr_output_max_luminance < 0.0f) {
 			if (p_screen_data.max_luminance > 0.0f) {
-				rendering_context->window_set_hdr_output_max_luminance(p_window, p_screen_data.max_luminance);
+				float current_max_luminance = rendering_context->window_get_hdr_output_max_luminance(p_window);
+				if (!Math::is_equal_approx(current_max_luminance, p_screen_data.max_luminance)) {
+					rendering_context->window_set_hdr_output_max_luminance(p_window, p_screen_data.max_luminance);
+					hdr_state_changed = true;
+				}
 			}
 			// If we cannot get the screen's max luminance, leave the previous value unchanged.
+		}
+
+		// Trigger HDR output changed event if any HDR parameter was modified.
+		if (hdr_state_changed) {
+			_send_window_event(p_window_data, DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED);
 		}
 	}
 #endif // RD_ENABLED
@@ -4768,6 +4783,7 @@ void DisplayServerWindows::window_set_hdr_output_reference_luminance(const float
 #if defined(RD_ENABLED)
 		if (rendering_context) {
 			rendering_context->window_set_hdr_output_reference_luminance(p_window, p_reference_luminance);
+			_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED);
 		}
 #endif
 	}
@@ -4813,6 +4829,7 @@ void DisplayServerWindows::window_set_hdr_output_max_luminance(const float p_max
 #if defined(RD_ENABLED)
 		if (rendering_context) {
 			rendering_context->window_set_hdr_output_max_luminance(p_window, p_max_luminance);
+			_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED);
 		}
 #endif
 	}

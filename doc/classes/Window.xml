@@ -123,8 +123,8 @@
 		<method name="get_output_max_linear_value" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the maximum value for linear color components that can be displayed in this window, regardless of SDR or HDR output. Returns [code]1.0[/code] if HDR is not enabled or not supported. This value is used by tonemapping and other [Environment] effects to ensure that bright colors are presented in the range that can be displayed by this window.
-				When using the Linear tonemapper without [Environment] effects or no [WorldEnvironment], use the returned value to scale content to maximize the screen's brightness, such as for lasers or other bright effects. The following is an example that produces the brightest purple color that the screen can produce:
+				Returns the maximum value for linear color components that can be displayed in this window, regardless of SDR or HDR output. Returns [code]1.0[/code] if HDR is not enabled or not supported. The [signal output_max_linear_value_changed] signal will be emitted whenever this value changes.
+				This value is used by tonemapping and other [Environment] effects to ensure that bright colors are presented in the range that can be displayed by this window. When using the Linear tonemapper without [Environment] effects or no [WorldEnvironment], use the returned value to scale content to maximize the screen's brightness, such as for lasers or other bright effects. The following is an example that produces the brightest purple color that the screen can produce:
 				[codeblocks]
 				[gdscript]
 				func _process(_delta):
@@ -865,6 +865,12 @@
 			<param index="0" name="event" type="InputEvent" />
 			<description>
 				Emitted when the mouse event is received by the custom decoration area defined by [member nonclient_area], and normal input to the window is blocked (such as when it has an exclusive child opened). [param event]'s position is in the embedder's coordinate system.
+			</description>
+		</signal>
+		<signal name="output_max_linear_value_changed">
+			<param index="0" name="output_max_linear_value" type="float" />
+			<description>
+				Emitted when the output max linear value returned by [method Window.get_output_max_linear_value] has changed. This occurs when HDR output is enabled or disabled and when any HDR output luminance values of the window have changed, such as when the player adjusts their screen brightness setting or moves the window to a different screen. [param output_max_linear_value] is the new value.
 			</description>
 		</signal>
 		<signal name="theme_changed">
