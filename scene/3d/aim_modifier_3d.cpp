@@ -204,8 +204,9 @@ void AimModifier3D::_process_constraint_by_node(int p_index, Skeleton3D *p_skele
 	if (!nd) {
 		return;
 	}
-	Vector3 reference_origin = nd->get_global_transform_interpolated().origin - p_skeleton->get_global_transform_interpolated().origin;
-	_process_aim(p_index, p_skeleton, p_apply_bone, reference_origin, p_amount);
+	Transform3D skel_tr = p_skeleton->get_global_transform_interpolated();
+	Vector3 reference_origin = nd->get_global_transform_interpolated().origin - skel_tr.origin;
+	_process_aim(p_index, p_skeleton, p_apply_bone, skel_tr.basis.get_rotation_quaternion().xform_inv(reference_origin), p_amount);
 }
 
 void AimModifier3D::_process_aim(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, Vector3 p_target, float p_amount) {
