@@ -1440,7 +1440,7 @@ struct CompletionContext {
 	/**
 	 * How the completion was triggered.
 	 */
-	int triggerKind = CompletionTriggerKind::TriggerCharacter;
+	int triggerKind = CompletionTriggerKind::Invoked;
 
 	/**
 	 * The trigger character (a single character) that has trigger code complete.
@@ -1463,7 +1463,10 @@ struct CompletionParams : public TextDocumentPositionParams {
 
 	void load(const Dictionary &p_params) {
 		TextDocumentPositionParams::load(p_params);
-		context.load(p_params["context"]);
+
+		if (p_params.has("context")) {
+			context.load(p_params["context"]);
+		}
 	}
 
 	Dictionary to_json() {
