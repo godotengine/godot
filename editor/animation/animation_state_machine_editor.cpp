@@ -1008,23 +1008,26 @@ void AnimationNodeStateMachineEditor::_dup_paste_nodes(const List<CopyItem> &p_i
 		String name = _deduplicate_node_name(item.name);
 		remap[item.name] = name;
 		// must duplicate node again for multiple pastes
-		undo_redo->add_do_method(state_machine.ptr(), "add_node", name, item.node->duplicate(), p_position + item.position);
-		undo_redo->add_undo_method(state_machine.ptr(), "remove_node", name);
+		if (item.node.is_valid()) {
+			undo_redo->add_do_method(state_machine.ptr(), "add_node", name, item.node->duplicate(), p_position + item.position);
+			undo_redo->add_undo_method(state_machine.ptr(), "remove_node", name);
+		}
 	}
 
 	for (const CopyTransition &item : p_transitions) {
 		StringName from = remap[item.from];
 		StringName to = remap[item.to];
 		// must duplicate node again for multiple pastes
-		undo_redo->add_do_method(state_machine.ptr(), "add_transition", from, to, item.transition->duplicate());
-		undo_redo->add_do_method(this, "_update_graph");
-		undo_redo->add_undo_method(state_machine.ptr(), "remove_transition", from, to);
-		undo_redo->add_undo_method(this, "_update_graph");
+		if (item.transition.is_valid()) {
+			undo_redo->add_do_method(state_machine.ptr(), "add_transition", from, to, item.transition->duplicate());
+			undo_redo->add_undo_method(state_machine.ptr(), "remove_transition", from, to);
+		}
 	}
 
-	updating = false;
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
 
-	state_machine_draw->queue_redraw();
+	updating = false;
 }
 
 void AnimationNodeStateMachineEditor::_duplicate_nodes() {
@@ -1046,11 +1049,6 @@ void AnimationNodeStateMachineEditor::_copy_nodes(bool p_cut) {
 	_dup_copy_nodes(copy_items_buffer, copy_transitions_buffer);
 
 	if (p_cut) {
-		TypedArray<StringName> names;
-		for (const CopyItem &E : copy_items_buffer) {
-			names.push_back(E.name);
-		}
-
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Cut State Machine Node(s)"));
 
@@ -1155,13 +1153,13 @@ void AnimationNodeStateMachineEditor::_add_node_and_transition(const String &p_b
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Node and Transition"));
 	undo_redo->add_do_method(state_machine.ptr(), "add_node", name, node, add_node_pos);
+	undo_redo->add_do_method(state_machine_draw, "queue_redraw");
 	undo_redo->add_undo_method(state_machine.ptr(), "remove_node", name);
+	undo_redo->add_undo_method(state_machine_draw, "queue_redraw");
 	connecting_to_node = name;
 	_add_transition(true);
 	undo_redo->commit_action();
 	updating = false;
-
-	state_machine_draw->queue_redraw();
 }
 
 void AnimationNodeStateMachineEditor::_connect_to(int p_index) {
