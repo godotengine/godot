@@ -121,6 +121,17 @@ real_t CapsuleShape2D::get_enclosing_radius() const {
 	return height * 0.5f;
 }
 
+bool CapsuleShape2D::contains_point(const Vector2 &p_point) const {
+	Vector2 p = p_point;
+	p.y = Math::abs(p.y);
+	p.y -= height * 0.5 - radius;
+	if (p.y < 0) {
+		p.y = 0;
+	}
+
+	return p.length_squared() < radius * radius;
+}
+
 void CapsuleShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CapsuleShape2D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &CapsuleShape2D::get_radius);
