@@ -216,7 +216,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 		for (int i = 0; i < sources_list->get_item_count(); i++) {
 			if ((int)sources_list->get_item_metadata(i) == to_select) {
 				sources_list->set_current(i);
-				sources_list->ensure_current_is_visible();
+				sources_list->center_on_current();
 				if (old_selected != to_select) {
 					sources_list->emit_signal(SceneStringName(item_selected), sources_list->get_current());
 				}

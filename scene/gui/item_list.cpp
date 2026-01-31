@@ -1189,6 +1189,10 @@ void ItemList::center_on_current(bool p_center_verically, bool p_center_horizont
 
 	ERR_FAIL_COND_MSG(!p_center_verically && !p_center_horizontally, "At least one of the parameters must be true.");
 
+	if (shape_changed) {
+		force_update_list_size();
+	}
+
 	Rect2 r = items[current].rect_cache;
 
 	if (p_center_verically) {

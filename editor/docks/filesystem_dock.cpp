@@ -1238,7 +1238,6 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 
 		if (!p_keep_selection && !file.is_empty() && fname == file) {
 			files->select(item_index, true);
-			files->ensure_current_is_visible();
 		}
 
 		// Tooltip.
@@ -1253,6 +1252,10 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	// If we only have any selected items retained, we need to update the current idx.
 	if (!valid_selection.is_empty()) {
 		files->set_current(*valid_selection.begin());
+	}
+
+	if (!p_keep_selection) {
+		files->center_on_current();
 	}
 }
 

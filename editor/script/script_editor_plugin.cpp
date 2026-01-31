@@ -2638,7 +2638,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 				}
 			}
 			_update_script_names();
-			script_list->ensure_current_is_visible();
+			script_list->center_on_current();
 			return true;
 		}
 	}
@@ -4466,7 +4466,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_name_button->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	script_name_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	script_name_button->set_tooltip_text(TTRC("Navigate to script list."));
-	script_name_button->connect(SceneStringName(pressed), callable_mp(script_list, &ItemList::ensure_current_is_visible));
+	script_name_button->connect(SceneStringName(pressed), callable_mp(script_list, &ItemList::center_on_current).bind(true, true));
 	script_name_button_hbox->add_child(script_name_button);
 
 	script_name_button_right_spacer = memnew(Control);

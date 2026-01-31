@@ -253,7 +253,7 @@ void TileMapLayerEditorTilesPlugin::_update_tile_set_sources_list() {
 			for (int i = 0; i < sources_list->get_item_count(); i++) {
 				if ((int)sources_list->get_item_metadata(i) == old_source) {
 					sources_list->set_current(i);
-					sources_list->ensure_current_is_visible();
+					sources_list->center_on_current();
 					break;
 				}
 			}
@@ -1409,7 +1409,7 @@ void TileMapLayerEditorTilesPlugin::_stop_dragging() {
 						break;
 					}
 				}
-				sources_list->ensure_current_is_visible();
+				sources_list->center_on_current();
 			}
 
 			Ref<TileMapPattern> new_selection_pattern = edited_layer->get_pattern(coords_array);
