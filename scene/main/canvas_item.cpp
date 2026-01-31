@@ -1122,6 +1122,19 @@ void CanvasItem::set_canvas_item_use_identity_transform(bool p_enable) {
 	}
 }
 
+bool CanvasItem::has_point(const Vector2 &p_point) const { //We'll override this in Sprite2D and Polygon2D
+	return false;
+}
+
+void CanvasItem::input(const Ref<InputEvent> &p_event) { //It needs to be enabled by setting set_process_input(true);
+	Ref<InputEventMouse> mouse_event = p_event;
+	Ref<InputEventMouseButton> mouse_button_event = mouse_event;
+	if (mouse_button_event.is_valid() && mouse_button_event->is_pressed()) { //If the mouse is over the item and a button is pressed, emit signal
+		emit_signal("mouse_pressed_node", mouse_button_event->get_button_index());
+	}
+	get_viewport()->set_input_as_handled(); //We mark the event as handled to avoid propagating it to other nodes
+}
+
 Rect2 CanvasItem::get_viewport_rect() const {
 	ERR_READ_THREAD_GUARD_V(Rect2());
 	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
@@ -1276,6 +1289,14 @@ Vector2 CanvasItem::get_local_mouse_position() const {
 	ERR_FAIL_NULL_V(get_viewport(), Vector2());
 
 	return get_global_transform().affine_inverse().xform(get_global_mouse_position());
+}
+
+void CanvasItem::set_mouse_picking_enabled(bool p_enabled) {
+	mouse_picking = p_enabled;
+}
+
+bool CanvasItem::is_mouse_picking_enabled() const {
+	return mouse_picking;
 }
 
 void CanvasItem::force_update_transform() {
@@ -1465,6 +1486,11 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_clip_children_mode", "mode"), &CanvasItem::set_clip_children_mode);
 	ClassDB::bind_method(D_METHOD("get_clip_children_mode"), &CanvasItem::get_clip_children_mode);
 
+	ClassDB::bind_method(D_METHOD("is_mouse_picking_enabled"), &CanvasItem::is_mouse_picking_enabled);
+	ClassDB::bind_method(D_METHOD("set_mouse_picking_enabled", "enabled"), &CanvasItem::set_mouse_picking_enabled);
+
+	ClassDB::bind_method(D_METHOD("has_point", "point"), &CanvasItem::has_point);
+
 	GDVIRTUAL_BIND(_draw);
 
 	ADD_GROUP("Visibility", "");
@@ -1498,6 +1524,9 @@ void CanvasItem::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
 	ADD_SIGNAL(MethodInfo("hidden"));
 	ADD_SIGNAL(MethodInfo("item_rect_changed"));
+	ADD_SIGNAL(MethodInfo("mouse_entered_node"));
+	ADD_SIGNAL(MethodInfo("mouse_exited_node"));
+	ADD_SIGNAL(MethodInfo("mouse_pressed_node", PropertyInfo(Variant::INT, "button_index")));
 
 	BIND_CONSTANT(NOTIFICATION_TRANSFORM_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);

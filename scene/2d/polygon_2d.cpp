@@ -105,6 +105,11 @@ void Polygon2D::_skeleton_bone_setup_changed() {
 	queue_redraw();
 }
 
+bool Polygon2D::has_point(const Vector2 &p_point) const {
+	Vector2 local = to_local(p_point);
+	return Geometry2D::is_point_in_polygon(local, polygon);
+}
+
 void Polygon2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_TRANSFORM_CHANGED && !Engine::get_singleton()->is_editor_hint()) {
 		return; // Mesh recreation for NOTIFICATION_TRANSFORM_CHANGED is only needed in editor.

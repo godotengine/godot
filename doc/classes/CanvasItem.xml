@@ -556,6 +556,14 @@
 				Usually, this is the same as this node's viewport (see [method Node.get_viewport] and [method Viewport.find_world_2d]).
 			</description>
 		</method>
+		<method name="has_point" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="point" type="Vector2" />
+			<description>
+				Returns [code]true[/code] if the given [param point] (in local coordinates) is inside the visible area of this [CanvasItem]. The visible area is only calculated in [Sprite2D] and [Polygon2D].
+				This method is used internally for mouse picking when mouse picking is enabled.
+			</description>
+		</method>
 		<method name="hide">
 			<return type="void" />
 			<description>
@@ -566,6 +574,12 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the node receives [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] whenever its local transform changes. This is enabled with [method set_notify_local_transform].
+			</description>
+		</method>
+		<method name="is_mouse_picking_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if mouse picking is enabled for this [CanvasItem].
 			</description>
 		</method>
 		<method name="is_transform_notification_enabled" qualifiers="const">
@@ -620,6 +634,13 @@
 				Set the value of a shader uniform for this instance only ([url=$DOCS_URL/tutorials/shaders/shader_reference/shading_language.html#per-instance-uniforms]per-instance uniform[/url]). See also [method ShaderMaterial.set_shader_parameter] to assign a uniform on all instances using the same [ShaderMaterial].
 				[b]Note:[/b] For a shader uniform to be assignable on a per-instance basis, it [i]must[/i] be defined with [code]instance uniform ...[/code] rather than [code]uniform ...[/code] in the shader code.
 				[b]Note:[/b] [param name] is case-sensitive and must match the name of the uniform in the code exactly (not the capitalized name in the inspector).
+			</description>
+		</method>
+		<method name="set_mouse_picking_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables mouse picking for this [CanvasItem].
 			</description>
 		</method>
 		<method name="set_notify_local_transform">
@@ -725,6 +746,22 @@
 		<signal name="item_rect_changed">
 			<description>
 				Emitted when the [CanvasItem]'s boundaries (position or size) change, or when an action took place that may have affected these boundaries (e.g. changing [member Sprite2D.texture]).
+			</description>
+		</signal>
+		<signal name="mouse_entered_node">
+			<description>
+				Emitted when the mouse cursor enters the CanvasItem boundaries. Requires input processing enabled to be emitted.
+			</description>
+		</signal>
+		<signal name="mouse_exited_node">
+			<description>
+				Emitted when the mouse cursor exits the CanvasItem boundaries. Requires input processing enabled to be emitted.
+			</description>
+		</signal>
+		<signal name="mouse_pressed_node">
+			<param index="0" name="button_index" type="int" />
+			<description>
+				Emitted when a mouse button is pressed while the cursor is over the CanvasItem boundaries. The [param button_index] indicates which button was pressed. Requires input processing enabled to be emitted.
 			</description>
 		</signal>
 		<signal name="visibility_changed">

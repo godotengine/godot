@@ -566,7 +566,7 @@ public:
 	virtual void gui_input(const Ref<InputEvent> &p_event);
 	void accept_event();
 
-	virtual bool has_point(const Point2 &p_point) const;
+	bool has_point(const Point2 &p_point) const override;
 
 	void set_mouse_filter(MouseFilter p_filter);
 	MouseFilter get_mouse_filter() const;

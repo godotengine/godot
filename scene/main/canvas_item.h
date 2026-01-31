@@ -115,6 +115,8 @@ private:
 	bool notify_local_transform = false;
 	bool notify_transform = false;
 	bool hide_clip_children = false;
+	bool mouse_inside = false;
+	bool mouse_picking = false;
 
 	ClipChildrenMode clip_children_mode = CLIP_CHILDREN_DISABLED;
 
@@ -180,7 +182,7 @@ protected:
 	void item_rect_changed(bool p_size_changed = true);
 
 	void set_canvas_item_use_identity_transform(bool p_enable);
-
+	virtual void input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -393,6 +395,9 @@ public:
 	Vector2 get_global_mouse_position() const;
 	Vector2 get_local_mouse_position() const;
 
+	void set_mouse_picking_enabled(bool p_enable);
+	bool is_mouse_picking_enabled() const;
+
 	void set_notify_local_transform(bool p_enable);
 	bool is_local_transform_notification_enabled() const;
 
@@ -417,6 +422,7 @@ public:
 	CanvasLayer *get_canvas_layer_node() const;
 
 	virtual PackedStringArray get_configuration_warnings() const override;
+	bool virtual has_point(const Vector2 &p_point) const;
 
 	CanvasItem();
 	~CanvasItem();

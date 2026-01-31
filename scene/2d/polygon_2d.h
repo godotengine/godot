@@ -150,6 +150,8 @@ public:
 	void set_skeleton(const NodePath &p_skeleton);
 	NodePath get_skeleton() const;
 
+	bool has_point(const Vector2 &p_point) const override;
+
 #ifndef NAVIGATION_2D_DISABLED
 private:
 	static Callable _navmesh_source_geometry_parsing_callback;
