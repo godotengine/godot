@@ -27,7 +27,7 @@ proto = """#define GDVIRTUAL$VER($ALIAS $RET m_name $ARG)\\
 				$CALLPTRARGS\\
 				$CALLPTRRETDEF\\
 				if (_get_extension()->call_virtual_with_data) {\\
-					_get_extension()->call_virtual_with_data(_get_extension_instance(), &_gdvirtual_##$VARNAME##_sn, _gdvirtual_##$VARNAME, $CALLPTRARGPASS, $CALLPTRRETPASS);\\
+					_get_extension()->call_virtual_with_data(_get_extension_instance(), to_gdextension(&_gdvirtual_##$VARNAME##_sn), _gdvirtual_##$VARNAME, $CALLPTRARGPASS, $CALLPTRRETPASS);\\
 					$CALLPTRRET\\
 				} else {\\
 					((GDExtensionClassCallVirtual)_gdvirtual_##$VARNAME)(_get_extension_instance(), $CALLPTRARGPASS, $CALLPTRRETPASS);\\
@@ -150,7 +150,7 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
         callsiargs += f"VariantInternal::make(arg{i + 1})"
         callsiargptrs += f"&vargs[{i}]"
         callptrargs += f"PtrToArg<m_type{i + 1}>::EncodeT argval{i + 1}; PtrToArg<m_type{i + 1}>::encode(arg{i + 1}, &argval{i + 1});\\\n"
-        callptrargsptr += f"&argval{i + 1}"
+        callptrargsptr += f"to_gdextension_type_ptr<m_type{i + 1}>(&argval{i + 1})"
 
     if argcount:
         callsiargs += " };\\\n"
@@ -172,7 +172,7 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
         callargtext += "m_ret &r_ret"
         s = s.replace("$CALLSIBEGIN", "Variant ret = ")
         s = s.replace("$CALLSIRET", "r_ret = VariantCaster<m_ret>::cast(ret);")
-        s = s.replace("$CALLPTRRETPASS", "&ret")
+        s = s.replace("$CALLPTRRETPASS", "to_gdextension_type_ptr<m_ret>(&ret)")
         s = s.replace("$CALLPTRRET", "r_ret = (m_ret)ret;")
     else:
         s = s.replace("$CALLSIBEGIN", "")
@@ -197,6 +197,7 @@ def run(target, source, env):
 #pragma once
 
 #include "core/object/script_instance.h"
+#include "core/extension/gdextension_interface_conv.h"
 
 inline constexpr uintptr_t _INVALID_GDVIRTUAL_FUNC_ADDR = static_cast<uintptr_t>(-1);
 

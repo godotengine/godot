@@ -817,7 +817,10 @@
         },
         {
             "name": "GDExtensionClassInstancePtr",
-            "kind": "handle"
+            "kind": "handle",
+            "description": [
+                "An opaque pointer to an instance of a native class within the extension, which is bound to a Godot Object."
+            ]
         },
         {
             "name": "GDExtensionClassSet",
@@ -1780,7 +1783,10 @@
         },
         {
             "name": "GDExtensionClassLibraryPtr",
-            "kind": "handle"
+            "kind": "handle",
+            "description": [
+                "A handle which represents the extension within Godot."
+            ]
         },
         {
             "name": "GDExtensionEditorGetClassesUsedCallback",

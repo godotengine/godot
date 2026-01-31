@@ -648,18 +648,18 @@ void Object::validate_property(PropertyInfo &p_property) const {
 		StringName prop_name = p_property.name;
 		GDExtensionPropertyInfo gdext_prop = {
 			(GDExtensionVariantType)p_property.type,
-			&prop_name,
-			&p_property.class_name,
+			to_gdextension(&prop_name),
+			to_gdextension(&p_property.class_name),
 			(uint32_t)p_property.hint,
-			&p_property.hint_string,
+			to_gdextension(&p_property.hint_string),
 			p_property.usage,
 		};
 		if (_extension->validate_property(_extension_instance, &gdext_prop)) {
 			p_property.type = (Variant::Type)gdext_prop.type;
-			p_property.name = *reinterpret_cast<StringName *>(gdext_prop.name);
-			p_property.class_name = *reinterpret_cast<StringName *>(gdext_prop.class_name);
+			p_property.name = *from_gdextension<StringName>(gdext_prop.name);
+			p_property.class_name = *from_gdextension<StringName>(gdext_prop.class_name);
 			p_property.hint = (PropertyHint)gdext_prop.hint;
-			p_property.hint_string = *reinterpret_cast<String *>(gdext_prop.hint_string);
+			p_property.hint_string = *from_gdextension<String>(gdext_prop.hint_string);
 			p_property.usage = gdext_prop.usage;
 		};
 	}
@@ -982,15 +982,15 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 void Object::_gdvirtual_init_method_ptr(uint32_t p_compat_hash, void *&r_fn_ptr, const StringName &p_fn_name, bool p_compat) const {
 	r_fn_ptr = nullptr;
 	if (_extension->get_virtual_call_data2 && _extension->call_virtual_with_data) {
-		r_fn_ptr = _extension->get_virtual_call_data2(_extension->class_userdata, &p_fn_name, p_compat_hash);
+		r_fn_ptr = _extension->get_virtual_call_data2(_extension->class_userdata, to_gdextension(&p_fn_name), p_compat_hash);
 	} else if (_extension->get_virtual2) {
-		r_fn_ptr = (void *)_extension->get_virtual2(_extension->class_userdata, &p_fn_name, p_compat_hash);
+		r_fn_ptr = (void *)_extension->get_virtual2(_extension->class_userdata, to_gdextension(&p_fn_name), p_compat_hash);
 #ifndef DISABLE_DEPRECATED
 	} else if (p_compat || ClassDB::get_virtual_method_compatibility_hashes(get_class_name(), p_fn_name).size() == 0) {
 		if (_extension->get_virtual_call_data && _extension->call_virtual_with_data) {
-			r_fn_ptr = _extension->get_virtual_call_data(_extension->class_userdata, &p_fn_name);
+			r_fn_ptr = _extension->get_virtual_call_data(_extension->class_userdata, to_gdextension(&p_fn_name));
 		} else if (_extension->get_virtual) {
-			r_fn_ptr = (void *)_extension->get_virtual(_extension->class_userdata, &p_fn_name);
+			r_fn_ptr = (void *)_extension->get_virtual(_extension->class_userdata, to_gdextension(&p_fn_name));
 		}
 #endif
 	}
@@ -1059,7 +1059,7 @@ String Object::to_string() {
 	if (_extension && _extension->to_string) {
 		String ret;
 		GDExtensionBool is_valid;
-		_extension->to_string(_extension_instance, &is_valid, &ret);
+		_extension->to_string(_extension_instance, &is_valid, to_gdextension(&ret));
 		if (is_valid) {
 			return ret;
 		}

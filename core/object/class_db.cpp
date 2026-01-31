@@ -194,7 +194,7 @@ public:
 		// done in a different way to support placeholders) will also be done here.
 
 		obj->_extension = ClassDB::get_placeholder_extension(ti->name);
-		obj->_extension_instance = memnew(PlaceholderExtensionInstance(ti->name));
+		obj->_extension_instance = reinterpret_cast<GDExtensionClassInstancePtr>(memnew(PlaceholderExtensionInstance(ti->name)));
 
 		obj->_reset_gdtype();
 
@@ -204,7 +204,7 @@ public:
 		}
 #endif
 
-		return obj;
+		return to_gdextension(obj);
 	}
 
 	static GDExtensionObjectPtr placeholder_class_recreate_instance(void *p_class_userdata, GDExtensionObjectPtr p_object) {
