@@ -1276,6 +1276,9 @@
 		<constant name="NOTIFICATION_WM_POSITION_CHANGED" value="1012">
 			Notification received when the window is moved.
 		</constant>
+		<constant name="NOTIFICATION_WM_HDR_OUTPUT_CHANGED" value="1013">
+			Notification received when the window's HDR output parameters (enabled, luminance, max output color value) change.
+		</constant>
 		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="2009">
 			Notification received from the OS when the application is exceeding its allocated memory.
 			Implemented only on iOS.
