@@ -6780,6 +6780,8 @@ void EditorNode::set_distraction_free_mode(bool p_enter) {
 	} else {
 		editor_dock_manager->set_docks_visible(true);
 	}
+
+	emit_signal(SNAME("distraction_free_mode_changed"), p_enter);
 }
 
 bool EditorNode::is_distraction_free_mode_enabled() const {
@@ -7801,6 +7803,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("preview_locale_changed"));
 	ADD_SIGNAL(MethodInfo("resource_counter_changed"));
+	ADD_SIGNAL(MethodInfo("distraction_free_mode_changed", PropertyInfo(Variant::BOOL, "enabled")));
 }
 
 static Node *_resource_get_edited_scene() {
