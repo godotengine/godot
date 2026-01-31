@@ -175,7 +175,7 @@
 		<method name="get_font_style" qualifiers="const">
 			<return type="int" enum="TextServer.FontStyle" is_bitfield="true" />
 			<description>
-				Returns font style flags, see [enum TextServer.FontStyle].
+				Returns font style flags.
 			</description>
 		</method>
 		<method name="get_font_style_name" qualifiers="const">
@@ -236,7 +236,7 @@
 			<return type="int" />
 			<param index="0" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<description>
-				Returns the spacing for the given [code]type[/code] (see [enum TextServer.SpacingType]).
+				Returns the amount of spacing for the given [param spacing] type.
 			</description>
 		</method>
 		<method name="get_string_size" qualifiers="const">
@@ -288,9 +288,9 @@
 				fv.base_font = load("res://RobotoFlex.ttf")
 				var variation_list = fv.get_supported_variation_list()
 				for tag in variation_list:
-				    var name = TextServerManager.get_primary_interface().tag_to_name(tag)
-				    var values = variation_list[tag]
-				    print("variation axis: %s (%d)\n\tmin, max, default: %s" % [name, tag, values])
+					var name = TextServerManager.get_primary_interface().tag_to_name(tag)
+					var values = variation_list[tag]
+					print("variation axis: %s (%d)\n\tmin, max, default: %s" % [name, tag, values])
 				[/codeblock]
 				[b]Note:[/b] To set and get variation coordinates of a [FontVariation], use [member FontVariation.variation_opentype].
 			</description>
@@ -322,14 +322,14 @@
 			<return type="bool" />
 			<param index="0" name="language" type="String" />
 			<description>
-				Returns [code]true[/code], if font supports given language ([url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
+				Returns [code]true[/code] if the font supports the given language (as a [url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
 			</description>
 		</method>
 		<method name="is_script_supported" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="script" type="String" />
 			<description>
-				Returns [code]true[/code], if font supports given script ([url=https://en.wikipedia.org/wiki/ISO_15924]ISO 15924[/url] code).
+				Returns [code]true[/code] if the font supports the given script (as a [url=https://en.wikipedia.org/wiki/ISO_15924]ISO 15924[/url] code).
 			</description>
 		</method>
 		<method name="set_cache_capacity">

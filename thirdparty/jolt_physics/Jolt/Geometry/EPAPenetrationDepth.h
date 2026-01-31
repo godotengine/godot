@@ -103,8 +103,6 @@ public:
 	template <typename AE, typename BE>
 	EStatus				GetPenetrationDepthStepGJK(const AE &inAExcludingConvexRadius, float inConvexRadiusA, const BE &inBExcludingConvexRadius, float inConvexRadiusB, float inTolerance, Vec3 &ioV, Vec3 &outPointA, Vec3 &outPointB)
 	{
-		JPH_PROFILE_FUNCTION();
-
 		JPH_IF_ENABLE_ASSERTS(mGJKTolerance = inTolerance;)
 
 		// Don't supply a zero ioV, we only want to get points on the hull of the Minkowsky sum and not internal points.

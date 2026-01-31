@@ -43,7 +43,8 @@ void ItemList::_shape_text(int p_idx) {
 	} else {
 		item.text_buf->set_direction((TextServer::Direction)item.text_direction);
 	}
-	item.text_buf->add_string(item.xl_text, theme_cache.font, theme_cache.font_size, item.language);
+	const String &lang = item.language.is_empty() ? _get_locale() : item.language;
+	item.text_buf->add_string(item.xl_text, theme_cache.font, theme_cache.font_size, lang);
 	if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
 		item.text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES);
 	} else {
@@ -208,11 +209,20 @@ void ItemList::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	if (items[p_idx].icon == p_icon) {
+	Item &item = items.write[p_idx];
+	if (item.icon == p_icon) {
 		return;
 	}
 
-	items.write[p_idx].icon = p_icon;
+	const Callable redraw = callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw);
+	if (item.icon.is_valid()) {
+		item.icon->disconnect_changed(redraw);
+	}
+	item.icon = p_icon;
+	if (p_icon.is_valid()) {
+		p_icon->connect_changed(redraw);
+	}
+
 	queue_redraw();
 	shape_changed = true;
 }
@@ -1172,6 +1182,36 @@ void ItemList::ensure_current_is_visible() {
 	queue_redraw();
 }
 
+void ItemList::center_on_current(bool p_center_verically, bool p_center_horizontally) {
+	if (current < 0 || current >= items.size()) {
+		return;
+	}
+
+	ERR_FAIL_COND_MSG(!p_center_verically && !p_center_horizontally, "At least one of the parameters must be true.");
+
+	Rect2 r = items[current].rect_cache;
+
+	if (p_center_verically) {
+		int from_v = scroll_bar_v->get_value();
+		int to_v = from_v + scroll_bar_v->get_page();
+		int item_center_y = r.position.y + r.size.y / 2;
+		int viewport_center_y = (from_v + to_v) / 2;
+
+		int offset_y = item_center_y - viewport_center_y;
+		scroll_bar_v->set_value(scroll_bar_v->get_value() + offset_y);
+	}
+
+	if (p_center_horizontally) {
+		int from_h = scroll_bar_h->get_value();
+		int to_h = from_h + scroll_bar_h->get_page();
+		int item_center_x = r.position.x + r.size.x / 2;
+		int viewport_center_x = (from_h + to_h) / 2;
+
+		int offset_x = item_center_x - viewport_center_x;
+		scroll_bar_h->set_value(scroll_bar_h->get_value() + offset_x);
+	}
+}
+
 static Rect2 _adjust_to_max_size(Size2 p_size, Size2 p_max_size) {
 	Size2 size = p_max_size;
 	int tex_width = p_size.width * size.height / p_size.height;
@@ -1204,19 +1244,35 @@ void ItemList::_accessibility_action_scroll_set(const Variant &p_data) {
 }
 
 void ItemList::_accessibility_action_scroll_up(const Variant &p_data) {
-	scroll_bar_v->set_value(scroll_bar_v->get_value() - scroll_bar_v->get_page() / 4);
+	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+		scroll_bar_v->set_value(scroll_bar_v->get_value() - scroll_bar_v->get_page() / 4);
+	} else {
+		scroll_bar_v->set_value(scroll_bar_v->get_value() - scroll_bar_v->get_page());
+	}
 }
 
 void ItemList::_accessibility_action_scroll_down(const Variant &p_data) {
-	scroll_bar_v->set_value(scroll_bar_v->get_value() + scroll_bar_v->get_page() / 4);
+	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+		scroll_bar_v->set_value(scroll_bar_v->get_value() + scroll_bar_v->get_page() / 4);
+	} else {
+		scroll_bar_v->set_value(scroll_bar_v->get_value() + scroll_bar_v->get_page());
+	}
 }
 
 void ItemList::_accessibility_action_scroll_left(const Variant &p_data) {
-	scroll_bar_h->set_value(scroll_bar_h->get_value() - scroll_bar_h->get_page() / 4);
+	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+		scroll_bar_h->set_value(scroll_bar_h->get_value() - scroll_bar_h->get_page() / 4);
+	} else {
+		scroll_bar_h->set_value(scroll_bar_h->get_value() - scroll_bar_h->get_page());
+	}
 }
 
 void ItemList::_accessibility_action_scroll_right(const Variant &p_data) {
-	scroll_bar_h->set_value(scroll_bar_h->get_value() + scroll_bar_h->get_page() / 4);
+	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+		scroll_bar_h->set_value(scroll_bar_h->get_value() + scroll_bar_h->get_page() / 4);
+	} else {
+		scroll_bar_h->set_value(scroll_bar_h->get_value() + scroll_bar_h->get_page());
+	}
 }
 
 void ItemList::_accessibility_action_scroll_into_view(const Variant &p_data, int p_index) {
@@ -1367,7 +1423,7 @@ void ItemList::_notification(int p_what) {
 			Ref<StyleBox> sbsel;
 			Ref<StyleBox> cursor;
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				sbsel = theme_cache.selected_focus_style;
 				cursor = theme_cache.cursor_focus_style;
 			} else {
@@ -1491,7 +1547,7 @@ void ItemList::_notification(int p_what) {
 						draw_style_box(sbsel, r);
 					}
 					if (should_draw_hovered_selected_bg) {
-						if (has_focus()) {
+						if (has_focus(true)) {
 							draw_style_box(theme_cache.hovered_selected_focus_style, r);
 						} else {
 							draw_style_box(theme_cache.hovered_selected_style, r);
@@ -1524,8 +1580,7 @@ void ItemList::_notification(int p_what) {
 
 					if (icon_mode == ICON_MODE_TOP) {
 						pos.x += Math::floor((items[i].rect_cache.size.width - icon_size.width) / 2);
-						pos.y += theme_cache.icon_margin;
-						text_ofs.y = icon_size.height + theme_cache.icon_margin * 2;
+						text_ofs.y = icon_size.height + theme_cache.icon_margin;
 					} else {
 						pos.y += Math::floor((items[i].rect_cache.size.height - icon_size.height) / 2);
 						text_ofs.x = icon_size.width + theme_cache.icon_margin;
@@ -1578,8 +1633,6 @@ void ItemList::_notification(int p_what) {
 				}
 
 				if (!items[i].text.is_empty()) {
-					Vector2 size2 = items[i].text_buf->get_size();
-
 					Color txt_modulate;
 					if (items[i].selected && hovered == i) {
 						txt_modulate = theme_cache.font_hovered_selected_color;
@@ -1598,18 +1651,19 @@ void ItemList::_notification(int p_what) {
 					}
 
 					if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
-						text_ofs += base_ofs;
-						text_ofs += items[i].rect_cache.position;
-
 						text_ofs.y += MAX(theme_cache.v_separation, 0) / 2;
+						text_ofs.x += MAX(theme_cache.h_separation, 0) / 2;
 
 						items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 
-						float text_w = items[i].rect_cache.size.width;
-						if (wraparound_items && items[i].rect_cache.size.width > width) {
-							text_w -= items[i].rect_cache.size.width - width;
+						float text_w = items[i].rect_cache.size.width - text_ofs.x * 2;
+						if (wraparound_items && text_w + text_ofs.x > width) {
+							text_w = width - text_ofs.x;
 						}
 						items.write[i].text_buf->set_width(text_w);
+
+						text_ofs += base_ofs;
+						text_ofs += items[i].rect_cache.position;
 
 						if (rtl) {
 							text_ofs.x = size.width - text_ofs.x - text_w;
@@ -1621,18 +1675,8 @@ void ItemList::_notification(int p_what) {
 
 						items[i].text_buf->draw(get_canvas_item(), text_ofs, txt_modulate);
 					} else {
-						if (fixed_column_width > 0) {
-							size2.x = MIN(size2.x, fixed_column_width);
-						}
-
-						if (icon_mode == ICON_MODE_TOP) {
-							text_ofs.x += (items[i].rect_cache.size.width - size2.x) / 2;
-							text_ofs.x += MAX(theme_cache.h_separation, 0) / 2;
-							text_ofs.y += MAX(theme_cache.v_separation, 0) / 2;
-						} else {
-							text_ofs.y += (items[i].rect_cache.size.height - size2.y) / 2;
-							text_ofs.x += MAX(theme_cache.h_separation, 0) / 2;
-						}
+						text_ofs.y += (items[i].rect_cache.size.height - items[i].text_buf->get_size().y) / 2;
+						text_ofs.x += MAX(theme_cache.h_separation, 0) / 2;
 
 						real_t text_width_ofs = text_ofs.x;
 
@@ -1690,7 +1734,22 @@ void ItemList::_notification(int p_what) {
 				draw_style_box(cursor, cursor_rcache);
 			}
 
-			if (has_focus()) {
+			if (scroll_hint_mode != SCROLL_HINT_MODE_DISABLED) {
+				Size2 control_size = get_size();
+				float v_scroll_value = scroll_bar_v->get_value();
+				bool v_scroll_below_max = v_scroll_value < (scroll_bar_v->get_max() - scroll_bar_v->get_page() - 1);
+				if (v_scroll_value > 1 || v_scroll_below_max) {
+					int hint_height = theme_cache.scroll_hint->get_height();
+					if ((scroll_hint_mode == SCROLL_HINT_MODE_BOTH || scroll_hint_mode == SCROLL_HINT_MODE_TOP) && v_scroll_value > 1) {
+						draw_texture_rect(theme_cache.scroll_hint, Rect2(Point2(), Size2(control_size.width, hint_height)), tile_scroll_hint, theme_cache.scroll_hint_color);
+					}
+					if ((scroll_hint_mode == SCROLL_HINT_MODE_BOTH || scroll_hint_mode == SCROLL_HINT_MODE_BOTTOM) && v_scroll_below_max) {
+						draw_texture_rect(theme_cache.scroll_hint, Rect2(Point2(0, control_size.height - hint_height), Size2(control_size.width, -hint_height)), tile_scroll_hint, theme_cache.scroll_hint_color);
+					}
+				}
+			}
+
+			if (has_focus(true)) {
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
 				size.x -= (scroll_bar_h->get_max() - scroll_bar_h->get_page());
 				draw_style_box(theme_cache.focus_style, Rect2(Point2(), size));
@@ -2178,6 +2237,32 @@ bool ItemList::has_wraparound_items() const {
 	return wraparound_items;
 }
 
+void ItemList::set_scroll_hint_mode(ScrollHintMode p_mode) {
+	if (scroll_hint_mode == p_mode) {
+		return;
+	}
+
+	scroll_hint_mode = p_mode;
+	queue_redraw();
+}
+
+ItemList::ScrollHintMode ItemList::get_scroll_hint_mode() const {
+	return scroll_hint_mode;
+}
+
+void ItemList::set_tile_scroll_hint(bool p_enable) {
+	if (tile_scroll_hint == p_enable) {
+		return;
+	}
+
+	tile_scroll_hint = p_enable;
+	queue_redraw();
+}
+
+bool ItemList::is_scroll_hint_tiled() {
+	return tile_scroll_hint;
+}
+
 bool ItemList::_set(const StringName &p_name, const Variant &p_value) {
 	if (property_helper.property_set_value(p_name, p_value)) {
 		return true;
@@ -2315,9 +2400,16 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_at_position", "position", "exact"), &ItemList::get_item_at_position, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("ensure_current_is_visible"), &ItemList::ensure_current_is_visible);
+	ClassDB::bind_method(D_METHOD("center_on_current", "center_verically", "center_horizontally"), &ItemList::center_on_current, DEFVAL(true), DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("get_v_scroll_bar"), &ItemList::get_v_scroll_bar);
 	ClassDB::bind_method(D_METHOD("get_h_scroll_bar"), &ItemList::get_h_scroll_bar);
+
+	ClassDB::bind_method(D_METHOD("set_scroll_hint_mode", "scroll_hint_mode"), &ItemList::set_scroll_hint_mode);
+	ClassDB::bind_method(D_METHOD("get_scroll_hint_mode"), &ItemList::get_scroll_hint_mode);
+
+	ClassDB::bind_method(D_METHOD("set_tile_scroll_hint", "tile_scroll_hint"), &ItemList::set_tile_scroll_hint);
+	ClassDB::bind_method(D_METHOD("is_scroll_hint_tiled"), &ItemList::is_scroll_hint_tiled);
 
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &ItemList::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &ItemList::get_text_overrun_behavior);
@@ -2336,6 +2428,8 @@ void ItemList::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_height"), "set_auto_height", "has_auto_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis (6+ Characters),Word Ellipsis (6+ Characters),Ellipsis (Always),Word Ellipsis (Always)"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wraparound_items"), "set_wraparound_items", "has_wraparound_items");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_hint_mode", PROPERTY_HINT_ENUM, "Disabled,Both,Top,Bottom"), "set_scroll_hint_mode", "get_scroll_hint_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tile_scroll_hint"), "set_tile_scroll_hint", "is_scroll_hint_tiled");
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");
 	ADD_GROUP("Columns", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_columns", PROPERTY_HINT_RANGE, "0,10,1,or_greater"), "set_max_columns", "get_max_columns");
@@ -2352,6 +2446,11 @@ void ItemList::_bind_methods() {
 	BIND_ENUM_CONSTANT(SELECT_SINGLE);
 	BIND_ENUM_CONSTANT(SELECT_MULTI);
 	BIND_ENUM_CONSTANT(SELECT_TOGGLE);
+
+	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_BOTH);
+	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_TOP);
+	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_BOTTOM);
 
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("empty_clicked", PropertyInfo(Variant::VECTOR2, "at_position"), PropertyInfo(Variant::INT, "mouse_button_index")));
@@ -2373,6 +2472,8 @@ void ItemList::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_selected_color);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, ItemList, font_outline_size, "outline_size");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_outline_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ItemList, scroll_hint);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, scroll_hint_color);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, line_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, icon_margin);

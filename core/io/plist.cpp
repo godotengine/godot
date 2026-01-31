@@ -553,7 +553,7 @@ Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_
 				marker_size = read_bplist_var_size_int(p_file, std::pow(2, ext));
 			}
 			node->data_type = PL_NODE_TYPE_STRING;
-			node->data_string.resize(marker_size + 1);
+			node->data_string.resize_uninitialized(marker_size + 1);
 			p_file->get_buffer(reinterpret_cast<uint8_t *>(node->data_string.ptrw()), marker_size);
 		} break;
 		case 0x60: {
@@ -562,7 +562,7 @@ Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_
 				marker_size = read_bplist_var_size_int(p_file, std::pow(2, ext));
 			}
 			Char16String cs16;
-			cs16.resize(marker_size + 1);
+			cs16.resize_uninitialized(marker_size + 1);
 			for (uint64_t i = 0; i < marker_size; i++) {
 				cs16[i] = BSWAP16(p_file->get_16());
 			}

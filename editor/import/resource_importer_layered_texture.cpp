@@ -34,7 +34,7 @@
 #include "core/error/error_macros.h"
 #include "core/io/image_loader.h"
 #include "core/object/ref_counted.h"
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "scene/resources/compressed_texture.h"
@@ -349,7 +349,7 @@ Error ResourceImporterLayeredTexture::import(ResourceUID::ID p_source_id, const 
 		//if using video ram, optimize
 		if (channel_pack == 0) {
 			//remove alpha if not needed, so compression is more efficient
-			if (image->get_format() == Image::FORMAT_RGBA8 && !image->detect_alpha()) {
+			if (image->get_format() == Image::FORMAT_RGBA8 && image->detect_alpha() == Image::ALPHA_NONE) {
 				image->convert(Image::FORMAT_RGB8);
 			}
 		} else if (image->get_format() < Image::FORMAT_RGBA8) {

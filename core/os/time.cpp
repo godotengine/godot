@@ -37,6 +37,33 @@
 #define IS_LEAP_YEAR(year) (!((year) % 4) && (((year) % 100) || !((year) % 400)))
 #define YEAR_SIZE(year) (IS_LEAP_YEAR(year) ? 366 : 365)
 
+static constexpr int64_t total_leap_days(int64_t p_year) {
+	if (p_year > 0) {
+		--p_year;
+		return 1 + (p_year / 4 - p_year / 100 + p_year / 400);
+	}
+
+	return p_year / 4 - p_year / 100 + p_year / 400;
+}
+
+static constexpr int64_t year_to_days(int64_t p_year) {
+	return p_year * 365 + total_leap_days(p_year);
+}
+
+static constexpr int64_t days_to_year(int64_t p_days) {
+	int64_t year = 400 * p_days / year_to_days(400);
+	if (year < 0) {
+		--year;
+	}
+	if (year_to_days(year) > p_days) {
+		--year;
+	}
+	if (year_to_days(year + 1) <= p_days) {
+		++year;
+	}
+	return year;
+}
+
 #define YEAR_KEY "year"
 #define MONTH_KEY "month"
 #define DAY_KEY "day"
@@ -72,16 +99,10 @@ static const uint8_t MONTH_DAYS_TABLE[2][12] = {
 	int64_t day_number = Math::floor(p_unix_time_val / (double)SECONDS_PER_DAY);            \
 	{                                                                                       \
 		int64_t day_number_copy = day_number;                                               \
-		year = UNIX_EPOCH_YEAR_AD;                                                          \
+		day_number_copy += year_to_days(UNIX_EPOCH_YEAR_AD);                                \
+		year = days_to_year(day_number_copy);                                               \
+		day_number_copy -= year_to_days(year);                                              \
 		uint8_t month_zero_index = 0;                                                       \
-		while (day_number_copy >= YEAR_SIZE(year)) {                                        \
-			day_number_copy -= YEAR_SIZE(year);                                             \
-			year++;                                                                         \
-		}                                                                                   \
-		while (day_number_copy < 0) {                                                       \
-			year--;                                                                         \
-			day_number_copy += YEAR_SIZE(year);                                             \
-		}                                                                                   \
 		/* After the above, day_number now represents the day of the year (0-index). */     \
 		while (day_number_copy >= MONTH_DAYS_TABLE[IS_LEAP_YEAR(year)][month_zero_index]) { \
 			day_number_copy -= MONTH_DAYS_TABLE[IS_LEAP_YEAR(year)][month_zero_index];      \
@@ -116,15 +137,8 @@ static const uint8_t MONTH_DAYS_TABLE[2][12] = {
 		day_number += MONTH_DAYS_TABLE[IS_LEAP_YEAR(year)][i];                      \
 	}                                                                               \
 	/* Add the days in the years to day_number. */                                  \
-	if (year >= UNIX_EPOCH_YEAR_AD) {                                               \
-		for (int64_t iyear = UNIX_EPOCH_YEAR_AD; iyear < year; iyear++) {           \
-			day_number += YEAR_SIZE(iyear);                                         \
-		}                                                                           \
-	} else {                                                                        \
-		for (int64_t iyear = UNIX_EPOCH_YEAR_AD - 1; iyear >= year; iyear--) {      \
-			day_number -= YEAR_SIZE(iyear);                                         \
-		}                                                                           \
-	}
+	day_number += year_to_days(year);                                               \
+	day_number -= year_to_days(UNIX_EPOCH_YEAR_AD);
 
 #define PARSE_ISO8601_STRING(ret)                                                             \
 	int64_t year = UNIX_EPOCH_YEAR_AD;                                                        \

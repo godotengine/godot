@@ -156,16 +156,26 @@ TypedArray<PhysicsBody2D> PhysicsBody2D::get_collision_exceptions() {
 	return ret;
 }
 
-void PhysicsBody2D::add_collision_exception_with(Node *p_node) {
-	ERR_FAIL_NULL(p_node);
+void PhysicsBody2D::add_collision_exception_with(RequiredParam<Node> rp_node) {
+	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
 	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(p_node);
 	ERR_FAIL_NULL_MSG(physics_body, "Collision exception only works between two nodes that inherit from PhysicsBody2D.");
 	PhysicsServer2D::get_singleton()->body_add_collision_exception(get_rid(), physics_body->get_rid());
 }
 
-void PhysicsBody2D::remove_collision_exception_with(Node *p_node) {
-	ERR_FAIL_NULL(p_node);
+void PhysicsBody2D::remove_collision_exception_with(RequiredParam<Node> rp_node) {
+	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
 	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(p_node);
 	ERR_FAIL_NULL_MSG(physics_body, "Collision exception only works between two nodes that inherit from PhysicsBody2D.");
 	PhysicsServer2D::get_singleton()->body_remove_collision_exception(get_rid(), physics_body->get_rid());
+}
+
+PackedStringArray PhysicsBody2D::get_configuration_warnings() const {
+	PackedStringArray warnings = CollisionObject2D::get_configuration_warnings();
+
+	if (SceneTree::is_fti_enabled_in_project() && !is_physics_interpolated()) {
+		warnings.push_back(RTR("PhysicsBody2D will not work correctly on a non-interpolated branch of the SceneTree.\nCheck the node's inherited physics_interpolation_mode."));
+	}
+
+	return warnings;
 }

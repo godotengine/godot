@@ -35,7 +35,7 @@
 
 #include "nav_mesh_generator_3d.h"
 
-using namespace NavigationUtilities;
+using namespace NavigationDefaults3D;
 
 /// Creates a struct for each function and a function that once called creates
 /// an instance of that struct with the submitted parameters.
@@ -333,7 +333,7 @@ TypedArray<RID> GodotNavigationServer3D::map_get_obstacles(RID p_map) const {
 	TypedArray<RID> obstacles_rids;
 	const NavMap3D *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_NULL_V(map, obstacles_rids);
-	const LocalVector<NavObstacle3D *> obstacles = map->get_obstacles();
+	const LocalVector<NavObstacle3D *> obstacles(map->get_obstacles());
 	obstacles_rids.resize(obstacles.size());
 	for (uint32_t i = 0; i < obstacles.size(); i++) {
 		obstacles_rids[i] = obstacles[i]->get_self();
@@ -395,6 +395,19 @@ uint32_t GodotNavigationServer3D::region_get_iteration_id(RID p_region) const {
 	ERR_FAIL_NULL_V(region, 0);
 
 	return region->get_iteration_id();
+}
+
+COMMAND_2(region_set_use_async_iterations, RID, p_region, bool, p_enabled) {
+	NavRegion3D *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL(region);
+	region->set_use_async_iterations(p_enabled);
+}
+
+bool GodotNavigationServer3D::region_get_use_async_iterations(RID p_region) const {
+	NavRegion3D *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, false);
+
+	return region->get_use_async_iterations();
 }
 
 COMMAND_2(region_set_enabled, RID, p_region, bool, p_enabled) {
@@ -1206,7 +1219,15 @@ bool GodotNavigationServer3D::is_baking_navigation_mesh(Ref<NavigationMesh> p_na
 	return NavMeshGenerator3D::get_singleton()->is_baking(p_navigation_mesh);
 }
 
-COMMAND_1(free, RID, p_object) {
+String GodotNavigationServer3D::get_baking_navigation_mesh_state_msg(Ref<NavigationMesh> p_navigation_mesh) const {
+#ifdef _3D_DISABLED
+	return "";
+#else
+	return NavMeshGenerator3D::get_singleton()->get_baking_state_msg(p_navigation_mesh);
+#endif // _3D_DISABLED
+}
+
+COMMAND_1(free_rid, RID, p_object) {
 	if (map_owner.owns(p_object)) {
 		NavMap3D *map = map_owner.get_or_null(p_object);
 

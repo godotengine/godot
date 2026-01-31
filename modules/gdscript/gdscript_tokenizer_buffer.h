@@ -39,6 +39,7 @@ public:
 		COMPRESS_ZSTD,
 	};
 
+	static constexpr uint32_t TOKENIZER_VERSION = 101;
 	static constexpr uint32_t TOKEN_BYTE_MASK = 0x80;
 	static constexpr uint32_t TOKEN_BITS = 8;
 	static constexpr uint32_t TOKEN_MASK = (1 << (TOKEN_BITS - 1)) - 1;
@@ -62,7 +63,7 @@ public:
 	HashMap<int, CommentData> dummy;
 #endif // TOOLS_ENABLED
 
-	static int _token_to_binary(const Token &p_token, Vector<uint8_t> &r_buffer, int p_start, HashMap<StringName, uint32_t> &r_identifiers_map, HashMap<Variant, uint32_t, VariantHasher, VariantComparator> &r_constants_map);
+	static int _token_to_binary(const Token &p_token, Vector<uint8_t> &r_buffer, int p_start, HashMap<StringName, uint32_t> &r_identifiers_map, HashMap<Variant, uint32_t> &r_constants_map);
 	Token _binary_to_token(const uint8_t *p_buffer);
 
 public:

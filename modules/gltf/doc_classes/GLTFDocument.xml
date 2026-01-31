@@ -130,11 +130,11 @@
 			If [member image_format] is a lossy image format, this determines the lossy quality of the image. On a range of [code]0.0[/code] to [code]1.0[/code], where [code]0.0[/code] is the lowest quality and [code]1.0[/code] is the highest quality. A lossy quality of [code]1.0[/code] is not the same as lossless.
 		</member>
 		<member name="root_node_mode" type="int" setter="set_root_node_mode" getter="get_root_node_mode" enum="GLTFDocument.RootNodeMode" default="0">
-			How to process the root node during export. See [enum RootNodeMode] for details. The default and recommended value is [constant ROOT_NODE_MODE_SINGLE_ROOT].
+			How to process the root node during export. The default and recommended value is [constant ROOT_NODE_MODE_SINGLE_ROOT].
 			[b]Note:[/b] Regardless of how the glTF file is exported, when importing, the root node type and name can be overridden in the scene import settings tab.
 		</member>
 		<member name="visibility_mode" type="int" setter="set_visibility_mode" getter="get_visibility_mode" enum="GLTFDocument.VisibilityMode" default="0">
-			How to deal with node visibility during export. This setting does nothing if all nodes are visible. See [enum VisibilityMode] for details. The default and recommended value is [constant VISIBILITY_MODE_INCLUDE_REQUIRED], which uses the [code]KHR_node_visibility[/code] extension.
+			How to deal with node visibility during export. This setting does nothing if all nodes are visible. The default and recommended value is [constant VISIBILITY_MODE_INCLUDE_REQUIRED], which uses the [code]KHR_node_visibility[/code] extension.
 		</member>
 	</members>
 	<constants>

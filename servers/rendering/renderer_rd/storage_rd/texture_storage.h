@@ -33,8 +33,10 @@
 #include "core/templates/paged_array.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/tex_blit.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/forward_id_storage.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/storage/texture_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
@@ -45,6 +47,8 @@ class MaterialStorage;
 
 class TextureStorage : public RendererTextureStorage {
 public:
+	const int SAMPLERS_BINDING_FIRST_INDEX = 4;
+
 	enum DefaultRDTexture {
 		DEFAULT_RD_TEXTURE_WHITE,
 		DEFAULT_RD_TEXTURE_BLACK,
@@ -57,10 +61,14 @@ public:
 		DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK,
 		DEFAULT_RD_TEXTURE_CUBEMAP_WHITE,
 		DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_WHITE,
+		DEFAULT_RD_TEXTURE_CUBEMAP_TRANSPARENT,
+		DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_TRANSPARENT,
 		DEFAULT_RD_TEXTURE_3D_WHITE,
 		DEFAULT_RD_TEXTURE_3D_BLACK,
+		DEFAULT_RD_TEXTURE_3D_TRANSPARENT,
 		DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE,
 		DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK,
+		DEFAULT_RD_TEXTURE_2D_ARRAY_TRANSPARENT,
 		DEFAULT_RD_TEXTURE_2D_ARRAY_NORMAL,
 		DEFAULT_RD_TEXTURE_2D_ARRAY_DEPTH,
 		DEFAULT_RD_TEXTURE_2D_UINT,
@@ -140,12 +148,14 @@ private:
 	public:
 		TextureType type;
 		RS::TextureLayeredType layered_type = RS::TEXTURE_LAYERED_2D_ARRAY;
+		RS::TextureDrawableFormat drawable_type = RS::TEXTURE_DRAWABLE_FORMAT_RGBA8;
 
 		RenderingDevice::TextureType rd_type;
 		RID rd_texture;
 		RID rd_texture_srgb;
 		RenderingDevice::DataFormat rd_format;
 		RenderingDevice::DataFormat rd_format_srgb;
+		Vector<RID> cached_rd_slices;
 
 		RD::TextureView rd_view;
 
@@ -366,6 +376,7 @@ private:
 
 		bool is_transparent = false;
 		bool use_hdr = false;
+		bool use_debanding = false;
 
 		bool sdf_enabled = false;
 
@@ -399,6 +410,7 @@ private:
 			RID color;
 			RID depth;
 			RID velocity;
+			RID velocity_depth;
 
 			// In a multiview scenario, which is the most likely where we
 			// override our destination textures, we need to obtain slices
@@ -476,8 +488,31 @@ private:
 		RID pipelines[SHADER_MAX];
 	} rt_sdf;
 
+	struct TextureBlitShader {
+		TexBlitShaderRD shader;
+		ShaderCompiler compiler;
+
+		bool initialized = false;
+		RID default_shader;
+		RID default_material;
+		RID default_shader_version;
+	} tex_blit_shader;
+
+	struct TexBlitPushConstant {
+		float offset[2]; // 8 - 8
+		float size[2]; // 8 - 16
+		float modulate[4]; // 16 - 32
+		float pad[2]; // 8 - 40
+		uint32_t convert_to_srgb; // 4 - 44
+		float time; // 4 - 48
+		// 128 is the max size of a push constant. We can replace "pad" but we can't add any more.
+	};
+
 public:
 	static TextureStorage *get_singleton();
+
+	void _tex_blit_shader_initialize();
+	void _tex_blit_shader_free();
 
 	_FORCE_INLINE_ RID texture_rd_get_default(DefaultRDTexture p_texture) {
 		return default_rd_textures[p_texture];
@@ -517,6 +552,7 @@ public:
 	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) override;
 	virtual void texture_external_initialize(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_initialize(RID p_texture, RID p_base) override; //all slices, then all the mipmaps, must be coherent
+	virtual void texture_drawable_initialize(RID p_texture, int p_width, int p_height, RS::TextureDrawableFormat p_format, const Color &p_color, bool p_with_mipmaps) override;
 
 	virtual RID texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY) override;
 
@@ -524,6 +560,8 @@ public:
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override;
 	virtual void texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) override;
+
+	virtual void texture_drawable_blit_rect(const TypedArray<RID> &p_textures, const Rect2i &p_rect, RID p_material, const Color &p_modulate, const TypedArray<RID> &p_source_textures, int p_to_mipmap) override;
 
 	Ref<Image> texture_2d_placeholder;
 	Vector<Ref<Image>> texture_2d_array_placeholder;
@@ -538,6 +576,9 @@ public:
 	virtual Ref<Image> texture_2d_get(RID p_texture) const override;
 	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const override;
 	virtual Vector<Ref<Image>> texture_3d_get(RID p_texture) const override;
+
+	virtual void texture_drawable_generate_mipmaps(RID p_texture) override;
+	virtual RID texture_drawable_get_default_material() const override;
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) override;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) override;
@@ -758,6 +799,8 @@ public:
 	virtual void render_target_do_msaa_resolve(RID p_render_target) override;
 	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr) override;
 	virtual bool render_target_is_using_hdr(RID p_render_target) const override;
+	virtual void render_target_set_use_debanding(RID p_render_target, bool p_use_debanding) override;
+	virtual bool render_target_is_using_debanding(RID p_render_target) const override;
 
 	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps);
 	void render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color);
@@ -791,7 +834,7 @@ public:
 	RID render_target_get_override_depth_slice(RID p_render_target, const uint32_t p_layer) const;
 	virtual RID render_target_get_override_velocity(RID p_render_target) const override;
 	RID render_target_get_override_velocity_slice(RID p_render_target, const uint32_t p_layer) const;
-	virtual RID render_target_get_override_velocity_depth(RID p_render_target) const override { return RID(); }
+	virtual RID render_target_get_override_velocity_depth(RID p_render_target) const override;
 
 	virtual void render_target_set_render_region(RID p_render_target, const Rect2i &p_render_region) override;
 	virtual Rect2i render_target_get_render_region(RID p_render_target) const override;

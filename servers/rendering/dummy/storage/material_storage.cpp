@@ -147,7 +147,7 @@ RID MaterialStorage::shader_allocate() {
 	return shader_owner.allocate_rid();
 }
 
-void MaterialStorage::shader_initialize(RID p_rid) {
+void MaterialStorage::shader_initialize(RID p_rid, bool p_embedded) {
 	shader_owner.initialize_rid(p_rid, DummyShader());
 }
 
@@ -178,6 +178,8 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 		new_mode = RS::SHADER_SKY;
 	} else if (mode_string == "fog") {
 		new_mode = RS::SHADER_FOG;
+	} else if (mode_string == "texture_blit") {
+		new_mode = RS::SHADER_TEXTURE_BLIT;
 	} else {
 		new_mode = RS::SHADER_MAX;
 		ERR_FAIL_MSG("Shader type " + mode_string + " not supported in Dummy renderer.");

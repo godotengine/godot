@@ -93,6 +93,11 @@ JPH::BroadPhaseLayer JoltBody3D::_get_broad_phase_layer() const {
 JPH::ObjectLayer JoltBody3D::_get_object_layer() const {
 	ERR_FAIL_NULL_V(space, 0);
 
+	if (jolt_shape == nullptr || jolt_shape->GetType() == JPH::EShapeType::Empty) {
+		// No point doing collision checks against a shapeless object.
+		return space->map_to_object_layer(_get_broad_phase_layer(), 0, 0);
+	}
+
 	return space->map_to_object_layer(_get_broad_phase_layer(), collision_layer, collision_mask);
 }
 
@@ -144,7 +149,7 @@ void JoltBody3D::_add_to_space() {
 
 	jolt_settings->SetShape(jolt_shape);
 
-	JPH::Body *new_jolt_body = space->add_rigid_body(*this, *jolt_settings, sleep_initially);
+	JPH::Body *new_jolt_body = space->add_object(*this, *jolt_settings, sleep_initially);
 	if (new_jolt_body == nullptr) {
 		return;
 	}
@@ -156,6 +161,8 @@ void JoltBody3D::_add_to_space() {
 }
 
 void JoltBody3D::_enqueue_call_queries() {
+	// This method will be called from the body activation listener on multiple threads during the simulation step.
+
 	if (space != nullptr) {
 		space->enqueue_call_queries(&call_queries_element);
 	}
@@ -173,23 +180,19 @@ void JoltBody3D::_integrate_forces(float p_step, JPH::Body &p_jolt_body) {
 	if (!custom_integrator) {
 		JPH::MotionProperties &motion_properties = *p_jolt_body.GetMotionPropertiesUnchecked();
 
-		JPH::Vec3 linear_velocity = motion_properties.GetLinearVelocity();
-		JPH::Vec3 angular_velocity = motion_properties.GetAngularVelocity();
-
 		// Jolt applies damping differently from Godot Physics, where Godot Physics applies damping before integrating
 		// forces whereas Jolt does it after integrating forces. The way Godot Physics does it seems to yield more
 		// consistent results across different update frequencies when using high (>1) damping values, so we apply the
 		// damping ourselves instead, before any force integration happens.
-
+		JPH::Vec3 linear_velocity = motion_properties.GetLinearVelocity();
 		linear_velocity *= MAX(1.0f - total_linear_damp * p_step, 0.0f);
+		motion_properties.SetLinearVelocity(linear_velocity);
+
+		JPH::Vec3 angular_velocity = motion_properties.GetAngularVelocity();
 		angular_velocity *= MAX(1.0f - total_angular_damp * p_step, 0.0f);
+		motion_properties.SetAngularVelocity(angular_velocity);
 
-		linear_velocity += to_jolt(gravity) * p_step;
-
-		motion_properties.SetLinearVelocityClamped(linear_velocity);
-		motion_properties.SetAngularVelocityClamped(angular_velocity);
-
-		p_jolt_body.AddForce(to_jolt(constant_force));
+		p_jolt_body.AddForce(to_jolt(gravity / motion_properties.GetInverseMass() + constant_force));
 		p_jolt_body.AddTorque(to_jolt(constant_torque));
 	}
 }
@@ -292,6 +295,14 @@ JPH::MassProperties JoltBody3D::_calculate_mass_properties(const JPH::Shape &p_s
 
 JPH::MassProperties JoltBody3D::_calculate_mass_properties() const {
 	return _calculate_mass_properties(*jolt_shape);
+}
+
+void JoltBody3D::_on_wake_up() {
+	// This method will be called from the body activation listener on multiple threads during the simulation step.
+
+	if (_should_call_queries()) {
+		_enqueue_call_queries();
+	}
 }
 
 void JoltBody3D::_update_mass_properties() {
@@ -706,11 +717,7 @@ void JoltBody3D::set_is_sleeping(bool p_enabled) {
 	if (!in_space()) {
 		sleep_initially = p_enabled;
 	} else {
-		if (p_enabled) {
-			space->get_body_iface().DeactivateBody(jolt_body->GetID());
-		} else {
-			space->get_body_iface().ActivateBody(jolt_body->GetID());
-		}
+		space->set_is_object_sleeping(jolt_body->GetID(), p_enabled);
 	}
 }
 
@@ -1180,7 +1187,7 @@ bool JoltBody3D::is_ccd_enabled() const {
 	if (!in_space()) {
 		return jolt_settings->mMotionQuality == JPH::EMotionQuality::LinearCast;
 	} else {
-		return space->get_body_iface().GetMotionQuality(jolt_body->GetID()) == JPH::EMotionQuality::LinearCast;
+		return !is_static() && jolt_body->GetMotionProperties()->GetMotionQuality() == JPH::EMotionQuality::LinearCast;
 	}
 }
 

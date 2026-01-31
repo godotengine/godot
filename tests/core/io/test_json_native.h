@@ -60,6 +60,9 @@ TEST_CASE("[JSON][Native] Conversion between native and JSON formats") {
 	// Numbers and strings (represented as JSON strings).
 	test(1, R"("i:1")");
 	test(1.0, R"("f:1.0")");
+	test(Math::INF, R"("f:inf")");
+	test(-Math::INF, R"("f:-inf")");
+	test(Math::NaN, R"("f:nan")");
 	test(String("abc"), R"("s:abc")");
 	test(StringName("abc"), R"("sn:abc")");
 	test(NodePath("abc"), R"("np:abc")");

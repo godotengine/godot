@@ -4,7 +4,7 @@
  *
  *   Signed Distance Field support for outline fonts (body).
  *
- * Copyright (C) 2020-2024 by
+ * Copyright (C) 2020-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Written by Anuj Verma.
@@ -1391,7 +1391,7 @@
       SDF_Contour*  contour = contour_list;
 
 
-      FT_TRACE5(( "  Contour %d\n", num_contours ));
+      FT_TRACE5(( "  Contour %u\n", num_contours ));
 
       edge_list = contour->edges;
 
@@ -1400,7 +1400,7 @@
         SDF_Edge*  edge = edge_list;
 
 
-        FT_TRACE5(( "  %3d: ", num_edges ));
+        FT_TRACE5(( "  %3u: ", num_edges ));
 
         switch ( edge->edge_type )
         {
@@ -1443,11 +1443,11 @@
     }
 
     FT_TRACE5(( "\n" ));
-    FT_TRACE5(( "  total number of contours = %d\n", num_contours ));
-    FT_TRACE5(( "  total number of edges    = %d\n", total_edges ));
-    FT_TRACE5(( "    |__lines = %d\n", total_lines ));
-    FT_TRACE5(( "    |__conic = %d\n", total_conic ));
-    FT_TRACE5(( "    |__cubic = %d\n", total_cubic ));
+    FT_TRACE5(( "  total number of contours = %u\n", num_contours ));
+    FT_TRACE5(( "  total number of edges    = %u\n", total_edges ));
+    FT_TRACE5(( "    |__lines = %u\n", total_lines ));
+    FT_TRACE5(( "    |__conic = %u\n", total_conic ));
+    FT_TRACE5(( "    |__cubic = %u\n", total_cubic ));
   }
 
 #endif /* FT_DEBUG_LEVEL_TRACE */
@@ -3456,7 +3456,7 @@
    *     A complete shape which is used to generate SDF.
    *
    *   spread ::
-   *     Maximum distances to be allowed inthe output bitmap.
+   *     Maximum distances to be allowed in the output bitmap.
    *
    * @Output:
    *   bitmap ::

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/import/3d/resource_importer_scene.h"
 
 class Animation;
@@ -57,7 +57,8 @@ public:
 	};
 	enum {
 		BLEND_MATERIAL_EXPORT_PLACEHOLDER,
-		BLEND_MATERIAL_EXPORT_EXPORT
+		BLEND_MATERIAL_EXPORT_EXPORT,
+		BLEND_MATERIAL_EXPORT_NAMED_PLACEHOLDER,
 	};
 	enum {
 		BLEND_MODIFIERS_NONE,

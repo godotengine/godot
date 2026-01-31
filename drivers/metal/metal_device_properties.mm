@@ -50,6 +50,10 @@
 
 #import "metal_device_properties.h"
 
+#import "metal_utils.h"
+
+#import "servers/rendering/renderer_rd/effects/metal_fx.h"
+
 #import <Metal/Metal.h>
 #import <MetalFX/MetalFX.h>
 #import <spirv_cross.hpp>
@@ -63,7 +67,7 @@
 #define MTLGPUFamilyApple9 (MTLGPUFamily)1009
 #endif
 
-API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0))
+API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(1.0))
 MTLGPUFamily &operator--(MTLGPUFamily &p_family) {
 	p_family = static_cast<MTLGPUFamily>(static_cast<int>(p_family) - 1);
 	if (p_family < MTLGPUFamilyApple1) {
@@ -75,6 +79,28 @@ MTLGPUFamily &operator--(MTLGPUFamily &p_family) {
 
 void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 	features = {};
+
+	MTLCompileOptions *opts = [MTLCompileOptions new];
+	features.msl_max_version = make_msl_version((opts.languageVersion >> 0x10) & 0xff, (opts.languageVersion >> 0x00) & 0xff);
+	features.msl_target_version = features.msl_max_version;
+	if (String version = OS::get_singleton()->get_environment("GODOT_MTL_TARGET_VERSION"); !version.is_empty()) {
+		if (version != "max") {
+			Vector<String> parts = version.split(".", true, 2);
+			if (parts.size() == 2) {
+				uint32_t major = parts[0].to_int();
+				uint32_t minor = parts[1].to_int();
+				uint32_t msl_version = make_msl_version(major, minor);
+				if (msl_version < MSL_VERSION_23 || msl_version > MSL_VERSION_40) {
+					WARN_PRINT(vformat("GODOT_MTL_TARGET_VERSION: invalid MSL version '%d.%d'", major, minor));
+				} else {
+					print_line(vformat("Override: Targeting Metal version %d.%d", major, minor));
+					features.msl_target_version = msl_version;
+				}
+			} else {
+				WARN_PRINT("GODOT_MTL_TARGET_VERSION: invalid version string format. Expected major.minor or 'max'.");
+			}
+		}
+	}
 
 	features.highestFamily = MTLGPUFamilyApple1;
 	for (MTLGPUFamily family = MTLGPUFamilyApple9; family >= MTLGPUFamilyApple1; --family) {
@@ -119,61 +145,40 @@ void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 	features.simdPermute = [p_device supportsFamily:MTLGPUFamilyApple6];
 	features.simdReduction = [p_device supportsFamily:MTLGPUFamilyApple7];
 	features.argument_buffers_tier = p_device.argumentBuffersSupport;
+	features.supports_image_atomic_32_bit = [p_device supportsFamily:MTLGPUFamilyApple6];
+	features.supports_image_atomic_64_bit = [p_device supportsFamily:MTLGPUFamilyApple9] || ([p_device supportsFamily:MTLGPUFamilyApple8] && [p_device supportsFamily:MTLGPUFamilyMac2]);
+
+	if (features.msl_target_version >= MSL_VERSION_31) {
+		// Native atomics are only supported on 3.1 and above.
+		if (@available(macOS 14.0, iOS 17.0, tvOS 17.0, visionOS 1.0, *)) {
+			features.supports_native_image_atomics = true;
+		}
+	}
+
+	if (OS::get_singleton()->get_environment("GODOT_MTL_DISABLE_IMAGE_ATOMICS") == "1") {
+		features.supports_native_image_atomics = false;
+	}
+
+	if (@available(macOS 15.0, iOS 18.0, tvOS 18.0, visionOS 2.0, *)) {
+		features.supports_residency_sets = true;
+	} else {
+		features.supports_residency_sets = false;
+	}
 
 	if (@available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
 		features.needs_arg_encoders = !([p_device supportsFamily:MTLGPUFamilyMetal3] && features.argument_buffers_tier == MTLArgumentBuffersTier2);
 	}
 
-	if (@available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
-		features.metal_fx_spatial = [MTLFXSpatialScalerDescriptor supportsDevice:p_device];
-		features.metal_fx_temporal = [MTLFXTemporalScalerDescriptor supportsDevice:p_device];
+	if (String v = OS::get_singleton()->get_environment("GODOT_MTL_DISABLE_ARGUMENT_BUFFERS"); v == "1") {
+		features.use_argument_buffers = false;
 	}
 
-	MTLCompileOptions *opts = [MTLCompileOptions new];
-	features.mslVersionEnum = opts.languageVersion; // By default, Metal uses the most recent language version.
-
-#define setMSLVersion(m_maj, m_min) \
-	features.mslVersion = SPIRV_CROSS_NAMESPACE::CompilerMSL::Options::make_msl_version(m_maj, m_min)
-
-	switch (features.mslVersionEnum) {
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 150000 || __IPHONE_OS_VERSION_MAX_ALLOWED >= 180000 || __TV_OS_VERSION_MAX_ALLOWED >= 180000
-		case MTLLanguageVersion3_2:
-			setMSLVersion(3, 2);
-			break;
-#endif
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 140000 || __IPHONE_OS_VERSION_MAX_ALLOWED >= 170000 || __TV_OS_VERSION_MAX_ALLOWED >= 170000
-		case MTLLanguageVersion3_1:
-			setMSLVersion(3, 1);
-			break;
-#endif
-		case MTLLanguageVersion3_0:
-			setMSLVersion(3, 0);
-			break;
-		case MTLLanguageVersion2_4:
-			setMSLVersion(2, 4);
-			break;
-		case MTLLanguageVersion2_3:
-			setMSLVersion(2, 3);
-			break;
-		case MTLLanguageVersion2_2:
-			setMSLVersion(2, 2);
-			break;
-		case MTLLanguageVersion2_1:
-			setMSLVersion(2, 1);
-			break;
-		case MTLLanguageVersion2_0:
-			setMSLVersion(2, 0);
-			break;
-		case MTLLanguageVersion1_2:
-			setMSLVersion(1, 2);
-			break;
-		case MTLLanguageVersion1_1:
-			setMSLVersion(1, 1);
-			break;
-#if TARGET_OS_IPHONE && !TARGET_OS_MACCATALYST
-		case MTLLanguageVersion1_0:
-			setMSLVersion(1, 0);
-			break;
+	if (@available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
+		features.metal_fx_spatial = [MTLFXSpatialScalerDescriptor supportsDevice:p_device];
+#ifdef METAL_MFXTEMPORAL_ENABLED
+		features.metal_fx_temporal = [MTLFXTemporalScalerDescriptor supportsDevice:p_device];
+#else
+		features.metal_fx_temporal = false;
 #endif
 	}
 }
@@ -324,6 +329,7 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 
 	limits.maxDrawIndexedIndexValue = std::numeric_limits<uint32_t>::max() - 1;
 
+#ifdef METAL_MFXTEMPORAL_ENABLED
 	if (@available(macOS 14.0, iOS 17.0, tvOS 17.0, *)) {
 		limits.temporalScalerInputContentMinScale = (double)[MTLFXTemporalScalerDescriptor supportedInputContentMinScaleForDevice:p_device];
 		limits.temporalScalerInputContentMaxScale = (double)[MTLFXTemporalScalerDescriptor supportedInputContentMaxScaleForDevice:p_device];
@@ -332,11 +338,22 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 		limits.temporalScalerInputContentMinScale = 1.0;
 		limits.temporalScalerInputContentMaxScale = 3.0;
 	}
+#else
+	// Defaults taken from macOS 14+
+	limits.temporalScalerInputContentMinScale = 1.0;
+	limits.temporalScalerInputContentMaxScale = 3.0;
+#endif
+}
+
+void MetalDeviceProperties::init_os_props() {
+	NSOperatingSystemVersion ver = NSProcessInfo.processInfo.operatingSystemVersion;
+	os_version = (uint32_t)ver.majorVersion * 10000 + (uint32_t)ver.minorVersion * 100 + (uint32_t)ver.patchVersion;
 }
 
 MetalDeviceProperties::MetalDeviceProperties(id<MTLDevice> p_device) {
 	init_features(p_device);
 	init_limits(p_device);
+	init_os_props();
 }
 
 MetalDeviceProperties::~MetalDeviceProperties() {

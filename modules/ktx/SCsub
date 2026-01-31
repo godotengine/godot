@@ -23,28 +23,30 @@ thirdparty_sources = [
     "lib/texture1.c",
     "lib/texture2.c",
     "lib/vkformat_check.c",
+    "lib/vkformat_check_variant.c",
     "lib/vkformat_typesize.c",
-    "lib/dfdutils/createdfd.c",
-    "lib/dfdutils/colourspaces.c",
-    "lib/dfdutils/interpretdfd.c",
-    "lib/dfdutils/printdfd.c",
-    "lib/dfdutils/queries.c",
-    "lib/dfdutils/vk2dfd.c",
+    "external/dfdutils/createdfd.c",
+    "external/dfdutils/colourspaces.c",
+    "external/dfdutils/interpretdfd.c",
+    "external/dfdutils/printdfd.c",
+    "external/dfdutils/queries.c",
+    "external/dfdutils/vk2dfd.c",
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-env_ktx.Prepend(CPPEXTPATH=[thirdparty_dir + "include"])
-env_ktx.Prepend(CPPEXTPATH=[thirdparty_dir + "utils"])
-env_ktx.Prepend(CPPEXTPATH=[thirdparty_dir + "lib"])
-env_ktx.Prepend(CPPEXTPATH=[thirdparty_dir + "other_include"])
+env_ktx.Prepend(CPPPATH=[thirdparty_dir + "include"])
+env_ktx.Prepend(CPPPATH=[thirdparty_dir + "utils"])
+env_ktx.Prepend(CPPPATH=[thirdparty_dir + "lib"])
+env_ktx.Prepend(CPPPATH=[thirdparty_dir + "other_include"])
+env_ktx.Prepend(CPPPATH=[thirdparty_dir + "external"])
 
-env_ktx.Prepend(CPPEXTPATH=["#thirdparty/basis_universal"])
+env_ktx.Prepend(CPPPATH=["#thirdparty/basis_universal"])
 if env.editor_build:
     # We already build miniz in the basis_universal module (editor only).
     env_ktx.Append(CPPDEFINES=["MINIZ_HEADER_FILE_ONLY"])
 
 if env["vulkan"]:
-    env_ktx.Prepend(CPPEXTPATH=["#thirdparty/vulkan/include"])
+    env_ktx.Prepend(CPPPATH=["#thirdparty/vulkan/include"])
 else:
     # Falls back on bundled `vkformat_enum.h`.
     env_ktx.Append(CPPDEFINES=["LIBKTX"])

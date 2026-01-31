@@ -27,9 +27,9 @@
 		[csharp]
 		Vector3[] vertices =
 		[
-		    new Vector3(0, 1, 0),
-		    new Vector3(1, 0, 0),
-		    new Vector3(0, 0, 1),
+			new Vector3(0, 1, 0),
+			new Vector3(1, 0, 0),
+			new Vector3(0, 0, 1),
 		];
 
 		// Initialize the ArrayMesh.
@@ -186,6 +186,9 @@
 			<param index="1" name="offset" type="int" />
 			<param index="2" name="data" type="PackedByteArray" />
 			<description>
+				Updates the attribute buffer of this mesh's surface with the given [param data]. The expected data per attribute is 12 or 8 bytes (4 bytes per float, 2 floats per [Vector2], and 3 floats per [Vector3]) depending on if the mesh is using [Vector3] or [Vector2] vertices. This value can be determined with [method RenderingServer.mesh_surface_get_format_attribute_stride].
+				The starting point of the updates can be changed with [param offset]. The value of [param offset] should be a multiple of 12 bytes in most cases to align to each attribute.
+				A [PackedVector3Array] of attribute locations can be converted into a [PackedByteArray] using [method PackedVector3Array.to_byte_array] for use in [param data].
 			</description>
 		</method>
 		<method name="surface_update_skin_region">
@@ -194,6 +197,9 @@
 			<param index="1" name="offset" type="int" />
 			<param index="2" name="data" type="PackedByteArray" />
 			<description>
+				Updates the skin buffer of this mesh's surface with the given [param data]. The expected data per skin is 12 or 8 bytes (4 bytes per float, 2 floats per [Vector2], and 3 floats per [Vector3]) depending on if the mesh is using [Vector3] or [Vector2] vertices. This value can be determined with [method RenderingServer.mesh_surface_get_format_skin_stride].
+				The starting point of the updates can be changed with [param offset]. The value of [param offset] should be a multiple of 12 bytes in most cases to align to each skin.
+				A [PackedVector3Array] of skin locations can be converted into a [PackedByteArray] using [method PackedVector3Array.to_byte_array] for use in [param data].
 			</description>
 		</method>
 		<method name="surface_update_vertex_region">
@@ -202,12 +208,15 @@
 			<param index="1" name="offset" type="int" />
 			<param index="2" name="data" type="PackedByteArray" />
 			<description>
+				Updates the vertex buffer of this mesh's surface with the given [param data]. The expected data per vertex is 12 or 8 bytes (4 bytes per float, 2 floats per [Vector2], and 3 floats per [Vector3]) depending on if the mesh is using [Vector3] or [Vector2] vertices. This value can be determined with [method RenderingServer.mesh_surface_get_format_vertex_stride].
+				The starting point of the updates can be changed with [param offset]. The value of [param offset] should be a multiple of 12 bytes in most cases to align to each vertex.
+				A [PackedVector3Array] of vertex locations can be converted into a [PackedByteArray] using [method PackedVector3Array.to_byte_array] for use in [param data].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="blend_shape_mode" type="int" setter="set_blend_shape_mode" getter="get_blend_shape_mode" enum="Mesh.BlendShapeMode" default="1">
-			Sets the blend shape mode to one of [enum Mesh.BlendShapeMode].
+			The blend shape mode.
 		</member>
 		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb" default="AABB(0, 0, 0, 0, 0, 0)">
 			Overrides the [AABB] with one defined by user for use with frustum culling. Especially useful to avoid unexpected culling when using a shader to offset vertices.

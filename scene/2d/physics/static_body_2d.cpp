@@ -38,7 +38,7 @@
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
 #include "scene/resources/2d/rectangle_shape_2d.h"
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 #endif // NAVIGATION_2D_DISABLED
 
 Callable StaticBody2D::_navmesh_source_geometry_parsing_callback;
@@ -163,12 +163,12 @@ void StaticBody2D::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 				shape_outline.resize(14);
 				int shape_outline_inx = 0;
 				for (int i = 0; i < 12; i++) {
-					Vector2 ofs = Vector2(0, (i > 3 && i <= 9) ? -capsule_height * 0.5 + capsule_radius : capsule_height * 0.5 - capsule_radius);
+					Vector2 ofs = Vector2(0, (i > 3 && i <= 9) ? capsule_height * 0.5 - capsule_radius : -capsule_height * 0.5 + capsule_radius);
 
-					shape_outline.write[shape_outline_inx] = static_body_xform.xform(Vector2(Math::sin(i * turn_step), Math::cos(i * turn_step)) * capsule_radius + ofs);
+					shape_outline.write[shape_outline_inx] = static_body_xform.xform(Vector2(Math::sin(i * turn_step), -Math::cos(i * turn_step)) * capsule_radius + ofs);
 					shape_outline_inx += 1;
 					if (i == 3 || i == 9) {
-						shape_outline.write[shape_outline_inx] = static_body_xform.xform(Vector2(Math::sin(i * turn_step), Math::cos(i * turn_step)) * capsule_radius - ofs);
+						shape_outline.write[shape_outline_inx] = static_body_xform.xform(Vector2(Math::sin(i * turn_step), -Math::cos(i * turn_step)) * capsule_radius - ofs);
 						shape_outline_inx += 1;
 					}
 				}

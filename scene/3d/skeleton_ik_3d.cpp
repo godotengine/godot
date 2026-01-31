@@ -30,6 +30,8 @@
 
 #include "skeleton_ik_3d.h"
 
+#include "core/config/engine.h"
+
 FabrikInverseKinematic::ChainItem *FabrikInverseKinematic::ChainItem::find_child(const BoneId p_bone_id) {
 	for (int i = children.size() - 1; 0 <= i; --i) {
 		if (p_bone_id == children[i].bone) {
@@ -301,8 +303,9 @@ void FabrikInverseKinematic::_update_chain(const Skeleton3D *p_sk, ChainItem *p_
 }
 
 void SkeletonIK3D::_validate_property(PropertyInfo &p_property) const {
-	SkeletonModifier3D::_validate_property(p_property);
-
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "root_bone" || p_property.name == "tip_bone") {
 		Skeleton3D *skeleton = get_skeleton();
 		if (skeleton) {

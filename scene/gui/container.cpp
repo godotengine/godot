@@ -92,8 +92,8 @@ void Container::_sort_children() {
 	pending_sort = false;
 }
 
-void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
-	ERR_FAIL_NULL(p_child);
+void Container::fit_child_in_rect(RequiredParam<Control> rp_child, const Rect2 &p_rect) {
+	EXTRACT_PARAM_OR_FAIL(p_child, rp_child);
 	ERR_FAIL_COND(p_child->get_parent() != this);
 
 	bool rtl = is_layout_rtl();
@@ -188,7 +188,11 @@ void Container::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_CONTAINER);
+			if (accessibility_region) {
+				DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_REGION);
+			} else {
+				DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_CONTAINER);
+			}
 		} break;
 
 		case NOTIFICATION_RESIZED:
@@ -204,6 +208,18 @@ void Container::_notification(int p_what) {
 	}
 }
 
+void Container::set_accessibility_region(bool p_region) {
+	ERR_MAIN_THREAD_GUARD;
+	if (accessibility_region != p_region) {
+		accessibility_region = p_region;
+		queue_accessibility_update();
+	}
+}
+
+bool Container::is_accessibility_region() const {
+	return accessibility_region;
+}
+
 PackedStringArray Container::get_configuration_warnings() const {
 	PackedStringArray warnings = Control::get_configuration_warnings();
 
@@ -217,6 +233,8 @@ PackedStringArray Container::get_configuration_warnings() const {
 void Container::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("queue_sort"), &Container::queue_sort);
 	ClassDB::bind_method(D_METHOD("fit_child_in_rect", "child", "rect"), &Container::fit_child_in_rect);
+	ClassDB::bind_method(D_METHOD("set_accessibility_region", "region"), &Container::set_accessibility_region);
+	ClassDB::bind_method(D_METHOD("is_accessibility_region"), &Container::is_accessibility_region);
 
 	GDVIRTUAL_BIND(_get_allowed_size_flags_horizontal);
 	GDVIRTUAL_BIND(_get_allowed_size_flags_vertical);
@@ -226,6 +244,8 @@ void Container::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("pre_sort_children"));
 	ADD_SIGNAL(MethodInfo("sort_children"));
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "accessibility_region"), "set_accessibility_region", "is_accessibility_region");
 }
 
 Container::Container() {

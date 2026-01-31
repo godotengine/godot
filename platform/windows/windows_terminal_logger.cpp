@@ -30,6 +30,7 @@
 
 #include "windows_terminal_logger.h"
 
+#include "core/object/script_backtrace.h"
 #include "core/os/os.h"
 
 #ifdef WINDOWS_ENABLED
@@ -90,9 +91,6 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 
 		uint32_t basecol = 0;
 		switch (p_type) {
-			case ERR_ERROR:
-				basecol = FOREGROUND_RED;
-				break;
 			case ERR_WARNING:
 				basecol = FOREGROUND_RED | FOREGROUND_GREEN;
 				break;
@@ -102,30 +100,16 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 			case ERR_SHADER:
 				basecol = FOREGROUND_GREEN | FOREGROUND_BLUE;
 				break;
+			case ERR_ERROR:
+			default:
+				basecol = FOREGROUND_RED;
+				break;
 		}
 
 		basecol |= current_bg;
 
 		SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
-		const char *indent = "";
-		switch (p_type) {
-			case ERR_ERROR:
-				indent = "   ";
-				logf_error("ERROR:");
-				break;
-			case ERR_WARNING:
-				indent = "     ";
-				logf_error("WARNING:");
-				break;
-			case ERR_SCRIPT:
-				indent = "          ";
-				logf_error("SCRIPT ERROR:");
-				break;
-			case ERR_SHADER:
-				indent = "          ";
-				logf_error("SHADER ERROR:");
-				break;
-		}
+		logf_error("%s:", error_type_string(p_type));
 
 		SetConsoleTextAttribute(hCon, basecol);
 		if (p_rationale && p_rationale[0]) {
@@ -137,14 +121,14 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 		// `FOREGROUND_INTENSITY` alone results in gray text.
 		SetConsoleTextAttribute(hCon, FOREGROUND_INTENSITY);
 		if (p_rationale && p_rationale[0]) {
-			logf_error("%sat: (%s:%i)\n", indent, p_file, p_line);
+			logf_error("%sat: (%s:%i)\n", error_type_indent(p_type), p_file, p_line);
 		} else {
-			logf_error("%sat: %s (%s:%i)\n", indent, p_function, p_file, p_line);
+			logf_error("%sat: %s (%s:%i)\n", error_type_indent(p_type), p_function, p_file, p_line);
 		}
 
 		for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
 			if (!backtrace->is_empty()) {
-				logf_error("%s\n", backtrace->format(strlen(indent)).utf8().get_data());
+				logf_error("%s\n", backtrace->format(strlen(error_type_indent(p_type))).utf8().get_data());
 			}
 		}
 

@@ -200,6 +200,12 @@ public:
 	/// Returns a locking interface that locks the body so other threads cannot modify it.
 	inline const BodyLockInterfaceLocking &	GetBodyLockInterface() const					{ return mBodyLockInterfaceLocking; }
 
+	/// Broadphase layer filter that decides if two objects can collide, this was passed to the Init function.
+	const ObjectVsBroadPhaseLayerFilter &GetObjectVsBroadPhaseLayerFilter() const			{ return *mObjectVsBroadPhaseLayerFilter; }
+
+	/// Object layer filter that decides if two objects can collide, this was passed to the Init function.
+	const ObjectLayerPairFilter &GetObjectLayerPairFilter() const							{ return *mObjectLayerPairFilter; }
+
 	/// Get an broadphase layer filter that uses the default pair filter and a specified object layer to determine if broadphase layers collide
 	DefaultBroadPhaseLayerFilter GetDefaultBroadPhaseLayerFilter(ObjectLayer inLayer) const	{ return DefaultBroadPhaseLayerFilter(*mObjectVsBroadPhaseLayerFilter, inLayer); }
 

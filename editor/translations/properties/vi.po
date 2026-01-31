@@ -30,13 +30,15 @@
 # Đăng khoa Phạm <phamkhoafunny@gmail.com>, 2024.
 # xanhAD <tnhuthao414@gmail.com>, 2024.
 # a <anhkietcb2008@gmail.com>, 2024.
+# Đức Anh Nguyễn <ducnah2132k9@gmail.com>, 2025.
+# Orus Or <orus3732@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-12-12 20:14+0000\n"
-"Last-Translator: a <anhkietcb2008@gmail.com>\n"
+"PO-Revision-Date: 2025-11-10 01:56+0000\n"
+"Last-Translator: Orus Or <orus3732@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/vi/>\n"
 "Language: vi\n"
@@ -44,7 +46,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.9-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 msgid "Application"
 msgstr "Ứng dụng"
@@ -103,6 +105,18 @@ msgstr "Tự động Đồng ý Thoát"
 msgid "Quit on Go Back"
 msgstr "Trở lại"
 
+msgid "Accessibility"
+msgstr "Khả năng hiển thị"
+
+msgid "General"
+msgstr "Tổng quan"
+
+msgid "Accessibility Support"
+msgstr "Trình soạn tập lệnh"
+
+msgid "Updates per Second"
+msgstr "Cập nhật mỗi giây"
+
 msgid "Display"
 msgstr "Hiển thị"
 
@@ -148,6 +162,15 @@ msgstr "Mở rộng tiêu đề"
 msgid "No Focus"
 msgstr "Đường dẫn Tập trung"
 
+msgid "Sharp Corners"
+msgstr "Độ sắc nét"
+
+msgid "Minimize Disabled"
+msgstr "Vô hiệu hoá thu nhỏ cửa sổ"
+
+msgid "Maximize Disabled"
+msgstr "Các mục tắt"
+
 msgid "Window Width Override"
 msgstr "Ghi đè chiều rộng cửa sổ"
 
@@ -181,9 +204,6 @@ msgstr "Xe buýt"
 msgid "Default Bus Layout"
 msgstr "Bố trí xe buýt mặc định"
 
-msgid "General"
-msgstr "Tổng quan"
-
 msgid "Default Playback Type"
 msgstr "Loại phát lại mặc định"
 
@@ -202,17 +222,23 @@ msgstr "iOS"
 msgid "Session Category"
 msgstr "Thể loại phiên"
 
-msgid "Mix With Others"
-msgstr "Trộn với những người khác"
-
 msgid "Subwindows"
 msgstr "Cửa sổ phụ"
 
 msgid "Embed Subwindows"
 msgstr "Nhúng cửa sổ phụ"
 
+msgid "Frame Pacing"
+msgstr "Tuỳ chọn bổ sung:"
+
 msgid "Android"
 msgstr "Android"
+
+msgid "Enable Frame Pacing"
+msgstr "Xem Khung hình Liên tiếp"
+
+msgid "Swappy Mode"
+msgstr "Chế độ chọn"
 
 msgid "Physics"
 msgstr "Vật lí"
@@ -345,6 +371,18 @@ msgstr "Kích hoạt Cử chỉ Xoay và Thu phóng"
 
 msgid "Rotary Input Scroll Axis"
 msgstr "Trục cuộn đầu vào quay"
+
+msgid "Navigation"
+msgstr "Điều hướng"
+
+msgid "Avoidance Use High Priority Threads"
+msgstr "Tránh sử dụng luồng có mức độ ưu tiên cao"
+
+msgid "Use Crash Prevention Checks"
+msgstr "Sử dụng Kiểm tra phòng ngừa sự cố"
+
+msgid "Baking Use High Priority Threads"
+msgstr "Baking Sử dụng luồng có mức độ ưu tiên cao"
 
 msgid "Low Processor Usage Mode"
 msgstr "Chế độ tiết kiệm của bộ vi xử lý"
@@ -562,20 +600,254 @@ msgstr "Luồng"
 msgid "Easing"
 msgstr "Làm dễ dàng"
 
+msgid "Asset Library"
+msgstr "Thư viện tài nguyên"
+
+msgid "Title"
+msgstr "Đã chọn"
+
+msgid "Distraction Free Mode"
+msgstr "Chế độ tập trung"
+
+msgid "Custom Template"
+msgstr "Bản mẫu tuỳ chỉnh"
+
+msgid "Release"
+msgstr "Phát hành"
+
+msgid "App Store Team ID"
+msgstr "ID nhóm App Store"
+
+msgid "Code Sign Identity Debug"
+msgstr "Gỡ lỗi nhận dạng ký hiệu mã"
+
+msgid "Code Sign Identity Release"
+msgstr "Phát hành nhận dạng ký hiệu mã"
+
+msgid "Provisioning Profile UUID Debug"
+msgstr "Gỡ lỗi UUID hồ sơ cung cấp"
+
+msgid "Provisioning Profile UUID Release"
+msgstr "Phát hành UUID hồ sơ cung cấp"
+
+msgid "Delete Old Export Files Unconditionally"
+msgstr "Xóa các tệp xuất cũ vô điều kiện"
+
+msgid "Plugins"
+msgstr "Tiện ích"
+
+msgid "Performance Gaming Tier"
+msgstr "Hiệu suất chơi game Cấp độ"
+
+msgid "Performance A 12"
+msgstr "Hiệu suất A 12"
+
+msgid "Enabled"
+msgstr "Bật"
+
+msgid "Accessible From Files App"
+msgstr "Có thể truy cập từ ứng dụng Tệp"
+
+msgid "Accessible From iTunes Sharing"
+msgstr "Có thể truy cập từ iTunes Chia sẻ"
+
+msgid "Privacy"
+msgstr "Quyền riêng tư"
+
+msgid "Icons"
+msgstr "Biểu tượng"
+
+msgid "Binary Format"
+msgstr "Định dạng nhị phân"
+
+msgid "Embed PCK"
+msgstr "PCK nhúng"
+
+msgid "Texture Format"
+msgstr "Định dạng hình kết cấu"
+
+msgid "Export Path"
+msgstr "Đường dẫn xuất"
+
 msgid "Label"
 msgstr "Nhãn"
 
 msgid "Read Only"
 msgstr "Chỉ đọc"
 
+msgid "Flat"
+msgstr "Tùy chọn"
+
+msgid "Make Unique"
+msgstr "Duy nhất"
+
+msgid "Rest Fixer"
+msgstr "Tên bộ xương"
+
+msgid "Reset All Bone Poses After Import"
+msgstr "Chuẩn hóa đường dẫn vị trí"
+
+msgid "Keep Global Rest on Leftovers"
+msgstr "Ghi đè Trục"
+
+msgid "Fix Silhouette"
+msgstr "Giữ nguyên trạng thái nghỉ toàn cục trên phần còn lại"
+
+msgid "Threshold"
+msgstr "Bộ lọc"
+
+msgid "Base Height Adjustment"
+msgstr "Ngưỡng"
+
+msgid "Unmapped Bones"
+msgstr "Vị trí không quan trọng"
+
+msgid "Node"
+msgstr "Nút"
+
+msgid "Import"
+msgstr "Nhập"
+
+msgid "Physics Material Override"
+msgstr "Kiểu hình dạng"
+
+msgid "Layer"
+msgstr "Lớp"
+
+msgid "Mask"
+msgstr "Vật lý Ghi đè vật liệu"
+
+msgid "Advanced"
+msgstr "Nâng cao"
+
+msgid "Symmetry Planes Clipping Bias"
+msgstr "Độ lõm tối đa"
+
+msgid "Revolution Axes Clipping Bias"
+msgstr "Mặt phẳng đối xứng Độ lệch cắt"
+
+msgid "Min Volume per Convex Hull"
+msgstr "Độ lệch cắt trục quay"
+
+msgid "Max Num Vertices per Convex Hull"
+msgstr "Độ phân giải"
+
+msgid "Plane Downsampling"
+msgstr "Số đỉnh tối đa trên mỗi thân lồi"
+
+msgid "Convexhull Downsampling"
+msgstr "Giảm mẫu mặt phẳng"
+
+msgid "Height"
+msgstr "Chiều cao"
+
+msgid "Radius"
+msgstr "Bán kính"
+
+msgid "LODs"
+msgstr "Lightmap UV"
+
+msgid "Page Size"
+msgstr "Cỡ trang"
+
+msgid "Nodes"
+msgstr "Nút"
+
+msgid "Import as Skeleton Bones"
+msgstr "Root Scale"
+
+msgid "Skins"
+msgstr "Force Disable Compression"
+
+msgid "FPS"
+msgstr "Khung hình(FPS)"
+
+msgid "Trimming"
+msgstr "Use Named Skins"
+
+msgid "Multichannel Signed Distance Field"
+msgstr "Disable Embedded Bitmap"
+
+msgid "MSDF Pixel Range"
+msgstr "Trường khoảng cách có dấu đa kênh"
+
+msgid "Hinting"
+msgstr "Buộc tự động gợi ý"
+
+msgid "Oversampling"
+msgstr "Định vị điểm ảnh phụ"
+
+msgid "Fallbacks"
+msgstr "Fallbacks"
+
+msgid "Embolden"
+msgstr "Đậm"
+
+msgid "Transform"
+msgstr "Biến đổi"
+
+msgid "Delimiter"
+msgstr "Dấu phân cách"
+
+msgid "Rows"
+msgstr "Hàng"
+
+msgid "Ascent"
+msgstr "Tăng dần"
+
+msgid "Descent"
+msgstr "Giảm dần"
+
+msgid "Lossy Quality"
+msgstr "Chất lượng mất mát"
+
+msgid "Limit"
+msgstr "Giới hạn"
+
+msgid "Layout"
+msgstr "Bố cục"
+
+msgid "Normal Map"
+msgstr "Bản đồ chuẩn"
+
+msgid "Roughness"
+msgstr "Độ nhám"
+
+msgid "Fix Alpha Border"
+msgstr "Sửa đường viền Alpha"
+
+msgid "HDR as sRGB"
+msgstr "HDR dưới dạng sRGB"
+
+msgid "Detect 3D"
+msgstr "Phát hiện 3D"
+
+msgid "SVG"
+msgstr "SVG"
+
+msgid "Editor"
+msgstr "Trình chỉnh sửa"
+
+msgid "Trim Alpha Border From Region"
+msgstr "Cắt đường viền Alpha từ vùng"
+
+msgid "8 Bit"
+msgstr "8 bit"
+
+msgid "Mono"
+msgstr "Đơn sắc"
+
+msgid "Edit"
+msgstr "Chỉnh sửa"
+
+msgid "Trim"
+msgstr "Cắt"
+
 msgid "Checkable"
 msgstr "Tích được"
 
 msgid "Checked"
 msgstr "Đã được tích"
-
-msgid "Distraction Free Mode"
-msgstr "Chế độ tập trung"
 
 msgid "Base Type"
 msgstr "loại cơ sở"
@@ -586,17 +858,44 @@ msgstr "Sửa được"
 msgid "Toggle Mode"
 msgstr "Bật tắt Chức năng"
 
+msgid "Naming"
+msgstr "Đặt tên"
+
+msgid "Default Signal Callback Name"
+msgstr "Tên gọi lại tín hiệu mặc định"
+
+msgid "Default Signal Callback to Self Name"
+msgstr "Tên gọi lại tín hiệu mặc định đến Self Name"
+
+msgid "Reimport Missing Imported Files"
+msgstr "Nhập lại các tệp đã được nhập bị thiếu"
+
+msgid "Export"
+msgstr "Xuất ra"
+
+msgid "Version Control"
+msgstr "Theo dõi phiên bản"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Alternative ID"
+msgstr "ID thay thế"
+
+msgid "Speed"
+msgstr "Tốc độ"
+
+msgid "Editors"
+msgstr "Trình chỉnh sửa"
+
+msgid "3D Gizmos"
+msgstr "Gizmo 3D"
+
 msgid "Interface"
 msgstr "Giao diễn"
 
-msgid "Editor"
-msgstr "Trình chỉnh sửa"
-
 msgid "Editor Language"
 msgstr "Ngôn ngữ trình chỉnh sửa"
-
-msgid "Asset Library"
-msgstr "Thư viện tài nguyên"
 
 msgid "Use Threads"
 msgstr "Sử dụng luồng"
@@ -643,9 +942,6 @@ msgstr "Hiển thị Lỗi nội bộ trong Thông báo Toast"
 msgid "Update Continuously"
 msgstr "Cập nhật Liên tục"
 
-msgid "Editors"
-msgstr "Trình chỉnh sửa"
-
 msgid "Derive Script Globals by Name"
 msgstr "Dẫn xuất toàn cục tập lệnh theo tên"
 
@@ -688,6 +984,9 @@ msgstr "Tương phản"
 msgid "Draw Extra Borders"
 msgstr "Vẽ Đường viền Bổ sung"
 
+msgid "Draw Relationship Lines"
+msgstr "Vẽ đường quan hệ"
+
 msgid "Relationship Line Opacity"
 msgstr "Độ mờ của Đường quan hệ"
 
@@ -705,9 +1004,6 @@ msgstr "Màn hình cảm ứng"
 
 msgid "Scale Gizmo Handles"
 msgstr "Tay cầm Gizmo Thu phóng"
-
-msgid "Increase Scrollbar Touch Area"
-msgstr "Tăng Vùng cảm ứng Thanh cuộn"
 
 msgid "Scene Tabs"
 msgstr "Thẻ cảnh"
@@ -751,9 +1047,6 @@ msgstr "Chế độ hiển thị"
 msgid "Thumbnail Size"
 msgstr "Cỡ ảnh thu nhỏ"
 
-msgid "Import"
-msgstr "Nhập"
-
 msgid "RPC Server Uptime"
 msgstr "Thời gian Hoạt động của Máy chủ RPC"
 
@@ -784,8 +1077,8 @@ msgstr "Tự động Làm mới Khoảng thời gian"
 msgid "Text Editor"
 msgstr "Trình soạn thảo"
 
-msgid "Line Spacing"
-msgstr "Khoảng cách dòng"
+msgid "Highlighting"
+msgstr "Tô sáng"
 
 msgid "Appearance"
 msgstr "Ngoại hình"
@@ -835,11 +1128,11 @@ msgstr "Gập mã"
 msgid "Whitespace"
 msgstr "Khoảng trắng"
 
+msgid "Line Spacing"
+msgstr "Khoảng cách dòng"
+
 msgid "Behavior"
 msgstr "Hành vi"
-
-msgid "Navigation"
-msgstr "Điều hướng"
 
 msgid "Move Caret on Right Click"
 msgstr "Di chuyển Dấu nháy khi Nhấp chuột phải"
@@ -928,12 +1221,6 @@ msgstr "Sắp xếp các hàm theo bảng chữ cái"
 msgid "Grid Map"
 msgstr "Bản đồ Lưới"
 
-msgid "Palette Min Width"
-msgstr "Chiều rộng tối thiểu của bảng màu"
-
-msgid "3D Gizmos"
-msgstr "Gizmo 3D"
-
 msgid "AABB"
 msgstr "AABB"
 
@@ -966,9 +1253,6 @@ msgstr "Khung xương"
 
 msgid "CSG"
 msgstr "CSG"
-
-msgid "Path 3D Tilt Disk Size"
-msgstr "Đường nghiêng 3D Kích thước đĩa"
 
 msgid "Grid Division Level Max"
 msgstr "Mức chia lưới Max"
@@ -1069,9 +1353,6 @@ msgstr "Màu tương lai của các lớp Onion"
 msgid "Minimap Opacity"
 msgstr "Độ mờ của bản đồ thu nhỏ"
 
-msgid "Export"
-msgstr "Xuất ra"
-
 msgid "SSH"
 msgstr "ETC2 ASTC"
 
@@ -1114,9 +1395,6 @@ msgstr "Khoảng thời gian làm mới cây cảnh từ xa"
 msgid "Remote Inspect Refresh Interval"
 msgstr "Khoảng thời gian làm mới Kiểm tra từ xa"
 
-msgid "Version Control"
-msgstr "Theo dõi phiên bản"
-
 msgid "Username"
 msgstr "Tên người dùng"
 
@@ -1137,267 +1415,6 @@ msgstr "Xả sự kiện Agile"
 
 msgid "Project Manager"
 msgstr "Trình quản lý Dự án"
-
-msgid "Highlighting"
-msgstr "Tô sáng"
-
-msgid "Symbol Color"
-msgstr "Màu biểu tượng"
-
-msgid "Keyword Color"
-msgstr "Màu từ khóa"
-
-msgid "Control Flow Keyword Color"
-msgstr "Màu từ khóa luồng điều khiển"
-
-msgid "Engine Type Color"
-msgstr "Màu loại công cụ"
-
-msgid "User Type Color"
-msgstr "Màu loại người dùng"
-
-msgid "Comment Color"
-msgstr "Màu bình luận"
-
-msgid "Completion Existing Color"
-msgstr "Màu hiện tại của hoàn thành"
-
-msgid "Completion Scroll Color"
-msgstr "Màu cuộn hoàn thành"
-
-msgid "Completion Font Color"
-msgstr "Màu phông chữ hoàn thành"
-
-msgid "Caret Color"
-msgstr "Màu dấu nháy"
-
-msgid "Brace Mismatch Color"
-msgstr "Màu dấu ngoặc nhọn"
-
-msgid "Line Length Guideline Color"
-msgstr "Dòng hiện tại Màu sắc"
-
-msgid "Number Color"
-msgstr "Màu tô sáng từ"
-
-msgid "Executing Line Color"
-msgstr "Màu điểm ngắt"
-
-msgid "Code Folding Color"
-msgstr "Màu đường thực thi"
-
-msgid "Custom Template"
-msgstr "Bản mẫu tuỳ chỉnh"
-
-msgid "Release"
-msgstr "Phát hành"
-
-msgid "Binary Format"
-msgstr "Định dạng nhị phân"
-
-msgid "Embed PCK"
-msgstr "PCK nhúng"
-
-msgid "Texture Format"
-msgstr "Định dạng hình kết cấu"
-
-msgid "Export Path"
-msgstr "Đường dẫn xuất"
-
-msgid "Access"
-msgstr "Truy cập"
-
-msgid "Filters"
-msgstr "Bộ lọc"
-
-msgid "Disable Overwrite Warning"
-msgstr "Tắt cảnh báo ghi đè"
-
-msgid "Flat"
-msgstr "Tùy chọn"
-
-msgid "Make Unique"
-msgstr "Duy nhất"
-
-msgid "Rest Fixer"
-msgstr "Tên bộ xương"
-
-msgid "Reset All Bone Poses After Import"
-msgstr "Chuẩn hóa đường dẫn vị trí"
-
-msgid "Keep Global Rest on Leftovers"
-msgstr "Ghi đè Trục"
-
-msgid "Fix Silhouette"
-msgstr "Giữ nguyên trạng thái nghỉ toàn cục trên phần còn lại"
-
-msgid "Threshold"
-msgstr "Bộ lọc"
-
-msgid "Base Height Adjustment"
-msgstr "Ngưỡng"
-
-msgid "Unmapped Bones"
-msgstr "Vị trí không quan trọng"
-
-msgid "Physics Material Override"
-msgstr "Kiểu hình dạng"
-
-msgid "Layer"
-msgstr "Lớp"
-
-msgid "Mask"
-msgstr "Vật lý Ghi đè vật liệu"
-
-msgid "Advanced"
-msgstr "Nâng cao"
-
-msgid "Symmetry Planes Clipping Bias"
-msgstr "Độ lõm tối đa"
-
-msgid "Revolution Axes Clipping Bias"
-msgstr "Mặt phẳng đối xứng Độ lệch cắt"
-
-msgid "Min Volume per Convex Hull"
-msgstr "Độ lệch cắt trục quay"
-
-msgid "Max Num Vertices per Convex Hull"
-msgstr "Độ phân giải"
-
-msgid "Plane Downsampling"
-msgstr "Số đỉnh tối đa trên mỗi thân lồi"
-
-msgid "Convexhull Downsampling"
-msgstr "Giảm mẫu mặt phẳng"
-
-msgid "Height"
-msgstr "Chiều cao"
-
-msgid "Radius"
-msgstr "Bán kính"
-
-msgid "Enabled"
-msgstr "Bật"
-
-msgid "LODs"
-msgstr "Lightmap UV"
-
-msgid "Page Size"
-msgstr "Cỡ trang"
-
-msgid "Nodes"
-msgstr "Nút"
-
-msgid "Import as Skeleton Bones"
-msgstr "Root Scale"
-
-msgid "Skins"
-msgstr "Force Disable Compression"
-
-msgid "FPS"
-msgstr "Khung hình(FPS)"
-
-msgid "Trimming"
-msgstr "Use Named Skins"
-
-msgid "Multichannel Signed Distance Field"
-msgstr "Disable Embedded Bitmap"
-
-msgid "MSDF Pixel Range"
-msgstr "Trường khoảng cách có dấu đa kênh"
-
-msgid "Hinting"
-msgstr "Buộc tự động gợi ý"
-
-msgid "Oversampling"
-msgstr "Định vị điểm ảnh phụ"
-
-msgid "Fallbacks"
-msgstr "Fallbacks"
-
-msgid "Embolden"
-msgstr "Đậm"
-
-msgid "Transform"
-msgstr "Biến đổi"
-
-msgid "Delimiter"
-msgstr "Dấu phân cách"
-
-msgid "Rows"
-msgstr "Hàng"
-
-msgid "Ascent"
-msgstr "Tăng dần"
-
-msgid "Descent"
-msgstr "Giảm dần"
-
-msgid "Lossy Quality"
-msgstr "Chất lượng mất mát"
-
-msgid "Limit"
-msgstr "Giới hạn"
-
-msgid "Layout"
-msgstr "Bố cục"
-
-msgid "Normal Map"
-msgstr "Bản đồ chuẩn"
-
-msgid "Roughness"
-msgstr "Độ nhám"
-
-msgid "Fix Alpha Border"
-msgstr "Sửa đường viền Alpha"
-
-msgid "HDR as sRGB"
-msgstr "HDR dưới dạng sRGB"
-
-msgid "Detect 3D"
-msgstr "Phát hiện 3D"
-
-msgid "SVG"
-msgstr "SVG"
-
-msgid "Convert Colors With Editor Theme"
-msgstr "Chuyển đổi màu với chủ đề trình chỉnh sửa"
-
-msgid "Trim Alpha Border From Region"
-msgstr "Cắt đường viền Alpha từ vùng"
-
-msgid "8 Bit"
-msgstr "8 bit"
-
-msgid "Mono"
-msgstr "Đơn sắc"
-
-msgid "Edit"
-msgstr "Chỉnh sửa"
-
-msgid "Trim"
-msgstr "Cắt"
-
-msgid "ID"
-msgstr "ID"
-
-msgid "Alternative ID"
-msgstr "ID thay thế"
-
-msgid "Speed"
-msgstr "Tốc độ"
-
-msgid "Naming"
-msgstr "Đặt tên"
-
-msgid "Default Signal Callback Name"
-msgstr "Tên gọi lại tín hiệu mặc định"
-
-msgid "Default Signal Callback to Self Name"
-msgstr "Tên gọi lại tín hiệu mặc định đến Self Name"
-
-msgid "Reimport Missing Imported Files"
-msgstr "Nhập lại các tệp đã được nhập bị thiếu"
 
 msgid "Flush stdout on Print"
 msgstr "Xả stdout khi in"
@@ -1434,9 +1451,6 @@ msgstr "Nvidia Tắt tối ưu hóa luồng"
 
 msgid "Force Angle on Devices"
 msgstr "Bật góc Thiết bị"
-
-msgid "Include Text Server Data"
-msgstr "Bao gồm dữ liệu máy chủ văn bản"
 
 msgid "DPI"
 msgstr "DPI"
@@ -1503,9 +1517,6 @@ msgstr "Biểu tượng gốc Windows"
 
 msgid "Custom Image Hotspot"
 msgstr "Điểm phát sóng hình ảnh tùy chỉnh"
-
-msgid "Fullsize"
-msgstr "Kích thước đầy đủ"
 
 msgid "Image"
 msgstr "Ảnh"
@@ -1615,14 +1626,8 @@ msgstr "FBX2glTF"
 msgid "GDScript"
 msgstr "GDScript"
 
-msgid "Function Definition Color"
-msgstr "Màu định nghĩa hàm"
-
 msgid "Max Call Stack"
 msgstr "Ngăn xếp cuộc gọi tối đa"
-
-msgid "Exclude Addons"
-msgstr "Loại trừ tiện ích bổ sung"
 
 msgid "Show Native Symbols in Editor"
 msgstr "Hiển thị ký hiệu gốc trong trình soạn thảo"
@@ -1695,9 +1700,6 @@ msgstr "Khung xương"
 
 msgid "Animations"
 msgstr "Hoạt hình"
-
-msgid "Handle Binary Image"
-msgstr "Xử lý hình ảnh nhị phân"
 
 msgid "Sparse Indices Buffer View"
 msgstr "Chỉ số thưa thớt Lượt xem bộ đệm"
@@ -1789,9 +1791,6 @@ msgstr "Số lượng tia thăm dò chất lượng cực cao"
 msgid "Max Rays per Probe Pass"
 msgstr "Số tia tối đa trên mỗi lần đi qua thăm dò"
 
-msgid "BPM"
-msgstr "BPM"
-
 msgid "Eye Height"
 msgstr "Chiều cao mắt"
 
@@ -1806,6 +1805,9 @@ msgstr "K1"
 
 msgid "K2"
 msgstr "K2"
+
+msgid "BPM"
+msgstr "BPM"
 
 msgid "Auth Callback"
 msgstr "Gọi lại xác thực"
@@ -1846,11 +1848,14 @@ msgstr "Độ lệch fractal"
 msgid "Width"
 msgstr "Chiều rộng"
 
-msgid "Invert"
-msgstr "Đảo ngược"
+msgid "Noise"
+msgstr "Nhiễu"
 
 msgid "Seamless"
 msgstr "Không liền mạch"
+
+msgid "Invert"
+msgstr "Đảo ngược"
 
 msgid "Seamless Blend Skirt"
 msgstr "Váy pha trộn liền mạch"
@@ -1858,8 +1863,8 @@ msgstr "Váy pha trộn liền mạch"
 msgid "Bump Strength"
 msgstr "Độ mạnh va chạm"
 
-msgid "Noise"
-msgstr "Nhiễu"
+msgid "Next"
+msgstr "Tiếp theo"
 
 msgid "Subject"
 msgstr "Chủ đề"
@@ -1924,12 +1929,6 @@ msgstr "Sử dụng Gradle Build"
 msgid "Android Source Template"
 msgstr "Mẫu nguồn Android"
 
-msgid "Compress Native Libraries"
-msgstr "Nén thư viện gốc"
-
-msgid "Plugins"
-msgstr "Tiện ích"
-
 msgid "Debug Password"
 msgstr "Gỡ lỗi mật khẩu"
 
@@ -1954,8 +1953,11 @@ msgstr "Salt"
 msgid "iOS Deploy"
 msgstr "Triển khai iOS"
 
-msgid "Icons"
-msgstr "Biểu tượng"
+msgid "Targeted Device Family"
+msgstr "Họ thiết bị mục tiêu"
+
+msgid "Storyboard"
+msgstr "Storyboard"
 
 msgid "Spotlight 80 X 80"
 msgstr "Spotlight 80 X 80"
@@ -1974,45 +1976,6 @@ msgstr "iPad 152 X 152"
 
 msgid "App Store 1024 X 1024"
 msgstr "App Store 1024 X 1024"
-
-msgid "App Store Team ID"
-msgstr "ID nhóm App Store"
-
-msgid "Code Sign Identity Debug"
-msgstr "Gỡ lỗi nhận dạng ký hiệu mã"
-
-msgid "Code Sign Identity Release"
-msgstr "Phát hành nhận dạng ký hiệu mã"
-
-msgid "Provisioning Profile UUID Debug"
-msgstr "Gỡ lỗi UUID hồ sơ cung cấp"
-
-msgid "Provisioning Profile UUID Release"
-msgstr "Phát hành UUID hồ sơ cung cấp"
-
-msgid "Targeted Device Family"
-msgstr "Họ thiết bị mục tiêu"
-
-msgid "Delete Old Export Files Unconditionally"
-msgstr "Xóa các tệp xuất cũ vô điều kiện"
-
-msgid "Performance Gaming Tier"
-msgstr "Hiệu suất chơi game Cấp độ"
-
-msgid "Performance A 12"
-msgstr "Hiệu suất A 12"
-
-msgid "Accessible From Files App"
-msgstr "Có thể truy cập từ ứng dụng Tệp"
-
-msgid "Accessible From iTunes Sharing"
-msgstr "Có thể truy cập từ iTunes Chia sẻ"
-
-msgid "Privacy"
-msgstr "Quyền riêng tư"
-
-msgid "Storyboard"
-msgstr "Storyboard"
 
 msgid "SSH Remote Deploy"
 msgstr "SSH triển khai từ xa"
@@ -2386,6 +2349,12 @@ msgstr "Góc"
 msgid "Torque"
 msgstr "Mô men xoắn"
 
+msgid "Bitmask"
+msgstr "Bitmask"
+
+msgid "Passby Press"
+msgstr "Nhấn qua"
+
 msgid "UV"
 msgstr "UV"
 
@@ -2409,12 +2378,6 @@ msgstr "Thứ tự vẽ X bị đảo ngược"
 
 msgid "Use Kinematic Bodies"
 msgstr "Sử dụng Vật thể động học"
-
-msgid "Bitmask"
-msgstr "Bitmask"
-
-msgid "Passby Press"
-msgstr "Nhấn qua"
 
 msgid "Unit Size"
 msgstr "Kích thước đơn vị"
@@ -2536,6 +2499,9 @@ msgstr "Nội thất"
 msgid "Subdiv"
 msgstr "Subdiv"
 
+msgid "Exclude"
+msgstr "Loại trừ"
+
 msgid "Quaternion"
 msgstr "Quaternion"
 
@@ -2599,6 +2565,21 @@ msgstr "Góc Z"
 msgid "Hit Back Faces"
 msgstr "Đánh mặt sau"
 
+msgid "Spatial Attachment Path"
+msgstr "Đường dẫn tệp đính kèm không gian"
+
+msgid "Linear Stiffness"
+msgstr "Độ cứng tuyến tính"
+
+msgid "Pressure Coefficient"
+msgstr "Hệ số áp suất"
+
+msgid "Damping Coefficient"
+msgstr "Hệ số giảm chấn"
+
+msgid "Drag Coefficient"
+msgstr "Hệ số kéo"
+
 msgid "Spring Length"
 msgstr "Chiều dài lò xo"
 
@@ -2634,24 +2615,6 @@ msgstr "Nam châm"
 
 msgid "Influence"
 msgstr "Ảnh hưởng"
-
-msgid "Spatial Attachment Path"
-msgstr "Đường dẫn tệp đính kèm không gian"
-
-msgid "Linear Stiffness"
-msgstr "Độ cứng tuyến tính"
-
-msgid "Pressure Coefficient"
-msgstr "Hệ số áp suất"
-
-msgid "Damping Coefficient"
-msgstr "Hệ số giảm chấn"
-
-msgid "Drag Coefficient"
-msgstr "Hệ số kéo"
-
-msgid "Use AABB Center"
-msgstr "Sử dụng AABB Trung tâm"
 
 msgid "Custom AABB"
 msgstr "AABB tùy chỉnh"
@@ -2758,9 +2721,6 @@ msgstr "Bản địa hoá"
 msgid "Localize Numeral System"
 msgstr "Tỷ lệ kéo giãn"
 
-msgid "Next"
-msgstr "Tiếp theo"
-
 msgid "Previous"
 msgstr "Trước đó"
 
@@ -2773,14 +2733,17 @@ msgstr "Chuột"
 msgid "Dialog"
 msgstr "Văn bản nút OK"
 
+msgid "Access"
+msgstr "Truy cập"
+
+msgid "Filters"
+msgstr "Bộ lọc"
+
 msgid "Show Grid"
 msgstr "Điền ngược"
 
 msgid "Toolbar Menu"
 msgstr "Bước thu nhỏ"
-
-msgid "Title"
-msgstr "Đã chọn"
 
 msgid "Ignore Invalid Connection Type"
 msgstr "Bỏ qua Loại kết nối không hợp lệ"
@@ -3004,9 +2967,6 @@ msgstr "Chống răng cưa"
 msgid "Screen Space AA"
 msgstr "Khoảng cách màn hình AA"
 
-msgid "Use Debanding"
-msgstr "Sử dụng Debanding"
-
 msgid "LOD Change"
 msgstr "Thay đổi LOD"
 
@@ -3036,6 +2996,9 @@ msgstr "MSAA 2D"
 
 msgid "MSAA 3D"
 msgstr "MSAA 3D"
+
+msgid "Use Debanding"
+msgstr "Sử dụng Debanding"
 
 msgid "Anisotropic Filtering Level"
 msgstr "Mức lọc dị hướng"
@@ -3352,9 +3315,6 @@ msgstr "Sâu Parallax"
 msgid "Flip Tangent"
 msgstr "Lật Tangent"
 
-msgid "Subsurface Scattering"
-msgstr "Phân tán dưới bề mặt"
-
 msgid "Boost"
 msgstr "Tăng cường"
 
@@ -3439,6 +3399,12 @@ msgstr "Bắt đầu phát triển"
 msgid "Grow End"
 msgstr "Kết thúc phát triển"
 
+msgid "Number Color"
+msgstr "Màu tô sáng từ"
+
+msgid "Symbol Color"
+msgstr "Màu biểu tượng"
+
 msgid "File"
 msgstr "Tệp"
 
@@ -3469,6 +3435,9 @@ msgstr "Radio Chưa kiểm tra"
 msgid "Radio Unchecked Disabled"
 msgstr "Radio Chưa kiểm tra Đã tắt"
 
+msgid "Caret Color"
+msgstr "Màu dấu nháy"
+
 msgid "Clear"
 msgstr "Xoá"
 
@@ -3477,6 +3446,24 @@ msgstr "Tab"
 
 msgid "Folded EOL Icon"
 msgstr "Biểu tượng EOL đã gập lại"
+
+msgid "Completion Existing Color"
+msgstr "Màu hiện tại của hoàn thành"
+
+msgid "Completion Scroll Color"
+msgstr "Màu cuộn hoàn thành"
+
+msgid "Executing Line Color"
+msgstr "Màu điểm ngắt"
+
+msgid "Code Folding Color"
+msgstr "Màu đường thực thi"
+
+msgid "Brace Mismatch Color"
+msgstr "Màu dấu ngoặc nhọn"
+
+msgid "Line Length Guideline Color"
+msgstr "Dòng hiện tại Màu sắc"
 
 msgid "Grabber"
 msgstr "Ghi lại"
@@ -3535,9 +3522,6 @@ msgstr "Con trỏ không được lấy nét"
 msgid "Custom Button Font Highlight"
 msgstr "Nét phông chữ nút tùy chỉnh Tô sáng"
 
-msgid "Draw Relationship Lines"
-msgstr "Vẽ đường quan hệ"
-
 msgid "Center Slider Grabbers"
 msgstr "Thanh trượt Grabber ở giữa"
 
@@ -3583,17 +3567,14 @@ msgstr "Mép cổng Hotzone bên trong"
 msgid "Port Hotzone Outer Extent"
 msgstr "Mở rộng bên ngoài cổng Hotzone"
 
-msgid "Node"
-msgstr "Nút"
-
-msgid "Default Font Multichannel Signed Distance Field"
-msgstr "Trường khoảng cách có dấu đa kênh phông chữ mặc định"
-
-msgid "Default Font Generate Mipmaps"
-msgstr "Tạo bản đồ Mipmap phông chữ mặc định"
-
 msgid "Fallback values"
 msgstr "Giá trị dự phòng"
+
+msgid "Channel Disable Threshold dB"
+msgstr "Kênh Disable Threshold dB"
+
+msgid "Video Delay Compensation (ms)"
+msgstr "Video Delay Compensation (ms)"
 
 msgid "Random Volume Offset dB"
 msgstr "Độ lệch âm lượng ngẫu nhiên dB"
@@ -3676,12 +3657,6 @@ msgstr "Pan Pullout"
 msgid "Surround"
 msgstr "Surround"
 
-msgid "Channel Disable Threshold dB"
-msgstr "Kênh Disable Threshold dB"
-
-msgid "Video Delay Compensation (ms)"
-msgstr "Video Delay Compensation (ms)"
-
 msgid "Feed"
 msgstr "Feed"
 
@@ -3693,18 +3668,6 @@ msgstr "ID chủ sở hữu đường dẫn"
 
 msgid "Merge Rasterizer Cell Scale"
 msgstr "Hợp nhất Tỷ lệ ô Rasterizer"
-
-msgid "Avoidance Use High Priority Threads"
-msgstr "Tránh sử dụng luồng có mức độ ưu tiên cao"
-
-msgid "Use Crash Prevention Checks"
-msgstr "Sử dụng Kiểm tra phòng ngừa sự cố"
-
-msgid "Baking Use High Priority Threads"
-msgstr "Baking Sử dụng luồng có mức độ ưu tiên cao"
-
-msgid "Enable Edge Lines X-Ray"
-msgstr "Bật đường cạnh X-Ray"
 
 msgid "Obstacles Radius Color"
 msgstr "Màu bán kính chướng ngại vật"
@@ -3724,17 +3687,14 @@ msgstr "Màu đẩy cạnh tĩnh chướng ngại vật"
 msgid "Enable Obstacles Static"
 msgstr "Bật Chướng ngại vật tĩnh"
 
+msgid "Enable Edge Lines X-Ray"
+msgstr "Bật đường cạnh X-Ray"
+
 msgid "Inverse Mass"
 msgstr "Khối lượng nghịch đảo"
 
 msgid "Total Angular Damp"
 msgstr "Độ ẩm góc tổng"
-
-msgid "Exclude"
-msgstr "Loại trừ"
-
-msgid "Collide With Areas"
-msgstr "Va chạm với diện tích"
 
 msgid "Shape RID"
 msgstr "RID hình dạng"
@@ -3774,33 +3734,6 @@ msgstr "Mã byte"
 
 msgid "IDs"
 msgstr "ID"
-
-msgid "Depth Prepass Alpha"
-msgstr "Phép đo độ sâu trước Alpha"
-
-msgid "SSS Mode Skin"
-msgstr "SSS Mode Skin"
-
-msgid "Cull"
-msgstr "tỉa bớt đối tượng"
-
-msgid "Unshaded"
-msgstr "Không đổ bóng"
-
-msgid "Wireframe"
-msgstr "Wireframe"
-
-msgid "Alpha to Coverage"
-msgstr "Alpha đến phạm vi phủ sóng"
-
-msgid "Alpha to Coverage and One"
-msgstr "Alpha đến phạm vi phủ sóng và một"
-
-msgid "Use Half Res Pass"
-msgstr "Sử dụng Half Res Pass"
-
-msgid "Use Quarter Res Pass"
-msgstr "Sử dụng Quarter Res Pass"
 
 msgid "Lossless Compression"
 msgstr "Nén không mất dữ liệu"
@@ -3850,6 +3783,9 @@ msgstr "Hình dán"
 msgid "Occlusion Rays per Thread"
 msgstr "Tia che khuất trên mỗi luồng"
 
+msgid "Subsurface Scattering"
+msgstr "Phân tán dưới bề mặt"
+
 msgid "Subsurface Scattering Quality"
 msgstr "Chất lượng tán xạ dưới bề mặt"
 
@@ -3879,6 +3815,42 @@ msgstr "Số lượng đèn tối đa trên mỗi đối tượng"
 
 msgid "Treat Warnings as Errors"
 msgstr "Xử lý cảnh báo là lỗi"
+
+msgid "Depth Prepass Alpha"
+msgstr "Phép đo độ sâu trước Alpha"
+
+msgid "SSS Mode Skin"
+msgstr "SSS Mode Skin"
+
+msgid "Cull"
+msgstr "tỉa bớt đối tượng"
+
+msgid "Unshaded"
+msgstr "Không đổ bóng"
+
+msgid "Wireframe"
+msgstr "Wireframe"
+
+msgid "Alpha to Coverage"
+msgstr "Alpha đến phạm vi phủ sóng"
+
+msgid "Alpha to Coverage and One"
+msgstr "Alpha đến phạm vi phủ sóng và một"
+
+msgid "Use Half Res Pass"
+msgstr "Sử dụng Half Res Pass"
+
+msgid "Use Quarter Res Pass"
+msgstr "Sử dụng Quarter Res Pass"
+
+msgid "Default Font Multichannel Signed Distance Field"
+msgstr "Trường khoảng cách có dấu đa kênh phông chữ mặc định"
+
+msgid "Default Font Generate Mipmaps"
+msgstr "Tạo bản đồ Mipmap phông chữ mặc định"
+
+msgid "Include Text Server Data"
+msgstr "Bao gồm dữ liệu máy chủ văn bản"
 
 msgid "Is Primary"
 msgstr "Là chính"

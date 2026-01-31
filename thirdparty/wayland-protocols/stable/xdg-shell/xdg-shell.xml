@@ -29,7 +29,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="xdg_wm_base" version="6">
+  <interface name="xdg_wm_base" version="7">
     <description summary="create desktop-style surfaces">
       The xdg_wm_base interface is exposed as a global object enabling clients
       to turn their wl_surfaces into windows in a desktop environment. It
@@ -122,7 +122,7 @@
     </event>
   </interface>
 
-  <interface name="xdg_positioner" version="6">
+  <interface name="xdg_positioner" version="7">
     <description summary="child surface positioner">
       The xdg_positioner provides a collection of rules for the placement of a
       child surface relative to a parent surface. Rules can be defined to ensure
@@ -344,7 +344,7 @@
 
 	The default adjustment is none.
       </description>
-      <arg name="constraint_adjustment" type="uint"
+      <arg name="constraint_adjustment" type="uint" enum="constraint_adjustment"
 	   summary="bit mask of constraint adjustments"/>
     </request>
 
@@ -407,7 +407,7 @@
     </request>
   </interface>
 
-  <interface name="xdg_surface" version="6">
+  <interface name="xdg_surface" version="7">
     <description summary="desktop user interface surface base interface">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface.
@@ -434,7 +434,8 @@
       manipulate a buffer prior to the first xdg_surface.configure call must
       also be treated as errors.
 
-      After creating a role-specific object and setting it up, the client must
+      After creating a role-specific object and setting it up (e.g. by sending
+      the title, app ID, size constraints, parent, etc), the client must
       perform an initial commit without any buffer attached. The compositor
       will reply with initial wl_surface state such as
       wl_surface.preferred_buffer_scale followed by an xdg_surface.configure
@@ -513,10 +514,12 @@
 	The window geometry of a surface is its "visible bounds" from the
 	user's perspective. Client-side decorations often have invisible
 	portions like drop-shadows which should be ignored for the
-	purposes of aligning, placing and constraining windows.
+	purposes of aligning, placing and constraining windows. Note that
+	in some situations, compositors may clip rendering to the window
+	geometry, so the client should avoid putting functional elements
+	outside of it.
 
-	The window geometry is double buffered, and will be applied at the
-	time wl_surface.commit of the corresponding wl_surface is called.
+	The window geometry is double-buffered state, see wl_surface.commit.
 
 	When maintaining a position, the compositor should treat the (x, y)
 	coordinate of the window geometry as the top left corner of the window.
@@ -617,7 +620,7 @@
 
   </interface>
 
-  <interface name="xdg_toplevel" version="6">
+  <interface name="xdg_toplevel" version="7">
     <description summary="toplevel surface">
       This interface defines an xdg_surface role which allows a surface to,
       among other things, set window-like properties such as maximize,
@@ -635,7 +638,7 @@
       attributes (e.g. title, state, stacking, ...) are discarded for
       an xdg_toplevel surface when it is unmapped. The xdg_toplevel returns to
       the state it had right after xdg_surface.get_toplevel. The client
-      can re-map the toplevel by perfoming a commit without any buffer
+      can re-map the toplevel by performing a commit without any buffer
       attached, waiting for a configure event and handling it as usual (see
       xdg_surface description).
 
@@ -832,8 +835,7 @@
 	configure event to ensure that both the client and the compositor
 	setting the state can be synchronized.
 
-	States set in this way are double-buffered. They will get applied on
-	the next commit.
+	States set in this way are double-buffered, see wl_surface.commit.
       </description>
       <entry name="maximized" value="1" summary="the surface is maximized">
 	<description summary="the surface is maximized">
@@ -873,24 +875,36 @@
 	<description summary="the surface’s left edge is tiled">
 	  The window is currently in a tiled layout and the left edge is
 	  considered to be adjacent to another part of the tiling grid.
+
+	  The client should draw without shadow or other decoration outside of
+	  the window geometry on the left edge.
 	</description>
       </entry>
       <entry name="tiled_right" value="6" since="2">
 	<description summary="the surface’s right edge is tiled">
 	  The window is currently in a tiled layout and the right edge is
 	  considered to be adjacent to another part of the tiling grid.
+
+	  The client should draw without shadow or other decoration outside of
+	  the window geometry on the right edge.
 	</description>
       </entry>
       <entry name="tiled_top" value="7" since="2">
 	<description summary="the surface’s top edge is tiled">
 	  The window is currently in a tiled layout and the top edge is
 	  considered to be adjacent to another part of the tiling grid.
+
+	  The client should draw without shadow or other decoration outside of
+	  the window geometry on the top edge.
 	</description>
       </entry>
       <entry name="tiled_bottom" value="8" since="2">
 	<description summary="the surface’s bottom edge is tiled">
 	  The window is currently in a tiled layout and the bottom edge is
 	  considered to be adjacent to another part of the tiling grid.
+
+	  The client should draw without shadow or other decoration outside of
+	  the window geometry on the bottom edge.
 	</description>
       </entry>
       <entry name="suspended" value="9" since="6">
@@ -898,6 +912,38 @@
 	  The surface is currently not ordinarily being repainted; for
 	  example because its content is occluded by another window, or its
 	  outputs are switched off due to screen locking.
+	</description>
+      </entry>
+      <entry name="constrained_left" value="10" since="7">
+	<description summary="the surface’s left edge is constrained">
+          The left edge of the window is currently constrained, meaning it
+          shouldn't attempt to resize from that edge. It can for example mean
+          it's tiled next to a monitor edge on the constrained side of the
+          window.
+	</description>
+      </entry>
+      <entry name="constrained_right" value="11" since="7">
+	<description summary="the surface’s right edge is constrained">
+          The right edge of the window is currently constrained, meaning it
+          shouldn't attempt to resize from that edge. It can for example mean
+          it's tiled next to a monitor edge on the constrained side of the
+          window.
+	</description>
+      </entry>
+      <entry name="constrained_top" value="12" since="7">
+	<description summary="the surface’s top edge is constrained">
+          The top edge of the window is currently constrained, meaning it
+          shouldn't attempt to resize from that edge. It can for example mean
+          it's tiled next to a monitor edge on the constrained side of the
+          window.
+	</description>
+      </entry>
+      <entry name="constrained_bottom" value="13" since="7">
+	<description summary="the surface’s bottom edge is constrained">
+          The bottom edge of the window is currently constrained, meaning it
+          shouldn't attempt to resize from that edge. It can for example mean
+          it's tiled next to a monitor edge on the constrained side of the
+          window.
 	</description>
       </entry>
     </enum>
@@ -912,8 +958,7 @@
 	The width and height arguments are in window geometry coordinates.
 	See xdg_surface.set_window_geometry.
 
-	Values set in this way are double-buffered. They will get applied
-	on the next commit.
+	Values set in this way are double-buffered, see wl_surface.commit.
 
 	The compositor can use this information to allow or disallow
 	different states like maximize or fullscreen and draw accurate
@@ -953,8 +998,7 @@
 	The width and height arguments are in window geometry coordinates.
 	See xdg_surface.set_window_geometry.
 
-	Values set in this way are double-buffered. They will get applied
-	on the next commit.
+	Values set in this way are double-buffered, see wl_surface.commit.
 
 	The compositor can use this information to allow or disallow
 	different states like maximize or fullscreen and draw accurate
@@ -1198,7 +1242,7 @@
     </event>
   </interface>
 
-  <interface name="xdg_popup" version="6">
+  <interface name="xdg_popup" version="7">
     <description summary="short-lived, popup surfaces for menus">
       A popup surface is a short-lived, temporary surface. It can be used to
       implement for example menus, popovers, tooltips and other similar user

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/editor_inspector.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
 

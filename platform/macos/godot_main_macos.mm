@@ -32,6 +32,7 @@
 
 #import "godot_application.h"
 
+#include "core/profiling/profiling.h"
 #include "main/main.h"
 
 #if defined(SANITIZERS_ENABLED)
@@ -39,6 +40,8 @@
 #endif
 
 int main(int argc, char **argv) {
+	godot_init_profiler();
+
 #if defined(VULKAN_ENABLED)
 	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1); // MoltenVK - enable full component swizzling support.
 	setenv("MVK_CONFIG_SWAPCHAIN_MIN_MAG_FILTER_USE_NEAREST", "0", 1); // MoltenVK - use linear surface scaling. TODO: remove when full DPI scaling is implemented.
@@ -56,6 +59,7 @@ int main(int argc, char **argv) {
 
 	int wait_for_debugger = 0; // wait 5 second by default
 	bool is_embedded = false;
+	bool is_headless = false;
 
 	for (int i = 0; i < argc; i++) {
 		if (strcmp("-NSDocumentRevisionsDebugMode", argv[i]) == 0) {
@@ -75,6 +79,16 @@ int main(int argc, char **argv) {
 		if (strcmp("--embedded", argv[i]) == 0) {
 			is_embedded = true;
 		}
+		for (size_t j = 0; j < std::size(OS_MacOS::headless_args); j++) {
+			if (strcmp(OS_MacOS::headless_args[j], argv[i]) == 0) {
+				is_headless = true;
+				break;
+			}
+		}
+
+		if (i < argc - 1 && strcmp("--display-driver", argv[i]) == 0 && strcmp("headless", argv[i + 1]) == 0) {
+			is_headless = true;
+		}
 
 		args.ptr()[argsc] = argv[i];
 		argsc++;
@@ -84,12 +98,14 @@ int main(int argc, char **argv) {
 
 	OS_MacOS *os = nullptr;
 	if (is_embedded) {
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 		os = memnew(OS_MacOS_Embedded(args[0], remaining_args, remaining_args > 0 ? &args[1] : nullptr));
 #else
 		WARN_PRINT("Embedded mode is not supported in release builds.");
 		return EXIT_FAILURE;
 #endif
+	} else if (is_headless) {
+		os = memnew(OS_MacOS_Headless(args[0], remaining_args, remaining_args > 0 ? &args[1] : nullptr));
 	} else {
 		os = memnew(OS_MacOS_NSApp(args[0], remaining_args, remaining_args > 0 ? &args[1] : nullptr));
 	}
@@ -116,9 +132,12 @@ int main(int argc, char **argv) {
 
 	os->run();
 
+	// Note: `os->run()` will never return if `OS_MacOS_NSApp` is used. Use `OS_MacOS_NSApp::cleanup()` for cleanup.
+
 	int exit_code = os->get_exit_code();
 
 	memdelete(os);
 
+	godot_cleanup_profiler();
 	return exit_code;
 }

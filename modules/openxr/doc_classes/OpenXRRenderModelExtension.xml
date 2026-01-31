@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRRenderModelExtension" inherits="OpenXRExtensionWrapper" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		This class implements the OpenXR Render Model Extension.
+	</brief_description>
+	<description>
+		This class implements the OpenXR Render Model Extension, if enabled it will maintain a list of active render models and provides an interface to the render model data.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="is_active" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if OpenXR's render model extension is supported and enabled.
+				[b]Note:[/b] This only returns a valid value after OpenXR has been initialized.
+			</description>
+		</method>
+		<method name="render_model_create">
+			<return type="RID" />
+			<param index="0" name="render_model_id" type="int" />
+			<description>
+				Creates a render model object within OpenXR using a render model id.
+				[b]Note:[/b] This function is exposed for dependent OpenXR extensions that provide render model ids to be used with the render model extension.
+			</description>
+		</method>
+		<method name="render_model_destroy">
+			<return type="void" />
+			<param index="0" name="render_model" type="RID" />
+			<description>
+				Destroys a render model object within OpenXR that was previously created with [method render_model_create].
+				[b]Note:[/b] This function is exposed for dependent OpenXR extensions that provide render model ids to be used with the render model extension.
+			</description>
+		</method>
+		<method name="render_model_get_all">
+			<return type="RID[]" />
+			<description>
+				Returns an array of all currently active render models registered with this extension.
+			</description>
+		</method>
+		<method name="render_model_get_animatable_node_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="render_model" type="RID" />
+			<description>
+				Returns the number of animatable nodes this render model has.
+			</description>
+		</method>
+		<method name="render_model_get_animatable_node_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="render_model" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Returns the name of the given animatable node.
+			</description>
+		</method>
+		<method name="render_model_get_animatable_node_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="render_model" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Returns the current local transform for an animatable node. This is updated every frame.
+			</description>
+		</method>
+		<method name="render_model_get_confidence" qualifiers="const">
+			<return type="int" enum="XRPose.TrackingConfidence" />
+			<param index="0" name="render_model" type="RID" />
+			<description>
+				Returns the tracking confidence of the tracking data for the render model.
+			</description>
+		</method>
+		<method name="render_model_get_root_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="render_model" type="RID" />
+			<description>
+				Returns the root transform of a render model. This is the tracked position relative to our [XROrigin3D] node.
+			</description>
+		</method>
+		<method name="render_model_get_subaction_paths">
+			<return type="PackedStringArray" />
+			<param index="0" name="render_model" type="RID" />
+			<description>
+				Returns a list of active subaction paths for this [param render_model].
+				[b]Note:[/b] If different devices are bound to your actions than available in suggested interaction bindings, this information shows paths related to the interaction bindings being mimicked by that device.
+			</description>
+		</method>
+		<method name="render_model_get_top_level_path" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="render_model" type="RID" />
+			<description>
+				Returns the top level path associated with this [param render_model]. If provided this identifies whether the render model is associated with the player's hands or other body part.
+			</description>
+		</method>
+		<method name="render_model_is_animatable_node_visible" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="render_model" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Returns [code]true[/code] if this animatable node should be visible.
+			</description>
+		</method>
+		<method name="render_model_new_scene_instance" qualifiers="const">
+			<return type="Node3D" />
+			<param index="0" name="render_model" type="RID" />
+			<description>
+				Returns an instance of a subscene that contains all [MeshInstance3D] nodes that allow you to visualize the render model.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="render_model_added">
+			<param index="0" name="render_model" type="RID" />
+			<description>
+				Emitted when a new render model is added.
+			</description>
+		</signal>
+		<signal name="render_model_removed">
+			<param index="0" name="render_model" type="RID" />
+			<description>
+				Emitted when a render model is removed.
+			</description>
+		</signal>
+		<signal name="render_model_top_level_path_changed">
+			<param index="0" name="render_model" type="RID" />
+			<description>
+				Emitted when the top level path associated with a render model changed.
+			</description>
+		</signal>
+	</signals>
+</class>

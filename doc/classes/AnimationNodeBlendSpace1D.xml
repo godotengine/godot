@@ -67,7 +67,7 @@
 	</methods>
 	<members>
 		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="AnimationNodeBlendSpace1D.BlendMode" default="0">
-			Controls the interpolation between animations. See [enum BlendMode] constants.
+			Controls the interpolation between animations.
 		</member>
 		<member name="max_space" type="float" setter="set_max_space" getter="get_max_space" default="1.0">
 			The blend space's axis's upper limit for the points' position. See [method add_blend_point].

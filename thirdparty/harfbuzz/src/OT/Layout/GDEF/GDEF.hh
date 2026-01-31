@@ -205,19 +205,18 @@ struct CaretValueFormat3
 
     unsigned varidx = (this+deviceTable).get_variation_index ();
     hb_pair_t<unsigned, int> *new_varidx_delta;
-    if (!c->plan->layout_variation_idx_delta_map.has (varidx, &new_varidx_delta))
-      return_trace (false);
+    if (c->plan->layout_variation_idx_delta_map.has (varidx, &new_varidx_delta)) {
+      uint32_t new_varidx = hb_first (*new_varidx_delta);
+      int delta = hb_second (*new_varidx_delta);
+      if (delta != 0)
+      {
+        if (!c->serializer->check_assign (out->coordinate, coordinate + delta, HB_SERIALIZE_ERROR_INT_OVERFLOW))
+          return_trace (false);
+      }
 
-    uint32_t new_varidx = hb_first (*new_varidx_delta);
-    int delta = hb_second (*new_varidx_delta);
-    if (delta != 0)
-    {
-      if (!c->serializer->check_assign (out->coordinate, coordinate + delta, HB_SERIALIZE_ERROR_INT_OVERFLOW))
-        return_trace (false);
+      if (new_varidx == HB_OT_LAYOUT_NO_VARIATIONS_INDEX)
+        return_trace (c->serializer->check_assign (out->caretValueFormat, 1, HB_SERIALIZE_ERROR_INT_OVERFLOW));
     }
-
-    if (new_varidx == HB_OT_LAYOUT_NO_VARIATIONS_INDEX)
-      return_trace (c->serializer->check_assign (out->caretValueFormat, 1, HB_SERIALIZE_ERROR_INT_OVERFLOW));
 
     if (!c->serializer->embed (deviceTable))
       return_trace (false);
@@ -253,7 +252,7 @@ struct CaretValue
 				 hb_codepoint_t glyph_id,
 				 const ItemVariationStore &var_store) const
   {
-    switch (u.format) {
+    switch (u.format.v) {
     case 1: return u.format1.get_caret_value (font, direction);
     case 2: return u.format2.get_caret_value (font, direction, glyph_id);
     case 3: return u.format3.get_caret_value (font, direction, var_store);
@@ -264,9 +263,9 @@ struct CaretValue
   template <typename context_t, typename ...Ts>
   typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
   {
-    if (unlikely (!c->may_dispatch (this, &u.format))) return c->no_dispatch_return_value ();
-    TRACE_DISPATCH (this, u.format);
-    switch (u.format) {
+    if (unlikely (!c->may_dispatch (this, &u.format.v))) return c->no_dispatch_return_value ();
+    TRACE_DISPATCH (this, u.format.v);
+    switch (u.format.v) {
     case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
     case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
     case 3: return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
@@ -276,7 +275,7 @@ struct CaretValue
 
   void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
   {
-    switch (u.format) {
+    switch (u.format.v) {
     case 1:
     case 2:
       return;
@@ -290,9 +289,9 @@ struct CaretValue
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    if (!u.format.sanitize (c)) return_trace (false);
+    if (!u.format.v.sanitize (c)) return_trace (false);
     hb_barrier ();
-    switch (u.format) {
+    switch (u.format.v) {
     case 1: return_trace (u.format1.sanitize (c));
     case 2: return_trace (u.format2.sanitize (c));
     case 3: return_trace (u.format3.sanitize (c));
@@ -302,13 +301,13 @@ struct CaretValue
 
   protected:
   union {
-  HBUINT16		format;		/* Format identifier */
+  struct { HBUINT16 v; }	format;		/* Format identifier */
   CaretValueFormat1	format1;
   CaretValueFormat2	format2;
   CaretValueFormat3	format3;
   } u;
   public:
-  DEFINE_SIZE_UNION (2, format);
+  DEFINE_SIZE_UNION (2, format.v);
 };
 
 struct LigGlyph
@@ -520,7 +519,7 @@ struct MarkGlyphSets
 {
   bool covers (unsigned int set_index, hb_codepoint_t glyph_id) const
   {
-    switch (u.format) {
+    switch (u.format.v) {
     case 1: return u.format1.covers (set_index, glyph_id);
     default:return false;
     }
@@ -529,7 +528,7 @@ struct MarkGlyphSets
   template <typename set_t>
   void collect_coverage (hb_vector_t<set_t> &sets) const
   {
-    switch (u.format) {
+    switch (u.format.v) {
     case 1: u.format1.collect_coverage (sets); return;
     default:return;
     }
@@ -538,7 +537,7 @@ struct MarkGlyphSets
   void collect_used_mark_sets (const hb_set_t& glyph_set,
                                hb_set_t& used_mark_sets /* OUT */) const
   {
-    switch (u.format) {
+    switch (u.format.v) {
     case 1: u.format1.collect_used_mark_sets (glyph_set, used_mark_sets); return;
     default:return;
     }
@@ -547,7 +546,7 @@ struct MarkGlyphSets
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    switch (u.format) {
+    switch (u.format.v) {
     case 1: return_trace (u.format1.subset (c));
     default:return_trace (false);
     }
@@ -556,9 +555,9 @@ struct MarkGlyphSets
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    if (!u.format.sanitize (c)) return_trace (false);
+    if (!u.format.v.sanitize (c)) return_trace (false);
     hb_barrier ();
-    switch (u.format) {
+    switch (u.format.v) {
     case 1: return_trace (u.format1.sanitize (c));
     default:return_trace (true);
     }
@@ -566,11 +565,11 @@ struct MarkGlyphSets
 
   protected:
   union {
-  HBUINT16		format;		/* Format identifier */
+  struct { HBUINT16 v; }	format;		/* Format identifier */
   MarkGlyphSetsFormat1	format1;
   } u;
   public:
-  DEFINE_SIZE_UNION (2, format);
+  DEFINE_SIZE_UNION (2, format.v);
 };
 
 
@@ -978,7 +977,7 @@ struct GDEF
       }
 
 #ifndef HB_NO_GDEF_CACHE
-      table->get_mark_glyph_sets ().collect_coverage (mark_glyph_set_digests);
+      table->get_mark_glyph_sets ().collect_coverage (mark_glyph_sets);
 #endif
     }
     ~accelerator_t () { table.destroy (); }
@@ -1003,19 +1002,36 @@ struct GDEF
 
     }
 
+    HB_ALWAYS_INLINE
     bool mark_set_covers (unsigned int set_index, hb_codepoint_t glyph_id) const
     {
       return
 #ifndef HB_NO_GDEF_CACHE
-	     mark_glyph_set_digests[set_index].may_have (glyph_id) &&
+	     // We can access arrayZ directly because of sanitize_lookup_props() guarantee.
+	     mark_glyph_sets.arrayZ[set_index].may_have (glyph_id) &&
 #endif
-	     table->mark_set_covers (set_index, glyph_id);
+	     table->mark_set_covers (set_index, glyph_id)
+      ;
+    }
+
+    unsigned sanitize_lookup_props (unsigned lookup_props) const
+    {
+#ifndef HB_NO_GDEF_CACHE
+      if (lookup_props & LookupFlag::UseMarkFilteringSet &&
+	  (lookup_props >> 16) >= mark_glyph_sets.length)
+      {
+        // Invalid mark filtering set index; unset the flag.
+	lookup_props &= ~LookupFlag::UseMarkFilteringSet;
+      }
+#endif
+      return lookup_props;
     }
 
     hb_blob_ptr_t<GDEF> table;
 #ifndef HB_NO_GDEF_CACHE
-    hb_vector_t<hb_set_digest_t> mark_glyph_set_digests;
-    mutable hb_cache_t<21, 3, 8> glyph_props_cache;
+    hb_vector_t<hb_set_digest_t> mark_glyph_sets;
+    mutable hb_cache_t<21, 3> glyph_props_cache;
+    static_assert (sizeof (glyph_props_cache) == 512, "");
 #endif
   };
 

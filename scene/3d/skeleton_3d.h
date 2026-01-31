@@ -67,7 +67,7 @@ class Skeleton3D : public Node3D {
 
 #ifdef TOOLS_ENABLED
 	bool saving = false;
-#endif //TOOLS_ENABLED
+#endif // TOOLS_ENABLED
 
 #if !defined(DISABLE_DEPRECATED) && !defined(PHYSICS_3D_DISABLED)
 	bool animate_physical_bones = true;
@@ -208,7 +208,6 @@ protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
-	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 	TypedArray<StringName> _get_bone_meta_list_bind(int p_bone) const;
 	static void _bind_methods();
@@ -225,7 +224,6 @@ public:
 	// Skeleton creation API
 	uint64_t get_version() const;
 	int add_bone(const String &p_name);
-	void remove_bone(int p_bone);
 	int find_bone(const String &p_name) const;
 	String get_bone_name(int p_bone) const;
 	void set_bone_name(int p_bone, const String &p_name);

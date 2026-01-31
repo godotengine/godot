@@ -40,6 +40,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "../editor/hostfxr_resolver.h"
+#include "../editor/semver.h"
 #endif
 
 #include "core/config/project_settings.h"
@@ -105,6 +106,60 @@ const char_t *get_data(const HostFxrCharString &p_char_str) {
 	return (const char_t *)p_char_str.get_data();
 }
 
+#ifdef TOOLS_ENABLED
+bool try_get_dotnet_root_from_command_line(String &r_dotnet_root) {
+	String pipe;
+	List<String> args;
+	args.push_back("--list-sdks");
+
+	int exitcode;
+	Error err = OS::get_singleton()->execute("dotnet", args, &pipe, &exitcode, true);
+
+	ERR_FAIL_COND_V_MSG(err != OK, false, String(".NET failed to get list of installed SDKs. Error: ") + error_names[err]);
+	ERR_FAIL_COND_V_MSG(exitcode != 0, false, pipe);
+
+	Vector<String> sdks = pipe.strip_edges().replace("\r\n", "\n").split("\n", false);
+
+	godotsharp::SemVerParser sem_ver_parser;
+
+	godotsharp::SemVer latest_sdk_version;
+	String latest_sdk_path;
+
+	for (const String &sdk : sdks) {
+		// The format of the SDK lines is:
+		// 8.0.401 [/usr/share/dotnet/sdk]
+		String version_string = sdk.get_slice(" ", 0);
+		String path = sdk.get_slice(" ", 1);
+		path = path.substr(1, path.length() - 2);
+
+		godotsharp::SemVer version;
+		if (!sem_ver_parser.parse(version_string, version)) {
+			WARN_PRINT("Unable to parse .NET SDK version '" + version_string + "'.");
+			continue;
+		}
+
+		if (!DirAccess::exists(path)) {
+			WARN_PRINT("Found .NET SDK version '" + version_string + "' with invalid path '" + path + "'.");
+			continue;
+		}
+
+		if (version > latest_sdk_version) {
+			latest_sdk_version = version;
+			latest_sdk_path = path;
+		}
+	}
+
+	if (!latest_sdk_path.is_empty()) {
+		print_verbose("Found .NET SDK at " + latest_sdk_path);
+		// The `dotnet_root` is the parent directory.
+		r_dotnet_root = latest_sdk_path.path_join("..").simplify_path();
+		return true;
+	}
+
+	return false;
+}
+#endif
+
 String find_hostfxr() {
 #ifdef TOOLS_ENABLED
 	String dotnet_root;
@@ -113,23 +168,9 @@ String find_hostfxr() {
 		return fxr_path;
 	}
 
-	// hostfxr_resolver doesn't look for dotnet in `PATH`. If it fails, we try to find the dotnet
-	// executable in `PATH` here and pass its location as `dotnet_root` to `get_hostfxr_path`.
-	String dotnet_exe = Path::find_executable("dotnet");
-
-	if (!dotnet_exe.is_empty()) {
-		// The file found in PATH may be a symlink
-		dotnet_exe = Path::abspath(Path::realpath(dotnet_exe));
-
-		// TODO:
-		// Sometimes, the symlink may not point to the dotnet executable in the dotnet root.
-		// That's the case with snaps. The snap install should have been found with the
-		// previous `get_hostfxr_path`, but it would still be better to do this properly
-		// and use something like `dotnet --list-sdks/runtimes` to find the actual location.
-		// This way we could also check if the proper sdk or runtime is installed. This would
-		// allow us to fail gracefully and show some helpful information in the editor.
-
-		dotnet_root = dotnet_exe.get_base_dir();
+	// hostfxr_resolver doesn't look for dotnet in `PATH`. If it fails, we try to use the dotnet
+	// executable in `PATH` to find the `dotnet_root` and get the `hostfxr_path` from there.
+	if (try_get_dotnet_root_from_command_line(dotnet_root)) {
 		if (godotsharp::hostfxr_resolver::try_get_path_from_dotnet_root(dotnet_root, fxr_path)) {
 			return fxr_path;
 		}
@@ -450,7 +491,7 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
 
 #if defined(WINDOWS_ENABLED)
 	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".dll");
-#elif defined(MACOS_ENABLED) || defined(IOS_ENABLED)
+#elif defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".dylib");
 #elif defined(ANDROID_ENABLED)
 	String native_aot_so_path = "lib" + assembly_name + ".so";
@@ -585,7 +626,7 @@ static bool _on_core_api_assembly_loaded() {
 	debug = true;
 #else
 	debug = false;
-#endif
+#endif // DEBUG_ENABLED
 
 	GDMonoCache::managed_callbacks.GD_OnCoreApiAssemblyLoaded(debug);
 
@@ -599,7 +640,7 @@ void GDMono::initialize() {
 
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
-#if !defined(IOS_ENABLED)
+#if !defined(APPLE_EMBEDDED_ENABLED)
 	// Check that the .NET assemblies directory exists before trying to use it.
 	if (!DirAccess::exists(GodotSharpDirs::get_api_assemblies_dir())) {
 		OS::get_singleton()->alert(vformat(RTR("Unable to find the .NET assemblies directory.\nMake sure the '%s' directory exists and contains the .NET assemblies."), GodotSharpDirs::get_api_assemblies_dir()), RTR(".NET assemblies not found"));
@@ -615,7 +656,8 @@ void GDMono::initialize() {
 		if (load_coreclr(coreclr_dll_handle)) {
 			godot_plugins_initialize = initialize_coreclr_and_godot_plugins(runtime_initialized);
 		} else {
-			godot_plugins_initialize = try_load_native_aot_library(hostfxr_dll_handle);
+			void *dll_handle = nullptr;
+			godot_plugins_initialize = try_load_native_aot_library(dll_handle);
 			if (godot_plugins_initialize != nullptr) {
 				runtime_initialized = true;
 			}
@@ -639,7 +681,7 @@ void GDMono::initialize() {
 
 	void *godot_dll_handle = nullptr;
 
-#if defined(UNIX_ENABLED) && !defined(MACOS_ENABLED) && !defined(IOS_ENABLED)
+#if defined(UNIX_ENABLED) && !defined(MACOS_ENABLED) && !defined(APPLE_EMBEDDED_ENABLED)
 	// Managed code can access it on its own on other platforms
 	godot_dll_handle = dlopen(nullptr, RTLD_NOW);
 #endif
@@ -690,13 +732,13 @@ void GDMono::_try_load_project_assembly() {
 #endif
 
 void GDMono::_init_godot_api_hashes() {
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	get_api_core_hash();
 
 #ifdef TOOLS_ENABLED
 	get_api_editor_hash();
 #endif // TOOLS_ENABLED
-#endif // DEBUG_METHODS_ENABLED
+#endif // DEBUG_ENABLED
 }
 
 #ifdef TOOLS_ENABLED

@@ -10,6 +10,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="clear_docs_from_script">
+			<return type="void" />
+			<param index="0" name="script" type="Script" />
+			<description>
+				Removes the documentation for the given [param script].
+				[b]Note:[/b] This should be called whenever the script is changed to keep the open documentation state up to date.
+			</description>
+		</method>
 		<method name="get_breakpoints">
 			<return type="PackedStringArray" />
 			<description>
@@ -91,6 +99,12 @@
 				[b]Note:[/b] Does not apply to scripts that are already opened.
 			</description>
 		</method>
+		<method name="save_all_scripts">
+			<return type="void" />
+			<description>
+				Saves all open scripts.
+			</description>
+		</method>
 		<method name="unregister_syntax_highlighter">
 			<return type="void" />
 			<param index="0" name="syntax_highlighter" type="EditorSyntaxHighlighter" />
@@ -103,7 +117,7 @@
 			<return type="void" />
 			<param index="0" name="script" type="Script" />
 			<description>
-				Updates the documentation for the given [param script] if the script's documentation is currently open.
+				Updates the documentation for the given [param script].
 				[b]Note:[/b] This should be called whenever the script is changed to keep the open documentation state up to date.
 			</description>
 		</method>

@@ -40,11 +40,12 @@
 #include "drivers/unix/file_access_unix_pipe.h"
 #include "drivers/unix/net_socket_unix.h"
 #include "drivers/unix/thread_posix.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
 #include <mach/host_info.h>
+#include <mach/mach.h>
 #include <mach/mach_host.h>
 #include <mach/mach_time.h>
 #include <sys/sysctl.h>
@@ -409,14 +410,8 @@ Dictionary OS_Unix::get_memory_info() const {
 	meminfo["stack"] = -1;
 
 #if defined(__APPLE__)
-	int pagesize = 0;
-	size_t len = sizeof(pagesize);
-	if (sysctlbyname("vm.pagesize", &pagesize, &len, nullptr, 0) < 0) {
-		ERR_PRINT(vformat("Could not get vm.pagesize, error code: %d - %s", errno, strerror(errno)));
-	}
-
 	int64_t phy_mem = 0;
-	len = sizeof(phy_mem);
+	size_t len = sizeof(phy_mem);
 	if (sysctlbyname("hw.memsize", &phy_mem, &len, nullptr, 0) < 0) {
 		ERR_PRINT(vformat("Could not get hw.memsize, error code: %d - %s", errno, strerror(errno)));
 	}
@@ -426,21 +421,30 @@ Dictionary OS_Unix::get_memory_info() const {
 	if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&vmstat, &count) != KERN_SUCCESS) {
 		ERR_PRINT("Could not get host vm statistics.");
 	}
-	struct xsw_usage swap_used;
+	int64_t used = (vmstat.active_count + vmstat.inactive_count + vmstat.speculative_count + vmstat.wire_count + vmstat.compressor_page_count - vmstat.purgeable_count - vmstat.external_page_count) * (int64_t)vm_page_size;
+
+#if !defined(APPLE_EMBEDDED_ENABLED)
+	struct xsw_usage swap_used = {};
 	len = sizeof(swap_used);
 	if (sysctlbyname("vm.swapusage", &swap_used, &len, nullptr, 0) < 0) {
 		ERR_PRINT(vformat("Could not get vm.swapusage, error code: %d - %s", errno, strerror(errno)));
 	}
+#endif
 
 	if (phy_mem != 0) {
 		meminfo["physical"] = phy_mem;
 	}
-	if (vmstat.free_count * (int64_t)pagesize != 0) {
-		meminfo["free"] = vmstat.free_count * (int64_t)pagesize;
+	if (used != 0) {
+		meminfo["free"] = phy_mem - used;
 	}
-	if (swap_used.xsu_avail + vmstat.free_count * (int64_t)pagesize != 0) {
-		meminfo["available"] = swap_used.xsu_avail + vmstat.free_count * (int64_t)pagesize;
+#if defined(APPLE_EMBEDDED_ENABLED)
+	meminfo["available"] = meminfo["free"];
+#else
+	if (swap_used.xsu_avail + (phy_mem - used) != 0) {
+		meminfo["available"] = swap_used.xsu_avail + (phy_mem - used);
 	}
+#endif
+
 #elif defined(__FreeBSD__)
 	int pagesize = 0;
 	size_t len = sizeof(pagesize);
@@ -756,6 +760,11 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 	}
 
 	if (pid == 0) {
+		// The new process
+		// Create a new session-ID so parent won't wait for it.
+		// This ensures the process won't go zombie at the end.
+		setsid();
+
 		// The child process.
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
@@ -795,7 +804,7 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 
 	Ref<FileAccessUnixPipe> err_pipe;
 	err_pipe.instantiate();
-	err_pipe->open_existing(pipe_err[0], 0, p_blocking);
+	err_pipe->open_existing(pipe_err[0], -1, p_blocking);
 
 	ProcessInfo pi;
 	process_map_mutex.lock();
@@ -811,10 +820,14 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 #endif
 }
 
-int OS_Unix::_wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_options) {
+int OS_Unix::_wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_options, pid_t *r_pid) {
 	while (true) {
-		if (waitpid(p_pid, r_status, p_options) != -1) {
-			// Thread exited normally.
+		pid_t pid = waitpid(p_pid, r_status, p_options);
+		if (pid != -1) {
+			// When `p_options` has `WNOHANG`, 0 can be returned if the process is still running.
+			if (r_pid) {
+				*r_pid = pid;
+			}
 			return 0;
 		}
 		const int error = errno;
@@ -838,16 +851,17 @@ bool OS_Unix::_check_pid_is_running(const pid_t p_pid, int *r_status) const {
 		return false;
 	}
 
+	pid_t pid = -1;
 	int status = 0;
-	const int result = _wait_for_pid_completion(p_pid, &status, WNOHANG);
-	if (result == 0) {
+	const int result = _wait_for_pid_completion(p_pid, &status, WNOHANG, &pid);
+	if (result == 0 && pid == 0) {
 		// Thread is still running.
 		return true;
 	}
 
-	ERR_FAIL_COND_V_MSG(result == -1, false, vformat("Thread %d exited with errno: %d", (int)p_pid, errno));
-	// Thread exited normally.
+	ERR_FAIL_COND_V_MSG(result != 0, false, vformat("Thread %d exited with errno: %d", (int)p_pid, errno));
 
+	// Thread exited normally.
 	status = WIFEXITED(status) ? WEXITSTATUS(status) : status;
 
 	if (pi) {
@@ -1086,6 +1100,16 @@ Error OS_Unix::set_cwd(const String &p_cwd) {
 	return OK;
 }
 
+String OS_Unix::get_cwd() const {
+	String dir;
+	char real_current_dir_name[2048];
+	ERR_FAIL_NULL_V(getcwd(real_current_dir_name, 2048), ".");
+	if (dir.append_utf8(real_current_dir_name) != OK) {
+		dir = real_current_dir_name;
+	}
+	return dir;
+}
+
 bool OS_Unix::has_environment(const String &p_var) const {
 	return getenv(p_var.utf8().get_data()) != nullptr;
 }
@@ -1120,8 +1144,8 @@ String OS_Unix::get_user_data_dir(const String &p_user_dir) const {
 String OS_Unix::get_executable_path() const {
 #ifdef __linux__
 	//fix for running from a symlink
-	char buf[256];
-	memset(buf, 0, 256);
+	char buf[PATH_MAX];
+	memset(buf, 0, PATH_MAX);
 	ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf));
 	String b;
 	if (len > 0) {
@@ -1211,32 +1235,34 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 	const char *cyan_bold = tty ? "\E[1;36m" : "";
 	const char *reset = tty ? "\E[0m" : "";
 
-	const char *indent = "";
+	const char *bold_color;
+	const char *normal_color;
 	switch (p_type) {
 		case ERR_WARNING:
-			indent = "     ";
-			logf_error("%sWARNING:%s %s\n", yellow_bold, yellow, err_details);
+			bold_color = yellow_bold;
+			normal_color = yellow;
 			break;
 		case ERR_SCRIPT:
-			indent = "          ";
-			logf_error("%sSCRIPT ERROR:%s %s\n", magenta_bold, magenta, err_details);
+			bold_color = magenta_bold;
+			normal_color = magenta;
 			break;
 		case ERR_SHADER:
-			indent = "          ";
-			logf_error("%sSHADER ERROR:%s %s\n", cyan_bold, cyan, err_details);
+			bold_color = cyan_bold;
+			normal_color = cyan;
 			break;
 		case ERR_ERROR:
 		default:
-			indent = "   ";
-			logf_error("%sERROR:%s %s\n", red_bold, red, err_details);
+			bold_color = red_bold;
+			normal_color = red;
 			break;
 	}
 
-	logf_error("%s%sat: %s (%s:%i)%s\n", gray, indent, p_function, p_file, p_line, reset);
+	logf_error("%s%s:%s %s\n", bold_color, error_type_string(p_type), normal_color, err_details);
+	logf_error("%s%sat: %s (%s:%i)%s\n", gray, error_type_indent(p_type), p_function, p_file, p_line, reset);
 
 	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
 		if (!backtrace->is_empty()) {
-			logf_error("%s%s%s\n", gray, backtrace->format(strlen(indent)).utf8().get_data(), reset);
+			logf_error("%s%s%s\n", gray, backtrace->format(strlen(error_type_indent(p_type))).utf8().get_data(), reset);
 		}
 	}
 }

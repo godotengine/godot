@@ -81,7 +81,7 @@ class GDScriptAnalyzer {
 	void resolve_function_signature(GDScriptParser::FunctionNode *p_function, const GDScriptParser::Node *p_source = nullptr, bool p_is_lambda = false);
 	void resolve_function_body(GDScriptParser::FunctionNode *p_function, bool p_is_lambda = false);
 	void resolve_node(GDScriptParser::Node *p_node, bool p_is_root = true);
-	void resolve_suite(GDScriptParser::SuiteNode *p_suite);
+	void resolve_suite(GDScriptParser::SuiteNode *p_suite, bool p_is_root = true);
 	void resolve_assignable(GDScriptParser::AssignableNode *p_assignable, const char *p_kind);
 	void resolve_variable(GDScriptParser::VariableNode *p_variable, bool p_is_local);
 	void resolve_constant(GDScriptParser::ConstantNode *p_constant, bool p_is_local);
@@ -116,15 +116,24 @@ class GDScriptAnalyzer {
 	void reduce_type_test(GDScriptParser::TypeTestNode *p_type_test);
 	void reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op);
 
-	Variant make_expression_reduced_value(GDScriptParser::ExpressionNode *p_expression, bool &is_reduced);
-	Variant make_array_reduced_value(GDScriptParser::ArrayNode *p_array, bool &is_reduced);
-	Variant make_dictionary_reduced_value(GDScriptParser::DictionaryNode *p_dictionary, bool &is_reduced);
-	Variant make_subscript_reduced_value(GDScriptParser::SubscriptNode *p_subscript, bool &is_reduced);
-	Variant make_call_reduced_value(GDScriptParser::CallNode *p_call, bool &is_reduced);
+	// These methods provide a fallback mechanism for constant folding in constant contexts (constant initializers,
+	// annotation arguments) and allow constant folding even when the normal constant folding mechanism does not consider
+	// an expression to be constant (usually due to the presence of `[...]` and `{...}` constructs in it).
+	// These methods assume that the normal expression reduction mechanism has already been performed.
+	Variant make_expression_reduced_value(GDScriptParser::ExpressionNode *p_expression, bool &r_is_reduced);
+	Variant make_array_reduced_value(GDScriptParser::ArrayNode *p_array, bool &r_is_reduced);
+	Variant make_dictionary_reduced_value(GDScriptParser::DictionaryNode *p_dictionary, bool &r_is_reduced);
+	Variant make_subscript_reduced_value(GDScriptParser::SubscriptNode *p_subscript, bool &r_is_reduced);
+	Variant make_call_reduced_value(GDScriptParser::CallNode *p_call, bool &r_is_reduced);
+	Variant make_binary_op_reduced_value(GDScriptParser::BinaryOpNode *p_binary_op, bool &r_is_reduced);
+	Variant make_ternary_op_reduced_value(GDScriptParser::TernaryOpNode *p_ternary_op, bool &r_is_reduced);
+	Variant make_cast_reduced_value(GDScriptParser::CastNode *p_cast, bool &r_is_reduced);
+	Variant make_type_test_reduced_value(GDScriptParser::TypeTestNode *p_type_test, bool &r_is_reduced);
 
 	// Helpers.
 	Array make_array_from_element_datatype(const GDScriptParser::DataType &p_element_datatype, const GDScriptParser::Node *p_source_node = nullptr);
 	Dictionary make_dictionary_from_element_datatype(const GDScriptParser::DataType &p_key_element_datatype, const GDScriptParser::DataType &p_value_element_datatype, const GDScriptParser::Node *p_source_node = nullptr);
+	GDScriptParser::DataType type_from_script(const Ref<Script> &p_script, const GDScriptParser::Node *p_source, bool p_is_meta_type);
 	GDScriptParser::DataType type_from_variant(const Variant &p_value, const GDScriptParser::Node *p_source);
 	GDScriptParser::DataType type_from_property(const PropertyInfo &p_property, bool p_is_arg = false, bool p_is_readonly = false) const;
 	GDScriptParser::DataType make_global_class_meta_type(const StringName &p_class_name, const GDScriptParser::Node *p_source);
@@ -138,12 +147,12 @@ class GDScriptAnalyzer {
 	void update_array_literal_element_type(GDScriptParser::ArrayNode *p_array, const GDScriptParser::DataType &p_element_type);
 	void update_dictionary_literal_element_type(GDScriptParser::DictionaryNode *p_dictionary, const GDScriptParser::DataType &p_key_element_type, const GDScriptParser::DataType &p_value_element_type);
 	bool is_type_compatible(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion = false, const GDScriptParser::Node *p_source_node = nullptr);
+	bool is_type_compatible_strict_collections(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source);
 	void push_error(const String &p_message, const GDScriptParser::Node *p_origin = nullptr);
 	void mark_node_unsafe(const GDScriptParser::Node *p_node);
 	void downgrade_node_type_source(GDScriptParser::Node *p_node);
 	void mark_lambda_use_self();
 	void resolve_pending_lambda_bodies();
-	bool class_exists(const StringName &p_class) const;
 	void reduce_identifier_from_base_set_class(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType p_identifier_datatype);
 	Ref<GDScriptParserRef> ensure_cached_external_parser_for_class(const GDScriptParser::ClassNode *p_class, const GDScriptParser::ClassNode *p_from_class, const char *p_context, const GDScriptParser::Node *p_source);
 	Ref<GDScriptParserRef> find_cached_external_parser_for_class(const GDScriptParser::ClassNode *p_class, const Ref<GDScriptParserRef> &p_dependant_parser);
@@ -164,6 +173,7 @@ public:
 
 	static bool check_type_compatibility(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion = false, const GDScriptParser::Node *p_source_node = nullptr);
 	static GDScriptParser::DataType type_from_metatype(const GDScriptParser::DataType &p_meta_type);
+	static bool class_exists(const StringName &p_class);
 
 	GDScriptAnalyzer(GDScriptParser *p_parser);
 };

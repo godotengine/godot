@@ -174,13 +174,16 @@ String Variant::get_type_name(Variant::Type p_type) {
 	return "";
 }
 
-Variant::Type Variant::get_type_by_name(const String &p_type_name) {
-	static HashMap<String, Type> type_names;
-	if (unlikely(type_names.is_empty())) {
-		for (int i = 0; i < VARIANT_MAX; i++) {
-			type_names[get_type_name((Type)i)] = (Type)i;
-		}
+static HashMap<String, Variant::Type> _init_type_name_map() {
+	HashMap<String, Variant::Type> type_names;
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		type_names[Variant::get_type_name((Variant::Type)i)] = (Variant::Type)i;
 	}
+	return type_names;
+}
+
+Variant::Type Variant::get_type_by_name(const String &p_type_name) {
+	static HashMap<String, Type> type_names = _init_type_name_map();
 
 	const Type *ptr = type_names.getptr(p_type_name);
 	return (ptr == nullptr) ? VARIANT_MAX : *ptr;
@@ -1610,41 +1613,41 @@ String Variant::stringify(int recursion_count) const {
 		case STRING:
 			return *reinterpret_cast<const String *>(_data._mem);
 		case VECTOR2:
-			return operator Vector2();
+			return String(operator Vector2());
 		case VECTOR2I:
-			return operator Vector2i();
+			return String(operator Vector2i());
 		case RECT2:
-			return operator Rect2();
+			return String(operator Rect2());
 		case RECT2I:
-			return operator Rect2i();
+			return String(operator Rect2i());
 		case TRANSFORM2D:
-			return operator Transform2D();
+			return String(operator Transform2D());
 		case VECTOR3:
-			return operator Vector3();
+			return String(operator Vector3());
 		case VECTOR3I:
-			return operator Vector3i();
+			return String(operator Vector3i());
 		case VECTOR4:
-			return operator Vector4();
+			return String(operator Vector4());
 		case VECTOR4I:
-			return operator Vector4i();
+			return String(operator Vector4i());
 		case PLANE:
-			return operator Plane();
+			return String(operator Plane());
 		case AABB:
-			return operator ::AABB();
+			return String(operator ::AABB());
 		case QUATERNION:
-			return operator Quaternion();
+			return String(operator Quaternion());
 		case BASIS:
-			return operator Basis();
+			return String(operator Basis());
 		case TRANSFORM3D:
-			return operator Transform3D();
+			return String(operator Transform3D());
 		case PROJECTION:
-			return operator Projection();
+			return String(operator Projection());
 		case STRING_NAME:
 			return operator StringName();
 		case NODE_PATH:
-			return operator NodePath();
+			return String(operator NodePath());
 		case COLOR:
-			return operator Color();
+			return String(operator Color());
 		case DICTIONARY: {
 			ERR_FAIL_COND_V_MSG(recursion_count > MAX_RECURSION, "{ ... }", "Maximum dictionary recursion reached!");
 			recursion_count++;
@@ -1725,11 +1728,11 @@ String Variant::stringify(int recursion_count) const {
 		}
 		case CALLABLE: {
 			const Callable &c = *reinterpret_cast<const Callable *>(_data._mem);
-			return c;
+			return String(c);
 		}
 		case SIGNAL: {
 			const Signal &s = *reinterpret_cast<const Signal *>(_data._mem);
-			return s;
+			return String(s);
 		}
 		case RID: {
 			const ::RID &s = *reinterpret_cast<const ::RID *>(_data._mem);
@@ -2941,7 +2944,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			return hash_one_uint64(reinterpret_cast<const ::RID *>(_data._mem)->get_id());
 		} break;
 		case OBJECT: {
-			return hash_one_uint64(hash_make_uint64_t(_get_obj().obj));
+			return hash_one_uint64(reinterpret_cast<uint64_t>(_get_obj().obj));
 		} break;
 		case STRING_NAME: {
 			return reinterpret_cast<const StringName *>(_data._mem)->hash();
@@ -3430,14 +3433,24 @@ bool Variant::is_ref_counted() const {
 bool Variant::is_type_shared(Variant::Type p_type) {
 	switch (p_type) {
 		case OBJECT:
-		case ARRAY:
 		case DICTIONARY:
+		case ARRAY:
+		// NOTE: Packed array constructors **do** copies (unlike `Array()` and `Dictionary()`),
+		// whereas they pass by reference when inside a `Variant`.
+		case PACKED_BYTE_ARRAY:
+		case PACKED_INT32_ARRAY:
+		case PACKED_INT64_ARRAY:
+		case PACKED_FLOAT32_ARRAY:
+		case PACKED_FLOAT64_ARRAY:
+		case PACKED_STRING_ARRAY:
+		case PACKED_VECTOR2_ARRAY:
+		case PACKED_VECTOR3_ARRAY:
+		case PACKED_COLOR_ARRAY:
+		case PACKED_VECTOR4_ARRAY:
 			return true;
-		default: {
-		}
+		default:
+			return false;
 	}
-
-	return false;
 }
 
 bool Variant::is_shared() const {
@@ -3501,9 +3514,9 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from [missing argptr, type unknown] to " + Variant::get_type_name(Variant::Type(ce.expected));
 		}
 	} else if (ce.error == Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
-		err_text = "Method expected " + itos(ce.expected) + " arguments, but called with " + itos(p_argcount);
+		err_text = "Method expected " + itos(ce.expected) + " argument(s), but called with " + itos(p_argcount);
 	} else if (ce.error == Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
-		err_text = "Method expected " + itos(ce.expected) + " arguments, but called with " + itos(p_argcount);
+		err_text = "Method expected " + itos(ce.expected) + " argument(s), but called with " + itos(p_argcount);
 	} else if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 		err_text = "Method not found";
 	} else if (ce.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {

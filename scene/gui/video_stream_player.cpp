@@ -31,7 +31,7 @@
 #include "video_stream_player.h"
 
 #include "core/os/os.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 int VideoStreamPlayer::sp_get_channel_count() const {
 	if (playback.is_null()) {
@@ -154,16 +154,12 @@ void VideoStreamPlayer::_notification(int p_notification) {
 				return;
 			}
 
-			double audio_time = USEC_TO_SEC(OS::get_singleton()->get_ticks_usec());
+			double delta = first_frame ? 0 : get_process_delta_time();
+			first_frame = false;
 
-			double delta = last_audio_time == 0 ? 0 : audio_time - last_audio_time;
-			last_audio_time = audio_time;
+			resampler.set_playback_speed(Engine::get_singleton()->get_effective_time_scale() * speed_scale);
 
-			if (delta == 0) {
-				return;
-			}
-
-			playback->update(delta); // playback->is_playing() returns false in the last video frame
+			playback->update(delta * speed_scale); // playback->is_playing() returns false in the last video frame
 
 			if (!playback->is_playing()) {
 				resampler.flush();
@@ -195,7 +191,6 @@ void VideoStreamPlayer::_notification(int p_notification) {
 					playback->set_paused(true);
 					set_process_internal(false);
 				}
-				last_audio_time = 0;
 			}
 		} break;
 
@@ -213,7 +208,6 @@ void VideoStreamPlayer::_notification(int p_notification) {
 					playback->set_paused(false);
 					set_process_internal(true);
 				}
-				last_audio_time = 0;
 			}
 		} break;
 	}
@@ -339,13 +333,9 @@ void VideoStreamPlayer::play() {
 	if (playback.is_null()) {
 		return;
 	}
-	playback->stop();
 	playback->play();
 	set_process_internal(true);
-	last_audio_time = 0;
-
-	// We update the playback to render the first frame immediately.
-	playback->update(0);
+	first_frame = true;
 
 	if (!can_process()) {
 		_notification(NOTIFICATION_PAUSED);
@@ -363,7 +353,6 @@ void VideoStreamPlayer::stop() {
 	playback->stop();
 	resampler.flush();
 	set_process_internal(false);
-	last_audio_time = 0;
 }
 
 bool VideoStreamPlayer::is_playing() const {
@@ -392,7 +381,6 @@ void VideoStreamPlayer::set_paused(bool p_paused) {
 		playback->set_paused(p_paused);
 		set_process_internal(!p_paused);
 	}
-	last_audio_time = 0;
 }
 
 bool VideoStreamPlayer::is_paused() const {
@@ -445,6 +433,15 @@ float VideoStreamPlayer::get_volume_db() const {
 	}
 }
 
+void VideoStreamPlayer::set_speed_scale(float p_speed_scale) {
+	ERR_FAIL_COND(p_speed_scale < 0.0);
+	speed_scale = p_speed_scale;
+}
+
+float VideoStreamPlayer::get_speed_scale() const {
+	return speed_scale;
+}
+
 String VideoStreamPlayer::get_stream_name() const {
 	if (stream.is_null()) {
 		return "<No Stream>";
@@ -468,7 +465,9 @@ double VideoStreamPlayer::get_stream_position() const {
 
 void VideoStreamPlayer::set_stream_position(double p_position) {
 	if (playback.is_valid()) {
+		resampler.flush();
 		playback->seek(p_position);
+		first_frame = true;
 	}
 }
 
@@ -505,6 +504,9 @@ StringName VideoStreamPlayer::get_bus() const {
 }
 
 void VideoStreamPlayer::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "bus") {
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
@@ -540,6 +542,9 @@ void VideoStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_volume_db", "db"), &VideoStreamPlayer::set_volume_db);
 	ClassDB::bind_method(D_METHOD("get_volume_db"), &VideoStreamPlayer::get_volume_db);
 
+	ClassDB::bind_method(D_METHOD("set_speed_scale", "speed_scale"), &VideoStreamPlayer::set_speed_scale);
+	ClassDB::bind_method(D_METHOD("get_speed_scale"), &VideoStreamPlayer::get_speed_scale);
+
 	ClassDB::bind_method(D_METHOD("set_audio_track", "track"), &VideoStreamPlayer::set_audio_track);
 	ClassDB::bind_method(D_METHOD("get_audio_track"), &VideoStreamPlayer::get_audio_track);
 
@@ -569,6 +574,7 @@ void VideoStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "VideoStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,0.01,suffix:dB"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume", PROPERTY_HINT_RANGE, "0,15,0.01,exp", PROPERTY_USAGE_NONE), "set_volume", "get_volume");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "0,4,0.001,or_greater"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "has_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_paused", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");

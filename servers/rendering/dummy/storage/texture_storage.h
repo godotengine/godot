@@ -36,7 +36,7 @@ namespace RendererDummy {
 
 class TextureStorage : public RendererTextureStorage {
 private:
-	static TextureStorage *singleton;
+	static inline TextureStorage *singleton = nullptr;
 
 	struct DummyTexture {
 		Ref<Image> image;
@@ -46,8 +46,8 @@ private:
 public:
 	static TextureStorage *get_singleton() { return singleton; }
 
-	TextureStorage();
-	~TextureStorage();
+	TextureStorage() { singleton = this; }
+	~TextureStorage() { singleton = nullptr; }
 
 	/* Canvas Texture API */
 
@@ -88,6 +88,7 @@ public:
 	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) override {}
 	virtual void texture_external_initialize(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override {}
 	virtual void texture_proxy_initialize(RID p_texture, RID p_base) override {} //all slices, then all the mipmaps, must be coherent
+	virtual void texture_drawable_initialize(RID p_texture, int p_width, int p_height, RS::TextureDrawableFormat p_format, const Color &p_color, bool p_with_mipmaps) override {}
 
 	virtual RID texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY) override { return RID(); }
 
@@ -95,6 +96,8 @@ public:
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override {}
 	virtual void texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override {}
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) override {}
+
+	virtual void texture_drawable_blit_rect(const TypedArray<RID> &p_textures, const Rect2i &p_rect, RID p_material, const Color &p_modulate, const TypedArray<RID> &p_source_textures, int p_to_mipmap) override {}
 
 	//these two APIs can be used together or in combination with the others.
 	virtual void texture_2d_placeholder_initialize(RID p_texture) override {}
@@ -108,6 +111,9 @@ public:
 	}
 	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const override { return Ref<Image>(); }
 	virtual Vector<Ref<Image>> texture_3d_get(RID p_texture) const override { return Vector<Ref<Image>>(); }
+
+	virtual void texture_drawable_generate_mipmaps(RID p_texture) override {}
+	virtual RID texture_drawable_get_default_material() const override { return RID(); }
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) override { texture_free(p_by_texture); }
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) override {}
@@ -180,6 +186,8 @@ public:
 	virtual void render_target_do_msaa_resolve(RID p_render_target) override {}
 	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr_2d) override {}
 	virtual bool render_target_is_using_hdr(RID p_render_target) const override { return false; }
+	virtual void render_target_set_use_debanding(RID p_render_target, bool p_use_debanding) override {}
+	virtual bool render_target_is_using_debanding(RID p_render_target) const override { return false; }
 
 	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color) override {}
 	virtual bool render_target_is_clear_requested(RID p_render_target) override { return false; }

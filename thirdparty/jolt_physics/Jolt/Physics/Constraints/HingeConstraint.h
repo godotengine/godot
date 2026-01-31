@@ -123,6 +123,11 @@ public:
 	void						SetTargetAngle(float inAngle)							{ mTargetAngle = mHasLimits? Clamp(inAngle, mLimitsMin, mLimitsMax) : inAngle; } ///< rad
 	float						GetTargetAngle() const									{ return mTargetAngle; }
 
+	/// Set the target orientation in body space (R2 = R1 * inOrientation, where R1 and R2 are the world space rotations for body 1 and 2).
+	/// Calculates the local space target angle and calls SetTargetAngle. Motor state must be EMotorState::Position for this to have any effect.
+	/// May set the wrong angle if inOrientation contains large rotations around other axis than the hinge axis.
+	void						SetTargetOrientationBS(QuatArg inOrientation);
+
 	/// Update the rotation limits of the hinge, value in radians (see HingeConstraintSettings)
 	void						SetLimits(float inLimitsMin, float inLimitsMax);
 	float						GetLimitsMin() const									{ return mLimitsMin; }

@@ -55,6 +55,7 @@
 #import "core/config/project_settings.h"
 #import "core/debugger/engine_debugger.h"
 #import "core/io/marshalls.h"
+#import "core/os/main_loop.h"
 
 DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	EmbeddedDebugger::initialize(this);
@@ -77,7 +78,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 	// Metal rendering driver not available on Intel.
 	if (rendering_driver == "metal") {
 		rendering_driver = "vulkan";
-		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 	}
 #endif
 	if (rendering_driver == "vulkan") {
@@ -97,10 +98,10 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 #if defined(GLES3_ENABLED)
 			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
 			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
-				WARN_PRINT("Your device seem not to support MoltenVK or Metal, switching to OpenGL 3.");
+				WARN_PRINT("Your device does not seem to support MoltenVK or Metal, switching to OpenGL 3.");
 				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility", OS::RENDERING_SOURCE_FALLBACK);
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else
 #endif
 			{
@@ -115,7 +116,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 	if (rendering_driver == "opengl3_angle") {
 		WARN_PRINT("ANGLE not supported for embedded display, switching to native OpenGL.");
 		rendering_driver = "opengl3";
-		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 	}
 
 	if (rendering_driver == "opengl3") {
@@ -135,6 +136,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 		if (err != OK) {
 			ERR_FAIL_MSG("Could not create OpenGL context.");
 		}
+		gl_manager->set_vsync_enabled(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 	}
 #endif
 
@@ -319,6 +321,12 @@ bool DisplayServerEmbedded::mouse_is_mode_override_enabled() const {
 	return mouse_mode_override_enabled;
 }
 
+void DisplayServerEmbedded::warp_mouse(const Point2i &p_position) {
+	_THREAD_SAFE_METHOD_
+	Input::get_singleton()->set_mouse_position(p_position);
+	EngineDebugger::get_singleton()->send_message("game_view:warp_mouse", { p_position });
+}
+
 Point2i DisplayServerEmbedded::mouse_get_position() const {
 	_THREAD_SAFE_METHOD_
 
@@ -382,36 +390,8 @@ void DisplayServerEmbedded::window_set_drop_files_callback(const Callable &p_cal
 	// Not supported
 }
 
-void DisplayServerEmbedded::joy_add(int p_idx, const String &p_name) {
-	Joy *joy = joysticks.getptr(p_idx);
-	if (joy == nullptr) {
-		joysticks[p_idx] = Joy(p_name);
-		Input::get_singleton()->joy_connection_changed(p_idx, true, p_name);
-	}
-}
-
-void DisplayServerEmbedded::joy_del(int p_idx) {
-	if (joysticks.erase(p_idx)) {
-		Input::get_singleton()->joy_connection_changed(p_idx, false, String());
-	}
-}
-
 void DisplayServerEmbedded::process_events() {
 	Input *input = Input::get_singleton();
-	for (KeyValue<int, Joy> &kv : joysticks) {
-		uint64_t ts = input->get_joy_vibration_timestamp(kv.key);
-		if (ts > kv.value.timestamp) {
-			kv.value.timestamp = ts;
-			Vector2 strength = input->get_joy_vibration_strength(kv.key);
-			if (strength == Vector2()) {
-				EngineDebugger::get_singleton()->send_message("game_view:joy_stop", { kv.key });
-			} else {
-				float duration = input->get_joy_vibration_duration(kv.key);
-				EngineDebugger::get_singleton()->send_message("game_view:joy_start", { kv.key, duration, strength });
-			}
-		}
-	}
-
 	input->flush_buffered_events();
 }
 
@@ -469,19 +449,19 @@ bool DisplayServerEmbedded::has_feature(Feature p_feature) const {
 #endif
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_IME:
-			// case FEATURE_CUSTOM_CURSOR_SHAPE:
+		case FEATURE_CUSTOM_CURSOR_SHAPE:
 			// case FEATURE_HIDPI:
 			// case FEATURE_ICON:
 			// case FEATURE_MOUSE:
-			// case FEATURE_MOUSE_WARP:
+		case FEATURE_MOUSE_WARP:
 			// case FEATURE_NATIVE_DIALOG:
 			// case FEATURE_NATIVE_ICON:
 			// case FEATURE_WINDOW_TRANSPARENCY:
-			// case FEATURE_CLIPBOARD:
+		case FEATURE_CLIPBOARD:
 			// case FEATURE_KEEP_SCREEN_ON:
 			// case FEATURE_ORIENTATION:
 			// case FEATURE_VIRTUAL_KEYBOARD:
-			// case FEATURE_TEXT_TO_SPEECH:
+		case FEATURE_TEXT_TO_SPEECH:
 			// case FEATURE_TOUCHSCREEN:
 			return true;
 		default:
@@ -502,23 +482,66 @@ int DisplayServerEmbedded::get_primary_screen() const {
 }
 
 Point2i DisplayServerEmbedded::screen_get_position(int p_screen) const {
-	return Size2i();
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Point2i());
+
+	return Point2i(0, 0);
 }
 
 Size2i DisplayServerEmbedded::screen_get_size(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
+
 	return window_get_size(MAIN_WINDOW_ID);
 }
 
 Rect2i DisplayServerEmbedded::screen_get_usable_rect(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	return Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
 }
 
 int DisplayServerEmbedded::screen_get_dpi(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 72);
+
 	return 96;
+}
+
+float DisplayServerEmbedded::screen_get_scale(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	switch (p_screen) {
+		case SCREEN_WITH_MOUSE_FOCUS:
+		case SCREEN_WITH_KEYBOARD_FOCUS:
+		case SCREEN_PRIMARY:
+		case SCREEN_OF_MAIN_WINDOW:
+		case 0:
+			return state.screen_window_scale;
+		default:
+			return 1.0;
+	}
 }
 
 float DisplayServerEmbedded::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
 
 	p_screen = _get_screen_index(p_screen);
 	NSArray *screenArray = [NSScreen screens];
@@ -555,7 +578,10 @@ void DisplayServerEmbedded::window_set_title(const String &p_title, WindowID p_w
 }
 
 int DisplayServerEmbedded::window_get_current_screen(WindowID p_window) const {
-	return SCREEN_OF_MAIN_WINDOW;
+	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, INVALID_SCREEN);
+
+	return 0;
 }
 
 void DisplayServerEmbedded::window_set_current_screen(int p_screen, WindowID p_window) {
@@ -595,6 +621,10 @@ Size2i DisplayServerEmbedded::window_get_min_size(WindowID p_window) const {
 }
 
 void DisplayServerEmbedded::window_set_size(const Size2i p_size, WindowID p_window) {
+	print_line("Embedded window can't be resized.");
+}
+
+void DisplayServerEmbedded::_window_set_size(const Size2i p_size, WindowID p_window) {
 	[CATransaction begin];
 	[CATransaction setDisableActions:YES];
 
@@ -708,15 +738,44 @@ void DisplayServerEmbedded::window_set_ime_position(const Point2i &p_pos, Window
 }
 
 void DisplayServerEmbedded::set_state(const DisplayServerEmbeddedState &p_state) {
+	if (state == p_state) {
+		return;
+	}
+
+	uint32_t old_display_id = state.display_id;
+
 	state = p_state;
+
+	if (state.display_id != old_display_id) {
+#if defined(GLES3_ENABLED)
+		if (gl_manager) {
+			gl_manager->set_display_id(state.display_id);
+		}
+#endif
+	}
 }
 
 void DisplayServerEmbedded::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
-	// Not supported
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		gl_manager->set_vsync_enabled(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+	}
+#endif
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
+	}
+#endif
 }
 
 DisplayServer::VSyncMode DisplayServerEmbedded::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		return (gl_manager->is_vsync_enabled() ? DisplayServer::VSyncMode::VSYNC_ENABLED : DisplayServer::VSyncMode::VSYNC_DISABLED);
+	}
+#endif
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		return rendering_context->window_get_vsync_mode(p_window);
@@ -750,7 +809,14 @@ DisplayServer::CursorShape DisplayServerEmbedded::cursor_get_shape() const {
 }
 
 void DisplayServerEmbedded::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
-	WARN_PRINT_ONCE("Custom cursor images are not supported in embedded mode.");
+	PackedByteArray data;
+	if (p_cursor.is_valid()) {
+		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot);
+		if (image.is_valid()) {
+			data = image->save_png_to_buffer();
+		}
+	}
+	EngineDebugger::get_singleton()->send_message("game_view:cursor_set_custom_image", { data, p_shape, p_hotspot });
 }
 
 void DisplayServerEmbedded::swap_buffers() {
@@ -762,14 +828,16 @@ void DisplayServerEmbedded::swap_buffers() {
 }
 
 void DisplayServerEmbeddedState::serialize(PackedByteArray &r_data) {
-	r_data.resize(8);
+	r_data.resize(16);
 
 	uint8_t *data = r_data.ptrw();
 	data += encode_float(screen_max_scale, data);
 	data += encode_float(screen_dpi, data);
+	data += encode_float(screen_window_scale, data);
+	data += encode_uint32(display_id, data);
 
 	// Assert we had enough space.
-	DEV_ASSERT(data - r_data.ptrw() >= r_data.size());
+	DEV_ASSERT(r_data.size() >= (data - r_data.ptrw()));
 }
 
 Error DisplayServerEmbeddedState::deserialize(const PackedByteArray &p_data) {
@@ -778,6 +846,10 @@ Error DisplayServerEmbeddedState::deserialize(const PackedByteArray &p_data) {
 	screen_max_scale = decode_float(data);
 	data += sizeof(float);
 	screen_dpi = decode_float(data);
+	data += sizeof(float);
+	screen_window_scale = decode_float(data);
+	data += sizeof(float);
+	display_id = decode_uint32(data);
 
 	return OK;
 }

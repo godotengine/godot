@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "scene/gui/label.h"
+#include "scene/main/timer.h"
 #include "scene/main/window.h"
 
 void BaseButton::_unpress_group() {
@@ -266,6 +267,10 @@ void BaseButton::set_disabled(bool p_disabled) {
 		}
 		status.press_attempt = false;
 		status.pressing_inside = false;
+		if (status.pressed_down_with_focus) {
+			status.pressed_down_with_focus = false;
+			emit_signal(SNAME("button_up"));
+		}
 	}
 	queue_accessibility_update();
 	queue_redraw();
@@ -452,7 +457,7 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 			if (shortcut_feedback_timer == nullptr) {
 				shortcut_feedback_timer = memnew(Timer);
 				shortcut_feedback_timer->set_one_shot(true);
-				add_child(shortcut_feedback_timer);
+				add_child(shortcut_feedback_timer, false, INTERNAL_MODE_BACK);
 				shortcut_feedback_timer->set_wait_time(GLOBAL_GET_CACHED(double, "gui/timers/button_shortcut_feedback_highlight_time"));
 				shortcut_feedback_timer->connect("timeout", callable_mp(this, &BaseButton::_shortcut_feedback_timeout));
 			}

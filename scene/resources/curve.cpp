@@ -2127,6 +2127,14 @@ PackedVector3Array Curve3D::get_baked_up_vectors() const {
 	return baked_up_vector_cache;
 }
 
+Vector<real_t> Curve3D::get_baked_dist_cache() const {
+	if (baked_cache_dirty) {
+		_bake();
+	}
+
+	return baked_dist_cache;
+}
+
 Vector3 Curve3D::get_closest_point(const Vector3 &p_to_point) const {
 	// Brute force method.
 
@@ -2458,7 +2466,7 @@ void Curve3D::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(pi);
 		}
 
-		pi = PropertyInfo(Variant::FLOAT, vformat("point_%d/tilt", i));
+		pi = PropertyInfo(Variant::FLOAT, vformat("point_%d/tilt", i), PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians_as_degrees");
 		pi.usage &= ~PROPERTY_USAGE_STORAGE;
 		p_list->push_back(pi);
 	}

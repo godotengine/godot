@@ -30,8 +30,8 @@
 
 #pragma once
 
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/storage/render_scene_buffers.h"
-#include "servers/rendering_server.h"
 
 #ifdef XR_DISABLED
 // RendererSceneCull::render_camera is empty when 3D is disabled, but
@@ -185,10 +185,11 @@ public:
 
 	// Tonemap
 	virtual void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) = 0;
+	virtual void environment_set_tonemap_agx_contrast(RID p_env, float p_agx_contrast) = 0;
 
 	virtual RS::EnvironmentToneMapper environment_get_tone_mapper(RID p_env) const = 0;
 	virtual float environment_get_exposure(RID p_env) const = 0;
-	virtual float environment_get_white(RID p_env) const = 0;
+	virtual float environment_get_white(RID p_env, bool p_limit_agx_white) const = 0;
 
 	// Fog
 	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect, RS::EnvironmentFogMode p_mode = RS::EnvironmentFogMode::ENV_FOG_MODE_EXPONENTIAL) = 0;
@@ -260,6 +261,7 @@ public:
 	virtual float environment_get_ssr_fade_out(RID p_env) const = 0;
 	virtual float environment_get_ssr_depth_tolerance(RID p_env) const = 0;
 
+	virtual void environment_set_ssr_half_size(bool p_half_size) = 0;
 	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) = 0;
 
 	// SSAO
@@ -355,6 +357,7 @@ public:
 	virtual void decals_set_filter(RS::DecalFilter p_filter) = 0;
 	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) = 0;
 	virtual void lightmaps_set_bicubic_filter(bool p_enable) = 0;
+	virtual void material_set_use_debanding(bool p_enable) = 0;
 
 	virtual bool free(RID p_rid) = 0;
 
@@ -368,6 +371,5 @@ public:
 	virtual void tick() = 0;
 	virtual void pre_draw(bool p_will_draw) = 0;
 
-	RenderingMethod();
-	virtual ~RenderingMethod();
+	virtual ~RenderingMethod() {}
 };

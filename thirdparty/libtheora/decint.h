@@ -6,12 +6,12 @@
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
  * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009                *
- * by the Xiph.Org Foundation and contributors http://www.xiph.org/ *
+ * by the Xiph.Org Foundation and contributors                      *
+ * https://www.xiph.org/                                            *
  *                                                                  *
  ********************************************************************
 
   function:
-    last mod: $Id$
 
  ********************************************************************/
 
@@ -86,12 +86,12 @@ struct oc_dec_pipeline_state{
      from buffer overflow.
     We make it fully twice as large so that the second half can serve as the
      reconstruction buffer, which saves passing another parameter to all the
-     acceleration functios.
+     acceleration functions.
     It also solves problems with 16-byte alignment for NEON on ARM.
     gcc (as of 4.2.1) only seems to be able to give stack variables 8-byte
      alignment, and silently produces incorrect results if you ask for 16.
     Finally, keeping it off the stack means there's less likely to be a data
-     hazard beween the NEON co-processor and the regular ARM core, which avoids
+     hazard between the NEON co-processor and the regular ARM core, which avoids
      unnecessary stalls.*/
   OC_ALIGN16(ogg_int16_t dct_coeffs[128]);
   OC_ALIGN16(signed char bounding_values[256]);

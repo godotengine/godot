@@ -42,10 +42,9 @@ struct TripleDistances
   double positive;
 };
 
-struct Triple {
-
-  Triple () :
-    minimum (0.0), middle (0.0), maximum (0.0) {}
+struct Triple
+{
+  Triple () = default;
 
   Triple (double minimum_, double middle_, double maximum_) :
     minimum (minimum_), middle (middle_), maximum (maximum_) {}
@@ -81,10 +80,9 @@ struct Triple {
     return current;
   }
 
-
-  double minimum;
-  double middle;
-  double maximum;
+  double minimum = 0;
+  double middle = 0;
+  double maximum = 0;
 };
 
 using rebase_tent_result_item_t = hb_pair_t<double, Triple>;
@@ -107,8 +105,10 @@ HB_INTERNAL double renormalizeValue (double v, const Triple &triple,
  * If tent value is Triple{}, that is a special deltaset that should
  * be always-enabled (called "gain").
  */
-HB_INTERNAL rebase_tent_result_t rebase_tent (Triple tent,
-					      Triple axisLimit,
-					      TripleDistances axis_triple_distances);
+HB_INTERNAL void rebase_tent (Triple tent,
+			      Triple axisLimit,
+			      TripleDistances axis_triple_distances,
+			      rebase_tent_result_t &out,
+			      rebase_tent_result_t &scratch);
 
 #endif /* HB_SUBSET_INSTANCER_SOLVER_HH */

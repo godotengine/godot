@@ -156,20 +156,6 @@ TEST_CASE("[String] UTF16 with BOM") {
 	CHECK(String::utf16(cs) == s);
 }
 
-TEST_CASE("[String] UTF8 with CR") {
-	const String base = U"Hello darkness\r\nMy old friend\nI've come to talk\rWith you again";
-
-	String keep_cr;
-	Error err = keep_cr.append_utf8(base.utf8().get_data());
-	CHECK(err == OK);
-	CHECK(keep_cr == base);
-
-	String no_cr;
-	err = no_cr.append_utf8(base.utf8().get_data(), -1, true); // Skip CR.
-	CHECK(err == OK);
-	CHECK(no_cr == base.replace("\r", ""));
-}
-
 TEST_CASE("[String] Invalid UTF8 (non shortest form sequence)") {
 	ERR_PRINT_OFF
 	// Examples from the unicode standard : 3.9 Unicode Encoding Forms - Table 3.8.
@@ -410,6 +396,8 @@ TEST_CASE("[String] Find") {
 	MULTICHECK_STRING_EQ(s, find, "tty", 3);
 	MULTICHECK_STRING_EQ(s, find, "Revenge of the Monster Truck", -1);
 	MULTICHECK_STRING_INT_EQ(s, find, "Wo", 9, 13);
+	MULTICHECK_STRING_INT_EQ(s, find, "Wo", 1000, -1);
+	MULTICHECK_STRING_INT_EQ(s, find, "Wo", -1, -1);
 	MULTICHECK_STRING_EQ(s, find, "", -1);
 	MULTICHECK_STRING_EQ(s, find, "Pretty Woman Woman", 0);
 	MULTICHECK_STRING_EQ(s, find, "WOMAN", -1);
@@ -421,6 +409,8 @@ TEST_CASE("[String] Find") {
 	MULTICHECK_STRING_EQ(s, rfind, "man", 15);
 	MULTICHECK_STRING_EQ(s, rfind, "WOMAN", -1);
 	MULTICHECK_STRING_INT_EQ(s, rfind, "", 15, -1);
+	MULTICHECK_STRING_INT_EQ(s, rfind, "Wo", 1000, -1);
+	MULTICHECK_STRING_INT_EQ(s, rfind, "Wo", -1, 13);
 }
 
 TEST_CASE("[String] Find character") {
@@ -440,6 +430,8 @@ TEST_CASE("[String] Find case insensitive") {
 	String s = "Pretty Whale Whale";
 	MULTICHECK_STRING_EQ(s, findn, "WHA", 7);
 	MULTICHECK_STRING_INT_EQ(s, findn, "WHA", 9, 13);
+	MULTICHECK_STRING_INT_EQ(s, findn, "WHA", 1000, -1);
+	MULTICHECK_STRING_INT_EQ(s, findn, "WHA", -1, -1);
 	MULTICHECK_STRING_EQ(s, findn, "Revenge of the Monster SawFish", -1);
 	MULTICHECK_STRING_EQ(s, findn, "", -1);
 	MULTICHECK_STRING_EQ(s, findn, "wha", 7);
@@ -451,6 +443,8 @@ TEST_CASE("[String] Find case insensitive") {
 	MULTICHECK_STRING_EQ(s, rfindn, "wha", 13);
 	MULTICHECK_STRING_EQ(s, rfindn, "Wha", 13);
 	MULTICHECK_STRING_INT_EQ(s, rfindn, "", 13, -1);
+	MULTICHECK_STRING_INT_EQ(s, rfindn, "WHA", 1000, -1);
+	MULTICHECK_STRING_INT_EQ(s, rfindn, "WHA", -1, 13);
 }
 
 TEST_CASE("[String] Find MK") {
@@ -467,6 +461,9 @@ TEST_CASE("[String] Find MK") {
 
 	CHECK(s.findmk(keys, 5, &key) == 9);
 	CHECK(key == 2);
+
+	CHECK(s.findmk(keys, -1, &key) == -1);
+	CHECK(s.findmk(keys, 1000, &key) == -1);
 }
 
 TEST_CASE("[String] Find and replace") {
@@ -546,7 +543,6 @@ TEST_CASE("[String] Number to string") {
 	CHECK(String::num(3.141593) == "3.141593");
 	CHECK(String::num(3.141593, 3) == "3.142");
 	CHECK(String::num(42.100023, 4) == "42.1"); // No trailing zeros.
-	CHECK(String::num_scientific(30000000) == "3e+07");
 
 	// String::num_int64 tests.
 	CHECK(String::num_int64(3141593) == "3141593");
@@ -566,6 +562,20 @@ TEST_CASE("[String] Number to string") {
 	CHECK(String::num_uint64(4294967295, 1) == ""); // Invalid base < 2.
 	CHECK(String::num_uint64(4294967295, 37) == ""); // Invalid base > 36.
 	ERR_PRINT_ON;
+
+	// String::num_scientific tests.
+	CHECK(String::num_scientific(30000000.0) == "30000000");
+	CHECK(String::num_scientific(1234567890.0) == "1234567890");
+	CHECK(String::num_scientific(3e100) == "3e+100");
+	CHECK(String::num_scientific(7e-100) == "7e-100");
+	CHECK(String::num_scientific(Math::TAU) == "6.283185307179586");
+	CHECK(String::num_scientific(Math::INF) == "inf");
+	CHECK(String::num_scientific(-Math::INF) == "-inf");
+	CHECK(String::num_scientific(Math::NaN) == "nan");
+	CHECK(String::num_scientific(2.0) == "2");
+	CHECK(String::num_scientific(1.0) == "1");
+	CHECK(String::num_scientific(0.0) == "0");
+	CHECK(String::num_scientific(-0.0) == "-0");
 
 	// String::num_real tests.
 	CHECK(String::num_real(1.0) == "1.0");
@@ -981,6 +991,38 @@ TEST_CASE("[String] sprintf") {
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish 143 frog"));
+
+	// INT64_MIN
+	format = "fish %d frog";
+	args.clear();
+	args.push_back(INT64_MIN);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish -9223372036854775808 frog"));
+
+	// INT64_MIN hex (lower)
+	format = "fish %x frog";
+	args.clear();
+	args.push_back(INT64_MIN);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish -8000000000000000 frog"));
+
+	// INT64_MIN hex (upper)
+	format = "fish %X frog";
+	args.clear();
+	args.push_back(INT64_MIN);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish -8000000000000000 frog"));
+
+	// INT64_MIN octal
+	format = "fish %o frog";
+	args.clear();
+	args.push_back(INT64_MIN);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish -1000000000000000000000 frog"));
 
 	///// Reals
 
@@ -1784,6 +1826,13 @@ TEST_CASE("[String] Path functions") {
 		CHECK(String(path[i]).simplify_path().get_base_dir().path_join(file[i]) == String(path[i]).simplify_path());
 	}
 
+	CHECK(String("res://test.png").has_extension("png"));
+	CHECK(String("res://test.PNG").has_extension("png"));
+	CHECK_FALSE(String("res://test.png").has_extension("jpg"));
+	CHECK_FALSE(String("res://test.png/README").has_extension("png"));
+	CHECK_FALSE(String("res://test.").has_extension("png"));
+	CHECK_FALSE(String("res://test").has_extension("png"));
+
 	static const char *file_name[3] = { "test.tscn", "test://.xscn", "?tes*t.scn" };
 	static const bool valid[3] = { true, false, false };
 	for (int i = 0; i < 3; i++) {
@@ -1998,7 +2047,7 @@ TEST_CASE("[String] Is_*") {
 	static bool isflt[] = { true, true, true, false, true, true, false, false, false, false, false, false, false, true, true };
 	static bool isaid[] = { false, false, false, false, false, false, false, false, true, true, false, false, false, false, false };
 	static bool isuid[] = { false, false, false, false, false, false, false, false, true, true, false, false, true, false, false };
-	for (unsigned int i = 0; i < std::size(data); i++) {
+	for (unsigned int i = 0; i < std_size(data); i++) {
 		String s = String::utf8(data[i]);
 		CHECK(s.is_numeric() == isnum[i]);
 		CHECK(s.is_valid_int() == isint[i]);
@@ -2185,23 +2234,5 @@ TEST_CASE("[String][URL] Parse URL") {
 	CHECK_URL("https://godotengine.org:88888", "https://", "godotengine.org", 88888, "", "", Error::ERR_INVALID_PARAMETER);
 
 #undef CHECK_URL
-}
-
-TEST_CASE("[Stress][String] Empty via ' == String()'") {
-	for (int i = 0; i < 100000; ++i) {
-		String str = "Hello World!";
-		if (str == String()) {
-			continue;
-		}
-	}
-}
-
-TEST_CASE("[Stress][String] Empty via `is_empty()`") {
-	for (int i = 0; i < 100000; ++i) {
-		String str = "Hello World!";
-		if (str.is_empty()) {
-			continue;
-		}
-	}
 }
 } // namespace TestString

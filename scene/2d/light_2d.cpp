@@ -161,7 +161,6 @@ int Light2D::get_item_shadow_cull_mask() const {
 void Light2D::set_shadow_enabled(bool p_enabled) {
 	shadow = p_enabled;
 	RS::get_singleton()->canvas_light_set_shadow_enabled(canvas_light, shadow);
-	notify_property_list_changed();
 }
 
 bool Light2D::is_shadow_enabled() const {
@@ -217,7 +216,7 @@ void Light2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
-			if (is_visible_in_tree() && is_physics_interpolated()) {
+			if (is_visible_in_tree() && is_physics_interpolated_and_enabled()) {
 				// Explicitly make sure the transform is up to date in RenderingServer before
 				// resetting. This is necessary because NOTIFICATION_TRANSFORM_CHANGED
 				// is normally deferred, and a client change to transform will not always be sent
@@ -244,10 +243,9 @@ real_t Light2D::get_shadow_smooth() const {
 }
 
 void Light2D::_validate_property(PropertyInfo &p_property) const {
-	if (!shadow && (p_property.name == "shadow_color" || p_property.name == "shadow_filter" || p_property.name == "shadow_filter_smooth" || p_property.name == "shadow_item_cull_mask")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
 	}
-
 	if (shadow && p_property.name == "shadow_filter_smooth" && shadow_filter == SHADOW_FILTER_NONE) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
@@ -310,8 +308,8 @@ void Light2D::_bind_methods() {
 	ADD_GROUP("Range", "range_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_min", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_min", "get_z_range_min");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_max", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_max", "get_z_range_max");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_layer_min", PROPERTY_HINT_RANGE, "-512,512,1"), "set_layer_range_min", "get_layer_range_min");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_layer_max", PROPERTY_HINT_RANGE, "-512,512,1"), "set_layer_range_max", "get_layer_range_max");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_layer_min", PROPERTY_HINT_RANGE, itos(RS::CANVAS_LAYER_MIN) + "," + itos(RS::CANVAS_LAYER_MAX) + ",1"), "set_layer_range_min", "get_layer_range_min");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_layer_max", PROPERTY_HINT_RANGE, itos(RS::CANVAS_LAYER_MIN) + "," + itos(RS::CANVAS_LAYER_MAX) + ",1"), "set_layer_range_max", "get_layer_range_max");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_item_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_item_cull_mask", "get_item_cull_mask");
 
 	ADD_GROUP("Shadow", "shadow_");
@@ -337,7 +335,7 @@ Light2D::Light2D() {
 
 Light2D::~Light2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(canvas_light);
+	RenderingServer::get_singleton()->free_rid(canvas_light);
 }
 
 //////////////////////////////

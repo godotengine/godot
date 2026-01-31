@@ -34,7 +34,7 @@
 #include "core/io/resource_saver.h"
 #include "editor/import/dynamic_font_import_settings.h"
 #include "scene/resources/font.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 String ResourceImporterDynamicFont::get_importer_name() const {
 	return "font_data_dynamic";
@@ -65,6 +65,13 @@ String ResourceImporterDynamicFont::get_resource_type() const {
 	return "FontFile";
 }
 
+void ResourceImporterDynamicFont::get_build_dependencies(const String &p_path, HashSet<String> *r_dependencies) {
+	Ref<FontFile> font = ResourceLoader::load(p_path);
+	if (font.is_valid() && font->is_multichannel_signed_distance_field()) {
+		r_dependencies->insert("module_msdfgen_enabled");
+	}
+}
+
 bool ResourceImporterDynamicFont::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	if (p_option == "msdf_pixel_range" && !bool(p_options["multichannel_signed_distance_field"])) {
 		return false;
@@ -73,6 +80,9 @@ bool ResourceImporterDynamicFont::get_option_visibility(const String &p_path, co
 		return false;
 	}
 	if (p_option == "antialiasing" && bool(p_options["multichannel_signed_distance_field"])) {
+		return false;
+	}
+	if (p_option == "oversampling" && bool(p_options["multichannel_signed_distance_field"])) {
 		return false;
 	}
 	if (p_option == "subpixel_positioning" && bool(p_options["multichannel_signed_distance_field"])) {
@@ -114,9 +124,10 @@ void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "allow_system_fallback"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "modulate_color_glyphs"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal,Light (Except Pixel Fonts),Normal (Except Pixel Fonts)"), 3));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel,Auto (Except Pixel Fonts)"), 4));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), 0.0));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::NIL, "Fallbacks", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), Array()));
@@ -155,6 +166,7 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	int hinting = p_options["hinting"];
 	int subpixel_positioning = p_options["subpixel_positioning"];
 	bool keep_rounding_remainders = p_options["keep_rounding_remainders"];
+	real_t oversampling = p_options["oversampling"];
 	Array fallbacks = p_options["fallbacks"];
 
 	// Load base font data.
@@ -175,10 +187,10 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	font->set_force_autohinter(autohinter);
 	font->set_modulate_color_glyphs(modulate_color_glyphs);
 	font->set_allow_system_fallback(allow_system_fallback);
-	font->set_hinting((TextServer::Hinting)hinting);
+	font->set_oversampling(oversampling);
 	font->set_fallbacks(fallbacks);
 
-	if (subpixel_positioning == 4 /* Auto (Except Pixel Fonts) */) {
+	if (subpixel_positioning == 4 || hinting == 3 || hinting == 4) /* Dected Pixel Fonts */ {
 		Array rids = font->get_rids();
 		if (!rids.is_empty()) {
 			PackedInt32Array glyphs = TS->font_get_supported_glyphs(rids[0]);
@@ -205,14 +217,32 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 					break;
 				}
 			}
-			if (is_pixel && !glyphs.is_empty()) {
-				print_line(vformat("%s: Pixel font detected, disabling subpixel positioning.", p_source_file));
-				subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
-			} else {
-				subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+			if (subpixel_positioning == 4) { // Auto (Except Pixel Fonts)
+				if (is_pixel && !glyphs.is_empty()) {
+					print_line(vformat("%s: Pixel font detected, disabling subpixel positioning.", p_source_file));
+					subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
+				} else {
+					subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+				}
+			}
+			if (hinting == 3) { // Light (Except Pixel Fonts)
+				if (is_pixel && !glyphs.is_empty()) {
+					print_line(vformat("%s: Pixel font detected, disabling hinting.", p_source_file));
+					hinting = TextServer::HINTING_NONE;
+				} else {
+					hinting = TextServer::HINTING_LIGHT;
+				}
+			} else if (hinting == 4) { // Normal (Except Pixel Fonts)
+				if (is_pixel && !glyphs.is_empty()) {
+					print_line(vformat("%s: Pixel font detected, disabling hinting.", p_source_file));
+					hinting = TextServer::HINTING_NONE;
+				} else {
+					hinting = TextServer::HINTING_NORMAL;
+				}
 			}
 		}
 	}
+	font->set_hinting((TextServer::Hinting)hinting);
 	font->set_subpixel_positioning((TextServer::SubpixelPositioning)subpixel_positioning);
 	font->set_keep_rounding_remainders(keep_rounding_remainders);
 

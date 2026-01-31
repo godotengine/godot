@@ -111,9 +111,9 @@ void NavAgent2D::dispatch_avoidance_callback() {
 		return;
 	}
 
-	Vector3 new_velocity;
+	Vector2 new_velocity;
 
-	new_velocity = Vector3(rvo_agent.velocity_.x(), 0.0, rvo_agent.velocity_.y());
+	new_velocity = Vector2(rvo_agent.velocity_.x(), rvo_agent.velocity_.y());
 
 	if (clamp_speed) {
 		new_velocity = new_velocity.limit_length(max_speed);

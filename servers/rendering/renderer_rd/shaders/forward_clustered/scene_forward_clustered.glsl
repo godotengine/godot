@@ -4,10 +4,19 @@
 
 #VERSION_DEFINES
 
+/* Include half precision types. */
+#include "../half_inc.glsl"
+
 #include "scene_forward_clustered_inc.glsl"
 
 #define SHADER_IS_SRGB false
 #define SHADER_SPACE_FAR 0.0
+
+#ifdef USE_MULTIVIEW
+#define OUTPUT_IS_MULTIVIEW true
+#else
+#define OUTPUT_IS_MULTIVIEW false
+#endif
 
 /* INPUT ATTRIBS */
 
@@ -68,13 +77,6 @@ layout(location = 13) in vec4 previous_normal_attrib;
 
 #endif // MOTION_VECTORS
 
-vec3 oct_to_vec3(vec2 e) {
-	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
-	float t = max(-v.z, 0.0);
-	v.xy += t * -sign(v.xy);
-	return normalize(v);
-}
-
 void axis_angle_to_tbn(vec3 axis, float angle, out vec3 tangent, out vec3 binormal, out vec3 normal) {
 	float c = cos(angle);
 	float s = sin(angle);
@@ -134,12 +136,9 @@ layout(location = 9) out float dp_clip;
 layout(location = 10) out flat uint instance_index_interp;
 
 #ifdef USE_MULTIVIEW
-#ifdef has_VK_KHR_multiview
+#extension GL_EXT_multiview : enable
 #define ViewIndex gl_ViewIndex
-#else // has_VK_KHR_multiview
-// !BAS! This needs to become an input once we implement our fallback!
-#define ViewIndex 0
-#endif // has_VK_KHR_multiview
+
 vec3 multiview_uv(vec2 uv) {
 	return vec3(uv, ViewIndex);
 }
@@ -148,7 +147,6 @@ ivec3 multiview_uv(ivec2 uv) {
 }
 layout(location = 11) out vec4 combined_projected;
 #else // USE_MULTIVIEW
-// Set to zero, not supported in non stereo
 #define ViewIndex 0
 vec2 multiview_uv(vec2 uv) {
 	return uv;
@@ -156,12 +154,11 @@ vec2 multiview_uv(vec2 uv) {
 ivec2 multiview_uv(ivec2 uv) {
 	return uv;
 }
-
 #endif //USE_MULTIVIEW
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
-layout(location = 12) highp out vec4 diffuse_light_interp;
-layout(location = 13) highp out vec4 specular_light_interp;
+layout(location = 12) out vec4 diffuse_light_interp;
+layout(location = 13) out vec4 specular_light_interp;
 
 #include "../scene_forward_vertex_lights_inc.glsl"
 
@@ -180,6 +177,11 @@ uint cluster_get_range_clip_mask(uint i, uint z_min, uint z_max) {
 	return bitfieldInsert(uint(0), uint(0xFFFFFFFF), local_min, mask_width);
 }
 #endif // !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
+
+#if defined(POINT_SIZE_USED) && defined(POINT_COORD_USED)
+layout(location = 14) out vec2 point_coord_interp;
+#endif
+
 invariant gl_Position;
 
 #GLOBALS
@@ -226,23 +228,28 @@ void vertex_shader(vec3 vertex_input,
 		in vec3 tangent_input,
 		in vec3 binormal_input,
 #endif
-		in uint instance_index, in uint multimesh_offset, in SceneData scene_data, in mat4 model_matrix, out vec4 screen_pos) {
+		in uint instance_index, in uint multimesh_offset, in SceneData scene_data, in mat3x4 in_model_matrix,
+#ifdef USE_DOUBLE_PRECISION
+		in vec3 model_precision,
+#endif
+		out vec4 screen_pos) {
 	vec4 instance_custom = vec4(0.0);
 #if defined(COLOR_USED)
 	color_interp = color_attrib;
 #endif
 
-	mat4 inv_view_matrix = scene_data.inv_view_matrix;
+	mat4 inv_view_matrix = transpose(mat4(scene_data.inv_view_matrix[0],
+			scene_data.inv_view_matrix[1],
+			scene_data.inv_view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+
+	mat4 model_matrix = transpose(mat4(in_model_matrix[0],
+			in_model_matrix[1],
+			in_model_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
 
 #ifdef USE_DOUBLE_PRECISION
-	vec3 model_precision = vec3(model_matrix[0][3], model_matrix[1][3], model_matrix[2][3]);
-	model_matrix[0][3] = 0.0;
-	model_matrix[1][3] = 0.0;
-	model_matrix[2][3] = 0.0;
-	vec3 view_precision = vec3(inv_view_matrix[0][3], inv_view_matrix[1][3], inv_view_matrix[2][3]);
-	inv_view_matrix[0][3] = 0.0;
-	inv_view_matrix[1][3] = 0.0;
-	inv_view_matrix[2][3] = 0.0;
+	vec3 view_precision = scene_data.inv_view_precision.xyz;
 #endif
 
 	mat3 model_normal_matrix;
@@ -262,7 +269,7 @@ void vertex_shader(vec3 vertex_input,
 		uint trail_size = (instances.data[instance_index].flags >> INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT) & INSTANCE_FLAGS_PARTICLE_TRAIL_MASK;
 		uint stride = 3 + 1 + 1; //particles always uses this format
 
-		uint offset = trail_size * stride * gl_InstanceIndex;
+		uint offset = trail_size * stride * INSTANCE_INDEX;
 
 #ifdef COLOR_USED
 		vec4 pcolor;
@@ -304,7 +311,7 @@ void vertex_shader(vec3 vertex_input,
 
 #else
 		uint stride = multimesh_stride();
-		uint offset = stride * (gl_InstanceIndex + multimesh_offset);
+		uint offset = stride * (INSTANCE_INDEX + multimesh_offset);
 
 		if (sc_multimesh_format_2d()) {
 			matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
@@ -341,7 +348,7 @@ void vertex_shader(vec3 vertex_input,
 
 	vec3 vertex = vertex_input;
 #ifdef NORMAL_USED
-	vec3 normal = normal_input;
+	vec3 normal_highp = normal_input;
 #endif
 
 #ifdef TANGENT_USED
@@ -389,7 +396,7 @@ void vertex_shader(vec3 vertex_input,
 	vertex = (model_matrix * vec4(vertex, 1.0)).xyz;
 
 #ifdef NORMAL_USED
-	normal = model_normal_matrix * normal;
+	normal_highp = model_normal_matrix * normal_highp;
 #endif
 
 #ifdef TANGENT_USED
@@ -400,36 +407,59 @@ void vertex_shader(vec3 vertex_input,
 #endif
 #endif
 
-	float roughness = 1.0;
+#ifdef Z_CLIP_SCALE_USED
+	float z_clip_scale = 1.0;
+#endif
 
-	mat4 modelview = scene_data.view_matrix * model_matrix;
-	mat3 modelview_normal = mat3(scene_data.view_matrix) * model_normal_matrix;
-	mat4 read_view_matrix = scene_data.view_matrix;
-	vec2 read_viewport_size = scene_data.viewport_size;
+	float roughness_highp = 1.0;
 
-	{
-#CODE : VERTEX
-	}
-
-// using local coordinates (default)
-#if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
+	mat4 read_view_matrix = transpose(mat4(scene_data.view_matrix[0],
+			scene_data.view_matrix[1],
+			scene_data.view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
 
 #ifdef USE_DOUBLE_PRECISION
+	mat4 modelview = read_view_matrix * model_matrix;
+
 	// We separate the basis from the origin because the basis is fine with single point precision.
 	// Then we combine the translations from the model matrix and the view matrix using emulated doubles.
 	// We add the result to the vertex and ignore the final lost precision.
 	vec3 model_origin = model_matrix[3].xyz;
 	if (sc_multimesh()) {
-		vertex = mat3(matrix) * vertex;
-		model_origin = double_add_vec3(model_origin, model_precision, matrix[3].xyz, vec3(0.0), model_precision);
+		modelview = modelview * matrix;
+
+		vec3 instance_origin = mat3(model_matrix) * matrix[3].xyz;
+		model_origin = double_add_vec3(model_origin, model_precision, instance_origin, vec3(0.0), model_precision);
 	}
-	vertex = mat3(inv_view_matrix * modelview) * vertex;
+
+	// Overwrite the translation part of modelview with improved precision.
 	vec3 temp_precision; // Will be ignored.
-	vertex += double_add_vec3(model_origin, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
-	vertex = mat3(scene_data.view_matrix) * vertex;
+	modelview[3].xyz = double_add_vec3(model_origin, model_precision, inv_view_matrix[3].xyz, view_precision, temp_precision);
+	modelview[3].xyz = mat3(read_view_matrix) * modelview[3].xyz;
 #else
-	vertex = (modelview * vec4(vertex, 1.0)).xyz;
+	mat4 modelview = read_view_matrix * model_matrix;
 #endif
+	mat3 modelview_normal = mat3(read_view_matrix) * model_normal_matrix;
+	vec2 read_viewport_size = scene_data.viewport_size;
+
+#ifdef POINT_SIZE_USED
+	float point_size = 1.0;
+#endif
+
+	{
+#CODE : VERTEX
+	}
+
+	float roughness = roughness_highp;
+#ifdef NORMAL_USED
+	vec3 normal = normal_highp;
+#endif
+
+// using local coordinates (default)
+#if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
+
+	vertex = (modelview * vec4(vertex, 1.0)).xyz;
+
 #ifdef NORMAL_USED
 	normal = modelview_normal * normal;
 #endif
@@ -444,14 +474,14 @@ void vertex_shader(vec3 vertex_input,
 //using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
 
-	vertex = (scene_data.view_matrix * vec4(vertex, 1.0)).xyz;
+	vertex = (read_view_matrix * vec4(vertex, 1.0)).xyz;
 #ifdef NORMAL_USED
-	normal = (scene_data.view_matrix * vec4(normal, 0.0)).xyz;
+	normal = (read_view_matrix * vec4(normal, 0.0)).xyz;
 #endif
 
 #ifdef TANGENT_USED
-	binormal = (scene_data.view_matrix * vec4(binormal, 0.0)).xyz;
-	tangent = (scene_data.view_matrix * vec4(tangent, 0.0)).xyz;
+	binormal = (read_view_matrix * vec4(binormal, 0.0)).xyz;
+	tangent = (read_view_matrix * vec4(tangent, 0.0)).xyz;
 #endif
 #endif
 
@@ -516,7 +546,9 @@ void vertex_shader(vec3 vertex_input,
 	vec2 clip_pos = clamp((gl_Position.xy / gl_Position.w) * 0.5 + 0.5, 0.0, 1.0);
 #endif
 
-	uvec2 cluster_pos = uvec2(clip_pos / scene_data.screen_pixel_size) >> implementation_data.cluster_shift;
+	uvec2 screen_size = uvec2(1.0 / scene_data.screen_pixel_size);
+	uvec2 screen_pixel = clamp(uvec2(clip_pos * vec2(screen_size)), uvec2(0), screen_size - uvec2(1));
+	uvec2 cluster_pos = screen_pixel >> implementation_data.cluster_shift;
 	uint cluster_offset = (implementation_data.cluster_width * cluster_pos.y + cluster_pos.x) * (implementation_data.max_cluster_element_count_div_32 + 32);
 	uint cluster_z = uint(clamp((-vertex_interp.z / scene_data.z_far) * 32.0, 0.0, 31.0));
 
@@ -597,11 +629,11 @@ void vertex_shader(vec3 vertex_input,
 		vec3 directional_specular = vec3(0.0);
 
 		for (uint i = 0; i < scene_data.directional_light_count; i++) {
-			if (!bool(directional_lights.data[i].mask & instances.data[draw_call.instance_index].layer_mask)) {
+			if (!bool(directional_lights.data[i].mask & instances.data[instance_index].layer_mask)) {
 				continue; // Not masked, skip.
 			}
 
-			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
 				continue; // Statically baked light and object uses lightmap, skip.
 			}
 			if (i == 0) {
@@ -644,14 +676,14 @@ void vertex_shader(vec3 vertex_input,
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
 
 #ifdef MODE_RENDER_DEPTH
-	if (scene_data.pancake_shadows) {
+	if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_PANCAKE_SHADOWS)) {
 		if (gl_Position.z >= 0.9999) {
 			gl_Position.z = 0.9999;
 		}
 	}
 #endif
 #ifdef MODE_RENDER_MATERIAL
-	if (scene_data.material_uv2_mode) {
+	if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_UV2_MATERIAL)) {
 		vec2 uv_dest_attrib;
 		if (uv_scale != vec4(0.0)) {
 			uv_dest_attrib = (uv2_attrib.xy - 0.5) * uv_scale.zw;
@@ -663,6 +695,33 @@ void vertex_shader(vec3 vertex_input,
 		gl_Position.xy = (uv_dest_attrib + uv_offset) * 2.0 - 1.0;
 		gl_Position.z = 0.00001;
 		gl_Position.w = 1.0;
+	}
+#endif
+
+#ifdef Z_CLIP_SCALE_USED
+	if (!bool(scene_data.flags & SCENE_DATA_FLAGS_IN_SHADOW_PASS)) {
+		gl_Position.z = mix(gl_Position.w, gl_Position.z, z_clip_scale);
+	}
+#endif
+
+#ifdef POINT_SIZE_USED
+	if (sc_emulate_point_size) {
+		vec2 point_coords[6] = vec2[](
+				vec2(0, 1),
+				vec2(0, 0),
+				vec2(1, 1),
+				vec2(0, 0),
+				vec2(1, 0),
+				vec2(1, 1));
+
+		vec2 point_coord = point_coords[gl_VertexIndex % 6];
+		gl_Position.xy += (point_coord * 2.0 - 1.0) * (point_size / scene_data.viewport_size) * gl_Position.w;
+
+#ifdef POINT_COORD_USED
+		point_coord_interp = point_coord;
+#endif
+	} else {
+		gl_PointSize = point_size;
 	}
 #endif
 }
@@ -710,12 +769,10 @@ void _unpack_vertex_attributes(vec4 p_vertex_in, vec3 p_compressed_aabb_position
 void main() {
 	uint instance_index = draw_call.instance_index;
 	if (!sc_multimesh()) {
-		instance_index += gl_InstanceIndex;
+		instance_index += INSTANCE_INDEX;
 	}
 
 	instance_index_interp = instance_index;
-
-	mat4 model_matrix = instances.data[instance_index].transform;
 
 #ifdef MOTION_VECTORS
 	// Previous vertex.
@@ -752,7 +809,11 @@ void main() {
 			prev_tangent,
 			prev_binormal,
 #endif
-			instance_index, draw_call.multimesh_motion_vectors_previous_offset, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
+			instance_index, draw_call.multimesh_motion_vectors_previous_offset, scene_data_block.prev_data, instances.data[instance_index].prev_transform,
+#ifdef USE_DOUBLE_PRECISION
+			instances.data[instance_index].prev_model_precision.xyz,
+#endif
+			prev_screen_position);
 #else
 	// Unused output.
 	vec4 screen_position;
@@ -791,7 +852,12 @@ void main() {
 			tangent,
 			binormal,
 #endif
-			instance_index, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, model_matrix, screen_position);
+			instance_index, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, instances.data[instance_index].transform,
+#ifdef USE_DOUBLE_PRECISION
+			instances.data[instance_index].model_precision.xyz,
+#endif
+
+			screen_position);
 }
 
 #[fragment]
@@ -802,6 +868,15 @@ void main() {
 
 #define SHADER_IS_SRGB false
 #define SHADER_SPACE_FAR 0.0
+
+#ifdef USE_MULTIVIEW
+#define OUTPUT_IS_MULTIVIEW true
+#else
+#define OUTPUT_IS_MULTIVIEW false
+#endif
+
+/* Include half precision types. */
+#include "../half_inc.glsl"
 
 #include "scene_forward_clustered_inc.glsl"
 
@@ -905,12 +980,8 @@ vec4 textureArray_bicubic(texture2DArray tex, vec3 uv, vec2 texture_size) {
 #endif //USE_LIGHTMAP
 
 #ifdef USE_MULTIVIEW
-#ifdef has_VK_KHR_multiview
+#extension GL_EXT_multiview : enable
 #define ViewIndex gl_ViewIndex
-#else // has_VK_KHR_multiview
-// !BAS! This needs to become an input once we implement our fallback!
-#define ViewIndex 0
-#endif // has_VK_KHR_multiview
 vec3 multiview_uv(vec2 uv) {
 	return vec3(uv, ViewIndex);
 }
@@ -919,7 +990,6 @@ ivec3 multiview_uv(ivec2 uv) {
 }
 layout(location = 11) in vec4 combined_projected;
 #else // USE_MULTIVIEW
-// Set to zero, not supported in non stereo
 #define ViewIndex 0
 vec2 multiview_uv(vec2 uv) {
 	return uv;
@@ -927,11 +997,16 @@ vec2 multiview_uv(vec2 uv) {
 ivec2 multiview_uv(ivec2 uv) {
 	return uv;
 }
-#endif //USE_MULTIVIEW
+#endif // !USE_MULTIVIEW
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
-layout(location = 12) highp in vec4 diffuse_light_interp;
-layout(location = 13) highp in vec4 specular_light_interp;
+layout(location = 12) in vec4 diffuse_light_interp;
+layout(location = 13) in vec4 specular_light_interp;
 #endif
+
+#if defined(POINT_SIZE_USED) && defined(POINT_COORD_USED)
+layout(location = 14) in vec2 point_coord_interp;
+#endif
+
 //defines to keep compatibility with vertex
 
 #ifdef USE_MULTIVIEW
@@ -1032,14 +1107,19 @@ vec4 fog_process(vec3 vertex) {
 		vec3 cube_view = scene_data_block.data.radiance_inverse_xform * vertex;
 		// mip_level always reads from the second mipmap and higher so the fog is always slightly blurred
 		float mip_level = mix(1.0 / MAX_ROUGHNESS_LOD, 1.0, 1.0 - (abs(vertex.z) - scene_data_block.data.z_near) / (scene_data_block.data.z_far - scene_data_block.data.z_near));
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
-		float lod, blend;
-		blend = modf(mip_level * MAX_ROUGHNESS_LOD, lod);
-		sky_fog_color = texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(cube_view, lod)).rgb;
-		sky_fog_color = mix(sky_fog_color, texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(cube_view, lod + 1)).rgb, blend);
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
+		float roughness_lod, blend;
+		blend = modf(mip_level * MAX_ROUGHNESS_LOD, roughness_lod);
+		float cube_lod = vec3_to_oct_lod(dFdx(cube_view), dFdy(cube_view), scene_data_block.data.radiance_pixel_size);
+		vec2 cube_uv = vec3_to_oct_with_border(cube_view, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		vec3 sky_sample_a = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(cube_uv, roughness_lod), cube_lod).rgb;
+		vec3 sky_sample_b = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(cube_uv, roughness_lod + 1), cube_lod).rgb;
+		sky_fog_color = mix(sky_sample_a, sky_sample_b, blend);
 #else
-		sky_fog_color = textureLod(samplerCube(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), cube_view, mip_level * MAX_ROUGHNESS_LOD).rgb;
-#endif //USE_RADIANCE_CUBEMAP_ARRAY
+		float roughness_lod = mip_level * MAX_ROUGHNESS_LOD;
+		vec2 cube_uv = vec3_to_oct_with_border(cube_view, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		sky_fog_color = textureLod(sampler2D(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), cube_uv, roughness_lod).rgb;
+#endif //USE_RADIANCE_OCTMAP_ARRAY
 		fog_color = mix(fog_color, sky_fog_color, scene_data_block.data.fog_aerial_perspective);
 	}
 
@@ -1066,7 +1146,12 @@ vec4 fog_process(vec3 vertex) {
 	}
 
 	if (abs(scene_data_block.data.fog_height_density) >= 0.0001) {
-		float y = (scene_data_block.data.inv_view_matrix * vec4(vertex, 1.0)).y;
+		mat4 inv_view_matrix = transpose(mat4(scene_data_block.data.inv_view_matrix[0],
+				scene_data_block.data.inv_view_matrix[1],
+				scene_data_block.data.inv_view_matrix[2],
+				vec4(0.0, 0.0, 0.0, 1.0)));
+
+		float y = (inv_view_matrix * vec4(vertex, 1.0)).y;
 
 		float y_dist = y - scene_data_block.data.fog_height;
 
@@ -1127,24 +1212,24 @@ void fragment_shader(in SceneData scene_data) {
 	vec3 vertex = vertex_interp;
 #ifdef USE_MULTIVIEW
 	vec3 eye_offset = scene_data.eye_offset[ViewIndex].xyz;
-	vec3 view = -normalize(vertex_interp - eye_offset);
+	vec3 view_highp = -normalize(vertex_interp - eye_offset);
 
 	// UV in our combined frustum space is used for certain screen uv processes where it's
 	// overkill to render separate left and right eye views
 	vec2 combined_uv = (combined_projected.xy / combined_projected.w) * 0.5 + 0.5;
 #else
 	vec3 eye_offset = vec3(0.0, 0.0, 0.0);
-	vec3 view = -normalize(vertex_interp);
+	vec3 view_highp = -normalize(vertex_interp);
 #endif
-	vec3 albedo = vec3(1.0);
+	vec3 albedo_highp = vec3(1.0);
 	vec3 backlight = vec3(0.0);
 	vec4 transmittance_color = vec4(0.0, 0.0, 0.0, 1.0);
 	float transmittance_depth = 0.0;
 	float transmittance_boost = 0.0;
-	float metallic = 0.0;
+	float metallic_highp = 0.0;
 	float specular = 0.5;
 	vec3 emission = vec3(0.0);
-	float roughness = 1.0;
+	float roughness_highp = 1.0;
 	float rim = 0.0;
 	float rim_tint = 0.0;
 	float clearcoat = 0.0;
@@ -1152,9 +1237,7 @@ void fragment_shader(in SceneData scene_data) {
 	float anisotropy = 0.0;
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
 	vec3 energy_compensation = vec3(1.0);
-#ifndef FOG_DISABLED
-	vec4 fog = vec4(0.0);
-#endif // !FOG_DISABLED
+	vec4 fog = vec4(0.0, 0.0, 0.0, 1.0);
 #if defined(CUSTOM_RADIANCE_USED)
 	vec4 custom_radiance = vec4(0.0);
 #endif
@@ -1165,7 +1248,7 @@ void fragment_shader(in SceneData scene_data) {
 	float ao = 1.0;
 	float ao_light_affect = 0.0;
 
-	float alpha = float(instances.data[instance_index].flags >> INSTANCE_FLAGS_FADE_SHIFT) / float(255.0);
+	float alpha_highp = float(instances.data[instance_index].flags >> INSTANCE_FLAGS_FADE_SHIFT) / float(255.0);
 
 #ifdef TANGENT_USED
 	vec3 binormal = binormal_interp;
@@ -1176,10 +1259,10 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 
 #ifdef NORMAL_USED
-	vec3 normal = normal_interp;
+	vec3 normal_highp = normal_interp;
 #if defined(DO_SIDE_CHECK)
 	if (!gl_FrontFacing) {
-		normal = -normal;
+		normal_highp = -normal_highp;
 	}
 #endif // DO_SIDE_CHECK
 #endif // NORMAL_USED
@@ -1225,16 +1308,14 @@ void fragment_shader(in SceneData scene_data) {
 	vec2 alpha_texture_coordinate = vec2(0.0, 0.0);
 #endif // ALPHA_ANTIALIASING_EDGE_USED
 
-	mat4 inv_view_matrix = scene_data.inv_view_matrix;
-	mat4 read_model_matrix = instances.data[instance_index].transform;
-#ifdef USE_DOUBLE_PRECISION
-	read_model_matrix[0][3] = 0.0;
-	read_model_matrix[1][3] = 0.0;
-	read_model_matrix[2][3] = 0.0;
-	inv_view_matrix[0][3] = 0.0;
-	inv_view_matrix[1][3] = 0.0;
-	inv_view_matrix[2][3] = 0.0;
-#endif
+	mat4 inv_view_matrix = transpose(mat4(scene_data.inv_view_matrix[0],
+			scene_data.inv_view_matrix[1],
+			scene_data.inv_view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+	mat4 read_model_matrix = transpose(mat4(instances.data[instance_index].transform[0],
+			instances.data[instance_index].transform[1],
+			instances.data[instance_index].transform[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
 
 #ifdef LIGHT_VERTEX_USED
 	vec3 light_vertex = vertex;
@@ -1247,11 +1328,36 @@ void fragment_shader(in SceneData scene_data) {
 		model_normal_matrix = mat3(read_model_matrix);
 	}
 
-	mat4 read_view_matrix = scene_data.view_matrix;
+	mat4 read_view_matrix = transpose(mat4(scene_data.view_matrix[0],
+			scene_data.view_matrix[1],
+			scene_data.view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
 	vec2 read_viewport_size = scene_data.viewport_size;
+
+#ifdef POINT_COORD_USED
+#ifdef POINT_SIZE_USED
+	vec2 point_coord;
+	if (sc_emulate_point_size) {
+		point_coord = point_coord_interp;
+	} else {
+		point_coord = gl_PointCoord;
+	}
+#else // !POINT_SIZE_USED
+	vec2 point_coord = vec2(0.5);
+#endif
+#endif
+
 	{
 #CODE : FRAGMENT
 	}
+
+	float roughness = roughness_highp;
+	float metallic = metallic_highp;
+	vec3 albedo = albedo_highp;
+	float alpha = alpha_highp;
+#ifdef NORMAL_USED
+	vec3 normal = normal_highp;
+#endif
 
 #ifdef LIGHT_TRANSMITTANCE_USED
 	transmittance_color.a *= sss_strength;
@@ -1260,10 +1366,12 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef LIGHT_VERTEX_USED
 	vertex = light_vertex;
 #ifdef USE_MULTIVIEW
-	view = -normalize(vertex - eye_offset);
+	vec3 view = -normalize(vertex - eye_offset);
 #else
-	view = -normalize(vertex);
+	vec3 view = -normalize(vertex);
 #endif //USE_MULTIVIEW
+#else
+	vec3 view = view_highp;
 #endif //LIGHT_VERTEX_USED
 
 #ifdef NORMAL_USED
@@ -1381,8 +1489,11 @@ void fragment_shader(in SceneData scene_data) {
 	// to maximize VGPR usage
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 
-	if (scene_data.fog_enabled) {
+	if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_FOG)) {
 		fog = fog_process(vertex);
+		// Premultiply by opacity and convert opacity to transmittance to match volumetric fog.
+		fog.rgb *= fog.a;
+		fog.a = 1.0 - fog.a;
 	}
 
 	if (implementation_data.volumetric_fog_enabled) {
@@ -1391,21 +1502,20 @@ void fragment_shader(in SceneData scene_data) {
 #else
 		vec4 volumetric_fog = volumetric_fog_process(screen_uv, -vertex.z);
 #endif
-		if (scene_data.fog_enabled) {
+		vec4 res = vec4(0.0);
+		if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_FOG)) {
 			//must use the full blending equation here to blend fogs
-			vec4 res;
-			float sa = 1.0 - volumetric_fog.a;
-			res.a = fog.a * sa + volumetric_fog.a;
-			if (res.a == 0.0) {
-				res.rgb = vec3(0.0);
-			} else {
-				res.rgb = (fog.rgb * fog.a * sa + volumetric_fog.rgb * volumetric_fog.a) / res.a;
-			}
-			fog = res;
+			res.a = fog.a * volumetric_fog.a;
+			res.rgb = fog.rgb * volumetric_fog.a + volumetric_fog.rgb;
 		} else {
-			fog = volumetric_fog;
+			res = volumetric_fog;
 		}
+		fog = res;
 	}
+#else
+	// Premultiply by opacity and convert opacity to transmittance to match volumetric fog.
+	fog.rgb *= fog.a;
+	fog.a = 1.0 - fog.a;
 #endif //!CUSTOM_FOG_USED
 
 	uint fog_rg = packHalf2x16(fog.rg);
@@ -1442,28 +1552,22 @@ void fragment_shader(in SceneData scene_data) {
 
 		cluster_get_item_range(cluster_decal_offset + implementation_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
 
-#ifdef USE_SUBGROUPS
 		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
 		item_to = subgroupBroadcastFirst(subgroupMax(item_to));
-#endif
 
 		for (uint i = item_from; i < item_to; i++) {
 			uint mask = cluster_buffer.data[cluster_decal_offset + i];
 			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
-#ifdef USE_SUBGROUPS
-			uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
-#else
-			uint merged_mask = mask;
-#endif
 
+			uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
 			while (merged_mask != 0) {
 				uint bit = findMSB(merged_mask);
 				merged_mask &= ~(1u << bit);
-#ifdef USE_SUBGROUPS
+
 				if (((1u << bit) & mask) == 0) { //do not process if not originally here
 					continue;
 				}
-#endif
+
 				uint decal_index = 32 * i + bit;
 
 				if (!bool(decals.data[decal_index].mask & instances.data[instance_index].layer_mask)) {
@@ -1543,7 +1647,7 @@ void fragment_shader(in SceneData scene_data) {
 	/////////////////////// LIGHTING //////////////////////////////
 
 #ifdef NORMAL_USED
-	if (scene_data.roughness_limiter_enabled) {
+	if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_ROUGHNESS_LIMITER)) {
 		//https://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf
 		float roughness2 = roughness * roughness;
 		vec3 dndu = dFdx(normal), dndv = dFdy(normal);
@@ -1551,6 +1655,12 @@ void fragment_shader(in SceneData scene_data) {
 		float kernelRoughness2 = min(2.0 * variance, scene_data.roughness_limiter_limit); //limit effect
 		float filteredRoughness2 = min(1.0, roughness2 + kernelRoughness2);
 		roughness = sqrt(filteredRoughness2);
+
+		// Reject very small roughness values. Lack of precision can collapse
+		// roughness^4 to 0 in GGX specular equations and cause divisions by zero.
+		if (roughness < 0.00000001) {
+			roughness = 0.0;
+		}
 	}
 #endif
 	//apply energy conservation
@@ -1574,7 +1684,7 @@ void fragment_shader(in SceneData scene_data) {
 	vec3 indirect_normal = normal;
 #endif
 
-	if (scene_data.use_reflection_cubemap) {
+	if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_REFLECTION_CUBEMAP)) {
 #ifdef LIGHT_ANISOTROPY_USED
 		// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
 		vec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
@@ -1591,18 +1701,24 @@ void fragment_shader(in SceneData scene_data) {
 		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
 
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
 
-		float lod, blend;
+		float roughness_lod, blend;
 
-		blend = modf(sqrt(roughness) * MAX_ROUGHNESS_LOD, lod);
-		indirect_specular_light = texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(ref_vec, lod)).rgb;
-		indirect_specular_light = mix(indirect_specular_light, texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(ref_vec, lod + 1)).rgb, blend);
+		blend = modf(sqrt(roughness) * MAX_ROUGHNESS_LOD, roughness_lod);
+
+		float ref_lod = vec3_to_oct_lod(dFdx(ref_vec), dFdy(ref_vec), scene_data_block.data.radiance_pixel_size);
+		vec2 ref_uv = vec3_to_oct_with_border(ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		vec3 indirect_sample_a = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, roughness_lod), ref_lod).rgb;
+		vec3 indirect_sample_b = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, roughness_lod + 1), ref_lod).rgb;
+		indirect_specular_light = mix(indirect_sample_a, indirect_sample_b, blend);
 
 #else
-		indirect_specular_light = textureLod(samplerCube(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ref_vec, sqrt(roughness) * MAX_ROUGHNESS_LOD).rgb;
+		float roughness_lod = sqrt(roughness) * MAX_ROUGHNESS_LOD;
+		vec2 ref_uv = vec3_to_oct_with_border(ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		indirect_specular_light = textureLod(sampler2D(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ref_uv, roughness_lod).rgb;
 
-#endif //USE_RADIANCE_CUBEMAP_ARRAY
+#endif //USE_RADIANCE_OCTMAP_ARRAY
 		indirect_specular_light *= scene_data.IBL_exposure_normalization;
 		indirect_specular_light *= horizon * horizon;
 		indirect_specular_light *= scene_data.ambient_light_color_energy.a;
@@ -1614,16 +1730,20 @@ void fragment_shader(in SceneData scene_data) {
 
 #ifndef USE_LIGHTMAP
 	//lightmap overrides everything
-	if (scene_data.use_ambient_light) {
+	if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_AMBIENT_LIGHT)) {
 		ambient_light = scene_data.ambient_light_color_energy.rgb;
 
-		if (scene_data.use_ambient_cubemap) {
+		if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_AMBIENT_CUBEMAP)) {
 			vec3 ambient_dir = scene_data.radiance_inverse_xform * indirect_normal;
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
-			vec3 cubemap_ambient = texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(ambient_dir, MAX_ROUGHNESS_LOD)).rgb;
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
+			float ambient_lod = vec3_to_oct_lod(dFdx(ambient_dir), dFdy(ambient_dir), scene_data_block.data.radiance_pixel_size);
+			vec2 ambient_uv = vec3_to_oct_with_border(ambient_dir, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+			vec3 cubemap_ambient = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ambient_uv, MAX_ROUGHNESS_LOD), ambient_lod).rgb;
 #else
-			vec3 cubemap_ambient = textureLod(samplerCube(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ambient_dir, MAX_ROUGHNESS_LOD).rgb;
-#endif //USE_RADIANCE_CUBEMAP_ARRAY
+			float roughness_lod = MAX_ROUGHNESS_LOD;
+			vec2 ambient_uv = vec3_to_oct_with_border(ambient_dir, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+			vec3 cubemap_ambient = textureLod(sampler2D(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ambient_uv, roughness_lod).rgb;
+#endif //USE_RADIANCE_OCTMAP_ARRAY
 			cubemap_ambient *= scene_data.IBL_exposure_normalization;
 			ambient_light = mix(ambient_light, cubemap_ambient * scene_data.ambient_light_color_energy.a, scene_data.ambient_color_sky_mix);
 		}
@@ -1635,7 +1755,7 @@ void fragment_shader(in SceneData scene_data) {
 
 #ifdef LIGHT_CLEARCOAT_USED
 
-	if (scene_data.use_reflection_cubemap) {
+	if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_REFLECTION_CUBEMAP)) {
 		float NoV = max(dot(geo_normal, view), 0.0001); // We want to use geometric normal, not normal_map
 		vec3 ref_vec = reflect(-view, geo_normal);
 		ref_vec = mix(ref_vec, geo_normal, clearcoat_roughness * clearcoat_roughness);
@@ -1648,17 +1768,22 @@ void fragment_shader(in SceneData scene_data) {
 		float horizon = min(1.0 + dot(ref_vec, indirect_normal), 1.0);
 		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
 		float roughness_lod = mix(0.001, 0.1, sqrt(clearcoat_roughness)) * MAX_ROUGHNESS_LOD;
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
 
 		float lod, blend;
 		blend = modf(roughness_lod, lod);
-		vec3 clearcoat_light = texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(ref_vec, lod)).rgb;
-		clearcoat_light = mix(clearcoat_light, texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(ref_vec, lod + 1)).rgb, blend);
+
+		float ref_lod = vec3_to_oct_lod(dFdx(ref_vec), dFdy(ref_vec), scene_data_block.data.radiance_pixel_size);
+		vec2 ref_uv = vec3_to_oct_with_border(ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		vec3 clearcoat_sample_a = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, lod), ref_lod).rgb;
+		vec3 clearcoat_sample_b = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, lod + 1), ref_lod).rgb;
+		vec3 clearcoat_light = mix(clearcoat_sample_a, clearcoat_sample_b, blend);
 
 #else
-		vec3 clearcoat_light = textureLod(samplerCube(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ref_vec, roughness_lod).rgb;
+		vec2 ref_uv = vec3_to_oct_with_border(ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		vec3 clearcoat_light = textureLod(sampler2D(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ref_uv, roughness_lod).rgb;
 
-#endif //USE_RADIANCE_CUBEMAP_ARRAY
+#endif //USE_RADIANCE_OCTMAP_ARRAY
 		indirect_specular_light += clearcoat_light * horizon * horizon * Fc * scene_data.ambient_light_color_energy.a;
 	}
 #endif // LIGHT_CLEARCOAT_USED
@@ -1677,7 +1802,7 @@ void fragment_shader(in SceneData scene_data) {
 		uint index = instances.data[instance_index].gi_offset;
 
 		// The world normal.
-		vec3 wnormal = mat3(scene_data.inv_view_matrix) * indirect_normal;
+		vec3 wnormal = mat3(inv_view_matrix) * indirect_normal;
 
 		// The SH coefficients used for evaluating diffuse data from SH probes.
 		const float c[5] = float[](
@@ -1697,7 +1822,7 @@ void fragment_shader(in SceneData scene_data) {
 								 c[3] * lightmap_captures.data[index].sh[6].rgb * (3.0 * wnormal.z * wnormal.z - 1.0) +
 								 c[2] * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
 								 c[4] * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y)) *
-				scene_data.emissive_exposure_normalization;
+				scene_data.IBL_exposure_normalization;
 
 	} else if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
 		bool uses_sh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
@@ -1747,9 +1872,9 @@ void fragment_shader(in SceneData scene_data) {
 	if (sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SDFGI)) { //has lightmap capture
 
 		//make vertex orientation the world one, but still align to camera
-		vec3 cam_pos = mat3(scene_data.inv_view_matrix) * vertex;
-		vec3 cam_normal = mat3(scene_data.inv_view_matrix) * indirect_normal;
-		vec3 cam_reflection = mat3(scene_data.inv_view_matrix) * reflect(-view, indirect_normal);
+		vec3 cam_pos = mat3(inv_view_matrix) * vertex;
+		vec3 cam_normal = mat3(inv_view_matrix) * indirect_normal;
+		vec3 cam_reflection = mat3(inv_view_matrix) * reflect(-view, indirect_normal);
 
 		//apply y-mult
 		cam_pos.y *= sdfgi.y_mult;
@@ -1819,9 +1944,9 @@ void fragment_shader(in SceneData scene_data) {
 	if (sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_VOXEL_GI)) { // process voxel_gi_instances
 		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
 		// Make vertex orientation the world one, but still align to camera.
-		vec3 cam_pos = mat3(scene_data.inv_view_matrix) * vertex;
-		vec3 cam_normal = mat3(scene_data.inv_view_matrix) * indirect_normal;
-		vec3 ref_vec = mat3(scene_data.inv_view_matrix) * normalize(reflect(-view, indirect_normal));
+		vec3 cam_pos = mat3(inv_view_matrix) * vertex;
+		vec3 cam_normal = mat3(inv_view_matrix) * indirect_normal;
+		vec3 ref_vec = mat3(inv_view_matrix) * normalize(reflect(-view, indirect_normal));
 
 		//find arbitrary tangent and bitangent, then build a matrix
 		vec3 v0 = abs(cam_normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
@@ -1921,10 +2046,8 @@ void fragment_shader(in SceneData scene_data) {
 
 		cluster_get_item_range(cluster_reflection_offset + implementation_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
 
-#ifdef USE_SUBGROUPS
 		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
 		item_to = subgroupBroadcastFirst(subgroupMax(item_to));
-#endif
 
 #ifdef LIGHT_ANISOTROPY_USED
 		// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
@@ -1942,20 +2065,16 @@ void fragment_shader(in SceneData scene_data) {
 		for (uint i = item_from; i < item_to; i++) {
 			uint mask = cluster_buffer.data[cluster_reflection_offset + i];
 			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
-#ifdef USE_SUBGROUPS
-			uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
-#else
-			uint merged_mask = mask;
-#endif
 
+			uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
 			while (merged_mask != 0) {
 				uint bit = findMSB(merged_mask);
 				merged_mask &= ~(1u << bit);
-#ifdef USE_SUBGROUPS
+
 				if (((1u << bit) & mask) == 0) { //do not process if not originally here
 					continue;
 				}
-#endif
+
 				uint reflection_index = 32 * i + bit;
 
 				if (!bool(reflections.data[reflection_index].mask & instances.data[instance_index].layer_mask)) {
@@ -2046,6 +2165,39 @@ void fragment_shader(in SceneData scene_data) {
 			ambient_light *= 1.0 - ssil.a;
 			ambient_light += ssil.rgb * albedo.rgb;
 		}
+
+		//process ssr
+		if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR)) {
+			bool resolve_ssr = bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR);
+
+			float ssr_mip_level = 0.0;
+			if (resolve_ssr) {
+#ifdef USE_MULTIVIEW
+				ssr_mip_level = textureLod(sampler2DArray(ssr_mip_level_buffer, SAMPLER_NEAREST_CLAMP), vec3(screen_uv, ViewIndex), 0.0).x;
+#else
+				ssr_mip_level = textureLod(sampler2D(ssr_mip_level_buffer, SAMPLER_NEAREST_CLAMP), screen_uv, 0.0).x;
+#endif // USE_MULTIVIEW
+
+				ssr_mip_level *= 14.0;
+			}
+
+#ifdef USE_MULTIVIEW
+			vec4 ssr = textureLod(sampler2DArray(ssr_buffer, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(screen_uv, ViewIndex), ssr_mip_level);
+#else
+			vec4 ssr = textureLod(sampler2D(ssr_buffer, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), screen_uv, ssr_mip_level);
+#endif // USE_MULTIVIEW
+
+			if (resolve_ssr) {
+				const vec3 rec709_luminance_weights = vec3(0.2126, 0.7152, 0.0722);
+				ssr.rgb /= 1.0 - dot(ssr.rgb, rec709_luminance_weights);
+			}
+
+			// Apply fade when approaching 0.7 roughness to smoothen the harsh cutoff in the main SSR trace pass.
+			ssr *= smoothstep(0.0, 1.0, 1.0 - clamp((roughness - 0.6) / (0.7 - 0.6), 0.0, 1.0));
+
+			// Alpha is premultiplied.
+			indirect_specular_light = indirect_specular_light * (1.0 - ssr.a) + ssr.rgb;
+		}
 	}
 #endif // AMBIENT_LIGHT_DISABLED
 
@@ -2068,17 +2220,12 @@ void fragment_shader(in SceneData scene_data) {
 
 		// cheap luminance approximation
 		float f90 = clamp(50.0 * f0.g, metallic, 1.0);
-		indirect_specular_light *= energy_compensation * (f90 * envBRDF.x + f0 * envBRDF.y);
+		indirect_specular_light *= energy_compensation * ((f90 - f0) * envBRDF.x + f0 * envBRDF.y);
 #endif
 	}
 
 #endif // !AMBIENT_LIGHT_DISABLED
 #endif //GI !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
-
-#if !defined(MODE_RENDER_DEPTH)
-	//this saves some VGPRs
-	uint orms = packUnorm4x8(vec4(ao, roughness, metallic, specular));
-#endif
 
 // LIGHTING
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
@@ -2467,7 +2614,7 @@ void fragment_shader(in SceneData scene_data) {
 #else
 					directional_lights.data[i].color * directional_lights.data[i].energy * tint,
 #endif
-					true, shadow, f0, orms, directional_lights.data[i].specular, albedo, alpha, screen_uv, energy_compensation,
+					true, shadow, f0, roughness, metallic, directional_lights.data[i].specular, albedo, alpha, screen_uv, energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
@@ -2505,28 +2652,22 @@ void fragment_shader(in SceneData scene_data) {
 
 		cluster_get_item_range(cluster_omni_offset + implementation_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
 
-#ifdef USE_SUBGROUPS
 		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
 		item_to = subgroupBroadcastFirst(subgroupMax(item_to));
-#endif
 
 		for (uint i = item_from; i < item_to; i++) {
 			uint mask = cluster_buffer.data[cluster_omni_offset + i];
 			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
-#ifdef USE_SUBGROUPS
-			uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
-#else
-			uint merged_mask = mask;
-#endif
 
+			uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
 			while (merged_mask != 0) {
 				uint bit = findMSB(merged_mask);
 				merged_mask &= ~(1u << bit);
-#ifdef USE_SUBGROUPS
+
 				if (((1u << bit) & mask) == 0) { //do not process if not originally here
 					continue;
 				}
-#endif
+
 				uint light_index = 32 * i + bit;
 
 				if (!bool(omni_lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
@@ -2537,7 +2678,7 @@ void fragment_shader(in SceneData scene_data) {
 					continue; // Statically baked light and object uses lightmap, skip
 				}
 
-				light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv, energy_compensation,
+				light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, roughness, metallic, scene_data.taa_frame_count, albedo, alpha, screen_uv, energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 						backlight,
 #endif
@@ -2554,7 +2695,7 @@ void fragment_shader(in SceneData scene_data) {
 						clearcoat, clearcoat_roughness, geo_normal,
 #endif // LIGHT_CLEARCOAT_USED
 #ifdef LIGHT_ANISOTROPY_USED
-						tangent, binormal, anisotropy,
+						binormal, tangent, anisotropy,
 #endif
 						diffuse_light, direct_specular_light);
 			}
@@ -2572,28 +2713,21 @@ void fragment_shader(in SceneData scene_data) {
 
 		cluster_get_item_range(cluster_spot_offset + implementation_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
 
-#ifdef USE_SUBGROUPS
 		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
 		item_to = subgroupBroadcastFirst(subgroupMax(item_to));
-#endif
 
 		for (uint i = item_from; i < item_to; i++) {
 			uint mask = cluster_buffer.data[cluster_spot_offset + i];
 			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
-#ifdef USE_SUBGROUPS
-			uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
-#else
-			uint merged_mask = mask;
-#endif
 
+			uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
 			while (merged_mask != 0) {
 				uint bit = findMSB(merged_mask);
 				merged_mask &= ~(1u << bit);
-#ifdef USE_SUBGROUPS
+
 				if (((1u << bit) & mask) == 0) { //do not process if not originally here
 					continue;
 				}
-#endif
 
 				uint light_index = 32 * i + bit;
 
@@ -2605,7 +2739,7 @@ void fragment_shader(in SceneData scene_data) {
 					continue; // Statically baked light and object uses lightmap, skip
 				}
 
-				light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv, energy_compensation,
+				light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, roughness, metallic, scene_data.taa_frame_count, albedo, alpha, screen_uv, energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 						backlight,
 #endif
@@ -2622,8 +2756,7 @@ void fragment_shader(in SceneData scene_data) {
 						clearcoat, clearcoat_roughness, geo_normal,
 #endif // LIGHT_CLEARCOAT_USED
 #ifdef LIGHT_ANISOTROPY_USED
-						tangent,
-						binormal, anisotropy,
+						binormal, tangent, anisotropy,
 #endif
 						diffuse_light, direct_specular_light);
 			}
@@ -2677,7 +2810,7 @@ void fragment_shader(in SceneData scene_data) {
 				vec3(0, -1, 0),
 				vec3(0, 0, -1));
 
-		vec3 cam_normal = mat3(scene_data.inv_view_matrix) * normalize(normal_interp);
+		vec3 cam_normal = mat3(inv_view_matrix) * normalize(normal_interp);
 
 		float closest_dist = -1e20;
 
@@ -2800,12 +2933,10 @@ void fragment_shader(in SceneData scene_data) {
 	diffuse_light *= albedo; // ambient must be multiplied by albedo at the end
 
 	// apply direct light AO
-	ao = unpackUnorm4x8(orms).x;
 	diffuse_light *= ao;
 	direct_specular_light *= ao;
 
 	// apply metallic
-	metallic = unpackUnorm4x8(orms).z;
 	diffuse_light *= 1.0 - metallic;
 	ambient_light *= 1.0 - metallic;
 
@@ -2830,8 +2961,8 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 
 #ifndef FOG_DISABLED
-	diffuse_buffer.rgb = mix(diffuse_buffer.rgb, fog.rgb, fog.a);
-	specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
+	diffuse_buffer.rgb = diffuse_buffer.rgb * fog.a + fog.rgb;
+	specular_buffer.rgb = specular_buffer.rgb * fog.a;
 #endif //!FOG_DISABLED
 
 #else //MODE_SEPARATE_SPECULAR
@@ -2846,9 +2977,12 @@ void fragment_shader(in SceneData scene_data) {
 #endif //USE_NO_SHADING
 
 #ifndef FOG_DISABLED
-	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
-	frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
+	frag_color.rgb = frag_color.rgb * fog.a + fog.rgb;
 #endif //!FOG_DISABLED
+
+#if defined(PREMUL_ALPHA_USED) && !defined(MODE_RENDER_DEPTH)
+	frag_color.rgb *= premul_alpha;
+#endif //PREMUL_ALPHA_USED
 
 #endif //MODE_SEPARATE_SPECULAR
 
@@ -2862,10 +2996,6 @@ void fragment_shader(in SceneData scene_data) {
 
 	motion_vector = prev_position_uv - position_uv;
 #endif
-
-#if defined(PREMUL_ALPHA_USED) && !defined(MODE_RENDER_DEPTH)
-	frag_color.rgb *= premul_alpha;
-#endif //PREMUL_ALPHA_USED
 }
 
 void main() {

@@ -60,7 +60,7 @@ String StringBuilder::as_string() const {
 	}
 
 	String string;
-	string.resize(string_length + 1);
+	string.resize_uninitialized(string_length + 1);
 	char32_t *buffer = string.ptrw();
 
 	int current_position = 0;

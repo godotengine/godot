@@ -32,7 +32,7 @@
 
 #include "jolt_object_3d.h"
 
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 #include "Jolt/Jolt.h"
 
@@ -42,21 +42,12 @@
 class JoltSpace3D;
 
 class JoltSoftBody3D final : public JoltObject3D {
-	struct Shared {
-		LocalVector<int> mesh_to_physics;
-		JPH::Ref<JPH::SoftBodySharedSettings> settings = new JPH::SoftBodySharedSettings();
-		int ref_count = 1;
-	};
-
-	inline static HashMap<RID, Shared> mesh_to_shared;
-
 	HashSet<int> pinned_vertices;
 	LocalVector<RID> exceptions;
 	LocalVector<Vector3> normals;
 
-	const Shared *shared = nullptr;
-
 	RID mesh;
+	LocalVector<int> mesh_to_physics;
 
 	JPH::SoftBodyCreationSettings *jolt_settings = new JPH::SoftBodyCreationSettings();
 
@@ -64,6 +55,7 @@ class JoltSoftBody3D final : public JoltObject3D {
 	float pressure = 0.0f;
 	float linear_damping = 0.01f;
 	float stiffness_coefficient = 0.5f;
+	float shrinking_factor = 0.0f;
 
 	int simulation_precision = 5;
 
@@ -75,8 +67,7 @@ class JoltSoftBody3D final : public JoltObject3D {
 
 	virtual void _add_to_space() override;
 
-	bool _ref_shared_data();
-	void _deref_shared_data();
+	JPH::SoftBodySharedSettings *_create_shared_settings();
 
 	void _update_mass();
 	void _update_pressure();
@@ -94,12 +85,11 @@ class JoltSoftBody3D final : public JoltObject3D {
 	void _pins_changed();
 	void _vertices_changed();
 	void _exceptions_changed();
+	void _motion_changed();
 
 public:
 	JoltSoftBody3D();
 	virtual ~JoltSoftBody3D() override;
-
-	bool in_space() const;
 
 	void add_collision_exception(const RID &p_excepted_body);
 	void remove_collision_exception(const RID &p_excepted_body);
@@ -138,6 +128,9 @@ public:
 	float get_stiffness_coefficient() const;
 	void set_stiffness_coefficient(float p_coefficient);
 
+	float get_shrinking_factor() const;
+	void set_shrinking_factor(float p_shrinking_factor);
+
 	float get_pressure() const { return pressure; }
 	void set_pressure(float p_pressure);
 
@@ -166,4 +159,9 @@ public:
 	void unpin_all_vertices();
 
 	bool is_vertex_pinned(int p_index) const;
+
+	void apply_vertex_impulse(int p_index, const Vector3 &p_impulse);
+	void apply_vertex_force(int p_index, const Vector3 &p_force);
+	void apply_central_impulse(const Vector3 &p_impulse);
+	void apply_central_force(const Vector3 &p_force);
 };

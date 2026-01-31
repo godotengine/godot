@@ -70,7 +70,7 @@ protected:
 	GDVIRTUAL2RC(Error, _rename_dependencies, String, Dictionary)
 	GDVIRTUAL1RC(bool, _exists, String)
 
-	GDVIRTUAL4RC(Variant, _load, String, String, bool, int)
+	GDVIRTUAL4RC_REQUIRED(Variant, _load, String, String, bool, int)
 
 public:
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
@@ -176,10 +176,8 @@ private:
 	struct ThreadLoadTask {
 		WorkerThreadPool::TaskID task_id = 0; // Used if run on a worker thread from the pool.
 		Thread::ID thread_id = 0; // Used if running on an user thread (e.g., simple non-threaded load).
-		bool awaited = false; // If it's in the pool, this helps not awaiting from more than one dependent thread.
 		ConditionVariable *cond_var = nullptr; // In not in the worker pool or already awaiting, this is used as a secondary awaiting mechanism.
 		uint32_t awaiters_count = 0;
-		bool need_wait = true;
 		LoadToken *load_token = nullptr;
 		String local_path;
 		String type_hint;
@@ -190,8 +188,12 @@ private:
 		ResourceFormatLoader::CacheMode cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE;
 		Error error = OK;
 		Ref<Resource> resource;
-		bool use_sub_threads = false;
 		HashSet<String> sub_tasks;
+
+		bool awaited : 1; // If it's in the pool, this helps not awaiting from more than one dependent thread.
+		bool need_wait : 1;
+		bool in_progress_check : 1; // Measure against recursion cycles in progress reporting. Cycles are not expected, but can happen due to how it's currently implemented.
+		bool use_sub_threads : 1;
 
 		struct ResourceChangedConnection {
 			Resource *source = nullptr;
@@ -199,8 +201,13 @@ private:
 			uint32_t flags = 0;
 		};
 		LocalVector<ResourceChangedConnection> resource_changed_connections;
-	};
 
+		ThreadLoadTask() :
+				awaited(false),
+				need_wait(true),
+				in_progress_check(false),
+				use_sub_threads(false) {}
+	};
 	static void _run_load_task(void *p_userdata);
 
 	static thread_local bool import_thread;
@@ -244,14 +251,12 @@ public:
 	static String get_resource_type(const String &p_path);
 	static String get_resource_script_class(const String &p_path);
 	static ResourceUID::ID get_resource_uid(const String &p_path);
-	static bool has_custom_uid_support(const String &p_path);
 	static bool should_create_uid_file(const String &p_path);
 	static void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	static Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);
 	static bool is_import_valid(const String &p_path);
 	static String get_import_group_file(const String &p_path);
 	static bool is_imported(const String &p_path);
-	static int get_import_order(const String &p_path);
 
 	static void set_is_import_thread(bool p_import_thread);
 

@@ -240,18 +240,18 @@ void NavMeshGenerator2D::generator_parse_geometry_node(Ref<NavigationPolygon> p_
 	}
 }
 
-void NavMeshGenerator2D::set_generator_parsers(LocalVector<NavMeshGeometryParser2D *> p_parsers) {
+void NavMeshGenerator2D::set_generator_parsers(const LocalVector<NavMeshGeometryParser2D *> &p_parsers) {
 	RWLockWrite write_lock(generator_parsers_rwlock);
 	generator_parsers = p_parsers;
 }
 
 void NavMeshGenerator2D::generator_parse_source_geometry_data(Ref<NavigationPolygon> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_root_node) {
-	List<Node *> parse_nodes;
+	Vector<Node *> parse_nodes;
 
 	if (p_navigation_mesh->get_source_geometry_mode() == NavigationPolygon::SOURCE_GEOMETRY_ROOT_NODE_CHILDREN) {
 		parse_nodes.push_back(p_root_node);
 	} else {
-		p_root_node->get_tree()->get_nodes_in_group(p_navigation_mesh->get_source_geometry_group_name(), &parse_nodes);
+		parse_nodes = p_root_node->get_tree()->get_nodes_in_group(p_navigation_mesh->get_source_geometry_group_name());
 	}
 
 	Transform2D root_node_transform = Transform2D();
@@ -444,10 +444,10 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 	if (baking_rect.has_area() && border_size > 0.0) {
 		Vector2 baking_rect_offset = p_navigation_mesh->get_baking_rect_offset();
 
-		const int rect_begin_x = baking_rect.position[0] + baking_rect_offset.x + border_size;
-		const int rect_begin_y = baking_rect.position[1] + baking_rect_offset.y + border_size;
-		const int rect_end_x = baking_rect.position[0] + baking_rect.size[0] + baking_rect_offset.x - border_size;
-		const int rect_end_y = baking_rect.position[1] + baking_rect.size[1] + baking_rect_offset.y - border_size;
+		const double rect_begin_x = baking_rect.position[0] + baking_rect_offset.x + border_size;
+		const double rect_begin_y = baking_rect.position[1] + baking_rect_offset.y + border_size;
+		const double rect_end_x = baking_rect.position[0] + baking_rect.size[0] + baking_rect_offset.x - border_size;
+		const double rect_end_y = baking_rect.position[1] + baking_rect.size[1] + baking_rect_offset.y - border_size;
 
 		RectD clipper_rect = RectD(rect_begin_x, rect_begin_y, rect_end_x, rect_end_y);
 

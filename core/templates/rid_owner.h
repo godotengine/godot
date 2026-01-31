@@ -34,8 +34,8 @@
 #include "core/os/mutex.h"
 #include "core/string/print_string.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/rid.h"
 #include "core/templates/safe_refcount.h"
+#include "core/variant/variant.h"
 
 #include <cstdio>
 #include <typeinfo> // IWYU pragma: keep // Used in macro.
@@ -75,7 +75,7 @@
 #endif
 
 class RID_AllocBase {
-	static SafeNumeric<uint64_t> base_id;
+	static inline SafeNumeric<uint64_t> base_id{ 1 };
 
 protected:
 	static RID _make_from_id(uint64_t p_id) {

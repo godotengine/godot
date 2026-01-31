@@ -13,11 +13,10 @@
 // limitations under the License.
 
 #pragma once
-#include "./parallel.h"
-#include "./sparse.h"
-#include "./utils.h"
-#include "./vec.h"
 #include "manifold/common.h"
+#include "parallel.h"
+#include "utils.h"
+#include "vec.h"
 
 #ifdef _MSC_VER
 #include <intrin.h>
@@ -40,7 +39,7 @@ constexpr int kRoot = 1;
 #ifdef _MSC_VER
 
 #ifndef _WINDEF_
-typedef unsigned long DWORD;
+using DWORD = unsigned long;
 #endif
 
 uint32_t inline ctz(uint32_t value) {
@@ -158,19 +157,21 @@ struct CreateRadixTree {
   }
 };
 
-template <typename T, const bool selfCollision, typename Recorder>
+template <typename F, const bool selfCollision, typename Recorder>
 struct FindCollision {
-  VecView<const T> queries;
+  F& f;
   VecView<const Box> nodeBBox_;
   VecView<const std::pair<int, int>> internalChildren_;
-  Recorder recorder;
+  Recorder& recorder;
 
-  inline int RecordCollision(int node, const int queryIdx, SparseIndices& ind) {
-    bool overlaps = nodeBBox_[node].DoesOverlap(queries[queryIdx]);
+  using Local = typename Recorder::Local;
+
+  inline int RecordCollision(int node, const int queryIdx, Local& local) {
+    bool overlaps = nodeBBox_[node].DoesOverlap(f(queryIdx));
     if (overlaps && IsLeaf(node)) {
       int leafIdx = Node2Leaf(node);
       if (!selfCollision || leafIdx != queryIdx) {
-        recorder.record(queryIdx, leafIdx, ind);
+        recorder.record(queryIdx, leafIdx, local);
       }
     }
     return overlaps && IsInternal(node);  // Should traverse into node
@@ -183,14 +184,14 @@ struct FindCollision {
     int top = -1;
     // Depth-first search
     int node = kRoot;
-    SparseIndices& ind = recorder.local();
+    Local& local = recorder.local();
     while (1) {
       int internal = Node2Internal(node);
       int child1 = internalChildren_[internal].first;
       int child2 = internalChildren_[internal].second;
 
-      int traverse1 = RecordCollision(child1, queryIdx, ind);
-      int traverse2 = RecordCollision(child2, queryIdx, ind);
+      int traverse1 = RecordCollision(child1, queryIdx, local);
+      int traverse2 = RecordCollision(child2, queryIdx, local);
 
       if (!traverse1 && !traverse2) {
         if (top < 0) break;   // done
@@ -204,35 +205,6 @@ struct FindCollision {
     }
   }
 };
-
-template <const bool inverted>
-struct SeqCollisionRecorder {
-  SparseIndices& queryTri_;
-  inline void record(int queryIdx, int leafIdx, SparseIndices& ind) const {
-    if (inverted)
-      ind.Add(leafIdx, queryIdx);
-    else
-      ind.Add(queryIdx, leafIdx);
-  }
-  SparseIndices& local() { return queryTri_; }
-};
-
-#if (MANIFOLD_PAR == 1)
-template <const bool inverted>
-struct ParCollisionRecorder {
-  tbb::combinable<SparseIndices>& store;
-  inline void record(int queryIdx, int leafIdx, SparseIndices& ind) const {
-    // Add may invoke something in parallel, and it may return in
-    // another thread, making thread local unsafe
-    // we need to explicitly forbid parallelization by passing a flag
-    if (inverted)
-      ind.Add(leafIdx, queryIdx, true);
-    else
-      ind.Add(queryIdx, leafIdx, true);
-  }
-  SparseIndices& local() { return store.local(); }
-};
-#endif
 
 struct BuildInternalBoxes {
   VecView<Box> nodeBBox_;
@@ -266,6 +238,22 @@ constexpr inline uint32_t SpreadBits3(uint32_t v) {
 }
 }  // namespace collider_internal
 
+template <typename F>
+struct SimpleRecorder {
+  using Local = F;
+  F& f;
+
+  inline void record(int queryIdx, int leafIdx, F& f) const {
+    f(queryIdx, leafIdx);
+  }
+  Local& local() { return f; }
+};
+
+template <typename F>
+inline SimpleRecorder<F> MakeSimpleRecorder(F& f) {
+  return SimpleRecorder<F>{f};
+}
+
 /** @ingroup Private */
 class Collider {
  public:
@@ -278,7 +266,7 @@ class Collider {
                  "vectors must be the same length");
     int num_nodes = 2 * leafBB.size() - 1;
     // assign and allocate members
-    nodeBBox_.resize(num_nodes);
+    nodeBBox_.resize_nofill(num_nodes);
     nodeParent_.resize(num_nodes, -1);
     internalChildren_.resize(leafBB.size() - 1, std::make_pair(-1, -1));
     // organize tree
@@ -321,40 +309,40 @@ class Collider {
                    {nodeBBox_, counter, nodeParent_, internalChildren_}));
   }
 
-  template <const bool selfCollision = false, const bool inverted = false,
-            typename T>
-  void Collisions(const VecView<const T>& queriesIn,
-                  SparseIndices& queryTri) const {
+  // This function iterates over queriesIn and calls recorder.record(queryIdx,
+  // leafIdx, local) for each collision it found.
+  // If selfCollisionl is true, it will skip the case where queryIdx == leafIdx.
+  // The recorder should provide a local() method that returns a Recorder::Local
+  // type, representing thread local storage. By default, recorder.record can
+  // run in parallel and the thread local storage can be combined at the end.
+  // If parallel is false, the function will run in sequential mode.
+  //
+  // If thread local storage is not needed, use SimpleRecorder.
+  template <const bool selfCollision = false, typename T, typename Recorder>
+  void Collisions(const VecView<const T>& queriesIn, Recorder& recorder,
+                  bool parallel = true) const {
     ZoneScoped;
     using collider_internal::FindCollision;
-#if (MANIFOLD_PAR == 1)
-    if (queriesIn.size() > collider_internal::kSequentialThreshold) {
-      tbb::combinable<SparseIndices> store;
-      for_each_n(
-          ExecutionPolicy::Par, countAt(0), queriesIn.size(),
-          FindCollision<T, selfCollision,
-                        collider_internal::ParCollisionRecorder<inverted>>{
-              queriesIn, nodeBBox_, internalChildren_, {store}});
-
-      std::vector<SparseIndices> tmp;
-      store.combine_each(
-          [&](SparseIndices& ind) { tmp.emplace_back(std::move(ind)); });
-      queryTri.FromIndices(tmp);
-      return;
-    }
-#endif
-    for_each_n(ExecutionPolicy::Seq, countAt(0), queriesIn.size(),
-               FindCollision<T, selfCollision,
-                             collider_internal::SeqCollisionRecorder<inverted>>{
-                   queriesIn, nodeBBox_, internalChildren_, {queryTri}});
+    if (internalChildren_.empty()) return;
+    auto f = [queriesIn](const int i) { return queriesIn[i]; };
+    for_each_n(parallel ? autoPolicy(queriesIn.size(),
+                                     collider_internal::kSequentialThreshold)
+                        : ExecutionPolicy::Seq,
+               countAt(0), queriesIn.size(),
+               FindCollision<decltype(f), selfCollision, Recorder>{
+                   f, nodeBBox_, internalChildren_, recorder});
   }
 
-  template <const bool selfCollision = false, const bool inverted = false,
-            typename T>
-  SparseIndices Collisions(const VecView<const T>& queriesIn) const {
-    SparseIndices result;
-    Collisions<selfCollision, inverted, T>(queriesIn, result);
-    return result;
+  template <const bool selfCollision = false, typename F, typename Recorder>
+  void Collisions(F f, int n, Recorder& recorder, bool parallel = true) const {
+    ZoneScoped;
+    using collider_internal::FindCollision;
+    if (internalChildren_.empty()) return;
+    for_each_n(parallel ? autoPolicy(n, collider_internal::kSequentialThreshold)
+                        : ExecutionPolicy::Seq,
+               countAt(0), n,
+               FindCollision<decltype(f), selfCollision, Recorder>{
+                   f, nodeBBox_, internalChildren_, recorder});
   }
 
   static uint32_t MortonCode(vec3 position, Box bBox) {

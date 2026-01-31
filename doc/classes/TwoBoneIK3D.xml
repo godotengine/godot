@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TwoBoneIK3D" inherits="IKModifier3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Rotation based intersection of two circles inverse kinematics solver.
+	</brief_description>
+	<description>
+		This [IKModifier3D] requires a pole target. It provides deterministic results by constructing a plane from each joint and pole target and finding the intersection of two circles (disks in 3D).
+		This IK can handle twist by setting the pole direction. If there are more than one bone between each set bone, their rotations are ignored, and the straight line connecting the root-middle and middle-end joints are treated as virtual bones.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_end_bone" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the end bone index.
+			</description>
+		</method>
+		<method name="get_end_bone_direction" qualifiers="const">
+			<return type="int" enum="SkeletonModifier3D.BoneDirection" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the end bone's tail direction when [method is_end_bone_extended] is [code]true[/code].
+			</description>
+		</method>
+		<method name="get_end_bone_length" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the end bone tail length of the bone chain when [method is_end_bone_extended] is [code]true[/code].
+			</description>
+		</method>
+		<method name="get_end_bone_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the end bone name.
+			</description>
+		</method>
+		<method name="get_middle_bone" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the middle bone index.
+			</description>
+		</method>
+		<method name="get_middle_bone_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the middle bone name.
+			</description>
+		</method>
+		<method name="get_pole_direction" qualifiers="const">
+			<return type="int" enum="SkeletonModifier3D.SecondaryDirection" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the pole direction.
+			</description>
+		</method>
+		<method name="get_pole_direction_vector" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the pole direction vector.
+				If [method get_pole_direction] is [constant SkeletonModifier3D.SECONDARY_DIRECTION_NONE], this method returns [code]Vector3(0, 0, 0)[/code].
+			</description>
+		</method>
+		<method name="get_pole_node" qualifiers="const">
+			<return type="NodePath" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the pole target node that constructs a plane which the joints are all on and the pole is trying to direct.
+			</description>
+		</method>
+		<method name="get_root_bone" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the root bone index.
+			</description>
+		</method>
+		<method name="get_root_bone_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the root bone name.
+			</description>
+		</method>
+		<method name="get_target_node" qualifiers="const">
+			<return type="NodePath" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the target node that the end bone is trying to reach.
+			</description>
+		</method>
+		<method name="is_end_bone_extended" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns [code]true[/code] if the end bone is extended to have a tail.
+			</description>
+		</method>
+		<method name="is_using_virtual_end" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns [code]true[/code] if the end bone is extended from the middle bone as a virtual bone.
+			</description>
+		</method>
+		<method name="set_end_bone">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone" type="int" />
+			<description>
+				Sets the end bone index.
+			</description>
+		</method>
+		<method name="set_end_bone_direction">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone_direction" type="int" enum="SkeletonModifier3D.BoneDirection" />
+			<description>
+				Sets the end bone tail direction when [method is_end_bone_extended] is [code]true[/code].
+			</description>
+		</method>
+		<method name="set_end_bone_length">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="length" type="float" />
+			<description>
+				Sets the end bone tail length when [method is_end_bone_extended] is [code]true[/code].
+			</description>
+		</method>
+		<method name="set_end_bone_name">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone_name" type="String" />
+			<description>
+				Sets the end bone name.
+				[b]Note:[/b] The end bone must be a child of the middle bone.
+			</description>
+		</method>
+		<method name="set_extend_end_bone">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] is [code]true[/code], the end bone is extended to have a tail.
+			</description>
+		</method>
+		<method name="set_middle_bone">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone" type="int" />
+			<description>
+				Sets the middle bone index.
+			</description>
+		</method>
+		<method name="set_middle_bone_name">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone_name" type="String" />
+			<description>
+				Sets the middle bone name.
+				[b]Note:[/b] The middle bone must be a child of the root bone.
+			</description>
+		</method>
+		<method name="set_pole_direction">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="direction" type="int" enum="SkeletonModifier3D.SecondaryDirection" />
+			<description>
+				Sets the pole direction.
+				The pole is on the middle bone and will direct to the pole target.
+				The rotation axis is a vector that is orthogonal to this and the forward vector.
+				[b]Note:[/b] The pole direction and the forward vector shouldn't be colinear to avoid unintended rotation.
+			</description>
+		</method>
+		<method name="set_pole_direction_vector">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="vector" type="Vector3" />
+			<description>
+				Sets the pole direction vector.
+				This vector is normalized by an internal process.
+				If the vector length is [code]0[/code], it is considered synonymous with [constant SkeletonModifier3D.SECONDARY_DIRECTION_NONE].
+			</description>
+		</method>
+		<method name="set_pole_node">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="pole_node" type="NodePath" />
+			<description>
+				Sets the pole target node that constructs a plane which the joints are all on and the pole is trying to direct.
+			</description>
+		</method>
+		<method name="set_root_bone">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone" type="int" />
+			<description>
+				Sets the root bone index.
+			</description>
+		</method>
+		<method name="set_root_bone_name">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone_name" type="String" />
+			<description>
+				Sets the root bone name.
+			</description>
+		</method>
+		<method name="set_target_node">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="target_node" type="NodePath" />
+			<description>
+				Sets the target node that the end bone is trying to reach.
+			</description>
+		</method>
+		<method name="set_use_virtual_end">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] is [code]true[/code], the end bone is extended from the middle bone as a virtual bone.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="setting_count" type="int" setter="set_setting_count" getter="get_setting_count" default="0">
+			The number of settings.
+		</member>
+	</members>
+</class>

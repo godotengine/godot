@@ -857,4 +857,82 @@ Vec3 Vec3::GetSign() const
 #endif
 }
 
+template <int X, int Y, int Z>
+JPH_INLINE Vec3 Vec3::FlipSign() const
+{
+	static_assert(X == 1 || X == -1, "X must be 1 or -1");
+	static_assert(Y == 1 || Y == -1, "Y must be 1 or -1");
+	static_assert(Z == 1 || Z == -1, "Z must be 1 or -1");
+	return Vec3::sXor(*this, Vec3(X > 0? 0.0f : -0.0f, Y > 0? 0.0f : -0.0f, Z > 0? 0.0f : -0.0f));
+}
+
+uint32 Vec3::CompressUnitVector() const
+{
+	constexpr float cOneOverSqrt2 = 0.70710678f;
+	constexpr uint cNumBits = 14;
+	constexpr uint cMask = (1 << cNumBits) - 1;
+
+	// Store sign bit
+	Vec3 v = *this;
+	uint32 max_element = v.Abs().GetHighestComponentIndex();
+	uint32 value = 0;
+	if (v[max_element] < 0.0f)
+	{
+		value = 0x80000000u;
+		v = -v;
+	}
+
+	// Store highest component
+	value |= max_element << 29;
+
+	// Store the other two components in a compressed format
+	UVec4 compressed = Vec3::sClamp((v + Vec3::sReplicate(cOneOverSqrt2)) * (float(cMask) / (2.0f * cOneOverSqrt2)) + Vec3::sReplicate(0.5f), Vec3::sZero(), Vec3::sReplicate(cMask)).ToInt();
+	switch (max_element)
+	{
+	case 0:
+		compressed = compressed.Swizzle<SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_UNUSED, SWIZZLE_UNUSED>();
+		break;
+
+	case 1:
+		compressed = compressed.Swizzle<SWIZZLE_X, SWIZZLE_Z, SWIZZLE_UNUSED, SWIZZLE_UNUSED>();
+		break;
+	}
+
+	value |= compressed.GetX();
+	value |= compressed.GetY() << cNumBits;
+	return value;
+}
+
+Vec3 Vec3::sDecompressUnitVector(uint32 inValue)
+{
+	constexpr float cOneOverSqrt2 = 0.70710678f;
+	constexpr uint cNumBits = 14;
+	constexpr uint cMask = (1u << cNumBits) - 1;
+
+	// Restore two components
+	Vec3 v = Vec3(UVec4(inValue & cMask, (inValue >> cNumBits) & cMask, 0, 0).ToFloat()) * (2.0f * cOneOverSqrt2 / float(cMask)) - Vec3(cOneOverSqrt2, cOneOverSqrt2, 0.0f);
+	JPH_ASSERT(v.GetZ() == 0.0f);
+
+	// Restore the highest component
+	v.SetZ(sqrt(max(1.0f - v.LengthSq(), 0.0f)));
+
+	// Extract sign
+	if ((inValue & 0x80000000u) != 0)
+		v = -v;
+
+	// Swizzle the components in place
+	switch ((inValue >> 29) & 3)
+	{
+	case 0:
+		v = v.Swizzle<SWIZZLE_Z, SWIZZLE_X, SWIZZLE_Y>();
+		break;
+
+	case 1:
+		v = v.Swizzle<SWIZZLE_X, SWIZZLE_Z, SWIZZLE_Y>();
+		break;
+	}
+
+	return v;
+}
+
 JPH_NAMESPACE_END

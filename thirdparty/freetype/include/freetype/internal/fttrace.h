@@ -4,7 +4,7 @@
  *
  *   Tracing handling (specification only).
  *
- * Copyright (C) 2002-2024 by
+ * Copyright (C) 2002-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,7 +19,7 @@
   /* definitions of trace levels for FreeType 2 */
 
   /* the maximum string length (if the argument to `FT_TRACE_DEF` */
-  /* gets used as a string) plus one charachter for ':' plus      */
+  /* gets used as a string) plus one character for ':' plus       */
   /* another one for the trace level                              */
 #define FT_MAX_TRACE_LEVEL_LENGTH  (9 + 1 + 1)
 
@@ -159,6 +159,7 @@ FT_TRACE_DEF( gxvprop )
 FT_TRACE_DEF( gxvtrak )
 
   /* autofit components */
+FT_TRACE_DEF( afadjust )
 FT_TRACE_DEF( afcjk )
 FT_TRACE_DEF( afglobal )
 FT_TRACE_DEF( afhints )

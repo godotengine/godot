@@ -71,7 +71,7 @@ class OS_Unix : public OS {
 	void _load_iconv();
 #endif
 
-	static int _wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_options);
+	static int _wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_options, pid_t *r_pid = nullptr);
 	bool _check_pid_is_running(const pid_t p_pid, int *r_status) const;
 
 protected:
@@ -101,6 +101,7 @@ public:
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String &p_name, void *&p_symbol_handle, bool p_optional = false) override;
 
 	virtual Error set_cwd(const String &p_cwd) override;
+	virtual String get_cwd() const override;
 
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;

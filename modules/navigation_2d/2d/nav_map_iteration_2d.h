@@ -37,9 +37,9 @@
 #include "core/math/math_defs.h"
 #include "core/os/semaphore.h"
 
-struct NavLinkIteration2D;
+class NavLinkIteration2D;
 class NavRegion2D;
-struct NavRegionIteration2D;
+class NavRegionIteration2D;
 struct NavMapIteration2D;
 
 struct NavMapIterationBuild2D {
@@ -52,7 +52,7 @@ struct NavMapIterationBuild2D {
 	int free_edge_count = 0;
 
 	HashMap<Nav2D::EdgeKey, Nav2D::EdgeConnectionPair, Nav2D::EdgeKey> iter_connection_pairs_map;
-	LocalVector<Nav2D::Edge::Connection> iter_free_edges;
+	LocalVector<Nav2D::Connection> iter_free_edges;
 
 	NavMapIteration2D *map_iteration = nullptr;
 
@@ -74,19 +74,33 @@ struct NavMapIteration2D {
 	mutable SafeNumeric<uint32_t> users;
 	RWLock rwlock;
 
-	LocalVector<NavRegionIteration2D> region_iterations;
-	LocalVector<NavLinkIteration2D> link_iterations;
+	LocalVector<Ref<NavRegionIteration2D>> region_iterations;
+	LocalVector<Ref<NavLinkIteration2D>> link_iterations;
 
 	int navmesh_polygon_count = 0;
 
 	// The edge connections that the map builds on top with the edge connection margin.
-	HashMap<uint32_t, LocalVector<Nav2D::Edge::Connection>> external_region_connections;
+	HashMap<const NavBaseIteration2D *, LocalVector<Nav2D::Connection>> external_region_connections;
+	HashMap<const NavBaseIteration2D *, LocalVector<LocalVector<Nav2D::Connection>>> navbases_polygons_external_connections;
 
-	HashMap<NavRegion2D *, uint32_t> region_ptr_to_region_id;
+	LocalVector<Nav2D::Polygon> navlink_polygons;
+
+	HashMap<NavRegion2D *, Ref<NavRegionIteration2D>> region_ptr_to_region_iteration;
 
 	LocalVector<NavMeshQueries2D::PathQuerySlot> path_query_slots;
 	Mutex path_query_slots_mutex;
 	Semaphore path_query_slots_semaphore;
+
+	void clear() {
+		navmesh_polygon_count = 0;
+
+		region_iterations.clear();
+		link_iterations.clear();
+		external_region_connections.clear();
+		navbases_polygons_external_connections.clear();
+		navlink_polygons.clear();
+		region_ptr_to_region_iteration.clear();
+	}
 };
 
 class NavMapIterationRead2D {

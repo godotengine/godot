@@ -10,7 +10,7 @@
 	</tutorials>
 	<members>
 		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="VisualShaderNodeFloatOp.Operator" default="0">
-			An operator to be applied to the inputs. See [enum Operator] for options.
+			An operator to be applied to the inputs.
 		</member>
 	</members>
 	<constants>

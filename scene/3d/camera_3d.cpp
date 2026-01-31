@@ -117,17 +117,19 @@ void Camera3D::_update_camera_mode() {
 }
 
 void Camera3D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "fov") {
-		if (mode != PROJECTION_PERSPECTIVE) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	} else if (p_property.name == "size") {
-		if (mode != PROJECTION_ORTHOGONAL && mode != PROJECTION_FRUSTUM) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	} else if (p_property.name == "frustum_offset") {
-		if (mode != PROJECTION_FRUSTUM) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "fov") {
+			if (mode != PROJECTION_PERSPECTIVE) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		} else if (p_property.name == "size") {
+			if (mode != PROJECTION_ORTHOGONAL && mode != PROJECTION_FRUSTUM) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		} else if (p_property.name == "frustum_offset") {
+			if (mode != PROJECTION_FRUSTUM) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
 		}
 	}
 
@@ -139,8 +141,6 @@ void Camera3D::_validate_property(PropertyInfo &p_property) const {
 			}
 		}
 	}
-
-	Node3D::_validate_property(p_property);
 }
 
 void Camera3D::_update_camera() {
@@ -867,11 +867,11 @@ Camera3D::Camera3D() {
 
 Camera3D::~Camera3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(camera);
+	RenderingServer::get_singleton()->free_rid(camera);
 #ifndef PHYSICS_3D_DISABLED
 	if (pyramid_shape.is_valid()) {
 		ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
-		PhysicsServer3D::get_singleton()->free(pyramid_shape);
+		PhysicsServer3D::get_singleton()->free_rid(pyramid_shape);
 	}
 #endif // PHYSICS_3D_DISABLED
 }

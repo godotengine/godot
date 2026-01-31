@@ -1,0 +1,5 @@
+GH-104890
+---------
+Validate extension JSON: API was removed: classes/JSONRPC/methods/set_scope
+
+Replaced `set_scope` with `set_method`. Compatibility method registered for binary compatibility. Manual upgrade required by users to retain functionality.

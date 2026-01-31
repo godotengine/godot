@@ -151,8 +151,8 @@ class TileSet : public Resource {
 private:
 	struct CompatibilityShapeData {
 		Vector2i autotile_coords;
-		bool one_way;
-		float one_way_margin;
+		bool one_way = false;
+		float one_way_margin = 0.0f;
 #ifndef PHYSICS_2D_DISABLED
 		Ref<Shape2D> shape;
 #endif // PHYSICS_2D_DISABLED
@@ -1029,7 +1029,7 @@ public:
 	Variant get_custom_data_by_layer_id(int p_layer_id) const;
 
 	// Polygons.
-	static PackedVector2Array get_transformed_vertices(const PackedVector2Array &p_vertices, bool p_flip_h, bool p_flip_v, bool p_transpose);
+	static PackedVector2Array get_transformed_vertices(const PackedVector2Array &p_vertices, bool p_flip_h, bool p_flip_v, bool p_transpose, bool p_preserve_winding_order = false);
 };
 
 VARIANT_ENUM_CAST(TileSet::CellNeighbor);

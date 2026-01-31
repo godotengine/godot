@@ -29,23 +29,23 @@
 /**************************************************************************/
 
 #include "control.h"
+#include "control.compat.inc"
 
 #include "container.h"
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
-#include "core/string/translation_server.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
-#include "servers/rendering_server.h"
-#include "servers/text_server.h"
+#include "servers/rendering/rendering_server.h"
+#include "servers/text/text_server.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/plugins/control_editor_plugin.h"
+#include "editor/scene/gui/control_editor_plugin.h"
 #endif // TOOLS_ENABLED
 
 // Editor plugin interoperability.
@@ -57,6 +57,7 @@ Dictionary Control::_edit_get_state() const {
 	s["rotation"] = get_rotation();
 	s["scale"] = get_scale();
 	s["pivot"] = get_pivot_offset();
+	s["pivot_ratio"] = get_pivot_offset_ratio();
 
 	Array anchors = { get_anchor(SIDE_LEFT), get_anchor(SIDE_TOP), get_anchor(SIDE_RIGHT), get_anchor(SIDE_BOTTOM) };
 	s["anchors"] = anchors;
@@ -73,13 +74,14 @@ Dictionary Control::_edit_get_state() const {
 void Control::_edit_set_state(const Dictionary &p_state) {
 	ERR_FAIL_COND(p_state.is_empty() ||
 			!p_state.has("rotation") || !p_state.has("scale") ||
-			!p_state.has("pivot") || !p_state.has("anchors") || !p_state.has("offsets") ||
+			!p_state.has("pivot") || !p_state.has("pivot_ratio") || !p_state.has("anchors") || !p_state.has("offsets") ||
 			!p_state.has("layout_mode") || !p_state.has("anchors_layout_preset"));
 	Dictionary state = p_state;
 
 	set_rotation(state["rotation"]);
 	set_scale(state["scale"]);
 	set_pivot_offset(state["pivot"]);
+	set_pivot_offset_ratio(state["pivot_ratio"]);
 
 	Array anchors = state["anchors"];
 
@@ -151,10 +153,11 @@ void Control::_edit_set_pivot(const Point2 &p_pivot) {
 	Vector2 move = Vector2((std::cos(data.rotation) - 1.0) * delta_pivot.x - std::sin(data.rotation) * delta_pivot.y, std::sin(data.rotation) * delta_pivot.x + (std::cos(data.rotation) - 1.0) * delta_pivot.y);
 	set_position(get_position() + move);
 	set_pivot_offset(p_pivot);
+	set_pivot_offset_ratio(Vector2());
 }
 
 Point2 Control::_edit_get_pivot() const {
-	return get_pivot_offset();
+	return get_combined_pivot_offset();
 }
 
 bool Control::_edit_use_pivot() const {
@@ -176,7 +179,7 @@ bool Control::_edit_use_rect() const {
 }
 #endif // DEBUG_ENABLED
 
-void Control::reparent(Node *p_parent, bool p_keep_global_transform) {
+void Control::reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform) {
 	ERR_MAIN_THREAD_GUARD;
 	if (p_keep_global_transform) {
 		Transform2D temp = get_global_transform();
@@ -404,6 +407,10 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Theme Overrides", "theme_override_"), PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
 
 	for (const ThemeDB::ThemeItemBind &E : theme_items) {
+		if (E.external) {
+			continue; // External items are not meant to be exposed.
+		}
+
 		uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 
 		switch (E.data_type) {
@@ -458,7 +465,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void Control::_validate_property(PropertyInfo &p_property) const {
 	// Update theme type variation options.
-	if (p_property.name == "theme_type_variation") {
+	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "theme_type_variation") {
 		List<StringName> names;
 
 		ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
@@ -505,20 +512,19 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		p_property.hint_string = hint_string;
 	}
 
-	if (p_property.name == "mouse_force_pass_scroll_events") {
+	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "mouse_force_pass_scroll_events") {
 		// Disable force pass if the control is not stopping the event.
 		if (data.mouse_filter != MOUSE_FILTER_STOP) {
 			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 		}
 	}
 
-	if (p_property.name == "scale") {
+	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "scale") {
 		p_property.hint = PROPERTY_HINT_LINK;
 	}
-
 	// Validate which positioning properties should be displayed depending on the parent and the layout mode.
 	Control *parent_control = get_parent_control();
-	if (!parent_control) {
+	if (Engine::get_singleton()->is_editor_hint() && !parent_control) {
 		// If there is no parent control, display both anchor and container options.
 
 		// Set the layout mode to be disabled with the proper value.
@@ -536,13 +542,13 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		// If the parent is a container, display only container-related properties.
 		if (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_") || p_property.name == "anchors_preset") {
 			p_property.usage ^= PROPERTY_USAGE_DEFAULT;
-		} else if (p_property.name == "position" || p_property.name == "rotation" || p_property.name == "scale" || p_property.name == "size" || p_property.name == "pivot_offset") {
+		} else if (p_property.name == "position" || p_property.name == "rotation" || p_property.name == "scale" || p_property.name == "size" || p_property.name == "pivot_offset" || p_property.name == "pivot_offset_ratio") {
 			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
-		} else if (p_property.name == "layout_mode") {
+		} else if (Engine::get_singleton()->is_editor_hint() && p_property.name == "layout_mode") {
 			// Set the layout mode to be disabled with the proper value.
 			p_property.hint_string = "Position,Anchors,Container,Uncontrolled";
 			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
-		} else if (p_property.name == "size_flags_horizontal" || p_property.name == "size_flags_vertical") {
+		} else if (Engine::get_singleton()->is_editor_hint() && (p_property.name == "size_flags_horizontal" || p_property.name == "size_flags_vertical")) {
 			// Filter allowed size flags based on the parent container configuration.
 			Container *parent_container = Object::cast_to<Container>(parent_control);
 			Vector<int> size_flags;
@@ -583,7 +589,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 				p_property.hint_string = hint_string;
 			}
 		}
-	} else {
+	} else if (Engine::get_singleton()->is_editor_hint()) {
 		// If the parent is a non-container control, display only anchoring-related properties.
 		if (p_property.name.begins_with("size_flags_")) {
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
@@ -604,7 +610,9 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
 	}
-
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	// Disable the property if it's managed by the parent container.
 	if (!Object::cast_to<Container>(parent_control)) {
 		return;
@@ -707,8 +715,8 @@ Size2 Control::get_parent_area_size() const {
 
 Transform2D Control::_get_internal_transform() const {
 	// T(pivot_offset) * R(rotation) * S(scale) * T(-pivot_offset)
-	Transform2D xform(data.rotation, data.scale, 0.0f, data.pivot_offset);
-	xform.translate_local(-data.pivot_offset);
+	Transform2D xform(data.rotation, data.scale, 0.0f, get_combined_pivot_offset());
+	xform.translate_local(-get_combined_pivot_offset());
 	return xform;
 }
 
@@ -1604,6 +1612,23 @@ real_t Control::get_rotation_degrees() const {
 	return Math::rad_to_deg(get_rotation());
 }
 
+void Control::set_pivot_offset_ratio(const Vector2 &p_ratio) {
+	ERR_MAIN_THREAD_GUARD;
+	if (data.pivot_offset_ratio == p_ratio) {
+		return;
+	}
+
+	data.pivot_offset_ratio = p_ratio;
+	queue_redraw();
+	_notify_transform();
+	queue_accessibility_update();
+}
+
+Vector2 Control::get_pivot_offset_ratio() const {
+	ERR_READ_THREAD_GUARD_V(Vector2());
+	return data.pivot_offset_ratio;
+}
+
 void Control::set_pivot_offset(const Vector2 &p_pivot) {
 	ERR_MAIN_THREAD_GUARD;
 	if (data.pivot_offset == p_pivot) {
@@ -1619,6 +1644,11 @@ void Control::set_pivot_offset(const Vector2 &p_pivot) {
 Vector2 Control::get_pivot_offset() const {
 	ERR_READ_THREAD_GUARD_V(Vector2());
 	return data.pivot_offset;
+}
+
+Vector2 Control::get_combined_pivot_offset() const {
+	ERR_READ_THREAD_GUARD_V(Vector2());
+	return data.pivot_offset + data.pivot_offset_ratio * get_size();
 }
 
 /// Sizes.
@@ -2120,6 +2150,100 @@ void Control::accessibility_drop() {
 	queue_accessibility_update();
 }
 
+String Control::get_accessibility_container_name(const Node *p_node) const {
+	String ret;
+	if (GDVIRTUAL_CALL(_get_accessibility_container_name, p_node, ret)) {
+	} else if (data.parent_control) {
+		ret = data.parent_control->get_accessibility_container_name(this);
+	}
+	return ret;
+}
+
+void Control::set_accessibility_name(const String &p_name) {
+	ERR_THREAD_GUARD
+	if (data.accessibility_name != p_name) {
+		data.accessibility_name = p_name;
+		queue_accessibility_update();
+		update_configuration_warnings();
+	}
+}
+
+String Control::get_accessibility_name() const {
+	return tr(data.accessibility_name);
+}
+
+void Control::set_accessibility_description(const String &p_description) {
+	ERR_THREAD_GUARD
+	if (data.accessibility_description != p_description) {
+		data.accessibility_description = p_description;
+		queue_accessibility_update();
+	}
+}
+
+String Control::get_accessibility_description() const {
+	return tr(data.accessibility_description);
+}
+
+void Control::set_accessibility_live(DisplayServer::AccessibilityLiveMode p_mode) {
+	ERR_THREAD_GUARD
+	if (data.accessibility_live != p_mode) {
+		data.accessibility_live = p_mode;
+		queue_accessibility_update();
+	}
+}
+
+DisplayServer::AccessibilityLiveMode Control::get_accessibility_live() const {
+	return data.accessibility_live;
+}
+
+void Control::set_accessibility_controls_nodes(const TypedArray<NodePath> &p_node_path) {
+	ERR_MAIN_THREAD_GUARD;
+	if (data.accessibility_controls_nodes != p_node_path) {
+		data.accessibility_controls_nodes = p_node_path;
+		queue_accessibility_update();
+	}
+}
+
+TypedArray<NodePath> Control::get_accessibility_controls_nodes() const {
+	return data.accessibility_controls_nodes;
+}
+
+void Control::set_accessibility_described_by_nodes(const TypedArray<NodePath> &p_node_path) {
+	ERR_MAIN_THREAD_GUARD;
+	if (data.accessibility_described_by_nodes != p_node_path) {
+		data.accessibility_described_by_nodes = p_node_path;
+		queue_accessibility_update();
+	}
+}
+
+TypedArray<NodePath> Control::get_accessibility_described_by_nodes() const {
+	return data.accessibility_described_by_nodes;
+}
+
+void Control::set_accessibility_labeled_by_nodes(const TypedArray<NodePath> &p_node_path) {
+	ERR_MAIN_THREAD_GUARD;
+	if (data.accessibility_labeled_by_nodes != p_node_path) {
+		data.accessibility_labeled_by_nodes = p_node_path;
+		queue_accessibility_update();
+	}
+}
+
+TypedArray<NodePath> Control::get_accessibility_labeled_by_nodes() const {
+	return data.accessibility_labeled_by_nodes;
+}
+
+void Control::set_accessibility_flow_to_nodes(const TypedArray<NodePath> &p_node_path) {
+	ERR_MAIN_THREAD_GUARD;
+	if (data.accessibility_flow_to_nodes != p_node_path) {
+		data.accessibility_flow_to_nodes = p_node_path;
+		queue_accessibility_update();
+	}
+}
+
+TypedArray<NodePath> Control::get_accessibility_flow_to_nodes() const {
+	return data.accessibility_flow_to_nodes;
+}
+
 void Control::set_drag_preview(Control *p_control) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
@@ -2142,7 +2266,11 @@ void Control::set_focus_mode(FocusMode p_focus_mode) {
 		release_focus();
 	}
 
+	if (data.focus_mode == p_focus_mode) {
+		return;
+	}
 	data.focus_mode = p_focus_mode;
+	queue_accessibility_update();
 }
 
 Control::FocusMode Control::get_focus_mode() const {
@@ -2166,6 +2294,7 @@ void Control::set_focus_behavior_recursive(FocusBehaviorRecursive p_focus_behavi
 	}
 	data.focus_behavior_recursive = p_focus_behavior_recursive;
 	_update_focus_behavior_recursive();
+	queue_accessibility_update();
 }
 
 Control::FocusBehaviorRecursive Control::get_focus_behavior_recursive() const {
@@ -2220,21 +2349,28 @@ void Control::_propagate_focus_behavior_recursive_recursively(bool p_enabled, bo
 	}
 }
 
-bool Control::has_focus() const {
+bool Control::has_focus(bool p_ignore_hidden_focus) const {
 	ERR_READ_THREAD_GUARD_V(false);
-	return is_inside_tree() && get_viewport()->_gui_control_has_focus(this);
+	return is_inside_tree() && get_viewport()->_gui_control_has_focus(this, p_ignore_hidden_focus);
 }
 
-void Control::grab_focus() {
+void Control::grab_focus(bool p_hide_focus) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
+
+	if (get_focus_mode_with_override() == FOCUS_ACCESSIBILITY) {
+		if (!get_tree()->is_accessibility_enabled()) {
+			WARN_PRINT("This control can grab focus only when screen reader is active. Use set_focus_mode() and set_focus_behavior_recursive() to allow a control to get focus. Use get_tree().is_accessibility_enabled() to check screen-reader state.");
+			return;
+		}
+	}
 
 	if (get_focus_mode_with_override() == FOCUS_NONE) {
 		WARN_PRINT("This control can't grab focus. Use set_focus_mode() and set_focus_behavior_recursive() to allow a control to get focus.");
 		return;
 	}
 
-	get_viewport()->_gui_control_grab_focus(this);
+	get_viewport()->_gui_control_grab_focus(this, p_hide_focus);
 }
 
 void Control::grab_click_focus() {
@@ -2287,7 +2423,7 @@ Control *Control::find_next_valid_focus() const {
 	// If the focus property is manually overwritten, attempt to use it.
 	if (!data.focus_next.is_empty()) {
 		Node *n = get_node_or_null(data.focus_next);
-		ERR_FAIL_NULL_V_MSG(n, nullptr, "Next focus node path is invalid: '" + data.focus_next + "'.");
+		ERR_FAIL_NULL_V_MSG(n, nullptr, "Next focus node path is invalid: '" + String(data.focus_next) + "'.");
 		Control *c = Object::cast_to<Control>(n);
 		ERR_FAIL_NULL_V_MSG(c, nullptr, "Next focus node is not a control: '" + n->get_name() + "'.");
 		if (c->_is_focusable()) {
@@ -2296,10 +2432,12 @@ Control *Control::find_next_valid_focus() const {
 	}
 
 	Control *from = const_cast<Control *>(this);
+	HashSet<Control *> checked;
 	bool ac_enabled = get_tree() && get_tree()->is_accessibility_enabled();
 
 	// Index of the current `Control` subtree within the containing `Window`.
 	int window_next = -1;
+	checked.insert(from);
 
 	while (true) {
 		// Find next child.
@@ -2361,9 +2499,10 @@ Control *Control::find_next_valid_focus() const {
 			return next_child;
 		}
 
-		if (next_child == from || next_child == this) {
+		if (checked.has(next_child)) {
 			return nullptr; // Stuck in a loop with no next control.
 		}
+		checked.insert(next_child);
 
 		from = next_child; // Try to find the next control with focus mode FOCUS_ALL.
 	}
@@ -2391,7 +2530,7 @@ Control *Control::find_prev_valid_focus() const {
 	// If the focus property is manually overwritten, attempt to use it.
 	if (!data.focus_prev.is_empty()) {
 		Node *n = get_node_or_null(data.focus_prev);
-		ERR_FAIL_NULL_V_MSG(n, nullptr, "Previous focus node path is invalid: '" + data.focus_prev + "'.");
+		ERR_FAIL_NULL_V_MSG(n, nullptr, "Previous focus node path is invalid: '" + String(data.focus_prev) + "'.");
 		Control *c = Object::cast_to<Control>(n);
 		ERR_FAIL_NULL_V_MSG(c, nullptr, "Previous focus node is not a control: '" + n->get_name() + "'.");
 		if (c->_is_focusable()) {
@@ -2400,10 +2539,12 @@ Control *Control::find_prev_valid_focus() const {
 	}
 
 	Control *from = const_cast<Control *>(this);
+	HashSet<Control *> checked;
 	bool ac_enabled = get_tree() && get_tree()->is_accessibility_enabled();
 
 	// Index of the current `Control` subtree within the containing `Window`.
 	int window_prev = -1;
+	checked.insert(from);
 
 	while (true) {
 		// Find prev child.
@@ -2459,9 +2600,10 @@ Control *Control::find_prev_valid_focus() const {
 			return prev_child;
 		}
 
-		if (prev_child == from || prev_child == this) {
+		if (checked.has(prev_child)) {
 			return nullptr; // Stuck in a loop with no prev control.
 		}
+		checked.insert(prev_child);
 
 		from = prev_child; // Try to find the prev control with focus mode FOCUS_ALL.
 	}
@@ -2511,7 +2653,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 	}
 	if (!data.focus_neighbor[p_side].is_empty()) {
 		Node *n = get_node_or_null(data.focus_neighbor[p_side]);
-		ERR_FAIL_NULL_V_MSG(n, nullptr, "Neighbor focus node path is invalid: '" + data.focus_neighbor[p_side] + "'.");
+		ERR_FAIL_NULL_V_MSG(n, nullptr, "Neighbor focus node path is invalid: '" + String(data.focus_neighbor[p_side]) + "'.");
 		Control *c = Object::cast_to<Control>(n);
 		ERR_FAIL_NULL_V_MSG(c, nullptr, "Neighbor focus node is not a control: '" + n->get_name() + "'.");
 		if (c->_is_focusable()) {
@@ -3199,9 +3341,9 @@ bool Control::has_theme_constant(const StringName &p_name, const StringName &p_t
 
 /// Local property overrides.
 
-void Control::add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon) {
+void Control::add_theme_icon_override(const StringName &p_name, RequiredParam<Texture2D> rp_icon) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(p_icon.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_icon, rp_icon);
 
 	if (data.theme_icon_override.has(p_name)) {
 		data.theme_icon_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
@@ -3212,9 +3354,9 @@ void Control::add_theme_icon_override(const StringName &p_name, const Ref<Textur
 	_notify_theme_override_changed();
 }
 
-void Control::add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style) {
+void Control::add_theme_style_override(const StringName &p_name, RequiredParam<StyleBox> rp_style) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(p_style.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_style, rp_style);
 
 	if (data.theme_style_override.has(p_name)) {
 		data.theme_style_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
@@ -3225,9 +3367,9 @@ void Control::add_theme_style_override(const StringName &p_name, const Ref<Style
 	_notify_theme_override_changed();
 }
 
-void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font) {
+void Control::add_theme_font_override(const StringName &p_name, RequiredParam<Font> rp_font) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(p_font.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_font, rp_font);
 
 	if (data.theme_font_override.has(p_name)) {
 		data.theme_font_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
@@ -3421,11 +3563,9 @@ bool Control::is_layout_rtl() const {
 					} else if (proj_root_layout_direction == 2) {
 						data.is_rtl = true;
 					} else if (proj_root_layout_direction == 3) {
-						String locale = OS::get_singleton()->get_locale();
-						data.is_rtl = TS->is_locale_right_to_left(locale);
+						data.is_rtl = TS->is_locale_right_to_left(OS::get_singleton()->get_locale());
 					} else {
-						String locale = TranslationServer::get_singleton()->get_tool_locale();
-						data.is_rtl = TS->is_locale_right_to_left(locale);
+						data.is_rtl = TS->is_locale_right_to_left(_get_locale());
 					}
 					return data.is_rtl;
 				}
@@ -3436,8 +3576,9 @@ bool Control::is_layout_rtl() const {
 				return data.is_rtl;
 			}
 #endif // TOOLS_ENABLED
+			const StringName domain_name = get_translation_domain();
 			Node *parent_node = get_parent();
-			while (parent_node) {
+			while (parent_node && domain_name == parent_node->get_translation_domain()) {
 				Control *parent_control = Object::cast_to<Control>(parent_node);
 				if (parent_control) {
 					data.is_rtl = parent_control->is_layout_rtl();
@@ -3460,22 +3601,19 @@ bool Control::is_layout_rtl() const {
 				String locale = OS::get_singleton()->get_locale();
 				data.is_rtl = TS->is_locale_right_to_left(locale);
 			} else {
-				String locale = TranslationServer::get_singleton()->get_tool_locale();
-				data.is_rtl = TS->is_locale_right_to_left(locale);
+				data.is_rtl = TS->is_locale_right_to_left(_get_locale());
 			}
 		} else if (data.layout_dir == LAYOUT_DIRECTION_APPLICATION_LOCALE) {
 			if (GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
 				data.is_rtl = true;
 			} else {
-				String locale = TranslationServer::get_singleton()->get_tool_locale();
-				data.is_rtl = TS->is_locale_right_to_left(locale);
+				data.is_rtl = TS->is_locale_right_to_left(_get_locale());
 			}
 		} else if (data.layout_dir == LAYOUT_DIRECTION_SYSTEM_LOCALE) {
 			if (GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
-				const_cast<Control *>(this)->data.is_rtl = true;
+				data.is_rtl = true;
 			} else {
-				String locale = OS::get_singleton()->get_locale();
-				const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
+				data.is_rtl = TS->is_locale_right_to_left(OS::get_singleton()->get_locale());
 			}
 		} else {
 			data.is_rtl = (data.layout_dir == LAYOUT_DIRECTION_RTL);
@@ -3605,14 +3743,26 @@ void Control::_notification(int p_notification) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
+			// Base info.
+			if (get_parent_control()) {
+				String container_info = get_parent_control()->get_accessibility_container_name(this);
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, container_info.is_empty() ? get_accessibility_name() : get_accessibility_name() + " " + container_info);
+			} else {
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, get_accessibility_name());
+			}
+			DisplayServer::get_singleton()->accessibility_update_set_description(ae, get_accessibility_description());
+			DisplayServer::get_singleton()->accessibility_update_set_live(ae, get_accessibility_live());
+
 			DisplayServer::get_singleton()->accessibility_update_set_transform(ae, get_transform());
 			DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, Rect2(Vector2(), data.size_cache));
 			DisplayServer::get_singleton()->accessibility_update_set_tooltip(ae, data.tooltip);
 			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_CLIPS_CHILDREN, data.clip_contents);
 			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_TOUCH_PASSTHROUGH, data.mouse_filter == MOUSE_FILTER_PASS);
 
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &Control::_accessibility_action_foucs));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_BLUR, callable_mp(this, &Control::_accessibility_action_blur));
+			if (_is_focusable()) {
+				DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &Control::_accessibility_action_foucs));
+				DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_BLUR, callable_mp(this, &Control::_accessibility_action_blur));
+			}
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SHOW_TOOLTIP, callable_mp(this, &Control::_accessibility_action_show_tooltip));
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_HIDE_TOOLTIP, callable_mp(this, &Control::_accessibility_action_hide_tooltip));
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &Control::_accessibility_action_scroll_into_view));
@@ -3621,6 +3771,44 @@ void Control::_notification(int p_notification) {
 					DisplayServer::get_singleton()->accessibility_update_set_extra_info(ae, vformat(RTR("%s can be dropped here. Use %s to drop, use %s to cancel."), get_viewport()->gui_get_drag_description(), InputMap::get_singleton()->get_action_description("ui_accessibility_drag_and_drop"), InputMap::get_singleton()->get_action_description("ui_cancel")));
 				} else {
 					DisplayServer::get_singleton()->accessibility_update_set_extra_info(ae, vformat(RTR("%s can not be dropped here. Use %s to cancel."), get_viewport()->gui_get_drag_description(), InputMap::get_singleton()->get_action_description("ui_cancel")));
+				}
+			}
+
+			// Related nodes.
+			for (int i = 0; i < data.accessibility_controls_nodes.size(); i++) {
+				const NodePath &np = data.accessibility_controls_nodes[i];
+				if (!np.is_empty()) {
+					Node *n = get_node(np);
+					if (n && !n->is_part_of_edited_scene()) {
+						DisplayServer::get_singleton()->accessibility_update_add_related_controls(ae, n->get_accessibility_element());
+					}
+				}
+			}
+			for (int i = 0; i < data.accessibility_described_by_nodes.size(); i++) {
+				const NodePath &np = data.accessibility_described_by_nodes[i];
+				if (!np.is_empty()) {
+					Node *n = get_node(np);
+					if (n && !n->is_part_of_edited_scene()) {
+						DisplayServer::get_singleton()->accessibility_update_add_related_described_by(ae, n->get_accessibility_element());
+					}
+				}
+			}
+			for (int i = 0; i < data.accessibility_labeled_by_nodes.size(); i++) {
+				const NodePath &np = data.accessibility_labeled_by_nodes[i];
+				if (!np.is_empty()) {
+					Node *n = get_node(np);
+					if (n && !n->is_part_of_edited_scene()) {
+						DisplayServer::get_singleton()->accessibility_update_add_related_labeled_by(ae, n->get_accessibility_element());
+					}
+				}
+			}
+			for (int i = 0; i < data.accessibility_flow_to_nodes.size(); i++) {
+				const NodePath &np = data.accessibility_flow_to_nodes[i];
+				if (!np.is_empty()) {
+					Node *n = get_node(np);
+					if (n && !n->is_part_of_edited_scene()) {
+						DisplayServer::get_singleton()->accessibility_update_add_related_flow_to(ae, n->get_accessibility_element());
+					}
 				}
 			}
 		} break;
@@ -3757,14 +3945,6 @@ void Control::_notification(int p_notification) {
 			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), data.clip_contents);
 		} break;
 
-		case NOTIFICATION_MOUSE_ENTER: {
-			emit_signal(SceneStringName(mouse_entered));
-		} break;
-
-		case NOTIFICATION_MOUSE_EXIT: {
-			emit_signal(SceneStringName(mouse_exited));
-		} break;
-
 		case NOTIFICATION_FOCUS_ENTER: {
 			emit_signal(SceneStringName(focus_entered));
 			queue_redraw();
@@ -3847,6 +4027,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rotation_degrees", "degrees"), &Control::set_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Control::set_scale);
 	ClassDB::bind_method(D_METHOD("set_pivot_offset", "pivot_offset"), &Control::set_pivot_offset);
+	ClassDB::bind_method(D_METHOD("set_pivot_offset_ratio", "ratio"), &Control::set_pivot_offset_ratio);
 	ClassDB::bind_method(D_METHOD("get_begin"), &Control::get_begin);
 	ClassDB::bind_method(D_METHOD("get_end"), &Control::get_end);
 	ClassDB::bind_method(D_METHOD("get_position"), &Control::get_position);
@@ -3855,6 +4036,8 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rotation_degrees"), &Control::get_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("get_scale"), &Control::get_scale);
 	ClassDB::bind_method(D_METHOD("get_pivot_offset"), &Control::get_pivot_offset);
+	ClassDB::bind_method(D_METHOD("get_pivot_offset_ratio"), &Control::get_pivot_offset_ratio);
+	ClassDB::bind_method(D_METHOD("get_combined_pivot_offset"), &Control::get_combined_pivot_offset);
 	ClassDB::bind_method(D_METHOD("get_custom_minimum_size"), &Control::get_custom_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_parent_area_size"), &Control::get_parent_area_size);
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Control::get_global_position);
@@ -3866,8 +4049,8 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_focus_mode_with_override"), &Control::get_focus_mode_with_override);
 	ClassDB::bind_method(D_METHOD("set_focus_behavior_recursive", "focus_behavior_recursive"), &Control::set_focus_behavior_recursive);
 	ClassDB::bind_method(D_METHOD("get_focus_behavior_recursive"), &Control::get_focus_behavior_recursive);
-	ClassDB::bind_method(D_METHOD("has_focus"), &Control::has_focus);
-	ClassDB::bind_method(D_METHOD("grab_focus"), &Control::grab_focus);
+	ClassDB::bind_method(D_METHOD("has_focus", "ignore_hidden_focus"), &Control::has_focus, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("grab_focus", "hide_focus"), &Control::grab_focus, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("release_focus"), &Control::release_focus);
 	ClassDB::bind_method(D_METHOD("find_prev_valid_focus"), &Control::find_prev_valid_focus);
 	ClassDB::bind_method(D_METHOD("find_next_valid_focus"), &Control::find_next_valid_focus);
@@ -3962,6 +4145,22 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("accessibility_drag"), &Control::accessibility_drag);
 	ClassDB::bind_method(D_METHOD("accessibility_drop"), &Control::accessibility_drop);
 
+	ClassDB::bind_method(D_METHOD("set_accessibility_name", "name"), &Control::set_accessibility_name);
+	ClassDB::bind_method(D_METHOD("get_accessibility_name"), &Control::get_accessibility_name);
+	ClassDB::bind_method(D_METHOD("set_accessibility_description", "description"), &Control::set_accessibility_description);
+	ClassDB::bind_method(D_METHOD("get_accessibility_description"), &Control::get_accessibility_description);
+	ClassDB::bind_method(D_METHOD("set_accessibility_live", "mode"), &Control::set_accessibility_live);
+	ClassDB::bind_method(D_METHOD("get_accessibility_live"), &Control::get_accessibility_live);
+
+	ClassDB::bind_method(D_METHOD("set_accessibility_controls_nodes", "node_path"), &Control::set_accessibility_controls_nodes);
+	ClassDB::bind_method(D_METHOD("get_accessibility_controls_nodes"), &Control::get_accessibility_controls_nodes);
+	ClassDB::bind_method(D_METHOD("set_accessibility_described_by_nodes", "node_path"), &Control::set_accessibility_described_by_nodes);
+	ClassDB::bind_method(D_METHOD("get_accessibility_described_by_nodes"), &Control::get_accessibility_described_by_nodes);
+	ClassDB::bind_method(D_METHOD("set_accessibility_labeled_by_nodes", "node_path"), &Control::set_accessibility_labeled_by_nodes);
+	ClassDB::bind_method(D_METHOD("get_accessibility_labeled_by_nodes"), &Control::get_accessibility_labeled_by_nodes);
+	ClassDB::bind_method(D_METHOD("set_accessibility_flow_to_nodes", "node_path"), &Control::set_accessibility_flow_to_nodes);
+	ClassDB::bind_method(D_METHOD("get_accessibility_flow_to_nodes"), &Control::get_accessibility_flow_to_nodes);
+
 	ClassDB::bind_method(D_METHOD("set_mouse_filter", "filter"), &Control::set_mouse_filter);
 	ClassDB::bind_method(D_METHOD("get_mouse_filter"), &Control::get_mouse_filter);
 	ClassDB::bind_method(D_METHOD("get_mouse_filter_with_override"), &Control::get_mouse_filter_with_override);
@@ -4031,7 +4230,7 @@ void Control::_bind_methods() {
 	StringBuilder builder;
 	builder.append(TTRC("Custom"));
 	builder.append(":-1");
-	for (size_t i = 0; i < std::size(anchors_presets); i++) {
+	for (size_t i = 0; i < std_size(anchors_presets); i++) {
 		builder.append(",");
 		builder.append(anchors_presets[i].name);
 		builder.append(":");
@@ -4066,6 +4265,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale"), "set_scale", "get_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pivot_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_pivot_offset", "get_pivot_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pivot_offset_ratio"), "set_pivot_offset_ratio", "get_pivot_offset_ratio");
 
 	ADD_SUBGROUP("Container Sizing", "size_flags_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill:1,Expand:2,Shrink Center:4,Shrink End:8"), "set_h_size_flags", "get_h_size_flags");
@@ -4101,6 +4301,15 @@ void Control::_bind_methods() {
 
 	ADD_GROUP("Input", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut_context", PROPERTY_HINT_NODE_TYPE, "Node"), "set_shortcut_context", "get_shortcut_context");
+
+	ADD_GROUP("Accessibility", "accessibility_");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "accessibility_name"), "set_accessibility_name", "get_accessibility_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "accessibility_description"), "set_accessibility_description", "get_accessibility_description");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "accessibility_live", PROPERTY_HINT_ENUM, "Off,Polite,Assertive"), "set_accessibility_live", "get_accessibility_live");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "accessibility_controls_nodes", PROPERTY_HINT_ARRAY_TYPE, "NodePath"), "set_accessibility_controls_nodes", "get_accessibility_controls_nodes");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "accessibility_described_by_nodes", PROPERTY_HINT_ARRAY_TYPE, "NodePath"), "set_accessibility_described_by_nodes", "get_accessibility_described_by_nodes");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "accessibility_labeled_by_nodes", PROPERTY_HINT_ARRAY_TYPE, "NodePath"), "set_accessibility_labeled_by_nodes", "get_accessibility_labeled_by_nodes");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "accessibility_flow_to_nodes", PROPERTY_HINT_ARRAY_TYPE, "NodePath"), "set_accessibility_flow_to_nodes", "get_accessibility_flow_to_nodes");
 
 	ADD_GROUP("Theme", "theme_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
@@ -4225,11 +4434,14 @@ void Control::_bind_methods() {
 	GDVIRTUAL_BIND(_make_custom_tooltip, "for_text");
 
 	GDVIRTUAL_BIND(_accessibility_get_contextual_info);
+	GDVIRTUAL_BIND(_get_accessibility_container_name, "node");
 
 	GDVIRTUAL_BIND(_gui_input, "event");
 }
 
 Control::Control() {
+	_define_ancestry(AncestralClass::CONTROL);
+
 	data.theme_owner = memnew(ThemeOwner(this));
 
 	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);

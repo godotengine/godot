@@ -97,10 +97,10 @@ void ImageLoaderLibJPEGTurbo::get_recognized_extensions(List<String> *p_extensio
 	p_extensions->push_back("jpeg");
 }
 
-static Ref<Image> _jpeg_turbo_mem_loader_func(const uint8_t *p_png, int p_size) {
+static Ref<Image> _jpeg_turbo_mem_loader_func(const uint8_t *p_data, int p_size) {
 	Ref<Image> img;
 	img.instantiate();
-	Error err = jpeg_turbo_load_image_from_buffer(img.ptr(), p_png, p_size);
+	Error err = jpeg_turbo_load_image_from_buffer(img.ptr(), p_data, p_size);
 	ERR_FAIL_COND_V(err, Ref<Image>());
 	return img;
 }

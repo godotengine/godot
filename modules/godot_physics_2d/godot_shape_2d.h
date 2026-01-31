@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 class GodotShape2D;
 

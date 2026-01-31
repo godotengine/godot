@@ -442,48 +442,6 @@ TEST_CASE("[CommandQueue] Test Queue Lapping") {
 			ProjectSettings::get_singleton()->property_get_revert(COMMAND_QUEUE_SETTING));
 }
 
-TEST_CASE("[Stress][CommandQueue] Stress test command queue") {
-	const char *COMMAND_QUEUE_SETTING = "memory/limits/command_queue/multithreading_queue_size_kb";
-	ProjectSettings::get_singleton()->set_setting(COMMAND_QUEUE_SETTING, 1);
-	SharedThreadState sts;
-	sts.init_threads();
-
-	RandomNumberGenerator rng;
-
-	rng.set_seed(1837267);
-
-	int msgs_to_add = 2048;
-
-	for (int i = 0; i < msgs_to_add; i++) {
-		// randi_range is inclusive, so allow any enum value except MAX.
-		sts.add_msg_to_write((SharedThreadState::TestMsgType)rng.randi_range(0, SharedThreadState::TEST_MSG_MAX - 1));
-	}
-	sts.writer_threadwork.main_start_work();
-
-	int max_loop_iters = msgs_to_add * 2;
-	int loop_iters = 0;
-	while (sts.func1_count < msgs_to_add && loop_iters < max_loop_iters) {
-		int remaining = (msgs_to_add - sts.func1_count);
-		sts.message_count_to_read = rng.randi_range(1, remaining < 128 ? remaining : 128);
-		if (loop_iters % 3 == 0) {
-			sts.message_count_to_read = -1;
-		}
-		sts.reader_threadwork.main_start_work();
-		sts.reader_threadwork.main_wait_for_done();
-		loop_iters++;
-	}
-	CHECK_MESSAGE(loop_iters < max_loop_iters,
-			"Reader needed too many iterations to read messages!");
-	sts.writer_threadwork.main_wait_for_done();
-
-	sts.destroy_threads();
-
-	CHECK_MESSAGE(sts.func1_count == msgs_to_add,
-			"Reader should have read no additional messages after join");
-	ProjectSettings::get_singleton()->set_setting(COMMAND_QUEUE_SETTING,
-			ProjectSettings::get_singleton()->property_get_revert(COMMAND_QUEUE_SETTING));
-}
-
 TEST_CASE("[CommandQueue] Test Parameter Passing Semantics") {
 	SharedThreadState sts;
 	sts.init_threads();

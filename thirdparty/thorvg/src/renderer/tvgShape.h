@@ -33,7 +33,7 @@ struct Shape::Impl
     RenderShape rs;                     //shape data
     RenderData rd = nullptr;            //engine data
     Shape* shape;
-    uint8_t rFlag = RenderUpdateFlag::None;
+    RenderUpdateFlag rFlag = RenderUpdateFlag::None;
     uint8_t cFlag = CompositionFlag::Invalid;
     uint8_t opacity;                    //for composition
 

@@ -85,19 +85,19 @@ String ShaderWarning::get_name_from_code(Code p_code) {
 	ERR_FAIL_INDEX_V(p_code, WARNING_MAX, String());
 
 	static const char *names[] = {
-		"FLOAT_COMPARISON",
-		"UNUSED_CONSTANT",
-		"UNUSED_FUNCTION",
-		"UNUSED_STRUCT",
-		"UNUSED_UNIFORM",
-		"UNUSED_VARYING",
-		"UNUSED_LOCAL_VARIABLE",
-		"FORMATTING_ERROR",
-		"DEVICE_LIMIT_EXCEEDED",
-		"MAGIC_POSITION_WRITE",
+		PNAME("FLOAT_COMPARISON"),
+		PNAME("UNUSED_CONSTANT"),
+		PNAME("UNUSED_FUNCTION"),
+		PNAME("UNUSED_STRUCT"),
+		PNAME("UNUSED_UNIFORM"),
+		PNAME("UNUSED_VARYING"),
+		PNAME("UNUSED_LOCAL_VARIABLE"),
+		PNAME("FORMATTING_ERROR"),
+		PNAME("DEVICE_LIMIT_EXCEEDED"),
+		PNAME("MAGIC_POSITION_WRITE"),
 	};
 
-	static_assert(std::size(names) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
+	static_assert(std_size(names) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
 
 	return names[(int)p_code];
 }

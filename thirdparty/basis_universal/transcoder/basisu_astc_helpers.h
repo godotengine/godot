@@ -1,6 +1,5 @@
 // basisu_astc_helpers.h
 // Be sure to define ASTC_HELPERS_IMPLEMENTATION somewhere to get the implementation, otherwise you only get the header.
-#pragma once
 #ifndef BASISU_ASTC_HELPERS_HEADER
 #define BASISU_ASTC_HELPERS_HEADER
 

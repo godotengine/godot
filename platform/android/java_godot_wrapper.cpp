@@ -30,6 +30,8 @@
 
 #include "java_godot_wrapper.h"
 
+#include "jni_utils.h"
+
 // JNIEnv is only valid within the thread it belongs to, in a multi threading environment
 // we can't cache it.
 // For Godot we call most access methods from our thread and we thus get a valid JNIEnv
@@ -37,21 +39,13 @@
 
 // TODO we could probably create a base class for this...
 
-GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_godot_instance) {
+GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance) {
 	godot_instance = p_env->NewGlobalRef(p_godot_instance);
-	activity = p_env->NewGlobalRef(p_activity);
 
 	// get info about our Godot class so we can get pointers and stuff...
-	godot_class = p_env->FindClass("org/godotengine/godot/Godot");
+	godot_class = jni_find_class(p_env, "org/godotengine/godot/Godot");
 	if (godot_class) {
 		godot_class = (jclass)p_env->NewGlobalRef(godot_class);
-	} else {
-		// this is a pretty serious fail.. bail... pointers will stay 0
-		return;
-	}
-	activity_class = p_env->FindClass("android/app/Activity");
-	if (activity_class) {
-		activity_class = (jclass)p_env->NewGlobalRef(activity_class);
 	} else {
 		// this is a pretty serious fail.. bail... pointers will stay 0
 		return;
@@ -88,12 +82,19 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_end_benchmark_measure = p_env->GetMethodID(godot_class, "nativeEndBenchmarkMeasure", "(Ljava/lang/String;Ljava/lang/String;)V");
 	_dump_benchmark = p_env->GetMethodID(godot_class, "nativeDumpBenchmark", "(Ljava/lang/String;)V");
 	_get_gdextension_list_config_file = p_env->GetMethodID(godot_class, "getGDExtensionConfigFiles", "()[Ljava/lang/String;");
-	_has_feature = p_env->GetMethodID(godot_class, "hasFeature", "(Ljava/lang/String;)Z");
+	_check_internal_feature_support = p_env->GetMethodID(godot_class, "checkInternalFeatureSupport", "(Ljava/lang/String;)Z");
 	_sign_apk = p_env->GetMethodID(godot_class, "nativeSignApk", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
 	_verify_apk = p_env->GetMethodID(godot_class, "nativeVerifyApk", "(Ljava/lang/String;)I");
 	_enable_immersive_mode = p_env->GetMethodID(godot_class, "nativeEnableImmersiveMode", "(Z)V");
 	_is_in_immersive_mode = p_env->GetMethodID(godot_class, "isInImmersiveMode", "()Z");
+	_set_window_color = p_env->GetMethodID(godot_class, "setWindowColor", "(Ljava/lang/String;)V");
 	_on_editor_workspace_selected = p_env->GetMethodID(godot_class, "nativeOnEditorWorkspaceSelected", "(Ljava/lang/String;)V");
+	_get_activity = p_env->GetMethodID(godot_class, "getActivity", "()Landroid/app/Activity;");
+	_build_env_connect = p_env->GetMethodID(godot_class, "nativeBuildEnvConnect", "(Lorg/godotengine/godot/variant/Callable;)Z");
+	_build_env_disconnect = p_env->GetMethodID(godot_class, "nativeBuildEnvDisconnect", "()V");
+	_build_env_execute = p_env->GetMethodID(godot_class, "nativeBuildEnvExecute", "(Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/godotengine/godot/variant/Callable;Lorg/godotengine/godot/variant/Callable;)I");
+	_build_env_cancel = p_env->GetMethodID(godot_class, "nativeBuildEnvCancel", "(I)V");
+	_build_env_clean_project = p_env->GetMethodID(godot_class, "nativeBuildEnvCleanProject", "(Ljava/lang/String;Ljava/lang/String;Lorg/godotengine/godot/variant/Callable;)V");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -105,12 +106,16 @@ GodotJavaWrapper::~GodotJavaWrapper() {
 	ERR_FAIL_NULL(env);
 	env->DeleteGlobalRef(godot_instance);
 	env->DeleteGlobalRef(godot_class);
-	env->DeleteGlobalRef(activity);
-	env->DeleteGlobalRef(activity_class);
 }
 
 jobject GodotJavaWrapper::get_activity() {
-	return activity;
+	if (_get_activity) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, nullptr);
+		jobject activity = env->CallObjectMethod(godot_instance, _get_activity);
+		return activity;
+	}
+	return nullptr;
 }
 
 GodotJavaViewWrapper *GodotJavaWrapper::get_godot_view() {
@@ -311,7 +316,7 @@ Error GodotJavaWrapper::show_dialog(const String &p_title, const String &p_descr
 		ERR_FAIL_NULL_V(env, ERR_UNCONFIGURED);
 		jstring j_title = env->NewStringUTF(p_title.utf8().get_data());
 		jstring j_description = env->NewStringUTF(p_description.utf8().get_data());
-		jobjectArray j_buttons = env->NewObjectArray(p_buttons.size(), env->FindClass("java/lang/String"), nullptr);
+		jobjectArray j_buttons = env->NewObjectArray(p_buttons.size(), jni_find_class(env, "java/lang/String"), nullptr);
 		for (int i = 0; i < p_buttons.size(); ++i) {
 			jstring j_button = env->NewStringUTF(p_buttons[i].utf8().get_data());
 			env->SetObjectArrayElement(j_buttons, i, j_button);
@@ -356,7 +361,7 @@ Error GodotJavaWrapper::show_file_picker(const String &p_current_directory, cons
 			filters.append_array(E.get_slicec(';', 0).split(",")); // Add extensions.
 			filters.append_array(E.get_slicec(';', 2).split(",")); // Add MIME types.
 		}
-		jobjectArray j_filters = env->NewObjectArray(filters.size(), env->FindClass("java/lang/String"), nullptr);
+		jobjectArray j_filters = env->NewObjectArray(filters.size(), jni_find_class(env, "java/lang/String"), nullptr);
 		for (int i = 0; i < filters.size(); ++i) {
 			jstring j_filter = env->NewStringUTF(filters[i].utf8().get_data());
 			env->SetObjectArrayElement(j_filters, i, j_filter);
@@ -472,7 +477,7 @@ int GodotJavaWrapper::create_new_godot_instance(const List<String> &args) {
 	if (_create_new_godot_instance) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, 0);
-		jobjectArray jargs = env->NewObjectArray(args.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
+		jobjectArray jargs = env->NewObjectArray(args.size(), jni_find_class(env, "java/lang/String"), env->NewStringUTF(""));
 		int i = 0;
 		for (List<String>::ConstIterator itr = args.begin(); itr != args.end(); ++itr, ++i) {
 			jstring j_arg = env->NewStringUTF(itr->utf8().get_data());
@@ -519,13 +524,13 @@ void GodotJavaWrapper::dump_benchmark(const String &benchmark_file) {
 	}
 }
 
-bool GodotJavaWrapper::has_feature(const String &p_feature) const {
-	if (_has_feature) {
+bool GodotJavaWrapper::check_internal_feature_support(const String &p_feature) const {
+	if (_check_internal_feature_support) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, false);
 
 		jstring j_feature = env->NewStringUTF(p_feature.utf8().get_data());
-		bool result = env->CallBooleanMethod(godot_instance, _has_feature, j_feature);
+		bool result = env->CallBooleanMethod(godot_instance, _check_internal_feature_support, j_feature);
 		env->DeleteLocalRef(j_feature);
 		return result;
 	} else {
@@ -590,6 +595,16 @@ bool GodotJavaWrapper::is_in_immersive_mode() {
 	}
 }
 
+void GodotJavaWrapper::set_window_color(const Color &p_color) {
+	if (_set_window_color) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+		String color = "#" + p_color.to_html(false);
+		jstring jStrColor = env->NewStringUTF(color.utf8().get_data());
+		env->CallVoidMethod(godot_instance, _set_window_color, jStrColor);
+	}
+}
+
 void GodotJavaWrapper::on_editor_workspace_selected(const String &p_workspace) {
 	if (_on_editor_workspace_selected) {
 		JNIEnv *env = get_jni_env();
@@ -597,5 +612,86 @@ void GodotJavaWrapper::on_editor_workspace_selected(const String &p_workspace) {
 
 		jstring j_workspace = env->NewStringUTF(p_workspace.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _on_editor_workspace_selected, j_workspace);
+	}
+}
+
+bool GodotJavaWrapper::build_env_connect(const Callable &p_callback) {
+	if (_build_env_connect) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, false);
+
+		jobject j_callback = callable_to_jcallable(env, p_callback);
+		jboolean result = env->CallBooleanMethod(godot_instance, _build_env_connect, j_callback);
+		env->DeleteLocalRef(j_callback);
+
+		return result;
+	}
+
+	return false;
+}
+
+void GodotJavaWrapper::build_env_disconnect() {
+	if (_build_env_disconnect) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+
+		env->CallVoidMethod(godot_instance, _build_env_disconnect);
+	}
+}
+
+int GodotJavaWrapper::build_env_execute(const String &p_build_tool, const List<String> &p_arguments, const String &p_project_path, const String &p_gradle_build_directory, const Callable &p_output_callback, const Callable &p_result_callback) {
+	if (_build_env_execute) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, -1);
+
+		jstring j_build_tool = env->NewStringUTF(p_build_tool.utf8().get_data());
+		jobjectArray j_args = env->NewObjectArray(p_arguments.size(), env->FindClass("java/lang/String"), nullptr);
+		for (int i = 0; i < p_arguments.size(); i++) {
+			jstring j_arg = env->NewStringUTF(p_arguments.get(i).utf8().get_data());
+			env->SetObjectArrayElement(j_args, i, j_arg);
+			env->DeleteLocalRef(j_arg);
+		}
+		jstring j_project_path = env->NewStringUTF(p_project_path.utf8().get_data());
+		jstring j_gradle_build_directory = env->NewStringUTF(p_gradle_build_directory.utf8().get_data());
+		jobject j_output_callback = callable_to_jcallable(env, p_output_callback);
+		jobject j_result_callback = callable_to_jcallable(env, p_result_callback);
+
+		jint result = env->CallIntMethod(godot_instance, _build_env_execute, j_build_tool, j_args, j_project_path, j_gradle_build_directory, j_output_callback, j_result_callback);
+
+		env->DeleteLocalRef(j_build_tool);
+		env->DeleteLocalRef(j_args);
+		env->DeleteLocalRef(j_project_path);
+		env->DeleteLocalRef(j_gradle_build_directory);
+		env->DeleteLocalRef(j_output_callback);
+		env->DeleteLocalRef(j_result_callback);
+
+		return result;
+	}
+
+	return -1;
+}
+
+void GodotJavaWrapper::build_env_cancel(int p_job_id) {
+	if (_build_env_cancel) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+		env->CallVoidMethod(godot_instance, _build_env_cancel, p_job_id);
+	}
+}
+
+void GodotJavaWrapper::build_env_clean_project(const String &p_project_path, const String &p_gradle_build_directory, const Callable &p_callback) {
+	if (_build_env_clean_project) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+
+		jstring j_project_path = env->NewStringUTF(p_project_path.utf8().get_data());
+		jstring j_gradle_build_directory = env->NewStringUTF(p_gradle_build_directory.utf8().get_data());
+		jobject j_callback = callable_to_jcallable(env, p_callback);
+
+		env->CallVoidMethod(godot_instance, _build_env_clean_project, j_project_path, j_gradle_build_directory, j_callback);
+
+		env->DeleteLocalRef(j_project_path);
+		env->DeleteLocalRef(j_gradle_build_directory);
+		env->DeleteLocalRef(j_callback);
 	}
 }

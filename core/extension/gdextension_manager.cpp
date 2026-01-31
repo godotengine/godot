@@ -30,6 +30,7 @@
 
 #include "gdextension_manager.h"
 
+#include "core/extension/gdextension_function_loader.h"
 #include "core/extension/gdextension_library_loader.h"
 #include "core/extension/gdextension_special_compat_hashes.h"
 #include "core/io/dir_access.h"
@@ -55,12 +56,22 @@ GDExtensionManager::LoadStatus GDExtensionManager::_load_extension_internal(cons
 		gdextension_class_icon_paths[kv.key] = kv.value;
 	}
 
+	return LOAD_STATUS_OK;
+}
+
+void GDExtensionManager::_finish_load_extension(const Ref<GDExtension> &p_extension) {
 #ifdef TOOLS_ENABLED
 	// Signals that a new extension is loaded so GDScript can register new class names.
 	emit_signal("extension_loaded", p_extension);
 #endif
 
-	return LOAD_STATUS_OK;
+	if (startup_callback_called) {
+		// Extension is loading after the startup callback has already been called,
+		// so we call it now for this extension to make sure it doesn't miss it.
+		if (p_extension->startup_callback) {
+			p_extension->startup_callback();
+		}
+	}
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::_unload_extension_internal(const Ref<GDExtension> &p_extension) {
@@ -68,6 +79,15 @@ GDExtensionManager::LoadStatus GDExtensionManager::_unload_extension_internal(co
 	// Signals that a new extension is unloading so GDScript can unregister class names.
 	emit_signal("extension_unloading", p_extension);
 #endif
+
+	if (!shutdown_callback_called) {
+		// Extension is unloading before the shutdown callback has been called,
+		// which means the engine hasn't shutdown yet but we want to make sure
+		// to call the shutdown callback so it doesn't miss it.
+		if (p_extension->shutdown_callback) {
+			p_extension->shutdown_callback();
+		}
+	}
 
 	if (level >= 0) { // Already initialized up to some level.
 		// Deinitialize down from current level.
@@ -80,6 +100,11 @@ GDExtensionManager::LoadStatus GDExtensionManager::_unload_extension_internal(co
 		gdextension_class_icon_paths.erase(kv.key);
 	}
 
+	// Clear main loop callbacks.
+	p_extension->startup_callback = nullptr;
+	p_extension->shutdown_callback = nullptr;
+	p_extension->frame_callback = nullptr;
+
 	return LOAD_STATUS_OK;
 }
 
@@ -90,7 +115,14 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension(const String &
 
 	Ref<GDExtensionLibraryLoader> loader;
 	loader.instantiate();
-	return GDExtensionManager::get_singleton()->load_extension_with_loader(p_path, loader);
+	return load_extension_with_loader(p_path, loader);
+}
+
+GDExtensionManager::LoadStatus GDExtensionManager::load_extension_from_function(const String &p_path, GDExtensionConstPtr<const GDExtensionInitializationFunction> p_init_func) {
+	Ref<GDExtensionFunctionLoader> func_loader;
+	func_loader.instantiate();
+	func_loader->set_initialization_function((GDExtensionInitializationFunction)*p_init_func.data);
+	return load_extension_with_loader(p_path, func_loader);
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::load_extension_with_loader(const String &p_path, const Ref<GDExtensionLoader> &p_loader) {
@@ -111,6 +143,8 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension_with_loader(co
 	if (status != LOAD_STATUS_OK) {
 		return status;
 	}
+
+	_finish_load_extension(extension);
 
 	extension->set_path(p_path);
 	gdextension_map[p_path] = extension;
@@ -163,6 +197,10 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 	}
 
 	extension->finish_reload();
+
+	// Needs to come after reload is fully finished, so all objects using
+	// extension classes are in a consistent state.
+	_finish_load_extension(extension);
 
 	return LOAD_STATUS_OK;
 #endif
@@ -387,12 +425,44 @@ bool GDExtensionManager::ensure_extensions_loaded(const HashSet<String> &p_exten
 	return needs_restart;
 }
 
+void GDExtensionManager::startup() {
+	startup_callback_called = true;
+
+	for (const KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
+		const Ref<GDExtension> &extension = E.value;
+		if (extension->startup_callback) {
+			extension->startup_callback();
+		}
+	}
+}
+
+void GDExtensionManager::shutdown() {
+	shutdown_callback_called = true;
+
+	for (const KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
+		const Ref<GDExtension> &extension = E.value;
+		if (extension->shutdown_callback) {
+			extension->shutdown_callback();
+		}
+	}
+}
+
+void GDExtensionManager::frame() {
+	for (const KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
+		const Ref<GDExtension> &extension = E.value;
+		if (extension->frame_callback) {
+			extension->frame_callback();
+		}
+	}
+}
+
 GDExtensionManager *GDExtensionManager::get_singleton() {
 	return singleton;
 }
 
 void GDExtensionManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_extension", "path"), &GDExtensionManager::load_extension);
+	ClassDB::bind_method(D_METHOD("load_extension_from_function", "path", "init_func"), &GDExtensionManager::load_extension_from_function);
 	ClassDB::bind_method(D_METHOD("reload_extension", "path"), &GDExtensionManager::reload_extension);
 	ClassDB::bind_method(D_METHOD("unload_extension", "path"), &GDExtensionManager::unload_extension);
 	ClassDB::bind_method(D_METHOD("is_extension_loaded", "path"), &GDExtensionManager::is_extension_loaded);

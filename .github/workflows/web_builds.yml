@@ -1,6 +1,7 @@
 name: 🌐 Web Builds
 on:
   workflow_call:
+  workflow_dispatch:
 
 # Global Settings
 env:
@@ -9,7 +10,7 @@ env:
     tests=no
     debug_symbols=no
     use_closure_compiler=yes
-  EM_VERSION: 3.1.64
+  EM_VERSION: 4.0.11
 
 jobs:
   web-template:
@@ -34,7 +35,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 

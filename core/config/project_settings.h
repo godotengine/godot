@@ -30,7 +30,8 @@
 
 #pragma once
 
-#include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/templates/rb_map.h"
 
 template <typename T>
 class TypedArray;
@@ -46,9 +47,14 @@ class ProjectSettings : public Object {
 	// and will always detect the initial project settings as a "change".
 	uint32_t _version = 1;
 
+	// Track changed settings for get_changed_settings functionality
+	HashSet<StringName> changed_settings;
+
 public:
 	typedef HashMap<String, Variant> CustomMap;
+	// This constant is used to make the ".godot" folder and paths like "res://.godot/editor".
 	static inline const String PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
+	static inline const String EDITOR_SETTING_OVERRIDE_PREFIX = PNAME("editor_overrides") + String("/");
 
 	// Properties that are not for built in values begin from this value, so builtin ones are displayed first.
 	constexpr static const int32_t NO_BUILTIN_ORDER_BASE = 1 << 16;
@@ -74,9 +80,9 @@ protected:
 		Variant initial;
 		bool hide_from_editor = false;
 		bool restart_if_changed = false;
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 		bool ignore_value_in_docs = false;
-#endif
+#endif // DEBUG_ENABLED
 
 		VariantContainer() {}
 
@@ -117,7 +123,7 @@ protected:
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
-	void _queue_changed();
+	void _queue_changed(const StringName &p_name);
 	void _emit_changed();
 
 	static inline ProjectSettings *singleton = nullptr;
@@ -152,6 +158,10 @@ protected:
 
 public:
 	static const int CONFIG_VERSION = 5;
+
+#ifdef TOOLS_ENABLED
+	HashMap<String, PropertyInfo> editor_settings_info;
+#endif
 
 	void set_setting(const String &p_setting, const Variant &p_value);
 	Variant get_setting(const String &p_setting, const Variant &p_default_value = Variant()) const;
@@ -204,11 +214,16 @@ public:
 
 	bool has_custom_feature(const String &p_feature) const;
 
+	// Change tracking methods
+	PackedStringArray get_changed_settings() const;
+	bool check_changed_settings_in_group(const String &p_setting_prefix) const;
+
 	const HashMap<StringName, AutoloadInfo> &get_autoload_list() const;
-	void add_autoload(const AutoloadInfo &p_autoload);
+	void add_autoload(const AutoloadInfo &p_autoload, bool p_front_insert = false);
 	void remove_autoload(const StringName &p_autoload);
 	bool has_autoload(const StringName &p_autoload) const;
 	AutoloadInfo get_autoload(const StringName &p_name) const;
+	void fix_autoload_paths();
 
 	const HashMap<StringName, String> &get_global_groups_list() const;
 	void add_global_group(const StringName &p_name, const String &p_description);
@@ -228,6 +243,10 @@ public:
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif
+
+	void set_editor_setting_override(const String &p_setting, const Variant &p_value);
+	bool has_editor_setting_override(const String &p_setting) const;
+	Variant get_editor_setting_override(const String &p_setting) const;
 
 	ProjectSettings();
 	ProjectSettings(const String &p_path);

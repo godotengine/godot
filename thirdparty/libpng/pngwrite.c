@@ -2173,8 +2173,7 @@ png_image_write_main(png_voidp argument)
     * before it is written.  This only applies when the input is 16-bit and
     * either there is an alpha channel or it is converted to 8-bit.
     */
-   if ((linear != 0 && alpha != 0 ) ||
-       (colormap == 0 && display->convert_to_8bit != 0))
+   if (linear != 0 && (alpha != 0 || display->convert_to_8bit != 0))
    {
       png_bytep row = png_voidcast(png_bytep, png_malloc(png_ptr,
           png_get_rowbytes(png_ptr, info_ptr)));
@@ -2333,7 +2332,7 @@ int PNGAPI
 png_image_write_to_stdio(png_imagep image, FILE *file, int convert_to_8bit,
     const void *buffer, png_int_32 row_stride, const void *colormap)
 {
-   /* Write the image to the given (FILE*). */
+   /* Write the image to the given FILE object. */
    if (image != NULL && image->version == PNG_IMAGE_VERSION)
    {
       if (file != NULL && buffer != NULL)

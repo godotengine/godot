@@ -114,7 +114,8 @@ void AudioStreamPlayerInternal::notification(int p_what) {
 
 		case Node::NOTIFICATION_SUSPENDED:
 		case Node::NOTIFICATION_PAUSED: {
-			if (!node->can_process()) {
+			bool can_process = node->is_inside_tree() && node->can_process();
+			if (!can_process) {
 				// Node can't process so we start fading out to silence
 				set_stream_paused(true);
 			}
@@ -193,6 +194,9 @@ bool AudioStreamPlayerInternal::get_stream_paused() const {
 }
 
 void AudioStreamPlayerInternal::validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "bus") {
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {

@@ -1764,6 +1764,20 @@
 #define MBEDTLS_SSL_KEEP_PEER_CERTIFICATE
 
 /**
+ * \def MBEDTLS_SSL_KEYING_MATERIAL_EXPORT
+ *
+ * When this option is enabled, the client and server can extract additional
+ * shared symmetric keys after an SSL handshake using the function
+ * mbedtls_ssl_export_keying_material().
+ *
+ * The process for deriving the keys is specified in RFC 5705 for TLS 1.2 and
+ * in RFC 8446, Section 7.5, for TLS 1.3.
+ *
+ * Comment this macro to disable mbedtls_ssl_export_keying_material().
+ */
+#define MBEDTLS_SSL_KEYING_MATERIAL_EXPORT
+
+/**
  * \def MBEDTLS_SSL_RENEGOTIATION
  *
  * Enable support for TLS renegotiation.
@@ -2136,7 +2150,19 @@
 /**
  * \def MBEDTLS_THREADING_ALT
  *
- * Provide your own alternate threading implementation.
+ * Provide your own alternate implementation of threading primitives
+ * for mutexes. If you enable this option:
+ *
+ * - Provide a header file `"threading_alt.h"`, defining the
+ *   type `mbedtls_threading_mutex_t` of mutex objects.
+ *
+ * - Call the function mbedtls_threading_set_alt() in your application
+ *   before calling any other library function (in particular before
+ *   calling psa_crypto_init(), performing an asymmetric cryptography
+ *   operation, or starting a TLS connection).
+ *
+ * See mbedtls/threading.h for more details, especially the documentation
+ * of mbedtls_threading_set_alt().
  *
  * Requires: MBEDTLS_THREADING_C
  *

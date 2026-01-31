@@ -300,17 +300,14 @@ png_set_mDCV(png_const_structrp png_ptr, png_inforp info_ptr,
     double maxDL, double minDL)
 {
    png_set_mDCV_fixed(png_ptr, info_ptr,
-      /* The ITU approach is to scale by 50,000, not 100,000 so just divide
-       * the input values by 2 and use png_fixed:
-       */
-      png_fixed(png_ptr, white_x / 2, "png_set_mDCV(white(x))"),
-      png_fixed(png_ptr, white_y / 2, "png_set_mDCV(white(y))"),
-      png_fixed(png_ptr, red_x / 2, "png_set_mDCV(red(x))"),
-      png_fixed(png_ptr, red_y / 2, "png_set_mDCV(red(y))"),
-      png_fixed(png_ptr, green_x / 2, "png_set_mDCV(green(x))"),
-      png_fixed(png_ptr, green_y / 2, "png_set_mDCV(green(y))"),
-      png_fixed(png_ptr, blue_x / 2, "png_set_mDCV(blue(x))"),
-      png_fixed(png_ptr, blue_y / 2, "png_set_mDCV(blue(y))"),
+      png_fixed(png_ptr, white_x, "png_set_mDCV(white(x))"),
+      png_fixed(png_ptr, white_y, "png_set_mDCV(white(y))"),
+      png_fixed(png_ptr, red_x, "png_set_mDCV(red(x))"),
+      png_fixed(png_ptr, red_y, "png_set_mDCV(red(y))"),
+      png_fixed(png_ptr, green_x, "png_set_mDCV(green(x))"),
+      png_fixed(png_ptr, green_y, "png_set_mDCV(green(y))"),
+      png_fixed(png_ptr, blue_x, "png_set_mDCV(blue(x))"),
+      png_fixed(png_ptr, blue_y, "png_set_mDCV(blue(y))"),
       png_fixed_ITU(png_ptr, maxDL, "png_set_mDCV(maxDL)"),
       png_fixed_ITU(png_ptr, minDL, "png_set_mDCV(minDL)"));
 }

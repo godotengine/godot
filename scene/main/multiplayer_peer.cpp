@@ -151,6 +151,7 @@ Error MultiplayerPeerExtension::get_packet(const uint8_t **r_buffer, int &r_buff
 }
 
 Error MultiplayerPeerExtension::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
+	ERR_FAIL_COND_V(p_buffer_size < 0, ERR_INVALID_PARAMETER);
 	Error err;
 	if (GDVIRTUAL_CALL(_put_packet, p_buffer, p_buffer_size, err)) {
 		return err;
