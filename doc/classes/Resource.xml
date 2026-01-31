@@ -186,7 +186,7 @@
 	</signals>
 	<constants>
 		<constant name="DEEP_DUPLICATE_NONE" value="0" enum="DeepDuplicateMode">
-			No subresorces at all are duplicated. This is useful even in a deep duplication to have all the arrays and dictionaries duplicated but still pointing to the original resources.
+			No subresources at all are duplicated. This is useful even in a deep duplication to have all the arrays and dictionaries duplicated but still pointing to the original resources.
 		</constant>
 		<constant name="DEEP_DUPLICATE_INTERNAL" value="1" enum="DeepDuplicateMode">
 			Only subresources without a path or with a scene-local path will be duplicated.
