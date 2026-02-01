@@ -210,10 +210,15 @@ protected:
 
 	Ref<Image> _load_icon_or_splash_image(const String &p_path, Error *r_error) const;
 
+	int _find_and_replace(const Ref<FileAccess> &p_file, const PackedByteArray &p_old, const PackedByteArray &p_new, uint64_t p_start = 0) const;
+
 #ifndef DISABLE_DEPRECATED
 	static Vector<String> _get_forced_export_files_bind_compat_71542();
 	static void _bind_compatibility_methods();
 #endif
+
+	const Vector<uint8_t> key_template = { 0x47, 0x44, 0x3A, 0x53, 0x43, 0x52, 0x49, 0x50, 0x54, 0x2D, 0x45, 0x4E, 0x43, 0x52, 0x59, 0x50, 0x54, 0x49, 0x4F, 0x4E, 0x2D, 0x4B, 0x45, 0x59, 0x2D, 0x42, 0x4C, 0x4F, 0x42, 0x3A, 0x47, 0x44 };
+	const Vector<uint8_t> _get_key(const Ref<EditorExportPreset> &p_preset) const;
 
 public:
 	static String simplify_path(const String &p_path);
@@ -237,6 +242,9 @@ public:
 
 	virtual Ref<EditorExportPreset> create_preset();
 	virtual bool is_executable(const String &p_path) const { return false; }
+
+	Error find_and_replace_key_file(const Ref<EditorExportPreset> &p_preset, const String &p_path);
+	Error find_and_replace_key_data(const Ref<EditorExportPreset> &p_preset, PackedByteArray &r_data, const String &p_name);
 
 	virtual void clear_messages() { messages.clear(); }
 	virtual void add_message(ExportMessageType p_type, const String &p_category, const String &p_message) {

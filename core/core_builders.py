@@ -47,7 +47,7 @@ const uint64_t GODOT_VERSION_TIMESTAMP = {git_timestamp};
 
 
 def encryption_key_builder(target, source, env):
-    src = source[0].read() or "0" * 64
+    src = source[0].read() or "47443A5343524950542D454E4352595054494F4E2D4B45592D424C4F423A4744"
     try:
         buffer = bytes.fromhex(src)
         if len(buffer) != 32:

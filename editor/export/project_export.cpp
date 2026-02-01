@@ -31,6 +31,7 @@
 #include "project_export.h"
 
 #include "core/config/project_settings.h"
+#include "core/crypto/crypto_core.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -109,6 +110,7 @@ void ProjectExportDialog::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			_script_encryption_key_visibility_changed(show_script_key->is_pressed());
+			pck_key_gen->set_button_icon(get_editor_theme_icon(SNAME("Random")));
 			duplicate_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
 			delete_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Remove")));
 			patch_add_btn->set_button_icon(get_editor_theme_icon(SNAME("Add")));
@@ -692,6 +694,27 @@ bool ProjectExportDialog::_validate_script_encryption_key(const String &p_key) {
 		is_valid = true;
 	}
 	return is_valid;
+}
+
+void ProjectExportDialog::_script_key_gen() {
+	Vector<uint8_t> key;
+	key.resize(32);
+
+	CryptoCore::RandomGenerator rng;
+	ERR_FAIL_COND(rng.init() != OK);
+	ERR_FAIL_COND(rng.get_random_bytes((uint8_t *)key.ptrw(), 32) != OK);
+
+	String str_key = String::hex_encode_buffer((uint8_t *)key.ptr(), 32);
+	script_key->set_text(str_key);
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_script_encryption_key(str_key);
+
+	updating_script_key = true;
+	_update_current_preset();
+	updating_script_key = false;
 }
 
 void ProjectExportDialog::_script_export_mode_changed(EditorExportPreset::ScriptExportMode p_mode) {
@@ -1865,12 +1888,17 @@ ProjectExportDialog::ProjectExportDialog() {
 	script_key->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_script_encryption_key_changed));
 	script_key->set_secret(true);
 
+	pck_key_gen = memnew(Button);
+	pck_key_gen->set_tooltip_text(TTR("Generate random key"));
+	pck_key_gen->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_script_key_gen));
+
 	show_script_key = memnew(Button);
 	show_script_key->set_toggle_mode(true);
 	show_script_key->connect(SceneStringName(toggled), callable_mp(this, &ProjectExportDialog::_script_encryption_key_visibility_changed));
 
 	HBoxContainer *encryption_hb = memnew(HBoxContainer);
 	encryption_hb->add_child(script_key);
+	encryption_hb->add_child(pck_key_gen);
 	encryption_hb->add_child(show_script_key);
 
 	script_key_error = memnew(Label);
@@ -1888,7 +1916,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	Label *sec_info = memnew(Label);
 	sec_info->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	sec_info->set_text(TTR("Note: Encryption key needs to be stored in the binary,\nyou need to build the export templates from source."));
+	sec_info->set_text(TTR("Note: Encryption key is stored in the binary,\nit is recommended to build the export templates from source."));
 	sec_vb->add_child(sec_info);
 
 	LinkButton *sec_more_info = memnew(LinkButton);
