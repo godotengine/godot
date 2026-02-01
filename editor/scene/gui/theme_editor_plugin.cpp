@@ -3962,6 +3962,18 @@ void ThemeEditor::_notification(int p_what) {
 	}
 }
 
+void ThemeEditor::save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const {
+	const int split_offset = Math::round(main_hs->get_split_offset() / EDSCALE);
+	p_layout->set_value(p_section, "split_offset", split_offset);
+}
+
+void ThemeEditor::load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) {
+	if (p_layout->has_section_key(p_section, "split_offset")) {
+		const int split_offset = p_layout->get_value(p_section, "split_offset");
+		main_hs->set_split_offset(split_offset * EDSCALE);
+	}
+}
+
 ThemeEditor::ThemeEditor() {
 	set_name(TTRC("Theme"));
 	set_icon_name("ThemeDock");
@@ -4026,7 +4038,7 @@ ThemeEditor::ThemeEditor() {
 	theme_edit_dialog->hide();
 	top_menu->add_child(theme_edit_dialog);
 
-	HSplitContainer *main_hs = memnew(HSplitContainer);
+	main_hs = memnew(HSplitContainer);
 	main_hs->set_v_size_flags(SIZE_EXPAND_FILL);
 	content_vb->add_child(main_hs);
 
