@@ -5859,7 +5859,7 @@
             "return_value": {
                 "type": "GDExtensionInt",
                 "description": [
-                    "The resulting encoded string length in characters (not bytes), not including a null terminator."
+                    "The resulting encoded string length in characters, not including a null terminator. Characters that cannot be converted to Latin-1 are replaced with a space."
                 ]
             },
             "arguments": [
@@ -5896,7 +5896,7 @@
             "return_value": {
                 "type": "GDExtensionInt",
                 "description": [
-                    "The resulting encoded string length in characters (not bytes), not including a null terminator."
+                    "The resulting encoded string length in bytes (not characters), not including a null terminator."
                 ]
             },
             "arguments": [
@@ -5933,7 +5933,7 @@
             "return_value": {
                 "type": "GDExtensionInt",
                 "description": [
-                    "The resulting encoded string length in characters (not bytes), not including a null terminator."
+                    "The resulting encoded string length in 16-bit code units (not bytes or characters), not including a null terminator."
                 ]
             },
             "arguments": [
@@ -6007,7 +6007,7 @@
             "return_value": {
                 "type": "GDExtensionInt",
                 "description": [
-                    "The resulting encoded string length in characters (not bytes), not including a null terminator."
+                    "The resulting encoded string length in characters (for UTF-32) or 16-bit code units (for UTF-16), depending on the wchar_t representation. Does not include a null terminator."
                 ]
             },
             "arguments": [
