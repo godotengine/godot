@@ -137,6 +137,11 @@ bool RayCast2D::get_exclude_parent_body() const {
 	return exclude_parent_body;
 }
 
+Color RayCast2D::_get_default_debug_color() const {
+	SceneTree *st = SceneTree::get_singleton();
+	return st ? st->get_debug_collisions_color() : Color();
+}
+
 void RayCast2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -224,12 +229,22 @@ void RayCast2D::_update_raycast_state() {
 }
 
 void RayCast2D::_draw_debug_shape() {
-	Color draw_col = collided ? Color(1.0, 0.01, 0) : get_tree()->get_debug_collisions_color();
+	Color draw_col = debug_color;
+
 	if (!enabled) {
 		const float g = draw_col.get_v();
 		draw_col.r = g;
 		draw_col.g = g;
 		draw_col.b = g;
+		draw_col.a *= 0.5;
+	} else if (collided) {
+		if ((draw_col.get_h() < 0.055 || draw_col.get_h() > 0.945) && draw_col.get_s() > 0.5 && draw_col.get_v() > 0.5) {
+			// If base color is already quite reddish, highlight collision with green color
+			draw_col = Color(0.0, 1.0, 0.0, draw_col.a);
+		} else {
+			// Else, highlight collision with red color
+			draw_col = Color(1.0, 0, 0, draw_col.a);
+		}
 	}
 
 	// Draw an arrow indicating where the RayCast is pointing to
@@ -316,6 +331,40 @@ bool RayCast2D::is_hit_from_inside_enabled() const {
 	return hit_from_inside;
 }
 
+void RayCast2D::set_debug_color(const Color &p_color) {
+	debug_color = p_color;
+	queue_redraw();
+}
+
+Color RayCast2D::get_debug_color() const {
+	return debug_color;
+}
+
+bool RayCast2D::_property_can_revert(const StringName &p_name) const {
+	if (p_name == "debug_color") {
+		return true;
+	}
+	return false;
+}
+
+bool RayCast2D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	if (p_name == "debug_color") {
+		r_property = _get_default_debug_color();
+		return true;
+	}
+	return false;
+}
+
+void RayCast2D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "debug_color") {
+		if (debug_color == _get_default_debug_color()) {
+			p_property.usage = PROPERTY_USAGE_DEFAULT & ~PROPERTY_USAGE_STORAGE;
+		} else {
+			p_property.usage = PROPERTY_USAGE_DEFAULT;
+		}
+	}
+}
+
 void RayCast2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &RayCast2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &RayCast2D::is_enabled);
@@ -358,6 +407,9 @@ void RayCast2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hit_from_inside", "enable"), &RayCast2D::set_hit_from_inside);
 	ClassDB::bind_method(D_METHOD("is_hit_from_inside_enabled"), &RayCast2D::is_hit_from_inside_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &RayCast2D::set_debug_color);
+	ClassDB::bind_method(D_METHOD("get_debug_color"), &RayCast2D::get_debug_color);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "target_position", PROPERTY_HINT_NONE, "suffix:px"), "set_target_position", "get_target_position");
@@ -367,8 +419,13 @@ void RayCast2D::_bind_methods() {
 	ADD_GROUP("Collide With", "collide_with");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
+
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_color"), "set_debug_color", "get_debug_color");
+	// Default value depends on a project setting, override for doc generation purposes.
+	ADD_PROPERTY_DEFAULT("debug_color", Color());
 }
 
 RayCast2D::RayCast2D() {
 	set_hide_clip_children(true);
+	debug_color = _get_default_debug_color();
 }
