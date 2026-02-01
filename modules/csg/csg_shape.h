@@ -41,6 +41,7 @@
 
 #include "thirdparty/misc/mikktspace.h"
 
+class Mesh;
 class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
 

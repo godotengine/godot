@@ -31,12 +31,12 @@
 #pragma once
 
 #include "core/io/http_client.h"
-#include "core/io/stream_peer_gzip.h"
-#include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
 
+class Thread;
 class Timer;
+class StreamPeerGZIP;
 
 class HTTPRequest : public Node {
 	GDCLASS(HTTPRequest, Node);

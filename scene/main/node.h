@@ -31,18 +31,18 @@
 #pragma once
 
 #include "core/input/input_event.h"
-#include "core/io/resource.h"
+#include "core/object/ref_counted.h"
 #include "core/string/node_path.h"
 #include "core/templates/iterable.h"
 #include "core/variant/typed_array.h"
 #include "scene/main/scene_tree.h"
 #include "scene/scene_string_names.h"
 
-class Viewport;
-class Window;
+class Resource;
 class SceneState;
 class Tween;
-class PropertyTweener;
+class Viewport;
+class Window;
 
 SAFE_FLAG_TYPE_PUN_GUARANTEES
 SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)

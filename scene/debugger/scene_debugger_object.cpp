@@ -34,6 +34,7 @@
 
 #include "core/io/marshalls.h"
 #include "core/object/script_language.h"
+#include "scene/main/node.h"
 
 SceneDebuggerObject::SceneDebuggerObject(Object *p_obj) {
 	if (!p_obj) {

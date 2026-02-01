@@ -34,6 +34,7 @@
 #include "scene/resources/curve.h"
 #include "scene/resources/gradient.h"
 
+class Mesh;
 class RandomNumberGenerator;
 
 class CPUParticles3D : public GeometryInstance3D {

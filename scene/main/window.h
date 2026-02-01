@@ -35,7 +35,6 @@
 #include "servers/display/display_server.h"
 
 class Font;
-class Shortcut;
 class StyleBox;
 class ThemeOwner;
 class ThemeContext;
