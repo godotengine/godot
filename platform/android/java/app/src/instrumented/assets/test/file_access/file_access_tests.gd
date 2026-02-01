@@ -9,8 +9,12 @@ func run_tests():
 	__exec_test(test_internal_app_dir_access)
 	__exec_test(test_internal_cache_dir_access)
 	__exec_test(test_external_app_dir_access)
-	__exec_test(test_downloads_dir_access)
-	__exec_test(test_documents_dir_access)
+
+	# Scoped storage: Testing access to Downloads and Documents directory.
+	var version = JavaClassWrapper.wrap("android.os.Build$VERSION")
+	if version.SDK_INT >= 29:
+		__exec_test(test_downloads_dir_access)
+		__exec_test(test_documents_dir_access)
 
 func _test_dir_access(dir_path: String, data_file_content: String) -> bool:
 	print("Testing access to " + dir_path)
