@@ -2386,7 +2386,7 @@ png_handle_tIME(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 static png_handle_result_code /* PRIVATE */
 png_handle_tEXt(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 {
-   png_text  text_info;
+   png_text text_info;
    png_bytep buffer;
    png_charp key;
    png_charp text;
@@ -2459,8 +2459,8 @@ static png_handle_result_code /* PRIVATE */
 png_handle_zTXt(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 {
    png_const_charp errmsg = NULL;
-   png_bytep       buffer;
-   png_uint_32     keyword_length;
+   png_bytep buffer;
+   png_uint_32 keyword_length;
 
    png_debug(1, "in png_handle_zTXt");
 
