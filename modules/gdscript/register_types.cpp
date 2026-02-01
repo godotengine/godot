@@ -39,6 +39,7 @@
 #ifdef TOOLS_ENABLED
 #include "editor/gdscript_highlighter.h"
 #include "editor/gdscript_translation_parser_plugin.h"
+#include "editor/script/script_editor_plugin.h"
 
 #ifndef GDSCRIPT_NO_LSP
 #include "language_server/gdscript_language_server.h"

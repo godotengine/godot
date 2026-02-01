@@ -123,6 +123,7 @@
 #include "editor/script/editor_script.h"
 #include "editor/script/editor_script_plugin.h"
 #include "editor/script/script_editor_plugin.h"
+#include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
