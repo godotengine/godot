@@ -43,6 +43,10 @@
 #undef CRASH_HANDLER_ENABLED
 #endif
 
+#ifdef DISABLE_CRASH_HANDLER
+#undef CRASH_HANDLER_ENABLED
+#endif
+
 #ifdef CRASH_HANDLER_ENABLED
 #include <cxxabi.h>
 #include <dlfcn.h>

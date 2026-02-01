@@ -148,6 +148,22 @@
     <Compile Include="Compat.cs" />
   </ItemGroup>
 
+  <!-- Disable runtime marshaling for this assembly. -->
+  <ItemGroup>
+    <Compile Include="DisableRuntimeMarshalling.cs" />
+  </ItemGroup>
+
+  <!-- Pack source-only files. -->
+  <ItemGroup>
+    <Compile Remove="SourceFiles\**\*.cs" />
+    <None Include="SourceFiles\**\*.cs" PackagePath="contentFiles/cs/netstandard2.0/GodotSharp/" Pack="true" BuildAction="Compile" />
+  </ItemGroup>
+
+  <!-- Pack props file that will be auto-included with GodotSharp. -->
+  <ItemGroup>
+    <None Include="GodotSharp.props" PackagePath="build/GodotSharp.props" Pack="true" />
+  </ItemGroup>
+
   <!--
   We import a props file with auto-generated includes. This works well with Rider.
   However, Visual Studio and MonoDevelop won't list them in the solution explorer.

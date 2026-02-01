@@ -84,6 +84,15 @@
     <GodotFloat64 Condition=" '$(GodotFloat64)' == '' ">false</GodotFloat64>
   </PropertyGroup>
 
+  <!--
+  Controls if Godot should automatically add 'DisableRuntimeMarshallingAttribute' to the user's assembly.
+  'GodotDisableRuntimeMarshalling' is used in GodotSharp/GodotSharp.props.
+  -->
+  <PropertyGroup Condition=" '$(GodotDisableRuntimeMarshalling)' == '' ">
+    <GodotDisableRuntimeMarshalling>false</GodotDisableRuntimeMarshalling>
+    <GodotDisableRuntimeMarshalling Condition=" '$(GodotTargetPlatform)' == 'web' ">true</GodotDisableRuntimeMarshalling>
+  </PropertyGroup>
+
   <!-- Godot DefineConstants. -->
   <PropertyGroup>
     <!-- Define constants to identify Godot builds. -->
@@ -103,6 +112,8 @@
     <_GodotDefineConstants>$(_GodotDefineConstants);$(_GodotPlatformConstants);$(_GodotVersionConstants)</_GodotDefineConstants>
   </PropertyGroup>
 
+  <!-- Platform-specific build properties. -->
   <Import Project="$(MSBuildThisFileDirectory)\Android.props" Condition=" '$(GodotTargetPlatform)' == 'android' " />
   <Import Project="$(MSBuildThisFileDirectory)\iOS.props" Condition=" '$(GodotTargetPlatform)' == 'ios' " />
+  <Import Project="$(MSBuildThisFileDirectory)\Browser.props" Condition=" '$(GodotTargetPlatform)' == 'web' " />
 </Project>
