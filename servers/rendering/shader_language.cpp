@@ -3646,8 +3646,36 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 	int builtin_idx = 0;
 
 	if (argcount <= 4) {
-		// test builtins
+		// Test builtins.
 		int idx = 0;
+		int full_match_index = 0;
+
+		while (builtin_func_defs[idx].name) {
+			if (completion_class != builtin_func_defs[idx].tag) {
+				idx++;
+				continue;
+			}
+
+			if (name == builtin_func_defs[idx].name) {
+				bool fail = false;
+
+				for (int i = 0; i < argcount; i++) {
+					if (args[i] != builtin_func_defs[idx].args[i]) {
+						fail = true;
+						break;
+					}
+				}
+
+				if (!fail) {
+					// Full match.
+					full_match_index = idx;
+					break;
+				}
+			}
+
+			idx++;
+		}
+		idx = full_match_index;
 
 		while (builtin_func_defs[idx].name) {
 			if (completion_class != builtin_func_defs[idx].tag) {
@@ -3667,7 +3695,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 						}
 					}
 					if (get_scalar_type(args[i]) == args[i] && p_func->arguments[i + 1]->type == Node::NODE_TYPE_CONSTANT && convert_constant(static_cast<ConstantNode *>(p_func->arguments[i + 1]), builtin_func_defs[idx].args[i])) {
-						//all good, but needs implicit conversion later
+						// All good, but needs implicit conversion later.
 					} else if (args[i] != builtin_func_defs[idx].args[i]) {
 						fail = true;
 						break;
@@ -3685,7 +3713,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 				}
 
 				if (!fail && argcount < 4 && builtin_func_defs[idx].args[argcount] != TYPE_VOID) {
-					fail = true; //make sure the number of arguments matches
+					fail = true; // Make sure the number of arguments matches.
 				}
 
 				if (!fail) {
@@ -3720,7 +3748,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 						}
 					}
 
-					//make sure its not an out argument used in the wrong way
+					// Make sure it's not an out argument used in the wrong way.
 					int outarg_idx = 0;
 					while (builtin_func_out_args[outarg_idx].name) {
 						if (String(name) == builtin_func_out_args[outarg_idx].name) {
@@ -3819,14 +3847,14 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 						}
 						outarg_idx++;
 					}
-					//implicitly convert values if possible
+					// Implicitly convert values if possible.
 					for (int i = 0; i < argcount; i++) {
 						if (get_scalar_type(args[i]) != args[i] || args[i] == builtin_func_defs[idx].args[i] || p_func->arguments[i + 1]->type != Node::NODE_TYPE_CONSTANT) {
-							//can't do implicit conversion here
+							// Can't do implicit conversion here.
 							continue;
 						}
 
-						//this is an implicit conversion
+						// This is an implicit conversion.
 						ConstantNode *constant = static_cast<ConstantNode *>(p_func->arguments[i + 1]);
 						ConstantNode *conversion = alloc_node<ConstantNode>();
 
