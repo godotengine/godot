@@ -106,11 +106,20 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 	int id = decode_uint32(&p_packet[ofs]);
 	ofs += 4;
 
-	ERR_FAIL_COND_MSG(peers_info[p_from].recv_nodes.has(id), vformat("Duplicate remote cache ID %d for peer %d", id, p_from));
+	// Might receive NETWORK_COMMAND_SIMPLIFY_PATH for the same ID more than once. If so, we just ignore them.
+	if (peers_info[p_from].recv_nodes.has(id)) {
+		return;
+	}
 
 	String paths = String::utf8((const char *)(p_packet + ofs), p_packet_len - ofs);
 
 	const NodePath path = paths;
+
+	// The node may not exist for many reasons. We can't assume this peer instantiates nodes as fast as other peers.
+	// We can simply return and wait for next NETWORK_COMMAND_SIMPLIFY_PATH.
+	if (!root_node->has_node(path)) {
+		return;
+	}
 
 	Node *node = root_node->get_node(path);
 	ERR_FAIL_NULL(node);
@@ -246,6 +255,7 @@ bool SceneCacheInterface::send_object_cache(Object *p_obj, int p_peer_id, int &r
 			peers_to_add.push_back(p_peer_id); // Need to also be notified.
 			has_all_peers = false;
 		} else if (!(*confirmed)) {
+			peers_to_add.push_back(p_peer_id); // Need to also be notified. Other peers may ignore NETWORK_COMMAND_SIMPLIFY_PATH several times for not yet having this node.
 			has_all_peers = false;
 		}
 	} else {
