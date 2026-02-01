@@ -165,6 +165,7 @@ opts.Add(
     )
 )
 opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectures, architecture_aliases, ignorecase=2))
+opts.Add(BoolVariable("enable_sse42", "Enable SSE4.2 instruction set as a forced baseline for x86_64 CPUs", True))
 opts.Add(BoolVariable("dev_build", "Developer build with dev-only debugging code (DEV_ENABLED)", False))
 opts.Add(
     EnumVariable(
@@ -772,15 +773,16 @@ elif env.msvc:
 
 # Set x86 CPU instruction sets to use by the compiler's autovectorization.
 if env["arch"] == "x86_64":
-    # On 64-bit x86, enable SSE 4.2 and prior instruction sets (SSE3/SSSE3/SSE4/SSE4.1) to improve performance.
-    # This is supported on most CPUs released after 2009-2011 (Intel Nehalem, AMD Bulldozer).
-    # AVX and AVX2 aren't enabled because they aren't available on more recent low-end Intel CPUs.
-    if env.msvc and not methods.using_clang(env):
-        # https://stackoverflow.com/questions/64053597/how-do-i-enable-sse4-1-and-sse3-but-not-avx-in-msvc/69328426
-        env.Append(CCFLAGS=["/d2archSSE42"])
-    else:
-        # `-msse2` is implied when compiling for x86_64.
-        env.Append(CCFLAGS=["-msse4.2", "-mpopcnt"])
+    if env["enable_sse42"]: # Force SSE4.2 baseline by default.
+        # On 64-bit x86, enable SSE 4.2 and prior instruction sets (SSE3/SSSE3/SSE4/SSE4.1) to improve performance.
+        # This is supported on most CPUs released after 2009-2011 (Intel Nehalem, AMD Bulldozer).
+        # AVX and AVX2 aren't enabled because they aren't available on more recent low-end Intel CPUs.
+        if env.msvc and not methods.using_clang(env):
+            # https://stackoverflow.com/questions/64053597/how-do-i-enable-sse4-1-and-sse3-but-not-avx-in-msvc/69328426
+            env.Append(CCFLAGS=["/d2archSSE42"])
+        else:
+            # `-msse2` is implied when compiling for x86_64.
+            env.Append(CCFLAGS=["-msse4.2", "-mpopcnt"])
 elif env["arch"] == "x86_32":
     # Be more conservative with instruction sets on 32-bit x86 to improve compatibility.
     # SSE and SSE2 are present on all CPUs that support 64-bit, even if running a 32-bit OS.
