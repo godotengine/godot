@@ -38,11 +38,11 @@ class Button;
 class ConfigFile;
 class Control;
 class EditorDock;
+class FloatingDockContainer;
 class PopupMenu;
 class TabBar;
 class TabContainer;
 class VBoxContainer;
-class WindowWrapper;
 class StyleBoxFlat;
 
 class DockSplitContainer : public SplitContainer {
@@ -96,7 +96,7 @@ private:
 	DockSplitContainer *bottom_hsplit = nullptr;
 
 	DockTabContainer *dock_slots[EditorDock::DOCK_SLOT_MAX];
-	Vector<WindowWrapper *> dock_windows;
+	HashMap<int, FloatingDockContainer *> floating_slots;
 	LocalVector<EditorDock *> all_docks;
 	HashSet<EditorDock *> dirty_docks;
 
@@ -115,18 +115,20 @@ private:
 
 	void _docks_menu_option(int p_id);
 
-	void _window_close_request(WindowWrapper *p_wrapper);
-	EditorDock *_close_window(WindowWrapper *p_wrapper);
-	void _open_dock_in_window(EditorDock *p_dock, bool p_show_window = true, bool p_reset_size = false);
-	void _restore_dock_to_saved_window(EditorDock *p_dock, const Dictionary &p_window_dump);
+	void _load_docks_in_slot(int p_slot, Ref<ConfigFile> p_layout, const String &p_section, bool p_first_load, const HashMap<String, EditorDock *> &p_dock_map, const Array &p_closed_docks);
+	FloatingDockContainer *_create_floating_dock_slot(const Vector2i &p_position, const Vector2i &p_size, int p_idx = -1);
+	void _open_dock_in_window(EditorDock *p_dock);
 
 	void _make_dock_visible(EditorDock *p_dock, bool p_grab_focus);
 	void _move_dock(EditorDock *p_dock, Control *p_target, int p_tab_index = -1, bool p_set_current = true);
+	DockTabContainer *_get_dock_slot(int p_idx);
 
 	void _queue_update_tab_style(EditorDock *p_dock);
 	void _update_dirty_dock_tabs();
 
 	void _register_split(DockSplitContainer **p_var, DockSplitContainer *p_split);
+	void _register_floating_dock_slot(FloatingDockContainer *p_tab_container);
+	void _close_floating_dock_slot(FloatingDockContainer *p_tab_container);
 
 public:
 	static EditorDockManager *get_singleton() { return singleton; }
@@ -142,6 +144,7 @@ public:
 	void set_main_hsplit(DockSplitContainer *p_split) { _register_split(&main_hsplit, p_split); }
 	void set_bottom_hsplit(DockSplitContainer *p_split) { _register_split(&bottom_hsplit, p_split); }
 	void register_dock_slot(DockTabContainer *p_tab_container);
+	void destroy_floating_slot(FloatingDockContainer *p_tab_container);
 	int get_vsplit_count() const;
 	PopupMenu *get_docks_menu();
 
