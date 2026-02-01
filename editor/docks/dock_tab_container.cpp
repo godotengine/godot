@@ -246,8 +246,10 @@ void DockTabContainer::show_drag_hint() {
 	drag_hint->show();
 }
 
-DockTabContainer::DockTabContainer(EditorDock::DockSlot p_slot) {
-	ERR_FAIL_INDEX(p_slot, EditorDock::DOCK_SLOT_MAX);
+DockTabContainer::DockTabContainer(int p_slot) {
+	if (p_slot < EditorDock::DOCK_SLOT_BASE_FLOATING) {
+		ERR_FAIL_INDEX(p_slot, EditorDock::DOCK_SLOT_MAX);
+	}
 	dock_slot = p_slot;
 
 	set_drag_to_rearrange_enabled(true);
@@ -263,7 +265,7 @@ DockTabContainer::DockTabContainer(EditorDock::DockSlot p_slot) {
 	get_tab_bar()->connect("tab_rmb_clicked", callable_mp(this, &DockTabContainer::_tab_rmb_clicked));
 }
 
-SideDockTabContainer::SideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect) :
+SideDockTabContainer::SideDockTabContainer(int p_slot, const Rect2i &p_slot_rect) :
 		DockTabContainer(p_slot) {
 	grid_rect = p_slot_rect;
 	set_custom_minimum_size(Size2(170 * EDSCALE, 0));

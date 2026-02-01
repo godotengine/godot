@@ -33,15 +33,16 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/main/window.h"
 
 #include "editor/docks/dock_tab_container.h"
 #include "editor/docks/editor_dock.h"
+#include "editor/docks/floating_dock_container.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/gui/window_wrapper.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 
@@ -154,6 +155,9 @@ EditorDock *EditorDockManager::_get_dock_tab_dragged() {
 		for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
 			dock_slots[i]->show_drag_hint();
 		}
+		for (DockTabContainer *slot : floating_slots) {
+			slot->show_drag_hint();
+		}
 
 		return dock_tab_dragged;
 	}
@@ -229,32 +233,59 @@ void EditorDockManager::_docks_menu_option(int p_id) {
 	focus_dock(dock);
 }
 
-void EditorDockManager::_window_close_request(WindowWrapper *p_wrapper) {
-	// Give the dock back to the original owner.
-	EditorDock *dock = _close_window(p_wrapper);
-	ERR_FAIL_COND(!all_docks.has(dock));
+void EditorDockManager::_load_docks_in_slot(int p_slot, Ref<ConfigFile> p_layout, const String &p_section, bool p_first_load, const HashMap<String, EditorDock *> &p_dock_map, const Array &p_closed_docks) {
+	const String key = DockTabContainer::get_config_key(p_slot);
+	if (!p_layout->has_section_key(p_section, key)) {
+		return;
+	}
 
-	if (dock->dock_slot_index != EditorDock::DOCK_SLOT_NONE) {
-		dock->is_open = false;
-		focus_dock(dock);
-	} else {
-		close_dock(dock);
+	DockTabContainer *dock_container = _get_dock_slot(p_slot);
+	ERR_FAIL_NULL(dock_container);
+
+	const Vector<String> names = String(p_layout->get_value(p_section, key)).split(",");
+	for (int i = names.size() - 1; i >= 0; i--) {
+		const String &name = names[i];
+		const String section_name = p_section + "/" + name;
+
+		if (!p_dock_map.has(name)) {
+			continue;
+		}
+		EditorDock *dock = p_dock_map[name];
+
+		if (!dock->enabled) {
+			// Don't open disabled docks.
+			dock->load_layout_from_config(p_layout, section_name);
+			continue;
+		}
+
+		if (p_slot >= 0 && !(dock->transient && !dock->is_open)) {
+			// Safe to include transient open docks here because they won't be in the closed dock dump.
+			if (p_closed_docks.has(name)) {
+				dock->is_open = false;
+				dock->hide();
+				_move_dock(dock, closed_dock_parent);
+			} else {
+				dock->is_open = true;
+				_move_dock(dock, dock_container, 0);
+			}
+		}
+		dock->load_layout_from_config(p_layout, section_name);
+
+		dock->dock_slot_index = p_slot;
+		dock->previous_tab_index = p_slot >= 0 ? i : 0;
 	}
 }
 
-EditorDock *EditorDockManager::_close_window(WindowWrapper *p_wrapper) {
-	p_wrapper->set_block_signals(true);
-	EditorDock *dock = Object::cast_to<EditorDock>(p_wrapper->release_wrapped_control());
-	p_wrapper->set_block_signals(false);
-	ERR_FAIL_COND_V(!all_docks.has(dock), nullptr);
-
-	dock->dock_window = nullptr;
-	dock_windows.erase(p_wrapper);
-	p_wrapper->queue_free();
-	return dock;
+FloatingDockContainer *EditorDockManager::_create_floating_dock_slot(const Vector2i &p_position, const Vector2i &p_size) {
+	FloatingDockContainer *floating_container = memnew(FloatingDockContainer(EditorDock::DOCK_SLOT_BASE_FLOATING + floating_slots.size()));
+	floating_container->window->set_position(p_position);
+	floating_container->window->set_size(p_size);
+	_register_floating_dock_slot(floating_container);
+	floating_container->show();
+	return floating_container;
 }
 
-void EditorDockManager::_open_dock_in_window(EditorDock *p_dock, bool p_show_window, bool p_reset_size) {
+void EditorDockManager::_open_dock_in_window(EditorDock *p_dock) {
 	ERR_FAIL_NULL(p_dock);
 
 	Size2 borders = Size2(4, 4) * EDSCALE;
@@ -262,46 +293,21 @@ void EditorDockManager::_open_dock_in_window(EditorDock *p_dock, bool p_show_win
 	Size2 dock_size = p_dock->get_size() + borders * 2;
 	Point2 dock_screen_pos = p_dock->get_screen_position();
 
-	WindowWrapper *wrapper = memnew(WindowWrapper);
-	wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), TTR(p_dock->get_display_title())));
-	wrapper->set_margins_enabled(true);
+	Window *current_window = p_dock->get_window();
+	FloatingDockContainer *floating_container;
+	if (current_window != EditorNode::get_singleton()->get_window()) {
+		// The dock is already floating, so copy the current window's rect.
+		floating_container = _create_floating_dock_slot(current_window->get_position(), current_window->get_size());
+	} else {
+		floating_container = _create_floating_dock_slot(dock_screen_pos, dock_size);
+	}
+	_move_dock(p_dock, floating_container);
 
-	EditorNode::get_singleton()->get_gui_base()->add_child(wrapper);
-
-	_move_dock(p_dock, nullptr);
-	p_dock->update_layout(EditorDock::DOCK_LAYOUT_FLOATING);
-	p_dock->current_layout = EditorDock::DOCK_LAYOUT_FLOATING;
-	wrapper->set_wrapped_control(p_dock);
-
-	p_dock->dock_window = wrapper;
 	p_dock->is_open = true;
 	p_dock->show();
 
-	wrapper->connect("window_close_requested", callable_mp(this, &EditorDockManager::_window_close_request).bind(wrapper));
-	dock_windows.push_back(wrapper);
-
-	if (p_show_window) {
-		wrapper->restore_window(Rect2i(dock_screen_pos, dock_size), EditorNode::get_singleton()->get_gui_base()->get_window()->get_current_screen());
-		_update_layout();
-		if (p_reset_size) {
-			// Use a default size of one third the current window size.
-			Size2i popup_size = EditorNode::get_singleton()->get_window()->get_size() / 3.0;
-			p_dock->get_window()->set_size(popup_size);
-			p_dock->get_window()->move_to_center();
-		}
-		p_dock->get_window()->grab_focus();
-	}
-}
-
-void EditorDockManager::_restore_dock_to_saved_window(EditorDock *p_dock, const Dictionary &p_window_dump) {
-	if (!p_dock->dock_window) {
-		_open_dock_in_window(p_dock, false);
-	}
-
-	p_dock->dock_window->restore_window_from_saved_position(
-			p_window_dump.get("window_rect", Rect2i()),
-			p_window_dump.get("window_screen", -1),
-			p_window_dump.get("window_screen_rect", Rect2i()));
+	_update_layout();
+	p_dock->get_window()->grab_focus();
 }
 
 void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_tab_index, bool p_set_current) {
@@ -319,18 +325,17 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 
 	// Remove dock from its existing parent.
 	if (parent) {
-		if (p_dock->dock_window) {
-			_close_window(p_dock->dock_window);
-		} else {
-			DockTabContainer *parent_tabs = Object::cast_to<DockTabContainer>(parent);
-			if (parent_tabs) {
-				p_dock->previous_tab_index = parent_tabs->get_tab_idx_from_control(p_dock);
-			}
-			parent->set_block_signals(true);
-			parent->remove_child(p_dock);
-			parent->set_block_signals(false);
-			if (parent_tabs) {
-				parent_tabs->update_visibility();
+		DockTabContainer *parent_tabs = Object::cast_to<DockTabContainer>(parent);
+		if (parent_tabs) {
+			p_dock->previous_tab_index = parent_tabs->get_tab_idx_from_control(p_dock);
+		}
+		parent->set_block_signals(true);
+		parent->remove_child(p_dock);
+		parent->set_block_signals(false);
+		if (parent_tabs) {
+			parent_tabs->update_visibility();
+			if (p_target != closed_dock_parent) {
+				parent_tabs->dock_removed(p_dock);
 			}
 		}
 	}
@@ -355,6 +360,7 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 	p_target->set_block_signals(false);
 
 	if (dock_tab_container) {
+		dock_tab_container->dock_added(p_dock);
 		if (dock_tab_container->is_inside_tree()) {
 			p_dock->update_tab_style();
 		}
@@ -363,6 +369,16 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 		}
 		dock_tab_container->update_visibility();
 	}
+}
+
+DockTabContainer *EditorDockManager::_get_dock_slot(int p_idx) {
+	if (p_idx >= EditorDock::DOCK_SLOT_BASE_FLOATING) {
+		p_idx -= EditorDock::DOCK_SLOT_BASE_FLOATING;
+		ERR_FAIL_INDEX_V(p_idx, (int)floating_slots.size(), nullptr);
+		return floating_slots[p_idx];
+	}
+	ERR_FAIL_INDEX_V(p_idx, EditorDock::DOCK_SLOT_MAX, nullptr);
+	return dock_slots[p_idx];
 }
 
 void EditorDockManager::_queue_update_tab_style(EditorDock *p_dock) {
@@ -385,10 +401,44 @@ void EditorDockManager::_update_dirty_dock_tabs() {
 	}
 }
 
+void EditorDockManager::_register_floating_dock_slot(FloatingDockContainer *p_tab_container) {
+	ERR_FAIL_NULL(p_tab_container);
+	floating_slots.push_back(p_tab_container);
+	EditorNode::get_singleton()->get_gui_base()->add_child(p_tab_container->window);
+
+	p_tab_container->set_dock_context_popup(dock_context_popup);
+	p_tab_container->connect("tab_changed", callable_mp(this, &EditorDockManager::_update_layout).unbind(1));
+	p_tab_container->connect("active_tab_rearranged", callable_mp(this, &EditorDockManager::_update_layout).unbind(1));
+	p_tab_container->window->connect("close_requested", callable_mp(this, &EditorDockManager::_close_floating_dock_slot).bind(p_tab_container));
+}
+
+void EditorDockManager::_close_floating_dock_slot(FloatingDockContainer *p_tab_container) {
+	int dock_count = p_tab_container->get_tab_count();
+	for (int i = dock_count - 1; i >= 0; i--) {
+		EditorDock *dock = p_tab_container->get_dock(i);
+		if (dock->global || dock->closable || dock->default_slot == EditorDock::DOCK_SLOT_NONE) {
+			close_dock(dock);
+		} else {
+			_move_dock(dock, dock_slots[dock->default_slot]);
+		}
+	}
+}
+
+void EditorDockManager::_update_floating_dock_slots() {
+	int idx = 0;
+	for (FloatingDockContainer *slot : floating_slots) {
+		slot->dock_slot = EditorDock::DOCK_SLOT_BASE_FLOATING + idx;
+		idx++;
+	}
+}
+
 void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section) const {
 	// Save docks by dock slot.
 	for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
 		dock_slots[i]->save_docks_to_config(p_layout, p_section);
+	}
+	for (DockTabContainer *slot : floating_slots) {
+		slot->save_docks_to_config(p_layout, p_section);
 	}
 
 	// Clear the special dock slot for docks without default slots (index -1 = dock_0).
@@ -398,36 +448,32 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 		p_layout->erase_section_key(p_section, no_slot_config_key);
 	}
 
-	// Save docks in windows.
-	Dictionary floating_docks_dump;
-	for (WindowWrapper *wrapper : dock_windows) {
-		EditorDock *dock = Object::cast_to<EditorDock>(wrapper->get_wrapped_control());
+	// Save floating dock containers.
+	int floating_slots_count = floating_slots.size();
+	for (int i = 0;; i++) {
+		const String config_key = "floating_" + DockTabContainer::get_config_key(EditorDock::DOCK_SLOT_BASE_FLOATING + i);
+		if (i < floating_slots_count) {
+			FloatingDockContainer *floating_container = floating_slots[i];
 
-		Dictionary window_dump;
-		window_dump["window_rect"] = wrapper->get_window_rect();
+			Dictionary window_data;
+			window_data["window_position"] = floating_container->window->get_position();
+			window_data["window_size"] = floating_container->window->get_size();
 
-		int screen = wrapper->get_window_screen();
-		window_dump["window_screen"] = wrapper->get_window_screen();
-		window_dump["window_screen_rect"] = DisplayServer::get_singleton()->screen_get_usable_rect(screen);
-
-		String name = dock->get_effective_layout_key();
-		if (!dock->transient) {
-			floating_docks_dump[name] = window_dump;
-		}
-
-		// Append to regular dock section so we know where to restore it to.
-		int dock_slot_id = dock->dock_slot_index;
-		String config_key = DockTabContainer::get_config_key(dock_slot_id);
-
-		String names = p_layout->get_value(p_section, config_key, "");
-		if (names.is_empty()) {
-			names = name;
+			p_layout->set_value(p_section, config_key, window_data);
+		} else if (p_layout->has_section_key(p_section, config_key)) {
+			p_layout->erase_section_key(p_section, config_key);
+			String docks_key = DockTabContainer::get_config_key(EditorDock::DOCK_SLOT_BASE_FLOATING + i);
+			if (p_layout->has_section_key(p_section, docks_key)) {
+				p_layout->erase_section_key(p_section, docks_key);
+			}
+			docks_key += "_selected_tab_idx";
+			if (p_layout->has_section_key(p_section, docks_key)) {
+				p_layout->erase_section_key(p_section, docks_key);
+			}
 		} else {
-			names += "," + name;
+			break;
 		}
-		p_layout->set_value(p_section, config_key, names);
 	}
-	p_layout->set_value(p_section, "dock_floating", floating_docks_dump);
 
 	Array closed_docks_dump;
 	for (const EditorDock *dock : all_docks) {
@@ -477,10 +523,19 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 }
 
 void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section, bool p_first_load) {
-	Dictionary floating_docks_dump = p_layout->get_value(p_section, "dock_floating", Dictionary());
 	Array closed_docks = p_layout->get_value(p_section, "dock_closed", Array());
 
 	bool allow_floating_docks = EditorNode::get_singleton()->is_multi_window_enabled() && (!p_first_load || EDITOR_GET("interface/multi_window/restore_windows_on_load"));
+	if (allow_floating_docks) {
+		for (int idx = EditorDock::DOCK_SLOT_BASE_FLOATING;; idx++) {
+			const String key = "floating_" + DockTabContainer::get_config_key(idx);
+			if (!p_layout->has_section_key(p_section, key)) {
+				break;
+			}
+			const Dictionary window_data = p_layout->get_value(p_section, key);
+			_create_floating_dock_slot(window_data["window_position"], window_data["window_size"]);
+		}
+	}
 
 	// Store the docks by name for easy lookup.
 	HashMap<String, EditorDock *> dock_map;
@@ -490,45 +545,11 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 
 	// Load docks by slot. Index -1 is for docks that have no slot.
 	for (int i = -1; i < EditorDock::DOCK_SLOT_MAX; i++) {
-		const String key = DockTabContainer::get_config_key(i);
-		if (!p_layout->has_section_key(p_section, key)) {
-			continue;
-		}
-
-		Vector<String> names = String(p_layout->get_value(p_section, key)).split(",");
-		for (int j = names.size() - 1; j >= 0; j--) {
-			const String &name = names[j];
-			const String section_name = p_section + "/" + name;
-
-			if (!dock_map.has(name)) {
-				continue;
-			}
-			EditorDock *dock = dock_map[name];
-
-			if (!dock->enabled) {
-				// Don't open disabled docks.
-				dock->load_layout_from_config(p_layout, section_name);
-				continue;
-			}
-
-			if (allow_floating_docks && floating_docks_dump.has(name)) {
-				_restore_dock_to_saved_window(dock, floating_docks_dump[name]);
-			} else if (i >= 0 && !(dock->transient && !dock->is_open)) {
-				// Safe to include transient open docks here because they won't be in the closed dock dump.
-				if (closed_docks.has(name)) {
-					dock->is_open = false;
-					dock->hide();
-					_move_dock(dock, closed_dock_parent);
-				} else {
-					dock->is_open = true;
-					_move_dock(dock, dock_slots[i], 0);
-				}
-			}
-			dock->load_layout_from_config(p_layout, section_name);
-
-			dock->dock_slot_index = i;
-			dock->previous_tab_index = i >= 0 ? j : 0;
-		}
+		_load_docks_in_slot(i, p_layout, p_section, p_first_load, dock_map, closed_docks);
+	}
+	int floating_docks_count = floating_slots.size();
+	for (int i = 0; i < floating_docks_count; i++) {
+		_load_docks_in_slot(EditorDock::DOCK_SLOT_BASE_FLOATING + i, p_layout, p_section, p_first_load, dock_map, closed_docks);
 	}
 
 	// Set the selected tabs.
@@ -610,7 +631,7 @@ void EditorDockManager::open_dock(EditorDock *p_dock, bool p_set_current) {
 
 	// Open dock to its previous location.
 	if (p_dock->dock_slot_index != EditorDock::DOCK_SLOT_NONE) {
-		DockTabContainer *slot = dock_slots[p_dock->dock_slot_index];
+		DockTabContainer *slot = _get_dock_slot(p_dock->dock_slot_index);
 		int tab_index = p_dock->previous_tab_index;
 		if (tab_index < 0) {
 			tab_index = slot->get_tab_count();
@@ -618,7 +639,7 @@ void EditorDockManager::open_dock(EditorDock *p_dock, bool p_set_current) {
 
 		_move_dock(p_dock, slot, tab_index, p_set_current && slot->can_switch_dock());
 	} else {
-		_open_dock_in_window(p_dock, true, true);
+		_open_dock_in_window(p_dock);
 		return;
 	}
 
@@ -629,19 +650,10 @@ void EditorDockManager::make_dock_floating(EditorDock *p_dock) {
 	ERR_FAIL_NULL(p_dock);
 	ERR_FAIL_COND_MSG(!all_docks.has(p_dock), vformat("Cannot make unknown dock '%s' floating.", p_dock->get_display_title()));
 
-	if (!p_dock->dock_window) {
-		_open_dock_in_window(p_dock);
-	}
+	_open_dock_in_window(p_dock);
 }
 
 void EditorDockManager::_make_dock_visible(EditorDock *p_dock, bool p_grab_focus) {
-	if (p_dock->dock_window) {
-		if (p_grab_focus) {
-			p_dock->get_window()->grab_focus();
-		}
-		return;
-	}
-
 	DockTabContainer *tab_container = p_dock->get_parent_container();
 	if (!tab_container || !tab_container->can_switch_dock()) {
 		return;
@@ -693,6 +705,10 @@ void EditorDockManager::remove_dock(EditorDock *p_dock) {
 	ERR_FAIL_NULL(p_dock);
 	ERR_FAIL_COND_MSG(!all_docks.has(p_dock), vformat("Cannot remove unknown dock '%s'.", p_dock->get_display_title()));
 
+	DockTabContainer *dock_container = p_dock->get_parent_container();
+	if (dock_container) {
+		dock_container->dock_removed(p_dock);
+	}
 	_move_dock(p_dock, nullptr);
 
 	all_docks.erase(p_dock);
@@ -746,6 +762,14 @@ void EditorDockManager::register_dock_slot(DockTabContainer *p_tab_container) {
 	p_tab_container->set_dock_context_popup(dock_context_popup);
 	p_tab_container->connect("tab_changed", callable_mp(this, &EditorDockManager::_update_layout).unbind(1));
 	p_tab_container->connect("active_tab_rearranged", callable_mp(this, &EditorDockManager::_update_layout).unbind(1));
+}
+
+void EditorDockManager::destroy_floating_slot(FloatingDockContainer *p_tab_container) {
+	_close_floating_dock_slot(p_tab_container);
+	floating_slots.erase(p_tab_container);
+	_update_floating_dock_slots();
+	p_tab_container->window->queue_free();
+	EditorNode::get_singleton()->save_editor_layout_delayed();
 }
 
 int EditorDockManager::get_vsplit_count() const {
