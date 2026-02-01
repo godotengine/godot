@@ -4040,7 +4040,7 @@ ThemeEditor::ThemeEditor() {
 	main_hs->set_v_size_flags(SIZE_EXPAND_FILL);
 	content_vb->add_child(main_hs);
 
-	main_hs->set_split_offset(520 * EDSCALE);
+	main_hs->set_split_offset(-368 * EDSCALE);
 
 	VBoxContainer *preview_tabs_vb = memnew(VBoxContainer);
 	preview_tabs_vb->set_h_size_flags(SIZE_EXPAND_FILL);
