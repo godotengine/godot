@@ -248,4 +248,51 @@ TEST_CASE("[FileAccess] Get/Store floating point half precision values") {
 	}
 }
 
+TEST_CASE("[FileAccess] Cursor positioning") {
+	Ref<FileAccess> f = FileAccess::open(TestUtils::get_data_path("line_endings_lf.test.txt"), FileAccess::READ);
+	REQUIRE(f.is_valid());
+
+	String full = f->get_as_utf8_string();
+	int64_t len = full.length();
+
+	SUBCASE("Initial position is zero") {
+		f->seek(0);
+		CHECK(f->get_position() == 0);
+	}
+
+	SUBCASE("seek() moves cursor to absolute position") {
+		f->seek(5);
+		CHECK(f->get_position() == 5);
+	}
+
+	SUBCASE("seek() moves cursor beyond file size") {
+		f->seek(len + 10);
+		CHECK(f->get_position() == len + 10);
+	}
+
+	SUBCASE("seek_end() moves cursor to end of file") {
+		f->seek_end(0);
+		CHECK(f->get_position() == len);
+	}
+
+	SUBCASE("seek_end() with positive offset") {
+		f->seek_end(1);
+		CHECK(f->get_position() == len + 1);
+	}
+
+	SUBCASE("seek_end() with negative offset") {
+		f->seek_end(-1);
+		CHECK(f->get_position() == len - 1);
+
+		char last_char = full[full.length() - 1];
+		CHECK(f->get_8() == last_char);
+	}
+
+	SUBCASE("seek_end() beyond file size") {
+		f->seek(5);
+		f->seek_end(-len - 10); // seeking to a position below 0; ignored.
+		CHECK(f->get_position() == 5);
+	}
+}
+
 } // namespace TestFileAccess
