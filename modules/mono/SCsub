@@ -6,6 +6,15 @@ import build_scripts.mono_configure as mono_configure
 Import("env")
 Import("env_modules")
 
+if env["platform"] == "web":
+    if env["library_type"] == "shared_library":
+        # Shared library doesn't work right now.
+        env["EXPORTED_FUNCTIONS_SHARED"] += ["_set_load_from_executable_fn"]
+
+    env.AddJSLibraries(["web/setjmp_stub.js"])
+    env.AddJSPre(["web/callMain_stub.js"])
+    env["CUSTOM_GODOT_JS"] = env.File("web/mono_bridge.js")
+
 env_mono = env_modules.Clone()
 
 # Configure Mono

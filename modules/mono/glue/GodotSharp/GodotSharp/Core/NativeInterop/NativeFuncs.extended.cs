@@ -101,5 +101,29 @@ namespace Godot.NativeInterop
             godotsharp_node_path_new_from_string(out godot_node_path ret, src);
             return ret;
         }
+
+        public static godot_string godotsharp_variant_as_string(scoped in godot_variant p_self)
+        {
+            godotsharp_variant_as_string(p_self, out godot_string ret);
+            return ret;
+        }
+
+        public static godot_string_name godotsharp_variant_as_string_name(scoped in godot_variant p_self)
+        {
+            godotsharp_variant_as_string_name(p_self, out godot_string_name ret);
+            return ret;
+        }
+
+        public static godot_node_path godotsharp_variant_as_node_path(scoped in godot_variant p_self)
+        {
+            godotsharp_variant_as_node_path(p_self, out godot_node_path ret);
+            return ret;
+        }
+
+        public static Rid godotsharp_variant_as_rid(scoped in godot_variant p_self)
+        {
+            godotsharp_variant_as_rid(p_self, out Rid ret);
+            return ret;
+        }
     }
 }

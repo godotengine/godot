@@ -172,10 +172,13 @@ const Engine = (function () {
 							me.rtenv['copyToFS'](file.path, file.buffer);
 						}
 						preloader.preloadedFiles.length = 0; // Clear memory
-						me.rtenv['callMain'](me.config.args);
-						initPromise = null;
-						me.installServiceWorker();
-						resolve();
+
+						// Adds optional support for custom async 'callMain'.
+						Promise.resolve(me.rtenv['callMain'](me.config.args)).then(function () {
+							initPromise = null;
+							me.installServiceWorker();
+							resolve();
+						});
 					});
 				});
 			},
@@ -249,6 +252,18 @@ const Engine = (function () {
 				}
 				return Promise.resolve();
 			},
+
+			/**
+			 * Get [JsExport] methods.
+			 *
+			 * @returns {Promise} The exports promise.
+			 */
+			getDotnetExports: function () {
+				if (this.rtenv && this.rtenv['getGodotSharpExports']) {
+					return this.rtenv['getGodotSharpExports']();
+				}
+				return Promise.resolve();
+			},
 		};
 
 		Engine.prototype = proto;
@@ -260,6 +275,7 @@ const Engine = (function () {
 		Engine.prototype['copyToFS'] = Engine.prototype.copyToFS;
 		Engine.prototype['requestQuit'] = Engine.prototype.requestQuit;
 		Engine.prototype['installServiceWorker'] = Engine.prototype.installServiceWorker;
+		Engine.prototype['getDotnetExports'] = Engine.prototype.getDotnetExports;
 		// Also expose static methods as instance methods
 		Engine.prototype['load'] = Engine.load;
 		Engine.prototype['unload'] = Engine.unload;

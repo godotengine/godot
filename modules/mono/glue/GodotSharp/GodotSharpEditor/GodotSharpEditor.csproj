@@ -39,6 +39,10 @@
   <ItemGroup Condition=" '$(GodotNoDeprecated)' == '' ">
     <Compile Include="Compat.cs" />
   </ItemGroup>
+  <!-- Disable runtime marshaling for this assembly. -->
+  <ItemGroup>
+    <Compile Include="DisableRuntimeMarshalling.cs" />
+  </ItemGroup>
   <!--
   We import a props file with auto-generated includes. This works well with Rider.
   However, Visual Studio and MonoDevelop won't list them in the solution explorer.
