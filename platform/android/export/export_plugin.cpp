@@ -3451,6 +3451,86 @@ void EditorExportPlatformAndroid::_remove_copied_libs(String p_gdextension_libs_
 	da->remove(p_gdextension_libs_path);
 }
 
+void EditorExportPlatformAndroid::_replace_key_in_libs(const Ref<EditorExportPreset> &p_preset, String p_libs_path) {
+	Ref<DirAccess> da = DirAccess::open(p_libs_path);
+	if (da.is_null()) {
+		return;
+	}
+	da->list_dir_begin();
+	while (true) {
+		String file = da->get_next();
+		if (file.is_empty()) {
+			break;
+		}
+		if (file == "." || file == "..") {
+			continue;
+		}
+		if (da->current_is_dir()) {
+			_replace_key_in_libs(p_preset, p_libs_path.path_join(file));
+			continue;
+		}
+		if (file.begins_with("godot-lib") && file.ends_with(".aar")) {
+			String template_name = p_libs_path.path_join(file) + ".template";
+			if (!da->file_exists(template_name)) {
+				da->copy(p_libs_path.path_join(file), template_name);
+			}
+			da->remove(p_libs_path.path_join(file));
+
+			Ref<FileAccess> io_fa;
+			zlib_filefunc_def io = zipio_create_io(&io_fa);
+			unzFile pkg = unzOpen2(template_name.utf8().get_data(), &io);
+			if (!pkg) {
+				continue;
+			}
+			int ret = unzGoToFirstFile(pkg);
+			Ref<FileAccess> io2_fa;
+			zlib_filefunc_def io2 = zipio_create_io(&io2_fa);
+			zipFile dst = zipOpen2(p_libs_path.path_join(file).utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);
+			while (ret == UNZ_OK) {
+				unz_file_info info;
+				char fname[16384];
+				ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+				if (ret != UNZ_OK) {
+					break;
+				}
+				String zfile = String::utf8(fname);
+				Vector<uint8_t> data;
+				data.resize(info.uncompressed_size);
+
+				unzOpenCurrentFile(pkg);
+				unzReadCurrentFile(pkg, data.ptrw(), data.size());
+				unzCloseCurrentFile(pkg);
+				if (zfile.contains("libgodot") && zfile.ends_with(".so")) {
+					find_and_replace_key_data(p_preset, data, zfile);
+				}
+				// Respect decision on compression made by AAPT for the export template
+				const bool uncompressed = info.compression_method == 0;
+
+				zip_fileinfo zipfi = get_zip_fileinfo();
+
+				zipOpenNewFileInZip(dst,
+						zfile.utf8().get_data(),
+						&zipfi,
+						nullptr,
+						0,
+						nullptr,
+						0,
+						nullptr,
+						uncompressed ? 0 : Z_DEFLATED,
+						Z_DEFAULT_COMPRESSION);
+
+				zipWriteInFileInZip(dst, data.ptr(), data.size());
+				zipCloseFileInZip(dst);
+
+				ret = unzGoToNextFile(pkg);
+			}
+			zipClose(dst, nullptr);
+			unzClose(pkg);
+		}
+	}
+	da->list_dir_end();
+}
+
 String EditorExportPlatformAndroid::join_list(const List<String> &p_parts, const String &p_separator) {
 	String ret;
 	for (List<String>::ConstIterator itr = p_parts.begin(); itr != p_parts.end(); ++itr) {
@@ -3757,6 +3837,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		_clear_assets_directory(p_preset);
 		String gdextension_libs_path = gradle_build_directory.path_join(GDEXTENSION_LIBS_PATH);
 		_remove_copied_libs(gdextension_libs_path);
+		_replace_key_in_libs(p_preset, gradle_build_directory.path_join("libs"));
 		if (!apk_expansion) {
 			print_verbose("Exporting project files...");
 			CustomExportData user_data;
@@ -4207,6 +4288,10 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 		if (!skip) {
 			print_line("ADDING: " + file);
+
+			if (file.contains("libgodot") && file.ends_with(".so")) {
+				find_and_replace_key_data(p_preset, data, file);
+			}
 
 			// Respect decision on compression made by AAPT for the export template
 			const bool uncompressed = info.compression_method == 0;

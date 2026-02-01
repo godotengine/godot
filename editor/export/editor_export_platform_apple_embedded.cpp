@@ -1834,9 +1834,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 	int ret = unzGoToFirstFile(src_pkg_zip);
 	Vector<uint8_t> project_file_data;
 	while (ret == UNZ_OK) {
-#if defined(MACOS_ENABLED) || defined(LINUXBSD_ENABLED)
-		bool is_execute = false;
-#endif
+		bool is_executable = false;
 
 		//get filename
 		unz_file_info info;
@@ -1867,9 +1865,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 				continue; //ignore!
 			}
 			found_library = true;
-#if defined(MACOS_ENABLED) || defined(LINUXBSD_ENABLED)
-			is_execute = true;
-#endif
+			is_executable = true;
 			file = file.replace(library_to_use, binary_name + ".xcframework");
 		}
 
@@ -1909,9 +1905,12 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 				};
 				f->store_buffer(data.ptr(), data.size());
 			}
+			if (is_executable && file.ends_with(".a")) {
+				find_and_replace_key_file(p_preset, file);
+			}
 
 #if defined(MACOS_ENABLED) || defined(LINUXBSD_ENABLED)
-			if (is_execute) {
+			if (is_executable) {
 				// we need execute rights on this file
 				chmod(file.utf8().get_data(), 0755);
 			}
