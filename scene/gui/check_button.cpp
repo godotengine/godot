@@ -108,6 +108,20 @@ void CheckButton::_notification(int p_what) {
 			RID ci = get_canvas_item();
 			bool rtl = is_layout_rtl();
 
+			// Select correct StyleBox for current state.
+			Ref<StyleBox> style = theme_cache.normal_style;
+			if (is_disabled() && theme_cache.disabled_style.is_valid()) {
+				style = theme_cache.disabled_style;
+			}
+
+			if (style.is_null()) {
+				return; // Safety check to prevent crashes if theme is missing.
+			}
+
+			// Draw background (CheckButton does not inherit Button background drawing).
+			style->draw(ci, Rect2(Vector2(), get_size()));
+
+			// Icon logic.
 			Ref<Texture2D> on_tex;
 			Ref<Texture2D> off_tex;
 
@@ -132,10 +146,11 @@ void CheckButton::_notification(int p_what) {
 			Vector2 ofs;
 			Size2 tex_size = get_icon_size();
 
+			// Use the selected style margins for positioning.
 			if (rtl) {
-				ofs.x = theme_cache.normal_style->get_margin(SIDE_LEFT);
+				ofs.x = style->get_margin(SIDE_LEFT);
 			} else {
-				ofs.x = get_size().width - (tex_size.width + theme_cache.normal_style->get_margin(SIDE_RIGHT));
+				ofs.x = get_size().width - (tex_size.width + style->get_margin(SIDE_RIGHT));
 			}
 			ofs.y = (get_size().height - tex_size.height) / 2 + theme_cache.check_v_offset;
 
@@ -152,6 +167,7 @@ void CheckButton::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CheckButton, h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CheckButton, check_v_offset);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CheckButton, normal_style, "normal");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CheckButton, disabled_style, "disabled");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckButton, checked);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckButton, unchecked);
