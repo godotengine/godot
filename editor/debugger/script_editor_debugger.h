@@ -312,6 +312,8 @@ public:
 		EMBED_NEXT_FRAME,
 	};
 
+	TabContainer *get_tabs() { return tabs; }
+
 	void request_remote_objects(const TypedArray<uint64_t> &p_obj_ids, bool p_update_selection = true);
 	void update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value, const String &p_field = "");
 

@@ -128,6 +128,8 @@ void EditorBottomPanel::dock_closed(EditorDock *p_dock) {
 void EditorBottomPanel::dock_focused(EditorDock *p_dock, bool p_was_visible) {
 	if (p_was_visible && p_dock->is_visible()) {
 		hide_bottom_panel();
+	} else {
+		get_tab_bar()->grab_focus();
 	}
 }
 
