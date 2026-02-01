@@ -560,6 +560,10 @@ void EditorAssetInstaller::_install_asset() {
 			Ref<FileAccess> f = FileAccess::open(target_path, FileAccess::WRITE);
 			if (f.is_valid()) {
 				f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
+				f.unref(); // close file.
+#ifndef WINDOWS_ENABLED
+				FileAccess::set_unix_permissions(target_path, (info.external_fa >> 16) & 0x01FF);
+#endif
 			} else {
 				failed_files.push_back(target_path);
 			}
