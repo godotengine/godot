@@ -1074,6 +1074,9 @@
 		<member name="interface/editor/localization/ui_layout_direction" type="int" setter="" getter="">
 			Editor UI default layout direction.
 		</member>
+		<member name="interface/editor/max_sticky_tree_items" type="int" setter="" getter="">
+			The maximum number of tree items allowed to stick to the top while its children are in view. A value of [code]0[/code] disables sticking.
+		</member>
 		<member name="interface/editor/timers/dragging_hover_wait_seconds" type="float" setter="" getter="">
 			During a drag-and-drop, this is how long to wait over a UI element before it triggers a reaction (e.g. a section unfolds to show nested items).
 		</member>
