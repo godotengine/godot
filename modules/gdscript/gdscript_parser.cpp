@@ -4815,10 +4815,10 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 					String enum_hint_string;
 					bool first = true;
 					for (const KeyValue<StringName, int64_t> &E : export_type.enum_values) {
-						if (!first) {
-							enum_hint_string += ",";
-						} else {
+						if (first) {
 							first = false;
+						} else {
+							enum_hint_string += ",";
 						}
 						enum_hint_string += E.key.operator String().capitalize().xml_escape();
 						enum_hint_string += ":";
@@ -4892,10 +4892,10 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 						String enum_hint_string;
 						bool first = true;
 						for (const KeyValue<StringName, int64_t> &E : export_type.enum_values) {
-							if (!first) {
-								enum_hint_string += ",";
-							} else {
+							if (first) {
 								first = false;
+							} else {
+								enum_hint_string += ",";
 							}
 							enum_hint_string += E.key.operator String().capitalize().xml_escape();
 							enum_hint_string += ":";
