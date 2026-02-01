@@ -863,14 +863,12 @@ Ref<TriangleMesh> MeshInstance3D::generate_triangle_mesh() const {
 	return Ref<TriangleMesh>();
 }
 
-Dictionary MeshInstance3D::intersect_ray(const Vector3& p_from, const Vector3& p_dir)
-{
+Dictionary MeshInstance3D::intersect_ray(const Vector3 &p_from, const Vector3 &p_dir) {
 	Dictionary result;
 
 	result["success"] = false;
 
-	if (!mesh.is_valid())
-	{
+	if (!mesh.is_valid()) {
 		return result;
 	}
 
@@ -879,7 +877,7 @@ Dictionary MeshInstance3D::intersect_ray(const Vector3& p_from, const Vector3& p
 
 	Vector3 local_from = in_tform.xform(p_from);
 	Vector3 local_dir = in_tform.basis.xform(p_dir).normalized();
-	
+
 	Vector3 local_point;
 	Vector3 local_normal;
 	int32_t surf_index, face_index;
@@ -906,7 +904,7 @@ Dictionary MeshInstance3D::intersect_ray(const Vector3& p_from, const Vector3& p
 	return result;
 }
 
-Dictionary MeshInstance3D::intersect_segment(const Vector3& p_from, const Vector3& p_to) {
+Dictionary MeshInstance3D::intersect_segment(const Vector3 &p_from, const Vector3 &p_to) {
 	Dictionary result;
 
 	result["success"] = false;
