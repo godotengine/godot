@@ -260,6 +260,7 @@ void ToneMapper::tonemapper_mobile(RID p_source_color, RID p_dst_framebuffer, co
 	spec_constant |= p_settings.tonemap_mode == RS::ENV_TONE_MAPPER_FILMIC ? TONEMAP_MOBILE_FLAG_TONEMAPPER_FILMIC : 0;
 	spec_constant |= p_settings.tonemap_mode == RS::ENV_TONE_MAPPER_ACES ? TONEMAP_MOBILE_FLAG_TONEMAPPER_ACES : 0;
 	spec_constant |= p_settings.tonemap_mode == RS::ENV_TONE_MAPPER_AGX ? TONEMAP_MOBILE_FLAG_TONEMAPPER_AGX : 0;
+	spec_constant |= p_settings.tonemap_mode == RS::ENV_TONE_MAPPER_ANIME ? TONEMAP_MOBILE_FLAG_TONEMAPPER_ANIME : 0;
 	spec_constant |= p_settings.glow_mode == RS::ENV_GLOW_BLEND_MODE_ADDITIVE ? TONEMAP_MOBILE_FLAG_GLOW_MODE_ADD : 0;
 	spec_constant |= p_settings.glow_mode == RS::ENV_GLOW_BLEND_MODE_SCREEN ? TONEMAP_MOBILE_FLAG_GLOW_MODE_SCREEN : 0;
 	spec_constant |= p_settings.glow_mode == RS::ENV_GLOW_BLEND_MODE_SOFTLIGHT ? TONEMAP_MOBILE_FLAG_GLOW_MODE_SOFTLIGHT : 0;
@@ -348,6 +349,7 @@ void ToneMapper::tonemapper_subpass(RD::DrawListID p_subpass_draw_list, RID p_so
 	spec_constant |= p_settings.tonemap_mode == RS::ENV_TONE_MAPPER_FILMIC ? TONEMAP_MOBILE_FLAG_TONEMAPPER_FILMIC : 0;
 	spec_constant |= p_settings.tonemap_mode == RS::ENV_TONE_MAPPER_ACES ? TONEMAP_MOBILE_FLAG_TONEMAPPER_ACES : 0;
 	spec_constant |= p_settings.tonemap_mode == RS::ENV_TONE_MAPPER_AGX ? TONEMAP_MOBILE_FLAG_TONEMAPPER_AGX : 0;
+	spec_constant |= p_settings.tonemap_mode == RS::ENV_TONE_MAPPER_ANIME ? TONEMAP_MOBILE_FLAG_TONEMAPPER_ANIME : 0;
 	//spec_constant |= p_settings.glow_mode == RS::ENV_GLOW_BLEND_MODE_ADDITIVE ? TONEMAP_MOBILE_FLAG_GLOW_MODE_ADD : 0;
 	//spec_constant |= p_settings.glow_mode == RS::ENV_GLOW_BLEND_MODE_SCREEN ? TONEMAP_MOBILE_FLAG_GLOW_MODE_SCREEN : 0;
 	//spec_constant |= p_settings.glow_mode == RS::ENV_GLOW_BLEND_MODE_SOFTLIGHT ? TONEMAP_MOBILE_FLAG_GLOW_MODE_SOFTLIGHT : 0;

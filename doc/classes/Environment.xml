@@ -440,6 +440,9 @@
 		<constant name="TONE_MAPPER_AGX" value="4" enum="ToneMapper">
 			Uses an adjustable film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
 		</constant>
+		<constant name="TONE_MAPPER_ANIME" value="5" enum="ToneMapper">
+			Optimized for anime-style and stylized rendering. Uses a luminance-based tonemapping approach that preserves color saturation in highlights, with a selective vibrancy boost for vivid colors and a subtle S-curve contrast enhancement. Designed for cel-shaded, visual novel, and JRPG-style games.
+		</constant>
 		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0" enum="GlowBlendMode">
 			Adds the glow effect to the scene.
 		</constant>

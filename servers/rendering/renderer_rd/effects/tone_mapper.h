@@ -94,13 +94,14 @@ private:
 		TONEMAP_MOBILE_FLAG_TONEMAPPER_FILMIC = (1 << 10),
 		TONEMAP_MOBILE_FLAG_TONEMAPPER_ACES = (1 << 11),
 		TONEMAP_MOBILE_FLAG_TONEMAPPER_AGX = (1 << 12),
+		TONEMAP_MOBILE_FLAG_TONEMAPPER_ANIME = (1 << 13),
 
-		TONEMAP_MOBILE_FLAG_GLOW_MODE_ADD = (1 << 13),
-		TONEMAP_MOBILE_FLAG_GLOW_MODE_SCREEN = (1 << 14),
-		TONEMAP_MOBILE_FLAG_GLOW_MODE_SOFTLIGHT = (1 << 15),
-		TONEMAP_MOBILE_FLAG_GLOW_MODE_REPLACE = (1 << 16),
-		TONEMAP_MOBILE_FLAG_GLOW_MODE_MIX = (1 << 17),
-		TONEMAP_MOBILE_ADRENO_BUG = (1 << 18), // Needs to be last so we force the pipeline cache to specify specializations for all variants.
+		TONEMAP_MOBILE_FLAG_GLOW_MODE_ADD = (1 << 14),
+		TONEMAP_MOBILE_FLAG_GLOW_MODE_SCREEN = (1 << 15),
+		TONEMAP_MOBILE_FLAG_GLOW_MODE_SOFTLIGHT = (1 << 16),
+		TONEMAP_MOBILE_FLAG_GLOW_MODE_REPLACE = (1 << 17),
+		TONEMAP_MOBILE_FLAG_GLOW_MODE_MIX = (1 << 18),
+		TONEMAP_MOBILE_ADRENO_BUG = (1 << 19), // Needs to be last so we force the pipeline cache to specify specializations for all variants.
 	};
 
 	struct TonemapPushConstant {

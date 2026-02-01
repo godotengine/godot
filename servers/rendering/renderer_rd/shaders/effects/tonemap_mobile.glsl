@@ -73,11 +73,12 @@ layout(constant_id = 9) const bool tonemapper_reinhard = false;
 layout(constant_id = 10) const bool tonemapper_filmic = false;
 layout(constant_id = 11) const bool tonemapper_aces = false;
 layout(constant_id = 12) const bool tonemapper_agx = false;
-layout(constant_id = 13) const bool glow_mode_add = false;
-layout(constant_id = 14) const bool glow_mode_screen = false;
-layout(constant_id = 15) const bool glow_mode_softlight = false;
-layout(constant_id = 16) const bool glow_mode_replace = false;
-layout(constant_id = 17) const bool glow_mode_mix = false;
+layout(constant_id = 13) const bool tonemapper_anime = false;
+layout(constant_id = 14) const bool glow_mode_add = false;
+layout(constant_id = 15) const bool glow_mode_screen = false;
+layout(constant_id = 16) const bool glow_mode_softlight = false;
+layout(constant_id = 17) const bool glow_mode_replace = false;
+layout(constant_id = 18) const bool glow_mode_mix = false;
 
 layout(push_constant, std430) uniform Params {
 	vec3 bcs;
@@ -240,6 +241,41 @@ vec3 tonemap_agx(vec3 color) {
 	return color;
 }
 
+// Anime/stylized tonemapper optimized for vibrant, saturated visuals.
+// Works in luminance space to preserve color hue and saturation through the
+// tonemapping curve, unlike standard tonemappers that desaturate highlights.
+// Designed for anime-style games (cel-shading, visual novels, JRPGs).
+vec3 tonemap_anime(vec3 color) {
+	// These constants must match the those in the C++ code that calculates the parameters.
+	const float exposure_bias = 1.6f;
+	color *= exposure_bias;
+
+	float white_squared = params.tonemapper_params.x;
+	float vibrancy = params.tonemapper_params.y;
+	float soft_contrast = params.tonemapper_params.z;
+
+	// Calculate perceptual luminance.
+	float luma = dot(color, vec3(0.2126f, 0.7152f, 0.0722f));
+
+	// Modified Reinhard with white point applied to luminance only.
+	float mapped_luma = luma * (1.0f + luma / white_squared) / (1.0f + luma);
+
+	// Recover color from luminance ratio (hue and saturation preserving).
+	vec3 result = color * (mapped_luma / max(luma, 1e-6f));
+
+	// Selective vibrancy boost.
+	float max_c = max(result.r, max(result.g, result.b));
+	float min_c = min(result.r, min(result.g, result.b));
+	float sat = (max_c - min_c) / max(max_c, 1e-6f);
+	result = mix(vec3(mapped_luma), result, 1.0f + vibrancy * (1.0f - sat));
+
+	// Gentle S-curve contrast in perceptual space for punchy midtones.
+	result = clamp(result, 0.0f, 1.0f);
+	result = result - soft_contrast * result * (result - 1.0f);
+
+	return result;
+}
+
 vec3 linear_to_srgb(vec3 color) {
 	const vec3 a = vec3(0.055f);
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
@@ -265,8 +301,10 @@ vec3 apply_tonemapping(vec3 color) { // inputs are LINEAR
 		return tonemap_filmic(color);
 	} else if (tonemapper_aces) {
 		return tonemap_aces(color);
-	} else { // tonemapper_agx
+	} else if (tonemapper_agx) {
 		return tonemap_agx(color);
+	} else { // tonemapper_anime
+		return tonemap_anime(color);
 	}
 }
 
@@ -294,14 +332,13 @@ vec3 apply_glow(vec3 color, vec3 glow, float white) {
 		// Note: white cannot be smaller than the maximum output value.
 		glow.rgb = clamp(glow.rgb, 0.0, white);
 
-		// Normalize to white range.
-		//glow.rgb /= white;
-		//color.rgb /= white;
-		//color.rgb = (color.rgb + glow.rgb) - (color.rgb * glow.rgb);
-		// Expand back to original range.
-		//color.rgb *= white;
+		// Hue-preserving glow: slightly re-saturate the glow contribution to
+		// counteract the natural desaturation that occurs during bloom generation.
+		float glow_luma = dot(glow.rgb, vec3(0.2126f, 0.7152f, 0.0722f));
+		glow.rgb = mix(vec3(glow_luma), glow.rgb, 1.15f);
+		glow.rgb = clamp(glow.rgb, 0.0, white);
 
-		// The following is a mathematically simplified version of the above.
+		// The following is a mathematically simplified version of the screen blend.
 		color.rgb = color.rgb + glow.rgb - (color.rgb * glow.rgb / white);
 
 		return color;

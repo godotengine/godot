@@ -175,6 +175,33 @@ vec3 tonemap_agx(vec3 color) {
 #define TONEMAPPER_FILMIC 2
 #define TONEMAPPER_ACES 3
 #define TONEMAPPER_AGX 4
+#define TONEMAPPER_ANIME 5
+
+// Anime/stylized tonemapper optimized for vibrant, saturated visuals.
+// Works in luminance space to preserve color hue and saturation through the
+// tonemapping curve, unlike standard tonemappers that desaturate highlights.
+vec3 tonemap_anime(vec3 color) {
+	const float exposure_bias = 1.6;
+	color *= exposure_bias;
+
+	float white_squared = tonemapper_params.x;
+	float vibrancy = tonemapper_params.y;
+	float soft_contrast = tonemapper_params.z;
+
+	float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
+	float mapped_luma = luma * (1.0 + luma / white_squared) / (1.0 + luma);
+	vec3 result = color * (mapped_luma / max(luma, 1e-6));
+
+	float max_c = max(result.r, max(result.g, result.b));
+	float min_c = min(result.r, min(result.g, result.b));
+	float sat = (max_c - min_c) / max(max_c, 1e-6);
+	result = mix(vec3(mapped_luma), result, 1.0 + vibrancy * (1.0 - sat));
+
+	result = clamp(result, 0.0, 1.0);
+	result = result - soft_contrast * result * (result - 1.0);
+
+	return result;
+}
 
 vec3 apply_tonemapping(vec3 color) { // inputs are LINEAR
 	if (tonemapper == TONEMAPPER_LINEAR) {
@@ -191,8 +218,10 @@ vec3 apply_tonemapping(vec3 color) { // inputs are LINEAR
 		return tonemap_filmic(color);
 	} else if (tonemapper == TONEMAPPER_ACES) {
 		return tonemap_aces(color);
-	} else { // TONEMAPPER_AGX
+	} else if (tonemapper == TONEMAPPER_AGX) {
 		return tonemap_agx(color);
+	} else { // TONEMAPPER_ANIME
+		return tonemap_anime(color);
 	}
 }
 

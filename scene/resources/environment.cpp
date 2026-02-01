@@ -1133,7 +1133,7 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 		}
 	}
 
-	if (p_property.name == "tonemap_white" && (tone_mapper == TONE_MAPPER_LINEAR || tone_mapper == TONE_MAPPER_AGX)) {
+	if (p_property.name == "tonemap_white" && (tone_mapper == TONE_MAPPER_LINEAR || tone_mapper == TONE_MAPPER_AGX || tone_mapper == TONE_MAPPER_ANIME)) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
@@ -1591,6 +1591,7 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(TONE_MAPPER_FILMIC);
 	BIND_ENUM_CONSTANT(TONE_MAPPER_ACES);
 	BIND_ENUM_CONSTANT(TONE_MAPPER_AGX);
+	BIND_ENUM_CONSTANT(TONE_MAPPER_ANIME);
 
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_ADDITIVE);
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_SCREEN);

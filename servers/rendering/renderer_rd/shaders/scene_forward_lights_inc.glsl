@@ -197,8 +197,15 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 			half op_roughness = half(1.0) + roughness;
 			diffuse_brdf_NL = max(half(0.0), (NdotL + roughness) / (op_roughness * op_roughness)) * half(1.0 / M_PI);
 #elif defined(DIFFUSE_TOON)
-
-			diffuse_brdf_NL = smoothstep(-roughness, max(roughness, half(0.01)), NdotL) * half(1.0 / M_PI);
+			// Enhanced toon diffuse with multi-band stepping for a cleaner anime look.
+			// The primary step creates a sharp light/shadow boundary, while the secondary
+			// smoothstep adds a subtle gradient band for softer transitions.
+			half toon_threshold = half(0.0);
+			half toon_smooth = max(roughness, half(0.01));
+			half base_toon = smoothstep(toon_threshold - toon_smooth, toon_threshold + toon_smooth, NdotL);
+			// Secondary rim band: adds a subtle mid-tone between full shadow and full light.
+			half mid_band = smoothstep(toon_threshold - toon_smooth * half(2.5), toon_threshold + toon_smooth * half(0.5), NdotL);
+			diffuse_brdf_NL = mix(mid_band * half(0.5), base_toon, base_toon) * half(1.0 / M_PI);
 
 #elif defined(DIFFUSE_BURLEY)
 			{
@@ -226,11 +233,19 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 			// Apply specular light.
 			// FIXME: roughness == 0 should not disable specular light entirely
 #if defined(SPECULAR_TOON)
+			// Enhanced toon specular with sharper highlight bands for a more stylized anime look.
+			// Uses a tighter smoothstep for crisp specular spots typical of cel-shaded rendering.
 			hvec3 R = normalize(-reflect(L, N));
 			half RdotV = dot(R, V);
 			half mid = half(1.0) - roughness;
 			mid *= mid;
-			half intensity = smoothstep(mid - roughness * half(0.5), mid + roughness * half(0.5), RdotV) * mid;
+			// Tighter transition for sharper specular highlight edges.
+			half spec_edge = roughness * half(0.35);
+			half intensity = smoothstep(mid - spec_edge, mid + spec_edge, RdotV) * mid;
+			// Add a subtle secondary highlight for hair/eye specular (common in anime rendering).
+			half secondary_mid = mid * half(0.6);
+			half secondary_intensity = smoothstep(secondary_mid - spec_edge, secondary_mid + spec_edge, RdotV) * secondary_mid * half(0.3);
+			intensity = max(intensity, secondary_intensity);
 			diffuse_light += light_color * intensity * attenuation * specular_amount; // write to diffuse_light, as in toon shading you generally want no reflection
 
 #elif defined(SPECULAR_DISABLED)

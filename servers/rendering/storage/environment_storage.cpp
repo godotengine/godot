@@ -249,6 +249,10 @@ float RendererEnvironmentStorage::environment_get_white(RID p_env, bool p_limit_
 			// is maintained in the shoulder.
 			return agx_white * output_max_value;
 		}
+	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_ANIME) {
+		// The Anime tonemapper uses a luminance-based modified Reinhard curve.
+		// White point should be at least 1.0 for proper behavior.
+		return MAX(output_max_value, env->white);
 	} else { // Reinhard
 		// The Reinhard tonemapper is not designed to have a white parameter
 		// that is less than the output max value. This is especially important
@@ -338,6 +342,17 @@ RendererEnvironmentStorage::TonemapParameters RendererEnvironmentStorage::enviro
 		tonemap_parameters.awp_toe_a = awp_toe_a;
 		tonemap_parameters.awp_slope = awp_slope;
 		tonemap_parameters.awp_w = awp_w;
+	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_ANIME) {
+		// Anime tonemapper parameters.
+		// These constants must match the those in the shader code.
+		const float exposure_bias = 1.6f;
+		// white_squared for the luminance-based modified Reinhard curve.
+		tonemap_parameters.tonemapper_params[0] = white * white * exposure_bias * exposure_bias;
+		// Vibrancy: selectively boosts saturation of less-saturated colors.
+		tonemap_parameters.tonemapper_params[1] = 0.15f;
+		// Soft S-curve contrast factor for punchy midtones.
+		tonemap_parameters.tonemapper_params[2] = 0.25f;
+		tonemap_parameters.tonemapper_params[3] = 0.0f;
 	}
 
 	return tonemap_parameters;
