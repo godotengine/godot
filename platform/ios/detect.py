@@ -113,6 +113,8 @@ def configure(env: "SConsEnvironment"):
         env.Append(CCFLAGS=["-miphoneos-version-min=14.0"])
     detect_darwin_sdk_path(env["APPLE_PLATFORM"], env)
 
+    env.Append(CCFLAGS=["-ffp-contract=off"])
+
     if env["arch"] == "x86_64":
         if not env["simulator"]:
             print_error("Building for iOS with 'arch=x86_64' requires 'simulator=yes'.")

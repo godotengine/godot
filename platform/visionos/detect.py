@@ -114,6 +114,8 @@ def configure(env: "SConsEnvironment"):
         env.Append(CCFLAGS=["-mtargetos=xros26.0"])
     detect_darwin_sdk_path(env["APPLE_PLATFORM"], env)
 
+    env.Append(CCFLAGS=["-ffp-contract=off"])
+
     if env["arch"] == "arm64":
         env.Append(
             CCFLAGS=(
