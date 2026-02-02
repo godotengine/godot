@@ -281,6 +281,9 @@
 			If [code]true[/code], displays folders in the FileSystem dock's bottom pane when split mode is enabled. If [code]false[/code], only files will be displayed in the bottom pane. Split mode can be toggled by pressing the icon next to the [code]res://[/code] folder path.
 			[b]Note:[/b] This setting has no effect when split mode is disabled (which is the default).
 		</member>
+		<member name="docks/filesystem/ask_before_moving_files" type="bool" setter="" getter="">
+			If [code]true[/code], displays a confirmation dialog when moving or duplicating items in the FileSystem dock. This dialog can also be bypassed by holding [kbd]Shift[/kbd].
+		</member>
 		<member name="docks/filesystem/automatically_open_created_scripts" type="bool" setter="" getter="">
 			If [code]true[/code], scripts created in FileSystem dock will be automatically edited.
 		</member>

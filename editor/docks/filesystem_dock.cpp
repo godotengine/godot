@@ -1931,6 +1931,11 @@ void FileSystemDock::_duplicate_operation_confirm(const String &p_path) {
 }
 
 void FileSystemDock::_move_confirm() {
+	if (confirm_before_move_checkbox->is_pressed()) {
+		EditorSettings::get_singleton()->set("docks/filesystem/ask_before_moving_files", false);
+		confirm_before_move_checkbox->set_pressed(false);
+	}
+
 	_move_operation_confirm(confirm_move_to_dir, confirm_to_copy);
 }
 
@@ -3210,16 +3215,20 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				String move_confirm_text;
 				confirm_move_to_dir = to_dir;
 
-				if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
-					move_confirm_text = vformat(TTRN("Copy %d selected item to \"%s\"?", "Copy %d selected items to \"%s\"?", to_move.size()), to_move.size(), target_dir);
-					confirm_to_copy = true;
-				} else {
-					move_confirm_text = vformat(TTRN("Move %d selected item to \"%s\"?", "Move %d selected items to \"%s\"?", to_move.size()), to_move.size(), target_dir);
-					confirm_to_copy = false;
-				}
+				bool ask_before_moving_files = EDITOR_GET("docks/filesystem/ask_before_moving_files") && !Input::get_singleton()->is_key_pressed(Key::SHIFT);
+				confirm_to_copy = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 
-				move_confirm_dialog->set_text(move_confirm_text);
-				move_confirm_dialog->popup_centered();
+				if (!ask_before_moving_files) {
+					_move_operation_confirm(to_dir, confirm_to_copy);
+				} else {
+					if (confirm_to_copy) {
+						move_confirm_text = vformat(TTRN("Copy %d selected item to \"%s\"?", "Copy %d selected items to \"%s\"?", to_move.size()), to_move.size(), target_dir);
+					} else {
+						move_confirm_text = vformat(TTRN("Move %d selected item to \"%s\"?", "Move %d selected items to \"%s\"?", to_move.size()), to_move.size(), target_dir);
+					}
+					move_confirm_dialog_label->set_text(move_confirm_text);
+					move_confirm_dialog->popup_centered();
+				}
 			}
 		} else if (favorite) {
 			// Add the files from favorites.
@@ -4556,6 +4565,15 @@ FileSystemDock::FileSystemDock() {
 	move_confirm_dialog = memnew(ConfirmationDialog);
 	add_child(move_confirm_dialog);
 	move_confirm_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileSystemDock::_move_confirm));
+
+	VBoxContainer *vb = memnew(VBoxContainer);
+	move_confirm_dialog->add_child(vb);
+	move_confirm_dialog_label = memnew(Label);
+	move_confirm_dialog_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	vb->add_child(move_confirm_dialog_label);
+	confirm_before_move_checkbox = memnew(CheckBox(TTRC("Don't Ask Again")));
+	confirm_before_move_checkbox->set_tooltip_text(TTRC("This dialog can be skipped by holding shift or enabled/disabled in the Editor Settings: Docks > FileSystem > Ask Before Moving Files."));
+	vb->add_child(confirm_before_move_checkbox);
 
 	unrecognized_ext_dialog = memnew(AcceptDialog);
 	add_child(unrecognized_ext_dialog);
