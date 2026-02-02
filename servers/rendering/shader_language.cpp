@@ -12075,7 +12075,10 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				if (current_uniform_hint == ShaderNode::Uniform::HINT_NONE) {
 					ScriptLanguage::CodeCompletionOption option("source_color", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 					r_options->push_back(option);
-					r_options->push_back({ "color_conversion_disabled", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT });
+				}
+				if (current_uniform_hint == ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+					ScriptLanguage::CodeCompletionOption option("color_conversion_disabled", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+					r_options->push_back(option);
 				}
 			} else if ((completion_base == DataType::TYPE_INT || completion_base == DataType::TYPE_FLOAT) && !completion_base_array) {
 				if (current_uniform_hint == ShaderNode::Uniform::HINT_NONE) {
