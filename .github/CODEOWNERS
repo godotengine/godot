@@ -128,7 +128,7 @@
 ## Physics
 /modules/godot_physics_2d/                    @godotengine/physics
 /modules/godot_physics_3d/                    @godotengine/physics
-/modules/jolt_physics/                        @godotengine/physics
+/modules/jolt_physics/                        @godotengine/physics @godotengine/jolt-physics
 
 ## Rendering
 /modules/glslang/                             @godotengine/rendering
@@ -249,6 +249,7 @@
 # Thirdparty
 
 /thirdparty/                                  @godotengine/buildsystem
+/thirdparty/jolt_physics/                     @godotengine/buildsystem @godotengine/jolt-physics
 
 # Buildsystem (After everything to catch all)
 
