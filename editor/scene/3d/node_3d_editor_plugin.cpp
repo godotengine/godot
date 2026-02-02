@@ -3802,14 +3802,10 @@ void Node3DEditorViewport::_draw() {
 			}
 
 			Color circle_color = (_edit.plane == TRANSFORM_VIEW) ? Color(1.0, 1.0, 1.0, 0.8) : handle_color.from_hsv(handle_color.get_h(), 0.6, 1.0, 0.8);
-			for (int i = 0; i < circle_points.size() - 1; i++) {
-				RenderingServer::get_singleton()->canvas_item_add_line(
-						ci,
-						circle_points[i],
-						circle_points[i + 1],
-						circle_color,
-						Math::round(2 * EDSCALE));
-			}
+			Vector<Color> circle_colors;
+			circle_colors.resize(circle_points.size());
+			circle_colors.fill(circle_color);
+			RenderingServer::get_singleton()->canvas_item_add_polyline(ci, circle_points, circle_colors, Math::round(2 * EDSCALE), true);
 
 			const int segments = 64;
 			float display_angle = _edit.display_rotation_angle;
@@ -3866,7 +3862,8 @@ void Node3DEditorViewport::_draw() {
 					center,
 					start_point_2d,
 					edge_color,
-					Math::round(2 * EDSCALE));
+					Math::round(2 * EDSCALE),
+					true);
 
 			Vector3 end_point_3d = _edit.center + gizmo_scale * rotation_radius * (right * Math::cos(_edit.accumulated_rotation_angle) + forward * Math::sin(_edit.accumulated_rotation_angle));
 			Point2 end_point_2d = point_to_screen(end_point_3d);
@@ -3875,7 +3872,8 @@ void Node3DEditorViewport::_draw() {
 					center,
 					end_point_2d,
 					edge_color,
-					Math::round(2 * EDSCALE));
+					Math::round(2 * EDSCALE),
+					true);
 		}
 
 		if (_edit.show_rotation_line) {
