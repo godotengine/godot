@@ -106,6 +106,27 @@
 				Returns the number of surface override materials. This is equivalent to [method Mesh.get_surface_count]. See also [method get_surface_override_material].
 			</description>
 		</method>
++		<method name="intersect_ray" qualifiers="const">
++			<return type="Dictionary" />
++			<param index="0" name="from" type="Vector3" />
++			<param index="1" name="dir" type="Vector3" />
++			<description>
+				Performs a ray intersection test against the visual mesh.
+				Returns a [Dictionary] with the following keys: [code]success[/code], [code]position[/code], [code]normal[/code], [code]surface[/code], [code]face[/code], and [code]material[/code].
+				The keys [code]surface[/code] and [code]face[/code] are indices into their respective mesh data, [code]position[/code] and [code]normal[/code] returns the position the mesh was intersected at and the normal of the intersected face, and [code]material[/code] is the material of the intersected face.
+				If the key [code]success[/code] is true, then the ray intersected the mesh.
++			</description>
++		</method>
++		<method name="intersect_segment" qualifiers="const">
++			<return type="Dictionary" />
++			<param index="0" name="from" type="Vector3" />
++			<param index="1" name="to" type="Vector3" />
++			<description>
+				Performs a line segment intersection test against the visual mesh.
+				The keys [code]surface[/code] and [code]face[/code] are indices into their respective mesh data, [code]position[/code] and [code]normal[/code] returns the position the mesh was intersected at and the normal of the intersected face, and [code]material[/code] is the material of the intersected face.
+				If the key [code]success[/code] is true, then the segment intersected the mesh.
++			</description>
++		</method>
 		<method name="set_blend_shape_value">
 			<return type="void" />
 			<param index="0" name="blend_shape_idx" type="int" />
