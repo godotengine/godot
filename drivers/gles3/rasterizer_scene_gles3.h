@@ -405,6 +405,9 @@ private:
 
 			float ambient_light_color_energy[4];
 
+			float reflection_color[3];
+			uint32_t use_reflection_color = 0;
+
 			float ambient_color_sky_mix;
 			uint32_t directional_shadow_count;
 			float emissive_exposure_normalization;

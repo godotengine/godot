@@ -106,12 +106,13 @@ private:
 	enum SceneDataFlags {
 		SCENE_DATA_FLAGS_USE_AMBIENT_LIGHT = 1 << 0,
 		SCENE_DATA_FLAGS_USE_AMBIENT_CUBEMAP = 1 << 1,
-		SCENE_DATA_FLAGS_USE_REFLECTION_CUBEMAP = 1 << 2,
-		SCENE_DATA_FLAGS_USE_ROUGHNESS_LIMITER = 1 << 3,
-		SCENE_DATA_FLAGS_USE_FOG = 1 << 4,
-		SCENE_DATA_FLAGS_USE_UV2_MATERIAL = 1 << 5,
-		SCENE_DATA_FLAGS_USE_PANCAKE_SHADOWS = 1 << 6,
-		SCENE_DATA_FLAGS_IN_SHADOW_PASS = 1 << 7, // Only used by Forward+ renderer.
+		SCENE_DATA_FLAGS_USE_REFLECTION_COLOR = 1 << 2,
+		SCENE_DATA_FLAGS_USE_REFLECTION_CUBEMAP = 1 << 3,
+		SCENE_DATA_FLAGS_USE_ROUGHNESS_LIMITER = 1 << 4,
+		SCENE_DATA_FLAGS_USE_FOG = 1 << 5,
+		SCENE_DATA_FLAGS_USE_UV2_MATERIAL = 1 << 6,
+		SCENE_DATA_FLAGS_USE_PANCAKE_SHADOWS = 1 << 7,
+		SCENE_DATA_FLAGS_IN_SHADOW_PASS = 1 << 8, // Only used by Forward+ renderer.
 		SCENE_DATA_FLAGS_MAX
 	};
 
@@ -160,6 +161,9 @@ private:
 		float radiance_inverse_xform[12];
 
 		float ambient_light_color_energy[4];
+
+		float reflection_color[3];
+		uint32_t pad;
 
 		float ambient_color_sky_mix;
 		float fog_density;

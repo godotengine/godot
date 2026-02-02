@@ -1546,6 +1546,12 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 		scene_state.data.ambient_light_color_energy[1] = 1;
 		scene_state.data.ambient_light_color_energy[2] = 1;
 		scene_state.data.ambient_light_color_energy[3] = 1.0;
+
+		scene_state.data.reflection_color[0] = 0.0;
+		scene_state.data.reflection_color[1] = 0.0;
+		scene_state.data.reflection_color[2] = 0.0;
+		scene_state.data.use_reflection_color = false;
+
 		scene_state.data.use_ambient_cubemap = false;
 		scene_state.data.use_reflection_cubemap = false;
 	} else if (is_environment(p_render_data->environment)) {
@@ -1583,13 +1589,16 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 			scene_state.data.use_ambient_light = scene_state.data.use_ambient_cubemap || ambient_src == RS::ENV_AMBIENT_SOURCE_COLOR;
 		}
 
-		//specular
-		RS::EnvironmentReflectionSource ref_src = environment_get_reflection_source(p_render_data->environment);
-		if ((ref_src == RS::ENV_REFLECTION_SOURCE_BG && env_bg == RS::ENV_BG_SKY) || ref_src == RS::ENV_REFLECTION_SOURCE_SKY) {
-			scene_state.data.use_reflection_cubemap = true;
-		} else {
-			scene_state.data.use_reflection_cubemap = false;
-		}
+		// Specular.
+		Color color = env_bg == RS::ENV_BG_CLEAR_COLOR ? p_default_bg_color : environment_get_bg_color(p_render_data->environment);
+		color = color.srgb_to_linear();
+		scene_state.data.reflection_color[0] = color.r;
+		scene_state.data.reflection_color[1] = color.g;
+		scene_state.data.reflection_color[2] = color.b;
+
+		const RS::EnvironmentReflectionSource ref_src = environment_get_reflection_source(p_render_data->environment);
+		scene_state.data.use_reflection_color = (ref_src == RS::ENV_REFLECTION_SOURCE_BG && env_bg == RS::ENV_BG_COLOR) || (ref_src == RS::ENV_REFLECTION_SOURCE_BG && env_bg == RS::ENV_BG_CLEAR_COLOR);
+		scene_state.data.use_reflection_cubemap = (ref_src == RS::ENV_REFLECTION_SOURCE_BG && env_bg == RS::ENV_BG_SKY) || ref_src == RS::ENV_REFLECTION_SOURCE_SKY;
 
 		scene_state.data.fog_enabled = environment_get_fog_enabled(p_render_data->environment);
 		scene_state.data.fog_mode = environment_get_fog_mode(p_render_data->environment);
