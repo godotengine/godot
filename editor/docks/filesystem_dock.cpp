@@ -2833,6 +2833,9 @@ void FileSystemDock::_resource_created() {
 }
 
 void FileSystemDock::_script_or_shader_created(const Ref<Resource> &p_resource) {
+	if (Object::cast_to<Script>(p_resource.ptr()) && !EDITOR_GET("docks/filesystem/automatically_open_created_scripts").operator bool()) {
+		return;
+	}
 	EditorNode::get_singleton()->push_item(p_resource.ptr());
 }
 

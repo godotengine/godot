@@ -281,6 +281,9 @@
 			If [code]true[/code], displays folders in the FileSystem dock's bottom pane when split mode is enabled. If [code]false[/code], only files will be displayed in the bottom pane. Split mode can be toggled by pressing the icon next to the [code]res://[/code] folder path.
 			[b]Note:[/b] This setting has no effect when split mode is disabled (which is the default).
 		</member>
+		<member name="docks/filesystem/automatically_open_created_scripts" type="bool" setter="" getter="">
+			If [code]true[/code], scripts created in FileSystem dock will be automatically edited.
+		</member>
 		<member name="docks/filesystem/other_file_extensions" type="String" setter="" getter="">
 			A comma separated list of unsupported file extensions to show in the FileSystem dock, e.g. [code]"ico,icns"[/code].
 		</member>
