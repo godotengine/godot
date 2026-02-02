@@ -1212,6 +1212,22 @@ bool ScriptEditor::_test_script_times_on_disk(Ref<Resource> p_for_script) {
 	return need_reload;
 }
 
+void ScriptEditor::_toggle_always_on_top(bool p_enabled) {
+	if (window_wrapper->is_window_available()) {
+		window_wrapper->set_always_on_top(p_enabled);
+	}
+
+	EditorSettings::get_singleton()->set("text_editor/behavior/floating/always_on_top", p_enabled);
+
+	if (p_enabled) {
+		always_on_top_button->set_button_icon(get_editor_theme_icon(SNAME("PinPressed")));
+		always_on_top_button->set_tooltip_text(TTR("Disable always-on-top for the floating script editor window."));
+	} else {
+		always_on_top_button->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
+		always_on_top_button->set_tooltip_text(TTR("Keep the floating script editor window on top."));
+	}
+}
+
 void _import_text_editor_theme(const String &p_file) {
 	if (p_file.get_extension() != "tet") {
 		EditorToaster::get_singleton()->popup_str(TTR("Importing theme failed. File is not a text editor theme file (.tet)."), EditorToaster::SEVERITY_ERROR);
@@ -1844,6 +1860,10 @@ void ScriptEditor::_notification(int p_what) {
 			if (is_inside_tree()) {
 				_update_script_names();
 			}
+
+			always_on_top_button->set_button_icon(get_editor_theme_icon(is_floating ? SNAME("PinPressed") : SNAME("Pin")));
+			always_on_top_button->set_tooltip_text(is_floating ? TTR("Disable always-on-top for the floating script editor window.") : TTR("Keep the floating script editor window on top."));
+
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -1876,6 +1896,7 @@ void ScriptEditor::_notification(int p_what) {
 			list_split->connect("dragged", callable_mp(this, &ScriptEditor::_split_dragged));
 
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &ScriptEditor::_filesystem_changed));
+
 #ifdef ANDROID_ENABLED
 			set_process(true);
 #endif
@@ -3108,6 +3129,28 @@ void ScriptEditor::_apply_editor_settings() {
 
 		se->update_settings();
 	}
+
+	_update_always_on_top_button();
+}
+
+void ScriptEditor::_update_always_on_top_button() {
+	bool is_editor_always_on_top = bool(EDITOR_GET("text_editor/behavior/floating/always_on_top"));
+
+	if (window_wrapper->is_window_available()) {
+		window_wrapper->set_always_on_top(is_editor_always_on_top);
+		always_on_top_button->set_visible(is_floating);
+		always_on_top_separator->set_visible(is_floating);
+	}
+
+	always_on_top_button->set_pressed(is_editor_always_on_top);
+
+	if (is_editor_always_on_top) {
+		always_on_top_button->set_button_icon(get_editor_theme_icon(SNAME("PinPressed")));
+		always_on_top_button->set_tooltip_text(TTR("Disable always-on-top for the floating script editor window."));
+	} else {
+		always_on_top_button->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
+		always_on_top_button->set_tooltip_text(TTR("Keep the floating script editor window on top."));
+	}
 }
 
 void ScriptEditor::_filesystem_changed() {
@@ -4195,6 +4238,14 @@ void ScriptEditor::_update_code_editor_zoom_factor(CodeTextEditor *p_code_text_e
 void ScriptEditor::_window_changed(bool p_visible) {
 	make_floating->set_visible(!p_visible);
 	is_floating = p_visible;
+
+	if (always_on_top_button) {
+		always_on_top_button->set_visible(p_visible);
+	}
+
+	if (always_on_top_separator) {
+		always_on_top_separator->set_visible(p_visible);
+	}
 }
 
 void ScriptEditor::_filter_scripts_text_changed(const String &p_newtext) {
@@ -4484,6 +4535,14 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	help_search->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_menu_option).bind(SEARCH_HELP));
 	menu_hb->add_child(help_search);
 	help_search->set_tooltip_text(TTRC("Search the reference documentation."));
+
+	always_on_top_separator = memnew(VSeparator);
+	menu_hb->add_child(always_on_top_separator);
+
+	always_on_top_button = memnew(Button);
+	always_on_top_button->set_toggle_mode(true);
+	always_on_top_button->connect("toggled", callable_mp(this, &ScriptEditor::_toggle_always_on_top));
+	menu_hb->add_child(always_on_top_button);
 
 	menu_hb->add_child(memnew(VSeparator));
 

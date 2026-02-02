@@ -34,6 +34,7 @@
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/separator.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/text_file.h"
 
@@ -335,6 +336,8 @@ class ScriptEditor : public PanelContainer {
 	Button *make_floating = nullptr;
 	bool is_floating = false;
 	EditorHelpSearch *help_search_dialog = nullptr;
+	Button *always_on_top_button = nullptr;
+	VSeparator *always_on_top_separator = nullptr;
 
 	ItemList *script_list = nullptr;
 	HSplitContainer *script_split = nullptr;
@@ -565,6 +568,9 @@ class ScriptEditor : public PanelContainer {
 
 	static void _open_script_request(const String &p_path);
 	void _close_builtin_scripts_from_scene(const String &p_scene);
+
+	void _toggle_always_on_top(bool p_enabled);
+	void _update_always_on_top_button();
 
 	static ScriptEditor *script_editor;
 

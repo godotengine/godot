@@ -211,6 +211,14 @@ void WindowWrapper::set_window_enabled(bool p_enabled) {
 	_set_window_enabled_with_rect(p_enabled, _get_default_window_rect());
 }
 
+void WindowWrapper::set_always_on_top(bool p_enabled) {
+	window->set_flag(Window::FLAG_ALWAYS_ON_TOP, p_enabled);
+}
+
+bool WindowWrapper::is_always_on_top() const {
+	return window->get_flag(Window::FLAG_ALWAYS_ON_TOP);
+}
+
 Rect2i WindowWrapper::get_window_rect() const {
 	ERR_FAIL_COND_V(!get_window_enabled(), Rect2i());
 	return Rect2i(window->get_position(), window->get_size());
