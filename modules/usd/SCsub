@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_usd = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+thirdparty_dir = "#thirdparty/tinyusdz/"
+thirdparty_sources = [
+    # Core library
+    thirdparty_dir + "tinyusdz.cc",
+    thirdparty_dir + "asset-resolution.cc",
+    thirdparty_dir + "xform.cc",
+    thirdparty_dir + "performance.cc",
+    # Format readers/writers
+    thirdparty_dir + "ascii-parser.cc",
+    thirdparty_dir + "ascii-parser-basetype.cc",
+    thirdparty_dir + "ascii-parser-timesamples.cc",
+    thirdparty_dir + "ascii-parser-timesamples-array.cc",
+    thirdparty_dir + "usda-reader.cc",
+    thirdparty_dir + "usdc-reader.cc",
+    thirdparty_dir + "usda-writer.cc",
+    thirdparty_dir + "usdc-writer.cc",
+    thirdparty_dir + "crate-reader.cc",
+    thirdparty_dir + "crate-format.cc",
+    thirdparty_dir + "crate-writer.cc",
+    thirdparty_dir + "crate-pprint.cc",
+    # Scene composition, types, and stage
+    thirdparty_dir + "composition.cc",
+    thirdparty_dir + "stage.cc",
+    thirdparty_dir + "prim-reconstruct.cc",
+    thirdparty_dir + "prim-composition.cc",
+    thirdparty_dir + "prim-types.cc",
+    thirdparty_dir + "primvar.cc",
+    thirdparty_dir + "value-types.cc",
+    thirdparty_dir + "value-pprint.cc",
+    thirdparty_dir + "pprinter.cc",
+    thirdparty_dir + "linear-algebra.cc",
+    # USD domain schemas
+    thirdparty_dir + "usdGeom.cc",
+    thirdparty_dir + "usdSkel.cc",
+    thirdparty_dir + "usdShade.cc",
+    thirdparty_dir + "usdLux.cc",
+    # Tydra helpers (render data, scene access, attribute evaluation)
+    thirdparty_dir + "tydra/render-data.cc",
+    thirdparty_dir + "tydra/scene-access.cc",
+    thirdparty_dir + "tydra/attribute-eval.cc",
+    thirdparty_dir + "tydra/attribute-eval-typed.cc",
+    thirdparty_dir + "tydra/attribute-eval-typed-animatable.cc",
+    thirdparty_dir + "tydra/attribute-eval-typed-fallback.cc",
+    thirdparty_dir + "tydra/attribute-eval-typed-animatable-fallback.cc",
+    thirdparty_dir + "tydra/prim-apply.cc",
+    thirdparty_dir + "tydra/shader-network.cc",
+    # Utility
+    thirdparty_dir + "str-util.cc",
+    thirdparty_dir + "io-util.cc",
+    thirdparty_dir + "path-util.cc",
+    thirdparty_dir + "tiny-format.cc",
+    # Image loading/writing
+    thirdparty_dir + "image-loader.cc",
+    thirdparty_dir + "image-util.cc",
+    thirdparty_dir + "image-writer.cc",
+    # Compression and dependencies
+    thirdparty_dir + "integerCoding.cpp",
+    thirdparty_dir + "lz4-compression.cc",
+    thirdparty_dir + "lz4/lz4.c",
+]
+
+env_usd.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "external/"])
+
+env_thirdparty = env_usd.Clone()
+env_thirdparty.disable_warnings()
+
+env_thirdparty.Append(
+    CPPDEFINES=[
+        "TINYUSDZ_NO_AUDIO",
+    ]
+)
+
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
+
+# Godot source files
+
+module_obj = []
+
+env_usd.add_source_files(module_obj, "*.cpp")
+env_usd.add_source_files(module_obj, "structures/*.cpp")
+
+if env.editor_build:
+    env_usd.add_source_files(module_obj, "editor/*.cpp")
+
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

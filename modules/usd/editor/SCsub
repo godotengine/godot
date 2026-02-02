@@ -1,0 +1,4 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+# Source files are compiled by the parent SCsub.
