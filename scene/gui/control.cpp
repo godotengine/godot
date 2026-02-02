@@ -2676,7 +2676,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 
 	Vector2 vdir = dir[p_side];
 
-	Rect2 r = get_global_rect();
+	Rect2 r = get_global_rect().abs();
 	real_t begin_d = vdir.dot(r.get_position());
 	real_t end_d = vdir.dot(r.get_end());
 	real_t maxd = MAX(begin_d, end_d);
@@ -2690,7 +2690,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 		ScrollContainer *sc = Object::cast_to<ScrollContainer>(base);
 
 		if (sc) {
-			Rect2 sc_r = sc->get_global_rect();
+			Rect2 sc_r = sc->get_global_rect().abs();
 			bool follow_focus = sc->is_following_focus();
 
 			if (result && !follow_focus && !sc_r.intersects(result_rect)) {
@@ -2722,7 +2722,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 					maxd = sc_maxd;
 					r.set_position(r.get_position() + (sc_maxd - maxd) * vdir);
 				} else {
-					result_rect = result->get_global_rect();
+					result_rect = result->get_global_rect().abs();
 					if (follow_focus) {
 						real_t r_begin_d = vdir.dot(result_rect.get_position());
 						real_t r_end_d = vdir.dot(result_rect.get_end());
@@ -2780,8 +2780,8 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 	Container *container = Object::cast_to<Container>(p_at);
 	bool in_container = container ? container->is_ancestor_of(this) : false;
 
-	if (c && c != this && ((c->get_focus_mode_with_override() == FOCUS_ALL) || (ac_enabled && c->get_focus_mode_with_override() == FOCUS_ACCESSIBILITY)) && !in_container && p_clamp.intersects(c->get_global_rect())) {
-		Rect2 r_c = c->get_global_rect();
+	if (c && c != this && ((c->get_focus_mode_with_override() == FOCUS_ALL) || (ac_enabled && c->get_focus_mode_with_override() == FOCUS_ACCESSIBILITY)) && !in_container && p_clamp.intersects(c->get_global_rect().abs())) {
+		Rect2 r_c = c->get_global_rect().abs();
 		r_c = r_c.intersection(p_clamp);
 		real_t begin_d = p_dir.dot(r_c.get_position());
 		real_t end_d = p_dir.dot(r_c.get_end());
@@ -2827,7 +2827,7 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 
 				Point2 p_center = p_rect.get_center();
 				Control *closest = *r_closest;
-				Point2 closest_center = closest->get_global_rect().get_center();
+				Point2 closest_center = closest->get_global_rect().abs().get_center();
 
 				// Tie-break in favor of the control most aligned with p_dir.
 				if (Math::abs(p_dir.cross(cC_origin)) < Math::abs(p_dir.cross(closest_center - p_center))) {
@@ -2841,7 +2841,7 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 	Rect2 intersection = p_clamp;
 	if (sc) {
 		if (!sc->is_following_focus() || !in_container) {
-			intersection = p_clamp.intersection(sc->get_global_rect());
+			intersection = p_clamp.intersection(sc->get_global_rect().abs());
 			if (!intersection.has_area()) {
 				return;
 			}
