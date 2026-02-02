@@ -141,10 +141,6 @@ void Polygon2DEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
-				EditorBottomPanel *bottom_panel = EditorNode::get_bottom_panel();
-				if (bottom_panel && bottom_panel->is_locked()) {
-					break;
-				}
 				polygon_edit->make_visible();
 			} else {
 				polygon_edit->close();
