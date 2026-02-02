@@ -36,7 +36,6 @@
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
@@ -54,6 +53,7 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/view_panner.h"
+#include "editor/gui/editor_bottom_panel.h"
 
 Node2D *Polygon2DEditor::_get_node() const {
 	return node;
