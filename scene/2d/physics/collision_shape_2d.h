@@ -50,6 +50,7 @@ class CollisionShape2D : public Node2D {
 
 	// Not wrapped in `#ifdef DEBUG_ENABLED` as it is used for rendering.
 	Color debug_color = Color(0.0, 0.0, 0.0, 0.0);
+	bool sleeping = false;
 
 	Color _get_default_debug_color() const;
 
@@ -85,6 +86,9 @@ public:
 
 	void set_debug_color(const Color &p_color);
 	Color get_debug_color() const;
+
+	void set_sleeping(bool p_sleeping);
+	bool is_sleeping() const;
 
 	PackedStringArray get_configuration_warnings() const override;
 
