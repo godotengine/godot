@@ -113,6 +113,7 @@ public:
 
 	void set_search_text(const String &text);
 	void set_replace_text(const String &text);
+	void set_folder(const String &folder);
 
 	void set_find_in_files_mode(FindInFilesMode p_mode);
 

@@ -1430,6 +1430,10 @@ void FindInFilesContainer::_on_find_in_files_modified_files(const PackedStringAr
 	emit_signal(SNAME("files_modified"), p_paths);
 }
 
+void FindInFilesDialog::set_folder(const String &folder) {
+	_folder_line_edit->set_text(folder);
+}
+
 void FindInFilesContainer::_on_find_in_files_close_button_clicked(FindInFilesPanel *p_panel) {
 	ERR_FAIL_COND_MSG(p_panel->get_parent() != _tabs, "This panel is not a child!");
 	_tabs->remove_child(p_panel);

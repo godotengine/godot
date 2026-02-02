@@ -2735,7 +2735,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	se->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 	se->connect("request_save_history", callable_mp(this, &ScriptEditor::_save_history));
 	se->connect("request_save_previous_state", callable_mp(this, &ScriptEditor::_save_previous_state));
-	se->connect("search_in_files_requested", callable_mp(this, &ScriptEditor::open_find_in_files_dialog));
+	se->connect("search_in_files_requested", callable_mp(this, &ScriptEditor::open_find_in_files_dialog).bind(""));
 	se->connect("replace_in_files_requested", callable_mp(this, &ScriptEditor::_on_replace_in_files_requested));
 	se->connect("go_to_method", callable_mp(this, &ScriptEditor::script_goto_method));
 
@@ -2959,9 +2959,10 @@ void ScriptEditor::_reload_scripts(bool p_refresh_only) {
 	_update_script_names();
 }
 
-void ScriptEditor::open_find_in_files_dialog(const String &text) {
+void ScriptEditor::open_find_in_files_dialog(const String &text, const String &folder) {
 	find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::SEARCH_MODE);
 	find_in_files_dialog->set_search_text(text);
+	find_in_files_dialog->set_folder(folder);
 	find_in_files_dialog->popup_centered();
 }
 

@@ -2298,6 +2298,20 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_MENU_FIND_IN_FOLDER: {
+			String fpath = current_path;
+			if (current_path == "Favorites") {
+				if (p_selected.is_empty()) {
+					return;
+				}
+				fpath = p_selected[0];
+			} else if (!p_selected.is_empty()) {
+				fpath = p_selected[0];
+			}
+
+			ScriptEditor::get_singleton()->open_find_in_files_dialog("", fpath.trim_prefix("res://").trim_suffix("/"));
+		} break;
+
 		case FILE_MENU_OPEN_IN_TERMINAL: {
 			String fpath = current_path;
 			if (current_path == "Favorites") {
@@ -3484,6 +3498,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		if (foldernames.size() == 1) {
 			p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowDown")), TTRC("Expand Hierarchy"), FILE_MENU_EXPAND_ALL);
 			p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowRight")), TTRC("Collapse Hierarchy"), FILE_MENU_COLLAPSE_ALL);
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Search")), TTRC("Find in Folder..."), FILE_MENU_FIND_IN_FOLDER);
 		}
 
 		p_popup->add_separator();
