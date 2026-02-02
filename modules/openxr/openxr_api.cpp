@@ -1261,10 +1261,13 @@ bool OpenXRAPI::obtain_swapchain_formats() {
 
 		graphics_extension->get_usable_swapchain_formats(usable_swapchain_formats);
 
-		// now find out which one is supported
-		for (int i = 0; i < usable_swapchain_formats.size() && color_swapchain_format == 0; i++) {
-			if (is_swapchain_format_supported(usable_swapchain_formats[i])) {
-				color_swapchain_format = usable_swapchain_formats[i];
+		// The OpenXR runtime's supported swapchain formats list is also sorted by priority, from the perspective of the runtime.
+		// Find supported and usable format, taking both the runtime's and Godot's preferences into account.
+		for (int i = 0; i < supported_swapchain_formats.size() && color_swapchain_format == 0; i++) {
+			for (int j = 0; j < usable_swapchain_formats.size() && color_swapchain_format == 0; j++) {
+				if (supported_swapchain_formats[i] == usable_swapchain_formats[j]) {
+					color_swapchain_format = usable_swapchain_formats[j];
+				}
 			}
 		}
 
@@ -1280,10 +1283,13 @@ bool OpenXRAPI::obtain_swapchain_formats() {
 
 		graphics_extension->get_usable_depth_formats(usable_swapchain_formats);
 
-		// now find out which one is supported
-		for (int i = 0; i < usable_swapchain_formats.size() && depth_swapchain_format == 0; i++) {
-			if (is_swapchain_format_supported(usable_swapchain_formats[i])) {
-				depth_swapchain_format = usable_swapchain_formats[i];
+		// The OpenXR runtime's supported swapchain formats list is also sorted by priority, from the perspective of the runtime.
+		// Find supported and usable format, taking both the runtime's and Godot's preferences into account.
+		for (int i = 0; i < supported_swapchain_formats.size() && depth_swapchain_format == 0; i++) {
+			for (int j = 0; j < usable_swapchain_formats.size() && depth_swapchain_format == 0; j++) {
+				if (supported_swapchain_formats[i] == usable_swapchain_formats[j]) {
+					depth_swapchain_format = usable_swapchain_formats[j];
+				}
 			}
 		}
 
