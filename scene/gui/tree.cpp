@@ -5769,7 +5769,13 @@ int Tree::get_columns() const {
 void Tree::_scroll_moved(float) {
 	_determine_hovered_item();
 	queue_redraw();
-	popup_editor->hide();
+
+	if (scrolled_to_visible > 0) {
+		// Needs to use counter in case horizontal and vertical scroll in the same frame.
+		scrolled_to_visible--;
+	} else {
+		popup_editor->hide();
+	}
 }
 
 Rect2 Tree::get_custom_popup_rect() const {
@@ -5835,12 +5841,15 @@ void Tree::ensure_cursor_is_visible() {
 
 		if (cell_h > screen_h) { // Screen size is too small, maybe it was not resized yet.
 			delta_v = y_offset - v_scroll->get_value();
+			scrolled_to_visible++;
 			v_scroll->set_value(y_offset);
 		} else if (y_offset + cell_h > v_scroll->get_value() + screen_h) {
 			delta_v = y_offset - screen_h + cell_h - v_scroll->get_value();
+			scrolled_to_visible++;
 			callable_mp((Range *)v_scroll, &Range::set_value).call_deferred(y_offset - screen_h + cell_h);
 		} else if (y_offset < v_scroll->get_value()) {
 			delta_v = y_offset - v_scroll->get_value();
+			scrolled_to_visible++;
 			v_scroll->set_value(y_offset);
 		}
 	}
@@ -5857,12 +5866,15 @@ void Tree::ensure_cursor_is_visible() {
 
 		if (cell_w > screen_w) {
 			delta_h = x_offset - h_scroll->get_value();
+			scrolled_to_visible++;
 			h_scroll->set_value(x_offset);
 		} else if (x_offset + cell_w > h_scroll->get_value() + screen_w) {
 			delta_h = x_offset - screen_w + cell_w - h_scroll->get_value();
+			scrolled_to_visible++;
 			callable_mp((Range *)h_scroll, &Range::set_value).call_deferred(x_offset - screen_w + cell_w);
 		} else if (x_offset < h_scroll->get_value()) {
 			delta_h = x_offset - h_scroll->get_value();
+			scrolled_to_visible++;
 			h_scroll->set_value(x_offset);
 		}
 	}

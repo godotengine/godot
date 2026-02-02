@@ -546,6 +546,7 @@ private:
 	bool show_column_titles = false;
 
 	bool popup_edit_committed = true;
+	int scrolled_to_visible = 0;
 	RID accessibility_scroll_element;
 	RID header_ci; // Separate canvas item for drawing column headers
 	RID content_ci; // Separate canvas item for drawing tree rows
