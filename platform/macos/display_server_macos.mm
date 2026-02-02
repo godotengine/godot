@@ -1056,6 +1056,7 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 		[panel setCanCreateDirectories:YES];
 		[panel setCanChooseFiles:(p_mode != FILE_DIALOG_MODE_OPEN_DIR)];
 		[panel setCanChooseDirectories:(p_mode == FILE_DIALOG_MODE_OPEN_DIR || p_mode == FILE_DIALOG_MODE_OPEN_ANY)];
+		[panel setTreatsFilePackagesAsDirectories:YES];
 		[panel setShowsHiddenFiles:p_show_hidden];
 		[panel setDelegate:panel_delegate];
 		if (p_filename != "") {

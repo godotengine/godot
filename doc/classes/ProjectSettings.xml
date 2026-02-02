@@ -3107,6 +3107,7 @@
 		</member>
 		<member name="rendering/lightmapping/probe_capture/update_speed" type="float" setter="" getter="" default="15">
 			The framerate-independent update speed when representing dynamic object lighting from [LightmapProbe]s. Higher values make dynamic object lighting update faster. Higher values can prevent fast-moving objects from having "outdated" indirect lighting displayed on them, at the cost of possible flickering when an object moves from a bright area to a shaded area.
+			[b]Note:[/b] This property is only read when the project starts. To adjust the BVH build quality at runtime, use [method RenderingServer.lightmap_set_probe_capture_update_speed].
 		</member>
 		<member name="rendering/lights_and_shadows/directional_shadow/16_bits" type="bool" setter="" getter="" default="true">
 			Use 16 bits for the directional shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
@@ -3590,6 +3591,9 @@
 		<member name="xr/openxr/extensions/spatial_entity/enabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], support for the spatial entity extension is requested. If supported, you will be able to access spatial information about the real environment around you. What information is available is dependent on additional extensions.
 			[b]Note:[/b] This requires that the OpenXR spatial entities extension is supported by the XR runtime. If not supported this setting will be ignored.
+		</member>
+		<member name="xr/openxr/extensions/user_presence" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the user presence extension is enabled if available.
 		</member>
 		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify whether OpenXR should be configured for an HMD or a hand held device.

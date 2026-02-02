@@ -30,6 +30,7 @@
 
 #include "animation_library_editor.h"
 
+#include "core/io/resource_loader.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"

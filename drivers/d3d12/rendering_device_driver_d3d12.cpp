@@ -1933,8 +1933,23 @@ RDD::SamplerID RenderingDeviceDriverD3D12::sampler_create(const SamplerState &p_
 
 	D3D12_SAMPLER_DESC &sampler_desc = samplers[slot];
 
-	if (p_state.use_anisotropy) {
-		sampler_desc.Filter = D3D12_ENCODE_ANISOTROPIC_FILTER(D3D12_FILTER_REDUCTION_TYPE_STANDARD);
+	// D3D12 does not support anisotropic nearest filtering.
+	bool use_anisotropy = p_state.use_anisotropy && p_state.min_filter == RDD::SAMPLER_FILTER_LINEAR && p_state.mag_filter == RDD::SAMPLER_FILTER_LINEAR;
+
+	// Nearest mipmap is a separate D3D12 capability.
+	if (!sampler_capabilities.aniso_filter_with_point_mip_supported && p_state.mip_filter == RDD::SAMPLER_FILTER_NEAREST) {
+		use_anisotropy = false;
+	}
+
+	D3D12_FILTER_REDUCTION_TYPE reduction_type = p_state.enable_compare ? D3D12_FILTER_REDUCTION_TYPE_COMPARISON : D3D12_FILTER_REDUCTION_TYPE_STANDARD;
+
+	if (use_anisotropy) {
+		if (p_state.mip_filter == RDD::SAMPLER_FILTER_NEAREST) {
+			// This path is never going to be taken if the capability is unsupported.
+			sampler_desc.Filter = D3D12_ENCODE_MIN_MAG_ANISOTROPIC_MIP_POINT_FILTER(reduction_type);
+		} else {
+			sampler_desc.Filter = D3D12_ENCODE_ANISOTROPIC_FILTER(reduction_type);
+		}
 		sampler_desc.MaxAnisotropy = p_state.anisotropy_max;
 	} else {
 		static const D3D12_FILTER_TYPE RD_FILTER_TYPE_TO_D3D12[] = {
@@ -1945,7 +1960,7 @@ RDD::SamplerID RenderingDeviceDriverD3D12::sampler_create(const SamplerState &p_
 				RD_FILTER_TYPE_TO_D3D12[p_state.min_filter],
 				RD_FILTER_TYPE_TO_D3D12[p_state.mag_filter],
 				RD_FILTER_TYPE_TO_D3D12[p_state.mip_filter],
-				p_state.enable_compare ? D3D12_FILTER_REDUCTION_TYPE_COMPARISON : D3D12_FILTER_REDUCTION_TYPE_STANDARD);
+				reduction_type);
 	}
 
 	sampler_desc.AddressU = RD_REPEAT_MODE_TO_D3D12_ADDRESS_MODE[p_state.repeat_u];
@@ -6168,6 +6183,12 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 	if (SUCCEEDED(res)) {
 		format_capabilities.relaxed_casting_supported = options12.RelaxedFormatCastingSupported;
 		barrier_capabilities.enhanced_barriers_supported = options12.EnhancedBarriersSupported;
+	}
+
+	D3D12_FEATURE_DATA_D3D12_OPTIONS19 options19 = {};
+	res = device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS19, &options19, sizeof(options19));
+	if (SUCCEEDED(res)) {
+		sampler_capabilities.aniso_filter_with_point_mip_supported = options19.AnisoFilterWithPointMipSupported;
 	}
 
 	if (fsr_capabilities.pipeline_supported || fsr_capabilities.primitive_supported || fsr_capabilities.attachment_supported) {

@@ -35,6 +35,7 @@
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/shader/shader_editor.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/resources/material.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/visual_shader.h"
 
@@ -232,6 +233,7 @@ class VisualShaderEditor : public ShaderEditor {
 	OptionButton *edit_type_particles = nullptr;
 	OptionButton *edit_type_sky = nullptr;
 	OptionButton *edit_type_fog = nullptr;
+	OptionButton *edit_type_texture_blit = nullptr;
 	CheckBox *custom_mode_box = nullptr;
 	bool custom_mode_enabled = false;
 
@@ -297,6 +299,7 @@ class VisualShaderEditor : public ShaderEditor {
 		MODE_FLAGS_SKY = 2,
 		MODE_FLAGS_PARTICLES = 4,
 		MODE_FLAGS_FOG = 8,
+		MODE_FLAGS_TEXTURE_BLIT = 16,
 	};
 
 	int mode = MODE_FLAGS_SPATIAL_CANVASITEM;
@@ -322,6 +325,10 @@ class VisualShaderEditor : public ShaderEditor {
 
 	enum FogTypeFlags {
 		TYPE_FLAGS_FOG = 1,
+	};
+
+	enum TextureBlitTypeFlags {
+		TYPE_FLAGS_BLIT = 1,
 	};
 
 	enum ToolsMenuOptions {

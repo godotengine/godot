@@ -739,6 +739,7 @@
 			<param index="0" name="occluder" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
+				Enables or disables using the light occluder as a signed distance field for 2D particle collision.
 			</description>
 		</method>
 		<method name="canvas_light_occluder_set_enabled">
@@ -990,6 +991,9 @@
 			<return type="void" />
 			<param index="0" name="disable" type="bool" />
 			<description>
+				If [param disable] is [code]true[/code], makes 2D rendering ignore the canvas scale defined for each canvas layer. This affects [CanvasLayer]s with the [member CanvasLayer.follow_viewport_enabled] property set to [code]true[/code].
+				In the editor, this is set to [code]true[/code] by default, and set to [code]false[/code] when [b]View &gt; Preview Canvas Scale[/b] is enabled at the top of the 2D editor viewport.
+				[b]Note:[/b] Setting this to [code]true[/code] does not impact the behavior of [member CanvasLayer.scale], [member Node2D.scale], or [member Control.scale].
 			</description>
 		</method>
 		<method name="canvas_set_item_mirroring">
@@ -2243,24 +2247,28 @@
 			<return type="PackedInt32Array" />
 			<param index="0" name="lightmap" type="RID" />
 			<description>
+				Returns the BSP tree data used for accelerating probe lookups. The BSP data is structured as a series of six signed 32-bit values per BSP node in this order: [code]float plane_x[/code], [code]float plane_y[/code], [code]float plane_z[/code], [code]float plane_distance[/code], [code]int32_t over[/code], [code]int32_t under[/code]. An empty leaf is denoted by the value [code]-2147483648[/code] (the minimum 32-bit signed integer). See also [method lightmap_set_probe_capture_data].
 			</description>
 		</method>
 		<method name="lightmap_get_probe_capture_points" qualifiers="const">
 			<return type="PackedVector3Array" />
 			<param index="0" name="lightmap" type="RID" />
 			<description>
+				Returns the [i]local space[/i] positions of each lightmap probe capture point. Keep in mind the lightmap instance may have a non-zero transform, which will affect the position of the probe capture points. See also [method lightmap_set_probe_capture_data].
 			</description>
 		</method>
 		<method name="lightmap_get_probe_capture_sh" qualifiers="const">
 			<return type="PackedColorArray" />
 			<param index="0" name="lightmap" type="RID" />
 			<description>
+				Returns the L0, L1, and L2 [url=https://en.wikipedia.org/wiki/Spherical_harmonics]spherical harmonics[/url] data for each lightmap probe capture point. This is specified as 9 [Color] values per probe, which means the size of the returned data is always 9 times the number of probe points. See also [method lightmap_set_probe_capture_data].
 			</description>
 		</method>
 		<method name="lightmap_get_probe_capture_tetrahedra" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<param index="0" name="lightmap" type="RID" />
 			<description>
+				Returns the tetrahedralization data used for interpolating between lightmap probe capture points. Each tetrahedron is specified as a series of 4 numbers, each being an index into the probe capture points array returned by [method lightmap_get_probe_capture_points]. See also [method lightmap_set_probe_capture_data].
 			</description>
 		</method>
 		<method name="lightmap_set_baked_exposure_normalization">
@@ -2276,6 +2284,7 @@
 			<param index="0" name="lightmap" type="RID" />
 			<param index="1" name="bounds" type="AABB" />
 			<description>
+				Sets the bounds that this lightmap instance should visually affect, both in terms of static lightmap baking and probe-based global illumination.
 			</description>
 		</method>
 		<method name="lightmap_set_probe_capture_data">
@@ -2286,12 +2295,14 @@
 			<param index="3" name="tetrahedra" type="PackedInt32Array" />
 			<param index="4" name="bsp_tree" type="PackedInt32Array" />
 			<description>
+				Sets the probe capture data for the given lightmap instance. See [method lightmap_get_probe_capture_points], [method lightmap_get_probe_capture_sh], [method lightmap_get_probe_capture_tetrahedra], and [method lightmap_get_probe_capture_bsp_tree] for the expected data formats.
 			</description>
 		</method>
 		<method name="lightmap_set_probe_capture_update_speed">
 			<return type="void" />
 			<param index="0" name="speed" type="float" />
 			<description>
+				The framerate-independent update speed when representing dynamic object lighting from [LightmapProbe]s. Higher values make dynamic object lighting update faster. Higher values can prevent fast-moving objects from having "outdated" indirect lighting displayed on them, at the cost of possible flickering when an object moves from a bright area to a shaded area. See also [member ProjectSettings.rendering/lightmapping/probe_capture/update_speed].
 			</description>
 		</method>
 		<method name="lightmap_set_probe_interior">
@@ -2299,6 +2310,7 @@
 			<param index="0" name="lightmap" type="RID" />
 			<param index="1" name="interior" type="bool" />
 			<description>
+				Sets whether the lightmap instance should be considered as interior (when [param interior] is [code]true[/code]). If the lightmap is marked as interior, environment lighting is ignored when baking lightmaps.
 			</description>
 		</method>
 		<method name="lightmap_set_textures">
@@ -2389,6 +2401,35 @@
 			<param index="0" name="mesh" type="RID" />
 			<param index="1" name="surface" type="Dictionary" />
 			<description>
+				Creates a new surface on the given [param mesh]. Equivalent to [method mesh_add_surface_from_arrays], but takes a single [Dictionary] argument instead of separate arguments. The dictionary must follow this structure:
+				[codeblock]
+				{
+					# Required:
+				    "primitive": RenderingServer.PrimitiveType,
+				    "format": RenderingServer.ArrayFormat,
+				    "vertex_data": PackedByteArray,
+				    "vertex_count": int,
+				    "aabb": AABB,
+
+					# Optional:
+					"attribute_data": PackedByteArray,
+					"skin_data": PackedByteArray,
+					"index_data": PackedByteArray,
+					"index_count": int, # Required if `index_data` is specified.
+					"uv_scale": Vector4,
+					"lods": [
+						# Both values are required for each LOD level.
+						{
+							"edge_length": float,
+							"index_data": PackedByteArray,
+						},
+					],
+					"bone_aabbs": Array[AABB],
+					"blend_shape_data": PackedByteArray,
+					"material": Material,
+				}
+				[/codeblock]
+				See also [method mesh_get_surface], which returns data in the same structure defined above.
 			</description>
 		</method>
 		<method name="mesh_add_surface_from_arrays">
@@ -2400,6 +2441,14 @@
 			<param index="4" name="lods" type="Dictionary" default="{}" />
 			<param index="5" name="compress_format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" default="0" />
 			<description>
+				Creates a new surface on the given [param mesh]. [method mesh_get_surface_count] will become the surface index for this new surface.
+				Surfaces are created to be rendered using a [param primitive], which may be any of the values defined in [enum Mesh.PrimitiveType].
+				The [param arrays] argument is an array of arrays. Each of the [constant Mesh.ARRAY_MAX] elements contains an array with some of the mesh data for this surface as described by the corresponding member of [enum Mesh.ArrayType] or [code]null[/code] if it is not used by the surface. For example, [code]arrays[0][/code] is the array of vertices. That first vertex sub-array is always required; the others are optional. Adding an index array puts this surface into "index mode" where the vertex and other arrays become the sources of data and the index array defines the vertex order. All sub-arrays must have the same length as the vertex array (or be an exact multiple of the vertex array's length, when multiple elements of a sub-array correspond to a single vertex) or be empty, except for [constant Mesh.ARRAY_INDEX] if it is used.
+				The [param blend_shapes] argument is an array of vertex data for each blend shape. Each element is an array of the same structure as [param arrays], but [constant Mesh.ARRAY_VERTEX], [constant Mesh.ARRAY_NORMAL], and [constant Mesh.ARRAY_TANGENT] are set if and only if they are set in [param arrays] and all other entries are [code]null[/code].
+				The [param lods] argument is a dictionary with [float] keys and [PackedInt32Array] values. Each entry in the dictionary represents an LOD level of the surface, where the value is the [constant Mesh.ARRAY_INDEX] array to use for the LOD level and the key is roughly proportional to the distance at which the LOD stats being used. I.e., increasing the key of an LOD also increases the distance that the objects has to be from the camera before the LOD is used.
+				The [param compress_format] argument is the bitwise OR of, as required: One value of [enum ArrayFormat] left shifted by [code]ARRAY_FORMAT_CUSTOMn_SHIFT[/code] for each custom channel in use, [constant ARRAY_FLAG_USE_DYNAMIC_UPDATE], [constant ARRAY_FLAG_USE_8_BONE_WEIGHTS], or [constant ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY].
+				See [method ArrayMesh.add_surface_from_arrays] and [method ImporterMesh.add_surface] for higher-level equivalents of this method.
+				[b]Note:[/b] When using indices, it is recommended to only use points, lines, or triangles.
 			</description>
 		</method>
 		<method name="mesh_clear">
@@ -2423,6 +2472,11 @@
 			<param index="0" name="surfaces" type="Dictionary[]" />
 			<param index="1" name="blend_shape_count" type="int" default="0" />
 			<description>
+				Creates a new mesh with predefined surfaces for it and adds the mesh to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]mesh_*[/code] RenderingServer functions. This method is more efficient for creating meshes with multiple surfaces compared to creating an empty mesh with [method mesh_create] and adding surfaces one by one with [method mesh_add_surface].
+				Each element in the [param surfaces] array must follow the same structure as described in [method mesh_add_surface]. The [param blend_shape_count] parameter must match the blend shape data defined in all surfaces.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				To place in a scene, attach this mesh to an instance using [method instance_set_base] using the returned RID.
+				[b]Note:[/b] The equivalent resource is [Mesh].
 			</description>
 		</method>
 		<method name="mesh_get_blend_shape_count" qualifiers="const">
@@ -2451,6 +2505,7 @@
 			<param index="0" name="mesh" type="RID" />
 			<param index="1" name="surface" type="int" />
 			<description>
+				Returns a mesh's surface as a dictionary following the same structure as described in [method mesh_add_surface].
 			</description>
 		</method>
 		<method name="mesh_get_surface_count" qualifiers="const">
@@ -2481,6 +2536,8 @@
 			<param index="0" name="mesh" type="RID" />
 			<param index="1" name="shadow_mesh" type="RID" />
 			<description>
+				Sets an optional second mesh which can be used for rendering shadows and the depth prepass. Can be used to increase performance by supplying a mesh with fused vertices and only vertex position data (without normals, UVs, colors, etc.).
+				[b]Note:[/b] This mesh must have exactly the same vertex positions as the source mesh (including the source mesh's LODs, if present). If vertex positions differ, then the mesh will not draw correctly.
 			</description>
 		</method>
 		<method name="mesh_surface_get_arrays" qualifiers="const">
@@ -2580,6 +2637,9 @@
 			<param index="2" name="offset" type="int" />
 			<param index="3" name="data" type="PackedByteArray" />
 			<description>
+				Updates the attribute buffer of the mesh surface with the given [param data]. The expected data per attribute is 8 or 12 bytes (4 bytes per float, 2 floats per [Vector2], and 3 floats per [Vector3]) depending on if the mesh is using [Vector2] or [Vector3] vertices. This value can be determined with [method mesh_surface_get_format_attribute_stride] instead.
+				The starting point of the updates can be changed with [param offset]. The value of [param offset] should be a multiple of 12 bytes in most cases to align to each attribute.
+				A [PackedVector3Array] of attribute locations can be converted into a [PackedByteArray] using [method PackedVector3Array.to_byte_array] for use in [param data].
 			</description>
 		</method>
 		<method name="mesh_surface_update_index_region">
@@ -2599,6 +2659,9 @@
 			<param index="2" name="offset" type="int" />
 			<param index="3" name="data" type="PackedByteArray" />
 			<description>
+				Updates the skin buffer of the mesh surface with the given [param data]. The expected data per skin is 8 or 12 bytes (4 bytes per float, 2 floats per [Vector2], and 3 floats per [Vector3]) depending on if the mesh is using [Vector2] or [Vector3] vertices. This value can be determined with [method mesh_surface_get_format_skin_stride] instead.
+				The starting point of the updates can be changed with [param offset]. The value of [param offset] should be a multiple of 12 bytes in most cases to align to each skin.
+				A [PackedVector3Array] of skin locations can be converted into a [PackedByteArray] using [method PackedVector3Array.to_byte_array] for use in [param data].
 			</description>
 		</method>
 		<method name="mesh_surface_update_vertex_region">
@@ -2608,6 +2671,9 @@
 			<param index="2" name="offset" type="int" />
 			<param index="3" name="data" type="PackedByteArray" />
 			<description>
+				Updates the vertex buffer of the mesh surface with the given [param data]. The expected data per vertex is 8 or 12 bytes (4 bytes per float, 2 floats per [Vector2], and 3 floats per [Vector3]) depending on if the mesh is using [Vector2] or [Vector3] vertices. This value can be determined with [method mesh_surface_get_format_vertex_stride] instead.
+				The starting point of the updates can be changed with [param offset]. The value of [param offset] should be a multiple of 12 bytes in most cases to align to each vertex.
+				A [PackedVector3Array] of vertex locations can be converted into a [PackedByteArray] using [method PackedVector3Array.to_byte_array] for use in [param data].
 			</description>
 		</method>
 		<method name="multimesh_allocate_data">
@@ -2619,6 +2685,7 @@
 			<param index="4" name="custom_data_format" type="bool" default="false" />
 			<param index="5" name="use_indirect" type="bool" default="false" />
 			<description>
+				Sets up the multimesh using the specified data. The number of instances is set by [param instances]. The format of the instance transforms is set by [param transform_format], which should be set according to whether the multimesh is meant to be rendered in 2D or 3D. If [param color_format] is [code]true[/code], each instance will have a color associated with it. If [param custom_data_format] is [code]true[/code], each instance will have a custom data vector associated with it. If [param use_indirect] is [code]true[/code], an indirect command buffer will be created for this multimesh, allowing the instance count to be modified directly on the GPU. See also [method multimesh_get_command_buffer_rd_rid].
 			</description>
 		</method>
 		<method name="multimesh_create">
@@ -2666,7 +2733,7 @@
 				  2 - firstIndex;
 				  3 - vertexOffset;
 				  4 - firstInstance;
-				Non Indexed:
+				Non-indexed:
 				  0 - vertexCount;
 				  1 - instanceCount;
 				  2 - firstVertex;
@@ -3069,6 +3136,7 @@
 			<param index="0" name="particles" type="RID" />
 			<param index="1" name="size" type="float" />
 			<description>
+				Sets the base size for particle collision. Equivalent to [member GPUParticles3D.collision_base_size].
 			</description>
 		</method>
 		<method name="particles_set_custom_aabb">
@@ -3165,6 +3233,7 @@
 			<param index="0" name="particles" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
+				Sets whether particles should use interpolation between fixed steps. Equivalent to [member GPUParticles3D.interpolate].
 			</description>
 		</method>
 		<method name="particles_set_lifetime">
@@ -3229,6 +3298,7 @@
 			<param index="0" name="particles" type="RID" />
 			<param index="1" name="subemitter_particles" type="RID" />
 			<description>
+				Sets the subemitter particles for the particle system. Equivalent to [member GPUParticles3D.sub_emitter].
 			</description>
 		</method>
 		<method name="particles_set_trail_bind_poses">
@@ -3236,6 +3306,7 @@
 			<param index="0" name="particles" type="RID" />
 			<param index="1" name="bind_poses" type="Transform3D[]" />
 			<description>
+				Sets the trail bind poses for the particle system. This specified as an array of [Transform3D]s representing the bind pose for each draw pass. See [member GPUParticles3D.draw_skin], [method Skin.get_bind_count], and [method Skin.get_bind_pose]. Set the value for each draw pass to [constant Transform3D.IDENTITY] to use the default behavior, which is what built-in trails use ([RibbonTrailMesh] and [TubeTrailMesh]).
 			</description>
 		</method>
 		<method name="particles_set_trails">
@@ -3252,6 +3323,7 @@
 			<param index="0" name="particles" type="RID" />
 			<param index="1" name="align" type="int" enum="RenderingServer.ParticlesTransformAlign" />
 			<description>
+				Sets the transform alignment for the particle system. Equivalent to [member GPUParticles3D.transform_align].
 			</description>
 		</method>
 		<method name="particles_set_use_local_coordinates">
@@ -3563,6 +3635,7 @@
 			<param index="1" name="bones" type="int" />
 			<param index="2" name="is_2d_skeleton" type="bool" default="false" />
 			<description>
+				Allocates data for this skeleton using the number of bones specified in [param bones]. If [param is_2d_skeleton] is [code]true[/code], the skeleton will be treated as a 2D skeleton instead of a 3D skeleton. See also [method skeleton_get_bone_count].
 			</description>
 		</method>
 		<method name="skeleton_bone_get_transform" qualifiers="const">
@@ -3610,7 +3683,7 @@
 			<return type="int" />
 			<param index="0" name="skeleton" type="RID" />
 			<description>
-				Returns the number of bones allocated for this skeleton.
+				Returns the number of bones allocated for this skeleton. See also [method skeleton_allocate_data].
 			</description>
 		</method>
 		<method name="skeleton_set_base_transform_2d">
@@ -3618,6 +3691,7 @@
 			<param index="0" name="skeleton" type="RID" />
 			<param index="1" name="base_transform" type="Transform2D" />
 			<description>
+				Sets the base [Transform2D] to use for the specified skeleton.
 			</description>
 		</method>
 		<method name="sky_bake_panorama">
@@ -3804,6 +3878,45 @@
 				[b]Note:[/b] If using only the rendering device renderer, it's recommend to use [method RenderingDevice.texture_create_from_extension] together with [method RenderingServer.texture_rd_create], rather than this method. This way, the texture's format and usage can be controlled more effectively.
 			</description>
 		</method>
+		<method name="texture_drawable_blit_rect">
+			<return type="void" />
+			<param index="0" name="textures" type="RID[]" />
+			<param index="1" name="rect" type="Rect2i" />
+			<param index="2" name="material" type="RID" />
+			<param index="3" name="modulate" type="Color" />
+			<param index="4" name="source_textures" type="RID[]" />
+			<param index="5" name="to_mipmap" type="int" default="0" />
+			<description>
+				Draws to [param rect] on up to 4 given Drawable [param textures], using a TextureBlit Shader from [param material]. [param modulate] and up to 4 [param source_textures] are uniforms for the Shader to process with. [param to_mipmap] can specify to perform this draw to a lower mipmap level.
+				[b]Note:[/b] All [param textures] must be the same size and format.
+			</description>
+		</method>
+		<method name="texture_drawable_create">
+			<return type="RID" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="format" type="int" enum="RenderingServer.TextureDrawableFormat" />
+			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="4" name="with_mipmaps" type="bool" default="false" />
+			<description>
+				Creates a 2-dimensional texture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]texture_drawable*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent resource is [DrawableTexture2D].
+			</description>
+		</method>
+		<method name="texture_drawable_generate_mipmaps">
+			<return type="void" />
+			<param index="0" name="texture" type="RID" />
+			<description>
+				Calculates new MipMaps for the given Drawable [param texture].
+			</description>
+		</method>
+		<method name="texture_drawable_get_default_material" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns a ShaderMaterial with the default texture_blit Shader.
+			</description>
+		</method>
 		<method name="texture_get_format" qualifiers="const">
 			<return type="int" enum="Image.Format" />
 			<param index="0" name="texture" type="RID" />
@@ -3825,6 +3938,7 @@
 			<return type="String" />
 			<param index="0" name="texture" type="RID" />
 			<description>
+				Returns the resource path (starting with [code]res://[/code] or [code]uid://[/code]) for the specified texture RID. Returns an empty [String] if the resource is built-in. See also [method texture_set_path].
 			</description>
 		</method>
 		<method name="texture_get_rd_texture" qualifiers="const">
@@ -3874,6 +3988,7 @@
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
+				Sets whether the texture RID should force redrawing when it's visible on screen when [member OS.low_processor_usage_mode] is [code]true[/code]. This is used by [AnimatedTexture] to force redrawing.
 			</description>
 		</method>
 		<method name="texture_set_path">
@@ -3881,6 +3996,8 @@
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="path" type="String" />
 			<description>
+				Sets the resource path for this texture RID. See also [method texture_get_path].
+				[b]Note:[/b] This is purely a hint and does not cause the texture to be automatically saved when set to a [code]res://[/code] path.
 			</description>
 		</method>
 		<method name="texture_set_size_override">
@@ -3889,6 +4006,7 @@
 			<param index="1" name="width" type="int" />
 			<param index="2" name="height" type="int" />
 			<description>
+				Sets the size at which the texture should be [i]displayed[/i] in 2D, ignoring its original size. This does not rescale the texture data itself, only how it is drawn in 2D. Set [param width] and [param height] to 0 to disable the size override.
 			</description>
 		</method>
 		<method name="viewport_attach_camera">
@@ -4367,6 +4485,7 @@
 			<param index="0" name="notifier" type="RID" />
 			<param index="1" name="aabb" type="AABB" />
 			<description>
+				Sets the AABB of the specified visibility notifier.
 			</description>
 		</method>
 		<method name="visibility_notifier_set_callbacks">
@@ -4375,6 +4494,7 @@
 			<param index="1" name="enter_callable" type="Callable" />
 			<param index="2" name="exit_callable" type="Callable" />
 			<description>
+				Sets the methods to be called when the notifier enters or exits the view.
 			</description>
 		</method>
 		<method name="voxel_gi_allocate_data">
@@ -4388,6 +4508,7 @@
 			<param index="6" name="distance_field" type="PackedByteArray" />
 			<param index="7" name="level_counts" type="PackedInt32Array" />
 			<description>
+				Allocates and initializes the voxel GI data for the specified [param voxel_gi] RID. [param octree_cells] must be a multiple of 32. [param octree_cells] must be double the size of [param data_cells]. The allocated data can be retrieved later using the various [code]voxel_gi_get_*[/code] methods.
 			</description>
 		</method>
 		<method name="voxel_gi_create">
@@ -4402,36 +4523,42 @@
 			<return type="PackedByteArray" />
 			<param index="0" name="voxel_gi" type="RID" />
 			<description>
+				Returns the data cells for the specified voxel GI data instance. See also [method voxel_gi_allocate_data].
 			</description>
 		</method>
 		<method name="voxel_gi_get_distance_field" qualifiers="const">
 			<return type="PackedByteArray" />
 			<param index="0" name="voxel_gi" type="RID" />
 			<description>
+				Returns the distance field data for the specified voxel GI data instance. See also [method voxel_gi_allocate_data].
 			</description>
 		</method>
 		<method name="voxel_gi_get_level_counts" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<param index="0" name="voxel_gi" type="RID" />
 			<description>
+				Returns the level counts for the specified voxel GI data instance. See also [method voxel_gi_allocate_data].
 			</description>
 		</method>
 		<method name="voxel_gi_get_octree_cells" qualifiers="const">
 			<return type="PackedByteArray" />
 			<param index="0" name="voxel_gi" type="RID" />
 			<description>
+				Returns the octree cell data for the specified voxel GI data instance. See also [method voxel_gi_allocate_data].
 			</description>
 		</method>
 		<method name="voxel_gi_get_octree_size" qualifiers="const">
 			<return type="Vector3i" />
 			<param index="0" name="voxel_gi" type="RID" />
 			<description>
+				Returns the octree size for the specified voxel GI data instance, which corresponds to the number of subdivisions per axis. This can be viewed in the editor by hovering the [b]Bake VoxelGI[/b] button at the top of the 3D editor viewport when a [VoxelGI] node is selected and looking at the [b]Subdivisions[/b] field in the tooltip.
 			</description>
 		</method>
 		<method name="voxel_gi_get_to_cell_xform" qualifiers="const">
 			<return type="Transform3D" />
 			<param index="0" name="voxel_gi" type="RID" />
 			<description>
+				Returns the transform to cell space for the specified voxel GI data instance. See also [method voxel_gi_allocate_data].
 			</description>
 		</method>
 		<method name="voxel_gi_set_baked_exposure_normalization">
@@ -4589,6 +4716,19 @@
 		<constant name="CUBEMAP_LAYER_BACK" value="5" enum="CubeMapLayer">
 			Back face of a [Cubemap].
 		</constant>
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBA8" value="0" enum="TextureDrawableFormat">
+			OpenGL texture format RGBA with four components, each with a bitdepth of 8.
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB" value="1" enum="TextureDrawableFormat">
+			OpenGL texture format RGBA with four components, each with a bitdepth of 8.
+			When drawn to, an sRGB to linear color space conversion is performed.
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBAH" value="2" enum="TextureDrawableFormat">
+			OpenGL texture format GL_RGBA16F where there are four components, each a 16-bit "half-precision" floating-point value.
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBAF" value="3" enum="TextureDrawableFormat">
+			OpenGL texture format GL_RGBA32F where there are four components, each a 32-bit floating-point value.
+		</constant>
 		<constant name="SHADER_SPATIAL" value="0" enum="ShaderMode">
 			Shader is a 3D shader.
 		</constant>
@@ -4604,7 +4744,10 @@
 		<constant name="SHADER_FOG" value="4" enum="ShaderMode">
 			Shader is a 3D fog shader.
 		</constant>
-		<constant name="SHADER_MAX" value="5" enum="ShaderMode">
+		<constant name="SHADER_TEXTURE_BLIT" value="5" enum="ShaderMode">
+			Shader is a texture_blit shader.
+		</constant>
+		<constant name="SHADER_MAX" value="6" enum="ShaderMode">
 			Represents the size of the [enum ShaderMode] enum.
 		</constant>
 		<constant name="MATERIAL_RENDER_PRIORITY_MIN" value="-128">
@@ -5028,22 +5171,31 @@
 			3D particles.
 		</constant>
 		<constant name="PARTICLES_TRANSFORM_ALIGN_DISABLED" value="0" enum="ParticlesTransformAlign">
+			Do not align particle transforms relative to the camera or velocity.
 		</constant>
 		<constant name="PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD" value="1" enum="ParticlesTransformAlign">
+			Align each particle's Z axis to face the camera.
 		</constant>
 		<constant name="PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY" value="2" enum="ParticlesTransformAlign">
+			Align each particle's Y axis to the velocity vector.
 		</constant>
 		<constant name="PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY" value="3" enum="ParticlesTransformAlign">
+			Align each particle's Z axis to face the camera and Y axis to the velocity vector.
 		</constant>
 		<constant name="PARTICLES_EMIT_FLAG_POSITION" value="1">
+			Particle starts at the specified position.
 		</constant>
 		<constant name="PARTICLES_EMIT_FLAG_ROTATION_SCALE" value="2">
+			Particle starts with specified rotation and scale.
 		</constant>
 		<constant name="PARTICLES_EMIT_FLAG_VELOCITY" value="4">
+			Particle starts with the specified velocity vector, which defines the emission direction and speed.
 		</constant>
 		<constant name="PARTICLES_EMIT_FLAG_COLOR" value="8">
+			Particle starts with specified color.
 		</constant>
 		<constant name="PARTICLES_EMIT_FLAG_CUSTOM" value="16">
+			Particle starts with specified [code]CUSTOM[/code] data.
 		</constant>
 		<constant name="PARTICLES_DRAW_ORDER_INDEX" value="0" enum="ParticlesDrawOrder">
 			Draw particles in the order that they appear in the particles array.
@@ -5058,30 +5210,43 @@
 			Sort particles based on their distance to the camera.
 		</constant>
 		<constant name="PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT" value="0" enum="ParticlesCollisionType">
+			Sphere attractor type for [GPUParticles3D] (see [GPUParticlesAttractorSphere3D]).
 		</constant>
 		<constant name="PARTICLES_COLLISION_TYPE_BOX_ATTRACT" value="1" enum="ParticlesCollisionType">
+			Box attractor type for [GPUParticles3D] (see [GPUParticlesAttractorBox3D]).
 		</constant>
 		<constant name="PARTICLES_COLLISION_TYPE_VECTOR_FIELD_ATTRACT" value="2" enum="ParticlesCollisionType">
+			Vector field attractor type for [GPUParticles3D] (see [GPUParticlesAttractorVectorField3D]).
 		</constant>
 		<constant name="PARTICLES_COLLISION_TYPE_SPHERE_COLLIDE" value="3" enum="ParticlesCollisionType">
+			Sphere collision type for [GPUParticles3D] (see [GPUParticlesCollisionSphere3D]).
 		</constant>
 		<constant name="PARTICLES_COLLISION_TYPE_BOX_COLLIDE" value="4" enum="ParticlesCollisionType">
+			Box collision type for [GPUParticles3D] (see [GPUParticlesCollisionBox3D]).
 		</constant>
 		<constant name="PARTICLES_COLLISION_TYPE_SDF_COLLIDE" value="5" enum="ParticlesCollisionType">
+			Signed distance field collision type for [GPUParticles3D] (see [GPUParticlesCollisionSDF3D]).
 		</constant>
 		<constant name="PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE" value="6" enum="ParticlesCollisionType">
+			Heightfield collision type for [GPUParticles3D] (see [GPUParticlesCollisionHeightField3D]).
 		</constant>
 		<constant name="PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_256" value="0" enum="ParticlesCollisionHeightfieldResolution">
+			256×256 heightfield resolution for [GPUParticlesCollisionHeightField3D].
 		</constant>
 		<constant name="PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_512" value="1" enum="ParticlesCollisionHeightfieldResolution">
+			512×512 heightfield resolution for [GPUParticlesCollisionHeightField3D].
 		</constant>
 		<constant name="PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024" value="2" enum="ParticlesCollisionHeightfieldResolution">
+			1024×1024 heightfield resolution for [GPUParticlesCollisionHeightField3D].
 		</constant>
 		<constant name="PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_2048" value="3" enum="ParticlesCollisionHeightfieldResolution">
+			2048×2048 heightfield resolution for [GPUParticlesCollisionHeightField3D].
 		</constant>
 		<constant name="PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_4096" value="4" enum="ParticlesCollisionHeightfieldResolution">
+			4096×4096 heightfield resolution for [GPUParticlesCollisionHeightField3D].
 		</constant>
 		<constant name="PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_8192" value="5" enum="ParticlesCollisionHeightfieldResolution">
+			8192×8192 heightfield resolution for [GPUParticlesCollisionHeightField3D].
 		</constant>
 		<constant name="PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_MAX" value="6" enum="ParticlesCollisionHeightfieldResolution">
 			Represents the size of the [enum ParticlesCollisionHeightfieldResolution] enum.

@@ -31,6 +31,7 @@
 #include "spring_bone_simulator_3d.h"
 #include "spring_bone_simulator_3d.compat.inc"
 
+#include "core/config/engine.h"
 #include "scene/3d/spring_bone_collision_3d.h"
 
 // Original VRM Spring Bone movement logic was distributed by (c) VRM Consortium. Licensed under the MIT license.
@@ -305,13 +306,13 @@ void SpringBoneSimulator3D::_get_property_list(List<PropertyInfo> *p_list) const
 		props.push_back(PropertyInfo(Variant::INT, path + "rotation_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_rotation_axis()));
 		props.push_back(PropertyInfo(Variant::VECTOR3, path + "rotation_axis_vector"));
 		props.push_back(PropertyInfo(Variant::FLOAT, path + "radius/value", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"));
-		props.push_back(PropertyInfo(Variant::OBJECT, path + "radius/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
+		props.push_back(PropertyInfo(Variant::OBJECT, path + "radius/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
 		props.push_back(PropertyInfo(Variant::FLOAT, path + "stiffness/value", PROPERTY_HINT_RANGE, "0,4,0.01,or_greater"));
-		props.push_back(PropertyInfo(Variant::OBJECT, path + "stiffness/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
+		props.push_back(PropertyInfo(Variant::OBJECT, path + "stiffness/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
 		props.push_back(PropertyInfo(Variant::FLOAT, path + "drag/value", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"));
-		props.push_back(PropertyInfo(Variant::OBJECT, path + "drag/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
+		props.push_back(PropertyInfo(Variant::OBJECT, path + "drag/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
 		props.push_back(PropertyInfo(Variant::FLOAT, path + "gravity/value", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater,or_less,suffix:m/s"));
-		props.push_back(PropertyInfo(Variant::OBJECT, path + "gravity/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
+		props.push_back(PropertyInfo(Variant::OBJECT, path + "gravity/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
 		props.push_back(PropertyInfo(Variant::VECTOR3, path + "gravity/direction"));
 		props.push_back(PropertyInfo(Variant::INT, path + "joint_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Joints," + path + "joints/,static,const"));
 		for (uint32_t j = 0; j < settings[i]->joints.size(); j++) {
@@ -1206,7 +1207,7 @@ LocalVector<ObjectID> SpringBoneSimulator3D::get_valid_collision_instance_ids(in
 	if (collisions_dirty) {
 		_find_collisions();
 	}
-	return settings[p_index]->cached_collisions;
+	return LocalVector<ObjectID>(settings[p_index]->cached_collisions);
 }
 
 void SpringBoneSimulator3D::set_external_force(const Vector3 &p_force) {

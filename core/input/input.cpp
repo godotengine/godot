@@ -118,6 +118,8 @@ bool Input::is_mouse_mode_override_enabled() {
 }
 
 void Input::_bind_methods() {
+	using namespace InputClassEnums;
+
 	ClassDB::bind_method(D_METHOD("is_anything_pressed"), &Input::is_anything_pressed);
 	ClassDB::bind_method(D_METHOD("is_key_pressed", "keycode"), &Input::is_key_pressed);
 	ClassDB::bind_method(D_METHOD("is_physical_key_pressed", "keycode"), &Input::is_physical_key_pressed);

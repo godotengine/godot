@@ -30,6 +30,7 @@
 
 #include "grid_map_editor_plugin.h"
 
+#include "core/input/input.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_main_screen.h"
@@ -736,7 +737,7 @@ void GridMapEditor::_show_viewports_transform_gizmo(bool p_value) {
 EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	// If the mouse is currently captured, we are most likely in freelook mode.
 	// In this case, disable shortcuts to avoid conflicts with freelook navigation.
-	if (!node || Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
+	if (!node || Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
 		return EditorPlugin::AFTER_GUI_INPUT_PASS;
 	}
 

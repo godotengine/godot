@@ -127,7 +127,7 @@ void FogMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "emission", PROPERTY_HINT_COLOR_NO_ALPHA), "set_emission", "get_emission");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height_falloff", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_height_falloff", "get_height_falloff");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "edge_fade", PROPERTY_HINT_EXP_EASING), "set_edge_fade", "get_edge_fade");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "density_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture3D"), "set_density_texture", "get_density_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "density_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture3D::get_class_static()), "set_density_texture", "get_density_texture");
 }
 
 void FogMaterial::cleanup_shader() {
