@@ -53,7 +53,6 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/view_panner.h"
-#include "editor/gui/editor_bottom_panel.h"
 
 Node2D *Polygon2DEditor::_get_node() const {
 	return node;
@@ -144,7 +143,6 @@ void Polygon2DEditor::_notification(int p_what) {
 			if (is_visible()) {
 				EditorBottomPanel *bottom_panel = EditorNode::get_bottom_panel();
 				if (bottom_panel && bottom_panel->is_locked()) {
-					polygon_edit->open();
 					break;
 				}
 				polygon_edit->make_visible();
