@@ -3237,16 +3237,16 @@
 			Represents the size of the [enum WindowResizeEdge] enum.
 		</constant>
 		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">
-			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible). Framerate is unlimited (regardless of [member Engine.max_fps]).
+			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible). Framerate is not limited by the monitor refresh rate, but it will still be limited by [member Engine.max_fps] if set to a value greater than [code]0[/code].
 		</constant>
 		<constant name="VSYNC_ENABLED" value="1" enum="VSyncMode">
-			Default vertical synchronization mode, the image is displayed only on vertical blanking intervals (no tearing is visible). Framerate is limited by the monitor refresh rate (regardless of [member Engine.max_fps]).
+			Default vertical synchronization mode, the image is displayed only on vertical blanking intervals (no tearing is visible). Framerate is limited by the monitor refresh rate when [member Engine.max_fps] is [code]0[/code] or is set to a value higher than the monitor refresh rate.
 		</constant>
 		<constant name="VSYNC_ADAPTIVE" value="2" enum="VSyncMode">
-			Behaves like [constant VSYNC_DISABLED] when the framerate drops below the screen's refresh rate to reduce stuttering (tearing may be visible). Otherwise, vertical synchronization is enabled to avoid tearing. Framerate is limited by the monitor refresh rate (regardless of [member Engine.max_fps]). Behaves like [constant VSYNC_ENABLED] when using the Compatibility rendering method.
+			Behaves like [constant VSYNC_DISABLED] when the framerate drops below the screen's refresh rate to reduce stuttering (tearing may be visible). Otherwise, vertical synchronization is enabled to avoid tearing. Framerate is limited by the monitor refresh rate when [member Engine.max_fps] is [code]0[/code] or is set to a value higher than the monitor refresh rate. Behaves like [constant VSYNC_ENABLED] when using the Compatibility rendering method.
 		</constant>
 		<constant name="VSYNC_MAILBOX" value="3" enum="VSyncMode">
-			Displays the most recent image in the queue on vertical blanking intervals, while rendering to the other images (no tearing is visible). Framerate is unlimited (regardless of [member Engine.max_fps]).
+			Displays the most recent image in the queue on vertical blanking intervals, while rendering to the other images (no tearing is visible). Framerate is not limited by the monitor refresh rate, but it will still be limited by [member Engine.max_fps] if set to a value greater than [code]0[/code].
 			Although not guaranteed, the images can be rendered as fast as possible, which may reduce input lag (also called "Fast" V-Sync mode). [constant VSYNC_MAILBOX] works best when at least twice as many frames as the display refresh rate are rendered. Behaves like [constant VSYNC_ENABLED] when using the Compatibility rendering method.
 		</constant>
 		<constant name="DISPLAY_HANDLE" value="0" enum="HandleType">
