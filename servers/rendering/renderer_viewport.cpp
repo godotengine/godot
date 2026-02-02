@@ -809,18 +809,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 
 #ifndef XR_DISABLED
 		if (vp->use_xr) {
-			if (xr_interface.is_valid()) {
-				// Ignore update mode we have to commit frames to our XR interface
-				visible = true;
-
-				// Override our size, make sure it matches our required size and is created as a stereo target
-				Size2 xr_size = xr_interface->get_render_target_size();
-				_viewport_set_size(vp, xr_size.width, xr_size.height, xr_interface->get_view_count());
-			} else {
-				// don't render anything
-				visible = false;
-				vp->size = Size2();
-			}
+			visible = xr_interface.is_valid();
 		} else
 #endif // XR_DISABLED
 		{
@@ -840,7 +829,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 			}
 		}
 
-		visible = visible && vp->size.x > 1 && vp->size.y > 1;
+		visible = visible && vp->size.x > 1 && vp->size.y > 1 && vp->view_count > 0;
 
 		if (visible) {
 			vp->last_pass = draw_viewports_pass;
@@ -1086,14 +1075,13 @@ void RendererViewport::viewport_set_scaling_3d_scale(RID p_viewport, float p_sca
 	_configure_3d_render_buffers(viewport);
 }
 
-void RendererViewport::viewport_set_size(RID p_viewport, int p_width, int p_height) {
-	ERR_FAIL_COND(p_width < 0 || p_height < 0);
+void RendererViewport::viewport_set_size(RID p_viewport, int p_width, int p_height, int p_view_count) {
+	ERR_FAIL_COND(p_width < 0 || p_height < 0 || p_view_count < 0);
 
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
-	ERR_FAIL_COND_MSG(viewport->use_xr, "Cannot set viewport size when using XR");
 
-	_viewport_set_size(viewport, p_width, p_height, 1);
+	_viewport_set_size(viewport, p_width, p_height, p_view_count);
 }
 
 void RendererViewport::_viewport_set_size(Viewport *p_viewport, int p_width, int p_height, uint32_t p_view_count) {

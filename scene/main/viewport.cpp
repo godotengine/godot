@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "viewport.h"
+#include "viewport.compat.inc"
 
 STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
@@ -690,6 +691,17 @@ void Viewport::_notification(int p_what) {
 			_update_viewport_path();
 		} break;
 
+#ifndef XR_DISABLED
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			// Note: internal process should only be enabled if use_xr is true,
+			// but we check anyway to be future proof.
+			// This is currently a polling approach.
+			if (use_xr) {
+				_check_xr_size();
+			}
+		} break;
+#endif // XR_DISABLED
+
 #if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (!get_tree()) {
@@ -1087,7 +1099,7 @@ void Viewport::set_use_oversampling(bool p_oversampling) {
 		return;
 	}
 	use_font_oversampling = p_oversampling;
-	_set_size(_get_size(), _get_size_2d_override(), _is_size_allocated());
+	_set_size(_get_size(), _get_view_count(), _get_size_2d_override(), _is_size_allocated());
 }
 
 bool Viewport::is_using_oversampling() const {
@@ -1101,7 +1113,7 @@ void Viewport::set_oversampling_override(float p_oversampling) {
 		return;
 	}
 	font_oversampling_override = p_oversampling;
-	_set_size(_get_size(), _get_size_2d_override(), _is_size_allocated());
+	_set_size(_get_size(), _get_view_count(), _get_size_2d_override(), _is_size_allocated());
 }
 
 float Viewport::get_oversampling_override() const {
@@ -1109,7 +1121,7 @@ float Viewport::get_oversampling_override() const {
 	return font_oversampling_override;
 }
 
-bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, bool p_allocated) {
+bool Viewport::_set_size(const Size2i &p_size, const int p_view_count, const Size2 &p_size_2d_override, bool p_allocated) {
 	Transform2D stretch_transform_new = Transform2D();
 	float new_font_oversampling = 1.0;
 	if (is_size_2d_override_stretch_enabled() && p_size_2d_override.width > 0 && p_size_2d_override.height > 0) {
@@ -1130,7 +1142,7 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, 
 	}
 
 	Size2i new_size = p_size.maxi(2);
-	if (size == new_size && size_allocated == p_allocated && stretch_transform == stretch_transform_new && p_size_2d_override == size_2d_override && new_font_oversampling == font_oversampling) {
+	if (size == new_size && view_count == p_view_count && size_allocated == p_allocated && stretch_transform == stretch_transform_new && p_size_2d_override == size_2d_override && new_font_oversampling == font_oversampling) {
 		return false;
 	}
 
@@ -1143,24 +1155,17 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, 
 	}
 
 	size = new_size;
+	view_count = p_view_count;
 	size_allocated = p_allocated;
 	size_2d_override = p_size_2d_override;
 	stretch_transform = stretch_transform_new;
 	font_oversampling = new_font_oversampling;
 
-#ifndef XR_DISABLED
-	if (!use_xr) {
-#endif
-
-		if (p_allocated) {
-			RS::get_singleton()->viewport_set_size(viewport, size.width, size.height);
-		} else {
-			RS::get_singleton()->viewport_set_size(viewport, 0, 0);
-		}
-
-#ifndef XR_DISABLED
-	} // if (!use_xr)
-#endif
+	if (p_allocated) {
+		RS::get_singleton()->viewport_set_size(viewport, size.width, size.height, view_count);
+	} else {
+		RS::get_singleton()->viewport_set_size(viewport, 0, 0, 0);
+	}
 
 	_update_global_transform();
 	update_configuration_warnings();
@@ -1186,25 +1191,35 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, 
 	return true;
 }
 
-Size2i Viewport::_get_size() const {
+void Viewport::_check_xr_size() {
 #ifndef XR_DISABLED
-	if (use_xr) {
-		if (XRServer::get_singleton() != nullptr) {
-			Ref<XRInterface> xr_interface = XRServer::get_singleton()->get_primary_interface();
-			if (xr_interface.is_valid() && xr_interface->is_initialized()) {
-				Size2 xr_size = xr_interface->get_render_target_size();
-				return (Size2i)xr_size;
-			}
+	// If our viewport has the use_xr flag set, our size and layout is managed by the XRServer.
+	if (use_xr && XRServer::get_singleton() != nullptr) {
+		Ref<XRInterface> xr_interface = XRServer::get_singleton()->get_primary_interface();
+		if (xr_interface.is_valid() && xr_interface->is_initialized()) {
+			Size2 xr_size = xr_interface->get_render_target_size();
+			int xr_view_count = xr_interface->get_view_count();
+
+			_set_size((Size2i)xr_size, xr_view_count, Size2i(0, 0), true);
+		} else {
+			// Set to default and prevent rendering for now (unless in editor, so we get a preview).
+			bool is_editor = Engine::get_singleton()->is_editor_hint();
+			_set_size(is_editor ? Size2i(512, 512) : Size2i(0, 0), is_editor ? 1 : 0, Size2i(0, 0), false);
 		}
-		return Size2i();
 	}
 #endif // XR_DISABLED
+}
 
+Size2i Viewport::_get_size() const {
 	return size;
 }
 
 Size2 Viewport::_get_size_2d_override() const {
 	return size_2d_override;
+}
+
+int Viewport::_get_view_count() const {
+	return view_count;
 }
 
 bool Viewport::_is_size_allocated() const {
@@ -4838,27 +4853,37 @@ void Viewport::_propagate_exit_world_3d(Node *p_node) {
 #ifndef XR_DISABLED
 void Viewport::set_use_xr(bool p_use_xr) {
 	ERR_MAIN_THREAD_GUARD;
+
 	if (use_xr != p_use_xr) {
 		use_xr = p_use_xr;
-
 		RS::get_singleton()->viewport_set_use_xr(viewport, use_xr);
 
-		if (!use_xr) {
-			// Set viewport to previous size when exiting XR.
-			if (size_allocated) {
-				RS::get_singleton()->viewport_set_size(viewport, size.width, size.height);
-			} else {
-				RS::get_singleton()->viewport_set_size(viewport, 0, 0);
-			}
+#ifndef XR_DISABLED
+		if (use_xr) {
+			// Note: use_xr is ONLY used for the primary XR viewport.
+			// Any additional (sub)viewports for composition layers and
+			// other purposes should not have use_xr set.
+			_check_xr_size();
+
+			// Enable internal process as we need to check for recommended size changes each frame
+			// (though size changes should only happen sporadically).
+			set_process_internal(true);
+		} else
+#endif // XR_DISABLED
+		{
+			// No longer check for recommended size changes in internal process.
+			set_process_internal(false);
 
 			// Reset render target override textures.
 			RID rt = RS::get_singleton()->viewport_get_render_target(viewport);
 			RSG::texture_storage->render_target_set_override(rt, RID(), RID(), RID(), RID());
 		}
+
+		notify_property_list_changed();
 	}
 }
 
-bool Viewport::is_using_xr() {
+bool Viewport::is_using_xr() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return use_xr;
 }
@@ -5422,17 +5447,17 @@ Viewport::~Viewport() {
 
 void SubViewport::set_size(const Size2i &p_size) {
 	ERR_MAIN_THREAD_GUARD;
-	_internal_set_size(p_size);
+	_internal_set_size(p_size, _get_view_count());
 }
 
 void SubViewport::set_size_force(const Size2i &p_size) {
 	ERR_MAIN_THREAD_GUARD;
 	// Use only for setting the size from the parent SubViewportContainer with enabled stretch mode.
 	// Don't expose function to scripting.
-	_internal_set_size(p_size, true);
+	_internal_set_size(p_size, _get_view_count(), true);
 }
 
-void SubViewport::_internal_set_size(const Size2i &p_size, bool p_force) {
+void SubViewport::_internal_set_size(const Size2i &p_size, const int p_view_count, bool p_force) {
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
 	if (!p_force && c && c->is_stretch_enabled()) {
 #ifdef DEBUG_ENABLED
@@ -5441,7 +5466,7 @@ void SubViewport::_internal_set_size(const Size2i &p_size, bool p_force) {
 		return;
 	}
 
-	_set_size(p_size, _get_size_2d_override(), true);
+	_set_size(p_size, p_view_count, _get_size_2d_override(), true);
 
 	if (c) {
 		c->update_minimum_size();
@@ -5454,9 +5479,22 @@ Size2i SubViewport::get_size() const {
 	return _get_size();
 }
 
+void SubViewport::set_view_count(const int p_view_count) {
+	ERR_MAIN_THREAD_GUARD;
+
+	// Q: add `, _get_size_2d_override(), true` ?
+	_internal_set_size(_get_size(), p_view_count);
+}
+
+int SubViewport::get_view_count() const {
+	ERR_READ_THREAD_GUARD_V(1);
+
+	return _get_view_count();
+}
+
 void SubViewport::set_size_2d_override(const Size2i &p_size) {
 	ERR_MAIN_THREAD_GUARD;
-	_set_size(_get_size(), p_size, true);
+	_set_size(_get_size(), _get_view_count(), p_size, true);
 }
 
 Size2i SubViewport::get_size_2d_override() const {
@@ -5474,7 +5512,7 @@ void SubViewport::set_size_2d_override_stretch(bool p_enable) {
 	}
 
 	size_2d_override_stretch = p_enable;
-	_set_size(_get_size(), _get_size_2d_override(), true);
+	_set_size(_get_size(), _get_view_count(), _get_size_2d_override(), true);
 }
 
 bool SubViewport::is_size_2d_override_stretch_enabled() const {
@@ -5580,6 +5618,9 @@ void SubViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size_2d_override_stretch", "enable"), &SubViewport::set_size_2d_override_stretch);
 	ClassDB::bind_method(D_METHOD("is_size_2d_override_stretch_enabled"), &SubViewport::is_size_2d_override_stretch_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_view_count", "view_count"), &SubViewport::set_view_count);
+	ClassDB::bind_method(D_METHOD("get_view_count"), &SubViewport::get_view_count);
+
 	ClassDB::bind_method(D_METHOD("set_update_mode", "mode"), &SubViewport::set_update_mode);
 	ClassDB::bind_method(D_METHOD("get_update_mode"), &SubViewport::get_update_mode);
 
@@ -5589,6 +5630,7 @@ void SubViewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size_2d_override", PROPERTY_HINT_NONE, "suffix:px"), "set_size_2d_override", "get_size_2d_override");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "size_2d_override_stretch"), "set_size_2d_override_stretch", "is_size_2d_override_stretch_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "view_count"), "set_view_count", "get_view_count");
 	ADD_GROUP("Render Target", "render_target_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_clear_mode", PROPERTY_HINT_ENUM, "Always,Never,Next Frame"), "set_clear_mode", "get_clear_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_update_mode", PROPERTY_HINT_ENUM, "Disabled,Once,When Visible,When Parent Visible,Always"), "set_update_mode", "get_update_mode");
@@ -5608,7 +5650,13 @@ void SubViewport::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
+#ifndef XR_DISABLED
+	if (is_using_xr() && (p_property.name == "size" || p_property.name == "size_2d_override" || p_property.name == "size_2d_override_stretch" || p_property.name == "view_count")) {
+		p_property.usage = PROPERTY_USAGE_NONE; // Managed by XR
+	} else if (p_property.name == "size") {
+#else
 	if (p_property.name == "size") {
+#endif
 		SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
 		if (parent_svc && parent_svc->is_stretch_enabled()) {
 			p_property.usage = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY;
@@ -5619,7 +5667,7 @@ void SubViewport::_validate_property(PropertyInfo &p_property) const {
 }
 
 SubViewport::SubViewport() {
-	RS::get_singleton()->viewport_set_size(get_viewport_rid(), get_size().width, get_size().height);
+	RS::get_singleton()->viewport_set_size(get_viewport_rid(), get_size().width, get_size().height, get_view_count());
 }
 
 /////////////////////////////////
