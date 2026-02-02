@@ -655,6 +655,7 @@ void ScriptEditorDebugger::_msg_error(uint64_t p_thread_id, const Array &p_data)
 	}
 	error->set_collapsed(true);
 
+	error->set_text_overrun_behavior(0, TextServer::OVERRUN_NO_TRIMMING);
 	error->set_icon(0, get_editor_theme_icon(oe.warning ? SNAME("Warning") : SNAME("Error")));
 	error->set_text(0, time);
 	error->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
@@ -2299,7 +2300,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 
 		error_tree->set_column_expand(0, false);
 		error_tree->set_column_custom_minimum_width(0, 140);
-		error_tree->set_column_clip_content(0, true);
+		error_tree->set_column_clip_content(0, false);
 
 		error_tree->set_column_expand(1, true);
 		error_tree->set_column_clip_content(1, true);
