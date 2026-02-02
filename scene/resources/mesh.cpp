@@ -464,7 +464,7 @@ Ref<TriangleMesh> Mesh::generate_surface_triangle_mesh(int p_surface) const {
 }
 
 Ref<TriangleMesh> Mesh::get_triangle_mesh() const {
-	if (!triangle_mesh.is_valid()) {
+	if (triangle_mesh.is_null()) {
 		generate_triangle_mesh();
 	}
 
