@@ -232,9 +232,17 @@ const GodotInputGamepads = {
 			GodotInputGamepads.samples = [];
 			function add(pad) {
 				const guid = GodotInputGamepads.get_guid(pad);
+				const vendor_str = GodotInputGamepads.get_vendor_str(pad);
+				const product_str = GodotInputGamepads.get_product_str(pad);
+				let vendor_id = 0;
+				let product_id = 0;
+				if (vendor_str && product_str) {
+					vendor_id = parseInt(vendor_str, 16);
+					product_id = parseInt(product_str, 16);
+				}
 				const c_id = GodotRuntime.allocString(pad.id);
 				const c_guid = GodotRuntime.allocString(guid);
-				onchange(pad.index, 1, c_id, c_guid);
+				onchange(pad.index, 1, c_id, c_guid, vendor_id, product_id);
 				GodotRuntime.free(c_id);
 				GodotRuntime.free(c_guid);
 			}
@@ -257,6 +265,40 @@ const GodotInputGamepads = {
 			}, false);
 		},
 
+		get_vendor_str: function (pad) {
+			const id = pad.id;
+			// Chrom* style: NAME (Vendor: xxxx Product: xxxx).
+			const exp1 = /vendor: ([0-9a-f]{4}) product: ([0-9a-f]{4})/i;
+			// Firefox/Safari style (Safari may remove leading zeroes).
+			const exp2 = /^([0-9a-f]+)-([0-9a-f]+)-/i;
+			let vendor = '';
+			if (exp1.test(id)) {
+				const match = exp1.exec(id);
+				vendor = match[1].padStart(4, '0');
+			} else if (exp2.test(id)) {
+				const match = exp2.exec(id);
+				vendor = match[1].padStart(4, '0');
+			}
+			return vendor;
+		},
+
+		get_product_str: function (pad) {
+			const id = pad.id;
+			// Chrom* style: NAME (Vendor: xxxx Product: xxxx).
+			const exp1 = /vendor: ([0-9a-f]{4}) product: ([0-9a-f]{4})/i;
+			// Firefox/Safari style (Safari may remove leading zeroes).
+			const exp2 = /^([0-9a-f]+)-([0-9a-f]+)-/i;
+			let product = '';
+			if (exp1.test(id)) {
+				const match = exp1.exec(id);
+				product = match[2].padStart(4, '0');
+			} else if (exp2.test(id)) {
+				const match = exp2.exec(id);
+				product = match[2].padStart(4, '0');
+			}
+			return product;
+		},
+
 		get_guid: function (pad) {
 			if (pad.mapping) {
 				return pad.mapping;
@@ -276,22 +318,9 @@ const GodotInputGamepads = {
 				os = 'Windows';
 			}
 
-			const id = pad.id;
-			// Chrom* style: NAME (Vendor: xxxx Product: xxxx).
-			const exp1 = /vendor: ([0-9a-f]{4}) product: ([0-9a-f]{4})/i;
-			// Firefox/Safari style (Safari may remove leading zeroes).
-			const exp2 = /^([0-9a-f]+)-([0-9a-f]+)-/i;
-			let vendor = '';
-			let product = '';
-			if (exp1.test(id)) {
-				const match = exp1.exec(id);
-				vendor = match[1].padStart(4, '0');
-				product = match[2].padStart(4, '0');
-			} else if (exp2.test(id)) {
-				const match = exp2.exec(id);
-				vendor = match[1].padStart(4, '0');
-				product = match[2].padStart(4, '0');
-			}
+			const vendor = GodotInputGamepads.get_vendor_str(pad);
+			const product = GodotInputGamepads.get_product_str(pad);
+
 			if (!vendor || !product) {
 				return `${os}Unknown`;
 			}
