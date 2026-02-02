@@ -4640,6 +4640,20 @@ void EditorHelpBitTooltip::_target_gui_input(const Ref<InputEvent> &p_event) {
 				break;
 		}
 	}
+
+	const Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed()) {
+		queue_free();
+	}
+}
+
+void EditorHelpBitTooltip::_shortcut_pressed(Control *p_target) {
+	TextEdit *tx = Object::cast_to<TextEdit>(p_target);
+	if (tx) {
+		popup_under_position(
+				tx->get_global_position() + tx->get_caret_draw_pos() +
+				Point2(0, tx->get_line_height()) + tx->get_window()->get_position_with_decorations());
+	}
 }
 
 void EditorHelpBitTooltip::_notification(int p_what) {
@@ -4659,7 +4673,7 @@ void EditorHelpBitTooltip::_notification(int p_what) {
 			_is_mouse_inside_tooltip = false;
 			_start_timer();
 			break;
-		case NOTIFICATION_INTERNAL_PROCESS:
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			// A workaround to hide the tooltip since the window does not receive keyboard events
 			// with `FLAG_POPUP` and `FLAG_NO_FOCUS` flags, so we can't use `_input_from_window()`.
 			if (is_inside_tree()) {
@@ -4667,9 +4681,11 @@ void EditorHelpBitTooltip::_notification(int p_what) {
 					queue_free();
 					get_parent_viewport()->set_input_as_handled();
 				} else if (Input::get_singleton()->is_any_key_pressed()) {
-					queue_free();
+					if (!_is_shortcut_pressed) {
+						queue_free();
+					}
 				} else if (!Input::get_singleton()->get_mouse_button_mask().is_empty()) {
-					if (!_is_mouse_inside_tooltip) {
+					if (!_is_mouse_inside_tooltip && !_is_shortcut_pressed) {
 						queue_free();
 					}
 				} else if (!Input::get_singleton()->get_last_mouse_velocity().is_zero_approx()) {
@@ -4678,38 +4694,41 @@ void EditorHelpBitTooltip::_notification(int p_what) {
 					}
 				}
 			}
-			break;
+		} break;
 	}
 }
 
-Control *EditorHelpBitTooltip::make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue, bool p_use_class_prefix) {
+Control *EditorHelpBitTooltip::make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue, bool p_use_class_prefix, bool p_shortcut) {
 	ERR_FAIL_NULL_V(p_target, _make_invisible_control());
 
 	// Show the custom tooltip only if it is not already visible.
 	// The viewport will retrigger `make_custom_tooltip()` every few seconds
 	// because the return control is not visible even if the custom tooltip is displayed.
-	if (_is_tooltip_visible || Input::get_singleton()->is_anything_pressed()) {
+	if (_is_tooltip_visible || (!p_shortcut && Input::get_singleton()->is_anything_pressed())) {
 		return _make_invisible_control();
 	}
 
 	EditorHelpBit *help_bit = memnew(EditorHelpBit(p_symbol, p_prologue, p_use_class_prefix, false, true));
 
-	EditorHelpBitTooltip *tooltip = memnew(EditorHelpBitTooltip(p_target));
+	EditorHelpBitTooltip *tooltip = memnew(EditorHelpBitTooltip(p_target, p_shortcut));
 	help_bit->connect("request_hide", callable_mp(static_cast<Node *>(tooltip), &Node::queue_free));
 	tooltip->add_child(help_bit);
 	p_target->add_child(tooltip);
 
 	help_bit->update_content_height();
-	tooltip->popup_under_cursor();
+	if (tooltip->is_shortcut_pressed()) {
+		tooltip->_shortcut_pressed(p_target);
+	} else {
+		tooltip->popup_under_position(tooltip->get_mouse_position());
+	}
 
 	return _make_invisible_control();
 }
 
 // Copy-paste from `Viewport::_gui_show_tooltip()`.
-void EditorHelpBitTooltip::popup_under_cursor() {
-	Point2 mouse_pos = get_mouse_position();
+void EditorHelpBitTooltip::popup_under_position(const Point2 &p_point) {
 	Point2 tooltip_offset = GLOBAL_GET_CACHED(Point2, "display/mouse_cursor/tooltip_position_offset");
-	Rect2 r(mouse_pos + tooltip_offset, get_contents_minimum_size());
+	Rect2 r(p_point + tooltip_offset, get_contents_minimum_size());
 	r.size = r.size.min(get_max_size());
 
 	Window *window = get_parent_visible_window();
@@ -4723,7 +4742,7 @@ void EditorHelpBitTooltip::popup_under_cursor() {
 	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS) || is_embedded()) {
 		if (r.size.x + r.position.x > vr.size.x + vr.position.x) {
 			// Place it in the opposite direction. If it fails, just hug the border.
-			r.position.x = mouse_pos.x - r.size.x - tooltip_offset.x;
+			r.position.x = p_point.x - r.size.x - tooltip_offset.x;
 
 			if (r.position.x < vr.position.x) {
 				r.position.x = vr.position.x + vr.size.x - r.size.x;
@@ -4734,7 +4753,7 @@ void EditorHelpBitTooltip::popup_under_cursor() {
 
 		if (r.size.y + r.position.y > vr.size.y + vr.position.y) {
 			// Same as above.
-			r.position.y = mouse_pos.y - r.size.y - tooltip_offset.y;
+			r.position.y = p_point.y - r.size.y - tooltip_offset.y;
 
 			if (r.position.y < vr.position.y) {
 				r.position.y = vr.position.y + vr.size.y - r.size.y;
@@ -4751,8 +4770,10 @@ void EditorHelpBitTooltip::popup_under_cursor() {
 	popup(r);
 }
 
-EditorHelpBitTooltip::EditorHelpBitTooltip(Control *p_target) {
+EditorHelpBitTooltip::EditorHelpBitTooltip(Control *p_target, bool p_shortcut) {
 	ERR_FAIL_NULL(p_target);
+
+	_is_shortcut_pressed = p_shortcut;
 
 	set_theme_type_variation("TooltipPanel");
 

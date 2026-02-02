@@ -184,6 +184,7 @@ ScriptTextEditor::EditMenusSTE::EditMenusSTE() {
 	edit_menu_convert_indent->add_shortcut(ED_GET_SHORTCUT("script_text_editor/auto_indent"), EDIT_AUTO_INDENT);
 
 	search_menu->get_popup()->add_separator();
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/show_tooltip"), SHOW_TOOLTIP_AT_CARET);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/contextual_help"), HELP_CONTEXTUAL);
 
 	breakpoints_menu = memnew(PopupMenu);
@@ -1300,7 +1301,7 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 	}
 }
 
-void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, int p_column) {
+void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, int p_column, bool p_shortcut) {
 	if (!EDITOR_GET("text_editor/behavior/documentation/enable_tooltips").booleanize()) {
 		return;
 	}
@@ -1418,7 +1419,7 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 	}
 
 	if (!doc_symbol.is_empty() || !debug_value.is_empty()) {
-		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), doc_symbol, debug_value, true);
+		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), doc_symbol, debug_value, true, p_shortcut);
 		memdelete(tmp);
 	}
 }
@@ -1792,6 +1793,9 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 				}
 			}
 			code_editor->goto_line_centered(bpoints[bpoint_idx]);
+		} break;
+		case SHOW_TOOLTIP_AT_CARET: {
+			_show_symbol_tooltip(tx->get_word_under_caret(), tx->get_caret_line(), tx->get_caret_column(), true);
 		} break;
 		case HELP_CONTEXTUAL: {
 			String text = tx->get_selected_text(0);
@@ -2565,6 +2569,7 @@ void ScriptTextEditor::register_editor() {
 
 	ED_SHORTCUT("script_text_editor/replace_in_files", TTRC("Replace in Files..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::R);
 
+	ED_SHORTCUT("script_text_editor/show_tooltip", TTRC("Show Tooltip"), KeyModifierMask::ALT | Key::SLASH, true);
 	ED_SHORTCUT("script_text_editor/contextual_help", TTRC("Contextual Help"), KeyModifierMask::ALT | Key::F1);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/contextual_help", "macos", KeyModifierMask::ALT | KeyModifierMask::SHIFT | Key::SPACE);
 
@@ -2598,7 +2603,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	code_editor->connect("show_errors_panel", callable_mp(this, &ScriptTextEditor::_show_errors_panel));
 	code_editor->connect("show_warnings_panel", callable_mp(this, &ScriptTextEditor::_show_warnings_panel));
 	code_editor->get_text_editor()->connect("symbol_lookup", callable_mp(this, &ScriptTextEditor::_lookup_symbol));
-	code_editor->get_text_editor()->connect("symbol_hovered", callable_mp(this, &ScriptTextEditor::_show_symbol_tooltip));
+	code_editor->get_text_editor()->connect("symbol_hovered", callable_mp(this, &ScriptTextEditor::_show_symbol_tooltip).bind(false));
 	code_editor->get_text_editor()->connect("symbol_validate", callable_mp(this, &ScriptTextEditor::_validate_symbol));
 	code_editor->get_text_editor()->connect("gutter_added", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
 	code_editor->get_text_editor()->connect("gutter_removed", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));

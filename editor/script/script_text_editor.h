@@ -115,6 +115,7 @@ class ScriptTextEditor : public CodeEditorBase {
 		DEBUG_GOTO_NEXT_BREAKPOINT,
 		DEBUG_GOTO_PREV_BREAKPOINT,
 
+		SHOW_TOOLTIP_AT_CARET,
 		HELP_CONTEXTUAL,
 		LOOKUP_SYMBOL,
 	};
@@ -191,7 +192,7 @@ protected:
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
 	void _validate_symbol(const String &p_symbol);
 
-	void _show_symbol_tooltip(const String &p_symbol, int p_row, int p_column);
+	void _show_symbol_tooltip(const String &p_symbol, int p_row, int p_column, bool p_shortcut = false);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
