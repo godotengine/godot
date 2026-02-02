@@ -1735,13 +1735,13 @@ void Skeleton3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo, c
 		}
 	} else {
 		Node3DEditor::ToolMode tool_mode = ne->get_tool_mode();
-		if (tool_mode == Node3DEditor::TOOL_MODE_SELECT || tool_mode == Node3DEditor::TOOL_MODE_MOVE || tool_mode == Node3DEditor::TOOL_MODE_TRANSFORM) {
+		if (tool_mode == Node3DEditor::TOOL_MODE_MOVE || tool_mode == Node3DEditor::TOOL_MODE_TRANSFORM) {
 			for (int id : p_ids) {
 				ur->add_do_method(skeleton, "set_bone_pose_position", id, skeleton->get_bone_pose_position(id));
 				ur->add_undo_method(skeleton, "set_bone_pose_position", id, se->get_bone_original_position());
 			}
 		}
-		if (tool_mode == Node3DEditor::TOOL_MODE_SELECT || tool_mode == Node3DEditor::TOOL_MODE_ROTATE || tool_mode == Node3DEditor::TOOL_MODE_TRANSFORM) {
+		if (tool_mode == Node3DEditor::TOOL_MODE_ROTATE || tool_mode == Node3DEditor::TOOL_MODE_TRANSFORM) {
 			for (int id : p_ids) {
 				ur->add_do_method(skeleton, "set_bone_pose_rotation", id, skeleton->get_bone_pose_rotation(id));
 				ur->add_undo_method(skeleton, "set_bone_pose_rotation", id, se->get_bone_original_rotation());
