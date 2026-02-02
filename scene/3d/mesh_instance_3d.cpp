@@ -868,10 +868,10 @@ Dictionary MeshInstance3D::intersect_ray(const Vector3 &p_from, const Vector3 &p
 
 	result["success"] = false;
 
-	if (!mesh.is_null()) {
+	if (mesh.is_valid()) {
 		Ref<TriangleMesh> tri_mesh = mesh->get_triangle_mesh();
 
-		if (!tri_mesh.is_null()) {
+		if (tri_mesh.is_valid()) {
 			Transform3D gl_tform = get_global_transform();
 			Transform3D in_tform = gl_tform.affine_inverse();
 
@@ -908,10 +908,10 @@ Dictionary MeshInstance3D::intersect_segment(const Vector3 &p_from, const Vector
 
 	result["success"] = false;
 
-	if (!mesh.is_null()) {
+	if (mesh.is_valid()) {
 		Ref<TriangleMesh> tri_mesh = mesh->get_triangle_mesh();
 
-		if (tri_mesh.is_null()) {
+		if (tri_mesh.is_valid()) {
 			Transform3D gl_tform = get_global_transform();
 			Transform3D in_tform = gl_tform.affine_inverse();
 
@@ -920,7 +920,8 @@ Dictionary MeshInstance3D::intersect_segment(const Vector3 &p_from, const Vector
 
 			Vector3 local_point;
 			Vector3 local_normal;
-			int32_t surf_index, face_index;
+			int32_t surf_index;
+			int32_t face_index;
 
 			bool intersected = tri_mesh->intersect_segment(local_from, local_to, local_point, local_normal, &surf_index, &face_index);
 
