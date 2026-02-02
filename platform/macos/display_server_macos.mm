@@ -3492,7 +3492,7 @@ DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver,
 							"If possible, consider updating your macOS version or using the OpenGL 3 driver.\n\n"
 							"You can enable the OpenGL 3 driver by starting the engine from the\n"
 							"command line with the command:\n\n    %s\n\n"
-                            "Keep in mind that using the OpenGL 3 driver without it being supported may cause visual artifacts or other issues.\n",
+							"Keep in mind that using the OpenGL 3 driver without it being supported may cause visual artifacts or other issues.\n",
 							executable_command),
 					"Unable to initialize Vulkan video driver");
 		} else {
