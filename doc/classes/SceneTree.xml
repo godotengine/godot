@@ -286,7 +286,7 @@
 		<member name="paused" type="bool" setter="set_pause" getter="is_paused" default="false">
 			If [code]true[/code], the scene tree is considered paused. This causes the following behavior:
 			- 2D and 3D physics will be stopped, as well as collision detection and related signals.
-			- Depending on each node's [member Node.process_mode], their [method Node._process], [method Node._physics_process] and [method Node._input] callback methods may not be called anymore.
+			- Depending on each node's [member Node.process_mode], their [method Node._process], [method Node._physics_process], and [method Node._input] callback methods may not be called anymore.
 		</member>
 		<member name="physics_interpolation" type="bool" setter="set_physics_interpolation_enabled" getter="is_physics_interpolation_enabled" default="false">
 			If [code]true[/code], the renderer will interpolate the transforms of objects (both physics and non-physics) between the last two transforms, so that smooth motion is seen even when physics ticks do not coincide with rendered frames.
