@@ -79,10 +79,10 @@ void RenderingLightCuller::prepare_directional_light(const RendererSceneCull::In
 		data.directional_cull_planes.resize(p_directional_light_id + 1);
 	}
 
-	_prepare_light(*p_instance, p_directional_light_id);
+	_prepare_light(*p_instance, data.directional_cull_planes[p_directional_light_id]);
 }
 
-bool RenderingLightCuller::_prepare_light(const RendererSceneCull::Instance &p_instance, int32_t p_directional_light_id) {
+bool RenderingLightCuller::_prepare_light(const RendererSceneCull::Instance &p_instance, LightCullPlanes &r_light_cull_planes) {
 	if (!data.is_active()) {
 		return true;
 	}
@@ -109,12 +109,7 @@ bool RenderingLightCuller::_prepare_light(const RendererSceneCull::Instance &p_i
 	lsource.dir = -p_instance.transform.basis.get_column(2);
 	lsource.dir.normalize();
 
-	bool visible;
-	if (p_directional_light_id == -1) {
-		visible = _add_light_camera_planes(data.regular_cull_planes, lsource);
-	} else {
-		visible = _add_light_camera_planes(data.directional_cull_planes[p_directional_light_id], lsource);
-	}
+	bool visible = _add_light_camera_planes(r_light_cull_planes, lsource);
 
 	if (data.light_culling_active) {
 		return visible;
@@ -150,14 +145,14 @@ bool RenderingLightCuller::cull_directional_light(const RendererSceneCull::Insta
 	return true;
 }
 
-void RenderingLightCuller::cull_regular_light(PagedArray<RendererSceneCull::Instance *> &r_instance_shadow_cull_result) {
+void RenderingLightCuller::cull_regular_light(const LightCullPlanes &p_light_cull_planes, PagedArray<RendererSceneCull::Instance *> &r_instance_shadow_cull_result) {
 	if (!data.is_active() || !is_caster_culling_active()) {
 		return;
 	}
 
 	// If the light is out of range, no need to check anything, just return 0 casters.
 	// Ideally an out of range light should not even be drawn AT ALL (no shadow map, no PCF etc).
-	if (data.out_of_range) {
+	if (p_light_cull_planes.out_of_range) {
 		return;
 	}
 
@@ -182,13 +177,13 @@ void RenderingLightCuller::cull_regular_light(PagedArray<RendererSceneCull::Inst
 		real_t r_min, r_max;
 		bool show = true;
 
-		for (int p = 0; p < data.regular_cull_planes.num_cull_planes; p++) {
+		for (int p = 0; p < p_light_cull_planes.num_cull_planes; p++) {
 			// As we only need r_min, could this be optimized?
-			bb.project_range_in_plane(data.regular_cull_planes.cull_planes[p], r_min, r_max);
+			bb.project_range_in_plane(p_light_cull_planes.cull_planes[p], r_min, r_max);
 
 #ifdef LIGHT_CULLER_DEBUG_LOGGING
 			if (is_logging()) {
-				print_line("\tplane " + itos(p) + " : " + String(data.regular_cull_planes.cull_planes[p]) + " r_min " + String(Variant(r_min)) + " r_max " + String(Variant(r_max)));
+				print_line("\tplane " + itos(p) + " : " + String(p_light_cull_planes.cull_planes[p]) + " r_min " + String(Variant(r_min)) + " r_max " + String(Variant(r_max)));
 			}
 #endif
 
@@ -221,7 +216,7 @@ void RenderingLightCuller::cull_regular_light(PagedArray<RendererSceneCull::Inst
 #endif
 }
 
-void RenderingLightCuller::LightCullPlanes::add_cull_plane(const Plane &p) {
+void LightCullPlanes::add_cull_plane(const Plane &p) {
 	ERR_FAIL_COND(num_cull_planes >= MAX_CULL_PLANES);
 	cull_planes[num_cull_planes++] = p;
 }
@@ -335,7 +330,7 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 
 	// Start with 0 cull planes.
 	r_cull_planes.num_cull_planes = 0;
-	data.out_of_range = false;
+	r_cull_planes.out_of_range = false;
 	uint32_t lookup = 0;
 
 	// Find which of the camera planes are facing away from the light.
@@ -364,7 +359,7 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 				// be seen.
 				if (dist >= p_light_source.range) {
 					// If the light is out of range, no need to do anything else, everything will be culled.
-					data.out_of_range = true;
+					r_cull_planes.out_of_range = true;
 					return false;
 				}
 			}
@@ -393,7 +388,7 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 
 				// Is the light out of range?
 				if (dist >= p_light_source.range) {
-					data.out_of_range = true;
+					r_cull_planes.out_of_range = true;
 					return false;
 				}
 
@@ -405,7 +400,7 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 				float dist_end = data.frustum_planes[n].distance_to(pos_end);
 
 				if (dist_end >= end_cone_radius) {
-					data.out_of_range = true;
+					r_cull_planes.out_of_range = true;
 					return false;
 				}
 			}
@@ -497,8 +492,6 @@ bool RenderingLightCuller::prepare_camera(const Transform3D &p_cam_transform, co
 	// Get the camera frustum planes in world space.
 	data.frustum_planes = p_cam_matrix.get_projection_planes(p_cam_transform);
 	DEV_CHECK_ONCE(data.frustum_planes.size() == 6);
-
-	data.regular_cull_planes.num_cull_planes = 0;
 
 #ifdef LIGHT_CULLER_DEBUG_DIRECTIONAL_LIGHT
 	if (is_logging()) {
