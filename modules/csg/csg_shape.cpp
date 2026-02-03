@@ -1568,9 +1568,10 @@ CSGBrush *CSGBox3D::_build_brush() {
 		Vector3 vertex_mul = size / 2;
 
 		{
+			int uv_direction = 0;
 			for (int i = 0; i < 6; i++) {
 				Vector3 face_points[4];
-				float uv_points[8] = { 0, 0, 0, 1, 1, 1, 1, 0 };
+				//float uv_points[8] = { 0, 0, 0, 1, 1, 1, 1, 0 };
 
 				for (int j = 0; j < 4; j++) {
 					float v[3];
@@ -1587,19 +1588,27 @@ CSGBrush *CSGBox3D::_build_brush() {
 					}
 				}
 
-				Vector2 u[4];
-				for (int j = 0; j < 4; j++) {
-					u[j] = Vector2(uv_points[j * 2 + 0], uv_points[j * 2 + 1]);
-				}
+				Vector2 u[4] = {Vector2(0, 0), Vector2(0, 1), Vector2(1, 1), Vector2(1, 0)};
+				//for (int j = 0; j < 4; j++) {
+				//	u[j] = Vector2(uv_points[j * 2 + 0], uv_points[j * 2 + 1]);
+				//}
 
+				//We should just provide the data for a box. It's a Box. Unlike Cylinder or Sphere, it will always have the same number of faces and vertices. This is a waste of resources.
 				//face 1
 				facesw[face * 3 + 0] = face_points[0] * vertex_mul;
 				facesw[face * 3 + 1] = face_points[1] * vertex_mul;
 				facesw[face * 3 + 2] = face_points[2] * vertex_mul;
 
-				uvsw[face * 3 + 0] = u[0];
-				uvsw[face * 3 + 1] = u[1];
-				uvsw[face * 3 + 2] = u[2];
+				if (scale_uv) {
+					uvsw[face * 3 + 0] = u[0];
+					uvsw[face * 3 + 1] = u[1];
+					uvsw[face * 3 + 2] = u[2];
+				} else {
+					uvsw[face * 3 + 0] = u[0];
+					uvsw[face * 3 + 1] = u[1];
+					uvsw[face * 3 + 2] = u[2];
+				}
+
 
 				smoothw[face] = false;
 				invertw[face] = invert_val;
@@ -1611,9 +1620,16 @@ CSGBrush *CSGBox3D::_build_brush() {
 				facesw[face * 3 + 1] = face_points[3] * vertex_mul;
 				facesw[face * 3 + 2] = face_points[0] * vertex_mul;
 
-				uvsw[face * 3 + 0] = u[2];
-				uvsw[face * 3 + 1] = u[3];
-				uvsw[face * 3 + 2] = u[0];
+				if (scale_uv) {
+					uvsw[face * 3 + 0] = u[2];
+					uvsw[face * 3 + 1] = u[3];
+					uvsw[face * 3 + 2] = u[0];
+				} else {
+					uvsw[face * 3 + 0] = u[2];
+					uvsw[face * 3 + 1] = u[3];
+					uvsw[face * 3 + 2] = u[0];
+				}
+
 
 				smoothw[face] = false;
 				invertw[face] = invert_val;
@@ -1640,7 +1656,11 @@ void CSGBox3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGBox3D::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGBox3D::get_material);
 
+	ClassDB::bind_method(D_METHOD("set_scale_uv", "scale_uv"), &CSGBox3D::set_scale_uv);
+	ClassDB::bind_method(D_METHOD("get_scale_uv"), &CSGBox3D::get_scale_uv);
+
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scale_uv"));//TODO come back
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
 
@@ -1653,6 +1673,17 @@ void CSGBox3D::set_size(const Vector3 &p_size) {
 Vector3 CSGBox3D::get_size() const {
 	return size;
 }
+
+void CSGBox3D::set_scale_uv(const bool &p_scale_uv) {
+	scale_uv = p_scale_uv;
+	_make_dirty();
+	update_gizmos();
+}
+
+bool CSGBox3D::get_scale_uv() const {
+	return scale_uv;
+}
+
 
 #ifndef DISABLE_DEPRECATED
 // Kept for compatibility from 3.x to 4.0.
