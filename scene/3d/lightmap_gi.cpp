@@ -884,7 +884,8 @@ LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Li
 
 		// Reimport the file.
 		ResourceLoader::import(atlas_path);
-		Ref<TextureLayered> t = ResourceLoader::load(atlas_path); // If already loaded, it will be updated on refocus?
+		// Use CACHE_MODE_REPLACE to ensure we get the newly imported texture, not a cached stale version.
+		Ref<TextureLayered> t = ResourceLoader::load(atlas_path, "", ResourceFormatLoader::CACHE_MODE_REPLACE);
 		ERR_FAIL_COND_V(t.is_null(), LightmapGI::BAKE_ERROR_CANT_CREATE_IMAGE);
 
 		// Store the atlas in the array.
