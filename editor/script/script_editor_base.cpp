@@ -645,6 +645,9 @@ TextEditorBase::TextEditorBase() {
 
 	edit_hb = memnew(HBoxContainer);
 
+	goto_line_popup = memnew(GotoLinePopup);
+	add_child(goto_line_popup);
+
 	Ref<EditorPlainTextSyntaxHighlighter> plain_highlighter;
 	plain_highlighter.instantiate();
 	add_syntax_highlighter(plain_highlighter);
