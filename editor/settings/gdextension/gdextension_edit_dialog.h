@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  project_settings_gdextension.h                                        */
+/*  gdextension_edit_dialog.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,33 +30,39 @@
 
 #pragma once
 
-#include "scene/gui/box_container.h"
+#include "scene/gui/dialogs.h"
 
-class GDExtensionEditDialog;
-class Tree;
+class CheckBox;
+class EditorPropertyDictionary;
+class EditorValidationPanel;
+class LineEdit;
 
-class ProjectSettingsGDExtension : public VBoxContainer {
-	GDCLASS(ProjectSettingsGDExtension, VBoxContainer);
+class GDExtensionEditDialog : public ConfirmationDialog {
+	GDCLASS(GDExtensionEditDialog, ConfirmationDialog);
 
 	enum {
-		COLUMN_PATH,
-		COLUMN_MIN_VERSION,
-		COLUMN_MAX_VERSION,
-		COLUMN_EDIT,
-		COLUMN_RELOAD,
-		COLUMN_MAX,
+		MSG_ID_ENTRY_SYMBOL_NAME,
+		MSG_ID_COMPAT_MIN_VERSION,
+		MSG_ID_COMPAT_MAX_VERSION,
 	};
 
-	GDExtensionEditDialog *edit_dialog = nullptr;
-	Tree *extension_list = nullptr;
+	Label *gdextension_path = nullptr;
+	LineEdit *entry_symbol_edit = nullptr;
+	LineEdit *compat_max_version_edit = nullptr;
+	LineEdit *compat_min_version_edit = nullptr;
+	CheckBox *reloadable_checkbox = nullptr;
+	EditorValidationPanel *validation_panel = nullptr;
 
-	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
-	void _on_item_activated();
-	void _update_extension_tree();
+	void _clear_fields();
+	void _on_canceled();
+	void _on_confirmed();
+	void _on_required_text_changed();
 
 protected:
+	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
-	ProjectSettingsGDExtension();
+	void load_gdextension_config(const String &p_path);
+	GDExtensionEditDialog();
 };

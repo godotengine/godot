@@ -35,6 +35,7 @@
 #include "core/io/config_file.h"
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
+#include "editor/settings/gdextension/gdextension_edit_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/label.h"
 #include "scene/gui/tree.h"
@@ -50,6 +51,7 @@ void ProjectSettingsGDExtension::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_READY: {
+			edit_dialog->connect("gdextension_editor_closed", callable_mp(this, &ProjectSettingsGDExtension::_update_extension_tree));
 			extension_list->connect("button_clicked", callable_mp(this, &ProjectSettingsGDExtension::_cell_button_pressed));
 			extension_list->connect("item_activated", callable_mp(this, &ProjectSettingsGDExtension::_on_item_activated));
 		} break;
@@ -64,7 +66,11 @@ void ProjectSettingsGDExtension::_cell_button_pressed(Object *p_item, int p_colu
 	if (item == nullptr) {
 		return;
 	}
-	if (p_id == COLUMN_RELOAD) {
+	if (p_id == COLUMN_EDIT) {
+		const String path = item->get_metadata(COLUMN_PATH);
+		edit_dialog->load_gdextension_config(path);
+		edit_dialog->popup_centered(Size2(400, 300) * EDSCALE);
+	} else if (p_id == COLUMN_RELOAD) {
 		const String path = item->get_metadata(COLUMN_PATH);
 		GDExtensionManager::get_singleton()->reload_extension(path);
 		_update_extension_tree();
@@ -96,6 +102,7 @@ void ProjectSettingsGDExtension::_update_extension_tree() {
 		ERR_CONTINUE(err != OK);
 		item->set_text(COLUMN_MIN_VERSION, gdext_config->get_value("configuration", "compatibility_minimum", ""));
 		item->set_text(COLUMN_MAX_VERSION, gdext_config->get_value("configuration", "compatibility_maximum", ""));
+		item->add_button(COLUMN_EDIT, get_editor_theme_icon(SNAME("Edit")), COLUMN_EDIT, false, TTRC("Edit Extension"));
 		if (gdextension->is_reloadable()) {
 			item->add_button(COLUMN_RELOAD, get_editor_theme_icon(SNAME("Reload")), COLUMN_RELOAD, false, TTRC("Reload Extension"));
 		}
@@ -104,6 +111,8 @@ void ProjectSettingsGDExtension::_update_extension_tree() {
 }
 
 ProjectSettingsGDExtension::ProjectSettingsGDExtension() {
+	edit_dialog = memnew(GDExtensionEditDialog);
+	add_child(edit_dialog);
 	// Create the title label.
 	HBoxContainer *title_hb = memnew(HBoxContainer);
 	Label *label = memnew(Label(TTRC("Installed GDExtensions:")));
@@ -123,22 +132,27 @@ ProjectSettingsGDExtension::ProjectSettingsGDExtension() {
 	extension_list->set_column_title(COLUMN_PATH, TTRC("Path"));
 	extension_list->set_column_title(COLUMN_MIN_VERSION, TTRC("Min Version"));
 	extension_list->set_column_title(COLUMN_MAX_VERSION, TTRC("Max Version"));
+	extension_list->set_column_title(COLUMN_EDIT, TTRC("Edit"));
 	extension_list->set_column_title(COLUMN_RELOAD, TTRC("Reload"));
 	extension_list->set_column_title_alignment(COLUMN_PATH, HORIZONTAL_ALIGNMENT_LEFT);
 	extension_list->set_column_title_alignment(COLUMN_MIN_VERSION, HORIZONTAL_ALIGNMENT_LEFT);
 	extension_list->set_column_title_alignment(COLUMN_MAX_VERSION, HORIZONTAL_ALIGNMENT_LEFT);
+	extension_list->set_column_title_alignment(COLUMN_EDIT, HORIZONTAL_ALIGNMENT_LEFT);
 	extension_list->set_column_title_alignment(COLUMN_RELOAD, HORIZONTAL_ALIGNMENT_LEFT);
 	extension_list->set_column_expand(COLUMN_PATH, true);
 	extension_list->set_column_expand(COLUMN_MIN_VERSION, false);
 	extension_list->set_column_expand(COLUMN_MAX_VERSION, false);
+	extension_list->set_column_expand(COLUMN_EDIT, false);
 	extension_list->set_column_expand(COLUMN_RELOAD, false);
 	extension_list->set_column_clip_content(COLUMN_PATH, true);
 	extension_list->set_column_clip_content(COLUMN_MIN_VERSION, true);
 	extension_list->set_column_clip_content(COLUMN_MAX_VERSION, true);
+	extension_list->set_column_clip_content(COLUMN_EDIT, true);
 	extension_list->set_column_clip_content(COLUMN_RELOAD, true);
 	extension_list->set_column_custom_minimum_width(COLUMN_PATH, 300 * EDSCALE);
 	extension_list->set_column_custom_minimum_width(COLUMN_MIN_VERSION, 100 * EDSCALE);
 	extension_list->set_column_custom_minimum_width(COLUMN_MAX_VERSION, 100 * EDSCALE);
+	extension_list->set_column_custom_minimum_width(COLUMN_EDIT, 40 * EDSCALE);
 	extension_list->set_column_custom_minimum_width(COLUMN_RELOAD, 40 * EDSCALE);
 	add_child(extension_list);
 }
