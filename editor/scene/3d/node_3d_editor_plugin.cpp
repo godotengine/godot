@@ -6282,6 +6282,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	gizmo_environment->set_background(Environment::BG_CLEAR_COLOR);
 	gizmo_environment->set_tonemapper(Environment::TONE_MAPPER_LINEAR);
 	gizmo_camera->set_environment(gizmo_environment);
+	gizmo_camera->set_compositor(Ref<Compositor>());
 	surface->set_focus_mode(FOCUS_ALL);
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
