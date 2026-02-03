@@ -607,12 +607,13 @@ void EditorDockManager::open_dock(EditorDock *p_dock, bool p_set_current) {
 
 	// Open dock to its previous location.
 	if (p_dock->dock_slot_index != EditorDock::DOCK_SLOT_NONE) {
-		TabContainer *slot = dock_slots[p_dock->dock_slot_index];
+		DockTabContainer *slot = dock_slots[p_dock->dock_slot_index];
 		int tab_index = p_dock->previous_tab_index;
 		if (tab_index < 0) {
 			tab_index = slot->get_tab_count();
 		}
-		_move_dock(p_dock, slot, tab_index, p_set_current);
+
+		_move_dock(p_dock, slot, tab_index, p_set_current && slot->can_switch_dock());
 	} else {
 		_open_dock_in_window(p_dock, true, true);
 		return;
