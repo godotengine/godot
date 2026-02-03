@@ -4327,8 +4327,9 @@ void Tree::_determine_hovered_item() {
 	cache.hover_header_row = false;
 	cache.hover_header_column = 0;
 	if (show_column_titles && is_mouse_hovering) {
-		pos.y -= _get_title_button_height();
-		if (pos.y < 0) {
+		int tbh = _get_title_button_height();
+		pos.y -= tbh;
+		if (pos.y < 0 && pos.y >= -tbh) {
 			pos.x += theme_cache.offset.x;
 			int len = 0;
 			for (int i = 0; i < columns.size(); i++) {
@@ -5024,6 +5025,7 @@ void Tree::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {
+			hovered_pos = Vector2(-1.0, -1.0);
 			is_mouse_hovering = false;
 			if (enable_drag_unfolding && drop_mode_over) {
 				_reset_drop_mode_over();
