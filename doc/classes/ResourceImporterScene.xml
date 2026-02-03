@@ -52,7 +52,7 @@
 			If [code]true[/code], enables the generation of shadow meshes on import. This optimizes shadow rendering without reducing quality by welding vertices together when possible. This in turn reduces the memory bandwidth required to render shadows. Shadow mesh generation currently doesn't support using a lower detail level than the source mesh (but shadow rendering will make use of LODs when relevant).
 		</member>
 		<member name="meshes/ensure_tangents" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], generate vertex tangents using [url=http://www.mikktspace.com/]Mikktspace[/url] if the input meshes don't have tangent data. When possible, it's recommended to let the 3D modeling software generate tangents on export instead on relying on this option. Tangents are required for correct display of normal and height maps, along with any material/shader features that require tangents.
+			If [code]true[/code], generate vertex tangents using [url=http://www.mikktspace.com/]Mikktspace[/url] if the input meshes don't have tangent data. When possible, it's recommended to let the 3D modeling software generate tangents on export instead of relying on this option. Tangents are required for correct display of normal and height maps, along with any material/shader features that require tangents.
 			If you don't need material features that require tangents, disabling this can reduce output file size and speed up importing if the source 3D file doesn't contain tangents.
 		</member>
 		<member name="meshes/force_disable_compression" type="bool" setter="" getter="" default="false">
@@ -94,9 +94,9 @@
 		</member>
 		<member name="skins/use_named_skins" type="bool" setter="" getter="" default="true">
 			If checked, use named [Skin]s for animation. The [MeshInstance3D] node contains 3 properties of relevance here: a skeleton [NodePath] pointing to the [Skeleton3D] node (usually [code]..[/code]), a mesh, and a skin:
-			- The [Skeleton3D] node contains a list of bones with names, their pose and rest, a name and a parent bone.
+			- The [Skeleton3D] node contains a list of bones with names, their pose and rest, a name, and a parent bone.
 			- The mesh is all of the raw vertex data needed to display a mesh. In terms of the mesh, it knows how vertices are weight-painted and uses some internal numbering often imported from 3D modeling software.
-			- The skin contains the information necessary to bind this mesh onto this Skeleton3D. For every one of the internal bone IDs chosen by the 3D modeling software, it contains two things. Firstly, a matrix known as the Bind Pose Matrix, Inverse Bind Matrix, or IBM for short. Secondly, the [Skin] contains each bone's name (if [member skins/use_named_skins] is [code]true[/code]), or the bone's index within the [Skeleton3D] list (if [member skins/use_named_skins] is [code]false[/code]).
+			- The skin contains the information necessary to bind this mesh onto this Skeleton3D. For each of the internal bone IDs chosen by the 3D modeling software, it contains two things. Firstly, a matrix known as the Bind Pose Matrix, Inverse Bind Matrix, or IBM for short. Secondly, the [Skin] contains each bone's name (if [member skins/use_named_skins] is [code]true[/code]), or the bone's index within the [Skeleton3D] list (if [member skins/use_named_skins] is [code]false[/code]).
 			Together, this information is enough to tell Godot how to use the bone poses in the [Skeleton3D] node to render the mesh from each [MeshInstance3D]. Note that each [MeshInstance3D] may share binds, as is common in models exported from Blender, or each [MeshInstance3D] may use a separate [Skin] object, as is common in models exported from other tools such as Maya.
 		</member>
 	</members>
