@@ -63,6 +63,7 @@ using namespace godot;
 
 #ifdef ICU_STATIC_DATA
 #include <icudata.gen.h>
+#include <icudata_base.gen.h>
 #endif
 
 // Thirdparty headers.
@@ -483,10 +484,10 @@ String TextServerAdvanced::_get_support_data_filename() const {
 }
 
 String TextServerAdvanced::_get_support_data_info() const {
-	return String("ICU break iteration data (\"icudt_godot.dat\").");
+	return String("ICU common and break iteration data (\"icudt_godot.dat\").");
 }
 
-bool TextServerAdvanced::_save_support_data(const String &p_filename) const {
+bool TextServerAdvanced::_save_support_data(const String &p_filename, const String &p_config) const {
 	_THREAD_SAFE_METHOD_
 #ifdef ICU_STATIC_DATA
 
@@ -498,8 +499,15 @@ bool TextServerAdvanced::_save_support_data(const String &p_filename) const {
 	}
 
 	PackedByteArray icu_data_static;
-	icu_data_static.resize(U_ICUDATA_SIZE);
-	memcpy(icu_data_static.ptrw(), U_ICUDATA_ENTRY_POINT, U_ICUDATA_SIZE);
+	if (p_config == "full") {
+		icu_data_static.resize(U_ICUDATA_SIZE);
+		memcpy(icu_data_static.ptrw(), U_ICUDATA_ENTRY_POINT, U_ICUDATA_SIZE);
+	} else if (p_config == "base") {
+		icu_data_static.resize(U_ICUDATA_SIZE_BASE);
+		memcpy(icu_data_static.ptrw(), U_ICUDATA_ENTRY_POINT_BASE, U_ICUDATA_SIZE_BASE);
+	} else {
+		ERR_FAIL_V_MSG(false, "Invalid data config.");
+	}
 	f->store_buffer(icu_data_static);
 
 	return true;
@@ -508,13 +516,20 @@ bool TextServerAdvanced::_save_support_data(const String &p_filename) const {
 #endif
 }
 
-PackedByteArray TextServerAdvanced::_get_support_data() const {
+PackedByteArray TextServerAdvanced::_get_support_data(const String &p_config) const {
 	_THREAD_SAFE_METHOD_
 #ifdef ICU_STATIC_DATA
 
 	PackedByteArray icu_data_static;
-	icu_data_static.resize(U_ICUDATA_SIZE);
-	memcpy(icu_data_static.ptrw(), U_ICUDATA_ENTRY_POINT, U_ICUDATA_SIZE);
+	if (p_config == "full") {
+		icu_data_static.resize(U_ICUDATA_SIZE);
+		memcpy(icu_data_static.ptrw(), U_ICUDATA_ENTRY_POINT, U_ICUDATA_SIZE);
+	} else if (p_config == "base") {
+		icu_data_static.resize(U_ICUDATA_SIZE_BASE);
+		memcpy(icu_data_static.ptrw(), U_ICUDATA_ENTRY_POINT_BASE, U_ICUDATA_SIZE_BASE);
+	} else {
+		ERR_FAIL_V_MSG(PackedByteArray(), "Invalid data config.");
+	}
 
 	return icu_data_static;
 #else
