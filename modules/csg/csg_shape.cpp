@@ -1656,7 +1656,7 @@ void CSGBox3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGBox3D::get_material);
 
 	ClassDB::bind_method(D_METHOD("set_scale_uv", "scale_uv"), &CSGBox3D::set_scale_uv);
-	ClassDB::bind_method(D_METHOD("is_scale_uv"), &CSGBox3D::get_scale_uv);
+	ClassDB::bind_method(D_METHOD("is_scale_uv"), &CSGBox3D::is_scale_uv);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scale_uv"), "set_scale_uv", "is_scale_uv");//TODO come back
