@@ -1136,6 +1136,34 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 #endif
 	EDITOR_SETTING_BASIC(Variant::STRING, PROPERTY_HINT_ENUM, "project_manager/default_renderer", default_renderer, "forward_plus,mobile,gl_compatibility")
 
+	// .NET settings.
+	// The enum values must be kept in sync with their C# counterparts:
+	// - ExternalEditorId in GodotTools/ExternalEditorId.cs
+	// - VerbosityLevelId in GodotTools/VerbosityLevelId.cs
+	// - ProblemsLayout in GodotTools/Build/BuildProblemsView.cs
+
+	// ExternalEditorId: None=0, VisualStudio=1, VisualStudioForMac=2,
+	// MonoDevelop=3, VsCode=4, Rider=5, CustomEditor=6, Fleet=7
+#if defined(WINDOWS_ENABLED)
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "dotnet/editor/external_editor", 0, "Disabled:0,Visual Studio:1,MonoDevelop:3,Visual Studio Code and VSCodium:4,JetBrains Rider:5,JetBrains Fleet:7,Custom:6")
+#elif defined(MACOS_ENABLED)
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "dotnet/editor/external_editor", 0, "Disabled:0,Visual Studio:2,MonoDevelop:3,Visual Studio Code and VSCodium:4,JetBrains Rider:5,JetBrains Fleet:7,Custom:6")
+#elif defined(UNIX_ENABLED)
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "dotnet/editor/external_editor", 0, "Disabled:0,MonoDevelop:3,Visual Studio Code and VSCodium:4,JetBrains Rider:5,JetBrains Fleet:7,Custom:6")
+#else
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "dotnet/editor/external_editor", 0, "Disabled:0")
+#endif
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "dotnet/editor/custom_exec_path", "", "")
+	_initial_set("dotnet/editor/custom_exec_path_args", "{file}");
+
+	// VerbosityLevelId: Quiet=0, Minimal=1, Normal=2, Detailed=3, Diagnostic=4
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "dotnet/build/verbosity_level", 2, "Quiet:0,Minimal:1,Normal:2,Detailed:3,Diagnostic:4")
+	_initial_set("dotnet/build/no_console_logging", false);
+	_initial_set("dotnet/build/create_binary_log", false);
+
+	// ProblemsLayout: List=0, Tree=1
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "dotnet/build/problems_layout", 1, "View as List:0,View as Tree:1")
+
 #undef EDITOR_SETTING
 #undef EDITOR_SETTING_BASIC
 #undef EDITOR_SETTING_USAGE

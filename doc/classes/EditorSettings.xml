@@ -317,6 +317,27 @@
 		<member name="docks/scene_tree/start_create_dialog_fully_expanded" type="bool" setter="" getter="">
 			If [code]true[/code], the Create dialog (Create New Node/Create New Resource) will start with all its sections expanded. Otherwise, sections will be collapsed until the user starts searching (which will automatically expand sections as needed).
 		</member>
+		<member name="dotnet/build/create_binary_log" type="bool" setter="" getter="">
+			If [code]true[/code], creates a binary log file for the .NET build.
+		</member>
+		<member name="dotnet/build/no_console_logging" type="bool" setter="" getter="">
+			If [code]true[/code], disables console logging for .NET builds.
+		</member>
+		<member name="dotnet/build/problems_layout" type="int" setter="" getter="">
+			The layout to use for displaying build problems. [code]0[/code] is List view, [code]1[/code] is Tree view.
+		</member>
+		<member name="dotnet/build/verbosity_level" type="int" setter="" getter="">
+			The verbosity level for .NET builds. [code]0[/code] is Quiet, [code]1[/code] is Minimal, [code]2[/code] is Normal, [code]3[/code] is Detailed, [code]4[/code] is Diagnostic.
+		</member>
+		<member name="dotnet/editor/custom_exec_path" type="String" setter="" getter="">
+			The path to the custom external editor executable for .NET scripts. Used when [member dotnet/editor/external_editor] is set to Custom.
+		</member>
+		<member name="dotnet/editor/custom_exec_path_args" type="String" setter="" getter="">
+			The arguments to pass to the custom external editor. The [code]{file}[/code] placeholder is replaced with the file path.
+		</member>
+		<member name="dotnet/editor/external_editor" type="int" setter="" getter="">
+			The external editor to use for .NET scripts. Options vary by platform and include Visual Studio, VS Code, JetBrains Rider, and others.
+		</member>
 		<member name="editors/2d/auto_resample_delay" type="float" setter="" getter="">
 			Delay time for automatic resampling in the 2D editor (in seconds).
 		</member>
