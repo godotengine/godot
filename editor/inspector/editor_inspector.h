@@ -329,6 +329,8 @@ public:
 	EditorProperty();
 };
 
+VARIANT_ENUM_CAST(EditorProperty::InlineControlSide);
+
 class EditorInspectorPlugin : public RefCounted {
 	GDCLASS(EditorInspectorPlugin, RefCounted);
 

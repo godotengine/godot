@@ -1498,6 +1498,7 @@ void EditorProperty::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_name_split_ratio", "ratio"), &EditorProperty::set_name_split_ratio);
 	ClassDB::bind_method(D_METHOD("get_name_split_ratio"), &EditorProperty::get_name_split_ratio);
 
+	ClassDB::bind_method(D_METHOD("add_inline_control", "control", "side"), &EditorProperty::add_inline_control);
 	ClassDB::bind_method(D_METHOD("deselect"), &EditorProperty::deselect);
 	ClassDB::bind_method(D_METHOD("is_selected"), &EditorProperty::is_selected);
 	ClassDB::bind_method(D_METHOD("select", "focusable"), &EditorProperty::select, DEFVAL(-1));
@@ -1537,6 +1538,9 @@ void EditorProperty::_bind_methods() {
 	GDVIRTUAL_BIND(_set_read_only, "read_only")
 
 	ClassDB::bind_method(D_METHOD("_update_editor_property_status"), &EditorProperty::update_editor_property_status);
+
+	BIND_ENUM_CONSTANT(INLINE_CONTROL_LEFT);
+	BIND_ENUM_CONSTANT(INLINE_CONTROL_RIGHT);
 }
 
 EditorProperty::EditorProperty() {
