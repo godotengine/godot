@@ -140,6 +140,13 @@
 				Returns the column's width in pixels.
 			</description>
 		</method>
+		<method name="get_custom_drawing_canvas_item" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the internal canvas item designated for custom drawing. See [method TreeItem.set_custom_draw_callback].
+				[b]Note:[/b] This canvas item clears automatically on each Tree draw call.
+			</description>
+		</method>
 		<method name="get_custom_popup_rect" qualifiers="const">
 			<return type="Rect2" />
 			<description>
