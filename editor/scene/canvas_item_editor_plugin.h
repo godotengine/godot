@@ -33,6 +33,8 @@
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 
+#include "modules/modules_enabled.gen.h" // for gdscript
+
 class AcceptDialog;
 class Button;
 class ButtonGroup;
@@ -676,6 +678,9 @@ class CanvasItemEditorViewport : public Control {
 	void _create_texture_node(Node *p_parent, Node *p_child, const String &p_path, const Point2 &p_point);
 	void _create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point);
 	bool _create_instance(Node *p_parent, const String &p_path, const Point2 &p_point);
+#ifdef MODULE_GDSCRIPT_ENABLED
+	void _create_node(Node *p_parent, const String &p_path, const Point2 &p_point);
+#endif
 	void _perform_drop_data();
 	void _show_texture_node_type_selector();
 	void _update_theme();
