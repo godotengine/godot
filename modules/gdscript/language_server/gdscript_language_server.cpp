@@ -90,15 +90,18 @@ void GDScriptLanguageServer::start() {
 	port = (GDScriptLanguageServer::port_override > -1) ? GDScriptLanguageServer::port_override : (int)_EDITOR_GET("network/language_server/remote_port");
 	use_thread = (bool)_EDITOR_GET("network/language_server/use_thread");
 	poll_limit_usec = (int)_EDITOR_GET("network/language_server/poll_limit_usec");
-	if (GDScriptLanguageProtocol::get_singleton()->start(port, IPAddress(host)) == OK) {
-		EditorNode::get_log()->add_message("--- GDScript language server started on port " + itos(port) + " ---", EditorLog::MSG_TYPE_EDITOR);
-		if (use_thread) {
-			thread_running = true;
-			thread.start(GDScriptLanguageServer::thread_main, this);
-		}
-		set_process_internal(!use_thread);
-		started = true;
+	const Error status = GDScriptLanguageProtocol::get_singleton()->start(port, IPAddress(host));
+	if (status != OK) {
+		EditorNode::get_log()->add_message("--- Failed to start GDScript language server on port " + itos(port) + ": " + error_names[status] + " ---", EditorLog::MSG_TYPE_EDITOR);
+		return;
 	}
+	EditorNode::get_log()->add_message("--- GDScript language server started on port " + itos(port) + " ---", EditorLog::MSG_TYPE_EDITOR);
+	if (use_thread) {
+		thread_running = true;
+		thread.start(GDScriptLanguageServer::thread_main, this);
+	}
+	set_process_internal(!use_thread);
+	started = true;
 }
 
 void GDScriptLanguageServer::stop() {
