@@ -54,7 +54,6 @@ jobs:
               linker=mold
             bin: ./bin/godot.linuxbsd.editor.dev.double.x86_64.san
             proj-test: true
-            artifact: true
 
           - name: Editor with clang sanitizers (target=editor, dev_build=yes, use_asan=yes, use_ubsan=yes, use_llvm=yes, linker=lld)
             cache-name: linux-editor-llvm-sanitizers
