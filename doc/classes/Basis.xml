@@ -250,7 +250,7 @@
 			<param index="1" name="angle" type="float" />
 			<description>
 				Returns a copy of this basis rotated around the given [param axis] by the given [param angle] (in radians).
-				The [param axis] must be a normalized vector (see [method Vector3.normalized]). If [param angle] is positive, the basis is rotated counter-clockwise around the axis.
+				The [param axis] must be a normalized vector (see [method Vector3.normalized]). If [param angle] is positive, the basis is rotated counter-clockwise when looking against the axis.
 				[codeblocks]
 				[gdscript]
 				var my_basis = Basis.IDENTITY
