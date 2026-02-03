@@ -608,9 +608,13 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		strnew += p_line.replace("$photolibrary_usage_description", description.xml_escape(true)) + "\n";
 	} else if (p_line.contains("$pbx_locale_file_reference")) {
 		String locale_files;
-		Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
-		if (translations.size() > 0) {
+		{
 			HashSet<String> languages;
+			String fb_locale = get_project_setting(p_preset, "internationalization/locale/fallback");
+			if (fb_locale != "en") {
+				languages.insert(fb_locale);
+			}
+			Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
 			for (const String &E : translations) {
 				Ref<Translation> tr = ResourceLoader::load(E);
 				if (tr.is_valid() && tr->get_locale() != "en") {
@@ -627,9 +631,13 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		strnew += p_line.replace("$pbx_locale_file_reference", locale_files);
 	} else if (p_line.contains("$pbx_locale_build_reference")) {
 		String locale_files;
-		Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
-		if (translations.size() > 0) {
+		{
 			HashSet<String> languages;
+			String fb_locale = get_project_setting(p_preset, "internationalization/locale/fallback");
+			if (fb_locale != "en") {
+				languages.insert(fb_locale);
+			}
+			Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
 			for (const String &E : translations) {
 				Ref<Translation> tr = ResourceLoader::load(E);
 				if (tr.is_valid() && tr->get_locale() != "en") {
@@ -1930,7 +1938,11 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 	const StringName domain_name = "godot.project_name_localization";
 	Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(domain_name);
 	TranslationServer::get_singleton()->load_project_translations(domain);
-	const Vector<String> locales = domain->get_loaded_locales();
+	Vector<String> locales = domain->get_loaded_locales();
+	String fb_locale = get_project_setting(p_preset, "internationalization/locale/fallback");
+	if (fb_locale != "en") {
+		locales.push_back(fb_locale);
+	}
 
 	if (!locales.is_empty()) {
 		{

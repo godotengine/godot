@@ -1776,7 +1776,11 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	const StringName domain_name = "godot.project_name_localization";
 	Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(domain_name);
 	TranslationServer::get_singleton()->load_project_translations(domain);
-	const Vector<String> locales = domain->get_loaded_locales();
+	Vector<String> locales = domain->get_loaded_locales();
+	String fb_locale = get_project_setting(p_preset, "internationalization/locale/fallback");
+	if (fb_locale != "en") {
+		locales.push_back(fb_locale);
+	}
 
 	if (!locales.is_empty()) {
 		{
