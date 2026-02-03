@@ -289,7 +289,7 @@ public:
 	Vector3 get_size() const;
 
 	void set_scale_uv(const bool &p_scale_uv);
-	bool get_scale_uv() const;
+	bool is_scale_uv() const;
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
