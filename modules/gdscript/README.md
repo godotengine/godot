@@ -1,15 +1,7 @@
 # Basic GDScript module architecture
 This provides some basic information in how GDScript is implemented and integrates with the rest of the engine. You can learn more about GDScript in the [documentation](https://docs.godotengine.org/en/latest/tutorials/scripting/gdscript/index.html). It describes the syntax and user facing systems and concepts, and can be used as a reference for what user expectations are.
 
-
-## General design
-
-GDScript is:
-
-1. A [gradually typed](https://en.wikipedia.org/wiki/Gradual_typing) language. Type hints are optional and help with static analysis and performance. However, typed code must easily interoperate with untyped code.
-2. A tightly designed language. Features are added because they are _needed_, and not because they can be added or are interesting to develop.
-3. Primarily an interpreted scripting language: it is compiled to GDScript byte code and interpreted in a GDScript virtual machine. It is meant to be easy to use and develop gameplay in. It is not meant for CPU-intensive algorithms or data processing, and is not optimized for it. For that, [C#](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_basics.html) or [GDExtension](https://docs.godotengine.org/en/stable/tutorials/scripting/gdextension/what_is_gdextension.html) may be used.
-
+For general language design guidelines, please visit the [contributing docs](https://contributing.godotengine.org/en/latest/engine/guidelines/gdscript_language_guidelines.html).
 
 ## Integration into Godot
 
