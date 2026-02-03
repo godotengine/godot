@@ -1081,19 +1081,24 @@ void LightStorage::lightmap_free(RID p_rid) {
 void LightStorage::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) {
 	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
 	ERR_FAIL_NULL(lightmap);
-	lightmap->light_texture = p_light;
 	lightmap->uses_spherical_harmonics = p_uses_spherical_haromics;
 
-	Vector3i light_texture_size = GLES3::TextureStorage::get_singleton()->texture_get_size(lightmap->light_texture);
-	lightmap->light_texture_size = Vector2i(light_texture_size.x, light_texture_size.y);
+	if(p_light.is_valid()){
+		lightmap->light_texture = p_light;
 
-	GLuint tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(lightmap->light_texture);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+		Vector3i light_texture_size = GLES3::TextureStorage::get_singleton()->texture_get_size(lightmap->light_texture);
+		lightmap->light_texture_size = Vector2i(light_texture_size.x, light_texture_size.y);
+
+		GLuint tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(lightmap->light_texture);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+	} else {
+        lightmap->light_texture_size = Vector2i(0, 0);
+    }
 }
 
 void LightStorage::lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds) {
@@ -1228,15 +1233,18 @@ float LightStorage::lightmap_get_probe_capture_update_speed() const {
 void LightStorage::lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) {
 	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
 	ERR_FAIL_NULL(lightmap);
-	lightmap->shadow_texture = p_shadow;
-
-	GLuint tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(lightmap->shadow_texture);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+	
+	if (p_shadow.is_valid()) {
+		lightmap->shadow_texture = p_shadow;
+		
+		GLuint tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(lightmap->shadow_texture);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+	}
 }
 
 RS::ShadowmaskMode LightStorage::lightmap_get_shadowmask_mode(RID p_lightmap) {
