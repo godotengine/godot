@@ -1566,6 +1566,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 		int face = 0;
 
 		Vector3 vertex_mul = size / 2;
+		Vector2 directions[6] = {Vector2(size.x, size.y), Vector2(size.x, size.z), Vector2(size.y, size.z), Vector2(size.x, size.y), Vector2(size.x, size.z), Vector2(size.y, size.z)};
 
 		{
 			for (int i = 0; i < 6; i++) {
@@ -1599,9 +1600,9 @@ CSGBrush *CSGBox3D::_build_brush() {
 				facesw[face * 3 + 2] = face_points[2] * vertex_mul;
 
 				if (scale_uv) {
-					uvsw[face * 3 + 0] = u[0] * Vector2(size.x, size.y);
-					uvsw[face * 3 + 1] = u[1] * Vector2(size.x, size.y);
-					uvsw[face * 3 + 2] = u[2] * Vector2(size.x, size.y);
+					uvsw[face * 3 + 0] = u[0] * directions[i];
+					uvsw[face * 3 + 1] = u[1] * directions[i];
+					uvsw[face * 3 + 2] = u[2] * directions[i];
 				} else {
 					uvsw[face * 3 + 0] = u[0];
 					uvsw[face * 3 + 1] = u[1];
@@ -1620,9 +1621,9 @@ CSGBrush *CSGBox3D::_build_brush() {
 				facesw[face * 3 + 2] = face_points[0] * vertex_mul;
 
 				if (scale_uv) {
-					uvsw[face * 3 + 0] = u[2] * Vector2(size.x, size.y);
-					uvsw[face * 3 + 1] = u[3] * Vector2(size.x, size.y);
-					uvsw[face * 3 + 2] = u[0] * Vector2(size.x, size.y);
+					uvsw[face * 3 + 0] = u[2] * directions[i];
+					uvsw[face * 3 + 1] = u[3] * directions[i];
+					uvsw[face * 3 + 2] = u[0] * directions[i];
 				} else {
 					uvsw[face * 3 + 0] = u[2];
 					uvsw[face * 3 + 1] = u[3];
