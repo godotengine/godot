@@ -1638,14 +1638,14 @@ void ItemList::_notification(int p_what) {
 
 				if (!items[i].text.is_empty()) {
 					Color txt_modulate;
-					if (items[i].selected && hovered == i) {
+					if (items[i].custom_fg != Color()) {
+						txt_modulate = items[i].custom_fg;
+					} else if (items[i].selected && hovered == i) {
 						txt_modulate = theme_cache.font_hovered_selected_color;
 					} else if (items[i].selected) {
 						txt_modulate = theme_cache.font_selected_color;
 					} else if (hovered == i) {
 						txt_modulate = theme_cache.font_hovered_color;
-					} else if (items[i].custom_fg != Color()) {
-						txt_modulate = items[i].custom_fg;
 					} else {
 						txt_modulate = theme_cache.font_color;
 					}
