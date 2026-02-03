@@ -77,6 +77,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	int in_type_params = 0; // The number of opened `[` after type name.
 
 	Color keyword_color;
+	Color current_member_variable_color;
 	Color color;
 
 	color_region_cache[p_line] = -1;
@@ -481,6 +482,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			} else if (member_keywords.has(word)) {
 				col = member_keywords[word];
 				in_member_variable = true;
+				current_member_variable_color = col;
 			}
 
 			if (col != Color()) {
@@ -539,7 +541,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			}
 		}
 
-		if (!in_function_name && !in_member_variable && !in_keyword && !in_number && in_word) {
+		if (!in_function_name && !in_keyword && !in_number && in_word) {
 			int k = j;
 			while (k > 0 && !is_symbol(str[k]) && !is_whitespace(str[k])) {
 				k--;
@@ -547,6 +549,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 			if (str[k] == '.' && (k < 1 || str[k - 1] != '.')) {
 				in_member_variable = true;
+				current_member_variable_color = property_access_color;
 			}
 		}
 
@@ -680,7 +683,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			color = keyword_color;
 		} else if (in_signal_declaration) {
 			next_type = SIGNAL;
-			color = member_variable_color;
+			color = custom_member_variable_color;
 		} else if (in_function_name) {
 			next_type = FUNCTION;
 			if (!in_lambda && in_function_declaration) {
@@ -699,7 +702,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			color = type_color;
 		} else if (in_member_variable) {
 			next_type = MEMBER;
-			color = member_variable_color;
+			color = current_member_variable_color;
 		} else {
 			next_type = IDENTIFIER;
 		}
@@ -760,17 +763,20 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 	font_color = text_edit->get_theme_color(SceneStringName(font_color));
 	symbol_color = EDITOR_GET("text_editor/theme/highlighting/symbol_color");
+	type_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
 	function_color = EDITOR_GET("text_editor/theme/highlighting/function_color");
 	number_color = EDITOR_GET("text_editor/theme/highlighting/number_color");
+	property_access_color = EDITOR_GET("text_editor/theme/highlighting/property_access_color");
 	member_variable_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
+	custom_member_variable_color = EDITOR_GET("text_editor/theme/highlighting/custom_member_variable_color");
 
 	/* Engine types. */
-	const Color types_color = EDITOR_GET("text_editor/theme/highlighting/engine_type_color");
+	const Color engine_type_color = EDITOR_GET("text_editor/theme/highlighting/engine_type_color");
 	LocalVector<StringName> types;
 	ClassDB::get_class_list(types);
 	for (const StringName &type : types) {
 		if (ClassDB::is_class_exposed(type)) {
-			class_names[type] = types_color;
+			class_names[type] = engine_type_color;
 		}
 	}
 
@@ -778,40 +784,40 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	List<StringName> global_enums;
 	CoreConstants::get_global_enums(&global_enums);
 	for (const StringName &enum_name : global_enums) {
-		class_names[enum_name] = types_color;
+		class_names[enum_name] = engine_type_color;
 	}
 
 	/* User types. */
-	const Color usertype_color = EDITOR_GET("text_editor/theme/highlighting/user_type_color");
+	const Color user_type_color = EDITOR_GET("text_editor/theme/highlighting/user_type_color");
 	LocalVector<StringName> global_classes;
 	ScriptServer::get_global_class_list(global_classes);
 	for (const StringName &class_name : global_classes) {
-		class_names[class_name] = usertype_color;
+		class_names[class_name] = user_type_color;
 	}
 
 	/* Autoloads. */
 	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
 		const ProjectSettings::AutoloadInfo &info = E.value;
 		if (info.is_singleton) {
-			class_names[info.name] = usertype_color;
+			class_names[info.name] = user_type_color;
 		}
 	}
 
 	const GDScriptLanguage *gdscript = GDScriptLanguage::get_singleton();
 
 	/* Core types. */
-	const Color basetype_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
+	const Color base_type_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
 	List<String> core_types;
 	gdscript->get_core_type_words(&core_types);
 	for (const String &E : core_types) {
-		class_names[StringName(E)] = basetype_color;
+		class_names[StringName(E)] = base_type_color;
 	}
-	class_names[SNAME("Variant")] = basetype_color;
-	class_names[SNAME("void")] = basetype_color;
+	class_names[SNAME("Variant")] = base_type_color;
+	class_names[SNAME("void")] = base_type_color;
 	// `get_core_type_words()` doesn't return primitive types.
-	class_names[SNAME("bool")] = basetype_color;
-	class_names[SNAME("int")] = basetype_color;
-	class_names[SNAME("float")] = basetype_color;
+	class_names[SNAME("bool")] = base_type_color;
+	class_names[SNAME("int")] = base_type_color;
+	class_names[SNAME("float")] = base_type_color;
 
 	/* Reserved words. */
 	const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
@@ -873,7 +879,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	add_color_region(ColorRegion::TYPE_MULTILINE_STRING, "'''", "'''", string_color, false, true);
 
 	/* Members. */
-	Ref<Script> scr = _get_edited_resource();
+	const Ref<Script> scr = _get_edited_resource();
 	if (scr.is_valid()) {
 		StringName instance_base = scr->get_instance_base_type();
 		if (instance_base != StringName()) {
@@ -912,7 +918,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 			List<StringName> builtin_enums;
 			ClassDB::get_enum_list(instance_base, &builtin_enums);
 			for (const StringName &E : builtin_enums) {
-				member_keywords[E] = types_color;
+				member_keywords[E] = engine_type_color;
 			}
 		}
 
@@ -926,20 +932,20 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 			if (prop_name.contains_char('/')) {
 				continue;
 			}
-			member_keywords[prop_name] = member_variable_color;
+			member_keywords[prop_name] = custom_member_variable_color;
 		}
 
 		List<MethodInfo> scr_signal_list;
 		scr->get_script_signal_list(&scr_signal_list);
 		for (const MethodInfo &E : scr_signal_list) {
-			member_keywords[E.name] = member_variable_color;
+			member_keywords[E.name] = custom_member_variable_color;
 		}
 
 		// For callables.
 		List<MethodInfo> scr_method_list;
 		scr->get_script_method_list(&scr_method_list);
 		for (const MethodInfo &E : scr_method_list) {
-			member_keywords[E.name] = member_variable_color;
+			member_keywords[E.name] = custom_member_variable_color;
 		}
 
 		Ref<Script> scr_class = scr;
@@ -947,19 +953,21 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 			HashMap<StringName, Variant> scr_constant_list;
 			scr_class->get_constants(&scr_constant_list);
 			for (const KeyValue<StringName, Variant> &E : scr_constant_list) {
-				member_keywords[E.key.operator String()] = member_variable_color;
+				member_keywords[E.key.operator String()] = custom_member_variable_color;
 			}
 			scr_class = scr_class->get_base_script();
 		}
 	}
 
+	/* GDScript specific */
 	function_definition_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/function_definition_color");
 	global_function_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/global_function_color");
 	node_path_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/node_path_color");
 	node_ref_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/node_reference_color");
 	annotation_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/annotation_color");
 	string_name_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/string_name_color");
-	type_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
+
+	/* Comment markers */
 	comment_marker_colors[COMMENT_MARKER_CRITICAL] = EDITOR_GET("text_editor/theme/highlighting/comment_markers/critical_color");
 	comment_marker_colors[COMMENT_MARKER_WARNING] = EDITOR_GET("text_editor/theme/highlighting/comment_markers/warning_color");
 	comment_marker_colors[COMMENT_MARKER_NOTICE] = EDITOR_GET("text_editor/theme/highlighting/comment_markers/notice_color");

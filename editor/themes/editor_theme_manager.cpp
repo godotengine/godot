@@ -478,6 +478,7 @@ void _load_text_editor_theme() {
 			settings->set_manually(setting_key, color_value);
 		}
 	}
+
 	// If it doesn't load a setting just use what is currently loaded.
 }
 
@@ -530,7 +531,9 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 			colors["text_editor/theme/highlighting/word_highlighted_color"] = alpha1;
 			colors["text_editor/theme/highlighting/number_color"] = p_config.dark_icon_and_font ? Color(0.63, 1, 0.88) : Color(0, 0.55, 0.28, 1);
 			colors["text_editor/theme/highlighting/function_color"] = p_config.dark_icon_and_font ? Color(0.34, 0.7, 1.0) : Color(0, 0.225, 0.9, 1);
-			colors["text_editor/theme/highlighting/member_variable_color"] = p_config.dark_icon_and_font ? Color(0.34, 0.7, 1.0).lerp(p_config.mono_color, 0.6) : Color(0, 0.4, 0.68, 1);
+			colors["text_editor/theme/highlighting/property_access_color"] = p_config.dark_icon_and_font ? Color(0.34, 0.7, 1.0).lerp(p_config.mono_color, 0.6) : Color(0, 0.4, 0.68, 1);
+			colors["text_editor/theme/highlighting/member_variable_color"] = colors["text_editor/theme/highlighting/property_access_color"];
+			colors["text_editor/theme/highlighting/custom_member_variable_color"] = colors["text_editor/theme/highlighting/property_access_color"];
 			colors["text_editor/theme/highlighting/mark_color"] = Color(p_config.error_color.r, p_config.error_color.g, p_config.error_color.b, 0.3);
 			colors["text_editor/theme/highlighting/warning_color"] = Color(p_config.warning_color.r, p_config.warning_color.g, p_config.warning_color.b, 0.15);
 			colors["text_editor/theme/highlighting/bookmark_color"] = Color(0.08, 0.49, 0.98);
@@ -548,6 +551,7 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 				colors["text_editor/theme/highlighting/gdscript/node_reference_color"] = Color(0.39, 0.76, 0.35);
 				colors["text_editor/theme/highlighting/gdscript/annotation_color"] = Color(1.0, 0.7, 0.45);
 				colors["text_editor/theme/highlighting/gdscript/string_name_color"] = Color(1.0, 0.76, 0.65);
+
 				colors["text_editor/theme/highlighting/comment_markers/critical_color"] = Color(0.77, 0.35, 0.35);
 				colors["text_editor/theme/highlighting/comment_markers/warning_color"] = Color(0.72, 0.61, 0.48);
 				colors["text_editor/theme/highlighting/comment_markers/notice_color"] = Color(0.56, 0.67, 0.51);
@@ -558,6 +562,7 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 				colors["text_editor/theme/highlighting/gdscript/node_reference_color"] = Color(0.0, 0.5, 0);
 				colors["text_editor/theme/highlighting/gdscript/annotation_color"] = Color(0.8, 0.37, 0);
 				colors["text_editor/theme/highlighting/gdscript/string_name_color"] = Color(0.8, 0.56, 0.45);
+
 				colors["text_editor/theme/highlighting/comment_markers/critical_color"] = Color(0.8, 0.14, 0.14);
 				colors["text_editor/theme/highlighting/comment_markers/warning_color"] = Color(0.75, 0.39, 0.03);
 				colors["text_editor/theme/highlighting/comment_markers/notice_color"] = Color(0.24, 0.54, 0.09);

@@ -1663,6 +1663,11 @@
 		<member name="text_editor/theme/highlighting/current_line_color" type="Color" setter="" getter="">
 			The script editor's background color for the line the caret is currently on. This should be set to a translucent color so that it can display on top of other line color modifiers such as [member text_editor/theme/highlighting/mark_color].
 		</member>
+		<member name="text_editor/theme/highlighting/custom_member_variable_color" type="Color" setter="" getter="">
+			The script editor's color for custom class members (variables, constants, signals, etc.).
+			[b]Note:[/b] This color is not used built-in class members, see [member text_editor/theme/highlighting/member_variable_color] instead.
+			[b]Note:[/b] This color is not used for local declarations and access.
+		</member>
 		<member name="text_editor/theme/highlighting/doc_comment_color" type="Color" setter="" getter="">
 			The script editor's documentation comment color. In GDScript, this is used for comments starting with [code]##[/code]. In C#, this is used for comments starting with [code]///[/code] or [code]/**[/code].
 		</member>
@@ -1710,11 +1715,15 @@
 			The script editor's background color for lines with errors. This should be set to a translucent color so that it can display on top of other line color modifiers such as [member text_editor/theme/highlighting/current_line_color].
 		</member>
 		<member name="text_editor/theme/highlighting/member_variable_color" type="Color" setter="" getter="">
-			The script editor's color for member variables on objects (e.g. [code]self.some_property[/code]).
-			[b]Note:[/b] This color is not used for local variable declaration and access.
+			The script editor's color for built-in class members (variables, constants, signals, etc.).
+			[b]Note:[/b] This color is not used custom class members, see [member text_editor/theme/highlighting/custom_member_variable_color] instead.
+			[b]Note:[/b] This color is not used for local declarations and access.
 		</member>
 		<member name="text_editor/theme/highlighting/number_color" type="Color" setter="" getter="">
 			The script editor's color for numbers (integer and floating-point).
+		</member>
+		<member name="text_editor/theme/highlighting/property_access_color" type="Color" setter="" getter="">
+			The script editor's color for a property name in the property access syntax (e.g. [code]some_property[/code] in [code]object.some_property[/code]).
 		</member>
 		<member name="text_editor/theme/highlighting/safe_line_number_color" type="Color" setter="" getter="">
 			The script editor's color for type-safe line numbers. See also [member text_editor/theme/highlighting/line_number_color].
