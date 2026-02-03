@@ -180,6 +180,11 @@ void JoypadSDL::process_events() {
 				joypad_info["vendor_id"] = itos(SDL_GetJoystickVendor(joy));
 				joypad_info["product_id"] = itos(SDL_GetJoystickProduct(joy));
 
+				const String serial = String(SDL_GetJoystickSerial(joy));
+				if (!serial.is_empty()) {
+					joypad_info["serial_number"] = serial;
+				}
+
 				const uint64_t steam_handle = SDL_GetGamepadSteamHandle(gamepad);
 				if (steam_handle != 0) {
 					joypad_info["steam_input_index"] = itos(steam_handle);

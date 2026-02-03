@@ -3395,10 +3395,9 @@ void ScriptEditor::update_docs_from_script(const Ref<Script> &p_script) {
 }
 
 void ScriptEditor::_update_selected_editor_menu() {
-	if (TextEditorBase *current_editor = Object::cast_to<TextEditorBase>(_get_current_editor())) {
-		for (Control *editor_menu : editor_menus) {
-			editor_menu->set_visible(current_editor && editor_menu == current_editor->get_edit_menu());
-		}
+	TextEditorBase *current_editor = Object::cast_to<TextEditorBase>(_get_current_editor());
+	for (Control *editor_menu : editor_menus) {
+		editor_menu->set_visible(current_editor && editor_menu == current_editor->get_edit_menu());
 	}
 
 	PopupMenu *search_popup = script_search_menu->get_popup();
