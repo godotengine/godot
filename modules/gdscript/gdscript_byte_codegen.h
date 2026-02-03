@@ -553,7 +553,7 @@ public:
 	virtual void write_breakpoint() override;
 	virtual void write_newline(int p_line) override;
 	virtual void write_return(const Address &p_return_value) override;
-	virtual void write_assert(const Address &p_test, const Address &p_message) override;
+	virtual void write_assert(const Address &p_test, const Address &p_message, bool p_release) override;
 
 	virtual ~GDScriptByteCodeGenerator();
 };

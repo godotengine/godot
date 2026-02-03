@@ -1302,8 +1302,9 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				DISASSEMBLE_TYPE_ADJUST(PACKED_COLOR_ARRAY);
 				DISASSEMBLE_TYPE_ADJUST(PACKED_VECTOR4_ARRAY);
 
-			case OPCODE_ASSERT: {
-				text += "assert (";
+			case OPCODE_ASSERT:
+			case OPCODE_ASSERT_RELEASE: {
+				text += opcode == OPCODE_ASSERT_RELEASE ? "assert_release (" : "assert (";
 				text += DADDR(1);
 				text += ", ";
 				text += DADDR(2);

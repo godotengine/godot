@@ -103,6 +103,7 @@ static const char *token_names[] = {
 	// Keywords
 	"as", // AS,
 	"assert", // ASSERT,
+	"assert_release", // ASSERT_RELEASE,
 	"await", // AWAIT,
 	"breakpoint", // BREAKPOINT,
 	"class", // CLASS,
@@ -217,6 +218,7 @@ bool GDScriptTokenizer::Token::is_node_name() const {
 		case AND:
 		case AS:
 		case ASSERT:
+		case ASSERT_RELEASE:
 		case AWAIT:
 		case BREAK:
 		case BREAKPOINT:
@@ -488,6 +490,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
 	KEYWORD("as", Token::AS) \
 	KEYWORD("and", Token::AND) \
 	KEYWORD("assert", Token::ASSERT) \
+	KEYWORD("assert_release", Token::ASSERT_RELEASE) \
 	KEYWORD("await", Token::AWAIT) \
 	KEYWORD_GROUP('b') \
 	KEYWORD("break", Token::BREAK) \
@@ -546,7 +549,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
 	KEYWORD("TAU", Token::CONST_TAU)
 
 #define MIN_KEYWORD_LENGTH 2
-#define MAX_KEYWORD_LENGTH 10
+#define MAX_KEYWORD_LENGTH 14
 
 #ifdef DEBUG_ENABLED
 void GDScriptTokenizerText::make_keyword_list() {

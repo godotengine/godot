@@ -489,6 +489,15 @@ void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const
 		mi.default_arguments.push_back(String());
 		p_functions->push_back(mi);
 	}
+	{
+		MethodInfo mi;
+		mi.name = "assert_release";
+		mi.return_val.type = Variant::NIL;
+		mi.arguments.push_back(PropertyInfo(Variant::BOOL, "condition"));
+		mi.arguments.push_back(PropertyInfo(Variant::STRING, "message"));
+		mi.default_arguments.push_back(String());
+		p_functions->push_back(mi);
+	}
 }
 
 void GDScriptLanguage::get_public_constants(List<Pair<String, Variant>> *p_constants) const {
@@ -1590,7 +1599,7 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 	}
 
 	static const char *_keywords_with_args[] = {
-		"assert", "preload",
+		"assert", "assert_release", "preload",
 		nullptr
 	};
 
@@ -4329,9 +4338,9 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 
 	// Allows class functions with the names like built-ins to be handled properly.
 	if (context.type != GDScriptParser::COMPLETION_ATTRIBUTE) {
-		// Need special checks for `assert` and `preload` as they are technically
+		// Need special checks for `assert`, `assert_release`, and `preload` as they are technically
 		// keywords, so are not registered in `GDScriptUtilityFunctions`.
-		if (GDScriptUtilityFunctions::function_exists(p_symbol) || p_symbol == "assert" || p_symbol == "preload") {
+		if (GDScriptUtilityFunctions::function_exists(p_symbol) || p_symbol == "assert" || p_symbol == "assert_release" || p_symbol == "preload") {
 			r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD;
 			r_result.class_name = "@GDScript";
 			r_result.class_member = p_symbol;

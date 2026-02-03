@@ -458,8 +458,8 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			String word = str.substr(j, to - j);
 			Color col;
 			if (global_functions.has(word)) {
-				// "assert" and "preload" are reserved, so highlight even if not followed by a bracket.
-				if (word == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::ASSERT) || word == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::PRELOAD)) {
+				// "assert", "assert_release", and "preload" are reserved, so highlight even if not followed by a bracket.
+				if (word == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::ASSERT) || word == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::ASSERT_RELEASE) || word == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::PRELOAD)) {
 					col = global_function_color;
 				} else {
 					// For other global functions, check if followed by bracket.
@@ -832,8 +832,9 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	List<StringName> global_function_list;
 	GDScriptUtilityFunctions::get_function_list(&global_function_list);
 	Variant::get_utility_function_list(&global_function_list);
-	// "assert" and "preload" are not utility functions, but are global nonetheless, so insert them.
+	// "assert", "assert_release", and "preload" are not utility functions, but are global nonetheless, so insert them.
 	global_functions.insert(SNAME("assert"));
+	global_functions.insert(SNAME("assert_release"));
 	global_functions.insert(SNAME("preload"));
 	for (const StringName &E : global_function_list) {
 		global_functions.insert(E);

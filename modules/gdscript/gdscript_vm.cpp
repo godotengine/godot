@@ -408,6 +408,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_TYPE_ADJUST_PACKED_COLOR_ARRAY, \
 		&&OPCODE_TYPE_ADJUST_PACKED_VECTOR4_ARRAY, \
 		&&OPCODE_ASSERT, \
+		&&OPCODE_ASSERT_RELEASE, \
 		&&OPCODE_BREAKPOINT, \
 		&&OPCODE_LINE, \
 		&&OPCODE_END \
@@ -733,8 +734,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		profile.call_count.increment();
 		profile.frame_call_count.increment();
 	}
-	bool exit_ok = false;
 	int variant_address_limits[ADDR_TYPE_MAX] = { _stack_size, _constant_count, p_instance ? (int)p_instance->members.size() : 0 };
+#endif
+
+	bool exit_ok = true; // Only used for ASSERT_RELEASE in release builds, set as false if assertion fails.
+#ifdef DEBUG_ENABLED
+	exit_ok = false;
 #endif
 
 	bool awaited = false;
@@ -3887,6 +3892,34 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_ASSERT_RELEASE) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(test, 0);
+				bool result = test->booleanize();
+
+				if (!result) {
+					String message_str;
+					if (_code_ptr[ip + 2] != 0) {
+						GET_VARIANT_PTR(message, 1);
+						Variant message_var = *message;
+						if (message->get_type() != Variant::NIL) {
+							message_str = message_var;
+						}
+					}
+					if (message_str.is_empty()) {
+						err_text = "Assertion failed.";
+					} else {
+						err_text = "Assertion failed: " + message_str;
+					}
+					exit_ok = false;
+					OPCODE_BREAK;
+				}
+
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_BREAKPOINT) {
 #ifdef DEBUG_ENABLED
 				if (EngineDebugger::is_active()) {
@@ -3945,8 +3978,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		}
 
 		OPCODES_END
-#ifdef DEBUG_ENABLED
-		if (exit_ok) {
+
+		if (likely(exit_ok)) {
 			OPCODE_OUT;
 		}
 		//error
@@ -3966,16 +3999,17 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			err_func = p_instance->script->local_name.operator String() + "." + err_func;
 		}
 		int err_line = line;
+#ifdef DEBUG_ENABLED
 		if (err_text.is_empty()) {
 			err_text = "Internal script error! Opcode: " + itos(last_opcode) + " (please report).";
 		}
+#endif
 
 		_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		GDScriptLanguage::get_singleton()->debug_break(err_text, false);
 
 		// Get a default return type in case of failure
 		retvalue = _get_default_variant_for_data_type(return_type);
-#endif
 
 		OPCODE_OUT;
 	}

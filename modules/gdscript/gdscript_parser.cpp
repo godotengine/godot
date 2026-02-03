@@ -2099,9 +2099,12 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 			end_statement(R"("breakpoint")");
 			break;
 		case GDScriptTokenizer::Token::ASSERT:
+		case GDScriptTokenizer::Token::ASSERT_RELEASE: {
+			bool release = current.type == GDScriptTokenizer::Token::ASSERT_RELEASE;
 			advance();
-			result = parse_assert();
+			result = parse_assert(release);
 			break;
+		}
 		case GDScriptTokenizer::Token::ANNOTATION: {
 			advance();
 			AnnotationNode *annotation = parse_annotation(AnnotationInfo::STATEMENT | AnnotationInfo::STANDALONE);
@@ -2232,12 +2235,12 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 	return result;
 }
 
-GDScriptParser::AssertNode *GDScriptParser::parse_assert() {
+GDScriptParser::AssertNode *GDScriptParser::parse_assert(bool p_release) {
 	// TODO: Add assert message.
 	AssertNode *assert = alloc_node<AssertNode>();
 
 	push_multiline(true);
-	consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after "assert".)");
+	consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, vformat(R"(Expected "(" after %s.)", p_release ? "assert_release" : "assert"));
 
 	assert->condition = parse_expression(false);
 	if (assert->condition == nullptr) {
@@ -2262,7 +2265,9 @@ GDScriptParser::AssertNode *GDScriptParser::parse_assert() {
 	consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after assert expression.)*");
 
 	complete_extents(assert);
-	end_statement(R"("assert")");
+	end_statement(p_release ? R"("assert_release")" : R"("assert")");
+
+	assert->release = p_release;
 
 	return assert;
 }
@@ -4282,6 +4287,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		// Keywords
 		{ nullptr,                                          &GDScriptParser::parse_cast,                 	PREC_CAST }, // AS,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // ASSERT,
+		{ nullptr,                                          nullptr,                                        PREC_NONE }, // ASSERT_RELEASE,
 		{ &GDScriptParser::parse_await,                  	nullptr,                                        PREC_NONE }, // AWAIT,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // BREAKPOINT,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // CLASS,
@@ -5702,7 +5708,7 @@ void GDScriptParser::TreePrinter::print_array(ArrayNode *p_array) {
 }
 
 void GDScriptParser::TreePrinter::print_assert(AssertNode *p_assert) {
-	push_text("Assert ( ");
+	push_text(p_assert->release ? "Release assert ( " : "Assert ( ");
 	print_expression(p_assert->condition);
 	push_line(" )");
 }

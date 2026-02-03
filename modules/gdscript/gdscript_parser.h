@@ -400,6 +400,7 @@ public:
 	struct AssertNode : public Node {
 		ExpressionNode *condition = nullptr;
 		ExpressionNode *message = nullptr;
+		bool release = false;
 
 		AssertNode() {
 			type = ASSERT;
@@ -1575,7 +1576,7 @@ private:
 	void parse_property_getter(VariableNode *p_variable);
 	void parse_property_setter(VariableNode *p_variable);
 	ConstantNode *parse_constant(bool p_is_static);
-	AssertNode *parse_assert();
+	AssertNode *parse_assert(bool p_release);
 	BreakNode *parse_break();
 	ContinueNode *parse_continue();
 	ForNode *parse_for();

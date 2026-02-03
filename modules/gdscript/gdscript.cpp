@@ -2631,6 +2631,7 @@ Vector<String> GDScriptLanguage::get_reserved_words() const {
 		"TAU",
 		// Functions (highlighter uses global function color instead).
 		"assert",
+		"assert_release",
 		"preload",
 		// Types (highlighter uses type color instead).
 		"void",

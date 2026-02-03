@@ -1930,8 +1930,8 @@ void GDScriptByteCodeGenerator::write_return(const Address &p_return_value) {
 	}
 }
 
-void GDScriptByteCodeGenerator::write_assert(const Address &p_test, const Address &p_message) {
-	append_opcode(GDScriptFunction::OPCODE_ASSERT);
+void GDScriptByteCodeGenerator::write_assert(const Address &p_test, const Address &p_message, bool p_release) {
+	append_opcode(p_release ? GDScriptFunction::OPCODE_ASSERT_RELEASE : GDScriptFunction::OPCODE_ASSERT);
 	append(p_test);
 	append(p_message);
 }

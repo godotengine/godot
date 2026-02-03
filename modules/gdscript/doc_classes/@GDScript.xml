@@ -46,6 +46,14 @@
 				[b]Note:[/b] [method assert] is a keyword, not a function. So you cannot access it as a [Callable] or use it inside expressions.
 			</description>
 		</method>
+		<method name="assert_release">
+			<return type="void" />
+			<param index="0" name="condition" type="bool" />
+			<param index="1" name="message" type="String" default="&quot;&quot;" />
+			<description>
+				The same as [method assert], but additionally runs in release builds.
+			</description>
+		</method>
 		<method name="char">
 			<return type="String" />
 			<param index="0" name="code" type="int" />

@@ -161,7 +161,7 @@ public:
 	virtual void write_breakpoint() = 0;
 	virtual void write_newline(int p_line) = 0;
 	virtual void write_return(const Address &p_return_value) = 0;
-	virtual void write_assert(const Address &p_test, const Address &p_message) = 0;
+	virtual void write_assert(const Address &p_test, const Address &p_message, bool p_release) = 0;
 
 	virtual ~GDScriptCodeGenerator() {}
 };

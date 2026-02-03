@@ -108,6 +108,7 @@ public:
 			// Keywords
 			AS,
 			ASSERT,
+			ASSERT_RELEASE,
 			AWAIT,
 			BREAKPOINT,
 			CLASS,

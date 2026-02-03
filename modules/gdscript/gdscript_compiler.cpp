@@ -2179,9 +2179,12 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				}
 			} break;
 			case GDScriptParser::Node::ASSERT: {
-#ifdef DEBUG_ENABLED
 				const GDScriptParser::AssertNode *as = static_cast<const GDScriptParser::AssertNode *>(s);
-
+#ifndef DEBUG_ENABLED
+				if (!as->release) {
+					break;
+				}
+#endif
 				GDScriptCodeGenerator::Address condition = _parse_expression(codegen, err, as->condition);
 				if (err) {
 					return err;
@@ -2195,7 +2198,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 						return err;
 					}
 				}
-				gen->write_assert(condition, message);
+				gen->write_assert(condition, message, as->release);
 
 				if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
@@ -2203,7 +2206,6 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				if (message.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
 				}
-#endif
 			} break;
 			case GDScriptParser::Node::BREAKPOINT: {
 #ifdef DEBUG_ENABLED
