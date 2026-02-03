@@ -608,6 +608,9 @@
 		<member name="editors/3d_gizmos/separate_gizmo_rendering" type="bool" setter="" getter="">
 			If [code]true[/code], 3D gizmos are rendered in a separate viewport to avoid being affected by scene environment, camera attributes, and post-processing (such as DoF or tonemapping). If [code]false[/code], gizmos are rendered together with the scene.
 		</member>
+		<member name="editors/3d_gizmos/separate_grid_rendering" type="bool" setter="" getter="">
+			If [code]true[/code], the 3D grid is rendered in the separate gizmo viewport. If [code]false[/code], the grid is rendered in the main scene viewport.
+		</member>
 		<member name="editors/animation/autorename_animation_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], automatically updates animation tracks' target paths when renaming or reparenting nodes in the Scene tree dock.
 		</member>

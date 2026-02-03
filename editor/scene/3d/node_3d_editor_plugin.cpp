@@ -762,24 +762,28 @@ void Node3DEditorViewport::_update_shrink() {
 	}
 }
 
-uint32_t Node3DEditorViewport::_get_gizmo_layers_mask() const {
-	uint32_t layers = (1 << (GIZMO_BASE_LAYER + index)) | (1 << GIZMO_EDIT_LAYER) | (1 << GIZMO_GRID_LAYER) | (1 << MISC_TOOL_LAYER);
+uint32_t Node3DEditorViewport::_get_gizmo_layers_mask(bool p_include_grid) const {
+	uint32_t layers = (1 << (GIZMO_BASE_LAYER + index)) | (1 << GIZMO_EDIT_LAYER) | (1 << MISC_TOOL_LAYER);
 	if (!view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_GIZMOS))) {
 		layers &= ~(1 << GIZMO_EDIT_LAYER);
 	}
-	if (!view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_GRID))) {
-		layers &= ~(1 << GIZMO_GRID_LAYER);
+	if (p_include_grid && view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_GRID))) {
+		layers |= (1 << GIZMO_GRID_LAYER);
 	}
 	return layers;
 }
 
 void Node3DEditorViewport::_apply_gizmo_rendering_mode() {
 	const bool separated = EDITOR_GET("editors/3d_gizmos/separate_gizmo_rendering");
+	const bool separate_grid = EDITOR_GET("editors/3d_gizmos/separate_grid_rendering");
 	const uint32_t scene_layers = (1 << 20) - 1;
-	const uint32_t gizmo_layers = _get_gizmo_layers_mask();
+	const bool view_grid = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_GRID));
+	const uint32_t grid_layer = view_grid ? (1 << GIZMO_GRID_LAYER) : 0;
+	const uint32_t gizmo_layers = _get_gizmo_layers_mask(separate_grid);
 
 	if (separated) {
-		camera->set_cull_mask(scene_layers);
+		const uint32_t scene_layers_with_grid = separate_grid ? scene_layers : (scene_layers | grid_layer);
+		camera->set_cull_mask(scene_layers_with_grid);
 		if (gizmo_camera) {
 			gizmo_camera->set_cull_mask(gizmo_layers);
 		}
@@ -790,7 +794,7 @@ void Node3DEditorViewport::_apply_gizmo_rendering_mode() {
 			gizmo_viewport->set_update_mode(SubViewport::UPDATE_WHEN_VISIBLE);
 		}
 	} else {
-		camera->set_cull_mask(scene_layers | gizmo_layers);
+		camera->set_cull_mask(scene_layers | gizmo_layers | grid_layer);
 		if (gizmo_camera) {
 			gizmo_camera->set_cull_mask(0);
 		}

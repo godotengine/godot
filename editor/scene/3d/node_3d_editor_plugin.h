@@ -315,7 +315,7 @@ private:
 	void cancel_transform();
 	void _update_shrink();
 	void _apply_gizmo_rendering_mode();
-	uint32_t _get_gizmo_layers_mask() const;
+	uint32_t _get_gizmo_layers_mask(bool p_include_grid) const;
 
 	Vector3 _get_camera_position() const;
 	Vector3 _get_camera_normal() const;
