@@ -276,11 +276,24 @@ TEST_CASE_TEMPLATE("[Math] pow/log/log2/exp/sqrt", T, float, double) {
 	CHECK(Math::log2((T)1.5) == doctest::Approx((T)0.5849625007));
 	CHECK(Math::log2((T)450.0) == doctest::Approx((T)8.8137811912));
 
+	CHECK(Math::is_nan(Math::log10((T)-0.1)));
+	CHECK(Math::log10((T)0.1) == doctest::Approx((T)-1.0));
+	CHECK(Math::log10((T)0.5) == doctest::Approx((T)-0.30102999566));
+	CHECK(Math::log10((T)1.0) == doctest::Approx((T)0.0));
+	CHECK(Math::log10((T)1.5) == doctest::Approx((T)0.17609125905));
+	CHECK(Math::log10((T)450.0) == doctest::Approx((T)2.65321251378));
+
 	CHECK(Math::exp((T)-0.1) == doctest::Approx((T)0.904837418));
 	CHECK(Math::exp((T)0.1) == doctest::Approx((T)1.1051709181));
 	CHECK(Math::exp((T)0.5) == doctest::Approx((T)1.6487212707));
 	CHECK(Math::exp((T)1.0) == doctest::Approx((T)2.7182818285));
 	CHECK(Math::exp((T)1.5) == doctest::Approx((T)4.4816890703));
+
+	CHECK(Math::exp2((T)-0.1) == doctest::Approx((T)0.93303299153));
+	CHECK(Math::exp2((T)0.1) == doctest::Approx((T)1.07177346254));
+	CHECK(Math::exp2((T)0.5) == doctest::Approx((T)1.41421356237));
+	CHECK(Math::exp2((T)1.0) == doctest::Approx((T)2.0));
+	CHECK(Math::exp2((T)1.5) == doctest::Approx((T)2.82842712475));
 
 	CHECK(Math::is_nan(Math::sqrt((T)-0.1)));
 	CHECK(Math::sqrt((T)0.1) == doctest::Approx((T)0.316228));
