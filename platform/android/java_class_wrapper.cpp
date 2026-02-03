@@ -44,6 +44,11 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 	ERR_FAIL_NULL_V(env, false);
 
 	env->PushLocalFrame(p_argcount);
+	if (env->ExceptionCheck()) {
+		env->ExceptionDescribe();
+		env->ExceptionClear();
+		return false;
+	}
 
 	MethodInfo *method = nullptr;
 	for (MethodInfo &E : M->value) {
