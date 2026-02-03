@@ -610,7 +610,7 @@ class WaylandEmbedder {
 	void shutdown();
 
 	bool handle_generic_msg(Client *client, const WaylandObject *p_object, const struct wl_message *message, const struct msg_info *info, uint32_t *buf, uint32_t instance_id = INVALID_ID);
-	Error handle_msg_info(Client *client, const struct msg_info *info, uint32_t *buf, int *fds_requested);
+	Error handle_msg_info(Client *client, const struct msg_info *info, uint32_t *buf, LocalVector<int> &r_fds_requested);
 	Error handle_sock(int p_fd);
 	void handle_fd(int p_fd, int p_revents);
 
