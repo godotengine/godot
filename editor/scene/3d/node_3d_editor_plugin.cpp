@@ -103,6 +103,8 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/3d/sky_material.h"
+#include "scene/resources/camera_attributes.h"
+#include "scene/resources/environment.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/surface_tool.h"
@@ -661,6 +663,16 @@ void Node3DEditorViewport::_update_camera(real_t p_interp_delta) {
 		} else {
 			camera->set_perspective(get_fov(), get_znear(), get_zfar());
 		}
+		if (gizmo_camera) {
+			gizmo_camera->set_global_transform(last_camera_transform);
+			if (orthogonal) {
+				float half_fov = Math::deg_to_rad(get_fov()) / 2.0;
+				float height = 2.0 * cursor.distance * Math::tan(half_fov);
+				gizmo_camera->set_orthogonal(height, get_znear(), get_zfar());
+			} else {
+				gizmo_camera->set_perspective(get_fov(), get_znear(), get_zfar());
+			}
+		}
 
 		update_transform_gizmo_view();
 		rotation_control->queue_redraw();
@@ -745,6 +757,50 @@ void Node3DEditorViewport::_update_shrink() {
 	const float scaling_3d_scale = GLOBAL_GET("rendering/scaling_3d/scale");
 	const float shrink_factor = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION)) ? 0.5 : 1.0;
 	viewport->set_scaling_3d_scale(MAX(0.25, scaling_3d_scale * shrink_factor));
+	if (gizmo_viewport) {
+		gizmo_viewport->set_scaling_3d_scale(MAX(0.25, scaling_3d_scale * shrink_factor));
+	}
+}
+
+uint32_t Node3DEditorViewport::_get_gizmo_layers_mask() const {
+	uint32_t layers = (1 << (GIZMO_BASE_LAYER + index)) | (1 << GIZMO_EDIT_LAYER) | (1 << GIZMO_GRID_LAYER) | (1 << MISC_TOOL_LAYER);
+	if (!view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_GIZMOS))) {
+		layers &= ~(1 << GIZMO_EDIT_LAYER);
+	}
+	if (!view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_GRID))) {
+		layers &= ~(1 << GIZMO_GRID_LAYER);
+	}
+	return layers;
+}
+
+void Node3DEditorViewport::_apply_gizmo_rendering_mode() {
+	const bool separated = EDITOR_GET("editors/3d_gizmos/separate_gizmo_rendering");
+	const uint32_t scene_layers = (1 << 20) - 1;
+	const uint32_t gizmo_layers = _get_gizmo_layers_mask();
+
+	if (separated) {
+		camera->set_cull_mask(scene_layers);
+		if (gizmo_camera) {
+			gizmo_camera->set_cull_mask(gizmo_layers);
+		}
+		if (gizmo_subviewport_container) {
+			gizmo_subviewport_container->show();
+		}
+		if (gizmo_viewport) {
+			gizmo_viewport->set_update_mode(SubViewport::UPDATE_WHEN_VISIBLE);
+		}
+	} else {
+		camera->set_cull_mask(scene_layers | gizmo_layers);
+		if (gizmo_camera) {
+			gizmo_camera->set_cull_mask(0);
+		}
+		if (gizmo_subviewport_container) {
+			gizmo_subviewport_container->hide();
+		}
+		if (gizmo_viewport) {
+			gizmo_viewport->set_update_mode(SubViewport::UPDATE_DISABLED);
+		}
+	}
 }
 
 float Node3DEditorViewport::get_znear() const {
@@ -3315,6 +3371,9 @@ void Node3DEditorViewport::_notification(int p_what) {
 			set_physics_process(vp_visible);
 
 			if (vp_visible) {
+				if (gizmo_viewport) {
+					gizmo_viewport->set_world_3d(viewport->find_world_3d());
+				}
 				orthogonal = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL));
 				_update_name();
 				_update_camera(0);
@@ -3634,6 +3693,9 @@ void Node3DEditorViewport::_notification(int p_what) {
 			surface->connect(SceneStringName(mouse_exited), callable_mp(this, &Node3DEditorViewport::_surface_mouse_exit));
 			surface->connect(SceneStringName(focus_entered), callable_mp(this, &Node3DEditorViewport::_surface_focus_enter));
 			surface->connect(SceneStringName(focus_exited), callable_mp(this, &Node3DEditorViewport::_surface_focus_exit));
+			if (gizmo_viewport) {
+				gizmo_viewport->set_world_3d(viewport->find_world_3d());
+			}
 
 			_init_gizmo_instance(index);
 		} break;
@@ -3696,6 +3758,9 @@ void Node3DEditorViewport::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/3d")) {
 				_update_navigation_controls_visibility();
+			}
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/3d_gizmos")) {
+				_apply_gizmo_rendering_mode();
 			}
 		} break;
 	}
@@ -4238,13 +4303,8 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			int idx = view_display_menu->get_popup()->get_item_index(VIEW_GIZMOS);
 			bool current = view_display_menu->get_popup()->is_item_checked(idx);
 			current = !current;
-			uint32_t layers = camera->get_cull_mask();
-			layers &= ~(1 << GIZMO_EDIT_LAYER);
-			if (current) {
-				layers |= (1 << GIZMO_EDIT_LAYER);
-			}
-			camera->set_cull_mask(layers);
 			view_display_menu->get_popup()->set_item_checked(idx, current);
+			_apply_gizmo_rendering_mode();
 
 		} break;
 		case VIEW_TRANSFORM_GIZMO: {
@@ -4277,13 +4337,8 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			int idx = view_display_menu->get_popup()->get_item_index(VIEW_GRID);
 			bool current = view_display_menu->get_popup()->is_item_checked(idx);
 			current = !current;
-			uint32_t layers = camera->get_cull_mask();
-			layers &= ~(1 << GIZMO_GRID_LAYER);
-			if (current) {
-				layers |= (1 << GIZMO_GRID_LAYER);
-			}
-			camera->set_cull_mask(layers);
 			view_display_menu->get_popup()->set_item_checked(idx, current);
+			_apply_gizmo_rendering_mode();
 		} break;
 		case VIEW_DISPLAY_NORMAL:
 		case VIEW_DISPLAY_WIREFRAME:
@@ -6193,6 +6248,15 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	viewport->set_disable_input(true);
 
 	c->add_child(viewport);
+	SubViewportContainer *gc = memnew(SubViewportContainer);
+	gizmo_subviewport_container = gc;
+	gc->set_stretch(true);
+	add_child(gc);
+	gc->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	gizmo_viewport = memnew(SubViewport);
+	gizmo_viewport->set_disable_input(true);
+	gizmo_viewport->set_transparent_background(true);
+	gc->add_child(gizmo_viewport);
 	surface = memnew(Control);
 	SET_DRAG_FORWARDING_CD(surface, Node3DEditorViewport);
 	add_child(surface);
@@ -6200,9 +6264,20 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	surface->set_clip_contents(true);
 	camera = memnew(Camera3D);
 	camera->set_disable_gizmos(true);
-	camera->set_cull_mask(((1 << 20) - 1) | (1 << (GIZMO_BASE_LAYER + p_index)) | (1 << GIZMO_EDIT_LAYER) | (1 << GIZMO_GRID_LAYER) | (1 << MISC_TOOL_LAYER));
+	camera->set_cull_mask(((1 << 20) - 1));
 	viewport->add_child(camera);
 	camera->make_current();
+	gizmo_camera = memnew(Camera3D);
+	gizmo_camera->set_disable_gizmos(true);
+	gizmo_camera->set_cull_mask((1 << (GIZMO_BASE_LAYER + p_index)) | (1 << GIZMO_EDIT_LAYER) | (1 << GIZMO_GRID_LAYER) | (1 << MISC_TOOL_LAYER));
+	gizmo_viewport->add_child(gizmo_camera);
+	gizmo_camera->make_current();
+	gizmo_camera_attributes.instantiate();
+	gizmo_camera->set_attributes(gizmo_camera_attributes);
+	gizmo_environment.instantiate();
+	gizmo_environment->set_background(Environment::BG_CLEAR_COLOR);
+	gizmo_environment->set_tonemapper(Environment::TONE_MAPPER_LINEAR);
+	gizmo_camera->set_environment(gizmo_environment);
 	surface->set_focus_mode(FOCUS_ALL);
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
@@ -6333,6 +6408,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_display_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditorViewport::_menu_option));
 	display_submenu->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditorViewport::_menu_option));
 	view_display_menu->set_disable_shortcuts(true);
+	_apply_gizmo_rendering_mode();
 
 	// Registering with Key::NONE intentionally creates an empty Array.
 	register_shortcut_action("spatial_editor/viewport_orbit_modifier_1", TTRC("Viewport Orbit Modifier 1"), Key::NONE);

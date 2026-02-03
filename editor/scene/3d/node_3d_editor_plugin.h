@@ -42,7 +42,9 @@
 
 class AcceptDialog;
 class CheckBox;
+class CameraAttributesPractical;
 class ColorPickerButton;
+class Environment;
 class ConfirmationDialog;
 class DirectionalLight3D;
 class EditorData;
@@ -249,13 +251,18 @@ private:
 	Button *translation_preview_button = nullptr;
 	CheckBox *preview_camera = nullptr;
 	SubViewportContainer *subviewport_container = nullptr;
+	SubViewportContainer *gizmo_subviewport_container = nullptr;
 
 	MenuButton *view_display_menu = nullptr;
 	PopupMenu *display_submenu = nullptr;
 
 	Control *surface = nullptr;
 	SubViewport *viewport = nullptr;
+	SubViewport *gizmo_viewport = nullptr;
 	Camera3D *camera = nullptr;
+	Camera3D *gizmo_camera = nullptr;
+	Ref<CameraAttributesPractical> gizmo_camera_attributes;
+	Ref<Environment> gizmo_environment;
 	bool transforming = false;
 	bool orthogonal;
 	bool auto_orthogonal;
@@ -307,6 +314,8 @@ private:
 	int get_selected_count() const;
 	void cancel_transform();
 	void _update_shrink();
+	void _apply_gizmo_rendering_mode();
+	uint32_t _get_gizmo_layers_mask() const;
 
 	Vector3 _get_camera_position() const;
 	Vector3 _get_camera_normal() const;
