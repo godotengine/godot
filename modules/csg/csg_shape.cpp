@@ -1556,93 +1556,173 @@ CSGBrush *CSGBox3D::_build_brush() {
 	materials.resize(face_count);
 	invert.resize(face_count);
 
+	Vector3 *facesw = faces.ptrw();
+	Vector2 *uvsw = uvs.ptrw();
+	bool *smoothw = smooth.ptrw();
+	Ref<Material> *materialsw = materials.ptrw();
+	bool *invertw = invert.ptrw();
+
+	//int face = 0;
+
+	Vector3 vertex_mul = size / 2;
+	Vector2 directions[6] = {Vector2(size.x, size.y), Vector2(size.x, size.z), Vector2(size.y, size.z), Vector2(size.x, size.y), Vector2(size.x, size.z), Vector2(size.y, size.z)};
+	//xy xz yz
+
+	//model from blender exported to obj. must check if it works and it's in the right direction.
+	facesw[0] = Vector3(-1.0, -1.0, 1.0);
+	facesw[1] = Vector3(-1.0, 1.0, 1.0);
+	facesw[2] = Vector3(-1.0, -1.0, -1.0);
+	facesw[3] = Vector3(-1.0, 1.0, -1.0);
+	facesw[4] = Vector3(1.0, 1.0, 1.0);
+	facesw[5] = Vector3(1.0, -1.0, -1.0);
+	facesw[6] = Vector3(-1.0, 1.0, -1.0);
+	facesw[7] = Vector3(1.0, -1.0, 1.0);
+	facesw[8] = Vector3(-1.0, -1.0, 1.0);
+	facesw[9] = Vector3(1.0, -1.0, -1.0);
+	facesw[10] = Vector3(1.0, 1.0, -1.0);
+	facesw[11] = Vector3(1.0, -1.0, 1.0);
+	facesw[12] = Vector3(-1.0, 1.0, 1.0);
+	facesw[13] = Vector3(-1.0, -1.0, -1.0);
+	facesw[14] = Vector3(-1.0, 1.0, -1.0);
+	facesw[15] = Vector3(-1.0, -1.0, 1.0);
+	facesw[16] = Vector3(-1.0, 1.0, 1.0);
+	facesw[17] = Vector3(-1.0, -1.0, 1.0);
+	facesw[18] = Vector3(1.0, 1.0, 1.0);
+	facesw[19] = Vector3(-1.0, -1.0, -1.0);
+	facesw[20] = Vector3(-1.0, 1.0, -1.0);
+	facesw[21] = Vector3(1.0, -1.0, -1.0);
+	facesw[22] = Vector3(-1.0, -1.0, 1.0);
+	facesw[23] = Vector3(-1.0, 1.0, -1.0);
+	facesw[24] = Vector3(1.0, 1.0, 1.0);
+	facesw[25] = Vector3(1.0, 1.0, -1.0);
+	facesw[26] = Vector3(1.0, -1.0, -1.0);
+	facesw[27] = Vector3(1.0, 1.0, -1.0);
+	facesw[28] = Vector3(1.0, -1.0, 1.0);
+	facesw[29] = Vector3(1.0, 1.0, 1.0);
+	facesw[30] = Vector3(-1.0, 1.0, 1.0);
+	facesw[31] = Vector3(-1.0, -1.0, -1.0);
+	facesw[32] = Vector3(1.0, 1.0, 1.0);
+	facesw[33] = Vector3(1.0, 1.0, -1.0);
+	facesw[34] = Vector3(1.0, -1.0, 1.0);
+	facesw[35] = Vector3(1.0, -1.0, -1.0);
+
+	uvsw[0] = Vector2(1.0, 1.0);
+	uvsw[1] = Vector2(0.0, 1.0);
+	uvsw[2] = Vector2(0.0, 0.0);
+	uvsw[3] = Vector2(1.0, 1.0);
+	uvsw[4] = Vector2(0.0, 1.0);
+	uvsw[5] = Vector2(0.0, 0.0);
+	uvsw[6] = Vector2(1.0, 1.0);
+	uvsw[7] = Vector2(0.0, 0.0);
+	uvsw[8] = Vector2(1.0, 0.0);
+	uvsw[9] = Vector2(1.0, 0.0);
+	uvsw[10] = Vector2(0.0, 1.0);
+	uvsw[11] = Vector2(0.0, 0.0);
+	uvsw[12] = Vector2(1.0, 1.0);
+	uvsw[13] = Vector2(0.0, 1.0);
+	uvsw[14] = Vector2(0.0, 0.0);
+	uvsw[15] = Vector2(1.0, 1.0);
+	uvsw[16] = Vector2(0.0, 0.0);
+	uvsw[17] = Vector2(1.0, 0.0);
+	uvsw[18] = Vector2(0.0, 1.0);
+	uvsw[19] = Vector2(1.0, 0.0);
+	uvsw[20] = Vector2(1.0, 1.0);
+	uvsw[21] = Vector2(1.0, 1.0);
+	uvsw[22] = Vector2(0.0, 1.0);
+	uvsw[23] = Vector2(0.0, 0.0);
+	uvsw[24] = Vector2(1.0, 1.0);
+	uvsw[25] = Vector2(0.0, 0.0);
+	uvsw[26] = Vector2(1.0, 0.0);
+	uvsw[27] = Vector2(0.0, 1.0);
+	uvsw[28] = Vector2(0.0, 0.0);
+	uvsw[29] = Vector2(1.0, 0.0);
+	uvsw[30] = Vector2(1.0, 1.0);
+	uvsw[31] = Vector2(0.0, 0.0);
+	uvsw[32] = Vector2(1.0, 0.0);
+	uvsw[33] = Vector2(1.0, 0.0);
+	uvsw[34] = Vector2(1.0, 1.0);
+	uvsw[35] = Vector2(0.0, 1.0);
+
+	for (int i = 0; i < face_count; i++)
 	{
-		Vector3 *facesw = faces.ptrw();
-		Vector2 *uvsw = uvs.ptrw();
-		bool *smoothw = smooth.ptrw();
-		Ref<Material> *materialsw = materials.ptrw();
-		bool *invertw = invert.ptrw();
-
-		int face = 0;
-
-		Vector3 vertex_mul = size / 2;
-		Vector2 directions[6] = {Vector2(size.x, size.y), Vector2(size.x, size.z), Vector2(size.y, size.z), Vector2(size.x, size.y), Vector2(size.x, size.z), Vector2(size.y, size.z)};
-
-		{
-			for (int i = 0; i < 6; i++) {
-				Vector3 face_points[4];
-				//float uv_points[8] = { 0, 0, 0, 1, 1, 1, 1, 0 };
-
-				for (int j = 0; j < 4; j++) {
-					float v[3];
-					v[0] = 1.0;
-					v[1] = 1 - 2 * ((j >> 1) & 1);
-					v[2] = v[1] * (1 - 2 * (j & 1));
-
-					for (int k = 0; k < 3; k++) {
-						if (i < 3) {
-							face_points[j][(i + k) % 3] = v[k];
-						} else {
-							face_points[3 - j][(i + k) % 3] = -v[k];
-						}
-					}
-				}
-
-				Vector2 u[4] = {Vector2(0, 0), Vector2(0, 1), Vector2(1, 1), Vector2(1, 0)};
-				//for (int j = 0; j < 4; j++) {
-				//	u[j] = Vector2(uv_points[j * 2 + 0], uv_points[j * 2 + 1]);
-				//}
-
-				//We should just provide the data for a box. It's a Box. Unlike Cylinder or Sphere, it will always have the same number of faces and vertices. This is a waste of resources.
-				//face 1
-				facesw[face * 3 + 0] = face_points[0] * vertex_mul;
-				facesw[face * 3 + 1] = face_points[1] * vertex_mul;
-				facesw[face * 3 + 2] = face_points[2] * vertex_mul;
-
-				if (scale_uv) {
-					uvsw[face * 3 + 0] = u[0] * directions[i];
-					uvsw[face * 3 + 1] = u[1] * directions[i];
-					uvsw[face * 3 + 2] = u[2] * directions[i];
-				} else {
-					uvsw[face * 3 + 0] = u[0];
-					uvsw[face * 3 + 1] = u[1];
-					uvsw[face * 3 + 2] = u[2];
-				}
-
-
-				smoothw[face] = false;
-				invertw[face] = invert_val;
-				materialsw[face] = base_material;
-
-				face++;
-				//face 2
-				facesw[face * 3 + 0] = face_points[2] * vertex_mul;
-				facesw[face * 3 + 1] = face_points[3] * vertex_mul;
-				facesw[face * 3 + 2] = face_points[0] * vertex_mul;
-
-				if (scale_uv) {
-					uvsw[face * 3 + 0] = u[2] * directions[i];
-					uvsw[face * 3 + 1] = u[3] * directions[i];
-					uvsw[face * 3 + 2] = u[0] * directions[i];
-				} else {
-					uvsw[face * 3 + 0] = u[2];
-					uvsw[face * 3 + 1] = u[3];
-					uvsw[face * 3 + 2] = u[0];
-				}
-
-
-				smoothw[face] = false;
-				invertw[face] = invert_val;
-				materialsw[face] = base_material;
-
-				face++;
-			}
-		}
-
-		if (face != face_count) {
-			ERR_PRINT("Face mismatch bug! fix code");
-		}
+		smoothw[i] = false;
+		invertw[i] = invert_val;
+		materialsw[i] = base_material;
 	}
+
+
+// 	for (int i = 0; i < 6; i++) {
+// 		Vector3 face_points[4];
+// 		//float uv_points[8] = { 0, 0, 0, 1, 1, 1, 1, 0 };
+//
+// 		for (int j = 0; j < 4; j++) {
+// 			float v[3];
+// 			v[0] = 1.0;
+// 			v[1] = 1 - 2 * ((j >> 1) & 1);
+// 			v[2] = v[1] * (1 - 2 * (j & 1));
+//
+// 			for (int k = 0; k < 3; k++) {
+// 				if (i < 3) {
+// 					face_points[j][(i + k) % 3] = v[k];
+// 				} else {
+// 					face_points[3 - j][(i + k) % 3] = -v[k];
+// 				}
+// 			}
+// 		}
+//
+// 		Vector2 u[4] = {Vector2(0, 0), Vector2(0, 1), Vector2(1, 1), Vector2(1, 0)};
+// 		//for (int j = 0; j < 4; j++) {
+// 		//	u[j] = Vector2(uv_points[j * 2 + 0], uv_points[j * 2 + 1]);
+// 		//}
+//
+// 		//We should just provide the data for a box. It's a Box. Unlike Cylinder or Sphere, it will always have the same number of faces and vertices. This is a waste of resources.
+// 		//face 1
+// 		facesw[face * 3 + 0] = face_points[0] * vertex_mul;
+// 		facesw[face * 3 + 1] = face_points[1] * vertex_mul;
+// 		facesw[face * 3 + 2] = face_points[2] * vertex_mul;
+//
+// 		if (scale_uv) {
+// 			uvsw[face * 3 + 0] = u[0] * directions[i];
+// 			uvsw[face * 3 + 1] = u[1] * directions[i];
+// 			uvsw[face * 3 + 2] = u[2] * directions[i];
+// 		} else {
+// 			uvsw[face * 3 + 0] = u[0];
+// 			uvsw[face * 3 + 1] = u[1];
+// 			uvsw[face * 3 + 2] = u[2];
+// 		}
+//
+//
+// 		smoothw[face] = false;
+// 		invertw[face] = invert_val;
+// 		materialsw[face] = base_material;
+//
+// 		face++;
+// 		//face 2
+// 		facesw[face * 3 + 0] = face_points[2] * vertex_mul;
+// 		facesw[face * 3 + 1] = face_points[3] * vertex_mul;
+// 		facesw[face * 3 + 2] = face_points[0] * vertex_mul;
+//
+// 		if (scale_uv) {
+// 			uvsw[face * 3 + 0] = u[2] * directions[i];
+// 			uvsw[face * 3 + 1] = u[3] * directions[i];
+// 			uvsw[face * 3 + 2] = u[0] * directions[i];
+// 		} else {
+// 			uvsw[face * 3 + 0] = u[2];
+// 			uvsw[face * 3 + 1] = u[3];
+// 			uvsw[face * 3 + 2] = u[0];
+// 		}
+//
+//
+// 		smoothw[face] = false;
+// 		invertw[face] = invert_val;
+// 		materialsw[face] = base_material;
+//
+// 		face++;
+// 	}
+//
+// 	if (face != face_count) {
+// 		ERR_PRINT("Face mismatch bug! fix code");
+// 	}
 
 	new_brush->build_from_faces(faces, uvs, smooth, materials, invert);
 
