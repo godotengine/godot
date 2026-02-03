@@ -578,7 +578,10 @@ void EditorDockManager::close_dock(EditorDock *p_dock) {
 	}
 
 	p_dock->is_open = false;
-	p_dock->get_parent_container()->dock_closed(p_dock);
+	DockTabContainer *parent_container = p_dock->get_parent_container();
+	if (parent_container) {
+		parent_container->dock_closed(p_dock);
+	}
 
 	// Hide before moving to remove inconsistent signals.
 	p_dock->hide();
