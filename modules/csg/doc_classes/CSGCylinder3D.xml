@@ -17,6 +17,16 @@
 		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
 			The height of the cylinder.
 		</member>
+		<member name="scale_uv" type="bool" setter="set_scale_uv" getter="get_scale_uv" default="true">
+			Enabling this will scale the UVs to account for CSGCylinder radius and height, maintaining uniform texel size.
+			[b]Note:[/b] scale_uv might have issues with non repeating textures.
+		</member>
+		<member name="uv_offset" type="Vector2" setter="set_uv_offset" getter="get_uv_offset" default="Vector2(0, 0)">
+			Offsets the UVs on the side faces of the CSGCylinder.
+		</member>
+		<member name="top_uv_offset" type="Vector2" setter="set_top_uv_offset" getter="get_top_uv_offset" default="Vector2(0, 0)">
+			Offsets the UVs on the top and bottom faces of the CSGCylinder.
+		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The material used to render the cylinder.
 		</member>
