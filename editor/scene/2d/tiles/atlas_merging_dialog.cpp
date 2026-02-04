@@ -236,7 +236,7 @@ void AtlasMergingDialog::_merge_confirmed(const String &p_path) {
 
 	ResourceLoader::import(p_path);
 
-	Ref<Texture2D> new_texture_resource = ResourceLoader::load(p_path, "Texture2D");
+	Ref<Texture2D> new_texture_resource = ResourceLoader::load(p_path, "Texture2D", ResourceFormatLoader::CACHE_MODE_REPLACE);
 	merged->set_texture(new_texture_resource);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
