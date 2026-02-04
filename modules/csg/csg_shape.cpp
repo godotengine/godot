@@ -1607,7 +1607,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 
 	if (scale_uv) {
 		//xy xz zy
-		Vector2 directions[3] = {Vector2(size.x, size.y), Vector2(size.x, size.z), Vector2(size.z, size.y)};
+		Vector2 directions[3] = { Vector2(size.x, size.y), Vector2(size.x, size.z), Vector2(size.z, size.y) };
 		//zy//X+
 		uvsw[0] = Vector2(0, -1) * directions[2];
 		uvsw[1] = Vector2(1, -1) * directions[2];
@@ -1771,8 +1771,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 		}
 	}
 
-	for (int i = 0; i < face_count; i++)
-	{
+	for (int i = 0; i < face_count; i++) {
 		smoothw[i] = false;
 		invertw[i] = invert_val;
 		materialsw[i] = base_material;
