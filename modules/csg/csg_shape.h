@@ -276,6 +276,7 @@ class CSGBox3D : public CSGPrimitive3D {
 	Ref<Material> material;
 	Vector3 size = Vector3(1, 1, 1);
 	bool scale_uv = true;
+	bool compat_mode = false;
 
 protected:
 	static void _bind_methods();
@@ -290,6 +291,9 @@ public:
 
 	void set_scale_uv(const bool &p_scale_uv);
 	bool is_scale_uv() const;
+
+	void set_compat_mode(const bool &p_compat);
+	bool is_compat_mode() const;
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
