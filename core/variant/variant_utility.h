@@ -67,7 +67,10 @@ struct VariantUtilityFunctions {
 	static double signf(double x);
 	static int64_t signi(int64_t x);
 	static double pow(double x, double y);
-	static double log(double x);
+	static double log(double x, double base);
+#ifndef DISABLE_DEPRECATED
+	static double _log_compat(double x);
+#endif
 	static double exp(double x);
 	static bool is_nan(double x);
 	static bool is_inf(double x);
@@ -118,7 +121,7 @@ struct VariantUtilityFunctions {
 	static void randomize();
 	static int64_t randi();
 	static double randf();
-	static double randfn(double mean, double deviation);
+	static double randfn(double mean = 0.0, double deviation = 1.0);
 	static int64_t randi_range(int64_t from, int64_t to);
 	static double randf_range(double from, double to);
 	static void seed(int64_t s);
