@@ -136,6 +136,9 @@ Vector2 AbstractPolygon2DEditor::_get_geometric_center() const {
 	int n_subs = 0;
 	for (int i = 0; i < n_polygons; i++) {
 		const Vector<Vector2> &vertices = _get_polygon(i);
+		if (vertices.size() < 3) {
+			continue;
+		}
 		Vector<Vector<Point2>> decomp = ::Geometry2D::decompose_polygon_in_convex(vertices);
 		if (decomp.is_empty()) {
 			continue;
