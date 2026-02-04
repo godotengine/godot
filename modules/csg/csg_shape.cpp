@@ -1608,67 +1608,69 @@ CSGBrush *CSGBox3D::_build_brush() {
 	if (scale_uv) {
 		//xy xz zy
 		Vector2 directions[3] = {Vector2(size.x, size.y), Vector2(size.x, size.z), Vector2(size.z, size.y)};
-		//zy
-		uvsw[0] = Vector2(0, 1) * directions[2];
-		uvsw[1] = Vector2(1, 1) * directions[2];
+		//zy//X+
+		uvsw[0] = Vector2(0, -1) * directions[2];
+		uvsw[1] = Vector2(1, -1) * directions[2];
 		uvsw[2] = Vector2(1, 0) * directions[2];
 		uvsw[3] = Vector2(1, 0) * directions[2];
 		uvsw[4] = Vector2(0, 0) * directions[2];
-		uvsw[5] = Vector2(0, 1) * directions[2];
+		uvsw[5] = Vector2(0, -1) * directions[2];
 		//xz
 		if (invert_val) {
 			//when we flip the faces, make sure the top and bottom are not mirrored.
-			uvsw[6] = Vector2(0, 0) * directions[1];
-			uvsw[7] = Vector2(0, 1) * directions[1];
-			uvsw[8] = Vector2(1, 1) * directions[1];
-			uvsw[9] = Vector2(1, 1) * directions[1];
-			uvsw[10] = Vector2(1, 0) * directions[1];
-			uvsw[11] = Vector2(0, 0) * directions[1];
+			//top face
+			uvsw[6] = Vector2(0, 1) * directions[1];
+			uvsw[7] = Vector2(0, 0) * directions[1];
+			uvsw[8] = Vector2(1, 0) * directions[1];
+			uvsw[9] = Vector2(1, 0) * directions[1];
+			uvsw[10] = Vector2(1, 1) * directions[1];
+			uvsw[11] = Vector2(0, 1) * directions[1];
 		} else {
 			uvsw[6] = Vector2(1, 1) * directions[1];
-			uvsw[7] = Vector2(0, 1) * directions[1];
+			uvsw[7] = Vector2(1, 0) * directions[1];
 			uvsw[8] = Vector2(0, 0) * directions[1];
 			uvsw[9] = Vector2(0, 0) * directions[1];
-			uvsw[10] = Vector2(1, 0) * directions[1];
+			uvsw[10] = Vector2(0, 1) * directions[1];
 			uvsw[11] = Vector2(1, 1) * directions[1];
 		}
 		//z+
-		uvsw[12] = Vector2(0, 0) * directions[0];//0 0
-		uvsw[13] = Vector2(0, 1) * directions[0];//0 1
-		uvsw[14] = Vector2(1, 1) * directions[0];//1 1
-		uvsw[15] = Vector2(1, 1) * directions[0];//1 1
-		uvsw[16] = Vector2(1, 0) * directions[0];//1 0
-		uvsw[17] = Vector2(0, 0) * directions[0];//0 0
+		uvsw[12] = Vector2(1, -1) * directions[0];
+		uvsw[13] = Vector2(1, 0) * directions[0];
+		uvsw[14] = Vector2(0, 0) * directions[0];
+		uvsw[15] = Vector2(0, 0) * directions[0];
+		uvsw[16] = Vector2(0, -1) * directions[0];
+		uvsw[17] = Vector2(1, -1) * directions[0];
 		//x-
-		uvsw[18] = Vector2(0, 0) * directions[2];//0 0
-		uvsw[19] = Vector2(1, 0) * directions[2];//1 0
-		uvsw[20] = Vector2(1, 1) * directions[2];//1 1
-		uvsw[21] = Vector2(1, 1) * directions[2];//1 1
-		uvsw[22] = Vector2(0, 1) * directions[2];//0 1
-		uvsw[23] = Vector2(0, 0) * directions[2];//0 0
+		uvsw[18] = Vector2(0, -1) * directions[2];
+		uvsw[19] = Vector2(1, -1) * directions[2];
+		uvsw[20] = Vector2(1, 0) * directions[2];
+		uvsw[21] = Vector2(1, 0) * directions[2];
+		uvsw[22] = Vector2(0, 0) * directions[2];
+		uvsw[23] = Vector2(0, -1) * directions[2];
 		//xz
 		if (invert_val) {
-			uvsw[24] = Vector2(0, 1) * directions[1];
+			//bottom face
+			uvsw[24] = Vector2(1, 0) * directions[1];
 			uvsw[25] = Vector2(1, 1) * directions[1];
-			uvsw[26] = Vector2(1, 0) * directions[1];
-			uvsw[27] = Vector2(1, 0) * directions[1];
+			uvsw[26] = Vector2(0, 1) * directions[1];
+			uvsw[27] = Vector2(0, 1) * directions[1];
 			uvsw[28] = Vector2(0, 0) * directions[1];
-			uvsw[29] = Vector2(0, 1) * directions[1];
+			uvsw[29] = Vector2(1, 0) * directions[1];
 		} else {
-			uvsw[24] = Vector2(0, 1) * directions[1];
-			uvsw[25] = Vector2(0, 0) * directions[1];
-			uvsw[26] = Vector2(1, 0) * directions[1];
-			uvsw[27] = Vector2(1, 0) * directions[1];
-			uvsw[28] = Vector2(1, 1) * directions[1];
-			uvsw[29] = Vector2(0, 1) * directions[1];
+			uvsw[24] = Vector2(0, 0) * directions[1];
+			uvsw[25] = Vector2(0, 1) * directions[1];
+			uvsw[26] = Vector2(1, 1) * directions[1];
+			uvsw[27] = Vector2(1, 1) * directions[1];
+			uvsw[28] = Vector2(1, 0) * directions[1];
+			uvsw[29] = Vector2(0, 0) * directions[1];
 		}
 		//z-
-		uvsw[30] = Vector2(1, 1) * directions[0];
-		uvsw[31] = Vector2(1, 0) * directions[0];
-		uvsw[32] = Vector2(0, 0) * directions[0];
-		uvsw[33] = Vector2(0, 0) * directions[0];
-		uvsw[34] = Vector2(0, 1) * directions[0];
-		uvsw[35] = Vector2(1, 1) * directions[0];
+		uvsw[30] = Vector2(0, 0) * directions[0];
+		uvsw[31] = Vector2(0, -1) * directions[0];
+		uvsw[32] = Vector2(1, -1) * directions[0];
+		uvsw[33] = Vector2(1, -1) * directions[0];
+		uvsw[34] = Vector2(1, 0) * directions[0];
+		uvsw[35] = Vector2(0, 0) * directions[0];
 	} else {
 		if (compat_mode) {
 			uvsw[0] = Vector2(0, 0);
@@ -1709,63 +1711,63 @@ CSGBrush *CSGBox3D::_build_brush() {
 			uvsw[35] = Vector2(0, 0);
 		} else {
 			//compat mode only available without scale_uv
-			uvsw[0] = Vector2(0, 1);
-			uvsw[1] = Vector2(1, 1);
+			uvsw[0] = Vector2(0, -1);
+			uvsw[1] = Vector2(1, -1);
 			uvsw[2] = Vector2(1, 0);
 			uvsw[3] = Vector2(1, 0);
 			uvsw[4] = Vector2(0, 0);
-			uvsw[5] = Vector2(0, 1);
+			uvsw[5] = Vector2(0, -1);
 			if (invert_val) {
-				uvsw[6] = Vector2(0, 0);
-				uvsw[7] = Vector2(0, 1);
-				uvsw[8] = Vector2(1, 1);
-				uvsw[9] = Vector2(1, 1);
-				uvsw[10] = Vector2(1, 0);
-				uvsw[11] = Vector2(0, 0);
+				uvsw[6] = Vector2(0, 1);
+				uvsw[7] = Vector2(0, 0);
+				uvsw[8] = Vector2(1, 0);
+				uvsw[9] = Vector2(1, 0);
+				uvsw[10] = Vector2(1, 1);
+				uvsw[11] = Vector2(0, 1);
 			} else {
 				uvsw[6] = Vector2(1, 1);
-				uvsw[7] = Vector2(0, 1);
+				uvsw[7] = Vector2(1, 0);
 				uvsw[8] = Vector2(0, 0);
 				uvsw[9] = Vector2(0, 0);
-				uvsw[10] = Vector2(1, 0);
+				uvsw[10] = Vector2(0, 1);
 				uvsw[11] = Vector2(1, 1);
 			}
 
-			uvsw[12] = Vector2(0, 0);
-			uvsw[13] = Vector2(0, 1);
-			uvsw[14] = Vector2(1, 1);
-			uvsw[15] = Vector2(1, 1);
-			uvsw[16] = Vector2(1, 0);
-			uvsw[17] = Vector2(0, 0);
+			uvsw[12] = Vector2(1, -1);
+			uvsw[13] = Vector2(1, 0);
+			uvsw[14] = Vector2(0, 0);
+			uvsw[15] = Vector2(0, 0);
+			uvsw[16] = Vector2(0, -1);
+			uvsw[17] = Vector2(1, -1);
 
-			uvsw[18] = Vector2(0, 0);
-			uvsw[19] = Vector2(1, 0);
-			uvsw[20] = Vector2(1, 1);
-			uvsw[21] = Vector2(1, 1);
-			uvsw[22] = Vector2(0, 1);
-			uvsw[23] = Vector2(0, 0);
+			uvsw[18] = Vector2(0, -1);
+			uvsw[19] = Vector2(1, -1);
+			uvsw[20] = Vector2(1, 0);
+			uvsw[21] = Vector2(1, 0);
+			uvsw[22] = Vector2(0, 0);
+			uvsw[23] = Vector2(0, -1);
 			if (invert_val) {
-				uvsw[24] = Vector2(0, 1);
+				uvsw[24] = Vector2(1, 0);
 				uvsw[25] = Vector2(1, 1);
-				uvsw[26] = Vector2(1, 0);
-				uvsw[27] = Vector2(1, 0);
+				uvsw[26] = Vector2(0, 1);
+				uvsw[27] = Vector2(0, 1);
 				uvsw[28] = Vector2(0, 0);
-				uvsw[29] = Vector2(0, 1);
+				uvsw[29] = Vector2(1, 0);
 			} else {
-				uvsw[24] = Vector2(0, 1);
-				uvsw[25] = Vector2(0, 0);
-				uvsw[26] = Vector2(1, 0);
-				uvsw[27] = Vector2(1, 0);
-				uvsw[28] = Vector2(1, 1);
-				uvsw[29] = Vector2(0, 1);
+				uvsw[24] = Vector2(0, 0);
+				uvsw[25] = Vector2(0, 1);
+				uvsw[26] = Vector2(1, 1);
+				uvsw[27] = Vector2(1, 1);
+				uvsw[28] = Vector2(1, 0);
+				uvsw[29] = Vector2(0, 0);
 			}
 
-			uvsw[30] = Vector2(1, 1);
-			uvsw[31] = Vector2(1, 0);
-			uvsw[32] = Vector2(0, 0);
-			uvsw[33] = Vector2(0, 0);
-			uvsw[34] = Vector2(0, 1);
-			uvsw[35] = Vector2(1, 1);
+			uvsw[30] = Vector2(0, 0);
+			uvsw[31] = Vector2(0, -1);
+			uvsw[32] = Vector2(1, -1);
+			uvsw[33] = Vector2(1, -1);
+			uvsw[34] = Vector2(1, 0);
+			uvsw[35] = Vector2(0, 0);
 		}
 	}
 
@@ -1775,11 +1777,6 @@ CSGBrush *CSGBox3D::_build_brush() {
 		invertw[i] = invert_val;
 		materialsw[i] = base_material;
 	}
-
-// 	for (int j = 0; j < 36; j++)
-// 	{
-// 		facesw[j] = facesw[j] * vertex_mul;
-// 	}
 
 	new_brush->build_from_faces(faces, uvs, smooth, materials, invert);
 

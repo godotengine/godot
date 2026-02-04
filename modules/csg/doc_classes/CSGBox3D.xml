@@ -19,6 +19,7 @@
 		</member>
 		<member name="scale_uv" type="bool" setter="set_scale_uv" getter="is_scale_uv" default="true">
 			Enabling this will scale the UVs to account for CSGBox size, maintaining uniform texel size.
+			[b]Note:[/b] scale_uv might have issues with non repeating textures.
 		</member>
 		<member name="compat_mode" type="bool" setter="set_compat_mode" getter="is_compat_mode">
 			Enabling] this will use UVs identical to those from previous versions of godot.
