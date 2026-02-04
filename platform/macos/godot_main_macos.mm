@@ -39,7 +39,7 @@
 #include <sys/resource.h>
 #endif
 
-int main(int argc, char **argv) {
+__attribute__((visibility("default"))) int main(int argc, char **argv) {
 	godot_init_profiler();
 
 #if defined(VULKAN_ENABLED)
