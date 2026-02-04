@@ -155,6 +155,11 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 				ERR_FAIL_MSG("Converting circular structure to JSON.");
 			}
 
+			if (d.is_empty()) {
+				r_result += "{}";
+				return;
+			}
+
 			r_result += '{';
 			r_result += end_statement;
 			p_markers.insert(d.id());
