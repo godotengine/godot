@@ -51,6 +51,7 @@ protected:
 
 public:
 	static VBoxContainer *make_default_tooltip(const String &p_resource_path);
+	static void append_editor_description_tooltip(const String &p_resource_path, VBoxContainer *p_default_tooltip);
 	void request_thumbnail(const String &p_path, TextureRect *p_for_control) const;
 
 	virtual bool handles(const String &p_resource_type) const;

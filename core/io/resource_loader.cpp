@@ -111,6 +111,14 @@ String ResourceFormatLoader::get_resource_script_class(const String &p_path) con
 	return ret;
 }
 
+String ResourceFormatLoader::get_resource_editor_description(const String &p_path) const {
+	return String();
+}
+
+bool ResourceFormatLoader::has_editor_description_support() const {
+	return false;
+}
+
 ResourceUID::ID ResourceFormatLoader::get_resource_uid(const String &p_path) const {
 	int64_t uid = ResourceUID::INVALID_ID;
 	if (has_custom_uid_support()) {
@@ -1203,6 +1211,36 @@ String ResourceLoader::get_resource_script_class(const String &p_path) {
 	}
 
 	return "";
+}
+
+String ResourceLoader::get_resource_editor_description(const String &p_path) {
+	const String local_path = _validate_local_path(p_path);
+
+	for (int i = 0; i < loader_count; i++) {
+		if (loader[i]->has_editor_description_support()) {
+			const String result = loader[i]->get_resource_editor_description(local_path);
+			if (!result.is_empty()) {
+				return result;
+			}
+		}
+	}
+
+	return "";
+}
+
+bool ResourceLoader::has_editor_description_support(const String &p_path) {
+	String local_path = _validate_local_path(p_path);
+
+	for (int i = 0; i < loader_count; i++) {
+		if (!loader[i]->recognize_path(local_path)) {
+			continue;
+		}
+		if (loader[i]->has_editor_description_support()) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
