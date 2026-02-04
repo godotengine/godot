@@ -2740,12 +2740,29 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					begin_transform(TRANSFORM_TRANSLATE, true);
 				}
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/instant_rotate", event_mod) && _edit.mode != TRANSFORM_ROTATE) {
-				if (_edit.mode == TRANSFORM_NONE) {
-					begin_transform(TRANSFORM_ROTATE, true);
-				} else if (_edit.instant || collision_reposition) {
-					commit_transform();
-					begin_transform(TRANSFORM_ROTATE, true);
+			if (ED_IS_SHORTCUT("spatial_editor/instant_rotate", event_mod)) {
+				if (_edit.mode == TRANSFORM_ROTATE && _edit.instant) {
+					_edit.is_trackball = !_edit.is_trackball;
+					_edit.show_rotation_line = !_edit.is_trackball;
+					_edit.plane = TRANSFORM_VIEW;
+					_edit.original_mouse_pos = _edit.mouse_pos;
+					if (_edit.is_trackball) {
+						set_message(TTR("Trackball Rotation"));
+					} else {
+						_edit.initial_click_vector = Vector3();
+						_edit.previous_rotation_vector = Vector3();
+						_edit.accumulated_rotation_angle = 0.0;
+						_edit.display_rotation_angle = 0.0;
+						set_message(vformat(TTR("Rotating %s degrees."), String::num(0, 0)));
+					}
+					surface->queue_redraw();
+				} else if (_edit.mode != TRANSFORM_ROTATE) {
+					if (_edit.mode == TRANSFORM_NONE) {
+						begin_transform(TRANSFORM_ROTATE, true);
+					} else if (_edit.instant || collision_reposition) {
+						commit_transform();
+						begin_transform(TRANSFORM_ROTATE, true);
+					}
 				}
 			}
 			if (ED_IS_SHORTCUT("spatial_editor/instant_scale", event_mod) && _edit.mode != TRANSFORM_SCALE) {
