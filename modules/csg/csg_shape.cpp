@@ -1831,7 +1831,6 @@ bool CSGBox3D::is_compat_mode() const {
 	return compat_mode;
 }
 
-
 #ifndef DISABLE_DEPRECATED
 // Kept for compatibility from 3.x to 4.0.
 bool CSGBox3D::_set(const StringName &p_name, const Variant &p_value) {
