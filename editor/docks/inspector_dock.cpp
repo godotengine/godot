@@ -228,7 +228,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 }
 
 void InspectorDock::_new_resource() {
-	new_resource_dialog->popup_create(true);
+	new_resource_dialog->popup_create(true, false, true);
 }
 
 void InspectorDock::_load_resource(const String &p_type) {

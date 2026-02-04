@@ -578,7 +578,7 @@ void EditorInterface::popup_create_dialog(const Callable &p_callback, const Stri
 	}
 
 	create_dialog->set_base_type(safe_base_type);
-	create_dialog->popup_create(false, true, p_current_type, "");
+	create_dialog->popup_create(false, true, false, p_current_type, "");
 	create_dialog->set_title(p_dialog_title.is_empty() ? vformat(TTR("Create New %s"), p_base_type) : p_dialog_title);
 
 	const Callable callback = callable_mp(this, &EditorInterface::_create_dialog_item_selected);
