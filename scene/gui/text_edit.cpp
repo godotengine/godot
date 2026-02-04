@@ -4895,6 +4895,11 @@ Point2i TextEdit::search(const String &p_key, uint32_t p_search_flags, int p_fro
 	int current_line = p_from_line;
 	int current_column = p_from_column;
 
+	if (p_search_flags & SEARCH_BACKWARDS) {
+		// `rfind` requires the from index to be within the bounds of the last possible match position.
+		current_column = MIN(current_column, text[p_from_line].length() - p_key.length());
+	}
+
 	// + 1 because we'll search p_from_line twice - starting from p_from_column, and then again at the very end.
 	for (int i = 0; i < text.size() + 1; i++) {
 		const String &text_line = text[current_line];
