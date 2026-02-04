@@ -332,6 +332,7 @@ public:
 	void set_item_multistate(int p_idx, int p_state);
 	void toggle_item_multistate(int p_idx);
 	void set_item_shortcut_disabled(int p_idx, bool p_disabled);
+	void set_item_index(int p_idx, int p_target_idx);
 
 	void toggle_item_checked(int p_idx);
 

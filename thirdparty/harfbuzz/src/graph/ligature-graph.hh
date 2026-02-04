@@ -67,14 +67,13 @@ struct LigatureSubstFormat1 : public OT::Layout::GSUB_impl::LigatureSubstFormat1
   }
 
   hb_vector_t<unsigned> split_subtables (gsubgpos_graph_context_t& c,
-                                         unsigned parent_index,
                                          unsigned this_index)
   {
-    auto split_points = compute_split_points(c, parent_index, this_index);
+    auto split_points = compute_split_points(c, this_index);
     split_context_t split_context {
       c,
       this,
-      c.graph.duplicate_if_shared (parent_index, this_index),
+      this_index,
       total_number_ligas(c, this_index),
       liga_counts(c, this_index),
     };
@@ -123,7 +122,6 @@ struct LigatureSubstFormat1 : public OT::Layout::GSUB_impl::LigatureSubstFormat1
   }
 
   hb_vector_t<unsigned> compute_split_points(gsubgpos_graph_context_t& c,
-                                             unsigned parent_index,
                                              unsigned this_index) const
   {
     // For ligature subst coverage is always packed last, and as a result is where an overflow
@@ -441,26 +439,36 @@ struct LigatureSubstFormat1 : public OT::Layout::GSUB_impl::LigatureSubstFormat1
     }
 
     // Adjust liga set array
-    c.graph.vertices_[this_index].obj.tail -= (ligatureSet.len - new_liga_set_count) * SmallTypes::size;
+    auto& this_vertex = c.graph.vertices_[this_index];
+    this_vertex.obj.tail -= (ligatureSet.len - new_liga_set_count) * SmallTypes::size;
     ligatureSet.len = new_liga_set_count;
 
     // Coverage matches the number of liga sets so rebuild as needed
-    auto coverage = c.graph.as_mutable_table<Coverage> (this_index, &this->coverage);
-    if (!coverage) return false;
+    unsigned coverage_idx = c.graph.index_for_offset (this_index, &this->coverage);
+    if (coverage_idx == (unsigned) -1) return false;
+
+    auto& coverage_v = c.graph.vertices_[coverage_idx];
+    unsigned coverage_size = coverage_v.table_size ();
+    Coverage* coverage_table = (Coverage*) coverage_v.obj.head;
+
+    if (coverage_v.is_shared ())
+    {
+      coverage_idx = c.graph.remap_child (this_index, coverage_idx);
+      if (coverage_idx == (unsigned) -1) return false;
+    }
 
     for (unsigned i : retained_indices.iter())
-      add_virtual_link(c, i, coverage.index);
+      add_virtual_link(c, i, coverage_idx);
 
-    unsigned coverage_size = coverage.vertex->table_size ();
     auto new_coverage =
-        + hb_zip (coverage.table->iter (), hb_range ())
+        + hb_zip (coverage_table->iter (), hb_range ())
         | hb_filter ([&] (hb_pair_t<unsigned, unsigned> p) {
           return p.second < new_liga_set_count;
         })
         | hb_map_retains_sorting (hb_first)
         ;
 
-    return Coverage::make_coverage (c, new_coverage, coverage.index, coverage_size);
+    return Coverage::make_coverage (c, new_coverage, coverage_idx, coverage_size);
   }
 };
 
@@ -468,12 +476,11 @@ struct LigatureSubst : public OT::Layout::GSUB_impl::LigatureSubst
 {
 
   hb_vector_t<unsigned> split_subtables (gsubgpos_graph_context_t& c,
-                                         unsigned parent_index,
                                          unsigned this_index)
   {
-    switch (u.format) {
+    switch (u.format.v) {
     case 1:
-      return ((LigatureSubstFormat1*)(&u.format1))->split_subtables (c, parent_index, this_index);
+      return ((LigatureSubstFormat1*)(&u.format1))->split_subtables (c, this_index);
 #ifndef HB_NO_BEYOND_64K
     case 2: HB_FALLTHROUGH;
       // Don't split 24bit Ligature Subs
@@ -486,10 +493,10 @@ struct LigatureSubst : public OT::Layout::GSUB_impl::LigatureSubst
   bool sanitize (graph_t::vertex_t& vertex) const
   {
     int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
-    if (vertex_len < u.format.get_size ()) return false;
+    if (vertex_len < u.format.v.get_size ()) return false;
     hb_barrier ();
 
-    switch (u.format) {
+    switch (u.format.v) {
     case 1:
       return ((LigatureSubstFormat1*)(&u.format1))->sanitize (vertex);
 #ifndef HB_NO_BEYOND_64K

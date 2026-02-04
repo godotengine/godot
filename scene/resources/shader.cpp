@@ -118,6 +118,8 @@ void Shader::set_code(const String &p_code) {
 		mode = MODE_SKY;
 	} else if (type == "fog") {
 		mode = MODE_FOG;
+	} else if (type == "texture_blit") {
+		mode = MODE_TEXTURE_BLIT;
 	} else {
 		mode = MODE_SPATIAL;
 	}
@@ -290,6 +292,7 @@ void Shader::_bind_methods() {
 	BIND_ENUM_CONSTANT(MODE_PARTICLES);
 	BIND_ENUM_CONSTANT(MODE_SKY);
 	BIND_ENUM_CONSTANT(MODE_FOG);
+	BIND_ENUM_CONSTANT(MODE_TEXTURE_BLIT);
 }
 
 Shader::Shader() {

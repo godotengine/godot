@@ -129,7 +129,7 @@ uint32_t AnimationMixer::_get_libraries_property_usage() const {
 void AnimationMixer::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (uint32_t i = 0; i < animation_libraries.size(); i++) {
 		const String path = vformat("libraries/%s", animation_libraries[i].name);
-		p_list->push_back(PropertyInfo(Variant::OBJECT, path, PROPERTY_HINT_RESOURCE_TYPE, "AnimationLibrary", _get_libraries_property_usage()));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, path, PROPERTY_HINT_RESOURCE_TYPE, AnimationLibrary::get_class_static(), _get_libraries_property_usage()));
 	}
 }
 
@@ -280,16 +280,6 @@ bool AnimationMixer::has_animation_library(const StringName &p_name) const {
 	}
 
 	return false;
-}
-
-StringName AnimationMixer::get_animation_library_name(const Ref<AnimationLibrary> &p_animation_library) const {
-	ERR_FAIL_COND_V(p_animation_library.is_null(), StringName());
-	for (const AnimationLibraryData &lib : animation_libraries) {
-		if (lib.library == p_animation_library) {
-			return lib.name;
-		}
-	}
-	return StringName();
 }
 
 StringName AnimationMixer::find_animation_library(const Ref<Animation> &p_animation) const {
@@ -2226,7 +2216,7 @@ Ref<AnimatedValuesBackup> AnimationMixer::make_backup() {
 	make_animation_instance(SceneStringName(RESET), pi);
 	_build_backup_track_cache();
 
-	backup->set_data(track_cache);
+	backup->set_data(AHashMap<Animation::TypeHash, TrackCache *, HashHasher>(track_cache));
 	clear_animation_instances();
 
 	return backup;

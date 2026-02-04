@@ -31,6 +31,7 @@
 #include "gi.h"
 
 #include "core/config/project_settings.h"
+#include "core/math/geometry_3d.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"

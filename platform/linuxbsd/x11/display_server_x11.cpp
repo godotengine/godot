@@ -36,6 +36,7 @@
 #include "x11/key_mapping_x11.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/io/file_access.h"
 #include "core/math/math_funcs.h"
 #include "core/os/main_loop.h"
@@ -7045,8 +7046,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
 				WARN_PRINT("Your video card drivers seem not to support the required Vulkan version, switching to OpenGL 3.");
 				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility", OS::RENDERING_SOURCE_FALLBACK);
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else
 #endif // GLES3_ENABLED
 			{
@@ -7122,7 +7123,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			if (fallback) {
 				WARN_PRINT("Your video card drivers seem not to support the required OpenGL version, switching to OpenGLES.");
 				rendering_driver = "opengl3_es";
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else {
 				r_error = ERR_UNAVAILABLE;
 

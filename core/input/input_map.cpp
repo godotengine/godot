@@ -317,6 +317,11 @@ void InputMap::load_from_project_settings() {
 		String name = pi.name.substr(pi.name.find_char('/') + 1);
 
 		Dictionary action = GLOBAL_GET(pi.name);
+
+		if (!action.has("events")) {
+			continue;
+		}
+
 		float deadzone = action.has("deadzone") ? (float)action["deadzone"] : DEFAULT_DEADZONE;
 		Array events = action["events"];
 
@@ -900,7 +905,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_featur
 }
 
 void InputMap::load_default() {
-	HashMap<String, List<Ref<InputEvent>>> builtins = get_builtins_with_feature_overrides_applied();
+	HashMap<String, List<Ref<InputEvent>>> builtins(get_builtins_with_feature_overrides_applied());
 
 	for (const KeyValue<String, List<Ref<InputEvent>>> &E : builtins) {
 		String name = E.key;

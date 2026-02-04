@@ -182,7 +182,12 @@ Error rename_and_store_file_in_gradle_project(const Ref<EditorExportPreset> &p_p
 		return err;
 	}
 
-	const String dst_path = export_data->assets_directory + String("/") + simplified_path.trim_prefix("res://");
+	String dst_path;
+	if (export_data->pd.salt.length() == 32) {
+		dst_path = export_data->assets_directory + String("/") + (simplified_path + export_data->pd.salt).sha256_text();
+	} else {
+		dst_path = export_data->assets_directory + String("/") + simplified_path.trim_prefix("res://");
+	}
 	print_verbose("Saving project files from " + simplified_path + " into " + dst_path);
 	err = store_file_at_path(dst_path, enc_data);
 

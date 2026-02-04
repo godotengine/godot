@@ -411,6 +411,56 @@ struct avar
 #endif
   }
 
+  bool has_v2_data () const { return version.major > 1; }
+
+  // axis normalization is done in 2.14 here
+  // TODO: deprecate this API once fonttools is updated to use 16.16 normalization
+  bool map_coords_2_14 (float *coords, unsigned int coords_length) const
+  {
+    hb_vector_t<int> coords_2_14;
+    if (!coords_2_14.resize (coords_length)) return false;
+    unsigned int count = hb_min (coords_length, axisCount);
+
+    const SegmentMaps *map = &firstAxisSegmentMaps;
+    for (unsigned int i = 0; i < count; i++)
+    {
+      int v = roundf (map->map_float (coords[i]) * 16384.f);
+      coords_2_14[i] = v;
+      coords[i] = v / 16384.f;
+      map = &StructAfter<SegmentMaps> (*map);
+    }
+
+#ifndef HB_NO_AVAR2
+    if (version.major < 2)
+      return true;
+    hb_barrier ();
+
+    for (; count < axisCount; count++)
+      map = &StructAfter<SegmentMaps> (*map);
+
+    const auto &v2 = * (const avarV2Tail *) map;
+
+    const auto &varidx_map = this+v2.varIdxMap;
+    const auto &var_store = this+v2.varStore;
+    auto *var_store_cache = var_store.create_cache ();
+
+    for (unsigned i = 0; i < coords_length; i++)
+    {
+      int v = coords_2_14[i];
+      uint32_t varidx = varidx_map.map (i);
+      float delta = var_store.get_delta (varidx, coords_2_14.arrayZ, coords_2_14.length, var_store_cache);
+      v += roundf (delta);
+      v = hb_clamp (v, -(1<<16), +(1<<16));
+      coords[i] = v / 16384.f;
+    }
+
+    OT::ItemVariationStore::destroy_cache (var_store_cache);
+    return true;
+#else
+    return version.major < 2;
+#endif
+  }
+
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);

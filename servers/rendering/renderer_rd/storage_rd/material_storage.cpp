@@ -1243,6 +1243,178 @@ void MaterialStorage::MaterialData::set_as_used() {
 	}
 }
 
+/* TextureBlit SHADER */
+
+void MaterialStorage::TexBlitShaderData::set_code(const String &p_code) {
+	TextureStorage *texture_storage = TextureStorage::get_singleton();
+	// Initialize and compile the shader.
+
+	code = p_code;
+	valid = false;
+	ubo_size = 0;
+	uniforms.clear();
+
+	if (code.is_empty()) {
+		return; // Just invalid, but no error.
+	}
+
+	ShaderCompiler::GeneratedCode gen_code;
+
+	// Actual enum set further down after compilation.
+	int blend_modei = BLEND_MODE_DISABLED;
+
+	ShaderCompiler::IdentifierActions actions;
+	actions.entry_point_stages["blit"] = ShaderCompiler::STAGE_FRAGMENT;
+
+	actions.render_mode_values["blend_add"] = Pair<int *, int>(&blend_modei, BLEND_MODE_ADD);
+	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MIX);
+	actions.render_mode_values["blend_sub"] = Pair<int *, int>(&blend_modei, BLEND_MODE_SUB);
+	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MUL);
+	actions.render_mode_values["blend_disabled"] = Pair<int *, int>(&blend_modei, BLEND_MODE_DISABLED);
+
+	actions.uniforms = &uniforms;
+	Error err = texture_storage->tex_blit_shader.compiler.compile(RS::SHADER_TEXTURE_BLIT, code, &actions, path, gen_code);
+	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
+
+	if (version.is_null()) {
+		version = texture_storage->tex_blit_shader.shader.version_create();
+	}
+
+	blend_mode = BlendMode(blend_modei);
+
+#if 0
+	print_line("**compiling shader:");
+	print_line("**defines:\n");
+	for (int i = 0; i < gen_code.defines.size(); i++) {
+		print_line(gen_code.defines[i]);
+	}
+
+	HashMap<String, String>::Iterator el = gen_code.code.begin();
+	while (el) {
+		print_line("\n**code " + el->key + ":\n" + el->value);
+		++el;
+	}
+
+	print_line("\n**uniforms:\n" + gen_code.uniforms);
+	print_line("\n**vertex_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX]);
+	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
+#endif
+
+	texture_storage->tex_blit_shader.shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines);
+	ERR_FAIL_COND(!texture_storage->tex_blit_shader.shader.version_is_valid(version));
+
+	ubo_size = gen_code.uniform_total_size;
+	ubo_offsets = gen_code.uniform_offsets;
+	texture_uniforms = gen_code.texture_uniforms;
+
+	RD::PipelineColorBlendState blend_state_color_blend;
+	RD::PipelineColorBlendState::Attachment attachment;
+
+	// blend_mode_to_blend_attachment(blend_mode) does not work
+	// Because we want BlendAdd and BlendSub to behave differently for Texture_Blit
+	switch (blend_mode) {
+		case BLEND_MODE_MIX: {
+			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
+			attachment.color_blend_op = RD::BLEND_OP_ADD;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+		} break;
+		case BLEND_MODE_ADD: {
+			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
+			attachment.color_blend_op = RD::BLEND_OP_ADD;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+		} break;
+		case BLEND_MODE_SUB: {
+			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_REVERSE_SUBTRACT;
+			attachment.color_blend_op = RD::BLEND_OP_REVERSE_SUBTRACT;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+		} break;
+		case BLEND_MODE_MUL: {
+			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
+			attachment.color_blend_op = RD::BLEND_OP_ADD;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_DST_COLOR;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ZERO;
+			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_DST_ALPHA;
+			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
+		} break;
+		case BLEND_MODE_DISABLED:
+		default: {
+			// Use default attachment values.
+		} break;
+	}
+
+	blend_state_color_blend.attachments = { attachment, attachment, attachment, attachment };
+
+	// Update Pipelines
+	for (int i = 0; i < 4; i++) {
+		RID shader_variant = texture_storage->tex_blit_shader.shader.version_get_shader(version, i);
+
+		pipelines[i].setup(shader_variant, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state_color_blend, 0);
+	}
+
+	valid = true;
+}
+
+bool MaterialStorage::TexBlitShaderData::is_animated() const {
+	return false;
+}
+
+bool MaterialStorage::TexBlitShaderData::casts_shadows() const {
+	return false;
+}
+
+RS::ShaderNativeSourceCode MaterialStorage::TexBlitShaderData::get_native_source_code() const {
+	return TextureStorage::get_singleton()->tex_blit_shader.shader.version_get_native_source_code(version);
+}
+
+Pair<ShaderRD *, RID> MaterialStorage::TexBlitShaderData::get_native_shader_and_version() const {
+	return { &TextureStorage::get_singleton()->tex_blit_shader.shader, version };
+}
+
+MaterialStorage::TexBlitShaderData::TexBlitShaderData() {
+	valid = false;
+}
+
+MaterialStorage::TexBlitShaderData::~TexBlitShaderData() {
+	if (version.is_valid()) {
+		TextureStorage::get_singleton()->tex_blit_shader.shader.version_free(version);
+	}
+}
+
+MaterialStorage::ShaderData *MaterialStorage::_create_tex_blit_shader_func() {
+	MaterialStorage::TexBlitShaderData *shader_data = memnew(MaterialStorage::TexBlitShaderData);
+	return shader_data;
+}
+
+bool MaterialStorage::TexBlitMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+	uniform_set_updated = true;
+
+	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, TextureStorage::get_singleton()->tex_blit_shader.shader.version_get_shader(shader_data->version, 0), 1, true, false);
+}
+
+MaterialStorage::TexBlitMaterialData::~TexBlitMaterialData() {
+	free_parameters_uniform_set(uniform_set);
+}
+
+MaterialStorage::MaterialData *MaterialStorage::_create_tex_blit_material_func(MaterialStorage::ShaderData *p_shader) {
+	MaterialStorage::TexBlitMaterialData *material_data = memnew(TexBlitMaterialData);
+	material_data->shader_data = static_cast<TexBlitShaderData *>(p_shader);
+	//update will happen later anyway so do nothing.
+	return material_data;
+}
+
 ///////////////////////////////////////////////////////////////////////////
 // MaterialStorage::Samplers
 
@@ -2033,6 +2205,8 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 		new_type = SHADER_TYPE_SKY;
 	} else if (mode_string == "fog") {
 		new_type = SHADER_TYPE_FOG;
+	} else if (mode_string == "texture_blit") {
+		new_type = SHADER_TYPE_TEXTURE_BLIT;
 	} else {
 		new_type = SHADER_TYPE_MAX;
 	}

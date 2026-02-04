@@ -210,7 +210,7 @@ void StyleBoxTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_v_axis_stretch_mode", "mode"), &StyleBoxTexture::set_v_axis_stretch_mode);
 	ClassDB::bind_method(D_METHOD("get_v_axis_stretch_mode"), &StyleBoxTexture::get_v_axis_stretch_mode);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_texture", "get_texture");
 
 	ADD_GROUP("Texture Margins", "texture_margin_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "texture_margin_left", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_texture_margin", "get_texture_margin", SIDE_LEFT);

@@ -30,7 +30,8 @@
 
 #pragma once
 
-#include "core/input/input.h"
+#include "core/input/input_event.h"
+#include "core/templates/rb_map.h"
 #include "core/variant/callable.h"
 
 class Texture2D;
@@ -140,6 +141,7 @@ public:
 	virtual void set_item_max_states(const RID &p_rid, int p_idx, int p_max_states);
 	virtual void set_item_icon(const RID &p_rid, int p_idx, const Ref<Texture2D> &p_icon);
 	virtual void set_item_indentation_level(const RID &p_rid, int p_idx, int p_level);
+	virtual int set_item_index(const RID &p_rid, int p_idx, int p_target_idx);
 
 	virtual int get_item_count(const RID &p_rid) const;
 	virtual bool is_system_menu(const RID &p_rid) const;

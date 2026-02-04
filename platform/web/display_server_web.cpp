@@ -35,6 +35,7 @@
 #include "os_web.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/object/callable_method_pointer.h"
 #include "core/os/main_loop.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"

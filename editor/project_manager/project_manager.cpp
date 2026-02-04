@@ -31,6 +31,7 @@
 #include "project_manager.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
@@ -1191,7 +1192,7 @@ void ProjectManager::_perform_full_project_conversion() {
 	args.push_back(path);
 	args.push_back("--convert-3to4");
 	args.push_back("--rendering-driver");
-	args.push_back(Main::get_rendering_driver_name());
+	args.push_back(OS::get_singleton()->get_current_rendering_driver_name());
 
 	Error err = OS::get_singleton()->create_instance(args);
 	ERR_FAIL_COND(err);

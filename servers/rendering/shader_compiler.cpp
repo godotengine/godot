@@ -527,7 +527,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				if (SL::is_sampler_type(E.value.type)) {
 					if (E.value.hint == SL::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
 							E.value.hint == SL::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
-							E.value.hint == SL::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+							E.value.hint == SL::ShaderNode::Uniform::HINT_DEPTH_TEXTURE ||
+							E.value.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE0 ||
+							E.value.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE1 ||
+							E.value.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE2 ||
+							E.value.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE3) {
 						continue; // Don't create uniforms in the generated code for these.
 					}
 					max_texture_uniforms++;
@@ -572,7 +576,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 				if (uniform.hint == SL::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
 						uniform.hint == SL::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
-						uniform.hint == SL::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+						uniform.hint == SL::ShaderNode::Uniform::HINT_DEPTH_TEXTURE ||
+						uniform.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE0 ||
+						uniform.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE1 ||
+						uniform.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE2 ||
+						uniform.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE3) {
 					continue; // Don't create uniforms in the generated code for these.
 				}
 
@@ -937,6 +945,14 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
 							name = "depth_buffer";
 							r_gen_code.uses_depth_texture = true;
+						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLIT_SOURCE0) {
+							name = "source0";
+						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLIT_SOURCE1) {
+							name = "source1";
+						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLIT_SOURCE2) {
+							name = "source2";
+						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLIT_SOURCE3) {
+							name = "source3";
 						} else {
 							name = _mkid(vnode->name); //texture, use as is
 						}

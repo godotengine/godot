@@ -1520,33 +1520,39 @@ void ResourceFormatLoaderBinary::get_classes_used(const String &p_path, HashSet<
 	loader.res_path = loader.local_path;
 	loader.get_classes_used(f, r_classes);
 
-	// Fetch the nodes inside scene files.
-	if (loader.type == "PackedScene") {
-		ERR_FAIL_COND(loader.load() != OK);
+	if (loader.type != "PackedScene") {
+		return;
+	}
 
-		Ref<SceneState> state = Ref<PackedScene>(loader.get_resource())->get_state();
-		for (int i = 0; i < state->get_node_count(); i++) {
-			const StringName node_name = state->get_node_type(i);
-			if (ClassDB::class_exists(node_name)) {
-				r_classes->insert(node_name);
+	// Fetch the nodes inside scene files.
+
+	// Reopening is necessary, or errors will occur.
+	f->reopen(p_path, FileAccess::READ);
+	loader.open(f);
+	ERR_FAIL_COND(loader.load() != OK);
+
+	Ref<SceneState> state = Ref<PackedScene>(loader.get_resource())->get_state();
+	for (int i = 0; i < state->get_node_count(); i++) {
+		const StringName node_name = state->get_node_type(i);
+		if (ClassDB::class_exists(node_name)) {
+			r_classes->insert(node_name);
+		}
+
+		// Fetch the values of properties in the node.
+		for (int j = 0; j < state->get_node_property_count(i); j++) {
+			const Variant var = state->get_node_property_value(i, j);
+			if (var.get_type() != Variant::OBJECT) {
+				continue;
 			}
 
-			// Fetch the values of properties in the node.
-			for (int j = 0; j < state->get_node_property_count(i); j++) {
-				const Variant var = state->get_node_property_value(i, j);
-				if (var.get_type() != Variant::OBJECT) {
-					continue;
-				}
+			const Object *obj = var.get_validated_object();
+			if (obj == nullptr) {
+				continue;
+			}
 
-				const Object *obj = var.get_validated_object();
-				if (obj == nullptr) {
-					continue;
-				}
-
-				const StringName obj_name = obj->get_class_name();
-				if (ClassDB::class_exists(obj_name)) {
-					r_classes->insert(obj_name);
-				}
+			const StringName obj_name = obj->get_class_name();
+			if (ClassDB::class_exists(obj_name)) {
+				r_classes->insert(obj_name);
 			}
 		}
 	}

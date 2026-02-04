@@ -32,6 +32,7 @@
 
 #include "core/input/shortcut.h"
 #include "core/io/config_file.h"
+#include "editor/docks/dock_tab_container.h"
 #include "editor/docks/editor_dock_manager.h"
 
 void EditorDock::_set_default_slot_bind(DockSlot p_slot) {
@@ -41,6 +42,23 @@ void EditorDock::_set_default_slot_bind(DockSlot p_slot) {
 
 void EditorDock::_emit_changed() {
 	emit_signal(SNAME("_tab_style_changed"));
+}
+
+void EditorDock::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			set_accessibility_region(true);
+			set_accessibility_name(get_display_title());
+		} break;
+
+		case NOTIFICATION_PARENTED: {
+			parent_dock_container = Object::cast_to<DockTabContainer>(get_parent());
+		} break;
+
+		case NOTIFICATION_UNPARENTED: {
+			parent_dock_container = nullptr;
+		} break;
+	}
 }
 
 void EditorDock::_bind_methods() {
@@ -74,7 +92,7 @@ void EditorDock::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_dock_icon", "icon"), &EditorDock::set_dock_icon);
 	ClassDB::bind_method(D_METHOD("get_dock_icon"), &EditorDock::get_dock_icon);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "dock_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_dock_icon", "get_dock_icon");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "dock_icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_dock_icon", "get_dock_icon");
 
 	ClassDB::bind_method(D_METHOD("set_force_show_icon", "force"), &EditorDock::set_force_show_icon);
 	ClassDB::bind_method(D_METHOD("get_force_show_icon"), &EditorDock::get_force_show_icon);
@@ -86,7 +104,7 @@ void EditorDock::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_dock_shortcut", "shortcut"), &EditorDock::set_dock_shortcut);
 	ClassDB::bind_method(D_METHOD("get_dock_shortcut"), &EditorDock::get_dock_shortcut);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "dock_shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_dock_shortcut", "get_dock_shortcut");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "dock_shortcut", PROPERTY_HINT_RESOURCE_TYPE, Shortcut::get_class_static()), "set_dock_shortcut", "get_dock_shortcut");
 
 	ClassDB::bind_method(D_METHOD("set_default_slot", "slot"), &EditorDock::_set_default_slot_bind);
 	ClassDB::bind_method(D_METHOD("get_default_slot"), &EditorDock::_get_default_slot_bind);
@@ -96,6 +114,7 @@ void EditorDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_available_layouts"), &EditorDock::get_available_layouts);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "available_layouts", PROPERTY_HINT_FLAGS, "Vertical:1,Horizontal:2,Floating:4"), "set_available_layouts", "get_available_layouts");
 
+	ADD_SIGNAL(MethodInfo("opened"));
 	ADD_SIGNAL(MethodInfo("closed"));
 	ADD_SIGNAL(MethodInfo("_tab_style_changed"));
 
@@ -131,6 +150,10 @@ void EditorDock::make_visible() {
 	EditorDockManager::get_singleton()->open_dock(this, true);
 }
 
+void EditorDock::make_floating() {
+	EditorDockManager::get_singleton()->make_dock_floating(this);
+}
+
 void EditorDock::close() {
 	if (is_open) {
 		EditorDockManager::get_singleton()->close_dock(this);
@@ -142,6 +165,7 @@ void EditorDock::set_title(const String &p_title) {
 		return;
 	}
 	title = p_title;
+	set_accessibility_name(get_display_title());
 	_emit_changed();
 }
 
@@ -203,6 +227,10 @@ void EditorDock::set_dock_shortcut(const Ref<Shortcut> &p_shortcut) {
 	_emit_changed();
 }
 
+Ref<Shortcut> EditorDock::get_dock_shortcut() const {
+	return shortcut;
+}
+
 void EditorDock::set_default_slot(DockSlot p_slot) {
 	ERR_FAIL_INDEX(p_slot, DOCK_SLOT_MAX);
 	default_slot = p_slot;
@@ -227,4 +255,63 @@ String EditorDock::get_display_title() const {
 
 String EditorDock::get_effective_layout_key() const {
 	return layout_key.is_empty() ? get_display_title() : layout_key;
+}
+
+void EditorDock::set_tab_index(int p_index, bool p_set_current) {
+	parent_dock_container->move_dock_index(this, p_index, p_set_current);
+	previous_tab_index = parent_dock_container->get_tab_idx_from_control(this);
+}
+
+void EditorDock::update_tab_style() {
+	if (!enabled || !is_open) {
+		return; // Disabled by feature profile or manually closed by user.
+	}
+	if (dock_window) {
+		return; // Floating.
+	}
+
+	ERR_FAIL_NULL(parent_dock_container);
+
+	int index = parent_dock_container->get_tab_idx_from_control(this);
+	ERR_FAIL_COND(index == -1);
+
+	parent_dock_container->get_tab_bar()->set_font_color_override_all(index, title_color);
+
+	const Ref<Texture2D> icon = get_effective_icon(callable_mp((Control *)this, &Control::get_editor_theme_icon));
+	bool assign_icon = force_show_icon;
+	String tooltip;
+	switch (parent_dock_container->get_tab_style()) {
+		case DockTabContainer::TabStyle::TEXT_ONLY: {
+			parent_dock_container->set_tab_title(index, get_display_title());
+		} break;
+		case DockTabContainer::TabStyle::ICON_ONLY: {
+			parent_dock_container->set_tab_title(index, icon.is_valid() ? String() : get_display_title());
+			tooltip = TTR(get_display_title());
+			assign_icon = true;
+		} break;
+		case DockTabContainer::TabStyle::TEXT_AND_ICON: {
+			parent_dock_container->set_tab_title(index, get_display_title());
+			parent_dock_container->set_tab_tooltip(index, String());
+			assign_icon = true;
+		} break;
+	}
+
+	if (shortcut.is_valid() && shortcut->has_valid_event()) {
+		tooltip += (tooltip.is_empty() ? "" : "\n") + TTR(shortcut->get_name()) + " (" + shortcut->get_as_text() + ")";
+	}
+	parent_dock_container->set_tab_tooltip(index, tooltip);
+
+	if (assign_icon) {
+		parent_dock_container->set_tab_icon(index, icon);
+	} else {
+		parent_dock_container->set_tab_icon(index, Ref<Texture2D>());
+	}
+}
+
+Ref<Texture2D> EditorDock::get_effective_icon(const Callable &p_icon_fetch) {
+	Ref<Texture2D> icon = dock_icon;
+	if (icon.is_null() && !icon_name.is_empty()) {
+		icon = p_icon_fetch.call(icon_name);
+	}
+	return icon;
 }

@@ -53,21 +53,21 @@ TEST_CASE("[FontFile] Load Dynamic Font - getters") {
 
 	Dictionary expected_ot_name_strings;
 	Dictionary en_dict;
-	en_dict["copyright"] = "Copyright 2022 The Noto Project Authors (https://github.com/notofonts/hebrew)";
+	en_dict["copyright"] = "Copyright 2024 The Noto Project Authors (https://github.com/notofonts/hebrew)";
 	en_dict["family_name"] = "Noto Sans Hebrew";
 	en_dict["subfamily_name"] = "Regular";
+	en_dict["unique_identifier"] = "3.001;GOOG;NotoSansHebrew-Regular";
 	en_dict["full_name"] = "Noto Sans Hebrew Regular";
-	en_dict["unique_identifier"] = "2.003;GOOG;NotoSansHebrew-Regular";
-	en_dict["version"] = "Version 2.003";
+	en_dict["version"] = "Version 3.001";
 	en_dict["postscript_name"] = "NotoSansHebrew-Regular";
 	en_dict["trademark"] = "Noto is a trademark of Google Inc.";
-	en_dict["license"] = "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL";
-	en_dict["license_url"] = "https://scripts.sil.org/OFL";
-	en_dict["designer"] = "Monotype Design Team";
-	en_dict["designer_url"] = "http://www.monotype.com/studio";
-	en_dict["description"] = "Designed by Monotype design team.";
-	en_dict["manufacturer"] = "Monotype Imaging Inc.";
+	en_dict["manufacturer"] = "Google LLC";
+	en_dict["designer"] = "Ben Nathan";
+	en_dict["description"] = "Designed by Ben Nathan";
 	en_dict["vendor_url"] = "http://www.google.com/get/noto/";
+	en_dict["designer_url"] = "https://hafontia.com/";
+	en_dict["license"] = "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software.";
+	en_dict["license_url"] = "http://scripts.sil.org/OFL";
 	expected_ot_name_strings["en"] = en_dict;
 	CHECK(ff->get_ot_name_strings() == expected_ot_name_strings);
 

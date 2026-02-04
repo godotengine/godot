@@ -30,6 +30,7 @@
 
 #include "spring_bone_collision_3d.h"
 
+#include "core/config/engine.h"
 #include "scene/3d/spring_bone_simulator_3d.h"
 
 PackedStringArray SpringBoneCollision3D::get_configuration_warnings() const {

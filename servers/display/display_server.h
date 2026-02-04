@@ -30,15 +30,23 @@
 
 #pragma once
 
-#include "core/input/input.h"
+#include "core/input/input_event.h"
 #include "core/io/image.h"
 #include "core/io/resource.h"
 #include "core/os/os.h"
+#include "core/templates/rb_map.h"
+#include "core/templates/rb_set.h"
 #include "core/variant/callable.h"
+#include "core/variant/typed_array.h"
 #include "servers/display/native_menu.h"
 
 class Texture2D;
 class AccessibilityDriver;
+
+namespace InputClassEnums {
+enum MouseMode : int;
+enum CursorShape : int;
+} //namespace InputClassEnums
 
 class DisplayServer : public Object {
 	GDCLASS(DisplayServer, Object)
@@ -96,15 +104,15 @@ public:
 	typedef Vector<String> (*GetRenderingDriversFunction)();
 
 private:
-	static void _input_set_mouse_mode(Input::MouseMode p_mode);
-	static Input::MouseMode _input_get_mouse_mode();
-	static void _input_set_mouse_mode_override(Input::MouseMode p_mode);
-	static Input::MouseMode _input_get_mouse_mode_override();
+	static void _input_set_mouse_mode(InputClassEnums::MouseMode p_mode);
+	static InputClassEnums::MouseMode _input_get_mouse_mode();
+	static void _input_set_mouse_mode_override(InputClassEnums::MouseMode p_mode);
+	static InputClassEnums::MouseMode _input_get_mouse_mode_override();
 	static void _input_set_mouse_mode_override_enabled(bool p_enabled);
 	static bool _input_is_mouse_mode_override_enabled();
 	static void _input_warp(const Vector2 &p_to_pos);
-	static Input::CursorShape _input_get_current_cursor_shape();
-	static void _input_set_custom_mouse_cursor_func(const Ref<Resource> &, Input::CursorShape, const Vector2 &p_hotspot);
+	static InputClassEnums::CursorShape _input_get_current_cursor_shape();
+	static void _input_set_custom_mouse_cursor_func(const Ref<Resource> &, InputClassEnums::CursorShape, const Vector2 &p_hotspot);
 
 protected:
 	static void _bind_methods();
@@ -287,12 +295,12 @@ public:
 	static void set_early_window_clear_color_override(bool p_enabled, Color p_color = Color(0, 0, 0, 0));
 
 	enum MouseMode {
-		MOUSE_MODE_VISIBLE = Input::MOUSE_MODE_VISIBLE,
-		MOUSE_MODE_HIDDEN = Input::MOUSE_MODE_HIDDEN,
-		MOUSE_MODE_CAPTURED = Input::MOUSE_MODE_CAPTURED,
-		MOUSE_MODE_CONFINED = Input::MOUSE_MODE_CONFINED,
-		MOUSE_MODE_CONFINED_HIDDEN = Input::MOUSE_MODE_CONFINED_HIDDEN,
-		MOUSE_MODE_MAX = Input::MOUSE_MODE_MAX,
+		MOUSE_MODE_VISIBLE, // Input::MouseMode::MOUSE_MODE_VISIBLE
+		MOUSE_MODE_HIDDEN, // Input::MouseMode::MOUSE_MODE_HIDDEN
+		MOUSE_MODE_CAPTURED, // Input::MouseMode::MOUSE_MODE_CAPTURED
+		MOUSE_MODE_CONFINED, // Input::MouseMode::MOUSE_MODE_CONFINED
+		MOUSE_MODE_CONFINED_HIDDEN, // Input::MouseMode::MOUSE_MODE_CONFINED_HIDDEN
+		MOUSE_MODE_MAX, // Input::MouseMode::MOUSE_MODE_MAX
 	};
 
 	virtual void mouse_set_mode(MouseMode p_mode);
@@ -606,6 +614,7 @@ public:
 		ROLE_TITLE_BAR,
 		ROLE_DIALOG,
 		ROLE_TOOLTIP,
+		ROLE_REGION,
 	};
 
 	enum AccessibilityPopupType {

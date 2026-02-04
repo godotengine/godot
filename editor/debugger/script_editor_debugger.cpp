@@ -54,7 +54,7 @@
 #include "editor/themes/editor_scale.h"
 #include "main/performance.h"
 #include "scene/3d/camera_3d.h"
-#include "scene/debugger/scene_debugger.h"
+#include "scene/debugger/scene_debugger_object.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/grid_container.h"
@@ -678,6 +678,7 @@ void ScriptEditorDebugger::_msg_error(uint64_t p_thread_id, const Array &p_data)
 	error_title += oe.error_descr.is_empty() ? oe.error : oe.error_descr;
 	error->set_text(1, error_title);
 	error->set_autowrap_mode(1, TextServer::AUTOWRAP_WORD_SMART);
+	error->set_autowrap_trim_flags(1, 0);
 	tooltip += " " + error_title + "\n";
 
 	// Find the language of the error's source file.
@@ -1116,6 +1117,13 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 			reason->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			reason->add_theme_style_override(SNAME("normal"), get_theme_stylebox(SNAME("normal"), SNAME("Label"))); // Empty stylebox.
+
+			const Ref<Font> source_font = get_theme_font(SNAME("output_source"), EditorStringName(EditorFonts));
+			if (source_font.is_valid()) {
+				error_tree->add_theme_font_override("font", source_font);
+			}
+			const int font_size = get_theme_font_size(SNAME("output_source_size"), EditorStringName(EditorFonts));
+			error_tree->add_theme_font_size_override("font_size", font_size);
 
 			TreeItem *error_root = error_tree->get_root();
 			if (error_root) {

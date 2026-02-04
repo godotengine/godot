@@ -239,7 +239,6 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 
 	if (!_initialized) {
 		workspace->initialize();
-		text_document->initialize();
 		_initialized = true;
 	}
 
@@ -558,6 +557,7 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	SET_DOCUMENT_METHOD(didSave);
 
 	SET_DOCUMENT_METHOD(documentSymbol);
+	SET_DOCUMENT_METHOD(documentHighlight);
 	SET_DOCUMENT_METHOD(completion);
 	SET_DOCUMENT_METHOD(rename);
 	SET_DOCUMENT_METHOD(prepareRename);

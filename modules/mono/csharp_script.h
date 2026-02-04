@@ -434,11 +434,6 @@ class CSharpLanguage : public ScriptLanguage {
 	friend class GDMono;
 
 #ifdef TOOLS_ENABLED
-	Vector<String> pending_file_system_update_paths;
-	bool is_flushing_filesystem_updates = false;
-	void _queue_for_filesystem_update(String p_script_path);
-	void _flush_filesystem_updates();
-
 	EditorPlugin *godotsharp_editor = nullptr;
 
 	static void _editor_init_callback();
@@ -518,7 +513,6 @@ public:
 		return true;
 	}
 	String validate_path(const String &p_path) const override;
-	Script *create_script() const override;
 	bool supports_builtin_mode() const override;
 	/* TODO? */ int find_function(const String &p_function, const String &p_code) const override {
 		return -1;

@@ -36,6 +36,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
+#include "core/os/keyboard.h"
 #include "core/os/time.h"
 #include "core/templates/list.h"
 #include "editor/project_upgrade/renames_map_3_to_4.h"

@@ -281,6 +281,9 @@
 			If [code]true[/code], displays folders in the FileSystem dock's bottom pane when split mode is enabled. If [code]false[/code], only files will be displayed in the bottom pane. Split mode can be toggled by pressing the icon next to the [code]res://[/code] folder path.
 			[b]Note:[/b] This setting has no effect when split mode is disabled (which is the default).
 		</member>
+		<member name="docks/filesystem/automatically_open_created_scripts" type="bool" setter="" getter="">
+			If [code]true[/code], scripts created in FileSystem dock will be automatically edited.
+		</member>
 		<member name="docks/filesystem/other_file_extensions" type="String" setter="" getter="">
 			A comma separated list of unsupported file extensions to show in the FileSystem dock, e.g. [code]"ico,icns"[/code].
 		</member>
@@ -598,6 +601,9 @@
 		</member>
 		<member name="editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size" type="float" setter="" getter="">
 			Size of the disk gizmo displayed when editing [Path3D]'s tilt handles.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_settings/show_collision_shapes_only_when_selected" type="bool" setter="" getter="">
+			If [code]true[/code], collision shapes in the 3D editor are visible only when selected. If [code]false[/code], collision shapes are always visible.
 		</member>
 		<member name="editors/animation/autorename_animation_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], automatically updates animation tracks' target paths when renaming or reparenting nodes in the Scene tree dock.
@@ -1259,8 +1265,9 @@
 		<member name="network/connection/check_for_updates" type="int" setter="" getter="">
 			Specifies how the engine should check for updates.
 			- [b]Disable Update Checks[/b] will block the engine from checking updates (see also [member network/connection/network_mode]).
-			- [b]Check Newest Preview[/b] (default for preview versions) will check for the newest available development snapshot.
-			- [b]Check Newest Stable[/b] (default for stable versions) will check for the newest available stable version.
+			- [b]Auto[/b] (default) will check for newest stable or unstable version, depending on which version are you currently using. Switch to another option if you want to lock in.
+			- [b]Check Newest Preview[/b] will check for the newest available development snapshot.
+			- [b]Check Newest Stable[/b] will check for the newest available stable version.
 			- [b]Check Newest Patch[/b] will check for the latest available stable version, but only within the same minor version. E.g. if your version is [code]4.3.stable[/code], you will be notified about [code]4.3.1.stable[/code], but not [code]4.4.stable[/code].
 			All update modes will ignore builds with different major versions (e.g. Godot 4 -&gt; Godot 5).
 		</member>

@@ -1122,6 +1122,58 @@ void NativeMenuWindows::set_item_indentation_level(const RID &p_rid, int p_idx, 
 	// Not supported.
 }
 
+int NativeMenuWindows::set_item_index(const RID &p_rid, int p_idx, int p_target_idx) {
+	ERR_FAIL_COND_V(p_idx < 0, -1);
+	const MenuData *md = menus.get_or_null(p_rid);
+	ERR_FAIL_NULL_V(md, -1);
+	int count = GetMenuItemCount(md->menu);
+	ERR_FAIL_COND_V(p_idx >= count, -1);
+	ERR_FAIL_INDEX_V(p_target_idx, count, -1);
+
+	// Get item text separately.
+	MENUITEMINFOW item;
+	ZeroMemory(&item, sizeof(item));
+	item.cbSize = sizeof(item);
+	item.fMask = MIIM_STRING;
+	item.dwTypeData = nullptr;
+	Char16String str;
+	if (!GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
+		return -1;
+	}
+	item.cch++;
+	str.resize_uninitialized(item.cch);
+	item.dwTypeData = (LPWSTR)str.ptrw();
+	if (!GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
+		return -1;
+	}
+
+	ZeroMemory(&item, sizeof(item));
+	item.cbSize = sizeof(item);
+	item.fMask = MIIM_FTYPE | MIIM_DATA | MIIM_STRING | MIIM_STATE | MIIM_SUBMENU | MIIM_BITMAP;
+	if (!GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
+		return -1;
+	}
+
+	item.dwTypeData = (LPWSTR)str.get_data();
+
+	if (!RemoveMenu(md->menu, p_idx, MF_BYPOSITION)) {
+		return -1;
+	}
+	if (!InsertMenuItemW(md->menu, p_target_idx, true, &item)) {
+		// Delete item if failed to insert.
+		MenuItemData *item_data = (MenuItemData *)item.dwItemData;
+		if (item_data) {
+			if (item_data->bmp) {
+				DeleteObject(item_data->bmp);
+			}
+			memdelete(item_data);
+		}
+		return -1;
+	}
+
+	return p_target_idx;
+}
+
 int NativeMenuWindows::get_item_count(const RID &p_rid) const {
 	const MenuData *md = menus.get_or_null(p_rid);
 	ERR_FAIL_NULL_V(md, 0);
