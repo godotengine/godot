@@ -1616,12 +1616,22 @@ CSGBrush *CSGBox3D::_build_brush() {
 		uvsw[4] = Vector2(0, 0) * directions[2];
 		uvsw[5] = Vector2(0, 1) * directions[2];
 		//xz
-		uvsw[6] = Vector2(1, 1) * directions[1];
-		uvsw[7] = Vector2(0, 1) * directions[1];
-		uvsw[8] = Vector2(0, 0) * directions[1];
-		uvsw[9] = Vector2(0, 0) * directions[1];
-		uvsw[10] = Vector2(1, 0) * directions[1];
-		uvsw[11] = Vector2(1, 1) * directions[1];
+		if (invert_val) {
+			//when we flip the faces, make sure the top and bottom are not mirrored.
+			uvsw[6] = Vector2(0, 0) * directions[1];
+			uvsw[7] = Vector2(0, 1) * directions[1];
+			uvsw[8] = Vector2(1, 1) * directions[1];
+			uvsw[9] = Vector2(1, 1) * directions[1];
+			uvsw[10] = Vector2(1, 0) * directions[1];
+			uvsw[11] = Vector2(0, 0) * directions[1];
+		} else {
+			uvsw[6] = Vector2(1, 1) * directions[1];
+			uvsw[7] = Vector2(0, 1) * directions[1];
+			uvsw[8] = Vector2(0, 0) * directions[1];
+			uvsw[9] = Vector2(0, 0) * directions[1];
+			uvsw[10] = Vector2(1, 0) * directions[1];
+			uvsw[11] = Vector2(1, 1) * directions[1];
+		}
 		//z+
 		uvsw[12] = Vector2(0, 0) * directions[0];//0 0
 		uvsw[13] = Vector2(0, 1) * directions[0];//0 1
@@ -1637,12 +1647,21 @@ CSGBrush *CSGBox3D::_build_brush() {
 		uvsw[22] = Vector2(0, 1) * directions[2];//0 1
 		uvsw[23] = Vector2(0, 0) * directions[2];//0 0
 		//xz
-		uvsw[24] = Vector2(0, 1) * directions[1];
-		uvsw[25] = Vector2(0, 0) * directions[1];
-		uvsw[26] = Vector2(1, 0) * directions[1];
-		uvsw[27] = Vector2(1, 0) * directions[1];
-		uvsw[28] = Vector2(1, 1) * directions[1];
-		uvsw[29] = Vector2(0, 1) * directions[1];
+		if (invert_val) {
+			uvsw[24] = Vector2(0, 1) * directions[1];
+			uvsw[25] = Vector2(1, 1) * directions[1];
+			uvsw[26] = Vector2(1, 0) * directions[1];
+			uvsw[27] = Vector2(1, 0) * directions[1];
+			uvsw[28] = Vector2(0, 0) * directions[1];
+			uvsw[29] = Vector2(0, 1) * directions[1];
+		} else {
+			uvsw[24] = Vector2(0, 1) * directions[1];
+			uvsw[25] = Vector2(0, 0) * directions[1];
+			uvsw[26] = Vector2(1, 0) * directions[1];
+			uvsw[27] = Vector2(1, 0) * directions[1];
+			uvsw[28] = Vector2(1, 1) * directions[1];
+			uvsw[29] = Vector2(0, 1) * directions[1];
+		}
 		//z-
 		uvsw[30] = Vector2(1, 1) * directions[0];
 		uvsw[31] = Vector2(1, 0) * directions[0];
@@ -1696,13 +1715,21 @@ CSGBrush *CSGBox3D::_build_brush() {
 			uvsw[3] = Vector2(1, 0);
 			uvsw[4] = Vector2(0, 0);
 			uvsw[5] = Vector2(0, 1);
-
-			uvsw[6] = Vector2(1, 1);
-			uvsw[7] = Vector2(0, 1);
-			uvsw[8] = Vector2(0, 0);
-			uvsw[9] = Vector2(0, 0);
-			uvsw[10] = Vector2(1, 0);
-			uvsw[11] = Vector2(1, 1);
+			if (invert_val) {
+				uvsw[6] = Vector2(0, 0);
+				uvsw[7] = Vector2(0, 1);
+				uvsw[8] = Vector2(1, 1);
+				uvsw[9] = Vector2(1, 1);
+				uvsw[10] = Vector2(1, 0);
+				uvsw[11] = Vector2(0, 0);
+			} else {
+				uvsw[6] = Vector2(1, 1);
+				uvsw[7] = Vector2(0, 1);
+				uvsw[8] = Vector2(0, 0);
+				uvsw[9] = Vector2(0, 0);
+				uvsw[10] = Vector2(1, 0);
+				uvsw[11] = Vector2(1, 1);
+			}
 
 			uvsw[12] = Vector2(0, 0);
 			uvsw[13] = Vector2(0, 1);
@@ -1717,13 +1744,21 @@ CSGBrush *CSGBox3D::_build_brush() {
 			uvsw[21] = Vector2(1, 1);
 			uvsw[22] = Vector2(0, 1);
 			uvsw[23] = Vector2(0, 0);
-
-			uvsw[24] = Vector2(0, 1);
-			uvsw[25] = Vector2(0, 0);
-			uvsw[26] = Vector2(1, 0);
-			uvsw[27] = Vector2(1, 0);
-			uvsw[28] = Vector2(1, 1);
-			uvsw[29] = Vector2(0, 1);
+			if (invert_val) {
+				uvsw[24] = Vector2(0, 1);
+				uvsw[25] = Vector2(1, 1);
+				uvsw[26] = Vector2(1, 0);
+				uvsw[27] = Vector2(1, 0);
+				uvsw[28] = Vector2(0, 0);
+				uvsw[29] = Vector2(0, 1);
+			} else {
+				uvsw[24] = Vector2(0, 1);
+				uvsw[25] = Vector2(0, 0);
+				uvsw[26] = Vector2(1, 0);
+				uvsw[27] = Vector2(1, 0);
+				uvsw[28] = Vector2(1, 1);
+				uvsw[29] = Vector2(0, 1);
+			}
 
 			uvsw[30] = Vector2(1, 1);
 			uvsw[31] = Vector2(1, 0);
