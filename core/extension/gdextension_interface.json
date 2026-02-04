@@ -192,8 +192,12 @@
                     "value": 38
                 },
                 {
-                    "name": "GDEXTENSION_VARIANT_TYPE_VARIANT_MAX",
+                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_PROJECTION_ARRAY",
                     "value": 39
+                },
+                {
+                    "name": "GDEXTENSION_VARIANT_TYPE_VARIANT_MAX",
+                    "value": 40
                 }
             ]
         },
@@ -7131,6 +7135,64 @@
                 "Gets a const pointer to a Vector4 in a PackedVector4Array."
             ],
             "since": "4.3"
+        },
+        {
+            "name": "packed_projection_array_operator_index",
+            "return_value": {
+                "type": "GDExtensionTypePtr",
+                "description": [
+                    "A pointer to the requested Projection."
+                ]
+            },
+            "arguments": [
+                {
+                    "name": "p_self",
+                    "type": "GDExtensionTypePtr",
+                    "description": [
+                        "A pointer to a PackedProjectionArray object."
+                    ]
+                },
+                {
+                    "name": "p_index",
+                    "type": "GDExtensionInt",
+                    "description": [
+                        "The index of the Projection to get."
+                    ]
+                }
+            ],
+            "description": [
+                "Gets a pointer to a Projection in a PackedProjectionArray."
+            ],
+            "since": "4.7"
+        },
+        {
+            "name": "packed_projection_array_operator_index_const",
+            "return_value": {
+                "type": "GDExtensionTypePtr",
+                "description": [
+                    "A const pointer to the requested Projection."
+                ]
+            },
+            "arguments": [
+                {
+                    "name": "p_self",
+                    "type": "GDExtensionConstTypePtr",
+                    "description": [
+                        "A const pointer to a PackedProjectionArray object."
+                    ]
+                },
+                {
+                    "name": "p_index",
+                    "type": "GDExtensionInt",
+                    "description": [
+                        "The index of the Projection to get."
+                    ]
+                }
+            ],
+            "description": [
+                "Gets a const pointer to a Projection in a PackedProjectionArray."
+            ],
+            "since": "4.7"
         },
         {
             "name": "packed_color_array_operator_index",

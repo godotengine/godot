@@ -87,6 +87,7 @@ typedef Vector<Vector2> PackedVector2Array;
 typedef Vector<Vector3> PackedVector3Array;
 typedef Vector<Color> PackedColorArray;
 typedef Vector<Vector4> PackedVector4Array;
+typedef Vector<Projection> PackedProjectionArray;
 
 class Variant {
 public:
@@ -139,6 +140,7 @@ public:
 		PACKED_VECTOR3_ARRAY,
 		PACKED_COLOR_ARRAY,
 		PACKED_VECTOR4_ARRAY,
+		PACKED_PROJECTION_ARRAY,
 
 		VARIANT_MAX
 	};
@@ -331,6 +333,7 @@ private:
 		true, //PACKED_VECTOR3_ARRAY,
 		true, //PACKED_COLOR_ARRAY,
 		true, //PACKED_VECTOR4_ARRAY,
+		true, //PACKED_PROJECTION_ARRAY,
 	};
 
 	_FORCE_INLINE_ void clear() {
@@ -484,6 +487,7 @@ public:
 	operator PackedVector2Array() const;
 	operator PackedColorArray() const;
 	operator PackedVector4Array() const;
+	operator PackedProjectionArray() const;
 
 	operator Vector<::RID>() const;
 	operator Vector<Plane>() const;
@@ -556,6 +560,7 @@ public:
 	Variant(const PackedVector3Array &p_vector3_array);
 	Variant(const PackedColorArray &p_color_array);
 	Variant(const PackedVector4Array &p_vector4_array);
+	Variant(const PackedProjectionArray &p_projection_array);
 
 	Variant(const Vector<::RID> &p_array); // helper
 	Variant(const Vector<Plane> &p_array); // helper

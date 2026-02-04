@@ -171,6 +171,12 @@ namespace Godot.NativeInterop
             return ret;
         }
 
+        public static godot_variant CreateFromPackedProjectionArray(scoped in godot_packed_projection_array from)
+        {
+            NativeFuncs.godotsharp_variant_new_packed_projection_array(out godot_variant ret, from);
+            return ret;
+        }
+
         public static godot_variant CreateFromPackedColorArray(scoped in godot_packed_color_array from)
         {
             NativeFuncs.godotsharp_variant_new_packed_color_array(out godot_variant ret, from);
@@ -635,6 +641,12 @@ namespace Godot.NativeInterop
         {
             using var packedArray = NativeFuncs.godotsharp_variant_as_packed_vector4_array(p_var);
             return Marshaling.ConvertNativePackedVector4ArrayToSystemArray(packedArray);
+        }
+
+        public static Projection[] ConvertAsPackedProjectionArrayToSystemArray(in godot_variant p_var)
+        {
+            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_projection_array(p_var);
+            return Marshaling.ConvertNativePackedProjectionArrayToSystemArray(packedArray);
         }
 
         public static Color[] ConvertAsPackedColorArrayToSystemArray(in godot_variant p_var)

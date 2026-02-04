@@ -476,6 +476,16 @@ godot_packed_array godotsharp_packed_vector4_array_new_mem_copy(const Vector4 *p
 	return ret;
 }
 
+godot_packed_array godotsharp_packed_projection_array_new_mem_copy(const Projection *p_src, int32_t p_length) {
+	godot_packed_array ret;
+	memnew_placement(&ret, PackedProjectionArray);
+	PackedProjectionArray *array = reinterpret_cast<PackedProjectionArray *>(&ret);
+	array->resize(p_length);
+	Projection *dst = array->ptrw();
+	memcpy(dst, p_src, p_length * sizeof(Projection));
+	return ret;
+}
+
 godot_packed_array godotsharp_packed_color_array_new_mem_copy(const Color *p_src, int32_t p_length) {
 	godot_packed_array ret;
 	memnew_placement(&ret, PackedColorArray);
@@ -674,6 +684,10 @@ void godotsharp_variant_new_packed_vector3_array(godot_variant *r_dest, const Pa
 }
 
 void godotsharp_variant_new_packed_vector4_array(godot_variant *r_dest, const PackedVector4Array *p_pv4a) {
+	memnew_placement(r_dest, Variant(*p_pv4a));
+}
+
+void godotsharp_variant_new_packed_projection_array(godot_variant *r_dest, const PackedProjectionArray *p_pv4a) {
 	memnew_placement(r_dest, Variant(*p_pv4a));
 }
 
@@ -924,6 +938,13 @@ godot_packed_array godotsharp_variant_as_packed_vector4_array(const Variant *p_s
 	return raw_dest;
 }
 
+godot_packed_array godotsharp_variant_as_packed_projection_array(const Variant *p_self) {
+	godot_packed_array raw_dest;
+	PackedProjectionArray *dest = (PackedProjectionArray *)&raw_dest;
+	memnew_placement(dest, PackedProjectionArray(p_self->operator PackedProjectionArray()));
+	return raw_dest;
+}
+
 godot_packed_array godotsharp_variant_as_packed_color_array(const Variant *p_self) {
 	godot_packed_array raw_dest;
 	PackedColorArray *dest = (PackedColorArray *)&raw_dest;
@@ -1014,6 +1035,10 @@ void godotsharp_packed_vector3_array_destroy(PackedVector3Array *p_self) {
 
 void godotsharp_packed_vector4_array_destroy(PackedVector4Array *p_self) {
 	p_self->~PackedVector4Array();
+}
+
+void godotsharp_packed_projection_array_destroy(PackedProjectionArray *p_self) {
+	p_self->~PackedProjectionArray();
 }
 
 void godotsharp_packed_color_array_destroy(PackedColorArray *p_self) {
@@ -1605,6 +1630,10 @@ int64_t godotsharp_packed_vector3_array_size(const PackedVector3Array *p_self) {
 }
 
 int64_t godotsharp_packed_vector4_array_size(const PackedVector4Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_projection_array_size(const PackedProjectionArray *p_self) {
 	return p_self->size();
 }
 

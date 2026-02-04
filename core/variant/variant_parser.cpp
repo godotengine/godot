@@ -1597,6 +1597,27 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = arr;
+		} else if (id == "PackedProjectionArray") {
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			if (err) {
+				return err;
+			}
+
+			Vector<Projection> arr;
+			{
+				int len = args.size() / 16;
+				int off = 0;
+				arr.resize(len);
+				Projection *w = arr.ptrw();
+				for (int i = 0; i < len; i++) {
+					for (int j = 0; j < 4; j++) {
+						w[i].columns[j] = Vector4(args[off++], args[off++], args[off++], args[off++]);
+					}
+				}
+			}
+
+			value = arr;
 		} else if (id == "PackedColorArray" || id == "PoolColorArray" || id == "ColorArray") {
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
@@ -2547,6 +2568,23 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					p_store_string_func(p_store_string_ud, ", ");
 				}
 				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x, p_compat) + ", " + rtos_fix(ptr[i].y, p_compat) + ", " + rtos_fix(ptr[i].z, p_compat) + ", " + rtos_fix(ptr[i].w, p_compat));
+			}
+
+			p_store_string_func(p_store_string_ud, ")");
+		} break;
+		case Variant::PACKED_PROJECTION_ARRAY: {
+			p_store_string_func(p_store_string_ud, "PackedProjectionArray(");
+			Vector<Projection> data = p_variant;
+			int len = data.size();
+			const Projection *ptr = data.ptr();
+
+			for (int i = 0; i < len; i++) {
+				for (int j = 0; j < 4; j++) {
+					if (i > 0 || j > 0) {
+						p_store_string_func(p_store_string_ud, ", ");
+					}
+					p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].columns[j].x, p_compat) + ", " + rtos_fix(ptr[i].columns[j].y, p_compat) + ", " + rtos_fix(ptr[i].columns[j].z, p_compat) + ", " + rtos_fix(ptr[i].columns[j].w, p_compat));
+				}
 			}
 
 			p_store_string_func(p_store_string_ud, ")");

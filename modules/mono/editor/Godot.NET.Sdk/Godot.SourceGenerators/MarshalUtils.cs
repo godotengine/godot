@@ -67,6 +67,7 @@ namespace Godot.SourceGenerators
                 MarshalType.Vector2Array => VariantType.PackedVector2Array,
                 MarshalType.Vector3Array => VariantType.PackedVector3Array,
                 MarshalType.Vector4Array => VariantType.PackedVector4Array,
+                MarshalType.ProjectionArray => VariantType.PackedProjectionArray,
                 MarshalType.ColorArray => VariantType.PackedColorArray,
                 MarshalType.GodotObjectOrDerivedArray => VariantType.Array,
                 MarshalType.SystemArrayOfStringName => VariantType.Array,

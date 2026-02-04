@@ -1730,6 +1730,9 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 		case Variant::PACKED_VECTOR4_ARRAY: {
 			use_compat = false;
 		} break;
+		case Variant::PACKED_PROJECTION_ARRAY: {
+			use_compat = false;
+		} break;
 		default: {
 		}
 	}

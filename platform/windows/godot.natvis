@@ -197,6 +197,7 @@
 		<DisplayString Condition="type == Variant::PACKED_VECTOR3_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;Vector3&gt;*&gt;(_data.packed_array)->array}</DisplayString>
 		<DisplayString Condition="type == Variant::PACKED_COLOR_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;Color&gt;*&gt;(_data.packed_array)->array}</DisplayString>
 		<DisplayString Condition="type == Variant::PACKED_VECTOR4_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;Vector4&gt;*&gt;(_data.packed_array)->array}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_PROJECTION_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;Projection&gt;*&gt;(_data.packed_array)->array}</DisplayString>
 		<DisplayString Condition="type &lt; 0 || type >= Variant::VARIANT_MAX">[INVALID]</DisplayString>
 
 		<StringView Condition="type == Variant::STRING &amp;&amp; ((String *)(_data._mem))->_cowdata._ptr">((String *)(_data._mem))->_cowdata._ptr,s32</StringView>
@@ -232,6 +233,7 @@
 			<Item Name="[value]" Condition="type == Variant::PACKED_VECTOR3_ARRAY">reinterpret_cast&lt;const Variant::PackedArrayRef&lt;Vector3&gt;*&gt;(_data.packed_array)->array</Item>
 			<Item Name="[value]" Condition="type == Variant::PACKED_COLOR_ARRAY">reinterpret_cast&lt;const Variant::PackedArrayRef&lt;Color&gt;*&gt;(_data.packed_array)->array</Item>
 			<Item Name="[value]" Condition="type == Variant::PACKED_VECTOR4_ARRAY">reinterpret_cast&lt;const Variant::PackedArrayRef&lt;Vector4&gt;*&gt;(_data.packed_array)->array</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_PROJECTION_ARRAY">reinterpret_cast&lt;const Variant::PackedArrayRef&lt;Projection&gt;*&gt;(_data.packed_array)->array</Item>
 
 		</Expand>
 	</Type>

@@ -238,6 +238,8 @@ struct PtrToArg<PackedColorArray> : Internal::PtrToArgDirect<PackedColorArray> {
 template <>
 struct PtrToArg<PackedVector4Array> : Internal::PtrToArgDirect<PackedVector4Array> {};
 template <>
+struct PtrToArg<PackedProjectionArray> : Internal::PtrToArgDirect<PackedProjectionArray> {};
+template <>
 struct PtrToArg<Variant> : Internal::PtrToArgByReference<Variant> {};
 
 template <typename T>

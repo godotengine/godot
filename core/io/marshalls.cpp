@@ -1294,6 +1294,88 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = varray;
 
 		} break;
+
+		case Variant::PACKED_PROJECTION_ARRAY: {
+			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
+			int32_t count = decode_uint32(buf);
+			buf += 4;
+			len -= 4;
+
+			Vector<Projection> varray;
+
+			if (header & HEADER_DATA_FLAG_64) {
+				ERR_FAIL_MUL_OF(count, sizeof(double) * 16, ERR_INVALID_DATA);
+				ERR_FAIL_COND_V(count < 0 || count * sizeof(double) * 16 > (size_t)len, ERR_INVALID_DATA);
+
+				if (r_len) {
+					(*r_len) += 4; // Size of count number.
+				}
+
+				if (count) {
+					varray.resize(count);
+					Projection *w = varray.ptrw();
+					int32_t ofs = 0;
+
+					for (int32_t i = 0; i < count; i++) {
+						for (int32_t j = 0; j < 4; j++) {
+							w[i].columns[j].x = decode_double(buf + ofs);
+							ofs += sizeof(double);
+							w[i].columns[j].y = decode_double(buf + ofs);
+							ofs += sizeof(double);
+							w[i].columns[j].z = decode_double(buf + ofs);
+							ofs += sizeof(double);
+							w[i].columns[j].w = decode_double(buf + ofs);
+							ofs += sizeof(double);
+						}
+					}
+
+					int adv = sizeof(double) * 16 * count;
+
+					if (r_len) {
+						(*r_len) += adv;
+					}
+					len -= adv;
+					buf += adv;
+				}
+			} else {
+				ERR_FAIL_MUL_OF(count, sizeof(float) * 16, ERR_INVALID_DATA);
+				ERR_FAIL_COND_V(count < 0 || count * sizeof(float) * 16 > (size_t)len, ERR_INVALID_DATA);
+
+				if (r_len) {
+					(*r_len) += 4; // Size of count number.
+				}
+
+				if (count) {
+					varray.resize(count);
+					Projection *w = varray.ptrw();
+					int32_t ofs = 0;
+
+					for (int32_t i = 0; i < count; i++) {
+						for (int32_t j = 0; j < 4; j++) {
+							w[i].columns[j].x = decode_float(buf + ofs);
+							ofs += sizeof(float);
+							w[i].columns[j].y = decode_float(buf + ofs);
+							ofs += sizeof(float);
+							w[i].columns[j].z = decode_float(buf + ofs);
+							ofs += sizeof(float);
+							w[i].columns[j].w = decode_float(buf + ofs);
+							ofs += sizeof(float);
+						}
+					}
+
+					int adv = sizeof(float) * 16 * count;
+
+					if (r_len) {
+						(*r_len) += adv;
+					}
+					len -= adv;
+					buf += adv;
+				}
+			}
+			r_variant = varray;
+
+		} break;
+
 		default: {
 			ERR_FAIL_V(ERR_BUG);
 		}
@@ -1412,6 +1494,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
 		case Variant::PACKED_VECTOR4_ARRAY:
+		case Variant::PACKED_PROJECTION_ARRAY:
 		case Variant::TRANSFORM2D:
 		case Variant::TRANSFORM3D:
 		case Variant::PROJECTION:
@@ -2120,6 +2203,35 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 
 			r_len += sizeof(real_t) * 4 * len;
+
+		} break;
+		case Variant::PACKED_PROJECTION_ARRAY: {
+			Vector<Projection> data = p_variant;
+			int len = data.size();
+
+			if (buf) {
+				encode_uint32(len, buf);
+				buf += 4;
+			}
+
+			r_len += 4;
+
+			if (buf) {
+				for (int i = 0; i < len; i++) {
+					Projection p = data.get(i);
+
+					for (int j = 0; i < 4; j++) {
+						const Vector4 &v = p.columns[j];
+						encode_real(v.x, &buf[0]);
+						encode_real(v.y, &buf[sizeof(real_t)]);
+						encode_real(v.z, &buf[sizeof(real_t) * 2]);
+						encode_real(v.w, &buf[sizeof(real_t) * 3]);
+						buf += sizeof(real_t) * 4;
+					}
+				}
+			}
+
+			r_len += sizeof(real_t) * 16 * len;
 
 		} break;
 		default: {

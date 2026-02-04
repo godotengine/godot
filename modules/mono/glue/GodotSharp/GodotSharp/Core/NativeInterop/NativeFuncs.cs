@@ -147,6 +147,9 @@ namespace Godot.NativeInterop
         public static partial godot_packed_vector4_array godotsharp_packed_vector4_array_new_mem_copy(Vector4* p_src,
             int p_length);
 
+        public static partial godot_packed_projection_array godotsharp_packed_projection_array_new_mem_copy(Projection* p_src,
+            int p_length);
+
         public static partial godot_packed_color_array godotsharp_packed_color_array_new_mem_copy(Color* p_src,
             int p_length);
 
@@ -312,6 +315,9 @@ namespace Godot.NativeInterop
         public static partial godot_packed_vector4_array godotsharp_variant_as_packed_vector4_array(
             in godot_variant p_self);
 
+        public static partial godot_packed_projection_array godotsharp_variant_as_packed_projection_array(
+            in godot_variant p_self);
+
         public static partial godot_packed_color_array godotsharp_variant_as_packed_color_array(scoped in godot_variant p_self);
 
         public static partial godot_bool godotsharp_variant_equals(scoped in godot_variant p_a, scoped in godot_variant p_b);
@@ -363,6 +369,8 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_packed_vector3_array_destroy(ref godot_packed_vector3_array p_self);
 
         public static partial void godotsharp_packed_vector4_array_destroy(ref godot_packed_vector4_array p_self);
+
+        public static partial void godotsharp_packed_projection_array_destroy(ref godot_packed_projection_array p_self);
 
         public static partial void godotsharp_packed_color_array_destroy(ref godot_packed_color_array p_self);
 
@@ -628,6 +636,8 @@ namespace Godot.NativeInterop
         public static partial long godotsharp_packed_vector3_array_size(in godot_packed_vector3_array p_self);
 
         public static partial long godotsharp_packed_vector4_array_size(in godot_packed_vector4_array p_self);
+
+        public static partial long godotsharp_packed_projection_array_size(in godot_packed_projection_array p_self);
 
         public static partial long godotsharp_packed_color_array_size(in godot_packed_color_array p_self);
 

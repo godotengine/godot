@@ -678,6 +678,7 @@ struct _VariantCall {
 	VARCALL_ARRAY_GETTER_SETTER(PackedVector2Array, Vector2)
 	VARCALL_ARRAY_GETTER_SETTER(PackedVector3Array, Vector3)
 	VARCALL_ARRAY_GETTER_SETTER(PackedVector4Array, Vector4)
+	VARCALL_ARRAY_GETTER_SETTER(PackedProjectionArray, Projection)
 	VARCALL_ARRAY_GETTER_SETTER(Array, Variant)
 
 	static String func_PackedByteArray_get_string_from_ascii(PackedByteArray *p_instance) {
@@ -1051,6 +1052,20 @@ struct _VariantCall {
 		dest.resize(size / sizeof(Vector4));
 		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(Vector4));
+		return dest;
+	}
+
+	static PackedProjectionArray func_PackedByteArray_decode_projection_array(PackedByteArray *p_instance) {
+		uint64_t size = p_instance->size();
+		PackedProjectionArray dest;
+		if (size == 0) {
+			return dest;
+		}
+		ERR_FAIL_COND_V_MSG(size % sizeof(Projection), dest, "PackedByteArray size must be a multiple of " + itos(sizeof(Projection)) + " (size of Projection) to convert to PackedProjectionArray.");
+		const uint8_t *r = p_instance->ptr();
+		dest.resize(size / sizeof(Projection));
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
+		memcpy(dest.ptrw(), r, dest.size() * sizeof(Projection));
 		return dest;
 	}
 
@@ -2736,6 +2751,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_function(PackedVector2Array, get, _VariantCall::func_PackedVector2Array_get, sarray("index"), varray());
 	bind_function(PackedVector3Array, get, _VariantCall::func_PackedVector3Array_get, sarray("index"), varray());
 	bind_function(PackedVector4Array, get, _VariantCall::func_PackedVector4Array_get, sarray("index"), varray());
+	bind_function(PackedProjectionArray, get, _VariantCall::func_PackedProjectionArray_get, sarray("index"), varray());
 
 	bind_functionnc(PackedByteArray, set, _VariantCall::func_PackedByteArray_set, sarray("index", "value"), varray());
 	bind_functionnc(PackedColorArray, set, _VariantCall::func_PackedColorArray_set, sarray("index", "value"), varray());
@@ -2747,6 +2763,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_functionnc(PackedVector2Array, set, _VariantCall::func_PackedVector2Array_set, sarray("index", "value"), varray());
 	bind_functionnc(PackedVector3Array, set, _VariantCall::func_PackedVector3Array_set, sarray("index", "value"), varray());
 	bind_functionnc(PackedVector4Array, set, _VariantCall::func_PackedVector4Array_set, sarray("index", "value"), varray());
+	bind_functionnc(PackedProjectionArray, set, _VariantCall::func_PackedProjectionArray_set, sarray("index", "value"), varray());
 
 	/* Byte Array */
 	bind_method(PackedByteArray, size, sarray(), varray());
@@ -3077,6 +3094,30 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedVector4Array, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedVector4Array, count, sarray("value"), varray());
 	bind_method(PackedVector4Array, erase, sarray("value"), varray());
+
+	/* Projection Array */
+
+	bind_method(PackedProjectionArray, size, sarray(), varray());
+	bind_method(PackedProjectionArray, is_empty, sarray(), varray());
+	bind_method(PackedProjectionArray, push_back, sarray("value"), varray());
+	bind_method(PackedProjectionArray, append, sarray("value"), varray());
+	bind_method(PackedProjectionArray, append_array, sarray("array"), varray());
+	bind_method(PackedProjectionArray, remove_at, sarray("index"), varray());
+	bind_method(PackedProjectionArray, insert, sarray("at_index", "value"), varray());
+	bind_method(PackedProjectionArray, fill, sarray("value"), varray());
+	bind_methodv(PackedProjectionArray, resize, &PackedProjectionArray::resize_initialized, sarray("new_size"), varray());
+	bind_method(PackedProjectionArray, clear, sarray(), varray());
+	bind_method(PackedProjectionArray, has, sarray("value"), varray());
+	bind_method(PackedProjectionArray, reverse, sarray(), varray());
+	bind_method(PackedProjectionArray, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_method(PackedProjectionArray, to_byte_array, sarray(), varray());
+	bind_method(PackedProjectionArray, sort, sarray(), varray());
+	bind_method(PackedProjectionArray, bsearch, sarray("value", "before"), varray(true));
+	bind_method(PackedProjectionArray, duplicate, sarray(), varray());
+	bind_method(PackedProjectionArray, find, sarray("value", "from"), varray(0));
+	bind_method(PackedProjectionArray, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedProjectionArray, count, sarray("value"), varray());
+	bind_method(PackedProjectionArray, erase, sarray("value"), varray());
 }
 
 static void _register_variant_builtin_constants() {

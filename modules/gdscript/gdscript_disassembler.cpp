@@ -1166,6 +1166,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 	m_macro(PACKED_VECTOR3_ARRAY);         \
 	m_macro(PACKED_COLOR_ARRAY);           \
 	m_macro(PACKED_VECTOR4_ARRAY);         \
+	m_macro(PACKED_PROJECTION_ARRAY);      \
 	m_macro(OBJECT)
 
 			case OPCODE_ITERATE_BEGIN: {
@@ -1301,6 +1302,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				DISASSEMBLE_TYPE_ADJUST(PACKED_VECTOR3_ARRAY);
 				DISASSEMBLE_TYPE_ADJUST(PACKED_COLOR_ARRAY);
 				DISASSEMBLE_TYPE_ADJUST(PACKED_VECTOR4_ARRAY);
+				DISASSEMBLE_TYPE_ADJUST(PACKED_PROJECTION_ARRAY);
 
 			case OPCODE_ASSERT: {
 				text += "assert (";

@@ -86,6 +86,7 @@ enum {
 	VARIANT_VECTOR4I = 51,
 	VARIANT_PROJECTION = 52,
 	VARIANT_PACKED_VECTOR4_ARRAY = 53,
+	VARIANT_PACKED_PROJECTION_ARRAY = 54,
 	OBJECT_EMPTY = 0,
 	OBJECT_EXTERNAL_RESOURCE = 1,
 	OBJECT_INTERNAL_RESOURCE = 2,
@@ -95,7 +96,8 @@ enum {
 	// Version 4: New string ID for ext/subresources, breaks forward compat.
 	// Version 5: Ability to store script class in the header.
 	// Version 6: Added PackedVector4Array Variant type.
-	FORMAT_VERSION = 6,
+	// Version 7: Added PackedProjectionArray Variant type.
+	FORMAT_VERSION = 7,
 	FORMAT_VERSION_CAN_RENAME_DEPS = 1,
 	FORMAT_VERSION_NO_NODEPATH_PROPERTY = 3,
 };
@@ -661,6 +663,19 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			Vector4 *w = array.ptrw();
 			static_assert(sizeof(Vector4) == 4 * sizeof(real_t));
 			const Error err = read_reals(reinterpret_cast<real_t *>(w), f, len * 4);
+			ERR_FAIL_COND_V(err != OK, err);
+
+			r_v = array;
+
+		} break;
+		case VARIANT_PACKED_PROJECTION_ARRAY: {
+			uint32_t len = f->get_32();
+
+			Vector<Projection> array;
+			array.resize(len);
+			Projection *w = array.ptrw();
+			static_assert(sizeof(Projection) == 16 * sizeof(real_t));
+			const Error err = read_reals(reinterpret_cast<real_t *>(w), f, len * 16);
 			ERR_FAIL_COND_V(err != OK, err);
 
 			r_v = array;
@@ -2035,6 +2050,23 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 				f->store_real(r[i].y);
 				f->store_real(r[i].z);
 				f->store_real(r[i].w);
+			}
+
+		} break;
+		case Variant::PACKED_PROJECTION_ARRAY: {
+			f->store_32(VARIANT_PACKED_PROJECTION_ARRAY);
+			Vector<Projection> arr = p_property;
+			int len = arr.size();
+			f->store_32(uint32_t(len));
+			const Projection *r = arr.ptr();
+			for (int i = 0; i < len; i++) {
+				for (int j = 0; j < 4; j++) {
+					const Vector4 &v = r[i].columns[j];
+					f->store_real(v.x);
+					f->store_real(v.y);
+					f->store_real(v.z);
+					f->store_real(v.w);
+				}
 			}
 
 		} break;

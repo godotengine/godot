@@ -167,6 +167,9 @@ String Variant::get_type_name(Variant::Type p_type) {
 		case PACKED_VECTOR4_ARRAY: {
 			return "PackedVector4Array";
 		}
+		case PACKED_PROJECTION_ARRAY: {
+			return "PackedProjectionArray";
+		}
 		default: {
 		}
 	}
@@ -420,6 +423,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 				PACKED_VECTOR2_ARRAY,
 				PACKED_VECTOR3_ARRAY,
 				PACKED_VECTOR4_ARRAY,
+				PACKED_PROJECTION_ARRAY,
 				NIL
 			};
 
@@ -497,6 +501,14 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 		} break;
 		case PACKED_VECTOR4_ARRAY: {
+			static const Type valid[] = {
+				ARRAY,
+				NIL
+			};
+			valid_types = valid;
+
+		} break;
+		case PACKED_PROJECTION_ARRAY: {
 			static const Type valid[] = {
 				ARRAY,
 				NIL
@@ -763,6 +775,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 				PACKED_VECTOR2_ARRAY,
 				PACKED_VECTOR3_ARRAY,
 				PACKED_VECTOR4_ARRAY,
+				PACKED_PROJECTION_ARRAY,
 				NIL
 			};
 
@@ -840,6 +853,14 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 
 		} break;
 		case PACKED_VECTOR4_ARRAY: {
+			static const Type valid[] = {
+				ARRAY,
+				NIL
+			};
+			valid_types = valid;
+
+		} break;
+		case PACKED_PROJECTION_ARRAY: {
 			static const Type valid[] = {
 				ARRAY,
 				NIL
@@ -1015,6 +1036,9 @@ bool Variant::is_zero() const {
 		}
 		case PACKED_VECTOR4_ARRAY: {
 			return PackedArrayRef<Vector4>::get_array(_data.packed_array).is_empty();
+		}
+		case PACKED_PROJECTION_ARRAY: {
+			return PackedArrayRef<Projection>::get_array(_data.packed_array).is_empty();
 		}
 		default: {
 		}
@@ -1312,6 +1336,12 @@ void Variant::reference(const Variant &p_variant) {
 				_data.packed_array = PackedArrayRef<Vector4>::create();
 			}
 		} break;
+		case PACKED_PROJECTION_ARRAY: {
+			_data.packed_array = static_cast<PackedArrayRef<Projection> *>(p_variant._data.packed_array)->reference();
+			if (!_data.packed_array) {
+				_data.packed_array = PackedArrayRef<Projection>::create();
+			}
+		} break;
 		default: {
 		}
 	}
@@ -1479,6 +1509,9 @@ void Variant::_clear_internal() {
 			PackedArrayRefBase::destroy(_data.packed_array);
 		} break;
 		case PACKED_VECTOR4_ARRAY: {
+			PackedArrayRefBase::destroy(_data.packed_array);
+		} break;
+		case PACKED_PROJECTION_ARRAY: {
 			PackedArrayRefBase::destroy(_data.packed_array);
 		} break;
 		default: {
@@ -1690,6 +1723,9 @@ String Variant::stringify(int recursion_count) const {
 		}
 		case PACKED_VECTOR4_ARRAY: {
 			return stringify_vector(operator PackedVector4Array(), recursion_count);
+		}
+		case PACKED_PROJECTION_ARRAY: {
+			return stringify_vector(operator PackedProjectionArray(), recursion_count);
 		}
 		case PACKED_STRING_ARRAY: {
 			return stringify_vector(operator PackedStringArray(), recursion_count);
@@ -2126,6 +2162,9 @@ inline DA _convert_array_from_variant(const Variant &p_variant) {
 		case Variant::PACKED_VECTOR4_ARRAY: {
 			return _convert_array<DA, PackedVector4Array>(p_variant.operator PackedVector4Array());
 		}
+		case Variant::PACKED_PROJECTION_ARRAY: {
+			return _convert_array<DA, PackedProjectionArray>(p_variant.operator PackedProjectionArray());
+		}
 		default: {
 			return DA();
 		}
@@ -2217,6 +2256,14 @@ Variant::operator PackedVector4Array() const {
 		return static_cast<PackedArrayRef<Vector4> *>(_data.packed_array)->array;
 	} else {
 		return _convert_array_from_variant<PackedVector4Array>(*this);
+	}
+}
+
+Variant::operator PackedProjectionArray() const {
+	if (type == PACKED_PROJECTION_ARRAY) {
+		return static_cast<PackedArrayRef<Projection> *>(_data.packed_array)->array;
+	} else {
+		return _convert_array_from_variant<PackedProjectionArray>(*this);
 	}
 }
 
@@ -2585,6 +2632,11 @@ Variant::Variant(const PackedVector4Array &p_vector4_array) :
 	_data.packed_array = PackedArrayRef<Vector4>::create(p_vector4_array);
 }
 
+Variant::Variant(const PackedProjectionArray &p_projection_array) :
+		type(PACKED_PROJECTION_ARRAY) {
+	_data.packed_array = PackedArrayRef<Projection>::create(p_projection_array);
+}
+
 /* helpers */
 Variant::Variant(const Vector<::RID> &p_array) :
 		type(ARRAY) {
@@ -2783,6 +2835,9 @@ void Variant::operator=(const Variant &p_variant) {
 		} break;
 		case PACKED_VECTOR4_ARRAY: {
 			_data.packed_array = PackedArrayRef<Vector4>::reference_from(_data.packed_array, p_variant._data.packed_array);
+		} break;
+		case PACKED_PROJECTION_ARRAY: {
+			_data.packed_array = PackedArrayRef<Projection>::reference_from(_data.packed_array, p_variant._data.packed_array);
 		} break;
 		default: {
 		}
@@ -3124,6 +3179,27 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 
 			return hash;
 		} break;
+		case PACKED_PROJECTION_ARRAY: {
+			uint32_t hash = HASH_MURMUR3_SEED;
+			const PackedProjectionArray &arr = PackedArrayRef<Projection>::get_array(_data.packed_array);
+			int len = arr.size();
+
+			if (likely(len)) {
+				const Projection *r = arr.ptr();
+
+				for (int i = 0; i < len; i++) {
+					for (int j = 0; j < 4; j++) {
+						hash = hash_murmur3_one_real(r[i].columns[j].x, hash);
+						hash = hash_murmur3_one_real(r[i].columns[j].y, hash);
+						hash = hash_murmur3_one_real(r[i].columns[j].z, hash);
+						hash = hash_murmur3_one_real(r[i].columns[j].w, hash);
+					}
+				}
+				hash = hash_fmix32(hash);
+			}
+
+			return hash;
+		} break;
 		default: {
 		}
 	}
@@ -3144,6 +3220,9 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 	(p_lhs).is_same(p_rhs)
 
 #define hash_compare_vector4(p_lhs, p_rhs) \
+	(p_lhs).is_same(p_rhs)
+
+#define hash_compare_projection(p_lhs, p_rhs) \
 	(p_lhs).is_same(p_rhs)
 
 #define hash_compare_quaternion(p_lhs, p_rhs) \
@@ -3344,6 +3423,10 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count, bool s
 			hash_compare_packed_array(_data.packed_array, p_variant._data.packed_array, Vector4, hash_compare_vector4);
 		} break;
 
+		case PACKED_PROJECTION_ARRAY: {
+			hash_compare_packed_array(_data.packed_array, p_variant._data.packed_array, Projection, hash_compare_projection);
+		} break;
+
 		default:
 			bool v;
 			Variant r;
@@ -3383,7 +3466,8 @@ bool Variant::identity_compare(const Variant &p_variant) const {
 		case PACKED_VECTOR2_ARRAY:
 		case PACKED_VECTOR3_ARRAY:
 		case PACKED_COLOR_ARRAY:
-		case PACKED_VECTOR4_ARRAY: {
+		case PACKED_VECTOR4_ARRAY:
+		case PACKED_PROJECTION_ARRAY: {
 			return _data.packed_array == p_variant._data.packed_array;
 		} break;
 
@@ -3447,6 +3531,7 @@ bool Variant::is_type_shared(Variant::Type p_type) {
 		case PACKED_VECTOR3_ARRAY:
 		case PACKED_COLOR_ARRAY:
 		case PACKED_VECTOR4_ARRAY:
+		case PACKED_PROJECTION_ARRAY:
 			return true;
 		default:
 			return false;

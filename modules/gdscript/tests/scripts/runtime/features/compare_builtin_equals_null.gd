@@ -144,3 +144,7 @@ func test():
 	# PackedVector4Array
 	value = PackedVector4Array()
 	print(value == null)
+
+	# PackedProjectionArray
+	value = PackedProjectionArray()
+	print(value == null)

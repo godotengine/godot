@@ -866,6 +866,7 @@ INDEXED_SETGET_STRUCT_TYPED(PackedVector3Array, Vector3)
 INDEXED_SETGET_STRUCT_TYPED(PackedStringArray, String)
 INDEXED_SETGET_STRUCT_TYPED(PackedColorArray, Color)
 INDEXED_SETGET_STRUCT_TYPED(PackedVector4Array, Vector4)
+INDEXED_SETGET_STRUCT_TYPED(PackedProjectionArray, Projection)
 
 struct VariantIndexedSetterGetterInfo {
 	void (*setter)(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) = nullptr;
@@ -932,6 +933,7 @@ void register_indexed_setters_getters() {
 	REGISTER_INDEXED_MEMBER(PackedStringArray);
 	REGISTER_INDEXED_MEMBER(PackedColorArray);
 	REGISTER_INDEXED_MEMBER(PackedVector4Array);
+	REGISTER_INDEXED_MEMBER(PackedProjectionArray);
 
 	REGISTER_INDEXED_MEMBER(Array);
 	REGISTER_INDEXED_MEMBER(Dictionary);
@@ -1507,6 +1509,14 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			r_iter = 0;
 			return true;
 		} break;
+		case PACKED_PROJECTION_ARRAY: {
+			const Vector<Projection> *arr = &PackedArrayRef<Projection>::get_array(_data.packed_array);
+			if (arr->size() == 0) {
+				return false;
+			}
+			r_iter = 0;
+			return true;
+		} break;
 		default: {
 		}
 	}
@@ -1765,6 +1775,16 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			r_iter = idx;
 			return true;
 		} break;
+		case PACKED_PROJECTION_ARRAY: {
+			const Vector<Projection> *arr = &PackedArrayRef<Projection>::get_array(_data.packed_array);
+			int idx = r_iter;
+			idx++;
+			if (idx >= arr->size()) {
+				return false;
+			}
+			r_iter = idx;
+			return true;
+		} break;
 		default: {
 		}
 	}
@@ -1961,6 +1981,18 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
+		case PACKED_PROJECTION_ARRAY: {
+			const Vector<Projection> *arr = &PackedArrayRef<Projection>::get_array(_data.packed_array);
+			int idx = r_iter;
+#ifdef DEBUG_ENABLED
+			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedProjectionArray of size %d.", idx, arr->size()));
+				r_valid = false;
+				return Variant();
+			}
+#endif
+			return arr->get(idx);
+		} break;
 		default: {
 		}
 	}
@@ -2017,6 +2049,8 @@ Variant Variant::recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_de
 			return operator Vector<Color>().duplicate();
 		case PACKED_VECTOR4_ARRAY:
 			return operator Vector<Vector4>().duplicate();
+		case PACKED_PROJECTION_ARRAY:
+			return operator Vector<Projection>().duplicate();
 		default:
 			return *this;
 	}

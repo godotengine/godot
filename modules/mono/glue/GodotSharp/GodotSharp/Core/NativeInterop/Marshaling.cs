@@ -136,6 +136,9 @@ namespace Godot.NativeInterop
                         if (type == typeof(Vector4[]))
                             return Variant.Type.PackedVector4Array;
 
+                        if (type == typeof(Projection[]))
+                            return Variant.Type.PackedProjectionArray;
+
                         if (type == typeof(Color[]))
                             return Variant.Type.PackedColorArray;
 
@@ -677,6 +680,34 @@ namespace Godot.NativeInterop
                 return new godot_packed_vector4_array();
             fixed (Vector4* src = p_array)
                 return NativeFuncs.godotsharp_packed_vector4_array_new_mem_copy(src, p_array.Length);
+        }
+
+        // PackedProjectionArray
+
+        public static unsafe Projection[] ConvertNativePackedProjectionArrayToSystemArray(godot_packed_projection_array p_array)
+        {
+            Projection* buffer = p_array.Buffer;
+            int size = p_array.Size;
+            if (size == 0)
+                return Array.Empty<Projection>();
+            int sizeInBytes = size * sizeof(Projection);
+            var array = new Projection[size];
+            fixed (Projection* dest = array)
+                Buffer.MemoryCopy(buffer, dest, sizeInBytes, sizeInBytes);
+            return array;
+        }
+
+        public static godot_packed_projection_array ConvertSystemArrayToNativePackedProjectionArray(scoped Span<Projection> p_array)
+        {
+            return ConvertSystemArrayToNativePackedProjectionArray((ReadOnlySpan<Projection>)p_array);
+        }
+
+        public static unsafe godot_packed_projection_array ConvertSystemArrayToNativePackedProjectionArray(scoped ReadOnlySpan<Projection> p_array)
+        {
+            if (p_array.IsEmpty)
+                return new godot_packed_projection_array();
+            fixed (Projection* src = p_array)
+                return NativeFuncs.godotsharp_packed_projection_array_new_mem_copy(src, p_array.Length);
         }
 
         // PackedColorArray

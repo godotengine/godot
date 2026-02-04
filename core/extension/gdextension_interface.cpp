@@ -632,6 +632,8 @@ static GDExtensionVariantFromTypeConstructorFunc gdextension_get_variant_from_ty
 			return VariantTypeConstructor<PackedVector3Array>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR4_ARRAY:
 			return VariantTypeConstructor<PackedVector4Array>::variant_from_type;
+		case GDEXTENSION_VARIANT_TYPE_PACKED_PROJECTION_ARRAY:
+			return VariantTypeConstructor<PackedProjectionArray>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_COLOR_ARRAY:
 			return VariantTypeConstructor<PackedColorArray>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_NIL:
@@ -717,6 +719,8 @@ static GDExtensionTypeFromVariantConstructorFunc gdextension_get_variant_to_type
 			return VariantTypeConstructor<PackedVector3Array>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR4_ARRAY:
 			return VariantTypeConstructor<PackedVector4Array>::type_from_variant;
+		case GDEXTENSION_VARIANT_TYPE_PACKED_PROJECTION_ARRAY:
+			return VariantTypeConstructor<PackedProjectionArray>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_COLOR_ARRAY:
 			return VariantTypeConstructor<PackedColorArray>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_NIL:
@@ -804,6 +808,8 @@ static GDExtensionVariantGetInternalPtrFunc gdextension_variant_get_ptr_internal
 			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<PackedColorArray *(*)(Variant *)>(VariantInternal::get_color_array));
 		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR4_ARRAY:
 			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<PackedVector4Array *(*)(Variant *)>(VariantInternal::get_vector4_array));
+		case GDEXTENSION_VARIANT_TYPE_PACKED_PROJECTION_ARRAY:
+			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<PackedProjectionArray *(*)(Variant *)>(VariantInternal::get_projection_array));
 		case GDEXTENSION_VARIANT_TYPE_NIL:
 		case GDEXTENSION_VARIANT_TYPE_VARIANT_MAX:
 			ERR_FAIL_V_MSG(nullptr, "Getting Variant get internal pointer function with invalid type.");
@@ -1267,6 +1273,22 @@ static GDExtensionTypePtr gdextension_packed_vector4_array_operator_index(GDExte
 
 static GDExtensionTypePtr gdextension_packed_vector4_array_operator_index_const(GDExtensionConstTypePtr p_self, GDExtensionInt p_index) {
 	const PackedVector4Array *self = (const PackedVector4Array *)p_self;
+	if (unlikely(p_index < 0 || p_index >= self->size())) {
+		return nullptr;
+	}
+	return (GDExtensionTypePtr)&self->ptr()[p_index];
+}
+
+static GDExtensionTypePtr gdextension_packed_projection_array_operator_index(GDExtensionTypePtr p_self, GDExtensionInt p_index) {
+	PackedProjectionArray *self = (PackedProjectionArray *)p_self;
+	if (unlikely(p_index < 0 || p_index >= self->size())) {
+		return nullptr;
+	}
+	return (GDExtensionTypePtr)&self->ptrw()[p_index];
+}
+
+static GDExtensionTypePtr gdextension_packed_projection_array_operator_index_const(GDExtensionConstTypePtr p_self, GDExtensionInt p_index) {
+	const PackedProjectionArray *self = (const PackedProjectionArray *)p_self;
 	if (unlikely(p_index < 0 || p_index >= self->size())) {
 		return nullptr;
 	}
@@ -1815,6 +1837,8 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(packed_vector3_array_operator_index_const);
 	REGISTER_INTERFACE_FUNC(packed_vector4_array_operator_index);
 	REGISTER_INTERFACE_FUNC(packed_vector4_array_operator_index_const);
+	REGISTER_INTERFACE_FUNC(packed_projection_array_operator_index);
+	REGISTER_INTERFACE_FUNC(packed_projection_array_operator_index_const);
 	REGISTER_INTERFACE_FUNC(array_operator_index);
 	REGISTER_INTERFACE_FUNC(array_operator_index_const);
 #ifndef DISABLE_DEPRECATED

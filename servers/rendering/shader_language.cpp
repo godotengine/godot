@@ -5046,6 +5046,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			break;
 		case ShaderLanguage::TYPE_MAT4:
 			if (p_uniform.array_size > 0) {
+				// Q: Should we support Variant::PACKED_PROJECTION_ARRAY here? Or would that be too breaking?
 				pi.type = Variant::PACKED_FLOAT32_ARRAY;
 			} else {
 				pi.type = Variant::PROJECTION;
