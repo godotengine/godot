@@ -236,6 +236,7 @@ opts.Add(BoolVariable("ninja", "Use the ninja backend for faster rebuilds", Fals
 opts.Add(BoolVariable("ninja_auto_run", "Run ninja automatically after generating the ninja file", True))
 opts.Add("ninja_file", "Path to the generated ninja file", "build.ninja")
 opts.Add(BoolVariable("compiledb", "Generate compilation DB (`compile_commands.json`) for external tools", False))
+opts.Add(BoolVariable("compiledb_gen_only", "Exit after building the compilation database", False))
 opts.Add(
     "num_jobs",
     "Use up to N jobs when compiling (equivalent to `-j N`). Defaults to max jobs - 1. Ignored if -j is used.",
@@ -1172,7 +1173,6 @@ env.Append(BUILDERS=GLSL_BUILDERS)
 
 if env["compiledb"]:
     env.Tool("compilation_db")
-    env.Alias("compiledb", env.CompilationDatabase())
     env.NoCache(env.CompilationDatabase())
     if not env["verbose"]:
         env["COMPILATIONDB_COMSTR"] = "$GENCOMSTR"
@@ -1232,6 +1232,12 @@ if env["vsproj"]:
 
 # Miscellaneous & post-build methods.
 if not env.GetOption("clean") and not env.GetOption("help"):
+    if env["compiledb"] and env["compiledb_gen_only"]:
+        from SCons.Tool.compilation_db import write_compilation_db
+
+        write_compilation_db([env.File("compile_commands.json")], [], env)
+        env.Exit()
+
     methods.dump(env)
     methods.show_progress(env)
     methods.prepare_purge(env)

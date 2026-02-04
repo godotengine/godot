@@ -1690,7 +1690,7 @@ void FileSystemDock::_update_dependencies_after_move(const HashMap<String, Strin
 
 void FileSystemDock::_update_project_settings_after_move(const HashMap<String, String> &p_renames, const HashMap<String, String> &p_folders_renames) {
 	// Find all project settings of type FILE and replace them if needed.
-	const HashMap<StringName, PropertyInfo> prop_info = ProjectSettings::get_singleton()->get_custom_property_info();
+	const HashMap<StringName, PropertyInfo> prop_info(ProjectSettings::get_singleton()->get_custom_property_info());
 	for (const KeyValue<StringName, PropertyInfo> &E : prop_info) {
 		if (E.value.hint == PROPERTY_HINT_FILE || E.value.hint == PROPERTY_HINT_FILE_PATH) {
 			String old_path = GLOBAL_GET(E.key);
@@ -2833,6 +2833,9 @@ void FileSystemDock::_resource_created() {
 }
 
 void FileSystemDock::_script_or_shader_created(const Ref<Resource> &p_resource) {
+	if (Object::cast_to<Script>(p_resource.ptr()) && !EDITOR_GET("docks/filesystem/automatically_open_created_scripts").operator bool()) {
+		return;
+	}
 	EditorNode::get_singleton()->push_item(p_resource.ptr());
 }
 
@@ -4288,7 +4291,7 @@ void FileSystemDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("inherit", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("instantiate", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
 
-	ADD_SIGNAL(MethodInfo("resource_removed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ADD_SIGNAL(MethodInfo("resource_removed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static())));
 	ADD_SIGNAL(MethodInfo("file_removed", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("folder_removed", PropertyInfo(Variant::STRING, "folder")));
 	ADD_SIGNAL(MethodInfo("files_moved", PropertyInfo(Variant::STRING, "old_file"), PropertyInfo(Variant::STRING, "new_file")));

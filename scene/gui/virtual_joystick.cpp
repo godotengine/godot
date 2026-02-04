@@ -249,8 +249,8 @@ void VirtualJoystick::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_mode", PROPERTY_HINT_ENUM, "Always,When Touched"), "set_visibility_mode", "get_visibility_mode");
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "joystick_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_joystick_texture", "get_joystick_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tip_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_tip_texture", "get_tip_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "joystick_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_joystick_texture", "get_joystick_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tip_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_tip_texture", "get_tip_texture");
 
 	ADD_SIGNAL(MethodInfo("pressed"));
 	ADD_SIGNAL(MethodInfo("tapped"));

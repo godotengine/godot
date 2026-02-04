@@ -4176,7 +4176,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(property_info);
 
 		// physics_layer_%d/physics_material
-		property_info = PropertyInfo(Variant::OBJECT, vformat("physics_layer_%d/physics_material", i), PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial");
+		property_info = PropertyInfo(Variant::OBJECT, vformat("physics_layer_%d/physics_material", i), PROPERTY_HINT_RESOURCE_TYPE, PhysicsMaterial::get_class_static());
 		if (physics_layers[i].physics_material.is_null()) {
 			property_info.usage ^= PROPERTY_USAGE_STORAGE;
 		}
@@ -4215,7 +4215,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 	// Sources.
 	// Note: sources have to be listed in at the end as some TileData rely on the TileSet properties being initialized first.
 	for (const KeyValue<int, Ref<TileSetSource>> &E_source : sources) {
-		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("sources/%d", E_source.key), PROPERTY_HINT_RESOURCE_TYPE, "TileSetAtlasSource", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_ALWAYS_DUPLICATE));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("sources/%d", E_source.key), PROPERTY_HINT_RESOURCE_TYPE, TileSetAtlasSource::get_class_static(), PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_ALWAYS_DUPLICATE));
 	}
 
 	// Tile Proxies.
@@ -4227,7 +4227,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	// Patterns.
 	for (unsigned int pattern_index = 0; pattern_index < patterns.size(); pattern_index++) {
-		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("pattern_%d", pattern_index), PROPERTY_HINT_RESOURCE_TYPE, "TileMapPattern", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("pattern_%d", pattern_index), PROPERTY_HINT_RESOURCE_TYPE, TileMapPattern::get_class_static(), PROPERTY_USAGE_NO_EDITOR));
 	}
 }
 
@@ -5482,7 +5482,7 @@ void TileSetAtlasSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_texture_padding", "use_texture_padding"), &TileSetAtlasSource::set_use_texture_padding);
 	ClassDB::bind_method(D_METHOD("get_use_texture_padding"), &TileSetAtlasSource::get_use_texture_padding);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NO_EDITOR), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), PROPERTY_USAGE_NO_EDITOR), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "margins", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NO_EDITOR), "set_margins", "get_margins");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NO_EDITOR), "set_separation", "get_separation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_region_size", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NO_EDITOR), "set_texture_region_size", "get_texture_region_size");
@@ -5910,7 +5910,7 @@ bool TileSetScenesCollectionSource::_get(const StringName &p_name, Variant &r_re
 
 void TileSetScenesCollectionSource::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < scenes_ids.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("%s/%d/%s", PNAME("scenes"), scenes_ids[i], PNAME("scene")), PROPERTY_HINT_RESOURCE_TYPE, "TileSetScenesCollectionSource"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("%s/%d/%s", PNAME("scenes"), scenes_ids[i], PNAME("scene")), PROPERTY_HINT_RESOURCE_TYPE, TileSetScenesCollectionSource::get_class_static()));
 
 		PropertyInfo property_info = PropertyInfo(Variant::BOOL, vformat("%s/%d/%s", PNAME("scenes"), scenes_ids[i], PNAME("display_placeholder")));
 		if (scenes[scenes_ids[i]].display_placeholder == false) {
@@ -6996,7 +6996,7 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::INT, vformat("occlusion_layer_%d/%s", i, PNAME("polygons_count")), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 			for (int j = 0; j < occluders[i].polygons.size(); j++) {
 				// occlusion_layer_%d/polygon_%d/polygon
-				property_info = PropertyInfo(Variant::OBJECT, vformat("occlusion_layer_%d/polygon_%d/%s", i, j, PNAME("polygon")), PROPERTY_HINT_RESOURCE_TYPE, "OccluderPolygon2D", PROPERTY_USAGE_DEFAULT);
+				property_info = PropertyInfo(Variant::OBJECT, vformat("occlusion_layer_%d/polygon_%d/%s", i, j, PNAME("polygon")), PROPERTY_HINT_RESOURCE_TYPE, OccluderPolygon2D::get_class_static(), PROPERTY_USAGE_DEFAULT);
 				if (occluders[i].polygons[j].occluder_polygon.is_null()) {
 					property_info.usage ^= PROPERTY_USAGE_STORAGE;
 				}
@@ -7068,7 +7068,7 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 		// Navigation layers.
 		p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Navigation", ""), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 		for (int i = 0; i < navigation.size(); i++) {
-			property_info = PropertyInfo(Variant::OBJECT, vformat("navigation_layer_%d/%s", i, PNAME("polygon")), PROPERTY_HINT_RESOURCE_TYPE, "NavigationPolygon", PROPERTY_USAGE_DEFAULT);
+			property_info = PropertyInfo(Variant::OBJECT, vformat("navigation_layer_%d/%s", i, PNAME("polygon")), PROPERTY_HINT_RESOURCE_TYPE, NavigationPolygon::get_class_static(), PROPERTY_USAGE_DEFAULT);
 			if (navigation[i].navigation_polygon.is_null()) {
 				property_info.usage ^= PROPERTY_USAGE_STORAGE;
 			}

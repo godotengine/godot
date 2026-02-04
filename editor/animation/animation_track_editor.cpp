@@ -633,7 +633,7 @@ void AnimationTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) const
 
 		} break;
 		case Animation::TYPE_AUDIO: {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("stream"), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("stream"), PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static()));
 			Ref<AudioStream> audio_stream = animation->audio_track_get_key_stream(track, key);
 			String hint_string = vformat("0,%.4f,0.0001,or_greater", audio_stream.is_valid() ? audio_stream->get_length() : 3600.0);
 			p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("start_offset"), PROPERTY_HINT_RANGE, hint_string));
@@ -1238,7 +1238,7 @@ void AnimationMultiTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) 
 				p_list->push_back(PropertyInfo(Variant::INT, "handle_mode", PROPERTY_HINT_ENUM, "Free,Linear,Balanced,Mirrored"));
 			} break;
 			case Animation::TYPE_AUDIO: {
-				p_list->push_back(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"));
+				p_list->push_back(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static()));
 				p_list->push_back(PropertyInfo(Variant::FLOAT, "start_offset", PROPERTY_HINT_RANGE, "0,3600,0.0001,or_greater"));
 				p_list->push_back(PropertyInfo(Variant::FLOAT, "end_offset", PROPERTY_HINT_RANGE, "0,3600,0.0001,or_greater"));
 			} break;

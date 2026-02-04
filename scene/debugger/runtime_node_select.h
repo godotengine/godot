@@ -37,6 +37,7 @@
 #include "scene/resources/mesh.h"
 #endif // _3D_DISABLED
 
+class Node;
 class PopupMenu;
 
 class RuntimeNodeSelect : public Object {

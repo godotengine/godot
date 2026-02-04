@@ -695,10 +695,12 @@ struct TextDocumentItem {
 		version = p_dict["version"];
 		text = p_dict["text"];
 
-		// Clients should use "gdscript" as language id, but we can't enforce it. The Rider integration
-		// in particular uses "gd" at the time of writing. We normalize the id to make it easier to work with.
+		// Clients should use "gdscript" as language id, but we can't enforce it.
+		// We normalize some known ids to make them easier to work with:
+		// Rider < 2026.1: "gd"
+		// Kate: "godot"
 		String rawLanguageId = p_dict["languageId"];
-		if (rawLanguageId == "gdscript" || rawLanguageId == "gd") {
+		if (rawLanguageId == "gdscript" || rawLanguageId == "gd" || rawLanguageId == "godot") {
 			languageId = LanguageId::GDSCRIPT;
 		} else {
 			languageId = LanguageId::OTHER;
@@ -1438,7 +1440,7 @@ struct CompletionContext {
 	/**
 	 * How the completion was triggered.
 	 */
-	int triggerKind = CompletionTriggerKind::TriggerCharacter;
+	int triggerKind = CompletionTriggerKind::Invoked;
 
 	/**
 	 * The trigger character (a single character) that has trigger code complete.
@@ -1461,7 +1463,10 @@ struct CompletionParams : public TextDocumentPositionParams {
 
 	void load(const Dictionary &p_params) {
 		TextDocumentPositionParams::load(p_params);
-		context.load(p_params["context"]);
+
+		if (p_params.has("context")) {
+			context.load(p_params["context"]);
+		}
 	}
 
 	Dictionary to_json() {

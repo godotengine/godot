@@ -4681,7 +4681,7 @@ void EditorHelpBitTooltip::_notification(int p_what) {
 				if (Input::get_singleton()->is_action_just_pressed(SNAME("ui_cancel"), true)) {
 					queue_free();
 					get_parent_viewport()->set_input_as_handled();
-				} else if (Input::get_singleton()->is_anything_pressed_except_mouse()) {
+				} else if (Input::get_singleton()->is_any_key_pressed()) {
 					queue_free();
 				} else if (!Input::get_singleton()->get_mouse_button_mask().is_empty()) {
 					if (!_is_mouse_inside_tooltip) {

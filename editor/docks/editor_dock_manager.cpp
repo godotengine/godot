@@ -333,6 +333,7 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 	}
 
 	if (!p_target) {
+		p_dock->is_open = false;
 		return;
 	}
 
@@ -578,7 +579,10 @@ void EditorDockManager::close_dock(EditorDock *p_dock) {
 	}
 
 	p_dock->is_open = false;
-	p_dock->get_parent_container()->dock_closed(p_dock);
+	DockTabContainer *parent_container = p_dock->get_parent_container();
+	if (parent_container) {
+		parent_container->dock_closed(p_dock);
+	}
 
 	// Hide before moving to remove inconsistent signals.
 	p_dock->hide();
@@ -603,12 +607,13 @@ void EditorDockManager::open_dock(EditorDock *p_dock, bool p_set_current) {
 
 	// Open dock to its previous location.
 	if (p_dock->dock_slot_index != EditorDock::DOCK_SLOT_NONE) {
-		TabContainer *slot = dock_slots[p_dock->dock_slot_index];
+		DockTabContainer *slot = dock_slots[p_dock->dock_slot_index];
 		int tab_index = p_dock->previous_tab_index;
 		if (tab_index < 0) {
 			tab_index = slot->get_tab_count();
 		}
-		_move_dock(p_dock, slot, tab_index, p_set_current);
+
+		_move_dock(p_dock, slot, tab_index, p_set_current && slot->can_switch_dock());
 	} else {
 		_open_dock_in_window(p_dock, true, true);
 		return;
@@ -656,6 +661,7 @@ void EditorDockManager::focus_dock(EditorDock *p_dock) {
 	}
 
 	if (!p_dock->is_open) {
+		p_dock->emit_signal("opened");
 		open_dock(p_dock, false);
 	}
 

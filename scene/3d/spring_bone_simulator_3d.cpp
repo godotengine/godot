@@ -306,13 +306,13 @@ void SpringBoneSimulator3D::_get_property_list(List<PropertyInfo> *p_list) const
 		props.push_back(PropertyInfo(Variant::INT, path + "rotation_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_rotation_axis()));
 		props.push_back(PropertyInfo(Variant::VECTOR3, path + "rotation_axis_vector"));
 		props.push_back(PropertyInfo(Variant::FLOAT, path + "radius/value", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"));
-		props.push_back(PropertyInfo(Variant::OBJECT, path + "radius/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
+		props.push_back(PropertyInfo(Variant::OBJECT, path + "radius/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
 		props.push_back(PropertyInfo(Variant::FLOAT, path + "stiffness/value", PROPERTY_HINT_RANGE, "0,4,0.01,or_greater"));
-		props.push_back(PropertyInfo(Variant::OBJECT, path + "stiffness/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
+		props.push_back(PropertyInfo(Variant::OBJECT, path + "stiffness/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
 		props.push_back(PropertyInfo(Variant::FLOAT, path + "drag/value", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"));
-		props.push_back(PropertyInfo(Variant::OBJECT, path + "drag/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
+		props.push_back(PropertyInfo(Variant::OBJECT, path + "drag/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
 		props.push_back(PropertyInfo(Variant::FLOAT, path + "gravity/value", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater,or_less,suffix:m/s"));
-		props.push_back(PropertyInfo(Variant::OBJECT, path + "gravity/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
+		props.push_back(PropertyInfo(Variant::OBJECT, path + "gravity/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
 		props.push_back(PropertyInfo(Variant::VECTOR3, path + "gravity/direction"));
 		props.push_back(PropertyInfo(Variant::INT, path + "joint_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Joints," + path + "joints/,static,const"));
 		for (uint32_t j = 0; j < settings[i]->joints.size(); j++) {

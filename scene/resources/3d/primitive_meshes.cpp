@@ -2777,7 +2777,7 @@ void TubeTrailMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cap_top"), "set_cap_top", "is_cap_top");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cap_bottom"), "set_cap_bottom", "is_cap_bottom");
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()), "set_curve", "get_curve");
 }
 
 TubeTrailMesh::TubeTrailMesh() {
@@ -3027,7 +3027,7 @@ void RibbonTrailMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sections", PROPERTY_HINT_RANGE, "2,128,1"), "set_sections", "get_sections");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "section_length", PROPERTY_HINT_RANGE, "0.001,1024.0,0.001,or_greater,suffix:m"), "set_section_length", "get_section_length");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "section_segments", PROPERTY_HINT_RANGE, "1,128,1"), "set_section_segments", "get_section_segments");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()), "set_curve", "get_curve");
 
 	BIND_ENUM_CONSTANT(SHAPE_FLAT)
 	BIND_ENUM_CONSTANT(SHAPE_CROSS)
@@ -3661,7 +3661,7 @@ void TextMesh::_bind_methods() {
 
 	ADD_GROUP("Text", "");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, ""), "set_text", "get_text");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, Font::get_class_static()), "set_font", "get_font");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size", PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px"), "set_font_size", "get_font_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom"), "set_vertical_alignment", "get_vertical_alignment");

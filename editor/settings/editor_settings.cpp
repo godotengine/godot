@@ -696,6 +696,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("docks/filesystem/always_show_folders", true);
 	_initial_set("docks/filesystem/textfile_extensions", "txt,md,cfg,ini,log,json,yml,yaml,toml,xml");
 	_initial_set("docks/filesystem/other_file_extensions", "ico,icns");
+	_initial_set("docks/filesystem/automatically_open_created_scripts", true);
 
 	// Property editor
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "docks/property_editor/auto_refresh_interval", 0.2, "0.01,1,0.001"); // Update 5 times per second by default.
@@ -1649,7 +1650,7 @@ Vector<String> EditorSettings::get_favorite_folders() const {
 }
 
 HashMap<String, PackedStringArray> EditorSettings::get_favorite_properties() const {
-	return favorite_properties;
+	return HashMap<String, PackedStringArray>(favorite_properties);
 }
 
 void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs, bool p_update_file_dialog) {

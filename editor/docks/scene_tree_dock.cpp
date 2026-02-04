@@ -4189,7 +4189,10 @@ void SceneTreeDock::save_branch_to_file(const String &p_directory) {
 
 void SceneTreeDock::_focus_node() {
 	Node *node = scene_tree->get_selected();
-	ERR_FAIL_NULL(node);
+	// This method handles the item_icon_double_clicked signal and there is no guarantee anything is actually selected.
+	if (!node) {
+		return;
+	}
 
 	if (node->is_class("CanvasItem")) {
 		CanvasItemEditorPlugin *editor = Object::cast_to<CanvasItemEditorPlugin>(editor_data->get_editor_by_name("2D"));
@@ -4756,7 +4759,7 @@ void SceneTreeDock::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("remote_tree_selected"));
 	ADD_SIGNAL(MethodInfo("add_node_used"));
-	ADD_SIGNAL(MethodInfo("node_created", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("node_created", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static())));
 }
 
 SceneTreeDock *SceneTreeDock::singleton = nullptr;

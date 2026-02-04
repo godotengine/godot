@@ -108,7 +108,7 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_get_property_list
 	p_list->push_back(PropertyInfo(Variant::NIL, TTR("Atlas"), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
 	p_list->push_back(PropertyInfo(Variant::INT, PNAME("id"), PROPERTY_HINT_RANGE, "0," + itos(INT_MAX) + ",1"));
 	p_list->push_back(PropertyInfo(Variant::STRING, PNAME("name")));
-	p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("texture"), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("texture"), PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2I, PNAME("margins"), PROPERTY_HINT_NONE, "suffix:px"));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2I, PNAME("separation"), PROPERTY_HINT_NONE, "suffix:px"));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2I, PNAME("texture_region_size"), PROPERTY_HINT_NONE, "suffix:px"));

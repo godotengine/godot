@@ -820,10 +820,10 @@ Error GDScript::reload(bool p_keep_state) {
 	}
 	if (err) {
 		if (EngineDebugger::is_active()) {
-			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
+			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().start_line, "Parser Error: " + parser.get_errors().front()->get().message);
 		}
 		// TODO: Show all error messages.
-		_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_errors().front()->get().line, ("Parse Error: " + parser.get_errors().front()->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+		_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_errors().front()->get().start_line, ("Parse Error: " + parser.get_errors().front()->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		reloading = false;
 		return ERR_PARSE_ERROR;
 	}
@@ -833,12 +833,12 @@ Error GDScript::reload(bool p_keep_state) {
 
 	if (err) {
 		if (EngineDebugger::is_active()) {
-			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
+			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().start_line, "Parser Error: " + parser.get_errors().front()->get().message);
 		}
 
 		const List<GDScriptParser::ParserError>::Element *e = parser.get_errors().front();
 		while (e != nullptr) {
-			_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), e->get().line, ("Parse Error: " + e->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+			_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), e->get().start_line, ("Parse Error: " + e->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 			e = e->next();
 		}
 		reloading = false;

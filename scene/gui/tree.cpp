@@ -4218,7 +4218,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 					if (rtl) {
 						pressing_pos.x = get_size().width - pressing_pos.x;
 					}
-				} else if (mb->is_double_click() && get_item_at_position(mb->get_position()) != nullptr) {
+				} else if (mb->is_double_click() && cache.click_type != Cache::CLICK_BUTTON && get_item_at_position(mb->get_position()) != nullptr) {
 					emit_signal(SNAME("item_icon_double_clicked"));
 				}
 
@@ -5769,6 +5769,7 @@ int Tree::get_columns() const {
 void Tree::_scroll_moved(float) {
 	_determine_hovered_item();
 	queue_redraw();
+	popup_editor->hide();
 }
 
 Rect2 Tree::get_custom_popup_rect() const {
@@ -6866,15 +6867,15 @@ void Tree::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("item_selected"));
 	ADD_SIGNAL(MethodInfo("cell_selected"));
-	ADD_SIGNAL(MethodInfo("multi_selected", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, "TreeItem"), PropertyInfo(Variant::INT, "column"), PropertyInfo(Variant::BOOL, "selected")));
+	ADD_SIGNAL(MethodInfo("multi_selected", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, TreeItem::get_class_static()), PropertyInfo(Variant::INT, "column"), PropertyInfo(Variant::BOOL, "selected")));
 	ADD_SIGNAL(MethodInfo("item_mouse_selected", PropertyInfo(Variant::VECTOR2, "mouse_position"), PropertyInfo(Variant::INT, "mouse_button_index")));
 	ADD_SIGNAL(MethodInfo("empty_clicked", PropertyInfo(Variant::VECTOR2, "click_position"), PropertyInfo(Variant::INT, "mouse_button_index")));
 	ADD_SIGNAL(MethodInfo("item_edited"));
 	ADD_SIGNAL(MethodInfo("custom_item_clicked", PropertyInfo(Variant::INT, "mouse_button_index")));
 	ADD_SIGNAL(MethodInfo("item_icon_double_clicked"));
-	ADD_SIGNAL(MethodInfo("item_collapsed", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, "TreeItem")));
-	ADD_SIGNAL(MethodInfo("check_propagated_to_item", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, "TreeItem"), PropertyInfo(Variant::INT, "column")));
-	ADD_SIGNAL(MethodInfo("button_clicked", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, "TreeItem"), PropertyInfo(Variant::INT, "column"), PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::INT, "mouse_button_index")));
+	ADD_SIGNAL(MethodInfo("item_collapsed", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, TreeItem::get_class_static())));
+	ADD_SIGNAL(MethodInfo("check_propagated_to_item", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, TreeItem::get_class_static()), PropertyInfo(Variant::INT, "column")));
+	ADD_SIGNAL(MethodInfo("button_clicked", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, TreeItem::get_class_static()), PropertyInfo(Variant::INT, "column"), PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::INT, "mouse_button_index")));
 	ADD_SIGNAL(MethodInfo("custom_popup_edited", PropertyInfo(Variant::BOOL, "arrow_clicked")));
 	ADD_SIGNAL(MethodInfo("item_activated"));
 	ADD_SIGNAL(MethodInfo("column_title_clicked", PropertyInfo(Variant::INT, "column"), PropertyInfo(Variant::INT, "mouse_button_index")));
