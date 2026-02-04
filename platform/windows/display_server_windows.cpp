@@ -4044,6 +4044,9 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 		ERR_FAIL_COND(p_icon->get_width() <= 0 || p_icon->get_height() <= 0);
 
 		Ref<Image> img = p_icon->duplicate();
+		if (img->is_compressed()) {
+			img->decompress();
+		}
 		img->convert(Image::FORMAT_RGBA8);
 
 		int w = img->get_width();
