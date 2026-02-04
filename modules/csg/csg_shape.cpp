@@ -1563,50 +1563,47 @@ CSGBrush *CSGBox3D::_build_brush() {
 	bool *invertw = invert.ptrw();
 
 	//model created from a program using the original code, it has to be manifold.
-	//TODO divide by 2
-	facesw[0] = Vector3(1, 1, 1) * size;
-	facesw[1] = Vector3(1, 1, -1) * size;
-	facesw[2] = Vector3(1, -1, -1) * size;
-	facesw[3] = Vector3(1, -1, -1) * size;
-	facesw[4] = Vector3(1, -1, 1) * size;
-	facesw[5] = Vector3(1, 1, 1) * size;
+	facesw[0] = Vector3(0.5, 0.5, 0.5) * size;
+	facesw[1] = Vector3(0.5, 0.5, -0.5) * size;
+	facesw[2] = Vector3(0.5, -0.5, -0.5) * size;
+	facesw[3] = Vector3(0.5, -0.5, -0.5) * size;
+	facesw[4] = Vector3(0.5, -0.5, 0.5) * size;
+	facesw[5] = Vector3(0.5, 0.5, 0.5) * size;
 
-	facesw[6] = Vector3(1, 1, 1) * size;
-	facesw[7] = Vector3(-1, 1, 1) * size;
-	facesw[8] = Vector3(-1, 1, -1) * size;
-	facesw[9] = Vector3(-1, 1, -1) * size;
-	facesw[10] = Vector3(1, 1, -1) * size;
-	facesw[11] = Vector3(1, 1, 1) * size;
+	facesw[6] = Vector3(0.5, 0.5, 0.5) * size;
+	facesw[7] = Vector3(-0.5, 0.5, 0.5) * size;
+	facesw[8] = Vector3(-0.5, 0.5, -0.5) * size;
+	facesw[9] = Vector3(-0.5, 0.5, -0.5) * size;
+	facesw[10] = Vector3(0.5, 0.5, -0.5) * size;
+	facesw[11] = Vector3(0.5, 0.5, 0.5) * size;
 
-	facesw[12] = Vector3(1, 1, 1) * size;
-	facesw[13] = Vector3(1, -1, 1) * size;
-	facesw[14] = Vector3(-1, -1, 1) * size;
-	facesw[15] = Vector3(-1, -1, 1) * size;
-	facesw[16] = Vector3(-1, 1, 1) * size;
-	facesw[17] = Vector3(1, 1, 1) * size;
+	facesw[12] = Vector3(0.5, 0.5, 0.5) * size;
+	facesw[13] = Vector3(0.5, -0.5, 0.5) * size;
+	facesw[14] = Vector3(-0.5, -0.5, 0.5) * size;
+	facesw[15] = Vector3(-0.5, -0.5, 0.5) * size;
+	facesw[16] = Vector3(-0.5, 0.5, 0.5) * size;
+	facesw[17] = Vector3(0.5, 0.5, 0.5) * size;
 
-	facesw[18] = Vector3(-1, 1, -1) * size;
-	facesw[19] = Vector3(-1, 1, 1) * size;
-	facesw[20] = Vector3(-1, -1, 1) * size;
-	facesw[21] = Vector3(-1, -1, 1) * size;
-	facesw[22] = Vector3(-1, -1, -1) * size;
-	facesw[23] = Vector3(-1, 1, -1) * size;
+	facesw[18] = Vector3(-0.5, 0.5, -0.5) * size;
+	facesw[19] = Vector3(-0.5, 0.5, 0.5) * size;
+	facesw[20] = Vector3(-0.5, -0.5, 0.5) * size;
+	facesw[21] = Vector3(-0.5, -0.5, 0.5) * size;
+	facesw[22] = Vector3(-0.5, -0.5, -0.5) * size;
+	facesw[23] = Vector3(-0.5, 0.5, -0.5) * size;
 
-	facesw[24] = Vector3(-1, -1, 1) * size;
-	facesw[25] = Vector3(1, -1, 1) * size;
-	facesw[26] = Vector3(1, -1, -1) * size;
-	facesw[27] = Vector3(1, -1, -1) * size;
-	facesw[28] = Vector3(-1, -1, -1) * size;
-	facesw[29] = Vector3(-1, -1, 1) * size;
+	facesw[24] = Vector3(-0.5, -0.5, 0.5) * size;
+	facesw[25] = Vector3(0.5, -0.5, 0.5) * size;
+	facesw[26] = Vector3(0.5, -0.5, -0.5) * size;
+	facesw[27] = Vector3(0.5, -0.5, -0.5) * size;
+	facesw[28] = Vector3(-0.5, -0.5, -0.5) * size;
+	facesw[29] = Vector3(-0.5, -0.5, 0.5) * size;
 
-	facesw[30] = Vector3(1, -1, -1) * size;
-	facesw[31] = Vector3(1, 1, -1) * size;
-	facesw[32] = Vector3(-1, 1, -1) * size;
-	facesw[33] = Vector3(-1, 1, -1) * size;
-	facesw[34] = Vector3(-1, -1, -1) * size;
-	facesw[35] = Vector3(1, -1, -1) * size;
-
-	//Vector3 vertex_mul = size / 2;
+	facesw[30] = Vector3(0.5, -0.5, -0.5) * size;
+	facesw[31] = Vector3(0.5, 0.5, -0.5) * size;
+	facesw[32] = Vector3(-0.5, 0.5, -0.5) * size;
+	facesw[33] = Vector3(-0.5, 0.5, -0.5) * size;
+	facesw[34] = Vector3(-0.5, -0.5, -0.5) * size;
+	facesw[35] = Vector3(0.5, -0.5, -0.5) * size;
 
 	if (scale_uv) {
 		//xy xz zy
