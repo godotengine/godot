@@ -521,6 +521,7 @@ void TextEditorBase::set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highl
 	ERR_FAIL_COND(p_highlighter.is_null());
 
 	CodeEdit *te = code_editor->get_text_editor();
+	p_highlighter->_set_edited_resource(edited_res);
 	te->set_syntax_highlighter(p_highlighter);
 }
 

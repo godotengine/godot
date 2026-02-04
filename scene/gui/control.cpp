@@ -1659,10 +1659,11 @@ void Control::_update_minimum_size() {
 		return;
 	}
 
+	bool was_invalid = !data.minimum_size_valid;
 	Size2 minsize = get_combined_minimum_size();
 	data.updating_last_minimum_size = false;
 
-	if (minsize != data.last_minimum_size) {
+	if (was_invalid || minsize != data.last_minimum_size) {
 		data.last_minimum_size = minsize;
 		_size_changed();
 		emit_signal(SceneStringName(minimum_size_changed));

@@ -3938,17 +3938,14 @@ void EditorInspector::update_tree() {
 	bool sub_inspectors_enabled = EDITOR_GET("interface/inspector/open_resources_in_current_inspector");
 
 	if (!valid_plugins.is_empty()) {
-		// Show early to avoid sizing problems.
-		begin_vbox->show();
-
 		for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
 			ped->parse_begin(object);
 			_parse_added_editors(begin_vbox, nullptr, ped);
 		}
 
-		// Hide it again if no editors were added to the beginning.
-		if (begin_vbox->get_child_count() == 0) {
-			begin_vbox->hide();
+		// Show if any of the editors were added to the beginning.
+		if (begin_vbox->get_child_count() > 0) {
+			begin_vbox->show();
 		}
 	}
 
