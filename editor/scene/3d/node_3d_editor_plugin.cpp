@@ -3890,7 +3890,7 @@ void Node3DEditorViewport::_draw() {
 					Math::round(2 * EDSCALE),
 					true);
 
-			Vector3 end_point_3d = _edit.center + gizmo_scale * rotation_radius * (right * Math::cos(_edit.accumulated_rotation_angle) + forward * Math::sin(_edit.accumulated_rotation_angle));
+			Vector3 end_point_3d = _edit.center + gizmo_scale * rotation_radius * (right * Math::cos(display_angle) + forward * Math::sin(display_angle));
 			Point2 end_point_2d = point_to_screen(end_point_3d);
 			RenderingServer::get_singleton()->canvas_item_add_line(
 					ci,
