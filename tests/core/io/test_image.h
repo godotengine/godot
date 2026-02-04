@@ -488,4 +488,28 @@ TEST_CASE("[Image] Convert image") {
 	CHECK_MESSAGE(image2->get_data() == image_data, "Image conversion to invalid type (Image::FORMAT_MAX + 1) should not alter image.");
 }
 
+TEST_CASE("[Image] Alpha mode") {
+	for (int fmt_idx = Image::FORMAT_L8; fmt_idx <= Image::FORMAT_RGBE9995; fmt_idx++) {
+		Image::Format format = (Image::Format)fmt_idx;
+
+		if ((Image::get_format_component_mask(format) & 0x8) == 0) {
+			continue;
+		}
+
+		Ref<Image> image = memnew(Image(4, 4, false, format));
+		for (int i = 0; i < 4 * 4; i++) {
+			image->set_pixel(i % 4, i / 4, Color(1.0f, 1.0f, 1.0f, float(i) / 15.0f));
+		}
+		CHECK_MESSAGE(image->detect_alpha() == Image::ALPHA_BLEND, "Image alpha mode detection failed, should be ALPHA_BLEND");
+
+		for (int i = 0; i < 4 * 4; i++) {
+			image->set_pixel(i % 4, i / 4, Color(1.0f, 1.0f, 1.0f, i % 2 == 0 ? 1.0f : 0.0f));
+		}
+		CHECK_MESSAGE(image->detect_alpha() == Image::ALPHA_BIT, "Image alpha mode detection failed, should be ALPHA_BIT");
+
+		image->fill(Color(1.0f, 0.0f, 0.5f, 1.0f));
+		CHECK_MESSAGE(image->detect_alpha() == Image::ALPHA_NONE, "Image alpha mode detection failed, should be ALPHA_NONE");
+	}
+}
+
 } // namespace TestImage
