@@ -1811,7 +1811,7 @@ Vector3 CSGBox3D::get_size() const {
 	return size;
 }
 
-void CSGBox3D::set_scale_uv(const bool &p_scale_uv) {
+void CSGBox3D::set_scale_uv(const bool p_scale_uv) {
 	scale_uv = p_scale_uv;
 	_make_dirty();
 	update_gizmos();
@@ -1821,7 +1821,7 @@ bool CSGBox3D::is_scale_uv() const {
 	return scale_uv;
 }
 
-void CSGBox3D::set_compat_mode(const bool &p_compat) {
+void CSGBox3D::set_compat_mode(const bool p_compat) {
 	compat_mode = p_compat;
 	_make_dirty();
 	update_gizmos();

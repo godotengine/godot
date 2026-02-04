@@ -289,10 +289,10 @@ public:
 	void set_size(const Vector3 &p_size);
 	Vector3 get_size() const;
 
-	void set_scale_uv(const bool &p_scale_uv);
+	void set_scale_uv(const bool p_scale_uv);
 	bool is_scale_uv() const;
 
-	void set_compat_mode(const bool &p_compat);
+	void set_compat_mode(const bool p_compat);
 	bool is_compat_mode() const;
 
 	void set_material(const Ref<Material> &p_material);
