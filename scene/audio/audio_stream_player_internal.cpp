@@ -30,6 +30,10 @@
 
 #include "audio_stream_player_internal.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/doc/editor_help.h"
+#endif
+
 #include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
 
@@ -56,6 +60,28 @@ void AudioStreamPlayerInternal::_update_stream_parameters() {
 			pd.path = pi.name;
 			pd.value = K.default_value;
 			playback_parameters.insert(key, pd);
+
+#ifdef TOOLS_ENABLED
+			static String player_classes[] = {
+				"AudioStreamPlayer",
+				"AudioStreamPlayer2D",
+				"AudioStreamPlayer3D",
+			};
+			for (const String &class_name : player_classes) {
+				DocData::ClassDoc *class_doc = EditorHelp::get_doc(class_name);
+				if (!class_doc) {
+					continue;
+				}
+
+				Dictionary prop;
+				prop["name"] = key;
+				prop["description"] = vformat(TTR(
+													  "This parameter optionally overwrites the [code]%s[/code] parameter value of the [member stream].\n"
+													  "If the checkbox next to this parameter's name is checked, the value of this parameter is used instead of the corresponding parameter in the [member stream]."),
+						pi.name);
+				class_doc->properties.append(DocData::PropertyDoc::from_dict(prop));
+			}
+#endif
 		}
 	}
 }
