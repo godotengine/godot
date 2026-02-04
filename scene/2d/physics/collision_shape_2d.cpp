@@ -30,6 +30,7 @@
 
 #include "collision_shape_2d.h"
 
+#include "core/config/project_settings.h"
 #include "scene/2d/physics/area_2d.h"
 #include "scene/2d/physics/collision_object_2d.h"
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
@@ -95,7 +96,7 @@ void CollisionShape2D::_notification(int p_what) {
 
 			rect = Rect2();
 
-			Color draw_col = debug_color;
+			Color draw_col = get_debug_color();
 			if (disabled) {
 				float g = draw_col.get_v();
 				draw_col.r = g;
@@ -238,10 +239,14 @@ void CollisionShape2D::set_debug_color(const Color &p_color) {
 	}
 
 	debug_color = p_color;
+	used_default_debug_color = debug_color == _get_default_debug_color();
 	queue_redraw();
 }
 
 Color CollisionShape2D::get_debug_color() const {
+	if (used_default_debug_color) {
+		return _get_default_debug_color();
+	}
 	return debug_color;
 }
 
@@ -264,11 +269,17 @@ bool CollisionShape2D::_property_get_revert(const StringName &p_name, Variant &r
 
 void CollisionShape2D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "debug_color") {
-		if (debug_color == _get_default_debug_color()) {
+		if (used_default_debug_color) {
 			p_property.usage = PROPERTY_USAGE_DEFAULT & ~PROPERTY_USAGE_STORAGE;
 		} else {
 			p_property.usage = PROPERTY_USAGE_DEFAULT;
 		}
+	}
+}
+
+void CollisionShape2D::_settings_changed() {
+	if (ProjectSettings::get_singleton()->check_changed_settings_in_group("debug/shapes/collision/shape_color")) {
+		queue_redraw();
 	}
 }
 
@@ -302,4 +313,8 @@ CollisionShape2D::CollisionShape2D() {
 	set_notify_local_transform(true);
 	set_hide_clip_children(true);
 	debug_color = _get_default_debug_color();
+
+#ifdef DEBUG_ENABLED
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &CollisionShape2D::_settings_changed));
+#endif
 }

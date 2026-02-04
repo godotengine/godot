@@ -50,6 +50,7 @@ class CollisionShape2D : public Node2D {
 
 	// Not wrapped in `#ifdef DEBUG_ENABLED` as it is used for rendering.
 	Color debug_color = Color(0.0, 0.0, 0.0, 0.0);
+	bool used_default_debug_color = true;
 
 	Color _get_default_debug_color() const;
 
@@ -60,6 +61,7 @@ protected:
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 	void _validate_property(PropertyInfo &p_property) const;
+	void _settings_changed();
 #endif // DEBUG_ENABLED
 
 	static void _bind_methods();

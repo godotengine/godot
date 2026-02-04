@@ -70,7 +70,7 @@ void CollisionPolygon3D::_build_polygon() {
 
 		convex->set_points(cp);
 		convex->set_margin(margin);
-		convex->set_debug_color(debug_color);
+		convex->set_debug_color(get_debug_color());
 		convex->set_debug_fill(debug_fill);
 		collision_object->shape_owner_add_shape(owner_id, convex);
 		collision_object->shape_owner_set_disabled(owner_id, disabled);
@@ -170,11 +170,15 @@ void CollisionPolygon3D::set_debug_color(const Color &p_color) {
 	}
 
 	debug_color = p_color;
+	used_default_debug_color = debug_color == _get_default_debug_color();
 
 	update_gizmos();
 }
 
 Color CollisionPolygon3D::get_debug_color() const {
+	if (used_default_debug_color) {
+		return _get_default_debug_color();
+	}
 	return debug_color;
 }
 
@@ -211,7 +215,7 @@ bool CollisionPolygon3D::_property_get_revert(const StringName &p_name, Variant 
 
 void CollisionPolygon3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "debug_color") {
-		if (debug_color == _get_default_debug_color()) {
+		if (used_default_debug_color) {
 			p_property.usage = PROPERTY_USAGE_DEFAULT & ~PROPERTY_USAGE_STORAGE;
 		} else {
 			p_property.usage = PROPERTY_USAGE_DEFAULT;
