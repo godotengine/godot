@@ -354,6 +354,26 @@ bool NavRegion3D::get_use_async_iterations() const {
 	return use_async_iterations;
 }
 
+void NavRegion3D::force_update() {
+	if (iteration_build_thread_task_id != WorkerThreadPool::INVALID_TASK_ID) {
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(iteration_build_thread_task_id);
+		iteration_build_thread_task_id = WorkerThreadPool::INVALID_TASK_ID;
+		iteration_building = false;
+		iteration_ready = true;
+	}
+
+	iteration_dirty = true;
+	iteration_building = false;
+	iteration_ready = false;
+
+	bool used_use_async_iterations = use_async_iterations;
+	use_async_iterations = false;
+
+	sync();
+
+	use_async_iterations = used_use_async_iterations;
+}
+
 NavRegion3D::NavRegion3D() :
 		sync_dirty_request_list_element(this), async_list_element(this) {
 	type = NavigationEnums3D::PathSegmentType::PATH_SEGMENT_TYPE_REGION;
