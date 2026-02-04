@@ -78,6 +78,7 @@ class ScriptTextEditor : public CodeEditorBase {
 	ColorPicker *inline_color_picker = nullptr;
 	OptionButton *inline_color_options = nullptr;
 	Ref<Texture2D> color_alpha_texture;
+	HashMap<String, Ref<Texture2D>> inline_textures;
 
 	ScriptEditorQuickOpen *quick_open = nullptr;
 	ConnectionInfoDialog *connection_info_dialog = nullptr;
@@ -173,15 +174,20 @@ protected:
 	void _error_clicked(const Variant &p_line);
 	virtual bool _warning_clicked(const Variant &p_line) override;
 
-	bool _is_valid_color_info(const Dictionary &p_info);
 	Array _inline_object_parse(const String &p_text);
 	void _inline_object_draw(const Dictionary &p_info, const Rect2 &p_rect);
 	void _inline_object_handle_click(const Dictionary &p_info, const Rect2 &p_rect);
+
+	bool _is_valid_color_info(const Dictionary &p_info);
+	Array _inline_color_parse(const String &p_text);
 	String _picker_color_stringify(const Color &p_color, COLOR_MODE p_mode);
 	void _picker_color_changed(const Color &p_color);
 	void _update_color_constructor_options();
 	void _update_background_color();
 	void _update_color_text();
+
+	bool _is_valid_icon_info(const Dictionary &p_info);
+	Array _inline_icon_parse(const String &p_text);
 
 	void _notification(int p_what);
 

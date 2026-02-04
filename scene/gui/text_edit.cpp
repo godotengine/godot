@@ -261,6 +261,17 @@ inline bool is_inline_info_valid(const Variant &p_info) {
 	return true;
 }
 
+inline bool is_picking_inline_object(const Variant &p_info) {
+	if (p_info.get_type() != Variant::DICTIONARY) {
+		return false;
+	}
+	Dictionary info = p_info;
+	if (info.get_valid("picking").get_type() == Variant::BOOL && info["picking"]) {
+		return true;
+	}
+	return false;
+}
+
 void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 	ERR_FAIL_INDEX(p_line, text.size());
 
@@ -3620,7 +3631,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 
 		Ref<TextParagraph> ldata = text.get_line_data(pos.y);
 		for (Variant k : ldata->get_line_objects(wrap_i)) {
-			if (!is_inline_info_valid(k)) {
+			if (!is_inline_info_valid(k) || !is_picking_inline_object(k)) {
 				continue;
 			}
 			Rect2 obj_rect = ldata->get_line_object_rect(wrap_i, k);

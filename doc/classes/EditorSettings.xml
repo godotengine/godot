@@ -1366,6 +1366,9 @@
 		<member name="text_editor/appearance/enable_inline_color_picker" type="bool" setter="" getter="">
 			If [code]true[/code], displays a colored button before any [Color] constructor in the script editor. Clicking on them allows the color to be modified through a color picker.
 		</member>
+		<member name="text_editor/appearance/enable_inline_icon_hint" type="bool" setter="" getter="">
+			If [code]true[/code], displays an icon hint inside [annotation @GDScript.@icon] in the script editor.
+		</member>
 		<member name="text_editor/appearance/guidelines/line_length_guideline_hard_column" type="int" setter="" getter="">
 			The column at which to display a subtle line as a line length guideline for scripts. This should generally be greater than [member text_editor/appearance/guidelines/line_length_guideline_soft_column].
 		</member>

@@ -446,6 +446,55 @@ void ScriptTextEditor::add_callback(const String &p_function, const PackedString
 	code_editor->get_text_editor()->end_complex_operation();
 }
 
+bool ScriptTextEditor::_is_valid_icon_info(const Dictionary &p_info) {
+	if (p_info.get_valid("icon_path").get_type() != Variant::STRING) {
+		return false;
+	}
+
+	return true;
+}
+
+Array ScriptTextEditor::_inline_icon_parse(const String &p_text) {
+	Array result;
+	int icon_start = p_text.find("@icon");
+	if (icon_start == -1) {
+		return result;
+	}
+
+	int path_start = p_text.find_char('(', icon_start + 5);
+	if (path_start == -1) {
+		return result;
+	}
+
+	int path_end = p_text.find_char(')', path_start);
+	if (path_end == -1) {
+		return result;
+	}
+
+	const String path_argument = p_text.substr(path_start + 1, path_end - path_start - 1);
+	const String stripped = path_argument.strip_edges(true, true);
+	if (stripped.length() < 2 && (stripped[0] != '"' || stripped[0] != '\'')) {
+		return result;
+	}
+
+	const char32_t string_delimiter = stripped[0];
+	if (stripped[stripped.length() - 1] != string_delimiter) {
+		return result;
+	}
+
+	const String path_string = stripped.substr(1, stripped.length() - 2);
+	if (!ResourceLoader::exists(path_string)) {
+		return result;
+	}
+
+	Dictionary icon_info;
+	icon_info["icon_path"] = path_string;
+	icon_info["column"] = path_start + 1;
+	icon_info["width_ratio"] = 1.0;
+	result.push_back(icon_info);
+	return result;
+}
+
 bool ScriptTextEditor::_is_valid_color_info(const Dictionary &p_info) {
 	if (p_info.get_valid("color").get_type() != Variant::COLOR) {
 		return false;
@@ -456,7 +505,7 @@ bool ScriptTextEditor::_is_valid_color_info(const Dictionary &p_info) {
 	return true;
 }
 
-Array ScriptTextEditor::_inline_object_parse(const String &p_text) {
+Array ScriptTextEditor::_inline_color_parse(const String &p_text) {
 	Array result;
 	int i_end_previous = 0;
 	int i_start = p_text.find("Color");
@@ -481,6 +530,7 @@ Array ScriptTextEditor::_inline_object_parse(const String &p_text) {
 		color_info["column"] = i_start;
 		color_info["width_ratio"] = 1.0;
 		color_info["color_end"] = i_par_end;
+		color_info["picking"] = true;
 
 		const String fn_name = p_text.substr(i_start + 5, i_par_start - i_start - 5);
 		const String s_params = p_text.substr(i_par_start + 1, i_par_end - i_par_start - 1);
@@ -564,6 +614,20 @@ Array ScriptTextEditor::_inline_object_parse(const String &p_text) {
 	return result;
 }
 
+Array ScriptTextEditor::_inline_object_parse(const String &p_text) {
+	Array result;
+
+	if (result.is_empty() && EDITOR_GET("text_editor/appearance/enable_inline_color_picker")) {
+		result = _inline_color_parse(p_text);
+	}
+
+	if (result.is_empty() && EDITOR_GET("text_editor/appearance/enable_inline_icon_hint")) {
+		result = _inline_icon_parse(p_text);
+	}
+
+	return result;
+}
+
 void ScriptTextEditor::_inline_object_draw(const Dictionary &p_info, const Rect2 &p_rect) {
 	if (_is_valid_color_info(p_info)) {
 		Rect2 col_rect = p_rect.grow(-4);
@@ -574,6 +638,18 @@ void ScriptTextEditor::_inline_object_draw(const Dictionary &p_info, const Rect2
 		RS::get_singleton()->canvas_item_add_rect(text_ci, p_rect.grow(-3), Color(1, 1, 1));
 		color_alpha_texture->draw_rect(text_ci, col_rect);
 		RS::get_singleton()->canvas_item_add_rect(text_ci, col_rect, Color(p_info["color"]));
+	} else if (_is_valid_icon_info(p_info)) {
+		const String icon_path = p_info["icon_path"];
+		Ref<Texture2D> texture;
+		if (!inline_textures.has(icon_path)) {
+			texture = ResourceLoader::load(icon_path);
+			inline_textures.insert(icon_path, texture);
+		} else {
+			texture = inline_textures.get(icon_path);
+		}
+		Rect2 tex_rect = p_rect.grow(-4);
+		RID text_ci = code_editor->get_text_editor()->get_text_canvas_item();
+		RS::get_singleton()->canvas_item_add_texture_rect(text_ci, tex_rect, texture->get_rid());
 	}
 }
 
@@ -732,7 +808,10 @@ void ScriptTextEditor::_update_color_text() {
 
 void ScriptTextEditor::update_settings() {
 	code_editor->get_text_editor()->set_gutter_draw(connection_gutter, EDITOR_GET("text_editor/appearance/gutters/show_info_gutter"));
-	if (EDITOR_GET("text_editor/appearance/enable_inline_color_picker")) {
+
+	bool is_inline_tools_enabled = EDITOR_GET("text_editor/appearance/enable_inline_color_picker") || EDITOR_GET("text_editor/appearance/enable_inline_icon_hint");
+
+	if (is_inline_tools_enabled) {
 		code_editor->get_text_editor()->set_inline_object_handlers(
 				callable_mp(this, &ScriptTextEditor::_inline_object_parse),
 				callable_mp(this, &ScriptTextEditor::_inline_object_draw),
@@ -823,6 +902,7 @@ void ScriptTextEditor::_validate_script() {
 	errors.clear();
 	depended_errors.clear();
 	safe_lines.clear();
+	inline_textures.clear();
 
 	Ref<Script> script = edited_res;
 	if (!script->get_language()->validate(text, script->get_path(), &fnc, &errors, &warnings, &safe_lines)) {
