@@ -120,6 +120,13 @@
 			<param index="3" name="z_far" type="float" />
 			<description>
 				Sets the camera projection to frustum mode (see [constant PROJECTION_FRUSTUM]), by specifying a [param size], an [param offset], and the [param z_near] and [param z_far] clip planes in world space units. See also [member frustum_offset].
+				[b]Note:[/b] The size parameter is the size of the view projected onto the near plane. It is either the width or height, according to the value of [member keep_aspect].
+				[b]Example:[/b] If you want to match a given FOV, this formula might be helpful:
+				[codeblock]
+				var fov = 75.0
+				var z_near = 0.1
+				var size = z_near * tan(deg_to_rad(fov / 2.0)) * 2.0
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_orthogonal">
