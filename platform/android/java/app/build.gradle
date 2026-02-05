@@ -56,8 +56,26 @@ dependencies {
     // Godot user plugins remote dependencies
     String[] remoteDeps = getGodotPluginsRemoteBinaries()
     if (remoteDeps != null && remoteDeps.size() > 0) {
+        def platformPattern = /^\s*(platform|enforcedPlatform)\s*\(\s*['"]*(\S+)['"]*\s*\)$/
         for (String dep : remoteDeps) {
-            implementation dep
+            def matcher = dep =~ platformPattern
+            if (matcher) {
+                switch (matcher[0][1]) {
+                    case "platform":
+                        implementation platform(matcher[0][2])
+                        break
+
+                    case "enforcedPlatform":
+                        implementation enforcedPlatform(matcher[0][2])
+                        break
+
+                    default:
+                        throw new GradleException("Invalid remote platform dependency: $dep")
+                        break
+                }
+            } else {
+                implementation dep
+            }
         }
     }
 
