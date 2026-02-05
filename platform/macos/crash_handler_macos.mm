@@ -137,6 +137,8 @@ static void handle_crash(int sig) {
 		args.push_back(str);
 	}
 
+	print_error(vformat("Load address: %x\n", (uint64_t)load_addr));
+
 	// Single execution of atos with all addresses.
 	String out;
 	int ret;
@@ -176,7 +178,7 @@ static void handle_crash(int sig) {
 				output = fname;
 			}
 
-			print_error(vformat("[%d] %s", (int64_t)i, output));
+			print_error(vformat("[%d] %x - %s", (int64_t)i, (uint64_t)bt_buffer[i], output));
 		}
 
 		if (strings) {
@@ -187,7 +189,7 @@ static void handle_crash(int sig) {
 		char **strings = backtrace_symbols(bt_buffer, size);
 		if (strings) {
 			for (size_t i = 0; i < size; i++) {
-				print_error(vformat("[%d] %s", (int64_t)i, strings[i]));
+				print_error(vformat("[%d] %x - %s", (int64_t)i, (uint64_t)bt_buffer[i], strings[i]));
 			}
 			free(strings);
 		}
