@@ -36,7 +36,22 @@
 #include <astcenc.h>
 
 #ifdef TOOLS_ENABLED
-void _compress_astc(Image *r_img, Image::ASTCFormat p_format) {
+Image::CompressProfile _pick_profile_from_channels(Image::UsedChannels p_channels) {
+	switch (p_channels) {
+		case Image::USED_CHANNELS_L:
+		case Image::USED_CHANNELS_R:
+			return Image::COMPRESS_PROFILE_MAX_COMPRESSION;
+		case Image::USED_CHANNELS_LA:
+		case Image::USED_CHANNELS_RG:
+			return Image::COMPRESS_PROFILE_COMPRESSED;
+		case Image::USED_CHANNELS_RGB:
+		case Image::USED_CHANNELS_RGBA:
+		default:
+			return Image::COMPRESS_PROFILE_MAX_QUALITY;
+	}
+}
+
+void _compress_astc(Image *r_img, Image::UsedChannels p_channels, Image::CompressProfile p_profile) {
 	const uint64_t start_time = OS::get_singleton()->get_ticks_msec();
 
 	if (r_img->is_compressed()) {
@@ -58,23 +73,27 @@ void _compress_astc(Image *r_img, Image::ASTCFormat p_format) {
 	const astcenc_profile profile = is_hdr ? ASTCENC_PRF_HDR : ASTCENC_PRF_LDR;
 
 	Image::Format target_format = Image::FORMAT_MAX;
-	unsigned int block_x = 4;
-	unsigned int block_y = 4;
+	unsigned int block_x = 1, block_y = 1;
+	if (p_profile == Image::COMPRESS_PROFILE_BALANCED) {
+		// Balanced profile will automatically pick one of the other profiles based on the amount of channels currently in use.
+		p_profile = _pick_profile_from_channels(p_channels);
+	}
 
-	if (p_format == Image::ASTCFormat::ASTC_FORMAT_4x4) {
-		if (is_hdr) {
-			target_format = Image::FORMAT_ASTC_4x4_HDR;
-		} else {
-			target_format = Image::FORMAT_ASTC_4x4;
-		}
-	} else if (p_format == Image::ASTCFormat::ASTC_FORMAT_8x8) {
-		if (is_hdr) {
-			target_format = Image::FORMAT_ASTC_8x8_HDR;
-		} else {
-			target_format = Image::FORMAT_ASTC_8x8;
-		}
-		block_x = 8;
-		block_y = 8;
+	switch (p_profile) {
+		case Image::COMPRESS_PROFILE_MAX_QUALITY:
+			target_format = is_hdr ? Image::FORMAT_ASTC_4x4_HDR : Image::FORMAT_ASTC_4x4;
+			block_x = block_y = 4;
+			break;
+		case Image::COMPRESS_PROFILE_COMPRESSED:
+			target_format = is_hdr ? Image::FORMAT_ASTC_6x6_HDR : Image::FORMAT_ASTC_6x6;
+			block_x = block_y = 6;
+			break;
+		case Image::COMPRESS_PROFILE_MAX_COMPRESSION:
+			target_format = is_hdr ? Image::FORMAT_ASTC_8x8_HDR : Image::FORMAT_ASTC_8x8;
+			block_x = block_y = 8;
+			break;
+		default:
+			break;
 	}
 
 	// Compress image data and (if required) mipmaps.
@@ -193,6 +212,16 @@ void _decompress_astc(Image *r_img) {
 		case Image::FORMAT_ASTC_4x4_HDR: {
 			block_x = 4;
 			block_y = 4;
+			is_hdr = true;
+		} break;
+		case Image::FORMAT_ASTC_6x6: {
+			block_x = 6;
+			block_y = 6;
+			is_hdr = false;
+		} break;
+		case Image::FORMAT_ASTC_6x6_HDR: {
+			block_x = 6;
+			block_y = 6;
 			is_hdr = true;
 		} break;
 		case Image::FORMAT_ASTC_8x8: {

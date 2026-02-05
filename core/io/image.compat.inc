@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  image_compress_astcenc.h                                              */
+/*  image.compat.inc                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,12 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef DISABLE_DEPRECATED
 
-#include "core/io/image.h"
+static Image::CompressProfile _astc_format_to_compress_profile(Image::ASTCFormat p_format) {
+	switch (p_format) {
+		case Image::ASTC_FORMAT_4x4:
+			return Image::COMPRESS_PROFILE_MAX_QUALITY;
+		case Image::ASTC_FORMAT_8x8:
+			return Image::COMPRESS_PROFILE_MAX_COMPRESSION;
+		default:
+			return Image::COMPRESS_PROFILE_BALANCED;
+	}
+}
 
-#ifdef TOOLS_ENABLED
-void _compress_astc(Image *r_img, Image::UsedChannels p_channels, Image::CompressProfile p_profile);
+Error Image::_compress_bind_compat_115003(CompressMode p_mode, CompressSource p_source, ASTCFormat p_format) {
+	return compress(p_mode, p_source, _astc_format_to_compress_profile(p_format));
+}
+
+Error Image::_compress_from_channels_compat_115003(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_format) {
+	return compress_from_channels(p_mode, p_channels, _astc_format_to_compress_profile(p_format));
+}
+
+void Image::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("compress", "mode", "source", "astc_format"), &Image::_compress_bind_compat_115003, DEFVAL(COMPRESS_SOURCE_GENERIC), DEFVAL(ASTC_FORMAT_4x4));
+	ClassDB::bind_compatibility_method(D_METHOD("compress_from_channels", "mode", "channels", "astc_format"), &Image::_compress_from_channels_compat_115003, DEFVAL(ASTC_FORMAT_4x4));
+}
+
 #endif
-
-void _decompress_astc(Image *r_img);

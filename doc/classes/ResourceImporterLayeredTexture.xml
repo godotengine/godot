@@ -28,6 +28,14 @@
 			If [code]false[/code], uses the faster but lower-quality S3TC compression on desktop platforms and ETC2 on mobile/web platforms. When using S3TC, DXT1 (BC1) is used for opaque textures and DXT5 (BC3) is used for transparent or normal map (RGTC) textures.
 			BPTC and ASTC support VRAM compression for HDR textures, but S3TC and ETC2 do not (see [member compress/hdr_compression]).
 		</member>
+		<member name="compress/high_quality_mode" type="int" setter="" getter="" default="1">
+			Controls the priorities of the VRAM compression when using [member compress/high_quality] is enabled.
+			[b]Max Quality:[/b] Prioritizes highest quality over compression. For ASTC, this corresponds to using a 4x4 block size.
+			[b]Balanced:[/b] Automatically adjusts the quality level based on the amount of unique color channels present in the image. For ASTC, this corresponds to picking 8x8 when only one channel is detected (R, L), 6x6 when two channels are detected (RG, RA, LA), and 4x4 in all other cases.
+			[b]Compressed:[/b] Prioritizes some compression over quality. For ASTC, this corresponds to using a 6x6 block size.
+			[b]Max Compression:[/b] Prioritizes highest compression over quality. For ASTC, this corresponds to using a 8x8 block size.
+			[b]Note:[/b] Currently, only the ASTC compressor uses this setting. Other compressors will ignore it.
+		</member>
 		<member name="compress/lossy_quality" type="float" setter="" getter="" default="0.7">
 			The quality to use when using the [b]Lossy[/b] compression mode. Higher values result in better quality, at the cost of larger file sizes. Lossy quality does not affect memory usage of the imported texture, only its file size on disk.
 		</member>

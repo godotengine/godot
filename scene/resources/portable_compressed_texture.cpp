@@ -46,7 +46,7 @@ static PortableCompressedTexture2D::CompressionMode get_expected_compression_mod
 		return PortableCompressedTexture2D::COMPRESSION_MODE_ETC2;
 	} else if (format >= Image::FORMAT_BPTC_RGBA && format <= Image::FORMAT_BPTC_RGBFU) {
 		return PortableCompressedTexture2D::COMPRESSION_MODE_BPTC;
-	} else if (format >= Image::FORMAT_ASTC_4x4 && format <= Image::FORMAT_ASTC_8x8_HDR) {
+	} else if ((format >= Image::FORMAT_ASTC_4x4 && format <= Image::FORMAT_ASTC_8x8_HDR) || (format >= Image::FORMAT_ASTC_6x6 && format <= Image::FORMAT_ASTC_6x6_HDR)) {
 		return PortableCompressedTexture2D::COMPRESSION_MODE_ASTC;
 	}
 	ERR_FAIL_V(PortableCompressedTexture2D::COMPRESSION_MODE_LOSSLESS);

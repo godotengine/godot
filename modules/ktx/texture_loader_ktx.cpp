@@ -266,6 +266,12 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 				case GL_COMPRESSED_RGBA_ASTC_4x4_KHR:
 					format = Image::FORMAT_ASTC_4x4_HDR;
 					break;
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR:
+					format = Image::FORMAT_ASTC_6x6;
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_6x6_KHR:
+					format = Image::FORMAT_ASTC_6x6_HDR;
+					break;
 				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR:
 					format = Image::FORMAT_ASTC_8x8;
 					break;
@@ -486,6 +492,12 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 				case VK_FORMAT_ASTC_4x4_UNORM_BLOCK:
 					format = Image::FORMAT_ASTC_4x4_HDR;
 					break;
+				case VK_FORMAT_ASTC_6x6_SRGB_BLOCK:
+					format = Image::FORMAT_ASTC_6x6;
+					break;
+				case VK_FORMAT_ASTC_6x6_UNORM_BLOCK:
+					format = Image::FORMAT_ASTC_6x6_HDR;
+					break;
 				case VK_FORMAT_ASTC_8x8_SRGB_BLOCK:
 					format = Image::FORMAT_ASTC_8x8;
 					break;
@@ -510,7 +522,6 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 	// KTX use 4-bytes padding, don't use mipmaps if padding is effective
 	// TODO: unpad dynamically
 	int pixel_size = Image::get_format_pixel_size(format);
-	int pixel_rshift = Image::get_format_pixel_rshift(format);
 	int block = Image::get_format_block_size(format);
 	int minw, minh;
 	Image::get_format_min_pixel_size(format, minw, minh);
@@ -522,7 +533,7 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 		size_t bh = h % block != 0 ? h + (block - h % block) : h;
 		size_t s = bw * bh;
 		s *= pixel_size;
-		s >>= pixel_rshift;
+		s = Image::get_format_pixels_shifted(format, s);
 		if (mip_size != static_cast<ktx_size_t>(s)) {
 			if (!i) {
 				ktxTexture_Destroy(ktx_texture);

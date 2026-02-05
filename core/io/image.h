@@ -119,6 +119,8 @@ public:
 		FORMAT_RG16I,
 		FORMAT_RGB16I,
 		FORMAT_RGBA16I,
+		FORMAT_ASTC_6x6,
+		FORMAT_ASTC_6x6_HDR,
 		FORMAT_MAX
 	};
 
@@ -144,11 +146,13 @@ public:
 		USED_CHANNELS_RGBA,
 	};
 
+#ifndef DISABLE_DEPRECATED
 	// ASTC supports block formats other than 4x4.
 	enum ASTCFormat {
 		ASTC_FORMAT_4x4,
 		ASTC_FORMAT_8x8,
 	};
+#endif
 
 	enum RoughnessChannel {
 		ROUGHNESS_CHANNEL_R,
@@ -182,6 +186,14 @@ public:
 		COMPRESS_SOURCE_SRGB,
 		COMPRESS_SOURCE_NORMAL,
 		COMPRESS_SOURCE_MAX,
+	};
+
+	enum CompressProfile {
+		COMPRESS_PROFILE_MAX_QUALITY,
+		COMPRESS_PROFILE_BALANCED,
+		COMPRESS_PROFILE_COMPRESSED,
+		COMPRESS_PROFILE_MAX_COMPRESSION,
+		COMPRESS_PROFILE_MAX
 	};
 
 	enum AlphaMode {
@@ -227,7 +239,7 @@ public:
 	static void (*_image_compress_bptc_func)(Image *, UsedChannels p_channels);
 	static void (*_image_compress_etc1_func)(Image *);
 	static void (*_image_compress_etc2_func)(Image *, UsedChannels p_channels);
-	static void (*_image_compress_astc_func)(Image *, ASTCFormat p_format);
+	static void (*_image_compress_astc_func)(Image *, UsedChannels p_channels, CompressProfile p_profile);
 
 	static Error (*_image_compress_bptc_rd_func)(Image *, UsedChannels p_channels);
 	static Error (*_image_compress_bc_rd_func)(Image *, UsedChannels p_channels);
@@ -256,6 +268,13 @@ protected:
 	virtual Ref<Resource> _duplicate(const DuplicateParams &p_params) const override;
 
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	Error _compress_bind_compat_115003(CompressMode p_mode, CompressSource p_source, ASTCFormat p_format);
+	Error _compress_from_channels_compat_115003(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_format);
+
+	static void _bind_compatibility_methods();
+#endif
 
 private:
 	Format format = FORMAT_L8;
@@ -381,7 +400,7 @@ public:
 	bool is_invisible() const;
 
 	static int get_format_pixel_size(Format p_format);
-	static int get_format_pixel_rshift(Format p_format);
+	static uint64_t get_format_pixels_shifted(Format p_format, uint64_t p_pixels);
 	static int get_format_block_size(Format p_format);
 	static void get_format_min_pixel_size(Format p_format, int &r_w, int &r_h);
 
@@ -391,8 +410,8 @@ public:
 	static int64_t get_image_mipmap_offset(int p_width, int p_height, Format p_format, int p_mipmap);
 	static int64_t get_image_mipmap_offset_and_dimensions(int p_width, int p_height, Format p_format, int p_mipmap, int &r_w, int &r_h);
 
-	Error compress(CompressMode p_mode, CompressSource p_source = COMPRESS_SOURCE_GENERIC, ASTCFormat p_astc_format = ASTC_FORMAT_4x4);
-	Error compress_from_channels(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_astc_format = ASTC_FORMAT_4x4);
+	Error compress(CompressMode p_mode, CompressSource p_source = COMPRESS_SOURCE_GENERIC, CompressProfile p_profile = COMPRESS_PROFILE_BALANCED);
+	Error compress_from_channels(CompressMode p_mode, UsedChannels p_channels, CompressProfile p_profile = COMPRESS_PROFILE_BALANCED);
 	Error decompress();
 	bool is_compressed() const;
 	static bool is_format_compressed(Format p_format);
@@ -467,4 +486,8 @@ VARIANT_ENUM_CAST(Image::CompressSource)
 VARIANT_ENUM_CAST(Image::UsedChannels)
 VARIANT_ENUM_CAST(Image::AlphaMode)
 VARIANT_ENUM_CAST(Image::RoughnessChannel)
+VARIANT_ENUM_CAST(Image::CompressProfile)
+
+#ifndef DISABLE_DEPRECATED
 VARIANT_ENUM_CAST(Image::ASTCFormat)
+#endif

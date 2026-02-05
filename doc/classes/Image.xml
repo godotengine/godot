@@ -79,11 +79,11 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="mode" type="int" enum="Image.CompressMode" />
 			<param index="1" name="source" type="int" enum="Image.CompressSource" default="0" />
-			<param index="2" name="astc_format" type="int" enum="Image.ASTCFormat" default="0" />
+			<param index="2" name="profile" type="int" enum="Image.CompressProfile" default="1" />
 			<description>
 				Compresses the image with a VRAM-compressed format to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available.
 				The [param source] parameter helps to pick the best compression method for DXT and ETC2 formats. It is ignored for ASTC compression.
-				The [param astc_format] parameter is only taken into account when using ASTC compression; it is ignored for all other formats.
+				The [param profile] lets the user pick whether the compression should prioritize quality or a smaller size. Only ASTC compression uses this currently.
 				[b]Note:[/b] [method compress] is only supported in editor builds. When run in an exported project, this method always returns [constant ERR_UNAVAILABLE].
 			</description>
 		</method>
@@ -91,11 +91,11 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="mode" type="int" enum="Image.CompressMode" />
 			<param index="1" name="channels" type="int" enum="Image.UsedChannels" />
-			<param index="2" name="astc_format" type="int" enum="Image.ASTCFormat" default="0" />
+			<param index="2" name="profile" type="int" enum="Image.CompressProfile" default="1" />
 			<description>
 				Compresses the image with a VRAM-compressed format to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available.
-				This is an alternative to [method compress] that lets the user supply the channels used in order for the compressor to pick the best DXT and ETC2 formats. For other formats (non DXT or ETC2), this argument is ignored.
-				The [param astc_format] parameter is only taken into account when using ASTC compression; it is ignored for all other formats.
+				This is an alternative to [method compress] that lets the user supply the channels used in order for the compressor to pick the best DXT, ETC2 and ASTC formats. For other formats (non DXT, ETC2 or ASTC), this argument is ignored.
+				The [param profile] lets the user pick whether the compression should prioritize quality or a smaller size. Only ASTC compression uses this currently.
 				[b]Note:[/b] [method compress_from_channels] is only supported in editor builds. When run in an exported project, this method always returns [constant ERR_UNAVAILABLE].
 			</description>
 		</method>
@@ -809,7 +809,13 @@
 			[b]Note:[/b] When used in a shader, the texture requires usage of [code]usampler[/code] samplers. Additionally, it only supports nearest-neighbor filtering under the Compatibility renderer.
 			[b]Note:[/b] When sampling using [method Image.get_pixel], returned [Color]s have to be divided by [code]65535[/code] to get the correct color value.
 		</constant>
-		<constant name="FORMAT_MAX" value="47" enum="Format">
+		<constant name="FORMAT_ASTC_6x6" value="47" enum="Format">
+			[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texture Compression[/url]. This implements the 6×6 (medium quality) mode.
+		</constant>
+		<constant name="FORMAT_ASTC_6x6_HDR" value="48" enum="Format">
+			Same format as [constant FORMAT_ASTC_6x6], but with the hint to let the GPU know it is used for HDR.
+		</constant>
+		<constant name="FORMAT_MAX" value="49" enum="Format">
 			Represents the size of the [enum Format] enum.
 		</constant>
 		<constant name="INTERPOLATE_NEAREST" value="0" enum="Interpolation">
@@ -884,6 +890,21 @@
 		</constant>
 		<constant name="COMPRESS_SOURCE_NORMAL" value="2" enum="CompressSource">
 			Source texture (before compression) is a normal texture (e.g. it can be compressed into two channels).
+		</constant>
+		<constant name="COMPRESS_PROFILE_MAX_QUALITY" value="0" enum="CompressProfile">
+			Prioritizes highest quality over compression. For ASTC, this corresponds to using a 4x4 block size.
+		</constant>
+		<constant name="COMPRESS_PROFILE_BALANCED" value="1" enum="CompressProfile">
+			Automatically adjusts the quality level based on the amount of unique color channels present in the image. For ASTC, this corresponds to picking 8x8 when only one channel is detected (R, L), 6x6 when two channels are detected (RG, RA, LA), and 4x4 in all other cases.
+		</constant>
+		<constant name="COMPRESS_PROFILE_COMPRESSED" value="2" enum="CompressProfile">
+			Prioritizes some compression over quality. For ASTC, this corresponds to using a 6x6 block size.
+		</constant>
+		<constant name="COMPRESS_PROFILE_MAX_COMPRESSION" value="3" enum="CompressProfile">
+			Prioritizes highest compression over quality. For ASTC, this corresponds to using a 8x8 block size.
+		</constant>
+		<constant name="COMPRESS_PROFILE_MAX" value="4" enum="CompressProfile">
+			Represents the size of the [enum CompressProfile] enum.
 		</constant>
 		<constant name="ASTC_FORMAT_4x4" value="0" enum="ASTCFormat">
 			Hint to indicate that the high quality 4×4 ASTC compression format should be used.

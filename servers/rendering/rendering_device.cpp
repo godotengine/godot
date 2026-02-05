@@ -1742,7 +1742,6 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 	get_compressed_image_format_block_dimensions(texture->format, block_w, block_h);
 
 	uint32_t pixel_size = get_image_format_pixel_size(texture->format);
-	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(texture->format);
 	uint32_t block_size = get_compressed_image_format_block_byte_size(texture->format);
 
 	// The algorithm operates on two passes, one to figure out the total size the staging buffer will require to allocate and another one where the copy is actually performed.
@@ -1800,11 +1799,10 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 					}
 				}
 
-				uint32_t pitch = (width * pixel_size * block_w) >> pixel_rshift;
+				uint32_t pitch = get_compressed_image_format_pixels_shifted(texture->format, width * pixel_size * block_w);
 				uint32_t pitch_step = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP);
 				pitch = STEPIFY(pitch, pitch_step);
-				uint32_t to_allocate = pitch * height;
-				to_allocate >>= pixel_rshift;
+				uint32_t to_allocate = get_compressed_image_format_pixels_shifted(texture->format, pitch * height);
 
 				if (copy_pass) {
 					const uint8_t *read_ptr_mipmap_layer = read_ptr_mipmap + (tight_mip_size / depth) * z;
@@ -1902,7 +1900,6 @@ Error RenderingDevice::texture_update(RID p_texture, uint32_t p_layer, const Vec
 	get_compressed_image_format_block_dimensions(texture->format, block_w, block_h);
 
 	uint32_t pixel_size = get_image_format_pixel_size(texture->format);
-	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(texture->format);
 	uint32_t block_size = get_compressed_image_format_block_byte_size(texture->format);
 
 	uint32_t region_size = texture_upload_region_size_px;
@@ -1937,7 +1934,7 @@ Error RenderingDevice::texture_update(RID p_texture, uint32_t p_layer, const Vec
 					uint32_t region_logic_w = MIN(region_size, logic_width - x);
 					uint32_t region_logic_h = MIN(region_size, logic_height - y);
 
-					uint32_t region_pitch = (region_w * pixel_size * block_w) >> pixel_rshift;
+					uint32_t region_pitch = get_compressed_image_format_pixels_shifted(texture->format, region_w * pixel_size * block_w);
 					uint32_t pitch_step = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP);
 					region_pitch = STEPIFY(region_pitch, pitch_step);
 					uint32_t to_allocate = region_pitch * region_h;
@@ -2423,10 +2420,8 @@ Error RenderingDevice::texture_get_data_async(RID p_texture, uint32_t p_layer, c
 	uint32_t block_w, block_h;
 	get_compressed_image_format_block_dimensions(tex->format, block_w, block_h);
 
-	uint32_t pixel_size = get_image_format_pixel_size(tex->format);
-	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(tex->format);
-
 	uint32_t w, h, d;
+	uint32_t pixel_size = get_image_format_pixel_size(tex->format);
 	uint32_t required_align = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT);
 	uint32_t pitch_step = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP);
 	uint32_t region_size = texture_download_region_size_px;
@@ -2449,7 +2444,7 @@ Error RenderingDevice::texture_get_data_async(RID p_texture, uint32_t p_layer, c
 
 					uint32_t region_logic_w = MIN(region_size, logic_w - x);
 					uint32_t region_logic_h = MIN(region_size, logic_h - y);
-					uint32_t region_pitch = (region_w * pixel_size * block_w) >> pixel_rshift;
+					uint32_t region_pitch = get_compressed_image_format_pixels_shifted(tex->format, region_w * pixel_size * block_w);
 					region_pitch = STEPIFY(region_pitch, pitch_step);
 
 					uint32_t to_allocate = region_pitch * region_h;

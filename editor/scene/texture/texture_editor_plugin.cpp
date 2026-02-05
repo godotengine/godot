@@ -186,8 +186,8 @@ void TexturePreview::_update_metadata_label_text() {
 	if (format != Image::FORMAT_MAX) {
 		// Avoid signed integer overflow that could occur with huge texture sizes by casting everything to uint64_t.
 		uint64_t memory = uint64_t(resolution.x) * uint64_t(resolution.y) * uint64_t(Image::get_format_pixel_size(format));
-		// Handle VRAM-compressed formats that are stored with 4 bpp.
-		memory >>= Image::get_format_pixel_rshift(format);
+		// Handle VRAM-compressed formats.
+		memory = Image::get_format_pixels_shifted(format, memory);
 
 		float mipmaps_multiplier = 1.0;
 		float mipmap_increase = 0.25;

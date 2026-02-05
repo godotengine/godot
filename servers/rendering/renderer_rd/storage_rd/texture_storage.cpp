@@ -1528,6 +1528,14 @@ RID TextureStorage::texture_create_from_native_handle(RS::TextureType p_type, Im
 			format = RD::DATA_FORMAT_ASTC_4x4_SFLOAT_BLOCK;
 			break;
 
+		case Image::FORMAT_ASTC_6x6:
+			format = RD::DATA_FORMAT_ASTC_6x6_UNORM_BLOCK;
+			break;
+
+		case Image::FORMAT_ASTC_6x6_HDR:
+			format = RD::DATA_FORMAT_ASTC_6x6_SFLOAT_BLOCK;
+			break;
+
 		case Image::FORMAT_ASTC_8x8:
 			format = RD::DATA_FORMAT_ASTC_8x8_UNORM_BLOCK;
 			break;
@@ -2650,6 +2658,38 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 
 		} break; // astc 4x4 HDR
+		case Image::FORMAT_ASTC_6x6: {
+			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ASTC_6x6_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
+				r_format.format = RD::DATA_FORMAT_ASTC_6x6_UNORM_BLOCK;
+				r_format.format_srgb = RD::DATA_FORMAT_ASTC_6x6_SRGB_BLOCK;
+			} else {
+				//not supported, reconvert
+				image->decompress();
+				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
+				image->convert(Image::FORMAT_RGBA8);
+			}
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+
+		} break; // astc 6x6
+		case Image::FORMAT_ASTC_6x6_HDR: {
+			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ASTC_6x6_SFLOAT_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
+				r_format.format = RD::DATA_FORMAT_ASTC_6x6_SFLOAT_BLOCK;
+			} else {
+				//not supported, reconvert
+				image->decompress();
+				r_format.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+				image->convert(Image::FORMAT_RGBAH);
+			}
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+
+		} break; // astc 8x8 HDR
 		case Image::FORMAT_ASTC_8x8: {
 			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ASTC_8x8_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
 				r_format.format = RD::DATA_FORMAT_ASTC_8x8_UNORM_BLOCK;
@@ -3139,6 +3179,31 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 		} break; // astc 4x4
+		case RD::DATA_FORMAT_ASTC_6x6_UNORM_BLOCK: {
+			r_format.image_format = Image::FORMAT_ASTC_6x6;
+			r_format.rd_format = RD::DATA_FORMAT_ASTC_6x6_UNORM_BLOCK;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+		} break;
+		case RD::DATA_FORMAT_ASTC_6x6_SRGB_BLOCK: {
+			r_format.image_format = Image::FORMAT_ASTC_6x6;
+			r_format.rd_format = RD::DATA_FORMAT_ASTC_6x6_UNORM_BLOCK;
+			r_format.rd_format_srgb = RD::DATA_FORMAT_ASTC_6x6_SRGB_BLOCK;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+		} break;
+		case RD::DATA_FORMAT_ASTC_6x6_SFLOAT_BLOCK: {
+			r_format.image_format = Image::FORMAT_ASTC_6x6_HDR;
+			r_format.rd_format = RD::DATA_FORMAT_ASTC_6x6_SFLOAT_BLOCK;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+		} break; // astc 8x8
 		case RD::DATA_FORMAT_ASTC_8x8_UNORM_BLOCK: {
 			// Q: Do we do as we do below, just create the sRGB variant?
 			r_format.image_format = Image::FORMAT_ASTC_8x8;
