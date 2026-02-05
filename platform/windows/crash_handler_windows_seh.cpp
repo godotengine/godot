@@ -167,6 +167,8 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	std::transform(module_handles.begin(), module_handles.end(), std::back_inserter(modules), get_mod_info(process));
 	void *base = modules[0].base_address;
 
+	print_error(vformat("Load address: %x\n", (uint64_t)base));
+
 	// Setup stuff:
 	CONTEXT *context = ep->ContextRecord;
 	STACKFRAME64 frame;
@@ -210,9 +212,9 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 				std::string fnName = symbol(process, frame.AddrPC.Offset).undecorated_name();
 
 				if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &offset_from_symbol, &line)) {
-					print_error(vformat("[%d] %s (%s:%d)", n, fnName.c_str(), (char *)line.FileName, (int)line.LineNumber));
+					print_error(vformat("[%d] %x - %s (%s:%d)", n, (uint64_t)frame.AddrPC.Offset, fnName.c_str(), (char *)line.FileName, (int)line.LineNumber));
 				} else {
-					print_error(vformat("[%d] %s", n, fnName.c_str()));
+					print_error(vformat("[%d] %x - %s", n, (uint64_t)frame.AddrPC.Offset, fnName.c_str()));
 				}
 			} else {
 				print_error(vformat("[%d] ???", n));

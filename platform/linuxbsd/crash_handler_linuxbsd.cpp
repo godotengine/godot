@@ -102,6 +102,9 @@ static void handle_crash(int sig) {
 	// Non glibc systems apparently don't give PIE relocation info.
 	uintptr_t relocation = 0;
 #endif //__GLIBC__
+
+	print_error(vformat("Load address: %x\n", (uint64_t)relocation));
+
 	if (strings) {
 		List<String> args;
 		for (size_t i = 0; i < size; i++) {
@@ -144,7 +147,7 @@ static void handle_crash(int sig) {
 			}
 
 			// Simplify printed file paths to remove redundant `/./` sections (e.g. `/opt/godot/./core` -> `/opt/godot/core`).
-			print_error(vformat("[%d] %s (%s)", (int64_t)i, fname, err == OK ? addr2line_results[i].replace("/./", "/") : ""));
+			print_error(vformat("[%d] %x - %s (%s)", (int64_t)i, (uint64_t)bt_buffer[i], fname, err == OK ? addr2line_results[i].replace("/./", "/") : ""));
 		}
 
 		free(strings);

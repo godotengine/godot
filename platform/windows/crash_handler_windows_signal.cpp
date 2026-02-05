@@ -56,31 +56,32 @@ struct CrashHandlerData {
 	int64_t index = 0;
 	backtrace_state *state = nullptr;
 	int64_t offset = 0;
+	uint64_t pc = 0;
 };
 
 int symbol_callback(void *data, uintptr_t pc, const char *filename, int lineno, const char *function) {
 	CrashHandlerData *ch_data = reinterpret_cast<CrashHandlerData *>(data);
-	if (!function) {
-		return 0;
-	}
 
-	char fname[1024];
-	snprintf(fname, 1024, "%s", function);
+	if (function) {
+		char fname[1024];
+		snprintf(fname, 1024, "%s", function);
 
-	if (function[0] == '_') {
-		int status;
-		char *demangled = abi::__cxa_demangle(function, nullptr, nullptr, &status);
+		if (function[0] == '_') {
+			int status;
+			char *demangled = abi::__cxa_demangle(function, nullptr, nullptr, &status);
 
-		if (status == 0 && demangled) {
-			snprintf(fname, 1024, "%s", demangled);
+			if (status == 0 && demangled) {
+				snprintf(fname, 1024, "%s", demangled);
+			}
+
+			if (demangled) {
+				free(demangled);
+			}
 		}
-
-		if (demangled) {
-			free(demangled);
-		}
+		print_error(vformat("[%d] %x - %s (%s:%d)", ch_data->index++, ch_data->pc, String::utf8(fname), String::utf8(filename), lineno));
+	} else {
+		print_error(vformat("[%d] %x - ??", ch_data->index++, ch_data->pc));
 	}
-
-	print_error(vformat("[%d] %s (%s:%d)", ch_data->index++, String::utf8(fname), String::utf8(filename), lineno));
 	return 0;
 }
 
@@ -89,12 +90,13 @@ void error_callback(void *data, const char *msg, int errnum) {
 	if (ch_data->index == 0) {
 		print_error(vformat("Error(%d): %s", errnum, String::utf8(msg)));
 	} else {
-		print_error(vformat("[%d] error(%d): %s", ch_data->index++, errnum, String::utf8(msg)));
+		print_error(vformat("[%d] %x - %s", ch_data->index++, ch_data->pc, String::utf8(msg)));
 	}
 }
 
 int trace_callback(void *data, uintptr_t pc) {
 	CrashHandlerData *ch_data = reinterpret_cast<CrashHandlerData *>(data);
+	ch_data->pc = (uint64_t)pc;
 	backtrace_pcinfo(ch_data->state, pc - ch_data->offset, &symbol_callback, &error_callback, data);
 	return 0;
 }
@@ -169,6 +171,8 @@ extern void CrashHandlerException(int signal) {
 	int64_t image_mem_base = reinterpret_cast<int64_t>(mi.lpBaseOfDll);
 	int64_t image_file_base = get_image_base(_execpath);
 	data.offset = image_mem_base - image_file_base;
+
+	print_error(vformat("Load address: %x\n", (uint64_t)(image_mem_base - image_file_base)));
 
 	if (FileAccess::exists(_execpath + ".debugsymbols")) {
 		_execpath = _execpath + ".debugsymbols";
