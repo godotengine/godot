@@ -39,6 +39,23 @@
 
 class Object;
 
+struct UniqueCallableCallKey {
+	Callable callable;
+	Vector<Variant> args;
+
+	bool operator==(const UniqueCallableCallKey &p_key) const {
+		return callable == p_key.callable && args == p_key.args;
+	}
+
+	uint32_t hash() const {
+		uint32_t h = callable.hash();
+		for (const Variant &arg : args) {
+			h = hash_djb2_one_32(arg.hash(), h);
+		}
+		return h;
+	}
+};
+
 class CallQueue {
 	friend class MessageQueue;
 
@@ -77,7 +94,7 @@ private:
 	uint32_t pages_used = 0;
 	bool flushing = false;
 
-	HashSet<uint32_t> current_frame_callables;
+	HashSet<UniqueCallableCallKey> current_frame_unique_callables;
 
 #ifdef DEV_ENABLED
 	bool is_current_thread_override = false;

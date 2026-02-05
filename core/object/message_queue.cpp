@@ -221,18 +221,20 @@ Error CallQueue::push_notification(ObjectID p_id, int p_notification) {
 }
 
 Error CallQueue::push_callable_uniquep(const Callable &p_callable, const Variant **p_args, int p_argcount, bool p_show_error) {
-	uint32_t hash = p_callable.hash();
+	UniqueCallableCallKey call_key;
+
+	call_key.callable = p_callable;
 	for (int i = 0; i < p_argcount; ++i) {
-		hash = hash_djb2_one_32(p_args[i]->hash(), hash);
+		call_key.args.push_back(*p_args[i]);
 	}
 
 	LOCK_MUTEX;
-	if (current_frame_callables.has(hash)) {
+	if (current_frame_unique_callables.has(call_key)) {
 		UNLOCK_MUTEX
 		return Error::OK;
 	}
 
-	current_frame_callables.insert(hash);
+	current_frame_unique_callables.insert(call_key);
 
 	Error result = push_callablep(p_callable, p_args, p_argcount, p_show_error, true);
 	UNLOCK_MUTEX;
@@ -335,7 +337,7 @@ Error CallQueue::flush() {
 	pages_used = 1;
 
 	flushing = false;
-	current_frame_callables.clear();
+	current_frame_unique_callables.clear();
 	UNLOCK_MUTEX;
 	return OK;
 }
