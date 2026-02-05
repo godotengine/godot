@@ -15,6 +15,10 @@ var test_color_no_alpha: Color = Color(0, 0, 0, 1)
   hint=COLOR_NO_ALPHA hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_node_path: NodePath = NodePath("hello")
   hint=NODE_PATH_VALID_TYPES hint_string="Sprite2D,Sprite3D,Control,Node" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_suffix: float = 0.0
+  hint=SUFFIX hint_string="m" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_suffix_extra_hints: float = 0.0
+  hint=SUFFIX hint_string="degrees,radians_as_degrees" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_side: Side = 0
   hint=ENUM hint_string="Side Left:0,Side Top:1,Side Right:2,Side Bottom:3" usage=DEFAULT|SCRIPT_VARIABLE|CLASS_IS_ENUM class_name=&"Side"
 var test_atm: Node.AutoTranslateMode = 0
