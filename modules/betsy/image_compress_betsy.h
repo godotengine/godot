@@ -39,7 +39,7 @@
 #include "servers/rendering/rendering_server_default.h"
 
 #if defined(VULKAN_ENABLED)
-#include "drivers/vulkan/rendering_context_driver_vulkan.h"
+#include "drivers/vulkan/rendering_context_driver_vulkan_public.h"
 #endif
 #if defined(METAL_ENABLED)
 #include "drivers/metal/rendering_context_driver_metal.h"

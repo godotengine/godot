@@ -97,7 +97,7 @@ void BetsyCompressor::_init() {
 #endif
 #if defined(VULKAN_ENABLED)
 		if (rcd == nullptr) {
-			rcd = memnew(RenderingContextDriverVulkan);
+			rcd = create_rendering_context_driver_vulkan();
 			rd = memnew(RenderingDevice);
 		}
 #endif

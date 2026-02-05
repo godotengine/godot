@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "rendering_context_driver_d3d12.h"
+#include "rendering_context_driver_d3d12_public.h"
+#include "rendering_device_driver_d3d12_public.h"
 
 #include "d3d12_hooks.h"
 
@@ -37,7 +39,6 @@
 #include "core/string/ustring.h"
 #include "core/templates/local_vector.h"
 #include "core/version.h"
-#include "servers/rendering/rendering_device.h"
 
 GODOT_GCC_WARNING_PUSH
 GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
@@ -248,17 +249,13 @@ bool RenderingContextDriverD3D12::device_supports_present(uint32_t p_device_inde
 }
 
 RenderingDeviceDriver *RenderingContextDriverD3D12::driver_create() {
-	return memnew(RenderingDeviceDriverD3D12(this));
-}
-
-void RenderingContextDriverD3D12::driver_free(RenderingDeviceDriver *p_driver) {
-	memdelete(p_driver);
+	return create_rendering_device_driver_d3d12(this);
 }
 
 RenderingContextDriver::SurfaceID RenderingContextDriverD3D12::surface_create(const void *p_platform_data) {
-	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
+	const D3D12WindowPlatformData *wpd = (const D3D12WindowPlatformData *)(p_platform_data);
 	Surface *surface = memnew(Surface);
-	surface->hwnd = wpd->window;
+	surface->hwnd = (HWND)wpd->window;
 	return SurfaceID(surface);
 }
 
@@ -342,4 +339,8 @@ IDXGIFactory2 *RenderingContextDriverD3D12::dxgi_factory_get() const {
 
 bool RenderingContextDriverD3D12::get_tearing_supported() const {
 	return tearing_supported;
+}
+
+RenderingContextDriver *create_rendering_context_driver_d3d12() {
+	return memnew(RenderingContextDriverD3D12);
 }

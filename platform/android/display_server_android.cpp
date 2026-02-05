@@ -43,7 +43,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#include "rendering_context_driver_vulkan_android.h"
+#include "rendering_context_driver_vulkan_android_public.h"
 #endif
 #endif
 
@@ -683,7 +683,7 @@ bool DisplayServerAndroid::check_vulkan_global_context(bool p_vulkan_requirement
 		bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
 		Error err = ERR_CANT_CREATE;
 		if (p_vulkan_requirements_met) {
-			rendering_context_global = memnew(RenderingContextDriverVulkanAndroid);
+			rendering_context_global = create_rendering_context_driver_vulkan_android();
 			err = rendering_context_global->initialize();
 		}
 
@@ -731,7 +731,7 @@ void DisplayServerAndroid::reset_window() {
 
 		union {
 #ifdef VULKAN_ENABLED
-			RenderingContextDriverVulkanAndroid::WindowPlatformData vulkan;
+			VulkanAndroidWindowPlatformData vulkan;
 #endif
 		} wpd;
 #ifdef VULKAN_ENABLED
@@ -790,7 +790,7 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 		ANativeWindow *native_window = OS_Android::get_singleton()->get_native_window();
 		ERR_FAIL_NULL(native_window);
 
-		RenderingContextDriverVulkanAndroid::WindowPlatformData wpd;
+		VulkanAndroidWindowPlatformData wpd;
 		wpd.window = native_window;
 
 		if (rendering_context_global->window_create(MAIN_WINDOW_ID, &wpd) != OK) {

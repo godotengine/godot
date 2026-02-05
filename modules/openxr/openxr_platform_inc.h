@@ -35,7 +35,7 @@
 
 #ifdef VULKAN_ENABLED
 #define XR_USE_GRAPHICS_API_VULKAN
-#include "drivers/vulkan/rendering_context_driver_vulkan.h"
+#include "drivers/vulkan/godot_vulkan.h"
 #endif // VULKAN_ENABLED
 
 #ifdef METAL_ENABLED
@@ -70,7 +70,7 @@
 
 #ifdef D3D12_ENABLED
 #define XR_USE_GRAPHICS_API_D3D12
-#include "drivers/d3d12/rendering_context_driver_d3d12.h"
+#include "drivers/d3d12/godot_d3d12.h"
 #endif // D3D12_ENABLED
 
 #ifdef X11_ENABLED

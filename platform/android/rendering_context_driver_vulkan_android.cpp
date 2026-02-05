@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "rendering_context_driver_vulkan_android.h"
+#include "rendering_context_driver_vulkan_android_public.h"
 
 #ifdef VULKAN_ENABLED
 
@@ -39,7 +40,7 @@ const char *RenderingContextDriverVulkanAndroid::_get_platform_surface_extension
 }
 
 RenderingContextDriver::SurfaceID RenderingContextDriverVulkanAndroid::surface_create(const void *p_platform_data) {
-	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
+	const VulkanAndroidWindowPlatformData *wpd = (const VulkanAndroidWindowPlatformData *)(p_platform_data);
 
 	VkAndroidSurfaceCreateInfoKHR create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
@@ -60,6 +61,10 @@ bool RenderingContextDriverVulkanAndroid::_use_validation_layers() const {
 
 	// On Android, we use validation layers automatically if they were explicitly linked with the app.
 	return (err == OK) && !layer_names.is_empty();
+}
+
+RenderingContextDriver *create_rendering_context_driver_vulkan_android() {
+	return memnew(RenderingContextDriverVulkanAndroid);
 }
 
 #endif // VULKAN_ENABLED

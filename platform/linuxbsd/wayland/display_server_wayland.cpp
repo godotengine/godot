@@ -821,7 +821,7 @@ void DisplayServerWayland::show_window(WindowID p_window_id) {
 		if (rendering_context) {
 			union {
 #ifdef VULKAN_ENABLED
-				RenderingContextDriverVulkanWayland::WindowPlatformData vulkan;
+				VulkanWaylandWindowPlatformData vulkan;
 #endif
 			} wpd;
 #ifdef VULKAN_ENABLED
@@ -2068,7 +2068,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 #ifdef RD_ENABLED
 #ifdef VULKAN_ENABLED
 	if (rendering_driver == "vulkan") {
-		rendering_context = memnew(RenderingContextDriverVulkanWayland);
+		rendering_context = create_rendering_context_driver_vulkan_wayland();
 	}
 #endif // VULKAN_ENABLED
 

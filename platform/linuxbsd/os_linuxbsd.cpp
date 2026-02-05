@@ -63,10 +63,10 @@
 
 #if defined(VULKAN_ENABLED)
 #ifdef X11_ENABLED
-#include "x11/rendering_context_driver_vulkan_x11.h"
+#include "x11/rendering_context_driver_vulkan_x11_public.h"
 #endif
 #ifdef WAYLAND_ENABLED
-#include "wayland/rendering_context_driver_vulkan_wayland.h"
+#include "wayland/rendering_context_driver_vulkan_wayland_public.h"
 #endif
 #endif
 #if defined(GLES3_ENABLED)
@@ -1232,12 +1232,12 @@ bool OS_LinuxBSD::_test_create_rendering_device(const String &p_display_driver) 
 #if defined(VULKAN_ENABLED)
 #ifdef X11_ENABLED
 	if (p_display_driver == "x11" || p_display_driver.is_empty()) {
-		rcd = memnew(RenderingContextDriverVulkanX11);
+		rcd = create_rendering_context_driver_vulkan_x11();
 	}
 #endif
 #ifdef WAYLAND_ENABLED
 	if (p_display_driver == "wayland") {
-		rcd = memnew(RenderingContextDriverVulkanWayland);
+		rcd = create_rendering_context_driver_vulkan_wayland();
 	}
 #endif
 #endif

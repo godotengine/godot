@@ -45,7 +45,7 @@
 #include "servers/rendering/rendering_server_globals.h"
 
 #if defined(VULKAN_ENABLED)
-#include "drivers/vulkan/rendering_context_driver_vulkan.h"
+#include "drivers/vulkan/rendering_context_driver_vulkan_public.h"
 #endif
 #if defined(METAL_ENABLED)
 #include "drivers/metal/rendering_context_driver_metal.h"
@@ -1134,7 +1134,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 #endif
 #if defined(VULKAN_ENABLED)
 		if (rcd == nullptr) {
-			rcd = memnew(RenderingContextDriverVulkan);
+			rcd = create_rendering_context_driver_vulkan();
 			rd = memnew(RenderingDevice);
 		}
 #endif

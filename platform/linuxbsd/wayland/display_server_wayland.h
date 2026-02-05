@@ -38,7 +38,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #ifdef VULKAN_ENABLED
-#include "wayland/rendering_context_driver_vulkan_wayland.h"
+#include "wayland/rendering_context_driver_vulkan_wayland_public.h"
 #endif
 
 #endif //RD_ENABLED

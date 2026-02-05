@@ -42,11 +42,6 @@ protected:
 	SurfaceID surface_create(const void *p_platform_data) override final;
 
 public:
-	struct WindowPlatformData {
-		struct wl_display *display;
-		struct wl_surface *surface;
-	};
-
 	RenderingContextDriverVulkanWayland();
 	~RenderingContextDriverVulkanWayland();
 };
