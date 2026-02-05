@@ -779,6 +779,7 @@ protected:
 
 	Variant _call_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	Variant _call_deferred_unique_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	virtual const GDType &_get_typev() const { return get_gdtype_static(); }
 
@@ -994,6 +995,11 @@ public:
 	template <typename... VarArgs>
 	void call_deferred(const StringName &p_name, VarArgs... p_args) {
 		MessageQueue::get_singleton()->push_call(this, p_name, p_args...);
+	}
+
+	template <typename... VarArgs>
+	void call_deferred_unique(const StringName &p_name, VarArgs... p_args) {
+		MessageQueue::get_singleton()->push_call_unique(this, p_name, p_args...);
 	}
 
 	void set_deferred(const StringName &p_property, const Variant &p_value);

@@ -40,6 +40,10 @@ void Callable::call_deferredp(const Variant **p_arguments, int p_argcount) const
 	MessageQueue::get_singleton()->push_callablep(*this, p_arguments, p_argcount, true);
 }
 
+void Callable::call_deferred_uniquep(const Variant **p_arguments, int p_argcount) const {
+	MessageQueue::get_singleton()->push_callable_uniquep(*this, p_arguments, p_argcount, false);
+}
+
 void Callable::callp(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const {
 	if (is_null()) {
 		r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;

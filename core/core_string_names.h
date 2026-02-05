@@ -80,6 +80,7 @@ public:
 
 	const StringName call = "call";
 	const StringName call_deferred = "call_deferred";
+	const StringName call_deferred_unique = "call_deferred_unique";
 	const StringName bind = "bind";
 	const StringName notification = "notification";
 	const StringName property_list_changed = "property_list_changed";
