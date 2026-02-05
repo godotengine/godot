@@ -134,7 +134,7 @@
 		<method name="call_deferred_unique" qualifiers="vararg const">
 			<return type="void"/>
 			<description>
-				Same as [method Callable.call_deferred], but it guarantees that within a single tick the method will be invoked at most once with the same arguments, no matter how many times it was requested during the previous tick.				
+				Same as [method call_deferred], but it guarantees that the method will be invoked at most once in a single frame with the same arguments, no matter how many times it was requested during the current frame.
 				[codeblocks]
 				[gdscript]
 				func _ready():

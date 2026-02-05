@@ -494,7 +494,7 @@
 			<return type="void" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Same as [method Object.call_deferred], but it guarantees that within a single tick the method will be invoked at most once with the same arguments, no matter how many times it was requested during the previous tick.
+				Same as [method call_deferred], but it guarantees that the method will be invoked at most once in a single frame with the same arguments, no matter how many times it was requested during the current frame.
 				[codeblocks]
 				[gdscript]
 				var node = Node3D.new()

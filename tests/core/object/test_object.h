@@ -552,7 +552,7 @@ public:
 
 	void test_args(Variant arg1, Variant arg2, Variant arg3, Variant arg4) {
 		++counter;
-	};
+	}
 };
 
 TEST_CASE("[Object] Deferred Unique") {

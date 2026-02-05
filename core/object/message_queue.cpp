@@ -91,14 +91,14 @@ Error CallQueue::push_set(Object *p_object, const StringName &p_prop, const Vari
 	return push_set(p_object->get_instance_id(), p_prop, p_value);
 }
 
-Error CallQueue::push_callablep(const Callable &p_callable, const Variant **p_args, int p_argcount, bool p_show_error, bool mutex_locked) {
+Error CallQueue::push_callablep(const Callable &p_callable, const Variant **p_args, int p_argcount, bool p_show_error, bool p_mutex_locked) {
 	uint32_t room_needed = sizeof(Message) + sizeof(Variant) * p_argcount;
 
 	ERR_FAIL_COND_V_MSG(room_needed > uint32_t(PAGE_SIZE_BYTES), ERR_INVALID_PARAMETER, "Message is too large to fit on a page (" + itos(PAGE_SIZE_BYTES) + " bytes), consider passing less arguments.");
 
-	if (!mutex_locked) {
+	if (!p_mutex_locked) {
 		LOCK_MUTEX;
-	};
+	}
 
 	_ensure_first_page();
 
@@ -106,9 +106,9 @@ Error CallQueue::push_callablep(const Callable &p_callable, const Variant **p_ar
 		if (pages_used == max_pages) {
 			fprintf(stderr, "Failed method: %s. Message queue out of memory. %s\n", String(p_callable).utf8().get_data(), error_text.utf8().get_data());
 			statistics();
-			if (!mutex_locked) {
+			if (!p_mutex_locked) {
 				UNLOCK_MUTEX;
-			};
+			}
 			return ERR_OUT_OF_MEMORY;
 		}
 		_add_page();
@@ -140,9 +140,9 @@ Error CallQueue::push_callablep(const Callable &p_callable, const Variant **p_ar
 
 	page_bytes[pages_used - 1] += room_needed;
 
-	if (!mutex_locked) {
+	if (!p_mutex_locked) {
 		UNLOCK_MUTEX
-	};
+	}
 
 	return OK;
 }
@@ -230,11 +230,11 @@ Error CallQueue::push_callable_uniquep(const Callable &p_callable, const Variant
 	if (current_frame_callables.has(hash)) {
 		UNLOCK_MUTEX
 		return Error::OK;
-	};
+	}
 
 	current_frame_callables.insert(hash);
 
-	Error result =  push_callablep(p_callable, p_args, p_argcount, p_show_error, true);
+	Error result = push_callablep(p_callable, p_args, p_argcount, p_show_error, true);
 	UNLOCK_MUTEX;
 
 	return result;
@@ -297,20 +297,17 @@ Error CallQueue::flush() {
 
 		switch (message->type & FLAG_MASK) {
 			case TYPE_CALL: {
-
 				if (target || (message->type & FLAG_NULL_IS_OK)) {
 					Variant *args = (Variant *)(message + 1);
 					_call_function(message->callable, args, message->args, message->type & FLAG_SHOW_ERROR);
 				}
 			} break;
 			case TYPE_NOTIFICATION: {
-
 				if (target) {
 					target->notification(message->notification);
 				}
 			} break;
 			case TYPE_SET: {
-
 				if (target) {
 					Variant *arg = (Variant *)(message + 1);
 					target->set(message->callable.get_method(), *arg);

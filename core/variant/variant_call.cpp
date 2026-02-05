@@ -1182,7 +1182,6 @@ struct _VariantCall {
 		callable->call_deferred_uniquep(p_args, p_argcount);
 	}
 
-
 	static void func_Callable_rpc(Variant *v, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 		Callable *callable = &VariantInternalAccessor<Callable>::get(v);
 		callable->rpcp(0, p_args, p_argcount, r_error);

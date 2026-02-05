@@ -118,7 +118,7 @@ public:
 		return push_callp(p_id, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
-	Error push_callablep(const Callable &p_callable, const Variant **p_args, int p_argcount, bool p_show_error = false, bool mutex_locked = false);
+	Error push_callablep(const Callable &p_callable, const Variant **p_args, int p_argcount, bool p_show_error = false, bool p_mutex_locked = false);
 	Error push_set(ObjectID p_id, const StringName &p_prop, const Variant &p_value);
 	Error push_notification(ObjectID p_id, int p_notification);
 
@@ -156,7 +156,7 @@ public:
 
 	Error push_callp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
 	Error push_call_uniquep(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
-	Error push_call_uniquep(ObjectID p_id, const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error);
+	Error push_call_uniquep(ObjectID p_id, const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
 
 	template <typename... VarArgs>
 	Error push_call(Object *p_object, const StringName &p_method, VarArgs... p_args) {
