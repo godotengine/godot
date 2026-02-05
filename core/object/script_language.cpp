@@ -45,7 +45,6 @@ thread_local bool ScriptServer::thread_entered = false;
 
 bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
-ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
 
 // These need to be the last static variables in this file, since we're exploiting the reverse-order destruction of static variables.
 static bool is_program_exiting = false;
