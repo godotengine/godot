@@ -44,11 +44,11 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access_pack.h"
 #include "core/os/os.h"
+#include "core/string/regex.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
 
 #include "modules/gdscript/gdscript_analyzer.h"
-#include "modules/regex/regex.h"
 
 #include "thirdparty/doctest/doctest.h"
 

@@ -30,9 +30,7 @@
 
 #pragma once
 
-#include "../regex.h"
-
-#include "core/string/ustring.h"
+#include "core/string/regex.h"
 
 #include "tests/test_macros.h"
 

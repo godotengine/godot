@@ -79,6 +79,7 @@
 #include "core/os/main_loop.h"
 #include "core/os/time.h"
 #include "core/string/optimized_translation.h"
+#include "core/string/regex.h"
 #include "core/string/translation.h"
 #include "core/string/translation_server.h"
 #ifndef DISABLE_DEPRECATED
@@ -266,6 +267,8 @@ void register_core_types() {
 
 	GDREGISTER_CLASS(XMLParser);
 	GDREGISTER_CLASS(JSON);
+	GDREGISTER_CLASS(RegExMatch);
+	GDREGISTER_CLASS(RegEx);
 
 	GDREGISTER_CLASS(ConfigFile);
 

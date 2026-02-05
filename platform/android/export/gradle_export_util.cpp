@@ -30,8 +30,8 @@
 
 #include "gradle_export_util.h"
 
+#include "core/string/regex.h"
 #include "core/string/translation_server.h"
-#include "modules/regex/regex.h"
 
 int _get_android_orientation_value(DisplayServer::ScreenOrientation screen_orientation) {
 	switch (screen_orientation) {

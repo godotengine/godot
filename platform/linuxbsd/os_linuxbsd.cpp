@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
+#include "core/string/regex.h"
 #ifdef SDL_ENABLED
 #include "drivers/sdl/joypad_sdl.h"
 #endif
@@ -50,11 +51,6 @@
 #ifdef WAYLAND_ENABLED
 #include "wayland/detect_prime_egl.h"
 #include "wayland/display_server_wayland.h"
-#endif
-
-#include "modules/modules_enabled.gen.h" // For regex.
-#ifdef MODULE_REGEX_ENABLED
-#include "modules/regex/regex.h"
 #endif
 
 #if defined(RD_ENABLED)
@@ -361,10 +357,8 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 	Vector<String> class_display_device_candidates;
 	Vector<String> class_3d_device_candidates;
 
-#ifdef MODULE_REGEX_ENABLED
 	RegEx regex_id_format = RegEx();
 	regex_id_format.compile("^[a-f0-9]{4}:[a-f0-9]{4}$"); // e.g. `10de:13c2`; IDs are always in hexadecimal
-#endif
 
 	Vector<String> value_lines = vendor_device_id_mappings.split("\n", false); // example: `02:00.0 0300: 10de:13c2 (rev a1)`
 	for (const String &line : value_lines) {
@@ -375,11 +369,9 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 		String device_class = columns[1].trim_suffix(":");
 		const String &vendor_device_id_mapping = columns[2];
 
-#ifdef MODULE_REGEX_ENABLED
 		if (regex_id_format.search(vendor_device_id_mapping).is_null()) {
 			continue;
 		}
-#endif
 
 		if (device_class == dc_vga) {
 			class_vga_device_candidates.push_back(vendor_device_id_mapping);

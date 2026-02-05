@@ -36,6 +36,7 @@
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/string/regex.h"
 #include "core/string/translation_server.h"
 #include "scene/gui/label.h"
 #include "scene/gui/rich_text_effect.h"
@@ -43,11 +44,6 @@
 #include "scene/resources/atlas_texture.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/display_server.h"
-
-#include "modules/modules_enabled.gen.h" // For regex.
-#ifdef MODULE_REGEX_ENABLED
-#include "modules/regex/regex.h"
-#endif
 
 RichTextLabel::ItemCustomFX::ItemCustomFX() {
 	type = ITEM_CUSTOMFX;
@@ -7855,9 +7851,7 @@ void RichTextLabel::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, RichTextLabel, table_border);
 
 	ADD_CLASS_DEPENDENCY("PopupMenu");
-#ifdef MODULE_REGEX_ENABLED
 	ADD_CLASS_DEPENDENCY("RegEx");
-#endif
 }
 
 TextServer::VisibleCharactersBehavior RichTextLabel::get_visible_characters_behavior() const {
@@ -8133,7 +8127,6 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 
 		Vector<String> values = parts[1].split(",", false);
 
-#ifdef MODULE_REGEX_ENABLED
 		RegEx color = RegEx();
 		color.compile("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$");
 		RegEx nodepath = RegEx();
@@ -8167,7 +8160,6 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 				a.append(values[j]);
 			}
 		}
-#endif
 
 		if (values.size() > 1) {
 			d[key] = a;

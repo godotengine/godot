@@ -33,9 +33,15 @@
 
 #include "core/os/memory.h"
 
-extern "C" {
-#include <pcre2.h>
-}
+#ifndef PCRE2_STATIC
+#define PCRE2_STATIC
+#endif
+
+#ifndef PCRE2_CODE_UNIT_WIDTH
+#define PCRE2_CODE_UNIT_WIDTH 32
+#endif
+
+#include <thirdparty/pcre2/src/pcre2.h>
 
 static void *_regex_malloc(PCRE2_SIZE size, void *user) {
 	return memalloc(size);

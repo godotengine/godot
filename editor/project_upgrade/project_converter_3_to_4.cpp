@@ -38,10 +38,9 @@
 #include "core/object/ref_counted.h"
 #include "core/os/keyboard.h"
 #include "core/os/time.h"
+#include "core/string/regex.h"
 #include "core/templates/list.h"
 #include "editor/project_upgrade/renames_map_3_to_4.h"
-
-#include "modules/regex/regex.h"
 
 // Find "OS.set_property(x)", capturing x into $1.
 static String make_regex_gds_os_property_set(const String &name_set) {

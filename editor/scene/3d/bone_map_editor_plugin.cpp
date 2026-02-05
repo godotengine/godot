@@ -30,6 +30,7 @@
 
 #include "bone_map_editor_plugin.h"
 
+#include "core/string/regex.h"
 #include "editor/import/3d/post_import_plugin_skeleton_renamer.h"
 #include "editor/import/3d/post_import_plugin_skeleton_rest_fixer.h"
 #include "editor/import/3d/post_import_plugin_skeleton_track_organizer.h"
@@ -40,8 +41,6 @@
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
-
-#include "modules/regex/regex.h"
 
 void BoneMapperButton::fetch_textures() {
 	if (selected) {

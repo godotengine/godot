@@ -33,11 +33,10 @@
 #include "core/crypto/crypto_core.h"
 #include "core/io/dir_access.h"
 #include "core/io/plist.h"
+#include "core/string/regex.h"
 #include "editor/file_system/editor_paths.h"
 #include "lipo.h"
 #include "macho.h"
-
-#include "modules/regex/regex.h"
 
 #include <ctime>
 
