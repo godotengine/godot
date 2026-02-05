@@ -727,6 +727,7 @@ class BindingsGenerator {
 			StringName(_STR(PackedVector3Array)),
 			StringName(_STR(PackedColorArray)),
 			StringName(_STR(PackedVector4Array)),
+			StringName(_STR(PackedProjectionArray)),
 		};
 
 		bool is_nullable_type(const StringName &p_type) const {

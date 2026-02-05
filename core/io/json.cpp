@@ -1007,6 +1007,22 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 
 			RETURN_ARGS;
 		} break;
+		case Variant::PACKED_PROJECTION_ARRAY: {
+			const PackedProjectionArray arr = p_variant;
+
+			Array args;
+			for (int i = 0; i < arr.size(); i++) {
+				Projection p = arr[i];
+				for (int j = 0; j < 4; j++) {
+					args.push_back(p.columns[j].x);
+					args.push_back(p.columns[j].y);
+					args.push_back(p.columns[j].z);
+					args.push_back(p.columns[j].w);
+				}
+			}
+
+			RETURN_ARGS;
+		} break;
 
 		case Variant::VARIANT_MAX: {
 			// Nothing to do.
@@ -1454,6 +1470,21 @@ Variant JSON::_to_native(const Variant &p_json, bool p_allow_objects, int p_dept
 					arr.resize(args.size() / 4);
 					for (int i = 0; i < arr.size(); i++) {
 						arr.write[i] = Vector4(args[i * 4 + 0], args[i * 4 + 1], args[i * 4 + 2], args[i * 4 + 3]);
+					}
+
+					return arr;
+				} break;
+
+				case Variant::PACKED_PROJECTION_ARRAY: {
+					LOAD_ARGS_CHECK_FACTOR(16);
+
+					PackedProjectionArray arr;
+					arr.resize(args.size() / 16);
+					int ofs = 0;
+					for (int i = 0; i < arr.size(); i++) {
+						for(int j = 0; j < 4; j++) {
+							arr.write[i].columns[j] = Vector4(args[ofs++], args[ofs++], args[ofs++], args[ofs++]);
+						}
 					}
 
 					return arr;

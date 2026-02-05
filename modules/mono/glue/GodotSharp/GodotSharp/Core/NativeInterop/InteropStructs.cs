@@ -1179,6 +1179,38 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
+    public ref struct godot_packed_projection_array
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal readonly unsafe godot_packed_projection_array* GetUnsafeAddress()
+            => (godot_packed_projection_array*)Unsafe.AsPointer(ref Unsafe.AsRef(in _writeProxy));
+
+        private IntPtr _writeProxy;
+        private unsafe Projection* _ptr;
+
+        public unsafe void Dispose()
+        {
+            if (_ptr == null)
+                return;
+            NativeFuncs.godotsharp_packed_projection_array_destroy(ref this);
+            _ptr = null;
+        }
+
+        public readonly unsafe Projection* Buffer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr;
+        }
+
+        public readonly unsafe int Size
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => (int)NativeFuncs.godotsharp_packed_projection_array_size(in this);
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    // ReSharper disable once InconsistentNaming
     public ref struct godot_packed_color_array
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

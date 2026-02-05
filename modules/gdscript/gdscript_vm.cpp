@@ -248,6 +248,7 @@ void (*type_init_function_table[])(Variant *) = {
 	&VariantInitializer<PackedVector3Array>::init, // PACKED_VECTOR3_ARRAY.
 	&VariantInitializer<PackedColorArray>::init, // PACKED_COLOR_ARRAY.
 	&VariantInitializer<PackedVector4Array>::init, // PACKED_VECTOR4_ARRAY.
+	&VariantInitializer<PackedProjectionArray>::init, // PACKED_PROJECTION_ARRAY.
 };
 
 #if defined(__GNUC__) || defined(__clang__)
@@ -343,6 +344,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_ITERATE_BEGIN_PACKED_VECTOR3_ARRAY,     \
 		&&OPCODE_ITERATE_BEGIN_PACKED_COLOR_ARRAY,       \
 		&&OPCODE_ITERATE_BEGIN_PACKED_VECTOR4_ARRAY,     \
+		&&OPCODE_ITERATE_BEGIN_PACKED_PROJECTION_ARRAY,  \
 		&&OPCODE_ITERATE_BEGIN_OBJECT,                   \
 		&&OPCODE_ITERATE_BEGIN_RANGE,                    \
 		&&OPCODE_ITERATE,                                \
@@ -365,6 +367,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_ITERATE_PACKED_VECTOR3_ARRAY,           \
 		&&OPCODE_ITERATE_PACKED_COLOR_ARRAY,             \
 		&&OPCODE_ITERATE_PACKED_VECTOR4_ARRAY,           \
+		&&OPCODE_ITERATE_PACKED_PROJECTION_ARRAY,        \
 		&&OPCODE_ITERATE_OBJECT,                         \
 		&&OPCODE_ITERATE_RANGE,                          \
 		&&OPCODE_STORE_GLOBAL,                           \
@@ -407,6 +410,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_TYPE_ADJUST_PACKED_VECTOR3_ARRAY,       \
 		&&OPCODE_TYPE_ADJUST_PACKED_COLOR_ARRAY,         \
 		&&OPCODE_TYPE_ADJUST_PACKED_VECTOR4_ARRAY,       \
+		&&OPCODE_TYPE_ADJUST_PACKED_PROJECTION_ARRAY,    \
 		&&OPCODE_ASSERT,                                 \
 		&&OPCODE_BREAKPOINT,                             \
 		&&OPCODE_LINE,                                   \
@@ -484,6 +488,7 @@ void (*type_init_function_table[])(Variant *) = {
 #define OP_GET_PACKED_VECTOR3_ARRAY get_vector3_array
 #define OP_GET_PACKED_COLOR_ARRAY get_color_array
 #define OP_GET_PACKED_VECTOR4_ARRAY get_vector4_array
+#define OP_GET_PACKED_PROJECTION_ARRAY get_projection_array
 #define OP_GET_TRANSFORM3D get_transform
 #define OP_GET_TRANSFORM2D get_transform2d
 #define OP_GET_PROJECTION get_projection
@@ -3332,6 +3337,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(VECTOR3, Vector3, get_vector3_array, VECTOR3, Vector3, get_vector3);
 			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(COLOR, Color, get_color_array, COLOR, Color, get_color);
 			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(VECTOR4, Vector4, get_vector4_array, VECTOR4, Vector4, get_vector4);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(PROJECTION, Projection, get_projection_array, PROJECTION, Projection, get_projection);
 
 			OPCODE(OPCODE_ITERATE_BEGIN_OBJECT) {
 				CHECK_SPACE(4);
@@ -3699,6 +3705,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_ITERATE_PACKED_ARRAY(VECTOR3, Vector3, get_vector3_array, get_vector3);
 			OPCODE_ITERATE_PACKED_ARRAY(COLOR, Color, get_color_array, get_color);
 			OPCODE_ITERATE_PACKED_ARRAY(VECTOR4, Vector4, get_vector4_array, get_vector4);
+			OPCODE_ITERATE_PACKED_ARRAY(PROJECTION, Projection, get_projection_array, get_projection);
 
 			OPCODE(OPCODE_ITERATE_OBJECT) {
 				CHECK_SPACE(4);
@@ -3857,6 +3864,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_TYPE_ADJUST(PACKED_VECTOR3_ARRAY, PackedVector3Array);
 			OPCODE_TYPE_ADJUST(PACKED_COLOR_ARRAY, PackedColorArray);
 			OPCODE_TYPE_ADJUST(PACKED_VECTOR4_ARRAY, PackedVector4Array);
+			OPCODE_TYPE_ADJUST(PACKED_PROJECTION_ARRAY, PackedProjectionArray);
 
 			OPCODE(OPCODE_ASSERT) {
 				CHECK_SPACE(3);

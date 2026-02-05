@@ -4196,6 +4196,11 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			editor->setup(Variant::PACKED_VECTOR4_ARRAY, p_hint_text);
 			return editor;
 		} break;
+		case Variant::PACKED_PROJECTION_ARRAY: {
+			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			editor->setup(Variant::PACKED_PROJECTION_ARRAY, p_hint_text);
+			return editor;
+		} break;
 		default: {
 		}
 	}

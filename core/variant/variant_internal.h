@@ -132,6 +132,9 @@ public:
 			case Variant::PACKED_VECTOR4_ARRAY:
 				init_vector4_array(v);
 				break;
+			case Variant::PACKED_PROJECTION_ARRAY:
+				init_projection_array(v);
+				break;
 			case Variant::OBJECT:
 				init_object(v);
 				break;
@@ -221,6 +224,8 @@ public:
 	_FORCE_INLINE_ static const PackedColorArray *get_color_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<Color> *>(v->_data.packed_array)->array; }
 	_FORCE_INLINE_ static PackedVector4Array *get_vector4_array(Variant *v) { return &static_cast<Variant::PackedArrayRef<Vector4> *>(v->_data.packed_array)->array; }
 	_FORCE_INLINE_ static const PackedVector4Array *get_vector4_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<Vector4> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static PackedProjectionArray *get_projection_array(Variant *v) { return &static_cast<Variant::PackedArrayRef<Projection> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static const PackedProjectionArray *get_projection_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<Projection> *>(v->_data.packed_array)->array; }
 
 	_FORCE_INLINE_ static Object **get_object(Variant *v) { return (Object **)&v->_get_obj().obj; }
 	_FORCE_INLINE_ static const Object **get_object(const Variant *v) { return (const Object **)&v->_get_obj().obj; }
@@ -337,6 +342,10 @@ public:
 		v->_data.packed_array = Variant::PackedArrayRef<Vector4>::create(Vector<Vector4>());
 		v->type = Variant::PACKED_VECTOR4_ARRAY;
 	}
+	_FORCE_INLINE_ static void init_projection_array(Variant *v) {
+		v->_data.packed_array = Variant::PackedArrayRef<Projection>::create(Vector<Projection>());
+		v->type = Variant::PACKED_PROJECTION_ARRAY;
+	}
 	_FORCE_INLINE_ static void init_object(Variant *v) {
 		object_reset_data(v);
 		v->type = Variant::OBJECT;
@@ -452,6 +461,8 @@ public:
 				return get_color_array(v);
 			case Variant::PACKED_VECTOR4_ARRAY:
 				return get_vector4_array(v);
+			case Variant::PACKED_PROJECTION_ARRAY:
+				return get_projection_array(v);
 			case Variant::OBJECT:
 				return get_object(v);
 			case Variant::VARIANT_MAX:
@@ -538,6 +549,8 @@ public:
 				return get_color_array(v);
 			case Variant::PACKED_VECTOR4_ARRAY:
 				return get_vector4_array(v);
+			case Variant::PACKED_PROJECTION_ARRAY:
+				return get_projection_array(v);
 			case Variant::OBJECT:
 				return get_object(v);
 			case Variant::VARIANT_MAX:
@@ -803,6 +816,9 @@ struct VariantInternalAccessor<PackedColorArray> : _VariantInternalAccessorPacke
 template <>
 struct VariantInternalAccessor<PackedVector4Array> : _VariantInternalAccessorPackedArrayRef<Vector4> {};
 
+template <>
+struct VariantInternalAccessor<PackedProjectionArray> : _VariantInternalAccessorPackedArrayRef<Projection> {};
+
 template <typename T, typename = std::void_t<>>
 struct IsVariantType : std::false_type {};
 
@@ -923,6 +939,11 @@ struct VariantInitializer<PackedColorArray> {
 template <>
 struct VariantInitializer<PackedVector4Array> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_vector4_array(v); }
+};
+
+template <>
+struct VariantInitializer<PackedProjectionArray> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_projection_array(v); }
 };
 
 template <>

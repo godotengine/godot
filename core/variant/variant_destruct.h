@@ -65,5 +65,6 @@ MAKE_PTRDESTRUCT(PackedVector2Array);
 MAKE_PTRDESTRUCT(PackedVector3Array);
 MAKE_PTRDESTRUCT(PackedColorArray);
 MAKE_PTRDESTRUCT(PackedVector4Array);
+MAKE_PTRDESTRUCT(PackedProjectionArray);
 
 #undef MAKE_PTRDESTRUCT

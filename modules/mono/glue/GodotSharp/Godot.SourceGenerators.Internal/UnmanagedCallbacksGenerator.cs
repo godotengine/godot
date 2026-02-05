@@ -473,6 +473,7 @@ using Godot.NativeInterop;
         "Godot.NativeInterop.godot_packed_vector2_array",
         "Godot.NativeInterop.godot_packed_vector3_array",
         "Godot.NativeInterop.godot_packed_vector4_array",
+        "Godot.NativeInterop.godot_packed_projection_array",
         "Godot.NativeInterop.godot_packed_color_array",
     };
 }

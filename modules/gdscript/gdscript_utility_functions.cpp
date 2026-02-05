@@ -442,6 +442,10 @@ struct GDScriptUtilityFunctionsDefinitions {
 				Vector<Vector4> d = *p_args[0];
 				*r_ret = d.size();
 			} break;
+			case Variant::PACKED_PROJECTION_ARRAY: {
+				Vector<Projection> d = *p_args[0];
+				*r_ret = d.size();
+			} break;
 			default: {
 				*r_ret = vformat(RTR("Value of type '%s' can't provide a length."), Variant::get_type_name(p_args[0]->get_type()));
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;

@@ -154,6 +154,58 @@ struct [[nodiscard]] Projection {
 		return !(*this == p_cam);
 	}
 
+	constexpr bool operator>(const Projection &p_cam) const {
+		if (columns[0] == p_cam.columns[0]) {
+			if (columns[1] == p_cam.columns[1]) {
+				if (columns[2] == p_cam.columns[2]) {
+					return columns[3] > p_cam.columns[3];
+				}
+				return columns[2] > p_cam.columns[2];
+			}
+			return columns[1] > p_cam.columns[1];
+		}
+		return columns[0] > p_cam.columns[0];
+	}
+
+	constexpr bool operator<(const Projection &p_cam) const {
+		if (columns[0] == p_cam.columns[0]) {
+			if (columns[1] == p_cam.columns[1]) {
+				if (columns[2] == p_cam.columns[2]) {
+					return columns[3] < p_cam.columns[3];
+				}
+				return columns[2] < p_cam.columns[2];
+			}
+			return columns[1] < p_cam.columns[1];
+		}
+		return columns[0] < p_cam.columns[0];
+	}
+
+	constexpr bool operator>=(const Projection &p_cam) const {
+		if (columns[0] == p_cam.columns[0]) {
+			if (columns[1] == p_cam.columns[1]) {
+				if (columns[2] == p_cam.columns[2]) {
+					return columns[3] >= p_cam.columns[3];
+				}
+				return columns[2] >= p_cam.columns[2];
+			}
+			return columns[1] >= p_cam.columns[1];
+		}
+		return columns[0] >= p_cam.columns[0];
+	}
+
+	constexpr bool operator<=(const Projection &p_cam) const {
+		if (columns[0] == p_cam.columns[0]) {
+			if (columns[1] == p_cam.columns[1]) {
+				if (columns[2] == p_cam.columns[2]) {
+					return columns[3] <= p_cam.columns[3];
+				}
+				return columns[2] <= p_cam.columns[2];
+			}
+			return columns[1] <= p_cam.columns[1];
+		}
+		return columns[0] <= p_cam.columns[0];
+	}
+
 	real_t get_lod_multiplier() const;
 
 	Projection() = default;
