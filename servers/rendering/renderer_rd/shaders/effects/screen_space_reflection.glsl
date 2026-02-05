@@ -311,7 +311,11 @@ void main() {
 				blur_radius = (a * (sqrt(a2 + fh2) - a)) / (4.0 * h);
 			}
 
-			mip_level = clamp(log2(blur_radius * max(params.screen_size.x, params.screen_size.y) / 16.0), 0, params.mipmaps - 1);
+			// We approximate the integration in world space with a blur in screen space,
+			// and use a mip bias, `log2(/* screen_space_blur_radius */ + 1.0)`, to approximate the screen space blur.
+			// This + 1.0 is needed because mip level is logarithmic to the diameter (in pixels) of sampling region,
+			// which is 1 pixel when no blur is applied (log2(1) = 0).
+			mip_level = clamp(log2(blur_radius * max(params.screen_size.x, params.screen_size.y) / 16.0 + 1.0), 0, params.mipmaps - 1);
 		}
 
 		// Because we still write mip level for invalid pixels to allow for smooth roughness transitions,
