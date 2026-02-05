@@ -221,13 +221,12 @@ Error CallQueue::push_notification(ObjectID p_id, int p_notification) {
 }
 
 Error CallQueue::push_callable_uniquep(const Callable &p_callable, const Variant **p_args, int p_argcount, bool p_show_error) {
-	LOCK_MUTEX;
-
 	uint32_t hash = p_callable.hash();
 	for (int i = 0; i < p_argcount; ++i) {
 		hash = hash_djb2_one_32(p_args[i]->hash(), hash);
 	}
 
+	LOCK_MUTEX;
 	if (current_frame_callables.has(hash)) {
 		UNLOCK_MUTEX
 		return Error::OK;
