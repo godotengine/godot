@@ -584,24 +584,26 @@ Error AudioStreamWAV::save_to_wav(const String &p_path) {
 	file->store_32(sub_chunk_2_size); //Subchunk2Size
 
 	// Add data
-	const uint8_t *read_data = data.ptr();
-	switch (format) {
-		case AudioStreamWAV::FORMAT_8_BITS:
-			for (uint64_t i = 0; i < data_bytes; i++) {
-				uint8_t data_point = (read_data[i] + 128);
-				file->store_8(data_point);
+	LocalVector<uint8_t> write_buffer;
+	write_buffer.resize(4096);
+	int64_t bytes_to_write = data_bytes;
+	const uint8_t *data_ptr = data.ptr();
+
+	while (bytes_to_write > 0) {
+		uint16_t bytes_this_step = MIN(bytes_to_write, write_buffer.size());
+		memcpy(write_buffer.ptr(), data_ptr, bytes_this_step);
+
+		if (format == AudioStreamWAV::FORMAT_8_BITS) {
+			// Convert signed to unsigned
+			for (uint16_t i = 0; i < bytes_this_step; i++) {
+				write_buffer[i] = write_buffer[i] + 128;
 			}
-			break;
-		case AudioStreamWAV::FORMAT_16_BITS:
-		case AudioStreamWAV::FORMAT_QOA:
-			for (uint64_t i = 0; i < data_bytes / 2; i++) {
-				uint16_t data_point = decode_uint16(&read_data[i * 2]);
-				file->store_16(data_point);
-			}
-			break;
-		case AudioStreamWAV::FORMAT_IMA_ADPCM:
-			//Unimplemented
-			break;
+		}
+
+		file->store_buffer(write_buffer.ptr(), bytes_this_step);
+
+		data_ptr += bytes_this_step;
+		bytes_to_write -= bytes_this_step;
 	}
 
 	return OK;
