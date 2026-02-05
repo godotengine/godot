@@ -4049,8 +4049,11 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 		int w = img->get_width();
 		int h = img->get_height();
 
+		int mask_pitch = ((w + 31) / 32) * 4;
+		int mask_size = mask_pitch * h;
+
 		// Create temporary bitmap buffer.
-		int icon_len = 40 + h * w * 4;
+		int icon_len = 40 + (h * w * 4) + mask_size;
 		icon_buffer_big.resize(icon_len);
 		BYTE *icon_bmp = icon_buffer_big.ptrw();
 
@@ -4078,6 +4081,11 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 				wpx[2] = rpx[0];
 				wpx[3] = rpx[3];
 			}
+		}
+
+		uint8_t *mask_ptr = &icon_bmp[40 + (w * h * 4)];
+		for (int i = 0; i < mask_size; i++) {
+			mask_ptr[i] = 0x00;
 		}
 		icon_big = CreateIconFromResourceEx(icon_bmp, icon_len, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
 		ERR_FAIL_NULL(icon_big);
