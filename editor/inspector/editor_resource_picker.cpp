@@ -39,6 +39,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_quick_open_dialog.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
@@ -1424,6 +1425,7 @@ bool EditorResourcePicker::_is_uniqueness_enabled(bool p_check_recursive) {
 	if (p_check_recursive && parent_counter <= 1) {
 		List<Ref<Resource>> nested_resources;
 		en->gather_resources(edited_resource, nested_resources, true, true);
+		en->resource_limit_warning(nested_resources.size());
 
 		for (Ref<Resource> R : nested_resources) {
 			// Take into account Nested External Resources.

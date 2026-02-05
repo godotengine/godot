@@ -1845,6 +1845,10 @@ void EditorNode::gather_resources(const Variant &p_variant, List<Ref<Resource>> 
 			if (Object::cast_to<Node>(v) == nullptr) {
 				gather_resources(v, r_list, p_subresources, p_allow_external);
 			}
+
+			if (r_list.size() > RESOURCE_GATHER_LIMIT) {
+				return;
+			}
 		}
 		return;
 	}
@@ -1873,6 +1877,10 @@ void EditorNode::gather_resources(const Variant &p_variant, List<Ref<Resource>> 
 			}
 			if (Object::cast_to<Node>(kv.value) == nullptr) {
 				gather_resources(kv.value, r_list, p_subresources, p_allow_external);
+			}
+
+			if (r_list.size() > RESOURCE_GATHER_LIMIT) {
+				return;
 			}
 		}
 		return;
@@ -1907,6 +1915,10 @@ void EditorNode::gather_resources(const Variant &p_variant, List<Ref<Resource>> 
 		if (p_subresources) {
 			gather_resources(res, r_list, p_subresources, p_allow_external);
 		}
+
+		if (r_list.size() > RESOURCE_GATHER_LIMIT) {
+			return;
+		}
 	}
 }
 
@@ -1917,6 +1929,7 @@ void EditorNode::update_resource_count(Node *p_node, bool p_remove) {
 
 	List<Ref<Resource>> res_list;
 	gather_resources(p_node, res_list, true);
+	resource_limit_warning(res_list.size());
 
 	for (Ref<Resource> &R : res_list) {
 		List<Node *>::Element *E = resource_count[R].find(p_node);
@@ -1940,6 +1953,12 @@ int EditorNode::get_resource_count(Ref<Resource> p_res) {
 List<Node *> EditorNode::get_resource_node_list(Ref<Resource> p_res) {
 	List<Node *> *L = resource_count.getptr(p_res);
 	return L == nullptr ? List<Node *>() : *L;
+}
+
+void EditorNode::resource_limit_warning(int p_resource_count) const {
+	if (p_resource_count > RESOURCE_GATHER_LIMIT) {
+		WARN_PRINT(vformat("Resource count limit (%d) exceeded. Uniqueness indicator will be unreliable.", RESOURCE_GATHER_LIMIT));
+	}
 }
 
 void EditorNode::update_node_reference(const Variant &p_value, Node *p_node, bool p_remove) {

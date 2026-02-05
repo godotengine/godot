@@ -237,6 +237,8 @@ public:
 private:
 	friend class EditorSceneTabs;
 
+	static constexpr int RESOURCE_GATHER_LIMIT = 500;
+
 	enum {
 		MAX_INIT_CALLBACKS = 128,
 		MAX_BUILD_CALLBACKS = 128,
@@ -833,6 +835,7 @@ public:
 	void clear_node_reference(Ref<Resource> p_res);
 	int get_resource_count(Ref<Resource> p_res);
 	List<Node *> get_resource_node_list(Ref<Resource> p_res);
+	void resource_limit_warning(int p_resource_count) const;
 
 	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
 
