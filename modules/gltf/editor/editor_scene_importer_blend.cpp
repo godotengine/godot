@@ -224,6 +224,17 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	if (p_options.has(SNAME("blender/nodes/active_collection_only")) && p_options[SNAME("blender/nodes/active_collection_only")]) {
 		parameters_map["use_active_collection"] = true;
 	}
+	if (blender_major_version > 4 || (blender_major_version == 4 && blender_minor_version >= 2)) {
+		if (p_options.has(SNAME("blender/nodes/named_collection_only"))) {
+			const Variant collection_variant = p_options[SNAME("blender/nodes/named_collection_only")];
+			if (collection_variant.get_type() == Variant::Type::STRING) {
+				const String collection_string = collection_variant;
+				if (!collection_string.is_empty()) {
+					parameters_map["collection"] = collection_string;
+				}
+			}
+		}
+	}
 
 	if (p_options.has(SNAME("blender/meshes/uvs")) && p_options[SNAME("blender/meshes/uvs")]) {
 		parameters_map["export_texcoords"] = true;
@@ -365,9 +376,12 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, SNAME(PATH)), VALUE));
 #define ADD_OPTION_ENUM(PATH, ENUM_HINT, VALUE) \
 	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, SNAME(PATH), PROPERTY_HINT_ENUM, ENUM_HINT), VALUE));
+#define ADD_OPTION_STRING(PATH, VALUE) \
+	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::STRING, SNAME(PATH)), VALUE));
 
 	ADD_OPTION_ENUM("blender/nodes/visible", "All,Visible Only,Renderable", BLEND_VISIBLE_ALL);
 	ADD_OPTION_BOOL("blender/nodes/active_collection_only", false);
+	ADD_OPTION_STRING("blender/nodes/named_collection_only", "")
 	ADD_OPTION_BOOL("blender/nodes/punctual_lights", true);
 	ADD_OPTION_BOOL("blender/nodes/cameras", true);
 	ADD_OPTION_BOOL("blender/nodes/custom_properties", true);
