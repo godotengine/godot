@@ -1899,7 +1899,7 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 
 				float inc_uv = 1.0 / sides * 4.0;
 
-				if (i == sides - 1) {
+				if (i == sides - 1) { //This is the bug with the weird side that gets squashed //it's used to produce a full circle using cos and sin//it should not be tied to the UVs, UVs need their own separate variables
 					inc_n = 0;
 				}
 
