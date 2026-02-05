@@ -673,7 +673,8 @@ def is_apple_clang(env):
         return False
     try:
         version = (
-            subprocess.check_output(shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"])
+            subprocess
+            .check_output(shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"])
             .strip()
             .decode("utf-8")
         )
