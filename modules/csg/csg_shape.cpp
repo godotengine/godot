@@ -1891,8 +1891,6 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 		int face = 0;
 
 		Vector3 vertex_mul(radius, height * 0.5, radius);
-// 		Vector2 side_uv_offset(uv_offset.x, uv_offset.y);
-// 		Vector2 cap_uv_offset(radius + top_uv_offset.x, radius + top_uv_offset.z);
 
 		{
 			for (int i = 0; i < sides; i++) {
