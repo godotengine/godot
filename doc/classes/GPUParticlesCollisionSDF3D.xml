@@ -10,6 +10,7 @@
 		[b]Note:[/b] Baking a [GPUParticlesCollisionSDF3D]'s [member texture] is only possible within the editor, as there is no bake method exposed for use in exported projects. However, it's still possible to load pre-baked [Texture3D]s into its [member texture] property in an exported project.
 		[b]Note:[/b] [member ParticleProcessMaterial.collision_mode] must be [constant ParticleProcessMaterial.COLLISION_RIGID] or [constant ParticleProcessMaterial.COLLISION_HIDE_ON_CONTACT] on the [GPUParticles3D]'s process material for collision to work.
 		[b]Note:[/b] Particle collision only affects [GPUParticles3D], not [CPUParticles3D].
+		[b]Note:[/b] For technical reasons, a [GPUParticles3D] node may only interact with up to 7 [GPUParticlesCollisionSDF3D] nodes at a time. If more than 7 [GPUParticlesCollisionSDF3D] nodes are present in the [GPUParticles3D]'s visibility AABB, some of them will be ignored by particles.
 	</description>
 	<tutorials>
 	</tutorials>
