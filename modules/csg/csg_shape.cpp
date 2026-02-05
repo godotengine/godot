@@ -1965,8 +1965,8 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					uvsw[face * 3 + 1] = (Vector2(face_points[0].x, face_points[0].z) * radius) + cap_uv_offset;
 					uvsw[face * 3 + 2] = cap_uv_offset;
 				} else {
-					uvsw[face * 3] = (Vector2(face_points[1].x, face_points[1].z) * 0.5) + 0.5;
-					uvsw[face * 3 + 1] = (Vector2(face_points[0].x, face_points[0].z) * 0.5) + 0.5;
+					uvsw[face * 3] = (Vector2(face_points[1].x, face_points[1].z) * 0.5) + Vector2(0.5, 0.5);
+					uvsw[face * 3 + 1] = (Vector2(face_points[0].x, face_points[0].z) * 0.5) + Vector2(0.5, 0.5);
 					uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
 				}
 
@@ -1991,8 +1991,8 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 						uvsw[face * 3 + 1] = (Vector2(face_points[0].x, face_points[0].z) * radius) + cap_uv_offset;
 						uvsw[face * 3 + 2] = cap_uv_offset;
 					} else {
-						uvsw[face * 3] = (Vector2(face_points[1].x, face_points[1].z) * 0.5) + 0.5;
-						uvsw[face * 3 + 1] = (Vector2(face_points[0].x, face_points[0].z) * 0.5) + 0.5;
+						uvsw[face * 3] = (Vector2(face_points[1].x, face_points[1].z) * 0.5) + Vector2(0.5, 0.5);
+						uvsw[face * 3 + 1] = (Vector2(face_points[0].x, face_points[0].z) * 0.5) + Vector2(0.5, 0.5);
 						uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
 					}
 					/*uvsw[face * 3 + 0] = Vector2(face_points[1].x, face_points[1].y) * 0.5 + Vector2(0.5, 0.5);
