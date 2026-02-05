@@ -1617,23 +1617,12 @@ CSGBrush *CSGBox3D::_build_brush() {
 		uvsw[4] = Vector2(0, 0) * directions[2] + shifts[2];
 		uvsw[5] = Vector2(0, -1) * directions[2] + shifts[2];
 		//xz
-// 		if (invert_val) {
-// 			//when we flip the faces, make sure the top and bottom are not mirrored.
-// 			//top face
-// 			uvsw[6] = Vector2(1, 0) * directions[1] + shifts[1];
-// 			uvsw[7] = Vector2(0, 0) * directions[1] + shifts[1];
-// 			uvsw[8] = Vector2(0, 1) * directions[1] + shifts[1];
-// 			uvsw[9] = Vector2(0, 1) * directions[1] + shifts[1];
-// 			uvsw[10] = Vector2(1, 1) * directions[1] + shifts[1];
-// 			uvsw[11] = Vector2(1, 0) * directions[1] + shifts[1];
-// 		} else {
 		uvsw[6] = Vector2(1, 1) * directions[1] + shifts[1];
 		uvsw[7] = Vector2(0, 1) * directions[1] + shifts[1];
 		uvsw[8] = Vector2(0, 0) * directions[1] + shifts[1];
 		uvsw[9] = Vector2(0, 0) * directions[1] + shifts[1];
 		uvsw[10] = Vector2(1, 0) * directions[1] + shifts[1];
 		uvsw[11] = Vector2(1, 1) * directions[1] + shifts[1];
-		//}
 		//z+
 		uvsw[12] = Vector2(1, -1) * directions[0] + shifts[0];
 		uvsw[13] = Vector2(1, 0) * directions[0] + shifts[0];
@@ -1649,22 +1638,12 @@ CSGBrush *CSGBox3D::_build_brush() {
 		uvsw[22] = Vector2(-1, 0) * directions[2] + shifts[2];
 		uvsw[23] = Vector2(-1, -1) * directions[2] + shifts[2];
 		//xz
-// 		if (invert_val) {//too much work
-// 			//bottom face
-// 			uvsw[24] = Vector2(0, 1) * directions[1] + shifts[1];
-// 			uvsw[25] = Vector2(1, 1) * directions[1] + shifts[1];
-// 			uvsw[26] = Vector2(1, 0) * directions[1] + shifts[1];
-// 			uvsw[27] = Vector2(1, 0) * directions[1] + shifts[1];
-// 			uvsw[28] = Vector2(0, 0) * directions[1] + shifts[1];
-// 			uvsw[29] = Vector2(0, 1) * directions[1] + shifts[1];
-// 		} else {
 		uvsw[24] = Vector2(0, 0) * directions[1] + shifts[3];
 		uvsw[25] = Vector2(1, 0) * directions[1] + shifts[3];
 		uvsw[26] = Vector2(1, 1) * directions[1] + shifts[3];
 		uvsw[27] = Vector2(1, 1) * directions[1] + shifts[3];
 		uvsw[28] = Vector2(0, 1) * directions[1] + shifts[3];
 		uvsw[29] = Vector2(0, 0) * directions[1] + shifts[3];
-		//}
 		//z-
 		uvsw[30] = Vector2(0, 0) * directions[0] + shifts[4];
 		uvsw[31] = Vector2(0, -1) * directions[0] + shifts[4];
@@ -1718,21 +1697,13 @@ CSGBrush *CSGBox3D::_build_brush() {
 			uvsw[3] = Vector2(1, 0);
 			uvsw[4] = Vector2(0, 0);
 			uvsw[5] = Vector2(0, -1);
-// 			if (invert_val) {
-// 				uvsw[6] = Vector2(1, 0);
-// 				uvsw[7] = Vector2(0, 0);
-// 				uvsw[8] = Vector2(0, 1);
-// 				uvsw[9] = Vector2(0, 1);
-// 				uvsw[10] = Vector2(1, 1);
-// 				uvsw[11] = Vector2(1, 0);
-// 			} else {
+
 			uvsw[6] = Vector2(0, 1);
 			uvsw[7] = Vector2(0, 0);
 			uvsw[8] = Vector2(1, 0);
 			uvsw[9] = Vector2(1, 0);
 			uvsw[10] = Vector2(1, 1);
 			uvsw[11] = Vector2(0, 1);
-			//}
 
 			uvsw[12] = Vector2(1, -1);
 			uvsw[13] = Vector2(1, 0);
@@ -1747,21 +1718,13 @@ CSGBrush *CSGBox3D::_build_brush() {
 			uvsw[21] = Vector2(1, 0);
 			uvsw[22] = Vector2(0, 0);
 			uvsw[23] = Vector2(0, -1);
-// 			if (invert_val) {
-// 				uvsw[24] = Vector2(0, 1);
-// 				uvsw[25] = Vector2(1, 1);
-// 				uvsw[26] = Vector2(1, 0);
-// 				uvsw[27] = Vector2(1, 0);
-// 				uvsw[28] = Vector2(0, 0);
-// 				uvsw[29] = Vector2(0, 1);
-// 			} else {
+
 			uvsw[24] = Vector2(0, 0);
 			uvsw[25] = Vector2(1, 0);
 			uvsw[26] = Vector2(1, 1);
 			uvsw[27] = Vector2(1, 1);
 			uvsw[28] = Vector2(0, 1);
 			uvsw[29] = Vector2(0, 0);
-			//}
 
 			uvsw[30] = Vector2(0, 0);
 			uvsw[31] = Vector2(0, -1);
@@ -1925,7 +1888,7 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 
 				float inc_n_uv = inc_n * 4.0;
 
-				if (i == sides - 1) {//This is the bug with the weird side that gets squashed //this is used to produce a full circle using cos and sin//it should not be tied to the UVs, UVs need their own separate variables
+				if (i == sides - 1) { //This is the bug with the weird side that gets squashed //it's used to produce a full circle using cos and sin//it should not be tied to the UVs, UVs need their own separate variables
 					inc_n = 0;
 				}
 
@@ -1965,7 +1928,7 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				facesw[face * 3 + 1] = face_points[1] * vertex_mul;
 				facesw[face * 3 + 2] = face_points[2] * vertex_mul;
 
-				uvsw[face * 3 + 0] = u[0] + side_uv_offset;//TODO split into 2 properties
+				uvsw[face * 3 + 0] = u[0] + side_uv_offset; //TODO split into 2 properties
 				uvsw[face * 3 + 1] = u[1] + side_uv_offset;
 				uvsw[face * 3 + 2] = u[2] + side_uv_offset;
 
@@ -2009,7 +1972,7 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 
 				/*uvsw[face * 3 + 0] = Vector2(face_points[1].x, face_points[1].y) * 0.5 + Vector2(0.5, 0.5);
 				uvsw[face * 3 + 1] = Vector2(face_points[0].x, face_points[0].y) * 0.5 + Vector2(0.5, 0.5);
-				uvsw[face * 3 + 2] = Vector2(0.5, 0.5);*///this points to the centre of the texture for the bottom face of the cylinder. that's why it looks so weird.
+				uvsw[face * 3 + 2] = Vector2(0.5, 0.5);*/
 
 				smoothw[face] = false;
 				invertw[face] = invert_val;
