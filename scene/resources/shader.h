@@ -31,10 +31,10 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "core/io/resource_loader.h"
-#include "core/io/resource_saver.h"
-#include "scene/resources/texture.h"
 #include "shader_include.h"
+
+class Texture;
+class Texture2D;
 
 class Shader : public Resource {
 	GDCLASS(Shader, Resource);
@@ -48,6 +48,7 @@ public:
 		MODE_PARTICLES,
 		MODE_SKY,
 		MODE_FOG,
+		MODE_TEXTURE_BLIT,
 		MODE_MAX
 	};
 

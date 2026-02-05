@@ -669,6 +669,12 @@ Variant ShaderEditorPlugin::get_drag_data_fw(const Point2 &p_point, Control *p_f
 	drag_data["type"] = "shader_list_element";
 	drag_data["shader_list_element"] = idx;
 
+	Ref<Resource> shader = edited_shaders[idx].shader;
+	if (shader.is_null()) {
+		shader = edited_shaders[idx].shader_inc;
+	}
+	drag_data["file_path"] = shader->get_path();
+
 	return drag_data;
 }
 
@@ -843,7 +849,7 @@ void ShaderEditorPlugin::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (make_floating_shortcut.is_valid() && make_floating_shortcut->matches_event(p_event)) {
-		EditorDockManager::get_singleton()->make_dock_floating(shader_dock);
+		shader_dock->make_floating();
 	}
 }
 

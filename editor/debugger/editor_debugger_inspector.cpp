@@ -32,10 +32,11 @@
 
 #include "core/debugger/debugger_marshalls.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "scene/debugger/scene_debugger.h"
+#include "scene/debugger/scene_debugger_object.h"
 
 bool EditorDebuggerRemoteObjects::_set(const StringName &p_name, const Variant &p_value) {
 	return _set_impl(p_name, p_value, "");

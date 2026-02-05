@@ -640,6 +640,14 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 	if (!p_skip_creation) {
 		theme = EditorThemeManager::generate_theme(theme);
 		DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
+
+#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
+		if (EditorHelpHighlighter::get_singleton()) {
+			// Update syntax colors.
+			EditorHelpHighlighter::free_singleton();
+			EditorHelpHighlighter::create_singleton();
+		}
+#endif
 	}
 
 	Vector<Ref<Theme>> editor_themes;
@@ -1059,9 +1067,12 @@ void EditorNode::_notification(int p_what) {
 				recent_scenes->reset_size();
 			}
 
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor")) {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/dragging_")) {
 				theme->set_constant("dragging_unfold_wait_msec", "Tree", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000);
 				theme->set_constant("hover_switch_wait_msec", "TabBar", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000);
+			}
+
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor")) {
 				editor_dock_manager->update_tab_styles();
 			}
 
@@ -1449,7 +1460,7 @@ void EditorNode::_sources_changed(bool p_exist) {
 			if (SceneTreeDock::get_singleton()->is_visible_in_tree()) {
 				SceneTreeDock::get_singleton()->get_tree_editor()->get_scene_tree()->grab_focus();
 			} else {
-				TabContainer *tab_container = EditorDockManager::get_singleton()->get_dock_tab_container(SceneTreeDock::get_singleton());
+				TabContainer *tab_container = SceneTreeDock::get_singleton()->get_parent_container();
 				if (tab_container) {
 					// Another tab is active (e.g., Import) - focus the tab bar so user can switch.
 					tab_container->get_tab_bar()->grab_focus();
@@ -1871,7 +1882,7 @@ void EditorNode::gather_resources(const Variant &p_variant, List<Ref<Resource>> 
 	p_variant.get_property_list(&pinfo);
 
 	for (const PropertyInfo &E : pinfo) {
-		if (!(E.usage & PROPERTY_USAGE_EDITOR) || E.name == "script") {
+		if (!(E.usage & PROPERTY_USAGE_EDITOR)) {
 			continue;
 		}
 
@@ -5341,9 +5352,9 @@ void EditorNode::_project_run_started() {
 
 	int action_on_play = EDITOR_GET("run/bottom_panel/action_on_play");
 	if (action_on_play == ACTION_ON_PLAY_OPEN_OUTPUT) {
-		editor_dock_manager->focus_dock(log);
+		editor_dock_manager->open_dock(log, true);
 	} else if (action_on_play == ACTION_ON_PLAY_OPEN_DEBUGGER) {
-		editor_dock_manager->focus_dock(EditorDebuggerNode::get_singleton());
+		editor_dock_manager->open_dock(EditorDebuggerNode::get_singleton(), true);
 	}
 }
 
@@ -5382,6 +5393,73 @@ void EditorNode::add_io_warning(const String &p_warning) {
 	} else {
 		EditorInterface::get_singleton()->popup_dialog_centered_ratio(singleton->load_error_dialog, 0.5);
 	}
+}
+
+bool EditorNode::find_recursive_resources(const Variant &p_variant, HashSet<Resource *> &r_resources_found) {
+	switch (p_variant.get_type()) {
+		case Variant::ARRAY: {
+			Array a = p_variant;
+			for (int i = 0; i < a.size(); i++) {
+				Variant v2 = a[i];
+				if (v2.get_type() != Variant::ARRAY && v2.get_type() != Variant::DICTIONARY && v2.get_type() != Variant::OBJECT) {
+					continue;
+				}
+				if (find_recursive_resources(v2, r_resources_found)) {
+					return true;
+				}
+			}
+		} break;
+		case Variant::DICTIONARY: {
+			Dictionary d = p_variant;
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				const Variant &k = kv.key;
+				const Variant &v2 = kv.value;
+				if (k.get_type() == Variant::ARRAY || k.get_type() == Variant::DICTIONARY || k.get_type() == Variant::OBJECT) {
+					if (find_recursive_resources(k, r_resources_found)) {
+						return true;
+					}
+				}
+				if (v2.get_type() == Variant::ARRAY || v2.get_type() == Variant::DICTIONARY || v2.get_type() == Variant::OBJECT) {
+					if (find_recursive_resources(v2, r_resources_found)) {
+						return true;
+					}
+				}
+			}
+		} break;
+		case Variant::OBJECT: {
+			Ref<Resource> r = p_variant;
+
+			if (r.is_null()) {
+				return false;
+			}
+
+			if (r_resources_found.has(r.ptr())) {
+				return true;
+			}
+
+			r_resources_found.insert(r.ptr());
+
+			List<PropertyInfo> plist;
+			r->get_property_list(&plist);
+			for (const PropertyInfo &pinfo : plist) {
+				if (!(pinfo.usage & PROPERTY_USAGE_STORAGE)) {
+					continue;
+				}
+
+				if (pinfo.type != Variant::ARRAY && pinfo.type != Variant::DICTIONARY && pinfo.type != Variant::OBJECT) {
+					continue;
+				}
+				if (find_recursive_resources(r->get(pinfo.name), r_resources_found)) {
+					return true;
+				}
+			}
+
+			r_resources_found.erase(r.ptr());
+		} break;
+		default: {
+		}
+	}
+	return false;
 }
 
 bool EditorNode::_find_scene_in_use(Node *p_node, const String &p_path) const {
@@ -8440,24 +8518,36 @@ EditorNode::EditorNode() {
 	left_l_vsplit->set_vertical(true);
 	main_hsplit->add_child(left_l_vsplit);
 
-	TabContainer *dock_slot[DockConstants::DOCK_SLOT_MAX];
-	dock_slot[DockConstants::DOCK_SLOT_LEFT_UL] = memnew(TabContainer);
-	dock_slot[DockConstants::DOCK_SLOT_LEFT_UL]->set_name("DockSlotLeftUL");
-	left_l_vsplit->add_child(dock_slot[DockConstants::DOCK_SLOT_LEFT_UL]);
-	dock_slot[DockConstants::DOCK_SLOT_LEFT_BL] = memnew(TabContainer);
-	dock_slot[DockConstants::DOCK_SLOT_LEFT_BL]->set_name("DockSlotLeftBL");
-	left_l_vsplit->add_child(dock_slot[DockConstants::DOCK_SLOT_LEFT_BL]);
+	DockTabContainer *dock_slots[EditorDock::DOCK_SLOT_MAX];
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_UL));
+		dock_container->set_name("DockSlotLeftUL");
+		left_l_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_BL));
+		dock_container->set_name("DockSlotLeftBL");
+		left_l_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
 
 	left_r_vsplit = memnew(DockSplitContainer);
 	left_r_vsplit->set_name("DockVSplitLeftR");
 	left_r_vsplit->set_vertical(true);
 	main_hsplit->add_child(left_r_vsplit);
-	dock_slot[DockConstants::DOCK_SLOT_LEFT_UR] = memnew(TabContainer);
-	dock_slot[DockConstants::DOCK_SLOT_LEFT_UR]->set_name("DockSlotLeftUR");
-	left_r_vsplit->add_child(dock_slot[DockConstants::DOCK_SLOT_LEFT_UR]);
-	dock_slot[DockConstants::DOCK_SLOT_LEFT_BR] = memnew(TabContainer);
-	dock_slot[DockConstants::DOCK_SLOT_LEFT_BR]->set_name("DockSlotLeftBR");
-	left_r_vsplit->add_child(dock_slot[DockConstants::DOCK_SLOT_LEFT_BR]);
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_UR));
+		dock_container->set_name("DockSlotLeftUR");
+		left_r_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_BR));
+		dock_container->set_name("DockSlotLeftBR");
+		left_r_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
 
 	VBoxContainer *center_vb = memnew(VBoxContainer);
 	center_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -8475,23 +8565,35 @@ EditorNode::EditorNode() {
 	right_l_vsplit->set_name("DockVSplitRightL");
 	right_l_vsplit->set_vertical(true);
 	main_hsplit->add_child(right_l_vsplit);
-	dock_slot[DockConstants::DOCK_SLOT_RIGHT_UL] = memnew(TabContainer);
-	dock_slot[DockConstants::DOCK_SLOT_RIGHT_UL]->set_name("DockSlotRightUL");
-	right_l_vsplit->add_child(dock_slot[DockConstants::DOCK_SLOT_RIGHT_UL]);
-	dock_slot[DockConstants::DOCK_SLOT_RIGHT_BL] = memnew(TabContainer);
-	dock_slot[DockConstants::DOCK_SLOT_RIGHT_BL]->set_name("DockSlotRightBL");
-	right_l_vsplit->add_child(dock_slot[DockConstants::DOCK_SLOT_RIGHT_BL]);
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_UL));
+		dock_container->set_name("DockSlotRightUL");
+		right_l_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_BL));
+		dock_container->set_name("DockSlotRightBL");
+		right_l_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
 
 	right_r_vsplit = memnew(DockSplitContainer);
 	right_r_vsplit->set_name("DockVSplitRightR");
 	right_r_vsplit->set_vertical(true);
 	main_hsplit->add_child(right_r_vsplit);
-	dock_slot[DockConstants::DOCK_SLOT_RIGHT_UR] = memnew(TabContainer);
-	dock_slot[DockConstants::DOCK_SLOT_RIGHT_UR]->set_name("DockSlotRightUR");
-	right_r_vsplit->add_child(dock_slot[DockConstants::DOCK_SLOT_RIGHT_UR]);
-	dock_slot[DockConstants::DOCK_SLOT_RIGHT_BR] = memnew(TabContainer);
-	dock_slot[DockConstants::DOCK_SLOT_RIGHT_BR]->set_name("DockSlotRightBR");
-	right_r_vsplit->add_child(dock_slot[DockConstants::DOCK_SLOT_RIGHT_BR]);
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_UR));
+		dock_container->set_name("DockSlotRightUR");
+		right_r_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_BR));
+		dock_container->set_name("DockSlotRightBR");
+		right_r_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
 
 	editor_dock_manager = memnew(EditorDockManager);
 
@@ -8503,8 +8605,8 @@ EditorNode::EditorNode() {
 
 	editor_dock_manager->set_hsplit(main_hsplit);
 
-	for (int i = 0; i < DockConstants::DOCK_SLOT_BOTTOM; i++) {
-		editor_dock_manager->register_dock_slot((DockConstants::DockSlot)i, dock_slot[i], DockConstants::DOCK_LAYOUT_VERTICAL);
+	for (int i = 0; i < EditorDock::DOCK_SLOT_BOTTOM; i++) {
+		editor_dock_manager->register_dock_slot(dock_slots[i]);
 	}
 
 	editor_layout_save_delay_timer = memnew(Timer);
@@ -8705,7 +8807,7 @@ EditorNode::EditorNode() {
 	if (NativeMenu::get_singleton()->has_system_menu(NativeMenu::APPLICATION_MENU_ID)) {
 		apple_menu = memnew(PopupMenu);
 		apple_menu->set_system_menu(NativeMenu::APPLICATION_MENU_ID);
-		_add_to_main_menu("", apple_menu);
+		_add_to_main_menu("Apple", apple_menu);
 
 		apple_menu->add_shortcut(ED_GET_SHORTCUT("editor/editor_settings"), EDITOR_OPEN_SETTINGS);
 		apple_menu->add_separator();
@@ -8910,8 +9012,7 @@ EditorNode::EditorNode() {
 	// Bottom panels.
 
 	bottom_panel = memnew(EditorBottomPanel);
-	editor_dock_manager->register_dock_slot(DockConstants::DOCK_SLOT_BOTTOM, bottom_panel, DockConstants::DOCK_LAYOUT_HORIZONTAL);
-	bottom_panel->set_theme_type_variation("BottomPanel");
+	editor_dock_manager->register_dock_slot(bottom_panel);
 	center_split->add_child(bottom_panel);
 	center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
 
@@ -9123,6 +9224,10 @@ EditorNode::EditorNode() {
 		Ref<CanvasItemMaterialConversionPlugin> canvas_item_mat_convert;
 		canvas_item_mat_convert.instantiate();
 		resource_conversion_plugins.push_back(canvas_item_mat_convert);
+
+		Ref<BlitMaterialConversionPlugin> blit_mat_convert;
+		blit_mat_convert.instantiate();
+		resource_conversion_plugins.push_back(blit_mat_convert);
 
 		Ref<ParticleProcessMaterialConversionPlugin> particles_mat_convert;
 		particles_mat_convert.instantiate();

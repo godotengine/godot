@@ -98,6 +98,9 @@ private:
 		Ref<Texture2D> scroll_hint_vertical;
 		Ref<Texture2D> scroll_hint_horizontal;
 
+		Color scroll_hint_vertical_color;
+		Color scroll_hint_horizontal_color;
+
 		int scrollbar_h_separation = 0;
 		int scrollbar_v_separation = 0;
 	} theme_cache;

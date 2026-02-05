@@ -405,6 +405,7 @@ private:
 	void _clear_all_layers_highlighting();
 	void _update_all_layers_highlighting();
 	void _highlight_selected_layer_button_toggled(bool p_pressed);
+	void _update_layer_selector_layout(bool p_is_vertical);
 
 	Button *toggle_grid_button = nullptr;
 	void _on_grid_toggled(bool p_pressed);

@@ -34,7 +34,7 @@
 #include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/editor_main_screen.h"
 #include "editor/plugins/editor_plugin.h"
-#include "scene/debugger/scene_debugger.h"
+#include "scene/debugger/runtime_node_select.h"
 #include "scene/gui/box_container.h"
 
 class EmbeddedProcessBase;
@@ -181,7 +181,7 @@ class GameView : public VBoxContainer {
 	HBoxContainer *embedding_hb = nullptr;
 	MenuButton *embed_options_menu = nullptr;
 	Label *game_size_label = nullptr;
-	PanelContainer *panel = nullptr;
+	Panel *panel = nullptr;
 	EmbeddedProcessBase *embedded_process = nullptr;
 	Label *state_label = nullptr;
 

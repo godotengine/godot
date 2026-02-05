@@ -1840,7 +1840,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.base_uniform_string = "material.";
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR;
 		actions.default_repeat = ShaderLanguage::REPEAT_DISABLE;
-		actions.base_varying_index = 8;
+		actions.base_varying_index = 9;
 
 		actions.global_buffer_array_variable = "global_shader_uniforms.data";
 		actions.instance_uniform_index_variable = "read_draw_data_instance_offset";
@@ -3231,7 +3231,8 @@ RendererCanvasRenderRD::InstanceData *RendererCanvasRenderRD::new_instance_data(
 		// instance_count must be > 0 to indicate the batch has been used when calling _new_batch, so we set a flag.
 		p_current_batch.instance_count = PUSH_DATA_INSTANCE_COUNT;
 	} else {
-		instance_data = &state.instance_data[state.instance_data_index];
+		// Return the intermediary instance data to prevent the caller from accidentally reading write-combined memory pages, which has huge performance implications.
+		instance_data = &state.intermediary_instance_data;
 	}
 
 	memcpy(instance_data, &template_instance, sizeof(InstanceData));
@@ -3287,6 +3288,7 @@ void RendererCanvasRenderRD::_add_to_batch(bool &r_batch_broken, Batch *&r_curre
 			r_current_batch->command_type == Item::Command::TYPE_NINEPATCH ||
 			r_current_batch->command_type == Item::Command::TYPE_PRIMITIVE);
 	r_current_batch->instance_count++;
+	memcpy(&state.instance_data[state.instance_data_index], &state.intermediary_instance_data, sizeof(InstanceData));
 	state.instance_data_index++;
 	if (state.instance_data_index >= state.max_instances_per_buffer) {
 		RD::get_singleton()->buffer_flush(r_current_batch->instance_buffer);

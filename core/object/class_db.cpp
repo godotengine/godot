@@ -1018,7 +1018,7 @@ void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List
 #endif // DEBUG_ENABLED
 
 		for (const KeyValue<StringName, LocalVector<MethodBind *, unsigned int, false, false>> &E : type->method_map_compatibility) {
-			LocalVector<MethodBind *> compat = E.value;
+			LocalVector<MethodBind *> compat(E.value);
 			for (MethodBind *method : compat) {
 				MethodInfo minfo = info_from_bind(method);
 
@@ -2420,6 +2420,7 @@ void ClassDB::cleanup_defaults() {
 	default_values_cached.clear();
 }
 
+LocalVector<GDType **> ClassDB::gdtype_autorelease_pool;
 void ClassDB::cleanup() {
 	//OBJTYPE_LOCK; hah not here
 
@@ -2440,6 +2441,15 @@ void ClassDB::cleanup() {
 	resource_base_extensions.clear();
 	compat_classes.clear();
 	native_structs.clear();
+
+	for (GDType **type : gdtype_autorelease_pool) {
+		if (!type) {
+			WARN_PRINT("GDType in autorelease pool was cleaned up before being auto-released. Ignoring.");
+		}
+		memdelete(*type);
+		*type = nullptr;
+	}
+	gdtype_autorelease_pool.clear();
 }
 
 // Array to use in optional parameters on methods and the DEFVAL_ARRAY macro.

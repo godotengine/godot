@@ -122,21 +122,6 @@ void GDScriptTextDocument::notify_client_show_symbol(const LSP::DocumentSymbol *
 	GDScriptLanguageProtocol::get_singleton()->notify_client("gdscript/show_native_symbol", symbol->to_json(true));
 }
 
-void GDScriptTextDocument::initialize() {
-	if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
-		for (const KeyValue<StringName, ClassMembers> &E : GDScriptLanguageProtocol::get_singleton()->get_workspace()->native_members) {
-			const ClassMembers &members = E.value;
-
-			for (const KeyValue<String, const LSP::DocumentSymbol *> &F : members) {
-				const LSP::DocumentSymbol *symbol = members.get(F.key);
-				LSP::CompletionItem item = symbol->make_completion_item();
-				item.data = JOIN_SYMBOLS(String(E.key), F.key);
-				native_member_completions.push_back(item.to_json());
-			}
-		}
-	}
-}
-
 Variant GDScriptTextDocument::nativeSymbol(const Dictionary &p_params) {
 	Variant ret;
 
@@ -161,6 +146,25 @@ Array GDScriptTextDocument::documentSymbol(const Dictionary &p_params) {
 	if (parser) {
 		LSP::DocumentSymbol symbol = parser->get_symbols();
 		arr.push_back(symbol.to_json(true));
+	}
+	return arr;
+}
+
+Array GDScriptTextDocument::documentHighlight(const Dictionary &p_params) {
+	Array arr;
+	LSP::TextDocumentPositionParams params;
+	params.load(p_params);
+
+	const LSP::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params);
+	if (symbol) {
+		String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(params.textDocument.uri);
+		Vector<LSP::Location> usages = GDScriptLanguageProtocol::get_singleton()->get_workspace()->find_usages_in_file(*symbol, path);
+
+		for (const LSP::Location &usage : usages) {
+			LSP::DocumentHighlight highlight;
+			highlight.range = usage.range;
+			arr.push_back(highlight.to_json());
+		}
 	}
 	return arr;
 }

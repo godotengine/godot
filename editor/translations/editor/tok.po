@@ -22,6 +22,9 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.14-dev\n"
 
+msgid "Help"
+msgstr "pona"
+
 msgid "Physical"
 msgstr "lon"
 
@@ -1692,9 +1695,6 @@ msgstr "o open e ilo ante kama"
 msgid "Open the previous Editor"
 msgstr "o open e ilo ante tawa"
 
-msgid "Help"
-msgstr "pona"
-
 msgid "Update Continuously"
 msgstr "ale la o sin"
 
@@ -3182,15 +3182,6 @@ msgstr "ante pi nasin Y."
 
 msgid "Z-Axis Transform."
 msgstr "ante pi nasin Z."
-
-msgid "X: %s\n"
-msgstr "X: %s\n"
-
-msgid "Y: %s\n"
-msgstr "Y: %s\n"
-
-msgid "Z: %s\n"
-msgstr "Z: %s\n"
 
 msgid "CPU Time: %s ms"
 msgstr "tenpo CPU: ms %s"
@@ -4948,14 +4939,6 @@ msgstr "mi lukin ala e sitelen tawa ni: '%s'"
 
 msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "ala li olin e pana '%s' pi ijo pali '%s'."
-
-msgid ""
-"Please be aware that GraphEdit and GraphNode will undergo extensive "
-"refactoring in a future 4.x version involving compatibility-breaking API "
-"changes."
-msgstr ""
-"o sona e ni: nanpa 4.x lon tenpo kama la ijo pali GraphEdit en ijo pali "
-"GraphNode li ante e nasin API ona. ante ona li ike tawa nanpa tawa."
 
 msgid "'%s' default color is incompatible with '%s' source."
 msgstr "kule meso '%s' li ike tawa tan '%s'."

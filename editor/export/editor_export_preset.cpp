@@ -319,13 +319,15 @@ String EditorExportPreset::get_name() const {
 }
 
 void EditorExportPreset::set_runnable(bool p_enable) {
-	runnable = p_enable;
-	EditorExport::singleton->emit_presets_runnable_changed();
-	EditorExport::singleton->save_presets();
+	if (p_enable) {
+		EditorExport::singleton->set_runnable_preset(this);
+	} else {
+		EditorExport::singleton->unset_runnable_preset(this);
+	}
 }
 
 bool EditorExportPreset::is_runnable() const {
-	return runnable;
+	return EditorExport::singleton->get_runnable_preset_for_platform(platform).ptr() == this;
 }
 
 bool EditorExportPreset::are_advanced_options_enabled() const {

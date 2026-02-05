@@ -582,7 +582,7 @@ public:
 
 	/* Constructors */
 
-	HashMap(const HashMap &p_other) {
+	explicit HashMap(const HashMap &p_other) {
 		reserve(hash_table_size_primes[p_other._capacity_idx]);
 
 		if (p_other._size == 0) {

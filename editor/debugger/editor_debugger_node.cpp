@@ -30,6 +30,7 @@
 
 #include "editor_debugger_node.h"
 
+#include "core/io/resource_loader.h"
 #include "core/object/undo_redo.h"
 #include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/debugger/editor_debugger_tree.h"
@@ -322,7 +323,9 @@ void EditorDebuggerNode::stop(bool p_force) {
 
 	// Also close all debugging sessions.
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
-		dbg->_stop_and_notify();
+		if (dbg->is_session_active()) {
+			dbg->_stop_and_notify();
+		}
 	});
 	_break_state_changed();
 	breakpoints.clear();

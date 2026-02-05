@@ -477,7 +477,7 @@ void ENetMultiplayerPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_host"), &ENetMultiplayerPeer::get_host);
 	ClassDB::bind_method(D_METHOD("get_peer", "id"), &ENetMultiplayerPeer::get_peer);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "host", PROPERTY_HINT_RESOURCE_TYPE, "ENetConnection", PROPERTY_USAGE_NONE), "", "get_host");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "host", PROPERTY_HINT_RESOURCE_TYPE, ENetConnection::get_class_static(), PROPERTY_USAGE_NONE), "", "get_host");
 }
 
 ENetMultiplayerPeer::ENetMultiplayerPeer() {

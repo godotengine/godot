@@ -89,14 +89,6 @@ void EditorSceneFormatImporterGLTF::get_import_options(const String &p_path,
 	}
 }
 
-void EditorSceneFormatImporterGLTF::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {
-	if (!p_import_params.has("gltf/naming_version")) {
-		// If an existing import file is missing the glTF
-		// compatibility version, we need to use version 0.
-		p_import_params["gltf/naming_version"] = 0;
-	}
-}
-
 Variant EditorSceneFormatImporterGLTF::get_option_visibility(const String &p_path, const String &p_scene_import_type,
 		const String &p_option, const HashMap<StringName, Variant> &p_options) {
 	return true;

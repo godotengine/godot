@@ -36,6 +36,7 @@
 #include "tts_android.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
@@ -50,6 +51,11 @@
 #include "drivers/gles3/rasterizer_gles3.h"
 
 #include <EGL/egl.h>
+#endif
+
+#if defined(RD_ENABLED)
+static RenderingContextDriver *rendering_context_global = nullptr;
+static bool rendering_context_global_checked = false;
 #endif
 
 DisplayServerAndroid *DisplayServerAndroid::get_singleton() {
@@ -671,15 +677,57 @@ void DisplayServerAndroid::register_android_driver() {
 	register_create_function("android", create_func, get_rendering_drivers_func);
 }
 
+#ifdef VULKAN_ENABLED
+bool DisplayServerAndroid::check_vulkan_global_context(bool p_vulkan_requirements_met) {
+	if (!rendering_context_global_checked) {
+		bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
+		Error err = ERR_CANT_CREATE;
+		if (p_vulkan_requirements_met) {
+			rendering_context_global = memnew(RenderingContextDriverVulkanAndroid);
+			err = rendering_context_global->initialize();
+		}
+
+		if (err != OK) {
+			if (rendering_context_global != nullptr) {
+				memdelete(rendering_context_global);
+				rendering_context_global = nullptr;
+			}
+
+#if defined(GLES3_ENABLED)
+			if (fallback_to_opengl3) {
+				WARN_PRINT("Your device does not seem to support Vulkan, switching to OpenGL 3.");
+				OS::get_singleton()->set_current_rendering_driver_name("opengl3", OS::RENDERING_SOURCE_FALLBACK);
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility", OS::RENDERING_SOURCE_FALLBACK);
+			} else
+#endif
+			{
+				ERR_PRINT("Failed to initialize Vulkan context.");
+			}
+		}
+
+		rendering_context_global_checked = true;
+	}
+
+	return rendering_context_global != nullptr;
+}
+
+void DisplayServerAndroid::free_vulkan_global_context() {
+	if (rendering_context_global != nullptr) {
+		memdelete(rendering_context_global);
+		rendering_context_global = nullptr;
+	}
+}
+#endif
+
 void DisplayServerAndroid::reset_window() {
 #if defined(RD_ENABLED)
-	if (rendering_context) {
+	if (rendering_context_global) {
 		if (rendering_device) {
 			rendering_device->screen_free(MAIN_WINDOW_ID);
 		}
 
-		VSyncMode last_vsync_mode = rendering_context->window_get_vsync_mode(MAIN_WINDOW_ID);
-		rendering_context->window_destroy(MAIN_WINDOW_ID);
+		VSyncMode last_vsync_mode = rendering_context_global->window_get_vsync_mode(MAIN_WINDOW_ID);
+		rendering_context_global->window_destroy(MAIN_WINDOW_ID);
 
 		union {
 #ifdef VULKAN_ENABLED
@@ -694,16 +742,14 @@ void DisplayServerAndroid::reset_window() {
 		}
 #endif
 
-		if (rendering_context->window_create(MAIN_WINDOW_ID, &wpd) != OK) {
+		if (rendering_context_global->window_create(MAIN_WINDOW_ID, &wpd) != OK) {
 			ERR_PRINT(vformat("Failed to reset %s window.", rendering_driver));
-			memdelete(rendering_context);
-			rendering_context = nullptr;
 			return;
 		}
 
 		Size2i display_size = OS_Android::get_singleton()->get_display_size();
-		rendering_context->window_set_size(MAIN_WINDOW_ID, display_size.width, display_size.height);
-		rendering_context->window_set_vsync_mode(MAIN_WINDOW_ID, last_vsync_mode);
+		rendering_context_global->window_set_size(MAIN_WINDOW_ID, display_size.width, display_size.height);
+		rendering_context_global->window_set_vsync_mode(MAIN_WINDOW_ID, last_vsync_mode);
 
 		if (rendering_device) {
 			rendering_device->screen_create(MAIN_WINDOW_ID);
@@ -733,71 +779,37 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 
 	native_menu = memnew(NativeMenu);
 
-#if defined(RD_ENABLED)
-	rendering_context = nullptr;
-	rendering_device = nullptr;
-
-#if defined(VULKAN_ENABLED)
+#ifdef VULKAN_ENABLED
 	if (rendering_driver == "vulkan") {
-		rendering_context = memnew(RenderingContextDriverVulkanAndroid);
-	}
-#endif
-
-	if (rendering_context) {
-		if (rendering_context->initialize() != OK) {
-			memdelete(rendering_context);
-			rendering_context = nullptr;
-#if defined(GLES3_ENABLED)
-			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
-			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
-				WARN_PRINT("Your device does not seem to support Vulkan, switching to OpenGL 3.");
-				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-			} else
-#endif
-			{
-				ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
-				r_error = ERR_UNAVAILABLE;
-				return;
-			}
+		if (rendering_context_global == nullptr) {
+			ERR_PRINT("Can't initialize display server with Vulkan driver because no Vulkan context is available.");
+			r_error = ERR_UNAVAILABLE;
+			return;
 		}
-	}
 
-	if (rendering_context) {
-		union {
-#ifdef VULKAN_ENABLED
-			RenderingContextDriverVulkanAndroid::WindowPlatformData vulkan;
-#endif
-		} wpd;
-#ifdef VULKAN_ENABLED
-		if (rendering_driver == "vulkan") {
-			ANativeWindow *native_window = OS_Android::get_singleton()->get_native_window();
-			ERR_FAIL_NULL(native_window);
-			wpd.vulkan.window = native_window;
-		}
-#endif
+		ANativeWindow *native_window = OS_Android::get_singleton()->get_native_window();
+		ERR_FAIL_NULL(native_window);
 
-		if (rendering_context->window_create(MAIN_WINDOW_ID, &wpd) != OK) {
+		RenderingContextDriverVulkanAndroid::WindowPlatformData wpd;
+		wpd.window = native_window;
+
+		if (rendering_context_global->window_create(MAIN_WINDOW_ID, &wpd) != OK) {
 			ERR_PRINT(vformat("Failed to create %s window.", rendering_driver));
-			memdelete(rendering_context);
-			rendering_context = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			return;
 		}
 
 		Size2i display_size = OS_Android::get_singleton()->get_display_size();
-		rendering_context->window_set_size(MAIN_WINDOW_ID, display_size.width, display_size.height);
-		rendering_context->window_set_vsync_mode(MAIN_WINDOW_ID, p_vsync_mode);
+		rendering_context_global->window_set_size(MAIN_WINDOW_ID, display_size.width, display_size.height);
+		rendering_context_global->window_set_vsync_mode(MAIN_WINDOW_ID, p_vsync_mode);
 
 		rendering_device = memnew(RenderingDevice);
-		if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) != OK) {
+		if (rendering_device->initialize(rendering_context_global, MAIN_WINDOW_ID) != OK) {
 			rendering_device = nullptr;
-			memdelete(rendering_context);
-			rendering_context = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			return;
 		}
+
 		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
@@ -825,9 +837,8 @@ DisplayServerAndroid::~DisplayServerAndroid() {
 	if (rendering_device) {
 		memdelete(rendering_device);
 	}
-	if (rendering_context) {
-		memdelete(rendering_context);
-	}
+
+	free_vulkan_global_context();
 #endif
 }
 
@@ -953,16 +964,16 @@ void DisplayServerAndroid::cursor_set_custom_image(const Ref<Resource> &p_cursor
 
 void DisplayServerAndroid::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 #if defined(RD_ENABLED)
-	if (rendering_context) {
-		rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
+	if (rendering_context_global) {
+		rendering_context_global->window_set_vsync_mode(p_window, p_vsync_mode);
 	}
 #endif
 }
 
 DisplayServer::VSyncMode DisplayServerAndroid::window_get_vsync_mode(WindowID p_window) const {
 #if defined(RD_ENABLED)
-	if (rendering_context) {
-		return rendering_context->window_get_vsync_mode(p_window);
+	if (rendering_context_global) {
+		return rendering_context_global->window_get_vsync_mode(p_window);
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;

@@ -139,6 +139,21 @@ static void _terminate(JNIEnv *env, bool p_restart = false) {
 	}
 }
 
+static String rendering_source_to_string(OS::RenderingSource p_source) {
+	switch (p_source) {
+		case OS::RENDERING_SOURCE_DEFAULT:
+			return "Default";
+		case OS::RENDERING_SOURCE_PROJECT_SETTING:
+			return "ProjectSettings";
+		case OS::RENDERING_SOURCE_COMMANDLINE:
+			return "Commandline";
+		case OS::RENDERING_SOURCE_FALLBACK:
+			return "Fallback";
+		default:
+			return "Unknown";
+	}
+}
+
 extern "C" {
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setVirtualKeyboardHeight(JNIEnv *env, jclass clazz, jint p_height) {
@@ -487,13 +502,30 @@ JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getGlobal(JNIEnv *
 	return env->NewStringUTF(setting_value.utf8().get_data());
 }
 
-JNIEXPORT jobjectArray JNICALL Java_org_godotengine_godot_GodotLib_getRendererInfo(JNIEnv *env, jclass clazz) {
-	String rendering_driver = RenderingServer::get_singleton()->get_current_rendering_driver_name();
+JNIEXPORT jobjectArray JNICALL Java_org_godotengine_godot_GodotLib_getRendererInfo(JNIEnv *env, jclass clazz, jboolean p_vulkan_requirements_met) {
+	String rendering_driver_original = RenderingServer::get_singleton()->get_current_rendering_driver_name();
+	String rendering_driver_chosen = rendering_driver_original;
 	String rendering_method = RenderingServer::get_singleton()->get_current_rendering_method();
 
-	jobjectArray result = env->NewObjectArray(2, jni_find_class(env, "java/lang/String"), nullptr);
-	env->SetObjectArrayElement(result, 0, env->NewStringUTF(rendering_driver.utf8().get_data()));
-	env->SetObjectArrayElement(result, 1, env->NewStringUTF(rendering_method.utf8().get_data()));
+#ifdef VULKAN_ENABLED
+	if (rendering_driver_original == "vulkan" && !DisplayServerAndroid::check_vulkan_global_context(p_vulkan_requirements_met)) {
+		// The Android display server only gets created after this step, so a static check must be used to check for Vulkan
+		// availability instead. If the check fails, it'll fall back to OpenGL3 accordingly if the relevant project setting
+		// is enabled. The Vulkan context created by this check will be reused by the DisplayServer afterwards.
+		rendering_driver_chosen = RenderingServer::get_singleton()->get_current_rendering_driver_name();
+		rendering_method = RenderingServer::get_singleton()->get_current_rendering_method();
+	}
+#endif
+
+	String rendering_driver_source = rendering_source_to_string(OS::get_singleton()->get_current_rendering_driver_name_source());
+	String rendering_method_source = rendering_source_to_string(OS::get_singleton()->get_current_rendering_method_source());
+
+	jobjectArray result = env->NewObjectArray(5, jni_find_class(env, "java/lang/String"), nullptr);
+	env->SetObjectArrayElement(result, 0, env->NewStringUTF(rendering_driver_chosen.utf8().get_data()));
+	env->SetObjectArrayElement(result, 1, env->NewStringUTF(rendering_driver_original.utf8().get_data()));
+	env->SetObjectArrayElement(result, 2, env->NewStringUTF(rendering_method.utf8().get_data()));
+	env->SetObjectArrayElement(result, 3, env->NewStringUTF(rendering_driver_source.utf8().get_data()));
+	env->SetObjectArrayElement(result, 4, env->NewStringUTF(rendering_method_source.utf8().get_data()));
 
 	return result;
 }
@@ -630,7 +662,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererPaused(JNIE
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onScreenRotationChange(JNIEnv *env, jclass clazz, jint p_orientation) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onOrientationChange(JNIEnv *env, jclass clazz, jint p_orientation) {
 	if (step.get() <= STEP_SETUP) {
 		return;
 	}
@@ -638,6 +670,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onScreenRotationChang
 	CameraServer *camera_server = CameraServer::get_singleton();
 	if (camera_server) {
 		camera_server->handle_display_rotation_change(p_orientation);
+	}
+
+	DisplayServer *display_server = DisplayServer::get_singleton();
+	if (display_server) {
+		display_server->emit_signal("orientation_changed", p_orientation);
 	}
 }
 

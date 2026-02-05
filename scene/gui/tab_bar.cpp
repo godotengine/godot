@@ -30,6 +30,7 @@
 
 #include "tab_bar.h"
 
+#include "core/input/input.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
@@ -1836,11 +1837,9 @@ void TabBar::_ensure_no_over_offset() {
 
 	int total_w = tabs[max_drawn_tab].ofs_cache + tabs[max_drawn_tab].size_cache - tabs[offset].ofs_cache;
 	for (int i = offset - 1; i >= 0; i--) {
-		if (tabs[i].hidden) {
-			continue;
+		if (!tabs[i].hidden) {
+			total_w += tabs[i].size_cache;
 		}
-
-		total_w += tabs[i].size_cache;
 
 		if (total_w < limit_with_buttons) {
 			offset_with_buttons--;
@@ -2191,7 +2190,7 @@ void TabBar::_bind_methods() {
 	base_property_helper.set_array_length_getter(&TabBar::get_tab_count);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "title"), defaults.text, &TabBar::set_tab_title, &TabBar::get_tab_title);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "tooltip"), defaults.tooltip, &TabBar::set_tab_tooltip, &TabBar::get_tab_tooltip);
-	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, &TabBar::set_tab_icon, &TabBar::get_tab_icon);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.icon, &TabBar::set_tab_icon, &TabBar::get_tab_icon);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &TabBar::set_tab_disabled, &TabBar::is_tab_disabled);
 	PropertyListHelper::register_base_helper(&base_property_helper);
 }

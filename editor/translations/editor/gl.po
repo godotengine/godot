@@ -35,6 +35,12 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.15-dev\n"
 
+msgid "OK"
+msgstr "Vale"
+
+msgid "Help"
+msgstr "Axuda"
+
 msgid "Physical"
 msgstr "Físico"
 
@@ -2738,9 +2744,6 @@ msgstr "Proxecto Sen Nome"
 msgid "Spins when the editor window redraws."
 msgstr "Xira cando o editor actualiza a pantalla."
 
-msgid "OK"
-msgstr "Vale"
-
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
@@ -3009,9 +3012,6 @@ msgstr "Abrir o anterior editor"
 
 msgid "Project"
 msgstr "Proxecto"
-
-msgid "Help"
-msgstr "Axuda"
 
 msgid "Update Continuously"
 msgstr "Actualizar de Maneira Continua"
@@ -3631,6 +3631,9 @@ msgstr "Erro"
 msgid "Restart Now"
 msgstr "Reiniciar Agora"
 
+msgid "Style"
+msgstr "Estilo"
+
 msgid "Network Profiler"
 msgstr "Analítica de Rendemento de Rede"
 
@@ -3848,9 +3851,6 @@ msgstr "Ortogonal"
 
 msgid "Perspective"
 msgstr "Perspetiva"
-
-msgid "Objects: %d\n"
-msgstr "Obxectos: %d\n"
 
 msgid "Top View."
 msgstr "Vista Superior."
@@ -4463,9 +4463,6 @@ msgstr "Substituír"
 
 msgid "Step"
 msgstr "Paso"
-
-msgid "Style"
-msgstr "Estilo"
 
 msgid "Case"
 msgstr "Maiús./Minús."

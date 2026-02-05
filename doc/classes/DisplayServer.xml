@@ -724,6 +724,7 @@
 			<description>
 				Sets a custom mouse cursor image for the given [param shape]. This means the user's operating system and mouse cursor theme will no longer influence the mouse cursor's appearance.
 				[param cursor] can be either a [Texture2D] or an [Image], and it should not be larger than 256×256 to display correctly. Optionally, [param hotspot] can be set to offset the image's position relative to the click point. By default, [param hotspot] is set to the top-left corner of the image. See also [method cursor_set_shape].
+				[b]Note:[/b] On Web, calling this method every frame can cause the cursor to flicker.
 			</description>
 		</method>
 		<method name="cursor_set_shape">
@@ -784,7 +785,7 @@
 				Displays OS native dialog for selecting files or directories in the file system.
 				Each filter string in the [param filters] array should be formatted like this: [code]*.png,*.jpg,*.jpeg;Image Files;image/png,image/jpeg[/code]. The description text of the filter is optional and can be omitted. It is recommended to set both file extension and MIME type. See also [member FileDialog.filters].
 				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int[/code]. [b]On Android,[/b] the third callback argument ([code]selected_filter_index[/code]) is always [code]0[/code].
-				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE] feature. Supported platforms include Linux (X11/Wayland), Windows, macOS, and Android (API level 29+).
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE] feature. Supported platforms include Linux (X11/Wayland), Windows, macOS, and Android.
 				[b]Note:[/b] [param current_directory] might be ignored.
 				[b]Note:[/b] Embedded file dialogs and Windows file dialogs support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
 				[b]Note:[/b] On Android and Linux, [param show_hidden] is ignored.
@@ -2532,6 +2533,16 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="orientation_changed">
+			<param index="0" name="orientation" type="int" />
+			<description>
+				Emitted when the device orientation changes. [param orientation] is the new orientation.
+				Returns [code]1[/code] for portrait, [code]2[/code] for landscape, and [code]0[/code] if the orientation is undefined.
+				[b]Note:[/b] This method is implemented on Android and iOS.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="FEATURE_GLOBAL_MENU" value="0" enum="Feature" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			Display server supports global menu. This allows the application to display its menu items in the operating system's top bar. [b]macOS[/b]
@@ -2773,6 +2784,9 @@
 		</constant>
 		<constant name="ROLE_TOOLTIP" value="45" enum="AccessibilityRole">
 			Tooltip element.
+		</constant>
+		<constant name="ROLE_REGION" value="46" enum="AccessibilityRole">
+			Region/landmark element. Screen readers can navigate between regions using landmark navigation.
 		</constant>
 		<constant name="POPUP_MENU" value="0" enum="AccessibilityPopupType">
 			Popup menu.

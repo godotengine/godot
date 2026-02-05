@@ -35,6 +35,7 @@
 #include "os_web.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/object/callable_method_pointer.h"
 #include "core/os/main_loop.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
@@ -1004,7 +1005,7 @@ Vector<String> DisplayServerWeb::get_rendering_drivers_func() {
 
 // Clipboard
 void DisplayServerWeb::update_clipboard_callback(const char *p_text) {
-	String text = p_text;
+	String text = String::utf8(p_text);
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {

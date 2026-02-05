@@ -32,6 +32,7 @@
 #include "code_edit.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
 #include "core/string/translation_server.h"
@@ -459,7 +460,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					if (line != -1) {
 						emit_signal(SNAME("symbol_lookup"), symbol_lookup_word, line, col);
 					}
-					return;
+					// Don't return here to pass event to TextEdit so it can clean up the mouse pressed state.
 				}
 			}
 		}

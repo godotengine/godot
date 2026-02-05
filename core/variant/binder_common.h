@@ -30,18 +30,28 @@
 
 #pragma once
 
-#include "core/input/input_enums.h"
 #include "core/object/object.h"
-#include "core/os/keyboard.h"
 #include "core/templates/simple_type.h"
 #include "core/typedefs.h"
 #include "core/variant/method_ptrcall.h"
-#include "core/variant/required_ptr.h"
 #include "core/variant/type_info.h"
 #include "core/variant/variant.h"
 #include "core/variant/variant_internal.h"
 
 #include <cstdio>
+
+enum class HatDir;
+enum class HatMask;
+enum class JoyAxis;
+enum class JoyButton;
+
+enum class MIDIMessage;
+enum class MouseButton;
+enum class MouseButtonMask;
+
+enum class Key;
+enum class KeyModifierMask;
+enum class KeyLocation;
 
 // Variant cannot define an implicit cast operator for every Object subclass, so the
 // casting is done here, to allow binding methods with parameters more specific than Object *
