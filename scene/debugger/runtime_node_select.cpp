@@ -43,6 +43,7 @@
 #include "scene/2d/camera_2d.h"
 #include "scene/debugger/scene_debugger_object.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/view_panner.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/mesh.h"
@@ -91,6 +92,8 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 
 	max_selection = p_settings.get("debugger/max_node_selection", 1);
 
+	// Panner Setup
+
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &RuntimeNodeSelect::_pan_callback), callable_mp(this, &RuntimeNodeSelect::_zoom_callback));
 
@@ -119,20 +122,79 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	RS::get_singleton()->canvas_item_set_parent(sbox_2d_ci, draw_canvas);
 
 #ifndef _3D_DISABLED
-	cursor = Cursor();
-
 	camera_fov = p_settings.get("editors/3d/default_fov", 70);
 	camera_znear = p_settings.get("editors/3d/default_z_near", 0.05);
 	camera_zfar = p_settings.get("editors/3d/default_z_far", 4'000);
 
-	invert_x_axis = p_settings.get("editors/3d/navigation/invert_x_axis", false);
-	invert_y_axis = p_settings.get("editors/3d/navigation/invert_y_axis", false);
-	warped_mouse_panning_3d = p_settings.get("editors/3d/navigation/warped_mouse_panning", true);
+	// View3DController Setup
 
-	freelook_base_speed = p_settings.get("editors/3d/freelook/freelook_base_speed", 5);
-	freelook_sensitivity = Math::deg_to_rad((real_t)p_settings.get("editors/3d/freelook/freelook_sensitivity", 0.25));
-	orbit_sensitivity = Math::deg_to_rad((real_t)p_settings.get("editors/3d/navigation_feel/orbit_sensitivity", 0.004));
-	translation_sensitivity = p_settings.get("editors/3d/navigation_feel/translation_sensitivity", 1);
+	view_3d_controller.instantiate();
+
+	view_3d_controller->set_freelook_scheme((View3DController::FreelookScheme)p_settings.get("editors/3d/freelook/freelook_navigation_scheme", View3DController::FREELOOK_DEFAULT).operator int());
+	view_3d_controller->set_freelook_base_speed(p_settings.get("editors/3d/freelook/freelook_base_speed", 5));
+	view_3d_controller->set_freelook_sensitivity(p_settings.get("editors/3d/freelook/freelook_sensitivity", 0.25));
+	view_3d_controller->set_freelook_inertia(p_settings.get("editors/3d/freelook/freelook_inertia", 0));
+	view_3d_controller->set_freelook_speed_zoom_link(p_settings.get("editors/3d/freelook/freelook_speed_zoom_link", false));
+	view_3d_controller->set_freelook_invert_y_axis(p_settings.get("editors/3d/freelook/freelook_invert_y_axis", false));
+
+	view_3d_controller->set_translation_sensitivity(p_settings.get("editors/3d/navigation_feel/translation_sensitivity", 1));
+	view_3d_controller->set_translation_inertia(p_settings.get("editors/3d/navigation_feel/translation_inertia", 0));
+
+	view_3d_controller->set_pan_mouse_button(p_settings.get("editors/3d/navigation/pan_mouse_button", View3DController::NAV_MOUSE_BUTTON_MIDDLE));
+
+	view_3d_controller->set_orbit_mouse_button(p_settings.get("editors/3d/navigation/orbit_mouse_button", View3DController::NAV_MOUSE_BUTTON_MIDDLE));
+	view_3d_controller->set_orbit_sensitivity(p_settings.get("editors/3d/navigation_feel/orbit_sensitivity", 0.004));
+	view_3d_controller->set_orbit_inertia(p_settings.get("editors/3d/navigation_feel/orbit_inertia", 0));
+
+	view_3d_controller->set_zoom_style(p_settings.get("editors/3d/navigation/zoom_style", View3DController::ZOOM_VERTICAL));
+	view_3d_controller->set_zoom_inertia(p_settings.get("editors/3d/navigation_feel/zoom_inertia", 0));
+	view_3d_controller->set_zoom_mouse_button(p_settings.get("editors/3d/navigation/zoom_mouse_button", View3DController::NAV_MOUSE_BUTTON_MIDDLE));
+
+	view_3d_controller->set_angle_snap_threshold(p_settings.get("editors/3d/navigation_feel/angle_snap_threshold", 10));
+
+	view_3d_controller->set_emulate_3_button_mouse(p_settings.get("editors/3d/navigation/emulate_3_button_mouse", false));
+	view_3d_controller->set_emulate_numpad(p_settings.get("editors/3d/navigation/emulate_numpad", true));
+
+	view_3d_controller->set_z_near(camera_znear);
+	view_3d_controller->set_z_far(camera_zfar);
+
+	view_3d_controller->set_invert_x_axis(p_settings.get("editors/3d/navigation/invert_x_axis", false));
+	view_3d_controller->set_invert_x_axis(p_settings.get("editors/3d/navigation/invert_y_axis", false));
+
+	view_3d_controller->set_warped_mouse_panning(p_settings.get("editors/3d/navigation/warped_mouse_panning", true));
+
+	view_3d_controller->connect("fov_scaled", callable_mp(this, &RuntimeNodeSelect::_fov_scaled));
+	view_3d_controller->connect("cursor_interpolated", callable_mp(this, &RuntimeNodeSelect::_cursor_interpolated));
+
+#define SET_SHORTCUT(p_name, p_setting) \
+	{ \
+		Ref<Shortcut> shortcut = DebuggerMarshalls::deserialize_key_shortcut(p_settings.get(p_setting, Array()).operator Array()); \
+		if (shortcut.is_valid()) { \
+			view_3d_controller->set_shortcut(p_name, shortcut); \
+		} \
+	}
+
+	SET_SHORTCUT(View3DController::SHORTCUT_FOV_DECREASE, "spatial_editor/decrease_fov");
+	SET_SHORTCUT(View3DController::SHORTCUT_FOV_INCREASE, "spatial_editor/increase_fov");
+	SET_SHORTCUT(View3DController::SHORTCUT_FOV_RESET, "spatial_editor/reset_fov");
+	SET_SHORTCUT(View3DController::SHORTCUT_PAN_MOD_1, "spatial_editor/viewport_pan_modifier_1");
+	SET_SHORTCUT(View3DController::SHORTCUT_PAN_MOD_2, "spatial_editor/viewport_pan_modifier_2");
+	SET_SHORTCUT(View3DController::SHORTCUT_ORBIT_MOD_1, "spatial_editor/viewport_orbit_modifier_1");
+	SET_SHORTCUT(View3DController::SHORTCUT_ORBIT_MOD_2, "spatial_editor/viewport_orbit_modifier_2");
+	SET_SHORTCUT(View3DController::SHORTCUT_ORBIT_SNAP_MOD_1, "spatial_editor/viewport_orbit_snap_modifier_1");
+	SET_SHORTCUT(View3DController::SHORTCUT_ORBIT_SNAP_MOD_2, "spatial_editor/viewport_orbit_snap_modifier_2");
+	SET_SHORTCUT(View3DController::SHORTCUT_ZOOM_MOD_1, "spatial_editor/viewport_zoom_modifier_1");
+	SET_SHORTCUT(View3DController::SHORTCUT_ZOOM_MOD_2, "spatial_editor/viewport_zoom_modifier_2");
+	SET_SHORTCUT(View3DController::SHORTCUT_FREELOOK_FORWARD, "spatial_editor/freelook_forward");
+	SET_SHORTCUT(View3DController::SHORTCUT_FREELOOK_BACKWARDS, "spatial_editor/freelook_backwards");
+	SET_SHORTCUT(View3DController::SHORTCUT_FREELOOK_LEFT, "spatial_editor/freelook_left");
+	SET_SHORTCUT(View3DController::SHORTCUT_FREELOOK_RIGHT, "spatial_editor/freelook_right");
+	SET_SHORTCUT(View3DController::SHORTCUT_FREELOOK_UP, "spatial_editor/freelook_up");
+	SET_SHORTCUT(View3DController::SHORTCUT_FREELOOK_DOWN, "spatial_editor/freelook_down");
+	SET_SHORTCUT(View3DController::SHORTCUT_FREELOOK_SPEED_MOD, "spatial_editor/freelook_speed_modifier");
+	SET_SHORTCUT(View3DController::SHORTCUT_FREELOOK_SLOW_MOD, "spatial_editor/freelook_slow_modifier");
+
+#undef SET_SHORTCUT
 
 	/// 3D Selection Box Generation
 	// Copied from the Node3DEditor implementation.
@@ -212,8 +274,8 @@ void RuntimeNodeSelect::_set_camera_override_enabled(bool p_enabled) {
 		Window *root = SceneTree::get_singleton()->get_root();
 		ERR_FAIL_COND(!root->is_camera_3d_override_enabled());
 		Camera3D *override_camera = root->get_override_camera_3d();
-		override_camera->set_transform(_get_cursor_transform());
-		override_camera->set_perspective(camera_fov * cursor.fov_scale, camera_znear, camera_zfar);
+		override_camera->set_transform(view_3d_controller->to_camera_transform());
+		override_camera->set_perspective(camera_fov * view_3d_controller->cursor.fov_scale, camera_znear, camera_zfar);
 #endif // _3D_DISABLED
 	}
 }
@@ -311,64 +373,24 @@ void RuntimeNodeSelect::_update_input_state() {
 
 void RuntimeNodeSelect::_process_frame() {
 #ifndef _3D_DISABLED
-	if (camera_freelook) {
-		Transform3D transform = _get_cursor_transform();
-		Vector3 forward = transform.basis.xform(Vector3(0, 0, -1));
-		const Vector3 right = transform.basis.xform(Vector3(1, 0, 0));
-		Vector3 up = transform.basis.xform(Vector3(0, 1, 0));
+	// Calculate the process time manually, as the time scale can be frozen.
+	const double process_time = (1.0 / Engine::get_singleton()->get_frames_per_second()) * Engine::get_singleton()->get_unfrozen_time_scale();
 
-		Vector3 direction;
-
+	if (view_3d_controller->is_freelook_enabled()) {
 		Input *input = Input::get_singleton();
 		bool was_input_disabled = input->is_input_disabled();
 		if (was_input_disabled) {
 			input->set_disable_input(false);
 		}
 
-		if (input->is_physical_key_pressed(Key::A)) {
-			direction -= right;
-		}
-		if (input->is_physical_key_pressed(Key::D)) {
-			direction += right;
-		}
-		if (input->is_physical_key_pressed(Key::W)) {
-			direction += forward;
-		}
-		if (input->is_physical_key_pressed(Key::S)) {
-			direction -= forward;
-		}
-		if (input->is_physical_key_pressed(Key::E)) {
-			direction += up;
-		}
-		if (input->is_physical_key_pressed(Key::Q)) {
-			direction -= up;
-		}
-
-		real_t speed = freelook_base_speed;
-		if (input->is_physical_key_pressed(Key::SHIFT)) {
-			speed *= 3.0;
-		}
-		if (input->is_physical_key_pressed(Key::ALT)) {
-			speed *= 0.333333;
-		}
+		view_3d_controller->update_freelook(process_time);
 
 		if (was_input_disabled) {
 			input->set_disable_input(true);
 		}
-
-		if (direction != Vector3()) {
-			Window *root = SceneTree::get_singleton()->get_root();
-			ERR_FAIL_COND(!root->is_camera_3d_override_enabled());
-
-			// Calculate the process time manually, as the time scale is frozen.
-			const double process_time = (1.0 / Engine::get_singleton()->get_frames_per_second()) * Engine::get_singleton()->get_unfrozen_time_scale();
-			const Vector3 motion = direction * speed * process_time;
-			cursor.pos += motion;
-			cursor.eye_pos += motion;
-
-			root->get_override_camera_3d()->set_transform(_get_cursor_transform());
-		}
 	}
+
+	view_3d_controller->update_camera(process_time);
 #endif // _3D_DISABLED
 
 	if (selection_update_queued || !SceneTree::get_singleton()->is_suspended()) {
@@ -1390,231 +1412,58 @@ Vector3 RuntimeNodeSelect::_get_screen_to_space(const Vector3 &p_vector3) {
 	return camera_transform.xform(Vector3(((p_vector3.x / size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (p_vector3.y / size.height)) * 2.0 - 1.0) * screen_he.y, -(znear + p_vector3.z)));
 }
 
+void RuntimeNodeSelect::_fov_scaled() {
+	SceneTree::get_singleton()->get_root()->get_override_camera_3d()->set_perspective(camera_fov * view_3d_controller->cursor.fov_scale, camera_znear, camera_zfar);
+}
+
+void RuntimeNodeSelect::_cursor_interpolated() {
+	Window *root = SceneTree::get_singleton()->get_root();
+	ERR_FAIL_COND(!root->is_camera_3d_override_enabled());
+	root->get_override_camera_3d()->set_transform(view_3d_controller->interp_to_camera_transform());
+}
+
 bool RuntimeNodeSelect::_handle_3d_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
-	if (b.is_valid()) {
-		const real_t zoom_factor = 1.08 * b->get_factor();
-		switch (b->get_button_index()) {
-			case MouseButton::WHEEL_UP: {
-				if (!camera_freelook) {
-					_cursor_scale_distance(1.0 / zoom_factor);
-				} else {
-					_scale_freelook_speed(zoom_factor);
-				}
-
-				return true;
-			} break;
-			case MouseButton::WHEEL_DOWN: {
-				if (!camera_freelook) {
-					_cursor_scale_distance(zoom_factor);
-				} else {
-					_scale_freelook_speed(1.0 / zoom_factor);
-				}
-
-				return true;
-			} break;
-			case MouseButton::RIGHT: {
-				_set_camera_freelook_enabled(b->is_pressed());
-				return true;
-			} break;
-			default: {
-			}
-		}
+	if (b.is_valid() && b->get_button_index() == MouseButton::RIGHT) {
+		view_3d_controller->set_freelook_enabled(b->is_pressed());
+		return true;
 	}
 
-	Ref<InputEventMouseMotion> m = p_event;
-	if (m.is_valid()) {
-		if (camera_freelook) {
-			_cursor_look(m);
-		} else if (m->get_button_mask().has_flag(MouseButtonMask::MIDDLE)) {
-			if (m->is_shift_pressed()) {
-				_cursor_pan(m);
-			} else {
-				_cursor_orbit(m);
-			}
-		}
+	Window *root = SceneTree::get_singleton()->get_root();
+	ERR_FAIL_COND_V(!root->is_camera_3d_override_enabled(), true);
 
+	Input *input = Input::get_singleton();
+	bool was_input_disabled = input->is_input_disabled();
+	if (was_input_disabled) {
+		input->set_disable_input(false);
+	}
+
+	// Reduce all sides of the area by 1, so warping works when windows are maximized/fullscreen.
+	bool view_3d_input_received = view_3d_controller->gui_input(p_event, Rect2(Vector2(1, 1), root->get_size() - Vector2(2, 2)));
+
+	if (was_input_disabled) {
+		input->set_disable_input(true);
+	}
+
+	if (view_3d_input_received) {
+		root->get_override_camera_3d()->set_transform(view_3d_controller->interp_to_camera_transform());
 		return true;
 	}
 
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid()) {
-		if (k->get_physical_keycode() == Key::ESCAPE) {
-			_set_camera_freelook_enabled(false);
-			return true;
-		} else if (k->is_ctrl_pressed()) {
-			switch (k->get_physical_keycode()) {
-				case Key::EQUAL: {
-					ERR_FAIL_COND_V(!SceneTree::get_singleton()->get_root()->is_camera_3d_override_enabled(), false);
-					cursor.fov_scale = CLAMP(cursor.fov_scale - 0.05, CAMERA_MIN_FOV_SCALE, CAMERA_MAX_FOV_SCALE);
-					SceneTree::get_singleton()->get_root()->get_override_camera_3d()->set_perspective(camera_fov * cursor.fov_scale, camera_znear, camera_zfar);
-
-					return true;
-				} break;
-				case Key::MINUS: {
-					ERR_FAIL_COND_V(!SceneTree::get_singleton()->get_root()->is_camera_3d_override_enabled(), false);
-					cursor.fov_scale = CLAMP(cursor.fov_scale + 0.05, CAMERA_MIN_FOV_SCALE, CAMERA_MAX_FOV_SCALE);
-					SceneTree::get_singleton()->get_root()->get_override_camera_3d()->set_perspective(camera_fov * cursor.fov_scale, camera_znear, camera_zfar);
-
-					return true;
-				} break;
-				case Key::KEY_0: {
-					ERR_FAIL_COND_V(!SceneTree::get_singleton()->get_root()->is_camera_3d_override_enabled(), false);
-					cursor.fov_scale = 1;
-					SceneTree::get_singleton()->get_root()->get_override_camera_3d()->set_perspective(camera_fov, camera_znear, camera_zfar);
-
-					return true;
-				} break;
-				default: {
-				}
-			}
-		}
+	if (k.is_valid() && k->get_physical_keycode() == Key::ESCAPE) {
+		view_3d_controller->set_freelook_enabled(false);
+		return true;
 	}
-
-	// TODO: Handle magnify and pan input gestures.
 
 	return false;
-}
-
-void RuntimeNodeSelect::_set_camera_freelook_enabled(bool p_enabled) {
-	camera_freelook = p_enabled;
-
-	if (p_enabled) {
-		// Make sure eye_pos is synced, because freelook referential is eye pos rather than orbit pos
-		Vector3 forward = _get_cursor_transform().basis.xform(Vector3(0, 0, -1));
-		cursor.eye_pos = cursor.pos - cursor.distance * forward;
-
-		previous_mouse_position = SceneTree::get_singleton()->get_root()->get_mouse_position();
-
-		// Hide mouse like in an FPS (warping doesn't work).
-		Input::get_singleton()->set_mouse_mode_override(Input::MouseMode::MOUSE_MODE_CAPTURED);
-
-	} else {
-		// Restore mouse.
-		Input::get_singleton()->set_mouse_mode_override(Input::MouseMode::MOUSE_MODE_VISIBLE);
-
-		// Restore the previous mouse position when leaving freelook mode.
-		// This is done because leaving `Input.MOUSE_MODE_CAPTURED` will center the cursor
-		// due to OS limitations.
-		Input::get_singleton()->warp_mouse(previous_mouse_position);
-	}
-}
-
-void RuntimeNodeSelect::_cursor_scale_distance(real_t p_scale) {
-	ERR_FAIL_COND(!SceneTree::get_singleton()->get_root()->is_camera_3d_override_enabled());
-	real_t min_distance = MAX(camera_znear * 4, VIEW_3D_MIN_ZOOM);
-	real_t max_distance = MIN(camera_zfar / 4, VIEW_3D_MAX_ZOOM);
-	cursor.distance = CLAMP(cursor.distance * p_scale, min_distance, max_distance);
-
-	SceneTree::get_singleton()->get_root()->get_override_camera_3d()->set_transform(_get_cursor_transform());
-}
-
-void RuntimeNodeSelect::_scale_freelook_speed(real_t p_scale) {
-	real_t min_speed = MAX(camera_znear * 4, VIEW_3D_MIN_ZOOM);
-	real_t max_speed = MIN(camera_zfar / 4, VIEW_3D_MAX_ZOOM);
-	if (unlikely(min_speed > max_speed)) {
-		freelook_base_speed = (min_speed + max_speed) / 2;
-	} else {
-		freelook_base_speed = CLAMP(freelook_base_speed * p_scale, min_speed, max_speed);
-	}
-}
-
-void RuntimeNodeSelect::_cursor_look(Ref<InputEventWithModifiers> p_event) {
-	Window *root = SceneTree::get_singleton()->get_root();
-	ERR_FAIL_COND(!root->is_camera_3d_override_enabled());
-
-	const Vector2 relative = _get_warped_mouse_motion(p_event, Rect2(Vector2(), root->get_size()));
-	const Transform3D prev_camera_transform = _get_cursor_transform();
-
-	if (invert_y_axis) {
-		cursor.x_rot -= relative.y * freelook_sensitivity;
-	} else {
-		cursor.x_rot += relative.y * freelook_sensitivity;
-	}
-	// Clamp the Y rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
-	cursor.x_rot = CLAMP(cursor.x_rot, -1.57, 1.57);
-
-	cursor.y_rot += relative.x * freelook_sensitivity;
-
-	// Look is like the opposite of Orbit: the focus point rotates around the camera.
-	Transform3D camera_transform = _get_cursor_transform();
-	Vector3 pos = camera_transform.xform(Vector3(0, 0, 0));
-	Vector3 prev_pos = prev_camera_transform.xform(Vector3(0, 0, 0));
-	Vector3 diff = prev_pos - pos;
-	cursor.pos += diff;
-
-	root->get_override_camera_3d()->set_transform(_get_cursor_transform());
-}
-
-void RuntimeNodeSelect::_cursor_pan(Ref<InputEventWithModifiers> p_event) {
-	Window *root = SceneTree::get_singleton()->get_root();
-	ERR_FAIL_COND(!root->is_camera_3d_override_enabled());
-
-	// Reduce all sides of the area by 1, so warping works when windows are maximized/fullscreen.
-	const Vector2 relative = _get_warped_mouse_motion(p_event, Rect2(Vector2(1, 1), root->get_size() - Vector2(2, 2)));
-	const real_t pan_speed = translation_sensitivity / 150.0;
-
-	Transform3D camera_transform;
-	camera_transform.translate_local(cursor.pos);
-	camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor.x_rot);
-	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
-
-	Vector3 translation(1 * -relative.x * pan_speed, relative.y * pan_speed, 0);
-	translation *= cursor.distance / 4;
-	camera_transform.translate_local(translation);
-	cursor.pos = camera_transform.origin;
-
-	root->get_override_camera_3d()->set_transform(_get_cursor_transform());
-}
-
-void RuntimeNodeSelect::_cursor_orbit(Ref<InputEventWithModifiers> p_event) {
-	Window *root = SceneTree::get_singleton()->get_root();
-	ERR_FAIL_COND(!root->is_camera_3d_override_enabled());
-
-	// Reduce all sides of the area by 1, so warping works when windows are maximized/fullscreen.
-	const Vector2 relative = _get_warped_mouse_motion(p_event, Rect2(Vector2(1, 1), root->get_size() - Vector2(2, 2)));
-
-	if (invert_y_axis) {
-		cursor.x_rot -= relative.y * orbit_sensitivity;
-	} else {
-		cursor.x_rot += relative.y * orbit_sensitivity;
-	}
-	// Clamp the Y rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
-	cursor.x_rot = CLAMP(cursor.x_rot, -1.57, 1.57);
-
-	if (invert_x_axis) {
-		cursor.y_rot -= relative.x * orbit_sensitivity;
-	} else {
-		cursor.y_rot += relative.x * orbit_sensitivity;
-	}
-
-	root->get_override_camera_3d()->set_transform(_get_cursor_transform());
-}
-
-Point2 RuntimeNodeSelect::_get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_event, Rect2 p_area) const {
-	ERR_FAIL_COND_V(p_event.is_null(), Point2());
-
-	if (warped_mouse_panning_3d) {
-		return Input::get_singleton()->warp_mouse_motion(p_event, p_area);
-	}
-
-	return p_event->get_relative();
-}
-
-Transform3D RuntimeNodeSelect::_get_cursor_transform() {
-	Transform3D camera_transform;
-	camera_transform.translate_local(cursor.pos);
-	camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor.x_rot);
-	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
-	camera_transform.translate_local(0, 0, cursor.distance);
-
-	return camera_transform;
 }
 
 void RuntimeNodeSelect::_reset_camera_3d() {
 	camera_first_override = true;
 
-	cursor = Cursor();
+	View3DController::Cursor cursor;
+
 	Window *root = SceneTree::get_singleton()->get_root();
 	Camera3D *game_camera = root->is_camera_3d_override_enabled() ? root->get_overridden_camera_3d() : root->get_camera_3d();
 	if (game_camera) {
@@ -1624,15 +1473,18 @@ void RuntimeNodeSelect::_reset_camera_3d() {
 
 		cursor.x_rot = -game_camera->get_global_rotation().x;
 		cursor.y_rot = -game_camera->get_global_rotation().y;
+		cursor.unsnapped_x_rot = cursor.x_rot;
+		cursor.unsnapped_y_rot = cursor.y_rot;
 
-		cursor.fov_scale = CLAMP(game_camera->get_fov() / camera_fov, CAMERA_MIN_FOV_SCALE, CAMERA_MAX_FOV_SCALE);
-	} else {
-		cursor.fov_scale = 1.0;
+		cursor.fov_scale = CLAMP(game_camera->get_fov() / camera_fov, View3DControllerConsts::CAMERA_MIN_FOV_SCALE, View3DControllerConsts::CAMERA_MAX_FOV_SCALE);
 	}
 
+	view_3d_controller->cursor = cursor;
+
 	if (root->is_camera_3d_override_enabled()) {
+		view_3d_controller->update_camera();
 		Camera3D *override_camera = root->get_override_camera_3d();
-		override_camera->set_transform(_get_cursor_transform());
+		override_camera->set_transform(view_3d_controller->to_camera_transform());
 		override_camera->set_perspective(camera_fov * cursor.fov_scale, camera_znear, camera_zfar);
 	}
 }
