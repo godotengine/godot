@@ -1608,32 +1608,32 @@ CSGBrush *CSGBox3D::_build_brush() {
 	if (scale_uv) {
 		//xy xz zy
 		Vector2 directions[3] = { Vector2(size.x, size.y), Vector2(size.x, size.z), Vector2(size.z, size.y) };
-		Vector2 shifts[3] = { Vector2(uv_shift.x, uv_shift.y), Vector2(uv_shift.x, uv_shift.z), Vector2(uv_shift.z, uv_shift.y) };
+		Vector2 shifts[5] = { Vector2(uv_offset.x, uv_offset.y), Vector2(uv_offset.x, uv_offset.z), Vector2(uv_offset.z, uv_offset.y), Vector2(uv_offset.x, -uv_offset.z), Vector2(-uv_offset.x, uv_offset.y) };
 		//zy//X+
-		uvsw[0] = Vector2(-1, -1) * directions[2] + shifts[2];
-		uvsw[1] = Vector2(0, -1) * directions[2] + shifts[2];
-		uvsw[2] = Vector2(0, 0) * directions[2] + shifts[2];
-		uvsw[3] = Vector2(0, 0) * directions[2] + shifts[2];
-		uvsw[4] = Vector2(-1, 0) * directions[2] + shifts[2];
-		uvsw[5] = Vector2(-1, -1) * directions[2] + shifts[2];
+		uvsw[0] = Vector2(0, -1) * directions[2] + shifts[2];
+		uvsw[1] = Vector2(1, -1) * directions[2] + shifts[2];
+		uvsw[2] = Vector2(1, 0) * directions[2] + shifts[2];
+		uvsw[3] = Vector2(1, 0) * directions[2] + shifts[2];
+		uvsw[4] = Vector2(0, 0) * directions[2] + shifts[2];
+		uvsw[5] = Vector2(0, -1) * directions[2] + shifts[2];
 		//xz
-		if (invert_val) {
-			//when we flip the faces, make sure the top and bottom are not mirrored.
-			//top face
-			uvsw[6] = Vector2(1, 0) * directions[1] + shifts[1];
-			uvsw[7] = Vector2(0, 0) * directions[1] + shifts[1];
-			uvsw[8] = Vector2(0, 1) * directions[1] + shifts[1];
-			uvsw[9] = Vector2(0, 1) * directions[1] + shifts[1];
-			uvsw[10] = Vector2(1, 1) * directions[1] + shifts[1];
-			uvsw[11] = Vector2(1, 0) * directions[1] + shifts[1];
-		} else {
-			uvsw[6] = Vector2(1, 1) * directions[1] + shifts[1];
-			uvsw[7] = Vector2(0, 1) * directions[1] + shifts[1];
-			uvsw[8] = Vector2(0, 0) * directions[1] + shifts[1];
-			uvsw[9] = Vector2(0, 0) * directions[1] + shifts[1];
-			uvsw[10] = Vector2(1, 0) * directions[1] + shifts[1];
-			uvsw[11] = Vector2(1, 1) * directions[1] + shifts[1];
-		}
+// 		if (invert_val) {
+// 			//when we flip the faces, make sure the top and bottom are not mirrored.
+// 			//top face
+// 			uvsw[6] = Vector2(1, 0) * directions[1] + shifts[1];
+// 			uvsw[7] = Vector2(0, 0) * directions[1] + shifts[1];
+// 			uvsw[8] = Vector2(0, 1) * directions[1] + shifts[1];
+// 			uvsw[9] = Vector2(0, 1) * directions[1] + shifts[1];
+// 			uvsw[10] = Vector2(1, 1) * directions[1] + shifts[1];
+// 			uvsw[11] = Vector2(1, 0) * directions[1] + shifts[1];
+// 		} else {
+		uvsw[6] = Vector2(1, 1) * directions[1] + shifts[1];
+		uvsw[7] = Vector2(0, 1) * directions[1] + shifts[1];
+		uvsw[8] = Vector2(0, 0) * directions[1] + shifts[1];
+		uvsw[9] = Vector2(0, 0) * directions[1] + shifts[1];
+		uvsw[10] = Vector2(1, 0) * directions[1] + shifts[1];
+		uvsw[11] = Vector2(1, 1) * directions[1] + shifts[1];
+		//}
 		//z+
 		uvsw[12] = Vector2(1, -1) * directions[0] + shifts[0];
 		uvsw[13] = Vector2(1, 0) * directions[0] + shifts[0];
@@ -1649,29 +1649,29 @@ CSGBrush *CSGBox3D::_build_brush() {
 		uvsw[22] = Vector2(-1, 0) * directions[2] + shifts[2];
 		uvsw[23] = Vector2(-1, -1) * directions[2] + shifts[2];
 		//xz
-		if (invert_val) {
-			//bottom face
-			uvsw[24] = Vector2(0, 1) * directions[1] + shifts[1];
-			uvsw[25] = Vector2(1, 1) * directions[1] + shifts[1];
-			uvsw[26] = Vector2(1, 0) * directions[1] + shifts[1];
-			uvsw[27] = Vector2(1, 0) * directions[1] + shifts[1];
-			uvsw[28] = Vector2(0, 0) * directions[1] + shifts[1];
-			uvsw[29] = Vector2(0, 1) * directions[1] + shifts[1];
-		} else {
-			uvsw[24] = Vector2(0, 0) * directions[1] + shifts[1];
-			uvsw[25] = Vector2(1, 0) * directions[1] + shifts[1];
-			uvsw[26] = Vector2(1, 1) * directions[1] + shifts[1];
-			uvsw[27] = Vector2(1, 1) * directions[1] + shifts[1];
-			uvsw[28] = Vector2(0, 1) * directions[1] + shifts[1];
-			uvsw[29] = Vector2(0, 0) * directions[1] + shifts[1];
-		}
+// 		if (invert_val) {//too much work
+// 			//bottom face
+// 			uvsw[24] = Vector2(0, 1) * directions[1] + shifts[1];
+// 			uvsw[25] = Vector2(1, 1) * directions[1] + shifts[1];
+// 			uvsw[26] = Vector2(1, 0) * directions[1] + shifts[1];
+// 			uvsw[27] = Vector2(1, 0) * directions[1] + shifts[1];
+// 			uvsw[28] = Vector2(0, 0) * directions[1] + shifts[1];
+// 			uvsw[29] = Vector2(0, 1) * directions[1] + shifts[1];
+// 		} else {
+		uvsw[24] = Vector2(0, 0) * directions[1] + shifts[3];
+		uvsw[25] = Vector2(1, 0) * directions[1] + shifts[3];
+		uvsw[26] = Vector2(1, 1) * directions[1] + shifts[3];
+		uvsw[27] = Vector2(1, 1) * directions[1] + shifts[3];
+		uvsw[28] = Vector2(0, 1) * directions[1] + shifts[3];
+		uvsw[29] = Vector2(0, 0) * directions[1] + shifts[3];
+		//}
 		//z-
-		uvsw[30] = Vector2(0, 0) * directions[0] + shifts[0];
-		uvsw[31] = Vector2(0, -1) * directions[0] + shifts[0];
-		uvsw[32] = Vector2(1, -1) * directions[0] + shifts[0];
-		uvsw[33] = Vector2(1, -1) * directions[0] + shifts[0];
-		uvsw[34] = Vector2(1, 0) * directions[0] + shifts[0];
-		uvsw[35] = Vector2(0, 0) * directions[0] + shifts[0];
+		uvsw[30] = Vector2(0, 0) * directions[0] + shifts[4];
+		uvsw[31] = Vector2(0, -1) * directions[0] + shifts[4];
+		uvsw[32] = Vector2(1, -1) * directions[0] + shifts[4];
+		uvsw[33] = Vector2(1, -1) * directions[0] + shifts[4];
+		uvsw[34] = Vector2(1, 0) * directions[0] + shifts[4];
+		uvsw[35] = Vector2(0, 0) * directions[0] + shifts[4];
 	} else {
 		if (compat_mode) {
 			uvsw[0] = Vector2(0, 0);
@@ -1718,21 +1718,21 @@ CSGBrush *CSGBox3D::_build_brush() {
 			uvsw[3] = Vector2(1, 0);
 			uvsw[4] = Vector2(0, 0);
 			uvsw[5] = Vector2(0, -1);
-			if (invert_val) {
-				uvsw[6] = Vector2(1, 0);
-				uvsw[7] = Vector2(0, 0);
-				uvsw[8] = Vector2(0, 1);
-				uvsw[9] = Vector2(0, 1);
-				uvsw[10] = Vector2(1, 1);
-				uvsw[11] = Vector2(1, 0);
-			} else {
-				uvsw[6] = Vector2(0, 1);
-				uvsw[7] = Vector2(0, 0);
-				uvsw[8] = Vector2(1, 0);
-				uvsw[9] = Vector2(1, 0);
-				uvsw[10] = Vector2(1, 1);
-				uvsw[11] = Vector2(0, 1);
-			}
+// 			if (invert_val) {
+// 				uvsw[6] = Vector2(1, 0);
+// 				uvsw[7] = Vector2(0, 0);
+// 				uvsw[8] = Vector2(0, 1);
+// 				uvsw[9] = Vector2(0, 1);
+// 				uvsw[10] = Vector2(1, 1);
+// 				uvsw[11] = Vector2(1, 0);
+// 			} else {
+			uvsw[6] = Vector2(0, 1);
+			uvsw[7] = Vector2(0, 0);
+			uvsw[8] = Vector2(1, 0);
+			uvsw[9] = Vector2(1, 0);
+			uvsw[10] = Vector2(1, 1);
+			uvsw[11] = Vector2(0, 1);
+			//}
 
 			uvsw[12] = Vector2(1, -1);
 			uvsw[13] = Vector2(1, 0);
@@ -1747,21 +1747,21 @@ CSGBrush *CSGBox3D::_build_brush() {
 			uvsw[21] = Vector2(1, 0);
 			uvsw[22] = Vector2(0, 0);
 			uvsw[23] = Vector2(0, -1);
-			if (invert_val) {
-				uvsw[24] = Vector2(0, 1);
-				uvsw[25] = Vector2(1, 1);
-				uvsw[26] = Vector2(1, 0);
-				uvsw[27] = Vector2(1, 0);
-				uvsw[28] = Vector2(0, 0);
-				uvsw[29] = Vector2(0, 1);
-			} else {
-				uvsw[24] = Vector2(0, 0);
-				uvsw[25] = Vector2(1, 0);
-				uvsw[26] = Vector2(1, 1);
-				uvsw[27] = Vector2(1, 1);
-				uvsw[28] = Vector2(0, 1);
-				uvsw[29] = Vector2(0, 0);
-			}
+// 			if (invert_val) {
+// 				uvsw[24] = Vector2(0, 1);
+// 				uvsw[25] = Vector2(1, 1);
+// 				uvsw[26] = Vector2(1, 0);
+// 				uvsw[27] = Vector2(1, 0);
+// 				uvsw[28] = Vector2(0, 0);
+// 				uvsw[29] = Vector2(0, 1);
+// 			} else {
+			uvsw[24] = Vector2(0, 0);
+			uvsw[25] = Vector2(1, 0);
+			uvsw[26] = Vector2(1, 1);
+			uvsw[27] = Vector2(1, 1);
+			uvsw[28] = Vector2(0, 1);
+			uvsw[29] = Vector2(0, 0);
+			//}
 
 			uvsw[30] = Vector2(0, 0);
 			uvsw[31] = Vector2(0, -1);
@@ -1793,15 +1793,15 @@ void CSGBox3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scale_uv", "scale_uv"), &CSGBox3D::set_scale_uv);
 	ClassDB::bind_method(D_METHOD("is_scale_uv"), &CSGBox3D::is_scale_uv);
 
-	ClassDB::bind_method(D_METHOD("set_uv_shift", "uv_shift"), &CSGBox3D::set_uv_shift);
-	ClassDB::bind_method(D_METHOD("get_uv_shift"), &CSGBox3D::get_uv_shift);
+	ClassDB::bind_method(D_METHOD("set_uv_offset", "uv_offset"), &CSGBox3D::set_uv_offset);
+	ClassDB::bind_method(D_METHOD("get_uv_offset"), &CSGBox3D::get_uv_offset);
 
 	ClassDB::bind_method(D_METHOD("set_compat_mode", "compat_mode"), &CSGBox3D::set_compat_mode);
 	ClassDB::bind_method(D_METHOD("is_compat_mode"), &CSGBox3D::is_compat_mode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scale_uv"), "set_scale_uv", "is_scale_uv");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv_shift", PROPERTY_HINT_NONE, "suffix:m"), "set_uv_shift", "get_uv_shift");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_uv_offset", "get_uv_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "compat_mode"), "set_compat_mode", "is_compat_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
@@ -1826,14 +1826,14 @@ bool CSGBox3D::is_scale_uv() const {
 	return scale_uv;
 }
 
-void CSGBox3D::set_uv_shift(const Vector3 &p_size) {
-	uv_shift = p_size;
+void CSGBox3D::set_uv_offset(const Vector3 &p_size) {
+	uv_offset = p_size;
 	_make_dirty();
 	update_gizmos();
 }
 
-Vector3 CSGBox3D::get_uv_shift() const {
-	return uv_shift;
+Vector3 CSGBox3D::get_uv_offset() const {
+	return uv_offset;
 }
 
 void CSGBox3D::set_compat_mode(const bool p_compat) {
@@ -1915,12 +1915,17 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 		int face = 0;
 
 		Vector3 vertex_mul(radius, height * 0.5, radius);
+		Vector2 side_uv_offset(uv_offset.x, uv_offset.y);
+		Vector2 cap_uv_offset(radius + uv_offset.x, radius + uv_offset.z);
 
 		{
 			for (int i = 0; i < sides; i++) {
 				float inc = float(i) / sides;
 				float inc_n = float((i + 1)) / sides;
-				if (i == sides - 1) {
+
+				float inc_n_uv = inc_n * 4.0;
+
+				if (i == sides - 1) {//This is the bug with the weird side that gets squashed //this is used to produce a full circle using cos and sin//it should not be tied to the UVs, UVs need their own separate variables
 					inc_n = 0;
 				}
 
@@ -1939,19 +1944,30 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 
 				Vector2 u[4] = {
 					Vector2(inc, 0),
-					Vector2(inc_n, 0),
-					Vector2(inc_n, 1),
+					Vector2(inc_n_uv, 0),
+					Vector2(inc_n_uv, 1),
 					Vector2(inc, 1),
 				};
+
+				if (scale_uv) {
+					u[0].x *= radius;
+					//u[0][1] *=
+					u[1].x *= radius;
+					//u[1][1]
+					u[2].x *= radius;
+					u[2].y = height;
+					u[3].x *= radius;
+					u[3].y = height;
+				}
 
 				//side face 1
 				facesw[face * 3 + 0] = face_points[0] * vertex_mul;
 				facesw[face * 3 + 1] = face_points[1] * vertex_mul;
 				facesw[face * 3 + 2] = face_points[2] * vertex_mul;
 
-				uvsw[face * 3 + 0] = u[0];
-				uvsw[face * 3 + 1] = u[1];
-				uvsw[face * 3 + 2] = u[2];
+				uvsw[face * 3 + 0] = u[0] + side_uv_offset;//TODO split into 2 properties
+				uvsw[face * 3 + 1] = u[1] + side_uv_offset;
+				uvsw[face * 3 + 2] = u[2] + side_uv_offset;
 
 				smoothw[face] = smooth_faces;
 				invertw[face] = invert_val;
@@ -1965,9 +1981,9 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					facesw[face * 3 + 1] = face_points[3] * vertex_mul;
 					facesw[face * 3 + 2] = face_points[0] * vertex_mul;
 
-					uvsw[face * 3 + 0] = u[2];
-					uvsw[face * 3 + 1] = u[3];
-					uvsw[face * 3 + 2] = u[0];
+					uvsw[face * 3 + 0] = u[2] + side_uv_offset;
+					uvsw[face * 3 + 1] = u[3] + side_uv_offset;
+					uvsw[face * 3 + 2] = u[0] + side_uv_offset;
 
 					smoothw[face] = smooth_faces;
 					invertw[face] = invert_val;
@@ -1980,9 +1996,20 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				facesw[face * 3 + 1] = face_points[0] * vertex_mul;
 				facesw[face * 3 + 2] = Vector3(0, -1, 0) * vertex_mul;
 
-				uvsw[face * 3 + 0] = Vector2(face_points[1].x, face_points[1].y) * 0.5 + Vector2(0.5, 0.5);
+				//use Z instead of Y
+				if (scale_uv) {
+					uvsw[face * 3] = (Vector2(face_points[1].x, face_points[1].z) * radius) + cap_uv_offset;
+					uvsw[face * 3 + 1] = (Vector2(face_points[0].x, face_points[0].z) * radius) + cap_uv_offset;
+					uvsw[face * 3 + 2] = cap_uv_offset;
+				} else {
+					uvsw[face * 3] = (Vector2(face_points[1].x, face_points[1].z) * 0.5) + 0.5;
+					uvsw[face * 3 + 1] = (Vector2(face_points[0].x, face_points[0].z) * 0.5) + 0.5;
+					uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
+				}
+
+				/*uvsw[face * 3 + 0] = Vector2(face_points[1].x, face_points[1].y) * 0.5 + Vector2(0.5, 0.5);
 				uvsw[face * 3 + 1] = Vector2(face_points[0].x, face_points[0].y) * 0.5 + Vector2(0.5, 0.5);
-				uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
+				uvsw[face * 3 + 2] = Vector2(0.5, 0.5);*///this points to the centre of the texture for the bottom face of the cylinder. that's why it looks so weird.
 
 				smoothw[face] = false;
 				invertw[face] = invert_val;
@@ -1995,9 +2022,19 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					facesw[face * 3 + 1] = face_points[2] * vertex_mul;
 					facesw[face * 3 + 2] = Vector3(0, 1, 0) * vertex_mul;
 
-					uvsw[face * 3 + 0] = Vector2(face_points[1].x, face_points[1].y) * 0.5 + Vector2(0.5, 0.5);
+					//this should be a different coordinate since they don't originate from the same edge as the bottom ones.
+					if (scale_uv) {
+						uvsw[face * 3] = (Vector2(face_points[1].x, face_points[1].z) * radius) + cap_uv_offset;
+						uvsw[face * 3 + 1] = (Vector2(face_points[0].x, face_points[0].z) * radius) + cap_uv_offset;
+						uvsw[face * 3 + 2] = cap_uv_offset;
+					} else {
+						uvsw[face * 3] = (Vector2(face_points[1].x, face_points[1].z) * 0.5) + 0.5;
+						uvsw[face * 3 + 1] = (Vector2(face_points[0].x, face_points[0].z) * 0.5) + 0.5;
+						uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
+					}
+					/*uvsw[face * 3 + 0] = Vector2(face_points[1].x, face_points[1].y) * 0.5 + Vector2(0.5, 0.5);
 					uvsw[face * 3 + 1] = Vector2(face_points[0].x, face_points[0].y) * 0.5 + Vector2(0.5, 0.5);
-					uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
+					uvsw[face * 3 + 2] = Vector2(0.5, 0.5);*/
 
 					smoothw[face] = false;
 					invertw[face] = invert_val;
@@ -2030,6 +2067,12 @@ void CSGCylinder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cone", "cone"), &CSGCylinder3D::set_cone);
 	ClassDB::bind_method(D_METHOD("is_cone"), &CSGCylinder3D::is_cone);
 
+	ClassDB::bind_method(D_METHOD("set_scale_uv", "scale_uv"), &CSGCylinder3D::set_scale_uv);
+	ClassDB::bind_method(D_METHOD("is_scale_uv"), &CSGCylinder3D::is_scale_uv);
+
+	ClassDB::bind_method(D_METHOD("set_uv_offset", "uv_offset"), &CSGCylinder3D::set_uv_offset);
+	ClassDB::bind_method(D_METHOD("get_uv_offset"), &CSGCylinder3D::get_uv_offset);
+
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGCylinder3D::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGCylinder3D::get_material);
 
@@ -2040,6 +2083,8 @@ void CSGCylinder3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater,exp,suffix:m"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_sides", "get_sides");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cone"), "set_cone", "is_cone");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scale_uv"), "set_scale_uv", "is_scale_uv");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_uv_offset", "get_uv_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
@@ -2083,6 +2128,26 @@ void CSGCylinder3D::set_cone(const bool p_cone) {
 
 bool CSGCylinder3D::is_cone() const {
 	return cone;
+}
+
+void CSGCylinder3D::set_scale_uv(const bool p_scale_uv) {
+	scale_uv = p_scale_uv;
+	_make_dirty();
+	update_gizmos();
+}
+
+bool CSGCylinder3D::is_scale_uv() const {
+	return scale_uv;
+}
+
+void CSGCylinder3D::set_uv_offset(const Vector3 &p_size) {
+	uv_offset = p_size;
+	_make_dirty();
+	update_gizmos();
+}
+
+Vector3 CSGCylinder3D::get_uv_offset() const {
+	return uv_offset;
 }
 
 void CSGCylinder3D::set_smooth_faces(const bool p_smooth_faces) {

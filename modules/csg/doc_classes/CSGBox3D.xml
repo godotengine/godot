@@ -21,9 +21,9 @@
 			Enabling this will scale the UVs to account for CSGBox size, maintaining uniform texel size.
 			[b]Note:[/b] scale_uv might have issues with non repeating textures.
 		</member>
-		<member name="uv_shift" type="Vector3" setter="set_uv_shift" getter="get_uv_shift" default="Vector3(0, 0, 0)">
-			Shifts the UVs of the CSGBox.
-			[b]Note:[/b] uv_shift only works when scale_uv is enabled.
+		<member name="uv_offset" type="Vector3" setter="set_uv_offset" getter="get_uv_offset" default="Vector3(0, 0, 0)">
+			Offsets the UVs of the CSGBox.
+			[b]Note:[/b] uv_offset only works when scale_uv is enabled.
 		</member>
 		<member name="compat_mode" type="bool" setter="set_compat_mode" getter="is_compat_mode">
 			Enabling this will use UVs identical to those from previous versions of godot.

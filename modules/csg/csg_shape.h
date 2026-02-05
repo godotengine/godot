@@ -276,7 +276,7 @@ class CSGBox3D : public CSGPrimitive3D {
 	Ref<Material> material;
 	Vector3 size = Vector3(1, 1, 1);
 	bool scale_uv = true;
-	Vector3 uv_shift = Vector3(0, 0, 0);
+	Vector3 uv_offset = Vector3(0, 0, 0);
 	bool compat_mode = false;
 
 protected:
@@ -293,8 +293,8 @@ public:
 	void set_scale_uv(const bool p_scale_uv);
 	bool is_scale_uv() const;
 
-	void set_uv_shift(const Vector3 &p_size);
-	Vector3 get_uv_shift() const;
+	void set_uv_offset(const Vector3 &p_size);
+	Vector3 get_uv_offset() const;
 
 	void set_compat_mode(const bool p_compat);
 	bool is_compat_mode() const;
@@ -315,6 +315,8 @@ class CSGCylinder3D : public CSGPrimitive3D {
 	int sides;
 	bool cone;
 	bool smooth_faces;
+	bool scale_uv = true;
+	Vector3 uv_offset = Vector3(0, 0, 0);
 
 protected:
 	static void _bind_methods();
@@ -331,6 +333,12 @@ public:
 
 	void set_cone(const bool p_cone);
 	bool is_cone() const;
+
+	void set_scale_uv(const bool p_scale_uv);
+	bool is_scale_uv() const;
+
+	void set_uv_offset(const Vector3 &p_size);
+	Vector3 get_uv_offset() const;
 
 	void set_smooth_faces(bool p_smooth_faces);
 	bool get_smooth_faces() const;
