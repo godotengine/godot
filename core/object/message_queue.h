@@ -135,13 +135,13 @@ public:
 	}
 
 	template <typename... VarArgs>
-	Error push_call_unique(const Callable &p_callable, VarArgs... p_args) {
+	Error push_callable_unique(const Callable &p_callable, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
 		const Variant *argptrs[sizeof...(p_args) + 1];
 		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
 			argptrs[i] = &args[i];
 		}
-		return push_call_uniquep(p_callable, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+		return push_callable_uniquep(p_callable, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
 	template <typename... VarArgs>
