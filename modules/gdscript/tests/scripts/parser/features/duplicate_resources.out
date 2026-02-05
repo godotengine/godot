@@ -1,0 +1,37 @@
+GDTEST_OK
+shallow_copy.exported_automatic_copy duplicated ? false
+with_subresources_copy.exported_automatic_copy duplicated ? true
+copy_all.exported_automatic_copy duplicated ? true
+copy_internal.exported_automatic_copy duplicated ? true
+copy_none.exported_automatic_copy duplicated ? false
+---
+shallow_copy.exported_shared_resource duplicated ? true
+with_subresources_copy.exported_shared_resource duplicated ? true
+copy_all.exported_shared_resource duplicated ? true
+copy_internal.exported_shared_resource duplicated ? true
+copy_none.exported_shared_resource duplicated ? true
+---
+shallow_copy.exported_unique_resource duplicated ? true
+with_subresources_copy.exported_unique_resource duplicated ? true
+copy_all.exported_unique_resource duplicated ? true
+copy_internal.exported_unique_resource duplicated ? true
+copy_none.exported_unique_resource duplicated ? true
+---
+shallow_copy.automatic_copy duplicated ? false
+with_subresources_copy.automatic_copy duplicated ? true
+copy_all.automatic_copy duplicated ? true
+copy_internal.automatic_copy duplicated ? true
+copy_none.automatic_copy duplicated ? false
+---
+shallow_copy.shared_resource duplicated ? true
+with_subresources_copy.shared_resource duplicated ? true
+copy_all.shared_resource duplicated ? true
+copy_internal.shared_resource duplicated ? true
+copy_none.shared_resource duplicated ? true
+---
+shallow_copy.unique_resource duplicated ? true
+with_subresources_copy.unique_resource duplicated ? true
+copy_all.unique_resource duplicated ? true
+copy_internal.unique_resource duplicated ? true
+copy_none.unique_resource duplicated ? true
+---
