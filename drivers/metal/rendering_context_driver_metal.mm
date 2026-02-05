@@ -79,7 +79,7 @@ Error RenderingContextDriverMetal::initialize() {
 	int version = (int)props.features.highestFamily - (int)MTLGPUFamilyApple1 + 1;
 	device.name = vformat("%s (Apple%d)", metal_device.name.UTF8String, version);
 
-	return OK;
+	return _check_excluded_devices();
 }
 
 const RenderingContextDriver::Device &RenderingContextDriverMetal::device_get(uint32_t p_device_index) const {

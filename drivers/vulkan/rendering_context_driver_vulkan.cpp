@@ -933,7 +933,7 @@ Error RenderingContextDriverVulkan::initialize() {
 	err = _initialize_devices();
 	ERR_FAIL_COND_V(err != OK, err);
 
-	return OK;
+	return _check_excluded_devices();
 }
 
 const RenderingContextDriver::Device &RenderingContextDriverVulkan::device_get(uint32_t p_device_index) const {

@@ -230,7 +230,7 @@ Error RenderingContextDriverD3D12::initialize() {
 	err = _initialize_devices();
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 
-	return OK;
+	return _check_excluded_devices();
 }
 
 const RenderingContextDriver::Device &RenderingContextDriverD3D12::device_get(uint32_t p_device_index) const {

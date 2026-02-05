@@ -54,66 +54,6 @@
 #define ERR_RENDER_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(render_thread_id != Thread::get_caller_id(), (m_ret), ERR_RENDER_THREAD_MSG);
 
 /**************************/
-/**** HELPER FUNCTIONS ****/
-/**************************/
-
-static String _get_device_vendor_name(const RenderingContextDriver::Device &p_device) {
-	switch (p_device.vendor) {
-		case RenderingContextDriver::Vendor::VENDOR_AMD:
-			return "AMD";
-		case RenderingContextDriver::Vendor::VENDOR_IMGTEC:
-			return "ImgTec";
-		case RenderingContextDriver::Vendor::VENDOR_APPLE:
-			return "Apple";
-		case RenderingContextDriver::Vendor::VENDOR_NVIDIA:
-			return "NVIDIA";
-		case RenderingContextDriver::Vendor::VENDOR_ARM:
-			return "ARM";
-		case RenderingContextDriver::Vendor::VENDOR_MICROSOFT:
-			return "Microsoft";
-		case RenderingContextDriver::Vendor::VENDOR_QUALCOMM:
-			return "Qualcomm";
-		case RenderingContextDriver::Vendor::VENDOR_INTEL:
-			return "Intel";
-		default:
-			return "Unknown";
-	}
-}
-
-static String _get_device_type_name(const RenderingContextDriver::Device &p_device) {
-	switch (p_device.type) {
-		case RenderingContextDriver::DEVICE_TYPE_INTEGRATED_GPU:
-			return "Integrated";
-		case RenderingContextDriver::DEVICE_TYPE_DISCRETE_GPU:
-			return "Discrete";
-		case RenderingContextDriver::DEVICE_TYPE_VIRTUAL_GPU:
-			return "Virtual";
-		case RenderingContextDriver::DEVICE_TYPE_CPU:
-			return "CPU";
-		case RenderingContextDriver::DEVICE_TYPE_OTHER:
-		default:
-			return "Other";
-	}
-}
-
-static uint32_t _get_device_type_score(const RenderingContextDriver::Device &p_device) {
-	static const bool prefer_integrated = OS::get_singleton()->get_user_prefers_integrated_gpu();
-	switch (p_device.type) {
-		case RenderingContextDriver::DEVICE_TYPE_INTEGRATED_GPU:
-			return prefer_integrated ? 5 : 4;
-		case RenderingContextDriver::DEVICE_TYPE_DISCRETE_GPU:
-			return prefer_integrated ? 4 : 5;
-		case RenderingContextDriver::DEVICE_TYPE_VIRTUAL_GPU:
-			return 3;
-		case RenderingContextDriver::DEVICE_TYPE_CPU:
-			return 2;
-		case RenderingContextDriver::DEVICE_TYPE_OTHER:
-		default:
-			return 1;
-	}
-}
-
-/**************************/
 /**** RENDERING DEVICE ****/
 /**************************/
 
@@ -7100,7 +7040,7 @@ void RenderingDevice::draw_command_end_label() {
 }
 
 String RenderingDevice::get_device_vendor_name() const {
-	return _get_device_vendor_name(device);
+	return RenderingContextDriver::get_device_vendor_name(device);
 }
 
 String RenderingDevice::get_device_name() const {
@@ -7573,30 +7513,8 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	context = p_context;
 	driver = context->driver_create();
 
-	print_verbose("Devices:");
-	int32_t device_index = Engine::get_singleton()->get_gpu_index();
-	const uint32_t device_count = context->device_get_count();
-	const bool detect_device = (device_index < 0) || (device_index >= int32_t(device_count));
-	uint32_t device_type_score = 0;
-	for (uint32_t i = 0; i < device_count; i++) {
-		RenderingContextDriver::Device device_option = context->device_get(i);
-		String name = device_option.name;
-		String vendor = _get_device_vendor_name(device_option);
-		String type = _get_device_type_name(device_option);
-		bool present_supported = main_surface != 0 ? context->device_supports_present(i, main_surface) : false;
-		print_verbose("  #" + itos(i) + ": " + vendor + " " + name + " - " + (present_supported ? "Supported" : "Unsupported") + ", " + type);
-		if (detect_device && (present_supported || main_surface == 0)) {
-			// If a window was specified, present must be supported by the device to be available as an option.
-			// Assign a score for each type of device and prefer the device with the higher score.
-			uint32_t option_score = _get_device_type_score(device_option);
-			if (option_score > device_type_score) {
-				device_index = i;
-				device_type_score = option_score;
-			}
-		}
-	}
-
-	ERR_FAIL_COND_V_MSG((device_index < 0) || (device_index >= int32_t(device_count)), ERR_CANT_CREATE, "None of the devices supports both graphics and present queues.");
+	int32_t device_index = context->pick_device(main_surface, true);
+	ERR_FAIL_COND_V_MSG((device_index < 0) || (device_index >= int32_t(context->device_get_count())), ERR_CANT_CREATE, "None of the devices supports both graphics and present queues.");
 
 	uint32_t frame_count = 1;
 	if (main_surface != 0) {
@@ -7620,7 +7538,7 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 		}
 
 		// Output our device version.
-		Engine::get_singleton()->print_header(vformat("%s %s - %s - Using Device #%d: %s - %s", get_device_api_name(), get_device_api_version(), rendering_method, device_index, _get_device_vendor_name(device), device.name));
+		Engine::get_singleton()->print_header(vformat("%s %s - %s - Using Device #%d: %s - %s", get_device_api_name(), get_device_api_version(), rendering_method, device_index, RenderingContextDriver::get_device_vendor_name(device), device.name));
 	}
 
 	// Pick the main queue family. It is worth noting we explicitly do not request the transfer bit, as apparently the specification defines
