@@ -1363,6 +1363,17 @@ void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
 	set_custom_property_info(pinfo);
 }
 
+String ProjectSettings::_get_property_warning(const StringName &p_name) const {
+#ifdef TOOLS_ENABLED
+	// Return a warning for settings that are not registered.
+	if (!is_builtin_setting(p_name)) {
+		return TTR("This setting is not recognized by the engine. It may be a custom setting, a deprecated setting from a previous version, or a setting from a different build.");
+	}
+#endif // TOOLS_ENABLED
+
+	return String();
+}
+
 void ProjectSettings::set_custom_property_info(const PropertyInfo &p_info) {
 	const String &prop_name = p_info.name;
 	ERR_FAIL_COND(!props.has(prop_name));
@@ -1623,6 +1634,7 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_as_basic", "name", "basic"), &ProjectSettings::set_as_basic);
 	ClassDB::bind_method(D_METHOD("set_as_internal", "name", "internal"), &ProjectSettings::set_as_internal);
 	ClassDB::bind_method(D_METHOD("add_property_info", "hint"), &ProjectSettings::_add_property_info_bind);
+	ClassDB::bind_method(D_METHOD("_get_property_warning", "name"), &ProjectSettings::_get_property_warning);
 	ClassDB::bind_method(D_METHOD("set_restart_if_changed", "name", "restart"), &ProjectSettings::set_restart_if_changed);
 	ClassDB::bind_method(D_METHOD("clear", "name"), &ProjectSettings::clear);
 	ClassDB::bind_method(D_METHOD("localize_path", "path"), &ProjectSettings::localize_path);

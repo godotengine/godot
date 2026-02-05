@@ -350,6 +350,15 @@ void EditorSettings::_add_property_info_bind(const Dictionary &p_info) {
 	add_property_hint(pinfo);
 }
 
+String EditorSettings::_get_property_warning(const StringName &p_name) const {
+	// Return a warning for settings that are not registered.
+	if (!has_default_value(p_name)) {
+		return TTR("This setting is not recognized by the editor. It may be a custom setting, a deprecated setting from a previous version, or a setting from a different build.");
+	}
+
+	return String();
+}
+
 // Default configs
 bool EditorSettings::has_default_value(const String &p_setting) const {
 	_THREAD_SAFE_METHOD_
@@ -2269,6 +2278,7 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("erase", "property"), &EditorSettings::erase);
 	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value", "update_current"), &EditorSettings::set_initial_value);
 	ClassDB::bind_method(D_METHOD("add_property_info", "info"), &EditorSettings::_add_property_info_bind);
+	ClassDB::bind_method(D_METHOD("_get_property_warning", "name"), &EditorSettings::_get_property_warning);
 
 	ClassDB::bind_method(D_METHOD("set_project_metadata", "section", "key", "data"), &EditorSettings::set_project_metadata);
 	ClassDB::bind_method(D_METHOD("get_project_metadata", "section", "key", "default"), &EditorSettings::get_project_metadata, DEFVAL(Variant()));

@@ -547,6 +547,19 @@ void EditorProperty::_notification(int p_what) {
 				check_rect = Rect2();
 			}
 
+			if (draw_prop_warning && theme_cache.warning_icon.is_valid()) {
+				const Ref<Texture2D> &warn_icon = theme_cache.warning_icon;
+				int y = (size.height - warn_icon->get_height()) / 2;
+				if (rtl) {
+					draw_texture(warn_icon, Vector2(size.width - ofs - warn_icon->get_width(), y), color);
+				} else {
+					draw_texture(warn_icon, Vector2(ofs, y), color);
+				}
+				int icon_ofs = warn_icon->get_width() + theme_cache.horizontal_separation;
+				ofs += icon_ofs;
+				text_limit -= icon_ofs;
+			}
+
 			if (can_revert && !is_read_only()) {
 				const Ref<Texture2D> &reload_icon = theme_cache.revert_icon;
 				text_limit -= reload_icon->get_width() + half_padding + theme_cache.horizontal_separation;
@@ -858,6 +871,27 @@ void EditorProperty::update_editor_property_status() {
 	bool new_warning = false;
 	if (object->has_method("_get_property_warning")) {
 		new_warning = !String(object->call("_get_property_warning", property)).is_empty();
+	}
+
+	// Also check if the property is deprecated or experimental via doc data.
+	if (!new_warning) {
+		EditorInspector *inspector = get_parent_inspector();
+		if (inspector) {
+			const String classname = inspector->get_object_class();
+			const String property_prefix = inspector->get_property_prefix();
+			const String propname = property_prefix + property;
+			DocData::ClassDoc *cd = EditorHelp::get_doc(classname);
+			if (cd) {
+				for (const DocData::PropertyDoc &prop : cd->properties) {
+					if (prop.name == propname) {
+						if (prop.is_deprecated || prop.is_experimental) {
+							new_warning = true;
+						}
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	Variant current = object->get(_get_revert_property());
@@ -3658,6 +3692,7 @@ void EditorInspector::initialize_property_theme(EditorProperty::ThemeCache &p_ca
 	p_cache.override_icon = p_control->get_editor_theme_icon(SNAME("Override"));
 	p_cache.remove_icon = p_control->get_editor_theme_icon(SNAME("Remove"));
 	p_cache.help_icon = p_control->get_editor_theme_icon(SNAME("Help"));
+	p_cache.warning_icon = p_control->get_editor_theme_icon(SNAME("NodeWarning"));
 
 	p_cache.font_size = p_control->get_theme_font_size(SceneStringName(font_size), SNAME("Tree"));
 	p_cache.font_offset = p_control->get_theme_constant(SNAME("font_offset"), SNAME("EditorProperty"));
