@@ -1985,7 +1985,7 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 			// 0000755: permissions rwxr-xr-x
 			// 0000644: permissions rw-r--r--
 			uint32_t _mode = 0120644;
-			zipfi.external_fa = (_mode << 16L) | !(_mode & 0200);
+			zipfi.external_fa = (_mode << 16L) | ((_mode & 0200) ? 0 : 1); // UUUUUUUUUUUUUUUU0000000000ADVSHR: Unix permissions (U) + DOS read-only flag (R).
 			zipfi.internal_fa = 0;
 
 			zipOpenNewFileInZip4(p_zip,
@@ -2029,7 +2029,7 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 			// 0000755: permissions rwxr-xr-x
 			// 0000644: permissions rw-r--r--
 			uint32_t _mode = (_is_executable ? 0100755 : 0100644);
-			zipfi.external_fa = (_mode << 16L) | !(_mode & 0200);
+			zipfi.external_fa = (_mode << 16L) | ((_mode & 0200) ? 0 : 1); // UUUUUUUUUUUUUUUU0000000000ADVSHR: Unix permissions (U) + DOS read-only flag (R).
 			zipfi.internal_fa = 0;
 
 			zipOpenNewFileInZip4(p_zip,
