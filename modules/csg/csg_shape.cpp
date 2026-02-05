@@ -1891,15 +1891,15 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 		int face = 0;
 
 		Vector3 vertex_mul(radius, height * 0.5, radius);
+		float inc_uv = uv_horizontal_divisions / float(sides); //we tile the textures 4 times around the cylinder.
+		float uv_radius = int(float(radius * uv_horizontal_divisions)) / float(uv_horizontal_divisions); //make sure the textures can complete a full rotation
 
 		{
 			for (int i = 0; i < sides; i++) {
 				float inc = float(i) / sides;
 				float inc_n = float((i + 1)) / sides;
 
-				float inc_uv = 1.0 / sides * 4.0;
-
-				if (i == sides - 1) { //This is the bug with the weird side that gets squashed //it's used to produce a full circle using cos and sin//it should not be tied to the UVs, UVs need their own separate variables
+				if (i == sides - 1) {
 					inc_n = 0;
 				}
 
@@ -1916,22 +1916,22 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					face_base * (cone ? 0.0 : 1.0) + Vector3(0, 1, 0),
 				};
 
+				int inverse_i = sides - i; //flip UVs horizontally
+
 				Vector2 u[4] = {
-					Vector2(inc_uv * (i + 1), 1),
-					Vector2(inc_uv * i, 1),
-					Vector2(inc_uv * i, 0),
-					Vector2(inc_uv * (i + 1), 0),
+					Vector2(inc_uv * inverse_i, 0),
+					Vector2(inc_uv * (inverse_i - 1), 0),
+					Vector2(inc_uv * (inverse_i - 1), -1),
+					Vector2(inc_uv * inverse_i, -1),
 				};
 
 				if (scale_uv) {
-					u[0].x *= radius;
-					//u[0][1] *=
-					u[1].x *= radius;
-					//u[1][1]
-					u[2].x *= radius;
-					u[2].y = height;
-					u[3].x *= radius;
-					u[3].y = height;
+					u[0].x *= uv_radius;
+					u[1].x *= uv_radius;
+					u[2].x *= uv_radius;
+					u[2].y = -height;
+					u[3].x *= uv_radius;
+					u[3].y = -height;
 				}
 
 				//side face 1
@@ -1939,9 +1939,9 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				facesw[face * 3 + 1] = face_points[1] * vertex_mul;
 				facesw[face * 3 + 2] = face_points[2] * vertex_mul;
 
-				uvsw[face * 3 + 0] = u[0] + uv_offset;
-				uvsw[face * 3 + 1] = u[1] + uv_offset;
-				uvsw[face * 3 + 2] = u[2] + uv_offset;
+				uvsw[face * 3 + 0] = u[0] - uv_offset;
+				uvsw[face * 3 + 1] = u[1] - uv_offset;
+				uvsw[face * 3 + 2] = u[2] - uv_offset;
 
 				smoothw[face] = smooth_faces;
 				invertw[face] = invert_val;
@@ -1955,9 +1955,9 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					facesw[face * 3 + 1] = face_points[3] * vertex_mul;
 					facesw[face * 3 + 2] = face_points[0] * vertex_mul;
 
-					uvsw[face * 3 + 0] = u[2] + uv_offset;
-					uvsw[face * 3 + 1] = u[3] + uv_offset;
-					uvsw[face * 3 + 2] = u[0] + uv_offset;
+					uvsw[face * 3 + 0] = u[2] - uv_offset;
+					uvsw[face * 3 + 1] = u[3] - uv_offset;
+					uvsw[face * 3 + 2] = u[0] - uv_offset;
 
 					smoothw[face] = smooth_faces;
 					invertw[face] = invert_val;
@@ -1970,20 +1970,15 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				facesw[face * 3 + 1] = face_points[0] * vertex_mul;
 				facesw[face * 3 + 2] = Vector3(0, -1, 0) * vertex_mul;
 
-				//use Z instead of Y
 				if (scale_uv) {
-					uvsw[face * 3] = (Vector2(face_points[1].x, face_points[1].z) * radius) + top_uv_offset;
-					uvsw[face * 3 + 1] = (Vector2(face_points[0].x, face_points[0].z) * radius) + top_uv_offset;
+					uvsw[face * 3] = (Vector2(-face_points[1].x, face_points[1].z) * radius) + top_uv_offset;
+					uvsw[face * 3 + 1] = (Vector2(-face_points[0].x, face_points[0].z) * radius) + top_uv_offset;
 					uvsw[face * 3 + 2] = top_uv_offset;
 				} else {
-					uvsw[face * 3] = (Vector2(face_points[1].x, face_points[1].z) * 0.5) + Vector2(0.5, 0.5);
-					uvsw[face * 3 + 1] = (Vector2(face_points[0].x, face_points[0].z) * 0.5) + Vector2(0.5, 0.5);
+					uvsw[face * 3] = (Vector2(-face_points[1].x, face_points[1].z) * 0.5) + Vector2(0.5, 0.5);
+					uvsw[face * 3 + 1] = (Vector2(-face_points[0].x, face_points[0].z) * 0.5) + Vector2(0.5, 0.5);
 					uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
 				}
-
-				/*uvsw[face * 3 + 0] = Vector2(face_points[1].x, face_points[1].y) * 0.5 + Vector2(0.5, 0.5);
-				uvsw[face * 3 + 1] = Vector2(face_points[0].x, face_points[0].y) * 0.5 + Vector2(0.5, 0.5);
-				uvsw[face * 3 + 2] = Vector2(0.5, 0.5);*/
 
 				smoothw[face] = false;
 				invertw[face] = invert_val;
@@ -1996,7 +1991,6 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					facesw[face * 3 + 1] = face_points[2] * vertex_mul;
 					facesw[face * 3 + 2] = Vector3(0, 1, 0) * vertex_mul;
 
-					//this should be a different coordinate since they don't originate from the same edge as the bottom ones.
 					if (scale_uv) {
 						uvsw[face * 3] = (Vector2(face_points[3].x, face_points[3].z) * radius) + top_uv_offset;
 						uvsw[face * 3 + 1] = (Vector2(face_points[2].x, face_points[2].z) * radius) + top_uv_offset;
@@ -2006,9 +2000,6 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 						uvsw[face * 3 + 1] = (Vector2(face_points[2].x, face_points[2].z) * 0.5) + Vector2(0.5, 0.5);
 						uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
 					}
-					/*uvsw[face * 3 + 0] = Vector2(face_points[1].x, face_points[1].y) * 0.5 + Vector2(0.5, 0.5);
-					uvsw[face * 3 + 1] = Vector2(face_points[0].x, face_points[0].y) * 0.5 + Vector2(0.5, 0.5);
-					uvsw[face * 3 + 2] = Vector2(0.5, 0.5);*/
 
 					smoothw[face] = false;
 					invertw[face] = invert_val;
@@ -2041,6 +2032,9 @@ void CSGCylinder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cone", "cone"), &CSGCylinder3D::set_cone);
 	ClassDB::bind_method(D_METHOD("is_cone"), &CSGCylinder3D::is_cone);
 
+	ClassDB::bind_method(D_METHOD("set_uv_horizontal_divisions", "uv_horizontal_divisions"), &CSGCylinder3D::set_uv_horizontal_divisions);
+	ClassDB::bind_method(D_METHOD("get_uv_horizontal_divisions"), &CSGCylinder3D::get_uv_horizontal_divisions);
+
 	ClassDB::bind_method(D_METHOD("set_scale_uv", "scale_uv"), &CSGCylinder3D::set_scale_uv);
 	ClassDB::bind_method(D_METHOD("is_scale_uv"), &CSGCylinder3D::is_scale_uv);
 
@@ -2060,6 +2054,7 @@ void CSGCylinder3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater,exp,suffix:m"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_sides", "get_sides");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cone"), "set_cone", "is_cone");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "uv_horizontal_divisions", PROPERTY_HINT_RANGE, "1,64,1"), "set_uv_horizontal_divisions", "get_uv_horizontal_divisions");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scale_uv"), "set_scale_uv", "is_scale_uv");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "uv_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_uv_offset", "get_uv_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "top_uv_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_top_uv_offset", "get_top_uv_offset");
@@ -2116,6 +2111,17 @@ void CSGCylinder3D::set_scale_uv(const bool p_scale_uv) {
 
 bool CSGCylinder3D::is_scale_uv() const {
 	return scale_uv;
+}
+
+void CSGCylinder3D::set_uv_horizontal_divisions(const int p_sides) {
+	ERR_FAIL_COND(p_sides < 1);
+	uv_horizontal_divisions = p_sides;
+	_make_dirty();
+	update_gizmos();
+}
+
+int CSGCylinder3D::get_uv_horizontal_divisions() const {
+	return uv_horizontal_divisions;
 }
 
 void CSGCylinder3D::set_uv_offset(const Vector2 &p_size) {

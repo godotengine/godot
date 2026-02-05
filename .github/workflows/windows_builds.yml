@@ -33,7 +33,6 @@ jobs:
               vsproj_gen_only=no
             bin: ./bin/godot.windows.editor.x86_64.exe
             compiler: msvc
-            artifact: true
 
           - name: Editor w/ clang-cl (target=editor, use_llvm=yes)
             cache-name: windows-editor-clang

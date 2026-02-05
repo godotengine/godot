@@ -316,6 +316,7 @@ class CSGCylinder3D : public CSGPrimitive3D {
 	bool cone;
 	bool smooth_faces;
 	bool scale_uv = true;
+	int uv_horizontal_divisions = 4;
 	Vector2 uv_offset = Vector2(0, 0);
 	Vector2 top_uv_offset = Vector2(0, 0);
 
@@ -337,6 +338,9 @@ public:
 
 	void set_scale_uv(const bool p_scale_uv);
 	bool is_scale_uv() const;
+
+	void set_uv_horizontal_divisions(const int p_sides);
+	int get_uv_horizontal_divisions() const;
 
 	void set_uv_offset(const Vector2 &p_size);
 	Vector2 get_uv_offset() const;
