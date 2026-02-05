@@ -45,9 +45,6 @@
 class OpenXRFBFoveationExtension : public OpenXRExtensionWrapper {
 	GDCLASS(OpenXRFBFoveationExtension, OpenXRExtensionWrapper);
 
-protected:
-	static void _bind_methods() {}
-
 public:
 	static OpenXRFBFoveationExtension *get_singleton();
 

@@ -39,8 +39,6 @@ class JoltPhysicsDirectBodyState3D final : public PhysicsDirectBodyState3D {
 
 	JoltBody3D *body = nullptr;
 
-	static void _bind_methods() {}
-
 public:
 	JoltPhysicsDirectBodyState3D() = default;
 

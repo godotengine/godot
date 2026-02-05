@@ -199,7 +199,7 @@ public:
 	GDVIRTUAL1R(bool, _on_event_polled, GDExtensionConstPtr<void>);
 
 	OpenXRExtensionWrapper();
-	virtual ~OpenXRExtensionWrapper() override;
+	virtual ~OpenXRExtensionWrapper() override {}
 };
 
 // `OpenXRGraphicsExtensionWrapper` implements specific logic for each supported graphics API.

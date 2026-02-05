@@ -35,9 +35,6 @@
 class OpenXRWMRControllerExtension : public OpenXRExtensionWrapper {
 	GDCLASS(OpenXRWMRControllerExtension, OpenXRExtensionWrapper);
 
-protected:
-	static void _bind_methods() {}
-
 public:
 	enum WMRControllers {
 		WMR_HPMR,

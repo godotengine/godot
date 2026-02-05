@@ -132,7 +132,6 @@ public:
 	Error dtls_client_setup(const String &p_hostname, const Ref<TLSOptions> &p_options);
 	void refuse_new_connections(bool p_refuse);
 
-	ENetConnection() {}
 	~ENetConnection();
 };
 

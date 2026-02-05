@@ -101,7 +101,6 @@ class GodotNavigationServer2D : public NavigationServer2D {
 	int pm_obstacle_count = 0;
 
 public:
-	GodotNavigationServer2D();
 	virtual ~GodotNavigationServer2D();
 
 	void add_command(SetCommand2D *p_command);

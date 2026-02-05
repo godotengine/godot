@@ -83,9 +83,6 @@ public:
 	virtual void close() = 0;
 
 	static WebRTCPeerConnection *create(bool p_notify_postinitialize = true);
-
-	WebRTCPeerConnection();
-	~WebRTCPeerConnection();
 };
 
 VARIANT_ENUM_CAST(WebRTCPeerConnection::ConnectionState);

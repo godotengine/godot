@@ -94,7 +94,6 @@ public:
 	bool is_owner(GodotShapeOwner3D *p_owner) const;
 	const HashMap<GodotShapeOwner3D *, int> &get_owners() const;
 
-	GodotShape3D() {}
 	virtual ~GodotShape3D();
 };
 
@@ -107,8 +106,6 @@ public:
 	typedef bool (*QueryCallback)(void *p_userdata, GodotShape3D *p_convex);
 
 	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata, bool p_invert_backface_collision) const = 0;
-
-	GodotConcaveShape3D() {}
 };
 
 class GodotWorldBoundaryShape3D : public GodotShape3D {
@@ -132,8 +129,6 @@ public:
 
 	virtual void set_data(const Variant &p_data) override;
 	virtual Variant get_data() const override;
-
-	GodotWorldBoundaryShape3D();
 };
 
 class GodotSeparationRayShape3D : public GodotShape3D {
@@ -160,8 +155,6 @@ public:
 
 	virtual void set_data(const Variant &p_data) override;
 	virtual Variant get_data() const override;
-
-	GodotSeparationRayShape3D();
 };
 
 class GodotSphereShape3D : public GodotShape3D {
@@ -187,8 +180,6 @@ public:
 
 	virtual void set_data(const Variant &p_data) override;
 	virtual Variant get_data() const override;
-
-	GodotSphereShape3D();
 };
 
 class GodotBoxShape3D : public GodotShape3D {
@@ -212,8 +203,6 @@ public:
 
 	virtual void set_data(const Variant &p_data) override;
 	virtual Variant get_data() const override;
-
-	GodotBoxShape3D();
 };
 
 class GodotCapsuleShape3D : public GodotShape3D {
@@ -241,8 +230,6 @@ public:
 
 	virtual void set_data(const Variant &p_data) override;
 	virtual Variant get_data() const override;
-
-	GodotCapsuleShape3D();
 };
 
 class GodotCylinderShape3D : public GodotShape3D {
@@ -270,8 +257,6 @@ public:
 
 	virtual void set_data(const Variant &p_data) override;
 	virtual Variant get_data() const override;
-
-	GodotCylinderShape3D();
 };
 
 struct GodotConvexPolygonShape3D : public GodotShape3D {
@@ -297,8 +282,6 @@ public:
 
 	virtual void set_data(const Variant &p_data) override;
 	virtual Variant get_data() const override;
-
-	GodotConvexPolygonShape3D();
 };
 
 struct _Volume_BVH;
@@ -378,8 +361,6 @@ public:
 
 	virtual void set_data(const Variant &p_data) override;
 	virtual Variant get_data() const override;
-
-	GodotConcavePolygonShape3D();
 };
 
 struct GodotHeightMapShape3D : public GodotConcaveShape3D {
@@ -441,8 +422,6 @@ public:
 
 	virtual void set_data(const Variant &p_data) override;
 	virtual Variant get_data() const override;
-
-	GodotHeightMapShape3D();
 };
 
 //used internally

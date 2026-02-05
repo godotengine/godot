@@ -116,9 +116,6 @@ public:
 		G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING_FREQUENCY,
 	};
 
-private:
-	static void _bind_methods() {}
-
 public:
 	explicit JoltPhysicsServer3D(bool p_on_separate_thread);
 	~JoltPhysicsServer3D();

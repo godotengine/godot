@@ -32,12 +32,6 @@
 
 WebSocketPeer *(*WebSocketPeer::_create)(bool p_notify_postinitialize) = nullptr;
 
-WebSocketPeer::WebSocketPeer() {
-}
-
-WebSocketPeer::~WebSocketPeer() {
-}
-
 void WebSocketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("connect_to_url", "url", "tls_client_options"), &WebSocketPeer::connect_to_url, DEFVAL(Ref<TLSOptions>()));
 	ClassDB::bind_method(D_METHOD("accept_stream", "stream"), &WebSocketPeer::accept_stream);

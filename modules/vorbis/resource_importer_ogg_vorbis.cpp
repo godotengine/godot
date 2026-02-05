@@ -130,6 +130,3 @@ void ResourceImporterOggVorbis::_bind_methods() {
 	ClassDB::bind_static_method("ResourceImporterOggVorbis", D_METHOD("load_from_file", "path"), &ResourceImporterOggVorbis::load_from_file);
 #endif
 }
-
-ResourceImporterOggVorbis::ResourceImporterOggVorbis() {
-}

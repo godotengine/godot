@@ -309,6 +309,3 @@ GodotArea2D::GodotArea2D() :
 		moved_list(this) {
 	_set_static(true); //areas are not active by default
 }
-
-GodotArea2D::~GodotArea2D() {
-}

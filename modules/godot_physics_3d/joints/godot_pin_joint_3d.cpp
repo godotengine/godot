@@ -176,6 +176,3 @@ GodotPinJoint3D::GodotPinJoint3D(GodotBody3D *p_body_a, const Vector3 &p_pos_a, 
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);
 }
-
-GodotPinJoint3D::~GodotPinJoint3D() {
-}

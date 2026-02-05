@@ -124,7 +124,6 @@ public:
 	Error update(const PackedByteArray &p_data) override;
 	PackedByteArray finish() override;
 
-	HMACContextMbedTLS() {}
 	~HMACContextMbedTLS() override;
 };
 

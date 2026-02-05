@@ -53,5 +53,4 @@ class GodotStep2D {
 public:
 	void step(GodotSpace2D *p_space, real_t p_delta);
 	GodotStep2D();
-	~GodotStep2D();
 };

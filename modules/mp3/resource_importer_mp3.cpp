@@ -114,6 +114,3 @@ Error ResourceImporterMP3::import(ResourceUID::ID p_source_id, const String &p_s
 
 	return ResourceSaver::save(mp3_stream, p_save_path + ".mp3str");
 }
-
-ResourceImporterMP3::ResourceImporterMP3() {
-}

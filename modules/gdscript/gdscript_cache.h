@@ -74,7 +74,6 @@ public:
 	Error raise_status(Status p_new_status);
 	void clear();
 
-	GDScriptParserRef() {}
 	~GDScriptParserRef();
 };
 

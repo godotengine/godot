@@ -35,9 +35,6 @@
 class OpenXRHTCControllerExtension : public OpenXRExtensionWrapper {
 	GDCLASS(OpenXRHTCControllerExtension, OpenXRExtensionWrapper);
 
-protected:
-	static void _bind_methods() {}
-
 public:
 	enum HTCControllers {
 		// Note, HTC Vive Wand controllers are part of the core spec and not part of our extension.

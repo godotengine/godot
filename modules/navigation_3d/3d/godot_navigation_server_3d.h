@@ -94,7 +94,6 @@ class GodotNavigationServer3D : public NavigationServer3D {
 	int pm_obstacle_count = 0;
 
 public:
-	GodotNavigationServer3D();
 	virtual ~GodotNavigationServer3D();
 
 	void add_command(SetCommand3D *command);

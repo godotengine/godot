@@ -47,7 +47,6 @@ public:
 	static NavigationMeshGenerator *get_singleton();
 
 	NavigationMeshGenerator();
-	~NavigationMeshGenerator();
 
 	void bake(const Ref<NavigationMesh> &p_navigation_mesh, Node *p_root_node);
 	void clear(Ref<NavigationMesh> p_navigation_mesh);

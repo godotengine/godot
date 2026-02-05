@@ -81,9 +81,6 @@ void CookieContextMbedTLS::clear() {
 	mbedtls_ssl_cookie_free(&cookie_ctx);
 }
 
-CookieContextMbedTLS::CookieContextMbedTLS() {
-}
-
 CookieContextMbedTLS::~CookieContextMbedTLS() {
 	clear();
 }
@@ -255,9 +252,6 @@ void TLSContextMbedTLS::clear() {
 mbedtls_ssl_context *TLSContextMbedTLS::get_context() {
 	ERR_FAIL_COND_V(!inited, nullptr);
 	return &tls;
-}
-
-TLSContextMbedTLS::TLSContextMbedTLS() {
 }
 
 TLSContextMbedTLS::~TLSContextMbedTLS() {

@@ -196,9 +196,6 @@ class CSGCombiner3D : public CSGShape3D {
 
 private:
 	virtual CSGBrush *_build_brush() override;
-
-public:
-	CSGCombiner3D();
 };
 
 class CSGPrimitive3D : public CSGShape3D {
@@ -289,8 +286,6 @@ public:
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
-
-	CSGBox3D() {}
 };
 
 class CSGCylinder3D : public CSGPrimitive3D {

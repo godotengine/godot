@@ -38,9 +38,6 @@
 class OpenXRHandTrackingExtension : public OpenXRExtensionWrapper {
 	GDCLASS(OpenXRHandTrackingExtension, OpenXRExtensionWrapper);
 
-protected:
-	static void _bind_methods() {}
-
 public:
 	enum HandTrackedHands {
 		OPENXR_TRACKED_LEFT_HAND,

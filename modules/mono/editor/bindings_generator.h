@@ -132,8 +132,6 @@ class BindingsGenerator {
 		 * %0 or %s: [cs_type] of the argument type
 		 */
 		String default_argument;
-
-		ArgumentInterface() {}
 	};
 
 	struct MethodInterface {
@@ -209,8 +207,6 @@ class BindingsGenerator {
 		void add_argument(const ArgumentInterface &argument) {
 			arguments.push_back(argument);
 		}
-
-		MethodInterface() {}
 	};
 
 	struct SignalInterface {
@@ -232,8 +228,6 @@ class BindingsGenerator {
 		void add_argument(const ArgumentInterface &argument) {
 			arguments.push_back(argument);
 		}
-
-		SignalInterface() {}
 	};
 
 	struct TypeInterface {

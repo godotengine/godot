@@ -3351,6 +3351,3 @@ int GDScriptCompiler::get_error_line() const {
 int GDScriptCompiler::get_error_column() const {
 	return err_column;
 }
-
-GDScriptCompiler::GDScriptCompiler() {
-}

@@ -76,9 +76,6 @@ FastNoiseLite::FastNoiseLite() {
 	_domain_warp_noise.SetFractalGain(domain_warp_fractal_gain);
 }
 
-FastNoiseLite::~FastNoiseLite() {
-}
-
 // General settings.
 
 void FastNoiseLite::set_noise_type(NoiseType p_noise_type) {

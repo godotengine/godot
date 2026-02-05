@@ -82,6 +82,4 @@ public:
 
 	Variant get_additional_data(const StringName &p_extension_name);
 	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
-
-	GLTFAnimation();
 };

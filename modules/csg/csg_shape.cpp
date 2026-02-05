@@ -1073,9 +1073,6 @@ CSGBrush *CSGCombiner3D::_build_brush() {
 	return memnew(CSGBrush); //does not build anything
 }
 
-CSGCombiner3D::CSGCombiner3D() {
-}
-
 /////////////////////
 
 CSGBrush *CSGPrimitive3D::_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials) {

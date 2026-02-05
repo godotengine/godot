@@ -85,8 +85,6 @@ public:
 	real_t m_accumulatedImpulse = 0.0;
 	//!@}
 
-	GodotG6DOFRotationalLimitMotor3D() {}
-
 	bool isLimited() {
 		return (m_loLimit < m_hiLimit);
 	}

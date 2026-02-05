@@ -67,8 +67,6 @@ public:
 	virtual double get_length() const override;
 	virtual bool is_meta_stream() const override { return true; }
 
-	AudioStreamSynchronized();
-
 protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &property) const;
@@ -114,6 +112,5 @@ public:
 
 	virtual void tag_used_streams() override;
 
-	AudioStreamPlaybackSynchronized();
 	~AudioStreamPlaybackSynchronized();
 };

@@ -35,9 +35,6 @@
 class OpenXRMetaControllerExtension : public OpenXRExtensionWrapper {
 	GDCLASS(OpenXRMetaControllerExtension, OpenXRExtensionWrapper);
 
-protected:
-	static void _bind_methods() {}
-
 public:
 	enum MetaControllers {
 		META_TOUCH_PROXIMITY, // Proximity extensions for normal touch controllers

@@ -171,6 +171,5 @@ public:
 
 	virtual RID get_vrs_texture() override;
 
-	MobileVRInterface();
 	~MobileVRInterface();
 };

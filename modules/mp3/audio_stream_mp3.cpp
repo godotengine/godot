@@ -356,9 +356,6 @@ void AudioStreamMP3::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_offset"), "set_loop_offset", "get_loop_offset");
 }
 
-AudioStreamMP3::AudioStreamMP3() {
-}
-
 AudioStreamMP3::~AudioStreamMP3() {
 	clear_data();
 }

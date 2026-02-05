@@ -35,9 +35,6 @@
 class OpenXREyeGazeInteractionExtension : public OpenXRExtensionWrapper {
 	GDCLASS(OpenXREyeGazeInteractionExtension, OpenXRExtensionWrapper);
 
-protected:
-	static void _bind_methods() {}
-
 public:
 	static OpenXREyeGazeInteractionExtension *get_singleton();
 

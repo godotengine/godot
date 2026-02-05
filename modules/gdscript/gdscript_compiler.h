@@ -181,6 +181,4 @@ public:
 	String get_error() const;
 	int get_error_line() const;
 	int get_error_column() const;
-
-	GDScriptCompiler();
 };

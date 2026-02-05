@@ -123,7 +123,6 @@ public:
 			}
 		}
 	}
-	GodotShape2D() {}
 	virtual ~GodotShape2D();
 };
 
@@ -459,7 +458,6 @@ public:
 
 	DEFAULT_PROJECT_RANGE_CAST
 
-	GodotConvexPolygonShape2D() {}
 	~GodotConvexPolygonShape2D();
 };
 

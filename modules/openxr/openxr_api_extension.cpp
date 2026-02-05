@@ -370,6 +370,3 @@ OpenXRAPIExtension::OpenXRAlphaBlendModeSupport OpenXRAPIExtension::is_environme
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE);
 	return (OpenXRAPIExtension::OpenXRAlphaBlendModeSupport)OpenXRAPI::get_singleton()->is_environment_blend_mode_alpha_blend_supported();
 }
-
-OpenXRAPIExtension::OpenXRAPIExtension() {
-}

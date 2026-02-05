@@ -83,7 +83,6 @@ public:
 	virtual void set_parameter(const StringName &p_name, const Variant &p_value) override;
 	virtual Variant get_parameter(const StringName &p_name) const override;
 
-	AudioStreamPlaybackMP3() {}
 	~AudioStreamPlaybackMP3();
 };
 
@@ -147,6 +146,5 @@ public:
 
 	virtual void get_parameter_list(List<Parameter> *r_parameters) override;
 
-	AudioStreamMP3();
 	virtual ~AudioStreamMP3();
 };

@@ -413,6 +413,3 @@ void OpenXRExtensionWrapper::_gdextension_register_extension_wrapper() {
 OpenXRExtensionWrapper::OpenXRExtensionWrapper() {
 	openxr_api_extension.instantiate();
 }
-
-OpenXRExtensionWrapper::~OpenXRExtensionWrapper() {
-}

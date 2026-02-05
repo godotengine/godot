@@ -54,6 +54,4 @@ public:
 	EXBIND3R(Error, add_ice_candidate, const String &, int, const String &);
 	EXBIND0R(Error, poll);
 	EXBIND0(close);
-
-	WebRTCPeerConnectionExtension() {}
 };

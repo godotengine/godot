@@ -57,7 +57,6 @@ public:
 	Error setup();
 	void clear();
 
-	CookieContextMbedTLS();
 	~CookieContextMbedTLS() override;
 };
 
@@ -86,6 +85,5 @@ public:
 
 	mbedtls_ssl_context *get_context();
 
-	TLSContextMbedTLS();
 	~TLSContextMbedTLS() override;
 };

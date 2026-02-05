@@ -184,8 +184,6 @@ public:
 	virtual double get_length() const override { return 0; }
 	virtual bool is_meta_stream() const override { return true; }
 
-	AudioStreamInteractive();
-
 protected:
 	virtual void get_parameter_list(List<Parameter> *r_parameters) override;
 
@@ -264,7 +262,4 @@ public:
 
 	virtual void set_parameter(const StringName &p_name, const Variant &p_value) override;
 	virtual Variant get_parameter(const StringName &p_name) const override;
-
-	AudioStreamPlaybackInteractive();
-	~AudioStreamPlaybackInteractive();
 };
