@@ -533,7 +533,7 @@ void ScriptServer::get_global_class_list(LocalVector<StringName> &r_global_class
 	for (const KeyValue<StringName, GlobalScriptClass> &global_class : global_classes) {
 		r_global_classes.push_back(global_class.key);
 	}
-	SortArray<StringName> sorter;
+	SortArray<StringName, StringName::AlphCompare> sorter;
 	sorter.sort(&r_global_classes[r_global_classes.size() - global_classes.size()], global_classes.size());
 }
 

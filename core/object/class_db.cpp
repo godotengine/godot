@@ -255,7 +255,7 @@ void ClassDB::get_class_list(LocalVector<StringName> &p_classes) {
 		p_classes.push_back(cls.key);
 	}
 
-	SortArray<StringName> sorter;
+	SortArray<StringName, StringName::AlphCompare> sorter;
 	sorter.sort(&p_classes[p_classes.size() - classes.size()], classes.size());
 }
 
@@ -279,7 +279,7 @@ void ClassDB::get_extensions_class_list(LocalVector<StringName> &p_classes) {
 		return;
 	}
 
-	SortArray<StringName> sorter;
+	SortArray<StringName, StringName::AlphCompare> sorter;
 	sorter.sort(&p_classes[original_size], p_classes.size() - original_size);
 }
 
