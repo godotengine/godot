@@ -6323,33 +6323,46 @@ bool EditorNode::ensure_main_scene(bool p_from_native) {
 	pick_main_scene->set_meta("from_native", p_from_native); // Whether from play button or native run.
 	String main_scene = GLOBAL_GET("application/run/main_scene");
 
-	if (main_scene.is_empty()) {
-		current_menu_option = -1;
-		pick_main_scene->set_text(TTR("No main scene has ever been defined. Select one?\nYou can change it later in \"Project Settings\" under the 'application' category."));
-		pick_main_scene->popup_centered();
+	bool is_custom_loop = false;
+	String main_loop_type = GLOBAL_GET("application/run/main_loop_type");
+	if (main_loop_type != "SceneTree" && ScriptServer::is_global_class(main_loop_type)) {
+		String script_path = ScriptServer::get_global_class_path(main_loop_type);
+		Ref<Script> script_res = ResourceLoader::load(script_path);
+		if (script_res.is_valid()) {
+			StringName base_type = script_res->get_instance_base_type();
+			is_custom_loop = ClassDB::is_parent_class(base_type, "MainLoop");
+		}
+	}
 
-		if (editor_data.get_edited_scene_root()) {
-			select_current_scene_button->set_disabled(false);
-			select_current_scene_button->grab_focus();
-		} else {
-			select_current_scene_button->set_disabled(true);
+	if (!is_custom_loop) {
+		if (main_scene.is_empty()) {
+			current_menu_option = -1;
+			pick_main_scene->set_text(TTR("No main scene has ever been defined. Select one?\nYou can change it later in \"Project Settings\" under the 'application' category."));
+			pick_main_scene->popup_centered();
+
+			if (editor_data.get_edited_scene_root()) {
+				select_current_scene_button->set_disabled(false);
+				select_current_scene_button->grab_focus();
+			} else {
+				select_current_scene_button->set_disabled(true);
+			}
+
+			return false;
 		}
 
-		return false;
-	}
+		if (!FileAccess::exists(main_scene)) {
+			current_menu_option = -1;
+			pick_main_scene->set_text(vformat(TTR("Selected scene '%s' does not exist. Select a valid one?\nYou can change it later in \"Project Settings\" under the 'application' category."), main_scene));
+			pick_main_scene->popup_centered();
+			return false;
+		}
 
-	if (!FileAccess::exists(main_scene)) {
-		current_menu_option = -1;
-		pick_main_scene->set_text(vformat(TTR("Selected scene '%s' does not exist. Select a valid one?\nYou can change it later in \"Project Settings\" under the 'application' category."), main_scene));
-		pick_main_scene->popup_centered();
-		return false;
-	}
-
-	if (ResourceLoader::get_resource_type(main_scene) != "PackedScene") {
-		current_menu_option = -1;
-		pick_main_scene->set_text(vformat(TTR("Selected scene '%s' is not a scene file. Select a valid one?\nYou can change it later in \"Project Settings\" under the 'application' category."), main_scene));
-		pick_main_scene->popup_centered();
-		return false;
+		if (ResourceLoader::get_resource_type(main_scene) != "PackedScene") {
+			current_menu_option = -1;
+			pick_main_scene->set_text(vformat(TTR("Selected scene '%s' is not a scene file. Select a valid one?\nYou can change it later in \"Project Settings\" under the 'application' category."), main_scene));
+			pick_main_scene->popup_centered();
+			return false;
+		}
 	}
 
 	return true;

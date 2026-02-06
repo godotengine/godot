@@ -2263,7 +2263,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->add_logger(memnew(RotatedFileLogger(base_path, max_files)));
 	}
 
-	if (main_args.is_empty() && String(GLOBAL_GET("application/run/main_scene")) == "") {
+	if (main_args.is_empty() && String(GLOBAL_GET("application/run/main_scene")) == "" && String(GLOBAL_GET("application/run/main_loop_type")) == "SceneTree") {
 #ifdef TOOLS_ENABLED
 		if (!editor && !project_manager) {
 #endif
@@ -4217,17 +4217,6 @@ int Main::start() {
 		}
 	}
 
-#ifdef TOOLS_ENABLED
-	if (!editor && !project_manager && !cmdline_tool && script.is_empty() && game_path.is_empty()) {
-		// If we end up here, it means we didn't manage to detect what we want to run.
-		// Let's throw an error gently. The code leading to this is pretty brittle so
-		// this might end up triggered by valid usage, in which case we'll have to
-		// fine-tune further.
-		OS::get_singleton()->alert("Couldn't detect whether to run the editor, the project manager or a specific project. Aborting.");
-		ERR_FAIL_V_MSG(EXIT_FAILURE, "Couldn't detect whether to run the editor, the project manager or a specific project. Aborting.");
-	}
-#endif
-
 	MainLoop *main_loop = nullptr;
 	if (editor) {
 		main_loop = memnew(SceneTree);
@@ -4303,6 +4292,17 @@ int Main::start() {
 			}
 		}
 	}
+
+#ifdef TOOLS_ENABLED
+	if (!editor && !project_manager && !cmdline_tool && script.is_empty() && game_path.is_empty() && main_loop_type == "SceneTree") {
+		// If we end up here, it means we didn't manage to detect what we want to run.
+		// Let's throw an error gently. The code leading to this is pretty brittle so
+		// this might end up triggered by valid usage, in which case we'll have to
+		// fine-tune further.
+		OS::get_singleton()->alert("Couldn't detect whether to run the editor, the project manager or a specific project. Aborting.");
+		ERR_FAIL_V_MSG(EXIT_FAILURE, "Couldn't detect whether to run the editor, the project manager or a specific project. Aborting.");
+	}
+#endif
 
 	OS::get_singleton()->set_main_loop(main_loop);
 
