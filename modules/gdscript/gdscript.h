@@ -68,6 +68,7 @@ class GDScript : public Script {
 		int index = 0;
 		StringName setter;
 		StringName getter;
+		StringName wrapped_getter;
 		GDScriptDataType data_type;
 		PropertyInfo property_info;
 	};

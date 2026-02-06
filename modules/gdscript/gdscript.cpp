@@ -1015,20 +1015,20 @@ bool GDScript::_set(const StringName &p_name, const Variant &p_value) {
 		if (E) {
 			const MemberInfo *member = &E->value;
 			Variant value = p_value;
-			if (!member->data_type.is_type(value)) {
-				const Variant *args = &p_value;
-				Callable::CallError err;
-				Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
-				if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
-					return false;
-				}
-			}
 			if (likely(top->valid) && member->setter) {
 				const Variant *args = &value;
 				Callable::CallError err;
 				callp(member->setter, &args, 1, err);
 				return err.error == Callable::CallError::CALL_OK;
 			} else {
+				if (!member->data_type.is_type(value)) {
+					const Variant *args = &p_value;
+					Callable::CallError err;
+					Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
+					if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
+						return false;
+					}
+				}
 				top->static_variables.write[member->index] = value;
 				return true;
 			}
@@ -1525,20 +1525,20 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 		if (E) {
 			const GDScript::MemberInfo *member = &E->value;
 			Variant value = p_value;
-			if (!member->data_type.is_type(value)) {
-				const Variant *args = &p_value;
-				Callable::CallError err;
-				Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
-				if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
-					return false;
-				}
-			}
 			if (likely(script->valid) && member->setter) {
 				const Variant *args = &value;
 				Callable::CallError err;
 				callp(member->setter, &args, 1, err);
 				return err.error == Callable::CallError::CALL_OK;
 			} else {
+				if (!member->data_type.is_type(value)) {
+					const Variant *args = &p_value;
+					Callable::CallError err;
+					Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
+					if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
+						return false;
+					}
+				}
 				members.write[member->index] = value;
 				return true;
 			}
@@ -1552,20 +1552,20 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 			if (E) {
 				const GDScript::MemberInfo *member = &E->value;
 				Variant value = p_value;
-				if (!member->data_type.is_type(value)) {
-					const Variant *args = &p_value;
-					Callable::CallError err;
-					Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
-					if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
-						return false;
-					}
-				}
 				if (likely(sptr->valid) && member->setter) {
 					const Variant *args = &value;
 					Callable::CallError err;
 					callp(member->setter, &args, 1, err);
 					return err.error == Callable::CallError::CALL_OK;
 				} else {
+					if (!member->data_type.is_type(value)) {
+						const Variant *args = &p_value;
+						Callable::CallError err;
+						Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
+						if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
+							return false;
+						}
+					}
 					sptr->static_variables.write[member->index] = value;
 					return true;
 				}
