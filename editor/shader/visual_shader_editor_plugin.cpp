@@ -5397,6 +5397,10 @@ void VisualShaderEditor::_notification(int p_what) {
 		case NOTIFICATION_DRAG_END: {
 			members->set_drop_mode_flags(0);
 		} break;
+
+		case NOTIFICATION_PREDELETE: {
+			save_editor_layout();
+		} break;
 	}
 }
 
@@ -7827,7 +7831,6 @@ VisualShaderEditor::VisualShaderEditor() {
 }
 
 VisualShaderEditor::~VisualShaderEditor() {
-	save_editor_layout();
 }
 
 class VisualShaderNodePluginInputEditor : public OptionButton {
