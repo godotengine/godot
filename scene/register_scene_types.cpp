@@ -94,6 +94,7 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/video_stream_player.h"
+#include "scene/gui/virtual_controller.h"
 #include "scene/gui/virtual_joystick.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/canvas_layer.h"
@@ -562,6 +563,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(FoldableContainer);
 
 	GDREGISTER_CLASS(VirtualJoystick);
+	GDREGISTER_CLASS(VirtualController);
 
 	OS::get_singleton()->yield(); // may take time to init
 

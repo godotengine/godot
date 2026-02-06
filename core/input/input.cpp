@@ -41,6 +41,10 @@
 #include "core/os/thread.h"
 #endif
 
+#include "scene/gui/virtual_controller.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/window.h"
+
 #include "thirdparty/gamepadmotionhelpers/GamepadMotion.hpp"
 
 #define STANDARD_GRAVITY 9.80665f
@@ -158,6 +162,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
 	ClassDB::bind_method(D_METHOD("vibrate_handheld", "duration_ms", "amplitude"), &Input::vibrate_handheld, DEFVAL(500), DEFVAL(-1.0));
+	ClassDB::bind_method(D_METHOD("set_virtual_controller_enabled", "enable"), &Input::set_virtual_controller_enabled);
+	ClassDB::bind_method(D_METHOD("is_virtual_controller_enabled"), &Input::is_virtual_controller_enabled);
 	ClassDB::bind_method(D_METHOD("get_gravity"), &Input::get_gravity);
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
 	ClassDB::bind_method(D_METHOD("get_magnetometer"), &Input::get_magnetometer);
@@ -205,7 +211,7 @@ void Input::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_mode"), "set_mouse_mode", "get_mouse_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_accumulated_input"), "set_use_accumulated_input", "is_using_accumulated_input");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_mouse_from_touch"), "set_emulate_mouse_from_touch", "is_emulating_mouse_from_touch");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_touch_from_mouse"), "set_emulate_touch_from_mouse", "is_emulating_touch_from_mouse");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "virtual_controller_enabled"), "set_virtual_controller_enabled", "is_virtual_controller_enabled");
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
@@ -373,6 +379,10 @@ bool Input::is_mouse_button_pressed(MouseButton p_button) const {
 	}
 
 	return mouse_button_mask.has_flag(mouse_button_to_mask(p_button));
+}
+
+void Input::_project_settings_changed() {
+	set_virtual_controller_enabled(ProjectSettings::get_singleton()->get("input_devices/pointing/enable_virtual_controller"));
 }
 
 static JoyAxis _combine_device(JoyAxis p_value, int p_device) {
@@ -1284,6 +1294,29 @@ void Input::stop_joy_vibration(int p_device) {
 
 void Input::vibrate_handheld(int p_duration_ms, float p_amplitude) {
 	OS::get_singleton()->vibrate_handheld(p_duration_ms, p_amplitude);
+}
+
+void Input::set_virtual_controller_enabled(bool p_enabled) {
+	virtual_controller_enabled = p_enabled;
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+
+	if (!virtual_controller_enabled && virtual_controller != nullptr) {
+		virtual_controller->queue_free();
+		virtual_controller = nullptr;
+	}
+
+	if (virtual_controller_enabled && virtual_controller == nullptr) {
+		virtual_controller = memnew(VirtualController);
+		SceneTree::get_singleton()->get_root()->add_child(virtual_controller, false, Node::INTERNAL_MODE_FRONT);
+		virtual_controller->set_name("_VirtualController");
+	}
+}
+
+bool Input::is_virtual_controller_enabled() const {
+	return virtual_controller_enabled;
 }
 
 void Input::set_gravity(const Vector3 &p_gravity) {
@@ -2274,6 +2307,8 @@ Input::Input() {
 	gravity_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gravity", false);
 	gyroscope_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gyroscope", false);
 	magnetometer_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_magnetometer", false);
+
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Input::_project_settings_changed));
 }
 
 Input::~Input() {

@@ -759,6 +759,9 @@
 			Input accumulation can be disabled to get slightly more precise/reactive input at the cost of increased CPU usage. In applications where drawing freehand lines is required, input accumulation should generally be disabled while the user is drawing the line to get results that closely follow the actual input.
 			[b]Note:[/b] Input accumulation is [i]enabled[/i] by default.
 		</member>
+		<member name="virtual_controller_enabled" type="bool" setter="set_virtual_controller_enabled" getter="is_virtual_controller_enabled">
+			If [code]true[/code], a virtual controller is created which sends controller input events based on touch input.
+		</member>
 	</members>
 	<signals>
 		<signal name="joy_connection_changed">

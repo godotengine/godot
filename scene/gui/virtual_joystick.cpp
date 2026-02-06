@@ -56,6 +56,7 @@ void VirtualJoystick::gui_input(const Ref<InputEvent> &p_event) {
 		} else if (touch->get_index() == touch_index) {
 			is_pressed = false;
 			emit_signal(SNAME("released"), input_vector);
+			emit_signal(SNAME("motion"), Vector2());
 
 			if (!is_flick_canceled && !has_moved) {
 				emit_signal(SNAME("tapped"));
@@ -134,6 +135,8 @@ void VirtualJoystick::_update_joystick(const Vector2 &p_pos) {
 		has_input = false;
 		input_vector = Vector2();
 	}
+
+	emit_signal(SNAME("motion"), input_vector);
 
 	if (!is_flick_canceled && was_pressed && !has_input) {
 		is_flick_canceled = true;
@@ -258,6 +261,7 @@ void VirtualJoystick::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("released", PropertyInfo(Variant::VECTOR2, "input_vector")));
 	ADD_SIGNAL(MethodInfo("flicked", PropertyInfo(Variant::VECTOR2, "input_vector")));
 	ADD_SIGNAL(MethodInfo("flick_canceled"));
+	ADD_SIGNAL(MethodInfo("motion", PropertyInfo(Variant::VECTOR2, "input_vector")));
 
 	BIND_ENUM_CONSTANT(JOYSTICK_FIXED);
 	BIND_ENUM_CONSTANT(JOYSTICK_DYNAMIC);

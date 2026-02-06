@@ -1690,6 +1690,9 @@
 		<member name="input_devices/pointing/emulate_touch_from_mouse" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], sends touch input events when clicking or dragging the mouse.
 		</member>
+		<member name="input_devices/pointing/enable_virtual_controller" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], a virtual controller is created which sends controller input events based on touch input.
+		</member>
 		<member name="input_devices/sensors/enable_accelerometer" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the accelerometer sensor is enabled and [method Input.get_accelerometer] returns valid data.
 		</member>
