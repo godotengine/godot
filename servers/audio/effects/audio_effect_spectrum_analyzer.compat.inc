@@ -34,7 +34,7 @@ void AudioEffectSpectrumAnalyzer::_set_tap_back_pos_bind_compat_114355(float p_s
 	WARN_PRINT_ONCE("AudioEffectSpectrumAnalyzer.set_tap_back_pos() is deprecated and the value will be discarded.");
 }
 
-float AudioEffectSpectrumAnalyzer::_get_tap_back_pos_bind_compat_114355() {
+float AudioEffectSpectrumAnalyzer::_get_tap_back_pos_bind_compat_114355() const {
 	WARN_PRINT_ONCE("AudioEffectSpectrumAnalyzer.get_tap_back_pos() is deprecated and will only return the original default value.");
 	return 0.01;
 }

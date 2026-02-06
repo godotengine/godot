@@ -88,7 +88,7 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	void _set_tap_back_pos_bind_compat_114355(float p_seconds);
-	float _get_tap_back_pos_bind_compat_114355();
+	float _get_tap_back_pos_bind_compat_114355() const;
 	static void _bind_compatibility_methods();
 #endif
 
