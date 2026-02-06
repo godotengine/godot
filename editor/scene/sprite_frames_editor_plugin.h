@@ -319,6 +319,7 @@ class SpriteFramesEditor : public EditorDock {
 	void _select_animation(const String &p_name, bool p_update_node = true);
 	void _rename_node_animation(EditorUndoRedoManager *undo_redo, bool is_undo, const String &p_filter, const String &p_new_animation, const String &p_new_autoplay);
 
+	Vector<StringName> _get_selected_animations();
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);

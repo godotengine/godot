@@ -1292,16 +1292,7 @@ void SpriteFramesEditor::_animation_duplicate() {
 }
 
 void SpriteFramesEditor::_animation_cut() {
-	Vector<StringName> anims_to_cut;
-	TreeItem* selected = animations->get_next_selected(nullptr);
-
-	while (selected) {
-		StringName anim_name = selected->get_text(0);
-		if (frames->has_animation(anim_name)) {
-			anims_to_cut.push_back(anim_name);
-		}
-		selected = animations->get_next_selected(selected);
-	}
+	Vector<StringName> anims_to_cut = _get_selected_animations();
 
 	if (anims_to_cut.is_empty()) {
 		return;
@@ -1432,16 +1423,7 @@ void SpriteFramesEditor::_animation_remove() {
 }
 
 void SpriteFramesEditor::_animation_remove_confirmed() {
-	Vector<StringName> anims_to_delete;
-	TreeItem* selected = animations->get_next_selected(nullptr);
-
-	while (selected) {
-		StringName anim_name = selected->get_text(0);
-		if (frames->has_animation(anim_name)) {
-			anims_to_delete.push_back(anim_name);
-		}
-		selected = animations->get_next_selected(selected);
-	}
+	Vector<StringName> anims_to_delete = _get_selected_animations();
 
 	if (anims_to_delete.is_empty()) {
 		return;
@@ -1463,10 +1445,24 @@ void SpriteFramesEditor::_animation_loop_changed() {
 		return;
 	}
 
+	Vector<StringName> selected_anims = _get_selected_animations();
+
+	if (selected_anims.is_empty()) {
+		return;
+	}
+
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+	String action_name = selected_anims.size() == 1 
+        ? TTR("Change Animation Loop")
+        : vformat(TTR("Change %d Animations Loop"), selected_anims.size());
 	undo_redo->create_action(TTR("Change Animation Loop"), UndoRedo::MERGE_DISABLE, frames.ptr());
-	undo_redo->add_do_method(frames.ptr(), "set_animation_loop", edited_anim, anim_loop->is_pressed());
-	undo_redo->add_undo_method(frames.ptr(), "set_animation_loop", edited_anim, frames->get_animation_loop(edited_anim));
+
+	for (const StringName &selected_anim : selected_anims) {
+		undo_redo->add_do_method(frames.ptr(), "set_animation_loop", selected_anim, anim_loop->is_pressed());
+		undo_redo->add_undo_method(frames.ptr(), "set_animation_loop", selected_anim, frames->get_animation_loop(selected_anim));
+	}
+
 	undo_redo->add_do_method(this, "_update_library", true);
 	undo_redo->add_undo_method(this, "_update_library", true);
 	undo_redo->commit_action();
@@ -1485,10 +1481,24 @@ void SpriteFramesEditor::_animation_speed_changed(double p_value) {
 		return;
 	}
 
+	Vector<StringName> selected_anims = _get_selected_animations();
+
+	if (selected_anims.is_empty()) {
+		return;
+	}
+
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Change Animation FPS"), UndoRedo::MERGE_ENDS, frames.ptr());
-	undo_redo->add_do_method(frames.ptr(), "set_animation_speed", edited_anim, p_value);
-	undo_redo->add_undo_method(frames.ptr(), "set_animation_speed", edited_anim, frames->get_animation_speed(edited_anim));
+
+	String action_name = selected_anims.size() == 1 
+        ? TTR("Change Animation FPS")
+        : vformat(TTR("Change %d Animations FPS"), selected_anims.size());
+	undo_redo->create_action(action_name, UndoRedo::MERGE_DISABLE, frames.ptr());
+
+	for (const StringName &selected_anim : selected_anims) {
+		undo_redo->add_do_method(frames.ptr(), "set_animation_speed", selected_anim, p_value);
+		undo_redo->add_undo_method(frames.ptr(), "set_animation_speed", selected_anim, frames->get_animation_speed(selected_anim));
+	}
+
 	undo_redo->add_do_method(this, "_update_library", true);
 	undo_redo->add_undo_method(this, "_update_library", true);
 	undo_redo->commit_action();
@@ -2934,4 +2944,21 @@ Ref<ClipboardAnimation> ClipboardAnimation::from_sprite_frames(const Ref<SpriteF
 		clipboard_anim->frames.push_back(frame);
 	}
 	return clipboard_anim;
+}
+
+
+// get all currently selected animations. Returns empty vector if nothing is selected
+Vector<StringName> SpriteFramesEditor::_get_selected_animations() {
+	Vector<StringName> selected_anims;
+	TreeItem *selected = animations->get_next_selected(nullptr);
+
+	while (selected) {
+		StringName anim_name = selected->get_text(0);
+		if (frames->has_animation(anim_name)) {
+			selected_anims.push_back(anim_name);
+		}
+		selected = animations->get_next_selected(selected);
+	}
+
+	return selected_anims;
 }
