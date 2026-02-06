@@ -36,14 +36,14 @@ void WebRTCDataChannelExtension::_bind_methods() {
 	ADD_PROPERTY_DEFAULT("write_mode", WRITE_MODE_BINARY);
 
 	GDVIRTUAL_BIND(_get_packet, "r_buffer", "r_buffer_size");
-	GDVIRTUAL_BIND(_put_packet, "p_buffer", "p_buffer_size");
+	GDVIRTUAL_BIND(_put_packet, "buffer", "buffer_size");
 	GDVIRTUAL_BIND(_get_available_packet_count);
 	GDVIRTUAL_BIND(_get_max_packet_size);
 
 	GDVIRTUAL_BIND(_poll);
 	GDVIRTUAL_BIND(_close);
 
-	GDVIRTUAL_BIND(_set_write_mode, "p_write_mode");
+	GDVIRTUAL_BIND(_set_write_mode, "write_mode");
 	GDVIRTUAL_BIND(_get_write_mode);
 
 	GDVIRTUAL_BIND(_was_string_packet);

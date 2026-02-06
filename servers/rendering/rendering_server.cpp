@@ -2730,7 +2730,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("particles_set_collision_base_size", "particles", "size"), &RenderingServer::particles_set_collision_base_size);
 	ClassDB::bind_method(D_METHOD("particles_set_transform_align", "particles", "align"), &RenderingServer::particles_set_transform_align);
 	ClassDB::bind_method(D_METHOD("particles_set_transform_align_channel_filter", "particles", "channel_filter"), &RenderingServer::particles_set_transform_align_channel_filter);
-	ClassDB::bind_method(D_METHOD("particles_set_transform_align_axis", "particles", "p_rotation_axis"), &RenderingServer::particles_set_transform_align_axis);
+	ClassDB::bind_method(D_METHOD("particles_set_transform_align_axis", "particles", "rotation_axis"), &RenderingServer::particles_set_transform_align_axis);
 	ClassDB::bind_method(D_METHOD("particles_set_trails", "particles", "enable", "length_sec"), &RenderingServer::particles_set_trails);
 	ClassDB::bind_method(D_METHOD("particles_set_trail_bind_poses", "particles", "bind_poses"), &RenderingServer::_particles_set_trail_bind_poses);
 
@@ -3078,7 +3078,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective", "sky_affect", "fog_mode"), &RenderingServer::environment_set_fog, DEFVAL(RSE::ENV_FOG_MODE_EXPONENTIAL));
 	ClassDB::bind_method(D_METHOD("environment_set_fog_depth", "env", "curve", "begin", "end"), &RenderingServer::environment_set_fog_depth);
 	ClassDB::bind_method(D_METHOD("environment_set_sdfgi", "env", "enable", "cascades", "min_cell_size", "y_scale", "use_occlusion", "bounce_feedback", "read_sky", "energy", "normal_bias", "probe_bias"), &RenderingServer::environment_set_sdfgi);
-	ClassDB::bind_method(D_METHOD("environment_set_volumetric_fog", "env", "enable", "density", "albedo", "emission", "emission_energy", "anisotropy", "length", "p_detail_spread", "gi_inject", "temporal_reprojection", "temporal_reprojection_amount", "ambient_inject", "sky_affect"), &RenderingServer::environment_set_volumetric_fog);
+	ClassDB::bind_method(D_METHOD("environment_set_volumetric_fog", "env", "enable", "density", "albedo", "emission", "emission_energy", "anisotropy", "length", "detail_spread", "gi_inject", "temporal_reprojection", "temporal_reprojection_amount", "ambient_inject", "sky_affect"), &RenderingServer::environment_set_volumetric_fog);
 
 	ClassDB::bind_method(D_METHOD("environment_glow_set_use_bicubic_upscale", "enable"), &RenderingServer::environment_glow_set_use_bicubic_upscale);
 	ClassDB::bind_method(D_METHOD("environment_set_ssr_half_size", "half_size"), &RenderingServer::environment_set_ssr_half_size);

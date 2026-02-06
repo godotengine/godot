@@ -19,9 +19,9 @@
 			<param index="4" name="collision_mask" type="int" />
 			<param index="5" name="collide_with_bodies" type="bool" />
 			<param index="6" name="collide_with_areas" type="bool" />
-			<param index="7" name="closest_safe" type="float*" />
-			<param index="8" name="closest_unsafe" type="float*" />
-			<param index="9" name="info" type="PhysicsServer3DExtensionShapeRestInfo*" />
+			<param index="7" name="r_closest_safe" type="float*" />
+			<param index="8" name="r_closest_unsafe" type="float*" />
+			<param index="9" name="r_info" type="PhysicsServer3DExtensionShapeRestInfo*" />
 			<description>
 			</description>
 		</method>
@@ -34,9 +34,9 @@
 			<param index="4" name="collision_mask" type="int" />
 			<param index="5" name="collide_with_bodies" type="bool" />
 			<param index="6" name="collide_with_areas" type="bool" />
-			<param index="7" name="results" type="void*" />
+			<param index="7" name="r_results" type="void*" />
 			<param index="8" name="max_results" type="int" />
-			<param index="9" name="result_count" type="int32_t*" />
+			<param index="9" name="r_result_count" type="int32_t*" />
 			<description>
 			</description>
 		</method>
@@ -53,7 +53,7 @@
 			<param index="1" name="collision_mask" type="int" />
 			<param index="2" name="collide_with_bodies" type="bool" />
 			<param index="3" name="collide_with_areas" type="bool" />
-			<param index="4" name="results" type="PhysicsServer3DExtensionShapeResult*" />
+			<param index="4" name="r_results" type="PhysicsServer3DExtensionShapeResult*" />
 			<param index="5" name="max_results" type="int" />
 			<description>
 			</description>
@@ -68,7 +68,7 @@
 			<param index="5" name="hit_from_inside" type="bool" />
 			<param index="6" name="hit_back_faces" type="bool" />
 			<param index="7" name="pick_ray" type="bool" />
-			<param index="8" name="result" type="PhysicsServer3DExtensionRayResult*" />
+			<param index="8" name="r_result" type="PhysicsServer3DExtensionRayResult*" />
 			<description>
 			</description>
 		</method>
@@ -81,7 +81,7 @@
 			<param index="4" name="collision_mask" type="int" />
 			<param index="5" name="collide_with_bodies" type="bool" />
 			<param index="6" name="collide_with_areas" type="bool" />
-			<param index="7" name="result_count" type="PhysicsServer3DExtensionShapeResult*" />
+			<param index="7" name="r_result_count" type="PhysicsServer3DExtensionShapeResult*" />
 			<param index="8" name="max_results" type="int" />
 			<description>
 			</description>
@@ -95,7 +95,7 @@
 			<param index="4" name="collision_mask" type="int" />
 			<param index="5" name="collide_with_bodies" type="bool" />
 			<param index="6" name="collide_with_areas" type="bool" />
-			<param index="7" name="rest_info" type="PhysicsServer3DExtensionShapeRestInfo*" />
+			<param index="7" name="r_rest_info" type="PhysicsServer3DExtensionShapeRestInfo*" />
 			<description>
 			</description>
 		</method>

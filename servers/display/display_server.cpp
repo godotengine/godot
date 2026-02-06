@@ -1604,7 +1604,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_description", "id", "description"), &DisplayServer::accessibility_update_set_description);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_value", "id", "value"), &DisplayServer::accessibility_update_set_value);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_tooltip", "id", "tooltip"), &DisplayServer::accessibility_update_set_tooltip);
-	ClassDB::bind_method(D_METHOD("accessibility_update_set_bounds", "id", "p_rect"), &DisplayServer::accessibility_update_set_bounds);
+	ClassDB::bind_method(D_METHOD("accessibility_update_set_bounds", "id", "rect"), &DisplayServer::accessibility_update_set_bounds);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_transform", "id", "transform"), &DisplayServer::accessibility_update_set_transform);
 	ClassDB::bind_method(D_METHOD("accessibility_update_add_child", "id", "child_id"), &DisplayServer::accessibility_update_add_child);
 	ClassDB::bind_method(D_METHOD("accessibility_update_add_related_controls", "id", "related_id"), &DisplayServer::accessibility_update_add_related_controls);

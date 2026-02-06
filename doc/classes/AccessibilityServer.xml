@@ -196,7 +196,7 @@
 		<method name="update_set_bounds">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
-			<param index="1" name="p_rect" type="Rect2" />
+			<param index="1" name="rect" type="Rect2" />
 			<description>
 				Sets element bounding box, relative to the node position.
 			</description>

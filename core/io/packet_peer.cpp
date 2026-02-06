@@ -173,7 +173,7 @@ Error PacketPeerExtension::put_packet(const uint8_t *p_buffer, int p_buffer_size
 
 void PacketPeerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_packet, "r_buffer", "r_buffer_size");
-	GDVIRTUAL_BIND(_put_packet, "p_buffer", "p_buffer_size");
+	GDVIRTUAL_BIND(_put_packet, "buffer", "buffer_size");
 	GDVIRTUAL_BIND(_get_available_packet_count);
 	GDVIRTUAL_BIND(_get_max_packet_size);
 }

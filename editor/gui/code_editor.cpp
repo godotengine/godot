@@ -1925,7 +1925,7 @@ void CodeTextEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("show_warnings_panel"));
 	ADD_SIGNAL(MethodInfo("show_goto_popup"));
 	ADD_SIGNAL(MethodInfo("navigation_preview_ended"));
-	ADD_SIGNAL(MethodInfo("zoomed", PropertyInfo(Variant::FLOAT, "p_zoom_factor")));
+	ADD_SIGNAL(MethodInfo("zoomed", PropertyInfo(Variant::FLOAT, "zoom_factor")));
 }
 
 void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud) {
