@@ -109,7 +109,6 @@ void EditorBottomPanel::_repaint() {
 	center_split->set_dragger_visibility(panel_collapsed ? SplitContainer::DRAGGER_HIDDEN : SplitContainer::DRAGGER_VISIBLE);
 	center_split->set_collapsed(panel_collapsed);
 
-	pin_button->set_visible(!panel_collapsed);
 	expand_button->set_visible(!panel_collapsed);
 	if (expand_button->is_pressed()) {
 		_expand_button_toggled(!panel_collapsed);
@@ -168,7 +167,7 @@ void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, c
 
 void EditorBottomPanel::make_item_visible(Control *p_item, bool p_visible, bool p_ignore_lock) {
 	// Don't allow changing tabs involuntarily when tabs are locked.
-	if (!p_ignore_lock && lock_panel_switching && pin_button->is_visible()) {
+	if (!p_ignore_lock && lock_panel_switching) {
 		return;
 	}
 
@@ -201,7 +200,7 @@ void EditorBottomPanel::_expand_button_toggled(bool p_pressed) {
 	EditorNode::get_singleton()->update_distraction_free_button_theme();
 	if (p_pressed) {
 		distraction_free->reparent(bottom_hbox);
-		bottom_hbox->move_child(distraction_free, -2);
+		bottom_hbox->move_child(distraction_free, -3);
 	} else {
 		distraction_free->get_parent()->remove_child(distraction_free);
 		EditorSceneTabs::get_singleton()->add_extra_button(distraction_free);
@@ -296,14 +295,6 @@ EditorBottomPanel::EditorBottomPanel() :
 	Control *h_spacer = memnew(Control);
 	bottom_hbox->add_child(h_spacer);
 
-	pin_button = memnew(Button);
-	bottom_hbox->add_child(pin_button);
-	pin_button->hide();
-	pin_button->set_theme_type_variation("BottomPanelButton");
-	pin_button->set_toggle_mode(true);
-	pin_button->set_tooltip_text(TTRC("Pin Bottom Panel Switching"));
-	pin_button->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_pin_button_toggled));
-
 	expand_button = memnew(Button);
 	bottom_hbox->add_child(expand_button);
 	expand_button->hide();
@@ -312,6 +303,13 @@ EditorBottomPanel::EditorBottomPanel() :
 	expand_button->set_accessibility_name(TTRC("Expand Bottom Panel"));
 	expand_button->set_shortcut(ED_SHORTCUT_AND_COMMAND("editor/bottom_panel_expand", TTRC("Expand Bottom Panel"), KeyModifierMask::SHIFT | Key::F12));
 	expand_button->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_expand_button_toggled));
+
+	pin_button = memnew(Button);
+	bottom_hbox->add_child(pin_button);
+	pin_button->set_theme_type_variation("BottomPanelButton");
+	pin_button->set_toggle_mode(true);
+	pin_button->set_tooltip_text(TTRC("Pin Bottom Panel Switching"));
+	pin_button->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_pin_button_toggled));
 
 	callable_mp(this, &EditorBottomPanel::_repaint).call_deferred();
 }
