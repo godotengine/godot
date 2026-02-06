@@ -4519,7 +4519,7 @@ void CanvasItemEditorPlugin::edit(Object *p_object) {
 }
 
 bool CanvasItemEditorPlugin::handles(Object *p_object) const {
-	return Object::cast_to<CanvasItem>(p_object);
+	return Object::cast_to<CanvasItem>(p_object) != nullptr || Object::cast_to<CanvasLayer>(p_object) != nullptr || Object::cast_to<Window>(p_object) != nullptr;
 }
 
 void CanvasItemEditorPlugin::make_visible(bool p_visible) {
