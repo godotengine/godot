@@ -3589,12 +3589,46 @@ void Viewport::push_unhandled_input(RequiredParam<InputEvent> rp_event, bool p_l
 }
 #endif // DISABLE_DEPRECATED
 
+void Viewport::_push_shortcut_input_internal(const Ref<InputEvent> &p_event) {
+	if (Object::cast_to<InputEventKey>(*p_event) == nullptr && Object::cast_to<InputEventShortcut>(*p_event) == nullptr && Object::cast_to<InputEventJoypadButton>(*p_event) == nullptr) {
+		return;
+	}
+	ERR_FAIL_COND(!is_inside_tree());
+	get_tree()->_call_input_pause(shortcut_input_group, SceneTree::CALL_INPUT_TYPE_SHORTCUT_INPUT, p_event, this);
+
+	if (!propagate_shortcuts_to_parent || is_input_handled()) {
+		return;
+	}
+
+	Viewport *parent_viewport = get_parent_viewport();
+	if (!parent_viewport) {
+		return;
+	}
+	if (parent_viewport->disable_input || parent_viewport->disable_input_override) {
+		return;
+	}
+	if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_ancestor_of(parent_viewport)) {
+		return;
+	}
+	if (!parent_viewport->handle_input_locally || parent_viewport->is_embedding_subwindows()) {
+		return;
+	}
+	if (!parent_viewport->_can_consume_input_events()) {
+		return;
+	}
+
+	parent_viewport->local_input_handled = false;
+	parent_viewport->shortcut_use_focus_owner = false;
+	parent_viewport->_push_shortcut_input_internal(p_event);
+	parent_viewport->shortcut_use_focus_owner = true;
+	if (parent_viewport->is_input_handled()) {
+		set_input_as_handled();
+	}
+}
+
 void Viewport::_push_unhandled_input_internal(const Ref<InputEvent> &p_event) {
 	// Shortcut Input.
-	if (Object::cast_to<InputEventKey>(*p_event) != nullptr || Object::cast_to<InputEventShortcut>(*p_event) != nullptr || Object::cast_to<InputEventJoypadButton>(*p_event) != nullptr) {
-		ERR_FAIL_COND(!is_inside_tree());
-		get_tree()->_call_input_pause(shortcut_input_group, SceneTree::CALL_INPUT_TYPE_SHORTCUT_INPUT, p_event, this);
-	}
+	_push_shortcut_input_internal(p_event);
 
 	// Unhandled key Input - Used for performance reasons - This is called a lot less than _unhandled_input since it ignores MouseMotion, and to handle Unicode input with Alt / Ctrl modifiers after handling shortcuts.
 	if (!is_input_handled() && (Object::cast_to<InputEventKey>(*p_event) != nullptr)) {
@@ -3995,6 +4029,16 @@ void Viewport::set_handle_input_locally(bool p_enable) {
 bool Viewport::is_handling_input_locally() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return handle_input_locally;
+}
+
+void Viewport::set_propagate_shortcuts_to_parent(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
+	propagate_shortcuts_to_parent = p_enable;
+}
+
+bool Viewport::gui_shortcut_use_focus_owner() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return shortcut_use_focus_owner;
 }
 
 void Viewport::_refresh_texture_filter_cache() const {
