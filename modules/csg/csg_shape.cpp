@@ -1644,12 +1644,12 @@ CSGBrush *CSGBox3D::_build_brush() {
 		uvsw[4] = Vector2(0, 0);
 		uvsw[5] = Vector2(0, -1);
 		//Y+
-		uvsw[6] = Vector2(0, 1);
-		uvsw[7] = Vector2(0, 0);
-		uvsw[8] = Vector2(1, 0);
-		uvsw[9] = Vector2(1, 0);
-		uvsw[10] = Vector2(1, 1);
-		uvsw[11] = Vector2(0, 1);
+		uvsw[6] = Vector2(0, 0);
+		uvsw[7] = Vector2(1, 0);
+		uvsw[8] = Vector2(1, 1);
+		uvsw[9] = Vector2(1, 1);
+		uvsw[10] = Vector2(0, 1);
+		uvsw[11] = Vector2(0, 0);
 		//Z+
 		uvsw[12] = Vector2(1, -1);
 		uvsw[13] = Vector2(1, 0);
@@ -1658,12 +1658,12 @@ CSGBrush *CSGBox3D::_build_brush() {
 		uvsw[16] = Vector2(0, -1);
 		uvsw[17] = Vector2(1, -1);
 		//X-
-		uvsw[18] = Vector2(0, -1);
-		uvsw[19] = Vector2(1, -1);
-		uvsw[20] = Vector2(1, 0);
-		uvsw[21] = Vector2(1, 0);
-		uvsw[22] = Vector2(0, 0);
-		uvsw[23] = Vector2(0, -1);
+		uvsw[18] = Vector2(-1, -1);
+		uvsw[19] = Vector2(0, -1);
+		uvsw[20] = Vector2(0, 0);
+		uvsw[21] = Vector2(0, 0);
+		uvsw[22] = Vector2(-1, 0);
+		uvsw[23] = Vector2(-1, -1);
 		//Y-
 		uvsw[24] = Vector2(0, 0);
 		uvsw[25] = Vector2(1, 0);
@@ -1688,12 +1688,12 @@ CSGBrush *CSGBox3D::_build_brush() {
 			};
 
 			Vector2 shifts[6] = {
-				Vector2(-uv_offset.z, uv_offset.y), //5
+				Vector2(uv_offset.z, uv_offset.y), //5
 				Vector2(uv_offset.x, uv_offset.z), //1
-				Vector2(uv_offset.x, uv_offset.y), //0
-				Vector2(uv_offset.z, uv_offset.y), //2
-				Vector2(uv_offset.x, -uv_offset.z), //3
-				Vector2(-uv_offset.x, uv_offset.y), //4
+				Vector2(-uv_offset.x, uv_offset.y), //0
+				Vector2(-uv_offset.z, uv_offset.y), //2
+				Vector2(-uv_offset.x, uv_offset.z), //3
+				Vector2(uv_offset.x, uv_offset.y), //4
 			};
 
 			int inc_s = 0;
@@ -1703,15 +1703,14 @@ CSGBrush *CSGBox3D::_build_brush() {
 				uvsw[j] *= directions[w];
 				uvsw[j] += shifts[inc_s];
 
-				w--;
-				if (w < 0) {
-					w = 2;
-				}
-
 				k++;
 				if (k > 5) {
 					k = 0;
 					inc_s++;
+					w--;
+					if (w < 0) {
+						w = 2;
+					}
 				}
 			}
 		}
@@ -1899,6 +1898,10 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					Vector2(inc_uv * inverse_i, -1),
 				};
 
+				if (cone) {
+					u[2].x = 0;
+				}
+
 				if (scale_uv) {
 					u[0].x *= uv_radius;
 					u[1].x *= uv_radius;
@@ -1908,14 +1911,19 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					u[3].y = -height;
 				}
 
+				for (int k = 0; k < 4; k++) {
+					u[k].x -= uv_offset.x;
+					u[k].y += uv_offset.y;
+				}
+
 				//side face 1
 				facesw[face * 3 + 0] = face_points[0] * vertex_mul;
 				facesw[face * 3 + 1] = face_points[1] * vertex_mul;
 				facesw[face * 3 + 2] = face_points[2] * vertex_mul;
 
-				uvsw[face * 3 + 0] = u[0] - uv_offset;
-				uvsw[face * 3 + 1] = u[1] - uv_offset;
-				uvsw[face * 3 + 2] = u[2] - uv_offset;
+				uvsw[face * 3 + 0] = u[0];
+				uvsw[face * 3 + 1] = u[1];
+				uvsw[face * 3 + 2] = u[2];
 
 				smoothw[face] = smooth_faces;
 				invertw[face] = invert_val;
@@ -1929,9 +1937,9 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					facesw[face * 3 + 1] = face_points[3] * vertex_mul;
 					facesw[face * 3 + 2] = face_points[0] * vertex_mul;
 
-					uvsw[face * 3 + 0] = u[2] - uv_offset;
-					uvsw[face * 3 + 1] = u[3] - uv_offset;
-					uvsw[face * 3 + 2] = u[0] - uv_offset;
+					uvsw[face * 3 + 0] = u[2];
+					uvsw[face * 3 + 1] = u[3];
+					uvsw[face * 3 + 2] = u[0];
 
 					smoothw[face] = smooth_faces;
 					invertw[face] = invert_val;
@@ -1945,13 +1953,13 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				facesw[face * 3 + 2] = Vector3(0, -1, 0) * vertex_mul;
 
 				if (scale_uv) {
-					uvsw[face * 3] = (Vector2(-face_points[1].x, face_points[1].z) * radius) + top_uv_offset;
-					uvsw[face * 3 + 1] = (Vector2(-face_points[0].x, face_points[0].z) * radius) + top_uv_offset;
+					uvsw[face * 3 + 0] = Vector2(-face_points[1].x * radius + top_uv_offset.x, face_points[1].z * radius + top_uv_offset.y);
+					uvsw[face * 3 + 1] = Vector2(-face_points[0].x * radius + top_uv_offset.x, face_points[0].z * radius + top_uv_offset.y);
 					uvsw[face * 3 + 2] = top_uv_offset;
 				} else {
-					uvsw[face * 3] = (Vector2(-face_points[1].x, face_points[1].z) * 0.5) + Vector2(0.5, 0.5);
-					uvsw[face * 3 + 1] = (Vector2(-face_points[0].x, face_points[0].z) * 0.5) + Vector2(0.5, 0.5);
-					uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
+					uvsw[face * 3 + 0] = Vector2(-face_points[1].x * 0.5 + top_uv_offset.x, face_points[1].z * 0.5 + top_uv_offset.y);
+					uvsw[face * 3 + 1] = Vector2(-face_points[0].x * 0.5 + top_uv_offset.x, face_points[0].z * 0.5 + top_uv_offset.y);
+					uvsw[face * 3 + 2] = top_uv_offset;
 				}
 
 				smoothw[face] = false;
@@ -1966,13 +1974,13 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					facesw[face * 3 + 2] = Vector3(0, 1, 0) * vertex_mul;
 
 					if (scale_uv) {
-						uvsw[face * 3] = Vector2(face_points[3].x, face_points[3].z) * radius + top_uv_offset;
-						uvsw[face * 3 + 1] = Vector2(face_points[2].x, face_points[2].z) * radius + top_uv_offset;
+						uvsw[face * 3 + 0] = Vector2(face_points[3].x * radius + top_uv_offset.x, face_points[3].z * radius + top_uv_offset.y);
+						uvsw[face * 3 + 1] = Vector2(face_points[2].x * radius + top_uv_offset.x, face_points[2].z * radius + top_uv_offset.y);
 						uvsw[face * 3 + 2] = top_uv_offset;
 					} else {
-						uvsw[face * 3] = Vector2(face_points[3].x, face_points[3].z) * 0.5 + Vector2(0.5, 0.5);
-						uvsw[face * 3 + 1] = Vector2(face_points[2].x, face_points[2].z) * 0.5 + Vector2(0.5, 0.5);
-						uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
+						uvsw[face * 3 + 0] = Vector2(face_points[3].x * 0.5 + top_uv_offset.x, face_points[3].z * 0.5 + top_uv_offset.y);
+						uvsw[face * 3 + 1] = Vector2(face_points[2].x * 0.5 + top_uv_offset.x, face_points[2].z * 0.5 + top_uv_offset.y);
+						uvsw[face * 3 + 2] = top_uv_offset;
 					}
 
 					smoothw[face] = false;
