@@ -201,7 +201,7 @@ void Button::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (!Engine::get_singleton()->is_editor_hint() && get_visibility_mode() == BaseButton::VISIBILITY_TOUCHSCREEN_ONLY && !DisplayServer::get_singleton()->is_touchscreen_available()) {
+			if (!Engine::get_singleton()->is_editor_hint() && is_touchscreen_only() && !DisplayServer::get_singleton()->is_touchscreen_available()) {
 				return;
 			}
 

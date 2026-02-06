@@ -45,11 +45,6 @@ public:
 		ACTION_MODE_BUTTON_RELEASE,
 	};
 
-	enum VisibilityMode {
-		VISIBILITY_ALWAYS,
-		VISIBILITY_TOUCHSCREEN_ONLY,
-	};
-
 private:
 	BitField<MouseButtonMask> button_mask = MouseButtonMask::LEFT;
 	bool toggle_mode = false;
@@ -74,7 +69,7 @@ private:
 
 	Ref<ButtonGroup> button_group;
 
-	VisibilityMode visibility_mode = VISIBILITY_ALWAYS;
+	bool touchscreen_only = false;
 
 	void _unpress_group();
 	void _pressed();
@@ -148,8 +143,8 @@ public:
 	void set_button_group(const Ref<ButtonGroup> &p_group);
 	Ref<ButtonGroup> get_button_group() const;
 
-	void set_visibility_mode(VisibilityMode p_mode);
-	VisibilityMode get_visibility_mode() const;
+	void set_touchscreen_only(bool p_on);
+	bool is_touchscreen_only() const;
 
 	PackedStringArray get_configuration_warnings() const override;
 
@@ -159,7 +154,6 @@ public:
 
 VARIANT_ENUM_CAST(BaseButton::DrawMode)
 VARIANT_ENUM_CAST(BaseButton::ActionMode)
-VARIANT_ENUM_CAST(BaseButton::VisibilityMode)
 
 class ButtonGroup : public Resource {
 	GDCLASS(ButtonGroup, Resource);
