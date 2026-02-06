@@ -132,9 +132,11 @@
 			<param index="1" name="type_hint" type="String" default="&quot;&quot;" />
 			<param index="2" name="use_sub_threads" type="bool" default="false" />
 			<param index="3" name="cache_mode" type="int" enum="ResourceLoader.CacheMode" default="1" />
+			<param index="4" name="queue_front" type="bool" default="false" />
 			<description>
 				Loads the resource using threads. If [param use_sub_threads] is [code]true[/code], multiple threads will be used to load the resource, which makes loading faster, but may affect the main thread (and thus cause game slowdowns).
 				The [param cache_mode] parameter defines whether and how the cache should be used or updated when loading the resource.
+				If [param queue_front] is [code]true[/code], the request will be put at the head of the queue of pending requests, prioritizing it.
 			</description>
 		</method>
 		<method name="remove_resource_format_loader">

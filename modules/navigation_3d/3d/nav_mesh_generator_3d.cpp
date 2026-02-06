@@ -226,7 +226,7 @@ void NavMeshGenerator3D::bake_from_source_geometry_data_async(Ref<NavigationMesh
 	generator_task->source_geometry_data = p_source_geometry_data;
 	generator_task->callback = p_callback;
 	generator_task->status = NavMeshGeneratorTask3D::TaskStatus::BAKING_STARTED;
-	generator_task->thread_task_id = WorkerThreadPool::get_singleton()->add_native_task(&NavMeshGenerator3D::generator_thread_bake, generator_task, NavMeshGenerator3D::baking_use_high_priority_threads, SNAME("NavMeshGeneratorBake3D"));
+	generator_task->thread_task_id = WorkerThreadPool::get_singleton()->add_native_task(&NavMeshGenerator3D::generator_thread_bake, generator_task, NavMeshGenerator3D::baking_use_high_priority_threads, false, SNAME("NavMeshGeneratorBake3D"));
 	MutexLock generator_task_lock(generator_task_mutex);
 	generator_tasks.insert(generator_task->thread_task_id, generator_task);
 }

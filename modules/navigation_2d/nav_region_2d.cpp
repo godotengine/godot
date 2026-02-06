@@ -254,7 +254,7 @@ void NavRegion2D::_build_iteration() {
 	iteration_build.region_iteration = new_iteration;
 
 	if (use_async_iterations) {
-		iteration_build_thread_task_id = WorkerThreadPool::get_singleton()->add_native_task(&NavRegion2D::_build_iteration_threaded, &iteration_build, true, SNAME("NavRegionBuilder2D"));
+		iteration_build_thread_task_id = WorkerThreadPool::get_singleton()->add_native_task(&NavRegion2D::_build_iteration_threaded, &iteration_build, true, false, SNAME("NavRegionBuilder2D"));
 		request_async_thread_join();
 	} else {
 		NavRegionBuilder2D::build_iteration(iteration_build);
