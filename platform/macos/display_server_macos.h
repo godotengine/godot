@@ -151,6 +151,8 @@ public:
 		bool extend_to_title = false;
 		bool hide_from_capture = false;
 
+		HDROutput hdr_output;
+
 		Rect2i parent_safe_rect;
 	};
 
@@ -160,13 +162,11 @@ public:
 	GodotProgressView *dock_progress = nullptr;
 
 private:
+	id screen_observer = nil;
+
 #if defined(GLES3_ENABLED)
 	GLManagerLegacy_MacOS *gl_manager_legacy = nullptr;
 	GLManagerANGLE_MacOS *gl_manager_angle = nullptr;
-#endif
-#if defined(RD_ENABLED)
-	RenderingContextDriver *rendering_context = nullptr;
-	RenderingDevice *rendering_device = nullptr;
 #endif
 	String rendering_driver;
 
@@ -184,15 +184,11 @@ private:
 	id menu_delegate = nullptr;
 	NativeMenuMacOS *native_menu = nullptr;
 
-	Point2i im_selection;
-	String im_text;
-
 	CGEventSourceRef event_source;
-	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
-	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
-	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
-	bool mouse_mode_override_enabled = false;
-	void _mouse_update_mode();
+	void _mouse_apply_mode(MouseMode p_prev_mode, MouseMode p_new_mode) override;
+
+	HDROutput &_get_hdr_output(WindowID p_window) override;
+	const HDROutput &_get_hdr_output(WindowID p_window) const override;
 
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;
@@ -205,7 +201,6 @@ private:
 	mutable bool displays_arrangement_dirty = true;
 	bool is_resizing = false;
 
-	CursorShape cursor_shape = CURSOR_ARROW;
 	NSCursor *cursors[CURSOR_MAX];
 	HashMap<CursorShape, Vector<Variant>> cursors_cache;
 
@@ -218,8 +213,6 @@ private:
 
 	IndicatorID indicator_id_counter = 0;
 	HashMap<IndicatorID, IndicatorData> indicators;
-
-	IOPMAssertionID screen_keep_on_assertion = kIOPMNullAssertionID;
 
 	Callable help_search_callback;
 	Callable help_action_callback;
@@ -275,7 +268,6 @@ public:
 	void update_mouse_pos(WindowData &p_wd, NSPoint p_location_in_window);
 	void push_to_key_event_buffer(const KeyEvent &p_event);
 	void pop_last_key_event();
-	void update_im_text(const Point2i &p_selection, const String &p_text);
 	void set_last_focused_window(WindowID p_window);
 	bool mouse_process_popups(bool p_close = false);
 	void popup_open(WindowID p_window);
@@ -312,22 +304,12 @@ public:
 	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) override;
 	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) override;
 
-	virtual void beep() const override;
-
-	virtual void mouse_set_mode(MouseMode p_mode) override;
-	virtual MouseMode mouse_get_mode() const override;
-	virtual void mouse_set_mode_override(MouseMode p_mode) override;
-	virtual MouseMode mouse_get_mode_override() const override;
-	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
-	virtual bool mouse_is_mode_override_enabled() const override;
-
 	bool update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, NSPoint &r_mpos, NSTimeInterval p_timestamp);
 	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
 
 	virtual int get_screen_count() const override;
-	virtual int get_primary_screen() const override;
 	virtual int get_keyboard_focus_screen() const override;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
@@ -335,13 +317,9 @@ public:
 	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_max_scale() const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
-	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Color screen_get_pixel(const Point2i &p_position) const override;
 	virtual Ref<Image> screen_get_image(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Ref<Image> screen_get_image_rect(const Rect2i &p_rect) const override;
-	virtual void screen_set_keep_on(bool p_enable) override;
-	virtual bool screen_is_kept_on() const override;
-
 	virtual Vector<int> get_window_list() const override;
 
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, WindowID p_transient_parent = INVALID_WINDOW_ID) override;
@@ -416,6 +394,9 @@ public:
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
 
+public:
+	void update_screen_parameters();
+
 	virtual bool window_maximize_on_title_dbl_click() const override;
 	virtual bool window_minimize_on_title_dbl_click() const override;
 
@@ -425,17 +406,8 @@ public:
 	virtual void window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Vector3i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const override;
 
-	virtual int accessibility_should_increase_contrast() const override;
-	virtual int accessibility_should_reduce_animation() const override;
-	virtual int accessibility_should_reduce_transparency() const override;
-	virtual int accessibility_screen_reader_active() const override;
-
-	virtual Point2i ime_get_selection() const override;
-	virtual String ime_get_text() const override;
-
 	void cursor_update_shape();
 	virtual void cursor_set_shape(CursorShape p_shape) override;
-	virtual CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
 
 	virtual bool get_swap_cancel_ok() override;
@@ -466,6 +438,8 @@ public:
 	virtual void delete_status_indicator(IndicatorID p_id) override;
 
 	virtual bool is_window_transparency_available() const override;
+
+	void window_get_edr_values(WindowID p_window, CGFloat *r_max_potential_edr_value, CGFloat *r_max_edr_value) const override;
 
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();

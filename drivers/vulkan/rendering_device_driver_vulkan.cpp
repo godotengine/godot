@@ -7327,6 +7327,9 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 			// involving integrated GPU hardware do not function correctly
 			// with HDR output.
 			return false;
+#elif defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+			// HDR support has not yet been thoroughly tested and validated for Apple platforms.
+			return false;
 #else
 			return context_driver->is_colorspace_supported();
 #endif // defined(WINDOWS_ENABLED)

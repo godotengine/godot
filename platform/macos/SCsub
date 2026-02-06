@@ -33,7 +33,7 @@ files = [
 
 if env.editor_build:
     files += [
-        "display_server_embedded.mm",
+        "display_server_macos_embedded.mm",
         "embedded_debugger.mm",
         "embedded_gl_manager.mm",
         "editor/embedded_game_view_plugin.mm",
