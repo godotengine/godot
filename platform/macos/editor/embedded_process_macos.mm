@@ -30,8 +30,8 @@
 
 #include "embedded_process_macos.h"
 
-#include "platform/macos/display_server_embedded.h"
 #include "platform/macos/display_server_macos.h"
+#include "platform/macos/display_server_macos_embedded.h"
 
 #include "core/input/input_event_codec.h"
 #include "core/os/main_loop.h"
@@ -127,12 +127,17 @@ void EmbeddedProcessMacOS::request_close() {
 }
 
 void EmbeddedProcessMacOS::display_state_changed() {
-	DisplayServerEmbeddedState state;
+	DisplayServerMacOSEmbeddedState state;
 	state.screen_max_scale = ds->screen_get_max_scale();
 	state.screen_dpi = ds->screen_get_dpi();
 	DisplayServer::WindowID wid = window->get_window_id();
 	state.screen_window_scale = ds->screen_get_scale(ds->window_get_current_screen(wid));
 	state.display_id = ds->window_get_display_id(wid);
+
+	CGFloat max_edr, max_potential_edr;
+	ds->window_get_edr_values(wid, &max_edr, &max_potential_edr);
+	state.screen_max_edr = max_edr;
+	state.screen_max_potential_edr = max_potential_edr;
 
 	PackedByteArray data;
 	state.serialize(data);

@@ -41,6 +41,8 @@ DisplayServerIOS *DisplayServerIOS::get_singleton() {
 
 DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) :
 		DisplayServerAppleEmbedded(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error) {
+	// See: https://github.com/godotengine/godot/pull/106814#discussion_r2854262156 for why this was set to 203 nits.
+	hardware_reference_luminance_nits = 203.0f;
 }
 
 DisplayServerIOS::~DisplayServerIOS() {
@@ -117,4 +119,25 @@ float DisplayServerIOS::screen_get_scale(int p_screen) const {
 	ERR_FAIL_INDEX_V(p_screen, screen_count, 1.0f);
 
 	return [UIScreen mainScreen].scale;
+}
+
+bool DisplayServerIOS::_screen_hdr_is_supported() const {
+	if (@available(iOS 16.0, *)) {
+		return [UIScreen mainScreen].potentialEDRHeadroom > 1.0;
+	}
+	return false;
+}
+
+float DisplayServerIOS::_screen_potential_edr_headroom() const {
+	if (@available(iOS 16.0, *)) {
+		return [UIScreen mainScreen].potentialEDRHeadroom;
+	}
+	return 1.0f;
+}
+
+float DisplayServerIOS::_screen_current_edr_headroom() const {
+	if (@available(iOS 16.0, *)) {
+		return [UIScreen mainScreen].currentEDRHeadroom;
+	}
+	return 1.0f;
 }

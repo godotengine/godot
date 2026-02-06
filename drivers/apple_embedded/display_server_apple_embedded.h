@@ -57,6 +57,7 @@
 class InputEvent;
 class NativeMenu;
 
+/// "Embedded" as in "Embedded Device".
 class DisplayServerAppleEmbedded : public DisplayServer {
 	GDSOFTCLASS(DisplayServerAppleEmbedded, DisplayServer);
 
@@ -87,7 +88,16 @@ class DisplayServerAppleEmbedded : public DisplayServer {
 
 	void initialize_tts() const;
 
+	bool edr_requested = false;
+	void _update_hdr_output();
+	float _calculate_current_reference_luminance() const;
+
 protected:
+	virtual bool _screen_hdr_is_supported() const { return false; }
+	virtual float _screen_potential_edr_headroom() const { return 1.0f; }
+	virtual float _screen_current_edr_headroom() const { return 1.0f; }
+	float hardware_reference_luminance_nits = 100.0f;
+
 	DisplayServerAppleEmbedded(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	~DisplayServerAppleEmbedded();
 
@@ -229,6 +239,24 @@ public:
 
 	virtual void screen_set_keep_on(bool p_enable) override;
 	virtual bool screen_is_kept_on() const override;
+
+	// MARK: - HDR / EDR
+
+	void current_edr_headroom_changed();
+	virtual bool window_is_hdr_output_supported(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void window_request_hdr_output(const bool p_enabled, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_is_hdr_output_requested(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual bool window_is_hdr_output_enabled(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual float window_get_hdr_output_reference_luminance(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual float window_get_hdr_output_current_reference_luminance(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual float window_get_hdr_output_max_luminance(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual float window_get_hdr_output_current_max_luminance(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual float window_get_output_max_linear_value(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	void resize_window(CGSize size);
 	virtual void swap_buffers() override {}

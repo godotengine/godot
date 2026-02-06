@@ -376,6 +376,7 @@ bool DisplayServerAppleEmbedded::has_feature(Feature p_feature) const {
 		// case FEATURE_NATIVE_ICON:
 		// case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_CLIPBOARD:
+		case FEATURE_HDR_OUTPUT:
 		case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_ORIENTATION:
 		case FEATURE_TOUCHSCREEN:
@@ -818,6 +819,106 @@ DisplayServer::VSyncMode DisplayServerAppleEmbedded::window_get_vsync_mode(Windo
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;
+}
+
+// MARK: - HDR / EDR
+
+void DisplayServerAppleEmbedded::_update_hdr_output() {
+#ifdef RD_ENABLED
+	if (!rendering_context) {
+		return;
+	}
+
+	bool desired = edr_requested && _screen_hdr_is_supported();
+	if (rendering_context->window_get_hdr_output_enabled(MAIN_WINDOW_ID) != desired) {
+		rendering_context->window_set_hdr_output_enabled(MAIN_WINDOW_ID, desired);
+	}
+
+	float reference_luminance = _calculate_current_reference_luminance();
+	rendering_context->window_set_hdr_output_reference_luminance(MAIN_WINDOW_ID, reference_luminance);
+
+	float max_luminance = _screen_potential_edr_headroom() * hardware_reference_luminance_nits;
+	rendering_context->window_set_hdr_output_max_luminance(MAIN_WINDOW_ID, max_luminance);
+#endif
+}
+
+void DisplayServerAppleEmbedded::current_edr_headroom_changed() {
+	_update_hdr_output();
+}
+
+bool DisplayServerAppleEmbedded::window_is_hdr_output_supported(WindowID p_window) const {
+#if defined(RD_ENABLED)
+	if (rendering_device && !rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
+		return false;
+	}
+#endif
+	return _screen_hdr_is_supported();
+}
+
+void DisplayServerAppleEmbedded::window_request_hdr_output(const bool p_enabled, WindowID p_window) {
+#if defined(RD_ENABLED)
+	ERR_FAIL_COND_MSG(p_enabled && rendering_device && !rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT), "HDR output is not supported by the rendering device.");
+#endif
+
+	edr_requested = p_enabled;
+	_update_hdr_output();
+}
+
+bool DisplayServerAppleEmbedded::window_is_hdr_output_requested(WindowID p_window) const {
+	return edr_requested;
+}
+
+bool DisplayServerAppleEmbedded::window_is_hdr_output_enabled(WindowID p_window) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_enabled(p_window);
+	}
+#endif
+	return false;
+}
+
+void DisplayServerAppleEmbedded::window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window) {
+	ERR_PRINT_ONCE("Manually setting reference white luminance is not supported on Apple devices, as they provide a user-facing brightness setting that directly controls reference white luminance.");
+}
+
+float DisplayServerAppleEmbedded::window_get_hdr_output_reference_luminance(WindowID p_window) const {
+	return -1.0f; // Always auto-adjusted by the OS on Apple platforms.
+}
+
+float DisplayServerAppleEmbedded::_calculate_current_reference_luminance() const {
+	float potential = _screen_potential_edr_headroom();
+	float current = _screen_current_edr_headroom();
+	return potential * hardware_reference_luminance_nits / current;
+}
+
+float DisplayServerAppleEmbedded::window_get_hdr_output_current_reference_luminance(WindowID p_window) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_reference_luminance(p_window);
+	}
+#endif
+	return 200.0f;
+}
+
+void DisplayServerAppleEmbedded::window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window) {
+	ERR_PRINT_ONCE("Manually setting max luminance is not supported on Apple embedded devices as they provide accurate max luminance values for their built-in screens.");
+}
+
+float DisplayServerAppleEmbedded::window_get_hdr_output_max_luminance(WindowID p_window) const {
+	return -1.0f;
+}
+
+float DisplayServerAppleEmbedded::window_get_hdr_output_current_max_luminance(WindowID p_window) const {
+	return _screen_potential_edr_headroom() * hardware_reference_luminance_nits;
+}
+
+float DisplayServerAppleEmbedded::window_get_output_max_linear_value(WindowID p_window) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_output_max_linear_value(p_window);
+	}
+#endif
+	return 1.0f;
 }
 
 void DisplayServerAppleEmbedded::set_native_icon(const String &p_filename) {

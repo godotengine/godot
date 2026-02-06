@@ -64,7 +64,7 @@
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #ifdef TOOLS_ENABLED
-#import "display_server_embedded.h"
+#import "display_server_macos_embedded.h"
 #import "editor/embedded_process_macos.h"
 #endif
 
@@ -743,13 +743,6 @@ void DisplayServerMacOS::push_to_key_event_buffer(const DisplayServerMacOS::KeyE
 	key_event_buffer.write[key_event_pos++] = p_event;
 }
 
-void DisplayServerMacOS::update_im_text(const Point2i &p_selection, const String &p_text) {
-	im_selection = p_selection;
-	im_text = p_text;
-
-	OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
-}
-
 void DisplayServerMacOS::set_last_focused_window(WindowID p_window) {
 	last_focused_window = p_window;
 }
@@ -843,6 +836,7 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
 		case FEATURE_EMOJI_AND_SYMBOL_PICKER:
 		case FEATURE_WINDOW_EMBEDDING:
+		case FEATURE_HDR_OUTPUT:
 			return true;
 #ifdef ACCESSKIT_ENABLED
 		case FEATURE_ACCESSIBILITY_SCREEN_READER: {
@@ -1175,10 +1169,6 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 	return OK;
 }
 
-void DisplayServerMacOS::beep() const {
-	NSBeep();
-}
-
 Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) {
 	_THREAD_SAFE_METHOD_
 
@@ -1215,16 +1205,8 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 	return OK;
 }
 
-void DisplayServerMacOS::_mouse_update_mode() {
+void DisplayServerMacOS::_mouse_apply_mode(MouseMode p_prev_mode, MouseMode p_new_mode) {
 	_THREAD_SAFE_METHOD_
-
-	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
-			? mouse_mode_override
-			: mouse_mode_base;
-
-	if (wanted_mouse_mode == mouse_mode) {
-		return;
-	}
 
 	WindowID window_id = _get_focused_window_or_popup();
 	if (!windows.has(window_id)) {
@@ -1232,15 +1214,15 @@ void DisplayServerMacOS::_mouse_update_mode() {
 	}
 	WindowData &wd = windows[window_id];
 
-	bool show_cursor = (wanted_mouse_mode == MOUSE_MODE_VISIBLE || wanted_mouse_mode == MOUSE_MODE_CONFINED);
-	bool previously_shown = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED);
+	bool show_cursor = (p_new_mode == MOUSE_MODE_VISIBLE || p_new_mode == MOUSE_MODE_CONFINED);
+	bool previously_shown = (p_prev_mode == MOUSE_MODE_VISIBLE || p_prev_mode == MOUSE_MODE_CONFINED);
 
 	if (show_cursor && !previously_shown) {
 		window_id = get_window_at_screen_position(mouse_get_position());
 		mouse_enter_window(window_id);
 	}
 
-	if (wanted_mouse_mode == MOUSE_MODE_CAPTURED) {
+	if (p_new_mode == MOUSE_MODE_CAPTURED) {
 		// Apple Docs state that the display parameter is not used.
 		// "This parameter is not used. By default, you may pass kCGDirectMainDisplay."
 		// https://developer.apple.com/library/mac/documentation/graphicsimaging/reference/Quartz_Services_Ref/Reference/reference.html
@@ -1254,17 +1236,17 @@ void DisplayServerMacOS::_mouse_update_mode() {
 		NSPoint pointOnScreen = [[wd.window_view window] convertRectToScreen:pointInWindowRect].origin;
 		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
 		CGWarpMouseCursorPosition(lMouseWarpPos);
-	} else if (wanted_mouse_mode == MOUSE_MODE_HIDDEN) {
+	} else if (p_new_mode == MOUSE_MODE_HIDDEN) {
 		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		[wd.window_object setMovable:YES];
 		CGAssociateMouseAndMouseCursorPosition(true);
-	} else if (wanted_mouse_mode == MOUSE_MODE_CONFINED) {
+	} else if (p_new_mode == MOUSE_MODE_CONFINED) {
 		CGDisplayShowCursor(kCGDirectMainDisplay);
 		[wd.window_object setMovable:NO];
 		CGAssociateMouseAndMouseCursorPosition(false);
-	} else if (wanted_mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+	} else if (p_new_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
@@ -1279,49 +1261,10 @@ void DisplayServerMacOS::_mouse_update_mode() {
 	last_warp = [[NSProcessInfo processInfo] systemUptime];
 	ignore_warp = true;
 	warp_events.clear();
-	mouse_mode = wanted_mouse_mode;
 
 	if (show_cursor) {
 		cursor_update_shape();
 	}
-}
-
-void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
-	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
-	if (p_mode == mouse_mode_base) {
-		return;
-	}
-	mouse_mode_base = p_mode;
-	_mouse_update_mode();
-}
-
-DisplayServer::MouseMode DisplayServerMacOS::mouse_get_mode() const {
-	return mouse_mode;
-}
-
-void DisplayServerMacOS::mouse_set_mode_override(MouseMode p_mode) {
-	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
-	if (p_mode == mouse_mode_override) {
-		return;
-	}
-	mouse_mode_override = p_mode;
-	_mouse_update_mode();
-}
-
-DisplayServer::MouseMode DisplayServerMacOS::mouse_get_mode_override() const {
-	return mouse_mode_override;
-}
-
-void DisplayServerMacOS::mouse_set_mode_override_enabled(bool p_override_enabled) {
-	if (p_override_enabled == mouse_mode_override_enabled) {
-		return;
-	}
-	mouse_mode_override_enabled = p_override_enabled;
-	_mouse_update_mode();
-}
-
-bool DisplayServerMacOS::mouse_is_mode_override_enabled() const {
-	return mouse_mode_override_enabled;
 }
 
 bool DisplayServerMacOS::update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, NSPoint &r_mpos, NSTimeInterval p_timestamp) {
@@ -1468,10 +1411,6 @@ int DisplayServerMacOS::get_screen_count() const {
 	return [screenArray count];
 }
 
-int DisplayServerMacOS::get_primary_screen() const {
-	return 0;
-}
-
 int DisplayServerMacOS::get_keyboard_focus_screen() const {
 	const NSUInteger index = [[NSScreen screens] indexOfObject:[NSScreen mainScreen]];
 	return (index == NSNotFound) ? get_primary_screen() : index;
@@ -1517,11 +1456,12 @@ int DisplayServerMacOS::screen_get_dpi(int p_screen) const {
 
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
-		NSDictionary *description = [[screenArray objectAtIndex:p_screen] deviceDescription];
+		NSScreen *screen = [screenArray objectAtIndex:p_screen];
+		NSDictionary *description = [screen deviceDescription];
 
 		const NSSize displayPixelSize = [[description objectForKey:NSDeviceSize] sizeValue];
-		const CGSize displayPhysicalSize = CGDisplayScreenSize([[description objectForKey:@"NSScreenNumber"] unsignedIntValue]);
-		float scale = [[screenArray objectAtIndex:p_screen] backingScaleFactor];
+		const CGSize displayPhysicalSize = CGDisplayScreenSize(_get_display_id_for_screen(screen));
+		float scale = [screen backingScaleFactor];
 
 		float den2 = (displayPhysicalSize.width / 25.4f) * (displayPhysicalSize.width / 25.4f) + (displayPhysicalSize.height / 25.4f) * (displayPhysicalSize.height / 25.4f);
 		if (den2 > 0.0f) {
@@ -1719,42 +1659,6 @@ Ref<Image> DisplayServerMacOS::screen_get_image_rect(const Rect2i &p_rect) const
 	return img;
 }
 
-float DisplayServerMacOS::screen_get_refresh_rate(int p_screen) const {
-	_THREAD_SAFE_METHOD_
-
-	p_screen = _get_screen_index(p_screen);
-	int screen_count = get_screen_count();
-	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
-
-	NSArray *screenArray = [NSScreen screens];
-	if ((NSUInteger)p_screen < [screenArray count]) {
-		NSDictionary *description = [[screenArray objectAtIndex:p_screen] deviceDescription];
-		const CGDisplayModeRef displayMode = CGDisplayCopyDisplayMode([[description objectForKey:@"NSScreenNumber"] unsignedIntValue]);
-		const double displayRefreshRate = CGDisplayModeGetRefreshRate(displayMode);
-		return (float)displayRefreshRate;
-	}
-	ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
-	return SCREEN_REFRESH_RATE_FALLBACK;
-}
-
-bool DisplayServerMacOS::screen_is_kept_on() const {
-	return (screen_keep_on_assertion);
-}
-
-void DisplayServerMacOS::screen_set_keep_on(bool p_enable) {
-	if (screen_keep_on_assertion) {
-		IOPMAssertionRelease(screen_keep_on_assertion);
-		screen_keep_on_assertion = kIOPMNullAssertionID;
-	}
-
-	if (p_enable) {
-		String app_name_string = GLOBAL_GET("application/config/name");
-		NSString *name = [NSString stringWithUTF8String:(app_name_string.is_empty() ? "Godot Engine" : app_name_string.utf8().get_data())];
-		NSString *reason = @"Godot Engine running with display/window/energy_saving/keep_screen_on = true";
-		IOPMAssertionCreateWithDescription(kIOPMAssertPreventUserIdleDisplaySleep, (__bridge CFStringRef)name, (__bridge CFStringRef)reason, (__bridge CFStringRef)reason, nullptr, 0, nullptr, &screen_keep_on_assertion);
-	}
-}
-
 Vector<DisplayServer::WindowID> DisplayServerMacOS::get_window_list() const {
 	_THREAD_SAFE_METHOD_
 
@@ -1769,11 +1673,16 @@ DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode,
 	_THREAD_SAFE_METHOD_
 
 	WindowID id = _create_window(p_mode, p_vsync_mode, p_rect);
-	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
-		if (p_flags & (1 << i)) {
-			window_set_flag(WindowFlags(i), true, id);
-		}
+
+	uint32_t set_flags = p_flags & ~(WINDOW_FLAG_MAX - 1); // Clear the flags that are not supported by the window.
+	while (set_flags != 0) {
+		// Find the index of the next set bit.
+		uint32_t index = (uint32_t)__builtin_ctzll(set_flags);
+		// Clear the set bit.
+		set_flags &= (set_flags - 1);
+		window_set_flag(WindowFlags(index), true, id);
 	}
+
 #ifdef RD_ENABLED
 	if (rendering_device) {
 		rendering_device->screen_create(id);
@@ -1982,6 +1891,8 @@ void DisplayServerMacOS::reparent_check(WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 	NSScreen *screen = [wd.window_object screen];
+
+	_update_hdr_output(p_window, wd.hdr_output);
 
 	_window_update_display_id(&wd);
 
@@ -2933,28 +2844,49 @@ DisplayServer::VSyncMode DisplayServerMacOS::window_get_vsync_mode(WindowID p_wi
 	return DisplayServer::VSYNC_ENABLED;
 }
 
-int DisplayServerMacOS::accessibility_should_increase_contrast() const {
-	return [(GodotApplicationDelegate *)[[NSApplication sharedApplication] delegate] getHighContrast];
+DisplayServerMacOSBase::HDROutput &DisplayServerMacOS::_get_hdr_output(WindowID p_window) {
+	return windows.getptr(p_window)->hdr_output;
 }
 
-int DisplayServerMacOS::accessibility_should_reduce_animation() const {
-	return [(GodotApplicationDelegate *)[[NSApplication sharedApplication] delegate] getReduceMotion];
+const DisplayServerMacOSBase::HDROutput &DisplayServerMacOS::_get_hdr_output(WindowID p_window) const {
+	return windows.getptr(p_window)->hdr_output;
 }
 
-int DisplayServerMacOS::accessibility_should_reduce_transparency() const {
-	return [(GodotApplicationDelegate *)[[NSApplication sharedApplication] delegate] getReduceTransparency];
+void DisplayServerMacOS::window_get_edr_values(WindowID p_window, CGFloat *r_max_potential_edr_value, CGFloat *r_max_edr_value) const {
+	_THREAD_SAFE_METHOD_
+
+	const WindowData *wd = windows.getptr(p_window);
+	ERR_FAIL_NULL(wd);
+
+	NSScreen *screen = wd->window_object.screen;
+#define SET_VAL(v, val) \
+	if (v) { \
+		*v = val; \
+	}
+
+	if (@available(macOS 10.15, *)) {
+		SET_VAL(r_max_potential_edr_value, screen.maximumPotentialExtendedDynamicRangeColorComponentValue);
+		SET_VAL(r_max_edr_value, screen.maximumExtendedDynamicRangeColorComponentValue);
+	} else {
+		SET_VAL(r_max_potential_edr_value, 1.0);
+		SET_VAL(r_max_edr_value, 1.0);
+	}
+
+#undef SET_VAL
 }
 
-int DisplayServerMacOS::accessibility_screen_reader_active() const {
-	return [(GodotApplicationDelegate *)[[NSApplication sharedApplication] delegate] getVoiceOver];
-}
+void DisplayServerMacOS::update_screen_parameters() {
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		if (E.value.hdr_output.requested) {
+			_update_hdr_output(E.key, E.value.hdr_output);
+		}
+	}
 
-Point2i DisplayServerMacOS::ime_get_selection() const {
-	return im_selection;
-}
-
-String DisplayServerMacOS::ime_get_text() const {
-	return im_text;
+#ifdef TOOLS_ENABLED
+	for (KeyValue<OS::ProcessID, EmbeddedProcessData> &E : embedded_processes) {
+		E.value.process->display_state_changed();
+	}
+#endif
 }
 
 void DisplayServerMacOS::cursor_update_shape() {
@@ -3037,10 +2969,6 @@ void DisplayServerMacOS::cursor_set_shape(CursorShape p_shape) {
 	}
 
 	cursor_update_shape();
-}
-
-DisplayServerMacOS::CursorShape DisplayServerMacOS::cursor_get_shape() const {
-	return cursor_shape;
 }
 
 void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
@@ -3143,7 +3071,7 @@ uint32_t DisplayServerMacOS::window_get_display_id(WindowID p_window) const {
 
 void DisplayServerMacOS::_window_update_display_id(WindowData *p_wd) {
 	NSScreen *screen = [p_wd->window_object screen];
-	CGDirectDisplayID display_id = [[screen deviceDescription][@"NSScreenNumber"] unsignedIntValue];
+	CGDirectDisplayID display_id = _get_display_id_for_screen(screen);
 	if (p_wd->display_id == display_id) {
 		return;
 	}
@@ -3933,6 +3861,15 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	}
 	force_process_and_drop_events();
 
+	__block DisplayServerMacOS *self = this;
+	screen_observer = [NSNotificationCenter.defaultCenter
+			addObserverForName:NSApplicationDidChangeScreenParametersNotification
+						object:nil
+						 queue:nil
+					usingBlock:^(NSNotification *_Nonnull note) {
+						self->update_screen_parameters();
+					}];
+
 	if (rendering_driver == "dummy") {
 		RasterizerDummy::make_current();
 	}
@@ -3954,16 +3891,9 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 		RendererCompositorRD::make_current();
 	}
 #endif
-
-	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 }
 
 DisplayServerMacOS::~DisplayServerMacOS() {
-	if (screen_keep_on_assertion) {
-		IOPMAssertionRelease(screen_keep_on_assertion);
-		screen_keep_on_assertion = kIOPMNullAssertionID;
-	}
-
 	// Destroy all status indicators.
 	for (HashMap<IndicatorID, IndicatorData>::Iterator E = indicators.begin(); E; ++E) {
 		[[NSStatusBar systemStatusBar] removeStatusItem:E->value.item];
@@ -4010,6 +3940,8 @@ DisplayServerMacOS::~DisplayServerMacOS() {
 		memdelete(accessibility_driver);
 	}
 #endif
+	[NSNotificationCenter.defaultCenter removeObserver:screen_observer];
+
 	CGDisplayRemoveReconfigurationCallback(_displays_arrangement_changed, nullptr);
 
 	cursors_cache.clear();
