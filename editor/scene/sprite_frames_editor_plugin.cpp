@@ -1312,8 +1312,7 @@ void SpriteFramesEditor::_animation_cut() {
 
 	HashMap<StringName, Vector<ClipboardSpriteFrames::Frame>> frames_map;
 
-	for (int i = 0; i < anims_to_cut.size(); i++) {
-		StringName anim_name = anims_to_cut[i];
+	for (const StringName &anim_name : anims_to_cut) {
 		Ref<ClipboardAnimation> clipboard_anim = ClipboardAnimation::from_sprite_frames(frames, anim_name);
 		clipboard_anims->add_animation(clipboard_anim);
 
@@ -1378,10 +1377,8 @@ void SpriteFramesEditor::_animation_paste() {
 	undo_redo->create_action(action_name, UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
 
 	String last_pasted_name;
-	for (int i = 0; i < anims_to_paste.size(); i++) {
-		Ref<ClipboardAnimation> clipboard_anim = anims_to_paste[i];
-
-		if (!clipboard_anim.is_null()) {
+	for (Ref<ClipboardAnimation> clipboard_anim : anims_to_paste) {
+		if (clipboard_anim.is_valid()) {
 			String new_name = _generate_unique_animation_name(clipboard_anim->name);
 			last_pasted_name = new_name;
 
@@ -1507,9 +1504,7 @@ void SpriteFramesEditor::_animation_remove_undo_redo(const StringName& p_action_
 	EditorUndoRedoManager* undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(p_action_name, UndoRedo::MERGE_DISABLE, frames.ptr());
 
-	for (int anim_idx = 0; anim_idx < p_anims_to_delete.size(); anim_idx++) {
-		StringName anim_name = p_anims_to_delete[anim_idx];
-
+	for (const StringName &anim_name : p_anims_to_delete) {
 		if (!frames->has_animation(anim_name)) {
 			continue;
 		}
