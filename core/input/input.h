@@ -39,6 +39,7 @@
 #include "core/variant/typed_array.h"
 
 class GamepadMotion;
+class VirtualController;
 
 namespace InputClassEnums {
 // Keep synced with DisplayServerEnums::MouseMode enum.
@@ -129,6 +130,8 @@ private:
 	bool ignore_joypad_on_unfocused_application = false;
 	bool application_focused = true;
 	bool embedder_focused = false;
+	bool virtual_controller_enabled = false;
+	VirtualController *virtual_controller = nullptr;
 
 	struct ActionState {
 		uint64_t pressed_physics_frame = UINT64_MAX;
@@ -328,6 +331,7 @@ private:
 	EventDispatchFunc event_dispatch_function = nullptr;
 
 	bool _should_ignore_joypad_events() const;
+	void _project_settings_changed();
 
 #ifndef DISABLE_DEPRECATED
 	void _vibrate_handheld_bind_compat_91143(int p_duration_ms = 500);
@@ -434,6 +438,8 @@ public:
 
 	void set_ignore_joypad_on_unfocused_application(bool p_ignore);
 	bool is_ignoring_joypad_on_unfocused_application() const;
+	void set_virtual_controller_enabled(bool p_enable);
+	bool is_virtual_controller_enabled() const;
 
 	void set_mouse_position(const Point2 &p_posf);
 
