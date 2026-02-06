@@ -23,6 +23,16 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_directory">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="permissions" type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" default="493" />
+			<param index="2" name="modified_time" type="int" default="0" />
+			<description>
+				Adds directory to the archive. If [param modified_time] is set to [code]0[/code], current system time is used.
+				[b]Note:[/b] Directories are automatically created when [method start_file] is called, use this function before adding files to create directories with custom permissions and modification time.
+			</description>
+		</method>
 		<method name="close">
 			<return type="int" enum="Error" />
 			<description>
@@ -48,8 +58,10 @@
 		<method name="start_file">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
+			<param index="1" name="permissions" type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" default="420" />
+			<param index="2" name="modified_time" type="int" default="0" />
 			<description>
-				Starts writing to a file within the archive. Only one file can be written at the same time.
+				Starts writing to a file within the archive. Only one file can be written at the same time. If [param modified_time] is set to [code]0[/code], current system time is used.
 				Must be called after [method open].
 			</description>
 		</method>
