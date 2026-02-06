@@ -1606,155 +1606,114 @@ CSGBrush *CSGBox3D::_build_brush() {
 	facesw[34] = Vector3(-0.5, -0.5, -0.5);
 	facesw[35] = Vector3(0.5, -0.5, -0.5);
 
-	if (scale_uv) {
-		//xy xz zy
-		Vector2 directions[3] = {
-			Vector2(size.x, size.y),
-			Vector2(size.x, size.z),
-			Vector2(size.z, size.y),
-		};
+	if (compat_mode) {
+		//pattern
+		//0 0
+		//0 1
+		//1 1
+		//1 1
+		//1 0
+		//0 0
 
-		/*Vector2 shifts[6] = {
-			Vector2(uv_offset.x, uv_offset.y),
-			Vector2(uv_offset.x, uv_offset.z),
-			Vector2(uv_offset.z, uv_offset.y),
-			Vector2(uv_offset.x, -uv_offset.z),
-			Vector2(-uv_offset.x, uv_offset.y),
-			Vector2(-uv_offset.z, uv_offset.y),
-		};*/
+		int k = 1;
+		int l = 2;
+		float coord_x = 0;
+		float coord_y = 0;
 
-		Vector2 shifts[6] = {
-			Vector2(-uv_offset.z, uv_offset.y), //5
-			Vector2(uv_offset.x, uv_offset.z), //1
-			Vector2(uv_offset.x, uv_offset.y), //0
-			Vector2(uv_offset.z, uv_offset.y), //2
-			Vector2(uv_offset.x, -uv_offset.z), //3
-			Vector2(-uv_offset.x, uv_offset.y), //4
-		};
+		for (int j = 0; j < 36; j++) {
+			uvsw[j] = Vector2(coord_x, coord_y);
+			k++;
+			if (k > 2) {
+				k = 0;
+				coord_x = coord_x == 0 ? 1 : 0;
+			}
 
-		//zy//X+
-		uvsw[0] = Vector2(0, -1) * directions[2] + shifts[0];
-		uvsw[1] = Vector2(1, -1) * directions[2] + shifts[0];
-		uvsw[2] = Vector2(1, 0) * directions[2] + shifts[0];
-		uvsw[3] = Vector2(1, 0) * directions[2] + shifts[0];
-		uvsw[4] = Vector2(0, 0) * directions[2] + shifts[0];
-		uvsw[5] = Vector2(0, -1) * directions[2] + shifts[0];
-		//Y+ //xz
-		uvsw[6] = Vector2(1, 1) * directions[1] + shifts[1];
-		uvsw[7] = Vector2(0, 1) * directions[1] + shifts[1];
-		uvsw[8] = Vector2(0, 0) * directions[1] + shifts[1];
-		uvsw[9] = Vector2(0, 0) * directions[1] + shifts[1];
-		uvsw[10] = Vector2(1, 0) * directions[1] + shifts[1];
-		uvsw[11] = Vector2(1, 1) * directions[1] + shifts[1];
-		//Z+
-		uvsw[12] = Vector2(1, -1) * directions[0] + shifts[2];
-		uvsw[13] = Vector2(1, 0) * directions[0] + shifts[2];
-		uvsw[14] = Vector2(0, 0) * directions[0] + shifts[2];
-		uvsw[15] = Vector2(0, 0) * directions[0] + shifts[2];
-		uvsw[16] = Vector2(0, -1) * directions[0] + shifts[2];
-		uvsw[17] = Vector2(1, -1) * directions[0] + shifts[2];
-		//x-
-		uvsw[18] = Vector2(-1, -1) * directions[2] + shifts[3];
-		uvsw[19] = Vector2(0, -1) * directions[2] + shifts[3];
-		uvsw[20] = Vector2(0, 0) * directions[2] + shifts[3];
-		uvsw[21] = Vector2(0, 0) * directions[2] + shifts[3];
-		uvsw[22] = Vector2(-1, 0) * directions[2] + shifts[3];
-		uvsw[23] = Vector2(-1, -1) * directions[2] + shifts[3];
-		//Y- //xz
-		uvsw[24] = Vector2(0, 0) * directions[1] + shifts[4];
-		uvsw[25] = Vector2(1, 0) * directions[1] + shifts[4];
-		uvsw[26] = Vector2(1, 1) * directions[1] + shifts[4];
-		uvsw[27] = Vector2(1, 1) * directions[1] + shifts[4];
-		uvsw[28] = Vector2(0, 1) * directions[1] + shifts[4];
-		uvsw[29] = Vector2(0, 0) * directions[1] + shifts[4];
-		//Z-
-		uvsw[30] = Vector2(0, 0) * directions[0] + shifts[5];
-		uvsw[31] = Vector2(0, -1) * directions[0] + shifts[5];
-		uvsw[32] = Vector2(1, -1) * directions[0] + shifts[5];
-		uvsw[33] = Vector2(1, -1) * directions[0] + shifts[5];
-		uvsw[34] = Vector2(1, 0) * directions[0] + shifts[5];
-		uvsw[35] = Vector2(0, 0) * directions[0] + shifts[5];
+			l++;
+			if (l > 2) {
+				l = 0;
+				coord_y = coord_y == 0 ? 1 : 0;
+			}
+		}
 	} else {
-		if (compat_mode) {
-			uvsw[0] = Vector2(0, 0);
-			uvsw[1] = Vector2(0, 1);
-			uvsw[2] = Vector2(1, 1);
-			uvsw[3] = Vector2(1, 1);
-			uvsw[4] = Vector2(1, 0);
-			uvsw[5] = Vector2(0, 0);
-			uvsw[6] = Vector2(0, 0);
-			uvsw[7] = Vector2(0, 1);
-			uvsw[8] = Vector2(1, 1);
-			uvsw[9] = Vector2(1, 1);
-			uvsw[10] = Vector2(1, 0);
-			uvsw[11] = Vector2(0, 0);
-			uvsw[12] = Vector2(0, 0);
-			uvsw[13] = Vector2(0, 1);
-			uvsw[14] = Vector2(1, 1);
-			uvsw[15] = Vector2(1, 1);
-			uvsw[16] = Vector2(1, 0);
-			uvsw[17] = Vector2(0, 0);
-			uvsw[18] = Vector2(0, 0);
-			uvsw[19] = Vector2(0, 1);
-			uvsw[20] = Vector2(1, 1);
-			uvsw[21] = Vector2(1, 1);
-			uvsw[22] = Vector2(1, 0);
-			uvsw[23] = Vector2(0, 0);
-			uvsw[24] = Vector2(0, 0);
-			uvsw[25] = Vector2(0, 1);
-			uvsw[26] = Vector2(1, 1);
-			uvsw[27] = Vector2(1, 1);
-			uvsw[28] = Vector2(1, 0);
-			uvsw[29] = Vector2(0, 0);
-			uvsw[30] = Vector2(0, 0);
-			uvsw[31] = Vector2(0, 1);
-			uvsw[32] = Vector2(1, 1);
-			uvsw[33] = Vector2(1, 1);
-			uvsw[34] = Vector2(1, 0);
-			uvsw[35] = Vector2(0, 0);
-		} else {
-			//compat mode only available without scale_uv
-			uvsw[0] = Vector2(0, -1);
-			uvsw[1] = Vector2(1, -1);
-			uvsw[2] = Vector2(1, 0);
-			uvsw[3] = Vector2(1, 0);
-			uvsw[4] = Vector2(0, 0);
-			uvsw[5] = Vector2(0, -1);
+		//now compat_mode disables scale_uv
+		//X+
+		uvsw[0] = Vector2(0, -1);
+		uvsw[1] = Vector2(1, -1);
+		uvsw[2] = Vector2(1, 0);
+		uvsw[3] = Vector2(1, 0);
+		uvsw[4] = Vector2(0, 0);
+		uvsw[5] = Vector2(0, -1);
+		//Y+
+		uvsw[6] = Vector2(0, 1);
+		uvsw[7] = Vector2(0, 0);
+		uvsw[8] = Vector2(1, 0);
+		uvsw[9] = Vector2(1, 0);
+		uvsw[10] = Vector2(1, 1);
+		uvsw[11] = Vector2(0, 1);
+		//Z+
+		uvsw[12] = Vector2(1, -1);
+		uvsw[13] = Vector2(1, 0);
+		uvsw[14] = Vector2(0, 0);
+		uvsw[15] = Vector2(0, 0);
+		uvsw[16] = Vector2(0, -1);
+		uvsw[17] = Vector2(1, -1);
+		//X-
+		uvsw[18] = Vector2(0, -1);
+		uvsw[19] = Vector2(1, -1);
+		uvsw[20] = Vector2(1, 0);
+		uvsw[21] = Vector2(1, 0);
+		uvsw[22] = Vector2(0, 0);
+		uvsw[23] = Vector2(0, -1);
+		//Y-
+		uvsw[24] = Vector2(0, 0);
+		uvsw[25] = Vector2(1, 0);
+		uvsw[26] = Vector2(1, 1);
+		uvsw[27] = Vector2(1, 1);
+		uvsw[28] = Vector2(0, 1);
+		uvsw[29] = Vector2(0, 0);
+		//Z-
+		uvsw[30] = Vector2(0, 0);
+		uvsw[31] = Vector2(0, -1);
+		uvsw[32] = Vector2(1, -1);
+		uvsw[33] = Vector2(1, -1);
+		uvsw[34] = Vector2(1, 0);
+		uvsw[35] = Vector2(0, 0);
 
-			uvsw[6] = Vector2(0, 1);
-			uvsw[7] = Vector2(0, 0);
-			uvsw[8] = Vector2(1, 0);
-			uvsw[9] = Vector2(1, 0);
-			uvsw[10] = Vector2(1, 1);
-			uvsw[11] = Vector2(0, 1);
+		if (scale_uv) {
+			//xy xz zy
+			Vector2 directions[3] = {
+				Vector2(size.x, size.y),
+				Vector2(size.x, size.z),
+				Vector2(size.z, size.y),
+			};
 
-			uvsw[12] = Vector2(1, -1);
-			uvsw[13] = Vector2(1, 0);
-			uvsw[14] = Vector2(0, 0);
-			uvsw[15] = Vector2(0, 0);
-			uvsw[16] = Vector2(0, -1);
-			uvsw[17] = Vector2(1, -1);
+			Vector2 shifts[6] = {
+				Vector2(-uv_offset.z, uv_offset.y), //5
+				Vector2(uv_offset.x, uv_offset.z), //1
+				Vector2(uv_offset.x, uv_offset.y), //0
+				Vector2(uv_offset.z, uv_offset.y), //2
+				Vector2(uv_offset.x, -uv_offset.z), //3
+				Vector2(-uv_offset.x, uv_offset.y), //4
+			};
 
-			uvsw[18] = Vector2(0, -1);
-			uvsw[19] = Vector2(1, -1);
-			uvsw[20] = Vector2(1, 0);
-			uvsw[21] = Vector2(1, 0);
-			uvsw[22] = Vector2(0, 0);
-			uvsw[23] = Vector2(0, -1);
+			int inc_s = 0;
+			int k = 0;
+			int w = 2;
+			for (int j = 0; j < 36; j++) {
+				uvsw[j] *= directions[w];
+				uvsw[j] += shifts[inc_s];
 
-			uvsw[24] = Vector2(0, 0);
-			uvsw[25] = Vector2(1, 0);
-			uvsw[26] = Vector2(1, 1);
-			uvsw[27] = Vector2(1, 1);
-			uvsw[28] = Vector2(0, 1);
-			uvsw[29] = Vector2(0, 0);
+				w--;
+				if (w < 0) {
+					w = 2;
+				}
 
-			uvsw[30] = Vector2(0, 0);
-			uvsw[31] = Vector2(0, -1);
-			uvsw[32] = Vector2(1, -1);
-			uvsw[33] = Vector2(1, -1);
-			uvsw[34] = Vector2(1, 0);
-			uvsw[35] = Vector2(0, 0);
+				k++;
+				if (k > 5) {
+					k = 0;
+					inc_s++;
+				}
+			}
 		}
 	}
 
