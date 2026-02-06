@@ -121,6 +121,16 @@ private:
 	float panning_strength = 1.0f;
 	float cached_global_panning_strength = 0.5f;
 
+	/// Vector storing the output volume for individual listeners in the range
+	/// of this audio stream player.
+	/// This vector is stored as member for efficiency reasons.
+	Vector<AudioFrame> listener_volume_vector;
+
+	/// Vector storing the reverb volume for individual listeners in the range
+	/// of this audio stream player.
+	/// This vector is stored as member for efficiency reasons.
+	Vector<AudioFrame> listener_reverb_vector;
+
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);

@@ -373,9 +373,10 @@ static float _get_max_volume(const Vector<AudioFrame> &p_src_volume_vector) {
 	return max_vol;
 }
 
+static constexpr int64_t volume_vector_size = AudioServer::MAX_CHANNELS_PER_BUS;
+
 // Interacts with PhysicsServer3D, so can only be called during _physics_process.
 Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
-	static constexpr int64_t volume_vector_size = AudioServer::MAX_CHANNELS_PER_BUS;
 	Vector<AudioFrame> output_volume_vector;
 	output_volume_vector.resize(volume_vector_size);
 	for (AudioFrame &frame : output_volume_vector) {
@@ -415,12 +416,6 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	for (AudioFrame &frame : output_reverb_vector) {
 		frame = AudioFrame(0, 0);
 	}
-
-	Vector<AudioFrame> tmp_volume_vector;
-	tmp_volume_vector.resize(volume_vector_size);
-
-	Vector<AudioFrame> tmp_reverb_vector;
-	tmp_reverb_vector.resize(volume_vector_size);
 
 	// keep track of a weighted average of the pitch on a logarithmic scale
 	float log_pitch_scale = 0.0F;
@@ -493,29 +488,29 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 
 		linear_attenuation = MAX(linear_attenuation, Math::db_to_linear(db_att));
 
-		for (AudioFrame &frame : tmp_volume_vector) {
+		for (AudioFrame &frame : listener_volume_vector) {
 			frame = AudioFrame(0, 0);
 		}
 
 		if (AudioServer::get_singleton()->get_speaker_mode() == AudioServer::SPEAKER_MODE_STEREO) {
-			tmp_volume_vector.write[0] = _calc_output_vol_stereo(local_pos, cached_global_panning_strength * panning_strength);
+			listener_volume_vector.write[0] = _calc_output_vol_stereo(local_pos, cached_global_panning_strength * panning_strength);
 		} else {
 			// Bake in a constant factor here to allow the project setting defaults for 2d and 3d to be normalized to 1.0.
 			float tightness = cached_global_panning_strength * 2.0f;
 			tightness *= panning_strength;
-			_calc_output_vol(local_pos.normalized(), tightness, tmp_volume_vector);
+			_calc_output_vol(local_pos.normalized(), tightness, listener_volume_vector);
 		}
 
 		for (int64_t k = 0; k < volume_vector_size; k++) {
-			tmp_volume_vector.write[k] = multiplier * tmp_volume_vector[k];
+			listener_volume_vector.write[k] = multiplier * listener_volume_vector[k];
 		}
 
-		_apply_max_volume_from_vector(output_volume_vector, tmp_volume_vector);
+		_apply_max_volume_from_vector(output_volume_vector, listener_volume_vector);
 
 #ifndef PHYSICS_3D_DISABLED
 		if (area && area->is_using_reverb_bus()) {
-			_calc_reverb_vol(area, listener_area_pos, tmp_volume_vector, tmp_reverb_vector);
-			_apply_max_volume_from_vector(output_reverb_vector, tmp_reverb_vector);
+			_calc_reverb_vol(area, listener_area_pos, listener_volume_vector, listener_reverb_vector);
+			_apply_max_volume_from_vector(output_reverb_vector, listener_reverb_vector);
 		}
 #endif
 
@@ -539,15 +534,15 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 
 				// just use the maximum volume of the current volume vector as weight
 				// so the pitch effect fades out with lower volumes
-				float weight = _get_max_volume(tmp_volume_vector);
-				log_pitch_scale += weight * std::log2(doppler_pitch_scale);
+				float weight = _get_max_volume(listener_volume_vector);
+				log_pitch_scale += weight * Math::log2(doppler_pitch_scale);
 				log_pitch_weight += weight;
 			}
 		}
 	}
 
 	if (log_pitch_weight > 0.0F) {
-		actual_pitch_scale = std::pow(2.0F, log_pitch_scale / log_pitch_weight);
+		actual_pitch_scale = Math::pow(2.0F, log_pitch_scale / log_pitch_weight);
 	}
 
 	for (Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
@@ -977,6 +972,8 @@ AudioStreamPlayer3D::AudioStreamPlayer3D() {
 	velocity_tracker.instantiate();
 	set_disable_scale(true);
 	cached_global_panning_strength = GLOBAL_GET_CACHED(float, "audio/general/3d_panning_strength");
+	listener_volume_vector.resize(volume_vector_size);
+	listener_reverb_vector.resize(volume_vector_size);
 }
 
 AudioStreamPlayer3D::~AudioStreamPlayer3D() {
