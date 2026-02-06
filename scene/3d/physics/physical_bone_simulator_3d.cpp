@@ -154,6 +154,9 @@ void PhysicalBoneSimulator3D::unbind_physical_bone_from_bone(int p_bone) {
 }
 
 PhysicalBone3D *PhysicalBoneSimulator3D::get_physical_bone(int p_bone) {
+	if (p_bone < 0) {
+		return nullptr;
+	}
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX_V(p_bone, bone_size, nullptr);
 
@@ -161,6 +164,9 @@ PhysicalBone3D *PhysicalBoneSimulator3D::get_physical_bone(int p_bone) {
 }
 
 PhysicalBone3D *PhysicalBoneSimulator3D::get_physical_bone_parent(int p_bone) {
+	if (p_bone < 0) {
+		return nullptr;
+	}
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX_V(p_bone, bone_size, nullptr);
 
