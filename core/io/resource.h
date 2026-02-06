@@ -32,7 +32,7 @@
 
 #include "core/io/resource_uid.h"
 #include "core/object/class_db.h"
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/self_list.h"

@@ -34,7 +34,7 @@
 #include "scene/property_list_helper.h"
 #include "servers/audio/audio_server.h"
 
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/variant/native_ptr.h"
 #include "core/variant/typed_array.h"
 

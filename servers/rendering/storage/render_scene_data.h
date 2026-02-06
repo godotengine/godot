@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/object/class_db.h"
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/object.h"
 #include "core/object/script_language.h"
 

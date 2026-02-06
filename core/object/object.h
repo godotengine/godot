@@ -719,7 +719,7 @@ protected:
 		return can_die;
 	}
 
-	// Used in gdvirtual.gen.inc
+	// Used in gdvirtual.gen.h
 	void _gdvirtual_init_method_ptr(uint32_t p_compat_hash, void *&r_fn_ptr, const StringName &p_fn_name, bool p_compat) const;
 
 	friend class GDExtensionMethodBind;
