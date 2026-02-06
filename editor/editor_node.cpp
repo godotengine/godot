@@ -5878,23 +5878,23 @@ String EditorNode::_get_system_info() const {
 
 	const String rendering_device_name = RenderingServer::get_singleton()->get_video_adapter_name();
 
-	RenderingDevice::DeviceType device_type = RenderingServer::get_singleton()->get_video_adapter_type();
+	RenderingDeviceEnums::DeviceType device_type = RenderingServer::get_singleton()->get_video_adapter_type();
 	String device_type_string;
 	switch (device_type) {
-		case RenderingDevice::DeviceType::DEVICE_TYPE_INTEGRATED_GPU:
+		case RenderingDeviceEnums::DeviceType::DEVICE_TYPE_INTEGRATED_GPU:
 			device_type_string = "integrated";
 			break;
-		case RenderingDevice::DeviceType::DEVICE_TYPE_DISCRETE_GPU:
+		case RenderingDeviceEnums::DeviceType::DEVICE_TYPE_DISCRETE_GPU:
 			device_type_string = "dedicated";
 			break;
-		case RenderingDevice::DeviceType::DEVICE_TYPE_VIRTUAL_GPU:
+		case RenderingDeviceEnums::DeviceType::DEVICE_TYPE_VIRTUAL_GPU:
 			device_type_string = "virtual";
 			break;
-		case RenderingDevice::DeviceType::DEVICE_TYPE_CPU:
+		case RenderingDeviceEnums::DeviceType::DEVICE_TYPE_CPU:
 			device_type_string = "(software emulation on CPU)";
 			break;
-		case RenderingDevice::DeviceType::DEVICE_TYPE_OTHER:
-		case RenderingDevice::DeviceType::DEVICE_TYPE_MAX:
+		case RenderingDeviceEnums::DeviceType::DEVICE_TYPE_OTHER:
+		case RenderingDeviceEnums::DeviceType::DEVICE_TYPE_MAX:
 			break; // Can't happen, but silences warning for DEVICE_TYPE_MAX
 	}
 

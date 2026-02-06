@@ -36,6 +36,7 @@
 #include "core/profiling/profiling.h"
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
+#include "rendering_device.h"
 #include "rendering_server_globals.h"
 #include "storage/texture_storage.h"
 

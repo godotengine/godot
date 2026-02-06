@@ -35,7 +35,6 @@
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/templates/fixed_vector.h"
-#include "servers/rendering/rendering_device.h"
 
 #include "thirdparty/spirv-reflect/spirv_reflect.h"
 
@@ -425,7 +424,7 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_
 
 				found->active_stages = uniform.stages;
 
-				RD::UniformType type = RD::UniformType(uniform.type);
+				RDC::UniformType type = RDC::UniformType(uniform.type);
 				uint32_t binding_stride = 1; // If this is an array, stride will be the length of the array.
 				if (uniform.length > 1) {
 					switch (type) {
@@ -619,13 +618,13 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_
 	for (uint32_t i = 0; i < p_spirv.size(); i++) {
 		StageData &stage_data = mtl_shaders.write[i];
 		const ReflectShaderStage &v = p_spirv[i];
-		RD::ShaderStage stage = v.shader_stage;
+		RDC::ShaderStage stage = v.shader_stage;
 		Span<uint32_t> spirv = v.spirv();
 		Parser parser(spirv.ptr(), spirv.size());
 		try {
 			parser.parse();
 		} catch (CompilerError &e) {
-			ERR_FAIL_V_MSG(false, "Failed to parse IR at stage " + String(RD::SHADER_STAGE_NAMES[stage]) + ": " + e.what());
+			ERR_FAIL_V_MSG(false, "Failed to parse IR at stage " + String(RDC::SHADER_STAGE_NAMES[stage]) + ": " + e.what());
 		}
 
 		CompilerMSL compiler(std::move(parser.get_parsed_ir()));
@@ -651,7 +650,7 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_
 		try {
 			source = compiler.compile();
 		} catch (CompilerError &e) {
-			ERR_FAIL_V_MSG(false, "Failed to compile stage " + String(RD::SHADER_STAGE_NAMES[stage]) + ": " + e.what());
+			ERR_FAIL_V_MSG(false, "Failed to compile stage " + String(RDC::SHADER_STAGE_NAMES[stage]) + ": " + e.what());
 		}
 
 		ERR_FAIL_COND_V_MSG(compiler.get_entry_points_and_stages().size() != 1, false, "Expected a single entry point and stage.");

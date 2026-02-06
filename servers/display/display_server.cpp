@@ -37,6 +37,10 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Input);
 #include "scene/resources/texture.h"
 #include "servers/display/display_server_headless.h"
 
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_device.h"
+#endif
+
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"
 #undef CursorShape

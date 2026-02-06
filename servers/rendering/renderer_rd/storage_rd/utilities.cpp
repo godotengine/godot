@@ -318,7 +318,7 @@ String Utilities::get_video_adapter_vendor() const {
 	return RenderingDevice::get_singleton()->get_device_vendor_name();
 }
 
-RenderingDevice::DeviceType Utilities::get_video_adapter_type() const {
+RenderingDeviceEnums::DeviceType Utilities::get_video_adapter_type() const {
 	return RenderingDevice::get_singleton()->get_device_type();
 }
 

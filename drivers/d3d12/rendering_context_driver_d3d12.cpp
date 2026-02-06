@@ -37,7 +37,6 @@
 #include "core/string/ustring.h"
 #include "core/templates/local_vector.h"
 #include "core/version.h"
-#include "servers/rendering/rendering_device.h"
 
 GODOT_GCC_WARNING_PUSH
 GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")

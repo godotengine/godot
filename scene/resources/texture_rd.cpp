@@ -30,6 +30,7 @@
 
 #include "texture_rd.h"
 
+#include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server.h"
 
 ////////////////////////////////////////////////////////////////////////////

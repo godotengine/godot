@@ -883,7 +883,7 @@ struct ShaderCacheEntry {
 	/// A hash of the Metal shader source code.
 	SHA256Digest key;
 	CharString name;
-	RD::ShaderStage stage = RD::SHADER_STAGE_VERTEX;
+	RDC::ShaderStage stage = RDC::SHADER_STAGE_VERTEX;
 	/// Weak reference to the library; allows cache lookup without preventing cleanup.
 	std::weak_ptr<MDLibrary> library;
 

@@ -272,20 +272,20 @@ void MetalDeviceProperties::init_limits(MTL::Device *p_device) {
 	}
 	limits.subgroupSupportedShaderStages.set_flag(RDD::ShaderStage::SHADER_STAGE_FRAGMENT_BIT);
 
-	limits.subgroupSupportedOperations.set_flag(RD::SubgroupOperations::SUBGROUP_BASIC_BIT);
+	limits.subgroupSupportedOperations.set_flag(RDD::SubgroupOperations::SUBGROUP_BASIC_BIT);
 	if (features.simdPermute || features.quadPermute) {
-		limits.subgroupSupportedOperations.set_flag(RD::SubgroupOperations::SUBGROUP_VOTE_BIT);
-		limits.subgroupSupportedOperations.set_flag(RD::SubgroupOperations::SUBGROUP_BALLOT_BIT);
-		limits.subgroupSupportedOperations.set_flag(RD::SubgroupOperations::SUBGROUP_SHUFFLE_BIT);
-		limits.subgroupSupportedOperations.set_flag(RD::SubgroupOperations::SUBGROUP_SHUFFLE_RELATIVE_BIT);
+		limits.subgroupSupportedOperations.set_flag(RDD::SubgroupOperations::SUBGROUP_VOTE_BIT);
+		limits.subgroupSupportedOperations.set_flag(RDD::SubgroupOperations::SUBGROUP_BALLOT_BIT);
+		limits.subgroupSupportedOperations.set_flag(RDD::SubgroupOperations::SUBGROUP_SHUFFLE_BIT);
+		limits.subgroupSupportedOperations.set_flag(RDD::SubgroupOperations::SUBGROUP_SHUFFLE_RELATIVE_BIT);
 	}
 
 	if (features.simdReduction) {
-		limits.subgroupSupportedOperations.set_flag(RD::SubgroupOperations::SUBGROUP_ARITHMETIC_BIT);
+		limits.subgroupSupportedOperations.set_flag(RDD::SubgroupOperations::SUBGROUP_ARITHMETIC_BIT);
 	}
 
 	if (features.quadPermute) {
-		limits.subgroupSupportedOperations.set_flag(RD::SubgroupOperations::SUBGROUP_QUAD_BIT);
+		limits.subgroupSupportedOperations.set_flag(RDD::SubgroupOperations::SUBGROUP_QUAD_BIT);
 	}
 
 	limits.maxBufferLength = p_device->maxBufferLength();
@@ -364,7 +364,7 @@ MetalDeviceProperties::MetalDeviceProperties(MTL::Device *p_device) {
 MetalDeviceProperties::~MetalDeviceProperties() {
 }
 
-SampleCount MetalDeviceProperties::find_nearest_supported_sample_count(RenderingDevice::TextureSamples p_samples) const {
+SampleCount MetalDeviceProperties::find_nearest_supported_sample_count(RenderingDeviceCommons::TextureSamples p_samples) const {
 	SampleCount supported = features.supportedSampleCounts;
 	if (supported & sample_count[p_samples]) {
 		return sample_count[p_samples];
@@ -384,7 +384,7 @@ SampleCount MetalDeviceProperties::find_nearest_supported_sample_count(Rendering
 
 // region static members
 
-const SampleCount MetalDeviceProperties::sample_count[RenderingDevice::TextureSamples::TEXTURE_SAMPLES_MAX] = {
+const SampleCount MetalDeviceProperties::sample_count[RenderingDeviceCommons::TextureSamples::TEXTURE_SAMPLES_MAX] = {
 	SampleCount1,
 	SampleCount2,
 	SampleCount4,

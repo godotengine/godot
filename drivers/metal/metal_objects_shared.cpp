@@ -632,11 +632,11 @@ void MDCommandBufferBase::encode_push_constant_data(RDD::ShaderID p_shader, Vect
 #pragma mark - Metal Library
 
 static const char *SHADER_STAGE_NAMES[] = {
-	[RD::SHADER_STAGE_VERTEX] = "vert",
-	[RD::SHADER_STAGE_FRAGMENT] = "frag",
-	[RD::SHADER_STAGE_TESSELATION_CONTROL] = "tess_ctrl",
-	[RD::SHADER_STAGE_TESSELATION_EVALUATION] = "tess_eval",
-	[RD::SHADER_STAGE_COMPUTE] = "comp",
+	[RDC::SHADER_STAGE_VERTEX] = "vert",
+	[RDC::SHADER_STAGE_FRAGMENT] = "frag",
+	[RDC::SHADER_STAGE_TESSELATION_CONTROL] = "tess_ctrl",
+	[RDC::SHADER_STAGE_TESSELATION_EVALUATION] = "tess_eval",
+	[RDC::SHADER_STAGE_COMPUTE] = "comp",
 };
 
 void ShaderCacheEntry::notify_free() const {

@@ -92,8 +92,11 @@ struct VariantCaster<const T &> {
 	}
 };
 
-#define VARIANT_ENUM_CAST(m_enum) MAKE_ENUM_TYPE_INFO(m_enum)
+#define VARIANT_ENUM_CAST(m_enum) MAKE_ENUM_TYPE_INFO(m_enum, m_enum)
 #define VARIANT_BITFIELD_CAST(m_enum) MAKE_BITFIELD_TYPE_INFO(m_enum)
+
+// Use only for backwards compatibility when the location of an enum changes.
+#define VARIANT_ENUM_CAST_EXT(m_enum, m_bound_name) MAKE_ENUM_TYPE_INFO(m_enum, m_bound_name)
 
 // Object enum casts must go here
 VARIANT_ENUM_CAST(Object::ConnectFlags);

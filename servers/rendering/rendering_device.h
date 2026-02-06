@@ -40,6 +40,7 @@
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/rendering_device_driver.h"
+#include "servers/rendering/rendering_device_enums.h"
 #include "servers/rendering/rendering_device_graph.h"
 
 class RDTextureFormat;
@@ -1835,7 +1836,7 @@ public:
 
 	String get_device_vendor_name() const;
 	String get_device_name() const;
-	DeviceType get_device_type() const;
+	RenderingDeviceEnums::DeviceType get_device_type() const;
 	String get_device_api_name() const;
 	String get_device_api_version() const;
 	String get_device_pipeline_cache_uuid() const;
@@ -1908,7 +1909,7 @@ private:
 	void _raytracing_list_set_push_constant(RaytracingListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size);
 };
 
-VARIANT_ENUM_CAST(RenderingDevice::DeviceType)
+VARIANT_ENUM_CAST_EXT(RenderingDeviceEnums::DeviceType, RenderingDevice::DeviceType)
 VARIANT_ENUM_CAST(RenderingDevice::DriverResource)
 VARIANT_ENUM_CAST(RenderingDevice::ShaderStage)
 VARIANT_ENUM_CAST(RenderingDevice::ShaderLanguage)

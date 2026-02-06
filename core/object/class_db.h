@@ -555,7 +555,7 @@ public:
 };
 
 #define BIND_ENUM_CONSTANT(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant), __constant_get_enum_value_name(#m_constant), m_constant);
 
 #define BIND_BITFIELD_FLAG(m_constant) \
 	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_bitfield_name(m_constant), #m_constant, m_constant, true);

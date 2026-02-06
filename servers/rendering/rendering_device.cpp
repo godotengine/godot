@@ -7118,8 +7118,8 @@ String RenderingDevice::get_device_name() const {
 	return device.name;
 }
 
-RenderingDevice::DeviceType RenderingDevice::get_device_type() const {
-	return DeviceType(device.type);
+RenderingDeviceEnums::DeviceType RenderingDevice::get_device_type() const {
+	return RenderingDeviceEnums::DeviceType(device.type);
 }
 
 String RenderingDevice::get_device_api_name() const {
@@ -8479,12 +8479,12 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_device_memory_by_object_type", "type"), &RenderingDevice::get_device_memory_by_object_type);
 	ClassDB::bind_method(D_METHOD("get_device_allocs_by_object_type", "type"), &RenderingDevice::get_device_allocs_by_object_type);
 
-	BIND_ENUM_CONSTANT(DEVICE_TYPE_OTHER);
-	BIND_ENUM_CONSTANT(DEVICE_TYPE_INTEGRATED_GPU);
-	BIND_ENUM_CONSTANT(DEVICE_TYPE_DISCRETE_GPU);
-	BIND_ENUM_CONSTANT(DEVICE_TYPE_VIRTUAL_GPU);
-	BIND_ENUM_CONSTANT(DEVICE_TYPE_CPU);
-	BIND_ENUM_CONSTANT(DEVICE_TYPE_MAX);
+	BIND_ENUM_CONSTANT(RenderingDeviceEnums::DEVICE_TYPE_OTHER);
+	BIND_ENUM_CONSTANT(RenderingDeviceEnums::DEVICE_TYPE_INTEGRATED_GPU);
+	BIND_ENUM_CONSTANT(RenderingDeviceEnums::DEVICE_TYPE_DISCRETE_GPU);
+	BIND_ENUM_CONSTANT(RenderingDeviceEnums::DEVICE_TYPE_VIRTUAL_GPU);
+	BIND_ENUM_CONSTANT(RenderingDeviceEnums::DEVICE_TYPE_CPU);
+	BIND_ENUM_CONSTANT(RenderingDeviceEnums::DEVICE_TYPE_MAX);
 
 	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_LOGICAL_DEVICE);
 	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_PHYSICAL_DEVICE);

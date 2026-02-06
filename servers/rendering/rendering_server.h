@@ -36,7 +36,7 @@
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
 #include "servers/display/display_server.h"
-#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_device_enums.h"
 
 namespace Geometry3D {
 struct MeshData;
@@ -57,6 +57,8 @@ struct MeshData;
 #define ERR_NOT_ON_RENDER_THREAD
 #define ERR_NOT_ON_RENDER_THREAD_V(m_ret)
 #endif
+
+class RenderingDevice;
 
 class RenderingServer : public Object {
 	GDCLASS(RenderingServer, Object);
@@ -1837,7 +1839,7 @@ public:
 	virtual uint64_t get_rendering_info(RenderingInfo p_info) = 0;
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
-	virtual RenderingDevice::DeviceType get_video_adapter_type() const = 0;
+	virtual RenderingDeviceEnums::DeviceType get_video_adapter_type() const = 0;
 	virtual String get_video_adapter_api_version() const = 0;
 
 	struct FrameProfileArea {

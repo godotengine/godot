@@ -40,6 +40,7 @@
 
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/renderer_scene_render.h"
+#include "servers/rendering/rendering_device_driver.h"
 
 namespace MTLFX {
 class SpatialScalerBase;
@@ -81,8 +82,8 @@ public:
 	struct CreateParams {
 		Vector2i input_size;
 		Vector2i output_size;
-		RD::DataFormat input_format;
-		RD::DataFormat output_format;
+		RDD::DataFormat input_format;
+		RDD::DataFormat output_format;
 	};
 
 	MFXSpatialContext *create_context(CreateParams p_params) const;
@@ -148,11 +149,11 @@ public:
 	struct CreateParams {
 		Vector2i input_size;
 		Vector2i output_size;
-		RD::DataFormat input_format;
-		RD::DataFormat depth_format;
-		RD::DataFormat motion_format;
-		RD::DataFormat reactive_format;
-		RD::DataFormat output_format;
+		RDD::DataFormat input_format;
+		RDD::DataFormat depth_format;
+		RDD::DataFormat motion_format;
+		RDD::DataFormat reactive_format;
+		RDD::DataFormat output_format;
 		Vector2 motion_vector_scale;
 	};
 

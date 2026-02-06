@@ -34,7 +34,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
-#include "servers/rendering/rendering_device.h"
 #include "thirdparty/zlib/zlib.h"
 
 #include "d3d12_godot_nir_bridge.h"
@@ -475,7 +474,7 @@ void RenderingDeviceDriverD3D12::CPUDescriptorHeapPool::free(const Allocation &p
 	}
 }
 
-static const D3D12_COMPARISON_FUNC RD_TO_D3D12_COMPARE_OP[RD::COMPARE_OP_MAX] = {
+static const D3D12_COMPARISON_FUNC RD_TO_D3D12_COMPARE_OP[RDD::COMPARE_OP_MAX] = {
 	D3D12_COMPARISON_FUNC_NEVER,
 	D3D12_COMPARISON_FUNC_LESS,
 	D3D12_COMPARISON_FUNC_EQUAL,
@@ -489,8 +488,8 @@ static const D3D12_COMPARISON_FUNC RD_TO_D3D12_COMPARE_OP[RD::COMPARE_OP_MAX] = 
 uint32_t RenderingDeviceDriverD3D12::SubgroupCapabilities::supported_stages_flags_rd() const {
 	// If there's a way to check exactly which are supported, I have yet to find it.
 	return (
-			RenderingDevice::ShaderStage::SHADER_STAGE_FRAGMENT_BIT |
-			RenderingDevice::ShaderStage::SHADER_STAGE_COMPUTE_BIT);
+			RenderingDeviceCommons::ShaderStage::SHADER_STAGE_FRAGMENT_BIT |
+			RenderingDeviceCommons::ShaderStage::SHADER_STAGE_COMPUTE_BIT);
 }
 
 uint32_t RenderingDeviceDriverD3D12::SubgroupCapabilities::supported_operations_flags_rd() const {
@@ -498,14 +497,14 @@ uint32_t RenderingDeviceDriverD3D12::SubgroupCapabilities::supported_operations_
 		return 0;
 	} else {
 		return (
-				RenderingDevice::SubgroupOperations::SUBGROUP_BASIC_BIT |
-				RenderingDevice::SubgroupOperations::SUBGROUP_BALLOT_BIT |
-				RenderingDevice::SubgroupOperations::SUBGROUP_VOTE_BIT |
-				RenderingDevice::SubgroupOperations::SUBGROUP_SHUFFLE_BIT |
-				RenderingDevice::SubgroupOperations::SUBGROUP_SHUFFLE_RELATIVE_BIT |
-				RenderingDevice::SubgroupOperations::SUBGROUP_QUAD_BIT |
-				RenderingDevice::SubgroupOperations::SUBGROUP_ARITHMETIC_BIT |
-				RenderingDevice::SubgroupOperations::SUBGROUP_CLUSTERED_BIT);
+				RenderingDeviceCommons::SubgroupOperations::SUBGROUP_BASIC_BIT |
+				RenderingDeviceCommons::SubgroupOperations::SUBGROUP_BALLOT_BIT |
+				RenderingDeviceCommons::SubgroupOperations::SUBGROUP_VOTE_BIT |
+				RenderingDeviceCommons::SubgroupOperations::SUBGROUP_SHUFFLE_BIT |
+				RenderingDeviceCommons::SubgroupOperations::SUBGROUP_SHUFFLE_RELATIVE_BIT |
+				RenderingDeviceCommons::SubgroupOperations::SUBGROUP_QUAD_BIT |
+				RenderingDeviceCommons::SubgroupOperations::SUBGROUP_ARITHMETIC_BIT |
+				RenderingDeviceCommons::SubgroupOperations::SUBGROUP_CLUSTERED_BIT);
 	}
 }
 
@@ -575,7 +574,7 @@ void RenderingDeviceDriverD3D12::_debug_message_func(D3D12_MESSAGE_CATEGORY p_ca
 /**** RESOURCE ****/
 /******************/
 
-static const D3D12_RESOURCE_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_RESOURCE_DIMENSION[RD::TEXTURE_TYPE_MAX] = {
+static const D3D12_RESOURCE_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_RESOURCE_DIMENSION[RDD::TEXTURE_TYPE_MAX] = {
 	D3D12_RESOURCE_DIMENSION_TEXTURE1D,
 	D3D12_RESOURCE_DIMENSION_TEXTURE2D,
 	D3D12_RESOURCE_DIMENSION_TEXTURE3D,
@@ -1075,7 +1074,7 @@ uint64_t RenderingDeviceDriverD3D12::buffer_get_device_address(BufferID p_buffer
 /**** TEXTURE ****/
 /*****************/
 
-static const D3D12_SRV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_SRV[RD::TEXTURE_TYPE_MAX] = {
+static const D3D12_SRV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_SRV[RDD::TEXTURE_TYPE_MAX] = {
 	D3D12_SRV_DIMENSION_TEXTURE1D,
 	D3D12_SRV_DIMENSION_TEXTURE2D,
 	D3D12_SRV_DIMENSION_TEXTURE3D,
@@ -1085,7 +1084,7 @@ static const D3D12_SRV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_SRV
 	D3D12_SRV_DIMENSION_TEXTURECUBEARRAY,
 };
 
-static const D3D12_SRV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_SRV_MS[RD::TEXTURE_TYPE_MAX] = {
+static const D3D12_SRV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_SRV_MS[RDD::TEXTURE_TYPE_MAX] = {
 	D3D12_SRV_DIMENSION_UNKNOWN,
 	D3D12_SRV_DIMENSION_TEXTURE2DMS,
 	D3D12_SRV_DIMENSION_UNKNOWN,
@@ -1095,7 +1094,7 @@ static const D3D12_SRV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_SRV
 	D3D12_SRV_DIMENSION_UNKNOWN,
 };
 
-static const D3D12_UAV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_UAV[RD::TEXTURE_TYPE_MAX] = {
+static const D3D12_UAV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_UAV[RDD::TEXTURE_TYPE_MAX] = {
 	D3D12_UAV_DIMENSION_TEXTURE1D,
 	D3D12_UAV_DIMENSION_TEXTURE2D,
 	D3D12_UAV_DIMENSION_TEXTURE3D,

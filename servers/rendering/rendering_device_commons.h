@@ -893,17 +893,6 @@ public:
 	/**** MISC ****/
 	/**************/
 
-	// This enum matches VkPhysicalDeviceType (except for `DEVICE_TYPE_MAX`).
-	// Unlike VkPhysicalDeviceType, DeviceType is exposed to the scripting API.
-	enum DeviceType {
-		DEVICE_TYPE_OTHER,
-		DEVICE_TYPE_INTEGRATED_GPU,
-		DEVICE_TYPE_DISCRETE_GPU,
-		DEVICE_TYPE_VIRTUAL_GPU,
-		DEVICE_TYPE_CPU,
-		DEVICE_TYPE_MAX
-	};
-
 	// Defined in an API-agnostic way.
 	// Some may not make sense for the underlying API; in that case, 0 is returned.
 	enum DriverResource {

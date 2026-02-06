@@ -150,14 +150,14 @@ MTL::PixelFormat PixelFormats::getMTLPixelFormat(DataFormat p_format) {
 
 	// If the MTL::PixelFormat is not supported but DataFormat is valid,
 	// attempt to substitute a different format.
-	if (mtlPixFmt == MTL::PixelFormatInvalid && p_format != RD::DATA_FORMAT_MAX && dfDesc.chromaSubsamplingPlaneCount <= 1) {
+	if (mtlPixFmt == MTL::PixelFormatInvalid && p_format != RDC::DATA_FORMAT_MAX && dfDesc.chromaSubsamplingPlaneCount <= 1) {
 		mtlPixFmt = dfDesc.mtlPixelFormatSubstitute;
 	}
 
 	return mtlPixFmt;
 }
 
-RD::DataFormat PixelFormats::getDataFormat(MTL::PixelFormat p_format) {
+RDC::DataFormat PixelFormats::getDataFormat(MTL::PixelFormat p_format) {
 	return getMTLPixelFormatDesc(p_format).dataFormat;
 }
 
@@ -283,10 +283,10 @@ PixelFormats::~PixelFormats() {
 }
 
 #define addDataFormatDescFull(DATA_FMT, MTL_FMT, MTL_FMT_ALT, MTL_VTX_FMT, MTL_VTX_FMT_ALT, CSPC, CSCB, BLK_W, BLK_H, BLK_BYTE_CNT, MVK_FMT_TYPE, SWIZ_R, SWIZ_G, SWIZ_B, SWIZ_A) \
-	dfFmt = RD::DATA_FORMAT_##DATA_FMT; \
+	dfFmt = RDC::DATA_FORMAT_##DATA_FMT; \
 	_data_format_descs[dfFmt] = { dfFmt, MTL::PixelFormat##MTL_FMT, MTL::PixelFormat##MTL_FMT_ALT, MTL::VertexFormat##MTL_VTX_FMT, MTL::VertexFormat##MTL_VTX_FMT_ALT, \
 		CSPC, CSCB, { BLK_W, BLK_H }, BLK_BYTE_CNT, MTLFormatType::MVK_FMT_TYPE, \
-		{ RD::TEXTURE_SWIZZLE_##SWIZ_R, RD::TEXTURE_SWIZZLE_##SWIZ_G, RD::TEXTURE_SWIZZLE_##SWIZ_B, RD::TEXTURE_SWIZZLE_##SWIZ_A }, \
+		{ RDC::TEXTURE_SWIZZLE_##SWIZ_R, RDC::TEXTURE_SWIZZLE_##SWIZ_G, RDC::TEXTURE_SWIZZLE_##SWIZ_B, RDC::TEXTURE_SWIZZLE_##SWIZ_A }, \
 		"DATA_FORMAT_" #DATA_FMT, false }
 
 #define addDataFormatDesc(VK_FMT, MTL_FMT, MTL_FMT_ALT, MTL_VTX_FMT, MTL_VTX_FMT_ALT, BLK_W, BLK_H, BLK_BYTE_CNT, MVK_FMT_TYPE) \
@@ -299,7 +299,7 @@ PixelFormats::~PixelFormats() {
 	addDataFormatDescFull(DATA_FMT, MTL_FMT, Invalid, Invalid, Invalid, CSPC, CSCB, BLK_W, BLK_H, BLK_BYTE_CNT, ColorFloat, IDENTITY, IDENTITY, IDENTITY, IDENTITY)
 
 void PixelFormats::initDataFormatCapabilities() {
-	_data_format_descs.reserve(RD::DATA_FORMAT_MAX + 1); // reserve enough space to avoid reallocs
+	_data_format_descs.reserve(RDC::DATA_FORMAT_MAX + 1); // reserve enough space to avoid reallocs
 	DataFormat dfFmt;
 
 	addDataFormatDesc(R4G4_UNORM_PACK8, Invalid, Invalid, Invalid, Invalid, 1, 1, 1, ColorFloat);
@@ -787,7 +787,7 @@ void PixelFormats::addMTLVertexFormatDescImpl(MTL::VertexFormat mtlVtxFmt, MTLFm
 	if (mtlVtxFmt >= _mtl_vertex_format_descs.size()) {
 		_mtl_vertex_format_descs.resize(mtlVtxFmt + 1);
 	}
-	_mtl_vertex_format_descs[mtlVtxFmt] = { .mtlVertexFormat = mtlVtxFmt, RD::DATA_FORMAT_MAX, vtxCap, MTLViewClass::None, MTL::PixelFormatInvalid, name };
+	_mtl_vertex_format_descs[mtlVtxFmt] = { .mtlVertexFormat = mtlVtxFmt, RDC::DATA_FORMAT_MAX, vtxCap, MTLViewClass::None, MTL::PixelFormatInvalid, name };
 }
 
 // Check mtlVtx exists on platform, to avoid overwriting the MTL::VertexFormatInvalid entry.
@@ -1021,7 +1021,7 @@ void PixelFormats::buildDFFormatMaps() {
 		// in the Godot format if not supported.
 		if (dfDesc.mtlPixelFormat) {
 			MTLFormatDesc &mtlDesc = getMTLPixelFormatDesc(dfDesc.mtlPixelFormat);
-			if (mtlDesc.dataFormat == RD::DATA_FORMAT_MAX) {
+			if (mtlDesc.dataFormat == RDC::DATA_FORMAT_MAX) {
 				mtlDesc.dataFormat = dfDesc.dataFormat;
 			}
 			if (!mtlDesc.isSupported()) {
@@ -1036,7 +1036,7 @@ void PixelFormats::buildDFFormatMaps() {
 		}
 		if (dfDesc.mtlVertexFormat) {
 			MTLFormatDesc &mtlDesc = getMTLVertexFormatDesc(dfDesc.mtlVertexFormat);
-			if (mtlDesc.dataFormat == RD::DATA_FORMAT_MAX) {
+			if (mtlDesc.dataFormat == RDC::DATA_FORMAT_MAX) {
 				mtlDesc.dataFormat = dfDesc.dataFormat;
 			}
 			if (!mtlDesc.isSupported()) {

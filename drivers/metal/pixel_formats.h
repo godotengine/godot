@@ -57,7 +57,7 @@ GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
 #include "inflection_map.h"
 #include "metal_device_properties.h"
 
-#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_device_commons.h"
 
 #ifdef __OBJC__
 #include <Metal/Metal.h>
@@ -67,6 +67,8 @@ GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
 
 #pragma mark -
 #pragma mark Metal format capabilities
+
+using RDC = RenderingDeviceCommons;
 
 typedef enum : uint16_t {
 
@@ -191,15 +193,15 @@ struct Extent2D {
 };
 
 struct ComponentMapping {
-	RD::TextureSwizzle r = RD::TEXTURE_SWIZZLE_IDENTITY;
-	RD::TextureSwizzle g = RD::TEXTURE_SWIZZLE_IDENTITY;
-	RD::TextureSwizzle b = RD::TEXTURE_SWIZZLE_IDENTITY;
-	RD::TextureSwizzle a = RD::TEXTURE_SWIZZLE_IDENTITY;
+	RDC::TextureSwizzle r = RDC::TEXTURE_SWIZZLE_IDENTITY;
+	RDC::TextureSwizzle g = RDC::TEXTURE_SWIZZLE_IDENTITY;
+	RDC::TextureSwizzle b = RDC::TEXTURE_SWIZZLE_IDENTITY;
+	RDC::TextureSwizzle a = RDC::TEXTURE_SWIZZLE_IDENTITY;
 };
 
 /** Describes the properties of a DataFormat, including the corresponding Metal pixel and vertex format. */
 struct DataFormatDesc {
-	RD::DataFormat dataFormat;
+	RDC::DataFormat dataFormat;
 	MTL::PixelFormat mtlPixelFormat;
 	MTL::PixelFormat mtlPixelFormatSubstitute;
 	MTL::VertexFormat mtlVertexFormat;
@@ -222,10 +224,10 @@ struct DataFormatDesc {
 	inline bool vertexIsSupportedOrSubstitutable() const { return vertexIsSupported() || (mtlVertexFormatSubstitute != MTL::VertexFormatInvalid); }
 
 	bool needsSwizzle() const {
-		return (componentMapping.r != RD::TEXTURE_SWIZZLE_IDENTITY ||
-				componentMapping.g != RD::TEXTURE_SWIZZLE_IDENTITY ||
-				componentMapping.b != RD::TEXTURE_SWIZZLE_IDENTITY ||
-				componentMapping.a != RD::TEXTURE_SWIZZLE_IDENTITY);
+		return (componentMapping.r != RDC::TEXTURE_SWIZZLE_IDENTITY ||
+				componentMapping.g != RDC::TEXTURE_SWIZZLE_IDENTITY ||
+				componentMapping.b != RDC::TEXTURE_SWIZZLE_IDENTITY ||
+				componentMapping.a != RDC::TEXTURE_SWIZZLE_IDENTITY);
 	}
 };
 
@@ -235,7 +237,7 @@ struct MTLFormatDesc {
 		MTL::PixelFormat mtlPixelFormat;
 		MTL::VertexFormat mtlVertexFormat;
 	};
-	RD::DataFormat dataFormat = RD::DATA_FORMAT_MAX;
+	RDC::DataFormat dataFormat = RDC::DATA_FORMAT_MAX;
 	MTLFmtCaps mtlFmtCaps;
 	MTLViewClass mtlViewClass;
 	MTL::PixelFormat mtlPixelFormatLinear;
@@ -245,7 +247,7 @@ struct MTLFormatDesc {
 };
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) PixelFormats {
-	using DataFormat = RD::DataFormat;
+	using DataFormat = RDC::DataFormat;
 
 public:
 	/** Returns whether the DataFormat is supported by the GPU bound to this instance. */
@@ -408,7 +410,7 @@ protected:
 	void addMTLVertexFormatDescImpl(MTL::VertexFormat p_vert_fmt, MTLFmtCaps p_vert_caps, const char *name);
 
 	MTL::Device *device;
-	InflectionMap<DataFormat, DataFormatDesc, RD::DATA_FORMAT_MAX> _data_format_descs;
+	InflectionMap<DataFormat, DataFormatDesc, RDC::DATA_FORMAT_MAX> _data_format_descs;
 	InflectionMap<uint16_t, MTLFormatDesc, MTL::PixelFormatX32_Stencil8 + 2> _mtl_pixel_format_descs; // The actual last enum value is not available on iOS.
 	TightLocalVector<MTLFormatDesc> _mtl_vertex_format_descs;
 };
