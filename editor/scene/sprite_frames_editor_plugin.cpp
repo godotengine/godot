@@ -1292,25 +1292,67 @@ void SpriteFramesEditor::_animation_duplicate() {
 }
 
 void SpriteFramesEditor::_animation_cut() {
-	if (!frames->has_animation(edited_anim)) {
+	Vector<StringName> anims_to_cut;
+	TreeItem* selected = animations->get_next_selected(nullptr);
+
+	while (selected) {
+		StringName anim_name = selected->get_text(0);
+		if (frames->has_animation(anim_name)) {
+			anims_to_cut.push_back(anim_name);
+		}
+		selected = animations->get_next_selected(selected);
+	}
+
+	if (anims_to_cut.is_empty()) {
 		return;
 	}
 
-	// Copy animation to clipboard.
-	Ref<ClipboardAnimation> clipboard_anim = ClipboardAnimation::from_sprite_frames(frames, edited_anim);
-	EditorSettings::get_singleton()->set_resource_clipboard(clipboard_anim);
+	Ref<ClipboardAnimationMulti> clipboard_anims;
+	clipboard_anims.instantiate();
 
-	// Remove animation with undo/redo (no confirmation dialog).
-	_animation_remove_undo_redo(TTR("Cut Animation"), &clipboard_anim->frames);
+	HashMap<StringName, Vector<ClipboardSpriteFrames::Frame>> frames_map;
+
+	for (int i = 0; i < anims_to_cut.size(); i++) {
+		StringName anim_name = anims_to_cut[i];
+		Ref<ClipboardAnimation> clipboard_anim = ClipboardAnimation::from_sprite_frames(frames, anim_name);
+		clipboard_anims->add_animation(clipboard_anim);
+
+		frames_map[anim_name] = clipboard_anim->frames;
+	}
+
+	// Copy animations to clipboard.
+	EditorSettings::get_singleton()->set_resource_clipboard(clipboard_anims);
+
+	String action_name = anims_to_cut.size() == 1
+		? TTR("Cut Animation")
+		: vformat(TTR("Cut %d Animations"), anims_to_cut.size());
+
+	_animation_remove_undo_redo(action_name, anims_to_cut, &frames_map);
 }
 
 void SpriteFramesEditor::_animation_copy() {
-	if (!frames->has_animation(edited_anim)) {
+	TreeItem* selected = animations->get_next_selected(nullptr);
+	if (!selected) {
 		return;
 	}
 
-	Ref<ClipboardAnimation> clipboard_anim = ClipboardAnimation::from_sprite_frames(frames, edited_anim);
-	EditorSettings::get_singleton()->set_resource_clipboard(clipboard_anim);
+	Ref<ClipboardAnimationMulti> clipboard_anims;
+	clipboard_anims.instantiate();
+
+	while (selected) {
+		StringName anim_name = selected->get_text(0);
+
+		if (frames->has_animation(anim_name)) {
+			Ref<ClipboardAnimation> clipboard_anim = ClipboardAnimation::from_sprite_frames(frames, anim_name);
+			clipboard_anims->add_animation(clipboard_anim);
+		}
+
+		selected = animations->get_next_selected(selected);
+	}
+
+	if (clipboard_anims->get_count() > 0) {
+		EditorSettings::get_singleton()->set_resource_clipboard(clipboard_anims);
+	}
 }
 
 void SpriteFramesEditor::_animation_paste() {
@@ -1318,27 +1360,49 @@ void SpriteFramesEditor::_animation_paste() {
 		return;
 	}
 
-	Ref<ClipboardAnimation> clipboard_anim = EditorSettings::get_singleton()->get_resource_clipboard();
-	if (clipboard_anim.is_null()) {
+	Ref<ClipboardAnimationMulti> clipboard_anims = EditorSettings::get_singleton()->get_resource_clipboard();
+	if (clipboard_anims.is_null()) {
 		return;
 	}
 
-	String new_name = _generate_unique_animation_name(clipboard_anim->name);
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Paste Animation"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
-	undo_redo->add_do_method(frames.ptr(), "add_animation", new_name);
-	undo_redo->add_undo_method(frames.ptr(), "remove_animation", new_name);
-	undo_redo->add_do_method(frames.ptr(), "set_animation_speed", new_name, clipboard_anim->speed);
-	undo_redo->add_do_method(frames.ptr(), "set_animation_loop", new_name, clipboard_anim->loop);
+	Vector<Ref<ClipboardAnimation>> anims_to_paste = clipboard_anims->get_animations();
 
-	for (ClipboardSpriteFrames::Frame &frame : clipboard_anim->frames) {
-		undo_redo->add_do_method(frames.ptr(), "add_frame", new_name, frame.texture, frame.duration);
+	if (anims_to_paste.is_empty()) {
+		return;
 	}
 
-	undo_redo->add_do_method(this, "_select_animation", new_name);
+	EditorUndoRedoManager* undo_redo = EditorUndoRedoManager::get_singleton();
+	String action_name = anims_to_paste.size() == 1
+		? TTR("Paste Animation")
+		: vformat(TTR("Paste %d Animations"), anims_to_paste.size());
+	undo_redo->create_action(action_name, UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
+
+	String last_pasted_name;
+	for (int i = 0; i < anims_to_paste.size(); i++) {
+		Ref<ClipboardAnimation> clipboard_anim = anims_to_paste[i];
+
+		if (!clipboard_anim.is_null()) {
+			String new_name = _generate_unique_animation_name(clipboard_anim->name);
+			last_pasted_name = new_name;
+
+			undo_redo->add_do_method(frames.ptr(), "add_animation", new_name);
+			undo_redo->add_undo_method(frames.ptr(), "remove_animation", new_name);
+
+			undo_redo->add_do_method(frames.ptr(), "set_animation_speed", new_name, clipboard_anim->speed);
+			undo_redo->add_do_method(frames.ptr(), "set_animation_loop", new_name, clipboard_anim->loop);
+
+			for (ClipboardSpriteFrames::Frame& frame : clipboard_anim->frames) {
+				undo_redo->add_do_method(frames.ptr(), "add_frame", new_name, frame.texture, frame.duration);
+			}
+		}
+	}
+
+	undo_redo->add_do_method(this, "_select_animation", last_pasted_name);
 	undo_redo->add_undo_method(this, "_select_animation", edited_anim);
+
 	undo_redo->add_do_method(this, "_update_library");
 	undo_redo->add_undo_method(this, "_update_library");
+
 	undo_redo->commit_action();
 }
 
@@ -1347,16 +1411,50 @@ void SpriteFramesEditor::_animation_remove() {
 		return;
 	}
 
-	if (!frames->has_animation(edited_anim)) {
+	TreeItem* selected = animations->get_next_selected(nullptr);
+	if (!selected) {
 		return;
 	}
 
-	delete_dialog->set_text(TTRC("Delete Animation?"));
+	int selection_count = 0;
+	TreeItem* temp = selected;
+	while (temp) {
+		selection_count++;
+		temp = animations->get_next_selected(temp);
+	}
+
+	// Update dialog text based on count
+	if (selection_count == 1) {
+		delete_dialog->set_text(TTRC("Delete Animation?"));
+	}
+	else {
+		delete_dialog->set_text(vformat(TTRC("Delete %d Animations?"), selection_count));
+	}
+
 	delete_dialog->popup_centered();
 }
 
 void SpriteFramesEditor::_animation_remove_confirmed() {
-	_animation_remove_undo_redo(TTR("Remove Animation"), nullptr);
+	Vector<StringName> anims_to_delete;
+	TreeItem* selected = animations->get_next_selected(nullptr);
+
+	while (selected) {
+		StringName anim_name = selected->get_text(0);
+		if (frames->has_animation(anim_name)) {
+			anims_to_delete.push_back(anim_name);
+		}
+		selected = animations->get_next_selected(selected);
+	}
+
+	if (anims_to_delete.is_empty()) {
+		return;
+	}
+
+	String action_name = anims_to_delete.size() == 1
+		? TTR("Remove Animation")
+		: vformat(TTR("Remove %d Animations"), anims_to_delete.size());
+
+	_animation_remove_undo_redo(action_name, anims_to_delete, nullptr);
 }
 
 void SpriteFramesEditor::_animation_search_text_changed(const String &p_text) {
@@ -1399,49 +1497,78 @@ void SpriteFramesEditor::_animation_speed_changed(double p_value) {
 	undo_redo->commit_action();
 }
 
-void SpriteFramesEditor::_animation_remove_undo_redo(const StringName &p_action_name, const Vector<ClipboardSpriteFrames::Frame> *p_frames) {
-	StringName new_edited = _find_next_animation();
-	int frame_count = frames->get_frame_count(edited_anim);
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(p_action_name, UndoRedo::MERGE_DISABLE, frames.ptr());
-	_rename_node_animation(undo_redo, false, edited_anim, new_edited, "");
-	undo_redo->add_do_method(frames.ptr(), "remove_animation", edited_anim);
-	undo_redo->add_undo_method(frames.ptr(), "add_animation", edited_anim);
-	_rename_node_animation(undo_redo, true, edited_anim, edited_anim, edited_anim);
-	undo_redo->add_undo_method(frames.ptr(), "set_animation_speed", edited_anim, frames->get_animation_speed(edited_anim));
-	undo_redo->add_undo_method(frames.ptr(), "set_animation_loop", edited_anim, frames->get_animation_loop(edited_anim));
-	for (int i = 0; i < frame_count; i++) {
-		Ref<Texture2D> texture;
-		float duration;
-		if (p_frames) {
-			texture = (*p_frames)[i].texture;
-			duration = (*p_frames)[i].duration;
-		} else {
-			texture = frames->get_frame_texture(edited_anim, i);
-			duration = frames->get_frame_duration(edited_anim, i);
-		}
-		undo_redo->add_undo_method(frames.ptr(), "add_frame", edited_anim, texture, duration);
+void SpriteFramesEditor::_animation_remove_undo_redo(const StringName& p_action_name, const Vector<StringName>& p_anims_to_delete, const HashMap<StringName, Vector<ClipboardSpriteFrames::Frame>>* p_frames_map) {
+	if (p_anims_to_delete.is_empty()) {
+		return;
 	}
+
+	StringName new_edited = _find_next_animation_excluding(p_anims_to_delete);
+
+	EditorUndoRedoManager* undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(p_action_name, UndoRedo::MERGE_DISABLE, frames.ptr());
+
+	for (int anim_idx = 0; anim_idx < p_anims_to_delete.size(); anim_idx++) {
+		StringName anim_name = p_anims_to_delete[anim_idx];
+
+		if (!frames->has_animation(anim_name)) {
+			continue;
+		}
+
+		int frame_count = frames->get_frame_count(anim_name);
+
+		// Don't rename if animation is being deleted.
+		if (new_edited != StringName() && new_edited != anim_name) {
+            _rename_node_animation(undo_redo, false, anim_name, new_edited, "");
+        }
+
+		undo_redo->add_do_method(frames.ptr(), "remove_animation", anim_name);
+		undo_redo->add_undo_method(frames.ptr(), "add_animation", anim_name);
+
+		_rename_node_animation(undo_redo, true, anim_name, anim_name, anim_name);
+
+		undo_redo->add_undo_method(frames.ptr(), "set_animation_speed", anim_name, frames->get_animation_speed(anim_name));
+		undo_redo->add_undo_method(frames.ptr(), "set_animation_loop", anim_name, frames->get_animation_loop(anim_name));
+
+		for (int i = 0; i < frame_count; i++) {
+			Ref<Texture2D> texture;
+			float duration;
+
+			if (p_frames_map && p_frames_map->has(anim_name)) {
+				const Vector<ClipboardSpriteFrames::Frame>& anim_frames = (*p_frames_map)[anim_name];
+				texture = anim_frames[i].texture;
+				duration = anim_frames[i].duration;
+			}
+			else {
+				texture = frames->get_frame_texture(anim_name, i);
+				duration = frames->get_frame_duration(anim_name, i);
+			}
+
+			undo_redo->add_undo_method(frames.ptr(), "add_frame", anim_name, texture, duration);
+		}
+	}
+
 	undo_redo->add_do_method(this, "_select_animation", new_edited);
-	undo_redo->add_undo_method(this, "_select_animation", edited_anim);
+	undo_redo->add_undo_method(this, "_select_animation", p_anims_to_delete[0]);
+
 	undo_redo->add_do_method(this, "_update_library");
 	undo_redo->add_undo_method(this, "_update_library");
+
 	undo_redo->commit_action();
 }
 
-StringName SpriteFramesEditor::_find_next_animation() {
-	List<StringName> anim_names;
-	frames->get_animation_list(&anim_names);
-	anim_names.sort_custom<StringName::AlphCompare>();
-	if (anim_names.size() >= 2) {
-		if (edited_anim == anim_names.get(0)) {
-			return anim_names.get(1);
-		} else {
-			return anim_names.get(0);
-		}
-	} else {
-		return StringName();
-	}
+StringName SpriteFramesEditor::_find_next_animation_excluding(const Vector<StringName> &p_exclude) {
+    List<StringName> anim_names;
+    frames->get_animation_list(&anim_names);
+    anim_names.sort_custom<StringName::AlphCompare>();
+    
+    for (const StringName &anim_name : anim_names) {
+		// Ignore animations in exclude list
+        if (!p_exclude.has(anim_name)) {
+            return anim_name;
+        }
+    }
+    
+    return StringName();
 }
 
 String SpriteFramesEditor::_generate_unique_animation_name(const String &p_base_name) const {
@@ -2228,6 +2355,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	animations->connect("item_edited", callable_mp(this, &SpriteFramesEditor::_animation_name_edited));
 	animations->set_theme_type_variation("TreeSecondary");
 	animations->set_allow_reselect(true);
+	animations->set_select_mode(Tree::SELECT_MULTI);
 
 	add_anim->set_shortcut_context(animations);
 	add_anim->set_shortcut(ED_SHORTCUT("sprite_frames/new_animation", TTRC("Add Animation"), KeyModifierMask::CMD_OR_CTRL | Key::N));

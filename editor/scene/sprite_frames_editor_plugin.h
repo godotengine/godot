@@ -69,6 +69,25 @@ public:
 	static Ref<ClipboardAnimation> from_sprite_frames(const Ref<SpriteFrames> &p_frames, const String &p_anim);
 };
 
+class ClipboardAnimationMulti : public Resource {
+	GDCLASS(ClipboardAnimationMulti, Resource);
+
+public:
+	Vector<Ref<ClipboardAnimation>> animations;
+	
+	void add_animation(const Ref<ClipboardAnimation>& p_anim) {
+		animations.push_back(p_anim);
+	}
+
+	Vector<Ref<ClipboardAnimation>> get_animations() const {
+		return animations;
+	}
+
+	int get_count() const {
+		return animations.size();
+	}
+};
+
 class SpriteFramesEditor : public EditorDock {
 	GDCLASS(SpriteFramesEditor, EditorDock);
 
@@ -242,9 +261,9 @@ class SpriteFramesEditor : public EditorDock {
 	void _animation_loop_changed();
 	void _animation_speed_resized();
 	void _animation_speed_changed(double p_value);
-	void _animation_remove_undo_redo(const StringName &p_action_name, const Vector<ClipboardSpriteFrames::Frame> *p_frames = nullptr);
+	void _animation_remove_undo_redo(const StringName &p_action_name, const Vector<StringName> &p_anims_to_delete, const HashMap<StringName, Vector<ClipboardSpriteFrames::Frame>> *p_frames_map);
 
-	StringName _find_next_animation();
+	StringName _find_next_animation_excluding(const Vector<StringName> &p_exclude);
 	String _generate_unique_animation_name(const String &p_base_name) const;
 
 	void _frame_list_gui_input(const Ref<InputEvent> &p_event);
