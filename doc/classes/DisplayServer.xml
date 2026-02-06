@@ -719,7 +719,7 @@
 		<method name="cursor_set_custom_image">
 			<return type="void" />
 			<param index="0" name="cursor" type="Resource" />
-			<param index="1" name="shape" type="int" enum="DisplayServer.CursorShape" default="0" />
+			<param index="1" name="shape" type="int" enum="DisplayServer.CursorShape" default="CURSOR_ARROW" />
 			<param index="2" name="hotspot" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Sets a custom mouse cursor image for the given [param shape]. This means the user's operating system and mouse cursor theme will no longer influence the mouse cursor's appearance.
@@ -940,7 +940,7 @@
 			<param index="2" name="callback" type="Callable" default="Callable()" />
 			<param index="3" name="key_callback" type="Callable" default="Callable()" />
 			<param index="4" name="tag" type="Variant" default="null" />
-			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="5" name="accelerator" type="int" enum="Key" default="KEY_NONE" />
 			<param index="6" name="index" type="int" default="-1" />
 			<description>
 				Adds a new checkable item with text [param label] to the global menu with ID [param menu_root].
@@ -966,7 +966,7 @@
 			<param index="3" name="callback" type="Callable" default="Callable()" />
 			<param index="4" name="key_callback" type="Callable" default="Callable()" />
 			<param index="5" name="tag" type="Variant" default="null" />
-			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="6" name="accelerator" type="int" enum="Key" default="KEY_NONE" />
 			<param index="7" name="index" type="int" default="-1" />
 			<description>
 				Adds a new checkable item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
@@ -992,7 +992,7 @@
 			<param index="3" name="callback" type="Callable" default="Callable()" />
 			<param index="4" name="key_callback" type="Callable" default="Callable()" />
 			<param index="5" name="tag" type="Variant" default="null" />
-			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="6" name="accelerator" type="int" enum="Key" default="KEY_NONE" />
 			<param index="7" name="index" type="int" default="-1" />
 			<description>
 				Adds a new item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
@@ -1018,7 +1018,7 @@
 			<param index="3" name="callback" type="Callable" default="Callable()" />
 			<param index="4" name="key_callback" type="Callable" default="Callable()" />
 			<param index="5" name="tag" type="Variant" default="null" />
-			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="6" name="accelerator" type="int" enum="Key" default="KEY_NONE" />
 			<param index="7" name="index" type="int" default="-1" />
 			<description>
 				Adds a new radio-checkable item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
@@ -1044,7 +1044,7 @@
 			<param index="2" name="callback" type="Callable" default="Callable()" />
 			<param index="3" name="key_callback" type="Callable" default="Callable()" />
 			<param index="4" name="tag" type="Variant" default="null" />
-			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="5" name="accelerator" type="int" enum="Key" default="KEY_NONE" />
 			<param index="6" name="index" type="int" default="-1" />
 			<description>
 				Adds a new item with text [param label] to the global menu with ID [param menu_root].
@@ -1071,7 +1071,7 @@
 			<param index="4" name="callback" type="Callable" default="Callable()" />
 			<param index="5" name="key_callback" type="Callable" default="Callable()" />
 			<param index="6" name="tag" type="Variant" default="null" />
-			<param index="7" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="7" name="accelerator" type="int" enum="Key" default="KEY_NONE" />
 			<param index="8" name="index" type="int" default="-1" />
 			<description>
 				Adds a new item with text [param label] to the global menu with ID [param menu_root].
@@ -1098,7 +1098,7 @@
 			<param index="2" name="callback" type="Callable" default="Callable()" />
 			<param index="3" name="key_callback" type="Callable" default="Callable()" />
 			<param index="4" name="tag" type="Variant" default="null" />
-			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="5" name="accelerator" type="int" enum="Key" default="KEY_NONE" />
 			<param index="6" name="index" type="int" default="-1" />
 			<description>
 				Adds a new radio-checkable item with text [param label] to the global menu with ID [param menu_root].
@@ -2088,7 +2088,7 @@
 			<return type="void" />
 			<param index="0" name="existing_text" type="String" />
 			<param index="1" name="position" type="Rect2" default="Rect2(0, 0, 0, 0)" />
-			<param index="2" name="type" type="int" enum="DisplayServer.VirtualKeyboardType" default="0" />
+			<param index="2" name="type" type="int" enum="DisplayServer.VirtualKeyboardType" default="KEYBOARD_TYPE_DEFAULT" />
 			<param index="3" name="max_length" type="int" default="-1" />
 			<param index="4" name="cursor_start" type="int" default="-1" />
 			<param index="5" name="cursor_end" type="int" default="-1" />

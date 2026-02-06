@@ -153,7 +153,7 @@
 			<return type="void" />
 			<param index="0" name="node" type="Node" />
 			<param index="1" name="force_readable_name" type="bool" default="false" />
-			<param index="2" name="internal" type="int" enum="Node.InternalMode" default="0" />
+			<param index="2" name="internal" type="int" enum="Node.InternalMode" default="INTERNAL_MODE_DISABLED" />
 			<description>
 				Adds a child [param node]. Nodes can have any number of children, but every child must have a unique name. Child nodes are automatically deleted when the parent node is deleted, so an entire scene can be removed by deleting its topmost node.
 				If [param force_readable_name] is [code]true[/code], improves the readability of the added [param node]. If not named, the [param node] is renamed to its type, and if it shares [member name] with a sibling, a number is suffixed more appropriately. This operation is very slow. As such, it is recommended leaving this to [code]false[/code], which assigns a dummy name featuring [code]@[/code] in both situations.

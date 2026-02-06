@@ -45,7 +45,7 @@
 			<param index="2" name="callback" type="Callable" default="Callable()" />
 			<param index="3" name="key_callback" type="Callable" default="Callable()" />
 			<param index="4" name="tag" type="Variant" default="null" />
-			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="5" name="accelerator" type="int" enum="Key" default="KEY_NONE" />
 			<param index="6" name="index" type="int" default="-1" />
 			<description>
 				Adds a new checkable item with text [param label] to the global menu [param rid].
@@ -64,7 +64,7 @@
 			<param index="3" name="callback" type="Callable" default="Callable()" />
 			<param index="4" name="key_callback" type="Callable" default="Callable()" />
 			<param index="5" name="tag" type="Variant" default="null" />
-			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="6" name="accelerator" type="int" enum="Key" default="KEY_NONE" />
 			<param index="7" name="index" type="int" default="-1" />
 			<description>
 				Adds a new checkable item with text [param label] and icon [param icon] to the global menu [param rid].
@@ -83,7 +83,7 @@
 			<param index="3" name="callback" type="Callable" default="Callable()" />
 			<param index="4" name="key_callback" type="Callable" default="Callable()" />
 			<param index="5" name="tag" type="Variant" default="null" />
-			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="6" name="accelerator" type="int" enum="Key" default="KEY_NONE" />
 			<param index="7" name="index" type="int" default="-1" />
 			<description>
 				Adds a new item with text [param label] and icon [param icon] to the global menu [param rid].
@@ -102,7 +102,7 @@
 			<param index="3" name="callback" type="Callable" default="Callable()" />
 			<param index="4" name="key_callback" type="Callable" default="Callable()" />
 			<param index="5" name="tag" type="Variant" default="null" />
-			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="6" name="accelerator" type="int" enum="Key" default="KEY_NONE" />
 			<param index="7" name="index" type="int" default="-1" />
 			<description>
 				Adds a new radio-checkable item with text [param label] and icon [param icon] to the global menu [param rid].
@@ -121,7 +121,7 @@
 			<param index="2" name="callback" type="Callable" default="Callable()" />
 			<param index="3" name="key_callback" type="Callable" default="Callable()" />
 			<param index="4" name="tag" type="Variant" default="null" />
-			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="5" name="accelerator" type="int" enum="Key" default="KEY_NONE" />
 			<param index="6" name="index" type="int" default="-1" />
 			<description>
 				Adds a new item with text [param label] to the global menu [param rid].
@@ -141,7 +141,7 @@
 			<param index="4" name="callback" type="Callable" default="Callable()" />
 			<param index="5" name="key_callback" type="Callable" default="Callable()" />
 			<param index="6" name="tag" type="Variant" default="null" />
-			<param index="7" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="7" name="accelerator" type="int" enum="Key" default="KEY_NONE" />
 			<param index="8" name="index" type="int" default="-1" />
 			<description>
 				Adds a new item with text [param label] to the global menu [param rid].
@@ -161,7 +161,7 @@
 			<param index="2" name="callback" type="Callable" default="Callable()" />
 			<param index="3" name="key_callback" type="Callable" default="Callable()" />
 			<param index="4" name="tag" type="Variant" default="null" />
-			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="5" name="accelerator" type="int" enum="Key" default="KEY_NONE" />
 			<param index="6" name="index" type="int" default="-1" />
 			<description>
 				Adds a new radio-checkable item with text [param label] to the global menu [param rid].

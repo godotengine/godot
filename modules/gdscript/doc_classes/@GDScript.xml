@@ -383,7 +383,7 @@
 			<return type="void" />
 			<param index="0" name="hint" type="int" enum="PropertyHint" />
 			<param index="1" name="hint_string" type="String" />
-			<param index="2" name="usage" type="int" enum="PropertyUsageFlags" is_bitfield="true" default="6" />
+			<param index="2" name="usage" type="int" enum="PropertyUsageFlags" is_bitfield="true" default="PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR" />
 			<description>
 				Allows you to set a custom hint, hint string, and usage flags for the exported property. Note that there's no validation done in GDScript, it will just pass the parameters to the editor.
 				[codeblock]

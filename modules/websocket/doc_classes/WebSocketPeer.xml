@@ -126,7 +126,7 @@
 		<method name="send">
 			<return type="int" enum="Error" />
 			<param index="0" name="message" type="PackedByteArray" />
-			<param index="1" name="write_mode" type="int" enum="WebSocketPeer.WriteMode" default="1" />
+			<param index="1" name="write_mode" type="int" enum="WebSocketPeer.WriteMode" default="WRITE_MODE_BINARY" />
 			<description>
 				Sends the given [param message] using the desired [param write_mode]. When sending a [String], prefer using [method send_text].
 			</description>

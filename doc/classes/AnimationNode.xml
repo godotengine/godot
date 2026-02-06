@@ -90,7 +90,7 @@
 			<param index="3" name="seeked" type="bool" />
 			<param index="4" name="is_external_seeking" type="bool" />
 			<param index="5" name="blend" type="float" />
-			<param index="6" name="looped_flag" type="int" enum="Animation.LoopedFlag" default="0" />
+			<param index="6" name="looped_flag" type="int" enum="Animation.LoopedFlag" default="LOOPED_FLAG_NONE" />
 			<description>
 				Blends an animation by [param blend] amount (name must be valid in the linked [AnimationPlayer]). A [param time] and [param delta] may be passed, as well as whether [param seeked] happened.
 				A [param looped_flag] is used by internal processing immediately after the loop.
@@ -103,7 +103,7 @@
 			<param index="2" name="seek" type="bool" />
 			<param index="3" name="is_external_seeking" type="bool" />
 			<param index="4" name="blend" type="float" />
-			<param index="5" name="filter" type="int" enum="AnimationNode.FilterAction" default="0" />
+			<param index="5" name="filter" type="int" enum="AnimationNode.FilterAction" default="FILTER_IGNORE" />
 			<param index="6" name="sync" type="bool" default="true" />
 			<param index="7" name="test_only" type="bool" default="false" />
 			<description>
@@ -118,7 +118,7 @@
 			<param index="3" name="seek" type="bool" />
 			<param index="4" name="is_external_seeking" type="bool" />
 			<param index="5" name="blend" type="float" />
-			<param index="6" name="filter" type="int" enum="AnimationNode.FilterAction" default="0" />
+			<param index="6" name="filter" type="int" enum="AnimationNode.FilterAction" default="FILTER_IGNORE" />
 			<param index="7" name="sync" type="bool" default="true" />
 			<param index="8" name="test_only" type="bool" default="false" />
 			<description>
