@@ -62,6 +62,12 @@
 				Returns the ID of this [MultiplayerPeer].
 			</description>
 		</method>
+		<method name="is_server" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the multiplayer peer is in server mode (listening for connections).
+			</description>
+		</method>
 		<method name="is_server_relay_supported" qualifiers="const">
 			<return type="bool" />
 			<description>

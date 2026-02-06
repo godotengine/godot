@@ -144,6 +144,8 @@ void PacketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_packet_error"), &PacketPeer::_get_packet_error);
 	ClassDB::bind_method(D_METHOD("get_available_packet_count"), &PacketPeer::get_available_packet_count);
 
+	ClassDB::bind_method(D_METHOD("get_max_packet_size"), &PacketPeer::get_max_packet_size);
+
 	ClassDB::bind_method(D_METHOD("get_encode_buffer_max_size"), &PacketPeer::get_encode_buffer_max_size);
 	ClassDB::bind_method(D_METHOD("set_encode_buffer_max_size", "max_size"), &PacketPeer::set_encode_buffer_max_size);
 
