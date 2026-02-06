@@ -741,7 +741,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 			anim_speed->set_suffix(TTR("FPS"));
 
 			// Similar to `_update_library_impl()`, but only updates text for "empty" items.
-			if (frames.is_valid()) {
+			if (!edited_anim.is_empty() && frames.is_valid()) {
 				for (int i = 0; i < frames->get_frame_count(edited_anim); i++) {
 					Ref<Texture2D> texture = frames->get_frame_texture(edited_anim, i);
 					if (texture.is_null()) {
