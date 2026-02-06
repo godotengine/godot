@@ -1335,7 +1335,13 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 					}
 					cname = ClassDB::get_parent_class(cname);
 				}
-				doc_symbol = "constant|" + result.class_name + "|" + result.class_member;
+				if (!result.enumeration.is_empty()) {
+					Dictionary d;
+					d["enumeration"] = result.enumeration;
+					doc_symbol = "constant|" + result.class_name + "|" + result.class_member + "|" + JSON::stringify(d);
+				} else {
+					doc_symbol = "constant|" + result.class_name + "|" + result.class_member;
+				}
 			} break;
 			case ScriptLanguage::LOOKUP_RESULT_CLASS_PROPERTY: {
 				StringName cname = result.class_name;

@@ -4226,15 +4226,16 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 						} else {
 							const int dot_pos = doc_enum_name.rfind_char('.');
 							if (dot_pos >= 0) {
+								const String enum_name = doc_enum_name.substr(dot_pos + 1);
 								Error err = OK;
 								r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
 								if (base_type.class_type != nullptr) {
 									// For script enums the value isn't accessible as class constant so we need the full enum name.
-									r_result.class_name = doc_enum_name;
+									r_result.class_name = doc_enum_name.left(dot_pos);
+									r_result.enumeration = enum_name;
 									r_result.class_member = p_symbol;
 									r_result.script = GDScriptCache::get_shallow_script(base_type.script_path, err);
 									r_result.script_path = base_type.script_path;
-									const String enum_name = doc_enum_name.substr(dot_pos + 1);
 									if (base_type.class_type->has_member(enum_name)) {
 										const GDScriptParser::ClassNode::Member member = base_type.class_type->get_member(enum_name);
 										if (member.type == GDScriptParser::ClassNode::Member::ENUM) {
@@ -4248,7 +4249,8 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 									}
 								} else if (base_type.script_type.is_valid()) {
 									// For script enums the value isn't accessible as class constant so we need the full enum name.
-									r_result.class_name = doc_enum_name;
+									r_result.class_name = doc_enum_name.left(dot_pos);
+									r_result.enumeration = enum_name;
 									r_result.class_member = p_symbol;
 									r_result.script = base_type.script_type;
 									r_result.script_path = base_type.script_path;

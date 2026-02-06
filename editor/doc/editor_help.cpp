@@ -3584,7 +3584,7 @@ EditorHelpBit::HelpData EditorHelpBit::_get_enum_help_data(const StringName &p_c
 	return result;
 }
 
-EditorHelpBit::HelpData EditorHelpBit::_get_constant_help_data(const StringName &p_class_name, const StringName &p_constant_name) {
+EditorHelpBit::HelpData EditorHelpBit::_get_constant_help_data(const StringName &p_class_name, const StringName &p_constant_name, const StringName &p_enum_name) {
 	if (doc_constant_cache.has(p_class_name) && doc_constant_cache[p_class_name].has(p_constant_name)) {
 		return doc_constant_cache[p_class_name][p_constant_name];
 	}
@@ -3619,6 +3619,9 @@ EditorHelpBit::HelpData EditorHelpBit::_get_constant_help_data(const StringName 
 			}
 
 			if (constant.name == p_constant_name) {
+				if (p_enum_name != StringName() && constant.enumeration != p_enum_name) {
+					continue;
+				}
 				result = current;
 
 				if (!is_native) {
@@ -4408,7 +4411,8 @@ void EditorHelpBit::parse_symbol(const String &p_symbol, const String &p_prologu
 		symbol_doc_link = vformat("@constant %s.%s", class_name, item_name);
 		symbol_type = TTR("Constant");
 		symbol_hint = SYMBOL_HINT_ASSIGNABLE;
-		help_data = _get_constant_help_data(class_name, item_name);
+		String enum_name = item_data.get("enumeration", "").operator String();
+		help_data = _get_constant_help_data(class_name, item_name, enum_name);
 	} else if (item_type == "property") {
 		if (item_name.begins_with("metadata/")) {
 			symbol_type = TTR("Metadata");

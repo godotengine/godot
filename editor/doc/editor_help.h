@@ -330,7 +330,7 @@ class EditorHelpBit : public VBoxContainer {
 
 	static HelpData _get_class_help_data(const StringName &p_class_name);
 	static HelpData _get_enum_help_data(const StringName &p_class_name, const StringName &p_enum_name);
-	static HelpData _get_constant_help_data(const StringName &p_class_name, const StringName &p_constant_name);
+	static HelpData _get_constant_help_data(const StringName &p_class_name, const StringName &p_constant_name, const StringName &p_enum_name = StringName());
 	static HelpData _get_property_help_data(const StringName &p_class_name, const StringName &p_property_name);
 	static HelpData _get_theme_item_help_data(const StringName &p_class_name, const StringName &p_theme_item_name);
 	static HelpData _get_method_help_data(const StringName &p_class_name, const StringName &p_method_name);
