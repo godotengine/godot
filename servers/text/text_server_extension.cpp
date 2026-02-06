@@ -56,7 +56,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_create_font_linked_variation, "font_rid");
 
 	GDVIRTUAL_BIND(_font_set_data, "font_rid", "data");
-	GDVIRTUAL_BIND(_font_set_data_ptr, "font_rid", "data_ptr", "data_size");
+	GDVIRTUAL_BIND(_font_set_data_ptr, "font_rid", "p_data_ptr", "data_size");
 
 	GDVIRTUAL_BIND(_font_set_face_index, "font_rid", "face_index");
 	GDVIRTUAL_BIND(_font_get_face_index, "font_rid");
@@ -344,7 +344,7 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_shaped_text_get_dominant_direction_in_range, "shaped", "start", "end");
 
-	GDVIRTUAL_BIND(_shaped_text_get_carets, "shaped", "position", "caret");
+	GDVIRTUAL_BIND(_shaped_text_get_carets, "shaped", "position", "r_caret");
 	GDVIRTUAL_BIND(_shaped_text_get_selection, "shaped", "start", "end");
 
 	GDVIRTUAL_BIND(_shaped_text_hit_test_grapheme, "shaped", "coord");
