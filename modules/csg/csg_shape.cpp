@@ -1992,12 +1992,12 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					facesw[face * 3 + 2] = Vector3(0, 1, 0) * vertex_mul;
 
 					if (scale_uv) {
-						uvsw[face * 3] = (Vector2(face_points[3].x, face_points[3].z) * radius) + top_uv_offset;
-						uvsw[face * 3 + 1] = (Vector2(face_points[2].x, face_points[2].z) * radius) + top_uv_offset;
+						uvsw[face * 3] = Vector2(face_points[3].x, face_points[3].z) * radius + top_uv_offset;
+						uvsw[face * 3 + 1] = Vector2(face_points[2].x, face_points[2].z) * radius + top_uv_offset;
 						uvsw[face * 3 + 2] = top_uv_offset;
 					} else {
-						uvsw[face * 3] = (Vector2(face_points[3].x, face_points[3].z) * 0.5) + Vector2(0.5, 0.5);
-						uvsw[face * 3 + 1] = (Vector2(face_points[2].x, face_points[2].z) * 0.5) + Vector2(0.5, 0.5);
+						uvsw[face * 3] = Vector2(face_points[3].x, face_points[3].z) * 0.5 + Vector2(0.5, 0.5);
+						uvsw[face * 3 + 1] = Vector2(face_points[2].x, face_points[2].z) * 0.5 + Vector2(0.5, 0.5);
 						uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
 					}
 

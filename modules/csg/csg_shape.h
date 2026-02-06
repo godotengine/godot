@@ -276,7 +276,7 @@ class CSGBox3D : public CSGPrimitive3D {
 	Ref<Material> material;
 	Vector3 size = Vector3(1, 1, 1);
 	bool scale_uv = true;
-	Vector3 uv_offset = Vector3(0, 0, 0);
+	Vector3 uv_offset;
 	bool compat_mode = false;
 
 protected:
@@ -317,8 +317,8 @@ class CSGCylinder3D : public CSGPrimitive3D {
 	bool smooth_faces;
 	bool scale_uv = true;
 	int uv_horizontal_divisions = 4;
-	Vector2 uv_offset = Vector2(0, 0);
-	Vector2 top_uv_offset = Vector2(0, 0);
+	Vector2 uv_offset;
+	Vector2 top_uv_offset;
 
 protected:
 	static void _bind_methods();

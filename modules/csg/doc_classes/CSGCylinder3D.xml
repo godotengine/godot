@@ -25,7 +25,7 @@
 		</member>
 		<member name="scale_uv" type="bool" setter="set_scale_uv" getter="is_scale_uv" default="true">
 			Enabling this will scale the UVs to account for CSGCylinder radius and height, maintaining uniform texel size.
-			[b]Note:[/b] scale_uv might have issues with non repeating textures.
+			[b]Note:[/b] [member scale_uv] might have issues with non-repeating textures.
 		</member>
 		<member name="sides" type="int" setter="set_sides" getter="get_sides" default="8">
 			The number of sides of the cylinder, the higher this number the more detail there will be in the cylinder.
@@ -38,7 +38,7 @@
 		</member>
 		<member name="uv_horizontal_divisions" type="int" setter="set_uv_horizontal_divisions" getter="get_uv_horizontal_divisions" default="4">
 			The number of times the texture on the CSGCylinder is going to repeat horizontally. Default is 4.
-			When scale_uv is enabled, this is used to calculate the number of horizontal repetitions on a cylinder with a 1m radius. Increasing the radius will increase the repetitions, while reducing it will reduce the number of repetitions.
+			When [member scale_uv] is enabled, this is used to calculate the number of horizontal repetitions on a cylinder with a 1m radius. Increasing the radius will increase the repetitions, while reducing it will reduce the number of repetitions.
 		</member>
 		<member name="uv_offset" type="Vector2" setter="set_uv_offset" getter="get_uv_offset" default="Vector2(0, 0)">
 			Offsets the UVs on the side faces of the CSGCylinder.
