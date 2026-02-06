@@ -478,15 +478,16 @@ int TileSet::add_source(Ref<TileSetSource> p_tile_set_source, int p_atlas_source
 	ERR_FAIL_COND_V_MSG(p_atlas_source_id_override >= 0 && (sources.has(p_atlas_source_id_override)), TileSet::INVALID_SOURCE, vformat("Cannot create TileSet atlas source. Another atlas source exists with id %d.", p_atlas_source_id_override));
 	ERR_FAIL_COND_V_MSG(p_atlas_source_id_override < 0 && p_atlas_source_id_override != TileSet::INVALID_SOURCE, TileSet::INVALID_SOURCE, vformat("Provided source ID %d is not valid. Negative source IDs are not allowed.", p_atlas_source_id_override));
 
+	TileSet *owning_tileset = p_tile_set_source->get_tile_set();
+	if (owning_tileset != this && owning_tileset != nullptr) {
+		// If the source is already in a TileSet (might happen when duplicating or during multithreaded loadin), duplicate it
+		p_tile_set_source = p_tile_set_source->duplicate();
+	}
+
 	int new_source_id = p_atlas_source_id_override >= 0 ? p_atlas_source_id_override : next_source_id;
 	sources[new_source_id] = p_tile_set_source;
 	source_ids.push_back(new_source_id);
 	source_ids.sort();
-	TileSet *old_tileset = p_tile_set_source->get_tile_set();
-	if (old_tileset != this && old_tileset != nullptr) {
-		// If the source is already in a TileSet (might happen when duplicating), remove it from the other TileSet.
-		old_tileset->remove_source_ptr(p_tile_set_source.ptr());
-	}
 	p_tile_set_source->set_tile_set(this);
 	_compute_next_source_id();
 
@@ -510,16 +511,6 @@ void TileSet::remove_source(int p_source_id) {
 
 	terrains_cache_dirty = true;
 	emit_changed();
-}
-
-void TileSet::remove_source_ptr(TileSetSource *p_tile_set_source) {
-	for (const KeyValue<int, Ref<TileSetSource>> &kv : sources) {
-		if (kv.value.ptr() == p_tile_set_source) {
-			remove_source(kv.key);
-			return;
-		}
-	}
-	ERR_FAIL_MSG(vformat("Attempting to remove source from a tileset, but the tileset doesn't have it: %s", p_tile_set_source));
 }
 
 void TileSet::set_source_id(int p_source_id, int p_new_source_id) {

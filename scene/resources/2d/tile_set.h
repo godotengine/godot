@@ -427,7 +427,6 @@ public:
 	int add_source(Ref<TileSetSource> p_tile_set_source, int p_source_id_override = -1);
 	void set_source_id(int p_source_id, int p_new_id);
 	void remove_source(int p_source_id);
-	void remove_source_ptr(TileSetSource *p_tile_set_source); // Not exposed
 	bool has_source(int p_source_id) const;
 	Ref<TileSetSource> get_source(int p_source_id) const;
 
