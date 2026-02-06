@@ -63,6 +63,7 @@ class VSplitContainer;
 class ViewportNavigationControl;
 class WorldEnvironment;
 class MeshInstance3D;
+class EditorPropertyLayers;
 
 class ViewportRotationControl : public Control {
 	GDCLASS(ViewportRotationControl, Control);
@@ -830,6 +831,9 @@ private:
 	SpinBox *settings_fov = nullptr;
 	SpinBox *settings_znear = nullptr;
 	SpinBox *settings_zfar = nullptr;
+	EditorPropertyLayers *settings_cull_mask = nullptr;
+	uint32_t cull_mask_temp = 0xfffff;
+	uint32_t cull_mask = 0xfffff;
 
 	void _snap_changed();
 	void _snap_update();
@@ -888,6 +892,10 @@ private:
 
 	bool do_snap_selected_nodes_to_floor = false;
 	void _snap_selected_nodes_to_floor();
+
+	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
+	void _view_settings_opened();
+	void _view_settings_confirmed();
 
 	// Preview Sun and Environment
 
@@ -978,6 +986,11 @@ protected:
 
 	static void _bind_methods();
 
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+
 public:
 	static Node3DEditor *get_singleton() { return singleton; }
 
@@ -988,6 +1001,9 @@ public:
 	float get_znear() const { return settings_znear->get_value(); }
 	float get_zfar() const { return settings_zfar->get_value(); }
 	float get_fov() const { return settings_fov->get_value(); }
+
+	uint32_t get_cull_mask() const { return cull_mask; }
+	void set_cull_mask(uint32_t mask) { cull_mask = mask; }
 
 	Transform3D get_gizmo_transform() const { return gizmo.transform; }
 	bool is_gizmo_visible() const;
