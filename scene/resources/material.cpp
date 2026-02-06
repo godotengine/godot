@@ -1814,9 +1814,17 @@ void fragment() {)";
 )";
 		}
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "	vec2 ref_ofs = SCREEN_UV - ref_normal.xy * dot(triplanar_texture(texture_refraction, uv1_power_normal, uv1_triplanar_pos), refraction_texture_channel) * refraction;\n";
+			code += R"(
+	float ref_strength = dot(triplanar_texture(texture_refraction, uv1_power_normal, uv1_triplanar_pos), refraction_texture_channel) * refraction;
+	float aspect = PROJECTION_MATRIX[1][1] / PROJECTION_MATRIX[0][0];
+	vec2 ref_ofs = SCREEN_UV - vec2(ref_normal.x / aspect, ref_normal.y) * ref_strength;
+)";
 		} else {
-			code += "	vec2 ref_ofs = SCREEN_UV - ref_normal.xy * dot(texture(texture_refraction, base_uv), refraction_texture_channel) * refraction;\n";
+			code += R"(
+	float ref_strength = dot(texture(texture_refraction, base_uv), refraction_texture_channel) * refraction;
+	float aspect = PROJECTION_MATRIX[1][1] / PROJECTION_MATRIX[0][0];
+	vec2 ref_ofs = SCREEN_UV - vec2(ref_normal.x / aspect, ref_normal.y) * ref_strength;
+)";
 		}
 		code += R"(
 	float ref_amount = 1.0 - albedo.a * albedo_tex.a;
