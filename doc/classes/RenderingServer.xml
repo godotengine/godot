@@ -1554,7 +1554,7 @@
 			<param index="5" name="emission_energy" type="float" />
 			<param index="6" name="anisotropy" type="float" />
 			<param index="7" name="length" type="float" />
-			<param index="8" name="p_detail_spread" type="float" />
+			<param index="8" name="detail_spread" type="float" />
 			<param index="9" name="gi_inject" type="float" />
 			<param index="10" name="temporal_reprojection" type="bool" />
 			<param index="11" name="temporal_reprojection_amount" type="float" />
@@ -3356,7 +3356,7 @@
 		<method name="particles_set_transform_align_axis">
 			<return type="void" />
 			<param index="0" name="particles" type="RID" />
-			<param index="1" name="p_rotation_axis" type="int" enum="RenderingServer.ParticlesTransformAlignAxis" />
+			<param index="1" name="rotation_axis" type="int" enum="RenderingServer.ParticlesTransformAlignAxis" />
 			<description>
 				Sets which axis to use for transform alignment.
 			</description>

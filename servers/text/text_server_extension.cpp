@@ -355,7 +355,7 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_shaped_text_get_dominant_direction_in_range, "shaped", "start", "end");
 
-	GDVIRTUAL_BIND(_shaped_text_get_carets, "shaped", "position", "caret");
+	GDVIRTUAL_BIND(_shaped_text_get_carets, "shaped", "position", "r_caret");
 	GDVIRTUAL_BIND(_shaped_text_get_selection, "shaped", "start", "end");
 
 	GDVIRTUAL_BIND(_shaped_text_hit_test_grapheme, "shaped", "coord");
