@@ -6858,6 +6858,26 @@ void Node3DEditorViewportContainer::add_viewport(Node3DEditorViewport *p_viewpor
 	}
 }
 
+Dictionary Node3DEditorViewportContainer::get_split_state() const {
+	Dictionary state;
+	state["main"] = Math::round(main_split->get_split_offset() / EDSCALE);
+	state["first"] = Math::round(first_split->get_split_offset() / EDSCALE);
+	state["second"] = Math::round(second_split->get_split_offset() / EDSCALE);
+	return state;
+}
+
+void Node3DEditorViewportContainer::set_split_state(const Dictionary &p_state) {
+	if (p_state.has("main")) {
+		main_split->set_split_offset(int(p_state["main"]) * EDSCALE);
+	}
+	if (p_state.has("first")) {
+		first_split->set_split_offset(int(p_state["first"]) * EDSCALE);
+	}
+	if (p_state.has("second")) {
+		second_split->set_split_offset(int(p_state["second"]) * EDSCALE);
+	}
+}
+
 Node3DEditorViewportContainer::Node3DEditorViewportContainer() {
 	set_clip_contents(true);
 
@@ -7148,6 +7168,7 @@ Dictionary Node3DEditor::get_state() const {
 	}
 
 	d["viewport_mode"] = vc;
+	d["viewport_splits"] = viewport_base->get_split_state();
 	Array vpdata;
 	for (int i = 0; i < 4; i++) {
 		vpdata.push_back(viewports[i]->get_state());
@@ -7269,6 +7290,9 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 	}
 	if (d.has("fov")) {
 		settings_fov->set_value(double(d["fov"]));
+	}
+	if (d.has("viewport_splits")) {
+		viewport_base->set_split_state(d["viewport_splits"]);
 	}
 
 	if (d.has("viewports")) {
