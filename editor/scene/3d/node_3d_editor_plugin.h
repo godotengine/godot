@@ -572,6 +572,9 @@ public:
 
 	void add_viewport(Node3DEditorViewport *p_viewport, int p_index);
 
+	Dictionary get_split_state() const;
+	void set_split_state(const Dictionary &p_state);
+
 	Node3DEditorViewportContainer();
 };
 
