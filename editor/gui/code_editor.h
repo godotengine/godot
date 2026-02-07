@@ -169,7 +169,7 @@ class CodeTextEditor : public VBoxContainer {
 	Button *warning_button = nullptr;
 
 	MenuButton *zoom_button = nullptr;
-	Label *line_and_col_txt = nullptr;
+	Button *line_and_col_button = nullptr;
 	Label *indentation_txt = nullptr;
 
 	Timer *idle = nullptr;
@@ -208,6 +208,8 @@ class CodeTextEditor : public VBoxContainer {
 	void _zoom_in();
 	void _zoom_out();
 	void _zoom_to(float p_zoom_factor);
+
+	void _show_goto_popup_request();
 
 	void _update_error_content_height();
 
