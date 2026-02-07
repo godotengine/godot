@@ -1852,12 +1852,16 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (previewing || get_viewport()->gui_get_drag_data()) {
-		// Disable all input actions when previewing a camera or during drag-and-drop.
+	if (_redirect_freelook_input(p_event, this)) {
+		Node3DEditorViewport *freelook_vp = spatial_editor->get_freelook_viewport();
+		if (freelook_vp) {
+			freelook_vp->get_surface()->grab_focus();
+		}
 		return;
 	}
 
-	if (_redirect_freelook_input(p_event, this)) {
+	if (previewing || get_viewport()->gui_get_drag_data()) {
+		// Disable all input actions when previewing a camera or during drag-and-drop.
 		return;
 	}
 
