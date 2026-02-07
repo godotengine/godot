@@ -574,16 +574,16 @@ void GPUParticles2D::convert_from_particles(Node *p_particles) {
 	proc_mat->set_gravity(Vector3(gravity.x, gravity.y, 0));
 	proc_mat->set_lifetime_randomness(cpu_particles->get_lifetime_randomness());
 
-#define CONVERT_PARAM(m_param)                                                                                        \
+#define CONVERT_PARAM(m_param) \
 	proc_mat->set_param_min(ParticleProcessMaterial::m_param, cpu_particles->get_param_min(CPUParticles2D::m_param)); \
-	{                                                                                                                 \
-		Ref<Curve> curve = cpu_particles->get_param_curve(CPUParticles2D::m_param);                                   \
-		if (curve.is_valid()) {                                                                                       \
-			Ref<CurveTexture> tex = memnew(CurveTexture);                                                             \
-			tex->set_curve(curve);                                                                                    \
-			proc_mat->set_param_texture(ParticleProcessMaterial::m_param, tex);                                       \
-		}                                                                                                             \
-	}                                                                                                                 \
+	{ \
+		Ref<Curve> curve = cpu_particles->get_param_curve(CPUParticles2D::m_param); \
+		if (curve.is_valid()) { \
+			Ref<CurveTexture> tex = memnew(CurveTexture); \
+			tex->set_curve(curve); \
+			proc_mat->set_param_texture(ParticleProcessMaterial::m_param, tex); \
+		} \
+	} \
 	proc_mat->set_param_max(ParticleProcessMaterial::m_param, cpu_particles->get_param_max(CPUParticles2D::m_param));
 
 	CONVERT_PARAM(PARAM_INITIAL_LINEAR_VELOCITY);
@@ -942,7 +942,7 @@ void GPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount"); // FIXME: Evaluate support for `exp` in integer properties, or remove this.
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "amount_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001"), "set_amount_ratio", "get_amount_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "sub_emitter", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GPUParticles2D"), "set_sub_emitter", "get_sub_emitter");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_texture", "get_texture");
 	ADD_GROUP("Time", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater,exp,suffix:s"), "set_lifetime", "get_lifetime");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "interp_to_end", PROPERTY_HINT_RANGE, "0.00,1.0,0.001"), "set_interp_to_end", "get_interp_to_end");

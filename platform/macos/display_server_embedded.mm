@@ -78,7 +78,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 	// Metal rendering driver not available on Intel.
 	if (rendering_driver == "metal") {
 		rendering_driver = "vulkan";
-		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 	}
 #endif
 	if (rendering_driver == "vulkan") {
@@ -100,8 +100,8 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
 				WARN_PRINT("Your device does not seem to support MoltenVK or Metal, switching to OpenGL 3.");
 				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility", OS::RENDERING_SOURCE_FALLBACK);
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else
 #endif
 			{
@@ -116,7 +116,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 	if (rendering_driver == "opengl3_angle") {
 		WARN_PRINT("ANGLE not supported for embedded display, switching to native OpenGL.");
 		rendering_driver = "opengl3";
-		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 	}
 
 	if (rendering_driver == "opengl3") {
@@ -160,7 +160,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 #endif
 #ifdef METAL_ENABLED
 		if (rendering_driver == "metal") {
-			wpd.metal.layer = (CAMetalLayer *)layer;
+			wpd.metal.layer = (__bridge CA::MetalLayer *)layer;
 		}
 #endif
 		Error err = rendering_context->window_create(window_id_counter, &wpd);

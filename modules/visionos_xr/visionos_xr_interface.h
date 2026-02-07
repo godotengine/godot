@@ -32,6 +32,7 @@
 
 #ifdef VISIONOS_ENABLED
 
+#include "drivers/metal/metal_objects_shared.h"
 #include "drivers/metal/rendering_context_driver_metal.h"
 #include "drivers/metal/rendering_device_driver_metal.h"
 #include "servers/rendering/renderer_compositor.h"
@@ -39,8 +40,20 @@
 #include "servers/xr/xr_positional_tracker.h"
 #include "servers/xr/xr_vrs.h"
 
+#ifdef __OBJC__
+// When compiling as Objective-C++, include the actual headers
 #import <ARKit/ARKit.h>
 #import <CompositorServices/CompositorServices.h>
+#else
+// When compiling as C++, use forward declarations for ARKit and CompositorServices types (opaque pointers)
+typedef struct ar_world_tracking_provider *ar_world_tracking_provider_t;
+typedef struct cp_layer_renderer *cp_layer_renderer_t;
+typedef struct cp_layer_renderer_capabilities *cp_layer_renderer_capabilities_t;
+typedef struct ar_session *ar_session_t;
+typedef struct ar_device_anchor *ar_device_anchor_t;
+typedef struct cp_frame *cp_frame_t;
+typedef struct cp_drawable *cp_drawable_t;
+#endif
 
 class VisionOSXRInterface : public XRInterface {
 	GDCLASS(VisionOSXRInterface, XRInterface);
@@ -113,7 +126,7 @@ private:
 
 		void pre_render();
 		Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect);
-		void encode_present(MDCommandBuffer *p_cmd_buffer);
+		void encode_present(MTL3::MDCommandBuffer *p_cmd_buffer);
 		void end_frame();
 
 		RID get_color_texture();
@@ -187,7 +200,7 @@ public:
 	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override {
 		return rt.post_draw_viewport(p_render_target, p_screen_rect);
 	}
-	void encode_present(MDCommandBuffer *p_cmd_buffer) {
+	void encode_present(MTL3::MDCommandBuffer *p_cmd_buffer) {
 		rt.encode_present(p_cmd_buffer);
 	}
 	virtual void end_frame() override {

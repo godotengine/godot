@@ -31,6 +31,7 @@
 #include "visual_shader_editor_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
@@ -42,7 +43,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_toaster.h"
-#include "editor/inspector/editor_properties.h"
+#include "editor/gui/filter_line_edit.h"
 #include "editor/inspector/editor_properties_vector.h"
 #include "editor/scene/curve_editor_plugin.h"
 #include "editor/scene/material_editor_plugin.h"
@@ -68,6 +69,7 @@
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
 #include "scene/resources/curve_texture.h"
+#include "scene/resources/sky.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/visual_shader_particle_nodes.h"
@@ -1731,6 +1733,10 @@ void VisualShaderEditor::_get_current_mode_limits(int &r_begin_type, int &r_end_
 		} break;
 		case Shader::MODE_FOG: {
 			r_begin_type = VisualShader::TYPE_FOG;
+			r_end_type = VisualShader::TYPE_TEXTURE_BLIT;
+		} break;
+		case Shader::MODE_TEXTURE_BLIT: {
+			r_begin_type = VisualShader::TYPE_TEXTURE_BLIT;
 			r_end_type = VisualShader::TYPE_MAX;
 		} break;
 		default: {
@@ -2469,6 +2475,7 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		edit_type_particles->set_visible(false);
 		edit_type_sky->set_visible(true);
 		edit_type_fog->set_visible(false);
+		edit_type_texture_blit->set_visible(false);
 		edit_type = edit_type_sky;
 		custom_mode_box->set_visible(false);
 		varying_button->hide();
@@ -2478,6 +2485,7 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		edit_type_particles->set_visible(false);
 		edit_type_sky->set_visible(false);
 		edit_type_fog->set_visible(true);
+		edit_type_texture_blit->set_visible(false);
 		edit_type = edit_type_fog;
 		custom_mode_box->set_visible(false);
 		varying_button->hide();
@@ -2487,6 +2495,7 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		edit_type_particles->set_visible(true);
 		edit_type_sky->set_visible(false);
 		edit_type_fog->set_visible(false);
+		edit_type_texture_blit->set_visible(false);
 		edit_type = edit_type_particles;
 		if ((edit_type->get_selected() + 3) > VisualShader::TYPE_PROCESS) {
 			custom_mode_box->set_visible(false);
@@ -2495,11 +2504,26 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		}
 		varying_button->hide();
 		mode = MODE_FLAGS_PARTICLES;
+	} else if (p_which == VisualShader::MODE_TEXTURE_BLIT) {
+		edit_type_standard->set_visible(false);
+		edit_type_particles->set_visible(false);
+		edit_type_sky->set_visible(false);
+		edit_type_fog->set_visible(false);
+		edit_type_texture_blit->set_visible(true);
+		edit_type = edit_type_texture_blit;
+		if ((edit_type->get_selected() + 3) > VisualShader::TYPE_PROCESS) {
+			custom_mode_box->set_visible(false);
+		} else {
+			custom_mode_box->set_visible(true);
+		}
+		varying_button->hide();
+		mode = MODE_FLAGS_TEXTURE_BLIT;
 	} else {
 		edit_type_particles->set_visible(false);
 		edit_type_standard->set_visible(true);
 		edit_type_sky->set_visible(false);
 		edit_type_fog->set_visible(false);
+		edit_type_texture_blit->set_visible(false);
 		edit_type = edit_type_standard;
 		custom_mode_box->set_visible(false);
 		varying_button->show();
@@ -2518,6 +2542,9 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		upper_type = VisualShader::TYPE_FOG;
 	} else if (mode & MODE_FLAGS_FOG) {
 		default_type = VisualShader::TYPE_FOG;
+		upper_type = VisualShader::TYPE_TEXTURE_BLIT;
+	} else if (mode & MODE_FLAGS_TEXTURE_BLIT) {
+		default_type = VisualShader::TYPE_TEXTURE_BLIT;
 		upper_type = VisualShader::TYPE_MAX;
 	}
 
@@ -5173,17 +5200,6 @@ void VisualShaderEditor::_show_remove_varying_dialog() {
 	remove_varying_dialog->set_position(remove_varying_dialog->get_position() - difference);
 }
 
-void VisualShaderEditor::_sbox_input(const Ref<InputEvent> &p_event) {
-	// Redirect navigational key events to the tree.
-	Ref<InputEventKey> key = p_event;
-	if (key.is_valid()) {
-		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
-			members->gui_input(key);
-			node_filter->accept_event();
-		}
-	}
-}
-
 void VisualShaderEditor::_param_filter_changed(const String &p_text) {
 	param_filter_name = p_text;
 
@@ -5276,8 +5292,6 @@ void VisualShaderEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			node_filter->set_clear_button_enabled(true);
-
 			// collapse tree by default
 
 			TreeItem *category = members->get_root()->get_first_child();
@@ -5300,7 +5314,6 @@ void VisualShaderEditor::_notification(int p_what) {
 			highend_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 
 			param_filter->set_right_icon(Control::get_editor_theme_icon(SNAME("Search")));
-			node_filter->set_right_icon(Control::get_editor_theme_icon(SNAME("Search")));
 
 			code_preview_button->set_button_icon(Control::get_editor_theme_icon(SNAME("Shader")));
 			shader_preview_button->set_button_icon(Control::get_editor_theme_icon(SNAME("SubViewport")));
@@ -5560,6 +5573,11 @@ void VisualShaderEditor::_dup_paste_nodes(int p_type, List<CopyItem> &r_items, c
 
 		int new_node_id = connection_remap[item.id];
 		int new_frame_id = node->get_frame();
+
+		if (connection_remap.has(new_frame_id)) {
+			new_frame_id = connection_remap[new_frame_id];
+		}
+
 		undo_redo->add_do_method(visual_shader.ptr(), "attach_node_to_frame", type, new_node_id, new_frame_id);
 		undo_redo->add_do_method(graph_plugin.ptr(), "attach_node_to_frame", type, new_node_id, new_frame_id);
 	}
@@ -5678,6 +5696,8 @@ void VisualShaderEditor::_type_selected(int p_id) {
 		offset = VisualShader::TYPE_SKY;
 	} else if (mode & MODE_FLAGS_FOG) {
 		offset = VisualShader::TYPE_FOG;
+	} else if (mode & MODE_FLAGS_TEXTURE_BLIT) {
+		offset = VisualShader::TYPE_TEXTURE_BLIT;
 	}
 
 	set_current_shader_type(VisualShader::Type(p_id + offset));
@@ -6685,6 +6705,11 @@ VisualShaderEditor::VisualShaderEditor() {
 	edit_type_fog->select(0);
 	edit_type_fog->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderEditor::_type_selected));
 
+	edit_type_texture_blit = memnew(OptionButton);
+	edit_type_texture_blit->add_item(TTR("Blit"));
+	edit_type_texture_blit->select(0);
+	edit_type_texture_blit->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderEditor::_type_selected));
+
 	edit_type = edit_type_standard;
 
 	toolbar_hflow->add_child(custom_mode_box);
@@ -6697,6 +6722,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	toolbar_hflow->move_child(edit_type_sky, 0);
 	toolbar_hflow->add_child(edit_type_fog);
 	toolbar_hflow->move_child(edit_type_fog, 0);
+	toolbar_hflow->add_child(edit_type_texture_blit);
+	toolbar_hflow->move_child(edit_type_texture_blit, 0);
 
 	add_node = memnew(Button);
 	add_node->set_theme_type_variation(SceneStringName(FlatButton));
@@ -6903,10 +6930,9 @@ VisualShaderEditor::VisualShaderEditor() {
 	HBoxContainer *filter_hb = memnew(HBoxContainer);
 	members_vb->add_child(filter_hb);
 
-	node_filter = memnew(LineEdit);
+	node_filter = memnew(FilterLineEdit);
 	filter_hb->add_child(node_filter);
 	node_filter->connect(SceneStringName(text_changed), callable_mp(this, &VisualShaderEditor::_member_filter_changed));
-	node_filter->connect(SceneStringName(gui_input), callable_mp(this, &VisualShaderEditor::_sbox_input));
 	node_filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	node_filter->set_placeholder(TTR("Search"));
 
@@ -6918,6 +6944,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	tools->get_popup()->add_item(TTR("Collapse All"), COLLAPSE_ALL);
 
 	members = memnew(Tree);
+	node_filter->set_forward_control(members);
 	members_vb->add_child(members);
 	SET_DRAG_FORWARDING_GCD(members, VisualShaderEditor);
 	members->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // TODO: Implement proper translation switch.
@@ -7145,6 +7172,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	add_options.push_back(AddOption("ClipSpaceFar", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "clip_space_far", "CLIP_SPACE_FAR"), { "clip_space_far" }, VisualShaderNode::PORT_TYPE_SCALAR, -1, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Exposure", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "exposure", "EXPOSURE"), { "exposure" }, VisualShaderNode::PORT_TYPE_SCALAR, -1, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("InShadowPass", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "in_shadow_pass", "IN_SHADOW_PASS"), { "in_shadow_pass" }, VisualShaderNode::PORT_TYPE_BOOLEAN, -1, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("InvProjectionMatrix", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "inv_projection_matrix", "INV_PROJECTION_MATRIX"), { "inv_projection_matrix" }, VisualShaderNode::PORT_TYPE_TRANSFORM, -1, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("InvViewMatrix", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "inv_view_matrix", "INV_VIEW_MATRIX"), { "inv_view_matrix" }, VisualShaderNode::PORT_TYPE_TRANSFORM, -1, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("ModelMatrix", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "model_matrix", "MODEL_MATRIX"), { "model_matrix" }, VisualShaderNode::PORT_TYPE_TRANSFORM, -1, Shader::MODE_SPATIAL));
@@ -7190,6 +7218,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	const String input_param_for_fragment_shader_mode = TTR("'%s' input parameter for fragment shader mode.") + translation_gdsl;
 	const String input_param_for_sky_shader_mode = TTR("'%s' input parameter for sky shader mode.") + translation_gdsl;
 	const String input_param_for_fog_shader_mode = TTR("'%s' input parameter for fog shader mode.") + translation_gdsl;
+	const String input_param_for_texture_blit_shader_mode = TTR("'%s' input parameter for blit shader mode.") + translation_gdsl;
 	const String input_param_for_light_shader_mode = TTR("'%s' input parameter for light shader mode.") + translation_gdsl;
 	const String input_param_for_vertex_shader_mode = TTR("'%s' input parameter for vertex shader mode.") + translation_gdsl;
 	const String input_param_for_start_shader_mode = TTR("'%s' input parameter for start shader mode.") + translation_gdsl;
@@ -7255,6 +7284,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Roughness", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_light_shader_mode, "roughness", "ROUGHNESS"), { "roughness" }, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("ScreenUV", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_fragment_and_light_shader_modes, "screen_uv", "SCREEN_UV"), { "screen_uv" }, VisualShaderNode::PORT_TYPE_VECTOR_2D, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Specular", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_light_shader_mode, "specular", "SPECULAR_LIGHT"), { "specular" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("SpecularAmount", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_light_shader_mode, "specular_amount", "SPECULAR_AMOUNT"), { "specular_amount" }, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("View", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_fragment_and_light_shader_modes, "view", "VIEW"), { "view" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 
 	// CANVASITEM INPUTS
@@ -7337,6 +7367,15 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Time", "Input/Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "time", "TIME"), { "time" }, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
 	add_options.push_back(AddOption("UVW", "Input/Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "uvw", "UVW"), { "uvw" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FOG, Shader::MODE_FOG));
 	add_options.push_back(AddOption("WorldPosition", "Input/Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "world_position", "WORLD_POSITION"), { "world_position" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FOG, Shader::MODE_FOG));
+
+	// TEXTURE BLIT INPUTS
+	add_options.push_back(AddOption("UV", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "uv", "UV"), { "uv" }, VisualShaderNode::PORT_TYPE_VECTOR_2D, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Modulate", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Modulate", "MODULATE"), { "Modulate" }, VisualShaderNode::PORT_TYPE_VECTOR_4D, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Fragcoord", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Fragcoord", "FRAGCOORD"), { "Fragcoord" }, VisualShaderNode::PORT_TYPE_VECTOR_4D, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Source Texture", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture", "source_texture"), { "Source Texture" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Source Texture 2", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture 2", "source_texture2"), { "Source Texture 2" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Source Texture 3", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture 3", "source_texture3"), { "Source Texture 3" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Source Texture 4", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture 4", "source_texture4"), { "Source Texture 4" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
 
 	// PARTICLES INPUTS
 
@@ -8285,7 +8324,7 @@ void EditorPropertyVisualShaderMode::_option_selected(int p_which) {
 	}
 
 	//4. delete varyings (if needed)
-	if (p_which == VisualShader::MODE_PARTICLES || p_which == VisualShader::MODE_SKY || p_which == VisualShader::MODE_FOG) {
+	if (p_which == VisualShader::MODE_PARTICLES || p_which == VisualShader::MODE_SKY || p_which == VisualShader::MODE_FOG || p_which == VisualShader::MODE_TEXTURE_BLIT) {
 		int var_count = visual_shader->get_varyings_count();
 
 		if (var_count > 0) {

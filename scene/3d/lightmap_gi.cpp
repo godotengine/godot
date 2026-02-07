@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/math/delaunay_3d.h"
+#include "core/math/geometry_3d.h"
 #include "core/object/object.h"
 #include "scene/3d/lightmap_probe.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -361,7 +362,7 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_light_textures_data", "data"), &LightmapGIData::_set_light_textures_data);
 	ClassDB::bind_method(D_METHOD("_get_light_textures_data"), &LightmapGIData::_get_light_textures_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_texture", PROPERTY_HINT_RESOURCE_TYPE, "TextureLayered", PROPERTY_USAGE_NONE), "set_light_texture", "get_light_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_texture", PROPERTY_HINT_RESOURCE_TYPE, TextureLayered::get_class_static(), PROPERTY_USAGE_NONE), "set_light_texture", "get_light_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "light_textures", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_INTERNAL), "_set_light_textures_data", "_get_light_textures_data");
 #endif
 
@@ -1933,14 +1934,14 @@ void LightmapGI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_texture_size", PROPERTY_HINT_RANGE, "2048,16384,1"), "set_max_texture_size", "get_max_texture_size");
 	ADD_GROUP("Environment", "environment_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "environment_mode", PROPERTY_HINT_ENUM, "Disabled,Scene,Custom Sky,Custom Color"), "set_environment_mode", "get_environment_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment_custom_sky", PROPERTY_HINT_RESOURCE_TYPE, "Sky"), "set_environment_custom_sky", "get_environment_custom_sky");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment_custom_sky", PROPERTY_HINT_RESOURCE_TYPE, Sky::get_class_static()), "set_environment_custom_sky", "get_environment_custom_sky");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "environment_custom_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_environment_custom_color", "get_environment_custom_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "environment_custom_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_environment_custom_energy", "get_environment_custom_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_camera_attributes", "get_camera_attributes");
 	ADD_GROUP("Gen Probes", "generate_probes_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "generate_probes_subdiv", PROPERTY_HINT_ENUM, "Disabled,4,8,16,32"), "set_generate_probes", "get_generate_probes");
 	ADD_GROUP("Data", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_data", PROPERTY_HINT_RESOURCE_TYPE, "LightmapGIData"), "set_light_data", "get_light_data");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_data", PROPERTY_HINT_RESOURCE_TYPE, LightmapGIData::get_class_static()), "set_light_data", "get_light_data");
 
 	BIND_ENUM_CONSTANT(BAKE_QUALITY_LOW);
 	BIND_ENUM_CONSTANT(BAKE_QUALITY_MEDIUM);

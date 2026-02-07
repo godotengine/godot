@@ -31,6 +31,7 @@
 #include "embedded_process.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "editor/editor_string_names.h"
 #include "scene/main/timer.h"
 #include "scene/main/window.h"

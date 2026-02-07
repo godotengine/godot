@@ -50,7 +50,7 @@ struct EntryExitRecord
   DEFINE_SIZE_STATIC (4);
 };
 
-static void
+static inline void
 reverse_cursive_minor_offset (hb_glyph_position_t *pos, unsigned int i, hb_direction_t direction, unsigned int new_parent)
 {
   int chain = pos[i].attach_chain(), type = pos[i].attach_type();

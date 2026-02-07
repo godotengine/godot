@@ -699,16 +699,16 @@ void GPUParticles3D::convert_from_particles(Node *p_particles) {
 	proc_mat->set_gravity(cpu_particles->get_gravity());
 	proc_mat->set_lifetime_randomness(cpu_particles->get_lifetime_randomness());
 
-#define CONVERT_PARAM(m_param)                                                                                        \
+#define CONVERT_PARAM(m_param) \
 	proc_mat->set_param_min(ParticleProcessMaterial::m_param, cpu_particles->get_param_min(CPUParticles3D::m_param)); \
-	{                                                                                                                 \
-		Ref<Curve> curve = cpu_particles->get_param_curve(CPUParticles3D::m_param);                                   \
-		if (curve.is_valid()) {                                                                                       \
-			Ref<CurveTexture> tex = memnew(CurveTexture);                                                             \
-			tex->set_curve(curve);                                                                                    \
-			proc_mat->set_param_texture(ParticleProcessMaterial::m_param, tex);                                       \
-		}                                                                                                             \
-	}                                                                                                                 \
+	{ \
+		Ref<Curve> curve = cpu_particles->get_param_curve(CPUParticles3D::m_param); \
+		if (curve.is_valid()) { \
+			Ref<CurveTexture> tex = memnew(CurveTexture); \
+			tex->set_curve(curve); \
+			proc_mat->set_param_texture(ParticleProcessMaterial::m_param, tex); \
+		} \
+	} \
 	proc_mat->set_param_max(ParticleProcessMaterial::m_param, cpu_particles->get_param_max(CPUParticles3D::m_param));
 
 	CONVERT_PARAM(PARAM_INITIAL_LINEAR_VELOCITY);
@@ -850,9 +850,9 @@ void GPUParticles3D::_bind_methods() {
 	ADD_GROUP("Draw Passes", "draw_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_passes", PROPERTY_HINT_RANGE, "0," + itos(MAX_DRAW_PASSES) + ",1"), "set_draw_passes", "get_draw_passes");
 	for (int i = 0; i < MAX_DRAW_PASSES; i++) {
-		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "draw_pass_" + itos(i + 1), PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_draw_pass_mesh", "get_draw_pass_mesh", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "draw_pass_" + itos(i + 1), PROPERTY_HINT_RESOURCE_TYPE, Mesh::get_class_static()), "set_draw_pass_mesh", "get_draw_pass_mesh", i);
 	}
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "draw_skin", PROPERTY_HINT_RESOURCE_TYPE, "Skin"), "set_skin", "get_skin");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "draw_skin", PROPERTY_HINT_RESOURCE_TYPE, Skin::get_class_static()), "set_skin", "get_skin");
 
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);

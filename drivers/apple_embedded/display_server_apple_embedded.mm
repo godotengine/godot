@@ -96,7 +96,7 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 	if (rendering_driver == "metal") {
 		if (@available(iOS 14.0, *)) {
 			layer = [GDTAppDelegateService.viewController.godotView initializeRenderingForDriver:@"metal"];
-			wpd.metal.layer = (CAMetalLayer *)layer;
+			wpd.metal.layer = (__bridge CA::MetalLayer *)layer;
 			rendering_context = memnew(RenderingContextDriverMetal);
 		} else {
 			OS::get_singleton()->alert("Metal is only supported on iOS 14.0 and later.");
@@ -114,8 +114,8 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
 				WARN_PRINT("Your device does not seem to support MoltenVK or Metal, switching to OpenGL 3.");
 				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility", OS::RENDERING_SOURCE_FALLBACK);
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else
 #endif
 			{

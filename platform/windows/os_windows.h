@@ -34,8 +34,9 @@
 #include "key_mapping_windows.h"
 
 #include "core/config/project_settings.h"
-#include "core/input/input.h"
+#include "core/input/input_event.h"
 #include "core/os/os.h"
+#include "core/templates/rb_map.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/midi_driver_winmidi.h"
 #include "servers/audio/audio_server.h"
@@ -70,8 +71,8 @@
 #ifndef SAFE_RELEASE // when Windows Media Device M? is not present
 #define SAFE_RELEASE(x) \
 	if (x != nullptr) { \
-		x->Release();   \
-		x = nullptr;    \
+		x->Release(); \
+		x = nullptr; \
 	}
 #endif
 

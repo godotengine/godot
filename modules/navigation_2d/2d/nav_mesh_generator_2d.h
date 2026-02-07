@@ -91,7 +91,7 @@ public:
 	static void cleanup();
 	static void finish();
 
-	static void set_generator_parsers(LocalVector<NavMeshGeometryParser2D *> p_parsers);
+	static void set_generator_parsers(const LocalVector<NavMeshGeometryParser2D *> &p_parsers);
 
 	static void parse_source_geometry_data(Ref<NavigationPolygon> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable());
 	static void bake_from_source_geometry_data(Ref<NavigationPolygon> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, const Callable &p_callback = Callable());

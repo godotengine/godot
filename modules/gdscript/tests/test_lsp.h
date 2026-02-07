@@ -32,9 +32,7 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "modules/modules_enabled.gen.h" // For jsonrpc.
-
-#ifdef MODULE_JSONRPC_ENABLED
+#ifndef GDSCRIPT_NO_LSP
 
 #include "tests/test_macros.h"
 
@@ -44,10 +42,7 @@
 #include "../language_server/godot_lsp.h"
 
 #include "core/io/dir_access.h"
-#include "core/io/file_access_pack.h"
-#include "core/os/os.h"
-#include "editor/doc/editor_help.h"
-#include "editor/editor_node.h"
+#include "editor/file_system/editor_file_system.h"
 
 #include "modules/gdscript/gdscript_analyzer.h"
 #include "modules/regex/regex.h"
@@ -607,6 +602,6 @@ func f():
 
 } // namespace GDScriptTests
 
-#endif // MODULE_JSONRPC_ENABLED
+#endif // GDSCRIPT_NO_LSP
 
 #endif // TOOLS_ENABLED

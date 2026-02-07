@@ -1920,7 +1920,7 @@ void InputEventShortcut::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shortcut", "shortcut"), &InputEventShortcut::set_shortcut);
 	ClassDB::bind_method(D_METHOD("get_shortcut"), &InputEventShortcut::get_shortcut);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, Shortcut::get_class_static()), "set_shortcut", "get_shortcut");
 }
 
 String InputEventShortcut::as_text() const {

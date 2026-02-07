@@ -46,7 +46,7 @@
 #include "editor/inspector/editor_resource_picker.h"
 #include "editor/inspector/property_selector.h"
 #include "editor/scene/scene_tree_editor.h"
-#include "editor/script/script_editor_plugin.h"
+#include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
@@ -59,6 +59,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
+#include "scene/resources/sky.h"
 #include "scene/resources/visual_shader_nodes.h"
 
 ///////////////////// NIL /////////////////////////
@@ -123,7 +124,7 @@ void EditorPropertyVariant::update_property() {
 		}
 
 		if (current_type == Variant::OBJECT) {
-			sub_property = EditorInspector::instantiate_property_editor(nullptr, current_type, "", PROPERTY_HINT_RESOURCE_TYPE, "Resource", PROPERTY_USAGE_NONE);
+			sub_property = EditorInspector::instantiate_property_editor(nullptr, current_type, "", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static(), PROPERTY_USAGE_NONE);
 		} else {
 			sub_property = EditorInspector::instantiate_property_editor(nullptr, current_type, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
 		}
@@ -1017,6 +1018,10 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 		Vector<String> text_split = option.split(":");
 		if (text_split.size() != 1) {
 			current_val = text_split[1].to_int();
+			// Skip entries like "None:0" (it's not an actual flag).
+			if (current_val == 0) {
+				continue;
+			}
 		} else {
 			current_val = 1u << i;
 		}
@@ -1051,8 +1056,10 @@ void EditorPropertyLayersGrid::_rename_pressed(int p_menu) {
 	// Show rename popup for active layer.
 	ERR_FAIL_INDEX(renamed_layer_index, names.size());
 	String name = names[renamed_layer_index];
-	rename_dialog->set_title(vformat(TTR("Renaming layer %d:"), renamed_layer_index + 1));
+	rename_dialog->set_title(vformat(TTR("Renaming Layer %d:"), renamed_layer_index + 1));
 	rename_dialog_text->set_text(name);
+	// Indicate that leaving it blank reverts back to "Layer [Number]".
+	rename_dialog_text->set_placeholder(vformat(TTR("Layer %d"), renamed_layer_index + 1));
 	rename_dialog_text->select(0, name.length());
 	rename_dialog->popup_centered(Size2(300, 80) * EDSCALE);
 	rename_dialog_text->grab_focus();
@@ -1060,15 +1067,13 @@ void EditorPropertyLayersGrid::_rename_pressed(int p_menu) {
 
 void EditorPropertyLayersGrid::_rename_operation_confirm() {
 	String new_name = rename_dialog_text->get_text().strip_edges();
-	if (new_name.length() == 0) {
-		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
-		return;
-	} else if (new_name.contains_char('/') || new_name.contains_char('\\') || new_name.contains_char(':')) {
+	if (new_name.contains_char('/') || new_name.contains_char('\\') || new_name.contains_char(':')) {
 		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
 		return;
 	}
+
 	names.set(renamed_layer_index, new_name);
-	tooltips.set(renamed_layer_index, new_name + "\n" + vformat(TTR("Bit %d, value %d"), renamed_layer_index, 1u << renamed_layer_index));
+	tooltips.set(renamed_layer_index, new_name + "\n" + vformat(TTR("Bit %d, Value %d"), renamed_layer_index, 1u << renamed_layer_index));
 	emit_signal(SNAME("rename_confirmed"), renamed_layer_index, new_name);
 }
 
@@ -1083,7 +1088,7 @@ EditorPropertyLayersGrid::EditorPropertyLayersGrid() {
 	rename_dialog->register_text_enter(rename_dialog_text);
 	rename_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorPropertyLayersGrid::_rename_operation_confirm));
 	layer_rename = memnew(PopupMenu);
-	layer_rename->add_item(TTR("Rename layer"), 0);
+	layer_rename->add_item(TTR("Rename Layer"), 0);
 	add_child(layer_rename);
 	layer_rename->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyLayersGrid::_rename_pressed));
 }
@@ -1227,15 +1232,6 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 
 void EditorPropertyLayersGrid::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
-			RID ae = get_accessibility_element();
-			ERR_FAIL_COND(ae.is_null());
-
-			//TODO
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, TTR(vformat("The %s is not accessible at this time.", "Layers grid property editor")));
-		} break;
-
 		case NOTIFICATION_DRAW: {
 			Size2 grid_size = get_grid_size();
 			grid_size.x = get_size().x;
@@ -3177,13 +3173,17 @@ void EditorPropertyNodePath::update_property() {
 	const Node *target_node = base_node->get_node(p);
 	ERR_FAIL_NULL(target_node);
 
-	if (String(target_node->get_name()).contains_char('@')) {
+	String new_text = target_node->get_name();
+	if (new_text.contains_char('@')) {
 		assign->set_button_icon(Ref<Texture2D>());
 		assign->set_text(String(p));
 		return;
 	}
 
-	assign->set_text(target_node->get_name());
+	if (p.get_subname_count() > 0) {
+		new_text += ":" + p.get_concatenated_subnames();
+	}
+	assign->set_text(new_text);
 	assign->set_button_icon(EditorNode::get_singleton()->get_object_icon(target_node));
 }
 
@@ -3242,15 +3242,29 @@ Node *EditorPropertyNodePath::get_base_node() {
 			}
 		}
 	}
-	if (use_path_from_scene_root) {
-		if (get_edited_object()->has_method("get_root_path")) {
-			base_node = Object::cast_to<Node>(get_edited_object()->call("get_root_path"));
-		} else {
-			base_node = get_tree()->get_edited_scene_root();
-		}
+
+	if (!use_path_from_scene_root) {
+		return base_node;
 	}
 
-	return base_node;
+	if (get_edited_object()->has_method("get_root_path")) {
+		return Object::cast_to<Node>(get_edited_object()->call("get_root_path"));
+	}
+
+	if (!base_node) {
+		return nullptr; // Editing external resources.
+	}
+
+	if (base_node->is_instance()) {
+		return base_node; // Known scene root.
+	}
+
+	base_node = base_node->get_owner();
+	if (base_node) {
+		return base_node; // Node in known scene.
+	}
+
+	return get_tree()->get_edited_scene_root(); // Treat as a node in the main scene.
 }
 
 EditorPropertyNodePath::EditorPropertyNodePath() {
@@ -3351,6 +3365,17 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 			emit_changed(get_edited_property(), Ref<Resource>());
 			update_property();
 			return;
+		}
+	}
+
+	if (p_resource.is_valid() && p_resource->is_local_to_scene()) {
+		// Attempting to configure the local scene.
+		Node *local_scene = _get_base_node();
+		if (local_scene) {
+			HashMap<Ref<Resource>, Ref<Resource>> remap;
+			p_resource->configure_for_local_scene(local_scene, remap);
+		} else {
+			WARN_PRINT("You are attempting to assign a local-to-scene resource outside the scene.");
 		}
 	}
 
@@ -3471,6 +3496,39 @@ bool EditorPropertyResource::_should_stop_editing() const {
 	return !resource_picker->is_toggle_pressed();
 }
 
+Node *EditorPropertyResource::_get_base_node() {
+	Node *base_node = Object::cast_to<Node>(get_edited_object());
+
+	if (!base_node) {
+		base_node = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
+	}
+
+	if (!base_node) {
+		// Try a base node within history.
+		if (EditorNode::get_singleton()->get_editor_selection_history()->get_path_size() > 0) {
+			Object *base = ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_selection_history()->get_path_object(0));
+			if (base) {
+				base_node = Object::cast_to<Node>(base);
+			}
+		}
+	}
+
+	if (!base_node) {
+		return nullptr; // Editing external resources.
+	}
+
+	if (!base_node->get_scene_file_path().is_empty()) {
+		return base_node; // Known scene root.
+	}
+
+	base_node = base_node->get_owner();
+	if (base_node) {
+		return base_node; // Node in known scene.
+	}
+
+	return get_tree()->get_edited_scene_root(); // Treat as a node in the main scene.
+}
+
 void EditorPropertyResource::_viewport_selected(const NodePath &p_path) {
 	Node *to_node = get_node(p_path);
 	if (!Object::cast_to<Viewport>(to_node)) {
@@ -3481,7 +3539,9 @@ void EditorPropertyResource::_viewport_selected(const NodePath &p_path) {
 	Ref<ViewportTexture> vt = get_edited_property_value();
 	ERR_FAIL_COND(vt.is_null());
 
-	vt->set_viewport_path_in_scene(get_tree()->get_edited_scene_root()->get_path_to(to_node));
+	Node *local_scene = _get_base_node();
+	ERR_FAIL_NULL(local_scene);
+	vt->set_viewport_path_in_scene(local_scene->get_path_to(to_node));
 
 	emit_changed(get_edited_property(), vt);
 	update_property();
@@ -3771,7 +3831,7 @@ static EditorProperty *get_input_action_editor(const String &p_hint_text, bool i
 	ProjectSettings::get_singleton()->get_property_list(&pinfo);
 	Vector<String> hints = p_hint_text.remove_char(' ').split(",", false);
 
-	HashMap<String, List<Ref<InputEvent>>> builtins = InputMap::get_singleton()->get_builtins();
+	HashMap<String, List<Ref<InputEvent>>> builtins(InputMap::get_singleton()->get_builtins());
 	bool show_builtin = hints.has("show_builtin");
 
 	for (const PropertyInfo &pi : pinfo) {
@@ -4029,7 +4089,14 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::QUATERNION: {
 			EditorPropertyQuaternion *editor = memnew(EditorPropertyQuaternion);
-			editor->setup(_parse_range_hint(p_hint, p_hint_text, default_float_step), p_hint == PROPERTY_HINT_HIDE_QUATERNION_EDIT);
+			// Quaternions are almost never used for human-readable values that need stepifying,
+			// so we should be more precise with their step, as much as the float precision allows.
+#ifdef REAL_T_IS_DOUBLE
+			constexpr double QUATERNION_STEP = 1e-14;
+#else
+			constexpr double QUATERNION_STEP = 1e-6;
+#endif
+			editor->setup(_parse_range_hint(p_hint, p_hint_text, QUATERNION_STEP), p_hint == PROPERTY_HINT_HIDE_QUATERNION_EDIT);
 			return editor;
 		} break;
 		case Variant::AABB: {
@@ -4039,7 +4106,6 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::BASIS: {
 			EditorPropertyBasis *editor = memnew(EditorPropertyBasis);
-			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
 			editor->setup(_parse_range_hint(p_hint, p_hint_text, default_float_step));
 			return editor;
 		} break;

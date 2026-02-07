@@ -38,6 +38,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/math/geometry_2d.h"
+#include "core/math/geometry_3d.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/settings/editor_settings.h"
 #include "servers/rendering/rendering_device_binds.h"
@@ -1168,19 +1169,19 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	RID shadowmask_tex;
 	RID shadowmask_tex2;
 
-#define FREE_TEXTURES                    \
-	rd->free_rid(albedo_array_tex);      \
-	rd->free_rid(emission_array_tex);    \
-	rd->free_rid(normal_tex);            \
-	rd->free_rid(position_tex);          \
-	rd->free_rid(unocclude_tex);         \
-	rd->free_rid(light_source_tex);      \
-	rd->free_rid(light_accum_tex2);      \
-	rd->free_rid(light_accum_tex);       \
+#define FREE_TEXTURES \
+	rd->free_rid(albedo_array_tex); \
+	rd->free_rid(emission_array_tex); \
+	rd->free_rid(normal_tex); \
+	rd->free_rid(position_tex); \
+	rd->free_rid(unocclude_tex); \
+	rd->free_rid(light_source_tex); \
+	rd->free_rid(light_accum_tex2); \
+	rd->free_rid(light_accum_tex); \
 	rd->free_rid(light_environment_tex); \
-	if (p_bake_shadowmask) {             \
-		rd->free_rid(shadowmask_tex);    \
-		rd->free_rid(shadowmask_tex2);   \
+	if (p_bake_shadowmask) { \
+		rd->free_rid(shadowmask_tex); \
+		rd->free_rid(shadowmask_tex2); \
 	}
 
 	{ // create all textures
@@ -1285,16 +1286,16 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	Vector<int> slice_seam_count;
 
-#define FREE_BUFFERS                       \
-	rd->free_rid(bake_parameters_buffer);  \
-	rd->free_rid(vertex_buffer);           \
-	rd->free_rid(triangle_buffer);         \
-	rd->free_rid(lights_buffer);           \
+#define FREE_BUFFERS \
+	rd->free_rid(bake_parameters_buffer); \
+	rd->free_rid(vertex_buffer); \
+	rd->free_rid(triangle_buffer); \
+	rd->free_rid(lights_buffer); \
 	rd->free_rid(triangle_indices_buffer); \
-	rd->free_rid(cluster_indices_buffer);  \
-	rd->free_rid(cluster_aabbs_buffer);    \
-	rd->free_rid(grid_texture);            \
-	rd->free_rid(seams_buffer);            \
+	rd->free_rid(cluster_indices_buffer); \
+	rd->free_rid(cluster_aabbs_buffer); \
+	rd->free_rid(grid_texture); \
+	rd->free_rid(seams_buffer); \
 	rd->free_rid(probe_positions_buffer);
 
 	const uint32_t cluster_size = 16;
@@ -1536,9 +1537,9 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 #endif
 
-#define FREE_RASTER_RESOURCES       \
+#define FREE_RASTER_RESOURCES \
 	rd->free_rid(rasterize_shader); \
-	rd->free_rid(sampler);          \
+	rd->free_rid(sampler); \
 	rd->free_rid(raster_depth_buffer);
 
 	/* Plot direct light */
@@ -1597,9 +1598,9 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	RID compute_base_uniform_set = rd->uniform_set_create(base_uniforms, compute_shader_primary, 0);
 
-#define FREE_COMPUTE_RESOURCES              \
+#define FREE_COMPUTE_RESOURCES \
 	rd->free_rid(compute_shader_unocclude); \
-	rd->free_rid(compute_shader_primary);   \
+	rd->free_rid(compute_shader_primary); \
 	rd->free_rid(compute_shader_secondary); \
 	rd->free_rid(compute_shader_light_probes);
 
@@ -2178,7 +2179,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	ERR_FAIL_COND_V(blendseams_triangle_raster_shader.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
-#define FREE_BLENDSEAMS_RESOURCES                \
+#define FREE_BLENDSEAMS_RESOURCES \
 	rd->free_rid(blendseams_line_raster_shader); \
 	rd->free_rid(blendseams_triangle_raster_shader);
 

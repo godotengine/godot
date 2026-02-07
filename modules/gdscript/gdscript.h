@@ -339,8 +339,6 @@ public:
 
 	virtual const Variant get_rpc_config() const override;
 
-	void unload_static() const;
-
 #ifdef TOOLS_ENABLED
 	virtual bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
 #endif
@@ -600,7 +598,6 @@ public:
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override;
-	virtual Script *create_script() const override;
 	virtual bool supports_builtin_mode() const override;
 	virtual bool supports_documentation() const override;
 	virtual bool can_inherit_from_file() const override { return true; }

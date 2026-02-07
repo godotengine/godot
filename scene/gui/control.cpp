@@ -407,6 +407,10 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Theme Overrides", "theme_override_"), PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
 
 	for (const ThemeDB::ThemeItemBind &E : theme_items) {
+		if (E.external) {
+			continue; // External items are not meant to be exposed.
+		}
+
 		uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 
 		switch (E.data_type) {
@@ -428,7 +432,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				if (data.theme_font_override.has(E.item_name)) {
 					usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 				}
-				p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_fonts") + String("/") + E.item_name, PROPERTY_HINT_RESOURCE_TYPE, "Font", usage));
+				p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_fonts") + String("/") + E.item_name, PROPERTY_HINT_RESOURCE_TYPE, Font::get_class_static(), usage));
 			} break;
 
 			case Theme::DATA_TYPE_FONT_SIZE: {
@@ -442,14 +446,14 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				if (data.theme_icon_override.has(E.item_name)) {
 					usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 				}
-				p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_icons") + String("/") + E.item_name, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", usage));
+				p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_icons") + String("/") + E.item_name, PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), usage));
 			} break;
 
 			case Theme::DATA_TYPE_STYLEBOX: {
 				if (data.theme_style_override.has(E.item_name)) {
 					usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 				}
-				p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_styles") + String("/") + E.item_name, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", usage));
+				p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_styles") + String("/") + E.item_name, PROPERTY_HINT_RESOURCE_TYPE, StyleBox::get_class_static(), usage));
 			} break;
 
 			default: {
@@ -1655,10 +1659,11 @@ void Control::_update_minimum_size() {
 		return;
 	}
 
+	bool was_invalid = !data.minimum_size_valid;
 	Size2 minsize = get_combined_minimum_size();
 	data.updating_last_minimum_size = false;
 
-	if (minsize != data.last_minimum_size) {
+	if (was_invalid || minsize != data.last_minimum_size) {
 		data.last_minimum_size = minsize;
 		_size_changed();
 		emit_signal(SceneStringName(minimum_size_changed));
@@ -4308,7 +4313,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "accessibility_flow_to_nodes", PROPERTY_HINT_ARRAY_TYPE, "NodePath"), "set_accessibility_flow_to_nodes", "get_accessibility_flow_to_nodes");
 
 	ADD_GROUP("Theme", "theme_");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, Theme::get_class_static()), "set_theme", "get_theme");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "theme_type_variation", PROPERTY_HINT_ENUM_SUGGESTION), "set_theme_type_variation", "get_theme_type_variation");
 
 	BIND_ENUM_CONSTANT(FOCUS_NONE);
@@ -4410,7 +4415,7 @@ void Control::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXT_DIRECTION_RTL);
 
 	ADD_SIGNAL(MethodInfo("resized"));
-	ADD_SIGNAL(MethodInfo("gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	ADD_SIGNAL(MethodInfo("gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, InputEvent::get_class_static())));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
 	ADD_SIGNAL(MethodInfo("focus_entered"));

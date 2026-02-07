@@ -94,6 +94,13 @@
 				Returns the text autowrap mode in the given [param column]. By default it is [constant TextServer.AUTOWRAP_OFF].
 			</description>
 		</method>
+		<method name="get_autowrap_trim_flags" qualifiers="const">
+			<return type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the autowrap trim flags for the given [param column]. By default, both [constant TextServer.BREAK_TRIM_START_EDGE_SPACES] and [constant TextServer.BREAK_TRIM_END_EDGE_SPACES] are enabled.
+			</description>
+		</method>
 		<method name="get_button" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="column" type="int" />
@@ -536,6 +543,14 @@
 			<param index="1" name="autowrap_mode" type="int" enum="TextServer.AutowrapMode" />
 			<description>
 				Sets the autowrap mode in the given [param column]. If set to something other than [constant TextServer.AUTOWRAP_OFF], the text gets wrapped inside the cell's bounding rectangle.
+			</description>
+		</method>
+		<method name="set_autowrap_trim_flags">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" />
+			<description>
+				Sets the autowrap trim flags for the given [param column]. These flags control whether leading and trailing spaces are trimmed on wrapped lines. Set to [code]0[/code] to disable all trimming.
 			</description>
 		</method>
 		<method name="set_button">

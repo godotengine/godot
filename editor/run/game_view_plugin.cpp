@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
-#include "core/debugger/engine_debugger.h"
 #include "core/string/translation_server.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
@@ -81,7 +80,6 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	settings["editors/3d/navigation_feel/orbit_sensitivity"] = EDITOR_GET("editors/3d/navigation_feel/orbit_sensitivity");
 	settings["editors/3d/navigation_feel/translation_sensitivity"] = EDITOR_GET("editors/3d/navigation_feel/translation_sensitivity");
 	settings["editors/3d/selection_box_color"] = EDITOR_GET("editors/3d/selection_box_color");
-	settings["editors/3d/freelook/freelook_base_speed"] = EDITOR_GET("editors/3d/freelook/freelook_base_speed");
 
 	Array setup_data;
 	setup_data.append(settings);

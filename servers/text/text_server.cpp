@@ -2310,6 +2310,7 @@ TypedArray<Dictionary> TextServer::_shaped_text_get_glyphs_wrapper(const RID &p_
 		glyph["font_rid"] = glyphs[i].font_rid;
 		glyph["font_size"] = glyphs[i].font_size;
 		glyph["index"] = glyphs[i].index;
+		glyph["span_index"] = glyphs[i].span_index;
 
 		ret.push_back(glyph);
 	}
@@ -2335,6 +2336,7 @@ TypedArray<Dictionary> TextServer::_shaped_text_sort_logical_wrapper(const RID &
 		glyph["font_rid"] = glyphs[i].font_rid;
 		glyph["font_size"] = glyphs[i].font_size;
 		glyph["index"] = glyphs[i].index;
+		glyph["span_index"] = glyphs[i].span_index;
 
 		ret.push_back(glyph);
 	}
@@ -2360,6 +2362,7 @@ TypedArray<Dictionary> TextServer::_shaped_text_get_ellipsis_glyphs_wrapper(cons
 		glyph["font_rid"] = glyphs[i].font_rid;
 		glyph["font_size"] = glyphs[i].font_size;
 		glyph["index"] = glyphs[i].index;
+		glyph["span_index"] = glyphs[i].span_index;
 
 		ret.push_back(glyph);
 	}

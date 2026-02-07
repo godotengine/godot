@@ -739,7 +739,8 @@ void AnimationTree::_animation_node_renamed(const ObjectID &p_oid, const String 
 	for (const PropertyInfo &E : properties) {
 		if (E.name.begins_with(old_base)) {
 			String new_name = E.name.replace_first(old_base, new_base);
-			property_map[new_name] = property_map[E.name];
+			const Pair<Variant, bool> temp_copy = property_map[E.name];
+			property_map[new_name] = temp_copy;
 			property_map.erase(E.name);
 		}
 	}
@@ -1014,7 +1015,7 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation_player", "path"), &AnimationTree::set_animation_player);
 	ClassDB::bind_method(D_METHOD("get_animation_player"), &AnimationTree::get_animation_player);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode"), "set_tree_root", "get_tree_root");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, AnimationRootNode::get_class_static()), "set_tree_root", "get_tree_root");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
 

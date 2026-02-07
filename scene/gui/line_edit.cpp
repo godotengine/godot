@@ -32,6 +32,7 @@
 #include "line_edit.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -3262,29 +3263,29 @@ void LineEdit::_update_context_menu() {
 
 	int idx = -1;
 
-#define MENU_ITEM_ACTION_DISABLED(m_menu, m_id, m_action, m_disabled)                                                  \
-	idx = m_menu->get_item_index(m_id);                                                                                \
-	if (idx >= 0) {                                                                                                    \
+#define MENU_ITEM_ACTION_DISABLED(m_menu, m_id, m_action, m_disabled) \
+	idx = m_menu->get_item_index(m_id); \
+	if (idx >= 0) { \
 		m_menu->set_item_accelerator(idx, shortcut_keys_enabled ? _get_menu_action_accelerator(m_action) : Key::NONE); \
-		m_menu->set_item_disabled(idx, m_disabled);                                                                    \
+		m_menu->set_item_disabled(idx, m_disabled); \
 	}
 
-#define MENU_ITEM_ACTION(m_menu, m_id, m_action)                                                                       \
-	idx = m_menu->get_item_index(m_id);                                                                                \
-	if (idx >= 0) {                                                                                                    \
+#define MENU_ITEM_ACTION(m_menu, m_id, m_action) \
+	idx = m_menu->get_item_index(m_id); \
+	if (idx >= 0) { \
 		m_menu->set_item_accelerator(idx, shortcut_keys_enabled ? _get_menu_action_accelerator(m_action) : Key::NONE); \
 	}
 
 #define MENU_ITEM_DISABLED(m_menu, m_id, m_disabled) \
-	idx = m_menu->get_item_index(m_id);              \
-	if (idx >= 0) {                                  \
-		m_menu->set_item_disabled(idx, m_disabled);  \
+	idx = m_menu->get_item_index(m_id); \
+	if (idx >= 0) { \
+		m_menu->set_item_disabled(idx, m_disabled); \
 	}
 
 #define MENU_ITEM_CHECKED(m_menu, m_id, m_checked) \
-	idx = m_menu->get_item_index(m_id);            \
-	if (idx >= 0) {                                \
-		m_menu->set_item_checked(idx, m_checked);  \
+	idx = m_menu->get_item_index(m_id); \
+	if (idx >= 0) { \
+		m_menu->set_item_checked(idx, m_checked); \
 	}
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
@@ -3523,7 +3524,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
 
 	ADD_GROUP("Icon", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_right_icon", "get_right_icon");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "right_icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_right_icon", "get_right_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_expand_mode", PROPERTY_HINT_ENUM, "Original,Fit to Text,Fit to LineEdit"), "set_icon_expand_mode", "get_icon_expand_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "right_icon_scale", PROPERTY_HINT_RANGE, "0.1,1.0,0.01"), "set_right_icon_scale", "get_right_icon_scale");
 

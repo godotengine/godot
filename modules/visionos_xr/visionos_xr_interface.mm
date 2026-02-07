@@ -32,12 +32,16 @@
 
 #include "visionos_xr_interface.h"
 
+#import <ARKit/ARKit.h>
+#import <CompositorServices/CompositorServices.h>
+
 #include "core/input/input.h"
 #include "core/os/os.h"
-#include "drivers/metal/metal_objects.h"
+#include "drivers/metal/metal3_objects.h"
 #include "platform/visionos/godot_app_delegate_service_visionos.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server_globals.h"
+#include "visionos_simd_helpers.h"
 
 #include "core/os/thread.h"
 
@@ -493,7 +497,7 @@ Vector<BlitToScreen> VisionOSXRInterface::RenderThread::post_draw_viewport(RID p
 	return Vector<BlitToScreen>();
 }
 
-void VisionOSXRInterface::RenderThread::encode_present(MDCommandBuffer *p_cmd_buffer) {
+void VisionOSXRInterface::RenderThread::encode_present(MTL3::MDCommandBuffer *p_cmd_buffer) {
 	ERR_NOT_ON_RENDER_THREAD;
 
 	if (!initialized) {
@@ -501,7 +505,7 @@ void VisionOSXRInterface::RenderThread::encode_present(MDCommandBuffer *p_cmd_bu
 	}
 
 	ERR_FAIL_NULL_MSG(current_drawable, "Current drawable is nil, probably process() has not been called");
-	cp_drawable_encode_present(current_drawable, p_cmd_buffer->get_command_buffer());
+	cp_drawable_encode_present(current_drawable, (__bridge id<MTLCommandBuffer>)p_cmd_buffer->get_command_buffer());
 	current_drawable = nullptr;
 }
 
@@ -533,7 +537,7 @@ RID VisionOSXRInterface::RenderThread::get_color_texture() {
 	id<MTLTexture> color_texture = cp_drawable_get_color_texture(current_drawable, 0);
 	current_color_texture_id = rendering_device->texture_create_from_extension(
 			MTL::texture_type_from_metal(color_texture.textureType),
-			pixel_formats->getDataFormat(color_texture.pixelFormat),
+			pixel_formats->getDataFormat((MTL::PixelFormat)color_texture.pixelFormat),
 			MTL::texture_samples_from_metal(color_texture.sampleCount),
 			RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT,
 			(uint64_t)color_texture,
@@ -562,7 +566,7 @@ RID VisionOSXRInterface::RenderThread::get_depth_texture() {
 
 	current_depth_texture_id = rendering_device->texture_create_from_extension(
 			MTL::texture_type_from_metal(depth_texture.textureType),
-			pixel_formats->getDataFormat(depth_texture.pixelFormat),
+			pixel_formats->getDataFormat((MTL::PixelFormat)depth_texture.pixelFormat),
 			MTL::texture_samples_from_metal(depth_texture.sampleCount),
 			RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT,
 			(uint64_t)depth_texture,

@@ -31,6 +31,7 @@
 #include "filesystem_dock.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
@@ -523,11 +524,11 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				if (is_vertical) {
 					tree->set_theme_type_variation("");
 					tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
-					tree_mc->set_theme_type_variation("NoBorderBottomPanel");
+					tree_mc->set_theme_type_variation(horizontal ? "NoBorderBottomPanel" : "NoBorderHorizontal");
 
-					files->set_theme_type_variation("");
-					files->set_scroll_hint_mode(horizontal ? ItemList::SCROLL_HINT_MODE_BOTH : ItemList::SCROLL_HINT_MODE_TOP);
-					files_mc->set_theme_type_variation(horizontal ? "NoBorderBottomPanel" : "NoBorderHorizontalBottom");
+					files->set_theme_type_variation(horizontal ? "ItemListSecondary" : "");
+					files->set_scroll_hint_mode(horizontal ? ItemList::SCROLL_HINT_MODE_DISABLED : ItemList::SCROLL_HINT_MODE_TOP);
+					files_mc->set_theme_type_variation(horizontal ? "" : "NoBorderHorizontalBottom");
 				} else {
 					tree->set_theme_type_variation("TreeSecondary");
 					tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_DISABLED);
@@ -862,12 +863,16 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_index, const String &p_filename) {
 	if (p_preview.is_valid()) {
 		if (p_index < files->get_item_count() && files->get_item_text(p_index) == p_filename && files->get_item_metadata(p_index) == p_path) {
+			Ref<Texture2D> thumbnail;
+
 			if (file_list_display_mode == FILE_LIST_DISPLAY_LIST) {
-				if (p_small_preview.is_valid()) {
-					files->set_item_icon(p_index, p_small_preview);
-				}
+				thumbnail = p_small_preview;
 			} else {
-				files->set_item_icon(p_index, p_preview);
+				thumbnail = p_preview;
+			}
+
+			if (thumbnail.is_valid()) {
+				files->set_item_icon(p_index, _apply_thumbnail_filter(thumbnail, p_path));
 			}
 		}
 	}
@@ -876,8 +881,35 @@ void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<T
 void FileSystemDock::_tree_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_update_id, ObjectID p_item) {
 	TreeItem *item = ObjectDB::get_instance<TreeItem>(p_item);
 	if (item && tree_update_id == p_update_id && p_small_preview.is_valid()) {
-		item->set_icon(0, p_small_preview);
+		item->set_icon(0, _apply_thumbnail_filter(p_small_preview, p_path));
 	}
+}
+
+Ref<Texture2D> FileSystemDock::_apply_thumbnail_filter(const Ref<Texture2D> &p_thumbnail, const String &p_file_path) const {
+	if (!p_file_path.is_empty()) {
+		int index;
+		EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->find_file(p_file_path, &index);
+
+		if (dir) {
+			if (dir->get_file_import_is_valid(index)) {
+				const StringName &file_type = dir->get_file_type(index);
+
+				if (file_type == SNAME("CompressedTexture2D") || file_type == SNAME("Image")) {
+					const String extension = p_file_path.get_extension();
+
+					if (extension != "svg" && extension != "svgz") {
+						Ref<CanvasTexture> thumbnail_wrapped;
+						thumbnail_wrapped.instantiate();
+						thumbnail_wrapped->set_diffuse_texture(p_thumbnail);
+						thumbnail_wrapped->set_texture_filter(CanvasItem::TextureFilter::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+						return thumbnail_wrapped;
+					}
+				}
+			}
+		}
+	}
+
+	return p_thumbnail;
 }
 
 void FileSystemDock::_toggle_file_display() {
@@ -1658,7 +1690,7 @@ void FileSystemDock::_update_dependencies_after_move(const HashMap<String, Strin
 
 void FileSystemDock::_update_project_settings_after_move(const HashMap<String, String> &p_renames, const HashMap<String, String> &p_folders_renames) {
 	// Find all project settings of type FILE and replace them if needed.
-	const HashMap<StringName, PropertyInfo> prop_info = ProjectSettings::get_singleton()->get_custom_property_info();
+	const HashMap<StringName, PropertyInfo> prop_info(ProjectSettings::get_singleton()->get_custom_property_info());
 	for (const KeyValue<StringName, PropertyInfo> &E : prop_info) {
 		if (E.value.hint == PROPERTY_HINT_FILE || E.value.hint == PROPERTY_HINT_FILE_PATH) {
 			String old_path = GLOBAL_GET(E.key);
@@ -2801,6 +2833,9 @@ void FileSystemDock::_resource_created() {
 }
 
 void FileSystemDock::_script_or_shader_created(const Ref<Resource> &p_resource) {
+	if (Object::cast_to<Script>(p_resource.ptr()) && !EDITOR_GET("docks/filesystem/automatically_open_created_scripts").operator bool()) {
+		return;
+	}
 	EditorNode::get_singleton()->push_item(p_resource.ptr());
 }
 
@@ -3694,7 +3729,7 @@ void FileSystemDock::_file_list_item_clicked(int p_item, const Vector2 &p_pos, M
 	if (p_mouse_button_index != MouseButton::RIGHT) {
 		return;
 	}
-	files->grab_focus();
+	files->grab_focus(true);
 
 	// Right click is pressed in the file list.
 	Vector<String> paths;
@@ -4154,7 +4189,7 @@ void FileSystemDock::update_layout(EditorDock::DockLayout p_layout) {
 	horizontal = new_horizontal;
 
 	if (horizontal) {
-		path_hb->reparent(toolbar_hbc, false);
+		path_hb->reparent(toolbar_hbc);
 		toolbar_hbc->move_child(path_hb, 2);
 		set_meta("_dock_display_mode", get_display_mode());
 		set_meta("_dock_file_display_mode", get_file_list_display_mode());
@@ -4256,7 +4291,7 @@ void FileSystemDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("inherit", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("instantiate", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
 
-	ADD_SIGNAL(MethodInfo("resource_removed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ADD_SIGNAL(MethodInfo("resource_removed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static())));
 	ADD_SIGNAL(MethodInfo("file_removed", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("folder_removed", PropertyInfo(Variant::STRING, "folder")));
 	ADD_SIGNAL(MethodInfo("files_moved", PropertyInfo(Variant::STRING, "old_file"), PropertyInfo(Variant::STRING, "new_file")));

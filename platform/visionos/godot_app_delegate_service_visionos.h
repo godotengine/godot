@@ -31,12 +31,13 @@
 #pragma once
 
 #import "drivers/apple_embedded/godot_app_delegate_service_apple_embedded.h"
+#import "render_mode_visionos.h"
 
 #import <CompositorServices/CompositorServices.h>
 
 typedef NS_ENUM(NSInteger, GDTRenderMode) {
-	GDTRenderModeWindowed,
-	GDTRenderModeCompositorServices
+	GDTRenderModeWindowed = RenderModeVisionOS::WINDOWED,
+	GDTRenderModeCompositorServices = RenderModeVisionOS::COMPOSITOR_SERVICES
 };
 
 @interface GDTAppDelegateServiceVisionOS : GDTAppDelegateService

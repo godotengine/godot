@@ -31,6 +31,8 @@
 #include "display_server.h"
 #include "display_server.compat.inc"
 
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Input);
+
 #include "core/input/input.h"
 #include "scene/resources/texture.h"
 #include "servers/display/display_server_headless.h"
@@ -1286,6 +1288,8 @@ void DisplayServer::unregister_additional_output(Object *p_object) {
 }
 
 void DisplayServer::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("orientation_changed", PropertyInfo(Variant::INT, "orientation")));
+
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &DisplayServer::has_feature);
 	ClassDB::bind_method(D_METHOD("get_name"), &DisplayServer::get_name);
 
@@ -1706,6 +1710,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ROLE_TITLE_BAR);
 	BIND_ENUM_CONSTANT(ROLE_DIALOG);
 	BIND_ENUM_CONSTANT(ROLE_TOOLTIP);
+	BIND_ENUM_CONSTANT(ROLE_REGION);
 
 	BIND_ENUM_CONSTANT(POPUP_MENU);
 	BIND_ENUM_CONSTANT(POPUP_LIST);
@@ -1932,20 +1937,20 @@ DisplayServer *DisplayServer::create(int p_index, const String &p_rendering_driv
 	return server_create_functions[p_index].create_function(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error);
 }
 
-void DisplayServer::_input_set_mouse_mode(Input::MouseMode p_mode) {
+void DisplayServer::_input_set_mouse_mode(InputClassEnums::MouseMode p_mode) {
 	singleton->mouse_set_mode(MouseMode(p_mode));
 }
 
-Input::MouseMode DisplayServer::_input_get_mouse_mode() {
-	return Input::MouseMode(singleton->mouse_get_mode());
+InputClassEnums::MouseMode DisplayServer::_input_get_mouse_mode() {
+	return InputClassEnums::MouseMode(singleton->mouse_get_mode());
 }
 
-void DisplayServer::_input_set_mouse_mode_override(Input::MouseMode p_mode) {
+void DisplayServer::_input_set_mouse_mode_override(InputClassEnums::MouseMode p_mode) {
 	singleton->mouse_set_mode_override(MouseMode(p_mode));
 }
 
-Input::MouseMode DisplayServer::_input_get_mouse_mode_override() {
-	return Input::MouseMode(singleton->mouse_get_mode_override());
+InputClassEnums::MouseMode DisplayServer::_input_get_mouse_mode_override() {
+	return InputClassEnums::MouseMode(singleton->mouse_get_mode_override());
 }
 
 void DisplayServer::_input_set_mouse_mode_override_enabled(bool p_enabled) {
@@ -1960,11 +1965,11 @@ void DisplayServer::_input_warp(const Vector2 &p_to_pos) {
 	singleton->warp_mouse(p_to_pos);
 }
 
-Input::CursorShape DisplayServer::_input_get_current_cursor_shape() {
-	return (Input::CursorShape)singleton->cursor_get_shape();
+InputClassEnums::CursorShape DisplayServer::_input_get_current_cursor_shape() {
+	return (InputClassEnums::CursorShape)singleton->cursor_get_shape();
 }
 
-void DisplayServer::_input_set_custom_mouse_cursor_func(const Ref<Resource> &p_image, Input::CursorShape p_shape, const Vector2 &p_hotspot) {
+void DisplayServer::_input_set_custom_mouse_cursor_func(const Ref<Resource> &p_image, InputClassEnums::CursorShape p_shape, const Vector2 &p_hotspot) {
 	singleton->cursor_set_custom_image(p_image, (CursorShape)p_shape, p_hotspot);
 }
 

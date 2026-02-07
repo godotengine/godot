@@ -373,7 +373,7 @@ Ref<Resource> Resource::_duplicate(const DuplicateParams &p_params) const {
 // These are for avoiding potential duplicates that can happen in custom code
 // from participating in the same duplication session (remap cache).
 #define BEFORE_USER_CODE thread_duplicate_remap_cache = nullptr;
-#define AFTER_USER_CODE                                \
+#define AFTER_USER_CODE \
 	thread_duplicate_remap_cache = remap_cache_backup; \
 	thread_duplicate_remap_cache_needs_deallocation = remap_cache_needs_deallocation_backup;
 

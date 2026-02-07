@@ -5182,6 +5182,8 @@ void RichTextLabel::set_scroll_active(bool p_active) {
 
 	scroll_active = p_active;
 	vscroll->set_drag_node_enabled(p_active);
+	vscroll->set_visible(p_active);
+	_apply_translation(); // without this, RichLabelText is not updated in the editor/game.
 	queue_redraw();
 }
 
@@ -5735,6 +5737,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front("lang");
 		} else if (tag == "br") {
+			// `\n` starts a new paragraph, `\r` just adds a break to existing one.
 			add_text("\r");
 			pos = brk_end + 1;
 		} else if (tag == "p") {
@@ -7853,6 +7856,9 @@ void RichTextLabel::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, RichTextLabel, table_border);
 
 	ADD_CLASS_DEPENDENCY("PopupMenu");
+#ifdef MODULE_REGEX_ENABLED
+	ADD_CLASS_DEPENDENCY("RegEx");
+#endif
 }
 
 TextServer::VisibleCharactersBehavior RichTextLabel::get_visible_characters_behavior() const {
@@ -8045,11 +8051,11 @@ void RichTextLabel::_update_context_menu() {
 
 	int idx = -1;
 
-#define MENU_ITEM_ACTION_DISABLED(m_menu, m_id, m_action, m_disabled)                                                  \
-	idx = m_menu->get_item_index(m_id);                                                                                \
-	if (idx >= 0) {                                                                                                    \
+#define MENU_ITEM_ACTION_DISABLED(m_menu, m_id, m_action, m_disabled) \
+	idx = m_menu->get_item_index(m_id); \
+	if (idx >= 0) { \
 		m_menu->set_item_accelerator(idx, shortcut_keys_enabled ? _get_menu_action_accelerator(m_action) : Key::NONE); \
-		m_menu->set_item_disabled(idx, m_disabled);                                                                    \
+		m_menu->set_item_disabled(idx, m_disabled); \
 	}
 
 	MENU_ITEM_ACTION_DISABLED(menu, MENU_COPY, "ui_copy", !selection.enabled)

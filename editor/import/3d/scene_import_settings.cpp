@@ -45,6 +45,7 @@
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/timer.h"
 #include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/sky.h"
 #include "scene/resources/surface_tool.h"
 
 class SceneImportSettingsData : public Object {
@@ -1022,7 +1023,7 @@ void SceneImportSettingsDialog::_inspector_property_edited(const String &p_name)
 		if (!animation_map.has(selected_id)) {
 			return;
 		}
-		HashMap<StringName, Variant> settings = animation_map[selected_id].settings;
+		HashMap<StringName, Variant> settings(animation_map[selected_id].settings);
 		if (settings.has(p_name)) {
 			animation_loop_mode = static_cast<Animation::LoopMode>((int)settings[p_name]);
 		} else {
@@ -1106,7 +1107,7 @@ void SceneImportSettingsDialog::_reset_animation(const String &p_animation_name)
 		animation_pingpong = false;
 
 		if (animation_map.has(p_animation_name)) {
-			HashMap<StringName, Variant> settings = animation_map[p_animation_name].settings;
+			HashMap<StringName, Variant> settings(animation_map[p_animation_name].settings);
 			if (settings.has("settings/loop_mode")) {
 				animation_loop_mode = static_cast<Animation::LoopMode>((int)settings["settings/loop_mode"]);
 			}

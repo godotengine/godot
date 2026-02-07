@@ -73,7 +73,7 @@ bool EditorFileDialog::_should_use_native_popup() const {
 }
 
 bool EditorFileDialog::_should_hide_file(const String &p_file) const {
-	if (Engine::get_singleton()->is_project_manager_hint()) {
+	if (get_access() != FileDialog::ACCESS_RESOURCES) {
 		return false;
 	}
 	const String full_path = dir_access->get_current_dir().path_join(p_file);
@@ -85,7 +85,7 @@ Color EditorFileDialog::_get_folder_color(const String &p_path) const {
 }
 
 Vector2i EditorFileDialog::_get_list_mode_icon_size() const {
-	return Vector2i(1, 1) * Math::round(get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)) * EDSCALE);
+	return Vector2i();
 }
 
 void EditorFileDialog::_bind_methods() {

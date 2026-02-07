@@ -135,18 +135,12 @@ void ExtendGDScriptParser::update_diagnostics() {
 		diagnostic.severity = LSP::DiagnosticSeverity::Error;
 		diagnostic.message = error.message;
 		diagnostic.source = "gdscript";
-		diagnostic.code = -1;
-		LSP::Range range;
-		LSP::Position pos;
-		const PackedStringArray line_array = get_lines();
-		int line = CLAMP(LINE_NUMBER_TO_INDEX(error.line), 0, line_array.size() - 1);
-		const String &line_text = line_array[line];
-		pos.line = line;
-		pos.character = line_text.length() - line_text.strip_edges(true, false).length();
-		range.start = pos;
-		range.end = range.start;
-		range.end.character = line_text.strip_edges(false).length();
-		diagnostic.range = range;
+
+		GodotRange godot_range(
+				GodotPosition(error.start_line, error.start_column),
+				GodotPosition(error.end_line, error.end_column));
+
+		diagnostic.range = godot_range.to_lsp(get_lines());
 		diagnostics.push_back(diagnostic);
 	}
 
@@ -156,17 +150,12 @@ void ExtendGDScriptParser::update_diagnostics() {
 		diagnostic.severity = LSP::DiagnosticSeverity::Warning;
 		diagnostic.message = "(" + warning.get_name() + "): " + warning.get_message();
 		diagnostic.source = "gdscript";
-		diagnostic.code = warning.code;
-		LSP::Range range;
-		LSP::Position pos;
-		int line = LINE_NUMBER_TO_INDEX(warning.start_line);
-		const String &line_text = get_lines()[line];
-		pos.line = line;
-		pos.character = line_text.length() - line_text.strip_edges(true, false).length();
-		range.start = pos;
-		range.end = pos;
-		range.end.character = line_text.strip_edges(false).length();
-		diagnostic.range = range;
+
+		GodotRange godot_range(
+				GodotPosition(warning.start_line, warning.start_column),
+				GodotPosition(warning.end_line, warning.end_column));
+
+		diagnostic.range = godot_range.to_lsp(get_lines());
 		diagnostics.push_back(diagnostic);
 	}
 }

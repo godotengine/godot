@@ -390,15 +390,15 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_THREAD_SAFE_METHOD_
 // Sets up the editor setting with a default value and hint PropertyInfo.
 #define EDITOR_SETTING(m_type, m_property_hint, m_name, m_default_value, m_hint_string) \
-	_initial_set(m_name, m_default_value);                                              \
+	_initial_set(m_name, m_default_value); \
 	hints[m_name] = PropertyInfo(m_type, m_name, m_property_hint, m_hint_string);
 
 #define EDITOR_SETTING_BASIC(m_type, m_property_hint, m_name, m_default_value, m_hint_string) \
-	_initial_set(m_name, m_default_value, true);                                              \
+	_initial_set(m_name, m_default_value, true); \
 	hints[m_name] = PropertyInfo(m_type, m_name, m_property_hint, m_hint_string);
 
 #define EDITOR_SETTING_USAGE(m_type, m_property_hint, m_name, m_default_value, m_hint_string, m_usage) \
-	_initial_set(m_name, m_default_value);                                                             \
+	_initial_set(m_name, m_default_value); \
 	hints[m_name] = PropertyInfo(m_type, m_name, m_property_hint, m_hint_string, m_usage);
 
 	/* Languages */
@@ -480,11 +480,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/project_manager_screen", EditorSettings::InitialScreen::INITIAL_SCREEN_PRIMARY, project_manager_screen_hints)
 
 	{
-		EngineUpdateLabel::UpdateMode default_update_mode = EngineUpdateLabel::UpdateMode::NEWEST_UNSTABLE;
-		if (String(GODOT_VERSION_STATUS) == String("stable")) {
-			default_update_mode = EngineUpdateLabel::UpdateMode::NEWEST_STABLE;
-		}
-		EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "network/connection/check_for_updates", int(default_update_mode), "Disable Update Checks,Check Newest Preview,Check Newest Stable,Check Newest Patch"); // Uses EngineUpdateLabel::UpdateMode.
+		const String update_hint = vformat("Disable Update Checks,Auto (%s),Check Newest Preview,Check Newest Stable,Check Newest Patch", (str_compare(GODOT_VERSION_STATUS, "stable") == 0) ? "Stable" : "Preview");
+		EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "network/connection/check_for_updates", EngineUpdateLabel::UpdateMode::AUTO, update_hint);
 	}
 
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/use_embedded_menu", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
@@ -699,6 +696,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("docks/filesystem/always_show_folders", true);
 	_initial_set("docks/filesystem/textfile_extensions", "txt,md,cfg,ini,log,json,yml,yaml,toml,xml");
 	_initial_set("docks/filesystem/other_file_extensions", "ico,icns");
+	_initial_set("docks/filesystem/automatically_open_created_scripts", true);
 
 	// Property editor
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "docks/property_editor/auto_refresh_interval", 0.2, "0.01,1,0.001"); // Update 5 times per second by default.
@@ -907,6 +905,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d_gizmos/gizmo_settings/bone_shape", 1, "Wire,Octahedron");
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size", 0.8, "0.01,4.0,0.001,or_greater", PROPERTY_USAGE_DEFAULT)
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d_gizmos/gizmo_settings/lightmap_gi_probe_size", 0.4, "0.0,1.0,0.001,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	_initial_set("editors/3d_gizmos/gizmo_settings/show_collision_shapes_only_when_selected", false);
 
 	// If a line is a multiple of this, it uses the primary grid color.
 	// Use a power of 2 value by default as it's more common to use powers of 2 in level design.
@@ -1651,7 +1650,7 @@ Vector<String> EditorSettings::get_favorite_folders() const {
 }
 
 HashMap<String, PackedStringArray> EditorSettings::get_favorite_properties() const {
-	return favorite_properties;
+	return HashMap<String, PackedStringArray>(favorite_properties);
 }
 
 void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs, bool p_update_file_dialog) {

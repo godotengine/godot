@@ -4940,14 +4940,6 @@ msgstr "mi lukin ala e sitelen tawa ni: '%s'"
 msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "ala li olin e pana '%s' pi ijo pali '%s'."
 
-msgid ""
-"Please be aware that GraphEdit and GraphNode will undergo extensive "
-"refactoring in a future 4.x version involving compatibility-breaking API "
-"changes."
-msgstr ""
-"o sona e ni: nanpa 4.x lon tenpo kama la ijo pali GraphEdit en ijo pali "
-"GraphNode li ante e nasin API ona. ante ona li ike tawa nanpa tawa."
-
 msgid "'%s' default color is incompatible with '%s' source."
 msgstr "kule meso '%s' li ike tawa tan '%s'."
 

@@ -3155,18 +3155,18 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 #define hash_compare_packed_array(p_lhs, p_rhs, p_type, p_compare_func) \
 	const Vector<p_type> &l = PackedArrayRef<p_type>::get_array(p_lhs); \
 	const Vector<p_type> &r = PackedArrayRef<p_type>::get_array(p_rhs); \
-                                                                        \
-	if (l.size() != r.size())                                           \
-		return false;                                                   \
-                                                                        \
-	const p_type *lr = l.ptr();                                         \
-	const p_type *rr = r.ptr();                                         \
-                                                                        \
-	for (int i = 0; i < l.size(); ++i) {                                \
-		if (!p_compare_func((lr[i]), (rr[i])))                          \
-			return false;                                               \
-	}                                                                   \
-                                                                        \
+\
+	if (l.size() != r.size()) \
+		return false; \
+\
+	const p_type *lr = l.ptr(); \
+	const p_type *rr = r.ptr(); \
+\
+	for (int i = 0; i < l.size(); ++i) { \
+		if (!p_compare_func((lr[i]), (rr[i]))) \
+			return false; \
+	} \
+\
 	return true
 
 bool Variant::hash_compare(const Variant &p_variant, int recursion_count, bool semantic_comparison) const {
@@ -3433,14 +3433,24 @@ bool Variant::is_ref_counted() const {
 bool Variant::is_type_shared(Variant::Type p_type) {
 	switch (p_type) {
 		case OBJECT:
-		case ARRAY:
 		case DICTIONARY:
+		case ARRAY:
+		// NOTE: Packed array constructors **do** copies (unlike `Array()` and `Dictionary()`),
+		// whereas they pass by reference when inside a `Variant`.
+		case PACKED_BYTE_ARRAY:
+		case PACKED_INT32_ARRAY:
+		case PACKED_INT64_ARRAY:
+		case PACKED_FLOAT32_ARRAY:
+		case PACKED_FLOAT64_ARRAY:
+		case PACKED_STRING_ARRAY:
+		case PACKED_VECTOR2_ARRAY:
+		case PACKED_VECTOR3_ARRAY:
+		case PACKED_COLOR_ARRAY:
+		case PACKED_VECTOR4_ARRAY:
 			return true;
-		default: {
-		}
+		default:
+			return false;
 	}
-
-	return false;
 }
 
 bool Variant::is_shared() const {

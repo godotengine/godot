@@ -175,7 +175,7 @@ bool WSLPeer::_parse_client_request() {
 	}
 	requested_host = headers.has("host") ? headers.get("host") : "";
 	requested_url = (use_tls ? "wss://" : "ws://") + requested_host + req[1];
-#define WSL_CHECK(NAME, VALUE)                                                          \
+#define WSL_CHECK(NAME, VALUE) \
 	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME].to_lower() != VALUE, false, \
 			"Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'.");
 #define WSL_CHECK_EX(NAME) \
@@ -440,10 +440,10 @@ bool WSLPeer::_verify_server_response() {
 		}
 	}
 
-#define WSL_CHECK(NAME, VALUE)                                                          \
+#define WSL_CHECK(NAME, VALUE) \
 	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME].to_lower() != VALUE, false, \
 			"Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'.");
-#define WSL_CHECK_NC(NAME, VALUE)                                            \
+#define WSL_CHECK_NC(NAME, VALUE) \
 	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME] != VALUE, false, \
 			"Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'.");
 	WSL_CHECK("connection", "upgrade");

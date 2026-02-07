@@ -42,7 +42,7 @@ DisplayServerVisionOS::DisplayServerVisionOS(const String &p_rendering_driver, W
 	GDTRenderMode app_delegate_render_mode = GDTAppDelegateServiceVisionOS.renderMode;
 	if (app_delegate_render_mode == GDTRenderModeCompositorServices && rendering_method == "forward_plus") {
 		WARN_PRINT_ONCE("visionOS in immersive mode doesn't support the Forward+ renderer, switching to the Mobile renderer.");
-		OS::get_singleton()->set_current_rendering_method("mobile");
+		OS::get_singleton()->set_current_rendering_method("mobile", OS::RENDERING_SOURCE_FALLBACK);
 	}
 }
 

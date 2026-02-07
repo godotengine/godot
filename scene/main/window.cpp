@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/input/input.h"
 #include "scene/gui/control.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
@@ -192,7 +193,7 @@ void Window::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_fonts") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, "Font", usage));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_fonts") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, Font::get_class_static(), usage));
 		}
 	}
 	{
@@ -216,7 +217,7 @@ void Window::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_icons") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", usage));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_icons") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), usage));
 		}
 	}
 	{
@@ -228,7 +229,7 @@ void Window::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_styles") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", usage));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_styles") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, StyleBox::get_class_static(), usage));
 		}
 	}
 }
@@ -3440,11 +3441,11 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "accessibility_description"), "set_accessibility_description", "get_accessibility_description");
 
 	ADD_GROUP("Theme", "theme_");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, Theme::get_class_static()), "set_theme", "get_theme");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "theme_type_variation", PROPERTY_HINT_ENUM_SUGGESTION), "set_theme_type_variation", "get_theme_type_variation");
 
-	ADD_SIGNAL(MethodInfo("window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	ADD_SIGNAL(MethodInfo("nonclient_window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	ADD_SIGNAL(MethodInfo("window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, InputEvent::get_class_static())));
+	ADD_SIGNAL(MethodInfo("nonclient_window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, InputEvent::get_class_static())));
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));

@@ -820,10 +820,10 @@ Error GDScript::reload(bool p_keep_state) {
 	}
 	if (err) {
 		if (EngineDebugger::is_active()) {
-			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
+			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().start_line, "Parser Error: " + parser.get_errors().front()->get().message);
 		}
 		// TODO: Show all error messages.
-		_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_errors().front()->get().line, ("Parse Error: " + parser.get_errors().front()->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+		_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_errors().front()->get().start_line, ("Parse Error: " + parser.get_errors().front()->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		reloading = false;
 		return ERR_PARSE_ERROR;
 	}
@@ -833,12 +833,12 @@ Error GDScript::reload(bool p_keep_state) {
 
 	if (err) {
 		if (EngineDebugger::is_active()) {
-			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
+			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().start_line, "Parser Error: " + parser.get_errors().front()->get().message);
 		}
 
 		const List<GDScriptParser::ParserError>::Element *e = parser.get_errors().front();
 		while (e != nullptr) {
-			_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), e->get().line, ("Parse Error: " + e->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+			_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), e->get().start_line, ("Parse Error: " + e->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 			e = e->next();
 		}
 		reloading = false;
@@ -925,10 +925,6 @@ void GDScript::get_members(HashSet<StringName> *p_members) {
 
 const Variant GDScript::get_rpc_config() const {
 	return rpc_config;
-}
-
-void GDScript::unload_static() const {
-	GDScriptCache::remove_script(fully_qualified_name);
 }
 
 Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -1095,7 +1091,9 @@ void GDScript::set_path(const String &p_path, bool p_take_over) {
 	String old_path = path;
 	path = p_path;
 	path_valid = true;
-	GDScriptCache::move_script(old_path, p_path);
+	if (is_root_script()) {
+		GDScriptCache::move_script(old_path, p_path);
+	}
 
 	for (KeyValue<StringName, Ref<GDScript>> &kv : subclasses) {
 		kv.value->set_path(p_path, p_take_over);

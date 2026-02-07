@@ -81,7 +81,7 @@ using namespace godot;
 #elif defined(GODOT_MODULE)
 // Headers for building as built-in module.
 
-#include "core/extension/ext_wrappers.gen.inc"
+#include "core/extension/ext_wrappers.gen.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/safe_refcount.h"
@@ -95,7 +95,7 @@ using namespace godot;
 // Thirdparty headers.
 
 GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wshadow")
-#if defined(__EMSCRIPTEN__) || __clang_major__ >= 21
+#if defined(__EMSCRIPTEN__) || (defined(__MINGW32__) && __clang_major__ >= 21)
 GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunnecessary-virtual-specifier")
 #endif
 
@@ -113,7 +113,7 @@ GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunnecessary-virtual-specifier")
 #include <unicode/utypes.h>
 
 GODOT_GCC_WARNING_POP
-#if defined(__EMSCRIPTEN__) || __clang_major__ >= 21
+#if defined(__EMSCRIPTEN__) || (defined(__MINGW32__) && __clang_major__ >= 21)
 GODOT_CLANG_WARNING_POP
 #endif
 
@@ -125,6 +125,7 @@ GODOT_CLANG_WARNING_POP
 #include FT_ADVANCES_H
 #include FT_MULTIPLE_MASTERS_H
 #include FT_BBOX_H
+#include FT_SIZES_H
 #include FT_MODULE_H
 #include FT_CONFIG_OPTIONS_H
 #if !defined(FT_CONFIG_OPTION_USE_BROTLI) && !defined(_MSC_VER)
@@ -296,8 +297,7 @@ class TextServerAdvanced : public TextServerExtension {
 		hb_font_t *hb_handle = nullptr;
 
 #ifdef MODULE_FREETYPE_ENABLED
-		FT_Face face = nullptr;
-		FT_StreamRec stream;
+		FT_Size fsize = nullptr;
 #endif
 
 		~FontForSizeAdvanced() {
@@ -305,8 +305,8 @@ class TextServerAdvanced : public TextServerExtension {
 				hb_font_destroy(hb_handle);
 			}
 #ifdef MODULE_FREETYPE_ENABLED
-			if (face != nullptr) {
-				FT_Done_Face(face);
+			if (fsize != nullptr) {
+				FT_Done_Size(fsize);
 			}
 #endif
 		}
@@ -372,11 +372,21 @@ class TextServerAdvanced : public TextServerExtension {
 		size_t data_size;
 		int face_index = 0;
 
+#ifdef MODULE_FREETYPE_ENABLED
+		FT_Face face = nullptr;
+		FT_StreamRec stream;
+#endif
+
 		~FontAdvanced() {
 			for (const KeyValue<Vector2i, FontForSizeAdvanced *> &E : cache) {
 				memdelete(E.value);
 			}
 			cache.clear();
+#ifdef MODULE_FREETYPE_ENABLED
+			if (face != nullptr) {
+				FT_Done_Face(face);
+			}
+#endif
 		}
 	};
 

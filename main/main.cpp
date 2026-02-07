@@ -196,8 +196,6 @@ static bool _start_success = false;
 String display_driver = "";
 String tablet_driver = "";
 String text_driver = "";
-String rendering_driver = "";
-String rendering_method = "";
 static int text_driver_idx = -1;
 static int audio_driver_idx = -1;
 
@@ -1083,6 +1081,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	bool delta_smoothing_override = false;
 	bool load_shell_env = false;
 
+	String rendering_driver = "";
+	String rendering_method = "";
+	OS::RenderingSource rendering_driver_source = OS::RenderingSource::RENDERING_SOURCE_DEFAULT;
+	OS::RenderingSource rendering_method_source = OS::RenderingSource::RENDERING_SOURCE_DEFAULT;
 	String default_renderer = "";
 	String default_renderer_mobile = "";
 	String renderer_hints = "";
@@ -1280,6 +1282,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--rendering-driver") {
 			if (N) {
 				rendering_driver = N->get();
+				rendering_driver_source = OS::RenderingSource::RENDERING_SOURCE_COMMANDLINE;
 				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing rendering driver argument, aborting.\n");
@@ -2336,11 +2339,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		Array force_angle_list;
 
-#define FORCE_ANGLE(m_vendor, m_name)       \
-	{                                       \
-		Dictionary device;                  \
-		device["vendor"] = m_vendor;        \
-		device["name"] = m_name;            \
+#define FORCE_ANGLE(m_vendor, m_name) \
+	{ \
+		Dictionary device; \
+		device["vendor"] = m_vendor; \
+		device["name"] = m_name; \
 		force_angle_list.push_back(device); \
 	}
 
@@ -2572,6 +2575,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// Default to ProjectSettings default if nothing set on the command line.
 	if (rendering_method.is_empty()) {
 		rendering_method = GLOBAL_GET("rendering/renderer/rendering_method");
+		rendering_method_source = OS::RenderingSource::RENDERING_SOURCE_PROJECT_SETTING;
 	}
 
 	if (rendering_driver.is_empty()) {
@@ -2579,16 +2583,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			rendering_driver = "dummy";
 		} else if (rendering_method == "gl_compatibility") {
 			rendering_driver = GLOBAL_GET("rendering/gl_compatibility/driver");
+			rendering_driver_source = OS::RenderingSource::RENDERING_SOURCE_PROJECT_SETTING;
 		} else {
 			rendering_driver = GLOBAL_GET("rendering/rendering_device/driver");
+			rendering_driver_source = OS::RenderingSource::RENDERING_SOURCE_PROJECT_SETTING;
 		}
 	}
 
 	// always convert to lower case for consistency in the code
 	rendering_driver = rendering_driver.to_lower();
 
-	OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-	OS::get_singleton()->set_current_rendering_method(rendering_method);
+	OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, rendering_driver_source);
+	OS::get_singleton()->set_current_rendering_method(rendering_method, rendering_method_source);
 
 #ifdef TOOLS_ENABLED
 	if (!force_res && project_manager) {
@@ -2821,6 +2827,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/spatial_entity/april_tag_dict", PROPERTY_HINT_ENUM, "4x4H5,5x5H9,6x6H10,6x6H11"), "3");
 	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/eye_gaze_interaction", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/render_model", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/user_presence", false);
 
 	// OpenXR Binding modifier settings
 	GLOBAL_DEF_BASIC("xr/openxr/binding_modifiers/analog_threshold", false);
@@ -3227,7 +3234,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 		}
 		DisplayServer::accessibility_set_mode(accessibility_mode);
 
-		// rendering_driver now held in static global String in main and initialized in setup()
+		String rendering_driver = OS::get_singleton()->get_current_rendering_driver_name();
 		Error err;
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, init_embed_parent_window_id, err);
 		if (err != OK || display_server == nullptr) {
@@ -3713,7 +3720,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 				GLOBAL_GET("display/mouse_cursor/custom_image"));
 		if (cursor.is_valid()) {
 			Vector2 hotspot = GLOBAL_GET("display/mouse_cursor/custom_image_hotspot");
-			Input::get_singleton()->set_custom_mouse_cursor(cursor, Input::CURSOR_ARROW, hotspot);
+			Input::get_singleton()->set_custom_mouse_cursor(cursor, Input::CursorShape::CURSOR_ARROW, hotspot);
 		}
 	}
 
@@ -3862,10 +3869,6 @@ void Main::setup_boot_logo() {
 	}
 	RenderingServer::get_singleton()->set_default_clear_color(
 			GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
-}
-
-String Main::get_rendering_driver_name() {
-	return rendering_driver;
 }
 
 String Main::get_locale_override() {
@@ -4366,7 +4369,7 @@ int Main::start() {
 			if (!game_path.is_empty() || !script.is_empty()) {
 				//autoload
 				OS::get_singleton()->benchmark_begin_measure("Startup", "Load Autoloads");
-				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads(ProjectSettings::get_singleton()->get_autoload_list());
 
 				//first pass, add the constants so they exist before any script is loaded
 				for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {

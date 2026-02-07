@@ -86,6 +86,7 @@
 #endif // SOWRAP_ENABLED
 #endif // LIBDECOR_ENABLED
 
+#include "core/input/input_event.h"
 #include "core/os/thread.h"
 #include "servers/display/display_server.h"
 

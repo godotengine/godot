@@ -1657,6 +1657,7 @@ AccessibilityDriverAccessKit::AccessibilityDriverAccessKit() {
 	role_map[DisplayServer::AccessibilityRole::ROLE_TITLE_BAR] = ACCESSKIT_ROLE_TITLE_BAR;
 	role_map[DisplayServer::AccessibilityRole::ROLE_DIALOG] = ACCESSKIT_ROLE_DIALOG;
 	role_map[DisplayServer::AccessibilityRole::ROLE_TOOLTIP] = ACCESSKIT_ROLE_TOOLTIP;
+	role_map[DisplayServer::AccessibilityRole::ROLE_REGION] = ACCESSKIT_ROLE_REGION;
 
 	action_map[DisplayServer::AccessibilityAction::ACTION_CLICK] = ACCESSKIT_ACTION_CLICK;
 	action_map[DisplayServer::AccessibilityAction::ACTION_FOCUS] = ACCESSKIT_ACTION_FOCUS;
