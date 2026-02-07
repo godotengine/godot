@@ -74,7 +74,7 @@ struct SwiftUIApp: App {
 						print("unknown default")
 					}
 				}
-			
+
 			// For some reason early iOS versions do not respect the prefersHomeIndicatorAutoHidden override flag,
 			// and the Home Indicator is always displayed.
 			// We use the SwiftUI modifier to enforce the override flag we want.
