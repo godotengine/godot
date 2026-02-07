@@ -566,6 +566,7 @@ protected:
 public:
 	void update_surface() { surface->queue_redraw(); }
 	void update_transform_gizmo_view();
+	void update_transform_gizmo_highlight();
 
 	void set_can_preview(Camera3D *p_preview);
 	void set_state(const Dictionary &p_state);
