@@ -52,7 +52,7 @@ struct SwiftUIApp: App {
 
 	var body: some Scene {
 		WindowGroup {
-			GodotSwiftUIViewController()
+			let viewController = GodotSwiftUIViewController()
 				.ignoresSafeArea()
 				// UIViewControllerRepresentable does not call viewWillDisappear() nor viewDidDisappear() when
 				// backgrounding the app, or closing the app's main window, update the renderer here.
@@ -74,6 +74,17 @@ struct SwiftUIApp: App {
 						print("unknown default")
 					}
 				}
+			
+			// For some reason early iOS versions do not respect the prefersHomeIndicatorAutoHidden override flag,
+			// and the Home Indicator is always displayed.
+			// We use the SwiftUI modifier to enforce the override flag we want.
+			// Not a perfect solution since there are still some devices that do not have access to this modifier.
+			if #available(iOS 16.0, *) {
+				let hideHomeIndictor = GDTAppDelegateService.viewController?.prefersHomeIndicatorAutoHidden ?? true
+				viewController.persistentSystemOverlays(hideHomeIndictor ? .hidden : .visible)
+			} else {
+				viewController
+			}
 		}
 	}
 }
