@@ -32,6 +32,8 @@
 
 #include "scene/3d/skeleton_3d.h"
 
+#include "core/math/geometry_3d.h"
+
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
@@ -863,7 +865,7 @@ Ref<TriangleMesh> MeshInstance3D::generate_triangle_mesh() const {
 	return Ref<TriangleMesh>();
 }
 
-Dictionary MeshInstance3D::intersect_ray(const Vector3 &p_from, const Vector3 &p_dir) const {
+Dictionary MeshInstance3D::intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, const bool include_uv) const {
 	Dictionary result;
 
 	result["success"] = false;
@@ -895,6 +897,54 @@ Dictionary MeshInstance3D::intersect_ray(const Vector3 &p_from, const Vector3 &p
 				result["surface"] = surf_index;
 				result["face"] = face_index;
 				result["material"] = material;
+
+				if (include_uv) {
+					const BitField<Mesh::ArrayFormat> surf_fmt = mesh->surface_get_format(surf_index);
+
+					if (surf_fmt.has_flag(Mesh::ArrayFormat::ARRAY_FORMAT_TEX_UV) || surf_fmt.has_flag(Mesh::ArrayFormat::ARRAY_FORMAT_TEX_UV2)) {
+						const Array surf_arrays = mesh->surface_get_arrays(surf_index);
+
+						const Vector<Vector3> &vertices = surf_arrays[Mesh::ArrayType::ARRAY_VERTEX];
+
+						int32_t f0 = face_index * 3 + 0;
+						int32_t f1 = face_index * 3 + 1;
+						int32_t f2 = face_index * 3 + 2;
+
+						if (surf_fmt.has_flag(Mesh::ArrayFormat::ARRAY_FORMAT_INDEX)) {
+							const Vector<int32_t> &indices = surf_arrays[Mesh::ArrayType::ARRAY_INDEX];
+							f0 = indices[f0];
+							f1 = indices[f1];
+							f2 = indices[f2];
+						}
+
+						const Vector3 barycoords = Geometry3D::triangle_get_barycentric_coords(
+								vertices[f0],
+								vertices[f1],
+								vertices[f2],
+								local_point);
+
+						if (surf_fmt.has_flag(Mesh::ArrayFormat::ARRAY_FORMAT_TEX_UV)) {
+							const Vector<Vector2> &tex_uv = surf_arrays[Mesh::ArrayType::ARRAY_TEX_UV];
+
+							Vector2 uv1 = tex_uv[f0];
+							Vector2 uv2 = tex_uv[f1];
+							Vector2 uv3 = tex_uv[f2];
+
+							result["uv"] = barycoords.x * uv1 + barycoords.y * uv2 + barycoords.z * uv3;
+						}
+
+						if (surf_fmt.has_flag(Mesh::ArrayFormat::ARRAY_FORMAT_TEX_UV2)) {
+							const Vector<Vector2> &tex_uv2 = surf_arrays[Mesh::ArrayType::ARRAY_TEX_UV2];
+
+							Vector2 uv1 = tex_uv2[f0];
+							Vector2 uv2 = tex_uv2[f1];
+							Vector2 uv3 = tex_uv2[f2];
+
+							result["uv2"] = barycoords.x * uv1 + barycoords.y * uv2 + barycoords.z * uv3;
+						}
+					}
+				}
+
 				result["success"] = true;
 			}
 		}
@@ -903,7 +953,7 @@ Dictionary MeshInstance3D::intersect_ray(const Vector3 &p_from, const Vector3 &p
 	return result;
 }
 
-Dictionary MeshInstance3D::intersect_segment(const Vector3 &p_from, const Vector3 &p_to) const {
+Dictionary MeshInstance3D::intersect_segment(const Vector3 &p_from, const Vector3 &p_to, const bool include_uv) const {
 	Dictionary result;
 
 	result["success"] = false;
@@ -934,6 +984,54 @@ Dictionary MeshInstance3D::intersect_segment(const Vector3 &p_from, const Vector
 				result["normal"] = global_normal;
 				result["surface"] = surf_index;
 				result["face"] = face_index;
+
+				if (include_uv) {
+					const BitField<Mesh::ArrayFormat> surf_fmt = mesh->surface_get_format(surf_index);
+
+					if (surf_fmt.has_flag(Mesh::ArrayFormat::ARRAY_FORMAT_TEX_UV) || surf_fmt.has_flag(Mesh::ArrayFormat::ARRAY_FORMAT_TEX_UV2)) {
+						const Array surf_arrays = mesh->surface_get_arrays(surf_index);
+
+						const Vector<Vector3> &vertices = surf_arrays[Mesh::ArrayType::ARRAY_VERTEX];
+
+						int32_t f0 = face_index * 3 + 0;
+						int32_t f1 = face_index * 3 + 1;
+						int32_t f2 = face_index * 3 + 2;
+
+						if (surf_fmt.has_flag(Mesh::ArrayFormat::ARRAY_FORMAT_INDEX)) {
+							const Vector<int32_t> &indices = surf_arrays[Mesh::ArrayType::ARRAY_INDEX];
+							f0 = indices[f0];
+							f1 = indices[f1];
+							f2 = indices[f2];
+						}
+
+						const Vector3 barycoords = Geometry3D::triangle_get_barycentric_coords(
+								vertices[f0],
+								vertices[f1],
+								vertices[f2],
+								local_point);
+
+						if (surf_fmt.has_flag(Mesh::ArrayFormat::ARRAY_FORMAT_TEX_UV)) {
+							const Vector<Vector2> &tex_uv = surf_arrays[Mesh::ArrayType::ARRAY_TEX_UV];
+
+							Vector2 uv1 = tex_uv[f0];
+							Vector2 uv2 = tex_uv[f1];
+							Vector2 uv3 = tex_uv[f2];
+
+							result["uv"] = barycoords.x * uv1 + barycoords.y * uv2 + barycoords.z * uv3;
+						}
+
+						if (surf_fmt.has_flag(Mesh::ArrayFormat::ARRAY_FORMAT_TEX_UV2)) {
+							const Vector<Vector2> &tex_uv2 = surf_arrays[Mesh::ArrayType::ARRAY_TEX_UV2];
+
+							Vector2 uv1 = tex_uv2[f0];
+							Vector2 uv2 = tex_uv2[f1];
+							Vector2 uv3 = tex_uv2[f2];
+
+							result["uv2"] = barycoords.x * uv1 + barycoords.y * uv2 + barycoords.z * uv3;
+						}
+					}
+				}
+
 				result["success"] = true;
 			}
 		}
