@@ -80,10 +80,6 @@ void ENetPacketPeer::set_timeout(int p_timeout, int p_timeout_min, int p_timeout
 	enet_peer_timeout(peer, p_timeout, p_timeout_min, p_timeout_max);
 }
 
-int ENetPacketPeer::get_max_packet_size() const {
-	return 1 << 24;
-}
-
 int ENetPacketPeer::get_available_packet_count() const {
 	return packet_queue.size();
 }

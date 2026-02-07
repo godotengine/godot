@@ -45,7 +45,6 @@ protected:
 
 public:
 	virtual bool is_peer_connected() = 0;
-	virtual int get_max_message_size() const = 0;
 	virtual bool has_message() = 0;
 	virtual Error put_message(const Array &p_arr) = 0;
 	virtual Array get_message() = 0;
@@ -86,7 +85,6 @@ public:
 	static RemoteDebuggerPeer *create_unix(const String &p_uri);
 
 	bool is_peer_connected() override;
-	int get_max_message_size() const override;
 	bool has_message() override;
 	Error put_message(const Array &p_arr) override;
 	Array get_message() override;

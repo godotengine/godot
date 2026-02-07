@@ -235,10 +235,6 @@ int PacketPeerMbedDTLS::get_available_packet_count() const {
 	return mbedtls_ssl_get_bytes_avail(&(tls_ctx->tls)) > 0 ? 1 : 0;
 }
 
-int PacketPeerMbedDTLS::get_max_packet_size() const {
-	return 488; // 512 (UDP in Godot) - 24 (DTLS header)
-}
-
 PacketPeerMbedDTLS::PacketPeerMbedDTLS() {
 	tls_ctx.instantiate();
 }

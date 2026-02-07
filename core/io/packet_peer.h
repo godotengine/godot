@@ -59,8 +59,6 @@ public:
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) = 0; ///< buffer is GONE after next get_packet
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) = 0;
 
-	virtual int get_max_packet_size() const = 0;
-
 	/* helpers / binders */
 
 	virtual Error get_packet_buffer(Vector<uint8_t> &r_buffer);
@@ -87,7 +85,6 @@ public:
 	GDVIRTUAL2R(Error, _put_packet, GDExtensionConstPtr<const uint8_t>, int);
 
 	EXBIND0RC(int, get_available_packet_count);
-	EXBIND0RC(int, get_max_packet_size);
 };
 
 class PacketPeerStream : public PacketPeer {
@@ -109,8 +106,6 @@ public:
 	virtual int get_available_packet_count() const override;
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
-
-	virtual int get_max_packet_size() const override;
 
 	void set_stream_peer(const Ref<StreamPeer> &p_peer);
 	Ref<StreamPeer> get_stream_peer() const;

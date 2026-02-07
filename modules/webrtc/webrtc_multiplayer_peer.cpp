@@ -433,10 +433,6 @@ int WebRTCMultiplayerPeer::get_available_packet_count() const {
 	return size;
 }
 
-int WebRTCMultiplayerPeer::get_max_packet_size() const {
-	return 1200;
-}
-
 void WebRTCMultiplayerPeer::close() {
 	peer_map.clear();
 	channels_config.clear();

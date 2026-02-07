@@ -37,11 +37,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="_get_max_packet_size" qualifiers="virtual required const">
-			<return type="int" />
-			<description>
-			</description>
-		</method>
 		<method name="_get_max_retransmits" qualifiers="virtual required const">
 			<return type="int" />
 			<description>

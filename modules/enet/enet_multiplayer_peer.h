@@ -113,7 +113,6 @@ public:
 
 	virtual int get_unique_id() const override;
 
-	virtual int get_max_packet_size() const override;
 	virtual int get_available_packet_count() const override;
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;

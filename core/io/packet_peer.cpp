@@ -174,7 +174,6 @@ void PacketPeerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_packet, "r_buffer", "r_buffer_size");
 	GDVIRTUAL_BIND(_put_packet, "p_buffer", "p_buffer_size");
 	GDVIRTUAL_BIND(_get_available_packet_count);
-	GDVIRTUAL_BIND(_get_max_packet_size);
 }
 
 /***************/
@@ -279,10 +278,6 @@ Error PacketPeerStream::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 	}
 
 	return peer->put_data(&output_buffer[0], p_buffer_size + 4);
-}
-
-int PacketPeerStream::get_max_packet_size() const {
-	return output_buffer.size();
 }
 
 void PacketPeerStream::set_stream_peer(const Ref<StreamPeer> &p_peer) {

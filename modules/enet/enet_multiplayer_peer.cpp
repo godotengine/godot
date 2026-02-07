@@ -414,10 +414,6 @@ Error ENetMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size
 	return OK;
 }
 
-int ENetMultiplayerPeer::get_max_packet_size() const {
-	return 1 << 24; // Anything is good
-}
-
 void ENetMultiplayerPeer::_pop_current_packet() {
 	if (current_packet.packet) {
 		current_packet.packet->referenceCount--;
