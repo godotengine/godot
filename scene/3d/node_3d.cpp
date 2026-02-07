@@ -122,10 +122,11 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 #else
 	if (data.notify_transform && !data.ignore_notification && !xform_change.in_list()) {
 #endif
-		if (likely(is_accessible_from_caller_thread())) {
+		// SceneTree::xform_change_list is not thread safe to modify, and is read by the main thread when processings are done.
+		if (Thread::is_main_thread()) {
 			get_tree()->xform_change_list.add(&xform_change);
 		} else {
-			// This should very rarely happen, but if it does at least make sure the notification is received eventually.
+			// For any threaded-processed node, add it to xform_change_list on the main thread in a deferred manner.
 			callable_mp(this, &Node3D::_propagate_transform_changed_deferred).call_deferred();
 		}
 	}

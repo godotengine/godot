@@ -1096,10 +1096,6 @@ void Node::_remove_tree_from_process_thread_group() {
 }
 
 void Node::_add_tree_to_process_thread_group(Node *p_owner) {
-	if (_is_any_processing()) {
-		_add_to_process_thread_group();
-	}
-
 	data.process_thread_group_owner = p_owner;
 	if (p_owner != nullptr) {
 		data.process_group = p_owner->data.process_group;
@@ -1107,12 +1103,16 @@ void Node::_add_tree_to_process_thread_group(Node *p_owner) {
 		data.process_group = &data.tree->default_process_group;
 	}
 
+	if (_is_any_processing()) {
+		_add_to_process_thread_group();
+	}
+
 	for (KeyValue<StringName, Node *> &K : data.children) {
 		if (K.value->data.process_thread_group != PROCESS_THREAD_GROUP_INHERIT) {
 			continue;
 		}
 
-		K.value->_add_to_process_thread_group();
+		K.value->_add_tree_to_process_thread_group(p_owner);
 	}
 }
 bool Node::is_processing_internal() const {
