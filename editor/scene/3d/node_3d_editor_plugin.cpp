@@ -6930,6 +6930,24 @@ Node3DEditorViewportContainer::View Node3DEditorViewportContainer::get_view() {
 	return view;
 }
 
+void Node3DEditorViewportContainer::set_ratio_h(real_t p_ratio) {
+	ratio_h = p_ratio;
+	queue_sort();
+}
+
+real_t Node3DEditorViewportContainer::get_ratio_h() const {
+	return ratio_h;
+}
+
+void Node3DEditorViewportContainer::set_ratio_v(real_t p_ratio) {
+	ratio_v = p_ratio;
+	queue_sort();
+}
+
+real_t Node3DEditorViewportContainer::get_ratio_v() const {
+	return ratio_v;
+}
+
 Node3DEditorViewportContainer::Node3DEditorViewportContainer() {
 	set_clip_contents(true);
 	view = VIEW_USE_1_VIEWPORT;
@@ -7210,6 +7228,8 @@ Dictionary Node3DEditor::get_state() const {
 	}
 
 	d["viewport_mode"] = vc;
+	d["viewport_ratio_h"] = viewport_base->get_ratio_h();
+	d["viewport_ratio_v"] = viewport_base->get_ratio_v();
 	Array vpdata;
 	for (int i = 0; i < 4; i++) {
 		vpdata.push_back(viewports[i]->get_state());
@@ -7318,6 +7338,12 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 	}
 	if (d.has("fov")) {
 		settings_fov->set_value(double(d["fov"]));
+	}
+	if (d.has("viewport_ratio_h")) {
+		viewport_base->set_ratio_h(d["viewport_ratio_h"]);
+	}
+	if (d.has("viewport_ratio_v")) {
+		viewport_base->set_ratio_v(d["viewport_ratio_v"]);
 	}
 
 	if (d.has("viewports")) {

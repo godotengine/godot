@@ -654,6 +654,11 @@ public:
 	void set_view(View p_view);
 	View get_view();
 
+	void set_ratio_h(real_t p_ratio);
+	real_t get_ratio_h() const;
+	void set_ratio_v(real_t p_ratio);
+	real_t get_ratio_v() const;
+
 	Node3DEditorViewportContainer();
 };
 
