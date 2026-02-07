@@ -1541,6 +1541,9 @@
 		<member name="text_editor/external/use_external_editor" type="bool" setter="" getter="">
 			If [code]true[/code], uses an external editor instead of the built-in Script Editor. See also [member text_editor/external/exec_path] and [member text_editor/external/exec_flags].
 		</member>
+		<member name="text_editor/help/bilingual_translation_bg_color" type="Color" setter="" getter="">
+			The translated text's background color in the class reference if [member text_editor/help/show_help_bilingual] is [code]true[/code].
+		</member>
 		<member name="text_editor/help/class_reference_examples" type="int" setter="" getter="">
 			Controls which multi-line code blocks should be displayed in the editor help. This setting does not affect single-line code literals in the editor help.
 		</member>
@@ -1552,6 +1555,12 @@
 		</member>
 		<member name="text_editor/help/help_title_font_size" type="int" setter="" getter="">
 			The font size to use for headings in the editor help (built-in class reference).
+		</member>
+		<member name="text_editor/help/show_help_bilingual" type="bool" setter="" getter="">
+			If [code]true[/code], the documentation description will be displayed alternately line by line in bilingual format if its translation is available.
+			[b]Note:[/b] If the source line is the same as its translated line (possibly due to missing translation), it will only be displayed once.
+			[b]Note:[/b] For text within code blocks and links to online tutorials, only their translations will be used when available.
+			[b]Note:[/b] Text used for online tutorials or prompts, if the translation is available, the original text and its translation will be separated using [code] - [/code] to ensure that the merged text appears on the same line.
 		</member>
 		<member name="text_editor/help/show_help_index" type="bool" setter="" getter="">
 			If [code]true[/code], displays a table of contents at the left of the editor help (at the location where the members overview would appear when editing a script).

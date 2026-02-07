@@ -853,6 +853,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/external/exec_path", "");
 
 	// Help
+	_initial_set("text_editor/help/show_help_bilingual", false);
+	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "text_editor/help/bilingual_translation_bg_color", Color(0.0, 0.5, 0.5, 0.5), "")
 	_initial_set("text_editor/help/show_help_index", true);
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/help/help_font_size", 16, "8,48,1")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/help/help_source_font_size", 15, "8,48,1")
