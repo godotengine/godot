@@ -480,7 +480,7 @@ int TileSet::add_source(Ref<TileSetSource> p_tile_set_source, int p_atlas_source
 
 	TileSet *owning_tileset = p_tile_set_source->get_tile_set();
 	if (owning_tileset != this && owning_tileset != nullptr) {
-		// If the source is already in a TileSet (might happen when duplicating or during multithreaded loadin), duplicate it
+		// If the source is already in a TileSet (might happen when duplicating or during multithreaded loading), duplicate it
 		p_tile_set_source = p_tile_set_source->duplicate();
 	}
 
