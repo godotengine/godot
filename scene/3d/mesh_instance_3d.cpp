@@ -865,7 +865,7 @@ Ref<TriangleMesh> MeshInstance3D::generate_triangle_mesh() const {
 	return Ref<TriangleMesh>();
 }
 
-Dictionary MeshInstance3D::intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, const bool include_uv) const {
+Dictionary MeshInstance3D::intersect_ray(const Vector3 &p_origin, const Vector3 &p_dir, const bool p_include_uv) const {
 	Dictionary result;
 
 	result["success"] = false;
@@ -877,7 +877,7 @@ Dictionary MeshInstance3D::intersect_ray(const Vector3 &p_from, const Vector3 &p
 			Transform3D gl_tform = get_global_transform();
 			Transform3D in_tform = gl_tform.affine_inverse();
 
-			Vector3 local_from = in_tform.xform(p_from);
+			Vector3 local_from = in_tform.xform(p_origin);
 			Vector3 local_dir = in_tform.basis.xform(p_dir).normalized();
 
 			Vector3 local_point;
@@ -894,11 +894,11 @@ Dictionary MeshInstance3D::intersect_ray(const Vector3 &p_from, const Vector3 &p
 
 				result["position"] = global_point;
 				result["normal"] = global_normal;
-				result["surface"] = surf_index;
-				result["face"] = face_index;
+				result["surface_index"] = surf_index;
+				result["face_index"] = face_index;
 				result["material"] = material;
 
-				if (include_uv) {
+				if (p_include_uv) {
 					const BitField<Mesh::ArrayFormat> surf_fmt = mesh->surface_get_format(surf_index);
 
 					if (surf_fmt.has_flag(Mesh::ArrayFormat::ARRAY_FORMAT_TEX_UV) || surf_fmt.has_flag(Mesh::ArrayFormat::ARRAY_FORMAT_TEX_UV2)) {
@@ -953,7 +953,7 @@ Dictionary MeshInstance3D::intersect_ray(const Vector3 &p_from, const Vector3 &p
 	return result;
 }
 
-Dictionary MeshInstance3D::intersect_segment(const Vector3 &p_from, const Vector3 &p_to, const bool include_uv) const {
+Dictionary MeshInstance3D::intersect_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_include_uv) const {
 	Dictionary result;
 
 	result["success"] = false;
@@ -982,10 +982,10 @@ Dictionary MeshInstance3D::intersect_segment(const Vector3 &p_from, const Vector
 
 				result["position"] = global_point;
 				result["normal"] = global_normal;
-				result["surface"] = surf_index;
-				result["face"] = face_index;
+				result["surface_index"] = surf_index;
+				result["face_index"] = face_index;
 
-				if (include_uv) {
+				if (p_include_uv) {
 					const BitField<Mesh::ArrayFormat> surf_fmt = mesh->surface_get_format(surf_index);
 
 					if (surf_fmt.has_flag(Mesh::ArrayFormat::ARRAY_FORMAT_TEX_UV) || surf_fmt.has_flag(Mesh::ArrayFormat::ARRAY_FORMAT_TEX_UV2)) {
@@ -1101,8 +1101,8 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("bake_mesh_from_current_blend_shape_mix", "existing"), &MeshInstance3D::bake_mesh_from_current_blend_shape_mix, DEFVAL(Ref<ArrayMesh>()));
 	ClassDB::bind_method(D_METHOD("bake_mesh_from_current_skeleton_pose", "existing"), &MeshInstance3D::bake_mesh_from_current_skeleton_pose, DEFVAL(Ref<ArrayMesh>()));
 
-	ClassDB::bind_method(D_METHOD("intersect_ray", "from", "dir"), &MeshInstance3D::intersect_ray);
-	ClassDB::bind_method(D_METHOD("intersect_segment", "from", "to"), &MeshInstance3D::intersect_segment);
+	ClassDB::bind_method(D_METHOD("intersect_ray", "origin", "dir", "include_uv"), &MeshInstance3D::intersect_ray);
+	ClassDB::bind_method(D_METHOD("intersect_segment", "from", "to", "include_uv"), &MeshInstance3D::intersect_segment);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, Mesh::get_class_static()), "set_mesh", "get_mesh");
 	ADD_GROUP("Skeleton", "");

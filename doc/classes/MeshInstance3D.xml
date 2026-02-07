@@ -108,14 +108,14 @@
 		</method>
 		<method name="intersect_ray" qualifiers="const">
 			<return type="Dictionary" />
-			<param index="0" name="from" type="Vector3" />
+			<param index="0" name="origin" type="Vector3" />
 			<param index="1" name="dir" type="Vector3" />
 			<param index="2" name="include_uv" type="Vector3" default="false" />
 			<description>
 				Performs a ray intersection test against the visual mesh.
-				Returns a [Dictionary] with the following keys: [code]success[/code], [code]position[/code], [code]normal[/code], [code]surface[/code], [code]face[/code], and [code]material[/code].
+				Returns a [Dictionary] with the following keys: [code]success[/code], [code]position[/code], [code]normal[/code], [code]surface_index[/code], [code]face_index[/code], and [code]material[/code].
 				The keys [code]surface[/code] and [code]face[/code] are indices into their respective mesh data, [code]position[/code] and [code]normal[/code] returns the position the mesh was intersected at and the normal of the intersected face, and [code]material[/code] is the material of the intersected face.
-				When the parameter [code skip-lint]include_uv[/code] is [code]true[/code], then the UV and UV2 of the face at the intersected point is calculated and returned.
+				When the parameter [code skip-lint]include_uv[/code] is [code]true[/code], then the UV and UV2 of the face at the intersected point is calculated and returned as the keys [code]uv[/code] and [code]uv2[/code].
 				If the key [code]success[/code] is true, then the ray intersected the mesh.
 			</description>
 		</method>
@@ -126,8 +126,9 @@
 			<param index="2" name="include_uv" type="Vector3" default="false" />
 			<description>
 				Performs a line segment intersection test against the visual mesh.
+				Returns a [Dictionary] with the following keys: [code]success[/code], [code]position[/code], [code]normal[/code], [code]surface_index[/code], [code]face_index[/code], and [code]material[/code].
 				The keys [code]surface[/code] and [code]face[/code] are indices into their respective mesh data, [code]position[/code] and [code]normal[/code] returns the position the mesh was intersected at and the normal of the intersected face, and [code]material[/code] is the material of the intersected face.
-				When the parameter [code skip-lint]include_uv[/code] is [code]true[/code], then the UV and UV2 of the face at the intersected point is calculated and returned.
+				When the parameter [code skip-lint]include_uv[/code] is [code]true[/code], then the UV and UV2 of the face at the intersected point is calculated and returned as the keys [code]uv[/code] and [code]uv2[/code].
 				If the key [code]success[/code] is true, then the segment intersected the mesh.
 			</description>
 		</method>
