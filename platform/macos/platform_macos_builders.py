@@ -1,6 +1,8 @@
 """Functions used to generate source files during build time"""
 
 import os
+import re
+import shlex
 import shutil
 import subprocess
 
@@ -113,9 +115,26 @@ def generate_bundle(target, source, env):
 def make_debug_macos(target, source, env):
     dst = str(target[0])
     if env["macports_clang"] != "no":
-        mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
-        mpclangver = env["macports_clang"]
-        os.system(mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-dsymutil {0} -o {0}.dSYM".format(dst))
+        # Validate and sanitize environment variables to prevent command injection
+        # Only allow alphanumeric, dots, hyphens, underscores, and forward slashes
+        mpprefix_raw = os.environ.get("MACPORTS_PREFIX", "/opt/local")
+        mpclangver_raw = env["macports_clang"]
+        
+        # Validate inputs contain only safe characters
+        if not re.match(r'^[a-zA-Z0-9._/\-]+$', mpprefix_raw):
+            raise ValueError(f"Invalid MACPORTS_PREFIX value: {mpprefix_raw}")
+        if not re.match(r'^[a-zA-Z0-9._\-]+$', mpclangver_raw):
+            raise ValueError(f"Invalid macports_clang value: {mpclangver_raw}")
+        
+        # Build path using validated components with shlex.quote as additional safety
+        dsymutil_path = os.path.join(
+            shlex.quote(mpprefix_raw).strip("'\""),
+            "libexec",
+            "llvm-" + shlex.quote(mpclangver_raw).strip("'\""),
+            "bin",
+            "llvm-dsymutil"
+        )
+        subprocess.run([dsymutil_path, dst, "-o", dst + ".dSYM"])
     else:
-        os.system("dsymutil {0} -o {0}.dSYM".format(dst))
-    os.system("strip -u -r {0}".format(dst))
+        subprocess.run(["dsymutil", dst, "-o", dst + ".dSYM"])
+    subprocess.run(["strip", "-u", "-r", dst])
