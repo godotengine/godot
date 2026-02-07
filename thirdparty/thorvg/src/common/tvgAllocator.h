@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2026 ThorVG project. All rights reserved.
+ * Copyright (c) 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,38 @@
  * SOFTWARE.
  */
 
-#ifndef _TVG_ITERATOR_ACCESSOR_H_
-#define _TVG_ITERATOR_ACCESSOR_H_
+#ifndef _TVG_ALLOCATOR_H_
+#define _TVG_ALLOCATOR_H_
 
-#include "tvgPaint.h"
+#include <cstdlib>
+#include <cstddef>
 
+//separate memory alloators for clean customization
 namespace tvg
 {
-
-class IteratorAccessor
-{
-public:
-    //Utility Method: Iterator Accessor
-    static Iterator* iterator(const Paint* paint)
+    template<typename T = void>
+    static inline T* malloc(size_t size)
     {
-        return PAINT(paint)->iterator();
+        return static_cast<T*>(std::malloc(size));
     }
-};
 
+    template<typename T = void>
+    static inline T* calloc(size_t nmem, size_t size)
+    {
+        return static_cast<T*>(std::calloc(nmem, size));
+    }
+
+    template<typename T = void>
+    static inline T* realloc(T* ptr, size_t size)
+    {
+        return static_cast<T*>(std::realloc(ptr, size));
+    }
+
+    template<typename T = void>
+    static inline void free(T* ptr)
+    {
+        std::free(ptr);
+    }
 }
 
-#endif //_TVG_ITERATOR_ACCESSOR_H_
+#endif //_TVG_ALLOCATOR_H_
