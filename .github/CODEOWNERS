@@ -13,6 +13,7 @@
 # Doc
 
 /doc/                                         @godotengine/documentation
+/doc/translations/                            @godotengine/i18n
 
 # Drivers
 
@@ -40,29 +41,27 @@
 /drivers/windows/                             @godotengine/windows
 
 ## Misc
-/drivers/png/                                 @godotengine/import
+/drivers/png/                                 @godotengine/asset-pipeline
 
 # Editor
 
-/editor/                                      @godotengine/docks
-/editor/animation/                            @godotengine/animation
-/editor/audio/                                @godotengine/audio
-/editor/debugger/                             @godotengine/debugger
-/editor/doc/                                  @godotengine/documentation
-/editor/docks/                                @godotengine/docks
-/editor/gui/                                  @godotengine/usability @godotengine/gui-nodes
-/editor/icons/                                @godotengine/usability
-/editor/import/                               @godotengine/import
-/editor/inspector/                            @godotengine/docks
-/editor/scene/2d/                             @godotengine/2d-editor
-/editor/scene/2d/physics/                     @godotengine/2d-editor @godotengine/physics
-/editor/scene/3d/                             @godotengine/3d-editor
-/editor/scene/3d/physics/                     @godotengine/3d-editor @godotengine/physics
-/editor/scene/gui/                            @godotengine/gui-nodes
-/editor/script/                               @godotengine/script-editor
-/editor/shader/                               @godotengine/script-editor @godotengine/shaders
-/editor/themes/                               @godotengine/usability @godotengine/gui-nodes
-/editor/translations/                         @godotengine/usability
+/editor/                                      @godotengine/editor
+/editor/animation/                            @godotengine/editor @godotengine/animation
+/editor/audio/                                @godotengine/editor @godotengine/audio
+/editor/debugger/                             @godotengine/editor @godotengine/debugger
+/editor/doc/                                  @godotengine/editor @godotengine/documentation
+/editor/gui/                                  @godotengine/editor @godotengine/usability @godotengine/gui-nodes
+/editor/icons/                                @godotengine/editor @godotengine/usability
+/editor/import/                               @godotengine/editor @godotengine/asset-pipeline
+/editor/scene/2d/                             @godotengine/editor @godotengine/2d-nodes
+/editor/scene/2d/physics/                     @godotengine/editor @godotengine/physics
+/editor/scene/3d/                             @godotengine/editor @godotengine/3d-nodes
+/editor/scene/3d/physics/                     @godotengine/editor @godotengine/physics
+/editor/scene/gui/                            @godotengine/editor @godotengine/gui-nodes
+/editor/script/                               @godotengine/editor @godotengine/script-editor
+/editor/shader/                               @godotengine/editor @godotengine/script-editor @godotengine/shaders
+/editor/themes/                               @godotengine/editor @godotengine/usability @godotengine/gui-nodes
+/editor/translations/                         @godotengine/i18n
 
 # Main
 
@@ -88,27 +87,27 @@
 /modules/vorbis/doc_classes/                  @godotengine/audio @godotengine/documentation
 
 ## Import
-/modules/astcenc/                             @godotengine/import
-/modules/basis_universal/                     @godotengine/import
-/modules/bcdec/                               @godotengine/import
-/modules/betsy/                               @godotengine/import
-/modules/bmp/                                 @godotengine/import
-/modules/cvtt/                                @godotengine/import
-/modules/dds/                                 @godotengine/import
-/modules/etcpak/                              @godotengine/import
-/modules/fbx/                                 @godotengine/import
-/modules/fbx/doc_classes/                     @godotengine/import @godotengine/documentation
-/modules/gltf/                                @godotengine/import
-/modules/gltf/doc_classes/                    @godotengine/import @godotengine/documentation
-/modules/gltf/tests/                          @godotengine/import @godotengine/tests
-/modules/hdr/                                 @godotengine/import
-/modules/jpg/                                 @godotengine/import
-/modules/ktx/                                 @godotengine/import
-/modules/squish/                              @godotengine/import
-/modules/svg/                                 @godotengine/import
-/modules/tga/                                 @godotengine/import
-/modules/tinyexr/                             @godotengine/import
-/modules/webp/                                @godotengine/import
+/modules/astcenc/                             @godotengine/asset-pipeline
+/modules/basis_universal/                     @godotengine/asset-pipeline
+/modules/bcdec/                               @godotengine/asset-pipeline
+/modules/betsy/                               @godotengine/asset-pipeline
+/modules/bmp/                                 @godotengine/asset-pipeline
+/modules/cvtt/                                @godotengine/asset-pipeline
+/modules/dds/                                 @godotengine/asset-pipeline
+/modules/etcpak/                              @godotengine/asset-pipeline
+/modules/fbx/                                 @godotengine/asset-pipeline
+/modules/fbx/doc_classes/                     @godotengine/asset-pipeline @godotengine/documentation
+/modules/gltf/                                @godotengine/asset-pipeline
+/modules/gltf/doc_classes/                    @godotengine/asset-pipeline @godotengine/documentation
+/modules/gltf/tests/                          @godotengine/asset-pipeline @godotengine/tests
+/modules/hdr/                                 @godotengine/asset-pipeline
+/modules/jpg/                                 @godotengine/asset-pipeline
+/modules/ktx/                                 @godotengine/asset-pipeline
+/modules/squish/                              @godotengine/asset-pipeline
+/modules/svg/                                 @godotengine/asset-pipeline
+/modules/tga/                                 @godotengine/asset-pipeline
+/modules/tinyexr/                             @godotengine/asset-pipeline
+/modules/webp/                                @godotengine/asset-pipeline
 
 ## Network
 /modules/enet/                                @godotengine/network
