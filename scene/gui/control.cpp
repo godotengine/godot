@@ -132,8 +132,12 @@ Size2 Control::_edit_get_scale() const {
 
 void Control::_edit_set_rect(const Rect2 &p_edit_rect) {
 	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
-	set_position((get_position() + get_transform().basis_xform(p_edit_rect.position)), ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled());
+	// Changing the size might change the internal transform (in case of non-zero `pivot_offset_ratio`),
+	// hence `position` (which is in the parent space, and is not always equivalent to the Control's rect top-left corner)
+	// needs to be changed after `size` (which is local) and needs to account for the possibly changed internal transform.
+	Vector2 rect_new_pos_in_parent_space = get_transform().xform(p_edit_rect.position);
 	set_size(p_edit_rect.size, ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled());
+	set_position(rect_new_pos_in_parent_space - _get_internal_transform().get_origin(), ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled());
 }
 
 void Control::_edit_set_rotation(real_t p_rotation) {
