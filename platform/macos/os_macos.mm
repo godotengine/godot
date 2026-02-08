@@ -57,6 +57,9 @@
 #include <os/log.h>
 #include <sys/sysctl.h>
 
+// URLs for which startAccessingSecurityScopedResource was called; stop must be called on the same instances in finalize.
+static NSMutableArray *s_security_scoped_urls = nil;
+
 void OS_MacOS::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
 	if (p_wake_for_events) {
 		uint64_t delay = get_frame_delay(p_can_draw);
@@ -220,16 +223,12 @@ void OS_MacOS::initialize_core() {
 }
 
 void OS_MacOS::finalize() {
-	if (is_sandboxed()) {
-		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
-		for (id bookmark in bookmarks) {
-			NSError *error = nil;
-			BOOL isStale = NO;
-			NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
-			if (!error && !isStale) {
-				[url stopAccessingSecurityScopedResource];
-			}
+	if (is_sandboxed() && s_security_scoped_urls) {
+		// Balance each startAccessingSecurityScopedResource from the constructor by stopping the same URL instance.
+		for (NSURL *url in s_security_scoped_urls) {
+			[url stopAccessingSecurityScopedResource];
 		}
+		[s_security_scoped_urls removeAllObjects];
 	}
 
 #ifdef COREMIDI_ENABLED
@@ -1050,9 +1049,12 @@ OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
 	argv = p_argv;
 
 	if (is_sandboxed()) {
-		// Load security-scoped bookmarks, request access, remove stale or invalid bookmarks.
+		// Load security-scoped bookmarks, request access once, and retain URLs for balanced start/stop (fixes repeated permission prompts; see GH-116054).
 		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
 		NSMutableArray *new_bookmarks = [[NSMutableArray alloc] init];
+		if (!s_security_scoped_urls) {
+			s_security_scoped_urls = [[NSMutableArray alloc] init];
+		}
 		for (id bookmark in bookmarks) {
 			NSError *error = nil;
 			BOOL isStale = NO;
@@ -1060,6 +1062,7 @@ OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
 			if (!error && !isStale) {
 				if ([url startAccessingSecurityScopedResource]) {
 					[new_bookmarks addObject:bookmark];
+					[s_security_scoped_urls addObject:url]; // Retain URL so we can call stop on the same instance in finalize.
 				}
 			}
 		}
