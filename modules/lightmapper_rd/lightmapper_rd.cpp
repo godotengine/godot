@@ -749,10 +749,10 @@ void LightmapperRD::_raster_geometry(RenderingDevice *rd, Size2i atlas_size, int
 		rd->draw_list_set_push_constant(draw_list, &raster_push_constant, sizeof(RasterPushConstant));
 		rd->draw_list_draw(draw_list, false, 1, slice_triangle_count[i] * 3);
 		//draw wire
-		// rd->draw_list_bind_render_pipeline(draw_list, raster_pipeline_wire);
-		// rd->draw_list_bind_uniform_set(draw_list, raster_base_uniform, 0);
-		// rd->draw_list_set_push_constant(draw_list, &raster_push_constant, sizeof(RasterPushConstant));
-		// rd->draw_list_draw(draw_list, false, 1, slice_triangle_count[i] * 3);
+		rd->draw_list_bind_render_pipeline(draw_list, raster_pipeline_wire);
+		rd->draw_list_bind_uniform_set(draw_list, raster_base_uniform, 0);
+		rd->draw_list_set_push_constant(draw_list, &raster_push_constant, sizeof(RasterPushConstant));
+		rd->draw_list_draw(draw_list, false, 1, slice_triangle_count[i] * 3);
 
 		rd->draw_list_end();
 
