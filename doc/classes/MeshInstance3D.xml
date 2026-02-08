@@ -110,7 +110,7 @@
 			<return type="Dictionary" />
 			<param index="0" name="origin" type="Vector3" />
 			<param index="1" name="dir" type="Vector3" />
-			<param index="2" name="include_uv" type="bool" default="false" />
+			<param index="2" name="include_uv" type="bool" />
 			<description>
 				Performs a ray intersection test against the visual mesh.
 				Returns a [Dictionary] with the following keys: [code]success[/code], [code]position[/code], [code]normal[/code], [code]surface_index[/code], [code]face_index[/code], and [code]material[/code].
@@ -123,7 +123,7 @@
 			<return type="Dictionary" />
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="to" type="Vector3" />
-			<param index="2" name="include_uv" type="bool" default="false" />
+			<param index="2" name="include_uv" type="bool" />
 			<description>
 				Performs a line segment intersection test against the visual mesh.
 				Returns a [Dictionary] with the following keys: [code]success[/code], [code]position[/code], [code]normal[/code], [code]surface_index[/code], [code]face_index[/code], and [code]material[/code].
