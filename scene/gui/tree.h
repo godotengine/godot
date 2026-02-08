@@ -568,8 +568,9 @@ private:
 
 	int compute_item_height(TreeItem *p_item) const;
 	int get_item_height(TreeItem *p_item) const;
-	Point2i convert_rtl_position(const Point2i &pos, int width = 0) const;
-	Rect2i convert_rtl_rect(const Rect2i &Rect2) const;
+	Point2i convert_rtl_position(const Point2i &p_pos, int p_width = 0) const;
+	Point2 convert_rtl_position(const Point2 &p_pos, int p_width = 0) const;
+	Rect2i convert_rtl_rect(const Rect2i &p_rect) const;
 	void _update_all();
 	void update_column(int p_col);
 	void update_item_cell(TreeItem *p_item, int p_col) const;
