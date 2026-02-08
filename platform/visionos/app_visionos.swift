@@ -35,17 +35,14 @@ import SwiftUI
 
 final class RendererTaskExecutor: TaskExecutor {
 	private let queue = DispatchQueue(label: "RenderThreadQueue", qos: .userInteractive)
-
 	func enqueue(_ job: UnownedJob) {
 		queue.async {
 		  job.runSynchronously(on: self.asUnownedSerialExecutor())
 		}
 	}
-
 	nonisolated func asUnownedSerialExecutor() -> UnownedTaskExecutor {
 		return UnownedTaskExecutor(ordinary: self)
 	}
-
 	static let shared: RendererTaskExecutor = RendererTaskExecutor()
 }
 
@@ -56,7 +53,7 @@ struct ContentStageConfiguration: CompositorLayerConfiguration {
 
 		GDTAppDelegateServiceVisionOS.layerRendererCapabilities = capabilities as __CP_OBJECT_cp_layer_renderer_capabilities
 
-		configuration.depthFormat = .depth32Float
+		configuration.depthFormat = .depth32Float_stencil8
 		configuration.colorFormat = .rgba16Float
 
 		let foveationEnabled = capabilities.supportsFoveation
