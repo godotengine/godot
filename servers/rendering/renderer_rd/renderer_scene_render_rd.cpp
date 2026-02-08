@@ -577,6 +577,14 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		rb->allocate_blur_textures();
 
+		// Clear glow buffers to avoid stale data from previous frames or editor redraws (fixes 2D glow
+		// artifacts on Forward+ when canvas background and glow are enabled; see GH-116053).
+		uint32_t blur_0_mipmaps = rb->get_texture_format(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0).mipmaps;
+		uint32_t blur_1_mipmaps = rb->get_texture_format(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1).mipmaps;
+		uint32_t view_count = rb->get_view_count();
+		RD::get_singleton()->texture_clear(rb->get_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0), Color(0, 0, 0, 0), 0, blur_0_mipmaps, 0, view_count);
+		RD::get_singleton()->texture_clear(rb->get_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1), Color(0, 0, 0, 0), 0, blur_1_mipmaps, 0, view_count);
+
 		int mipmaps = int(rb->get_texture_format(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1).mipmaps);
 		Vector<float> glow_levels = environment_get_glow_levels(p_render_data->environment);
 		bool use_debanding = rb->get_use_debanding() && !texture_storage->render_target_is_using_hdr(render_target);
