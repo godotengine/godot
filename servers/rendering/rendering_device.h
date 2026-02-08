@@ -117,6 +117,7 @@ private:
 
 	void _add_dependency(RID p_id, RID p_depends_on);
 	void _free_dependencies(RID p_id);
+	void _replace_dependency(RID p_dependent, RID p_old_dependency, RID p_new_dependency);
 
 private:
 	/***************************/
@@ -1155,6 +1156,10 @@ private:
 		LocalVector<RID> pending_clear_textures;
 		InvalidationCallback invalidated_callback = nullptr;
 		void *invalidated_callback_userdata = nullptr;
+
+		// Stored for uniform set re-creation during texture replacement.
+		LocalVector<Uniform> bound_uniforms;
+		bool is_linear_pool = false;
 	};
 
 	RID_Owner<UniformSet, true> uniform_set_owner;
@@ -1786,6 +1791,7 @@ public:
 	void _set_max_fps(int p_max_fps);
 
 	void free_rid(RID p_rid);
+	void texture_replace_rid(RID p_old_texture, RID p_new_texture);
 #ifndef DISABLE_DEPRECATED
 	[[deprecated("Use `free_rid()` instead.")]] void free(RID p_rid) {
 		free_rid(p_rid);
