@@ -4199,7 +4199,18 @@ void SceneTreeDock::save_branch_to_file(const String &p_directory) {
 	_tool_selected(TOOL_NEW_SCENE_FROM);
 }
 
+void SceneTreeDock::_on_visibility_toggle_clicked() {
+	// Toggling visibility from the SceneTree eye icon should not recenter the 2D/3D viewport (fixes GH-116048).
+	skip_next_focus_node = true;
+}
+
 void SceneTreeDock::_focus_node() {
+	// Do not recenter view when the user just toggled visibility via the eye icon.
+	if (skip_next_focus_node) {
+		skip_next_focus_node = false;
+		return;
+	}
+
 	Node *node = scene_tree->get_selected();
 	// This method handles the item_icon_double_clicked signal and there is no guarantee anything is actually selected.
 	if (!node) {
@@ -4944,6 +4955,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	scene_tree->get_scene_tree()->connect(SceneStringName(gui_input), callable_mp(this, &SceneTreeDock::_scene_tree_gui_input));
 	scene_tree->get_scene_tree()->connect("item_icon_double_clicked", callable_mp(this, &SceneTreeDock::_focus_node));
+	scene_tree->connect("visibility_toggle_clicked", callable_mp(this, &SceneTreeDock::_on_visibility_toggle_clicked));
 
 	editor_selection->connect("selection_changed", callable_mp(this, &SceneTreeDock::_selection_changed));
 

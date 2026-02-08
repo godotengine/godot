@@ -133,6 +133,8 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 			}
 		}
 		undo_redo->commit_action();
+		// Notify dock so it can skip focusing 2D/3D view on the next item_icon_double_clicked (fixes GH-116048).
+		emit_signal(SNAME("visibility_toggle_clicked"));
 	} else if (p_id == BUTTON_LOCK) {
 		undo_redo->create_action(TTR("Unlock Node"));
 		undo_redo->add_do_method(n, "remove_meta", "_edit_lock_");
@@ -2153,6 +2155,7 @@ void SceneTreeEditor::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("open"));
 	ADD_SIGNAL(MethodInfo("open_script"));
+	ADD_SIGNAL(MethodInfo("visibility_toggle_clicked"));
 }
 
 SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_open_instance) :

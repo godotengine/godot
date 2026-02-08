@@ -183,6 +183,7 @@ class SceneTreeDock : public EditorDock {
 	Node *edited_scene = nullptr;
 	Node *pending_click_select = nullptr;
 	bool tree_clicked = false;
+	bool skip_next_focus_node = false; // Skip centering 2D/3D view when SceneTree eye icon was just toggled (fixes GH-116048).
 
 	VBoxContainer *create_root_dialog = nullptr;
 	String selected_favorite_root;
@@ -208,6 +209,7 @@ class SceneTreeDock : public EditorDock {
 	void _script_open_request(const Ref<Script> &p_script);
 	void _push_item(Object *p_object);
 	void _handle_select(Node *p_node);
+	void _on_visibility_toggle_clicked();
 
 	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node);
 	bool _track_inherit(const String &p_target_scene_path, Node *p_desired_node);
