@@ -38,7 +38,7 @@
 		};
 		[/csharp]
 		[/codeblocks]
-		You can access a dictionary's value by referencing its corresponding key. In the above example, [code]points_dict["White"][/code] will return [code]50[/code]. You can also write [code]points_dict.White[/code], which is equivalent. However, you'll have to use the bracket syntax if the key you're accessing the dictionary with isn't a fixed string (such as a number or variable). Referencing a dictionary method as a [Callable] requires special handling, since this syntax prioritizes key lookup over built in methods. For example, [code]some_signal.connect(points_dict.erase)[/code] will lookup the [code]"erase"[/code] key, rather than the [method Dictionary.erase] method.
+		You can access a dictionary's value by referencing its corresponding key. In the above example, [code]points_dict["White"][/code] will return [code]50[/code]. You can also write [code]points_dict.White[/code], which is equivalent. However, you'll have to use the bracket syntax if the key you're accessing the dictionary with isn't a fixed string (such as a number or variable). Referencing a dictionary method as a [Callable] requires special handling, since this syntax prioritizes key lookup over built-in methods. For example, [code]some_signal.connect(points_dict.erase)[/code] will look up the [code]"erase"[/code] key, rather than the [method erase] method.
 		[codeblocks]
 		[gdscript]
 		@export_enum("White", "Yellow", "Orange") var my_color: String
