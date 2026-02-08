@@ -1058,12 +1058,14 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 
 		bool different = false;
 		if (collision_3d_textures_used == p_particles->collision_3d_textures_used) {
-			for (int i = 0; i < ParticlesFrameParams::MAX_3D_TEXTURES; i++) {
+			for (uint32_t i = 0; i < collision_3d_textures_used; i++) {
 				if (p_particles->collision_3d_textures[i] != collision_3d_textures[i]) {
 					different = true;
 					break;
 				}
 			}
+		} else {
+			different = true;
 		}
 
 		if (collision_heightmap_texture != p_particles->collision_heightmap_texture) {
@@ -1109,6 +1111,11 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 					u.append_id(texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_BLACK));
 				}
 				uniforms.push_back(u);
+			}
+
+			p_particles->collision_3d_textures_used = collision_3d_textures_used;
+			for (int i = 0; i < ParticlesFrameParams::MAX_3D_TEXTURES; i++) {
+				p_particles->collision_3d_textures[i] = collision_3d_textures[i];
 			}
 			p_particles->collision_textures_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 2);
 			p_particles->collision_heightmap_texture = collision_heightmap_texture;
