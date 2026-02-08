@@ -188,6 +188,7 @@ private:
 		ResourceFormatLoader::CacheMode cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE;
 		Error error = OK;
 		Ref<Resource> resource;
+		ThreadLoadTask *parent_task = nullptr;
 		HashSet<String> sub_tasks;
 
 		bool awaited : 1; // If it's in the pool, this helps not awaiting from more than one dependent thread.
@@ -213,7 +214,6 @@ private:
 	static thread_local bool import_thread;
 	static thread_local int load_nesting;
 	static thread_local HashMap<int, HashMap<String, Ref<Resource>>> res_ref_overrides; // Outermost key is nesting level.
-	static thread_local Vector<String> load_paths_stack;
 	static thread_local ThreadLoadTask *curr_load_task;
 
 	static SafeBinaryMutex<BINARY_MUTEX_TAG> thread_load_mutex;
