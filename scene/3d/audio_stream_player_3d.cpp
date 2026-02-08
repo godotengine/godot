@@ -354,21 +354,11 @@ StringName AudioStreamPlayer3D::_get_actual_bus() {
 	return internal->bus;
 }
 
-static void _apply_max_volume_from_vector(Vector<AudioFrame> &r_tgt_volume_vector, const Vector<AudioFrame> &p_src_volume_vector) {
-	for (int64_t i = 0; i < r_tgt_volume_vector.size(); i++) {
-		const AudioFrame frame = AudioFrame(
-				MAX(r_tgt_volume_vector[i].left, p_src_volume_vector[i].left),
-				MAX(r_tgt_volume_vector[i].right, p_src_volume_vector[i].right));
-
-		r_tgt_volume_vector.write[i] = frame;
-	}
-}
-
 static float _get_max_volume(const Vector<AudioFrame> &p_src_volume_vector) {
 	float max_vol = 0.0;
-	for (int64_t i = 0; i < p_src_volume_vector.size(); i++) {
-		max_vol = MAX(max_vol, p_src_volume_vector[i].left);
-		max_vol = MAX(max_vol, p_src_volume_vector[i].right);
+	for (const AudioFrame &frame : p_src_volume_vector) {
+		max_vol = MAX(max_vol, frame.left);
+		max_vol = MAX(max_vol, frame.right);
 	}
 	return max_vol;
 }
@@ -417,9 +407,10 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		frame = AudioFrame(0, 0);
 	}
 
-	// keep track of a weighted average of the pitch
+	// keep track of a weighted average of the volume and pitch
 	float pitch_scale_sum = 0.0F;
 	float pitch_scale_weight = 0.0F;
+	float volume_weight = 0.0F;
 
 	bool has_any_listener_in_range = false;
 	linear_attenuation = 0;
@@ -486,8 +477,6 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			}
 		}
 
-		linear_attenuation = MAX(linear_attenuation, Math::db_to_linear(db_att));
-
 		for (AudioFrame &frame : listener_volume_vector) {
 			frame = AudioFrame(0, 0);
 		}
@@ -501,16 +490,24 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			_calc_output_vol(local_pos.normalized(), tightness, listener_volume_vector);
 		}
 
-		for (int64_t k = 0; k < volume_vector_size; k++) {
-			listener_volume_vector.write[k] = multiplier * listener_volume_vector[k];
+		for (AudioFrame &frame : listener_volume_vector) {
+			frame *= multiplier;
 		}
 
-		_apply_max_volume_from_vector(output_volume_vector, listener_volume_vector);
+		// just use the maximum volume of the current volume vector as weight
+		const float weight = _get_max_volume(listener_volume_vector);
+		linear_attenuation += weight * Math::db_to_linear(db_att);
+		for (int64_t k = 0; k < volume_vector_size; k++) {
+			output_volume_vector.write[k] += weight * listener_volume_vector[k];
+		}
+		volume_weight += weight;
 
 #ifndef PHYSICS_3D_DISABLED
 		if (area && area->is_using_reverb_bus()) {
 			_calc_reverb_vol(area, listener_area_pos, listener_volume_vector, listener_reverb_vector);
-			_apply_max_volume_from_vector(output_reverb_vector, listener_reverb_vector);
+			for (int64_t k = 0; k < volume_vector_size; k++) {
+				output_reverb_vector.write[k] += weight * listener_reverb_vector[k];
+			}
 		}
 #endif
 
@@ -532,12 +529,17 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 				float doppler_pitch_scale = internal->pitch_scale * speed_of_sound / (speed_of_sound + velocity * approaching);
 				doppler_pitch_scale = CLAMP(doppler_pitch_scale, (1.0F / 8.0F), 8.0F); //avoid crazy stuff
 
-				// just use the maximum volume of the current volume vector as weight
-				// so the pitch effect fades out with lower volumes
-				float weight = _get_max_volume(listener_volume_vector);
+				// use the volume weight so the pitch effect fades out with lower volumes
 				pitch_scale_sum += weight * doppler_pitch_scale;
 				pitch_scale_weight += weight;
 			}
+		}
+	}
+
+	if (volume_weight > 0.0F) {
+		linear_attenuation /= volume_weight;
+		for (AudioFrame &frame : output_volume_vector) {
+			frame /= volume_weight;
 		}
 	}
 
@@ -559,6 +561,11 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			}
 
 			if (area->is_using_reverb_bus()) {
+				if (volume_weight > 0.0F) {
+					for (AudioFrame &frame : output_reverb_vector) {
+						frame /= volume_weight;
+					}
+				}
 				StringName reverb_bus_name = area->get_reverb_bus_name();
 				bus_volumes[reverb_bus_name] = output_reverb_vector;
 			}
