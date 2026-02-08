@@ -404,7 +404,7 @@ private:
 		Vector3 rotation_axis;
 		Vector3 view_axis_local;
 		double accumulated_rotation_angle = 0.0;
-		double display_rotation_angle = 0.0;
+		double rotation_angle = 0.0;
 		Vector3 initial_click_vector;
 		Vector3 previous_rotation_vector;
 		bool gizmo_initiated = false;
