@@ -417,9 +417,9 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		frame = AudioFrame(0, 0);
 	}
 
-	// keep track of a weighted average of the pitch on a logarithmic scale
-	float log_pitch_scale = 0.0F;
-	float log_pitch_weight = 0.0F;
+	// keep track of a weighted average of the pitch
+	float pitch_scale_sum = 0.0F;
+	float pitch_scale_weight = 0.0F;
 
 	bool has_any_listener_in_range = false;
 	linear_attenuation = 0;
@@ -535,14 +535,14 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 				// just use the maximum volume of the current volume vector as weight
 				// so the pitch effect fades out with lower volumes
 				float weight = _get_max_volume(listener_volume_vector);
-				log_pitch_scale += weight * Math::log2(doppler_pitch_scale);
-				log_pitch_weight += weight;
+				pitch_scale_sum += weight * doppler_pitch_scale;
+				pitch_scale_weight += weight;
 			}
 		}
 	}
 
-	if (log_pitch_weight > 0.0F) {
-		actual_pitch_scale = Math::pow(2.0F, log_pitch_scale / log_pitch_weight);
+	if (pitch_scale_weight > 0.0F) {
+		actual_pitch_scale = pitch_scale_sum / pitch_scale_weight;
 	}
 
 	for (Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
