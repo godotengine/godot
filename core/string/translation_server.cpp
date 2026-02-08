@@ -485,6 +485,7 @@ void TranslationServer::set_locale(const String &p_locale) {
 	}
 
 	locale = new_locale;
+	locale_compare_cache.clear(); // Invalidate so fallback resolution is re-evaluated for the new locale (fixes GH-116051).
 	ResourceLoader::reload_translation_remaps();
 
 	if (OS::get_singleton()->get_main_loop()) {
@@ -497,7 +498,10 @@ String TranslationServer::get_locale() const {
 }
 
 void TranslationServer::set_fallback_locale(const String &p_locale) {
-	fallback = p_locale;
+	if (fallback != p_locale) {
+		fallback = p_locale;
+		locale_compare_cache.clear();
+	}
 }
 
 String TranslationServer::get_fallback_locale() const {
