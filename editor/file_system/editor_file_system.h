@@ -177,6 +177,7 @@ class EditorFileSystem : public Node {
 		~ScannedDirectory();
 	};
 
+	bool is_case_sensitive = true;
 	bool use_threads = false;
 	Thread thread;
 	static void _thread_func(void *_userdata);

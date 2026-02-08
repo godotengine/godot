@@ -1868,11 +1868,6 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 	}
 
 	String f = ProjectSettings::get_singleton()->localize_path(p_file);
-
-	// Note: Only checks if base directory is case sensitive.
-	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	bool fs_case_sensitive = dir->is_case_sensitive("res://");
-
 	if (!f.begins_with("res://")) {
 		return false;
 	}
@@ -1884,25 +1879,28 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 	if (path.is_empty()) {
 		return false;
 	}
-	String file = path[path.size() - 1];
+	const String file = path[path.size() - 1];
+	const String file_lower = file.to_lower();
 	path.resize(path.size() - 1);
 
+	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	EditorFileSystemDirectory *fs = filesystem;
 
-	for (int i = 0; i < path.size(); i++) {
-		if (path[i].begins_with(".")) {
+	for (const String &path_bit : path) {
+		if (path_bit.begins_with(".")) {
 			return false;
 		}
+		const String path_bit_lower = path_bit.to_lower();
 
 		int idx = -1;
 		for (int j = 0; j < fs->get_subdir_count(); j++) {
-			if (fs_case_sensitive) {
-				if (fs->get_subdir(j)->get_name() == path[i]) {
+			if (is_case_sensitive) {
+				if (fs->get_subdir(j)->get_name() == path_bit) {
 					idx = j;
 					break;
 				}
 			} else {
-				if (fs->get_subdir(j)->get_name().to_lower() == path[i].to_lower()) {
+				if (fs->get_subdir(j)->get_name().to_lower() == path_bit_lower) {
 					idx = j;
 					break;
 				}
@@ -1911,12 +1909,12 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 
 		if (idx == -1) {
 			// Only create a missing directory in memory when it exists on disk.
-			if (!dir->dir_exists(fs->get_path().path_join(path[i]))) {
+			if (!dir->dir_exists(fs->get_path().path_join(path_bit))) {
 				return false;
 			}
 			EditorFileSystemDirectory *efsd = memnew(EditorFileSystemDirectory);
 
-			efsd->name = path[i];
+			efsd->name = path_bit;
 			efsd->parent = fs;
 
 			int idx2 = 0;
@@ -1940,13 +1938,13 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 
 	int cpos = -1;
 	for (int i = 0; i < fs->files.size(); i++) {
-		if (fs_case_sensitive) {
+		if (is_case_sensitive) {
 			if (fs->files[i]->file == file) {
 				cpos = i;
 				break;
 			}
 		} else {
-			if (fs->files[i]->file.to_lower() == file.to_lower()) {
+			if (fs->files[i]->file.to_lower() == file_lower) {
 				cpos = i;
 				break;
 			}
@@ -3784,6 +3782,9 @@ EditorFileSystem::EditorFileSystem() {
 	// Set the callback method that the ResourceFormatImporter will use
 	// if resources are loaded during the first scan.
 	ResourceImporter::load_on_startup = _load_resource_on_startup;
+
+	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	is_case_sensitive = dir->is_case_sensitive("res://");
 }
 
 EditorFileSystem::~EditorFileSystem() {
