@@ -16,6 +16,9 @@
 			Disabling this will use UVs better fit for level prototyping, with the side faces aligned along the Y axis and the top and bottom faces aligned along the Z axis.
 			[b]Note:[/b] [member scale_uv] only works when [member compat_mode] is disabled.
 		</member>
+		<member name="flip_uvs" type="bool" setter="set_flip_uvs" getter="is_flip_uvs" default="false">
+			Mirrors the UVs.
+		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The material used to render the box.
 		</member>

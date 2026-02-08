@@ -1562,113 +1562,6 @@ CSGBrush *CSGBox3D::_build_brush() {
 	Ref<Material> *materialsw = materials.ptrw();
 	bool *invertw = invert.ptrw();
 
-	/*
-	//model created from a program using the original code, it has to be manifold.
-	//X+
-	facesw[0] = Vector3(0.5, 0.5, 0.5);
-	facesw[1] = Vector3(0.5, 0.5, -0.5);
-	facesw[2] = Vector3(0.5, -0.5, -0.5);
-	facesw[3] = Vector3(0.5, -0.5, -0.5);
-	facesw[4] = Vector3(0.5, -0.5, 0.5);
-	facesw[5] = Vector3(0.5, 0.5, 0.5);
-	//Y+
-	facesw[6] = Vector3(0.5, 0.5, 0.5);
-	facesw[7] = Vector3(-0.5, 0.5, 0.5);
-	facesw[8] = Vector3(-0.5, 0.5, -0.5);
-	facesw[9] = Vector3(-0.5, 0.5, -0.5);
-	facesw[10] = Vector3(0.5, 0.5, -0.5);
-	facesw[11] = Vector3(0.5, 0.5, 0.5);
-	//Z+
-	facesw[12] = Vector3(0.5, 0.5, 0.5);
-	facesw[13] = Vector3(0.5, -0.5, 0.5);
-	facesw[14] = Vector3(-0.5, -0.5, 0.5);
-	facesw[15] = Vector3(-0.5, -0.5, 0.5);
-	facesw[16] = Vector3(-0.5, 0.5, 0.5);
-	facesw[17] = Vector3(0.5, 0.5, 0.5);
-	//X-
-	facesw[18] = Vector3(-0.5, 0.5, -0.5);
-	facesw[19] = Vector3(-0.5, 0.5, 0.5);
-	facesw[20] = Vector3(-0.5, -0.5, 0.5);
-	facesw[21] = Vector3(-0.5, -0.5, 0.5);
-	facesw[22] = Vector3(-0.5, -0.5, -0.5);
-	facesw[23] = Vector3(-0.5, 0.5, -0.5);
-	//Y-
-	facesw[24] = Vector3(-0.5, -0.5, 0.5);
-	facesw[25] = Vector3(0.5, -0.5, 0.5);
-	facesw[26] = Vector3(0.5, -0.5, -0.5);
-	facesw[27] = Vector3(0.5, -0.5, -0.5);
-	facesw[28] = Vector3(-0.5, -0.5, -0.5);
-	facesw[29] = Vector3(-0.5, -0.5, 0.5);
-	//Z-
-	facesw[30] = Vector3(0.5, -0.5, -0.5);
-	facesw[31] = Vector3(0.5, 0.5, -0.5);
-	facesw[32] = Vector3(-0.5, 0.5, -0.5);
-	facesw[33] = Vector3(-0.5, 0.5, -0.5);
-	facesw[34] = Vector3(-0.5, -0.5, -0.5);
-	facesw[35] = Vector3(0.5, -0.5, -0.5);*/
-
-	{ //Generate vertex coords.
-		int quad_c = 0;
-
-		int col_f = 0;
-		int col_1 = 1;
-		int col_2 = 2;
-
-		float dir_f = 0.5;
-		float dir_1 = 0.5;
-		float dir_2 = 0.5;
-
-		int t_1 = 1;
-		int t_2 = 2;
-
-		for (int i = 0; i < 36; i++) {
-			facesw[i] = Vector3(1, 1, 1); //Not sure if `resize` is populating the `Vector`.
-			facesw[i][col_f] = dir_f;
-			facesw[i][col_1] = dir_1;
-			facesw[i][col_2] = dir_2;
-			facesw[i] *= size;
-
-			t_1++;
-			t_2++;
-
-			if (t_1 > 2) {
-				t_1 = 0;
-				dir_1 *= -1;
-			}
-
-			if (t_2 > 2) {
-				t_2 = 0;
-				dir_2 *= -1;
-			}
-
-			quad_c++;
-			if (quad_c > 5) {
-				col_f++;
-				col_1++;
-				col_2++;
-
-				if (i == 17) {
-					dir_2 *= -1;
-				}
-
-				if (col_f > 2) {
-					col_f = 0;
-					dir_f = -0.5;
-				}
-
-				if (col_1 > 2) {
-					col_1 = 0;
-				}
-
-				if (col_2 > 2) {
-					col_2 = 0;
-				}
-
-				quad_c = 0;
-			}
-		}
-	}
-
 	if (compat_mode) {
 		//pattern
 		//0 0
@@ -1779,6 +1672,118 @@ CSGBrush *CSGBox3D::_build_brush() {
 		}
 	}
 
+	/*
+	//model created from a program using the original code, it has to be manifold.
+	//X+
+	facesw[0] = Vector3(0.5, 0.5, 0.5);
+	facesw[1] = Vector3(0.5, 0.5, -0.5);
+	facesw[2] = Vector3(0.5, -0.5, -0.5);
+	facesw[3] = Vector3(0.5, -0.5, -0.5);
+	facesw[4] = Vector3(0.5, -0.5, 0.5);
+	facesw[5] = Vector3(0.5, 0.5, 0.5);
+	//Y+
+	facesw[6] = Vector3(0.5, 0.5, 0.5);
+	facesw[7] = Vector3(-0.5, 0.5, 0.5);
+	facesw[8] = Vector3(-0.5, 0.5, -0.5);
+	facesw[9] = Vector3(-0.5, 0.5, -0.5);
+	facesw[10] = Vector3(0.5, 0.5, -0.5);
+	facesw[11] = Vector3(0.5, 0.5, 0.5);
+	//Z+
+	facesw[12] = Vector3(0.5, 0.5, 0.5);
+	facesw[13] = Vector3(0.5, -0.5, 0.5);
+	facesw[14] = Vector3(-0.5, -0.5, 0.5);
+	facesw[15] = Vector3(-0.5, -0.5, 0.5);
+	facesw[16] = Vector3(-0.5, 0.5, 0.5);
+	facesw[17] = Vector3(0.5, 0.5, 0.5);
+	//X-
+	facesw[18] = Vector3(-0.5, 0.5, -0.5);
+	facesw[19] = Vector3(-0.5, 0.5, 0.5);
+	facesw[20] = Vector3(-0.5, -0.5, 0.5);
+	facesw[21] = Vector3(-0.5, -0.5, 0.5);
+	facesw[22] = Vector3(-0.5, -0.5, -0.5);
+	facesw[23] = Vector3(-0.5, 0.5, -0.5);
+	//Y-
+	facesw[24] = Vector3(-0.5, -0.5, 0.5);
+	facesw[25] = Vector3(0.5, -0.5, 0.5);
+	facesw[26] = Vector3(0.5, -0.5, -0.5);
+	facesw[27] = Vector3(0.5, -0.5, -0.5);
+	facesw[28] = Vector3(-0.5, -0.5, -0.5);
+	facesw[29] = Vector3(-0.5, -0.5, 0.5);
+	//Z-
+	facesw[30] = Vector3(0.5, -0.5, -0.5);
+	facesw[31] = Vector3(0.5, 0.5, -0.5);
+	facesw[32] = Vector3(-0.5, 0.5, -0.5);
+	facesw[33] = Vector3(-0.5, 0.5, -0.5);
+	facesw[34] = Vector3(-0.5, -0.5, -0.5);
+	facesw[35] = Vector3(0.5, -0.5, -0.5);*/
+
+	{ //Generate vertex coords.
+		int quad_c = 0;
+
+		int col_f = 0;
+		int col_1 = 1;
+		int col_2 = 2;
+
+		float dir_f = 0.5;
+		float dir_1 = 0.5;
+		float dir_2 = 0.5;
+
+		int t_1 = 1;
+		int t_2 = 2;
+
+		for (int i = 0; i < 36; i++) {
+			facesw[i] = Vector3(1, 1, 1); //Not sure if `resize` is populating the `Vector`.
+			facesw[i][col_f] = dir_f;
+			facesw[i][col_1] = dir_1;
+			facesw[i][col_2] = dir_2;
+			facesw[i] *= size;
+
+			//For subtracting CSGs
+			if (flip_uvs) {
+				uvsw[i].x *= -1;
+			}
+
+			t_1++;
+			t_2++;
+
+			if (t_1 > 2) {
+				t_1 = 0;
+				dir_1 *= -1;
+			}
+
+			if (t_2 > 2) {
+				t_2 = 0;
+				dir_2 *= -1;
+			}
+
+			quad_c++;
+			if (quad_c > 5) {
+				col_f++;
+				col_1++;
+				col_2++;
+
+				if (i == 17) {
+					dir_2 *= -1;
+				}
+
+				if (col_f > 2) {
+					col_f = 0;
+					dir_f = -0.5;
+				}
+
+				if (col_1 > 2) {
+					col_1 = 0;
+				}
+
+				if (col_2 > 2) {
+					col_2 = 0;
+				}
+
+				quad_c = 0;
+			}
+		}
+	}
+
 	for (int i = 0; i < face_count; i++) {
 		smoothw[i] = false;
 		invertw[i] = invert_val;
@@ -1800,6 +1805,9 @@ void CSGBox3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scale_uv", "scale_uv"), &CSGBox3D::set_scale_uv);
 	ClassDB::bind_method(D_METHOD("is_scale_uv"), &CSGBox3D::is_scale_uv);
 
+	ClassDB::bind_method(D_METHOD("set_flip_uvs", "flip_uvs"), &CSGBox3D::set_flip_uvs);
+	ClassDB::bind_method(D_METHOD("is_flip_uvs"), &CSGBox3D::is_flip_uvs);
+
 	ClassDB::bind_method(D_METHOD("set_uv_offset", "uv_offset"), &CSGBox3D::set_uv_offset);
 	ClassDB::bind_method(D_METHOD("get_uv_offset"), &CSGBox3D::get_uv_offset);
 
@@ -1809,6 +1817,7 @@ void CSGBox3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scale_uv"), "set_scale_uv", "is_scale_uv");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_uv_offset", "get_uv_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_uvs"), "set_flip_uvs", "is_flip_uvs");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "compat_mode"), "set_compat_mode", "is_compat_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
@@ -1831,6 +1840,16 @@ void CSGBox3D::set_scale_uv(const bool p_scale_uv) {
 
 bool CSGBox3D::is_scale_uv() const {
 	return scale_uv;
+}
+
+void CSGBox3D::set_flip_uvs(const bool p_flip) {
+	flip_uvs = p_flip;
+	_make_dirty();
+	update_gizmos();
+}
+
+bool CSGBox3D::is_flip_uvs() const {
+	return flip_uvs;
 }
 
 void CSGBox3D::set_uv_offset(const Vector3 &p_size) {
@@ -2050,6 +2069,12 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 			}
 		}
 
+		if (flip_uvs) {
+			for (int i = 0; i < face_count * 3; i++) {
+				uvsw[i].x *= -1;
+			}
+		}
+
 		if (face != face_count) {
 			ERR_PRINT("Face mismatch bug! fix code");
 		}
@@ -2079,6 +2104,9 @@ void CSGCylinder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scale_uv", "scale_uv"), &CSGCylinder3D::set_scale_uv);
 	ClassDB::bind_method(D_METHOD("is_scale_uv"), &CSGCylinder3D::is_scale_uv);
 
+	ClassDB::bind_method(D_METHOD("set_flip_uvs", "flip_uvs"), &CSGCylinder3D::set_flip_uvs);
+	ClassDB::bind_method(D_METHOD("is_flip_uvs"), &CSGCylinder3D::is_flip_uvs);
+
 	ClassDB::bind_method(D_METHOD("set_uv_offset", "uv_offset"), &CSGCylinder3D::set_uv_offset);
 	ClassDB::bind_method(D_METHOD("get_uv_offset"), &CSGCylinder3D::get_uv_offset);
 
@@ -2099,6 +2127,7 @@ void CSGCylinder3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scale_uv"), "set_scale_uv", "is_scale_uv");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "uv_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_uv_offset", "get_uv_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "top_uv_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_top_uv_offset", "get_top_uv_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_uvs"), "set_flip_uvs", "is_flip_uvs");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
@@ -2152,6 +2181,16 @@ void CSGCylinder3D::set_scale_uv(const bool p_scale_uv) {
 
 bool CSGCylinder3D::is_scale_uv() const {
 	return scale_uv;
+}
+
+void CSGCylinder3D::set_flip_uvs(const bool p_flip) {
+	flip_uvs = p_flip;
+	_make_dirty();
+	update_gizmos();
+}
+
+bool CSGCylinder3D::is_flip_uvs() const {
+	return flip_uvs;
 }
 
 void CSGCylinder3D::set_uv_horizontal_divisions(const int p_sides) {
