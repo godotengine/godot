@@ -1607,62 +1607,65 @@ CSGBrush *CSGBox3D::_build_brush() {
 	facesw[34] = Vector3(-0.5, -0.5, -0.5);
 	facesw[35] = Vector3(0.5, -0.5, -0.5);*/
 
-	int quad_c = 0;
+	{ //Generate vertex coords.
+		int quad_c = 0;
 
-	int col_f = 0;
-	int col_1 = 1;
-	int col_2 = 2;
+		int col_f = 0;
+		int col_1 = 1;
+		int col_2 = 2;
 
-	float dir_f = 0.5;
-	float dir_1 = 0.5;
-	float dir_2 = 0.5;
+		float dir_f = 0.5;
+		float dir_1 = 0.5;
+		float dir_2 = 0.5;
 
-	int t_1 = 1;
-	int t_2 = 2;
+		int t_1 = 1;
+		int t_2 = 2;
 
-	for (int i = 0; i < 36; i++) {
-		facesw[i] = Vector3(1, 1, 1);
-		facesw[i][col_f] = dir_f;
-		facesw[i][col_1] = dir_1;
-		facesw[i][col_2] = dir_2;
+		for (int i = 0; i < 36; i++) {
+			facesw[i] = Vector3(1, 1, 1); //Not sure if `resize` is populating the `Vector`.
+			facesw[i][col_f] = dir_f * size[col_f];
+			facesw[i][col_1] = dir_1 * size[col_1];
+			facesw[i][col_2] = dir_2 * size[col_2];
+			//facesw[i] *= size;
 
-		t_1++;
-		t_2++;
+			t_1++;
+			t_2++;
 
-		if (t_1 > 2) {
-			t_1 = 0;
-			dir_1 *= -1;
-		}
+			if (t_1 > 2) {
+				t_1 = 0;
+				dir_1 *= -1;
+			}
 
-		if (t_2 > 2) {
-			t_2 = 0;
-			dir_2 *= -1;
-		}
-
-		quad_c++;
-		if (quad_c > 5) {
-			col_f++;
-			col_1++;
-			col_2++;
-
-			if (i == 17) {
+			if (t_2 > 2) {
+				t_2 = 0;
 				dir_2 *= -1;
 			}
 
-			if (col_f > 2) {
-				col_f = 0;
-				dir_f = -0.5;
-			}
+			quad_c++;
+			if (quad_c > 5) {
+				col_f++;
+				col_1++;
+				col_2++;
 
-			if (col_1 > 2) {
-				col_1 = 0;
-			}
+				if (i == 17) {
+					dir_2 *= -1;
+				}
 
-			if (col_2 > 2) {
-				col_2 = 0;
-			}
+				if (col_f > 2) {
+					col_f = 0;
+					dir_f = -0.5;
+				}
 
-			quad_c = 0;
+				if (col_1 > 2) {
+					col_1 = 0;
+				}
+
+				if (col_2 > 2) {
+					col_2 = 0;
+				}
+
+				quad_c = 0;
+			}
 		}
 	}
 
@@ -1695,7 +1698,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 			}
 		}
 	} else {
-		//now compat_mode disables scale_uv
+		//Now `compat_mode` disables `scale_uv`.
 		//X+
 		uvsw[0] = Vector2(0, -1);
 		uvsw[1] = Vector2(1, -1);
@@ -1774,11 +1777,6 @@ CSGBrush *CSGBox3D::_build_brush() {
 				}
 			}
 		}
-	}
-
-	for (int i = 0; i < 36; i++) {
-		//scale mesh
-		facesw[i] *= size;
 	}
 
 	for (int i = 0; i < face_count; i++) {
