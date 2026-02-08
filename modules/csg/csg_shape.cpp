@@ -1623,10 +1623,10 @@ CSGBrush *CSGBox3D::_build_brush() {
 
 		for (int i = 0; i < 36; i++) {
 			facesw[i] = Vector3(1, 1, 1); //Not sure if `resize` is populating the `Vector`.
-			facesw[i][col_f] = dir_f * size[col_f];
-			facesw[i][col_1] = dir_1 * size[col_1];
-			facesw[i][col_2] = dir_2 * size[col_2];
-			//facesw[i] *= size;
+			facesw[i][col_f] = dir_f;
+			facesw[i][col_1] = dir_1;
+			facesw[i][col_2] = dir_2;
+			facesw[i] *= size;
 
 			t_1++;
 			t_2++;
