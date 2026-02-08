@@ -1562,6 +1562,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 	Ref<Material> *materialsw = materials.ptrw();
 	bool *invertw = invert.ptrw();
 
+	/*
 	//model created from a program using the original code, it has to be manifold.
 	//X+
 	facesw[0] = Vector3(0.5, 0.5, 0.5);
@@ -1604,7 +1605,66 @@ CSGBrush *CSGBox3D::_build_brush() {
 	facesw[32] = Vector3(-0.5, 0.5, -0.5);
 	facesw[33] = Vector3(-0.5, 0.5, -0.5);
 	facesw[34] = Vector3(-0.5, -0.5, -0.5);
-	facesw[35] = Vector3(0.5, -0.5, -0.5);
+	facesw[35] = Vector3(0.5, -0.5, -0.5);*/
+
+	int quad_c = 0;
+
+	int col_f = 0;
+	int col_1 = 1;
+	int col_2 = 2;
+
+	float dir_f = 0.5;
+	float dir_1 = 0.5;
+	float dir_2 = 0.5;
+
+	int t_1 = 1;
+	int t_2 = 2;
+
+	for (int i = 0; i < 36; i++) {
+		facesw[i] = Vector3(1, 1, 1);
+		facesw[i][col_f] = dir_f;
+		facesw[i][col_1] = dir_1;
+		facesw[i][col_2] = dir_2;
+
+		t_1++;
+		t_2++;
+
+		if (t_1 > 2) {
+			t_1 = 0;
+			dir_1 *= -1;
+		}
+
+		if (t_2 > 2) {
+			t_2 = 0;
+			dir_2 *= -1;
+		}
+
+		quad_c++;
+		if (quad_c > 5) {
+			col_f++;
+			col_1++;
+			col_2++;
+
+			if (i == 17) {
+				dir_2 *= -1;
+			}
+
+			if (col_f > 2) {
+				col_f = 0;
+				dir_f = -0.5;
+			}
+
+			if (col_1 > 2) {
+				col_1 = 0;
+			}
+
+			if (col_2 > 2) {
+				col_2 = 0;
+			}
+
+			quad_c = 0;
+		}
+	}
 
 	if (compat_mode) {
 		//pattern
@@ -1688,12 +1748,12 @@ CSGBrush *CSGBox3D::_build_brush() {
 			};
 
 			Vector2 shifts[6] = {
-				Vector2(uv_offset.z, uv_offset.y), //5
-				Vector2(uv_offset.x, uv_offset.z), //1
-				Vector2(-uv_offset.x, uv_offset.y), //0
-				Vector2(-uv_offset.z, uv_offset.y), //2
-				Vector2(-uv_offset.x, uv_offset.z), //3
-				Vector2(uv_offset.x, uv_offset.y), //4
+				Vector2(uv_offset.z, uv_offset.y),
+				Vector2(uv_offset.x, uv_offset.z),
+				Vector2(-uv_offset.x, uv_offset.y),
+				Vector2(-uv_offset.z, uv_offset.y),
+				Vector2(-uv_offset.x, uv_offset.z),
+				Vector2(uv_offset.x, uv_offset.y),
 			};
 
 			int inc_s = 0;
@@ -1864,8 +1924,9 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 		int face = 0;
 
 		Vector3 vertex_mul(radius, height * 0.5, radius);
-		float inc_uv = uv_horizontal_divisions / float(sides); //we tile the textures 4 times around the cylinder.
-		float uv_radius = int(float(radius * uv_horizontal_divisions)) / float(uv_horizontal_divisions); //make sure the textures can complete a full rotation
+		float inc_uv = uv_horizontal_divisions / static_cast<float>(sides); //We tile the textures 4 times around the cylinder.
+		float uv_radius = Math::ceil(static_cast<float>(radius * uv_horizontal_divisions)) / static_cast<float>(uv_horizontal_divisions); //Make sure the textures can complete a full rotation.
+		float h_inc = inc_uv / 2.0;
 
 		{
 			for (int i = 0; i < sides; i++) {
@@ -1889,7 +1950,7 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					face_base * (cone ? 0.0 : 1.0) + Vector3(0, 1, 0),
 				};
 
-				int inverse_i = sides - i; //flip UVs horizontally
+				int inverse_i = sides - i; //Flip UVs horizontally.
 
 				Vector2 u[4] = {
 					Vector2(inc_uv * inverse_i, 0),
@@ -1899,7 +1960,7 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				};
 
 				if (cone) {
-					u[2].x = 0;
+					u[2].x -= h_inc;
 				}
 
 				if (scale_uv) {
