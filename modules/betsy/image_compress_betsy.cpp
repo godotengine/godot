@@ -38,6 +38,7 @@
 #include "bc1.glsl.gen.h"
 #include "bc4.glsl.gen.h"
 #include "bc6h.glsl.gen.h"
+#include "bc7.glsl.gen.h"
 #include "rgb_to_rgba.glsl.gen.h"
 #include "servers/display/display_server.h"
 
@@ -54,6 +55,7 @@ static const BetsyShaderType FORMAT_TO_TYPE[BETSY_FORMAT_MAX] = {
 	BETSY_SHADER_BC4_UNSIGNED,
 	BETSY_SHADER_BC6_SIGNED,
 	BETSY_SHADER_BC6_UNSIGNED,
+	BETSY_SHADER_BC7_UNSIGNED,
 };
 
 static const RD::DataFormat BETSY_TO_RD_FORMAT[BETSY_FORMAT_MAX] = {
@@ -66,6 +68,7 @@ static const RD::DataFormat BETSY_TO_RD_FORMAT[BETSY_FORMAT_MAX] = {
 	RD::DATA_FORMAT_R32G32_UINT,
 	RD::DATA_FORMAT_R32G32B32A32_UINT,
 	RD::DATA_FORMAT_R32G32B32A32_UINT,
+	RD::DATA_FORMAT_R32G32B32A32_UINT, // BC7 is 128-bit per block
 };
 
 static const Image::Format BETSY_TO_IMAGE_FORMAT[BETSY_FORMAT_MAX] = {
@@ -78,6 +81,7 @@ static const Image::Format BETSY_TO_IMAGE_FORMAT[BETSY_FORMAT_MAX] = {
 	Image::FORMAT_RGTC_RG,
 	Image::FORMAT_BPTC_RGBF,
 	Image::FORMAT_BPTC_RGBFU,
+	Image::FORMAT_BPTC_RGBA,
 };
 
 void BetsyCompressor::_init() {
@@ -205,6 +209,23 @@ void BetsyCompressor::_init() {
 
 		cached_shaders[BETSY_SHADER_BC6_UNSIGNED].pipeline = compress_rd->compute_pipeline_create(cached_shaders[BETSY_SHADER_BC6_UNSIGNED].compiled);
 		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_BC6_UNSIGNED].pipeline.is_null());
+	}
+
+	{
+		Ref<RDShaderFile> bc7_shader;
+		bc7_shader.instantiate();
+		Error err = bc7_shader->parse_versions_from_text(bc7_shader_glsl);
+
+		if (err != OK) {
+			bc7_shader->print_errors("Betsy BC7 compress shader");
+		}
+
+		// BC7 compression.
+		cached_shaders[BETSY_SHADER_BC7_UNSIGNED].compiled = compress_rd->shader_create_from_spirv(bc7_shader->get_spirv_stages("default"));
+		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_BC7_UNSIGNED].compiled.is_null());
+
+		cached_shaders[BETSY_SHADER_BC7_UNSIGNED].pipeline = compress_rd->compute_pipeline_create(cached_shaders[BETSY_SHADER_BC7_UNSIGNED].compiled);
+		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_BC7_UNSIGNED].pipeline.is_null());
 	}
 
 	{
@@ -705,6 +726,16 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 					compress_rd->compute_list_dispatch(compute_list, 1, get_next_multiple(width, 16) / 16, get_next_multiple(height, 16) / 16);
 				} break;
 
+				case BETSY_SHADER_BC7_UNSIGNED: {
+					BC7PushConstant push_constant;
+					push_constant.sizeX = 1.0f / width;
+					push_constant.sizeY = 1.0f / height;
+					push_constant.qualityLevel = 2; // High quality - try multiple modes
+
+					compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(BC7PushConstant));
+					compress_rd->compute_list_dispatch(compute_list, get_next_multiple(width, 32) / 32, get_next_multiple(height, 32) / 32, 1);
+				} break;
+
 				default: {
 				} break;
 			}
@@ -858,11 +889,15 @@ Error _betsy_compress_bptc(Image *r_img, Image::UsedChannels p_channels) {
 	Error result = ERR_UNAVAILABLE;
 
 	if (format >= Image::FORMAT_RF && format <= Image::FORMAT_RGBE9995) {
+		// HDR formats use BC6H
 		if (r_img->detect_signed()) {
 			result = betsy->compress(BETSY_FORMAT_BC6_SIGNED, r_img);
 		} else {
 			result = betsy->compress(BETSY_FORMAT_BC6_UNSIGNED, r_img);
 		}
+	} else if (format <= Image::FORMAT_RGBA8) {
+		// LDR formats use BC7
+		result = betsy->compress(BETSY_FORMAT_BC7_UNSIGNED, r_img);
 	}
 
 	if (!GLOBAL_GET("rendering/textures/vram_compression/cache_gpu_compressor")) {

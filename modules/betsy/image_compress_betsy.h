@@ -55,6 +55,7 @@ enum BetsyFormat {
 	BETSY_FORMAT_BC5_UNSIGNED,
 	BETSY_FORMAT_BC6_SIGNED,
 	BETSY_FORMAT_BC6_UNSIGNED,
+	BETSY_FORMAT_BC7_UNSIGNED,
 	BETSY_FORMAT_MAX,
 };
 
@@ -65,6 +66,7 @@ enum BetsyShaderType {
 	BETSY_SHADER_BC4_UNSIGNED,
 	BETSY_SHADER_BC6_SIGNED,
 	BETSY_SHADER_BC6_UNSIGNED,
+	BETSY_SHADER_BC7_UNSIGNED,
 	BETSY_SHADER_ALPHA_STITCH,
 	BETSY_SHADER_RGB_TO_RGBA_FLOAT,
 	BETSY_SHADER_RGB_TO_RGBA_HALF,
@@ -77,6 +79,13 @@ struct BC6PushConstant {
 	float sizeX;
 	float sizeY;
 	uint32_t padding[2] = { 0 };
+};
+
+struct BC7PushConstant {
+	float sizeX;
+	float sizeY;
+	uint32_t qualityLevel;
+	uint32_t padding = 0;
 };
 
 struct BC1PushConstant {

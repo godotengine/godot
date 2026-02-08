@@ -2954,8 +2954,7 @@ Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels
 	if (GLOBAL_GET("rendering/textures/vram_compression/compress_with_gpu")) {
 		switch (p_mode) {
 			case COMPRESS_BPTC: {
-				// BC7 is unsupported currently.
-				if ((format >= FORMAT_RF && format <= FORMAT_RGBE9995) && _image_compress_bptc_rd_func) {
+				if (_image_compress_bptc_rd_func) {
 					Error result = _image_compress_bptc_rd_func(this, p_channels);
 
 					// If the image was compressed successfully, we return here. If not, we fall back to the default compression scheme.
