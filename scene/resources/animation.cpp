@@ -2818,7 +2818,7 @@ void Animation::_track_get_key_indices_in_range(const LocalVector<T> &p_array, d
 	}
 }
 
-void Animation::track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices, Animation::LoopedFlag p_looped_flag) const {
+void Animation::track_get_key_indices_in_range(int p_track, double p_time, double p_delta, double p_start, double p_end, List<int> *p_indices, Animation::LoopedFlag p_looped_flag) const {
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_track, tracks.size());
 
 	if (p_delta == 0) {
@@ -2829,6 +2829,14 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 
 	double from_time = p_time - p_delta;
 	double to_time = p_time;
+	double start = p_start;
+	double end = p_end;
+	if (start < 0) {
+		start = 0;
+	}
+	if (end > length) {
+		end = length;
+	}
 
 	bool is_backward = false;
 	if (from_time > to_time) {
@@ -2841,36 +2849,36 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 			if (from_time < 0) {
 				from_time = 0;
 			}
-			if (from_time > length) {
-				from_time = length;
+			if (from_time > end) {
+				from_time = end;
 			}
 
 			if (to_time < 0) {
 				to_time = 0;
 			}
-			if (to_time > length) {
-				to_time = length;
+			if (to_time > end) {
+				to_time = end;
 			}
 		} break;
 		case LOOP_LINEAR: {
-			if (from_time > length || from_time < 0) {
-				from_time = Math::fposmod(from_time, length);
+			if (from_time > end || from_time < start) {
+				from_time = Math::fposmod(from_time, end);
 			}
-			if (to_time > length || to_time < 0) {
-				to_time = Math::fposmod(to_time, length);
+			if (to_time > end || to_time < start) {
+				to_time = Math::fposmod(to_time, end);
 			}
 
 			if (from_time > to_time) {
 				// Handle loop by splitting.
-				double anim_end = length + CMP_EPSILON;
-				double anim_start = -CMP_EPSILON;
+				double anim_end = end + CMP_EPSILON;
+				double anim_start = start - CMP_EPSILON;
 
 				switch (t->type) {
 					case TYPE_POSITION_3D: {
 						const PositionTrack *tt = static_cast<const PositionTrack *>(t);
 						if (tt->compressed_track >= 0) {
 							_get_compressed_key_indices_in_range<3>(tt->compressed_track, from_time, length, p_indices);
-							_get_compressed_key_indices_in_range<3>(tt->compressed_track, 0, to_time, p_indices);
+							_get_compressed_key_indices_in_range<3>(tt->compressed_track, p_start, to_time, p_indices);
 						} else {
 							if (!is_backward) {
 								_track_get_key_indices_in_range(tt->positions, from_time, anim_end, p_indices, is_backward);
@@ -2884,8 +2892,8 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 					case TYPE_ROTATION_3D: {
 						const RotationTrack *rt = static_cast<const RotationTrack *>(t);
 						if (rt->compressed_track >= 0) {
-							_get_compressed_key_indices_in_range<3>(rt->compressed_track, from_time, length, p_indices);
-							_get_compressed_key_indices_in_range<3>(rt->compressed_track, 0, to_time, p_indices);
+							_get_compressed_key_indices_in_range<3>(rt->compressed_track, from_time, end, p_indices);
+							_get_compressed_key_indices_in_range<3>(rt->compressed_track, start, to_time, p_indices);
 						} else {
 							if (!is_backward) {
 								_track_get_key_indices_in_range(rt->rotations, from_time, anim_end, p_indices, is_backward);
@@ -2899,8 +2907,8 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 					case TYPE_SCALE_3D: {
 						const ScaleTrack *st = static_cast<const ScaleTrack *>(t);
 						if (st->compressed_track >= 0) {
-							_get_compressed_key_indices_in_range<3>(st->compressed_track, from_time, length, p_indices);
-							_get_compressed_key_indices_in_range<3>(st->compressed_track, 0, to_time, p_indices);
+							_get_compressed_key_indices_in_range<3>(st->compressed_track, from_time, end, p_indices);
+							_get_compressed_key_indices_in_range<3>(st->compressed_track, start, to_time, p_indices);
 						} else {
 							if (!is_backward) {
 								_track_get_key_indices_in_range(st->scales, from_time, anim_end, p_indices, is_backward);
@@ -2914,8 +2922,8 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 					case TYPE_BLEND_SHAPE: {
 						const BlendShapeTrack *bst = static_cast<const BlendShapeTrack *>(t);
 						if (bst->compressed_track >= 0) {
-							_get_compressed_key_indices_in_range<1>(bst->compressed_track, from_time, length, p_indices);
-							_get_compressed_key_indices_in_range<1>(bst->compressed_track, 0, to_time, p_indices);
+							_get_compressed_key_indices_in_range<1>(bst->compressed_track, from_time, end, p_indices);
+							_get_compressed_key_indices_in_range<1>(bst->compressed_track, start, to_time, p_indices);
 						} else {
 							if (!is_backward) {
 								_track_get_key_indices_in_range(bst->blend_shapes, from_time, anim_end, p_indices, is_backward);
@@ -2982,13 +2990,13 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 
 			// Not from_time > to_time but most recent of looping...
 			if (p_looped_flag != Animation::LOOPED_FLAG_NONE) {
-				if (!is_backward && Math::is_equal_approx(from_time, 0)) {
-					int edge = track_find_key(p_track, 0, FIND_MODE_EXACT);
+				if (!is_backward && Math::is_equal_approx(from_time, start)) {
+					int edge = track_find_key(p_track, start, FIND_MODE_EXACT);
 					if (edge >= 0) {
 						p_indices->push_back(edge);
 					}
-				} else if (is_backward && Math::is_equal_approx(to_time, length)) {
-					int edge = track_find_key(p_track, length, FIND_MODE_EXACT);
+				} else if (is_backward && Math::is_equal_approx(to_time, end)) {
+					int edge = track_find_key(p_track, end, FIND_MODE_EXACT);
 					if (edge >= 0) {
 						p_indices->push_back(edge);
 					}
@@ -2996,10 +3004,10 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 			}
 		} break;
 		case LOOP_PINGPONG: {
-			if (from_time > length || from_time < 0) {
+			if (from_time > end || from_time < start) {
 				from_time = Math::pingpong(from_time, length);
 			}
-			if (to_time > length || to_time < 0) {
+			if (to_time > end || to_time < start) {
 				to_time = Math::pingpong(to_time, length);
 			}
 
@@ -3009,67 +3017,67 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 					case TYPE_POSITION_3D: {
 						const PositionTrack *tt = static_cast<const PositionTrack *>(t);
 						if (tt->compressed_track >= 0) {
-							_get_compressed_key_indices_in_range<3>(tt->compressed_track, 0, from_time, p_indices);
-							_get_compressed_key_indices_in_range<3>(tt->compressed_track, 0, to_time, p_indices);
+							_get_compressed_key_indices_in_range<3>(tt->compressed_track, start, from_time, p_indices);
+							_get_compressed_key_indices_in_range<3>(tt->compressed_track, start, to_time, p_indices);
 						} else {
-							_track_get_key_indices_in_range(tt->positions, 0, from_time, p_indices, true);
-							_track_get_key_indices_in_range(tt->positions, 0, to_time, p_indices, false);
+							_track_get_key_indices_in_range(tt->positions, start, from_time, p_indices, true);
+							_track_get_key_indices_in_range(tt->positions, start, to_time, p_indices, false);
 						}
 					} break;
 					case TYPE_ROTATION_3D: {
 						const RotationTrack *rt = static_cast<const RotationTrack *>(t);
 						if (rt->compressed_track >= 0) {
-							_get_compressed_key_indices_in_range<3>(rt->compressed_track, 0, from_time, p_indices);
-							_get_compressed_key_indices_in_range<3>(rt->compressed_track, 0, to_time, p_indices);
+							_get_compressed_key_indices_in_range<3>(rt->compressed_track, start, from_time, p_indices);
+							_get_compressed_key_indices_in_range<3>(rt->compressed_track, start, to_time, p_indices);
 						} else {
-							_track_get_key_indices_in_range(rt->rotations, 0, from_time, p_indices, true);
-							_track_get_key_indices_in_range(rt->rotations, 0, to_time, p_indices, false);
+							_track_get_key_indices_in_range(rt->rotations, start, from_time, p_indices, true);
+							_track_get_key_indices_in_range(rt->rotations, start, to_time, p_indices, false);
 						}
 					} break;
 					case TYPE_SCALE_3D: {
 						const ScaleTrack *st = static_cast<const ScaleTrack *>(t);
 						if (st->compressed_track >= 0) {
-							_get_compressed_key_indices_in_range<3>(st->compressed_track, 0, from_time, p_indices);
-							_get_compressed_key_indices_in_range<3>(st->compressed_track, 0, to_time, p_indices);
+							_get_compressed_key_indices_in_range<3>(st->compressed_track, start, from_time, p_indices);
+							_get_compressed_key_indices_in_range<3>(st->compressed_track, start, to_time, p_indices);
 						} else {
-							_track_get_key_indices_in_range(st->scales, 0, from_time, p_indices, true);
-							_track_get_key_indices_in_range(st->scales, 0, to_time, p_indices, false);
+							_track_get_key_indices_in_range(st->scales, start, from_time, p_indices, true);
+							_track_get_key_indices_in_range(st->scales, start, to_time, p_indices, false);
 						}
 					} break;
 					case TYPE_BLEND_SHAPE: {
 						const BlendShapeTrack *bst = static_cast<const BlendShapeTrack *>(t);
 						if (bst->compressed_track >= 0) {
-							_get_compressed_key_indices_in_range<1>(bst->compressed_track, 0, from_time, p_indices);
-							_get_compressed_key_indices_in_range<1>(bst->compressed_track, 0, to_time, p_indices);
+							_get_compressed_key_indices_in_range<1>(bst->compressed_track, start, from_time, p_indices);
+							_get_compressed_key_indices_in_range<1>(bst->compressed_track, start, to_time, p_indices);
 						} else {
-							_track_get_key_indices_in_range(bst->blend_shapes, 0, from_time, p_indices, true);
-							_track_get_key_indices_in_range(bst->blend_shapes, 0, to_time, p_indices, false);
+							_track_get_key_indices_in_range(bst->blend_shapes, start, from_time, p_indices, true);
+							_track_get_key_indices_in_range(bst->blend_shapes, start, to_time, p_indices, false);
 						}
 					} break;
 					case TYPE_VALUE: {
 						const ValueTrack *vt = static_cast<const ValueTrack *>(t);
-						_track_get_key_indices_in_range(vt->values, 0, from_time, p_indices, true);
-						_track_get_key_indices_in_range(vt->values, 0, to_time, p_indices, false);
+						_track_get_key_indices_in_range(vt->values, start, from_time, p_indices, true);
+						_track_get_key_indices_in_range(vt->values, start, to_time, p_indices, false);
 					} break;
 					case TYPE_METHOD: {
 						const MethodTrack *mt = static_cast<const MethodTrack *>(t);
-						_track_get_key_indices_in_range(mt->methods, 0, from_time, p_indices, true);
-						_track_get_key_indices_in_range(mt->methods, 0, to_time, p_indices, false);
+						_track_get_key_indices_in_range(mt->methods, start, from_time, p_indices, true);
+						_track_get_key_indices_in_range(mt->methods, start, to_time, p_indices, false);
 					} break;
 					case TYPE_BEZIER: {
 						const BezierTrack *bz = static_cast<const BezierTrack *>(t);
-						_track_get_key_indices_in_range(bz->values, 0, from_time, p_indices, true);
-						_track_get_key_indices_in_range(bz->values, 0, to_time, p_indices, false);
+						_track_get_key_indices_in_range(bz->values, start, from_time, p_indices, true);
+						_track_get_key_indices_in_range(bz->values, start, to_time, p_indices, false);
 					} break;
 					case TYPE_AUDIO: {
 						const AudioTrack *ad = static_cast<const AudioTrack *>(t);
-						_track_get_key_indices_in_range(ad->values, 0, from_time, p_indices, true);
-						_track_get_key_indices_in_range(ad->values, 0, to_time, p_indices, false);
+						_track_get_key_indices_in_range(ad->values, start, from_time, p_indices, true);
+						_track_get_key_indices_in_range(ad->values, start, to_time, p_indices, false);
 					} break;
 					case TYPE_ANIMATION: {
 						const AnimationTrack *an = static_cast<const AnimationTrack *>(t);
-						_track_get_key_indices_in_range(an->values, 0, from_time, p_indices, true);
-						_track_get_key_indices_in_range(an->values, 0, to_time, p_indices, false);
+						_track_get_key_indices_in_range(an->values, start, from_time, p_indices, true);
+						_track_get_key_indices_in_range(an->values, start, to_time, p_indices, false);
 					} break;
 				}
 				return;
@@ -3080,76 +3088,76 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 					case TYPE_POSITION_3D: {
 						const PositionTrack *tt = static_cast<const PositionTrack *>(t);
 						if (tt->compressed_track >= 0) {
-							_get_compressed_key_indices_in_range<3>(tt->compressed_track, from_time, length, p_indices);
-							_get_compressed_key_indices_in_range<3>(tt->compressed_track, to_time, length, p_indices);
+							_get_compressed_key_indices_in_range<3>(tt->compressed_track, from_time, end, p_indices);
+							_get_compressed_key_indices_in_range<3>(tt->compressed_track, to_time, end, p_indices);
 						} else {
-							_track_get_key_indices_in_range(tt->positions, from_time, length, p_indices, false);
-							_track_get_key_indices_in_range(tt->positions, to_time, length, p_indices, true);
+							_track_get_key_indices_in_range(tt->positions, from_time, end, p_indices, false);
+							_track_get_key_indices_in_range(tt->positions, to_time, end, p_indices, true);
 						}
 					} break;
 					case TYPE_ROTATION_3D: {
 						const RotationTrack *rt = static_cast<const RotationTrack *>(t);
 						if (rt->compressed_track >= 0) {
-							_get_compressed_key_indices_in_range<3>(rt->compressed_track, from_time, length, p_indices);
-							_get_compressed_key_indices_in_range<3>(rt->compressed_track, to_time, length, p_indices);
+							_get_compressed_key_indices_in_range<3>(rt->compressed_track, from_time, end, p_indices);
+							_get_compressed_key_indices_in_range<3>(rt->compressed_track, to_time, end, p_indices);
 						} else {
-							_track_get_key_indices_in_range(rt->rotations, from_time, length, p_indices, false);
-							_track_get_key_indices_in_range(rt->rotations, to_time, length, p_indices, true);
+							_track_get_key_indices_in_range(rt->rotations, from_time, end, p_indices, false);
+							_track_get_key_indices_in_range(rt->rotations, to_time, end, p_indices, true);
 						}
 					} break;
 					case TYPE_SCALE_3D: {
 						const ScaleTrack *st = static_cast<const ScaleTrack *>(t);
 						if (st->compressed_track >= 0) {
-							_get_compressed_key_indices_in_range<3>(st->compressed_track, from_time, length, p_indices);
-							_get_compressed_key_indices_in_range<3>(st->compressed_track, to_time, length, p_indices);
+							_get_compressed_key_indices_in_range<3>(st->compressed_track, from_time, end, p_indices);
+							_get_compressed_key_indices_in_range<3>(st->compressed_track, to_time, end, p_indices);
 						} else {
-							_track_get_key_indices_in_range(st->scales, from_time, length, p_indices, false);
-							_track_get_key_indices_in_range(st->scales, to_time, length, p_indices, true);
+							_track_get_key_indices_in_range(st->scales, from_time, end, p_indices, false);
+							_track_get_key_indices_in_range(st->scales, to_time, end, p_indices, true);
 						}
 					} break;
 					case TYPE_BLEND_SHAPE: {
 						const BlendShapeTrack *bst = static_cast<const BlendShapeTrack *>(t);
 						if (bst->compressed_track >= 0) {
-							_get_compressed_key_indices_in_range<1>(bst->compressed_track, from_time, length, p_indices);
-							_get_compressed_key_indices_in_range<1>(bst->compressed_track, to_time, length, p_indices);
+							_get_compressed_key_indices_in_range<1>(bst->compressed_track, from_time, end, p_indices);
+							_get_compressed_key_indices_in_range<1>(bst->compressed_track, to_time, end, p_indices);
 						} else {
-							_track_get_key_indices_in_range(bst->blend_shapes, from_time, length, p_indices, false);
-							_track_get_key_indices_in_range(bst->blend_shapes, to_time, length, p_indices, true);
+							_track_get_key_indices_in_range(bst->blend_shapes, from_time, end, p_indices, false);
+							_track_get_key_indices_in_range(bst->blend_shapes, to_time, end, p_indices, true);
 						}
 					} break;
 					case TYPE_VALUE: {
 						const ValueTrack *vt = static_cast<const ValueTrack *>(t);
-						_track_get_key_indices_in_range(vt->values, from_time, length, p_indices, false);
-						_track_get_key_indices_in_range(vt->values, to_time, length, p_indices, true);
+						_track_get_key_indices_in_range(vt->values, from_time, end, p_indices, false);
+						_track_get_key_indices_in_range(vt->values, to_time, end, p_indices, true);
 					} break;
 					case TYPE_METHOD: {
 						const MethodTrack *mt = static_cast<const MethodTrack *>(t);
-						_track_get_key_indices_in_range(mt->methods, from_time, length, p_indices, false);
-						_track_get_key_indices_in_range(mt->methods, to_time, length, p_indices, true);
+						_track_get_key_indices_in_range(mt->methods, from_time, end, p_indices, false);
+						_track_get_key_indices_in_range(mt->methods, to_time, end, p_indices, true);
 					} break;
 					case TYPE_BEZIER: {
 						const BezierTrack *bz = static_cast<const BezierTrack *>(t);
-						_track_get_key_indices_in_range(bz->values, from_time, length, p_indices, false);
-						_track_get_key_indices_in_range(bz->values, to_time, length, p_indices, true);
+						_track_get_key_indices_in_range(bz->values, from_time, end, p_indices, false);
+						_track_get_key_indices_in_range(bz->values, to_time, end, p_indices, true);
 					} break;
 					case TYPE_AUDIO: {
 						const AudioTrack *ad = static_cast<const AudioTrack *>(t);
-						_track_get_key_indices_in_range(ad->values, from_time, length, p_indices, false);
-						_track_get_key_indices_in_range(ad->values, to_time, length, p_indices, true);
+						_track_get_key_indices_in_range(ad->values, from_time, end, p_indices, false);
+						_track_get_key_indices_in_range(ad->values, to_time, end, p_indices, true);
 					} break;
 					case TYPE_ANIMATION: {
 						const AnimationTrack *an = static_cast<const AnimationTrack *>(t);
-						_track_get_key_indices_in_range(an->values, from_time, length, p_indices, false);
-						_track_get_key_indices_in_range(an->values, to_time, length, p_indices, true);
+						_track_get_key_indices_in_range(an->values, from_time, end, p_indices, false);
+						_track_get_key_indices_in_range(an->values, to_time, end, p_indices, true);
 					} break;
 				}
 				return;
 			}
 
 			// The edge will be pingponged in the next frame and processed there, so let's ignore it now...
-			if (!is_backward && Math::is_equal_approx(to_time, length)) {
+			if (!is_backward && Math::is_equal_approx(to_time, end)) {
 				to_time -= CMP_EPSILON;
-			} else if (is_backward && Math::is_equal_approx(from_time, 0)) {
+			} else if (is_backward && Math::is_equal_approx(from_time, start)) {
 				from_time += CMP_EPSILON;
 			}
 		} break;
