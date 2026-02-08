@@ -165,6 +165,7 @@
 		</member>
 		<member name="total_mass" type="float" setter="set_total_mass" getter="get_total_mass" default="1.0">
 			The SoftBody3D's mass.
+			[b]Note:[/b] When using Jolt Physics, the default value of this property will instead be [code]0.0[/code], which will cause the body to automatically calculate the mass to 1 kg per point. This is a bug, which will be fixed in Godot 4.7.
 		</member>
 	</members>
 	<constants>
