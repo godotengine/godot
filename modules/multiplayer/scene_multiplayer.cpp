@@ -649,8 +649,6 @@ void SceneMultiplayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_auth_timeout", "timeout"), &SceneMultiplayer::set_auth_timeout);
 	ClassDB::bind_method(D_METHOD("get_auth_timeout"), &SceneMultiplayer::get_auth_timeout);
 
-	ClassDB::bind_method(D_METHOD("set_refuse_new_connections", "refuse"), &SceneMultiplayer::set_refuse_new_connections);
-	ClassDB::bind_method(D_METHOD("is_refusing_new_connections"), &SceneMultiplayer::is_refusing_new_connections);
 	ClassDB::bind_method(D_METHOD("set_allow_object_decoding", "enable"), &SceneMultiplayer::set_allow_object_decoding);
 	ClassDB::bind_method(D_METHOD("is_object_decoding_allowed"), &SceneMultiplayer::is_object_decoding_allowed);
 	ClassDB::bind_method(D_METHOD("set_server_relay_enabled", "enabled"), &SceneMultiplayer::set_server_relay_enabled);
@@ -666,12 +664,9 @@ void SceneMultiplayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "auth_callback"), "set_auth_callback", "get_auth_callback");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auth_timeout", PROPERTY_HINT_RANGE, "0,30,0.1,or_greater,suffix:s"), "set_auth_timeout", "get_auth_timeout");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_object_decoding"), "set_allow_object_decoding", "is_object_decoding_allowed");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_connections"), "set_refuse_new_connections", "is_refusing_new_connections");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "server_relay"), "set_server_relay_enabled", "is_server_relay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_sync_packet_size"), "set_max_sync_packet_size", "get_max_sync_packet_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_delta_packet_size"), "set_max_delta_packet_size", "get_max_delta_packet_size");
-
-	ADD_PROPERTY_DEFAULT("refuse_new_connections", false);
 
 	ADD_SIGNAL(MethodInfo("peer_authenticating", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("peer_authentication_failed", PropertyInfo(Variant::INT, "id")));

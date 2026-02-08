@@ -1,0 +1,7 @@
+GH-116028
+--------------
+Validate extension JSON: API was removed: classes/SceneMultiplayer/methods/set_refuse_new_connections
+Validate extension JSON: API was removed: classes/SceneMultiplayer/methods/is_refusing_new_connections
+Validate extension JSON: API was removed: classes/SceneMultiplayer/properties/refuse_new_connections
+
+Methods have been moved to parent class, errors are false-positives.

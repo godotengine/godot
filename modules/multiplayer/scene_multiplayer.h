@@ -185,8 +185,8 @@ public:
 	const HashSet<int> get_connected_peers() const { return connected_peers; }
 
 	void set_remote_sender_override(int p_id) { remote_sender_override = p_id; }
-	void set_refuse_new_connections(bool p_refuse);
-	bool is_refusing_new_connections() const;
+	void set_refuse_new_connections(bool p_refuse) override;
+	bool is_refusing_new_connections() const override;
 
 	void set_allow_object_decoding(bool p_enable);
 	bool is_object_decoding_allowed() const;

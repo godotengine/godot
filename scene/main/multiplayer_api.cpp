@@ -294,10 +294,15 @@ void MultiplayerAPI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rpc", "peer", "object", "method", "arguments"), &MultiplayerAPI::_rpc_bind, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("object_configuration_add", "object", "configuration"), &MultiplayerAPI::object_configuration_add);
 	ClassDB::bind_method(D_METHOD("object_configuration_remove", "object", "configuration"), &MultiplayerAPI::object_configuration_remove);
+	ClassDB::bind_method(D_METHOD("set_refuse_new_connections", "refuse"), &MultiplayerAPI::set_refuse_new_connections);
+	ClassDB::bind_method(D_METHOD("is_refusing_new_connections"), &MultiplayerAPI::is_refusing_new_connections);
 
 	ClassDB::bind_method(D_METHOD("get_peers"), &MultiplayerAPI::get_peer_ids);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer_peer", PROPERTY_HINT_RESOURCE_TYPE, MultiplayerPeer::get_class_static(), PROPERTY_USAGE_NONE), "set_multiplayer_peer", "get_multiplayer_peer");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_connections"), "set_refuse_new_connections", "is_refusing_new_connections");
+
+	ADD_PROPERTY_DEFAULT("refuse_new_connections", false);
 
 	ClassDB::bind_static_method("MultiplayerAPI", D_METHOD("set_default_interface", "interface_name"), &MultiplayerAPI::set_default_interface);
 	ClassDB::bind_static_method("MultiplayerAPI", D_METHOD("get_default_interface"), &MultiplayerAPI::get_default_interface);
@@ -375,6 +380,16 @@ Error MultiplayerAPIExtension::object_configuration_remove(Object *p_object, Var
 	return err;
 }
 
+void MultiplayerAPIExtension::set_refuse_new_connections(bool p_refuse) {
+	GDVIRTUAL_CALL(_set_refuse_new_connections, p_refuse);
+}
+
+bool MultiplayerAPIExtension::is_refusing_new_connections() const {
+	bool is_peer_refusing = false;
+	GDVIRTUAL_CALL(_is_refusing_new_connections, is_peer_refusing);
+	return is_peer_refusing;
+}
+
 void MultiplayerAPIExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_poll);
 	GDVIRTUAL_BIND(_set_multiplayer_peer, "multiplayer_peer");
@@ -385,4 +400,6 @@ void MultiplayerAPIExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_remote_sender_id);
 	GDVIRTUAL_BIND(_object_configuration_add, "object", "configuration");
 	GDVIRTUAL_BIND(_object_configuration_remove, "object", "configuration");
+	GDVIRTUAL_BIND(_set_refuse_new_connections, "refuse");
+	GDVIRTUAL_BIND(_is_refusing_new_connections);
 }
