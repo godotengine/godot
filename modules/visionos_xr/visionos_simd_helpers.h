@@ -36,8 +36,8 @@
 #include "core/math/transform_3d.h"
 #include "servers/rendering/rendering_device.h"
 
-#include <simd/simd.h>
 #import <Metal/Metal.h>
+#include <simd/simd.h>
 
 namespace MTL {
 
