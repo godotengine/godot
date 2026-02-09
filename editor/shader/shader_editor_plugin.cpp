@@ -126,26 +126,14 @@ String ShaderEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
 		if (unsaved_built_in_scripts.is_empty()) {
 			return String();
 		} else {
-			message.resize(unsaved_built_in_scripts.size() + 1);
-			message.write[0] = TTR("There are unsaved changes in the following built-in resource(s)");
-
-			int i = 1;
-			for (const String &E : unsaved_built_in_scripts) {
-				message.write[i] = E.trim_suffix("(*)");
-				i++;
-			}
+			message.push_back(TTR("There are unsaved changes in the following built-in resource(s)"));
+			message.append_array(unsaved_built_in_scripts);
 			return String("\n").join(message);
 		}
 	}
 
-	message.resize(unsaved_scripts.size() + 1);
-	message.write[0] = TTR("Save changes to the following file(s) before quitting?");
-
-	int i = 1;
-	for (const String &E : unsaved_scripts) {
-		message.write[i] = E.trim_suffix("(*)");
-		i++;
-	}
+	message.push_back(TTR("Save changes to the following file(s) before quitting?"));
+	message.append_array(unsaved_scripts);
 	return String("\n").join(message);
 }
 

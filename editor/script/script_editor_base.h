@@ -62,7 +62,7 @@ public:
 		uint64_t last_modified_time = -1;
 	} edited_file_data;
 
-	virtual String get_name();
+	String get_document_name() const;
 	virtual String get_doc_url_path() { return "/"; }
 	virtual Ref<Texture2D> get_theme_icon();
 
@@ -171,6 +171,7 @@ protected:
 	}
 
 	bool validation_success = true;
+	bool was_unsaved = false;
 
 	bool editor_enabled = false;
 	CodeTextEditor *code_editor = nullptr;
@@ -189,6 +190,7 @@ protected:
 
 	virtual void _load_theme_settings();
 	virtual void _validate_script();
+	void _saved_update();
 
 	void _convert_case(CodeTextEditor::CaseStyle p_case) { code_editor->convert_case(p_case); }
 

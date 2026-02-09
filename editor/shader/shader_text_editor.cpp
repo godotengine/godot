@@ -792,6 +792,10 @@ void ShaderTextEditor::_shader_changed() {
 	}
 	dependencies_changed = true;
 	_validate_script();
+	if (edited_res->is_built_in() && previous_name != get_document_name()) {
+		previous_name = get_document_name();
+		emit_signal(SNAME("name_changed"));
+	}
 }
 
 void ShaderTextEditor::_clear_previews() {
@@ -1263,13 +1267,15 @@ void ShaderTextEditor::set_edited_resource(const Ref<Resource> &p_res) {
 	if (p_res.is_null() || edited_res == p_res) {
 		return;
 	}
+	if (edited_res.is_valid()) {
+		edited_res->disconnect_changed(callable_mp(this, &ShaderTextEditor::_shader_changed));
+	}
+
 	Ref<Shader> shader = p_res;
 	Ref<ShaderInclude> shader_inc = p_res;
 	if (shader.is_null() && shader_inc.is_null()) {
 		return;
 	}
-
-	p_res->disconnect_changed(callable_mp(this, &ShaderTextEditor::_shader_changed));
 
 	edited_res = p_res;
 	_load_theme_settings();
@@ -1289,7 +1295,7 @@ void ShaderTextEditor::set_edited_resource(const Ref<Resource> &p_res) {
 	_validate_script();
 	code_editor->update_line_and_column();
 
-	p_res->connect_changed(callable_mp(this, &ShaderTextEditor::_shader_changed));
+	edited_res->connect_changed(callable_mp(this, &ShaderTextEditor::_shader_changed));
 }
 
 void ShaderTextEditor::goto_line_centered(int p_line, int p_column) {
