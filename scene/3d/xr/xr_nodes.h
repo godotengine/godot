@@ -41,13 +41,17 @@ class XRCamera3D : public Camera3D {
 	GDCLASS(XRCamera3D, Camera3D);
 
 protected:
-	// The name and pose for our HMD tracker is currently the only hardcoded bit.
-	// If we ever are able to support multiple HMDs we may need to make this settable.
-	StringName tracker_name = "head";
+	StringName tracker_name = XR_TRACKER_HEAD;
 	StringName pose_name = SceneStringName(default_);
 	Ref<XRPositionalTracker> tracker;
 
+	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
+	void _notification(int p_what);
+
+	virtual void _update_camera_mode() override;
+	virtual void fti_update_servers_property() override;
+	void _update_projections();
 
 	void _bind_tracker();
 	void _unbind_tracker();
@@ -63,6 +67,9 @@ public:
 	virtual Point2 unproject_position(const Vector3 &p_pos) const override;
 	virtual Vector3 project_position(const Point2 &p_point, real_t p_z_depth) const override;
 	virtual Vector<Plane> get_frustum() const override;
+
+	void set_tracker(const StringName &p_tracker_name);
+	StringName get_tracker() const;
 
 	XRCamera3D();
 	~XRCamera3D();
