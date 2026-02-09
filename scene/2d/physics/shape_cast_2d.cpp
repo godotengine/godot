@@ -218,12 +218,13 @@ void ShapeCast2D::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_DRAW: {
 #ifdef TOOLS_ENABLED
+		case NOTIFICATION_DRAW: {
 			ERR_FAIL_COND(!is_inside_tree());
 			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
 			}
+			_prepare_debug_canvas_item();
 			if (shape.is_null()) {
 				break;
 			}
@@ -239,7 +240,7 @@ void ShapeCast2D::_notification(int p_what) {
 			for (int i = 0; i <= steps; ++i) {
 				Vector2 t = (real_t(i) / steps) * target_position;
 				draw_set_transform(t, 0.0, Size2(1, 1));
-				shape->draw(get_canvas_item(), draw_col);
+				shape->draw(_get_debug_canvas_item(), draw_col);
 			}
 			draw_set_transform(Vector2(), 0.0, Size2(1, 1));
 
@@ -250,10 +251,11 @@ void ShapeCast2D::_notification(int p_what) {
 				bool no_line = target_position.length() < line_width;
 				real_t arrow_size = CLAMP(target_position.length() * 2 / 3, line_width, max_arrow_size);
 
+				RenderingServer *rs = RenderingServer::get_singleton();
 				if (no_line) {
 					arrow_size = target_position.length();
 				} else {
-					draw_line(Vector2(), target_position - target_position.normalized() * arrow_size, draw_col, line_width);
+					rs->canvas_item_add_line(_get_debug_canvas_item(), Vector2(), target_position - target_position.normalized() * arrow_size, draw_col, line_width);
 				}
 
 				Transform2D xf;
@@ -268,10 +270,10 @@ void ShapeCast2D::_notification(int p_what) {
 
 				Vector<Color> cols = { draw_col, draw_col, draw_col };
 
-				draw_primitive(pts, cols, Vector<Vector2>());
+				rs->canvas_item_add_primitive(_get_debug_canvas_item(), pts, cols, Vector<Vector2>(), RID());
 			}
-#endif
 		} break;
+#endif // TOOLS_ENABLED
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (!enabled) {

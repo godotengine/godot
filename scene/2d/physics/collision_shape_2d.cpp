@@ -34,6 +34,7 @@
 #include "scene/2d/physics/collision_object_2d.h"
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
+#include "servers/rendering/rendering_server.h"
 
 void CollisionShape2D::_shape_changed() {
 	queue_redraw();
@@ -82,12 +83,15 @@ void CollisionShape2D::_notification(int p_what) {
 			collision_object = nullptr;
 		} break;
 
+#ifdef DEBUG_ENABLED
 		case NOTIFICATION_DRAW: {
 			ERR_FAIL_COND(!is_inside_tree());
 
 			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
 			}
+
+			_prepare_debug_canvas_item();
 
 			if (shape.is_null()) {
 				break;
@@ -103,19 +107,20 @@ void CollisionShape2D::_notification(int p_what) {
 				draw_col.b = g;
 				draw_col.a *= 0.5;
 			}
-			shape->draw(get_canvas_item(), draw_col);
+			shape->draw(_get_debug_canvas_item(), draw_col);
 
 			rect = shape->get_rect();
 			rect = rect.grow(3);
 
 			if (one_way_collision) {
+				RenderingServer *rs = RenderingServer::get_singleton();
 				// Draw an arrow indicating the one-way collision direction
 				draw_col = debug_color.inverted();
 				if (disabled) {
 					draw_col = draw_col.darkened(0.25);
 				}
 				Vector2 line_to(0, 20);
-				draw_line(Vector2(), line_to, draw_col, 2);
+				rs->canvas_item_add_line(_get_debug_canvas_item(), Vector2(), line_to, draw_col, 2);
 				real_t tsize = 8;
 
 				Vector<Vector2> pts{
@@ -126,9 +131,10 @@ void CollisionShape2D::_notification(int p_what) {
 
 				Vector<Color> cols{ draw_col, draw_col, draw_col };
 
-				draw_primitive(pts, cols, Vector<Vector2>());
+				rs->canvas_item_add_primitive(_get_debug_canvas_item(), pts, cols, Vector<Vector2>(), RID());
 			}
 		} break;
+#endif // DEBUG_ENABLED
 	}
 }
 
