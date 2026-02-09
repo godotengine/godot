@@ -408,6 +408,7 @@ def configure_msvc(env: "SConsEnvironment"):
         "wbemuuid",
         "ntdll",
         "hid",
+        "mincore",
     ]
 
     if env.debug_features:
@@ -783,6 +784,7 @@ def configure_mingw(env: "SConsEnvironment"):
             "wbemuuid",
             "ntdll",
             "hid",
+            "mincore",
         ]
     )
 

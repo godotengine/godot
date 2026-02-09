@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  tts_windows.cpp                                                       */
+/*  tts_driver.h                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,90 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "tts_windows.h"
+#pragma once
 
-#include "tts_driver_sapi.h"
+#include "core/string/ustring.h"
+#include "core/variant/array.h"
 
-#include "tts_driver_onecore.h"
+GODOT_CLANG_WARNING_PUSH
+GODOT_CLANG_WARNING_IGNORE("-Wdeprecated-pragma") // Note: remove after switching to C++20.
+#include "core/object/object.h"
+#include "servers/display/display_server.h"
+GODOT_CLANG_WARNING_POP
 
-TTS_Windows *TTS_Windows::singleton = nullptr;
+class TTSDriver : public Object {
+	GDSOFTCLASS(TTSDriver, Object);
 
-TTS_Windows *TTS_Windows::get_singleton() {
-	return singleton;
-}
+public:
+	virtual bool is_speaking() const = 0;
+	virtual bool is_paused() const = 0;
+	virtual Array get_voices() const = 0;
 
-bool TTS_Windows::is_speaking() const {
-	if (driver) {
-		return driver->is_speaking();
-	}
-	return false;
-}
+	virtual void speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int64_t p_utterance_id = 0, bool p_interrupt = false) = 0;
+	virtual void pause() = 0;
+	virtual void resume() = 0;
+	virtual void stop() = 0;
 
-bool TTS_Windows::is_paused() const {
-	if (driver) {
-		return driver->is_paused();
-	}
-	return false;
-}
+	virtual void process_events() = 0;
 
-Array TTS_Windows::get_voices() const {
-	if (driver) {
-		return driver->get_voices();
-	}
-	return Array();
-}
+	virtual bool init() = 0;
 
-void TTS_Windows::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
-	if (driver) {
-		driver->speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
-	}
-}
-
-void TTS_Windows::pause() {
-	if (driver) {
-		driver->pause();
-	}
-}
-
-void TTS_Windows::resume() {
-	if (driver) {
-		driver->resume();
-	}
-}
-
-void TTS_Windows::stop() {
-	if (driver) {
-		driver->stop();
-	}
-}
-
-void TTS_Windows::process_events() {
-	if (driver) {
-		driver->process_events();
-	}
-}
-
-TTS_Windows::TTS_Windows() {
-	// Try OneCore driver.
-	if (!driver) {
-		driver = memnew(TTSDriverOneCore);
-		if (!driver->init()) {
-			memdelete(driver);
-			driver = nullptr;
-		}
-	}
-	// Try SAPI driver.
-	if (!driver) {
-		driver = memnew(TTSDriverSAPI);
-		if (!driver->init()) {
-			memdelete(driver);
-			driver = nullptr;
-		}
-	}
-}
-
-TTS_Windows::~TTS_Windows() {
-	if (driver) {
-		memdelete(driver);
-	}
-}
+	virtual ~TTSDriver() {}
+};
