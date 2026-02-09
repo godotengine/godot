@@ -147,7 +147,9 @@ SMAA::~SMAA() {
 }
 
 void SMAA::allocate_render_targets(Ref<RenderSceneBuffersRD> p_render_buffers) {
-	Size2i full_size = p_render_buffers->get_internal_size();
+	RS::ViewportScaling3DMode scale_mode = p_render_buffers->get_scaling_3d_mode();
+	bool use_upscaled_texture = p_render_buffers->has_upscaled_texture() && (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2 || scale_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL);
+	Size2i full_size = use_upscaled_texture ? p_render_buffers->get_target_size() : p_render_buffers->get_internal_size();
 
 	// As we're not clearing these, and render buffers will return the cached texture if it already exists,
 	// we don't first check has_texture here.
@@ -167,7 +169,9 @@ void SMAA::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_colo
 	memset(&smaa.weight_push_constant, 0, sizeof(SMAAWeightPushConstant));
 	memset(&smaa.blend_push_constant, 0, sizeof(SMAABlendPushConstant));
 
-	Size2i size = p_render_buffers->get_internal_size();
+	RS::ViewportScaling3DMode scale_mode = p_render_buffers->get_scaling_3d_mode();
+	bool use_upscaled_texture = p_render_buffers->has_upscaled_texture() && (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2 || scale_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL);
+	Size2i size = use_upscaled_texture ? p_render_buffers->get_target_size() : p_render_buffers->get_internal_size();
 	Size2 inv_size = Size2(1.0f / (float)size.x, 1.0f / (float)size.y);
 
 	smaa.edge_push_constant.inv_size[0] = inv_size.x;
