@@ -103,7 +103,7 @@ void SceneCreateDialog::update_dialog() {
 	scene_name = scene_name_edit->get_text().strip_edges();
 
 	if (scene_name.is_empty()) {
-		validation_panel->set_message(MSG_ID_PATH, TTR("Scene name is empty."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(MSG_ID_PATH, TTRC("Scene name is empty."), EditorValidationPanel::MSG_ERROR);
 	}
 
 	if (validation_panel->is_valid()) {
@@ -114,16 +114,16 @@ void SceneCreateDialog::update_dialog() {
 	}
 
 	if (validation_panel->is_valid() && !scene_name.is_valid_filename()) {
-		validation_panel->set_message(MSG_ID_PATH, TTR("File name invalid."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(MSG_ID_PATH, TTRC("File name invalid."), EditorValidationPanel::MSG_ERROR);
 	} else if (validation_panel->is_valid() && scene_name[0] == '.') {
-		validation_panel->set_message(MSG_ID_PATH, TTR("File name begins with a dot."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(MSG_ID_PATH, TTRC("File name begins with a dot."), EditorValidationPanel::MSG_ERROR);
 	}
 
 	if (validation_panel->is_valid()) {
 		scene_name = directory.path_join(scene_name);
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (da->file_exists(scene_name)) {
-			validation_panel->set_message(MSG_ID_PATH, TTR("File already exists."), EditorValidationPanel::MSG_ERROR);
+			validation_panel->set_message(MSG_ID_PATH, TTRC("File already exists."), EditorValidationPanel::MSG_ERROR);
 		}
 	}
 
@@ -148,9 +148,9 @@ void SceneCreateDialog::update_dialog() {
 	}
 
 	if (root_name.is_empty()) {
-		validation_panel->set_message(MSG_ID_ROOT, TTR("Invalid root node name."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(MSG_ID_ROOT, TTRC("Invalid root node name."), EditorValidationPanel::MSG_ERROR);
 	} else if (root_name != root_name.validate_node_name()) {
-		validation_panel->set_message(MSG_ID_ROOT, TTR("Invalid root node name characters have been replaced."), EditorValidationPanel::MSG_WARNING);
+		validation_panel->set_message(MSG_ID_ROOT, TTRC("Invalid root node name characters have been replaced."), EditorValidationPanel::MSG_WARNING);
 	}
 }
 
@@ -303,8 +303,8 @@ SceneCreateDialog::SceneCreateDialog() {
 
 	validation_panel = memnew(EditorValidationPanel);
 	main_vb->add_child(validation_panel);
-	validation_panel->add_line(MSG_ID_PATH, TTR("Scene name is valid."));
-	validation_panel->add_line(MSG_ID_ROOT, TTR("Root node valid."));
+	validation_panel->add_line(MSG_ID_PATH, TTRC("Scene name is valid."));
+	validation_panel->add_line(MSG_ID_ROOT, TTRC("Root node valid."));
 	validation_panel->set_update_callback(callable_mp(this, &SceneCreateDialog::update_dialog));
 	validation_panel->set_accept_button(get_ok_button());
 

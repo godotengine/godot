@@ -42,7 +42,7 @@ void EditorValidationPanel::_update() {
 	}
 
 	valid = true;
-	update_callback.callv(Array());
+	update_callback.call();
 
 	if (accept_button) {
 		accept_button->set_disabled(!valid);
@@ -52,10 +52,24 @@ void EditorValidationPanel::_update() {
 
 void EditorValidationPanel::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (is_visible_in_tree()) {
+				update();
+			} else {
+				pending_update = true;
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			theme_cache.valid_color = get_theme_color(SNAME("success_color"), EditorStringName(Editor));
 			theme_cache.warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
 			theme_cache.error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible_in_tree() && pending_update) {
+				_update();
+			}
 		} break;
 	}
 }
@@ -65,10 +79,11 @@ void EditorValidationPanel::add_line(int p_id, const String &p_valid_message) {
 
 	Label *label = memnew(Label);
 	label->set_focus_mode(FOCUS_ACCESSIBILITY);
-	message_container->add_child(label);
 	label->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
 	label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	message_container->add_child(label);
 
 	valid_messages[p_id] = p_valid_message;
 	labels[p_id] = label;
@@ -89,7 +104,10 @@ void EditorValidationPanel::update() {
 		return;
 	}
 	pending_update = true;
-	callable_mp(this, &EditorValidationPanel::_update).call_deferred();
+
+	if (is_visible_in_tree()) {
+		callable_mp(this, &EditorValidationPanel::_update).call_deferred();
+	}
 }
 
 void EditorValidationPanel::set_message(int p_id, const String &p_text, MessageType p_type, bool p_auto_prefix) {
@@ -103,9 +121,9 @@ void EditorValidationPanel::set_message(int p_id, const String &p_text, MessageT
 	label->show();
 
 	if (p_auto_prefix) {
-		label->set_text(String(U"•  ") + p_text);
+		label->set_text(String(U"•  ") + TTR(p_text));
 	} else {
-		label->set_text(p_text);
+		label->set_text(TTR(p_text));
 	}
 
 	switch (p_type) {
