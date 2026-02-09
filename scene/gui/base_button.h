@@ -69,8 +69,6 @@ private:
 
 	Ref<ButtonGroup> button_group;
 
-	bool touchscreen_only = false;
-
 	void _unpress_group();
 	void _pressed();
 	void _toggled(bool p_pressed);
@@ -142,9 +140,6 @@ public:
 
 	void set_button_group(const Ref<ButtonGroup> &p_group);
 	Ref<ButtonGroup> get_button_group() const;
-
-	void set_touchscreen_only(bool p_on);
-	bool is_touchscreen_only() const;
 
 	PackedStringArray get_configuration_warnings() const override;
 
