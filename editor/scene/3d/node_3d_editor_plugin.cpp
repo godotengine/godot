@@ -7321,6 +7321,8 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 		sun_environ_updating = true;
 		Dictionary pd = d["preview_sun_env"];
 		sun_rotation = pd["sun_rotation"];
+		sun_angle_altitude->set_value_no_signal(-Math::rad_to_deg(sun_rotation.x));
+		sun_angle_azimuth->set_value_no_signal(180.0 - Math::rad_to_deg(sun_rotation.y));
 
 		environ_sky_color->set_pick_color(pd["environ_sky_color"]);
 		environ_ground_color->set_pick_color(pd["environ_ground_color"]);
@@ -9626,6 +9628,7 @@ void Node3DEditor::_preview_settings_changed() {
 		environment->set_sdfgi_enabled(environ_gi_button->is_pressed());
 		environment->set_tonemapper(environ_tonemap_button->is_pressed() ? Environment::TONE_MAPPER_FILMIC : Environment::TONE_MAPPER_LINEAR);
 	}
+	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "preview_sun_rotation", sun_rotation);
 }
 
 void Node3DEditor::_load_default_preview_settings() {
@@ -9637,7 +9640,7 @@ void Node3DEditor::_load_default_preview_settings() {
 	// On any not-tidally-locked planet, a sun would have an angular altitude
 	// of 60 degrees as the average of all points on the sphere at noon.
 	// The azimuth choice is arbitrary, but ideally shouldn't be on an axis.
-	sun_rotation = Vector2(-Math::deg_to_rad(60.0), Math::deg_to_rad(150.0));
+	sun_rotation = EditorSettings::get_singleton()->get_project_metadata("3d_editor", "preview_sun_rotation", Vector2(-Math::deg_to_rad(60.0), Math::deg_to_rad(150.0)));
 
 	sun_angle_altitude->set_value_no_signal(-Math::rad_to_deg(sun_rotation.x));
 	sun_angle_azimuth->set_value_no_signal(180.0 - Math::rad_to_deg(sun_rotation.y));
