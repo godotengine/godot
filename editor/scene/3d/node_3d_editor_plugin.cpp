@@ -1925,6 +1925,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						// Restore.
 						_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, true);
 						_edit.gizmo = Ref<EditorNode3DGizmo>();
+						set_message("");
 					}
 
 					if (_edit.mode == TRANSFORM_NONE) {
@@ -2242,6 +2243,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							selected_node->update_gizmos();
 						}
 						_edit.gizmo = Ref<EditorNode3DGizmo>();
+						set_message("");
 						break;
 					}
 
@@ -2580,6 +2582,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				// Restore.
 				_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, true);
 				_edit.gizmo = Ref<EditorNode3DGizmo>();
+				set_message("");
 			}
 			if (k->get_keycode() == Key::ESCAPE && !cursor.region_select && !k->is_echo()) {
 				_clear_selected();
@@ -3625,6 +3628,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 				spatial_editor->get_single_selected_node()->update_gizmos();
 				_edit.gizmo = Ref<EditorNode3DGizmo>();
+				set_message("");
 			}
 		} break;
 
