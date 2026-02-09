@@ -63,6 +63,7 @@ JoypadSDL::~JoypadSDL() {
 
 Error JoypadSDL::initialize() {
 	SDL_SetHint(SDL_HINT_JOYSTICK_THREAD, "1");
+	SDL_SetHint(SDL_HINT_JOYSTICK_RAWINPUT, "1");
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 	ERR_FAIL_COND_V_MSG(!SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD), FAILED, SDL_GetError());
 
@@ -178,14 +179,6 @@ void JoypadSDL::process_events() {
 				if (steam_handle != 0) {
 					joypad_info["steam_input_index"] = itos(steam_handle);
 				}
-
-#ifdef WINDOWS_ENABLED
-				const int player_index = SDL_GetJoystickPlayerIndex(joy);
-				if (player_index >= 0 && joy_guid.data[14] == 'x') { // See also "SDL_IsJoystickXInput" in "thirdparty/sdl/joystick/SDL_joystick.c".
-					// For XInput controllers SDL_GetJoystickPlayerIndex returns the XInput user index.
-					joypad_info["xinput_index"] = itos(player_index);
-				}
-#endif
 
 				Input::get_singleton()->joy_connection_changed(
 						joy_id,

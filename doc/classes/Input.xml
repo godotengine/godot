@@ -185,8 +185,6 @@
 				[code]product_id[/code]: The USB product ID of the device.
 				[code]serial_number[/code]: The serial number of the device. This key won't be present if the serial number is unavailable.
 				[code]steam_input_index[/code]: The Steam Input gamepad index, if the device is not a Steam Input device this key won't be present.
-				On Windows, the dictionary can have an additional field:
-				[code]xinput_index[/code]: The index of the controller in the XInput system. This key won't be present for devices not handled by XInput.
 				[b]Note:[/b] The returned dictionary is always empty on Android, iOS, visionOS, and Web.
 			</description>
 		</method>
