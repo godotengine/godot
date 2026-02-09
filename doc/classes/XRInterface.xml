@@ -70,7 +70,7 @@
 				If supported, returns the status of our tracking. This will allow you to provide feedback to the user whether there are issues with positional tracking.
 			</description>
 		</method>
-		<method name="get_transform_for_view">
+		<method name="get_transform_for_view" deprecated="Use get_view_offset">
 			<return type="Transform3D" />
 			<param index="0" name="view" type="int" />
 			<param index="1" name="cam_transform" type="Transform3D" />
@@ -84,6 +84,13 @@
 			<return type="int" />
 			<description>
 				Returns the number of views that need to be rendered for this device. 1 for Monoscopic, 2 for Stereoscopic.
+			</description>
+		</method>
+		<method name="get_view_offset">
+			<return type="Transform3D" />
+			<param index="0" name="view" type="int" />
+			<description>
+				Returns the offset transform for each view in head space. This allows for returning ocular distance and any rotation/skew applicable.
 			</description>
 		</method>
 		<method name="initialize">

@@ -47,7 +47,18 @@ protected:
 	StringName pose_name = SceneStringName(default_);
 	Ref<XRPositionalTracker> tracker;
 
+	int first_view = 0;
+	int last_view = 1;
+	TypedArray<Transform3D> offsets;
+	TypedArray<Projection> projections;
+
+	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
+	void _notification(int p_what);
+
+	virtual void _update_camera_mode() override;
+	virtual void fti_update_servers_property() override;
+	void _update_projections();
 
 	void _bind_tracker();
 	void _unbind_tracker();
@@ -63,6 +74,12 @@ public:
 	virtual Point2 unproject_position(const Vector3 &p_pos) const override;
 	virtual Vector3 project_position(const Point2 &p_point, real_t p_z_depth) const override;
 	virtual Vector<Plane> get_frustum() const override;
+
+	void set_first_view(int p_view) { first_view = p_view; }
+	int get_first_view() const { return first_view; }
+
+	void set_last_view(int p_view) { last_view = p_view; }
+	int get_last_view() const { return last_view; }
 
 	XRCamera3D();
 	~XRCamera3D();

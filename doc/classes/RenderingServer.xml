@@ -173,6 +173,15 @@
 				Sets camera to use perspective projection. Objects on the screen becomes smaller when they are far away.
 			</description>
 		</method>
+		<method name="camera_set_projections">
+			<return type="void" />
+			<param index="0" name="camera" type="RID" />
+			<param index="1" name="projections" type="Projection[]" />
+			<param index="2" name="offsets" type="Transform3D[]" default="[]" />
+			<description>
+				Sets camera to use any set of [param projections]. You can specify one projection for each view set on the viewport. If the views are offset (e.g. ocular distance) and/or skewed, this data can be provided through [param offsets].
+			</description>
+		</method>
 		<method name="camera_set_transform">
 			<return type="void" />
 			<param index="0" name="camera" type="RID" />

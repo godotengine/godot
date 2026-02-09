@@ -95,6 +95,8 @@ void RendererSceneCull::camera_set_perspective(RID p_camera, float p_fovy_degree
 	camera->fov = p_fovy_degrees;
 	camera->znear = p_z_near;
 	camera->zfar = p_z_far;
+	camera->offsets.clear();
+	camera->projections.clear();
 }
 
 void RendererSceneCull::camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far) {
@@ -104,6 +106,8 @@ void RendererSceneCull::camera_set_orthogonal(RID p_camera, float p_size, float 
 	camera->size = p_size;
 	camera->znear = p_z_near;
 	camera->zfar = p_z_far;
+	camera->offsets.clear();
+	camera->projections.clear();
 }
 
 void RendererSceneCull::camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far) {
@@ -114,6 +118,32 @@ void RendererSceneCull::camera_set_frustum(RID p_camera, float p_size, Vector2 p
 	camera->offset = p_offset;
 	camera->znear = p_z_near;
 	camera->zfar = p_z_far;
+	camera->offsets.clear();
+	camera->projections.clear();
+}
+
+void RendererSceneCull::camera_set_projections(RID p_camera, TypedArray<Projection> p_projections, TypedArray<Transform3D> p_offsets) {
+	ERR_FAIL_COND(p_projections.is_empty());
+	bool has_offsets = !p_offsets.is_empty();
+	ERR_FAIL_COND(has_offsets && p_offsets.size() != p_projections.size());
+
+	for (const Projection &projection : p_projections) {
+		ERR_FAIL_COND_MSG(!projection.is_z_axis_projection(), "Projections must be z-axis aligned. Use [param p_offsets] to apply any transforms.");
+	}
+
+	Camera *camera = camera_owner.get_or_null(p_camera);
+	ERR_FAIL_NULL(camera);
+	camera->type = Camera::PROJECTION;
+	camera->offsets.resize(p_projections.size());
+	camera->projections.resize(p_projections.size());
+	for (int i = 0; i < p_projections.size(); i++) {
+		if (has_offsets) {
+			camera->offsets[i] = p_offsets[i];
+		} else {
+			camera->offsets[i] = Transform3D();
+		}
+		camera->projections[i] = p_projections[i];
+	}
 }
 
 void RendererSceneCull::camera_set_transform(RID p_camera, const Transform3D &p_transform) {
@@ -2626,83 +2656,78 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 	RendererSceneRender::CameraData camera_data;
 
 	// Setup Camera(s)
-	if (p_xr_interface.is_null()) {
-		// Normal camera
-		Transform3D transform = camera->transform;
-		Projection projection;
-		bool vaspect = camera->vaspect;
-		bool is_orthogonal = false;
+	// Normal camera
+	Transform3D transform = camera->transform;
+	bool vaspect = camera->vaspect;
+	bool is_orthogonal = false;
+	bool is_asymmetrical = false;
 
-		switch (camera->type) {
-			case Camera::ORTHOGONAL: {
-				projection.set_orthogonal(
-						camera->size,
-						p_viewport_size.width / (float)p_viewport_size.height,
-						camera->znear,
-						camera->zfar,
-						camera->vaspect);
-				is_orthogonal = true;
-			} break;
-			case Camera::PERSPECTIVE: {
-				projection.set_perspective(
-						camera->fov,
-						p_viewport_size.width / (float)p_viewport_size.height,
-						camera->znear,
-						camera->zfar,
-						camera->vaspect);
+	// TODO, we should set our projections if not initialized,
+	// or better yet, redo Camera3D to use camera_set_projection.
+	// We'll need to figure something out for is_frustum...
 
-			} break;
-			case Camera::FRUSTUM: {
-				projection.set_frustum(
-						camera->size,
-						p_viewport_size.width / (float)p_viewport_size.height,
-						camera->offset,
-						camera->znear,
-						camera->zfar,
-						camera->vaspect);
-			} break;
-		}
+	switch (camera->type) {
+		case Camera::ORTHOGONAL: {
+			Projection projection;
+			projection.set_orthogonal(
+					camera->size,
+					p_viewport_size.width / (float)p_viewport_size.height,
+					camera->znear,
+					camera->zfar,
+					camera->vaspect);
+			is_orthogonal = true;
 
-		camera_data.set_camera(transform, projection, is_orthogonal, vaspect, jitter, taa_frame_count, camera->visible_layers);
-#ifndef XR_DISABLED
+			camera->offsets.resize(1);
+			camera->offsets[0] = Transform3D();
+			camera->projections.resize(1);
+			camera->projections[0] = projection;
+		} break;
+		case Camera::PERSPECTIVE: {
+			Projection projection;
+			projection.set_perspective(
+					camera->fov,
+					p_viewport_size.width / (float)p_viewport_size.height,
+					camera->znear,
+					camera->zfar,
+					camera->vaspect);
+
+			camera->offsets.resize(1);
+			camera->offsets[0] = Transform3D();
+			camera->projections.resize(1);
+			camera->projections[0] = projection;
+		} break;
+		case Camera::FRUSTUM: {
+			Projection projection;
+			projection.set_frustum(
+					camera->size,
+					p_viewport_size.width / (float)p_viewport_size.height,
+					camera->offset,
+					camera->znear,
+					camera->zfar,
+					camera->vaspect);
+
+			camera->offsets.resize(1);
+			camera->offsets[0] = Transform3D();
+			camera->projections.resize(1);
+			camera->projections[0] = projection;
+		} break;
+	}
+
+	for (const Projection &projection : camera->projections) {
+		is_orthogonal |= projection.is_orthogonal();
+		is_asymmetrical |= projection.is_asymmetrical();
+	}
+
+	// Q: if viewport viewcount does not match our projection count, we may need to adjust.
+	// If we only have one projection when we need two, we could just duplicate it.
+	// If we have two, maybe just use the first one? Or error out.
+
+	if (camera->projections.size() == 1) {
+		camera_data.set_camera(transform * camera->offsets[0], camera->projections[0], is_orthogonal, is_asymmetrical, vaspect, jitter, taa_frame_count, camera->visible_layers);
+	} else if (camera->projections.size() == 2) {
+		camera_data.set_multiview_camera(transform, camera->offsets, camera->projections, is_orthogonal, is_asymmetrical, vaspect, camera->visible_layers);
 	} else {
-		XRServer *xr_server = XRServer::get_singleton();
-
-		// Setup our camera for our XR interface.
-		// We can support multiple views here each with their own camera
-		Transform3D transforms[RendererSceneRender::MAX_RENDER_VIEWS];
-		Projection projections[RendererSceneRender::MAX_RENDER_VIEWS];
-
-		uint32_t view_count = p_xr_interface->get_view_count();
-		ERR_FAIL_COND_MSG(view_count == 0 || view_count > RendererSceneRender::MAX_RENDER_VIEWS, "Requested view count is not supported");
-
-		float aspect = p_viewport_size.width / (float)p_viewport_size.height;
-
-		Transform3D world_origin = xr_server->get_world_origin();
-
-		// We ignore our camera position, it will have been positioned with a slightly old tracking position.
-		// Instead we take our origin point and have our XR interface add fresh tracking data! Whoohoo!
-		for (uint32_t v = 0; v < view_count; v++) {
-			transforms[v] = p_xr_interface->get_transform_for_view(v, world_origin);
-			projections[v] = p_xr_interface->get_projection_for_view(v, aspect, camera->znear, camera->zfar);
-		}
-
-		// If requested, we move the views to be rendered as if the HMD is at the XROrigin.
-		if (unlikely(xr_server->is_camera_locked_to_origin())) {
-			Transform3D camera_reset = p_xr_interface->get_camera_transform().affine_inverse() * xr_server->get_reference_frame().affine_inverse();
-			for (uint32_t v = 0; v < view_count; v++) {
-				transforms[v] *= camera_reset;
-			}
-		}
-
-		if (view_count == 1) {
-			camera_data.set_camera(transforms[0], projections[0], false, camera->vaspect, jitter, p_jitter_phase_count, camera->visible_layers);
-		} else if (view_count == 2) {
-			camera_data.set_multiview_camera(view_count, transforms, projections, false, camera->vaspect, camera->visible_layers);
-		} else {
-			// this won't be called (see fail check above) but keeping this comment to indicate we may support more then 2 views in the future...
-		}
-#endif // XR_DISABLED
+		ERR_FAIL_MSG("Unsupported camera setup.");
 	}
 
 	RID environment = _render_get_environment(p_camera, p_scenario);
@@ -3648,7 +3673,7 @@ void RendererSceneCull::render_empty_scene(const Ref<RenderSceneBuffers> &p_rend
 	RENDER_TIMESTAMP("Render Empty 3D Scene");
 
 	RendererSceneRender::CameraData camera_data;
-	camera_data.set_camera(Transform3D(), Projection(), true, false);
+	camera_data.set_camera(Transform3D(), Projection(), true, false, false);
 
 	scene_render->render_scene(p_render_buffers, &camera_data, &camera_data, PagedArray<RenderGeometryInstance *>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), environment, RID(), compositor, p_shadow_atlas, RID(), scenario->reflection_atlas, RID(), 0, 0, nullptr, 0, nullptr, 0, p_window_output_max_value, nullptr);
 #endif
@@ -3714,7 +3739,7 @@ bool RendererSceneCull::_render_reflection_probe_step(Instance *p_instance, int 
 
 			RendererSceneRender::CameraData camera_data;
 			Transform3D xform = p_instance->transform * local_view;
-			camera_data.set_camera(xform, cm, false, false);
+			camera_data.set_camera(xform, cm, false, false, false);
 
 			RENDER_TIMESTAMP("Render ReflectionProbe, Face " + itos(face));
 			_render_scene(&camera_data, render_buffers, environment, RID(), RID(), RSG::light_storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, RID(), shadow_atlas, reflection_probe->instance, face, mesh_lod_threshold, use_shadows);

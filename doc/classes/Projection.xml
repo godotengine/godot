@@ -243,6 +243,12 @@
 				Returns a [Projection] that performs the inverse of this [Projection]'s projective transformation.
 			</description>
 		</method>
+		<method name="is_asymmetrical" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [Projection] is an asymmetrical projection.[br]The vector (0.0, 0.0, 1.0) in view space is not perpendicular to the near plane.
+			</description>
+		</method>
 		<method name="is_orthogonal" qualifiers="const">
 			<return type="bool" />
 			<description>
