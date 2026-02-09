@@ -210,8 +210,16 @@ void ScriptTextEditor::set_edited_resource(const Ref<Resource> &p_res) {
 	code_editor->get_text_editor()->clear_undo_history();
 	code_editor->get_text_editor()->tag_saved_version();
 
-	emit_signal(SNAME("name_changed"));
 	code_editor->update_line_and_column();
+
+	if (edited_res->is_built_in()) {
+		// Connect for name change.
+		edited_res->connect_changed(callable_mp(this, &ScriptTextEditor::_script_res_changed));
+	}
+}
+
+void ScriptTextEditor::_script_res_changed() {
+	emit_signal(SNAME("name_changed"));
 }
 
 void ScriptTextEditor::enable_editor() {
@@ -2068,7 +2076,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 		Ref<Script> script = edited_res;
 		if (!ClassDB::is_parent_class(script->get_instance_base_type(), "Node")) {
-			EditorToaster::get_singleton()->popup_str(vformat(TTR("Can't drop nodes because script '%s' does not inherit Node."), get_name()), EditorToaster::SEVERITY_WARNING);
+			EditorToaster::get_singleton()->popup_str(vformat(TTR("Can't drop nodes because script '%s' does not inherit Node."), get_document_name()), EditorToaster::SEVERITY_WARNING);
 			return;
 		}
 

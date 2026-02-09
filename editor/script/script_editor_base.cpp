@@ -69,7 +69,7 @@ void ScriptEditorBase::_bind_methods() {
 #endif
 }
 
-String ScriptEditorBase::get_name() {
+String ScriptEditorBase::get_document_name() const {
 	String name;
 
 	name = edited_res->get_path().get_file();
@@ -83,10 +83,6 @@ String ScriptEditorBase::get_name() {
 			// display the built-in text_file name as follows: `ResourceName (scene_file.tscn)`
 			name = vformat("%s (%s)", text_file_name, name.get_slice("::", 0));
 		}
-	}
-
-	if (is_unsaved()) {
-		name += "(*)";
 	}
 
 	return name;
@@ -567,8 +563,14 @@ void TextEditorBase::_load_theme_settings() {
 }
 
 void TextEditorBase::_validate_script() {
-	emit_signal(SNAME("name_changed"));
 	emit_signal(SNAME("edited_script_changed"));
+}
+
+void TextEditorBase::_saved_update() {
+	if (was_unsaved != is_unsaved()) {
+		was_unsaved = is_unsaved();
+		emit_signal(SNAME("name_changed"));
+	}
 }
 
 void TextEditorBase::_emit_request_save_new_history() {
@@ -620,7 +622,6 @@ void TextEditorBase::set_edited_resource(const Ref<Resource> &p_res) {
 	code_editor->get_text_editor()->clear_undo_history();
 	code_editor->get_text_editor()->tag_saved_version();
 
-	emit_signal(SNAME("name_changed"));
 	code_editor->update_line_and_column();
 }
 
@@ -631,6 +632,7 @@ bool TextEditorBase::is_unsaved() {
 void TextEditorBase::tag_saved_version() {
 	code_editor->get_text_editor()->tag_saved_version();
 	ScriptEditorBase::tag_saved_version();
+	_saved_update();
 }
 
 void TextEditorBase::reload_text() {
@@ -673,6 +675,7 @@ void TextEditorBase::reload_text() {
 	te->set_v_scroll(v);
 
 	te->tag_saved_version();
+	_saved_update();
 
 	code_editor->update_line_and_column();
 	if (editor_enabled) {
@@ -726,6 +729,7 @@ TextEditorBase::TextEditorBase() {
 	code_editor->show_toggle_files_button();
 	code_editor->get_text_editor()->set_context_menu_enabled(false);
 	code_editor->get_text_editor()->connect(SceneStringName(gui_input), callable_mp(this, &TextEditorBase::_text_edit_gui_input));
+	code_editor->get_text_editor()->connect(SceneStringName(text_changed), callable_mp(this, &TextEditorBase::_saved_update));
 	code_editor->connect("validate_script", callable_mp(this, &TextEditorBase::_validate_script));
 	code_editor->connect("load_theme_settings", callable_mp(this, &TextEditorBase::_load_theme_settings));
 	code_editor->connect("show_goto_popup", callable_mp(this, &TextEditorBase::_edit_option).bind(SEARCH_GOTO_LINE));

@@ -135,6 +135,7 @@ class ScriptTextEditor : public CodeEditorBase {
 		EditMenusScTE(ScriptEditor *p_se);
 	};
 
+	void _script_res_changed();
 	void _enable_code_editor();
 
 	struct DraggedExport {
