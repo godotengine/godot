@@ -196,7 +196,8 @@
 			<return type="Vector3" />
 			<param index="0" name="local_position" type="Vector3" />
 			<description>
-				Returns the body's velocity at the given relative position, including both translation and rotation.
+				Returns the body's velocity at the given relative position.
+				[param local_position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="integrate_forces">
