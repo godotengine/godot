@@ -50,6 +50,25 @@
 				Finds an interface by its [param name]. For example, if your project uses capabilities of an AR/VR platform, you can find the interface for that platform by name and initialize it.
 			</description>
 		</method>
+		<method name="get_camera_offsets">
+			<return type="Transform3D[]" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<description>
+				Get an array of offset transforms for each view for tracker [param tracker_name]. [param tracker_name] must refer to a [XRPositionalTracker] used as a camera.
+				Will check our primary interface first, then check each active interface. Returns empty if no interfaces manage this tracker.
+			</description>
+		</method>
+		<method name="get_camera_projections">
+			<return type="Projection[]" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="aspect" type="float" />
+			<param index="2" name="near" type="float" />
+			<param index="3" name="far" type="float" />
+			<description>
+				Get an array of projection matrices for each view for tracker [param tracker_name]. [param tracker_name] must refer to a [XRPositionalTracker] used as a camera.
+				Will check our primary interface first, then check each active interface. Returns empty if no interfaces manage this tracker.
+			</description>
+		</method>
 		<method name="get_hmd_transform">
 			<return type="Transform3D" />
 			<description>
@@ -172,8 +191,8 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="TRACKER_HEAD" value="1" enum="TrackerType">
-			The tracker tracks the location of the player's head. This is usually a location centered between the player's eyes. Note that for handheld AR devices this can be the current location of the device.
+		<constant name="TRACKER_CAMERA" value="1" enum="TrackerType">
+			The tracker tracks the position of an XR camera (HMD, external camera, phone camera for phone based AR).
 		</constant>
 		<constant name="TRACKER_CONTROLLER" value="2" enum="TrackerType">
 			The tracker tracks the location of a controller.
@@ -201,6 +220,9 @@
 		</constant>
 		<constant name="TRACKER_ANY" value="255" enum="TrackerType">
 			Used internally to select all trackers.
+		</constant>
+		<constant name="TRACKER_HEAD" value="1" enum="TrackerType" deprecated="Use TRACKER_CAMERA">
+			The tracker tracks the location of the player's head. This is usually a location centered between the player's eyes. Note that for handheld AR devices this can be the current location of the device.
 		</constant>
 		<constant name="RESET_FULL_ROTATION" value="0" enum="RotationMode">
 			Fully reset the orientation of the HMD. Regardless of what direction the user is looking to in the real world. The user will look dead ahead in the virtual world.

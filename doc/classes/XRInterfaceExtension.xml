@@ -28,6 +28,23 @@
 				Returns the camera feed ID for the [CameraFeed] registered with the [CameraServer] that should be presented as the background on an AR capable device (if applicable).
 			</description>
 		</method>
+		<method name="_get_camera_offsets" qualifiers="virtual">
+			<return type="Transform3D[]" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<description>
+				Returns an array of offsets for each view rendered for the given camera. [param tracker_name] refers to the camera tracker for which we're retrieving this.
+			</description>
+		</method>
+		<method name="_get_camera_projections" qualifiers="virtual">
+			<return type="Projection[]" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="aspect" type="float" />
+			<param index="2" name="z_near" type="float" />
+			<param index="3" name="z_far" type="float" />
+			<description>
+				Returns an array of projections for each view rendered for the given camera. [param tracker_name] refers to the camera tracker for which we're retrieving this.
+			</description>
+		</method>
 		<method name="_get_camera_transform" qualifiers="virtual">
 			<return type="Transform3D" />
 			<description>
@@ -70,7 +87,7 @@
 				Returns the play area mode that sets up our play area.
 			</description>
 		</method>
-		<method name="_get_projection_for_view" qualifiers="virtual">
+		<method name="_get_projection_for_view" qualifiers="virtual" deprecated="Implement _get_camera_projections">
 			<return type="PackedFloat64Array" />
 			<param index="0" name="view" type="int" />
 			<param index="1" name="aspect" type="float" />
@@ -111,7 +128,7 @@
 				Returns the current status of our tracking.
 			</description>
 		</method>
-		<method name="_get_transform_for_view" qualifiers="virtual">
+		<method name="_get_transform_for_view" qualifiers="virtual" deprecated="Impleemnt _get_camera_offsets">
 			<return type="Transform3D" />
 			<param index="0" name="view" type="int" />
 			<param index="1" name="cam_transform" type="Transform3D" />

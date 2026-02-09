@@ -33,6 +33,8 @@
 #include "core/object/ref_counted.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/type_info.h"
+#include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 
 /**
 	The XR interface is a template class on top of which we build interface to different AR, VR and tracking SDKs.
@@ -132,16 +134,22 @@ public:
 	/** rendering and internal **/
 
 	// These methods are called from the main thread.
-	virtual Transform3D get_camera_transform() = 0; /* returns the position of our camera, only used for updating reference frame. For monoscopic this is equal to the views transform, for stereoscopic this should be an average */
 	virtual void process() = 0;
+
+	// Camera information
+	virtual Transform3D get_camera_transform() = 0; /* returns the position of our main camera, only used for updating reference frame. For monoscopic this is equal to the views transform, for stereoscopic this should be an average */
+	virtual TypedArray<Projection> get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far) = 0; /* Get projections for each eye of the given camera */
+	virtual TypedArray<Transform3D> get_camera_offsets(const StringName &p_tracker_name) = 0; /* Get offsets for each eye of the given camera */
 
 	// These methods can be called from both main and render thread.
 	virtual Size2 get_render_target_size() = 0; /* returns the recommended render target size per eye for this device */
-	virtual uint32_t get_view_count() = 0; /* returns the view count we need (1 is monoscopic, 2 is stereoscopic but can be more) */
+	virtual uint32_t get_view_count() = 0; /* returns the primary view count we need (1 is monoscopic, 2 is stereoscopic but can be more) */
 
 	// These methods are called from the rendering thread.
-	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) = 0; /* get each views transform */
-	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) = 0; /* get each view projection matrix */
+#ifndef DISABLE_DEPRECATED
+	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) { return Transform3D(); } /* Deprecated, get each views transform */
+	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) { return Projection(); } /* Deprecated, get each view projection matrix */
+#endif
 	virtual RID get_color_texture(); /* obtain color output texture (if applicable) */
 	virtual RID get_depth_texture(); /* obtain depth output texture (if applicable, used for reprojection) */
 	virtual RID get_velocity_texture(); /* obtain velocity output texture (if applicable, used for spacewarp) */
