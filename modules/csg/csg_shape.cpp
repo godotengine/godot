@@ -1562,7 +1562,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 	Ref<Material> *materialsw = materials.ptrw();
 	bool *invertw = invert.ptrw();
 
-	if (compat_mode) {
+	if (compatibility_mode) {
 		//pattern
 		//0 0
 		//0 1
@@ -1591,7 +1591,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 			}
 		}
 	} else {
-		//Now `compat_mode` disables `scale_uv`.
+		//`compatibility_mode` disables `scale_uv`.
 		//X+
 		uvsw[0] = Vector2(0, -1);
 		uvsw[1] = Vector2(1, -1);
@@ -1682,51 +1682,6 @@ CSGBrush *CSGBox3D::_build_brush() {
 			}
 		}
 	}
-
-	/*
-	//model created from a program using the original code, it has to be manifold.
-	//X+
-	facesw[0] = Vector3(0.5, 0.5, 0.5);
-	facesw[1] = Vector3(0.5, 0.5, -0.5);
-	facesw[2] = Vector3(0.5, -0.5, -0.5);
-	facesw[3] = Vector3(0.5, -0.5, -0.5);
-	facesw[4] = Vector3(0.5, -0.5, 0.5);
-	facesw[5] = Vector3(0.5, 0.5, 0.5);
-	//Y+
-	facesw[6] = Vector3(0.5, 0.5, 0.5);
-	facesw[7] = Vector3(-0.5, 0.5, 0.5);
-	facesw[8] = Vector3(-0.5, 0.5, -0.5);
-	facesw[9] = Vector3(-0.5, 0.5, -0.5);
-	facesw[10] = Vector3(0.5, 0.5, -0.5);
-	facesw[11] = Vector3(0.5, 0.5, 0.5);
-	//Z+
-	facesw[12] = Vector3(0.5, 0.5, 0.5);
-	facesw[13] = Vector3(0.5, -0.5, 0.5);
-	facesw[14] = Vector3(-0.5, -0.5, 0.5);
-	facesw[15] = Vector3(-0.5, -0.5, 0.5);
-	facesw[16] = Vector3(-0.5, 0.5, 0.5);
-	facesw[17] = Vector3(0.5, 0.5, 0.5);
-	//X-
-	facesw[18] = Vector3(-0.5, 0.5, -0.5);
-	facesw[19] = Vector3(-0.5, 0.5, 0.5);
-	facesw[20] = Vector3(-0.5, -0.5, 0.5);
-	facesw[21] = Vector3(-0.5, -0.5, 0.5);
-	facesw[22] = Vector3(-0.5, -0.5, -0.5);
-	facesw[23] = Vector3(-0.5, 0.5, -0.5);
-	//Y-
-	facesw[24] = Vector3(-0.5, -0.5, 0.5);
-	facesw[25] = Vector3(0.5, -0.5, 0.5);
-	facesw[26] = Vector3(0.5, -0.5, -0.5);
-	facesw[27] = Vector3(0.5, -0.5, -0.5);
-	facesw[28] = Vector3(-0.5, -0.5, -0.5);
-	facesw[29] = Vector3(-0.5, -0.5, 0.5);
-	//Z-
-	facesw[30] = Vector3(0.5, -0.5, -0.5);
-	facesw[31] = Vector3(0.5, 0.5, -0.5);
-	facesw[32] = Vector3(-0.5, 0.5, -0.5);
-	facesw[33] = Vector3(-0.5, 0.5, -0.5);
-	facesw[34] = Vector3(-0.5, -0.5, -0.5);
-	facesw[35] = Vector3(0.5, -0.5, -0.5);*/
 
 	{ //Generate vertex coords.
 		int quad_c = 0;
@@ -1825,8 +1780,8 @@ void CSGBox3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uv_size", "uv_size"), &CSGBox3D::set_uv_size);
 	ClassDB::bind_method(D_METHOD("get_uv_size"), &CSGBox3D::get_uv_size);
 
-	ClassDB::bind_method(D_METHOD("set_compat_mode", "compat_mode"), &CSGBox3D::set_compat_mode);
-	ClassDB::bind_method(D_METHOD("is_compat_mode"), &CSGBox3D::is_compat_mode);
+	ClassDB::bind_method(D_METHOD("set_compatibility_mode", "compatibility_mode"), &CSGBox3D::set_compatibility_mode);
+	ClassDB::bind_method(D_METHOD("is_compatibility_mode"), &CSGBox3D::is_compatibility_mode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 	ADD_GROUP("UV", "");
@@ -1834,7 +1789,7 @@ void CSGBox3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "uv_size", PROPERTY_HINT_RANGE, "0.0015625,4096.0,0.0015625,or_greater,exp,suffix:m"), "set_uv_size", "get_uv_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_uv_offset", "get_uv_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_uvs"), "set_flip_uvs", "is_flip_uvs");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "compat_mode"), "set_compat_mode", "is_compat_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "compatibility_mode"), "set_compatibility_mode", "is_compatibility_mode");
 	ADD_GROUP("Material", "material_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
@@ -1889,14 +1844,14 @@ float CSGBox3D::get_uv_size() const {
 	return uv_size;
 }
 
-void CSGBox3D::set_compat_mode(const bool p_compat) {
-	compat_mode = p_compat;
+void CSGBox3D::set_compatibility_mode(const bool p_compat) {
+	compatibility_mode = p_compat;
 	_make_dirty();
 	update_gizmos();
 }
 
-bool CSGBox3D::is_compat_mode() const {
-	return compat_mode;
+bool CSGBox3D::is_compatibility_mode() const {
+	return compatibility_mode;
 }
 
 #ifndef DISABLE_DEPRECATED

@@ -279,7 +279,7 @@ class CSGBox3D : public CSGPrimitive3D {
 	bool flip_uvs = false;
 	Vector3 uv_offset;
 	float uv_size = 1.0;
-	bool compat_mode = false;
+	bool compatibility_mode = false;
 
 protected:
 	static void _bind_methods();
@@ -304,8 +304,8 @@ public:
 	void set_uv_size(const float p_size);
 	float get_uv_size() const;
 
-	void set_compat_mode(const bool p_compat);
-	bool is_compat_mode() const;
+	void set_compatibility_mode(const bool p_compat);
+	bool is_compatibility_mode() const;
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
