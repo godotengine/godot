@@ -135,8 +135,19 @@ void CollisionPolygon2D::_notification(int p_what) {
 					Vector<Vector<Vector2>> decomp = _decompose_in_convex();
 
 					Color c(0.4, 0.9, 0.1);
+
+					if (disabled) {
+						float g = c.get_v();
+						c.r = g;
+						c.g = g;
+						c.b = g;
+						c.a *= 0.5;
+					} else if (sleeping) {
+						c.a *= 0.5;
+					}
+
 					for (int i = 0; i < decomp.size(); i++) {
-						c.set_hsv(Math::fmod(c.get_h() + 0.738, 1), c.get_s(), c.get_v(), 0.5);
+						c.set_hsv(Math::fmod(c.get_h() + 0.738, 1), c.get_s(), c.get_v(), 0.5 * c.a);
 						draw_colored_polygon(decomp[i], c);
 					}
 				}
@@ -266,6 +277,18 @@ void CollisionPolygon2D::set_disabled(bool p_disabled) {
 
 bool CollisionPolygon2D::is_disabled() const {
 	return disabled;
+}
+
+void CollisionPolygon2D::set_sleeping(bool p_sleeping) {
+	if (sleeping == p_sleeping) {
+		return;
+	}
+	sleeping = p_sleeping;
+	queue_redraw();
+}
+
+bool CollisionPolygon2D::is_sleeping() const {
+	return sleeping;
 }
 
 void CollisionPolygon2D::set_one_way_collision(bool p_enable) {

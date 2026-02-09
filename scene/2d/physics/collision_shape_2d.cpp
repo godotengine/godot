@@ -102,6 +102,8 @@ void CollisionShape2D::_notification(int p_what) {
 				draw_col.g = g;
 				draw_col.b = g;
 				draw_col.a *= 0.5;
+			} else if (sleeping) {
+				draw_col.a *= 0.5;
 			}
 			shape->draw(get_canvas_item(), draw_col);
 
@@ -201,6 +203,18 @@ void CollisionShape2D::set_disabled(bool p_disabled) {
 
 bool CollisionShape2D::is_disabled() const {
 	return disabled;
+}
+
+void CollisionShape2D::set_sleeping(bool p_sleeping) {
+	if (sleeping == p_sleeping) {
+		return;
+	}
+	sleeping = p_sleeping;
+	queue_redraw();
+}
+
+bool CollisionShape2D::is_sleeping() const {
+	return sleeping;
 }
 
 void CollisionShape2D::set_one_way_collision(bool p_enable) {

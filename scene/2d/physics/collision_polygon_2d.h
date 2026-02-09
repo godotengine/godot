@@ -53,6 +53,8 @@ protected:
 	bool one_way_collision = false;
 	real_t one_way_collision_margin = 1.0;
 
+	bool sleeping = false;
+
 	Vector<Vector<Vector2>> _decompose_in_convex();
 
 	void _build_polygon();
@@ -86,6 +88,9 @@ public:
 
 	void set_one_way_collision_margin(real_t p_margin);
 	real_t get_one_way_collision_margin() const;
+
+	void set_sleeping(bool p_sleeping);
+	bool is_sleeping() const;
 
 	CollisionPolygon2D();
 };

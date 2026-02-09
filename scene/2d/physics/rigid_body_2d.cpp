@@ -30,6 +30,9 @@
 
 #include "rigid_body_2d.h"
 
+#include "scene/2d/physics/collision_polygon_2d.h"
+#include "scene/2d/physics/collision_shape_2d.h"
+
 void RigidBody2D::_body_enter_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
@@ -157,6 +160,26 @@ void RigidBody2D::_sync_body_state(PhysicsDirectBodyState2D *p_state) {
 	if (sleeping != p_state->is_sleeping()) {
 		sleeping = p_state->is_sleeping();
 		emit_signal(SceneStringName(sleeping_state_changed));
+
+		if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+			return;
+		}
+
+		List<uint32_t> shape_owners;
+		get_shape_owners(&shape_owners);
+		for (uint32_t owner_id : shape_owners) {
+			Object *owner = shape_owner_get_owner(owner_id);
+
+			CollisionShape2D *shape = Object::cast_to<CollisionShape2D>(owner);
+			if (shape) {
+				shape->set_sleeping(sleeping);
+			}
+
+			CollisionPolygon2D *polygon = Object::cast_to<CollisionPolygon2D>(owner);
+			if (polygon) {
+				polygon->set_sleeping(sleeping);
+			}
+		}
 	}
 }
 
