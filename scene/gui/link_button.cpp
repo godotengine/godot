@@ -374,7 +374,6 @@ void LinkButton::_bind_methods() {
 
 LinkButton::LinkButton(const String &p_text) {
 	text_buf.instantiate();
-	set_focus_mode(FOCUS_ACCESSIBILITY);
 	set_default_cursor_shape(CURSOR_POINTING_HAND);
 
 	set_text(p_text);
