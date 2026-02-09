@@ -46,5 +46,8 @@
 		<member name="uv_offset" type="Vector2" setter="set_uv_offset" getter="get_uv_offset" default="Vector2(0, 0)">
 			Offsets the UVs on the side faces of the CSGCylinder.
 		</member>
+		<member name="uv_size" type="float" setter="set_uv_size" getter="get_uv_size" default="1.0">
+			Uniformly scales UVs to set the texel size.
+		</member>
 	</members>
 </class>

@@ -31,7 +31,9 @@
 		</member>
 		<member name="uv_offset" type="Vector3" setter="set_uv_offset" getter="get_uv_offset" default="Vector3(0, 0, 0)">
 			Offsets the UVs of the CSGBox.
-			[b]Note:[/b] [member uv_offset] only works when [member scale_uv] is enabled.
+		</member>
+		<member name="uv_size" type="float" setter="set_uv_size" getter="get_uv_size" default="1.0">
+			Uniformly scales UVs to set the texel size.
 		</member>
 	</members>
 </class>
