@@ -1509,8 +1509,8 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 		} else {
 			FT_Size_RequestRec req;
 			req.type = FT_SIZE_REQUEST_TYPE_NOMINAL;
-			req.width = sz * 64.0;
-			req.height = sz * 64.0;
+			req.width = MIN(2048.0, sz) * 64.0;
+			req.height = MIN(2048.0, sz) * 64.0;
 			req.horiResolution = 0;
 			req.vertResolution = 0;
 

@@ -6417,7 +6417,7 @@ RenderingDevice::TransferWorker *RenderingDevice::_acquire_transfer_worker(uint3
 		MutexLock pool_lock(transfer_worker_pool_mutex);
 
 		// If no workers are available and we've reached the max pool capacity, wait until one of them becomes available.
-		bool transfer_worker_pool_full = transfer_worker_pool.size() >= transfer_worker_pool_max_size;
+		bool transfer_worker_pool_full = transfer_worker_pool_size >= transfer_worker_pool_max_size;
 		while (transfer_worker_pool_available_list.is_empty() && transfer_worker_pool_full) {
 			transfer_worker_pool_condition.wait(pool_lock);
 		}
@@ -6480,13 +6480,16 @@ RenderingDevice::TransferWorker *RenderingDevice::_acquire_transfer_worker(uint3
 			DEV_ASSERT(!transfer_worker_pool_full && "A transfer worker should never be created when the pool is full.");
 
 			// No existing worker was picked, we create a new one.
+			uint32_t transfer_worker_index = transfer_worker_pool_size;
+			++transfer_worker_pool_size;
+
 			transfer_worker = memnew(TransferWorker);
 			transfer_worker->command_fence = driver->fence_create();
 			transfer_worker->command_pool = driver->command_pool_create(transfer_queue_family, RDD::COMMAND_BUFFER_TYPE_PRIMARY);
 			transfer_worker->command_buffer = driver->command_buffer_create(transfer_worker->command_pool);
-			transfer_worker->index = transfer_worker_pool.size();
-			transfer_worker_pool.push_back(transfer_worker);
-			transfer_worker_operation_used_by_draw.push_back(0);
+			transfer_worker->index = transfer_worker_index;
+			transfer_worker_pool[transfer_worker_index] = transfer_worker;
+			transfer_worker_operation_used_by_draw[transfer_worker_index] = 0;
 			transfer_worker->thread_mutex.lock();
 		}
 	}
@@ -6640,7 +6643,7 @@ void RenderingDevice::_check_transfer_worker_index_array(IndexArray *p_index_arr
 
 void RenderingDevice::_submit_transfer_workers(RDD::CommandBufferID p_draw_command_buffer) {
 	MutexLock transfer_worker_lock(transfer_worker_pool_mutex);
-	for (uint32_t i = 0; i < transfer_worker_pool.size(); i++) {
+	for (uint32_t i = 0; i < transfer_worker_pool_size; i++) {
 		TransferWorker *worker = transfer_worker_pool[i];
 		if (p_draw_command_buffer) {
 			MutexLock lock(worker->operations_mutex);
@@ -6675,7 +6678,8 @@ void RenderingDevice::_submit_transfer_barriers(RDD::CommandBufferID p_draw_comm
 
 void RenderingDevice::_wait_for_transfer_workers() {
 	MutexLock transfer_worker_lock(transfer_worker_pool_mutex);
-	for (TransferWorker *worker : transfer_worker_pool) {
+	for (uint32_t i = 0; i < transfer_worker_pool_size; i++) {
+		TransferWorker *worker = transfer_worker_pool[i];
 		MutexLock lock(worker->thread_mutex);
 		if (worker->submitted) {
 			_wait_for_transfer_worker(worker);
@@ -6685,14 +6689,15 @@ void RenderingDevice::_wait_for_transfer_workers() {
 
 void RenderingDevice::_free_transfer_workers() {
 	MutexLock transfer_worker_lock(transfer_worker_pool_mutex);
-	for (TransferWorker *worker : transfer_worker_pool) {
+	for (uint32_t i = 0; i < transfer_worker_pool_size; i++) {
+		TransferWorker *worker = transfer_worker_pool[i];
 		driver->fence_free(worker->command_fence);
 		driver->buffer_free(worker->staging_buffer);
 		driver->command_pool_free(worker->command_pool);
 		memdelete(worker);
 	}
 
-	transfer_worker_pool.clear();
+	transfer_worker_pool_size = 0;
 }
 
 /***********************/
@@ -7665,6 +7670,10 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 
 	// Use the processor count as the max amount of transfer workers that can be created.
 	transfer_worker_pool_max_size = OS::get_singleton()->get_processor_count();
+
+	// Pre-allocate to avoid locking a mutex when indexing into them.
+	transfer_worker_pool.resize(transfer_worker_pool_max_size);
+	transfer_worker_operation_used_by_draw.resize(transfer_worker_pool_max_size);
 
 	frames.resize(frame_count);
 

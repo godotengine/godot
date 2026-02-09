@@ -329,329 +329,329 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 
 #endif
 
-#define INDEXED_SETGET_STRUCT_TYPED(m_base_type, m_elem_type)                                                                  \
-	struct VariantIndexedSetGet_##m_base_type {                                                                                \
-		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {                                       \
-			int64_t size = VariantInternalAccessor<m_base_type>::get(base).size();                                             \
-			if (index < 0) {                                                                                                   \
-				index += size;                                                                                                 \
-			}                                                                                                                  \
-			if (index < 0 || index >= size) {                                                                                  \
-				*oob = true;                                                                                                   \
-				return;                                                                                                        \
-			}                                                                                                                  \
-			VariantTypeAdjust<m_elem_type>::adjust(value);                                                                     \
-			VariantInternalAccessor<m_elem_type>::get(value) = (VariantInternalAccessor<m_base_type>::get(base))[index];       \
-			*oob = false;                                                                                                      \
-		}                                                                                                                      \
-		static void ptr_get(const void *base, int64_t index, void *member) {                                                   \
-			/* avoid ptrconvert for performance*/                                                                              \
-			const m_base_type &v = *reinterpret_cast<const m_base_type *>(base);                                               \
-			if (index < 0)                                                                                                     \
-				index += v.size();                                                                                             \
-			OOB_TEST(index, v.size());                                                                                         \
-			PtrToArg<m_elem_type>::encode(v[index], member);                                                                   \
-		}                                                                                                                      \
-		static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {                          \
-			if (value->get_type() != GetTypeInfo<m_elem_type>::VARIANT_TYPE) {                                                 \
-				*oob = false;                                                                                                  \
-				*valid = false;                                                                                                \
-				return;                                                                                                        \
-			}                                                                                                                  \
-			int64_t size = VariantInternalAccessor<m_base_type>::get(base).size();                                             \
-			if (index < 0) {                                                                                                   \
-				index += size;                                                                                                 \
-			}                                                                                                                  \
-			if (index < 0 || index >= size) {                                                                                  \
-				*oob = true;                                                                                                   \
-				*valid = false;                                                                                                \
-				return;                                                                                                        \
-			}                                                                                                                  \
-			(VariantInternalAccessor<m_base_type>::get(base)).write[index] = VariantInternalAccessor<m_elem_type>::get(value); \
-			*oob = false;                                                                                                      \
-			*valid = true;                                                                                                     \
-		}                                                                                                                      \
-		static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {                             \
-			int64_t size = VariantInternalAccessor<m_base_type>::get(base).size();                                             \
-			if (index < 0) {                                                                                                   \
-				index += size;                                                                                                 \
-			}                                                                                                                  \
-			if (index < 0 || index >= size) {                                                                                  \
-				*oob = true;                                                                                                   \
-				return;                                                                                                        \
-			}                                                                                                                  \
-			(VariantInternalAccessor<m_base_type>::get(base)).write[index] = VariantInternalAccessor<m_elem_type>::get(value); \
-			*oob = false;                                                                                                      \
-		}                                                                                                                      \
-		static void ptr_set(void *base, int64_t index, const void *member) {                                                   \
-			/* avoid ptrconvert for performance*/                                                                              \
-			m_base_type &v = *reinterpret_cast<m_base_type *>(base);                                                           \
-			if (index < 0)                                                                                                     \
-				index += v.size();                                                                                             \
-			OOB_TEST(index, v.size());                                                                                         \
-			v.write[index] = PtrToArg<m_elem_type>::convert(member);                                                           \
-		}                                                                                                                      \
-		static Variant::Type get_index_type() {                                                                                \
-			return GetTypeInfo<m_elem_type>::VARIANT_TYPE;                                                                     \
-		}                                                                                                                      \
-		static uint32_t get_index_usage() {                                                                                    \
-			return GetTypeInfo<m_elem_type>::get_class_info().usage;                                                           \
-		}                                                                                                                      \
-		static uint64_t get_indexed_size(const Variant *base) {                                                                \
-			return VariantInternalAccessor<m_base_type>::get(base).size();                                                     \
-		}                                                                                                                      \
-	};
-
-#define INDEXED_SETGET_STRUCT_TYPED_NUMERIC(m_base_type, m_elem_type, m_assign_type)                                           \
-	struct VariantIndexedSetGet_##m_base_type {                                                                                \
-		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {                                       \
-			int64_t size = VariantInternalAccessor<m_base_type>::get(base).size();                                             \
-			if (index < 0) {                                                                                                   \
-				index += size;                                                                                                 \
-			}                                                                                                                  \
-			if (index < 0 || index >= size) {                                                                                  \
-				*oob = true;                                                                                                   \
-				return;                                                                                                        \
-			}                                                                                                                  \
-			VariantTypeAdjust<m_elem_type>::adjust(value);                                                                     \
-			VariantInternalAccessor<m_elem_type>::get(value) = (VariantInternalAccessor<m_base_type>::get(base))[index];       \
-			*oob = false;                                                                                                      \
-		}                                                                                                                      \
-		static void ptr_get(const void *base, int64_t index, void *member) {                                                   \
-			/* avoid ptrconvert for performance*/                                                                              \
-			const m_base_type &v = *reinterpret_cast<const m_base_type *>(base);                                               \
-			if (index < 0)                                                                                                     \
-				index += v.size();                                                                                             \
-			OOB_TEST(index, v.size());                                                                                         \
-			PtrToArg<m_elem_type>::encode(v[index], member);                                                                   \
-		}                                                                                                                      \
-		static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {                          \
-			int64_t size = VariantInternalAccessor<m_base_type>::get(base).size();                                             \
-			if (index < 0) {                                                                                                   \
-				index += size;                                                                                                 \
-			}                                                                                                                  \
-			if (index < 0 || index >= size) {                                                                                  \
-				*oob = true;                                                                                                   \
-				*valid = false;                                                                                                \
-				return;                                                                                                        \
-			}                                                                                                                  \
-			m_assign_type num;                                                                                                 \
-			if (value->get_type() == Variant::INT) {                                                                           \
-				num = (m_assign_type) * &VariantInternalAccessor<int64_t>::get(value);                                         \
-			} else if (value->get_type() == Variant::FLOAT) {                                                                  \
-				num = (m_assign_type) * &VariantInternalAccessor<double>::get(value);                                          \
-			} else {                                                                                                           \
-				*oob = false;                                                                                                  \
-				*valid = false;                                                                                                \
-				return;                                                                                                        \
-			}                                                                                                                  \
-			(VariantInternalAccessor<m_base_type>::get(base)).write[index] = num;                                              \
-			*oob = false;                                                                                                      \
-			*valid = true;                                                                                                     \
-		}                                                                                                                      \
-		static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {                             \
-			int64_t size = VariantInternalAccessor<m_base_type>::get(base).size();                                             \
-			if (index < 0) {                                                                                                   \
-				index += size;                                                                                                 \
-			}                                                                                                                  \
-			if (index < 0 || index >= size) {                                                                                  \
-				*oob = true;                                                                                                   \
-				return;                                                                                                        \
-			}                                                                                                                  \
-			(VariantInternalAccessor<m_base_type>::get(base)).write[index] = VariantInternalAccessor<m_elem_type>::get(value); \
-			*oob = false;                                                                                                      \
-		}                                                                                                                      \
-		static void ptr_set(void *base, int64_t index, const void *member) {                                                   \
-			/* avoid ptrconvert for performance*/                                                                              \
-			m_base_type &v = *reinterpret_cast<m_base_type *>(base);                                                           \
-			if (index < 0)                                                                                                     \
-				index += v.size();                                                                                             \
-			OOB_TEST(index, v.size());                                                                                         \
-			v.write[index] = PtrToArg<m_elem_type>::convert(member);                                                           \
-		}                                                                                                                      \
-		static Variant::Type get_index_type() {                                                                                \
-			return GetTypeInfo<m_elem_type>::VARIANT_TYPE;                                                                     \
-		}                                                                                                                      \
-		static uint32_t get_index_usage() {                                                                                    \
-			return GetTypeInfo<m_elem_type>::get_class_info().usage;                                                           \
-		}                                                                                                                      \
-		static uint64_t get_indexed_size(const Variant *base) {                                                                \
-			return VariantInternalAccessor<m_base_type>::get(base).size();                                                     \
-		}                                                                                                                      \
-	};
-
-#define INDEXED_SETGET_STRUCT_BUILTIN_NUMERIC(m_base_type, m_elem_type, m_assign_type, m_max)                            \
-	struct VariantIndexedSetGet_##m_base_type {                                                                          \
-		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {                                 \
-			if (index < 0 || index >= m_max) {                                                                           \
-				*oob = true;                                                                                             \
-				return;                                                                                                  \
-			}                                                                                                            \
-			VariantTypeAdjust<m_elem_type>::adjust(value);                                                               \
+#define INDEXED_SETGET_STRUCT_TYPED(m_base_type, m_elem_type) \
+	struct VariantIndexedSetGet_##m_base_type { \
+		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) { \
+			int64_t size = VariantInternalAccessor<m_base_type>::get(base).size(); \
+			if (index < 0) { \
+				index += size; \
+			} \
+			if (index < 0 || index >= size) { \
+				*oob = true; \
+				return; \
+			} \
+			VariantTypeAdjust<m_elem_type>::adjust(value); \
 			VariantInternalAccessor<m_elem_type>::get(value) = (VariantInternalAccessor<m_base_type>::get(base))[index]; \
-			*oob = false;                                                                                                \
-		}                                                                                                                \
-		static void ptr_get(const void *base, int64_t index, void *member) {                                             \
-			/* avoid ptrconvert for performance*/                                                                        \
-			const m_base_type &v = *reinterpret_cast<const m_base_type *>(base);                                         \
-			OOB_TEST(index, m_max);                                                                                      \
-			PtrToArg<m_elem_type>::encode(v[index], member);                                                             \
-		}                                                                                                                \
-		static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {                    \
-			if (index < 0 || index >= m_max) {                                                                           \
-				*oob = true;                                                                                             \
-				*valid = false;                                                                                          \
-				return;                                                                                                  \
-			}                                                                                                            \
-			m_assign_type num;                                                                                           \
-			if (value->get_type() == Variant::INT) {                                                                     \
-				num = (m_assign_type) * &VariantInternalAccessor<int64_t>::get(value);                                   \
-			} else if (value->get_type() == Variant::FLOAT) {                                                            \
-				num = (m_assign_type) * &VariantInternalAccessor<double>::get(value);                                    \
-			} else {                                                                                                     \
-				*oob = false;                                                                                            \
-				*valid = false;                                                                                          \
-				return;                                                                                                  \
-			}                                                                                                            \
-			(VariantInternalAccessor<m_base_type>::get(base))[index] = num;                                              \
-			*oob = false;                                                                                                \
-			*valid = true;                                                                                               \
-		}                                                                                                                \
-		static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {                       \
-			if (index < 0 || index >= m_max) {                                                                           \
-				*oob = true;                                                                                             \
-				return;                                                                                                  \
-			}                                                                                                            \
+			*oob = false; \
+		} \
+		static void ptr_get(const void *base, int64_t index, void *member) { \
+			/* avoid ptrconvert for performance*/ \
+			const m_base_type &v = *reinterpret_cast<const m_base_type *>(base); \
+			if (index < 0) \
+				index += v.size(); \
+			OOB_TEST(index, v.size()); \
+			PtrToArg<m_elem_type>::encode(v[index], member); \
+		} \
+		static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) { \
+			if (value->get_type() != GetTypeInfo<m_elem_type>::VARIANT_TYPE) { \
+				*oob = false; \
+				*valid = false; \
+				return; \
+			} \
+			int64_t size = VariantInternalAccessor<m_base_type>::get(base).size(); \
+			if (index < 0) { \
+				index += size; \
+			} \
+			if (index < 0 || index >= size) { \
+				*oob = true; \
+				*valid = false; \
+				return; \
+			} \
+			(VariantInternalAccessor<m_base_type>::get(base)).write[index] = VariantInternalAccessor<m_elem_type>::get(value); \
+			*oob = false; \
+			*valid = true; \
+		} \
+		static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) { \
+			int64_t size = VariantInternalAccessor<m_base_type>::get(base).size(); \
+			if (index < 0) { \
+				index += size; \
+			} \
+			if (index < 0 || index >= size) { \
+				*oob = true; \
+				return; \
+			} \
+			(VariantInternalAccessor<m_base_type>::get(base)).write[index] = VariantInternalAccessor<m_elem_type>::get(value); \
+			*oob = false; \
+		} \
+		static void ptr_set(void *base, int64_t index, const void *member) { \
+			/* avoid ptrconvert for performance*/ \
+			m_base_type &v = *reinterpret_cast<m_base_type *>(base); \
+			if (index < 0) \
+				index += v.size(); \
+			OOB_TEST(index, v.size()); \
+			v.write[index] = PtrToArg<m_elem_type>::convert(member); \
+		} \
+		static Variant::Type get_index_type() { \
+			return GetTypeInfo<m_elem_type>::VARIANT_TYPE; \
+		} \
+		static uint32_t get_index_usage() { \
+			return GetTypeInfo<m_elem_type>::get_class_info().usage; \
+		} \
+		static uint64_t get_indexed_size(const Variant *base) { \
+			return VariantInternalAccessor<m_base_type>::get(base).size(); \
+		} \
+	};
+
+#define INDEXED_SETGET_STRUCT_TYPED_NUMERIC(m_base_type, m_elem_type, m_assign_type) \
+	struct VariantIndexedSetGet_##m_base_type { \
+		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) { \
+			int64_t size = VariantInternalAccessor<m_base_type>::get(base).size(); \
+			if (index < 0) { \
+				index += size; \
+			} \
+			if (index < 0 || index >= size) { \
+				*oob = true; \
+				return; \
+			} \
+			VariantTypeAdjust<m_elem_type>::adjust(value); \
+			VariantInternalAccessor<m_elem_type>::get(value) = (VariantInternalAccessor<m_base_type>::get(base))[index]; \
+			*oob = false; \
+		} \
+		static void ptr_get(const void *base, int64_t index, void *member) { \
+			/* avoid ptrconvert for performance*/ \
+			const m_base_type &v = *reinterpret_cast<const m_base_type *>(base); \
+			if (index < 0) \
+				index += v.size(); \
+			OOB_TEST(index, v.size()); \
+			PtrToArg<m_elem_type>::encode(v[index], member); \
+		} \
+		static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) { \
+			int64_t size = VariantInternalAccessor<m_base_type>::get(base).size(); \
+			if (index < 0) { \
+				index += size; \
+			} \
+			if (index < 0 || index >= size) { \
+				*oob = true; \
+				*valid = false; \
+				return; \
+			} \
+			m_assign_type num; \
+			if (value->get_type() == Variant::INT) { \
+				num = (m_assign_type) * &VariantInternalAccessor<int64_t>::get(value); \
+			} else if (value->get_type() == Variant::FLOAT) { \
+				num = (m_assign_type) * &VariantInternalAccessor<double>::get(value); \
+			} else { \
+				*oob = false; \
+				*valid = false; \
+				return; \
+			} \
+			(VariantInternalAccessor<m_base_type>::get(base)).write[index] = num; \
+			*oob = false; \
+			*valid = true; \
+		} \
+		static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) { \
+			int64_t size = VariantInternalAccessor<m_base_type>::get(base).size(); \
+			if (index < 0) { \
+				index += size; \
+			} \
+			if (index < 0 || index >= size) { \
+				*oob = true; \
+				return; \
+			} \
+			(VariantInternalAccessor<m_base_type>::get(base)).write[index] = VariantInternalAccessor<m_elem_type>::get(value); \
+			*oob = false; \
+		} \
+		static void ptr_set(void *base, int64_t index, const void *member) { \
+			/* avoid ptrconvert for performance*/ \
+			m_base_type &v = *reinterpret_cast<m_base_type *>(base); \
+			if (index < 0) \
+				index += v.size(); \
+			OOB_TEST(index, v.size()); \
+			v.write[index] = PtrToArg<m_elem_type>::convert(member); \
+		} \
+		static Variant::Type get_index_type() { \
+			return GetTypeInfo<m_elem_type>::VARIANT_TYPE; \
+		} \
+		static uint32_t get_index_usage() { \
+			return GetTypeInfo<m_elem_type>::get_class_info().usage; \
+		} \
+		static uint64_t get_indexed_size(const Variant *base) { \
+			return VariantInternalAccessor<m_base_type>::get(base).size(); \
+		} \
+	};
+
+#define INDEXED_SETGET_STRUCT_BUILTIN_NUMERIC(m_base_type, m_elem_type, m_assign_type, m_max) \
+	struct VariantIndexedSetGet_##m_base_type { \
+		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) { \
+			if (index < 0 || index >= m_max) { \
+				*oob = true; \
+				return; \
+			} \
+			VariantTypeAdjust<m_elem_type>::adjust(value); \
+			VariantInternalAccessor<m_elem_type>::get(value) = (VariantInternalAccessor<m_base_type>::get(base))[index]; \
+			*oob = false; \
+		} \
+		static void ptr_get(const void *base, int64_t index, void *member) { \
+			/* avoid ptrconvert for performance*/ \
+			const m_base_type &v = *reinterpret_cast<const m_base_type *>(base); \
+			OOB_TEST(index, m_max); \
+			PtrToArg<m_elem_type>::encode(v[index], member); \
+		} \
+		static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) { \
+			if (index < 0 || index >= m_max) { \
+				*oob = true; \
+				*valid = false; \
+				return; \
+			} \
+			m_assign_type num; \
+			if (value->get_type() == Variant::INT) { \
+				num = (m_assign_type) * &VariantInternalAccessor<int64_t>::get(value); \
+			} else if (value->get_type() == Variant::FLOAT) { \
+				num = (m_assign_type) * &VariantInternalAccessor<double>::get(value); \
+			} else { \
+				*oob = false; \
+				*valid = false; \
+				return; \
+			} \
+			(VariantInternalAccessor<m_base_type>::get(base))[index] = num; \
+			*oob = false; \
+			*valid = true; \
+		} \
+		static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) { \
+			if (index < 0 || index >= m_max) { \
+				*oob = true; \
+				return; \
+			} \
 			(VariantInternalAccessor<m_base_type>::get(base))[index] = VariantInternalAccessor<m_elem_type>::get(value); \
-			*oob = false;                                                                                                \
-		}                                                                                                                \
-		static void ptr_set(void *base, int64_t index, const void *member) {                                             \
-			/* avoid ptrconvert for performance*/                                                                        \
-			m_base_type &v = *reinterpret_cast<m_base_type *>(base);                                                     \
-			OOB_TEST(index, m_max);                                                                                      \
-			v[index] = PtrToArg<m_elem_type>::convert(member);                                                           \
-		}                                                                                                                \
-		static Variant::Type get_index_type() {                                                                          \
-			return GetTypeInfo<m_elem_type>::VARIANT_TYPE;                                                               \
-		}                                                                                                                \
-		static uint32_t get_index_usage() {                                                                              \
-			return GetTypeInfo<m_elem_type>::get_class_info().usage;                                                     \
-		}                                                                                                                \
-		static uint64_t get_indexed_size(const Variant *base) {                                                          \
-			return m_max;                                                                                                \
-		}                                                                                                                \
+			*oob = false; \
+		} \
+		static void ptr_set(void *base, int64_t index, const void *member) { \
+			/* avoid ptrconvert for performance*/ \
+			m_base_type &v = *reinterpret_cast<m_base_type *>(base); \
+			OOB_TEST(index, m_max); \
+			v[index] = PtrToArg<m_elem_type>::convert(member); \
+		} \
+		static Variant::Type get_index_type() { \
+			return GetTypeInfo<m_elem_type>::VARIANT_TYPE; \
+		} \
+		static uint32_t get_index_usage() { \
+			return GetTypeInfo<m_elem_type>::get_class_info().usage; \
+		} \
+		static uint64_t get_indexed_size(const Variant *base) { \
+			return m_max; \
+		} \
 	};
 
-#define INDEXED_SETGET_STRUCT_BUILTIN_ACCESSOR(m_base_type, m_elem_type, m_accessor, m_max)                                         \
-	struct VariantIndexedSetGet_##m_base_type {                                                                                     \
-		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {                                            \
-			if (index < 0 || index >= m_max) {                                                                                      \
-				*oob = true;                                                                                                        \
-				return;                                                                                                             \
-			}                                                                                                                       \
-			VariantTypeAdjust<m_elem_type>::adjust(value);                                                                          \
-			VariantInternalAccessor<m_elem_type>::get(value) = (VariantInternalAccessor<m_base_type>::get(base))m_accessor[index];  \
-			*oob = false;                                                                                                           \
-		}                                                                                                                           \
-		static void ptr_get(const void *base, int64_t index, void *member) {                                                        \
-			/* avoid ptrconvert for performance*/                                                                                   \
-			const m_base_type &v = *reinterpret_cast<const m_base_type *>(base);                                                    \
-			OOB_TEST(index, m_max);                                                                                                 \
-			PtrToArg<m_elem_type>::encode(v m_accessor[index], member);                                                             \
-		}                                                                                                                           \
-		static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {                               \
-			if (value->get_type() != GetTypeInfo<m_elem_type>::VARIANT_TYPE) {                                                      \
-				*oob = false;                                                                                                       \
-				*valid = false;                                                                                                     \
-			}                                                                                                                       \
-			if (index < 0 || index >= m_max) {                                                                                      \
-				*oob = true;                                                                                                        \
-				*valid = false;                                                                                                     \
-				return;                                                                                                             \
-			}                                                                                                                       \
+#define INDEXED_SETGET_STRUCT_BUILTIN_ACCESSOR(m_base_type, m_elem_type, m_accessor, m_max) \
+	struct VariantIndexedSetGet_##m_base_type { \
+		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) { \
+			if (index < 0 || index >= m_max) { \
+				*oob = true; \
+				return; \
+			} \
+			VariantTypeAdjust<m_elem_type>::adjust(value); \
+			VariantInternalAccessor<m_elem_type>::get(value) = (VariantInternalAccessor<m_base_type>::get(base))m_accessor[index]; \
+			*oob = false; \
+		} \
+		static void ptr_get(const void *base, int64_t index, void *member) { \
+			/* avoid ptrconvert for performance*/ \
+			const m_base_type &v = *reinterpret_cast<const m_base_type *>(base); \
+			OOB_TEST(index, m_max); \
+			PtrToArg<m_elem_type>::encode(v m_accessor[index], member); \
+		} \
+		static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) { \
+			if (value->get_type() != GetTypeInfo<m_elem_type>::VARIANT_TYPE) { \
+				*oob = false; \
+				*valid = false; \
+			} \
+			if (index < 0 || index >= m_max) { \
+				*oob = true; \
+				*valid = false; \
+				return; \
+			} \
 			(VariantInternalAccessor<m_base_type>::get(base)) m_accessor[index] = VariantInternalAccessor<m_elem_type>::get(value); \
-			*oob = false;                                                                                                           \
-			*valid = true;                                                                                                          \
-		}                                                                                                                           \
-		static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {                                  \
-			if (index < 0 || index >= m_max) {                                                                                      \
-				*oob = true;                                                                                                        \
-				return;                                                                                                             \
-			}                                                                                                                       \
+			*oob = false; \
+			*valid = true; \
+		} \
+		static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) { \
+			if (index < 0 || index >= m_max) { \
+				*oob = true; \
+				return; \
+			} \
 			(VariantInternalAccessor<m_base_type>::get(base)) m_accessor[index] = VariantInternalAccessor<m_elem_type>::get(value); \
-			*oob = false;                                                                                                           \
-		}                                                                                                                           \
-		static void ptr_set(void *base, int64_t index, const void *member) {                                                        \
-			/* avoid ptrconvert for performance*/                                                                                   \
-			m_base_type &v = *reinterpret_cast<m_base_type *>(base);                                                                \
-			OOB_TEST(index, m_max);                                                                                                 \
-			v m_accessor[index] = PtrToArg<m_elem_type>::convert(member);                                                           \
-		}                                                                                                                           \
-		static Variant::Type get_index_type() {                                                                                     \
-			return GetTypeInfo<m_elem_type>::VARIANT_TYPE;                                                                          \
-		}                                                                                                                           \
-		static uint32_t get_index_usage() {                                                                                         \
-			return GetTypeInfo<m_elem_type>::get_class_info().usage;                                                                \
-		}                                                                                                                           \
-		static uint64_t get_indexed_size(const Variant *base) {                                                                     \
-			return m_max;                                                                                                           \
-		}                                                                                                                           \
+			*oob = false; \
+		} \
+		static void ptr_set(void *base, int64_t index, const void *member) { \
+			/* avoid ptrconvert for performance*/ \
+			m_base_type &v = *reinterpret_cast<m_base_type *>(base); \
+			OOB_TEST(index, m_max); \
+			v m_accessor[index] = PtrToArg<m_elem_type>::convert(member); \
+		} \
+		static Variant::Type get_index_type() { \
+			return GetTypeInfo<m_elem_type>::VARIANT_TYPE; \
+		} \
+		static uint32_t get_index_usage() { \
+			return GetTypeInfo<m_elem_type>::get_class_info().usage; \
+		} \
+		static uint64_t get_indexed_size(const Variant *base) { \
+			return m_max; \
+		} \
 	};
 
-#define INDEXED_SETGET_STRUCT_BUILTIN_FUNC(m_base_type, m_elem_type, m_set, m_get, m_max)                                    \
-	struct VariantIndexedSetGet_##m_base_type {                                                                              \
-		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {                                     \
-			if (index < 0 || index >= m_max) {                                                                               \
-				*oob = true;                                                                                                 \
-				return;                                                                                                      \
-			}                                                                                                                \
-			VariantTypeAdjust<m_elem_type>::adjust(value);                                                                   \
+#define INDEXED_SETGET_STRUCT_BUILTIN_FUNC(m_base_type, m_elem_type, m_set, m_get, m_max) \
+	struct VariantIndexedSetGet_##m_base_type { \
+		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) { \
+			if (index < 0 || index >= m_max) { \
+				*oob = true; \
+				return; \
+			} \
+			VariantTypeAdjust<m_elem_type>::adjust(value); \
 			VariantInternalAccessor<m_elem_type>::get(value) = VariantInternalAccessor<m_base_type>::get(base).m_get(index); \
-			*oob = false;                                                                                                    \
-		}                                                                                                                    \
-		static void ptr_get(const void *base, int64_t index, void *member) {                                                 \
-			/* avoid ptrconvert for performance*/                                                                            \
-			const m_base_type &v = *reinterpret_cast<const m_base_type *>(base);                                             \
-			OOB_TEST(index, m_max);                                                                                          \
-			PtrToArg<m_elem_type>::encode(v.m_get(index), member);                                                           \
-		}                                                                                                                    \
-		static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {                        \
-			if (value->get_type() != GetTypeInfo<m_elem_type>::VARIANT_TYPE) {                                               \
-				*oob = false;                                                                                                \
-				*valid = false;                                                                                              \
-			}                                                                                                                \
-			if (index < 0 || index >= m_max) {                                                                               \
-				*oob = true;                                                                                                 \
-				*valid = false;                                                                                              \
-				return;                                                                                                      \
-			}                                                                                                                \
-			VariantInternalAccessor<m_base_type>::get(base).m_set(index, VariantInternalAccessor<m_elem_type>::get(value));  \
-			*oob = false;                                                                                                    \
-			*valid = true;                                                                                                   \
-		}                                                                                                                    \
-		static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {                           \
-			if (index < 0 || index >= m_max) {                                                                               \
-				*oob = true;                                                                                                 \
-				return;                                                                                                      \
-			}                                                                                                                \
-			VariantInternalAccessor<m_base_type>::get(base).m_set(index, VariantInternalAccessor<m_elem_type>::get(value));  \
-			*oob = false;                                                                                                    \
-		}                                                                                                                    \
-		static void ptr_set(void *base, int64_t index, const void *member) {                                                 \
-			/* avoid ptrconvert for performance*/                                                                            \
-			m_base_type &v = *reinterpret_cast<m_base_type *>(base);                                                         \
-			OOB_TEST(index, m_max);                                                                                          \
-			v.m_set(index, PtrToArg<m_elem_type>::convert(member));                                                          \
-		}                                                                                                                    \
-		static Variant::Type get_index_type() {                                                                              \
-			return GetTypeInfo<m_elem_type>::VARIANT_TYPE;                                                                   \
-		}                                                                                                                    \
-		static uint32_t get_index_usage() {                                                                                  \
-			return GetTypeInfo<m_elem_type>::get_class_info().usage;                                                         \
-		}                                                                                                                    \
-		static uint64_t get_indexed_size(const Variant *base) {                                                              \
-			return m_max;                                                                                                    \
-		}                                                                                                                    \
+			*oob = false; \
+		} \
+		static void ptr_get(const void *base, int64_t index, void *member) { \
+			/* avoid ptrconvert for performance*/ \
+			const m_base_type &v = *reinterpret_cast<const m_base_type *>(base); \
+			OOB_TEST(index, m_max); \
+			PtrToArg<m_elem_type>::encode(v.m_get(index), member); \
+		} \
+		static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) { \
+			if (value->get_type() != GetTypeInfo<m_elem_type>::VARIANT_TYPE) { \
+				*oob = false; \
+				*valid = false; \
+			} \
+			if (index < 0 || index >= m_max) { \
+				*oob = true; \
+				*valid = false; \
+				return; \
+			} \
+			VariantInternalAccessor<m_base_type>::get(base).m_set(index, VariantInternalAccessor<m_elem_type>::get(value)); \
+			*oob = false; \
+			*valid = true; \
+		} \
+		static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) { \
+			if (index < 0 || index >= m_max) { \
+				*oob = true; \
+				return; \
+			} \
+			VariantInternalAccessor<m_base_type>::get(base).m_set(index, VariantInternalAccessor<m_elem_type>::get(value)); \
+			*oob = false; \
+		} \
+		static void ptr_set(void *base, int64_t index, const void *member) { \
+			/* avoid ptrconvert for performance*/ \
+			m_base_type &v = *reinterpret_cast<m_base_type *>(base); \
+			OOB_TEST(index, m_max); \
+			v.m_set(index, PtrToArg<m_elem_type>::convert(member)); \
+		} \
+		static Variant::Type get_index_type() { \
+			return GetTypeInfo<m_elem_type>::VARIANT_TYPE; \
+		} \
+		static uint32_t get_index_usage() { \
+			return GetTypeInfo<m_elem_type>::get_class_info().usage; \
+		} \
+		static uint64_t get_indexed_size(const Variant *base) { \
+			return m_max; \
+		} \
 	};
 
 struct VariantIndexedSetGet_Array {

@@ -3559,27 +3559,6 @@ void ScriptEditor::_help_search(const String &p_text) {
 	help_search_dialog->popup_dialog(p_text);
 }
 
-void ScriptEditor::_open_script_request(const String &p_path) {
-	Ref<Script> scr = ResourceLoader::load(p_path);
-	if (scr.is_valid()) {
-		script_editor->edit(scr, false);
-		return;
-	}
-
-	Ref<JSON> json = ResourceLoader::load(p_path);
-	if (json.is_valid()) {
-		script_editor->edit(json, false);
-		return;
-	}
-
-	Error err;
-	Ref<TextFile> text_file = script_editor->_load_text_file(p_path, &err);
-	if (text_file.is_valid()) {
-		script_editor->edit(text_file, false);
-		return;
-	}
-}
-
 void ScriptEditor::register_syntax_highlighter(const Ref<EditorSyntaxHighlighter> &p_syntax_highlighter) {
 	ERR_FAIL_COND(p_syntax_highlighter.is_null());
 
@@ -4140,8 +4119,6 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	trim_trailing_whitespace_on_save = EDITOR_GET("text_editor/behavior/files/trim_trailing_whitespace_on_save");
 	trim_final_newlines_on_save = EDITOR_GET("text_editor/behavior/files/trim_final_newlines_on_save");
 	convert_indent_on_save = EDITOR_GET("text_editor/behavior/files/convert_indent_on_save");
-
-	ScriptServer::edit_request_func = _open_script_request;
 
 	Ref<EditorJSONSyntaxHighlighter> json_syntax_highlighter;
 	json_syntax_highlighter.instantiate();

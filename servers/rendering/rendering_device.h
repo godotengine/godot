@@ -1598,9 +1598,10 @@ private:
 		BinaryMutex operations_mutex;
 	};
 
-	LocalVector<TransferWorker *> transfer_worker_pool;
+	TightLocalVector<TransferWorker *> transfer_worker_pool;
+	uint32_t transfer_worker_pool_size = 0;
 	uint32_t transfer_worker_pool_max_size = 1;
-	LocalVector<uint64_t> transfer_worker_operation_used_by_draw;
+	TightLocalVector<uint64_t> transfer_worker_operation_used_by_draw;
 	LocalVector<uint32_t> transfer_worker_pool_available_list;
 	LocalVector<RDD::TextureBarrier> transfer_worker_pool_texture_barriers;
 	BinaryMutex transfer_worker_pool_mutex;

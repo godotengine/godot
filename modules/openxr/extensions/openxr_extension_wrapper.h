@@ -33,7 +33,7 @@
 #include "core/error/error_macros.h"
 #include "core/math/projection.h"
 #include "core/object/class_db.h"
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid.h"

@@ -30,9 +30,9 @@
 
 #pragma once
 
-#import <CommonCrypto/CommonDigest.h>
-#import <simd/simd.h>
-#import <zlib.h>
+#include <CommonCrypto/CommonDigest.h>
+#include <simd/simd.h>
+#include <zlib.h>
 
 #include "core/templates/hashfuncs.h"
 #include "core/templates/local_vector.h"

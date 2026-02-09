@@ -65,22 +65,22 @@
 // Stringify all `Variant` compatible types for doctest output by default.
 // https://github.com/onqtam/doctest/blob/master/doc/markdown/stringification.md
 
-#define DOCTEST_STRINGIFY_VARIANT(m_type)                     \
-	template <>                                               \
-	struct doctest::StringMaker<m_type> {                     \
+#define DOCTEST_STRINGIFY_VARIANT(m_type) \
+	template <> \
+	struct doctest::StringMaker<m_type> { \
 		static doctest::String convert(const m_type &p_val) { \
-			const Variant val = p_val;                        \
+			const Variant val = p_val; \
 			return val.operator ::String().utf8().get_data(); \
-		}                                                     \
+		} \
 	};
 
-#define DOCTEST_STRINGIFY_VARIANT_POINTER(m_type)             \
-	template <>                                               \
-	struct doctest::StringMaker<m_type> {                     \
+#define DOCTEST_STRINGIFY_VARIANT_POINTER(m_type) \
+	template <> \
+	struct doctest::StringMaker<m_type> { \
 		static doctest::String convert(const m_type *p_val) { \
-			const Variant val = p_val;                        \
+			const Variant val = p_val; \
 			return val.operator ::String().utf8().get_data(); \
-		}                                                     \
+		} \
 	};
 
 DOCTEST_STRINGIFY_VARIANT(Variant);
@@ -131,7 +131,7 @@ typedef void (*TestFunc)();
 extern HashMap<String, TestFunc> *test_commands;
 int register_test_command(String p_command, TestFunc p_function);
 
-#define REGISTER_TEST_COMMAND(m_command, m_function)                 \
+#define REGISTER_TEST_COMMAND(m_command, m_function) \
 	DOCTEST_GLOBAL_NO_WARNINGS(DOCTEST_ANONYMOUS(DOCTEST_ANON_VAR_), \
 			register_test_command(m_command, m_function))
 
@@ -147,98 +147,98 @@ int register_test_command(String p_command, TestFunc p_function);
 
 #define _SEND_DISPLAYSERVER_EVENT(m_event) ((DisplayServerMock *)(DisplayServer::get_singleton()))->simulate_event(m_event);
 
-#define SEND_GUI_ACTION(m_action)                                                                     \
-	{                                                                                                 \
+#define SEND_GUI_ACTION(m_action) \
+	{ \
 		const List<Ref<InputEvent>> *events = InputMap::get_singleton()->action_get_events(m_action); \
-		const List<Ref<InputEvent>>::Element *first_event = events->front();                          \
-		Ref<InputEventKey> event = first_event->get()->duplicate();                                   \
-		event->set_pressed(true);                                                                     \
-		_SEND_DISPLAYSERVER_EVENT(event);                                                             \
-		MessageQueue::get_singleton()->flush();                                                       \
+		const List<Ref<InputEvent>>::Element *first_event = events->front(); \
+		Ref<InputEventKey> event = first_event->get()->duplicate(); \
+		event->set_pressed(true); \
+		_SEND_DISPLAYSERVER_EVENT(event); \
+		MessageQueue::get_singleton()->flush(); \
 	}
 
-#define SEND_GUI_KEY_EVENT(m_input)                                          \
-	{                                                                        \
+#define SEND_GUI_KEY_EVENT(m_input) \
+	{ \
 		Ref<InputEventKey> event = InputEventKey::create_reference(m_input); \
-		event->set_pressed(true);                                            \
-		_SEND_DISPLAYSERVER_EVENT(event);                                    \
-		MessageQueue::get_singleton()->flush();                              \
+		event->set_pressed(true); \
+		_SEND_DISPLAYSERVER_EVENT(event); \
+		MessageQueue::get_singleton()->flush(); \
 	}
 
-#define SEND_GUI_KEY_UP_EVENT(m_input)                                       \
-	{                                                                        \
+#define SEND_GUI_KEY_UP_EVENT(m_input) \
+	{ \
 		Ref<InputEventKey> event = InputEventKey::create_reference(m_input); \
-		event->set_pressed(false);                                           \
-		_SEND_DISPLAYSERVER_EVENT(event);                                    \
-		MessageQueue::get_singleton()->flush();                              \
+		event->set_pressed(false); \
+		_SEND_DISPLAYSERVER_EVENT(event); \
+		MessageQueue::get_singleton()->flush(); \
 	}
 
-#define _UPDATE_EVENT_MODIFIERS(m_event, m_modifiers)                                  \
+#define _UPDATE_EVENT_MODIFIERS(m_event, m_modifiers) \
 	m_event->set_shift_pressed(((m_modifiers) & KeyModifierMask::SHIFT) != Key::NONE); \
-	m_event->set_alt_pressed(((m_modifiers) & KeyModifierMask::ALT) != Key::NONE);     \
-	m_event->set_ctrl_pressed(((m_modifiers) & KeyModifierMask::CTRL) != Key::NONE);   \
+	m_event->set_alt_pressed(((m_modifiers) & KeyModifierMask::ALT) != Key::NONE); \
+	m_event->set_ctrl_pressed(((m_modifiers) & KeyModifierMask::CTRL) != Key::NONE); \
 	m_event->set_meta_pressed(((m_modifiers) & KeyModifierMask::META) != Key::NONE);
 
 #define _CREATE_GUI_MOUSE_EVENT(m_screen_pos, m_input, m_mask, m_modifiers) \
-	Ref<InputEventMouseButton> event;                                       \
-	event.instantiate();                                                    \
-	event->set_position(m_screen_pos);                                      \
-	event->set_button_index(m_input);                                       \
-	event->set_button_mask(m_mask);                                         \
-	event->set_factor(1);                                                   \
-	_UPDATE_EVENT_MODIFIERS(event, m_modifiers);                            \
+	Ref<InputEventMouseButton> event; \
+	event.instantiate(); \
+	event->set_position(m_screen_pos); \
+	event->set_button_index(m_input); \
+	event->set_button_mask(m_mask); \
+	event->set_factor(1); \
+	_UPDATE_EVENT_MODIFIERS(event, m_modifiers); \
 	event->set_pressed(true);
 
 #define _CREATE_GUI_TOUCH_EVENT(m_screen_pos, m_pressed, m_double) \
-	Ref<InputEventScreenTouch> event;                              \
-	event.instantiate();                                           \
-	event->set_position(m_screen_pos);                             \
-	event->set_pressed(m_pressed);                                 \
+	Ref<InputEventScreenTouch> event; \
+	event.instantiate(); \
+	event->set_position(m_screen_pos); \
+	event->set_pressed(m_pressed); \
 	event->set_double_tap(m_double);
 
 #define SEND_GUI_MOUSE_BUTTON_EVENT(m_screen_pos, m_input, m_mask, m_modifiers) \
-	{                                                                           \
-		_CREATE_GUI_MOUSE_EVENT(m_screen_pos, m_input, m_mask, m_modifiers);    \
-		_SEND_DISPLAYSERVER_EVENT(event);                                       \
-		MessageQueue::get_singleton()->flush();                                 \
+	{ \
+		_CREATE_GUI_MOUSE_EVENT(m_screen_pos, m_input, m_mask, m_modifiers); \
+		_SEND_DISPLAYSERVER_EVENT(event); \
+		MessageQueue::get_singleton()->flush(); \
 	}
 
 #define SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(m_screen_pos, m_input, m_mask, m_modifiers) \
-	{                                                                                    \
-		_CREATE_GUI_MOUSE_EVENT(m_screen_pos, m_input, m_mask, m_modifiers);             \
-		event->set_pressed(false);                                                       \
-		_SEND_DISPLAYSERVER_EVENT(event);                                                \
-		MessageQueue::get_singleton()->flush();                                          \
+	{ \
+		_CREATE_GUI_MOUSE_EVENT(m_screen_pos, m_input, m_mask, m_modifiers); \
+		event->set_pressed(false); \
+		_SEND_DISPLAYSERVER_EVENT(event); \
+		MessageQueue::get_singleton()->flush(); \
 	}
 
-#define SEND_GUI_DOUBLE_CLICK(m_screen_pos, m_modifiers)                                              \
-	{                                                                                                 \
+#define SEND_GUI_DOUBLE_CLICK(m_screen_pos, m_modifiers) \
+	{ \
 		_CREATE_GUI_MOUSE_EVENT(m_screen_pos, MouseButton::LEFT, MouseButtonMask::NONE, m_modifiers); \
-		event->set_double_click(true);                                                                \
-		_SEND_DISPLAYSERVER_EVENT(event);                                                             \
-		MessageQueue::get_singleton()->flush();                                                       \
+		event->set_double_click(true); \
+		_SEND_DISPLAYSERVER_EVENT(event); \
+		MessageQueue::get_singleton()->flush(); \
 	}
 
 // We toggle _print_error_enabled to prevent display server not supported warnings.
 #define SEND_GUI_MOUSE_MOTION_EVENT(m_screen_pos, m_mask, m_modifiers) \
-	{                                                                  \
-		bool errors_enabled = CoreGlobals::print_error_enabled;        \
-		CoreGlobals::print_error_enabled = false;                      \
-		Ref<InputEventMouseMotion> event;                              \
-		event.instantiate();                                           \
-		event->set_position(m_screen_pos);                             \
-		event->set_button_mask(m_mask);                                \
-		_UPDATE_EVENT_MODIFIERS(event, m_modifiers);                   \
-		_SEND_DISPLAYSERVER_EVENT(event);                              \
-		MessageQueue::get_singleton()->flush();                        \
-		CoreGlobals::print_error_enabled = errors_enabled;             \
+	{ \
+		bool errors_enabled = CoreGlobals::print_error_enabled; \
+		CoreGlobals::print_error_enabled = false; \
+		Ref<InputEventMouseMotion> event; \
+		event.instantiate(); \
+		event->set_position(m_screen_pos); \
+		event->set_button_mask(m_mask); \
+		_UPDATE_EVENT_MODIFIERS(event, m_modifiers); \
+		_SEND_DISPLAYSERVER_EVENT(event); \
+		MessageQueue::get_singleton()->flush(); \
+		CoreGlobals::print_error_enabled = errors_enabled; \
 	}
 
-#define SEND_GUI_TOUCH_EVENT(m_screen_pos, m_pressed, m_double)    \
-	{                                                              \
+#define SEND_GUI_TOUCH_EVENT(m_screen_pos, m_pressed, m_double) \
+	{ \
 		_CREATE_GUI_TOUCH_EVENT(m_screen_pos, m_pressed, m_double) \
-		_SEND_DISPLAYSERVER_EVENT(event);                          \
-		MessageQueue::get_singleton()->flush();                    \
+		_SEND_DISPLAYSERVER_EVENT(event); \
+		MessageQueue::get_singleton()->flush(); \
 	}
 
 // Utility class / macros for testing signals
@@ -406,68 +406,68 @@ public:
 #define SIGNAL_DISCARD(m_signal) SignalWatcher::get_singleton()->discard_signal(m_signal);
 
 #define MULTICHECK_STRING_EQ(m_obj, m_func, m_param1, m_eq) \
-	CHECK(m_obj.m_func(m_param1) == m_eq);                  \
-	CHECK(m_obj.m_func(U##m_param1) == m_eq);               \
-	CHECK(m_obj.m_func(L##m_param1) == m_eq);               \
+	CHECK(m_obj.m_func(m_param1) == m_eq); \
+	CHECK(m_obj.m_func(U##m_param1) == m_eq); \
+	CHECK(m_obj.m_func(L##m_param1) == m_eq); \
 	CHECK(m_obj.m_func(String(m_param1)) == m_eq);
 
 #define MULTICHECK_STRING_INT_EQ(m_obj, m_func, m_param1, m_param2, m_eq) \
-	CHECK(m_obj.m_func(m_param1, m_param2) == m_eq);                      \
-	CHECK(m_obj.m_func(U##m_param1, m_param2) == m_eq);                   \
-	CHECK(m_obj.m_func(L##m_param1, m_param2) == m_eq);                   \
+	CHECK(m_obj.m_func(m_param1, m_param2) == m_eq); \
+	CHECK(m_obj.m_func(U##m_param1, m_param2) == m_eq); \
+	CHECK(m_obj.m_func(L##m_param1, m_param2) == m_eq); \
 	CHECK(m_obj.m_func(String(m_param1), m_param2) == m_eq);
 
 #define MULTICHECK_STRING_INT_INT_EQ(m_obj, m_func, m_param1, m_param2, m_param3, m_eq) \
-	CHECK(m_obj.m_func(m_param1, m_param2, m_param3) == m_eq);                          \
-	CHECK(m_obj.m_func(U##m_param1, m_param2, m_param3) == m_eq);                       \
-	CHECK(m_obj.m_func(L##m_param1, m_param2, m_param3) == m_eq);                       \
+	CHECK(m_obj.m_func(m_param1, m_param2, m_param3) == m_eq); \
+	CHECK(m_obj.m_func(U##m_param1, m_param2, m_param3) == m_eq); \
+	CHECK(m_obj.m_func(L##m_param1, m_param2, m_param3) == m_eq); \
 	CHECK(m_obj.m_func(String(m_param1), m_param2, m_param3) == m_eq);
 
 #define MULTICHECK_STRING_STRING_EQ(m_obj, m_func, m_param1, m_param2, m_eq) \
-	CHECK(m_obj.m_func(m_param1, m_param2) == m_eq);                         \
-	CHECK(m_obj.m_func(U##m_param1, U##m_param2) == m_eq);                   \
-	CHECK(m_obj.m_func(L##m_param1, L##m_param2) == m_eq);                   \
+	CHECK(m_obj.m_func(m_param1, m_param2) == m_eq); \
+	CHECK(m_obj.m_func(U##m_param1, U##m_param2) == m_eq); \
+	CHECK(m_obj.m_func(L##m_param1, L##m_param2) == m_eq); \
 	CHECK(m_obj.m_func(String(m_param1), String(m_param2)) == m_eq);
 
-#define MULTICHECK_GET_SLICE(m_obj, m_param1, m_slices)                 \
-	for (int i = 0; i < m_obj.get_slice_count(m_param1); ++i) {         \
-		CHECK(m_obj.get_slice(m_param1, i) == m_slices[i]);             \
-	}                                                                   \
-	for (int i = 0; i < m_obj.get_slice_count(U##m_param1); ++i) {      \
-		CHECK(m_obj.get_slice(U##m_param1, i) == m_slices[i]);          \
-	}                                                                   \
-	for (int i = 0; i < m_obj.get_slice_count(L##m_param1); ++i) {      \
-		CHECK(m_obj.get_slice(L##m_param1, i) == m_slices[i]);          \
-	}                                                                   \
+#define MULTICHECK_GET_SLICE(m_obj, m_param1, m_slices) \
+	for (int i = 0; i < m_obj.get_slice_count(m_param1); ++i) { \
+		CHECK(m_obj.get_slice(m_param1, i) == m_slices[i]); \
+	} \
+	for (int i = 0; i < m_obj.get_slice_count(U##m_param1); ++i) { \
+		CHECK(m_obj.get_slice(U##m_param1, i) == m_slices[i]); \
+	} \
+	for (int i = 0; i < m_obj.get_slice_count(L##m_param1); ++i) { \
+		CHECK(m_obj.get_slice(L##m_param1, i) == m_slices[i]); \
+	} \
 	for (int i = 0; i < m_obj.get_slice_count(String(m_param1)); ++i) { \
-		CHECK(m_obj.get_slice(String(m_param1), i) == m_slices[i]);     \
+		CHECK(m_obj.get_slice(String(m_param1), i) == m_slices[i]); \
 	}
 
 #define MULTICHECK_SPLIT(m_obj, m_func, m_param1, m_param2, m_param3, m_slices, m_expected_size) \
-	do {                                                                                         \
-		Vector<String> string_list;                                                              \
-                                                                                                 \
-		string_list = m_obj.m_func(m_param1, m_param2, m_param3);                                \
-		CHECK(m_expected_size == string_list.size());                                            \
-		for (int i = 0; i < string_list.size(); ++i) {                                           \
-			CHECK(string_list[i] == m_slices[i]);                                                \
-		}                                                                                        \
-                                                                                                 \
-		string_list = m_obj.m_func(U##m_param1, m_param2, m_param3);                             \
-		CHECK(m_expected_size == string_list.size());                                            \
-		for (int i = 0; i < string_list.size(); ++i) {                                           \
-			CHECK(string_list[i] == m_slices[i]);                                                \
-		}                                                                                        \
-                                                                                                 \
-		string_list = m_obj.m_func(L##m_param1, m_param2, m_param3);                             \
-		CHECK(m_expected_size == string_list.size());                                            \
-		for (int i = 0; i < string_list.size(); ++i) {                                           \
-			CHECK(string_list[i] == m_slices[i]);                                                \
-		}                                                                                        \
-                                                                                                 \
-		string_list = m_obj.m_func(String(m_param1), m_param2, m_param3);                        \
-		CHECK(m_expected_size == string_list.size());                                            \
-		for (int i = 0; i < string_list.size(); ++i) {                                           \
-			CHECK(string_list[i] == m_slices[i]);                                                \
-		}                                                                                        \
+	do { \
+		Vector<String> string_list; \
+\
+		string_list = m_obj.m_func(m_param1, m_param2, m_param3); \
+		CHECK(m_expected_size == string_list.size()); \
+		for (int i = 0; i < string_list.size(); ++i) { \
+			CHECK(string_list[i] == m_slices[i]); \
+		} \
+\
+		string_list = m_obj.m_func(U##m_param1, m_param2, m_param3); \
+		CHECK(m_expected_size == string_list.size()); \
+		for (int i = 0; i < string_list.size(); ++i) { \
+			CHECK(string_list[i] == m_slices[i]); \
+		} \
+\
+		string_list = m_obj.m_func(L##m_param1, m_param2, m_param3); \
+		CHECK(m_expected_size == string_list.size()); \
+		for (int i = 0; i < string_list.size(); ++i) { \
+			CHECK(string_list[i] == m_slices[i]); \
+		} \
+\
+		string_list = m_obj.m_func(String(m_param1), m_param2, m_param3); \
+		CHECK(m_expected_size == string_list.size()); \
+		for (int i = 0; i < string_list.size(); ++i) { \
+			CHECK(string_list[i] == m_slices[i]); \
+		} \
 	} while (false)

@@ -461,7 +461,7 @@ constexpr bool is_fully_defined_v = is_fully_defined<T>::value;
 /// This can be used to reduce include coupling and keep compile times low.
 /// The check must be made at the top of the corresponding .cpp file of a header.
 #define STATIC_ASSERT_INCOMPLETE_TYPE(m_keyword, m_type) \
-	m_keyword m_type;                                    \
+	m_keyword m_type; \
 	static_assert(!is_fully_defined_v<m_type>, #m_type " was unexpectedly fully defined. Please check the include hierarchy of '" __FILE__ "' and remove includes that resolve the " #m_keyword ".");
 #else
 #define STATIC_ASSERT_INCOMPLETE_TYPE(m_keyword, m_type)

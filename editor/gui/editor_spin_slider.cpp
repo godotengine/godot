@@ -128,7 +128,10 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 					pre_grab_value = get_max();
 				}
 
-				double new_value = pre_grab_value + get_step() * grabbing_spinner_dist_cache;
+				// Prevent dragging properties with very precise steps from being agonizingly slow.
+				const double default_float_step = EDITOR_GET("interface/inspector/default_float_step");
+				const double drag_step = MAX(get_step(), default_float_step);
+				const double new_value = pre_grab_value + drag_step * grabbing_spinner_dist_cache;
 				set_value((mm->is_command_or_control_pressed() && !editing_integer) ? Math::round(new_value) : new_value);
 			}
 		} else if (updown_offset != -1) {

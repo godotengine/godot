@@ -1622,9 +1622,9 @@ TEST_CASE("[String] Checking string is empty when it should be") {
 }
 
 TEST_CASE("[String] lstrip and rstrip") {
-#define STRIP_TEST(x)             \
-	{                             \
-		bool success = x;         \
+#define STRIP_TEST(x) \
+	{ \
+		bool success = x; \
 		state = state && success; \
 	}
 
@@ -2183,17 +2183,17 @@ TEST_CASE("[String] Variant ptr indexed set") {
 
 TEST_CASE("[String][URL] Parse URL") {
 #define CHECK_URL(m_url_to_parse, m_expected_schema, m_expected_host, m_expected_port, m_expected_path, m_expected_fragment, m_expected_error) \
-	if (true) {                                                                                                                                \
-		int port;                                                                                                                              \
-		String url(m_url_to_parse), schema, host, path, fragment;                                                                              \
-                                                                                                                                               \
-		CHECK_EQ(url.parse_url(schema, host, port, path, fragment), m_expected_error);                                                         \
-		CHECK_EQ(schema, m_expected_schema);                                                                                                   \
-		CHECK_EQ(host, m_expected_host);                                                                                                       \
-		CHECK_EQ(path, m_expected_path);                                                                                                       \
-		CHECK_EQ(fragment, m_expected_fragment);                                                                                               \
-		CHECK_EQ(port, m_expected_port);                                                                                                       \
-	} else                                                                                                                                     \
+	if (true) { \
+		int port; \
+		String url(m_url_to_parse), schema, host, path, fragment; \
+\
+		CHECK_EQ(url.parse_url(schema, host, port, path, fragment), m_expected_error); \
+		CHECK_EQ(schema, m_expected_schema); \
+		CHECK_EQ(host, m_expected_host); \
+		CHECK_EQ(path, m_expected_path); \
+		CHECK_EQ(fragment, m_expected_fragment); \
+		CHECK_EQ(port, m_expected_port); \
+	} else \
 		((void)0)
 
 	// All elements.

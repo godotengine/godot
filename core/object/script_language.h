@@ -35,7 +35,6 @@
 #include "core/object/script_backtrace.h"
 #include "core/object/script_instance.h"
 #include "core/templates/pair.h"
-#include "core/templates/safe_refcount.h"
 #include "core/variant/typed_array.h"
 
 class ScriptLanguage;
@@ -71,8 +70,6 @@ class ScriptServer {
 	static bool inheriters_cache_dirty;
 
 public:
-	static ScriptEditRequestFunction edit_request_func;
-
 	static void set_scripting_enabled(bool p_enabled);
 	static bool is_scripting_enabled();
 	_FORCE_INLINE_ static int get_language_count() { return _language_count; }

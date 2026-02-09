@@ -1,0 +1,76 @@
+ thirdparty/metal-cpp/Foundation/NSData.hpp    | 6 ++++++
+ thirdparty/metal-cpp/Foundation/NSPrivate.hpp | 4 ++++
+ thirdparty/metal-cpp/Foundation/NSString.hpp  | 7 +++++++
+ 3 files changed, 17 insertions(+)
+
+diff --git a/thirdparty/metal-cpp/Foundation/NSData.hpp b/thirdparty/metal-cpp/Foundation/NSData.hpp
+index 3ad360609f..fbf3f20343 100644
+--- a/thirdparty/metal-cpp/Foundation/NSData.hpp
++++ b/thirdparty/metal-cpp/Foundation/NSData.hpp
+@@ -33,6 +33,7 @@ class Data : public Copying<Data>
+ {
+ public:
+     void*    mutableBytes() const;
++    void*    bytes() const;
+     UInteger length() const;
+ };
+ }
+@@ -44,6 +45,11 @@ _NS_INLINE void* NS::Data::mutableBytes() const
+     return Object::sendMessage<void*>(this, _NS_PRIVATE_SEL(mutableBytes));
+ }
+ 
++_NS_INLINE void* NS::Data::bytes() const
++{
++    return Object::sendMessage<void*>(this, _NS_PRIVATE_SEL(bytes));
++}
++
+ //-------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 
+ _NS_INLINE NS::UInteger NS::Data::length() const
+diff --git a/thirdparty/metal-cpp/Foundation/NSPrivate.hpp b/thirdparty/metal-cpp/Foundation/NSPrivate.hpp
+index f8d87004f3..17909fbd2a 100644
+--- a/thirdparty/metal-cpp/Foundation/NSPrivate.hpp
++++ b/thirdparty/metal-cpp/Foundation/NSPrivate.hpp
+@@ -272,6 +272,8 @@ namespace Private
+             "initWithBytes:objCType:");
+         _NS_PRIVATE_DEF_SEL(initWithBytesNoCopy_length_encoding_freeWhenDone_,
+             "initWithBytesNoCopy:length:encoding:freeWhenDone:");
++        _NS_PRIVATE_DEF_SEL(initWithBytes_length_encoding_,
++            "initWithBytes:length:encoding:");
+         _NS_PRIVATE_DEF_SEL(initWithChar_,
+             "initWithChar:");
+         _NS_PRIVATE_DEF_SEL(initWithCoder_,
+@@ -372,6 +374,8 @@ namespace Private
+             "methodSignatureForSelector:");
+         _NS_PRIVATE_DEF_SEL(mutableBytes,
+             "mutableBytes");
++        _NS_PRIVATE_DEF_SEL(bytes,
++            "bytes");
+         _NS_PRIVATE_DEF_SEL(name,
+             "name");
+         _NS_PRIVATE_DEF_SEL(nextObject,
+diff --git a/thirdparty/metal-cpp/Foundation/NSString.hpp b/thirdparty/metal-cpp/Foundation/NSString.hpp
+index 07ba3f8d39..d4d0c52ec2 100644
+--- a/thirdparty/metal-cpp/Foundation/NSString.hpp
++++ b/thirdparty/metal-cpp/Foundation/NSString.hpp
+@@ -87,6 +87,7 @@ public:
+     String*          init();
+     String*          init(const String* pString);
+     String*          init(const char* pString, StringEncoding encoding);
++    String*          init(void* pBytes, UInteger len, StringEncoding encoding);
+     String*          init(void* pBytes, UInteger len, StringEncoding encoding, bool freeBuffer);
+ 
+     unichar          character(UInteger index) const;
+@@ -168,6 +169,12 @@ _NS_INLINE NS::String* NS::String::init(const char* pString, StringEncoding enco
+ 
+ //-------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 
++_NS_INLINE NS::String* NS::String::init(void* pBytes, UInteger len, StringEncoding encoding)
++{
++    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(initWithBytes_length_encoding_), pBytes, len, encoding);
++}
++//-------------------------------------------------------------------------------------------------------------------------------------------------------------
++
+ _NS_INLINE NS::String* NS::String::init(void* pBytes, UInteger len, StringEncoding encoding, bool freeBuffer)
+ {
+     return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(initWithBytesNoCopy_length_encoding_freeWhenDone_), pBytes, len, encoding, freeBuffer);

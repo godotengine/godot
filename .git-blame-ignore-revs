@@ -72,3 +72,9 @@ e06d83860d798b6766b23d6eae48557387a7db85
 
 # Style: Replace header guards with `#pragma once`
 324512e11c1b7663c3cf47bec6ddbe65c6b8db2b
+
+# Style: Don't right-align escaped newlines
+c5df0cb82bc539eff7dcfb2add99d60771fc50c5
+
+# Style: Convert `*.gen.inc` to `*.gen.h`
+7dae5da1982f4a55ba91557814905faef9ce461b

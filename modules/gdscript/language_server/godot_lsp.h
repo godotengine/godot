@@ -34,6 +34,15 @@
 #include "core/object/class_db.h"
 #include "core/templates/list.h"
 
+// Enable additional LSP related logging.
+//#define DEBUG_LSP
+
+#ifdef DEBUG_LSP
+#define LOG_LSP(...) print_line("[ LSP -", __FILE__, ":", __LINE__, "-", __func__, "] -", ##__VA_ARGS__)
+#else
+#define LOG_LSP(...)
+#endif
+
 namespace LSP {
 
 typedef String DocumentUri;

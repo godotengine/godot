@@ -1590,7 +1590,8 @@ void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringN
 
 	nodes[p_name].node->disconnect_changed(callable_mp(this, &AnimationNodeBlendTree::_node_changed));
 
-	nodes[p_new_name] = nodes[p_name];
+	const Node temp_copy = nodes[p_name];
+	nodes[p_new_name] = temp_copy; // might realloc
 	nodes.erase(p_name);
 
 	// Rename connections.
