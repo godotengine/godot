@@ -75,7 +75,7 @@ class ClipboardAnimationMulti : public Resource {
 public:
 	Vector<Ref<ClipboardAnimation>> animations;
 	
-	void add_animation(const Ref<ClipboardAnimation>& p_anim) {
+	void add_animation(const Ref<ClipboardAnimation> &p_anim) {
 		animations.push_back(p_anim);
 	}
 
