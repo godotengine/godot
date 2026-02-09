@@ -714,14 +714,32 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 	HashMap<String, String> tag_map;
 
 	while (!file->eof_reached()) {
+		int64_t chunk_start_pos = file->get_position();
+
 		/* chunk */
-		char chunk_id[4];
-		file->get_buffer((uint8_t *)&chunk_id, 4); //RIFF
+		 char chunk_id[4];
+		if (file->get_buffer((uint8_t *)&chunk_id, 4) != 4) {
+			break; // EOF or truncated
+		}
 
 		/* chunk size */
-		uint32_t chunksize = file->get_32();
-		uint32_t file_pos = file->get_position(); //save file pos, so we can skip to next chunk safely
+		if (file->get_position() + 4 > file_size) {
+			WARN_PRINT("Invalid WAV chunk header (truncated size field).");
+			break;
+		}
 
+		uint32_t chunksize = file->get_32();
+		uint64_t file_pos = file->get_position(); // start of chunk data
+
+		uint64_t chunk_end = file_pos + chunksize;
+
+		// Clamp chunk to file size to avoid overread & infinite loops
+		if (chunk_end > file_size) {
+			WARN_PRINT("WAV chunk size exceeds file length. Clamping.");
+			chunk_end = file_size;
+		}
+
+		
 		if (file->eof_reached()) {
 			//ERR_PRINT("EOF REACH");
 			break;
@@ -769,12 +787,12 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 				break;
 			}
 
-			uint64_t remaining_bytes = file_size - file_pos;
-			frames = chunksize;
-			if (remaining_bytes < chunksize) {
-				WARN_PRINT("Data chunk size is smaller than expected. Proceeding with actual data size.");
-				frames = remaining_bytes;
+			uint64_t max_readable = chunk_end - file->get_position();
+			if (chunksize > max_readable) {
+				WARN_PRINT("WAV data chunk truncated.");
+				chunksize = max_readable;
 			}
+			frames = chunksize;
 
 			ERR_FAIL_COND_V(format_channels == 0, Ref<AudioStreamWAV>());
 			frames /= format_channels;
@@ -875,23 +893,33 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 
 			char list_id[4];
 			file->get_buffer((uint8_t *)&list_id, 4);
-			uint32_t end_of_chunk = file_pos + chunksize - 8;
+			uint64_t end_of_chunk = chunk_end;
 
 			if (list_id[0] == 'I' && list_id[1] == 'N' && list_id[2] == 'F' && list_id[3] == 'O') {
 				// 'INFO' list type.
 				// The size of an entry can be arbitrary.
-				while (file->get_position() < end_of_chunk) {
+				while (file->get_position() + 8 <= end_of_chunk) {
 					char info_id[4];
-					file->get_buffer((uint8_t *)&info_id, 4);
+					if (file->get_buffer((uint8_t *)&info_id, 4) != 4) {
+						break;
+					}
 
 					uint32_t text_size = file->get_32();
 					if (text_size == 0) {
-						continue;
+						WARN_PRINT("Invalid zero-sized INFO entry in WAV.");
+						break;
 					}
+
+					if (file->get_position() + text_size > end_of_chunk) {
+						WARN_PRINT("INFO text exceeds LIST chunk bounds.");
+						break;
+					}
+
 
 					Vector<char> text;
 					ERR_FAIL_COND_V(text.resize(text_size) != OK, Ref<AudioStreamWAV>());
-					file->get_buffer((uint8_t *)&text[0], text_size);
+
+					file->get_buffer(reinterpret_cast<uint8_t *>(text.ptrw()), text_size);
 
 					// Skip padding byte if text_size is odd
 					if (text_size & 1) {
@@ -910,9 +938,19 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 			}
 		}
 
-		// Move to the start of the next chunk. Note that RIFF requires a padding byte for odd
-		// chunk sizes.
-		file->seek(file_pos + chunksize + (chunksize & 1));
+		/// Ensure we always advance to the end of the chunk
+		file->seek(chunk_end);
+
+		// RIFF padding (word alignment)
+		if ((chunk_end & 1) && chunk_end < file_size) {
+			file->seek(chunk_end + 1);
+		}
+
+		// Safety: stop if we didn't move (prevents infinite loop on malformed files)
+		if (file->get_position() <= chunk_start_pos) {
+			WARN_PRINT("WAV parser made no progress, aborting to avoid infinite loop.");
+			break;
+		}
 	}
 
 	// STEP 2, APPLY CONVERSIONS
