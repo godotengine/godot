@@ -1999,8 +1999,8 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				Vector2 u[4] = {
 					Vector2(inc_uv * inverse_i, 0),
 					Vector2(inc_uv * (inverse_i - 1), 0),
-					Vector2(inc_uv * (inverse_i - 1), -1),
-					Vector2(inc_uv * inverse_i, -1),
+					Vector2(inc_uv * (inverse_i - 1), -1 * uv_size),
+					Vector2(inc_uv * inverse_i, -1 * uv_size),
 				};
 
 				if (cone) {
