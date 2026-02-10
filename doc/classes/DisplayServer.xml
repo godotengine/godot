@@ -3296,7 +3296,7 @@
 		</constant>
 		<constant name="WINDOW_EVENT_HDR_OUTPUT_CHANGED" value="9" enum="WindowEvent">
 			Sent when the HDR output parameters (enabled, luminance, max output color value) of the display where the window is located has changed.
-			[b]Note:[/b] This flag is implemented only on Windows.
+			[b]Note:[/b] This flag is implemented only on Windows and Linux (Wayland).
 		</constant>
 		<constant name="WINDOW_EDGE_TOP_LEFT" value="0" enum="WindowResizeEdge">
 			Top-left edge of a window.

@@ -1978,6 +1978,7 @@ void DisplayServerWayland::process_events() {
 			wd.color_profile = color_profile_msg->color_profile;
 
 			_window_update_hdr_state(wd);
+			_send_window_event(WINDOW_EVENT_HDR_OUTPUT_CHANGED, wd.id);
 		}
 	}
 
