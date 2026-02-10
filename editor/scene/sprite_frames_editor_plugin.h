@@ -74,7 +74,7 @@ class ClipboardAnimationMulti : public Resource {
 
 public:
 	Vector<Ref<ClipboardAnimation>> animations;
-	
+
 	void add_animation(const Ref<ClipboardAnimation> &p_anim) {
 		animations.push_back(p_anim);
 	}
@@ -320,6 +320,7 @@ class SpriteFramesEditor : public EditorDock {
 	void _rename_node_animation(EditorUndoRedoManager *undo_redo, bool is_undo, const String &p_filter, const String &p_new_animation, const String &p_new_autoplay);
 
 	Vector<StringName> _get_selected_animations();
+
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);

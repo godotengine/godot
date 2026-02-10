@@ -1321,7 +1321,7 @@ void SpriteFramesEditor::_animation_cut() {
 }
 
 void SpriteFramesEditor::_animation_copy() {
-	TreeItem* selected = animations->get_next_selected(nullptr);
+	TreeItem *selected = animations->get_next_selected(nullptr);
 	if (!selected) {
 		return;
 	}
@@ -1361,7 +1361,7 @@ void SpriteFramesEditor::_animation_paste() {
 		return;
 	}
 
-	EditorUndoRedoManager* undo_redo = EditorUndoRedoManager::get_singleton();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	String action_name = anims_to_paste.size() == 1
 			? TTR("Paste Animation")
 			: vformat(TTR("Paste %d Animations"), anims_to_paste.size());
@@ -1399,7 +1399,7 @@ void SpriteFramesEditor::_animation_remove() {
 		return;
 	}
 
-	TreeItem* selected = animations->get_next_selected(nullptr);
+	TreeItem *selected = animations->get_next_selected(nullptr);
 	if (!selected) {
 		return;
 	}
@@ -1414,8 +1414,7 @@ void SpriteFramesEditor::_animation_remove() {
 	// Update dialog text based on count
 	if (selection_count == 1) {
 		delete_dialog->set_text(TTRC("Delete Animation?"));
-	}
-	else {
+	} else {
 		delete_dialog->set_text(vformat(TTRC("Delete %d Animations?"), selection_count));
 	}
 
@@ -1453,7 +1452,7 @@ void SpriteFramesEditor::_animation_loop_changed() {
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
-	String action_name = selected_anims.size() == 1 
+	String action_name = selected_anims.size() == 1
 			? TTR("Change Animation Loop")
 			: vformat(TTR("Change %d Animations Loop"), selected_anims.size());
 	undo_redo->create_action(TTR("Change Animation Loop"), UndoRedo::MERGE_DISABLE, frames.ptr());
@@ -1489,7 +1488,7 @@ void SpriteFramesEditor::_animation_speed_changed(double p_value) {
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
-	String action_name = selected_anims.size() == 1 
+	String action_name = selected_anims.size() == 1
 			? TTR("Change Animation FPS")
 			: vformat(TTR("Change %d Animations FPS"), selected_anims.size());
 	undo_redo->create_action(action_name, UndoRedo::MERGE_DISABLE, frames.ptr());
@@ -1523,8 +1522,8 @@ void SpriteFramesEditor::_animation_remove_undo_redo(const StringName &p_action_
 
 		// Don't rename if animation is being deleted.
 		if (new_edited != StringName() && new_edited != anim_name) {
-            _rename_node_animation(undo_redo, false, anim_name, new_edited, "");
-        }
+			_rename_node_animation(undo_redo, false, anim_name, new_edited, "");
+		}
 
 		undo_redo->add_do_method(frames.ptr(), "remove_animation", anim_name);
 		undo_redo->add_undo_method(frames.ptr(), "add_animation", anim_name);
@@ -1542,8 +1541,7 @@ void SpriteFramesEditor::_animation_remove_undo_redo(const StringName &p_action_
 				const Vector<ClipboardSpriteFrames::Frame> &anim_frames = (*p_frames_map)[anim_name];
 				texture = anim_frames[i].texture;
 				duration = anim_frames[i].duration;
-			}
-			else {
+			} else {
 				texture = frames->get_frame_texture(anim_name, i);
 				duration = frames->get_frame_duration(anim_name, i);
 			}
@@ -2945,7 +2943,6 @@ Ref<ClipboardAnimation> ClipboardAnimation::from_sprite_frames(const Ref<SpriteF
 	}
 	return clipboard_anim;
 }
-
 
 // get all currently selected animations. Returns empty vector if nothing is selected
 Vector<StringName> SpriteFramesEditor::_get_selected_animations() {
