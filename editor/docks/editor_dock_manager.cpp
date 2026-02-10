@@ -351,6 +351,10 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 	p_target->add_child(p_dock);
 	p_target->set_block_signals(false);
 
+	if (p_set_current) {
+		p_dock->set_visible(true);
+	}
+
 	if (dock_tab_container) {
 		if (dock_tab_container->is_inside_tree()) {
 			p_dock->update_tab_style();
@@ -358,6 +362,7 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 		if (p_tab_index >= 0) {
 			p_dock->set_tab_index(p_tab_index, p_set_current);
 		}
+
 		dock_tab_container->update_visibility();
 	}
 }
