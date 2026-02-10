@@ -712,20 +712,22 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 	Vector<float> data;
 
 	HashMap<String, String> tag_map;
-
 	while (!file->eof_reached()) {
-		int64_t chunk_start_pos = file->get_position();
+		uint64_t chunk_start_pos = file->get_position();
 
 		/* chunk */
-		 char chunk_id[4];
+		char chunk_id[4];
 		if (file->get_buffer((uint8_t *)&chunk_id, 4) != 4) {
-			break; // EOF or truncated
+			ERR_FAIL_V_MSG(
+					Ref<AudioStreamWAV>(),
+					"Unexpected end of file or truncated WAV chunk header.");
 		}
 
 		/* chunk size */
 		if (file->get_position() + 4 > file_size) {
-			WARN_PRINT("Invalid WAV chunk header (truncated size field).");
-			break;
+			ERR_FAIL_V_MSG(
+					Ref<AudioStreamWAV>(),
+					"Invalid WAV chunk header (truncated size field).");
 		}
 
 		uint32_t chunksize = file->get_32();
@@ -739,7 +741,6 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 			chunk_end = file_size;
 		}
 
-		
 		if (file->eof_reached()) {
 			//ERR_PRINT("EOF REACH");
 			break;
@@ -914,7 +915,6 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 						WARN_PRINT("INFO text exceeds LIST chunk bounds.");
 						break;
 					}
-
 
 					Vector<char> text;
 					ERR_FAIL_COND_V(text.resize(text_size) != OK, Ref<AudioStreamWAV>());
