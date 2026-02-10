@@ -120,6 +120,10 @@ void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
 	ERR_FAIL_NULL(p_control);
 	EditorNode::get_bottom_panel()->remove_item(p_control);
 }
+
+void EditorPlugin::make_bottom_panel_item_visible(Control *p_item) {
+	EditorNode::get_bottom_panel()->make_item_visible(p_item);
+}
 #endif
 
 void EditorPlugin::add_dock(EditorDock *p_dock) {
@@ -566,10 +570,6 @@ void EditorPlugin::queue_save_layout() {
 	EditorNode::get_singleton()->save_editor_layout_delayed();
 }
 
-void EditorPlugin::make_bottom_panel_item_visible(Control *p_item) {
-	EditorNode::get_bottom_panel()->make_item_visible(p_item);
-}
-
 void EditorPlugin::hide_bottom_panel() {
 	EditorNode::get_bottom_panel()->hide_bottom_panel();
 }
@@ -636,6 +636,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_dock_tab_icon", "control", "icon"), &EditorPlugin::set_dock_tab_icon);
 	ClassDB::bind_method(D_METHOD("add_control_to_bottom_panel", "control", "title", "shortcut"), &EditorPlugin::add_control_to_bottom_panel, DEFVAL(Ref<Shortcut>()));
 	ClassDB::bind_method(D_METHOD("remove_control_from_bottom_panel", "control"), &EditorPlugin::remove_control_from_bottom_panel);
+	ClassDB::bind_method(D_METHOD("make_bottom_panel_item_visible", "item"), &EditorPlugin::make_bottom_panel_item_visible);
 #endif
 
 	ClassDB::bind_method(D_METHOD("add_autoload_singleton", "name", "path"), &EditorPlugin::add_autoload_singleton);
@@ -643,7 +644,6 @@ void EditorPlugin::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("update_overlays"), &EditorPlugin::update_overlays);
 
-	ClassDB::bind_method(D_METHOD("make_bottom_panel_item_visible", "item"), &EditorPlugin::make_bottom_panel_item_visible);
 	ClassDB::bind_method(D_METHOD("hide_bottom_panel"), &EditorPlugin::hide_bottom_panel);
 
 	ClassDB::bind_method(D_METHOD("get_undo_redo"), &EditorPlugin::get_undo_redo);

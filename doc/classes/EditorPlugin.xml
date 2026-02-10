@@ -636,7 +636,7 @@
 				Minimizes the bottom panel.
 			</description>
 		</method>
-		<method name="make_bottom_panel_item_visible">
+		<method name="make_bottom_panel_item_visible" deprecated="Use [method EditorDock.make_visible] instead.">
 			<return type="void" />
 			<param index="0" name="item" type="Control" />
 			<description>

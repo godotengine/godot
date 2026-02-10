@@ -180,17 +180,6 @@ void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, c
 	_update_center_split_offset();
 }
 
-void EditorBottomPanel::make_item_visible(Control *p_item, bool p_visible, bool p_ignore_lock) {
-	// Don't allow changing tabs involuntarily when tabs are locked.
-	if (!p_ignore_lock && lock_panel_switching && pin_button->is_visible()) {
-		return;
-	}
-
-	EditorDock *dock = _get_dock_from_control(p_item);
-	ERR_FAIL_NULL(dock);
-	dock->set_visible(p_visible);
-}
-
 void EditorBottomPanel::hide_bottom_panel() {
 	set_current_tab(-1);
 }
@@ -230,6 +219,7 @@ void EditorBottomPanel::_update_center_split_offset() {
 	center_split->set_split_offset(get_bottom_panel_offset());
 }
 
+#ifndef DISABLE_DEPRECATED
 EditorDock *EditorBottomPanel::_get_dock_from_control(Control *p_control) const {
 	return Object::cast_to<EditorDock>(p_control->get_parent());
 }
@@ -280,6 +270,7 @@ void EditorBottomPanel::_on_button_visibility_changed(Button *p_button, EditorDo
 		p_dock->close();
 	}
 }
+#endif
 
 EditorBottomPanel::EditorBottomPanel() :
 		DockTabContainer(EditorDock::DOCK_SLOT_BOTTOM) {
@@ -335,7 +326,9 @@ EditorBottomPanel::EditorBottomPanel() :
 }
 
 EditorBottomPanel::~EditorBottomPanel() {
+#ifndef DISABLE_DEPRECATED
 	for (Button *b : legacy_buttons) {
 		memdelete(b);
 	}
+#endif
 }
