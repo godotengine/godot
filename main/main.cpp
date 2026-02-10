@@ -1728,9 +1728,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif // defined(OVERRIDE_PATH_ENABLED)
 		} else if (arg == "--quit") { // Auto quit at the end of the first main loop iteration
 			quit_after = 1;
-#ifdef TOOLS_ENABLED
-			wait_for_import = true;
-#endif
 		} else if (arg == "--quit-after") { // Quit after the given number of iterations
 			if (N) {
 				quit_after = N->get().to_int();
@@ -5066,8 +5063,13 @@ bool Main::iteration() {
 #endif
 
 #ifdef TOOLS_ENABLED
-	if (exit && quit_after_timeout && EditorNode::get_singleton()) {
-		EditorNode::get_singleton()->unload_editor_addons();
+	if (exit && quit_after_timeout) {
+		if (EditorNode::get_singleton()) {
+			EditorNode::get_singleton()->unload_editor_addons();
+		}
+		if (cmdline_tool) {
+			print_line("Quitting on iteration " + itos(Engine::get_singleton()->_process_frames) + ".");
+		}
 	}
 #endif
 
