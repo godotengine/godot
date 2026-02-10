@@ -30,13 +30,11 @@
 
 #pragma once
 
+#include "scene/resources/blit_material.h"
 #include "scene/resources/texture.h"
 
 class AnimatedTexture : public Texture2D {
 	GDCLASS(AnimatedTexture, Texture2D);
-
-	// Use readers writers lock for this, since its far more times read than written to.
-	RWLock rw_lock;
 
 public:
 	enum {
@@ -44,13 +42,16 @@ public:
 	};
 
 private:
-	RID proxy_ph;
-	RID proxy;
-
 	struct Frame {
 		Ref<Texture2D> texture;
 		float duration = 1.0;
 	};
+
+	mutable RID proxy;
+	RID blit_shader;
+	RID blit_material;
+	int proxy_width = 64;
+	int proxy_height = 64;
 
 	Frame frames[MAX_FRAMES];
 	int frame_count = 1.0;
@@ -65,6 +66,7 @@ private:
 
 	void _update_proxy();
 	void _finish_non_thread_safe_setup();
+	void _blit_frame(int p_frame);
 
 protected:
 	static void _bind_methods();
@@ -97,6 +99,10 @@ public:
 	virtual RID get_rid() const override;
 
 	virtual bool has_alpha() const override;
+
+	void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
+	void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
+	void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = true) const override;
 
 	virtual Ref<Image> get_image() const override;
 
