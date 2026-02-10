@@ -80,12 +80,14 @@
 ## Audio (+ video)
 /modules/interactive_music/                   @godotengine/audio
 /modules/interactive_music/doc_classes/       @godotengine/audio @godotengine/documentation
+/modules/interactive_music/editor/            @godotengine/audio @godotengine/editor
 /modules/mp3/                                 @godotengine/audio
 /modules/mp3/doc_classes/                     @godotengine/audio @godotengine/documentation
 /modules/ogg/                                 @godotengine/audio
 /modules/ogg/doc_classes/                     @godotengine/audio @godotengine/documentation
 /modules/theora/                              @godotengine/audio
 /modules/theora/doc_classes/                  @godotengine/audio @godotengine/documentation
+/modules/theora/editor/                       @godotengine/audio @godotengine/editor
 /modules/vorbis/                              @godotengine/audio
 /modules/vorbis/doc_classes/                  @godotengine/audio @godotengine/documentation
 
@@ -97,11 +99,14 @@
 /modules/bmp/                                 @godotengine/asset-pipeline
 /modules/cvtt/                                @godotengine/asset-pipeline
 /modules/dds/                                 @godotengine/asset-pipeline
+/modules/dds/tests/                           @godotengine/asset-pipeline @godotengine/tests
 /modules/etcpak/                              @godotengine/asset-pipeline
 /modules/fbx/                                 @godotengine/asset-pipeline
 /modules/fbx/doc_classes/                     @godotengine/asset-pipeline @godotengine/documentation
+/modules/fbx/editor/                          @godotengine/asset-pipeline @godotengine/editor
 /modules/gltf/                                @godotengine/asset-pipeline
 /modules/gltf/doc_classes/                    @godotengine/asset-pipeline @godotengine/documentation
+/modules/gltf/editor/                         @godotengine/asset-pipeline @godotengine/editor
 /modules/gltf/tests/                          @godotengine/asset-pipeline @godotengine/tests
 /modules/hdr/                                 @godotengine/asset-pipeline
 /modules/jpg/                                 @godotengine/asset-pipeline
@@ -119,6 +124,8 @@
 /modules/mbedtls/tests/                       @godotengine/network @godotengine/tests
 /modules/multiplayer/                         @godotengine/network
 /modules/multiplayer/doc_classes/             @godotengine/network @godotengine/documentation
+/modules/multiplayer/editor/                  @godotengine/network @godotengine/editor
+/modules/multiplayer/icons/                   @godotengine/network @godotengine/usability
 /modules/multiplayer/tests/                   @godotengine/network @godotengine/tests
 /modules/upnp/                                @godotengine/network
 /modules/upnp/doc_classes/                    @godotengine/network @godotengine/documentation
@@ -126,6 +133,7 @@
 /modules/webrtc/doc_classes/                  @godotengine/network @godotengine/documentation
 /modules/websocket/                           @godotengine/network
 /modules/websocket/doc_classes/               @godotengine/network @godotengine/documentation
+/modules/websocket/editor/                    @godotengine/network @godotengine/editor
 
 ## Physics
 /modules/godot_physics_2d/                    @godotengine/physics
@@ -143,12 +151,14 @@
 ## Scripting
 /modules/gdscript/                            @godotengine/gdscript
 /modules/gdscript/doc_classes/                @godotengine/gdscript @godotengine/documentation
+/modules/gdscript/editor/                     @godotengine/gdscript @godotengine/script-editor
 /modules/gdscript/icons/                      @godotengine/gdscript @godotengine/usability
 /modules/gdscript/tests/                      @godotengine/gdscript @godotengine/tests
 /modules/jsonrpc/                             @godotengine/gdscript @godotengine/network
 /modules/jsonrpc/tests/                       @godotengine/gdscript @godotengine/network @godotengine/tests
 /modules/mono/                                @godotengine/dotnet
 /modules/mono/doc_classes/                    @godotengine/dotnet @godotengine/documentation
+/modules/mono/editor/                         @godotengine/dotnet @godotengine/script-editor
 /modules/mono/icons/                          @godotengine/dotnet @godotengine/usability
 
 ## Text
@@ -165,29 +175,38 @@
 /modules/mobile_vr/doc_classes/               @godotengine/xr @godotengine/documentation
 /modules/openxr/                              @godotengine/xr
 /modules/openxr/doc_classes/                  @godotengine/xr @godotengine/documentation
+/modules/openxr/editor/                       @godotengine/xr @godotengine/editor
 /modules/webxr/                               @godotengine/xr
 /modules/webxr/doc_classes/                   @godotengine/xr @godotengine/documentation
 
 ## Misc
 /modules/csg/                                 @godotengine/3d-nodes
 /modules/csg/doc_classes/                     @godotengine/3d-nodes @godotengine/documentation
+/modules/csg/editor/                          @godotengine/3d-nodes @godotengine/editor
 /modules/csg/icons/                           @godotengine/3d-nodes @godotengine/usability
+/modules/csg/tests/                           @godotengine/3d-nodes @godotengine/tests
 /modules/gridmap/                             @godotengine/3d-nodes
 /modules/gridmap/doc_classes/                 @godotengine/3d-nodes @godotengine/documentation
+/modules/gridmap/editor/                      @godotengine/3d-nodes @godotengine/editor
 /modules/gridmap/icons/                       @godotengine/3d-nodes @godotengine/usability
 /modules/navigation_2d/                       @godotengine/navigation
+/modules/navigation_2d/editor/                @godotengine/navigation @godotengine/editor
 /modules/navigation_3d/                       @godotengine/navigation
+/modules/navigation_3d/editor/                @godotengine/navigation @godotengine/editor
 /modules/noise/                               @godotengine/core
 /modules/noise/doc_classes/                   @godotengine/core @godotengine/documentation
+/modules/noise/editor/                        @godotengine/core @godotengine/editor
 /modules/noise/icons/                         @godotengine/core @godotengine/usability
 /modules/noise/tests/                         @godotengine/core @godotengine/tests
+/modules/objectdb_profiler/                   @godotengine/debugger
+/modules/objectdb_profiler/editor/            @godotengine/debugger @godotengine/editor
 /modules/regex/                               @godotengine/core
 /modules/regex/doc_classes/                   @godotengine/core @godotengine/documentation
 /modules/regex/icons/                         @godotengine/core @godotengine/usability
 /modules/regex/tests/                         @godotengine/core @godotengine/tests
 /modules/zip/                                 @godotengine/core
 /modules/zip/doc_classes/                     @godotengine/core @godotengine/documentation
-/modules/zip/tests                            @godotengine/core @godotengine/tests
+/modules/zip/tests/                           @godotengine/core @godotengine/tests
 
 # Platform
 
