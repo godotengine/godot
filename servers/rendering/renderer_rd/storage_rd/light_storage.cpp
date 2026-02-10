@@ -1659,6 +1659,14 @@ bool LightStorage::reflection_probe_instance_postprocess_step(RID p_instance) {
 		return true;
 	}
 
+	// Roughness layers are too few, skip processing.
+	int mipmap_count = (int)atlas->reflections[rpi->atlas_index].data.layers[0].mipmaps.size();
+	if (rpi->processing_layer >= mipmap_count) {
+		rpi->rendering = false;
+		rpi->processing_layer = 1;
+		return true;
+	}
+
 	atlas->reflections.write[rpi->atlas_index].data.create_reflection_importance_sample(false, rpi->processing_layer, RendererSceneRenderRD::get_singleton()->get_sky()->sky_ggx_samples_quality);
 
 	rpi->processing_layer++;

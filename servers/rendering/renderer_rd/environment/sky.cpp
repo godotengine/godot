@@ -693,7 +693,7 @@ RendererRD::MaterialStorage::MaterialData *SkyRD::_create_sky_material_funcs(Ren
 }
 
 SkyRD::SkyRD() {
-	roughness_layers = GLOBAL_GET("rendering/reflections/sky_reflections/roughness_layers");
+	roughness_layers = MAX(2, (int)GLOBAL_GET("rendering/reflections/sky_reflections/roughness_layers"));
 	sky_ggx_samples_quality = GLOBAL_GET("rendering/reflections/sky_reflections/ggx_samples");
 	sky_use_octmap_array = GLOBAL_GET("rendering/reflections/sky_reflections/texture_array_reflections");
 }
