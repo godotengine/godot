@@ -869,8 +869,6 @@ public:
 	static bool is_control_flow_keyword(String p_keyword);
 	static void get_builtin_funcs(List<String> *r_keywords);
 
-	static SafeNumeric<int> instance_counter;
-
 	struct BuiltInInfo {
 		DataType type = TYPE_VOID;
 		bool constant = false;
@@ -1156,12 +1154,9 @@ private:
 
 	struct BuiltinFuncDef {
 		enum { MAX_ARGS = 5 };
-		const char *name;
 		DataType rettype;
 		const DataType args[MAX_ARGS];
 		const char *args_names[MAX_ARGS];
-		SubClassTag tag;
-		bool high_end;
 	};
 
 	struct BuiltinFuncOutArgs { //arguments used as out in built in functions
@@ -1200,7 +1195,10 @@ private:
 	bool is_discard_supported = false;
 
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
-	static const BuiltinFuncDef builtin_func_defs[];
+	static const AHashMap<String, Vector<BuiltinFuncDef>> global_builtins_map;
+	static const AHashMap<String, Vector<BuiltinFuncDef>> array_builtins_map;
+	static const AHashMap<SubClassTag, AHashMap<String, Vector<BuiltinFuncDef>> const *> builtins_map;
+	static const HashSet<String> highend_funcs;
 	static const BuiltinFuncOutArgs builtin_func_out_args[];
 	static const BuiltinFuncConstArgs builtin_func_const_args[];
 	static const BuiltinEntry frag_only_func_defs[];
