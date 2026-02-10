@@ -625,11 +625,13 @@ private:
 		int from_line = 0;
 		Item *from_item = nullptr;
 		int from_char = 0;
+		mutable bool from_line_found = false;
 
 		ItemFrame *to_frame = nullptr;
 		int to_line = 0;
 		Item *to_item = nullptr;
 		int to_char = 0;
+		mutable bool to_line_found = false;
 
 		bool double_click = false; // Selecting whole words?
 		bool active = false; // anything selected? i.e. from, to, etc. valid?
@@ -663,7 +665,7 @@ private:
 	bool _is_click_inside_selection() const;
 	void _find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr, bool p_meta = false);
 
-	String _get_line_text(ItemFrame *p_frame, int p_line, Selection p_sel) const;
+	String _get_line_text(ItemFrame *p_frame, int p_line) const;
 	bool _search_table_cell(ItemTable *p_table, List<Item *>::Element *p_cell, const String &p_string, bool p_reverse_search, int p_from_line);
 	bool _search_table(ItemTable *p_table, List<Item *>::Element *p_from, const String &p_string, bool p_reverse_search);
 	bool _search_line(ItemFrame *p_frame, int p_line, const String &p_string, int p_char_idx, bool p_reverse_search);
