@@ -6319,6 +6319,14 @@ void EditorNode::redo() {
 	_menu_option_confirm(SCENE_REDO, true);
 }
 
+bool EditorNode::is_focus_in_global_settings_context() const {
+	Control *focus = get_viewport() ? get_viewport()->gui_get_focus_owner() : nullptr;
+	if (!focus) {
+		return false;
+	}
+	return editor_settings_dialog->is_ancestor_of(focus) || project_settings_editor->is_ancestor_of(focus);
+}
+
 bool EditorNode::ensure_main_scene(bool p_from_native) {
 	pick_main_scene->set_meta("from_native", p_from_native); // Whether from play button or native run.
 	String main_scene = GLOBAL_GET("application/run/main_scene");
