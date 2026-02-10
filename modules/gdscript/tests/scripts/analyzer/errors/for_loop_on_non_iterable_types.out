@@ -1,0 +1,4 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 6: Unable to iterate on object of type "Object".
+>> ERROR at line 8: Unable to iterate on meta type "Iterator".
+>> ERROR at line 10: Unable to iterate on object of type "Iterator".

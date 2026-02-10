@@ -2255,6 +2255,41 @@ void GDScriptAnalyzer::resolve_if(GDScriptParser::IfNode *p_if) {
 	}
 }
 
+bool GDScriptAnalyzer::find_non_native_function(const GDScriptParser::DataType &p_type, const StringName &p_function_name, GDScriptParser::FunctionNode *&r_found_function) const {
+	GDScriptParser::ClassNode *base_class = p_type.class_type;
+
+	while (r_found_function == nullptr && base_class != nullptr) {
+		if (base_class->has_function(p_function_name)) {
+			r_found_function = base_class->get_member(p_function_name).function;
+			return true;
+		}
+		base_class = base_class->base_type.class_type;
+	}
+
+	return false;
+}
+
+bool GDScriptAnalyzer::is_iterable_type(const GDScriptParser::DataType &p_type, GDScriptParser::DataType &r_return_type) const {
+	GDScriptParser::FunctionNode *init_func = nullptr;
+	GDScriptParser::FunctionNode *next_func = nullptr;
+	GDScriptParser::FunctionNode *get_func = nullptr;
+	if (find_non_native_function(p_type, CoreStringName(_iter_init), init_func) && find_non_native_function(p_type, CoreStringName(_iter_next), next_func) && find_non_native_function(p_type, CoreStringName(_iter_get), get_func)) {
+		r_return_type = get_func->get_datatype();
+		r_return_type.is_meta_type = false;
+		r_return_type.is_coroutine = get_func->is_coroutine;
+		return true;
+	}
+
+	MethodInfo info;
+	if (ClassDB::get_method_info(p_type.native_type, CoreStringName(_iter_get), &info)) {
+		bool is_core_not_overriden_method = info.flags & METHOD_FLAG_OBJECT_CORE;
+		r_return_type = type_from_property(info.return_val);
+		return !is_core_not_overriden_method;
+	}
+
+	return false;
+}
+
 void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 	GDScriptParser::DataType variable_type;
 	GDScriptParser::DataType list_type;
@@ -2311,10 +2346,9 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 			variable_type.builtin_type = Variant::FLOAT;
 		} else if (list_type.builtin_type == Variant::OBJECT) {
 			GDScriptParser::DataType return_type;
-			List<GDScriptParser::DataType> par_types;
-			int default_arg_count = 0;
-			BitField<MethodFlags> method_flags = {};
-			if (get_function_signature(p_for->list, false, list_type, CoreStringName(_iter_get), return_type, par_types, default_arg_count, method_flags)) {
+			if (list_type.is_meta_type) {
+				push_error(vformat(R"(Unable to iterate on meta type "%s".)", list_type.to_string()), p_for->list);
+			} else if (is_iterable_type(list_type, return_type)) {
 				variable_type = return_type;
 				variable_type.type_source = list_type.type_source;
 			} else if (!list_type.is_hard_type()) {
