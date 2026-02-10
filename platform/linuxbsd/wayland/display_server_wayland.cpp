@@ -2023,6 +2023,7 @@ void DisplayServerWayland::process_events() {
 			wd.color_profile = color_profile_msg->color_profile;
 
 			_window_update_hdr_state(wd);
+			_send_window_event(DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED, wd.id);
 			continue;
 		}
 	}
