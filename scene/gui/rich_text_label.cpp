@@ -514,7 +514,7 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 					table->columns[i].width = 0;
 				}
 
-				const int available_width = p_width - theme_cache.table_h_separation * (col_count - 1);
+				const int available_width = p_width - l.offset.x - theme_cache.table_h_separation * (col_count - 1);
 				int base_column_width = available_width / col_count;
 
 				for (Item *E : table->subitems) {
@@ -698,7 +698,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 					table->columns[i].width = 0;
 				}
 				// Compute minimum width for each cell.
-				const int available_width = p_width - theme_cache.table_h_separation * (col_count - 1);
+				const int available_width = p_width - l.offset.x - theme_cache.table_h_separation * (col_count - 1);
 				int base_column_width = available_width / col_count;
 				int idx = 0;
 				for (Item *E : table->subitems) {
