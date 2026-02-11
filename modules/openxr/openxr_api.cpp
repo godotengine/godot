@@ -72,6 +72,7 @@
 #include "extensions/openxr_fb_foveation_extension.h"
 #include "extensions/openxr_fb_update_swapchain_extension.h"
 #include "extensions/openxr_hand_tracking_extension.h"
+#include "extensions/spatial_container/openxr_spatial_container_extension.h"
 
 #ifndef DISABLE_DEPRECATED
 #include "extensions/openxr_extension_wrapper_extension.h"
@@ -1375,7 +1376,9 @@ void OpenXRAPI::destroy_session() {
 
 	if (running) {
 		if (session != XR_NULL_HANDLE) {
-			xrEndSession(session);
+			if (!is_spatial_container_enabled()) {
+				xrEndSession(session);
+			}
 		}
 
 		running = false;
@@ -1442,17 +1445,19 @@ bool OpenXRAPI::on_state_idle() {
 bool OpenXRAPI::on_state_ready() {
 	print_verbose("On state ready");
 
-	// begin session
-	XrSessionBeginInfo session_begin_info = {
-		XR_TYPE_SESSION_BEGIN_INFO, // type
-		nullptr, // next
-		view_configuration // primaryViewConfigurationType
-	};
+	if (!is_spatial_container_enabled()) {
+		// begin session
+		XrSessionBeginInfo session_begin_info = {
+			XR_TYPE_SESSION_BEGIN_INFO, // type
+			nullptr, // next
+			view_configuration // primaryViewConfigurationType
+		};
 
-	XrResult result = xrBeginSession(session, &session_begin_info);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to begin session [", get_error_string(result), "]");
-		return false;
+		XrResult result = xrBeginSession(session, &session_begin_info);
+		if (XR_FAILED(result)) {
+			print_line("OpenXR: Failed to begin session [", get_error_string(result), "]");
+			return false;
+		}
 	}
 
 	// we're running
@@ -1524,10 +1529,12 @@ bool OpenXRAPI::on_state_stopping() {
 	}
 
 	if (running) {
-		XrResult result = xrEndSession(session);
-		if (XR_FAILED(result)) {
-			// we only report this..
-			print_line("OpenXR: Failed to end session [", get_error_string(result), "]");
+		if (!is_spatial_container_enabled()) {
+			XrResult result = xrEndSession(session);
+			if (XR_FAILED(result)) {
+				// we only report this..
+				print_line("OpenXR: Failed to end session [", get_error_string(result), "]");
+			}
 		}
 
 		running = false;
@@ -2086,6 +2093,14 @@ bool OpenXRAPI::poll_events() {
 					switch (session_state) {
 						case XR_SESSION_STATE_IDLE:
 							on_state_idle();
+
+							// If spatial container is enabled, then we also invoke on_state_ready() and
+							// on_state_synchronized() as the corresponding events are no longer dispatched by
+							// the runtime.
+							if (is_spatial_container_enabled()) {
+								on_state_ready();
+								on_state_synchronized();
+							}
 							break;
 						case XR_SESSION_STATE_READY:
 							on_state_ready();
@@ -2103,6 +2118,12 @@ bool OpenXRAPI::poll_events() {
 							on_state_stopping();
 							break;
 						case XR_SESSION_STATE_LOSS_PENDING:
+							// If spatial container is enabled, then we also invoke on_state_stopping()
+							// as the corresponding event is no longer dispatched by the runtime.
+							if (is_spatial_container_enabled()) {
+								on_state_stopping();
+							}
+
 							on_state_loss_pending();
 							break;
 						case XR_SESSION_STATE_EXITING:
@@ -2215,7 +2236,7 @@ void OpenXRAPI::_set_render_display_info_rt(XrTime p_predicted_display_time, boo
 	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
 	ERR_FAIL_NULL(openxr_api);
 	openxr_api->render_state.predicted_display_time = p_predicted_display_time;
-	openxr_api->render_state.should_render = p_should_render;
+	openxr_api->render_state.should_render = p_should_render || openxr_api->render_state.should_submit_spatial_container_layers;
 }
 
 void OpenXRAPI::_set_render_environment_blend_mode_rt(int32_t p_environment_blend_mode) {
@@ -2452,32 +2473,43 @@ void OpenXRAPI::pre_render() {
 
 	// That is not possible yet but worth investigating in the future.
 
-	XrViewLocateInfo view_locate_info = {
-		XR_TYPE_VIEW_LOCATE_INFO, // type
-		view_locate_info_next_pointer, // next
-		view_configuration, // viewConfigurationType
-		render_state.predicted_display_time, // displayTime
-		render_state.play_space // space
-	};
-	XrViewState view_state = {
-		XR_TYPE_VIEW_STATE, // type
-		nullptr, // next
-		0 // viewStateFlags
-	};
-	uint32_t view_count_output;
-	XrResult result = xrLocateViews(session, &view_locate_info, &view_state, render_state.views.size(), &view_count_output, render_state.views.ptr());
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: Couldn't locate views [", get_error_string(result), "]");
-		return;
-	}
-
+	XrResult result;
 	bool pose_valid = true;
-	for (uint64_t i = 0; i < view_count_output; i++) {
+	if (is_spatial_container_enabled()) {
+		OpenXRSpatialContainerExtension *spatial_container_ext = OpenXRSpatialContainerExtension::get_singleton();
+		ERR_FAIL_NULL(spatial_container_ext);
+		result = spatial_container_ext->locate_spatial_container_views(render_state.views.ptr(), pose_valid,
+				render_state.should_submit_spatial_container_layers);
+		if (XR_FAILED(result)) {
+			print_line("OpenXR: Couldn't locate spatial container views [", get_error_string(result), "]");
+			return;
+		}
+	} else {
+		XrViewLocateInfo view_locate_info = {
+			XR_TYPE_VIEW_LOCATE_INFO, // type
+			view_locate_info_next_pointer, // next
+			view_configuration, // viewConfigurationType
+			render_state.predicted_display_time, // displayTime
+			render_state.play_space // space
+		};
+		XrViewState view_state = {
+			XR_TYPE_VIEW_STATE, // type
+			nullptr, // next
+			0 // viewStateFlags
+		};
+		uint32_t view_count_output;
+		result = xrLocateViews(session, &view_locate_info, &view_state, render_state.views.size(), &view_count_output, render_state.views.ptr());
+		if (XR_FAILED(result)) {
+			print_line("OpenXR: Couldn't locate views [", get_error_string(result), "]");
+			return;
+		}
+
 		if ((view_state.viewStateFlags & XR_VIEW_STATE_ORIENTATION_VALID_BIT) == 0 ||
 				(view_state.viewStateFlags & XR_VIEW_STATE_POSITION_VALID_BIT) == 0) {
 			pose_valid = false;
 		}
 	}
+
 	if (render_state.view_pose_valid != pose_valid) {
 		render_state.view_pose_valid = pose_valid;
 		if (!render_state.view_pose_valid) {
@@ -2802,8 +2834,8 @@ void OpenXRAPI::end_frame() {
 		frame_end_info_next_pointer, // next
 		render_state.predicted_display_time, // displayTime
 		render_state.environment_blend_mode, // environmentBlendMode
-		static_cast<uint32_t>(layers_list.size()), // layerCount
-		layers_list.ptr() // layers
+		is_spatial_container_enabled() ? 0 : static_cast<uint32_t>(layers_list.size()), // layerCount
+		is_spatial_container_enabled() ? nullptr : layers_list.ptr() // layers
 	};
 	result = xrEndFrame(session, &frame_end_info);
 	if (XR_FAILED(result)) {
@@ -2855,6 +2887,11 @@ Rect2i OpenXRAPI::get_render_region() const {
 void OpenXRAPI::set_render_region(const Rect2i &p_render_region) {
 	render_region = p_render_region;
 	set_render_state_render_region(p_render_region);
+}
+
+bool OpenXRAPI::is_spatial_container_enabled() const {
+	OpenXRSpatialContainerExtension *spatial_container_ext = OpenXRSpatialContainerExtension::get_singleton();
+	return spatial_container_ext != nullptr && spatial_container_ext->is_enabled();
 }
 
 bool OpenXRAPI::is_foveation_supported() const {
