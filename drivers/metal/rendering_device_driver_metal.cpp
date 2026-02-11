@@ -72,6 +72,17 @@
 typedef uint64_t MTLGPUAddress;
 #endif
 
+static bool class_conforms_to_protocol_recursive(Class p_class, Protocol *p_protocol) {
+	Class current = p_class;
+	while (current != nil) {
+		if (class_conformsToProtocol(current, p_protocol)) {
+			return true;
+		}
+		current = class_getSuperclass(current);
+	}
+	return false;
+}
+
 #pragma mark - Logging
 
 extern os_log_t LOG_DRIVER;
@@ -981,10 +992,10 @@ RDD::FramebufferID RenderingDeviceDriverMetal::framebuffer_create(RenderPassID p
 
 		MTL::Texture *tex = nullptr;
 		bool attachment_is_rasterization_rate_map = false;
-		if (class_conformsToProtocol(cls, objc_getProtocol("MTLRasterizationRateMap"))) {
+		if (class_conforms_to_protocol_recursive(cls, objc_getProtocol("MTLRasterizationRateMap"))) {
 			rasterization_rate_map = reinterpret_cast<MTL::RasterizationRateMap *>(p_attachments[i].id);
 			attachment_is_rasterization_rate_map = true;
-		} else if (class_conformsToProtocol(cls, objc_getProtocol("MTLTexture"))) {
+		} else if (class_conforms_to_protocol_recursive(cls, objc_getProtocol("MTLTexture"))) {
 			tex = reinterpret_cast<MTL::Texture *>(p_attachments[i].id);
 		}
 		if (tex == nullptr && !attachment_is_rasterization_rate_map) {
