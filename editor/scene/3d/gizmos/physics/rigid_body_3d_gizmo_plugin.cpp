@@ -64,18 +64,18 @@ void RigidBody3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	const Vector3 center_of_mass = rigid_body->get_center_of_mass();
 
-	// Length of the crosshair lines
-	const float extents = 0.1;
+	// Length of the crosshair lines.
+	constexpr float extents = 0.1;
 
-	// Draw a crosshair at the center of mass position
+	// Draw a crosshair at the center of mass position.
 	Vector<Vector3> lines;
-	// X line
+	// X line.
 	lines.push_back(center_of_mass + Vector3(-extents, 0, 0));
 	lines.push_back(center_of_mass + Vector3(+extents, 0, 0));
-	// Y line
+	// Y line.
 	lines.push_back(center_of_mass + Vector3(0, -extents, 0));
 	lines.push_back(center_of_mass + Vector3(0, +extents, 0));
-	// Z line
+	// Z line.
 	lines.push_back(center_of_mass + Vector3(0, 0, -extents));
 	lines.push_back(center_of_mass + Vector3(0, 0, +extents));
 
