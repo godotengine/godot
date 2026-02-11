@@ -630,6 +630,9 @@
 		<member name="force_native" type="bool" setter="set_force_native" getter="get_force_native" default="false">
 			If [code]true[/code], native window will be used regardless of parent viewport and project settings.
 		</member>
+		<member name="fullscreen_shortcut_enabled" type="bool" setter="set_fullscreen_shortcut_enabled" getter="is_fullscreen_shortcut_enabled" default="false">
+			If [code]true[/code], allows the user to toggle fullscreen mode by pressing the shortcut defined in [member ProjectSettings.input/ui_toggle_fullscreen] ([kbd]Alt + Enter[/kbd] by default). This is enabled on the main window according to the [member ProjectSettings.display/window/size/enable_toggle_fullscreen_shortcut] project setting.
+		</member>
 		<member name="initial_position" type="int" setter="set_initial_position" getter="get_initial_position" enum="Window.WindowInitialPosition" default="0">
 			Specifies the initial type of position for the [Window].
 		</member>

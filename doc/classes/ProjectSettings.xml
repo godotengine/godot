@@ -997,6 +997,9 @@
 			Forces the main window to be borderless.
 			[b]Note:[/b] This setting is ignored on iOS, Android, and Web.
 		</member>
+		<member name="display/window/size/enable_toggle_fullscreen_shortcut" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], allows the user to toggle fullscreen mode by pressing the shortcut defined in [member input/ui_toggle_fullscreen] ([kbd]Alt + Enter[/kbd] by default).
+		</member>
 		<member name="display/window/size/extend_to_title" type="bool" setter="" getter="" default="false">
 			Main window content is expanded to the full size of the window. Unlike a borderless window, the frame is left intact and can be used to resize the window, and the title bar is transparent, but has minimize/maximize/close buttons.
 			[b]Note:[/b] This setting is implemented only on macOS.
@@ -1628,6 +1631,10 @@
 		</member>
 		<member name="input/ui_text_toggle_insert_mode" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to toggle [i]insert mode[/i] in a text field. While in insert mode, inserting new text overrides the character after the cursor, unless the next character is a new line.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_toggle_fullscreen" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to toggle fullscreen mode on the main window. This input action is only effective if [member display/window/size/enable_toggle_fullscreen_shortcut] is [code]true[/code].
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_undo" type="Dictionary" setter="" getter="">
