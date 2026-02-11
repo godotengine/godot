@@ -364,7 +364,7 @@ namespace Godot.Bridge
 
         [UnmanagedCallersOnly]
         internal static unsafe void RaiseEventSignal(IntPtr ownerGCHandlePtr,
-            godot_string_name* eventSignalName, godot_variant** args, int argCount, godot_bool* outOwnerIsNull)
+            godot_string_name* eventSignalName, godot_variant** args, int argCount, godot_bool* refOwnerIsNull)
         {
             try
             {
@@ -372,11 +372,11 @@ namespace Godot.Bridge
 
                 if (owner == null)
                 {
-                    *outOwnerIsNull = godot_bool.True;
+                    *refOwnerIsNull = godot_bool.True;
                     return;
                 }
 
-                *outOwnerIsNull = godot_bool.False;
+                *refOwnerIsNull = godot_bool.False;
 
                 owner.RaiseGodotClassSignalCallbacks(CustomUnsafe.AsRef(eventSignalName),
                     new NativeVariantPtrArgs(args, argCount));
@@ -384,7 +384,33 @@ namespace Godot.Bridge
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
-                *outOwnerIsNull = godot_bool.False;
+                *refOwnerIsNull = godot_bool.False;
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        internal static unsafe void RaiseEventSignalViaTrampoline(
+            RaiseSignalTrampolineDelegate raiseSignalTrampoline,
+            IntPtr ownerGCHandlePtr, godot_variant** args, int argCount, godot_bool* refOwnerIsNull)
+        {
+            try
+            {
+                object? owner = GCHandle.FromIntPtr(ownerGCHandlePtr).Target;
+
+                if (owner == null)
+                {
+                    *refOwnerIsNull = godot_bool.True;
+                    return;
+                }
+
+                *refOwnerIsNull = godot_bool.False;
+
+                raiseSignalTrampoline(owner, new NativeVariantPtrArgs(args, argCount));
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                *refOwnerIsNull = godot_bool.False;
             }
         }
 

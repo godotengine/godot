@@ -63,6 +63,7 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetGlobalClassName);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, SetGodotObjectPtr);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, RaiseEventSignal);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, RaiseEventSignalViaTrampoline);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, ScriptIsOrInherits);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, AddScriptBridge);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetOrCreateScriptBridgeForPath);
@@ -77,6 +78,9 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Call);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Set);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Get);
+	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, CallViaTrampoline);
+	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, SetViaTrampoline);
+	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, GetViaTrampoline);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, CallDispose);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, CallToString);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, HasMethodUnknownParams);

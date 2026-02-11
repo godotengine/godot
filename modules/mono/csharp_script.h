@@ -44,11 +44,20 @@
 #include "editor/plugins/editor_plugin.h"
 #endif
 
-using MethodTrampoline = void(GD_CLR_STDCALL *)(GCHandleIntPtr p_obj_gchandle, const Variant **p_args, int32_t p_argc,
-		Callable::CallError *r_ref_call_error, Variant *r_ret);
-using PropertyGetterTrampoline = bool(GD_CLR_STDCALL *)(GCHandleIntPtr p_obj_gchandle, Variant *r_args);
-using PropertySetterTrampoline = bool(GD_CLR_STDCALL *)(GCHandleIntPtr p_obj_gchandle, const Variant *p_args);
-using RaiseSignalTrampoline = void(GD_CLR_STDCALL *)(GCHandleIntPtr p_obj_gchandle, const Variant **p_args, int32_t p_argc, bool *r_owner_is_null);
+namespace godotsharp {
+struct MethodTrampoline {
+	void *function_pointer;
+};
+struct PropertyGetterTrampoline {
+	void *function_pointer;
+};
+struct PropertySetterTrampoline {
+	void *function_pointer;
+};
+struct RaiseSignalTrampoline {
+	void *function_pointer;
+};
+} //namespace godotsharp
 
 class CSharpScript;
 class CSharpInstance;
@@ -198,8 +207,8 @@ private:
 	Vector<CSharpMethodInfo> methods;
 
 	struct PropertyTrampolines {
-		PropertyGetterTrampoline getter;
-		PropertySetterTrampoline setter;
+		godotsharp::PropertyGetterTrampoline getter;
+		godotsharp::PropertySetterTrampoline setter;
 	};
 
 	struct MethodKey {
@@ -224,11 +233,11 @@ private:
 	AHashMap<MethodKey, StringName> name_to_proxy_name_map;
 
 	/// Also includes methods declared in inherited scripts.
-	AHashMap<MethodKey, MethodTrampoline> method_trampolines;
+	AHashMap<MethodKey, godotsharp::MethodTrampoline> method_trampolines;
 	/// Also includes properties declared in inherited scripts.
 	AHashMap<StringName, PropertyTrampolines> property_trampolines;
 	/// Also includes event signals declared in inherited scripts.
-	AHashMap<SignalKey, RaiseSignalTrampoline> raise_signal_trampolines;
+	AHashMap<SignalKey, godotsharp::RaiseSignalTrampoline> raise_signal_trampolines;
 	bool should_fallback_to_legacy_trampolines = true;
 
 	bool _has_method_mapping_to_proxy_include_base(const StringName &p_name) const;

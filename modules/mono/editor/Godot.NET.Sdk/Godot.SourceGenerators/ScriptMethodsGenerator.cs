@@ -167,7 +167,7 @@ namespace Godot.SourceGenerators
                 source.Append("\";\n");
             }
 
-            source.Append("    }\n"); // class GodotInternal
+            source.Append("    }\n"); // end of class MethodName
 
             // Generate GetGodotMethodList
 
@@ -213,7 +213,7 @@ namespace Godot.SourceGenerators
 
                 source.Append(
                     "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append("    internal new static unsafe ")
+                source.Append("    internal new static ")
                     .Append(DictType)
                     .Append(" GetGodotMethodNameToProxyNameMap()\n    {\n");
 
@@ -226,8 +226,8 @@ namespace Godot.SourceGenerators
                 foreach (var method in godotClassMethods)
                 {
                     if (method.Method is { IsOverride: true, OverriddenMethod: not null } &&
-                        method.Method.OverriddenMethod.ContainingType.ContainingAssembly is
-                            { Name: "GodotSharp" or "GodotSharpEditor" })
+                        method.Method.OverriddenMethod.ContainingType
+                            .ContainingAssembly is { Name: "GodotSharp" or "GodotSharpEditor" })
                     {
                         // Only do this for native virtual methods by checking that it is also in MethodName.
                         if (method.Method.OverriddenMethod.ContainingType.GetTypeMembers()
@@ -461,7 +461,7 @@ namespace Godot.SourceGenerators
 
             source.Append("        trampolines.Add(new(MethodName.@")
                 .Append(methodName).Append(", ").Append(parameterCount)
-                .Append("), new global::Godot.Bridge.MethodTrampoline(&trampoline_")
+                .Append("), new(&trampoline_")
                 .Append(parameterCount).Append("_").Append(methodName)
                 .Append("));\n");
         }
@@ -483,8 +483,8 @@ namespace Godot.SourceGenerators
             // These two will behave differently if the derived class hides the method
             // (with the 'new' keyword) instead of overriding it.
             if (method.Method is { IsOverride: true, OverriddenMethod: not null } &&
-                method.Method.OverriddenMethod.ContainingType.ContainingAssembly is
-                    { Name: "GodotSharp" or "GodotSharpEditor" })
+                method.Method.OverriddenMethod.ContainingType
+                    .ContainingAssembly is { Name: "GodotSharp" or "GodotSharpEditor" })
             {
                 // Only do this for native virtual methods by checking that it is also in MethodName.
                 // This is not only for correctness, but to also avoid issues with protected functions like Dispose(bool).
@@ -498,38 +498,20 @@ namespace Godot.SourceGenerators
 
             bool isStaticMethod = method.Method.IsStatic;
 
-            source.Append("        [global::System.Runtime.InteropServices.UnmanagedCallersOnly]\n");
-            source.Append("        static void trampoline_")
-                .Append(parameterCount).Append("_").Append(methodName);
+            source
+                .Append("        static godot_variant trampoline_")
+                .Append(parameterCount).Append("_").Append(methodName)
+                .Append("(object godotObject, NativeVariantPtrArgs args, ")
+                .Append("ref godot_variant_call_error callError)\n        {\n");
 
-            source.Append("(global::System.IntPtr godotObjectGCHandle, godot_variant** args, int argCount, ");
-            source.Append("godot_variant_call_error* outRefCallError, godot_variant* outRet)\n        {\n");
-
-            source.Append("          try {\n");
-
-            source.Append("            if (argCount != ");
+            source.Append("            if (args.Count != ");
             source.Append(parameterCount);
             source.Append(") {\n");
-            source.Append("                *outRet = default;\n");
-            source.Append("                *outRefCallError = ")
+            source.Append("                callError = ")
                 .Append("godot_variant_call_error.CreateInvalidArgumentCountError(expected: ")
-                .Append(parameterCount).Append(", provided: argCount);\n");
-            source.Append("                return;\n");
+                .Append(parameterCount).Append(", provided: args.Count);\n");
+            source.Append("                return default;\n");
             source.Append("            }\n");
-
-            if (!isStaticMethod)
-            {
-                source
-                    .Append("            var godotObject = (").Append(castClassSymbol.FullQualifiedNameIncludeGlobal())
-                    .Append(
-                        ")global::System.Runtime.InteropServices.GCHandle.FromIntPtr(godotObjectGCHandle).Target;\n")
-                    .Append("            if (godotObject == null) {\n")
-                    .Append("                *outRet = default;\n")
-                    .Append("                (*outRefCallError).Error = godot_variant_call_error_error.")
-                    .Append("GODOT_CALL_ERROR_CALL_ERROR_INSTANCE_IS_NULL;\n")
-                    .Append("                return;\n")
-                    .Append("            }\n");
-            }
 
             if (method.RetType != null)
                 source.Append("            var callRet = ");
@@ -537,7 +519,7 @@ namespace Godot.SourceGenerators
                 source.Append("            ");
 
             if (!isStaticMethod)
-                source.Append("godotObject.");
+                source.Append("((").Append(castClassSymbol.FullQualifiedNameIncludeGlobal()).Append(")godotObject).");
             source.Append("@");
             source.Append(methodName);
             source.Append("(");
@@ -547,7 +529,7 @@ namespace Godot.SourceGenerators
                 if (i != 0)
                     source.Append(", ");
 
-                source.AppendNativeVariantToManagedExpr(string.Concat("*(args[", i.ToString(), "])"),
+                source.AppendNativeVariantToManagedExpr(string.Concat("args[", i.ToString(), "]"),
                     method.ParamTypeSymbols[i], method.ParamTypes[i]);
             }
 
@@ -555,20 +537,15 @@ namespace Godot.SourceGenerators
 
             if (method.RetType != null)
             {
-                source.Append("            *outRet = ");
-
+                source.Append("            return ");
                 source.AppendManagedToNativeVariantExpr("callRet",
                     method.RetType.Value.TypeSymbol, method.RetType.Value.MarshalType);
                 source.Append(";\n");
             }
             else
             {
-                source.Append("            *outRet = default;\n");
+                source.Append("            return default;\n");
             }
-
-            source.Append("          } catch (global::System.Exception e) {\n");
-            source.Append("              global::Godot.NativeInterop.ExceptionUtils.LogException(e);\n");
-            source.Append("          }\n");
 
             source.Append("        }\n");
         }

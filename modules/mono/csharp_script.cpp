@@ -1493,10 +1493,11 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 
 	const CSharpScript::PropertyTrampolines *trampolines = script->property_trampolines.getptr(p_name);
 	if (trampolines) {
-		if (trampolines->setter == nullptr) {
+		if (trampolines->setter.function_pointer == nullptr) {
 			return false;
 		}
-		return trampolines->setter(gchandle.get_intptr(), &p_value);
+		return GDMonoCache::managed_callbacks.CSharpInstanceBridge_SetViaTrampoline(
+				trampolines->setter, gchandle.get_intptr(), &p_value);
 	}
 
 	if (has_method(SNAME("_set"))) {
@@ -1525,12 +1526,13 @@ bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 
 	const CSharpScript::PropertyTrampolines *trampolines = script->property_trampolines.getptr(p_name);
 	if (trampolines) {
-		if (trampolines->getter == nullptr) {
+		if (trampolines->getter.function_pointer == nullptr) {
 			return false;
 		}
 
 		Variant ret_value;
-		if (likely(trampolines->getter(gchandle.get_intptr(), &ret_value))) {
+		if (likely(GDMonoCache::managed_callbacks.CSharpInstanceBridge_GetViaTrampoline(
+					trampolines->getter, gchandle.get_intptr(), &ret_value))) {
 			r_ret = ret_value;
 			return true;
 		}
@@ -1538,7 +1540,7 @@ bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 		return false;
 	}
 
-	for (const KeyValue<CSharpScript::SignalKey, RaiseSignalTrampoline> &kvp : script->raise_signal_trampolines) {
+	for (const KeyValue<CSharpScript::SignalKey, godotsharp::RaiseSignalTrampoline> &kvp : script->raise_signal_trampolines) {
 		if (kvp.key.name == p_name) {
 			r_ret = Signal(owner->get_instance_id(), p_name);
 			return true;
@@ -1768,10 +1770,11 @@ Variant CSharpInstance::_callp(const StringName &p_method, const Variant **p_arg
 		return _callp(*proxy_name, p_args, p_argcount, r_error);
 	}
 
-	const MethodTrampoline *trampoline = script->method_trampolines.getptr(method_key);
+	const godotsharp::MethodTrampoline *trampoline = script->method_trampolines.getptr(method_key);
 	if (trampoline != nullptr) {
 		Variant ret;
-		(*trampoline)(gchandle.get_intptr(), p_args, p_argcount, &r_error, &ret);
+		GDMonoCache::managed_callbacks.CSharpInstanceBridge_CallViaTrampoline(
+				*trampoline, gchandle.get_intptr(), p_args, p_argcount, &r_error, &ret);
 		if (likely(r_error.error == Callable::CallError::CALL_OK)) {
 			return ret;
 		}
@@ -1796,10 +1799,11 @@ Variant CSharpInstance::callp(const StringName &p_method, const Variant **p_args
 void CSharpInstance::raise_event_signal(const StringName &p_event_signal_name, const Variant **p_args, int p_argcount, Callable::CallError &r_error) const {
 	bool owner_is_null = false;
 
-	const RaiseSignalTrampoline *trampoline = script->raise_signal_trampolines.getptr(
+	const godotsharp::RaiseSignalTrampoline *trampoline = script->raise_signal_trampolines.getptr(
 			CSharpScript::SignalKey{ p_event_signal_name, p_argcount });
 	if (trampoline) {
-		(*trampoline)(gchandle.get_intptr(), p_args, p_argcount, &owner_is_null);
+		GDMonoCache::managed_callbacks.ScriptManagerBridge_RaiseEventSignalViaTrampoline(
+				*trampoline, gchandle.get_intptr(), p_args, p_argcount, &owner_is_null);
 
 		if (unlikely(owner_is_null)) {
 			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
@@ -2381,7 +2385,7 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 		}
 	};
 
-	auto try_add_method_tramp = [](CSharpScript *p_scr, const StringName *p_name, int32_t p_argc, MethodTrampoline p_trampoline) {
+	auto try_add_method_tramp = [](CSharpScript *p_scr, const StringName *p_name, int32_t p_argc, godotsharp::MethodTrampoline p_trampoline) {
 		MethodKey method_key{ *p_name, p_argc };
 		if (!p_scr->method_trampolines.has(method_key)) {
 			p_scr->method_trampolines.insert_new(method_key, p_trampoline);
@@ -2389,14 +2393,14 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	};
 
 	auto try_add_property_tramp = [](CSharpScript *p_scr, const StringName *p_name,
-										  PropertyGetterTrampoline p_getter_trampoline,
-										  PropertySetterTrampoline p_setter_trampoline) {
+										  godotsharp::PropertyGetterTrampoline p_getter_trampoline,
+										  godotsharp::PropertySetterTrampoline p_setter_trampoline) {
 		if (!p_scr->property_trampolines.has(*p_name)) {
 			p_scr->property_trampolines.insert_new(*p_name, { p_getter_trampoline, p_setter_trampoline });
 		}
 	};
 
-	auto try_add_raise_signal_tramp = [](CSharpScript *p_scr, const StringName *p_name, int32_t p_argc, RaiseSignalTrampoline p_trampoline) {
+	auto try_add_raise_signal_tramp = [](CSharpScript *p_scr, const StringName *p_name, int32_t p_argc, godotsharp::RaiseSignalTrampoline p_trampoline) {
 		SignalKey signal_key{ *p_name, p_argc };
 		if (!p_scr->raise_signal_trampolines.has(signal_key)) {
 			p_scr->raise_signal_trampolines.insert_new(signal_key, p_trampoline);
@@ -2688,7 +2692,7 @@ bool CSharpScript::_has_method_mapping_to_proxy_include_base(const StringName &p
 		}
 	}
 
-	for (const KeyValue<MethodKey, MethodTrampoline> &kvp : method_trampolines) {
+	for (const KeyValue<MethodKey, godotsharp::MethodTrampoline> &kvp : method_trampolines) {
 		if (kvp.key.name == p_name) {
 			return true;
 		}

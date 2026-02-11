@@ -1,45 +1,8 @@
 using System;
-using Godot.NativeInterop;
 
 namespace Godot.Bridge;
 
 #nullable enable
-using unsafe MethodTrampolineDelegate = delegate* unmanaged<
-    /* godotObjectGCHandle: */
-    IntPtr,
-    /* args: */
-    godot_variant**,
-    /* argCount: */
-    int,
-    /* outRefCallError: */
-    godot_variant_call_error*,
-    /* outRet: */
-    godot_variant*,
-    void>;
-using unsafe PropertyGetterTrampolineDelegate = delegate* unmanaged<
-    /* godotObjectGCHandle: */
-    IntPtr,
-    /* outValue: */
-    godot_variant*,
-    /* return (success): */
-    godot_bool>;
-using unsafe PropertySetterTrampolineDelegate = delegate* unmanaged<
-    /* godotObjectGCHandle: */
-    IntPtr,
-    /* value: */
-    godot_variant*,
-    /* return (success): */
-    godot_bool>;
-using unsafe RaiseSignalTrampolineDelegate = delegate* unmanaged<
-    /* godotObjectGCHandle: */
-    IntPtr,
-    /* args: */
-    godot_variant**,
-    /* argCount: */
-    int,
-    /* outOwnerIsNull: */
-    godot_bool*,
-    void>;
 
 public readonly struct MethodTrampoline
 {

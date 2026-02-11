@@ -212,7 +212,7 @@ namespace Godot.SourceGenerators
                 source.Append("\";\n");
             }
 
-            source.Append("    }\n"); // class GodotInternal
+            source.Append("    }\n"); // end of class SignalName
 
             // Generate GetGodotSignalList
 
@@ -499,7 +499,7 @@ namespace Godot.SourceGenerators
 
             source.Append("        trampolines.Add(new(SignalName.@")
                 .Append(methodName).Append(", ").Append(parameterCount)
-                .Append("), new global::Godot.Bridge.RaiseSignalTrampoline(&trampoline_")
+                .Append("), new(&trampoline_")
                 .Append(parameterCount).Append("_").Append(methodName)
                 .Append("));\n");
         }
@@ -514,47 +514,33 @@ namespace Godot.SourceGenerators
             var invokeMethodData = signal.InvokeMethodData;
             int parameterCount = invokeMethodData.ParamTypes.Length;
 
-            source.Append("        [global::System.Runtime.InteropServices.UnmanagedCallersOnly]\n");
-            source.Append("        static void trampoline_")
-                .Append(parameterCount).Append("_").Append(signalName);
+            source
+                .Append("        static void trampoline_")
+                .Append(parameterCount).Append("_").Append(signalName)
+                .Append("(object godotObject, NativeVariantPtrArgs args)\n        {\n");
 
-            source.Append("(global::System.IntPtr godotObjectGCHandle, godot_variant** args, int argCount, ");
-            source.Append("godot_bool* outOwnerIsNull)\n        {\n");
-
-            source.Append("          try {\n");
-
-            source.Append("            if (argCount != ");
+            source.Append("            if (args.Count != ");
             source.Append(parameterCount);
             source.Append(") {\n");
             source.Append("                return;\n");
             source.Append("            }\n");
 
             source
-                .Append("            var godotObject = (").Append(classSymbol.FullQualifiedNameIncludeGlobal())
-                .Append(")global::System.Runtime.InteropServices.GCHandle.FromIntPtr(godotObjectGCHandle).Target;\n")
-                .Append("            if (godotObject == null) {\n")
-                .Append("                *outOwnerIsNull = godot_bool.True;\n")
-                .Append("                return;\n")
-                .Append("            }\n");
-
-            source.Append("            godotObject.backing_");
-            source.Append(signalName);
-            source.Append("?.Invoke(");
+                .Append("            ((").Append(classSymbol.FullQualifiedNameIncludeGlobal())
+                .Append(")godotObject).backing_")
+                .Append(signalName)
+                .Append("?.Invoke(");
 
             for (int i = 0; i < invokeMethodData.ParamTypes.Length; i++)
             {
                 if (i != 0)
                     source.Append(", ");
 
-                source.AppendNativeVariantToManagedExpr(string.Concat("*(args[", i.ToString(), "])"),
+                source.AppendNativeVariantToManagedExpr(string.Concat("args[", i.ToString(), "]"),
                     invokeMethodData.ParamTypeSymbols[i], invokeMethodData.ParamTypes[i]);
             }
 
             source.Append(");\n");
-
-            source.Append("          } catch (global::System.Exception e) {\n");
-            source.Append("              global::Godot.NativeInterop.ExceptionUtils.LogException(e);\n");
-            source.Append("          }\n");
 
             source.Append("        }\n");
         }

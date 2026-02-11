@@ -173,7 +173,7 @@ namespace Godot.SourceGenerators
                 source.Append("\";\n");
             }
 
-            source.Append("    }\n"); // class GodotInternal
+            source.Append("    }\n"); // end of class PropertyName
 
             if (godotClassProperties.Length > 0 || godotClassFields.Length > 0)
             {
@@ -332,14 +332,14 @@ namespace Godot.SourceGenerators
         {
             source.Append("        trampolines.Add(PropertyName.@")
                 .Append(propertyMemberName)
-                .Append(", (new global::Godot.Bridge.PropertyGetterTrampoline(");
+                .Append(", (new(");
 
             if (hasGetter)
                 source.Append("&trampoline_get_").Append(propertyMemberName);
             else
                 source.Append("null");
 
-            source.Append("), new global::Godot.Bridge.PropertySetterTrampoline(");
+            source.Append("), new(");
 
             if (hasSetter)
                 source.Append("&trampoline_set_").Append(propertyMemberName);
@@ -357,31 +357,18 @@ namespace Godot.SourceGenerators
             StringBuilder source
         )
         {
-            source.Append("        [global::System.Runtime.InteropServices.UnmanagedCallersOnly]\n");
-            source.Append("        static godot_bool trampoline_get_").Append(propertyMemberName);
-
-            source.Append("(global::System.IntPtr godotObjectGCHandle, godot_variant* value)\n        {\n");
-
-            source.Append("          try {\n");
-
-            source.Append("            var godotObject = (").Append(classSymbol.FullQualifiedNameIncludeGlobal())
-                .Append(")global::System.Runtime.InteropServices.GCHandle.FromIntPtr(godotObjectGCHandle).Target;\n")
-                .Append("            if (godotObject == null) {\n")
-                .Append("                return godot_bool.False;\n")
-                .Append("            }\n");
+            source
+                .Append("        static godot_variant trampoline_get_").Append(propertyMemberName)
+                .Append("(object godotObject)\n        {\n");
 
             source
-                .Append("            *value = ")
-                .AppendManagedToNativeVariantExpr(("godotObject.@", propertyMemberName),
-                    propertyTypeSymbol, propertyMarshalType)
+                .Append("            var ret = ((").Append(classSymbol.FullQualifiedNameIncludeGlobal())
+                .Append(")godotObject).@")
+                .Append(propertyMemberName).Append(";\n");
+            source
+                .Append("            return ")
+                .AppendManagedToNativeVariantExpr("ret", propertyTypeSymbol, propertyMarshalType)
                 .Append(";\n");
-
-            source.Append("            return godot_bool.True;\n");
-
-            source.Append("          } catch (global::System.Exception e) {\n");
-            source.Append("              global::Godot.NativeInterop.ExceptionUtils.LogException(e);\n");
-            source.Append("              return godot_bool.False;\n");
-            source.Append("          }\n");
 
             source.Append("        }\n");
         }
@@ -394,32 +381,17 @@ namespace Godot.SourceGenerators
             StringBuilder source
         )
         {
-            source.Append("        [global::System.Runtime.InteropServices.UnmanagedCallersOnly]\n");
-            source.Append("        static godot_bool trampoline_set_").Append(propertyMemberName);
-
-            source.Append("(global::System.IntPtr godotObjectGCHandle, godot_variant* value)\n        {\n");
-
-            source.Append("          try {\n");
-
-            source.Append("            var godotObject = (").Append(classSymbol.FullQualifiedNameIncludeGlobal())
-                .Append(")global::System.Runtime.InteropServices.GCHandle.FromIntPtr(godotObjectGCHandle).Target;\n")
-                .Append("            if (godotObject == null) {\n")
-                .Append("                return godot_bool.False;\n")
-                .Append("            }\n");
+            source
+                .Append("        static void trampoline_set_").Append(propertyMemberName)
+                .Append("(object godotObject, in godot_variant value)\n        {\n");
 
             source
-                .Append("            godotObject.@")
+                .Append("            ((").Append(classSymbol.FullQualifiedNameIncludeGlobal())
+                .Append(")godotObject).@")
                 .Append(propertyMemberName)
                 .Append(" = ")
-                .AppendNativeVariantToManagedExpr("*value", propertyTypeSymbol, propertyMarshalType)
+                .AppendNativeVariantToManagedExpr("value", propertyTypeSymbol, propertyMarshalType)
                 .Append(";\n");
-
-            source.Append("            return godot_bool.True;\n");
-
-            source.Append("          } catch (global::System.Exception e) {\n");
-            source.Append("              global::Godot.NativeInterop.ExceptionUtils.LogException(e);\n");
-            source.Append("              return godot_bool.False;\n");
-            source.Append("          }\n");
 
             source.Append("        }\n");
         }
