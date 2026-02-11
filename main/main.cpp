@@ -3004,6 +3004,8 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 					bool ac_found = false;
 
+					bool single_window_found = false;
+
 					if (editor) {
 						screen_property = "interface/editor/editor_screen";
 					} else if (project_manager) {
@@ -3018,7 +3020,12 @@ Error Main::setup2(bool p_show_boot_logo) {
 						prefer_wayland_found = true;
 					}
 
-					while (!screen_found || !init_expand_to_title_found || !init_display_scale_found || !init_custom_scale_found || !prefer_wayland_found || !tablet_found || !ac_found) {
+					if (single_window) {
+						// Skip.
+						single_window_found = true;
+					}
+
+					while (!screen_found || !init_expand_to_title_found || !init_display_scale_found || !init_custom_scale_found || !prefer_wayland_found || !tablet_found || !ac_found || !single_window_found) {
 						assign = Variant();
 						next_tag.fields.clear();
 						next_tag.name = String();
@@ -3055,6 +3062,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 							} else if (!tablet_found && assign == "interface/editor/tablet_driver") {
 								tablet_driver_editor = value;
 								tablet_found = true;
+							} else if (!single_window_found && assign == "interface/editor/single_window_mode") {
+								single_window = value;
+								single_window_found = true;
 							}
 						}
 					}
