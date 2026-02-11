@@ -50,6 +50,8 @@ private:
 		int separation = 0;
 	} theme_cache;
 
+	bool reverse_sort = false;
+
 	void _resort();
 	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
 
@@ -68,6 +70,9 @@ public:
 
 	void set_vertical(bool p_vertical);
 	bool is_vertical() const;
+
+	void set_reverse_sort(bool p_reverse_sort);
+	bool is_reverse_sort() const;
 
 	virtual Size2 get_minimum_size() const override;
 	virtual Size2 get_desired_size() const override;
