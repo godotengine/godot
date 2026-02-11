@@ -7323,3 +7323,7 @@ RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
 		vkDestroyDevice(vk_device, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DEVICE));
 	}
 }
+
+RenderingDeviceDriver *create_rendering_device_driver_vulkan(RenderingContextDriverVulkan *p_context_driver) {
+	return memnew(RenderingDeviceDriverVulkan(p_context_driver));
+}

@@ -31,13 +31,13 @@
 #ifdef VULKAN_ENABLED
 
 #include "rendering_context_driver_vulkan.h"
+#include "rendering_device_driver_vulkan_public.h"
 
 #include "vk_enum_string_helper.h"
 
 #include "core/config/project_settings.h"
 #include "core/version.h"
 
-#include "rendering_device_driver_vulkan.h"
 #include "vulkan_hooks.h"
 
 #if defined(VK_TRACK_DRIVER_MEMORY)
@@ -961,11 +961,7 @@ bool RenderingContextDriverVulkan::device_supports_present(uint32_t p_device_ind
 }
 
 RenderingDeviceDriver *RenderingContextDriverVulkan::driver_create() {
-	return memnew(RenderingDeviceDriverVulkan(this));
-}
-
-void RenderingContextDriverVulkan::driver_free(RenderingDeviceDriver *p_driver) {
-	memdelete(p_driver);
+	return create_rendering_device_driver_vulkan(this);
 }
 
 RenderingContextDriver::SurfaceID RenderingContextDriverVulkan::surface_create(const void *p_platform_data) {
@@ -1052,6 +1048,10 @@ bool RenderingContextDriverVulkan::queue_family_supports_present(VkPhysicalDevic
 
 const RenderingContextDriverVulkan::Functions &RenderingContextDriverVulkan::functions_get() const {
 	return functions;
+}
+
+RenderingContextDriver *create_rendering_context_driver_vulkan() {
+	return memnew(RenderingContextDriverVulkan);
 }
 
 #endif // VULKAN_ENABLED

@@ -92,7 +92,7 @@ public:
 	virtual uint32_t device_get_count() const = 0;
 	virtual bool device_supports_present(uint32_t p_device_index, SurfaceID p_surface) const = 0;
 	virtual RenderingDeviceDriver *driver_create() = 0;
-	virtual void driver_free(RenderingDeviceDriver *p_driver) = 0;
+	virtual void driver_free(RenderingDeviceDriver *p_driver);
 	virtual SurfaceID surface_create(const void *p_platform_data) = 0;
 	virtual void surface_set_size(SurfaceID p_surface, uint32_t p_width, uint32_t p_height) = 0;
 	virtual void surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) = 0;

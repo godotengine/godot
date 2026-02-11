@@ -33,32 +33,10 @@
 #include "core/os/mutex.h"
 #include "core/string/ustring.h"
 #include "core/templates/rid_owner.h"
-#include "rendering_device_driver_d3d12.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_context_driver.h"
 
-#if !defined(_MSC_VER) && !defined(__REQUIRED_RPCNDR_H_VERSION__)
-// Match current version used by MinGW, MSVC and Direct3D 12 headers use 500.
-#define __REQUIRED_RPCNDR_H_VERSION__ 475
-#endif // !defined(_MSC_VER) && !defined(__REQUIRED_RPCNDR_H_VERSION__)
-
-GODOT_GCC_WARNING_PUSH
-GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
-GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_GCC_WARNING_IGNORE("-Wshadow")
-GODOT_GCC_WARNING_IGNORE("-Wswitch")
-GODOT_CLANG_WARNING_PUSH
-GODOT_CLANG_WARNING_IGNORE("-Wimplicit-fallthrough")
-GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
-GODOT_CLANG_WARNING_IGNORE("-Wswitch")
-
-#include <thirdparty/directx_headers/include/directx/d3dx12.h>
-
-GODOT_GCC_WARNING_POP
-GODOT_CLANG_WARNING_POP
+#include "godot_d3d12.h"
 
 #if defined(AS)
 #undef AS
@@ -67,8 +45,6 @@ GODOT_CLANG_WARNING_POP
 #ifdef DCOMP_ENABLED
 #include <dcomp.h>
 #endif
-
-#include <wrl/client.h>
 
 #define ARRAY_SIZE(a) std_size(a)
 
@@ -88,7 +64,6 @@ public:
 	virtual uint32_t device_get_count() const override;
 	virtual bool device_supports_present(uint32_t p_device_index, SurfaceID p_surface) const override;
 	virtual RenderingDeviceDriver *driver_create() override;
-	virtual void driver_free(RenderingDeviceDriver *p_driver) override;
 	virtual SurfaceID surface_create(const void *p_platform_data) override;
 	virtual void surface_set_size(SurfaceID p_surface, uint32_t p_width, uint32_t p_height) override;
 	virtual void surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) override;
@@ -99,11 +74,6 @@ public:
 	virtual bool surface_get_needs_resize(SurfaceID p_surface) const override;
 	virtual void surface_destroy(SurfaceID p_surface) override;
 	virtual bool is_debug_utils_enabled() const override;
-
-	// Platform-specific data for the Windows embedded in this driver.
-	struct WindowPlatformData {
-		HWND window;
-	};
 
 	// D3D12-only methods.
 	struct Surface {

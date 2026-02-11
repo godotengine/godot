@@ -31,6 +31,7 @@
 #ifdef VULKAN_ENABLED
 
 #include "rendering_context_driver_vulkan_wayland.h"
+#include "rendering_context_driver_vulkan_wayland_public.h"
 
 #include "drivers/vulkan/godot_vulkan.h"
 
@@ -39,7 +40,7 @@ const char *RenderingContextDriverVulkanWayland::_get_platform_surface_extension
 }
 
 RenderingContextDriver::SurfaceID RenderingContextDriverVulkanWayland::surface_create(const void *p_platform_data) {
-	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
+	const VulkanWaylandWindowPlatformData *wpd = (const VulkanWaylandWindowPlatformData *)(p_platform_data);
 
 	VkWaylandSurfaceCreateInfoKHR create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
@@ -61,6 +62,10 @@ RenderingContextDriverVulkanWayland::RenderingContextDriverVulkanWayland() {
 
 RenderingContextDriverVulkanWayland::~RenderingContextDriverVulkanWayland() {
 	// Does nothing.
+}
+
+RenderingContextDriver *create_rendering_context_driver_vulkan_wayland() {
+	return memnew(RenderingContextDriverVulkanWayland);
 }
 
 #endif // VULKAN_ENABLED

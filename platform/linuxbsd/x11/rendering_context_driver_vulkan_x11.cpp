@@ -31,6 +31,7 @@
 #ifdef VULKAN_ENABLED
 
 #include "rendering_context_driver_vulkan_x11.h"
+#include "rendering_context_driver_vulkan_x11_public.h"
 
 #include "drivers/vulkan/godot_vulkan.h"
 
@@ -39,7 +40,7 @@ const char *RenderingContextDriverVulkanX11::_get_platform_surface_extension() c
 }
 
 RenderingContextDriver::SurfaceID RenderingContextDriverVulkanX11::surface_create(const void *p_platform_data) {
-	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
+	const VulkanX11WindowPlatformData *wpd = (const VulkanX11WindowPlatformData *)(p_platform_data);
 
 	VkXlibSurfaceCreateInfoKHR create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
@@ -61,6 +62,10 @@ RenderingContextDriverVulkanX11::RenderingContextDriverVulkanX11() {
 
 RenderingContextDriverVulkanX11::~RenderingContextDriverVulkanX11() {
 	// Does nothing.
+}
+
+RenderingContextDriver *create_rendering_context_driver_vulkan_x11() {
+	return memnew(RenderingContextDriverVulkanX11);
 }
 
 #endif // VULKAN_ENABLED

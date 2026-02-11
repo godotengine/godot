@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rendering_context_driver_vulkan_windows.cpp                           */
+/*  godot_d3d12.h                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,49 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#if defined(WINDOWS_ENABLED) && defined(VULKAN_ENABLED)
+#pragma once
 
-#include "core/os/os.h"
+#include "core/typedefs.h"
 
-#include "rendering_context_driver_vulkan_windows.h"
-#include "rendering_context_driver_vulkan_windows_public.h"
+#if !defined(_MSC_VER) && !defined(__REQUIRED_RPCNDR_H_VERSION__)
+// Match current version used by MinGW, MSVC and Direct3D 12 headers use 500.
+#define __REQUIRED_RPCNDR_H_VERSION__ 475
+#endif // !defined(_MSC_VER) && !defined(__REQUIRED_RPCNDR_H_VERSION__)
 
-#include "drivers/vulkan/godot_vulkan.h"
+GODOT_GCC_WARNING_PUSH
+GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
+GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
+GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
+GODOT_GCC_WARNING_IGNORE("-Wshadow")
+GODOT_GCC_WARNING_IGNORE("-Wswitch")
+GODOT_CLANG_WARNING_PUSH
+GODOT_CLANG_WARNING_IGNORE("-Wimplicit-fallthrough")
+GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
+GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
+GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
+GODOT_CLANG_WARNING_IGNORE("-Wswitch")
 
-const char *RenderingContextDriverVulkanWindows::_get_platform_surface_extension() const {
-	return VK_KHR_WIN32_SURFACE_EXTENSION_NAME;
-}
+#include <thirdparty/directx_headers/include/directx/d3dx12.h>
 
-RenderingContextDriverVulkanWindows::RenderingContextDriverVulkanWindows() {
-	// Workaround for Vulkan not working on setups with AMD integrated graphics + NVIDIA dedicated GPU (GH-57708).
-	// This prevents using AMD integrated graphics with Vulkan entirely, but it allows the engine to start
-	// even on outdated/broken driver setups.
-	OS::get_singleton()->set_environment("DISABLE_LAYER_AMD_SWITCHABLE_GRAPHICS_1", "1");
-}
+GODOT_GCC_WARNING_POP
+GODOT_CLANG_WARNING_POP
 
-RenderingContextDriverVulkanWindows::~RenderingContextDriverVulkanWindows() {
-	// Does nothing.
-}
-
-RenderingContextDriver::SurfaceID RenderingContextDriverVulkanWindows::surface_create(const void *p_platform_data) {
-	const VulkanWindowsWindowPlatformData *wpd = (const VulkanWindowsWindowPlatformData *)(p_platform_data);
-
-	VkWin32SurfaceCreateInfoKHR create_info = {};
-	create_info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-	create_info.hinstance = (HINSTANCE)wpd->instance;
-	create_info.hwnd = (HWND)wpd->window;
-
-	VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
-	VkResult err = vkCreateWin32SurfaceKHR(instance_get(), &create_info, get_allocation_callbacks(VK_OBJECT_TYPE_SURFACE_KHR), &vk_surface);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, SurfaceID());
-
-	Surface *surface = memnew(Surface);
-	surface->vk_surface = vk_surface;
-	return SurfaceID(surface);
-}
-
-RenderingContextDriver *create_rendering_context_driver_vulkan_windows() {
-	return memnew(RenderingContextDriverVulkanWindows);
-}
-
-#endif // WINDOWS_ENABLED && VULKAN_ENABLED
+#include <wrl/client.h>

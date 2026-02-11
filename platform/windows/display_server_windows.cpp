@@ -53,10 +53,10 @@
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #if defined(VULKAN_ENABLED)
-#include "rendering_context_driver_vulkan_windows.h"
+#include "rendering_context_driver_vulkan_windows_public.h"
 #endif
 #if defined(D3D12_ENABLED)
-#include "drivers/d3d12/rendering_context_driver_d3d12.h"
+#include "drivers/d3d12/rendering_context_driver_d3d12_public.h"
 #endif
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -6685,10 +6685,10 @@ Error DisplayServerWindows::_create_rendering_context_window(WindowID p_window_i
 
 	union {
 #ifdef VULKAN_ENABLED
-		RenderingContextDriverVulkanWindows::WindowPlatformData vulkan;
+		VulkanWindowsWindowPlatformData vulkan;
 #endif
 #ifdef D3D12_ENABLED
-		RenderingContextDriverD3D12::WindowPlatformData d3d12;
+		D3D12WindowPlatformData d3d12;
 #endif
 	} wpd;
 #ifdef VULKAN_ENABLED
@@ -7268,13 +7268,13 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 #ifdef VULKAN_ENABLED
 		if (tested_rendering_driver == "vulkan") {
-			rendering_context = memnew(RenderingContextDriverVulkanWindows);
+			rendering_context = create_rendering_context_driver_vulkan_windows();
 			tested_drivers.set_flag(DRIVER_ID_RD_VULKAN);
 		}
 #endif
 #ifdef D3D12_ENABLED
 		if (tested_rendering_driver == "d3d12") {
-			rendering_context = memnew(RenderingContextDriverD3D12);
+			rendering_context = create_rendering_context_driver_d3d12();
 			tested_drivers.set_flag(DRIVER_ID_RD_D3D12);
 		}
 #endif

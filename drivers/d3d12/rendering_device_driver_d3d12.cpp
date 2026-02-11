@@ -6381,3 +6381,7 @@ Error RenderingDeviceDriverD3D12::initialize(uint32_t p_device_index, uint32_t p
 
 	return OK;
 }
+
+RenderingDeviceDriver *create_rendering_device_driver_d3d12(RenderingContextDriverD3D12 *p_context_driver) {
+	return memnew(RenderingDeviceDriverD3D12(p_context_driver));
+}

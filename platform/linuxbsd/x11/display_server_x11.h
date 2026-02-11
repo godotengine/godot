@@ -59,7 +59,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#include "x11/rendering_context_driver_vulkan_x11.h"
+#include "x11/rendering_context_driver_vulkan_x11_public.h"
 #endif
 #endif
 

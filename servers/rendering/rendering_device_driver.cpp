@@ -30,6 +30,10 @@
 
 #include "rendering_device_driver.h"
 
+void RenderingContextDriver::driver_free(RenderingDeviceDriver *p_driver) {
+	memdelete(p_driver);
+}
+
 /**************/
 /**** MISC ****/
 /**************/

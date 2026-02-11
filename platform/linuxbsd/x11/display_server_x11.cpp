@@ -6574,7 +6574,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		if (rendering_context) {
 			union {
 #ifdef VULKAN_ENABLED
-				RenderingContextDriverVulkanX11::WindowPlatformData vulkan;
+				VulkanX11WindowPlatformData vulkan;
 #endif
 			} wpd;
 #ifdef VULKAN_ENABLED
@@ -7033,7 +7033,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 #if defined(RD_ENABLED)
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-		rendering_context = memnew(RenderingContextDriverVulkanX11);
+		rendering_context = create_rendering_context_driver_vulkan_x11();
 	}
 #endif // VULKAN_ENABLED
 
