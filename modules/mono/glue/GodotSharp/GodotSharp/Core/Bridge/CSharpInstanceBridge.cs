@@ -8,7 +8,7 @@ namespace Godot.Bridge
     {
         [UnmanagedCallersOnly]
         internal static unsafe godot_bool Call(IntPtr godotObjectGCHandle, godot_string_name* method,
-            godot_variant** args, int argCount, godot_variant_call_error* refCallError, godot_variant* ret)
+            godot_variant** args, int argCount, godot_variant_call_error* refCallError, godot_variant* outRet)
         {
             try
             {
@@ -16,7 +16,7 @@ namespace Godot.Bridge
 
                 if (godotObject == null)
                 {
-                    *ret = default;
+                    *outRet = default;
                     (*refCallError).Error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INSTANCE_IS_NULL;
                     return godot_bool.False;
                 }
@@ -26,20 +26,20 @@ namespace Godot.Bridge
 
                 if (!methodInvoked)
                 {
-                    *ret = default;
+                    *outRet = default;
                     // This is important, as it tells Object::call that no method was called.
                     // Otherwise, it would prevent Object::call from calling native methods.
                     (*refCallError).Error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INVALID_METHOD;
                     return godot_bool.False;
                 }
 
-                *ret = retValue;
+                *outRet = retValue;
                 return godot_bool.True;
             }
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
-                *ret = default;
+                *outRet = default;
                 return godot_bool.False;
             }
         }
@@ -52,7 +52,7 @@ namespace Godot.Bridge
                 var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
-                    throw new InvalidOperationException();
+                    throw new InvalidOperationException("Godot Object instance is null.");
 
                 if (godotObject.SetGodotClassPropertyValue(CustomUnsafe.AsRef(name), CustomUnsafe.AsRef(value)))
                 {
@@ -87,7 +87,7 @@ namespace Godot.Bridge
                 var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
-                    throw new InvalidOperationException();
+                    throw new InvalidOperationException("Godot Object instance is null.");
 
                 // Properties
                 if (godotObject.GetGodotClassPropertyValue(CustomUnsafe.AsRef(name), out godot_variant outRetValue))
@@ -131,6 +131,79 @@ namespace Godot.Bridge
                 }
 
                 *outRet = ret.CopyNativeVariant();
+                return godot_bool.True;
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                *outRet = default;
+                return godot_bool.False;
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        internal static unsafe godot_bool CallViaTrampoline(
+            MethodTrampolineDelegate methodTrampoline,
+            IntPtr godotObjectGCHandle, godot_variant** args, int argCount,
+            godot_variant_call_error* refCallError, godot_variant* outRet)
+        {
+            try
+            {
+                object godotObject = GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+
+                if (godotObject == null)
+                {
+                    *outRet = default;
+                    (*refCallError).Error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INSTANCE_IS_NULL;
+                    return godot_bool.False;
+                }
+
+                *outRet = methodTrampoline(godotObject, new NativeVariantPtrArgs(args, argCount), ref *refCallError);
+                return godot_bool.True;
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                *outRet = default;
+                return godot_bool.False;
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        internal static unsafe godot_bool SetViaTrampoline(
+            PropertySetterTrampolineDelegate setterTrampoline,
+            IntPtr godotObjectGCHandle, godot_variant* value)
+        {
+            try
+            {
+                object godotObject = GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+
+                if (godotObject == null)
+                    throw new InvalidOperationException("Godot Object instance is null.");
+
+                setterTrampoline(godotObject, *value);
+                return godot_bool.True;
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                return godot_bool.False;
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        internal static unsafe godot_bool GetViaTrampoline(
+            PropertyGetterTrampolineDelegate getterTrampoline,
+            IntPtr godotObjectGCHandle, godot_variant* outRet)
+        {
+            try
+            {
+                object godotObject = GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+
+                if (godotObject == null)
+                    throw new InvalidOperationException("Godot Object instance is null.");
+
+                *outRet = getterTrampoline(godotObject);
                 return godot_bool.True;
             }
             catch (Exception e)
