@@ -184,14 +184,15 @@ void BoxContainer::_resort() {
 	int start;
 	int end;
 	int delta;
-	if (!rtl || vertical) {
-		start = 0;
-		end = get_child_count();
-		delta = +1;
-	} else {
+
+	if ((rtl && !vertical) != reverse_sort) {
 		start = get_child_count() - 1;
 		end = -1;
 		delta = -1;
+	} else {
+		start = 0;
+		end = get_child_count();
+		delta = +1;
 	}
 
 	for (int i = start; i != end; i += delta) {
@@ -319,6 +320,18 @@ bool BoxContainer::is_vertical() const {
 	return vertical;
 }
 
+void BoxContainer::set_reverse_sort(bool p_reverse_sort) {
+	if (reverse_sort == p_reverse_sort) {
+		return;
+	}
+	reverse_sort = p_reverse_sort;
+	queue_sort();
+}
+
+bool BoxContainer::is_reverse_sort() const {
+	return reverse_sort;
+}
+
 Control *BoxContainer::add_spacer(bool p_begin) {
 	Control *c = memnew(Control);
 	c->set_mouse_filter(MOUSE_FILTER_PASS); //allow spacer to pass mouse events
@@ -371,6 +384,8 @@ void BoxContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_alignment"), &BoxContainer::get_alignment);
 	ClassDB::bind_method(D_METHOD("set_vertical", "vertical"), &BoxContainer::set_vertical);
 	ClassDB::bind_method(D_METHOD("is_vertical"), &BoxContainer::is_vertical);
+	ClassDB::bind_method(D_METHOD("set_reverse_sort", "reverse_sort"), &BoxContainer::set_reverse_sort);
+	ClassDB::bind_method(D_METHOD("is_reverse_sort"), &BoxContainer::is_reverse_sort);
 
 	BIND_ENUM_CONSTANT(ALIGNMENT_BEGIN);
 	BIND_ENUM_CONSTANT(ALIGNMENT_CENTER);
@@ -378,6 +393,7 @@ void BoxContainer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment", "get_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reverse_sort"), "set_reverse_sort", "is_reverse_sort");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, BoxContainer, separation);
 }
