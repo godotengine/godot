@@ -242,16 +242,28 @@ void ShaderEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
 
 	Array shaders = p_layout->get_value("ShaderEditor", "open_shaders");
 	int selected_shader_idx = 0;
+	Control *prev_control = shader_tabs->get_current_tab_control();
 	String selected_shader = p_layout->get_value("ShaderEditor", "selected_shader");
 	for (int i = 0; i < shaders.size(); i++) {
 		String path = shaders[i];
 		Ref<Resource> res = ResourceLoader::load(path);
 		if (res.is_valid()) {
 			edit(res.ptr());
+			// Move already existing tabs to correct position.
+			Control *active_tab_control = shader_tabs->get_current_tab_control();
+			if (active_tab_control) {
+				int from = shader_tabs->get_tab_idx_from_control(active_tab_control);
+				_move_shader_tab(from, shader_tabs->get_tab_count() - 1);
+			}
 		}
 		if (selected_shader == path) {
 			selected_shader_idx = i;
 		}
+	}
+
+	// Recover tab if it was changed previously.
+	if (prev_control && selected_changed) {
+		selected_shader_idx = shader_tabs->get_tab_idx_from_control(prev_control);
 	}
 
 	if (p_layout->has_section_key("ShaderEditor", "split_offset")) {
@@ -788,6 +800,7 @@ void ShaderEditorPlugin::_switch_to_editor(ShaderEditor *p_editor, bool p_focus)
 			text_shader_editor->get_code_editor()->get_text_editor()->grab_focus();
 		}
 	}
+	selected_changed = true;
 }
 
 void ShaderEditorPlugin::_file_removed(const String &p_removed_file) {
@@ -855,7 +868,11 @@ void ShaderEditorPlugin::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+ShaderEditorPlugin *ShaderEditorPlugin::singleton = nullptr;
+
 ShaderEditorPlugin::ShaderEditorPlugin() {
+	singleton = this;
+
 	ED_SHORTCUT("shader_editor/new", TTRC("New Shader..."), KeyModifierMask::CMD_OR_CTRL | Key::N);
 	ED_SHORTCUT("shader_editor/new_include", TTRC("New Shader Include..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::N);
 	ED_SHORTCUT("shader_editor/open", TTRC("Load Shader File..."), KeyModifierMask::CMD_OR_CTRL | Key::O);
@@ -937,4 +954,5 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 ShaderEditorPlugin::~ShaderEditorPlugin() {
 	EditorShaderLanguagePlugin::clear_registered_shader_languages();
 	memdelete(file_menu);
+	singleton = nullptr;
 }
