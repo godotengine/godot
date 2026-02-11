@@ -661,7 +661,7 @@ void RigidBody2D::_notification(int p_what) {
 				break;
 			}
 
-			// Draw a crosshair at the center of mass position
+			// Draw a crosshair at the center of mass position.
 			const Vector2 com = get_center_of_mass();
 			const float extents = 5.0;
 			const Color com_color = Color(1.0, 0.6, 0.0, 0.8);
