@@ -193,42 +193,34 @@ CopyBufferDecoder::CopyBufferDecoder(CameraFeed *p_camera_feed, CopyFormat p_for
 }
 
 void CopyBufferDecoder::decode(StreamingBuffer p_buffer) {
-	uint8_t *src = (uint8_t *)p_buffer.start;
+	uint8_t *scan_line0 = (uint8_t *)p_buffer.start;
 	uint8_t *dst = (uint8_t *)image_data.ptrw();
+	int32_t pitch = p_buffer.pitch;
+
+	// If pitch is not set, calculate from buffer length (assumes top-down, contiguous).
+	if (pitch == 0) {
+		pitch = p_buffer.length / height;
+	}
 
 	if (convert_bgr) {
 		// Windows RGB24 uses BGR byte order.
 		// See: https://learn.microsoft.com/en-us/windows/win32/directshow/uncompressed-rgb-video-subtypes
-		if (flip_vertical) {
-			for (int y = 0; y < height; y++) {
-				uint8_t *row_src = src + (height - 1 - y) * width * 3;
-				for (int x = 0; x < width; x++) {
-					dst[0] = row_src[2];
-					dst[1] = row_src[1];
-					dst[2] = row_src[0];
-					dst += 3;
-					row_src += 3;
-				}
-			}
-		} else {
-			for (int i = 0; i < width * height; i++) {
-				dst[0] = src[2];
-				dst[1] = src[1];
-				dst[2] = src[0];
+		for (int y = 0; y < height; y++) {
+			uint8_t *row_src = scan_line0 + y * pitch;
+			for (int x = 0; x < width; x++) {
+				dst[0] = row_src[2];
+				dst[1] = row_src[1];
+				dst[2] = row_src[0];
 				dst += 3;
-				src += 3;
+				row_src += 3;
 			}
 		}
 	} else {
-		if (flip_vertical) {
-			int stride = p_buffer.length / height;
-			for (int y = 0; y < height; y++) {
-				uint8_t *row_src = src + (height - 1 - y) * stride;
-				memcpy(dst, row_src, stride);
-				dst += stride;
-			}
-		} else {
-			memcpy(dst, src, p_buffer.length);
+		int row_bytes = abs(pitch);
+		for (int y = 0; y < height; y++) {
+			uint8_t *row_src = scan_line0 + y * pitch;
+			memcpy(dst, row_src, row_bytes);
+			dst += row_bytes;
 		}
 	}
 

@@ -521,7 +521,6 @@ void CameraFeedWindows::read() {
 		if (SUCCEEDED(hr) && buffer) {
 			BYTE *data = nullptr;
 			DWORD buffer_length = 0;
-			bool flip_detected = false;
 			bool used_2d_buffer = false;
 
 			// Try IMF2DBuffer for stride information (faster).
@@ -533,16 +532,12 @@ void CameraFeedWindows::read() {
 				if (SUCCEEDED(hr)) {
 					data = scan_line;
 					buffer_length = abs(pitch) * get_format().height;
-					flip_detected = (pitch < 0);
 					used_2d_buffer = true;
-
-					if (buffer_decoder) {
-						buffer_decoder->set_flip_vertical(flip_detected);
-					}
 
 					StreamingBuffer streaming_buffer;
 					streaming_buffer.start = data;
 					streaming_buffer.length = buffer_length;
+					streaming_buffer.pitch = pitch;
 
 					if (buffer_decoder) {
 						buffer_decoder->decode(streaming_buffer);
@@ -558,11 +553,22 @@ void CameraFeedWindows::read() {
 				hr = buffer->Lock(&data, nullptr, &buffer_length);
 				if (SUCCEEDED(hr)) {
 					StreamingBuffer streaming_buffer;
-					streaming_buffer.start = data;
 					streaming_buffer.length = buffer_length;
 
+					if (use_mf_conversion) {
+						// CopyBufferDecoder expects bottom-up image layout.
+						// Lock() returns pointer to buffer start, but we need pointer to
+						// last row to match Lock2D layout for negative pitch iteration.
+						int row_stride = buffer_length / get_format().height;
+						streaming_buffer.start = data + buffer_length - row_stride;
+						streaming_buffer.pitch = -row_stride;
+					} else {
+						// Other decoders (YUY2, NV12, etc.) expect contiguous memory.
+						streaming_buffer.start = data;
+						streaming_buffer.pitch = 0;
+					}
+
 					if (buffer_decoder) {
-						buffer_decoder->set_flip_vertical(true);
 						buffer_decoder->decode(streaming_buffer);
 					}
 

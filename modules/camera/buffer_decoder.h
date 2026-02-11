@@ -38,6 +38,7 @@ class CameraFeed;
 struct StreamingBuffer {
 	void *start = nullptr;
 	size_t length = 0;
+	int32_t pitch = 0; // Row stride in bytes (negative for bottom-up images).
 };
 
 class BufferDecoder {
@@ -46,11 +47,9 @@ protected:
 	Ref<Image> image;
 	int width = 0;
 	int height = 0;
-	bool flip_vertical = false;
 
 public:
 	virtual void decode(StreamingBuffer p_buffer) = 0;
-	virtual void set_flip_vertical(bool p_flip) { flip_vertical = p_flip; }
 
 	BufferDecoder(CameraFeed *p_camera_feed);
 	virtual ~BufferDecoder() {}
