@@ -830,6 +830,10 @@ if env.msvc:
             env.AppendUnique(CPPDEFINES=["SIZE_EXTRA"])
     elif env["optimize"] == "debug" or env["optimize"] == "none":
         env["OPTIMIZELEVEL"] = "/Od"
+    if not env["use_llvm"] and (env["debug_paths_relative"] or not env["debug_symbols"]):
+        # Remap absolute paths to relative paths for debug symbols and __FILE__.
+        project_path = Dir("#").abspath
+        env.Prepend(CXXFLAGS=["/d1trimfile:" + project_path])
 else:
     if env["debug_symbols"]:
         if env["platform"] == "windows":
