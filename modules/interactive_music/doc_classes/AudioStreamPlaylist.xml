@@ -4,8 +4,10 @@
 		[AudioStream] that includes sub-streams and plays them back like a playlist.
 	</brief_description>
 	<description>
+		An audio stream that can play back sub-streams in sequence. Streams can be added to the Playlist with [method set_list_stream], and shuffled with [member shuffle].
 	</description>
 	<tutorials>
+		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_bpm" qualifiers="const">

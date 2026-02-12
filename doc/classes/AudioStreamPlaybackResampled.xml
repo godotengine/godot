@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamPlaybackResampled" inherits="AudioStreamPlayback" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Playback class used for resampled [AudioStream]s.
 	</brief_description>
 	<description>
+		Playback class used to mix an [AudioStream]'s audio samples to [method AudioServer.get_mix_rate] using cubic interpolation.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,6 +12,7 @@
 		<method name="_get_stream_sampling_rate" qualifiers="virtual required const">
 			<return type="float" />
 			<description>
+				Returns an [AudioStream]'s sample rate, in Hz. Used to perform resampling.
 			</description>
 		</method>
 		<method name="_mix_resampled" qualifiers="virtual required">
@@ -17,11 +20,13 @@
 			<param index="0" name="dst_buffer" type="AudioFrame*" />
 			<param index="1" name="frame_count" type="int" />
 			<description>
+				Called by [method begin_resample] to mix an [AudioStream] to [method AudioServer.get_mix_rate]. Uses [method _get_stream_sampling_rate] as the source sample rate. Returns the number of mixed frames.
 			</description>
 		</method>
 		<method name="begin_resample">
 			<return type="void" />
 			<description>
+				Called when an [AudioStream] is played. Clears the cubic interpolation history and starts mixing by calling [method _mix_resampled].
 			</description>
 		</method>
 	</methods>
