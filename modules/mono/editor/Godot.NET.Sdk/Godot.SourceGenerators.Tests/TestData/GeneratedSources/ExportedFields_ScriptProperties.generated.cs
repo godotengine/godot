@@ -261,521 +261,767 @@ partial class ExportedFields
         /// </summary>
         public new static readonly global::Godot.StringName @_fieldEmptyInt64Array = "_fieldEmptyInt64Array";
     }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
+    protected internal new static partial class GodotInternal
     {
-        if (name == PropertyName.@_fieldBoolean) {
-            this.@_fieldBoolean = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
-            return true;
+        public static void GetGodotPropertyTrampolines(global::Godot.Bridge.PropertyTrampolineCollector collector)
+        {
+            static godot_variant trampoline_get__fieldBoolean(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldBoolean;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<bool>(ret);
+            }
+            static void trampoline_set__fieldBoolean(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldBoolean = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
+            }
+            static godot_variant trampoline_get__fieldChar(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldChar;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<char>(ret);
+            }
+            static void trampoline_set__fieldChar(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldChar = global::Godot.NativeInterop.VariantUtils.ConvertTo<char>(value);
+            }
+            static godot_variant trampoline_get__fieldSByte(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldSByte;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<sbyte>(ret);
+            }
+            static void trampoline_set__fieldSByte(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldSByte = global::Godot.NativeInterop.VariantUtils.ConvertTo<sbyte>(value);
+            }
+            static godot_variant trampoline_get__fieldInt16(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldInt16;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<short>(ret);
+            }
+            static void trampoline_set__fieldInt16(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldInt16 = global::Godot.NativeInterop.VariantUtils.ConvertTo<short>(value);
+            }
+            static godot_variant trampoline_get__fieldInt32(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldInt32;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(ret);
+            }
+            static void trampoline_set__fieldInt32(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldInt32 = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
+            }
+            static godot_variant trampoline_get__fieldInt64(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldInt64;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<long>(ret);
+            }
+            static void trampoline_set__fieldInt64(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldInt64 = global::Godot.NativeInterop.VariantUtils.ConvertTo<long>(value);
+            }
+            static godot_variant trampoline_get__fieldByte(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldByte;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<byte>(ret);
+            }
+            static void trampoline_set__fieldByte(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldByte = global::Godot.NativeInterop.VariantUtils.ConvertTo<byte>(value);
+            }
+            static godot_variant trampoline_get__fieldUInt16(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldUInt16;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<ushort>(ret);
+            }
+            static void trampoline_set__fieldUInt16(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldUInt16 = global::Godot.NativeInterop.VariantUtils.ConvertTo<ushort>(value);
+            }
+            static godot_variant trampoline_get__fieldUInt32(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldUInt32;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<uint>(ret);
+            }
+            static void trampoline_set__fieldUInt32(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldUInt32 = global::Godot.NativeInterop.VariantUtils.ConvertTo<uint>(value);
+            }
+            static godot_variant trampoline_get__fieldUInt64(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldUInt64;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<ulong>(ret);
+            }
+            static void trampoline_set__fieldUInt64(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldUInt64 = global::Godot.NativeInterop.VariantUtils.ConvertTo<ulong>(value);
+            }
+            static godot_variant trampoline_get__fieldSingle(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldSingle;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(ret);
+            }
+            static void trampoline_set__fieldSingle(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldSingle = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+            }
+            static godot_variant trampoline_get__fieldDouble(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldDouble;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<double>(ret);
+            }
+            static void trampoline_set__fieldDouble(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldDouble = global::Godot.NativeInterop.VariantUtils.ConvertTo<double>(value);
+            }
+            static godot_variant trampoline_get__fieldString(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldString;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static void trampoline_set__fieldString(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            }
+            static godot_variant trampoline_get__fieldStaticImport(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldStaticImport;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(ret);
+            }
+            static void trampoline_set__fieldStaticImport(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+            }
+            static godot_variant trampoline_get__fieldVector2(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldVector2;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2>(ret);
+            }
+            static void trampoline_set__fieldVector2(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldVector2 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2>(value);
+            }
+            static godot_variant trampoline_get__fieldVector2I(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldVector2I;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2I>(ret);
+            }
+            static void trampoline_set__fieldVector2I(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldVector2I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2I>(value);
+            }
+            static godot_variant trampoline_get__fieldRect2(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldRect2;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rect2>(ret);
+            }
+            static void trampoline_set__fieldRect2(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldRect2 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rect2>(value);
+            }
+            static godot_variant trampoline_get__fieldRect2I(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldRect2I;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rect2I>(ret);
+            }
+            static void trampoline_set__fieldRect2I(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldRect2I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rect2I>(value);
+            }
+            static godot_variant trampoline_get__fieldTransform2D(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldTransform2D;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Transform2D>(ret);
+            }
+            static void trampoline_set__fieldTransform2D(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldTransform2D = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Transform2D>(value);
+            }
+            static godot_variant trampoline_get__fieldVector3(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldVector3;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3>(ret);
+            }
+            static void trampoline_set__fieldVector3(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldVector3 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3>(value);
+            }
+            static godot_variant trampoline_get__fieldVector3I(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldVector3I;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3I>(ret);
+            }
+            static void trampoline_set__fieldVector3I(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldVector3I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3I>(value);
+            }
+            static godot_variant trampoline_get__fieldBasis(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldBasis;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Basis>(ret);
+            }
+            static void trampoline_set__fieldBasis(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldBasis = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Basis>(value);
+            }
+            static godot_variant trampoline_get__fieldQuaternion(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldQuaternion;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Quaternion>(ret);
+            }
+            static void trampoline_set__fieldQuaternion(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldQuaternion = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Quaternion>(value);
+            }
+            static godot_variant trampoline_get__fieldTransform3D(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldTransform3D;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Transform3D>(ret);
+            }
+            static void trampoline_set__fieldTransform3D(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldTransform3D = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Transform3D>(value);
+            }
+            static godot_variant trampoline_get__fieldVector4(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldVector4;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector4>(ret);
+            }
+            static void trampoline_set__fieldVector4(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldVector4 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector4>(value);
+            }
+            static godot_variant trampoline_get__fieldVector4I(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldVector4I;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector4I>(ret);
+            }
+            static void trampoline_set__fieldVector4I(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldVector4I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector4I>(value);
+            }
+            static godot_variant trampoline_get__fieldProjection(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldProjection;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Projection>(ret);
+            }
+            static void trampoline_set__fieldProjection(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldProjection = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Projection>(value);
+            }
+            static godot_variant trampoline_get__fieldAabb(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldAabb;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Aabb>(ret);
+            }
+            static void trampoline_set__fieldAabb(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldAabb = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Aabb>(value);
+            }
+            static godot_variant trampoline_get__fieldColor(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldColor;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Color>(ret);
+            }
+            static void trampoline_set__fieldColor(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldColor = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Color>(value);
+            }
+            static godot_variant trampoline_get__fieldPlane(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldPlane;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Plane>(ret);
+            }
+            static void trampoline_set__fieldPlane(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldPlane = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Plane>(value);
+            }
+            static godot_variant trampoline_get__fieldCallable(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldCallable;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            }
+            static void trampoline_set__fieldCallable(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldCallable = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
+            }
+            static godot_variant trampoline_get__fieldSignal(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldSignal;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Signal>(ret);
+            }
+            static void trampoline_set__fieldSignal(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldSignal = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Signal>(value);
+            }
+            static godot_variant trampoline_get__fieldEnum(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldEnum;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::ExportedFields.MyEnum>(ret);
+            }
+            static void trampoline_set__fieldEnum(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::ExportedFields.MyEnum>(value);
+            }
+            static godot_variant trampoline_get__fieldFlagsEnum(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldFlagsEnum;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::ExportedFields.MyFlagsEnum>(ret);
+            }
+            static void trampoline_set__fieldFlagsEnum(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldFlagsEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::ExportedFields.MyFlagsEnum>(value);
+            }
+            static godot_variant trampoline_get__fieldByteArray(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldByteArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<byte[]>(ret);
+            }
+            static void trampoline_set__fieldByteArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldByteArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<byte[]>(value);
+            }
+            static godot_variant trampoline_get__fieldInt32Array(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldInt32Array;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<int[]>(ret);
+            }
+            static void trampoline_set__fieldInt32Array(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldInt32Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<int[]>(value);
+            }
+            static godot_variant trampoline_get__fieldInt64Array(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldInt64Array;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<long[]>(ret);
+            }
+            static void trampoline_set__fieldInt64Array(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldInt64Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<long[]>(value);
+            }
+            static godot_variant trampoline_get__fieldSingleArray(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldSingleArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float[]>(ret);
+            }
+            static void trampoline_set__fieldSingleArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldSingleArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<float[]>(value);
+            }
+            static godot_variant trampoline_get__fieldDoubleArray(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldDoubleArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<double[]>(ret);
+            }
+            static void trampoline_set__fieldDoubleArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldDoubleArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<double[]>(value);
+            }
+            static godot_variant trampoline_get__fieldStringArray(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldStringArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string[]>(ret);
+            }
+            static void trampoline_set__fieldStringArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldStringArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<string[]>(value);
+            }
+            static godot_variant trampoline_get__fieldStringArrayEnum(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldStringArrayEnum;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string[]>(ret);
+            }
+            static void trampoline_set__fieldStringArrayEnum(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldStringArrayEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<string[]>(value);
+            }
+            static godot_variant trampoline_get__fieldVector2Array(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldVector2Array;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2[]>(ret);
+            }
+            static void trampoline_set__fieldVector2Array(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldVector2Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2[]>(value);
+            }
+            static godot_variant trampoline_get__fieldVector3Array(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldVector3Array;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3[]>(ret);
+            }
+            static void trampoline_set__fieldVector3Array(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldVector3Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3[]>(value);
+            }
+            static godot_variant trampoline_get__fieldColorArray(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldColorArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Color[]>(ret);
+            }
+            static void trampoline_set__fieldColorArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldColorArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Color[]>(value);
+            }
+            static godot_variant trampoline_get__fieldGodotObjectOrDerivedArray(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldGodotObjectOrDerivedArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFromSystemArrayOfGodotObject(ret);
+            }
+            static void trampoline_set__fieldGodotObjectOrDerivedArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldGodotObjectOrDerivedArray = global::Godot.NativeInterop.VariantUtils.ConvertToSystemArrayOfGodotObject<global::Godot.GodotObject>(value);
+            }
+            static godot_variant trampoline_get__fieldStringNameArray(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldStringNameArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.StringName[]>(ret);
+            }
+            static void trampoline_set__fieldStringNameArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldStringNameArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName[]>(value);
+            }
+            static godot_variant trampoline_get__fieldNodePathArray(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldNodePathArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath[]>(ret);
+            }
+            static void trampoline_set__fieldNodePathArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldNodePathArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath[]>(value);
+            }
+            static godot_variant trampoline_get__fieldRidArray(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldRidArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rid[]>(ret);
+            }
+            static void trampoline_set__fieldRidArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldRidArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rid[]>(value);
+            }
+            static godot_variant trampoline_get__fieldEmptyInt32Array(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldEmptyInt32Array;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<int[]>(ret);
+            }
+            static void trampoline_set__fieldEmptyInt32Array(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldEmptyInt32Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<int[]>(value);
+            }
+            static godot_variant trampoline_get__fieldArrayFromList(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldArrayFromList;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<int[]>(ret);
+            }
+            static void trampoline_set__fieldArrayFromList(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldArrayFromList = global::Godot.NativeInterop.VariantUtils.ConvertTo<int[]>(value);
+            }
+            static godot_variant trampoline_get__fieldVariant(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldVariant;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Variant>(ret);
+            }
+            static void trampoline_set__fieldVariant(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldVariant = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Variant>(value);
+            }
+            static godot_variant trampoline_get__fieldGodotObjectOrDerived(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldGodotObjectOrDerived;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.GodotObject>(ret);
+            }
+            static void trampoline_set__fieldGodotObjectOrDerived(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldGodotObjectOrDerived = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.GodotObject>(value);
+            }
+            static godot_variant trampoline_get__fieldGodotResourceTexture(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldGodotResourceTexture;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Texture>(ret);
+            }
+            static void trampoline_set__fieldGodotResourceTexture(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldGodotResourceTexture = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Texture>(value);
+            }
+            static godot_variant trampoline_get__fieldGodotResourceTextureWithInitializer(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldGodotResourceTextureWithInitializer;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Texture>(ret);
+            }
+            static void trampoline_set__fieldGodotResourceTextureWithInitializer(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldGodotResourceTextureWithInitializer = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Texture>(value);
+            }
+            static godot_variant trampoline_get__fieldStringName(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldStringName;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.StringName>(ret);
+            }
+            static void trampoline_set__fieldStringName(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldStringName = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName>(value);
+            }
+            static godot_variant trampoline_get__fieldNodePath(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldNodePath;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath>(ret);
+            }
+            static void trampoline_set__fieldNodePath(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldNodePath = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath>(value);
+            }
+            static godot_variant trampoline_get__fieldRid(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldRid;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rid>(ret);
+            }
+            static void trampoline_set__fieldRid(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldRid = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rid>(value);
+            }
+            static godot_variant trampoline_get__fieldGodotDictionary(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldGodotDictionary;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Collections.Dictionary>(ret);
+            }
+            static void trampoline_set__fieldGodotDictionary(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldGodotDictionary = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Collections.Dictionary>(value);
+            }
+            static godot_variant trampoline_get__fieldGodotArray(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldGodotArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Collections.Array>(ret);
+            }
+            static void trampoline_set__fieldGodotArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldGodotArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Collections.Array>(value);
+            }
+            static godot_variant trampoline_get__fieldGodotGenericDictionary(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldGodotGenericDictionary;
+                return global::Godot.NativeInterop.VariantUtils.CreateFromDictionary(ret);
+            }
+            static void trampoline_set__fieldGodotGenericDictionary(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldGodotGenericDictionary = global::Godot.NativeInterop.VariantUtils.ConvertToDictionary<string, bool>(value);
+            }
+            static godot_variant trampoline_get__fieldGodotGenericArray(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldGodotGenericArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFromArray(ret);
+            }
+            static void trampoline_set__fieldGodotGenericArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldGodotGenericArray = global::Godot.NativeInterop.VariantUtils.ConvertToArray<int>(value);
+            }
+            static godot_variant trampoline_get__notIgnoredField(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_notIgnoredField;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(ret);
+            }
+            static void trampoline_set__notIgnoredField(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_notIgnoredField = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
+            }
+            static godot_variant trampoline_get__fieldEmptyInt64Array(object godotObject)
+            {
+                var ret = ((global::ExportedFields)godotObject).@_fieldEmptyInt64Array;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<long[]>(ret);
+            }
+            static void trampoline_set__fieldEmptyInt64Array(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedFields)godotObject).@_fieldEmptyInt64Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<long[]>(value);
+            }
+            var aux_delegate_get__fieldBoolean = trampoline_get__fieldBoolean;
+            var aux_delegate_set__fieldBoolean = trampoline_set__fieldBoolean;
+            collector.TryAdd(PropertyName.@_fieldBoolean, new(aux_delegate_get__fieldBoolean.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldBoolean.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldChar = trampoline_get__fieldChar;
+            var aux_delegate_set__fieldChar = trampoline_set__fieldChar;
+            collector.TryAdd(PropertyName.@_fieldChar, new(aux_delegate_get__fieldChar.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldChar.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldSByte = trampoline_get__fieldSByte;
+            var aux_delegate_set__fieldSByte = trampoline_set__fieldSByte;
+            collector.TryAdd(PropertyName.@_fieldSByte, new(aux_delegate_get__fieldSByte.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldSByte.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldInt16 = trampoline_get__fieldInt16;
+            var aux_delegate_set__fieldInt16 = trampoline_set__fieldInt16;
+            collector.TryAdd(PropertyName.@_fieldInt16, new(aux_delegate_get__fieldInt16.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldInt16.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldInt32 = trampoline_get__fieldInt32;
+            var aux_delegate_set__fieldInt32 = trampoline_set__fieldInt32;
+            collector.TryAdd(PropertyName.@_fieldInt32, new(aux_delegate_get__fieldInt32.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldInt32.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldInt64 = trampoline_get__fieldInt64;
+            var aux_delegate_set__fieldInt64 = trampoline_set__fieldInt64;
+            collector.TryAdd(PropertyName.@_fieldInt64, new(aux_delegate_get__fieldInt64.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldInt64.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldByte = trampoline_get__fieldByte;
+            var aux_delegate_set__fieldByte = trampoline_set__fieldByte;
+            collector.TryAdd(PropertyName.@_fieldByte, new(aux_delegate_get__fieldByte.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldByte.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldUInt16 = trampoline_get__fieldUInt16;
+            var aux_delegate_set__fieldUInt16 = trampoline_set__fieldUInt16;
+            collector.TryAdd(PropertyName.@_fieldUInt16, new(aux_delegate_get__fieldUInt16.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldUInt16.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldUInt32 = trampoline_get__fieldUInt32;
+            var aux_delegate_set__fieldUInt32 = trampoline_set__fieldUInt32;
+            collector.TryAdd(PropertyName.@_fieldUInt32, new(aux_delegate_get__fieldUInt32.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldUInt32.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldUInt64 = trampoline_get__fieldUInt64;
+            var aux_delegate_set__fieldUInt64 = trampoline_set__fieldUInt64;
+            collector.TryAdd(PropertyName.@_fieldUInt64, new(aux_delegate_get__fieldUInt64.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldUInt64.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldSingle = trampoline_get__fieldSingle;
+            var aux_delegate_set__fieldSingle = trampoline_set__fieldSingle;
+            collector.TryAdd(PropertyName.@_fieldSingle, new(aux_delegate_get__fieldSingle.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldSingle.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldDouble = trampoline_get__fieldDouble;
+            var aux_delegate_set__fieldDouble = trampoline_set__fieldDouble;
+            collector.TryAdd(PropertyName.@_fieldDouble, new(aux_delegate_get__fieldDouble.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldDouble.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldString = trampoline_get__fieldString;
+            var aux_delegate_set__fieldString = trampoline_set__fieldString;
+            collector.TryAdd(PropertyName.@_fieldString, new(aux_delegate_get__fieldString.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldString.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldStaticImport = trampoline_get__fieldStaticImport;
+            var aux_delegate_set__fieldStaticImport = trampoline_set__fieldStaticImport;
+            collector.TryAdd(PropertyName.@_fieldStaticImport, new(aux_delegate_get__fieldStaticImport.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldStaticImport.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldVector2 = trampoline_get__fieldVector2;
+            var aux_delegate_set__fieldVector2 = trampoline_set__fieldVector2;
+            collector.TryAdd(PropertyName.@_fieldVector2, new(aux_delegate_get__fieldVector2.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldVector2.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldVector2I = trampoline_get__fieldVector2I;
+            var aux_delegate_set__fieldVector2I = trampoline_set__fieldVector2I;
+            collector.TryAdd(PropertyName.@_fieldVector2I, new(aux_delegate_get__fieldVector2I.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldVector2I.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldRect2 = trampoline_get__fieldRect2;
+            var aux_delegate_set__fieldRect2 = trampoline_set__fieldRect2;
+            collector.TryAdd(PropertyName.@_fieldRect2, new(aux_delegate_get__fieldRect2.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldRect2.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldRect2I = trampoline_get__fieldRect2I;
+            var aux_delegate_set__fieldRect2I = trampoline_set__fieldRect2I;
+            collector.TryAdd(PropertyName.@_fieldRect2I, new(aux_delegate_get__fieldRect2I.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldRect2I.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldTransform2D = trampoline_get__fieldTransform2D;
+            var aux_delegate_set__fieldTransform2D = trampoline_set__fieldTransform2D;
+            collector.TryAdd(PropertyName.@_fieldTransform2D, new(aux_delegate_get__fieldTransform2D.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldTransform2D.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldVector3 = trampoline_get__fieldVector3;
+            var aux_delegate_set__fieldVector3 = trampoline_set__fieldVector3;
+            collector.TryAdd(PropertyName.@_fieldVector3, new(aux_delegate_get__fieldVector3.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldVector3.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldVector3I = trampoline_get__fieldVector3I;
+            var aux_delegate_set__fieldVector3I = trampoline_set__fieldVector3I;
+            collector.TryAdd(PropertyName.@_fieldVector3I, new(aux_delegate_get__fieldVector3I.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldVector3I.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldBasis = trampoline_get__fieldBasis;
+            var aux_delegate_set__fieldBasis = trampoline_set__fieldBasis;
+            collector.TryAdd(PropertyName.@_fieldBasis, new(aux_delegate_get__fieldBasis.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldBasis.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldQuaternion = trampoline_get__fieldQuaternion;
+            var aux_delegate_set__fieldQuaternion = trampoline_set__fieldQuaternion;
+            collector.TryAdd(PropertyName.@_fieldQuaternion, new(aux_delegate_get__fieldQuaternion.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldQuaternion.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldTransform3D = trampoline_get__fieldTransform3D;
+            var aux_delegate_set__fieldTransform3D = trampoline_set__fieldTransform3D;
+            collector.TryAdd(PropertyName.@_fieldTransform3D, new(aux_delegate_get__fieldTransform3D.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldTransform3D.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldVector4 = trampoline_get__fieldVector4;
+            var aux_delegate_set__fieldVector4 = trampoline_set__fieldVector4;
+            collector.TryAdd(PropertyName.@_fieldVector4, new(aux_delegate_get__fieldVector4.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldVector4.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldVector4I = trampoline_get__fieldVector4I;
+            var aux_delegate_set__fieldVector4I = trampoline_set__fieldVector4I;
+            collector.TryAdd(PropertyName.@_fieldVector4I, new(aux_delegate_get__fieldVector4I.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldVector4I.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldProjection = trampoline_get__fieldProjection;
+            var aux_delegate_set__fieldProjection = trampoline_set__fieldProjection;
+            collector.TryAdd(PropertyName.@_fieldProjection, new(aux_delegate_get__fieldProjection.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldProjection.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldAabb = trampoline_get__fieldAabb;
+            var aux_delegate_set__fieldAabb = trampoline_set__fieldAabb;
+            collector.TryAdd(PropertyName.@_fieldAabb, new(aux_delegate_get__fieldAabb.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldAabb.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldColor = trampoline_get__fieldColor;
+            var aux_delegate_set__fieldColor = trampoline_set__fieldColor;
+            collector.TryAdd(PropertyName.@_fieldColor, new(aux_delegate_get__fieldColor.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldColor.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldPlane = trampoline_get__fieldPlane;
+            var aux_delegate_set__fieldPlane = trampoline_set__fieldPlane;
+            collector.TryAdd(PropertyName.@_fieldPlane, new(aux_delegate_get__fieldPlane.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldPlane.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldCallable = trampoline_get__fieldCallable;
+            var aux_delegate_set__fieldCallable = trampoline_set__fieldCallable;
+            collector.TryAdd(PropertyName.@_fieldCallable, new(aux_delegate_get__fieldCallable.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldCallable.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldSignal = trampoline_get__fieldSignal;
+            var aux_delegate_set__fieldSignal = trampoline_set__fieldSignal;
+            collector.TryAdd(PropertyName.@_fieldSignal, new(aux_delegate_get__fieldSignal.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldSignal.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldEnum = trampoline_get__fieldEnum;
+            var aux_delegate_set__fieldEnum = trampoline_set__fieldEnum;
+            collector.TryAdd(PropertyName.@_fieldEnum, new(aux_delegate_get__fieldEnum.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldEnum.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldFlagsEnum = trampoline_get__fieldFlagsEnum;
+            var aux_delegate_set__fieldFlagsEnum = trampoline_set__fieldFlagsEnum;
+            collector.TryAdd(PropertyName.@_fieldFlagsEnum, new(aux_delegate_get__fieldFlagsEnum.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldFlagsEnum.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldByteArray = trampoline_get__fieldByteArray;
+            var aux_delegate_set__fieldByteArray = trampoline_set__fieldByteArray;
+            collector.TryAdd(PropertyName.@_fieldByteArray, new(aux_delegate_get__fieldByteArray.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldByteArray.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldInt32Array = trampoline_get__fieldInt32Array;
+            var aux_delegate_set__fieldInt32Array = trampoline_set__fieldInt32Array;
+            collector.TryAdd(PropertyName.@_fieldInt32Array, new(aux_delegate_get__fieldInt32Array.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldInt32Array.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldInt64Array = trampoline_get__fieldInt64Array;
+            var aux_delegate_set__fieldInt64Array = trampoline_set__fieldInt64Array;
+            collector.TryAdd(PropertyName.@_fieldInt64Array, new(aux_delegate_get__fieldInt64Array.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldInt64Array.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldSingleArray = trampoline_get__fieldSingleArray;
+            var aux_delegate_set__fieldSingleArray = trampoline_set__fieldSingleArray;
+            collector.TryAdd(PropertyName.@_fieldSingleArray, new(aux_delegate_get__fieldSingleArray.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldSingleArray.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldDoubleArray = trampoline_get__fieldDoubleArray;
+            var aux_delegate_set__fieldDoubleArray = trampoline_set__fieldDoubleArray;
+            collector.TryAdd(PropertyName.@_fieldDoubleArray, new(aux_delegate_get__fieldDoubleArray.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldDoubleArray.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldStringArray = trampoline_get__fieldStringArray;
+            var aux_delegate_set__fieldStringArray = trampoline_set__fieldStringArray;
+            collector.TryAdd(PropertyName.@_fieldStringArray, new(aux_delegate_get__fieldStringArray.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldStringArray.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldStringArrayEnum = trampoline_get__fieldStringArrayEnum;
+            var aux_delegate_set__fieldStringArrayEnum = trampoline_set__fieldStringArrayEnum;
+            collector.TryAdd(PropertyName.@_fieldStringArrayEnum, new(aux_delegate_get__fieldStringArrayEnum.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldStringArrayEnum.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldVector2Array = trampoline_get__fieldVector2Array;
+            var aux_delegate_set__fieldVector2Array = trampoline_set__fieldVector2Array;
+            collector.TryAdd(PropertyName.@_fieldVector2Array, new(aux_delegate_get__fieldVector2Array.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldVector2Array.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldVector3Array = trampoline_get__fieldVector3Array;
+            var aux_delegate_set__fieldVector3Array = trampoline_set__fieldVector3Array;
+            collector.TryAdd(PropertyName.@_fieldVector3Array, new(aux_delegate_get__fieldVector3Array.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldVector3Array.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldColorArray = trampoline_get__fieldColorArray;
+            var aux_delegate_set__fieldColorArray = trampoline_set__fieldColorArray;
+            collector.TryAdd(PropertyName.@_fieldColorArray, new(aux_delegate_get__fieldColorArray.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldColorArray.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldGodotObjectOrDerivedArray = trampoline_get__fieldGodotObjectOrDerivedArray;
+            var aux_delegate_set__fieldGodotObjectOrDerivedArray = trampoline_set__fieldGodotObjectOrDerivedArray;
+            collector.TryAdd(PropertyName.@_fieldGodotObjectOrDerivedArray, new(aux_delegate_get__fieldGodotObjectOrDerivedArray.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldGodotObjectOrDerivedArray.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldStringNameArray = trampoline_get__fieldStringNameArray;
+            var aux_delegate_set__fieldStringNameArray = trampoline_set__fieldStringNameArray;
+            collector.TryAdd(PropertyName.@_fieldStringNameArray, new(aux_delegate_get__fieldStringNameArray.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldStringNameArray.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldNodePathArray = trampoline_get__fieldNodePathArray;
+            var aux_delegate_set__fieldNodePathArray = trampoline_set__fieldNodePathArray;
+            collector.TryAdd(PropertyName.@_fieldNodePathArray, new(aux_delegate_get__fieldNodePathArray.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldNodePathArray.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldRidArray = trampoline_get__fieldRidArray;
+            var aux_delegate_set__fieldRidArray = trampoline_set__fieldRidArray;
+            collector.TryAdd(PropertyName.@_fieldRidArray, new(aux_delegate_get__fieldRidArray.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldRidArray.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldEmptyInt32Array = trampoline_get__fieldEmptyInt32Array;
+            var aux_delegate_set__fieldEmptyInt32Array = trampoline_set__fieldEmptyInt32Array;
+            collector.TryAdd(PropertyName.@_fieldEmptyInt32Array, new(aux_delegate_get__fieldEmptyInt32Array.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldEmptyInt32Array.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldArrayFromList = trampoline_get__fieldArrayFromList;
+            var aux_delegate_set__fieldArrayFromList = trampoline_set__fieldArrayFromList;
+            collector.TryAdd(PropertyName.@_fieldArrayFromList, new(aux_delegate_get__fieldArrayFromList.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldArrayFromList.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldVariant = trampoline_get__fieldVariant;
+            var aux_delegate_set__fieldVariant = trampoline_set__fieldVariant;
+            collector.TryAdd(PropertyName.@_fieldVariant, new(aux_delegate_get__fieldVariant.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldVariant.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldGodotObjectOrDerived = trampoline_get__fieldGodotObjectOrDerived;
+            var aux_delegate_set__fieldGodotObjectOrDerived = trampoline_set__fieldGodotObjectOrDerived;
+            collector.TryAdd(PropertyName.@_fieldGodotObjectOrDerived, new(aux_delegate_get__fieldGodotObjectOrDerived.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldGodotObjectOrDerived.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldGodotResourceTexture = trampoline_get__fieldGodotResourceTexture;
+            var aux_delegate_set__fieldGodotResourceTexture = trampoline_set__fieldGodotResourceTexture;
+            collector.TryAdd(PropertyName.@_fieldGodotResourceTexture, new(aux_delegate_get__fieldGodotResourceTexture.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldGodotResourceTexture.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldGodotResourceTextureWithInitializer = trampoline_get__fieldGodotResourceTextureWithInitializer;
+            var aux_delegate_set__fieldGodotResourceTextureWithInitializer = trampoline_set__fieldGodotResourceTextureWithInitializer;
+            collector.TryAdd(PropertyName.@_fieldGodotResourceTextureWithInitializer, new(aux_delegate_get__fieldGodotResourceTextureWithInitializer.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldGodotResourceTextureWithInitializer.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldStringName = trampoline_get__fieldStringName;
+            var aux_delegate_set__fieldStringName = trampoline_set__fieldStringName;
+            collector.TryAdd(PropertyName.@_fieldStringName, new(aux_delegate_get__fieldStringName.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldStringName.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldNodePath = trampoline_get__fieldNodePath;
+            var aux_delegate_set__fieldNodePath = trampoline_set__fieldNodePath;
+            collector.TryAdd(PropertyName.@_fieldNodePath, new(aux_delegate_get__fieldNodePath.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldNodePath.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldRid = trampoline_get__fieldRid;
+            var aux_delegate_set__fieldRid = trampoline_set__fieldRid;
+            collector.TryAdd(PropertyName.@_fieldRid, new(aux_delegate_get__fieldRid.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldRid.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldGodotDictionary = trampoline_get__fieldGodotDictionary;
+            var aux_delegate_set__fieldGodotDictionary = trampoline_set__fieldGodotDictionary;
+            collector.TryAdd(PropertyName.@_fieldGodotDictionary, new(aux_delegate_get__fieldGodotDictionary.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldGodotDictionary.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldGodotArray = trampoline_get__fieldGodotArray;
+            var aux_delegate_set__fieldGodotArray = trampoline_set__fieldGodotArray;
+            collector.TryAdd(PropertyName.@_fieldGodotArray, new(aux_delegate_get__fieldGodotArray.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldGodotArray.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldGodotGenericDictionary = trampoline_get__fieldGodotGenericDictionary;
+            var aux_delegate_set__fieldGodotGenericDictionary = trampoline_set__fieldGodotGenericDictionary;
+            collector.TryAdd(PropertyName.@_fieldGodotGenericDictionary, new(aux_delegate_get__fieldGodotGenericDictionary.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldGodotGenericDictionary.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldGodotGenericArray = trampoline_get__fieldGodotGenericArray;
+            var aux_delegate_set__fieldGodotGenericArray = trampoline_set__fieldGodotGenericArray;
+            collector.TryAdd(PropertyName.@_fieldGodotGenericArray, new(aux_delegate_get__fieldGodotGenericArray.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldGodotGenericArray.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__notIgnoredField = trampoline_get__notIgnoredField;
+            var aux_delegate_set__notIgnoredField = trampoline_set__notIgnoredField;
+            collector.TryAdd(PropertyName.@_notIgnoredField, new(aux_delegate_get__notIgnoredField.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__notIgnoredField.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get__fieldEmptyInt64Array = trampoline_get__fieldEmptyInt64Array;
+            var aux_delegate_set__fieldEmptyInt64Array = trampoline_set__fieldEmptyInt64Array;
+            collector.TryAdd(PropertyName.@_fieldEmptyInt64Array, new(aux_delegate_get__fieldEmptyInt64Array.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__fieldEmptyInt64Array.Method.MethodHandle.GetFunctionPointer()));
         }
-        if (name == PropertyName.@_fieldChar) {
-            this.@_fieldChar = global::Godot.NativeInterop.VariantUtils.ConvertTo<char>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldSByte) {
-            this.@_fieldSByte = global::Godot.NativeInterop.VariantUtils.ConvertTo<sbyte>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldInt16) {
-            this.@_fieldInt16 = global::Godot.NativeInterop.VariantUtils.ConvertTo<short>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldInt32) {
-            this.@_fieldInt32 = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldInt64) {
-            this.@_fieldInt64 = global::Godot.NativeInterop.VariantUtils.ConvertTo<long>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldByte) {
-            this.@_fieldByte = global::Godot.NativeInterop.VariantUtils.ConvertTo<byte>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldUInt16) {
-            this.@_fieldUInt16 = global::Godot.NativeInterop.VariantUtils.ConvertTo<ushort>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldUInt32) {
-            this.@_fieldUInt32 = global::Godot.NativeInterop.VariantUtils.ConvertTo<uint>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldUInt64) {
-            this.@_fieldUInt64 = global::Godot.NativeInterop.VariantUtils.ConvertTo<ulong>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldSingle) {
-            this.@_fieldSingle = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldDouble) {
-            this.@_fieldDouble = global::Godot.NativeInterop.VariantUtils.ConvertTo<double>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldString) {
-            this.@_fieldString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldStaticImport) {
-            this.@_fieldStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldVector2) {
-            this.@_fieldVector2 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldVector2I) {
-            this.@_fieldVector2I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2I>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldRect2) {
-            this.@_fieldRect2 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rect2>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldRect2I) {
-            this.@_fieldRect2I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rect2I>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldTransform2D) {
-            this.@_fieldTransform2D = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Transform2D>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldVector3) {
-            this.@_fieldVector3 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldVector3I) {
-            this.@_fieldVector3I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3I>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldBasis) {
-            this.@_fieldBasis = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Basis>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldQuaternion) {
-            this.@_fieldQuaternion = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Quaternion>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldTransform3D) {
-            this.@_fieldTransform3D = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Transform3D>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldVector4) {
-            this.@_fieldVector4 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector4>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldVector4I) {
-            this.@_fieldVector4I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector4I>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldProjection) {
-            this.@_fieldProjection = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Projection>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldAabb) {
-            this.@_fieldAabb = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Aabb>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldColor) {
-            this.@_fieldColor = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Color>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldPlane) {
-            this.@_fieldPlane = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Plane>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldCallable) {
-            this.@_fieldCallable = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldSignal) {
-            this.@_fieldSignal = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Signal>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldEnum) {
-            this.@_fieldEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::ExportedFields.MyEnum>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldFlagsEnum) {
-            this.@_fieldFlagsEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::ExportedFields.MyFlagsEnum>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldByteArray) {
-            this.@_fieldByteArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<byte[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldInt32Array) {
-            this.@_fieldInt32Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<int[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldInt64Array) {
-            this.@_fieldInt64Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<long[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldSingleArray) {
-            this.@_fieldSingleArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<float[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldDoubleArray) {
-            this.@_fieldDoubleArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<double[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldStringArray) {
-            this.@_fieldStringArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<string[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldStringArrayEnum) {
-            this.@_fieldStringArrayEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<string[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldVector2Array) {
-            this.@_fieldVector2Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldVector3Array) {
-            this.@_fieldVector3Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldColorArray) {
-            this.@_fieldColorArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Color[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldGodotObjectOrDerivedArray) {
-            this.@_fieldGodotObjectOrDerivedArray = global::Godot.NativeInterop.VariantUtils.ConvertToSystemArrayOfGodotObject<global::Godot.GodotObject>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldStringNameArray) {
-            this.@_fieldStringNameArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldNodePathArray) {
-            this.@_fieldNodePathArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldRidArray) {
-            this.@_fieldRidArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rid[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldEmptyInt32Array) {
-            this.@_fieldEmptyInt32Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<int[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldArrayFromList) {
-            this.@_fieldArrayFromList = global::Godot.NativeInterop.VariantUtils.ConvertTo<int[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldVariant) {
-            this.@_fieldVariant = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Variant>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldGodotObjectOrDerived) {
-            this.@_fieldGodotObjectOrDerived = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.GodotObject>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldGodotResourceTexture) {
-            this.@_fieldGodotResourceTexture = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Texture>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldGodotResourceTextureWithInitializer) {
-            this.@_fieldGodotResourceTextureWithInitializer = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Texture>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldStringName) {
-            this.@_fieldStringName = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldNodePath) {
-            this.@_fieldNodePath = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldRid) {
-            this.@_fieldRid = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rid>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldGodotDictionary) {
-            this.@_fieldGodotDictionary = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Collections.Dictionary>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldGodotArray) {
-            this.@_fieldGodotArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Collections.Array>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldGodotGenericDictionary) {
-            this.@_fieldGodotGenericDictionary = global::Godot.NativeInterop.VariantUtils.ConvertToDictionary<string, bool>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldGodotGenericArray) {
-            this.@_fieldGodotGenericArray = global::Godot.NativeInterop.VariantUtils.ConvertToArray<int>(value);
-            return true;
-        }
-        if (name == PropertyName.@_notIgnoredField) {
-            this.@_notIgnoredField = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fieldEmptyInt64Array) {
-            this.@_fieldEmptyInt64Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<long[]>(value);
-            return true;
-        }
-        return base.SetGodotClassPropertyValue(name, value);
-    }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
-    {
-        if (name == PropertyName.@_fieldBoolean) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<bool>(this.@_fieldBoolean);
-            return true;
-        }
-        if (name == PropertyName.@_fieldChar) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<char>(this.@_fieldChar);
-            return true;
-        }
-        if (name == PropertyName.@_fieldSByte) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<sbyte>(this.@_fieldSByte);
-            return true;
-        }
-        if (name == PropertyName.@_fieldInt16) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<short>(this.@_fieldInt16);
-            return true;
-        }
-        if (name == PropertyName.@_fieldInt32) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this.@_fieldInt32);
-            return true;
-        }
-        if (name == PropertyName.@_fieldInt64) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<long>(this.@_fieldInt64);
-            return true;
-        }
-        if (name == PropertyName.@_fieldByte) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<byte>(this.@_fieldByte);
-            return true;
-        }
-        if (name == PropertyName.@_fieldUInt16) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<ushort>(this.@_fieldUInt16);
-            return true;
-        }
-        if (name == PropertyName.@_fieldUInt32) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<uint>(this.@_fieldUInt32);
-            return true;
-        }
-        if (name == PropertyName.@_fieldUInt64) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<ulong>(this.@_fieldUInt64);
-            return true;
-        }
-        if (name == PropertyName.@_fieldSingle) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@_fieldSingle);
-            return true;
-        }
-        if (name == PropertyName.@_fieldDouble) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<double>(this.@_fieldDouble);
-            return true;
-        }
-        if (name == PropertyName.@_fieldString) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@_fieldString);
-            return true;
-        }
-        if (name == PropertyName.@_fieldStaticImport) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@_fieldStaticImport);
-            return true;
-        }
-        if (name == PropertyName.@_fieldVector2) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2>(this.@_fieldVector2);
-            return true;
-        }
-        if (name == PropertyName.@_fieldVector2I) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2I>(this.@_fieldVector2I);
-            return true;
-        }
-        if (name == PropertyName.@_fieldRect2) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rect2>(this.@_fieldRect2);
-            return true;
-        }
-        if (name == PropertyName.@_fieldRect2I) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rect2I>(this.@_fieldRect2I);
-            return true;
-        }
-        if (name == PropertyName.@_fieldTransform2D) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Transform2D>(this.@_fieldTransform2D);
-            return true;
-        }
-        if (name == PropertyName.@_fieldVector3) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3>(this.@_fieldVector3);
-            return true;
-        }
-        if (name == PropertyName.@_fieldVector3I) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3I>(this.@_fieldVector3I);
-            return true;
-        }
-        if (name == PropertyName.@_fieldBasis) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Basis>(this.@_fieldBasis);
-            return true;
-        }
-        if (name == PropertyName.@_fieldQuaternion) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Quaternion>(this.@_fieldQuaternion);
-            return true;
-        }
-        if (name == PropertyName.@_fieldTransform3D) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Transform3D>(this.@_fieldTransform3D);
-            return true;
-        }
-        if (name == PropertyName.@_fieldVector4) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector4>(this.@_fieldVector4);
-            return true;
-        }
-        if (name == PropertyName.@_fieldVector4I) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector4I>(this.@_fieldVector4I);
-            return true;
-        }
-        if (name == PropertyName.@_fieldProjection) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Projection>(this.@_fieldProjection);
-            return true;
-        }
-        if (name == PropertyName.@_fieldAabb) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Aabb>(this.@_fieldAabb);
-            return true;
-        }
-        if (name == PropertyName.@_fieldColor) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Color>(this.@_fieldColor);
-            return true;
-        }
-        if (name == PropertyName.@_fieldPlane) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Plane>(this.@_fieldPlane);
-            return true;
-        }
-        if (name == PropertyName.@_fieldCallable) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@_fieldCallable);
-            return true;
-        }
-        if (name == PropertyName.@_fieldSignal) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Signal>(this.@_fieldSignal);
-            return true;
-        }
-        if (name == PropertyName.@_fieldEnum) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::ExportedFields.MyEnum>(this.@_fieldEnum);
-            return true;
-        }
-        if (name == PropertyName.@_fieldFlagsEnum) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::ExportedFields.MyFlagsEnum>(this.@_fieldFlagsEnum);
-            return true;
-        }
-        if (name == PropertyName.@_fieldByteArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<byte[]>(this.@_fieldByteArray);
-            return true;
-        }
-        if (name == PropertyName.@_fieldInt32Array) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int[]>(this.@_fieldInt32Array);
-            return true;
-        }
-        if (name == PropertyName.@_fieldInt64Array) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<long[]>(this.@_fieldInt64Array);
-            return true;
-        }
-        if (name == PropertyName.@_fieldSingleArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float[]>(this.@_fieldSingleArray);
-            return true;
-        }
-        if (name == PropertyName.@_fieldDoubleArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<double[]>(this.@_fieldDoubleArray);
-            return true;
-        }
-        if (name == PropertyName.@_fieldStringArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string[]>(this.@_fieldStringArray);
-            return true;
-        }
-        if (name == PropertyName.@_fieldStringArrayEnum) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string[]>(this.@_fieldStringArrayEnum);
-            return true;
-        }
-        if (name == PropertyName.@_fieldVector2Array) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2[]>(this.@_fieldVector2Array);
-            return true;
-        }
-        if (name == PropertyName.@_fieldVector3Array) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3[]>(this.@_fieldVector3Array);
-            return true;
-        }
-        if (name == PropertyName.@_fieldColorArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Color[]>(this.@_fieldColorArray);
-            return true;
-        }
-        if (name == PropertyName.@_fieldGodotObjectOrDerivedArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFromSystemArrayOfGodotObject(this.@_fieldGodotObjectOrDerivedArray);
-            return true;
-        }
-        if (name == PropertyName.@_fieldStringNameArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.StringName[]>(this.@_fieldStringNameArray);
-            return true;
-        }
-        if (name == PropertyName.@_fieldNodePathArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath[]>(this.@_fieldNodePathArray);
-            return true;
-        }
-        if (name == PropertyName.@_fieldRidArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rid[]>(this.@_fieldRidArray);
-            return true;
-        }
-        if (name == PropertyName.@_fieldEmptyInt32Array) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int[]>(this.@_fieldEmptyInt32Array);
-            return true;
-        }
-        if (name == PropertyName.@_fieldArrayFromList) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int[]>(this.@_fieldArrayFromList);
-            return true;
-        }
-        if (name == PropertyName.@_fieldVariant) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Variant>(this.@_fieldVariant);
-            return true;
-        }
-        if (name == PropertyName.@_fieldGodotObjectOrDerived) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.GodotObject>(this.@_fieldGodotObjectOrDerived);
-            return true;
-        }
-        if (name == PropertyName.@_fieldGodotResourceTexture) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Texture>(this.@_fieldGodotResourceTexture);
-            return true;
-        }
-        if (name == PropertyName.@_fieldGodotResourceTextureWithInitializer) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Texture>(this.@_fieldGodotResourceTextureWithInitializer);
-            return true;
-        }
-        if (name == PropertyName.@_fieldStringName) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.StringName>(this.@_fieldStringName);
-            return true;
-        }
-        if (name == PropertyName.@_fieldNodePath) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath>(this.@_fieldNodePath);
-            return true;
-        }
-        if (name == PropertyName.@_fieldRid) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rid>(this.@_fieldRid);
-            return true;
-        }
-        if (name == PropertyName.@_fieldGodotDictionary) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Collections.Dictionary>(this.@_fieldGodotDictionary);
-            return true;
-        }
-        if (name == PropertyName.@_fieldGodotArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Collections.Array>(this.@_fieldGodotArray);
-            return true;
-        }
-        if (name == PropertyName.@_fieldGodotGenericDictionary) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFromDictionary(this.@_fieldGodotGenericDictionary);
-            return true;
-        }
-        if (name == PropertyName.@_fieldGodotGenericArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFromArray(this.@_fieldGodotGenericArray);
-            return true;
-        }
-        if (name == PropertyName.@_notIgnoredField) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this.@_notIgnoredField);
-            return true;
-        }
-        if (name == PropertyName.@_fieldEmptyInt64Array) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<long[]>(this.@_fieldEmptyInt64Array);
-            return true;
-        }
-        return base.GetGodotClassPropertyValue(name, out value);
     }
     /// <summary>
     /// Get the property information for all the properties declared in this class.

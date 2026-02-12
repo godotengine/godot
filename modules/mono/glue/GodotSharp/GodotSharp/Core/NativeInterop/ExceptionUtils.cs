@@ -30,7 +30,12 @@ namespace Godot.NativeInterop
             }
         }
 
-        private record struct StackInfoTuple(string? File, string Func, int Line);
+        private readonly struct StackInfoTuple(string? file, string func, int line)
+        {
+            public string? File { get; } = file;
+            public string Func { get; } = func;
+            public int Line { get; } = line;
+        }
 
         private static void CollectExceptionInfo(Exception exception, List<StackInfoTuple> globalFrames,
             StringBuilder excMsg)
@@ -138,7 +143,8 @@ namespace Godot.NativeInterop
         }
 
         [Conditional("DEBUG")]
-        public unsafe static void DebugCheckCallError(godot_string_name method, IntPtr instance, godot_variant** args, int argCount, godot_variant_call_error error)
+        public unsafe static void DebugCheckCallError(godot_string_name method, IntPtr instance, godot_variant** args,
+            int argCount, godot_variant_call_error error)
         {
             if (error.Error != godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_OK)
             {
@@ -150,23 +156,27 @@ namespace Godot.NativeInterop
         }
 
         [Conditional("DEBUG")]
-        public unsafe static void DebugCheckCallError(in godot_callable callable, godot_variant** args, int argCount, godot_variant_call_error error)
+        public unsafe static void DebugCheckCallError(in godot_callable callable, godot_variant** args, int argCount,
+            godot_variant_call_error error)
         {
             if (error.Error != godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_OK)
             {
-                using godot_variant callableVariant = VariantUtils.CreateFromCallableTakingOwnershipOfDisposableValue(callable);
+                using godot_variant callableVariant =
+                    VariantUtils.CreateFromCallableTakingOwnershipOfDisposableValue(callable);
                 string where = $"callable '{VariantUtils.ConvertToString(callableVariant)}'";
                 string errorText = GetCallErrorMessage(error, where, args);
                 GD.PushError(errorText);
             }
         }
 
-        private unsafe static string GetCallErrorWhere(ref godot_variant_call_error error, godot_string_name method, godot_variant* instance, godot_variant** args, int argCount)
+        private unsafe static string GetCallErrorWhere(ref godot_variant_call_error error, godot_string_name method,
+            godot_variant* instance, godot_variant** args, int argCount)
         {
             string? methodstr = null;
             string basestr = GetVariantTypeName(instance);
 
-            if (method == GodotObject.MethodName.Call || (basestr == "Godot.TreeItem" && method == TreeItem.MethodName.CallRecursive))
+            if (method == GodotObject.MethodName.Call ||
+                (basestr == "Godot.TreeItem" && method == TreeItem.MethodName.CallRecursive))
             {
                 if (argCount >= 1)
                 {
@@ -186,7 +196,8 @@ namespace Godot.NativeInterop
             return $"function '{methodstr}' in base '{basestr}'";
         }
 
-        private unsafe static string GetCallErrorMessage(godot_variant_call_error error, string where, godot_variant** args)
+        private unsafe static string GetCallErrorMessage(godot_variant_call_error error, string where,
+            godot_variant** args)
         {
             switch (error.Error)
             {
@@ -197,16 +208,21 @@ namespace Godot.NativeInterop
 #if DEBUG
                     if (error.Expected == Variant.Type.Object && args[errorarg]->Type == error.Expected)
                     {
-                        return $"Invalid type in {where}. The Object-derived class of argument {errorarg + 1} (" + GetVariantTypeName(args[errorarg]) + ") is not a subclass of the expected argument class.";
+                        return $"Invalid type in {where}. The Object-derived class of argument {errorarg + 1} (" +
+                               GetVariantTypeName(args[errorarg]) +
+                               ") is not a subclass of the expected argument class.";
                     }
                     else if (error.Expected == Variant.Type.Array && args[errorarg]->Type == error.Expected)
                     {
-                        return $"Invalid type in {where}. The array of argument {errorarg + 1} (" + GetVariantTypeName(args[errorarg]) + ") does not have the same element type as the expected typed array argument.";
+                        return $"Invalid type in {where}. The array of argument {errorarg + 1} (" +
+                               GetVariantTypeName(args[errorarg]) +
+                               ") does not have the same element type as the expected typed array argument.";
                     }
                     else
 #endif
                     {
-                        return $"Invalid type in {where}. Cannot convert argument {errorarg + 1} from {args[errorarg]->Type} to {error.Expected}.";
+                        return
+                            $"Invalid type in {where}. Cannot convert argument {errorarg + 1} from {args[errorarg]->Type} to {error.Expected}.";
                     }
                 }
                 case godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_TOO_MANY_ARGUMENTS:
