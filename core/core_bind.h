@@ -86,6 +86,12 @@ public:
 	Vector<String> list_directory(const String &p_directory);
 
 	ResourceLoader() { singleton = this; }
+
+#ifndef DISABLE_DEPRECATED
+protected:
+	Error _load_threaded_request_115964(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, CacheMode p_cache_mode = CACHE_MODE_REUSE);
+	static void _bind_compatibility_methods();
+#endif
 };
 
 class ResourceSaver : public Object {

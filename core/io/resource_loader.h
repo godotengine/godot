@@ -139,7 +139,7 @@ public:
 
 	static const int BINARY_MUTEX_TAG = 1;
 
-	static Ref<LoadToken> _load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, bool p_queue_front, ResourceFormatLoader::CacheMode p_cache_mode, bool p_for_user = false);
+	static Ref<LoadToken> _load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode, bool p_queue_front, bool p_for_user = false);
 	static Ref<Resource> _load_complete(LoadToken &p_load_token, Error *r_error);
 
 private:
