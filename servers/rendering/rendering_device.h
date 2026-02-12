@@ -1299,7 +1299,8 @@ private:
 		RDG::ResourceTracker *draw_tracker = nullptr;
 		Vector<RDG::ResourceTracker *> draw_trackers;
 
-		RID scratch_buffer;
+		// Scratch buffer used during build, owned by the AS.
+		RDD::BufferID scratch_buffer;
 		RID vertex_array;
 		RID index_array;
 		RID transform_buffer;

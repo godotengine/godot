@@ -427,23 +427,28 @@ Error RenderingDevice::acceleration_structure_build(RID p_acceleration_structure
 
 	uint64_t scratch_size = driver->acceleration_structure_get_scratch_size_bytes(accel->driver_id);
 
-	const Buffer *scratch_buffer = storage_buffer_owner.get_or_null(accel->scratch_buffer);
-	if (scratch_buffer && driver->buffer_get_allocation_size(scratch_buffer->driver_id) < scratch_size) {
-		scratch_buffer = nullptr;
-		free_rid(accel->scratch_buffer);
-		accel->scratch_buffer = RID();
-	}
-	if (accel->scratch_buffer == RID()) {
-		accel->scratch_buffer = storage_buffer_create(scratch_size, { nullptr, 0 }, RDD::BUFFER_USAGE_STORAGE_BIT | RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT);
-		ERR_FAIL_COND_V(accel->scratch_buffer == RID(), ERR_CANT_CREATE);
-	}
-
-	if (scratch_buffer == nullptr) {
-		scratch_buffer = storage_buffer_owner.get_or_null(accel->scratch_buffer);
-		ERR_FAIL_NULL_V_MSG(scratch_buffer, ERR_CANT_CREATE, "Scratch buffer is not valid.");
+	if (accel->scratch_buffer) {
+		uint64_t scratch_buffer_size = driver->buffer_get_allocation_size(accel->scratch_buffer);
+		if (scratch_buffer_size < scratch_size) {
+			Buffer to_dispose = Buffer();
+			to_dispose.driver_id = accel->scratch_buffer;
+			DEV_ASSERT(scratch_buffer_size <= UINT32_MAX);
+			to_dispose.size = scratch_buffer_size;
+			frames[frame].buffers_to_dispose_of.push_back(to_dispose);
+			accel->scratch_buffer = RDD::BufferID();
+		}
 	}
 
-	draw_graph.add_acceleration_structure_build(accel->driver_id, scratch_buffer->driver_id, accel->draw_tracker, accel->draw_trackers);
+	if (!accel->scratch_buffer) {
+		accel->scratch_buffer = driver->buffer_create(scratch_size, RDD::BUFFER_USAGE_STORAGE_BIT | RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT, RDD::MEMORY_ALLOCATION_TYPE_GPU, frames_drawn);
+		ERR_FAIL_COND_V(!accel->scratch_buffer, ERR_CANT_CREATE);
+
+		_THREAD_SAFE_LOCK_
+		buffer_memory += scratch_size;
+		_THREAD_SAFE_UNLOCK_
+	}
+
+	draw_graph.add_acceleration_structure_build(accel->driver_id, accel->scratch_buffer, accel->draw_tracker, accel->draw_trackers);
 
 	return OK;
 }
@@ -7204,10 +7209,16 @@ void RenderingDevice::_free_pending_resources(int p_frame) {
 	while (frames[p_frame].acceleration_structures_to_dispose_of.front()) {
 		AccelerationStructure &acceleration_structure = frames[p_frame].acceleration_structures_to_dispose_of.front()->get();
 
-		if (acceleration_structure.scratch_buffer != RID()) {
-			free_rid(acceleration_structure.scratch_buffer);
-		}
 		driver->acceleration_structure_free(acceleration_structure.driver_id);
+
+		if (acceleration_structure.scratch_buffer) {
+			size_t scratch_size = driver->buffer_get_allocation_size(acceleration_structure.scratch_buffer);
+			_THREAD_SAFE_LOCK_
+			buffer_memory -= scratch_size;
+			_THREAD_SAFE_UNLOCK_
+
+			driver->buffer_free(acceleration_structure.scratch_buffer);
+		}
 
 		frames[p_frame].acceleration_structures_to_dispose_of.pop_front();
 	}
