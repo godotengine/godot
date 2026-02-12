@@ -2655,6 +2655,15 @@ void OpenXRAPI::end_frame() {
 		layer_flags |= XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
 	}
 
+	void *projection_layer_next_pointer = nullptr;
+	for (OpenXRExtensionWrapper *extension : projection_layer_extensions) {
+		void *np = extension->set_projection_layer_and_get_next_pointer(projection_layer_next_pointer);
+		if (np != nullptr) {
+			projection_layer_next_pointer = np;
+		}
+	}
+
+	render_state.projection_layer.next = projection_layer_next_pointer;
 	render_state.projection_layer.layerFlags = layer_flags;
 	render_state.projection_layer.space = render_state.play_space;
 	render_state.projection_layer.viewCount = (uint32_t)render_state.projection_views.size();
@@ -2905,6 +2914,7 @@ OpenXRAPI::OpenXRAPI() {
 OpenXRAPI::~OpenXRAPI() {
 	composition_layer_providers.clear();
 	frame_info_extensions.clear();
+	projection_layer_extensions.clear();
 	supported_extensions.clear();
 	layer_properties.clear();
 
@@ -3957,6 +3967,14 @@ void OpenXRAPI::register_frame_info_extension(OpenXRExtensionWrapper *p_extensio
 void OpenXRAPI::unregister_frame_info_extension(OpenXRExtensionWrapper *p_extension) {
 	ERR_FAIL_COND_MSG(running, "Cannot unregister OpenXR frame info extensions while the session is running.");
 	frame_info_extensions.erase(p_extension);
+}
+
+void OpenXRAPI::register_projection_layer_extension(OpenXRExtensionWrapper *p_extension) {
+	projection_layer_extensions.append(p_extension);
+}
+
+void OpenXRAPI::unregister_projection_layer_extension(OpenXRExtensionWrapper *p_extension) {
+	projection_layer_extensions.erase(p_extension);
 }
 
 const Vector<XrEnvironmentBlendMode> OpenXRAPI::get_supported_environment_blend_modes() {
