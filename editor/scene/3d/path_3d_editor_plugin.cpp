@@ -857,6 +857,34 @@ void Path3DEditorPlugin::_confirm_clear_points() {
 	clear_points_dialog->popup_centered();
 }
 
+void Path3DEditorPlugin::_smooth_points(){
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	PackedVector3Array points = path->get_curve()->get_points().duplicate();
+
+	undo_redo->create_action(TTR("Smooth Curve Points"));
+	undo_redo->add_do_method(this, "_smooth_curve_points");
+	undo_redo->add_undo_method(this, "_restore_curve_points", points);
+	undo_redo->commit_action();
+}
+
+void Path3DEditorPlugin::_smooth_curve_points(){
+	if (!path || path->get_curve().is_null() || path->get_curve()->get_point_count() < 2) {
+		return;
+	}
+	Ref<Curve3D> curve = path->get_curve();
+	const smooth_ratio = 0.33;
+	for (int i = 0; i < curve.get_point_count(); i += 1) {
+		if i == 0 or i == curve.point_count-1:
+			continue
+		var previous_point = curve.samplef(i-smooth_ratio)
+		var next_point = curve.samplef(i+smooth_ratio)
+		var point_in =  -(next_point-previous_point)
+		var point_out = -(previous_point-next_point)
+		curve.set_point_in(i,point_in)
+		curve.set_point_out(i,point_out)
+	}
+}
+
 void Path3DEditorPlugin::_clear_points() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	PackedVector3Array points = path->get_curve()->get_points().duplicate();
@@ -899,6 +927,7 @@ void Path3DEditorPlugin::_update_theme() {
 	curve_del->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveDelete")));
 	curve_closed->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveClose")));
 	curve_clear_points->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("Clear")));
+	curve_smooth_points->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveClose")));
 	create_curve_button->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("Curve3D")));
 }
 
@@ -1047,6 +1076,13 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_closed->set_tooltip_text(TTR("Close Curve"));
 	toolbar->add_child(curve_closed);
 	curve_closed->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_toggle_closed_curve));
+
+	smooth_points = memnew(Button);
+	smooth_points->set_theme_type_variation(SceneStringName(FlatButton));
+	smooth_points->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	smooth_points->set_tooltip_text(TTR("Smooth Points"));
+	toolbar->add_child(smooth_points);
+	curve_clear_points->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_smooth_points));
 
 	curve_clear_points = memnew(Button);
 	curve_clear_points->set_theme_type_variation(SceneStringName(FlatButton));
