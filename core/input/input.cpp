@@ -149,6 +149,9 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
 	ClassDB::bind_method(D_METHOD("vibrate_handheld", "duration_ms", "amplitude"), &Input::vibrate_handheld, DEFVAL(500), DEFVAL(-1.0));
+	ClassDB::bind_method(D_METHOD("start_joy_triggers_vibration", "device", "left_intensity", "right_intensity", "duration"), &Input::start_joy_triggers_vibration);
+	ClassDB::bind_method(D_METHOD("stop_joy_triggers_vibration", "device"), &Input::stop_joy_triggers_vibration);
+	ClassDB::bind_method(D_METHOD("has_joy_triggers_vibration", "device"), &Input::has_joy_triggers_vibration);
 	ClassDB::bind_method(D_METHOD("get_gravity"), &Input::get_gravity);
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
 	ClassDB::bind_method(D_METHOD("get_magnetometer"), &Input::get_magnetometer);
@@ -1246,6 +1249,35 @@ void Input::stop_joy_vibration(int p_device) {
 	joy_vibration[p_device] = vibration;
 }
 
+bool Input::has_joy_triggers_vibration(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	return joypad != nullptr && joypad->has_triggers_vibration;
+}
+
+void Input::start_joy_triggers_vibration(int p_device, float p_left_intensity, float p_right_intensity, float p_duration) {
+	_THREAD_SAFE_METHOD_
+	if (p_left_intensity < 0 || p_left_intensity > 1 || p_right_intensity < 0 || p_right_intensity > 1 || p_duration < 0) {
+		return;
+	}
+
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (!joypad || joypad->features == nullptr) {
+		return;
+	}
+
+	joypad->features->start_joy_triggers_vibration(p_left_intensity, p_right_intensity, p_duration);
+}
+
+void Input::stop_joy_triggers_vibration(int p_device) {
+	_THREAD_SAFE_METHOD_
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (!joypad || joypad->features == nullptr) {
+		return;
+	}
+	joypad->features->start_joy_triggers_vibration(0.0f, 0.0f, 0.0f);
+}
+
 void Input::vibrate_handheld(int p_duration_ms, float p_amplitude) {
 	OS::get_singleton()->vibrate_handheld(p_duration_ms, p_amplitude);
 }
@@ -1750,6 +1782,9 @@ void Input::_update_joypad_features(int p_device) {
 			motion.gamepad_motion->Reset();
 		}
 		motion.last_timestamp = OS::get_singleton()->get_ticks_msec();
+	}
+	if (joypad->features->has_joy_triggers_vibration()) {
+		joypad->has_triggers_vibration = true;
 	}
 }
 
