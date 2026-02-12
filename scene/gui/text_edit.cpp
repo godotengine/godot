@@ -4501,10 +4501,18 @@ void TextEdit::copy(int p_caret) {
 }
 
 void TextEdit::paste(int p_caret) {
+	const int caret_to_adjust = (p_caret >= 0) ? p_caret : 0;
+
 	if (GDVIRTUAL_CALL(_paste, p_caret)) {
+		// Even if a script overrides paste, keep caret visible.
+		call_deferred(SNAME("adjust_viewport_to_caret"), caret_to_adjust);
 		return;
 	}
+
 	_paste_internal(p_caret);
+
+	// Defer to ensure scrollbars/layout are updated after the paste.
+	call_deferred(SNAME("adjust_viewport_to_caret"), caret_to_adjust);
 }
 
 void TextEdit::paste_primary_clipboard(int p_caret) {
