@@ -50,6 +50,7 @@
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/control.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
@@ -5206,7 +5207,8 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		Variant value = object->get(p_name, &valid);
 		Variant::Type type = p_value.get_type();
 		if (valid) {
-			if (Object::cast_to<Control>(object) && (p_name == "anchors_preset" || p_name == "layout_mode")) {
+			bool is_anchor_prop = (p_name == "anchor_left" || p_name == "anchor_top" || p_name == "anchor_right" || p_name == "anchor_bottom");
+			if (Object::cast_to<Control>(object) && (p_name == "anchors_preset" || p_name == "layout_mode" || is_anchor_prop)) {
 				undo_redo->add_undo_method(object, "_edit_set_state", Object::cast_to<Control>(object)->_edit_get_state());
 			} else {
 				undo_redo->add_undo_property(object, p_name, value);
