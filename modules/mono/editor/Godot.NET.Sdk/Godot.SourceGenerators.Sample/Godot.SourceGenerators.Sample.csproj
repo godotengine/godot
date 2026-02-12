@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <LangVersion>12</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -31,5 +32,11 @@
   <!-- This file is imported automatically when using PackageReference to
   reference Godot.SourceGenerators, but not when using ProjectReference -->
   <Import Project="..\Godot.SourceGenerators\Godot.SourceGenerators.props" />
+
+  <ItemGroup>
+    <Compile Remove="Generic.cs"/>
+    <Compile Remove="Generic1T.cs"/>
+    <Compile Remove="Generic2T.cs"/>
+  </ItemGroup>
 
 </Project>

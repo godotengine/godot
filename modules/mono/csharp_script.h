@@ -44,6 +44,12 @@
 #include "editor/plugins/editor_plugin.h"
 #endif
 
+using MethodTrampoline = void(GD_CLR_STDCALL *)(GCHandleIntPtr p_obj_gchandle, const Variant **p_args, int32_t p_argc,
+		Callable::CallError *r_ref_call_error, Variant *r_ret);
+using PropertyGetterTrampoline = bool(GD_CLR_STDCALL *)(GCHandleIntPtr p_obj_gchandle, Variant *r_args);
+using PropertySetterTrampoline = bool(GD_CLR_STDCALL *)(GCHandleIntPtr p_obj_gchandle, const Variant *p_args);
+using RaiseSignalTrampoline = void(GD_CLR_STDCALL *)(GCHandleIntPtr p_obj_gchandle, const Variant **p_args, int32_t p_argc, bool *r_owner_is_null);
+
 class CSharpScript;
 class CSharpInstance;
 class CSharpLanguage;
@@ -186,8 +192,46 @@ private:
 		MethodInfo method_info;
 	};
 
+	/// Only includes event signals declared in this exact script, not inherited ones.
 	Vector<EventSignalInfo> event_signals;
+	/// Only includes methods declared in this exact script, not inherited ones.
 	Vector<CSharpMethodInfo> methods;
+
+	struct PropertyTrampolines {
+		PropertyGetterTrampoline getter;
+		PropertySetterTrampoline setter;
+	};
+
+	struct MethodKey {
+		StringName name;
+		int32_t arg_count;
+
+		bool operator==(const MethodKey &p_other) const {
+			return name == p_other.name && arg_count == p_other.arg_count;
+		}
+
+		uint32_t hash() const {
+			const uint32_t hash = name.hash();
+			return hash_murmur3_one_32(arg_count, hash);
+		}
+	};
+
+	using SignalKey = MethodKey;
+
+	/// This maps contains mapping of engine names to proxy names registered in \ref method_trampolines.
+	/// { MethodKey("_get", 0), "_Get" }
+	/// Also includes methods declared in inherited scripts.
+	AHashMap<MethodKey, StringName> name_to_proxy_name_map;
+
+	/// Also includes methods declared in inherited scripts.
+	AHashMap<MethodKey, MethodTrampoline> method_trampolines;
+	/// Also includes properties declared in inherited scripts.
+	AHashMap<StringName, PropertyTrampolines> property_trampolines;
+	/// Also includes event signals declared in inherited scripts.
+	AHashMap<SignalKey, RaiseSignalTrampoline> raise_signal_trampolines;
+	bool should_fallback_to_legacy_trampolines = true;
+
+	bool _has_method_mapping_to_proxy_include_base(const StringName &p_name) const;
 
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache
@@ -335,6 +379,10 @@ class CSharpInstance : public ScriptInstance {
 	// Do not use unless you know what you are doing
 	static CSharpInstance *create_for_managed_type(Object *p_owner, CSharpScript *p_script, const MonoGCHandleData &p_gchandle);
 
+	Variant _callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) const;
+
+	void _call_notification(int p_notification, bool p_reversed = false) const;
+
 public:
 	_FORCE_INLINE_ bool is_destructing_script_instance() { return destructing_script_instance; }
 
@@ -356,6 +404,8 @@ public:
 	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override;
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
+	void raise_event_signal(const StringName &p_event_signal_name, const Variant **p_args, int p_argcount, Callable::CallError &r_error) const;
+
 	void mono_object_disposed(GCHandleIntPtr p_gchandle_to_free);
 
 	/*
@@ -373,7 +423,6 @@ public:
 	const Variant get_rpc_config() const override;
 
 	void notification(int p_notification, bool p_reversed = false) override;
-	void _call_notification(int p_notification, bool p_reversed = false);
 
 	String to_string(bool *r_valid) override;
 

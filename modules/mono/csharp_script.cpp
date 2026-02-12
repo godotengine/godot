@@ -1491,6 +1491,31 @@ Object *CSharpInstance::get_owner() {
 bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 	ERR_FAIL_COND_V(script.is_null(), false);
 
+	const CSharpScript::PropertyTrampolines *trampolines = script->property_trampolines.getptr(p_name);
+	if (trampolines) {
+		if (trampolines->setter == nullptr) {
+			return false;
+		}
+		return trampolines->setter(gchandle.get_intptr(), &p_value);
+	}
+
+	if (has_method(SNAME("_set"))) {
+		Callable::CallError call_error;
+		const Variant name_arg = p_name;
+		const Variant *args[2]{ &name_arg, &p_value };
+		const Variant ret = _callp(SNAME("_set"), args, 2, call_error);
+
+		if (ret.get_type() == Variant::NIL || call_error.error != Callable::CallError::CALL_OK) {
+			return false;
+		}
+
+		return true;
+	}
+
+	if (likely(!script->should_fallback_to_legacy_trampolines)) {
+		return false;
+	}
+
 	return GDMonoCache::managed_callbacks.CSharpInstanceBridge_Set(
 			gchandle.get_intptr(), &p_name, &p_value);
 }
@@ -1498,12 +1523,54 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 	ERR_FAIL_COND_V(script.is_null(), false);
 
+	const CSharpScript::PropertyTrampolines *trampolines = script->property_trampolines.getptr(p_name);
+	if (trampolines) {
+		if (trampolines->getter == nullptr) {
+			return false;
+		}
+
+		Variant ret_value;
+		if (likely(trampolines->getter(gchandle.get_intptr(), &ret_value))) {
+			r_ret = ret_value;
+			return true;
+		}
+
+		return false;
+	}
+
+	for (const KeyValue<CSharpScript::SignalKey, RaiseSignalTrampoline> &kvp : script->raise_signal_trampolines) {
+		if (kvp.key.name == p_name) {
+			r_ret = Signal(owner->get_instance_id(), p_name);
+			return true;
+		}
+	}
+
+	if (script->_has_method_mapping_to_proxy_include_base(p_name)) {
+		r_ret = Callable(owner->get_instance_id(), p_name);
+		return true;
+	}
+
+	if (has_method(SNAME("_get"))) {
+		Callable::CallError call_error;
+		const Variant name_arg = p_name;
+		const Variant *args[1]{ &name_arg };
+		const Variant ret = _callp(SNAME("_get"), args, 1, call_error);
+
+		if (ret.get_type() == Variant::NIL || call_error.error != Callable::CallError::CALL_OK) {
+			r_ret = Variant();
+			return false;
+		}
+
+		r_ret = ret;
+		return true;
+	}
+
+	if (likely(!script->should_fallback_to_legacy_trampolines)) {
+		return false;
+	}
+
 	Variant ret_value;
-
-	bool ret = GDMonoCache::managed_callbacks.CSharpInstanceBridge_Get(
-			gchandle.get_intptr(), &p_name, &ret_value);
-
-	if (ret) {
+	if (GDMonoCache::managed_callbacks.CSharpInstanceBridge_Get(gchandle.get_intptr(), &p_name, &ret_value)) {
 		r_ret = ret_value;
 		return true;
 	}
@@ -1533,17 +1600,13 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
 	StringName method = SNAME("_get_property_list");
 
-	Variant ret;
 	Callable::CallError call_error;
-	bool ok = GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
-			gchandle.get_intptr(), &method, nullptr, 0, &call_error, &ret);
+	Variant ret = _callp(method, nullptr, 0, call_error);
 
 	// CALL_ERROR_INVALID_METHOD would simply mean it was not overridden
 	if (call_error.error != Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 		if (call_error.error != Callable::CallError::CALL_OK) {
 			ERR_PRINT("Error calling '_get_property_list': " + Variant::get_call_error_text(method, nullptr, 0, call_error));
-		} else if (!ok) {
-			ERR_PRINT("Unexpected error calling '_get_property_list'");
 		} else {
 			Array array = ret;
 			for (int i = 0, size = array.size(); i < size; i++) {
@@ -1595,16 +1658,14 @@ bool CSharpInstance::property_can_revert(const StringName &p_name) const {
 	Variant name_arg = p_name;
 	const Variant *args[1] = { &name_arg };
 
-	Variant ret;
 	Callable::CallError call_error;
-	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
-			gchandle.get_intptr(), &SNAME("_property_can_revert"), args, 1, &call_error, &ret);
+	Variant ret = _callp(SNAME("_property_can_revert"), args, 1, call_error);
 
 	if (call_error.error != Callable::CallError::CALL_OK) {
 		return false;
 	}
 
-	return (bool)ret;
+	return ret;
 }
 
 void CSharpInstance::validate_property(PropertyInfo &p_property) const {
@@ -1613,10 +1674,8 @@ void CSharpInstance::validate_property(PropertyInfo &p_property) const {
 	Variant property_arg = (Dictionary)p_property;
 	const Variant *args[1] = { &property_arg };
 
-	Variant ret;
 	Callable::CallError call_error;
-	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
-			gchandle.get_intptr(), &SNAME("_validate_property"), args, 1, &call_error, &ret);
+	Variant ret = _callp(SNAME("_validate_property"), args, 1, call_error);
 
 	if (call_error.error != Callable::CallError::CALL_OK) {
 		return;
@@ -1631,10 +1690,8 @@ bool CSharpInstance::property_get_revert(const StringName &p_name, Variant &r_re
 	Variant name_arg = p_name;
 	const Variant *args[1] = { &name_arg };
 
-	Variant ret;
 	Callable::CallError call_error;
-	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
-			gchandle.get_intptr(), &SNAME("_property_get_revert"), args, 1, &call_error, &ret);
+	Variant ret = _callp(SNAME("_property_get_revert"), args, 1, call_error);
 
 	if (call_error.error != Callable::CallError::CALL_OK) {
 		return false;
@@ -1658,6 +1715,14 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 	}
 
 	if (!GDMonoCache::godot_api_cache_updated) {
+		return false;
+	}
+
+	if (script->_has_method_mapping_to_proxy_include_base(p_method)) {
+		return true;
+	}
+
+	if (likely(!script->should_fallback_to_legacy_trampolines)) {
 		return false;
 	}
 
@@ -1693,14 +1758,71 @@ int CSharpInstance::get_method_argument_count(const StringName &p_method, bool *
 	return 0;
 }
 
-Variant CSharpInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+Variant CSharpInstance::_callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) const {
 	ERR_FAIL_COND_V(script.is_null(), Variant());
+
+	const CSharpScript::MethodKey method_key{ p_method, p_argcount };
+
+	const StringName *proxy_name = script->name_to_proxy_name_map.getptr(method_key);
+	if (proxy_name != nullptr) {
+		return _callp(*proxy_name, p_args, p_argcount, r_error);
+	}
+
+	const MethodTrampoline *trampoline = script->method_trampolines.getptr(method_key);
+	if (trampoline != nullptr) {
+		Variant ret;
+		(*trampoline)(gchandle.get_intptr(), p_args, p_argcount, &r_error, &ret);
+		if (likely(r_error.error == Callable::CallError::CALL_OK)) {
+			return ret;
+		}
+		return Variant();
+	}
+
+	if (likely(!script->should_fallback_to_legacy_trampolines)) {
+		return Variant();
+	}
 
 	Variant ret;
 	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
 			gchandle.get_intptr(), &p_method, p_args, p_argcount, &r_error, &ret);
 
 	return ret;
+}
+
+Variant CSharpInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	return _callp(p_method, p_args, p_argcount, r_error);
+}
+
+void CSharpInstance::raise_event_signal(const StringName &p_event_signal_name, const Variant **p_args, int p_argcount, Callable::CallError &r_error) const {
+	bool owner_is_null = false;
+
+	const RaiseSignalTrampoline *trampoline = script->raise_signal_trampolines.getptr(
+			CSharpScript::SignalKey{ p_event_signal_name, p_argcount });
+	if (trampoline) {
+		(*trampoline)(gchandle.get_intptr(), p_args, p_argcount, &owner_is_null);
+
+		if (unlikely(owner_is_null)) {
+			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		} else {
+			r_error.error = Callable::CallError::CALL_OK;
+		}
+
+		return;
+	}
+
+	if (likely(!script->should_fallback_to_legacy_trampolines)) {
+		return;
+	}
+
+	GDMonoCache::managed_callbacks.ScriptManagerBridge_RaiseEventSignal(
+			gchandle.get_intptr(), &p_event_signal_name,
+			p_args, p_argcount, &owner_is_null);
+
+	if (unlikely(owner_is_null)) {
+		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+	} else {
+		r_error.error = Callable::CallError::CALL_OK;
+	}
 }
 
 bool CSharpInstance::_reference_owner_unsafe() {
@@ -1951,14 +2073,12 @@ void CSharpInstance::notification(int p_notification, bool p_reversed) {
 	_call_notification(p_notification, p_reversed);
 }
 
-void CSharpInstance::_call_notification(int p_notification, bool p_reversed) {
+void CSharpInstance::_call_notification(int p_notification, bool p_reversed) const {
 	Variant arg = p_notification;
 	const Variant *args[1] = { &arg };
 
-	Variant ret;
 	Callable::CallError call_error;
-	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
-			gchandle.get_intptr(), &SNAME("_notification"), args, 1, &call_error, &ret);
+	_callp(SNAME("_notification"), args, 1, call_error);
 }
 
 String CSharpInstance::to_string(bool *r_valid) {
@@ -2250,6 +2370,43 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 
 // Extract information about the script using the mono class.
 void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
+	p_script->method_trampolines.clear();
+	p_script->property_trampolines.clear();
+	p_script->raise_signal_trampolines.clear();
+
+	auto try_add_name_to_proxy_name_map = [](CSharpScript *p_scr, const StringName *p_name, int32_t p_argc, const StringName *p_proxy_name) {
+		MethodKey method_key{ *p_name, p_argc };
+		if (!p_scr->name_to_proxy_name_map.has(method_key)) {
+			p_scr->name_to_proxy_name_map.insert_new(method_key, *p_proxy_name);
+		}
+	};
+
+	auto try_add_method_tramp = [](CSharpScript *p_scr, const StringName *p_name, int32_t p_argc, MethodTrampoline p_trampoline) {
+		MethodKey method_key{ *p_name, p_argc };
+		if (!p_scr->method_trampolines.has(method_key)) {
+			p_scr->method_trampolines.insert_new(method_key, p_trampoline);
+		}
+	};
+
+	auto try_add_property_tramp = [](CSharpScript *p_scr, const StringName *p_name,
+										  PropertyGetterTrampoline p_getter_trampoline,
+										  PropertySetterTrampoline p_setter_trampoline) {
+		if (!p_scr->property_trampolines.has(*p_name)) {
+			p_scr->property_trampolines.insert_new(*p_name, { p_getter_trampoline, p_setter_trampoline });
+		}
+	};
+
+	auto try_add_raise_signal_tramp = [](CSharpScript *p_scr, const StringName *p_name, int32_t p_argc, RaiseSignalTrampoline p_trampoline) {
+		SignalKey signal_key{ *p_name, p_argc };
+		if (!p_scr->raise_signal_trampolines.has(signal_key)) {
+			p_scr->raise_signal_trampolines.insert_new(signal_key, p_trampoline);
+		}
+	};
+
+	GDMonoCache::managed_callbacks.ScriptManagerBridge_UpdateScriptTrampolines(
+			p_script.ptr(), &p_script->should_fallback_to_legacy_trampolines, try_add_name_to_proxy_name_map,
+			try_add_method_tramp, try_add_property_tramp, try_add_raise_signal_tramp);
+
 	TypeInfo type_info;
 
 	// TODO: Use GDExtension godot_dictionary
@@ -2524,9 +2681,44 @@ void CSharpScript::get_script_method_list(List<MethodInfo> *p_list) const {
 	}
 }
 
+bool CSharpScript::_has_method_mapping_to_proxy_include_base(const StringName &p_name) const {
+	for (const KeyValue<MethodKey, StringName> &kvp : name_to_proxy_name_map) {
+		if (kvp.key.name == p_name) {
+			return true;
+		}
+	}
+
+	for (const KeyValue<MethodKey, MethodTrampoline> &kvp : method_trampolines) {
+		if (kvp.key.name == p_name) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool CSharpScript::has_method(const StringName &p_method) const {
 	if (!valid) {
 		return false;
+	}
+
+	// TODO: This is a behavior change, which might cause regressions.
+	//       Previously it would return 'false' for names like '_process' and 'true' for '_Process'.
+	//       Now it checks both. This feels correct, but is it worth risking regressions?
+
+	for (const KeyValue<MethodKey, StringName> &kvp : name_to_proxy_name_map) {
+		if (kvp.key.name == p_method) {
+			const StringName &proxy_name = kvp.value;
+			// Name to proxy name map found, but it may be from an inherited script.
+			// We don't want that here, so make sure it's in 'methods' (which excludes inherited ones).
+			for (const CSharpMethodInfo &E : methods) {
+				if (E.name == proxy_name) {
+					return true;
+				}
+			}
+			// Break instead of returning false. The script still contain a method with the non-proxy name.
+			break;
+		}
 	}
 
 	for (const CSharpMethodInfo &E : methods) {
@@ -2697,7 +2889,7 @@ void CSharpScript::_get_script_signal_list(List<MethodInfo> *r_signals, bool p_i
 }
 
 void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
-	_get_script_signal_list(r_signals, true);
+	_get_script_signal_list(r_signals, /* include_base */ true);
 }
 
 bool CSharpScript::inherits_script(const Ref<Script> &p_script) const {
