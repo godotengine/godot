@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectAmplify" inherits="AudioEffect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Adds an amplifying audio effect to an audio bus.
+		Adds a volume manipulation audio effect to an audio bus.
 	</brief_description>
 	<description>
 		Increases or decreases the volume being routed through the audio bus.
 	</description>
 	<tutorials>
 		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
+		<link title="Audio effects">$DOCS_URL/tutorials/audio/audio_effects.html</link>
 	</tutorials>
 	<members>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">
-			Amount of amplification in decibels. Positive values make the sound louder, negative values make it quieter. Value can range from -80 to 24.
+			Amount of amplification in dB. Positive values make the sound louder, negative values make it quieter. Value can range from -80 to 24.
 		</member>
 		<member name="volume_linear" type="float" setter="set_volume_linear" getter="get_volume_linear">
 			Amount of amplification as a linear value.

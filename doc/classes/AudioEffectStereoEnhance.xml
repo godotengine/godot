@@ -1,23 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectStereoEnhance" inherits="AudioEffect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		An audio effect that can be used to adjust the intensity of stereo panning.
+		Adds a stereo manipulation audio effect to an audio bus.
+		Controls gain of the side channels, and widens the stereo image.
 	</brief_description>
 	<description>
-		An audio effect that can be used to adjust the intensity of stereo panning.
+		Adjusts gain of the left and right channels, and makes mono sounds stereo through phase shifting.
 	</description>
 	<tutorials>
 		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
+		<link title="Audio effects">$DOCS_URL/tutorials/audio/audio_effects.html</link>
 	</tutorials>
 	<members>
 		<member name="pan_pullout" type="float" setter="set_pan_pullout" getter="get_pan_pullout" default="1.0">
-			Amplifies the difference between stereo channels, increasing or decreasing existing panning. A value of 0.0 will downmix stereo to mono. Does not affect a mono signal.
+			Gain of the side channels, if they exist. A value of 0 will downmix stereo to mono. Value can range from 0 to 4.
 		</member>
 		<member name="surround" type="float" setter="set_surround" getter="get_surround" default="0.0">
-			Widens sound stage through phase shifting in conjunction with [member time_pullout_ms]. Just pans sound to the left channel if [member time_pullout_ms] is 0.
+			Widens the stereo image through phase shifting in conjunction with [member time_pullout_ms]. Just pans sound to the left channel if [member time_pullout_ms] is 0. Value can range from 0 to 1.
 		</member>
 		<member name="time_pullout_ms" type="float" setter="set_time_pullout" getter="get_time_pullout" default="0.0">
-			Widens sound stage through phase shifting in conjunction with [member surround]. Just delays the right channel if [member surround] is 0.
+			Widens the stereo image through phase shifting in conjunction with [member surround]. Just delays the right channel if [member surround] is 0. Value is in milliseconds, and can range from 0 to 50.
 		</member>
 	</members>
 </class>
