@@ -430,6 +430,17 @@ bool Engine::is_embedded_in_editor() const {
 	return embedded_in_editor;
 }
 
+void Engine::set_physics_iteration_callback(PhysicsIterationCallback p_callback) {
+	physics_iteration_callback = p_callback;
+}
+
+bool Engine::physics_iteration(double p_delta) {
+	if (physics_iteration_callback) {
+		return physics_iteration_callback(p_delta);
+	}
+	return false;
+}
+
 Engine::Engine() {
 	singleton = this;
 }

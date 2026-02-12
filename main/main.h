@@ -80,6 +80,8 @@ public:
 	static int start();
 
 	static bool iteration();
+	// One physics step (sync, physics_process, navigation, step). Used when use_builtin_physics_stepping is true or via Engine.physics_iteration().
+	static bool physics_iteration(double delta);
 	static void force_redraw();
 
 	static bool is_iterating();

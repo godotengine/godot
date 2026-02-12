@@ -624,6 +624,9 @@ public:
 
 	bool is_embedded_in_editor() const;
 
+	// Run one physics step (sync, physics_process, navigation, step). Use when built-in physics stepping is disabled.
+	bool physics_iteration(double p_delta);
+
 	// `set_write_movie_path()` is not exposed to the scripting API as changing it at run-time has no effect.
 	String get_write_movie_path() const;
 

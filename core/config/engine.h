@@ -41,6 +41,9 @@ template <typename T>
 class TypedArray;
 
 class Engine {
+	// Called by main loop when built-in stepping is disabled. Set from main.cpp.
+	using PhysicsIterationCallback = bool (*)(double);
+	PhysicsIterationCallback physics_iteration_callback = nullptr;
 public:
 	struct Singleton {
 		StringName name;
@@ -223,6 +226,11 @@ public:
 	void set_freeze_time_scale(bool p_frozen);
 	void set_embedded_in_editor(bool p_enabled);
 	bool is_embedded_in_editor() const;
+
+	// Manual physics stepping: call once per physics step when built-in stepping is disabled.
+	// Returns true if the main loop should exit (e.g. scene tree requested quit).
+	void set_physics_iteration_callback(PhysicsIterationCallback p_callback);
+	bool physics_iteration(double p_delta);
 
 	Engine();
 	virtual ~Engine();

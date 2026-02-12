@@ -2176,6 +2176,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	Engine::get_singleton()->set_physics_ticks_per_second(GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/common/physics_ticks_per_second", PROPERTY_HINT_RANGE, "1,1000,1"), 60));
 	Engine::get_singleton()->set_max_physics_steps_per_frame(GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/common/max_physics_steps_per_frame", PROPERTY_HINT_RANGE, "1,100,1"), 8));
+	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "physics/common/use_builtin_physics_stepping", PROPERTY_HINT_NONE, ""), true);
 	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/common/physics_jitter_fix", PROPERTY_HINT_RANGE, "0,2,0.001,or_greater"), 0.5));
 	Engine::get_singleton()->set_max_fps(GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/max_fps", PROPERTY_HINT_RANGE, "0,1000,1"), 0));
 	if (max_fps >= 0) {
@@ -2846,6 +2847,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Engine::get_singleton()->set_frame_delay(frame_delay);
 
 	message_queue = memnew(MessageQueue);
+
+	Engine::get_singleton()->set_physics_iteration_callback(Main::physics_iteration);
 
 	Thread::release_main_thread(); // If setup2() is called from another thread, that one will become main thread, so preventively release this one.
 	set_current_thread_safe_for_nodes(false);
@@ -4792,6 +4795,97 @@ static uint64_t physics_process_max = 0;
 static uint64_t process_max = 0;
 static uint64_t navigation_process_max = 0;
 
+// Last physics_iteration() tick counts; read by Main::iteration() to update local profiling vars.
+static uint64_t s_physics_iteration_ticks = 0;
+#if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
+static uint64_t s_navigation_iteration_ticks = 0;
+#endif
+
+bool Main::physics_iteration(double delta) {
+	GodotProfileZone("Physics Step");
+	GodotProfileZoneGroupedFirst(_physics_zone, "setup");
+	if (Input::get_singleton()->is_agile_input_event_flushing()) {
+		Input::get_singleton()->flush_buffered_events();
+	}
+
+	Engine::get_singleton()->_in_physics = true;
+	Engine::get_singleton()->_physics_frames++;
+
+	uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
+
+	// Prepare the fixed timestep interpolated nodes BEFORE they are updated
+	// by the physics server, otherwise the current and previous transforms
+	// may be the same, and no interpolation takes place.
+	GodotProfileZoneGrouped(_physics_zone, "main loop iteration prepare");
+	OS::get_singleton()->get_main_loop()->iteration_prepare();
+
+#ifndef PHYSICS_3D_DISABLED
+	GodotProfileZoneGrouped(_physics_zone, "PhysicsServer3D::sync");
+	PhysicsServer3D::get_singleton()->sync();
+	PhysicsServer3D::get_singleton()->flush_queries();
+#endif // PHYSICS_3D_DISABLED
+
+#ifndef PHYSICS_2D_DISABLED
+	GodotProfileZoneGrouped(_physics_zone, "PhysicsServer2D::sync");
+	PhysicsServer2D::get_singleton()->sync();
+	PhysicsServer2D::get_singleton()->flush_queries();
+#endif // PHYSICS_2D_DISABLED
+
+	GodotProfileZoneGrouped(_physics_zone, "physics_process");
+	if (OS::get_singleton()->get_main_loop()->physics_process(delta)) {
+#ifndef PHYSICS_3D_DISABLED
+		PhysicsServer3D::get_singleton()->end_sync();
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
+		PhysicsServer2D::get_singleton()->end_sync();
+#endif // PHYSICS_2D_DISABLED
+
+		Engine::get_singleton()->_in_physics = false;
+		return true;
+	}
+
+#if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
+	uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
+
+#ifndef NAVIGATION_2D_DISABLED
+	GodotProfileZoneGrouped(_profile_zone, "NavigationServer2D::physics_process");
+	NavigationServer2D::get_singleton()->physics_process(delta);
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+	GodotProfileZoneGrouped(_profile_zone, "NavigationServer3D::physics_process");
+	NavigationServer3D::get_singleton()->physics_process(delta);
+#endif // NAVIGATION_3D_DISABLED
+
+	s_navigation_iteration_ticks = OS::get_singleton()->get_ticks_usec() - navigation_begin;
+	navigation_process_max = MAX(s_navigation_iteration_ticks, navigation_process_max);
+
+	message_queue->flush();
+#endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
+
+#ifndef PHYSICS_3D_DISABLED
+	GodotProfileZoneGrouped(_profile_zone, "3D physics");
+	PhysicsServer3D::get_singleton()->end_sync();
+	PhysicsServer3D::get_singleton()->step(delta);
+#endif // PHYSICS_3D_DISABLED
+
+#ifndef PHYSICS_2D_DISABLED
+	GodotProfileZoneGrouped(_profile_zone, "2D physics");
+	PhysicsServer2D::get_singleton()->end_sync();
+	PhysicsServer2D::get_singleton()->step(delta);
+#endif // PHYSICS_2D_DISABLED
+
+	message_queue->flush();
+
+	GodotProfileZoneGrouped(_profile_zone, "main loop iteration end");
+	OS::get_singleton()->get_main_loop()->iteration_end();
+
+	s_physics_iteration_ticks = OS::get_singleton()->get_ticks_usec() - physics_begin;
+	physics_process_max = MAX(s_physics_iteration_ticks, physics_process_max);
+
+	Engine::get_singleton()->_in_physics = false;
+	return false;
+}
+
 // Return false means iterating further, returning true means `OS::run`
 // will terminate the program. In case of failure, the OS exit code needs
 // to be set explicitly here (defaults to EXIT_SUCCESS).
@@ -4844,89 +4938,17 @@ bool Main::iteration() {
 #endif // XR_DISABLED
 
 	GodotProfileZoneGrouped(_profile_zone, "physics");
-	for (int iters = 0; iters < advance.physics_steps; ++iters) {
-		GodotProfileZone("Physics Step");
-		GodotProfileZoneGroupedFirst(_physics_zone, "setup");
-		if (Input::get_singleton()->is_agile_input_event_flushing()) {
-			Input::get_singleton()->flush_buffered_events();
-		}
-
-		Engine::get_singleton()->_in_physics = true;
-		Engine::get_singleton()->_physics_frames++;
-
-		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
-
-		// Prepare the fixed timestep interpolated nodes BEFORE they are updated
-		// by the physics server, otherwise the current and previous transforms
-		// may be the same, and no interpolation takes place.
-		GodotProfileZoneGrouped(_physics_zone, "main loop iteration prepare");
-		OS::get_singleton()->get_main_loop()->iteration_prepare();
-
-#ifndef PHYSICS_3D_DISABLED
-		GodotProfileZoneGrouped(_physics_zone, "PhysicsServer3D::sync");
-		PhysicsServer3D::get_singleton()->sync();
-		PhysicsServer3D::get_singleton()->flush_queries();
-#endif // PHYSICS_3D_DISABLED
-
-#ifndef PHYSICS_2D_DISABLED
-		GodotProfileZoneGrouped(_physics_zone, "PhysicsServer2D::sync");
-		PhysicsServer2D::get_singleton()->sync();
-		PhysicsServer2D::get_singleton()->flush_queries();
-#endif // PHYSICS_2D_DISABLED
-
-		GodotProfileZoneGrouped(_physics_zone, "physics_process");
-		if (OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale)) {
-#ifndef PHYSICS_3D_DISABLED
-			PhysicsServer3D::get_singleton()->end_sync();
-#endif // PHYSICS_3D_DISABLED
-#ifndef PHYSICS_2D_DISABLED
-			PhysicsServer2D::get_singleton()->end_sync();
-#endif // PHYSICS_2D_DISABLED
-
-			Engine::get_singleton()->_in_physics = false;
-			exit = true;
-			break;
-		}
-
+	if (GLOBAL_GET_CACHED(bool, "physics/common/use_builtin_physics_stepping")) {
+		for (int iters = 0; iters < advance.physics_steps; ++iters) {
+			if (Main::physics_iteration(physics_step * time_scale)) {
+				exit = true;
+				break;
+			}
+			physics_process_ticks = MAX(physics_process_ticks, s_physics_iteration_ticks);
 #if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
-		uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
-
-#ifndef NAVIGATION_2D_DISABLED
-		GodotProfileZoneGrouped(_profile_zone, "NavigationServer2D::physics_process");
-		NavigationServer2D::get_singleton()->physics_process(physics_step * time_scale);
-#endif // NAVIGATION_2D_DISABLED
-#ifndef NAVIGATION_3D_DISABLED
-		GodotProfileZoneGrouped(_profile_zone, "NavigationServer3D::physics_process");
-		NavigationServer3D::get_singleton()->physics_process(physics_step * time_scale);
-#endif // NAVIGATION_3D_DISABLED
-
-		navigation_process_ticks = MAX(navigation_process_ticks, OS::get_singleton()->get_ticks_usec() - navigation_begin); // keep the largest one for reference
-		navigation_process_max = MAX(OS::get_singleton()->get_ticks_usec() - navigation_begin, navigation_process_max);
-
-		message_queue->flush();
-#endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
-
-#ifndef PHYSICS_3D_DISABLED
-		GodotProfileZoneGrouped(_profile_zone, "3D physics");
-		PhysicsServer3D::get_singleton()->end_sync();
-		PhysicsServer3D::get_singleton()->step(physics_step * time_scale);
-#endif // PHYSICS_3D_DISABLED
-
-#ifndef PHYSICS_2D_DISABLED
-		GodotProfileZoneGrouped(_profile_zone, "2D physics");
-		PhysicsServer2D::get_singleton()->end_sync();
-		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
-#endif // PHYSICS_2D_DISABLED
-
-		message_queue->flush();
-
-		GodotProfileZoneGrouped(_profile_zone, "main loop iteration end");
-		OS::get_singleton()->get_main_loop()->iteration_end();
-
-		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
-		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);
-
-		Engine::get_singleton()->_in_physics = false;
+			navigation_process_ticks = MAX(navigation_process_ticks, s_navigation_iteration_ticks);
+#endif
+		}
 	}
 
 	if (Input::get_singleton()->is_agile_input_event_flushing()) {
@@ -4987,6 +5009,12 @@ bool Main::iteration() {
 
 	GodotProfileZoneGrouped(_profile_zone, "AudioServer::update");
 	AudioServer::get_singleton()->update();
+
+	// Include physics ticks from manual Engine.physics_iteration() calls (when use_builtin_physics_stepping is false).
+	physics_process_ticks = MAX(physics_process_ticks, s_physics_iteration_ticks);
+#if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
+	navigation_process_ticks = MAX(navigation_process_ticks, s_navigation_iteration_ticks);
+#endif
 
 	if (EngineDebugger::is_active()) {
 		EngineDebugger::get_singleton()->iteration(frame_time, process_ticks, physics_process_ticks, physics_step);
