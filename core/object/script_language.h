@@ -380,12 +380,32 @@ public:
 		int location = -1;
 	};
 
+	enum InlineHintKind {
+		INLINE_HINT_PARAMETER,
+		INLINE_HINT_COLOR,
+	};
+
+	struct InlineHint {
+		InlineHintKind kind;
+
+		String label;
+
+		struct {
+			int line;
+			int column;
+		} position;
+
+		Variant data;
+	};
+
 	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) { return ERR_UNAVAILABLE; }
 
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const = 0;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) = 0;
 	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) {}
 	virtual void remove_named_global_constant(const StringName &p_name) {}
+
+	virtual Error generate_inline_info(const String &p_code, const String &p_path, HashMap<int, Vector<InlineHint>> *r_inline_info) { return ERR_UNAVAILABLE; }
 
 	/* MULTITHREAD FUNCTIONS */
 
