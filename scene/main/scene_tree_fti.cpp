@@ -83,7 +83,7 @@ void SceneTreeFTI::set_enabled(Node *p_root, bool p_enabled) {
 	if (data.enabled == p_enabled) {
 		return;
 	}
-	MutexLock(data.mutex);
+	MutexLock lock(data.mutex);
 
 	data.tick_xform_list[0].clear();
 	data.tick_xform_list[1].clear();
@@ -111,7 +111,7 @@ void SceneTreeFTI::tick_update() {
 	if (!data.enabled) {
 		return;
 	}
-	MutexLock(data.mutex);
+	MutexLock lock(data.mutex);
 
 	_update_request_resets();
 
@@ -221,7 +221,7 @@ void SceneTreeFTI::node_3d_request_reset(Node3D *p_node) {
 	DEV_CHECK_ONCE(data.enabled);
 	DEV_ASSERT(p_node);
 
-	MutexLock(data.mutex);
+	MutexLock lock(data.mutex);
 
 	if (!p_node->_is_physics_interpolation_reset_requested()) {
 		p_node->_set_physics_interpolation_reset_requested(true);
@@ -415,7 +415,7 @@ void SceneTreeFTI::node_3d_notify_delete(Node3D *p_node) {
 
 	ERR_FAIL_NULL(p_node);
 
-	MutexLock(data.mutex);
+	MutexLock lock(data.mutex);
 
 	// Remove from frame lists.
 	if (p_node->data.fti_on_frame_xform_list) {
@@ -605,7 +605,7 @@ void SceneTreeFTI::frame_update(Node *p_root, bool p_frame_start) {
 	if (!data.enabled || !p_root) {
 		return;
 	}
-	MutexLock(data.mutex);
+	MutexLock lock(data.mutex);
 
 	data.frame_start = p_frame_start;
 	data.in_frame = true;
