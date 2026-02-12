@@ -439,6 +439,7 @@ TreeItem *EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, co
 	TreeItem *shortcut_item = shortcuts->create_item(p_parent);
 	shortcut_item->set_collapsed(p_is_collapsed);
 	shortcut_item->set_text(0, p_display);
+	shortcut_item->set_tooltip_text(0, p_shortcut_identifier);
 
 	Ref<InputEvent> primary = p_events.size() > 0 ? Ref<InputEvent>(p_events[0]) : Ref<InputEvent>();
 	Ref<InputEvent> secondary = p_events.size() > 1 ? Ref<InputEvent>(p_events[1]) : Ref<InputEvent>();
