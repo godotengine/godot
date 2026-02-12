@@ -201,7 +201,7 @@ Vector<String> ScriptTextEditor::get_functions() {
 	List<String> fnc;
 
 	Ref<Script> script = edited_res;
-	if (script->is_valid() && script->get_language()->validate(text, script->get_path(), &fnc)) {
+	if (script.is_valid() && script->get_language()->validate(text, script->get_path(), &fnc)) {
 		//if valid rewrite functions to latest
 		functions.clear();
 		for (const String &E : fnc) {
@@ -214,7 +214,7 @@ Vector<String> ScriptTextEditor::get_functions() {
 
 void ScriptTextEditor::apply_code() {
 	Ref<Script> script = edited_res;
-	if (script->is_valid()) {
+	if (script.is_valid()) {
 		script->set_source_code(code_editor->get_text_editor()->get_text());
 		script->update_exports();
 		if (!pending_dragged_exports.is_empty()) {
