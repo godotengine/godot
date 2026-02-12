@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamPlaybackSynchronized" inherits="AudioStreamPlayback" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
+		Playback class used for [AudioStreamSynchronized].
 	</brief_description>
 	<description>
+		Playback component of [AudioStreamSynchronized]. Handles the playback of multiple [AudioStream]s in synchrony.
 	</description>
 	<tutorials>
 	</tutorials>
