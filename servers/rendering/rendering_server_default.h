@@ -329,11 +329,15 @@ public:
 			RSG::material_storage->material_initialize(material);
 			RSG::material_storage->material_set_next_pass(material, p_next_pass);
 			RSG::material_storage->material_set_render_priority(material, p_render_priority);
-			RSG::material_storage->material_set_shader(material, p_shader);
 		} else {
 			command_queue.push(RSG::material_storage, &RendererMaterialStorage::material_initialize, material);
 			command_queue.push(RSG::material_storage, &RendererMaterialStorage::material_set_next_pass, material, p_next_pass);
 			command_queue.push(RSG::material_storage, &RendererMaterialStorage::material_set_render_priority, material, p_render_priority);
+		}
+
+		if (using_server_thread) {
+			RSG::material_storage->material_set_shader(material, p_shader);
+		} else {
 			command_queue.push(RSG::material_storage, &RendererMaterialStorage::material_set_shader, material, p_shader);
 		}
 
