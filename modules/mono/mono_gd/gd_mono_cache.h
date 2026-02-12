@@ -68,6 +68,11 @@ struct godotsharp_property_def_val_pair {
 };
 
 struct ManagedCallbacks {
+	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddNameToProxyNameMap = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const StringName *p_name, int32_t p_argc, const StringName *p_proxy_name);
+	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddMethod = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const StringName *p_name, int32_t p_argc, MethodTrampoline p_trampoline);
+	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddProperty = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const StringName *p_name,
+			PropertyGetterTrampoline p_getter_trampoline, PropertySetterTrampoline p_setter_trampoline);
+	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddRaiseSignal = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const StringName *p_name, int32_t p_argc, RaiseSignalTrampoline p_trampoline);
 	using Callback_ScriptManagerBridge_GetPropertyInfoList_Add = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const String *, void *p_props, int32_t p_count);
 	using Callback_ScriptManagerBridge_GetPropertyDefaultValues_Add = void(GD_CLR_STDCALL *)(CSharpScript *p_script, void *p_def_vals, int32_t p_count);
 
@@ -90,6 +95,11 @@ struct ManagedCallbacks {
 	using FuncScriptManagerBridge_GetOrCreateScriptBridgeForPath = void(GD_CLR_STDCALL *)(const String *, Ref<CSharpScript> *);
 	using FuncScriptManagerBridge_RemoveScriptBridge = void(GD_CLR_STDCALL *)(const CSharpScript *);
 	using FuncScriptManagerBridge_TryReloadRegisteredScriptWithClass = bool(GD_CLR_STDCALL *)(const CSharpScript *);
+	using FuncScriptManagerBridge_UpdateScriptTrampolines = void(GD_CLR_STDCALL *)(const CSharpScript *, bool *,
+			Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddNameToProxyNameMap,
+			Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddMethod,
+			Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddProperty,
+			Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddRaiseSignal);
 	using FuncScriptManagerBridge_UpdateScriptClassInfo = void(GD_CLR_STDCALL *)(const CSharpScript *, CSharpScript::TypeInfo *, Array *, Dictionary *, Dictionary *, Ref<CSharpScript> *);
 	using FuncScriptManagerBridge_SwapGCHandleForType = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, GCHandleIntPtr *, bool);
 	using FuncScriptManagerBridge_GetPropertyInfoList = void(GD_CLR_STDCALL *)(CSharpScript *, Callback_ScriptManagerBridge_GetPropertyInfoList_Add);
@@ -128,6 +138,7 @@ struct ManagedCallbacks {
 	FuncScriptManagerBridge_GetOrCreateScriptBridgeForPath ScriptManagerBridge_GetOrCreateScriptBridgeForPath;
 	FuncScriptManagerBridge_RemoveScriptBridge ScriptManagerBridge_RemoveScriptBridge;
 	FuncScriptManagerBridge_TryReloadRegisteredScriptWithClass ScriptManagerBridge_TryReloadRegisteredScriptWithClass;
+	FuncScriptManagerBridge_UpdateScriptTrampolines ScriptManagerBridge_UpdateScriptTrampolines;
 	FuncScriptManagerBridge_UpdateScriptClassInfo ScriptManagerBridge_UpdateScriptClassInfo;
 	FuncScriptManagerBridge_SwapGCHandleForType ScriptManagerBridge_SwapGCHandleForType;
 	FuncScriptManagerBridge_GetPropertyInfoList ScriptManagerBridge_GetPropertyInfoList;

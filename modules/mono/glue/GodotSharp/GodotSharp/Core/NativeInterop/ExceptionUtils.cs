@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Godot.NativeInterop
 {
-    internal static class ExceptionUtils
+    public static class ExceptionUtils
     {
         public static void PushError(string message)
         {

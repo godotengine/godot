@@ -43,6 +43,15 @@
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!--
+    This is required for trampolines, which are passed as unmanaged delegate pointers.
+    We could wrap pointer parameters in structs to work with them from safe contexts
+    but ultimately, taking the address of the function requires unsafe blocks.
+    -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
   <!--
   The Microsoft.NET.Sdk only understands of the Debug and Release configurations.
   We need to set the following properties manually for ExportDebug and ExportRelease.
