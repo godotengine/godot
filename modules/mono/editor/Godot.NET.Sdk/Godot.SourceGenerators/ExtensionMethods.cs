@@ -54,7 +54,7 @@ namespace Godot.SourceGenerators
 
             while (symbol != null)
             {
-                if (symbol.ContainingAssembly?.Name == "GodotSharp")
+                if (symbol.ContainingAssembly is { Name: "GodotSharp" or "GodotSharpEditor" })
                     return symbol;
 
                 symbol = symbol.BaseType;
@@ -393,5 +393,46 @@ namespace Godot.SourceGenerators
         public static int StartLine(this Location location)
             => location.SourceTree?.GetLineSpan(location.SourceSpan).StartLinePosition.Line
                ?? location.GetLineSpan().StartLinePosition.Line;
+
+        public static INamedTypeSymbol? GetClosestBaseTypeDeclaringGodotInternalMethod(
+            this INamedTypeSymbol classTypeSymbol, string godotInternalMethod)
+        {
+            var top = classTypeSymbol;
+
+            do
+            {
+                top = top.BaseType;
+
+                if (top == null ||
+                    SymbolEqualityComparer.Default.Equals(top, classTypeSymbol.GetGodotScriptNativeClass()))
+                {
+                    // Reached a native class, stop looking.
+                    return null;
+                }
+            } while (
+                // Ignore while the type is extern AND...
+                top.IsExtern && (
+                    // not accessible from a derived class in this project OR...
+                    !IsExternSymbolAccessibleFromDerivedClass(top) ||
+                    // doesn't contain a GodotInternal type THAT IS...
+                    !top.GetTypeMembers("GodotInternal").Any(t =>
+                        // accessible from a derived class in this project AND...
+                        IsExternSymbolAccessibleFromDerivedClass(t)
+                        // has the method we're looking for.
+                        && t.MemberNames.Contains(godotInternalMethod)
+                    )
+                )
+            );
+
+            return top;
+
+            static bool IsExternSymbolAccessibleFromDerivedClass(INamedTypeSymbol externSymbol) =>
+                externSymbol.DeclaredAccessibility
+                    is not (Accessibility.NotApplicable
+                    or Accessibility.Private
+                    // C#'s 'private protected'. Access is granted derived classes BUT only within the same assembly.
+                    or Accessibility.ProtectedAndInternal or Accessibility.ProtectedAndFriend
+                    or Accessibility.Internal);
+        }
     }
 }
