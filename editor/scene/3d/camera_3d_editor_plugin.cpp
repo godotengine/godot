@@ -31,6 +31,7 @@
 #include "camera_3d_editor_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "editor/editor_node.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/foldable_container.h"
@@ -116,16 +117,16 @@ Camera3DPreview::Camera3DPreview(Camera3D *p_camera) {
 
 	RenderingServer::get_singleton()->viewport_attach_camera(sub_viewport->get_viewport_rid(), camera->get_camera());
 
+	EditorNode::get_singleton()->register_hdr_viewport(sub_viewport);
+
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Camera3DPreview::_project_settings_changed));
-	_project_settings_changed();
+	_update_sub_viewport_size();
 }
 
 void Camera3DPreview::_project_settings_changed() {
-	_update_sub_viewport_size();
-
-	const bool hdr_requested = GLOBAL_GET("display/window/hdr/request_hdr_output");
-	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
-	sub_viewport->set_use_hdr_2d(use_hdr_2d || hdr_requested);
+	if (ProjectSettings::get_singleton()->check_changed_settings_in_group("display/window/size")) {
+		_update_sub_viewport_size();
+	}
 }
 
 bool EditorInspectorPluginCamera3DPreview::can_handle(Object *p_object) {

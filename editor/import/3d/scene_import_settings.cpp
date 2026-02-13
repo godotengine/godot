@@ -1995,14 +1995,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	update_view_timer->connect("timeout", callable_mp(this, &SceneImportSettingsDialog::_update_view_gizmos));
 	add_child(update_view_timer);
 
-	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &SceneImportSettingsDialog::_project_settings_changed));
-	_project_settings_changed();
-}
-
-void SceneImportSettingsDialog::_project_settings_changed() {
-	const bool hdr_requested = GLOBAL_GET("display/window/hdr/request_hdr_output");
-	const bool hdr_2d_enabled = GLOBAL_GET("rendering/viewport/hdr_2d");
-	base_viewport->set_use_hdr_2d(hdr_2d_enabled || hdr_requested);
+	EditorNode::get_singleton()->register_hdr_viewport(base_viewport);
 }
 
 SceneImportSettingsDialog::~SceneImportSettingsDialog() {

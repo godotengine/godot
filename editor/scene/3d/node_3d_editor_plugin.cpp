@@ -3226,10 +3226,6 @@ void Node3DEditorViewport::_project_settings_changed() {
 	const bool transparent_background = GLOBAL_GET("rendering/viewport/transparent_background");
 	viewport->set_transparent_background(transparent_background);
 
-	const bool hdr_requested = GLOBAL_GET("display/window/hdr/request_hdr_output");
-	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
-	viewport->set_use_hdr_2d(use_hdr_2d || hdr_requested);
-
 	const bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
 	viewport->set_use_debanding(use_debanding);
 
@@ -6621,6 +6617,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	view_type = VIEW_TYPE_USER;
 	_update_name();
+
+	EditorNode::get_singleton()->register_hdr_viewport(viewport);
 }
 
 Node3DEditorViewport::~Node3DEditorViewport() {
