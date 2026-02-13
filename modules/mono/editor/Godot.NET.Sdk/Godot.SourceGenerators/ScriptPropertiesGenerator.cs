@@ -64,6 +64,9 @@ namespace Godot.SourceGenerators
             INamedTypeSymbol symbol
         )
         {
+            var options = context.Compilation.Options as Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions;
+            bool isUnsafeAllowed = options?.AllowUnsafe ?? false;
+
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
             string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace
                 ? namespaceSymbol.FullQualifiedNameOmitGlobal()
@@ -185,7 +188,9 @@ namespace Godot.SourceGenerators
 
                     source.Append(
                         "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                    source.Append("    internal new static unsafe void GetGodotPropertyTrampolines(")
+                    source.Append("    internal new static ")
+                        .Append(isUnsafeAllowed ? "unsafe " : "")
+                        .Append("void GetGodotPropertyTrampolines(")
                         .Append(CollectorType).Append(" collector)\n    {\n");
 
                     // Generate trampolines
@@ -221,14 +226,14 @@ namespace Godot.SourceGenerators
 
                     foreach (var property in godotClassProperties)
                     {
-                        AppendPropertyTrampolines(source, property.PropertySymbol.Name,
+                        AppendPropertyTrampolines(source, property.PropertySymbol.Name, isUnsafeAllowed,
                             hasGetter: !property.IsWriteOnly,
                             hasSetter: !property.IsReadOnly);
                     }
 
                     foreach (var field in godotClassFields)
                     {
-                        AppendPropertyTrampolines(source, field.FieldSymbol.Name,
+                        AppendPropertyTrampolines(source, field.FieldSymbol.Name, isUnsafeAllowed,
                             hasGetter: true,
                             hasSetter: !field.IsReadOnly);
                     }
@@ -320,23 +325,66 @@ namespace Godot.SourceGenerators
         }
 
         private static void AppendPropertyTrampolines(StringBuilder source,
-            string propertyMemberName, bool hasGetter, bool hasSetter)
+            string propertyMemberName, bool isUnsafeAllowed, bool hasGetter, bool hasSetter)
         {
+            if (!isUnsafeAllowed)
+            {
+                if (hasGetter)
+                {
+                    source.Append("        var aux_delegate_get_").Append(propertyMemberName)
+                        .Append(" = ")
+                        .Append("trampoline_get_").Append(propertyMemberName)
+                        .Append(";\n");
+                }
+
+                if (hasSetter)
+                {
+                    source.Append("        var aux_delegate_set_").Append(propertyMemberName)
+                        .Append(" = ")
+                        .Append("trampoline_set_").Append(propertyMemberName)
+                        .Append(";\n");
+                }
+            }
+
             source.Append("        collector.TryAdd(PropertyName.@")
                 .Append(propertyMemberName)
                 .Append(", (new(");
 
             if (hasGetter)
-                source.Append("&trampoline_get_").Append(propertyMemberName);
+            {
+                if (isUnsafeAllowed)
+                {
+                    source.Append("&trampoline_get_").Append(propertyMemberName);
+                }
+                else
+                {
+                    source.Append("aux_delegate_get_").Append(propertyMemberName)
+                        .Append(".Method.MethodHandle.GetFunctionPointer()");
+                }
+            }
             else
-                source.Append("null");
+            {
+                source.Append(isUnsafeAllowed ? "null" : "global::System.IntPtr.Zero");
+            }
 
             source.Append("), new(");
 
             if (hasSetter)
-                source.Append("&trampoline_set_").Append(propertyMemberName);
+            {
+                if (isUnsafeAllowed)
+                {
+                    source.Append("&trampoline_set_").Append(propertyMemberName);
+                }
+                else
+                {
+                    source.Append("aux_delegate_set_").Append(propertyMemberName)
+                        .Append(".Method.MethodHandle.GetFunctionPointer()");
+                }
+            }
             else
-                source.Append("null");
+            {
+                source.Append(isUnsafeAllowed ? "null" : "global::System.IntPtr.Zero");
+            }
 
             source.Append(")));\n");
         }
