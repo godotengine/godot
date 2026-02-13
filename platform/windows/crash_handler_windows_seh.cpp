@@ -63,32 +63,38 @@ struct module_data {
 	DWORD load_size;
 };
 
-class symbol {
-	typedef IMAGEHLP_SYMBOL64 sym_type;
-	sym_type *sym;
-	static const int max_name_len = 1024;
+static String get_undecorated_symbol_name(HANDLE process, DWORD64 address) {
+	constexpr int max_name_len = 1024;
+	alignas(IMAGEHLP_SYMBOL64) char symbol_buffer[sizeof(IMAGEHLP_SYMBOL64) + max_name_len] = {};
+	IMAGEHLP_SYMBOL64 *sym = reinterpret_cast<IMAGEHLP_SYMBOL64 *>(symbol_buffer);
+	sym->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL64);
+	sym->MaxNameLength = max_name_len;
+	DWORD64 displacement;
 
-public:
-	symbol(HANDLE process, DWORD64 address) :
-			sym((sym_type *)::operator new(sizeof(*sym) + max_name_len)) {
-		memset(sym, '\0', sizeof(*sym) + max_name_len);
-		sym->SizeOfStruct = sizeof(*sym);
-		sym->MaxNameLength = max_name_len;
-		DWORD64 displacement;
-
-		SymGetSymFromAddr64(process, address, &displacement, sym);
-	}
-
-	std::string name() { return std::string(sym->Name); }
-	std::string undecorated_name() {
-		if (*sym->Name == '\0') {
-			return "<couldn't map PC to fn name>";
+	if (SymGetSymFromAddr64(process, address, &displacement, sym) && sym->Name[0] != '\0') {
+		char und_name[max_name_len];
+		if (UnDecorateSymbolName(sym->Name, und_name, max_name_len, UNDNAME_COMPLETE)) {
+			return String(und_name);
 		}
-		std::vector<char> und_name(max_name_len);
-		UnDecorateSymbolName(sym->Name, &und_name[0], max_name_len, UNDNAME_COMPLETE);
-		return std::string(&und_name[0], strlen(&und_name[0]));
+		return String(sym->Name);
 	}
-};
+
+	// If the symbol name can't be found, the module name can still be useful to identify where the crash happened.
+	IMAGEHLP_MODULE64 module_info = {};
+	module_info.SizeOfStruct = sizeof(module_info);
+	if (SymGetModuleInfo64(process, address, &module_info)) {
+		const DWORD64 offset = address - module_info.BaseOfImage;
+
+		if (module_info.ModuleName[0] != '\0') {
+			return vformat("%s+0x%x", module_info.ModuleName, (uint64_t)offset);
+		}
+		if (module_info.ImageName[0] != '\0') {
+			return vformat("%s+0x%x", module_info.ImageName, (uint64_t)offset);
+		}
+	}
+
+	return String("<couldn't map PC to fn name>");
+}
 
 class get_mod_info {
 	HANDLE process;
@@ -110,9 +116,7 @@ public:
 		ret.image_name = temp;
 		GetModuleBaseName(process, module, temp, sizeof(temp));
 		ret.module_name = temp;
-		std::vector<char> img(ret.image_name.begin(), ret.image_name.end());
-		std::vector<char> mod(ret.module_name.begin(), ret.module_name.end());
-		SymLoadModule64(process, nullptr, &img[0], &mod[0], (DWORD64)ret.base_address, ret.load_size);
+		SymLoadModule64(process, nullptr, ret.image_name.c_str(), ret.module_name.c_str(), (DWORD64)ret.base_address, ret.load_size);
 		return ret;
 	}
 };
@@ -207,12 +211,12 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 			skip_first = false;
 		} else {
 			if (frame.AddrPC.Offset != 0) {
-				std::string fnName = symbol(process, frame.AddrPC.Offset).undecorated_name();
+				String fn_name = get_undecorated_symbol_name(process, frame.AddrPC.Offset);
 
 				if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &offset_from_symbol, &line)) {
-					print_error(vformat("[%d] %s (%s:%d)", n, fnName.c_str(), (char *)line.FileName, (int)line.LineNumber));
+					print_error(vformat("[%d] %s (%s:%d)", n, fn_name, (char *)line.FileName, (int)line.LineNumber));
 				} else {
-					print_error(vformat("[%d] %s", n, fnName.c_str()));
+					print_error(vformat("[%d] %s", n, fn_name));
 				}
 			} else {
 				print_error(vformat("[%d] ???", n));
