@@ -1287,6 +1287,10 @@ void WaylandThread::_wl_output_on_mode(void *data, struct wl_output *wl_output, 
 	ScreenState *ss = (ScreenState *)data;
 	ERR_FAIL_NULL(ss);
 
+	if (!(flags & WL_OUTPUT_MODE_CURRENT)) {
+		return;
+	}
+
 	ss->pending_data.size.width = width;
 	ss->pending_data.size.height = height;
 
