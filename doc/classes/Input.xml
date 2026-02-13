@@ -584,26 +584,26 @@
 				func calibrate_motion():
 					Input.start_joy_motion_sensors_calibration(0)
 
-					# Wait for some time
+					# Wait for some time.
 					await get_tree().create_timer(1.0).timeout
 
 					Input.stop_joy_motion_sensors_calibration(0)
 					# The joypad is now calibrated.
 
 				func move_object(delta):
-					var object: Node3D = ... # Put your object here.
+					var node: Node3D = ... # Put your node here.
 
 					var gyro := Input.get_joy_gyroscope(0)
-					object.rotation.x -= -gyro.y * GYRO_SENSITIVITY * 0.5 * delta # Use rotation around the Y axis (yaw) here
-					object.rotation.y += -gyro.x * GYRO_SENSITIVITY * delta # Use rotation around the X axis (pitch) here
+					node.rotation.x -= -gyro.y * GYRO_SENSITIVITY * delta # Use rotation around the Y axis (yaw) here.
+					node.rotation.y += -gyro.x * GYRO_SENSITIVITY * delta # Use rotation around the X axis (pitch) here.
 				[/gdscript]
 				[csharp]
-				const double GYRO_SENSITIVITY = 10.0;
+				private const float GyroSensitivity = 10.0;
 
 				public override void _Ready()
 				{
 					// In this example we only use the first connected joypad (id 0).
-					if (!Input.GetConnectedJoypads().Has(0))
+					if (!Input.GetConnectedJoypads().Contains(0))
 					{
 						return;
 					}
@@ -631,12 +631,12 @@
 					}
 				}
 
-				private void CalibrateMotion()
+				private async Task CalibrateMotion()
 				{
 					Input.StartJoyMotionSensorsCalibration(0);
 
 					// Wait for some time.
-					await ToSignal(GetTree().CreateTimer(1.0), "timeout");
+					await ToSignal(GetTree().CreateTimer(1.0), SceneTreeTimer.SignalName.Timeout);
 
 					Input.StopJoyMotionSensorsCalibration(0);
 					// The joypad is now calibrated.
@@ -644,12 +644,12 @@
 
 				private void MoveObject(double delta)
 				{
-					Node3D object = ... ; // Put your object here.
+					Node3D node = ... ; // Put your object here.
 					Vector3 gyro = Input.GetJoyGyroscope(0);
-					Vector3 rotation = object.Rotation;
-					rotation.X -= -gyro.Y * GYRO_SENSITIVITY * 0.5 * delta; // Use rotation around the Y axis (yaw) here
-					rotation.Y += -gyro.X * GYRO_SENSITIVITY * delta; // Use rotation around the X axis (pitch) here
-					object.Rotation = rotation;
+					Vector3 rotation = node.Rotation;
+					rotation.X -= -gyro.Y * GyroSensitivity * (float)delta; // Use rotation around the Y axis (yaw) here.
+					rotation.Y += -gyro.X * GyroSensitivity * (float)delta; // Use rotation around the X axis (pitch) here.
+					node.Rotation = rotation;
 				}
 				[/csharp]
 				[/codeblocks]
