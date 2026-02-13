@@ -126,13 +126,15 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				}
 				frame->set_value(player->get_current_animation_position());
 				track_editor->set_anim_pos(player->get_current_animation_position());
-			} else if (!player->is_valid()) {
-				// Reset timeline when the player has been stopped externally
-				frame->set_value(0);
-			} else if (last_active) {
-				// Need the last frame after it stopped.
-				frame->set_value(player->get_current_animation_position());
-				track_editor->set_anim_pos(player->get_current_animation_position());
+			} else {
+				if (!player->is_valid()) {
+					// Reset timeline when the player has been stopped externally
+					frame->set_value(0);
+				} else if (last_active) {
+					// Need the last frame after it stopped.
+					frame->set_value(player->get_current_animation_position());
+					track_editor->set_anim_pos(player->get_current_animation_position());
+				}
 				stop->set_button_icon(stop_icon);
 			}
 
@@ -317,7 +319,7 @@ void AnimationPlayerEditor::_play_pressed() {
 
 	if (!current.is_empty()) {
 		if (current == player->get_assigned_animation()) {
-			player->stop(); //so it won't blend with itself
+			player->stop(); // So it won't blend with itself.
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		PackedStringArray markers = track_editor->get_selected_section();
@@ -338,9 +340,13 @@ void AnimationPlayerEditor::_play_from_pressed() {
 	String current = _get_current();
 
 	if (!current.is_empty()) {
+		if (!player->is_valid()) {
+			_play_pressed(); // Fallback.
+			return;
+		}
 		double time = player->get_current_animation_position();
 		if (current == player->get_assigned_animation() && player->is_playing()) {
-			player->clear_caches(); //so it won't blend with itself
+			player->clear_caches(); // So it won't blend with itself.
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->seek_internal(time, true, true, true);
@@ -369,7 +375,7 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 	String current = _get_current();
 	if (!current.is_empty()) {
 		if (current == player->get_assigned_animation()) {
-			player->stop(); //so it won't blend with itself
+			player->stop(); // So it won't blend with itself.
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		PackedStringArray markers = track_editor->get_selected_section();
@@ -390,9 +396,13 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 	String current = _get_current();
 
 	if (!current.is_empty()) {
+		if (!player->is_valid()) {
+			_play_bw_pressed(); // Fallback.
+			return;
+		}
 		double time = player->get_current_animation_position();
 		if (current == player->get_assigned_animation() && player->is_playing()) {
-			player->clear_caches(); //so it won't blend with itself
+			player->clear_caches(); // So it won't blend with itself.
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->seek_internal(time, true, true, true);
@@ -1546,6 +1556,7 @@ void AnimationPlayerEditor::_current_animation_changed(const StringName &p_name)
 void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) {
 	frame->set_max(p_len);
 }
+
 void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_timeline_only, bool p_update_position_only) {
 	timeline_position = p_pos;
 
