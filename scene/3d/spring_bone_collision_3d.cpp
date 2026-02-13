@@ -175,7 +175,7 @@ void SpringBoneCollision3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rotation_offset", "offset"), &SpringBoneCollision3D::set_rotation_offset);
 	ClassDB::bind_method(D_METHOD("get_rotation_offset"), &SpringBoneCollision3D::get_rotation_offset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bone_name"), "set_bone_name", "get_bone_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bone_name"), "set_bone_name", "get_bone_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_bone", "get_bone");
 
 	ADD_GROUP("Offset", "");

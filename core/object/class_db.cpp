@@ -1517,6 +1517,19 @@ void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinf
 
 		int exp_args = 1 + (p_index >= 0 ? 1 : 0);
 		ERR_FAIL_COND_MSG(mb_set->get_argument_count() != exp_args, vformat("Invalid function for setter '%s::%s' for property '%s'.", p_class, p_setter, p_pinfo.name));
+
+		// Type of the last arg for the setter function (the value passed in).
+		Variant::Type setter_arg_type = mb_set->get_argument_type(exp_args - 1);
+
+		// If property type and setter arg type are not identical, we want feedback.
+		if (unlikely(setter_arg_type != p_pinfo.type)) {
+			// If the types are not compatible with each other, throw an error!
+			bool possibly_convertible = Variant::can_convert(setter_arg_type, p_pinfo.type) || Variant::can_convert(p_pinfo.type, setter_arg_type);
+			ERR_FAIL_COND_MSG(!possibly_convertible, vformat("Type of property '%s' : '%s' is not convertible to or from the arg type of setter '%s::%s' : '%s'.", p_pinfo.name, Variant::get_type_name(p_pinfo.type), p_class, p_setter, Variant::get_type_name(setter_arg_type)));
+
+			// If not, we want at least a warning
+			WARN_PRINT(vformat("Type of property '%s' : '%s' does not match return type of setter '%s::%s' : '%s'.", p_pinfo.name, Variant::get_type_name(p_pinfo.type), p_class, p_setter, Variant::get_type_name(setter_arg_type)));
+		}
 #endif // DEBUG_ENABLED
 	}
 
@@ -1529,6 +1542,18 @@ void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinf
 
 		int exp_args = 0 + (p_index >= 0 ? 1 : 0);
 		ERR_FAIL_COND_MSG(mb_get->get_argument_count() != exp_args, vformat("Invalid function for getter '%s::%s' for property '%s'.", p_class, p_getter, p_pinfo.name));
+
+		Variant::Type getter_return_type = mb_get->get_return_info().type;
+
+		// If property type and getter return type are not identical, we want feedback.
+		if (unlikely(getter_return_type != p_pinfo.type)) {
+			// If the types are not compatible with each other, throw an error!
+			bool possibly_convertible = Variant::can_convert(getter_return_type, p_pinfo.type) || Variant::can_convert(p_pinfo.type, getter_return_type);
+			ERR_FAIL_COND_MSG(!possibly_convertible, vformat("Type of property '%s' : '%s' is not convertible to or from the return type of getter '%s::%s' : '%s'.", p_pinfo.name, Variant::get_type_name(p_pinfo.type), p_class, p_getter, Variant::get_type_name(mb_get->get_return_info().type)));
+
+			// If not, we want at least a warning
+			WARN_PRINT(vformat("Type of property '%s' : '%s' does not match return type of getter '%s::%s' : '%s'.", p_pinfo.name, Variant::get_type_name(p_pinfo.type), p_class, p_getter, Variant::get_type_name(getter_return_type)));
+		}
 #endif // DEBUG_ENABLED
 	}
 

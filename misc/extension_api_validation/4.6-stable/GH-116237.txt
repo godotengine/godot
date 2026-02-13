@@ -1,0 +1,44 @@
+GH-116237
+--------------
+Validate extension JSON: Error: Field 'classes/TouchScreenButton/properties/action': type changed value in new API, from "StringName" to "String".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeVarying/properties/varying_name': type changed value in new API, from "StringName" to "String".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeParameterRef/properties/parameter_name': type changed value in new API, from "StringName" to "String".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeParameter/properties/parameter_name': type changed value in new API, from "StringName" to "String".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeInput/properties/input_name': type changed value in new API, from "StringName" to "String".
+Validate extension JSON: Error: Field 'classes/NavigationMesh/properties/geometry_source_group_name': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/NavigationMeshSourceGeometryData3D/properties/vertices': type changed value in new API, from "PackedVector3Array" to "PackedFloat32Array".
+Validate extension JSON: Error: Field 'classes/BoneAttachment3D/properties/bone_name': type changed value in new API, from "StringName" to "String".
+Validate extension JSON: Error: Field 'classes/XRFaceModifier3D/properties/face_tracker': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/XRHandModifier3D/properties/hand_tracker': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/XRBodyModifier3D/properties/body_tracker': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/XRNode3D/properties/tracker': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/XRNode3D/properties/pose': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/SpringBoneCollision3D/properties/bone_name': type changed value in new API, from "StringName" to "String".
+Validate extension JSON: Error: Field 'classes/GLTFObjectModelProperty/properties/json_pointers': type changed value in new API, from "PackedStringArray" to "Array".
+Validate extension JSON: Error: Field 'classes/NavigationPolygon/properties/source_geometry_group_name': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/ConvexPolygonShape3D/properties/points': type changed value in new API, from "Array" to "PackedVector3Array".
+Validate extension JSON: Error: Field 'classes/EditorSpinSlider/properties/control_state': type changed value in new API, from "bool" to "int".
+Validate extension JSON: Error: Field 'classes/RegExMatch/properties/strings': type changed value in new API, from "Array" to "PackedStringArray".
+Validate extension JSON: Error: Field 'classes/OpenXRMarkerTracker/properties/bounds_size': type changed value in new API, from "int" to "Vector2".
+Validate extension JSON: Error: Field 'classes/OpenXRPlaneTracker/properties/bounds_size': type changed value in new API, from "int" to "Vector2".
+Validate extension JSON: Error: Field 'classes/XRServer/properties/world_origin': type changed value in new API, from "Vector3" to "Transform3D".
+Validate extension JSON: Error: Field 'classes/XRPose/properties/name': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/XRPose/properties/transform': type changed value in new API, from "String" to "Transform3D".
+Validate extension JSON: Error: Field 'classes/XRPose/properties/linear_velocity': type changed value in new API, from "String" to "Vector3".
+Validate extension JSON: Error: Field 'classes/XRPose/properties/angular_velocity': type changed value in new API, from "String" to "Vector3".
+Validate extension JSON: Error: Field 'classes/XRTracker/properties/name': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/RenderSceneBuffersConfiguration/properties/fsr_sharpness': type changed value in new API, from "bool" to "float".
+Validate extension JSON: Error: Field 'classes/RenderSceneBuffersConfiguration/properties/texture_mipmap_bias': type changed value in new API, from "bool" to "float".
+Validate extension JSON: Error: Field 'classes/AudioEffectPitchShift/properties/oversampling': type changed value in new API, from "float" to "int".
+Validate extension JSON: Error: Field 'classes/Window/properties/theme_type_variation': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/WebSocketPeer/properties/heartbeat_interval': type changed value in new API, from "int" to "float".
+Validate extension JSON: Error: Field 'classes/Control/properties/theme_type_variation': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/CodeEdit/properties/line_length_guidelines': type changed value in new API, from "PackedInt32Array" to "Array".
+Validate extension JSON: Error: Field 'classes/CodeEdit/properties/delimiter_strings': type changed value in new API, from "PackedStringArray" to "Array".
+Validate extension JSON: Error: Field 'classes/CodeEdit/properties/delimiter_comments': type changed value in new API, from "PackedStringArray" to "Array".
+Validate extension JSON: Error: Field 'classes/CodeEdit/properties/code_completion_prefixes': type changed value in new API, from "PackedStringArray" to "Array".
+Validate extension JSON: Error: Field 'classes/CodeEdit/properties/indent_automatic_prefixes': type changed value in new API, from "PackedStringArray" to "Array".
+Validate extension JSON: Error: Field 'classes/AnimatedSprite3D/properties/autoplay': type changed value in new API, from "StringName" to "String".
+Validate extension JSON: Error: Field 'classes/AnimatedSprite2D/properties/autoplay': type changed value in new API, from "StringName" to "String".
+
+Type for properties modified to match the return type of getter.
