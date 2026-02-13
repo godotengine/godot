@@ -549,7 +549,7 @@ namespace Godot.NativeInterop
         internal readonly unsafe godot_string_name* GetUnsafeAddress()
             => (godot_string_name*)Unsafe.AsPointer(ref Unsafe.AsRef(in _data));
 
-        private IntPtr _data;
+        internal IntPtr _data;
 
         public void Dispose()
         {
@@ -602,7 +602,7 @@ namespace Godot.NativeInterop
         internal struct movable
 #pragma warning restore CS8981
         {
-            private IntPtr _data;
+            internal IntPtr _data;
 
             public static unsafe explicit operator movable(in godot_string_name value)
                 => *(movable*)CustomUnsafe.AsPointer(ref CustomUnsafe.AsRef(value));
