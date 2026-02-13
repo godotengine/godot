@@ -2240,6 +2240,8 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 				material->data = material_get_data_request_function(new_type)(shader->data);
 				material->data->self = material->self;
 				material->data->set_next_pass(material->next_pass);
+				material->data->set_depth_bias_slope_factor(material->depth_bias_slope_factor);
+				material->data->set_depth_bias_constant_factor(material->depth_bias_constant_factor);
 				material->data->set_render_priority(material->priority);
 			}
 			material->shader_type = new_type;
@@ -2490,6 +2492,8 @@ void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
 	material->data = material_data_request_func[shader->type](shader->data);
 	material->data->self = p_material;
 	material->data->set_next_pass(material->next_pass);
+	material->data->set_depth_bias_slope_factor(material->depth_bias_slope_factor);
+	material->data->set_depth_bias_constant_factor(material->depth_bias_constant_factor);
 	material->data->set_render_priority(material->priority);
 	//updating happens later
 	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
@@ -2547,6 +2551,20 @@ void MaterialStorage::material_set_next_pass(RID p_material, RID p_next_material
 		material->data->set_next_pass(p_next_material);
 	}
 
+	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
+}
+
+void MaterialStorage::material_set_depth_bias_slope_factor(RID p_material, float p_slope_factor) {
+	Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL(material);
+	material->depth_bias_slope_factor = p_slope_factor;
+	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
+}
+
+void MaterialStorage::material_set_depth_bias_constant_factor(RID p_material, float p_constant_factor) {
+	Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL(material);
+	material->depth_bias_constant_factor = p_constant_factor;
 	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 }
 

@@ -97,6 +97,8 @@ public:
 		void set_as_used();
 
 		virtual void set_render_priority(int p_priority) = 0;
+		virtual void set_depth_bias_constant_factor(float p_constant_factor) = 0;
+		virtual void set_depth_bias_slope_factor(float p_slope_factor) = 0;
 		virtual void set_next_pass(RID p_pass) = 0;
 		virtual bool update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) = 0;
 		virtual ~MaterialData();

@@ -77,6 +77,30 @@ int Material::get_render_priority() const {
 	return render_priority;
 }
 
+void Material::set_depth_bias_constant_factor(float p_constant_factor) {
+	depth_bias_constant_factor = p_constant_factor;
+
+	if (material.is_valid()) {
+		RS::get_singleton()->material_set_depth_bias_constant_factor(material, depth_bias_constant_factor);
+	}
+}
+
+float Material::get_depth_bias_constant_factor() const {
+	return depth_bias_constant_factor;
+}
+
+void Material::set_depth_bias_slope_factor(float p_slope_factor) {
+	depth_bias_slope_factor = p_slope_factor;
+
+	if (material.is_valid()) {
+		RS::get_singleton()->material_set_depth_bias_slope_factor(material, depth_bias_slope_factor);
+	}
+}
+
+float Material::get_depth_bias_slope_factor() const {
+	return depth_bias_slope_factor;
+}
+
 RID Material::get_rid() const {
 	return material;
 }
@@ -160,12 +184,21 @@ void Material::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_render_priority", "priority"), &Material::set_render_priority);
 	ClassDB::bind_method(D_METHOD("get_render_priority"), &Material::get_render_priority);
 
+	ClassDB::bind_method(D_METHOD("set_depth_bias_constant_factor", "depth_bias"), &Material::set_depth_bias_constant_factor);
+	ClassDB::bind_method(D_METHOD("get_depth_bias_constant_factor"), &Material::get_depth_bias_constant_factor);
+
+	ClassDB::bind_method(D_METHOD("set_depth_bias_slope_factor", "depth_bias"), &Material::set_depth_bias_slope_factor);
+	ClassDB::bind_method(D_METHOD("get_depth_bias_slope_factor"), &Material::get_depth_bias_slope_factor);
+
 	ClassDB::bind_method(D_METHOD("inspect_native_shader_code"), &Material::inspect_native_shader_code);
 	ClassDB::set_method_flags(get_class_static(), StringName("inspect_native_shader_code"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ClassDB::bind_method(D_METHOD("create_placeholder"), &Material::create_placeholder);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RENDER_PRIORITY_MIN) + "," + itos(RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
+	ADD_GROUP("Depth Bias", "depth_bias_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_bias_constant_factor"), "set_depth_bias_constant_factor", "get_depth_bias_constant_factor");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_bias_slope_factor"), "set_depth_bias_slope_factor", "get_depth_bias_slope_factor");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "next_pass", PROPERTY_HINT_RESOURCE_TYPE, Material::get_class_static()), "set_next_pass", "get_next_pass");
 
 	BIND_CONSTANT(RENDER_PRIORITY_MAX);
@@ -179,6 +212,8 @@ void Material::_bind_methods() {
 
 Material::Material() {
 	render_priority = 0;
+	depth_bias_constant_factor = 0.0f;
+	depth_bias_slope_factor = 0.0f;
 }
 
 Material::~Material() {

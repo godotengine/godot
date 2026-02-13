@@ -44,6 +44,9 @@ class Material : public Resource {
 	Ref<Material> next_pass;
 	int render_priority;
 
+	float depth_bias_constant_factor;
+	float depth_bias_slope_factor;
+
 	enum {
 		INIT_STATE_UNINITIALIZED,
 		INIT_STATE_INITIALIZING,
@@ -81,6 +84,12 @@ public:
 
 	void set_render_priority(int p_priority);
 	int get_render_priority() const;
+
+	void set_depth_bias_constant_factor(float p_depth_bias);
+	float get_depth_bias_constant_factor() const;
+
+	void set_depth_bias_slope_factor(float p_depth_bias);
+	float get_depth_bias_slope_factor() const;
 
 	virtual RID get_rid() const override;
 	virtual RID get_shader_rid() const;

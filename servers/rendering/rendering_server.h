@@ -288,6 +288,9 @@ public:
 
 	virtual void material_set_render_priority(RID p_material, int priority) = 0;
 
+	virtual void material_set_depth_bias_constant_factor(RID p_material, float p_constant_factor) = 0;
+	virtual void material_set_depth_bias_slope_factor(RID p_material, float p_slope_factor) = 0;
+
 	virtual void material_set_next_pass(RID p_material, RID p_next_material) = 0;
 
 	virtual void material_set_use_debanding(bool p_enable) = 0;

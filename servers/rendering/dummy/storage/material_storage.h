@@ -124,6 +124,9 @@ public:
 
 	virtual void material_set_next_pass(RID p_material, RID p_next_material) override;
 
+	virtual void material_set_depth_bias_constant_factor(RID p_material, float p_constant_factor) override {}
+	virtual void material_set_depth_bias_slope_factor(RID p_material, float p_slope_factor) override {}
+
 	virtual bool material_is_animated(RID p_material) override { return false; }
 	virtual bool material_casts_shadows(RID p_material) override { return false; }
 	virtual RS::CullMode material_get_cull_mode(RID p_material) const override { return RS::CULL_MODE_DISABLED; }

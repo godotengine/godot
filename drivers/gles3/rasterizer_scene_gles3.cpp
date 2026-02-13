@@ -3772,6 +3772,18 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				}
 			}
 
+			// Before issuing draw calls, apply depth bias from material if needed.
+			if (material_data->depth_bias_constant_factor != 0.0f || material_data->depth_bias_slope_factor != 0.0f) {
+				glEnable(GL_POLYGON_OFFSET_FILL);
+				glEnable(GL_POLYGON_OFFSET_LINE);
+				glEnable(GL_POLYGON_OFFSET_POINT);
+				glPolygonOffset(material_data->depth_bias_slope_factor, material_data->depth_bias_constant_factor);
+			} else {
+				glDisable(GL_POLYGON_OFFSET_FILL);
+				glDisable(GL_POLYGON_OFFSET_LINE);
+				glDisable(GL_POLYGON_OFFSET_POINT);
+			}
+
 			if (inst->instance_count > 0) {
 				// Using MultiMesh or Particles.
 				// Bind instance buffers.
