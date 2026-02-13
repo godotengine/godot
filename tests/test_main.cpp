@@ -209,6 +209,10 @@
 
 #include "modules/modules_tests.gen.h"
 
+#ifdef TOOLS_ENABLED
+#include "tests/editor/translation_tests.h"
+#endif //TOOLS_ENABLED
+
 #include "tests/display_server_mock.h"
 #include "tests/test_macros.h"
 

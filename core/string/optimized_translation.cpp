@@ -309,6 +309,11 @@ Vector<String> OptimizedTranslation::get_translated_message_list() const {
 	return msgs;
 }
 
+HashMap<StringName, Vector<StringName>> OptimizedTranslation::get_translated_message_map() const {
+	WARN_PRINT_ONCE("OptimizedTranslation does not store the message texts to be translated.");
+	return HashMap<StringName, Vector<StringName>>();
+}
+
 StringName OptimizedTranslation::get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context) const {
 	// The use of plurals translation is not yet supported in OptimizedTranslation.
 	return get_message(p_src_text, p_context);
