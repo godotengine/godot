@@ -1296,6 +1296,15 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish     99.990 frog"));
 
+	///// Argument indices.
+	format = "fish %2$d frog %1$s xx";
+	args.clear();
+	args.push_back("test");
+	args.push_back(5);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish 5 frog test xx"));
+
 	///// Errors
 
 	// More formats than arguments.
