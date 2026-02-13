@@ -30,7 +30,7 @@ namespace Godot.Bridge
         public delegate* unmanaged<IntPtr, godot_bool> ScriptManagerBridge_TryReloadRegisteredScriptWithClass;
         public delegate* unmanaged<IntPtr, godot_bool*,
             delegate* unmanaged<IntPtr, godot_string_name*, int, godot_string_name*, void>,
-            delegate* unmanaged<IntPtr, godot_string_name*, int, void*, void>,
+            delegate* unmanaged<IntPtr, godot_string_name*, int, void*, godot_bool, void>,
             delegate* unmanaged<IntPtr, godot_string_name*, void*, void*, void>,
             delegate* unmanaged<IntPtr, godot_string_name*, int, void*, void>,
             void> ScriptManagerBridge_UpdateScriptTrampolines;
@@ -39,6 +39,7 @@ namespace Godot.Bridge
         public delegate* unmanaged<IntPtr, delegate* unmanaged<IntPtr, godot_string*, void*, int, void>, void> ScriptManagerBridge_GetPropertyInfoList;
         public delegate* unmanaged<IntPtr, delegate* unmanaged<IntPtr, void*, int, void>, void> ScriptManagerBridge_GetPropertyDefaultValues;
         public delegate* unmanaged<IntPtr, godot_string_name*, godot_variant**, int, godot_variant_call_error*, godot_variant*, godot_bool> ScriptManagerBridge_CallStatic;
+        public delegate* unmanaged<MethodTrampolineDelegate, godot_variant**, int, godot_variant_call_error*, godot_variant*, godot_bool> ScriptManagerBridge_CallStaticWithTrampoline;
         public delegate* unmanaged<IntPtr, godot_string_name*, godot_variant**, int, godot_variant_call_error*, godot_variant*, godot_bool> CSharpInstanceBridge_Call;
         public delegate* unmanaged<IntPtr, godot_string_name*, godot_variant*, godot_bool> CSharpInstanceBridge_Set;
         public delegate* unmanaged<IntPtr, godot_string_name*, godot_variant*, godot_bool> CSharpInstanceBridge_Get;
@@ -88,6 +89,7 @@ namespace Godot.Bridge
                 ScriptManagerBridge_GetPropertyInfoList = &ScriptManagerBridge.GetPropertyInfoList,
                 ScriptManagerBridge_GetPropertyDefaultValues = &ScriptManagerBridge.GetPropertyDefaultValues,
                 ScriptManagerBridge_CallStatic = &ScriptManagerBridge.CallStatic,
+                ScriptManagerBridge_CallStaticWithTrampoline = &ScriptManagerBridge.CallStaticWithTrampoline,
                 CSharpInstanceBridge_Call = &CSharpInstanceBridge.Call,
                 CSharpInstanceBridge_Set = &CSharpInstanceBridge.Set,
                 CSharpInstanceBridge_Get = &CSharpInstanceBridge.Get,
