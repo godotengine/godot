@@ -232,6 +232,9 @@ private:
 	/// Also includes methods declared in inherited scripts.
 	AHashMap<MethodKey, StringName> name_to_proxy_name_map;
 
+	/// Only includes methods declared in this exact script, not inherited ones.
+	AHashMap<MethodKey, godotsharp::MethodTrampoline> static_method_trampolines;
+
 	/// Also includes methods declared in inherited scripts.
 	AHashMap<MethodKey, godotsharp::MethodTrampoline> method_trampolines;
 	/// Also includes properties declared in inherited scripts.
@@ -274,6 +277,9 @@ private:
 	static void update_script_class_info(Ref<CSharpScript> p_script);
 
 	void _get_script_signal_list(List<MethodInfo> *r_signals, bool p_include_base) const;
+
+	static bool _callp_static(const CSharpScript *p_script, const StringName &p_method,
+			const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &r_ret);
 
 protected:
 	static void _bind_methods();

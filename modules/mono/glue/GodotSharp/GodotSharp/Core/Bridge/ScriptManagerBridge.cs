@@ -18,7 +18,7 @@ namespace Godot.Bridge
     using unsafe TryAddNameToProxyNameMapDelegate = delegate* unmanaged<
         IntPtr, godot_string_name*, int, godot_string_name*, void>;
     using unsafe TryAddMethodTrampolineDelegate = delegate* unmanaged<
-        IntPtr, godot_string_name*, int, void*, void>;
+        IntPtr, godot_string_name*, int, void*, godot_bool, void>;
     using unsafe TryAddPropertyTrampolineDelegate = delegate* unmanaged<
         IntPtr, godot_string_name*, void*, void*, void>;
     using unsafe TryAddRaiseSignalTrampolineDelegate = delegate* unmanaged<
@@ -1155,7 +1155,8 @@ namespace Godot.Bridge
             public unsafe void TryAdd(MethodKey methodKey, MethodTrampoline trampoline)
             {
                 var nameSelf = (godot_string_name)methodKey.Name.NativeValue;
-                _tryAddDelegate(_scriptPtr, &nameSelf, methodKey.ArgumentCount, trampoline.TrampolineDelegate);
+                _tryAddDelegate(_scriptPtr, &nameSelf, methodKey.ArgumentCount,
+                    trampoline.TrampolineDelegate, trampoline.IsStatic.ToGodotBool());
             }
         }
 
@@ -1450,10 +1451,8 @@ namespace Godot.Bridge
 
         [UnmanagedCallersOnly]
         internal static unsafe godot_bool CallStatic(IntPtr scriptPtr, godot_string_name* method,
-            godot_variant** args, int argCount, godot_variant_call_error* refCallError, godot_variant* ret)
+            godot_variant** args, int argCount, godot_variant_call_error* refCallError, godot_variant* outRet)
         {
-            // TODO: Optimize with source generators and delegate pointers.
-
             try
             {
                 Type scriptType = _scriptTypeBiMap.GetScriptType(scriptPtr);
@@ -1476,7 +1475,7 @@ namespace Godot.Bridge
                                 out godot_variant retValue);
                         if (invoked)
                         {
-                            *ret = retValue;
+                            *outRet = retValue;
                             return godot_bool.True;
                         }
                     }
@@ -1487,13 +1486,30 @@ namespace Godot.Bridge
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
-                *ret = default;
+                *outRet = default;
                 return godot_bool.False;
             }
 
-            *ret = default;
+            *outRet = default;
             (*refCallError).Error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INVALID_METHOD;
             return godot_bool.False;
+        }
+
+        [UnmanagedCallersOnly]
+        internal static unsafe godot_bool CallStaticWithTrampoline(MethodTrampolineDelegate methodTrampoline,
+            godot_variant** args, int argCount, godot_variant_call_error* refCallError, godot_variant* outRet)
+        {
+            try
+            {
+                *outRet = methodTrampoline(null, new NativeVariantPtrArgs(args, argCount), ref *refCallError);
+                return godot_bool.True;
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                *outRet = default;
+                return godot_bool.False;
+            }
         }
 
         [UnmanagedCallersOnly]

@@ -13,13 +13,21 @@ namespace Godot.Bridge;
 /// </summary>
 public readonly struct MethodTrampoline
 {
-    public unsafe MethodTrampoline(MethodTrampolineDelegate trampolineDelegate)
-        => TrampolineDelegate = trampolineDelegate;
+    public unsafe MethodTrampoline(MethodTrampolineDelegate trampolineDelegate, bool isStatic)
+    {
+        TrampolineDelegate = trampolineDelegate;
+        IsStatic = isStatic;
+    }
 
-    public unsafe MethodTrampoline(IntPtr trampolineDelegate)
-        => TrampolineDelegate = (MethodTrampolineDelegate)trampolineDelegate;
+    public unsafe MethodTrampoline(IntPtr trampolineDelegate, bool isStatic)
+    {
+        TrampolineDelegate = (MethodTrampolineDelegate)trampolineDelegate;
+        IsStatic = isStatic;
+    }
 
     public unsafe MethodTrampolineDelegate TrampolineDelegate { get; }
+
+    public bool IsStatic { get; }
 }
 
 /// <summary>

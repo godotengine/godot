@@ -2374,6 +2374,7 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 
 // Extract information about the script using the mono class.
 void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
+	p_script->static_method_trampolines.clear();
 	p_script->method_trampolines.clear();
 	p_script->property_trampolines.clear();
 	p_script->raise_signal_trampolines.clear();
@@ -2385,10 +2386,14 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 		}
 	};
 
-	auto try_add_method_tramp = [](CSharpScript *p_scr, const StringName *p_name, int32_t p_argc, godotsharp::MethodTrampoline p_trampoline) {
+	auto try_add_method_tramp = [](CSharpScript *p_scr, const StringName *p_name, int32_t p_argc,
+										godotsharp::MethodTrampoline p_trampoline, bool p_is_static) {
 		MethodKey method_key{ *p_name, p_argc };
 		if (!p_scr->method_trampolines.has(method_key)) {
 			p_scr->method_trampolines.insert_new(method_key, p_trampoline);
+		}
+		if (p_is_static) {
+			p_scr->static_method_trampolines.insert_new(method_key, p_trampoline);
 		}
 	};
 
@@ -2415,7 +2420,8 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 		}
 	};
 
-	auto try_add_raise_signal_tramp = [](CSharpScript *p_scr, const StringName *p_name, int32_t p_argc, godotsharp::RaiseSignalTrampoline p_trampoline) {
+	auto try_add_raise_signal_tramp = [](CSharpScript *p_scr, const StringName *p_name, int32_t p_argc,
+											  godotsharp::RaiseSignalTrampoline p_trampoline) {
 		SignalKey signal_key{ *p_name, p_argc };
 		if (!p_scr->raise_signal_trampolines.has(signal_key)) {
 			p_scr->raise_signal_trampolines.insert_new(signal_key, p_trampoline);
@@ -2793,13 +2799,37 @@ MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 	return mi;
 }
 
-Variant CSharpScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	if (valid) {
-		Variant ret;
-		bool ok = GDMonoCache::managed_callbacks.ScriptManagerBridge_CallStatic(this, &p_method, p_args, p_argcount, &r_error, &ret);
-		if (ok) {
-			return ret;
+bool CSharpScript::_callp_static(const CSharpScript *p_script, const StringName &p_method,
+		const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &r_ret) {
+	if (!p_script->valid) {
+		return false;
+	}
+
+	const MethodKey method_key{ p_method, p_argcount };
+
+	const godotsharp::MethodTrampoline *trampoline = p_script->static_method_trampolines.getptr(method_key);
+	if (trampoline != nullptr) {
+		GDMonoCache::managed_callbacks.ScriptManagerBridge_CallStaticWithTrampoline(
+				*trampoline, p_args, p_argcount, &r_error, &r_ret);
+		if (likely(r_error.error == Callable::CallError::CALL_OK)) {
+			return true;
 		}
+		return false;
+	}
+
+	if (likely(!p_script->should_fallback_to_legacy_trampolines)) {
+		return false;
+	}
+
+	Variant ret;
+	return GDMonoCache::managed_callbacks.ScriptManagerBridge_CallStatic(
+			p_script, &p_method, p_args, p_argcount, &r_error, &ret);
+}
+
+Variant CSharpScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	Variant ret;
+	if (_callp_static(this, p_method, p_args, p_argcount, r_error, ret)) {
+		return ret;
 	}
 
 	return Script::callp(p_method, p_args, p_argcount, r_error);

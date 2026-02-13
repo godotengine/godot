@@ -69,7 +69,7 @@ struct godotsharp_property_def_val_pair {
 
 struct ManagedCallbacks {
 	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddNameToProxyNameMap = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const StringName *p_name, int32_t p_argc, const StringName *p_proxy_name);
-	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddMethod = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const StringName *p_name, int32_t p_argc, godotsharp::MethodTrampoline p_trampoline);
+	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddMethod = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const StringName *p_name, int32_t p_argc, godotsharp::MethodTrampoline p_trampoline, bool p_is_static);
 	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddProperty = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const StringName *p_name,
 			godotsharp::PropertyGetterTrampoline p_getter_trampoline, godotsharp::PropertySetterTrampoline p_setter_trampoline);
 	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddRaiseSignal = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const StringName *p_name, int32_t p_argc, godotsharp::RaiseSignalTrampoline p_trampoline);
@@ -106,6 +106,7 @@ struct ManagedCallbacks {
 	using FuncScriptManagerBridge_GetPropertyInfoList = void(GD_CLR_STDCALL *)(CSharpScript *, Callback_ScriptManagerBridge_GetPropertyInfoList_Add);
 	using FuncScriptManagerBridge_GetPropertyDefaultValues = void(GD_CLR_STDCALL *)(CSharpScript *, Callback_ScriptManagerBridge_GetPropertyDefaultValues_Add);
 	using FuncScriptManagerBridge_CallStatic = bool(GD_CLR_STDCALL *)(const CSharpScript *, const StringName *, const Variant **, int32_t, Callable::CallError *, Variant *);
+	using FuncScriptManagerBridge_CallStaticWithTrampoline = bool(GD_CLR_STDCALL *)(godotsharp::MethodTrampoline p_trampoline, const Variant **, int32_t, Callable::CallError *, Variant *);
 	using FuncCSharpInstanceBridge_Call = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant **, int32_t, Callable::CallError *, Variant *);
 	using FuncCSharpInstanceBridge_Set = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant *);
 	using FuncCSharpInstanceBridge_Get = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, Variant *);
@@ -149,6 +150,7 @@ struct ManagedCallbacks {
 	FuncScriptManagerBridge_GetPropertyInfoList ScriptManagerBridge_GetPropertyInfoList;
 	FuncScriptManagerBridge_GetPropertyDefaultValues ScriptManagerBridge_GetPropertyDefaultValues;
 	FuncScriptManagerBridge_CallStatic ScriptManagerBridge_CallStatic;
+	FuncScriptManagerBridge_CallStaticWithTrampoline ScriptManagerBridge_CallStaticWithTrampoline;
 	FuncCSharpInstanceBridge_Call CSharpInstanceBridge_Call;
 	FuncCSharpInstanceBridge_Set CSharpInstanceBridge_Set;
 	FuncCSharpInstanceBridge_Get CSharpInstanceBridge_Get;
