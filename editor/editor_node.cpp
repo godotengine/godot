@@ -526,9 +526,17 @@ void EditorNode::_update_from_settings() {
 	scene_root->set_use_debanding(use_debanding);
 	get_viewport()->set_use_debanding(use_debanding);
 
-	bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
-	scene_root->set_use_hdr_2d(use_hdr_2d);
-	get_viewport()->set_use_hdr_2d(use_hdr_2d);
+	// Enable HDR if requested.
+	const bool hdr_requested = GLOBAL_GET("display/window/hdr/request_hdr_output");
+	DisplayServer::get_singleton()->window_request_hdr_output(hdr_requested);
+
+	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
+	scene_root->set_use_hdr_2d(use_hdr_2d || hdr_requested);
+	get_viewport()->set_use_hdr_2d(use_hdr_2d || hdr_requested);
+
+	if (hdr_requested && !use_hdr_2d) {
+		WARN_PRINT_ED("HDR 2D was automatically enabled because HDR output was requested in project settings. To avoid this warning, enable rendering/viewport/hdr_2d in the Project Settings.");
+	}
 
 	float mesh_lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
 	scene_root->set_mesh_lod_threshold(mesh_lod_threshold);
@@ -1460,7 +1468,7 @@ void EditorNode::_sources_changed(bool p_exist) {
 			if (SceneTreeDock::get_singleton()->is_visible_in_tree()) {
 				SceneTreeDock::get_singleton()->get_tree_editor()->get_scene_tree()->grab_focus();
 			} else {
-				TabContainer *tab_container = EditorDockManager::get_singleton()->get_dock_tab_container(SceneTreeDock::get_singleton());
+				TabContainer *tab_container = SceneTreeDock::get_singleton()->get_parent_container();
 				if (tab_container) {
 					// Another tab is active (e.g., Import) - focus the tab bar so user can switch.
 					tab_container->get_tab_bar()->grab_focus();
@@ -5870,23 +5878,23 @@ String EditorNode::_get_system_info() const {
 
 	const String rendering_device_name = RenderingServer::get_singleton()->get_video_adapter_name();
 
-	RenderingDevice::DeviceType device_type = RenderingServer::get_singleton()->get_video_adapter_type();
+	RenderingDeviceEnums::DeviceType device_type = RenderingServer::get_singleton()->get_video_adapter_type();
 	String device_type_string;
 	switch (device_type) {
-		case RenderingDevice::DeviceType::DEVICE_TYPE_INTEGRATED_GPU:
+		case RenderingDeviceEnums::DeviceType::DEVICE_TYPE_INTEGRATED_GPU:
 			device_type_string = "integrated";
 			break;
-		case RenderingDevice::DeviceType::DEVICE_TYPE_DISCRETE_GPU:
+		case RenderingDeviceEnums::DeviceType::DEVICE_TYPE_DISCRETE_GPU:
 			device_type_string = "dedicated";
 			break;
-		case RenderingDevice::DeviceType::DEVICE_TYPE_VIRTUAL_GPU:
+		case RenderingDeviceEnums::DeviceType::DEVICE_TYPE_VIRTUAL_GPU:
 			device_type_string = "virtual";
 			break;
-		case RenderingDevice::DeviceType::DEVICE_TYPE_CPU:
+		case RenderingDeviceEnums::DeviceType::DEVICE_TYPE_CPU:
 			device_type_string = "(software emulation on CPU)";
 			break;
-		case RenderingDevice::DeviceType::DEVICE_TYPE_OTHER:
-		case RenderingDevice::DeviceType::DEVICE_TYPE_MAX:
+		case RenderingDeviceEnums::DeviceType::DEVICE_TYPE_OTHER:
+		case RenderingDeviceEnums::DeviceType::DEVICE_TYPE_MAX:
 			break; // Can't happen, but silences warning for DEVICE_TYPE_MAX
 	}
 
@@ -8518,24 +8526,36 @@ EditorNode::EditorNode() {
 	left_l_vsplit->set_vertical(true);
 	main_hsplit->add_child(left_l_vsplit);
 
-	TabContainer *dock_slot[DockConstants::DOCK_SLOT_MAX];
-	dock_slot[DockConstants::DOCK_SLOT_LEFT_UL] = memnew(TabContainer);
-	dock_slot[DockConstants::DOCK_SLOT_LEFT_UL]->set_name("DockSlotLeftUL");
-	left_l_vsplit->add_child(dock_slot[DockConstants::DOCK_SLOT_LEFT_UL]);
-	dock_slot[DockConstants::DOCK_SLOT_LEFT_BL] = memnew(TabContainer);
-	dock_slot[DockConstants::DOCK_SLOT_LEFT_BL]->set_name("DockSlotLeftBL");
-	left_l_vsplit->add_child(dock_slot[DockConstants::DOCK_SLOT_LEFT_BL]);
+	DockTabContainer *dock_slots[EditorDock::DOCK_SLOT_MAX];
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_UL));
+		dock_container->set_name("DockSlotLeftUL");
+		left_l_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_BL));
+		dock_container->set_name("DockSlotLeftBL");
+		left_l_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
 
 	left_r_vsplit = memnew(DockSplitContainer);
 	left_r_vsplit->set_name("DockVSplitLeftR");
 	left_r_vsplit->set_vertical(true);
 	main_hsplit->add_child(left_r_vsplit);
-	dock_slot[DockConstants::DOCK_SLOT_LEFT_UR] = memnew(TabContainer);
-	dock_slot[DockConstants::DOCK_SLOT_LEFT_UR]->set_name("DockSlotLeftUR");
-	left_r_vsplit->add_child(dock_slot[DockConstants::DOCK_SLOT_LEFT_UR]);
-	dock_slot[DockConstants::DOCK_SLOT_LEFT_BR] = memnew(TabContainer);
-	dock_slot[DockConstants::DOCK_SLOT_LEFT_BR]->set_name("DockSlotLeftBR");
-	left_r_vsplit->add_child(dock_slot[DockConstants::DOCK_SLOT_LEFT_BR]);
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_UR));
+		dock_container->set_name("DockSlotLeftUR");
+		left_r_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_BR));
+		dock_container->set_name("DockSlotLeftBR");
+		left_r_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
 
 	VBoxContainer *center_vb = memnew(VBoxContainer);
 	center_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -8553,23 +8573,35 @@ EditorNode::EditorNode() {
 	right_l_vsplit->set_name("DockVSplitRightL");
 	right_l_vsplit->set_vertical(true);
 	main_hsplit->add_child(right_l_vsplit);
-	dock_slot[DockConstants::DOCK_SLOT_RIGHT_UL] = memnew(TabContainer);
-	dock_slot[DockConstants::DOCK_SLOT_RIGHT_UL]->set_name("DockSlotRightUL");
-	right_l_vsplit->add_child(dock_slot[DockConstants::DOCK_SLOT_RIGHT_UL]);
-	dock_slot[DockConstants::DOCK_SLOT_RIGHT_BL] = memnew(TabContainer);
-	dock_slot[DockConstants::DOCK_SLOT_RIGHT_BL]->set_name("DockSlotRightBL");
-	right_l_vsplit->add_child(dock_slot[DockConstants::DOCK_SLOT_RIGHT_BL]);
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_UL));
+		dock_container->set_name("DockSlotRightUL");
+		right_l_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_BL));
+		dock_container->set_name("DockSlotRightBL");
+		right_l_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
 
 	right_r_vsplit = memnew(DockSplitContainer);
 	right_r_vsplit->set_name("DockVSplitRightR");
 	right_r_vsplit->set_vertical(true);
 	main_hsplit->add_child(right_r_vsplit);
-	dock_slot[DockConstants::DOCK_SLOT_RIGHT_UR] = memnew(TabContainer);
-	dock_slot[DockConstants::DOCK_SLOT_RIGHT_UR]->set_name("DockSlotRightUR");
-	right_r_vsplit->add_child(dock_slot[DockConstants::DOCK_SLOT_RIGHT_UR]);
-	dock_slot[DockConstants::DOCK_SLOT_RIGHT_BR] = memnew(TabContainer);
-	dock_slot[DockConstants::DOCK_SLOT_RIGHT_BR]->set_name("DockSlotRightBR");
-	right_r_vsplit->add_child(dock_slot[DockConstants::DOCK_SLOT_RIGHT_BR]);
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_UR));
+		dock_container->set_name("DockSlotRightUR");
+		right_r_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_BR));
+		dock_container->set_name("DockSlotRightBR");
+		right_r_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
 
 	editor_dock_manager = memnew(EditorDockManager);
 
@@ -8581,8 +8613,8 @@ EditorNode::EditorNode() {
 
 	editor_dock_manager->set_hsplit(main_hsplit);
 
-	for (int i = 0; i < DockConstants::DOCK_SLOT_BOTTOM; i++) {
-		editor_dock_manager->register_dock_slot((DockConstants::DockSlot)i, dock_slot[i], DockConstants::DOCK_LAYOUT_VERTICAL);
+	for (int i = 0; i < EditorDock::DOCK_SLOT_BOTTOM; i++) {
+		editor_dock_manager->register_dock_slot(dock_slots[i]);
 	}
 
 	editor_layout_save_delay_timer = memnew(Timer);
@@ -8783,7 +8815,7 @@ EditorNode::EditorNode() {
 	if (NativeMenu::get_singleton()->has_system_menu(NativeMenu::APPLICATION_MENU_ID)) {
 		apple_menu = memnew(PopupMenu);
 		apple_menu->set_system_menu(NativeMenu::APPLICATION_MENU_ID);
-		_add_to_main_menu("", apple_menu);
+		_add_to_main_menu("Apple", apple_menu);
 
 		apple_menu->add_shortcut(ED_GET_SHORTCUT("editor/editor_settings"), EDITOR_OPEN_SETTINGS);
 		apple_menu->add_separator();
@@ -8988,8 +9020,7 @@ EditorNode::EditorNode() {
 	// Bottom panels.
 
 	bottom_panel = memnew(EditorBottomPanel);
-	editor_dock_manager->register_dock_slot(DockConstants::DOCK_SLOT_BOTTOM, bottom_panel, DockConstants::DOCK_LAYOUT_HORIZONTAL);
-	bottom_panel->set_theme_type_variation("BottomPanel");
+	editor_dock_manager->register_dock_slot(bottom_panel);
 	center_split->add_child(bottom_panel);
 	center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
 
@@ -9201,6 +9232,10 @@ EditorNode::EditorNode() {
 		Ref<CanvasItemMaterialConversionPlugin> canvas_item_mat_convert;
 		canvas_item_mat_convert.instantiate();
 		resource_conversion_plugins.push_back(canvas_item_mat_convert);
+
+		Ref<BlitMaterialConversionPlugin> blit_mat_convert;
+		blit_mat_convert.instantiate();
+		resource_conversion_plugins.push_back(blit_mat_convert);
 
 		Ref<ParticleProcessMaterialConversionPlugin> particles_mat_convert;
 		particles_mat_convert.instantiate();

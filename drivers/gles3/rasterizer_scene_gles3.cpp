@@ -72,27 +72,39 @@ uint32_t RasterizerSceneGLES3::geometry_instance_get_pair_mask() {
 	return ((1 << RS::INSTANCE_LIGHT) | (1 << RS::INSTANCE_REFLECTION_PROBE));
 }
 
-void RasterizerSceneGLES3::GeometryInstanceGLES3::pair_light_instances(const RID *p_light_instances, uint32_t p_light_instance_count) {
-	GLES3::Config *config = GLES3::Config::get_singleton();
+uint32_t RasterizerSceneGLES3::get_max_lights_total() {
+	return (uint32_t)GLES3::Config::get_singleton()->max_renderable_lights;
+}
 
+uint32_t RasterizerSceneGLES3::get_max_lights_per_mesh() {
+	return (uint32_t)GLES3::Config::get_singleton()->max_lights_per_object;
+}
+
+void RasterizerSceneGLES3::GeometryInstanceGLES3::clear_light_instances() {
 	paired_omni_light_count = 0;
 	paired_spot_light_count = 0;
 	paired_omni_lights.clear();
 	paired_spot_lights.clear();
+}
 
-	for (uint32_t i = 0; i < p_light_instance_count; i++) {
-		RS::LightType type = GLES3::LightStorage::get_singleton()->light_instance_get_type(p_light_instances[i]);
-		switch (type) {
+void RasterizerSceneGLES3::GeometryInstanceGLES3::pair_light_instance(
+		const RID p_light_instance, RS::LightType light_type, uint32_t placement_idx) {
+	if (placement_idx < GLES3::Config::get_singleton()->max_lights_per_object) {
+		switch (light_type) {
 			case RS::LIGHT_OMNI: {
-				if (paired_omni_light_count < (uint32_t)config->max_lights_per_object) {
-					paired_omni_lights.push_back(p_light_instances[i]);
-					paired_omni_light_count++;
+				if (placement_idx >= paired_omni_light_count) {
+					paired_omni_lights.push_back(p_light_instance);
+					++paired_omni_light_count;
+				} else {
+					paired_omni_lights[placement_idx] = p_light_instance;
 				}
 			} break;
 			case RS::LIGHT_SPOT: {
-				if (paired_spot_light_count < (uint32_t)config->max_lights_per_object) {
-					paired_spot_lights.push_back(p_light_instances[i]);
-					paired_spot_light_count++;
+				if (placement_idx >= paired_spot_light_count) {
+					paired_spot_lights.push_back(p_light_instance);
+					++paired_spot_light_count;
+				} else {
+					paired_spot_lights[placement_idx] = p_light_instance;
 				}
 			} break;
 			default:
@@ -2251,7 +2263,7 @@ void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, 
 	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 }
 
-void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingMethod::RenderInfo *r_render_info) {
+void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, float p_window_output_max_value, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingMethod::RenderInfo *r_render_info) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLES3::Config *config = GLES3::Config::get_singleton();
 	RENDER_TIMESTAMP("Setup 3D Scene");
@@ -2387,7 +2399,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 		tonemap_ubo.exposure = environment_get_exposure(render_data.environment);
 		tonemap_ubo.tonemapper = int32_t(environment_get_tone_mapper(render_data.environment));
-		RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(render_data.environment, false);
+		RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(render_data.environment, false, 1.0f);
 		tonemap_ubo.tonemapper_params[0] = params.tonemapper_params[0];
 		tonemap_ubo.tonemapper_params[1] = params.tonemapper_params[1];
 		tonemap_ubo.tonemapper_params[2] = params.tonemapper_params[2];
@@ -2856,7 +2868,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 		glow_hdr_bleed_threshold = environment_get_glow_hdr_bleed_threshold(p_render_data->environment);
 		glow_hdr_bleed_scale = environment_get_glow_hdr_bleed_scale(p_render_data->environment);
 		glow_hdr_luminance_cap = environment_get_glow_hdr_luminance_cap(p_render_data->environment);
-		srgb_white = environment_get_white(p_render_data->environment, false);
+		srgb_white = environment_get_white(p_render_data->environment, false, 1.0f);
 	}
 
 	if (glow_enabled) {

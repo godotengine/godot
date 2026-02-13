@@ -1096,10 +1096,6 @@ void Node::_remove_tree_from_process_thread_group() {
 }
 
 void Node::_add_tree_to_process_thread_group(Node *p_owner) {
-	if (_is_any_processing()) {
-		_add_to_process_thread_group();
-	}
-
 	data.process_thread_group_owner = p_owner;
 	if (p_owner != nullptr) {
 		data.process_group = p_owner->data.process_group;
@@ -1107,12 +1103,16 @@ void Node::_add_tree_to_process_thread_group(Node *p_owner) {
 		data.process_group = &data.tree->default_process_group;
 	}
 
+	if (_is_any_processing()) {
+		_add_to_process_thread_group();
+	}
+
 	for (KeyValue<StringName, Node *> &K : data.children) {
 		if (K.value->data.process_thread_group != PROCESS_THREAD_GROUP_INHERIT) {
 			continue;
 		}
 
-		K.value->_add_to_process_thread_group();
+		K.value->_add_tree_to_process_thread_group(p_owner);
 	}
 }
 bool Node::is_processing_internal() const {
@@ -3499,7 +3499,7 @@ void Node::get_argument_options(const StringName &p_function, int p_idx, List<St
 	if (p_idx == 0 && (pf == "has_node" || pf == "get_node" || pf == "get_node_or_null")) {
 		_add_nodes_to_options(this, this, r_options);
 	} else if (p_idx == 0 && (pf == "add_to_group" || pf == "remove_from_group" || pf == "is_in_group")) {
-		HashMap<StringName, String> global_groups = ProjectSettings::get_singleton()->get_global_groups_list();
+		HashMap<StringName, String> global_groups(ProjectSettings::get_singleton()->get_global_groups_list());
 		for (const KeyValue<StringName, String> &E : global_groups) {
 			r_options->push_back(E.key.operator String().quote());
 		}
@@ -4036,8 +4036,8 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_file_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_file_path", "get_scene_file_path");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_owner", "get_owner");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", PROPERTY_USAGE_NONE), "", "get_multiplayer");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static(), PROPERTY_USAGE_NONE), "set_owner", "get_owner");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, MultiplayerAPI::get_class_static(), PROPERTY_USAGE_NONE), "", "get_multiplayer");
 
 	ADD_GROUP("Process", "process_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Inherit,Pausable,When Paused,Always,Disabled"), "set_process_mode", "get_process_mode");

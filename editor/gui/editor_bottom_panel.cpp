@@ -39,6 +39,7 @@
 #include "editor/gui/editor_version_button.h"
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/separator.h"
@@ -47,7 +48,7 @@
 void EditorBottomPanel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			layout_popup = get_popup();
+			set_accessibility_region(true);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -60,6 +61,9 @@ void EditorBottomPanel::_notification(int p_what) {
 void EditorBottomPanel::_on_tab_changed(int p_idx) {
 	_update_center_split_offset();
 	_repaint();
+	if (p_idx >= 0 && p_idx < get_tab_count()) {
+		set_accessibility_name(get_tab_title(p_idx));
+	}
 }
 
 void EditorBottomPanel::_theme_changed() {
@@ -106,7 +110,7 @@ void EditorBottomPanel::_repaint() {
 	if (panel_collapsed && get_popup()) {
 		set_popup(nullptr);
 	} else if (!panel_collapsed && !get_popup()) {
-		set_popup(layout_popup);
+		set_popup(dock_context_popup);
 	}
 	if (!panel_collapsed && (previous_tab != -1)) {
 		return;
@@ -126,6 +130,36 @@ void EditorBottomPanel::_repaint() {
 	} else {
 		_theme_changed();
 	}
+}
+
+void EditorBottomPanel::dock_closed(EditorDock *p_dock) {
+	if (p_dock == get_current_tab_control()) {
+		hide_bottom_panel();
+	}
+}
+
+void EditorBottomPanel::dock_focused(EditorDock *p_dock, bool p_was_visible) {
+	if (p_was_visible && p_dock->is_visible()) {
+		hide_bottom_panel();
+	}
+}
+
+DockTabContainer::TabStyle EditorBottomPanel::get_tab_style() const {
+	return (TabStyle)EDITOR_GET("interface/editor/bottom_dock_tab_style").operator int();
+}
+
+bool EditorBottomPanel::can_switch_dock() const {
+	return !is_locked();
+}
+
+void EditorBottomPanel::load_selected_tab(int p_idx) {
+	EditorDock *selected_dock = get_dock(p_idx);
+	if (!selected_dock) {
+		p_idx = -1;
+	}
+	set_block_signals(true);
+	set_current_tab(p_idx);
+	set_block_signals(false);
 }
 
 void EditorBottomPanel::save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const {
@@ -247,10 +281,14 @@ void EditorBottomPanel::_on_button_visibility_changed(Button *p_button, EditorDo
 	}
 }
 
-EditorBottomPanel::EditorBottomPanel() {
+EditorBottomPanel::EditorBottomPanel() :
+		DockTabContainer(EditorDock::DOCK_SLOT_BOTTOM) {
+	layout = EditorDock::DOCK_LAYOUT_HORIZONTAL;
+
 	get_tab_bar()->connect("tab_changed", callable_mp(this, &EditorBottomPanel::_on_tab_changed));
 	set_tabs_position(TabPosition::POSITION_BOTTOM);
 	set_deselect_enabled(true);
+	set_theme_type_variation("BottomPanel");
 
 	bottom_hbox = memnew(HBoxContainer);
 	bottom_hbox->set_mouse_filter(MOUSE_FILTER_IGNORE);

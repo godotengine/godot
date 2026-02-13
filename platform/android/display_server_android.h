@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/input/input_event.h"
 #include "servers/display/display_server.h"
 
 #if defined(RD_ENABLED)
@@ -76,7 +77,6 @@ class DisplayServerAndroid : public DisplayServer {
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 
 #if defined(RD_ENABLED)
-	RenderingContextDriver *rendering_context = nullptr;
 	RenderingDevice *rendering_device = nullptr;
 #endif
 	NativeMenu *native_menu = nullptr;
@@ -245,6 +245,11 @@ public:
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 	static void register_android_driver();
+
+#ifdef VULKAN_ENABLED
+	static bool check_vulkan_global_context(bool p_vulkan_requirements_met);
+	static void free_vulkan_global_context();
+#endif
 
 	void reset_window();
 	void notify_surface_changed(int p_width, int p_height);

@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/plugins/editor_plugin.h"
+#include "scene/resources/shader.h"
 
 class CodeTextEditor;
 class EditorDock;

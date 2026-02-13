@@ -21,6 +21,7 @@
 			<param index="5" name="distance_field" type="PackedByteArray" />
 			<param index="6" name="level_counts" type="PackedInt32Array" />
 			<description>
+				Initializes this [VoxelGIData] with the specified data. [param octree_cells] must be a multiple of 32. [param octree_cells] must be double the size of [param data_cells]. The allocated data can be retrieved later using the various getter methods.
 			</description>
 		</method>
 		<method name="get_bounds" qualifiers="const">
@@ -33,26 +34,31 @@
 		<method name="get_data_cells" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
+				Returns the baked cell data for this [VoxelGIData].
 			</description>
 		</method>
 		<method name="get_level_counts" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<description>
+				Returns the baked level counts for this [VoxelGIData].
 			</description>
 		</method>
 		<method name="get_octree_cells" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
+				Returns the baked octree cell data for this [VoxelGIData].
 			</description>
 		</method>
 		<method name="get_octree_size" qualifiers="const">
 			<return type="Vector3" />
 			<description>
+				Returns the baked octree size for this [VoxelGIData], which corresponds to the number of subdivisions per axis. This can be viewed in the editor by hovering the [b]Bake VoxelGI[/b] button at the top of the 3D editor viewport when a [VoxelGI] node is selected and looking at the [b]Subdivisions[/b] field in the tooltip.
 			</description>
 		</method>
 		<method name="get_to_cell_xform" qualifiers="const">
 			<return type="Transform3D" />
 			<description>
+				Returns the baked cell transform for this [VoxelGIData].
 			</description>
 		</method>
 	</methods>

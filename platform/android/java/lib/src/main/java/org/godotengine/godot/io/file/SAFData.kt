@@ -32,19 +32,21 @@ package org.godotengine.godot.io.file
 
 import android.content.Context
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import android.provider.DocumentsContract
 import android.util.Log
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
 import java.nio.channels.FileChannel
 
 /**
  * Implementation of [DataAccess] which handles file access via a content URI obtained using the Android
  * Storage Access Framework (SAF).
  */
-internal class SAFData(context: Context, path: String, accessFlag: FileAccessFlags) :
+internal class SAFData(context: Context, private val path: String, accessFlag: FileAccessFlags) :
 	DataAccess.FileChannelDataAccess(path) {
 
 	companion object {
@@ -173,9 +175,10 @@ internal class SAFData(context: Context, path: String, accessFlag: FileAccessFla
 	}
 
 	override val fileChannel: FileChannel
+	val parcelFileDescriptor: ParcelFileDescriptor
 	init {
 		val uri = resolvePath(context, path, accessFlag)
-		val parcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, accessFlag.getMode())
+		parcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, accessFlag.getMode())
 			?: throw IllegalStateException("Unable to access file descriptor")
 		fileChannel = if (accessFlag == FileAccessFlags.READ) {
 			FileInputStream(parcelFileDescriptor.fileDescriptor).channel
@@ -185,6 +188,20 @@ internal class SAFData(context: Context, path: String, accessFlag: FileAccessFla
 
 		if (accessFlag.shouldTruncate()) {
 			fileChannel.truncate(0)
+		}
+	}
+
+	override fun close() {
+		try {
+			fileChannel.close()
+		} catch (e: IOException) {
+			Log.w(TAG, "Exception when closing file $path.", e)
+		} finally {
+			try {
+				parcelFileDescriptor.close()
+			} catch (e: IOException) {
+				Log.w(TAG, "Exception when closing ParcelFileDescriptor for $path.", e)
+			}
 		}
 	}
 }

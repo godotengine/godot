@@ -160,36 +160,43 @@
 
  #endif
 
-void
+bool
 normalize_axes_location (hb_face_t *face, hb_subset_plan_t *plan)
 {
   if (plan->user_axes_location.is_empty ())
-    return;
+    return true;
 
   hb_array_t<const OT::AxisRecord> axes = face->table.fvar->get_axes ();
-  plan->normalized_coords.resize (axes.length);
+  if (!plan->check_success (plan->normalized_coords.resize (axes.length)))
+    return false;
 
   bool has_avar = face->table.avar->has_data ();
-  const OT::SegmentMaps *seg_maps = nullptr;
-  unsigned avar_axis_count = 0;
+  hb_vector_t<float> normalized_mins;
+  hb_vector_t<float> normalized_defaults;
+  hb_vector_t<float> normalized_maxs;
   if (has_avar)
   {
-    seg_maps = face->table.avar->get_segment_maps ();
-    avar_axis_count = face->table.avar->get_axis_count();
+    if (!plan->check_success (normalized_mins.resize (axes.length)) ||
+        !plan->check_success (normalized_defaults.resize (axes.length)) ||
+        !plan->check_success (normalized_maxs.resize (axes.length)))
+      return false;
   }
 
   bool axis_not_pinned = false;
-  unsigned old_axis_idx = 0, new_axis_idx = 0;
-  for (const auto& axis : axes)
+  unsigned new_axis_idx = 0;
+  unsigned last_idx = 0;
+  for (const auto& _ : + hb_enumerate (axes))
   {
+    unsigned i = _.first;
+    const OT::AxisRecord &axis = _.second;
     hb_tag_t axis_tag = axis.get_axis_tag ();
-    plan->axes_old_index_tag_map.set (old_axis_idx, axis_tag);
+    plan->axes_old_index_tag_map.set (i, axis_tag);
 
     if (!plan->user_axes_location.has (axis_tag) ||
         !plan->user_axes_location.get (axis_tag).is_point ())
     {
       axis_not_pinned = true;
-      plan->axes_index_map.set (old_axis_idx, new_axis_idx);
+      plan->axes_index_map.set (i, new_axis_idx);
       plan->axis_tags.push (axis_tag);
       new_axis_idx++;
     }
@@ -216,35 +223,66 @@ normalize_axes_location (hb_face_t *face, hb_subset_plan_t *plan)
       normalized_default = roundf (normalized_default * 16384.f) / 16384.f;
       normalized_max = roundf (normalized_max * 16384.f) / 16384.f;
 
-      if (has_avar && old_axis_idx < avar_axis_count)
+      if (has_avar)
       {
-	normalized_min = seg_maps->map_float (normalized_min);
-	normalized_default = seg_maps->map_float (normalized_default);
-	normalized_max = seg_maps->map_float (normalized_max);
-
-	// Round to 2.14
-	normalized_min = roundf (normalized_min * 16384.f) / 16384.f;
-	normalized_default = roundf (normalized_default * 16384.f) / 16384.f;
-	normalized_max = roundf (normalized_max * 16384.f) / 16384.f;
+        normalized_mins[i] = normalized_min;
+        normalized_defaults[i] = normalized_default;
+        normalized_maxs[i] = normalized_max;
+        last_idx = i;
       }
-      plan->axes_location.set (axis_tag, Triple ((double) normalized_min,
-                                                 (double) normalized_default,
-                                                 (double) normalized_max));
+      else
+      {
+        plan->axes_location.set (axis_tag, Triple ((double) normalized_min,
+                                                   (double) normalized_default,
+                                                   (double) normalized_max));
+        if (normalized_default == -0.f)
+          normalized_default = 0.f; // Normalize -0 to 0
+        if (normalized_default != 0.f)
+          plan->pinned_at_default = false;
 
-      if (normalized_default == -0.f)
-        normalized_default = 0.f; // Normalize -0 to 0
-      if (normalized_default != 0.f)
-        plan->pinned_at_default = false;
-
-      plan->normalized_coords[old_axis_idx] = roundf (normalized_default * 16384.f);
+        plan->normalized_coords[i] = roundf (normalized_default * 16384.f);
+      }
     }
-
-    old_axis_idx++;
-
-    if (has_avar && old_axis_idx < avar_axis_count)
-      seg_maps = &StructAfter<OT::SegmentMaps> (*seg_maps);
   }
   plan->all_axes_pinned = !axis_not_pinned;
+
+  // TODO: use avar map_coords_16_16() when normalization is changed to 16.16
+  // in fonttools
+  if (has_avar)
+  {
+    const OT::avar* avar_table = face->table.avar;
+    if (avar_table->has_v2_data () && !plan->all_axes_pinned)
+    {
+      DEBUG_MSG (SUBSET, nullptr, "Partial-instancing avar2 table is not supported.");
+      return false;
+    }
+
+    unsigned coords_len = last_idx + 1;
+    if (!plan->check_success (avar_table->map_coords_2_14 (normalized_mins.arrayZ, coords_len)) ||
+        !plan->check_success (avar_table->map_coords_2_14 (normalized_defaults.arrayZ, coords_len)) ||
+        !plan->check_success (avar_table->map_coords_2_14 (normalized_maxs.arrayZ, coords_len)))
+      return false;
+
+    for (const auto& _ : + hb_enumerate (axes))
+    {
+      unsigned i = _.first;
+      hb_tag_t axis_tag = _.second.get_axis_tag ();
+      if (plan->user_axes_location.has (axis_tag))
+      {
+        plan->axes_location.set (axis_tag, Triple ((double) normalized_mins[i],
+                                                   (double) normalized_defaults[i],
+                                                   (double) normalized_maxs[i]));
+        float normalized_default = normalized_defaults[i];
+        if (normalized_default == -0.f)
+          normalized_default = 0.f; // Normalize -0 to 0
+        if (normalized_default != 0.f)
+          plan->pinned_at_default = false;
+
+        plan->normalized_coords[i] = roundf (normalized_default * 16384.f);
+      }
+    }
+  }
+  return true;
 }
 
 void

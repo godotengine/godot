@@ -2610,15 +2610,7 @@ Ref<Texture2D> EditorExportPlatformMacOS::get_run_icon() const {
 }
 
 bool EditorExportPlatformMacOS::poll_export() {
-	Ref<EditorExportPreset> preset;
-
-	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-		Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(i);
-		if (ep->is_runnable() && ep->get_platform() == this) {
-			preset = ep;
-			break;
-		}
-	}
+	Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_runnable_preset_for_platform(this);
 
 	int prev = menu_options;
 	menu_options = (preset.is_valid() && preset->get("ssh_remote_deploy/enabled").operator bool());
@@ -2709,19 +2701,19 @@ Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, in
 
 	const String basepath = dest.path_join("tmp_macos_export");
 
-#define CLEANUP_AND_RETURN(m_err)                      \
-	{                                                  \
-		if (da->file_exists(basepath + ".zip")) {      \
-			da->remove(basepath + ".zip");             \
-		}                                              \
+#define CLEANUP_AND_RETURN(m_err) \
+	{ \
+		if (da->file_exists(basepath + ".zip")) { \
+			da->remove(basepath + ".zip"); \
+		} \
 		if (da->file_exists(basepath + "_start.sh")) { \
-			da->remove(basepath + "_start.sh");        \
-		}                                              \
+			da->remove(basepath + "_start.sh"); \
+		} \
 		if (da->file_exists(basepath + "_clean.sh")) { \
-			da->remove(basepath + "_clean.sh");        \
-		}                                              \
-		return m_err;                                  \
-	}                                                  \
+			da->remove(basepath + "_clean.sh"); \
+		} \
+		return m_err; \
+	} \
 	((void)0)
 
 	if (ep.step(TTR("Exporting project..."), 1)) {

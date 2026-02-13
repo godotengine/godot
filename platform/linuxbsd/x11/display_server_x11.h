@@ -32,10 +32,11 @@
 
 #ifdef X11_ENABLED
 
-#include "core/input/input.h"
+#include "core/input/input_event.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/rb_map.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
@@ -55,7 +56,6 @@
 #endif
 
 #if defined(RD_ENABLED)
-#include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
 #include "x11/rendering_context_driver_vulkan_x11.h"

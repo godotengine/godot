@@ -719,7 +719,7 @@ void VisualShaderNodeParticleMeshEmitter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_surface_index", "surface_index"), &VisualShaderNodeParticleMeshEmitter::set_surface_index);
 	ClassDB::bind_method(D_METHOD("get_surface_index"), &VisualShaderNodeParticleMeshEmitter::get_surface_index);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, Mesh::get_class_static()), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_all_surfaces"), "set_use_all_surfaces", "is_use_all_surfaces");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "surface_index"), "set_surface_index", "get_surface_index");
 }

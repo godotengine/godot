@@ -123,13 +123,11 @@ source_files = generated_sources + [
 ]
 
 if env["use_sowrap"]:
-    source_files.append(
-        [
-            File("dynwrappers/wayland-cursor-so_wrap.c"),
-            File("dynwrappers/wayland-client-core-so_wrap.c"),
-            File("dynwrappers/wayland-egl-core-so_wrap.c"),
-        ]
-    )
+    source_files.append([
+        File("dynwrappers/wayland-cursor-so_wrap.c"),
+        File("dynwrappers/wayland-client-core-so_wrap.c"),
+        File("dynwrappers/wayland-egl-core-so_wrap.c"),
+    ])
 
     if env["libdecor"]:
         source_files.append(File("dynwrappers/libdecor-so_wrap.c"))

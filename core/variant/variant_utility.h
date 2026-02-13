@@ -74,8 +74,8 @@ struct VariantUtilityFunctions {
 	static bool is_equal_approx(double x, double y);
 	static bool is_zero_approx(double x);
 	static bool is_finite(double x);
-	static double ease(float x, float curve);
-	static int step_decimals(float step);
+	static double ease(double x, double curve);
+	static int step_decimals(double step);
 	static Variant snapped(const Variant &x, const Variant &step, Callable::CallError &r_error);
 	static double snappedf(double x, double step);
 	static int64_t snappedi(double x, int64_t step);

@@ -274,16 +274,16 @@ void ImporterMesh::optimize_indices() {
 }
 
 #define VERTEX_SKIN_FUNC(bone_count, vert_idx, read_array, write_array, transform_array, bone_array, weight_array) \
-	Vector3 transformed_vert;                                                                                      \
-	for (unsigned int weight_idx = 0; weight_idx < bone_count; weight_idx++) {                                     \
-		int bone_idx = bone_array[vert_idx * bone_count + weight_idx];                                             \
-		float w = weight_array[vert_idx * bone_count + weight_idx];                                                \
-		if (w < FLT_EPSILON) {                                                                                     \
-			continue;                                                                                              \
-		}                                                                                                          \
-		ERR_FAIL_INDEX(bone_idx, static_cast<int>(transform_array.size()));                                        \
-		transformed_vert += transform_array[bone_idx].xform(read_array[vert_idx]) * w;                             \
-	}                                                                                                              \
+	Vector3 transformed_vert; \
+	for (unsigned int weight_idx = 0; weight_idx < bone_count; weight_idx++) { \
+		int bone_idx = bone_array[vert_idx * bone_count + weight_idx]; \
+		float w = weight_array[vert_idx * bone_count + weight_idx]; \
+		if (w < FLT_EPSILON) { \
+			continue; \
+		} \
+		ERR_FAIL_INDEX(bone_idx, static_cast<int>(transform_array.size())); \
+		transformed_vert += transform_array[bone_idx].xform(read_array[vert_idx]) * w; \
+	} \
 	write_array[vert_idx] = transformed_vert;
 
 void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transform_array) {
@@ -478,7 +478,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 		const float max_mesh_error = 1.0f; // We only need LODs that can be selected by error threshold.
 		const unsigned min_target_indices = 12;
 
-		LocalVector<int> current_indices = merged_indices;
+		LocalVector<int> current_indices(merged_indices);
 		float current_error = 0.0f;
 		bool allow_prune = true;
 

@@ -232,7 +232,7 @@ void PhysicsServer2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_body_get_shape_transform, "body", "shape_idx");
 
 	GDVIRTUAL_BIND(_body_set_shape_disabled, "body", "shape_idx", "disabled");
-	GDVIRTUAL_BIND(_body_set_shape_as_one_way_collision, "body", "shape_idx", "enable", "margin");
+	GDVIRTUAL_BIND(_body_set_shape_as_one_way_collision, "body", "shape_idx", "enable", "margin", "direction");
 
 	GDVIRTUAL_BIND(_body_remove_shape, "body", "shape_idx");
 	GDVIRTUAL_BIND(_body_clear_shapes, "body");
@@ -348,6 +348,10 @@ void PhysicsServer2DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_is_flushing_queries);
 	GDVIRTUAL_BIND(_get_process_info, "process_info");
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND_COMPAT(_body_set_shape_as_one_way_collision_bind_compat_104736, "body", "shape_idx", "enable", "margin");
+#endif
 }
 
 PhysicsServer2DExtension::PhysicsServer2DExtension() {

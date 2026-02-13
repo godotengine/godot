@@ -2790,7 +2790,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 
 	//try to obtain existing params
 
-	HashMap<StringName, Variant> params = p_custom_options;
+	HashMap<StringName, Variant> params(p_custom_options);
 	String importer_name; //empty by default though
 
 	if (!p_custom_importer.is_empty()) {
@@ -3689,6 +3689,7 @@ bool EditorFileSystem::_scan_extensions() {
 void EditorFileSystem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_filesystem"), &EditorFileSystem::get_filesystem);
 	ClassDB::bind_method(D_METHOD("is_scanning"), &EditorFileSystem::is_scanning);
+	ClassDB::bind_method(D_METHOD("is_importing"), &EditorFileSystem::is_importing);
 	ClassDB::bind_method(D_METHOD("get_scanning_progress"), &EditorFileSystem::get_scanning_progress);
 	ClassDB::bind_method(D_METHOD("scan"), &EditorFileSystem::scan);
 	ClassDB::bind_method(D_METHOD("scan_sources"), &EditorFileSystem::scan_changes);

@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "scene/resources/gradient_texture.h"
+#include "scene/resources/sky.h"
 #include "servers/rendering/rendering_server.h"
 
 RID Environment::get_rid() const {
@@ -1243,7 +1244,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_camera_feed_id", PROPERTY_HINT_RANGE, "1,10,1"), "set_camera_feed_id", "get_camera_feed_id");
 
 	ADD_GROUP("Sky", "sky_");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sky", PROPERTY_HINT_RESOURCE_TYPE, "Sky"), "set_sky", "get_sky");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sky", PROPERTY_HINT_RESOURCE_TYPE, Sky::get_class_static()), "set_sky", "get_sky");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sky_custom_fov", PROPERTY_HINT_RANGE, "0,180,0.1,degrees"), "set_sky_custom_fov", "get_sky_custom_fov");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "sky_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians_as_degrees"), "set_sky_rotation", "get_sky_rotation");
 
@@ -1450,7 +1451,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_hdr_scale", PROPERTY_HINT_RANGE, "0.0,4.0,0.01"), "set_glow_hdr_bleed_scale", "get_glow_hdr_bleed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_hdr_luminance_cap", PROPERTY_HINT_RANGE, "0.0,256.0,0.01"), "set_glow_hdr_luminance_cap", "get_glow_hdr_luminance_cap");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_map_strength", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_glow_map_strength", "get_glow_map_strength");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "glow_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_glow_map", "get_glow_map");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "glow_map", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_glow_map", "get_glow_map");
 
 	// Fog
 

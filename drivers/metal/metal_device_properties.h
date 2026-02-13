@@ -50,16 +50,16 @@
 /* permissions and limitations under the License.                         */
 /**************************************************************************/
 
-#import "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_device_driver.h"
 
-#import <Foundation/Foundation.h>
-#import <Metal/Metal.h>
+#include <Metal/Metal.hpp>
+#include <cstddef>
 
 /** The buffer index to use for vertex content. */
 const static uint32_t VERT_CONTENT_BUFFER_INDEX = 0;
 const static uint32_t MAX_COLOR_ATTACHMENT_COUNT = 8;
 
-typedef NS_OPTIONS(NSUInteger, SampleCount) {
+enum SampleCount : NS::UInteger {
 	SampleCount1 = (1UL << 0),
 	SampleCount2 = (1UL << 1),
 	SampleCount4 = (1UL << 2),
@@ -68,6 +68,22 @@ typedef NS_OPTIONS(NSUInteger, SampleCount) {
 	SampleCount32 = (1UL << 5),
 	SampleCount64 = (1UL << 6),
 };
+
+_FORCE_INLINE_ SampleCount operator|(SampleCount a, SampleCount b) {
+	return static_cast<SampleCount>(static_cast<NS::UInteger>(a) | static_cast<NS::UInteger>(b));
+}
+
+_FORCE_INLINE_ SampleCount &operator|=(SampleCount &a, SampleCount b) {
+	return a = a | b;
+}
+
+_FORCE_INLINE_ SampleCount operator<<(SampleCount a, int shift) {
+	return static_cast<SampleCount>(static_cast<NS::UInteger>(a) << shift);
+}
+
+_FORCE_INLINE_ SampleCount &operator<<=(SampleCount &a, int shift) {
+	return a = a << shift;
+}
 
 struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalFeatures {
 	/// Maximum version of the Metal Shading Language version available.
@@ -78,7 +94,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalFeatures {
 	 * for engine developers for testing.
 	 */
 	uint32_t msl_target_version = 0;
-	MTLGPUFamily highestFamily = MTLGPUFamilyApple4;
+	MTL::GPUFamily highestFamily = MTL::GPUFamilyApple4;
 	bool supportsBCTextureCompression = false;
 	bool supportsDepth24Stencil8 = false;
 	bool supports32BitFloatFiltering = false;
@@ -93,7 +109,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalFeatures {
 	bool simdReduction = false; /**< If true, SIMD-group reduction functions (arithmetic) are supported in shaders. */
 	bool tessellationShader = false; /**< If true, tessellation shaders are supported. */
 	bool imageCubeArray = false; /**< If true, image cube arrays are supported. */
-	MTLArgumentBuffersTier argument_buffers_tier = MTLArgumentBuffersTier1;
+	MTL::ArgumentBuffersTier argument_buffers_tier = MTL::ArgumentBuffersTier1;
 	bool needs_arg_encoders = true; /**< If true, argument encoders are required to encode arguments into an argument buffer. */
 	bool use_argument_buffers = true; /**< If true, argument buffers are can be used instead of slot binding, if available. */
 	bool metal_fx_spatial = false; /**< If true, Metal FX spatial functions are supported. */
@@ -108,7 +124,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalFeatures {
 	 * Check if argument buffers are fully supported, which requires tier 2 support and no need for argument encoders.
 	 */
 	_FORCE_INLINE_ bool argument_buffers_supported() const {
-		return argument_buffers_tier == MTLArgumentBuffersTier2 && needs_arg_encoders == false;
+		return argument_buffers_tier == MTL::ArgumentBuffersTier2 && needs_arg_encoders == false;
 	}
 
 	/*!
@@ -129,8 +145,8 @@ struct MetalLimits {
 	uint64_t maxImageDimensionCube;
 	uint64_t maxViewportDimensionX;
 	uint64_t maxViewportDimensionY;
-	MTLSize maxThreadsPerThreadGroup;
-	MTLSize maxComputeWorkGroupCount;
+	MTL::Size maxThreadsPerThreadGroup;
+	MTL::Size maxComputeWorkGroupCount;
 	uint64_t maxBoundDescriptorSets;
 	uint64_t maxColorAttachments;
 	uint64_t maxTexturesPerArgumentBuffer;
@@ -156,13 +172,13 @@ struct MetalLimits {
 	uint32_t minSubgroupSize; /**< The minimum number of threads in a SIMD-group. */
 	uint32_t maxSubgroupSize; /**< The maximum number of threads in a SIMD-group. */
 	BitField<RDD::ShaderStage> subgroupSupportedShaderStages;
-	BitField<RD::SubgroupOperations> subgroupSupportedOperations; /**< The subgroup operations supported by the device. */
+	BitField<RDD::SubgroupOperations> subgroupSupportedOperations; /**< The subgroup operations supported by the device. */
 };
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalDeviceProperties {
 private:
-	void init_features(id<MTLDevice> p_device);
-	void init_limits(id<MTLDevice> p_device);
+	void init_features(MTL::Device *p_device);
+	void init_limits(MTL::Device *p_device);
 	void init_os_props();
 
 public:
@@ -172,11 +188,11 @@ public:
 	// maj * 10000 + min * 100 + patch
 	uint32_t os_version;
 
-	SampleCount find_nearest_supported_sample_count(RenderingDevice::TextureSamples p_samples) const;
+	SampleCount find_nearest_supported_sample_count(RDD::TextureSamples p_samples) const;
 
-	MetalDeviceProperties(id<MTLDevice> p_device);
+	MetalDeviceProperties(MTL::Device *p_device);
 	~MetalDeviceProperties();
 
 private:
-	static const SampleCount sample_count[RenderingDevice::TextureSamples::TEXTURE_SAMPLES_MAX];
+	static const SampleCount sample_count[RDD::TextureSamples::TEXTURE_SAMPLES_MAX];
 };

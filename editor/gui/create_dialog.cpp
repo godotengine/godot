@@ -30,13 +30,19 @@
 
 #include "create_dialog.h"
 
+#include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_paths.h"
+#include "editor/gui/filter_line_edit.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/button.h"
+#include "scene/gui/item_list.h"
+#include "scene/gui/tree.h"
 
 void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_current_type, const String &p_current_name) {
 	_fill_type_list();
@@ -499,7 +505,7 @@ void CreateDialog::_cleanup() {
 }
 
 void CreateDialog::_confirmed() {
-	String selected_item = get_selected_type();
+	String selected_item = get_selected_type_name();
 	if (selected_item.is_empty()) {
 		return;
 	}
@@ -538,10 +544,7 @@ void CreateDialog::_sbox_input(const Ref<InputEvent> &p_event) {
 	// Redirect navigational key events to the tree.
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid()) {
-		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
-			search_options->gui_input(key);
-			search_box->accept_event();
-		} else if (key->is_action_pressed("ui_select", true)) {
+		if (key->is_action_pressed("ui_select", true)) {
 			TreeItem *ti = search_options->get_selected();
 			if (ti) {
 				ti->set_collapsed(!ti->is_collapsed());
@@ -576,7 +579,6 @@ void CreateDialog::_notification(int p_what) {
 			favorites->add_theme_constant_override("icon_max_width", icon_width);
 			recent->set_fixed_icon_size(Size2(icon_width, icon_width));
 
-			search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			favorite->set_button_icon(get_editor_theme_icon(SNAME("Favorites")));
 		} break;
 	}
@@ -632,6 +634,14 @@ String CreateDialog::get_selected_type() {
 	return String(selected->get_meta("_script_path", "")); // Script types
 }
 
+String CreateDialog::get_selected_type_name() {
+	TreeItem *selected = search_options->get_selected();
+	if (!selected) {
+		return String();
+	}
+	return selected->get_text(0).get_slicec(' ', 0);
+}
+
 void CreateDialog::set_base_type(const String &p_base) {
 	base_type = p_base;
 	is_base_type_node = ClassDB::is_parent_class(p_base, "Node");
@@ -669,11 +679,7 @@ Variant CreateDialog::instantiate_selected() {
 }
 
 void CreateDialog::_item_selected() {
-	String name = get_selected_type();
-	if (name.is_resource_file()) {
-		name = search_options->get_selected()->get_text(0).get_slicec(' ', 0);
-	}
-	select_type(name, false);
+	select_type(get_selected_type_name(), false);
 }
 
 void CreateDialog::_hide_requested() {
@@ -690,7 +696,7 @@ void CreateDialog::_favorite_toggled() {
 		return;
 	}
 
-	String name = item->get_text(0).get_slicec(' ', 0);
+	String name = get_selected_type_name();
 
 	if (favorite_list.has(name)) {
 		favorite_list.erase(name);
@@ -918,12 +924,10 @@ CreateDialog::CreateDialog() {
 	vbc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vsc_right->add_child(vbc);
 
-	search_box = memnew(LineEdit);
+	search_box = memnew(FilterLineEdit);
 	search_box->set_accessibility_name(TTRC("Search"));
-	search_box->set_clear_button_enabled(true);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &CreateDialog::_text_changed));
-	search_box->connect(SceneStringName(gui_input), callable_mp(this, &CreateDialog::_sbox_input));
 
 	HBoxContainer *search_hb = memnew(HBoxContainer);
 	search_hb->add_child(search_box);
@@ -936,6 +940,7 @@ CreateDialog::CreateDialog() {
 	vbc->add_margin_child(TTR("Search:"), search_hb);
 
 	search_options = memnew(Tree);
+	search_box->set_forward_control(search_options);
 	search_options->set_accessibility_name(TTRC("Matches:"));
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	search_options->connect("item_activated", callable_mp(this, &CreateDialog::_confirmed));

@@ -31,6 +31,9 @@
 #include "voxelizer.h"
 
 #include "core/config/project_settings.h"
+#include "core/math/geometry_3d.h"
+#include "scene/resources/curve.h"
+#include "scene/resources/texture.h"
 
 static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3 *p_vtx, const Vector2 *p_uv, const Vector3 *p_normal, Vector2 &r_uv, Vector3 &r_normal) {
 	if (p_pos.is_equal_approx(p_vtx[0])) {
@@ -1011,7 +1014,7 @@ Ref<MultiMesh> Voxelizer::create_debug_multimesh() {
 
 		Vector<Vector3> vertices;
 		Vector<Color> colors;
-#define ADD_VTX(m_idx)                      \
+#define ADD_VTX(m_idx) \
 	vertices.push_back(face_points[m_idx]); \
 	colors.push_back(Color(1, 1, 1, 1));
 

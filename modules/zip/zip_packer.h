@@ -41,9 +41,15 @@ class ZIPPacker : public RefCounted {
 	Ref<FileAccess> fa;
 	zipFile zf = nullptr;
 	int compression_level = Z_DEFAULT_COMPRESSION;
+	HashSet<String> directories;
 
 protected:
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	Error _start_file_bind_compat_115946(const String &p_path);
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	enum ZipAppend {
@@ -65,9 +71,11 @@ public:
 	void set_compression_level(int p_compression_level);
 	int get_compression_level() const;
 
-	Error start_file(const String &p_path);
+	Error start_file(const String &p_path, BitField<FileAccess::UnixPermissionFlags> p_permissions = 0644, uint64_t p_modified_time = 0);
 	Error write_file(const Vector<uint8_t> &p_data);
 	Error close_file();
+
+	Error add_directory(const String &p_path, BitField<FileAccess::UnixPermissionFlags> p_permissions = 0755, uint64_t p_modified_time = 0);
 
 	ZIPPacker();
 	~ZIPPacker();

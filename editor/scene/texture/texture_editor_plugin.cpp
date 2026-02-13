@@ -42,6 +42,7 @@
 #include "scene/resources/compressed_texture.h"
 #include "scene/resources/dpi_texture.h"
 #include "scene/resources/image_texture.h"
+#include "scene/resources/material.h"
 #include "scene/resources/portable_compressed_texture.h"
 
 constexpr const char *texture_2d_shader_code = R"(

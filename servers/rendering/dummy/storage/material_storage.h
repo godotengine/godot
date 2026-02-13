@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/templates/rid_owner.h"
+
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/storage/material_storage.h"

@@ -155,6 +155,11 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 				ERR_FAIL_MSG("Converting circular structure to JSON.");
 			}
 
+			if (d.is_empty()) {
+				r_result += "{}";
+				return;
+			}
+
 			r_result += '{';
 			r_result += end_statement;
 			p_markers.insert(d.id());
@@ -668,10 +673,10 @@ static bool _encode_container_type(Dictionary &r_dict, const String &p_key, cons
 }
 
 Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_depth) {
-#define RETURN_ARGS                                           \
-	Dictionary ret;                                           \
+#define RETURN_ARGS \
+	Dictionary ret; \
 	ret[TYPE] = Variant::get_type_name(p_variant.get_type()); \
-	ret[ARGS] = args;                                         \
+	ret[ARGS] = args; \
 	return ret
 
 	switch (p_variant.get_type()) {
@@ -1093,18 +1098,18 @@ Variant JSON::_to_native(const Variant &p_json, bool p_allow_objects, int p_dept
 
 			ERR_FAIL_COND_V(!dict.has(TYPE), Variant());
 
-#define LOAD_ARGS()                              \
+#define LOAD_ARGS() \
 	ERR_FAIL_COND_V(!dict.has(ARGS), Variant()); \
 	const Array args = dict[ARGS]
 
-#define LOAD_ARGS_CHECK_SIZE(m_size)             \
+#define LOAD_ARGS_CHECK_SIZE(m_size) \
 	ERR_FAIL_COND_V(!dict.has(ARGS), Variant()); \
-	const Array args = dict[ARGS];               \
+	const Array args = dict[ARGS]; \
 	ERR_FAIL_COND_V(args.size() != (m_size), Variant())
 
-#define LOAD_ARGS_CHECK_FACTOR(m_factor)         \
+#define LOAD_ARGS_CHECK_FACTOR(m_factor) \
 	ERR_FAIL_COND_V(!dict.has(ARGS), Variant()); \
-	const Array args = dict[ARGS];               \
+	const Array args = dict[ARGS]; \
 	ERR_FAIL_COND_V(args.size() % (m_factor) != 0, Variant())
 
 			switch (Variant::get_type_by_name(dict[TYPE])) {

@@ -35,7 +35,7 @@
 #include "wayland/wayland_thread.h"
 
 #ifdef RD_ENABLED
-#include "servers/rendering/rendering_device.h"
+class RenderingDevice;
 
 #ifdef VULKAN_ENABLED
 #include "wayland/rendering_context_driver_vulkan_wayland.h"
@@ -58,7 +58,8 @@
 #endif
 
 #include "core/config/project_settings.h"
-#include "core/input/input.h"
+#include "core/input/input_event.h"
+#include "core/templates/rb_map.h"
 #include "servers/display/display_server.h"
 
 #include <climits>

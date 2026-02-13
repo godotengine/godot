@@ -31,9 +31,15 @@
 #include "display_server.h"
 #include "display_server.compat.inc"
 
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Input);
+
 #include "core/input/input.h"
 #include "scene/resources/texture.h"
 #include "servers/display/display_server_headless.h"
+
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_device.h"
+#endif
 
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"
@@ -1267,6 +1273,52 @@ DisplayServer::VSyncMode DisplayServer::window_get_vsync_mode(WindowID p_window)
 	return VSyncMode::VSYNC_ENABLED;
 }
 
+bool DisplayServer::window_is_hdr_output_supported(WindowID p_window) const {
+	return false;
+}
+
+void DisplayServer::window_request_hdr_output(const bool p_enable, WindowID p_window) {
+	if (p_enable) {
+		WARN_PRINT_ED("HDR output is not supported by this display server.");
+	}
+}
+
+bool DisplayServer::window_is_hdr_output_requested(WindowID p_window) const {
+	return false;
+}
+
+bool DisplayServer::window_is_hdr_output_enabled(WindowID p_window) const {
+	return false;
+}
+
+void DisplayServer::window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window) {
+	WARN_PRINT_ED("HDR output is not supported by this display server.");
+}
+
+float DisplayServer::window_get_hdr_output_reference_luminance(WindowID p_window) const {
+	return -1.0f;
+}
+
+float DisplayServer::window_get_hdr_output_current_reference_luminance(WindowID p_window) const {
+	return 0.0f;
+}
+
+void DisplayServer::window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window) {
+	WARN_PRINT_ED("HDR output is not supported by this display server.");
+}
+
+float DisplayServer::window_get_hdr_output_max_luminance(WindowID p_window) const {
+	return -1.0f;
+}
+
+float DisplayServer::window_get_hdr_output_current_max_luminance(WindowID p_window) const {
+	return 0.0f;
+}
+
+float DisplayServer::window_get_output_max_linear_value(WindowID p_window) const {
+	return 1.0f;
+}
+
 DisplayServer::WindowID DisplayServer::get_focused_window() const {
 	return MAIN_WINDOW_ID; // Proper value for single windows.
 }
@@ -1286,6 +1338,8 @@ void DisplayServer::unregister_additional_output(Object *p_object) {
 }
 
 void DisplayServer::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("orientation_changed", PropertyInfo(Variant::INT, "orientation")));
+
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &DisplayServer::has_feature);
 	ClassDB::bind_method(D_METHOD("get_name"), &DisplayServer::get_name);
 
@@ -1468,6 +1522,22 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("window_set_vsync_mode", "vsync_mode", "window_id"), &DisplayServer::window_set_vsync_mode, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_get_vsync_mode", "window_id"), &DisplayServer::window_get_vsync_mode, DEFVAL(MAIN_WINDOW_ID));
+
+	ClassDB::bind_method(D_METHOD("window_is_hdr_output_supported", "window_id"), &DisplayServer::window_is_hdr_output_supported, DEFVAL(MAIN_WINDOW_ID));
+
+	ClassDB::bind_method(D_METHOD("window_request_hdr_output", "enable", "window_id"), &DisplayServer::window_request_hdr_output, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_is_hdr_output_requested", "window_id"), &DisplayServer::window_is_hdr_output_requested, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_is_hdr_output_enabled", "window_id"), &DisplayServer::window_is_hdr_output_enabled, DEFVAL(MAIN_WINDOW_ID));
+
+	ClassDB::bind_method(D_METHOD("window_set_hdr_output_reference_luminance", "reference_luminance", "window_id"), &DisplayServer::window_set_hdr_output_reference_luminance, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_get_hdr_output_reference_luminance", "window_id"), &DisplayServer::window_get_hdr_output_reference_luminance, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_get_hdr_output_current_reference_luminance", "window_id"), &DisplayServer::window_get_hdr_output_current_reference_luminance, DEFVAL(MAIN_WINDOW_ID));
+
+	ClassDB::bind_method(D_METHOD("window_set_hdr_output_max_luminance", "max_luminance", "window_id"), &DisplayServer::window_set_hdr_output_max_luminance, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_get_hdr_output_max_luminance", "window_id"), &DisplayServer::window_get_hdr_output_max_luminance, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_get_hdr_output_current_max_luminance", "window_id"), &DisplayServer::window_get_hdr_output_current_max_luminance, DEFVAL(MAIN_WINDOW_ID));
+
+	ClassDB::bind_method(D_METHOD("window_get_output_max_linear_value", "window_id"), &DisplayServer::window_get_output_max_linear_value, DEFVAL(MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("window_is_maximize_allowed", "window_id"), &DisplayServer::window_is_maximize_allowed, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_maximize_on_title_dbl_click"), &DisplayServer::window_maximize_on_title_dbl_click);
@@ -1659,6 +1729,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_COLOR_PICKER);
 	BIND_ENUM_CONSTANT(FEATURE_SELF_FITTING_WINDOWS);
 	BIND_ENUM_CONSTANT(FEATURE_ACCESSIBILITY_SCREEN_READER);
+	BIND_ENUM_CONSTANT(FEATURE_HDR_OUTPUT);
 
 	BIND_ENUM_CONSTANT(ROLE_UNKNOWN);
 	BIND_ENUM_CONSTANT(ROLE_DEFAULT_BUTTON);
@@ -1706,6 +1777,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ROLE_TITLE_BAR);
 	BIND_ENUM_CONSTANT(ROLE_DIALOG);
 	BIND_ENUM_CONSTANT(ROLE_TOOLTIP);
+	BIND_ENUM_CONSTANT(ROLE_REGION);
 
 	BIND_ENUM_CONSTANT(POPUP_MENU);
 	BIND_ENUM_CONSTANT(POPUP_LIST);
@@ -1932,20 +2004,20 @@ DisplayServer *DisplayServer::create(int p_index, const String &p_rendering_driv
 	return server_create_functions[p_index].create_function(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error);
 }
 
-void DisplayServer::_input_set_mouse_mode(Input::MouseMode p_mode) {
+void DisplayServer::_input_set_mouse_mode(InputClassEnums::MouseMode p_mode) {
 	singleton->mouse_set_mode(MouseMode(p_mode));
 }
 
-Input::MouseMode DisplayServer::_input_get_mouse_mode() {
-	return Input::MouseMode(singleton->mouse_get_mode());
+InputClassEnums::MouseMode DisplayServer::_input_get_mouse_mode() {
+	return InputClassEnums::MouseMode(singleton->mouse_get_mode());
 }
 
-void DisplayServer::_input_set_mouse_mode_override(Input::MouseMode p_mode) {
+void DisplayServer::_input_set_mouse_mode_override(InputClassEnums::MouseMode p_mode) {
 	singleton->mouse_set_mode_override(MouseMode(p_mode));
 }
 
-Input::MouseMode DisplayServer::_input_get_mouse_mode_override() {
-	return Input::MouseMode(singleton->mouse_get_mode_override());
+InputClassEnums::MouseMode DisplayServer::_input_get_mouse_mode_override() {
+	return InputClassEnums::MouseMode(singleton->mouse_get_mode_override());
 }
 
 void DisplayServer::_input_set_mouse_mode_override_enabled(bool p_enabled) {
@@ -1960,11 +2032,11 @@ void DisplayServer::_input_warp(const Vector2 &p_to_pos) {
 	singleton->warp_mouse(p_to_pos);
 }
 
-Input::CursorShape DisplayServer::_input_get_current_cursor_shape() {
-	return (Input::CursorShape)singleton->cursor_get_shape();
+InputClassEnums::CursorShape DisplayServer::_input_get_current_cursor_shape() {
+	return (InputClassEnums::CursorShape)singleton->cursor_get_shape();
 }
 
-void DisplayServer::_input_set_custom_mouse_cursor_func(const Ref<Resource> &p_image, Input::CursorShape p_shape, const Vector2 &p_hotspot) {
+void DisplayServer::_input_set_custom_mouse_cursor_func(const Ref<Resource> &p_image, InputClassEnums::CursorShape p_shape, const Vector2 &p_hotspot) {
 	singleton->cursor_set_custom_image(p_image, (CursorShape)p_shape, p_hotspot);
 }
 

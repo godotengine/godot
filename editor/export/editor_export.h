@@ -41,6 +41,9 @@ class EditorExport : public Node {
 	Vector<Ref<EditorExportPlatform>> export_platforms;
 	Vector<Ref<EditorExportPreset>> export_presets;
 	Vector<Ref<EditorExportPlugin>> export_plugins;
+	HashMap<Ref<EditorExportPlatform>, Ref<EditorExportPreset>> runnable_presets;
+
+	static inline const String RUNNABLE_SECTION_NAME = "runnable_presets";
 
 	static inline StringName _export_presets_updated;
 	static inline StringName _export_presets_runnable_updated;
@@ -84,6 +87,10 @@ public:
 	void add_export_plugin(const Ref<EditorExportPlugin> &p_plugin);
 	void remove_export_plugin(const Ref<EditorExportPlugin> &p_plugin);
 	Vector<Ref<EditorExportPlugin>> get_export_plugins();
+
+	void set_runnable_preset(const Ref<EditorExportPreset> &p_preset);
+	void unset_runnable_preset(const Ref<EditorExportPreset> &p_preset);
+	Ref<EditorExportPreset> get_runnable_preset_for_platform(const Ref<EditorExportPlatform> &p_for_platform) const;
 
 	void load_config();
 	void update_export_presets();

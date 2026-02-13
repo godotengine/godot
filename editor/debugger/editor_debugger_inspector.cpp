@@ -32,10 +32,11 @@
 
 #include "core/debugger/debugger_marshalls.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "scene/debugger/scene_debugger.h"
+#include "scene/debugger/scene_debugger_object.h"
 
 bool EditorDebuggerRemoteObjects::_set(const StringName &p_name, const Variant &p_value) {
 	return _set_impl(p_name, p_value, "");
@@ -125,7 +126,7 @@ void EditorDebuggerRemoteObjects::_bind_methods() {
 	ClassDB::bind_method("_hide_script_from_inspector", &EditorDebuggerRemoteObjects::_hide_script_from_inspector);
 	ClassDB::bind_method("_hide_metadata_from_inspector", &EditorDebuggerRemoteObjects::_hide_metadata_from_inspector);
 
-	ADD_SIGNAL(MethodInfo("values_edited", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::DICTIONARY, "values", PROPERTY_HINT_DICTIONARY_TYPE, "uint64_t:Variant"), PropertyInfo(Variant::STRING, "field")));
+	ADD_SIGNAL(MethodInfo("values_edited", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::DICTIONARY, "values", PROPERTY_HINT_DICTIONARY_TYPE, "uint64_t;Variant"), PropertyInfo(Variant::STRING, "field")));
 }
 
 /// EditorDebuggerInspector

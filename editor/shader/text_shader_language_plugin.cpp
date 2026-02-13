@@ -127,6 +127,13 @@ void fog() {
 }
 )";
 			} break;
+			case Shader::MODE_TEXTURE_BLIT: {
+				code += R"(
+void blit() {
+	// Called for each pixel inside the given rect on the DrawableTexture.
+}
+)";
+			} break;
 			case Shader::MODE_MAX: {
 				ERR_FAIL_V_MSG(Ref<Shader>(), "Invalid shader mode for text shader editor.");
 			} break;

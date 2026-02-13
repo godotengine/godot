@@ -1273,7 +1273,7 @@ bool OpenXRAPI::obtain_swapchain_formats() {
 		print_verbose(String("Using color swap chain format:") + get_swapchain_format_name(color_swapchain_format));
 	}
 
-	{
+	if (submit_depth_buffer) {
 		// Build a vector with swapchain formats we want to use, from best fit to worst
 		Vector<int64_t> usable_swapchain_formats;
 		depth_swapchain_format = 0;
@@ -1287,9 +1287,11 @@ bool OpenXRAPI::obtain_swapchain_formats() {
 			}
 		}
 
-		ERR_FAIL_COND_V_MSG(depth_swapchain_format == 0, false, "OpenXR: No usable depth swap chain format available!");
-
-		print_verbose(String("Using depth swap chain format:") + get_swapchain_format_name(depth_swapchain_format));
+		if (depth_swapchain_format == 0) {
+			WARN_PRINT("OpenXR: No usable depth swap chain format available!");
+		} else {
+			print_verbose(String("Using depth swap chain format:") + get_swapchain_format_name(depth_swapchain_format));
+		}
 	}
 
 	return true;
@@ -1299,21 +1301,6 @@ bool OpenXRAPI::create_main_swapchains(const Size2i &p_size) {
 	ERR_NOT_ON_RENDER_THREAD_V(false);
 	ERR_FAIL_NULL_V(graphics_extension, false);
 	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, false);
-
-	/*
-		TODO: We need to improve on this, for now we're taking our old approach of creating our main swapchains and substituting
-		those for the ones Godot normally creates.
-		This however means we can only use swapchains for our main XR view.
-
-		It would have been nicer if we could override the swapchain creation in Godot with ours but we have a timing issue here.
-		We can't create XR swapchains until after our XR session is fully instantiated, yet Godot creates its swapchain much earlier.
-
-		We only creates a swapchain for the main output here.
-		Additional swapchains may be created through our composition layer extension.
-
-		Finally an area we need to expand upon is that Foveated rendering is only enabled for the swap chain we create,
-		as we render 3D content into internal buffers that are copied into the swapchain, we do now have (basic) VRS support
-	*/
 
 	render_state.main_swapchain_size = p_size;
 	uint32_t sample_count = 1;
@@ -1330,19 +1317,13 @@ bool OpenXRAPI::create_main_swapchains(const Size2i &p_size) {
 	// We create our depth swapchain if:
 	// - we've enabled submitting depth buffer
 	// - we support our depth layer extension
-	// - we have our spacewarp extension (not yet implemented)
+	// Note: Application Space Warp and Frame Synthesis use a separate lower resolution depth buffer.
 	if (depth_swapchain_format != 0 && submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available()) {
 		if (!render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].create(0, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depth_swapchain_format, render_state.main_swapchain_size.width, render_state.main_swapchain_size.height, sample_count, view_configuration_views.size())) {
 			return false;
 		}
 
 		set_object_name(XR_OBJECT_TYPE_SWAPCHAIN, uint64_t(render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].get_swapchain()), "Main depth swapchain");
-	}
-
-	// We create our velocity swapchain if:
-	// - we have our spacewarp extension (not yet implemented)
-	{
-		// TBD
 	}
 
 	for (uint32_t i = 0; i < render_state.views.size(); i++) {

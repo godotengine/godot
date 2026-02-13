@@ -527,7 +527,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				if (SL::is_sampler_type(E.value.type)) {
 					if (E.value.hint == SL::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
 							E.value.hint == SL::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
-							E.value.hint == SL::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+							E.value.hint == SL::ShaderNode::Uniform::HINT_DEPTH_TEXTURE ||
+							E.value.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE0 ||
+							E.value.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE1 ||
+							E.value.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE2 ||
+							E.value.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE3) {
 						continue; // Don't create uniforms in the generated code for these.
 					}
 					max_texture_uniforms++;
@@ -572,7 +576,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 				if (uniform.hint == SL::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
 						uniform.hint == SL::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
-						uniform.hint == SL::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+						uniform.hint == SL::ShaderNode::Uniform::HINT_DEPTH_TEXTURE ||
+						uniform.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE0 ||
+						uniform.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE1 ||
+						uniform.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE2 ||
+						uniform.hint == SL::ShaderNode::Uniform::HINT_BLIT_SOURCE3) {
 					continue; // Don't create uniforms in the generated code for these.
 				}
 
@@ -937,6 +945,14 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
 							name = "depth_buffer";
 							r_gen_code.uses_depth_texture = true;
+						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLIT_SOURCE0) {
+							name = "source0";
+						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLIT_SOURCE1) {
+							name = "source1";
+						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLIT_SOURCE2) {
+							name = "source2";
+						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLIT_SOURCE3) {
+							name = "source3";
 						} else {
 							name = _mkid(vnode->name); //texture, use as is
 						}
@@ -1171,6 +1187,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					bool is_radiance_texture = false;
 					bool texture_func_no_uv = false;
 					bool texture_func_returns_data = false;
+					bool texture_func_simple = false;
 
 					if (onode->op == SL::OP_STRUCT) {
 						code += _mkid(vnode->name);
@@ -1187,6 +1204,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							is_texture_func = texture_functions.has(vnode->name);
 							texture_func_no_uv = (vnode->name == "textureSize" || vnode->name == "textureQueryLevels");
 							texture_func_returns_data = texture_func_no_uv || vnode->name == "textureQueryLod";
+							texture_func_simple = vnode->name == "texture";
 						} else if (p_default_actions.renames.has(vnode->name)) {
 							code += p_default_actions.renames[vnode->name];
 						} else {
@@ -1324,6 +1342,10 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 									data_type_name = "multiviewSampler";
 									multiview_uv_needed = true;
 								} else if (is_radiance_texture) {
+									// We need to use an explicit level of detail to avoid mip mapping artifacts caused by the octahedral discontinuity.
+									if (texture_func_simple) {
+										code = code.replace("texture(", "textureLod(");
+									}
 									data_type_name = "sampler2D";
 								} else {
 									data_type_name = ShaderLanguage::get_datatype_name(onode->arguments[i]->get_datatype());
@@ -1360,6 +1382,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							code += node_code;
 						} else if (is_radiance_texture && !texture_func_no_uv && i == 2) {
 							node_code = "vec3_to_oct_with_border(" + node_code + ", params.border_size)";
+
+							// Need an explicit level of detail if one isn't provided by the user.
+							if (texture_func_simple && onode->arguments.size() == 3) {
+								node_code += ", 0.0";
+							}
 
 							code += node_code;
 						} else {

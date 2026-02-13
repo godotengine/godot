@@ -255,109 +255,109 @@ public:
 	}
 };
 
-#define DEFINE_DUPLICATE_GUINEA_PIG(m_class_name, m_property_usage)                                                                                 \
-	class m_class_name : public Resource {                                                                                                          \
-		GDCLASS(m_class_name, Resource)                                                                                                             \
-                                                                                                                                                    \
-		DuplicateGuineaPigData data;                                                                                                                \
-                                                                                                                                                    \
-	public:                                                                                                                                         \
-		void set_obj(Object *p_obj) {                                                                                                               \
-			data.obj = p_obj;                                                                                                                       \
-		}                                                                                                                                           \
-		Object *get_obj() const {                                                                                                                   \
-			return data.obj;                                                                                                                        \
-		}                                                                                                                                           \
-                                                                                                                                                    \
-		void set_arr(const Array &p_arr) {                                                                                                          \
-			data.arr = p_arr;                                                                                                                       \
-		}                                                                                                                                           \
-		Array get_arr() const {                                                                                                                     \
-			return data.arr;                                                                                                                        \
-		}                                                                                                                                           \
-                                                                                                                                                    \
-		void set_dict(const Dictionary &p_dict) {                                                                                                   \
-			data.dict = p_dict;                                                                                                                     \
-		}                                                                                                                                           \
-		Dictionary get_dict() const {                                                                                                               \
-			return data.dict;                                                                                                                       \
-		}                                                                                                                                           \
-                                                                                                                                                    \
-		void set_packed(const Variant &p_packed) {                                                                                                  \
-			data.packed = p_packed;                                                                                                                 \
-		}                                                                                                                                           \
-		Variant get_packed() const {                                                                                                                \
-			return data.packed;                                                                                                                     \
-		}                                                                                                                                           \
-                                                                                                                                                    \
-		void set_subres(const Ref<Resource> &p_subres) {                                                                                            \
-			data.subres = p_subres;                                                                                                                 \
-		}                                                                                                                                           \
-		Ref<Resource> get_subres() const {                                                                                                          \
-			return data.subres;                                                                                                                     \
-		}                                                                                                                                           \
-                                                                                                                                                    \
-		void set_subres_sl(const Ref<Resource> &p_subres) {                                                                                         \
-			data.subres_sl = p_subres;                                                                                                              \
-		}                                                                                                                                           \
-		Ref<Resource> get_subres_sl() const {                                                                                                       \
-			return data.subres_sl;                                                                                                                  \
-		}                                                                                                                                           \
-                                                                                                                                                    \
-		void set_defaults() {                                                                                                                       \
-			data.set_defaults();                                                                                                                    \
-		}                                                                                                                                           \
-                                                                                                                                                    \
-		Object *get_data() {                                                                                                                        \
-			return &data;                                                                                                                           \
-		}                                                                                                                                           \
-                                                                                                                                                    \
-		void verify_duplication(const Ref<Resource> &p_orig, int p_test_mode, int p_deep_mode) const {                                              \
-			const DuplicateGuineaPigData *orig_data = Object::cast_to<DuplicateGuineaPigData>(p_orig->call("get_data"));                            \
-			data.verify_duplication(orig_data, m_property_usage, (TestDuplicateMode)p_test_mode, (ResourceDeepDuplicateMode)p_deep_mode);           \
-		}                                                                                                                                           \
-                                                                                                                                                    \
-	protected:                                                                                                                                      \
-		static void _bind_methods() {                                                                                                               \
-			ClassDB::bind_method(D_METHOD("set_obj", "obj"), &m_class_name::set_obj);                                                               \
-			ClassDB::bind_method(D_METHOD("get_obj"), &m_class_name::get_obj);                                                                      \
-                                                                                                                                                    \
-			ClassDB::bind_method(D_METHOD("set_arr", "arr"), &m_class_name::set_arr);                                                               \
-			ClassDB::bind_method(D_METHOD("get_arr"), &m_class_name::get_arr);                                                                      \
-                                                                                                                                                    \
-			ClassDB::bind_method(D_METHOD("set_dict", "dict"), &m_class_name::set_dict);                                                            \
-			ClassDB::bind_method(D_METHOD("get_dict"), &m_class_name::get_dict);                                                                    \
-                                                                                                                                                    \
-			ClassDB::bind_method(D_METHOD("set_packed", "packed"), &m_class_name::set_packed);                                                      \
-			ClassDB::bind_method(D_METHOD("get_packed"), &m_class_name::get_packed);                                                                \
-                                                                                                                                                    \
-			ClassDB::bind_method(D_METHOD("set_subres", "subres"), &m_class_name::set_subres);                                                      \
-			ClassDB::bind_method(D_METHOD("get_subres"), &m_class_name::get_subres);                                                                \
-                                                                                                                                                    \
-			ClassDB::bind_method(D_METHOD("set_subres_sl", "subres"), &m_class_name::set_subres_sl);                                                \
-			ClassDB::bind_method(D_METHOD("get_subres_sl"), &m_class_name::get_subres_sl);                                                          \
-                                                                                                                                                    \
-			ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "obj", PROPERTY_HINT_NONE, "", m_property_usage), "set_obj", "get_obj");                     \
-			ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "arr", PROPERTY_HINT_NONE, "", m_property_usage), "set_arr", "get_arr");                      \
-			ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "dict", PROPERTY_HINT_NONE, "", m_property_usage), "set_dict", "get_dict");              \
+#define DEFINE_DUPLICATE_GUINEA_PIG(m_class_name, m_property_usage) \
+	class m_class_name : public Resource { \
+		GDCLASS(m_class_name, Resource) \
+\
+		DuplicateGuineaPigData data; \
+\
+	public: \
+		void set_obj(Object *p_obj) { \
+			data.obj = p_obj; \
+		} \
+		Object *get_obj() const { \
+			return data.obj; \
+		} \
+\
+		void set_arr(const Array &p_arr) { \
+			data.arr = p_arr; \
+		} \
+		Array get_arr() const { \
+			return data.arr; \
+		} \
+\
+		void set_dict(const Dictionary &p_dict) { \
+			data.dict = p_dict; \
+		} \
+		Dictionary get_dict() const { \
+			return data.dict; \
+		} \
+\
+		void set_packed(const Variant &p_packed) { \
+			data.packed = p_packed; \
+		} \
+		Variant get_packed() const { \
+			return data.packed; \
+		} \
+\
+		void set_subres(const Ref<Resource> &p_subres) { \
+			data.subres = p_subres; \
+		} \
+		Ref<Resource> get_subres() const { \
+			return data.subres; \
+		} \
+\
+		void set_subres_sl(const Ref<Resource> &p_subres) { \
+			data.subres_sl = p_subres; \
+		} \
+		Ref<Resource> get_subres_sl() const { \
+			return data.subres_sl; \
+		} \
+\
+		void set_defaults() { \
+			data.set_defaults(); \
+		} \
+\
+		Object *get_data() { \
+			return &data; \
+		} \
+\
+		void verify_duplication(const Ref<Resource> &p_orig, int p_test_mode, int p_deep_mode) const { \
+			const DuplicateGuineaPigData *orig_data = Object::cast_to<DuplicateGuineaPigData>(p_orig->call("get_data")); \
+			data.verify_duplication(orig_data, m_property_usage, (TestDuplicateMode)p_test_mode, (ResourceDeepDuplicateMode)p_deep_mode); \
+		} \
+\
+	protected: \
+		static void _bind_methods() { \
+			ClassDB::bind_method(D_METHOD("set_obj", "obj"), &m_class_name::set_obj); \
+			ClassDB::bind_method(D_METHOD("get_obj"), &m_class_name::get_obj); \
+\
+			ClassDB::bind_method(D_METHOD("set_arr", "arr"), &m_class_name::set_arr); \
+			ClassDB::bind_method(D_METHOD("get_arr"), &m_class_name::get_arr); \
+\
+			ClassDB::bind_method(D_METHOD("set_dict", "dict"), &m_class_name::set_dict); \
+			ClassDB::bind_method(D_METHOD("get_dict"), &m_class_name::get_dict); \
+\
+			ClassDB::bind_method(D_METHOD("set_packed", "packed"), &m_class_name::set_packed); \
+			ClassDB::bind_method(D_METHOD("get_packed"), &m_class_name::get_packed); \
+\
+			ClassDB::bind_method(D_METHOD("set_subres", "subres"), &m_class_name::set_subres); \
+			ClassDB::bind_method(D_METHOD("get_subres"), &m_class_name::get_subres); \
+\
+			ClassDB::bind_method(D_METHOD("set_subres_sl", "subres"), &m_class_name::set_subres_sl); \
+			ClassDB::bind_method(D_METHOD("get_subres_sl"), &m_class_name::get_subres_sl); \
+\
+			ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "obj", PROPERTY_HINT_NONE, "", m_property_usage), "set_obj", "get_obj"); \
+			ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "arr", PROPERTY_HINT_NONE, "", m_property_usage), "set_arr", "get_arr"); \
+			ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "dict", PROPERTY_HINT_NONE, "", m_property_usage), "set_dict", "get_dict"); \
 			ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "packed", PROPERTY_HINT_NONE, "", m_property_usage), "set_packed", "get_packed"); \
-			ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "subres", PROPERTY_HINT_NONE, "", m_property_usage), "set_subres", "get_subres");            \
-			ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "subres_sl", PROPERTY_HINT_NONE, "", m_property_usage), "set_subres_sl", "get_subres_sl");   \
-                                                                                                                                                    \
-			ClassDB::bind_method(D_METHOD("set_defaults"), &m_class_name::set_defaults);                                                            \
-			ClassDB::bind_method(D_METHOD("get_data"), &m_class_name::get_data);                                                                    \
-			ClassDB::bind_method(D_METHOD("verify_duplication", "orig", "test_mode", "deep_mode"), &m_class_name::verify_duplication);              \
-		}                                                                                                                                           \
-                                                                                                                                                    \
-	public:                                                                                                                                         \
-		static m_class_name *register_and_instantiate() {                                                                                           \
-			static bool registered = false;                                                                                                         \
-			if (!registered) {                                                                                                                      \
-				GDREGISTER_CLASS(m_class_name);                                                                                                     \
-				registered = true;                                                                                                                  \
-			}                                                                                                                                       \
-			return memnew(m_class_name);                                                                                                            \
-		}                                                                                                                                           \
+			ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "subres", PROPERTY_HINT_NONE, "", m_property_usage), "set_subres", "get_subres"); \
+			ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "subres_sl", PROPERTY_HINT_NONE, "", m_property_usage), "set_subres_sl", "get_subres_sl"); \
+\
+			ClassDB::bind_method(D_METHOD("set_defaults"), &m_class_name::set_defaults); \
+			ClassDB::bind_method(D_METHOD("get_data"), &m_class_name::get_data); \
+			ClassDB::bind_method(D_METHOD("verify_duplication", "orig", "test_mode", "deep_mode"), &m_class_name::verify_duplication); \
+		} \
+\
+	public: \
+		static m_class_name *register_and_instantiate() { \
+			static bool registered = false; \
+			if (!registered) { \
+				GDREGISTER_CLASS(m_class_name); \
+				registered = true; \
+			} \
+			return memnew(m_class_name); \
+		} \
 	};
 
 DEFINE_DUPLICATE_GUINEA_PIG(DuplicateGuineaPig_None, PROPERTY_USAGE_NONE)
