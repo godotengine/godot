@@ -76,6 +76,9 @@ namespace Godot.SourceGenerators
             INamedTypeSymbol symbol
         )
         {
+            var options = context.Compilation.Options as Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions;
+            bool isUnsafeAllowed = options?.AllowUnsafe ?? false;
+
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
             string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace
                 ? namespaceSymbol.FullQualifiedNameOmitGlobal()
@@ -251,13 +254,15 @@ namespace Godot.SourceGenerators
 
                 source.Append(
                     "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append("    internal new static unsafe void GetGodotMethodTrampolines(")
+                source.Append("    internal new static ")
+                    .Append(isUnsafeAllowed ? "unsafe " : "")
+                    .Append("void GetGodotMethodTrampolines(")
                     .Append(CollectorType).Append(" collector)\n    {\n");
 
                 foreach (var method in godotClassMethods)
                 {
                     GenerateMethodTrampoline(symbol, method, source);
-                    AppendMethodTrampoline(source, method);
+                    AppendMethodTrampoline(source, method, isUnsafeAllowed);
                 }
 
                 source.Append("    }\n");
@@ -436,16 +441,40 @@ namespace Godot.SourceGenerators
                 PropertyHint.None, string.Empty, propUsage, className, exported: false);
         }
 
-        private static void AppendMethodTrampoline(StringBuilder source, GodotMethodData method)
+        private static void AppendMethodTrampoline(StringBuilder source, GodotMethodData method, bool isUnsafeAllowed)
         {
             string methodName = method.Method.Name;
             int parameterCount = method.ParamTypes.Length;
 
+            if (!isUnsafeAllowed)
+            {
+                source.Append("        var aux_delegate_")
+                    .Append(parameterCount).Append("_").Append(methodName)
+                    .Append(" = ")
+                    .Append("trampoline_")
+                    .Append(parameterCount).Append("_").Append(methodName)
+                    .Append(";\n");
+            }
+
             source.Append("        collector.TryAdd(new(MethodName.@")
                 .Append(methodName).Append(", ").Append(parameterCount)
-                .Append("), new(&trampoline_")
-                .Append(parameterCount).Append("_").Append(methodName)
-                .Append("));\n");
+                .Append("), new(");
+
+            if (isUnsafeAllowed)
+            {
+                source
+                    .Append("&trampoline_")
+                    .Append(parameterCount).Append("_").Append(methodName);
+            }
+            else
+            {
+                source
+                    .Append("aux_delegate_")
+                    .Append(parameterCount).Append("_").Append(methodName)
+                    .Append(".Method.MethodHandle.GetFunctionPointer()");
+            }
+
+            source.Append("));\n");
         }
 
         private static void GenerateMethodTrampoline(

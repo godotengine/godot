@@ -64,6 +64,9 @@ namespace Godot.SourceGenerators
             INamedTypeSymbol symbol
         )
         {
+            var options = context.Compilation.Options as Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions;
+            bool isUnsafeAllowed = options?.AllowUnsafe ?? false;
+
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
             string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace
                 ? namespaceSymbol.FullQualifiedNameOmitGlobal()
@@ -257,13 +260,15 @@ namespace Godot.SourceGenerators
 
                 source.Append(
                     "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append("    internal new static unsafe void GetGodotRaiseSignalTrampolines(")
+                source.Append("    internal new static ")
+                    .Append(isUnsafeAllowed ? "unsafe " : "")
+                    .Append("void GetGodotRaiseSignalTrampolines(")
                     .Append(CollectorType).Append(" collector)\n    {\n");
 
                 foreach (var signal in godotSignalDelegates)
                 {
                     GenerateRaiseSignalTrampoline(symbol, signal, source);
-                    AppendRaiseSignalTrampoline(source, signal);
+                    AppendRaiseSignalTrampoline(source, signal, isUnsafeAllowed);
                 }
 
                 source.Append("    }\n");
@@ -483,16 +488,41 @@ namespace Godot.SourceGenerators
                 PropertyHint.None, string.Empty, propUsage, className, exported: false);
         }
 
-        private static void AppendRaiseSignalTrampoline(StringBuilder source, GodotSignalDelegateData signal)
+        private static void AppendRaiseSignalTrampoline(StringBuilder source, GodotSignalDelegateData signal,
+            bool isUnsafeAllowed)
         {
-            string methodName = signal.Name;
+            string signalName = signal.Name;
             int parameterCount = signal.InvokeMethodData.ParamTypes.Length;
 
+            if (!isUnsafeAllowed)
+            {
+                source.Append("        var aux_delegate_")
+                    .Append(parameterCount).Append("_").Append(signalName)
+                    .Append(" = ")
+                    .Append("trampoline_")
+                    .Append(parameterCount).Append("_").Append(signalName)
+                    .Append(";\n");
+            }
+
             source.Append("        collector.TryAdd(new(SignalName.@")
-                .Append(methodName).Append(", ").Append(parameterCount)
-                .Append("), new(&trampoline_")
-                .Append(parameterCount).Append("_").Append(methodName)
-                .Append("));\n");
+                .Append(signalName).Append(", ").Append(parameterCount)
+                .Append("), new(");
+
+            if (isUnsafeAllowed)
+            {
+                source
+                    .Append("&trampoline_")
+                    .Append(parameterCount).Append("_").Append(signalName);
+            }
+            else
+            {
+                source
+                    .Append("aux_delegate_")
+                    .Append(parameterCount).Append("_").Append(signalName)
+                    .Append(".Method.MethodHandle.GetFunctionPointer()");
+            }
+
+            source.Append("));\n");
         }
 
         private static void GenerateRaiseSignalTrampoline(
