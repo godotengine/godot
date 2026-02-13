@@ -267,8 +267,8 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 #endif
 
 	if (channel_count != get_channel_count()) {
-		// Number of channels changed due to a output_device or speaker_mode change
-		// reinitialize the buses channels and buffers
+		// Number of channels changed due to an output_device or speaker_mode change,
+		// reinitialize the buses channels and buffers.
 		init_channels_and_buffers();
 	}
 
@@ -285,9 +285,9 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 		int from = buffer_size - to_mix;
 		int from_buf = p_frames - todo;
 
-		// Channels size from driver and channels used by master
+		// Channels size from driver and channels used by master.
 		int cs = get_driver_channel_count();
-		int mcs = master->channels.size();
+		int master_cs = master->channels.size();
 
 		// Take away 1 from the stride, as we are manually incrementing by 1 for stereo.
 		uintptr_t stride_minus_one = (cs * 2) - 1;
@@ -297,9 +297,9 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 			int32_t *dest = &p_buffer[from_buf * (cs * 2) + (k * 2)];
 
 #ifdef DEBUG_ENABLED
-			if (!debug_mute && k < mcs && master->channels[k].active) {
+			if (!debug_mute && k < master_cs && master->channels[k].active) {
 #else
-			if (k < mcs && master->channels[k].active) {
+			if (k < master_cs && master->channels[k].active) {
 #endif // DEBUG_ENABLED
 				const AudioFrame *buf = master->channels[k].buffer.ptr();
 

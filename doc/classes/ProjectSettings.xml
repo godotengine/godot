@@ -462,8 +462,10 @@
 			Safer override for [member audio/driver/output_latency] in the Web platform, to avoid audio issues especially on mobile devices.
 		</member>
 		<member name="audio/driver/speaker_mode_override" type="int" setter="" getter="" default="0">
-			Override the speaker mode used internally by Godot. [code]Disabled[/code] will use the audio driver's speaker mode, while other values will override the internal speaker mode, and thus the number of audio channels, used by the [AudioServer].
-			When the [AudioServer] speaker mode is overridden and differs from the audio driver's speaker mode, audio channels will be ignored or muted, depending on if there are more channels than the driver supports, or fewer (respectively).
+			Override the speaker mode used internally by Godot. Can be used to enforce a particular speaker mode (e.g. stereo in a 2D game), or to help test or troubleshoot different speaker configurations.
+			[code]Disabled[/code] will use the audio driver's speaker mode, while other values will override the internal speaker mode, and thus the number of audio channels, used by the [AudioServer].
+			If the specified mode has fewer channels than the system's audio driver, remaining channels will not receive any audio.
+			If the specified mode has more channels than the system's audio driver, the superfluous channels will be discarded.
 			This setting can itself be overridden using the [code]--speaker-mode-override &lt;mode&gt;[/code] command line argument.
 		</member>
 		<member name="audio/general/2d_panning_strength" type="float" setter="" getter="" default="0.5">

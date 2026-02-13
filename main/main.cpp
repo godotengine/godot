@@ -606,7 +606,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("].\n");
 	print_help_option("--audio-output-latency <ms>", "Override audio output latency in milliseconds (default is 15 ms).\n");
 	print_help_option("", "Lower values make sound playback more reactive but increase CPU usage, and may result in audio cracking if the CPU can't keep up.\n");
-	print_help_option("--speaker-mode-override <mode>", "Override speaker mode used by Godot to mix audio (0: driver default (disable override), 1: force stereo, 2: force 3.1 surround, 3: force 5.1 surround, 4: force 7.1 surround).\n");
+	print_help_option("--speaker-mode-override <mode>", "Override speaker mode used by the audio engine to mix audio (0: driver default (disable override), 1: force stereo, 2: force 3.1 surround, 3: force 5.1 surround, 4: force 7.1 surround).\n");
 
 	print_help_option("--rendering-method <renderer>", "Renderer name. Requires driver support.\n");
 	print_help_option("--rendering-driver <driver>", "Rendering driver (depends on display driver).\n");
