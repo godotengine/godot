@@ -113,16 +113,6 @@
 				Returns the fraction through the current physics tick we are at the time of rendering the frame. This can be used to implement fixed timestep interpolation.
 			</description>
 		</method>
-		<method name="physics_iteration">
-			<return type="bool" />
-			<param index="0" name="delta" type="float" />
-			<description>
-				Runs one physics step: synchronizes the physics servers, calls [method Node._physics_process] on the scene tree, runs navigation and physics stepping, then flushes the message queue. Use this when [member ProjectSettings.physics/common/use_builtin_physics_stepping] is [code]false[/code] to drive physics manually (e.g. for rollback netcode or custom tick rates).
-				[param delta] should typically be the fixed physics step in seconds, e.g. [code]1.0 / Engine.physics_ticks_per_second[/code].
-				Returns [code]true[/code] if the main loop should exit (e.g. the scene tree requested quit during [method Node._physics_process]); otherwise returns [code]false[/code].
-				[b]Note:[/b] When built-in physics stepping is disabled, you must call this method yourself each time you want to advance the physics simulation. Calling it from [method Node._process] is a common approach.
-			</description>
-		</method>
 		<method name="get_process_frames" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -282,6 +272,16 @@
 				func _physics_process(delta):
 					print(Engine.is_in_physics_frame()) # Prints true
 				[/codeblock]
+			</description>
+		</method>
+		<method name="physics_iteration">
+			<return type="bool" />
+			<param index="0" name="delta" type="float" />
+			<description>
+				Runs one physics step: synchronizes the physics servers, calls [method Node._physics_process] on the scene tree, runs navigation and physics stepping, then flushes the message queue. Use this when [member ProjectSettings.physics/common/use_builtin_physics_stepping] is [code]false[/code] to drive physics manually (e.g. for rollback netcode or custom tick rates).
+				[param delta] should typically be the fixed physics step in seconds, e.g. [code]1.0 / Engine.physics_ticks_per_second[/code].
+				Returns [code]true[/code] if the main loop should exit (e.g. the scene tree requested quit during [method Node._physics_process]); otherwise returns [code]false[/code].
+				[b]Note:[/b] When built-in physics stepping is disabled, you must call this method yourself each time you want to advance the physics simulation. Calling it from [method Node._process] is a common approach.
 			</description>
 		</method>
 		<method name="register_script_language">
