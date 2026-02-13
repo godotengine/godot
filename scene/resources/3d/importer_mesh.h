@@ -87,6 +87,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static Ref<ImporterMesh> merge_importer_meshes(const TypedArray<ImporterMesh> &p_importer_meshes, const TypedArray<Transform3D> &p_relative_transforms, bool p_deduplicate_surfaces = true);
+
 	void add_blend_shape(const String &p_name);
 	int get_blend_shape_count() const;
 	String get_blend_shape_name(int p_blend_shape) const;

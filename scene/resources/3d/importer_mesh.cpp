@@ -38,6 +38,284 @@
 #include "core/math/convex_hull.h"
 #endif // PHYSICS_3D_DISABLED
 
+Ref<ImporterMesh> ImporterMesh::merge_importer_meshes(const TypedArray<ImporterMesh> &p_importer_meshes, const TypedArray<Transform3D> &p_relative_transforms, bool p_deduplicate_surfaces) {
+	// Setup and safety checks.
+	const int mesh_count = p_importer_meshes.size();
+	Ref<ImporterMesh> merged_importer_mesh;
+	ERR_FAIL_COND_V(mesh_count == 0, merged_importer_mesh);
+	ERR_FAIL_COND_V(mesh_count != p_relative_transforms.size(), merged_importer_mesh);
+	// Contains more than just the surface arrays, also contains some metadata to help with merging.
+	HashMap<String, Array> names_to_surfaces;
+	for (int mesh_index = 0; mesh_index < mesh_count; mesh_index++) {
+		const Ref<ImporterMesh> importer_mesh = p_importer_meshes[mesh_index];
+		if (importer_mesh->get_blend_shape_count() > 0) {
+			WARN_PRINT("ImporterMesh.merge_importer_meshes: Mesh " + itos(mesh_index) + " has blend shapes, which are not supported and will be discarded in the merged mesh.");
+		}
+		const Transform3D &relative_transform = p_relative_transforms[mesh_index];
+		const bool is_determinant_negative = relative_transform.basis.determinant() < 0;
+		for (int surface_index = 0; surface_index < importer_mesh->get_surface_count(); surface_index++) {
+			if (importer_mesh->get_surface_lod_count(surface_index) > 0) {
+				WARN_PRINT("ImporterMesh.merge_importer_meshes: Mesh " + itos(mesh_index) + " surface " + itos(surface_index) + " has LODs, which are not supported and will be discarded in the merged mesh.");
+			}
+			// Shallow-duplicate the surface arrays so that writing transformed data back doesn't mutate the original mesh.
+			Array this_surface_arrays = importer_mesh->get_surface_arrays(surface_index).duplicate(false);
+			ERR_FAIL_COND_V(this_surface_arrays.size() != Mesh::ARRAY_MAX, merged_importer_mesh);
+			// Transform the data of the mesh by the instance's relative transform.
+			{
+				PackedVector3Array vertices = this_surface_arrays[Mesh::ARRAY_VERTEX];
+				for (int vertex_index = 0; vertex_index < vertices.size(); vertex_index++) {
+					vertices.ptrw()[vertex_index] = relative_transform.xform(vertices[vertex_index]);
+				}
+				PackedVector3Array normals = this_surface_arrays[Mesh::ARRAY_NORMAL];
+				for (int normal_index = 0; normal_index < normals.size(); normal_index++) {
+					normals.ptrw()[normal_index] = relative_transform.basis.xform(normals[normal_index]).normalized();
+				}
+				PackedFloat32Array tangents = this_surface_arrays[Mesh::ARRAY_TANGENT];
+				for (int tangent_index = 0; tangent_index < tangents.size(); tangent_index += 4) {
+					Vector3 tangent = Vector3(tangents[tangent_index], tangents[tangent_index + 1], tangents[tangent_index + 2]);
+					tangent = relative_transform.basis.xform(tangent).normalized();
+					tangents.ptrw()[tangent_index + 0] = tangent.x;
+					tangents.ptrw()[tangent_index + 1] = tangent.y;
+					tangents.ptrw()[tangent_index + 2] = tangent.z;
+					// The tangent's W component is not transformed (the binormal direction sign), so we keep it as is.
+				}
+				// If the determinant is negative, we need to swap vertices to fix the winding order.
+				if (is_determinant_negative) {
+					PackedInt32Array this_indices = this_surface_arrays[Mesh::ARRAY_INDEX];
+					if (this_indices.is_empty()) {
+						// For non-indexed meshes, we need to swap the data in the arrays.
+						PackedColorArray colors = this_surface_arrays[Mesh::ARRAY_COLOR];
+						PackedVector2Array tex_uv1 = this_surface_arrays[Mesh::ARRAY_TEX_UV];
+						PackedVector2Array tex_uv2 = this_surface_arrays[Mesh::ARRAY_TEX_UV2];
+						Color temp_color;
+						Vector4 temp_vec4;
+						Vector3 temp_vec3;
+						Vector2 temp_vec2;
+						for (int i = 1; i < vertices.size() - 1; i += 3) {
+							temp_vec3 = vertices[i];
+							vertices.ptrw()[i] = vertices[i + 1];
+							vertices.ptrw()[i + 1] = temp_vec3;
+						}
+						for (int i = 1; i < normals.size() - 1; i += 3) {
+							temp_vec3 = normals[i];
+							normals.ptrw()[i] = normals[i + 1];
+							normals.ptrw()[i + 1] = temp_vec3;
+						}
+						for (int i = 4; i < tangents.size() - 1; i += 12) {
+							temp_vec4 = Vector4(tangents[i + 0], tangents[i + 1], tangents[i + 2], tangents[i + 3]);
+							tangents.ptrw()[i + 0] = tangents[i + 4];
+							tangents.ptrw()[i + 1] = tangents[i + 5];
+							tangents.ptrw()[i + 2] = tangents[i + 6];
+							tangents.ptrw()[i + 3] = tangents[i + 7];
+							tangents.ptrw()[i + 4] = temp_vec4.x;
+							tangents.ptrw()[i + 5] = temp_vec4.y;
+							tangents.ptrw()[i + 6] = temp_vec4.z;
+							tangents.ptrw()[i + 7] = temp_vec4.w;
+						}
+						for (int i = 1; i < colors.size() - 1; i += 3) {
+							temp_color = colors[i];
+							colors.ptrw()[i] = colors[i + 1];
+							colors.ptrw()[i + 1] = temp_color;
+						}
+						for (int i = 1; i < tex_uv1.size() - 1; i += 3) {
+							temp_vec2 = tex_uv1[i];
+							tex_uv1.ptrw()[i] = tex_uv1[i + 1];
+							tex_uv1.ptrw()[i + 1] = temp_vec2;
+						}
+						for (int i = 1; i < tex_uv2.size() - 1; i += 3) {
+							temp_vec2 = tex_uv2[i];
+							tex_uv2.ptrw()[i] = tex_uv2[i + 1];
+							tex_uv2.ptrw()[i + 1] = temp_vec2;
+						}
+						// Swap custom data channels.
+						for (int custom_index = 0; custom_index < 4; custom_index++) {
+							Variant custom_var = this_surface_arrays[Mesh::ARRAY_CUSTOM0 + custom_index];
+							if (custom_var.get_type() == Variant::PACKED_BYTE_ARRAY) {
+								PackedByteArray custom_bytes = custom_var;
+								if (!custom_bytes.is_empty()) {
+									// Each vertex may have multiple bytes associated with it, such as in a half precision float.
+									const int byte_stride = custom_bytes.size() / vertices.size();
+									for (int i = 1; i < vertices.size() - 1; i += 3) {
+										for (int s = 0; s < byte_stride; s++) {
+											const uint8_t temp_byte = custom_bytes[i * byte_stride + s];
+											custom_bytes.ptrw()[i * byte_stride + s] = custom_bytes[(i + 1) * byte_stride + s];
+											custom_bytes.ptrw()[(i + 1) * byte_stride + s] = temp_byte;
+										}
+									}
+									this_surface_arrays[Mesh::ARRAY_CUSTOM0 + custom_index] = custom_bytes;
+								}
+							} else if (custom_var.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
+								PackedFloat32Array custom_floats = custom_var;
+								if (!custom_floats.is_empty()) {
+									// Each vertex may have multiple floats associated with it, such as in a vector or color.
+									const int float_stride = custom_floats.size() / vertices.size();
+									for (int i = 1; i < vertices.size() - 1; i += 3) {
+										for (int s = 0; s < float_stride; s++) {
+											const float temp_float = custom_floats[i * float_stride + s];
+											custom_floats.ptrw()[i * float_stride + s] = custom_floats[(i + 1) * float_stride + s];
+											custom_floats.ptrw()[(i + 1) * float_stride + s] = temp_float;
+										}
+									}
+									this_surface_arrays[Mesh::ARRAY_CUSTOM0 + custom_index] = custom_floats;
+								}
+							} else {
+								ERR_PRINT("Unsupported custom data format when merging ImporterMesh surfaces.");
+							}
+						}
+						// Put the data back into the surface arrays.
+						this_surface_arrays[Mesh::ARRAY_COLOR] = colors.is_empty() ? Variant() : Variant(colors);
+						this_surface_arrays[Mesh::ARRAY_TEX_UV] = tex_uv1.is_empty() ? Variant() : Variant(tex_uv1);
+						this_surface_arrays[Mesh::ARRAY_TEX_UV2] = tex_uv2.is_empty() ? Variant() : Variant(tex_uv2);
+					} else {
+						// For indexed meshes, we need to swap the indices.
+						for (int i = 1; i < this_indices.size() - 1; i += 3) {
+							int32_t temp = this_indices[i];
+							this_indices.ptrw()[i] = this_indices[i + 1];
+							this_indices.ptrw()[i + 1] = temp;
+						}
+						this_surface_arrays[Mesh::ARRAY_INDEX] = this_indices;
+					}
+				}
+				// This data always needs to be put back into the surface arrays,
+				// because it gets transformed even if the determinant is positive.
+				this_surface_arrays[Mesh::ARRAY_VERTEX] = vertices;
+				this_surface_arrays[Mesh::ARRAY_NORMAL] = normals.is_empty() ? Variant() : Variant(normals);
+				this_surface_arrays[Mesh::ARRAY_TANGENT] = tangents.is_empty() ? Variant() : Variant(tangents);
+			}
+			// Insert the transformed data into the temporary HashMap.
+			const Mesh::PrimitiveType mesh_prim_type = importer_mesh->get_surface_primitive_type(surface_index);
+			const uint64_t mesh_flags = importer_mesh->get_surface_format(surface_index);
+			String surface_name = importer_mesh->get_surface_name(surface_index);
+			if (surface_name.is_empty()) {
+				surface_name = String("surface_") + itos(surface_index);
+			}
+			// Check if the surface has bone data by inspecting the actual arrays.
+			// NOTE: Unlike ArrayMesh, we can't use the mesh format flags, because those may not be set by ImporterMesh callers.
+			const bool has_bones = this_surface_arrays[Mesh::ARRAY_BONES].get_type() != Variant::NIL;
+			const bool has_weights = this_surface_arrays[Mesh::ARRAY_WEIGHTS].get_type() != Variant::NIL;
+			const bool name_exists = names_to_surfaces.has(surface_name);
+			if (name_exists) {
+				// Only attempt to deduplicate surfaces if the mesh is not skinned.
+				// Avoid deduplicating surfaces with bone weights.
+				constexpr uint64_t skinning_flags = Mesh::ARRAY_FORMAT_BONES | Mesh::ARRAY_FORMAT_WEIGHTS;
+				const bool is_skinned = has_bones || has_weights;
+				if (p_deduplicate_surfaces && !is_skinned && (mesh_flags & skinning_flags) == 0) {
+					Array &existing_surface = names_to_surfaces[surface_name];
+					const Mesh::PrimitiveType existing_prim_type = (Mesh::PrimitiveType)(uint64_t)existing_surface[0];
+					const uint64_t existing_flags = (uint64_t)existing_surface[3];
+					if (existing_prim_type == mesh_prim_type && existing_flags == mesh_flags) {
+						// Duplicate surface found, insert the data into the existing surface.
+						Array merged_surface_arrays = existing_surface[1];
+						PackedVector3Array merged_vertices = merged_surface_arrays[Mesh::ARRAY_VERTEX];
+						const int32_t existing_vertex_count = merged_vertices.size();
+						// Merge vertices (always present).
+						merged_vertices.append_array(this_surface_arrays[Mesh::ARRAY_VERTEX]);
+						merged_surface_arrays[Mesh::ARRAY_VERTEX] = merged_vertices;
+						// Merge normals.
+						{
+							PackedVector3Array existing_normals = merged_surface_arrays[Mesh::ARRAY_NORMAL];
+							const PackedVector3Array incoming_normals = this_surface_arrays[Mesh::ARRAY_NORMAL];
+							if (!existing_normals.is_empty() || !incoming_normals.is_empty()) {
+								existing_normals.append_array(incoming_normals);
+								merged_surface_arrays[Mesh::ARRAY_NORMAL] = existing_normals;
+							}
+						}
+						// Merge tangents.
+						{
+							PackedFloat32Array existing_tangents = merged_surface_arrays[Mesh::ARRAY_TANGENT];
+							const PackedFloat32Array incoming_tangents = this_surface_arrays[Mesh::ARRAY_TANGENT];
+							if (!existing_tangents.is_empty() || !incoming_tangents.is_empty()) {
+								existing_tangents.append_array(incoming_tangents);
+								merged_surface_arrays[Mesh::ARRAY_TANGENT] = existing_tangents;
+							}
+						}
+						// Merge colors.
+						{
+							PackedColorArray existing_colors = merged_surface_arrays[Mesh::ARRAY_COLOR];
+							const PackedColorArray incoming_colors = this_surface_arrays[Mesh::ARRAY_COLOR];
+							if (!existing_colors.is_empty() || !incoming_colors.is_empty()) {
+								existing_colors.append_array(incoming_colors);
+								merged_surface_arrays[Mesh::ARRAY_COLOR] = existing_colors;
+							}
+						}
+						// Merge UV1.
+						{
+							PackedVector2Array existing_uv = merged_surface_arrays[Mesh::ARRAY_TEX_UV];
+							const PackedVector2Array incoming_uv = this_surface_arrays[Mesh::ARRAY_TEX_UV];
+							if (!existing_uv.is_empty() || !incoming_uv.is_empty()) {
+								existing_uv.append_array(incoming_uv);
+								merged_surface_arrays[Mesh::ARRAY_TEX_UV] = existing_uv;
+							}
+						}
+						// Merge UV2.
+						{
+							PackedVector2Array existing_uv2 = merged_surface_arrays[Mesh::ARRAY_TEX_UV2];
+							const PackedVector2Array incoming_uv2 = this_surface_arrays[Mesh::ARRAY_TEX_UV2];
+							if (!existing_uv2.is_empty() || !incoming_uv2.is_empty()) {
+								existing_uv2.append_array(incoming_uv2);
+								merged_surface_arrays[Mesh::ARRAY_TEX_UV2] = existing_uv2;
+							}
+						}
+						// Merge custom data channels.
+						for (int custom_index = 0; custom_index < 4; custom_index++) {
+							const Variant existing_custom = merged_surface_arrays[Mesh::ARRAY_CUSTOM0 + custom_index];
+							const Variant incoming_custom = this_surface_arrays[Mesh::ARRAY_CUSTOM0 + custom_index];
+							if (existing_custom.get_type() == Variant::PACKED_BYTE_ARRAY || incoming_custom.get_type() == Variant::PACKED_BYTE_ARRAY) {
+								PackedByteArray merged_custom = existing_custom;
+								merged_custom.append_array(PackedByteArray(incoming_custom));
+								merged_surface_arrays[Mesh::ARRAY_CUSTOM0 + custom_index] = merged_custom;
+							} else if (existing_custom.get_type() == Variant::PACKED_FLOAT32_ARRAY || incoming_custom.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
+								PackedFloat32Array merged_custom = existing_custom;
+								merged_custom.append_array(PackedFloat32Array(incoming_custom));
+								merged_surface_arrays[Mesh::ARRAY_CUSTOM0 + custom_index] = merged_custom;
+							}
+						}
+						// Merge indices and remap to account for the new vertex count.
+						{
+							PackedInt32Array existing_indices = merged_surface_arrays[Mesh::ARRAY_INDEX];
+							PackedInt32Array incoming_indices = this_surface_arrays[Mesh::ARRAY_INDEX];
+							if (!existing_indices.is_empty() || !incoming_indices.is_empty()) {
+								for (int i = 0; i < incoming_indices.size(); i++) {
+									incoming_indices.ptrw()[i] = incoming_indices[i] + existing_vertex_count;
+								}
+								existing_indices.append_array(incoming_indices);
+								merged_surface_arrays[Mesh::ARRAY_INDEX] = existing_indices;
+							}
+						}
+						existing_surface.set(1, merged_surface_arrays);
+						continue; // Next surface.
+					}
+				}
+				// If the name already exists but isn't a duplicate, we need a new name for the surface.
+				const String original_name = surface_name;
+				int64_t discriminator = 2;
+				do {
+					surface_name = original_name + "_" + itos(discriminator);
+					discriminator++;
+				} while (names_to_surfaces.has(surface_name));
+			}
+			// Add a new entry to the temporary HashMap. The indices are based on the arguments to add_surface.
+			Array new_surface;
+			new_surface.resize(4);
+			new_surface[0] = mesh_prim_type;
+			new_surface[1] = this_surface_arrays;
+			new_surface[2] = importer_mesh->get_surface_material(surface_index);
+			new_surface[3] = mesh_flags;
+			names_to_surfaces[surface_name] = new_surface;
+		}
+	}
+	// Actually put the merged surfaces into the merged ImporterMesh.
+	merged_importer_mesh.instantiate();
+	for (const KeyValue<String, Array> &surface_name_kvp : names_to_surfaces) {
+		const Array surface = surface_name_kvp.value;
+		const Mesh::PrimitiveType mesh_prim_type = (Mesh::PrimitiveType)(uint64_t)surface[0];
+		const Ref<Material> material = surface[2];
+		const uint64_t mesh_flags = (uint64_t)surface[3];
+		merged_importer_mesh->add_surface(mesh_prim_type, surface[1], TypedArray<Array>(), Dictionary(), material, surface_name_kvp.key, mesh_flags);
+	}
+	return merged_importer_mesh;
+}
+
 String ImporterMesh::validate_blend_shape_name(const String &p_name) {
 	return p_name.replace_char(':', '_');
 }
@@ -1268,6 +1546,7 @@ Size2i ImporterMesh::get_lightmap_size_hint() const {
 }
 
 void ImporterMesh::_bind_methods() {
+	ClassDB::bind_static_method("ImporterMesh", D_METHOD("merge_importer_meshes", "importer_meshes", "relative_transforms", "deduplicate_surfaces"), &ImporterMesh::merge_importer_meshes, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("add_blend_shape", "name"), &ImporterMesh::add_blend_shape);
 	ClassDB::bind_method(D_METHOD("get_blend_shape_count"), &ImporterMesh::get_blend_shape_count);
 	ClassDB::bind_method(D_METHOD("get_blend_shape_name", "blend_shape_idx"), &ImporterMesh::get_blend_shape_name);

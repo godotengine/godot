@@ -168,6 +168,17 @@
 				Returns the primitive type of the requested surface (see [method add_surface]).
 			</description>
 		</method>
+		<method name="merge_importer_meshes" qualifiers="static">
+			<return type="ImporterMesh" />
+			<param index="0" name="importer_meshes" type="ImporterMesh[]" />
+			<param index="1" name="relative_transforms" type="Transform3D[]" />
+			<param index="2" name="deduplicate_surfaces" type="bool" default="true" />
+			<description>
+				Merges multiple [ImporterMesh]es into a single [ImporterMesh]. Each input mesh is transformed by the corresponding [Transform3D] in the [param relative_transforms] array, which must be the same size as [param importer_meshes]. Negative scales are supported, and the winding order in the mesh data will be corrected to account for this.
+				If [param deduplicate_surfaces] is [code]true[/code] and multiple meshes have surfaces with the same names and formats, the surfaces will be merged together when the meshes are merged, and will use the material from the first matching surface. This is useful for reducing the number of surfaces in the resulting mesh, and avoids duplicating materials. Surfaces with bone weights will never be deduplicated. If [param deduplicate_surfaces] is [code]false[/code], the surfaces will always be kept separate, and will be given unique names.
+				[b]Warning:[/b] Blend shapes and LODs are not supported and will be discarded. Do not use this function to discard blend shapes and LODs, as support for these may be added in the future.
+			</description>
+		</method>
 		<method name="set_blend_shape_mode">
 			<return type="void" />
 			<param index="0" name="mode" type="int" enum="Mesh.BlendShapeMode" />
