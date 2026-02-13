@@ -595,7 +595,12 @@ bool AnimationPlayer::is_playing() const {
 
 void AnimationPlayer::set_current_animation(const StringName &p_animation) {
 	if (p_animation == SNAME("[stop]") || p_animation.is_empty()) {
-		stop();
+		// It should be call deferred and handled only when is_playing() == true to prevent infinite loops caused by seeking within stop().
+		// Especially when the key current_animation = "[stop]" is placed at the beginning of an animation,
+		// this line is called when the animation changes, so is_playing() == true must be checked.
+		if (is_playing()) {
+			callable_mp(this, &AnimationPlayer::stop).call_deferred(false);
+		}
 	} else if (!is_playing()) {
 		play(p_animation);
 	} else if (playback.assigned != p_animation) {
@@ -786,16 +791,13 @@ bool AnimationPlayer::is_movie_quit_on_finish_enabled() const {
 void AnimationPlayer::_stop_internal(bool p_reset, bool p_keep_state) {
 	_clear_caches();
 	Playback &c = playback;
-	// c.blend.clear();
 	double start = c.current.is_enabled ? playback.current.get_start_time() : 0;
 	if (p_reset) {
 		c.blend.clear();
 		if (p_keep_state) {
 			c.current.pos = start;
 		} else {
-			is_stopping = true;
 			seek_internal(start, true, true, true);
-			is_stopping = false;
 		}
 		c.current.is_enabled = false;
 		c.current.animation_name = String();
