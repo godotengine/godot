@@ -954,8 +954,6 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			started_timestamp = Time::get_singleton()->get_unix_time_from_system();
-
 			// Store the default order of bottom docks. It can only be determined dynamically.
 			PackedStringArray bottom_docks;
 			bottom_docks.reserve_exact(bottom_panel->get_tab_count());
@@ -3269,13 +3267,15 @@ void EditorNode::_android_explore_build_templates() {
 	OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(export_template_manager->get_android_build_directory(android_export_preset).get_base_dir()), true);
 }
 
-static String _get_unsaved_scene_dialog_text(String p_scene_filename, uint64_t p_started_timestamp) {
+static String _get_unsaved_scene_dialog_text(String p_scene_filename, uint64_t p_opened_timestamp) {
+	const uint64_t scene_modified_time = FileAccess::get_modified_time(p_scene_filename);
 	String unsaved_message;
 
-	// Consider editor startup to be a point of saving, so that when you
+	// Consider scene opening to be a point of saving, so that when you
 	// close and reopen the editor, you don't get an excessively long
 	// "modified X hours ago".
-	const uint64_t last_modified_seconds = Time::get_singleton()->get_unix_time_from_system() - MAX(p_started_timestamp, FileAccess::get_modified_time(p_scene_filename));
+	const uint64_t last_modified_seconds = Time::get_singleton()->get_unix_time_from_system() - MAX(p_opened_timestamp, scene_modified_time);
+
 	String last_modified_string;
 	if (last_modified_seconds < 120) {
 		last_modified_string = vformat(TTRN("%d second ago", "%d seconds ago", last_modified_seconds), last_modified_seconds);
@@ -3284,7 +3284,15 @@ static String _get_unsaved_scene_dialog_text(String p_scene_filename, uint64_t p
 	} else {
 		last_modified_string = vformat(TTRN("%d hour ago", "%d hours ago", last_modified_seconds / 3600), last_modified_seconds / 3600);
 	}
-	unsaved_message = vformat(TTR("Scene \"%s\" has unsaved changes.\nLast saved: %s."), p_scene_filename, last_modified_string);
+
+	String last_action_and_time;
+	if (p_opened_timestamp > scene_modified_time) {
+		last_action_and_time = vformat(TTR("Scene opened: %s."), last_modified_string);
+	} else {
+		last_action_and_time = vformat(TTR("Last saved: %s."), last_modified_string);
+	}
+
+	unsaved_message = vformat(TTR("Scene \"%s\" has unsaved changes.\n%s"), p_scene_filename, last_action_and_time);
 
 	return unsaved_message;
 }
@@ -3526,7 +3534,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 
 		case SCENE_RELOAD_SAVED_SCENE: {
-			const String scene_filename = editor_data.get_scene_path(editor_data.get_edited_scene());
+			const int p_idx = editor_data.get_edited_scene();
+			const uint64_t scene_time_opened = editor_data.get_scene_time_opened(p_idx);
+			const String scene_filename = editor_data.get_scene_path(p_idx);
+
 			if (scene_filename.is_empty()) {
 				show_warning(TTR("Can't reload a scene that was never saved."));
 				break;
@@ -3535,7 +3546,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (unsaved_cache) {
 				if (!p_confirmed) {
 					confirmation->set_ok_button_text(TTRC("Save & Reload"));
-					const String unsaved_message = _get_unsaved_scene_dialog_text(scene_filename, started_timestamp);
+					const String unsaved_message = _get_unsaved_scene_dialog_text(scene_filename, scene_time_opened);
 					confirmation->set_text(unsaved_message + "\n\n" + TTR("Save before reloading the scene?"));
 					confirmation->popup_centered();
 					confirmation_button->show();
@@ -6624,7 +6635,8 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 		if (scene_filename.is_empty()) {
 			unsaved_message = TTR("This scene was never saved.");
 		} else {
-			unsaved_message = _get_unsaved_scene_dialog_text(scene_filename, started_timestamp);
+			uint32_t time_opened = editor_data.get_scene_time_opened(p_tab);
+			unsaved_message = _get_unsaved_scene_dialog_text(scene_filename, time_opened);
 		}
 	} else {
 		// Check if any plugin has unsaved changes in that scene.
