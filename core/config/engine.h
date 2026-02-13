@@ -44,6 +44,7 @@ class Engine {
 	// Called by main loop when built-in stepping is disabled. Set from main.cpp.
 	using PhysicsIterationCallback = bool (*)(double);
 	PhysicsIterationCallback physics_iteration_callback = nullptr;
+
 public:
 	struct Singleton {
 		StringName name;
