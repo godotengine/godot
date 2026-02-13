@@ -100,6 +100,8 @@ public:
 		OPENGL_CONTEXT,
 		EGL_DISPLAY,
 		EGL_CONFIG,
+		GLX_VISUALID,
+		GLX_FBCONFIG,
 	};
 
 	enum Context {

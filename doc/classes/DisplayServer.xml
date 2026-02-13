@@ -3412,6 +3412,14 @@
 			- macOS: [code]EGLConfig[/code] for the window (ANGLE).
 			- Linux (Wayland): [code]EGLConfig[/code] for the window.
 		</constant>
+		<constant name="GLX_VISUALID" value="6" enum="HandleType">
+			The GLX [code]VisualID[/code] for the window.
+			[b]Note:[/b] Only available on Linux when using X11.
+		</constant>
+		<constant name="GLX_FBCONFIG" value="7" enum="HandleType">
+			The [code]GLXFBConfig[/code] for the window.
+			[b]Note:[/b] Only available on Linux when using X11.
+		</constant>
 		<constant name="TTS_UTTERANCE_STARTED" value="0" enum="TTSUtteranceEvent">
 			Utterance has begun to be spoken.
 		</constant>

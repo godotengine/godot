@@ -2149,6 +2149,18 @@ int64_t DisplayServerX11::window_get_native_handle(HandleType p_handle_type, Win
 			}
 			return 0;
 		}
+		case GLX_VISUALID: {
+			if (gl_manager) {
+				return (int64_t)gl_manager->get_glx_visualid(p_window);
+			}
+			return 0;
+		}
+		case GLX_FBCONFIG: {
+			if (gl_manager) {
+				return (int64_t)gl_manager->get_glx_fbconfig(p_window);
+			}
+			return 0;
+		}
 #endif
 		default: {
 			return 0;
