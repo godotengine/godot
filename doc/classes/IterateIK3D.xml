@@ -6,6 +6,7 @@
 	<description>
 		Base class of [SkeletonModifier3D] to approach the goal by repeating small rotations.
 		Each bone chain (setting) has one effector, which is processed in order of the setting list. You can set some limitations for each joint.
+		[b]Note:[/b] All the methods in this class take an [code]index[/code] parameter. This parameter specifies which setting list entry to return if the IK has multiple entries (e.g. [code]settings/&lt;index&gt;/target_node[/code]).
 	</description>
 	<tutorials>
 	</tutorials>
