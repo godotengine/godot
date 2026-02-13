@@ -270,31 +270,6 @@ namespace Godot.SourceGenerators
 
             source.Append("#pragma warning restore CS0109\n");
 
-            // Generate InvokeGodotClassStaticMethod
-
-            var godotClassStaticMethods = godotClassMethods.Where(m => m.Method.IsStatic).ToArray();
-
-            if (godotClassStaticMethods.Length > 0)
-            {
-                source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
-                source.Append(
-                    "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append(
-                    "    internal new static bool InvokeGodotClassStaticMethod(in godot_string_name method, ");
-                source.Append("NativeVariantPtrArgs args, out godot_variant ret)\n    {\n");
-
-                foreach (var method in godotClassStaticMethods)
-                {
-                    GenerateMethodInvoker(method, source);
-                }
-
-                source.Append("        ret = default;\n");
-                source.Append("        return false;\n");
-                source.Append("    }\n");
-
-                source.Append("#pragma warning restore CS0109\n");
-            }
-
             source.Append("}\n"); // partial class
 
             if (isInnerClass)
@@ -474,6 +449,7 @@ namespace Godot.SourceGenerators
                     .Append(".Method.MethodHandle.GetFunctionPointer()");
             }
 
+            source.Append(", isStatic: ").Append(method.Method.IsStatic ? "true" : "false");
             source.Append("));\n");
         }
 
@@ -556,58 +532,6 @@ namespace Godot.SourceGenerators
             else
             {
                 source.Append("            return default;\n");
-            }
-
-            source.Append("        }\n");
-        }
-
-        private static void GenerateMethodInvoker(
-            GodotMethodData method,
-            StringBuilder source
-        )
-        {
-            string methodName = method.Method.Name;
-
-            source.Append("        if (method == MethodName.@");
-            source.Append(methodName);
-            source.Append(" && args.Count == ");
-            source.Append(method.ParamTypes.Length);
-            source.Append(") {\n");
-
-            if (method.RetType != null)
-                source.Append("            var callRet = ");
-            else
-                source.Append("            ");
-
-            source.Append("@");
-            source.Append(methodName);
-            source.Append("(");
-
-            for (int i = 0; i < method.ParamTypes.Length; i++)
-            {
-                if (i != 0)
-                    source.Append(", ");
-
-                source.AppendNativeVariantToManagedExpr(string.Concat("args[", i.ToString(), "]"),
-                    method.ParamTypeSymbols[i], method.ParamTypes[i]);
-            }
-
-            source.Append(");\n");
-
-            if (method.RetType != null)
-            {
-                source.Append("            ret = ");
-
-                source.AppendManagedToNativeVariantExpr("callRet",
-                    method.RetType.Value.TypeSymbol, method.RetType.Value.MarshalType);
-                source.Append(";\n");
-
-                source.Append("            return true;\n");
-            }
-            else
-            {
-                source.Append("            ret = default;\n");
-                source.Append("            return true;\n");
             }
 
             source.Append("        }\n");
