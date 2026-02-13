@@ -4058,15 +4058,10 @@ void Node3DEditorViewport::_draw() {
 			}
 
 			Color circle_color = handle_color.from_hsv(handle_color.get_h(), handle_color.get_s() * 0.6, 1.0, 0.8);
-			for (int i = 0; i < circle_points.size() - 1; i++) {
-				RenderingServer::get_singleton()->canvas_item_add_line(
-						ci,
-						circle_points[i],
-						circle_points[i + 1],
-						circle_color,
-						Math::round(2 * EDSCALE),
-						true);
-			}
+			Vector<Color> circle_colors;
+			circle_colors.resize(circle_points.size());
+			circle_colors.fill(circle_color);
+			RenderingServer::get_singleton()->canvas_item_add_polyline(ci, circle_points, circle_colors, Math::round(2 * EDSCALE), true);
 
 			const int segments = 64;
 			float display_angle = _edit.rotation_angle;
