@@ -207,6 +207,10 @@
 #include "tests/servers/test_navigation_server_3d.h"
 #endif // MODULE_NAVIGATION_3D_ENABLED
 
+#ifdef MODULE_RAYCAST_ENABLED
+#include "tests/scene/test_occluder_instance_3d.h"
+#endif // MODULE_RAYCAST_ENABLED
+
 #include "modules/modules_tests.gen.h"
 
 #include "tests/display_server_mock.h"
