@@ -514,23 +514,31 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 					table->columns[i].width = 0;
 				}
 
-				const int available_width = p_width - l.offset.x - theme_cache.table_h_separation * (col_count - 1);
-				int base_column_width = available_width / col_count;
+				// Compute width for each column.
+				const int available_width = p_width - l.offset.x - theme_cache.table_h_separation * col_count;
+				_update_table_column_width(table, available_width);
 
+				// Resize for elements in the table.
+				int idx = 0;
 				for (Item *E : table->subitems) {
 					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 					ItemFrame *frame = static_cast<ItemFrame *>(E);
 
+					const int frame_padding_space = Math::ceil(frame->padding.position.x + frame->padding.size.x);
+
+					int column = idx % col_count;
 					float prev_h = 0;
 					for (int i = 0; i < (int)frame->lines.size(); i++) {
 						MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
-						int w = base_column_width - frame->padding.position.x - frame->padding.size.x;
+						int w = table->columns[column].width - frame_padding_space;
 						w = MAX(w, _find_margin(frame->lines[i].from, p_base_font, p_base_font_size) + 1);
 						prev_h = _resize_line(frame, i, p_base_font, p_base_font_size, w, prev_h);
 					}
+					idx++;
 				}
 
-				_set_table_size(table, available_width);
+				// Compute size and offset for each element in the table.
+				_update_table_size(table);
 
 				int row_idx = (table->align_to_row < 0) ? table->rows_baseline.size() - 1 : table->align_to_row;
 				if (table->rows_baseline.size() != 0 && row_idx < (int)table->rows_baseline.size()) {
@@ -552,6 +560,55 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 
 	l.offset.y = p_h;
 	return _calculate_line_vertical_offset(l);
+}
+
+int RichTextLabel::_get_line_max_width(ItemFrame *p_frame, int p_line) const {
+	ERR_FAIL_NULL_V(p_frame, 0);
+	ERR_FAIL_INDEX_V(p_line, (int)p_frame->lines.size(), 0);
+
+	Line &l = p_frame->lines[p_line];
+	MutexLock lock(l.text_buf->get_mutex());
+
+	int max_width = Math::ceil(l.text_buf->get_non_wrapped_size().x);
+
+	Item *it_to = (p_line + 1 < (int)p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
+	for (Item *it = l.from; it && it != it_to; it = _get_next_item(it)) {
+		if (it->type != ITEM_TABLE) {
+			continue;
+		}
+
+		ItemTable *table = static_cast<ItemTable *>(it);
+
+		// Subtract the table's width recorded in text_buf.
+		max_width -= table->total_width;
+
+		// Recalculate the maximum width of the table.
+		const int col_count = table->columns.size();
+		max_width += theme_cache.table_h_separation * col_count;
+
+		if (table->column_max_width_dirty) {
+			int idx = 0;
+			for (Item *E : table->subitems) {
+				ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
+				ItemFrame *frame = static_cast<ItemFrame *>(E);
+				int column = idx % col_count;
+				ItemTable::Column &C = table->columns[column];
+				for (int i = 0; i < (int)frame->lines.size(); i++) {
+					C.max_width = MAX(C.max_width, _get_line_max_width(frame, i));
+				}
+				idx++;
+			}
+			table->column_max_width_dirty = false;
+		}
+
+		for (ItemTable::Column &C : table->columns) {
+			max_width += C.max_width;
+		}
+	}
+
+	max_width += Math::ceil(p_frame->padding.position.x + p_frame->padding.size.x + l.indent);
+
+	return max_width;
 }
 
 float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h, int *r_char_offset) {
@@ -691,51 +748,70 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				ItemTable *table = static_cast<ItemTable *>(it);
 				int col_count = table->columns.size();
 				int t_char_count = 0;
+
 				// Set minimums to zero.
 				for (int i = 0; i < col_count; i++) {
 					table->columns[i].min_width = 0;
 					table->columns[i].max_width = 0;
 					table->columns[i].width = 0;
 				}
+
+				table->column_max_width_dirty = true;
 				// Compute minimum width for each cell.
-				const int available_width = p_width - l.offset.x - theme_cache.table_h_separation * (col_count - 1);
-				int base_column_width = available_width / col_count;
 				int idx = 0;
 				for (Item *E : table->subitems) {
 					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 					ItemFrame *frame = static_cast<ItemFrame *>(E);
 
+					const real_t frame_padding_space = frame->padding.position.x + frame->padding.size.x;
+
 					int column = idx % col_count;
+					ItemTable::Column &C = table->columns[column];
+
 					float prev_h = 0;
 					for (int i = 0; i < (int)frame->lines.size(); i++) {
-						MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
+						Line &line = frame->lines[i];
+						MutexLock sub_lock(line.text_buf->get_mutex());
 
 						int char_offset = l.char_offset + l.char_count;
-						int w = _find_margin(frame->lines[i].from, p_base_font, p_base_font_size) + 1;
+						int w = _find_margin(line.from, p_base_font, p_base_font_size) + 1;
 						prev_h = _shape_line(frame, i, p_base_font, p_base_font_size, w, prev_h, &char_offset);
 						int cell_ch = (char_offset - (l.char_offset + l.char_count));
 						l.char_count += cell_ch;
 						t_char_count += cell_ch;
 						remaining_characters -= cell_ch;
 
-						table->columns[column].min_width = MAX(table->columns[column].min_width, frame->lines[i].indent + std::ceil(frame->lines[i].text_buf->get_size().x));
-						table->columns[column].max_width = MAX(table->columns[column].max_width, frame->lines[i].indent + std::ceil(frame->lines[i].text_buf->get_non_wrapped_size().x));
+						C.min_width = MAX(C.min_width, Math::ceil(frame_padding_space + line.indent) + Math::ceil(line.text_buf->get_size().x));
+						C.max_width = MAX(C.max_width, _get_line_max_width(frame, i));
 					}
 					idx++;
 				}
+
+				// Compute width for each column.
+				const int available_width = p_width - l.offset.x - theme_cache.table_h_separation * col_count;
+				_update_table_column_width(table, available_width);
+
+				// Resize for elements in the table.
+				idx = 0;
 				for (Item *E : table->subitems) {
 					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 					ItemFrame *frame = static_cast<ItemFrame *>(E);
 
+					const int frame_padding_space = Math::ceil(frame->padding.position.x + frame->padding.size.x);
+
+					int column = idx % col_count;
 					float prev_h = 0;
 					for (int i = 0; i < (int)frame->lines.size(); i++) {
-						int w = base_column_width - frame->padding.position.x - frame->padding.size.x;
+						MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
+						int w = table->columns[column].width - frame_padding_space;
 						w = MAX(w, _find_margin(frame->lines[i].from, p_base_font, p_base_font_size) + 1);
 						prev_h = _resize_line(frame, i, p_base_font, p_base_font_size, w, prev_h);
 					}
+					idx++;
 				}
 
-				_set_table_size(table, available_width);
+				// Compute size and offset for each element in the table.
+				_update_table_size(table);
 
 				int row_idx = (table->align_to_row < 0) ? table->rows_baseline.size() - 1 : table->align_to_row;
 				if (table->rows_baseline.size() != 0 && row_idx < (int)table->rows_baseline.size()) {
@@ -763,85 +839,98 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	return _calculate_line_vertical_offset(l);
 }
 
-void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
-	int col_count = p_table->columns.size();
+void RichTextLabel::_update_table_column_width(ItemTable *p_table, int p_available_width) {
+	const int col_count = p_table->columns.size();
 
-	// Compute available width and total ratio (for expanders).
-	int total_ratio = 0;
-	int remaining_width = p_available_width;
-	p_table->total_width = theme_cache.table_h_separation;
+	LocalVector<bool> columns_will_stretch;
+	columns_will_stretch.resize(col_count);
+
+	int total_ratio = 0; // The total ratio of the columns that will stretch.
+	p_table->total_width = 0;
+	float remaining_width = 0; // The available width of the columns that will stretch.
 
 	for (int i = 0; i < col_count; i++) {
-		remaining_width -= p_table->columns[i].min_width;
-		if (p_table->columns[i].max_width > p_table->columns[i].min_width) {
-			p_table->columns[i].expand = true;
+		ItemTable::Column &C = p_table->columns[i];
+		p_table->total_width += C.min_width;
+		C.width = C.min_width;
+		if (C.max_width > C.min_width) {
+			C.expand = true; // Like a hack.
 		}
-		if (p_table->columns[i].expand) {
-			total_ratio += p_table->columns[i].expand_ratio;
+		columns_will_stretch[i] = C.expand;
+		if (columns_will_stretch[i]) {
+			remaining_width += C.min_width;
+			total_ratio += C.expand_ratio;
 		}
 	}
 
-	// Assign actual widths.
-	for (int i = 0; i < col_count; i++) {
-		p_table->columns[i].width = p_table->columns[i].min_width;
-		if (p_table->columns[i].expand && total_ratio > 0 && remaining_width > 0) {
-			p_table->columns[i].width += p_table->columns[i].expand_ratio * remaining_width / total_ratio;
-		}
-		if (i != col_count - 1) {
-			p_table->total_width += p_table->columns[i].width + theme_cache.table_h_separation;
-		} else {
-			p_table->total_width += p_table->columns[i].width;
-		}
-		p_table->columns[i].width_with_padding = p_table->columns[i].width;
+	int diff = p_available_width - p_table->total_width;
+	if (diff < 0) {
+		diff = 0; // Avoid negative stretch space.
 	}
+	remaining_width += diff;
 
 	// Resize to max_width if needed and distribute the remaining space.
 	bool table_need_fit = true;
 	while (table_need_fit) {
 		table_need_fit = false;
-		// Fit slim.
+		float error = 0.0; // Keep track of accumulated error in pixels.
+
 		for (int i = 0; i < col_count; i++) {
-			if (!p_table->columns[i].expand || !p_table->columns[i].shrink) {
+			if (!columns_will_stretch[i]) {
 				continue;
 			}
-			int dif = p_table->columns[i].width - p_table->columns[i].max_width;
-			if (dif > 0) {
+			ItemTable::Column &C = p_table->columns[i];
+
+			float final_pixel_size = remaining_width * C.expand_ratio / total_ratio;
+			error += Math::fract(final_pixel_size);
+
+			if (C.shrink && final_pixel_size > C.max_width) {
+				columns_will_stretch[i] = false;
+				total_ratio -= C.expand_ratio;
 				table_need_fit = true;
-				p_table->columns[i].width = p_table->columns[i].max_width;
-				p_table->total_width -= dif;
-				total_ratio -= p_table->columns[i].expand_ratio;
-				p_table->columns[i].width_with_padding = p_table->columns[i].width;
+				remaining_width -= C.max_width;
+				C.width = C.max_width;
+				break;
 			}
-		}
-		// Grow.
-		remaining_width = p_available_width - p_table->total_width;
-		if (remaining_width > 0 && total_ratio > 0) {
-			for (int i = 0; i < col_count; i++) {
-				if (p_table->columns[i].expand) {
-					int dif = p_table->columns[i].max_width - p_table->columns[i].width;
-					if (dif > 0) {
-						int slice = p_table->columns[i].expand_ratio * remaining_width / total_ratio;
-						int incr = MIN(dif, slice);
-						p_table->columns[i].width += incr;
-						p_table->total_width += incr;
-						p_table->columns[i].width_with_padding = p_table->columns[i].width;
-					}
-				}
+
+			if (final_pixel_size < C.min_width) {
+				// If available stretching area is too small for widget,
+				// then remove it from stretching area.
+				columns_will_stretch[i] = false;
+				total_ratio -= C.expand_ratio;
+				table_need_fit = true;
+				remaining_width -= C.min_width;
+				C.width = C.min_width;
+				break;
+			}
+
+			C.width = final_pixel_size;
+			// Dump accumulated error if one pixel or more.
+			if (error >= 1) {
+				C.width += 1;
+				error -= 1;
 			}
 		}
 	}
+
+	// Recalculate total width.
+	p_table->total_width = theme_cache.table_h_separation * col_count;
+	for (ItemTable::Column &C : p_table->columns) {
+		p_table->total_width += C.width;
+	}
+}
+
+void RichTextLabel::_update_table_size(ItemTable *p_table) {
+	const int col_count = p_table->columns.size();
 
 	// Update line width and get total height.
 	int idx = 0;
 	p_table->total_height = 0;
 	p_table->rows.clear();
-	p_table->rows_no_padding.clear();
 	p_table->rows_baseline.clear();
 
 	Vector2 offset = Vector2(theme_cache.table_h_separation * 0.5, theme_cache.table_v_separation * 0.5).floor();
 	float row_height = 0.0;
-	float row_top_padding = 0.0;
-	float row_bottom_padding = 0.0;
 	const List<Item *>::Element *prev = p_table->subitems.front();
 
 	for (const List<Item *>::Element *E = prev; E; E = E->next()) {
@@ -849,21 +938,19 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 		ItemFrame *frame = static_cast<ItemFrame *>(E->get());
 
 		int column = idx % col_count;
+		const real_t frame_padding_space = frame->padding.position.x + frame->padding.size.x;
 
-		offset.x += frame->padding.position.x;
+		offset += frame->padding.position;
 		float yofs = 0.0;
 		float prev_h = 0.0;
 		float row_baseline = 0.0;
 		for (int i = 0; i < (int)frame->lines.size(); i++) {
-			MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
+			Line &line = frame->lines[i];
+			MutexLock sub_lock(line.text_buf->get_mutex());
+			line.text_buf->set_width(p_table->columns[column].width - Math::ceil(frame_padding_space + line.indent));
+			line.offset.y = prev_h;
 
-			frame->lines[i].text_buf->set_width(p_table->columns[column].width);
-			p_table->columns[column].width = MAX(p_table->columns[column].width, std::ceil(frame->lines[i].text_buf->get_size().x));
-			p_table->columns[column].width_with_padding = MAX(p_table->columns[column].width_with_padding, std::ceil(frame->lines[i].text_buf->get_size().x + frame->padding.position.x + frame->padding.size.x));
-
-			frame->lines[i].offset.y = prev_h;
-
-			float h = frame->lines[i].text_buf->get_size().y + (frame->lines[i].text_buf->get_line_count() - 1) * theme_cache.line_separation;
+			float h = line.text_buf->get_size().y + (line.text_buf->get_line_count() - 1) * theme_cache.line_separation;
 			if (i > 0) {
 				h += theme_cache.paragraph_separation + theme_cache.line_separation;
 			}
@@ -874,48 +961,28 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 				h = MIN(h, frame->max_size_over.y);
 			}
 			yofs += h;
-			prev_h = frame->lines[i].offset.y + frame->lines[i].text_buf->get_size().y + frame->lines[i].text_buf->get_line_count() * theme_cache.line_separation + theme_cache.paragraph_separation;
+			prev_h = line.offset.y + line.text_buf->get_size().y + line.text_buf->get_line_count() * theme_cache.line_separation + theme_cache.paragraph_separation;
 
-			frame->lines[i].offset += offset;
-			row_baseline = MAX(row_baseline, frame->lines[i].text_buf->get_line_ascent(frame->lines[i].text_buf->get_line_count() - 1));
+			line.offset += offset;
+			row_baseline = MAX(row_baseline, line.text_buf->get_line_ascent(line.text_buf->get_line_count() - 1));
 		}
-		row_top_padding = MAX(row_top_padding, frame->padding.position.y);
-		row_bottom_padding = MAX(row_bottom_padding, frame->padding.size.y);
-		offset.x += p_table->columns[column].width + theme_cache.table_h_separation + frame->padding.size.x;
 
-		row_height = MAX(yofs, row_height);
+		offset -= frame->padding.position;
+		offset.x += p_table->columns[column].width + theme_cache.table_h_separation;
+
+		row_height = MAX(yofs + frame->padding.position.y + frame->padding.size.y, row_height);
 		// Add row height after last column of the row or last cell of the table.
 		if (column == col_count - 1 || E->next() == nullptr) {
 			offset.x = Math::floor(theme_cache.table_h_separation * 0.5);
-			float row_contents_height = row_height;
-			row_height += row_top_padding + row_bottom_padding;
 			row_height += theme_cache.table_v_separation;
+			p_table->rows.push_back(row_height);
+			p_table->rows_baseline.push_back(p_table->total_height + row_baseline + Math::floor(theme_cache.table_v_separation * 0.5));
 			p_table->total_height += row_height;
 			offset.y += row_height;
-			p_table->rows.push_back(row_height);
-			p_table->rows_no_padding.push_back(row_contents_height);
-			p_table->rows_baseline.push_back(p_table->total_height - row_height + row_baseline + Math::floor(theme_cache.table_v_separation * 0.5));
-			for (const List<Item *>::Element *F = prev; F; F = F->next()) {
-				ItemFrame *in_frame = static_cast<ItemFrame *>(F->get());
-				for (int i = 0; i < (int)in_frame->lines.size(); i++) {
-					in_frame->lines[i].offset.y += row_top_padding;
-				}
-				if (in_frame == frame) {
-					break;
-				}
-			}
 			row_height = 0.0;
-			row_top_padding = 0.0;
-			row_bottom_padding = 0.0;
 			prev = E->next();
 		}
 		idx++;
-	}
-
-	// Recalculate total width.
-	p_table->total_width = 0;
-	for (int i = 0; i < col_count; i++) {
-		p_table->total_width += p_table->columns[i].width_with_padding + theme_cache.table_h_separation;
 	}
 }
 
@@ -1108,6 +1175,14 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 								int col_count = table->columns.size();
 								int row_count = table->rows.size();
 
+								Point2 table_ofs = p_ofs + rect.position + off;
+								if (rtl) {
+									table_ofs -= Vector2(h_separation * 0.5, v_separation * 0.5).ceil();
+								} else {
+									table_ofs -= Vector2(h_separation * 0.5, v_separation * 0.5).floor();
+								}
+
+								bool right_has_border = false;
 								int idx = 0;
 								for (Item *E : table->subitems) {
 									ItemFrame *frame = static_cast<ItemFrame *>(E);
@@ -1115,26 +1190,43 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 									int col = idx % col_count;
 									int row = idx / col_count;
 
+									const Size2 cell_size = Size2(table->columns[col].width + h_separation, table->rows[row]);
+
 									if (frame->lines.size() != 0 && row < row_count) {
-										Vector2 coff = frame->lines[0].offset;
+										Vector2 coff = frame->lines[0].offset - frame->padding.position;
 										coff.x -= frame->lines[0].indent;
 										if (rtl) {
 											coff.x = rect.size.width - table->columns[col].width - coff.x;
 										}
+
+										const Point2 cell_ofs = table_ofs + coff;
+										Rect2 cell_rect = Rect2(cell_ofs, cell_size);
+
+										Color row_bg;
 										if (row % 2 == 0) {
-											Color c = frame->odd_row_bg != Color(0, 0, 0, 0) ? frame->odd_row_bg : odd_row_bg;
-											if (c.a > 0.0) {
-												draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y)), c, true);
-											}
+											row_bg = frame->odd_row_bg != Color(0, 0, 0, 0) ? frame->odd_row_bg : odd_row_bg;
 										} else {
-											Color c = frame->even_row_bg != Color(0, 0, 0, 0) ? frame->even_row_bg : even_row_bg;
-											if (c.a > 0.0) {
-												draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y)), c, true);
+											row_bg = frame->even_row_bg != Color(0, 0, 0, 0) ? frame->even_row_bg : even_row_bg;
+										}
+										if (row_bg.a > 0.0) {
+											if (right_has_border) {
+												// To prevent the border of the right cell from being covered.
+												cell_rect.size.x -= 1;
+												draw_rect(cell_rect, row_bg, true);
+												cell_rect.size.x += 1;
+											} else {
+												draw_rect(cell_rect, row_bg, true);
 											}
 										}
+
+										right_has_border = false;
+
 										Color bc = frame->border != Color(0, 0, 0, 0) ? frame->border : border;
 										if (bc.a > 0.0) {
-											draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y)), bc, false);
+											if (rtl && col < col_count - 1) {
+												right_has_border = true;
+											}
+											draw_rect(cell_rect, bc, false);
 										}
 									}
 

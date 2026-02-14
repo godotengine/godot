@@ -406,9 +406,9 @@ private:
 			int width_with_padding = 0;
 		};
 
+		bool column_max_width_dirty = true;
 		LocalVector<Column> columns;
 		LocalVector<float> rows;
-		LocalVector<float> rows_no_padding;
 		LocalVector<float> rows_baseline;
 		String name;
 
@@ -673,7 +673,9 @@ private:
 	float _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h, int *r_char_offset);
 	float _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h);
 
-	void _set_table_size(ItemTable *p_table, int p_available_width);
+	int _get_line_max_width(ItemFrame *p_frame, int p_line) const;
+	void _update_table_column_width(ItemTable *p_table, int p_available_width);
+	void _update_table_size(ItemTable *p_table);
 
 	void _update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size);
 	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, float p_vsep, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs);
