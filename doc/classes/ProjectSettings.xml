@@ -364,6 +364,33 @@
 		<member name="application/config/windows_native_icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon set in [code].ico[/code] format used on Windows to set the game's icon. This is done automatically on start by calling [method DisplayServer.set_native_icon].
 		</member>
+		<member name="application/persistence/backup_enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], a backup copy of the save file is created before overwriting it during a save operation. If a save file is found to be corrupted during loading, the [SaveServer] will automatically attempt to restore the state from the backup file ([code].bak[/code]).
+		</member>
+		<member name="application/persistence/compression_enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables ZSTD compression for binary save files ([code].data[/code]). This reduces save file size significantly at a minor CPU cost during saving and loading.
+		</member>
+		<member name="application/persistence/encryption_key" type="String" setter="" getter="" default="&quot;&quot;">
+			The encryption key used to protect binary save files ([code].data[/code]). If left empty or reset, a unique key is automatically generated.
+			[b]Note:[/b] This only affects binary saves. Text-based saves ([code].tres[/code]) are never encrypted.
+		</member>
+		<member name="application/persistence/integrity_check_level" type="int" setter="" getter="" default="1">
+			Determines how strictly the [SaveServer] validates the integrity of a save file during loading.
+			- [b]None[/b] ([code]0[/code]): No integrity checks are performed.
+			- [b]Signature[/b] ([code]1[/code]): Validates a checksum stored in the snapshot. Logs a warning if it doesn't match.
+			- [b]Strict[/b] ([code]2[/code]): Validates the checksum and rejects the load operation if it doesn't match.
+		</member>
+		<member name="application/persistence/max_backups" type="int" setter="" getter="" default="2">
+			The maximum number of timestamped backups to keep for each save slot.
+		</member>
+		<member name="application/persistence/save_format" type="int" setter="" getter="" default="0">
+			The file format used by [SaveServer] when creating snapshots.
+			- [b]Text[/b] ([code]0[/code]): Saves as human-readable [code].tres[/code] files. Best for development, version control, and debugging.
+			- [b]Binary[/b] ([code]1[/code]): Saves as [code].data[/code] files. Supports encryption and compression. Best for production releases to protect player data.
+		</member>
+		<member name="application/persistence/save_path" type="String" setter="" getter="" default="&quot;user://saves/&quot;">
+			The base directory within the [code]user://[/code] path where [SaveServer] stores snapshot files.
+		</member>
 		<member name="application/run/delta_smoothing" type="bool" setter="" getter="" default="true">
 			Time samples for frame deltas are subject to random variation introduced by the platform, even when frames are displayed at regular intervals thanks to V-Sync. This can lead to jitter. Delta smoothing can often give a better result by filtering the input deltas to correct for minor fluctuations from the refresh rate.
 			[b]Note:[/b] Delta smoothing is only attempted when [member display/window/vsync/vsync_mode] is set to [code]enabled[/code], as it does not work well without V-Sync.
@@ -603,6 +630,11 @@
 		</member>
 		<member name="debug/gdscript/warnings/onready_with_export" type="int" setter="" getter="" default="2">
 			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when the [code]@onready[/code] annotation is used together with the [code]@export[/code] annotation, since it may not behave as expected.
+		</member>
+		<member name="debug/gdscript/warnings/persistent_reserved_tag" type="int" setter="" getter="" default="2">
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning when a reserved tag ([code]meta[/code], [code].id[/code], [code].children[/code]) is used in a [code]@persistent[/code] annotation.
+		</member>
+		<member name="debug/gdscript/warnings/persistent_without_type" type="int" setter="" getter="" default="2">
 		</member>
 		<member name="debug/gdscript/warnings/redundant_await" type="int" setter="" getter="" default="1">
 			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a function that is not a coroutine is called with await.

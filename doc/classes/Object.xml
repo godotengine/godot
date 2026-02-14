@@ -245,6 +245,27 @@
 				Moves the iterator to the next iteration. [param iter] stores the iteration state. Since GDScript does not support passing arguments by reference, a single-element array is used as a wrapper. Returns [code]true[/code] so long as the iterator has not reached the end.
 			</description>
 		</method>
+		<method name="_load_persistence" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="data" type="Dictionary" />
+			<description>
+				Override this method to restore custom data from the object's persistence state. This method is called automatically by [method set_persistent_properties] after restoring all properties marked with [annotation @GDScript.@persistent].
+				The [param data] dictionary is hierarchical and organized by tags.
+				[codeblock]
+				extends Node
+
+				@persistent("combat") var health: int = 100
+
+				func _load_persistence(data: Dictionary):
+					# Check for specific tags
+					if data.has(&amp;"combat"):
+						var combat_data = data[&amp;"combat"]
+						if combat_data.has("last_damage"):
+							_apply_damage_effect(combat_data["last_damage"])
+				[/codeblock]
+				See also [method _save_persistence], [method set_persistent_properties], and [annotation @GDScript.@persistent].
+			</description>
+		</method>
 		<method name="_notification" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="what" type="int" />
@@ -286,6 +307,27 @@
 				Override this method to customize the given [param property]'s revert behavior. Should return the default value for the [param property]. If the default value differs from the [param property]'s current value, a revert icon is displayed in the Inspector dock.
 				[b]Note:[/b] [method _property_can_revert] must also be overridden for this method to be called.
 				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy. The call chain will stop on the first class that returns a non-[code]null[/code] value.
+			</description>
+		</method>
+		<method name="_save_persistence" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Override this method to add custom data to the object's persistence state. This method is called automatically by [method get_persistent_properties] after collecting all properties marked with [annotation @GDScript.@persistent].
+				The [param state] dictionary is organized by tags. Automated properties are grouped into sub-dictionaries named after their [annotation @GDScript.@persistent] tag (or "general" if no tag was specified).
+				[codeblock]
+				extends Node
+
+				@persistent("combat") var health: int = 100
+				var last_damage_time: float = 0.0
+
+				func _save_persistence(state: Dictionary):
+					# Custom data can be added to existing tags or new ones
+					if not state.has(&amp;"combat"):
+						state[&amp;"combat"] = {}
+					state[&amp;"combat"]["last_damage"] = last_damage_time
+				[/codeblock]
+				See also [method _load_persistence], [method get_persistent_properties], and [annotation @GDScript.@persistent].
 			</description>
 		</method>
 		<method name="_set" qualifiers="virtual">
@@ -671,6 +713,21 @@
 				[b]Note:[/b] The dictionaries of [code]args[/code] and [code]return[/code] are formatted identically to the results of [method get_property_list], although not all entries are used.
 			</description>
 		</method>
+		<method name="get_persistent_properties" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="tags" type="Variant" default="null" />
+			<description>
+				Returns a hierarchical [Dictionary] containing all properties marked with [annotation @GDScript.@persistent], organized by tags.
+				The result is a dictionary of dictionaries, where each top-level key corresponds to a persistence tag (e.g., "combate", "items"). Properties without an explicit tag are grouped under the [code]"general"[/code] key.
+				[codeblock]
+				var state = get_persistent_properties()
+				var health = state["combat"]["health"]
+				[/codeblock]
+				If [param tags] is provided (as an [Array] of [StringName]), only properties belonging to those specific tags will be collected.
+				Initially, it collects all properties marked for persistence, then calls [method _save_persistence] for the object to add its own custom data.
+				See also [method set_persistent_properties], [method _save_persistence], and [annotation @GDScript.@persistent].
+			</description>
+		</method>
 		<method name="get_property_list" qualifiers="const">
 			<return type="Dictionary[]" />
 			<description>
@@ -965,6 +1022,28 @@
 				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
 			</description>
 		</method>
+		<method name="set_persistent_properties">
+			<return type="void" />
+			<param index="0" name="data" type="Dictionary" />
+			<description>
+				Restores properties from a hierarchical [param data] dictionary. The dictionary must follow the tag-grouped structure returned by [method get_persistent_properties].
+				This method iterates through the tags in [param data], finds the corresponding properties in the object, and restores their values only if the tags match their definition (e.g., a variable marked [code]@persistent("stats")[/code] will only be updated from [code]data["stats"]["var_name"][/code]).
+				After restoring automated properties, it calls [method _load_persistence] to allow custom restoration of any additional data.
+				[codeblock]
+				extends Node
+
+				@persistent var health: int = 100
+				@persistent var mana: int = 50
+
+				func load_from_file():
+					var file = FileAccess.open("user://save.dat", FileAccess.READ)
+					var state = file.get_var()
+					set_persistent_properties(state)
+					# health and mana are now restored from the file
+				[/codeblock]
+				See also [method get_persistent_properties], [method _load_persistence], and [annotation @GDScript.@persistent].
+			</description>
+		</method>
 		<method name="set_script">
 			<return type="void" />
 			<param index="0" name="script" type="Variant" />
@@ -1035,7 +1114,7 @@
 			This notification is sent in reversed order.
 		</constant>
 		<constant name="NOTIFICATION_EXTENSION_RELOADED" value="2">
-			Notification received when the object finishes hot reloading. This notification is only sent for extensions classes and derived.
+			Notification received when the object's script is reloaded by an extension. This is only sent if the script is a GDExtension. Equivalent to [constant Node.NOTIFICATION_UNPARENTED] and [constant Node.NOTIFICATION_PARENTED] in sequence.
 		</constant>
 		<constant name="CONNECT_DEFERRED" value="1" enum="ConnectFlags">
 			Deferred connections trigger their [Callable]s on idle time (at the end of the frame), rather than instantly.

@@ -2110,6 +2110,23 @@ int32_t Node::get_unique_scene_id() const {
 	return data.unique_scene_id;
 }
 
+void Node::set_persistence_id(const StringName &p_id) {
+	data.persistence_id = p_id;
+	// TODO: Register/unregister with SaveServer when implemented
+}
+
+StringName Node::get_persistence_id() const {
+	return data.persistence_id;
+}
+
+void Node::set_save_policy(SavePolicy p_policy) {
+	data.save_policy = p_policy;
+}
+
+Node::SavePolicy Node::get_save_policy() const {
+	return data.save_policy;
+}
+
 Window *Node::get_window() const {
 	ERR_THREAD_GUARD_V(nullptr);
 	Viewport *vp = get_viewport();
@@ -3917,6 +3934,12 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("update_configuration_warnings"), &Node::update_configuration_warnings);
 
+	// Persistence
+	ClassDB::bind_method(D_METHOD("set_persistence_id", "id"), &Node::set_persistence_id);
+	ClassDB::bind_method(D_METHOD("get_persistence_id"), &Node::get_persistence_id);
+	ClassDB::bind_method(D_METHOD("set_save_policy", "policy"), &Node::set_save_policy);
+	ClassDB::bind_method(D_METHOD("get_save_policy"), &Node::get_save_policy);
+
 	{
 		MethodInfo mi;
 		mi.name = "call_deferred_thread_group";
@@ -3957,6 +3980,10 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_POST_ENTER_TREE);
 	BIND_CONSTANT(NOTIFICATION_DISABLED);
 	BIND_CONSTANT(NOTIFICATION_ENABLED);
+	BIND_CONSTANT(NOTIFICATION_SAVE_PREPARE);
+	BIND_CONSTANT(NOTIFICATION_SAVE_COMPLETED);
+	BIND_CONSTANT(NOTIFICATION_LOAD_STARTED);
+	BIND_CONSTANT(NOTIFICATION_LOAD_COMPLETED);
 	BIND_CONSTANT(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 
 	BIND_CONSTANT(NOTIFICATION_EDITOR_PRE_SAVE);
@@ -4020,6 +4047,11 @@ void Node::_bind_methods() {
 	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_ALWAYS);
 	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_DISABLED);
 
+	BIND_ENUM_CONSTANT(SAVE_POLICY_INHERIT);
+	BIND_ENUM_CONSTANT(SAVE_POLICY_ALWAYS);
+	BIND_ENUM_CONSTANT(SAVE_POLICY_NEVER);
+	BIND_ENUM_CONSTANT(SAVE_POLICY_CUSTOM);
+
 	ADD_SIGNAL(MethodInfo("ready"));
 	ADD_SIGNAL(MethodInfo("renamed"));
 	ADD_SIGNAL(MethodInfo("tree_entered"));
@@ -4057,6 +4089,10 @@ void Node::_bind_methods() {
 
 	ADD_GROUP("Editor Description", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT), "set_editor_description", "get_editor_description");
+
+	ADD_GROUP("Persistence", "persistence_");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "persistence_id"), "set_persistence_id", "get_persistence_id");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "save_policy", PROPERTY_HINT_ENUM, "Inherit,Always,Never,Custom"), "set_save_policy", "get_save_policy");
 
 	GDVIRTUAL_BIND(_process, "delta");
 	GDVIRTUAL_BIND(_physics_process, "delta");

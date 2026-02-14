@@ -129,6 +129,13 @@ public:
 		AUTO_TRANSLATE_MODE_DISABLED,
 	};
 
+	enum SavePolicy {
+		SAVE_POLICY_INHERIT,
+		SAVE_POLICY_ALWAYS,
+		SAVE_POLICY_NEVER,
+		SAVE_POLICY_CUSTOM,
+	};
+
 	struct Comparator {
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
 	};
@@ -289,6 +296,10 @@ private:
 		mutable bool is_translation_domain_dirty : 1;
 
 		int32_t unique_scene_id = UNIQUE_SCENE_ID_UNASSIGNED;
+
+		// Persistence
+		StringName persistence_id;
+		SavePolicy save_policy = SAVE_POLICY_INHERIT;
 
 		mutable NodePath *path_cache = nullptr;
 
@@ -468,6 +479,10 @@ public:
 		NOTIFICATION_POST_ENTER_TREE = 27,
 		NOTIFICATION_DISABLED = 28,
 		NOTIFICATION_ENABLED = 29,
+		NOTIFICATION_SAVE_PREPARE = 30,
+		NOTIFICATION_SAVE_COMPLETED = 31,
+		NOTIFICATION_LOAD_STARTED = 32,
+		NOTIFICATION_LOAD_COMPLETED = 33,
 		NOTIFICATION_RESET_PHYSICS_INTERPOLATION = 2001, // A GodotSpace Odyssey.
 		// Keep these linked to Node.
 
@@ -736,6 +751,13 @@ public:
 	void set_scene_instance_load_placeholder(bool p_enable);
 	bool get_scene_instance_load_placeholder() const;
 
+	// Persistence
+	void set_persistence_id(const StringName &p_id);
+	StringName get_persistence_id() const;
+
+	void set_save_policy(SavePolicy p_policy);
+	SavePolicy get_save_policy() const;
+
 	template <typename... VarArgs>
 	Vector<Variant> make_binds(VarArgs... p_args) {
 		Vector<Variant> binds = { p_args... };
@@ -897,6 +919,7 @@ VARIANT_BITFIELD_CAST(Node::ProcessThreadMessages);
 VARIANT_ENUM_CAST(Node::InternalMode);
 VARIANT_ENUM_CAST(Node::PhysicsInterpolationMode);
 VARIANT_ENUM_CAST(Node::AutoTranslateMode);
+VARIANT_ENUM_CAST(Node::SavePolicy);
 
 typedef HashSet<Node *, Node::Comparator> NodeSet;
 

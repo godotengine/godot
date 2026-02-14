@@ -712,6 +712,144 @@ void Object::get_method_list(List<MethodInfo> *p_list) const {
 	}
 }
 
+Dictionary Object::get_persistent_properties(const Variant &p_tags) const {
+	TypedArray<StringName> tags = p_tags;
+	// Send notification before saving
+	const_cast<Object *>(this)->notification(NOTIFICATION_PERSISTENCE_SAVE);
+
+	Dictionary result;
+
+	// Get all properties
+	List<PropertyInfo> properties;
+	get_property_list(&properties);
+
+	// Filter and group properties with PROPERTY_USAGE_PERSISTENCE flag
+	StringName current_tag = SNAME("general");
+
+	for (const PropertyInfo &prop : properties) {
+		// Detect persistence group change
+		if ((prop.usage & PROPERTY_USAGE_GROUP) && (prop.usage & PROPERTY_USAGE_PERSISTENCE)) {
+			current_tag = prop.name;
+			continue;
+		}
+
+		if (!(prop.usage & PROPERTY_USAGE_PERSISTENCE)) {
+			continue;
+		}
+
+		StringName tag = prop.hint_string;
+		if (tag.is_empty()) {
+			tag = current_tag;
+		}
+
+		// Filter by requested tags if needed
+		if (!tags.is_empty() && !tags.has(tag)) {
+			continue;
+		}
+
+		// Ensure sub-dictionary for the tag exists
+		if (!result.has(tag)) {
+			result[tag] = Dictionary();
+		}
+
+		// Get property value
+		bool valid = false;
+		Variant value = get(prop.name, &valid);
+		if (valid) {
+			((Dictionary)result[tag])[prop.name] = value;
+		}
+	}
+
+	// Call virtual hook for custom persistence data
+	// We pass the hierarchical result directly so user can add to tags (the dictionary keys)
+	_save_persistence(result);
+
+	return result;
+}
+
+void Object::set_persistent_properties(const Dictionary &p_data) {
+	// Send notification before loading
+	notification(NOTIFICATION_PERSISTENCE_LOAD);
+
+	// Get all properties to validate and map by name
+	List<PropertyInfo> properties;
+	get_property_list(&properties);
+
+	// Build a map of valid persistent properties: Name -> (Tag, Type)
+	struct PropertyMetadata {
+		StringName tag;
+		Variant::Type type;
+	};
+	HashMap<StringName, PropertyMetadata> persistence_map;
+	StringName current_tag = SNAME("general");
+
+	for (const PropertyInfo &prop : properties) {
+		// Detect persistence group change
+		if ((prop.usage & PROPERTY_USAGE_GROUP) && (prop.usage & PROPERTY_USAGE_PERSISTENCE)) {
+			current_tag = prop.name;
+			continue;
+		}
+
+		if (prop.usage & PROPERTY_USAGE_PERSISTENCE) {
+			StringName tag = prop.hint_string;
+			if (tag.is_empty()) {
+				tag = current_tag;
+			}
+			PropertyMetadata meta;
+			meta.tag = tag;
+			meta.type = prop.type;
+			persistence_map[prop.name] = meta;
+		}
+	}
+
+	// Restore properties from hierarchical structure
+	Array tags = p_data.keys();
+	for (int i = 0; i < tags.size(); i++) {
+		Variant tag_val = p_data[tags[i]];
+		if (tag_val.get_type() != Variant::DICTIONARY) {
+			continue;
+		}
+
+		Dictionary tag_data = tag_val;
+		Array property_names = tag_data.keys();
+		for (int j = 0; j < property_names.size(); j++) {
+			StringName prop_name = property_names[j];
+
+			// Validation: Check if property exists and matches the tag
+			if (!persistence_map.has(prop_name)) {
+				continue;
+			}
+
+			const PropertyMetadata &meta = persistence_map[prop_name];
+			if (meta.tag != (StringName)tags[i]) {
+				continue;
+			}
+
+			// Type validation: Ensure loaded value matches property type
+			Variant loaded_value = tag_data[prop_name];
+			if (loaded_value.get_type() != meta.type) {
+				// Attempt type conversion for common cases
+				Callable::CallError ce;
+				Variant converted;
+				const Variant *args[] = { &loaded_value };
+				Variant::construct(meta.type, converted, args, 1, ce);
+
+				if (ce.error == Callable::CallError::CALL_OK && converted.get_type() == meta.type) {
+					set(prop_name, converted);
+				} else {
+					ERR_PRINT(vformat("SaveServer: Type mismatch for property '%s'. Expected %s, got %s. Skipping.",
+							prop_name, Variant::get_type_name(meta.type), Variant::get_type_name(loaded_value.get_type())));
+				}
+			} else {
+				set(prop_name, loaded_value);
+			}
+		}
+	}
+
+	// Call virtual hook for custom persistence data
+	_load_persistence(p_data);
+}
+
 Variant Object::_call_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
@@ -1996,6 +2134,18 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tr_n", "message", "plural_message", "n", "context"), &Object::tr_n, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("get_translation_domain"), &Object::get_translation_domain);
 	ClassDB::bind_method(D_METHOD("set_translation_domain", "domain"), &Object::set_translation_domain);
+
+	// Persistence methods
+	ClassDB::bind_method(D_METHOD("get_persistent_properties", "tags"), &Object::get_persistent_properties, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("set_persistent_properties", "data"), &Object::set_persistent_properties);
+
+	Vector<String> save_args;
+	save_args.push_back("state");
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_save_persistence", PropertyInfo(Variant::DICTIONARY, "state")), true, save_args);
+
+	Vector<String> load_args;
+	load_args.push_back("data");
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_load_persistence", PropertyInfo(Variant::DICTIONARY, "data")), true, load_args);
 
 	ClassDB::bind_method(D_METHOD("is_queued_for_deletion"), &Object::is_queued_for_deletion);
 	ClassDB::bind_method(D_METHOD("cancel_free"), &Object::cancel_free);

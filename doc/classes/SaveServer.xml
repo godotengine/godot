@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SaveServer" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		High-performance persistence backend.
+	</brief_description>
+	<description>
+		[SaveServer] is a singleton responsible for managing data storage on disk for the Godot Engine. It abstracts I/O complexity in separate threads (non-blocking).
+		It ensures that game state snapshots are persisted asynchronously as [Snapshot] resources in [code].tres[/code] format, allowing for easy inspection, version control integration, and automatic game version tracking.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="amend_save">
+			<return type="bool" />
+			<param index="0" name="root" type="Node" />
+			<param index="1" name="slot_name" type="String" />
+			<description>
+				Performs an amended save of the [param root] branch. Only objects that have been staged (via [method stage_change]) since the last save or load will be processed. This is significantly more efficient for large scenes where only a subset of objects change frequently.
+			</description>
+		</method>
+		<method name="clear_staged">
+			<return type="void" />
+			<description>
+				Clears the list of currently staged objects.
+			</description>
+		</method>
+		<method name="delete_slot">
+			<return type="void" />
+			<param index="0" name="slot_name" type="String" />
+			<description>
+				Permanently removes the [Snapshot] file from the specified slot.
+			</description>
+		</method>
+		<method name="delete_snapshot">
+			<return type="void" />
+			<param index="0" name="snapshot_name" type="String" />
+			<description>
+				Deletes a snapshot and all its associated satellite slots (tagged data) from disk.
+			</description>
+		</method>
+		<method name="get_object_by_id" qualifiers="const">
+			<return type="Object" />
+			<param index="0" name="id" type="StringName" />
+			<description>
+				Returns the object registered with the given persistence [param id], or [code]null[/code] if not found.
+			</description>
+		</method>
+		<method name="has_slot" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="slot_name" type="String" />
+			<description>
+				Returns [code]true[/code] if the specified save slot exists on disk.
+			</description>
+		</method>
+		<method name="has_snapshot" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="slot_name" type="String" />
+			<description>
+				Alias for [method has_slot].
+			</description>
+		</method>
+		<method name="load_slot">
+			<return type="Dictionary" />
+			<param index="0" name="slot_name" type="String" />
+			<description>
+				Loads a [Snapshot] resource and returns its [code]snapshot[/code] data. Returns an empty dictionary if the slot does not exist or is corrupted.
+			</description>
+		</method>
+		<method name="load_snapshot">
+			<return type="void" />
+			<param index="0" name="root" type="Node" />
+			<param index="1" name="slot_name" type="String" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
+			<param index="3" name="dynamic_respawn" type="bool" default="false" />
+			<description>
+				Loads a [Snapshot] from disk and recursively restores the state in the hierarchy starting from the [param root] node.
+				If [param callback] is provided, it will be called once the loading process is finished (especially useful for async loading).
+				If [param dynamic_respawn] is [code]true[/code], the system performs a bidirectional synchronization:
+				1. **Respawn:** Nodes saved in the snapshot but missing from the current scene tree will be automatically instantiated and added (requires a valid scene file path).
+				2. **Orphan Cleanup:** Persistent nodes currently in the scene tree but missing from the snapshot will be removed via [method Node.queue_free]. This ensures that objects destroyed or enemies killed are correctly removed upon loading.
+			</description>
+		</method>
+		<method name="register_id">
+			<return type="void" />
+			<param index="0" name="id" type="StringName" />
+			<param index="1" name="obj_id" type="int" />
+			<description>
+				Registers a unique persistence ID for an object.
+			</description>
+		</method>
+		<method name="register_migration">
+			<return type="void" />
+			<param index="0" name="from" type="String" />
+			<param index="1" name="to" type="String" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Registers a migration callback to transform save data from version [param from] to [param to].
+			</description>
+		</method>
+		<method name="save_slot">
+			<return type="void" />
+			<param index="0" name="slot_name" type="String" />
+			<param index="1" name="data" type="Dictionary" />
+			<param index="2" name="async" type="bool" default="true" />
+			<param index="3" name="metadata" type="Dictionary" default="{}" />
+			<param index="4" name="thumbnail" type="Resource" default="null" />
+			<description>
+				Wraps the [param data] into a [Snapshot] resource and saves it. Supports optional [param metadata] and a [param thumbnail] (e.g. screenshot).
+			</description>
+		</method>
+		<method name="save_snapshot">
+			<return type="bool" />
+			<param index="0" name="root" type="Node" />
+			<param index="1" name="slot_name" type="String" />
+			<param index="2" name="async" type="bool" default="true" />
+			<param index="3" name="tags" type="StringName[]" default="[]" />
+			<param index="4" name="metadata" type="Dictionary" default="{}" />
+			<param index="5" name="thumbnail" type="Resource" default="null" />
+			<description>
+				Creates a recursive snapshot starting from [param root]. Can filter properties using [param tags].
+			</description>
+		</method>
+		<method name="stage_change">
+			<return type="void" />
+			<param index="0" name="obj_id" type="int" />
+			<param index="1" name="tag" type="StringName" default="&amp;&quot;general&quot;" />
+			<description>
+				Explicitly stages an object to be included in the next amended save. This notifies the [SaveServer] that the object's persistent state has changed.
+			</description>
+		</method>
+		<method name="stage_deletion">
+			<return type="void" />
+			<param index="0" name="root_context" type="Node" />
+			<param index="1" name="node" type="Node" />
+			<description>
+				Stages a node for deletion in the next amended save. The [param node] must be a descendant of [param root_context]. This ensures that the object will be removed from the save snapshot, preventing it from being recreated during the next load.
+			</description>
+		</method>
+		<method name="unregister_id">
+			<return type="void" />
+			<param index="0" name="id" type="StringName" />
+			<description>
+				Unregisters a persistence ID.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="backup_enabled" type="bool" setter="set_backup_enabled" getter="is_backup_enabled" default="true">
+			Enables or disables automatic backup of snapshots.
+		</member>
+		<member name="compression_enabled" type="bool" setter="set_compression_enabled" getter="is_compression_enabled" default="true">
+			Enables or disables ZSTD compression for binary saves.
+		</member>
+		<member name="encryption_key" type="String" setter="set_encryption_key" getter="get_encryption_key" default="&quot;&quot;">
+			Sets the encryption key for binary saves.
+		</member>
+		<member name="integrity_check_level" type="int" setter="set_integrity_check_level" getter="get_integrity_check_level" enum="SaveServer.IntegrityCheckLevel" default="1">
+			Determines how strictly the [SaveServer] validates the integrity of a save file during loading.
+		</member>
+		<member name="max_backups" type="int" setter="set_max_backups" getter="get_max_backups" default="2">
+			The maximum number of timestamped backups to keep for each save slot.
+		</member>
+		<member name="save_format" type="int" setter="set_save_format" getter="get_save_format" enum="SaveServer.SaveFormat" default="0">
+			The file format used by [SaveServer] when creating snapshots.
+		</member>
+		<member name="save_path" type="String" setter="set_save_path" getter="get_save_path" default="&quot;user://saves/&quot;">
+			The base directory within the [code]user://[/code] path where [SaveServer] stores snapshot files.
+		</member>
+	</members>
+	<signals>
+		<signal name="backup_restored">
+			<param index="0" name="slot_name" type="String" />
+			<param index="1" name="file_path" type="String" />
+			<description>
+				Emitted when a corrupted save slot is automatically restored from a backup.
+			</description>
+		</signal>
+		<signal name="save_corrupted">
+			<param index="0" name="slot_name" type="String" />
+			<description>
+				Emitted when the [SaveServer] detects a corrupted save file during load.
+			</description>
+		</signal>
+		<signal name="save_successful">
+			<param index="0" name="slot_name" type="String" />
+			<description>
+				Emitted when a save operation completes successfully.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="FORMAT_TEXT" value="0" enum="SaveFormat">
+			Saves as human-readable [code].tres[/code] files.
+		</constant>
+		<constant name="FORMAT_BINARY" value="1" enum="SaveFormat">
+			Saves as compressed/encrypted [code].data[/code] files.
+		</constant>
+		<constant name="INTEGRITY_NONE" value="0" enum="IntegrityCheckLevel">
+			No integrity checks performed.
+		</constant>
+		<constant name="INTEGRITY_SIGNATURE" value="1" enum="IntegrityCheckLevel">
+			Validated by checksum.
+		</constant>
+		<constant name="INTEGRITY_STRICT" value="2" enum="IntegrityCheckLevel">
+			Fails if checksum mismatched.
+		</constant>
+		<constant name="SAVE_OK" value="0" enum="SaveResult">
+			Operation succeeded.
+		</constant>
+		<constant name="SAVE_ERR_FILE_LOCKED" value="1" enum="SaveResult">
+			File is in use.
+		</constant>
+		<constant name="SAVE_ERR_ENCRYPTION" value="2" enum="SaveResult">
+			Encryption/Decryption failed.
+		</constant>
+		<constant name="SAVE_ERR_DISK_FULL" value="3" enum="SaveResult">
+			Not enough space.
+		</constant>
+		<constant name="SAVE_ERR_INVALID_DATA" value="4" enum="SaveResult">
+			Corrupted or malformed data.
+		</constant>
+		<constant name="SAVE_ERR_CHECKSUM_MISMATCH" value="5" enum="SaveResult">
+			Integrity check failed.
+		</constant>
+		<constant name="SAVE_ERR_VERSION_MISMATCH" value="6" enum="SaveResult">
+			Snapshot version incompatible with current game version.
+		</constant>
+	</constants>
+</class>

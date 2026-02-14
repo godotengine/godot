@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Snapshot" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A resource that holds the state of a saved game.
+	</brief_description>
+	<description>
+		Snapshot is a Resource designed to contain the serialized state of the game, managed by the SaveServer.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="checksum" type="String" setter="set_checksum" getter="get_checksum" default="&quot;&quot;">
+		</member>
+		<member name="metadata" type="Dictionary" setter="set_metadata" getter="get_metadata" default="{}">
+		</member>
+		<member name="snapshot" type="Dictionary" setter="set_snapshot" getter="get_snapshot" default="{}">
+			The dictionary containing the saved state.
+		</member>
+		<member name="tag_slots" type="Dictionary" setter="set_tag_slots" getter="get_tag_slots" default="{}">
+			Maps tags to additional slot files.
+		</member>
+		<member name="thumbnail" type="Resource" setter="set_thumbnail" getter="get_thumbnail">
+		</member>
+		<member name="version" type="String" setter="set_version" getter="get_version" default="&quot;&quot;">
+			The game version when this snapshot was created.
+		</member>
+	</members>
+</class>

@@ -164,6 +164,12 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"*(The default value uses "%s" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.)*", symbols[0]);
 		case ONREADY_WITH_EXPORT:
 			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
+		case PERSISTENT_WITHOUT_TYPE:
+			CHECK_SYMBOLS(1);
+			return vformat(R"(The variable "%s" is marked as "@persistent" but does not have an explicit type. Persistence requires explicit typing.)", symbols[0]);
+		case PERSISTENT_RESERVED_TAG:
+			CHECK_SYMBOLS(1);
+			return vformat(R"(The tag "%s" is reserved for internal use by the SaveServer.)", symbols[0]);
 #ifndef DISABLE_DEPRECATED
 		// Never produced. These warnings migrated from 3.x by mistake.
 		case PROPERTY_USED_AS_FUNCTION: // There is already an error.
@@ -241,6 +247,8 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		PNAME("NATIVE_METHOD_OVERRIDE"),
 		PNAME("GET_NODE_DEFAULT_WITHOUT_ONREADY"),
 		PNAME("ONREADY_WITH_EXPORT"),
+		PNAME("PERSISTENT_WITHOUT_TYPE"),
+		PNAME("PERSISTENT_RESERVED_TAG"),
 #ifndef DISABLE_DEPRECATED
 		"PROPERTY_USED_AS_FUNCTION",
 		"CONSTANT_USED_AS_FUNCTION",

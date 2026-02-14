@@ -72,6 +72,7 @@
 #include "rendering/storage/render_data.h"
 #include "rendering/storage/render_scene_buffers.h"
 #include "rendering/storage/render_scene_data.h"
+#include "save/save_server.h"
 #include "servers/rendering/shader_types.h"
 #include "text/text_server.h"
 #include "text/text_server_dummy.h"
@@ -111,6 +112,7 @@
 #endif // XR_DISABLED
 
 ShaderTypes *shader_types = nullptr;
+static SaveServer *save_server = nullptr;
 
 #ifndef PHYSICS_2D_DISABLED
 static PhysicsServer2D *_create_dummy_physics_server_2d() {
@@ -140,6 +142,10 @@ void register_server_types() {
 	OS::get_singleton()->benchmark_begin_measure("Servers", "Register Extensions");
 
 	shader_types = memnew(ShaderTypes);
+	SaveServer::register_settings();
+	save_server = memnew(SaveServer);
+
+	GDREGISTER_CLASS(SaveServer);
 
 	GDREGISTER_CLASS(TextServerManager);
 	GDREGISTER_ABSTRACT_CLASS(TextServer);
@@ -371,6 +377,11 @@ void unregister_server_types() {
 
 	ServersDebugger::deinitialize();
 	memdelete(shader_types);
+	if (save_server) {
+		memdelete(save_server);
+		save_server = nullptr;
+	}
+
 	if constexpr (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
 		memdelete(writer_pngwav);
 	}
@@ -383,6 +394,7 @@ void register_server_singletons() {
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("AudioServer", AudioServer::get_singleton(), "AudioServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("CameraServer", CameraServer::get_singleton(), "CameraServer"));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("SaveServer", SaveServer::get_singleton(), "SaveServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("DisplayServer", DisplayServer::get_singleton(), "DisplayServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NativeMenu", NativeMenu::get_singleton(), "NativeMenu"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("RenderingServer", RenderingServer::get_singleton(), "RenderingServer"));

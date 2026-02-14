@@ -181,6 +181,9 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@export_category", PropertyInfo(Variant::STRING, "name")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_CATEGORY>);
 		register_annotation(MethodInfo("@export_group", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_GROUP>, varray(""));
 		register_annotation(MethodInfo("@export_subgroup", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_SUBGROUP>, varray(""));
+		// Persistence annotations.
+		register_annotation(MethodInfo("@persistent", PropertyInfo(Variant::STRING, "tag")), AnnotationInfo::VARIABLE, &GDScriptParser::persistent_annotation, varray(""));
+		register_annotation(MethodInfo("@persistent_group", PropertyInfo(Variant::STRING, "name")), AnnotationInfo::STANDALONE, &GDScriptParser::persistent_group_annotation);
 		// Warning annotations.
 		register_annotation(MethodInfo("@warning_ignore", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::CLASS_LEVEL | AnnotationInfo::STATEMENT, &GDScriptParser::warning_ignore_annotation, varray(), true);
 		register_annotation(MethodInfo("@warning_ignore_start", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::STANDALONE, &GDScriptParser::warning_ignore_region_annotations, varray(), true);
@@ -1149,7 +1152,7 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 						if (previous.type != GDScriptTokenizer::Token::NEWLINE) {
 							push_error(R"(Expected newline after a standalone annotation.)");
 						}
-						if (annotation->name == SNAME("@export_category") || annotation->name == SNAME("@export_group") || annotation->name == SNAME("@export_subgroup")) {
+						if (annotation->name == SNAME("@export_category") || annotation->name == SNAME("@export_group") || annotation->name == SNAME("@export_subgroup") || annotation->name == SNAME("@persistent_group")) {
 							current_class->add_member_group(annotation);
 						} else if (annotation->name == SNAME("@warning_ignore_start") || annotation->name == SNAME("@warning_ignore_restore")) {
 							// Some annotations need to be resolved and applied in the parser.
@@ -5097,6 +5100,80 @@ bool GDScriptParser::export_group_annotations(AnnotationNode *p_annotation, Node
 				p_annotation->export_info.hint_string = p_annotation->resolved_arguments[1];
 			}
 		} break;
+	}
+
+	return true;
+}
+
+bool GDScriptParser::persistent_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
+
+	VariableNode *variable = static_cast<VariableNode *>(p_target);
+	if (variable->is_static) {
+		push_error(vformat(R"(Annotation "%s" cannot be applied to a static variable.)", p_annotation->name), p_annotation);
+		return false;
+	}
+
+	// Validate explicit typing
+	if (variable->datatype_specifier == nullptr) {
+#ifdef DEBUG_ENABLED
+		push_warning(variable, GDScriptWarning::UNTYPED_DECLARATION, variable->identifier->name);
+#endif
+	}
+
+	// Mark property with persistence flag
+	variable->export_info.usage |= PROPERTY_USAGE_PERSISTENCE;
+
+	// If a tag is provided, store it in hint_string
+	if (!p_annotation->resolved_arguments.is_empty()) {
+		String tag = p_annotation->resolved_arguments[0];
+		if (tag == "meta" || tag == ".id" || tag == ".children") {
+#ifdef DEBUG_ENABLED
+			push_warning(p_annotation, GDScriptWarning::PERSISTENT_RESERVED_TAG, tag);
+#endif
+			return false;
+		}
+		variable->export_info.hint_string = tag;
+	}
+
+	return true;
+}
+
+bool GDScriptParser::persistent_group_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	// Check for reserved tags: .id, .children, meta
+	if (!p_annotation->resolved_arguments.is_empty()) {
+		String tag = p_annotation->resolved_arguments[0];
+		if (tag == "meta" || tag == ".id" || tag == ".children") {
+#ifdef DEBUG_ENABLED
+			push_warning(p_annotation, GDScriptWarning::PERSISTENT_RESERVED_TAG, tag);
+#endif
+			return false;
+		}
+	}
+
+	if (p_target == nullptr) {
+		// Standalone use: @persistent_group("tag_name")
+		ERR_FAIL_COND_V(p_annotation->resolved_arguments.is_empty(), false);
+		p_annotation->export_info.name = (String)p_annotation->resolved_arguments[0];
+		p_annotation->export_info.usage = PROPERTY_USAGE_PERSISTENCE | PROPERTY_USAGE_GROUP;
+		return true;
+	}
+
+	// Also support applying it to a single variable (same as @persistent("tag"))
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables or used standalone.)", p_annotation->name));
+
+	VariableNode *variable = static_cast<VariableNode *>(p_target);
+	if (variable->is_static) {
+		push_error(vformat(R"(Annotation "%s" cannot be applied to a static variable.)", p_annotation->name), p_annotation);
+		return false;
+	}
+
+	// Mark property with persistence flag
+	variable->export_info.usage |= PROPERTY_USAGE_PERSISTENCE;
+
+	// Set tag from group name
+	if (!p_annotation->resolved_arguments.is_empty()) {
+		variable->export_info.hint_string = (String)p_annotation->resolved_arguments[0];
 	}
 
 	return true;

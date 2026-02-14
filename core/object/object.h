@@ -127,6 +127,7 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_EDITOR_BASIC_SETTING = 1 << 27, //for project or editor settings, show when basic settings are selected.
 	PROPERTY_USAGE_READ_ONLY = 1 << 28, // Mark a property as read-only in the inspector.
 	PROPERTY_USAGE_SECRET = 1 << 29, // Export preset credentials that should be stored separately from the rest of the export config.
+	PROPERTY_USAGE_PERSISTENCE = 1 << 30, // Property is included in persistence system (SaveServer).
 
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR,
 	PROPERTY_USAGE_NO_EDITOR = PROPERTY_USAGE_STORAGE,
@@ -749,6 +750,10 @@ protected:
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return false; }
 	void _notification(int p_notification) {}
 
+	// Persistence hooks
+	virtual void _save_persistence(Dictionary &r_state) const {}
+	virtual void _load_persistence(const Dictionary &p_data) {}
+
 	_FORCE_INLINE_ static void (*_get_bind_methods())() {
 		return &Object::_bind_methods;
 	}
@@ -857,6 +862,9 @@ public:
 		NOTIFICATION_EXTENSION_RELOADED = 2,
 		// Internal notification to send after NOTIFICATION_PREDELETE, not bound to scripting.
 		NOTIFICATION_PREDELETE_CLEANUP = 3,
+		// Persistence notifications
+		NOTIFICATION_PERSISTENCE_SAVE = 4,
+		NOTIFICATION_PERSISTENCE_LOAD = 5,
 	};
 
 	/* TYPE API */
@@ -1015,6 +1023,10 @@ public:
 
 	virtual StringName get_translation_domain() const;
 	virtual void set_translation_domain(const StringName &p_domain);
+
+	// Persistence
+	Dictionary get_persistent_properties(const Variant &p_tags = Variant()) const;
+	void set_persistent_properties(const Dictionary &p_data);
 
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;

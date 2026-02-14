@@ -210,6 +210,30 @@ msgstr "Versão"
 msgid "Run"
 msgstr "Executar"
 
+msgid "Persistence"
+msgstr "Persistência"
+
+msgid "Save Format"
+msgstr "Formato do Save"
+
+msgid "Encryption Key"
+msgstr "Chave de Criptografia"
+
+msgid "Compression Enabled"
+msgstr "Compressão Ativa"
+
+msgid "Backup Enabled"
+msgstr "Backup Ativo"
+
+msgid "Max Backups"
+msgstr "Máximo de Backups"
+
+msgid "Integrity Check Level"
+msgstr "Nível de Verificação de Integridade"
+
+msgid "Save Path"
+msgstr "Caminho do Save"
+
 msgid "Main Scene"
 msgstr "Cena Principal"
 

@@ -367,6 +367,21 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			String group_name = p_name.operator String().get_slicec('/', 1);
 			add_global_group(group_name, p_value);
 		}
+
+		// Persistence Reactive Logic
+		if (p_name == "application/persistence/encryption_key") {
+			String key = p_value;
+			if (key.is_empty()) {
+				// Re-generate if cleared (Reset)
+				String allowed = "abcdef0123456789";
+				String new_key = "";
+				for (int i = 0; i < 32; i++) {
+					int r = Math::rand() % allowed.length();
+					new_key += String::chr(allowed[r]);
+				}
+				props[p_name].variant = new_key;
+			}
+		}
 	}
 
 	_version++;
@@ -1874,6 +1889,14 @@ ProjectSettings::ProjectSettings() {
 #endif // NAVIGATION_3D_DISABLED
 
 	ProjectSettings::get_singleton()->add_hidden_prefix("input/");
+
+	// Persistence Settings
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "application/persistence/save_format", PROPERTY_HINT_ENUM, "Text,Binary"), 0);
+	GLOBAL_DEF_BASIC("application/persistence/encryption_key", "");
+	GLOBAL_DEF_BASIC("application/persistence/compression_enabled", true);
+	GLOBAL_DEF_BASIC("application/persistence/backup_enabled", true);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "application/persistence/integrity_check_level", PROPERTY_HINT_ENUM, "None,Signature,Strict"), 1);
+	GLOBAL_DEF_BASIC("application/persistence/save_path", "user://saves/");
 }
 
 ProjectSettings::ProjectSettings(const String &p_path) {

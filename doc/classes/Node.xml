@@ -1057,6 +1057,10 @@
 			[b]Note:[/b] In the editor, nodes not owned by the scene root are usually not displayed in the Scene dock, and will [b]not[/b] be saved. To prevent this, remember to set the owner after calling [method add_child].
 			[b]Note:[/b] The owner needs to be the current scene root. See [url=$DOCS_URL/tutorials/plugins/running_code_in_the_editor.html#instancing-scenes]Instancing scenes[/url] in the documentation for more information.
 		</member>
+		<member name="persistence_id" type="StringName" setter="set_persistence_id" getter="get_persistence_id" default="&amp;&quot;&quot;">
+			Sets a unique persistence identifier for this node. This ID is used by the persistence system to track and restore nodes across save/load cycles, even if the node's name or position in the tree changes.
+			[b]Note:[/b] Persistence IDs should be unique within the scene tree. Duplicate IDs may cause unexpected behavior during state restoration.
+		</member>
 		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" enum="Node.PhysicsInterpolationMode" default="0">
 			The physics interpolation mode to use for this node. Only effective if [member ProjectSettings.physics/common/physics_interpolation] or [member SceneTree.physics_interpolation] is [code]true[/code].
 			By default, nodes inherit the physics interpolation mode from their parent. This property can enable or disable physics interpolation individually for each node, regardless of their parents' physics interpolation mode.
@@ -1083,6 +1087,9 @@
 		</member>
 		<member name="process_thread_messages" type="int" setter="set_process_thread_messages" getter="get_process_thread_messages" enum="Node.ProcessThreadMessages" is_bitfield="true">
 			Set whether the current thread group will process messages (calls to [method call_deferred_thread_group] on threads), and whether it wants to receive them during regular process or physics process callbacks.
+		</member>
+		<member name="save_policy" type="int" setter="set_save_policy" getter="get_save_policy" enum="Node.SavePolicy" default="0">
+			Sets the save policy for this node, controlling whether it and its children are included in persistence operations. See [enum SavePolicy] for available options.
 		</member>
 		<member name="scene_file_path" type="String" setter="set_scene_file_path" getter="get_scene_file_path">
 			The original scene's file path, if the node has been instantiated from a [PackedScene] file. Only scene root nodes contains this.
@@ -1225,7 +1232,19 @@
 			Notification received when the node is disabled. See [constant PROCESS_MODE_DISABLED].
 		</constant>
 		<constant name="NOTIFICATION_ENABLED" value="29">
-			Notification received when the node is enabled again after being disabled. See [constant PROCESS_MODE_DISABLED].
+			Notification received when the node is enabled in the scene tree.
+		</constant>
+		<constant name="NOTIFICATION_SAVE_PREPARE" value="30">
+			Notification received before the node's state is captured during a persistence save operation. This allows the node to prepare any complex data or internal state that needs to be persisted.
+		</constant>
+		<constant name="NOTIFICATION_SAVE_COMPLETED" value="31">
+			Notification received after a persistence save operation has finished capturing the node's state.
+		</constant>
+		<constant name="NOTIFICATION_LOAD_STARTED" value="32">
+			Notification received before the node's state is restored during a persistence load operation.
+		</constant>
+		<constant name="NOTIFICATION_LOAD_COMPLETED" value="33">
+			Notification received after the node's state has been fully restored from a persistence snapshot.
 		</constant>
 		<constant name="NOTIFICATION_RESET_PHYSICS_INTERPOLATION" value="2001">
 			Notification received when [method reset_physics_interpolation] is called on the node or its ancestors.
@@ -1411,6 +1430,18 @@
 		<constant name="AUTO_TRANSLATE_MODE_DISABLED" value="2" enum="AutoTranslateMode">
 			Never automatically translate. This is the inverse of [constant AUTO_TRANSLATE_MODE_ALWAYS].
 			String parsing for translation template generation will be skipped for this node and children that are set to [constant AUTO_TRANSLATE_MODE_INHERIT].
+		</constant>
+		<constant name="SAVE_POLICY_INHERIT" value="0" enum="SavePolicy">
+			Inherits the save policy from the parent node. This is the default.
+		</constant>
+		<constant name="SAVE_POLICY_ALWAYS" value="1" enum="SavePolicy">
+			Always include this node in the persistence snapshot, unless a parent with SAVE_POLICY_NEVER prevents reaching it.
+		</constant>
+		<constant name="SAVE_POLICY_NEVER" value="2" enum="SavePolicy">
+			Never include this node (and its children) in the persistence snapshot. Useful for temporary or decorative objects.
+		</constant>
+		<constant name="SAVE_POLICY_CUSTOM" value="3" enum="SavePolicy">
+			Reserved for custom save logic. Currently behaves like ALWAYS.
 		</constant>
 	</constants>
 </class>
