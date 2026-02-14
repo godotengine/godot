@@ -806,7 +806,7 @@ void AnimationLibraryEditor::_save_mixer_lib_folding(TreeItem *p_item) {
 	const String md = (mixer->get_tree()->get_edited_scene_root()->get_scene_file_path() + String(mixer->get_path())).md5_text();
 
 	Vector<String> collapsed_libs;
-	if (config->has_section(md)) {
+	if (config->has_section_key(md, "folding")) {
 		collapsed_libs = config->get_value(md, "folding");
 	}
 
@@ -866,7 +866,7 @@ Vector<String> AnimationLibraryEditor::_load_mixer_libs_folding() {
 		for (const String &section : config->get_sections()) {
 			if (config->get_value(section, "mixer_signature") == current_mixer_signature) {
 				config->set_value(md, "mixer_signature", current_mixer_signature);
-				config->set_value(md, "folding", config->get_value(section, "folding"));
+				config->set_value(md, "folding", config->get_value(section, "folding", PackedStringArray()));
 
 				config->erase_section(section);
 
@@ -879,7 +879,7 @@ Vector<String> AnimationLibraryEditor::_load_mixer_libs_folding() {
 		}
 	}
 
-	return config->get_value(md, "folding");
+	return config->get_value(md, "folding", PackedStringArray());
 }
 
 String AnimationLibraryEditor::_get_mixer_signature() const {
