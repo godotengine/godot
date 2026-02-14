@@ -365,10 +365,8 @@ void MeshInstance3DEditor::_create_collision_shape() {
 
 	for (Node *E : selection) {
 		if (placement_option == SHAPE_PLACEMENT_SIBLING && E == get_tree()->get_edited_scene_root()) {
-			if (verbose) {
-				err_dialog->set_text(TTR("Can't create a collision shape as sibling for the scene root."));
-				err_dialog->popup_centered();
-			}
+			err_dialog->set_text(TTR("Can't create a collision shape as sibling for the scene root."));
+			err_dialog->popup_centered();
 			continue;
 		}
 
