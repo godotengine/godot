@@ -132,6 +132,13 @@ public class TrampolineCollectorDispatchGenerator : ISourceGenerator
             .Append("        ").Append(symbol.FullQualifiedNameIncludeGlobal()).Append(".GodotInternal")
             .Append(".GetGodotRaiseSignalTrampolines(collectors.RaiseSignalTrampolineCollector);\n");
 
+        if (!symbol.IsGenericType)
+        {
+            source
+                .Append("        ").Append(symbol.FullQualifiedNameIncludeGlobal()).Append(".GodotInternal")
+                .Append(".GetGodotConstructorTrampolines(collectors.ConstructorTrampolineCollector);\n");
+        }
+
         var baseType = symbol.BaseType!;
 
         if (!SymbolEqualityComparer.Default.Equals(baseType, symbol.GetGodotScriptNativeClass()))
