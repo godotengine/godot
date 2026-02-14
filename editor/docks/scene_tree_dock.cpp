@@ -237,6 +237,8 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_TOGGLE_SCENE_UNIQUE_NAME);
 	} else if (ED_IS_SHORTCUT("scene_tree/toggle_editable_children", p_event)) {
 		_tool_selected(TOOL_SCENE_EDITABLE_CHILDREN);
+	} else if (ED_IS_SHORTCUT("scene_tree/open_scene_in_editor", p_event)) {
+		_tool_selected(TOOL_SCENE_OPEN);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
 		_tool_selected(TOOL_ERASE);
 	} else {
@@ -262,6 +264,9 @@ void SceneTreeDock::_scene_tree_gui_input(Ref<InputEvent> p_event) {
 	if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 		filter->grab_focus();
 		filter->select_all();
+		accept_event();
+	} else if (ED_IS_SHORTCUT("scene_tree/open_scene_in_editor", p_event)) {
+		_tool_selected(TOOL_SCENE_OPEN);
 		accept_event();
 	}
 }
@@ -1422,7 +1427,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			const List<Node *>::Element *e = selection.front();
 			if (e) {
 				Node *node = e->get();
-				if (node) {
+				if (node && node->is_instance()) {
 					scene_tree->emit_signal(SNAME("open"), node->get_scene_file_path());
 				}
 			}
@@ -4100,6 +4105,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 					menu->add_item(TTR("Make Local"), TOOL_SCENE_MAKE_LOCAL);
 				}
 				menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open in Editor"), TOOL_SCENE_OPEN);
+				menu->set_item_shortcut(-1, ED_GET_SHORTCUT("scene_tree/open_scene_in_editor"));
 				if (profile_allow_editing) {
 					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Editable Children")), editable);
 					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Load as Placeholder")), placeholder);
@@ -4964,6 +4970,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/show_in_file_system", TTRC("Show in FileSystem"));
 	ED_SHORTCUT("scene_tree/toggle_unique_name", TTRC("Toggle Access as Unique Name"));
 	ED_SHORTCUT("scene_tree/toggle_editable_children", TTRC("Toggle Editable Children"));
+	ED_SHORTCUT_ARRAY("scene_tree/open_scene_in_editor", TTRC("Open Scene in Editor"), { int32_t(Key::SLASH), int32_t(KeyModifierMask::SHIFT | Key::COLON) });
 	ED_SHORTCUT("scene_tree/delete_no_confirm", TTRC("Delete (No Confirm)"), KeyModifierMask::SHIFT | Key::KEY_DELETE);
 	ED_SHORTCUT("scene_tree/delete", TTRC("Delete"), Key::KEY_DELETE);
 
