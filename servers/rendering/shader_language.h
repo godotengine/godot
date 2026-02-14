@@ -179,6 +179,7 @@ public:
 		TK_HINT_SOURCE_COLOR,
 		TK_HINT_COLOR_CONVERSION_DISABLED,
 		TK_HINT_RANGE,
+		TK_HINT_LINK,
 		TK_HINT_ENUM,
 		TK_HINT_INSTANCE_INDEX,
 		TK_HINT_SCREEN_TEXTURE,
@@ -665,6 +666,7 @@ public:
 			enum Hint {
 				HINT_NONE,
 				HINT_RANGE,
+				HINT_LINK,
 				HINT_ENUM,
 				HINT_SOURCE_COLOR,
 				HINT_COLOR_CONVERSION_DISABLED,
@@ -856,6 +858,7 @@ public:
 	static DataType get_scalar_type(DataType p_type);
 	static int get_cardinality(DataType p_type);
 	static bool is_scalar_type(DataType p_type);
+	static bool is_num_vector_type(DataType p_type);
 	static bool is_float_type(DataType p_type);
 	static bool is_sampler_type(DataType p_type);
 	static bool is_hint_color(ShaderNode::Uniform::Hint p_hint);

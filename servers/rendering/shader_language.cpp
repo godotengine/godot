@@ -215,6 +215,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"HINT_SOURCE_COLOR",
 	"HINT_COLOR_CONVERSION_DISABLED",
 	"HINT_RANGE",
+	"HINT_LINK",
 	"HINT_ENUM",
 	"HINT_INSTANCE_INDEX",
 	"HINT_SCREEN_TEXTURE",
@@ -376,6 +377,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_HINT_SOURCE_COLOR, "source_color", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_COLOR_CONVERSION_DISABLED, "color_conversion_disabled", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_RANGE, "hint_range", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_LINK, "hint_link", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_ENUM, "hint_enum", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_INSTANCE_INDEX, "instance_index", CF_UNSPECIFIED, {}, {} },
 
@@ -1193,6 +1195,9 @@ String ShaderLanguage::get_uniform_hint_name(ShaderNode::Uniform::Hint p_hint) {
 	switch (p_hint) {
 		case ShaderNode::Uniform::HINT_RANGE: {
 			result = "hint_range";
+		} break;
+		case ShaderNode::Uniform::HINT_LINK: {
+			result = "hint_link";
 		} break;
 		case ShaderNode::Uniform::HINT_ENUM: {
 			result = "hint_enum";
@@ -4272,6 +4277,10 @@ bool ShaderLanguage::is_scalar_type(DataType p_type) {
 	return p_type == TYPE_BOOL || p_type == TYPE_INT || p_type == TYPE_UINT || p_type == TYPE_FLOAT;
 }
 
+bool ShaderLanguage::is_num_vector_type(DataType p_type) {
+	return p_type == TYPE_VEC2 || p_type == TYPE_VEC3 || p_type == TYPE_VEC4 || p_type == TYPE_IVEC2 || p_type == TYPE_IVEC3 || p_type == TYPE_IVEC4 || p_type == TYPE_UVEC2 || p_type == TYPE_UVEC3 || p_type == TYPE_UVEC4;
+}
+
 bool ShaderLanguage::is_float_type(DataType p_type) {
 	switch (p_type) {
 		case TYPE_FLOAT:
@@ -4987,6 +4996,9 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 				pi.type = Variant::PACKED_INT32_ARRAY;
 				// TODO: Handle vector pairs?
 			} else {
+				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_LINK) {
+					pi.hint = PROPERTY_HINT_LINK;
+				}
 				pi.type = Variant::VECTOR2I;
 			}
 		} break;
@@ -4996,6 +5008,9 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 				pi.type = Variant::PACKED_INT32_ARRAY;
 				// TODO: Handle vector pairs?
 			} else {
+				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_LINK) {
+					pi.hint = PROPERTY_HINT_LINK;
+				}
 				pi.type = Variant::VECTOR3I;
 			}
 		} break;
@@ -5005,6 +5020,9 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 				pi.type = Variant::PACKED_INT32_ARRAY;
 				// TODO: Handle vector pairs?
 			} else {
+				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_LINK) {
+					pi.hint = PROPERTY_HINT_LINK;
+				}
 				pi.type = Variant::VECTOR4I;
 			}
 		} break;
@@ -5023,6 +5041,9 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_VECTOR2_ARRAY;
 			} else {
+				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_LINK) {
+					pi.hint = PROPERTY_HINT_LINK;
+				}
 				pi.type = Variant::VECTOR2;
 			}
 			break;
@@ -5039,6 +5060,9 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 					pi.hint = PROPERTY_HINT_COLOR_NO_ALPHA;
 					pi.type = Variant::COLOR;
 				} else {
+					if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_LINK) {
+						pi.hint = PROPERTY_HINT_LINK;
+					}
 					pi.type = Variant::VECTOR3;
 				}
 			}
@@ -5054,6 +5078,9 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 				if (ShaderLanguage::is_hint_color(p_uniform.hint)) {
 					pi.type = Variant::COLOR;
 				} else {
+					if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_LINK) {
+						pi.hint = PROPERTY_HINT_LINK;
+					}
 					pi.type = Variant::VECTOR4;
 				}
 			}
@@ -9978,6 +10005,13 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 									new_hint = ShaderNode::Uniform::HINT_RANGE;
 								} break;
+								case TK_HINT_LINK: {
+									if (!is_num_vector_type(type)) {
+										_set_error(vformat(RTR("Link hint is for numeric vector types only.")));
+										return ERR_PARSE_ERROR;
+									}
+									new_hint = ShaderNode::Uniform::HINT_LINK;
+								} break;
 								case TK_HINT_ENUM: {
 									if (type != TYPE_INT) {
 										_set_error(vformat(RTR("Enum hint is for '%s' only."), "int"));
@@ -10143,7 +10177,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									break;
 							}
 
-							bool is_sampler_hint = new_hint != ShaderNode::Uniform::HINT_NONE && new_hint != ShaderNode::Uniform::HINT_SOURCE_COLOR && new_hint != ShaderNode::Uniform::HINT_COLOR_CONVERSION_DISABLED && new_hint != ShaderNode::Uniform::HINT_RANGE && new_hint != ShaderNode::Uniform::HINT_ENUM;
+							bool is_sampler_hint = new_hint != ShaderNode::Uniform::HINT_NONE && new_hint != ShaderNode::Uniform::HINT_SOURCE_COLOR && new_hint != ShaderNode::Uniform::HINT_COLOR_CONVERSION_DISABLED && new_hint != ShaderNode::Uniform::HINT_RANGE && new_hint != ShaderNode::Uniform::HINT_ENUM && new_hint != ShaderNode::Uniform::HINT_LINK;
 							if (((new_filter != FILTER_DEFAULT || new_repeat != REPEAT_DEFAULT) || is_sampler_hint) && !is_sampler_type(type)) {
 								_set_error(RTR("This hint is only for sampler types."));
 								return ERR_PARSE_ERROR;
@@ -12099,6 +12133,9 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 		} break;
 		case COMPLETION_HINT: {
+			if (is_num_vector_type(completion_base)) {
+				r_options->push_back({ "hint_link", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT });
+			}
 			if (completion_base == DataType::TYPE_VEC3 || completion_base == DataType::TYPE_VEC4) {
 				if (current_uniform_hint == ShaderNode::Uniform::HINT_NONE) {
 					ScriptLanguage::CodeCompletionOption option("source_color", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
