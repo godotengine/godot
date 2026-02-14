@@ -1,11 +1,11 @@
-using Godot.NativeInterop;
 using System;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 
 namespace Godot.Bridge
 {
-    public static class ScriptMethodCache<T>
+    internal static class ScriptMethodCache<T>
         where T : GodotObject
     {
         private const int Tries = 16;
@@ -31,9 +31,16 @@ namespace Godot.Bridge
             foreach (var method in methods)
             {
                 int slot = GetSlot(method.ptr);
+                int i = 1;
                 while (_keys[slot] != IntPtr.Zero)
                 {
                     slot = (slot + 1) & _mask;
+                    i++;
+
+                    if (i == Tries + 1)
+                    {
+                        ThrowRegisterMethodFailed();
+                    }
                 }
 
                 _keys[slot] = method.ptr;
@@ -107,7 +114,6 @@ namespace Godot.Bridge
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetSlot(nint namePtr)
         {
-            //return (int)((long)namePtr >> 3) & _mask;
             // Fibonacci Hashing
             int slot = (int)(((ulong)namePtr.ToInt64() * 11400714819323198485uL) >> 32) & _mask;
 
@@ -138,6 +144,12 @@ namespace Godot.Bridge
             }
 
             Console.WriteLine($"Items: {count}, Avg Probes: {(double)totalProbes / count:F2}, Max: {maxProbes}");
+        }
+
+        [DoesNotReturn]
+        private static void ThrowRegisterMethodFailed()
+        {
+            throw new InvalidOperationException($"Trying to register a method failed due to too many hash misses ({Tries})");
         }
     }
 }
