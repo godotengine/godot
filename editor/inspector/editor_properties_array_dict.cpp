@@ -36,13 +36,13 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
+#include "editor/gui/editor_icon_button.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/gui/editor_variant_type_selectors.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/editor_properties_vector.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
 
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
@@ -311,9 +311,8 @@ void EditorPropertyArray::_create_new_property_slot() {
 
 	EditorProperty *prop = memnew(EditorPropertyNil);
 
-	Button *reorder_button = memnew(Button);
+	EditorIconButton *reorder_button = memnew(EditorIconButton(SNAME("TripleBar")));
 	reorder_button->set_accessibility_name(TTRC("Reorder"));
-	reorder_button->set_button_icon(get_editor_theme_icon(SNAME("TripleBar")));
 	reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
 	reorder_button->set_disabled(is_read_only());
 	reorder_button->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
@@ -325,19 +324,17 @@ void EditorPropertyArray::_create_new_property_slot() {
 
 	bool is_untyped_array = object->get_array().get_type() == Variant::ARRAY && subtype == Variant::NIL;
 
-	Button *edit_btn = nullptr;
-	Button *remove_btn = nullptr;
+	EditorIconButton *edit_btn = nullptr;
+	EditorIconButton *remove_btn = nullptr;
 	if (is_untyped_array) {
-		edit_btn = memnew(Button);
+		edit_btn = memnew(EditorIconButton(SNAME("Edit")));
 		edit_btn->set_accessibility_name(TTRC("Edit"));
-		edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 		edit_btn->set_disabled(is_read_only());
 		edit_btn->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 		edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_change_type).bind(edit_btn, idx));
 	} else {
-		remove_btn = memnew(Button);
+		remove_btn = memnew(EditorIconButton(SNAME("Remove")));
 		remove_btn->set_accessibility_name(TTRC("Remove"));
-		remove_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 		remove_btn->set_disabled(is_read_only());
 		remove_btn->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 		remove_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_remove_pressed).bind(idx));
@@ -382,11 +379,11 @@ void EditorPropertyArray::update_property() {
 	if (!array.is_array()) {
 		if (preview_value) {
 			edit->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
-			edit->set_button_icon(get_editor_theme_icon(SNAME("Nil")));
+			edit->set_icon_name(SNAME("Nil"));
 			edit->set_text(array_type_name);
 		} else {
 			edit->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-			edit->set_button_icon(Ref<Texture2D>());
+			edit->set_icon_name(StringName());
 			edit->set_text(vformat(TTR("(Nil) %s"), array_type_name));
 		}
 		edit->set_pressed(false);
@@ -419,12 +416,12 @@ void EditorPropertyArray::update_property() {
 
 		edit->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 		edit->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
-		edit->set_button_icon(get_editor_theme_icon(array_type_name));
+		edit->set_icon_name(array_type_name);
 		edit->set_text(vformat("%s%s", array_sub_type_name, ctr_str));
 		edit->set_tooltip_text(vformat(TTR("%s%s (size %d)"), array_type_name, array_sub_type_name, size));
 	} else {
 		edit->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-		edit->set_button_icon(Ref<Texture2D>());
+		edit->set_icon_name(StringName());
 		edit->set_text(vformat(TTR("%s (size %d)"), array_type_name, size));
 	}
 
@@ -972,7 +969,7 @@ EditorPropertyArray::EditorPropertyArray() {
 	object.instantiate();
 	page_length = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
 
-	edit = memnew(Button);
+	edit = memnew(EditorIconButton);
 	edit->set_accessibility_name(TTRC("Edit"));
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
@@ -1085,19 +1082,17 @@ void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
 	bool use_key = p_idx == EditorPropertyDictionaryObject::NEW_KEY_INDEX;
 	bool is_untyped_dict = (use_key ? key_subtype : value_subtype) == Variant::NIL;
 
-	Button *edit_btn = nullptr;
-	Button *remove_btn = nullptr;
+	EditorIconButton *edit_btn = nullptr;
+	EditorIconButton *remove_btn = nullptr;
 	if (is_untyped_dict) {
-		edit_btn = memnew(Button);
+		edit_btn = memnew(EditorIconButton(SNAME("Edit")));
 		edit_btn->set_accessibility_name(TTRC("Edit"));
-		edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 		edit_btn->set_disabled(is_read_only());
 		edit_btn->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 		edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_change_type).bind(edit_btn, slots.size()));
 	} else if (p_idx >= 0) {
-		remove_btn = memnew(Button);
+		remove_btn = memnew(EditorIconButton(SNAME("Remove")));
 		remove_btn->set_accessibility_name(TTRC("Remove"));
-		remove_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 		remove_btn->set_disabled(is_read_only());
 		remove_btn->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 		remove_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_remove_pressed).bind(slots.size()));
@@ -1248,11 +1243,11 @@ void EditorPropertyDictionary::update_property() {
 	if (updated_val.get_type() != Variant::DICTIONARY) {
 		if (preview_value) {
 			edit->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
-			edit->set_button_icon(get_editor_theme_icon(SNAME("Nil")));
+			edit->set_icon_name(SNAME("Nil"));
 			edit->set_text(dict_type_name);
 		} else {
 			edit->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-			edit->set_button_icon(Ref<Texture2D>());
+			edit->set_icon_name(StringName());
 			edit->set_text(vformat(TTR("(Nil) %s"), dict_type_name));
 		}
 		edit->set_pressed(false);
@@ -1281,12 +1276,12 @@ void EditorPropertyDictionary::update_property() {
 
 		edit->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 		edit->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
-		edit->set_button_icon(get_editor_theme_icon(dict_type_name));
+		edit->set_icon_name(dict_type_name);
 		edit->set_text(vformat("%s%s", dict_sub_type_name, ctr_str));
 		edit->set_tooltip_text(vformat(TTR("%s%s (size %d)"), dict_type_name, dict_sub_type_name, dict.size()));
 	} else {
 		edit->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-		edit->set_button_icon(Ref<Texture2D>());
+		edit->set_icon_name(StringName());
 		edit->set_text(vformat(TTR("%s (size %d)"), dict_type_name, dict.size()));
 	}
 
@@ -1541,7 +1536,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	object.instantiate();
 	page_length = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
 
-	edit = memnew(Button);
+	edit = memnew(EditorIconButton);
 	edit->set_accessibility_name(TTRC("Edit"));
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
@@ -1700,9 +1695,8 @@ void EditorPropertyLocalizableString::update_property() {
 			property_vbox->add_child(hbox);
 			hbox->add_child(prop);
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
-			Button *edit_btn = memnew(Button);
+			EditorIconButton *edit_btn = memnew(EditorIconButton(SNAME("Remove")));
 			edit_btn->set_accessibility_name(TTRC("Remove Translation"));
-			edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 			hbox->add_child(edit_btn);
 			edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_remove_item).bind(edit_btn, remove_index));
 
