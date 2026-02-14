@@ -1867,6 +1867,27 @@ bool CSharpInstance::_unreference_owner_unsafe() {
 	return static_cast<RefCounted *>(owner)->unreference();
 }
 
+bool CSharpScript::_unchecked_create_managed_for_godot_object_script_instance(Object *p_owner, const Variant **p_args, int p_argcount) {
+	DEV_ASSERT(p_owner != nullptr);
+	DEV_ASSERT(can_instantiate());
+
+	// IMPORTANT:
+	// For compatibility reasons, we only use trampolines for the parameterless constructor.
+	// For constructors with parameters, we cannot guarantee that the overload we got is the
+	// same we would get with the legacy version, and that would be a breaking change.
+	if (p_argcount == 0) {
+		const godotsharp::ConstructorTrampoline *trampoline = constructor_trampolines.getptr(p_argcount);
+		if (trampoline) {
+			return GDMonoCache::managed_callbacks.ScriptManagerBridge_CreateManagedForGodotObjectScriptInstanceWithTrampoline(
+					*trampoline, p_owner, p_args, p_argcount);
+		}
+	}
+
+	// Legacy version.
+	return GDMonoCache::managed_callbacks.ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance(
+			this, p_owner, p_args, p_argcount);
+}
+
 bool CSharpInstance::_internal_new_managed() {
 	CSharpLanguage::get_singleton()->release_script_gchandle(gchandle);
 
@@ -1874,8 +1895,7 @@ bool CSharpInstance::_internal_new_managed() {
 	ERR_FAIL_COND_V(script.is_null(), false);
 	ERR_FAIL_COND_V(!script->can_instantiate(), false);
 
-	bool ok = GDMonoCache::managed_callbacks.ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance(
-			script.ptr(), owner, nullptr, 0);
+	const bool ok = script->_unchecked_create_managed_for_godot_object_script_instance(owner, nullptr, 0);
 
 	if (!ok) {
 		// Important to clear this before destroying the script instance here
@@ -2369,10 +2389,15 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 
 // Extract information about the script using the mono class.
 void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
+	p_script->constructor_trampolines.clear();
 	p_script->static_method_trampolines.clear();
 	p_script->method_trampolines.clear();
 	p_script->property_trampolines.clear();
 	p_script->raise_signal_trampolines.clear();
+
+	auto try_add_constructor_tramp = [](CSharpScript *p_scr, int32_t p_argc, godotsharp::ConstructorTrampoline p_trampoline) {
+		p_scr->constructor_trampolines.insert_new(p_argc, p_trampoline);
+	};
 
 	auto try_add_method_tramp = [](CSharpScript *p_scr, const StringName *p_name, int32_t p_argc,
 										godotsharp::MethodTrampoline p_trampoline, bool p_is_static) {
@@ -2418,7 +2443,8 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 
 	GDMonoCache::managed_callbacks.ScriptManagerBridge_UpdateScriptTrampolines(
 			p_script.ptr(), &p_script->should_fallback_to_legacy_trampolines,
-			try_add_method_tramp, try_add_property_tramp, try_add_raise_signal_tramp);
+			try_add_constructor_tramp, try_add_method_tramp,
+			try_add_property_tramp, try_add_raise_signal_tramp);
 
 	TypeInfo type_info;
 
@@ -2566,8 +2592,7 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 
 	/* STEP 2, INITIALIZE AND CONSTRUCT */
 
-	bool ok = GDMonoCache::managed_callbacks.ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance(
-			this, p_owner, p_args, p_argcount);
+	const bool ok = _unchecked_create_managed_for_godot_object_script_instance(p_owner, p_args, p_argcount);
 
 	if (!ok) {
 		// Important to clear this before destroying the script instance here

@@ -45,17 +45,20 @@
 #endif
 
 namespace godotsharp {
+struct ConstructorTrampoline {
+	void *function_pointer = nullptr;
+};
 struct MethodTrampoline {
-	void *function_pointer;
+	void *function_pointer = nullptr;
 };
 struct PropertyGetterTrampoline {
-	void *function_pointer;
+	void *function_pointer = nullptr;
 };
 struct PropertySetterTrampoline {
-	void *function_pointer;
+	void *function_pointer = nullptr;
 };
 struct RaiseSignalTrampoline {
-	void *function_pointer;
+	void *function_pointer = nullptr;
 };
 } //namespace godotsharp
 
@@ -227,6 +230,9 @@ private:
 
 	using SignalKey = MethodKey;
 
+	/// Only includes constructors declared in this exact script, not inherited ones.
+	AHashMap<int32_t /* argc */, godotsharp::ConstructorTrampoline> constructor_trampolines;
+
 	/// Only includes methods declared in this exact script, not inherited ones.
 	AHashMap<MethodKey, godotsharp::MethodTrampoline> static_method_trampolines;
 
@@ -275,6 +281,9 @@ private:
 
 	static bool _callp_static(const CSharpScript *p_script, const StringName &p_method,
 			const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &r_ret);
+
+	bool _unchecked_create_managed_for_godot_object_script_instance(
+			Object *p_owner, const Variant **p_args, int p_argcount);
 
 protected:
 	static void _bind_methods();

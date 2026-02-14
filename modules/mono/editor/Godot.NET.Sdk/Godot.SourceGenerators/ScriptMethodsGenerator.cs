@@ -227,6 +227,52 @@ namespace Godot.SourceGenerators
                 source.Append("        }\n");
             }
 
+            // Generate GetGodotConstructorTrampolines
+            if (!symbol.IsGenericType) // Generic classes cannot be instantiated from Godot.
+            {
+                var constructorMethods = symbol.InstanceConstructors
+                    .WhereHasGodotCompatibleSignature(typeCache)
+                    .Distinct(new MethodOverloadEqualityComparer())
+                    .ToArray();
+
+                if (constructorMethods.Length > 0)
+                {
+                    // Store cached typeof(this) and unsafe accessors in GodotInternal class.
+                    {
+                        source
+                            .Append("        private static readonly global::System.Type CachedType = typeof(")
+                            .Append(symbol.FullQualifiedNameIncludeGlobal())
+                            .Append(");\n");
+
+                        if (constructorMethods.Length > 0)
+                        {
+                            source.Append("        private static partial class Accessors\n        {\n");
+
+                            foreach (var constructorMethod in constructorMethods)
+                                GenerateConstructorUnsafeAccessor(symbol, constructorMethod, source);
+
+                            source.Append("        }\n");
+                        }
+                    }
+
+                    const string CollectorType =
+                        "global::Godot.Bridge.ScriptManagerBridge.ConstructorTrampolineCollector";
+
+                    source.Append("        public new static ")
+                        .Append(isUnsafeAllowed ? "unsafe " : "")
+                        .Append("void GetGodotConstructorTrampolines(")
+                        .Append(CollectorType).Append(" collector)\n        {\n");
+
+                    foreach (var constructorMethod in constructorMethods)
+                    {
+                        GenerateConstructorTrampoline(symbol, constructorMethod, source);
+                        AppendConstructorTrampoline(source, constructorMethod, isUnsafeAllowed);
+                    }
+
+                    source.Append("        }\n");
+                }
+            }
+
             source.Append("    }\n"); // partial class GodotInternal
 
             source.Append("#pragma warning restore CS0109\n");
@@ -527,6 +573,123 @@ namespace Godot.SourceGenerators
             }
 
             source.Append("            }\n");
+        }
+
+        private static void AppendConstructorTrampoline(StringBuilder source,
+            GodotMethodData constructorMethod, bool isUnsafeAllowed)
+        {
+            int parameterCount = constructorMethod.ParamTypes.Length;
+
+            if (!isUnsafeAllowed)
+            {
+                source.Append("            var aux_delegate_").Append(parameterCount)
+                    .Append(" = ")
+                    .Append("trampoline_").Append(parameterCount)
+                    .Append(";\n");
+            }
+
+            source.Append("            collector.TryAdd(").Append(parameterCount).Append(", new(");
+
+            if (isUnsafeAllowed)
+            {
+                source
+                    .Append("&trampoline_").Append(parameterCount);
+            }
+            else
+            {
+                source
+                    .Append("aux_delegate_").Append(parameterCount)
+                    .Append(".Method.MethodHandle.GetFunctionPointer()");
+            }
+
+            source.Append("));\n");
+        }
+
+        private static void GenerateConstructorTrampoline(
+            INamedTypeSymbol classSymbol,
+            GodotMethodData constructorMethod,
+            StringBuilder source
+        )
+        {
+            int parameterCount = constructorMethod.ParamTypes.Length;
+
+            source
+                .Append("            static global::Godot.GodotObject trampoline_").Append(parameterCount)
+                .Append("(global::System.IntPtr godotObjectPtr, NativeVariantPtrArgs args)\n            {\n");
+
+            source.Append("                if (args.Count != ");
+            source.Append(parameterCount);
+            source.Append(") {\n");
+            source.Append("                    throw new global::System.MissingMemberException(")
+                .Append("$\"Invalid argument count for constructor of class '")
+                .Append(classSymbol.FullQualifiedNameOmitGlobal()).Append("'. Expected ").Append(parameterCount)
+                .Append(", but got {args.Count}.\"")
+                .Append(");\n");
+            source.Append("                }\n");
+
+            string classFullName = classSymbol.FullQualifiedNameIncludeGlobal();
+
+            // Create uninitialized object.
+            source.Append("                var godotObject = (").Append(classFullName)
+                .Append(")global::System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(")
+                .Append(classFullName).Append(".GodotInternal.CachedType")
+                .Append(");\n");
+
+            // Set NativePtr.
+            source.Append("                global::Godot.Bridge.ScriptManagerBridge.Accessors")
+                .Append(".UnsafeSetGodotObjectNativePtr(godotObject, godotObjectPtr);\n");
+
+            // Call constructor as method.
+            source.Append("                ").Append(classFullName)
+                .Append(".GodotInternal.Accessors.CtorAsMethod(godotObject");
+
+            if (constructorMethod.ParamTypes.Length > 0)
+            {
+                source.Append(", ");
+
+                for (int i = 0; i < constructorMethod.ParamTypes.Length; i++)
+                {
+                    if (i != 0)
+                        source.Append(", ");
+
+                    source.AppendNativeVariantToManagedExpr(string.Concat("args[", i.ToString(), "]"),
+                        constructorMethod.ParamTypeSymbols[i], constructorMethod.ParamTypes[i]);
+                }
+            }
+
+            source.Append(");\n");
+
+            source.Append("                return godotObject;\n");
+            source.Append("            }\n");
+        }
+
+        private static void GenerateConstructorUnsafeAccessor(
+            INamedTypeSymbol classSymbol,
+            GodotMethodData constructorMethod,
+            StringBuilder source
+        )
+        {
+            source.Append("            [global::System.Runtime.CompilerServices.UnsafeAccessor(")
+                .Append("global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \".ctor\")]\n");
+            source.Append("            public extern static void CtorAsMethod(")
+                .Append(classSymbol.FullQualifiedNameIncludeGlobal()).Append(" godotObject");
+
+            if (constructorMethod.ParamTypes.Length > 0)
+            {
+                source.Append(", ");
+
+                for (int i = 0; i < constructorMethod.ParamTypes.Length; i++)
+                {
+                    if (i != 0)
+                        source.Append(", ");
+
+                    source
+                        .Append(constructorMethod.ParamTypeSymbols[i].FullQualifiedNameIncludeGlobal())
+                        .Append(" p").Append(i + 1);
+                }
+            }
+
+            source.Append(");\n");
         }
     }
 }

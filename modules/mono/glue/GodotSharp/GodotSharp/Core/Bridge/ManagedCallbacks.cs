@@ -18,6 +18,7 @@ namespace Godot.Bridge
         public delegate* unmanaged<void> ScriptManagerBridge_FrameCallback;
         public delegate* unmanaged<godot_string_name*, IntPtr, IntPtr> ScriptManagerBridge_CreateManagedForGodotObjectBinding;
         public delegate* unmanaged<IntPtr, IntPtr, godot_variant**, int, godot_bool> ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance;
+        public delegate* unmanaged<ConstructorTrampolineDelegate, IntPtr, godot_variant**, int, godot_bool> ScriptManagerBridge_CreateManagedForGodotObjectScriptInstanceWithTrampoline;
         public delegate* unmanaged<IntPtr, godot_string_name*, void> ScriptManagerBridge_GetScriptNativeName;
         public delegate* unmanaged<godot_string*, godot_string*, godot_string*, godot_bool*, godot_bool*, godot_string*, void> ScriptManagerBridge_GetGlobalClassName;
         public delegate* unmanaged<IntPtr, IntPtr, void> ScriptManagerBridge_SetGodotObjectPtr;
@@ -29,6 +30,7 @@ namespace Godot.Bridge
         public delegate* unmanaged<IntPtr, void> ScriptManagerBridge_RemoveScriptBridge;
         public delegate* unmanaged<IntPtr, godot_bool> ScriptManagerBridge_TryReloadRegisteredScriptWithClass;
         public delegate* unmanaged<IntPtr, godot_bool*,
+            delegate* unmanaged<IntPtr, int, void*, void>,
             delegate* unmanaged<IntPtr, godot_string_name*, int, void*, godot_bool, void>,
             delegate* unmanaged<IntPtr, godot_string_name*, void*, void*, void>,
             delegate* unmanaged<IntPtr, godot_string_name*, int, void*, void>,
@@ -72,6 +74,7 @@ namespace Godot.Bridge
                 ScriptManagerBridge_FrameCallback = &ScriptManagerBridge.FrameCallback,
                 ScriptManagerBridge_CreateManagedForGodotObjectBinding = &ScriptManagerBridge.CreateManagedForGodotObjectBinding,
                 ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance = &ScriptManagerBridge.CreateManagedForGodotObjectScriptInstance,
+                ScriptManagerBridge_CreateManagedForGodotObjectScriptInstanceWithTrampoline = &ScriptManagerBridge.CreateManagedForGodotObjectScriptInstanceWithTrampoline,
                 ScriptManagerBridge_GetScriptNativeName = &ScriptManagerBridge.GetScriptNativeName,
                 ScriptManagerBridge_GetGlobalClassName = &ScriptManagerBridge.GetGlobalClassName,
                 ScriptManagerBridge_SetGodotObjectPtr = &ScriptManagerBridge.SetGodotObjectPtr,
