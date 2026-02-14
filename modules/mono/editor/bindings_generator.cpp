@@ -2598,9 +2598,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		output.append(INDENT1);
 		output.append("}\n");
 
-		// TODO: Only generate HasGodotClassMethod and InvokeGodotClassMethod if there's any method
-
-		// Generate InvokeGodotClassMethod
+		// Generate TryGetGodotClassMethod
 
 		output << MEMBER_BEGIN "/// <summary>\n"
 			   << INDENT1 "/// Invokes the method with the given name, using the given arguments.\n"
@@ -2627,6 +2625,35 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		output.append("    }\n\n");
 
 		output << "#pragma warning restore CS0618\n";
+
+		// TODO: Only generate HasGodotClassMethod and InvokeGodotClassMethod if there's any method
+
+		// Generate InvokeGodotClassMethod
+
+		output << MEMBER_BEGIN "/// <summary>\n"
+			   << INDENT1 "/// Invokes the method with the given name, using the given arguments.\n"
+			   << INDENT1 "/// This method is used by Godot to invoke methods from the engine side.\n"
+			   << INDENT1 "/// Do not call or override this method.\n"
+			   << INDENT1 "/// </summary>\n"
+			   << INDENT1 "/// <param name=\"method\">Name of the method to invoke.</param>\n"
+			   << INDENT1 "/// <param name=\"args\">Arguments to use with the invoked method.</param>\n"
+			   << INDENT1 "/// <param name=\"ret\">Value returned by the invoked method.</param>\n";
+
+		// Avoid raising diagnostics because of calls to obsolete methods.
+		output << "#pragma warning disable CS0618 // Member is obsolete\n";
+
+		output << INDENT1 "protected internal " << (is_derived_type ? "override" : "virtual")
+			   << " bool " CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(in godot_string_name method, "
+			   << "NativeVariantPtrArgs args, out godot_variant ret)\n"
+			   << INDENT1 << "{\n"
+			   << INDENT1 << "    if (MethodRegistry.TryGetMethod(in method, args.Count, out var scriptMethod))\n"
+			   << INDENT1 << "    {\n"
+			   << INDENT1 << "        ret = scriptMethod(this, args);\n"
+			   << INDENT1 << "        return true;\n"
+			   << INDENT1 << "    }\n\n"
+			   << INDENT1 << "    ret = new godot_variant();\n"
+			   << INDENT1 << "    return false;\n"
+			   << INDENT1 << "}\n\n";
 
 		// Generate HasGodotClassMethod
 

@@ -142,8 +142,8 @@ namespace Godot.SourceGenerators
                 .Append("    /// Cached StringNames for the methods contained in this class, for fast lookup.\n")
                 .Append("    /// </summary>\n");
 
-            source.Append(
-                $"    public new class MethodName : {symbol.BaseType!.FullQualifiedNameIncludeGlobal()}.MethodName {{\n");
+            source.Append($"    public new class MethodName : {symbol.BaseType!.FullQualifiedNameIncludeGlobal()}.MethodName\n");
+            source.Append("    {\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
@@ -230,13 +230,27 @@ namespace Godot.SourceGenerators
                 {
                     GenerateScriptMethodDispatchHelperMethod(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), method, source);
                 }
-                source.Append("    }");
+                source.Append("    }\n\n");
 
                 source.Append("    /// <inheritdoc/>\n");
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
                 source.Append($"    public override ref readonly ScriptMethod<GodotObject> TryGetGodotClassMethod(in godot_string_name method, int argc)\n");
                 source.Append("    {\n");
                 source.Append("        return ref MethodRegistry.TryGetMethodFast(in method, argc);\n");
+                source.Append("    }\n\n");
+
+                // InvokeGodotClassMethod
+                source.Append("    /// <inheritdoc/>\n");
+                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+                source.Append("    protected override bool InvokeGodotClassMethod(in godot_string_name method, ");
+                source.Append("NativeVariantPtrArgs args, out godot_variant ret)\n    {\n");
+                source.Append("        if (MethodRegistry.TryGetMethod(in method, args.Count, out var scriptMethod))\n");
+                source.Append("        {\n");
+                source.Append("            ret = scriptMethod(this, args);\n");
+                source.Append("            return true;\n");
+                source.Append("        }\n\n");
+                source.Append("        ret = new godot_variant();\n");
+                source.Append("        return false;\n");
                 source.Append("    }\n\n");
             }
 
@@ -320,7 +334,7 @@ namespace Godot.SourceGenerators
                     source.Append(", ");
                 }
 
-                source.Append(" }");
+                source.Append("}");
             }
             else
             {
@@ -498,7 +512,7 @@ namespace Godot.SourceGenerators
             source.Append(
                 $$"""
                         public static ScriptMethod<GodotObject> CreateScriptMethod_{{methodName}}{{method.ParamTypeSymbols.Length}}()
-                        {   
+                        {
                             static godot_variant Impl(GodotObject scriptInstance, scoped in NativeVariantPtrArgs args)
                             {
 
