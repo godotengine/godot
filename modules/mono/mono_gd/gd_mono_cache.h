@@ -68,6 +68,7 @@ struct godotsharp_property_def_val_pair {
 };
 
 struct ManagedCallbacks {
+	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddConstructor = void(GD_CLR_STDCALL *)(CSharpScript *p_script, int32_t p_argc, godotsharp::ConstructorTrampoline p_trampoline);
 	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddMethod = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const StringName *p_name, int32_t p_argc, godotsharp::MethodTrampoline p_trampoline, bool p_is_static);
 	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddProperty = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const StringName *p_name,
 			godotsharp::PropertyGetterTrampoline p_getter_trampoline, godotsharp::PropertySetterTrampoline p_setter_trampoline);
@@ -85,6 +86,7 @@ struct ManagedCallbacks {
 	using FuncScriptManagerBridge_FrameCallback = void(GD_CLR_STDCALL *)();
 	using FuncScriptManagerBridge_CreateManagedForGodotObjectBinding = GCHandleIntPtr(GD_CLR_STDCALL *)(const StringName *, Object *);
 	using FuncScriptManagerBridge_CreateManagedForGodotObjectScriptInstance = bool(GD_CLR_STDCALL *)(const CSharpScript *, Object *, const Variant **, int32_t);
+	using FuncScriptManagerBridge_CreateManagedForGodotObjectScriptInstanceWithTrampoline = bool(GD_CLR_STDCALL *)(godotsharp::ConstructorTrampoline, Object *, const Variant **, int32_t);
 	using FuncScriptManagerBridge_GetScriptNativeName = void(GD_CLR_STDCALL *)(const CSharpScript *, StringName *);
 	using FuncScriptManagerBridge_GetGlobalClassName = void(GD_CLR_STDCALL *)(const String *, String *, String *, bool *, bool *, String *);
 	using FuncScriptManagerBridge_SetGodotObjectPtr = void(GD_CLR_STDCALL *)(GCHandleIntPtr, Object *);
@@ -96,6 +98,7 @@ struct ManagedCallbacks {
 	using FuncScriptManagerBridge_RemoveScriptBridge = void(GD_CLR_STDCALL *)(const CSharpScript *);
 	using FuncScriptManagerBridge_TryReloadRegisteredScriptWithClass = bool(GD_CLR_STDCALL *)(const CSharpScript *);
 	using FuncScriptManagerBridge_UpdateScriptTrampolines = void(GD_CLR_STDCALL *)(const CSharpScript *, bool *,
+			Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddConstructor,
 			Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddMethod,
 			Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddProperty,
 			Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddRaiseSignal);
@@ -132,6 +135,7 @@ struct ManagedCallbacks {
 	FuncScriptManagerBridge_FrameCallback ScriptManagerBridge_FrameCallback;
 	FuncScriptManagerBridge_CreateManagedForGodotObjectBinding ScriptManagerBridge_CreateManagedForGodotObjectBinding;
 	FuncScriptManagerBridge_CreateManagedForGodotObjectScriptInstance ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance;
+	FuncScriptManagerBridge_CreateManagedForGodotObjectScriptInstanceWithTrampoline ScriptManagerBridge_CreateManagedForGodotObjectScriptInstanceWithTrampoline;
 	FuncScriptManagerBridge_GetScriptNativeName ScriptManagerBridge_GetScriptNativeName;
 	FuncScriptManagerBridge_GetGlobalClassName ScriptManagerBridge_GetGlobalClassName;
 	FuncScriptManagerBridge_SetGodotObjectPtr ScriptManagerBridge_SetGodotObjectPtr;

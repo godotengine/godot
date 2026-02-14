@@ -113,8 +113,6 @@ namespace Godot.Bridge
             IntPtr godotObject,
             godot_variant** args, int argCount)
         {
-            // TODO: Optimize with source generators and delegate pointers.
-
             try
             {
                 // Performance is not critical here as this will be replaced with source generators.
@@ -125,21 +123,16 @@ namespace Godot.Bridge
 
                 var ctor = scriptType
                     .GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                    .Where(c => c.GetParameters().Length == argCount)
-                    .FirstOrDefault();
+                    .FirstOrDefault(c => c.GetParameters().Length == argCount);
 
                 if (ctor == null)
                 {
                     if (argCount == 0)
-                    {
                         throw new MissingMemberException(
                             $"Cannot create script instance. The class '{scriptType.FullName}' does not define a parameterless constructor.");
-                    }
-                    else
-                    {
-                        throw new MissingMemberException(
-                            $"The class '{scriptType.FullName}' does not define a constructor that takes {argCount} parameters.");
-                    }
+
+                    throw new MissingMemberException(
+                        $"The class '{scriptType.FullName}' does not define a constructor that takes {argCount} parameters.");
                 }
 
                 var obj = (GodotObject)RuntimeHelpers.GetUninitializedObject(scriptType);
@@ -159,7 +152,23 @@ namespace Godot.Bridge
 
                 _ = ctor.Invoke(obj, invokeParams);
 
+                return godot_bool.True;
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                return godot_bool.False;
+            }
+        }
 
+        [UnmanagedCallersOnly]
+        internal static unsafe godot_bool CreateManagedForGodotObjectScriptInstanceWithTrampoline(
+            ConstructorTrampolineDelegate constructorTrampoline, IntPtr godotObjectPtr,
+            godot_variant** args, int argCount)
+        {
+            try
+            {
+                _ = constructorTrampoline(godotObjectPtr, new NativeVariantPtrArgs(args, argCount));
                 return godot_bool.True;
             }
             catch (Exception e)
@@ -793,6 +802,7 @@ namespace Godot.Bridge
         [UnmanagedCallersOnly]
         internal static unsafe void UpdateScriptTrampolines(
             IntPtr scriptPtr, godot_bool* outShouldFallbackToLegacyTrampolines,
+            TryAddConstructorTrampolineDelegate tryAddConstructorTrampoline,
             TryAddMethodTrampolineDelegate tryAddMethodTrampoline,
             TryAddPropertyTrampolineDelegate tryAddPropertyTrampoline,
             TryAddRaiseSignalTrampolineDelegate tryAddRaiseSignalTrampoline)
@@ -810,18 +820,22 @@ namespace Godot.Bridge
                     _cachedTrampolineCollectorPool = new(
                         TwoArgumentArray: new object[2],
                         Collectors: new(
+                            new(scriptPtr, tryAddConstructorTrampoline),
                             new(scriptPtr, tryAddMethodTrampoline),
                             new(scriptPtr, tryAddPropertyTrampoline),
                             new(scriptPtr, tryAddRaiseSignalTrampoline)),
-                        CollectionOptions: new(IncludeAncestors: true));
+                        CollectionOptions: new(IncludeAncestors: true) { CollectConstructors = true });
 
                     collectorPool = _cachedTrampolineCollectorPool.Value;
                 }
                 else
                 {
                     collectorPool = _cachedTrampolineCollectorPool.Value;
-                    collectorPool.Collectors.UpdateCollectors(scriptPtr, tryAddMethodTrampoline,
+                    collectorPool.Collectors.UpdateCollectors(scriptPtr,
+                        tryAddConstructorTrampoline, tryAddMethodTrampoline,
                         tryAddPropertyTrampoline, tryAddRaiseSignalTrampoline);
+                    // GetGodotClassTrampolines changes this before calling the ancestor, so set it again.
+                    collectorPool.CollectionOptions.CollectConstructors = true;
                 }
 
                 GetGodotClassTrampolinesForType(scriptType, collectorPool);
@@ -855,6 +869,8 @@ namespace Godot.Bridge
             }
             catch (Exception e)
             {
+                *outShouldFallbackToLegacyTrampolines = godot_bool.True;
+
                 ExceptionUtils.LogException(e);
             }
         }
@@ -1454,6 +1470,17 @@ namespace Godot.Bridge
                 ExceptionUtils.LogException(e);
                 *outNewGCHandlePtr = IntPtr.Zero;
                 return godot_bool.False;
+            }
+        }
+
+        public static class Accessors
+        {
+            public static void UnsafeSetGodotObjectNativePtr(GodotObject godotObject, IntPtr nativePtr)
+            {
+                if (godotObject.NativePtr != IntPtr.Zero)
+                    throw new InvalidOperationException(
+                        "The Godot Object was already initialized with a native pointer.");
+                godotObject.NativePtr = nativePtr;
             }
         }
     }

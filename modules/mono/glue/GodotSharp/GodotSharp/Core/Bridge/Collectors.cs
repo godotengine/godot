@@ -6,6 +6,40 @@ namespace Godot.Bridge;
 using PropertyTrampolines = (PropertyGetterTrampoline getterTramp, PropertySetterTrampoline setterTramp);
 
 /// <summary>
+/// This is used to collect the constructor trampolines for a script.
+/// </summary>
+/// <remarks>
+/// The user script can implement a static method "GetGodotClassTrampolines"
+/// that receives an instance of <see cref="TrampolineCollectors"/> which
+/// contains an instance of this class. The user script can then call the
+/// <see cref="TryAdd"/> method of this class to add constructors to the script.<br/>
+/// </remarks>
+public class ConstructorTrampolineCollector
+{
+    private IntPtr _scriptPtr;
+    private unsafe TryAddConstructorTrampolineDelegate _tryAddDelegate;
+
+    internal unsafe ConstructorTrampolineCollector(IntPtr scriptPtr,
+        TryAddConstructorTrampolineDelegate tryAddDelegate)
+    {
+        _scriptPtr = scriptPtr;
+        _tryAddDelegate = tryAddDelegate;
+    }
+
+    internal unsafe void Update(IntPtr scriptPtr, TryAddConstructorTrampolineDelegate tryAddDelegate)
+    {
+        _scriptPtr = scriptPtr;
+        _tryAddDelegate = tryAddDelegate;
+    }
+
+    /// <summary>
+    /// Adds a method trampoline to the script if a trampoline for the given method key doesn't already exist.
+    /// </summary>
+    public unsafe void TryAdd(int argumentCount, ConstructorTrampoline trampoline)
+        => _tryAddDelegate(_scriptPtr, argumentCount, trampoline.TrampolineDelegate);
+}
+
+/// <summary>
 /// This is used to collect the method trampolines for a script.
 /// </summary>
 /// <remarks>
@@ -146,15 +180,18 @@ public class RaiseSignalTrampolineCollector
 /// and method name to proxy name mappings for a script.
 /// </summary>
 public record TrampolineCollectors(
+    ConstructorTrampolineCollector ConstructorTrampolineCollector,
     MethodTrampolineCollector MethodTrampolineCollector,
     PropertyTrampolineCollector PropertyTrampolineCollector,
     RaiseSignalTrampolineCollector RaiseSignalTrampolineCollector)
 {
     internal unsafe void UpdateCollectors(IntPtr scriptPtr,
+        TryAddConstructorTrampolineDelegate tryAddConstructorTrampoline,
         TryAddMethodTrampolineDelegate tryAddMethodTrampoline,
         TryAddPropertyTrampolineDelegate tryAddPropertyTrampoline,
         TryAddRaiseSignalTrampolineDelegate tryAddRaiseSignalTrampoline)
     {
+        ConstructorTrampolineCollector.Update(scriptPtr, tryAddConstructorTrampoline);
         MethodTrampolineCollector.Update(scriptPtr, tryAddMethodTrampoline);
         PropertyTrampolineCollector.Update(scriptPtr, tryAddPropertyTrampoline);
         RaiseSignalTrampolineCollector.Update(scriptPtr, tryAddRaiseSignalTrampoline);
@@ -169,4 +206,14 @@ public record TrampolineCollectors(
 /// If true, the trampoline collection method of each ancestor class must be called
 /// after the trampoline collection method of the current class.
 /// </param>
-public record TrampolineCollectionOptions(bool IncludeAncestors);
+public record TrampolineCollectionOptions(bool IncludeAncestors)
+{
+    /// <summary>
+    /// Whether constructors should also be collected.
+    /// </summary>
+    /// <remarks>
+    /// Implementations of GetGodotClassTrampolines must set this to <see langword="false"/>
+    /// before calling GetGodotClassTrampolines on its ancestor.
+    /// </remarks>
+    public bool CollectConstructors { get; set; }
+}

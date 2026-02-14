@@ -5,6 +5,24 @@ namespace Godot.Bridge;
 #nullable enable
 
 /// <summary>
+/// Struct representing a constructor trampoline, containing a delegate to the trampoline function.
+/// The trampoline is a <c>delegate* managed</c> with a signature equivalent to the following C# delegate:
+/// <code>
+/// delegate GodotObject ConstructorTrampoline(System.IntPtr godotObjectPtr, NativeVariantPtrArgs args);
+/// </code>
+/// </summary>
+public readonly struct ConstructorTrampoline
+{
+    public unsafe ConstructorTrampoline(ConstructorTrampolineDelegate trampolineDelegate)
+        => TrampolineDelegate = trampolineDelegate;
+
+    public unsafe ConstructorTrampoline(IntPtr trampolineDelegate)
+        => TrampolineDelegate = (ConstructorTrampolineDelegate)trampolineDelegate;
+
+    public unsafe ConstructorTrampolineDelegate TrampolineDelegate { get; }
+}
+
+/// <summary>
 /// Struct representing a method trampoline, containing a delegate to the trampoline function.
 /// The trampoline is a <c>delegate* managed</c> with a signature equivalent to the following C# delegate:
 /// <code>
