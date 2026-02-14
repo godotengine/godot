@@ -1057,6 +1057,7 @@ bool ProjectSettings::is_builtin_setting(const String &p_name) const {
 void ProjectSettings::clear(const String &p_name) {
 	ERR_FAIL_COND_MSG(!props.has(p_name), vformat("Request for nonexistent project setting: '%s'.", p_name));
 	props.erase(p_name);
+	_queue_changed(p_name);
 }
 
 Error ProjectSettings::save() {
