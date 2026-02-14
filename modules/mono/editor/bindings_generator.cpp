@@ -2165,6 +2165,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	output.append("using System.Diagnostics;\n"); // DebuggerBrowsable
 	output.append("using Godot.NativeInterop;\n");
 	output.append("using Godot.Bridge;\n");
+	output.append("using System.Runtime.CompilerServices;\n");
 
 	output.append("\n#nullable disable\n");
 
@@ -2461,7 +2462,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 
 		// Add ScriptMethodRegistry
-		output.append(MEMBER_BEGIN "public new static readonly ScriptMethodRegistry<");
+		output.append(MEMBER_BEGIN "protected new static readonly ScriptMethodRegistry<");
 		output.append(itype.proxy_name);
 		output.append("> MethodRegistry = new ScriptMethodRegistry<");
 		output.append(itype.proxy_name);
@@ -2486,6 +2487,30 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			}
 		}
 
+		output.append("\n");
+
+		List<String> alreadyUsed;
+
+		for (const MethodInterface &imethod : itype.methods) {
+			const String methodName = imethod.proxy_name + itos(imethod.arguments.size());
+			if (imethod.is_static ||
+					imethod.is_virtual ||
+					itype.is_singleton ||
+					itype.is_singleton_instance ||
+					alreadyUsed.find(methodName)) {
+				continue;
+			}
+
+			alreadyUsed.push_back(methodName);
+
+			output << INDENT2 ".Register("
+				   << "global::Godot." << itype.proxy_name + ".MethodName." + imethod.proxy_name
+				   << ", "
+				   << itos(imethod.arguments.size())
+				   << ", "
+				   << "ScriptMethodDispatchHelper.CreateScriptMethod_" << imethod.proxy_name << itos(imethod.arguments.size()) << "())\n";
+		}
+
 		for (const MethodInterface &imethod : itype.methods) {
 			if (!imethod.is_virtual) {
 				continue;
@@ -2493,10 +2518,84 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			output.append("\n");
 			output.append(INDENT2 ".AddAlias(");
 			output << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name << ", " << itos(imethod.arguments.size()) << ", MethodName." << imethod.proxy_name;
-			output << ")";
+			output << ")\n";
 		}
-		output.append("\n");
 		output.append(INDENT2 ".Compile();\n");
+
+		alreadyUsed.clear();
+
+		output << INDENT1 << "\n";
+		output << INDENT1 << "private sealed class ScriptMethodDispatchHelper\n";
+		output << INDENT1 << "{\n";
+		for (const MethodInterface &imethod : itype.methods) {
+			const String methodName = imethod.proxy_name + itos(imethod.arguments.size());
+			if (imethod.is_static ||
+					imethod.is_virtual ||
+					itype.is_singleton ||
+					itype.is_singleton_instance ||
+					alreadyUsed.find(methodName)) {
+				continue;
+			}
+
+			alreadyUsed.push_back(methodName);
+
+			output << INDENT2 "public static ScriptMethod<GodotObject> CreateScriptMethod_" << imethod.proxy_name << itos(imethod.arguments.size()) << "()\n"
+				   << INDENT2 << "{\n"
+				   << INDENT3 << "static godot_variant Impl(GodotObject scriptInstance, scoped in NativeVariantPtrArgs args)\n"
+				   << INDENT3 << "{\n";
+
+			output << INDENT4;
+
+			if (imethod.return_type.cname != name_cache.type_void) {
+				output << "var callRet = ";
+			}
+
+			output << "Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance)."
+				   << imethod.proxy_name
+				   << "(";
+
+			int idx = 0;
+			for (const ArgumentInterface &iarg : imethod.arguments) {
+				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+				ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
+
+				if (idx != 0) {
+					output << ", ";
+				}
+
+				if (arg_type->cname == name_cache.type_Array_generic || arg_type->cname == name_cache.type_Dictionary_generic) {
+					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+					String toManaged = sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_cs_type, arg_type->name)
+											   .replacen("params ", "");
+					output << "new " << arg_cs_type << "(" << toManaged << ")";
+				} else {
+					output << sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name)
+									  .replacen("params ", "");
+				}
+
+				idx++;
+			}
+
+			output.append(");\n");
+
+			if (imethod.return_type.cname != name_cache.type_void) {
+				const TypeInterface *return_interface = _get_type_or_null(imethod.return_type);
+				String toManaged = sformat(return_interface->cs_managed_to_variant, "callRet", return_interface->cs_type, return_interface->name)
+										   .replacen("params ", "");
+				output << INDENT4 << "var ret = " + toManaged;
+				output << ";\n";
+			} else {
+				output << INDENT4 << "godot_variant ret = default;\n";
+			}
+
+			output << INDENT4 << "return ret;\n";
+
+			output << INDENT3 << "}\n"
+				   << INDENT3 << "return Impl;\n"
+				   << INDENT2 << "}\n";
+		}
+		output.append(INDENT1);
+		output.append("}\n");
 
 		// TODO: Only generate HasGodotClassMethod and InvokeGodotClassMethod if there's any method
 
@@ -2514,16 +2613,17 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		// Avoid raising diagnostics because of calls to obsolete methods.
 		output << "#pragma warning disable CS0618 // Member is obsolete\n";
 
-		// TODO: should we generate the "real" body for C++ generatred C# classes as well? We only need to if any of them actually implement any functionality in C#, which I doubt
-		output << INDENT1 "protected internal " << (is_derived_type ? "override" : "virtual")
-			   << " bool " CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(in godot_string_name method, "
-			   << "NativeVariantPtrArgs args, out godot_variant ret)\n"
-			   << INDENT1 "{\n";
-
-		output << INDENT2 "ret = new godot_variant();\n"
-			   << INDENT2 "return false;\n";
-
-		output << INDENT1 "}\n";
+		output.append("    /// <inheritdoc/>\n");
+		output.append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+		output.append("    public ");
+		output.append(is_derived_type ? "override" : "virtual");
+		output.append(" ref readonly ScriptMethod<");
+		//output.append(itype.proxy_name);
+		output.append("GodotObject");
+		output.append("> TryGetGodotClassMethod(in godot_string_name method, int argc)\n");
+		output.append("    {\n");
+		output.append("        return ref MethodRegistry.TryGetMethodFast(in method, argc);\n");
+		output.append("    }\n\n");
 
 		output << "#pragma warning restore CS0618\n";
 

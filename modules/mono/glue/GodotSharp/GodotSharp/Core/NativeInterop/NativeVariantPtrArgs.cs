@@ -7,8 +7,8 @@ namespace Godot.NativeInterop
 
     public unsafe ref struct NativeVariantPtrArgs
     {
-        private godot_variant** _args;
-        private int _argc;
+        private readonly godot_variant** _args;
+        private readonly int _argc;
 
         internal NativeVariantPtrArgs(godot_variant** args, int argc)
         {

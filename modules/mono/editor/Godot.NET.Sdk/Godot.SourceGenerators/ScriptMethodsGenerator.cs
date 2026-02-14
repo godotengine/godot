@@ -91,6 +91,7 @@ namespace Godot.SourceGenerators
             source.Append("using Godot;\n");
             source.Append("using Godot.NativeInterop;\n");
             source.Append("using Godot.Bridge;\n");
+            source.Append("using System.Runtime.CompilerServices;\n");
             source.Append("\n");
 
             if (hasNamespace)
@@ -210,29 +211,32 @@ namespace Godot.SourceGenerators
             var godotClassNonStaticMethods = godotClassMethods.Where(m => !m.Method.IsStatic).ToArray();
             if (godotClassNonStaticMethods.Length > 0)
             {
-                source.Append("    public new static readonly ScriptMethodRegistry<").Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat))
+                source.Append("    protected new static readonly ScriptMethodRegistry<").Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat))
                     .Append("> MethodRegistry = ")
                     .Append("new ScriptMethodRegistry<").Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)).Append(">()");
-                source.Append("\n        .Register(").Append(symbol.BaseType.FullQualifiedNameIncludeGlobal()).Append(".MethodRegistry)");
+                source.Append("\n        .Register(").Append(symbol.BaseType.FullQualifiedNameIncludeGlobal()).Append(".MethodRegistry)\n");
 
                 foreach (var method in godotClassNonStaticMethods)
                 {
                     GenerateScriptMethodRegistryEntry(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), method, source);
                 }
 
-                source.Append("\n        .Compile();\n\n");
+                source.Append("        .Compile();\n\n");
+
+                source.Append("    private sealed class ScriptMethodDispatchHelper\n");
+                //source.Append($"        where T : {symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}\n");
+                source.Append("    {\n");
+                foreach (var method in godotClassNonStaticMethods)
+                {
+                    GenerateScriptMethodDispatchHelperMethod(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), method, source);
+                }
+                source.Append("    }");
 
                 source.Append("    /// <inheritdoc/>\n");
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append("    protected override bool InvokeGodotClassMethod(in godot_string_name method, ");
-                source.Append("NativeVariantPtrArgs args, out godot_variant ret)\n    {\n");
-                source.Append("        if (MethodRegistry.TryGetMethod(in method, args.Count, out var scriptMethod))\n");
-                source.Append("        {\n");
-                source.Append("            scriptMethod(this, args, out ret);\n");
-                source.Append("            return true;\n");
-                source.Append("        }\n\n");
-                source.Append("        ret = new godot_variant();\n");
-                source.Append("        return false;\n");
+                source.Append($"    public override ref readonly ScriptMethod<GodotObject> TryGetGodotClassMethod(in godot_string_name method, int argc)\n");
+                source.Append("    {\n");
+                source.Append("        return ref MethodRegistry.TryGetMethodFast(in method, argc);\n");
                 source.Append("    }\n\n");
             }
 
@@ -475,20 +479,37 @@ namespace Godot.SourceGenerators
         {
             string methodName = method.Method.Name;
 
-            source.Append("\n        .Register(MethodName.")
+            source.Append("        .Register(MethodName.")
                 .Append(methodName)
                 .Append(", ")
                 .Append(method.ParamTypes.Length)
                 .Append(", ")
-                .Append($"({type} scriptInstance, NativeVariantPtrArgs args, out godot_variant ret) => \n")
-                .Append("        {\n");
+                .Append($"ScriptMethodDispatchHelper.CreateScriptMethod_{methodName}{method.ParamTypeSymbols.Length}())\n");
+        }
+
+        private static void GenerateScriptMethodDispatchHelperMethod(
+            string type,
+            GodotMethodData method,
+            StringBuilder source
+        )
+        {
+            string methodName = method.Method.Name;
+
+            source.Append(
+                $$"""
+                        public static ScriptMethod<GodotObject> CreateScriptMethod_{{methodName}}{{method.ParamTypeSymbols.Length}}()
+                        {   
+                            static godot_variant Impl(GodotObject scriptInstance, scoped in NativeVariantPtrArgs args)
+                            {
+
+                """);
 
             if (method.RetType != null)
-                source.Append("            var callRet = ");
+                source.Append("                var callRet = ");
             else
-                source.Append("            ");
+                source.Append("                ");
 
-            source.Append("scriptInstance.").Append(methodName);
+            source.Append($"Unsafe.As<GodotObject, {type}>(ref scriptInstance).").Append(methodName);
             source.Append("(");
 
             for (int i = 0; i < method.ParamTypes.Length; i++)
@@ -504,7 +525,7 @@ namespace Godot.SourceGenerators
 
             if (method.RetType != null)
             {
-                source.Append("            ret = ");
+                source.Append("                var ret = ");
 
                 source.AppendManagedToNativeVariantExpr("callRet",
                     method.RetType.Value.TypeSymbol, method.RetType.Value.MarshalType);
@@ -512,11 +533,21 @@ namespace Godot.SourceGenerators
             }
             else
             {
-                source.Append("            ret = default;\n");
+                source.Append("                godot_variant ret = default;\n");
             }
 
-            source.Append("        })");
+            source.Append("                return ret;\n");
 
+            source.Append(
+                $$"""
+                            }
+                
+                            // Wrap static method into ScriptMethodPtr
+                            //return ScriptMethodPtr.Create<{{type}}>(&Impl);
+                            return Impl;
+                        }
+
+                """);
         }
     }
 }
