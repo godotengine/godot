@@ -2293,9 +2293,9 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 				material->data = material_data_request_func[new_mode](shader->data);
 				material->data->self = material->self;
 				material->data->set_next_pass(material->next_pass);
-				material->data->set_render_priority(material->priority);
-				material->data->set_depth_bias_constant_factor(material->depth_bias_constant_factor);
 				material->data->set_depth_bias_slope_factor(material->depth_bias_slope_factor);
+				material->data->set_depth_bias_constant_factor(material->depth_bias_constant_factor);
+				material->data->set_render_priority(material->priority);
 			}
 			material->shader_mode = new_mode;
 		}
@@ -2493,9 +2493,9 @@ void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
 	material->data = material_data_request_func[shader->mode](shader->data);
 	material->data->self = p_material;
 	material->data->set_next_pass(material->next_pass);
-	material->data->set_render_priority(material->priority);
-	material->data->set_depth_bias_constant_factor(material->depth_bias_constant_factor);
 	material->data->set_depth_bias_slope_factor(material->depth_bias_slope_factor);
+	material->data->set_depth_bias_constant_factor(material->depth_bias_constant_factor);
+	material->data->set_render_priority(material->priority);
 	//updating happens later
 	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 	_material_queue_update(material, true, true);
@@ -2546,15 +2546,12 @@ void MaterialStorage::material_set_next_pass(RID p_material, RID p_next_material
 	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 }
 
-void MaterialStorage::material_set_render_priority(RID p_material, int priority) {
-	ERR_FAIL_COND(priority < RS::MATERIAL_RENDER_PRIORITY_MIN);
-	ERR_FAIL_COND(priority > RS::MATERIAL_RENDER_PRIORITY_MAX);
-
+void MaterialStorage::material_set_depth_bias_slope_factor(RID p_material, float p_slope_factor) {
 	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_NULL(material);
-	material->priority = priority;
+	material->depth_bias_slope_factor = p_slope_factor;
 	if (material->data) {
-		material->data->set_render_priority(priority);
+		material->data->set_depth_bias_slope_factor(p_slope_factor);
 	}
 	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 }
@@ -2569,12 +2566,15 @@ void MaterialStorage::material_set_depth_bias_constant_factor(RID p_material, fl
 	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 }
 
-void MaterialStorage::material_set_depth_bias_slope_factor(RID p_material, float p_slope_factor) {
+void MaterialStorage::material_set_render_priority(RID p_material, int priority) {
+	ERR_FAIL_COND(priority < RS::MATERIAL_RENDER_PRIORITY_MIN);
+	ERR_FAIL_COND(priority > RS::MATERIAL_RENDER_PRIORITY_MAX);
+
 	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_NULL(material);
-	material->depth_bias_slope_factor = p_slope_factor;
+	material->priority = priority;
 	if (material->data) {
-		material->data->set_depth_bias_slope_factor(p_slope_factor);
+		material->data->set_render_priority(priority);
 	}
 	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 }

@@ -279,7 +279,7 @@ public:
 	};
 
 	virtual RID material_create() = 0;
-	virtual RID material_create_from_shader(RID p_next_pass, int p_render_priority, RID p_shader) = 0;
+	virtual RID material_create_from_shader(RID p_next_pass, float p_depth_bias_constant_factor, float p_depth_bias_slope_factor, int p_render_priority, RID p_shader) = 0;
 
 	virtual void material_set_shader(RID p_shader_material, RID p_shader) = 0;
 

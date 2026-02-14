@@ -42,10 +42,9 @@ class Material : public Resource {
 
 	mutable RID material;
 	Ref<Material> next_pass;
-	int render_priority;
-
-	float depth_bias_constant_factor;
 	float depth_bias_slope_factor;
+	float depth_bias_constant_factor;
+	int render_priority;
 
 	enum {
 		INIT_STATE_UNINITIALIZED,
@@ -60,6 +59,7 @@ protected:
 	_FORCE_INLINE_ RID _get_material() const { return material; }
 	static void _bind_methods();
 	virtual bool _can_do_next_pass() const;
+	virtual bool _can_use_depth_bias() const;
 	virtual bool _can_use_render_priority() const;
 
 	void _validate_property(PropertyInfo &p_property) const;
@@ -70,6 +70,7 @@ protected:
 	GDVIRTUAL0RC_REQUIRED(RID, _get_shader_rid)
 	GDVIRTUAL0RC_REQUIRED(Shader::Mode, _get_shader_mode)
 	GDVIRTUAL0RC(bool, _can_do_next_pass)
+	GDVIRTUAL0RC(bool, _can_use_depth_bias)
 	GDVIRTUAL0RC(bool, _can_use_render_priority)
 public:
 	enum {
@@ -123,6 +124,7 @@ protected:
 #endif
 
 	virtual bool _can_do_next_pass() const override;
+	virtual bool _can_use_depth_bias() const override;
 	virtual bool _can_use_render_priority() const override;
 
 	void _shader_changed();
@@ -648,6 +650,7 @@ protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
 	virtual bool _can_do_next_pass() const override { return true; }
+	virtual bool _can_use_depth_bias() const override { return true; }
 	virtual bool _can_use_render_priority() const override { return true; }
 
 public:

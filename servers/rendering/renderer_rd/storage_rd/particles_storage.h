@@ -381,6 +381,8 @@ private:
 		RID uniform_set;
 
 		virtual void set_render_priority(int p_priority) {}
+		virtual void set_depth_bias_constant_factor(float p_constant_factor) {}
+		virtual void set_depth_bias_slope_factor(float p_slope_factor) {}
 		virtual void set_next_pass(RID p_pass) {}
 		virtual bool update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 		virtual ~ParticleProcessMaterialData();

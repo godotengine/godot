@@ -2558,6 +2558,9 @@ void MaterialStorage::material_set_depth_bias_slope_factor(RID p_material, float
 	Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_NULL(material);
 	material->depth_bias_slope_factor = p_slope_factor;
+	if (material->data) {
+		material->data->set_depth_bias_slope_factor(p_slope_factor);
+	}
 	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 }
 
@@ -2565,6 +2568,9 @@ void MaterialStorage::material_set_depth_bias_constant_factor(RID p_material, fl
 	Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_NULL(material);
 	material->depth_bias_constant_factor = p_constant_factor;
+	if (material->data) {
+		material->data->set_depth_bias_constant_factor(p_constant_factor);
+	}
 	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 }
 
