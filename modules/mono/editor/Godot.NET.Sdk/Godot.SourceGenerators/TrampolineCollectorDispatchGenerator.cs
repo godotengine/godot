@@ -134,17 +134,26 @@ public class TrampolineCollectorDispatchGenerator : ISourceGenerator
             .Append("            ").Append(symbol.FullQualifiedNameIncludeGlobal()).Append(".GodotInternal")
             .Append(".GetGodotRaiseSignalTrampolines(collectors.RaiseSignalTrampolineCollector);\n");
 
+        if (!symbol.IsGenericType)
+        {
+            source
+                .Append("        if (options.CollectConstructors) {\n")
+                .Append("            ").Append(symbol.FullQualifiedNameIncludeGlobal()).Append(".GodotInternal")
+                .Append(".GetGodotConstructorTrampolines(collectors.ConstructorTrampolineCollector);\n")
+                .Append("        }\n");
+        }
+
         var usableBaseType = symbol.GetClosestBaseTypeDeclaringGodotInternalMethod("GetGodotClassTrampolines");
 
         if (usableBaseType != null)
         {
             source
                 .Append("            if (options.IncludeAncestors) {\n")
+                .Append("                options.CollectConstructors = false;\n")
                 .Append("                ").Append(usableBaseType.FullQualifiedNameIncludeGlobal())
                 .Append(".GodotInternal.GetGodotClassTrampolines(collectors, options);\n")
                 .Append("            }\n");
         }
-
 
         source
             .Append("        }\n");
