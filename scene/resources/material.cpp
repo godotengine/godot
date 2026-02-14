@@ -241,7 +241,7 @@ bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
-	if (shader.is_valid()) {
+	if (_can_use_shader_parameters() && shader.is_valid()) {
 		List<PropertyInfo> list;
 		shader->get_shader_uniform_list(&list, true);
 
@@ -525,6 +525,27 @@ void ShaderMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_shader_parameter", "param"), &ShaderMaterial::get_shader_parameter);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shader", PROPERTY_HINT_RESOURCE_TYPE, Shader::get_class_static()), "set_shader", "get_shader");
+
+	GDVIRTUAL_BIND(_can_use_shader);
+	GDVIRTUAL_BIND(_can_use_shader_parameters);
+}
+
+bool ShaderMaterial::_can_use_shader() const {
+	bool ret = true;
+	GDVIRTUAL_CALL(_can_use_shader, ret);
+	return ret;
+}
+
+bool ShaderMaterial::_can_use_shader_parameters() const {
+	bool ret = true;
+	GDVIRTUAL_CALL(_can_use_shader_parameters, ret);
+	return ret;
+}
+
+void ShaderMaterial::_validate_property(PropertyInfo &p_property) const {
+	if (!_can_use_shader() && p_property.name == "shader") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
 }
 
 #ifdef TOOLS_ENABLED
@@ -544,11 +565,19 @@ void ShaderMaterial::get_argument_options(const StringName &p_function, int p_id
 #endif
 
 bool ShaderMaterial::_can_do_next_pass() const {
-	return shader.is_valid() && shader->get_mode() == Shader::MODE_SPATIAL;
+	bool ret = shader.is_valid() && shader->get_mode() == Shader::MODE_SPATIAL;
+	if (ret) {
+		GDVIRTUAL_CALL(_can_do_next_pass, ret);
+	}
+	return ret;
 }
 
 bool ShaderMaterial::_can_use_render_priority() const {
-	return shader.is_valid() && shader->get_mode() == Shader::MODE_SPATIAL;
+	bool ret = shader.is_valid() && shader->get_mode() == Shader::MODE_SPATIAL;
+	if (ret) {
+		GDVIRTUAL_CALL(_can_use_render_priority, ret);
+	}
+	return ret;
 }
 
 Shader::Mode ShaderMaterial::get_shader_mode() const {
