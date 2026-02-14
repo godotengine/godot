@@ -565,6 +565,7 @@ void ItemList::remove_item(int p_idx) {
 	queue_redraw();
 	shape_changed = true;
 	defer_select_single = -1;
+	defer_select_multi = -1;
 	notify_property_list_changed();
 }
 
@@ -582,6 +583,7 @@ void ItemList::clear() {
 	queue_redraw();
 	shape_changed = true;
 	defer_select_single = -1;
+	defer_select_multi = -1;
 	notify_property_list_changed();
 }
 
@@ -742,8 +744,9 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	bool scroll_value_modified = false;
 
 	Ref<InputEventMouseMotion> mm = p_event;
-	if (defer_select_single >= 0 && mm.is_valid()) {
+	if ((defer_select_single >= 0 || defer_select_multi >= 0) && mm.is_valid()) {
 		defer_select_single = -1;
+		defer_select_multi = -1;
 		return;
 	}
 
@@ -759,6 +762,18 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 		emit_signal(SNAME("multi_selected"), defer_select_single, true);
 		defer_select_single = -1;
+		return;
+	}
+
+	if (defer_select_multi >= 0 && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
+		if (items[defer_select_multi].selected) {
+			deselect(defer_select_multi);
+			emit_signal(SNAME("multi_selected"), defer_select_multi, false);
+		} else {
+			select(defer_select_multi, false);
+			emit_signal(SNAME("multi_selected"), defer_select_multi, true);
+		}
+		defer_select_multi = -1;
 		return;
 	}
 
@@ -785,9 +800,9 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				return;
 			}
 
-			if (select_mode == SELECT_MULTI && items[i].selected && mb->is_command_or_control_pressed()) {
-				deselect(i);
-				emit_signal(SNAME("multi_selected"), i, false);
+			if (select_mode == SELECT_MULTI && mb->is_command_or_control_pressed()) {
+				defer_select_multi = i;
+				return;
 
 			} else if (select_mode == SELECT_MULTI && mb->is_shift_pressed() && current >= 0 && current < items.size() && current != i) {
 				// Range selection.

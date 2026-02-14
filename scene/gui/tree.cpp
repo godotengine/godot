@@ -147,6 +147,10 @@ void TreeItem::_change_tree(Tree *p_tree) {
 			tree->single_select_defer = nullptr;
 		}
 
+		if (tree->multi_select_defer == this) {
+			tree->multi_select_defer = nullptr;
+		}
+
 		if (tree->edited_item == this) {
 			tree->edited_item = nullptr;
 			tree->pressing_for_editor = false;
@@ -3236,14 +3240,8 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 
 			if (c.selectable) {
 				if (select_mode == SELECT_MULTI && p_mod->is_command_or_control_pressed()) {
-					if (c.selected && p_button == MouseButton::LEFT) {
-						p_item->deselect(col);
-						emit_signal(SNAME("multi_selected"), p_item, col, false);
-					} else {
-						p_item->select(col);
-						emit_signal(SNAME("multi_selected"), p_item, col, true);
-						emit_signal(SNAME("item_mouse_selected"), get_local_mouse_position(), p_button);
-					}
+					multi_select_defer = p_item;
+					multi_select_defer_column = col;
 				} else {
 					if (select_mode == SELECT_MULTI && p_mod->is_shift_pressed() && selected_item && selected_item != p_item) {
 						bool inrange = false;
@@ -3273,8 +3271,8 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 			}
 		}
 
-		if (!c.editable) {
-			return -1; // If cell is not editable, don't bother.
+		if (!c.editable || multi_select_defer) {
+			return -1; // If cell is not editable or multi-select is deferred, don't bother.
 		}
 
 		// Editing.
@@ -4121,6 +4119,20 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 				if (single_select_defer) {
 					select_single_item(single_select_defer, root, single_select_defer_column);
 					single_select_defer = nullptr;
+				}
+
+				else if (multi_select_defer) {
+					const TreeItem::Cell &c = multi_select_defer->cells[multi_select_defer_column];
+					if (c.selected) {
+						multi_select_defer->deselect(multi_select_defer_column);
+						emit_signal(SNAME("multi_selected"), multi_select_defer, multi_select_defer_column, false);
+					} else {
+						multi_select_defer->select(multi_select_defer_column);
+						emit_signal(SNAME("multi_selected"), multi_select_defer, multi_select_defer_column, true);
+						emit_signal(SNAME("item_mouse_selected"), get_local_mouse_position(), mb->get_button_index());
+					}
+					multi_select_defer = nullptr;
+					multi_select_defer_column = 0;
 				}
 
 				range_click_timer->stop();
@@ -5079,6 +5091,7 @@ void Tree::_notification(int p_what) {
 
 		case NOTIFICATION_DRAG_BEGIN: {
 			single_select_defer = nullptr;
+			multi_select_defer = nullptr;
 			if (theme_cache.scroll_speed > 0) {
 				scrolling = true;
 				set_process_internal(true);
