@@ -2540,8 +2540,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			alreadyUsed.push_back(methodName);
 
-			output << INDENT2 "[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]"
-				   << INDENT2 "public static ScriptMethod<GodotObject> CreateScriptMethod_" << imethod.proxy_name << itos(imethod.arguments.size()) << "()\n"
+			output << INDENT2 "public static ScriptMethod<GodotObject> CreateScriptMethod_" << imethod.proxy_name << itos(imethod.arguments.size()) << "()\n"
 				   << INDENT2 << "{\n"
 				   << INDENT3 << "return [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n"
 				   << INDENT3 << "static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>\n"
