@@ -1458,6 +1458,11 @@ int AnimationTimelineEdit::get_name_limit() const {
 void AnimationTimelineEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
+			const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+			const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+			const int min_length_field_width = int(Math::ceil(font->get_string_size("0000.0000", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 28 * EDSCALE));
+			length->set_custom_minimum_size(Size2(MAX(int(70 * EDSCALE), min_length_field_width), 0));
+
 			add_track->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
 			time_icon->set_texture(get_editor_theme_icon(SNAME("Time")));
@@ -1747,7 +1752,9 @@ Size2 AnimationTimelineEdit::get_minimum_size() const {
 	Size2 ms = filter_track->get_minimum_size();
 	const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-	ms.height = MAX(ms.height, font->get_height(font_size));
+	const int timeline_handle_height = get_editor_theme_icon(SNAME("TimelineHandle"))->get_height();
+	const int right_controls_height = len_hb ? int(Math::ceil(len_hb->get_combined_minimum_size().y)) : 0;
+	ms.height = MAX(ms.height, MAX(font->get_height(font_size), MAX(timeline_handle_height, right_controls_height)));
 	ms.width = get_buttons_width() + add_track->get_minimum_size().width + get_editor_theme_icon(SNAME("Hsize"))->get_width() + 2 + 8 * EDSCALE;
 	return ms;
 }
