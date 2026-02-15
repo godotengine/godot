@@ -2395,7 +2395,22 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	auto try_add_property_tramp = [](CSharpScript *p_scr, const StringName *p_name,
 										  godotsharp::PropertyGetterTrampoline p_getter_trampoline,
 										  godotsharp::PropertySetterTrampoline p_setter_trampoline) {
-		if (!p_scr->property_trampolines.has(*p_name)) {
+		DEV_ASSERT(p_getter_trampoline.function_pointer != nullptr || p_setter_trampoline.function_pointer != nullptr);
+
+		PropertyTrampolines *found = p_scr->property_trampolines.getptr(*p_name);
+		if (found) {
+			// Could not have added an entry where both are null.
+			DEV_ASSERT(found->getter.function_pointer != nullptr || found->setter.function_pointer != nullptr);
+
+			// If an entry already exists, we still replace one of the trampolines if it's null.
+			// This matches the behavior of Get/SetGodotClassPropertyValue, which will continue
+			// looking in base classes if the property in the current class is readonly/writeonly.
+			if (p_getter_trampoline.function_pointer && !found->getter.function_pointer) {
+				found->getter = p_getter_trampoline;
+			} else if (p_setter_trampoline.function_pointer && !found->setter.function_pointer) {
+				found->setter = p_setter_trampoline;
+			}
+		} else {
 			p_scr->property_trampolines.insert_new(*p_name, { p_getter_trampoline, p_setter_trampoline });
 		}
 	};
