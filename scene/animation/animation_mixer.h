@@ -314,6 +314,8 @@ protected:
 	void _clear_audio_streams();
 	void _clear_playing_caches();
 	void _init_root_motion_cache();
+	TrackCache *_find_track_cache(Animation::TypeHash p_thash, const NodePath &p_path, Animation::TrackType p_cache_type, Animation::TypeHash *r_cache_key = nullptr) const;
+	Animation::TypeHash _find_or_make_track_cache_key(Animation::TypeHash p_thash, const NodePath &p_path, Animation::TrackType p_cache_type) const;
 	bool _update_caches();
 	void _create_track_num_to_track_cache_for_animation(Ref<Animation> &p_animation);
 
