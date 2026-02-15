@@ -24,3 +24,6 @@ global using unsafe RaiseSignalTrampolineDelegate = delegate* managed<
     /* godotObject: */ object,
     /* args: */ Godot.NativeInterop.NativeVariantPtrArgs,
     /* return */ void>;
+global using unsafe BuiltInConstructorTrampolineDelegate = delegate* managed<
+    /* godotObjectPtr: */ System.IntPtr,
+    /* return */ Godot.GodotObject>;

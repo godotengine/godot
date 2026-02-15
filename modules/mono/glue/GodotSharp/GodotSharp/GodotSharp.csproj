@@ -142,6 +142,7 @@
     <Compile Include="Core\Vector3I.cs" />
     <Compile Include="Core\Vector4.cs" />
     <Compile Include="Core\Vector4I.cs" />
+    <Compile Include="Constructors.cs" />
     <Compile Include="GlobalUsings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

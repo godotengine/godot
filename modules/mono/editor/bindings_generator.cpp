@@ -79,6 +79,8 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 
 #define BINDINGS_CLASS_CONSTRUCTOR "Constructors"
 #define BINDINGS_CLASS_CONSTRUCTOR_EDITOR "EditorConstructors"
+#define BINDINGS_CLASS_BUILTIN_CTOR_TRAMP_DELEG "BuiltInConstructorTrampolineDelegate"
+#define BINDINGS_CLASS_BUILTIN_CTOR_TRAMP "BuiltInConstructorTrampoline"
 #define BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY "BuiltInMethodConstructors"
 
 #define CS_PARAM_MEMORYOWN "memoryOwn"
@@ -1812,20 +1814,10 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 
 		cs_built_in_ctors_content.append("namespace " BINDINGS_NAMESPACE ";\n\n");
 		cs_built_in_ctors_content.append("using System;\n"
-										 "using System.Collections.Generic;\n"
 										 "\n");
-		cs_built_in_ctors_content.append("internal static class " BINDINGS_CLASS_CONSTRUCTOR "\n{");
+		cs_built_in_ctors_content.append("internal static partial class " BINDINGS_CLASS_CONSTRUCTOR "\n{");
 
-		cs_built_in_ctors_content.append(MEMBER_BEGIN "internal static readonly Dictionary<string, Func<IntPtr, GodotObject>> " BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY ";\n");
-
-		cs_built_in_ctors_content.append(MEMBER_BEGIN "public static GodotObject Invoke(string nativeTypeNameStr, IntPtr nativeObjectPtr)\n");
-		cs_built_in_ctors_content.append(INDENT1 OPEN_BLOCK);
-		cs_built_in_ctors_content.append(INDENT2 "if (!" BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY ".TryGetValue(nativeTypeNameStr, out var constructor))\n");
-		cs_built_in_ctors_content.append(INDENT3 "throw new InvalidOperationException(\"Wrapper class not found for type: \" + nativeTypeNameStr);\n");
-		cs_built_in_ctors_content.append(INDENT2 "return constructor(nativeObjectPtr);\n");
-		cs_built_in_ctors_content.append(INDENT1 CLOSE_BLOCK);
-
-		cs_built_in_ctors_content.append(MEMBER_BEGIN "static " BINDINGS_CLASS_CONSTRUCTOR "()\n");
+		cs_built_in_ctors_content.append(MEMBER_BEGIN "static unsafe " BINDINGS_CLASS_CONSTRUCTOR "()\n");
 		cs_built_in_ctors_content.append(INDENT1 OPEN_BLOCK);
 		cs_built_in_ctors_content.append(INDENT2 BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY " = new();\n");
 
@@ -1842,12 +1834,12 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 
 			cs_built_in_ctors_content.append(INDENT2 BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY ".Add(\"");
 			cs_built_in_ctors_content.append(itype.name);
-			cs_built_in_ctors_content.append("\", " CS_PARAM_INSTANCE " => new ");
+			cs_built_in_ctors_content.append("\", new(");
 			cs_built_in_ctors_content.append(itype.proxy_name);
 			if (itype.is_singleton && !itype.is_compat_singleton) {
 				cs_built_in_ctors_content.append("Instance");
 			}
-			cs_built_in_ctors_content.append("(" CS_PARAM_INSTANCE "));\n");
+			cs_built_in_ctors_content.append(".GetGodotBuiltinConstructorTrampoline()));\n");
 
 			if (itype.is_deprecated) {
 				cs_built_in_ctors_content.append("#pragma warning restore CS0618\n");
@@ -1983,7 +1975,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 		cs_built_in_ctors_content.append("namespace " BINDINGS_NAMESPACE ";\n\n");
 		cs_built_in_ctors_content.append("internal static class " BINDINGS_CLASS_CONSTRUCTOR_EDITOR "\n{");
 
-		cs_built_in_ctors_content.append(MEMBER_BEGIN "private static void AddEditorConstructors()\n");
+		cs_built_in_ctors_content.append(MEMBER_BEGIN "private static unsafe void AddEditorConstructors()\n");
 		cs_built_in_ctors_content.append(INDENT1 OPEN_BLOCK);
 		cs_built_in_ctors_content.append(INDENT2 "var builtInMethodConstructors = " BINDINGS_CLASS_CONSTRUCTOR "." BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY ";\n");
 
@@ -2000,12 +1992,12 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 
 			cs_built_in_ctors_content.append(INDENT2 "builtInMethodConstructors.Add(\"");
 			cs_built_in_ctors_content.append(itype.name);
-			cs_built_in_ctors_content.append("\", " CS_PARAM_INSTANCE " => new ");
+			cs_built_in_ctors_content.append("\", new(");
 			cs_built_in_ctors_content.append(itype.proxy_name);
 			if (itype.is_singleton && !itype.is_compat_singleton) {
 				cs_built_in_ctors_content.append("Instance");
 			}
-			cs_built_in_ctors_content.append("(" CS_PARAM_INSTANCE "));\n");
+			cs_built_in_ctors_content.append(".GetGodotBuiltinConstructorTrampoline()));\n");
 
 			if (itype.is_deprecated) {
 				cs_built_in_ctors_content.append("#pragma warning restore CS0618\n");
@@ -2406,6 +2398,22 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			output.append(itype.proxy_name);
 			output.append("(bool " CS_PARAM_MEMORYOWN ") : base(" CS_PARAM_MEMORYOWN ") { }\n");
 		}
+
+		// Add default constructor trampoline
+		output << MEMBER_BEGIN "internal ";
+		if (itype.cname != name_cache.type_Object) {
+			output << "new ";
+		}
+		output << "static unsafe " BINDINGS_CLASS_BUILTIN_CTOR_TRAMP_DELEG
+				  " GetGodotBuiltinConstructorTrampoline()\n" OPEN_BLOCK_L1
+			   << INDENT2 "static GodotObject CtorTrampoline(IntPtr nativeObjectPtr) => new "
+			   << itype.proxy_name;
+		if (itype.is_singleton && !itype.is_compat_singleton) {
+			output << "Instance";
+		}
+		output << "(nativeObjectPtr);\n"
+			   << INDENT2 "return &CtorTrampoline;\n"
+			   << CLOSE_BLOCK_L1;
 	}
 
 	// Methods
