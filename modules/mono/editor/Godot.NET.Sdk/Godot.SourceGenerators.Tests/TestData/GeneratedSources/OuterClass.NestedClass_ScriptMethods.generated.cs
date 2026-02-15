@@ -39,18 +39,16 @@ partial class NestedClass
 
     private sealed class ScriptMethodDispatchHelper
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static ScriptMethod<GodotObject> CreateScriptMethod__Get1()
         {
-            static godot_variant Impl(GodotObject scriptInstance, scoped in NativeVariantPtrArgs args)
+            return [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>
             {
                 var callRet = Unsafe.As<GodotObject, NestedClass>(ref scriptInstance)._Get(global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName>(args[0]));
                 var ret = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Variant>(callRet);
                 return ret;
-            }
-
-            // Wrap static method into ScriptMethodPtr
-            //return ScriptMethodPtr.Create<NestedClass>(&Impl);
-            return Impl;
+            };
         }
     }
 
