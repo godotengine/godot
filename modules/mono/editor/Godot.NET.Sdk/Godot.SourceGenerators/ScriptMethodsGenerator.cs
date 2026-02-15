@@ -511,7 +511,6 @@ namespace Godot.SourceGenerators
 
             source.Append(
                 $$"""
-                        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
                         public static ScriptMethod<GodotObject> CreateScriptMethod_{{methodName}}{{method.ParamTypeSymbols.Length}}()
                         {
                             return [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
