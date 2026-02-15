@@ -221,7 +221,7 @@ namespace Godot.SourceGenerators
                     GenerateScriptMethodRegistryEntry(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), method, source);
                 }
 
-                source.Append("        .Compile();\n\n");
+                source.Append("        .Build();\n\n");
 
                 source.Append("    private sealed class ScriptMethodDispatchHelper\n");
                 //source.Append($"        where T : {symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}\n");

@@ -37,7 +37,7 @@ partial class Methods
         .Register(MethodName.MethodWithOverload, 0, ScriptMethodDispatchHelper.CreateScriptMethod_MethodWithOverload0())
         .Register(MethodName.MethodWithOverload, 1, ScriptMethodDispatchHelper.CreateScriptMethod_MethodWithOverload1())
         .Register(MethodName.MethodWithOverload, 2, ScriptMethodDispatchHelper.CreateScriptMethod_MethodWithOverload2())
-        .Compile();
+        .Build();
 
     private sealed class ScriptMethodDispatchHelper
     {

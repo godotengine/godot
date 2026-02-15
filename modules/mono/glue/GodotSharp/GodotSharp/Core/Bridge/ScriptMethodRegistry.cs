@@ -36,7 +36,7 @@ namespace Godot.Bridge
             return this;
         }
 
-        public ScriptMethodRegistry<T> Compile()
+        public ScriptMethodRegistry<T> Build()
         {
             int aliasesRegistered = 0;
             foreach (var (methodKey, alias) in Aliases)
