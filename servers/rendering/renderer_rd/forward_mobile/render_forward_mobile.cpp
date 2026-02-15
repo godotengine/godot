@@ -2444,6 +2444,8 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		pipeline_key.wireframe = p_params->force_wireframe;
 		pipeline_key.render_pass = p_params->subpass;
 		pipeline_key.ubershader = 0;
+		pipeline_key.depth_bias_constant_factor = surf->material->depth_bias_constant_factor;
+		pipeline_key.depth_bias_slope_factor = surf->material->depth_bias_slope_factor;
 
 		bool emulate_point_size = shader->uses_point_size && scene_shader.emulate_point_size;
 

@@ -484,6 +484,8 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 		pipeline_key.framebuffer_format_id = framebuffer_format;
 		pipeline_key.wireframe = p_params->force_wireframe;
 		pipeline_key.ubershader = 0;
+		pipeline_key.depth_bias_constant_factor = surf->material->depth_bias_constant_factor;
+		pipeline_key.depth_bias_slope_factor = surf->material->depth_bias_slope_factor;
 
 		bool emulate_point_size = shader->uses_point_size && scene_shader.emulate_point_size;
 

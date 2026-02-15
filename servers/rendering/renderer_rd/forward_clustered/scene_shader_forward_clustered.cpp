@@ -423,6 +423,9 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 	RD::PipelineRasterizationState raster_state;
 	raster_state.cull_mode = p_pipeline_key.cull_mode;
 	raster_state.wireframe = wireframe || p_pipeline_key.wireframe;
+	raster_state.depth_bias_enabled = p_pipeline_key.depth_bias_constant_factor != 0.0f || p_pipeline_key.depth_bias_slope_factor != 0.0f;
+	raster_state.depth_bias_constant_factor = p_pipeline_key.depth_bias_constant_factor;
+	raster_state.depth_bias_slope_factor = p_pipeline_key.depth_bias_slope_factor;
 
 	RD::PipelineMultisampleState multisample_state;
 	multisample_state.sample_count = RD::get_singleton()->framebuffer_format_get_texture_samples(p_pipeline_key.framebuffer_format_id, 0);
@@ -581,6 +584,14 @@ RendererRD::MaterialStorage::ShaderData *SceneShaderForwardClustered::_create_sh
 
 void SceneShaderForwardClustered::MaterialData::set_render_priority(int p_priority) {
 	priority = p_priority - RS::MATERIAL_RENDER_PRIORITY_MIN; //8 bits
+}
+
+void SceneShaderForwardClustered::MaterialData::set_depth_bias_constant_factor(float p_constant_factor) {
+	depth_bias_constant_factor = p_constant_factor;
+}
+
+void SceneShaderForwardClustered::MaterialData::set_depth_bias_slope_factor(float p_slope_factor) {
+	depth_bias_slope_factor = p_slope_factor;
 }
 
 void SceneShaderForwardClustered::MaterialData::set_next_pass(RID p_pass) {

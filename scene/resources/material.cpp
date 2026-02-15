@@ -171,7 +171,7 @@ bool Material::_can_do_next_pass() const {
 	return ret;
 }
 
-bool ShaderMaterial::_can_use_depth_bias() const {
+bool Material::_can_use_depth_bias() const {
 	bool ret = false;
 	GDVIRTUAL_CALL(_can_use_depth_bias, ret);
 	return ret;

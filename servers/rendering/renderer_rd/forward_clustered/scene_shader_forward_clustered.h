@@ -195,6 +195,8 @@ public:
 			ShaderSpecialization shader_specialization = {};
 			uint32_t wireframe = false;
 			uint32_t ubershader = false;
+			float depth_bias_constant_factor = 0.0f;
+			float depth_bias_slope_factor = 0.0f;
 
 			uint32_t hash() const {
 				uint32_t h = hash_murmur3_one_64(vertex_format_id);
@@ -208,6 +210,8 @@ public:
 				h = hash_murmur3_one_32(shader_specialization.packed_2, h);
 				h = hash_murmur3_one_32(wireframe, h);
 				h = hash_murmur3_one_32(ubershader, h);
+				h = hash_murmur3_one_float(depth_bias_constant_factor, h);
+				h = hash_murmur3_one_float(depth_bias_slope_factor, h);
 				return hash_fmix32(h);
 			}
 		};
@@ -328,10 +332,12 @@ public:
 		uint64_t last_pass = 0;
 		uint32_t index = 0;
 		RID next_pass;
+		float depth_bias_slope_factor = 0.0f;
+		float depth_bias_constant_factor = 0.0f;
 		uint8_t priority;
 		virtual void set_render_priority(int p_priority);
-		virtual void set_depth_bias_constant_factor(float p_constant_factor) {} //TODO: implement
-		virtual void set_depth_bias_slope_factor(float p_slope_factor) {} //TODO: implement
+		virtual void set_depth_bias_constant_factor(float p_constant_factor);
+		virtual void set_depth_bias_slope_factor(float p_slope_factor);
 		virtual void set_next_pass(RID p_pass);
 		virtual bool update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 		virtual ~MaterialData();
