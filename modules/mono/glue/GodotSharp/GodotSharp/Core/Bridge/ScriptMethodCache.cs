@@ -1,51 +1,111 @@
 using System;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Godot.Bridge
 {
     internal static class ScriptMethodCache<T>
         where T : GodotObject
     {
-        private const int Tries = 16;
 
-        private static IntPtr[] _keys;
-        private static int[] _argCounts;
-        private static ScriptMethod<GodotObject>[] _methods;
+        [StructLayout(LayoutKind.Sequential, Pack = 8)]
+        private struct MethodSlot
+        {
+            public IntPtr Key; // 8 Byte
+            public int ArgCount; // 4 Byte
+            public ScriptMethod<GodotObject> Method; // 8 Byte (reference)
+            // The CPU pads here often up to 24 or 32 bytes , 
+            // which fits perfectly in a 64 bytes cache line.
+        }
+
+        private const int Tries = 8;
+        private const int SizeLimit = 8192;
+
+        private static MethodSlot[] _table;
         private static int _mask;
+        private static int _shift;
+        private static bool _useMixer;
 
         public static void Initialize((IntPtr ptr, int argc, ScriptMethod<GodotObject> method)[] methods)
         {
             int capacity = methods.Length;
+            int maxProbes = int.MaxValue;
+            double averageProbes = Tries;
 
             // calculate optimal size (2^n) for optimal masking
+            bool requestMoreSize = true;
             int size = 1;
-            while (size < capacity * 2) size <<= 1;
-
-            _mask = size - 1;
-            _keys = new IntPtr[size];
-            _argCounts = new int[size];
-            _methods = new ScriptMethod<GodotObject>[size];
-
-            foreach (var method in methods)
+            int potenz = 0;
+            while (size < capacity * 2)
             {
-                int slot = GetSlot(method.ptr);
-                int i = 1;
-                while (_keys[slot] != IntPtr.Zero)
-                {
-                    slot = (slot + 1) & _mask;
-                    i++;
+                size <<= 1;
+                potenz++;
+                _shift = 64 - potenz;
+            }
 
-                    if (i == Tries + 1)
+            while (requestMoreSize)
+            {
+                requestMoreSize = false;
+
+                _mask = size - 1;
+                _table = new MethodSlot[size];
+
+                foreach (var method in methods)
+                {
+                    int currentMaxProbes = 0;
+                    int slot = GetSlot(method.ptr);
+                    while (_table[slot].Key != IntPtr.Zero)
                     {
-                        ThrowRegisterMethodFailed();
+                        currentMaxProbes++;
+                        slot = (slot + 1) & _mask;
                     }
+
+                    if (requestMoreSize)
+                    {
+                        break;
+                    }
+
+                    _table[slot] = new MethodSlot
+                    {
+                        Method = (ScriptMethod<GodotObject>)(object)method.method,
+                        ArgCount = method.argc,
+                        Key = method.ptr
+                    };
                 }
 
-                _keys[slot] = method.ptr;
-                _argCounts[slot] = method.argc;
-                _methods[slot] = (ScriptMethod<GodotObject>)(object)method.method;
+                if (!requestMoreSize)
+                {
+                    (averageProbes, maxProbes) = CalculateDiagnostics();
+
+                    if (maxProbes >= 3 ||
+                        averageProbes >= 2)
+                    {
+                        if (size < SizeLimit)
+                        {
+                            requestMoreSize = true;
+                        }
+                    }
+                }
+                if (requestMoreSize)
+                {
+                    Console.WriteLine("Requesting more capacity...");
+                    if (!_useMixer)
+                    {
+                        _useMixer = true;
+                        Console.WriteLine("Mix before enlarging size");
+                    }
+                    else
+                    {
+                        Console.WriteLine("More size");
+                        _useMixer = false;
+                        size <<= 1;
+                        potenz++;
+                        _shift = 64 - potenz;
+                    }
+
+                    continue;
+                }
             }
         }
 
@@ -58,12 +118,12 @@ namespace Godot.Bridge
             for (i = 0; i < Tries; i++)
             {
                 int curr = (slot + i) & _mask;
-                IntPtr key = _keys[curr];
+                IntPtr key = _table[curr].Key;
 
                 if (key == namePtr &&
-                    _argCounts[curr] == argCount)
+                    _table[curr].ArgCount == argCount)
                 {
-                    method = (ScriptMethod<T>)(object)_methods[curr];
+                    method = (ScriptMethod<T>)(object)_table[curr].Method;
                     return true;
                 }
 
@@ -90,12 +150,12 @@ namespace Godot.Bridge
             for (i = 0; i < Tries; i++)
             {
                 int curr = (slot + i) & _mask;
-                IntPtr key = _keys[curr];
+                IntPtr key = _table[curr].Key;
 
                 if (key == namePtr &&
-                    _argCounts[curr] == argCount)
+                    _table[curr].ArgCount == argCount)
                 {
-                    return ref _methods[curr];
+                    return ref _table[curr].Method;
                 }
 
                 if (key == IntPtr.Zero)
@@ -111,45 +171,54 @@ namespace Godot.Bridge
             return ref Unsafe.NullRef<ScriptMethod<GodotObject>>();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         private static int GetSlot(nint namePtr)
         {
-            // Fibonacci Hashing
-            int slot = (int)(((ulong)namePtr.ToInt64() * 11400714819323198485uL) >> 32) & _mask;
+            ulong x = (ulong)namePtr.ToInt64();
+            if (_useMixer)
+            {
+                // SplitMix64 - extremly fast und cracks open pointer patterns
+                x ^= x >> 30;
+                x *= 0xbf58476d1ce4e5b9uL;
+                x ^= x >> 27;
+                x *= 0x94d049bb133111ebuL;
+                x ^= x >> 31;
+            }
+            else
+            {
+                x >>= 3;
+            }
 
-            return slot;
+            // Fibonacci distributes it perfectly over the length of the array
+            return (int)((x * 11400714819323198485uL) >> _shift);
         }
 
-        public static void PrintDiagnostics()
+        public static (double AverageProbes, int MaxProbes) CalculateDiagnostics()
         {
-            //var table = _state.CurrentTable;
             long totalProbes = 0;
             int maxProbes = 0;
             int count = 0;
 
-            for (int i = 0; i < _keys.Length; i++)
+            for (int i = 0; i < _table.Length; i++)
             {
-                if (_keys[i] != IntPtr.Zero)
+                if (_table[i].Key != IntPtr.Zero)
                 {
                     count++;
-                    int idealSlot = GetSlot(_keys[i]);
+                    int idealSlot = GetSlot(_table[i].Key);
 
-                    // Distanz berechnen (Modular Arithmetic)
-                    int distance = (i - idealSlot + _keys.Length) & _mask;
-                    distance += 1; // 1-basiert für Probes
+                    // calculate distance
+                    int distance = (i - idealSlot + _table.Length) & _mask;
+                    distance += 1;
 
                     totalProbes += distance;
                     if (distance > maxProbes) maxProbes = distance;
                 }
             }
 
-            Console.WriteLine($"Items: {count}, Avg Probes: {(double)totalProbes / count:F2}, Max: {maxProbes}");
-        }
+            var averageProbes = (double)totalProbes / count;
+            Console.WriteLine($"Size: {_table.Length}, Items: {count}, Avg Probes: {averageProbes:F2}, Max: {maxProbes}");
 
-        [DoesNotReturn]
-        private static void ThrowRegisterMethodFailed()
-        {
-            throw new InvalidOperationException($"Trying to register a method failed due to too many hash misses ({Tries})");
+            return (averageProbes, maxProbes);
         }
     }
 }

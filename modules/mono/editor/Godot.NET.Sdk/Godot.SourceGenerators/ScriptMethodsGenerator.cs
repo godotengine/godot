@@ -511,9 +511,11 @@ namespace Godot.SourceGenerators
 
             source.Append(
                 $$"""
+                        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
                         public static ScriptMethod<GodotObject> CreateScriptMethod_{{methodName}}{{method.ParamTypeSymbols.Length}}()
                         {
-                            static godot_variant Impl(GodotObject scriptInstance, scoped in NativeVariantPtrArgs args)
+                            return [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+                            static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>
                             {
 
                 """);
@@ -554,11 +556,7 @@ namespace Godot.SourceGenerators
 
             source.Append(
                 $$"""
-                            }
-                
-                            // Wrap static method into ScriptMethodPtr
-                            //return ScriptMethodPtr.Create<{{type}}>(&Impl);
-                            return Impl;
+                            };
                         }
 
                 """);
