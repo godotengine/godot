@@ -3,10 +3,13 @@ const constant_int = 1
 enum { enum_value = 1 }
 
 class Iterator:
+	@override
 	func _iter_init(_count):
 		return true
+	@override
 	func _iter_next(_count):
 		return false
+	@override
 	func _iter_get(_count) -> StringName:
 		return &'custom'
 

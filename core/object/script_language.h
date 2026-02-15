@@ -313,14 +313,27 @@ public:
 		LOCATION_OTHER = 1 << 10,
 	};
 
-	struct TextEdit {
-		String new_text;
-		int start_line = -1;
-		int start_column;
-		int end_line;
-		int end_column;
+	/**
+	 * Represents a position in a text editor. Uses zero-indexed line and column numbers.
+	 */
+	struct CodePos {
+		int line = 0;
+		int column = 0;
 
-		_FORCE_INLINE_ bool is_set() const { return start_line != -1; }
+		CodePos() = default;
+
+		CodePos(int p_line, int p_column) : line(p_line), column(p_column) {}
+	};
+
+	/**
+	 * Represents a replacement hunk of text for a given region based on the start and end pos.
+	 */
+	struct TextEdit {
+		CodePos start{ -1, 0 };
+		CodePos end;
+		String new_text;
+
+		_FORCE_INLINE_ bool is_set() const { return start.line != -1; }
 	};
 
 	struct CodeCompletionOption {
@@ -341,6 +354,14 @@ public:
 		bool matches_dirty = true; // Must be set when mutating `matches`, so that sorting characteristics are recalculated.
 		int location = LOCATION_OTHER;
 		String theme_color_name;
+
+		/**
+		 * Additional text edits that will be applied if this suggestion is applied.
+		 * These should not modify the range that is being modified by insert_text.
+		 *
+		 * Note: The caret(s) will attempt to maintain their relative positions regardless of what changes are applied here.
+		 */
+		LocalVector<TextEdit> additional_edits;
 
 		CodeCompletionOption() {}
 

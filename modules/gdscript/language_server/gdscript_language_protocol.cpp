@@ -569,7 +569,7 @@ Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
 			}
 
 			if (option.text_edit.is_set()) {
-				GodotRange range(GodotPosition(option.text_edit.start_line, option.text_edit.start_column), GodotPosition(option.text_edit.end_line, option.text_edit.end_column));
+				GodotRange range(GodotPosition(option.text_edit.start.line, option.text_edit.start.column), GodotPosition(option.text_edit.end.line, option.text_edit.end.column));
 				item.textEdit.newText = option.text_edit.new_text;
 				item.textEdit.range = range.to_lsp();
 			}

@@ -15,9 +15,13 @@ class B extends A:
 	var test_var_b2
 	static func test_static_func_b1(): pass
 	static func test_static_func_b2(): pass
+	@override
 	func test_abstract_func_1(): pass
+	@override
 	func test_abstract_func_2(): pass
+	@override
 	func test_override_func_1(): pass
+	@override
 	func test_override_func_2(): pass
 	func test_func_b1(): pass
 	func test_func_b2(): pass
@@ -31,9 +35,13 @@ class C extends B:
 	var test_var_c2
 	static func test_static_func_c1(): pass
 	static func test_static_func_c2(): pass
+	@override
 	func test_abstract_func_1(): pass
+	@override
 	func test_abstract_func_2(): pass
+	@override
 	func test_override_func_1(): pass
+	@override
 	func test_override_func_2(): pass
 	func test_func_c1(): pass
 	func test_func_c2(): pass
