@@ -1870,19 +1870,19 @@ void WaylandThread::_wl_pointer_on_button(void *data, struct wl_pointer *wl_poin
 			button_pressed = MouseButton::LEFT;
 			break;
 
-		case BTN_MIDDLE:
-			button_pressed = MouseButton::MIDDLE;
-			break;
-
 		case BTN_RIGHT:
 			button_pressed = MouseButton::RIGHT;
 			break;
 
-		case BTN_EXTRA:
-			button_pressed = MouseButton::MB_XBUTTON1;
+		case BTN_MIDDLE:
+			button_pressed = MouseButton::MIDDLE;
 			break;
 
 		case BTN_SIDE:
+			button_pressed = MouseButton::MB_XBUTTON1;
+			break;
+
+		case BTN_EXTRA:
 			button_pressed = MouseButton::MB_XBUTTON2;
 			break;
 
