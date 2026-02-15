@@ -15,7 +15,7 @@ namespace Godot.Bridge
             public IntPtr Key; // 8 Byte
             public int ArgCount; // 4 Byte
             public ScriptMethod<GodotObject> Method; // 8 Byte (reference)
-            // The CPU pads here often up to 24 or 32 bytes, 
+            // The CPU pads here often up to 24 or 32 bytes,
             // which fits perfectly in a 64 bytes cache line.
         }
 
@@ -87,6 +87,7 @@ namespace Godot.Bridge
                         }
                     }
                 }
+
                 if (requestMoreSize)
                 {
                     Console.WriteLine("Requesting more capacity...");
@@ -177,7 +178,7 @@ namespace Godot.Bridge
             ulong x = (ulong)namePtr.ToInt64();
             if (_useMixer)
             {
-                // SplitMix64 - extremly fast and cracks open pointer patterns
+                // SplitMix64 - extremely fast and cracks open pointer patterns
                 x ^= x >> 30;
                 x *= 0xbf58476d1ce4e5b9uL;
                 x ^= x >> 27;
