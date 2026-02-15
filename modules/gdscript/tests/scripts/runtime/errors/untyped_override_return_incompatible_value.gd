@@ -5,9 +5,13 @@ class A:
 	func return_node(_variant: Variant) -> Node: return null
 
 class B extends A:
+	@override
 	func return_int(variant: Variant): return variant
+	@override
 	func return_int_array(variant: Variant): return variant
+	@override
 	func return_int_dict(variant: Variant): return variant
+	@override
 	func return_node(variant: Variant): return variant
 
 func output(value: Variant) -> void:

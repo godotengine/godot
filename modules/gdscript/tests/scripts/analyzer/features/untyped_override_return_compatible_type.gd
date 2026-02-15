@@ -6,10 +6,15 @@ class A:
 	func return_float_dict() -> Dictionary[float, float]: return {1.0: 1.0}
 
 class B extends A:
+	@override
 	func return_float(): return 2
+	@override
 	func return_int_as_float(x: int): return x
+	@override
 	func return_variant_as_float(x: Variant): return x
+	@override
 	func return_float_array(): return [2]
+	@override
 	func return_float_dict(): return {2: 2}
 
 func output(value: Variant) -> void:

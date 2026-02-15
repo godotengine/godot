@@ -13,5 +13,6 @@ class Parent:
 		return par1
 
 class Child extends Parent:
+	@override
 	func my_function(_par1: int, par2: int = 0) -> int:
 		return par2
