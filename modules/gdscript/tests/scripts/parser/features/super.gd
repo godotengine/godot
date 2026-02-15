@@ -13,10 +13,12 @@ class SayAnotherThing extends Say:
 	# This currently crashes the engine.
 	#var prefix = "SAT"
 
+	@override
 	func greet():
 		prefix = "SAT Greeted"
 		print("hi")
 
+	@override
 	func say(name):
 		print(prefix, " say another thing ", name)
 
@@ -25,6 +27,7 @@ class SayNothing extends Say:
 	# This currently crashes the engine.
 	#var prefix = "SN"
 
+	@override
 	func greet():
 		super()
 		prefix = "SN Greeted"
@@ -35,6 +38,7 @@ class SayNothing extends Say:
 		super.greet()
 		print("howdy, see above")
 
+	@override
 	func say(name):
 		@warning_ignore("unsafe_call_argument")
 		super(name + " super'd")

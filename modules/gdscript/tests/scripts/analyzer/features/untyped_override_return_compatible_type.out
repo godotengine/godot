@@ -1,4 +1,6 @@
 GDTEST_OK
+~~ WARNING at line 24: (IMPLICIT_FUNCTION_OVERRIDE) The method "return_untyped_dict_as_float_dict()" overrides "A.return_untyped_dict_as_float_dict()" but does not have the "@override" annotation.
+~~ WARNING at line 25: (IMPLICIT_FUNCTION_OVERRIDE) The method "return_object_as_node()" overrides "A.return_object_as_node()" but does not have the "@override" annotation.
 2.0
 2.0
 2.0
