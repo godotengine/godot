@@ -1283,6 +1283,7 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 	Callable *slot_callables = (Callable *)slot_callable_stack;
 	uint32_t *slot_flags = slot_flags_stack;
 	uint32_t slot_count = 0;
+	bool has_one_shots = false;
 
 	{
 		OBJ_SIGNAL_LOCK
@@ -1298,9 +1299,15 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 			return ERR_UNAVAILABLE;
 		}
 
-		if (s->slot_map.size() > MAX_SLOTS_ON_STACK) {
-			slot_callables = (Callable *)memalloc(sizeof(Callable) * s->slot_map.size());
-			slot_flags = (uint32_t *)memalloc(sizeof(uint32_t) * s->slot_map.size());
+		const uint32_t slot_map_size = s->slot_map.size();
+
+		if (unlikely(slot_map_size == 0)) {
+			return ERR_UNAVAILABLE;
+		}
+
+		if (unlikely(slot_map_size > MAX_SLOTS_ON_STACK)) {
+			slot_callables = (Callable *)memalloc(sizeof(Callable) * slot_map_size);
+			slot_flags = (uint32_t *)memalloc(sizeof(uint32_t) * slot_map_size);
 		}
 
 		// Ensure that disconnecting the signal or even deleting the object
@@ -1308,22 +1315,27 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
 			memnew_placement(&slot_callables[slot_count], Callable(slot_kv.value.conn.callable));
 			slot_flags[slot_count] = slot_kv.value.conn.flags;
+			has_one_shots |= (slot_flags[slot_count] & CONNECT_ONE_SHOT);
 			++slot_count;
 		}
 
-		DEV_ASSERT(slot_count == s->slot_map.size());
+		DEV_ASSERT(slot_count == slot_map_size);
 
-		// Disconnect all one-shot connections before emitting to prevent recursion.
-		for (uint32_t i = 0; i < slot_count; ++i) {
-			bool disconnect = slot_flags[i] & CONNECT_ONE_SHOT;
+		// Only scan for one-shot disconnections if any were flagged — avoids
+		// unnecessary iteration in the common case (no one-shots).
+		if (unlikely(has_one_shots)) {
+			// Disconnect all one-shot connections before emitting to prevent recursion.
+			for (uint32_t i = 0; i < slot_count; ++i) {
+				bool disconnect = slot_flags[i] & CONNECT_ONE_SHOT;
 #ifdef TOOLS_ENABLED
-			if (disconnect && (slot_flags[i] & CONNECT_PERSIST) && Engine::get_singleton()->is_editor_hint()) {
-				// This signal was connected from the editor, and is being edited. Just don't disconnect for now.
-				disconnect = false;
-			}
+				if (disconnect && (slot_flags[i] & CONNECT_PERSIST) && Engine::get_singleton()->is_editor_hint()) {
+					// This signal was connected from the editor, and is being edited. Just don't disconnect for now.
+					disconnect = false;
+				}
 #endif
-			if (disconnect) {
-				_disconnect(p_name, slot_callables[i]);
+				if (disconnect) {
+					_disconnect(p_name, slot_callables[i]);
+				}
 			}
 		}
 	}
