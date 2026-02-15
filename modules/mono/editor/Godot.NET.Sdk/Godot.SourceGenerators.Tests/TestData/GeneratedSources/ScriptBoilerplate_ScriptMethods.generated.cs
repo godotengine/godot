@@ -39,7 +39,7 @@ partial class ScriptBoilerplate
         .Register(global::Godot.Node.MethodRegistry)
         .Register(MethodName._Process, 1, ScriptMethodDispatchHelper.CreateScriptMethod__Process1())
         .Register(MethodName.Bazz, 1, ScriptMethodDispatchHelper.CreateScriptMethod_Bazz1())
-        .Compile();
+        .Build();
 
     private sealed class ScriptMethodDispatchHelper
     {

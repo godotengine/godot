@@ -2521,7 +2521,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			output << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name << ", " << itos(imethod.arguments.size()) << ", MethodName." << imethod.proxy_name;
 			output << ")\n";
 		}
-		output.append(INDENT2 ".Compile();\n");
+		output.append(INDENT2 ".Build();\n");
 
 		alreadyUsed.clear();
 

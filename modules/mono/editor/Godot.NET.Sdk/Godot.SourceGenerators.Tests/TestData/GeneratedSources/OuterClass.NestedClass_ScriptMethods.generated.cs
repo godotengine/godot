@@ -35,7 +35,7 @@ partial class NestedClass
     protected new static readonly ScriptMethodRegistry<NestedClass> MethodRegistry = new ScriptMethodRegistry<NestedClass>()
         .Register(global::Godot.RefCounted.MethodRegistry)
         .Register(MethodName._Get, 1, ScriptMethodDispatchHelper.CreateScriptMethod__Get1())
-        .Compile();
+        .Build();
 
     private sealed class ScriptMethodDispatchHelper
     {
