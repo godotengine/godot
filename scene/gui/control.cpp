@@ -1655,6 +1655,22 @@ Vector2 Control::get_combined_pivot_offset() const {
 	return data.pivot_offset + data.pivot_offset_ratio * get_size();
 }
 
+void Control::set_pivot_position(const Point2 &p_point) {
+	set_position(p_point - get_combined_pivot_offset());
+}
+
+Vector2 Control::get_pivot_position() const {
+	return get_combined_pivot_offset() + get_position();
+}
+
+void Control::set_pivot_global_position(const Point2 &p_point) {
+	set_global_position(p_point - get_combined_pivot_offset());
+}
+
+Vector2 Control::get_pivot_global_position() const {
+	return get_combined_pivot_offset() + get_global_position();
+}
+
 /// Sizes.
 
 void Control::_update_minimum_size() {
@@ -4033,6 +4049,8 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Control::set_scale);
 	ClassDB::bind_method(D_METHOD("set_pivot_offset", "pivot_offset"), &Control::set_pivot_offset);
 	ClassDB::bind_method(D_METHOD("set_pivot_offset_ratio", "ratio"), &Control::set_pivot_offset_ratio);
+	ClassDB::bind_method(D_METHOD("set_pivot_position", "position"), &Control::set_pivot_position);
+	ClassDB::bind_method(D_METHOD("set_pivot_global_position", "position"), &Control::set_pivot_global_position);
 	ClassDB::bind_method(D_METHOD("get_begin"), &Control::get_begin);
 	ClassDB::bind_method(D_METHOD("get_end"), &Control::get_end);
 	ClassDB::bind_method(D_METHOD("get_position"), &Control::get_position);
@@ -4043,6 +4061,8 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pivot_offset"), &Control::get_pivot_offset);
 	ClassDB::bind_method(D_METHOD("get_pivot_offset_ratio"), &Control::get_pivot_offset_ratio);
 	ClassDB::bind_method(D_METHOD("get_combined_pivot_offset"), &Control::get_combined_pivot_offset);
+	ClassDB::bind_method(D_METHOD("get_pivot_position"), &Control::get_pivot_position);
+	ClassDB::bind_method(D_METHOD("get_pivot_global_position"), &Control::get_pivot_global_position);
 	ClassDB::bind_method(D_METHOD("get_custom_minimum_size"), &Control::get_custom_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_parent_area_size"), &Control::get_parent_area_size);
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Control::get_global_position);
@@ -4271,6 +4291,8 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale"), "set_scale", "get_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pivot_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_pivot_offset", "get_pivot_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pivot_offset_ratio"), "set_pivot_offset_ratio", "get_pivot_offset_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pivot_position", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NONE), "set_pivot_position", "get_pivot_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pivot_global_position", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NONE), "set_pivot_global_position", "get_pivot_global_position");
 
 	ADD_SUBGROUP("Container Sizing", "size_flags_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill:1,Expand:2,Shrink Center:4,Shrink End:8"), "set_h_size_flags", "get_h_size_flags");

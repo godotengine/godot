@@ -541,6 +541,10 @@ public:
 	void set_pivot_offset(const Vector2 &p_pivot);
 	Vector2 get_pivot_offset() const;
 	Vector2 get_combined_pivot_offset() const;
+	void set_pivot_position(const Point2 &p_point);
+	Vector2 get_pivot_position() const;
+	void set_pivot_global_position(const Point2 &p_point);
+	Vector2 get_pivot_global_position() const;
 
 	void update_minimum_size();
 
