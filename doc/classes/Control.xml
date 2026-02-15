@@ -1098,6 +1098,41 @@
 			Distance between the node's top edge and its parent control, based on [member anchor_top].
 			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
 		</member>
+		<member name="offset_transform_enabled" type="bool" setter="set_offset_transform_enabled" getter="is_offset_transform_enabled" default="false">
+			If [code]true[/code], applies all offset transform properties. Otherwise, no offset transform is applied and the properties have no effect.
+		</member>
+		<member name="offset_transform_pivot" type="Vector2" setter="set_offset_transform_pivot" getter="get_offset_transform_pivot" default="Vector2(0, 0)">
+			Pivot used by [member offset_transform_rotation] and [member offset_transform_scale] in absolute units.
+			The final pivot position is the combined value of this property and [member offset_transform_pivot_ratio].
+			Has no effect unless [member offset_transform_enabled] is [code]true[/code].
+		</member>
+		<member name="offset_transform_pivot_ratio" type="Vector2" setter="set_offset_transform_pivot_ratio" getter="get_offset_transform_pivot_ratio" default="Vector2(0.5, 0.5)">
+			Same as [member offset_transform_pivot] but expressed in units relative to the [Control] [member size] where [code]Vector2(0, 0)[/code] is the top-left corner of this control, and [code]Vector2(1, 1)[/code] is its bottom-right corner.
+			The final pivot position is the combined value of this property and [member offset_transform_pivot].
+			Has no effect unless [member offset_transform_enabled] is [code]true[/code].
+		</member>
+		<member name="offset_transform_position" type="Vector2" setter="set_offset_transform_position" getter="get_offset_transform_position" default="Vector2(0, 0)">
+			Position offset in absolute units. The final offset is the combined value of this property and [member offset_transform_position_ratio].
+			Has no effect unless [member offset_transform_enabled] is [code]true[/code].
+		</member>
+		<member name="offset_transform_position_ratio" type="Vector2" setter="set_offset_transform_position_ratio" getter="get_offset_transform_position_ratio" default="Vector2(0, 0)">
+			Same as [member offset_transform_position] but expressed in units relative to the [Control] [member size] where [code]Vector2(0, 0)[/code] is the top-left corner of this control, and [code]Vector2(1, 1)[/code] is its bottom-right corner.
+			The final offset is the combined value of this property and [member offset_transform_position].
+			Has no effect unless [member offset_transform_enabled] is [code]true[/code].
+		</member>
+		<member name="offset_transform_rotation" type="float" setter="set_offset_transform_rotation" getter="get_offset_transform_rotation" default="0.0">
+			Rotation offset. The rotation pivot is defined by [member offset_transform_pivot] and [member offset_transform_pivot_ratio].
+			Has no effect unless [member offset_transform_enabled] is [code]true[/code].
+		</member>
+		<member name="offset_transform_scale" type="Vector2" setter="set_offset_transform_scale" getter="get_offset_transform_scale" default="Vector2(1, 1)">
+			Scale offset. The scale pivot is defined by [member offset_transform_pivot] and [member offset_transform_pivot_ratio].
+			Has no effect unless [member offset_transform_enabled] is [code]true[/code].
+		</member>
+		<member name="offset_transform_visual_only" type="bool" setter="set_offset_transform_visual_only" getter="is_offset_transform_visual_only" default="true">
+			If [code]true[/code], the offset transforms is only applied visually and does not affect input. In other words, this Control will still receive input events at its original location before the offset transform is applied.
+			If [code]false[/code], the entire transform of this Control is affected and input events will register where the Control is visually.
+			Has no effect unless [member offset_transform_enabled] is [code]true[/code].
+		</member>
 		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
 		<member name="pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset" default="Vector2(0, 0)">
 			By default, the node's pivot is its top-left corner. When you change its [member rotation] or [member scale], it will rotate or scale around this pivot.

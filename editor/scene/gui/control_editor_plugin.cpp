@@ -1261,10 +1261,78 @@ ControlEditorToolbar *ControlEditorToolbar::singleton = nullptr;
 
 // Editor plugin.
 
+void ControlOffsetTransformPreview::edit(Control *p_control) {
+	if (p_control == selected_control) {
+		return;
+	}
+
+	const Callable update_overlays = callable_mp(plugin, &EditorPlugin::update_overlays);
+
+	if (selected_control) {
+		selected_control->disconnect(SceneStringName(draw), update_overlays);
+	}
+
+	selected_control = p_control;
+
+	if (selected_control) {
+		selected_control->connect(SceneStringName(draw), update_overlays);
+	}
+
+	plugin->update_overlays();
+}
+
+void ControlOffsetTransformPreview::forward_canvas_draw_over_viewport(Control *p_overlay) const {
+	if (!selected_control || !selected_control->is_offset_transform_enabled() || selected_control->is_offset_transform_visual_only()) {
+		return;
+	}
+
+	Point2 top_left = Point2();
+	Point2 bottom_right = selected_control->get_size();
+	Point2 top_right = Point2(bottom_right.x, top_left.y);
+	Point2 bottom_left = Point2(top_left.x, bottom_right.y);
+
+	Transform2D control_transform_without_offset = selected_control->get_global_transform() * selected_control->get_offset_transform().affine_inverse();
+	top_left = control_transform_without_offset.xform(top_left);
+	bottom_right = control_transform_without_offset.xform(bottom_right);
+	top_right = control_transform_without_offset.xform(top_right);
+	bottom_left = control_transform_without_offset.xform(bottom_left);
+
+	Transform2D canvas_transform = CanvasItemEditor::get_singleton()->get_canvas_transform();
+	top_left = canvas_transform.xform(top_left);
+	bottom_right = canvas_transform.xform(bottom_right);
+	top_right = canvas_transform.xform(top_right);
+	bottom_left = canvas_transform.xform(bottom_left);
+
+	Color color = Color(0.5, 0.5, 0.5, 0.75);
+	p_overlay->draw_dashed_line(top_left, top_right, color, 5.0, 4.0);
+	p_overlay->draw_dashed_line(top_right, bottom_right, color, 5.0, 4.0);
+	p_overlay->draw_dashed_line(bottom_right, bottom_left, color, 5.0, 4.0);
+	p_overlay->draw_dashed_line(bottom_left, top_left, color, 5.0, 4.0);
+}
+
+ControlOffsetTransformPreview::ControlOffsetTransformPreview(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
+}
+
+void ControlEditorPlugin::edit(Object *p_object) {
+	offset_transform_preview->edit(Object::cast_to<Control>(p_object));
+}
+
+bool ControlEditorPlugin::handles(Object *p_object) const {
+	return Object::cast_to<Control>(p_object) != nullptr;
+}
+
+void ControlEditorPlugin::forward_canvas_draw_over_viewport(Control *p_overlay) {
+	offset_transform_preview->forward_canvas_draw_over_viewport(p_overlay);
+}
+
 ControlEditorPlugin::ControlEditorPlugin() {
 	toolbar = memnew(ControlEditorToolbar);
 	toolbar->hide();
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);
+
+	offset_transform_preview = memnew(ControlOffsetTransformPreview(this));
+	EditorNode::get_singleton()->get_gui_base()->add_child(offset_transform_preview);
 
 	Ref<EditorInspectorPluginControl> plugin;
 	plugin.instantiate();
