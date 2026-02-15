@@ -43,31 +43,27 @@ partial class ScriptBoilerplate
 
     private sealed class ScriptMethodDispatchHelper
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static ScriptMethod<GodotObject> CreateScriptMethod__Process1()
         {
-            static godot_variant Impl(GodotObject scriptInstance, scoped in NativeVariantPtrArgs args)
+            return [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>
             {
                 Unsafe.As<GodotObject, ScriptBoilerplate>(ref scriptInstance)._Process(global::Godot.NativeInterop.VariantUtils.ConvertTo<double>(args[0]));
                 godot_variant ret = default;
                 return ret;
-            }
-
-            // Wrap static method into ScriptMethodPtr
-            //return ScriptMethodPtr.Create<ScriptBoilerplate>(&Impl);
-            return Impl;
+            };
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static ScriptMethod<GodotObject> CreateScriptMethod_Bazz1()
         {
-            static godot_variant Impl(GodotObject scriptInstance, scoped in NativeVariantPtrArgs args)
+            return [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>
             {
                 var callRet = Unsafe.As<GodotObject, ScriptBoilerplate>(ref scriptInstance).Bazz(global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName>(args[0]));
                 var ret = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(callRet);
                 return ret;
-            }
-
-            // Wrap static method into ScriptMethodPtr
-            //return ScriptMethodPtr.Create<ScriptBoilerplate>(&Impl);
-            return Impl;
+            };
         }
     }
 

@@ -41,44 +41,38 @@ partial class Methods
 
     private sealed class ScriptMethodDispatchHelper
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static ScriptMethod<GodotObject> CreateScriptMethod_MethodWithOverload0()
         {
-            static godot_variant Impl(GodotObject scriptInstance, scoped in NativeVariantPtrArgs args)
+            return [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>
             {
                 Unsafe.As<GodotObject, Methods>(ref scriptInstance).MethodWithOverload();
                 godot_variant ret = default;
                 return ret;
-            }
-
-            // Wrap static method into ScriptMethodPtr
-            //return ScriptMethodPtr.Create<Methods>(&Impl);
-            return Impl;
+            };
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static ScriptMethod<GodotObject> CreateScriptMethod_MethodWithOverload1()
         {
-            static godot_variant Impl(GodotObject scriptInstance, scoped in NativeVariantPtrArgs args)
+            return [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>
             {
                 Unsafe.As<GodotObject, Methods>(ref scriptInstance).MethodWithOverload(global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(args[0]));
                 godot_variant ret = default;
                 return ret;
-            }
-
-            // Wrap static method into ScriptMethodPtr
-            //return ScriptMethodPtr.Create<Methods>(&Impl);
-            return Impl;
+            };
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static ScriptMethod<GodotObject> CreateScriptMethod_MethodWithOverload2()
         {
-            static godot_variant Impl(GodotObject scriptInstance, scoped in NativeVariantPtrArgs args)
+            return [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>
             {
                 Unsafe.As<GodotObject, Methods>(ref scriptInstance).MethodWithOverload(global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(args[0]), global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(args[1]));
                 godot_variant ret = default;
                 return ret;
-            }
-
-            // Wrap static method into ScriptMethodPtr
-            //return ScriptMethodPtr.Create<Methods>(&Impl);
-            return Impl;
+            };
         }
     }
 
