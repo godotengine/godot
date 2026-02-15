@@ -120,3 +120,10 @@ class SideDockTabContainer : public DockTabContainer {
 public:
 	SideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect);
 };
+
+class BottomSideDockTabContainer : public DockTabContainer {
+	GDCLASS(BottomSideDockTabContainer, DockTabContainer);
+
+public:
+	BottomSideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect);
+};

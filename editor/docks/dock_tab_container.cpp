@@ -270,3 +270,13 @@ SideDockTabContainer::SideDockTabContainer(EditorDock::DockSlot p_slot, const Re
 	set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	set_use_hidden_tabs_for_min_size(true);
 }
+
+BottomSideDockTabContainer::BottomSideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect) :
+		DockTabContainer(p_slot) {
+	grid_rect = p_slot_rect;
+	layout = EditorDock::DOCK_LAYOUT_HORIZONTAL;
+
+	set_custom_minimum_size(Size2(0, 170 * EDSCALE));
+	set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_use_hidden_tabs_for_min_size(true);
+}

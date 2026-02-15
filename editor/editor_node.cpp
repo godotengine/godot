@@ -8528,28 +8528,34 @@ EditorNode::EditorNode() {
 	main_vbox->add_child(title_bar);
 #endif
 
+	DockSplitContainer *main_vsplit = memnew(DockSplitContainer);
+	main_vsplit->set_name("DockVSplitMain");
+	main_vsplit->set_vertical(true);
+	main_vsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	main_vbox->add_child(main_vsplit);
+
 	main_hsplit = memnew(DockSplitContainer);
 	main_hsplit->set_name("DockHSplitMain");
 	main_hsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	main_vbox->add_child(main_hsplit);
+	main_vsplit->add_child(main_hsplit);
 
 	left_l_vsplit = memnew(DockSplitContainer);
 	left_l_vsplit->set_name("DockVSplitLeftL");
 	left_l_vsplit->set_vertical(true);
 	main_hsplit->add_child(left_l_vsplit);
 
-	DockTabContainer *dock_slots[EditorDock::DOCK_SLOT_MAX];
+	LocalVector<DockTabContainer *> dock_slots;
 	{
 		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_UL, Rect2i(0, 0, 1, 3)));
 		dock_container->set_name("DockSlotLeftUL");
 		left_l_vsplit->add_child(dock_container);
-		dock_slots[dock_container->dock_slot] = dock_container;
+		dock_slots.push_back(dock_container);
 	}
 	{
 		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_BL, Rect2i(0, 3, 1, 3)));
 		dock_container->set_name("DockSlotLeftBL");
 		left_l_vsplit->add_child(dock_container);
-		dock_slots[dock_container->dock_slot] = dock_container;
+		dock_slots.push_back(dock_container);
 	}
 
 	left_r_vsplit = memnew(DockSplitContainer);
@@ -8560,13 +8566,13 @@ EditorNode::EditorNode() {
 		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_UR, Rect2i(1, 0, 1, 3)));
 		dock_container->set_name("DockSlotLeftUR");
 		left_r_vsplit->add_child(dock_container);
-		dock_slots[dock_container->dock_slot] = dock_container;
+		dock_slots.push_back(dock_container);
 	}
 	{
 		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_BR, Rect2i(1, 3, 1, 3)));
 		dock_container->set_name("DockSlotLeftBR");
 		left_r_vsplit->add_child(dock_container);
-		dock_slots[dock_container->dock_slot] = dock_container;
+		dock_slots.push_back(dock_container);
 	}
 
 	VBoxContainer *center_vb = memnew(VBoxContainer);
@@ -8589,13 +8595,13 @@ EditorNode::EditorNode() {
 		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_UL, Rect2i(4, 0, 1, 3)));
 		dock_container->set_name("DockSlotRightUL");
 		right_l_vsplit->add_child(dock_container);
-		dock_slots[dock_container->dock_slot] = dock_container;
+		dock_slots.push_back(dock_container);
 	}
 	{
 		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_BL, Rect2i(4, 3, 1, 3)));
 		dock_container->set_name("DockSlotRightBL");
 		right_l_vsplit->add_child(dock_container);
-		dock_slots[dock_container->dock_slot] = dock_container;
+		dock_slots.push_back(dock_container);
 	}
 
 	right_r_vsplit = memnew(DockSplitContainer);
@@ -8606,13 +8612,29 @@ EditorNode::EditorNode() {
 		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_UR, Rect2i(5, 0, 1, 3)));
 		dock_container->set_name("DockSlotRightUR");
 		right_r_vsplit->add_child(dock_container);
-		dock_slots[dock_container->dock_slot] = dock_container;
+		dock_slots.push_back(dock_container);
 	}
 	{
 		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_BR, Rect2i(5, 3, 1, 3)));
 		dock_container->set_name("DockSlotRightBR");
 		right_r_vsplit->add_child(dock_container);
-		dock_slots[dock_container->dock_slot] = dock_container;
+		dock_slots.push_back(dock_container);
+	}
+
+	DockSplitContainer *bottom_hsplit = memnew(DockSplitContainer);
+	bottom_hsplit->set_name("DockHSplitBottom");
+	main_vsplit->add_child(bottom_hsplit);
+	{
+		DockTabContainer *dock_container = memnew(BottomSideDockTabContainer(EditorDock::DOCK_SLOT_BOTTOM_L, Rect2i(0, 6, 3, 2)));
+		dock_container->set_name("DockSlotBottomL");
+		bottom_hsplit->add_child(dock_container);
+		dock_slots.push_back(dock_container);
+	}
+	{
+		DockTabContainer *dock_container = memnew(BottomSideDockTabContainer(EditorDock::DOCK_SLOT_BOTTOM_R, Rect2i(3, 6, 3, 2)));
+		dock_container->set_name("DockSlotBottomR");
+		bottom_hsplit->add_child(dock_container);
+		dock_slots.push_back(dock_container);
 	}
 
 	editor_dock_manager = memnew(EditorDockManager);
@@ -8625,8 +8647,8 @@ EditorNode::EditorNode() {
 
 	editor_dock_manager->set_hsplit(main_hsplit);
 
-	for (int i = 0; i < EditorDock::DOCK_SLOT_BOTTOM; i++) {
-		editor_dock_manager->register_dock_slot(dock_slots[i]);
+	for (DockTabContainer *dock_container : dock_slots) {
+		editor_dock_manager->register_dock_slot(dock_container);
 	}
 
 	editor_layout_save_delay_timer = memnew(Timer);
