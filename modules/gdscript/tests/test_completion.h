@@ -53,16 +53,16 @@
 namespace GDScriptTests {
 
 static bool match_option(const Dictionary p_expected, const ScriptLanguage::CodeCompletionOption p_got) {
-	if (p_expected.get("display", p_got.display) != p_got.display) {
+	if (String(p_expected.get("display", p_got.display)) != p_got.display) {
 		return false;
 	}
-	if (p_expected.get("insert_text", p_got.insert_text) != p_got.insert_text) {
+	if (String(p_expected.get("insert_text", p_got.insert_text)) != p_got.insert_text) {
 		return false;
 	}
-	if (p_expected.get("kind", p_got.kind) != Variant(p_got.kind)) {
+	if (ScriptLanguage::CodeCompletionKind(p_expected.get("kind", p_got.kind)) != p_got.kind) {
 		return false;
 	}
-	if (p_expected.get("location", p_got.location) != Variant(p_got.location)) {
+	if (int(p_expected.get("location", p_got.location)) != p_got.location) {
 		return false;
 	}
 	return true;

@@ -213,7 +213,7 @@ void ImportDock::_update_options(const String &p_path, const Ref<ConfigFile> &p_
 	params->update();
 	_update_preset_menu();
 
-	bool was_imported = p_config.is_valid() && p_config->get_value("remap", "importer") != "skip" && p_config->get_value("remap", "importer") != "keep";
+	bool was_imported = p_config.is_valid() && String(p_config->get_value("remap", "importer")) != "skip" && String(p_config->get_value("remap", "importer")) != "keep";
 	if (was_imported && params->importer.is_valid() && params->paths.size() == 1 && params->importer->has_advanced_options()) {
 		advanced->show();
 		advanced_spacer->show();
@@ -640,7 +640,7 @@ void ImportDock::_reimport() {
 		if (params->importer.is_valid()) {
 			String importer_name = params->importer->get_importer_name();
 
-			if (params->checking && config->get_value("remap", "importer") == params->importer->get_importer_name()) {
+			if (params->checking && String(config->get_value("remap", "importer")) == params->importer->get_importer_name()) {
 				//update only what is edited (checkboxes) if the importer is the same
 				for (const PropertyInfo &E : params->properties) {
 					if (params->checked.has(E.name)) {

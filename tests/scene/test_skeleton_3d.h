@@ -44,13 +44,13 @@ TEST_CASE("[Skeleton3D] Test per-bone meta") {
 	// Adding meta to bone.
 	skeleton->set_bone_meta(0, "key1", "value1");
 	skeleton->set_bone_meta(0, "key2", 12345);
-	CHECK_MESSAGE(skeleton->get_bone_meta(0, "key1") == "value1", "Bone meta missing.");
-	CHECK_MESSAGE(skeleton->get_bone_meta(0, "key2") == Variant(12345), "Bone meta missing.");
+	CHECK_MESSAGE(String(skeleton->get_bone_meta(0, "key1")) == "value1", "Bone meta missing.");
+	CHECK_MESSAGE(int(skeleton->get_bone_meta(0, "key2")) == 12345, "Bone meta missing.");
 
 	// Rename bone and check if meta persists.
 	skeleton->set_bone_name(0, "renamed_root");
-	CHECK_MESSAGE(skeleton->get_bone_meta(0, "key1") == "value1", "Bone meta missing.");
-	CHECK_MESSAGE(skeleton->get_bone_meta(0, "key2") == Variant(12345), "Bone meta missing.");
+	CHECK_MESSAGE(String(skeleton->get_bone_meta(0, "key1")) == "value1", "Bone meta missing.");
+	CHECK_MESSAGE(int(skeleton->get_bone_meta(0, "key2")) == 12345, "Bone meta missing.");
 
 	// Retrieve list of keys.
 	List<StringName> keys;

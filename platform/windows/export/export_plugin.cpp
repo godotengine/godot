@@ -507,9 +507,9 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 
 Error EditorExportPlatformWindows::_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_console_icon) {
 	String icon_path;
-	if (p_preset->get("application/icon") != "") {
+	if (String(p_preset->get("application/icon")) != "") {
 		icon_path = p_preset->get("application/icon");
-	} else if (get_project_setting(p_preset, "application/config/windows_native_icon") != "") {
+	} else if (String(get_project_setting(p_preset, "application/config/windows_native_icon")) != "") {
 		icon_path = get_project_setting(p_preset, "application/config/windows_native_icon");
 	} else {
 		icon_path = get_project_setting(p_preset, "application/config/icon");
@@ -571,7 +571,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	if (id_type == 0) { //auto select
 		args.push_back("/a");
 	} else if (id_type == 1) { //pkcs12
-		if (p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID) != "") {
+		if (String(p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID)) != "") {
 			args.push_back("/f");
 			args.push_back(p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID));
 		} else {
@@ -579,7 +579,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 			return FAILED;
 		}
 	} else if (id_type == 2) { //Windows certificate store
-		if (p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID) != "") {
+		if (String(p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID)) != "") {
 			args.push_back("/sha1");
 			args.push_back(p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID));
 		} else {
@@ -592,7 +592,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	}
 #else
 	int id_type = 1;
-	if (p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID) != "") {
+	if (String(p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID)) != "") {
 		args.push_back("-pkcs12");
 		args.push_back(p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID));
 	} else {
@@ -602,7 +602,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 #endif
 
 	//password
-	if ((id_type == 1) && (p_preset->get_or_env("codesign/password", ENV_WIN_CODESIGN_PASS) != "")) {
+	if (id_type == 1 && String(p_preset->get_or_env("codesign/password", ENV_WIN_CODESIGN_PASS)) != "") {
 #ifdef WINDOWS_ENABLED
 		args.push_back("/p");
 #else
@@ -613,7 +613,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 
 	//timestamp
 	if (p_preset->get("codesign/timestamp")) {
-		if (p_preset->get("codesign/timestamp_server") != "") {
+		if (String(p_preset->get("codesign/timestamp_server")) != "") {
 #ifdef WINDOWS_ENABLED
 			args.push_back("/tr");
 			args.push_back(p_preset->get("codesign/timestamp_server_url"));
@@ -646,7 +646,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	}
 
 	//description
-	if (p_preset->get("codesign/description") != "") {
+	if (String(p_preset->get("codesign/description")) != "") {
 #ifdef WINDOWS_ENABLED
 		args.push_back("/d");
 #else

@@ -782,7 +782,7 @@ void OpenXRSpatialMarkerTrackingCapability::_process_snapshot(RID p_snapshot, bo
 	se_extension->free_spatial_snapshot(p_snapshot);
 
 	// And if this was our discovery snapshot, let's reset it.
-	if (p_is_discovery && discovery_query_result.is_valid() && discovery_query_result->get_result_value() == p_snapshot) {
+	if (p_is_discovery && discovery_query_result.is_valid() && RID(discovery_query_result->get_result_value()) == p_snapshot) {
 		discovery_query_result.unref();
 	}
 }

@@ -435,13 +435,13 @@ bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExp
 	bool dvalid = exists_export_template(_get_template_name(extensions, thread_support, true), &err);
 	bool rvalid = exists_export_template(_get_template_name(extensions, thread_support, false), &err);
 
-	if (p_preset->get("custom_template/debug") != "") {
+	if (String(p_preset->get("custom_template/debug")) != "") {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
 		if (!dvalid) {
 			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
-	if (p_preset->get("custom_template/release") != "") {
+	if (String(p_preset->get("custom_template/release")) != "") {
 		rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
 		if (!rvalid) {
 			err += TTR("Custom release template not found.") + "\n";

@@ -3239,7 +3239,7 @@ bool EditorInspectorArray::can_drop_data_fw(const Point2 &p_point, const Variant
 	}
 	Dictionary dict = p_data;
 	int drop_position = (p_point == Vector2(Math::INF, Math::INF)) ? selected : _drop_position();
-	if (!dict.has("type") || dict["type"] != "property_array_element" || String(dict["property_array_prefix"]) != array_element_prefix || drop_position < 0) {
+	if (!dict.has("type") || String(dict["type"]) != "property_array_element" || String(dict["property_array_prefix"]) != array_element_prefix || drop_position < 0) {
 		return false;
 	}
 
@@ -3320,7 +3320,7 @@ void EditorInspectorArray::_notification(int p_what) {
 
 		case NOTIFICATION_DRAG_BEGIN: {
 			Dictionary dict = get_viewport()->gui_get_drag_data();
-			if (dict.has("type") && dict["type"] == "property_array_element" && String(dict["property_array_prefix"]) == array_element_prefix) {
+			if (dict.has("type") && String(dict["type"]) == "property_array_element" && String(dict["property_array_prefix"]) == array_element_prefix) {
 				dropping = true;
 				control_dropping->queue_redraw();
 			}
@@ -3451,10 +3451,10 @@ void EditorPaginator::_page_line_edit_text_submitted(const String &p_text) {
 	if (p_text.is_valid_int()) {
 		int new_page = p_text.to_int() - 1;
 		new_page = MIN(MAX(0, new_page), max_page);
-		page_line_edit->set_text(Variant(new_page));
+		page_line_edit->set_text(itos(new_page));
 		emit_signal("page_changed", new_page);
 	} else {
-		page_line_edit->set_text(Variant(page));
+		page_line_edit->set_text(itos(page));
 	}
 }
 

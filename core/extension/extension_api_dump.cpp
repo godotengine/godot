@@ -639,7 +639,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			d["is_keyed"] = Variant::is_keyed(type);
 
 			DocData::ClassDoc *builtin_doc = nullptr;
-			if (p_include_docs && d["name"] != "Nil") {
+			if (p_include_docs && String(d["name"]) != "Nil") {
 				builtin_doc = EditorHelp::get_doc_data()->class_list.getptr(d["name"]);
 				CRASH_COND_MSG(!builtin_doc, vformat("Could not find '%s' in DocData.", d["name"]));
 			}
@@ -1362,7 +1362,7 @@ static bool compare_value(const String &p_path, const String &p_field, const Var
 				print_error(vformat("Validate extension JSON: Error: Field '%s': %s was removed.", p_path, kv.key));
 				continue;
 			}
-			if (p_allow_name_change && kv.key == "name") {
+			if (p_allow_name_change && String(kv.key) == "name") {
 				continue;
 			}
 			if (!compare_value(path, kv.key, kv.value, new_dict[kv.key], p_allow_name_change)) {

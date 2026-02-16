@@ -35,7 +35,7 @@
 namespace TestJSONRPC {
 
 void check_error_code(const Dictionary &p_dict, const JSONRPC::ErrorCode &p_code) {
-	CHECK(p_dict["jsonrpc"] == "2.0");
+	CHECK(String(p_dict["jsonrpc"]) == "2.0");
 	REQUIRE(p_dict.has("error"));
 	const Dictionary &err_body = p_dict["error"];
 	const int &code = err_body["code"];

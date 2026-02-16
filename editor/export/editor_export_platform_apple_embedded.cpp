@@ -2164,13 +2164,13 @@ bool EditorExportPlatformAppleEmbedded::has_valid_export_configuration(const Ref
 	bool dvalid = exists_export_template(get_platform_name() + ".zip", &err);
 	bool rvalid = dvalid; // Both in the same ZIP.
 
-	if (p_preset->get("custom_template/debug") != "") {
+	if (String(p_preset->get("custom_template/debug")) != "") {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
 		if (!dvalid) {
 			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
-	if (p_preset->get("custom_template/release") != "") {
+	if (String(p_preset->get("custom_template/release")) != "") {
 		rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
 		if (!rvalid) {
 			err += TTR("Custom release template not found.") + "\n";
@@ -2385,12 +2385,12 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 						Array devices = data["devices"];
 						for (int i = 0; i < devices.size(); i++) {
 							Dictionary device_event = devices[i];
-							if (device_event["Event"] == "DeviceDetected") {
+							if (String(device_event["Event"]) == "DeviceDetected") {
 								Dictionary device_info = device_event["Device"];
 								Device nd;
 								nd.id = device_info["DeviceIdentifier"];
-								nd.name = device_info["DeviceName"].operator String() + " (ios_deploy, " + ((device_event["Interface"] == "WIFI") ? "network" : "wired") + ")";
-								nd.wifi = device_event["Interface"] == "WIFI";
+								nd.name = device_info["DeviceName"].operator String() + " (ios_deploy, " + ((String(device_event["Interface"]) == "WIFI") ? "network" : "wired") + ")";
+								nd.wifi = String(device_event["Interface"]) == "WIFI";
 								nd.use_ios_deploy = true;
 								ldevices.push_back(nd);
 							}
@@ -2429,11 +2429,11 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 						const Dictionary &device_info = devices[i];
 						const Dictionary &conn_props = device_info["connectionProperties"];
 						const Dictionary &dev_props = device_info["deviceProperties"];
-						if (dev_props.has("developerModeStatus") && conn_props.has("pairingState") && conn_props.has("transportType") && conn_props["pairingState"] == "paired" && dev_props["developerModeStatus"] == "enabled") {
+						if (dev_props.has("developerModeStatus") && conn_props.has("pairingState") && conn_props.has("transportType") && String(conn_props["pairingState"]) == "paired" && String(dev_props["developerModeStatus"]) == "enabled") {
 							Device nd;
 							nd.id = device_info["identifier"];
-							nd.name = dev_props["name"].operator String() + " (devicectl, " + ((conn_props["transportType"] == "localNetwork") ? "network" : "wired") + ")";
-							nd.wifi = conn_props["transportType"] == "localNetwork";
+							nd.name = dev_props["name"].operator String() + " (devicectl, " + ((String(conn_props["transportType"]) == "localNetwork") ? "network" : "wired") + ")";
+							nd.wifi = String(conn_props["transportType"]) == "localNetwork";
 							ldevices.push_back(nd);
 						}
 					}

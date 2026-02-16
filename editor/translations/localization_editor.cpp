@@ -558,7 +558,7 @@ bool LocalizationEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 	ERR_FAIL_COND_V(trees.find(tree) == -1, false);
 
 	Dictionary drop_data = p_data;
-	return drop_data.get("type", "") == tree_data_types[tree];
+	return String(drop_data.get("type", "")) == tree_data_types[tree];
 }
 
 void LocalizationEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {

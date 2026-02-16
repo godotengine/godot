@@ -4992,7 +4992,7 @@ NodePath GLTFDocument::_find_material_node_path(Ref<GLTFState> p_state, const Re
 	for (Ref<GLTFMesh> gltf_mesh : p_state->meshes) {
 		TypedArray<Material> materials = gltf_mesh->get_instance_materials();
 		for (int mat_index = 0; mat_index < materials.size(); mat_index++) {
-			if (materials[mat_index] == p_material) {
+			if (Ref<Material>(materials[mat_index]) == p_material) {
 				for (Ref<GLTFNode> gltf_node : p_state->nodes) {
 					if (gltf_node->mesh == mesh_index) {
 						NodePath node_path = gltf_node->get_scene_node_path(p_state);

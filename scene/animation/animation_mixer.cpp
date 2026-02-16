@@ -1724,7 +1724,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							start_ofs += time - a->track_get_key_time(i, idx);
 						}
 
-						if (t_obj->call(SNAME("get_stream")) != t->audio_stream) {
+						if (Ref<AudioStreamPolyphonic>(t_obj->call(SNAME("get_stream"))) != t->audio_stream) {
 							t_obj->call(SNAME("set_stream"), t->audio_stream);
 							t->audio_stream_playback.unref();
 							if (!playing_audio_stream_players.has(asp)) {

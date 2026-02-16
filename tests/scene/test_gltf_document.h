@@ -169,8 +169,8 @@ void test_gltf_document_values(Ref<GLTFDocument> &p_gltf_document, Ref<GLTFState
 	}
 
 	CHECK(p_gltf_state->get_copyright() == p_test_case.copyright);
-	CHECK(((Dictionary)p_gltf_state->get_json()["asset"])["generator"] == p_test_case.generator);
-	CHECK(((Dictionary)p_gltf_state->get_json()["asset"])["version"] == p_test_case.version);
+	CHECK(String(((Dictionary)p_gltf_state->get_json()["asset"])["generator"]) == p_test_case.generator);
+	CHECK(String(((Dictionary)p_gltf_state->get_json()["asset"])["version"]) == p_test_case.version);
 }
 
 void test_gltf_save(Node *p_node) {

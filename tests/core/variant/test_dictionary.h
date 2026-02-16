@@ -82,17 +82,17 @@ TEST_CASE("[Dictionary] List init") {
 		{ Vector2(), "v2" },
 	};
 	CHECK(dict.size() == 4);
-	CHECK(dict[0] == "int");
+	CHECK(String(dict[0]) == "int");
 	CHECK(PackedStringArray(dict["packed_string_array"])[2] == "values");
 	CHECK(Dictionary(dict["key"])["nested"] == Variant(200));
-	CHECK(dict[Vector2()] == "v2");
+	CHECK(String(dict[Vector2()]) == "v2");
 
 	TypedDictionary<double, double> tdict{
 		{ 0.0, 1.0 },
 		{ 5.0, 2.0 },
 	};
-	CHECK_EQ(tdict[0.0], Variant(1.0));
-	CHECK_EQ(tdict[5.0], Variant(2.0));
+	CHECK_EQ(double(tdict[0.0]), 1.0);
+	CHECK_EQ(double(tdict[5.0]), 2.0);
 }
 
 TEST_CASE("[Dictionary] get_key_list()") {
@@ -594,7 +594,7 @@ TEST_CASE("[Dictionary] Order and find") {
 	Array keys = { 4, 8, 12, "4" };
 
 	CHECK_EQ(d.keys(), keys);
-	CHECK_EQ(d.find_key("four"), Variant(4));
+	CHECK_EQ(int32_t(d.find_key("four")), 4);
 	CHECK_EQ(d.find_key("does not exist"), Variant());
 }
 
@@ -661,17 +661,17 @@ TEST_CASE("[Dictionary] Typed copying") {
 	d4[0] = 3;
 
 	// Same typed TypedDictionary should be shared.
-	CHECK_EQ(d1[0], Variant(3));
-	CHECK_EQ(d3[0], Variant(3));
-	CHECK_EQ(d4[0], Variant(3));
+	CHECK_EQ(int(d1[0]), 3);
+	CHECK_EQ(int(d3[0]), 3);
+	CHECK_EQ(int(d4[0]), 3);
 
 	d5[0] = 2.0;
 	d6[0] = 3.0;
 
 	// Different typed TypedDictionary should not be shared.
-	CHECK_EQ(d2[0], Variant(2.0));
-	CHECK_EQ(d5[0], Variant(2.0));
-	CHECK_EQ(d6[0], Variant(3.0));
+	CHECK_EQ(double(d2[0]), 2.0);
+	CHECK_EQ(double(d5[0]), 2.0);
+	CHECK_EQ(double(d6[0]), 3.0);
 
 	d1.clear();
 	d2.clear();
@@ -730,8 +730,8 @@ TEST_CASE("[Dictionary] Object value init") {
 		{ 0.0, a },
 		{ 5.0, b },
 	};
-	CHECK_EQ(tdict[0.0], Variant(a));
-	CHECK_EQ(tdict[5.0], Variant(b));
+	CHECK_EQ(tdict[0.0].get_validated_object(), a);
+	CHECK_EQ(tdict[5.0].get_validated_object(), b);
 	memdelete(a);
 	memdelete(b);
 }
@@ -743,8 +743,8 @@ TEST_CASE("[Dictionary] RefCounted value init") {
 		{ 0.0, a },
 		{ 5.0, b },
 	};
-	CHECK_EQ(tdict[0.0], Variant(a));
-	CHECK_EQ(tdict[5.0], Variant(b));
+	CHECK_EQ(Ref<RefCounted>(tdict[0.0]), a);
+	CHECK_EQ(Ref<RefCounted>(tdict[5.0]), b);
 }
 
 } // namespace TestDictionary

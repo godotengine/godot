@@ -838,6 +838,20 @@ public:
 	bool operator==(const Variant &p_variant) const;
 	bool operator!=(const Variant &p_variant) const;
 	bool operator<(const Variant &p_variant) const;
+
+	template <typename T>
+	bool operator==(const T &p_value) const = delete;
+	template <typename T>
+	bool operator!=(const T &p_value) const = delete;
+	template <typename T>
+	bool operator<(const T &p_value) const = delete;
+	template <typename T>
+	bool operator<=(const T &p_value) const = delete;
+	template <typename T>
+	bool operator>(const T &p_value) const = delete;
+	template <typename T>
+	bool operator>=(const T &p_value) const = delete;
+
 	uint32_t hash() const;
 	uint32_t recursive_hash(int recursion_count) const;
 

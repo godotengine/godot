@@ -133,7 +133,7 @@ void GDExtensionInterfaceHeaderGenerator::write_doc(const Ref<FileAccess> &p_fa,
 			p_fa->store_string(p_indent + " *");
 		}
 
-		if (line == "") {
+		if (String(line) == "") {
 			p_fa->store_string("\n");
 		} else {
 			p_fa->store_line(String(" ") + (String)line);

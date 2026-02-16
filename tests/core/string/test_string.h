@@ -1129,7 +1129,7 @@ TEST_CASE("[String] sprintf") {
 	// Vector2
 	format = "fish %v frog";
 	args.clear();
-	args.push_back(Variant(Vector2(19.99, 1.00)));
+	args.push_back(Vector2(19.99, 1.00));
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish (19.990000, 1.000000) frog"));
@@ -1137,7 +1137,7 @@ TEST_CASE("[String] sprintf") {
 	// Vector3
 	format = "fish %v frog";
 	args.clear();
-	args.push_back(Variant(Vector3(19.99, 1.00, -2.05)));
+	args.push_back(Vector3(19.99, 1.00, -2.05));
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish (19.990000, 1.000000, -2.050000) frog"));
@@ -1145,7 +1145,7 @@ TEST_CASE("[String] sprintf") {
 	// Vector4
 	format = "fish %v frog";
 	args.clear();
-	args.push_back(Variant(Vector4(19.99, 1.00, -2.05, 5.5)));
+	args.push_back(Vector4(19.99, 1.00, -2.05, 5.5));
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish (19.990000, 1.000000, -2.050000, 5.500000) frog"));
@@ -1153,7 +1153,7 @@ TEST_CASE("[String] sprintf") {
 	// Vector with negative values.
 	format = "fish %v frog";
 	args.clear();
-	args.push_back(Variant(Vector2(-19.99, -1.00)));
+	args.push_back(Vector2(-19.99, -1.00));
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish (-19.990000, -1.000000) frog"));
@@ -1161,7 +1161,7 @@ TEST_CASE("[String] sprintf") {
 	// Vector left-padded.
 	format = "fish %11v frog";
 	args.clear();
-	args.push_back(Variant(Vector3(19.99, 1.00, -2.05)));
+	args.push_back(Vector3(19.99, 1.00, -2.05));
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish (  19.990000,    1.000000,   -2.050000) frog"));
@@ -1169,7 +1169,7 @@ TEST_CASE("[String] sprintf") {
 	// Vector left-padded with inf/nan
 	format = "fish %11v frog";
 	args.clear();
-	args.push_back(Variant(Vector2(Math::INF, Math::NaN)));
+	args.push_back(Vector2(Math::INF, Math::NaN));
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish (        inf,         nan) frog"));
@@ -1177,7 +1177,7 @@ TEST_CASE("[String] sprintf") {
 	// Vector right-padded.
 	format = "fish %-11v frog";
 	args.clear();
-	args.push_back(Variant(Vector3(19.99, 1.00, -2.05)));
+	args.push_back(Vector3(19.99, 1.00, -2.05));
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish (19.990000  , 1.000000   , -2.050000  ) frog"));
@@ -1185,7 +1185,7 @@ TEST_CASE("[String] sprintf") {
 	// Vector left-padded with zeros.
 	format = "fish %011v frog";
 	args.clear();
-	args.push_back(Variant(Vector3(19.99, 1.00, -2.05)));
+	args.push_back(Vector3(19.99, 1.00, -2.05));
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish (0019.990000, 0001.000000, -002.050000) frog"));
@@ -1193,7 +1193,7 @@ TEST_CASE("[String] sprintf") {
 	// Vector given Vector3i.
 	format = "fish %v frog";
 	args.clear();
-	args.push_back(Variant(Vector3i(19, 1, -2)));
+	args.push_back(Vector3i(19, 1, -2));
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish (19.000000, 1.000000, -2.000000) frog"));
@@ -1201,7 +1201,7 @@ TEST_CASE("[String] sprintf") {
 	// Vector with 1 decimal.
 	format = "fish %.1v frog";
 	args.clear();
-	args.push_back(Variant(Vector3(19.99, 1.00, -2.05)));
+	args.push_back(Vector3(19.99, 1.00, -2.05));
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish (20.0, 1.0, -2.0) frog"));
@@ -1209,7 +1209,7 @@ TEST_CASE("[String] sprintf") {
 	// Vector with 12 decimals.
 	format = "fish %.12v frog";
 	args.clear();
-	args.push_back(Variant(Vector3(19.00, 1.00, -2.00)));
+	args.push_back(Vector3(19.00, 1.00, -2.00));
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish (19.000000000000, 1.000000000000, -2.000000000000) frog"));
@@ -1217,7 +1217,7 @@ TEST_CASE("[String] sprintf") {
 	// Vector with no decimals.
 	format = "fish %.v frog";
 	args.clear();
-	args.push_back(Variant(Vector3(19.99, 1.00, -2.05)));
+	args.push_back(Vector3(19.99, 1.00, -2.05));
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish (20, 1, -2) frog"));
@@ -2131,7 +2131,7 @@ TEST_CASE("[String] Variant validated indexed get") {
 	getter(&s, 1, &r, &oob);
 
 	CHECK_FALSE(oob);
-	CHECK_EQ(r, String("b"));
+	CHECK_EQ(String(r), "b");
 }
 
 TEST_CASE("[String] Variant ptr indexed get") {
@@ -2154,7 +2154,7 @@ TEST_CASE("[String] Variant indexed set") {
 
 	CHECK(valid);
 	CHECK_FALSE(oob);
-	CHECK_EQ(s, String("azcd"));
+	CHECK_EQ(String(s), "azcd");
 }
 
 TEST_CASE("[String] Variant validated indexed set") {
@@ -2167,7 +2167,7 @@ TEST_CASE("[String] Variant validated indexed set") {
 	setter(&s, 1, &v, &oob);
 
 	CHECK_FALSE(oob);
-	CHECK_EQ(s, String("azcd"));
+	CHECK_EQ(String(s), "azcd");
 }
 
 TEST_CASE("[String] Variant ptr indexed set") {

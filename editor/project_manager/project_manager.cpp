@@ -297,7 +297,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 		migration_guide_button->set_button_icon(get_editor_theme_icon("ExternalLink"));
 
 		// Asset library popup.
-		if (asset_library && EDITOR_GET("interface/theme/style") == "Classic") {
+		if (asset_library && String(EDITOR_GET("interface/theme/style")) == "Classic") {
 			// Removes extra border margins.
 			asset_library->add_theme_style_override(SceneStringName(panel), memnew(StyleBoxEmpty));
 		}

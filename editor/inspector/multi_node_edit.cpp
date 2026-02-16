@@ -53,7 +53,7 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 	}
 
 	Node *node_path_target = nullptr;
-	if (p_value.get_type() == Variant::NODE_PATH && p_value != NodePath()) {
+	if (p_value.get_type() == Variant::NODE_PATH && !NodePath(p_value).is_empty()) {
 		node_path_target = es->get_node(p_value);
 	}
 

@@ -864,7 +864,7 @@ Vector<String> AnimationLibraryEditor::_load_mixer_libs_folding() {
 		String current_mixer_signature = _get_mixer_signature();
 
 		for (const String &section : config->get_sections()) {
-			if (config->get_value(section, "mixer_signature") == current_mixer_signature) {
+			if (String(config->get_value(section, "mixer_signature")) == current_mixer_signature) {
 				config->set_value(md, "mixer_signature", current_mixer_signature);
 				config->set_value(md, "folding", config->get_value(section, "folding"));
 

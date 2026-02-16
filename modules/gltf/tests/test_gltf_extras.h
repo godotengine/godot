@@ -92,20 +92,20 @@ TEST_CASE("[SceneTree][Node] GLTF test mesh and material meta export and import"
 	// Compare the results.
 	CHECK(loaded->get_name() == "node3d");
 	CHECK(Dictionary(loaded->get_meta("extras")).size() == 1);
-	CHECK(Dictionary(loaded->get_meta("extras"))["node_type"] == "node3d");
+	CHECK(String(Dictionary(loaded->get_meta("extras"))["node_type"]) == "node3d");
 	CHECK_FALSE(loaded->has_meta("meta_not_nested_under_extras"));
 	CHECK_FALSE(Dictionary(loaded->get_meta("extras")).has("meta_not_nested_under_extras"));
 
 	MeshInstance3D *mesh_instance_3d = Object::cast_to<MeshInstance3D>(loaded->find_child("mesh_instance_3d", false, true));
 	CHECK(mesh_instance_3d->get_name() == "mesh_instance_3d");
-	CHECK(Dictionary(mesh_instance_3d->get_meta("extras"))["node_type"] == "mesh_instance_3d");
+	CHECK(String(Dictionary(mesh_instance_3d->get_meta("extras"))["node_type"]) == "mesh_instance_3d");
 
 	Ref<Mesh> mesh = mesh_instance_3d->get_mesh();
-	CHECK(Dictionary(mesh->get_meta("extras"))["node_type"] == "planemesh");
+	CHECK(String(Dictionary(mesh->get_meta("extras"))["node_type"]) == "planemesh");
 
 	Ref<Material> material = mesh->surface_get_material(0);
 	CHECK(material->get_name() == "material");
-	CHECK(Dictionary(material->get_meta("extras"))["node_type"] == "material");
+	CHECK(String(Dictionary(material->get_meta("extras"))["node_type"]) == "material");
 
 	memdelete(original_mesh_instance);
 	memdelete(original);
@@ -161,9 +161,9 @@ TEST_CASE("[SceneTree][Node] GLTF test skeleton and bone export and import") {
 	CHECK(loaded->get_name() == "node3d");
 	Skeleton3D *result = Object::cast_to<Skeleton3D>(loaded->find_child("Skeleton3D", false, true));
 	CHECK(result->get_bone_name(0) == "parent");
-	CHECK(Dictionary(result->get_bone_meta(0, "extras"))["bone"] == "i_am_parent_bone");
+	CHECK(String(Dictionary(result->get_bone_meta(0, "extras"))["bone"]) == "i_am_parent_bone");
 	CHECK(result->get_bone_name(1) == "child");
-	CHECK(Dictionary(result->get_bone_meta(1, "extras"))["bone"] == "i_am_child_bone");
+	CHECK(String(Dictionary(result->get_bone_meta(1, "extras"))["bone"]) == "i_am_child_bone");
 
 	memdelete(skeleton);
 	memdelete(mesh);

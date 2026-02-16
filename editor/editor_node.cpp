@@ -7614,7 +7614,7 @@ void EditorNode::_renderer_selected(int p_index) {
 
 	// Don't change selection.
 	for (int i = 0; i < renderer->get_item_count(); i++) {
-		if (renderer->get_item_metadata(i) == current_renderer) {
+		if (String(renderer->get_item_metadata(i)) == current_renderer) {
 			renderer->select(i);
 			break;
 		}

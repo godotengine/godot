@@ -429,7 +429,7 @@ void TileSetEditor::_patterns_item_list_gui_input(const Ref<InputEvent> &p_event
 void TileSetEditor::_pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Texture2D> p_texture) {
 	// TODO optimize ?
 	for (int i = 0; i < patterns_item_list->get_item_count(); i++) {
-		if (patterns_item_list->get_item_metadata(i) == p_pattern) {
+		if (Ref<TileMapPattern>(patterns_item_list->get_item_metadata(i)) == p_pattern) {
 			patterns_item_list->set_item_icon(i, p_texture);
 			break;
 		}

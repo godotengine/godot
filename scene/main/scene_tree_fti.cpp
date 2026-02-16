@@ -762,7 +762,7 @@ SceneTreeFTI::SceneTreeFTI() {
 	_tests = memnew(SceneTreeFTITests(*this));
 #endif
 
-	Variant traversal_mode_string = GLOBAL_DEF("physics/3d/physics_interpolation/scene_traversal", "DEFAULT");
+	String traversal_mode_string = GLOBAL_DEF("physics/3d/physics_interpolation/scene_traversal", "DEFAULT");
 	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, "physics/3d/physics_interpolation/scene_traversal", PROPERTY_HINT_ENUM, "DEFAULT,Legacy,Debug"));
 
 	data.traversal_mode = TM_DEFAULT;

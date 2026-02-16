@@ -524,8 +524,8 @@ TEST_CASE("[Resource] Duplication") {
 		}
 
 		// Ensure all the usages are of the same resource.
-		CHECK(((Dictionary)dupe_a[1]).get_key_at_index(0) == dupe_res);
-		CHECK(((Dictionary)dupe_a[1]).get_value_at_index(0) == dupe_res);
+		CHECK(Ref<Resource>(((Dictionary)dupe_a[1]).get_key_at_index(0)) == dupe_res);
+		CHECK(Ref<Resource>(((Dictionary)dupe_a[1]).get_value_at_index(0)) == dupe_res);
 	}
 }
 
@@ -547,10 +547,10 @@ TEST_CASE("[Resource] Saving and loading") {
 			loaded_resource_binary->get_name() == "Hello world",
 			"The loaded resource name should be equal to the expected value.");
 	CHECK_MESSAGE(
-			loaded_resource_binary->get_meta("ExampleMetadata") == Vector2i(40, 80),
+			Vector2i(loaded_resource_binary->get_meta("ExampleMetadata")) == Vector2i(40, 80),
 			"The loaded resource metadata should be equal to the expected value.");
 	CHECK_MESSAGE(
-			loaded_resource_binary->get_meta("string") == "The\nstring\nwith\nunnecessary\nline\n\t\\\nbreaks",
+			String(loaded_resource_binary->get_meta("string")) == "The\nstring\nwith\nunnecessary\nline\n\t\\\nbreaks",
 			"The loaded resource metadata should be equal to the expected value.");
 	const Ref<Resource> &loaded_child_resource_binary = loaded_resource_binary->get_meta("other_resource");
 	CHECK_MESSAGE(
@@ -562,10 +562,10 @@ TEST_CASE("[Resource] Saving and loading") {
 			loaded_resource_text->get_name() == "Hello world",
 			"The loaded resource name should be equal to the expected value.");
 	CHECK_MESSAGE(
-			loaded_resource_text->get_meta("ExampleMetadata") == Vector2i(40, 80),
+			Vector2i(loaded_resource_text->get_meta("ExampleMetadata")) == Vector2i(40, 80),
 			"The loaded resource metadata should be equal to the expected value.");
 	CHECK_MESSAGE(
-			loaded_resource_text->get_meta("string") == "The\nstring\nwith\nunnecessary\nline\n\t\\\nbreaks",
+			String(loaded_resource_text->get_meta("string")) == "The\nstring\nwith\nunnecessary\nline\n\t\\\nbreaks",
 			"The loaded resource metadata should be equal to the expected value.");
 	const Ref<Resource> &loaded_child_resource_text = loaded_resource_text->get_meta("other_resource");
 	CHECK_MESSAGE(

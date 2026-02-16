@@ -89,7 +89,7 @@ String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPr
 			} break;
 #ifdef MACOS_ENABLED
 			case 3: { // "codesign"
-				ad_hoc = (p_preset->get("codesign/identity") == "" || p_preset->get("codesign/identity") == "-");
+				ad_hoc = (String(p_preset->get("codesign/identity")) == "" || String(p_preset->get("codesign/identity")) == "-");
 			} break;
 #endif
 			default: {
@@ -1040,11 +1040,11 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 
 			args.push_back("notary-submit");
 
-			if (p_preset->get_or_env("notarization/api_uuid", ENV_MAC_NOTARIZATION_UUID) == "") {
+			if (String(p_preset->get_or_env("notarization/api_uuid", ENV_MAC_NOTARIZATION_UUID)) == "") {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("App Store Connect issuer ID name not specified."));
 				return Error::FAILED;
 			}
-			if (p_preset->get_or_env("notarization/api_key", ENV_MAC_NOTARIZATION_KEY) == "") {
+			if (String(p_preset->get_or_env("notarization/api_key", ENV_MAC_NOTARIZATION_KEY)) == "") {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("App Store Connect API key ID not specified."));
 				return Error::FAILED;
 			}
@@ -1104,17 +1104,17 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 
 			args.push_back(p_path);
 
-			if (p_preset->get_or_env("notarization/apple_id_name", ENV_MAC_NOTARIZATION_APPLE_ID) == "" && p_preset->get_or_env("notarization/api_uuid", ENV_MAC_NOTARIZATION_UUID) == "") {
+			if (String(p_preset->get_or_env("notarization/apple_id_name", ENV_MAC_NOTARIZATION_APPLE_ID)) == "" && p_preset->get_or_env("notarization/api_uuid", ENV_MAC_NOTARIZATION_UUID) == Variant("")) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Neither Apple ID name nor App Store Connect issuer ID name not specified."));
 				return Error::FAILED;
 			}
-			if (p_preset->get_or_env("notarization/apple_id_name", ENV_MAC_NOTARIZATION_APPLE_ID) != "" && p_preset->get_or_env("notarization/api_uuid", ENV_MAC_NOTARIZATION_UUID) != "") {
+			if (String(p_preset->get_or_env("notarization/apple_id_name", ENV_MAC_NOTARIZATION_APPLE_ID)) != "" && p_preset->get_or_env("notarization/api_uuid", ENV_MAC_NOTARIZATION_UUID) != Variant("")) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Both Apple ID name and App Store Connect issuer ID name are specified, only one should be set at the same time."));
 				return Error::FAILED;
 			}
 
-			if (p_preset->get_or_env("notarization/apple_id_name", ENV_MAC_NOTARIZATION_APPLE_ID) != "") {
-				if (p_preset->get_or_env("notarization/apple_id_password", ENV_MAC_NOTARIZATION_APPLE_PASS) == "") {
+			if (String(p_preset->get_or_env("notarization/apple_id_name", ENV_MAC_NOTARIZATION_APPLE_ID)) != "") {
+				if (String(p_preset->get_or_env("notarization/apple_id_password", ENV_MAC_NOTARIZATION_APPLE_PASS)) == "") {
 					add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Apple ID password not specified."));
 					return Error::FAILED;
 				}
@@ -1124,7 +1124,7 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 				args.push_back("--password");
 				args.push_back(p_preset->get_or_env("notarization/apple_id_password", ENV_MAC_NOTARIZATION_APPLE_PASS));
 			} else {
-				if (p_preset->get_or_env("notarization/api_key_id", ENV_MAC_NOTARIZATION_KEY_ID) == "") {
+				if (String(p_preset->get_or_env("notarization/api_key_id", ENV_MAC_NOTARIZATION_KEY_ID)) == "") {
 					add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("App Store Connect API key ID not specified."));
 					return Error::FAILED;
 				}
@@ -1257,7 +1257,7 @@ void EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pres
 				return;
 			}
 
-			bool ad_hoc = (p_preset->get("codesign/identity") == "" || p_preset->get("codesign/identity") == "-");
+			bool ad_hoc = (String(p_preset->get("codesign/identity")) == "" || String(p_preset->get("codesign/identity")) == "-");
 
 			List<String> args;
 			if (!ad_hoc) {
@@ -1985,9 +1985,9 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		if (file == "Contents/Resources/icon.icns") {
 			// See if there is an icon.
 			String icon_path;
-			if (p_preset->get("application/icon") != "") {
+			if (String(p_preset->get("application/icon")) != "") {
 				icon_path = p_preset->get("application/icon");
-			} else if (get_project_setting(p_preset, "application/config/macos_native_icon") != "") {
+			} else if (String(get_project_setting(p_preset, "application/config/macos_native_icon")) != "") {
 				icon_path = get_project_setting(p_preset, "application/config/macos_native_icon");
 			} else {
 				icon_path = get_project_setting(p_preset, "application/config/icon");
@@ -2087,7 +2087,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			} break;
 #ifdef MACOS_ENABLED
 			case 3: { // "codesign"
-				ad_hoc = (p_preset->get("codesign/identity") == "" || p_preset->get("codesign/identity") == "-");
+				ad_hoc = (String(p_preset->get("codesign/identity")) == "" || String(p_preset->get("codesign/identity")) == "-");
 			} break;
 #endif
 			default: {
@@ -2461,13 +2461,13 @@ bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorE
 	bool dvalid = exists_export_template("macos.zip", &err);
 	bool rvalid = dvalid; // Both in the same ZIP.
 
-	if (p_preset->get("custom_template/debug") != "") {
+	if (p_preset->get("custom_template/debug") != Variant("")) {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
 		if (!dvalid) {
 			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
-	if (p_preset->get("custom_template/release") != "") {
+	if (p_preset->get("custom_template/release") != Variant("")) {
 		rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
 		if (!rvalid) {
 			err += TTR("Custom release template not found.") + "\n";
@@ -2518,7 +2518,7 @@ bool EditorExportPlatformMacOS::has_valid_project_configuration(const Ref<Editor
 		} break;
 #ifdef MACOS_ENABLED
 		case 3: { // "codesign"
-			ad_hoc = (p_preset->get("codesign/identity") == "" || p_preset->get("codesign/identity") == "-");
+			ad_hoc = (p_preset->get("codesign/identity") == Variant("") || p_preset->get("codesign/identity") == Variant("-"));
 		} break;
 #endif
 		default: {

@@ -877,7 +877,7 @@ void OpenXRSpatialAnchorCapability::_process_discovery_snapshot(RID p_snapshot) 
 	se_extension->free_spatial_snapshot(p_snapshot);
 
 	// And if this was our discovery snapshot, let's reset it.
-	if (discovery_query_result.is_valid() && discovery_query_result->get_result_value() == p_snapshot) {
+	if (discovery_query_result.is_valid() && RID(discovery_query_result->get_result_value()) == p_snapshot) {
 		discovery_query_result.unref();
 	}
 }

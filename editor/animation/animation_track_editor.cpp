@@ -3551,7 +3551,7 @@ bool AnimationTrackEdit::can_drop_data(const Point2 &p_point, const Variant &p_d
 	if (get_editor()->is_grouping_tracks()) {
 		String base_path = String(animation->track_get_path(track));
 		base_path = base_path.get_slicec(':', 0); // Remove sub-path.
-		if (d["group"] != base_path) {
+		if (String(d["group"]) != base_path) {
 			return false;
 		}
 	}
@@ -3582,7 +3582,7 @@ void AnimationTrackEdit::drop_data(const Point2 &p_point, const Variant &p_data)
 	if (get_editor()->is_grouping_tracks()) {
 		String base_path = String(animation->track_get_path(track));
 		base_path = base_path.get_slicec(':', 0); // Remove sub-path.
-		if (d["group"] != base_path) {
+		if (String(d["group"]) != base_path) {
 			return;
 		}
 	}

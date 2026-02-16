@@ -2461,7 +2461,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->is_mouse_over_selection());
 			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(0, 7).get_center() + Point2i(2, 0), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_viewport()->gui_is_dragging());
-			CHECK(text_edit->get_viewport()->gui_get_drag_data() == "drag");
+			CHECK(String(text_edit->get_viewport()->gui_get_drag_data()) == "drag");
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 4);
@@ -2501,7 +2501,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->is_mouse_over_selection());
 			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(1, 7).get_center() + Point2i(2, 0), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_viewport()->gui_is_dragging());
-			CHECK(text_edit->get_viewport()->gui_get_drag_data() == "'drag'");
+			CHECK(String(text_edit->get_viewport()->gui_get_drag_data()) == "'drag'");
 			CHECK(text_edit->has_selection());
 			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(0, 0).get_center(), MouseButtonMask::LEFT, Key::NONE);
 			SEND_GUI_KEY_EVENT(Key::CMD_OR_CTRL);
@@ -2524,7 +2524,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->is_mouse_over_selection(true, 1));
 			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(1, 12).get_center() + Point2i(2, 0), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_viewport()->gui_is_dragging());
-			CHECK(text_edit->get_viewport()->gui_get_drag_data() == "test\nop");
+			CHECK(String(text_edit->get_viewport()->gui_get_drag_data()) == "test\nop");
 			// Carets aren't removed from dragging, only dropping.
 			CHECK(text_edit->get_caret_count() == 3);
 			CHECK(text_edit->has_selection(0));
@@ -2557,7 +2557,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->is_mouse_over_selection());
 			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(0, 1).get_center() + Point2i(2, 0), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_viewport()->gui_is_dragging());
-			CHECK(text_edit->get_viewport()->gui_get_drag_data() == "here");
+			CHECK(String(text_edit->get_viewport()->gui_get_drag_data()) == "here");
 			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(text_edit->get_rect_at_line_column(1, 7).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
 			CHECK_FALSE(text_edit->get_viewport()->gui_is_dragging());
 			CHECK(text_edit->get_text() == "'drag' \ndr heretest\nop 'drag'");
@@ -2591,7 +2591,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->is_mouse_over_selection());
 			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(0, 1).get_center() + Point2i(2, 0), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_viewport()->gui_is_dragging());
-			CHECK(text_edit->get_viewport()->gui_get_drag_data() == "drag");
+			CHECK(String(text_edit->get_viewport()->gui_get_drag_data()) == "drag");
 			SEND_GUI_KEY_EVENT(Key::ESCAPE);
 			CHECK_FALSE(text_edit->get_viewport()->gui_is_dragging());
 			CHECK(text_edit->get_text() == "'drag' \ndr heretest\nop 'drag'");
@@ -2607,7 +2607,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->is_mouse_over_selection());
 			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(0, 1).get_center() + Point2i(2, 0), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_viewport()->gui_is_dragging());
-			CHECK(text_edit->get_viewport()->gui_get_drag_data() == "drag");
+			CHECK(String(text_edit->get_viewport()->gui_get_drag_data()) == "drag");
 			SEND_GUI_KEY_EVENT(Key::RIGHT);
 			CHECK_FALSE(text_edit->get_viewport()->gui_is_dragging());
 			CHECK(text_edit->get_text() == "'drag' \ndr heretest\nop 'drag'");
@@ -2621,7 +2621,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->is_mouse_over_selection());
 			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(0, 1).get_center() + Point2i(2, 0), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_viewport()->gui_is_dragging());
-			CHECK(text_edit->get_viewport()->gui_get_drag_data() == "drag");
+			CHECK(String(text_edit->get_viewport()->gui_get_drag_data()) == "drag");
 			SEND_GUI_KEY_EVENT(Key::A);
 			CHECK_FALSE(text_edit->get_viewport()->gui_is_dragging());
 			CHECK(text_edit->get_text() == "'A' \ndr heretest\nop 'drag'");
@@ -2655,7 +2655,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->is_mouse_over_selection());
 			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(0, 7).get_center(), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_viewport()->gui_is_dragging());
-			CHECK(text_edit->get_viewport()->gui_get_drag_data() == "drag me");
+			CHECK(String(text_edit->get_viewport()->gui_get_drag_data()) == "drag me");
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 7);
@@ -2742,7 +2742,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->is_mouse_over_selection(true, 0));
 			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(1, 6).get_center(), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_viewport()->gui_is_dragging());
-			CHECK(text_edit->get_viewport()->gui_get_drag_data() == "d\nte");
+			CHECK(String(text_edit->get_viewport()->gui_get_drag_data()) == "d\nte");
 			CHECK(text_edit->has_selection());
 			SEND_GUI_KEY_EVENT(Key::CMD_OR_CTRL);
 			SEND_GUI_MOUSE_MOTION_EVENT(target_text_edit->get_position() + target_text_edit->get_rect_at_line_column(0, 6).get_center() + Point2i(2, 0), MouseButtonMask::LEFT, Key::NONE);
@@ -2774,7 +2774,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->is_mouse_over_selection(true, 0));
 			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(1, 7).get_center(), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_viewport()->gui_is_dragging());
-			CHECK(text_edit->get_viewport()->gui_get_drag_data() == "test");
+			CHECK(String(text_edit->get_viewport()->gui_get_drag_data()) == "test");
 			CHECK(text_edit->has_selection());
 			SEND_GUI_MOUSE_MOTION_EVENT(target_text_edit->get_position() + target_text_edit->get_rect_at_line_column(0, 7).get_center() + Point2i(2, 0), MouseButtonMask::LEFT, Key::NONE);
 			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(target_text_edit->get_position() + target_text_edit->get_rect_at_line_column(0, 7).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
@@ -2801,7 +2801,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->is_mouse_over_selection());
 			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(1, 7).get_center() + Point2i(2, 0), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_viewport()->gui_is_dragging());
-			CHECK(text_edit->get_viewport()->gui_get_drag_data() == " ");
+			CHECK(String(text_edit->get_viewport()->gui_get_drag_data()) == " ");
 			CHECK(text_edit->has_selection());
 			SEND_GUI_MOUSE_MOTION_EVENT(target_text_edit->get_position() + target_text_edit->get_rect_at_line_column(0, 2).get_center() + Point2i(2, 0), MouseButtonMask::LEFT, Key::NONE);
 			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(target_text_edit->get_position() + target_text_edit->get_rect_at_line_column(0, 7).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
@@ -2826,7 +2826,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->is_mouse_over_selection());
 			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(1, 7).get_center() + Point2i(2, 0), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_viewport()->gui_is_dragging());
-			CHECK(text_edit->get_viewport()->gui_get_drag_data() == "rag");
+			CHECK(String(text_edit->get_viewport()->gui_get_drag_data()) == "rag");
 			CHECK(text_edit->has_selection());
 			SEND_GUI_MOUSE_MOTION_EVENT(target_text_edit->get_position() + target_text_edit->get_rect_at_line_column(0, 2).get_center() + Point2i(2, 0), MouseButtonMask::LEFT, Key::NONE);
 			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(target_text_edit->get_position() + target_text_edit->get_rect_at_line_column(0, 2).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
@@ -2844,7 +2844,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->is_mouse_over_selection());
 			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(1, 7).get_center() + Point2i(2, 0), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_viewport()->gui_is_dragging());
-			CHECK(text_edit->get_viewport()->gui_get_drag_data() == "drag");
+			CHECK(String(text_edit->get_viewport()->gui_get_drag_data()) == "drag");
 			CHECK(text_edit->has_selection());
 			SEND_GUI_MOUSE_MOTION_EVENT(target_text_edit->get_position() + target_text_edit->get_rect_at_line_column(0, 4).get_center() + Point2i(2, 0), MouseButtonMask::LEFT, Key::NONE);
 			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(target_text_edit->get_position() + target_text_edit->get_rect_at_line_column(0, 4).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
@@ -8222,11 +8222,11 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 		text_edit->set_line_gutter_metadata(2, 0, "test");
 		text_edit->set_line_gutter_metadata(-1, 0, "test");
 
-		CHECK(text_edit->get_line_gutter_metadata(1, 0) == "test");
-		CHECK(text_edit->get_line_gutter_metadata(0, -1) == "");
-		CHECK(text_edit->get_line_gutter_metadata(0, 2) == "");
-		CHECK(text_edit->get_line_gutter_metadata(2, 0) == "");
-		CHECK(text_edit->get_line_gutter_metadata(-1, 0) == "");
+		CHECK(String(text_edit->get_line_gutter_metadata(1, 0)) == "test");
+		CHECK(String(text_edit->get_line_gutter_metadata(0, -1)) == "");
+		CHECK(String(text_edit->get_line_gutter_metadata(0, 2)) == "");
+		CHECK(String(text_edit->get_line_gutter_metadata(2, 0)) == "");
+		CHECK(String(text_edit->get_line_gutter_metadata(-1, 0)) == "");
 
 		text_edit->set_line_gutter_text(1, 0, "test");
 		text_edit->set_line_gutter_text(0, -1, "test");

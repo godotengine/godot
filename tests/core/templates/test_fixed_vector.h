@@ -94,8 +94,8 @@ TEST_CASE("[FixedVector] Basic Checks") {
 	vector_variant[1] = 1;
 	CHECK_EQ(vector_variant.capacity(), 3);
 	CHECK_EQ(vector_variant.size(), 3);
-	CHECK_EQ(vector_variant[0], "Test");
-	CHECK_EQ(vector_variant[1], Variant(1));
+	CHECK_EQ(String(vector_variant[0]), "Test");
+	CHECK_EQ(int32_t(vector_variant[1]), 1);
 	CHECK_EQ(vector_variant[2].get_type(), Variant::NIL);
 
 	// Test that move-only types are transferred.

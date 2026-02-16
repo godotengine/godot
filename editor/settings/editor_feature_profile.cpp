@@ -906,7 +906,7 @@ void EditorFeatureProfileManager::set_current_profile(const String &p_profile_na
 		// Change profile selection to emulate the UI interaction. Otherwise, the wrong profile would get activated.
 		// FIXME: Ideally, _update_selected_profile() should not rely on the user interface state to function properly.
 		for (int i = 0; i < profile_list->get_item_count(); i++) {
-			if (profile_list->get_item_metadata(i) == p_profile_name) {
+			if (String(profile_list->get_item_metadata(i)) == p_profile_name) {
 				profile_list->select(i);
 				break;
 			}

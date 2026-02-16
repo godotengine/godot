@@ -1213,11 +1213,11 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			bool got_comma_token = false;
 			if (builtin_types.has(token.value)) {
 				key_type = builtin_types.get(token.value);
-			} else if (token.value == "Resource" || token.value == "SubResource" || token.value == "ExtResource") {
+			} else if (String(token.value) == "Resource" || String(token.value) == "SubResource" || String(token.value) == "ExtResource") {
 				Variant resource;
 				err = parse_value(token, resource, p_stream, line, r_err_str, p_res_parser);
 				if (err) {
-					if (token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && token.type == TK_COMMA) {
+					if (String(token.value) == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && token.type == TK_COMMA) {
 						err = OK;
 						r_err_str = String();
 						key_type = Variant::OBJECT;
@@ -1259,11 +1259,11 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			bool got_bracket_token = false;
 			if (builtin_types.has(token.value)) {
 				value_type = builtin_types.get(token.value);
-			} else if (token.value == "Resource" || token.value == "SubResource" || token.value == "ExtResource") {
+			} else if (String(token.value) == "Resource" || String(token.value) == "SubResource" || String(token.value) == "ExtResource") {
 				Variant resource;
 				err = parse_value(token, resource, p_stream, line, r_err_str, p_res_parser);
 				if (err) {
-					if (token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && token.type == TK_BRACKET_CLOSE) {
+					if (String(token.value) == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && token.type == TK_BRACKET_CLOSE) {
 						err = OK;
 						r_err_str = String();
 						value_type = Variant::OBJECT;
@@ -1350,11 +1350,11 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			bool got_bracket_token = false;
 			if (builtin_types.has(token.value)) {
 				array.set_typed(builtin_types.get(token.value), StringName(), Variant());
-			} else if (token.value == "Resource" || token.value == "SubResource" || token.value == "ExtResource") {
+			} else if (String(token.value) == "Resource" || String(token.value) == "SubResource" || String(token.value) == "ExtResource") {
 				Variant resource;
 				err = parse_value(token, resource, p_stream, line, r_err_str, p_res_parser);
 				if (err) {
-					if (token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && token.type == TK_BRACKET_CLOSE) {
+					if (String(token.value) == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && token.type == TK_BRACKET_CLOSE) {
 						err = OK;
 						r_err_str = String();
 						array.set_typed(Variant::OBJECT, token.value, Variant());

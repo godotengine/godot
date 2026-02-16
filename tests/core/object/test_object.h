@@ -191,7 +191,7 @@ TEST_CASE("[Object] Metadata") {
 			"Not conflicting meta on destination should be kept intact.");
 
 	CHECK_MESSAGE(
-			object.get_meta("other_meta", String()) == "other",
+			String(object.get_meta("other_meta")) == "other",
 			"Not conflicting meta name on source should merged.");
 
 	List<StringName> meta_list3;
