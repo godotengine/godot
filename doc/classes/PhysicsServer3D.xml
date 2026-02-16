@@ -868,6 +868,7 @@
 			<param index="0" name="joint" type="RID" />
 			<description>
 				Gets the priority value of the Joint3D.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This method always returns [code]1[/code] when using Jolt Physics, as it does not support joint solver priority.
 			</description>
 		</method>
 		<method name="joint_get_type" qualifiers="const">
@@ -941,6 +942,7 @@
 			<param index="1" name="priority" type="int" />
 			<description>
 				Sets the priority value of the Joint3D.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This method has no effect when using Jolt Physics, as it does not support joint solver priority.
 			</description>
 		</method>
 		<method name="pin_joint_get_local_a" qualifiers="const">
@@ -1457,18 +1459,20 @@
 			Represents the size of the [enum JointType] enum.
 		</constant>
 		<constant name="PIN_JOINT_BIAS" value="0" enum="PinJointParam">
-			The strength with which the pinned objects try to stay in positional relation to each other.
-			The higher, the stronger.
+			The strength with which the pinned objects try to stay in positional relation to each other. The higher, the stronger.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="PIN_JOINT_DAMPING" value="1" enum="PinJointParam">
-			The strength with which the pinned objects try to stay in velocity relation to each other.
-			The higher, the stronger.
+			The strength with which the pinned objects try to stay in velocity relation to each other. The higher, the stronger.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="PIN_JOINT_IMPULSE_CLAMP" value="2" enum="PinJointParam">
 			If above 0, this value is the maximum value for an impulse that this Joint3D puts on its ends.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="HINGE_JOINT_BIAS" value="0" enum="HingeJointParam">
 			The speed with which the two bodies get pulled together when they move in different directions.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="HINGE_JOINT_LIMIT_UPPER" value="1" enum="HingeJointParam">
 			The maximum rotation across the Hinge.
@@ -1478,11 +1482,14 @@
 		</constant>
 		<constant name="HINGE_JOINT_LIMIT_BIAS" value="3" enum="HingeJointParam">
 			The speed with which the rotation across the axis perpendicular to the hinge gets corrected.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="HINGE_JOINT_LIMIT_SOFTNESS" value="4" enum="HingeJointParam">
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="HINGE_JOINT_LIMIT_RELAXATION" value="5" enum="HingeJointParam">
 			The lower this value, the more the rotation gets slowed down.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="HINGE_JOINT_MOTOR_TARGET_VELOCITY" value="6" enum="HingeJointParam">
 			Target speed for the motor.
@@ -1504,63 +1511,83 @@
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS" value="2" enum="SliderJointParam">
 			A factor applied to the movement across the slider axis once the limits get surpassed. The lower, the slower the movement.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION" value="3" enum="SliderJointParam">
 			The amount of restitution once the limits are surpassed. The lower, the more velocity-energy gets lost.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_LIMIT_DAMPING" value="4" enum="SliderJointParam">
 			The amount of damping once the slider limits are surpassed.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_MOTION_SOFTNESS" value="5" enum="SliderJointParam">
 			A factor applied to the movement across the slider axis as long as the slider is in the limits. The lower, the slower the movement.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_MOTION_RESTITUTION" value="6" enum="SliderJointParam">
 			The amount of restitution inside the slider limits.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_MOTION_DAMPING" value="7" enum="SliderJointParam">
 			The amount of damping inside the slider limits.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS" value="8" enum="SliderJointParam">
 			A factor applied to the movement across axes orthogonal to the slider.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION" value="9" enum="SliderJointParam">
 			The amount of restitution when movement is across axes orthogonal to the slider.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING" value="10" enum="SliderJointParam">
 			The amount of damping when movement is across axes orthogonal to the slider.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_UPPER" value="11" enum="SliderJointParam">
 			The upper limit of rotation in the slider.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_LOWER" value="12" enum="SliderJointParam">
 			The lower limit of rotation in the slider.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS" value="13" enum="SliderJointParam">
 			A factor applied to the all rotation once the limit is surpassed.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_RESTITUTION" value="14" enum="SliderJointParam">
 			The amount of restitution of the rotation when the limit is surpassed.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_DAMPING" value="15" enum="SliderJointParam">
 			The amount of damping of the rotation when the limit is surpassed.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_ANGULAR_MOTION_SOFTNESS" value="16" enum="SliderJointParam">
 			A factor that gets applied to the all rotation in the limits.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_ANGULAR_MOTION_RESTITUTION" value="17" enum="SliderJointParam">
 			The amount of restitution of the rotation in the limits.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_ANGULAR_MOTION_DAMPING" value="18" enum="SliderJointParam">
 			The amount of damping of the rotation in the limits.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS" value="19" enum="SliderJointParam">
 			A factor that gets applied to the all rotation across axes orthogonal to the slider.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION" value="20" enum="SliderJointParam">
 			The amount of restitution of the rotation across axes orthogonal to the slider.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING" value="21" enum="SliderJointParam">
 			The amount of damping of the rotation across axes orthogonal to the slider.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_MAX" value="22" enum="SliderJointParam">
 			Represents the size of the [enum SliderJointParam] enum.
@@ -1568,22 +1595,22 @@
 		<constant name="CONE_TWIST_JOINT_SWING_SPAN" value="0" enum="ConeTwistJointParam">
 			Swing is rotation from side to side, around the axis perpendicular to the twist axis.
 			The swing span defines, how much rotation will not get corrected along the swing axis.
-			Could be defined as looseness in the [ConeTwistJoint3D].
-			If below 0.05, this behavior is locked.
+			Could be defined as looseness in the [ConeTwistJoint3D]. If below 0.05, this behavior is locked.
 		</constant>
 		<constant name="CONE_TWIST_JOINT_TWIST_SPAN" value="1" enum="ConeTwistJointParam">
-			Twist is the rotation around the twist axis, this value defined how far the joint can twist.
-			Twist is locked if below 0.05.
+			Twist is the rotation around the twist axis, this value defined how far the joint can twist. Twist is locked if below 0.05.
 		</constant>
 		<constant name="CONE_TWIST_JOINT_BIAS" value="2" enum="ConeTwistJointParam">
-			The speed with which the swing or twist will take place.
-			The higher, the faster.
+			The speed with which the swing or twist will take place. The higher, the faster.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="CONE_TWIST_JOINT_SOFTNESS" value="3" enum="ConeTwistJointParam">
 			The ease with which the Joint3D twists, if it's too low, it takes more force to twist the joint.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="CONE_TWIST_JOINT_RELAXATION" value="4" enum="ConeTwistJointParam">
 			Defines, how fast the swing- and twist-speed-difference on both sides gets synced.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="G6DOF_JOINT_LINEAR_LOWER_LIMIT" value="0" enum="G6DOFJointAxisParam">
 			The minimum difference between the pivot points' axes.
@@ -1593,12 +1620,15 @@
 		</constant>
 		<constant name="G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS" value="2" enum="G6DOFJointAxisParam">
 			A factor that gets applied to the movement across the axes. The lower, the slower the movement.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="G6DOF_JOINT_LINEAR_RESTITUTION" value="3" enum="G6DOFJointAxisParam">
 			The amount of restitution on the axes movement. The lower, the more velocity-energy gets lost.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="G6DOF_JOINT_LINEAR_DAMPING" value="4" enum="G6DOFJointAxisParam">
 			The amount of damping that happens at the linear motion across the axes.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="G6DOF_JOINT_LINEAR_MOTOR_TARGET_VELOCITY" value="5" enum="G6DOFJointAxisParam">
 			The velocity that the joint's linear motor will attempt to reach.
@@ -1620,18 +1650,23 @@
 		</constant>
 		<constant name="G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS" value="12" enum="G6DOFJointAxisParam">
 			A factor that gets multiplied onto all rotations across the axes.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="G6DOF_JOINT_ANGULAR_DAMPING" value="13" enum="G6DOFJointAxisParam">
 			The amount of rotational damping across the axes. The lower, the more damping occurs.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="G6DOF_JOINT_ANGULAR_RESTITUTION" value="14" enum="G6DOFJointAxisParam">
 			The amount of rotational restitution across the axes. The lower, the more restitution occurs.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="G6DOF_JOINT_ANGULAR_FORCE_LIMIT" value="15" enum="G6DOFJointAxisParam">
 			The maximum amount of force that can occur, when rotating around the axes.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="G6DOF_JOINT_ANGULAR_ERP" value="16" enum="G6DOFJointAxisParam">
 			When correcting the crossing of limits in rotation across the axes, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY" value="17" enum="G6DOFJointAxisParam">
 			Target speed for the motor at the axes.
@@ -1853,9 +1888,11 @@
 		</constant>
 		<constant name="SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD" value="4" enum="SpaceParameter">
 			Constant to set/get the threshold linear velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD" value="5" enum="SpaceParameter">
 			Constant to set/get the threshold angular velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SPACE_PARAM_BODY_TIME_TO_SLEEP" value="6" enum="SpaceParameter">
 			Constant to set/get the maximum time of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after this time.
