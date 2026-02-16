@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -8,40 +7,34 @@ namespace Godot.Bridge
     internal static class ScriptMethodCache<T>
         where T : GodotObject
     {
-
-        [StructLayout(LayoutKind.Sequential, Pack = 8)]
-        private struct MethodSlot
-        {
-            public IntPtr Key; // 8 Byte
-            public int ArgCount; // 4 Byte
-            public ScriptMethod<GodotObject> Method; // 8 Byte (reference)
-            // The CPU pads here often up to 24 or 32 bytes,
-            // which fits perfectly in a 64 bytes cache line.
-        }
-
-        private const int Tries = 8;
+        private const int MaxProbes = 4;
+        private const double MaxAverageProbes = 1.5;
         private const int SizeLimit = 8192;
 
-        private static MethodSlot[] _table;
+        private static IntPtr[] _keys;
+        private static byte[] _argCounts;
+        private static ScriptMethod<GodotObject>[] _methods;
+
         private static int _mask;
         private static int _shift;
         private static bool _useMixer;
+        private static int _finalMaxProbes;
 
         public static void Initialize((IntPtr ptr, int argc, ScriptMethod<GodotObject> method)[] methods)
         {
             int capacity = methods.Length;
             int maxProbes = int.MaxValue;
-            double averageProbes = Tries;
+            double averageProbes = MaxProbes;
 
             // calculate optimal size (2^n) for optimal masking
             bool requestMoreSize = true;
             int size = 1;
-            int potenz = 0;
+            int power = 0;
             while (size < capacity * 2)
             {
                 size <<= 1;
-                potenz++;
-                _shift = 64 - potenz;
+                power++;
+                _shift = 64 - power;
             }
 
             while (requestMoreSize)
@@ -49,16 +42,24 @@ namespace Godot.Bridge
                 requestMoreSize = false;
 
                 _mask = size - 1;
-                _table = new MethodSlot[size];
+                _keys = new IntPtr[size];
+                _argCounts = new byte[size];
+                _methods = new ScriptMethod<GodotObject>[size];
 
                 foreach (var method in methods)
                 {
                     int currentMaxProbes = 0;
                     int slot = GetSlot(method.ptr);
-                    while (_table[slot].Key != IntPtr.Zero)
+                    while (_keys[slot] != IntPtr.Zero)
                     {
                         currentMaxProbes++;
                         slot = (slot + 1) & _mask;
+                        if (currentMaxProbes > MaxProbes &&
+                            CanRequestMoreSize(size))
+                        {
+                            requestMoreSize = true;
+                            break;
+                        }
                     }
 
                     if (requestMoreSize)
@@ -66,22 +67,20 @@ namespace Godot.Bridge
                         break;
                     }
 
-                    _table[slot] = new MethodSlot
-                    {
-                        Method = (ScriptMethod<GodotObject>)(object)method.method,
-                        ArgCount = method.argc,
-                        Key = method.ptr
-                    };
+                    _keys[slot] = method.ptr;
+                    _argCounts[slot] = (byte)method.argc;
+                    _methods[slot] = (ScriptMethod<GodotObject>)(object)method.method;
                 }
 
                 if (!requestMoreSize)
                 {
-                    (averageProbes, maxProbes) = CalculateDiagnostics();
+                    // check if amount of probes is still reasonable fast
+                    (averageProbes, maxProbes, _) = CalculateDiagnostics();
 
-                    if (maxProbes >= 3 ||
-                        averageProbes >= 2)
+                    if (maxProbes > MaxProbes ||
+                        averageProbes > MaxAverageProbes)
                     {
-                        if (size < SizeLimit)
+                        if (CanRequestMoreSize(size))
                         {
                             requestMoreSize = true;
                         }
@@ -90,24 +89,34 @@ namespace Godot.Bridge
 
                 if (requestMoreSize)
                 {
-                    Console.WriteLine("Requesting more capacity...");
+                    // requesting more capacity
                     if (!_useMixer)
                     {
+                        // mix before enlarging size
                         _useMixer = true;
-                        Console.WriteLine("Mix before enlarging size");
                     }
                     else
                     {
-                        Console.WriteLine("More size");
+                        // increase size
                         _useMixer = false;
                         size <<= 1;
-                        potenz++;
-                        _shift = 64 - potenz;
+                        power++;
+                        _shift = 64 - power;
                     }
 
                     continue;
                 }
             }
+
+            var (finalAverageProbes, finalMaxProbes, FinalCount) = CalculateDiagnostics();
+            //GD.Print($"Final: Size: {_keys.Length}, Items: {FinalCount}, Avg Probes: {finalAverageProbes:F2}, Max: {finalMaxProbes}\n");
+            _finalMaxProbes = finalMaxProbes; // if size cannot be increased this is the real worst count of probes
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool CanRequestMoreSize(int size)
+        {
+            return size < SizeLimit;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -116,15 +125,15 @@ namespace Godot.Bridge
             int slot = GetSlot(namePtr);
 
             int i;
-            for (i = 0; i < Tries; i++)
+            for (i = 0; i < _finalMaxProbes; i++)
             {
                 int curr = (slot + i) & _mask;
-                IntPtr key = _table[curr].Key;
+                IntPtr key = _keys[curr];
 
                 if (key == namePtr &&
-                    _table[curr].ArgCount == argCount)
+                    _argCounts[curr] == argCount)
                 {
-                    method = (ScriptMethod<T>)(object)_table[curr].Method;
+                    method = (ScriptMethod<T>)(object)_methods[curr];
                     return true;
                 }
 
@@ -133,9 +142,10 @@ namespace Godot.Bridge
                     break;
                 }
             }
-            if (i == Tries)
+
+            if (i == _finalMaxProbes)
             {
-                Console.WriteLine("LIMIT REACHED - NOT FOUND");
+                GD.PushWarning("ScriptMethodCache: Limit reached but no method match found");
             }
 
             method = default;
@@ -148,15 +158,15 @@ namespace Godot.Bridge
             int slot = GetSlot(namePtr);
 
             int i;
-            for (i = 0; i < Tries; i++)
+            for (i = 0; i < _finalMaxProbes; i++)
             {
                 int curr = (slot + i) & _mask;
-                IntPtr key = _table[curr].Key;
+                IntPtr key = _keys[curr];
 
                 if (key == namePtr &&
-                    _table[curr].ArgCount == argCount)
+                    _argCounts[curr] == argCount)
                 {
-                    return ref _table[curr].Method;
+                    return ref _methods[curr];
                 }
 
                 if (key == IntPtr.Zero)
@@ -164,9 +174,10 @@ namespace Godot.Bridge
                     break;
                 }
             }
-            if (i == Tries)
+
+            if (i == _finalMaxProbes)
             {
-                Console.WriteLine("LIMIT REACHED - NOT FOUND");
+                GD.PushWarning($"ScriptMethodCache: Limit {_finalMaxProbes} reached but no method match found");
             }
 
             return ref Unsafe.NullRef<ScriptMethod<GodotObject>>();
@@ -194,32 +205,56 @@ namespace Godot.Bridge
             return (int)((x * 11400714819323198485uL) >> _shift);
         }
 
-        public static (double AverageProbes, int MaxProbes) CalculateDiagnostics()
+        public static (double AverageProbes, int MaxProbes, int Count) CalculateDiagnostics()
         {
-            long totalProbes = 0;
-            int maxProbes = 0;
-            int count = 0;
+            var totalProbes = 0L;
+            var maxProbes = 0;
+            var count = 0;
 
-            for (int i = 0; i < _table.Length; i++)
+            for (int i = 0; i < _keys.Length; i++)
             {
-                if (_table[i].Key != IntPtr.Zero)
+                var searchKey = _keys[i];
+                if (searchKey != IntPtr.Zero)
                 {
                     count++;
-                    int idealSlot = GetSlot(_table[i].Key);
+
+                    var idealSlot = GetSlot(_keys[i]);
+                    var searchArgCount = _argCounts[i];
+                    int probesNeeded = 1;
+
+                    int currentSlot = idealSlot;
+                    while (true)
+                    {
+                        if (_keys[currentSlot] == searchKey &&
+                            _argCounts[currentSlot] == searchArgCount)
+                        {
+                            break;
+                        }
+
+                        currentSlot = (currentSlot + 1) & _mask;
+                        probesNeeded++;
+
+                        // safety-check if table is corrupt somehow
+                        if (probesNeeded > _keys.Length)
+                        {
+                            break;
+                        }
+                    }
 
                     // calculate distance
-                    int distance = (i - idealSlot + _table.Length) & _mask;
-                    distance += 1;
-
-                    totalProbes += distance;
-                    if (distance > maxProbes) maxProbes = distance;
+                    totalProbes += probesNeeded;
+                    if (probesNeeded > maxProbes)
+                    {
+                        maxProbes = probesNeeded;
+                    }
                 }
             }
 
-            var averageProbes = (double)totalProbes / count;
-            Console.WriteLine($"Size: {_table.Length}, Items: {count}, Avg Probes: {averageProbes:F2}, Max: {maxProbes}");
+            var averageProbes = count == 0 ? 0 : (double)totalProbes / count;
 
-            return (averageProbes, maxProbes);
+            //GD.Print($"Size: {_keys.Length}, Items: {count}, Avg Probes: {averageProbes:F2}, Max: {maxProbes}");
+
+            return (averageProbes, maxProbes, count);
         }
     }
 }
