@@ -123,6 +123,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 	Button *curve_del = nullptr;
 	Button *curve_closed = nullptr;
 	Button *curve_clear_points = nullptr;
+	Button *curve_smooth_points = nullptr;
 	MenuButton *handle_menu = nullptr;
 
 	Button *create_curve_button = nullptr;
@@ -154,6 +155,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 	void _confirm_clear_points();
 	void _clear_points();
 	void _smooth_points();
+	void _smooth_curve_points();
 	void _clear_curve_points();
 	void _restore_curve_points(const PackedVector3Array &p_points);
 

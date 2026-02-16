@@ -873,13 +873,19 @@ void Path3DEditorPlugin::_smooth_curve_points(){
 	}
 	Ref<Curve3D> curve = path->get_curve();
 	const float smooth_ratio = 0.33;
-	for (int i = 1; i < curve.get_point_count() -1; i += 1) {
-		Vector3 previous_point = curve->samplef(i-smooth_ratio);
-		Vector3 next_point = curve.samplef(i+smooth_ratio);
-		Vector3 point_in =  previous_point - next_point;
-		Vector3 point_out = next_point - previous_point;
-		curve -> set_point_in(i,point_in);
-		curve -> set_point_out(i,point_out);
+	for (int i = 0; i < curve->get_point_count(); i++) {
+		if (i > 0) {
+			Vector3 p_prev = curve->get_point_position(i - 1);
+			Vector3 p_curr = curve->get_point_position(i);
+			Vector3 direction = p_curr - p_prev;
+			curve->set_point_in(i, -direction * smoothness);
+		}
+		if (i < curve->get_point_count() - 1) {
+			Vector3 p_curr = curve->get_point_position(i);
+			Vector3 p_next = curve->get_point_position(i + 1);
+			Vector3 direction = p_next - p_curr;
+			curve->set_point_out(i, direction * smoothness);
+		}
 	}
 }
 
@@ -925,7 +931,7 @@ void Path3DEditorPlugin::_update_theme() {
 	curve_del->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveDelete")));
 	curve_closed->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveClose")));
 	curve_clear_points->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("Clear")));
-	curve_smooth_points->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveClose")));
+	curve_smooth_points->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveSmooth")));
 	create_curve_button->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("Curve3D")));
 }
 
@@ -1006,6 +1012,7 @@ void Path3DEditorPlugin::_notification(int p_what) {
 void Path3DEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_toolbar"), &Path3DEditorPlugin::_update_toolbar);
 	ClassDB::bind_method(D_METHOD("_clear_curve_points"), &Path3DEditorPlugin::_clear_curve_points);
+	ClassDB::bind_method(D_METHOD("_smooth_curve_points"), &Path3DEditorPlugin::_smooth_curve_points);
 	ClassDB::bind_method(D_METHOD("_restore_curve_points"), &Path3DEditorPlugin::_restore_curve_points);
 }
 
@@ -1075,12 +1082,12 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	toolbar->add_child(curve_closed);
 	curve_closed->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_toggle_closed_curve));
 
-	smooth_points = memnew(Button);
-	smooth_points->set_theme_type_variation(SceneStringName(FlatButton));
-	smooth_points->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	smooth_points->set_tooltip_text(TTR("Smooth Points"));
-	toolbar->add_child(smooth_points);
-	curve_clear_points->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_smooth_points));
+	curve_smooth_points = memnew(Button);
+	curve_smooth_points->set_theme_type_variation(SceneStringName(FlatButton));
+	curve_smooth_points->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	curve_smooth_points->set_tooltip_text(TTR("Smooth Points"));
+	toolbar->add_child(curve_smooth_points);
+	curve_smooth_points->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_smooth_points));
 
 	curve_clear_points = memnew(Button);
 	curve_clear_points->set_theme_type_variation(SceneStringName(FlatButton));
