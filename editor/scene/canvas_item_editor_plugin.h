@@ -274,6 +274,7 @@ private:
 	bool key_scale = false;
 
 	bool pan_pressed = false;
+	// temporary pivot, in canvas coordinates
 	Vector2 temp_pivot = Vector2(Math::INF, Math::INF);
 
 	bool ruler_tool_active = false;
@@ -657,6 +658,7 @@ public:
 	int current_hover_gizmo_handle;
 	bool current_hover_gizmo_handle_secondary;
 	bool gizmos_dirty = false;
+	Vector2 selected_subgizmos_center;
 
 	bool is_current_selected_gizmo(const EditorCanvasItemGizmo *p_gizmo);
 	Ref<EditorCanvasItemGizmo> get_current_hover_gizmo() { return current_hover_gizmo; }
@@ -668,8 +670,7 @@ public:
 	Vector<int> get_subgizmo_selection();
 	void clear_subgizmo_selection(Object *p_obj = nullptr);
 	void refresh_dirty_gizmos();
-	// TODO: GIZMOS actually implement this.
-	void update_transform_gizmo() {}
+	void update_transform_gizmo();
 	void update_all_gizmos(Node *p_node = nullptr);
 	void add_gizmo_plugin(Ref<EditorCanvasItemGizmoPlugin> p_plugin);
 	void remove_gizmo_plugin(Ref<EditorCanvasItemGizmoPlugin> p_plugin);

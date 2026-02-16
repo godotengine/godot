@@ -1889,9 +1889,6 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 					CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
 					if (!Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y)) {
 						drag_rotation_center = temp_pivot;
-					} else if (se && se->gizmo.is_valid()) {
-						// if subgizmos are selected, the rotation center is the position of the first subgizmo
-						drag_rotation_center = ci->get_screen_transform().xform(se->subgizmos.begin()->value.get_origin());
 					} else if (_use_edit_pivot(ci)) {
 						drag_rotation_center = ci->get_screen_transform().xform(_get_edit_pivot(ci));
 					} else {
@@ -2414,6 +2411,12 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 			// Remove non-movable nodes.
 			for (CanvasItem *ci : selection) {
 				if (!_is_node_movable(ci, true)) {
+					// if the node has subgizmos selected, we can still scale those
+					CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
+					if (se->gizmo.is_valid()) {
+						continue;
+					}
+					// otherwise
 					selection.erase(ci);
 				}
 			}
@@ -2466,10 +2469,73 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 	} else if (drag_type == DRAG_SCALE_BOTH || drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y) {
 		// Resize the node
 		if (m.is_valid()) {
-			_restore_drag_selection_state();
-
 			drag_to = transform.affine_inverse().xform(m->get_position());
 
+			// subgizmo handling
+			{
+				CanvasItemEditorSelectedItem *se = _get_selected_subgizmo();
+				if (se) {
+					Transform2D edit_transform;
+					bool uniform = m->is_shift_pressed();
+					bool is_ctrl = m->is_command_or_control_pressed();
+
+					if (temp_pivot.is_finite()) {
+						edit_transform = Transform2D(selected_canvas_item->_edit_get_rotation(), temp_pivot);
+					} else {
+						edit_transform = selected_canvas_item->_edit_get_transform();
+					}
+					Transform2D parent_xform = selected_canvas_item->get_screen_transform() * selected_canvas_item->get_transform().affine_inverse();
+					Transform2D unscaled_transform = (transform * parent_xform * edit_transform).orthonormalized();
+					Transform2D simple_xform;
+
+					if (drag_type == DRAG_SCALE_BOTH) {
+						simple_xform = (viewport->get_transform() * unscaled_transform).affine_inverse() * transform;
+					} else {
+						Transform2D translation = Transform2D(0.0f, unscaled_transform.get_origin());
+						simple_xform = (viewport->get_transform() * translation).affine_inverse() * transform;
+					}
+
+					Point2 drag_from_local = simple_xform.xform(drag_from);
+					Point2 drag_to_local = simple_xform.xform(drag_to);
+					Size2 scale_factor = Size2(1.0f, 1.0f);
+					scale_factor = drag_to_local / drag_from_local;
+
+					if (drag_type == DRAG_SCALE_X) {
+						scale_factor.y = 1.0f;
+					}
+					if (drag_type == DRAG_SCALE_Y) {
+						scale_factor.x = 1.0f;
+					}
+
+					if (uniform) {
+						scale_factor.x = (scale_factor.x + scale_factor.y) / 2.0f;
+						scale_factor.y = scale_factor.x;
+					}
+
+					for (KeyValue<int, Transform2D> &entry : se->subgizmos) {
+						Transform2D gizmo_xform = entry.value;
+						Vector2 gizmo_pos = gizmo_xform.get_origin();
+						// scale in place, move to origin, scale, move back
+						Transform2D new_gizmo_xform = gizmo_xform.translated(-gizmo_pos).scaled(scale_factor).translated(gizmo_pos);
+
+						// if we have a temp pivot, move each gizmo relative to the temp pivot, otherwise use the center of
+						// the selection as pivot
+						Vector2 pivot_local_pos = selected_subgizmos_center;
+						if (temp_pivot.is_finite()) {
+							// temp pivot is in canvas coordinates so we need to convert to to local
+							pivot_local_pos = selected_canvas_item->get_global_transform().affine_inverse().xform(temp_pivot);
+						}
+
+						Vector2 move_towards = (pivot_local_pos - gizmo_xform.get_origin()) * (Vector2(1.0, 1.0) - scale_factor);
+						new_gizmo_xform = new_gizmo_xform.translated(move_towards);
+
+						se->gizmo->_set_subgizmo_transform(entry.key, new_gizmo_xform);
+					}
+					return true;
+				}
+			}
+
+			_restore_drag_selection_state();
 			Size2 scale_max;
 			if (drag_type != DRAG_SCALE_BOTH) {
 				for (CanvasItem *ci : drag_selection) {
@@ -4394,23 +4460,11 @@ void CanvasItemEditor::_draw_selection() {
 		CanvasItem *ci = selection.front()->get();
 
 		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
-
 		Transform2D subgizmo_xform;
 		// If subgizmos are selected, we use the subgizmo's transform(s) for positioning the scale/rotate/move handles
 		// similar to the dedicated transform gizmo in 3D.
 		if (se && se->gizmo.is_valid()) {
-			if (se->subgizmos.size() == 1) {
-				// single transform, keep offset/rotation, ignore scale
-				subgizmo_xform = se->subgizmos.begin()->value.orthonormalized();
-			} else {
-				// multiple transforms, calculate average offset, ignore scale/rotation
-				Vector2 offset;
-				for (const KeyValue<int, Transform2D> &kv : se->subgizmos) {
-					offset += kv.value.orthonormalized().get_origin();
-				}
-				offset /= static_cast<real_t>(se->subgizmos.size());
-				subgizmo_xform = Transform2D().translated(offset);
-			}
+			subgizmo_xform = Transform2D().translated(selected_subgizmos_center);
 		}
 
 		Transform2D xform = transform * ci->get_screen_transform();
@@ -5108,6 +5162,25 @@ void CanvasItemEditor::refresh_dirty_gizmos() {
 		}
 	}
 	gizmos_dirty = false;
+}
+
+void CanvasItemEditor::update_transform_gizmo() {
+	if (!selected_canvas_item) {
+		selected_subgizmos_center = Vector2(Math::INF, Math::INF);
+		return;
+	}
+
+	CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(selected_canvas_item);
+	if (se && se->gizmo.is_valid()) {
+		Vector2 offset;
+		for (const KeyValue<int, Transform2D> &kv : se->subgizmos) {
+			offset += kv.value.orthonormalized().get_origin();
+		}
+		offset /= static_cast<real_t>(se->subgizmos.size());
+		selected_subgizmos_center = offset;
+	} else {
+		selected_subgizmos_center = Vector2(Math::INF, Math::INF);
+	}
 }
 
 void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
