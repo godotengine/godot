@@ -398,18 +398,6 @@ const Vector3 &RigidBody3D::get_center_of_mass() const {
 	return center_of_mass;
 }
 
-void RigidBody3D::set_show_center_of_mass(bool p_show) {
-	if (show_center_of_mass == p_show) {
-		return;
-	}
-	show_center_of_mass = p_show;
-	update_gizmos();
-}
-
-bool RigidBody3D::is_showing_center_of_mass() const {
-	return show_center_of_mass;
-}
-
 void RigidBody3D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
 		physics_material_override->disconnect_changed(callable_mp(this, &RigidBody3D::_reload_physics_characteristics));
@@ -696,9 +684,6 @@ void RigidBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_center_of_mass", "center_of_mass"), &RigidBody3D::set_center_of_mass);
 	ClassDB::bind_method(D_METHOD("get_center_of_mass"), &RigidBody3D::get_center_of_mass);
-
-	ClassDB::bind_method(D_METHOD("set_show_center_of_mass", "show"), &RigidBody3D::set_show_center_of_mass);
-	ClassDB::bind_method(D_METHOD("is_showing_center_of_mass"), &RigidBody3D::is_showing_center_of_mass);
 
 	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &RigidBody3D::set_physics_material_override);
 	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &RigidBody3D::get_physics_material_override);

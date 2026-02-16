@@ -33,9 +33,9 @@
 #include "scene/3d/physics/rigid_body_3d.h"
 
 RigidBody3DGizmoPlugin::RigidBody3DGizmoPlugin() {
-	// Center of mass indicator color (orange)
-	const Color com_color = Color(1.0, 0.6, 0.0);
-	create_material("center_of_mass_material", com_color);
+	// Materials for center of mass crosshair.
+	create_material("center_of_mass_material_custom", Color(1.0, 0.0, 1.0)); // Magenta
+	create_material("center_of_mass_material_auto", Color(1.0, 0.6, 0.0)); // Orange
 }
 
 bool RigidBody3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -58,7 +58,7 @@ void RigidBody3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 
-	if (!rigid_body->is_showing_center_of_mass()) {
+	if (!p_gizmo->is_selected()) {
 		return;
 	}
 
@@ -79,6 +79,11 @@ void RigidBody3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	lines.push_back(center_of_mass + Vector3(0, 0, -extents));
 	lines.push_back(center_of_mass + Vector3(0, 0, +extents));
 
-	Ref<Material> material = get_material("center_of_mass_material", p_gizmo);
+	// Color of the center of mass indicator.
+	String mat_name = (rigid_body->get_center_of_mass_mode() == RigidBody3D::CENTER_OF_MASS_MODE_CUSTOM)
+			? "center_of_mass_material_custom"
+			: "center_of_mass_material_auto";  
+
+	Ref<Material> material = get_material(mat_name, p_gizmo);
 	p_gizmo->add_lines(lines, material);
 }

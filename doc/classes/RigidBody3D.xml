@@ -233,9 +233,6 @@
 			The physics material override for the body.
 			If a material is assigned to this property, it will be used instead of any other physics material, such as an inherited one.
 		</member>
-		<member name="show_center_of_mass" type="bool" setter="set_show_center_of_mass" getter="is_showing_center_of_mass" default="false">
-			If [code]true[/code], displays a crosshair indicator at the center of mass position in the editor.
-		</member>
 		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping" default="false">
 			If [code]true[/code], the body will not move and will not calculate forces until woken up by another body through, for example, a collision, or by using the [method apply_impulse] or [method apply_force] methods.
 		</member>

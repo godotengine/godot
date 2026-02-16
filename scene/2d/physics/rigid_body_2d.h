@@ -68,7 +68,6 @@ private:
 	real_t inertia = 0.0;
 	CenterOfMassMode center_of_mass_mode = CENTER_OF_MASS_MODE_AUTO;
 	Vector2 center_of_mass;
-	bool show_center_of_mass = false;
 
 	Ref<PhysicsMaterial> physics_material_override;
 	real_t gravity_scale = 1.0;
@@ -167,9 +166,6 @@ public:
 
 	void set_center_of_mass(const Vector2 &p_center_of_mass);
 	const Vector2 &get_center_of_mass() const;
-
-	void set_show_center_of_mass(bool p_show);
-	bool is_showing_center_of_mass() const;
 
 	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
 	Ref<PhysicsMaterial> get_physics_material_override() const;
