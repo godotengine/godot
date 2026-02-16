@@ -1806,42 +1806,27 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 	}
 }
 
-// Helper function to redirect mouse events to the active freelook viewport
-static bool _redirect_freelook_input(const Ref<InputEvent> &p_event, Node3DEditorViewport *p_exclude_viewport = nullptr) {
-	if (Input::get_singleton()->get_mouse_mode() != Input::MouseMode::MOUSE_MODE_CAPTURED) {
-		return false;
-	}
-
-	Node3DEditor *editor = Node3DEditor::get_singleton();
-	if (!editor->get_freelook_viewport()) {
-		return false;
-	}
-
-	Node3DEditorViewport *freelook_vp = editor->get_freelook_viewport();
-	if (freelook_vp == p_exclude_viewport) {
-		return false;
-	}
-
-	Ref<InputEventMouse> mouse_event = p_event;
-	if (!mouse_event.is_valid()) {
-		return false;
-	}
-
-	Control *target_surface = freelook_vp->get_surface();
-
-	target_surface->emit_signal(SceneStringName(gui_input), p_event);
-	return true;
-}
-
-// This is only active during instant transforms,
-// to capture and wrap mouse events outside the control.
+// This is only active during instant transforms or freelook,
+// to capture mouse events that may not reach the viewport through normal GUI routing
+// (e.g., when the mouse position is outside the viewport due to MOUSE_MODE_CAPTURED
+// centering the cursor at the window center).
 void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(!_edit.instant);
 	Ref<InputEventMouseMotion> m = p_event;
 
-	if (m.is_valid()) {
+	if (_edit.instant && m.is_valid()) {
 		_edit.mouse_pos += _get_warped_mouse_motion(p_event);
 		update_transform(_get_key_modifier(m) == Key::SHIFT);
+	}
+
+	if (freelook_active) {
+		Ref<InputEventMouse> mouse_event = p_event;
+		if (mouse_event.is_valid()) {
+			Ref<InputEventMouseButton> mb = p_event;
+			if (mb.is_null() || mb->get_button_index() != MouseButton::LEFT) {
+				_sinput(p_event);
+			}
+			get_viewport()->set_input_as_handled();
+		}
 	}
 }
 
@@ -1857,10 +1842,6 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 	if (previewing || get_viewport()->gui_get_drag_data()) {
 		// Disable all input actions when previewing a camera or during drag-and-drop.
-		return;
-	}
-
-	if (_redirect_freelook_input(p_event, this)) {
 		return;
 	}
 
@@ -3031,16 +3012,14 @@ void Node3DEditorViewport::set_freelook_active(bool active_now) {
 
 		previous_mouse_position = get_local_mouse_position();
 
-		spatial_editor->set_freelook_viewport(this);
-
 		// Hide mouse like in an FPS (warping doesn't work)
 		Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
+
+		set_process_input(true);
 
 	} else if (freelook_active && !active_now) {
 		// Sync camera cursor to cursor to "cut" interpolation jumps due to changing referential
 		cursor = camera_cursor;
-
-		spatial_editor->set_freelook_viewport(nullptr);
 
 		// Restore mouse
 		Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
@@ -3049,6 +3028,8 @@ void Node3DEditorViewport::set_freelook_active(bool active_now) {
 		// This is done because leaving `Input.MOUSE_MODE_CAPTURED` will center the cursor
 		// due to OS limitations.
 		warp_mouse(previous_mouse_position);
+
+		set_process_input(false);
 	}
 
 	freelook_active = active_now;
@@ -6625,10 +6606,6 @@ Node3DEditorViewport::~Node3DEditorViewport() {
 
 void Node3DEditorViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
-
-	if (_redirect_freelook_input(p_event)) {
-		return;
-	}
 
 	Ref<InputEventMouseButton> mb = p_event;
 
