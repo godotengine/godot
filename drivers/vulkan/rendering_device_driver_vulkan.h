@@ -527,12 +527,12 @@ private:
 
 	using DescriptorSetPools = RBMap<DescriptorSetPoolKey, HashMap<VkDescriptorPool, uint32_t>>;
 	DescriptorSetPools descriptor_set_pools;
+	BinaryMutex descriptor_set_pool_mutex;
 	uint32_t max_descriptor_sets_per_pool = 0;
 
 	HashMap<int, DescriptorSetPools> linear_descriptor_set_pools;
 	bool linear_descriptor_pools_enabled = true;
 	VkDescriptorPool _descriptor_set_pool_create(const DescriptorSetPoolKey &p_key, bool p_linear_pool);
-	void _descriptor_set_pool_unreference(DescriptorSetPools::Iterator p_pool_sets_it, VkDescriptorPool p_vk_descriptor_pool, int p_linear_pool_index);
 
 	// Global flag to toggle usage of immutable sampler when creating pipeline layouts.
 	// It cannot change after creating the PSOs, since we need to skipping samplers when creating uniform sets.

@@ -1915,27 +1915,8 @@ static const FLOAT RD_TO_D3D12_SAMPLER_BORDER_COLOR[RDD::SAMPLER_BORDER_COLOR_MA
 };
 
 RDD::SamplerID RenderingDeviceDriverD3D12::sampler_create(const SamplerState &p_state) {
-	uint32_t slot = UINT32_MAX;
-
-	if (samplers.is_empty()) {
-		// Adding a seemigly busy slot 0 makes things easier elsewhere.
-		samplers.push_back({});
-		samplers.push_back({});
-		slot = 1;
-	} else {
-		for (uint32_t i = 1; i < samplers.size(); i++) {
-			if ((int)samplers[i].Filter == INT_MAX) {
-				slot = i;
-				break;
-			}
-		}
-		if (slot == UINT32_MAX) {
-			slot = samplers.size();
-			samplers.push_back({});
-		}
-	}
-
-	D3D12_SAMPLER_DESC &sampler_desc = samplers[slot];
+	D3D12_SAMPLER_DESC *sampler_desc = VersatileResource::allocate<D3D12_SAMPLER_DESC>(resources_allocator);
+	*sampler_desc = {};
 
 	// D3D12 does not support anisotropic nearest filtering.
 	bool use_anisotropy = p_state.use_anisotropy && p_state.min_filter == RDD::SAMPLER_FILTER_LINEAR && p_state.mag_filter == RDD::SAMPLER_FILTER_LINEAR;
@@ -1950,47 +1931,48 @@ RDD::SamplerID RenderingDeviceDriverD3D12::sampler_create(const SamplerState &p_
 	if (use_anisotropy) {
 		if (p_state.mip_filter == RDD::SAMPLER_FILTER_NEAREST) {
 			// This path is never going to be taken if the capability is unsupported.
-			sampler_desc.Filter = D3D12_ENCODE_MIN_MAG_ANISOTROPIC_MIP_POINT_FILTER(reduction_type);
+			sampler_desc->Filter = D3D12_ENCODE_MIN_MAG_ANISOTROPIC_MIP_POINT_FILTER(reduction_type);
 		} else {
-			sampler_desc.Filter = D3D12_ENCODE_ANISOTROPIC_FILTER(reduction_type);
+			sampler_desc->Filter = D3D12_ENCODE_ANISOTROPIC_FILTER(reduction_type);
 		}
-		sampler_desc.MaxAnisotropy = p_state.anisotropy_max;
+		sampler_desc->MaxAnisotropy = p_state.anisotropy_max;
 	} else {
 		static const D3D12_FILTER_TYPE RD_FILTER_TYPE_TO_D3D12[] = {
 			D3D12_FILTER_TYPE_POINT, // SAMPLER_FILTER_NEAREST.
 			D3D12_FILTER_TYPE_LINEAR, // SAMPLER_FILTER_LINEAR.
 		};
-		sampler_desc.Filter = D3D12_ENCODE_BASIC_FILTER(
+		sampler_desc->Filter = D3D12_ENCODE_BASIC_FILTER(
 				RD_FILTER_TYPE_TO_D3D12[p_state.min_filter],
 				RD_FILTER_TYPE_TO_D3D12[p_state.mag_filter],
 				RD_FILTER_TYPE_TO_D3D12[p_state.mip_filter],
 				reduction_type);
 	}
 
-	sampler_desc.AddressU = RD_REPEAT_MODE_TO_D3D12_ADDRESS_MODE[p_state.repeat_u];
-	sampler_desc.AddressV = RD_REPEAT_MODE_TO_D3D12_ADDRESS_MODE[p_state.repeat_v];
-	sampler_desc.AddressW = RD_REPEAT_MODE_TO_D3D12_ADDRESS_MODE[p_state.repeat_w];
+	sampler_desc->AddressU = RD_REPEAT_MODE_TO_D3D12_ADDRESS_MODE[p_state.repeat_u];
+	sampler_desc->AddressV = RD_REPEAT_MODE_TO_D3D12_ADDRESS_MODE[p_state.repeat_v];
+	sampler_desc->AddressW = RD_REPEAT_MODE_TO_D3D12_ADDRESS_MODE[p_state.repeat_w];
 
 	for (int i = 0; i < 4; i++) {
-		sampler_desc.BorderColor[i] = RD_TO_D3D12_SAMPLER_BORDER_COLOR[p_state.border_color][i];
+		sampler_desc->BorderColor[i] = RD_TO_D3D12_SAMPLER_BORDER_COLOR[p_state.border_color][i];
 	}
 
-	sampler_desc.MinLOD = p_state.min_lod;
-	sampler_desc.MaxLOD = p_state.max_lod;
-	sampler_desc.MipLODBias = p_state.lod_bias;
+	sampler_desc->MinLOD = p_state.min_lod;
+	sampler_desc->MaxLOD = p_state.max_lod;
+	sampler_desc->MipLODBias = p_state.lod_bias;
 
-	sampler_desc.ComparisonFunc = p_state.enable_compare ? RD_TO_D3D12_COMPARE_OP[p_state.compare_op] : D3D12_COMPARISON_FUNC_NEVER;
+	sampler_desc->ComparisonFunc = p_state.enable_compare ? RD_TO_D3D12_COMPARE_OP[p_state.compare_op] : D3D12_COMPARISON_FUNC_NEVER;
 
 	// TODO: Emulate somehow?
 	if (p_state.unnormalized_uvw) {
 		WARN_PRINT("Creating a sampler with unnormalized UVW, which is not supported.");
 	}
 
-	return SamplerID(slot);
+	return SamplerID(sampler_desc);
 }
 
 void RenderingDeviceDriverD3D12::sampler_free(SamplerID p_sampler) {
-	samplers[p_sampler.id].Filter = (D3D12_FILTER)INT_MAX;
+	D3D12_SAMPLER_DESC *sampler_desc = (D3D12_SAMPLER_DESC *)p_sampler.id;
+	VersatileResource::free(resources_allocator, sampler_desc);
 }
 
 bool RenderingDeviceDriverD3D12::sampler_is_format_supported_for_filter(DataFormat p_format, SamplerFilter p_filter) {
@@ -3416,6 +3398,8 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 
 	// Allocate range for resource descriptors.
 	if (uniform_set.resource_descriptor_count > 0) {
+		MutexLock lock(resource_descriptor_heap_mutex);
+
 		Error err = resource_descriptor_heap.allocate(uniform_set.resource_descriptor_count, uniform_set_info->resource_descriptor_heap_alloc);
 		if (unlikely(err != OK)) {
 			VersatileResource::free(resources_allocator, uniform_set_info);
@@ -3450,6 +3434,8 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 			}
 		}
 		sampler_key = hash_fmix32(sampler_key);
+
+		MutexLock lock(sampler_descriptor_heap_mutex);
 
 		RBMap<uint32_t, SamplerDescriptorHeapAllocation>::Iterator find_result = sampler_descriptor_heap_allocations.find(sampler_key);
 		if (find_result != sampler_descriptor_heap_allocations.end()) {
@@ -3489,16 +3475,16 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 			case UNIFORM_TYPE_SAMPLER: {
 				if (create_samplers) {
 					for (uint32_t j = 0; j < uniform.ids.size(); j++) {
-						const D3D12_SAMPLER_DESC &sampler_desc = samplers[uniform.ids[j].id];
-						device->CreateSampler(&sampler_desc, get_cpu_handle(uniform_set_info->sampler_descriptor_heap_alloc->cpu_handle, binding.sampler_descriptor_offset + j, sampler_descriptor_heap.increment_size));
+						const D3D12_SAMPLER_DESC *sampler_desc = (const D3D12_SAMPLER_DESC *)uniform.ids[j].id;
+						device->CreateSampler(sampler_desc, get_cpu_handle(uniform_set_info->sampler_descriptor_heap_alloc->cpu_handle, binding.sampler_descriptor_offset + j, sampler_descriptor_heap.increment_size));
 					}
 				}
 			} break;
 			case UNIFORM_TYPE_SAMPLER_WITH_TEXTURE: {
 				for (uint32_t j = 0; j < uniform.ids.size(); j += 2) {
 					if (create_samplers) {
-						const D3D12_SAMPLER_DESC &sampler_desc = samplers[uniform.ids[j].id];
-						device->CreateSampler(&sampler_desc, get_cpu_handle(uniform_set_info->sampler_descriptor_heap_alloc->cpu_handle, binding.sampler_descriptor_offset + (j / 2), sampler_descriptor_heap.increment_size));
+						const D3D12_SAMPLER_DESC *sampler_desc = (const D3D12_SAMPLER_DESC *)uniform.ids[j].id;
+						device->CreateSampler(sampler_desc, get_cpu_handle(uniform_set_info->sampler_descriptor_heap_alloc->cpu_handle, binding.sampler_descriptor_offset + (j / 2), sampler_descriptor_heap.increment_size));
 					}
 
 					TextureInfo *texture_info = (TextureInfo *)uniform.ids[j + 1].id;
@@ -3652,9 +3638,15 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 void RenderingDeviceDriverD3D12::uniform_set_free(UniformSetID p_uniform_set) {
 	UniformSetInfo *uniform_set_info = (UniformSetInfo *)p_uniform_set.id;
 
-	resource_descriptor_heap.free(uniform_set_info->resource_descriptor_heap_alloc);
+	if (uniform_set_info->resource_descriptor_heap_alloc.virtual_alloc_handle != 0) {
+		MutexLock lock(resource_descriptor_heap_mutex);
+
+		resource_descriptor_heap.free(uniform_set_info->resource_descriptor_heap_alloc);
+	}
 
 	if (uniform_set_info->sampler_descriptor_heap_alloc != nullptr) {
+		MutexLock lock(sampler_descriptor_heap_mutex);
+
 		if ((--uniform_set_info->sampler_descriptor_heap_alloc->use_count) == 0) {
 			sampler_descriptor_heap.free(*uniform_set_info->sampler_descriptor_heap_alloc);
 			sampler_descriptor_heap_allocations.erase(uniform_set_info->sampler_descriptor_heap_alloc->key);
@@ -3842,7 +3834,13 @@ RenderingDeviceDriverD3D12::DescriptorHeap::Allocation RenderingDeviceDriverD3D1
 	} else {
 		DescriptorHeap::Allocation descriptor_allocation = {};
 
-		Error err = resource_descriptor_heap.allocate(1, descriptor_allocation);
+		Error err;
+		{
+			MutexLock lock(resource_descriptor_heap_mutex);
+
+			err = resource_descriptor_heap.allocate(1, descriptor_allocation);
+		}
+
 		ERR_FAIL_COND_V_MSG(err == ERR_OUT_OF_MEMORY, DescriptorHeap::Allocation(), "Cannot allocate per frame descriptor because there's not enough room in the RESOURCES descriptor heap.\n"
 																					"Please increase the value of the rendering/rendering_device/d3d12/max_resource_descriptors project setting.");
 

@@ -1671,18 +1671,36 @@ private:
 	// nature of the GPU. They will get deleted
 	// when the frame is cycled.
 
-	struct Frame {
+	struct ResourcesToDisposeOf {
 		// List in usage order, from last to free to first to free.
-		List<Buffer> buffers_to_dispose_of;
-		List<Texture> textures_to_dispose_of;
-		List<Framebuffer> framebuffers_to_dispose_of;
-		List<RDD::SamplerID> samplers_to_dispose_of;
-		List<Shader> shaders_to_dispose_of;
-		List<UniformSet> uniform_sets_to_dispose_of;
-		List<RenderPipeline> render_pipelines_to_dispose_of;
-		List<ComputePipeline> compute_pipelines_to_dispose_of;
-		List<AccelerationStructure> acceleration_structures_to_dispose_of;
-		List<RaytracingPipeline> raytracing_pipelines_to_dispose_of;
+		List<Buffer> buffers;
+		List<Texture> textures;
+		List<Framebuffer> framebuffers;
+		List<RDD::SamplerID> samplers;
+		List<Shader> shaders;
+		List<UniformSet> uniform_sets;
+		List<RenderPipeline> render_pipelines;
+		List<ComputePipeline> compute_pipelines;
+		List<AccelerationStructure> acceleration_structures;
+		List<RaytracingPipeline> raytracing_pipelines;
+
+		_FORCE_INLINE_ bool is_empty() const {
+			return buffers.is_empty() &&
+					textures.is_empty() &&
+					framebuffers.is_empty() &&
+					samplers.is_empty() &&
+					shaders.is_empty() &&
+					uniform_sets.is_empty() &&
+					render_pipelines.is_empty() &&
+					compute_pipelines.is_empty() &&
+					acceleration_structures.is_empty() &&
+					raytracing_pipelines.is_empty();
+		}
+	};
+
+	struct Frame {
+		ResourcesToDisposeOf resources_to_dispose_of;
+		LocalVector<WorkerThreadPool::TaskID> resource_dispose_tasks;
 
 		// Pending asynchronous data transfer for buffers.
 		LocalVector<RDD::BufferID> download_buffer_staging_buffers;
@@ -1756,10 +1774,11 @@ public:
 	bool has_pending_resources_for_processing() const { return frames_pending_resources_for_processing != 0u; }
 
 private:
-	void _free_pending_resources(int p_frame);
+	void _free_pending_resources(ResourcesToDisposeOf &p_resources_to_dispose_of);
+	void _free_pending_resources(int p_frame, bool p_async);
 
-	uint64_t texture_memory = 0;
-	uint64_t buffer_memory = 0;
+	SafeNumeric<uint64_t> texture_memory;
+	SafeNumeric<uint64_t> buffer_memory;
 
 protected:
 	void execute_chained_cmds(bool p_present_swap_chain,
