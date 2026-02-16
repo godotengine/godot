@@ -121,6 +121,7 @@ void MultiplayerPeer::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRANSFER_MODE_UNRELIABLE_ORDERED);
 	BIND_ENUM_CONSTANT(TRANSFER_MODE_RELIABLE);
 
+	ADD_SIGNAL(MethodInfo("closed"));
 	ADD_SIGNAL(MethodInfo("peer_connected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("peer_disconnected", PropertyInfo(Variant::INT, "id")));
 }

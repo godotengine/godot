@@ -437,7 +437,11 @@ int WebRTCMultiplayerPeer::get_max_packet_size() const {
 	return 1200;
 }
 
-void WebRTCMultiplayerPeer::close() {
+void WebRTCMultiplayerPeer::_close() {
+	if (network_mode == MODE_NONE) {
+		return;
+	}
+
 	peer_map.clear();
 	channels_config.clear();
 	unique_id = 0;
@@ -446,8 +450,16 @@ void WebRTCMultiplayerPeer::close() {
 	target_peer = 0;
 	network_mode = MODE_NONE;
 	connection_status = CONNECTION_DISCONNECTED;
+	emit_signal("closed");
+}
+
+void WebRTCMultiplayerPeer::close() {
+	bool blocking = is_blocking_signals();
+	set_block_signals(true);
+	_close();
+	set_block_signals(blocking);
 }
 
 WebRTCMultiplayerPeer::~WebRTCMultiplayerPeer() {
-	close();
+	_close();
 }

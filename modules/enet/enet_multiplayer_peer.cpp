@@ -171,7 +171,7 @@ void ENetMultiplayerPeer::poll() {
 	switch (active_mode) {
 		case MODE_CLIENT: {
 			if (!peers.has(1)) {
-				close();
+				_close();
 				return;
 			}
 			ENetConnection::Event event;
@@ -185,11 +185,11 @@ void ENetMultiplayerPeer::poll() {
 						// Client just disconnected from server.
 						emit_signal(SNAME("peer_disconnected"), 1);
 					}
-					close();
+					_close();
 				} else if (ret == ENetConnection::EVENT_RECEIVE) {
 					_store_packet(1, event);
 				} else if (ret != ENetConnection::EVENT_NONE) {
-					close(); // Error.
+					_close(); // Error.
 				}
 			} while (hosts.has(0) && hosts[0]->check_events(ret, event) > 0);
 		} break;
@@ -223,7 +223,7 @@ void ENetMultiplayerPeer::poll() {
 					int32_t source = event.peer->get_meta(SNAME("_net_id"));
 					_store_packet(source, event);
 				} else if (ret != ENetConnection::EVENT_NONE) {
-					close(); // Error
+					_close(); // Error
 				}
 			} while (hosts.has(0) && hosts[0]->check_events(ret, event) > 0);
 		} break;
@@ -282,12 +282,12 @@ void ENetMultiplayerPeer::disconnect_peer(int p_peer, bool p_force) {
 		}
 		if (active_mode == MODE_CLIENT) {
 			hosts.clear(); // Avoid flushing again.
-			close();
+			_close();
 		}
 	}
 }
 
-void ENetMultiplayerPeer::close() {
+void ENetMultiplayerPeer::_close() {
 	if (!_is_active()) {
 		return;
 	}
@@ -311,6 +311,14 @@ void ENetMultiplayerPeer::close() {
 	unique_id = 0;
 	connection_status = CONNECTION_DISCONNECTED;
 	set_refuse_new_connections(false);
+	emit_signal("closed");
+}
+
+void ENetMultiplayerPeer::close() {
+	bool blocking = is_blocking_signals();
+	set_block_signals(true);
+	_close();
+	set_block_signals(blocking);
 }
 
 int ENetMultiplayerPeer::get_available_packet_count() const {
@@ -485,9 +493,7 @@ ENetMultiplayerPeer::ENetMultiplayerPeer() {
 }
 
 ENetMultiplayerPeer::~ENetMultiplayerPeer() {
-	if (_is_active()) {
-		close();
-	}
+	_close();
 }
 
 // Sets IP for ENet to bind when using create_server or create_client

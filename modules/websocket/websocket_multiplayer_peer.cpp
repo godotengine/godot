@@ -52,6 +52,10 @@ Ref<WebSocketPeer> WebSocketMultiplayerPeer::_create_peer() {
 }
 
 void WebSocketMultiplayerPeer::_clear() {
+	if (connection_status == CONNECTION_DISCONNECTED) {
+		return;
+	}
+
 	connection_status = CONNECTION_DISCONNECTED;
 	unique_id = 0;
 	peers_map.clear();
@@ -69,6 +73,8 @@ void WebSocketMultiplayerPeer::_clear() {
 	}
 
 	incoming_packets.clear();
+
+	emit_signal("closed");
 }
 
 void WebSocketMultiplayerPeer::_bind_methods() {
@@ -491,5 +497,8 @@ void WebSocketMultiplayerPeer::disconnect_peer(int p_peer_id, bool p_force) {
 }
 
 void WebSocketMultiplayerPeer::close() {
+	bool blocking = is_blocking_signals();
+	set_block_signals(true);
 	_clear();
+	set_block_signals(blocking);
 }
