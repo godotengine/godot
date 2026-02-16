@@ -2489,19 +2489,19 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		output.append("\n");
 
-		List<String> alreadyUsed;
+		LocalVector<String> already_used;
 
 		for (const MethodInterface &imethod : itype.methods) {
-			const String methodName = imethod.proxy_name + itos(imethod.arguments.size());
+			const String method_name = imethod.proxy_name + itos(imethod.arguments.size());
 			if (imethod.is_static ||
 					imethod.is_virtual ||
 					itype.is_singleton ||
 					itype.is_singleton_instance ||
-					alreadyUsed.find(methodName)) {
+					already_used.find(method_name) != -1) {
 				continue;
 			}
 
-			alreadyUsed.push_back(methodName);
+			already_used.push_back(method_name);
 
 			output << INDENT2 ".Register("
 				   << "global::Godot." << itype.proxy_name + ".MethodName." + imethod.proxy_name
@@ -2522,22 +2522,22 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 		output.append(INDENT2 ".Build();\n");
 
-		alreadyUsed.clear();
+		already_used.clear();
 
 		output << INDENT1 << "\n";
 		output << INDENT1 << "private sealed class ScriptMethodDispatchHelper\n";
 		output << INDENT1 << "{\n";
 		for (const MethodInterface &imethod : itype.methods) {
-			const String methodName = imethod.proxy_name + itos(imethod.arguments.size());
+			const String method_name = imethod.proxy_name + itos(imethod.arguments.size());
 			if (imethod.is_static ||
 					imethod.is_virtual ||
 					itype.is_singleton ||
 					itype.is_singleton_instance ||
-					alreadyUsed.find(methodName)) {
+					already_used.find(method_name) != -1) {
 				continue;
 			}
 
-			alreadyUsed.push_back(methodName);
+			already_used.push_back(method_name);
 
 			output << INDENT2 "public static ScriptMethod<GodotObject> CreateScriptMethod_" << imethod.proxy_name << itos(imethod.arguments.size()) << "()\n"
 				   << INDENT2 << "{\n"
@@ -2566,9 +2566,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 				if (arg_type->cname == name_cache.type_Array_generic || arg_type->cname == name_cache.type_Dictionary_generic) {
 					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
-					String toManaged = sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_cs_type, arg_type->name)
+					String to_managed = sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_cs_type, arg_type->name)
 											   .replacen("params ", "");
-					output << "new " << arg_cs_type << "(" << toManaged << ")";
+					output << "new " << arg_cs_type << "(" << to_managed << ")";
 				} else {
 					output << sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name)
 									  .replacen("params ", "");
@@ -2581,9 +2581,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			if (imethod.return_type.cname != name_cache.type_void) {
 				const TypeInterface *return_interface = _get_type_or_null(imethod.return_type);
-				String toManaged = sformat(return_interface->cs_managed_to_variant, "callRet", return_interface->cs_type, return_interface->name)
+				String to_managed = sformat(return_interface->cs_managed_to_variant, "callRet", return_interface->cs_type, return_interface->name)
 										   .replacen("params ", "");
-				output << INDENT4 << "var ret = " + toManaged;
+				output << INDENT4 << "var ret = " + to_managed;
 				output << ";\n";
 			} else {
 				output << INDENT4 << "godot_variant ret = default;\n";
