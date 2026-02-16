@@ -1367,17 +1367,19 @@ void AnimationTimelineEdit::_update_length_field_width() {
 	const int sep = int(4 * EDSCALE) + stylebox->get_offset().x;
 	const float text_width = font->get_string_size(length->get_text_value(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
 	const int min_length_field_width = int(Math::ceil(stylebox->get_minimum_size().width + sep + text_width + 2 * EDSCALE));
+	const int desired_length_field_width = MAX(int(70 * EDSCALE), min_length_field_width);
 
-	length->set_custom_minimum_size(Size2(MAX(int(70 * EDSCALE), min_length_field_width), 0));
+	length->set_custom_minimum_size(Size2(desired_length_field_width, 0));
+
+	const int right_controls_width = get_buttons_width();
+	len_hb->set_position(Vector2(get_size().width - right_controls_width, 0));
+	len_hb->set_size(Size2(right_controls_width, get_size().height));
 }
 
 void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
 	if (editing) {
 		return;
 	}
-
-	_update_length_field_width();
-	update_minimum_size();
 
 	p_new_len = MAX(SECOND_DECIMAL, p_new_len);
 	if (use_fps && animation->get_step() > 0) {
@@ -1489,6 +1491,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyAnimation")), TTR("Animation Playback Track..."));
 
 			timeline_resize_rect.size = get_editor_theme_icon(SNAME("TimelineHandle"))->get_size();
+
 			_update_length_field_width();
 			update_minimum_size();
 		} break;
@@ -1505,10 +1508,13 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESIZED: {
-			len_hb->set_position(Vector2(get_size().width - get_buttons_width(), 0));
-			len_hb->set_size(Size2(get_buttons_width(), get_size().height));
+			const int right_controls_width = get_buttons_width();
+			len_hb->set_position(Vector2(get_size().width - right_controls_width, 0));
+			len_hb->set_size(Size2(right_controls_width, get_size().height));
 			int hsize_icon_width = get_editor_theme_icon(SNAME("Hsize"))->get_width();
 			add_track_hb->set_size(Size2(name_limit - ((hsize_icon_width + 16) * EDSCALE), 0));
+			_update_length_field_width();
+			update_minimum_size();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -1750,6 +1756,7 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation, boo
 			add_track->show();
 		}
 		play_position->show();
+		update_values();
 	} else {
 		len_hb->hide();
 		filter_track->hide();
