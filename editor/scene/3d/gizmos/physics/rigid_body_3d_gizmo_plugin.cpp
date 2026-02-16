@@ -82,7 +82,7 @@ void RigidBody3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	// Color of the center of mass indicator.
 	String mat_name = (rigid_body->get_center_of_mass_mode() == RigidBody3D::CENTER_OF_MASS_MODE_CUSTOM)
 			? "center_of_mass_material_custom"
-			: "center_of_mass_material_auto";  
+			: "center_of_mass_material_auto";
 
 	Ref<Material> material = get_material(mat_name, p_gizmo);
 	p_gizmo->add_lines(lines, material);
