@@ -868,20 +868,18 @@ void Path3DEditorPlugin::_smooth_points(){
 }
 
 void Path3DEditorPlugin::_smooth_curve_points(){
-	if (!path || path->get_curve().is_null() || path->get_curve()->get_point_count() < 2) {
+	if (!path || path->get_curve().is_null() || path->get_curve()->get_point_count() <= 2) {
 		return;
 	}
 	Ref<Curve3D> curve = path->get_curve();
-	const smooth_ratio = 0.33;
-	for (int i = 0; i < curve.get_point_count(); i += 1) {
-		if i == 0 or i == curve.point_count-1:
-			continue
-		var previous_point = curve.samplef(i-smooth_ratio)
-		var next_point = curve.samplef(i+smooth_ratio)
-		var point_in =  -(next_point-previous_point)
-		var point_out = -(previous_point-next_point)
-		curve.set_point_in(i,point_in)
-		curve.set_point_out(i,point_out)
+	const float smooth_ratio = 0.33;
+	for (int i = 1; i < curve.get_point_count() -1; i += 1) {
+		Vector3 previous_point = curve->samplef(i-smooth_ratio);
+		Vector3 next_point = curve.samplef(i+smooth_ratio);
+		Vector3 point_in =  previous_point - next_point;
+		Vector3 point_out = next_point - previous_point;
+		curve -> set_point_in(i,point_in);
+		curve -> set_point_out(i,point_out);
 	}
 }
 
