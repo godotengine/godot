@@ -149,6 +149,7 @@ public:
 	EditorAutoloadSettings *get_autoload_settings() { return autoload_settings; }
 	GroupSettingsEditor *get_group_settings() { return group_settings; }
 	TabContainer *get_tabs() { return tab_container; }
+	SectionedInspector *get_inspector() { return general_settings_inspector; }
 
 	void queue_save();
 	void connect_filesystem_dock_signals(FileSystemDock *p_fs_dock);
