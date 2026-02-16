@@ -376,7 +376,7 @@ Variant OpenXRSpatialComponentMarkerList::get_marker_data(RID p_snapshot, int64_
 void OpenXRMarkerTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bounds_size", "bounds_size"), &OpenXRMarkerTracker::set_bounds_size);
 	ClassDB::bind_method(D_METHOD("get_bounds_size"), &OpenXRMarkerTracker::get_bounds_size);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "bounds_size"), "set_bounds_size", "get_bounds_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "bounds_size"), "set_bounds_size", "get_bounds_size");
 
 	ClassDB::bind_method(D_METHOD("set_marker_type", "marker_type"), &OpenXRMarkerTracker::set_marker_type);
 	ClassDB::bind_method(D_METHOD("get_marker_type"), &OpenXRMarkerTracker::get_marker_type);

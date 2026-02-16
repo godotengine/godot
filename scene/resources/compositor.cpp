@@ -210,7 +210,7 @@ void Compositor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_compositor_effects", "compositor_effects"), &Compositor::set_compositor_effects);
 	ClassDB::bind_method(D_METHOD("get_compositor_effects"), &Compositor::get_compositor_effects);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "compositor_effects", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("CompositorEffect")), "set_compositor_effects", "get_compositor_effects");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "compositor_effects", PROPERTY_HINT_ARRAY_TYPE, "CompositorEffect"), "set_compositor_effects", "get_compositor_effects");
 }
 
 Compositor::Compositor() {

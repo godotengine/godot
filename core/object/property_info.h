@@ -149,7 +149,7 @@ struct PropertyInfo {
 			hint(p_hint),
 			hint_string(p_hint_string),
 			usage(p_usage) {
-		if (hint == PROPERTY_HINT_RESOURCE_TYPE) {
+		if (hint == PROPERTY_HINT_RESOURCE_TYPE && p_class_name == StringName()) {
 			class_name = hint_string;
 		} else {
 			class_name = p_class_name;
