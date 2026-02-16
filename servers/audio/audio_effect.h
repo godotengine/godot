@@ -43,9 +43,14 @@ protected:
 	GDVIRTUAL0RC(bool, _process_silence)
 	static void _bind_methods();
 
+	int current_channel;
+
 public:
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 	virtual bool process_silence() const;
+
+	void set_current_channel(int p_channel) { current_channel = p_channel; }
+	int get_current_channel() { return current_channel; }
 };
 
 class AudioEffect : public Resource {
@@ -53,9 +58,12 @@ class AudioEffect : public Resource {
 
 protected:
 	GDVIRTUAL0R_REQUIRED(Ref<AudioEffectInstance>, _instantiate)
+	GDVIRTUAL0(_finalize)
 	static void _bind_methods();
 
 public:
 	virtual Ref<AudioEffectInstance> instantiate();
+	virtual void finalize();
+
 	AudioEffect();
 };

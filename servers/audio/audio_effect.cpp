@@ -38,7 +38,6 @@ bool AudioEffectInstance::process_silence() const {
 	GDVIRTUAL_CALL(_process_silence, ret);
 	return ret;
 }
-
 void AudioEffectInstance::_bind_methods() {
 	GDVIRTUAL_BIND(_process, "src_buffer", "dst_buffer", "frame_count");
 	GDVIRTUAL_BIND(_process_silence);
@@ -51,8 +50,14 @@ Ref<AudioEffectInstance> AudioEffect::instantiate() {
 	GDVIRTUAL_CALL(_instantiate, ret);
 	return ret;
 }
+
+void AudioEffect::finalize() {
+	GDVIRTUAL_CALL(_finalize);
+}
+
 void AudioEffect::_bind_methods() {
 	GDVIRTUAL_BIND(_instantiate);
+	GDVIRTUAL_BIND(_finalize);
 }
 
 AudioEffect::AudioEffect() {

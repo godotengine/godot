@@ -12,6 +12,12 @@
 		<link title="Audio Microphone Record Demo">https://godotengine.org/asset-library/asset/2760</link>
 	</tutorials>
 	<methods>
+		<method name="_finalize" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Override this method to do any finalization in the [AudioEffect] after all [AudioEffectInstance]s have been created.
+			</description>
+		</method>
 		<method name="_instantiate" qualifiers="virtual required">
 			<return type="AudioEffectInstance" />
 			<description>
