@@ -773,12 +773,18 @@ int AudioServer::thread_find_bus_index(const StringName &p_name) {
 #ifdef DEBUG_ENABLED
 void AudioServer::set_debug_mute(bool p_mute) {
 	debug_mute = p_mute;
+	for (int i = 0; i < get_bus_count(); i++) {
+		set_bus_mute(i, p_mute);
+		if (!p_mute) {
+			set_bus_volume_db(i, 0);
+		}
+	}
 }
 
 bool AudioServer::get_debug_mute() const {
 	return debug_mute;
 }
-#endif // DEBUG_ENABLED
+#endif
 
 void AudioServer::set_bus_count(int p_count) {
 	ERR_FAIL_COND(p_count < 1);

@@ -1691,10 +1691,7 @@ void ScriptEditorDebugger::_send_debug_mute_audio_msg(bool p_mute) {
 }
 
 void ScriptEditorDebugger::set_debug_mute_audio(bool p_mute) {
-	// Send the message if we want to mute the audio or if it isn't muted already due to a break.
-	if (p_mute || !audio_muted_on_break) {
-		_send_debug_mute_audio_msg(p_mute);
-	}
+	_send_debug_mute_audio_msg(p_mute);
 	debug_mute_audio = p_mute;
 }
 
