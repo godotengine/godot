@@ -988,7 +988,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			}
 			pd.name = s.name;
 			pd.type = s.ptr->get_class();
-			while (String(ClassDB::get_parent_class(pd.type)) != "Object") {
+			while (!ClassDB::is_class_exposed(pd.type)) {
 				pd.type = ClassDB::get_parent_class(pd.type);
 			}
 			c.properties.push_back(pd);

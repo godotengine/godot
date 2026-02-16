@@ -126,12 +126,6 @@ static void _editor_init() {
 	gdscript_syntax_highlighter.instantiate();
 	ScriptEditor::get_singleton()->register_syntax_highlighter(gdscript_syntax_highlighter);
 #endif
-
-#ifndef GDSCRIPT_NO_LSP
-	Engine::Singleton singleton("GDScriptLanguageProtocol", GDScriptLanguageProtocol::get_singleton());
-	singleton.editor_only = true;
-	Engine::get_singleton()->add_singleton(singleton);
-#endif // !GDSCRIPT_NO_LSP
 }
 
 #endif // TOOLS_ENABLED
@@ -166,6 +160,10 @@ void initialize_gdscript_module(ModuleInitializationLevel p_level) {
 		register_lsp_types();
 		memnew(GDScriptLanguageProtocol);
 		EditorPlugins::add_by_type<GDScriptLanguageServer>();
+
+		Engine::Singleton singleton("GDScriptLanguageProtocol", GDScriptLanguageProtocol::get_singleton());
+		singleton.editor_only = true;
+		Engine::get_singleton()->add_singleton(singleton);
 #endif // !GDSCRIPT_NO_LSP
 	}
 #endif // TOOLS_ENABLED

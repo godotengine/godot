@@ -1572,6 +1572,10 @@
 		<member name="GDExtensionManager" type="GDExtensionManager" setter="" getter="">
 			The [GDExtensionManager] singleton.
 		</member>
+		<member name="GDScriptLanguageProtocol" type="GDScriptLanguageProtocol" setter="" getter="">
+			The [GDScriptLanguageProtocol] singleton.
+			[b]Note:[/b] Only available in editor builds.
+		</member>
 		<member name="Geometry2D" type="Geometry2D" setter="" getter="">
 			The [Geometry2D] singleton.
 		</member>
