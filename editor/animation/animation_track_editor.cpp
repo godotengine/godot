@@ -1360,10 +1360,24 @@ float AnimationTimelineEdit::_get_zoom_scale(double p_zoom_value) const {
 	}
 }
 
+void AnimationTimelineEdit::_update_length_field_width() {
+	const Ref<StyleBox> stylebox = length->get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit"));
+	const Ref<Font> font = length->get_theme_font(SceneStringName(font), SNAME("LineEdit"));
+	const int font_size = length->get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
+	const int sep = int(4 * EDSCALE) + stylebox->get_offset().x;
+	const float text_width = font->get_string_size(length->get_text_value(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
+	const int min_length_field_width = int(Math::ceil(stylebox->get_minimum_size().width + sep + text_width + 2 * EDSCALE));
+
+	length->set_custom_minimum_size(Size2(MAX(int(70 * EDSCALE), min_length_field_width), 0));
+}
+
 void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
 	if (editing) {
 		return;
 	}
+
+	_update_length_field_width();
+	update_minimum_size();
 
 	p_new_len = MAX(SECOND_DECIMAL, p_new_len);
 	if (use_fps && animation->get_step() > 0) {
@@ -1458,11 +1472,6 @@ int AnimationTimelineEdit::get_name_limit() const {
 void AnimationTimelineEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
-			const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-			const int min_length_field_width = int(Math::ceil(font->get_string_size("0000.0000", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 28 * EDSCALE));
-			length->set_custom_minimum_size(Size2(MAX(int(70 * EDSCALE), min_length_field_width), 0));
-
 			add_track->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
 			time_icon->set_texture(get_editor_theme_icon(SNAME("Time")));
@@ -1480,6 +1489,8 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyAnimation")), TTR("Animation Playback Track..."));
 
 			timeline_resize_rect.size = get_editor_theme_icon(SNAME("TimelineHandle"))->get_size();
+			_update_length_field_width();
+			update_minimum_size();
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -1752,9 +1763,7 @@ Size2 AnimationTimelineEdit::get_minimum_size() const {
 	Size2 ms = filter_track->get_minimum_size();
 	const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-	const int timeline_handle_height = get_editor_theme_icon(SNAME("TimelineHandle"))->get_height();
-	const int right_controls_height = len_hb ? int(Math::ceil(len_hb->get_combined_minimum_size().y)) : 0;
-	ms.height = MAX(ms.height, MAX(font->get_height(font_size), MAX(timeline_handle_height, right_controls_height)));
+	ms.height = MAX(ms.height, font->get_height(font_size));
 	ms.width = get_buttons_width() + add_track->get_minimum_size().width + get_editor_theme_icon(SNAME("Hsize"))->get_width() + 2 + 8 * EDSCALE;
 	return ms;
 }
@@ -1868,6 +1877,8 @@ void AnimationTimelineEdit::update_values() {
 		length->set_tooltip_text(TTR("Animation length (seconds)"));
 		time_icon->set_tooltip_text(TTR("Animation length (seconds)"));
 	}
+	_update_length_field_width();
+	update_minimum_size();
 
 	switch (animation->get_loop_mode()) {
 		case Animation::LOOP_NONE: {
