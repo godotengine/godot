@@ -253,20 +253,12 @@ namespace Godot.SourceGenerators
 
             if (godotSignalDelegates.Count > 0)
             {
-                const string DictType =
-                    "global::System.Collections.Generic.Dictionary<global::Godot.Bridge.SignalKey, global::Godot.Bridge.RaiseSignalTrampoline>";
+                const string CollectorType = "global::Godot.Bridge.ScriptManagerBridge.RaiseSignalTrampolineCollector";
 
                 source.Append(
                     "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append("    internal new static unsafe ")
-                    .Append(DictType)
-                    .Append(" GetGodotRaiseSignalTrampolines()\n    {\n");
-
-                source.Append("        var trampolines = new ")
-                    .Append(DictType)
-                    .Append("(")
-                    .Append(godotSignalDelegates.Count)
-                    .Append(");\n");
+                source.Append("    internal new static unsafe void GetGodotRaiseSignalTrampolines(")
+                    .Append(CollectorType).Append(" collector)\n    {\n");
 
                 foreach (var signal in godotSignalDelegates)
                 {
@@ -274,7 +266,6 @@ namespace Godot.SourceGenerators
                     AppendRaiseSignalTrampoline(source, signal);
                 }
 
-                source.Append("        return trampolines;\n");
                 source.Append("    }\n");
             }
 
@@ -497,7 +488,7 @@ namespace Godot.SourceGenerators
             string methodName = signal.Name;
             int parameterCount = signal.InvokeMethodData.ParamTypes.Length;
 
-            source.Append("        trampolines.Add(new(SignalName.@")
+            source.Append("        collector.TryAdd(new(SignalName.@")
                 .Append(methodName).Append(", ").Append(parameterCount)
                 .Append("), new(&trampoline_")
                 .Append(parameterCount).Append("_").Append(methodName)

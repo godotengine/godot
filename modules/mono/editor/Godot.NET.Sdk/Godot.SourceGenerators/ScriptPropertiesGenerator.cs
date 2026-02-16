@@ -179,20 +179,12 @@ namespace Godot.SourceGenerators
             {
                 // Generate GetGodotMethodTrampolines
                 {
-                    const string DictType =
-                        "global::System.Collections.Generic.Dictionary<global::Godot.StringName, (global::Godot.Bridge.PropertyGetterTrampoline getterTramp, global::Godot.Bridge.PropertySetterTrampoline setterTramp)>";
+                    const string CollectorType = "global::Godot.Bridge.ScriptManagerBridge.PropertyTrampolineCollector";
 
                     source.Append(
                         "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                    source.Append("    internal new static unsafe ")
-                        .Append(DictType)
-                        .Append(" GetGodotPropertyTrampolines()\n    {\n");
-
-                    source.Append("        var trampolines = new ")
-                        .Append(DictType)
-                        .Append("(")
-                        .Append(godotClassProperties.Length + godotClassFields.Length)
-                        .Append(");\n");
+                    source.Append("    internal new static unsafe void GetGodotPropertyTrampolines(")
+                        .Append(CollectorType).Append(" collector)\n    {\n");
 
                     // Generate trampolines
 
@@ -240,7 +232,6 @@ namespace Godot.SourceGenerators
                             hasSetter: !field.FieldSymbol.IsReadOnly);
                     }
 
-                    source.Append("        return trampolines;\n");
                     source.Append("    }\n");
                 }
 
@@ -330,7 +321,7 @@ namespace Godot.SourceGenerators
         private static void AppendPropertyTrampolines(StringBuilder source,
             string propertyMemberName, bool hasGetter, bool hasSetter)
         {
-            source.Append("        trampolines.Add(PropertyName.@")
+            source.Append("        collector.TryAdd(PropertyName.@")
                 .Append(propertyMemberName)
                 .Append(", (new(");
 
