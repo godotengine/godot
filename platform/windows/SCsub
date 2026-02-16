@@ -82,7 +82,7 @@ env.Depends(res_obj, "#core/version_generated.gen.h")
 env.add_source_files(sources, common_win)
 
 env_winrt = env.Clone()
-tts_sources = ["tts_windows.cpp", "tts_driver_sapi.cpp"]
+tts_sources = ["tts_windows.cpp", "tts_driver_sapi.cpp", "winrt_utils.cpp"]
 if env["winrt"]:
     if not env_winrt.msvc:
         if "-std=gnu++17" in env_winrt["CXXFLAGS"]:
