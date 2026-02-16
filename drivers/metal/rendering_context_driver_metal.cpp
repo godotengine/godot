@@ -41,23 +41,6 @@
 
 #include <objc/message.h>
 
-// Selector helper for calling ObjC methods from C++
-#define _APPLE_PRIVATE_DEF_SEL(accessor, symbol) static SEL s_k##accessor = sel_registerName(symbol)
-#define _APPLE_PRIVATE_SEL(accessor) (Private::Selector::s_k##accessor)
-
-namespace Private::Selector {
-
-_APPLE_PRIVATE_DEF_SEL(setOpaque_, "setOpaque:");
-
-template <typename _Ret, typename... _Args>
-_NS_INLINE _Ret sendMessage(const void *pObj, SEL selector, _Args... args) {
-	using SendMessageProc = _Ret (*)(const void *, SEL, _Args...);
-	const SendMessageProc pProc = reinterpret_cast<SendMessageProc>(&objc_msgSend);
-	return (*pProc)(pObj, selector, args...);
-}
-
-} // namespace Private::Selector
-
 #pragma mark - Logging
 
 os_log_t LOG_DRIVER;
@@ -127,7 +110,7 @@ public:
 			Surface(p_device), layer(p_layer) {
 		layer->setAllowsNextDrawableTimeout(true);
 		layer->setFramebufferOnly(true);
-		Private::Selector::sendMessage<void>(layer, _APPLE_PRIVATE_SEL(setOpaque_), !OS::get_singleton()->is_layered_allowed());
+		layer->setOpaque(!OS::get_singleton()->is_layered_allowed());
 		layer->setPixelFormat(get_pixel_format());
 		layer->setDevice(p_device);
 	}
@@ -252,7 +235,7 @@ public:
 			Surface(p_device), layer(p_layer) {
 		layer->setAllowsNextDrawableTimeout(true);
 		layer->setFramebufferOnly(true);
-		Private::Selector::sendMessage<void>(layer, _APPLE_PRIVATE_SEL(setOpaque_), !OS::get_singleton()->is_layered_allowed());
+		layer->setOpaque(!OS::get_singleton()->is_layered_allowed());
 		layer->setPixelFormat(get_pixel_format());
 		layer->setDevice(p_device);
 #if TARGET_OS_OSX

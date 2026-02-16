@@ -118,6 +118,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalFeatures {
 	bool supports_image_atomic_32_bit = false; /**< If true, 32-bit atomic operations on images are supported by the GPU. */
 	bool supports_image_atomic_64_bit = false; /**< If true, 64-bit atomic operations on images are supported by the GPU. */
 	bool supports_native_image_atomics = false; /**< If true, native image atomic operations are supported by the OS. */
+	bool supports_border_color = false; /**< If true, sampler border color (clamp-to-border) is supported. Requires Apple7+. */
 	bool supports_residency_sets = false; /**< If true, residency sets (MTLResidencySet) are supported by the OS. */
 
 	/*!

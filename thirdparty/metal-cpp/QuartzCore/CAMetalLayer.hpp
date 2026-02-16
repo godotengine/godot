@@ -32,13 +32,14 @@
 #include "CADefines.hpp"
 #include "CAMetalDrawable.hpp"
 #include "CAPrivate.hpp"
+#include "CALayer.hpp"
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 namespace CA
 {
 
-class MetalLayer : public NS::Referencing<MetalLayer>
+class MetalLayer : public NS::Referencing<MetalLayer, Layer>
 {
 public:
     static class MetalLayer* layer();

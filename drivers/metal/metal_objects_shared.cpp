@@ -748,14 +748,19 @@ class MDImmediateLibrary final : public MDLibrary {
 	NS::Error *_error = nullptr;
 	std::mutex _cv_mutex;
 	std::condition_variable _cv;
-	std::atomic<bool> _complete{ false };
-	bool _ready = false;
+	bool _complete = false;
+
+	void _check_and_wait() {
+		std::unique_lock<std::mutex> lock(_cv_mutex);
+		_cv.wait(lock, [this] { return _complete; });
+	}
 
 public:
 	MDImmediateLibrary(ShaderCacheEntry *p_entry,
 			MTL::Device *p_device,
 			NS::String *p_source,
 			MTL::CompileOptions *p_options);
+	~MDImmediateLibrary() override;
 
 	MTL::Library *get_library() override;
 	NS::Error *get_error() override;
@@ -787,28 +792,24 @@ MDImmediateLibrary::MDImmediateLibrary(ShaderCacheEntry *p_entry,
 			ERR_PRINT(vformat(U"Error compiling shader %s: %s", p_entry->name.get_data(), error->localizedDescription()->utf8String()));
 		}
 
-		{
-			std::lock_guard<std::mutex> lock(_cv_mutex);
-			_ready = true;
-		}
-		_cv.notify_all();
+		std::lock_guard<std::mutex> lock(_cv_mutex);
 		_complete = true;
+		_cv.notify_all();
 	});
 }
 
+MDImmediateLibrary::~MDImmediateLibrary() {
+	// Wait for the async compilation callback to complete before destroying to avoid segfault.
+	_check_and_wait();
+}
+
 MTL::Library *MDImmediateLibrary::get_library() {
-	if (!_complete) {
-		std::unique_lock<std::mutex> lock(_cv_mutex);
-		_cv.wait(lock, [this] { return _ready; });
-	}
+	_check_and_wait();
 	return _library.get();
 }
 
 NS::Error *MDImmediateLibrary::get_error() {
-	if (!_complete) {
-		std::unique_lock<std::mutex> lock(_cv_mutex);
-		_cv.wait(lock, [this] { return _ready; });
-	}
+	_check_and_wait();
 	return _error;
 }
 

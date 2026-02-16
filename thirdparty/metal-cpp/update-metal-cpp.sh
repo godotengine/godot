@@ -58,39 +58,4 @@ else
     echo "  Warning: $PATCH_DIR not found"
 fi
 
-# Patch 1: Add forward declarations to NSDefines.hpp to avoid conflicts with
-#          Godot's global types (String, Object, Error).
-#
-# Without this patch, metal-cpp's "class String*" forward declarations conflict
-# with Godot's ::String, ::Object, and ::Error types.
-
-NSDEFINES="$SCRIPT_DIR/Foundation/NSDefines.hpp"
-
-if [ -f "$NSDEFINES" ]; then
-    # Check if patch already applied
-    if grep -q "Forward declarations to avoid conflicts with Godot" "$NSDEFINES"; then
-        echo "  NSDefines.hpp: already patched"
-    else
-        # Find the line with #pragma once and insert after the next separator
-        sed -i '' '/^#pragma once$/,/^\/\/---/{
-            /^\/\/---/ {
-                a\
-\
-// Forward declarations to avoid conflicts with Godot types (String, Object, Error)\
-namespace NS {\
-class Array;\
-class Dictionary;\
-class Error;\
-class Object;\
-class String;\
-class URL;\
-} // namespace NS
-            }
-        }' "$NSDEFINES"
-        echo "  NSDefines.hpp: patched"
-    fi
-else
-    echo "  Warning: $NSDEFINES not found"
-fi
-
 echo "Done."

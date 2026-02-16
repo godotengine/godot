@@ -87,7 +87,6 @@ public:
     String*          init();
     String*          init(const String* pString);
     String*          init(const char* pString, StringEncoding encoding);
-    String*          init(void* pBytes, UInteger len, StringEncoding encoding);
     String*          init(void* pBytes, UInteger len, StringEncoding encoding, bool freeBuffer);
 
     unichar          character(UInteger index) const;
@@ -105,6 +104,7 @@ public:
 
     String*          stringByAppendingString(const String* pString) const;
     ComparisonResult caseInsensitiveCompare(const String* pString) const;
+    NS::String* init(const void * bytes, NS::UInteger len, NS::StringEncoding encoding);
 };
 
 /// Create an NS::String* from a string literal.
@@ -122,7 +122,7 @@ template <std::size_t _StringLen>
 
 _NS_INLINE NS::String* NS::String::string()
 {
-    return sendMessage<String*>(_NS_PRIVATE_CLS(NSString), _NS_PRIVATE_SEL(string));
+    return Object::sendMessage<String*>(_NS_PRIVATE_CLS(NSString), _NS_PRIVATE_SEL(string));
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -167,12 +167,6 @@ _NS_INLINE NS::String* NS::String::init(const char* pString, StringEncoding enco
     return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(initWithCString_encoding_), pString, encoding);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::String* NS::String::init(void* pBytes, UInteger len, StringEncoding encoding)
-{
-    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(initWithBytes_length_encoding_), pBytes, len, encoding);
-}
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::String* NS::String::init(void* pBytes, UInteger len, StringEncoding encoding, bool freeBuffer)
@@ -257,6 +251,11 @@ _NS_INLINE NS::String* NS::String::stringByAppendingString(const String* pString
 _NS_INLINE NS::ComparisonResult NS::String::caseInsensitiveCompare(const String* pString) const
 {
     return Object::sendMessage<NS::ComparisonResult>(this, _NS_PRIVATE_SEL(caseInsensitiveCompare_), pString);
+}
+
+_NS_INLINE NS::String* NS::String::init(const void * bytes, NS::UInteger len, NS::StringEncoding encoding)
+{
+    return Object::sendMessage<NS::String*>(this, _NS_PRIVATE_SEL(initWithBytes_length_encoding_), bytes, len, encoding);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
