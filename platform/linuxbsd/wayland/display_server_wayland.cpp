@@ -1194,6 +1194,10 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowData &wd = windows[p_window_id];
 
+	if (wd.rect.size == p_size) {
+		return;
+	}
+
 	Size2i new_size = p_size;
 	if (wd.visible) {
 		new_size = wayland_thread.window_set_size(p_window_id, p_size);
