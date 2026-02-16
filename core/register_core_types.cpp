@@ -137,7 +137,7 @@ void register_core_types() {
 
 	GDREGISTER_CLASS(Object);
 	GDREGISTER_CLASS(RefCounted);
-	GDREGISTER_CLASS(WeakRef);
+	GDREGISTER_CLASS(CoreBind::WeakRef);
 	GDREGISTER_CLASS(Resource);
 
 	GDREGISTER_CLASS(Time);

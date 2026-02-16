@@ -224,20 +224,6 @@ public:
 	}
 };
 
-class WeakRef : public RefCounted {
-	GDCLASS(WeakRef, RefCounted);
-
-	ObjectID ref;
-
-protected:
-	static void _bind_methods();
-
-public:
-	Variant get_ref() const;
-	void set_obj(Object *p_object);
-	void set_ref(const Ref<RefCounted> &p_ref);
-};
-
 template <typename T>
 struct PtrToArg<Ref<T>> {
 	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
