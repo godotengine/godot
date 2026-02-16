@@ -390,7 +390,7 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	second_vb->add_child(te);
 	second_vb->add_child(memnew(SpinBox));
 
-		HBoxContainer *vhb = memnew(HBoxContainer);
+	HBoxContainer *vhb = memnew(HBoxContainer);
 	second_vb->add_child(vhb);
 	vhb->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	vhb->add_child(memnew(VSlider));
