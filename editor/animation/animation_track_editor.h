@@ -217,7 +217,6 @@ class AnimationTimelineEdit : public Range {
 	void _anim_length_changed(double p_new_len);
 	void _anim_loop_pressed();
 	void _update_length_field_width();
-	void _update_right_controls_layout();
 
 	void _play_position_draw();
 	Rect2 hsize_rect;
