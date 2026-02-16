@@ -53,9 +53,9 @@
 
 #ifdef DEBUG_ENABLED
 _FORCE_INLINE_ void SceneRPCInterface::_profile_node_data(const String &p_what, ObjectID p_id, int p_size) {
-	if (EngineDebugger::is_profiling("multiplayer:rpc")) {
+	if (EngineDebugger::is_profiling(SNAME("multiplayer:rpc"))) {
 		Array values = { p_what, p_id, p_size };
-		EngineDebugger::profiler_add_frame_data("multiplayer:rpc", values);
+		EngineDebugger::profiler_add_frame_data(SNAME("multiplayer:rpc"), values);
 	}
 }
 #endif
@@ -114,10 +114,9 @@ const SceneRPCInterface::RPCConfigCache &SceneRPCInterface::_get_node_config(con
 	return rpc_cache[oid];
 }
 
-String SceneRPCInterface::get_rpc_md5(const Object *p_obj) {
-	const Node *node = Object::cast_to<Node>(p_obj);
-	ERR_FAIL_NULL_V(node, "");
-	const RPCConfigCache cache = _get_node_config(node);
+String SceneRPCInterface::get_rpc_md5(const Node *p_node) {
+	ERR_FAIL_NULL_V(p_node, "");
+	const RPCConfigCache cache = _get_node_config(p_node);
 	String rpc_list;
 	for (const KeyValue<uint16_t, RPCConfig> &config : cache.configs) {
 		rpc_list += String(config.value.name);
