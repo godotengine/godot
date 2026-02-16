@@ -160,7 +160,7 @@ jobs:
         uses: ./.github/actions/godot-deps
         with:
           # Sync with Ensure*Version in SConstruct.
-          python-version: 3.8
+          python-version: 3.9
           scons-version: 4.0
 
       - name: Force remove preinstalled .NET SDKs
