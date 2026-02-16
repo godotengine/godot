@@ -439,10 +439,10 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	test_tree->set_custom_minimum_size(Size2(0, 175) * EDSCALE);
 
 	ItemList *test_item_list = memnew(ItemList);
-    test_item_list->set_custom_minimum_size(Size2(0, 120) * EDSCALE);
-    test_item_list->add_item(TTR("Item 1"));
-    test_item_list->add_item(TTR("Item 2"));
-    third_vb->add_child(test_item_list);
+	test_item_list->set_custom_minimum_size(Size2(0, 120) * EDSCALE);
+	test_item_list->add_item(TTR("Item 1"));
+	test_item_list->add_item(TTR("Item 2"));
+	third_vb->add_child(test_item_list);
 
 	TreeItem *item = test_tree->create_item();
 	item->set_text(0, "Tree");
