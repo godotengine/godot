@@ -390,7 +390,7 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	second_vb->add_child(te);
 	second_vb->add_child(memnew(SpinBox));
 
-	HBoxContainer *vhb = memnew(HBoxContainer);
+		HBoxContainer *vhb = memnew(HBoxContainer);
 	second_vb->add_child(vhb);
 	vhb->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	vhb->add_child(memnew(VSlider));
@@ -436,6 +436,20 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	Tree *test_tree = memnew(Tree);
 	third_vb->add_child(test_tree);
 	test_tree->set_custom_minimum_size(Size2(0, 175) * EDSCALE);
+
+	TabBar *tb_bar = memnew(TabBar);
+	tb_bar->set_custom_minimum_size(Size2(0, 25) * EDSCALE);
+	tb_bar->add_tab(TTR("Tab 1"));
+	tb_bar->add_tab(TTR("Tab 2"));
+	tb_bar->add_tab(TTR("Tab 3"));
+	tb_bar->set_tab_disabled(2, true);
+	third_vb->add_child(tb_bar);
+
+	ItemList *test_item_list = memnew(ItemList);
+	test_item_list->set_custom_minimum_size(Size2(0, 120) * EDSCALE);
+	test_item_list->add_item(TTR("Item 1"));
+	test_item_list->add_item(TTR("Item 2"));
+	third_vb->add_child(test_item_list);
 
 	TreeItem *item = test_tree->create_item();
 	item->set_text(0, "Tree");
