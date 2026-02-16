@@ -59,10 +59,6 @@ namespace Godot.Bridge
                     .ToArray();
             ScriptMethodCache<T>.Initialize(methods);
 
-            GD.Print($"Script method registry compiled for {typeof(T)}: size={MethodsByNameAndArgc.Count}, alias_size={Aliases.Count}, aliasesRegistered={aliasesRegistered}");
-            // TODO: I would like to discard _aliases now to free up memory, but the hierarchy above it still needs it
-            //       There are probably lots of aliases, we could at least not copy them and recursively walk our parent
-            //       hierarchy as it's only done once (here). Ideas are appreciated
             return this;
         }
 
