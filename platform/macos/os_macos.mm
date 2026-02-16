@@ -369,11 +369,13 @@ _FORCE_INLINE_ String OS_MacOS::get_framework_executable(const String &p_path) {
 
 	// Read framework bundle to get executable name.
 	NSURL *url = [NSURL fileURLWithPath:@(p_path.utf8().get_data())];
-	NSBundle *bundle = [NSBundle bundleWithURL:url];
-	if (bundle) {
-		String exe_path = String::utf8([[bundle executablePath] UTF8String]);
-		if (da->file_exists(exe_path)) {
-			return exe_path;
+	if (url) {
+		NSBundle *bundle = [NSBundle bundleWithURL:url];
+		if (bundle) {
+			String exe_path = String::utf8([[bundle executablePath] UTF8String]);
+			if (da->file_exists(exe_path)) {
+				return exe_path;
+			}
 		}
 	}
 
