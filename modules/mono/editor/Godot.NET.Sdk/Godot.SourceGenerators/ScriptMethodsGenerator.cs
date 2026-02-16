@@ -207,16 +207,14 @@ namespace Godot.SourceGenerators
                 source.Append("    }\n");
             }
 
-            // Generate GetGodotMethodNameToProxyNameMap
+            source.Append("    private static partial class GodotInternal\n    {\n");
 
-            if (godotClassMethods.Length > 0)
+            // Generate GetGodotMethodNameToProxyNameMap
             {
                 const string CollectorType = "global::Godot.Bridge.ScriptManagerBridge.NameToProxyNameMapCollector";
 
-                source.Append(
-                    "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append("    internal new static void GetGodotMethodNameToProxyNameMap(")
-                    .Append(CollectorType).Append(" collector)\n    {\n");
+                source.Append("        public new static void GetGodotMethodNameToProxyNameMap(")
+                    .Append(CollectorType).Append(" collector)\n        {\n");
 
                 foreach (var method in godotClassMethods)
                 {
@@ -232,7 +230,7 @@ namespace Godot.SourceGenerators
                             INamedTypeSymbol castClassSymbol = method.Method.OverriddenMethod.ContainingType;
                             int parameterCount = method.ParamTypes.Length;
 
-                            source.Append("        collector.TryAdd(new(")
+                            source.Append("            collector.TryAdd(new(")
                                 .Append(castClassSymbol.FullQualifiedNameIncludeGlobal())
                                 .Append(".MethodName.@").Append(method.Method.Name)
                                 .Append(", ").Append(parameterCount)
@@ -243,21 +241,17 @@ namespace Godot.SourceGenerators
                     }
                 }
 
-                source.Append("    }\n");
+                source.Append("        }\n");
             }
 
             // Generate GetGodotMethodTrampolines
-
-            if (godotClassMethods.Length > 0)
             {
                 const string CollectorType = "global::Godot.Bridge.ScriptManagerBridge.MethodTrampolineCollector";
 
-                source.Append(
-                    "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append("    internal new static ")
+                source.Append("        public new static ")
                     .Append(isUnsafeAllowed ? "unsafe " : "")
                     .Append("void GetGodotMethodTrampolines(")
-                    .Append(CollectorType).Append(" collector)\n    {\n");
+                    .Append(CollectorType).Append(" collector)\n        {\n");
 
                 foreach (var method in godotClassMethods)
                 {
@@ -265,8 +259,10 @@ namespace Godot.SourceGenerators
                     AppendMethodTrampoline(source, method, isUnsafeAllowed);
                 }
 
-                source.Append("    }\n");
+                source.Append("        }\n");
             }
+
+            source.Append("    }\n"); // partial class GodotInternal
 
             source.Append("#pragma warning restore CS0109\n");
 
@@ -423,7 +419,7 @@ namespace Godot.SourceGenerators
 
             if (!isUnsafeAllowed)
             {
-                source.Append("        var aux_delegate_")
+                source.Append("            var aux_delegate_")
                     .Append(parameterCount).Append("_").Append(methodName)
                     .Append(" = ")
                     .Append("trampoline_")
@@ -431,7 +427,7 @@ namespace Godot.SourceGenerators
                     .Append(";\n");
             }
 
-            source.Append("        collector.TryAdd(new(MethodName.@")
+            source.Append("            collector.TryAdd(new(MethodName.@")
                 .Append(methodName).Append(", ").Append(parameterCount)
                 .Append("), new(");
 
@@ -486,24 +482,24 @@ namespace Godot.SourceGenerators
             bool isStaticMethod = method.Method.IsStatic;
 
             source
-                .Append("        static godot_variant trampoline_")
+                .Append("            static godot_variant trampoline_")
                 .Append(parameterCount).Append("_").Append(methodName)
                 .Append("(object godotObject, NativeVariantPtrArgs args, ")
-                .Append("ref godot_variant_call_error callError)\n        {\n");
+                .Append("ref godot_variant_call_error callError)\n            {\n");
 
-            source.Append("            if (args.Count != ");
+            source.Append("                if (args.Count != ");
             source.Append(parameterCount);
             source.Append(") {\n");
-            source.Append("                callError = ")
+            source.Append("                    callError = ")
                 .Append("godot_variant_call_error.CreateInvalidArgumentCountError(expected: ")
                 .Append(parameterCount).Append(", provided: args.Count);\n");
-            source.Append("                return default;\n");
-            source.Append("            }\n");
+            source.Append("                    return default;\n");
+            source.Append("                }\n");
 
             if (method.RetType != null)
-                source.Append("            var callRet = ");
+                source.Append("                var callRet = ");
             else
-                source.Append("            ");
+                source.Append("                ");
 
             if (!isStaticMethod)
                 source.Append("((").Append(castClassSymbol.FullQualifiedNameIncludeGlobal()).Append(")godotObject).");
@@ -524,17 +520,17 @@ namespace Godot.SourceGenerators
 
             if (method.RetType != null)
             {
-                source.Append("            return ");
+                source.Append("                return ");
                 source.AppendManagedToNativeVariantExpr("callRet",
                     method.RetType.Value.TypeSymbol, method.RetType.Value.MarshalType);
                 source.Append(";\n");
             }
             else
             {
-                source.Append("            return default;\n");
+                source.Append("                return default;\n");
             }
 
-            source.Append("        }\n");
+            source.Append("            }\n");
         }
     }
 }
