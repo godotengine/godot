@@ -874,14 +874,23 @@ void Path3DEditorPlugin::_smooth_curve_points(){
 	 // Catmull–Rom smoothing
 	Ref<Curve3D> curve = path->get_curve();
 	int point_count = curve->get_point_count();
-	const float smooth_ratio = 0.33;
-	for (int i = 1; i < point_count - 1; i++) {
+	const float smooth_ratio = 0.5;
+	for (int i = 1; i < point_count - 1; i++) { // Ignore first and last points unless it's closed.
 		Vector3 next_p = curve->get_point_position(i-1);
-		Vector3 curr_p = curve->get_point_position(i);
 		Vector3 prev_p = curve->get_point_position(i+1);
-		Vector3 tangent = (next_p - prev_p) / 2.0f;
+		Vector3 tangent = (next_p - prev_p) * smooth_ratio;
 		curve->set_point_in(i, tangent*smooth_ratio);
-		curve->set_point_out(i,-tangent*smooth_ratio);
+		curve->set_point_out(i, -tangent*smooth_ratio);
+	}
+	if (curve->is_closed()){
+		Vector3 first_p = curve->get_point_position(0);
+		Vector3 last_p = curve->get_point_position(point_count-1);
+
+		Vector3 first_last_tangent = (last_p - first_p) * smooth_ratio;
+		curve->set_point_out(0, -first_p_tangent);
+
+		Vector3 last_p_tangent = (curve->get_point_position(point_count-2) - first_p) * smooth_ratio;
+		curve->set_point_in(point_count-1, last_p_tangent);
 	}
 }
 
