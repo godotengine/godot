@@ -2544,7 +2544,7 @@ void EditorFileSystem::_notify_filesystem_changed() {
 }
 
 HashSet<String> EditorFileSystem::get_valid_extensions() const {
-	return valid_extensions;
+	return HashSet<String>(valid_extensions);
 }
 
 void EditorFileSystem::_register_global_class_script(const String &p_search_path, const String &p_target_path, const ScriptClassInfoUpdate &p_script_update) {

@@ -221,7 +221,8 @@ TEST_CASE("[HashSet] Copy") {
 	expected.push_back(0);
 	expected.push_back(123485);
 
-	HashSet<int> copy_assign = set;
+	HashSet<int> copy_assign;
+	copy_assign = set;
 
 	int idx = 0;
 	for (const int &E : copy_assign) {

@@ -644,7 +644,7 @@ void GDScript::_update_exports_down(bool p_base_exports_changed) {
 		return;
 	}
 
-	HashSet<ObjectID> copy = inheriters_cache; //might get modified
+	HashSet<ObjectID> copy(inheriters_cache); //might get modified
 
 	for (const ObjectID &E : copy) {
 		Object *id = ObjectDB::get_instance(E);
