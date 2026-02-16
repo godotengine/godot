@@ -800,37 +800,31 @@ namespace Godot.Bridge
                 Debug.Assert(!scriptType.IsGenericTypeDefinition,
                     $"Script type must be a constructed generic type or not generic at all. Type: {scriptType}.");
 
-                Type native = GodotObject.InternalGetClassNativeBase(scriptType);
-
                 TrampolineCollectorPool collectorPool;
 
                 if (_cachedTrampolineCollectorPool == null)
                 {
                     _cachedTrampolineCollectorPool = new(
-                        OneArgumentArray: new object[1],
-                        new(scriptPtr, tryAddNameToProxyNameMap),
-                        new(scriptPtr, tryAddMethodTrampoline),
-                        new(scriptPtr, tryAddPropertyTrampoline),
-                        new(scriptPtr, tryAddRaiseSignalTrampoline));
+                        TwoArgumentArray: new object[2],
+                        Collectors: new(
+                            new(scriptPtr, tryAddNameToProxyNameMap),
+                            new(scriptPtr, tryAddMethodTrampoline),
+                            new(scriptPtr, tryAddPropertyTrampoline),
+                            new(scriptPtr, tryAddRaiseSignalTrampoline)),
+                        CollectionOptions: new(IncludeAncestors: true));
 
                     collectorPool = _cachedTrampolineCollectorPool.Value;
                 }
                 else
                 {
                     collectorPool = _cachedTrampolineCollectorPool.Value;
-                    collectorPool.NameToProxyNameMapCollector.Change(scriptPtr, tryAddNameToProxyNameMap);
-                    collectorPool.MethodTrampolineCollector.Change(scriptPtr, tryAddMethodTrampoline);
-                    collectorPool.PropertyTrampolineCollector.Change(scriptPtr, tryAddPropertyTrampoline);
-                    collectorPool.RaiseSignalTrampolineCollector.Change(scriptPtr, tryAddRaiseSignalTrampoline);
+                    collectorPool.Collectors.UpdateCollectors(scriptPtr, tryAddNameToProxyNameMap,
+                        tryAddMethodTrampoline, tryAddPropertyTrampoline, tryAddRaiseSignalTrampoline);
                 }
 
-                for (Type? top = scriptType; top != null && top != native; top = top.BaseType)
-                {
-                    GetMethodNameToProxyNameMapForType(top, collectorPool);
-                    GetMethodTrampolinesForType(top, collectorPool);
-                    GetPropertyTrampolinesForType(top, collectorPool);
-                    GetRaiseSignalTrampolinesForType(top, collectorPool);
-                }
+                GetGodotClassTrampolinesForType(scriptType, collectorPool);
+
+                Type native = GodotObject.InternalGetClassNativeBase(scriptType);
 
                 bool DoesUserScriptContainMethod(string methodName)
                 {
@@ -1083,11 +1077,14 @@ namespace Godot.Bridge
         /// This is used to collect the method name to proxy name map for a script.
         /// </summary>
         /// <remarks>
-        /// The user script can implement a static method "GetGodotMethodNameToProxyNameMap"
-        /// that receives an instance of this class and calls its <see cref="TryAdd"/> method.<br/>
+        /// The user script can implement a static method "GetGodotClassTrampolines"
+        /// that receives an instance of <see cref="TrampolineCollectors"/> which
+        /// contains an instance of this class. The user script can then call the
+        /// <see cref="TryAdd"/> method of this class to add proxy name mappings to the script.<br/>
         /// <br/>
-        /// "GetGodotMethodNameToProxyNameMap" is called on the most derived class first,
-        /// then through the base classes one by one in inheritance order.
+        /// "GetGodotClassTrampolines" must be called on the most derived class first,
+        /// and after collecting the members for that class, its implementation must call the base
+        /// implementation to also collect members from the base classes in inheritance order.<br/>
         /// As a result, <see cref="TryAdd"/> will not add a method from a base class if the derived class
         /// has already added a method with the same MethodKey.
         /// </remarks>
@@ -1103,7 +1100,7 @@ namespace Godot.Bridge
                 _tryAddDelegate = tryAddDelegate;
             }
 
-            internal unsafe void Change(IntPtr scriptPtr, TryAddNameToProxyNameMapDelegate tryAddDelegate)
+            internal unsafe void Update(IntPtr scriptPtr, TryAddNameToProxyNameMapDelegate tryAddDelegate)
             {
                 _scriptPtr = scriptPtr;
                 _tryAddDelegate = tryAddDelegate;
@@ -1124,11 +1121,14 @@ namespace Godot.Bridge
         /// This is used to collect the method trampolines for a script.
         /// </summary>
         /// <remarks>
-        /// The user script can implement a static method "GetGodotMethodTrampolines"
-        /// that receives an instance of this class and calls its <see cref="TryAdd"/> method.<br/>
+        /// The user script can implement a static method "GetGodotClassTrampolines"
+        /// that receives an instance of <see cref="TrampolineCollectors"/> which
+        /// contains an instance of this class. The user script can then call the
+        /// <see cref="TryAdd"/> method of this class to add methodsto the script.<br/>
         /// <br/>
-        /// "GetGodotMethodTrampolines" is called on the most derived class first,
-        /// then through the base classes one by one in inheritance order.
+        /// "GetGodotClassTrampolines" must be called on the most derived class first,
+        /// and after collecting the members for that class, its implementation must call the base
+        /// implementation to also collect members from the base classes in inheritance order.<br/>
         /// As a result, <see cref="TryAdd"/> will not add a method from a base class if the derived class
         /// has already added a method with the same MethodKey.
         /// </remarks>
@@ -1143,7 +1143,7 @@ namespace Godot.Bridge
                 _tryAddDelegate = tryAddDelegate;
             }
 
-            internal unsafe void Change(IntPtr scriptPtr, TryAddMethodTrampolineDelegate tryAddDelegate)
+            internal unsafe void Update(IntPtr scriptPtr, TryAddMethodTrampolineDelegate tryAddDelegate)
             {
                 _scriptPtr = scriptPtr;
                 _tryAddDelegate = tryAddDelegate;
@@ -1164,11 +1164,14 @@ namespace Godot.Bridge
         /// This is used to collect the property trampolines for a script.
         /// </summary>
         /// <remarks>
-        /// The user script can implement a static method "GetGodotPropertyTrampolines"
-        /// that receives an instance of this class and calls its <see cref="TryAdd"/> method.<br/>
+        /// The user script can implement a static method "GetGodotClassTrampolines"
+        /// that receives an instance of <see cref="TrampolineCollectors"/> which
+        /// contains an instance of this class. The user script can then call the
+        /// <see cref="TryAdd"/> method of this class to add properties to the script.<br/>
         /// <br/>
-        /// "GetGodotPropertyTrampolines" is called on the most derived class first,
-        /// then through the base classes one by one in inheritance order.
+        /// "GetGodotClassTrampolines" must be called on the most derived class first,
+        /// and after collecting the members for that class, its implementation must call the base
+        /// implementation to also collect members from the base classes in inheritance order.<br/>
         /// As a result, <see cref="TryAdd"/> will not add a property from a base class if the derived class
         /// has already added a property with the same name.
         /// </remarks>
@@ -1184,7 +1187,7 @@ namespace Godot.Bridge
                 _tryAddDelegate = tryAddDelegate;
             }
 
-            internal unsafe void Change(IntPtr scriptPtr, TryAddPropertyTrampolineDelegate tryAddDelegate)
+            internal unsafe void Update(IntPtr scriptPtr, TryAddPropertyTrampolineDelegate tryAddDelegate)
             {
                 _scriptPtr = scriptPtr;
                 _tryAddDelegate = tryAddDelegate;
@@ -1211,11 +1214,14 @@ namespace Godot.Bridge
         /// This is used to collect the raise signal trampolines for a script.
         /// </summary>
         /// <remarks>
-        /// The user script can implement a static method "GetGodotRaiseSignalTrampolines"
-        /// that receives an instance of this class and calls its <see cref="TryAdd"/> method.<br/>
+        /// The user script can implement a static method "GetGodotClassTrampolines"
+        /// that receives an instance of <see cref="TrampolineCollectors"/> which
+        /// contains an instance of this class. The user script can then call the
+        /// <see cref="TryAdd"/> method of this class to add signals to the script.<br/>
         /// <br/>
-        /// "GetGodotRaiseSignalTrampolines" is called on the most derived class first,
-        /// then through the base classes one by one in inheritance order.
+        /// "GetGodotClassTrampolines" must be called on the most derived class first,
+        /// and after collecting the members for that class, its implementation must call the base
+        /// implementation to also collect members from the base classes in inheritance order.<br/>
         /// As a result, <see cref="TryAdd"/> will not add a signal from a base class if the derived class
         /// has already added a signal with the same SignalKey.
         /// </remarks>
@@ -1231,7 +1237,7 @@ namespace Godot.Bridge
                 _tryAddDelegate = tryAddDelegate;
             }
 
-            internal unsafe void Change(IntPtr scriptPtr, TryAddRaiseSignalTrampolineDelegate tryAddDelegate)
+            internal unsafe void Update(IntPtr scriptPtr, TryAddRaiseSignalTrampolineDelegate tryAddDelegate)
             {
                 _scriptPtr = scriptPtr;
                 _tryAddDelegate = tryAddDelegate;
@@ -1248,70 +1254,60 @@ namespace Godot.Bridge
         }
 
         /// <summary>
+        /// Group of collectors passed to the user script to collect trampolines
+        /// and method name to proxy name mappings for a script.
+        /// </summary>
+        public record TrampolineCollectors(
+            NameToProxyNameMapCollector NameToProxyNameMapCollector,
+            MethodTrampolineCollector MethodTrampolineCollector,
+            PropertyTrampolineCollector PropertyTrampolineCollector,
+            RaiseSignalTrampolineCollector RaiseSignalTrampolineCollector)
+        {
+            internal unsafe void UpdateCollectors(IntPtr scriptPtr,
+                TryAddNameToProxyNameMapDelegate tryAddNameToProxyNameMap,
+                TryAddMethodTrampolineDelegate tryAddMethodTrampoline,
+                TryAddPropertyTrampolineDelegate tryAddPropertyTrampoline,
+                TryAddRaiseSignalTrampolineDelegate tryAddRaiseSignalTrampoline)
+            {
+                NameToProxyNameMapCollector.Update(scriptPtr, tryAddNameToProxyNameMap);
+                MethodTrampolineCollector.Update(scriptPtr, tryAddMethodTrampoline);
+                PropertyTrampolineCollector.Update(scriptPtr, tryAddPropertyTrampoline);
+                RaiseSignalTrampolineCollector.Update(scriptPtr, tryAddRaiseSignalTrampoline);
+            }
+        }
+
+        /// <summary>
+        /// Options for collecting trampolines for a script.
+        /// </summary>
+        /// <param name="IncludeAncestors">
+        /// Whether trampolines from ancestor classes should also be collected.
+        /// If true, the trampoline collection method of each ancestor class must be called
+        /// after the trampoline collection method of the current class.
+        /// </param>
+        public record TrampolineCollectionOptions(bool IncludeAncestors);
+
+        /// <summary>
         /// This is used as a pool to avoid having to allocate multiple instances of the
         /// collectors and argument arrays when updating trampolines for a script.
         /// </summary>
         private record struct TrampolineCollectorPool(
-            object[] OneArgumentArray,
-            NameToProxyNameMapCollector NameToProxyNameMapCollector,
-            MethodTrampolineCollector MethodTrampolineCollector,
-            PropertyTrampolineCollector PropertyTrampolineCollector,
-            RaiseSignalTrampolineCollector RaiseSignalTrampolineCollector);
+            object[] TwoArgumentArray,
+            TrampolineCollectors Collectors,
+            TrampolineCollectionOptions CollectionOptions);
 
-        private static void GetMethodNameToProxyNameMapForType(Type type, TrampolineCollectorPool collectorPool)
+        private static void GetGodotClassTrampolinesForType(Type type, TrampolineCollectorPool collectorPool)
         {
             var getGodotMethodNameToProxyNameMap = type.GetMethod(
-                "GetGodotMethodNameToProxyNameMap",
+                "GetGodotClassTrampolines",
                 BindingFlags.DeclaredOnly | BindingFlags.Static |
                 BindingFlags.NonPublic | BindingFlags.Public);
 
             if (getGodotMethodNameToProxyNameMap == null)
                 return;
 
-            collectorPool.OneArgumentArray[0] = collectorPool.NameToProxyNameMapCollector;
-            getGodotMethodNameToProxyNameMap.Invoke(null, collectorPool.OneArgumentArray);
-        }
-
-        private static void GetMethodTrampolinesForType(Type type, TrampolineCollectorPool collectorPool)
-        {
-            var getGodotMethodTrampolines = type.GetMethod(
-                "GetGodotMethodTrampolines",
-                BindingFlags.DeclaredOnly | BindingFlags.Static |
-                BindingFlags.NonPublic | BindingFlags.Public);
-
-            if (getGodotMethodTrampolines == null)
-                return;
-
-            collectorPool.OneArgumentArray[0] = collectorPool.MethodTrampolineCollector;
-            getGodotMethodTrampolines.Invoke(null, collectorPool.OneArgumentArray);
-        }
-
-        private static void GetPropertyTrampolinesForType(Type type, TrampolineCollectorPool collectorPool)
-        {
-            var getGodotPropertyTrampolines = type.GetMethod(
-                "GetGodotPropertyTrampolines",
-                BindingFlags.DeclaredOnly | BindingFlags.Static |
-                BindingFlags.NonPublic | BindingFlags.Public);
-
-            if (getGodotPropertyTrampolines == null)
-                return;
-
-            collectorPool.OneArgumentArray[0] = collectorPool.PropertyTrampolineCollector;
-            getGodotPropertyTrampolines.Invoke(null, collectorPool.OneArgumentArray);
-        }
-
-        private static void GetRaiseSignalTrampolinesForType(Type type, TrampolineCollectorPool collectorPool)
-        {
-            var getGodotRaiseSignalTrampolines = type.GetMethod(
-                "GetGodotRaiseSignalTrampolines",
-                BindingFlags.DeclaredOnly | BindingFlags.Static |
-                BindingFlags.NonPublic | BindingFlags.Public);
-
-            if (getGodotRaiseSignalTrampolines == null)
-                return;
-
-            collectorPool.OneArgumentArray[0] = collectorPool.RaiseSignalTrampolineCollector;
-            getGodotRaiseSignalTrampolines.Invoke(null, collectorPool.OneArgumentArray);
+            collectorPool.TwoArgumentArray[0] = collectorPool.Collectors;
+            collectorPool.TwoArgumentArray[1] = collectorPool.CollectionOptions;
+            getGodotMethodNameToProxyNameMap.Invoke(null, collectorPool.TwoArgumentArray);
         }
 
 #pragma warning disable IDE1006 // Naming rule violation

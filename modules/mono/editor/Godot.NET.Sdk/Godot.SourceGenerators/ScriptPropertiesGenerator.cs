@@ -137,8 +137,9 @@ namespace Godot.SourceGenerators
                     "    /// Cached StringNames for the properties and fields contained in this class, for fast lookup.\n")
                 .Append("    /// </summary>\n");
 
-            source.Append(
-                $"    public new class PropertyName : {symbol.BaseType!.FullQualifiedNameIncludeGlobal()}.PropertyName {{\n");
+            source.Append("    public new class PropertyName : ")
+                .Append(symbol.BaseType!.FullQualifiedNameIncludeGlobal())
+                .Append(".PropertyName {\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
@@ -178,68 +179,70 @@ namespace Godot.SourceGenerators
 
             source.Append("    }\n"); // end of class PropertyName
 
-            if (godotClassProperties.Length > 0 || godotClassFields.Length > 0)
+            source.Append("    private static partial class GodotInternal\n    {\n");
+
+            // Generate GetGodotMethodTrampolines
             {
-                // Generate GetGodotMethodTrampolines
+                const string CollectorType = "global::Godot.Bridge.ScriptManagerBridge.PropertyTrampolineCollector";
+
+                source.Append("        internal new static ")
+                    .Append(isUnsafeAllowed ? "unsafe " : "")
+                    .Append("void GetGodotPropertyTrampolines(")
+                    .Append(CollectorType).Append(" collector)\n        {\n");
+
+                // Generate trampolines
+
+                foreach (var property in godotClassProperties)
                 {
-                    const string CollectorType = "global::Godot.Bridge.ScriptManagerBridge.PropertyTrampolineCollector";
-
-                    source.Append(
-                        "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                    source.Append("    internal new static ")
-                        .Append(isUnsafeAllowed ? "unsafe " : "")
-                        .Append("void GetGodotPropertyTrampolines(")
-                        .Append(CollectorType).Append(" collector)\n    {\n");
-
-                    // Generate trampolines
-
-                    foreach (var property in godotClassProperties)
+                    if (!property.PropertySymbol.IsWriteOnly)
                     {
-                        if (!property.PropertySymbol.IsWriteOnly)
-                        {
-                            GeneratePropertyGetterTrampoline(symbol, property.PropertySymbol.Name,
-                                property.PropertySymbol.Type, property.Type, source);
-                        }
-
-                        if (!property.PropertySymbol.IsReadOnly && !property.PropertySymbol.SetMethod!.IsInitOnly)
-                        {
-                            GeneratePropertySetterTrampoline(symbol, property.PropertySymbol.Name,
-                                property.PropertySymbol.Type, property.Type, source);
-                        }
+                        GeneratePropertyGetterTrampoline(symbol, property.PropertySymbol.Name,
+                            property.PropertySymbol.Type, property.Type, source);
                     }
 
-                    foreach (var field in godotClassFields)
+                    if (!property.PropertySymbol.IsReadOnly && !property.PropertySymbol.SetMethod!.IsInitOnly)
                     {
-                        GeneratePropertyGetterTrampoline(symbol, field.FieldSymbol.Name,
-                            field.FieldSymbol.Type, field.Type, source);
-
-                        if (!field.FieldSymbol.IsReadOnly)
-                        {
-                            GeneratePropertySetterTrampoline(symbol, field.FieldSymbol.Name,
-                                field.FieldSymbol.Type, field.Type, source);
-                        }
+                        GeneratePropertySetterTrampoline(symbol, property.PropertySymbol.Name,
+                            property.PropertySymbol.Type, property.Type, source);
                     }
-
-                    // Append trampolines
-
-                    foreach (var property in godotClassProperties)
-                    {
-                        AppendPropertyTrampolines(source, property.PropertySymbol.Name, isUnsafeAllowed,
-                            hasGetter: !property.PropertySymbol.IsWriteOnly,
-                            hasSetter: !property.PropertySymbol.IsReadOnly &&
-                                       !property.PropertySymbol.SetMethod!.IsInitOnly);
-                    }
-
-                    foreach (var field in godotClassFields)
-                    {
-                        AppendPropertyTrampolines(source, field.FieldSymbol.Name, isUnsafeAllowed,
-                            hasGetter: true,
-                            hasSetter: !field.FieldSymbol.IsReadOnly);
-                    }
-
-                    source.Append("    }\n");
                 }
 
+                foreach (var field in godotClassFields)
+                {
+                    GeneratePropertyGetterTrampoline(symbol, field.FieldSymbol.Name,
+                        field.FieldSymbol.Type, field.Type, source);
+
+                    if (!field.FieldSymbol.IsReadOnly)
+                    {
+                        GeneratePropertySetterTrampoline(symbol, field.FieldSymbol.Name,
+                            field.FieldSymbol.Type, field.Type, source);
+                    }
+                }
+
+                // Append trampolines
+
+                foreach (var property in godotClassProperties)
+                {
+                    AppendPropertyTrampolines(source, property.PropertySymbol.Name, isUnsafeAllowed,
+                        hasGetter: !property.PropertySymbol.IsWriteOnly,
+                        hasSetter: !property.PropertySymbol.IsReadOnly &&
+                                   !property.PropertySymbol.SetMethod!.IsInitOnly);
+                }
+
+                foreach (var field in godotClassFields)
+                {
+                    AppendPropertyTrampolines(source, field.FieldSymbol.Name, isUnsafeAllowed,
+                        hasGetter: true,
+                        hasSetter: !field.FieldSymbol.IsReadOnly);
+                }
+
+                source.Append("        }\n");
+            }
+
+            source.Append("    }\n"); // partial class GodotInternal
+
+            if (godotClassProperties.Length > 0 || godotClassFields.Length > 0)
+            {
                 // Generate GetGodotPropertyList
 
                 const string DictionaryType =
@@ -297,9 +300,9 @@ namespace Godot.SourceGenerators
 
                 source.Append("        return properties;\n");
                 source.Append("    }\n");
-
-                source.Append("#pragma warning restore CS0109\n");
             }
+
+            source.Append("#pragma warning restore CS0109\n");
 
             source.Append("}\n"); // partial class
 
@@ -330,7 +333,7 @@ namespace Godot.SourceGenerators
             {
                 if (hasGetter)
                 {
-                    source.Append("        var aux_delegate_get_").Append(propertyMemberName)
+                    source.Append("            var aux_delegate_get_").Append(propertyMemberName)
                         .Append(" = ")
                         .Append("trampoline_get_").Append(propertyMemberName)
                         .Append(";\n");
@@ -338,14 +341,14 @@ namespace Godot.SourceGenerators
 
                 if (hasSetter)
                 {
-                    source.Append("        var aux_delegate_set_").Append(propertyMemberName)
+                    source.Append("            var aux_delegate_set_").Append(propertyMemberName)
                         .Append(" = ")
                         .Append("trampoline_set_").Append(propertyMemberName)
                         .Append(";\n");
                 }
             }
 
-            source.Append("        collector.TryAdd(PropertyName.@")
+            source.Append("            collector.TryAdd(PropertyName.@")
                 .Append(propertyMemberName)
                 .Append(", (new(");
 
@@ -397,19 +400,19 @@ namespace Godot.SourceGenerators
         )
         {
             source
-                .Append("        static godot_variant trampoline_get_").Append(propertyMemberName)
-                .Append("(object godotObject)\n        {\n");
+                .Append("            static godot_variant trampoline_get_").Append(propertyMemberName)
+                .Append("(object godotObject)\n            {\n");
 
             source
-                .Append("            var ret = ((").Append(classSymbol.FullQualifiedNameIncludeGlobal())
+                .Append("                var ret = ((").Append(classSymbol.FullQualifiedNameIncludeGlobal())
                 .Append(")godotObject).@")
                 .Append(propertyMemberName).Append(";\n");
             source
-                .Append("            return ")
+                .Append("                return ")
                 .AppendManagedToNativeVariantExpr("ret", propertyTypeSymbol, propertyMarshalType)
                 .Append(";\n");
 
-            source.Append("        }\n");
+            source.Append("            }\n");
         }
 
         private static void GeneratePropertySetterTrampoline(
@@ -421,18 +424,18 @@ namespace Godot.SourceGenerators
         )
         {
             source
-                .Append("        static void trampoline_set_").Append(propertyMemberName)
-                .Append("(object godotObject, in godot_variant value)\n        {\n");
+                .Append("            static void trampoline_set_").Append(propertyMemberName)
+                .Append("(object godotObject, in godot_variant value)\n            {\n");
 
             source
-                .Append("            ((").Append(classSymbol.FullQualifiedNameIncludeGlobal())
+                .Append("                ((").Append(classSymbol.FullQualifiedNameIncludeGlobal())
                 .Append(")godotObject).@")
                 .Append(propertyMemberName)
                 .Append(" = ")
                 .AppendNativeVariantToManagedExpr("value", propertyTypeSymbol, propertyMarshalType)
                 .Append(";\n");
 
-            source.Append("        }\n");
+            source.Append("            }\n");
         }
 
         private static void AppendGroupingPropertyInfo(StringBuilder source, PropertyInfo propertyInfo)

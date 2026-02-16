@@ -54,7 +54,7 @@ namespace Godot.SourceGenerators
 
             while (symbol != null)
             {
-                if (symbol.ContainingAssembly?.Name == "GodotSharp")
+                if (symbol.ContainingAssembly is { Name: "GodotSharp" or "GodotSharpEditor" })
                     return symbol;
 
                 symbol = symbol.BaseType;
