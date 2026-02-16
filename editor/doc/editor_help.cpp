@@ -38,6 +38,7 @@
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
+#include "core/string/translation_server.h"
 #include "core/version.h"
 #include "editor/doc/doc_data_compressed.gen.h"
 #include "editor/docks/filesystem_dock.h"
@@ -714,6 +715,19 @@ void EditorHelp::_push_code_font() {
 void EditorHelp::_pop_code_font() {
 	class_desc->pop(); // font_size
 	class_desc->pop(); // font
+}
+
+void EditorHelp::_menu_option(int p_option) {
+	if (p_option == MENU_CORRECT_TRANSLATION) {
+		StringBuilder sb;
+		sb.append("https://hosted.weblate.org/translate/godot-engine/godot-class-reference/");
+		sb.append(TranslationServer::get_singleton()->get_locale());
+		sb.append("/?q=+location%3A");
+		sb.append(edited_class);
+		sb.append(".xml++");
+		sb.append(class_desc->get_selected_text());
+		OS::get_singleton()->shell_open(sb.as_string());
+	}
 }
 
 Error EditorHelp::_goto_desc(const String &p_class) {
@@ -3425,6 +3439,10 @@ EditorHelp::EditorHelp() {
 	class_desc->set_tab_size(8);
 	class_desc->set_autowrap_trim_flags(TextServer::BREAK_TRIM_END_EDGE_SPACES);
 	add_child(class_desc);
+
+	PopupMenu *menu = class_desc->get_menu();
+	menu->add_item(ETR("Correct Translation"), MENU_CORRECT_TRANSLATION);
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorHelp::_menu_option));
 
 	class_desc->set_threaded(true);
 	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);

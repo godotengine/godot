@@ -176,6 +176,11 @@ class EditorHelp : public VBoxContainer {
 	void _class_desc_resized(bool p_force_update_theme);
 	int display_margin = 0;
 
+	enum MenuItems {
+		MENU_CORRECT_TRANSLATION = RichTextLabel::MENU_MAX + 1,
+	};
+	void _menu_option(int p_option);
+
 	Error _goto_desc(const String &p_class);
 	//void _update_history_buttons();
 	void _update_method_list(MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods);
