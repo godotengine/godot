@@ -210,20 +210,12 @@ namespace Godot.SourceGenerators
 
             if (godotClassMethods.Length > 0)
             {
-                const string DictType =
-                    "global::System.Collections.Generic.Dictionary<global::Godot.Bridge.MethodKey, global::Godot.StringName>";
+                const string CollectorType = "global::Godot.Bridge.ScriptManagerBridge.NameToProxyNameMapCollector";
 
                 source.Append(
                     "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append("    internal new static ")
-                    .Append(DictType)
-                    .Append(" GetGodotMethodNameToProxyNameMap()\n    {\n");
-
-                source.Append("        var nameToProxyNameMap = new ")
-                    .Append(DictType)
-                    .Append("(")
-                    .Append(godotClassMethods.Length)
-                    .Append(");\n");
+                source.Append("    internal new static void GetGodotMethodNameToProxyNameMap(")
+                    .Append(CollectorType).Append(" collector)\n    {\n");
 
                 foreach (var method in godotClassMethods)
                 {
@@ -239,7 +231,7 @@ namespace Godot.SourceGenerators
                             INamedTypeSymbol castClassSymbol = method.Method.OverriddenMethod.ContainingType;
                             int parameterCount = method.ParamTypes.Length;
 
-                            source.Append("        nameToProxyNameMap.Add(new(")
+                            source.Append("        collector.TryAdd(new(")
                                 .Append(castClassSymbol.FullQualifiedNameIncludeGlobal())
                                 .Append(".MethodName.@").Append(method.Method.Name)
                                 .Append(", ").Append(parameterCount)
@@ -250,7 +242,6 @@ namespace Godot.SourceGenerators
                     }
                 }
 
-                source.Append("        return nameToProxyNameMap;\n");
                 source.Append("    }\n");
             }
 
@@ -258,20 +249,12 @@ namespace Godot.SourceGenerators
 
             if (godotClassMethods.Length > 0)
             {
-                const string DictType =
-                    "global::System.Collections.Generic.Dictionary<global::Godot.Bridge.MethodKey, global::Godot.Bridge.MethodTrampoline>";
+                const string CollectorType = "global::Godot.Bridge.ScriptManagerBridge.MethodTrampolineCollector";
 
                 source.Append(
                     "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append("    internal new static unsafe ")
-                    .Append(DictType)
-                    .Append(" GetGodotMethodTrampolines()\n    {\n");
-
-                source.Append("        var trampolines = new ")
-                    .Append(DictType)
-                    .Append("(")
-                    .Append(godotClassMethods.Length)
-                    .Append(");\n");
+                source.Append("    internal new static unsafe void GetGodotMethodTrampolines(")
+                    .Append(CollectorType).Append(" collector)\n    {\n");
 
                 foreach (var method in godotClassMethods)
                 {
@@ -279,7 +262,6 @@ namespace Godot.SourceGenerators
                     AppendMethodTrampoline(source, method);
                 }
 
-                source.Append("        return trampolines;\n");
                 source.Append("    }\n");
             }
 
@@ -461,7 +443,7 @@ namespace Godot.SourceGenerators
             string methodName = method.Method.Name;
             int parameterCount = method.ParamTypes.Length;
 
-            source.Append("        trampolines.Add(new(MethodName.@")
+            source.Append("        collector.TryAdd(new(MethodName.@")
                 .Append(methodName).Append(", ").Append(parameterCount)
                 .Append("), new(&trampoline_")
                 .Append(parameterCount).Append("_").Append(methodName)
