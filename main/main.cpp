@@ -3051,7 +3051,12 @@ Error Main::setup2(bool p_show_boot_logo) {
 								init_custom_scale = value;
 								init_custom_scale_found = true;
 							} else if (!prefer_wayland_found && assign == "run/platforms/linuxbsd/prefer_wayland") {
-								prefer_wayland = value;
+								if (!OS::get_singleton()->get_environment("WAYLAND_DISPLAY").is_empty()) {
+									// Do not prefer Wayland if not currently on a Wayland session.
+									// This avoids error messages on startup when currently on X11
+									// and the Prefer Wayland setting is enabled.
+									prefer_wayland = value;
+								}
 								prefer_wayland_found = true;
 							} else if (!tablet_found && assign == "interface/editor/tablet_driver") {
 								tablet_driver_editor = value;
