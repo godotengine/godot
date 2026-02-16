@@ -3074,13 +3074,13 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "panning_scheme", PROPERTY_HINT_ENUM, "Scroll Zooms,Scroll Pans"), "set_panning_scheme", "get_panning_scheme");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "right_disconnects"), "set_right_disconnects", "is_right_disconnects_enabled");
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "type_names", PROPERTY_HINT_DICTIONARY_TYPE, "int;String"), "set_type_names", "get_type_names");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "type_names", PROPERTY_HINT_TYPE_STRING, "int;String"), "set_type_names", "get_type_names");
 
 	ADD_GROUP("Connection Lines", "connection_lines");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "connection_lines_curvature"), "set_connection_lines_curvature", "get_connection_lines_curvature");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "connection_lines_thickness", PROPERTY_HINT_RANGE, "0,100,0.1,suffix:px"), "set_connection_lines_thickness", "get_connection_lines_thickness");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "connection_lines_antialiased"), "set_connection_lines_antialiased", "is_connection_lines_antialiased");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "connections", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::DICTIONARY, PROPERTY_HINT_NONE, String())), "set_connections", "get_connection_list");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "connections", PROPERTY_HINT_ARRAY_TYPE, "Dictionary"), "set_connections", "get_connection_list");
 
 	ADD_GROUP("Zoom", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom"), "set_zoom", "get_zoom");

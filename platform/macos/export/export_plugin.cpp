@@ -539,7 +539,7 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_music", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_movies", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_user_selected", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::ARRAY, "codesign/entitlements/app_sandbox/helper_executables", PROPERTY_HINT_ARRAY_TYPE, itos(Variant::STRING) + "/" + itos(PROPERTY_HINT_GLOBAL_FILE) + ":"), Array()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::ARRAY, "codesign/entitlements/app_sandbox/helper_executables", PROPERTY_HINT_TYPE_STRING, itos(Variant::STRING) + "/" + itos(PROPERTY_HINT_GLOBAL_FILE) + ":"), Array()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements/additional", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
 

@@ -368,7 +368,7 @@ void NavigationMeshSourceGeometryData2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_bounds"), &NavigationMeshSourceGeometryData2D::get_bounds);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "traversable_outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_traversable_outlines", "get_traversable_outlines");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "obstruction_outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_obstruction_outlines", "get_obstruction_outlines");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "traversable_outlines", PROPERTY_HINT_ARRAY_TYPE, "PackedVector2Array", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_traversable_outlines", "get_traversable_outlines");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "obstruction_outlines", PROPERTY_HINT_ARRAY_TYPE, "PackedVector2Array", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_obstruction_outlines", "get_obstruction_outlines");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "projected_obstructions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_projected_obstructions", "get_projected_obstructions");
 }

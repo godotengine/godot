@@ -81,7 +81,7 @@ void WebSocketPeer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_queued_packets"), "set_max_queued_packets", "get_max_queued_packets");
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "heartbeat_interval"), "set_heartbeat_interval", "get_heartbeat_interval");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "heartbeat_interval"), "set_heartbeat_interval", "get_heartbeat_interval");
 
 	BIND_ENUM_CONSTANT(WRITE_MODE_TEXT);
 	BIND_ENUM_CONSTANT(WRITE_MODE_BINARY);

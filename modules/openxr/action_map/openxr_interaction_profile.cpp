@@ -43,7 +43,7 @@ void OpenXRIPBinding::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_binding_modifier", "index"), &OpenXRIPBinding::get_binding_modifier);
 	ClassDB::bind_method(D_METHOD("set_binding_modifiers", "binding_modifiers"), &OpenXRIPBinding::set_binding_modifiers);
 	ClassDB::bind_method(D_METHOD("get_binding_modifiers"), &OpenXRIPBinding::get_binding_modifiers);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "binding_modifiers", PROPERTY_HINT_RESOURCE_TYPE, OpenXRActionBindingModifier::get_class_static(), PROPERTY_USAGE_NO_EDITOR), "set_binding_modifiers", "get_binding_modifiers");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "binding_modifiers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_binding_modifiers", "get_binding_modifiers");
 
 	// Deprecated
 #ifndef DISABLE_DEPRECATED
@@ -229,13 +229,13 @@ void OpenXRInteractionProfile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_binding", "index"), &OpenXRInteractionProfile::get_binding);
 	ClassDB::bind_method(D_METHOD("set_bindings", "bindings"), &OpenXRInteractionProfile::set_bindings);
 	ClassDB::bind_method(D_METHOD("get_bindings"), &OpenXRInteractionProfile::get_bindings);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "bindings", PROPERTY_HINT_RESOURCE_TYPE, OpenXRIPBinding::get_class_static(), PROPERTY_USAGE_NO_EDITOR), "set_bindings", "get_bindings");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "bindings", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_bindings", "get_bindings");
 
 	ClassDB::bind_method(D_METHOD("get_binding_modifier_count"), &OpenXRInteractionProfile::get_binding_modifier_count);
 	ClassDB::bind_method(D_METHOD("get_binding_modifier", "index"), &OpenXRInteractionProfile::get_binding_modifier);
 	ClassDB::bind_method(D_METHOD("set_binding_modifiers", "binding_modifiers"), &OpenXRInteractionProfile::set_binding_modifiers);
 	ClassDB::bind_method(D_METHOD("get_binding_modifiers"), &OpenXRInteractionProfile::get_binding_modifiers);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "binding_modifiers", PROPERTY_HINT_RESOURCE_TYPE, OpenXRIPBindingModifier::get_class_static(), PROPERTY_USAGE_NO_EDITOR), "set_binding_modifiers", "get_binding_modifiers");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "binding_modifiers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_binding_modifiers", "get_binding_modifiers");
 }
 
 Ref<OpenXRInteractionProfile> OpenXRInteractionProfile::new_profile(const char *p_input_profile_path) {

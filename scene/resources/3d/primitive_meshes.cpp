@@ -253,7 +253,7 @@ void PrimitiveMesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("request_update"), &PrimitiveMesh::request_update);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT, "Material"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "add_uv2"), "set_add_uv2", "get_add_uv2");

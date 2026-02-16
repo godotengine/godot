@@ -977,7 +977,17 @@ public:
 
 	static String get_default_value_string(const Variant &p_value);
 
-	static void return_doc_from_retinfo(DocData::MethodDoc &p_method, const PropertyInfo &p_retinfo);
-	static void argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const PropertyInfo &p_arginfo);
-	static void method_doc_from_methodinfo(DocData::MethodDoc &p_method, const MethodInfo &p_methodinfo, const String &p_desc);
+	static void doctype_from_propinfo(const PropertyInfo &p_info, String &r_type, String &r_enum, bool &r_is_bitfield, bool p_is_return = false);
+	_FORCE_INLINE_ static void property_doc_from_propinfo(DocData::PropertyDoc &r_property, const PropertyInfo &p_propinfo) {
+		doctype_from_propinfo(p_propinfo, r_property.type, r_property.enumeration, r_property.is_bitfield);
+	}
+	_FORCE_INLINE_ static void argument_doc_from_arginfo(DocData::ArgumentDoc &r_argument, const PropertyInfo &p_arginfo) {
+		r_argument.name = p_arginfo.name;
+		doctype_from_propinfo(p_arginfo, r_argument.type, r_argument.enumeration, r_argument.is_bitfield);
+	}
+	_FORCE_INLINE_ static void return_doc_from_retinfo(DocData::MethodDoc &r_method, const PropertyInfo &p_retinfo) {
+		doctype_from_propinfo(p_retinfo, r_method.return_type, r_method.return_enum, r_method.return_is_bitfield, true);
+	}
+
+	static void method_doc_from_methodinfo(DocData::MethodDoc &r_method, const MethodInfo &p_methodinfo, const String &p_desc);
 };

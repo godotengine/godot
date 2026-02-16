@@ -151,7 +151,7 @@ void OpenXRCompositionLayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("intersects_ray", "origin", "direction"), &OpenXRCompositionLayer::intersects_ray);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "layer_viewport", PROPERTY_HINT_NODE_TYPE, "SubViewport"), "set_layer_viewport", "get_layer_viewport");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "layer_viewport", PROPERTY_HINT_NODE_TYPE, "SubViewport", PROPERTY_USAGE_DEFAULT, "SubViewport"), "set_layer_viewport", "get_layer_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_android_surface", PROPERTY_HINT_NONE, ""), "set_use_android_surface", "get_use_android_surface");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "protected_content", PROPERTY_HINT_NONE, ""), "set_protected_content", "is_protected_content");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "android_surface_size", PROPERTY_HINT_NONE, ""), "set_android_surface_size", "get_android_surface_size");

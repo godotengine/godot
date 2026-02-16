@@ -98,7 +98,7 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_supported_variation_list"), &Font::get_supported_variation_list);
 	ClassDB::bind_method(D_METHOD("get_face_count"), &Font::get_face_count);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), "set_fallbacks", "get_fallbacks");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, "Font"), "set_fallbacks", "get_fallbacks");
 }
 
 void Font::_update_rids_fb(const Font *p_f, int p_depth) const {

@@ -264,7 +264,7 @@ OpenXRSpatialComponentPlaneSemanticLabelList::PlaneSemanticLabel OpenXRSpatialCo
 void OpenXRPlaneTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bounds_size", "bounds_size"), &OpenXRPlaneTracker::set_bounds_size);
 	ClassDB::bind_method(D_METHOD("get_bounds_size"), &OpenXRPlaneTracker::get_bounds_size);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "bounds_size"), "set_bounds_size", "get_bounds_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "bounds_size"), "set_bounds_size", "get_bounds_size");
 
 	ClassDB::bind_method(D_METHOD("set_plane_alignment", "plane_alignment"), &OpenXRPlaneTracker::set_plane_alignment);
 	ClassDB::bind_method(D_METHOD("get_plane_alignment"), &OpenXRPlaneTracker::get_plane_alignment);
