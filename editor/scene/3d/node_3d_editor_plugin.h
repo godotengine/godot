@@ -799,8 +799,6 @@ private:
 
 	Node3D *selected = nullptr;
 
-	Node3DEditorViewport *freelook_viewport = nullptr;
-
 	void _request_gizmo(Object *p_obj);
 	void _request_gizmo_for_id(ObjectID p_id);
 	void _set_subgizmo_selection(Object *p_obj, Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform = Transform3D());
@@ -1011,9 +1009,6 @@ public:
 		return viewports[p_idx];
 	}
 	Node3DEditorViewport *get_last_used_viewport();
-
-	void set_freelook_viewport(Node3DEditorViewport *p_viewport) { freelook_viewport = p_viewport; }
-	Node3DEditorViewport *get_freelook_viewport() const { return freelook_viewport; }
 
 	void add_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin);
 	void remove_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin);

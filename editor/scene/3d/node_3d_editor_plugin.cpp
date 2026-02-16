@@ -1967,42 +1967,27 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 	}
 }
 
-// Helper function to redirect mouse events to the active freelook viewport
-static bool _redirect_freelook_input(const Ref<InputEvent> &p_event, Node3DEditorViewport *p_exclude_viewport = nullptr) {
-	if (Input::get_singleton()->get_mouse_mode() != Input::MouseMode::MOUSE_MODE_CAPTURED) {
-		return false;
-	}
-
-	Node3DEditor *editor = Node3DEditor::get_singleton();
-	if (!editor->get_freelook_viewport()) {
-		return false;
-	}
-
-	Node3DEditorViewport *freelook_vp = editor->get_freelook_viewport();
-	if (freelook_vp == p_exclude_viewport) {
-		return false;
-	}
-
-	Ref<InputEventMouse> mouse_event = p_event;
-	if (!mouse_event.is_valid()) {
-		return false;
-	}
-
-	Control *target_surface = freelook_vp->get_surface();
-
-	target_surface->emit_signal(SceneStringName(gui_input), p_event);
-	return true;
-}
-
-// This is only active during instant transforms,
-// to capture and wrap mouse events outside the control.
+// This is only active during instant transforms or freelook,
+// to capture mouse events that may not reach the viewport through normal GUI routing
+// (e.g., when the mouse position is outside the viewport due to MOUSE_MODE_CAPTURED
+// centering the cursor at the window center).
 void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(!_edit.instant);
 	Ref<InputEventMouseMotion> m = p_event;
 
-	if (m.is_valid()) {
+	if (_edit.instant && m.is_valid()) {
 		_edit.mouse_pos += view_3d_controller->get_warped_mouse_motion(p_event, surface->get_global_rect());
 		update_transform(_get_key_modifier(m) == Key::SHIFT);
+	}
+
+	if (view_3d_controller->is_freelook_enabled()) {
+		Ref<InputEventMouse> mouse_event = p_event;
+		if (mouse_event.is_valid()) {
+			Ref<InputEventMouseButton> mb = p_event;
+			if (mb.is_null() || mb->get_button_index() != MouseButton::LEFT) {
+				_sinput(p_event);
+			}
+			get_viewport()->set_input_as_handled();
+		}
 	}
 }
 
@@ -2050,10 +2035,6 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			set_message("");
 			return;
 		}
-	}
-
-	if (_redirect_freelook_input(p_event, this)) {
-		return;
 	}
 
 	{
@@ -2998,7 +2979,7 @@ void Node3DEditorViewport::_cursor_interpolated() {
 }
 
 void Node3DEditorViewport::_freelook_changed() {
-	spatial_editor->set_freelook_viewport(view_3d_controller->is_freelook_enabled() ? this : nullptr);
+	set_process_input(view_3d_controller->is_freelook_enabled());
 }
 
 void Node3DEditorViewport::_freelook_speed_scaled() {
