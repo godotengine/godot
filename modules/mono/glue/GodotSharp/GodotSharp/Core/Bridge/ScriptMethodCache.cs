@@ -20,7 +20,7 @@ namespace Godot.Bridge
         private static bool _useMixer;
         private static int _finalMaxProbes;
 
-        public static void Initialize((IntPtr ptr, int argc, ScriptMethod<GodotObject> method)[] methods)
+        public static void Initialize((IntPtr NamePtr, int ArgCount, ScriptMethod<GodotObject> Method)[] methods)
         {
             int capacity = methods.Length;
             int maxProbes = int.MaxValue;
@@ -49,7 +49,7 @@ namespace Godot.Bridge
                 foreach (var method in methods)
                 {
                     int currentMaxProbes = 0;
-                    int slot = GetSlot(method.ptr);
+                    int slot = GetSlot(method.NamePtr);
                     while (_keys[slot] != IntPtr.Zero)
                     {
                         currentMaxProbes++;
@@ -67,9 +67,9 @@ namespace Godot.Bridge
                         break;
                     }
 
-                    _keys[slot] = method.ptr;
-                    _argCounts[slot] = (byte)method.argc;
-                    _methods[slot] = (ScriptMethod<GodotObject>)(object)method.method;
+                    _keys[slot] = method.NamePtr;
+                    _argCounts[slot] = (byte)method.ArgCount;
+                    _methods[slot] = (ScriptMethod<GodotObject>)(object)method.Method;
                 }
 
                 if (!requestMoreSize)
@@ -110,7 +110,7 @@ namespace Godot.Bridge
 
             var (finalAverageProbes, finalMaxProbes, FinalCount) = CalculateDiagnostics();
             //GD.Print($"Final: Size: {_keys.Length}, Items: {FinalCount}, Avg Probes: {finalAverageProbes:F2}, Max: {finalMaxProbes}\n");
-            _finalMaxProbes = finalMaxProbes; // if size cannot be increased this is the real worst count of probes
+            _finalMaxProbes = finalMaxProbes; // this is the real worst count of probes
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -127,8 +127,8 @@ namespace Godot.Bridge
             int i;
             for (i = 0; i < _finalMaxProbes; i++)
             {
-                int curr = (slot + i) & _mask;
-                IntPtr key = _keys[curr];
+                var curr = (slot + i) & _mask;
+                var key = _keys[curr];
 
                 if (key == namePtr &&
                     _argCounts[curr] == argCount)
@@ -160,13 +160,13 @@ namespace Godot.Bridge
             int i;
             for (i = 0; i < _finalMaxProbes; i++)
             {
-                int curr = (slot + i) & _mask;
-                IntPtr key = _keys[curr];
+                int currentSlot = (slot + i) & _mask;
+                IntPtr key = _keys[currentSlot];
 
                 if (key == namePtr &&
-                    _argCounts[curr] == argCount)
+                    _argCounts[currentSlot] == argCount)
                 {
-                    return ref _methods[curr];
+                    return ref _methods[currentSlot];
                 }
 
                 if (key == IntPtr.Zero)

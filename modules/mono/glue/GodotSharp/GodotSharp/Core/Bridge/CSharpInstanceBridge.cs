@@ -40,25 +40,27 @@ namespace Godot.Bridge
 
         private static unsafe bool Invoke(GodotObject godotObject, scoped in godot_string_name* method, scoped in godot_variant** args, int argCount, scoped in godot_variant_call_error* refCallError, scoped out godot_variant retValue)
         {
-            ref readonly var scriptMethod = ref godotObject.TryGetGodotClassMethod(in *method, argCount);
-            if (!Unsafe.IsNullRef(in scriptMethod))
+            try
             {
-                try
+                ref readonly var scriptMethod = ref godotObject.TryGetGodotClassMethod(in *method, argCount);
+                if (!Unsafe.IsNullRef(in scriptMethod))
                 {
+
                     scoped var argsStruct = new NativeVariantPtrArgs(args, argCount);
                     retValue = scriptMethod(godotObject, in argsStruct);
 
                     return true;
+
                 }
-                catch (Exception e)
+                else
                 {
-                    ExceptionUtils.LogException(e);
+                    ref var callError = ref *refCallError;
+                    callError.Error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INVALID_METHOD;
                 }
             }
-            else
+            catch (Exception e)
             {
-                ref var callError = ref *refCallError;
-                callError.Error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INVALID_METHOD;
+                ExceptionUtils.LogException(e);
             }
 
             retValue = default;
