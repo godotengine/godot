@@ -2890,7 +2890,7 @@ void Control::set_default_cursor_shape(CursorShape p_shape) {
 	}
 
 	// Defer to avoid interrupting the current input event flow.
-	get_viewport()->call_deferred("update_mouse_cursor_state");
+	callable_mp(get_viewport(), &Viewport::update_mouse_cursor_state).call_deferred();
 }
 
 Control::CursorShape Control::get_default_cursor_shape() const {
