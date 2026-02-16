@@ -1390,7 +1390,7 @@ void VisualShaderNodeTexture2DArray::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_array", "value"), &VisualShaderNodeTexture2DArray::set_texture_array);
 	ClassDB::bind_method(D_METHOD("get_texture_array"), &VisualShaderNodeTexture2DArray::get_texture_array);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_array", PROPERTY_HINT_RESOURCE_TYPE, "Texture2DArray,CompressedTexture2DArray,PlaceholderTexture2DArray,Texture2DArrayRD"), "set_texture_array", "get_texture_array");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_array", PROPERTY_HINT_RESOURCE_TYPE, "Texture2DArray,CompressedTexture2DArray,PlaceholderTexture2DArray,Texture2DArrayRD", PROPERTY_USAGE_DEFAULT, "TextureLayered"), "set_texture_array", "get_texture_array");
 }
 
 VisualShaderNodeTexture2DArray::VisualShaderNodeTexture2DArray() {
@@ -1633,7 +1633,7 @@ void VisualShaderNodeCubemap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_texture_type"), &VisualShaderNodeCubemap::get_texture_type);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "source", PROPERTY_HINT_ENUM, "Texture,SamplerPort"), "set_source", "get_source");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "cube_map", PROPERTY_HINT_RESOURCE_TYPE, "Cubemap,CompressedCubemap,PlaceholderCubemap,TextureCubemapRD"), "set_cube_map", "get_cube_map");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "cube_map", PROPERTY_HINT_RESOURCE_TYPE, "Cubemap,CompressedCubemap,PlaceholderCubemap,TextureCubemapRD", PROPERTY_USAGE_DEFAULT, "TextureLayered"), "set_cube_map", "get_cube_map");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normal Map"), "set_texture_type", "get_texture_type");
 
 	BIND_ENUM_CONSTANT(SOURCE_TEXTURE);

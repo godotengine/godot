@@ -241,10 +241,10 @@ void Decal::_bind_methods() {
 	ADD_GROUP("Textures", "texture_");
 	// Only allow texture types that display correctly.
 	const String texture_hint = "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture";
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_albedo", PROPERTY_HINT_RESOURCE_TYPE, texture_hint), "set_texture", "get_texture", TEXTURE_ALBEDO);
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_normal", PROPERTY_HINT_RESOURCE_TYPE, texture_hint), "set_texture", "get_texture", TEXTURE_NORMAL);
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_orm", PROPERTY_HINT_RESOURCE_TYPE, texture_hint), "set_texture", "get_texture", TEXTURE_ORM);
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_emission", PROPERTY_HINT_RESOURCE_TYPE, texture_hint), "set_texture", "get_texture", TEXTURE_EMISSION);
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_albedo", PROPERTY_HINT_RESOURCE_TYPE, texture_hint, PROPERTY_USAGE_DEFAULT, "Texture2D"), "set_texture", "get_texture", TEXTURE_ALBEDO);
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_normal", PROPERTY_HINT_RESOURCE_TYPE, texture_hint, PROPERTY_USAGE_DEFAULT, "Texture2D"), "set_texture", "get_texture", TEXTURE_NORMAL);
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_orm", PROPERTY_HINT_RESOURCE_TYPE, texture_hint, PROPERTY_USAGE_DEFAULT, "Texture2D"), "set_texture", "get_texture", TEXTURE_ORM);
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_emission", PROPERTY_HINT_RESOURCE_TYPE, texture_hint, PROPERTY_USAGE_DEFAULT, "Texture2D"), "set_texture", "get_texture", TEXTURE_EMISSION);
 
 	ADD_GROUP("Parameters", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_emission_energy", "get_emission_energy");
