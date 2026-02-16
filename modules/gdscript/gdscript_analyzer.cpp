@@ -1064,8 +1064,15 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				static_context = previous_static_context;
 
 #ifdef DEBUG_ENABLED
-				if (member.variable->exported && member.variable->onready) {
-					parser->push_warning(member.variable, GDScriptWarning::ONREADY_WITH_EXPORT);
+				if (member.variable->exported) {
+					if (member.variable->onready) {
+						parser->push_warning(member.variable, GDScriptWarning::ONREADY_WITH_EXPORT);
+					}
+					bool is_unnamed_script = member.variable->get_datatype().kind == GDScriptParser::DataType::SCRIPT && member.variable->get_datatype().script_type->get_global_name().is_empty();
+					bool is_unnamed_gdscript = member.variable->get_datatype().kind == GDScriptParser::DataType::CLASS && member.variable->get_datatype().class_type->get_global_name().is_empty();
+					if (is_unnamed_script || is_unnamed_gdscript) {
+						parser->push_warning(member.variable, GDScriptWarning::EXPORT_OF_UNNAMED_TYPE);
+					}
 				}
 				if (member.variable->initializer) {
 					// Check if it is call to get_node() on self (using shorthand $ or not), so we can check if @onready is needed.

@@ -567,6 +567,9 @@
 		<member name="debug/gdscript/warnings/enum_variable_without_default" type="int" setter="" getter="" default="1">
 			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a variable has an enum type but no explicit default value, but only if the enum does not contain [code]0[/code] as a valid value.
 		</member>
+		<member name="debug/gdscript/warnings/export_of_unnamed_type" type="int" setter="" getter="" default="1">
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when the type of an [code]@export[/code]ed variable has no [code]class_name[/code] or is an inner class.
+		</member>
 		<member name="debug/gdscript/warnings/get_node_default_without_onready" type="int" setter="" getter="" default="2">
 			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when [method Node.get_node] (or the shorthand [code]$[/code]) is used as default value of a class variable without the [code]@onready[/code] annotation.
 		</member>
