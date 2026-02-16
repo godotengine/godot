@@ -198,44 +198,56 @@ bool TranslationDomain::_is_placeholder(const String &p_message, int p_index) co
 					p_message[p_index + 1] == 'o' || p_message[p_index + 1] == 'x' || p_message[p_index + 1] == 'X' || p_message[p_index + 1] == 'f');
 }
 
-StringName TranslationDomain::get_message_from_translations(const String &p_locale, const StringName &p_message, const StringName &p_context) const {
+StringName TranslationDomain::get_message_from_translations(const String &p_locale, const StringName &p_message, bool p_exact, const StringName &p_context) const {
 	StringName res;
 	int best_score = 0;
 
 	for (const Ref<Translation> &E : translations) {
 		int score = TranslationServer::get_singleton()->compare_locales(p_locale, E->get_locale());
-		if (score > 0 && score >= best_score) {
+		if (score == 10) {
 			const StringName r = E->get_message(p_message, p_context);
 			if (!r) {
 				continue;
 			}
 			res = r;
 			best_score = score;
-			if (score == 10) {
-				break; // Exact match, skip the rest.
+			break;
+		}
+		if (!p_exact && score > 0 && score >= best_score) {
+			const StringName r = E->get_message(p_message, p_context);
+			if (!r) {
+				continue;
 			}
+			res = r;
+			best_score = score;
 		}
 	}
 
 	return res;
 }
 
-StringName TranslationDomain::get_message_from_translations(const String &p_locale, const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
+StringName TranslationDomain::get_message_from_translations(const String &p_locale, const StringName &p_message, bool p_exact, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
 	StringName res;
 	int best_score = 0;
 
 	for (const Ref<Translation> &E : translations) {
 		int score = TranslationServer::get_singleton()->compare_locales(p_locale, E->get_locale());
-		if (score > 0 && score >= best_score) {
+		if (score == 10) {
 			const StringName r = E->get_plural_message(p_message, p_message_plural, p_n, p_context);
 			if (!r) {
 				continue;
 			}
 			res = r;
 			best_score = score;
-			if (score == 10) {
-				break; // Exact match, skip the rest.
+			break;
+		}
+		if (!p_exact && score > 0 && score >= best_score) {
+			const StringName r = E->get_plural_message(p_message, p_message_plural, p_n, p_context);
+			if (!r) {
+				continue;
 			}
+			res = r;
+			best_score = score;
 		}
 	}
 
@@ -354,11 +366,12 @@ StringName TranslationDomain::translate(const StringName &p_message, const Strin
 	}
 
 	const String &locale = locale_override.is_empty() ? TranslationServer::get_singleton()->get_locale() : locale_override;
-	StringName res = get_message_from_translations(locale, p_message, p_context);
-
 	const String &fallback = TranslationServer::get_singleton()->get_fallback_locale();
+	const bool &fallback_exact = (TranslationServer::get_singleton()->get_fallback_exact() ? (locale == fallback) : false);
+
+	StringName res = get_message_from_translations(locale, p_message, fallback_exact, p_context);
 	if (!res && fallback.length() >= 2) {
-		res = get_message_from_translations(fallback, p_message, p_context);
+		res = get_message_from_translations(fallback, p_message, fallback_exact, p_context);
 	}
 
 	if (!res) {
@@ -373,11 +386,12 @@ StringName TranslationDomain::translate_plural(const StringName &p_message, cons
 	}
 
 	const String &locale = locale_override.is_empty() ? TranslationServer::get_singleton()->get_locale() : locale_override;
-	StringName res = get_message_from_translations(locale, p_message, p_message_plural, p_n, p_context);
-
 	const String &fallback = TranslationServer::get_singleton()->get_fallback_locale();
+	const bool &fallback_exact = (TranslationServer::get_singleton()->get_fallback_exact() ? (locale == fallback) : false);
+
+	StringName res = get_message_from_translations(locale, p_message, fallback_exact, p_message_plural, p_n, p_context);
 	if (!res && fallback.length() >= 2) {
-		res = get_message_from_translations(fallback, p_message, p_message_plural, p_n, p_context);
+		res = get_message_from_translations(fallback, p_message, fallback_exact, p_message_plural, p_n, p_context);
 	}
 
 	if (!res) {

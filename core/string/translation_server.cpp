@@ -504,6 +504,14 @@ String TranslationServer::get_fallback_locale() const {
 	return fallback;
 }
 
+void TranslationServer::set_fallback_exact(bool p_exact) {
+	fallback_exact = p_exact;
+}
+
+bool TranslationServer::get_fallback_exact() {
+	return fallback_exact;
+}
+
 bool TranslationServer::is_script_suppored_by_locale(const String &p_locale, const String &p_script) const {
 	Locale l = Locale(*this, p_locale, true);
 	if (l.script == p_script) {
@@ -599,6 +607,7 @@ void TranslationServer::setup() {
 	}
 
 	fallback = GLOBAL_DEF("internationalization/locale/fallback", "en");
+	fallback_exact = GLOBAL_DEF("internationalization/locale/fallback_needs_exactly_match_when_same_as_locale", false);
 	main_domain->set_pseudolocalization_enabled(GLOBAL_DEF("internationalization/pseudolocalization/use_pseudolocalization", false));
 	main_domain->set_pseudolocalization_accents_enabled(GLOBAL_DEF("internationalization/pseudolocalization/replace_with_accents", true));
 	main_domain->set_pseudolocalization_double_vowels_enabled(GLOBAL_DEF("internationalization/pseudolocalization/double_vowels", false));

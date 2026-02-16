@@ -38,6 +38,7 @@ class TranslationServer : public Object {
 
 	String locale = "en";
 	String fallback;
+	bool fallback_exact;
 
 	Ref<TranslationDomain> main_domain;
 #ifdef TOOLS_ENABLED
@@ -111,6 +112,8 @@ public:
 	String get_locale() const;
 	void set_fallback_locale(const String &p_locale);
 	String get_fallback_locale() const;
+	void set_fallback_exact(bool p_exact);
+	bool get_fallback_exact();
 
 #ifndef DISABLE_DEPRECATED
 	Ref<Translation> get_translation_object(const String &p_locale);

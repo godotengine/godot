@@ -1706,6 +1706,10 @@
 			The locale to fall back to if a translation isn't available in a given language. If left empty, [code]en[/code] (English) will be used.
 			[b]Note:[/b] Not to be confused with [TextServerFallback].
 		</member>
+		<member name="internationalization/locale/fallback_needs_exactly_match_when_same_as_locale" type="bool" setter="" getter="" default="false">
+			When current locale is same as [member internationalization/locale/fallback], only translations that exactly match the current locale will be returned.
+			If no such translation exists, it will directly return the original text.
+		</member>
 		<member name="internationalization/locale/include_text_server_data" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], text server break iteration rule sets, dictionaries and other optional data are included in the exported project.
 			[b]Note:[/b] "ICU / HarfBuzz / Graphite" text server data includes dictionaries for Burmese, Chinese, Japanese, Khmer, Lao and Thai as well as Unicode Standard Annex #29 and Unicode Standard Annex #14 word and line breaking rules. Data is about 4 MB large.
