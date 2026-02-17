@@ -48,7 +48,7 @@
 			# Will not work, equivalent to `points_dict["erase"]`
 			$LineEdit.text_submitted.connect(points_dict.erase)
 			# Create a Callable manually.
-			$LineEdit.text_submitted.connect(Callable.create(points_dict, &"erase"))
+			$LineEdit.text_submitted.connect(Callable.create(points_dict, &amp;"erase"))
 		[/gdscript]
 		[/codeblocks]
 		However, you'll have to use the bracket syntax if the key you're accessing the dictionary with isn't a fixed string (such as a number or variable). In the following code, [code]points[/code] will be assigned the value that is paired with the appropriate color selected in [code]my_color[/code].
