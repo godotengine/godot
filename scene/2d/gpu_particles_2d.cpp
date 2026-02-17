@@ -180,8 +180,6 @@ void GPUParticles2D::set_trail_enabled(bool p_enabled) {
 	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_lifetime);
 	queue_redraw();
 	update_configuration_warnings();
-
-	RS::get_singleton()->particles_set_transform_align(particles, p_enabled ? RS::PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY : RS::PARTICLES_TRANSFORM_ALIGN_DISABLED);
 }
 
 void GPUParticles2D::set_trail_lifetime(double p_seconds) {
