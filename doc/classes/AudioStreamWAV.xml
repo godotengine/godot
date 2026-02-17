@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamWAV" inherits="AudioStream" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Stores audio data loaded from WAV files.
+		Stores audio data loaded from WAV and AIFF files.
 	</brief_description>
 	<description>
-		AudioStreamWAV stores sound samples loaded from WAV files. To play the stored sound, use an [AudioStreamPlayer] (for non-positional audio) or [AudioStreamPlayer2D]/[AudioStreamPlayer3D] (for positional audio). The sound can be looped.
+		AudioStreamWAV stores sound samples loaded from WAV and AIFF files. To play the stored sound, use an [AudioStreamPlayer] (for non-positional audio) or [AudioStreamPlayer2D]/[AudioStreamPlayer3D] (for positional audio). The sound can be looped.
 		This class can also be used to store dynamically-generated PCM audio data. See also [AudioStreamGenerator] for procedural audio generation.
 	</description>
 	<tutorials>
@@ -16,7 +16,7 @@
 			<param index="0" name="stream_data" type="PackedByteArray" />
 			<param index="1" name="options" type="Dictionary" default="{}" />
 			<description>
-				Creates a new [AudioStreamWAV] instance from the given buffer. The buffer must contain WAV data.
+				Creates a new [AudioStreamWAV] instance from the given buffer. The buffer must contain WAV or AIFF data.
 				The keys and values of [param options] match the properties of [ResourceImporterWAV]. The usage of [param options] is identical to [method AudioStreamWAV.load_from_file].
 			</description>
 		</method>
@@ -25,7 +25,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="options" type="Dictionary" default="{}" />
 			<description>
-				Creates a new [AudioStreamWAV] instance from the given file path. The file must be in WAV format.
+				Creates a new [AudioStreamWAV] instance from the given file path. The file must be in WAV or AIFF format.
 				The keys and values of [param options] match the properties of [ResourceImporterWAV].
 				[b]Example:[/b] Load the first file dropped as a WAV and play it:
 				[codeblock]
