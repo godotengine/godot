@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/rb_map.h"
 #include "scene/2d/node_2d.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/2d/shape_2d.h"

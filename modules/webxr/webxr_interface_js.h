@@ -32,9 +32,11 @@
 
 #ifdef WEB_ENABLED
 
+#include "webxr_interface.h"
+
+#include "core/templates/rb_map.h"
 #include "servers/xr/xr_controller_tracker.h"
 #include "servers/xr/xr_hand_tracker.h"
-#include "webxr_interface.h"
 
 /**
 	The WebXR interface is a VR/AR interface that can be used on the web.

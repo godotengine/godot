@@ -34,38 +34,29 @@
 
 #include "wayland/wayland_thread.h"
 
+#include "servers/display/display_server.h"
+
+class InputEvent;
+class NativeMenu;
+
 #ifdef RD_ENABLED
 class RenderingDevice;
-
-#ifdef VULKAN_ENABLED
-#include "wayland/rendering_context_driver_vulkan_wayland.h"
+class RenderingContextDriver;
 #endif
-
-#endif //RD_ENABLED
 
 #ifdef GLES3_ENABLED
-#include "drivers/egl/egl_manager.h"
-#endif
-
-#if defined(SPEECHD_ENABLED)
-#include "tts_linux.h"
+class EGLManager;
 #endif
 
 #ifdef DBUS_ENABLED
-#include "freedesktop_at_spi_monitor.h"
-#include "freedesktop_portal_desktop.h"
-#include "freedesktop_screensaver.h"
+class FreeDesktopPortalDesktop;
+class FreeDesktopAtSPIMonitor;
+class FreeDesktopScreenSaver;
 #endif
 
-#include "core/config/project_settings.h"
-#include "core/input/input_event.h"
-#include "core/templates/rb_map.h"
-#include "servers/display/display_server.h"
-
-#include <climits>
-#include <cstdio>
-
-#undef CursorShape
+#ifdef SPEECHD_ENABLED
+class TTS_Linux;
+#endif
 
 class DisplayServerWayland : public DisplayServer {
 	GDSOFTCLASS(DisplayServerWayland, DisplayServer);

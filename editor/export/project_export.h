@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/rb_set.h"
 #include "editor/export/editor_export_preset.h"
 #include "scene/gui/dialogs.h"
 

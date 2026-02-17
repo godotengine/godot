@@ -31,6 +31,7 @@
 #include "editor_import_collada.h"
 
 #include "core/config/project_settings.h"
+#include "core/templates/rb_set.h"
 #include "editor/import/3d/collada.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"

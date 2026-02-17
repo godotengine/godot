@@ -34,6 +34,10 @@
 #include "rendering_device_commons.h"
 #include "rendering_device_driver.h"
 
+#ifdef DEV_ENABLED
+#include "core/templates/rb_map.h"
+#endif
+
 // Buffer barriers have not shown any significant improvement or shown to be
 // even detrimental to performance. However, there are currently some known
 // cases where using them can solve problems that using singular memory

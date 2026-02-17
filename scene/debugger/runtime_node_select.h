@@ -37,6 +37,9 @@
 #include "scene/resources/mesh.h"
 #endif // _3D_DISABLED
 
+class InputEvent;
+class InputEventMouseMotion;
+class InputEventWithModifiers;
 class Node;
 class PopupMenu;
 

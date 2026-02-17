@@ -31,6 +31,7 @@
 #include "test_main.h"
 
 #include "core/error/error_macros.h"
+#include "core/input/input.h"
 #include "core/io/dir_access.h"
 #include "modules/modules_enabled.gen.h"
 

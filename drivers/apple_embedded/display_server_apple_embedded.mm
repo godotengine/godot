@@ -40,7 +40,9 @@
 #import "tts_apple_embedded.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/io/file_access_pack.h"
+#include "servers/display/native_menu.h"
 
 #import <GameController/GameController.h>
 

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  xr_face_modifier_3d.h                                                 */
+/*  display_server_mock.cpp                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,44 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "display_server_mock.h"
 
-#include "core/templates/rb_map.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/node_3d.h"
+#include "core/input/input.h"
+#include "core/input/input_event.h"
+#include "servers/rendering/dummy/rasterizer_dummy.h"
 
-/**
-	The XRFaceModifier3D node drives the blend shapes of a MeshInstance3D
-	with facial expressions from an XRFaceTracking instance.
+DisplayServer *DisplayServerMock::create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+	r_error = OK;
+	RasterizerDummy::make_current();
+	return memnew(DisplayServerMock());
+}
 
-	The blend shapes provided by the mesh are interrogated, and used to
-	deduce an optimal mapping from the Unified Expressions blend shapes
-	provided by the	XRFaceTracking instance to drive the face.
- */
-
-class XRFaceModifier3D : public Node3D {
-	GDCLASS(XRFaceModifier3D, Node3D);
-
-private:
-	StringName tracker_name = "/user/face_tracker";
-	NodePath target;
-
-	// Map from XRFaceTracker blend shape index to mesh blend shape index.
-	RBMap<int, int> blend_mapping;
-
-	MeshInstance3D *get_mesh_instance() const;
-	void _get_blend_data();
-	void _update_face_blends() const;
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_face_tracker(const StringName &p_tracker_name);
-	StringName get_face_tracker() const;
-
-	void set_target(const NodePath &p_target);
-	NodePath get_target() const;
-
-	void _notification(int p_what);
-};
+void DisplayServerMock::simulate_event(Ref<InputEvent> p_event) {
+	Ref<InputEvent> event = p_event;
+	Ref<InputEventMouse> me = p_event;
+	if (me.is_valid()) {
+		Ref<InputEventMouseMotion> mm = p_event;
+		if (mm.is_valid()) {
+			mm->set_relative(mm->get_position() - mouse_position);
+			event = mm;
+		}
+		_set_mouse_position(me->get_position());
+	}
+	Input::get_singleton()->parse_input_event(event);
+}

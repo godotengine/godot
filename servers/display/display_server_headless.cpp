@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  xr_face_modifier_3d.h                                                 */
+/*  display_server_headless.cpp                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,44 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "display_server_headless.h"
 
-#include "core/templates/rb_map.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/node_3d.h"
+#include "core/input/input.h"
+#include "core/input/input_event.h"
+#include "servers/display/native_menu.h"
+#include "servers/rendering/dummy/rasterizer_dummy.h"
 
-/**
-	The XRFaceModifier3D node drives the blend shapes of a MeshInstance3D
-	with facial expressions from an XRFaceTracking instance.
+DisplayServer *DisplayServerHeadless::create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+	r_error = OK;
+	RasterizerDummy::make_current();
+	return memnew(DisplayServerHeadless());
+}
 
-	The blend shapes provided by the mesh are interrogated, and used to
-	deduce an optimal mapping from the Unified Expressions blend shapes
-	provided by the	XRFaceTracking instance to drive the face.
- */
+void DisplayServerHeadless::_dispatch_input_events(const Ref<InputEvent> &p_event) {
+	static_cast<DisplayServerHeadless *>(get_singleton())->_dispatch_input_event(p_event);
+}
 
-class XRFaceModifier3D : public Node3D {
-	GDCLASS(XRFaceModifier3D, Node3D);
+void DisplayServerHeadless::_dispatch_input_event(const Ref<InputEvent> &p_event) {
+	if (input_event_callback.is_valid()) {
+		input_event_callback.call(p_event);
+	}
+}
 
-private:
-	StringName tracker_name = "/user/face_tracker";
-	NodePath target;
+void DisplayServerHeadless::process_events() {
+	Input::get_singleton()->flush_buffered_events();
+}
 
-	// Map from XRFaceTracker blend shape index to mesh blend shape index.
-	RBMap<int, int> blend_mapping;
+DisplayServerHeadless::DisplayServerHeadless() {
+	native_menu = memnew(NativeMenu);
+	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
+}
 
-	MeshInstance3D *get_mesh_instance() const;
-	void _get_blend_data();
-	void _update_face_blends() const;
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_face_tracker(const StringName &p_tracker_name);
-	StringName get_face_tracker() const;
-
-	void set_target(const NodePath &p_target);
-	NodePath get_target() const;
-
-	void _notification(int p_what);
-};
+DisplayServerHeadless::~DisplayServerHeadless() {
+	if (native_menu) {
+		memdelete(native_menu);
+		native_menu = nullptr;
+	}
+}

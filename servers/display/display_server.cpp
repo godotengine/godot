@@ -32,10 +32,15 @@
 #include "display_server.compat.inc"
 
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Input);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, NativeMenu);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Texture2D);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
 #include "core/input/input.h"
 #include "scene/resources/texture.h"
 #include "servers/display/display_server_headless.h"
+#include "servers/display/native_menu.h"
+#include "servers/rendering/rendering_server.h"
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
@@ -43,7 +48,6 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Input);
 
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"
-#undef CursorShape
 #endif
 #if defined(D3D12_ENABLED)
 #include "drivers/d3d12/rendering_context_driver_d3d12.h"

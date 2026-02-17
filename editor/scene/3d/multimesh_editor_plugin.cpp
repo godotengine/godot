@@ -30,6 +30,7 @@
 
 #include "multimesh_editor_plugin.h"
 
+#include "core/templates/rb_map.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"

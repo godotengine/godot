@@ -30,18 +30,17 @@
 
 #pragma once
 
-#include "core/input/input_event.h"
 #include "core/io/image.h"
 #include "core/io/resource.h"
+#include "core/object/object.h"
+#include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/templates/rb_map.h"
-#include "core/templates/rb_set.h"
 #include "core/variant/callable.h"
 #include "core/variant/typed_array.h"
-#include "servers/display/native_menu.h"
 
-class Texture2D;
 class AccessibilityDriver;
+class NativeMenu;
+class Texture2D;
 
 namespace InputClassEnums {
 enum MouseMode : int;

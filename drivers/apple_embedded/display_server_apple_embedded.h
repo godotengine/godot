@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/input/input.h"
 #include "servers/display/display_server.h"
 
 #if defined(RD_ENABLED)
@@ -54,6 +53,9 @@
 
 #import <Foundation/Foundation.h>
 #import <QuartzCore/CAMetalLayer.h>
+
+class InputEvent;
+class NativeMenu;
 
 class DisplayServerAppleEmbedded : public DisplayServer {
 	GDSOFTCLASS(DisplayServerAppleEmbedded, DisplayServer);

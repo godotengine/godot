@@ -30,10 +30,10 @@
 
 #pragma once
 
-#include "core/input/input.h"
 #include "servers/display/display_server.h"
 
-#include "servers/rendering/dummy/rasterizer_dummy.h"
+class InputEvent;
+class NativeMenu;
 
 class DisplayServerHeadless : public DisplayServer {
 	GDSOFTCLASS(DisplayServerHeadless, DisplayServer);
@@ -47,21 +47,10 @@ private:
 		return drivers;
 	}
 
-	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
-		r_error = OK;
-		RasterizerDummy::make_current();
-		return memnew(DisplayServerHeadless());
-	}
+	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 
-	static void _dispatch_input_events(const Ref<InputEvent> &p_event) {
-		static_cast<DisplayServerHeadless *>(get_singleton())->_dispatch_input_event(p_event);
-	}
-
-	void _dispatch_input_event(const Ref<InputEvent> &p_event) {
-		if (input_event_callback.is_valid()) {
-			input_event_callback.call(p_event);
-		}
-	}
+	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
+	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 
 	NativeMenu *native_menu = nullptr;
 	Callable input_event_callback;
@@ -156,9 +145,7 @@ public:
 
 	int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const override { return 0; }
 
-	void process_events() override {
-		Input::get_singleton()->flush_buffered_events();
-	}
+	void process_events() override;
 
 	void set_native_icon(const String &p_filename) override {}
 	void set_icon(const Ref<Image> &p_icon) override {}
@@ -200,15 +187,6 @@ public:
 	void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) override {}
 	void delete_status_indicator(IndicatorID p_id) override {}
 
-	DisplayServerHeadless() {
-		native_menu = memnew(NativeMenu);
-		Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
-	}
-
-	~DisplayServerHeadless() {
-		if (native_menu) {
-			memdelete(native_menu);
-			native_menu = nullptr;
-		}
-	}
+	DisplayServerHeadless();
+	~DisplayServerHeadless();
 };

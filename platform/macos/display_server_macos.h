@@ -37,8 +37,6 @@
 #include "gl_manager_macos_legacy.h"
 #endif // GLES3_ENABLED
 
-#import "native_menu_macos.h"
-
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
 
@@ -77,6 +75,10 @@
 #ifdef TOOLS_ENABLED
 class EmbeddedProcessMacOS;
 #endif
+
+class InputEvent;
+class InputEventWithModifiers;
+class NativeMenuMacOS;
 
 class DisplayServerMacOS : public DisplayServerMacOSBase {
 	GDSOFTCLASS(DisplayServerMacOS, DisplayServerMacOSBase);

@@ -36,8 +36,10 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/input/input_event.h"
 #include "core/object/callable_method_pointer.h"
 #include "core/os/main_loop.h"
+#include "servers/display/native_menu.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #ifdef GLES3_ENABLED

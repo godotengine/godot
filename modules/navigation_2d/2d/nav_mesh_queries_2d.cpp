@@ -36,6 +36,7 @@
 #include "nav_region_iteration_2d.h"
 
 #include "core/math/geometry_2d.h"
+#include "core/templates/rb_map.h"
 
 using namespace Nav2D;
 
