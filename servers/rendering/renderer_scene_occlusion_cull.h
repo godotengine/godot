@@ -233,7 +233,7 @@ public:
 		return RID();
 	}
 
-	virtual void set_build_quality(RS::ViewportOcclusionCullingBuildQuality p_quality) {}
+	virtual void set_build_quality(RSE::ViewportOcclusionCullingBuildQuality p_quality) {}
 
 	RendererSceneOcclusionCull() {
 		singleton = this;

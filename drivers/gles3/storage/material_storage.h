@@ -76,7 +76,7 @@ struct Shader {
 	ShaderData *data = nullptr;
 	String code;
 	String path_hint;
-	RS::ShaderMode mode;
+	RSE::ShaderMode mode;
 	HashMap<StringName, HashMap<int, RID>> default_texture_parameter;
 	HashSet<Material *> owners;
 };
@@ -117,7 +117,7 @@ struct Material {
 	MaterialData *data = nullptr;
 	Shader *shader = nullptr;
 	//shortcut to shader data and type
-	RS::ShaderMode shader_mode = RS::SHADER_MAX;
+	RSE::ShaderMode shader_mode = RSE::SHADER_MAX;
 	uint32_t shader_id = 0;
 	bool uniform_dirty = false;
 	bool texture_dirty = false;
@@ -301,7 +301,7 @@ struct SceneShaderData : public ShaderData {
 	AlphaAntiAliasing alpha_antialiasing_mode;
 	DepthDraw depth_draw;
 	DepthTest depth_test;
-	RS::CullMode cull_mode;
+	RSE::CullMode cull_mode;
 
 	StencilCompare stencil_compare;
 	uint32_t stencil_flags;
@@ -477,7 +477,7 @@ struct GlobalShaderUniforms {
 	struct Variable {
 		HashSet<RID> texture_materials; // materials using this
 
-		RS::GlobalShaderParameterType type;
+		RSE::GlobalShaderParameterType type;
 		Variant value;
 		Variant override;
 		int32_t buffer_index; //for vectors
@@ -538,16 +538,16 @@ private:
 	GlobalShaderUniforms global_shader_uniforms;
 
 	int32_t _global_shader_uniform_allocate(uint32_t p_elements);
-	void _global_shader_uniform_store_in_buffer(int32_t p_index, RS::GlobalShaderParameterType p_type, const Variant &p_value);
+	void _global_shader_uniform_store_in_buffer(int32_t p_index, RSE::GlobalShaderParameterType p_type, const Variant &p_value);
 	void _global_shader_uniform_mark_buffer_dirty(int32_t p_index, int32_t p_elements);
 
 	/* SHADER API */
 
-	ShaderDataRequestFunction shader_data_request_func[RS::SHADER_MAX];
+	ShaderDataRequestFunction shader_data_request_func[RSE::SHADER_MAX];
 	mutable RID_Owner<Shader, true> shader_owner;
 
 	/* MATERIAL API */
-	MaterialDataRequestFunction material_data_request_func[RS::SHADER_MAX];
+	MaterialDataRequestFunction material_data_request_func[RSE::SHADER_MAX];
 	mutable RID_Owner<Material, true> material_owner;
 
 	SelfList<Material>::List material_update_list;
@@ -619,15 +619,15 @@ public:
 
 	void _update_global_shader_uniforms();
 
-	virtual void global_shader_parameter_add(const StringName &p_name, RS::GlobalShaderParameterType p_type, const Variant &p_value) override;
+	virtual void global_shader_parameter_add(const StringName &p_name, RSE::GlobalShaderParameterType p_type, const Variant &p_value) override;
 	virtual void global_shader_parameter_remove(const StringName &p_name) override;
 	virtual Vector<StringName> global_shader_parameter_get_list() const override;
 
 	virtual void global_shader_parameter_set(const StringName &p_name, const Variant &p_value) override;
 	virtual void global_shader_parameter_set_override(const StringName &p_name, const Variant &p_value) override;
 	virtual Variant global_shader_parameter_get(const StringName &p_name) const override;
-	virtual RS::GlobalShaderParameterType global_shader_parameter_get_type(const StringName &p_name) const override;
-	RS::GlobalShaderParameterType global_shader_parameter_get_type_internal(const StringName &p_name) const;
+	virtual RSE::GlobalShaderParameterType global_shader_parameter_get_type(const StringName &p_name) const override;
+	RSE::GlobalShaderParameterType global_shader_parameter_get_type_internal(const StringName &p_name) const;
 
 	virtual void global_shader_parameters_load_settings(bool p_load_textures = true) override;
 	virtual void global_shader_parameters_clear() override;
@@ -685,7 +685,7 @@ public:
 
 	virtual bool material_is_animated(RID p_material) override;
 	virtual bool material_casts_shadows(RID p_material) override;
-	virtual RS::CullMode material_get_cull_mode(RID p_material) const override;
+	virtual RSE::CullMode material_get_cull_mode(RID p_material) const override;
 
 	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override;
 
@@ -696,7 +696,7 @@ public:
 		return material->shader_id;
 	}
 
-	_FORCE_INLINE_ MaterialData *material_get_data(RID p_material, RS::ShaderMode p_shader_mode) {
+	_FORCE_INLINE_ MaterialData *material_get_data(RID p_material, RSE::ShaderMode p_shader_mode) {
 		Material *material = material_owner.get_or_null(p_material);
 		if (!material || material->shader_mode != p_shader_mode) {
 			return nullptr;

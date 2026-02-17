@@ -158,7 +158,7 @@ private:
 	};
 
 	struct Particles {
-		RS::ParticlesMode mode = RS::PARTICLES_MODE_3D;
+		RSE::ParticlesMode mode = RSE::PARTICLES_MODE_3D;
 		bool inactive = true;
 		double inactive_time = 0.0;
 		bool emitting = false;
@@ -181,9 +181,9 @@ private:
 
 		RID process_material;
 		uint32_t frame_counter = 0;
-		RS::ParticlesTransformAlign transform_align = RS::PARTICLES_TRANSFORM_ALIGN_DISABLED;
+		RSE::ParticlesTransformAlign transform_align = RSE::PARTICLES_TRANSFORM_ALIGN_DISABLED;
 
-		RS::ParticlesDrawOrder draw_order = RS::PARTICLES_DRAW_ORDER_INDEX;
+		RSE::ParticlesDrawOrder draw_order = RSE::PARTICLES_DRAW_ORDER_INDEX;
 
 		Vector<RID> draw_passes;
 		Vector<Transform3D> trail_bind_poses;
@@ -394,7 +394,7 @@ private:
 	/* Particles Collision */
 
 	struct ParticlesCollision {
-		RS::ParticlesCollisionType type = RS::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT;
+		RSE::ParticlesCollisionType type = RSE::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT;
 		uint32_t cull_mask = 0xFFFFFFFF;
 		float radius = 1.0;
 		Vector3 extents = Vector3(1, 1, 1);
@@ -407,7 +407,7 @@ private:
 		Size2i heightfield_fb_size;
 		uint32_t heightfield_mask = (1 << 20) - 1;
 
-		RS::ParticlesCollisionHeightfieldResolution heightfield_resolution = RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024;
+		RSE::ParticlesCollisionHeightfieldResolution heightfield_resolution = RSE::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024;
 
 		Dependency dependency;
 	};
@@ -438,7 +438,7 @@ public:
 	virtual void particles_initialize(RID p_rid) override;
 	virtual void particles_free(RID p_rid) override;
 
-	virtual void particles_set_mode(RID p_particles, RS::ParticlesMode p_mode) override;
+	virtual void particles_set_mode(RID p_particles, RSE::ParticlesMode p_mode) override;
 	virtual void particles_set_emitting(RID p_particles, bool p_emitting) override;
 	virtual void particles_set_amount(RID p_particles, int p_amount) override;
 	virtual void particles_set_amount_ratio(RID p_particles, float p_amount_ratio) override;
@@ -458,7 +458,7 @@ public:
 	virtual void particles_set_interpolate(RID p_particles, bool p_enable) override;
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) override;
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) override;
-	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) override;
+	virtual void particles_set_transform_align(RID p_particles, RSE::ParticlesTransformAlign p_transform_align) override;
 	virtual void particles_set_seed(RID p_particles, uint32_t p_seed) override;
 
 	virtual void particles_set_trails(RID p_particles, bool p_enable, double p_length) override;
@@ -469,7 +469,7 @@ public:
 
 	virtual void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) override;
 
-	virtual void particles_set_draw_order(RID p_particles, RS::ParticlesDrawOrder p_order) override;
+	virtual void particles_set_draw_order(RID p_particles, RSE::ParticlesDrawOrder p_order) override;
 
 	virtual void particles_set_draw_passes(RID p_particles, int p_count) override;
 	virtual void particles_set_draw_pass_mesh(RID p_particles, int p_pass, RID p_mesh) override;
@@ -490,9 +490,9 @@ public:
 
 	virtual bool particles_is_inactive(RID p_particles) const override;
 
-	_FORCE_INLINE_ RS::ParticlesMode particles_get_mode(RID p_particles) {
+	_FORCE_INLINE_ RSE::ParticlesMode particles_get_mode(RID p_particles) {
 		Particles *particles = particles_owner.get_or_null(p_particles);
-		ERR_FAIL_NULL_V(particles, RS::PARTICLES_MODE_2D);
+		ERR_FAIL_NULL_V(particles, RSE::PARTICLES_MODE_2D);
 		return particles->mode;
 	}
 
@@ -569,7 +569,7 @@ public:
 	virtual void particles_collision_initialize(RID p_particles_collision) override;
 	virtual void particles_collision_free(RID p_rid) override;
 
-	virtual void particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) override;
+	virtual void particles_collision_set_collision_type(RID p_particles_collision, RSE::ParticlesCollisionType p_type) override;
 	virtual void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) override;
 	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) override; //for spheres
 	virtual void particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) override; //for non-spheres
@@ -578,7 +578,7 @@ public:
 	virtual void particles_collision_set_attractor_attenuation(RID p_particles_collision, real_t p_curve) override;
 	virtual void particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) override; //for SDF and vector field, heightfield is dynamic
 	virtual void particles_collision_height_field_update(RID p_particles_collision) override; //for SDF and vector field
-	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) override; //for SDF and vector field
+	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, RSE::ParticlesCollisionHeightfieldResolution p_resolution) override; //for SDF and vector field
 	virtual AABB particles_collision_get_aabb(RID p_particles_collision) const override;
 	Vector3 particles_collision_get_extents(RID p_particles_collision) const;
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const override;

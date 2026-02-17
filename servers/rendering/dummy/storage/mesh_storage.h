@@ -38,7 +38,7 @@ namespace RendererDummy {
 struct DummyMesh {
 	Vector<RS::SurfaceData> surfaces;
 	int blend_shape_count;
-	RS::BlendShapeMode blend_shape_mode;
+	RSE::BlendShapeMode blend_shape_mode;
 	PackedFloat32Array blend_shape_values;
 	Dependency dependency;
 };
@@ -105,15 +105,15 @@ public:
 		return m->blend_shape_count;
 	}
 
-	virtual void mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) override {
+	virtual void mesh_set_blend_shape_mode(RID p_mesh, RSE::BlendShapeMode p_mode) override {
 		DummyMesh *m = mesh_owner.get_or_null(p_mesh);
 		ERR_FAIL_NULL(m);
 		m->blend_shape_mode = p_mode;
 	}
 
-	virtual RS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const override {
+	virtual RSE::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const override {
 		DummyMesh *m = mesh_owner.get_or_null(p_mesh);
-		ERR_FAIL_NULL_V(m, RS::BLEND_SHAPE_MODE_NORMALIZED);
+		ERR_FAIL_NULL_V(m, RSE::BLEND_SHAPE_MODE_NORMALIZED);
 		return m->blend_shape_mode;
 	}
 
@@ -171,7 +171,7 @@ public:
 	virtual void _multimesh_initialize(RID p_rid) override;
 	virtual void _multimesh_free(RID p_rid) override;
 
-	virtual void _multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false, bool p_use_indirect = false) override {}
+	virtual void _multimesh_allocate_data(RID p_multimesh, int p_instances, RSE::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false, bool p_use_indirect = false) override {}
 	virtual int _multimesh_get_instance_count(RID p_multimesh) const override { return 0; }
 
 	virtual void _multimesh_set_mesh(RID p_multimesh, RID p_mesh) override {}

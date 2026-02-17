@@ -72,14 +72,14 @@ TextureStorage::TextureStorage() {
 			images.push_back(image);
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE] = texture_allocate();
-			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE], images, RS::TEXTURE_LAYERED_2D_ARRAY);
+			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE], images, RSE::TEXTURE_LAYERED_2D_ARRAY);
 
 			for (int i = 0; i < 5; i++) {
 				images.push_back(image);
 			}
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_WHITE] = texture_allocate();
-			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_WHITE], images, RS::TEXTURE_LAYERED_CUBEMAP);
+			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_WHITE], images, RSE::TEXTURE_LAYERED_CUBEMAP);
 		}
 
 		{
@@ -106,13 +106,13 @@ TextureStorage::TextureStorage() {
 			images.push_back(image);
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_BLACK] = texture_allocate();
-			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_BLACK], images, RS::TEXTURE_LAYERED_2D_ARRAY);
+			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_BLACK], images, RSE::TEXTURE_LAYERED_2D_ARRAY);
 
 			for (int i = 0; i < 5; i++) {
 				images.push_back(image);
 			}
 			default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_BLACK] = texture_allocate();
-			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_BLACK], images, RS::TEXTURE_LAYERED_CUBEMAP);
+			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_BLACK], images, RSE::TEXTURE_LAYERED_CUBEMAP);
 		}
 
 		{
@@ -139,14 +139,14 @@ TextureStorage::TextureStorage() {
 			images.push_back(image);
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_TRANSPARENT] = texture_allocate();
-			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_TRANSPARENT], images, RS::TEXTURE_LAYERED_2D_ARRAY);
+			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_TRANSPARENT], images, RSE::TEXTURE_LAYERED_2D_ARRAY);
 
 			for (int i = 0; i < 5; i++) {
 				images.push_back(image);
 			}
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_TRANSPARENT] = texture_allocate();
-			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_TRANSPARENT], images, RS::TEXTURE_LAYERED_CUBEMAP);
+			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_TRANSPARENT], images, RSE::TEXTURE_LAYERED_CUBEMAP);
 		}
 
 		{
@@ -207,7 +207,7 @@ TextureStorage::TextureStorage() {
 			glBindTexture(GL_TEXTURE_2D, texture.tex_id);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8UI, 4, 4, 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, pixel_data);
 			GLES3::Utilities::get_singleton()->texture_allocated_data(texture.tex_id, 4 * 4 * 4, "Default uint texture");
-			texture.gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+			texture.gl_set_filter(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 		}
 		{
 			uint16_t pixel_data[4 * 4];
@@ -229,7 +229,7 @@ TextureStorage::TextureStorage() {
 			glBindTexture(GL_TEXTURE_2D, texture.tex_id);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 4, 4, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, pixel_data);
 			GLES3::Utilities::get_singleton()->texture_allocated_data(texture.tex_id, 4 * 4 * 2, "Default depth texture");
-			texture.gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+			texture.gl_set_filter(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 		}
 	}
 
@@ -371,8 +371,8 @@ void blit() {
 		glGenVertexArrays(1, &tex_blit_quad_array);
 		glBindVertexArray(tex_blit_quad_array);
 		glBindBuffer(GL_ARRAY_BUFFER, tex_blit_quad);
-		glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
-		glEnableVertexAttribArray(RS::ARRAY_VERTEX);
+		glVertexAttribPointer(RSE::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		glEnableVertexAttribArray(RSE::ARRAY_VERTEX);
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 	}
@@ -406,18 +406,18 @@ void TextureStorage::canvas_texture_free(RID p_rid) {
 	canvas_texture_owner.free(p_rid);
 }
 
-void TextureStorage::canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) {
+void TextureStorage::canvas_texture_set_channel(RID p_canvas_texture, RSE::CanvasTextureChannel p_channel, RID p_texture) {
 	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
 	ERR_FAIL_NULL(ct);
 
 	switch (p_channel) {
-		case RS::CANVAS_TEXTURE_CHANNEL_DIFFUSE: {
+		case RSE::CANVAS_TEXTURE_CHANNEL_DIFFUSE: {
 			ct->diffuse = p_texture;
 		} break;
-		case RS::CANVAS_TEXTURE_CHANNEL_NORMAL: {
+		case RSE::CANVAS_TEXTURE_CHANNEL_NORMAL: {
 			ct->normal_map = p_texture;
 		} break;
-		case RS::CANVAS_TEXTURE_CHANNEL_SPECULAR: {
+		case RSE::CANVAS_TEXTURE_CHANNEL_SPECULAR: {
 			ct->specular = p_texture;
 		} break;
 	}
@@ -433,14 +433,14 @@ void TextureStorage::canvas_texture_set_shading_parameters(RID p_canvas_texture,
 	ct->specular_color.a = p_shininess;
 }
 
-void TextureStorage::canvas_texture_set_texture_filter(RID p_canvas_texture, RS::CanvasItemTextureFilter p_filter) {
+void TextureStorage::canvas_texture_set_texture_filter(RID p_canvas_texture, RSE::CanvasItemTextureFilter p_filter) {
 	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
 	ERR_FAIL_NULL(ct);
 
 	ct->texture_filter = p_filter;
 }
 
-void TextureStorage::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) {
+void TextureStorage::canvas_texture_set_texture_repeat(RID p_canvas_texture, RSE::CanvasItemTextureRepeat p_repeat) {
 	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
 	ERR_FAIL_NULL(ct);
 
@@ -1097,11 +1097,11 @@ void TextureStorage::texture_external_initialize(RID p_texture, int p_width, int
 	glBindTexture(texture.target, 0);
 }
 
-void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) {
+void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RSE::TextureLayeredType p_layered_type) {
 	ERR_FAIL_COND(p_layers.is_empty());
 
-	ERR_FAIL_COND(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP && p_layers.size() != 6);
-	ERR_FAIL_COND_MSG(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP_ARRAY, "Cubemap Arrays are not supported in the Compatibility renderer.");
+	ERR_FAIL_COND(p_layered_type == RSE::TEXTURE_LAYERED_CUBEMAP && p_layers.size() != 6);
+	ERR_FAIL_COND_MSG(p_layered_type == RSE::TEXTURE_LAYERED_CUBEMAP_ARRAY, "Cubemap Arrays are not supported in the Compatibility renderer.");
 
 	const Ref<Image> &image = p_layers[0];
 	{
@@ -1136,7 +1136,7 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 	texture.format = image->get_format();
 	texture.type = Texture::TYPE_LAYERED;
 	texture.layered_type = p_layered_type;
-	texture.target = p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D_ARRAY;
+	texture.target = p_layered_type == RSE::TEXTURE_LAYERED_CUBEMAP ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D_ARRAY;
 	texture.layers = p_layers.size();
 	_get_gl_image_and_format(Ref<Image>(), texture.format, texture.real_format, texture.gl_format_cache, texture.gl_internal_format_cache, texture.gl_type_cache, texture.compressed, false);
 	texture.total_data_size = p_layers[0]->get_image_data_size(texture.width, texture.height, texture.format, texture.mipmaps) * texture.layers;
@@ -1202,7 +1202,7 @@ void TextureStorage::texture_proxy_initialize(RID p_texture, RID p_base) {
 	texture_owner.initialize_rid(p_texture, proxy_tex);
 }
 
-void TextureStorage::texture_drawable_initialize(RID p_texture, int p_width, int p_height, RS::TextureDrawableFormat p_format, const Color &p_color, bool p_with_mipmaps) {
+void TextureStorage::texture_drawable_initialize(RID p_texture, int p_width, int p_height, RSE::TextureDrawableFormat p_format, const Color &p_color, bool p_with_mipmaps) {
 	// Behaves identically to Texture_2D_Initialize by generating a white image based on parameters.
 
 	// GUARDRAIL: Bad Widths/Heights
@@ -1211,16 +1211,16 @@ void TextureStorage::texture_drawable_initialize(RID p_texture, int p_width, int
 
 	Image::Format format;
 	switch (p_format) {
-		case RS::TEXTURE_DRAWABLE_FORMAT_RGBA8:
+		case RSE::TEXTURE_DRAWABLE_FORMAT_RGBA8:
 			format = Image::FORMAT_RGBA8;
 			break;
-		case RS::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB:
+		case RSE::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB:
 			format = Image::FORMAT_RGBA8;
 			break;
-		case RS::TEXTURE_DRAWABLE_FORMAT_RGBAH:
+		case RSE::TEXTURE_DRAWABLE_FORMAT_RGBAH:
 			format = Image::FORMAT_RGBAH;
 			break;
-		case RS::TEXTURE_DRAWABLE_FORMAT_RGBAF:
+		case RSE::TEXTURE_DRAWABLE_FORMAT_RGBAF:
 			format = Image::FORMAT_RGBAF;
 			break;
 		default:
@@ -1247,21 +1247,21 @@ void TextureStorage::texture_drawable_initialize(RID p_texture, int p_width, int
 	texture_set_data(p_texture, image);
 }
 
-RID TextureStorage::texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers, RS::TextureLayeredType p_layered_type) {
+RID TextureStorage::texture_create_from_native_handle(RSE::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers, RSE::TextureLayeredType p_layered_type) {
 	Texture texture;
 	texture.active = true;
 	texture.is_from_native_handle = true;
 
 	switch (p_type) {
-		case RS::TEXTURE_TYPE_2D: {
+		case RSE::TEXTURE_TYPE_2D: {
 			texture.type = Texture::TYPE_2D;
 			texture.target = GL_TEXTURE_2D;
 		} break;
-		case RS::TEXTURE_TYPE_3D: {
+		case RSE::TEXTURE_TYPE_3D: {
 			texture.type = Texture::TYPE_3D;
 			texture.target = GL_TEXTURE_3D;
 		} break;
-		case RS::TEXTURE_TYPE_LAYERED: {
+		case RSE::TEXTURE_TYPE_LAYERED: {
 			texture.type = Texture::TYPE_LAYERED;
 			texture.target = GL_TEXTURE_2D_ARRAY;
 		} break;
@@ -1371,9 +1371,9 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 	ERR_FAIL_COND_MSG(p_textures.size() == 0 || p_source_textures.size() == 0, "Blit Rect texture output and source arrays must contain at least 1 texture.");
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 
-	TexBlitMaterialData *m = static_cast<TexBlitMaterialData *>(material_storage->material_get_data(p_material, RS::SHADER_TEXTURE_BLIT));
+	TexBlitMaterialData *m = static_cast<TexBlitMaterialData *>(material_storage->material_get_data(p_material, RSE::SHADER_TEXTURE_BLIT));
 	if (!m) {
-		m = static_cast<TexBlitMaterialData *>(material_storage->material_get_data(tex_blit_shader.default_material, RS::SHADER_TEXTURE_BLIT));
+		m = static_cast<TexBlitMaterialData *>(material_storage->material_get_data(tex_blit_shader.default_material, RSE::SHADER_TEXTURE_BLIT));
 	}
 	// GUARDRAIL: p_material MUST BE ShaderType TextureBlit
 	ERR_FAIL_NULL(m);
@@ -1412,7 +1412,7 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 			draw_buffers.push_back(GL_COLOR_ATTACHMENT0 + i);
 			ERR_FAIL_COND_MSG(p_to_mipmap >= tar_textures[i]->mipmaps, vformat("Drawable Texture Target does not have mipmap level %d.", p_to_mipmap));
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, tar_textures[i]->tex_id, p_to_mipmap);
-			convert_to_srgb_mask += tar_textures[i]->drawable_type == RS::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB ? srgbMaskArray[i] : 0;
+			convert_to_srgb_mask += tar_textures[i]->drawable_type == RSE::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB ? srgbMaskArray[i] : 0;
 		}
 
 		// Bind Sources to buffer. Use placeholder Black Texture if source is bad.
@@ -1498,8 +1498,8 @@ void TextureStorage::texture_2d_placeholder_initialize(RID p_texture) {
 	texture_2d_initialize(p_texture, texture_2d_placeholder);
 }
 
-void TextureStorage::texture_2d_layered_placeholder_initialize(RID p_texture, RS::TextureLayeredType p_layered_type) {
-	if (p_layered_type == RS::TEXTURE_LAYERED_2D_ARRAY) {
+void TextureStorage::texture_2d_layered_placeholder_initialize(RID p_texture, RSE::TextureLayeredType p_layered_type) {
+	if (p_layered_type == RSE::TEXTURE_LAYERED_2D_ARRAY) {
 		texture_2d_layered_initialize(p_texture, texture_2d_array_placeholder, p_layered_type);
 	} else {
 		texture_2d_layered_initialize(p_texture, cubemap_placeholder, p_layered_type);
@@ -1922,7 +1922,7 @@ void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
 		tinfo.width = t->alloc_width;
 		tinfo.height = t->alloc_height;
 		tinfo.bytes = t->total_data_size;
-		tinfo.type = static_cast<RenderingServer::TextureType>(t->type);
+		tinfo.type = static_cast<RSE::TextureType>(t->type);
 
 		switch (t->type) {
 			case Texture::TYPE_3D:
@@ -1960,7 +1960,7 @@ Size2 TextureStorage::texture_size_with_proxy(RID p_texture) {
 	}
 }
 
-void TextureStorage::texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RS::TextureLayeredType p_layer_type) {
+void TextureStorage::texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RSE::TextureLayeredType p_layer_type) {
 }
 
 RID TextureStorage::texture_get_rd_texture(RID p_texture, bool p_srgb) const {
@@ -2034,12 +2034,12 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 
 	// Set filtering and repeat state to default.
 	if (mipmaps > 1) {
-		texture->gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+		texture->gl_set_filter(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 	} else {
-		texture->gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+		texture->gl_set_filter(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 	}
 
-	texture->gl_set_repeat(RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+	texture->gl_set_repeat(RSE::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
 
 	int w = img->get_width();
 	int h = img->get_height();
@@ -2114,12 +2114,12 @@ void TextureStorage::_texture_set_3d_data(RID p_texture, const Vector<Ref<Image>
 
 	// Set filtering and repeat state to default.
 	if (texture->mipmaps > 1) {
-		texture->gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+		texture->gl_set_filter(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 	} else {
-		texture->gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+		texture->gl_set_filter(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 	}
 
-	texture->gl_set_repeat(RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+	texture->gl_set_repeat(RSE::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
 
 	Vector<Ref<Image>> images;
 	images.resize(p_data.size());
@@ -2503,7 +2503,7 @@ void TextureStorage::decal_initialize(RID p_rid) {
 void TextureStorage::decal_set_size(RID p_decal, const Vector3 &p_size) {
 }
 
-void TextureStorage::decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) {
+void TextureStorage::decal_set_texture(RID p_decal, RSE::DecalTexture p_type, RID p_texture) {
 }
 
 void TextureStorage::decal_set_emission_energy(RID p_decal, float p_energy) {
@@ -2603,8 +2603,8 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 				glTexImage2D(texture_target, 0, rt->color_internal_format, rt->size.x, rt->size.y, 0, rt->color_format, rt->color_type, nullptr);
 			}
 
-			texture->gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
-			texture->gl_set_repeat(RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			texture->gl_set_filter(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+			texture->gl_set_repeat(RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 			GLES3::Utilities::get_singleton()->texture_allocated_data(rt->color, rt->size.x * rt->size.y * rt->view_count * rt->color_format_size, "Render target color texture");
 		}
@@ -2853,8 +2853,8 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 			tex->active = false;
 			tex->render_target = nullptr;
 			tex->is_render_target = false;
-			tex->gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_MAX);
-			tex->gl_set_repeat(RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX);
+			tex->gl_set_filter(RSE::CANVAS_ITEM_TEXTURE_FILTER_MAX);
+			tex->gl_set_repeat(RSE::CANVAS_ITEM_TEXTURE_REPEAT_MAX);
 		}
 	} else {
 		Texture *tex = get_texture(rt->overridden.color);
@@ -3197,7 +3197,7 @@ void TextureStorage::render_target_clear_used(RID p_render_target) {
 	rt->used_in_frame = false;
 }
 
-void TextureStorage::render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) {
+void TextureStorage::render_target_set_msaa(RID p_render_target, RSE::ViewportMSAA p_msaa) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
 	ERR_FAIL_COND(rt->direct_to_screen);
@@ -3214,9 +3214,9 @@ void TextureStorage::render_target_set_msaa(RID p_render_target, RS::ViewportMSA
 	}
 }
 
-RS::ViewportMSAA TextureStorage::render_target_get_msaa(RID p_render_target) const {
+RSE::ViewportMSAA TextureStorage::render_target_get_msaa(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_NULL_V(rt, RS::VIEWPORT_MSAA_DISABLED);
+	ERR_FAIL_NULL_V(rt, RSE::VIEWPORT_MSAA_DISABLED);
 
 	return rt->msaa;
 }
@@ -3364,7 +3364,7 @@ bool TextureStorage::render_target_is_reattach_textures(RID p_render_target) con
 	return rt->reattach_textures;
 }
 
-void TextureStorage::render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) {
+void TextureStorage::render_target_set_sdf_size_and_scale(RID p_render_target, RSE::ViewportSDFOversize p_size, RSE::ViewportSDFScale p_scale) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
 	if (rt->sdf_oversize == p_size && rt->sdf_scale == p_scale) {
@@ -3381,16 +3381,16 @@ Rect2i TextureStorage::_render_target_get_sdf_rect(const RenderTarget *rt) const
 	Size2i margin;
 	int scale;
 	switch (rt->sdf_oversize) {
-		case RS::VIEWPORT_SDF_OVERSIZE_100_PERCENT: {
+		case RSE::VIEWPORT_SDF_OVERSIZE_100_PERCENT: {
 			scale = 100;
 		} break;
-		case RS::VIEWPORT_SDF_OVERSIZE_120_PERCENT: {
+		case RSE::VIEWPORT_SDF_OVERSIZE_120_PERCENT: {
 			scale = 120;
 		} break;
-		case RS::VIEWPORT_SDF_OVERSIZE_150_PERCENT: {
+		case RSE::VIEWPORT_SDF_OVERSIZE_150_PERCENT: {
 			scale = 150;
 		} break;
-		case RS::VIEWPORT_SDF_OVERSIZE_200_PERCENT: {
+		case RSE::VIEWPORT_SDF_OVERSIZE_200_PERCENT: {
 			scale = 200;
 		} break;
 		default: {
@@ -3463,13 +3463,13 @@ void TextureStorage::_render_target_allocate_sdf(RenderTarget *rt) {
 
 	int scale;
 	switch (rt->sdf_scale) {
-		case RS::VIEWPORT_SDF_SCALE_100_PERCENT: {
+		case RSE::VIEWPORT_SDF_SCALE_100_PERCENT: {
 			scale = 100;
 		} break;
-		case RS::VIEWPORT_SDF_SCALE_50_PERCENT: {
+		case RSE::VIEWPORT_SDF_SCALE_50_PERCENT: {
 			scale = 50;
 		} break;
-		case RS::VIEWPORT_SDF_SCALE_25_PERCENT: {
+		case RSE::VIEWPORT_SDF_SCALE_25_PERCENT: {
 			scale = 25;
 		} break;
 		default: {
@@ -3555,13 +3555,13 @@ void TextureStorage::render_target_sdf_process(RID p_render_target) {
 	bool shrink = false;
 
 	switch (rt->sdf_scale) {
-		case RS::VIEWPORT_SDF_SCALE_50_PERCENT: {
+		case RSE::VIEWPORT_SDF_SCALE_50_PERCENT: {
 			size[0] >>= 1;
 			size[1] >>= 1;
 			shift = 1;
 			shrink = true;
 		} break;
-		case RS::VIEWPORT_SDF_SCALE_25_PERCENT: {
+		case RSE::VIEWPORT_SDF_SCALE_25_PERCENT: {
 			size[0] >>= 2;
 			size[1] >>= 2;
 			shift = 2;

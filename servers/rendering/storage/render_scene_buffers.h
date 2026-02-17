@@ -30,8 +30,9 @@
 
 #pragma once
 
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 class RenderSceneBuffersConfiguration : public RefCounted {
 	GDCLASS(RenderSceneBuffersConfiguration, RefCounted);
@@ -43,10 +44,10 @@ private:
 	Size2i target_size;
 	uint32_t view_count = 1;
 
-	RS::ViewportScaling3DMode scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
-	RS::ViewportMSAA msaa_3d = RS::VIEWPORT_MSAA_DISABLED;
-	RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
-	RS::ViewportAnisotropicFiltering anisotropic_filtering_level = RS::VIEWPORT_ANISOTROPY_4X;
+	RSE::ViewportScaling3DMode scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_OFF;
+	RSE::ViewportMSAA msaa_3d = RSE::VIEWPORT_MSAA_DISABLED;
+	RSE::ViewportScreenSpaceAA screen_space_aa = RSE::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
+	RSE::ViewportAnisotropicFiltering anisotropic_filtering_level = RSE::VIEWPORT_ANISOTROPY_4X;
 
 	float fsr_sharpness = 0.0;
 	float texture_mipmap_bias = 0.0;
@@ -69,14 +70,14 @@ public:
 	uint32_t get_view_count() const { return view_count; }
 	void set_view_count(uint32_t p_view_count) { view_count = p_view_count; }
 
-	RS::ViewportScaling3DMode get_scaling_3d_mode() const { return scaling_3d_mode; }
-	void set_scaling_3d_mode(RS::ViewportScaling3DMode p_scaling_3d_mode) { scaling_3d_mode = p_scaling_3d_mode; }
+	RSE::ViewportScaling3DMode get_scaling_3d_mode() const { return scaling_3d_mode; }
+	void set_scaling_3d_mode(RSE::ViewportScaling3DMode p_scaling_3d_mode) { scaling_3d_mode = p_scaling_3d_mode; }
 
-	RS::ViewportMSAA get_msaa_3d() const { return msaa_3d; }
-	void set_msaa_3d(RS::ViewportMSAA p_msaa_3d) { msaa_3d = p_msaa_3d; }
+	RSE::ViewportMSAA get_msaa_3d() const { return msaa_3d; }
+	void set_msaa_3d(RSE::ViewportMSAA p_msaa_3d) { msaa_3d = p_msaa_3d; }
 
-	RS::ViewportScreenSpaceAA get_screen_space_aa() const { return screen_space_aa; }
-	void set_screen_space_aa(RS::ViewportScreenSpaceAA p_screen_space_aa) { screen_space_aa = p_screen_space_aa; }
+	RSE::ViewportScreenSpaceAA get_screen_space_aa() const { return screen_space_aa; }
+	void set_screen_space_aa(RSE::ViewportScreenSpaceAA p_screen_space_aa) { screen_space_aa = p_screen_space_aa; }
 
 	float get_fsr_sharpness() const { return fsr_sharpness; }
 	void set_fsr_sharpness(float p_fsr_sharpness) { fsr_sharpness = p_fsr_sharpness; }
@@ -84,8 +85,8 @@ public:
 	float get_texture_mipmap_bias() const { return texture_mipmap_bias; }
 	void set_texture_mipmap_bias(float p_texture_mipmap_bias) { texture_mipmap_bias = p_texture_mipmap_bias; }
 
-	RS::ViewportAnisotropicFiltering get_anisotropic_filtering_level() const { return anisotropic_filtering_level; }
-	void set_anisotropic_filtering_level(RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level) { anisotropic_filtering_level = p_anisotropic_filtering_level; }
+	RSE::ViewportAnisotropicFiltering get_anisotropic_filtering_level() const { return anisotropic_filtering_level; }
+	void set_anisotropic_filtering_level(RSE::ViewportAnisotropicFiltering p_anisotropic_filtering_level) { anisotropic_filtering_level = p_anisotropic_filtering_level; }
 
 	bool get_use_taa() const { return use_taa; }
 	void set_use_taa(bool p_use_taa) { use_taa = p_use_taa; }
@@ -112,7 +113,7 @@ public:
 	// for those settings that are unlikely to require buffers to be recreated, we'll add setters
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) = 0;
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) = 0;
-	virtual void set_anisotropic_filtering_level(RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level) = 0;
+	virtual void set_anisotropic_filtering_level(RSE::ViewportAnisotropicFiltering p_anisotropic_filtering_level) = 0;
 	virtual void set_use_debanding(bool p_use_debanding) = 0;
 };
 
@@ -135,6 +136,6 @@ public:
 
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) override;
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override;
-	virtual void set_anisotropic_filtering_level(RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level) override;
+	virtual void set_anisotropic_filtering_level(RSE::ViewportAnisotropicFiltering p_anisotropic_filtering_level) override;
 	virtual void set_use_debanding(bool p_use_debanding) override;
 };

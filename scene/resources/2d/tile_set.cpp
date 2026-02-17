@@ -38,6 +38,7 @@
 #include "scene/gui/control.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/mesh.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef NAVIGATION_2D_DISABLED
 #include "servers/navigation_2d/navigation_server_2d.h"

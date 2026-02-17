@@ -34,8 +34,9 @@
 #include "core/io/resource_loader.h"
 #include "servers/rendering/renderer_rd/forward_clustered/scene_shader_forward_clustered.h"
 #include "servers/rendering/renderer_rd/forward_mobile/scene_shader_forward_mobile.h"
+#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/storage/variant_converters.h"
-#include "texture_storage.h"
 
 using namespace RendererRD;
 
@@ -870,7 +871,7 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 
 #ifdef TOOLS_ENABLED
 	TextureStorage::Texture *roughness_detect_texture = nullptr;
-	RS::TextureDetectRoughnessChannel roughness_channel = RS::TEXTURE_DETECT_ROUGHNESS_R;
+	RSE::TextureDetectRoughnessChannel roughness_channel = RSE::TEXTURE_DETECT_ROUGHNESS_R;
 	TextureStorage::Texture *normal_detect_texture = nullptr;
 #endif
 
@@ -1084,7 +1085,7 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 					if (tex->detect_roughness_callback && (p_texture_uniforms[i].hint >= ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_R || p_texture_uniforms[i].hint <= ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_GRAY)) {
 						//find the normal texture
 						roughness_detect_texture = tex;
-						roughness_channel = RS::TextureDetectRoughnessChannel(p_texture_uniforms[i].hint - ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_R);
+						roughness_channel = RSE::TextureDetectRoughnessChannel(p_texture_uniforms[i].hint - ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_R);
 					}
 #endif // TOOLS_ENABLED
 					if (tex->render_target) {
@@ -1273,7 +1274,7 @@ void MaterialStorage::TexBlitShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["blend_disabled"] = Pair<int *, int>(&blend_modei, BLEND_MODE_DISABLED);
 
 	actions.uniforms = &uniforms;
-	Error err = texture_storage->tex_blit_shader.compiler.compile(RS::SHADER_TEXTURE_BLIT, code, &actions, path, gen_code);
+	Error err = texture_storage->tex_blit_shader.compiler.compile(RSE::SHADER_TEXTURE_BLIT, code, &actions, path, gen_code);
 	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
 
 	if (version.is_null()) {
@@ -1425,18 +1426,18 @@ template void MaterialStorage::Samplers::append_uniforms(Vector<RD::Uniform> &p_
 template <typename Collection>
 void MaterialStorage::Samplers::append_uniforms(Collection &p_uniforms, int p_first_index) const {
 	// Binding ids are aligned with samplers_inc.glsl.
-	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 0, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
-	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 1, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
-	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 2, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
-	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 3, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
-	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 4, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
-	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 5, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
-	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 6, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
-	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 7, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
-	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 8, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
-	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 9, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
-	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 10, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
-	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 11, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 0, rids[RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST][RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 1, rids[RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR][RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 2, rids[RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS][RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 3, rids[RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS][RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 4, rids[RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC][RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 5, rids[RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC][RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 6, rids[RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST][RSE::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 7, rids[RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR][RSE::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 8, rids[RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS][RSE::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 9, rids[RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS][RSE::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 10, rids[RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC][RSE::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 11, rids[RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC][RSE::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
 }
 
 bool MaterialStorage::Samplers::is_valid() const {
@@ -1552,9 +1553,9 @@ int32_t MaterialStorage::_global_shader_uniform_allocate(uint32_t p_elements) {
 	return -1;
 }
 
-void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS::GlobalShaderParameterType p_type, const Variant &p_value) {
+void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RSE::GlobalShaderParameterType p_type, const Variant &p_value) {
 	switch (p_type) {
-		case RS::GLOBAL_VAR_TYPE_BOOL: {
+		case RSE::GLOBAL_VAR_TYPE_BOOL: {
 			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			bool b = p_value;
 			bv.x = b ? 1.0 : 0.0;
@@ -1563,7 +1564,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv.w = 0.0;
 
 		} break;
-		case RS::GLOBAL_VAR_TYPE_BVEC2: {
+		case RSE::GLOBAL_VAR_TYPE_BVEC2: {
 			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			uint32_t bvec = p_value;
 			bv.x = (bvec & 1) ? 1.0 : 0.0;
@@ -1571,7 +1572,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv.z = 0.0;
 			bv.w = 0.0;
 		} break;
-		case RS::GLOBAL_VAR_TYPE_BVEC3: {
+		case RSE::GLOBAL_VAR_TYPE_BVEC3: {
 			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			uint32_t bvec = p_value;
 			bv.x = (bvec & 1) ? 1.0 : 0.0;
@@ -1579,7 +1580,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv.z = (bvec & 4) ? 1.0 : 0.0;
 			bv.w = 0.0;
 		} break;
-		case RS::GLOBAL_VAR_TYPE_BVEC4: {
+		case RSE::GLOBAL_VAR_TYPE_BVEC4: {
 			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			uint32_t bvec = p_value;
 			bv.x = (bvec & 1) ? 1.0 : 0.0;
@@ -1587,7 +1588,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv.z = (bvec & 4) ? 1.0 : 0.0;
 			bv.w = (bvec & 8) ? 1.0 : 0.0;
 		} break;
-		case RS::GLOBAL_VAR_TYPE_INT: {
+		case RSE::GLOBAL_VAR_TYPE_INT: {
 			GlobalShaderUniforms::ValueInt &bv = *(GlobalShaderUniforms::ValueInt *)&global_shader_uniforms.buffer_values[p_index];
 			int32_t v = p_value;
 			bv.x = v;
@@ -1595,7 +1596,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv.z = 0;
 			bv.w = 0;
 		} break;
-		case RS::GLOBAL_VAR_TYPE_IVEC2: {
+		case RSE::GLOBAL_VAR_TYPE_IVEC2: {
 			GlobalShaderUniforms::ValueInt &bv = *(GlobalShaderUniforms::ValueInt *)&global_shader_uniforms.buffer_values[p_index];
 			Vector2i v = convert_to_vector<Vector2i>(p_value);
 			bv.x = v.x;
@@ -1603,7 +1604,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv.z = 0;
 			bv.w = 0;
 		} break;
-		case RS::GLOBAL_VAR_TYPE_IVEC3: {
+		case RSE::GLOBAL_VAR_TYPE_IVEC3: {
 			GlobalShaderUniforms::ValueInt &bv = *(GlobalShaderUniforms::ValueInt *)&global_shader_uniforms.buffer_values[p_index];
 			Vector3i v = convert_to_vector<Vector3i>(p_value);
 			bv.x = v.x;
@@ -1611,7 +1612,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv.z = v.z;
 			bv.w = 0;
 		} break;
-		case RS::GLOBAL_VAR_TYPE_IVEC4: {
+		case RSE::GLOBAL_VAR_TYPE_IVEC4: {
 			GlobalShaderUniforms::ValueInt &bv = *(GlobalShaderUniforms::ValueInt *)&global_shader_uniforms.buffer_values[p_index];
 			Vector4i v = convert_to_vector<Vector4i>(p_value);
 			bv.x = v.x;
@@ -1619,7 +1620,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv.z = v.z;
 			bv.w = v.w;
 		} break;
-		case RS::GLOBAL_VAR_TYPE_RECT2I: {
+		case RSE::GLOBAL_VAR_TYPE_RECT2I: {
 			GlobalShaderUniforms::ValueInt &bv = *(GlobalShaderUniforms::ValueInt *)&global_shader_uniforms.buffer_values[p_index];
 			Rect2i v = p_value;
 			bv.x = v.position.x;
@@ -1627,7 +1628,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv.z = v.size.x;
 			bv.w = v.size.y;
 		} break;
-		case RS::GLOBAL_VAR_TYPE_UINT: {
+		case RSE::GLOBAL_VAR_TYPE_UINT: {
 			GlobalShaderUniforms::ValueUInt &bv = *(GlobalShaderUniforms::ValueUInt *)&global_shader_uniforms.buffer_values[p_index];
 			uint32_t v = p_value;
 			bv.x = v;
@@ -1635,7 +1636,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv.z = 0;
 			bv.w = 0;
 		} break;
-		case RS::GLOBAL_VAR_TYPE_UVEC2: {
+		case RSE::GLOBAL_VAR_TYPE_UVEC2: {
 			GlobalShaderUniforms::ValueUInt &bv = *(GlobalShaderUniforms::ValueUInt *)&global_shader_uniforms.buffer_values[p_index];
 			Vector2i v = convert_to_vector<Vector2i>(p_value);
 			bv.x = v.x;
@@ -1643,7 +1644,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv.z = 0;
 			bv.w = 0;
 		} break;
-		case RS::GLOBAL_VAR_TYPE_UVEC3: {
+		case RSE::GLOBAL_VAR_TYPE_UVEC3: {
 			GlobalShaderUniforms::ValueUInt &bv = *(GlobalShaderUniforms::ValueUInt *)&global_shader_uniforms.buffer_values[p_index];
 			Vector3i v = convert_to_vector<Vector3i>(p_value);
 			bv.x = v.x;
@@ -1651,7 +1652,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv.z = v.z;
 			bv.w = 0;
 		} break;
-		case RS::GLOBAL_VAR_TYPE_UVEC4: {
+		case RSE::GLOBAL_VAR_TYPE_UVEC4: {
 			GlobalShaderUniforms::ValueUInt &bv = *(GlobalShaderUniforms::ValueUInt *)&global_shader_uniforms.buffer_values[p_index];
 			Vector4i v = convert_to_vector<Vector4i>(p_value);
 			bv.x = v.x;
@@ -1659,7 +1660,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv.z = v.z;
 			bv.w = v.w;
 		} break;
-		case RS::GLOBAL_VAR_TYPE_FLOAT: {
+		case RSE::GLOBAL_VAR_TYPE_FLOAT: {
 			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			float v = p_value;
 			bv.x = v;
@@ -1667,7 +1668,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv.z = 0;
 			bv.w = 0;
 		} break;
-		case RS::GLOBAL_VAR_TYPE_VEC2: {
+		case RSE::GLOBAL_VAR_TYPE_VEC2: {
 			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			Vector2 v = convert_to_vector<Vector2>(p_value);
 			bv.x = v.x;
@@ -1675,7 +1676,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv.z = 0;
 			bv.w = 0;
 		} break;
-		case RS::GLOBAL_VAR_TYPE_VEC3: {
+		case RSE::GLOBAL_VAR_TYPE_VEC3: {
 			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			Vector3 v = convert_to_vector<Vector3>(p_value);
 			bv.x = v.x;
@@ -1683,7 +1684,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv.z = v.z;
 			bv.w = 0;
 		} break;
-		case RS::GLOBAL_VAR_TYPE_VEC4: {
+		case RSE::GLOBAL_VAR_TYPE_VEC4: {
 			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			Vector4 v = convert_to_vector<Vector4>(p_value);
 			bv.x = v.x;
@@ -1691,7 +1692,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv.z = v.z;
 			bv.w = v.w;
 		} break;
-		case RS::GLOBAL_VAR_TYPE_COLOR: {
+		case RSE::GLOBAL_VAR_TYPE_COLOR: {
 			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			Color v = p_value;
 			bv.x = v.r;
@@ -1707,7 +1708,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv_linear.w = v.a;
 
 		} break;
-		case RS::GLOBAL_VAR_TYPE_RECT2: {
+		case RSE::GLOBAL_VAR_TYPE_RECT2: {
 			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			Rect2 v = p_value;
 			bv.x = v.position.x;
@@ -1715,7 +1716,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv.z = v.size.x;
 			bv.w = v.size.y;
 		} break;
-		case RS::GLOBAL_VAR_TYPE_MAT2: {
+		case RSE::GLOBAL_VAR_TYPE_MAT2: {
 			GlobalShaderUniforms::Value *bv = &global_shader_uniforms.buffer_values[p_index];
 			Vector<float> m2 = p_value;
 			if (m2.size() < 4) {
@@ -1732,25 +1733,25 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 			bv[1].w = 0;
 
 		} break;
-		case RS::GLOBAL_VAR_TYPE_MAT3: {
+		case RSE::GLOBAL_VAR_TYPE_MAT3: {
 			GlobalShaderUniforms::Value *bv = &global_shader_uniforms.buffer_values[p_index];
 			Basis v = p_value;
 			convert_item_std140<Basis>(v, &bv->x);
 
 		} break;
-		case RS::GLOBAL_VAR_TYPE_MAT4: {
+		case RSE::GLOBAL_VAR_TYPE_MAT4: {
 			GlobalShaderUniforms::Value *bv = &global_shader_uniforms.buffer_values[p_index];
 			Projection m = p_value;
 			convert_item_std140<Projection>(m, &bv->x);
 
 		} break;
-		case RS::GLOBAL_VAR_TYPE_TRANSFORM_2D: {
+		case RSE::GLOBAL_VAR_TYPE_TRANSFORM_2D: {
 			GlobalShaderUniforms::Value *bv = &global_shader_uniforms.buffer_values[p_index];
 			Transform2D v = p_value;
 			convert_item_std140<Transform2D>(v, &bv->x);
 
 		} break;
-		case RS::GLOBAL_VAR_TYPE_TRANSFORM: {
+		case RSE::GLOBAL_VAR_TYPE_TRANSFORM: {
 			GlobalShaderUniforms::Value *bv = &global_shader_uniforms.buffer_values[p_index];
 			Transform3D v = p_value;
 			convert_item_std140<Transform3D>(v, &bv->x);
@@ -1778,27 +1779,27 @@ void MaterialStorage::_global_shader_uniform_mark_buffer_dirty(int32_t p_index, 
 	}
 }
 
-void MaterialStorage::global_shader_parameter_add(const StringName &p_name, RS::GlobalShaderParameterType p_type, const Variant &p_value) {
+void MaterialStorage::global_shader_parameter_add(const StringName &p_name, RSE::GlobalShaderParameterType p_type, const Variant &p_value) {
 	ERR_FAIL_COND(global_shader_uniforms.variables.has(p_name));
 	GlobalShaderUniforms::Variable gv;
 	gv.type = p_type;
 	gv.value = p_value;
 	gv.buffer_index = -1;
 
-	if (p_type >= RS::GLOBAL_VAR_TYPE_SAMPLER2D) {
+	if (p_type >= RSE::GLOBAL_VAR_TYPE_SAMPLER2D) {
 		//is texture
 		global_shader_uniforms.must_update_texture_materials = true; //normally there are none
 	} else {
 		gv.buffer_elements = 1;
-		if (p_type == RS::GLOBAL_VAR_TYPE_COLOR || p_type == RS::GLOBAL_VAR_TYPE_MAT2) {
+		if (p_type == RSE::GLOBAL_VAR_TYPE_COLOR || p_type == RSE::GLOBAL_VAR_TYPE_MAT2) {
 			//color needs to elements to store srgb and linear
 			gv.buffer_elements = 2;
 		}
-		if (p_type == RS::GLOBAL_VAR_TYPE_MAT3 || p_type == RS::GLOBAL_VAR_TYPE_TRANSFORM_2D) {
+		if (p_type == RSE::GLOBAL_VAR_TYPE_MAT3 || p_type == RSE::GLOBAL_VAR_TYPE_TRANSFORM_2D) {
 			//color needs to elements to store srgb and linear
 			gv.buffer_elements = 3;
 		}
-		if (p_type == RS::GLOBAL_VAR_TYPE_MAT4 || p_type == RS::GLOBAL_VAR_TYPE_TRANSFORM) {
+		if (p_type == RSE::GLOBAL_VAR_TYPE_MAT4 || p_type == RSE::GLOBAL_VAR_TYPE_TRANSFORM) {
 			//color needs to elements to store srgb and linear
 			gv.buffer_elements = 4;
 		}
@@ -1909,17 +1910,17 @@ Variant MaterialStorage::global_shader_parameter_get(const StringName &p_name) c
 	return global_shader_uniforms.variables[p_name].value;
 }
 
-RS::GlobalShaderParameterType MaterialStorage::global_shader_parameter_get_type_internal(const StringName &p_name) const {
+RSE::GlobalShaderParameterType MaterialStorage::global_shader_parameter_get_type_internal(const StringName &p_name) const {
 	if (!global_shader_uniforms.variables.has(p_name)) {
-		return RS::GLOBAL_VAR_TYPE_MAX;
+		return RSE::GLOBAL_VAR_TYPE_MAX;
 	}
 
 	return global_shader_uniforms.variables[p_name].type;
 }
 
-RS::GlobalShaderParameterType MaterialStorage::global_shader_parameter_get_type(const StringName &p_name) const {
+RSE::GlobalShaderParameterType MaterialStorage::global_shader_parameter_get_type(const StringName &p_name) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
-		ERR_FAIL_V_MSG(RS::GLOBAL_VAR_TYPE_MAX, "This function should never be used outside the editor, it can severely damage performance.");
+		ERR_FAIL_V_MSG(RSE::GLOBAL_VAR_TYPE_MAX, "This function should never be used outside the editor, it can severely damage performance.");
 	}
 
 	return global_shader_parameter_get_type_internal(p_name);
@@ -1939,7 +1940,7 @@ void MaterialStorage::global_shader_parameters_load_settings(bool p_load_texture
 
 			String type = d["type"];
 
-			static const char *global_var_type_names[RS::GLOBAL_VAR_TYPE_MAX] = {
+			static const char *global_var_type_names[RSE::GLOBAL_VAR_TYPE_MAX] = {
 				"bool",
 				"bvec2",
 				"bvec3",
@@ -1971,20 +1972,20 @@ void MaterialStorage::global_shader_parameters_load_settings(bool p_load_texture
 				"samplerExternalOES",
 			};
 
-			RS::GlobalShaderParameterType gvtype = RS::GLOBAL_VAR_TYPE_MAX;
+			RSE::GlobalShaderParameterType gvtype = RSE::GLOBAL_VAR_TYPE_MAX;
 
-			for (int i = 0; i < RS::GLOBAL_VAR_TYPE_MAX; i++) {
+			for (int i = 0; i < RSE::GLOBAL_VAR_TYPE_MAX; i++) {
 				if (global_var_type_names[i] == type) {
-					gvtype = RS::GlobalShaderParameterType(i);
+					gvtype = RSE::GlobalShaderParameterType(i);
 					break;
 				}
 			}
 
-			ERR_CONTINUE(gvtype == RS::GLOBAL_VAR_TYPE_MAX); //type invalid
+			ERR_CONTINUE(gvtype == RSE::GLOBAL_VAR_TYPE_MAX); //type invalid
 
 			Variant value = d["value"];
 
-			if (gvtype >= RS::GLOBAL_VAR_TYPE_SAMPLER2D) {
+			if (gvtype >= RSE::GLOBAL_VAR_TYPE_SAMPLER2D) {
 				String path = value;
 				// Don't load the textures, but still add the parameter so shaders compile correctly while loading.
 				if (!p_load_textures || path.is_empty()) {
@@ -2586,22 +2587,22 @@ bool MaterialStorage::material_casts_shadows(RID p_material) {
 	return true; //by default everything casts shadows
 }
 
-RS::CullMode RendererRD::MaterialStorage::material_get_cull_mode(RID p_material) const {
+RSE::CullMode RendererRD::MaterialStorage::material_get_cull_mode(RID p_material) const {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_NULL_V(material, RS::CULL_MODE_DISABLED);
-	ERR_FAIL_NULL_V(material->shader, RS::CULL_MODE_DISABLED);
+	ERR_FAIL_NULL_V(material, RSE::CULL_MODE_DISABLED);
+	ERR_FAIL_NULL_V(material->shader, RSE::CULL_MODE_DISABLED);
 	if (material->shader->type == ShaderType::SHADER_TYPE_3D && material->shader->data) {
 		RendererSceneRenderImplementation::SceneShaderForwardClustered::ShaderData *sd_clustered = dynamic_cast<RendererSceneRenderImplementation::SceneShaderForwardClustered::ShaderData *>(material->shader->data);
 		if (sd_clustered) {
-			return (RS::CullMode)sd_clustered->cull_mode;
+			return (RSE::CullMode)sd_clustered->cull_mode;
 		}
 
 		RendererSceneRenderImplementation::SceneShaderForwardMobile::ShaderData *sd_mobile = dynamic_cast<RendererSceneRenderImplementation::SceneShaderForwardMobile::ShaderData *>(material->shader->data);
 		if (sd_mobile) {
-			return (RS::CullMode)sd_mobile->cull_mode;
+			return (RSE::CullMode)sd_mobile->cull_mode;
 		}
 	}
-	return RS::CULL_MODE_DISABLED;
+	return RSE::CULL_MODE_DISABLED;
 }
 
 void MaterialStorage::material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) {
@@ -2625,7 +2626,7 @@ void MaterialStorage::material_update_dependency(RID p_material, DependencyTrack
 	}
 }
 
-MaterialStorage::Samplers MaterialStorage::samplers_rd_allocate(float p_mipmap_bias, RS::ViewportAnisotropicFiltering anisotropic_filtering_level) const {
+MaterialStorage::Samplers MaterialStorage::samplers_rd_allocate(float p_mipmap_bias, RSE::ViewportAnisotropicFiltering anisotropic_filtering_level) const {
 	Samplers samplers;
 	samplers.mipmap_bias = p_mipmap_bias;
 	samplers.anisotropic_filtering_level = (int)anisotropic_filtering_level;
@@ -2634,34 +2635,34 @@ MaterialStorage::Samplers MaterialStorage::samplers_rd_allocate(float p_mipmap_b
 	RD::SamplerFilter mip_filter = samplers.use_nearest_mipmap_filter ? RD::SAMPLER_FILTER_NEAREST : RD::SAMPLER_FILTER_LINEAR;
 	float anisotropy_max = float(1 << samplers.anisotropic_filtering_level);
 
-	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
-		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+	for (int i = 1; i < RSE::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (int j = 1; j < RSE::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
 			RD::SamplerState sampler_state;
 			switch (i) {
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
+				case RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
 					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
 					sampler_state.max_lod = 0;
 				} break;
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR: {
+				case RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.max_lod = 0;
 				} break;
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
+				case RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
 					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
 					sampler_state.mip_filter = mip_filter;
 					sampler_state.lod_bias = samplers.mipmap_bias;
 				} break;
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
+				case RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.mip_filter = mip_filter;
 					sampler_state.lod_bias = samplers.mipmap_bias;
 
 				} break;
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
+				case RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
 					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
 					sampler_state.mip_filter = mip_filter;
@@ -2669,7 +2670,7 @@ MaterialStorage::Samplers MaterialStorage::samplers_rd_allocate(float p_mipmap_b
 					sampler_state.use_anisotropy = true;
 					sampler_state.anisotropy_max = anisotropy_max;
 				} break;
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
+				case RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.mip_filter = mip_filter;
@@ -2682,18 +2683,18 @@ MaterialStorage::Samplers MaterialStorage::samplers_rd_allocate(float p_mipmap_b
 				}
 			}
 			switch (j) {
-				case RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: {
+				case RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: {
 					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
 					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
 					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
 
 				} break;
-				case RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
+				case RSE::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
 					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_REPEAT;
 					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_REPEAT;
 					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_REPEAT;
 				} break;
-				case RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR: {
+				case RSE::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR: {
 					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
 					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
 					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
@@ -2710,8 +2711,8 @@ MaterialStorage::Samplers MaterialStorage::samplers_rd_allocate(float p_mipmap_b
 }
 
 void MaterialStorage::samplers_rd_free(Samplers &p_samplers) const {
-	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
-		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+	for (int i = 1; i < RSE::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (int j = 1; j < RSE::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
 			if (p_samplers.rids[i][j].is_valid()) {
 				RD::get_singleton()->free_rid(p_samplers.rids[i][j]);
 				p_samplers.rids[i][j] = RID();

@@ -32,7 +32,7 @@
 
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 #include "servers/text/text_server.h"
 
 class CanvasLayer;
@@ -121,8 +121,8 @@ private:
 
 	ClipChildrenMode clip_children_mode = CLIP_CHILDREN_DISABLED;
 
-	mutable RS::CanvasItemTextureFilter texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
-	mutable RS::CanvasItemTextureRepeat texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+	mutable RSE::CanvasItemTextureFilter texture_filter_cache = RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+	mutable RSE::CanvasItemTextureRepeat texture_repeat_cache = RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 	TextureFilter texture_filter = TEXTURE_FILTER_PARENT_NODE;
 	TextureRepeat texture_repeat = TEXTURE_REPEAT_PARENT_NODE;
 
@@ -170,8 +170,8 @@ protected:
 
 	virtual void _physics_interpolated_changed() override;
 
-	virtual void _update_self_texture_repeat(RS::CanvasItemTextureRepeat p_texture_repeat);
-	virtual void _update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter);
+	virtual void _update_self_texture_repeat(RSE::CanvasItemTextureRepeat p_texture_repeat);
+	virtual void _update_self_texture_filter(RSE::CanvasItemTextureFilter p_texture_filter);
 
 	_FORCE_INLINE_ void _notify_transform() {
 		_notify_transform(this);

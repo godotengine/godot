@@ -39,6 +39,7 @@
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/particle_process_material.h"
+#include "servers/rendering/rendering_server.h"
 
 void CPUParticles2D::set_emitting(bool p_emitting) {
 	if (emitting == p_emitting) {
@@ -77,7 +78,7 @@ void CPUParticles2D::set_amount(int p_amount) {
 	}
 
 	particle_data.resize((8 + 4 + 4) * p_amount);
-	RS::get_singleton()->multimesh_allocate_data(multimesh, p_amount, RS::MULTIMESH_TRANSFORM_2D, true, true);
+	RS::get_singleton()->multimesh_allocate_data(multimesh, p_amount, RSE::MULTIMESH_TRANSFORM_2D, true, true);
 
 	particle_order.resize(p_amount);
 }
@@ -219,14 +220,14 @@ void CPUParticles2D::_update_mesh_texture() {
 	Vector<int> indices = { 0, 1, 2, 2, 3, 0 };
 
 	Array arr;
-	arr.resize(RS::ARRAY_MAX);
-	arr[RS::ARRAY_VERTEX] = vertices;
-	arr[RS::ARRAY_TEX_UV] = uvs;
-	arr[RS::ARRAY_COLOR] = colors;
-	arr[RS::ARRAY_INDEX] = indices;
+	arr.resize(RSE::ARRAY_MAX);
+	arr[RSE::ARRAY_VERTEX] = vertices;
+	arr[RSE::ARRAY_TEX_UV] = uvs;
+	arr[RSE::ARRAY_COLOR] = colors;
+	arr[RSE::ARRAY_INDEX] = indices;
 
 	RS::get_singleton()->mesh_clear(mesh);
-	RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr);
+	RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RSE::PRIMITIVE_TRIANGLES, arr);
 }
 
 void CPUParticles2D::set_texture(const Ref<Texture2D> &p_texture) {

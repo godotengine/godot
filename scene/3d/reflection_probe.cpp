@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "reflection_probe.h"
+#include "servers/rendering/rendering_server.h"
 
 void ReflectionProbe::set_intensity(float p_intensity) {
 	intensity = p_intensity;
@@ -51,7 +52,7 @@ float ReflectionProbe::get_blend_distance() const {
 
 void ReflectionProbe::set_ambient_mode(AmbientMode p_mode) {
 	ambient_mode = p_mode;
-	RS::get_singleton()->reflection_probe_set_ambient_mode(probe, RS::ReflectionProbeAmbientMode(p_mode));
+	RS::get_singleton()->reflection_probe_set_ambient_mode(probe, RSE::ReflectionProbeAmbientMode(p_mode));
 	notify_property_list_changed();
 }
 
@@ -186,7 +187,7 @@ uint32_t ReflectionProbe::get_reflection_mask() const {
 
 void ReflectionProbe::set_update_mode(UpdateMode p_mode) {
 	update_mode = p_mode;
-	RS::get_singleton()->reflection_probe_set_update_mode(probe, RS::ReflectionProbeUpdateMode(p_mode));
+	RS::get_singleton()->reflection_probe_set_update_mode(probe, RSE::ReflectionProbeUpdateMode(p_mode));
 }
 
 ReflectionProbe::UpdateMode ReflectionProbe::get_update_mode() const {

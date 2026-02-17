@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/templates/pair.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/shader_language.h"
 
 class ShaderCompiler {
@@ -134,7 +134,7 @@ private:
 	static ShaderLanguage::DataType _get_global_shader_uniform_type(const StringName &p_name);
 
 public:
-	Error compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code);
+	Error compile(RSE::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code);
 
 	void initialize(DefaultIdentifierActions p_actions);
 	ShaderCompiler();

@@ -32,6 +32,7 @@
 
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/mesh.h"
+#include "servers/rendering/rendering_server.h"
 
 Color SpriteBase3D::_get_color_accum() {
 	if (!color_dirty) {
@@ -240,14 +241,14 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 		}
 
 		float v_uv[2] = { (float)uvs[i].x, (float)uvs[i].y };
-		memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RS::ARRAY_TEX_UV]], v_uv, 8);
+		memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RSE::ARRAY_TEX_UV]], v_uv, 8);
 
 		float v_vertex[3] = { (float)vtx.x, (float)vtx.y, (float)vtx.z };
 
-		memcpy(&vertex_write_buffer[i * vertex_stride + mesh_surface_offsets[RS::ARRAY_VERTEX]], &v_vertex, sizeof(float) * 3);
-		memcpy(&vertex_write_buffer[i * normal_tangent_stride + mesh_surface_offsets[RS::ARRAY_NORMAL]], &v_normal, 4);
-		memcpy(&vertex_write_buffer[i * normal_tangent_stride + mesh_surface_offsets[RS::ARRAY_TANGENT]], &v_tangent, 4);
-		memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RS::ARRAY_COLOR]], v_color, 4);
+		memcpy(&vertex_write_buffer[i * vertex_stride + mesh_surface_offsets[RSE::ARRAY_VERTEX]], &v_vertex, sizeof(float) * 3);
+		memcpy(&vertex_write_buffer[i * normal_tangent_stride + mesh_surface_offsets[RSE::ARRAY_NORMAL]], &v_normal, 4);
+		memcpy(&vertex_write_buffer[i * normal_tangent_stride + mesh_surface_offsets[RSE::ARRAY_TANGENT]], &v_tangent, 4);
+		memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RSE::ARRAY_COLOR]], v_color, 4);
 	}
 
 	switch (get_billboard_mode()) {
@@ -380,7 +381,7 @@ Color SpriteBase3D::get_modulate() const {
 }
 
 void SpriteBase3D::set_render_priority(int p_priority) {
-	ERR_FAIL_COND(p_priority < RS::MATERIAL_RENDER_PRIORITY_MIN || p_priority > RS::MATERIAL_RENDER_PRIORITY_MAX);
+	ERR_FAIL_COND(p_priority < RSE::MATERIAL_RENDER_PRIORITY_MIN || p_priority > RSE::MATERIAL_RENDER_PRIORITY_MAX);
 
 	if (render_priority == p_priority) {
 		return;
@@ -694,7 +695,7 @@ void SpriteBase3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_antialiasing_mode", PROPERTY_HINT_ENUM, "Disabled,Alpha Edge Blend,Alpha Edge Clip"), "set_alpha_antialiasing", "get_alpha_antialiasing");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_antialiasing_edge", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_antialiasing_edge", "get_alpha_antialiasing_edge");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RSE::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RSE::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
 
 	BIND_ENUM_CONSTANT(FLAG_TRANSPARENT);
 	BIND_ENUM_CONSTANT(FLAG_SHADED);
@@ -761,16 +762,16 @@ SpriteBase3D::SpriteBase3D() {
 	indices.write[5] = 3;
 
 	Array mesh_array;
-	mesh_array.resize(RS::ARRAY_MAX);
-	mesh_array[RS::ARRAY_VERTEX] = mesh_vertices;
-	mesh_array[RS::ARRAY_NORMAL] = mesh_normals;
-	mesh_array[RS::ARRAY_TANGENT] = mesh_tangents;
-	mesh_array[RS::ARRAY_COLOR] = mesh_colors;
-	mesh_array[RS::ARRAY_TEX_UV] = mesh_uvs;
-	mesh_array[RS::ARRAY_INDEX] = indices;
+	mesh_array.resize(RSE::ARRAY_MAX);
+	mesh_array[RSE::ARRAY_VERTEX] = mesh_vertices;
+	mesh_array[RSE::ARRAY_NORMAL] = mesh_normals;
+	mesh_array[RSE::ARRAY_TANGENT] = mesh_tangents;
+	mesh_array[RSE::ARRAY_COLOR] = mesh_colors;
+	mesh_array[RSE::ARRAY_TEX_UV] = mesh_uvs;
+	mesh_array[RSE::ARRAY_INDEX] = indices;
 
 	RS::SurfaceData sd;
-	RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RS::PRIMITIVE_TRIANGLES, mesh_array);
+	RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RSE::PRIMITIVE_TRIANGLES, mesh_array);
 
 	mesh_surface_format = sd.format;
 	vertex_buffer = sd.vertex_data;

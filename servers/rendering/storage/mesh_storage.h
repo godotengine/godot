@@ -31,6 +31,7 @@
 #pragma once
 
 #include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 #include "utilities.h"
 
 class RendererMeshStorage {
@@ -50,8 +51,8 @@ public:
 
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const = 0;
 
-	virtual void mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) = 0;
-	virtual RS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const = 0;
+	virtual void mesh_set_blend_shape_mode(RID p_mesh, RSE::BlendShapeMode p_mode) = 0;
+	virtual RSE::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const = 0;
 
 	virtual void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
 	virtual void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
@@ -93,7 +94,7 @@ public:
 
 	/* MULTIMESH API */
 	struct MultiMeshInterpolator {
-		RS::MultimeshTransformFormat _transform_format = RS::MULTIMESH_TRANSFORM_3D;
+		RSE::MultimeshTransformFormat _transform_format = RSE::MULTIMESH_TRANSFORM_3D;
 		bool _use_colors = false;
 		bool _use_custom_data = false;
 
@@ -123,7 +124,7 @@ public:
 	virtual void multimesh_initialize(RID p_rid);
 	virtual void multimesh_free(RID p_rid);
 
-	virtual void multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false, bool p_use_indirect = false);
+	virtual void multimesh_allocate_data(RID p_multimesh, int p_instances, RSE::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false, bool p_use_indirect = false);
 
 	virtual int multimesh_get_instance_count(RID p_multimesh) const;
 
@@ -150,7 +151,7 @@ public:
 
 	virtual void multimesh_set_buffer_interpolated(RID p_multimesh, const Vector<float> &p_buffer, const Vector<float> &p_buffer_prev);
 	virtual void multimesh_set_physics_interpolated(RID p_multimesh, bool p_interpolated);
-	virtual void multimesh_set_physics_interpolation_quality(RID p_multimesh, RS::MultimeshPhysicsInterpolationQuality p_quality);
+	virtual void multimesh_set_physics_interpolation_quality(RID p_multimesh, RSE::MultimeshPhysicsInterpolationQuality p_quality);
 	virtual void multimesh_instance_reset_physics_interpolation(RID p_multimesh, int p_index);
 	virtual void multimesh_instances_reset_physics_interpolation(RID p_multimesh);
 
@@ -163,7 +164,7 @@ public:
 	virtual void _multimesh_initialize(RID p_rid) = 0;
 	virtual void _multimesh_free(RID p_rid) = 0;
 
-	virtual void _multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false, bool p_use_indirect = false) = 0;
+	virtual void _multimesh_allocate_data(RID p_multimesh, int p_instances, RSE::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false, bool p_use_indirect = false) = 0;
 
 	virtual int _multimesh_get_instance_count(RID p_multimesh) const = 0;
 

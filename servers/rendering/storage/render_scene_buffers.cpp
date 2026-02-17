@@ -30,6 +30,8 @@
 
 #include "render_scene_buffers.h"
 
+#include "servers/rendering/rendering_server.h" // IWYU pragma: Needed to bind RSE enums.
+
 void RenderSceneBuffersConfiguration::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_render_target"), &RenderSceneBuffersConfiguration::get_render_target);
 	ClassDB::bind_method(D_METHOD("set_render_target", "render_target"), &RenderSceneBuffersConfiguration::set_render_target);
@@ -96,7 +98,7 @@ void RenderSceneBuffersExtension::set_texture_mipmap_bias(float p_texture_mipmap
 	GDVIRTUAL_CALL(_set_texture_mipmap_bias, p_texture_mipmap_bias);
 }
 
-void RenderSceneBuffersExtension::set_anisotropic_filtering_level(RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level) {
+void RenderSceneBuffersExtension::set_anisotropic_filtering_level(RSE::ViewportAnisotropicFiltering p_anisotropic_filtering_level) {
 	GDVIRTUAL_CALL(_set_anisotropic_filtering_level, p_anisotropic_filtering_level);
 }
 

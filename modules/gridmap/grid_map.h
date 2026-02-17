@@ -190,10 +190,10 @@ class GridMap : public Node3D {
 	void _recreate_octant_data();
 
 	struct BakeLight {
-		RS::LightType type = RS::LightType::LIGHT_DIRECTIONAL;
+		RSE::LightType type = RSE::LightType::LIGHT_DIRECTIONAL;
 		Vector3 pos;
 		Vector3 dir;
-		float param[RS::LIGHT_PARAM_MAX] = {};
+		float param[RSE::LIGHT_PARAM_MAX] = {};
 	};
 
 	_FORCE_INLINE_ Vector3 _octant_get_offset(const OctantKey &p_key) const {

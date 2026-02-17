@@ -38,6 +38,7 @@
 #include "scene/gui/panel_container.h"
 #include "scene/main/window.h"
 #include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 void BackgroundProgress::_add_task(const String &p_task, const String &p_label, int p_steps) {
 	_THREAD_SAFE_METHOD_
@@ -286,7 +287,7 @@ ProgressDialog::ProgressDialog() {
 	// We want to cover the entire screen to prevent the user from interacting with the Editor.
 	set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	// Be sure it's the top most component.
-	set_z_index(RS::CANVAS_ITEM_Z_MAX);
+	set_z_index(RSE::CANVAS_ITEM_Z_MAX);
 	singleton = this;
 	hide();
 

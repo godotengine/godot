@@ -452,7 +452,7 @@ static Vector<T> _remap_array(Vector<T> p_array, const Vector<uint32_t> &p_remap
 
 static void _remap_arrays(Array &r_arrays, const Vector<uint32_t> &p_remap, uint32_t p_vertex_count) {
 	for (int i = 0; i < r_arrays.size(); i++) {
-		if (i == RS::ARRAY_INDEX) {
+		if (i == RSE::ARRAY_INDEX) {
 			continue;
 		}
 
@@ -496,8 +496,8 @@ void ImporterMesh::optimize_indices() {
 			continue;
 		}
 
-		Vector<Vector3> vertices = surfaces[i].arrays[RS::ARRAY_VERTEX];
-		PackedInt32Array indices = surfaces[i].arrays[RS::ARRAY_INDEX];
+		Vector<Vector3> vertices = surfaces[i].arrays[RSE::ARRAY_VERTEX];
+		PackedInt32Array indices = surfaces[i].arrays[RSE::ARRAY_INDEX];
 
 		unsigned int index_count = indices.size();
 		unsigned int vertex_count = vertices.size();
@@ -509,7 +509,7 @@ void ImporterMesh::optimize_indices() {
 		// Optimize indices for vertex cache to establish final triangle order.
 		int *indices_ptr = indices.ptrw();
 		SurfaceTool::optimize_vertex_cache_func((unsigned int *)indices_ptr, (const unsigned int *)indices_ptr, index_count, vertex_count);
-		surfaces.write[i].arrays[RS::ARRAY_INDEX] = indices;
+		surfaces.write[i].arrays[RSE::ARRAY_INDEX] = indices;
 
 		for (int j = 0; j < surfaces[i].lods.size(); ++j) {
 			Surface::LOD &lod = surfaces.write[i].lods.write[j];
@@ -532,7 +532,7 @@ void ImporterMesh::optimize_indices() {
 
 		// We need to remap all vertex and index arrays in lockstep according to the remap.
 		SurfaceTool::remap_index_func((unsigned int *)indices_ptr, (const unsigned int *)indices_ptr, index_count, remap.ptr());
-		surfaces.write[i].arrays[RS::ARRAY_INDEX] = indices;
+		surfaces.write[i].arrays[RSE::ARRAY_INDEX] = indices;
 
 		for (int j = 0; j < surfaces[i].lods.size(); ++j) {
 			Surface::LOD &lod = surfaces.write[i].lods.write[j];
@@ -584,15 +584,15 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 		}
 
 		surfaces.write[i].lods.clear();
-		Vector<Vector3> vertices = surfaces[i].arrays[RS::ARRAY_VERTEX];
-		PackedInt32Array indices = surfaces[i].arrays[RS::ARRAY_INDEX];
-		Vector<Vector3> normals = surfaces[i].arrays[RS::ARRAY_NORMAL];
-		Vector<float> tangents = surfaces[i].arrays[RS::ARRAY_TANGENT];
-		Vector<Vector2> uvs = surfaces[i].arrays[RS::ARRAY_TEX_UV];
-		Vector<Vector2> uv2s = surfaces[i].arrays[RS::ARRAY_TEX_UV2];
-		Vector<int> bones = surfaces[i].arrays[RS::ARRAY_BONES];
-		Vector<float> weights = surfaces[i].arrays[RS::ARRAY_WEIGHTS];
-		Vector<Color> colors = surfaces[i].arrays[RS::ARRAY_COLOR];
+		Vector<Vector3> vertices = surfaces[i].arrays[RSE::ARRAY_VERTEX];
+		PackedInt32Array indices = surfaces[i].arrays[RSE::ARRAY_INDEX];
+		Vector<Vector3> normals = surfaces[i].arrays[RSE::ARRAY_NORMAL];
+		Vector<float> tangents = surfaces[i].arrays[RSE::ARRAY_TANGENT];
+		Vector<Vector2> uvs = surfaces[i].arrays[RSE::ARRAY_TEX_UV];
+		Vector<Vector2> uv2s = surfaces[i].arrays[RSE::ARRAY_TEX_UV2];
+		Vector<int> bones = surfaces[i].arrays[RSE::ARRAY_BONES];
+		Vector<float> weights = surfaces[i].arrays[RSE::ARRAY_WEIGHTS];
+		Vector<Color> colors = surfaces[i].arrays[RSE::ARRAY_COLOR];
 
 		unsigned int index_count = indices.size();
 		unsigned int vertex_count = vertices.size();
@@ -960,10 +960,10 @@ void ImporterMesh::create_shadow_mesh() {
 	}
 	//no shadow mesh for skeletons
 	for (int i = 0; i < surfaces.size(); i++) {
-		if (surfaces[i].arrays[RS::ARRAY_BONES].get_type() != Variant::NIL) {
+		if (surfaces[i].arrays[RSE::ARRAY_BONES].get_type() != Variant::NIL) {
 			return;
 		}
-		if (surfaces[i].arrays[RS::ARRAY_WEIGHTS].get_type() != Variant::NIL) {
+		if (surfaces[i].arrays[RSE::ARRAY_WEIGHTS].get_type() != Variant::NIL) {
 			return;
 		}
 	}
@@ -973,7 +973,7 @@ void ImporterMesh::create_shadow_mesh() {
 	for (int i = 0; i < surfaces.size(); i++) {
 		LocalVector<int> vertex_remap;
 		Vector<Vector3> new_vertices;
-		Vector<Vector3> vertices = surfaces[i].arrays[RS::ARRAY_VERTEX];
+		Vector<Vector3> vertices = surfaces[i].arrays[RSE::ARRAY_VERTEX];
 		int vertex_count = vertices.size();
 		{
 			HashMap<Vector3, int> unique_vertices;
@@ -995,14 +995,14 @@ void ImporterMesh::create_shadow_mesh() {
 		}
 
 		Array new_surface;
-		new_surface.resize(RS::ARRAY_MAX);
+		new_surface.resize(RSE::ARRAY_MAX);
 		Dictionary lods;
 
 		//		print_line("original vertex count: " + itos(vertices.size()) + " new vertex count: " + itos(new_vertices.size()));
 
-		new_surface[RS::ARRAY_VERTEX] = new_vertices;
+		new_surface[RSE::ARRAY_VERTEX] = new_vertices;
 
-		Vector<int> indices = surfaces[i].arrays[RS::ARRAY_INDEX];
+		Vector<int> indices = surfaces[i].arrays[RSE::ARRAY_INDEX];
 		if (indices.size()) {
 			int index_count = indices.size();
 			const int *index_rptr = indices.ptr();
@@ -1016,7 +1016,7 @@ void ImporterMesh::create_shadow_mesh() {
 				index_wptr[j] = vertex_remap[index];
 			}
 
-			new_surface[RS::ARRAY_INDEX] = new_indices;
+			new_surface[RSE::ARRAY_INDEX] = new_indices;
 
 			// Make sure the same LODs as the full version are used.
 			// This makes it more coherent between rendered model and its shadows.
@@ -1312,7 +1312,7 @@ struct EditorSceneFormatImporterMeshLightmapSurface {
 	String name;
 };
 
-static const uint32_t custom_shift[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
+static const uint32_t custom_shift[RSE::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
 
 Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, float p_texel_size, const Vector<uint8_t> &p_src_cache, Vector<uint8_t> &r_dst_cache) {
 	ERR_FAIL_NULL_V(array_mesh_lightmap_unwrap_callback, ERR_UNCONFIGURED);
@@ -1445,8 +1445,8 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 		st->set_material(lightmap_surfaces[i].material);
 		st->set_meta("name", lightmap_surfaces[i].name);
 
-		for (int custom_i = 0; custom_i < RS::ARRAY_CUSTOM_COUNT; custom_i++) {
-			st->set_custom_format(custom_i, (SurfaceTool::CustomFormat)((lightmap_surfaces[i].format >> custom_shift[custom_i]) & RS::ARRAY_FORMAT_CUSTOM_MASK));
+		for (int custom_i = 0; custom_i < RSE::ARRAY_CUSTOM_COUNT; custom_i++) {
+			st->set_custom_format(custom_i, (SurfaceTool::CustomFormat)((lightmap_surfaces[i].format >> custom_shift[custom_i]) & RSE::ARRAY_FORMAT_CUSTOM_MASK));
 		}
 		surfaces_tools.push_back(st); //stay there
 	}
@@ -1490,8 +1490,8 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 			if (lightmap_surfaces[surface].format & Mesh::ARRAY_FORMAT_WEIGHTS) {
 				surfaces_tools[surface]->set_weights(v.weights);
 			}
-			for (int custom_i = 0; custom_i < RS::ARRAY_CUSTOM_COUNT; custom_i++) {
-				if ((lightmap_surfaces[surface].format >> custom_shift[custom_i]) & RS::ARRAY_FORMAT_CUSTOM_MASK) {
+			for (int custom_i = 0; custom_i < RSE::ARRAY_CUSTOM_COUNT; custom_i++) {
+				if ((lightmap_surfaces[surface].format >> custom_shift[custom_i]) & RSE::ARRAY_FORMAT_CUSTOM_MASK) {
 					surfaces_tools[surface]->set_custom(custom_i, v.custom[custom_i]);
 				}
 			}
@@ -1511,9 +1511,9 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 
 		uint64_t format = lightmap_surfaces[i].format;
 		if (tool->get_skin_weight_count() == SurfaceTool::SKIN_8_WEIGHTS) {
-			format |= RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+			format |= RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
 		} else {
-			format &= ~RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+			format &= ~RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
 		}
 
 		add_surface(tool->get_primitive_type(), arrays, Array(), Dictionary(), tool->get_material(), tool->get_meta("name"), format);

@@ -55,6 +55,7 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 #include "scene/resources/style_box_flat.h"
+#include "servers/rendering/rendering_server.h"
 
 void ConnectionInfoDialog::ok_pressed() {
 }

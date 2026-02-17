@@ -38,6 +38,7 @@
 #include "servers/rendering/renderer_rd/shaders/light_data_inc.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/scene_data_inc.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/rendering/shader_include_db.h"
 #include "servers/rendering/storage/camera_attributes_storage.h"
@@ -65,7 +66,7 @@ void RendererSceneRenderRD::sky_set_radiance_size(RID p_sky, int p_radiance_size
 	sky.sky_set_radiance_size(p_sky, p_radiance_size);
 }
 
-void RendererSceneRenderRD::sky_set_mode(RID p_sky, RS::SkyMode p_mode) {
+void RendererSceneRenderRD::sky_set_mode(RID p_sky, RSE::SkyMode p_mode) {
 	sky.sky_set_mode(p_sky, p_mode);
 }
 
@@ -90,37 +91,37 @@ void RendererSceneRenderRD::environment_set_volumetric_fog_filter_active(bool p_
 	volumetric_fog_filter_active = p_enable;
 }
 
-void RendererSceneRenderRD::environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) {
+void RendererSceneRenderRD::environment_set_sdfgi_ray_count(RSE::EnvironmentSDFGIRayCount p_ray_count) {
 	gi.sdfgi_ray_count = p_ray_count;
 }
 
-void RendererSceneRenderRD::environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) {
+void RendererSceneRenderRD::environment_set_sdfgi_frames_to_converge(RSE::EnvironmentSDFGIFramesToConverge p_frames) {
 	gi.sdfgi_frames_to_converge = p_frames;
 }
-void RendererSceneRenderRD::environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update) {
+void RendererSceneRenderRD::environment_set_sdfgi_frames_to_update_light(RSE::EnvironmentSDFGIFramesToUpdateLight p_update) {
 	gi.sdfgi_frames_to_update_light = p_update;
 }
 
 Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) {
 	ERR_FAIL_COND_V(p_env.is_null(), Ref<Image>());
 
-	RS::EnvironmentBG environment_background = environment_get_background(p_env);
+	RSE::EnvironmentBG environment_background = environment_get_background(p_env);
 
-	if (environment_background == RS::ENV_BG_CAMERA_FEED || environment_background == RS::ENV_BG_CANVAS || environment_background == RS::ENV_BG_KEEP) {
+	if (environment_background == RSE::ENV_BG_CAMERA_FEED || environment_background == RSE::ENV_BG_CANVAS || environment_background == RSE::ENV_BG_KEEP) {
 		return Ref<Image>(); //nothing to bake
 	}
 
-	RS::EnvironmentAmbientSource ambient_source = environment_get_ambient_source(p_env);
+	RSE::EnvironmentAmbientSource ambient_source = environment_get_ambient_source(p_env);
 
 	bool use_ambient_light = false;
 	bool use_octmap = false;
-	if (ambient_source == RS::ENV_AMBIENT_SOURCE_BG && (environment_background == RS::ENV_BG_CLEAR_COLOR || environment_background == RS::ENV_BG_COLOR)) {
+	if (ambient_source == RSE::ENV_AMBIENT_SOURCE_BG && (environment_background == RSE::ENV_BG_CLEAR_COLOR || environment_background == RSE::ENV_BG_COLOR)) {
 		use_ambient_light = true;
 	} else {
-		use_octmap = (ambient_source == RS::ENV_AMBIENT_SOURCE_BG && environment_background == RS::ENV_BG_SKY) || ambient_source == RS::ENV_AMBIENT_SOURCE_SKY;
-		use_ambient_light = use_octmap || ambient_source == RS::ENV_AMBIENT_SOURCE_COLOR;
+		use_octmap = (ambient_source == RSE::ENV_AMBIENT_SOURCE_BG && environment_background == RSE::ENV_BG_SKY) || ambient_source == RSE::ENV_AMBIENT_SOURCE_SKY;
+		use_ambient_light = use_octmap || ambient_source == RSE::ENV_AMBIENT_SOURCE_COLOR;
 	}
-	use_octmap = use_octmap || (environment_background == RS::ENV_BG_SKY && environment_get_sky(p_env).is_valid());
+	use_octmap = use_octmap || (environment_background == RSE::ENV_BG_SKY && environment_get_sky(p_env).is_valid());
 
 	Color ambient_color;
 	float ambient_color_sky_mix = 0.0;
@@ -146,7 +147,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 		return panorama;
 	} else {
 		const float bg_energy_multiplier = environment_get_bg_energy_multiplier(p_env);
-		Color panorama_color = ((environment_background == RS::ENV_BG_CLEAR_COLOR) ? RSG::texture_storage->get_default_clear_color() : environment_get_bg_color(p_env));
+		Color panorama_color = ((environment_background == RSE::ENV_BG_CLEAR_COLOR) ? RSG::texture_storage->get_default_clear_color() : environment_get_bg_color(p_env));
 		panorama_color = panorama_color.srgb_to_linear();
 		panorama_color.r *= bg_energy_multiplier;
 		panorama_color.g *= bg_energy_multiplier;
@@ -252,7 +253,7 @@ Ref<RenderSceneBuffers> RendererSceneRenderRD::render_buffers_create() {
 	return rb;
 }
 
-bool RendererSceneRenderRD::_compositor_effects_has_flag(const RenderDataRD *p_render_data, RS::CompositorEffectFlags p_flag, RS::CompositorEffectCallbackType p_callback_type) {
+bool RendererSceneRenderRD::_compositor_effects_has_flag(const RenderDataRD *p_render_data, RSE::CompositorEffectFlags p_flag, RSE::CompositorEffectCallbackType p_callback_type) {
 	RendererCompositorStorage *comp_storage = RendererCompositorStorage::get_singleton();
 
 	if (p_render_data->compositor.is_null()) {
@@ -275,7 +276,7 @@ bool RendererSceneRenderRD::_compositor_effects_has_flag(const RenderDataRD *p_r
 	return false;
 }
 
-bool RendererSceneRenderRD::_has_compositor_effect(RS::CompositorEffectCallbackType p_callback_type, const RenderDataRD *p_render_data) {
+bool RendererSceneRenderRD::_has_compositor_effect(RSE::CompositorEffectCallbackType p_callback_type, const RenderDataRD *p_render_data) {
 	RendererCompositorStorage *comp_storage = RendererCompositorStorage::get_singleton();
 
 	if (p_render_data->compositor.is_null()) {
@@ -293,7 +294,7 @@ bool RendererSceneRenderRD::_has_compositor_effect(RS::CompositorEffectCallbackT
 	return effects.size() > 0;
 }
 
-void RendererSceneRenderRD::_process_compositor_effects(RS::CompositorEffectCallbackType p_callback_type, const RenderDataRD *p_render_data) {
+void RendererSceneRenderRD::_process_compositor_effects(RSE::CompositorEffectCallbackType p_callback_type, const RenderDataRD *p_render_data) {
 	RendererCompositorStorage *comp_storage = RendererCompositorStorage::get_singleton();
 
 	if (p_render_data->compositor.is_null()) {
@@ -438,7 +439,7 @@ void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataR
 		} else {
 			RID depth_back_fb = FramebufferCacheRD::get_singleton()->get_cache(depth_back_texture);
 			if (p_use_msaa) {
-				static const int texture_multisamples[RS::VIEWPORT_MSAA_MAX] = { 1, 2, 4, 8 };
+				static const int texture_multisamples[RSE::VIEWPORT_MSAA_MAX] = { 1, 2, 4, 8 };
 
 				resolve_effects->resolve_depth_raster(rb->get_depth_msaa(v), depth_back_fb, texture_multisamples[rb->get_msaa_3d()]);
 			} else {
@@ -467,26 +468,26 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	can_use_effects &= _debug_draw_can_use_effects(debug_draw);
 	bool can_use_storage = _render_buffers_can_be_storage();
 
-	RS::ViewportScaling3DMode scale_mode = rb->get_scaling_3d_mode();
-	bool use_upscaled_texture = rb->has_upscaled_texture() && (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2 || scale_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL);
+	RSE::ViewportScaling3DMode scale_mode = rb->get_scaling_3d_mode();
+	bool use_upscaled_texture = rb->has_upscaled_texture() && (scale_mode == RSE::VIEWPORT_SCALING_3D_MODE_FSR2 || scale_mode == RSE::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL);
 	SpatialUpscaler *spatial_upscaler = nullptr;
 	if (can_use_effects) {
-		if (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR) {
+		if (scale_mode == RSE::VIEWPORT_SCALING_3D_MODE_FSR) {
 			spatial_upscaler = fsr;
-		} else if (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
+		} else if (scale_mode == RSE::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
 #if METAL_ENABLED
 			spatial_upscaler = mfx_spatial;
 #endif
 		}
 	}
 
-	bool use_smaa = smaa && rb->get_screen_space_aa() == RS::VIEWPORT_SCREEN_SPACE_AA_SMAA;
+	bool use_smaa = smaa && rb->get_screen_space_aa() == RSE::VIEWPORT_SCREEN_SPACE_AA_SMAA;
 
 	RID render_target = rb->get_render_target();
 	RID color_texture = use_upscaled_texture ? rb->get_upscaled_texture() : rb->get_internal_texture();
 	Size2i color_size = use_upscaled_texture ? target_size : rb->get_internal_size();
 
-	bool dest_is_msaa_2d = rb->get_view_count() == 1 && texture_storage->render_target_get_msaa(render_target) != RS::VIEWPORT_MSAA_DISABLED;
+	bool dest_is_msaa_2d = rb->get_view_count() == 1 && texture_storage->render_target_get_msaa(render_target) != RSE::VIEWPORT_MSAA_DISABLED;
 
 	bool using_dof = RSG::camera_attributes->camera_attributes_uses_dof(p_render_data->camera_attributes);
 
@@ -582,8 +583,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		bool use_debanding = rb->get_use_debanding() && !texture_storage->render_target_is_using_hdr(render_target);
 
 		int max_glow_index = -1;
-		int min_glow_level = RS::MAX_GLOW_LEVELS;
-		for (int i = 0; i < RS::MAX_GLOW_LEVELS; i++) {
+		int min_glow_level = RSE::MAX_GLOW_LEVELS;
+		for (int i = 0; i < RSE::MAX_GLOW_LEVELS; i++) {
 			if (glow_levels[i] > 0.01) {
 				max_glow_index = MAX(max_glow_index, i);
 				min_glow_level = MIN(min_glow_level, i);
@@ -686,8 +687,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		if (can_use_effects && p_render_data->environment.is_valid() && environment_get_glow_enabled(p_render_data->environment)) {
 			tonemap.use_glow = true;
 			tonemap.glow_mode = environment_get_glow_blend_mode(p_render_data->environment);
-			tonemap.glow_intensity = tonemap.glow_mode == RS::ENV_GLOW_BLEND_MODE_MIX ? environment_get_glow_mix(p_render_data->environment) : environment_get_glow_intensity(p_render_data->environment);
-			for (int i = 0; i < RS::MAX_GLOW_LEVELS; i++) {
+			tonemap.glow_intensity = tonemap.glow_mode == RSE::ENV_GLOW_BLEND_MODE_MIX ? environment_get_glow_mix(p_render_data->environment) : environment_get_glow_intensity(p_render_data->environment);
+			for (int i = 0; i < RSE::MAX_GLOW_LEVELS; i++) {
 				tonemap.glow_levels[i] = environment_get_glow_levels(p_render_data->environment)[i];
 			}
 
@@ -715,7 +716,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			tonemap.glow_map = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
 		}
 
-		if (rb->get_screen_space_aa() == RS::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
+		if (rb->get_screen_space_aa() == RSE::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
 			tonemap.use_fxaa = true;
 		}
 
@@ -899,7 +900,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	// FIXME: Our input it our internal_texture, shouldn't this be using internal_size ??
 	// Seeing we don't support FSR in our mobile renderer right now target_size = internal_size...
 	Size2i target_size = rb->get_target_size();
-	bool can_use_effects = target_size.x >= 8 && target_size.y >= 8 && debug_draw == RS::VIEWPORT_DEBUG_DRAW_DISABLED;
+	bool can_use_effects = target_size.x >= 8 && target_size.y >= 8 && debug_draw == RSE::VIEWPORT_DEBUG_DRAW_DISABLED;
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
 
@@ -987,47 +988,47 @@ void RendererSceneRenderRD::_disable_clear_request(const RenderDataRD *p_render_
 	texture_storage->render_target_disable_clear_request(p_render_data->render_buffers->get_render_target());
 }
 
-bool RendererSceneRenderRD::_debug_draw_can_use_effects(RS::ViewportDebugDraw p_debug_draw) {
+bool RendererSceneRenderRD::_debug_draw_can_use_effects(RSE::ViewportDebugDraw p_debug_draw) {
 	bool can_use_effects = true;
 	switch (p_debug_draw) {
 		// No debug draw, use camera effects
-		case RS::VIEWPORT_DEBUG_DRAW_DISABLED:
+		case RSE::VIEWPORT_DEBUG_DRAW_DISABLED:
 			can_use_effects = true;
 			break;
 		// Modes that completely override rendering to draw debug information should disable camera effects.
-		case RS::VIEWPORT_DEBUG_DRAW_UNSHADED:
-		case RS::VIEWPORT_DEBUG_DRAW_OVERDRAW:
-		case RS::VIEWPORT_DEBUG_DRAW_WIREFRAME:
-		case RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_ALBEDO:
-		case RS::VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS:
-		case RS::VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS:
-		case RS::VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS:
-		case RS::VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES:
-		case RS::VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER:
+		case RSE::VIEWPORT_DEBUG_DRAW_UNSHADED:
+		case RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW:
+		case RSE::VIEWPORT_DEBUG_DRAW_WIREFRAME:
+		case RSE::VIEWPORT_DEBUG_DRAW_VOXEL_GI_ALBEDO:
+		case RSE::VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS:
+		case RSE::VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS:
+		case RSE::VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS:
+		case RSE::VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES:
+		case RSE::VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER:
 			can_use_effects = false;
 			break;
 		// Modes that draws information over part of the viewport needs camera effects because we see partially the normal draw mode.
-		case RS::VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS:
-		case RS::VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS:
-		case RS::VIEWPORT_DEBUG_DRAW_DECAL_ATLAS:
-		case RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS:
+		case RSE::VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS:
+		case RSE::VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS:
+		case RSE::VIEWPORT_DEBUG_DRAW_DECAL_ATLAS:
+		case RSE::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS:
 		// Modes that draws a buffer over viewport needs camera effects because if the buffer is not available it will be equivalent to normal draw mode.
-		case RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER:
-		case RS::VIEWPORT_DEBUG_DRAW_SSAO:
-		case RS::VIEWPORT_DEBUG_DRAW_SSIL:
-		case RS::VIEWPORT_DEBUG_DRAW_SDFGI:
-		case RS::VIEWPORT_DEBUG_DRAW_GI_BUFFER:
-		case RS::VIEWPORT_DEBUG_DRAW_OCCLUDERS:
+		case RSE::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER:
+		case RSE::VIEWPORT_DEBUG_DRAW_SSAO:
+		case RSE::VIEWPORT_DEBUG_DRAW_SSIL:
+		case RSE::VIEWPORT_DEBUG_DRAW_SDFGI:
+		case RSE::VIEWPORT_DEBUG_DRAW_GI_BUFFER:
+		case RSE::VIEWPORT_DEBUG_DRAW_OCCLUDERS:
 			can_use_effects = true;
 			break;
 		// Other debug draw modes keep camera effects.
-		case RS::VIEWPORT_DEBUG_DRAW_LIGHTING:
-		case RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_LIGHTING:
-		case RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION:
-		case RS::VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE:
-		case RS::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS:
-		case RS::VIEWPORT_DEBUG_DRAW_SDFGI_PROBES:
-		case RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD:
+		case RSE::VIEWPORT_DEBUG_DRAW_LIGHTING:
+		case RSE::VIEWPORT_DEBUG_DRAW_VOXEL_GI_LIGHTING:
+		case RSE::VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION:
+		case RSE::VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE:
+		case RSE::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS:
+		case RSE::VIEWPORT_DEBUG_DRAW_SDFGI_PROBES:
+		case RSE::VIEWPORT_DEBUG_DRAW_DISABLE_LOD:
 			can_use_effects = true;
 			break;
 		default:
@@ -1046,7 +1047,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 
 	RID render_target = rb->get_render_target();
 
-	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS) {
+	if (debug_draw == RSE::VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS) {
 		if (p_render_data->shadow_atlas.is_valid()) {
 			RID shadow_atlas_texture = RendererRD::LightStorage::get_singleton()->shadow_atlas_get_texture(p_render_data->shadow_atlas);
 
@@ -1059,7 +1060,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 		}
 	}
 
-	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS) {
+	if (debug_draw == RSE::VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS) {
 		if (RendererRD::LightStorage::get_singleton()->directional_shadow_get_texture().is_valid()) {
 			RID shadow_atlas_texture = RendererRD::LightStorage::get_singleton()->directional_shadow_get_texture();
 			Size2i rtsize = texture_storage->render_target_get_size(render_target);
@@ -1080,14 +1081,14 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 				RID light = p_render_data->render_shadows[i].light;
 				RID base = light_storage->light_instance_get_base_light(light);
 
-				if (light_storage->light_get_type(base) == RS::LIGHT_DIRECTIONAL) {
+				if (light_storage->light_get_type(base) == RSE::LIGHT_DIRECTIONAL) {
 					debug_effects->draw_shadow_frustum(light, p_render_data->scene_data->cam_projection, p_render_data->scene_data->cam_transform, dest_fb, Rect2(Size2(), size));
 				}
 			}
 		}
 	}
 
-	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_DECAL_ATLAS) {
+	if (debug_draw == RSE::VIEWPORT_DEBUG_DRAW_DECAL_ATLAS) {
 		RID decal_atlas = RendererRD::TextureStorage::get_singleton()->decal_atlas_get_texture();
 
 		if (decal_atlas.is_valid()) {
@@ -1097,7 +1098,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 		}
 	}
 
-	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE) {
+	if (debug_draw == RSE::VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE) {
 		RID luminance_texture = luminance->get_current_luminance_buffer(rb);
 		if (luminance_texture.is_valid()) {
 			Size2i rtsize = texture_storage->render_target_get_size(render_target);
@@ -1106,24 +1107,24 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 		}
 	}
 
-	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER) {
+	if (debug_draw == RSE::VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER) {
 		Size2 rtsize = texture_storage->render_target_get_size(render_target);
 		copy_effects->copy_to_fb_rect(rb->get_internal_texture(), texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize), false, false);
 	}
 
-	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER && _render_buffers_get_normal_texture(rb).is_valid()) {
+	if (debug_draw == RSE::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER && _render_buffers_get_normal_texture(rb).is_valid()) {
 		Size2 rtsize = texture_storage->render_target_get_size(render_target);
 		copy_effects->copy_to_fb_rect(_render_buffers_get_normal_texture(rb), texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize), false, false, false, false, RID(), false, false, false, true);
 	}
 
-	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_OCCLUDERS) {
+	if (debug_draw == RSE::VIEWPORT_DEBUG_DRAW_OCCLUDERS) {
 		if (p_render_data->occluder_debug_tex.is_valid()) {
 			Size2i rtsize = texture_storage->render_target_get_size(render_target);
 			copy_effects->copy_to_fb_rect(texture_storage->texture_get_rd_texture(p_render_data->occluder_debug_tex), texture_storage->render_target_get_rd_framebuffer(render_target), Rect2i(Vector2(), rtsize), true, false);
 		}
 	}
 
-	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS && _render_buffers_get_velocity_texture(rb).is_valid()) {
+	if (debug_draw == RSE::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS && _render_buffers_get_velocity_texture(rb).is_valid()) {
 		RID velocity = _render_buffers_get_velocity_texture(rb);
 		RID depth = rb->get_depth_texture();
 		RID dest_fb = texture_storage->render_target_get_rd_framebuffer(render_target);
@@ -1149,44 +1150,44 @@ void RendererSceneRenderRD::gi_set_use_half_resolution(bool p_enable) {
 	gi.half_resolution = p_enable;
 }
 
-void RendererSceneRenderRD::positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) {
-	ERR_FAIL_INDEX_MSG(p_quality, RS::SHADOW_QUALITY_MAX, "Shadow quality too high, please see RenderingServer's ShadowQuality enum");
+void RendererSceneRenderRD::positional_soft_shadow_filter_set_quality(RSE::ShadowQuality p_quality) {
+	ERR_FAIL_INDEX_MSG(p_quality, RSE::SHADOW_QUALITY_MAX, "Shadow quality too high, please see RenderingServer's ShadowQuality enum");
 
 	if (shadows_quality != p_quality) {
 		shadows_quality = p_quality;
 
 		switch (shadows_quality) {
-			case RS::SHADOW_QUALITY_HARD: {
+			case RSE::SHADOW_QUALITY_HARD: {
 				penumbra_shadow_samples = 4;
 				soft_shadow_samples = 0;
 				shadows_quality_radius = 1.0;
 			} break;
-			case RS::SHADOW_QUALITY_SOFT_VERY_LOW: {
+			case RSE::SHADOW_QUALITY_SOFT_VERY_LOW: {
 				penumbra_shadow_samples = 4;
 				soft_shadow_samples = 1;
 				shadows_quality_radius = 1.5;
 			} break;
-			case RS::SHADOW_QUALITY_SOFT_LOW: {
+			case RSE::SHADOW_QUALITY_SOFT_LOW: {
 				penumbra_shadow_samples = 8;
 				soft_shadow_samples = 4;
 				shadows_quality_radius = 2.0;
 			} break;
-			case RS::SHADOW_QUALITY_SOFT_MEDIUM: {
+			case RSE::SHADOW_QUALITY_SOFT_MEDIUM: {
 				penumbra_shadow_samples = 12;
 				soft_shadow_samples = 8;
 				shadows_quality_radius = 2.0;
 			} break;
-			case RS::SHADOW_QUALITY_SOFT_HIGH: {
+			case RSE::SHADOW_QUALITY_SOFT_HIGH: {
 				penumbra_shadow_samples = 24;
 				soft_shadow_samples = 16;
 				shadows_quality_radius = 3.0;
 			} break;
-			case RS::SHADOW_QUALITY_SOFT_ULTRA: {
+			case RSE::SHADOW_QUALITY_SOFT_ULTRA: {
 				penumbra_shadow_samples = 32;
 				soft_shadow_samples = 32;
 				shadows_quality_radius = 4.0;
 			} break;
-			case RS::SHADOW_QUALITY_MAX:
+			case RSE::SHADOW_QUALITY_MAX:
 				break;
 		}
 		get_vogel_disk(penumbra_shadow_kernel, penumbra_shadow_samples);
@@ -1196,44 +1197,44 @@ void RendererSceneRenderRD::positional_soft_shadow_filter_set_quality(RS::Shadow
 	_update_shader_quality_settings();
 }
 
-void RendererSceneRenderRD::directional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) {
-	ERR_FAIL_INDEX_MSG(p_quality, RS::SHADOW_QUALITY_MAX, "Shadow quality too high, please see RenderingServer's ShadowQuality enum");
+void RendererSceneRenderRD::directional_soft_shadow_filter_set_quality(RSE::ShadowQuality p_quality) {
+	ERR_FAIL_INDEX_MSG(p_quality, RSE::SHADOW_QUALITY_MAX, "Shadow quality too high, please see RenderingServer's ShadowQuality enum");
 
 	if (directional_shadow_quality != p_quality) {
 		directional_shadow_quality = p_quality;
 
 		switch (directional_shadow_quality) {
-			case RS::SHADOW_QUALITY_HARD: {
+			case RSE::SHADOW_QUALITY_HARD: {
 				directional_penumbra_shadow_samples = 4;
 				directional_soft_shadow_samples = 0;
 				directional_shadow_quality_radius = 1.0;
 			} break;
-			case RS::SHADOW_QUALITY_SOFT_VERY_LOW: {
+			case RSE::SHADOW_QUALITY_SOFT_VERY_LOW: {
 				directional_penumbra_shadow_samples = 4;
 				directional_soft_shadow_samples = 1;
 				directional_shadow_quality_radius = 1.5;
 			} break;
-			case RS::SHADOW_QUALITY_SOFT_LOW: {
+			case RSE::SHADOW_QUALITY_SOFT_LOW: {
 				directional_penumbra_shadow_samples = 8;
 				directional_soft_shadow_samples = 4;
 				directional_shadow_quality_radius = 2.0;
 			} break;
-			case RS::SHADOW_QUALITY_SOFT_MEDIUM: {
+			case RSE::SHADOW_QUALITY_SOFT_MEDIUM: {
 				directional_penumbra_shadow_samples = 12;
 				directional_soft_shadow_samples = 8;
 				directional_shadow_quality_radius = 2.0;
 			} break;
-			case RS::SHADOW_QUALITY_SOFT_HIGH: {
+			case RSE::SHADOW_QUALITY_SOFT_HIGH: {
 				directional_penumbra_shadow_samples = 24;
 				directional_soft_shadow_samples = 16;
 				directional_shadow_quality_radius = 3.0;
 			} break;
-			case RS::SHADOW_QUALITY_SOFT_ULTRA: {
+			case RSE::SHADOW_QUALITY_SOFT_ULTRA: {
 				directional_penumbra_shadow_samples = 32;
 				directional_soft_shadow_samples = 32;
 				directional_shadow_quality_radius = 4.0;
 			} break;
-			case RS::SHADOW_QUALITY_MAX:
+			case RSE::SHADOW_QUALITY_MAX:
 				break;
 		}
 		get_vogel_disk(directional_penumbra_shadow_kernel, directional_penumbra_shadow_samples);
@@ -1243,14 +1244,14 @@ void RendererSceneRenderRD::directional_soft_shadow_filter_set_quality(RS::Shado
 	_update_shader_quality_settings();
 }
 
-void RendererSceneRenderRD::decals_set_filter(RenderingServer::DecalFilter p_filter) {
+void RendererSceneRenderRD::decals_set_filter(RSE::DecalFilter p_filter) {
 	if (decals_filter == p_filter) {
 		return;
 	}
 	decals_filter = p_filter;
 	_update_shader_quality_settings();
 }
-void RendererSceneRenderRD::light_projectors_set_filter(RenderingServer::LightProjectorFilter p_filter) {
+void RendererSceneRenderRD::light_projectors_set_filter(RSE::LightProjectorFilter p_filter) {
 	if (light_projectors_filter == p_filter) {
 		return;
 	}
@@ -1293,8 +1294,8 @@ void RendererSceneRenderRD::_update_vrs(Ref<RenderSceneBuffersRD> p_render_buffe
 	if (vrs) {
 		RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
-		RS::ViewportVRSMode vrs_mode = texture_storage->render_target_get_vrs_mode(render_target);
-		if (vrs_mode != RS::VIEWPORT_VRS_DISABLED) {
+		RSE::ViewportVRSMode vrs_mode = texture_storage->render_target_get_vrs_mode(render_target);
+		if (vrs_mode != RSE::VIEWPORT_VRS_DISABLED) {
 			RID vrs_texture = p_render_buffers->get_texture(RB_SCOPE_VRS, RB_TEXTURE);
 
 			// We use get_cache_multipass instead of get_cache_multiview because the default behavior is for
@@ -1384,7 +1385,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		const float scaling_3d_scale = GLOBAL_GET_CACHED(float, "rendering/scaling_3d/scale");
 		scene_data.lod_distance_multiplier = lod_distance_multiplier * (1.0 / scaling_3d_scale);
 
-		if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
+		if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
 			scene_data.screen_mesh_lod_threshold = 0.0;
 		} else {
 			scene_data.screen_mesh_lod_threshold = p_screen_mesh_lod_threshold;
@@ -1460,17 +1461,17 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 
 	PagedArray<RID> empty;
 
-	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
+	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UNSHADED || get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
 		render_data.lights = &empty;
 		render_data.reflection_probes = &empty;
 		render_data.voxel_gi_instances = &empty;
 		render_data.lightmaps = &empty;
 	}
 
-	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED ||
-			get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW ||
-			get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_LIGHTING ||
-			get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS) {
+	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UNSHADED ||
+			get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW ||
+			get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_LIGHTING ||
+			get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS) {
 		render_data.decals = &empty;
 	}
 
@@ -1531,7 +1532,7 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 	return true;
 }
 
-void RendererSceneRenderRD::set_debug_draw_mode(RS::ViewportDebugDraw p_debug_draw) {
+void RendererSceneRenderRD::set_debug_draw_mode(RSE::ViewportDebugDraw p_debug_draw) {
 	debug_draw = p_debug_draw;
 }
 
@@ -1720,8 +1721,8 @@ void RendererSceneRenderRD::init() {
 		RendererRD::Fog::get_singleton()->init_fog_shader(RendererRD::LightStorage::get_singleton()->get_max_directional_lights(), get_roughness_layers(), is_using_radiance_octmap_array());
 	}
 
-	RSG::camera_attributes->camera_attributes_set_dof_blur_bokeh_shape(RS::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape"))));
-	RSG::camera_attributes->camera_attributes_set_dof_blur_quality(RS::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality"))), GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_use_jitter"));
+	RSG::camera_attributes->camera_attributes_set_dof_blur_bokeh_shape(RSE::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape"))));
+	RSG::camera_attributes->camera_attributes_set_dof_blur_quality(RSE::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality"))), GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_use_jitter"));
 	use_physical_light_units = GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units");
 
 	screen_space_roughness_limiter = GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/enabled");
@@ -1733,14 +1734,14 @@ void RendererSceneRenderRD::init() {
 	directional_soft_shadow_kernel = memnew_arr(float, 128);
 	penumbra_shadow_kernel = memnew_arr(float, 128);
 	soft_shadow_kernel = memnew_arr(float, 128);
-	positional_soft_shadow_filter_set_quality(RS::ShadowQuality(int(GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality"))));
-	directional_soft_shadow_filter_set_quality(RS::ShadowQuality(int(GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality"))));
+	positional_soft_shadow_filter_set_quality(RSE::ShadowQuality(int(GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality"))));
+	directional_soft_shadow_filter_set_quality(RSE::ShadowQuality(int(GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality"))));
 
 	environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/environment/volumetric_fog/volume_size"), GLOBAL_GET("rendering/environment/volumetric_fog/volume_depth"));
 	environment_set_volumetric_fog_filter_active(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter"));
 
-	decals_set_filter(RS::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
-	light_projectors_set_filter(RS::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
+	decals_set_filter(RSE::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
+	light_projectors_set_filter(RSE::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
 	lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
 	material_set_use_debanding(GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding"));
 

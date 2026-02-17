@@ -130,7 +130,7 @@ public:
 	virtual RendererCanvasRender *get_canvas() override { return canvas; }
 	virtual RendererSceneRender *get_scene() override { return scene; }
 
-	virtual void set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter) override;
+	virtual void set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RSE::SplashStretchMode p_stretch_mode, bool p_use_filter) override;
 
 	virtual void initialize() override;
 	virtual void begin_frame(double frame_step) override;

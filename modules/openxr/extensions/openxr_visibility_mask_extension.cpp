@@ -277,12 +277,12 @@ void OpenXRVisibilityMaskExtension::_update_mesh() {
 
 		// Update our mesh.
 		Array arr;
-		arr.resize(RS::ARRAY_MAX);
-		arr[RS::ARRAY_VERTEX] = vertices;
-		arr[RS::ARRAY_INDEX] = indices;
+		arr.resize(RSE::ARRAY_MAX);
+		arr[RSE::ARRAY_VERTEX] = vertices;
+		arr[RSE::ARRAY_INDEX] = indices;
 
 		rendering_server->mesh_clear(mesh);
-		rendering_server->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr);
+		rendering_server->mesh_add_surface_from_arrays(mesh, RSE::PRIMITIVE_TRIANGLES, arr);
 		rendering_server->mesh_surface_set_material(mesh, 0, material);
 
 		// Set no longer dirty.

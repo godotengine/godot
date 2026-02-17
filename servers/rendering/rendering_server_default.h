@@ -39,6 +39,7 @@
 #include "rendering_server_globals.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 #include "servers/server_wrap_mt_common.h"
 
 class RenderingServerDefault : public RenderingServer {
@@ -209,14 +210,14 @@ public:
 
 	//these go pass-through, as they can be called from any thread
 	FUNCRIDTEX1(texture_2d, const Ref<Image> &)
-	FUNCRIDTEX2(texture_2d_layered, const Vector<Ref<Image>> &, TextureLayeredType)
+	FUNCRIDTEX2(texture_2d_layered, const Vector<Ref<Image>> &, RSE::TextureLayeredType)
 	FUNCRIDTEX6(texture_3d, Image::Format, int, int, int, bool, const Vector<Ref<Image>> &)
 	FUNCRIDTEX3(texture_external, int, int, uint64_t)
 	FUNCRIDTEX1(texture_proxy, RID)
-	FUNCRIDTEX5(texture_drawable, int, int, TextureDrawableFormat, const Color &, bool)
+	FUNCRIDTEX5(texture_drawable, int, int, RSE::TextureDrawableFormat, const Color &, bool)
 
 	// Called directly, not through the command queue.
-	virtual RID texture_create_from_native_handle(TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, TextureLayeredType p_layered_type = TEXTURE_LAYERED_2D_ARRAY) override {
+	virtual RID texture_create_from_native_handle(RSE::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, RSE::TextureLayeredType p_layered_type = RSE::TEXTURE_LAYERED_2D_ARRAY) override {
 		return RSG::texture_storage->texture_create_from_native_handle(p_type, p_format, p_native_handle, p_width, p_height, p_depth, p_layers, p_layered_type);
 	}
 
@@ -230,7 +231,7 @@ public:
 
 	//these also go pass-through
 	FUNCRIDTEX0(texture_2d_placeholder)
-	FUNCRIDTEX1(texture_2d_layered_placeholder, TextureLayeredType)
+	FUNCRIDTEX1(texture_2d_layered_placeholder, RSE::TextureLayeredType)
 	FUNCRIDTEX0(texture_3d_placeholder)
 
 	FUNC1RC(Ref<Image>, texture_2d_get, RID)
@@ -260,7 +261,7 @@ public:
 	FUNC1(texture_debug_usage, List<TextureInfo> *)
 
 	FUNC2(texture_set_force_redraw_if_visible, RID, bool)
-	FUNCRIDTEX2(texture_rd, const RID &, const RS::TextureLayeredType)
+	FUNCRIDTEX2(texture_rd, const RID &, const RSE::TextureLayeredType)
 	FUNC2RC(RID, texture_get_rd_texture, RID, bool)
 	FUNC2RC(uint64_t, texture_get_native_handle, RID, bool)
 
@@ -391,8 +392,8 @@ public:
 
 	FUNC1RC(int, mesh_get_blend_shape_count, RID)
 
-	FUNC2(mesh_set_blend_shape_mode, RID, BlendShapeMode)
-	FUNC1RC(BlendShapeMode, mesh_get_blend_shape_mode, RID)
+	FUNC2(mesh_set_blend_shape_mode, RID, RSE::BlendShapeMode)
+	FUNC1RC(RSE::BlendShapeMode, mesh_get_blend_shape_mode, RID)
 
 	FUNC4(mesh_surface_update_vertex_region, RID, int, int, const Vector<uint8_t> &)
 	FUNC4(mesh_surface_update_attribute_region, RID, int, int, const Vector<uint8_t> &)
@@ -423,7 +424,7 @@ public:
 
 	FUNCRIDSPLIT(multimesh)
 
-	FUNC6(multimesh_allocate_data, RID, int, MultimeshTransformFormat, bool, bool, bool)
+	FUNC6(multimesh_allocate_data, RID, int, RSE::MultimeshTransformFormat, bool, bool, bool)
 	FUNC1RC(int, multimesh_get_instance_count, RID)
 
 	FUNC2(multimesh_set_mesh, RID, RID)
@@ -450,7 +451,7 @@ public:
 
 	FUNC3(multimesh_set_buffer_interpolated, RID, const Vector<float> &, const Vector<float> &)
 	FUNC2(multimesh_set_physics_interpolated, RID, bool)
-	FUNC2(multimesh_set_physics_interpolation_quality, RID, MultimeshPhysicsInterpolationQuality)
+	FUNC2(multimesh_set_physics_interpolation_quality, RID, RSE::MultimeshPhysicsInterpolationQuality)
 	FUNC2(multimesh_instance_reset_physics_interpolation, RID, int)
 	FUNC1(multimesh_instances_reset_physics_interpolation, RID)
 
@@ -480,7 +481,7 @@ public:
 	FUNCRIDSPLIT(spot_light)
 
 	FUNC2(light_set_color, RID, const Color &)
-	FUNC3(light_set_param, RID, LightParam, float)
+	FUNC3(light_set_param, RID, RSE::LightParam, float)
 	FUNC2(light_set_shadow, RID, bool)
 	FUNC2(light_set_projector, RID, RID)
 	FUNC2(light_set_negative, RID, bool)
@@ -488,25 +489,25 @@ public:
 	FUNC5(light_set_distance_fade, RID, bool, float, float, float)
 	FUNC2(light_set_reverse_cull_face_mode, RID, bool)
 	FUNC2(light_set_shadow_caster_mask, RID, uint32_t)
-	FUNC2(light_set_bake_mode, RID, LightBakeMode)
+	FUNC2(light_set_bake_mode, RID, RSE::LightBakeMode)
 	FUNC2(light_set_max_sdfgi_cascade, RID, uint32_t)
 
-	FUNC2(light_omni_set_shadow_mode, RID, LightOmniShadowMode)
+	FUNC2(light_omni_set_shadow_mode, RID, RSE::LightOmniShadowMode)
 
-	FUNC2(light_directional_set_shadow_mode, RID, LightDirectionalShadowMode)
+	FUNC2(light_directional_set_shadow_mode, RID, RSE::LightDirectionalShadowMode)
 	FUNC2(light_directional_set_blend_splits, RID, bool)
-	FUNC2(light_directional_set_sky_mode, RID, LightDirectionalSkyMode)
+	FUNC2(light_directional_set_sky_mode, RID, RSE::LightDirectionalSkyMode)
 
 	/* PROBE API */
 
 	FUNCRIDSPLIT(reflection_probe)
 
-	FUNC2(reflection_probe_set_update_mode, RID, ReflectionProbeUpdateMode)
+	FUNC2(reflection_probe_set_update_mode, RID, RSE::ReflectionProbeUpdateMode)
 	FUNC2(reflection_probe_set_intensity, RID, float)
 	FUNC2(reflection_probe_set_blend_distance, RID, float)
 	FUNC2(reflection_probe_set_ambient_color, RID, const Color &)
 	FUNC2(reflection_probe_set_ambient_energy, RID, float)
-	FUNC2(reflection_probe_set_ambient_mode, RID, ReflectionProbeAmbientMode)
+	FUNC2(reflection_probe_set_ambient_mode, RID, RSE::ReflectionProbeAmbientMode)
 	FUNC2(reflection_probe_set_max_distance, RID, float)
 	FUNC2(reflection_probe_set_size, RID, const Vector3 &)
 	FUNC2(reflection_probe_set_origin_offset, RID, const Vector3 &)
@@ -534,8 +535,8 @@ public:
 	FUNC1(lightmap_set_probe_capture_update_speed, float)
 
 	FUNC2(lightmap_set_shadowmask_textures, RID, RID)
-	FUNC1R(ShadowmaskMode, lightmap_get_shadowmask_mode, RID)
-	FUNC2(lightmap_set_shadowmask_mode, RID, ShadowmaskMode)
+	FUNC1R(RSE::ShadowmaskMode, lightmap_get_shadowmask_mode, RID)
+	FUNC2(lightmap_set_shadowmask_mode, RID, RSE::ShadowmaskMode)
 
 	/* Shadow Atlas */
 	FUNC0R(RID, shadow_atlas_create)
@@ -555,7 +556,7 @@ public:
 	FUNCRIDSPLIT(decal)
 
 	FUNC2(decal_set_size, RID, const Vector3 &)
-	FUNC3(decal_set_texture, RID, DecalTexture, RID)
+	FUNC3(decal_set_texture, RID, RSE::DecalTexture, RID)
 	FUNC2(decal_set_emission_energy, RID, float)
 	FUNC2(decal_set_albedo_mix, RID, float)
 	FUNC2(decal_set_modulate, RID, const Color &)
@@ -606,7 +607,7 @@ public:
 
 	FUNCRIDSPLIT(particles)
 
-	FUNC2(particles_set_mode, RID, ParticlesMode)
+	FUNC2(particles_set_mode, RID, RSE::ParticlesMode)
 	FUNC2(particles_set_emitting, RID, bool)
 	FUNC1R(bool, particles_get_emitting, RID)
 	FUNC2(particles_set_amount, RID, int)
@@ -635,9 +636,9 @@ public:
 	FUNC2(particles_set_subemitter, RID, RID)
 	FUNC2(particles_set_collision_base_size, RID, float)
 
-	FUNC2(particles_set_transform_align, RID, RS::ParticlesTransformAlign)
+	FUNC2(particles_set_transform_align, RID, RSE::ParticlesTransformAlign)
 
-	FUNC2(particles_set_draw_order, RID, RS::ParticlesDrawOrder)
+	FUNC2(particles_set_draw_order, RID, RSE::ParticlesDrawOrder)
 
 	FUNC2(particles_set_draw_passes, RID, int)
 	FUNC3(particles_set_draw_pass_mesh, RID, int, RID)
@@ -651,7 +652,7 @@ public:
 
 	FUNCRIDSPLIT(particles_collision)
 
-	FUNC2(particles_collision_set_collision_type, RID, ParticlesCollisionType)
+	FUNC2(particles_collision_set_collision_type, RID, RSE::ParticlesCollisionType)
 	FUNC2(particles_collision_set_cull_mask, RID, uint32_t)
 	FUNC2(particles_collision_set_sphere_radius, RID, real_t)
 	FUNC2(particles_collision_set_box_extents, RID, const Vector3 &)
@@ -661,7 +662,7 @@ public:
 	FUNC2(particles_collision_set_field_texture, RID, RID)
 	FUNC1(particles_collision_height_field_update, RID)
 	FUNC2(particles_collision_set_height_field_mask, RID, uint32_t)
-	FUNC2(particles_collision_set_height_field_resolution, RID, ParticlesCollisionHeightfieldResolution)
+	FUNC2(particles_collision_set_height_field_resolution, RID, RSE::ParticlesCollisionHeightfieldResolution)
 
 	/* FOG VOLUME */
 
@@ -673,7 +674,7 @@ public:
 
 	FUNCRIDSPLIT(fog_volume)
 
-	FUNC2(fog_volume_set_shape, RID, FogVolumeShape)
+	FUNC2(fog_volume_set_shape, RID, RSE::FogVolumeShape)
 	FUNC2(fog_volume_set_size, RID, const Vector3 &)
 	FUNC2(fog_volume_set_material, RID, RID)
 
@@ -731,25 +732,25 @@ public:
 	FUNC2(viewport_set_active, RID, bool)
 	FUNC2(viewport_set_parent_viewport, RID, RID)
 
-	FUNC2(viewport_set_clear_mode, RID, ViewportClearMode)
+	FUNC2(viewport_set_clear_mode, RID, RSE::ViewportClearMode)
 
 	FUNC3(viewport_attach_to_screen, RID, const Rect2 &, int)
 	FUNC2(viewport_set_render_direct_to_screen, RID, bool)
 
-	FUNC2(viewport_set_scaling_3d_mode, RID, ViewportScaling3DMode)
+	FUNC2(viewport_set_scaling_3d_mode, RID, RSE::ViewportScaling3DMode)
 	FUNC2(viewport_set_scaling_3d_scale, RID, float)
 	FUNC2(viewport_set_fsr_sharpness, RID, float)
 	FUNC2(viewport_set_texture_mipmap_bias, RID, float)
-	FUNC2(viewport_set_anisotropic_filtering_level, RID, ViewportAnisotropicFiltering)
+	FUNC2(viewport_set_anisotropic_filtering_level, RID, RSE::ViewportAnisotropicFiltering)
 
-	FUNC2(viewport_set_update_mode, RID, ViewportUpdateMode)
-	FUNC1RC(ViewportUpdateMode, viewport_get_update_mode, RID)
+	FUNC2(viewport_set_update_mode, RID, RSE::ViewportUpdateMode)
+	FUNC1RC(RSE::ViewportUpdateMode, viewport_get_update_mode, RID)
 
 	FUNC1RC(RID, viewport_get_render_target, RID)
 	FUNC1RC(RID, viewport_get_texture, RID)
 
 	FUNC2(viewport_set_disable_2d, RID, bool)
-	FUNC2(viewport_set_environment_mode, RID, ViewportEnvironmentMode)
+	FUNC2(viewport_set_environment_mode, RID, RSE::ViewportEnvironmentMode)
 	FUNC2(viewport_set_disable_3d, RID, bool)
 
 	FUNC2(viewport_set_canvas_cull_mask, RID, uint32_t)
@@ -766,27 +767,27 @@ public:
 	FUNC2(viewport_set_snap_2d_transforms_to_pixel, RID, bool)
 	FUNC2(viewport_set_snap_2d_vertices_to_pixel, RID, bool)
 
-	FUNC2(viewport_set_default_canvas_item_texture_filter, RID, CanvasItemTextureFilter)
-	FUNC2(viewport_set_default_canvas_item_texture_repeat, RID, CanvasItemTextureRepeat)
+	FUNC2(viewport_set_default_canvas_item_texture_filter, RID, RSE::CanvasItemTextureFilter)
+	FUNC2(viewport_set_default_canvas_item_texture_repeat, RID, RSE::CanvasItemTextureRepeat)
 
 	FUNC2(viewport_set_global_canvas_transform, RID, const Transform2D &)
 	FUNC4(viewport_set_canvas_stacking, RID, RID, int, int)
 	FUNC3(viewport_set_positional_shadow_atlas_size, RID, int, bool)
-	FUNC3(viewport_set_sdf_oversize_and_scale, RID, ViewportSDFOversize, ViewportSDFScale)
+	FUNC3(viewport_set_sdf_oversize_and_scale, RID, RSE::ViewportSDFOversize, RSE::ViewportSDFScale)
 	FUNC3(viewport_set_positional_shadow_atlas_quadrant_subdivision, RID, int, int)
-	FUNC2(viewport_set_msaa_2d, RID, ViewportMSAA)
-	FUNC2(viewport_set_msaa_3d, RID, ViewportMSAA)
-	FUNC2(viewport_set_screen_space_aa, RID, ViewportScreenSpaceAA)
+	FUNC2(viewport_set_msaa_2d, RID, RSE::ViewportMSAA)
+	FUNC2(viewport_set_msaa_3d, RID, RSE::ViewportMSAA)
+	FUNC2(viewport_set_screen_space_aa, RID, RSE::ViewportScreenSpaceAA)
 	FUNC2(viewport_set_use_taa, RID, bool)
 	FUNC2(viewport_set_use_debanding, RID, bool)
 	FUNC2(viewport_set_force_motion_vectors, RID, bool)
 	FUNC2(viewport_set_use_occlusion_culling, RID, bool)
 	FUNC1(viewport_set_occlusion_rays_per_thread, int)
-	FUNC1(viewport_set_occlusion_culling_build_quality, ViewportOcclusionCullingBuildQuality)
+	FUNC1(viewport_set_occlusion_culling_build_quality, RSE::ViewportOcclusionCullingBuildQuality)
 	FUNC2(viewport_set_mesh_lod_threshold, RID, float)
 
-	FUNC3R(int, viewport_get_render_info, RID, ViewportRenderInfoType, ViewportRenderInfo)
-	FUNC2(viewport_set_debug_draw, RID, ViewportDebugDraw)
+	FUNC3R(int, viewport_get_render_info, RID, RSE::ViewportRenderInfoType, RSE::ViewportRenderInfo)
+	FUNC2(viewport_set_debug_draw, RID, RSE::ViewportDebugDraw)
 
 	FUNC2(viewport_set_measure_render_time, RID, bool)
 	FUNC1RC(double, viewport_get_measured_render_time_cpu, RID)
@@ -795,8 +796,8 @@ public:
 
 	FUNC2(call_set_vsync_mode, DisplayServer::VSyncMode, DisplayServer::WindowID)
 
-	FUNC2(viewport_set_vrs_mode, RID, ViewportVRSMode)
-	FUNC2(viewport_set_vrs_update_mode, RID, ViewportVRSUpdateMode)
+	FUNC2(viewport_set_vrs_mode, RID, RSE::ViewportVRSMode)
+	FUNC2(viewport_set_vrs_update_mode, RID, RSE::ViewportVRSUpdateMode)
 	FUNC2(viewport_set_vrs_texture, RID, RID)
 
 	/* COMPOSITOR EFFECT */
@@ -809,8 +810,8 @@ public:
 
 	FUNCRIDSPLIT(compositor_effect)
 	FUNC2(compositor_effect_set_enabled, RID, bool)
-	FUNC3(compositor_effect_set_callback, RID, CompositorEffectCallbackType, const Callable &)
-	FUNC3(compositor_effect_set_flag, RID, CompositorEffectFlags, bool)
+	FUNC3(compositor_effect_set_callback, RID, RSE::CompositorEffectCallbackType, const Callable &)
+	FUNC3(compositor_effect_set_flag, RID, RSE::CompositorEffectFlags, bool)
 
 	/* COMPOSITOR */
 
@@ -820,13 +821,13 @@ public:
 
 	/* ENVIRONMENT API */
 
-	FUNC1(voxel_gi_set_quality, VoxelGIQuality)
+	FUNC1(voxel_gi_set_quality, RSE::VoxelGIQuality)
 
 	/* SKY API */
 
 	FUNCRIDSPLIT(sky)
 	FUNC2(sky_set_radiance_size, RID, int)
-	FUNC2(sky_set_mode, RID, SkyMode)
+	FUNC2(sky_set_mode, RID, RSE::SkyMode)
 	FUNC2(sky_set_material, RID, RID)
 	FUNC4R(Ref<Image>, sky_bake_panorama, RID, float, bool, const Size2i &)
 
@@ -834,36 +835,36 @@ public:
 
 	FUNCRIDSPLIT(environment)
 
-	FUNC2(environment_set_background, RID, EnvironmentBG)
+	FUNC2(environment_set_background, RID, RSE::EnvironmentBG)
 	FUNC2(environment_set_sky, RID, RID)
 	FUNC2(environment_set_sky_custom_fov, RID, float)
 	FUNC2(environment_set_sky_orientation, RID, const Basis &)
 	FUNC2(environment_set_bg_color, RID, const Color &)
 	FUNC3(environment_set_bg_energy, RID, float, float)
 	FUNC2(environment_set_canvas_max_layer, RID, int)
-	FUNC6(environment_set_ambient_light, RID, const Color &, EnvironmentAmbientSource, float, float, EnvironmentReflectionSource)
+	FUNC6(environment_set_ambient_light, RID, const Color &, RSE::EnvironmentAmbientSource, float, float, RSE::EnvironmentReflectionSource)
 
 	FUNC2(environment_set_camera_feed_id, RID, int)
 
 	FUNC6(environment_set_ssr, RID, bool, int, float, float, float)
 	FUNC1(environment_set_ssr_half_size, bool)
-	FUNC1(environment_set_ssr_roughness_quality, EnvironmentSSRRoughnessQuality)
+	FUNC1(environment_set_ssr_roughness_quality, RSE::EnvironmentSSRRoughnessQuality)
 
 	FUNC10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
-	FUNC6(environment_set_ssao_quality, EnvironmentSSAOQuality, bool, float, int, float, float)
+	FUNC6(environment_set_ssao_quality, RSE::EnvironmentSSAOQuality, bool, float, int, float, float)
 
 	FUNC6(environment_set_ssil, RID, bool, float, float, float, float)
-	FUNC6(environment_set_ssil_quality, EnvironmentSSILQuality, bool, float, int, float, float)
+	FUNC6(environment_set_ssil_quality, RSE::EnvironmentSSILQuality, bool, float, int, float, float)
 
-	FUNC13(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, EnvironmentGlowBlendMode, float, float, float, float, RID)
+	FUNC13(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, RSE::EnvironmentGlowBlendMode, float, float, float, float, RID)
 	FUNC1(environment_glow_set_use_bicubic_upscale, bool)
 
-	FUNC4(environment_set_tonemap, RID, EnvironmentToneMapper, float, float)
+	FUNC4(environment_set_tonemap, RID, RSE::EnvironmentToneMapper, float, float)
 	FUNC2(environment_set_tonemap_agx_contrast, RID, float)
 
 	FUNC7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
 
-	FUNC11(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float, float, EnvironmentFogMode)
+	FUNC11(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float, float, RSE::EnvironmentFogMode)
 
 	FUNC4(environment_set_fog_depth, RID, float, float, float)
 	FUNC14(environment_set_volumetric_fog, RID, bool, float, const Color &, const Color &, float, float, float, float, float, bool, float, float, float)
@@ -871,21 +872,21 @@ public:
 	FUNC2(environment_set_volumetric_fog_volume_size, int, int)
 	FUNC1(environment_set_volumetric_fog_filter_active, bool)
 
-	FUNC11(environment_set_sdfgi, RID, bool, int, float, EnvironmentSDFGIYScale, bool, float, bool, float, float, float)
-	FUNC1(environment_set_sdfgi_ray_count, EnvironmentSDFGIRayCount)
-	FUNC1(environment_set_sdfgi_frames_to_converge, EnvironmentSDFGIFramesToConverge)
-	FUNC1(environment_set_sdfgi_frames_to_update_light, EnvironmentSDFGIFramesToUpdateLight)
+	FUNC11(environment_set_sdfgi, RID, bool, int, float, RSE::EnvironmentSDFGIYScale, bool, float, bool, float, float, float)
+	FUNC1(environment_set_sdfgi_ray_count, RSE::EnvironmentSDFGIRayCount)
+	FUNC1(environment_set_sdfgi_frames_to_converge, RSE::EnvironmentSDFGIFramesToConverge)
+	FUNC1(environment_set_sdfgi_frames_to_update_light, RSE::EnvironmentSDFGIFramesToUpdateLight)
 
 	FUNC3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
 
 	FUNC3(screen_space_roughness_limiter_set_active, bool, float, float)
-	FUNC1(sub_surface_scattering_set_quality, SubSurfaceScatteringQuality)
+	FUNC1(sub_surface_scattering_set_quality, RSE::SubSurfaceScatteringQuality)
 	FUNC2(sub_surface_scattering_set_scale, float, float)
 
-	FUNC1(positional_soft_shadow_filter_set_quality, ShadowQuality);
-	FUNC1(directional_soft_shadow_filter_set_quality, ShadowQuality);
-	FUNC1(decals_set_filter, RS::DecalFilter);
-	FUNC1(light_projectors_set_filter, RS::LightProjectorFilter);
+	FUNC1(positional_soft_shadow_filter_set_quality, RSE::ShadowQuality);
+	FUNC1(directional_soft_shadow_filter_set_quality, RSE::ShadowQuality);
+	FUNC1(decals_set_filter, RSE::DecalFilter);
+	FUNC1(light_projectors_set_filter, RSE::LightProjectorFilter);
 	FUNC1(lightmaps_set_bicubic_filter, bool);
 	FUNC1(material_set_use_debanding, bool);
 
@@ -899,8 +900,8 @@ public:
 
 	FUNCRIDSPLIT(camera_attributes)
 
-	FUNC2(camera_attributes_set_dof_blur_quality, DOFBlurQuality, bool)
-	FUNC1(camera_attributes_set_dof_blur_bokeh_shape, DOFBokehShape)
+	FUNC2(camera_attributes_set_dof_blur_quality, RSE::DOFBlurQuality, bool)
+	FUNC1(camera_attributes_set_dof_blur_bokeh_shape, RSE::DOFBokehShape)
 
 	FUNC8(camera_attributes_set_dof_blur, RID, bool, float, float, bool, float, float, float)
 	FUNC3(camera_attributes_set_exposure, RID, float, float)
@@ -950,12 +951,12 @@ public:
 	FUNC3RC(Vector<ObjectID>, instances_cull_ray, const Vector3 &, const Vector3 &, RID)
 	FUNC2RC(Vector<ObjectID>, instances_cull_convex, const Vector<Plane> &, RID)
 
-	FUNC3(instance_geometry_set_flag, RID, InstanceFlags, bool)
-	FUNC2(instance_geometry_set_cast_shadows_setting, RID, ShadowCastingSetting)
+	FUNC3(instance_geometry_set_flag, RID, RSE::InstanceFlags, bool)
+	FUNC2(instance_geometry_set_cast_shadows_setting, RID, RSE::ShadowCastingSetting)
 	FUNC2(instance_geometry_set_material_override, RID, RID)
 	FUNC2(instance_geometry_set_material_overlay, RID, RID)
 
-	FUNC6(instance_geometry_set_visibility_range, RID, float, float, float, float, VisibilityRangeFadeMode)
+	FUNC6(instance_geometry_set_visibility_range, RID, float, float, float, float, RSE::VisibilityRangeFadeMode)
 	FUNC4(instance_geometry_set_lightmap, RID, RID, const Rect2 &, int)
 	FUNC2(instance_geometry_set_lod_bias, RID, float)
 	FUNC2(instance_geometry_set_transparency, RID, float)
@@ -984,17 +985,17 @@ public:
 	FUNC1(canvas_set_disable_scale, bool)
 
 	FUNCRIDSPLIT(canvas_texture)
-	FUNC3(canvas_texture_set_channel, RID, CanvasTextureChannel, RID)
+	FUNC3(canvas_texture_set_channel, RID, RSE::CanvasTextureChannel, RID)
 	FUNC3(canvas_texture_set_shading_parameters, RID, const Color &, float)
 
-	FUNC2(canvas_texture_set_texture_filter, RID, CanvasItemTextureFilter)
-	FUNC2(canvas_texture_set_texture_repeat, RID, CanvasItemTextureRepeat)
+	FUNC2(canvas_texture_set_texture_filter, RID, RSE::CanvasItemTextureFilter)
+	FUNC2(canvas_texture_set_texture_repeat, RID, RSE::CanvasItemTextureRepeat)
 
 	FUNCRIDSPLIT(canvas_item)
 	FUNC2(canvas_item_set_parent, RID, RID)
 
-	FUNC2(canvas_item_set_default_texture_filter, RID, CanvasItemTextureFilter)
-	FUNC2(canvas_item_set_default_texture_repeat, RID, CanvasItemTextureRepeat)
+	FUNC2(canvas_item_set_default_texture_filter, RID, RSE::CanvasItemTextureFilter)
+	FUNC2(canvas_item_set_default_texture_repeat, RID, RSE::CanvasItemTextureRepeat)
 
 	FUNC2(canvas_item_set_visible, RID, bool)
 	FUNC2(canvas_item_set_light_mask, RID, int)
@@ -1023,7 +1024,7 @@ public:
 	FUNC7(canvas_item_add_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &, bool, bool)
 	FUNC8(canvas_item_add_msdf_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &, int, float, float)
 	FUNC5(canvas_item_add_lcd_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &)
-	FUNC10(canvas_item_add_nine_patch, RID, const Rect2 &, const Rect2 &, RID, const Vector2 &, const Vector2 &, NinePatchAxisMode, NinePatchAxisMode, bool, const Color &)
+	FUNC10(canvas_item_add_nine_patch, RID, const Rect2 &, const Rect2 &, RID, const Vector2 &, const Vector2 &, RSE::NinePatchAxisMode, RSE::NinePatchAxisMode, bool, const Color &)
 	FUNC5(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID)
 	FUNC5(canvas_item_add_polygon, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID)
 	FUNC9(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, const Vector<int> &, const Vector<float> &, RID, int)
@@ -1054,7 +1055,7 @@ public:
 
 	FUNC5(canvas_item_set_visibility_notifier, RID, bool, const Rect2 &, const Callable &, const Callable &)
 
-	FUNC6(canvas_item_set_canvas_group_mode, RID, CanvasGroupMode, float, bool, float, bool)
+	FUNC6(canvas_item_set_canvas_group_mode, RID, RSE::CanvasGroupMode, float, bool, float, bool)
 
 	FUNC1(canvas_item_set_debug_redraw, bool)
 	FUNC0RC(bool, canvas_item_get_debug_redraw)
@@ -1065,7 +1066,7 @@ public:
 
 	FUNCRIDSPLIT(canvas_light)
 
-	FUNC2(canvas_light_set_mode, RID, CanvasLightMode)
+	FUNC2(canvas_light_set_mode, RID, RSE::CanvasLightMode)
 
 	FUNC2(canvas_light_attach_to_canvas, RID, RID)
 	FUNC2(canvas_light_set_enabled, RID, bool)
@@ -1082,10 +1083,10 @@ public:
 	FUNC2(canvas_light_set_item_shadow_cull_mask, RID, int)
 	FUNC2(canvas_light_set_directional_distance, RID, float)
 
-	FUNC2(canvas_light_set_blend_mode, RID, CanvasLightBlendMode)
+	FUNC2(canvas_light_set_blend_mode, RID, RSE::CanvasLightBlendMode)
 
 	FUNC2(canvas_light_set_shadow_enabled, RID, bool)
-	FUNC2(canvas_light_set_shadow_filter, RID, CanvasLightShadowFilter)
+	FUNC2(canvas_light_set_shadow_filter, RID, RSE::CanvasLightShadowFilter)
 	FUNC2(canvas_light_set_shadow_color, RID, const Color &)
 	FUNC2(canvas_light_set_shadow_smooth, RID, float)
 
@@ -1108,7 +1109,7 @@ public:
 	FUNCRIDSPLIT(canvas_occluder_polygon)
 	FUNC3(canvas_occluder_polygon_set_shape, RID, const Vector<Vector2> &, bool)
 
-	FUNC2(canvas_occluder_polygon_set_cull_mode, RID, CanvasOccluderPolygonCullMode)
+	FUNC2(canvas_occluder_polygon_set_cull_mode, RID, RSE::CanvasOccluderPolygonCullMode)
 
 	FUNC1(canvas_set_shadow_texture_size, int)
 
@@ -1122,12 +1123,12 @@ public:
 #define ServerName RendererMaterialStorage
 #define server_name RSG::material_storage
 
-	FUNC3(global_shader_parameter_add, const StringName &, GlobalShaderParameterType, const Variant &)
+	FUNC3(global_shader_parameter_add, const StringName &, RSE::GlobalShaderParameterType, const Variant &)
 	FUNC1(global_shader_parameter_remove, const StringName &)
 	FUNC0RC(Vector<StringName>, global_shader_parameter_get_list)
 	FUNC2(global_shader_parameter_set, const StringName &, const Variant &)
 	FUNC2(global_shader_parameter_set_override, const StringName &, const Variant &)
-	FUNC1RC(GlobalShaderParameterType, global_shader_parameter_get_type, const StringName &)
+	FUNC1RC(RSE::GlobalShaderParameterType, global_shader_parameter_get_type, const StringName &)
 	FUNC1RC(Variant, global_shader_parameter_get, const StringName &)
 
 	FUNC1(global_shader_parameters_load_settings, bool)
@@ -1140,7 +1141,7 @@ public:
 #define ServerName RendererCompositor
 #define server_name RSG::rasterizer
 
-	FUNC4S(set_boot_image_with_stretch, const Ref<Image> &, const Color &, RenderingServer::SplashStretchMode, bool)
+	FUNC4S(set_boot_image_with_stretch, const Ref<Image> &, const Color &, RSE::SplashStretchMode, bool)
 
 	/* STATUS INFORMATION */
 
@@ -1162,7 +1163,7 @@ public:
 #undef MAIN_THREAD_SYNC_WARN
 #endif
 
-	virtual uint64_t get_rendering_info(RenderingInfo p_info) override;
+	virtual uint64_t get_rendering_info(RSE::RenderingInfo p_info) override;
 	virtual RenderingDeviceEnums::DeviceType get_video_adapter_type() const override;
 
 	virtual void set_frame_profiling_enabled(bool p_enable) override;
@@ -1219,7 +1220,7 @@ public:
 	virtual void set_default_clear_color(const Color &p_color) override;
 
 #ifndef DISABLE_DEPRECATED
-	virtual bool has_feature(Features p_feature) const override;
+	virtual bool has_feature(RSE::Features p_feature) const override;
 #endif
 
 	virtual bool has_os_feature(const String &p_feature) const override;

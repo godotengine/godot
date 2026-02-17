@@ -30,13 +30,15 @@
 
 #include "light_3d.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "servers/rendering/rendering_server.h"
 
 void Light3D::set_param(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	param[p_param] = p_value;
 
-	RS::get_singleton()->light_set_param(light, RS::LightParam(p_param), p_value);
+	RS::get_singleton()->light_set_param(light, RSE::LightParam(p_param), p_value);
 
 	if (p_param == PARAM_SPOT_ANGLE || p_param == PARAM_RANGE) {
 		update_gizmos();
@@ -155,13 +157,13 @@ uint32_t Light3D::get_shadow_caster_mask() const {
 }
 
 AABB Light3D::get_aabb() const {
-	if (type == RenderingServer::LIGHT_DIRECTIONAL) {
+	if (type == RSE::LIGHT_DIRECTIONAL) {
 		return AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 
-	} else if (type == RenderingServer::LIGHT_OMNI) {
+	} else if (type == RSE::LIGHT_OMNI) {
 		return AABB(Vector3(-1, -1, -1) * param[PARAM_RANGE], Vector3(2, 2, 2) * param[PARAM_RANGE]);
 
-	} else if (type == RenderingServer::LIGHT_SPOT) {
+	} else if (type == RSE::LIGHT_SPOT) {
 		real_t cone_slant_height = param[PARAM_RANGE];
 		real_t cone_angle_rad = Math::deg_to_rad(param[PARAM_SPOT_ANGLE]);
 
@@ -189,7 +191,7 @@ PackedStringArray Light3D::get_configuration_warnings() const {
 
 void Light3D::set_bake_mode(BakeMode p_mode) {
 	bake_mode = p_mode;
-	RS::get_singleton()->light_set_bake_mode(light, RS::LightBakeMode(p_mode));
+	RS::get_singleton()->light_set_bake_mode(light, RSE::LightBakeMode(p_mode));
 }
 
 Light3D::BakeMode Light3D::get_bake_mode() const {
@@ -322,10 +324,10 @@ bool Light3D::is_editor_only() const {
 }
 
 void Light3D::_validate_property(PropertyInfo &p_property) const {
-	if (get_light_type() != RS::LIGHT_DIRECTIONAL && (p_property.name == "light_angular_distance" || p_property.name == "light_intensity_lux")) {
+	if (get_light_type() != RSE::LIGHT_DIRECTIONAL && (p_property.name == "light_angular_distance" || p_property.name == "light_intensity_lux")) {
 		// Angular distance and Light Intensity Lux are only used in DirectionalLight3D.
 		p_property.usage = PROPERTY_USAGE_NONE;
-	} else if (get_light_type() == RS::LIGHT_DIRECTIONAL && p_property.name == "light_intensity_lumens") {
+	} else if (get_light_type() == RSE::LIGHT_DIRECTIONAL && p_property.name == "light_intensity_lumens") {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	} else if (!GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units") && (p_property.name == "light_intensity_lumens" || p_property.name == "light_intensity_lux" || p_property.name == "light_temperature")) {
 		p_property.usage = PROPERTY_USAGE_NONE;
@@ -445,16 +447,16 @@ void Light3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(BAKE_DYNAMIC);
 }
 
-Light3D::Light3D(RenderingServer::LightType p_type) {
+Light3D::Light3D(RSE::LightType p_type) {
 	type = p_type;
 	switch (p_type) {
-		case RS::LIGHT_DIRECTIONAL:
+		case RSE::LIGHT_DIRECTIONAL:
 			light = RenderingServer::get_singleton()->directional_light_create();
 			break;
-		case RS::LIGHT_OMNI:
+		case RSE::LIGHT_OMNI:
 			light = RenderingServer::get_singleton()->omni_light_create();
 			break;
-		case RS::LIGHT_SPOT:
+		case RSE::LIGHT_SPOT:
 			light = RenderingServer::get_singleton()->spot_light_create();
 			break;
 		default: {
@@ -512,7 +514,7 @@ Light3D::~Light3D() {
 
 void DirectionalLight3D::set_shadow_mode(ShadowMode p_mode) {
 	shadow_mode = p_mode;
-	RS::get_singleton()->light_directional_set_shadow_mode(light, RS::LightDirectionalShadowMode(p_mode));
+	RS::get_singleton()->light_directional_set_shadow_mode(light, RSE::LightDirectionalShadowMode(p_mode));
 	notify_property_list_changed();
 }
 
@@ -531,7 +533,7 @@ bool DirectionalLight3D::is_blend_splits_enabled() const {
 
 void DirectionalLight3D::set_sky_mode(SkyMode p_mode) {
 	sky_mode = p_mode;
-	RS::get_singleton()->light_directional_set_sky_mode(light, RS::LightDirectionalSkyMode(p_mode));
+	RS::get_singleton()->light_directional_set_sky_mode(light, RSE::LightDirectionalSkyMode(p_mode));
 }
 
 DirectionalLight3D::SkyMode DirectionalLight3D::get_sky_mode() const {
@@ -591,7 +593,7 @@ void DirectionalLight3D::_bind_methods() {
 }
 
 DirectionalLight3D::DirectionalLight3D() :
-		Light3D(RenderingServer::LIGHT_DIRECTIONAL) {
+		Light3D(RSE::LIGHT_DIRECTIONAL) {
 	set_param(PARAM_SHADOW_MAX_DISTANCE, 100);
 	set_param(PARAM_SHADOW_FADE_START, 0.8);
 	// Increase the default shadow normal bias to better suit most scenes.
@@ -605,7 +607,7 @@ DirectionalLight3D::DirectionalLight3D() :
 
 void OmniLight3D::set_shadow_mode(ShadowMode p_mode) {
 	shadow_mode = p_mode;
-	RS::get_singleton()->light_omni_set_shadow_mode(light, RS::LightOmniShadowMode(p_mode));
+	RS::get_singleton()->light_omni_set_shadow_mode(light, RSE::LightOmniShadowMode(p_mode));
 }
 
 OmniLight3D::ShadowMode OmniLight3D::get_shadow_mode() const {
@@ -640,7 +642,7 @@ void OmniLight3D::_bind_methods() {
 }
 
 OmniLight3D::OmniLight3D() :
-		Light3D(RenderingServer::LIGHT_OMNI) {
+		Light3D(RSE::LIGHT_OMNI) {
 	set_shadow_mode(SHADOW_CUBE);
 }
 
@@ -671,7 +673,7 @@ void SpotLight3D::_bind_methods() {
 }
 
 SpotLight3D::SpotLight3D() :
-		Light3D(RenderingServer::LIGHT_SPOT) {
+		Light3D(RSE::LIGHT_SPOT) {
 	// Decrease the default shadow bias to better suit most scenes.
 	set_param(PARAM_SHADOW_BIAS, 0.03);
 }

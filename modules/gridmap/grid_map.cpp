@@ -792,7 +792,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			Octant::MultimeshInstance mmi;
 
 			RID mm = RS::get_singleton()->multimesh_create();
-			RS::get_singleton()->multimesh_allocate_data(mm, E.value.size(), RS::MULTIMESH_TRANSFORM_3D);
+			RS::get_singleton()->multimesh_allocate_data(mm, E.value.size(), RSE::MULTIMESH_TRANSFORM_3D);
 			RS::get_singleton()->multimesh_set_mesh(mm, mesh_library->get_item_mesh(E.key)->get_rid());
 
 			int idx = 0;
@@ -819,7 +819,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 				RS::get_singleton()->instance_set_transform(instance, get_global_transform());
 			}
 
-			RS::ShadowCastingSetting cast_shadows = (RS::ShadowCastingSetting)mesh_library->get_item_mesh_cast_shadow(E.key);
+			RSE::ShadowCastingSetting cast_shadows = (RSE::ShadowCastingSetting)mesh_library->get_item_mesh_cast_shadow(E.key);
 			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(instance, cast_shadows);
 
 			mmi.multimesh = mm;
@@ -840,11 +840,11 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		}
 
 		Array arr;
-		arr.resize(RS::ARRAY_MAX);
-		arr[RS::ARRAY_VERTEX] = col_debug;
-		arr[RS::ARRAY_COLOR] = colors;
+		arr.resize(RSE::ARRAY_MAX);
+		arr[RSE::ARRAY_VERTEX] = col_debug;
+		arr[RSE::ARRAY_COLOR] = colors;
 
-		RS::get_singleton()->mesh_add_surface_from_arrays(g.collision_debug, RS::PRIMITIVE_LINES, arr);
+		RS::get_singleton()->mesh_add_surface_from_arrays(g.collision_debug, RSE::PRIMITIVE_LINES, arr);
 		if (st) {
 			RS::get_singleton()->mesh_surface_set_material(g.collision_debug, 0, st->get_debug_collision_material()->get_rid());
 		}
@@ -1540,14 +1540,14 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 				case PhysicsServer3D::SHAPE_SPHERE: {
 					real_t radius = data;
 					Array arr;
-					arr.resize(RS::ARRAY_MAX);
+					arr.resize(RSE::ARRAY_MAX);
 					SphereMesh::create_mesh_array(arr, radius, radius * 2.0);
 					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
 				} break;
 				case PhysicsServer3D::SHAPE_BOX: {
 					Vector3 extents = data;
 					Array arr;
-					arr.resize(RS::ARRAY_MAX);
+					arr.resize(RSE::ARRAY_MAX);
 					BoxMesh::create_mesh_array(arr, extents * 2.0);
 					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
 				} break;
@@ -1556,7 +1556,7 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 					real_t radius = dict["radius"];
 					real_t height = dict["height"];
 					Array arr;
-					arr.resize(RS::ARRAY_MAX);
+					arr.resize(RSE::ARRAY_MAX);
 					CapsuleMesh::create_mesh_array(arr, radius, height);
 					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
 				} break;
@@ -1565,7 +1565,7 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 					real_t radius = dict["radius"];
 					real_t height = dict["height"];
 					Array arr;
-					arr.resize(RS::ARRAY_MAX);
+					arr.resize(RSE::ARRAY_MAX);
 					CylinderMesh::create_mesh_array(arr, radius, radius, height);
 					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
 				} break;

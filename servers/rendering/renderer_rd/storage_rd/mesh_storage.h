@@ -75,7 +75,7 @@ private:
 
 	struct Mesh {
 		struct Surface {
-			RS::PrimitiveType primitive = RS::PRIMITIVE_POINTS;
+			RSE::PrimitiveType primitive = RSE::PRIMITIVE_POINTS;
 			uint64_t format = 0;
 
 			uint32_t vertex_count = 0;
@@ -153,7 +153,7 @@ private:
 		};
 
 		uint32_t blend_shape_count = 0;
-		RS::BlendShapeMode blend_shape_mode = RS::BLEND_SHAPE_MODE_NORMALIZED;
+		RSE::BlendShapeMode blend_shape_mode = RSE::BLEND_SHAPE_MODE_NORMALIZED;
 
 		Surface **surfaces = nullptr;
 		uint32_t surface_count = 0;
@@ -228,7 +228,7 @@ private:
 	struct MultiMesh {
 		RID mesh;
 		int instances = 0;
-		RS::MultimeshTransformFormat xform_format = RS::MULTIMESH_TRANSFORM_3D;
+		RSE::MultimeshTransformFormat xform_format = RSE::MULTIMESH_TRANSFORM_3D;
 		bool uses_colors = false;
 		bool uses_custom_data = false;
 		int visible_instances = -1;
@@ -378,8 +378,8 @@ public:
 
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const override;
 
-	virtual void mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) override;
-	virtual RS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const override;
+	virtual void mesh_set_blend_shape_mode(RID p_mesh, RSE::BlendShapeMode p_mode) override;
+	virtual RSE::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const override;
 
 	virtual void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
 	virtual void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
@@ -441,7 +441,7 @@ public:
 		return mesh->shadow_mesh;
 	}
 
-	_FORCE_INLINE_ RS::PrimitiveType mesh_surface_get_primitive(void *p_surface) {
+	_FORCE_INLINE_ RSE::PrimitiveType mesh_surface_get_primitive(void *p_surface) {
 		Mesh::Surface *surface = reinterpret_cast<Mesh::Surface *>(p_surface);
 		return surface->primitive;
 	}
@@ -657,7 +657,7 @@ public:
 	virtual void _multimesh_initialize(RID p_multimesh) override;
 	virtual void _multimesh_free(RID p_rid) override;
 
-	virtual void _multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false, bool p_use_indirect = false) override;
+	virtual void _multimesh_allocate_data(RID p_multimesh, int p_instances, RSE::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false, bool p_use_indirect = false) override;
 	virtual int _multimesh_get_instance_count(RID p_multimesh) const override;
 
 	virtual void _multimesh_set_mesh(RID p_multimesh, RID p_mesh) override;
@@ -699,9 +699,9 @@ public:
 		return multimesh->indirect;
 	}
 
-	_FORCE_INLINE_ RS::MultimeshTransformFormat multimesh_get_transform_format(RID p_multimesh) const {
+	_FORCE_INLINE_ RSE::MultimeshTransformFormat multimesh_get_transform_format(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
-		ERR_FAIL_NULL_V(multimesh, RS::MULTIMESH_TRANSFORM_3D);
+		ERR_FAIL_NULL_V(multimesh, RSE::MULTIMESH_TRANSFORM_3D);
 		return multimesh->xform_format;
 	}
 

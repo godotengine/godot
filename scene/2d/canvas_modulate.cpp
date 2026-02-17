@@ -30,6 +30,8 @@
 
 #include "canvas_modulate.h"
 
+#include "servers/rendering/rendering_server.h"
+
 void CanvasModulate::_on_in_canvas_visibility_changed(bool p_new_visibility) {
 	RID canvas = get_canvas();
 	StringName group_name = "_canvas_modulate_" + itos(canvas.get_id());

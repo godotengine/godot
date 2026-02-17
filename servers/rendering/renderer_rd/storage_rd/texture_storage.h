@@ -123,8 +123,8 @@ private:
 		Color specular_color = Color(1, 1, 1, 1);
 		float shininess = 1.0;
 
-		RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
-		RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
+		RSE::CanvasItemTextureFilter texture_filter = RSE::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
+		RSE::CanvasItemTextureRepeat texture_repeat = RSE::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
 		CanvasTextureCache info_cache[2];
 
 		InvalidationCallback invalidated_callback = nullptr;
@@ -147,8 +147,8 @@ private:
 	class Texture {
 	public:
 		TextureType type;
-		RS::TextureLayeredType layered_type = RS::TEXTURE_LAYERED_2D_ARRAY;
-		RS::TextureDrawableFormat drawable_type = RS::TEXTURE_DRAWABLE_FORMAT_RGBA8;
+		RSE::TextureLayeredType layered_type = RSE::TEXTURE_LAYERED_2D_ARRAY;
+		RSE::TextureDrawableFormat drawable_type = RSE::TEXTURE_DRAWABLE_FORMAT_RGBA8;
 
 		RenderingDevice::TextureType rd_type;
 		RID rd_texture;
@@ -293,7 +293,7 @@ private:
 
 	struct Decal {
 		Vector3 size = Vector3(2, 2, 2);
-		RID textures[RS::DECAL_TEXTURE_MAX];
+		RID textures[RSE::DECAL_TEXTURE_MAX];
 		float emission_energy = 1.0;
 		float albedo_mix = 1.0;
 		Color modulate = Color(1, 1, 1, 1);
@@ -366,7 +366,7 @@ private:
 		Vector<RID> color_slices;
 		RID color_multisample; // Needed when 2D MSAA is enabled.
 
-		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED; // 2D MSAA mode
+		RSE::ViewportMSAA msaa = RSE::VIEWPORT_MSAA_DISABLED; // 2D MSAA mode
 		bool msaa_needs_resolve = false; // 2D MSAA needs resolved
 
 		//used for retrieving from CPU
@@ -394,13 +394,13 @@ private:
 		RID sdf_buffer_process[2];
 		RID sdf_buffer_read;
 		RID sdf_buffer_process_uniform_sets[2];
-		RS::ViewportSDFOversize sdf_oversize = RS::VIEWPORT_SDF_OVERSIZE_120_PERCENT;
-		RS::ViewportSDFScale sdf_scale = RS::VIEWPORT_SDF_SCALE_50_PERCENT;
+		RSE::ViewportSDFOversize sdf_oversize = RSE::VIEWPORT_SDF_OVERSIZE_120_PERCENT;
+		RSE::ViewportSDFScale sdf_scale = RSE::VIEWPORT_SDF_SCALE_50_PERCENT;
 		Size2i process_size;
 
 		// VRS
-		RS::ViewportVRSMode vrs_mode = RS::VIEWPORT_VRS_DISABLED;
-		RS::ViewportVRSUpdateMode vrs_update_mode = RS::VIEWPORT_VRS_UPDATE_ONCE;
+		RSE::ViewportVRSMode vrs_mode = RSE::VIEWPORT_VRS_DISABLED;
+		RSE::ViewportVRSUpdateMode vrs_update_mode = RSE::VIEWPORT_VRS_UPDATE_ONCE;
 		RID vrs_texture;
 
 		Rect2i render_region;
@@ -531,13 +531,13 @@ public:
 	virtual void canvas_texture_initialize(RID p_rid) override;
 	virtual void canvas_texture_free(RID p_rid) override;
 
-	virtual void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) override;
+	virtual void canvas_texture_set_channel(RID p_canvas_texture, RSE::CanvasTextureChannel p_channel, RID p_texture) override;
 	virtual void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess) override;
 
-	virtual void canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) override;
-	virtual void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) override;
+	virtual void canvas_texture_set_texture_filter(RID p_item, RSE::CanvasItemTextureFilter p_filter) override;
+	virtual void canvas_texture_set_texture_repeat(RID p_item, RSE::CanvasItemTextureRepeat p_repeat) override;
 
-	CanvasTextureInfo canvas_texture_get_info(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, bool p_use_srgb, bool p_texture_is_data);
+	CanvasTextureInfo canvas_texture_get_info(RID p_texture, RSE::CanvasItemTextureFilter p_base_filter, RSE::CanvasItemTextureRepeat p_base_repeat, bool p_use_srgb, bool p_texture_is_data);
 	void canvas_texture_set_invalidation_callback(RID p_canvas_texture, InvalidationCallback p_callback, void *p_userdata);
 
 	/* Texture API */
@@ -548,13 +548,13 @@ public:
 	virtual void texture_free(RID p_rid) override;
 
 	virtual void texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) override;
-	virtual void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) override;
+	virtual void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RSE::TextureLayeredType p_layered_type) override;
 	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) override;
 	virtual void texture_external_initialize(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_initialize(RID p_texture, RID p_base) override; //all slices, then all the mipmaps, must be coherent
-	virtual void texture_drawable_initialize(RID p_texture, int p_width, int p_height, RS::TextureDrawableFormat p_format, const Color &p_color, bool p_with_mipmaps) override;
+	virtual void texture_drawable_initialize(RID p_texture, int p_width, int p_height, RSE::TextureDrawableFormat p_format, const Color &p_color, bool p_with_mipmaps) override;
 
-	virtual RID texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY) override;
+	virtual RID texture_create_from_native_handle(RSE::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, RSE::TextureLayeredType p_layered_type = RSE::TEXTURE_LAYERED_2D_ARRAY) override;
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override;
@@ -570,7 +570,7 @@ public:
 
 	//these two APIs can be used together or in combination with the others.
 	virtual void texture_2d_placeholder_initialize(RID p_texture) override;
-	virtual void texture_2d_layered_placeholder_initialize(RID p_texture, RenderingServer::TextureLayeredType p_layered_type) override;
+	virtual void texture_2d_layered_placeholder_initialize(RID p_texture, RSE::TextureLayeredType p_layered_type) override;
 	virtual void texture_3d_placeholder_initialize(RID p_texture) override;
 
 	virtual Ref<Image> texture_2d_get(RID p_texture) const override;
@@ -598,7 +598,7 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override;
 
-	virtual void texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RS::TextureLayeredType p_layer_type = RS::TEXTURE_LAYERED_2D_ARRAY) override;
+	virtual void texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RSE::TextureLayeredType p_layer_type = RSE::TEXTURE_LAYERED_2D_ARRAY) override;
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override;
 
@@ -655,7 +655,7 @@ public:
 	virtual void decal_free(RID p_rid) override;
 
 	virtual void decal_set_size(RID p_decal, const Vector3 &p_size) override;
-	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) override;
+	virtual void decal_set_texture(RID p_decal, RSE::DecalTexture p_type, RID p_texture) override;
 	virtual void decal_set_emission_energy(RID p_decal, float p_energy) override;
 	virtual void decal_set_albedo_mix(RID p_decal, float p_mix) override;
 	virtual void decal_set_modulate(RID p_decal, const Color &p_modulate) override;
@@ -675,7 +675,7 @@ public:
 		return decal->size;
 	}
 
-	_FORCE_INLINE_ RID decal_get_texture(RID p_decal, RS::DecalTexture p_texture) {
+	_FORCE_INLINE_ RID decal_get_texture(RID p_decal, RSE::DecalTexture p_texture) {
 		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->textures[p_texture];
 	}
@@ -792,8 +792,8 @@ public:
 	virtual bool render_target_get_direct_to_screen(RID p_render_target) const override;
 	virtual bool render_target_was_used(RID p_render_target) const override;
 	virtual void render_target_set_as_unused(RID p_render_target) override;
-	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) override;
-	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const override;
+	virtual void render_target_set_msaa(RID p_render_target, RSE::ViewportMSAA p_msaa) override;
+	virtual RSE::ViewportMSAA render_target_get_msaa(RID p_render_target) const override;
 	virtual void render_target_set_msaa_needs_resolve(RID p_render_target, bool p_needs_resolve) override;
 	virtual bool render_target_get_msaa_needs_resolve(RID p_render_target) const override;
 	virtual void render_target_do_msaa_resolve(RID p_render_target) override;
@@ -813,7 +813,7 @@ public:
 	virtual void render_target_disable_clear_request(RID p_render_target) override;
 	virtual void render_target_do_clear_request(RID p_render_target) override;
 
-	virtual void render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) override;
+	virtual void render_target_set_sdf_size_and_scale(RID p_render_target, RSE::ViewportSDFOversize p_size, RSE::ViewportSDFScale p_scale) override;
 	RID render_target_get_sdf_texture(RID p_render_target);
 	RID render_target_get_sdf_framebuffer(RID p_render_target);
 	void render_target_sdf_process(RID p_render_target);
@@ -821,10 +821,10 @@ public:
 	virtual void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) override;
 	bool render_target_is_sdf_enabled(RID p_render_target) const;
 
-	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) override;
-	virtual RS::ViewportVRSMode render_target_get_vrs_mode(RID p_render_target) const override;
-	virtual void render_target_set_vrs_update_mode(RID p_render_target, RS::ViewportVRSUpdateMode p_mode) override;
-	virtual RS::ViewportVRSUpdateMode render_target_get_vrs_update_mode(RID p_render_target) const override;
+	virtual void render_target_set_vrs_mode(RID p_render_target, RSE::ViewportVRSMode p_mode) override;
+	virtual RSE::ViewportVRSMode render_target_get_vrs_mode(RID p_render_target) const override;
+	virtual void render_target_set_vrs_update_mode(RID p_render_target, RSE::ViewportVRSUpdateMode p_mode) override;
+	virtual RSE::ViewportVRSUpdateMode render_target_get_vrs_update_mode(RID p_render_target) const override;
 	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) override;
 	virtual RID render_target_get_vrs_texture(RID p_render_target) const override;
 

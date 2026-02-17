@@ -30,11 +30,13 @@
 
 #include "canvas_group.h"
 
+#include "servers/rendering/rendering_server.h"
+
 void CanvasGroup::set_fit_margin(real_t p_fit_margin) {
 	ERR_FAIL_COND(p_fit_margin < 0.0);
 
 	fit_margin = p_fit_margin;
-	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CANVAS_GROUP_MODE_TRANSPARENT, clear_margin, true, fit_margin, use_mipmaps);
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RSE::CANVAS_GROUP_MODE_TRANSPARENT, clear_margin, true, fit_margin, use_mipmaps);
 
 	queue_redraw();
 }
@@ -47,7 +49,7 @@ void CanvasGroup::set_clear_margin(real_t p_clear_margin) {
 	ERR_FAIL_COND(p_clear_margin < 0.0);
 
 	clear_margin = p_clear_margin;
-	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CANVAS_GROUP_MODE_TRANSPARENT, clear_margin, true, fit_margin, use_mipmaps);
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RSE::CANVAS_GROUP_MODE_TRANSPARENT, clear_margin, true, fit_margin, use_mipmaps);
 
 	queue_redraw();
 }
@@ -58,7 +60,7 @@ real_t CanvasGroup::get_clear_margin() const {
 
 void CanvasGroup::set_use_mipmaps(bool p_use_mipmaps) {
 	use_mipmaps = p_use_mipmaps;
-	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CANVAS_GROUP_MODE_TRANSPARENT, clear_margin, true, fit_margin, use_mipmaps);
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RSE::CANVAS_GROUP_MODE_TRANSPARENT, clear_margin, true, fit_margin, use_mipmaps);
 }
 bool CanvasGroup::is_using_mipmaps() const {
 	return use_mipmaps;
@@ -116,5 +118,5 @@ CanvasGroup::CanvasGroup() {
 	set_fit_margin(10.0); //sets things
 }
 CanvasGroup::~CanvasGroup() {
-	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CANVAS_GROUP_MODE_DISABLED);
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RSE::CANVAS_GROUP_MODE_DISABLED);
 }

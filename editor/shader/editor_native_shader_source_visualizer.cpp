@@ -35,6 +35,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/code_edit.h"
 #include "scene/gui/text_edit.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_language.h"
 
 void EditorNativeShaderSourceVisualizer::_load_theme_settings() {

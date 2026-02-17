@@ -34,6 +34,7 @@
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/main/viewport.h"
 #include "scene/property_utils.h"
+#include "servers/rendering/rendering_server.h"
 
 /*
 

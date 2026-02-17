@@ -42,6 +42,7 @@
 #include "scene/resources/environment.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/sky.h"
+#include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For lightmapper_rd.
 
@@ -214,7 +215,7 @@ bool LightmapGIData::_is_using_packed_directional() const {
 }
 
 void LightmapGIData::update_shadowmask_mode(ShadowmaskMode p_mode) {
-	RS::get_singleton()->lightmap_set_shadowmask_mode(lightmap, (RS::ShadowmaskMode)p_mode);
+	RS::get_singleton()->lightmap_set_shadowmask_mode(lightmap, (RSE::ShadowmaskMode)p_mode);
 }
 
 LightmapGIData::ShadowmaskMode LightmapGIData::get_shadowmask_mode() const {
@@ -963,8 +964,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 			ERR_FAIL_COND_V(images.is_empty(), BAKE_ERROR_CANT_CREATE_IMAGE);
 
-			Ref<Image> albedo = images[RS::BAKE_CHANNEL_ALBEDO_ALPHA];
-			Ref<Image> orm = images[RS::BAKE_CHANNEL_ORM];
+			Ref<Image> albedo = images[RSE::BAKE_CHANNEL_ALBEDO_ALPHA];
+			Ref<Image> orm = images[RSE::BAKE_CHANNEL_ORM];
 
 			//multiply albedo by metal
 
@@ -1007,7 +1008,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				md.albedo_on_uv2->set_data(lightmap_size.width, lightmap_size.height, false, Image::FORMAT_RGBA8, albedom);
 			}
 
-			md.emission_on_uv2 = images[RS::BAKE_CHANNEL_EMISSION];
+			md.emission_on_uv2 = images[RSE::BAKE_CHANNEL_EMISSION];
 			if (md.emission_on_uv2->get_format() != Image::FORMAT_RGBAH) {
 				md.emission_on_uv2->convert(Image::FORMAT_RGBAH);
 			}

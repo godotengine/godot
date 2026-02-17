@@ -31,6 +31,7 @@
 #pragma once
 
 #include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 #include "utilities.h"
 
 class RendererMaterialStorage {
@@ -38,14 +39,14 @@ public:
 	virtual ~RendererMaterialStorage() {}
 
 	/* GLOBAL SHADER UNIFORM API */
-	virtual void global_shader_parameter_add(const StringName &p_name, RS::GlobalShaderParameterType p_type, const Variant &p_value) = 0;
+	virtual void global_shader_parameter_add(const StringName &p_name, RSE::GlobalShaderParameterType p_type, const Variant &p_value) = 0;
 	virtual void global_shader_parameter_remove(const StringName &p_name) = 0;
 	virtual Vector<StringName> global_shader_parameter_get_list() const = 0;
 
 	virtual void global_shader_parameter_set(const StringName &p_name, const Variant &p_value) = 0;
 	virtual void global_shader_parameter_set_override(const StringName &p_name, const Variant &p_value) = 0;
 	virtual Variant global_shader_parameter_get(const StringName &p_name) const = 0;
-	virtual RS::GlobalShaderParameterType global_shader_parameter_get_type(const StringName &p_name) const = 0;
+	virtual RSE::GlobalShaderParameterType global_shader_parameter_get_type(const StringName &p_name) const = 0;
 
 	virtual void global_shader_parameters_load_settings(bool p_load_textures = true) = 0;
 	virtual void global_shader_parameters_clear() = 0;
@@ -89,7 +90,7 @@ public:
 
 	virtual bool material_is_animated(RID p_material) = 0;
 	virtual bool material_casts_shadows(RID p_material) = 0;
-	virtual RS::CullMode material_get_cull_mode(RID p_material) const = 0;
+	virtual RSE::CullMode material_get_cull_mode(RID p_material) const = 0;
 
 	struct InstanceShaderParam {
 		PropertyInfo info;

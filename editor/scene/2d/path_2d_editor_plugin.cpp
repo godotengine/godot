@@ -39,6 +39,7 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
 #include "scene/resources/mesh.h"
+#include "servers/rendering/rendering_server.h"
 
 void Path2DEditor::_notification(int p_what) {
 	switch (p_what) {
@@ -501,7 +502,7 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 		handles_array[Mesh::ARRAY_VERTEX] = Vector<Vector2>(debug_handle_lines);
 
-		rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_LINES, handles_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+		rs->mesh_add_surface_from_arrays(debug_mesh_rid, RSE::PRIMITIVE_LINES, handles_array, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
 		rs->canvas_item_add_mesh(vpc->get_canvas_item(), debug_mesh_rid, Transform2D(), Color(0.5, 0.5, 0.5, 1.0));
 	}
 
@@ -516,7 +517,7 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	rs->multimesh_set_visible_instances(debug_handle_curve_multimesh_rid, 0);
 	if (handle_curve_count > 0) {
 		if (rs->multimesh_get_instance_count(debug_handle_curve_multimesh_rid) != int(handle_curve_count)) {
-			rs->multimesh_allocate_data(debug_handle_curve_multimesh_rid, handle_curve_count, RS::MULTIMESH_TRANSFORM_2D);
+			rs->multimesh_allocate_data(debug_handle_curve_multimesh_rid, handle_curve_count, RSE::MULTIMESH_TRANSFORM_2D);
 		}
 
 		Vector<float> multimesh_buffer;
@@ -549,7 +550,7 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	rs->multimesh_set_visible_instances(debug_handle_sharp_multimesh_rid, 0);
 	if (handle_sharp_count > 0) {
 		if (rs->multimesh_get_instance_count(debug_handle_sharp_multimesh_rid) != int(handle_sharp_count)) {
-			rs->multimesh_allocate_data(debug_handle_sharp_multimesh_rid, handle_sharp_count, RS::MULTIMESH_TRANSFORM_2D);
+			rs->multimesh_allocate_data(debug_handle_sharp_multimesh_rid, handle_sharp_count, RSE::MULTIMESH_TRANSFORM_2D);
 		}
 
 		Vector<float> multimesh_buffer;
@@ -582,7 +583,7 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	rs->multimesh_set_visible_instances(debug_handle_smooth_multimesh_rid, 0);
 	if (handle_smooth_count > 0) {
 		if (rs->multimesh_get_instance_count(debug_handle_smooth_multimesh_rid) != int(handle_smooth_count)) {
-			rs->multimesh_allocate_data(debug_handle_smooth_multimesh_rid, handle_smooth_count, RS::MULTIMESH_TRANSFORM_2D);
+			rs->multimesh_allocate_data(debug_handle_smooth_multimesh_rid, handle_smooth_count, RSE::MULTIMESH_TRANSFORM_2D);
 		}
 
 		Vector<float> multimesh_buffer;
@@ -957,12 +958,12 @@ Path2DEditor::Path2DEditor() {
 		index_array_ptrw[5] = 3;
 
 		Array mesh_arrays;
-		mesh_arrays.resize(RS::ARRAY_MAX);
-		mesh_arrays[RS::ARRAY_VERTEX] = vertex_array;
-		mesh_arrays[RS::ARRAY_TEX_UV] = uv_array;
-		mesh_arrays[RS::ARRAY_INDEX] = index_array;
+		mesh_arrays.resize(RSE::ARRAY_MAX);
+		mesh_arrays[RSE::ARRAY_VERTEX] = vertex_array;
+		mesh_arrays[RSE::ARRAY_TEX_UV] = uv_array;
+		mesh_arrays[RSE::ARRAY_INDEX] = index_array;
 
-		rs->mesh_add_surface_from_arrays(debug_handle_mesh_rid, RS::PRIMITIVE_TRIANGLES, mesh_arrays, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+		rs->mesh_add_surface_from_arrays(debug_handle_mesh_rid, RSE::PRIMITIVE_TRIANGLES, mesh_arrays, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
 
 		debug_handle_curve_multimesh_rid = rs->multimesh_create();
 		debug_handle_sharp_multimesh_rid = rs->multimesh_create();

@@ -37,9 +37,10 @@
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_language.h"
 
-static const char *global_var_type_names[RS::GLOBAL_VAR_TYPE_MAX] = {
+static const char *global_var_type_names[RSE::GLOBAL_VAR_TYPE_MAX] = {
 	"bool",
 	"bvec2",
 	"bvec3",
@@ -80,10 +81,10 @@ class ShaderGlobalsEditorInterface : public Object {
 		undo_redo->create_action(TTR("Set Shader Global Variable"));
 		undo_redo->add_do_method(RS::get_singleton(), "global_shader_parameter_set", p_name, p_value);
 		undo_redo->add_undo_method(RS::get_singleton(), "global_shader_parameter_set", p_name, p_prev_value);
-		RS::GlobalShaderParameterType type = RS::get_singleton()->global_shader_parameter_get_type(p_name);
+		RSE::GlobalShaderParameterType type = RS::get_singleton()->global_shader_parameter_get_type(p_name);
 		Dictionary gv;
 		gv["type"] = global_var_type_names[type];
-		if (type >= RS::GLOBAL_VAR_TYPE_SAMPLER2D) {
+		if (type >= RSE::GLOBAL_VAR_TYPE_SAMPLER2D) {
 			Ref<Resource> res = p_value;
 			if (res.is_valid()) {
 				gv["value"] = res->get_path();
@@ -138,105 +139,105 @@ protected:
 			pinfo.name = variables[i];
 
 			switch (RS::get_singleton()->global_shader_parameter_get_type(variables[i])) {
-				case RS::GLOBAL_VAR_TYPE_BOOL: {
+				case RSE::GLOBAL_VAR_TYPE_BOOL: {
 					pinfo.type = Variant::BOOL;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_BVEC2: {
+				case RSE::GLOBAL_VAR_TYPE_BVEC2: {
 					pinfo.type = Variant::INT;
 					pinfo.hint = PROPERTY_HINT_FLAGS;
 					pinfo.hint_string = "x,y";
 				} break;
-				case RS::GLOBAL_VAR_TYPE_BVEC3: {
+				case RSE::GLOBAL_VAR_TYPE_BVEC3: {
 					pinfo.type = Variant::INT;
 					pinfo.hint = PROPERTY_HINT_FLAGS;
 					pinfo.hint_string = "x,y,z";
 				} break;
-				case RS::GLOBAL_VAR_TYPE_BVEC4: {
+				case RSE::GLOBAL_VAR_TYPE_BVEC4: {
 					pinfo.type = Variant::INT;
 					pinfo.hint = PROPERTY_HINT_FLAGS;
 					pinfo.hint_string = "x,y,z,w";
 				} break;
-				case RS::GLOBAL_VAR_TYPE_INT: {
+				case RSE::GLOBAL_VAR_TYPE_INT: {
 					pinfo.type = Variant::INT;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_IVEC2: {
+				case RSE::GLOBAL_VAR_TYPE_IVEC2: {
 					pinfo.type = Variant::VECTOR2I;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_IVEC3: {
+				case RSE::GLOBAL_VAR_TYPE_IVEC3: {
 					pinfo.type = Variant::VECTOR3I;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_IVEC4: {
+				case RSE::GLOBAL_VAR_TYPE_IVEC4: {
 					pinfo.type = Variant::VECTOR4I;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_RECT2I: {
+				case RSE::GLOBAL_VAR_TYPE_RECT2I: {
 					pinfo.type = Variant::RECT2I;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_UINT: {
+				case RSE::GLOBAL_VAR_TYPE_UINT: {
 					pinfo.type = Variant::INT;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_UVEC2: {
+				case RSE::GLOBAL_VAR_TYPE_UVEC2: {
 					pinfo.type = Variant::VECTOR2I;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_UVEC3: {
+				case RSE::GLOBAL_VAR_TYPE_UVEC3: {
 					pinfo.type = Variant::VECTOR3I;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_UVEC4: {
+				case RSE::GLOBAL_VAR_TYPE_UVEC4: {
 					pinfo.type = Variant::VECTOR4I;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_FLOAT: {
+				case RSE::GLOBAL_VAR_TYPE_FLOAT: {
 					pinfo.type = Variant::FLOAT;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_VEC2: {
+				case RSE::GLOBAL_VAR_TYPE_VEC2: {
 					pinfo.type = Variant::VECTOR2;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_VEC3: {
+				case RSE::GLOBAL_VAR_TYPE_VEC3: {
 					pinfo.type = Variant::VECTOR3;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_VEC4: {
+				case RSE::GLOBAL_VAR_TYPE_VEC4: {
 					pinfo.type = Variant::VECTOR4;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_RECT2: {
+				case RSE::GLOBAL_VAR_TYPE_RECT2: {
 					pinfo.type = Variant::RECT2;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_COLOR: {
+				case RSE::GLOBAL_VAR_TYPE_COLOR: {
 					pinfo.type = Variant::COLOR;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_MAT2: {
+				case RSE::GLOBAL_VAR_TYPE_MAT2: {
 					pinfo.type = Variant::PACKED_FLOAT32_ARRAY;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_MAT3: {
+				case RSE::GLOBAL_VAR_TYPE_MAT3: {
 					pinfo.type = Variant::BASIS;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_TRANSFORM_2D: {
+				case RSE::GLOBAL_VAR_TYPE_TRANSFORM_2D: {
 					pinfo.type = Variant::TRANSFORM2D;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_TRANSFORM: {
+				case RSE::GLOBAL_VAR_TYPE_TRANSFORM: {
 					pinfo.type = Variant::TRANSFORM3D;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_MAT4: {
+				case RSE::GLOBAL_VAR_TYPE_MAT4: {
 					pinfo.type = Variant::PROJECTION;
 				} break;
-				case RS::GLOBAL_VAR_TYPE_SAMPLER2D: {
+				case RSE::GLOBAL_VAR_TYPE_SAMPLER2D: {
 					pinfo.type = Variant::OBJECT;
 					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
 					pinfo.hint_string = "Texture2D";
 				} break;
-				case RS::GLOBAL_VAR_TYPE_SAMPLER2DARRAY: {
+				case RSE::GLOBAL_VAR_TYPE_SAMPLER2DARRAY: {
 					pinfo.type = Variant::OBJECT;
 					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
 					pinfo.hint_string = "Texture2DArray,CompressedTexture2DArray";
 				} break;
-				case RS::GLOBAL_VAR_TYPE_SAMPLER3D: {
+				case RSE::GLOBAL_VAR_TYPE_SAMPLER3D: {
 					pinfo.type = Variant::OBJECT;
 					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
 					pinfo.hint_string = "Texture3D";
 				} break;
-				case RS::GLOBAL_VAR_TYPE_SAMPLERCUBE: {
+				case RSE::GLOBAL_VAR_TYPE_SAMPLERCUBE: {
 					pinfo.type = Variant::OBJECT;
 					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
 					pinfo.hint_string = "Cubemap,CompressedCubemap";
 				} break;
-				case RS::GLOBAL_VAR_TYPE_SAMPLEREXT: {
+				case RSE::GLOBAL_VAR_TYPE_SAMPLEREXT: {
 					pinfo.type = Variant::OBJECT;
 					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
 					pinfo.hint_string = "ExternalTexture";
@@ -256,66 +257,66 @@ public:
 	}
 };
 
-static Variant create_var(RS::GlobalShaderParameterType p_type) {
+static Variant create_var(RSE::GlobalShaderParameterType p_type) {
 	switch (p_type) {
-		case RS::GLOBAL_VAR_TYPE_BOOL: {
+		case RSE::GLOBAL_VAR_TYPE_BOOL: {
 			return false;
 		}
-		case RS::GLOBAL_VAR_TYPE_BVEC2: {
+		case RSE::GLOBAL_VAR_TYPE_BVEC2: {
 			return 0; //bits
 		}
-		case RS::GLOBAL_VAR_TYPE_BVEC3: {
+		case RSE::GLOBAL_VAR_TYPE_BVEC3: {
 			return 0; //bits
 		}
-		case RS::GLOBAL_VAR_TYPE_BVEC4: {
+		case RSE::GLOBAL_VAR_TYPE_BVEC4: {
 			return 0; //bits
 		}
-		case RS::GLOBAL_VAR_TYPE_INT: {
+		case RSE::GLOBAL_VAR_TYPE_INT: {
 			return 0; //bits
 		}
-		case RS::GLOBAL_VAR_TYPE_IVEC2: {
+		case RSE::GLOBAL_VAR_TYPE_IVEC2: {
 			return Vector2i();
 		}
-		case RS::GLOBAL_VAR_TYPE_IVEC3: {
+		case RSE::GLOBAL_VAR_TYPE_IVEC3: {
 			return Vector3i();
 		}
-		case RS::GLOBAL_VAR_TYPE_IVEC4: {
+		case RSE::GLOBAL_VAR_TYPE_IVEC4: {
 			return Vector4i();
 		}
-		case RS::GLOBAL_VAR_TYPE_RECT2I: {
+		case RSE::GLOBAL_VAR_TYPE_RECT2I: {
 			return Rect2i();
 		}
-		case RS::GLOBAL_VAR_TYPE_UINT: {
+		case RSE::GLOBAL_VAR_TYPE_UINT: {
 			return 0;
 		}
-		case RS::GLOBAL_VAR_TYPE_UVEC2: {
+		case RSE::GLOBAL_VAR_TYPE_UVEC2: {
 			return Vector2i();
 		}
-		case RS::GLOBAL_VAR_TYPE_UVEC3: {
+		case RSE::GLOBAL_VAR_TYPE_UVEC3: {
 			return Vector3i();
 		}
-		case RS::GLOBAL_VAR_TYPE_UVEC4: {
+		case RSE::GLOBAL_VAR_TYPE_UVEC4: {
 			return Vector4i();
 		}
-		case RS::GLOBAL_VAR_TYPE_FLOAT: {
+		case RSE::GLOBAL_VAR_TYPE_FLOAT: {
 			return 0.0;
 		}
-		case RS::GLOBAL_VAR_TYPE_VEC2: {
+		case RSE::GLOBAL_VAR_TYPE_VEC2: {
 			return Vector2();
 		}
-		case RS::GLOBAL_VAR_TYPE_VEC3: {
+		case RSE::GLOBAL_VAR_TYPE_VEC3: {
 			return Vector3();
 		}
-		case RS::GLOBAL_VAR_TYPE_VEC4: {
+		case RSE::GLOBAL_VAR_TYPE_VEC4: {
 			return Vector4();
 		}
-		case RS::GLOBAL_VAR_TYPE_RECT2: {
+		case RSE::GLOBAL_VAR_TYPE_RECT2: {
 			return Rect2();
 		}
-		case RS::GLOBAL_VAR_TYPE_COLOR: {
+		case RSE::GLOBAL_VAR_TYPE_COLOR: {
 			return Color();
 		}
-		case RS::GLOBAL_VAR_TYPE_MAT2: {
+		case RSE::GLOBAL_VAR_TYPE_MAT2: {
 			Vector<float> xform;
 			xform.resize(4);
 			xform.write[0] = 1;
@@ -324,31 +325,31 @@ static Variant create_var(RS::GlobalShaderParameterType p_type) {
 			xform.write[3] = 1;
 			return xform;
 		}
-		case RS::GLOBAL_VAR_TYPE_MAT3: {
+		case RSE::GLOBAL_VAR_TYPE_MAT3: {
 			return Basis();
 		}
-		case RS::GLOBAL_VAR_TYPE_TRANSFORM_2D: {
+		case RSE::GLOBAL_VAR_TYPE_TRANSFORM_2D: {
 			return Transform2D();
 		}
-		case RS::GLOBAL_VAR_TYPE_TRANSFORM: {
+		case RSE::GLOBAL_VAR_TYPE_TRANSFORM: {
 			return Transform3D();
 		}
-		case RS::GLOBAL_VAR_TYPE_MAT4: {
+		case RSE::GLOBAL_VAR_TYPE_MAT4: {
 			return Projection();
 		}
-		case RS::GLOBAL_VAR_TYPE_SAMPLER2D: {
+		case RSE::GLOBAL_VAR_TYPE_SAMPLER2D: {
 			return "";
 		}
-		case RS::GLOBAL_VAR_TYPE_SAMPLER2DARRAY: {
+		case RSE::GLOBAL_VAR_TYPE_SAMPLER2DARRAY: {
 			return "";
 		}
-		case RS::GLOBAL_VAR_TYPE_SAMPLER3D: {
+		case RSE::GLOBAL_VAR_TYPE_SAMPLER3D: {
 			return "";
 		}
-		case RS::GLOBAL_VAR_TYPE_SAMPLERCUBE: {
+		case RSE::GLOBAL_VAR_TYPE_SAMPLERCUBE: {
 			return "";
 		}
-		case RS::GLOBAL_VAR_TYPE_SAMPLEREXT: {
+		case RSE::GLOBAL_VAR_TYPE_SAMPLEREXT: {
 			return "";
 		}
 		default: {
@@ -397,10 +398,10 @@ void ShaderGlobalsEditor::_variable_added() {
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
-	Variant value = create_var(RS::GlobalShaderParameterType(variable_type->get_selected()));
+	Variant value = create_var(RSE::GlobalShaderParameterType(variable_type->get_selected()));
 
 	undo_redo->create_action(TTR("Add Shader Global Parameter"));
-	undo_redo->add_do_method(RS::get_singleton(), "global_shader_parameter_add", var, RS::GlobalShaderParameterType(variable_type->get_selected()), value);
+	undo_redo->add_do_method(RS::get_singleton(), "global_shader_parameter_add", var, RSE::GlobalShaderParameterType(variable_type->get_selected()), value);
 	undo_redo->add_undo_method(RS::get_singleton(), "global_shader_parameter_remove", var);
 	Dictionary gv;
 	gv["type"] = global_var_type_names[variable_type->get_selected()];
@@ -479,7 +480,7 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	variable_type->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_menu_hb->add_child(variable_type);
 
-	for (int i = 0; i < RS::GLOBAL_VAR_TYPE_MAX; i++) {
+	for (int i = 0; i < RSE::GLOBAL_VAR_TYPE_MAX; i++) {
 		variable_type->add_item(global_var_type_names[i]);
 	}
 

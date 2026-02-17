@@ -50,42 +50,42 @@ Utilities::~Utilities() {
 
 /* INSTANCES */
 
-RS::InstanceType Utilities::get_base_type(RID p_rid) const {
+RSE::InstanceType Utilities::get_base_type(RID p_rid) const {
 	if (RendererRD::MeshStorage::get_singleton()->owns_mesh(p_rid)) {
-		return RS::INSTANCE_MESH;
+		return RSE::INSTANCE_MESH;
 	}
 	if (RendererRD::MeshStorage::get_singleton()->owns_multimesh(p_rid)) {
-		return RS::INSTANCE_MULTIMESH;
+		return RSE::INSTANCE_MULTIMESH;
 	}
 	if (RendererRD::LightStorage::get_singleton()->owns_reflection_probe(p_rid)) {
-		return RS::INSTANCE_REFLECTION_PROBE;
+		return RSE::INSTANCE_REFLECTION_PROBE;
 	}
 	if (RendererRD::TextureStorage::get_singleton()->owns_decal(p_rid)) {
-		return RS::INSTANCE_DECAL;
+		return RSE::INSTANCE_DECAL;
 	}
 	if (RendererRD::GI::get_singleton()->owns_voxel_gi(p_rid)) {
-		return RS::INSTANCE_VOXEL_GI;
+		return RSE::INSTANCE_VOXEL_GI;
 	}
 	if (RendererRD::LightStorage::get_singleton()->owns_light(p_rid)) {
-		return RS::INSTANCE_LIGHT;
+		return RSE::INSTANCE_LIGHT;
 	}
 	if (RendererRD::LightStorage::get_singleton()->owns_lightmap(p_rid)) {
-		return RS::INSTANCE_LIGHTMAP;
+		return RSE::INSTANCE_LIGHTMAP;
 	}
 	if (RendererRD::ParticlesStorage::get_singleton()->owns_particles(p_rid)) {
-		return RS::INSTANCE_PARTICLES;
+		return RSE::INSTANCE_PARTICLES;
 	}
 	if (RendererRD::ParticlesStorage::get_singleton()->owns_particles_collision(p_rid)) {
-		return RS::INSTANCE_PARTICLES_COLLISION;
+		return RSE::INSTANCE_PARTICLES_COLLISION;
 	}
 	if (RendererRD::Fog::get_singleton()->owns_fog_volume(p_rid)) {
-		return RS::INSTANCE_FOG_VOLUME;
+		return RSE::INSTANCE_FOG_VOLUME;
 	}
 	if (owns_visibility_notifier(p_rid)) {
-		return RS::INSTANCE_VISIBLITY_NOTIFIER;
+		return RSE::INSTANCE_VISIBLITY_NOTIFIER;
 	}
 
-	return RS::INSTANCE_NONE;
+	return RSE::INSTANCE_NONE;
 }
 
 bool Utilities::free(RID p_rid) {
@@ -299,12 +299,12 @@ void Utilities::update_memory_info() {
 	total_mem_cache = RenderingDevice::get_singleton()->get_memory_usage(RenderingDevice::MEMORY_TOTAL);
 }
 
-uint64_t Utilities::get_rendering_info(RS::RenderingInfo p_info) {
-	if (p_info == RS::RENDERING_INFO_TEXTURE_MEM_USED) {
+uint64_t Utilities::get_rendering_info(RSE::RenderingInfo p_info) {
+	if (p_info == RSE::RENDERING_INFO_TEXTURE_MEM_USED) {
 		return texture_mem_cache;
-	} else if (p_info == RS::RENDERING_INFO_BUFFER_MEM_USED) {
+	} else if (p_info == RSE::RENDERING_INFO_BUFFER_MEM_USED) {
 		return buffer_mem_cache;
-	} else if (p_info == RS::RENDERING_INFO_VIDEO_MEM_USED) {
+	} else if (p_info == RSE::RENDERING_INFO_VIDEO_MEM_USED) {
 		return total_mem_cache;
 	}
 	return 0;

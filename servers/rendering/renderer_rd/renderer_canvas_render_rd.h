@@ -189,7 +189,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		RD::VertexFormatID quad_vertex_format_id;
 		RD::VertexFormatID primitive_vertex_format_id;
 		ShaderCompiler compiler;
-		uint32_t pipeline_compilations[RS::PIPELINE_SOURCE_MAX] = {};
+		uint32_t pipeline_compilations[RSE::PIPELINE_SOURCE_MAX] = {};
 		Mutex mutex;
 	} shader;
 
@@ -219,8 +219,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	/**************************/
 
 	struct {
-		RS::CanvasItemTextureFilter default_filter;
-		RS::CanvasItemTextureRepeat default_repeat;
+		RSE::CanvasItemTextureFilter default_filter;
+		RSE::CanvasItemTextureRepeat default_repeat;
 	} default_samplers;
 
 	/******************/
@@ -289,7 +289,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	};
 
 	struct OccluderPolygon {
-		RS::CanvasOccluderPolygonCullMode cull_mode;
+		RSE::CanvasOccluderPolygonCullMode cull_mode;
 		int line_point_count;
 		RID vertex_buffer;
 		RID vertex_array;
@@ -422,7 +422,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 		TextureState() {}
 
-		TextureState(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, bool p_texture_is_data, bool p_use_linear_colors) {
+		TextureState(RID p_texture, RSE::CanvasItemTextureFilter p_base_filter, RSE::CanvasItemTextureRepeat p_base_repeat, bool p_texture_is_data, bool p_use_linear_colors) {
 			texture = p_texture;
 			other = (((uint32_t)p_base_filter & FILTER_MASK) << FILTER_SHIFT) |
 					(((uint32_t)p_base_repeat & REPEAT_MASK) << REPEAT_SHIFT) |
@@ -430,12 +430,12 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 					(((uint32_t)p_use_linear_colors & LINEAR_COLORS_MASK) << LINEAR_COLORS_SHIFT);
 		}
 
-		_ALWAYS_INLINE_ RS::CanvasItemTextureFilter texture_filter() const {
-			return (RS::CanvasItemTextureFilter)((other >> FILTER_SHIFT) & FILTER_MASK);
+		_ALWAYS_INLINE_ RSE::CanvasItemTextureFilter texture_filter() const {
+			return (RSE::CanvasItemTextureFilter)((other >> FILTER_SHIFT) & FILTER_MASK);
 		}
 
-		_ALWAYS_INLINE_ RS::CanvasItemTextureRepeat texture_repeat() const {
-			return (RS::CanvasItemTextureRepeat)((other >> REPEAT_SHIFT) & REPEAT_MASK);
+		_ALWAYS_INLINE_ RSE::CanvasItemTextureRepeat texture_repeat() const {
+			return (RSE::CanvasItemTextureRepeat)((other >> REPEAT_SHIFT) & REPEAT_MASK);
 		}
 
 		_ALWAYS_INLINE_ bool linear_colors() const {
@@ -655,8 +655,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	RID default_clip_children_material;
 	RID default_clip_children_shader;
 
-	RS::CanvasItemTextureFilter default_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
-	RS::CanvasItemTextureRepeat default_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+	RSE::CanvasItemTextureFilter default_filter = RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+	RSE::CanvasItemTextureRepeat default_repeat = RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 
 	RID _create_base_uniform_set(RID p_to_render_target, bool p_backbuffer);
 
@@ -706,14 +706,14 @@ public:
 
 	RID occluder_polygon_create() override;
 	void occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed) override;
-	void occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) override;
+	void occluder_polygon_set_cull_mode(RID p_occluder, RSE::CanvasOccluderPolygonCullMode p_mode) override;
 
-	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
+	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RSE::CanvasItemTextureFilter p_default_filter, RSE::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
 
 	virtual void set_shadow_texture_size(int p_size) override;
 
 	void set_debug_redraw(bool p_enabled, double p_time, const Color &p_color) override;
-	uint32_t get_pipeline_compilations(RS::PipelineSource p_source) override;
+	uint32_t get_pipeline_compilations(RSE::PipelineSource p_source) override;
 
 	void set_time(double p_time);
 	void update() override;

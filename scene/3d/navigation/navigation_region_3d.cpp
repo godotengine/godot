@@ -33,6 +33,7 @@
 #include "core/math/random_pcg.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/rendering/rendering_server.h"
 
 RID NavigationRegion3D::get_rid() const {
 	return region;

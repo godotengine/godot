@@ -36,6 +36,7 @@
 #include "scene/gui/foldable_container.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/viewport.h"
+#include "servers/rendering/rendering_server.h"
 
 void Camera3DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {

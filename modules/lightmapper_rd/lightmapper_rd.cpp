@@ -42,6 +42,7 @@
 #include "editor/file_system/editor_paths.h"
 #include "editor/settings/editor_settings.h"
 #include "servers/rendering/rendering_device_binds.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 
 #if defined(VULKAN_ENABLED)
@@ -496,7 +497,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 			t.max_bounds[1] = taabb.position.y + MAX(taabb.size.y, 0.0001);
 			t.max_bounds[2] = taabb.position.z + MAX(taabb.size.z, 0.0001);
 
-			t.cull_mode = RS::CULL_MODE_BACK;
+			t.cull_mode = RSE::CULL_MODE_BACK;
 
 			RID material = mi.data.material[i];
 			if (material.is_valid()) {

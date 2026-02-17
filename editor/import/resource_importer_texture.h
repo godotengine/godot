@@ -33,7 +33,7 @@
 #include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "core/io/resource_importer.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 class CompressedTexture2D;
 
@@ -74,12 +74,12 @@ protected:
 	struct MakeInfo {
 		int flags = 0;
 		String normal_path_for_roughness;
-		RS::TextureDetectRoughnessChannel channel_for_roughness = RS::TEXTURE_DETECT_ROUGHNESS_R;
+		RSE::TextureDetectRoughnessChannel channel_for_roughness = RSE::TEXTURE_DETECT_ROUGHNESS_R;
 	};
 
 	HashMap<StringName, MakeInfo> make_flags;
 
-	static void _texture_reimport_roughness(const Ref<CompressedTexture2D> &p_tex, const String &p_normal_path, RenderingServer::TextureDetectRoughnessChannel p_channel);
+	static void _texture_reimport_roughness(const Ref<CompressedTexture2D> &p_tex, const String &p_normal_path, RSE::TextureDetectRoughnessChannel p_channel);
 	static void _texture_reimport_3d(const Ref<CompressedTexture2D> &p_tex);
 	static void _texture_reimport_normal(const Ref<CompressedTexture2D> &p_tex);
 

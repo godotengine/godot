@@ -34,6 +34,7 @@
 
 #include "../../openxr_util.h"
 
+#include "core/templates/rb_map.h"
 #include "drivers/gles3/effects/copy_effects.h"
 #include "drivers/gles3/storage/texture_storage.h"
 #include "servers/rendering/rendering_server.h"
@@ -270,7 +271,7 @@ bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 
 	for (uint64_t i = 0; i < swapchain_length; i++) {
 		RID texture_rid = texture_storage->texture_create_from_native_handle(
-				p_array_size == 1 ? RS::TEXTURE_TYPE_2D : RS::TEXTURE_TYPE_LAYERED,
+				p_array_size == 1 ? RSE::TEXTURE_TYPE_2D : RSE::TEXTURE_TYPE_LAYERED,
 				format,
 				images[i].image,
 				p_width,

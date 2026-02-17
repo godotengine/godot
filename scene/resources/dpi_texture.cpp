@@ -35,6 +35,7 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/placeholder_textures.h"
+#include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
 #ifdef MODULE_SVG_ENABLED

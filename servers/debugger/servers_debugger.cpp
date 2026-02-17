@@ -437,13 +437,13 @@ void ServersDebugger::_send_resource_usage() {
 		info.id = E.texture;
 
 		switch (E.type) {
-			case RS::TextureType::TEXTURE_TYPE_2D:
+			case RSE::TextureType::TEXTURE_TYPE_2D:
 				info.type = "Texture2D";
 				break;
-			case RS::TextureType::TEXTURE_TYPE_3D:
+			case RSE::TextureType::TEXTURE_TYPE_3D:
 				info.type = "Texture3D";
 				break;
-			case RS::TextureType::TEXTURE_TYPE_LAYERED:
+			case RSE::TextureType::TEXTURE_TYPE_LAYERED:
 				info.type = "TextureLayered";
 				break;
 		}

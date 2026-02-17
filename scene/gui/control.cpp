@@ -31,6 +31,8 @@
 #include "control.h"
 #include "control.compat.inc"
 
+STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
+
 #include "container.h"
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"

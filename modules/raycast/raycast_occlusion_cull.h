@@ -157,7 +157,7 @@ private:
 	RID_PtrOwner<Occluder> occluder_owner;
 	HashMap<RID, Scenario> scenarios;
 	HashMap<RID, RaycastHZBuffer> buffers;
-	RS::ViewportOcclusionCullingBuildQuality build_quality;
+	RSE::ViewportOcclusionCullingBuildQuality build_quality;
 	bool _jitter_enabled = false;
 
 	void _init_embree();
@@ -184,7 +184,7 @@ public:
 
 	virtual RID buffer_get_debug_texture(RID p_buffer) override;
 
-	virtual void set_build_quality(RS::ViewportOcclusionCullingBuildQuality p_quality) override;
+	virtual void set_build_quality(RSE::ViewportOcclusionCullingBuildQuality p_quality) override;
 
 	RaycastOcclusionCull();
 	~RaycastOcclusionCull();

@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
+#include "servers/rendering/rendering_server.h"
 
 #define LINE_GRAB_WIDTH 8
 
@@ -114,7 +115,7 @@ bool OccluderPolygon2D::is_closed() const {
 
 void OccluderPolygon2D::set_cull_mode(CullMode p_mode) {
 	cull = p_mode;
-	RS::get_singleton()->canvas_occluder_polygon_set_cull_mode(occ_polygon, RS::CanvasOccluderPolygonCullMode(p_mode));
+	RS::get_singleton()->canvas_occluder_polygon_set_cull_mode(occ_polygon, RSE::CanvasOccluderPolygonCullMode(p_mode));
 }
 
 OccluderPolygon2D::CullMode OccluderPolygon2D::get_cull_mode() const {

@@ -307,11 +307,11 @@ Error ImageTextureLayered::create_from_images(Vector<Ref<Image>> p_images) {
 	}
 
 	if (texture.is_valid()) {
-		RID new_texture = RS::get_singleton()->texture_2d_layered_create(p_images, RS::TextureLayeredType(layered_type));
+		RID new_texture = RS::get_singleton()->texture_2d_layered_create(p_images, RSE::TextureLayeredType(layered_type));
 		ERR_FAIL_COND_V(!new_texture.is_valid(), ERR_CANT_CREATE);
 		RS::get_singleton()->texture_replace(texture, new_texture);
 	} else {
-		texture = RS::get_singleton()->texture_2d_layered_create(p_images, RS::TextureLayeredType(layered_type));
+		texture = RS::get_singleton()->texture_2d_layered_create(p_images, RSE::TextureLayeredType(layered_type));
 		ERR_FAIL_COND_V(!texture.is_valid(), ERR_CANT_CREATE);
 	}
 
@@ -340,7 +340,7 @@ Ref<Image> ImageTextureLayered::get_layer_data(int p_layer) const {
 
 RID ImageTextureLayered::get_rid() const {
 	if (texture.is_null()) {
-		texture = RS::get_singleton()->texture_2d_layered_placeholder_create(RS::TextureLayeredType(layered_type));
+		texture = RS::get_singleton()->texture_2d_layered_placeholder_create(RSE::TextureLayeredType(layered_type));
 	}
 	return texture;
 }

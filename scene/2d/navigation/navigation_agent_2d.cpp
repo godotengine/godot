@@ -34,6 +34,7 @@
 #include "scene/2d/navigation/navigation_link_2d.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
+#include "servers/rendering/rendering_server.h"
 
 void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationAgent2D::get_rid);
@@ -1097,7 +1098,7 @@ void NavigationAgent2D::_update_debug_path() {
 	}
 
 	RenderingServer::get_singleton()->canvas_item_set_parent(debug_path_instance, agent_parent->get_canvas());
-	RenderingServer::get_singleton()->canvas_item_set_z_index(debug_path_instance, RS::CANVAS_ITEM_Z_MAX - 1);
+	RenderingServer::get_singleton()->canvas_item_set_z_index(debug_path_instance, RSE::CANVAS_ITEM_Z_MAX - 1);
 	RenderingServer::get_singleton()->canvas_item_set_visible(debug_path_instance, agent_parent->is_visible_in_tree());
 
 	const Vector<Vector2> &navigation_path = navigation_result->get_path();

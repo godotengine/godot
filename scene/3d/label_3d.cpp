@@ -34,6 +34,7 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
+#include "servers/rendering/rendering_server.h"
 
 void Label3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &Label3D::set_horizontal_alignment);
@@ -143,8 +144,8 @@ void Label3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_antialiasing_mode", PROPERTY_HINT_ENUM, "Disabled,Alpha Edge Blend,Alpha Edge Clip"), "set_alpha_antialiasing", "get_alpha_antialiasing");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_antialiasing_edge", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_antialiasing_edge", "get_alpha_antialiasing_edge");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_outline_render_priority", "get_outline_render_priority");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RSE::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RSE::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_render_priority", PROPERTY_HINT_RANGE, itos(RSE::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RSE::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_outline_render_priority", "get_outline_render_priority");
 
 	ADD_GROUP("Text", "");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
@@ -640,16 +641,16 @@ void Label3D::_shape() {
 
 	for (const KeyValue<SurfaceKey, SurfaceData> &E : surfaces) {
 		Array mesh_array;
-		mesh_array.resize(RS::ARRAY_MAX);
-		mesh_array[RS::ARRAY_VERTEX] = E.value.mesh_vertices;
-		mesh_array[RS::ARRAY_NORMAL] = E.value.mesh_normals;
-		mesh_array[RS::ARRAY_TANGENT] = E.value.mesh_tangents;
-		mesh_array[RS::ARRAY_COLOR] = E.value.mesh_colors;
-		mesh_array[RS::ARRAY_TEX_UV] = E.value.mesh_uvs;
-		mesh_array[RS::ARRAY_INDEX] = E.value.indices;
+		mesh_array.resize(RSE::ARRAY_MAX);
+		mesh_array[RSE::ARRAY_VERTEX] = E.value.mesh_vertices;
+		mesh_array[RSE::ARRAY_NORMAL] = E.value.mesh_normals;
+		mesh_array[RSE::ARRAY_TANGENT] = E.value.mesh_tangents;
+		mesh_array[RSE::ARRAY_COLOR] = E.value.mesh_colors;
+		mesh_array[RSE::ARRAY_TEX_UV] = E.value.mesh_uvs;
+		mesh_array[RSE::ARRAY_INDEX] = E.value.indices;
 
 		RS::SurfaceData sd;
-		RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RS::PRIMITIVE_TRIANGLES, mesh_array);
+		RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RSE::PRIMITIVE_TRIANGLES, mesh_array);
 
 		sd.material = E.value.material;
 
@@ -761,7 +762,7 @@ bool Label3D::is_uppercase() const {
 }
 
 void Label3D::set_render_priority(int p_priority) {
-	ERR_FAIL_COND(p_priority < RS::MATERIAL_RENDER_PRIORITY_MIN || p_priority > RS::MATERIAL_RENDER_PRIORITY_MAX);
+	ERR_FAIL_COND(p_priority < RSE::MATERIAL_RENDER_PRIORITY_MIN || p_priority > RSE::MATERIAL_RENDER_PRIORITY_MAX);
 	if (render_priority != p_priority) {
 		render_priority = p_priority;
 		_queue_update();
@@ -773,7 +774,7 @@ int Label3D::get_render_priority() const {
 }
 
 void Label3D::set_outline_render_priority(int p_priority) {
-	ERR_FAIL_COND(p_priority < RS::MATERIAL_RENDER_PRIORITY_MIN || p_priority > RS::MATERIAL_RENDER_PRIORITY_MAX);
+	ERR_FAIL_COND(p_priority < RSE::MATERIAL_RENDER_PRIORITY_MIN || p_priority > RSE::MATERIAL_RENDER_PRIORITY_MAX);
 	if (outline_render_priority != p_priority) {
 		outline_render_priority = p_priority;
 		_queue_update();

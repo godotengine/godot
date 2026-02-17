@@ -41,6 +41,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/rendering/rendering_server.h"
 
 bool NavigationObstacle3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
 	return Object::cast_to<NavigationObstacle3D>(p_spatial) != nullptr;
@@ -753,7 +754,7 @@ void NavigationObstacle3DEditorPlugin::redraw() {
 
 	point_lines_mesh_array[Mesh::ARRAY_VERTEX] = point_lines_mesh_vertices;
 
-	rs->mesh_add_surface_from_arrays(point_lines_mesh_rid, RS::PRIMITIVE_LINES, point_lines_mesh_array);
+	rs->mesh_add_surface_from_arrays(point_lines_mesh_rid, RSE::PRIMITIVE_LINES, point_lines_mesh_array);
 	rs->instance_set_surface_override_material(point_lines_instance_rid, 0, line_material->get_rid());
 	const Vector3 safe_scale = obstacle_node->get_global_basis().get_scale().abs().maxf(0.001);
 	const Transform3D gt = Transform3D(Basis().scaled(safe_scale).rotated(Vector3(0.0, 1.0, 0.0), obstacle_node->get_global_rotation().y), obstacle_node->get_global_position());
@@ -780,7 +781,7 @@ void NavigationObstacle3DEditorPlugin::redraw() {
 
 	point_handle_mesh_array[Mesh::ARRAY_VERTEX] = point_handle_mesh_vertices;
 
-	rs->mesh_add_surface_from_arrays(point_handle_mesh_rid, RS::PRIMITIVE_POINTS, point_handle_mesh_array);
+	rs->mesh_add_surface_from_arrays(point_handle_mesh_rid, RSE::PRIMITIVE_POINTS, point_handle_mesh_array);
 	rs->instance_set_surface_override_material(point_handles_instance_rid, 0, handle_material->get_rid());
 	rs->instance_set_transform(point_handles_instance_rid, gt);
 }

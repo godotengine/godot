@@ -40,6 +40,7 @@
 #include "bc6h.glsl.gen.h"
 #include "rgb_to_rgba.glsl.gen.h"
 #include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 static Mutex betsy_mutex;
 static BetsyCompressor *betsy = nullptr;

@@ -230,13 +230,13 @@ TEST_CASE("[SceneTree][ArrayMesh] Surface metadata tests.") {
 	}
 
 	SUBCASE("Get the array length of a particular surface.") {
-		CHECK(mesh->surface_get_array_len(0) == static_cast<Vector<Vector3>>(cylinder_array[RenderingServer::ARRAY_VERTEX]).size());
-		CHECK(mesh->surface_get_array_len(1) == static_cast<Vector<Vector3>>(box_array[RenderingServer::ARRAY_VERTEX]).size());
+		CHECK(mesh->surface_get_array_len(0) == static_cast<Vector<Vector3>>(cylinder_array[RSE::ARRAY_VERTEX]).size());
+		CHECK(mesh->surface_get_array_len(1) == static_cast<Vector<Vector3>>(box_array[RSE::ARRAY_VERTEX]).size());
 	}
 
 	SUBCASE("Get the index array length of a particular surface.") {
-		CHECK(mesh->surface_get_array_index_len(0) == static_cast<Vector<Vector3>>(cylinder_array[RenderingServer::ARRAY_INDEX]).size());
-		CHECK(mesh->surface_get_array_index_len(1) == static_cast<Vector<Vector3>>(box_array[RenderingServer::ARRAY_INDEX]).size());
+		CHECK(mesh->surface_get_array_index_len(0) == static_cast<Vector<Vector3>>(cylinder_array[RSE::ARRAY_INDEX]).size());
+		CHECK(mesh->surface_get_array_index_len(1) == static_cast<Vector<Vector3>>(box_array[RSE::ARRAY_INDEX]).size());
 	}
 
 	SUBCASE("Get correct primitive type") {
@@ -247,7 +247,7 @@ TEST_CASE("[SceneTree][ArrayMesh] Surface metadata tests.") {
 	}
 
 	SUBCASE("Returns correct format for the mesh") {
-		int format = RS::ARRAY_FORMAT_BLEND_SHAPE_MASK | RS::ARRAY_FORMAT_TEX_UV | RS::ARRAY_FORMAT_INDEX;
+		int format = RSE::ARRAY_FORMAT_BLEND_SHAPE_MASK | RSE::ARRAY_FORMAT_TEX_UV | RSE::ARRAY_FORMAT_INDEX;
 		CHECK((mesh->surface_get_format(0) & format) != 0);
 		CHECK((mesh->surface_get_format(1) & format) != 0);
 	}

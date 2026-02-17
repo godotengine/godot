@@ -298,23 +298,23 @@ void RenderingServerDefault::finish() {
 
 /* STATUS INFORMATION */
 
-uint64_t RenderingServerDefault::get_rendering_info(RenderingInfo p_info) {
-	if (p_info == RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME) {
+uint64_t RenderingServerDefault::get_rendering_info(RSE::RenderingInfo p_info) {
+	if (p_info == RSE::RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME) {
 		return RSG::viewport->get_total_objects_drawn();
-	} else if (p_info == RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME) {
+	} else if (p_info == RSE::RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME) {
 		return RSG::viewport->get_total_primitives_drawn();
-	} else if (p_info == RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME) {
+	} else if (p_info == RSE::RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME) {
 		return RSG::viewport->get_total_draw_calls_used();
-	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS) {
-		return RSG::canvas_render->get_pipeline_compilations(PIPELINE_SOURCE_CANVAS);
-	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_MESH) {
-		return RSG::canvas_render->get_pipeline_compilations(PIPELINE_SOURCE_MESH) + RSG::scene->get_pipeline_compilations(PIPELINE_SOURCE_MESH);
-	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE) {
-		return RSG::scene->get_pipeline_compilations(PIPELINE_SOURCE_SURFACE);
-	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW) {
-		return RSG::canvas_render->get_pipeline_compilations(PIPELINE_SOURCE_DRAW) + RSG::scene->get_pipeline_compilations(PIPELINE_SOURCE_DRAW);
-	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION) {
-		return RSG::canvas_render->get_pipeline_compilations(PIPELINE_SOURCE_SPECIALIZATION) + RSG::scene->get_pipeline_compilations(PIPELINE_SOURCE_SPECIALIZATION);
+	} else if (p_info == RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS) {
+		return RSG::canvas_render->get_pipeline_compilations(RSE::PIPELINE_SOURCE_CANVAS);
+	} else if (p_info == RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_MESH) {
+		return RSG::canvas_render->get_pipeline_compilations(RSE::PIPELINE_SOURCE_MESH) + RSG::scene->get_pipeline_compilations(RSE::PIPELINE_SOURCE_MESH);
+	} else if (p_info == RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE) {
+		return RSG::scene->get_pipeline_compilations(RSE::PIPELINE_SOURCE_SURFACE);
+	} else if (p_info == RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW) {
+		return RSG::canvas_render->get_pipeline_compilations(RSE::PIPELINE_SOURCE_DRAW) + RSG::scene->get_pipeline_compilations(RSE::PIPELINE_SOURCE_DRAW);
+	} else if (p_info == RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION) {
+		return RSG::canvas_render->get_pipeline_compilations(RSE::PIPELINE_SOURCE_SPECIALIZATION) + RSG::scene->get_pipeline_compilations(RSE::PIPELINE_SOURCE_SPECIALIZATION);
 	}
 	return RSG::utilities->get_rendering_info(p_info);
 }
@@ -346,7 +346,7 @@ void RenderingServerDefault::set_default_clear_color(const Color &p_color) {
 }
 
 #ifndef DISABLE_DEPRECATED
-bool RenderingServerDefault::has_feature(Features p_feature) const {
+bool RenderingServerDefault::has_feature(RSE::Features p_feature) const {
 	return false;
 }
 #endif

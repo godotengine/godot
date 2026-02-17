@@ -37,6 +37,7 @@
 
 #include "openxr_fb_update_swapchain_extension.h"
 #include "platform/android/api/java_class_wrapper.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 
 ////////////////////////////////////////////////////////////////////////////
@@ -496,10 +497,10 @@ void OpenXRCompositionLayerExtension::CompositionLayer::on_pre_render() {
 	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
 
 	if (subviewport.viewport.is_valid() && openxr_api && openxr_api->is_running()) {
-		RS::ViewportUpdateMode update_mode = rs->viewport_get_update_mode(subviewport.viewport);
-		if (update_mode == RS::VIEWPORT_UPDATE_ONCE || update_mode == RS::VIEWPORT_UPDATE_ALWAYS) {
+		RSE::ViewportUpdateMode update_mode = rs->viewport_get_update_mode(subviewport.viewport);
+		if (update_mode == RSE::VIEWPORT_UPDATE_ONCE || update_mode == RSE::VIEWPORT_UPDATE_ALWAYS) {
 			// Update our XR swapchain
-			if (update_and_acquire_swapchain(update_mode == RS::VIEWPORT_UPDATE_ONCE)) {
+			if (update_and_acquire_swapchain(update_mode == RSE::VIEWPORT_UPDATE_ONCE)) {
 				// Render to our XR swapchain image.
 				RID rt = rs->viewport_get_render_target(subviewport.viewport);
 				RSG::texture_storage->render_target_set_override(rt, get_current_swapchain_texture(), RID(), RID(), RID());

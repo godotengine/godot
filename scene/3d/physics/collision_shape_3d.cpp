@@ -36,6 +36,7 @@
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/3d/world_boundary_shape_3d.h"
+#include "servers/rendering/rendering_server.h"
 
 void CollisionShape3D::make_convex_from_siblings() {
 	Node *p = get_parent();
@@ -54,7 +55,7 @@ void CollisionShape3D::make_convex_from_siblings() {
 				for (int j = 0; j < m->get_surface_count(); j++) {
 					Array a = m->surface_get_arrays(j);
 					if (!a.is_empty()) {
-						Vector<Vector3> v = a[RenderingServer::ARRAY_VERTEX];
+						Vector<Vector3> v = a[RSE::ARRAY_VERTEX];
 						for (int k = 0; k < v.size(); k++) {
 							vertices.append(mi->get_transform().xform(v[k]));
 						}

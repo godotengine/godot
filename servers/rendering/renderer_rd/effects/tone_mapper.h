@@ -167,7 +167,7 @@ public:
 
 	struct TonemapSettings {
 		bool use_glow = false;
-		RS::EnvironmentGlowBlendMode glow_mode = RS::ENV_GLOW_BLEND_MODE_SCREEN;
+		RSE::EnvironmentGlowBlendMode glow_mode = RSE::ENV_GLOW_BLEND_MODE_SCREEN;
 		float glow_intensity = 0.3;
 		float glow_map_strength = 0.0f;
 		float glow_levels[7] = { 1.0, 0.8, 0.4, 0.1, 0.0, 0.0, 0.0 };
@@ -176,7 +176,7 @@ public:
 		RID glow_texture;
 		RID glow_map;
 
-		RS::EnvironmentToneMapper tonemap_mode = RS::ENV_TONE_MAPPER_LINEAR;
+		RSE::EnvironmentToneMapper tonemap_mode = RSE::ENV_TONE_MAPPER_LINEAR;
 		float tonemapper_params[4] = { 0.0, 0.0, 0.0, 0.0 };
 		float exposure = 1.0;
 		float white = 1.0;

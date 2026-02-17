@@ -32,6 +32,7 @@
 #include "soft_body_3d.compat.inc"
 
 #include "scene/3d/physics/physics_body_3d.h"
+#include "servers/rendering/rendering_server.h"
 
 SoftBodyRenderingServerHandler::SoftBodyRenderingServerHandler() {}
 
@@ -45,7 +46,7 @@ void SoftBodyRenderingServerHandler::prepare(RID p_mesh, int p_surface) {
 
 	RS::SurfaceData surface_data = RS::get_singleton()->mesh_get_surface(mesh, surface);
 
-	uint32_t surface_offsets[RS::ARRAY_MAX];
+	uint32_t surface_offsets[RSE::ARRAY_MAX];
 	uint32_t vertex_stride;
 	uint32_t normal_tangent_stride;
 	uint32_t attrib_stride;
@@ -55,8 +56,8 @@ void SoftBodyRenderingServerHandler::prepare(RID p_mesh, int p_surface) {
 	buffer = surface_data.vertex_data;
 	stride = vertex_stride;
 	normal_stride = normal_tangent_stride;
-	offset_vertices = surface_offsets[RS::ARRAY_VERTEX];
-	offset_normal = surface_offsets[RS::ARRAY_NORMAL];
+	offset_vertices = surface_offsets[RSE::ARRAY_VERTEX];
+	offset_normal = surface_offsets[RSE::ARRAY_NORMAL];
 }
 
 void SoftBodyRenderingServerHandler::clear() {

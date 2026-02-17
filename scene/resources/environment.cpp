@@ -43,7 +43,7 @@ RID Environment::get_rid() const {
 
 void Environment::set_background(BGMode p_bg) {
 	bg_mode = p_bg;
-	RS::get_singleton()->environment_set_background(environment, RS::EnvironmentBG(p_bg));
+	RS::get_singleton()->environment_set_background(environment, RSE::EnvironmentBG(p_bg));
 	notify_property_list_changed();
 	if (bg_mode != BG_SKY) {
 		set_fog_aerial_perspective(0.0);
@@ -193,9 +193,9 @@ void Environment::_update_ambient_light() {
 	RS::get_singleton()->environment_set_ambient_light(
 			environment,
 			ambient_color,
-			RS::EnvironmentAmbientSource(ambient_source),
+			RSE::EnvironmentAmbientSource(ambient_source),
 			ambient_energy,
-			ambient_sky_contribution, RS::EnvironmentReflectionSource(reflection_source));
+			ambient_sky_contribution, RSE::EnvironmentReflectionSource(reflection_source));
 }
 
 // Tonemap
@@ -249,7 +249,7 @@ float Environment::get_tonemap_agx_contrast() const {
 void Environment::_update_tonemap() {
 	RS::get_singleton()->environment_set_tonemap(
 			environment,
-			RS::EnvironmentToneMapper(tone_mapper),
+			RSE::EnvironmentToneMapper(tone_mapper),
 			tonemap_exposure,
 			tone_mapper == TONE_MAPPER_AGX ? tonemap_agx_white : tonemap_white);
 }
@@ -590,7 +590,7 @@ void Environment::_update_sdfgi() {
 			sdfgi_enabled,
 			sdfgi_cascades,
 			sdfgi_min_cell_size,
-			RS::EnvironmentSDFGIYScale(sdfgi_y_scale),
+			RSE::EnvironmentSDFGIYScale(sdfgi_y_scale),
 			sdfgi_use_occlusion,
 			sdfgi_bounce_feedback,
 			sdfgi_read_sky_light,
@@ -611,7 +611,7 @@ bool Environment::is_glow_enabled() const {
 }
 
 void Environment::set_glow_level(int p_level, float p_intensity) {
-	ERR_FAIL_INDEX(p_level, RS::MAX_GLOW_LEVELS);
+	ERR_FAIL_INDEX(p_level, RSE::MAX_GLOW_LEVELS);
 
 	glow_levels.write[p_level] = p_intensity;
 
@@ -619,7 +619,7 @@ void Environment::set_glow_level(int p_level, float p_intensity) {
 }
 
 float Environment::get_glow_level(int p_level) const {
-	ERR_FAIL_INDEX_V(p_level, RS::MAX_GLOW_LEVELS, 0.0);
+	ERR_FAIL_INDEX_V(p_level, RSE::MAX_GLOW_LEVELS, 0.0);
 
 	return glow_levels[p_level];
 }
@@ -757,7 +757,7 @@ void Environment::_update_glow() {
 			glow_strength,
 			glow_mix,
 			glow_bloom,
-			RS::EnvironmentGlowBlendMode(glow_blend_mode),
+			RSE::EnvironmentGlowBlendMode(glow_blend_mode),
 			glow_hdr_bleed_threshold,
 			glow_hdr_bleed_scale,
 			glow_hdr_luminance_cap,
@@ -863,7 +863,7 @@ void Environment::_update_fog() {
 			fog_height_density,
 			fog_aerial_perspective,
 			fog_sky_affect,
-			RS::EnvironmentFogMode(fog_mode));
+			RSE::EnvironmentFogMode(fog_mode));
 }
 
 // Depth Fog

@@ -30,11 +30,8 @@
 
 #include "mesh_storage.h"
 
+#include "core/config/engine.h"
 #include "core/math/transform_interpolator.h"
-
-#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
-#include "core/config/project_settings.h"
-#endif
 
 RID RendererMeshStorage::multimesh_allocate() {
 	return _multimesh_allocate();
@@ -48,7 +45,7 @@ void RendererMeshStorage::multimesh_free(RID p_rid) {
 	_multimesh_free(p_rid);
 }
 
-void RendererMeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors, bool p_use_custom_data, bool p_use_indirect) {
+void RendererMeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instances, RSE::MultimeshTransformFormat p_transform_format, bool p_use_colors, bool p_use_custom_data, bool p_use_indirect) {
 	MultiMeshInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
 	if (mmi) {
 		mmi->_transform_format = p_transform_format;
@@ -56,7 +53,7 @@ void RendererMeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instanc
 		mmi->_use_custom_data = p_use_custom_data;
 		mmi->_num_instances = p_instances;
 
-		mmi->_vf_size_xform = p_transform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12;
+		mmi->_vf_size_xform = p_transform_format == RSE::MULTIMESH_TRANSFORM_2D ? 8 : 12;
 		mmi->_vf_size_color = p_use_colors ? 4 : 0;
 		mmi->_vf_size_data = p_use_custom_data ? 4 : 0;
 
@@ -306,7 +303,7 @@ void RendererMeshStorage::multimesh_set_physics_interpolated(RID p_multimesh, bo
 	}
 }
 
-void RendererMeshStorage::multimesh_set_physics_interpolation_quality(RID p_multimesh, RS::MultimeshPhysicsInterpolationQuality p_quality) {
+void RendererMeshStorage::multimesh_set_physics_interpolation_quality(RID p_multimesh, RSE::MultimeshPhysicsInterpolationQuality p_quality) {
 	ERR_FAIL_COND((p_quality < 0) || (p_quality > 1));
 	MultiMeshInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
 	if (mmi) {

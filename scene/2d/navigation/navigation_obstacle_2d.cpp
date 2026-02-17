@@ -35,6 +35,7 @@
 #include "scene/resources/2d/navigation_polygon.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
+#include "servers/rendering/rendering_server.h"
 
 Callable NavigationObstacle2D::_navmesh_source_geometry_parsing_callback;
 RID NavigationObstacle2D::_navmesh_source_geometry_parser;
@@ -505,7 +506,7 @@ void NavigationObstacle2D::_update_static_obstacle_debug() {
 	edge_mesh_array[Mesh::ARRAY_VERTEX] = edge_vertex_array;
 	edge_mesh_array[Mesh::ARRAY_COLOR] = line_color_array;
 
-	rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_LINES, edge_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+	rs->mesh_add_surface_from_arrays(debug_mesh_rid, RSE::PRIMITIVE_LINES, edge_mesh_array, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
 
 	rs->canvas_item_add_mesh(debug_canvas_item, debug_mesh_rid, get_global_transform());
 }

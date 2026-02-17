@@ -569,7 +569,7 @@ RID WebXRInterfaceJS::_get_texture(unsigned int p_texture_id) {
 	Size2 texture_size = get_render_target_size();
 
 	RID texture = texture_storage->texture_create_from_native_handle(
-			view_count == 1 ? RS::TEXTURE_TYPE_2D : RS::TEXTURE_TYPE_LAYERED,
+			view_count == 1 ? RSE::TEXTURE_TYPE_2D : RSE::TEXTURE_TYPE_LAYERED,
 			Image::FORMAT_RGBA8,
 			p_texture_id,
 			(int)texture_size.width,

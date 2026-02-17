@@ -33,6 +33,7 @@
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_default.h"
 
 using namespace RendererRD;
@@ -95,7 +96,7 @@ Dependency *Fog::fog_volume_get_dependency(RID p_fog_volume) const {
 	return &fog_volume->dependency;
 }
 
-void Fog::fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) {
+void Fog::fog_volume_set_shape(RID p_fog_volume, RSE::FogVolumeShape p_shape) {
 	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
 	ERR_FAIL_NULL(fog_volume);
 
@@ -128,9 +129,9 @@ RID Fog::fog_volume_get_material(RID p_fog_volume) const {
 	return fog_volume->material;
 }
 
-RS::FogVolumeShape Fog::fog_volume_get_shape(RID p_fog_volume) const {
+RSE::FogVolumeShape Fog::fog_volume_get_shape(RID p_fog_volume) const {
 	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
-	ERR_FAIL_NULL_V(fog_volume, RS::FOG_VOLUME_SHAPE_BOX);
+	ERR_FAIL_NULL_V(fog_volume, RSE::FOG_VOLUME_SHAPE_BOX);
 
 	return fog_volume->shape;
 }
@@ -140,10 +141,10 @@ AABB Fog::fog_volume_get_aabb(RID p_fog_volume) const {
 	ERR_FAIL_NULL_V(fog_volume, AABB());
 
 	switch (fog_volume->shape) {
-		case RS::FOG_VOLUME_SHAPE_ELLIPSOID:
-		case RS::FOG_VOLUME_SHAPE_CONE:
-		case RS::FOG_VOLUME_SHAPE_CYLINDER:
-		case RS::FOG_VOLUME_SHAPE_BOX: {
+		case RSE::FOG_VOLUME_SHAPE_ELLIPSOID:
+		case RSE::FOG_VOLUME_SHAPE_CONE:
+		case RSE::FOG_VOLUME_SHAPE_CYLINDER:
+		case RSE::FOG_VOLUME_SHAPE_BOX: {
 			AABB aabb;
 			aabb.position = -fog_volume->size / 2;
 			aabb.size = fog_volume->size;
@@ -377,7 +378,7 @@ void Fog::FogShaderData::set_code(const String &p_code) {
 
 	Fog *fog_singleton = Fog::get_singleton();
 
-	Error err = fog_singleton->volumetric_fog.compiler.compile(RS::SHADER_FOG, code, &actions, path, gen_code);
+	Error err = fog_singleton->volumetric_fog.compiler.compile(RSE::SHADER_FOG, code, &actions, path, gen_code);
 	ERR_FAIL_COND_MSG(err != OK, "Fog shader compilation failed.");
 
 	if (version.is_null()) {
@@ -696,10 +697,10 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 			Vector3i kernel_size;
 
 			Vector3 fog_position = fog_volume_instance->transform.get_origin();
-			RS::FogVolumeShape volume_type = RendererRD::Fog::get_singleton()->fog_volume_get_shape(fog_volume);
+			RSE::FogVolumeShape volume_type = RendererRD::Fog::get_singleton()->fog_volume_get_shape(fog_volume);
 			Vector3 extents = RendererRD::Fog::get_singleton()->fog_volume_get_size(fog_volume) / 2;
 
-			if (volume_type != RS::FOG_VOLUME_SHAPE_WORLD) {
+			if (volume_type != RSE::FOG_VOLUME_SHAPE_WORLD) {
 				// Local fog volume.
 				Vector3 fog_size = Vector3(fog->width, fog->height, fog->depth);
 				float volumetric_fog_detail_spread = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_detail_spread(p_settings.env);
@@ -869,7 +870,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 7;
-			u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+			u.append_id(material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
 		}
@@ -931,7 +932,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 13;
-			u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+			u.append_id(material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
 		}

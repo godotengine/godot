@@ -30,6 +30,8 @@
 
 #include "back_buffer_copy.h"
 
+#include "servers/rendering/rendering_server.h"
+
 void BackBufferCopy::_update_copy_mode() {
 	switch (copy_mode) {
 		case COPY_MODE_DISABLED: {

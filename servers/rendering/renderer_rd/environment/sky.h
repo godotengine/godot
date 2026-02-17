@@ -261,7 +261,7 @@ public:
 		int radiance_size = REAL_TIME_SIZE;
 		float uv_border_size = 0.0; // Border size in UV space.
 
-		RS::SkyMode mode = RS::SKY_MODE_AUTOMATIC;
+		RSE::SkyMode mode = RSE::SKY_MODE_AUTOMATIC;
 
 		ReflectionData reflection;
 		bool dirty = false;
@@ -279,7 +279,7 @@ public:
 		RID get_textures(SkyTextureSetVersion p_version, RID p_default_shader_rd, Ref<RenderSceneBuffersRD> p_render_buffers);
 		bool set_radiance_size(int p_radiance_size);
 		int get_radiance_size() const;
-		bool set_mode(RS::SkyMode p_mode);
+		bool set_mode(RSE::SkyMode p_mode);
 		bool set_material(RID p_material);
 		Ref<Image> bake_panorama(float p_energy, int p_roughness_layers, const Size2i &p_size);
 	};
@@ -320,7 +320,7 @@ public:
 	void free_sky(RID p_sky);
 	void sky_set_radiance_size(RID p_sky, int p_radiance_size);
 	int sky_get_radiance_size(RID p_sky) const;
-	void sky_set_mode(RID p_sky, RS::SkyMode p_mode);
+	void sky_set_mode(RID p_sky, RSE::SkyMode p_mode);
 	void sky_set_material(RID p_sky, RID p_material);
 	Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size);
 	float sky_get_uv_border_size(RID p_sky);

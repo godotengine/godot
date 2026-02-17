@@ -37,6 +37,7 @@
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/particle_process_material.h"
+#include "servers/rendering/rendering_server.h"
 
 void GPUParticles2D::set_emitting(bool p_emitting) {
 	// Do not return even if `p_emitting == emitting` because `emitting` is just an approximation.
@@ -181,7 +182,7 @@ void GPUParticles2D::set_trail_enabled(bool p_enabled) {
 	queue_redraw();
 	update_configuration_warnings();
 
-	RS::get_singleton()->particles_set_transform_align(particles, p_enabled ? RS::PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY : RS::PARTICLES_TRANSFORM_ALIGN_DISABLED);
+	RS::get_singleton()->particles_set_transform_align(particles, p_enabled ? RSE::PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY : RSE::PARTICLES_TRANSFORM_ALIGN_DISABLED);
 }
 
 void GPUParticles2D::set_trail_lifetime(double p_seconds) {
@@ -307,7 +308,7 @@ double GPUParticles2D::get_speed_scale() const {
 
 void GPUParticles2D::set_draw_order(DrawOrder p_order) {
 	draw_order = p_order;
-	RS::get_singleton()->particles_set_draw_order(particles, RS::ParticlesDrawOrder(p_order));
+	RS::get_singleton()->particles_set_draw_order(particles, RSE::ParticlesDrawOrder(p_order));
 }
 
 GPUParticles2D::DrawOrder GPUParticles2D::get_draw_order() const {
@@ -669,14 +670,14 @@ void GPUParticles2D::_notification(int p_what) {
 				}
 
 				Array arr;
-				arr.resize(RS::ARRAY_MAX);
-				arr[RS::ARRAY_VERTEX] = points;
-				arr[RS::ARRAY_TEX_UV] = uvs;
-				arr[RS::ARRAY_BONES] = bone_indices;
-				arr[RS::ARRAY_WEIGHTS] = bone_weights;
-				arr[RS::ARRAY_INDEX] = indices;
+				arr.resize(RSE::ARRAY_MAX);
+				arr[RSE::ARRAY_VERTEX] = points;
+				arr[RSE::ARRAY_TEX_UV] = uvs;
+				arr[RSE::ARRAY_BONES] = bone_indices;
+				arr[RSE::ARRAY_WEIGHTS] = bone_weights;
+				arr[RSE::ARRAY_INDEX] = indices;
 
-				RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+				RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RSE::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
 
 				Vector<Transform3D> xforms;
 				for (int i = 0; i <= trail_sections; i++) {
@@ -718,12 +719,12 @@ void GPUParticles2D::_notification(int p_what) {
 				Vector<int> indices = { 0, 1, 2, 0, 2, 3 };
 
 				Array arr;
-				arr.resize(RS::ARRAY_MAX);
-				arr[RS::ARRAY_VERTEX] = points;
-				arr[RS::ARRAY_TEX_UV] = uvs;
-				arr[RS::ARRAY_INDEX] = indices;
+				arr.resize(RSE::ARRAY_MAX);
+				arr[RSE::ARRAY_VERTEX] = points;
+				arr[RSE::ARRAY_TEX_UV] = uvs;
+				arr[RSE::ARRAY_INDEX] = indices;
 
-				RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+				RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RSE::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
 				RS::get_singleton()->particles_set_trail_bind_poses(particles, Vector<Transform3D>());
 			}
 			RS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid);
@@ -985,7 +986,7 @@ void GPUParticles2D::_bind_methods() {
 
 GPUParticles2D::GPUParticles2D() {
 	particles = RS::get_singleton()->particles_create();
-	RS::get_singleton()->particles_set_mode(particles, RS::PARTICLES_MODE_2D);
+	RS::get_singleton()->particles_set_mode(particles, RSE::PARTICLES_MODE_2D);
 
 	mesh = RS::get_singleton()->mesh_create();
 	RS::get_singleton()->particles_set_draw_passes(particles, 1);
