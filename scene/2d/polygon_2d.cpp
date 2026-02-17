@@ -237,6 +237,23 @@ void Polygon2D::_notification(int p_what) {
 						uvs.write[i] = texmat.xform(points[i]) / tex_size;
 					}
 				}
+			} else {
+				// Even without a texture, shaders will still need UVs to be usable.
+				int uv_size = uv.size();
+				if (uv_size != 0) {
+					// Case no texture, but UVs are still provided.
+					uvs.resize(uv_size);
+					const Vector2 *uvp = uv.ptr();
+					for (int i = 0; i < uv_size; i++) {
+						uvs.write[i] = uvp[i];
+					}
+				} else {
+					// Case no texture and no UVs, the points should give usable coords.
+					uvs.resize(len);
+					for (int i = 0; i < len; i++) {
+						uvs.write[i] = points[i];
+					}
+				}
 			}
 
 			if (skeleton_node && !invert && bone_weights.size()) {
