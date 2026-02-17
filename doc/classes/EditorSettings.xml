@@ -1292,6 +1292,33 @@
 			The port number to use to contact the HTTP and HTTPS proxy in the editor (for the asset library and export template downloads). See also [member network/http_proxy/host].
 			[b]Note:[/b] Godot currently doesn't automatically use system proxy settings, so you have to enter them manually here if needed.
 		</member>
+		<member name="network/language_server/enable_smart_resolve" type="bool" setter="" getter="">
+			If [code]true[/code] the language server will try to provide additional results when resolving symbols at the cost of showing wrong results. All symbols in the project are checked and resolved just based on their name, without taking context into account.
+			[codeblock]
+			func untyped(param):
+				param.print() # Will resolve to the global print method for e.g. hover hints.
+			[/codeblock]
+			When using static typing it is recommended to disable this setting, since it will mostly add false positives for typed code.
+			[b]Note:[/b] This setting also influences how symbols are resolved when using renaming capabilities.
+			[b]Note:[/b] The default value of this setting might change in future versions.
+		</member>
+		<member name="network/language_server/poll_limit_usec" type="int" setter="" getter="">
+			The upper limit of time, that the language server spends for IO each poll.
+		</member>
+		<member name="network/language_server/remote_host" type="String" setter="" getter="">
+			The host used to listen for language server clients.
+		</member>
+		<member name="network/language_server/remote_port" type="int" setter="" getter="">
+			The port used to listen for language server clients.
+			[b]Note:[/b] A port configured with command-line options will take priority over this setting: [code]--lsp-port &lt;port&gt;[/code].
+		</member>
+		<member name="network/language_server/show_native_symbols_in_editor" type="bool" setter="" getter="">
+			The declaration of native symbols can't be resolved to a position in the file system. If [code]true[/code] the language server will instead open the documentation for native symbols in the editor.
+			[b]Note:[/b] The VSCode plugin adds additional functionality which allows viewing Godot documentation directly in VSCode, so this option is usually not needed in VSCode.
+		</member>
+		<member name="network/language_server/use_thread" type="bool" setter="" getter="">
+			If [code]true[/code] the language server will run in a separate thread, if [code]false[/code] it will run on the main thread.
+		</member>
 		<member name="network/tls/editor_tls_certificates" type="String" setter="" getter="">
 			The TLS certificate bundle to use for HTTP requests made within the editor (e.g. from the AssetLib tab). If left empty, the [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-bundle.crt]included Mozilla certificate bundle[/url] will be used.
 		</member>

@@ -38,14 +38,6 @@
 int GDScriptLanguageServer::port_override = -1;
 
 GDScriptLanguageServer::GDScriptLanguageServer() {
-	// TODO: Move to editor_settings.cpp
-	_EDITOR_DEF("network/language_server/remote_host", host);
-	_EDITOR_DEF("network/language_server/remote_port", port);
-	_EDITOR_DEF("network/language_server/enable_smart_resolve", true);
-	_EDITOR_DEF("network/language_server/show_native_symbols_in_editor", false);
-	_EDITOR_DEF("network/language_server/use_thread", use_thread);
-	_EDITOR_DEF("network/language_server/poll_limit_usec", poll_limit_usec);
-
 	set_process_internal(true);
 }
 
