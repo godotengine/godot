@@ -784,7 +784,7 @@ void AudioServer::set_debug_mute(bool p_mute) {
 bool AudioServer::get_debug_mute() const {
 	return debug_mute;
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void AudioServer::set_bus_count(int p_count) {
 	ERR_FAIL_COND(p_count < 1);
