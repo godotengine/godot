@@ -499,7 +499,13 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 	ERR_FAIL_COND(shader_rid.is_null());
 
 	RID pipeline = RD::get_singleton()->render_pipeline_create(shader_rid, p_pipeline_key.framebuffer_format_id, p_pipeline_key.vertex_format_id, primitive_rd, raster_state, multisample_state, depth_stencil_state, blend_state, 0, 0, specialization_constants);
-	ERR_FAIL_COND(pipeline.is_null());
+	ERR_FAIL_COND_MSG(
+			pipeline.is_null(),
+			vformat("Forward+ pipeline creation failed for key %lld (version=%d, flags=%u, ubershader=%d).",
+					(int64_t)p_pipeline_key.hash(),
+					p_pipeline_key.version,
+					p_pipeline_key.color_pass_flags,
+					(int)p_pipeline_key.ubershader));
 
 	pipeline_hash_map.add_compiled_pipeline(p_pipeline_key.hash(), pipeline);
 }
