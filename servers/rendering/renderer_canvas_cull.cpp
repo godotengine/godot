@@ -1429,7 +1429,7 @@ void RendererCanvasCull::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, c
 	}
 }
 
-void RendererCanvasCull::canvas_item_add_ellipse(RID p_item, const Point2 &p_pos, float p_major, float p_minor, const Color &p_color, bool p_antialiased) {
+void RendererCanvasCull::canvas_item_add_ellipse(RID p_item, const Point2 &p_pos, float p_radius_x, float p_radius_y, const Color &p_color, bool p_antialiased) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
 
@@ -1454,8 +1454,8 @@ void RendererCanvasCull::canvas_item_add_ellipse(RID p_item, const Point2 &p_pos
 
 		for (int i = 0; i < ellipse_segments + 1; i++) {
 			float angle = i * ellipse_point_step;
-			points_ptr[i].x = Math::cos(angle) * p_major;
-			points_ptr[i].y = Math::sin(angle) * p_minor;
+			points_ptr[i].x = Math::cos(angle) * p_radius_x;
+			points_ptr[i].y = Math::sin(angle) * p_radius_y;
 			points_ptr[i] += p_pos;
 		}
 
@@ -1476,7 +1476,7 @@ void RendererCanvasCull::canvas_item_add_ellipse(RID p_item, const Point2 &p_pos
 	if (p_antialiased) {
 		float border_size = FEATHER_SIZE;
 
-		const float max_axis = fmax(p_major, p_minor) * 2.0f;
+		const float max_axis = fmax(p_radius_x, p_radius_y) * 2.0f;
 		if (0.0f <= max_axis && max_axis < 1.0f) {
 			border_size *= max_axis * 0.5f;
 		}
@@ -1504,12 +1504,12 @@ void RendererCanvasCull::canvas_item_add_ellipse(RID p_item, const Point2 &p_pos
 			const float c = Math::cos(angle);
 			const float s = Math::sin(angle);
 
-			points_ptr[i * 2].x = c * p_major;
-			points_ptr[i * 2].y = s * p_minor;
+			points_ptr[i * 2].x = c * p_radius_x;
+			points_ptr[i * 2].y = s * p_radius_y;
 			points_ptr[i * 2] += p_pos;
 
-			points_ptr[i * 2 + 1].x = c * (p_major + border_size);
-			points_ptr[i * 2 + 1].y = s * (p_minor + border_size);
+			points_ptr[i * 2 + 1].x = c * (p_radius_x + border_size);
+			points_ptr[i * 2 + 1].y = s * (p_radius_y + border_size);
 			points_ptr[i * 2 + 1] += p_pos;
 
 			colors_ptr[i * 2] = p_color;
