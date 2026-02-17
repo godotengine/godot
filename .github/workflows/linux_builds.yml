@@ -123,35 +123,6 @@ jobs:
             sudo apt-get install mesa-vulkan-drivers
           fi
 
-      - name: Setup Android SDK
-        if: matrix.proj-export
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y unzip openjdk-11-jdk wget
-          
-          export ANDROID_SDK_ROOT=$HOME/android-sdk
-          mkdir -p $ANDROID_SDK_ROOT
-
-          cd $ANDROID_SDK_ROOT
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-          unzip -q commandlinetools-linux-9477386_latest.zip
-          rm commandlinetools-linux-9477386_latest.zip
-
-          # Aceptar licencias
-          yes | ./cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
-
-          # Instalar lo mínimo necesario para exportar
-          ./cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT \
-            "platform-tools" \
-            "platforms;android-33"
-
-      - name: Configure Godot Android SDK path
-        if: matrix.proj-export
-        run: |
-          mkdir -p ~/.config/godot
-          echo "[editor]" > ~/.config/godot/editor_settings-4.tres
-          echo "export/android/android_sdk_path=\"$HOME/android-sdk\"" >> ~/.config/godot/editor_settings-4.tres
-
       - name: Free disk space on runner
         run: |
           echo "Disk usage before:" && df -h
