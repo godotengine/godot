@@ -2566,10 +2566,6 @@ void VisualShaderEditor::_set_mode(int p_which) {
 	set_current_shader_type((VisualShader::Type)saved_type);
 }
 
-Size2 VisualShaderEditor::get_minimum_size() const {
-	return Size2(10, 200);
-}
-
 void VisualShaderEditor::update_toggle_files_button() {
 	ERR_FAIL_NULL(toggle_files_list);
 	bool forward = toggle_files_list->is_visible() == is_layout_rtl();
