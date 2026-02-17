@@ -270,7 +270,7 @@ void RetargetModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scale_enabled", "enabled"), &RetargetModifier3D::set_scale_enabled);
 	ClassDB::bind_method(D_METHOD("is_scale_enabled"), &RetargetModifier3D::is_scale_enabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "profile", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonProfile"), "set_profile", "get_profile");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "profile", PROPERTY_HINT_RESOURCE_TYPE, SkeletonProfile::get_class_static()), "set_profile", "get_profile");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_global_pose"), "set_use_global_pose", "is_using_global_pose");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "enable", PROPERTY_HINT_FLAGS, "Position,Rotation,Scale"), "set_enable_flags", "get_enable_flags");
 

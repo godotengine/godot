@@ -34,6 +34,7 @@
 
 #include "../../openxr_util.h"
 
+#include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 
@@ -315,8 +316,8 @@ void OpenXRD3D12Extension::cleanup_swapchain_graphics_data(void **p_swapchain_gr
 }
 
 #define ENUM_TO_STRING_CASE(e) \
-	case e: {                  \
-		return String(#e);     \
+	case e: { \
+		return String(#e); \
 	} break;
 
 String OpenXRD3D12Extension::get_swapchain_format_name(int64_t p_swapchain_format) const {

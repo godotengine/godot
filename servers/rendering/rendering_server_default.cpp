@@ -34,6 +34,7 @@
 #include "core/profiling/profiling.h"
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
+#include "rendering_device.h"
 #include "rendering_server_globals.h"
 
 // careful, these may run in different threads than the rendering server
@@ -318,7 +319,7 @@ uint64_t RenderingServerDefault::get_rendering_info(RenderingInfo p_info) {
 	return RSG::utilities->get_rendering_info(p_info);
 }
 
-RenderingDevice::DeviceType RenderingServerDefault::get_video_adapter_type() const {
+RenderingDeviceEnums::DeviceType RenderingServerDefault::get_video_adapter_type() const {
 	return RSG::utilities->get_video_adapter_type();
 }
 

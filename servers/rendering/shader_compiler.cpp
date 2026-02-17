@@ -1187,6 +1187,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					bool is_radiance_texture = false;
 					bool texture_func_no_uv = false;
 					bool texture_func_returns_data = false;
+					bool texture_func_simple = false;
 
 					if (onode->op == SL::OP_STRUCT) {
 						code += _mkid(vnode->name);
@@ -1203,6 +1204,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							is_texture_func = texture_functions.has(vnode->name);
 							texture_func_no_uv = (vnode->name == "textureSize" || vnode->name == "textureQueryLevels");
 							texture_func_returns_data = texture_func_no_uv || vnode->name == "textureQueryLod";
+							texture_func_simple = vnode->name == "texture";
 						} else if (p_default_actions.renames.has(vnode->name)) {
 							code += p_default_actions.renames[vnode->name];
 						} else {
@@ -1340,6 +1342,10 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 									data_type_name = "multiviewSampler";
 									multiview_uv_needed = true;
 								} else if (is_radiance_texture) {
+									// We need to use an explicit level of detail to avoid mip mapping artifacts caused by the octahedral discontinuity.
+									if (texture_func_simple) {
+										code = code.replace("texture(", "textureLod(");
+									}
 									data_type_name = "sampler2D";
 								} else {
 									data_type_name = ShaderLanguage::get_datatype_name(onode->arguments[i]->get_datatype());
@@ -1376,6 +1382,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							code += node_code;
 						} else if (is_radiance_texture && !texture_func_no_uv && i == 2) {
 							node_code = "vec3_to_oct_with_border(" + node_code + ", params.border_size)";
+
+							// Need an explicit level of detail if one isn't provided by the user.
+							if (texture_func_simple && onode->arguments.size() == 3) {
+								node_code += ", 0.0";
+							}
 
 							code += node_code;
 						} else {

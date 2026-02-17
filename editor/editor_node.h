@@ -348,8 +348,6 @@ private:
 
 	Timer *screenshot_timer = nullptr;
 
-	uint64_t started_timestamp = 0;
-
 	RichTextLabel *load_errors = nullptr;
 	AcceptDialog *load_error_dialog = nullptr;
 	bool load_errors_queued_to_display = false;

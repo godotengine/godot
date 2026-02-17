@@ -990,6 +990,14 @@ void ContactConstraintManager::GetContactsFromCache(ContactAllocator &ioContactA
 			if (sDrawContactManifolds)
 				constraint.Draw(DebugRenderer::sInstance, Color::sYellow);
 		#endif // JPH_DEBUG_RENDERER
+
+		#ifdef JPH_TRACK_SIMULATION_STATS
+			// Track new contact constraints
+			if (!body1->IsStatic())
+				body1->GetMotionPropertiesUnchecked()->GetSimulationStats().mNumContactConstraints.fetch_add(1, memory_order_relaxed);
+			if (!body2->IsStatic())
+				body2->GetMotionPropertiesUnchecked()->GetSimulationStats().mNumContactConstraints.fetch_add(1, memory_order_relaxed);
+		#endif
 		}
 
 		// Mark contact as persisted so that we won't fire OnContactRemoved callbacks
@@ -1230,6 +1238,14 @@ bool ContactConstraintManager::TemplatedAddContactConstraint(ContactAllocator &i
 		if (sDrawContactManifolds)
 			constraint.Draw(DebugRenderer::sInstance, Color::sOrange);
 	#endif // JPH_DEBUG_RENDERER
+
+	#ifdef JPH_TRACK_SIMULATION_STATS
+		// Track new contact constraints
+		if constexpr (Type1 != EMotionType::Static)
+			inBody1.GetMotionPropertiesUnchecked()->GetSimulationStats().mNumContactConstraints.fetch_add(1, memory_order_relaxed);
+		if constexpr (Type2 != EMotionType::Static)
+			inBody2.GetMotionPropertiesUnchecked()->GetSimulationStats().mNumContactConstraints.fetch_add(1, memory_order_relaxed);
+	#endif
 	}
 	else
 	{

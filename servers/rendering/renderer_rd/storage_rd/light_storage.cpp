@@ -2157,7 +2157,7 @@ void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits
 	ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_atlas);
 	ERR_FAIL_NULL(shadow_atlas);
 	ERR_FAIL_COND(p_size < 0);
-	p_size = next_power_of_2((uint32_t)p_size);
+	p_size = Math::next_power_of_2((uint32_t)p_size);
 
 	if (p_size == shadow_atlas->size && p_16_bits == shadow_atlas->use_16_bits) {
 		return;
@@ -2194,7 +2194,7 @@ void LightStorage::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quad
 	ERR_FAIL_INDEX(p_quadrant, 4);
 	ERR_FAIL_INDEX(p_subdivision, 16384);
 
-	uint32_t subdiv = next_power_of_2((uint32_t)p_subdivision);
+	uint32_t subdiv = Math::next_power_of_2((uint32_t)p_subdivision);
 	if (subdiv & 0xaaaaaaaa) { //sqrt(subdiv) must be integer
 		subdiv <<= 1;
 	}
@@ -2389,7 +2389,7 @@ bool LightStorage::shadow_atlas_update_light(RID p_atlas, RID p_light_instance, 
 	}
 
 	uint32_t quad_size = shadow_atlas->size >> 1;
-	int desired_fit = MIN(quad_size / shadow_atlas->smallest_subdiv, next_power_of_2(uint32_t(quad_size * p_coverage)));
+	int desired_fit = MIN(quad_size / shadow_atlas->smallest_subdiv, Math::next_power_of_2(uint32_t(quad_size * p_coverage)));
 
 	int valid_quadrants[4];
 	int valid_quadrant_count = 0;
@@ -2554,7 +2554,7 @@ void LightStorage::update_directional_shadow_atlas() {
 	}
 }
 void LightStorage::directional_shadow_atlas_set_size(int p_size, bool p_16_bits) {
-	p_size = nearest_power_of_2_templated(p_size);
+	p_size = Math::nearest_power_of_2_templated(p_size);
 
 	if (directional_shadow.size == p_size && directional_shadow.use_16_bits == p_16_bits) {
 		return;

@@ -40,6 +40,7 @@
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/rendering_device_driver.h"
+#include "servers/rendering/rendering_device_enums.h"
 #include "servers/rendering/rendering_device_graph.h"
 
 class RDTextureFormat;
@@ -1278,6 +1279,7 @@ public:
 	int screen_get_height(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
 	int screen_get_pre_rotation_degrees(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
 	FramebufferFormatID screen_get_framebuffer_format(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
+	ColorSpace screen_get_color_space(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
 	Error screen_free(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
 
 private:
@@ -1297,7 +1299,8 @@ private:
 		RDG::ResourceTracker *draw_tracker = nullptr;
 		Vector<RDG::ResourceTracker *> draw_trackers;
 
-		RID scratch_buffer;
+		// Scratch buffer used during build, owned by the AS.
+		RDD::BufferID scratch_buffer;
 		RID vertex_array;
 		RID index_array;
 		RID transform_buffer;
@@ -1598,9 +1601,10 @@ private:
 		BinaryMutex operations_mutex;
 	};
 
-	LocalVector<TransferWorker *> transfer_worker_pool;
+	TightLocalVector<TransferWorker *> transfer_worker_pool;
+	uint32_t transfer_worker_pool_size = 0;
 	uint32_t transfer_worker_pool_max_size = 1;
-	LocalVector<uint64_t> transfer_worker_operation_used_by_draw;
+	TightLocalVector<uint64_t> transfer_worker_operation_used_by_draw;
 	LocalVector<uint32_t> transfer_worker_pool_available_list;
 	LocalVector<RDD::TextureBarrier> transfer_worker_pool_texture_barriers;
 	BinaryMutex transfer_worker_pool_mutex;
@@ -1833,7 +1837,7 @@ public:
 
 	String get_device_vendor_name() const;
 	String get_device_name() const;
-	DeviceType get_device_type() const;
+	RenderingDeviceEnums::DeviceType get_device_type() const;
 	String get_device_api_name() const;
 	String get_device_api_version() const;
 	String get_device_pipeline_cache_uuid() const;
@@ -1906,7 +1910,7 @@ private:
 	void _raytracing_list_set_push_constant(RaytracingListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size);
 };
 
-VARIANT_ENUM_CAST(RenderingDevice::DeviceType)
+VARIANT_ENUM_CAST_EXT(RenderingDeviceEnums::DeviceType, RenderingDevice::DeviceType)
 VARIANT_ENUM_CAST(RenderingDevice::DriverResource)
 VARIANT_ENUM_CAST(RenderingDevice::ShaderStage)
 VARIANT_ENUM_CAST(RenderingDevice::ShaderLanguage)

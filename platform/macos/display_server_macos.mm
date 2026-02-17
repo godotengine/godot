@@ -38,6 +38,7 @@
 #import "godot_menu_delegate.h"
 #import "godot_menu_item.h"
 #import "godot_open_save_delegate.h"
+#import "godot_progress_view.h"
 #import "godot_status_item.h"
 #import "godot_window.h"
 #import "godot_window_delegate.h"
@@ -73,6 +74,7 @@
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+#include "servers/rendering/rendering_device.h"
 #endif
 
 #if defined(ACCESSKIT_ENABLED)
@@ -185,7 +187,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 #endif
 #ifdef METAL_ENABLED
 			if (rendering_driver == "metal") {
-				wpd.metal.layer = (CAMetalLayer *)layer;
+				wpd.metal.layer = (__bridge CA::MetalLayer *)layer;
 			}
 #endif
 			Error err = rendering_context->window_create(window_id_counter, &wpd);
@@ -2714,6 +2716,28 @@ void DisplayServerMacOS::window_request_attention(WindowID p_window) {
 	[NSApp requestUserAttention:NSCriticalRequest];
 }
 
+void DisplayServerMacOS::window_set_taskbar_progress_value(float p_value, WindowID p_window) {
+	ERR_FAIL_COND(p_window != MAIN_WINDOW_ID);
+
+	if (!dock_progress) {
+		dock_progress = [[GodotProgressView alloc] init];
+		[NSApp.dockTile setContentView:dock_progress];
+	}
+
+	[dock_progress setValue:p_value];
+}
+
+void DisplayServerMacOS::window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window) {
+	ERR_FAIL_COND(p_window != MAIN_WINDOW_ID);
+
+	if (!dock_progress) {
+		dock_progress = [[GodotProgressView alloc] init];
+		[NSApp.dockTile setContentView:dock_progress];
+	}
+
+	[dock_progress setState:p_state];
+}
+
 void DisplayServerMacOS::window_move_to_foreground(WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -3098,9 +3122,9 @@ void DisplayServerMacOS::enable_for_stealing_focus(OS::ProcessID pid) {
 }
 
 #define GET_OR_FAIL_V(m_val, m_map, m_key, m_retval) \
-	m_val = m_map.getptr(m_key);                     \
-	if (m_val == nullptr) {                          \
-		ERR_FAIL_V(m_retval);                        \
+	m_val = m_map.getptr(m_key); \
+	if (m_val == nullptr) { \
+		ERR_FAIL_V(m_retval); \
 	}
 
 uint32_t DisplayServerMacOS::window_get_display_id(WindowID p_window) const {
@@ -3257,6 +3281,11 @@ void DisplayServerMacOS::_process_events(bool p_pump) {
 				[wd.window_object setIgnoresMouseEvents:NO];
 			}
 		}
+	}
+
+	if (dock_progress) {
+		dock_progress.needsDisplay = true;
+		[NSApp.dockTile display];
 	}
 
 	_THREAD_SAFE_UNLOCK_

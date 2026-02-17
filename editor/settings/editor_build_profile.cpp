@@ -490,7 +490,7 @@ LocalVector<EditorBuildProfile::BuildOption> EditorBuildProfile::get_build_optio
 
 HashMap<String, LocalVector<Variant>> EditorBuildProfile::get_build_option_settings(BuildOption p_build_option) {
 	ERR_FAIL_INDEX_V(p_build_option, BUILD_OPTION_MAX, (HashMap<String, LocalVector<Variant>>()));
-	return build_option_settings.has(p_build_option) ? build_option_settings[p_build_option] : HashMap<String, LocalVector<Variant>>();
+	return build_option_settings.has(p_build_option) ? HashMap<String, LocalVector<Variant>>(build_option_settings[p_build_option]) : HashMap<String, LocalVector<Variant>>();
 }
 
 LocalVector<String> EditorBuildProfile::get_build_option_classes(BuildOption p_build_option) {

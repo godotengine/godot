@@ -160,7 +160,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 #endif
 #ifdef METAL_ENABLED
 		if (rendering_driver == "metal") {
-			wpd.metal.layer = (CAMetalLayer *)layer;
+			wpd.metal.layer = (__bridge CA::MetalLayer *)layer;
 		}
 #endif
 		Error err = rendering_context->window_create(window_id_counter, &wpd);
@@ -703,6 +703,14 @@ bool DisplayServerEmbedded::window_get_flag(WindowFlags p_flag, WindowID p_windo
 
 void DisplayServerEmbedded::window_request_attention(WindowID p_window) {
 	// Not supported
+}
+
+void DisplayServerEmbedded::window_set_taskbar_progress_value(float p_value, WindowID p_window) {
+	// Not supported.
+}
+
+void DisplayServerEmbedded::window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window) {
+	// Not supported.
 }
 
 void DisplayServerEmbedded::window_move_to_foreground(WindowID p_window) {

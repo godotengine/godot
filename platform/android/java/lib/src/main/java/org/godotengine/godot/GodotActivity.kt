@@ -202,7 +202,8 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		handleStartIntent(intent, false)
 	}
 
-	private fun handleStartIntent(intent: Intent, newLaunch: Boolean) {
+	@CallSuper
+	protected open fun handleStartIntent(intent: Intent, newLaunch: Boolean) {
 		if (!newLaunch) {
 			val newLaunchRequested = intent.getBooleanExtra(EXTRA_NEW_LAUNCH, false)
 			if (newLaunchRequested) {

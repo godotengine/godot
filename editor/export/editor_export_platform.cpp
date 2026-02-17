@@ -44,6 +44,7 @@
 #include "core/io/resource_uid.h"
 #include "core/math/random_pcg.h"
 #include "core/os/shared_object.h"
+#include "core/string/translation_server.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -1008,12 +1009,15 @@ Dictionary EditorExportPlatform::get_internal_export_files(const Ref<EditorExpor
 		bool include_data = (bool)get_project_setting(p_preset, "internationalization/locale/include_text_server_data");
 		if (!include_data) {
 			Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
-			translations.push_back(get_project_setting(p_preset, "internationalization/locale/fallback"));
 			for (const String &t : translations) {
-				if (TS->is_locale_using_support_data(t)) {
+				Ref<Translation> tr = ResourceLoader::load(t);
+				if (tr.is_valid() && TS->is_locale_using_support_data(tr->get_locale())) {
 					include_data = true;
 					break;
 				}
+			}
+			if (TS->is_locale_using_support_data(get_project_setting(p_preset, "internationalization/locale/fallback"))) {
+				include_data = true;
 			}
 		}
 		if (include_data) {

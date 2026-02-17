@@ -297,7 +297,7 @@ void MultiplayerAPI::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_peers"), &MultiplayerAPI::get_peer_ids);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer_peer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerPeer", PROPERTY_USAGE_NONE), "set_multiplayer_peer", "get_multiplayer_peer");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer_peer", PROPERTY_HINT_RESOURCE_TYPE, MultiplayerPeer::get_class_static(), PROPERTY_USAGE_NONE), "set_multiplayer_peer", "get_multiplayer_peer");
 
 	ClassDB::bind_static_method("MultiplayerAPI", D_METHOD("set_default_interface", "interface_name"), &MultiplayerAPI::set_default_interface);
 	ClassDB::bind_static_method("MultiplayerAPI", D_METHOD("get_default_interface"), &MultiplayerAPI::get_default_interface);

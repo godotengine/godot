@@ -98,28 +98,28 @@ public:
 				id(p_id) {}
 	};
 
-#define DEFINE_ID(m_name)                                                         \
-	struct m_name##ID : public ID {                                               \
-		_ALWAYS_INLINE_ explicit operator bool() const {                          \
-			return id != 0;                                                       \
-		}                                                                         \
-		_ALWAYS_INLINE_ m_name##ID &operator=(m_name##ID p_other) {               \
-			id = p_other.id;                                                      \
-			return *this;                                                         \
-		}                                                                         \
-		_ALWAYS_INLINE_ bool operator<(const m_name##ID &p_other) const {         \
-			return id < p_other.id;                                               \
-		}                                                                         \
-		_ALWAYS_INLINE_ bool operator==(const m_name##ID &p_other) const {        \
-			return id == p_other.id;                                              \
-		}                                                                         \
-		_ALWAYS_INLINE_ bool operator!=(const m_name##ID &p_other) const {        \
-			return id != p_other.id;                                              \
-		}                                                                         \
+#define DEFINE_ID(m_name) \
+	struct m_name##ID : public ID { \
+		_ALWAYS_INLINE_ explicit operator bool() const { \
+			return id != 0; \
+		} \
+		_ALWAYS_INLINE_ m_name##ID &operator=(m_name##ID p_other) { \
+			id = p_other.id; \
+			return *this; \
+		} \
+		_ALWAYS_INLINE_ bool operator<(const m_name##ID &p_other) const { \
+			return id < p_other.id; \
+		} \
+		_ALWAYS_INLINE_ bool operator==(const m_name##ID &p_other) const { \
+			return id == p_other.id; \
+		} \
+		_ALWAYS_INLINE_ bool operator!=(const m_name##ID &p_other) const { \
+			return id != p_other.id; \
+		} \
 		_ALWAYS_INLINE_ m_name##ID(const m_name##ID &p_other) : ID(p_other.id) {} \
-		_ALWAYS_INLINE_ explicit m_name##ID(uint64_t p_int) : ID(p_int) {}        \
+		_ALWAYS_INLINE_ explicit m_name##ID(uint64_t p_int) : ID(p_int) {} \
 		_ALWAYS_INLINE_ explicit m_name##ID(void *p_ptr) : ID((uint64_t)p_ptr) {} \
-		_ALWAYS_INLINE_ m_name##ID() = default;                                   \
+		_ALWAYS_INLINE_ m_name##ID() = default; \
 	};
 
 	// Id types declared before anything else to prevent cyclic dependencies between the different concerns.
@@ -480,6 +480,9 @@ public:
 
 	// Retrieve the format used by the swap chain's framebuffers.
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) = 0;
+
+	// Retrieve the color space used by the swap chain's framebuffers.
+	virtual ColorSpace swap_chain_get_color_space(SwapChainID p_swap_chain) = 0;
 
 	// Tells the swapchain the max_fps so it can use the proper frame pacing.
 	// Android uses this with Swappy library. Some implementations or platforms may ignore this hint.

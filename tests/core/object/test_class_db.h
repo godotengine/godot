@@ -496,9 +496,6 @@ void validate_class(const Context &p_context, const ExposedClass &p_exposed_clas
 				"Object class is registered as a singleton.");
 	}
 
-	TEST_FAIL_COND((p_exposed_class.is_singleton && p_exposed_class.base != p_context.names_cache.object_class),
-			"Singleton base class '", String(p_exposed_class.base), "' is not Object, for class '", p_exposed_class.name, "'.");
-
 	TEST_FAIL_COND((is_derived_type && !p_context.exposed_classes.has(p_exposed_class.base)),
 			"Base type '", p_exposed_class.base.operator String(), "' does not exist, for class '", p_exposed_class.name, "'.");
 

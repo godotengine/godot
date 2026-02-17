@@ -102,11 +102,6 @@ const Vector<String> classes_with_csharp_differences = {
 };
 #endif
 
-static const char32_t nbsp_chr = 160;
-static const String nbsp = String::chr(nbsp_chr);
-static const String nbsp_equal_nbsp = nbsp + "=" + nbsp;
-static const String colon_nbsp = ":" + nbsp;
-
 const Vector<String> packed_array_types = {
 	"PackedByteArray",
 	"PackedColorArray",
@@ -120,8 +115,22 @@ const Vector<String> packed_array_types = {
 	"PackedVector4Array",
 };
 
-static String _replace_nbsp_with_space(const String &p_string) {
-	return p_string.replace_char(nbsp_chr, ' ');
+static const char32_t nbsp_chr = 160;
+static const String nbsp = String::chr(nbsp_chr);
+static const String nbsp_equal_nbsp = nbsp + "=" + nbsp;
+static const String colon_nbsp = ":" + nbsp;
+
+static const char32_t wj_chr = 8288;
+static const String cr_wj = "\r" + String::chr(wj_chr);
+
+static String _fix_newlines(const String &p_string) {
+	// `\n` starts a new paragraph, `\r` just adds a break to existing one.
+	// Add a non-printable character "WORD JOINER" so that multi-breaks work correctly (`RichTextLabel` bug?).
+	return p_string.replace("\n", cr_wj);
+}
+
+static String _fix_selection(const String &p_string) {
+	return p_string.replace_char(nbsp_chr, ' ').remove_char(wj_chr);
 }
 
 static String _fix_constant(const String &p_constant) {
@@ -209,6 +218,8 @@ void EditorHelp::_update_theme_item_cache() {
 	theme_cache.qualifier_color = get_theme_color(SNAME("qualifier_color"), SNAME("EditorHelp"));
 	theme_cache.type_color = get_theme_color(SNAME("type_color"), SNAME("EditorHelp"));
 	theme_cache.override_color = get_theme_color(SNAME("override_color"), SNAME("EditorHelp"));
+	theme_cache.primary_hr_color = Color(theme_cache.title_color, 0.25);
+	theme_cache.secondary_hr_color = Color(theme_cache.comment_color, 0.25);
 
 	theme_cache.doc_font = get_theme_font(SNAME("doc"), EditorStringName(EditorFonts));
 	theme_cache.doc_bold_font = get_theme_font(SNAME("doc_bold"), EditorStringName(EditorFonts));
@@ -225,14 +236,17 @@ void EditorHelp::_update_theme_item_cache() {
 	theme_cache.background_style = get_theme_stylebox(SNAME("background"), SNAME("EditorHelp"));
 
 	class_desc->begin_bulk_theme_override();
+
 	class_desc->add_theme_font_override("normal_font", theme_cache.doc_font);
 	class_desc->add_theme_font_size_override("normal_font_size", theme_cache.doc_font_size);
 
 	class_desc->add_theme_constant_override(SceneStringName(line_separation), get_theme_constant(SceneStringName(line_separation), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override(SceneStringName(paragraph_separation), get_theme_constant(SceneStringName(paragraph_separation), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("table_h_separation", get_theme_constant(SNAME("table_h_separation"), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("table_v_separation", get_theme_constant(SNAME("table_v_separation"), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("text_highlight_h_padding", get_theme_constant(SNAME("text_highlight_h_padding"), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("text_highlight_v_padding", get_theme_constant(SNAME("text_highlight_v_padding"), SNAME("EditorHelp")));
+
 	class_desc->end_bulk_theme_override();
 }
 
@@ -488,56 +502,56 @@ void EditorHelp::_add_type_icon(const String &p_type, int p_size, const String &
 
 // Macros for assigning the deprecated/experimental marks to class members in overview.
 
-#define DEPRECATED_DOC_TAG                                                                   \
-	class_desc->push_font(theme_cache.doc_bold_font);                                        \
+#define DEPRECATED_DOC_TAG \
+	class_desc->push_font(theme_cache.doc_bold_font); \
 	class_desc->push_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor))); \
-	Ref<Texture2D> error_icon = get_editor_theme_icon(SNAME("StatusError"));                 \
-	class_desc->add_image(error_icon, error_icon->get_width(), error_icon->get_height());    \
-	class_desc->add_text(String::chr(160) + TTR("Deprecated"));                              \
-	class_desc->pop();                                                                       \
+	Ref<Texture2D> error_icon = get_editor_theme_icon(SNAME("StatusError")); \
+	class_desc->add_image(error_icon, error_icon->get_width(), error_icon->get_height()); \
+	class_desc->add_text(String::chr(160) + TTR("Deprecated")); \
+	class_desc->pop(); \
 	class_desc->pop();
 
-#define EXPERIMENTAL_DOC_TAG                                                                    \
-	class_desc->push_font(theme_cache.doc_bold_font);                                           \
-	class_desc->push_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));  \
-	Ref<Texture2D> warning_icon = get_editor_theme_icon(SNAME("NodeWarning"));                  \
+#define EXPERIMENTAL_DOC_TAG \
+	class_desc->push_font(theme_cache.doc_bold_font); \
+	class_desc->push_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor))); \
+	Ref<Texture2D> warning_icon = get_editor_theme_icon(SNAME("NodeWarning")); \
 	class_desc->add_image(warning_icon, warning_icon->get_width(), warning_icon->get_height()); \
-	class_desc->add_text(String::chr(160) + TTR("Experimental"));                               \
-	class_desc->pop();                                                                          \
+	class_desc->add_text(String::chr(160) + TTR("Experimental")); \
+	class_desc->pop(); \
 	class_desc->pop();
 
 // Macros for displaying the deprecated/experimental info in class member descriptions.
 
-#define DEPRECATED_DOC_MSG(m_message, m_default_message)                                     \
-	Ref<Texture2D> error_icon = get_editor_theme_icon(SNAME("StatusError"));                 \
-	class_desc->add_image(error_icon, error_icon->get_width(), error_icon->get_height());    \
-	class_desc->add_text(nbsp);                                                              \
+#define DEPRECATED_DOC_MSG(m_message, m_default_message) \
+	Ref<Texture2D> error_icon = get_editor_theme_icon(SNAME("StatusError")); \
+	class_desc->add_image(error_icon, error_icon->get_width(), error_icon->get_height()); \
+	class_desc->add_text(nbsp); \
 	class_desc->push_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor))); \
-	class_desc->push_font(theme_cache.doc_bold_font);                                        \
-	class_desc->add_text(TTR("Deprecated:"));                                                \
-	class_desc->pop();                                                                       \
-	class_desc->pop();                                                                       \
-	class_desc->add_text(" ");                                                               \
-	if ((m_message).is_empty()) {                                                            \
-		class_desc->add_text(m_default_message);                                             \
-	} else {                                                                                 \
-		_add_text(m_message);                                                                \
+	class_desc->push_font(theme_cache.doc_bold_font); \
+	class_desc->add_text(TTR("Deprecated:")); \
+	class_desc->pop(); \
+	class_desc->pop(); \
+	class_desc->add_text(" "); \
+	if ((m_message).is_empty()) { \
+		class_desc->add_text(m_default_message); \
+	} else { \
+		_add_text(m_message); \
 	}
 
-#define EXPERIMENTAL_DOC_MSG(m_message, m_default_message)                                      \
-	Ref<Texture2D> warning_icon = get_editor_theme_icon(SNAME("NodeWarning"));                  \
+#define EXPERIMENTAL_DOC_MSG(m_message, m_default_message) \
+	Ref<Texture2D> warning_icon = get_editor_theme_icon(SNAME("NodeWarning")); \
 	class_desc->add_image(warning_icon, warning_icon->get_width(), warning_icon->get_height()); \
-	class_desc->add_text(nbsp);                                                                 \
-	class_desc->push_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));  \
-	class_desc->push_font(theme_cache.doc_bold_font);                                           \
-	class_desc->add_text(TTR("Experimental:"));                                                 \
-	class_desc->pop();                                                                          \
-	class_desc->pop();                                                                          \
-	class_desc->add_text(" ");                                                                  \
-	if ((m_message).is_empty()) {                                                               \
-		class_desc->add_text(m_default_message);                                                \
-	} else {                                                                                    \
-		_add_text(m_message);                                                                   \
+	class_desc->add_text(nbsp); \
+	class_desc->push_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor))); \
+	class_desc->push_font(theme_cache.doc_bold_font); \
+	class_desc->add_text(TTR("Experimental:")); \
+	class_desc->pop(); \
+	class_desc->pop(); \
+	class_desc->add_text(" "); \
+	if ((m_message).is_empty()) { \
+		class_desc->add_text(m_default_message); \
+	} else { \
+		_add_text(m_message); \
 	}
 
 void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview, bool p_override) {
@@ -739,9 +753,7 @@ void EditorHelp::_update_method_list(MethodType p_method_type, const Vector<DocD
 	_pop_title_font();
 
 	class_desc->add_newline();
-	class_desc->add_newline();
 
-	class_desc->push_indent(1);
 	_push_code_font();
 	class_desc->push_table(2);
 	class_desc->set_table_column_expand(1, true);
@@ -793,14 +805,13 @@ void EditorHelp::_update_method_list(MethodType p_method_type, const Vector<DocD
 
 	class_desc->pop(); // table
 	_pop_code_font();
-	class_desc->pop(); // indent
 }
 
 void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc, MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods) {
 #define HANDLE_DOC(m_string) ((p_classdoc.is_script_doc ? (m_string) : DTR(m_string)).strip_edges())
 
 	class_desc->add_newline();
-	class_desc->add_newline();
+	class_desc->add_hr(100, 2, theme_cache.primary_hr_color);
 	class_desc->add_newline();
 
 	static const char *titles_by_type[METHOD_TYPE_MAX] = {
@@ -817,29 +828,33 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 
 	String link_color_text = theme_cache.title_color.to_html(false);
 
+	bool is_first_method = true;
 	for (int pass = 0; pass < 2; pass++) {
-		Vector<DocData::MethodDoc> methods_filtered;
+		Vector<const DocData::MethodDoc *> methods_filtered;
 
-		for (int i = 0; i < p_methods.size(); i++) {
-			const String &q = p_methods[i].qualifiers;
+		for (const DocData::MethodDoc &method : p_methods) {
+			const String &q = method.qualifiers;
 			if ((pass == 0 && q.contains("virtual")) || (pass == 1 && !q.contains("virtual"))) {
-				methods_filtered.push_back(p_methods[i]);
+				methods_filtered.push_back(&method);
 			}
 		}
 
 		for (int i = 0; i < methods_filtered.size(); i++) {
-			const DocData::MethodDoc &method = methods_filtered[i];
+			const DocData::MethodDoc &method = *methods_filtered[i];
 
 			class_desc->add_newline();
-			class_desc->add_newline();
-			class_desc->add_newline();
+			if (is_first_method) {
+				is_first_method = false;
+			} else {
+				class_desc->add_hr(100, 1, theme_cache.secondary_hr_color);
+				class_desc->add_newline();
+			}
 
 			_push_code_font();
 			// For constructors always point to the first one.
 			_add_method(method, false, (p_method_type != METHOD_TYPE_CONSTRUCTOR || i == 0));
 			_pop_code_font();
 
-			class_desc->add_newline();
 			class_desc->add_newline();
 
 			class_desc->push_indent(1);
@@ -862,7 +877,6 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 			if (method.is_experimental) {
 				if (has_prev_text) {
 					class_desc->add_newline();
-					class_desc->add_newline();
 				}
 				has_prev_text = true;
 
@@ -876,7 +890,6 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 
 			if (!method.errors_returned.is_empty()) {
 				if (has_prev_text) {
-					class_desc->add_newline();
 					class_desc->add_newline();
 				}
 				has_prev_text = true;
@@ -910,14 +923,12 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 			if (!descr.is_empty()) {
 				if (has_prev_text) {
 					class_desc->add_newline();
-					class_desc->add_newline();
 				}
 				has_prev_text = true;
 
 				_add_text(descr);
 			} else if (!is_documented) {
 				if (has_prev_text) {
-					class_desc->add_newline();
 					class_desc->add_newline();
 				}
 				has_prev_text = true;
@@ -1032,7 +1043,7 @@ void EditorHelp::_update_doc() {
 
 		_push_normal_font();
 		class_desc->push_color(theme_cache.title_color);
-		class_desc->add_text(TTR("Inherited by:") + " ");
+		class_desc->add_text(TTR("Inherited By:") + " ");
 
 		for (RBSet<String, NaturalNoCaseComparator>::Element *itr = doc->inheriting[cd.name].front(); itr; itr = itr->next()) {
 			if (itr->prev()) {
@@ -1048,60 +1059,45 @@ void EditorHelp::_update_doc() {
 		_pop_normal_font();
 	}
 
-	bool has_description = false;
-
-	// Brief description
-	const String brief_class_descr = HANDLE_DOC(cd.brief_description);
-	if (!brief_class_descr.is_empty()) {
-		has_description = true;
-
-		class_desc->add_newline();
-		class_desc->add_newline();
-
-		class_desc->push_indent(1);
-		class_desc->push_font(theme_cache.doc_bold_font);
-		class_desc->push_color(theme_cache.text_color);
-
-		_add_text(brief_class_descr);
-
-		class_desc->pop(); // color
-		class_desc->pop(); // font
-		class_desc->pop(); // indent
-	}
-
 	// Class description
+	class_desc->add_newline();
+	class_desc->add_newline();
+
+	section_line.push_back(Pair<String, int>(TTR("Description"), class_desc->get_paragraph_count() - 2));
+	description_line = class_desc->get_paragraph_count() - 2;
+	_push_title_font();
+	class_desc->add_text(TTR("Description"));
+	_pop_title_font();
+
+	const String brief_class_descr = HANDLE_DOC(cd.brief_description);
 	const String class_descr = HANDLE_DOC(cd.description);
-	if (!class_descr.is_empty()) {
-		has_description = true;
+	if (!brief_class_descr.is_empty() || !class_descr.is_empty()) {
+		if (!brief_class_descr.is_empty()) {
+			class_desc->add_newline();
 
-		class_desc->add_newline();
-		class_desc->add_newline();
+			class_desc->push_font(theme_cache.doc_bold_font);
+			class_desc->push_color(theme_cache.text_color);
 
-		section_line.push_back(Pair<String, int>(TTR("Description"), class_desc->get_paragraph_count() - 2));
-		description_line = class_desc->get_paragraph_count() - 2;
-		_push_title_font();
-		class_desc->add_text(TTR("Description"));
-		_pop_title_font();
+			_add_text(brief_class_descr);
 
-		class_desc->add_newline();
-		class_desc->add_newline();
+			class_desc->pop(); // color
+			class_desc->pop(); // font
+		}
 
-		class_desc->push_indent(1);
-		_push_normal_font();
-		class_desc->push_color(theme_cache.text_color);
+		if (!class_descr.is_empty()) {
+			class_desc->add_newline();
 
-		_add_text(class_descr);
+			_push_normal_font();
+			class_desc->push_color(theme_cache.text_color);
 
-		class_desc->pop(); // color
-		_pop_normal_font();
-		class_desc->pop(); // indent
-	}
+			_add_text(class_descr);
 
-	if (!has_description) {
-		class_desc->add_newline();
+			class_desc->pop(); // color
+			_pop_normal_font();
+		}
+	} else {
 		class_desc->add_newline();
 
-		class_desc->push_indent(1);
 		_push_normal_font();
 
 		class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
@@ -1116,17 +1112,14 @@ void EditorHelp::_update_doc() {
 		class_desc->pop(); // color
 
 		_pop_normal_font();
-		class_desc->pop(); // indent
 	}
 
 #ifdef MODULE_MONO_ENABLED
 	if (classes_with_csharp_differences.has(cd.name)) {
 		class_desc->add_newline();
-		class_desc->add_newline();
 
 		const String &csharp_differences_url = vformat("%s/tutorials/scripting/c_sharp/c_sharp_differences.html", GODOT_VERSION_DOCS_URL);
 
-		class_desc->push_indent(1);
 		_push_normal_font();
 		class_desc->push_color(theme_cache.text_color);
 
@@ -1134,7 +1127,6 @@ void EditorHelp::_update_doc() {
 
 		class_desc->pop(); // color
 		_pop_normal_font();
-		class_desc->pop(); // indent
 	}
 #endif
 
@@ -1143,6 +1135,8 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 		class_desc->add_newline();
 
+		section_line.push_back(Pair<String, int>(TTR("Online Tutorials"), class_desc->get_paragraph_count() - 2));
+		description_line = class_desc->get_paragraph_count() - 2;
 		_push_title_font();
 		class_desc->add_text(TTR("Online Tutorials"));
 		_pop_title_font();
@@ -1153,6 +1147,7 @@ void EditorHelp::_update_doc() {
 		_push_code_font();
 		class_desc->push_color(theme_cache.symbol_color);
 
+		bool is_first_tutorial = true;
 		for (const DocData::TutorialDoc &tutorial : cd.tutorials) {
 			const String link = HANDLE_DOC(tutorial.link);
 
@@ -1166,7 +1161,13 @@ void EditorHelp::_update_doc() {
 				}
 			}
 
-			class_desc->add_newline();
+			if (is_first_tutorial) {
+				is_first_tutorial = false;
+			} else {
+				// `\n` starts a new paragraph, `\r` just adds a break to existing one.
+				class_desc->add_text("\r");
+			}
+
 			_add_bulletpoint();
 			class_desc->append_text("[url=" + link + "]" + link_text + "[/url]");
 		}
@@ -1203,9 +1204,7 @@ void EditorHelp::_update_doc() {
 		_pop_title_font();
 
 		class_desc->add_newline();
-		class_desc->add_newline();
 
-		class_desc->push_indent(1);
 		_push_code_font();
 		class_desc->push_table(4);
 		class_desc->set_table_column_expand(1, true);
@@ -1365,7 +1364,6 @@ void EditorHelp::_update_doc() {
 
 		class_desc->pop(); // table
 		_pop_code_font();
-		class_desc->pop(); // indent
 	}
 
 	// Methods overview
@@ -1411,6 +1409,7 @@ void EditorHelp::_update_doc() {
 	// Theme properties
 	if (!cd.theme_properties.is_empty()) {
 		class_desc->add_newline();
+		class_desc->add_hr(100, 2, theme_cache.primary_hr_color);
 		class_desc->add_newline();
 
 		section_line.push_back(Pair<String, int>(TTR("Theme Properties"), class_desc->get_paragraph_count() - 2));
@@ -1432,7 +1431,6 @@ void EditorHelp::_update_doc() {
 				theme_data_type = theme_item.data_type;
 
 				class_desc->add_newline();
-				class_desc->add_newline();
 
 				class_desc->push_indent(1);
 				_push_title_font();
@@ -1447,7 +1445,6 @@ void EditorHelp::_update_doc() {
 				class_desc->pop(); // indent
 			}
 
-			class_desc->add_newline();
 			class_desc->add_newline();
 
 			theme_property_line[theme_item.name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
@@ -1499,7 +1496,6 @@ void EditorHelp::_update_doc() {
 			if (theme_item.is_experimental) {
 				if (has_prev_text) {
 					class_desc->add_newline();
-					class_desc->add_newline();
 				}
 				has_prev_text = true;
 				EXPERIMENTAL_DOC_MSG(HANDLE_DOC(theme_item.experimental_message), TTR("This theme property may be changed or removed in future versions."));
@@ -1508,7 +1504,6 @@ void EditorHelp::_update_doc() {
 			const String descr = HANDLE_DOC(theme_item.description);
 			if (!descr.is_empty()) {
 				if (has_prev_text) {
-					class_desc->add_newline();
 					class_desc->add_newline();
 				}
 				has_prev_text = true;
@@ -1540,7 +1535,7 @@ void EditorHelp::_update_doc() {
 		}
 
 		bool header_added = false;
-
+		bool is_first_signal = true;
 		for (const DocData::MethodDoc &signal : cd.signals) {
 			// Ignore undocumented private.
 			const bool is_documented = signal.is_deprecated || signal.is_experimental || !signal.description.strip_edges().is_empty();
@@ -1552,6 +1547,7 @@ void EditorHelp::_update_doc() {
 				header_added = true;
 
 				class_desc->add_newline();
+				class_desc->add_hr(100, 2, theme_cache.primary_hr_color);
 				class_desc->add_newline();
 
 				section_line.push_back(Pair<String, int>(TTR("Signals"), class_desc->get_paragraph_count() - 2));
@@ -1561,11 +1557,14 @@ void EditorHelp::_update_doc() {
 			}
 
 			class_desc->add_newline();
-			class_desc->add_newline();
+			if (is_first_signal) {
+				is_first_signal = false;
+			} else {
+				class_desc->add_hr(100, 1, theme_cache.secondary_hr_color);
+				class_desc->add_newline();
+			}
 
 			signal_line[signal.name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
-
-			class_desc->push_indent(1);
 
 			// Signal header.
 			_push_code_font();
@@ -1624,7 +1623,6 @@ void EditorHelp::_update_doc() {
 			class_desc->push_color(theme_cache.comment_color);
 
 			const String descr = HANDLE_DOC(signal.description);
-			const bool is_multiline = descr.find_char('\n') > 0;
 			bool has_prev_text = false;
 
 			if (signal.is_deprecated) {
@@ -1635,9 +1633,6 @@ void EditorHelp::_update_doc() {
 			if (signal.is_experimental) {
 				if (has_prev_text) {
 					class_desc->add_newline();
-					if (is_multiline) {
-						class_desc->add_newline();
-					}
 				}
 				has_prev_text = true;
 				EXPERIMENTAL_DOC_MSG(HANDLE_DOC(signal.experimental_message), TTR("This signal may be changed or removed in future versions."));
@@ -1646,9 +1641,6 @@ void EditorHelp::_update_doc() {
 			if (!descr.is_empty()) {
 				if (has_prev_text) {
 					class_desc->add_newline();
-					if (is_multiline) {
-						class_desc->add_newline();
-					}
 				}
 				has_prev_text = true;
 				_add_text(descr);
@@ -1666,8 +1658,6 @@ void EditorHelp::_update_doc() {
 
 			class_desc->pop(); // color
 			_pop_normal_font();
-			class_desc->pop(); // indent
-
 			class_desc->pop(); // indent
 		}
 	}
@@ -1708,6 +1698,7 @@ void EditorHelp::_update_doc() {
 		}
 		if (has_enums) {
 			class_desc->add_newline();
+			class_desc->add_hr(100, 2, theme_cache.primary_hr_color);
 			class_desc->add_newline();
 
 			section_line.push_back(Pair<String, int>(TTR("Enumerations"), class_desc->get_paragraph_count() - 2));
@@ -1715,6 +1706,7 @@ void EditorHelp::_update_doc() {
 			class_desc->add_text(TTR("Enumerations"));
 			_pop_title_font();
 
+			bool is_first_enum = true;
 			for (KeyValue<String, Vector<DocData::ConstantDoc>> &E : enums) {
 				String key = E.key;
 				if ((key.get_slice_count(".") > 1) && (key.get_slicec('.', 0) == edited_class)) {
@@ -1728,7 +1720,12 @@ void EditorHelp::_update_doc() {
 				}
 
 				class_desc->add_newline();
-				class_desc->add_newline();
+				if (is_first_enum) {
+					is_first_enum = false;
+				} else {
+					class_desc->add_hr(100, 1, theme_cache.secondary_hr_color);
+					class_desc->add_newline();
+				}
 
 				// Enum header.
 				_push_code_font();
@@ -1755,7 +1752,6 @@ void EditorHelp::_update_doc() {
 				// Enum description.
 				if (key != "@unnamed_enums" && cd.enums.has(key)) {
 					const String descr = HANDLE_DOC(cd.enums[key].description);
-					const bool is_multiline = descr.find_char('\n') > 0;
 					if (cd.enums[key].is_deprecated || cd.enums[key].is_experimental || !descr.is_empty()) {
 						class_desc->add_newline();
 
@@ -1773,9 +1769,6 @@ void EditorHelp::_update_doc() {
 						if (cd.enums[key].is_experimental) {
 							if (has_prev_text) {
 								class_desc->add_newline();
-								if (is_multiline) {
-									class_desc->add_newline();
-								}
 							}
 							has_prev_text = true;
 							EXPERIMENTAL_DOC_MSG(HANDLE_DOC(cd.enums[key].experimental_message), TTR("This enumeration may be changed or removed in future versions."));
@@ -1784,9 +1777,6 @@ void EditorHelp::_update_doc() {
 						if (!descr.is_empty()) {
 							if (has_prev_text) {
 								class_desc->add_newline();
-								if (is_multiline) {
-									class_desc->add_newline();
-								}
 							}
 							has_prev_text = true;
 							_add_text(descr);
@@ -1801,16 +1791,10 @@ void EditorHelp::_update_doc() {
 				HashMap<String, int> enum_values;
 				const int enum_start_line = enum_line[E.key];
 
-				bool prev_is_multiline = true; // Use a large margin for the first item.
 				for (const DocData::ConstantDoc &enum_value : E.value) {
 					const String descr = HANDLE_DOC(enum_value.description);
-					const bool is_multiline = descr.find_char('\n') > 0;
 
 					class_desc->add_newline();
-					if (prev_is_multiline || is_multiline) {
-						class_desc->add_newline();
-					}
-					prev_is_multiline = is_multiline;
 
 					if (cd.name == "@GlobalScope") {
 						enum_values[enum_value.name] = enum_start_line;
@@ -1857,9 +1841,6 @@ void EditorHelp::_update_doc() {
 						if (enum_value.is_experimental) {
 							if (has_prev_text) {
 								class_desc->add_newline();
-								if (is_multiline) {
-									class_desc->add_newline();
-								}
 							}
 							has_prev_text = true;
 							EXPERIMENTAL_DOC_MSG(HANDLE_DOC(enum_value.experimental_message), TTR("This constant may be changed or removed in future versions."));
@@ -1868,9 +1849,6 @@ void EditorHelp::_update_doc() {
 						if (!descr.is_empty()) {
 							if (has_prev_text) {
 								class_desc->add_newline();
-								if (is_multiline) {
-									class_desc->add_newline();
-								}
 							}
 							has_prev_text = true;
 							_add_text(descr);
@@ -1893,6 +1871,7 @@ void EditorHelp::_update_doc() {
 		// Constants
 		if (!constants.is_empty()) {
 			class_desc->add_newline();
+			class_desc->add_hr(100, 2, theme_cache.primary_hr_color);
 			class_desc->add_newline();
 
 			section_line.push_back(Pair<String, int>(TTR("Constants"), class_desc->get_paragraph_count() - 2));
@@ -1900,20 +1879,19 @@ void EditorHelp::_update_doc() {
 			class_desc->add_text(TTR("Constants"));
 			_pop_title_font();
 
-			bool prev_is_multiline = true; // Use a large margin for the first item.
+			bool is_first_constant = true;
 			for (const DocData::ConstantDoc &constant : constants) {
 				const String descr = HANDLE_DOC(constant.description);
-				const bool is_multiline = descr.find_char('\n') > 0;
 
 				class_desc->add_newline();
-				if (prev_is_multiline || is_multiline) {
+				if (is_first_constant) {
+					is_first_constant = false;
+				} else {
+					class_desc->add_hr(100, 1, theme_cache.secondary_hr_color);
 					class_desc->add_newline();
 				}
-				prev_is_multiline = is_multiline;
 
 				constant_line[constant.name] = class_desc->get_paragraph_count() - 2;
-
-				class_desc->push_indent(1);
 
 				// Constant header.
 				_push_code_font();
@@ -1962,9 +1940,6 @@ void EditorHelp::_update_doc() {
 					if (constant.is_experimental) {
 						if (has_prev_text) {
 							class_desc->add_newline();
-							if (is_multiline) {
-								class_desc->add_newline();
-							}
 						}
 						has_prev_text = true;
 						EXPERIMENTAL_DOC_MSG(HANDLE_DOC(constant.experimental_message), TTR("This constant may be changed or removed in future versions."));
@@ -1973,9 +1948,6 @@ void EditorHelp::_update_doc() {
 					if (!descr.is_empty()) {
 						if (has_prev_text) {
 							class_desc->add_newline();
-							if (is_multiline) {
-								class_desc->add_newline();
-							}
 						}
 						has_prev_text = true;
 						_add_text(descr);
@@ -1985,8 +1957,6 @@ void EditorHelp::_update_doc() {
 					_pop_normal_font();
 					class_desc->pop(); // indent
 				}
-
-				class_desc->pop(); // indent
 			}
 		}
 	}
@@ -1998,6 +1968,7 @@ void EditorHelp::_update_doc() {
 		}
 
 		class_desc->add_newline();
+		class_desc->add_hr(100, 2, theme_cache.primary_hr_color);
 		class_desc->add_newline();
 
 		section_line.push_back(Pair<String, int>(TTR("Annotations"), class_desc->get_paragraph_count() - 2));
@@ -2005,13 +1976,17 @@ void EditorHelp::_update_doc() {
 		class_desc->add_text(TTR("Annotations"));
 		_pop_title_font();
 
+		bool is_first_annotation = true;
 		for (const DocData::MethodDoc &annotation : cd.annotations) {
 			class_desc->add_newline();
-			class_desc->add_newline();
+			if (is_first_annotation) {
+				is_first_annotation = false;
+			} else {
+				class_desc->add_hr(100, 1, theme_cache.secondary_hr_color);
+				class_desc->add_newline();
+			}
 
 			annotation_line[annotation.name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
-
-			class_desc->push_indent(1);
 
 			// Annotation header.
 			_push_code_font();
@@ -2122,15 +2097,13 @@ void EditorHelp::_update_doc() {
 			class_desc->pop(); // color
 			_pop_normal_font();
 			class_desc->pop(); // indent
-
-			class_desc->pop(); // indent
 		}
 	}
 
 	// Property descriptions
 	if (has_property_descriptions) {
 		class_desc->add_newline();
-		class_desc->add_newline();
+		class_desc->add_hr(100, 2, theme_cache.primary_hr_color);
 		class_desc->add_newline();
 
 		section_line.push_back(Pair<String, int>(TTR("Property Descriptions"), class_desc->get_paragraph_count() - 2));
@@ -2138,6 +2111,7 @@ void EditorHelp::_update_doc() {
 		class_desc->add_text(TTR("Property Descriptions"));
 		_pop_title_font();
 
+		bool is_first_property = true;
 		for (const DocData::PropertyDoc &prop : cd.properties) {
 			if (prop.overridden) {
 				continue;
@@ -2149,8 +2123,12 @@ void EditorHelp::_update_doc() {
 			}
 
 			class_desc->add_newline();
-			class_desc->add_newline();
-			class_desc->add_newline();
+			if (is_first_property) {
+				is_first_property = false;
+			} else {
+				class_desc->add_hr(100, 1, theme_cache.secondary_hr_color);
+				class_desc->add_newline();
+			}
 
 			property_line[prop.name] = class_desc->get_paragraph_count() - 2;
 
@@ -2279,7 +2257,6 @@ void EditorHelp::_update_doc() {
 			class_desc->pop(); // table
 
 			class_desc->add_newline();
-			class_desc->add_newline();
 
 			class_desc->push_indent(1);
 			_push_normal_font();
@@ -2295,7 +2272,6 @@ void EditorHelp::_update_doc() {
 			if (prop.is_experimental) {
 				if (has_prev_text) {
 					class_desc->add_newline();
-					class_desc->add_newline();
 				}
 				has_prev_text = true;
 				EXPERIMENTAL_DOC_MSG(HANDLE_DOC(prop.experimental_message), TTR("This property may be changed or removed in future versions."));
@@ -2304,7 +2280,6 @@ void EditorHelp::_update_doc() {
 			const String descr = HANDLE_DOC(prop.description);
 			if (!descr.is_empty()) {
 				if (has_prev_text) {
-					class_desc->add_newline();
 					class_desc->add_newline();
 				}
 				has_prev_text = true;
@@ -2323,7 +2298,6 @@ void EditorHelp::_update_doc() {
 
 			// Add copy note to built-in properties returning `Packed*Array`.
 			if (!cd.is_script_doc && packed_array_types.has(prop.type)) {
-				class_desc->add_newline();
 				class_desc->add_newline();
 				// See also `EditorHelpBit::parse_symbol()` and `doc/tools/make_rst.py`.
 				_add_text(vformat(TTR("[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details."), prop.type));
@@ -2351,7 +2325,6 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Allow the document to be scrolled slightly below the end.
-	class_desc->add_newline();
 	class_desc->add_newline();
 
 	// Free the scroll.
@@ -2544,7 +2517,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 	bbcode = bbcode.replace("[codeblocks]", "");
 	bbcode = bbcode.replace("[/codeblocks]", "");
 
-	// Remove `\n` here because `\n` is replaced by `\n\n` later.
+	// Remove `\n` here because it doesn't look nice.
 	// Will be compensated when parsing `[/codeblock]`.
 	bbcode = bbcode.replace("[/codeblock]\n", "[/codeblock]");
 
@@ -2559,7 +2532,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 		}
 
 		if (brk_pos > pos) {
-			p_rt->add_text(bbcode.substr(pos, brk_pos - pos).replace("\n", "\n\n"));
+			p_rt->add_text(bbcode.substr(pos, brk_pos - pos));
 		}
 
 		if (brk_pos == bbcode.length()) {
@@ -2569,7 +2542,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 		int brk_end = bbcode.find_char(']', brk_pos + 1);
 
 		if (brk_end == -1) {
-			p_rt->add_text(bbcode.substr(brk_pos).replace("\n", "\n\n"));
+			p_rt->add_text(bbcode.substr(brk_pos));
 			break;
 		}
 
@@ -2714,7 +2687,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			p_rt->push_bgcolor(code_bg_color);
 			p_rt->push_color(code_color.lerp(p_owner_node->get_theme_color(SNAME("error_color"), EditorStringName(Editor)), 0.6));
 
-			p_rt->add_text(bbcode.substr(brk_end + 1, end_pos - (brk_end + 1)));
+			p_rt->add_text(_fix_newlines(bbcode.substr(brk_end + 1, end_pos - (brk_end + 1))));
 
 			p_rt->pop(); // color
 			p_rt->pop(); // bgcolor
@@ -2789,7 +2762,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 #endif
 
 			if (!codeblock_printed) {
-				p_rt->add_text(codeblock_text);
+				p_rt->add_text(_fix_newlines(codeblock_text));
 				codeblock_printed = true;
 			}
 
@@ -2814,7 +2787,8 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 
 			// Compensate for `\n` removed before the loop.
 			if (pos < bbcode.length()) {
-				p_rt->add_newline();
+				// `\n` starts a new paragraph, `\r` just adds a break to existing one.
+				p_rt->add_text("\r");
 			}
 		} else if (tag == "kbd") {
 			int end_pos = bbcode.find("[/kbd]", brk_end + 1);
@@ -2828,7 +2802,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			p_rt->push_bgcolor(kbd_bg_color);
 			p_rt->push_color(kbd_color);
 
-			p_rt->add_text(bbcode.substr(brk_end + 1, end_pos - (brk_end + 1)));
+			p_rt->add_text(_fix_newlines(bbcode.substr(brk_end + 1, end_pos - (brk_end + 1))));
 
 			p_rt->pop(); // color
 			p_rt->pop(); // bgcolor
@@ -2842,8 +2816,8 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "br") {
-			// Force a line break.
-			p_rt->add_newline();
+			// `\n` starts a new paragraph, `\r` just adds a break to existing one.
+			p_rt->add_text("\r");
 			pos = brk_end + 1;
 		} else if (tag == "u") {
 			// Use underline.
@@ -3449,7 +3423,9 @@ EditorHelp::EditorHelp() {
 
 	class_desc = memnew(RichTextLabel);
 	class_desc->set_tab_size(8);
+	class_desc->set_autowrap_trim_flags(TextServer::BREAK_TRIM_END_EDGE_SPACES);
 	add_child(class_desc);
+
 	class_desc->set_threaded(true);
 	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
 
@@ -3478,7 +3454,7 @@ EditorHelp::EditorHelp() {
 
 	class_desc->set_selection_enabled(true);
 	class_desc->set_context_menu_enabled(true);
-	class_desc->set_selection_modifier(callable_mp_static(_replace_nbsp_with_space));
+	class_desc->set_selection_modifier(callable_mp_static(_fix_selection));
 
 	class_desc->hide();
 }
@@ -4155,7 +4131,6 @@ void EditorHelpBit::_update_labels() {
 	if (!help_data.experimental_message.is_empty()) {
 		if (has_prev_text) {
 			content->add_newline();
-			content->add_newline();
 		}
 		has_prev_text = true;
 
@@ -4174,7 +4149,6 @@ void EditorHelpBit::_update_labels() {
 	if (!help_data.description.is_empty()) {
 		if (has_prev_text) {
 			content->add_newline();
-			content->add_newline();
 		}
 		has_prev_text = true;
 
@@ -4184,7 +4158,6 @@ void EditorHelpBit::_update_labels() {
 
 	if (!help_data.resource_path.is_empty()) {
 		if (has_prev_text) {
-			content->add_newline();
 			content->add_newline();
 		}
 		has_prev_text = true;
@@ -4369,6 +4342,17 @@ void EditorHelpBit::_bind_methods() {
 void EditorHelpBit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
+			content->begin_bulk_theme_override();
+
+			//content->add_theme_constant_override(SceneStringName(line_separation), get_theme_constant(SceneStringName(line_separation), SNAME("EditorHelp")));
+			content->add_theme_constant_override(SceneStringName(paragraph_separation), get_theme_constant(SceneStringName(paragraph_separation), SNAME("EditorHelp")));
+			content->add_theme_constant_override("table_h_separation", get_theme_constant(SNAME("table_h_separation"), SNAME("EditorHelp")));
+			content->add_theme_constant_override("table_v_separation", get_theme_constant(SNAME("table_v_separation"), SNAME("EditorHelp")));
+			content->add_theme_constant_override("text_highlight_h_padding", get_theme_constant(SNAME("text_highlight_h_padding"), SNAME("EditorHelp")));
+			content->add_theme_constant_override("text_highlight_v_padding", get_theme_constant(SNAME("text_highlight_v_padding"), SNAME("EditorHelp")));
+
+			content->end_bulk_theme_override();
+
 			_update_labels();
 			break;
 	}
@@ -4597,7 +4581,7 @@ EditorHelpBit::EditorHelpBit(const String &p_symbol, const String &p_prologue, b
 	title->set_fit_content(true);
 	title->set_selection_enabled(p_allow_selection);
 	title->set_context_menu_enabled(p_allow_selection);
-	title->set_selection_modifier(callable_mp_static(_replace_nbsp_with_space));
+	title->set_selection_modifier(callable_mp_static(_fix_selection));
 	title->connect("meta_clicked", callable_mp(this, &EditorHelpBit::_meta_clicked));
 	title->hide();
 	add_child(title);
@@ -4607,11 +4591,12 @@ EditorHelpBit::EditorHelpBit(const String &p_symbol, const String &p_prologue, b
 
 	content = memnew(RichTextLabel);
 	content->set_theme_type_variation(p_in_tooltip ? "EditorHelpBitTooltipContent" : "EditorHelpBitContent");
+	content->set_autowrap_trim_flags(TextServer::BREAK_TRIM_END_EDGE_SPACES);
 	content->set_custom_minimum_size(Size2(640 * EDSCALE, content_min_height));
 	content->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	content->set_selection_enabled(p_allow_selection);
 	content->set_context_menu_enabled(p_allow_selection);
-	content->set_selection_modifier(callable_mp_static(_replace_nbsp_with_space));
+	content->set_selection_modifier(callable_mp_static(_fix_selection));
 	content->connect("meta_clicked", callable_mp(this, &EditorHelpBit::_meta_clicked));
 	add_child(content);
 
@@ -4655,6 +4640,20 @@ void EditorHelpBitTooltip::_target_gui_input(const Ref<InputEvent> &p_event) {
 				break;
 		}
 	}
+
+	const Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed()) {
+		queue_free();
+	}
+}
+
+void EditorHelpBitTooltip::_shortcut_pressed(Control *p_target) {
+	TextEdit *tx = Object::cast_to<TextEdit>(p_target);
+	if (tx) {
+		popup_under_position(
+				tx->get_global_position() + tx->get_caret_draw_pos() +
+				Point2(0, tx->get_line_height()) + tx->get_window()->get_position_with_decorations());
+	}
 }
 
 void EditorHelpBitTooltip::_notification(int p_what) {
@@ -4674,17 +4673,19 @@ void EditorHelpBitTooltip::_notification(int p_what) {
 			_is_mouse_inside_tooltip = false;
 			_start_timer();
 			break;
-		case NOTIFICATION_INTERNAL_PROCESS:
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			// A workaround to hide the tooltip since the window does not receive keyboard events
 			// with `FLAG_POPUP` and `FLAG_NO_FOCUS` flags, so we can't use `_input_from_window()`.
 			if (is_inside_tree()) {
 				if (Input::get_singleton()->is_action_just_pressed(SNAME("ui_cancel"), true)) {
 					queue_free();
 					get_parent_viewport()->set_input_as_handled();
-				} else if (Input::get_singleton()->is_anything_pressed_except_mouse()) {
-					queue_free();
+				} else if (Input::get_singleton()->is_any_key_pressed()) {
+					if (!_is_shortcut_pressed) {
+						queue_free();
+					}
 				} else if (!Input::get_singleton()->get_mouse_button_mask().is_empty()) {
-					if (!_is_mouse_inside_tooltip) {
+					if (!_is_mouse_inside_tooltip && !_is_shortcut_pressed) {
 						queue_free();
 					}
 				} else if (!Input::get_singleton()->get_last_mouse_velocity().is_zero_approx()) {
@@ -4693,38 +4694,41 @@ void EditorHelpBitTooltip::_notification(int p_what) {
 					}
 				}
 			}
-			break;
+		} break;
 	}
 }
 
-Control *EditorHelpBitTooltip::make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue, bool p_use_class_prefix) {
+Control *EditorHelpBitTooltip::make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue, bool p_use_class_prefix, bool p_shortcut) {
 	ERR_FAIL_NULL_V(p_target, _make_invisible_control());
 
 	// Show the custom tooltip only if it is not already visible.
 	// The viewport will retrigger `make_custom_tooltip()` every few seconds
 	// because the return control is not visible even if the custom tooltip is displayed.
-	if (_is_tooltip_visible || Input::get_singleton()->is_anything_pressed()) {
+	if (_is_tooltip_visible || (!p_shortcut && Input::get_singleton()->is_anything_pressed())) {
 		return _make_invisible_control();
 	}
 
 	EditorHelpBit *help_bit = memnew(EditorHelpBit(p_symbol, p_prologue, p_use_class_prefix, false, true));
 
-	EditorHelpBitTooltip *tooltip = memnew(EditorHelpBitTooltip(p_target));
+	EditorHelpBitTooltip *tooltip = memnew(EditorHelpBitTooltip(p_target, p_shortcut));
 	help_bit->connect("request_hide", callable_mp(static_cast<Node *>(tooltip), &Node::queue_free));
 	tooltip->add_child(help_bit);
 	p_target->add_child(tooltip);
 
 	help_bit->update_content_height();
-	tooltip->popup_under_cursor();
+	if (tooltip->is_shortcut_pressed()) {
+		tooltip->_shortcut_pressed(p_target);
+	} else {
+		tooltip->popup_under_position(tooltip->get_mouse_position());
+	}
 
 	return _make_invisible_control();
 }
 
 // Copy-paste from `Viewport::_gui_show_tooltip()`.
-void EditorHelpBitTooltip::popup_under_cursor() {
-	Point2 mouse_pos = get_mouse_position();
+void EditorHelpBitTooltip::popup_under_position(const Point2 &p_point) {
 	Point2 tooltip_offset = GLOBAL_GET_CACHED(Point2, "display/mouse_cursor/tooltip_position_offset");
-	Rect2 r(mouse_pos + tooltip_offset, get_contents_minimum_size());
+	Rect2 r(p_point + tooltip_offset, get_contents_minimum_size());
 	r.size = r.size.min(get_max_size());
 
 	Window *window = get_parent_visible_window();
@@ -4738,7 +4742,7 @@ void EditorHelpBitTooltip::popup_under_cursor() {
 	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS) || is_embedded()) {
 		if (r.size.x + r.position.x > vr.size.x + vr.position.x) {
 			// Place it in the opposite direction. If it fails, just hug the border.
-			r.position.x = mouse_pos.x - r.size.x - tooltip_offset.x;
+			r.position.x = p_point.x - r.size.x - tooltip_offset.x;
 
 			if (r.position.x < vr.position.x) {
 				r.position.x = vr.position.x + vr.size.x - r.size.x;
@@ -4749,7 +4753,7 @@ void EditorHelpBitTooltip::popup_under_cursor() {
 
 		if (r.size.y + r.position.y > vr.size.y + vr.position.y) {
 			// Same as above.
-			r.position.y = mouse_pos.y - r.size.y - tooltip_offset.y;
+			r.position.y = p_point.y - r.size.y - tooltip_offset.y;
 
 			if (r.position.y < vr.position.y) {
 				r.position.y = vr.position.y + vr.size.y - r.size.y;
@@ -4766,8 +4770,10 @@ void EditorHelpBitTooltip::popup_under_cursor() {
 	popup(r);
 }
 
-EditorHelpBitTooltip::EditorHelpBitTooltip(Control *p_target) {
+EditorHelpBitTooltip::EditorHelpBitTooltip(Control *p_target, bool p_shortcut) {
 	ERR_FAIL_NULL(p_target);
+
+	_is_shortcut_pressed = p_shortcut;
 
 	set_theme_type_variation("TooltipPanel");
 
@@ -4872,7 +4878,7 @@ void EditorHelpHighlighter::highlight(RichTextLabel *p_rich_text_label, Language
 			const Pair<int, Color> &prev = highlight_data[i - 1];
 			const Pair<int, Color> &curr = highlight_data[i];
 			p_rich_text_label->push_color(prev.second);
-			p_rich_text_label->add_text(p_source.substr(prev.first, curr.first - prev.first));
+			p_rich_text_label->add_text(_fix_newlines(p_source.substr(prev.first, curr.first - prev.first)));
 			p_rich_text_label->pop(); // color
 		}
 

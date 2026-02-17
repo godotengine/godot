@@ -340,7 +340,7 @@ public:
 	static Input *get_singleton();
 
 	bool is_anything_pressed() const;
-	bool is_anything_pressed_except_mouse() const;
+	bool is_any_key_pressed() const;
 	bool is_key_pressed(Key p_keycode) const;
 	bool is_physical_key_pressed(Key p_keycode) const;
 	bool is_key_label_pressed(Key p_keycode) const;

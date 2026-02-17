@@ -1002,7 +1002,7 @@ void RendererCanvasRenderRD::_update_occluder_buffer(uint32_t p_size) {
 
 	if (p_size > state.shadow_occluder_buffer_size) {
 		needs_update = true;
-		state.shadow_occluder_buffer_size = next_power_of_2(p_size);
+		state.shadow_occluder_buffer_size = Math::next_power_of_2(p_size);
 		if (state.shadow_occluder_buffer.is_valid()) {
 			RD::get_singleton()->free_rid(state.shadow_occluder_buffer);
 		}
@@ -2146,7 +2146,7 @@ bool RendererCanvasRenderRD::free(RID p_rid) {
 }
 
 void RendererCanvasRenderRD::set_shadow_texture_size(int p_size) {
-	p_size = MAX(1, nearest_power_of_2_templated(p_size));
+	p_size = MAX(1, Math::nearest_power_of_2_templated(p_size));
 	if (p_size == state.shadow_texture_size) {
 		return;
 	}
@@ -3231,7 +3231,8 @@ RendererCanvasRenderRD::InstanceData *RendererCanvasRenderRD::new_instance_data(
 		// instance_count must be > 0 to indicate the batch has been used when calling _new_batch, so we set a flag.
 		p_current_batch.instance_count = PUSH_DATA_INSTANCE_COUNT;
 	} else {
-		instance_data = &state.instance_data[state.instance_data_index];
+		// Return the intermediary instance data to prevent the caller from accidentally reading write-combined memory pages, which has huge performance implications.
+		instance_data = &state.intermediary_instance_data;
 	}
 
 	memcpy(instance_data, &template_instance, sizeof(InstanceData));
@@ -3287,6 +3288,7 @@ void RendererCanvasRenderRD::_add_to_batch(bool &r_batch_broken, Batch *&r_curre
 			r_current_batch->command_type == Item::Command::TYPE_NINEPATCH ||
 			r_current_batch->command_type == Item::Command::TYPE_PRIMITIVE);
 	r_current_batch->instance_count++;
+	memcpy(&state.instance_data[state.instance_data_index], &state.intermediary_instance_data, sizeof(InstanceData));
 	state.instance_data_index++;
 	if (state.instance_data_index >= state.max_instances_per_buffer) {
 		RD::get_singleton()->buffer_flush(r_current_batch->instance_buffer);

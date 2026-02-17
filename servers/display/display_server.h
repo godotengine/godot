@@ -76,6 +76,14 @@ public:
 		WINDOW_MODE_EXCLUSIVE_FULLSCREEN,
 	};
 
+	enum ProgressState {
+		PROGRESS_STATE_NOPROGRESS,
+		PROGRESS_STATE_INDETERMINATE,
+		PROGRESS_STATE_NORMAL,
+		PROGRESS_STATE_ERROR,
+		PROGRESS_STATE_PAUSED,
+	};
+
 	// Keep the VSyncMode enum values in sync with the `display/window/vsync/vsync_mode`
 	// project setting hint.
 	enum VSyncMode {
@@ -92,6 +100,8 @@ public:
 		OPENGL_CONTEXT,
 		EGL_DISPLAY,
 		EGL_CONFIG,
+		GLX_VISUALID,
+		GLX_FBCONFIG,
 	};
 
 	enum Context {
@@ -177,6 +187,7 @@ public:
 		FEATURE_NATIVE_COLOR_PICKER,
 		FEATURE_SELF_FITTING_WINDOWS,
 		FEATURE_ACCESSIBILITY_SCREEN_READER,
+		FEATURE_HDR_OUTPUT,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -512,12 +523,30 @@ public:
 	virtual void window_set_vsync_mode(VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID);
 	virtual VSyncMode window_get_vsync_mode(WindowID p_window) const;
 
+	virtual bool window_is_hdr_output_supported(WindowID p_window = MAIN_WINDOW_ID) const;
+
+	virtual void window_request_hdr_output(const bool p_enable, WindowID p_window = MAIN_WINDOW_ID);
+	virtual bool window_is_hdr_output_requested(WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual bool window_is_hdr_output_enabled(WindowID p_window = MAIN_WINDOW_ID) const;
+
+	virtual void window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window = MAIN_WINDOW_ID);
+	virtual float window_get_hdr_output_reference_luminance(WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual float window_get_hdr_output_current_reference_luminance(WindowID p_window = MAIN_WINDOW_ID) const;
+
+	virtual void window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window = MAIN_WINDOW_ID);
+	virtual float window_get_hdr_output_max_luminance(WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual float window_get_hdr_output_current_max_luminance(WindowID p_window = MAIN_WINDOW_ID) const;
+
+	virtual float window_get_output_max_linear_value(WindowID p_window = MAIN_WINDOW_ID) const;
+
 	virtual bool window_is_maximize_allowed(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
 	virtual void window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual bool window_get_flag(WindowFlags p_flag, WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) = 0;
+	virtual void window_set_taskbar_progress_value(float p_value, WindowID p_window = MAIN_WINDOW_ID) {}
+	virtual void window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window = MAIN_WINDOW_ID) {}
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
@@ -1027,3 +1056,4 @@ VARIANT_ENUM_CAST(DisplayServer::CursorShape)
 VARIANT_ENUM_CAST(DisplayServer::VSyncMode)
 VARIANT_ENUM_CAST(DisplayServer::TTSUtteranceEvent)
 VARIANT_ENUM_CAST(DisplayServer::FileDialogMode)
+VARIANT_ENUM_CAST(DisplayServer::ProgressState)

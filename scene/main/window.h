@@ -134,6 +134,10 @@ private:
 	WindowInitialPosition initial_position = WINDOW_INITIAL_POSITION_ABSOLUTE;
 	bool force_native = false;
 
+	mutable bool hdr_output_requested = false;
+
+	void _update_viewport_for_hdr_output();
+
 	bool transient = false;
 	bool transient_to_focused = false;
 	bool exclusive = false;
@@ -335,9 +339,15 @@ public:
 
 	bool is_popup() const;
 
+	void set_hdr_output_requested(bool p_enabled);
+	bool is_hdr_output_requested() const;
+	float get_output_max_linear_value() const;
+
 	bool is_maximize_allowed() const;
 
 	void request_attention();
+	void set_taskbar_progress_value(float p_value);
+	void set_taskbar_progress_state(DisplayServer::ProgressState p_state);
 #ifndef DISABLE_DEPRECATED
 	void move_to_foreground();
 #endif // DISABLE_DEPRECATED
@@ -403,7 +413,7 @@ public:
 	void child_controls_changed();
 
 	Window *get_exclusive_child() const { return exclusive_child; }
-	HashSet<Window *> get_transient_children() const { return transient_children; }
+	const HashSet<Window *> &get_transient_children() const { return transient_children; }
 	Window *get_parent_visible_window() const;
 	Window *get_non_popup_window() const;
 	Viewport *get_parent_viewport() const;

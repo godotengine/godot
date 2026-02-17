@@ -79,125 +79,125 @@ static const uint8_t MONTH_DAYS_TABLE[2][12] = {
 	{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
 };
 
-#define UNIX_TIME_TO_HMS                                                     \
-	uint8_t hour, minute, second;                                            \
-	{                                                                        \
-		/* The time of the day (in seconds since start of day). */           \
+#define UNIX_TIME_TO_HMS \
+	uint8_t hour, minute, second; \
+	{ \
+		/* The time of the day (in seconds since start of day). */ \
 		uint32_t day_clock = Math::posmod(p_unix_time_val, SECONDS_PER_DAY); \
-		/* On x86 these 4 lines can be optimized to only 2 divisions. */     \
-		second = day_clock % 60;                                             \
-		day_clock /= 60;                                                     \
-		minute = day_clock % 60;                                             \
-		hour = day_clock / 60;                                               \
+		/* On x86 these 4 lines can be optimized to only 2 divisions. */ \
+		second = day_clock % 60; \
+		day_clock /= 60; \
+		minute = day_clock % 60; \
+		hour = day_clock / 60; \
 	}
 
-#define UNIX_TIME_TO_YMD                                                                    \
-	int64_t year;                                                                           \
-	Month month;                                                                            \
-	uint8_t day;                                                                            \
-	/* The day number since Unix epoch (0-index). Days before 1970 are negative. */         \
-	int64_t day_number = Math::floor(p_unix_time_val / (double)SECONDS_PER_DAY);            \
-	{                                                                                       \
-		int64_t day_number_copy = day_number;                                               \
-		day_number_copy += year_to_days(UNIX_EPOCH_YEAR_AD);                                \
-		year = days_to_year(day_number_copy);                                               \
-		day_number_copy -= year_to_days(year);                                              \
-		uint8_t month_zero_index = 0;                                                       \
-		/* After the above, day_number now represents the day of the year (0-index). */     \
+#define UNIX_TIME_TO_YMD \
+	int64_t year; \
+	Month month; \
+	uint8_t day; \
+	/* The day number since Unix epoch (0-index). Days before 1970 are negative. */ \
+	int64_t day_number = Math::floor(p_unix_time_val / (double)SECONDS_PER_DAY); \
+	{ \
+		int64_t day_number_copy = day_number; \
+		day_number_copy += year_to_days(UNIX_EPOCH_YEAR_AD); \
+		year = days_to_year(day_number_copy); \
+		day_number_copy -= year_to_days(year); \
+		uint8_t month_zero_index = 0; \
+		/* After the above, day_number now represents the day of the year (0-index). */ \
 		while (day_number_copy >= MONTH_DAYS_TABLE[IS_LEAP_YEAR(year)][month_zero_index]) { \
-			day_number_copy -= MONTH_DAYS_TABLE[IS_LEAP_YEAR(year)][month_zero_index];      \
-			month_zero_index++;                                                             \
-		}                                                                                   \
-		/* After the above, day_number now represents the day of the month (0-index). */    \
-		month = (Month)(month_zero_index + 1);                                              \
-		day = day_number_copy + 1;                                                          \
+			day_number_copy -= MONTH_DAYS_TABLE[IS_LEAP_YEAR(year)][month_zero_index]; \
+			month_zero_index++; \
+		} \
+		/* After the above, day_number now represents the day of the month (0-index). */ \
+		month = (Month)(month_zero_index + 1); \
+		day = day_number_copy + 1; \
 	}
 
-#define VALIDATE_YMDHMS(ret)                                                                                                                                              \
+#define VALIDATE_YMDHMS(ret) \
 	ERR_FAIL_COND_V_MSG(month == 0, ret, "Invalid month value of: " + itos(month) + ", months are 1-indexed and cannot be 0. See the Time.Month enum for valid values."); \
-	ERR_FAIL_COND_V_MSG(month < 0, ret, "Invalid month value of: " + itos(month) + ".");                                                                                  \
-	ERR_FAIL_COND_V_MSG(month > 12, ret, "Invalid month value of: " + itos(month) + ". See the Time.Month enum for valid values.");                                       \
-	ERR_FAIL_COND_V_MSG(hour > 23, ret, "Invalid hour value of: " + itos(hour) + ".");                                                                                    \
-	ERR_FAIL_COND_V_MSG(hour < 0, ret, "Invalid hour value of: " + itos(hour) + ".");                                                                                     \
-	ERR_FAIL_COND_V_MSG(minute > 59, ret, "Invalid minute value of: " + itos(minute) + ".");                                                                              \
-	ERR_FAIL_COND_V_MSG(minute < 0, ret, "Invalid minute value of: " + itos(minute) + ".");                                                                               \
-	ERR_FAIL_COND_V_MSG(second > 59, ret, "Invalid second value of: " + itos(second) + " (leap seconds are not supported).");                                             \
-	ERR_FAIL_COND_V_MSG(second < 0, ret, "Invalid second value of: " + itos(second) + ".");                                                                               \
-	ERR_FAIL_COND_V_MSG(day == 0, ret, "Invalid day value of: " + itos(day) + ", days are 1-indexed and cannot be 0.");                                                   \
-	ERR_FAIL_COND_V_MSG(day < 0, ret, "Invalid day value of: " + itos(day) + ".");                                                                                        \
-	/* Do this check after month is tested as valid. */                                                                                                                   \
-	uint8_t days_in_this_month = MONTH_DAYS_TABLE[IS_LEAP_YEAR(year)][month - 1];                                                                                         \
+	ERR_FAIL_COND_V_MSG(month < 0, ret, "Invalid month value of: " + itos(month) + "."); \
+	ERR_FAIL_COND_V_MSG(month > 12, ret, "Invalid month value of: " + itos(month) + ". See the Time.Month enum for valid values."); \
+	ERR_FAIL_COND_V_MSG(hour > 23, ret, "Invalid hour value of: " + itos(hour) + "."); \
+	ERR_FAIL_COND_V_MSG(hour < 0, ret, "Invalid hour value of: " + itos(hour) + "."); \
+	ERR_FAIL_COND_V_MSG(minute > 59, ret, "Invalid minute value of: " + itos(minute) + "."); \
+	ERR_FAIL_COND_V_MSG(minute < 0, ret, "Invalid minute value of: " + itos(minute) + "."); \
+	ERR_FAIL_COND_V_MSG(second > 59, ret, "Invalid second value of: " + itos(second) + " (leap seconds are not supported)."); \
+	ERR_FAIL_COND_V_MSG(second < 0, ret, "Invalid second value of: " + itos(second) + "."); \
+	ERR_FAIL_COND_V_MSG(day == 0, ret, "Invalid day value of: " + itos(day) + ", days are 1-indexed and cannot be 0."); \
+	ERR_FAIL_COND_V_MSG(day < 0, ret, "Invalid day value of: " + itos(day) + "."); \
+	/* Do this check after month is tested as valid. */ \
+	uint8_t days_in_this_month = MONTH_DAYS_TABLE[IS_LEAP_YEAR(year)][month - 1]; \
 	ERR_FAIL_COND_V_MSG(day > days_in_this_month, ret, "Invalid day value of: " + itos(day) + " which is larger than the maximum for this month, " + itos(days_in_this_month) + ".");
 
-#define YMD_TO_DAY_NUMBER                                                           \
+#define YMD_TO_DAY_NUMBER \
 	/* The day number since Unix epoch (0-index). Days before 1970 are negative. */ \
-	int64_t day_number = day - 1;                                                   \
-	/* Add the days in the months to day_number. */                                 \
-	for (int i = 0; i < month - 1; i++) {                                           \
-		day_number += MONTH_DAYS_TABLE[IS_LEAP_YEAR(year)][i];                      \
-	}                                                                               \
-	/* Add the days in the years to day_number. */                                  \
-	day_number += year_to_days(year);                                               \
+	int64_t day_number = day - 1; \
+	/* Add the days in the months to day_number. */ \
+	for (int i = 0; i < month - 1; i++) { \
+		day_number += MONTH_DAYS_TABLE[IS_LEAP_YEAR(year)][i]; \
+	} \
+	/* Add the days in the years to day_number. */ \
+	day_number += year_to_days(year); \
 	day_number -= year_to_days(UNIX_EPOCH_YEAR_AD);
 
-#define PARSE_ISO8601_STRING(ret)                                                             \
-	int64_t year = UNIX_EPOCH_YEAR_AD;                                                        \
-	Month month = MONTH_JANUARY;                                                              \
-	int day = 1;                                                                              \
-	int hour = 0;                                                                             \
-	int minute = 0;                                                                           \
-	int second = 0;                                                                           \
-	{                                                                                         \
-		bool has_date = false, has_time = false;                                              \
-		String date, time;                                                                    \
-		if (p_datetime.find_char('T') > 0) {                                                  \
-			has_date = has_time = true;                                                       \
-			PackedStringArray array = p_datetime.split("T");                                  \
+#define PARSE_ISO8601_STRING(ret) \
+	int64_t year = UNIX_EPOCH_YEAR_AD; \
+	Month month = MONTH_JANUARY; \
+	int day = 1; \
+	int hour = 0; \
+	int minute = 0; \
+	int second = 0; \
+	{ \
+		bool has_date = false, has_time = false; \
+		String date, time; \
+		if (p_datetime.find_char('T') > 0) { \
+			has_date = has_time = true; \
+			PackedStringArray array = p_datetime.split("T"); \
 			ERR_FAIL_COND_V_MSG(array.size() < 2, ret, "Invalid ISO 8601 date/time string."); \
-			date = array[0];                                                                  \
-			time = array[1];                                                                  \
-		} else if (p_datetime.find_char(' ') > 0) {                                           \
-			has_date = has_time = true;                                                       \
-			PackedStringArray array = p_datetime.split(" ");                                  \
+			date = array[0]; \
+			time = array[1]; \
+		} else if (p_datetime.find_char(' ') > 0) { \
+			has_date = has_time = true; \
+			PackedStringArray array = p_datetime.split(" "); \
 			ERR_FAIL_COND_V_MSG(array.size() < 2, ret, "Invalid ISO 8601 date/time string."); \
-			date = array[0];                                                                  \
-			time = array[1];                                                                  \
-		} else if (p_datetime.find_char('-', 1) > 0) {                                        \
-			has_date = true;                                                                  \
-			date = p_datetime;                                                                \
-		} else if (p_datetime.find_char(':') > 0) {                                           \
-			has_time = true;                                                                  \
-			time = p_datetime;                                                                \
-		}                                                                                     \
-		/* Set the variables from the contents of the string. */                              \
-		if (has_date) {                                                                       \
-			PackedInt32Array array = date.split_ints("-", false);                             \
-			ERR_FAIL_COND_V_MSG(array.size() < 3, ret, "Invalid ISO 8601 date string.");      \
-			year = array[0];                                                                  \
-			month = (Month)array[1];                                                          \
-			day = array[2];                                                                   \
-			/* Handle negative years. */                                                      \
-			if (p_datetime.find_char('-') == 0) {                                             \
-				year *= -1;                                                                   \
-			}                                                                                 \
-		}                                                                                     \
-		if (has_time) {                                                                       \
-			PackedInt32Array array = time.split_ints(":", false);                             \
-			ERR_FAIL_COND_V_MSG(array.size() < 3, ret, "Invalid ISO 8601 time string.");      \
-			hour = array[0];                                                                  \
-			minute = array[1];                                                                \
-			second = array[2];                                                                \
-		}                                                                                     \
+			date = array[0]; \
+			time = array[1]; \
+		} else if (p_datetime.find_char('-', 1) > 0) { \
+			has_date = true; \
+			date = p_datetime; \
+		} else if (p_datetime.find_char(':') > 0) { \
+			has_time = true; \
+			time = p_datetime; \
+		} \
+		/* Set the variables from the contents of the string. */ \
+		if (has_date) { \
+			PackedInt32Array array = date.split_ints("-", false); \
+			ERR_FAIL_COND_V_MSG(array.size() < 3, ret, "Invalid ISO 8601 date string."); \
+			year = array[0]; \
+			month = (Month)array[1]; \
+			day = array[2]; \
+			/* Handle negative years. */ \
+			if (p_datetime.find_char('-') == 0) { \
+				year *= -1; \
+			} \
+		} \
+		if (has_time) { \
+			PackedInt32Array array = time.split_ints(":", false); \
+			ERR_FAIL_COND_V_MSG(array.size() < 3, ret, "Invalid ISO 8601 time string."); \
+			hour = array[0]; \
+			minute = array[1]; \
+			second = array[2]; \
+		} \
 	}
 
-#define EXTRACT_FROM_DICTIONARY                                                                   \
-	/* Get all time values from the dictionary. If it doesn't exist, set the */                   \
-	/* values to the default values for Unix epoch (1970-01-01 00:00:00). */                      \
+#define EXTRACT_FROM_DICTIONARY \
+	/* Get all time values from the dictionary. If it doesn't exist, set the */ \
+	/* values to the default values for Unix epoch (1970-01-01 00:00:00). */ \
 	int64_t year = p_datetime.has(YEAR_KEY) ? int64_t(p_datetime[YEAR_KEY]) : UNIX_EPOCH_YEAR_AD; \
-	Month month = Month((p_datetime.has(MONTH_KEY)) ? int(p_datetime[MONTH_KEY]) : 1);            \
-	int day = p_datetime.has(DAY_KEY) ? int(p_datetime[DAY_KEY]) : 1;                             \
-	int hour = p_datetime.has(HOUR_KEY) ? int(p_datetime[HOUR_KEY]) : 0;                          \
-	int minute = p_datetime.has(MINUTE_KEY) ? int(p_datetime[MINUTE_KEY]) : 0;                    \
+	Month month = Month((p_datetime.has(MONTH_KEY)) ? int(p_datetime[MONTH_KEY]) : 1); \
+	int day = p_datetime.has(DAY_KEY) ? int(p_datetime[DAY_KEY]) : 1; \
+	int hour = p_datetime.has(HOUR_KEY) ? int(p_datetime[HOUR_KEY]) : 0; \
+	int minute = p_datetime.has(MINUTE_KEY) ? int(p_datetime[MINUTE_KEY]) : 0; \
 	int second = p_datetime.has(SECOND_KEY) ? int(p_datetime[SECOND_KEY]) : 0;
 
 Time *Time::singleton = nullptr;
