@@ -1152,7 +1152,7 @@ void ParticleProcessMaterial::_update_shader() {
 
 	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 		if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
-			code += "	if (length(final_velocity) > 0.0) {\n";
+			code += "	if (length(final_velocity) > 0.00001) {\n";
 			code += "		TRANSFORM[1].xyz = normalize(final_velocity);\n";
 			code += "	} else {\n";
 			code += "		TRANSFORM[1].xyz = normalize(TRANSFORM[1].xyz);\n";
@@ -1168,7 +1168,7 @@ void ParticleProcessMaterial::_update_shader() {
 		//TODO Fix so 0 scaling on all axes doesn't break during normalization
 		// Orient particle Y towards velocity.
 		if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
-			code += "	if (length(final_velocity) > 0.0) {\n";
+			code += "	if (length(final_velocity) > 0.00001) {\n";
 			code += "		TRANSFORM[1].xyz = normalize_or_else(final_velocity, vec3(0.0, 1.0, 0.0));\n";
 			code += "	} else {\n";
 			code += "		TRANSFORM[1].xyz = normalize_or_else(TRANSFORM[1].xyz, vec3(0.0, 1.0, 0.0));\n";
