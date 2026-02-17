@@ -42,7 +42,7 @@
 		[codeblocks]
 		[gdscript]
 		var points_dict = { "White": 50, "Yellow": 75, "Orange": 100 }
-		func _ready() -> void:
+		func _ready():
 			print(points_dict.White) # Prints 50
 
 			# Will not work, equivalent to `points_dict["erase"]`
