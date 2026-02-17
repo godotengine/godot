@@ -797,6 +797,7 @@
 			<description>
 				Returns [code]true[/code] if the caret is visible, [code]false[/code] otherwise. A caret will be considered hidden if it is outside the scrollable area when scrolling is enabled.
 				[b]Note:[/b] [method is_caret_visible] does not account for a caret being off-screen if it is still within the scrollable area. It will return [code]true[/code] even if the caret is off-screen as long as it meets [TextEdit]'s own conditions for being visible. This includes uses of [member scroll_fit_content_width] and [member scroll_fit_content_height] that cause the [TextEdit] to expand beyond the viewport's bounds.
+				[b]Note:[/b] This method does [i]not[/i] guarantee an accurate visibility check immediately after setting the caret position. The correct value may only be available in the next frame after the [TextEdit] has finished drawing. This also applies to any operation that causes the [TextEdit] to change in size.
 			</description>
 		</method>
 		<method name="is_dragging_cursor" qualifiers="const">
@@ -838,6 +839,13 @@
 			<param index="1" name="gutter" type="int" />
 			<description>
 				Returns [code]true[/code] if the gutter at the given index on the given line is clickable. See [method set_line_gutter_clickable].
+			</description>
+		</method>
+		<method name="is_line_in_viewport" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns [code]true[/code] if the given line is within the scope of the scrollable area of the viewport.
 			</description>
 		</method>
 		<method name="is_line_wrapped" qualifiers="const">

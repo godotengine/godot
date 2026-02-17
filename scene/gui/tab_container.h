@@ -127,7 +127,9 @@ private:
 	Control *_as_tab_control(Node *p_child) const;
 	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();
+	void _repaint_call_deferred();
 	void _repaint();
+	void _repaint_internal();
 	void _refresh_tab_indices();
 	void _refresh_tab_names();
 	void _update_margins();
