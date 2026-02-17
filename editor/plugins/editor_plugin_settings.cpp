@@ -75,6 +75,31 @@ void EditorPluginSettings::update_plugins() {
 	Vector<String> plugins = _get_plugins("res://addons");
 	plugins.sort();
 
+	// Clean up any plugins that were enabled but whose config no longer exists
+	// on disk. This can happen if the user deletes the addon folder while the
+	// editor is running. Removing the entry here ensures editor settings
+	// introduced by the plugin are also erased (see #116393).
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	if (ps->has_setting("editor_plugins/enabled")) {
+		PackedStringArray enabled = ps->get("editor_plugins/enabled");
+		bool changed = false;
+		for (int i = enabled.size() - 1; i >= 0; i--) {
+			String path = enabled.get(i);
+			if (!plugins.has(path)) {
+				// plugin no longer present on disk, drop it and wipe its settings
+				enabled.remove_at(i);
+				String prefix = path.get_base_dir().get_file();
+				if (!prefix.is_empty()) {
+					EditorSettings::get_singleton()->erase_group(prefix);
+				}
+				changed = true;
+			}
+		}
+		if (changed) {
+			ps->set("editor_plugins/enabled", enabled);
+		}
+	}
+
 	for (int i = 0; i < plugins.size(); i++) {
 		Ref<ConfigFile> cfg;
 		cfg.instantiate();

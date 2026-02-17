@@ -696,6 +696,7 @@ Table of contents:
 - Fix setting remote properties that take objects not working ([GH-107687](https://github.com/godotengine/godot/pull/107687)).
 - Show description for editor setting overrides ([GH-107692](https://github.com/godotengine/godot/pull/107692)).
 - Improve editor settings override display ([GH-107765](https://github.com/godotengine/godot/pull/107765)).
+- Remove leftover editor settings when an addon/plugin is uninstalled or its folder is manually deleted ([GH-116393](https://github.com/godotengine/godot/issues/116393)).
 - Simplify Node Filter's placeholder in Scene dock ([GH-107942](https://github.com/godotengine/godot/pull/107942)).
 - Replace Inspector `pending` stack usage with loop ([GH-107947](https://github.com/godotengine/godot/pull/107947)).
 - Clean up numeric EditorProperty `setup()` methods ([GH-108065](https://github.com/godotengine/godot/pull/108065)).

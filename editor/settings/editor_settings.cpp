@@ -1470,6 +1470,39 @@ void EditorSettings::erase(const String &p_setting) {
 	props.erase(p_setting);
 }
 
+void EditorSettings::erase_group(const String &p_group) {
+	// Remove any settings whose name begins with the given prefix (either exactly
+	// matching the prefix or followed by a '/'). This is used by the editor when an
+	// addon/plugin is uninstalled so that its custom settings and shortcuts don't
+	// linger in the global editor settings.
+	_THREAD_SAFE_METHOD_
+
+	String prefix = p_group;
+	if (!prefix.ends_with("/")) {
+		prefix += "/";
+	}
+
+	Vector<String> to_erase;
+	// Gather keys to erase first to avoid modifying the map while iterating.
+	for (const KeyValue<String, VariantContainer> &kv : props) {
+		const String &name = kv.key;
+		if (name == p_group || name.begins_with(prefix)) {
+			to_erase.push_back(name);
+		}
+	}
+
+	for (const String &name : to_erase) {
+		props.erase(name);
+		hints.erase(name);
+		shortcuts.erase(name);
+		builtin_action_overrides.erase(name);
+	}
+
+	if (!to_erase.empty()) {
+		emit_signal(SNAME("settings_changed"));
+	}
+}
+
 void EditorSettings::raise_order(const String &p_setting) {
 	_THREAD_SAFE_METHOD_
 
@@ -2266,6 +2299,7 @@ void EditorSettings::get_argument_options(const StringName &p_function, int p_id
 void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &EditorSettings::has_setting);
 	ClassDB::bind_method(D_METHOD("set_setting", "name", "value"), &EditorSettings::set_setting);
+	ClassDB::bind_method(D_METHOD("erase_group", "prefix"), &EditorSettings::erase_group);
 	ClassDB::bind_method(D_METHOD("get_setting", "name"), &EditorSettings::get_setting);
 	ClassDB::bind_method(D_METHOD("erase", "property"), &EditorSettings::erase);
 	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value", "update_current"), &EditorSettings::set_initial_value);

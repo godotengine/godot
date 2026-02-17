@@ -1207,6 +1207,15 @@ void EditorNode::_remove_plugin_from_enabled(const String &p_name) {
 		}
 	}
 	ps->set("editor_plugins/enabled", enabled_plugins);
+
+	// When a plugin is removed from the list (usually because its folder no
+	// longer exists or it failed to load) also wipe out any editor settings that
+	// were created by that addon. We derive the group prefix from the directory
+	// name, which matches the common convention used by most plugins.
+	String plugin_folder = p_name.get_base_dir().get_file();
+	if (!plugin_folder.is_empty()) {
+		EditorSettings::get_singleton()->erase_group(plugin_folder);
+	}
 }
 
 void EditorNode::_plugin_over_edit(EditorPlugin *p_plugin, Object *p_object) {
@@ -4337,6 +4346,13 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 	if (!DirAccess::exists(addon_path.get_base_dir())) {
 		_remove_plugin_from_enabled(addon_path);
 		WARN_PRINT("Addon '" + addon_path + "' failed to load. No directory found. Removing from enabled plugins.");
+		// If the addon has been deleted from disk we also need to purge any
+		// editor settings left behind by it so that stray options don't remain
+		// visible when opening Editor Settings (see #116393).
+		String plugin_folder = addon_path.get_base_dir().get_file();
+		if (!plugin_folder.is_empty()) {
+			EditorSettings::get_singleton()->erase_group(plugin_folder);
+		}
 		return;
 	}
 	Error err = cf->load(addon_path);
