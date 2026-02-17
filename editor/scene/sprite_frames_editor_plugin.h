@@ -249,6 +249,7 @@ class SpriteFramesEditor : public EditorDock {
 	void _stop_pressed();
 
 	void _animation_selected();
+	void _animation_multi_selected(TreeItem *p_item, int p_column, bool p_selected);
 	void _animation_name_edited();
 	void _animation_add();
 	void _animation_duplicate();

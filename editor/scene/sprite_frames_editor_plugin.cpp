@@ -1110,6 +1110,58 @@ void SpriteFramesEditor::_animation_selected() {
 	_update_library(true);
 }
 
+void SpriteFramesEditor::_animation_multi_selected(TreeItem *p_item, int p_column, bool p_selected) {
+	if (updating) {
+		return;
+	}
+
+	TreeItem *selected = animations->get_next_selected(nullptr);
+	if (!selected) {
+		return;
+	}
+
+	Vector<StringName> selected_animations = _get_selected_animations();
+	if (selected_animations.is_empty()) {
+		return;
+	}
+
+	updating = true;
+
+	// Update FPS field
+	bool all_same_speed = true;
+	double first_speed = frames->get_animation_speed(selected_animations[0]);
+
+	for (const StringName &selected_animation : selected_animations) {
+		if (frames->get_animation_speed(selected_animation) != first_speed) {
+			all_same_speed = false;
+			break;
+		}
+	}
+
+	if (all_same_speed) {
+		anim_speed->set_value_no_signal(first_speed);
+		anim_speed->get_line_edit()->set_placeholder("");
+	} else {
+		anim_speed->get_line_edit()->set_text("");
+		anim_speed->get_line_edit()->set_placeholder(TTR(""));
+	}
+
+	// Update loop button
+	bool all_same_loop = true;
+	bool first_loop = frames->get_animation_loop(selected_animations[0]);
+
+	for (const StringName &selected_animation : selected_animations) {
+		if (frames->get_animation_loop(selected_animation) != first_loop) {
+			all_same_loop = false;
+			break;
+		}
+	}
+
+	anim_loop->set_pressed_no_signal(all_same_loop ? first_loop : false);
+
+	updating = false;
+}
+
 void SpriteFramesEditor::_sync_animation() {
 	if (!animated_sprite || sprite_node_updating) {
 		return;
@@ -2355,6 +2407,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	animations->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	// HACK: The cell_selected signal is emitted before the FPS spinbox loses focus and applies the change.
 	animations->connect("cell_selected", callable_mp(this, &SpriteFramesEditor::_animation_selected), CONNECT_DEFERRED);
+	animations->connect("multi_selected", callable_mp(this, &SpriteFramesEditor::_animation_multi_selected), CONNECT_DEFERRED);
 	animations->connect("item_edited", callable_mp(this, &SpriteFramesEditor::_animation_name_edited));
 	animations->set_theme_type_variation("TreeSecondary");
 	animations->set_allow_reselect(true);
