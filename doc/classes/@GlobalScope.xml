@@ -2518,7 +2518,22 @@
 		<constant name="JOY_BUTTON_TOUCHPAD" value="20" enum="JoyButton">
 			Game controller SDL touchpad button.
 		</constant>
-		<constant name="JOY_BUTTON_SDL_MAX" value="21" enum="JoyButton">
+		<constant name="JOY_BUTTON_MISC2" value="21" enum="JoyButton">
+			Game controller SDL miscellaneous button. Used by Nintendo Switch 2 Pro Controller and Horipad Steam controllers.
+		</constant>
+		<constant name="JOY_BUTTON_MISC3" value="22" enum="JoyButton">
+			Game controller SDL miscellaneous button.
+		</constant>
+		<constant name="JOY_BUTTON_MISC4" value="23" enum="JoyButton">
+			Game controller SDL miscellaneous button.
+		</constant>
+		<constant name="JOY_BUTTON_MISC5" value="24" enum="JoyButton">
+			Game controller SDL miscellaneous button.
+		</constant>
+		<constant name="JOY_BUTTON_MISC6" value="25" enum="JoyButton">
+			Game controller SDL miscellaneous button.
+		</constant>
+		<constant name="JOY_BUTTON_SDL_MAX" value="26" enum="JoyButton">
 			The number of SDL game controller buttons.
 		</constant>
 		<constant name="JOY_BUTTON_MAX" value="128" enum="JoyButton">

@@ -66,6 +66,11 @@ static const char *_joy_buttons[(size_t)JoyButton::SDL_MAX] = {
 	"paddle3",
 	"paddle4",
 	"touchpad",
+	"misc2",
+	"misc3",
+	"misc4",
+	"misc5",
+	"misc6",
 };
 
 static const char *_joy_axes[(size_t)JoyAxis::SDL_MAX] = {
