@@ -442,9 +442,6 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 		}
 		return;
 	}
-	for (const ScriptLanguage::CodeCompletionOption &E : pp_defines) {
-		r_options->push_back(E);
-	}
 
 	ShaderLanguage sl;
 	String calltip;
@@ -455,6 +452,12 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 		comp_info.is_include = true;
 
 		sl.complete(code, comp_info, r_options, calltip);
+		if (sl.get_completion_type() == ShaderLanguage::COMPLETION_IDENTIFIER) {
+			for (const ScriptLanguage::CodeCompletionOption &E : pp_defines) {
+				r_options->push_back(E);
+			}
+		}
+
 		get_text_editor()->set_code_hint(calltip);
 		return;
 	}
@@ -465,6 +468,12 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	comp_info.shader_types = ShaderTypes::get_singleton()->get_types();
 
 	sl.complete(code, comp_info, r_options, calltip);
+	if (sl.get_completion_type() == ShaderLanguage::COMPLETION_IDENTIFIER) {
+		for (const ScriptLanguage::CodeCompletionOption &E : pp_defines) {
+			r_options->push_back(E);
+		}
+	}
+
 	get_text_editor()->set_code_hint(calltip);
 }
 
