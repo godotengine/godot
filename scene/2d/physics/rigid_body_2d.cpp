@@ -378,6 +378,7 @@ void RigidBody2D::set_center_of_mass(const Vector2 &p_center_of_mass) {
 const Vector2 &RigidBody2D::get_center_of_mass() const {
 	return center_of_mass;
 }
+
 void RigidBody2D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
 		physics_material_override->disconnect_changed(callable_mp(this, &RigidBody2D::_reload_physics_characteristics));
