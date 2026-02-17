@@ -114,6 +114,12 @@ public:
 		WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS,
 	};
 
+	enum TitleAutoTranslateMode : unsigned int {
+		TITLE_AUTO_TRANSLATE_MODE_INHERIT,
+		TITLE_AUTO_TRANSLATE_MODE_ALWAYS,
+		TITLE_AUTO_TRANSLATE_MODE_DISABLED,
+	};
+
 private:
 	DisplayServer::WindowID window_id = DisplayServer::INVALID_WINDOW_ID;
 	bool initialized = false;
@@ -263,6 +269,8 @@ private:
 	void _update_displayed_title();
 
 	static int root_layout_direction;
+
+	TitleAutoTranslateMode title_auto_translate_mode : 2;
 
 protected:
 	virtual void _popup_base(const Rect2i &p_screen_rect = Rect2i());
@@ -467,6 +475,9 @@ public:
 	bool is_auto_translating() const;
 #endif
 
+	void set_title_auto_translate_mode(TitleAutoTranslateMode p_mode);
+	TitleAutoTranslateMode get_title_auto_translate_mode() const;
+
 	// Theming.
 
 	void set_theme_owner_node(Node *p_node);
@@ -551,3 +562,4 @@ VARIANT_ENUM_CAST(Window::ContentScaleAspect);
 VARIANT_ENUM_CAST(Window::ContentScaleStretch);
 VARIANT_ENUM_CAST(Window::LayoutDirection);
 VARIANT_ENUM_CAST(Window::WindowInitialPosition);
+VARIANT_ENUM_CAST(Window::TitleAutoTranslateMode);

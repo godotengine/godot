@@ -778,6 +778,10 @@
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
 			The window's title. If the [Window] is native, title styles set in [Theme] will have no effect.
 		</member>
+		<member name="title_auto_translate_mode" type="int" setter="set_title_auto_translate_mode" getter="get_title_auto_translate_mode" enum="Window.TitleAutoTranslateMode" default="0">
+			Defines if the window title should automatically change to its translated version depending on the current locale.
+			[b]Note:[/b] For the root node, the auto translate mode can also be set via [member ProjectSettings.internationalization/rendering/root_node_auto_translate].
+		</member>
 		<member name="transient" type="bool" setter="set_transient" getter="is_transient" default="false">
 			If [code]true[/code], the [Window] is transient, i.e. it's considered a child of another [Window]. The transient window will be destroyed with its transient parent and will return focus to their parent when closed. The transient window is displayed on top of a non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
 			Note that behavior might be different depending on the platform.
@@ -1053,6 +1057,16 @@
 		</constant>
 		<constant name="WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS" value="5" enum="WindowInitialPosition">
 			Initial window position is the center of the screen containing the window with the keyboard focus.
+		</constant>
+		<constant name="TITLE_AUTO_TRANSLATE_MODE_INHERIT" value="0" enum="TitleAutoTranslateMode">
+			Inherits [member Node.auto_translate_mode] from the node. This is the default for any newly created node.
+		</constant>
+		<constant name="TITLE_AUTO_TRANSLATE_MODE_ALWAYS" value="1" enum="TitleAutoTranslateMode">
+			Always automatically translate. This is the inverse of [constant TITLE_AUTO_TRANSLATE_MODE_DISABLED], and the default for the root node.
+		</constant>
+		<constant name="TITLE_AUTO_TRANSLATE_MODE_DISABLED" value="2" enum="TitleAutoTranslateMode">
+			Never automatically translate. This is the inverse of [constant TITLE_AUTO_TRANSLATE_MODE_ALWAYS].
+			String parsing for translation template generation will be skipped for this node.
 		</constant>
 	</constants>
 	<theme_items>
