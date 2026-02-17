@@ -1371,6 +1371,24 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 	text_editor->end_complex_operation();
 }
 
+void CodeTextEditor::adjust_viewport_to_caret() {
+	call_on_all_layout_pending_finished(callable_mp((TextEdit *)text_editor, &TextEdit::adjust_viewport_to_caret).bind(0));
+}
+
+void CodeTextEditor::center_viewport_to_caret() {
+	call_on_all_layout_pending_finished(callable_mp((TextEdit *)text_editor, &TextEdit::center_viewport_to_caret).bind(0));
+}
+
+void CodeTextEditor::center_viewport_to_caret_if_line_invisible(int p_line) {
+	if (text_editor->is_layout_pending_in_tree()) {
+		text_editor->call_on_all_layout_pending_finished(callable_mp(this, &CodeTextEditor::center_viewport_to_caret_if_line_invisible).bind(0));
+		return;
+	}
+	if (!text_editor->is_line_in_viewport(p_line)) {
+		text_editor->center_viewport_to_caret();
+	}
+}
+
 void CodeTextEditor::goto_line(int p_line, int p_column) {
 	text_editor->remove_secondary_carets();
 	text_editor->deselect();
@@ -1379,8 +1397,7 @@ void CodeTextEditor::goto_line(int p_line, int p_column) {
 	text_editor->set_caret_column(p_column, false);
 	text_editor->set_code_hint("");
 	text_editor->cancel_code_completion();
-	// Defer in case the CodeEdit was just created and needs to be resized.
-	callable_mp((TextEdit *)text_editor, &TextEdit::adjust_viewport_to_caret).call_deferred(0);
+	adjust_viewport_to_caret();
 }
 
 void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
@@ -1389,7 +1406,7 @@ void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	text_editor->select(p_line, p_begin, p_line, p_end);
 	text_editor->set_code_hint("");
 	text_editor->cancel_code_completion();
-	callable_mp((TextEdit *)text_editor, &TextEdit::adjust_viewport_to_caret).call_deferred(0);
+	adjust_viewport_to_caret();
 }
 
 void CodeTextEditor::goto_line_centered(int p_line, int p_column) {
@@ -1400,7 +1417,7 @@ void CodeTextEditor::goto_line_centered(int p_line, int p_column) {
 	text_editor->set_caret_column(p_column, false);
 	text_editor->set_code_hint("");
 	text_editor->cancel_code_completion();
-	callable_mp((TextEdit *)text_editor, &TextEdit::center_viewport_to_caret).call_deferred(0);
+	center_viewport_to_caret();
 }
 
 void CodeTextEditor::set_executing_line(int p_line) {
@@ -1451,15 +1468,21 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 	Dictionary state = p_state;
 
 	/* update the row first as it sets the column to 0 */
-	text_editor->set_caret_line(state["row"]);
-	text_editor->set_caret_column(state["column"]);
-	if (int(state["scroll_position"]) == -1) {
-		// Special case for previous state.
-		text_editor->center_viewport_to_caret();
+	if (state.get("ensure_caret_visible", false)) {
+		text_editor->set_caret_line(state["row"], false);
+		text_editor->set_caret_column(state["column"], false);
+		center_viewport_to_caret_if_line_invisible(state["row"]);
 	} else {
-		text_editor->set_v_scroll(state["scroll_position"]);
+		text_editor->set_caret_line(state["row"]);
+		text_editor->set_caret_column(state["column"]);
+		if (int(state["scroll_position"]) == -1) {
+			// Special case for previous state.
+			center_viewport_to_caret();
+		} else {
+			text_editor->set_v_scroll(state["scroll_position"]);
+		}
+		text_editor->set_h_scroll(state["h_scroll_position"]);
 	}
-	text_editor->set_h_scroll(state["h_scroll_position"]);
 
 	if (state.get("selection", false)) {
 		text_editor->select(state["selection_from_line"], state["selection_from_column"], state["selection_to_line"], state["selection_to_column"]);
