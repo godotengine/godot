@@ -256,6 +256,10 @@ public:
 	/// by adding or removing comment delimiter
 	void toggle_inline_comment(const String &delimiter);
 
+	void adjust_viewport_to_caret();
+	void center_viewport_to_caret();
+	void center_viewport_to_caret_if_line_invisible(int p_line);
+
 	void goto_line(int p_line, int p_column = 0);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
 	void goto_line_centered(int p_line, int p_column = 0);

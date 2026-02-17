@@ -271,7 +271,17 @@ void TabContainer::_on_theme_changed() {
 	theme_changing = false;
 }
 
+void TabContainer::_repaint_call_deferred() {
+	layout_pending_start();
+	callable_mp(this, &TabContainer::_repaint_internal).call_deferred();
+}
+
 void TabContainer::_repaint() {
+	layout_pending_start();
+	_repaint_internal();
+}
+
+void TabContainer::_repaint_internal() {
 	Vector<Control *> controls = _get_tab_controls();
 	int current = get_current_tab();
 
@@ -315,6 +325,7 @@ void TabContainer::_repaint() {
 	updating_visibility = false;
 
 	update_minimum_size();
+	layout_pending_finish();
 }
 
 void TabContainer::_update_margins() {
@@ -494,7 +505,7 @@ void TabContainer::_on_tab_hovered(int p_tab) {
 }
 
 void TabContainer::_on_tab_changed(int p_tab) {
-	callable_mp(this, &TabContainer::_repaint).call_deferred();
+	_repaint_call_deferred();
 	queue_redraw();
 	queue_accessibility_update();
 
@@ -503,7 +514,7 @@ void TabContainer::_on_tab_changed(int p_tab) {
 
 void TabContainer::_on_tab_selected(int p_tab) {
 	if (p_tab != get_previous_tab()) {
-		callable_mp(this, &TabContainer::_repaint).call_deferred();
+		_repaint_call_deferred();
 	}
 
 	emit_signal(SNAME("tab_selected"), p_tab);
@@ -595,7 +606,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
-		callable_mp(this, &TabContainer::_repaint).call_deferred();
+		_repaint_call_deferred();
 	}
 	notify_property_list_changed();
 }
@@ -657,7 +668,7 @@ void TabContainer::remove_child_notify(Node *p_child) {
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
-		callable_mp(this, &TabContainer::_repaint).call_deferred();
+		_repaint_call_deferred();
 	}
 	notify_property_list_changed();
 }
@@ -774,7 +785,7 @@ void TabContainer::set_tabs_position(TabPosition p_tabs_position) {
 
 	tab_bar->set_tab_style_v_flip(tabs_position == POSITION_BOTTOM);
 
-	callable_mp(this, &TabContainer::_repaint).call_deferred();
+	_repaint_call_deferred();
 	queue_redraw();
 }
 
@@ -806,7 +817,7 @@ void TabContainer::set_tabs_visible(bool p_visible) {
 	tabs_visible = p_visible;
 	tab_bar->set_visible(tabs_visible);
 
-	callable_mp(this, &TabContainer::_repaint).call_deferred();
+	_repaint_call_deferred();
 	queue_redraw();
 }
 
@@ -947,7 +958,7 @@ void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 	if (!get_clip_tabs()) {
 		update_minimum_size();
 	}
-	callable_mp(this, &TabContainer::_repaint).call_deferred();
+	_repaint_call_deferred();
 }
 
 bool TabContainer::is_tab_hidden(int p_tab) const {
