@@ -202,5 +202,28 @@ TEST_CASE("[SceneTree][Timer] Check Timer timeout signal") {
 
 	memdelete(test_timer);
 }
+	SUBCASE("[Timer] Paused timer does not emit timeout") {
+	Timer *paused_timer = memnew(Timer);
+	SceneTree::get_singleton()->get_root()->add_child(paused_timer);
+
+	paused_timer->start(0.1);
+	paused_timer->set_paused(true);
+
+	SIGNAL_WATCH(paused_timer, SNAME("timeout"));
+
+	SceneTree::get_singleton()->process(0.2);
+
+	SIGNAL_CHECK_FALSE(SNAME("timeout"));
+	SIGNAL_UNWATCH(paused_timer, SNAME("timeout"));
+
+	paused_timer->stop();
+	SceneTree::get_singleton()->get_root()->remove_child(paused_timer);
+	memdelete(paused_timer);
+}
+
+	SceneTree::get_singleton()->get_root()->remove_child(test_timer);
+	memdelete(test_timer);
+}
+
 
 } // namespace TestTimer
