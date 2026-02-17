@@ -180,3 +180,19 @@ static GDTViewController *mainViewController = nil;
 }
 
 @end
+
+void apple_embedded_on_focus_out(void) {
+	OS_AppleEmbedded::get_singleton()->on_focus_out();
+}
+
+void apple_embedded_on_focus_in(void) {
+	OS_AppleEmbedded::get_singleton()->on_focus_in();
+}
+
+void apple_embedded_on_enter_background(void) {
+	OS_AppleEmbedded::get_singleton()->on_enter_background();
+}
+
+void apple_embedded_on_exit_background(void) {
+	OS_AppleEmbedded::get_singleton()->on_exit_background();
+}

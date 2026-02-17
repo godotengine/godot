@@ -741,8 +741,8 @@ Error OS_AppleEmbedded::setup_remote_filesystem(const String &p_server_host, int
 }
 
 void OS_AppleEmbedded::on_focus_out() {
-	if (is_focused) {
-		is_focused = false;
+	if (_application_state == ApplicationState::FocusIn) {
+		_application_state = ApplicationState::FocusOut;
 
 		if (DisplayServerAppleEmbedded::get_singleton()) {
 			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
@@ -759,8 +759,14 @@ void OS_AppleEmbedded::on_focus_out() {
 }
 
 void OS_AppleEmbedded::on_focus_in() {
-	if (!is_focused) {
-		is_focused = true;
+	if (_application_state == ApplicationState::FocusIn) {
+		return;
+	}
+
+	on_exit_background();
+
+	if (_application_state == ApplicationState::FocusOut) {
+		_application_state = ApplicationState::FocusIn;
 
 		if (DisplayServerAppleEmbedded::get_singleton()) {
 			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
@@ -777,22 +783,28 @@ void OS_AppleEmbedded::on_focus_in() {
 }
 
 void OS_AppleEmbedded::on_enter_background() {
-	// Do not check for is_focused, because on_focus_out will always be fired first by applicationWillResignActive.
+	if (_application_state == ApplicationState::Background) {
+		return;
+	}
+
+	on_focus_out();
+
+	_application_state = ApplicationState::Background;
 
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
 	}
-
-	on_focus_out();
 }
 
 void OS_AppleEmbedded::on_exit_background() {
-	if (!is_focused) {
-		on_focus_in();
+	if (_application_state != ApplicationState::Background) {
+		return;
+	}
 
-		if (OS::get_singleton()->get_main_loop()) {
-			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
-		}
+	_application_state = ApplicationState::FocusOut;
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
 	}
 }
 

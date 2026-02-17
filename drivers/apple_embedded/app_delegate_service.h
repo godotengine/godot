@@ -39,3 +39,16 @@
 @property(strong, class, nonatomic) GDTViewController *viewController;
 
 @end
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void apple_embedded_on_focus_out(void);
+void apple_embedded_on_focus_in(void);
+void apple_embedded_on_enter_background(void);
+void apple_embedded_on_exit_background(void);
+
+#ifdef __cplusplus
+}
+#endif

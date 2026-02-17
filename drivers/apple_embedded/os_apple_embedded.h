@@ -53,6 +53,12 @@ private:
 	static HashMap<String, void *> dynamic_symbol_lookup_table;
 	friend void register_dynamic_symbol(char *name, void *address);
 
+	enum class ApplicationState {
+		FocusIn,
+		FocusOut,
+		Background,
+	} _application_state = ApplicationState::FocusOut;
+
 	AudioDriverCoreAudio audio_driver;
 
 	AppleEmbedded *apple_embedded = nullptr;
@@ -72,8 +78,6 @@ private:
 	virtual void delete_main_loop() override;
 
 	virtual void finalize() override;
-
-	bool is_focused = false;
 
 	CGFloat _weight_to_ct(int p_weight) const;
 	CGFloat _stretch_to_ct(int p_stretch) const;
@@ -133,7 +137,6 @@ public:
 
 	void on_focus_out();
 	void on_focus_in();
-
 	void on_enter_background();
 	void on_exit_background();
 

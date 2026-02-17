@@ -62,16 +62,13 @@ struct SwiftUIApp: App {
 					// stop the renderer.
 					switch phase {
 					case .active:
-						print("GodotSwiftUIViewController scene active")
-						GDTAppDelegateService.viewController?.godotView.startRendering()
+						apple_embedded_on_focus_in()
 					case .inactive:
-						print("GodotSwiftUIViewController scene inactive")
-						GDTAppDelegateService.viewController?.godotView.stopRendering()
+						apple_embedded_on_focus_out()
 					case .background:
-						print("GodotSwiftUIViewController scene backgrounded")
-						GDTAppDelegateService.viewController?.godotView.stopRendering()
+						apple_embedded_on_enter_background()
 					@unknown default:
-						print("unknown default")
+						break
 					}
 				}
 		}
