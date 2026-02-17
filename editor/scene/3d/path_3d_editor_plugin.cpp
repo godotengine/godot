@@ -878,15 +878,16 @@ void Path3DEditorPlugin::_smooth_curve_points(){
 	for (int i = 1; i < point_count - 1; i++) { // Ignore first and last points unless it's closed.
 		Vector3 next_p = curve->get_point_position(i-1);
 		Vector3 prev_p = curve->get_point_position(i+1);
-		Vector3 tangent = (next_p - prev_p) * smooth_ratio;
-		curve->set_point_in(i, tangent);
-		curve->set_point_out(i, -tangent);
+		Vector3 curr_p = curve->get_point_position(i);
+		Vector3 tangent = (next_p - prev_p).normalized();
+		curve->set_point_in(i, tangent * curr_p.distance_to(next_p) * smooth_ratio);
+		curve->set_point_out(i, -tangent * curr_p.distance_to(prev_p) * smooth_ratio);
 	}
 	if (curve->is_closed()){
 		Vector3 first_p = curve->get_point_position(0);
 		Vector3 last_p = curve->get_point_position(point_count-1);
 
-		Vector3 first_last_tangent = (last_p - first_p) * smooth_ratio;
+		Vector3 first_last_tangent = (last_p - first_p).normalized();
 		curve->set_point_out(0, -first_last_tangent);
 		curve->set_point_in(point_count-1, first_last_tangent);
 
