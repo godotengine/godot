@@ -47,7 +47,7 @@
 
 			# Will not work, equivalent to `points_dict["erase"]`
 			$LineEdit.text_submitted.connect(points_dict.erase)
-			# Create a Callable manually
+			# Create a Callable manually.
 			$LineEdit.text_submitted.connect(Callable.create(points_dict, &"erase"))
 		[/gdscript]
 		[/codeblocks]
