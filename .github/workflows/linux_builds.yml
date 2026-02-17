@@ -128,11 +128,18 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y unzip openjdk-11-jdk wget
-          mkdir -p $HOME/Android/Sdk/cmdline-tools
+
+          mkdir -p $HOME/Android/Sdk
           cd $HOME/Android/Sdk
+
           wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
           unzip -q cmdline-tools.zip
-          mv cmdline-tools cmdline-tools/latest
+
+          mkdir -p cmdline-tools/latest
+          mv cmdline-tools/* cmdline-tools/latest/
+          rm -rf cmdline-tools/latest/cmdline-tools
+          rm cmdline-tools.zip
+
           yes | $HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --licenses
           $HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33"
 
