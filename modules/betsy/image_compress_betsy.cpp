@@ -86,41 +86,11 @@ void BetsyCompressor::_init() {
 	}
 
 	// Create local RD.
-	RenderingContextDriver *rcd = nullptr;
-	RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
-
-	if (rd == nullptr) {
-#if defined(RD_ENABLED)
-#if defined(METAL_ENABLED)
-		rcd = memnew(RenderingContextDriverMetal);
-		rd = memnew(RenderingDevice);
-#endif
-#if defined(VULKAN_ENABLED)
-		if (rcd == nullptr) {
-			rcd = memnew(RenderingContextDriverVulkan);
-			rd = memnew(RenderingDevice);
-		}
-#endif
-#endif
-		if (rcd != nullptr && rd != nullptr) {
-			Error err = rcd->initialize();
-			if (err == OK) {
-				err = rd->initialize(rcd);
-			}
-
-			if (err != OK) {
-				memdelete(rd);
-				memdelete(rcd);
-				rd = nullptr;
-				rcd = nullptr;
-			}
-		}
-	}
+	RenderingDevice *rd = DisplayServer::create_local_rendering_device_with_fallback();
 
 	ERR_FAIL_NULL_MSG(rd, "Unable to create a local RenderingDevice.");
 
 	compress_rd = rd;
-	compress_rcd = rcd;
 
 	// Create the sampler state.
 	RD::SamplerState src_sampler_state;
@@ -302,10 +272,6 @@ void BetsyCompressor::_thread_exit() {
 		// Free the RD (and RCD if necessary).
 		memdelete(compress_rd);
 		compress_rd = nullptr;
-		if (compress_rcd != nullptr) {
-			memdelete(compress_rcd);
-			compress_rcd = nullptr;
-		}
 	}
 }
 

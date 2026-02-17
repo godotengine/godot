@@ -38,13 +38,6 @@
 #include "servers/rendering/rendering_device_binds.h"
 #include "servers/rendering/rendering_server_default.h"
 
-#if defined(VULKAN_ENABLED)
-#include "drivers/vulkan/rendering_context_driver_vulkan.h"
-#endif
-#if defined(METAL_ENABLED)
-#include "drivers/metal/rendering_context_driver_metal.h"
-#endif
-
 enum BetsyFormat {
 	BETSY_FORMAT_BC1,
 	BETSY_FORMAT_BC1_DITHER,
@@ -114,7 +107,6 @@ class BetsyCompressor : public Object {
 
 	// Resources shared by all compression formats.
 	RenderingDevice *compress_rd = nullptr;
-	RenderingContextDriver *compress_rcd = nullptr;
 	BetsyShader cached_shaders[BETSY_SHADER_MAX];
 	RID src_sampler;
 
