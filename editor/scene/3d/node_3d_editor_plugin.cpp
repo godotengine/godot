@@ -371,11 +371,11 @@ void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 
 	if (positive) {
 		// Draw axis lines for the positive axes.
-		const Vector2 center = get_size() / 2.0;
+		const Vector2 center = get_size() / 2.0f;
 		const Vector2 diff = p_axis.screen_point - center;
-		const float line_length = MAX(diff.length() - AXIS_CIRCLE_RADIUS - 0.5 * EDSCALE, 0);
+		const real_t line_length = MAX(diff.length() - AXIS_CIRCLE_RADIUS - 0.5f * EDSCALE, 0.0f);
 
-		draw_line(center + diff.limit_length(0.5 * EDSCALE), center + diff.limit_length(line_length), c, 1.5 * EDSCALE, true);
+		draw_line(center + diff.limit_length(0.5f * EDSCALE), center + diff.limit_length(line_length), c, 1.5f * EDSCALE, true);
 
 		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS, c, true, -1.0, true);
 
@@ -384,12 +384,12 @@ void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 		const Ref<Font> &font = get_theme_font(SNAME("rotation_control"), EditorStringName(EditorFonts));
 		const int font_size = get_theme_font_size(SNAME("rotation_control_size"), EditorStringName(EditorFonts));
 		const Size2 char_size = font->get_char_size(axis_name[0], font_size);
-		const Vector2 char_offset = Vector2(-char_size.width / 2.0, char_size.height * 0.25);
+		const Vector2 char_offset = Vector2(-char_size.width / 2.0f, char_size.height * 0.25f);
 		draw_char(font, p_axis.screen_point + char_offset, axis_name, font_size, c_positive_axis);
 	} else {
 		// Draw an outline around the negative axes.
-		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS, c, true, -1.0, true);
-		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS * 0.8, c.darkened(0.4), true, -1.0, true);
+		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS, c, true, -1.0f, true);
+		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS * 0.8f, c.darkened(0.4), true, -1.0f, true);
 
 		// Draw the text for the negative axes.
 		const String axis_name = direction == 0 ? "-X" : (direction == 1 ? "-Y" : "-Z");
@@ -399,14 +399,14 @@ void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 		const float font_ascent = font->get_ascent(font_size);
 		const float font_descent = font->get_descent(font_size);
 		const float string_height = font_ascent + font_descent;
-		const Vector2 offset(-string_size.width / 2.0, string_height * 0.25);
+		const Vector2 offset(-string_size.width / 2.0f, string_height * 0.25f);
 		draw_string(font, p_axis.screen_point + offset, axis_name, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, font_size, c_negative_axis);
 	}
 }
 
 void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
-	const Vector2 center = get_size() / 2.0;
-	const real_t radius = get_size().x / 2.0 - AXIS_CIRCLE_RADIUS - 2.0 * EDSCALE;
+	const Vector2 center = get_size() / 2.0f;
+	const real_t radius = get_size().x / 2.0f - AXIS_CIRCLE_RADIUS - 2.0f * EDSCALE;
 	const Basis camera_basis = viewport->to_camera_transform(viewport->cursor).get_basis().inverse();
 
 	for (int i = 0; i < 3; ++i) {
@@ -465,7 +465,7 @@ void ViewportRotationControl::_process_click(int p_index, Vector2 p_position, bo
 
 void ViewportRotationControl::_process_drag(Ref<InputEventWithModifiers> p_event, int p_index, Vector2 p_position, Vector2 p_relative_position) {
 	Point2 mouse_pos = get_local_mouse_position();
-	const bool movement_threshold_passed = original_mouse_pos.distance_to(mouse_pos) > 4 * EDSCALE;
+	const bool movement_threshold_passed = original_mouse_pos.distance_squared_to(mouse_pos) > (4.0f * EDSCALE) * (4.0f * EDSCALE);
 	if (orbiting_index == p_index && gizmo_activated && movement_threshold_passed) {
 		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_VISIBLE) {
 			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
@@ -545,7 +545,7 @@ void ViewportRotationControl::_update_focus() {
 
 	for (int i = 0; i < axes.size(); i++) {
 		const Axis2D &axis = axes[i];
-		if (mouse_pos.distance_to(axis.screen_point) < AXIS_CIRCLE_RADIUS) {
+		if (mouse_pos.distance_squared_to(axis.screen_point) < AXIS_CIRCLE_RADIUS_SQUARED) {
 			focused_axis = axis.axis;
 		}
 	}
@@ -2373,7 +2373,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			if (change_nav_from_shortcut != NAVIGATION_NONE) {
 				nav_mode = change_nav_from_shortcut;
 			} else {
-				movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
+				movement_threshold_passed = _edit.original_mouse_pos.distance_squared_to(_edit.mouse_pos) > (8.0f * EDSCALE) * (8.0f * EDSCALE);
 
 				if ((selection_in_progress || clicked_wants_append || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT) && movement_threshold_passed && clicked.is_valid()) {
 					cursor.region_select = true;
@@ -5025,6 +5025,7 @@ void _insert_rid_recursive(Node *node, HashSet<RID> &rids) {
 
 Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D *p_node) const {
 	const float MAX_DISTANCE = 50.0;
+	const float MAX_DISTANCE_SQUARED = MAX_DISTANCE * MAX_DISTANCE;
 	const float FALLBACK_DISTANCE = 5.0;
 
 	Vector3 world_ray = get_ray(p_pos);
@@ -5085,7 +5086,7 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 	Vector3 intersection;
 	Plane plane(Vector3(0, 1, 0));
 	if (plane.intersects_ray(world_pos, world_ray, &intersection)) {
-		if (is_orthogonal || world_pos.distance_to(intersection) <= MAX_DISTANCE) {
+		if (is_orthogonal || world_pos.distance_squared_to(intersection) <= MAX_DISTANCE_SQUARED) {
 			return intersection;
 		}
 	}
