@@ -246,6 +246,42 @@ TEST_CASE("[Curve3D] Sampling") {
 		CHECK(cross_linear_curve->get_baked_points().size() >= 3);
 		CHECK(cross_linear_curve->sample_baked_with_rotation(cross_linear_curve->get_closest_offset(Vector3(0.5, 0, 0))).is_equal_approx(Transform3D(Basis(Vector3(0, 0, 1), Vector3(0, 1, 0), Vector3(-1, 0, 0)), Vector3(0.5, 0, 0))));
 	}
+
+	SUBCASE("Sample overlapping points") {
+		// Only overlapping points.
+		curve->clear_points();
+		curve->add_point(Vector3(10, 0, 0));
+		curve->add_point(Vector3(10, 0, 0));
+		curve->add_point(Vector3(10, 0, 0));
+
+		CHECK(curve->sample_baked_with_rotation(0.0) == Transform3D(Basis(), Vector3(10, 0, 0)));
+
+		// Overlapping points at start.
+		curve->clear_points();
+		curve->add_point(Vector3(10, 0, 0));
+		curve->add_point(Vector3(10, 0, 0));
+		curve->add_point(Vector3(20, 0, 0));
+
+		const Basis right_facing_basis = Basis::looking_at(Vector3(1, 0, 0), Vector3(0, 1, 0), false);
+		CHECK(curve->sample_baked_with_rotation(0.0).is_equal_approx(Transform3D(right_facing_basis, Vector3(10, 0, 0))));
+
+		// Overlapping points at end.
+		curve->clear_points();
+		curve->add_point(Vector3(5, 0, 0));
+		curve->add_point(Vector3(10, 0, 0));
+		curve->add_point(Vector3(10, 0, 0));
+
+		CHECK(curve->sample_baked_with_rotation(5.0).is_equal_approx(Transform3D(right_facing_basis, Vector3(10, 0, 0))));
+
+		// Overlapping points at middle.
+		curve->clear_points();
+		curve->add_point(Vector3(5, 0, 0));
+		curve->add_point(Vector3(10, 0, 0));
+		curve->add_point(Vector3(10, 0, 0));
+		curve->add_point(Vector3(20, 0, 0));
+
+		CHECK(curve->sample_baked_with_rotation(5.0).is_equal_approx(Transform3D(right_facing_basis, Vector3(10, 0, 0))));
+	}
 }
 
 TEST_CASE("[Curve3D] Tessellation") {
