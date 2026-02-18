@@ -293,7 +293,7 @@ void Line2D::_draw() {
 
 	RID texture_rid;
 	if (_texture.is_valid()) {
-		texture_rid = _texture->get_rid();
+		texture_rid = _texture->get_scaled_rid();
 
 		lb.tile_aspect = _texture->get_size().aspect();
 	}
