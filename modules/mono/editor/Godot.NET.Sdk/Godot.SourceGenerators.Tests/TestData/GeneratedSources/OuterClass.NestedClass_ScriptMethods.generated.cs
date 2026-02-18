@@ -43,6 +43,26 @@ partial class NestedClass
             collector.TryAdd(new(MethodName.@_Get, 1), new(&trampoline_1__Get, isStatic: false));
             collector.TryAdd(new(global::Godot.GodotObject.MethodName.@_Get, 1), new(&trampoline_1__Get, isStatic: false));
         }
+        private static readonly global::System.Type CachedType = typeof(global::OuterClass.NestedClass);
+        private static partial class Accessors
+        {
+            [global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = ".ctor")]
+            public extern static void CtorAsMethod(global::OuterClass.NestedClass godotObject);
+        }
+        public new static unsafe void GetGodotConstructorTrampolines(global::Godot.Bridge.ScriptManagerBridge.ConstructorTrampolineCollector collector)
+        {
+            static global::Godot.GodotObject trampoline_0(global::System.IntPtr godotObjectPtr, NativeVariantPtrArgs args)
+            {
+                if (args.Count != 0) {
+                    throw new global::System.MissingMemberException($"Invalid argument count for constructor of class 'OuterClass.NestedClass'. Expected 0, but got {args.Count}.");
+                }
+                var godotObject = (global::OuterClass.NestedClass)global::System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(global::OuterClass.NestedClass.GodotInternal.CachedType);
+                global::Godot.Bridge.ScriptManagerBridge.Accessors.UnsafeSetGodotObjectNativePtr(godotObject, godotObjectPtr);
+                global::OuterClass.NestedClass.GodotInternal.Accessors.CtorAsMethod(godotObject);
+                return godotObject;
+            }
+            collector.TryAdd(0, new(&trampoline_0));
+        }
     }
 #pragma warning restore CS0109
 }

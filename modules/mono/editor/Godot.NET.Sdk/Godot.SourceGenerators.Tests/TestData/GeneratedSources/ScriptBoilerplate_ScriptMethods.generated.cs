@@ -56,6 +56,26 @@ partial class ScriptBoilerplate
             }
             collector.TryAdd(new(MethodName.@Bazz, 1), new(&trampoline_1_Bazz, isStatic: false));
         }
+        private static readonly global::System.Type CachedType = typeof(global::ScriptBoilerplate);
+        private static partial class Accessors
+        {
+            [global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = ".ctor")]
+            public extern static void CtorAsMethod(global::ScriptBoilerplate godotObject);
+        }
+        public new static unsafe void GetGodotConstructorTrampolines(global::Godot.Bridge.ScriptManagerBridge.ConstructorTrampolineCollector collector)
+        {
+            static global::Godot.GodotObject trampoline_0(global::System.IntPtr godotObjectPtr, NativeVariantPtrArgs args)
+            {
+                if (args.Count != 0) {
+                    throw new global::System.MissingMemberException($"Invalid argument count for constructor of class 'ScriptBoilerplate'. Expected 0, but got {args.Count}.");
+                }
+                var godotObject = (global::ScriptBoilerplate)global::System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(global::ScriptBoilerplate.GodotInternal.CachedType);
+                global::Godot.Bridge.ScriptManagerBridge.Accessors.UnsafeSetGodotObjectNativePtr(godotObject, godotObjectPtr);
+                global::ScriptBoilerplate.GodotInternal.Accessors.CtorAsMethod(godotObject);
+                return godotObject;
+            }
+            collector.TryAdd(0, new(&trampoline_0));
+        }
     }
 #pragma warning restore CS0109
 }

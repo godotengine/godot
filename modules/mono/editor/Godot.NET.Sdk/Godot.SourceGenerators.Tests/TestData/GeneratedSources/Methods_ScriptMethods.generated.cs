@@ -62,6 +62,26 @@ partial class Methods
             }
             collector.TryAdd(new(MethodName.@MethodWithOverload, 2), new(&trampoline_2_MethodWithOverload, isStatic: false));
         }
+        private static readonly global::System.Type CachedType = typeof(global::Methods);
+        private static partial class Accessors
+        {
+            [global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = ".ctor")]
+            public extern static void CtorAsMethod(global::Methods godotObject);
+        }
+        public new static unsafe void GetGodotConstructorTrampolines(global::Godot.Bridge.ScriptManagerBridge.ConstructorTrampolineCollector collector)
+        {
+            static global::Godot.GodotObject trampoline_0(global::System.IntPtr godotObjectPtr, NativeVariantPtrArgs args)
+            {
+                if (args.Count != 0) {
+                    throw new global::System.MissingMemberException($"Invalid argument count for constructor of class 'Methods'. Expected 0, but got {args.Count}.");
+                }
+                var godotObject = (global::Methods)global::System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(global::Methods.GodotInternal.CachedType);
+                global::Godot.Bridge.ScriptManagerBridge.Accessors.UnsafeSetGodotObjectNativePtr(godotObject, godotObjectPtr);
+                global::Methods.GodotInternal.Accessors.CtorAsMethod(godotObject);
+                return godotObject;
+            }
+            collector.TryAdd(0, new(&trampoline_0));
+        }
     }
 #pragma warning restore CS0109
 }
