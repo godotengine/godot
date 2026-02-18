@@ -143,7 +143,11 @@ Picture (*XRenderCreateConicalGradient_dylibloader_wrapper_xrender)(Display *, c
 int initialize_xrender(int verbose) {
   void *handle;
   char *error;
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+  handle = dlopen("libXrender.so", RTLD_LAZY);
+#else
   handle = dlopen("libXrender.so.1", RTLD_LAZY);
+#endif
   if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());

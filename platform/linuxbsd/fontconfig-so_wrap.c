@@ -626,7 +626,11 @@ FcBool (*FcConfigParseAndLoadFromMemory_dylibloader_wrapper_fontconfig)( FcConfi
 int initialize_fontconfig(int verbose) {
   void *handle;
   char *error;
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+  handle = dlopen("libfontconfig.so", RTLD_LAZY);
+#else
   handle = dlopen("libfontconfig.so.1", RTLD_LAZY);
+#endif
   if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());

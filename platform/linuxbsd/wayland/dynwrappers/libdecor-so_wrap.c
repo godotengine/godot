@@ -134,7 +134,11 @@ bool (*libdecor_configuration_get_window_state_dylibloader_wrapper_libdecor)(str
 int initialize_libdecor(int verbose) {
   void *handle;
   char *error;
+#if defined(__OpenBSD__) || defined(__NetBSD)
+  handle = dlopen("libdecor-0.so", RTLD_LAZY);
+#else
   handle = dlopen("libdecor-0.so.0", RTLD_LAZY);
+#endif
   if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());
