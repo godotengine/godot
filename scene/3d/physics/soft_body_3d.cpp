@@ -44,7 +44,7 @@ void SoftBodyRenderingServerHandler::prepare(RID p_mesh, int p_surface) {
 	mesh = p_mesh;
 	surface = p_surface;
 
-	RS::SurfaceData surface_data = RS::get_singleton()->mesh_get_surface(mesh, surface);
+	RenderingServerTypes::SurfaceData surface_data = RS::get_singleton()->mesh_get_surface(mesh, surface);
 
 	uint32_t surface_offsets[RSE::ARRAY_MAX];
 	uint32_t vertex_stride;

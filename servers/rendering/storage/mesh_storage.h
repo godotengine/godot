@@ -30,9 +30,12 @@
 
 #pragma once
 
-#include "servers/rendering/rendering_server.h"
+#include "core/math/color.h"
+#include "core/math/transform_2d.h"
+#include "core/templates/local_vector.h"
 #include "servers/rendering/rendering_server_enums.h"
-#include "utilities.h"
+#include "servers/rendering/rendering_server_types.h"
+#include "servers/rendering/storage/utilities.h"
 
 class RendererMeshStorage {
 public:
@@ -47,7 +50,7 @@ public:
 	virtual void mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) = 0;
 
 	/// Returns stride
-	virtual void mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) = 0;
+	virtual void mesh_add_surface(RID p_mesh, const RenderingServerTypes::SurfaceData &p_surface) = 0;
 
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const = 0;
 
@@ -62,7 +65,7 @@ public:
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) = 0;
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const = 0;
 
-	virtual RS::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const = 0;
+	virtual RenderingServerTypes::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const = 0;
 
 	virtual int mesh_get_surface_count(RID p_mesh) const = 0;
 
@@ -78,7 +81,7 @@ public:
 	virtual void mesh_surface_remove(RID p_mesh, int p_surface) = 0;
 	virtual void mesh_clear(RID p_mesh) = 0;
 
-	virtual void mesh_debug_usage(List<RS::MeshInfo> *r_info) = 0;
+	virtual void mesh_debug_usage(List<RenderingServerTypes::MeshInfo> *r_info) = 0;
 
 	virtual bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton) = 0;
 

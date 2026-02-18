@@ -30,15 +30,21 @@
 
 #pragma once
 
+#include "core/math/aabb.h"
 #include "core/math/rect2.h"
 #include "core/math/rect2i.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector2.h"
+#include "core/math/vector4.h"
 #include "core/string/ustring.h"
 #include "core/templates/rid.h"
 #include "core/templates/vector.h"
 #include "servers/rendering/rendering_server_enums.h"
 
 #include <cstdint>
+
+template <typename T>
+class Vector;
 
 namespace RenderingServerTypes {
 
@@ -53,6 +59,50 @@ struct ShaderNativeSourceCode {
 		Vector<Stage> stages;
 	};
 	Vector<Version> versions;
+};
+
+/* MESH API */
+
+struct SurfaceData {
+	RSE::PrimitiveType primitive = RSE::PRIMITIVE_MAX;
+
+	uint64_t format = RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION;
+	Vector<uint8_t> vertex_data; // Vertex, Normal, Tangent (change with skinning, blendshape).
+	Vector<uint8_t> attribute_data; // Color, UV, UV2, Custom0-3.
+	Vector<uint8_t> skin_data; // Bone index, Bone weight.
+	uint32_t vertex_count = 0;
+	Vector<uint8_t> index_data;
+	uint32_t index_count = 0;
+
+	AABB aabb;
+	struct LOD {
+		float edge_length = 0.0f;
+		Vector<uint8_t> index_data;
+	};
+	Vector<LOD> lods;
+	Vector<AABB> bone_aabbs;
+
+	// Transforms used in runtime bone AABBs compute.
+	// Since bone AABBs is saved in Mesh space, but bones is in Skeleton space.
+	Transform3D mesh_to_skeleton_xform;
+
+	Vector<uint8_t> blend_shape_data;
+
+	Vector4 uv_scale;
+
+	RID material;
+};
+
+struct MeshInfo {
+	RID mesh;
+	String path;
+	uint32_t vertex_buffer_size = 0;
+	uint32_t attribute_buffer_size = 0;
+	uint32_t skin_buffer_size = 0;
+	uint32_t index_buffer_size = 0;
+	uint32_t blend_shape_buffer_size = 0;
+	uint32_t lod_index_buffers_size = 0;
+	uint64_t vertex_count = 0;
 };
 
 /* STATUS INFORMATION */

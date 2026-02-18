@@ -34,12 +34,12 @@
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
 #include "core/templates/hash_map.h"
-#include "renderer_canvas_cull.h"
-#include "renderer_viewport.h"
-#include "rendering_server_globals.h"
+#include "servers/rendering/renderer_canvas_cull.h"
 #include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/renderer_viewport.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_enums.h"
+#include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/rendering_server_types.h"
 #include "servers/server_wrap_mt_common.h"
 
@@ -359,7 +359,7 @@ public:
 #define ServerName RendererMeshStorage
 #define server_name RSG::mesh_storage
 
-	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces, int p_blend_shape_count = 0) override {
+	virtual RID mesh_create_from_surfaces(const Vector<RenderingServerTypes::SurfaceData> &p_surfaces, int p_blend_shape_count = 0) override {
 		RID mesh = RSG::mesh_storage->mesh_allocate();
 
 		bool using_server_thread = Thread::get_caller_id() == server_thread;
@@ -389,7 +389,7 @@ public:
 
 	FUNCRIDSPLIT(mesh)
 
-	FUNC2(mesh_add_surface, RID, const SurfaceData &)
+	FUNC2(mesh_add_surface, RID, const RenderingServerTypes::SurfaceData &)
 
 	FUNC1RC(int, mesh_get_blend_shape_count, RID)
 
@@ -404,7 +404,7 @@ public:
 	FUNC3(mesh_surface_set_material, RID, int, RID)
 	FUNC2RC(RID, mesh_surface_get_material, RID, int)
 
-	FUNC2RC(SurfaceData, mesh_get_surface, RID, int)
+	FUNC2RC(RenderingServerTypes::SurfaceData, mesh_get_surface, RID, int)
 
 	FUNC1RC(int, mesh_get_surface_count, RID)
 
@@ -419,7 +419,7 @@ public:
 	FUNC2(mesh_surface_remove, RID, int)
 	FUNC1(mesh_clear, RID)
 
-	FUNC1(mesh_debug_usage, List<MeshInfo> *)
+	FUNC1(mesh_debug_usage, List<RenderingServerTypes::MeshInfo> *)
 
 	/* MULTIMESH API */
 

@@ -36,6 +36,7 @@ TEST_FORCE_LINK(test_arraymesh)
 
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/mesh.h"
+#include "servers/rendering/rendering_server.h"
 
 namespace TestArrayMesh {
 
@@ -396,7 +397,7 @@ TEST_CASE("[SceneTree][ArrayMesh] Get/Set mesh metadata and actions") {
 
 	SUBCASE("Create surface from raw SurfaceData data.") {
 		RID mesh_rid = mesh->get_rid();
-		RS::SurfaceData surface_data = RS::get_singleton()->mesh_get_surface(mesh_rid, 0);
+		RenderingServerTypes::SurfaceData surface_data = RS::get_singleton()->mesh_get_surface(mesh_rid, 0);
 		Ref<ArrayMesh> mesh2;
 		mesh2.instantiate();
 		mesh2->add_surface(surface_data.format, Mesh::PRIMITIVE_TRIANGLES, surface_data.vertex_data, surface_data.attribute_data,

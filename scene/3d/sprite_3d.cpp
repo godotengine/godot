@@ -770,7 +770,7 @@ SpriteBase3D::SpriteBase3D() {
 	mesh_array[RSE::ARRAY_TEX_UV] = mesh_uvs;
 	mesh_array[RSE::ARRAY_INDEX] = indices;
 
-	RS::SurfaceData sd;
+	RenderingServerTypes::SurfaceData sd;
 	RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RSE::PRIMITIVE_TRIANGLES, mesh_array);
 
 	mesh_surface_format = sd.format;

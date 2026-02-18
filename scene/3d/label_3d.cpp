@@ -649,7 +649,7 @@ void Label3D::_shape() {
 		mesh_array[RSE::ARRAY_TEX_UV] = E.value.mesh_uvs;
 		mesh_array[RSE::ARRAY_INDEX] = E.value.indices;
 
-		RS::SurfaceData sd;
+		RenderingServerTypes::SurfaceData sd;
 		RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RSE::PRIMITIVE_TRIANGLES, mesh_array);
 
 		sd.material = E.value.material;

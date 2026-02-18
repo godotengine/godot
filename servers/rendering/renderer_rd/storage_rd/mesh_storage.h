@@ -30,11 +30,11 @@
 
 #pragma once
 
-#include "../../rendering_server_globals.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "servers/rendering/renderer_rd/shaders/skeleton.glsl.gen.h"
+#include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/storage/mesh_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
@@ -374,7 +374,7 @@ public:
 	virtual void mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) override;
 
 	/// Return stride
-	virtual void mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) override;
+	virtual void mesh_add_surface(RID p_mesh, const RenderingServerTypes::SurfaceData &p_surface) override;
 
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const override;
 
@@ -389,7 +389,7 @@ public:
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) override;
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const override;
 
-	virtual RS::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const override;
+	virtual RenderingServerTypes::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const override;
 
 	virtual int mesh_get_surface_count(RID p_mesh) const override;
 
@@ -405,7 +405,7 @@ public:
 	virtual void mesh_clear(RID p_mesh) override;
 	virtual void mesh_surface_remove(RID p_mesh, int p_surface) override;
 
-	virtual void mesh_debug_usage(List<RS::MeshInfo> *r_info) override;
+	virtual void mesh_debug_usage(List<RenderingServerTypes::MeshInfo> *r_info) override;
 
 	virtual bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton) override;
 

@@ -42,6 +42,7 @@
 #include "scene/debugger/scene_debugger_object.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/main/canvas_layer.h"
+#include "scene/resources/mesh.h"
 #include "scene/theme/theme_db.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -1155,6 +1156,7 @@ void RuntimeNodeSelect::_update_view_2d() {
 }
 
 #ifndef _3D_DISABLED
+
 void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<SelectResult> &r_items) {
 	Window *root = SceneTree::get_singleton()->get_root();
 
@@ -1631,6 +1633,16 @@ void RuntimeNodeSelect::_reset_camera_3d() {
 		override_camera->set_perspective(camera_fov * cursor.fov_scale, camera_znear, camera_zfar);
 	}
 }
+
+RuntimeNodeSelect::SelectionBox3D::~SelectionBox3D() {
+	if (instance.is_valid()) {
+		RS::get_singleton()->free_rid(instance);
+		RS::get_singleton()->free_rid(instance_ofs);
+		RS::get_singleton()->free_rid(instance_xray);
+		RS::get_singleton()->free_rid(instance_xray_ofs);
+	}
+}
+
 #endif // _3D_DISABLED
 
 #endif // DEBUG_ENABLED

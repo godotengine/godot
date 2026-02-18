@@ -462,10 +462,10 @@ void ServersDebugger::_send_resource_usage() {
 		usage.infos.push_back(info);
 	}
 
-	List<RS::MeshInfo> mesh_info;
+	List<RenderingServerTypes::MeshInfo> mesh_info;
 	RS::get_singleton()->mesh_debug_usage(&mesh_info);
 
-	for (const RS::MeshInfo &E : mesh_info) {
+	for (const RenderingServerTypes::MeshInfo &E : mesh_info) {
 		ServersDebugger::ResourceInfo info;
 		info.path = E.path;
 		// We use 64-bit integers to avoid overflow, if for whatever reason, the sum is bigger than 4GB.

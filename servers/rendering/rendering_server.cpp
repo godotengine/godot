@@ -35,6 +35,7 @@
 #include "core/math/geometry_3d.h"
 #include "core/variant/typed_array.h"
 #include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_server_types.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_warnings.h"
 
@@ -1173,7 +1174,7 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint64_t p_format, i
 	}
 }
 
-Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surface_data, RSE::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, const Dictionary &p_lods, uint64_t p_compress_format) {
+Error RenderingServer::mesh_create_surface_data_from_arrays(RenderingServerTypes::SurfaceData *r_surface_data, RSE::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, const Dictionary &p_lods, uint64_t p_compress_format) {
 	ERR_FAIL_INDEX_V(p_primitive, RSE::PRIMITIVE_MAX, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_arrays.size() != RSE::ARRAY_MAX, ERR_INVALID_PARAMETER);
 
@@ -1331,7 +1332,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 			blend_shape_data.append_array(vertex_array_shape);
 		}
 	}
-	Vector<SurfaceData::LOD> lods;
+	Vector<RenderingServerTypes::SurfaceData::LOD> lods;
 	if (index_array_len) {
 		LocalVector<Variant> keys = p_lods.get_key_list();
 		keys.sort(); // otherwise lod levels may get skipped
@@ -1364,14 +1365,14 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 				}
 			}
 
-			SurfaceData::LOD lod;
+			RenderingServerTypes::SurfaceData::LOD lod;
 			lod.edge_length = distance;
 			lod.index_data = data;
 			lods.push_back(lod);
 		}
 	}
 
-	SurfaceData &surface_data = *r_surface_data;
+	RenderingServerTypes::SurfaceData &surface_data = *r_surface_data;
 	surface_data.format = format;
 	surface_data.primitive = p_primitive;
 	surface_data.aabb = aabb;
@@ -1390,7 +1391,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 }
 
 void RenderingServer::mesh_add_surface_from_arrays(RID p_mesh, RSE::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, const Dictionary &p_lods, BitField<RSE::ArrayFormat> p_compress_format) {
-	SurfaceData sd;
+	RenderingServerTypes::SurfaceData sd;
 	Error err = mesh_create_surface_data_from_arrays(&sd, p_primitive, p_arrays, p_blend_shapes, p_lods, p_compress_format);
 	if (err != OK) {
 		return;
@@ -1714,12 +1715,12 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 }
 
 Array RenderingServer::mesh_surface_get_arrays(RID p_mesh, int p_surface) const {
-	SurfaceData sd = mesh_get_surface(p_mesh, p_surface);
+	RenderingServerTypes::SurfaceData sd = mesh_get_surface(p_mesh, p_surface);
 	return mesh_create_arrays_from_surface_data(sd);
 }
 
 Dictionary RenderingServer::mesh_surface_get_lods(RID p_mesh, int p_surface) const {
-	SurfaceData sd = mesh_get_surface(p_mesh, p_surface);
+	RenderingServerTypes::SurfaceData sd = mesh_get_surface(p_mesh, p_surface);
 	ERR_FAIL_COND_V(sd.vertex_count == 0, Dictionary());
 
 	Dictionary ret;
@@ -1753,7 +1754,7 @@ Dictionary RenderingServer::mesh_surface_get_lods(RID p_mesh, int p_surface) con
 }
 
 TypedArray<Array> RenderingServer::mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const {
-	SurfaceData sd = mesh_get_surface(p_mesh, p_surface);
+	RenderingServerTypes::SurfaceData sd = mesh_get_surface(p_mesh, p_surface);
 	ERR_FAIL_COND_V(sd.vertex_count == 0, Array());
 
 	Vector<uint8_t> blend_shape_data = sd.blend_shape_data;
@@ -1789,7 +1790,7 @@ TypedArray<Array> RenderingServer::mesh_surface_get_blend_shape_arrays(RID p_mes
 	}
 }
 
-Array RenderingServer::mesh_create_arrays_from_surface_data(const SurfaceData &p_data) const {
+Array RenderingServer::mesh_create_arrays_from_surface_data(const RenderingServerTypes::SurfaceData &p_data) const {
 	Vector<uint8_t> vertex_data = p_data.vertex_data;
 	Vector<uint8_t> attrib_data = p_data.attribute_data;
 	Vector<uint8_t> skin_data = p_data.skin_data;
@@ -1804,16 +1805,6 @@ Array RenderingServer::mesh_create_arrays_from_surface_data(const SurfaceData &p
 
 	return _get_array_from_surface(format, vertex_data, attrib_data, skin_data, vertex_len, index_data, index_len, p_data.aabb, p_data.uv_scale);
 }
-#if 0
-Array RenderingServer::_mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_surface) const {
-	Vector<AABB> vec = RS::get_singleton()->mesh_surface_get_skeleton_aabb(p_mesh, p_surface);
-	Array arr;
-	for (int i = 0; i < vec.size(); i++) {
-		arr[i] = vec[i];
-	}
-	return arr;
-}
-#endif
 
 Rect2 RenderingServer::debug_canvas_item_get_rect(RID p_item) {
 #ifdef TOOLS_ENABLED
@@ -1937,14 +1928,14 @@ TypedArray<Dictionary> RenderingServer::_shader_get_shader_parameter_list(RID p_
 	return convert_property_list(&l);
 }
 
-static RS::SurfaceData _dict_to_surf(const Dictionary &p_dictionary) {
-	ERR_FAIL_COND_V(!p_dictionary.has("primitive"), RS::SurfaceData());
-	ERR_FAIL_COND_V(!p_dictionary.has("format"), RS::SurfaceData());
-	ERR_FAIL_COND_V(!p_dictionary.has("vertex_data"), RS::SurfaceData());
-	ERR_FAIL_COND_V(!p_dictionary.has("vertex_count"), RS::SurfaceData());
-	ERR_FAIL_COND_V(!p_dictionary.has("aabb"), RS::SurfaceData());
+static RenderingServerTypes::SurfaceData _dict_to_surf(const Dictionary &p_dictionary) {
+	ERR_FAIL_COND_V(!p_dictionary.has("primitive"), RenderingServerTypes::SurfaceData());
+	ERR_FAIL_COND_V(!p_dictionary.has("format"), RenderingServerTypes::SurfaceData());
+	ERR_FAIL_COND_V(!p_dictionary.has("vertex_data"), RenderingServerTypes::SurfaceData());
+	ERR_FAIL_COND_V(!p_dictionary.has("vertex_count"), RenderingServerTypes::SurfaceData());
+	ERR_FAIL_COND_V(!p_dictionary.has("aabb"), RenderingServerTypes::SurfaceData());
 
-	RS::SurfaceData sd;
+	RenderingServerTypes::SurfaceData sd;
 
 	sd.primitive = RSE::PrimitiveType(int(p_dictionary["primitive"]));
 	sd.format = p_dictionary["format"];
@@ -1960,7 +1951,7 @@ static RS::SurfaceData _dict_to_surf(const Dictionary &p_dictionary) {
 
 	if (p_dictionary.has("index_data")) {
 		sd.index_data = p_dictionary["index_data"];
-		ERR_FAIL_COND_V(!p_dictionary.has("index_count"), RS::SurfaceData());
+		ERR_FAIL_COND_V(!p_dictionary.has("index_count"), RenderingServerTypes::SurfaceData());
 		sd.index_count = p_dictionary["index_count"];
 	}
 
@@ -1975,7 +1966,7 @@ static RS::SurfaceData _dict_to_surf(const Dictionary &p_dictionary) {
 			Dictionary lod = lods[i];
 			ERR_CONTINUE(!lod.has("edge_length"));
 			ERR_CONTINUE(!lod.has("index_data"));
-			RS::SurfaceData::LOD l;
+			RenderingServerTypes::SurfaceData::LOD l;
 			l.edge_length = lod["edge_length"];
 			l.index_data = lod["index_data"];
 			sd.lods.push_back(l);
@@ -2001,7 +1992,7 @@ static RS::SurfaceData _dict_to_surf(const Dictionary &p_dictionary) {
 	return sd;
 }
 RID RenderingServer::_mesh_create_from_surfaces(const TypedArray<Dictionary> &p_surfaces, int p_blend_shape_count) {
-	Vector<RS::SurfaceData> surfaces;
+	Vector<RenderingServerTypes::SurfaceData> surfaces;
 	for (int i = 0; i < p_surfaces.size(); i++) {
 		surfaces.push_back(_dict_to_surf(p_surfaces[i]));
 	}
@@ -2011,7 +2002,7 @@ void RenderingServer::_mesh_add_surface(RID p_mesh, const Dictionary &p_surface)
 	mesh_add_surface(p_mesh, _dict_to_surf(p_surface));
 }
 Dictionary RenderingServer::_mesh_get_surface(RID p_mesh, int p_idx) {
-	RS::SurfaceData sd = mesh_get_surface(p_mesh, p_idx);
+	RenderingServerTypes::SurfaceData sd = mesh_get_surface(p_mesh, p_idx);
 
 	Dictionary d;
 	d["primitive"] = sd.primitive;
@@ -2165,7 +2156,7 @@ void RenderingServer::set_warn_on_surface_upgrade(bool p_warn) {
 #endif
 
 #ifndef DISABLE_DEPRECATED
-void RenderingServer::fix_surface_compatibility(SurfaceData &p_surface, const String &p_path) {
+void RenderingServer::fix_surface_compatibility(RenderingServerTypes::SurfaceData &p_surface, const String &p_path) {
 	uint64_t surface_version = p_surface.format & (RSE::ARRAY_FLAG_FORMAT_VERSION_MASK << RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
 	ERR_FAIL_COND_MSG(surface_version > RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION, "Cannot convert surface with version provided (" + itos((surface_version >> RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RSE::ARRAY_FLAG_FORMAT_VERSION_MASK) + ") to current version (" + itos((RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RSE::ARRAY_FLAG_FORMAT_VERSION_MASK) + ")");
 

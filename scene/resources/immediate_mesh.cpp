@@ -277,7 +277,7 @@ void ImmediateMesh::surface_end() {
 		}
 	}
 
-	RS::SurfaceData sd;
+	RenderingServerTypes::SurfaceData sd;
 
 	sd.primitive = RSE::PrimitiveType(active_surface_data.primitive);
 	sd.format = format;
