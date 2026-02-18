@@ -1035,10 +1035,10 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			SIGNAL_CHECK(SceneStringName(mouse_entered), signal_args);
 			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
-			// Remove node_i from the tree. node_i and node_j should receive Mouse Exit. node_h should not receive any new signals.
+			// Remove node_i from the tree. node_i and node_j should receive Mouse Exit. node_h should receive Mouse Enter.
 			node_h->remove_child(node_i);
 			CHECK(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
+			CHECK(node_h->mouse_over_self);
 			CHECK_FALSE(node_i->mouse_over);
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK_FALSE(node_j->mouse_over);
@@ -1088,10 +1088,10 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			SIGNAL_CHECK(SceneStringName(mouse_entered), signal_args);
 			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
-			// Hide node_i. node_i and node_j should receive Mouse Exit. node_h should not receive any new signals.
+			// Hide node_i. node_i and node_j should receive Mouse Exit. node_h should receive Mouse Enter.
 			node_i->hide();
 			CHECK(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
+			CHECK(node_h->mouse_over_self);
 			CHECK_FALSE(node_i->mouse_over);
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK_FALSE(node_j->mouse_over);

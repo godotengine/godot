@@ -3936,6 +3936,9 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_CHILD_ORDER_CHANGED: {
+			if (get_viewport() != nullptr && !get_viewport()->gui_is_dragging()) {
+				get_viewport()->_update_mouse_over(get_viewport()->get_mouse_position());
+			}
 			// Some parents need to know the order of the children to draw (like TabContainer),
 			// so we update them just in case.
 			queue_redraw();
@@ -3980,6 +3983,9 @@ void Control::_notification(int p_notification) {
 			} else {
 				update_minimum_size();
 				_size_changed();
+				if (get_viewport() != nullptr && !get_viewport()->gui_is_dragging()) {
+					get_viewport()->_update_mouse_over(get_viewport()->get_mouse_position());
+				}
 			}
 		} break;
 
