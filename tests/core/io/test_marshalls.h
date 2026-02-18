@@ -39,26 +39,43 @@ namespace TestMarshalls {
 TEST_CASE("[Marshalls] Unsigned 16 bit integer encoding") {
 	uint8_t arr[2];
 
+	// Little-endian
 	unsigned int actual_size = encode_uint16(0x1234, arr);
 	CHECK(actual_size == sizeof(uint16_t));
 	CHECK_MESSAGE(arr[0] == 0x34, "First encoded byte value should be equal to low order byte value.");
 	CHECK_MESSAGE(arr[1] == 0x12, "Last encoded byte value should be equal to high order byte value.");
+
+	// Big-endian
+	actual_size = encode_uint16_be(0x1234, arr);
+	CHECK(actual_size == sizeof(uint16_t));
+	CHECK_MESSAGE(arr[0] == 0x12, "(Big-endian) First encoded byte value should be equal to high order byte value.");
+	CHECK_MESSAGE(arr[1] == 0x34, "(Big-endian) Last encoded byte value should be equal to low order byte value.");
 }
 
 TEST_CASE("[Marshalls] Unsigned 32 bit integer encoding") {
 	uint8_t arr[4];
 
+	// Little-endian
 	unsigned int actual_size = encode_uint32(0x12345678, arr);
 	CHECK(actual_size == sizeof(uint32_t));
 	CHECK_MESSAGE(arr[0] == 0x78, "First encoded byte value should be equal to low order byte value.");
 	CHECK(arr[1] == 0x56);
 	CHECK(arr[2] == 0x34);
 	CHECK_MESSAGE(arr[3] == 0x12, "Last encoded byte value should be equal to high order byte value.");
+
+	// Big-endian
+	actual_size = encode_uint32_be(0x12345678, arr);
+	CHECK(actual_size == sizeof(uint32_t));
+	CHECK_MESSAGE(arr[0] == 0x12, "(Big-endian) First encoded byte value should be equal to high order byte value.");
+	CHECK(arr[1] == 0x34);
+	CHECK(arr[2] == 0x56);
+	CHECK_MESSAGE(arr[3] == 0x78, "(Big-endian) Last encoded byte value should be equal to low order byte value.");
 }
 
 TEST_CASE("[Marshalls] Unsigned 64 bit integer encoding") {
 	uint8_t arr[8];
 
+	// Little-endian
 	unsigned int actual_size = encode_uint64(0x0f123456789abcdef, arr);
 	CHECK(actual_size == sizeof(uint64_t));
 	CHECK_MESSAGE(arr[0] == 0xef, "First encoded byte value should be equal to low order byte value.");
@@ -69,24 +86,48 @@ TEST_CASE("[Marshalls] Unsigned 64 bit integer encoding") {
 	CHECK(arr[5] == 0x45);
 	CHECK(arr[6] == 0x23);
 	CHECK_MESSAGE(arr[7] == 0xf1, "Last encoded byte value should be equal to high order byte value.");
+
+	// Big-endian
+	actual_size = encode_uint64_be(0x0f123456789abcdef, arr);
+	CHECK(actual_size == sizeof(uint64_t));
+	CHECK_MESSAGE(arr[0] == 0xf1, "(Big-endian) First encoded byte value should be equal to high order byte value.");
+	CHECK(arr[1] == 0x23);
+	CHECK(arr[2] == 0x45);
+	CHECK(arr[3] == 0x67);
+	CHECK(arr[4] == 0x89);
+	CHECK(arr[5] == 0xab);
+	CHECK(arr[6] == 0xcd);
+	CHECK_MESSAGE(arr[7] == 0xef, "(Big-endian) Last encoded byte value should be equal to low order byte value.");
 }
 
 TEST_CASE("[Marshalls] Unsigned 16 bit integer decoding") {
+	// Little-endian
 	uint8_t arr[] = { 0x34, 0x12 };
-
 	CHECK(decode_uint16(arr) == 0x1234);
+
+	// Big-endian
+	uint8_t arr_be[] = { 0x12, 0x34 };
+	CHECK(decode_uint16_be(arr_be) == 0x1234);
 }
 
 TEST_CASE("[Marshalls] Unsigned 32 bit integer decoding") {
+	// Little-endian
 	uint8_t arr[] = { 0x78, 0x56, 0x34, 0x12 };
-
 	CHECK(decode_uint32(arr) == 0x12345678);
+
+	// Big-endian
+	uint8_t arr_be[] = { 0x12, 0x34, 0x56, 0x78 };
+	CHECK(decode_uint32_be(arr_be) == 0x12345678);
 }
 
 TEST_CASE("[Marshalls] Unsigned 64 bit integer decoding") {
+	// Little-endian
 	uint8_t arr[] = { 0xef, 0xcd, 0xab, 0x89, 0x67, 0x45, 0x23, 0xf1 };
-
 	CHECK(decode_uint64(arr) == 0x0f123456789abcdef);
+
+	// Big-endian
+	uint8_t arr_be[] = { 0xf1, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef };
+	CHECK(decode_uint64_be(arr_be) == 0x0f123456789abcdef);
 }
 
 TEST_CASE("[Marshalls] Floating point half precision encoding") {
@@ -97,10 +138,18 @@ TEST_CASE("[Marshalls] Floating point half precision encoding") {
 	// sign exponent (5 bits)    fraction (10 bits)
 	//  0        01101               0101010101
 	// Hexadecimal: 0x3555
+
+	// Little-endian
 	unsigned int actual_size = encode_half(0.33325195f, arr);
 	CHECK(actual_size == sizeof(uint16_t));
 	CHECK(arr[0] == 0x55);
 	CHECK(arr[1] == 0x35);
+
+	// Big-endian
+	unsigned int actual_size_be = encode_half_be(0.33325195f, arr);
+	CHECK(actual_size_be == sizeof(uint16_t));
+	CHECK(arr[0] == 0x35);
+	CHECK(arr[1] == 0x55);
 }
 
 TEST_CASE("[Marshalls] Floating point single precision encoding") {
@@ -111,12 +160,22 @@ TEST_CASE("[Marshalls] Floating point single precision encoding") {
 	// sign exponent (8 bits)    fraction (23 bits)
 	//  0       01111100      01000000000000000000000
 	// Hexadecimal: 0x3E200000
+
+	// Little-endian
 	unsigned int actual_size = encode_float(0.15625f, arr);
 	CHECK(actual_size == sizeof(uint32_t));
 	CHECK(arr[0] == 0x00);
 	CHECK(arr[1] == 0x00);
 	CHECK(arr[2] == 0x20);
 	CHECK(arr[3] == 0x3e);
+
+	// Big-endian
+	actual_size = encode_float_be(0.15625f, arr);
+	CHECK(actual_size == sizeof(uint32_t));
+	CHECK(arr[0] == 0x3e);
+	CHECK(arr[1] == 0x20);
+	CHECK(arr[2] == 0x00);
+	CHECK(arr[3] == 0x00);
 }
 
 TEST_CASE("[Marshalls] Floating point double precision encoding") {
@@ -127,6 +186,8 @@ TEST_CASE("[Marshalls] Floating point double precision encoding") {
 	// sign exponent (11 bits)                  fraction (52 bits)
 	//  0      01111111101     0101010101010101010101010101010101010101010101010101
 	// Hexadecimal: 0x3FD5555555555555
+
+	// Little-endian
 	unsigned int actual_size = encode_double(0.33333333333333333, arr);
 	CHECK(actual_size == sizeof(uint64_t));
 	CHECK(arr[0] == 0x55);
@@ -137,27 +198,48 @@ TEST_CASE("[Marshalls] Floating point double precision encoding") {
 	CHECK(arr[5] == 0x55);
 	CHECK(arr[6] == 0xd5);
 	CHECK(arr[7] == 0x3f);
+
+	// Big-endian
+	actual_size = encode_double_be(0.33333333333333333, arr);
+	CHECK(actual_size == sizeof(uint64_t));
+	CHECK(arr[0] == 0x3f);
+	CHECK(arr[1] == 0xd5);
+	CHECK(arr[2] == 0x55);
+	CHECK(arr[3] == 0x55);
+	CHECK(arr[4] == 0x55);
+	CHECK(arr[5] == 0x55);
+	CHECK(arr[6] == 0x55);
+	CHECK(arr[7] == 0x55);
 }
 
 TEST_CASE("[Marshalls] Floating point half precision decoding") {
+	// Little-endian
 	uint8_t arr[] = { 0x55, 0x35 };
-
-	// See floating point half precision encoding test case for details behind expected values.
 	CHECK(decode_half(arr) == 0.33325195f);
+
+	// Big-endian
+	uint8_t arr_be[] = { 0x35, 0x55 };
+	CHECK(decode_half_be(arr_be) == 0.33325195f);
 }
 
 TEST_CASE("[Marshalls] Floating point single precision decoding") {
+	// Little-endian
 	uint8_t arr[] = { 0x00, 0x00, 0x20, 0x3e };
-
-	// See floating point encoding test case for details behind expected values
 	CHECK(decode_float(arr) == 0.15625f);
+
+	// Big-endian
+	uint8_t arr_be[] = { 0x3e, 0x20, 0x00, 0x00 };
+	CHECK(decode_float_be(arr_be) == 0.15625f);
 }
 
 TEST_CASE("[Marshalls] Floating point double precision decoding") {
+	// Little-endian
 	uint8_t arr[] = { 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0xd5, 0x3f };
-
-	// See floating point encoding test case for details behind expected values
 	CHECK(decode_double(arr) == 0.33333333333333333);
+
+	// Big-endian
+	uint8_t arr_be[] = { 0x3f, 0xd5, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55 };
+	CHECK(decode_double_be(arr_be) == 0.33333333333333333);
 }
 
 TEST_CASE("[Marshalls] C string encoding") {
