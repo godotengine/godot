@@ -36,7 +36,10 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
+#include "editor/shader/shader_editor_plugin.h"
+#include "editor/shader/text_shader_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -279,23 +282,48 @@ void FindInFiles::_scan_dir(const String &path, PackedStringArray &out_folders, 
 	}
 }
 
+CodeEdit *FindInFiles::get_code_edit(const String &p_fpath) {
+	if (ResourceLoader::exists(p_fpath) && ResourceCache::has(p_fpath)) {
+		Ref<Resource> res = ResourceLoader::load(p_fpath);
+
+		ShaderEditorPlugin *shader_editor_plugin = Object::cast_to<ShaderEditorPlugin>(EditorNode::get_editor_data().get_editor_by_name("Shader"));
+		ScriptEditorPlugin *script_editor_plugin = Object::cast_to<ScriptEditorPlugin>(EditorNode::get_editor_data().get_editor_by_name("Script"));
+
+		if (shader_editor_plugin && shader_editor_plugin->handles(res.ptr())) {
+			if (TextShaderEditor *tse = Object::cast_to<TextShaderEditor>(shader_editor_plugin->get_shader_editor(res))) {
+				return tse->get_code_editor()->get_text_editor();
+			}
+		} else if (script_editor_plugin && script_editor_plugin->handles(res.ptr())) {
+			ScriptEditor *script_editor = ScriptEditor::get_singleton();
+			if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(script_editor->get_script_editor(res))) {
+				return teb->get_code_editor()->get_text_editor();
+			}
+		}
+	}
+	return nullptr;
+}
+
 void FindInFiles::_scan_file(const String &fpath) {
-	Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);
-	if (f.is_null()) {
-		print_verbose(String("Cannot open file ") + fpath);
-		return;
+	Vector<String> lines;
+
+	if (CodeEdit *code_edit = get_code_edit(fpath)) {
+		lines = code_edit->get_text().split("\n");
+	} else {
+		Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);
+		ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + fpath + "'.");
+
+		while (!f->eof_reached()) {
+			lines.append(f->get_line());
+		}
 	}
 
 	int line_number = 0;
 
-	while (!f->eof_reached()) {
+	for (String line : lines) {
 		// Line number starts at 1.
 		++line_number;
-
 		int begin = 0;
 		int end = 0;
-
-		String line = f->get_line();
 
 		while (find_next(line, _pattern, end, _match_case, _whole_words, begin, end)) {
 			emit_signal(SNAME(SIGNAL_RESULT_FOUND), fpath, line_number, begin, end, line);
@@ -1212,9 +1240,30 @@ private:
 };
 
 void FindInFilesPanel::apply_replaces_in_file(const String &fpath, const Vector<Result> &locations, const String &new_text) {
-	// If the file is already open, I assume the editor will reload it.
-	// If there are unsaved changes, the user will be asked on focus,
-	// however that means either losing changes or losing replaces.
+	String search_text = _finder->get_search_text();
+	int _;
+	int repl_line_number = 0;
+
+	// First try to replace in open editor.
+	if (CodeEdit *code_edit = FindInFiles::get_code_edit(fpath)) {
+		Vector<String> lines = code_edit->get_text().split("\n");
+
+		// Iterate backwards so changes don't affect the location of the next change in the same line.
+		for (int i = locations.size() - 1; i >= 0; i--) {
+			Result location = locations[i];
+			repl_line_number = location.line_number - 1;
+			String line = lines[repl_line_number];
+
+			if (!find_next(line, search_text, location.begin, _finder->is_match_case(), _finder->is_whole_words(), _, _)) {
+				// Make sure the replace is still valid in case the file was tampered with.
+				print_verbose(vformat(R"(Occurrence no longer matches, replace will be ignored in "%s": line %d, col %d.)", fpath, repl_line_number, location.begin));
+				continue;
+			}
+			code_edit->remove_text(repl_line_number, location.begin, repl_line_number, location.end);
+			code_edit->insert_text(new_text, repl_line_number, location.begin);
+		}
+		return;
+	}
 
 	Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);
 	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + fpath + "'.");
@@ -1225,33 +1274,25 @@ void FindInFilesPanel::apply_replaces_in_file(const String &fpath, const Vector<
 	ConservativeGetLine conservative;
 
 	String line = conservative.get_line(f);
-	String search_text = _finder->get_search_text();
 
-	int offset = 0;
-
-	for (int i = 0; i < locations.size(); ++i) {
-		int repl_line_number = locations[i].line_number;
+	// Iterate backwards so changes don't affect the location of the next change in the same line.
+	for (int i = locations.size() - 1; i >= 0; i--) {
+		Result location = locations[i];
+		repl_line_number = location.line_number;
 
 		while (current_line < repl_line_number) {
 			buffer += line;
 			line = conservative.get_line(f);
 			++current_line;
-			offset = 0;
 		}
 
-		int repl_begin = locations[i].begin + offset;
-		int repl_end = locations[i].end + offset;
-
-		int _;
-		if (!find_next(line, search_text, repl_begin, _finder->is_match_case(), _finder->is_whole_words(), _, _)) {
+		if (!find_next(line, search_text, location.begin, _finder->is_match_case(), _finder->is_whole_words(), _, _)) {
 			// Make sure the replace is still valid in case the file was tampered with.
-			print_verbose(String("Occurrence no longer matches, replace will be ignored in {0}: line {1}, col {2}").format(varray(fpath, repl_line_number, repl_begin)));
+			print_verbose(vformat(R"(Occurrence no longer matches, replace will be ignored in "%s": line %d, col %d.)", fpath, repl_line_number, location.begin));
 			continue;
 		}
 
-		line = line.left(repl_begin) + new_text + line.substr(repl_end);
-		// Keep an offset in case there are successive replaces in the same line.
-		offset += new_text.length() - (repl_end - repl_begin);
+		line = line.left(location.begin) + new_text + line.substr(location.end);
 	}
 
 	buffer += line;
