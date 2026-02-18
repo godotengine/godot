@@ -81,7 +81,7 @@ def create_template_zip(env, js, wasm, side):
         # And logo/favicon
         in_files.append("#misc/dist/html/logo.svg")
         out_files.append(zip_dir.File("logo.svg"))
-        in_files.append("#icon.png")
+        in_files.append("#misc/dist/common/icon.png")
         out_files.append(zip_dir.File("favicon.png"))
         # PWA
         service_worker = env.Substfile(

@@ -6,7 +6,7 @@
 for s in 16 24 32 48 64 128 256 512 1024; do
   convert -resize ${s}x$s -antialias \
           -background transparent \
-          ../../icon.svg icon$s.png
+          ../../misc/dist/common/icon.svg icon$s.png
 done
 
 # 16px tga file for library

@@ -92,13 +92,13 @@ TEST_CASE("[PCKPacker] Pack a PCK file with some files and directories") {
 			pck_packer.add_file("version.py", base_dir.path_join("../version.py"), "version.py") == OK,
 			"Adding a file to the PCK should return an OK error code.");
 	CHECK_MESSAGE(
-			pck_packer.add_file("some/directories with spaces/to/create/icon.png", base_dir.path_join("../icon.png")) == OK,
+			pck_packer.add_file("some/directories with spaces/to/create/icon.png", base_dir.path_join("../misc/dist/common/icon.png")) == OK,
 			"Adding a file to a new subdirectory in the PCK should return an OK error code.");
 	CHECK_MESSAGE(
-			pck_packer.add_file("some/directories with spaces/to/create/icon.svg", base_dir.path_join("../icon.svg")) == OK,
+			pck_packer.add_file("some/directories with spaces/to/create/icon.svg", base_dir.path_join("../misc/dist/common/icon.svg")) == OK,
 			"Adding a file to an existing subdirectory in the PCK should return an OK error code.");
 	CHECK_MESSAGE(
-			pck_packer.add_file("some/directories with spaces/to/create/icon.png", base_dir.path_join("../logo.png")) == OK,
+			pck_packer.add_file("some/directories with spaces/to/create/icon.png", base_dir.path_join("../misc/dist/common/logo.png")) == OK,
 			"Overriding a non-flushed file to an existing subdirectory in the PCK should return an OK error code.");
 	CHECK_MESSAGE(
 			pck_packer.add_file_from_buffer("buffer/new.txt", String("Hello world!").to_utf8_buffer()) == OK,

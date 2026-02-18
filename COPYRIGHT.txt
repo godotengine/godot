@@ -45,10 +45,10 @@ Copyright: 2014-present, Godot Engine contributors
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat
 
-Files: icon.png
- icon.svg
- logo.png
- logo.svg
+Files: misc/dist/common/icon.png
+ misc/dist/common/icon.svg
+ misc/dist/common/logo.png
+ misc/dist/common/logo.svg
 Comment: Godot Engine logo
 Copyright: 2017, Andrea Calabró
 License: CC-BY-4.0
