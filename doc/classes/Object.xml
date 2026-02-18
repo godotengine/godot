@@ -490,6 +490,23 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="call_deferred_unique" qualifiers="vararg">
+			<return type="Variant" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+				Same as [method call_deferred], but it guarantees that the method will be invoked at most once in a single frame with the same arguments, no matter how many times it was requested during the current frame.
+				[codeblocks]
+				[gdscript]
+				var node = Node3D.new()
+				node.call_deferred_unique("rotate", Vector3(1.0, 0.0, 0.0), 1.571)
+				[/gdscript]
+				[csharp]
+				var node = new Node3D();
+				node.CallDeferredUnique(Node3D.MethodName.Rotate, new Vector3(1f, 0f, 0f), 1.571f);
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="callv">
 			<return type="Variant" />
 			<param index="0" name="method" type="StringName" />

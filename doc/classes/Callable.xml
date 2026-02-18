@@ -131,6 +131,25 @@
 				See also [method Object.call_deferred].
 			</description>
 		</method>
+		<method name="call_deferred_unique" qualifiers="vararg const">
+			<return type="void" />
+			<description>
+				Same as [method call_deferred], but it guarantees that the method will be invoked at most once in a single frame with the same arguments, no matter how many times it was requested during the current frame.
+				[codeblocks]
+				[gdscript]
+				func _ready():
+					grab_focus.call_deferred_unique()
+				[/gdscript]
+				[csharp]
+				public override void _Ready()
+				{
+					Callable.From(GrabFocus).CallDeferredUnique();
+				}
+				[/csharp]
+				[/codeblocks]
+				See also [method Object.call_deferred_unique].
+			</description>
+		</method>
 		<method name="callv" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="arguments" type="Array" />

@@ -75,6 +75,14 @@ Error CallQueue::push_callp(Object *p_object, const StringName &p_method, const 
 	return push_callp(p_object->get_instance_id(), p_method, p_args, p_argcount, p_show_error);
 }
 
+Error CallQueue::push_call_uniquep(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error) {
+	return push_call_uniquep(p_object->get_instance_id(), p_method, p_args, p_argcount, p_show_error);
+}
+
+Error CallQueue::push_call_uniquep(ObjectID p_id, const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error) {
+	return push_callable_uniquep(Callable(p_id, p_method), p_args, p_argcount, p_show_error);
+}
+
 Error CallQueue::push_notification(Object *p_object, int p_notification) {
 	return push_notification(p_object->get_instance_id(), p_notification);
 }
@@ -83,12 +91,14 @@ Error CallQueue::push_set(Object *p_object, const StringName &p_prop, const Vari
 	return push_set(p_object->get_instance_id(), p_prop, p_value);
 }
 
-Error CallQueue::push_callablep(const Callable &p_callable, const Variant **p_args, int p_argcount, bool p_show_error) {
+Error CallQueue::push_callablep(const Callable &p_callable, const Variant **p_args, int p_argcount, bool p_show_error, bool p_mutex_locked) {
 	uint32_t room_needed = sizeof(Message) + sizeof(Variant) * p_argcount;
 
 	ERR_FAIL_COND_V_MSG(room_needed > uint32_t(PAGE_SIZE_BYTES), ERR_INVALID_PARAMETER, "Message is too large to fit on a page (" + itos(PAGE_SIZE_BYTES) + " bytes), consider passing less arguments.");
 
-	LOCK_MUTEX;
+	if (!p_mutex_locked) {
+		LOCK_MUTEX;
+	}
 
 	_ensure_first_page();
 
@@ -96,7 +106,9 @@ Error CallQueue::push_callablep(const Callable &p_callable, const Variant **p_ar
 		if (pages_used == max_pages) {
 			fprintf(stderr, "Failed method: %s. Message queue out of memory. %s\n", String(p_callable).utf8().get_data(), error_text.utf8().get_data());
 			statistics();
-			UNLOCK_MUTEX;
+			if (!p_mutex_locked) {
+				UNLOCK_MUTEX;
+			}
 			return ERR_OUT_OF_MEMORY;
 		}
 		_add_page();
@@ -128,7 +140,9 @@ Error CallQueue::push_callablep(const Callable &p_callable, const Variant **p_ar
 
 	page_bytes[pages_used - 1] += room_needed;
 
-	UNLOCK_MUTEX;
+	if (!p_mutex_locked) {
+		UNLOCK_MUTEX
+	}
 
 	return OK;
 }
@@ -204,6 +218,28 @@ Error CallQueue::push_notification(ObjectID p_id, int p_notification) {
 	UNLOCK_MUTEX;
 
 	return OK;
+}
+
+Error CallQueue::push_callable_uniquep(const Callable &p_callable, const Variant **p_args, int p_argcount, bool p_show_error) {
+	UniqueCallableCallKey call_key;
+
+	call_key.callable = p_callable;
+	for (int i = 0; i < p_argcount; ++i) {
+		call_key.args.push_back(*p_args[i]);
+	}
+
+	LOCK_MUTEX;
+	if (current_frame_unique_callables.has(call_key)) {
+		UNLOCK_MUTEX
+		return Error::OK;
+	}
+
+	current_frame_unique_callables.insert(call_key);
+
+	Error result = push_callablep(p_callable, p_args, p_argcount, p_show_error, true);
+	UNLOCK_MUTEX;
+
+	return result;
 }
 
 void CallQueue::_call_function(const Callable &p_callable, const Variant *p_args, int p_argcount, bool p_show_error) {
@@ -301,6 +337,7 @@ Error CallQueue::flush() {
 	pages_used = 1;
 
 	flushing = false;
+	current_frame_unique_callables.clear();
 	UNLOCK_MUTEX;
 	return OK;
 }

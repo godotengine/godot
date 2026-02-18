@@ -754,6 +754,29 @@ Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Call
 	return Variant();
 }
 
+Variant Object::_call_deferred_unique_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	if (p_argcount < 1) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.expected = 1;
+		return Variant();
+	}
+
+	if (!p_args[0]->is_string()) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = 0;
+		r_error.expected = Variant::STRING_NAME;
+		return Variant();
+	}
+
+	r_error.error = Callable::CallError::CALL_OK;
+
+	StringName method = *p_args[0];
+
+	MessageQueue::get_singleton()->push_call_uniquep(get_instance_id(), method, &p_args[1], p_argcount - 1, true);
+
+	return Variant();
+}
+
 bool Object::has_method(const StringName &p_method) const {
 	if (p_method == CoreStringName(free_)) {
 		return true;
@@ -1968,6 +1991,14 @@ void Object::_bind_methods() {
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_deferred", &Object::_call_deferred_bind, mi, varray(), false);
 	}
 
+	{
+		MethodInfo mi;
+		mi.name = "call_deferred_unique";
+		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
+
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_deferred_unique", &Object::_call_deferred_unique_bind, mi, varray(), false);
+	}
+
 	ClassDB::bind_method(D_METHOD("set_deferred", "property", "value"), &Object::set_deferred);
 
 	ClassDB::bind_method(D_METHOD("callv", "method", "arg_array"), &Object::callv);
@@ -2506,7 +2537,7 @@ void Object::get_argument_options(const StringName &p_function, int p_idx, List<
 			for (const MethodInfo &E : signals) {
 				r_options->push_back(E.name.quote());
 			}
-		} else if (pf == "call" || pf == "call_deferred" || pf == "callv" || pf == "has_method") {
+		} else if (pf == "call" || pf == "call_deferred" || pf == "callv" || pf == "has_method" || pf == "call_deferred_unique") {
 			List<MethodInfo> methods;
 			get_method_list(&methods);
 			for (const MethodInfo &E : methods) {

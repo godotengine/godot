@@ -525,6 +525,169 @@ TEST_CASE("[Object] Signals") {
 	}
 }
 
+class _DeferredUniqueMockObject : public Object {
+	GDCLASS(_DeferredUniqueMockObject, Object);
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("test"), &_DeferredUniqueMockObject::test);
+		ClassDB::bind_method(D_METHOD("test_arg1", "arg1"), &_DeferredUniqueMockObject::test_arg1);
+		ClassDB::bind_method(D_METHOD("test_args", "arg1", "arg2", "arg3", "arg4"), &_DeferredUniqueMockObject::test_args);
+	}
+
+public:
+	int8_t counter = 0;
+
+	void reset() {
+		counter = 0;
+	}
+
+	void test() {
+		++counter;
+	}
+
+	void test_arg1(String arg1) {
+		++counter;
+	}
+
+	void test_args(Variant arg1, Variant arg2, Variant arg3, Variant arg4) {
+		++counter;
+	}
+};
+
+TEST_CASE("[Object] Deferred Unique") {
+	CallQueue *message_queue = MessageQueue::get_singleton();
+	_DeferredUniqueMockObject *object = memnew(_DeferredUniqueMockObject);
+
+	if (message_queue == nullptr) {
+		message_queue = memnew(MessageQueue);
+	}
+
+	SUBCASE("[Object] Breakpoints") {
+		SUBCASE("[Object] Without Arg") {
+			CHECK(!message_queue->has_messages());
+			CHECK(object->counter == 0);
+
+			object->call_deferred_unique("test");
+			object->call_deferred_unique("test");
+			object->call_deferred_unique("test");
+
+			CHECK(message_queue->has_messages());
+
+			message_queue->flush();
+
+			CHECK(object->counter == 1);
+			CHECK(!message_queue->has_messages());
+
+			object->reset();
+
+			CHECK(object->counter == 0);
+			CHECK(!message_queue->has_messages());
+
+			object->call_deferred_unique("test");
+			object->call_deferred_unique("test");
+			object->call_deferred_unique("test");
+
+			CHECK(message_queue->has_messages());
+			message_queue->flush();
+
+			CHECK(object->counter == 1);
+		}
+
+		SUBCASE("[Object] With Arg") {
+			object->reset();
+
+			CHECK(!message_queue->has_messages());
+			CHECK(object->counter == 0);
+
+			object->call_deferred_unique("test_arg1", "A");
+			object->call_deferred_unique("test_arg1", "A");
+
+			CHECK(message_queue->has_messages());
+
+			message_queue->flush();
+			CHECK(!message_queue->has_messages());
+			CHECK(object->counter == 1);
+
+			object->reset();
+			CHECK(object->counter == 0);
+
+			object->call_deferred_unique("test_arg1", "A");
+			object->call_deferred_unique("test_arg1", "B");
+			object->call_deferred_unique("test_arg1", "B");
+			object->call_deferred_unique("test_arg1", "C");
+			CHECK(message_queue->has_messages());
+
+			message_queue->flush();
+			CHECK(!message_queue->has_messages());
+			CHECK(object->counter == 3);
+
+			object->reset();
+
+			object->call_deferred_unique("test_args", "A", 1, Vector2(0, 0), Array());
+			object->call_deferred_unique("test_args", "A", 1, Vector2(1, 0), Array());
+			object->call_deferred_unique("test_args", "A", 1, Vector2(1, 0), Array());
+			object->call_deferred_unique("test_args", "A", 2, Vector2(0, 0), 1);
+
+			CHECK(message_queue->has_messages());
+			message_queue->flush();
+			CHECK(!message_queue->has_messages());
+			CHECK(object->counter == 3);
+
+			object->reset();
+		}
+
+		SUBCASE("[Object] Callable") {
+			auto callable = Callable(object, "test");
+			auto callable_with_arg = Callable(object, "test_arg1");
+
+			CHECK(!message_queue->has_messages());
+
+			callable.call_deferred_unique();
+			callable.call_deferred_unique();
+			callable.call_deferred_unique();
+
+			CHECK(message_queue->has_messages());
+			message_queue->flush();
+
+			CHECK(object->counter == 1);
+			CHECK(!message_queue->has_messages());
+
+			object->reset();
+			CHECK(object->counter == 0);
+			CHECK(!message_queue->has_messages());
+
+			callable_with_arg.call_deferred_unique("A");
+			callable_with_arg.call_deferred_unique("A");
+			callable_with_arg.call_deferred_unique("A");
+
+			CHECK(message_queue->has_messages());
+
+			message_queue->flush();
+			CHECK(object->counter == 1);
+			CHECK(!message_queue->has_messages());
+
+			object->reset();
+			CHECK(object->counter == 0);
+
+			callable_with_arg.call_deferred_unique("A");
+			callable_with_arg.call_deferred_unique("B");
+			callable_with_arg.call_deferred_unique("B");
+			CHECK(message_queue->has_messages());
+
+			message_queue->flush();
+			CHECK(object->counter == 2);
+			CHECK(!message_queue->has_messages());
+
+			object->reset();
+			CHECK(object->counter == 0);
+		}
+	}
+
+	memdelete(object);
+	memdelete(message_queue);
+}
+
 class NotificationObjectSuperclass : public Object {
 	GDCLASS(NotificationObjectSuperclass, Object);
 
