@@ -44,7 +44,7 @@
 			<description>
 				Clears the calibration information for the specified joypad's motion sensors, if it has any and if they were calibrated.
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="flush_buffered_events">
@@ -128,7 +128,7 @@
 				+Y ... -Y: bottom ... top;
 				+Z ... -Z: farther ... closer.
 				The gravity part value is measured as a vector with length of [code]9.8[/code] away from the center of the Earth, which is a negative Y value.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS. On iOS, joypad accelerometer sensor reading is not supported due to OS limitations.
 			</description>
 		</method>
 		<method name="get_joy_axis" qualifiers="const">
@@ -149,7 +149,7 @@
 				+Y ... -Y: bottom ... top;
 				+Z ... -Z: farther ... closer.
 				The gravity part value is measured as a vector with length of [code]9.8[/code] away from the center of the Earth, which is a negative Y value.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS. On iOS, joypad accelerometer sensor reading is not supported due to OS limitations.
 			</description>
 		</method>
 		<method name="get_joy_guid" qualifiers="const">
@@ -171,7 +171,7 @@
 				Y: Angular speed around the Y axis (yaw);
 				Z: Angular speed around the Z axis (roll).
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad gyroscope and gyroscope calibration in your games.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="get_joy_info" qualifiers="const">
@@ -179,15 +179,15 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns a dictionary with extra platform-specific information about the device, e.g. the raw gamepad name from the OS or the Steam Input index.
-				On Windows, Linux, and macOS, the dictionary contains the following fields:
+				On Windows, Linux, macOS, and iOS, the dictionary contains the following fields:
 				[code]raw_name[/code]: The name of the controller as it came from the OS, before getting renamed by the controller database.
 				[code]vendor_id[/code]: The USB vendor ID of the device.
 				[code]product_id[/code]: The USB product ID of the device.
 				[code]serial_number[/code]: The serial number of the device. This key won't be present if the serial number is unavailable.
-				[code]steam_input_index[/code]: The Steam Input gamepad index, if the device is not a Steam Input device this key won't be present.
-				On Windows, the dictionary can have an additional field:
-				[code]xinput_index[/code]: The index of the controller in the XInput system. This key won't be present for devices not handled by XInput.
-				[b]Note:[/b] The returned dictionary is always empty on Android, iOS, visionOS, and Web.
+				The dictionary can also include the following fields under selected platforms:
+				[code]steam_input_index[/code]: The Steam Input gamepad index (Windows, Linux, and macOS only). If the device is not a Steam Input device this key won't be present.
+				[code]xinput_index[/code]: The index of the controller in the XInput system (Windows only). This key won't be present for devices not handled by XInput.
+				[b]Note:[/b] The returned dictionary is always empty on Android and Web.
 			</description>
 		</method>
 		<method name="get_joy_motion_sensors_calibration" qualifiers="const" experimental="">
@@ -198,7 +198,7 @@
 				The dictionary contains the following fields:
 				[code]gyroscope_offset[/code]: average offset in gyroscope values from [constant Vector2.ZERO] in rad/s.
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="get_joy_motion_sensors_rate" qualifiers="const" experimental="">
@@ -206,7 +206,7 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns the joypad's motion sensor rate in Hz, if the joypad has motion sensors and they're currently enabled. See also [method set_joy_motion_sensors_enabled].
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="get_joy_name">
@@ -274,7 +274,7 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns [code]true[/code] if the joypad has an LED light that can change colors and/or brightness. See also [method set_joy_light].
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="has_joy_motion_sensors" qualifiers="const" experimental="">
@@ -282,7 +282,8 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns [code]true[/code] if the joypad has motion sensors (accelerometer and gyroscope).
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] On iOS, joypad accelerometer sensor reading is not supported due to OS limitations.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="is_action_just_pressed" qualifiers="const">
@@ -371,7 +372,7 @@
 			<description>
 				Returns [code]true[/code] if the joypad's motion sensors have been calibrated.
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="is_joy_motion_sensors_calibrating" qualifiers="const" experimental="">
@@ -380,7 +381,7 @@
 			<description>
 				Returns [code]true[/code] if the joypad's motion sensors are currently being calibrated.
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="is_joy_motion_sensors_enabled" qualifiers="const" experimental="">
@@ -389,7 +390,7 @@
 			<description>
 				Returns [code]true[/code] if the requested joypad has motion sensors (accelerometer and gyroscope) and they are currently enabled. See also [method set_joy_motion_sensors_enabled] and [method has_joy_motion_sensors].
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="is_key_label_pressed" qualifiers="const">
@@ -508,7 +509,7 @@
 			<description>
 				Sets the joypad's LED light, if available, to the specified color. See also [method has_joy_light].
 				[b]Note:[/b] There is no way to get the color of the light from a joypad. If you need to know the assigned color, store it separately.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="set_joy_motion_sensors_calibration" experimental="">
@@ -518,7 +519,7 @@
 			<description>
 				Sets the specified joypad's calibration information. See also [method get_joy_motion_sensors_calibration].
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="set_joy_motion_sensors_enabled" experimental="">
@@ -529,7 +530,7 @@
 				Enables or disables the motion sensors (accelerometer and gyroscope), if available, on the specified joypad.
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
 				It's recommended to disable the motion sensors when they're no longer being used, because otherwise it might drain the controller battery faster.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="set_magnetometer">
@@ -654,7 +655,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] Accelerometer sensor doesn't usually require calibration.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="start_joy_vibration">
@@ -675,7 +676,7 @@
 			<description>
 				Stops the calibration process of the specified joypad's motion sensors.
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="stop_joy_vibration">

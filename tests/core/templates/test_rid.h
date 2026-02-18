@@ -37,18 +37,6 @@
 
 #include "tests/test_macros.h"
 
-#ifdef THREADS_ENABLED
-#ifdef SANITIZERS_ENABLED
-#ifdef __has_feature
-#if __has_feature(thread_sanitizer)
-#define TSAN_ENABLED
-#endif
-#elif defined(__SANITIZE_THREAD__)
-#define TSAN_ENABLED
-#endif
-#endif // SANITIZERS_ENABLED
-#endif // THREADS_ENABLED
-
 #ifdef TSAN_ENABLED
 #include <sanitizer/tsan_interface.h>
 #endif
