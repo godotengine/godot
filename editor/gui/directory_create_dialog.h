@@ -41,21 +41,22 @@ class DirectoryCreateDialog : public ConfirmationDialog {
 
 public:
 	enum Mode {
-		MODE_FILE,
-		MODE_DIRECTORY,
+		MODE_DUPLICATE_FILE,
+		MODE_CREATE_DIRECTORY,
 	};
 
 private:
 	String base_dir;
+	String base_name;
 	Callable accept_callback;
-	int mode = MODE_FILE;
+	int mode = MODE_DUPLICATE_FILE;
 
 	Label *base_path_label = nullptr;
 	LineEdit *dir_path = nullptr;
 	EditorValidationPanel *validation_panel = nullptr;
 
 	String _sanitize_input(const String &p_input) const;
-	String _validate_path(const String &p_path) const;
+	String _validate_path(const String &p_path, bool *p_warning) const;
 	void _on_dir_path_changed();
 
 protected:
