@@ -2054,6 +2054,7 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_methodv(split, static_cast<Vector<String> (String::*)(const String &, bool, int) const>(&String::split), sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
 	bind_string_methodv(rsplit, static_cast<Vector<String> (String::*)(const String &, bool, int) const>(&String::rsplit), sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
 	bind_string_method(split_floats, sarray("delimiter", "allow_empty"), varray(true));
+	bind_string_method(split_lines, sarray(), varray());
 	bind_string_method(join, sarray("parts"), varray());
 
 	bind_string_method(to_upper, sarray(), varray());
