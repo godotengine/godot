@@ -81,19 +81,11 @@ void VirtualJoystick::_notification(int p_what) {
 				return;
 			}
 
-			if (joystick_texture.is_valid()) {
-				Rect2 rect = Rect2(joystick_pos - Vector2(0.5, 0.5) * joystick_size, Vector2(joystick_size, joystick_size));
-				draw_texture_rect(joystick_texture, rect);
-			} else {
-				draw_circle(joystick_pos, joystick_size * 0.5, is_pressed ? theme_cache.ring_pressed_color : theme_cache.ring_normal_color, false, joystick_size * 0.05, true);
-			}
+			Rect2 rect_joystick = Rect2(joystick_pos - Vector2(0.5, 0.5) * joystick_size, Vector2(joystick_size, joystick_size));
+			draw_style_box(is_pressed ? theme_cache.pressed_joystick : theme_cache.normal_joystick, rect_joystick);
 
-			if (tip_texture.is_valid()) {
-				Rect2 rect = Rect2(tip_pos - Vector2(0.5, 0.5) * tip_size, Vector2(tip_size, tip_size));
-				draw_texture_rect(tip_texture, rect);
-			} else {
-				draw_circle(tip_pos, tip_size * 0.5, is_pressed ? theme_cache.tip_pressed_color : theme_cache.tip_normal_color, true, -1, true);
-			}
+			Rect2 rect_tip = Rect2(tip_pos - Vector2(0.5, 0.5) * tip_size, Vector2(tip_size, tip_size));
+			draw_style_box(is_pressed ? theme_cache.pressed_tip : theme_cache.normal_tip, rect_tip);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -231,11 +223,6 @@ void VirtualJoystick::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_visibility_mode", "mode"), &VirtualJoystick::set_visibility_mode);
 	ClassDB::bind_method(D_METHOD("get_visibility_mode"), &VirtualJoystick::get_visibility_mode);
 
-	ClassDB::bind_method(D_METHOD("set_joystick_texture", "texture"), &VirtualJoystick::set_joystick_texture);
-	ClassDB::bind_method(D_METHOD("get_joystick_texture"), &VirtualJoystick::get_joystick_texture);
-	ClassDB::bind_method(D_METHOD("set_tip_texture", "texture"), &VirtualJoystick::set_tip_texture);
-	ClassDB::bind_method(D_METHOD("get_tip_texture"), &VirtualJoystick::get_tip_texture);
-
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "joystick_mode", PROPERTY_HINT_ENUM, "Fixed,Dynamic,Following"), "set_joystick_mode", "get_joystick_mode");
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "joystick_size", PROPERTY_HINT_RANGE, "10,500,1"), "set_joystick_size", "get_joystick_size");
@@ -251,9 +238,6 @@ void VirtualJoystick::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_mode", PROPERTY_HINT_ENUM, "Always,When Touched"), "set_visibility_mode", "get_visibility_mode");
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "joystick_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_joystick_texture", "get_joystick_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tip_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_tip_texture", "get_tip_texture");
-
 	ADD_SIGNAL(MethodInfo("pressed"));
 	ADD_SIGNAL(MethodInfo("tapped"));
 	ADD_SIGNAL(MethodInfo("released", PropertyInfo(Variant::VECTOR2, "input_vector")));
@@ -266,10 +250,10 @@ void VirtualJoystick::_bind_methods() {
 	BIND_ENUM_CONSTANT(VISIBILITY_ALWAYS);
 	BIND_ENUM_CONSTANT(VISIBILITY_WHEN_TOUCHED);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, VirtualJoystick, ring_normal_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, VirtualJoystick, tip_normal_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, VirtualJoystick, ring_pressed_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, VirtualJoystick, tip_pressed_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, VirtualJoystick, normal_joystick);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, VirtualJoystick, normal_tip);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, VirtualJoystick, pressed_joystick);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, VirtualJoystick, pressed_tip);
 }
 
 Vector2 VirtualJoystick::get_joystick_position() const {
@@ -380,28 +364,4 @@ void VirtualJoystick::set_visibility_mode(VisibilityMode p_mode) {
 
 VirtualJoystick::VisibilityMode VirtualJoystick::get_visibility_mode() const {
 	return visibility;
-}
-
-void VirtualJoystick::set_joystick_texture(const Ref<Texture2D> &p_texture) {
-	if (joystick_texture == p_texture) {
-		return;
-	}
-	joystick_texture = p_texture;
-	queue_redraw();
-}
-
-Ref<Texture2D> VirtualJoystick::get_joystick_texture() const {
-	return joystick_texture;
-}
-
-void VirtualJoystick::set_tip_texture(const Ref<Texture2D> &p_texture) {
-	if (tip_texture == p_texture) {
-		return;
-	}
-	tip_texture = p_texture;
-	queue_redraw();
-}
-
-Ref<Texture2D> VirtualJoystick::get_tip_texture() const {
-	return tip_texture;
 }

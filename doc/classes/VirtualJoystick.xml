@@ -43,14 +43,8 @@
 		<member name="joystick_size" type="float" setter="set_joystick_size" getter="get_joystick_size" default="100.0">
 			The size of the joystick in pixels.
 		</member>
-		<member name="joystick_texture" type="Texture2D" setter="set_joystick_texture" getter="get_joystick_texture">
-			The texture to use for the joystick base. When [code]null[/code], a ring is drawn using the [theme_item ring_normal_color] and [theme_item ring_pressed_color].
-		</member>
 		<member name="tip_size" type="float" setter="set_tip_size" getter="get_tip_size" default="50.0">
 			The size of the joystick tip in pixels.
-		</member>
-		<member name="tip_texture" type="Texture2D" setter="set_tip_texture" getter="get_tip_texture">
-			The texture to use for the joystick tip. When [code]null[/code], a circle is drawn using the [theme_item tip_normal_color] and [theme_item tip_pressed_color].
 		</member>
 		<member name="visibility_mode" type="int" setter="set_visibility_mode" getter="get_visibility_mode" enum="VirtualJoystick.VisibilityMode" default="0">
 			The visibility mode to use.
@@ -103,17 +97,17 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="ring_normal_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
-			Default ring joystick [Color].
+		<theme_item name="normal_joystick" data_type="style" type="StyleBox">
+			Base joystick [StyleBox].
 		</theme_item>
-		<theme_item name="ring_pressed_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
-			Ring joystick [Color] when pressed.
+		<theme_item name="normal_tip" data_type="style" type="StyleBox">
+			Tip joystick [StyleBox].
 		</theme_item>
-		<theme_item name="tip_normal_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
-			Default Tip joystick [Color].
+		<theme_item name="pressed_joystick" data_type="style" type="StyleBox">
+			Base joystick [StyleBox] when pressed.
 		</theme_item>
-		<theme_item name="tip_pressed_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
-			Tip joystick [Color] when pressed.
+		<theme_item name="pressed_tip" data_type="style" type="StyleBox">
+			Tip joystick [StyleBox] when pressed.
 		</theme_item>
 	</theme_items>
 </class>
