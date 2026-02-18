@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Curve3DMesh" inherits="PrimitiveMesh" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Class representing a [PrimitiveMesh] shaped by a [Curve3D].
+	</brief_description>
+	<description>
+		Class representing a [PrimitiveMesh] shaped by a [Curve3D].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="corner_threshold" type="float" setter="set_corner_threshold" getter="get_corner_threshold" default="0.5236">
+			Threshold angle in degrees for detecting corners. If the angle between segments exceeds this value, a corner is created. Corner points will not be interleaved or filtered out.
+		</member>
+		<member name="curve" type="Curve3D" setter="set_curve" getter="get_curve">
+			[Curve3D] that defines the shape of the mesh.
+		</member>
+		<member name="extend_edges" type="bool" setter="set_extend_edges" getter="is_extend_edges" default="false">
+			If true, the mesh will be extended at endpoints along the curve's tangent to match the width.
+		</member>
+		<member name="filter_overlaps" type="bool" setter="set_filter_overlaps" getter="is_filter_overlaps" default="false">
+		</member>
+		<member name="follow_curve" type="bool" setter="set_follow_curve" getter="is_follow_curve" default="true">
+			If true, the mesh will follow the curve's tilt instead of the up vector.
+		</member>
+		<member name="interleave_vertices" type="bool" setter="set_interleave_vertices" getter="is_interleave_vertices" default="false">
+		</member>
+		<member name="profile" type="int" setter="set_profile" getter="get_profile" enum="Curve3DMesh.Profile" default="0">
+			Determines the shape of the mesh's cross-section.
+		</member>
+		<member name="scale_uv_by_length" type="bool" setter="set_scale_uv_by_length" getter="is_scale_uv_by_length" default="false">
+			If true, the U coordinate of the UV map will be scaled by the length of the curve.
+		</member>
+		<member name="scale_uv_by_width" type="bool" setter="set_scale_uv_by_width" getter="is_scale_uv_by_width" default="false">
+			If true, the V coordinate of the UV map will be scaled by the width curve.
+		</member>
+		<member name="segments" type="int" setter="set_segments" getter="get_segments" default="2">
+		</member>
+		<member name="smooth_shaded_corners" type="bool" setter="set_smooth_shaded_corners" getter="is_smooth_shaded_corners" default="true">
+			If false, corners will be flat-shaded.
+		</member>
+		<member name="tessellation_mode" type="int" setter="set_tessellation_mode" getter="get_tessellation_mode" enum="Curve3DMesh.TessellationMode" default="1">
+		</member>
+		<member name="tessellation_tolerance" type="float" setter="set_tessellation_tolerance" getter="get_tessellation_tolerance" default="4.0">
+		</member>
+		<member name="tile_segment_uv" type="bool" setter="set_tile_segment_UV" getter="is_tile_segment_UV" default="true">
+			If true, segments of a cross-shaped mesh will be mapped to separate UV regions.
+		</member>
+		<member name="up_vector" type="Vector3" setter="set_up_vector" getter="get_up_vector" default="Vector3(0, 1, 0)">
+			Up vector for the curve. The mesh will be oriented to this vector.
+		</member>
+		<member name="width" type="float" setter="set_width" getter="get_width" default="0.5">
+			Width of the mesh. The width is applied perpendicular to the curve.
+		</member>
+		<member name="width_curve" type="Curve" setter="set_width_curve" getter="get_width_curve">
+			Optional [Curve] that defines the width of the mesh along the curve.
+		</member>
+	</members>
+	<constants>
+		<constant name="TESSELLATION_BAKED" value="1" enum="TessellationMode">
+		</constant>
+		<constant name="TESSELLATION_DISABLED" value="2" enum="TessellationMode">
+		</constant>
+		<constant name="TESSELLATION_ADAPTIVE" value="0" enum="TessellationMode">
+		</constant>
+		<constant name="PROFILE_FLAT" value="0" enum="Profile">
+			Flat ribbon-like profile.
+		</constant>
+		<constant name="PROFILE_CROSS" value="1" enum="Profile">
+			Cross-shaped profile. The mesh will be composed of several flat segments crossing each other.
+		</constant>
+		<constant name="PROFILE_TUBE" value="2" enum="Profile">
+			Tube profile. The mesh will be a tube with a circular cross-section.
+		</constant>
+	</constants>
+</class>

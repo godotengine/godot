@@ -3974,3 +3974,1032 @@ void TextMesh::set_uppercase(bool p_uppercase) {
 bool TextMesh::is_uppercase() const {
 	return uppercase;
 }
+
+void Curve3DMesh::_update_lightmap_size() {
+	if (get_add_uv2() && curve.is_valid() && (curve->get_point_count() > 1)) {
+		// size must have changed, update lightmap size hint
+		Size2i _lightmap_size_hint;
+		float padding = get_uv2_padding();
+
+		float lightmap_length = curve->get_baked_length();
+		if (extend_edges && !curve->is_closed()) {
+			float extra_length = 1.0;
+			if (width_curve.is_valid()) {
+				extra_length += width_curve->sample(0.0);
+				extra_length += width_curve->sample(1.0);
+			}
+			lightmap_length += extra_length * width;
+		}
+		_lightmap_size_hint.x = MAX(1.0, lightmap_length / texel_size) + 2.0 * padding;
+
+		float lightmap_width = width;
+		if (width_curve.is_valid()) {
+			lightmap_width *= MAX(width_curve->get_max_value(), width_curve->get_min_value());
+		}
+		float width_padding = 1.0;
+		if (profile == PROFILE_CROSS) {
+			lightmap_width *= segments;
+			width_padding *= segments;
+		} else if (profile == PROFILE_TUBE) {
+			lightmap_width *= Math::PI;
+			width_padding = 0.0;
+		}
+
+		_lightmap_size_hint.y = MAX(1.0, lightmap_width / texel_size) + width_padding * padding;
+		set_lightmap_size_hint(_lightmap_size_hint);
+	}
+}
+
+void Curve3DMesh::_create_mesh_array(Array &p_arr) const {
+	Vector<Vector3> points;
+	Vector<Vector3> normals;
+	Vector<float> tangents;
+	Vector<Vector2> uvs;
+	Vector<Vector2> uv2s;
+	Vector<int> indices;
+
+	// Only used if we calculate UV2
+	float _uv2_padding = get_uv2_padding() * texel_size;
+	bool _add_uv2 = get_add_uv2();
+
+	if (curve.is_valid() && (curve->get_point_count() > 1)) {
+		LocalVector<CenterPoint> center_points;
+	real_t total_length = 0.0;
+
+		_generate_curve_points(center_points, total_length);
+
+		LocalVector<EdgePoint> edge_points;
+		int radial_segments = (profile == PROFILE_FLAT) ? 1 : segments;
+		_generate_edge_vertices(center_points, total_length, radial_segments, _uv2_padding, edge_points);
+
+		if (interleave_vertices && (profile != PROFILE_TUBE)) {
+			_interleave_edge_vertices(edge_points, center_points, radial_segments);
+		}
+
+		if (filter_overlaps) {
+			_filter_overlapping_vertices(edge_points, center_points, radial_segments);
+		}
+
+		_generate_triangles(edge_points, radial_segments, points, normals, tangents, uvs, uv2s, indices);
+	}
+
+	if (indices.is_empty()) {
+		// If empty, add single triangle to suppress errors.
+		points.push_back(Vector3());
+		normals.push_back(Vector3(0.0, 1.0, 0.0));
+		uvs.push_back(Vector2());
+		if (_add_uv2) {
+			uv2s.push_back(Vector2());
+		}
+		tangents.push_back(1.0);
+		tangents.push_back(0.0);
+		tangents.push_back(0.0);
+		tangents.push_back(1.0);
+		indices.push_back(0);
+		indices.push_back(0);
+		indices.push_back(0);
+	}
+
+	p_arr[RS::ARRAY_VERTEX] = points;
+	p_arr[RS::ARRAY_NORMAL] = normals;
+	p_arr[RS::ARRAY_TANGENT] = tangents;
+	p_arr[RS::ARRAY_TEX_UV] = uvs;
+	if (_add_uv2) {
+		p_arr[RS::ARRAY_TEX_UV2] = uv2s;
+	}
+	p_arr[RS::ARRAY_INDEX] = indices;
+}
+
+void Curve3DMesh::_generate_curve_points(LocalVector<CenterPoint> &center_points, real_t &total_length) const {
+	int point_count = 0;
+	switch (tessellation_mode) {
+		case TESSELLATION_BAKED: {
+			PackedVector3Array pts = curve->get_baked_points();
+			PackedRealArray tilts = curve->get_baked_tilts();
+			point_count = pts.size();
+			if (curve->is_closed()) {
+				point_count--;
+			}
+			center_points.resize(point_count);
+			for (int i = 0; i < point_count; i++) {
+				center_points[i].position = pts[i];
+				center_points[i].tilt = tilts[i];
+			}
+		} break;
+		case TESSELLATION_ADAPTIVE: {
+			PackedVector3Array pts = curve->tessellate(5, tessellation_tolerance);
+			point_count = pts.size();
+			if (curve->is_closed()) {
+				point_count--;
+			}
+			center_points.resize(point_count);
+			for (int i = 0; i < point_count; i++) {
+				float offset = curve->get_closest_offset(pts[i]);
+				center_points[i].position = pts[i];
+				center_points[i].tilt = curve->sample_baked_tilt(offset);
+			}
+		} break;
+		case TESSELLATION_DISABLED: {
+			point_count = curve->get_point_count();
+			center_points.resize(point_count);
+			for (int i = 0; i < point_count; i++) {
+				center_points[i].position = curve->get_point_position(i);
+				center_points[i].tilt = curve->get_point_tilt(i);
+			}
+		} break;
+	}
+
+	// Calculate auxiliary data for the center points of the curve: tangents, partial lengths, corner points, etc.
+	// First point:
+	Vector3 next = center_points[1].position;
+	Vector3 next_dir = (next - center_points[0].position).normalized();
+	Vector3 prev_dir = next_dir;
+	if (curve->is_closed()) {
+		prev_dir = (center_points[0].position - center_points[point_count - 1].position).normalized();
+	}
+
+	center_points[0].tangent_prev = prev_dir;
+	center_points[0].tangent_next = next_dir;
+
+	total_length = 0.0;
+	center_points[0].partial_length = total_length;
+
+	if (extend_edges && !curve->is_closed()) {
+		float extra_width = width * 0.5;
+		if (width_curve.is_valid()) {
+			extra_width *= width_curve->sample(0.0);
+		}
+		center_points[0].position -= next_dir * extra_width;
+		total_length += extra_width;
+	}
+
+	// Middle section:
+	for (int i = 1; i < point_count - 1; i++) {
+		Vector3 prev_vec = center_points[i].position - center_points[i - 1].position;
+		float prev_length = prev_vec.length();
+		prev_dir = prev_vec.normalized();
+		next_dir = (center_points[i + 1].position - center_points[i].position).normalized();
+		total_length += prev_length;
+		center_points[i].partial_length = total_length;
+		center_points[i].tangent_prev = prev_dir;
+		center_points[i].tangent_next = next_dir;
+	}
+
+	// Last point:
+	Vector3 prev_vec = center_points[point_count - 1].position - center_points[point_count - 2].position;
+	float prev_length = prev_vec.length();
+	prev_dir = prev_vec.normalized();
+	next_dir = prev_dir;
+	total_length += prev_length;
+	center_points[point_count - 1].partial_length = total_length;
+	if (curve->is_closed()) {
+		next_dir = (center_points[0].position - center_points[point_count - 1].position);
+		float extra_length = next_dir.length();
+		if (extra_length > 0.0) {
+			next_dir /= extra_length;
+		}
+		total_length += extra_length;
+	}
+	center_points[point_count - 1].tangent_prev = prev_dir;
+	center_points[point_count - 1].tangent_next = next_dir;
+
+	// Extend edge points to match the width if needed.
+	if (extend_edges && !curve->is_closed()) {
+		float extra_width = width * 0.5;
+		if (width_curve.is_valid()) {
+			extra_width *= width_curve->sample(1.0);
+		}
+		center_points[point_count - 1].position += next_dir * extra_width;
+		total_length += extra_width;
+		center_points[point_count - 1].partial_length += extra_width;
+	}
+
+	// Prevent edge points from being interleaved or filtered out.
+	if (!curve->is_closed()) {
+		center_points[point_count - 1].corner_point = true;
+		center_points[0].corner_point = true;
+	}
+}
+
+void Curve3DMesh::_generate_edge_vertices(LocalVector<CenterPoint> &center_points, real_t total_length,
+		int radial_segments, float _uv2_padding, LocalVector<EdgePoint> &edge_points) const {
+	const Vector3 up_vector_normalized = up_vector.normalized();
+	float segment_angle = Math::PI;
+	if (profile == PROFILE_CROSS) {
+		segment_angle = Math::PI / radial_segments;
+	} else if (profile == PROFILE_TUBE) {
+		segment_angle = Math::PI * 2.0 / radial_segments;
+	}
+
+	const float horizontal_total = total_length + 2.0 * _uv2_padding;
+	const float length_h = total_length / horizontal_total;
+	const float padding_h = _uv2_padding / horizontal_total;
+
+	const float max_width = width * (width_curve.is_valid() ? MAX(width_curve->get_max_value(), -width_curve->get_min_value()) : 1.0);
+	const float length_v = 1.0 / radial_segments;
+	const float edge_padding = length_v * ((profile == PROFILE_TUBE) ? 1.0 : max_width / (max_width + _uv2_padding));
+
+	// Calculate the points that will form the geometry of the mesh.
+	// They are not converted to vertices right away because some of them may be filtered out later.
+
+	Vector3 current_up = up_vector_normalized;
+
+	const int point_count = center_points.size();
+	const int edge_count = (profile == PROFILE_TUBE) ? 1 : 2;
+
+	const float corner_scalar_threshold = Math::cos(corner_threshold);
+	const bool zero_width = (width == 0.0);
+	const bool _add_uv2 = get_add_uv2();
+
+	for (int i = 0; i < point_count; i++) {
+		float corner_cosine = center_points[i].tangent_prev.dot(center_points[i].tangent_next);
+		center_points[i].corner_point = center_points[i].corner_point || (corner_cosine < corner_scalar_threshold);
+
+		float local_width = 1.0;
+		float u = center_points[i].partial_length / total_length;
+
+		if (width_curve.is_valid()) {
+			local_width = width_curve->sample(u);
+		}
+
+		Vector3 binormal, spoke;
+		Vector3 tangent_avg = (center_points[i].tangent_next + center_points[i].tangent_prev).normalized();
+
+		real_t width_correction = 1.0f;
+		Vector3 width_correction_dir;
+
+		if (!zero_width) {
+			if (!follow_curve) {
+				Vector3 local_up = up_vector.slide(center_points[i].tangent_next).normalized();
+				binormal = tangent_avg.cross(local_up);
+			} else {
+				binormal = tangent_avg.cross(current_up);
+				current_up = binormal.cross(tangent_avg);
+			}
+			binormal.normalize();
+			binormal.rotate(tangent_avg, center_points[i].tilt);
+			spoke = binormal * width * local_width * 0.5;
+
+			width_correction = sqrt(2.0 / (1.0 + corner_cosine));
+			width_correction_dir = (center_points[i].tangent_prev - center_points[i].tangent_next).normalized();
+		} else {
+			binormal = Vector3(0.0, 0.0, 1.0);
+			spoke = Vector3(0.0, 0.0, 0.0);
+		}
+
+		float v_offset = 0.5;
+		if (scale_UV_by_width) {
+			v_offset *= local_width;
+		}
+
+		EdgePoint point;
+
+		Vector3 tangent = tangent_avg;
+		if (!smooth_shaded_corners && center_points[i].corner_point) {
+			tangent = center_points[i].tangent_prev;
+		}
+
+		Vector3 normal = -tangent.cross(binormal).normalized();
+		if (_add_uv2) {
+			point.uv2.x = padding_h + u * length_h;
+		}
+		if (scale_UV_by_length) {
+			u *= total_length;
+		}
+		point.uv.x = u;
+		point.tangent = tangent;
+
+		for (int e = 0; e < edge_count; e++) {
+			int edge = e * 2 - 1;
+			for (int j = 0; j < radial_segments; j++) {
+				if (!zero_width) {
+					float angle = j * segment_angle;
+					Vector3 spoke_rotated = spoke.rotated(tangent_avg, angle);
+
+					Vector3 stretched_component = spoke_rotated.dot(width_correction_dir) * width_correction_dir;
+					Vector3 fixed_component = spoke_rotated - stretched_component;
+					spoke_rotated = width_correction * stretched_component + fixed_component;
+
+					point.position = center_points[i].position + edge * spoke_rotated;
+
+					Vector3 normal_rotated = (profile == PROFILE_TUBE) ? -edge * normal.cross(tangent) : normal;
+					normal_rotated.rotate(tangent, angle);
+					point.normal = normal_rotated;
+				} else {
+					point.position = center_points[i].position;
+					point.normal = normal;
+				}
+
+				if (profile == PROFILE_CROSS && tile_segment_UV) {
+					point.uv.y = (e + j) * length_v;
+				} else if (profile == PROFILE_TUBE) {
+					point.uv.y = j * length_v;
+				} else {
+					point.uv.y = 0.5 + edge * v_offset;
+				}
+
+				if (_add_uv2) {
+					point.uv2.y = e * edge_padding + j * length_v;
+				}
+
+				int index = edge_points.size();
+				if (index >= radial_segments) {
+					point.prev_point = index - radial_segments;
+					edge_points[point.prev_point].next_point = index;
+				}
+
+				point.source_index = i;
+				point.edge = e;
+				edge_points.push_back(point);
+			}
+		}
+
+		// Corner points are duplicated to split normals for flat shading.
+		if (!smooth_shaded_corners && center_points[i].corner_point) {
+			tangent = center_points[i].tangent_next;
+			normal = -tangent.cross(binormal).normalized();
+
+			for (int e = 0; e < edge_count; e++) {
+				int edge = e * 2 - 1;
+				for (int j = 0; j < radial_segments; j++) {
+					int duplicated_index = edge_points.size() - radial_segments * edge_count;
+					point = edge_points[duplicated_index];
+					point.tangent = tangent;
+					Vector3 normal_rotated = (profile == PROFILE_TUBE) ? -edge * normal.cross(tangent) : normal;
+					normal_rotated.rotate(tangent, j * segment_angle);
+					point.normal = normal_rotated;
+					int index = edge_points.size();
+					point.prev_point = index - radial_segments;
+					edge_points[point.prev_point].next_point = index;
+					edge_points[duplicated_index].next_connected = false;
+					point.prev_connected = false;
+					edge_points.push_back(point);
+				}
+			}
+		}
+	}
+
+	for (int j = 0; j < radial_segments; j++) {
+		edge_points[edge_points.size() - radial_segments + j].next_point = j;
+		edge_points[j].prev_point = edge_points.size() - radial_segments + j;
+		if (!curve->is_closed()) {
+			for (int e = 0; e < edge_count; e++) {
+				edge_points[j + e * radial_segments].prev_connected = false;
+				edge_points[edge_points.size() - (edge_count - e) * radial_segments + j].next_connected = false;
+			}
+		}
+	}
+}
+
+#define REMOVE_POINT(m_point)                                            \
+	edge_points[(m_point).prev_point].next_point = (m_point).next_point; \
+	edge_points[(m_point).next_point].prev_point = (m_point).prev_point;
+
+void Curve3DMesh::_interleave_edge_vertices(LocalVector<EdgePoint> &edge_points, LocalVector<CenterPoint> &center_points, int radial_segments) const {
+	for (int j = 0; j < radial_segments; j++) {
+		EdgePoint *point = &edge_points[j];
+		int point_index = 0;
+		while (point->next_point >= point_index) {
+			point_index = point->next_point;
+			EdgePoint *next_point = &edge_points[point->next_point];
+			if ((center_points[point->source_index].corner_point) ||
+					(center_points[next_point->source_index].corner_point) ||
+					(point->source_index == next_point->source_index)) {
+				point = next_point;
+				continue;
+			}
+			REMOVE_POINT(*point)
+			REMOVE_POINT(*next_point)
+			point->removed = true;
+			next_point->removed = true;
+			point = &edge_points[next_point->next_point];
+			point = &edge_points[point->next_point];
+			point = &edge_points[point->next_point];
+		}
+	}
+}
+
+void Curve3DMesh::_filter_overlapping_vertices(LocalVector<EdgePoint> &edge_points, LocalVector<CenterPoint> &center_points, int radial_segments) const {
+	bool points_removed = true;
+	while (points_removed) {
+		points_removed = false;
+		for (int j = 0; j < radial_segments; j++) {
+			int point_index = j;
+			int last_index = -1;
+			EdgePoint *point = &edge_points[point_index];
+			int next_index = point->next_point;
+			EdgePoint *next_point = &edge_points[next_index];
+
+			while (point_index > last_index) {
+				if ((next_index < point_index) && !curve->is_closed()) {
+					break;
+				}
+				if (next_point->edge == point->edge) {
+					Vector3 center_dir = center_points[next_point->source_index].position - center_points[point->source_index].position;
+					Vector3 next_dir = next_point->position - point->position;
+					if (next_dir.dot(center_dir) < 0.0) {
+						point->filter = true;
+						next_point->filter = true;
+					}
+
+					if (profile == PROFILE_TUBE) {
+						const EdgePoint *top_point = &edge_points[point_index - j + ((j + 1) % radial_segments)];
+						const EdgePoint *bottom_point = &edge_points[next_index - j + ((j + radial_segments - 1) % radial_segments)];
+
+						while (top_point->filter) {
+							if (center_points[top_point->source_index].corner_point) {
+								break;
+							}
+							top_point = &edge_points[top_point->prev_point];
+						}
+
+						while (bottom_point->filter) {
+							if (center_points[bottom_point->source_index].corner_point) {
+								break;
+							}
+							bottom_point = &edge_points[bottom_point->next_point];
+						}
+
+						Vector3 top_dir = top_point->position - point->position;
+						Vector3 bottom_dir = bottom_point->position - next_point->position;
+						if (top_dir.cross(next_dir).dot(point->normal) < 0.0) {
+							Vector3 top_side = top_point->position - center_points[top_point->source_index].position;
+							Vector3 next_side = next_point->position - center_points[next_point->source_index].position;
+							Vector3 point_side = point->position - center_points[point->source_index].position;
+							if (top_side.dot(point_side) > 0.0 && top_side.dot(next_side) > 0.0) {
+								point->filter = true;
+							}
+						}
+
+						if (next_dir.cross(bottom_dir).dot(point->normal) < 0.0) {
+							Vector3 bottom_side = bottom_point->position - center_points[bottom_point->source_index].position;
+							Vector3 next_side = next_point->position - center_points[next_point->source_index].position;
+							Vector3 point_side = point->position - center_points[point->source_index].position;
+							if (bottom_side.dot(point_side) > 0.0 && bottom_side.dot(next_side) > 0.0) {
+								next_point->filter = true;
+							}
+						}
+					}
+
+					last_index = point_index;
+					point_index = point->next_point;
+					point = &edge_points[point_index];
+					next_index = point->next_point;
+					next_point = &edge_points[next_index];
+				} else {
+					next_index = next_point->next_point;
+					next_point = &edge_points[next_index];
+				}
+			}
+		}
+
+		for (uint32_t k = 0; k < edge_points.size(); ++k) {
+			EdgePoint *point = &edge_points[k];
+			if (point->filter && !point->removed) {
+				if (center_points[point->source_index].corner_point || (point->next_point == point->prev_point)) {
+					point->filter = false;
+				}
+			}
+		}
+
+		// Group consecutive filtered points on the same edge
+		for (uint32_t k = 0; k < edge_points.size(); ++k) {
+			EdgePoint *point = &edge_points[k];
+			if (point->filter && !point->removed) {
+				LocalVector<int> group_indices;
+				group_indices.push_back(k);
+
+				int next_idx = point->next_point;
+				while (next_idx < (int)edge_points.size()) {
+					if (edge_points[next_idx].edge == point->edge) {
+						if (edge_points[next_idx].filter) {
+							group_indices.push_back(next_idx);
+						} else {
+							break;
+						}
+					}
+					next_idx = edge_points[next_idx].next_point;
+				}
+
+				if (group_indices.size() > 1) {
+					// Find the neighbors on the same edge for averaging
+					int first_idx = group_indices[0];
+					int last_idx = group_indices[group_indices.size() - 1];
+
+					int before_idx = edge_points[first_idx].prev_point;
+					while (before_idx >= 0) {
+						if (edge_points[before_idx].edge == point->edge && !edge_points[before_idx].filter) {
+							break;
+						} else {
+							before_idx = edge_points[before_idx].prev_point;
+						}
+					}
+
+					int after_idx = edge_points[last_idx].next_point;
+					while (after_idx < (int)edge_points.size()) {
+						if (edge_points[after_idx].edge == point->edge && !edge_points[after_idx].filter) {
+							break;
+						} else {
+							after_idx = edge_points[after_idx].next_point;
+						}
+					}
+
+					// Keep the first point in the group and derive position from neighbor tangents
+					EdgePoint *kept_point = &edge_points[first_idx];
+
+					if (before_idx >= 0 && after_idx < (int)edge_points.size() &&
+							edge_points[before_idx].edge == point->edge &&
+							edge_points[after_idx].edge == point->edge) {
+						EdgePoint *before_point = &edge_points[before_idx];
+						EdgePoint *after_point = &edge_points[after_idx];
+
+						// Calculate position based on tangent intersection
+						Vector3 before_pos = before_point->position;
+						Vector3 after_pos = after_point->position;
+						Vector3 before_tangent = before_point->tangent;
+						Vector3 after_tangent = after_point->tangent;
+
+						// Find intersection of the extended tangent lines
+						// Line 1: before_pos + t1 * before_tangent
+						// Line 2: after_pos + t2 * after_tangent
+						// Solve for closest approach point between the two lines
+						Vector3 w0 = before_pos - after_pos;
+						float a = before_tangent.dot(before_tangent);
+						float b = before_tangent.dot(after_tangent);
+						float c = after_tangent.dot(after_tangent);
+						float d = before_tangent.dot(w0);
+						float e = after_tangent.dot(w0);
+
+						float denom = a * c - b * b;
+						Vector3 tangent_position;
+
+						if (Math::abs(denom) > CMP_EPSILON) {
+							// Lines are not parallel, find intersection point
+							float t1 = (b * e - c * d) / denom;
+							float t2 = (a * e - b * d) / denom;
+
+							// Use the midpoint of the closest approach
+							Vector3 point1 = before_pos + t1 * before_tangent;
+							Vector3 point2 = after_pos + t2 * after_tangent;
+							tangent_position = (point1 + point2) * 0.5f;
+						} else {
+							// Lines are parallel, use simple average
+							tangent_position = (before_pos + after_pos) * 0.5f;
+						}
+
+						kept_point->position = tangent_position;
+						kept_point->normal = (before_point->normal + after_point->normal).normalized();
+						kept_point->tangent = (before_point->tangent + after_point->tangent).normalized();
+						kept_point->uv = (before_point->uv + after_point->uv) * 0.5f;
+						kept_point->uv2 = (before_point->uv2 + after_point->uv2) * 0.5f;
+					}
+
+					kept_point->filter = false;
+
+					// Remove all other points in the group
+					for (uint32_t i = 1; i < group_indices.size(); ++i) {
+						EdgePoint *remove_point = &edge_points[group_indices[i]];
+						REMOVE_POINT(*remove_point);
+						remove_point->removed = true;
+						remove_point->filter = false;
+						points_removed = true;
+					}
+				} else {
+					// Single point, just remove it normally
+					REMOVE_POINT(*point);
+					point->removed = true;
+					point->filter = false;
+					points_removed = true;
+				}
+			}
+		}
+	}
+}
+#undef REMOVE_POINT
+
+void Curve3DMesh::_generate_triangles(LocalVector<EdgePoint> &edge_points, int radial_segments, Vector<Vector3> &points,
+		Vector<Vector3> &normals, Vector<float> &tangents, Vector<Vector2> &uvs, Vector<Vector2> &uv2s,
+		Vector<int> &indices) const {
+	bool _add_uv2 = get_add_uv2();
+
+#define ADD_POINT(m_point)                   \
+	points.push_back((m_point).position);    \
+	normals.push_back((m_point).normal);     \
+	uvs.push_back((m_point).uv);             \
+	if (_add_uv2) {                          \
+		uv2s.push_back((m_point).uv2);       \
+	}                                        \
+	tangents.push_back((m_point).tangent.x); \
+	tangents.push_back((m_point).tangent.y); \
+	tangents.push_back((m_point).tangent.z); \
+	tangents.push_back(1.0);
+
+	for (uint32_t k = 0; k < edge_points.size(); ++k) {
+		EdgePoint *point = &edge_points[k];
+		if (!point->removed) {
+			point->source_index = points.size();
+			ADD_POINT(*point)
+		}
+	}
+
+	if (profile != PROFILE_TUBE) {
+		for (int j = 0; j < radial_segments; j++) {
+			const EdgePoint *point = &edge_points[j];
+			const EdgePoint *last_edge_idx[2];
+
+			int stop_index = point->next_point;
+			const EdgePoint *stop_point = &edge_points[stop_index];
+
+			while (stop_point->edge == point->edge) {
+				point = stop_point;
+				stop_index = point->next_point;
+				stop_point = &edge_points[stop_index];
+			}
+
+			last_edge_idx[static_cast<int>(point->edge)] = point;
+			last_edge_idx[static_cast<int>(stop_point->edge)] = stop_point;
+			point = stop_point;
+			int point_index;
+			do {
+				point_index = point->next_point;
+				point = &edge_points[point_index];
+
+				bool skip_face = false;
+
+				if (!last_edge_idx[0]->next_connected && !last_edge_idx[1]->next_connected) {
+					skip_face = true;
+				}
+
+				if (!point->prev_connected && !last_edge_idx[1 - static_cast<int>(point->edge)]->prev_connected) {
+					skip_face = true;
+				}
+
+				if (!skip_face) {
+					indices.push_back(last_edge_idx[1]->source_index);
+					indices.push_back(last_edge_idx[0]->source_index);
+					indices.push_back(point->source_index);
+				}
+
+				last_edge_idx[static_cast<int>(point->edge)] = &edge_points[point_index];
+			} while (point_index != stop_index);
+		}
+	} else {
+		for (uint32_t i = 0; i < edge_points.size(); i += radial_segments) {
+			for (int j = 0; j < radial_segments; j++) {
+				int point_index = i + j;
+				const EdgePoint *point = &edge_points[point_index];
+				if (point->removed) {
+					continue;
+				}
+				EdgePoint *next_point = &edge_points[point->next_point];
+				EdgePoint *top_point = &edge_points[i + ((j + 1) % radial_segments)];
+				EdgePoint *bottom_point = &edge_points[point->next_point - j + ((j + radial_segments - 1) % radial_segments)];
+
+				while (top_point->removed) {
+					top_point = &edge_points[top_point->prev_point];
+				}
+
+				if (next_point->prev_connected || top_point->next_connected) {
+					indices.push_back(point->source_index);
+					indices.push_back(next_point->source_index);
+					indices.push_back(top_point->source_index);
+				}
+
+				while (bottom_point->removed) {
+					bottom_point = &edge_points[bottom_point->next_point];
+				}
+
+				if (point->next_connected || bottom_point->prev_connected) {
+					indices.push_back(point->source_index);
+					indices.push_back(bottom_point->source_index);
+					indices.push_back(next_point->source_index);
+				}
+			}
+		}
+	}
+}
+
+void Curve3DMesh::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Curve3DMesh::set_curve);
+	ClassDB::bind_method(D_METHOD("get_curve"), &Curve3DMesh::get_curve);
+
+	ClassDB::bind_method(D_METHOD("set_width", "width"), &Curve3DMesh::set_width);
+	ClassDB::bind_method(D_METHOD("get_width"), &Curve3DMesh::get_width);
+
+	ClassDB::bind_method(D_METHOD("set_width_curve", "curve"), &Curve3DMesh::set_width_curve);
+	ClassDB::bind_method(D_METHOD("get_width_curve"), &Curve3DMesh::get_width_curve);
+
+	ClassDB::bind_method(D_METHOD("set_extend_edges", "extend_edges"), &Curve3DMesh::set_extend_edges);
+	ClassDB::bind_method(D_METHOD("is_extend_edges"), &Curve3DMesh::is_extend_edges);
+
+	ClassDB::bind_method(D_METHOD("set_scale_uv_by_length", "scale_uv_by_length"), &Curve3DMesh::set_scale_UV_by_length);
+	ClassDB::bind_method(D_METHOD("is_scale_uv_by_length"), &Curve3DMesh::is_scale_UV_by_length);
+
+	ClassDB::bind_method(D_METHOD("set_scale_uv_by_width", "scale_uv_by_width"), &Curve3DMesh::set_scale_UV_by_width);
+	ClassDB::bind_method(D_METHOD("is_scale_uv_by_width"), &Curve3DMesh::is_scale_UV_by_width);
+
+	ClassDB::bind_method(D_METHOD("set_tile_segment_UV", "enable"), &Curve3DMesh::set_tile_segment_UV);
+	ClassDB::bind_method(D_METHOD("is_tile_segment_UV"), &Curve3DMesh::is_tile_segment_UV);
+
+	ClassDB::bind_method(D_METHOD("set_tessellation_mode", "mode"), &Curve3DMesh::set_tessellation_mode);
+	ClassDB::bind_method(D_METHOD("get_tessellation_mode"), &Curve3DMesh::get_tessellation_mode);
+
+	ClassDB::bind_method(D_METHOD("set_tessellation_tolerance", "tolerance"), &Curve3DMesh::set_tessellation_tolerance);
+	ClassDB::bind_method(D_METHOD("get_tessellation_tolerance"), &Curve3DMesh::get_tessellation_tolerance);
+
+	ClassDB::bind_method(D_METHOD("set_corner_threshold", "corner_threshold"), &Curve3DMesh::set_corner_threshold);
+	ClassDB::bind_method(D_METHOD("get_corner_threshold"), &Curve3DMesh::get_corner_threshold);
+
+	ClassDB::bind_method(D_METHOD("is_smooth_shaded_corners"), &Curve3DMesh::is_smooth_shaded_corners);
+	ClassDB::bind_method(D_METHOD("set_smooth_shaded_corners", "enable"), &Curve3DMesh::set_smooth_shaded_corners);
+
+	ClassDB::bind_method(D_METHOD("set_interleave_vertices", "enable"), &Curve3DMesh::set_interleave_vertices);
+	ClassDB::bind_method(D_METHOD("is_interleave_vertices"), &Curve3DMesh::is_interleave_vertices);
+
+	ClassDB::bind_method(D_METHOD("is_filter_overlaps"), &Curve3DMesh::is_filter_overlaps);
+	ClassDB::bind_method(D_METHOD("set_filter_overlaps", "enable"), &Curve3DMesh::set_filter_overlaps);
+
+	ClassDB::bind_method(D_METHOD("set_up_vector", "up_vector"), &Curve3DMesh::set_up_vector);
+	ClassDB::bind_method(D_METHOD("get_up_vector"), &Curve3DMesh::get_up_vector);
+
+	ClassDB::bind_method(D_METHOD("set_follow_curve", "follow_curve"), &Curve3DMesh::set_follow_curve);
+	ClassDB::bind_method(D_METHOD("is_follow_curve"), &Curve3DMesh::is_follow_curve);
+
+	ClassDB::bind_method(D_METHOD("set_profile", "profile"), &Curve3DMesh::set_profile);
+	ClassDB::bind_method(D_METHOD("get_profile"), &Curve3DMesh::get_profile);
+	ClassDB::bind_method(D_METHOD("set_segments", "segments"), &Curve3DMesh::set_segments);
+	ClassDB::bind_method(D_METHOD("get_segments"), &Curve3DMesh::get_segments);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve3D"), "set_curve", "get_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_RANGE, "0.0,2.0,0.001,or_greater"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "width_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_width_curve", "get_width_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scale_uv_by_width"), "set_scale_uv_by_width", "is_scale_uv_by_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "profile", PROPERTY_HINT_ENUM, "Flat,Cross,Tube"), "set_profile", "get_profile");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "segments", PROPERTY_HINT_RANGE, "2,100,1,or_greater"), "set_segments", "get_segments");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tile_segment_uv", PROPERTY_HINT_NONE, "hint_tooltip:Tile UVs for each segment."), "set_tile_segment_UV", "is_tile_segment_UV");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "extend_edges", PROPERTY_HINT_NONE, "hint_tooltip:Extend edges to cover the curve."), "set_extend_edges", "is_extend_edges");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "up_vector", PROPERTY_HINT_NONE, "hint_tooltip:Up vector for the curve."), "set_up_vector", "get_up_vector");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_curve", PROPERTY_HINT_NONE, "hint_tooltip:Follow the curve's tilt instead of up vector."), "set_follow_curve", "is_follow_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tessellation_mode", PROPERTY_HINT_ENUM, "Adaptive,Baked,Disabled"), "set_tessellation_mode", "get_tessellation_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tessellation_tolerance", PROPERTY_HINT_RANGE, "0.001,16.0,0.001,or_greater,suffix:m"), "set_tessellation_tolerance", "get_tessellation_tolerance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "corner_threshold", PROPERTY_HINT_RANGE, "0.0,180.0,0.1,radians_as_degrees"), "set_corner_threshold", "get_corner_threshold");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_shaded_corners", PROPERTY_HINT_NONE, "hint_tooltip:Smooth shaded corners."), "set_smooth_shaded_corners", "is_smooth_shaded_corners");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interleave_vertices", PROPERTY_HINT_NONE, "hint_tooltip:Interleave vertices to reduce vertex count."), "set_interleave_vertices", "is_interleave_vertices");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_overlaps", PROPERTY_HINT_NONE), "set_filter_overlaps", "is_filter_overlaps");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scale_uv_by_length"), "set_scale_uv_by_length", "is_scale_uv_by_length");
+
+	BIND_ENUM_CONSTANT(TESSELLATION_BAKED);
+	BIND_ENUM_CONSTANT(TESSELLATION_DISABLED);
+	BIND_ENUM_CONSTANT(TESSELLATION_ADAPTIVE);
+
+	BIND_ENUM_CONSTANT(PROFILE_FLAT);
+	BIND_ENUM_CONSTANT(PROFILE_CROSS);
+	BIND_ENUM_CONSTANT(PROFILE_TUBE);
+}
+
+void Curve3DMesh::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "interleave_vertices" && profile == PROFILE_TUBE) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (p_property.name == "extend_edges" && (!curve.is_valid() || curve->is_closed())) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (p_property.name == "segments" && profile == PROFILE_FLAT) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (p_property.name == "tile_segment_uv" && profile != PROFILE_CROSS) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (p_property.name == "tessellation_tolerance" && tessellation_mode != TESSELLATION_ADAPTIVE) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (p_property.name == "scale_uv_by_width" && width_curve.is_null()) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+}
+
+void Curve3DMesh::set_width(const float p_width) {
+	if (width != p_width) {
+		width = p_width;
+		request_update();
+	}
+}
+
+float Curve3DMesh::get_width() const {
+	return width;
+}
+
+void Curve3DMesh::set_curve(const Ref<Curve3D> &p_curve) {
+	if (curve != p_curve) {
+		if (curve.is_valid()) {
+			curve->disconnect_changed(callable_mp(static_cast<PrimitiveMesh *>(this), (&PrimitiveMesh::request_update)));
+		}
+
+		curve = p_curve;
+
+		if (curve.is_valid()) {
+			curve->connect_changed(callable_mp(static_cast<PrimitiveMesh *>(this), (&PrimitiveMesh::request_update)));
+		}
+
+		request_update();
+	}
+}
+
+Ref<Curve3D> Curve3DMesh::get_curve() const {
+	return curve;
+}
+
+void Curve3DMesh::set_width_curve(const Ref<Curve> &p_curve) {
+	if (width_curve != p_curve) {
+		if (width_curve.is_valid()) {
+			width_curve->disconnect_changed(callable_mp(static_cast<PrimitiveMesh *>(this), (&PrimitiveMesh::request_update)));
+		}
+
+		width_curve = p_curve;
+
+		if (width_curve.is_valid()) {
+			width_curve->connect_changed(callable_mp(static_cast<PrimitiveMesh *>(this), (&PrimitiveMesh::request_update)));
+		}
+
+		notify_property_list_changed();
+		request_update();
+	}
+}
+
+Ref<Curve> Curve3DMesh::get_width_curve() const {
+	return width_curve;
+}
+
+void Curve3DMesh::set_scale_UV_by_length(bool p_enable) {
+	if (scale_UV_by_length != p_enable) {
+		scale_UV_by_length = p_enable;
+		request_update();
+	}
+}
+
+bool Curve3DMesh::is_scale_UV_by_length() const {
+	return scale_UV_by_length;
+}
+
+void Curve3DMesh::set_scale_UV_by_width(bool p_enable) {
+	if (scale_UV_by_width != p_enable) {
+		scale_UV_by_width = p_enable;
+		request_update();
+	}
+}
+
+bool Curve3DMesh::is_scale_UV_by_width() const {
+	return scale_UV_by_width;
+}
+
+void Curve3DMesh::set_tile_segment_UV(bool p_enable) {
+	if (tile_segment_UV != p_enable) {
+		tile_segment_UV = p_enable;
+		request_update();
+	}
+}
+
+bool Curve3DMesh::is_tile_segment_UV() const {
+	return tile_segment_UV;
+}
+
+bool Curve3DMesh::is_interleave_vertices() const {
+	return interleave_vertices;
+}
+
+void Curve3DMesh::set_interleave_vertices(bool p_enable) {
+	if (interleave_vertices != p_enable) {
+		interleave_vertices = p_enable;
+		request_update();
+	}
+}
+
+bool Curve3DMesh::is_filter_overlaps() const {
+	return filter_overlaps;
+}
+
+void Curve3DMesh::set_filter_overlaps(bool p_enable) {
+	if (filter_overlaps != p_enable) {
+		filter_overlaps = p_enable;
+		request_update();
+	}
+}
+
+void Curve3DMesh::set_tessellation_mode(TessellationMode p_mode) {
+	if (tessellation_mode != p_mode) {
+		tessellation_mode = p_mode;
+		notify_property_list_changed();
+		request_update();
+	}
+}
+
+Curve3DMesh::TessellationMode Curve3DMesh::get_tessellation_mode() const {
+	return tessellation_mode;
+}
+
+void Curve3DMesh::set_tessellation_tolerance(float p_tolerance) {
+	if (tessellation_tolerance != p_tolerance) {
+		tessellation_tolerance = MAX(p_tolerance, 0.001);
+		request_update();
+	}
+}
+
+float Curve3DMesh::get_tessellation_tolerance() const {
+	return tessellation_tolerance;
+}
+
+void Curve3DMesh::set_corner_threshold(float p_threshold) {
+	if (corner_threshold != p_threshold) {
+		corner_threshold = p_threshold;
+		request_update();
+	}
+}
+
+float Curve3DMesh::get_corner_threshold() const {
+	return corner_threshold;
+}
+
+void Curve3DMesh::set_smooth_shaded_corners(bool p_enable) {
+	if (smooth_shaded_corners != p_enable) {
+		smooth_shaded_corners = p_enable;
+		request_update();
+	}
+}
+
+bool Curve3DMesh::is_smooth_shaded_corners() const {
+	return smooth_shaded_corners;
+}
+
+void Curve3DMesh::set_up_vector(const Vector3 &p_up_vector) {
+	if (up_vector != p_up_vector) {
+		up_vector = p_up_vector;
+		request_update();
+	}
+}
+
+Vector3 Curve3DMesh::get_up_vector() const {
+	return up_vector;
+}
+
+void Curve3DMesh::set_follow_curve(bool p_follow) {
+	if (follow_curve != p_follow) {
+		follow_curve = p_follow;
+		request_update();
+	}
+}
+
+bool Curve3DMesh::is_follow_curve() const {
+	return follow_curve;
+}
+
+void Curve3DMesh::set_profile(Profile p_profile) {
+	if (profile != p_profile) {
+		profile = p_profile;
+		if (profile == PROFILE_CROSS) {
+			segments = MAX(segments, 2);
+		} else if (profile == PROFILE_TUBE) {
+			segments = MAX(segments, 3);
+		}
+		notify_property_list_changed();
+		request_update();
+	}
+}
+
+Curve3DMesh::Profile Curve3DMesh::get_profile() const {
+	return profile;
+}
+
+void Curve3DMesh::set_segments(int p_segments) {
+	if (profile == PROFILE_TUBE) {
+		p_segments = MAX(p_segments, 3);
+	} else {
+		p_segments = MAX(p_segments, 2);
+	}
+	if (segments != p_segments) {
+		segments = p_segments;
+		request_update();
+	}
+}
+
+int Curve3DMesh::get_segments() const {
+	return segments;
+}
+
+void Curve3DMesh::set_extend_edges(bool p_extend) {
+	if (extend_edges != p_extend) {
+		extend_edges = p_extend;
+		request_update();
+	}
+}
+
+bool Curve3DMesh::is_extend_edges() const {
+	return extend_edges;
+}
+
+Curve3DMesh::Curve3DMesh() {
+}
