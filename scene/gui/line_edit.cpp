@@ -1829,11 +1829,14 @@ void LineEdit::redo() {
 }
 
 void LineEdit::shift_selection_check_pre(bool p_shift) {
-	if (!selection.enabled && p_shift) {
-		selection.start_column = caret_column;
-	}
 	if (!p_shift) {
 		deselect();
+		return;
+	}
+	if (!selection.enabled) {
+		selection.start_column = caret_column;
+	} else {
+		selection.start_column = (caret_column == selection.begin) ? selection.end : selection.begin;
 	}
 }
 
