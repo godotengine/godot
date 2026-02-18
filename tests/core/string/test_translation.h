@@ -209,8 +209,10 @@ TEST_CASE("[OptimizedTranslation] Generate from Translation and read messages") 
 
 	List<StringName> messages;
 	// `get_message_list()` can't return the list of messages stored in an OptimizedTranslation.
+	ERR_PRINT_OFF;
 	optimized_translation->get_message_list(&messages);
 	CHECK(optimized_translation->get_message_count() == 0);
+	ERR_PRINT_ON;
 	CHECK(messages.size() == 0);
 }
 

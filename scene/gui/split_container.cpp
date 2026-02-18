@@ -378,7 +378,7 @@ void SplitContainer::_set_desired_sizes(const PackedInt32Array &p_desired_sizes,
 	real_t available_space = size - total_desired_size;
 
 	// Grow expanding children.
-	if (available_space > 0) {
+	if (available_space > 0 && stretch_total > 0) {
 		const real_t grow_amount = available_space / stretch_total;
 		for (StretchData &sdata : stretch_data) {
 			if (sdata.stretch_ratio <= 0) {
