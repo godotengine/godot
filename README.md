@@ -1,76 +1,27 @@
-# Godot Engine
+# Reginleif Engine
+Blah blah blah, insert boilerplate, you've seen this a ton of times. This fork was made because I was a little fed up with how absolutely
+glacial Godot is at accepting PRs and how slow work was on GDScript. Now, don't get me wrong, I fucking love Godot, but I think GDScript 
+is the absolute worst thing about it. But instead of adding a whole new language, this fork will focus on improving GDScript, because I'd
+be fucking braindead if I said GDScript was completely useless. It is EXTREMELY good for rapid-fucking-iteration. So I don't want to give up
+on this language yet.
 
-<p align="center">
-  <a href="https://godotengine.org">
-    <img src="logo_outlined.svg" width="400" alt="Godot Engine logo">
-  </a>
-</p>
+Why not contribute to Godot itself? Well, I WANT to. But I have a few issues with that...
+1. Godot PR review is GLACIAL. By glacial I do mean INSANELY GLACIAL. New features take YEARS to be accepted. The dev team actually just hates it when you touch `core`. I won't pretend they're evil and do it just because they're lazy or something (cough cough Redot), but obviously I'm unhappy with the pace, so I'll go ahead implementing some of these myself.
+2. I want the freedom to make mistakes with my PRs. I don't like C++ as a language and how much it relies to on me being completely fucking omniscient. Speaking of which...
+3. If I had a Rust dependency later on (something the Godot team will never accept), I want a platform to be able to do that.
+4. I also just want to have fun adding silly little things! Professionalism is the antithesis of fun. I want the freedom to add a little life to the engine.
+5. This fork will never fucking take off, so it'll be a little retreat for me and my friends. Yes this is just point 4 restated. I can do whatever I want and that's fun.
 
-## 2D and 3D cross-platform game engine
+## Shit I want to add
 
-**[Godot Engine](https://godotengine.org) is a feature-packed, cross-platform
-game engine to create 2D and 3D games from a unified interface.** It provides a
-comprehensive set of [common tools](https://godotengine.org/features), so that
-users can focus on making games without having to reinvent the wheel. Games can
-be exported with one click to a number of platforms, including the major desktop
-platforms (Linux, macOS, Windows), mobile platforms (Android, iOS), as well as
-Web-based platforms and [consoles](https://godotengine.org/consoles).
+- type unifier
+- generics (holy shit!!!!!!!)
+- traits (holy shit!!!)
+- nested types
 
-## Free, open source and community-driven
+## call for help
+I hate c++ but my spite is greater. contribute and I'll be in your eternal debt 🙏
 
-Godot is completely free and open source under the very permissive [MIT license](https://godotengine.org/license).
-No strings attached, no royalties, nothing. The users' games are theirs, down
-to the last line of engine code. Godot's development is fully independent and
-community-driven, empowering users to help shape their engine to match their
-expectations. It is supported by the [Godot Foundation](https://godot.foundation/)
-not-for-profit.
-
-Before being open sourced in [February 2014](https://github.com/godotengine/godot/commit/0b806ee0fc9097fa7bda7ac0109191c9c5e0a1ac),
-Godot had been developed by [Juan Linietsky](https://github.com/reduz) and
-[Ariel Manzur](https://github.com/punto-) for several years as an in-house
-engine, used to publish several work-for-hire titles.
-
-![Screenshot of a 3D scene in the Godot Engine editor](https://raw.githubusercontent.com/godotengine/godot-design/master/screenshots/editor_tps_demo_1920x1080.jpg)
-
-## Getting the engine
-
-### Binary downloads
-
-Official binaries for the Godot editor and the export templates can be found
-[on the Godot website](https://godotengine.org/download).
-
-### Compiling from source
-
-[See the official docs](https://docs.godotengine.org/en/latest/engine_details/development/compiling)
-for compilation instructions for every supported platform.
-
-## Community and contributing
-
-Godot is not only an engine but an ever-growing community of users and engine
-developers. The main community channels are listed [on the homepage](https://godotengine.org/community).
-
-The best way to get in touch with the core engine developers is to join the
-[Godot Contributors Chat](https://chat.godotengine.org).
-
-To get started contributing to the project, see the [contributing guide](CONTRIBUTING.md).
-This document also includes guidelines for reporting bugs.
-
-## Documentation and demos
-
-The official documentation is hosted on [Read the Docs](https://docs.godotengine.org).
-It is maintained by the Godot community in its own [GitHub repository](https://github.com/godotengine/godot-docs).
-
-The [class reference](https://docs.godotengine.org/en/latest/classes/)
-is also accessible from the Godot editor.
-
-We also maintain official demos in their own [GitHub repository](https://github.com/godotengine/godot-demo-projects)
-as well as a list of [awesome Godot community resources](https://github.com/godotengine/awesome-godot).
-
-There are also a number of other
-[learning resources](https://docs.godotengine.org/en/latest/community/tutorials.html)
-provided by the community, such as text and video tutorials, demos, etc.
-Consult the [community channels](https://godotengine.org/community)
-for more information.
-
-[![Code Triagers Badge](https://www.codetriage.com/godotengine/godot/badges/users.svg)](https://www.codetriage.com/godotengine/godot)
-[![Translate on Weblate](https://hosted.weblate.org/widgets/godot-engine/-/godot/svg-badge.svg)](https://hosted.weblate.org/engage/godot-engine/?utm_source=widget)
+## clarification
+i don't hate the godot dev team, i fucking love them!!!
+i just don't like the whole 'approachability over correctness' philosophy that is used to explain away the absence of BASIC fucking language features. that's it. 
