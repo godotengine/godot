@@ -37,6 +37,7 @@
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_device_enums.h"
 #include "servers/rendering/rendering_server_enums.h"
+#include "servers/rendering/rendering_server_types.h"
 
 namespace Geometry3D {
 struct MeshData;
@@ -1045,14 +1046,8 @@ public:
 	virtual RenderingDeviceEnums::DeviceType get_video_adapter_type() const = 0;
 	virtual String get_video_adapter_api_version() const = 0;
 
-	struct FrameProfileArea {
-		String name;
-		double gpu_msec;
-		double cpu_msec;
-	};
-
 	virtual void set_frame_profiling_enabled(bool p_enable) = 0;
-	virtual Vector<FrameProfileArea> get_frame_profile() = 0;
+	virtual Vector<RenderingServerTypes::FrameProfileArea> get_frame_profile() = 0;
 	virtual uint64_t get_frame_profile_frame() = 0;
 
 	virtual double get_frame_setup_time_cpu() const = 0;

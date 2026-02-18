@@ -36,6 +36,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #define CHECK_SIZE(arr, expected, what) ERR_FAIL_COND_V_MSG((uint32_t)arr.size() < (uint32_t)(expected), false, String("Malformed ") + what + " message from script debugger, message too short. Expected size: " + itos(expected) + ", actual size: " + itos(arr.size()))
 #define CHECK_END(arr, expected, what) ERR_FAIL_COND_V_MSG((uint32_t)arr.size() > (uint32_t)expected, false, String("Malformed ") + what + " message from script debugger, message too long. Expected size: " + itos(expected) + ", actual size: " + itos(arr.size()))
@@ -170,7 +171,7 @@ bool ServersDebugger::VisualProfilerFrame::deserialize(const Array &p_arr) {
 	CHECK_SIZE(p_arr, size, "VisualProfilerFrame");
 	int idx = 2;
 	areas.resize(size / 3);
-	RS::FrameProfileArea *w = areas.ptrw();
+	RenderingServerTypes::FrameProfileArea *w = areas.ptrw();
 	for (int i = 0; i < size / 3; i++) {
 		w[i].name = p_arr[idx];
 		w[i].cpu_msec = p_arr[idx + 1];
@@ -371,7 +372,7 @@ public:
 	void add(const Array &p_data) {}
 
 	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
-		Vector<RS::FrameProfileArea> profile_areas = RS::get_singleton()->get_frame_profile();
+		Vector<RenderingServerTypes::FrameProfileArea> profile_areas = RS::get_singleton()->get_frame_profile();
 		ServersDebugger::VisualProfilerFrame frame;
 		if (!profile_areas.size()) {
 			return;

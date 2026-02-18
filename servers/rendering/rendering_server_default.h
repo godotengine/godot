@@ -40,6 +40,7 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_enums.h"
+#include "servers/rendering/rendering_server_types.h"
 #include "servers/server_wrap_mt_common.h"
 
 class RenderingServerDefault : public RenderingServer {
@@ -65,7 +66,7 @@ class RenderingServerDefault : public RenderingServer {
 	static void _changes_changed() {}
 
 	uint64_t frame_profile_frame = 0;
-	Vector<FrameProfileArea> frame_profile;
+	Vector<RenderingServerTypes::FrameProfileArea> frame_profile;
 
 	double frame_setup_time = 0;
 
@@ -1167,7 +1168,7 @@ public:
 	virtual RenderingDeviceEnums::DeviceType get_video_adapter_type() const override;
 
 	virtual void set_frame_profiling_enabled(bool p_enable) override;
-	virtual Vector<FrameProfileArea> get_frame_profile() override;
+	virtual Vector<RenderingServerTypes::FrameProfileArea> get_frame_profile() override;
 	virtual uint64_t get_frame_profile_frame() override;
 
 	virtual RID get_test_cube() override;

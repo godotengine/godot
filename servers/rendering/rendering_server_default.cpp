@@ -129,7 +129,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 	if (RSG::utilities->get_captured_timestamps_count()) {
 		GodotProfileZoneGrouped(_profile_zone, "frame_profile");
-		Vector<FrameProfileArea> new_profile;
+		Vector<RenderingServerTypes::FrameProfileArea> new_profile;
 		if (RSG::utilities->capturing_timestamps) {
 			new_profile.resize(RSG::utilities->get_captured_timestamps_count());
 		}
@@ -331,7 +331,7 @@ uint64_t RenderingServerDefault::get_frame_profile_frame() {
 	return frame_profile_frame;
 }
 
-Vector<RenderingServer::FrameProfileArea> RenderingServerDefault::get_frame_profile() {
+Vector<RenderingServerTypes::FrameProfileArea> RenderingServerDefault::get_frame_profile() {
 	return frame_profile;
 }
 
