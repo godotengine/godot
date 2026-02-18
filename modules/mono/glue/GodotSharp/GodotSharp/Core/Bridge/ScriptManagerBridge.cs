@@ -15,8 +15,6 @@ using Godot.NativeInterop;
 namespace Godot.Bridge
 {
     using PropertyTrampolines = (PropertyGetterTrampoline getterTramp, PropertySetterTrampoline setterTramp);
-    using unsafe TryAddNameToProxyNameMapDelegate = delegate* unmanaged<
-        IntPtr, godot_string_name*, int, godot_string_name*, void>;
     using unsafe TryAddMethodTrampolineDelegate = delegate* unmanaged<
         IntPtr, godot_string_name*, int, void*, godot_bool, void>;
     using unsafe TryAddPropertyTrampolineDelegate = delegate* unmanaged<
@@ -789,7 +787,6 @@ namespace Godot.Bridge
         [UnmanagedCallersOnly]
         internal static unsafe void UpdateScriptTrampolines(
             IntPtr scriptPtr, godot_bool* outShouldFallbackToLegacyTrampolines,
-            TryAddNameToProxyNameMapDelegate tryAddNameToProxyNameMap,
             TryAddMethodTrampolineDelegate tryAddMethodTrampoline,
             TryAddPropertyTrampolineDelegate tryAddPropertyTrampoline,
             TryAddRaiseSignalTrampolineDelegate tryAddRaiseSignalTrampoline)
@@ -807,7 +804,6 @@ namespace Godot.Bridge
                     _cachedTrampolineCollectorPool = new(
                         TwoArgumentArray: new object[2],
                         Collectors: new(
-                            new(scriptPtr, tryAddNameToProxyNameMap),
                             new(scriptPtr, tryAddMethodTrampoline),
                             new(scriptPtr, tryAddPropertyTrampoline),
                             new(scriptPtr, tryAddRaiseSignalTrampoline)),
@@ -818,8 +814,8 @@ namespace Godot.Bridge
                 else
                 {
                     collectorPool = _cachedTrampolineCollectorPool.Value;
-                    collectorPool.Collectors.UpdateCollectors(scriptPtr, tryAddNameToProxyNameMap,
-                        tryAddMethodTrampoline, tryAddPropertyTrampoline, tryAddRaiseSignalTrampoline);
+                    collectorPool.Collectors.UpdateCollectors(scriptPtr, tryAddMethodTrampoline,
+                        tryAddPropertyTrampoline, tryAddRaiseSignalTrampoline);
                 }
 
                 GetGodotClassTrampolinesForType(scriptType, collectorPool);
@@ -1074,50 +1070,6 @@ namespace Godot.Bridge
         }
 
         /// <summary>
-        /// This is used to collect the method name to proxy name map for a script.
-        /// </summary>
-        /// <remarks>
-        /// The user script can implement a static method "GetGodotClassTrampolines"
-        /// that receives an instance of <see cref="TrampolineCollectors"/> which
-        /// contains an instance of this class. The user script can then call the
-        /// <see cref="TryAdd"/> method of this class to add proxy name mappings to the script.<br/>
-        /// <br/>
-        /// "GetGodotClassTrampolines" must be called on the most derived class first,
-        /// and after collecting the members for that class, its implementation must call the base
-        /// implementation to also collect members from the base classes in inheritance order.<br/>
-        /// As a result, <see cref="TryAdd"/> will not add a method from a base class if the derived class
-        /// has already added a method with the same MethodKey.
-        /// </remarks>
-        public class NameToProxyNameMapCollector
-        {
-            private IntPtr _scriptPtr;
-            private unsafe TryAddNameToProxyNameMapDelegate _tryAddDelegate;
-
-            internal unsafe NameToProxyNameMapCollector(IntPtr scriptPtr,
-                TryAddNameToProxyNameMapDelegate tryAddDelegate)
-            {
-                _scriptPtr = scriptPtr;
-                _tryAddDelegate = tryAddDelegate;
-            }
-
-            internal unsafe void Update(IntPtr scriptPtr, TryAddNameToProxyNameMapDelegate tryAddDelegate)
-            {
-                _scriptPtr = scriptPtr;
-                _tryAddDelegate = tryAddDelegate;
-            }
-
-            /// <summary>
-            /// Adds a method name to proxy name mapping to the script if a mapping for the given method key doesn't already exist.
-            /// </summary>
-            public unsafe void TryAdd(MethodKey methodKey, StringName proxyName)
-            {
-                var nameSelf = (godot_string_name)methodKey.Name.NativeValue;
-                var proxyNameSelf = (godot_string_name)proxyName.NativeValue;
-                _tryAddDelegate(_scriptPtr, &nameSelf, methodKey.ArgumentCount, &proxyNameSelf);
-            }
-        }
-
-        /// <summary>
         /// This is used to collect the method trampolines for a script.
         /// </summary>
         /// <remarks>
@@ -1258,18 +1210,15 @@ namespace Godot.Bridge
         /// and method name to proxy name mappings for a script.
         /// </summary>
         public record TrampolineCollectors(
-            NameToProxyNameMapCollector NameToProxyNameMapCollector,
             MethodTrampolineCollector MethodTrampolineCollector,
             PropertyTrampolineCollector PropertyTrampolineCollector,
             RaiseSignalTrampolineCollector RaiseSignalTrampolineCollector)
         {
             internal unsafe void UpdateCollectors(IntPtr scriptPtr,
-                TryAddNameToProxyNameMapDelegate tryAddNameToProxyNameMap,
                 TryAddMethodTrampolineDelegate tryAddMethodTrampoline,
                 TryAddPropertyTrampolineDelegate tryAddPropertyTrampoline,
                 TryAddRaiseSignalTrampolineDelegate tryAddRaiseSignalTrampoline)
             {
-                NameToProxyNameMapCollector.Update(scriptPtr, tryAddNameToProxyNameMap);
                 MethodTrampolineCollector.Update(scriptPtr, tryAddMethodTrampoline);
                 PropertyTrampolineCollector.Update(scriptPtr, tryAddPropertyTrampoline);
                 RaiseSignalTrampolineCollector.Update(scriptPtr, tryAddRaiseSignalTrampoline);
@@ -1297,17 +1246,17 @@ namespace Godot.Bridge
 
         private static void GetGodotClassTrampolinesForType(Type type, TrampolineCollectorPool collectorPool)
         {
-            var getGodotMethodNameToProxyNameMap = type.GetMethod(
+            var getGodotClassTrampolines = type.GetMethod(
                 "GetGodotClassTrampolines",
                 BindingFlags.DeclaredOnly | BindingFlags.Static |
                 BindingFlags.NonPublic | BindingFlags.Public);
 
-            if (getGodotMethodNameToProxyNameMap == null)
+            if (getGodotClassTrampolines == null)
                 return;
 
             collectorPool.TwoArgumentArray[0] = collectorPool.Collectors;
             collectorPool.TwoArgumentArray[1] = collectorPool.CollectionOptions;
-            getGodotMethodNameToProxyNameMap.Invoke(null, collectorPool.TwoArgumentArray);
+            getGodotClassTrampolines.Invoke(null, collectorPool.TwoArgumentArray);
         }
 
 #pragma warning disable IDE1006 // Naming rule violation

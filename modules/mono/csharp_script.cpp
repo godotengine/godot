@@ -1765,11 +1765,6 @@ Variant CSharpInstance::_callp(const StringName &p_method, const Variant **p_arg
 
 	const CSharpScript::MethodKey method_key{ p_method, p_argcount };
 
-	const StringName *proxy_name = script->name_to_proxy_name_map.getptr(method_key);
-	if (proxy_name != nullptr) {
-		return _callp(*proxy_name, p_args, p_argcount, r_error);
-	}
-
 	const godotsharp::MethodTrampoline *trampoline = script->method_trampolines.getptr(method_key);
 	if (trampoline != nullptr) {
 		Variant ret;
@@ -2379,13 +2374,6 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	p_script->property_trampolines.clear();
 	p_script->raise_signal_trampolines.clear();
 
-	auto try_add_name_to_proxy_name_map = [](CSharpScript *p_scr, const StringName *p_name, int32_t p_argc, const StringName *p_proxy_name) {
-		MethodKey method_key{ *p_name, p_argc };
-		if (!p_scr->name_to_proxy_name_map.has(method_key)) {
-			p_scr->name_to_proxy_name_map.insert_new(method_key, *p_proxy_name);
-		}
-	};
-
 	auto try_add_method_tramp = [](CSharpScript *p_scr, const StringName *p_name, int32_t p_argc,
 										godotsharp::MethodTrampoline p_trampoline, bool p_is_static) {
 		MethodKey method_key{ *p_name, p_argc };
@@ -2429,7 +2417,7 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	};
 
 	GDMonoCache::managed_callbacks.ScriptManagerBridge_UpdateScriptTrampolines(
-			p_script.ptr(), &p_script->should_fallback_to_legacy_trampolines, try_add_name_to_proxy_name_map,
+			p_script.ptr(), &p_script->should_fallback_to_legacy_trampolines,
 			try_add_method_tramp, try_add_property_tramp, try_add_raise_signal_tramp);
 
 	TypeInfo type_info;
@@ -2707,12 +2695,6 @@ void CSharpScript::get_script_method_list(List<MethodInfo> *p_list) const {
 }
 
 bool CSharpScript::_has_method_mapping_to_proxy_include_base(const StringName &p_name) const {
-	for (const KeyValue<MethodKey, StringName> &kvp : name_to_proxy_name_map) {
-		if (kvp.key.name == p_name) {
-			return true;
-		}
-	}
-
 	for (const KeyValue<MethodKey, godotsharp::MethodTrampoline> &kvp : method_trampolines) {
 		if (kvp.key.name == p_name) {
 			return true;
@@ -2725,25 +2707,6 @@ bool CSharpScript::_has_method_mapping_to_proxy_include_base(const StringName &p
 bool CSharpScript::has_method(const StringName &p_method) const {
 	if (!valid) {
 		return false;
-	}
-
-	// TODO: This is a behavior change, which might cause regressions.
-	//       Previously it would return 'false' for names like '_process' and 'true' for '_Process'.
-	//       Now it checks both. This feels correct, but is it worth risking regressions?
-
-	for (const KeyValue<MethodKey, StringName> &kvp : name_to_proxy_name_map) {
-		if (kvp.key.name == p_method) {
-			const StringName &proxy_name = kvp.value;
-			// Name to proxy name map found, but it may be from an inherited script.
-			// We don't want that here, so make sure it's in 'methods' (which excludes inherited ones).
-			for (const CSharpMethodInfo &E : methods) {
-				if (E.name == proxy_name) {
-					return true;
-				}
-			}
-			// Break instead of returning false. The script still contain a method with the non-proxy name.
-			break;
-		}
 	}
 
 	for (const CSharpMethodInfo &E : methods) {

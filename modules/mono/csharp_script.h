@@ -227,11 +227,6 @@ private:
 
 	using SignalKey = MethodKey;
 
-	/// This maps contains mapping of engine names to proxy names registered in \ref method_trampolines.
-	/// { MethodKey("_get", 0), "_Get" }
-	/// Also includes methods declared in inherited scripts.
-	AHashMap<MethodKey, StringName> name_to_proxy_name_map;
-
 	/// Only includes methods declared in this exact script, not inherited ones.
 	AHashMap<MethodKey, godotsharp::MethodTrampoline> static_method_trampolines;
 
