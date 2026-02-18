@@ -99,6 +99,8 @@
 #include "servers/physics_3d/physics_server_3d_dummy.h"
 #include "servers/physics_3d/physics_server_3d_extension.h"
 #endif // PHYSICS_3D_DISABLED
+
+// XR
 #ifndef XR_DISABLED
 #include "xr/xr_body_tracker.h"
 #include "xr/xr_controller_tracker.h"
@@ -108,6 +110,7 @@
 #include "xr/xr_interface_extension.h"
 #include "xr/xr_positional_tracker.h"
 #include "xr/xr_server.h"
+#include "xr/xr_vrs.h"
 #endif // XR_DISABLED
 
 ShaderTypes *shader_types = nullptr;

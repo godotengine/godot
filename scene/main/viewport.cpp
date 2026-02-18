@@ -74,6 +74,8 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
 #ifndef XR_DISABLED
 #include "servers/rendering/rendering_server_globals.h"
+#include "servers/xr/xr_interface.h"
+#include "servers/xr/xr_server.h"
 #endif // XR_DISABLED
 
 void ViewportTexture::setup_local_to_scene() {

@@ -29,10 +29,12 @@
 /**************************************************************************/
 
 #include "openxr_fb_foveation_extension.h"
-#include "core/config/project_settings.h"
-#include "openxr_eye_gaze_interaction.h"
 
 #include "../openxr_platform_inc.h"
+#include "openxr_eye_gaze_interaction.h"
+
+#include "core/config/project_settings.h"
+#include "servers/rendering/rendering_server.h"
 
 OpenXRFBFoveationExtension *OpenXRFBFoveationExtension::singleton = nullptr;
 
@@ -281,4 +283,12 @@ void OpenXRFBFoveationExtension::_update_profile_rt() {
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: Unable to destroy the foveation profile [", openxr_api->get_error_string(result), "]");
 	}
+}
+
+void OpenXRFBFoveationExtension::update_profile() {
+	// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+
+	rendering_server->call_on_render_thread(callable_mp(this, &OpenXRFBFoveationExtension::_update_profile_rt));
 }

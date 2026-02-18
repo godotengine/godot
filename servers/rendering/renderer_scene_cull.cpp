@@ -42,6 +42,11 @@
 #include "scene/main/node.h"
 #endif
 
+#ifndef XR_DISABLED
+#include "servers/xr/xr_interface.h"
+#include "servers/xr/xr_server.h"
+#endif
+
 /* HALTON SEQUENCE */
 
 #ifndef _3D_DISABLED

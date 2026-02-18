@@ -39,6 +39,11 @@
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server_default.h"
 
+#ifndef XR_DISABLED
+#include "servers/xr/xr_interface.h"
+#include "servers/xr/xr_server.h"
+#endif
+
 #define PRELOAD_PIPELINES_ON_SURFACE_CACHE_CONSTRUCTION 1
 
 using namespace RendererSceneRenderImplementation;

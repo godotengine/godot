@@ -34,14 +34,16 @@
 #include "core/math/transform_interpolator.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/profiling/profiling.h"
-#include "renderer_canvas_cull.h"
-#include "renderer_scene_cull.h"
-#include "rendering_device.h"
-#include "rendering_server_globals.h"
-#include "storage/texture_storage.h"
+#include "servers/rendering/renderer_canvas_cull.h"
+#include "servers/rendering/renderer_scene_cull.h"
+#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_server_globals.h"
+#include "servers/rendering/rendering_server_types.h"
+#include "servers/rendering/storage/texture_storage.h"
 
 #ifndef XR_DISABLED
 #include "servers/xr/xr_interface.h"
+#include "servers/xr/xr_server.h"
 #endif // XR_DISABLED
 
 static Transform2D _canvas_get_transform(RendererViewport::Viewport *p_viewport, RendererCanvasCull::Canvas *p_canvas, RendererViewport::Viewport::CanvasData *p_canvas_data, const Vector2 &p_vp_size) {
@@ -782,7 +784,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 		sorted_active_viewports_dirty = false;
 	}
 
-	HashMap<DisplayServer::WindowID, Vector<BlitToScreen>> blit_to_screen_list;
+	HashMap<DisplayServer::WindowID, Vector<RenderingServerTypes::BlitToScreen>> blit_to_screen_list;
 	//draw viewports
 	RENDER_TIMESTAMP("> Render Viewports");
 
@@ -892,7 +894,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 				_draw_viewport(vp);
 
 				// commit our eyes
-				Vector<BlitToScreen> blits = xr_interface->post_draw_viewport(vp->render_target, vp->viewport_to_screen_rect);
+				Vector<RenderingServerTypes::BlitToScreen> blits = xr_interface->post_draw_viewport(vp->render_target, vp->viewport_to_screen_rect);
 				if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID) {
 					if (RSG::rasterizer->is_opengl()) {
 						if (blits.size() > 0) {
@@ -901,7 +903,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 						}
 					} else if (blits.size() > 0) {
 						if (!blit_to_screen_list.has(vp->viewport_to_screen)) {
-							blit_to_screen_list[vp->viewport_to_screen] = Vector<BlitToScreen>();
+							blit_to_screen_list[vp->viewport_to_screen] = Vector<RenderingServerTypes::BlitToScreen>();
 						}
 
 						for (int b = 0; b < blits.size(); b++) {
@@ -920,7 +922,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 
 			if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID && (!vp->viewport_render_direct_to_screen || !RSG::rasterizer->is_low_end())) {
 				//copy to screen if set as such
-				BlitToScreen blit;
+				RenderingServerTypes::BlitToScreen blit;
 				blit.render_target = vp->render_target;
 				if (vp->viewport_to_screen_rect != Rect2()) {
 					blit.dst_rect = vp->viewport_to_screen_rect;
@@ -933,9 +935,9 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 					RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, &blit, 1);
 					RSG::rasterizer->gl_end_frame(p_swap_buffers);
 				} else {
-					Vector<BlitToScreen> *blits = blit_to_screen_list.getptr(vp->viewport_to_screen);
+					Vector<RenderingServerTypes::BlitToScreen> *blits = blit_to_screen_list.getptr(vp->viewport_to_screen);
 					if (blits == nullptr) {
-						blits = &blit_to_screen_list.insert(vp->viewport_to_screen, Vector<BlitToScreen>())->value;
+						blits = &blit_to_screen_list.insert(vp->viewport_to_screen, Vector<RenderingServerTypes::BlitToScreen>())->value;
 					}
 					blits->push_back(blit);
 				}
@@ -968,7 +970,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 
 	GodotProfileZoneGrouped(_profile_zone, "rasterizer->blit_render_targets_to_screen");
 	if (p_swap_buffers && !blit_to_screen_list.is_empty()) {
-		for (const KeyValue<int, Vector<BlitToScreen>> &E : blit_to_screen_list) {
+		for (const KeyValue<int, Vector<RenderingServerTypes::BlitToScreen>> &E : blit_to_screen_list) {
 			RSG::rasterizer->blit_render_targets_to_screen(E.key, E.value.ptr(), E.value.size());
 		}
 	}

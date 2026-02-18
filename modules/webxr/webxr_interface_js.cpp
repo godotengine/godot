@@ -40,8 +40,6 @@
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
-#include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/rendering_server_globals.h"
 #include "servers/xr/xr_hand_tracker.h"
 
 #include <emscripten.h>
@@ -523,8 +521,8 @@ bool WebXRInterfaceJS::pre_draw_viewport(RID p_render_target) {
 	return true;
 }
 
-Vector<BlitToScreen> WebXRInterfaceJS::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
-	Vector<BlitToScreen> blit_to_screen;
+Vector<RenderingServerTypes::BlitToScreen> WebXRInterfaceJS::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
+	Vector<RenderingServerTypes::BlitToScreen> blit_to_screen;
 
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	if (texture_storage == nullptr) {

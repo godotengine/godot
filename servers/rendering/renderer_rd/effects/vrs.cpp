@@ -34,9 +34,8 @@
 #include "../storage_rd/texture_storage.h"
 #include "../uniform_set_cache_rd.h"
 
-#include "servers/rendering/rendering_server.h"
-
 #ifndef XR_DISABLED
+#include "servers/xr/xr_interface.h"
 #include "servers/xr/xr_server.h"
 #endif // XR_DISABLED
 

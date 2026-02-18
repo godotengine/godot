@@ -30,7 +30,11 @@
 
 #pragma once
 
+#include "core/math/rect2.h"
+#include "core/math/rect2i.h"
+#include "core/math/vector2.h"
 #include "core/string/ustring.h"
+#include "core/templates/rid.h"
 
 #include <cstdint>
 
@@ -42,6 +46,30 @@ struct FrameProfileArea {
 	String name;
 	double gpu_msec;
 	double cpu_msec;
+};
+
+/* COMPOSITOR */
+
+struct BlitToScreen {
+	RID render_target;
+	Rect2 src_rect = Rect2(0.0, 0.0, 1.0, 1.0);
+	Rect2i dst_rect;
+
+	struct {
+		bool use_layer = false;
+		uint32_t layer = 0;
+	} multi_view;
+
+	struct {
+		//lens distorted parameters for VR
+		bool apply = false;
+		Vector2 eye_center;
+		float k1 = 0.0;
+		float k2 = 0.0;
+
+		float upscale = 1.0;
+		float aspect_ratio = 1.0;
+	} lens_distortion;
 };
 
 } // namespace RenderingServerTypes

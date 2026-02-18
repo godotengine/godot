@@ -59,6 +59,7 @@
 
 #include "servers/xr/xr_controller_tracker.h"
 #include "servers/xr/xr_interface.h"
+#include "servers/xr/xr_vrs.h"
 
 // declare some default strings
 #define INTERACTION_PROFILE_NONE "/interaction_profiles/none"
@@ -193,7 +194,7 @@ public:
 	virtual void process() override;
 	virtual void pre_render() override;
 	bool pre_draw_viewport(RID p_render_target) override;
-	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
+	virtual Vector<RenderingServerTypes::BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
 	virtual void end_frame() override;
 
 	virtual bool is_passthrough_supported() override;

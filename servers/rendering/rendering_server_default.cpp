@@ -37,6 +37,10 @@
 #include "rendering_device.h"
 #include "rendering_server_globals.h"
 
+#ifndef XR_DISABLED
+#include "servers/xr/xr_server.h"
+#endif
+
 // careful, these may run in different threads than the rendering server
 
 int RenderingServerDefault::changes = 0;
