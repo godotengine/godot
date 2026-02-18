@@ -40,6 +40,7 @@
 #include "tests/test_macros.h"
 
 #include <functional>
+#include <string>
 
 namespace TestResource {
 
