@@ -100,6 +100,8 @@ struct VariantUtilityFunctions {
 	static double rad_to_deg(double angle_rad);
 	static double linear_to_db(double linear);
 	static double db_to_linear(double db);
+	static double pitch_scale_to_semitones(double pitch_scale);
+	static double semitones_to_pitch_scale(double semitones);
 	static Variant wrap(const Variant &p_x, const Variant &p_min, const Variant &p_max, Callable::CallError &r_error);
 	static int64_t wrapi(int64_t value, int64_t min, int64_t max);
 	static double wrapf(double value, double min, double max);
