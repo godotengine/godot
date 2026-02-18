@@ -239,19 +239,29 @@ void Polygon2D::_notification(int p_what) {
 				}
 			} else {
 				// Even without a texture, shaders will still need UVs to be usable.
-				int uv_size = uv.size();
-				if (uv_size != 0) {
-					// Case no texture, but UVs are still provided.
-					uvs.resize(uv_size);
-					const Vector2 *uvp = uv.ptr();
-					for (int i = 0; i < uv_size; i++) {
-						uvs.write[i] = uvp[i];
+				const Vector<Vector2> *uv_source = (uv.size() == len) ? &uv : &points;
+
+				uvs.resize(len);
+				if (len > 0) {
+					const Vector2 *src = uv_source->ptr();
+					Vector2 min_uv = src[0];
+					Vector2 max_uv = src[0];
+
+					for (int i = 1; i < len; i++) {
+						min_uv.x = MIN(min_uv.x, src[i].x);
+						min_uv.y = MIN(min_uv.y, src[i].y);
+						max_uv.x = MAX(max_uv.x, src[i].x);
+						max_uv.y = MAX(max_uv.y, src[i].y);
 					}
-				} else {
-					// Case no texture and no UVs, the points should give usable coords.
-					uvs.resize(len);
+
+					Vector2 size = max_uv - min_uv;
+
 					for (int i = 0; i < len; i++) {
-						uvs.write[i] = points[i];
+						Vector2 v = src[i];
+						Vector2 normalized;
+						normalized.x = Math::is_zero_approx(size.x) ? 0.5 : (v.x - min_uv.x) / size.x;
+						normalized.y = Math::is_zero_approx(size.y) ? 0.5 : (v.y - min_uv.y) / size.y;
+						uvs.write[i] = normalized;
 					}
 				}
 			}
