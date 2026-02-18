@@ -490,37 +490,37 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		SIGNAL_CHECK("tab_selected", { { 4 } });
 		SIGNAL_CHECK("tab_changed", { { 4 } });
 
-		// Does not wrap around.
-		CHECK_FALSE(tab_bar->select_next_available());
-		CHECK(tab_bar->get_current_tab() == 4);
-		CHECK(tab_bar->get_previous_tab() == 1);
-		SIGNAL_CHECK_FALSE("tab_selected");
-		SIGNAL_CHECK_FALSE("tab_changed");
+		// Wraps around to the first available tab.
+		CHECK(tab_bar->select_next_available());
+		CHECK(tab_bar->get_current_tab() == 0);
+		CHECK(tab_bar->get_previous_tab() == 4);
+		SIGNAL_CHECK("tab_selected", { { 0 } });
+		SIGNAL_CHECK("tab_changed", { { 0 } });
 
 		// Fails if there is only one valid tab.
 		tab_bar->remove_tab(0);
 		tab_bar->remove_tab(3);
 		CHECK(tab_bar->get_current_tab() == 0);
-		CHECK(tab_bar->get_previous_tab() == 0);
+		CHECK(tab_bar->get_previous_tab() == 2);
 		SIGNAL_DISCARD("tab_selected");
 		SIGNAL_DISCARD("tab_changed");
 
 		CHECK_FALSE(tab_bar->select_next_available());
 		CHECK(tab_bar->get_current_tab() == 0);
-		CHECK(tab_bar->get_previous_tab() == 0);
+		CHECK(tab_bar->get_previous_tab() == 2);
 		SIGNAL_CHECK_FALSE("tab_selected");
 		SIGNAL_CHECK_FALSE("tab_changed");
 
 		// Fails if there are no valid tabs.
 		tab_bar->remove_tab(0);
 		CHECK(tab_bar->get_current_tab() == -1);
-		CHECK(tab_bar->get_previous_tab() == 0);
+		CHECK(tab_bar->get_previous_tab() == 1);
 		SIGNAL_DISCARD("tab_selected");
 		SIGNAL_DISCARD("tab_changed");
 
 		CHECK_FALSE(tab_bar->select_next_available());
 		CHECK(tab_bar->get_current_tab() == -1);
-		CHECK(tab_bar->get_previous_tab() == 0);
+		CHECK(tab_bar->get_previous_tab() == 1);
 		SIGNAL_CHECK_FALSE("tab_selected");
 		SIGNAL_CHECK_FALSE("tab_changed");
 
@@ -566,14 +566,18 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		SIGNAL_CHECK("tab_selected", { { 0 } });
 		SIGNAL_CHECK("tab_changed", { { 0 } });
 
-		// Does not wrap around.
-		CHECK_FALSE(tab_bar->select_previous_available());
-		CHECK(tab_bar->get_current_tab() == 0);
-		CHECK(tab_bar->get_previous_tab() == 3);
-		SIGNAL_CHECK_FALSE("tab_selected");
-		SIGNAL_CHECK_FALSE("tab_changed");
+		// Wraps around to the last available tab.
+		CHECK(tab_bar->select_previous_available());
+		CHECK(tab_bar->get_current_tab() == 4);
+		CHECK(tab_bar->get_previous_tab() == 0);
+		SIGNAL_CHECK("tab_selected", { { 4 } });
+		SIGNAL_CHECK("tab_changed", { { 4 } });
 
 		// Fails if there is only one valid tab.
+		tab_bar->set_current_tab(0);
+		SIGNAL_DISCARD("tab_selected");
+		SIGNAL_DISCARD("tab_changed");
+
 		tab_bar->remove_tab(4);
 		tab_bar->remove_tab(3);
 		CHECK(tab_bar->get_current_tab() == 0);

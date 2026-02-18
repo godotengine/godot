@@ -261,10 +261,21 @@ TEST_CASE("[SceneTree][TabContainer] tab operations") {
 		CHECK(tab1->is_visible());
 		CHECK_FALSE(tab2->is_visible());
 
-		// Hide the visible child to select the next tab.
+		// Hide the visible child to select the previous tab.
 		tab1->hide();
-		CHECK(tab_container->get_current_tab() == 2);
+		CHECK(tab_container->get_current_tab() == 0);
 		CHECK(tab_container->get_previous_tab() == 1);
+		SIGNAL_CHECK("tab_selected", { { 0 } });
+		SIGNAL_CHECK("tab_changed", { { 0 } });
+		MessageQueue::get_singleton()->flush();
+		CHECK(tab0->is_visible());
+		CHECK_FALSE(tab1->is_visible());
+		CHECK_FALSE(tab2->is_visible());
+
+		// Hide the visible child to select the next tab (no previous available).
+		tab0->hide();
+		CHECK(tab_container->get_current_tab() == 2);
+		CHECK(tab_container->get_previous_tab() == 0);
 		SIGNAL_CHECK("tab_selected", { { 2 } });
 		SIGNAL_CHECK("tab_changed", { { 2 } });
 		MessageQueue::get_singleton()->flush();
@@ -272,7 +283,7 @@ TEST_CASE("[SceneTree][TabContainer] tab operations") {
 		CHECK_FALSE(tab1->is_visible());
 		CHECK(tab2->is_visible());
 
-		// Hide the visible child to select the previous tab if there is no next.
+		// Hide the last tab to select the previous tab (the new last).
 		tab2->hide();
 		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == 2);
