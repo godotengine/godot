@@ -46,6 +46,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/inspector/editor_properties.h"
 #include "editor/plugins/editor_plugin_list.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/scene/3d/gizmos/audio_listener_3d_gizmo_plugin.h"
@@ -582,6 +583,12 @@ bool Node3DEditorViewport::_is_rotation_arc_visible() const {
 
 void Node3DEditorViewport::_update_camera(real_t p_interp_delta) {
 	bool is_orthogonal = camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
+
+	uint32_t view_mask = (1 << 20) - 1; // Layers 1-20
+	uint32_t tool_mask = ~view_mask; // Layers 21-32
+	uint32_t view_layers = view_mask & spatial_editor->get_cull_mask();
+	uint32_t tool_layers = tool_mask & camera->get_cull_mask(); // Grid and gizmo layers
+	camera->set_cull_mask(view_layers | tool_layers);
 
 	Cursor old_camera_cursor = camera_cursor;
 	camera_cursor = cursor;
@@ -6266,7 +6273,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	surface->set_clip_contents(true);
 	camera = memnew(Camera3D);
 	camera->set_disable_gizmos(true);
-	camera->set_cull_mask(((1 << 20) - 1) | (1 << (GIZMO_BASE_LAYER + p_index)) | (1 << GIZMO_EDIT_LAYER) | (1 << GIZMO_GRID_LAYER) | (1 << MISC_TOOL_LAYER));
+	camera->set_cull_mask(spatial_editor->get_cull_mask() | (1 << (GIZMO_BASE_LAYER + p_index)) | (1 << GIZMO_EDIT_LAYER) | (1 << GIZMO_GRID_LAYER) | (1 << MISC_TOOL_LAYER));
 	viewport->add_child(camera);
 	camera->make_current();
 	surface->set_focus_mode(FOCUS_ALL);
@@ -7221,6 +7228,7 @@ Dictionary Node3DEditor::get_state() const {
 	d["fov"] = get_fov();
 	d["znear"] = get_znear();
 	d["zfar"] = get_zfar();
+	d["cull_mask"] = cull_mask;
 
 	Dictionary gizmos_status;
 	for (int i = 0; i < gizmo_plugins_by_name.size(); i++) {
@@ -7330,6 +7338,12 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 	}
 	if (d.has("fov")) {
 		settings_fov->set_value(double(d["fov"]));
+	}
+	if (d.has("cull_mask")) {
+		cull_mask = uint32_t(d["cull_mask"]);
+		cull_mask_temp = cull_mask;
+		settings_cull_mask->update_property();
+		settings_cull_mask->update_editor_property_status();
 	}
 	if (d.has("show_grid")) {
 		bool use = d["show_grid"];
@@ -9019,6 +9033,21 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 	}
 }
 
+void Node3DEditor::_view_settings_opened() {
+	cull_mask_temp = cull_mask;
+	settings_cull_mask->update_property();
+	settings_cull_mask->update_editor_property_status();
+}
+
+void Node3DEditor::_view_settings_confirmed() {
+	cull_mask = cull_mask_temp;
+}
+
+void Node3DEditor::_property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing) {
+	_set(p_property, p_value);
+	settings_cull_mask->update_editor_property_status();
+}
+
 void Node3DEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -9600,10 +9629,46 @@ void Node3DEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_group_status_changed"));
 }
 
+bool Node3DEditor::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "cull_mask_temp") {
+		cull_mask_temp = p_value;
+		return true;
+	}
+	return false;
+}
+
+bool Node3DEditor::_get(const StringName &p_name, Variant &r_ret) const {
+	if (p_name == "cull_mask_temp") {
+		r_ret = cull_mask_temp;
+		return true;
+	}
+	return false;
+}
+
+bool Node3DEditor::_property_can_revert(const StringName &p_name) const {
+	if (p_name == "cull_mask_temp") {
+		return true;
+	}
+	return false;
+}
+
+bool Node3DEditor::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	if (p_name == "cull_mask_temp") {
+		r_property = 0xfffff;
+		return true;
+	}
+	return false;
+}
+
 void Node3DEditor::clear() {
 	settings_fov->set_value(EDITOR_GET("editors/3d/default_fov"));
 	settings_znear->set_value(EDITOR_GET("editors/3d/default_z_near"));
 	settings_zfar->set_value(EDITOR_GET("editors/3d/default_z_far"));
+
+	cull_mask = 0xfffff;
+	cull_mask_temp = cull_mask;
+	settings_cull_mask->update_property();
+	settings_cull_mask->update_editor_property_status();
 
 	snap_translate_value = EditorSettings::get_singleton()->get_project_metadata("3d_editor", "snap_translate_value", 1);
 	snap_rotate_value = EditorSettings::get_singleton()->get_project_metadata("3d_editor", "snap_rotate_value", 15);
@@ -10292,7 +10357,7 @@ Node3DEditor::Node3DEditor() {
 	settings_dialog->set_title(TTRC("Viewport Settings"));
 	add_child(settings_dialog);
 	settings_vbc = memnew(VBoxContainer);
-	settings_vbc->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
+	settings_vbc->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
 	settings_dialog->add_child(settings_vbc);
 
 	settings_fov = memnew(SpinBox);
@@ -10323,6 +10388,17 @@ Node3DEditor::Node3DEditor() {
 	settings_zfar->set_select_all_on_focus(true);
 	settings_vbc->add_margin_child(TTRC("View Z-Far:"), settings_zfar);
 
+	settings_cull_mask = memnew(EditorPropertyLayers);
+	settings_cull_mask->setup(EditorPropertyLayers::LAYER_RENDER_3D);
+	settings_cull_mask->set_object_and_property(this, "cull_mask_temp");
+	settings_cull_mask->set_label("Cull Mask");
+	settings_cull_mask->set_selectable(false);
+	settings_cull_mask->update_property();
+	settings_cull_mask->connect("property_changed", callable_mp(this, &Node3DEditor::_property_changed));
+	settings_vbc->add_margin_child(TTRC("View Cull Mask:"), settings_cull_mask);
+
+	settings_dialog->connect("about_to_popup", callable_mp(this, &Node3DEditor::_view_settings_opened));
+	settings_dialog->connect(SceneStringName(confirmed), callable_mp(this, &Node3DEditor::_view_settings_confirmed));
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; ++i) {
 		settings_dialog->connect(SceneStringName(confirmed), callable_mp(viewports[i], &Node3DEditorViewport::_view_settings_confirmed).bind(0.0));
 	}
