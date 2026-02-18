@@ -56,6 +56,7 @@ public:
 	ConstIterator end() const;
 
 	LocalVector<Variant> get_key_list() const;
+	const KeyValue<Variant, Variant> *get_key_value_at_index(int p_index) const;
 	Variant get_key_at_index(int p_index) const;
 	Variant get_value_at_index(int p_index) const;
 
