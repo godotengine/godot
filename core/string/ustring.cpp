@@ -4137,13 +4137,8 @@ bool String::is_network_share_path() const {
 	return begins_with("//") || begins_with("\\\\");
 }
 
-bool simplify_path_coverage[30] = {false}; // 40 branches should cover all nested ifs
-
-void report_animation_name_edited_coverage() {
-    for (int i = 0; i < 30; i++) {
-        printf("Branch %d: %s\n", i+1,simplify_path_coverage[i] ? "taken" : "not taken");
-    }
-}
+/// Global coverage array here
+extern bool simplify_path_coverage[];
 
 String String::simplify_path() const {
 	String s = *this;

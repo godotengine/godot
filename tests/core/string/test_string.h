@@ -34,6 +34,10 @@
 
 #include "tests/test_macros.h"
 
+
+extern void report_animation_name_edited_coverage();
+
+
 namespace TestString {
 
 int u32scmp(const char32_t *l, const char32_t *r) {
@@ -1823,6 +1827,8 @@ TEST_CASE("[String] Path functions") {
 		CHECK(String(path[i]).is_absolute_path() == abs[i]);
 		CHECK(String(path[i]).is_relative_path() != abs[i]);
 		CHECK(String(path[i]).simplify_path() == String(simplified[i]));
+		// report coverage here
+		report_animation_name_edited_coverage();
 		CHECK(String(path[i]).simplify_path().get_base_dir().path_join(file[i]) == String(path[i]).simplify_path());
 	}
 
