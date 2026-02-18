@@ -203,12 +203,13 @@ Patches:
 ## dr_libs
 
 - Upstream: https://github.com/mackron/dr_libs
-- Version: mp3-0.7.2 (547c211a87a06a42bf62c1366616aa14b57dd429, 2025)
+- Version: mp3-0.7.3 (86cc48cbfd981fa00ea94905ac9d6df4b18d4e59, 2026)
 - License: Public Domain or Unlicense or MIT-0
 
 Files extracted from upstream source:
 
 - `dr_mp3.h`
+- `dr_wav.h`
 - `LICENSE`
 
 `dr_bridge.h` is a Godot file and should be preserved on updates.

@@ -1,0 +1,80 @@
+diff --git a/dr_wav.h b/dr_wav.h
+index f2d861b089..8a75ab9bac 100644
+--- a/dr_wav.h
++++ b/dr_wav.h
+@@ -530,6 +530,17 @@ typedef enum
+     drwav_metadata_type_list_info_keywords          = 1 << 20,
+     drwav_metadata_type_list_info_medium            = 1 << 21,
+     drwav_metadata_type_list_info_description       = 1 << 22,
++	drwav_metadata_type_list_info_releasecountry    = 1 << 23,
++	drwav_metadata_type_list_info_encodedby		    = 1 << 24,
++	drwav_metadata_type_list_info_engineer          = 1 << 25,
++	drwav_metadata_type_list_info_tracktotal		= 1 << 26,
++	drwav_metadata_type_list_info_language			= 1 << 27,
++	drwav_metadata_type_list_info_composer			= 1 << 28,
++	drwav_metadata_type_list_info_producer			= 1 << 29,
++	drwav_metadata_type_list_info_author			= 1 << 30,
++	drwav_metadata_type_list_info_length			= 1 << 31,
++
++
+ 
+     /* Other type constants for convenience. */
+     drwav_metadata_type_list_all_info_strings       = drwav_metadata_type_list_info_software
+@@ -545,7 +556,16 @@ typedef enum
+                                                     | drwav_metadata_type_list_info_organization
+                                                     | drwav_metadata_type_list_info_keywords
+                                                     | drwav_metadata_type_list_info_medium
+-                                                    | drwav_metadata_type_list_info_description,
++                                                    | drwav_metadata_type_list_info_description
++													| drwav_metadata_type_list_info_releasecountry
++													| drwav_metadata_type_list_info_encodedby
++													| drwav_metadata_type_list_info_engineer
++													| drwav_metadata_type_list_info_tracktotal
++													| drwav_metadata_type_list_info_language
++													| drwav_metadata_type_list_info_composer
++													| drwav_metadata_type_list_info_producer
++													| drwav_metadata_type_list_info_author
++													| drwav_metadata_type_list_info_length,
+ 
+     drwav_metadata_type_list_all_adtl               = drwav_metadata_type_list_label
+                                                     | drwav_metadata_type_list_note
+@@ -2940,6 +2960,8 @@ DRWAV_PRIVATE drwav_uint64 drwav__metadata_process_chunk(drwav__metadata_parser*
+                 subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_album);
+             } else if (drwav__chunk_matches(allowedMetadataTypes, subchunkId, drwav_metadata_type_list_info_tracknumber, "ITRK")) {
+                 subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_tracknumber);
++            } else if (drwav__chunk_matches(allowedMetadataTypes, subchunkId, drwav_metadata_type_list_info_tracknumber, "IPRT")) {
++                subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_tracknumber);
+             } else if (drwav__chunk_matches(allowedMetadataTypes, subchunkId, drwav_metadata_type_list_info_location, "IARL")) {
+                 subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_location);
+             } else if (drwav__chunk_matches(allowedMetadataTypes, subchunkId, drwav_metadata_type_list_info_organization, "ICMS")) {
+@@ -2948,8 +2970,30 @@ DRWAV_PRIVATE drwav_uint64 drwav__metadata_process_chunk(drwav__metadata_parser*
+                 subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_keywords);
+             } else if (drwav__chunk_matches(allowedMetadataTypes, subchunkId, drwav_metadata_type_list_info_medium, "IMED")) {
+                 subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_medium);
++            } else if (drwav__chunk_matches(allowedMetadataTypes, subchunkId, drwav_metadata_type_list_info_medium, "ISRF")) {
++                subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_medium);
+             } else if (drwav__chunk_matches(allowedMetadataTypes, subchunkId, drwav_metadata_type_list_info_description, "ISBJ")) {
+                 subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_description);
++            } else if (drwav__chunk_matches(allowedMetadataTypes, subchunkId, drwav_metadata_type_list_info_releasecountry, "ICNT")) {
++                subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_releasecountry);
++            } else if (drwav__chunk_matches(allowedMetadataTypes, subchunkId, drwav_metadata_type_list_info_encodedby, "IENC")) {
++                subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_encodedby);
++            } else if (drwav__chunk_matches(allowedMetadataTypes, subchunkId, drwav_metadata_type_list_info_encodedby, "ITCH")) {
++                subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_encodedby);
++            } else if (drwav__chunk_matches(allowedMetadataTypes, subchunkId, drwav_metadata_type_list_info_engineer, "IENG")) {
++                subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_engineer);
++            } else if (drwav__chunk_matches(allowedMetadataTypes, subchunkId, drwav_metadata_type_list_info_tracktotal, "IFRM")) {
++                subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_tracktotal);
++            } else if (drwav__chunk_matches(allowedMetadataTypes, subchunkId, drwav_metadata_type_list_info_language, "ILNG")) {
++                subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_language);
++            } else if (drwav__chunk_matches(allowedMetadataTypes, subchunkId, drwav_metadata_type_list_info_composer, "IMUS")) {
++                subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_composer);
++            } else if (drwav__chunk_matches(allowedMetadataTypes, subchunkId, drwav_metadata_type_list_info_producer, "IPRO")) {
++                subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_producer);
++            } else if (drwav__chunk_matches(allowedMetadataTypes, subchunkId, drwav_metadata_type_list_info_author, "IWRI")) {
++                subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_author);
++            } else if (drwav__chunk_matches(allowedMetadataTypes, subchunkId, drwav_metadata_type_list_info_length, "TLEN")) {
++                subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_length);
+             } else if ((allowedMetadataTypes & drwav_metadata_type_unknown) != 0) {
+                 subchunkBytesRead = drwav__metadata_process_unknown_chunk(pParser, subchunkId, subchunkDataSize, listType);
+             }

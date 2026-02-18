@@ -1,0 +1,51 @@
+diff --git a/dr_wav.h b/dr_wav.h
+index f2d861b089..0fadf13f6f 100644
+--- a/dr_wav.h
++++ b/dr_wav.h
+@@ -6288,7 +6288,7 @@ DRWAV_PRIVATE drwav_uint64 drwav_read_pcm_frames_s16__msadpcm(drwav* pWav, drwav
+                 pWav->msadpcm.cachedFrameCount = 2;
+ 
+                 /* The predictor is used as an index into coeff1Table so we'll need to validate to ensure it never overflows. */
+-                if (pWav->msadpcm.predictor[0] >= drwav_countof(coeff1Table) || pWav->msadpcm.predictor[0] >= drwav_countof(coeff2Table)) {
++                if (pWav->msadpcm.predictor[0] >= drwav_countof(coeff1Table)) {
+                     return totalFramesRead; /* Invalid file. */
+                 }
+             } else {
+@@ -6315,8 +6315,8 @@ DRWAV_PRIVATE drwav_uint64 drwav_read_pcm_frames_s16__msadpcm(drwav* pWav, drwav
+                 pWav->msadpcm.cachedFrameCount = 2;
+ 
+                 /* The predictor is used as an index into coeff1Table so we'll need to validate to ensure it never overflows. */
+-                if (pWav->msadpcm.predictor[0] >= drwav_countof(coeff1Table) || pWav->msadpcm.predictor[0] >= drwav_countof(coeff2Table) ||
+-                    pWav->msadpcm.predictor[1] >= drwav_countof(coeff1Table) || pWav->msadpcm.predictor[1] >= drwav_countof(coeff2Table)) {
++                if (pWav->msadpcm.predictor[0] >= drwav_countof(coeff1Table) ||
++                    pWav->msadpcm.predictor[1] >= drwav_countof(coeff1Table)) {
+                     return totalFramesRead; /* Invalid file. */
+                 }
+             }
+@@ -6371,7 +6371,7 @@ DRWAV_PRIVATE drwav_uint64 drwav_read_pcm_frames_s16__msadpcm(drwav* pWav, drwav
+                     drwav_int32 newSample1;
+ 
+                     /* The predictor is read from the file and then indexed into a table. Check that it's in bounds. */
+-                    if (pWav->msadpcm.predictor[0] >= drwav_countof(coeff1Table) || pWav->msadpcm.predictor[0] >= drwav_countof(coeff2Table)) {
++                    if (pWav->msadpcm.predictor[0] >= drwav_countof(coeff1Table)) {
+                         return totalFramesRead;
+                     }
+ 
+@@ -6409,7 +6409,7 @@ DRWAV_PRIVATE drwav_uint64 drwav_read_pcm_frames_s16__msadpcm(drwav* pWav, drwav
+                     drwav_int32 newSample1;
+ 
+                     /* Left. */
+-                    if (pWav->msadpcm.predictor[0] >= drwav_countof(coeff1Table) || pWav->msadpcm.predictor[0] >= drwav_countof(coeff2Table)) {
++                    if (pWav->msadpcm.predictor[0] >= drwav_countof(coeff1Table)) {
+                         return totalFramesRead; /* Out of bounds. Invalid file. */
+                     }
+ 
+@@ -6427,7 +6427,7 @@ DRWAV_PRIVATE drwav_uint64 drwav_read_pcm_frames_s16__msadpcm(drwav* pWav, drwav
+ 
+ 
+                     /* Right. */
+-                    if (pWav->msadpcm.predictor[1] >= drwav_countof(coeff1Table) || pWav->msadpcm.predictor[1] >= drwav_countof(coeff2Table)) {
++                    if (pWav->msadpcm.predictor[1] >= drwav_countof(coeff1Table)) {
+                         return totalFramesRead; /* Out of bounds. Invalid file. */
+                     }
+ 
