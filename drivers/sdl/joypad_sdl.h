@@ -36,6 +36,9 @@
 typedef uint32_t SDL_JoystickID;
 typedef struct SDL_Joystick SDL_Joystick;
 typedef struct SDL_Gamepad SDL_Gamepad;
+typedef struct SDL_Haptic SDL_Haptic;
+typedef union SDL_HapticEffect SDL_HapticEffect;
+class InputHapticEffect;
 
 class JoypadSDL {
 public:
@@ -55,12 +58,21 @@ private:
 		bool supports_force_feedback = false;
 		bool supports_motion_sensors = false;
 		uint64_t ff_effect_timestamp = 0;
+		SDL_Haptic *haptic = nullptr;
 
 		virtual bool has_joy_light() const override;
 		virtual void set_joy_light(const Color &p_color) override;
 
 		virtual bool has_joy_motion_sensors() const override;
 		virtual void set_joy_motion_sensors_enabled(bool p_enable) override;
+
+		virtual int create_joy_haptic_effect(const InputHapticEffect &p_effect) override;
+		virtual void start_joy_haptic_effect(int p_effect_id) override;
+		virtual bool update_joy_haptic_effect(int p_effect_id, const InputHapticEffect &p_effect) override;
+		virtual void stop_joy_haptic_effect(int p_effect_id) override;
+		virtual void remove_joy_haptic_effect(int p_effect_id) override;
+
+		bool setup_sdl_haptic_effect(SDL_HapticEffect *p_sdl_effect, const InputHapticEffect &p_effect, Vector<uint16_t> &r_custom_data);
 
 		SDL_Joystick *get_sdl_joystick() const;
 		SDL_Gamepad *get_sdl_gamepad() const;

@@ -39,6 +39,7 @@
 #include "core/variant/typed_array.h"
 
 class GamepadMotion;
+class InputHapticEffect;
 
 namespace InputClassEnums {
 // Keep synced with "DisplayServer::MouseMode" enum.
@@ -96,6 +97,12 @@ public:
 
 		virtual bool has_joy_motion_sensors() const { return false; }
 		virtual void set_joy_motion_sensors_enabled(bool p_enable) {}
+
+		virtual int create_joy_haptic_effect(const InputHapticEffect &p_effect) { return -1; }
+		virtual void start_joy_haptic_effect(int p_effect_id) {}
+		virtual bool update_joy_haptic_effect(int p_effect_id, const InputHapticEffect &p_effect) { return false; }
+		virtual void stop_joy_haptic_effect(int p_effect_id) {}
+		virtual void remove_joy_haptic_effect(int p_effect_id) {}
 	};
 
 	static constexpr int32_t JOYPADS_MAX = 16;
@@ -416,6 +423,12 @@ public:
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
 	void vibrate_handheld(int p_duration_ms = 500, float p_amplitude = -1.0);
+
+	int create_joy_haptic_effect(int p_device, RequiredParam<InputHapticEffect> rp_effect);
+	void start_joy_haptic_effect(int p_device, int p_effect_id);
+	bool update_joy_haptic_effect(int p_device, int p_effect_id, RequiredParam<InputHapticEffect> rp_effect);
+	void stop_joy_haptic_effect(int p_device, int p_effect_id);
+	void remove_joy_haptic_effect(int p_device, int p_effect_id);
 
 	void set_mouse_position(const Point2 &p_posf);
 
