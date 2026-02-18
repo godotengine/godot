@@ -874,7 +874,7 @@ void Path3DEditorPlugin::_smooth_curve_points() {
 	// Catmull–Rom smoothing
 	Ref<Curve3D> curve = path->get_curve();
 	int point_count = curve->get_point_count();
-	const float smooth_ratio = 0.33;
+	const float smooth_ratio = 0.5;
 	for (int i = 1; i < point_count - 1; i++) {
 		Vector3 next_p = curve->get_point_position(i - 1);
 		Vector3 prev_p = curve->get_point_position(i + 1);
