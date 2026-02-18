@@ -2419,6 +2419,7 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Color, to_abgr64, sarray(), varray());
 	bind_method(Color, to_rgba64, sarray(), varray());
 	bind_method(Color, to_html, sarray("with_alpha"), varray(true));
+	bind_method(Color, to_named, sarray(), varray());
 
 	bind_method(Color, clamp, sarray("min", "max"), varray(Color(0, 0, 0, 0), Color(1, 1, 1, 1)));
 	bind_method(Color, inverted, sarray(), varray());

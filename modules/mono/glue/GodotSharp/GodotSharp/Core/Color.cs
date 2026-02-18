@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -576,6 +577,34 @@ namespace Godot
         }
 
         /// <summary>
+        /// Finds the mathematically closest standardized color name listed in <see cref="Colors"/>.
+        /// </summary>
+        /// <returns>The closest standardized color name in UPPER_SNAKE_CASE, for example "RED".</returns>
+        public readonly KeyValuePair<string, Color> ToNamed()
+        {
+            KeyValuePair<string, Color> closestNamedColor = default;
+            float closestDistanceSquared = float.PositiveInfinity;
+
+            foreach (KeyValuePair<string, Color> namedColor in Colors.NamedColors)
+            {
+                Color delta = namedColor.Value - this;
+                float distanceSquared = (delta.R * delta.R) + (delta.G * delta.G) + (delta.B * delta.B) + (delta.A * delta.A);
+
+                if (distanceSquared == 0)
+                {
+                    return namedColor;
+                }
+                if (distanceSquared < closestDistanceSquared)
+                {
+                    closestNamedColor = namedColor;
+                    closestDistanceSquared = distanceSquared;
+                }
+            }
+
+            return closestNamedColor;
+        }
+
+        /// <summary>
         /// Constructs a <see cref="Color"/> from RGBA values, typically on the range of 0 to 1.
         /// </summary>
         /// <param name="r">The color's red component, typically on the range of 0 to 1.</param>
@@ -832,12 +861,7 @@ namespace Godot
 
         private static bool FindNamedColor(string name, out Color color)
         {
-            name = name.Replace(" ", string.Empty, StringComparison.Ordinal);
-            name = name.Replace("-", string.Empty, StringComparison.Ordinal);
-            name = name.Replace("_", string.Empty, StringComparison.Ordinal);
-            name = name.Replace("'", string.Empty, StringComparison.Ordinal);
-            name = name.Replace(".", string.Empty, StringComparison.Ordinal);
-            name = name.ToUpperInvariant();
+            name = name.ToSnakeCase().ToUpperInvariant();
 
             return Colors.NamedColors.TryGetValue(name, out color);
         }
