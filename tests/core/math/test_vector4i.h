@@ -41,6 +41,10 @@ TEST_CASE("[Vector4i] Constructor methods") {
 	static_assert(
 			vector_empty == vector_zero,
 			"Vector4i Constructor with no inputs should return a zero Vector4i.");
+
+	CHECK_MESSAGE(
+			Vector4i(123) == Vector4i(123, 123, 123, 123),
+			"Vector4i Constructor with one argument should set all components to the same value.");
 }
 
 TEST_CASE("[Vector4i] Axis methods") {
