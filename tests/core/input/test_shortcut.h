@@ -116,10 +116,10 @@ TEST_CASE("[Shortcut] 'matches_event' should correctly match the same event") {
 
 	original->set_keycode(Key::ENTER);
 	similar_but_not_equal->set_keycode(Key::ENTER);
-	similar_but_not_equal->set_keycode(Key::ESCAPE);
+	different->set_keycode(Key::ESCAPE);
 	copy = original;
 
-	// Only the copy is really the same, so only that one should match.
+	// Every instance that has the same keycode should match.
 	// The rest should not match.
 
 	Ref<InputEvent> e_original = original;
@@ -132,7 +132,7 @@ TEST_CASE("[Shortcut] 'matches_event' should correctly match the same event") {
 	Shortcut s;
 	s.set_events(a);
 
-	CHECK(s.matches_event(e_similar_but_not_equal) == false);
+	CHECK(s.matches_event(e_similar_but_not_equal) == true);
 	CHECK(s.matches_event(e_different) == false);
 
 	CHECK(s.matches_event(e_copy) == true);
