@@ -209,41 +209,6 @@ namespace Godot.SourceGenerators
 
             source.Append("    private static partial class GodotInternal\n    {\n");
 
-            // Generate GetGodotMethodNameToProxyNameMap
-            {
-                const string CollectorType = "global::Godot.Bridge.ScriptManagerBridge.NameToProxyNameMapCollector";
-
-                source.Append("        public new static void GetGodotMethodNameToProxyNameMap(")
-                    .Append(CollectorType).Append(" collector)\n        {\n");
-
-                foreach (var method in godotClassMethods)
-                {
-                    if (method.Method is { IsOverride: true, OverriddenMethod: not null } &&
-                        method.Method.OverriddenMethod.ContainingType
-                            .ContainingAssembly is { Name: "GodotSharp" or "GodotSharpEditor" })
-                    {
-                        // Only do this for native virtual methods by checking that it is also in MethodName.
-                        if (method.Method.OverriddenMethod.ContainingType.GetTypeMembers()
-                                .FirstOrDefault(s => s.Name == "MethodName")?
-                                .MemberNames.Any(name => name == method.Method.Name) ?? false)
-                        {
-                            INamedTypeSymbol castClassSymbol = method.Method.OverriddenMethod.ContainingType;
-                            int parameterCount = method.ParamTypes.Length;
-
-                            source.Append("            collector.TryAdd(new(")
-                                .Append(castClassSymbol.FullQualifiedNameIncludeGlobal())
-                                .Append(".MethodName.@").Append(method.Method.Name)
-                                .Append(", ").Append(parameterCount)
-                                .Append("), MethodName.@")
-                                .Append(method.Method.Name)
-                                .Append(");\n");
-                        }
-                    }
-                }
-
-                source.Append("        }\n");
-            }
-
             // Generate GetGodotMethodTrampolines
             {
                 const string CollectorType = "global::Godot.Bridge.ScriptManagerBridge.MethodTrampolineCollector";
@@ -416,6 +381,7 @@ namespace Godot.SourceGenerators
         {
             string methodName = method.Method.Name;
             int parameterCount = method.ParamTypes.Length;
+            bool isStatic = method.Method.IsStatic;
 
             if (!isUnsafeAllowed)
             {
@@ -427,26 +393,56 @@ namespace Godot.SourceGenerators
                     .Append(";\n");
             }
 
-            source.Append("            collector.TryAdd(new(MethodName.@")
-                .Append(methodName).Append(", ").Append(parameterCount)
-                .Append("), new(");
+            DoAppendTrampoline(source, methodName, parameterCount, isStatic, isUnsafeAllowed);
 
-            if (isUnsafeAllowed)
+            if (method.Method is { IsOverride: true, OverriddenMethod: not null } &&
+                method.Method.OverriddenMethod.ContainingType
+                    .ContainingAssembly is { Name: "GodotSharp" or "GodotSharpEditor" })
             {
-                source
-                    .Append("&trampoline_")
-                    .Append(parameterCount).Append("_").Append(methodName);
-            }
-            else
-            {
-                source
-                    .Append("aux_delegate_")
-                    .Append(parameterCount).Append("_").Append(methodName)
-                    .Append(".Method.MethodHandle.GetFunctionPointer()");
+                // Only do this for native virtual methods by checking that it is also in MethodName.
+                if (method.Method.OverriddenMethod.ContainingType.GetTypeMembers()
+                        .FirstOrDefault(s => s.Name == "MethodName")?
+                        .MemberNames.Any(name => name == method.Method.Name) ?? false)
+                {
+                    INamedTypeSymbol overriddenContainingType =
+                        method.Method.OverriddenMethod.ContainingType;
+
+                    DoAppendTrampoline(source, methodName, parameterCount,
+                        isStatic, isUnsafeAllowed, overriddenContainingType);
+                }
             }
 
-            source.Append(", isStatic: ").Append(method.Method.IsStatic ? "true" : "false");
-            source.Append("));\n");
+            static void DoAppendTrampoline(StringBuilder source,
+                string methodName, int parameterCount,
+                bool isStatic, bool isUnsafeAllowed,
+                INamedTypeSymbol? overriddenContainingType = null)
+            {
+                source.Append("            collector.TryAdd(new(");
+
+                if (overriddenContainingType != null)
+                    source.Append(overriddenContainingType.FullQualifiedNameIncludeGlobal()).Append(".");
+
+                source.Append("MethodName.@")
+                    .Append(methodName).Append(", ").Append(parameterCount)
+                    .Append("), new(");
+
+                if (isUnsafeAllowed)
+                {
+                    source
+                        .Append("&trampoline_")
+                        .Append(parameterCount).Append("_").Append(methodName);
+                }
+                else
+                {
+                    source
+                        .Append("aux_delegate_")
+                        .Append(parameterCount).Append("_").Append(methodName)
+                        .Append(".Method.MethodHandle.GetFunctionPointer()");
+                }
+
+                source.Append(", isStatic: ").Append(isStatic ? "true" : "false");
+                source.Append("));\n");
+            }
         }
 
         private static void GenerateMethodTrampoline(

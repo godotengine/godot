@@ -126,8 +126,6 @@ public class TrampolineCollectorDispatchGenerator : ISourceGenerator
 
         source
             .Append("        ").Append(symbol.FullQualifiedNameIncludeGlobal()).Append(".GodotInternal")
-            .Append(".GetGodotMethodNameToProxyNameMap(collectors.NameToProxyNameMapCollector);\n")
-            .Append("        ").Append(symbol.FullQualifiedNameIncludeGlobal()).Append(".GodotInternal")
             .Append(".GetGodotMethodTrampolines(collectors.MethodTrampolineCollector);\n")
             .Append("        ").Append(symbol.FullQualifiedNameIncludeGlobal()).Append(".GodotInternal")
             .Append(".GetGodotPropertyTrampolines(collectors.PropertyTrampolineCollector);\n")
