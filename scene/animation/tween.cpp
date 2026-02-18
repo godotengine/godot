@@ -34,7 +34,7 @@
 #include "scene/main/node.h"
 #include "scene/resources/animation.h"
 
-#define CHECK_VALID()                                                                                      \
+#define CHECK_VALID() \
 	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Tween invalid. Either finished or created outside scene tree."); \
 	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");
 
@@ -95,8 +95,8 @@ void Tween::_stop_internal(bool p_reset) {
 	}
 }
 
-RequiredResult<PropertyTweener> Tween::tween_property(const Object *p_target, const NodePath &p_property, Variant p_to, double p_duration) {
-	ERR_FAIL_NULL_V(p_target, nullptr);
+RequiredResult<PropertyTweener> Tween::tween_property(RequiredParam<const Object> rp_target, const NodePath &p_property, Variant p_to, double p_duration) {
+	EXTRACT_PARAM_OR_FAIL_V(p_target, rp_target, nullptr);
 	CHECK_VALID();
 
 	Vector<StringName> property_subnames = p_property.get_as_property_path().get_subnames();
@@ -149,11 +149,11 @@ RequiredResult<MethodTweener> Tween::tween_method(const Callable &p_callback, co
 	return tweener;
 }
 
-RequiredResult<SubtweenTweener> Tween::tween_subtween(const Ref<Tween> &p_subtween) {
+RequiredResult<SubtweenTweener> Tween::tween_subtween(RequiredParam<Tween> rp_subtween) {
 	CHECK_VALID();
 
 	// Ensure that the subtween being added is not null.
-	ERR_FAIL_COND_V(p_subtween.is_null(), nullptr);
+	EXTRACT_PARAM_OR_FAIL_V(p_subtween, rp_subtween, nullptr);
 
 	Ref<SubtweenTweener> tweener;
 	tweener.instantiate(p_subtween);
@@ -165,6 +165,14 @@ RequiredResult<SubtweenTweener> Tween::tween_subtween(const Ref<Tween> &p_subtwe
 		tweener->subtween->parent_tree->remove_tween(tweener->subtween);
 	}
 	subtweens.push_back(p_subtween);
+	append(tweener);
+	return tweener;
+}
+
+RequiredResult<AwaitTweener> Tween::tween_await(const Signal &p_signal) {
+	CHECK_VALID();
+
+	Ref<AwaitTweener> tweener = memnew(AwaitTweener(p_signal));
 	append(tweener);
 	return tweener;
 }
@@ -221,8 +229,8 @@ void Tween::clear() {
 	tweeners.clear();
 }
 
-RequiredResult<Tween> Tween::bind_node(const Node *p_node) {
-	ERR_FAIL_NULL_V(p_node, this);
+RequiredResult<Tween> Tween::bind_node(RequiredParam<const Node> rp_node) {
+	EXTRACT_PARAM_OR_FAIL_V(p_node, rp_node, this);
 
 	bound_node = p_node->get_instance_id();
 	is_bound = true;
@@ -474,6 +482,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tween_callback", "callback"), &Tween::tween_callback);
 	ClassDB::bind_method(D_METHOD("tween_method", "method", "from", "to", "duration"), &Tween::tween_method);
 	ClassDB::bind_method(D_METHOD("tween_subtween", "subtween"), &Tween::tween_subtween);
+	ClassDB::bind_method(D_METHOD("tween_await", "signal"), &Tween::tween_await);
 
 	ClassDB::bind_method(D_METHOD("custom_step", "delta"), &Tween::custom_step);
 	ClassDB::bind_method(D_METHOD("stop"), &Tween::stop);
@@ -927,4 +936,64 @@ SubtweenTweener::SubtweenTweener(const Ref<Tween> &p_subtween) {
 
 SubtweenTweener::SubtweenTweener() {
 	ERR_FAIL_MSG("SubtweenTweener can't be created directly. Use the tween_subtween() method in Tween.");
+}
+
+Ref<AwaitTweener> AwaitTweener::set_timeout(double p_timeout) {
+	timeout = p_timeout;
+	return this;
+}
+
+void AwaitTweener::start() {
+	Tweener::start();
+	received = false;
+}
+
+bool AwaitTweener::step(double &r_delta) {
+	if (finished) {
+		return false;
+	}
+
+	if (!signal.get_object() || !signal.is_connected(target_callable)) { // In case the object was destroyed before emitting.
+		_finish();
+		return false;
+	}
+
+	elapsed_time += r_delta;
+
+	if (timeout >= 0 && elapsed_time >= timeout) {
+		_finish();
+		r_delta = elapsed_time - timeout;
+		return false;
+	}
+
+	r_delta = 0; // "Consume" all remaining time to prevent infinite loops.
+	if (received) {
+		_finish();
+		return false;
+	}
+	return true;
+}
+
+AwaitTweener::AwaitTweener(const Signal &p_signal) {
+	signal = p_signal;
+	target_callable = Callable(this, SNAME("_signal_callback"));
+	signal.connect(target_callable);
+
+	Object *signal_instance = p_signal.get_object();
+	if (signal_instance && signal_instance->is_ref_counted()) {
+		ref_copy = signal_instance;
+	}
+}
+
+AwaitTweener::AwaitTweener() {
+	ERR_FAIL_MSG("AwaitTweener can't be created directly. Use the tween_await() method in Tween.");
+}
+
+void AwaitTweener::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_timeout", "timeout"), &AwaitTweener::set_timeout);
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &AwaitTweener::_signal_received, MethodInfo("_signal_callback"));
+}
+
+void AwaitTweener::_signal_received(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	received = true;
 }

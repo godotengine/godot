@@ -30,13 +30,19 @@
 
 #include "create_dialog.h"
 
+#include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_paths.h"
+#include "editor/gui/filter_line_edit.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/button.h"
+#include "scene/gui/item_list.h"
+#include "scene/gui/tree.h"
 
 void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_current_type, const String &p_current_name) {
 	_fill_type_list();
@@ -459,29 +465,27 @@ float CreateDialog::_score_type(const String &p_type, const String &p_search) co
 		return 1.0f;
 	}
 
-	const String &type_name = p_type.get_slicec(' ', 0);
-
-	float inverse_length = 1.f / float(type_name.length());
+	float inverse_length = 1.f / float(p_type.length());
 
 	// Favor types where search term is a substring close to the start of the type.
 	float w = 0.5f;
-	int pos = type_name.findn(p_search);
+	int pos = p_type.findn(p_search);
 	float score = (pos > -1) ? 1.0f - w * MIN(1, 3 * pos * inverse_length) : MAX(0.f, .9f - w);
 
 	// Favor shorter items: they resemble the search term more.
 	w = 0.9f;
 	score *= (1 - w) + w * MIN(1.0f, p_search.length() * inverse_length);
 
-	score *= _is_type_preferred(type_name) ? 1.0f : 0.9f;
+	score *= _is_type_preferred(p_type) ? 1.0f : 0.9f;
 
 	// Add score for being a favorite type.
-	score *= favorite_list.has(type_name) ? 1.0f : 0.8f;
+	score *= favorite_list.has(p_type) ? 1.0f : 0.8f;
 
 	// Look through at most 5 recent items
 	bool in_recent = false;
 	constexpr int RECENT_COMPLETION_SIZE = 5;
 	for (int i = 0; i < MIN(RECENT_COMPLETION_SIZE - 1, recent->get_item_count()); i++) {
-		if (recent->get_item_text(i) == type_name) {
+		if (recent->get_item_text(i) == p_type) {
 			in_recent = true;
 			break;
 		}
@@ -501,7 +505,7 @@ void CreateDialog::_cleanup() {
 }
 
 void CreateDialog::_confirmed() {
-	String selected_item = get_selected_type();
+	String selected_item = get_selected_type_name();
 	if (selected_item.is_empty()) {
 		return;
 	}
@@ -540,10 +544,7 @@ void CreateDialog::_sbox_input(const Ref<InputEvent> &p_event) {
 	// Redirect navigational key events to the tree.
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid()) {
-		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
-			search_options->gui_input(key);
-			search_box->accept_event();
-		} else if (key->is_action_pressed("ui_select", true)) {
+		if (key->is_action_pressed("ui_select", true)) {
 			TreeItem *ti = search_options->get_selected();
 			if (ti) {
 				ti->set_collapsed(!ti->is_collapsed());
@@ -578,7 +579,6 @@ void CreateDialog::_notification(int p_what) {
 			favorites->add_theme_constant_override("icon_max_width", icon_width);
 			recent->set_fixed_icon_size(Size2(icon_width, icon_width));
 
-			search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			favorite->set_button_icon(get_editor_theme_icon(SNAME("Favorites")));
 		} break;
 	}
@@ -621,8 +621,25 @@ String CreateDialog::get_selected_type() {
 		return String();
 	}
 
-	String type = selected->get_text(0);
-	return ClassDB::class_exists(type) ? type : String(selected->get_meta("_script_path", ""));
+	String type = selected->get_text(0).get_slicec(' ', 0);
+	if (ClassDB::class_exists(type)) {
+		return type; // CPP type - from the core or GDExtensions
+	}
+
+	const EditorData::CustomType *custom_type = EditorNode::get_editor_data().get_custom_type_by_name(type);
+	if (custom_type != nullptr) {
+		return custom_type->script->get_path(); // Types via EditorPlugin::add_custom_type()
+	}
+
+	return String(selected->get_meta("_script_path", "")); // Script types
+}
+
+String CreateDialog::get_selected_type_name() {
+	TreeItem *selected = search_options->get_selected();
+	if (!selected) {
+		return String();
+	}
+	return selected->get_text(0).get_slicec(' ', 0);
 }
 
 void CreateDialog::set_base_type(const String &p_base) {
@@ -662,8 +679,7 @@ Variant CreateDialog::instantiate_selected() {
 }
 
 void CreateDialog::_item_selected() {
-	String name = get_selected_type();
-	select_type(name, false);
+	select_type(get_selected_type_name(), false);
 }
 
 void CreateDialog::_hide_requested() {
@@ -680,7 +696,7 @@ void CreateDialog::_favorite_toggled() {
 		return;
 	}
 
-	String name = item->get_text(0);
+	String name = get_selected_type_name();
 
 	if (favorite_list.has(name)) {
 		favorite_list.erase(name);
@@ -694,7 +710,7 @@ void CreateDialog::_favorite_toggled() {
 }
 
 void CreateDialog::_history_selected(int p_idx) {
-	search_box->set_text(recent->get_item_text(p_idx).get_slicec(' ', 0));
+	search_box->set_text(recent->get_item_text(p_idx));
 	favorites->deselect_all();
 	_update_search();
 }
@@ -705,7 +721,7 @@ void CreateDialog::_favorite_selected() {
 		return;
 	}
 
-	search_box->set_text(item->get_text(0).get_slicec(' ', 0));
+	search_box->set_text(item->get_text(0));
 	recent->deselect_all();
 	_update_search();
 }
@@ -801,20 +817,18 @@ void CreateDialog::_save_and_update_favorite_list() {
 	{
 		Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorites." + base_type), FileAccess::WRITE);
 		if (f.is_valid()) {
-			for (int i = 0; i < favorite_list.size(); i++) {
-				String l = favorite_list[i];
-				String name = l.get_slicec(' ', 0);
+			for (const String &name : favorite_list) {
 				if (!EditorNode::get_editor_data().is_type_recognized(name)) {
 					continue;
 				}
-				f->store_line(l);
+				f->store_line(name);
 
 				if (_is_class_disabled_by_feature_profile(name)) {
 					continue;
 				}
 
 				TreeItem *ti = favorites->create_item(root);
-				ti->set_text(0, l);
+				ti->set_text(0, name);
 				ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(name));
 			}
 		}
@@ -828,11 +842,10 @@ void CreateDialog::_load_favorites_and_history() {
 	Ref<FileAccess> f = FileAccess::open(dir.path_join("create_recent." + base_type), FileAccess::READ);
 	if (f.is_valid()) {
 		while (!f->eof_reached()) {
-			String l = f->get_line().strip_edges();
-			String name = l.get_slicec(' ', 0);
+			String name = f->get_line().strip_edges();
 
 			if (EditorNode::get_editor_data().is_type_recognized(name) && !_is_class_disabled_by_feature_profile(name)) {
-				recent->add_item(l, EditorNode::get_singleton()->get_class_icon(name));
+				recent->add_item(name, EditorNode::get_singleton()->get_class_icon(name));
 			}
 		}
 	}
@@ -840,10 +853,10 @@ void CreateDialog::_load_favorites_and_history() {
 	f = FileAccess::open(dir.path_join("favorites." + base_type), FileAccess::READ);
 	if (f.is_valid()) {
 		while (!f->eof_reached()) {
-			String l = f->get_line().strip_edges();
+			String name = f->get_line().strip_edges();
 
-			if (!l.is_empty()) {
-				favorite_list.push_back(l);
+			if (!name.is_empty()) {
+				favorite_list.push_back(name);
 			}
 		}
 	}
@@ -911,12 +924,10 @@ CreateDialog::CreateDialog() {
 	vbc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vsc_right->add_child(vbc);
 
-	search_box = memnew(LineEdit);
+	search_box = memnew(FilterLineEdit);
 	search_box->set_accessibility_name(TTRC("Search"));
-	search_box->set_clear_button_enabled(true);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &CreateDialog::_text_changed));
-	search_box->connect(SceneStringName(gui_input), callable_mp(this, &CreateDialog::_sbox_input));
 
 	HBoxContainer *search_hb = memnew(HBoxContainer);
 	search_hb->add_child(search_box);
@@ -929,11 +940,13 @@ CreateDialog::CreateDialog() {
 	vbc->add_margin_child(TTR("Search:"), search_hb);
 
 	search_options = memnew(Tree);
+	search_box->set_forward_control(search_options);
 	search_options->set_accessibility_name(TTRC("Matches:"));
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	search_options->connect("item_activated", callable_mp(this, &CreateDialog::_confirmed));
 	search_options->connect("cell_selected", callable_mp(this, &CreateDialog::_item_selected));
 	search_options->connect("button_clicked", callable_mp(this, &CreateDialog::_script_button_clicked));
+	search_options->set_theme_type_variation("TreeSecondary");
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 
 	help_bit = memnew(EditorHelpBit);

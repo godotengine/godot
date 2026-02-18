@@ -44,6 +44,11 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 	ERR_FAIL_NULL_V(env, false);
 
 	env->PushLocalFrame(p_argcount);
+	if (env->ExceptionCheck()) {
+		env->ExceptionDescribe();
+		env->ExceptionClear();
+		return false;
+	}
 
 	MethodInfo *method = nullptr;
 	for (MethodInfo &E : M->value) {
@@ -199,7 +204,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				case ARG_ARRAY_BIT | ARG_TYPE_CHARSEQUENCE: {
 					if (p_args[i]->get_type() == Variant::ARRAY) {
 						Array arr = *p_args[i];
-						if (arr.is_typed() && (arr.get_typed_builtin() != Variant::STRING || arr.get_typed_builtin() != Variant::STRING_NAME)) {
+						if (arr.is_typed() && (arr.get_typed_builtin() != Variant::STRING && arr.get_typed_builtin() != Variant::STRING_NAME)) {
 							arg_expected = Variant::ARRAY;
 						}
 					} else if (p_args[i]->get_type() != Variant::PACKED_STRING_ARRAY) {
@@ -1657,7 +1662,7 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_non_p
 		String str_field = jstring_to_string(name, env);
 		env->DeleteLocalRef(name);
 		int mods = env->CallIntMethod(obj, Field_getModifiers);
-		if ((mods & 0x8) && (mods & 0x10) && (mods & 0x1)) { //static final public!
+		if ((mods & 0x8) && (mods & 0x1)) { //static public!
 
 			jobject objc = env->CallObjectMethod(obj, Field_get, nullptr);
 			if (objc) {

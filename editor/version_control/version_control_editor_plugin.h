@@ -82,6 +82,8 @@ private:
 	FileDialog *set_up_ssh_public_key_file_dialog = nullptr;
 	FileDialog *set_up_ssh_private_key_file_dialog = nullptr;
 	Label *set_up_warning_text = nullptr;
+	Button *select_public_path_button = nullptr;
+	Button *select_private_path_button = nullptr;
 
 	AcceptDialog *discard_all_confirm = nullptr;
 
@@ -129,7 +131,7 @@ private:
 	TextEdit *commit_message = nullptr;
 	Button *commit_button = nullptr;
 
-	VBoxContainer *version_control_dock = nullptr;
+	EditorDock *version_control_dock = nullptr;
 	Label *diff_title = nullptr;
 	RichTextLabel *diff = nullptr;
 	OptionButton *diff_view_type_select = nullptr;
@@ -137,6 +139,7 @@ private:
 	List<EditorVCSInterface::DiffFile> diff_content;
 
 	void _notification(int p_what);
+	void _update_theme();
 	void _initialize_vcs();
 	void _set_vcs_ui_state(bool p_enabled);
 	void _set_credentials();

@@ -102,6 +102,7 @@ class MaterialEditor : public Control {
 	void _set_rotation(real_t p_x_degrees, real_t p_y_degrees);
 	void _store_rotation_metadata();
 	void _update_rotation();
+	void _project_settings_changed();
 
 protected:
 	virtual void _update_theme_item_cache() override;
@@ -147,6 +148,15 @@ public:
 
 class CanvasItemMaterialConversionPlugin : public EditorResourceConversionPlugin {
 	GDCLASS(CanvasItemMaterialConversionPlugin, EditorResourceConversionPlugin);
+
+public:
+	virtual String converts_to() const override;
+	virtual bool handles(const Ref<Resource> &p_resource) const override;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
+};
+
+class BlitMaterialConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(BlitMaterialConversionPlugin, EditorResourceConversionPlugin);
 
 public:
 	virtual String converts_to() const override;

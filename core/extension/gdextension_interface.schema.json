@@ -37,7 +37,22 @@
                         }
                     },
                     "deprecated": {
-                        "type": "string"
+                        "type": "object",
+                        "properties": {
+                            "since": {
+                                "type": "string",
+                                "pattern": "4\\.[0-9]+"
+                            },
+                            "message": {
+                                "type": "string",
+                                "pattern": "\\.$"
+                            },
+                            "replace_with": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["since"],
+                        "additionalProperties": false
                     }
                 },
                 "required": [
@@ -54,6 +69,9 @@
                         },
                         "then": {
                             "properties": {
+                                "is_bitfield": {
+                                    "type": "boolean"
+                                },
                                 "values": {
                                     "type": "array",
                                     "items": {
@@ -91,7 +109,10 @@
                                 "parent": {
                                     "type": "string"
                                 },
-                                "const": {
+                                "is_const": {
+                                    "type": "boolean"
+                                },
+                                "is_uninitialized": {
                                     "type": "boolean"
                                 }
                             }
@@ -193,7 +214,7 @@
                                     }
                                 }
                             },
-                            "required": ["name", "kind", "return_value", "arguments"]
+                            "required": ["name", "kind", "arguments"]
                         }
                     }
                 ]
@@ -256,7 +277,22 @@
                         "pattern": "4\\.[0-9]+"
                     },
                     "deprecated": {
-                        "type": "string"
+                        "type": "object",
+                        "properties": {
+                            "since": {
+                                "type": "string",
+                                "pattern": "4\\.[0-9]+"
+                            },
+                            "message": {
+                                "type": "string",
+                                "pattern": "\\.$"
+                            },
+                            "replace_with": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["since"],
+                        "additionalProperties": false
                     },
                     "see": {
                         "type": "array",
@@ -270,7 +306,6 @@
                 },
                 "required": [
                     "name",
-                    "return_value",
                     "arguments",
                     "description",
                     "since"

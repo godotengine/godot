@@ -204,7 +204,7 @@ public:
 	const HashMap<StringName, PropertyInfo> &get_custom_property_info() const;
 	uint64_t get_last_saved_time() { return last_save_time; }
 
-	List<String> get_input_presets() const { return input_presets; }
+	List<String> get_input_presets() const { return List<String>(input_presets); }
 
 	Variant get_setting_with_override(const StringName &p_name) const;
 	Variant get_setting_with_override_and_custom_features(const StringName &p_name, const Vector<String> &p_features) const;
@@ -219,10 +219,11 @@ public:
 	bool check_changed_settings_in_group(const String &p_setting_prefix) const;
 
 	const HashMap<StringName, AutoloadInfo> &get_autoload_list() const;
-	void add_autoload(const AutoloadInfo &p_autoload);
+	void add_autoload(const AutoloadInfo &p_autoload, bool p_front_insert = false);
 	void remove_autoload(const StringName &p_autoload);
 	bool has_autoload(const StringName &p_autoload) const;
 	AutoloadInfo get_autoload(const StringName &p_name) const;
+	void fix_autoload_paths();
 
 	const HashMap<StringName, String> &get_global_groups_list() const;
 	void add_global_group(const StringName &p_name, const String &p_description);

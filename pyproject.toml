@@ -15,8 +15,10 @@ python_version = "3.8"
 [tool.ruff]
 extend-exclude = ["thirdparty"]
 extend-include = ["*SConstruct", "*SCsub"]
-line-length = 120
 target-version = "py38"
+line-length = 120
+preview = true
+fix = true
 
 [tool.ruff.lint]
 extend-select = [
@@ -89,6 +91,7 @@ ignore-words-list = [
 	"ot",
 	"outin",
 	"parm",
+	"pEvent",
 	"requestor",
 	"streamin",
 	"te",

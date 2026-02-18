@@ -45,7 +45,6 @@ thread_local bool ScriptServer::thread_entered = false;
 
 bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
-ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
 
 // These need to be the last static variables in this file, since we're exploiting the reverse-order destruction of static variables.
 static bool is_program_exiting = false;
@@ -253,6 +252,13 @@ Error ScriptServer::register_language(ScriptLanguage *p_language) {
 		ERR_FAIL_COND_V_MSG(other_language->get_type() == p_language->get_type(), ERR_ALREADY_EXISTS, vformat("A script language with type '%s' is already registered.", p_language->get_type()));
 	}
 	_languages[_language_count++] = p_language;
+
+	// Make sure the new language is initialized in case languages have already been initialized before
+	// This happens when importing the GDExtension for the first time in the editor
+	if (languages_ready) {
+		p_language->init();
+	}
+
 	return OK;
 }
 
@@ -460,6 +466,15 @@ void ScriptServer::get_inheriters_list(const StringName &p_base_type, List<Strin
 	}
 }
 
+void ScriptServer::get_indirect_inheriters_list(const StringName &p_base_type, List<StringName> *r_classes) {
+	List<StringName> direct_inheritors;
+	get_inheriters_list(p_base_type, &direct_inheritors);
+	for (const StringName &inheritor : direct_inheritors) {
+		r_classes->push_back(inheritor);
+		get_indirect_inheriters_list(inheritor, r_classes);
+	}
+}
+
 void ScriptServer::remove_global_class_by_path(const String &p_path) {
 	for (const KeyValue<StringName, GlobalScriptClass> &kv : global_classes) {
 		if (kv.value.path == p_path) {
@@ -518,7 +533,7 @@ void ScriptServer::get_global_class_list(LocalVector<StringName> &r_global_class
 	for (const KeyValue<StringName, GlobalScriptClass> &global_class : global_classes) {
 		r_global_classes.push_back(global_class.key);
 	}
-	SortArray<StringName> sorter;
+	SortArray<StringName, StringName::AlphCompare> sorter;
 	sorter.sort(&r_global_classes[r_global_classes.size() - global_classes.size()], global_classes.size());
 }
 

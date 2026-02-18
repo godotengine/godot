@@ -216,7 +216,7 @@
 			<param index="0" name="rid" type="RID" />
 			<param index="1" name="submenu_rid" type="RID" />
 			<description>
-				Returns the index of the item with the submenu specified by [param submenu_rid]. Indices are automatically assigned to each item by the engine, and cannot be set manually.
+				Returns the index of the item with the submenu specified by [param submenu_rid]. Indices are automatically assigned to each item by the engine.
 				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
@@ -225,7 +225,7 @@
 			<param index="0" name="rid" type="RID" />
 			<param index="1" name="tag" type="Variant" />
 			<description>
-				Returns the index of the item with the specified [param tag]. Indices are automatically assigned to each item by the engine, and cannot be set manually.
+				Returns the index of the item with the specified [param tag]. Indices are automatically assigned to each item by the engine.
 				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
@@ -234,7 +234,7 @@
 			<param index="0" name="rid" type="RID" />
 			<param index="1" name="text" type="String" />
 			<description>
-				Returns the index of the item with the specified [param text]. Indices are automatically assigned to each item by the engine, and cannot be set manually.
+				Returns the index of the item with the specified [param text]. Indices are automatically assigned to each item by the engine.
 				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
@@ -399,6 +399,14 @@
 			<description>
 				Returns readable name of a special system menu.
 				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="get_system_menu_text" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="menu_id" type="int" enum="NativeMenu.SystemMenus" />
+			<description>
+				Returns the text of the system menu item.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="const">
@@ -610,6 +618,18 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
+		<method name="set_item_index">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="target_idx" type="int" />
+			<description>
+				Changes the index of the item at index [param idx] to be at index [param target_idx]. This can be used to move an item above other items.
+				Returns the new index of the moved item, it's not guaranteed to be the same as [param target_idx].
+				[b]Note:[/b] The indices of any items between index [param idx] and index [param target_idx] will be shifted by one.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
 		<method name="set_item_key_callback">
 			<return type="void" />
 			<param index="0" name="rid" type="RID" />
@@ -718,6 +738,15 @@
 			<description>
 				Registers callable to emit after the menu is closed.
 				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="set_system_menu_text">
+			<return type="void" />
+			<param index="0" name="menu_id" type="int" enum="NativeMenu.SystemMenus" />
+			<param index="1" name="name" type="String" />
+			<description>
+				Sets the text of the system menu item.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 	</methods>

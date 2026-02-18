@@ -1,4 +1,5 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+
 from __future__ import annotations
 
 import os
@@ -182,13 +183,11 @@ def run_msbuild(tools: ToolsLocation, sln: str, chdir_to: str, msbuild_args: lis
         # The (Csc/Vbc/Fsc)ToolExe environment variables are required when
         # building with Mono's MSBuild. They must point to the batch files
         # in Mono's bin directory to make sure they are executed with Mono.
-        msbuild_env.update(
-            {
-                "CscToolExe": os.path.join(tools.mono_bin_dir, "csc.bat"),
-                "VbcToolExe": os.path.join(tools.mono_bin_dir, "vbc.bat"),
-                "FscToolExe": os.path.join(tools.mono_bin_dir, "fsharpc.bat"),
-            }
-        )
+        msbuild_env.update({
+            "CscToolExe": os.path.join(tools.mono_bin_dir, "csc.bat"),
+            "VbcToolExe": os.path.join(tools.mono_bin_dir, "vbc.bat"),
+            "FscToolExe": os.path.join(tools.mono_bin_dir, "fsharpc.bat"),
+        })
 
     # We want to control cwd when running msbuild, because that's where the search for global.json begins.
     return subprocess.call(args, env=msbuild_env, cwd=chdir_to)

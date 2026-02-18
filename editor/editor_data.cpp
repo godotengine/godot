@@ -34,6 +34,7 @@
 #include "core/extension/gdextension_manager.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/os/time.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
@@ -617,6 +618,7 @@ int EditorData::add_edited_scene(int p_at_pos) {
 	es.history_current = -1;
 	es.live_edit_root = NodePath(String("/root"));
 	es.history_id = last_created_scene++;
+	es.time_opened = Time::get_singleton()->get_unix_time_from_system();
 
 	if (p_at_pos == edited_scene.size()) {
 		edited_scene.push_back(es);
@@ -643,6 +645,9 @@ void EditorData::remove_scene(int p_idx) {
 			editor_plugins[i]->notify_scene_closed(edited_scene[p_idx].root->get_scene_file_path());
 		}
 
+		if (edited_scene[p_idx].root == SceneTree::get_singleton()->get_edited_scene_root()) {
+			SceneTree::get_singleton()->set_edited_scene_root(nullptr);
+		}
 		memdelete(edited_scene[p_idx].root);
 		edited_scene.write[p_idx].root = nullptr;
 	}
@@ -811,6 +816,11 @@ Vector<EditorData::EditedScene> EditorData::get_edited_scenes() const {
 	}
 
 	return out_edited_scenes_list;
+}
+
+uint64_t EditorData::get_scene_time_opened(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), 0);
+	return edited_scene[p_idx].time_opened;
 }
 
 void EditorData::set_scene_modified_time(int p_idx, uint64_t p_time) {
@@ -1211,15 +1221,15 @@ EditorData::~EditorData() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void EditorSelection::_node_removed(Node *p_node) {
-	if (!selection.has(p_node)) {
+	ERR_FAIL_NULL(p_node);
+	ObjectID nid = p_node->get_instance_id();
+	if (!selection.has(nid)) {
 		return;
 	}
 
-	Object *meta = selection[p_node];
-	if (meta) {
-		memdelete(meta);
-	}
-	selection.erase(p_node);
+	Object *meta = selection[nid];
+	memdelete_notnull(meta);
+	selection.erase(nid);
 	changed = true;
 	node_list_changed = true;
 }
@@ -1227,7 +1237,8 @@ void EditorSelection::_node_removed(Node *p_node) {
 void EditorSelection::add_node(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	ERR_FAIL_COND(!p_node->is_inside_tree());
-	if (selection.has(p_node)) {
+	ObjectID nid = p_node->get_instance_id();
+	if (selection.has(nid)) {
 		return;
 	}
 
@@ -1240,30 +1251,32 @@ void EditorSelection::add_node(Node *p_node) {
 			break;
 		}
 	}
-	selection[p_node] = meta;
+	selection[nid] = meta;
 
 	p_node->connect(SceneStringName(tree_exiting), callable_mp(this, &EditorSelection::_node_removed).bind(p_node), CONNECT_ONE_SHOT);
 }
 
 void EditorSelection::remove_node(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
-	if (!selection.has(p_node)) {
+	ObjectID nid = p_node->get_instance_id();
+	if (!selection.has(nid)) {
 		return;
 	}
 
 	changed = true;
 	node_list_changed = true;
-	Object *meta = selection[p_node];
-	if (meta) {
-		memdelete(meta);
-	}
-	selection.erase(p_node);
+	Object *meta = selection[nid];
+	memdelete_notnull(meta);
+	selection.erase(nid);
 
 	p_node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &EditorSelection::_node_removed));
 }
 
 bool EditorSelection::is_selected(Node *p_node) const {
-	return selection.has(p_node);
+	if (!p_node) {
+		return false;
+	}
+	return selection.has(p_node->get_instance_id());
 }
 
 void EditorSelection::_bind_methods() {
@@ -1292,12 +1305,15 @@ void EditorSelection::_update_node_list() {
 	// If the selection does not have the parent of the selected node, then add the node to the node list.
 	// However, if the parent is already selected, then adding this node is redundant as
 	// it is included with the parent, so skip it.
-	for (const KeyValue<Node *, Object *> &E : selection) {
-		Node *parent = E.key;
+	for (const KeyValue<ObjectID, Object *> &E : selection) {
+		Node *parent = ObjectDB::get_instance<Node>(E.key);
+		if (!parent) {
+			continue;
+		}
 		parent = parent->get_parent();
 		bool skip = false;
 		while (parent) {
-			if (selection.has(parent)) {
+			if (selection.has(parent->get_instance_id())) {
 				skip = true;
 				break;
 			}
@@ -1334,8 +1350,11 @@ void EditorSelection::_emit_change() {
 TypedArray<Node> EditorSelection::get_top_selected_nodes() {
 	TypedArray<Node> ret;
 
-	for (const Node *E : top_selected_node_list) {
-		ret.push_back(E);
+	for (const ObjectID &nid : top_selected_node_list) {
+		Node *node = ObjectDB::get_instance<Node>(nid);
+		if (node) {
+			ret.push_back(node);
+		}
 	}
 
 	return ret;
@@ -1344,26 +1363,39 @@ TypedArray<Node> EditorSelection::get_top_selected_nodes() {
 TypedArray<Node> EditorSelection::get_selected_nodes() {
 	TypedArray<Node> ret;
 
-	for (const KeyValue<Node *, Object *> &E : selection) {
-		ret.push_back(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : selection) {
+		Node *node = ObjectDB::get_instance<Node>(E.key);
+		if (node) {
+			ret.push_back(node);
+		}
 	}
 
 	return ret;
 }
 
-const List<Node *> &EditorSelection::get_top_selected_node_list() {
+List<Node *> EditorSelection::get_top_selected_node_list() {
 	if (changed) {
 		update();
 	} else {
 		_update_node_list();
 	}
-	return top_selected_node_list;
+	List<Node *> node_list;
+	for (const ObjectID &nid : top_selected_node_list) {
+		Node *node = ObjectDB::get_instance<Node>(nid);
+		if (node) {
+			node_list.push_back(node);
+		}
+	}
+	return node_list;
 }
 
 List<Node *> EditorSelection::get_full_selected_node_list() {
 	List<Node *> node_list;
-	for (const KeyValue<Node *, Object *> &E : selection) {
-		node_list.push_back(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : selection) {
+		Node *node = ObjectDB::get_instance<Node>(E.key);
+		if (node) {
+			node_list.push_back(node);
+		}
 	}
 
 	return node_list;
@@ -1371,7 +1403,10 @@ List<Node *> EditorSelection::get_full_selected_node_list() {
 
 void EditorSelection::clear() {
 	while (!selection.is_empty()) {
-		remove_node(selection.begin()->key);
+		Node *node = ObjectDB::get_instance<Node>(selection.begin()->key);
+		if (node) {
+			remove_node(node);
+		}
 	}
 
 	changed = true;

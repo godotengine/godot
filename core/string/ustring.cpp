@@ -35,6 +35,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Dictionary);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 
 #include "core/crypto/crypto_core.h"
+#include "core/io/ip_address.h"
 #include "core/math/color.h"
 #include "core/math/math_funcs.h"
 #include "core/object/object.h"
@@ -1644,16 +1645,16 @@ String String::hex_encode_buffer(const uint8_t *p_buffer, int p_len) {
 Vector<uint8_t> String::hex_decode() const {
 	ERR_FAIL_COND_V_MSG(length() % 2 != 0, Vector<uint8_t>(), "Hexadecimal string of uneven length.");
 
-#define HEX_TO_BYTE(m_output, m_index)                                                                                   \
-	uint8_t m_output;                                                                                                    \
-	c = operator[](m_index);                                                                                             \
-	if (is_digit(c)) {                                                                                                   \
-		m_output = c - '0';                                                                                              \
-	} else if (c >= 'a' && c <= 'f') {                                                                                   \
-		m_output = c - 'a' + 10;                                                                                         \
-	} else if (c >= 'A' && c <= 'F') {                                                                                   \
-		m_output = c - 'A' + 10;                                                                                         \
-	} else {                                                                                                             \
+#define HEX_TO_BYTE(m_output, m_index) \
+	uint8_t m_output; \
+	c = operator[](m_index); \
+	if (is_digit(c)) { \
+		m_output = c - '0'; \
+	} else if (c >= 'a' && c <= 'f') { \
+		m_output = c - 'a' + 10; \
+	} else if (c >= 'A' && c <= 'F') { \
+		m_output = c - 'A' + 10; \
+	} else { \
 		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Invalid hexadecimal character \"" + chr(c) + "\" at index " + m_index + "."); \
 	}
 
@@ -4189,6 +4190,9 @@ String String::simplify_path() const {
 		}
 	}
 	Vector<String> dirs = s.split("/", false);
+	bool absolute_path = is_absolute_path();
+
+	absolute_path = absolute_path && !begins_with("res://"); // FIXME: Some code (GLTF importer) rely on accessing files up from `res://`, this probably should be disabled in the future.
 
 	for (int i = 0; i < dirs.size(); i++) {
 		String d = dirs[i];
@@ -4200,6 +4204,9 @@ String String::simplify_path() const {
 				dirs.remove_at(i);
 				dirs.remove_at(i - 1);
 				i -= 2;
+			} else if (absolute_path && i == 0) {
+				dirs.remove_at(i);
+				i--;
 			}
 		}
 	}
@@ -4934,43 +4941,7 @@ String String::validate_filename() const {
 }
 
 bool String::is_valid_ip_address() const {
-	if (find_char(':') >= 0) {
-		Vector<String> ip = split(":");
-		for (int i = 0; i < ip.size(); i++) {
-			const String &n = ip[i];
-			if (n.is_empty()) {
-				continue;
-			}
-			if (n.is_valid_hex_number(false)) {
-				int64_t nint = n.hex_to_int();
-				if (nint < 0 || nint > 0xffff) {
-					return false;
-				}
-				continue;
-			}
-			if (!n.is_valid_ip_address()) {
-				return false;
-			}
-		}
-
-	} else {
-		Vector<String> ip = split(".");
-		if (ip.size() != 4) {
-			return false;
-		}
-		for (int i = 0; i < ip.size(); i++) {
-			const String &n = ip[i];
-			if (!n.is_valid_int()) {
-				return false;
-			}
-			int val = n.to_int();
-			if (val < 0 || val > 255) {
-				return false;
-			}
-		}
-	}
-
-	return true;
+	return IPAddress::is_valid_ip_address(*this);
 }
 
 bool String::is_resource_file() const {
@@ -5262,7 +5233,11 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					// Get basic number.
 					String str;
 					if (!as_unsigned) {
-						str = String::num_int64(Math::abs(value), base, capitalize);
+						if (value == INT64_MIN) { // INT64_MIN can't be represented as positive value.
+							str = String::num_int64(value, base, capitalize).trim_prefix("-");
+						} else {
+							str = String::num_int64(Math::abs(value), base, capitalize);
+						}
 					} else {
 						uint64_t uvalue = *((uint64_t *)&value);
 						// In unsigned hex, if the value fits in 32 bits, trim it down to that.

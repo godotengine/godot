@@ -36,6 +36,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
+#include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/storage/material_storage.h"
@@ -51,6 +52,7 @@ public:
 		SHADER_TYPE_PARTICLES,
 		SHADER_TYPE_SKY,
 		SHADER_TYPE_FOG,
+		SHADER_TYPE_TEXTURE_BLIT,
 		SHADER_TYPE_MAX
 	};
 
@@ -133,6 +135,53 @@ public:
 		bool is_valid() const;
 		bool is_null() const;
 	};
+
+	/* Texture Blit Shader */
+
+	struct TexBlitShaderData : public ShaderData {
+		bool valid;
+		RID version;
+
+		PipelineCacheRD pipelines[4];
+		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
+
+		Vector<uint32_t> ubo_offsets;
+		uint32_t ubo_size;
+
+		String code;
+
+		BlendMode blend_mode;
+
+		virtual void set_code(const String &p_Code);
+		virtual bool is_animated() const;
+		virtual bool casts_shadows() const;
+		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
+
+		TexBlitShaderData();
+		virtual ~TexBlitShaderData();
+	};
+
+	ShaderData *_create_tex_blit_shader_func();
+	static MaterialStorage::ShaderData *_create_tex_blit_shader_funcs() {
+		return get_singleton()->_create_tex_blit_shader_func();
+	}
+
+	struct TexBlitMaterialData : public MaterialData {
+		TexBlitShaderData *shader_data = nullptr;
+		RID uniform_set;
+		bool uniform_set_updated;
+
+		virtual void set_render_priority(int p_priority) {}
+		virtual void set_next_pass(RID p_pass) {}
+		virtual bool update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+		virtual ~TexBlitMaterialData();
+	};
+
+	MaterialData *_create_tex_blit_material_func(ShaderData *p_shader);
+	static MaterialStorage::MaterialData *_create_tex_blit_material_funcs(MaterialStorage::ShaderData *p_shader) {
+		return get_singleton()->_create_tex_blit_material_func(static_cast<TexBlitShaderData *>(p_shader));
+	}
 
 private:
 	static MaterialStorage *singleton;

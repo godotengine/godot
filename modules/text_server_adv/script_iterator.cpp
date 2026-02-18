@@ -35,6 +35,7 @@
 inline constexpr UChar32 ZERO_WIDTH_JOINER = 0x200d;
 inline constexpr UChar32 VARIATION_SELECTOR_15 = 0xfe0e;
 inline constexpr UChar32 VARIATION_SELECTOR_16 = 0xfe0f;
+inline constexpr UChar32 COMBINING_ENCLOSING_KEYCAP = 0x20e3;
 
 inline bool ScriptIterator::same_script(int32_t p_script_one, int32_t p_script_two) {
 	return p_script_one <= USCRIPT_INHERITED || p_script_two <= USCRIPT_INHERITED || p_script_one == p_script_two;
@@ -107,7 +108,7 @@ ScriptIterator::ScriptIterator(const String &p_string, int p_start, int p_length
 					emoji_stack[emoji_sp].start = script_end;
 					emoji_stack[emoji_sp].end = script_end;
 				}
-			} else if (emoji_run && ch != ZERO_WIDTH_JOINER && ch != VARIATION_SELECTOR_16 && !(u_hasBinaryProperty(ch, UCHAR_EXTENDED_PICTOGRAPHIC) && n != VARIATION_SELECTOR_15)) {
+			} else if (emoji_run && ch != ZERO_WIDTH_JOINER && ch != VARIATION_SELECTOR_16 && ch != COMBINING_ENCLOSING_KEYCAP && !(u_hasBinaryProperty(ch, UCHAR_EXTENDED_PICTOGRAPHIC) && n != VARIATION_SELECTOR_15)) {
 				emoji_run = false;
 				emoji_stack[emoji_sp].end = script_end;
 			}

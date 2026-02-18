@@ -37,6 +37,11 @@
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_context_driver.h"
 
+#if !defined(_MSC_VER) && !defined(__REQUIRED_RPCNDR_H_VERSION__)
+// Match current version used by MinGW, MSVC and Direct3D 12 headers use 500.
+#define __REQUIRED_RPCNDR_H_VERSION__ 475
+#endif // !defined(_MSC_VER) && !defined(__REQUIRED_RPCNDR_H_VERSION__)
+
 GODOT_GCC_WARNING_PUSH
 GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
 GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
@@ -50,6 +55,11 @@ GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
 GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
 GODOT_CLANG_WARNING_IGNORE("-Wswitch")
 
+#include <thirdparty/directx_headers/include/directx/d3dx12.h>
+
+GODOT_GCC_WARNING_POP
+GODOT_CLANG_WARNING_POP
+
 #if defined(AS)
 #undef AS
 #endif
@@ -58,26 +68,19 @@ GODOT_CLANG_WARNING_IGNORE("-Wswitch")
 #include <dcomp.h>
 #endif
 
-#include <d3dx12.h>
-#include <dxgi1_6.h>
-
 #include <wrl/client.h>
-
-GODOT_GCC_WARNING_POP
-GODOT_CLANG_WARNING_POP
-
-using Microsoft::WRL::ComPtr;
 
 #define ARRAY_SIZE(a) std_size(a)
 
 class RenderingContextDriverD3D12 : public RenderingContextDriver {
-	ComPtr<ID3D12DeviceFactory> device_factory;
-	ComPtr<IDXGIFactory2> dxgi_factory;
+	Microsoft::WRL::ComPtr<ID3D12DeviceFactory> device_factory;
+	Microsoft::WRL::ComPtr<IDXGIFactory2> dxgi_factory;
 	TightLocalVector<Device> driver_devices;
 	bool tearing_supported = false;
 
 	Error _init_device_factory();
 	Error _initialize_debug_layers();
+	Error _create_dxgi_factory();
 	Error _initialize_devices();
 
 public:
@@ -91,6 +94,15 @@ public:
 	virtual void surface_set_size(SurfaceID p_surface, uint32_t p_width, uint32_t p_height) override;
 	virtual void surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) override;
 	virtual DisplayServer::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) override;
+	virtual bool surface_get_hdr_output_enabled(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) override;
+	virtual float surface_get_hdr_output_reference_luminance(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_output_max_luminance(SurfaceID p_surface, float p_max_luminance) override;
+	virtual float surface_get_hdr_output_max_luminance(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_output_linear_luminance_scale(SurfaceID p_surface, float p_linear_luminance_scale) override;
+	virtual float surface_get_hdr_output_linear_luminance_scale(SurfaceID p_surface) const override;
+	virtual float surface_get_hdr_output_max_value(SurfaceID p_surface) const override;
 	virtual uint32_t surface_get_width(SurfaceID p_surface) const override;
 	virtual uint32_t surface_get_height(SurfaceID p_surface) const override;
 	virtual void surface_set_needs_resize(SurfaceID p_surface, bool p_needs_resize) override;
@@ -110,10 +122,19 @@ public:
 		uint32_t height = 0;
 		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
 		bool needs_resize = false;
+
+		bool hdr_output = false;
+		// BT.2408 recommendation of 203 nits for HDR Reference White, rounded to 200
+		// to be a more pleasant player-facing value. This value is used by Steam
+		// Deck and other Windows emulation that does not provide an SDRWhiteLevel.
+		float hdr_reference_luminance = 200.0f;
+		float hdr_max_luminance = 1000.0f;
+		float hdr_linear_luminance_scale = 80.0f;
+
 #ifdef DCOMP_ENABLED
-		ComPtr<IDCompositionDevice> composition_device;
-		ComPtr<IDCompositionTarget> composition_target;
-		ComPtr<IDCompositionVisual> composition_visual;
+		Microsoft::WRL::ComPtr<IDCompositionDevice> composition_device;
+		Microsoft::WRL::ComPtr<IDCompositionTarget> composition_target;
+		Microsoft::WRL::ComPtr<IDCompositionVisual> composition_visual;
 #endif
 	};
 
@@ -125,7 +146,7 @@ public:
 
 	IDXGIAdapter1 *create_adapter(uint32_t p_adapter_index) const;
 	ID3D12DeviceFactory *device_factory_get() const;
-	IDXGIFactory2 *dxgi_factory_get() const;
+	IDXGIFactory2 *dxgi_factory_get();
 	bool get_tearing_supported() const;
 	bool use_validation_layers() const;
 

@@ -100,8 +100,26 @@ bool RenderingLightCuller::_prepare_light(const RendererSceneCull::Instance &p_i
 			break;
 		case RS::LIGHT_DIRECTIONAL:
 			lsource.type = LightSource::ST_DIRECTIONAL;
-			// Could deal with a max directional shadow range here? NYI
-			// LIGHT_PARAM_SHADOW_MAX_DISTANCE
+
+			lsource.range = RSG::light_storage->light_get_param(p_instance.base, RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
+			switch (RSG::light_storage->light_directional_get_shadow_mode(p_instance.base)) {
+				case RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL:
+					lsource.cascade_count = 1;
+					break;
+				case RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS:
+					lsource.cascade_count = 2;
+					break;
+				case RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS:
+					lsource.cascade_count = 4;
+					break;
+				default:
+					ERR_FAIL_V_MSG(false, "Only directional lights with 1, 2, or 4 shadow cascades are supported.");
+					break;
+			}
+			lsource.cascade_splits[0] = RSG::light_storage->light_get_param(p_instance.base, RS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET);
+			lsource.cascade_splits[1] = RSG::light_storage->light_get_param(p_instance.base, RS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET);
+			lsource.cascade_splits[2] = RSG::light_storage->light_get_param(p_instance.base, RS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET);
+			lsource.blend_splits = RSG::light_storage->light_directional_get_blend_splits(p_instance.base);
 			break;
 	}
 
@@ -109,11 +127,84 @@ bool RenderingLightCuller::_prepare_light(const RendererSceneCull::Instance &p_i
 	lsource.dir = -p_instance.transform.basis.get_column(2);
 	lsource.dir.normalize();
 
-	bool visible;
+	// In reality there's always going to be at least one cascade, but the compiler can't know that.
+	// If SOMEHOW there's actually 0 cascades though, I suppose there isn't going to be anything visible after all.
+	bool visible = false;
 	if (p_directional_light_id == -1) {
-		visible = _add_light_camera_planes(data.regular_cull_planes, lsource);
+		visible = _add_light_camera_planes(data.regular_cull_planes, lsource, { &data.frustum_planes[0], data.frustum_points });
 	} else {
-		visible = _add_light_camera_planes(data.directional_cull_planes[p_directional_light_id], lsource);
+		int used_planes = 1 + lsource.cascade_count; // 2 for ortho (near+far), 3 for pssm2 (near+mid+far), 5 for pssm4 (near+3mids+far).
+		Plane boundary_planes[5];
+		{
+			constexpr const int MAX_PLANES = 5;
+			real_t plane_distances[MAX_PLANES] = {
+				data.camera_projection.get_z_near(),
+				lsource.cascade_splits[0] * lsource.range,
+				lsource.cascade_splits[1] * lsource.range,
+				lsource.cascade_splits[2] * lsource.range,
+				lsource.range,
+			};
+			//If not 4 cascades, replace last used cascade plane distance with max shadow range (shadow far plane distance).
+			plane_distances[used_planes - 1] = lsource.range;
+#ifdef LIGHT_CULLER_DEBUG_LOGGING
+			if (is_logging()) {
+				print_line("cascade split planes (first " + itos(used_planes) + " used): " +
+						String(Variant(plane_distances[0])) + "m, " +
+						String(Variant(plane_distances[1])) + "m, " +
+						String(Variant(plane_distances[2])) + "m, " +
+						String(Variant(plane_distances[3])) + "m, " +
+						String(Variant(plane_distances[4])) + "m");
+			}
+#endif
+			Vector3 camera_normal = data.camera_transform.basis.xform(Vector3(0, 0, 1)).normalized();
+			for (int i = 0; i < used_planes; i++) {
+				real_t plane_distance = plane_distances[i];
+
+				//Plane compute
+				boundary_planes[i] = Plane(
+						camera_normal,
+						data.camera_transform.origin + camera_normal * -plane_distance);
+			}
+		}
+
+		for (int i = 0; i < lsource.cascade_count; i++) {
+			/*
+			enum PlaneOrder {
+				PLANE_NEAR,
+				PLANE_FAR,
+				PLANE_LEFT,
+				PLANE_TOP,
+				PLANE_RIGHT,
+				PLANE_BOTTOM,
+				PLANE_TOTAL,
+			};
+			*/
+			Plane cull_planes[6] = {
+				boundary_planes[MAX(i - (lsource.blend_splits ? 1 : 0), 0)],
+				Plane(-boundary_planes[i + 1].normal, -boundary_planes[i + 1].d), // Normal flip to ensure far is outward-facing.
+				data.frustum_planes[2],
+				data.frustum_planes[3],
+				data.frustum_planes[4],
+				data.frustum_planes[5],
+			};
+
+#ifdef LIGHT_CULLER_DEBUG_LOGGING
+			if (is_logging()) {
+				for (int p = 0; p < 6; p++) {
+					print_line("cascade " + itos(i) + " plane " + itos(p) + " : " + String(cull_planes[p]));
+				}
+			}
+#endif
+
+			// Frustum point calculation
+			Vector3 frustum_points[8];
+			bool success = create_frustum_points(cull_planes, frustum_points);
+			ERR_FAIL_COND_V(!success, false);
+
+			// Replace frustum arguments with cascade's.
+			LightCullPlanes &destination = data.directional_cull_planes[p_directional_light_id].planes[i];
+			visible = _add_light_camera_planes(destination, lsource, { cull_planes, frustum_points });
+		}
 	}
 
 	if (data.light_culling_active) {
@@ -122,14 +213,14 @@ bool RenderingLightCuller::_prepare_light(const RendererSceneCull::Instance &p_i
 	return true;
 }
 
-bool RenderingLightCuller::cull_directional_light(const RendererSceneCull::InstanceBounds &p_bound, int32_t p_directional_light_id) {
+bool RenderingLightCuller::cull_directional_light(const RendererSceneCull::InstanceBounds &p_bound, int32_t p_directional_light_id, int32_t p_cascade) {
 	if (!data.is_active() || !is_caster_culling_active()) {
 		return true;
 	}
 
 	ERR_FAIL_INDEX_V(p_directional_light_id, (int32_t)data.directional_cull_planes.size(), true);
 
-	LightCullPlanes &cull_planes = data.directional_cull_planes[p_directional_light_id];
+	LightCullPlanes &cull_planes = data.directional_cull_planes[p_directional_light_id].planes[p_cascade];
 
 	Vector3 mins = Vector3(p_bound.bounds[0], p_bound.bounds[1], p_bound.bounds[2]);
 	Vector3 maxs = Vector3(p_bound.bounds[3], p_bound.bounds[4], p_bound.bounds[5]);
@@ -228,18 +319,20 @@ void RenderingLightCuller::LightCullPlanes::add_cull_plane(const Plane &p) {
 
 // Directional lights are different to points, as the origin is infinitely in the distance, so the plane third
 // points are derived differently.
-bool RenderingLightCuller::add_light_camera_planes_directional(LightCullPlanes &r_cull_planes, const LightSource &p_light_source) {
+bool RenderingLightCuller::add_light_camera_planes_directional(LightCullPlanes &r_cull_planes, const LightSource &p_light_source, const CullFrustumData &p_cull_frustum) {
 	uint32_t lookup = 0;
 	r_cull_planes.num_cull_planes = 0;
 
+	const Plane *const cull_frustum_planes = p_cull_frustum.frustum_planes;
+
 	// Directional light, we will use dot against the light direction to determine back facing planes.
 	for (int n = 0; n < 6; n++) {
-		float dot = data.frustum_planes[n].normal.dot(p_light_source.dir);
+		float dot = cull_frustum_planes[n].normal.dot(p_light_source.dir);
 		if (dot > 0.0f) {
 			lookup |= 1 << n;
 
 			// Add backfacing camera frustum planes.
-			r_cull_planes.add_cull_plane(data.frustum_planes[n]);
+			r_cull_planes.add_cull_plane(cull_frustum_planes[n]);
 		}
 	}
 
@@ -252,8 +345,8 @@ bool RenderingLightCuller::add_light_camera_planes_directional(LightCullPlanes &
 	// Should never happen with directional light?? This may be able to be removed.
 	if (lookup == 63) {
 		r_cull_planes.num_cull_planes = 0;
-		for (int n = 0; n < data.frustum_planes.size(); n++) {
-			r_cull_planes.add_cull_plane(data.frustum_planes[n]);
+		for (int n = 0; n < 6; n++) {
+			r_cull_planes.add_cull_plane(cull_frustum_planes[n]);
 		}
 
 		return true;
@@ -270,11 +363,14 @@ bool RenderingLightCuller::add_light_camera_planes_directional(LightCullPlanes &
 	int n_edges = data.LUT_entry_sizes[lookup] - 1;
 #endif
 
+	const Vector3 *const frustum_points = p_cull_frustum.frustum_points;
+
 	for (int e = 0; e < n_edges; e++) {
 		int i0 = entry[e];
 		int i1 = entry[e + 1];
-		const Vector3 &pt0 = data.frustum_points[i0];
-		const Vector3 &pt1 = data.frustum_points[i1];
+
+		const Vector3 &pt0 = frustum_points[i0];
+		const Vector3 &pt1 = frustum_points[i1];
 
 		// Create a third point from the light direction.
 		Vector3 pt2 = pt0 - p_light_source.dir;
@@ -291,8 +387,8 @@ bool RenderingLightCuller::add_light_camera_planes_directional(LightCullPlanes &
 		int i0 = entry[n_edges]; // Last.
 		int i1 = entry[0]; // First.
 
-		const Vector3 &pt0 = data.frustum_points[i0];
-		const Vector3 &pt1 = data.frustum_points[i1];
+		const Vector3 &pt0 = frustum_points[i0];
+		const Vector3 &pt1 = frustum_points[i1];
 
 		// Create a third point from the light direction.
 		Vector3 pt2 = pt0 - p_light_source.dir;
@@ -313,20 +409,19 @@ bool RenderingLightCuller::add_light_camera_planes_directional(LightCullPlanes &
 	return true;
 }
 
-bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_planes, const LightSource &p_light_source) {
+bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_planes, const LightSource &p_light_source, const CullFrustumData &p_cull_frustum) {
 	if (!data.is_active()) {
 		return true;
 	}
 
-	// We should have called prepare_camera before this.
-	ERR_FAIL_COND_V(data.frustum_planes.size() != 6, true);
+	const Plane *const cull_frustum_planes = p_cull_frustum.frustum_planes;
 
 	switch (p_light_source.type) {
 		case LightSource::ST_SPOTLIGHT:
 		case LightSource::ST_OMNI:
 			break;
 		case LightSource::ST_DIRECTIONAL:
-			return add_light_camera_planes_directional(r_cull_planes, p_light_source);
+			return add_light_camera_planes_directional(r_cull_planes, p_light_source, p_cull_frustum);
 			break;
 		default:
 			return false; // not yet supported
@@ -352,12 +447,12 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 	// OMNIS
 	if (p_light_source.type == LightSource::ST_OMNI) {
 		for (int n = 0; n < 6; n++) {
-			float dist = data.frustum_planes[n].distance_to(p_light_source.pos);
+			float dist = cull_frustum_planes[n].distance_to(p_light_source.pos);
 			if (dist < 0.0f) {
 				lookup |= 1 << n;
 
 				// Add backfacing camera frustum planes.
-				r_cull_planes.add_cull_plane(data.frustum_planes[n]);
+				r_cull_planes.add_cull_plane(cull_frustum_planes[n]);
 			} else {
 				// Is the light out of range?
 				// This is one of the tests. If the point source is more than range distance from a frustum plane, it can't
@@ -381,13 +476,13 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 		float end_cone_radius = radius_at_dist_one * p_light_source.range;
 
 		for (int n = 0; n < 6; n++) {
-			float dist = data.frustum_planes[n].distance_to(p_light_source.pos);
+			float dist = cull_frustum_planes[n].distance_to(p_light_source.pos);
 			if (dist < 0.0f) {
 				// Either the plane is backfacing or we are inside the frustum.
 				lookup |= 1 << n;
 
 				// Add backfacing camera frustum planes.
-				r_cull_planes.add_cull_plane(data.frustum_planes[n]);
+				r_cull_planes.add_cull_plane(cull_frustum_planes[n]);
 			} else {
 				// The light is in front of the plane.
 
@@ -402,7 +497,7 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 				// If the cone end point is further than the maximum possible distance to the plane
 				// we can guarantee that the cone does not cross the plane, and hence the cone
 				// is outside the frustum.
-				float dist_end = data.frustum_planes[n].distance_to(pos_end);
+				float dist_end = cull_frustum_planes[n].distance_to(pos_end);
 
 				if (dist_end >= end_cone_radius) {
 					data.out_of_range = true;
@@ -420,8 +515,8 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 	// render shadow casters outside the frustum as shadows can never re-enter the frustum.
 	if (lookup == 63) {
 		r_cull_planes.num_cull_planes = 0;
-		for (int n = 0; n < data.frustum_planes.size(); n++) {
-			r_cull_planes.add_cull_plane(data.frustum_planes[n]);
+		for (int n = 0; n < 6; n++) {
+			r_cull_planes.add_cull_plane(cull_frustum_planes[n]);
 		}
 
 		return true;
@@ -431,13 +526,15 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 	uint8_t *entry = &data.LUT_entries[lookup][0];
 	int n_edges = data.LUT_entry_sizes[lookup] - 1;
 
+	const Vector3 *const frustum_points = p_cull_frustum.frustum_points;
+
 	const Vector3 &pt2 = p_light_source.pos;
 
 	for (int e = 0; e < n_edges; e++) {
 		int i0 = entry[e];
 		int i1 = entry[e + 1];
-		const Vector3 &pt0 = data.frustum_points[i0];
-		const Vector3 &pt1 = data.frustum_points[i1];
+		const Vector3 &pt0 = frustum_points[i0];
+		const Vector3 &pt1 = frustum_points[i1];
 
 		if (!_is_colinear_tri(pt0, pt1, pt2)) {
 			// Create plane from 3 points.
@@ -451,8 +548,8 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 		int i0 = entry[n_edges]; // Last.
 		int i1 = entry[0]; // First.
 
-		const Vector3 &pt0 = data.frustum_points[i0];
-		const Vector3 &pt1 = data.frustum_points[i1];
+		const Vector3 &pt0 = frustum_points[i0];
+		const Vector3 &pt1 = frustum_points[i1];
 
 		if (!_is_colinear_tri(pt0, pt1, pt2)) {
 			// Create plane from 3 points.
@@ -493,6 +590,9 @@ bool RenderingLightCuller::prepare_camera(const Transform3D &p_cam_transform, co
 	if (!data.is_active()) {
 		return false;
 	}
+	// These are needed later to build per-cascade cull frustums for directional lights.
+	data.camera_transform = p_cam_transform;
+	data.camera_projection = p_cam_matrix;
 
 	// Get the camera frustum planes in world space.
 	data.frustum_planes = p_cam_matrix.get_projection_planes(p_cam_transform);
@@ -524,6 +624,10 @@ bool RenderingLightCuller::prepare_camera(const Transform3D &p_cam_transform, co
 	}
 #endif
 
+	return create_frustum_points(&data.frustum_planes[0], data.frustum_points);
+}
+
+bool RenderingLightCuller::create_frustum_points(const Plane *p_frustum_planes, Vector3 *r_result) const {
 	// We want to calculate the frustum corners in a specific order.
 	const Projection::Planes intersections[8][3] = {
 		{ Projection::PLANE_FAR, Projection::PLANE_LEFT, Projection::PLANE_TOP },
@@ -538,18 +642,17 @@ bool RenderingLightCuller::prepare_camera(const Transform3D &p_cam_transform, co
 
 	for (int i = 0; i < 8; i++) {
 		// 3 plane intersection, gives us a point.
-		bool res = data.frustum_planes[intersections[i][0]].intersect_3(data.frustum_planes[intersections[i][1]], data.frustum_planes[intersections[i][2]], &data.frustum_points[i]);
+		bool res = p_frustum_planes[intersections[i][0]].intersect_3(p_frustum_planes[intersections[i][1]], p_frustum_planes[intersections[i][2]], &r_result[i]);
 
 		// What happens with a zero frustum? NYI - deal with this.
 		ERR_FAIL_COND_V(!res, false);
 
 #ifdef LIGHT_CULLER_DEBUG_LOGGING
 		if (is_logging()) {
-			print_line("point " + itos(i) + " -> " + String(data.frustum_points[i]));
+			print_line("point " + itos(i) + " -> " + String(result[i]));
 		}
 #endif
 	}
-
 	return true;
 }
 
@@ -932,11 +1035,11 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				// LSM_FP_NEAR
 				{
 						// LSM_FP_NEAR
-						PT_NEAR_LEFT_TOP, PT_NEAR_RIGHT_TOP, // Invalid combination.
+						PT_NEAR_LEFT_TOP, PT_NEAR_RIGHT_TOP // Invalid combination.
 				},
 				{
 						// LSM_FP_FAR
-						PT_FAR_RIGHT_TOP, PT_FAR_LEFT_TOP, // Invalid combination.
+						PT_FAR_RIGHT_TOP, PT_FAR_LEFT_TOP // Invalid combination.
 				},
 				{
 						// LSM_FP_LEFT
@@ -964,11 +1067,11 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				// LSM_FP_FAR
 				{
 						// LSM_FP_NEAR
-						PT_FAR_LEFT_TOP, PT_FAR_RIGHT_TOP, // Invalid combination.
+						PT_FAR_LEFT_TOP, PT_FAR_RIGHT_TOP // Invalid combination.
 				},
 				{
 						// LSM_FP_FAR
-						PT_FAR_RIGHT_TOP, PT_FAR_LEFT_TOP, // Invalid combination.
+						PT_FAR_RIGHT_TOP, PT_FAR_LEFT_TOP // Invalid combination.
 				},
 				{
 						// LSM_FP_LEFT
@@ -1006,7 +1109,7 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				},
 				{
 						// LSM_FP_LEFT
-						PT_FAR_LEFT_BOTTOM, PT_FAR_LEFT_BOTTOM, // Invalid combination.
+						PT_FAR_LEFT_BOTTOM, PT_FAR_LEFT_BOTTOM // Invalid combination.
 				},
 				{
 						// LSM_FP_TOP
@@ -1015,7 +1118,7 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				},
 				{
 						// LSM_FP_RIGHT
-						PT_FAR_LEFT_BOTTOM, PT_FAR_LEFT_BOTTOM, // Invalid combination.
+						PT_FAR_LEFT_BOTTOM, PT_FAR_LEFT_BOTTOM // Invalid combination.
 				},
 				{
 						// LSM_FP_BOTTOM
@@ -1043,7 +1146,7 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				},
 				{
 						// LSM_FP_TOP
-						PT_NEAR_LEFT_TOP, PT_FAR_LEFT_TOP, // Invalid combination.
+						PT_NEAR_LEFT_TOP, PT_FAR_LEFT_TOP // Invalid combination.
 				},
 				{
 						// LSM_FP_RIGHT
@@ -1052,7 +1155,7 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				},
 				{
 						// LSM_FP_BOTTOM
-						PT_FAR_LEFT_BOTTOM, PT_NEAR_LEFT_BOTTOM, // Invalid combination.
+						PT_FAR_LEFT_BOTTOM, PT_NEAR_LEFT_BOTTOM // Invalid combination.
 				},
 		},
 
@@ -1070,7 +1173,7 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				},
 				{
 						// LSM_FP_LEFT
-						PT_FAR_RIGHT_BOTTOM, PT_FAR_RIGHT_BOTTOM, // Invalid combination.
+						PT_FAR_RIGHT_BOTTOM, PT_FAR_RIGHT_BOTTOM // Invalid combination.
 				},
 				{
 						// LSM_FP_TOP
@@ -1079,7 +1182,7 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				},
 				{
 						// LSM_FP_RIGHT
-						PT_FAR_RIGHT_BOTTOM, PT_FAR_RIGHT_BOTTOM, // Invalid combination.
+						PT_FAR_RIGHT_BOTTOM, PT_FAR_RIGHT_BOTTOM // Invalid combination.
 				},
 				{
 						// LSM_FP_BOTTOM
@@ -1116,7 +1219,7 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				},
 				{
 						// LSM_FP_TOP
-						PT_NEAR_LEFT_BOTTOM, PT_FAR_LEFT_BOTTOM, // Invalid combination.
+						PT_NEAR_LEFT_BOTTOM, PT_FAR_LEFT_BOTTOM // Invalid combination.
 				},
 				{
 						// LSM_FP_RIGHT
@@ -1125,7 +1228,7 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 				},
 				{
 						// LSM_FP_BOTTOM
-						PT_FAR_LEFT_BOTTOM, PT_NEAR_LEFT_BOTTOM, // Invalid combination.
+						PT_FAR_LEFT_BOTTOM, PT_NEAR_LEFT_BOTTOM // Invalid combination.
 				},
 		},
 

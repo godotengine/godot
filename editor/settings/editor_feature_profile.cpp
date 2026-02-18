@@ -1028,6 +1028,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	property_list->set_hide_folding(true);
 	property_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	property_list->connect("item_edited", callable_mp(this, &EditorFeatureProfileManager::_property_item_edited), CONNECT_DEFERRED);
+	property_list->set_theme_type_variation("TreeSecondary");
 	// It will be displayed once the user creates or chooses a profile.
 	property_list_vbc->hide();
 

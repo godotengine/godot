@@ -189,7 +189,7 @@ void GroupSettingsEditor::_group_name_text_changed(const String &p_name) {
 void GroupSettingsEditor::_modify_references(const StringName &p_name, const StringName &p_new_name, bool p_is_rename) {
 	HashSet<String> scenes;
 
-	HashMap<StringName, HashSet<StringName>> scene_groups_cache = ProjectSettings::get_singleton()->get_scene_groups_cache();
+	HashMap<StringName, HashSet<StringName>> scene_groups_cache(ProjectSettings::get_singleton()->get_scene_groups_cache());
 	for (const KeyValue<StringName, HashSet<StringName>> &E : scene_groups_cache) {
 		if (E.value.has(p_name)) {
 			scenes.insert(E.key);
@@ -523,12 +523,19 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	add_button->connect(SceneStringName(pressed), callable_mp(this, &GroupSettingsEditor::_add_group));
 	hbc->add_child(add_button);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(mc);
+
 	tree = memnew(Tree);
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_hide_root(true);
 	tree->set_select_mode(Tree::SELECT_SINGLE);
 	tree->set_allow_reselect(true);
 
+	tree->set_theme_type_variation("TreeTable");
+	tree->set_hide_folding(true);
 	tree->set_columns(3);
 	tree->set_column_titles_visible(true);
 
@@ -539,9 +546,8 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	tree->connect("item_edited", callable_mp(this, &GroupSettingsEditor::_item_edited));
 	tree->connect("item_activated", callable_mp(this, &GroupSettingsEditor::_show_rename_dialog));
 	tree->connect("button_clicked", callable_mp(this, &GroupSettingsEditor::_item_button_pressed));
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	add_child(tree, true);
+	mc->add_child(tree, true);
 
 	message = memnew(AcceptDialog);
 	add_child(message);

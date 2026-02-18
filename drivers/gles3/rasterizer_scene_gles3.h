@@ -79,6 +79,8 @@ enum SceneUniformLocation {
 	SCENE_POSITIONAL_SHADOW_UNIFORM_LOCATION,
 	SCENE_DIRECTIONAL_SHADOW_UNIFORM_LOCATION,
 	SCENE_EMPTY2, // Unused, put here to avoid conflicts with SKY_MULTIVIEW_UNIFORM_LOCATION.
+	SCENE_PREV_DATA_UNIFORM_LOCATION,
+	SCENE_PREV_MULTIVIEW_UNIFORM_LOCATION,
 };
 
 enum SkyUniformLocation {
@@ -94,6 +96,8 @@ enum SkyUniformLocation {
 	SKY_EMPTY6, // Unused, put here to avoid conflicts with SCENE_POSITIONAL_SHADOW_UNIFORM_LOCATION.
 	SKY_EMPTY7, // Unused, put here to avoid conflicts with SCENE_DIRECTIONAL_SHADOW_UNIFORM_LOCATION.
 	SKY_MULTIVIEW_UNIFORM_LOCATION,
+	SKY_EMPTY8, // Unused, put here to avoid conflicts with SCENE_PREV_DATA_UNIFORM_LOCATION.
+	SKY_EMPTY9, // Unused, put here to avoid conflicts with SCENE_PREV_MULTIVIEW_UNIFORM_LOCATION.
 };
 
 struct RenderDataGLES3 {
@@ -349,13 +353,17 @@ private:
 		virtual void set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) override;
 		virtual void set_lightmap_capture(const Color *p_sh9) override;
 
-		virtual void pair_light_instances(const RID *p_light_instances, uint32_t p_light_instance_count) override;
+		virtual void clear_light_instances() override;
+		virtual void pair_light_instance(const RID p_light_instance, RS::LightType light_type, uint32_t placement_idx) override;
 		virtual void pair_reflection_probe_instances(const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) override;
 		virtual void pair_decal_instances(const RID *p_decal_instances, uint32_t p_decal_instance_count) override {}
 		virtual void pair_voxel_gi_instances(const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) override {}
 
 		virtual void set_softshadow_projector_pairing(bool p_softshadow, bool p_projector) override {}
 	};
+
+	virtual uint32_t get_max_lights_total() override;
+	virtual uint32_t get_max_lights_per_mesh() override;
 
 	enum {
 		INSTANCE_DATA_FLAGS_DYNAMIC = 1 << 3,
@@ -449,26 +457,28 @@ private:
 
 		struct TonemapUBO {
 			float exposure = 1.0;
-			float white = 1.0;
 			int32_t tonemapper = 0;
 			int32_t pad = 0;
-
 			int32_t pad2 = 0;
+			float tonemapper_params[4] = { 0.0, 0.0, 0.0, 0.0 };
 			float brightness = 1.0;
 			float contrast = 1.0;
 			float saturation = 1.0;
+			int32_t pad3 = 0;
 		};
 		static_assert(sizeof(TonemapUBO) % 16 == 0, "Tonemap UBO size must be a multiple of 16 bytes");
 
 		UBO data;
 		UBO prev_data;
 		GLuint ubo_buffer = 0;
+		GLuint prev_ubo_buffer = 0;
 		MultiviewUBO multiview_data;
 		MultiviewUBO prev_multiview_data;
 		GLuint multiview_buffer = 0;
+		GLuint prev_multiview_buffer = 0;
 		GLuint tonemap_buffer = 0;
 
-		bool is_prev_data_stored = false;
+		int prev_data_state = 0; // 0 = Motion vectors not used, 1 = use data (first frame only), 2 = use previous data
 
 		bool used_depth_prepass = false;
 
@@ -717,6 +727,8 @@ private:
 
 	RenderList render_list[RENDER_LIST_MAX];
 
+	void _update_scene_ubo(GLuint &p_ubo_buffer, GLuint p_index, uint32_t p_size, const void *p_source_data, String p_name = "");
+
 	void _setup_lights(const RenderDataGLES3 *p_render_data, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_omni_light_count, uint32_t &r_spot_light_count, uint32_t &r_directional_shadow_count);
 	void _setup_environment(const RenderDataGLES3 *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_pancake_shadows, float p_shadow_bias = 0.0);
 	void _fill_render_list(RenderListType p_render_list, const RenderDataGLES3 *p_render_data, PassMode p_pass_mode, bool p_append = false);
@@ -913,7 +925,7 @@ public:
 
 	void voxel_gi_set_quality(RS::VoxelGIQuality) override;
 
-	void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
+	void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, float p_window_output_max_value, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
 	void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
 	void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<RenderGeometryInstance *> &p_instances) override;
 

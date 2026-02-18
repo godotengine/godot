@@ -45,6 +45,7 @@
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
 #include <mach/host_info.h>
+#include <mach/mach.h>
 #include <mach/mach_host.h>
 #include <mach/mach_time.h>
 #include <sys/sysctl.h>
@@ -409,14 +410,8 @@ Dictionary OS_Unix::get_memory_info() const {
 	meminfo["stack"] = -1;
 
 #if defined(__APPLE__)
-	int pagesize = 0;
-	size_t len = sizeof(pagesize);
-	if (sysctlbyname("vm.pagesize", &pagesize, &len, nullptr, 0) < 0) {
-		ERR_PRINT(vformat("Could not get vm.pagesize, error code: %d - %s", errno, strerror(errno)));
-	}
-
 	int64_t phy_mem = 0;
-	len = sizeof(phy_mem);
+	size_t len = sizeof(phy_mem);
 	if (sysctlbyname("hw.memsize", &phy_mem, &len, nullptr, 0) < 0) {
 		ERR_PRINT(vformat("Could not get hw.memsize, error code: %d - %s", errno, strerror(errno)));
 	}
@@ -426,21 +421,30 @@ Dictionary OS_Unix::get_memory_info() const {
 	if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&vmstat, &count) != KERN_SUCCESS) {
 		ERR_PRINT("Could not get host vm statistics.");
 	}
-	struct xsw_usage swap_used;
+	int64_t used = (vmstat.active_count + vmstat.inactive_count + vmstat.speculative_count + vmstat.wire_count + vmstat.compressor_page_count - vmstat.purgeable_count - vmstat.external_page_count) * (int64_t)vm_page_size;
+
+#if !defined(APPLE_EMBEDDED_ENABLED)
+	struct xsw_usage swap_used = {};
 	len = sizeof(swap_used);
 	if (sysctlbyname("vm.swapusage", &swap_used, &len, nullptr, 0) < 0) {
 		ERR_PRINT(vformat("Could not get vm.swapusage, error code: %d - %s", errno, strerror(errno)));
 	}
+#endif
 
 	if (phy_mem != 0) {
 		meminfo["physical"] = phy_mem;
 	}
-	if (vmstat.free_count * (int64_t)pagesize != 0) {
-		meminfo["free"] = vmstat.free_count * (int64_t)pagesize;
+	if (used != 0) {
+		meminfo["free"] = phy_mem - used;
 	}
-	if (swap_used.xsu_avail + vmstat.free_count * (int64_t)pagesize != 0) {
-		meminfo["available"] = swap_used.xsu_avail + vmstat.free_count * (int64_t)pagesize;
+#if defined(APPLE_EMBEDDED_ENABLED)
+	meminfo["available"] = meminfo["free"];
+#else
+	if (swap_used.xsu_avail + (phy_mem - used) != 0) {
+		meminfo["available"] = swap_used.xsu_avail + (phy_mem - used);
 	}
+#endif
+
 #elif defined(__FreeBSD__)
 	int pagesize = 0;
 	size_t len = sizeof(pagesize);
@@ -707,23 +711,23 @@ PackedByteArray OS_Unix::string_to_multibyte(const String &p_encoding, const Str
 }
 
 Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking) {
-#define CLEAN_PIPES           \
-	if (pipe_in[0] >= 0) {    \
-		::close(pipe_in[0]);  \
-	}                         \
-	if (pipe_in[1] >= 0) {    \
-		::close(pipe_in[1]);  \
-	}                         \
-	if (pipe_out[0] >= 0) {   \
+#define CLEAN_PIPES \
+	if (pipe_in[0] >= 0) { \
+		::close(pipe_in[0]); \
+	} \
+	if (pipe_in[1] >= 0) { \
+		::close(pipe_in[1]); \
+	} \
+	if (pipe_out[0] >= 0) { \
 		::close(pipe_out[0]); \
-	}                         \
-	if (pipe_out[1] >= 0) {   \
+	} \
+	if (pipe_out[1] >= 0) { \
 		::close(pipe_out[1]); \
-	}                         \
-	if (pipe_err[0] >= 0) {   \
+	} \
+	if (pipe_err[0] >= 0) { \
 		::close(pipe_err[0]); \
-	}                         \
-	if (pipe_err[1] >= 0) {   \
+	} \
+	if (pipe_err[1] >= 0) { \
 		::close(pipe_err[1]); \
 	}
 
@@ -1054,7 +1058,7 @@ Error OS_Unix::open_dynamic_library(const String &p_path, void *&p_library_handl
 		path = get_executable_path().get_base_dir().path_join("../lib").path_join(p_path.get_file());
 	}
 
-	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
+	ERR_FAIL_COND_V_MSG(!FileAccess::exists(path), ERR_FILE_NOT_FOUND, vformat("Can't open dynamic library, file not found: '%s'.", p_path));
 
 	p_library_handle = dlopen(path.utf8().get_data(), GODOT_DLOPEN_MODE);
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));

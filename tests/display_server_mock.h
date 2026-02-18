@@ -32,8 +32,6 @@
 
 #include "servers/display/display_server_headless.h"
 
-#include "servers/rendering/dummy/rasterizer_dummy.h"
-
 // Specialized DisplayServer for unittests based on DisplayServerHeadless, that
 // additionally supports things like mouse enter/exit events and clipboard.
 class DisplayServerMock : public DisplayServerHeadless {
@@ -56,11 +54,7 @@ private:
 		return drivers;
 	}
 
-	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
-		r_error = OK;
-		RasterizerDummy::make_current();
-		return memnew(DisplayServerMock());
-	}
+	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 
 	void _set_mouse_position(const Point2i &p_position) {
 		if (mouse_position == p_position) {
@@ -105,19 +99,7 @@ public:
 	// The events will be delivered to Godot's Input-system.
 	// Mouse-events (Button & Motion) will additionally update the DisplayServer's mouse position.
 	// For Mouse motion events, the `relative`-property is set based on the distance to the previous mouse position.
-	void simulate_event(Ref<InputEvent> p_event) {
-		Ref<InputEvent> event = p_event;
-		Ref<InputEventMouse> me = p_event;
-		if (me.is_valid()) {
-			Ref<InputEventMouseMotion> mm = p_event;
-			if (mm.is_valid()) {
-				mm->set_relative(mm->get_position() - mouse_position);
-				event = mm;
-			}
-			_set_mouse_position(me->get_position());
-		}
-		Input::get_singleton()->parse_input_event(event);
-	}
+	void simulate_event(Ref<InputEvent> p_event);
 
 	// Returns the current cursor shape.
 	CursorShape get_cursor_shape() {

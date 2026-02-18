@@ -253,23 +253,23 @@ NavigationServer3D::NavigationServer3D() {
 
 #ifdef DEBUG_ENABLED
 #ifndef DISABLE_DEPRECATED
-#define MOVE_PROJECT_SETTING_1(m_old_setting, m_new_setting)                                                                             \
+#define MOVE_PROJECT_SETTING_1(m_old_setting, m_new_setting) \
 	if (!ProjectSettings::get_singleton()->has_setting(m_new_setting) && ProjectSettings::get_singleton()->has_setting(m_old_setting)) { \
-		Variant value = GLOBAL_GET(m_old_setting);                                                                                       \
-		ProjectSettings::get_singleton()->set_setting(m_new_setting, value);                                                             \
-		ProjectSettings::get_singleton()->clear(m_old_setting);                                                                          \
+		Variant value = GLOBAL_GET(m_old_setting); \
+		ProjectSettings::get_singleton()->set_setting(m_new_setting, value); \
+		ProjectSettings::get_singleton()->clear(m_old_setting); \
 	}
-#define MOVE_PROJECT_SETTING_2(m_old_setting, m_new_setting_1, m_new_setting_2)                                                                 \
+#define MOVE_PROJECT_SETTING_2(m_old_setting, m_new_setting_1, m_new_setting_2) \
 	if ((!ProjectSettings::get_singleton()->has_setting(m_new_setting_1) || !ProjectSettings::get_singleton()->has_setting(m_new_setting_2)) && \
-			ProjectSettings::get_singleton()->has_setting(m_old_setting)) {                                                                     \
-		Variant value = GLOBAL_GET(m_old_setting);                                                                                              \
-		if (!ProjectSettings::get_singleton()->has_setting(m_new_setting_1)) {                                                                  \
-			ProjectSettings::get_singleton()->set_setting(m_new_setting_1, value);                                                              \
-		}                                                                                                                                       \
-		if (!ProjectSettings::get_singleton()->has_setting(m_new_setting_2)) {                                                                  \
-			ProjectSettings::get_singleton()->set_setting(m_new_setting_2, value);                                                              \
-		}                                                                                                                                       \
-		ProjectSettings::get_singleton()->clear(m_old_setting);                                                                                 \
+			ProjectSettings::get_singleton()->has_setting(m_old_setting)) { \
+		Variant value = GLOBAL_GET(m_old_setting); \
+		if (!ProjectSettings::get_singleton()->has_setting(m_new_setting_1)) { \
+			ProjectSettings::get_singleton()->set_setting(m_new_setting_1, value); \
+		} \
+		if (!ProjectSettings::get_singleton()->has_setting(m_new_setting_2)) { \
+			ProjectSettings::get_singleton()->set_setting(m_new_setting_2, value); \
+		} \
+		ProjectSettings::get_singleton()->clear(m_old_setting); \
 	}
 	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/edge_connection_color", "debug/shapes/navigation/2d/edge_connection_color", "debug/shapes/navigation/3d/edge_connection_color");
 	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/geometry_edge_color", "debug/shapes/navigation/2d/geometry_edge_color", "debug/shapes/navigation/3d/geometry_edge_color");

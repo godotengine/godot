@@ -48,9 +48,6 @@ class AnimationNodeAnimation : public AnimationRootNode {
 	bool stretch_time_scale = true;
 	double start_offset = 0.0;
 
-	uint64_t last_version = 0;
-	bool skip = false;
-
 public:
 	enum PlayMode {
 		PLAY_MODE_FORWARD,
@@ -342,9 +339,6 @@ class AnimationNodeTransition : public AnimationNodeSync {
 	StringName current_index = PNAME("current_index");
 	StringName current_state = PNAME("current_state");
 	StringName transition_request = PNAME("transition_request");
-
-	StringName prev_frame_current = "pf_current";
-	StringName prev_frame_current_idx = "pf_current_idx";
 
 	double xfade_time = 0.0;
 	Ref<Curve> xfade_curve;

@@ -42,8 +42,10 @@
 #include "scene/gui/label.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/viewport.h"
+#include "scene/resources/blit_material.h"
 #include "scene/resources/canvas_item_material.h"
 #include "scene/resources/particle_process_material.h"
+#include "scene/resources/sky.h"
 
 // 3D.
 #include "scene/3d/camera_3d.h"
@@ -52,7 +54,6 @@
 
 Ref<ShaderMaterial> MaterialEditor::make_shader_material(const Ref<Material> &p_from, bool p_copy_params) {
 	ERR_FAIL_COND_V(p_from.is_null(), Ref<ShaderMaterial>());
-	ERR_FAIL_COND_V(!p_from->_is_initialized(), Ref<ShaderMaterial>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -151,6 +152,13 @@ void MaterialEditor::_update_rotation() {
 	t.basis.rotate(Vector3(0, 1, 0), -rot.y);
 	t.basis.rotate(Vector3(1, 0, 0), -rot.x);
 	rotation->set_transform(t);
+}
+
+void MaterialEditor::_project_settings_changed() {
+	const bool hdr_requested = GLOBAL_GET("display/window/hdr/request_hdr_output");
+	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
+	viewport->set_use_hdr_2d(use_hdr_2d || hdr_requested);
+	viewport_2d->set_use_hdr_2d(use_hdr_2d || hdr_requested);
 }
 
 void MaterialEditor::edit(Ref<Material> p_material, const Ref<Environment> &p_env) {
@@ -397,6 +405,9 @@ MaterialEditor::MaterialEditor() {
 
 	Vector2 stored_rot = EditorSettings::get_singleton()->get_project_metadata("inspector_options", "material_preview_rotation", Vector2());
 	_set_rotation(stored_rot.x, stored_rot.y);
+
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &MaterialEditor::_project_settings_changed));
+	_project_settings_changed();
 }
 
 ///////////////////////
@@ -497,5 +508,45 @@ bool CanvasItemMaterialConversionPlugin::handles(const Ref<Resource> &p_resource
 }
 
 Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+	ERR_FAIL_COND_V(!Object::cast_to<CanvasItemMaterial>(*p_resource) || !Object::cast_to<CanvasItemMaterial>(*p_resource)->_is_initialized(), Ref<CanvasItemMaterial>());
 	return MaterialEditor::make_shader_material(p_resource);
+}
+
+String BlitMaterialConversionPlugin::converts_to() const {
+	return "ShaderMaterial";
+}
+
+bool BlitMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+	Ref<BlitMaterial> mat = p_resource;
+	return mat.is_valid();
+}
+
+Ref<Resource> BlitMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+	Ref<BlitMaterial> mat = p_resource;
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
+
+	Ref<ShaderMaterial> smat;
+	smat.instantiate();
+
+	Ref<Shader> shader;
+	shader.instantiate();
+
+	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
+
+	shader->set_code(code);
+
+	smat->set_shader(shader);
+
+	List<PropertyInfo> params;
+	RS::get_singleton()->get_shader_parameter_list(mat->get_shader_rid(), &params);
+
+	for (const PropertyInfo &E : params) {
+		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
+		smat->set_shader_parameter(E.name, value);
+	}
+
+	smat->set_render_priority(mat->get_render_priority());
+	smat->set_local_to_scene(mat->is_local_to_scene());
+	smat->set_name(mat->get_name());
+	return smat;
 }

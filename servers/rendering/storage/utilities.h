@@ -148,15 +148,15 @@ public:
 
 	bool capturing_timestamps = false;
 
-#define TIMESTAMP_BEGIN()                               \
-	{                                                   \
-		if (RSG::utilities->capturing_timestamps)       \
+#define TIMESTAMP_BEGIN() \
+	{ \
+		if (RSG::utilities->capturing_timestamps) \
 			RSG::utilities->capture_timestamps_begin(); \
 	}
 
-#define RENDER_TIMESTAMP(m_text)                       \
-	{                                                  \
-		if (RSG::utilities->capturing_timestamps)      \
+#define RENDER_TIMESTAMP(m_text) \
+	{ \
+		if (RSG::utilities->capturing_timestamps) \
 			RSG::utilities->capture_timestamp(m_text); \
 	}
 
@@ -180,7 +180,7 @@ public:
 	virtual uint64_t get_rendering_info(RS::RenderingInfo p_info) = 0;
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
-	virtual RenderingDevice::DeviceType get_video_adapter_type() const = 0;
+	virtual RenderingDeviceEnums::DeviceType get_video_adapter_type() const = 0;
 	virtual String get_video_adapter_api_version() const = 0;
 
 	virtual Size2i get_maximum_viewport_size() const = 0;

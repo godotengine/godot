@@ -113,14 +113,14 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 	RS::EnvironmentAmbientSource ambient_source = environment_get_ambient_source(p_env);
 
 	bool use_ambient_light = false;
-	bool use_cube_map = false;
+	bool use_octmap = false;
 	if (ambient_source == RS::ENV_AMBIENT_SOURCE_BG && (environment_background == RS::ENV_BG_CLEAR_COLOR || environment_background == RS::ENV_BG_COLOR)) {
 		use_ambient_light = true;
 	} else {
-		use_cube_map = (ambient_source == RS::ENV_AMBIENT_SOURCE_BG && environment_background == RS::ENV_BG_SKY) || ambient_source == RS::ENV_AMBIENT_SOURCE_SKY;
-		use_ambient_light = use_cube_map || ambient_source == RS::ENV_AMBIENT_SOURCE_COLOR;
+		use_octmap = (ambient_source == RS::ENV_AMBIENT_SOURCE_BG && environment_background == RS::ENV_BG_SKY) || ambient_source == RS::ENV_AMBIENT_SOURCE_SKY;
+		use_ambient_light = use_octmap || ambient_source == RS::ENV_AMBIENT_SOURCE_COLOR;
 	}
-	use_cube_map = use_cube_map || (environment_background == RS::ENV_BG_SKY && environment_get_sky(p_env).is_valid());
+	use_octmap = use_octmap || (environment_background == RS::ENV_BG_SKY && environment_get_sky(p_env).is_valid());
 
 	Color ambient_color;
 	float ambient_color_sky_mix = 0.0;
@@ -134,7 +134,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 		ambient_color.b *= ambient_energy;
 	}
 
-	if (use_cube_map) {
+	if (use_octmap) {
 		Ref<Image> panorama = sky_bake_panorama(environment_get_sky(p_env), environment_get_bg_energy_multiplier(p_env), p_bake_irradiance, p_size);
 		if (use_ambient_light && panorama.is_valid()) {
 			for (int x = 0; x < p_size.width; x++) {
@@ -722,9 +722,26 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		tonemap.texture_size = Vector2i(color_size.x, color_size.y);
 
 		if (p_render_data->environment.is_valid()) {
+			// When we are using RGB10A2 render buffer format, our scene
+			// is limited to a maximum of 2.0. In this case we should limit
+			// the max white of tonemappers, specifically AgX which defaults
+			// to a high white value.
+			bool limit_agx_white = rb->get_base_data_format() == RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
+
+			// When using HDR 2D, we use the parent window's output max value.
+			// Otherwise, we're tonemapping to an SDR low bit depth buffer, so
+			// we need to use SDR range with a max value of 1.0.
+			float max_value = using_hdr ? p_render_data->window_output_max_value : 1.0;
+
 			tonemap.tonemap_mode = environment_get_tone_mapper(p_render_data->environment);
-			tonemap.white = environment_get_white(p_render_data->environment);
+			RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(p_render_data->environment, limit_agx_white, max_value);
+			tonemap.tonemapper_params[0] = params.tonemapper_params[0];
+			tonemap.tonemapper_params[1] = params.tonemapper_params[1];
+			tonemap.tonemapper_params[2] = params.tonemapper_params[2];
+			tonemap.tonemapper_params[3] = params.tonemapper_params[3];
+			tonemap.white = environment_get_white(p_render_data->environment, limit_agx_white, max_value);
 			tonemap.exposure = environment_get_exposure(p_render_data->environment);
+			tonemap.max_value = max_value;
 		}
 
 		tonemap.use_color_correction = false;
@@ -881,10 +898,29 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 
 	RendererRD::ToneMapper::TonemapSettings tonemap;
 
+	bool using_hdr = texture_storage->render_target_is_using_hdr(rb->get_render_target());
+
 	if (p_render_data->environment.is_valid()) {
+		// When we are using RGB10A2 render buffer format, our scene
+		// is limited to a maximum of 2.0. In this case we should limit
+		// the max white of tonemappers, specifically AgX which defaults
+		// to a high white value.
+		bool limit_agx_white = rb->get_base_data_format() == RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
+
+		// When using HDR 2D, we use the parent window's output max value.
+		// Otherwise, we're tonemapping to an SDR low bit depth buffer, so
+		// we need to use SDR range with a max value of 1.0.
+		float max_value = using_hdr ? p_render_data->window_output_max_value : 1.0;
+
 		tonemap.tonemap_mode = environment_get_tone_mapper(p_render_data->environment);
+		RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(p_render_data->environment, limit_agx_white, max_value);
+		tonemap.tonemapper_params[0] = params.tonemapper_params[0];
+		tonemap.tonemapper_params[1] = params.tonemapper_params[1];
+		tonemap.tonemapper_params[2] = params.tonemapper_params[2];
+		tonemap.tonemapper_params[3] = params.tonemapper_params[3];
 		tonemap.exposure = environment_get_exposure(p_render_data->environment);
-		tonemap.white = environment_get_white(p_render_data->environment);
+		tonemap.white = environment_get_white(p_render_data->environment, limit_agx_white, max_value);
+		tonemap.max_value = max_value;
 	}
 
 	// We don't support glow or auto exposure here, if they are needed, don't use subpasses!
@@ -897,8 +933,6 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes)) {
 		ERR_FAIL_MSG("Auto Exposure is not supported when using subpasses.");
 	}
-
-	bool using_hdr = texture_storage->render_target_is_using_hdr(rb->get_render_target());
 
 	tonemap.use_glow = false;
 	tonemap.glow_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
@@ -1234,8 +1268,8 @@ int RendererSceneRenderRD::get_roughness_layers() const {
 	return sky.roughness_layers;
 }
 
-bool RendererSceneRenderRD::is_using_radiance_cubemap_array() const {
-	return sky.sky_use_cubemap_array;
+bool RendererSceneRenderRD::is_using_radiance_octmap_array() const {
+	return sky.sky_use_octmap_array;
 }
 
 void RendererSceneRenderRD::_update_vrs(Ref<RenderSceneBuffersRD> p_render_buffers) {
@@ -1295,7 +1329,7 @@ void RendererSceneRenderRD::_post_prepass_render(RenderDataRD *p_render_data, bo
 	}
 }
 
-void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingMethod::RenderInfo *r_render_info) {
+void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, float p_window_output_max_value, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingMethod::RenderInfo *r_render_info) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
@@ -1360,6 +1394,22 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 			scene_data.directional_shadow_pixel_size.y = 1.0 / directional_shadow_size;
 		}
 
+		if (p_environment.is_valid()) {
+			RID sky_rid = environment_get_sky(p_environment);
+			if (sky_rid.is_valid()) {
+				int radiance_size = sky.sky_get_radiance_size(sky_rid);
+				scene_data.radiance_pixel_size = 1.0f / radiance_size;
+				float uv_border_size = sky.sky_get_uv_border_size(sky_rid);
+				scene_data.radiance_border_size = uv_border_size;
+			}
+		}
+
+		if (p_reflection_atlas.is_valid()) {
+			float border_size = light_storage->reflection_atlas_get_border_size(p_reflection_atlas);
+			scene_data.reflection_atlas_border_size.x = border_size;
+			scene_data.reflection_atlas_border_size.y = 1.0f - border_size * 2.0;
+		}
+
 		scene_data.time = time;
 		scene_data.time_step = time_step;
 	}
@@ -1391,6 +1441,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		render_data.render_sdfgi_regions = p_render_sdfgi_regions;
 		render_data.render_sdfgi_region_count = p_render_sdfgi_region_count;
 		render_data.sdfgi_update_data = p_sdfgi_update_data;
+		render_data.window_output_max_value = p_window_output_max_value;
 
 		render_data.render_info = r_render_info;
 
@@ -1659,7 +1710,7 @@ void RendererSceneRenderRD::init() {
 	}
 
 	if (is_volumetric_supported()) {
-		RendererRD::Fog::get_singleton()->init_fog_shader(RendererRD::LightStorage::get_singleton()->get_max_directional_lights(), get_roughness_layers(), is_using_radiance_cubemap_array());
+		RendererRD::Fog::get_singleton()->init_fog_shader(RendererRD::LightStorage::get_singleton()->get_max_directional_lights(), get_roughness_layers(), is_using_radiance_octmap_array());
 	}
 
 	RSG::camera_attributes->camera_attributes_set_dof_blur_bokeh_shape(RS::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape"))));
@@ -1690,8 +1741,26 @@ void RendererSceneRenderRD::init() {
 
 	bool can_use_storage = _render_buffers_can_be_storage();
 	bool can_use_vrs = is_vrs_supported();
+	BitField<RendererRD::CopyEffects::RasterEffects> raster_effects = {};
+	if (!can_use_storage) {
+		raster_effects.set_flag(RendererRD::CopyEffects::RASTER_EFFECT_COPY);
+		raster_effects.set_flag(RendererRD::CopyEffects::RASTER_EFFECT_GAUSSIAN_BLUR);
+
+		// This path can be used to redirect certain devices to use the raster version of the effect, either due to performance, lack of capabilities, or driver errors.
+		bool use_raster_for_octmaps = false;
+
+		// Some devices may not support the A2B10G10R10 format as a storage image on the Mobile renderer.
+		if (!RD::get_singleton()->texture_is_format_supported_for_usage(_render_buffers_get_preferred_color_format(), RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT)) {
+			use_raster_for_octmaps = true;
+		}
+
+		if (use_raster_for_octmaps) {
+			raster_effects.set_flag(RendererRD::CopyEffects::RASTER_EFFECT_OCTMAP);
+		}
+	}
+
 	bokeh_dof = memnew(RendererRD::BokehDOF(!can_use_storage));
-	copy_effects = memnew(RendererRD::CopyEffects(!can_use_storage));
+	copy_effects = memnew(RendererRD::CopyEffects(raster_effects));
 	debug_effects = memnew(RendererRD::DebugEffects);
 	luminance = memnew(RendererRD::Luminance(!can_use_storage));
 	smaa = memnew(RendererRD::SMAA);

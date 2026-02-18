@@ -306,7 +306,7 @@ void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 			handled = true;
 		}
 
-		if (ED_IS_SHORTCUT("file_dialog/focus_path", p_event)) {
+		if (ED_IS_SHORTCUT("filesystem_dock/focus_path", p_event)) {
 			_focus_current_path_box();
 			handled = true;
 		}
@@ -613,6 +613,11 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 		String display_name = property_name.substr(String("input/").size() - 1);
 		Dictionary action = GLOBAL_GET(property_name);
 
+		if (!action.has("events")) {
+			WARN_PRINT_ONCE_ED(vformat("Attempted to load invalid input action from setting at \"%s\". The `input/` prefix should only be used for input actions, and cannot be changed in the settings editor. Consider changing the category.", property_name));
+			continue;
+		}
+
 		ActionMapEditor::ActionInfo action_info;
 		action_info.action = action;
 		action_info.editable = true;
@@ -813,6 +818,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	tab_container->add_child(localization_editor);
 
 	TabContainer *globals_container = memnew(TabContainer);
+	globals_container->set_theme_type_variation("TabContainerInner");
 	globals_container->set_name(TTRC("Globals"));
 	tab_container->add_child(globals_container);
 

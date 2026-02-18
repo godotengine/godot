@@ -1160,6 +1160,7 @@ void TextureRegionEditor::_bind_methods() {
 
 TextureRegionEditor::TextureRegionEditor() {
 	set_title(TTR("Region Editor"));
+	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	set_process_shortcut_input(true);
 	set_ok_button_text(TTR("Close"));
 	// Handled manually, to allow canceling dragging.

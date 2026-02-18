@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "scene/gui/box_container.h"
 #include "scene/gui/tab_container.h"
 
 #include "tests/test_macros.h"
@@ -542,6 +543,7 @@ TEST_CASE("[SceneTree][TabContainer] layout and offset") {
 	Size2 all_tabs_size = tab_container->get_size();
 	const float side_margin = tab_container->get_theme_constant("side_margin");
 
+	HBoxContainer *internal_container = tab_container->get_internal_container();
 	TabBar *tab_bar = tab_container->get_tab_bar();
 
 	Vector<Rect2> tab_rects = {
@@ -580,14 +582,14 @@ TEST_CASE("[SceneTree][TabContainer] layout and offset") {
 
 		// Initial position, same as top position.
 		// Tab bar is at the top.
-		CHECK(tab_bar->get_anchor(SIDE_TOP) == 0);
-		CHECK(tab_bar->get_anchor(SIDE_BOTTOM) == 0);
-		CHECK(tab_bar->get_anchor(SIDE_LEFT) == 0);
-		CHECK(tab_bar->get_anchor(SIDE_RIGHT) == 1);
-		CHECK(tab_bar->get_offset(SIDE_TOP) == 0);
-		CHECK(tab_bar->get_offset(SIDE_BOTTOM) == tab_height);
-		CHECK(tab_bar->get_offset(SIDE_LEFT) == side_margin);
-		CHECK(tab_bar->get_offset(SIDE_RIGHT) == 0);
+		CHECK(internal_container->get_anchor(SIDE_TOP) == 0);
+		CHECK(internal_container->get_anchor(SIDE_BOTTOM) == 0);
+		CHECK(internal_container->get_anchor(SIDE_LEFT) == 0);
+		CHECK(internal_container->get_anchor(SIDE_RIGHT) == 1);
+		CHECK(internal_container->get_offset(SIDE_TOP) == 0);
+		CHECK(internal_container->get_offset(SIDE_BOTTOM) == tab_height);
+		CHECK(internal_container->get_offset(SIDE_LEFT) == side_margin);
+		CHECK(internal_container->get_offset(SIDE_RIGHT) == 0);
 
 		// Child is expanded and below the tab bar.
 		CHECK(tab0->get_anchor(SIDE_TOP) == 0);
@@ -605,14 +607,14 @@ TEST_CASE("[SceneTree][TabContainer] layout and offset") {
 		MessageQueue::get_singleton()->flush();
 
 		// Tab bar is at the bottom.
-		CHECK(tab_bar->get_anchor(SIDE_TOP) == 1);
-		CHECK(tab_bar->get_anchor(SIDE_BOTTOM) == 1);
-		CHECK(tab_bar->get_anchor(SIDE_LEFT) == 0);
-		CHECK(tab_bar->get_anchor(SIDE_RIGHT) == 1);
-		CHECK(tab_bar->get_offset(SIDE_TOP) == -tab_height);
-		CHECK(tab_bar->get_offset(SIDE_BOTTOM) == 0);
-		CHECK(tab_bar->get_offset(SIDE_LEFT) == side_margin);
-		CHECK(tab_bar->get_offset(SIDE_RIGHT) == 0);
+		CHECK(internal_container->get_anchor(SIDE_TOP) == 1);
+		CHECK(internal_container->get_anchor(SIDE_BOTTOM) == 1);
+		CHECK(internal_container->get_anchor(SIDE_LEFT) == 0);
+		CHECK(internal_container->get_anchor(SIDE_RIGHT) == 1);
+		CHECK(internal_container->get_offset(SIDE_TOP) == -tab_height);
+		CHECK(internal_container->get_offset(SIDE_BOTTOM) == 0);
+		CHECK(internal_container->get_offset(SIDE_LEFT) == side_margin);
+		CHECK(internal_container->get_offset(SIDE_RIGHT) == 0);
 
 		// Child is expanded and above the tab bar.
 		CHECK(tab0->get_anchor(SIDE_TOP) == 0);
@@ -630,14 +632,14 @@ TEST_CASE("[SceneTree][TabContainer] layout and offset") {
 		MessageQueue::get_singleton()->flush();
 
 		// Tab bar is at the top.
-		CHECK(tab_bar->get_anchor(SIDE_TOP) == 0);
-		CHECK(tab_bar->get_anchor(SIDE_BOTTOM) == 0);
-		CHECK(tab_bar->get_anchor(SIDE_LEFT) == 0);
-		CHECK(tab_bar->get_anchor(SIDE_RIGHT) == 1);
-		CHECK(tab_bar->get_offset(SIDE_TOP) == 0);
-		CHECK(tab_bar->get_offset(SIDE_BOTTOM) == tab_height);
-		CHECK(tab_bar->get_offset(SIDE_LEFT) == side_margin);
-		CHECK(tab_bar->get_offset(SIDE_RIGHT) == 0);
+		CHECK(internal_container->get_anchor(SIDE_TOP) == 0);
+		CHECK(internal_container->get_anchor(SIDE_BOTTOM) == 0);
+		CHECK(internal_container->get_anchor(SIDE_LEFT) == 0);
+		CHECK(internal_container->get_anchor(SIDE_RIGHT) == 1);
+		CHECK(internal_container->get_offset(SIDE_TOP) == 0);
+		CHECK(internal_container->get_offset(SIDE_BOTTOM) == tab_height);
+		CHECK(internal_container->get_offset(SIDE_LEFT) == side_margin);
+		CHECK(internal_container->get_offset(SIDE_RIGHT) == 0);
 
 		// Child is expanded and below the tab bar.
 		CHECK(tab0->get_anchor(SIDE_TOP) == 0);

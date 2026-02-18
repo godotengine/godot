@@ -134,6 +134,10 @@ private:
 	WindowInitialPosition initial_position = WINDOW_INITIAL_POSITION_ABSOLUTE;
 	bool force_native = false;
 
+	mutable bool hdr_output_requested = false;
+
+	void _update_viewport_for_hdr_output();
+
 	bool transient = false;
 	bool transient_to_focused = false;
 	bool exclusive = false;
@@ -244,7 +248,7 @@ private:
 	friend class Viewport; //friend back, can call the methods below
 
 	void _window_input(const Ref<InputEvent> &p_ev);
-	void _window_input_text(const String &p_text);
+	void _window_input_text(const String &p_text, bool p_emit_signal = false);
 	void _window_drop_files(const Vector<String> &p_files);
 	void _rect_changed_callback(const Rect2i &p_callback);
 	void _event_callback(DisplayServer::WindowEvent p_event);
@@ -335,9 +339,15 @@ public:
 
 	bool is_popup() const;
 
+	void set_hdr_output_requested(bool p_enabled);
+	bool is_hdr_output_requested() const;
+	float get_output_max_linear_value() const;
+
 	bool is_maximize_allowed() const;
 
 	void request_attention();
+	void set_taskbar_progress_value(float p_value);
+	void set_taskbar_progress_state(DisplayServer::ProgressState p_state);
 #ifndef DISABLE_DEPRECATED
 	void move_to_foreground();
 #endif // DISABLE_DEPRECATED
@@ -403,7 +413,7 @@ public:
 	void child_controls_changed();
 
 	Window *get_exclusive_child() const { return exclusive_child; }
-	HashSet<Window *> get_transient_children() const { return transient_children; }
+	const HashSet<Window *> &get_transient_children() const { return transient_children; }
 	Window *get_parent_visible_window() const;
 	Window *get_non_popup_window() const;
 	Viewport *get_parent_viewport() const;
@@ -495,7 +505,6 @@ public:
 	Variant get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 #ifdef TOOLS_ENABLED
 	Ref<Texture2D> get_editor_theme_icon(const StringName &p_name) const;
-	Ref<Texture2D> get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const;
 #endif
 
 	bool has_theme_icon_override(const StringName &p_name) const;

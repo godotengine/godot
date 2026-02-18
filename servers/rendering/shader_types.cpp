@@ -84,6 +84,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["constants"].built_ins["E"] = constvt(ShaderLanguage::TYPE_FLOAT, { e_scalar });
 	shader_modes[RS::SHADER_SPATIAL].functions["constants"].built_ins["OUTPUT_IS_SRGB"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RS::SHADER_SPATIAL].functions["constants"].built_ins["CLIP_SPACE_FAR"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_SPATIAL].functions["constants"].built_ins["IS_MULTIVIEW"] = constt(ShaderLanguage::TYPE_BOOL);
 
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["VERTEX"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["NORMAL"] = ShaderLanguage::TYPE_VEC3;
@@ -518,12 +519,37 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_FOG].functions["fog"].built_ins["EMISSION"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[RS::SHADER_FOG].functions["fog"].main_function = true;
 
+	/************ TEXTURE_BLIT **************************/
+
+	shader_modes[RS::SHADER_TEXTURE_BLIT].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_TEXTURE_BLIT].functions["constants"].built_ins["PI"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_TEXTURE_BLIT].functions["constants"].built_ins["TAU"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_TEXTURE_BLIT].functions["constants"].built_ins["E"] = constt(ShaderLanguage::TYPE_FLOAT);
+
+	shader_modes[RS::SHADER_TEXTURE_BLIT].functions["blit"].built_ins["FRAGCOORD"] = constt(ShaderLanguage::TYPE_VEC4);
+
+	shader_modes[RS::SHADER_TEXTURE_BLIT].functions["blit"].built_ins["UV"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_TEXTURE_BLIT].functions["blit"].built_ins["MODULATE"] = constt(ShaderLanguage::TYPE_VEC4);
+
+	shader_modes[RS::SHADER_TEXTURE_BLIT].functions["blit"].built_ins["COLOR0"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_TEXTURE_BLIT].functions["blit"].built_ins["COLOR1"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_TEXTURE_BLIT].functions["blit"].built_ins["COLOR2"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_TEXTURE_BLIT].functions["blit"].built_ins["COLOR3"] = ShaderLanguage::TYPE_VEC4;
+
+	shader_modes[RS::SHADER_TEXTURE_BLIT].functions["blit"].main_function = true;
+
+	// Texture Blit Modes
+	{
+		shader_modes[RS::SHADER_TEXTURE_BLIT].modes.push_back({ PNAME("blend"), "mix", "add", "sub", "mul", "disabled" });
+	}
+
 	// Must be kept in sync with the Shader::Mode enum.
 	shader_types_list.push_back("spatial");
 	shader_types_list.push_back("canvas_item");
 	shader_types_list.push_back("particles");
 	shader_types_list.push_back("sky");
 	shader_types_list.push_back("fog");
+	shader_types_list.push_back("texture_blit");
 	DEV_ASSERT(shader_types_list.size() == Shader::MODE_MAX);
 
 	for (const String &type : shader_types_list) {

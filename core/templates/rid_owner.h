@@ -310,24 +310,16 @@ public:
 	}
 
 	_FORCE_INLINE_ bool owns(const RID &p_rid) const {
-		if (p_rid == RID()) {
-			return false;
-		}
-
 		if constexpr (THREAD_SAFE) {
-			SYNC_ACQUIRE;
+			mutex.lock();
 		}
 
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
-		uint32_t ma;
-		if constexpr (THREAD_SAFE) {
-			ma = ((std::atomic<uint32_t> *)&max_alloc)->load(std::memory_order_relaxed);
-		} else {
-			ma = max_alloc;
-		}
-
-		if (unlikely(idx >= ma)) {
+		if (unlikely(idx >= max_alloc)) {
+			if constexpr (THREAD_SAFE) {
+				mutex.unlock();
+			}
 			return false;
 		}
 
@@ -336,29 +328,10 @@ public:
 
 		uint32_t validator = uint32_t(id >> 32);
 
-		if constexpr (THREAD_SAFE) {
-#ifdef TSAN_ENABLED
-			__tsan_acquire(&chunks[idx_chunk]); // We know not a race in practice.
-			__tsan_acquire(&chunks[idx_chunk][idx_element]); // We know not a race in practice.
-#endif
-		}
-
-		Chunk &c = chunks[idx_chunk][idx_element];
+		bool owned = (chunks[idx_chunk][idx_element].validator & 0x7FFFFFFF) == validator;
 
 		if constexpr (THREAD_SAFE) {
-#ifdef TSAN_ENABLED
-			__tsan_release(&chunks[idx_chunk]);
-			__tsan_release(&chunks[idx_chunk][idx_element]);
-			__tsan_acquire(&c.validator); // We know not a race in practice.
-#endif
-		}
-
-		bool owned = (c.validator & 0x7FFFFFFF) == validator;
-
-		if constexpr (THREAD_SAFE) {
-#ifdef TSAN_ENABLED
-			__tsan_release(&c.validator);
-#endif
+			mutex.unlock();
 		}
 
 		return owned;

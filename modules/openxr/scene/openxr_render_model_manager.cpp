@@ -30,7 +30,9 @@
 
 #include "openxr_render_model_manager.h"
 
+#ifdef MODULE_GLTF_ENABLED
 #include "../extensions/openxr_render_model_extension.h"
+
 #include "../openxr_api.h"
 #include "core/config/project_settings.h"
 #include "scene/3d/xr/xr_nodes.h"
@@ -45,8 +47,8 @@ void OpenXRRenderModelManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_make_local_to_pose", "make_local_to_pose"), &OpenXRRenderModelManager::set_make_local_to_pose);
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "make_local_to_pose", PROPERTY_HINT_ENUM_SUGGESTION, "aim,grip"), "set_make_local_to_pose", "get_make_local_to_pose");
 
-	ADD_SIGNAL(MethodInfo("render_model_added", PropertyInfo(Variant::OBJECT, "render_model", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRRenderModel")));
-	ADD_SIGNAL(MethodInfo("render_model_removed", PropertyInfo(Variant::OBJECT, "render_model", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRRenderModel")));
+	ADD_SIGNAL(MethodInfo("render_model_added", PropertyInfo(Variant::OBJECT, "render_model", PROPERTY_HINT_RESOURCE_TYPE, OpenXRRenderModel::get_class_static())));
+	ADD_SIGNAL(MethodInfo("render_model_removed", PropertyInfo(Variant::OBJECT, "render_model", PROPERTY_HINT_RESOURCE_TYPE, OpenXRRenderModel::get_class_static())));
 
 	BIND_ENUM_CONSTANT(RENDER_MODEL_TRACKER_ANY);
 	BIND_ENUM_CONSTANT(RENDER_MODEL_TRACKER_NONE_SET);
@@ -282,3 +284,4 @@ void OpenXRRenderModelManager::set_make_local_to_pose(const String &p_action) {
 String OpenXRRenderModelManager::get_make_local_to_pose() const {
 	return make_local_to_pose;
 }
+#endif // MODULE_GLTF_ENABLED

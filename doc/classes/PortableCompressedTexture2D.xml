@@ -40,7 +40,7 @@
 		<method name="is_keeping_all_compressed_buffers" qualifiers="static">
 			<return type="bool" />
 			<description>
-				Return whether the flag is overridden for all textures of this type.
+				Returns [code]true[/code] if the flag is overridden for all textures of this type.
 			</description>
 		</method>
 		<method name="set_basisu_compressor_params">
@@ -56,7 +56,7 @@
 			<return type="void" />
 			<param index="0" name="keep" type="bool" />
 			<description>
-				Overrides the flag globally for all textures of this type. This is used primarily by the editor.
+				If [param keep] is [code]true[/code], overrides the flag globally for all textures of this type. This is used primarily by the editor.
 			</description>
 		</method>
 	</methods>

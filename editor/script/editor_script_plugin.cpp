@@ -30,6 +30,7 @@
 
 #include "editor_script_plugin.h"
 
+#include "core/io/resource_loader.h"
 #include "editor/editor_interface.h"
 #include "editor/script/editor_script.h"
 #include "editor/settings/editor_command_palette.h"
@@ -53,7 +54,7 @@ void EditorScriptPlugin::command_palette_about_to_popup() {
 		EditorInterface::get_singleton()->get_command_palette()->remove_command("editor_scripts/" + command);
 	}
 	commands.clear();
-	ScriptServer::get_inheriters_list(SNAME("EditorScript"), &commands);
+	ScriptServer::get_indirect_inheriters_list(SNAME("EditorScript"), &commands);
 	for (const StringName &command : commands) {
 		EditorInterface::get_singleton()->get_command_palette()->add_command(String(command).capitalize(), "editor_scripts/" + command, callable_mp(this, &EditorScriptPlugin::run_command), varray(command), nullptr);
 	}

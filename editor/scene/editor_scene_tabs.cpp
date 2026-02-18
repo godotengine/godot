@@ -31,6 +31,7 @@
 #include "editor_scene_tabs.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_loader.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -128,7 +129,7 @@ void EditorSceneTabs::_scene_tab_input(const Ref<InputEvent> &p_input) {
 	Ref<InputEventMouseButton> mb = p_input;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
+		if (scene_tabs->get_hovered_tab() < 0 && mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
 			int tab_buttons = 0;
 			if (scene_tabs->get_offset_buttons_visible()) {
 				tab_buttons = get_theme_icon(SNAME("increment"), SNAME("TabBar"))->get_width() + get_theme_icon(SNAME("decrement"), SNAME("TabBar"))->get_width();
@@ -137,8 +138,7 @@ void EditorSceneTabs::_scene_tab_input(const Ref<InputEvent> &p_input) {
 			if ((is_layout_rtl() && mb->get_position().x > tab_buttons) || (!is_layout_rtl() && mb->get_position().x < scene_tabs->get_size().width - tab_buttons)) {
 				EditorNode::get_singleton()->trigger_menu_option(EditorNode::SCENE_NEW_SCENE, true);
 			}
-		}
-		if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
+		} else if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 			// Context menu.
 			_update_context_menu();
 
@@ -166,8 +166,8 @@ void EditorSceneTabs::_reposition_active_tab(int p_to_index) {
 }
 
 void EditorSceneTabs::_update_context_menu() {
-#define DISABLE_LAST_OPTION_IF(m_condition)                   \
-	if (m_condition) {                                        \
+#define DISABLE_LAST_OPTION_IF(m_condition) \
+	if (m_condition) { \
 		scene_tabs_context_menu->set_item_disabled(-1, true); \
 	}
 
@@ -471,6 +471,7 @@ EditorSceneTabs::EditorSceneTabs() {
 
 	scene_list = memnew(MenuButton);
 	scene_list->set_flat(false);
+	scene_list->set_theme_type_variation("FlatMenuButton");
 	scene_list->set_accessibility_name(TTRC("Show Opened Scenes List"));
 	scene_list->set_shortcut(ED_SHORTCUT("editor/show_opened_scenes_list", TTRC("Show Opened Scenes List"), KeyModifierMask::ALT | Key::T));
 	scene_list->get_popup()->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);

@@ -34,16 +34,18 @@
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/slider.h"
-#include "scene/gui/spin_box.h"
 
+class Button;
 class ConfirmationDialog;
+class FilterLineEdit;
+class HSlider;
+class ItemList;
 class MenuButton;
 class Node3DEditorPlugin;
 class ButtonGroup;
 class EditorZoomWidget;
 class BaseButton;
+class SpinBox;
 
 class GridMapEditor : public VBoxContainer {
 	GDCLASS(GridMapEditor, VBoxContainer);
@@ -93,7 +95,7 @@ class GridMapEditor : public VBoxContainer {
 	EditorZoomWidget *zoom_widget = nullptr;
 	Button *mode_thumbnail = nullptr;
 	Button *mode_list = nullptr;
-	LineEdit *search_box = nullptr;
+	FilterLineEdit *search_box = nullptr;
 	HSlider *size_slider = nullptr;
 	ConfirmationDialog *settings_dialog = nullptr;
 	VBoxContainer *settings_vbc = nullptr;
@@ -138,6 +140,7 @@ class GridMapEditor : public VBoxContainer {
 	};
 
 	LocalVector<ClipboardItem> clipboard_items;
+	bool clipboard_is_move = false;
 
 	Color default_color;
 	Color erase_color;
@@ -196,7 +199,7 @@ class GridMapEditor : public VBoxContainer {
 		MENU_OPTION_CURSOR_CLEAR_ROTATION,
 		MENU_OPTION_PASTE_SELECTS,
 		MENU_OPTION_SELECTION_DUPLICATE,
-		MENU_OPTION_SELECTION_CUT,
+		MENU_OPTION_SELECTION_MOVE,
 		MENU_OPTION_SELECTION_CLEAR,
 		MENU_OPTION_SELECTION_FILL,
 		MENU_OPTION_GRIDMAP_SETTINGS
@@ -227,7 +230,6 @@ class GridMapEditor : public VBoxContainer {
 	void _update_theme();
 
 	void _text_changed(const String &p_text);
-	void _sbox_input(const Ref<InputEvent> &p_event);
 	void _mesh_library_palette_input(const Ref<InputEvent> &p_ie);
 
 	void _icon_size_changed(float p_value);
@@ -236,6 +238,7 @@ class GridMapEditor : public VBoxContainer {
 	void _set_clipboard_data();
 	void _update_paste_indicator();
 	void _do_paste();
+	void _cancel_pending_move();
 	void _show_viewports_transform_gizmo(bool p_value);
 	void _update_selection_transform();
 	void _validate_selection();
@@ -248,7 +251,9 @@ class GridMapEditor : public VBoxContainer {
 	void _floor_mouse_exited();
 
 	void _delete_selection();
+	void _delete_selection_with_undo();
 	void _fill_selection();
+	void _setup_paste_mode();
 
 	bool do_input_action(Camera3D *p_camera, const Point2 &p_point, bool p_click);
 

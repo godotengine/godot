@@ -31,6 +31,7 @@
 #include "visual_instance_3d.h"
 
 #include "core/config/project_settings.h"
+#include "scene/resources/material.h"
 
 AABB VisualInstance3D::get_aabb() const {
 	AABB ret;
@@ -522,11 +523,11 @@ PackedStringArray GeometryInstance3D::get_configuration_warnings() const {
 	}
 
 	if (!Math::is_zero_approx(transparency) && OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
-		warnings.push_back(RTR("GeometryInstance3D transparency is only available when using the Forward+ rendering method."));
+		warnings.push_back(RTR("GeometryInstance3D transparency is only available when using the Forward+ renderer."));
 	}
 
 	if ((visibility_range_fade_mode == VISIBILITY_RANGE_FADE_SELF || visibility_range_fade_mode == VISIBILITY_RANGE_FADE_DEPENDENCIES) && OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
-		warnings.push_back(RTR("GeometryInstance3D visibility range transparency fade is only available when using the Forward+ rendering method."));
+		warnings.push_back(RTR("GeometryInstance3D visibility range transparency fade is only available when using the Forward+ renderer."));
 	}
 
 	return warnings;

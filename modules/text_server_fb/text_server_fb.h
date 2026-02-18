@@ -79,7 +79,7 @@ using namespace godot;
 #elif defined(GODOT_MODULE)
 // Headers for building as built-in module.
 
-#include "core/extension/ext_wrappers.gen.inc"
+#include "core/extension/ext_wrappers.gen.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
@@ -101,6 +101,7 @@ using namespace godot;
 #include FT_ADVANCES_H
 #include FT_MULTIPLE_MASTERS_H
 #include FT_BBOX_H
+#include FT_SIZES_H
 #include FT_MODULE_H
 #include FT_CONFIG_OPTIONS_H
 #if !defined(FT_CONFIG_OPTION_USE_BROTLI) && !defined(_MSC_VER)
@@ -239,14 +240,13 @@ class TextServerFallback : public TextServerExtension {
 		HashMap<Vector2i, Vector2> kerning_map;
 
 #ifdef MODULE_FREETYPE_ENABLED
-		FT_Face face = nullptr;
-		FT_StreamRec stream;
+		FT_Size fsize = nullptr;
 #endif
 
 		~FontForSizeFallback() {
 #ifdef MODULE_FREETYPE_ENABLED
-			if (face != nullptr) {
-				FT_Done_Face(face);
+			if (fsize != nullptr) {
+				FT_Done_Size(fsize);
 			}
 #endif
 		}
@@ -310,11 +310,21 @@ class TextServerFallback : public TextServerExtension {
 		size_t data_size;
 		int face_index = 0;
 
+#ifdef MODULE_FREETYPE_ENABLED
+		FT_Face face = nullptr;
+		FT_StreamRec stream;
+#endif
+
 		~FontFallback() {
 			for (const KeyValue<Vector2i, FontForSizeFallback *> &E : cache) {
 				memdelete(E.value);
 			}
 			cache.clear();
+#ifdef MODULE_FREETYPE_ENABLED
+			if (face != nullptr) {
+				FT_Done_Face(face);
+			}
+#endif
 		}
 	};
 
@@ -616,6 +626,7 @@ public:
 	MODBIND0RC(String, get_support_data_info);
 	MODBIND1RC(bool, save_support_data, const String &);
 	MODBIND0RC(PackedByteArray, get_support_data);
+	MODBIND1RC(bool, is_locale_using_support_data, const String &);
 
 	MODBIND1RC(bool, is_locale_right_to_left, const String &);
 

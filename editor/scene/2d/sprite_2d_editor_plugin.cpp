@@ -624,7 +624,7 @@ Sprite2DEditor::Sprite2DEditor() {
 
 	options->set_text(TTR("Sprite2D"));
 	options->set_flat(false);
-	options->set_theme_type_variation("FlatMenuButton");
+	options->set_theme_type_variation("FlatMenuButtonNoIconTint");
 
 	options->get_popup()->add_item(TTR("Convert to MeshInstance2D"), MENU_OPTION_CONVERT_TO_MESH_2D);
 	options->get_popup()->add_item(TTR("Convert to Polygon2D"), MENU_OPTION_CONVERT_TO_POLYGON_2D);

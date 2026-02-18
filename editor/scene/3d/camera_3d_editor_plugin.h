@@ -39,7 +39,6 @@ class SubViewport;
 class Camera3DEditor : public Control {
 	GDCLASS(Camera3DEditor, Control);
 
-	Panel *panel = nullptr;
 	Button *preview = nullptr;
 	Node *node = nullptr;
 
@@ -60,6 +59,7 @@ class Camera3DPreview : public TexturePreview {
 	SubViewport *sub_viewport = nullptr;
 
 	void _update_sub_viewport_size();
+	void _project_settings_changed();
 
 public:
 	Camera3DPreview(Camera3D *p_camera);

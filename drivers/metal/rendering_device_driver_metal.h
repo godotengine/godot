@@ -30,13 +30,13 @@
 
 #pragma once
 
-#import "metal_device_profile.h"
-#import "metal_objects.h"
+#include "metal_device_profile.h"
+#include "metal_objects_shared.h"
 
 #include "servers/rendering/rendering_device_driver.h"
 
-#import <Metal/Metal.h>
-#import <variant>
+#include <Metal/Metal.hpp>
+#include <variant>
 
 class RenderingShaderContainerFormatMetal;
 
@@ -48,18 +48,28 @@ class RenderingShaderContainerFormatMetal;
 
 class RenderingContextDriverMetal;
 
+namespace MTL3 {
+class MDCommandBuffer;
+}
+namespace MTL4 {
+class MDCommandBuffer;
+}
+
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingDeviceDriverMetal : public RenderingDeviceDriver {
 	friend struct ShaderCacheEntry;
-	friend class MDCommandBuffer;
+	friend class MTL3::MDCommandBuffer;
+	friend class MTL4::MDCommandBuffer;
+	friend class MDUniformSet;
 
 	template <typename T>
 	using Result = std::variant<T, Error>;
 
 #pragma mark - Generic
 
+protected:
 	RenderingContextDriverMetal *context_driver = nullptr;
 	RenderingContextDriver::Device context_device;
-	id<MTLDevice> device = nil;
+	MTL::Device *device = nullptr;
 
 	uint32_t _frame_count = 1;
 	/// frame_index is a cyclic counter derived from the current frame number modulo frame_count,
@@ -78,16 +88,84 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingDeviceDriverMet
 	RDD::FragmentShadingRateCapabilities fsr_capabilities;
 	RDD::FragmentDensityMapCapabilities fdm_capabilities;
 
-	id<MTLBinaryArchive> archive = nil;
+	NS::SharedPtr<MTL::BinaryArchive> archive;
 	uint32_t archive_count = 0;
+	// DEV: When true, attempting to create a pipeline will fail if it cannot use the archive.
+	bool archive_fail_on_miss = false;
 
-	id<MTLCommandQueue> device_queue = nil;
-	id<MTLCaptureScope> device_scope = nil;
+	/// Resources to be added to the `main_residency_set`.
+	LocalVector<MTL::Resource *> _residency_add;
+	/// Resources to be removed from the `main_residency_set`.
+	LocalVector<MTL::Resource *> _residency_del;
+
+#pragma mark - Copy Queue
+
+	Mutex copy_queue_mutex;
+	/// A command queue used for internal copy operations.
+	NS::SharedPtr<MTL::CommandQueue> copy_queue;
+	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
+	NS::SharedPtr<MTL::ResidencySet> copy_queue_rs;
+	GODOT_CLANG_WARNING_POP
+	// If this is not nullptr, there are pending copy operations.
+	NS::SharedPtr<MTL::CommandBuffer> copy_queue_command_buffer;
+	NS::SharedPtr<MTL::BlitCommandEncoder> copy_queue_blit_encoder;
+	NS::SharedPtr<MTL::Buffer> copy_queue_buffer;
+	NS::UInteger copy_queue_buffer_offset = 0;
+
+	_FORCE_INLINE_ NS::UInteger _copy_queue_buffer_available() const {
+		return copy_queue_buffer.get()->length() - copy_queue_buffer_offset;
+	}
+
+	/// Marks p_size bytes as consumed from the copy queue buffer, aligning the offset to 16 bytes.
+	_FORCE_INLINE_ void _copy_queue_buffer_consume(NS::UInteger p_size) {
+		NS::UInteger aligned_offset = round_up_to_alignment(copy_queue_buffer_offset, 16);
+		copy_queue_buffer_offset = aligned_offset + p_size;
+	}
+
+	/// Returns a pointer to the current position in the copy queue buffer.
+	_FORCE_INLINE_ void *_copy_queue_buffer_ptr() const {
+		return static_cast<uint8_t *>(copy_queue_buffer.get()->contents()) + copy_queue_buffer_offset;
+	}
+
+	_FORCE_INLINE_ MTL::CommandBuffer *_copy_queue_command_buffer() {
+		if (!copy_queue_command_buffer) {
+			DEV_ASSERT(!copy_queue_blit_encoder);
+			copy_queue_command_buffer = NS::RetainPtr(copy_queue.get()->commandBufferWithUnretainedReferences());
+		}
+		return copy_queue_command_buffer.get();
+	}
+
+	_FORCE_INLINE_ MTL::BlitCommandEncoder *_copy_queue_blit_encoder() {
+		if (!copy_queue_blit_encoder) {
+			MTL::BlitCommandEncoder *enc = _copy_queue_command_buffer()->blitCommandEncoder();
+			copy_queue_blit_encoder = NS::RetainPtr(enc);
+		}
+		return copy_queue_blit_encoder.get();
+	}
+
+	void _copy_queue_copy_to_buffer(Span<uint8_t> p_src_data, MTL::Buffer *p_dst_buffer, uint64_t p_dst_offset = 0);
+	void _copy_queue_flush();
+	Error _copy_queue_initialize();
+
+	NS::SharedPtr<MTL::CaptureScope> device_scope;
 
 	String pipeline_cache_id;
 
-	Error _create_device();
+	virtual MTL::CommandQueue *get_command_queue() const = 0;
+	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
+	virtual void add_residency_set_to_main_queue(MTL::ResidencySet *p_set) = 0;
+	virtual void remove_residency_set_to_main_queue(MTL::ResidencySet *p_set) = 0;
+	NS::SharedPtr<MTL::ResidencySet> main_residency_set;
+	GODOT_CLANG_WARNING_POP
+
+	bool use_barriers = false;
+	MTL::ResourceOptions base_hazard_tracking = MTL::ResourceHazardTrackingModeTracked;
+
+	virtual Error _create_device();
+	virtual void _track_resource(MTL::Resource *p_resource);
+	virtual void _untrack_resource(MTL::Resource *p_resource);
 	void _check_capabilities();
+	Error _initialize(uint32_t p_device_index, uint32_t p_frame_count);
 
 #pragma mark - Shader Cache
 
@@ -103,7 +181,7 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingDeviceDriverMet
 	void shader_cache_free_entry(const SHA256Digest &key);
 
 public:
-	Error initialize(uint32_t p_device_index, uint32_t p_frame_count) override final;
+	virtual Error initialize(uint32_t p_device_index, uint32_t p_frame_count) override = 0;
 
 #pragma mark - Memory
 
@@ -111,7 +189,7 @@ public:
 
 public:
 	struct BufferInfo {
-		id<MTLBuffer> metal_buffer;
+		NS::SharedPtr<MTL::Buffer> metal_buffer;
 
 		_FORCE_INLINE_ bool is_dynamic() const { return _frame_idx != UINT32_MAX; }
 		_FORCE_INLINE_ uint32_t frame_index() const { return _frame_idx; }
@@ -131,7 +209,6 @@ public:
 	virtual void buffer_unmap(BufferID p_buffer) override final;
 	virtual uint8_t *buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) override final;
 	virtual uint64_t buffer_get_dynamic_offsets(Span<BufferID> p_buffers) override final;
-	virtual void buffer_flush(BufferID p_buffer) override final;
 	virtual uint64_t buffer_get_device_address(BufferID p_buffer) override final;
 
 #pragma mark - Texture
@@ -168,88 +245,28 @@ public:
 
 #pragma mark - Barriers
 
+public:
 	virtual void command_pipeline_barrier(
 			CommandBufferID p_cmd_buffer,
 			BitField<PipelineStageBits> p_src_stages,
 			BitField<PipelineStageBits> p_dst_stages,
 			VectorView<MemoryAccessBarrier> p_memory_barriers,
 			VectorView<BufferBarrier> p_buffer_barriers,
-			VectorView<TextureBarrier> p_texture_barriers) override final;
+			VectorView<TextureBarrier> p_texture_barriers,
+			VectorView<AccelerationStructureBarrier> p_acceleration_structure_barriers) override final;
 
 #pragma mark - Fences
 
-private:
-	struct Fence {
-		virtual void signal(id<MTLCommandBuffer> p_cmd_buffer) = 0;
-		virtual Error wait(uint32_t p_timeout_ms) = 0;
-		virtual ~Fence() = default;
-	};
-
-	struct FenceEvent : public Fence {
-		id<MTLSharedEvent> event;
-		uint64_t value;
-		FenceEvent(id<MTLSharedEvent> p_event) :
-				event(p_event),
-				value(0) {}
-
-		virtual void signal(id<MTLCommandBuffer> p_cb) override {
-			if (p_cb) {
-				value++;
-				[p_cb encodeSignalEvent:event value:value];
-			}
-		}
-
-		virtual Error wait(uint32_t p_timeout_ms) override {
-			GODOT_CLANG_WARNING_PUSH
-			GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
-			BOOL signaled = [event waitUntilSignaledValue:value timeoutMS:p_timeout_ms];
-			GODOT_CLANG_WARNING_POP
-			if (!signaled) {
-#ifdef DEBUG_ENABLED
-				ERR_PRINT("timeout waiting for fence");
-#endif
-				return ERR_TIMEOUT;
-			}
-
-			return OK;
-		}
-	};
-
-	struct FenceSemaphore : public Fence {
-		dispatch_semaphore_t semaphore;
-		FenceSemaphore() :
-				semaphore(dispatch_semaphore_create(0)) {}
-
-		virtual void signal(id<MTLCommandBuffer> p_cb) override {
-			if (p_cb) {
-				[p_cb addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
-					dispatch_semaphore_signal(semaphore);
-				}];
-			} else {
-				dispatch_semaphore_signal(semaphore);
-			}
-		}
-
-		virtual Error wait(uint32_t p_timeout_ms) override {
-			dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(p_timeout_ms) * 1000000);
-			long result = dispatch_semaphore_wait(semaphore, timeout);
-			if (result != 0) {
-				return ERR_TIMEOUT;
-			}
-			return OK;
-		}
-	};
-
 public:
-	virtual FenceID fence_create() override final;
-	virtual Error fence_wait(FenceID p_fence) override final;
-	virtual void fence_free(FenceID p_fence) override final;
+	virtual FenceID fence_create() override = 0;
+	virtual Error fence_wait(FenceID p_fence) override = 0;
+	virtual void fence_free(FenceID p_fence) override = 0;
 
 #pragma mark - Semaphores
 
 public:
-	virtual SemaphoreID semaphore_create() override final;
-	virtual void semaphore_free(SemaphoreID p_semaphore) override final;
+	virtual SemaphoreID semaphore_create() override = 0;
+	virtual void semaphore_free(SemaphoreID p_semaphore) override = 0;
 
 #pragma mark - Commands
 	// ----- QUEUE FAMILY -----
@@ -257,25 +274,22 @@ public:
 	virtual CommandQueueFamilyID command_queue_family_get(BitField<CommandQueueFamilyBits> p_cmd_queue_family_bits, RenderingContextDriver::SurfaceID p_surface = 0) override final;
 
 	// ----- QUEUE -----
+
 public:
-	virtual CommandQueueID command_queue_create(CommandQueueFamilyID p_cmd_queue_family, bool p_identify_as_main_queue = false) override final;
-	virtual Error command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) override final;
-	virtual void command_queue_free(CommandQueueID p_cmd_queue) override final;
+	virtual CommandQueueID command_queue_create(CommandQueueFamilyID p_cmd_queue_family, bool p_identify_as_main_queue = false) override = 0;
+	virtual Error command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) override = 0;
+	virtual void command_queue_free(CommandQueueID p_cmd_queue) override = 0;
 
 	// ----- POOL -----
 
-	virtual CommandPoolID command_pool_create(CommandQueueFamilyID p_cmd_queue_family, CommandBufferType p_cmd_buffer_type) override final;
-	virtual bool command_pool_reset(CommandPoolID p_cmd_pool) override final;
-	virtual void command_pool_free(CommandPoolID p_cmd_pool) override final;
+	virtual CommandPoolID command_pool_create(CommandQueueFamilyID p_cmd_queue_family, CommandBufferType p_cmd_buffer_type) override = 0;
+	virtual bool command_pool_reset(CommandPoolID p_cmd_pool) override = 0;
+	virtual void command_pool_free(CommandPoolID p_cmd_pool) override = 0;
 
 	// ----- BUFFER -----
 
-private:
-	// Used to maintain references.
-	Vector<MDCommandBuffer *> command_buffers;
-
 public:
-	virtual CommandBufferID command_buffer_create(CommandPoolID p_cmd_pool) override final;
+	virtual CommandBufferID command_buffer_create(CommandPoolID p_cmd_pool) override = 0;
 	virtual bool command_buffer_begin(CommandBufferID p_cmd_buffer) override final;
 	virtual bool command_buffer_begin_secondary(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, uint32_t p_subpass, FramebufferID p_framebuffer) override final;
 	virtual void command_buffer_end(CommandBufferID p_cmd_buffer) override final;
@@ -283,7 +297,7 @@ public:
 
 #pragma mark - Swapchain
 
-private:
+protected:
 	struct SwapChain {
 		RenderingContextDriver::SurfaceID surface = RenderingContextDriver::SurfaceID();
 		RenderPassID render_pass;
@@ -301,6 +315,7 @@ public:
 	virtual FramebufferID swap_chain_acquire_framebuffer(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, bool &r_resize_required) override final;
 	virtual RenderPassID swap_chain_get_render_pass(SwapChainID p_swap_chain) override final;
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) override final;
+	virtual ColorSpace swap_chain_get_color_space(SwapChainID p_swap_chain) override final;
 	virtual void swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) override final;
 	virtual void swap_chain_free(SwapChainID p_swap_chain) override final;
 
@@ -346,6 +361,7 @@ public:
 	virtual void command_copy_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<TextureCopyRegion> p_regions) override final;
 	virtual void command_resolve_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, uint32_t p_src_layer, uint32_t p_src_mipmap, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, uint32_t p_dst_layer, uint32_t p_dst_mipmap) override final;
 	virtual void command_clear_color_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, const Color &p_color, const TextureSubresourceRange &p_subresources) override final;
+	virtual void command_clear_depth_stencil_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, float p_depth, uint8_t p_stencil, const TextureSubresourceRange &p_subresources) override final;
 
 	virtual void command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) override final;
 	virtual void command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_dst_buffer, VectorView<BufferTextureCopyRegion> p_regions) override final;
@@ -353,7 +369,7 @@ public:
 #pragma mark Pipeline
 
 private:
-	Result<id<MTLFunction>> _create_function(MDLibrary *p_library, NSString *p_name, VectorView<PipelineSpecializationConstant> &p_specialization_constants);
+	Result<NS::SharedPtr<MTL::Function>> _create_function(MDLibrary *p_library, NS::String *p_name, VectorView<PipelineSpecializationConstant> &p_specialization_constants);
 
 public:
 	virtual void pipeline_free(PipelineID p_pipeline_id) override final;
@@ -441,6 +457,29 @@ public:
 
 	virtual PipelineID compute_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) override final;
 
+#pragma mark - Raytracing
+
+	// ----- ACCELERATION STRUCTURE -----
+
+	virtual AccelerationStructureID blas_create(BufferID p_vertex_buffer, uint64_t p_vertex_offset, VertexFormatID p_vertex_format, uint32_t p_vertex_count, uint32_t p_position_attribute_location, BufferID p_index_buffer, IndexBufferFormat p_index_format, uint64_t p_index_offset_bytes, uint32_t p_index_count, BitField<AccelerationStructureGeometryBits> p_geometry_bits) override final;
+	virtual uint32_t tlas_instances_buffer_get_size_bytes(uint32_t p_instance_count) override final;
+	virtual void tlas_instances_buffer_fill(BufferID p_instances_buffer, VectorView<AccelerationStructureID> p_blases, VectorView<Transform3D> p_transforms) override final;
+	virtual AccelerationStructureID tlas_create(BufferID p_instances_buffer) override final;
+	virtual void acceleration_structure_free(AccelerationStructureID p_acceleration_structure) override final;
+	virtual uint32_t acceleration_structure_get_scratch_size_bytes(AccelerationStructureID p_acceleration_structure) override final;
+
+	// ----- PIPELINE -----
+
+	virtual RaytracingPipelineID raytracing_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) override final;
+	virtual void raytracing_pipeline_free(RaytracingPipelineID p_pipeline) override final;
+
+	// ----- COMMANDS -----
+
+	virtual void command_build_acceleration_structure(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) override final;
+	virtual void command_bind_raytracing_pipeline(CommandBufferID p_cmd_buffer, RaytracingPipelineID p_pipeline) override final;
+	virtual void command_bind_raytracing_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) override final;
+	virtual void command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height) override final;
+
 #pragma mark - Queries
 
 	// ----- TIMESTAMP -----
@@ -481,14 +520,13 @@ public:
 	virtual const MultiviewCapabilities &get_multiview_capabilities() override final;
 	virtual const FragmentShadingRateCapabilities &get_fragment_shading_rate_capabilities() override final;
 	virtual const FragmentDensityMapCapabilities &get_fragment_density_map_capabilities() override final;
-	virtual String get_api_name() const override final { return "Metal"; }
 	virtual String get_api_version() const override final;
 	virtual String get_pipeline_cache_uuid() const override final;
 	virtual const Capabilities &get_capabilities() const override final;
 	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const override final;
 
 	// Metal-specific.
-	id<MTLDevice> get_device() const { return device; }
+	MTL::Device *get_device() const { return device; }
 	PixelFormats &get_pixel_formats() const { return *pixel_formats; }
 	MDResourceCache &get_resource_cache() const { return *resource_cache; }
 	MetalDeviceProperties const &get_device_properties() const { return *device_properties; }
@@ -498,7 +536,7 @@ public:
 	}
 
 	size_t get_texel_buffer_alignment_for_format(RDD::DataFormat p_format) const;
-	size_t get_texel_buffer_alignment_for_format(MTLPixelFormat p_format) const;
+	size_t get_texel_buffer_alignment_for_format(MTL::PixelFormat p_format) const;
 
 	_FORCE_INLINE_ uint32_t frame_count() const { return _frame_count; }
 	_FORCE_INLINE_ uint32_t frame_index() const { return _frame_index; }
@@ -509,7 +547,7 @@ public:
 	~RenderingDeviceDriverMetal();
 };
 
-// Defined outside because we need to forward declare it in metal_objects.h
+// Defined outside because we need to forward declare it in metal3_objects.h
 struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalBufferDynamicInfo : public RenderingDeviceDriverMetal::BufferInfo {
 	uint64_t size_bytes; // Contains the real buffer size / frame_count.
 	uint32_t next_frame_index(uint32_t p_frame_count) {

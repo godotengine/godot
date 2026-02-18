@@ -134,6 +134,9 @@ msgstr "Animatsioon"
 msgid "Warnings"
 msgstr "Hoiatused"
 
+msgid "Compatibility"
+msgstr "Ühilduvus"
+
 msgid "Audio"
 msgstr "Heli"
 
@@ -319,9 +322,6 @@ msgstr "Emuleerige Hiirt Puudutusest"
 
 msgid "Emulate Touch From Mouse"
 msgstr "Emuleerige Puudutust Hiirest"
-
-msgid "Compatibility"
-msgstr "Ühilduvus"
 
 msgid "Device"
 msgstr "Seade"
@@ -569,9 +569,6 @@ msgstr "Pseudo-Lokaliseerimine"
 msgid "Use Pseudolocalization"
 msgstr "Kasuta Lokaliseerimist"
 
-msgid "Replace With Accents"
-msgstr "Asenda Aktsentidega"
-
 msgid "Double Vowels"
 msgstr "Kahekordsed Täishäälkud"
 
@@ -718,24 +715,6 @@ msgstr "Tekstuuriformaat"
 
 msgid "Export Path"
 msgstr "Ekspordi Tee"
-
-msgid "Access"
-msgstr "Juurdepääs"
-
-msgid "Display Mode"
-msgstr "Kuvamisrežiim"
-
-msgid "File Mode"
-msgstr "Faili Režiim"
-
-msgid "Filters"
-msgstr "Filtrid"
-
-msgid "Show Hidden Files"
-msgstr "Näita Peidetud Faile"
-
-msgid "Disable Overwrite Warning"
-msgstr "Keela Ülekirjutamise Hoiatus"
 
 msgid "Label"
 msgstr "Silt"
@@ -1364,6 +1343,12 @@ msgstr "Parool"
 msgid "File Dialog"
 msgstr "Failidialoog"
 
+msgid "Show Hidden Files"
+msgstr "Näita Peidetud Faile"
+
+msgid "Display Mode"
+msgstr "Kuvamisrežiim"
+
 msgid "Thumbnail Size"
 msgstr "Pisipildi Suurus"
 
@@ -1940,9 +1925,6 @@ msgstr "Hiire Kursor"
 msgid "Show Image"
 msgstr "Näita Pilti"
 
-msgid "Fullsize"
-msgstr "Täissuurus"
-
 msgid "Use Filter"
 msgstr "Kasuta Filtrit"
 
@@ -2032,9 +2014,6 @@ msgstr "GDScript"
 
 msgid "Max Call Stack"
 msgstr "Maksimaalne Kutsepinu"
-
-msgid "Exclude Addons"
-msgstr "Välista Lisad"
 
 msgid "Language Server"
 msgstr "Keeleserver"
@@ -2213,17 +2192,17 @@ msgstr "Ultra Kvaliteediga Sond Kiirte Arv"
 msgid "Max Rays per Probe Pass"
 msgstr "Maksimaalne Kiirte Arv Ühe Passi Kohta"
 
-msgid "BPM"
-msgstr "BPM"
-
-msgid "Loop Offset"
-msgstr "Tsükli Nihutus"
-
 msgid "Eye Height"
 msgstr "Silma Kõrgus"
 
 msgid "IOD"
 msgstr "IOD"
+
+msgid "BPM"
+msgstr "BPM"
+
+msgid "Loop Offset"
+msgstr "Tsükli Nihutus"
 
 msgid "Spawn Limit"
 msgstr "Tekkimise Limiit"
@@ -2834,6 +2813,15 @@ msgstr "Stiilid"
 msgid "Localization"
 msgstr "Lokaliseerimine"
 
+msgid "File Mode"
+msgstr "Faili Režiim"
+
+msgid "Access"
+msgstr "Juurdepääs"
+
+msgid "Filters"
+msgstr "Filtrid"
+
 msgid "Select Mode"
 msgstr "Valimisrežiim"
 
@@ -3023,23 +3011,20 @@ msgstr "Alammenüü"
 msgid "Custom"
 msgstr "Kohandatud"
 
-msgid "Pan"
-msgstr "Nihe"
-
 msgid "Output Device"
 msgstr "Väljundseade"
 
 msgid "Input Device"
 msgstr "Sisendseade"
 
+msgid "Pan"
+msgstr "Nihe"
+
 msgid "Is Active"
 msgstr "On Aktiivne"
 
 msgid "Vertex"
 msgstr "Tipp"
-
-msgid "Cull"
-msgstr "Väljalõikama"
 
 msgid "Shadow Atlas"
 msgstr "Varju Atlas"
@@ -3067,6 +3052,9 @@ msgstr "Max Renderdatavaid Tulesid"
 
 msgid "Max Lights per Object"
 msgstr "Maks Valguste Arv Objekti Kohta"
+
+msgid "Cull"
+msgstr "Väljalõikama"
 
 msgid "Is Primary"
 msgstr "On Peamine"

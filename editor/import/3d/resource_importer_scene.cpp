@@ -2118,17 +2118,17 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 	switch (p_category) {
 		case INTERNAL_IMPORT_CATEGORY_NODE: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "node/node_type", PROPERTY_HINT_TYPE_STRING, "Node"), ""));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static()), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE: {
-			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static()), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate/physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/navmesh", PROPERTY_HINT_ENUM, "Disabled,Mesh + NavMesh,NavMesh Only"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/body_type", PROPERTY_HINT_ENUM, "StaticBody3D,RigidBody3D,Area3D"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex (Slow),Single Convex (Average),Trimesh (Slow),Box (Fast),Sphere (Fast),Cylinder (Average),Capsule (Fast),Automatic", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 7));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "physics/physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), Variant()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "physics/physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, PhysicsMaterial::get_class_static()), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
 
@@ -2203,7 +2203,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			}
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE: {
-			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static()), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "optimizer/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "optimizer/max_velocity_error", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.01));
@@ -2216,7 +2216,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_tracks/scale", PROPERTY_HINT_ENUM, "IfPresent,IfPresentForAll,Never"), 1));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE: {
-			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static()), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "rest_pose/load_pose", PROPERTY_HINT_ENUM, "Default Pose,Use AnimationPlayer,Load External Animation", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "rest_pose/external_animation_library", PROPERTY_HINT_RESOURCE_TYPE, "Animation,AnimationLibrary", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Variant()));
@@ -2246,7 +2246,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 							Variant::STRING, U"rest_pose//no_animation_chosen",
 							PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY),
 					Variant(no_animation_warning)));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "retarget/bone_map", PROPERTY_HINT_RESOURCE_TYPE, "BoneMap", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Variant()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "retarget/bone_map", PROPERTY_HINT_RESOURCE_TYPE, BoneMap::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Variant()));
 		} break;
 		default: {
 		}
@@ -2501,7 +2501,7 @@ bool ResourceImporterScene::get_internal_option_update_view_required(InternalImp
 void ResourceImporterScene::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_type", PROPERTY_HINT_TYPE_STRING, "Node"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_name"), ""));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "nodes/root_script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "nodes/root_script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static()), Variant()));
 
 	List<String> script_extensions;
 	ResourceLoader::get_recognized_extensions_for_type("Script", &script_extensions);

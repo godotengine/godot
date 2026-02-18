@@ -8,7 +8,7 @@ env:
   SCONS_FLAGS: >-
     dev_mode=yes
     module_text_server_fb_enabled=yes
-    "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.17.0/"
+    "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.18.0/"
   GODOT_CPP_BRANCH: 4.5
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
@@ -35,6 +35,7 @@ jobs:
             build-mono: true
             doc-test: true
             proj-conv: true
+            proj-export: true
             api-compat: true
             artifact: true
             # Validate godot-cpp compatibility on one arbitrary editor build.
@@ -110,7 +111,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
@@ -118,7 +119,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install libwayland-bin  # TODO: Figure out somehow how to embed this one.
-          if [ "${{ matrix.proj-test }}" == "true" ]; then
+          if [ "${{ matrix.proj-test }}" == "true" -o "${{ matrix.proj-export }}" == "true" ]; then
             sudo apt-get install mesa-vulkan-drivers
           fi
 
@@ -162,12 +163,12 @@ jobs:
         uses: dsaltares/fetch-gh-release-asset@1.1.2
         with:
           repo: AccessKit/accesskit-c
-          version: tags/0.17.0
-          file: accesskit-c-0.17.0.zip
-          target: accesskit-c-0.17.0/accesskit_c.zip
+          version: tags/0.18.0
+          file: accesskit-c-0.18.0.zip
+          target: accesskit-c-0.18.0/accesskit_c.zip
 
       - name: Extract pre-built AccessKit
-        run: unzip -o accesskit-c-0.17.0/accesskit_c.zip
+        run: unzip -o accesskit-c-0.18.0/accesskit_c.zip
 
       - name: Install mold linker
         if: matrix.proj-test
@@ -238,15 +239,29 @@ jobs:
           git diff --color --exit-code && ! git ls-files --others --exclude-standard | sed -e 's/^/New doc file missing in PR: /' | grep 'xml$'
 
       # Check API backwards compatibility
-      - name: Check for GDExtension compatibility
+      - name: Check for GDExtension compatibility – JSON check
         if: matrix.api-compat
         run: |
           ./misc/scripts/validate_extension_api.sh "${{ matrix.bin }}"
+
+      - name: Test GDExtension compatibility – load methods
+        uses: ./.github/actions/godot-compat-test
+        if: matrix.api-compat
+        with:
+          bin: ${{ matrix.bin }}
+          reftags: "4.5-stable,4.4-stable"
 
       # Download and run the test project
       - name: Test Godot project
         uses: ./.github/actions/godot-project-test
         if: matrix.proj-test
+        with:
+          bin: ${{ matrix.bin }}
+
+      # Test project export
+      - name: Test project export
+        uses: ./.github/actions/godot-project-export
+        if: matrix.proj-export
         with:
           bin: ${{ matrix.bin }}
 

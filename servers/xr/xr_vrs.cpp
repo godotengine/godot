@@ -31,6 +31,7 @@
 #include "xr_vrs.h"
 
 #include "servers/rendering/renderer_scene_render.h"
+#include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server.h"
 
 void XRVRS::_bind_methods() {

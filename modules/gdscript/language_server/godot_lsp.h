@@ -34,6 +34,15 @@
 #include "core/object/class_db.h"
 #include "core/templates/list.h"
 
+// Enable additional LSP related logging.
+//#define DEBUG_LSP
+
+#ifdef DEBUG_LSP
+#define LOG_LSP(...) print_line("[ LSP -", __FILE__, ":", __LINE__, "-", __func__, "] -", ##__VA_ARGS__)
+#else
+#define LOG_LSP(...)
+#endif
+
 namespace LSP {
 
 typedef String DocumentUri;
@@ -663,6 +672,11 @@ struct DocumentOnTypeFormattingOptions {
 	}
 };
 
+enum class LanguageId {
+	GDSCRIPT,
+	OTHER,
+};
+
 struct TextDocumentItem {
 	/**
 	 * The text document's URI.
@@ -672,7 +686,7 @@ struct TextDocumentItem {
 	/**
 	 * The text document's language identifier.
 	 */
-	String languageId;
+	LanguageId languageId;
 
 	/**
 	 * The version number of this document (it will increase after each
@@ -687,18 +701,19 @@ struct TextDocumentItem {
 
 	void load(const Dictionary &p_dict) {
 		uri = p_dict["uri"];
-		languageId = p_dict.get("languageId", "");
-		version = p_dict.get("version", 0);
-		text = p_dict.get("text", "");
-	}
+		version = p_dict["version"];
+		text = p_dict["text"];
 
-	Dictionary to_json() const {
-		Dictionary dict;
-		dict["uri"] = uri;
-		dict["languageId"] = languageId;
-		dict["version"] = version;
-		dict["text"] = text;
-		return dict;
+		// Clients should use "gdscript" as language id, but we can't enforce it.
+		// We normalize some known ids to make them easier to work with:
+		// Rider < 2026.1: "gd"
+		// Kate: "godot"
+		String rawLanguageId = p_dict["languageId"];
+		if (rawLanguageId == "gdscript" || rawLanguageId == "gd" || rawLanguageId == "godot") {
+			languageId = LanguageId::GDSCRIPT;
+		} else {
+			languageId = LanguageId::OTHER;
+		}
 	}
 };
 
@@ -1434,7 +1449,7 @@ struct CompletionContext {
 	/**
 	 * How the completion was triggered.
 	 */
-	int triggerKind = CompletionTriggerKind::TriggerCharacter;
+	int triggerKind = CompletionTriggerKind::Invoked;
 
 	/**
 	 * The trigger character (a single character) that has trigger code complete.
@@ -1457,7 +1472,10 @@ struct CompletionParams : public TextDocumentPositionParams {
 
 	void load(const Dictionary &p_params) {
 		TextDocumentPositionParams::load(p_params);
-		context.load(p_params["context"]);
+
+		if (p_params.has("context")) {
+			context.load(p_params["context"]);
+		}
 	}
 
 	Dictionary to_json() {
@@ -1702,16 +1720,8 @@ struct FileOperations {
  * Workspace specific server capabilities
  */
 struct Workspace {
-	/**
-	 * The server is interested in file notifications/requests.
-	 */
-	FileOperations fileOperations;
-
 	Dictionary to_json() const {
 		Dictionary dict;
-
-		dict["fileOperations"] = fileOperations.to_json();
-
 		return dict;
 	}
 };
@@ -1765,7 +1775,7 @@ struct ServerCapabilities {
 	/**
 	 * The server provides document highlight support.
 	 */
-	bool documentHighlightProvider = false;
+	bool documentHighlightProvider = true;
 
 	/**
 	 * The server provides document symbol support.
@@ -2122,4 +2132,26 @@ static String marked_documentation(const String &p_bbcode) {
 	}
 	return markdown;
 }
+
+/**
+ * A document highlight is a range inside a text document which deserves
+ * special attention. Usually a document highlight is visualized by changing
+ * the background color of its range.
+ */
+struct DocumentHighlight {
+	/**
+	 * The range this highlight applies to.
+	 */
+	Range range;
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+		dict["range"] = range.to_json();
+		return dict;
+	}
+
+	_FORCE_INLINE_ void load(const Dictionary &p_params) {
+		range.load(p_params["range"]);
+	}
+};
 } // namespace LSP

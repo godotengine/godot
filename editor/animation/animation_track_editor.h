@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/rb_map.h"
 #include "editor/editor_data.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/property_selector.h"
@@ -522,7 +523,7 @@ public:
 	virtual int get_key_height() const;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec);
 	virtual bool is_key_selectable_by_distance() const;
-	virtual void draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right);
+	virtual void draw_key_link(int p_index_from, int p_index_to, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right);
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
 	virtual void draw_bg(int p_clip_left, int p_clip_right);
 	virtual void draw_fg(int p_clip_left, int p_clip_right);
@@ -616,6 +617,9 @@ class AnimationTrackEditor : public VBoxContainer {
 	VBoxContainer *track_vbox = nullptr;
 	AnimationBezierTrackEdit *bezier_edit = nullptr;
 	VBoxContainer *timeline_vbox = nullptr;
+
+	MarginContainer *timeline_mc = nullptr;
+	void _update_timeline_margins();
 
 	VBoxContainer *info_message_vbox = nullptr;
 	Label *info_message = nullptr;
@@ -893,7 +897,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _pick_track_filter_text_changed(const String &p_newtext);
 	void _pick_track_select_recursive(TreeItem *p_item, const String &p_filter, Vector<Node *> &p_select_candidates);
 
-	double snap_unit;
+	double snap_unit = 0;
 	bool fps_compatible = true;
 	int nearest_fps = 0;
 	void _update_snap_unit();

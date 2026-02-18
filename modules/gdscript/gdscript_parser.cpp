@@ -160,7 +160,7 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@export_dir"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_DIR, Variant::STRING>);
 		register_annotation(MethodInfo("@export_global_file", PropertyInfo(Variant::STRING, "filter")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_GLOBAL_FILE, Variant::STRING>, varray(""), true);
 		register_annotation(MethodInfo("@export_global_dir"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_GLOBAL_DIR, Variant::STRING>);
-		register_annotation(MethodInfo("@export_multiline"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_MULTILINE_TEXT, Variant::STRING>);
+		register_annotation(MethodInfo("@export_multiline", PropertyInfo(Variant::STRING, "hint")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_MULTILINE_TEXT, Variant::STRING>, varray(""), true);
 		register_annotation(MethodInfo("@export_placeholder", PropertyInfo(Variant::STRING, "placeholder")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_PLACEHOLDER_TEXT, Variant::STRING>);
 		register_annotation(MethodInfo("@export_range", PropertyInfo(Variant::FLOAT, "min"), PropertyInfo(Variant::FLOAT, "max"), PropertyInfo(Variant::FLOAT, "step"), PropertyInfo(Variant::STRING, "extra_hints")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_RANGE, Variant::FLOAT>, varray(1.0, ""), true);
 		register_annotation(MethodInfo("@export_exp_easing", PropertyInfo(Variant::STRING, "hints")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_EXP_EASING, Variant::FLOAT>, varray(""), true);
@@ -186,7 +186,8 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@warning_ignore_start", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::STANDALONE, &GDScriptParser::warning_ignore_region_annotations, varray(), true);
 		register_annotation(MethodInfo("@warning_ignore_restore", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::STANDALONE, &GDScriptParser::warning_ignore_region_annotations, varray(), true);
 		// Networking.
-		register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode"), PropertyInfo(Variant::STRING, "sync"), PropertyInfo(Variant::STRING, "transfer_mode"), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::rpc_annotation, varray("authority", "call_remote", "unreliable", 0));
+		// Keep in sync with `rpc_annotation()` and `SceneRPCInterface::_parse_rpc_config()`.
+		register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode"), PropertyInfo(Variant::STRING, "sync"), PropertyInfo(Variant::STRING, "transfer_mode"), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::rpc_annotation, varray("authority", "call_remote", "reliable", 0));
 	}
 
 #ifdef DEBUG_ENABLED
@@ -234,12 +235,22 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 	// TODO: Improve error reporting by pointing at source code.
 	// TODO: Errors might point at more than one place at once (e.g. show previous declaration).
 	panic_mode = true;
-	// TODO: Improve positional information.
+	ParserError err;
+	err.message = p_message;
+
 	if (p_origin == nullptr) {
-		errors.push_back({ p_message, previous.start_line, previous.start_column });
+		err.start_line = previous.start_line;
+		err.start_column = previous.start_column;
+		err.end_line = previous.end_line;
+		err.end_column = previous.end_column;
 	} else {
-		errors.push_back({ p_message, p_origin->start_line, p_origin->start_column });
+		err.start_line = p_origin->start_line;
+		err.start_column = p_origin->start_column;
+		err.end_line = p_origin->end_line;
+		err.end_column = p_origin->end_column;
 	}
+
+	errors.push_back(err);
 }
 
 #ifdef DEBUG_ENABLED
@@ -278,7 +289,9 @@ void GDScriptParser::apply_pending_warnings() {
 		warning.code = pw.code;
 		warning.symbols = pw.symbols;
 		warning.start_line = pw.source->start_line;
+		warning.start_column = pw.source->start_column;
 		warning.end_line = pw.source->end_line;
+		warning.end_column = pw.source->end_column;
 
 		if (pw.treated_as_error) {
 			push_error(warning.get_message() + String(" (Warning treated as error.)"), pw.source);
@@ -690,12 +703,12 @@ void GDScriptParser::parse_program() {
 	current_class = head;
 	bool can_have_class_or_extends = true;
 
-#define PUSH_PENDING_ANNOTATIONS_TO_HEAD                 \
-	if (!annotation_stack.is_empty()) {                  \
+#define PUSH_PENDING_ANNOTATIONS_TO_HEAD \
+	if (!annotation_stack.is_empty()) { \
 		for (AnnotationNode *annot : annotation_stack) { \
-			head->annotations.push_back(annot);          \
-		}                                                \
-		annotation_stack.clear();                        \
+			head->annotations.push_back(annot); \
+		} \
+		annotation_stack.clear(); \
 	}
 
 	while (!check(GDScriptTokenizer::Token::TK_EOF)) {
@@ -3453,8 +3466,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 		if (!check(GDScriptTokenizer::Token::PERIOD)) {
 			make_completion_context(COMPLETION_SUPER, call);
 		}
-		push_multiline(true);
-		if (match(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
+		if (check(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
+			push_multiline(true);
+			advance();
 			// Implicit call to the parent method of the same name.
 			if (current_function == nullptr) {
 				push_error(R"(Cannot use implicit "super" call outside of a function.)");
@@ -3471,15 +3485,18 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 			consume(GDScriptTokenizer::Token::PERIOD, R"(Expected "." or "(" after "super".)");
 			make_completion_context(COMPLETION_SUPER_METHOD, call);
 			if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected function name after ".".)")) {
-				pop_multiline();
 				complete_extents(call);
 				return nullptr;
 			}
 			IdentifierNode *identifier = parse_identifier();
 			call->callee = identifier;
 			call->function_name = identifier->name;
-			if (!consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after function name.)")) {
-				pop_multiline();
+
+			if (check(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
+				push_multiline(true);
+				advance();
+			} else {
+				push_error(R"(Expected "(" after function name.)");
 				complete_extents(call);
 				return nullptr;
 			}
@@ -3901,20 +3918,24 @@ enum DocLineState {
 	DOC_LINE_IN_KBD,
 };
 
-static String _process_doc_line(const String &p_line, const String &p_text, const String &p_space_prefix, DocLineState &r_state) {
+static void _process_doc_line(const String &p_line, String &r_text, const String &p_space_prefix, DocLineState &r_state) {
 	String line = p_line;
 	if (r_state == DOC_LINE_NORMAL) {
-		line = line.strip_edges(true, false);
+		line = line.lstrip(" \t");
 	} else {
 		line = line.trim_prefix(p_space_prefix);
 	}
 
 	String line_join;
-	if (!p_text.is_empty()) {
+	if (!r_text.is_empty()) {
 		if (r_state == DOC_LINE_NORMAL) {
-			if (p_text.ends_with("[/codeblock]")) {
+			if (r_text.ends_with("[/codeblock]")) {
 				line_join = "\n";
-			} else if (!p_text.ends_with("[br]")) {
+			} else if (r_text.ends_with("[br]")) {
+				// We want to replace `[br][br]` with `\n` (paragraph), so we move the trailing `[br]` here.
+				r_text = r_text.left(-4); // `-len("[br]")`.
+				line = "[br]" + line;
+			} else if (!r_text.ends_with("\n")) {
 				line_join = " ";
 			}
 		} else {
@@ -3944,7 +3965,14 @@ static String _process_doc_line(const String &p_line, const String &p_text, cons
 				from = rb_pos + 1;
 
 				String tag = line.substr(lb_pos + 1, rb_pos - lb_pos - 1);
-				if (tag == "code" || tag.begins_with("code ")) {
+				if (tag == "br") {
+					if (line.substr(from, 4) == "[br]") { // `len("[br]")`.
+						// Replace `[br][br]` with `\n` (paragraph).
+						result += line.substr(buffer_start, lb_pos - buffer_start) + '\n';
+						from += 4; // `len("[br]")`.
+						buffer_start = from;
+					}
+				} else if (tag == "code" || tag.begins_with("code ")) {
 					r_state = DOC_LINE_IN_CODE;
 				} else if (tag == "codeblock" || tag.begins_with("codeblock ")) {
 					if (lb_pos == 0) {
@@ -4012,10 +4040,10 @@ static String _process_doc_line(const String &p_line, const String &p_text, cons
 
 	result += line.substr(buffer_start);
 	if (r_state == DOC_LINE_NORMAL) {
-		result = result.strip_edges(false, true);
+		result = result.rstrip(" \t");
 	}
 
-	return line_join + result;
+	r_text += line_join + result;
 }
 
 bool GDScriptParser::has_comment(int p_line, bool p_must_be_doc) {
@@ -4078,7 +4106,7 @@ GDScriptParser::MemberDocData GDScriptParser::parse_doc_comment(int p_line, bool
 			}
 		}
 
-		result.description += _process_doc_line(doc_line, result.description, space_prefix, state);
+		_process_doc_line(doc_line, result.description, space_prefix, state);
 	}
 
 	return result;
@@ -4188,9 +4216,9 @@ GDScriptParser::ClassDocData GDScriptParser::parse_class_doc_comment(int p_line,
 		}
 
 		if (is_in_brief) {
-			result.brief += _process_doc_line(doc_line, result.brief, space_prefix, state);
+			_process_doc_line(doc_line, result.brief, space_prefix, state);
 		} else {
-			result.description += _process_doc_line(doc_line, result.description, space_prefix, state);
+			_process_doc_line(doc_line, result.description, space_prefix, state);
 		}
 	}
 
@@ -4696,13 +4724,10 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	// This is called after the analyzer is done finding the type, so this should be set here.
 	DataType export_type = variable->get_datatype();
 
-	bool is_variant_explicitly_declared = false;
-
 	// Use initializer type if specified type is `Variant`.
-	if (export_type.is_variant() && variable->initializer != nullptr && variable->initializer->datatype.is_set()) {
+	if (export_type.is_variant() && !export_type.is_hard_type() && variable->initializer != nullptr && variable->initializer->datatype.is_set()) {
 		export_type = variable->initializer->get_datatype();
 		export_type.type_source = DataType::INFERRED;
-		is_variant_explicitly_declared = true;
 	}
 
 	const Variant::Type original_export_type_builtin = export_type.builtin_type;
@@ -4747,36 +4772,31 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	} else if (p_annotation->name == SNAME("@export")) {
 		use_default_variable_type_check = false;
 
-		DataType deduced_export_type = export_type;
-
-		if (is_variant_explicitly_declared) {
-			deduced_export_type = variable->get_datatype();
-		}
 		if (variable->datatype_specifier == nullptr && variable->initializer == nullptr) {
 			push_error(R"(Cannot use simple "@export" annotation with variable without type or initializer, since type can't be inferred.)", p_annotation);
 			return false;
 		}
 
-		if (deduced_export_type.has_no_type()) {
+		if (export_type.has_no_type()) {
 			push_error(R"(Cannot use simple "@export" annotation because the type of the initialized value can't be inferred.)", p_annotation);
 			return false;
 		}
 
-		switch (deduced_export_type.kind) {
+		switch (export_type.kind) {
 			case GDScriptParser::DataType::BUILTIN:
-				variable->export_info.type = deduced_export_type.builtin_type;
+				variable->export_info.type = export_type.builtin_type;
 				variable->export_info.hint = PROPERTY_HINT_NONE;
 				variable->export_info.hint_string = String();
 				break;
 			case GDScriptParser::DataType::NATIVE:
 			case GDScriptParser::DataType::SCRIPT:
 			case GDScriptParser::DataType::CLASS: {
-				const StringName class_name = _find_narrowest_native_or_global_class(deduced_export_type);
-				if (ClassDB::is_parent_class(deduced_export_type.native_type, SNAME("Resource"))) {
+				const StringName class_name = _find_narrowest_native_or_global_class(export_type);
+				if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
 					variable->export_info.type = Variant::OBJECT;
 					variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
 					variable->export_info.hint_string = class_name;
-				} else if (ClassDB::is_parent_class(deduced_export_type.native_type, SNAME("Node"))) {
+				} else if (ClassDB::is_parent_class(export_type.native_type, SNAME("Node"))) {
 					variable->export_info.type = Variant::OBJECT;
 					variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
 					variable->export_info.hint_string = class_name;
@@ -4786,7 +4806,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 				}
 			} break;
 			case GDScriptParser::DataType::ENUM: {
-				if (deduced_export_type.is_meta_type) {
+				if (export_type.is_meta_type) {
 					variable->export_info.type = Variant::DICTIONARY;
 				} else {
 					variable->export_info.type = Variant::INT;
@@ -4794,11 +4814,11 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 
 					String enum_hint_string;
 					bool first = true;
-					for (const KeyValue<StringName, int64_t> &E : deduced_export_type.enum_values) {
-						if (!first) {
-							enum_hint_string += ",";
-						} else {
+					for (const KeyValue<StringName, int64_t> &E : export_type.enum_values) {
+						if (first) {
 							first = false;
+						} else {
+							enum_hint_string += ",";
 						}
 						enum_hint_string += E.key.operator String().capitalize().xml_escape();
 						enum_hint_string += ":";
@@ -4807,11 +4827,11 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 
 					variable->export_info.hint_string = enum_hint_string;
 					variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
-					variable->export_info.class_name = String(deduced_export_type.native_type).replace("::", ".");
+					variable->export_info.class_name = String(export_type.native_type).replace("::", ".");
 				}
 			} break;
 			case GDScriptParser::DataType::VARIANT: {
-				if (deduced_export_type.is_variant()) {
+				if (export_type.is_variant()) {
 					variable->export_info.type = Variant::NIL;
 					variable->export_info.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 				}
@@ -4872,10 +4892,10 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 						String enum_hint_string;
 						bool first = true;
 						for (const KeyValue<StringName, int64_t> &E : export_type.enum_values) {
-							if (!first) {
-								enum_hint_string += ",";
-							} else {
+							if (first) {
 								first = false;
+							} else {
+								enum_hint_string += ",";
 							}
 							enum_hint_string += E.key.operator String().capitalize().xml_escape();
 							enum_hint_string += ":";
@@ -5095,14 +5115,14 @@ bool GDScriptParser::warning_ignore_annotation(AnnotationNode *p_annotation, Nod
 			int end_line = p_target->end_line;
 
 			switch (p_target->type) {
-#define SIMPLE_CASE(m_type, m_class, m_property)          \
-	case m_type: {                                        \
+#define SIMPLE_CASE(m_type, m_class, m_property) \
+	case m_type: { \
 		m_class *node = static_cast<m_class *>(p_target); \
-		if (node->m_property == nullptr) {                \
-			end_line = node->start_line;                  \
-		} else {                                          \
-			end_line = node->m_property->end_line;        \
-		}                                                 \
+		if (node->m_property == nullptr) { \
+			end_line = node->start_line; \
+		} else { \
+			end_line = node->m_property->end_line; \
+		} \
 	} break;
 
 				// Can contain properties (set/get).
@@ -5207,6 +5227,7 @@ bool GDScriptParser::rpc_annotation(AnnotationNode *p_annotation, Node *p_target
 		return false;
 	}
 
+	// Default values should match the annotation registration defaults and `SceneRPCInterface::_parse_rpc_config()`.
 	Dictionary rpc_config;
 	rpc_config["rpc_mode"] = MultiplayerAPI::RPC_MODE_AUTHORITY;
 	if (!p_annotation->resolved_arguments.is_empty()) {

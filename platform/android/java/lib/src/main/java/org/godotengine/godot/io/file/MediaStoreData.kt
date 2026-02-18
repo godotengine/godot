@@ -37,6 +37,7 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -45,6 +46,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
+import java.io.IOException
 import java.nio.channels.FileChannel
 
 
@@ -53,7 +55,7 @@ import java.nio.channels.FileChannel
  * under scoped storage via the MediaStore API.
  */
 @RequiresApi(Build.VERSION_CODES.Q)
-internal class MediaStoreData(context: Context, filePath: String, accessFlag: FileAccessFlags) :
+internal class MediaStoreData(context: Context, private val filePath: String, accessFlag: FileAccessFlags) :
 	DataAccess.FileChannelDataAccess(filePath) {
 
 	private data class DataItem(
@@ -82,10 +84,6 @@ internal class MediaStoreData(context: Context, filePath: String, accessFlag: Fi
 
 		private const val SELECTION_BY_PATH = "${MediaStore.Files.FileColumns.DISPLAY_NAME} = ? " +
 			" AND ${MediaStore.Files.FileColumns.RELATIVE_PATH} = ?"
-
-		private const val AUTHORITY_MEDIA_DOCUMENTS = "com.android.providers.media.documents"
-		private const val AUTHORITY_EXTERNAL_STORAGE_DOCUMENTS = "com.android.externalstorage.documents"
-		private const val AUTHORITY_DOWNLOADS_DOCUMENTS = "com.android.providers.downloads.documents"
 
 		private fun getSelectionByPathArguments(path: String): Array<String> {
 			return arrayOf(getMediaStoreDisplayName(path), getMediaStoreRelativePath(path))
@@ -212,10 +210,6 @@ internal class MediaStoreData(context: Context, filePath: String, accessFlag: Fi
 			return dataItem.dateModified.toLong() / 1000L
 		}
 
-		fun fileLastAccessed(@Suppress("UNUSED_PARAMETER") context: Context, @Suppress("UNUSED_PARAMETER") path: String): Long {
-			return 0L
-		}
-
 		fun fileSize(context: Context, path: String): Long {
 			val result = queryByPath(context, path)
 			if (result.isEmpty()) {
@@ -251,76 +245,12 @@ internal class MediaStoreData(context: Context, filePath: String, accessFlag: Fi
 			return updated > 0
 		}
 
-		fun getUriFromDirectoryPath(context: Context, directoryPath: String): Uri? {
-			if (!directoryExists(directoryPath)) {
-				return null
-			}
-			// Check if the path is under external storage.
-			val externalStorageRoot = Environment.getExternalStorageDirectory().absolutePath
-			if (directoryPath.startsWith(externalStorageRoot)) {
-				val relativePath = directoryPath.replaceFirst(externalStorageRoot, "").trim('/')
-				val uri = Uri.Builder()
-					.scheme("content")
-					.authority(AUTHORITY_EXTERNAL_STORAGE_DOCUMENTS)
-					.appendPath("document")
-					.appendPath("primary:$relativePath")
-					.build()
-				return uri
-			}
-			return null
-		}
-
-		fun getFilePathFromUri(context: Context, uri: Uri): String? {
-			// Converts content uri to filepath.
-			val id = getIdFromUri(uri) ?: return null
-
-			if (uri.authority == AUTHORITY_EXTERNAL_STORAGE_DOCUMENTS) {
-				val split = id.split(":")
-				val fileName = split.last()
-				val relativePath = split.dropLast(1).joinToString("/")
-				val fullPath = File(Environment.getExternalStorageDirectory(), "$relativePath/$fileName").absolutePath
-				return fullPath
-			} else {
-				val id = id.toLongOrNull() ?: return null
-				val dataItems = queryById(context, id)
-				return if (dataItems.isNotEmpty()) {
-					val dataItem = dataItems[0]
-					File(Environment.getExternalStorageDirectory(), File(dataItem.relativePath, dataItem.displayName).toString()).absolutePath
-				} else {
-					null
-				}
-			}
-		}
-
-		private fun getIdFromUri(uri: Uri): String? {
-			return try {
-				if (uri.authority == AUTHORITY_EXTERNAL_STORAGE_DOCUMENTS || uri.authority == AUTHORITY_MEDIA_DOCUMENTS || uri.authority == AUTHORITY_DOWNLOADS_DOCUMENTS) {
-					val documentId = uri.lastPathSegment ?: throw IllegalArgumentException("Invalid URI: $uri")
-					documentId.substringAfter(":")
-				} else {
-					throw IllegalArgumentException("Unsupported URI format: $uri")
-				}
-			} catch (e: Exception) {
-				Log.d(TAG, "Failed to parse ID from URI: $uri", e)
-				null
-			}
-		}
-
-		private fun directoryExists(path: String): Boolean {
-			return try {
-				val file = File(path)
-				file.isDirectory && file.exists()
-			} catch (e: SecurityException) {
-				Log.d(TAG, "Failed to check directoryExists: $path", e)
-				false
-			}
-		}
-
 	}
 
 	private val id: Long
 	private val uri: Uri
 	override val fileChannel: FileChannel
+	private val parcelFileDescriptor: ParcelFileDescriptor
 
 	init {
 		val contentResolver = context.contentResolver
@@ -355,7 +285,7 @@ internal class MediaStoreData(context: Context, filePath: String, accessFlag: Fi
 		id = dataItem.id
 		uri = dataItem.uri
 
-		val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, accessFlag.getMode())
+		parcelFileDescriptor = contentResolver.openFileDescriptor(uri, accessFlag.getMode())
 			?: throw IllegalStateException("Unable to access file descriptor")
 		fileChannel = if (accessFlag == FileAccessFlags.READ) {
 			FileInputStream(parcelFileDescriptor.fileDescriptor).channel
@@ -365,6 +295,20 @@ internal class MediaStoreData(context: Context, filePath: String, accessFlag: Fi
 
 		if (accessFlag.shouldTruncate()) {
 			fileChannel.truncate(0)
+		}
+	}
+
+	override fun close() {
+		try {
+			fileChannel.close()
+		} catch (e: IOException) {
+			Log.w(TAG, "Exception when closing file $filePath.", e)
+		} finally {
+			try {
+				parcelFileDescriptor.close()
+			} catch (e: IOException) {
+				Log.w(TAG, "Exception when closing ParcelFileDescriptor for $filePath.", e)
+			}
 		}
 	}
 }

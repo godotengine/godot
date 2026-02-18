@@ -207,6 +207,7 @@ public partial class ExportedProperties(string primaryCtorParameter) : GodotObje
     // Classes
     [Export] private GodotObject PropertyGodotObjectOrDerived { get; set; }
     [Export] private Godot.Texture PropertyGodotResourceTexture { get; set; }
+    [Export] private Godot.Texture PropertyGodotResourceTextureWithInitializer { get; set; } = new() { ResourceName = "" };
     [Export] private StringName PropertyStringName { get; set; } = new StringName("foo");
     [Export] private NodePath PropertyNodePath { get; set; } = new NodePath("foo");
     [Export] private Rid PropertyRid { get; set; }

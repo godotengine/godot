@@ -231,6 +231,9 @@ bool EditorBitmapPreviewPlugin::handles(const String &p_type) const {
 
 Ref<Texture2D> EditorBitmapPreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const {
 	Ref<BitMap> bm = p_from;
+	if (bm.is_null()) {
+		return Ref<Texture2D>();
+	}
 
 	if (bm->get_size() == Size2()) {
 		return Ref<Texture2D>();
@@ -428,27 +431,27 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 				Vector3(x0 * zr0, z0, y0 * zr0)
 			};
 
-#define ADD_POINT(m_idx)                                                                               \
-	normals.push_back(v[m_idx]);                                                                       \
-	vertices.push_back(v[m_idx] * radius);                                                             \
-	{                                                                                                  \
-		Vector2 uv;                                                                                    \
-		if (j >= lons / 2) {                                                                           \
+#define ADD_POINT(m_idx) \
+	normals.push_back(v[m_idx]); \
+	vertices.push_back(v[m_idx] * radius); \
+	{ \
+		Vector2 uv; \
+		if (j >= lons / 2) { \
 			uv = Vector2(Math::atan2(-v[m_idx].x, -v[m_idx].z), Math::atan2(v[m_idx].y, -v[m_idx].z)); \
-		} else {                                                                                       \
-			uv = Vector2(Math::atan2(v[m_idx].x, v[m_idx].z), Math::atan2(-v[m_idx].y, v[m_idx].z));   \
-		}                                                                                              \
-		uv /= Math::PI;                                                                                \
-		uv *= 4.0;                                                                                     \
-		uv = uv * 0.5 + Vector2(0.5, 0.5);                                                             \
-		uvs.push_back(uv);                                                                             \
-	}                                                                                                  \
-	{                                                                                                  \
-		Vector3 t = tt.xform(v[m_idx]);                                                                \
-		tangents.push_back(t.x);                                                                       \
-		tangents.push_back(t.y);                                                                       \
-		tangents.push_back(t.z);                                                                       \
-		tangents.push_back(1.0);                                                                       \
+		} else { \
+			uv = Vector2(Math::atan2(v[m_idx].x, v[m_idx].z), Math::atan2(-v[m_idx].y, v[m_idx].z)); \
+		} \
+		uv /= Math::PI; \
+		uv *= 4.0; \
+		uv = uv * 0.5 + Vector2(0.5, 0.5); \
+		uvs.push_back(uv); \
+	} \
+	{ \
+		Vector3 t = tt.xform(v[m_idx]); \
+		tangents.push_back(t.x); \
+		tangents.push_back(t.y); \
+		tangents.push_back(t.z); \
+		tangents.push_back(1.0); \
 	}
 
 			ADD_POINT(0);

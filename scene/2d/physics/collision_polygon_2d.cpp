@@ -151,14 +151,14 @@ void CollisionPolygon2D::_notification(int p_what) {
 			if (one_way_collision) {
 				Color dcol = get_tree()->get_debug_collisions_color(); //0.9,0.2,0.2,0.4);
 				dcol.a = 1.0;
-				Vector2 line_to(0, 20);
+				Vector2 line_to = 20.0 * one_way_collision_direction;
 				draw_line(Vector2(), line_to, dcol, 3);
 				real_t tsize = 8;
 
 				Vector<Vector2> pts = {
-					line_to + Vector2(0, tsize),
-					line_to + Vector2(Math::SQRT12 * tsize, 0),
-					line_to + Vector2(-Math::SQRT12 * tsize, 0)
+					line_to + tsize * one_way_collision_direction,
+					line_to + Math::SQRT12 * tsize * one_way_collision_direction.orthogonal(),
+					line_to - Math::SQRT12 * tsize * one_way_collision_direction.orthogonal(),
 				};
 
 				Vector<Color> cols{ dcol, dcol, dcol };
@@ -292,6 +292,22 @@ real_t CollisionPolygon2D::get_one_way_collision_margin() const {
 	return one_way_collision_margin;
 }
 
+void CollisionPolygon2D::set_one_way_collision_direction(const Vector2 &p_direction) {
+	if (p_direction == one_way_collision_direction) {
+		return;
+	}
+
+	one_way_collision_direction = p_direction.normalized();
+	queue_redraw();
+	if (collision_object) {
+		collision_object->shape_owner_set_one_way_collision_direction(owner_id, p_direction);
+	}
+}
+
+Vector2 CollisionPolygon2D::get_one_way_collision_direction() const {
+	return one_way_collision_direction;
+}
+
 void CollisionPolygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_polygon", "polygon"), &CollisionPolygon2D::set_polygon);
 	ClassDB::bind_method(D_METHOD("get_polygon"), &CollisionPolygon2D::get_polygon);
@@ -304,6 +320,8 @@ void CollisionPolygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_one_way_collision_enabled"), &CollisionPolygon2D::is_one_way_collision_enabled);
 	ClassDB::bind_method(D_METHOD("set_one_way_collision_margin", "margin"), &CollisionPolygon2D::set_one_way_collision_margin);
 	ClassDB::bind_method(D_METHOD("get_one_way_collision_margin"), &CollisionPolygon2D::get_one_way_collision_margin);
+	ClassDB::bind_method(D_METHOD("set_one_way_collision_direction", "direction"), &CollisionPolygon2D::set_one_way_collision_direction);
+	ClassDB::bind_method(D_METHOD("get_one_way_collision_direction"), &CollisionPolygon2D::get_one_way_collision_direction);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "build_mode", PROPERTY_HINT_ENUM, "Solids,Segments"), "set_build_mode", "get_build_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
@@ -312,6 +330,7 @@ void CollisionPolygon2D::_bind_methods() {
 	ADD_GROUP("One Way Collision", "one_way_collision");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision", PROPERTY_HINT_GROUP_ENABLE), "set_one_way_collision", "is_one_way_collision_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1,suffix:px"), "set_one_way_collision_margin", "get_one_way_collision_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "one_way_collision_direction"), "set_one_way_collision_direction", "get_one_way_collision_direction");
 
 	BIND_ENUM_CONSTANT(BUILD_SOLIDS);
 	BIND_ENUM_CONSTANT(BUILD_SEGMENTS);

@@ -222,7 +222,7 @@ Error AudioDriverPulseAudio::init_output_device() {
 	}
 
 	int tmp_latency = Engine::get_singleton()->get_audio_output_latency();
-	buffer_frames = closest_power_of_2(tmp_latency * mix_rate / 1000);
+	buffer_frames = Math::closest_power_of_2(tmp_latency * mix_rate / 1000);
 	pa_buffer_size = buffer_frames * pa_map.channels;
 
 	print_verbose("PulseAudio: detected " + itos(pa_map.channels) + " output channels");
@@ -555,6 +555,8 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 			}
 
 			// User selected a new input device, finish the current one so we'll init the new input device
+			// (If `AudioServer.set_input_device()` did not set the value when the microphone was running,
+			//  this section with its problematic error handling could be deleted.)
 			if (ad->input_device_name != ad->new_input_device) {
 				ad->input_device_name = ad->new_input_device;
 				ad->finish_input_device();
@@ -691,6 +693,10 @@ void AudioDriverPulseAudio::finish() {
 }
 
 Error AudioDriverPulseAudio::init_input_device() {
+	if (pa_rec_str) {
+		return ERR_ALREADY_IN_USE;
+	}
+
 	// If there is a specified input device, check that it is really present
 	if (input_device_name != "Default") {
 		PackedStringArray list = get_input_device_list();
@@ -721,7 +727,7 @@ Error AudioDriverPulseAudio::init_input_device() {
 	spec.rate = mix_rate;
 
 	int input_latency = 30;
-	int input_buffer_frames = closest_power_of_2(input_latency * mix_rate / 1000);
+	int input_buffer_frames = Math::closest_power_of_2(input_latency * mix_rate / 1000);
 	int input_buffer_size = input_buffer_frames * spec.channels;
 
 	pa_buffer_attr attr = {};

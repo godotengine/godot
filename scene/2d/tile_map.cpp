@@ -38,17 +38,17 @@
 #endif // NAVIGATION_2D_DISABLED
 
 #define TILEMAP_CALL_FOR_LAYER(layer, function, ...) \
-	if (layer < 0) {                                 \
-		layer = layers.size() + layer;               \
-	};                                               \
-	ERR_FAIL_INDEX(layer, (int)layers.size());       \
+	if (layer < 0) { \
+		layer = layers.size() + layer; \
+	}; \
+	ERR_FAIL_INDEX(layer, (int)layers.size()); \
 	layers[layer]->function(__VA_ARGS__);
 
 #define TILEMAP_CALL_FOR_LAYER_V(layer, err_value, function, ...) \
-	if (layer < 0) {                                              \
-		layer = layers.size() + layer;                            \
-	};                                                            \
-	ERR_FAIL_INDEX_V(layer, (int)layers.size(), err_value);       \
+	if (layer < 0) { \
+		layer = layers.size() + layer; \
+	}; \
+	ERR_FAIL_INDEX_V(layer, (int)layers.size(), err_value); \
 	return layers[layer]->function(__VA_ARGS__);
 
 #ifndef NAVIGATION_2D_DISABLED
@@ -147,7 +147,7 @@ Vector<int> TileMap::_get_tile_map_data_using_compatibility_format(int p_layer) 
 	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), Vector<int>());
 
 	// Export tile data to raw format.
-	const HashMap<Vector2i, CellData> tile_map_layer_data = layers[p_layer]->get_tile_map_layer_data();
+	const HashMap<Vector2i, CellData> tile_map_layer_data(layers[p_layer]->get_tile_map_layer_data());
 	Vector<int> tile_data;
 	tile_data.resize(tile_map_layer_data.size() * 3);
 	int *w = tile_data.ptrw();
@@ -992,7 +992,7 @@ void TileMap::_bind_methods() {
 	GDVIRTUAL_BIND(_use_tile_data_runtime_update, "layer", "coords");
 	GDVIRTUAL_BIND(_tile_data_runtime_update, "layer", "coords", "tile_data");
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, "TileSet"), "set_tileset", "get_tileset");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, TileSet::get_class_static()), "set_tileset", "get_tileset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rendering_quadrant_size", PROPERTY_HINT_RANGE, "1,128,1"), "set_rendering_quadrant_size", "get_rendering_quadrant_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_animatable"), "set_collision_animatable", "is_collision_animatable");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");

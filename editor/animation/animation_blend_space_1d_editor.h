@@ -49,9 +49,6 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	Ref<AnimationNodeBlendSpace1D> blend_space;
 	bool read_only = false;
 
-	HBoxContainer *goto_parent_hb = nullptr;
-	Button *goto_parent = nullptr;
-
 	PanelContainer *panel = nullptr;
 	Button *tool_blend = nullptr;
 	Button *tool_select = nullptr;

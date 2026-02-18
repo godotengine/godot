@@ -316,6 +316,29 @@ TEST_CASE("[Object] Absent name getter") {
 			"The returned value should equal nil variant.");
 }
 
+class SignalReceiver : public Object {
+	GDCLASS(SignalReceiver, Object);
+
+public:
+	Vector<Variant> received_args;
+
+	void callback0() {
+		received_args = Vector<Variant>{};
+	}
+
+	void callback1(Variant p_arg1) {
+		received_args = Vector<Variant>{ p_arg1 };
+	}
+
+	void callback2(Variant p_arg1, Variant p_arg2) {
+		received_args = Vector<Variant>{ p_arg1, p_arg2 };
+	}
+
+	void callback3(Variant p_arg1, Variant p_arg2, Variant p_arg3) {
+		received_args = Vector<Variant>{ p_arg1, p_arg2, p_arg3 };
+	}
+};
+
 TEST_CASE("[Object] Signals") {
 	Object object;
 
@@ -454,6 +477,51 @@ TEST_CASE("[Object] Signals") {
 		signal_connections.clear();
 		object.get_all_signal_connections(&signal_connections);
 		CHECK(signal_connections.size() == 0);
+	}
+
+	SUBCASE("Connecting with CONNECT_APPEND_SOURCE_OBJECT flag") {
+		SignalReceiver target;
+
+		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback1), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object.emit_signal("my_custom_signal");
+		CHECK_EQ(target.received_args, Vector<Variant>{ &object });
+		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback1));
+
+		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object.emit_signal("my_custom_signal", "emit_arg");
+		CHECK_EQ(target.received_args, Vector<Variant>{ "emit_arg", &object });
+		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2));
+
+		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2).bind("bind_arg"), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object.emit_signal("my_custom_signal");
+		CHECK_EQ(target.received_args, Vector<Variant>{ &object, "bind_arg" });
+		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2));
+
+		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback3).bind("bind_arg"), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object.emit_signal("my_custom_signal", "emit_arg");
+		CHECK_EQ(target.received_args, Vector<Variant>{ "emit_arg", &object, "bind_arg" });
+		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback3));
+
+		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback3).bind(&object), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object.emit_signal("my_custom_signal", &object);
+		CHECK_EQ(target.received_args, Vector<Variant>{ &object, &object, &object });
+		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback3));
+
+		// Source should be appended regardless of unbinding.
+		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback1).unbind(1), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object.emit_signal("my_custom_signal", "emit_arg");
+		CHECK_EQ(target.received_args, Vector<Variant>{ &object });
+		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback1));
+
+		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2).bind("bind_arg").unbind(1), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object.emit_signal("my_custom_signal", "emit_arg");
+		CHECK_EQ(target.received_args, Vector<Variant>{ &object, "bind_arg" });
+		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2));
+
+		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2).unbind(1).bind("bind_arg"), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object.emit_signal("my_custom_signal", "emit_arg");
+		CHECK_EQ(target.received_args, Vector<Variant>{ "emit_arg", &object });
+		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2));
 	}
 }
 
@@ -596,28 +664,42 @@ TEST_CASE("[Object] Destruction at the end of the call chain is safe") {
 			"Object was tail-deleted without crashes.");
 }
 
-int required_param_compare(const Ref<RefCounted> &p_ref, const RequiredParam<RefCounted> &p_required) {
-	EXTRACT_PARAM_OR_FAIL_V(extract, p_required, false);
-	ERR_FAIL_COND_V(p_ref->get_reference_count() != extract->get_reference_count(), -1);
+int required_param_compare(const Ref<RefCounted> &p_ref, const RequiredParam<RefCounted> &rp_required) {
+	EXTRACT_PARAM_OR_FAIL_V(p_required, rp_required, false);
+	ERR_FAIL_COND_V(p_ref->get_reference_count() != p_required->get_reference_count(), -1);
 	return p_ref->get_reference_count();
 }
 
 TEST_CASE("[Object] RequiredParam Ref<T>") {
 	Ref<RefCounted> ref;
 	ref.instantiate();
+	const Ref<RefCounted> &ref_ref = ref;
 
 	RequiredParam<RefCounted> required = ref;
 	EXTRACT_PARAM_OR_FAIL(extract, required);
 
-	static_assert(std::is_same_v<decltype(ref), decltype(extract)>);
+	static_assert(std::is_same_v<decltype(ref_ref), decltype(extract)>);
 
 	CHECK_EQ(ref->get_reference_count(), extract->get_reference_count());
 
 	const int count = required_param_compare(ref, ref);
 	CHECK_NE(count, -1);
-	CHECK_NE(count, ref->get_reference_count());
+	CHECK_EQ(count, ref->get_reference_count());
 
 	CHECK_EQ(ref->get_reference_count(), extract->get_reference_count());
+}
+
+TEST_CASE("[Object] RequiredResult") {
+	Ref<RefCounted> ref;
+	ref.instantiate();
+
+	RequiredResult<RefCounted> required = ref;
+
+	Ref<RefCounted> unpacked = required;
+	Variant var = Ref<RefCounted>(required);
+
+	CHECK_EQ(ref, unpacked);
+	CHECK_EQ(ref, var);
 }
 
 } // namespace TestObject

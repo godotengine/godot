@@ -30,6 +30,7 @@
 
 #include "script_editor_debugger.h"
 
+#include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/remote_debugger.h"
 #include "core/string/ustring.h"
@@ -54,7 +55,7 @@
 #include "editor/themes/editor_scale.h"
 #include "main/performance.h"
 #include "scene/3d/camera_3d.h"
-#include "scene/debugger/scene_debugger.h"
+#include "scene/debugger/scene_debugger_object.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/grid_container.h"
@@ -272,7 +273,15 @@ void ScriptEditorDebugger::request_remote_evaluate(const String &p_expression, i
 }
 
 void ScriptEditorDebugger::update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value, const String &p_field) {
-	Array msg = { p_obj_id, p_prop, p_value };
+	Array msg = { p_obj_id, p_prop };
+
+	Ref<Resource> res = p_value;
+	if (res.is_valid() && !res->get_path().is_empty()) {
+		msg.append(res->get_path());
+	} else {
+		msg.append(p_value);
+	}
+
 	if (p_field.is_empty()) {
 		_put_msg("scene:set_object_property", msg);
 	} else {
@@ -646,6 +655,7 @@ void ScriptEditorDebugger::_msg_error(uint64_t p_thread_id, const Array &p_data)
 	}
 	error->set_collapsed(true);
 
+	error->set_text_overrun_behavior(0, TextServer::OVERRUN_NO_TRIMMING);
 	error->set_icon(0, get_editor_theme_icon(oe.warning ? SNAME("Warning") : SNAME("Error")));
 	error->set_text(0, time);
 	error->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
@@ -670,6 +680,7 @@ void ScriptEditorDebugger::_msg_error(uint64_t p_thread_id, const Array &p_data)
 	error_title += oe.error_descr.is_empty() ? oe.error : oe.error_descr;
 	error->set_text(1, error_title);
 	error->set_autowrap_mode(1, TextServer::AUTOWRAP_WORD_SMART);
+	error->set_autowrap_trim_flags(1, 0);
 	tooltip += " " + error_title + "\n";
 
 	// Find the language of the error's source file.
@@ -1104,10 +1115,19 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			vmem_notice_icon->set_texture(get_editor_theme_icon(SNAME("NodeInfo")));
 			vmem_refresh->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
 			vmem_export->set_button_icon(get_editor_theme_icon(SNAME("Save")));
+			vmem_item_menu->set_item_icon(VMEM_MENU_SHOW_IN_FILESYSTEM, get_editor_theme_icon(SNAME("ShowInFileSystem")));
+			vmem_item_menu->set_item_icon(VMEM_MENU_SHOW_IN_EXPLORER, get_editor_theme_icon(SNAME("Filesystem")));
 			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 			reason->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			reason->add_theme_style_override(SNAME("normal"), get_theme_stylebox(SNAME("normal"), SNAME("Label"))); // Empty stylebox.
+
+			const Ref<Font> source_font = get_theme_font(SNAME("output_source"), EditorStringName(EditorFonts));
+			if (source_font.is_valid()) {
+				error_tree->add_theme_font_override("font", source_font);
+			}
+			const int font_size = get_theme_font_size(SNAME("output_source_size"), EditorStringName(EditorFonts));
+			error_tree->add_theme_font_size_override("font_size", font_size);
 
 			TreeItem *error_root = error_tree->get_root();
 			if (error_root) {
@@ -1826,6 +1846,45 @@ void ScriptEditorDebugger::_vmem_item_activated() {
 	FileSystemDock::get_singleton()->navigate_to_path(path);
 }
 
+void ScriptEditorDebugger::_vmem_tree_rmb_selected(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
+
+	TreeItem *item = vmem_tree->get_selected();
+	if (!item) {
+		return;
+	}
+
+	String path = item->get_text(0);
+	if (path.is_empty() || !FileAccess::exists(path)) {
+		return;
+	}
+
+	vmem_item_menu->set_position(vmem_tree->get_screen_position() + p_pos);
+	vmem_item_menu->popup();
+}
+
+void ScriptEditorDebugger::_vmem_item_menu_id_pressed(int p_option) {
+	TreeItem *item = vmem_tree->get_selected();
+	if (!item) {
+		return;
+	}
+
+	String path = item->get_text(0);
+	switch (p_option) {
+		case VMEM_MENU_SHOW_IN_FILESYSTEM: {
+			FileSystemDock::get_singleton()->navigate_to_path(path);
+		} break;
+		case VMEM_MENU_SHOW_IN_EXPLORER: {
+			OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(path), true);
+		} break;
+		case VMEM_MENU_OWNERS: {
+			FileSystemDock::get_owners_dialog()->show(path);
+		} break;
+	}
+}
+
 void ScriptEditorDebugger::_clear_errors_list() {
 	error_tree->clear();
 	error_count = 0;
@@ -2130,15 +2189,9 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		docontinue->set_shortcut(ED_GET_SHORTCUT("debugger/continue"));
 		docontinue->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_continue));
 
-		HSplitContainer *parent_sc = memnew(HSplitContainer);
-		vbc->add_child(parent_sc);
-		parent_sc->set_v_size_flags(SIZE_EXPAND_FILL);
-		parent_sc->set_split_offset(500 * EDSCALE);
-
 		HSplitContainer *sc = memnew(HSplitContainer);
 		sc->set_v_size_flags(SIZE_EXPAND_FILL);
-		sc->set_h_size_flags(SIZE_EXPAND_FILL);
-		parent_sc->add_child(sc);
+		vbc->add_child(sc);
 
 		VBoxContainer *stack_vb = memnew(VBoxContainer);
 		stack_vb->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -2204,7 +2257,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		breakpoints_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_breakpoint_tree_clicked));
 		breakpoints_tree->create_item();
 
-		parent_sc->add_child(breakpoints_tree);
+		sc->add_child(breakpoints_tree);
 		tabs->add_child(dbg);
 
 		breakpoints_menu = memnew(PopupMenu);
@@ -2247,7 +2300,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 
 		error_tree->set_column_expand(0, false);
 		error_tree->set_column_custom_minimum_width(0, 140);
-		error_tree->set_column_clip_content(0, true);
+		error_tree->set_column_clip_content(0, false);
 
 		error_tree->set_column_expand(1, true);
 		error_tree->set_column_clip_content(1, true);
@@ -2350,14 +2403,12 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		vmem_refresh->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_video_mem_request));
 		vmem_export->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_video_mem_export));
 
-		VBoxContainer *vmmc = memnew(VBoxContainer);
-		vmem_tree = memnew(Tree);
-		vmem_tree->set_v_size_flags(SIZE_EXPAND_FILL);
-		vmem_tree->set_h_size_flags(SIZE_EXPAND_FILL);
-		vmmc->add_child(vmem_tree);
-		vmmc->set_v_size_flags(SIZE_EXPAND_FILL);
-		vmem_vb->add_child(vmmc);
+		MarginContainer *mc = memnew(MarginContainer);
+		mc->set_theme_type_variation("NoBorderBottomPanel");
+		mc->set_v_size_flags(SIZE_EXPAND_FILL);
+		vmem_vb->add_child(mc);
 
+		vmem_tree = memnew(Tree);
 		vmem_vb->set_name(TTRC("Video RAM"));
 		vmem_tree->set_columns(4);
 		vmem_tree->set_column_titles_visible(true);
@@ -2373,9 +2424,19 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		vmem_tree->set_column_title(3, TTRC("Usage"));
 		vmem_tree->set_column_custom_minimum_width(3, 80 * EDSCALE);
 		vmem_tree->set_hide_root(true);
+		vmem_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
+		mc->add_child(vmem_tree);
+		vmem_tree->set_allow_rmb_select(true);
 		vmem_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_vmem_item_activated));
-
+		vmem_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_vmem_tree_rmb_selected));
 		tabs->add_child(vmem_vb);
+
+		vmem_item_menu = memnew(PopupMenu);
+		vmem_item_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditorDebugger::_vmem_item_menu_id_pressed));
+		vmem_item_menu->add_item(TTRC("Show in FileSystem"), VMEM_MENU_SHOW_IN_FILESYSTEM);
+		vmem_item_menu->add_item(TTRC("Show in File Manager"), VMEM_MENU_SHOW_IN_EXPLORER);
+		vmem_item_menu->add_item(TTRC("View Owners..."), VMEM_MENU_OWNERS);
+		add_child(vmem_item_menu);
 	}
 
 	{ // misc

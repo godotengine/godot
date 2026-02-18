@@ -31,11 +31,12 @@
 #include "display_server_windows.h"
 
 #include "drop_target_windows.h"
+#include "native_menu_windows.h"
 #include "os_windows.h"
-#include "scene/main/window.h"
 #include "wgl_detect_version.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/xml_parser.h"
@@ -43,19 +44,20 @@
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
+#include "scene/main/window.h"
 #include "scene/resources/texture.h"
+#include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #ifdef SDL_ENABLED
 #include "drivers/sdl/joypad_sdl.h"
 #endif
-
-#include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #if defined(VULKAN_ENABLED)
 #include "rendering_context_driver_vulkan_windows.h"
 #endif
 #if defined(D3D12_ENABLED)
 #include "drivers/d3d12/rendering_context_driver_d3d12.h"
+#include <dxgi1_6.h>
 #endif
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -96,8 +98,6 @@
 #endif
 
 #define WM_INDICATOR_CALLBACK_MESSAGE (WM_USER + 1)
-
-int constexpr FS_TRANSP_BORDER = 2;
 
 static String format_error_message(DWORD id) {
 	LPWSTR messageBuffer = nullptr;
@@ -151,6 +151,7 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_STATUS_INDICATOR:
 		case FEATURE_WINDOW_EMBEDDING:
 		case FEATURE_WINDOW_DRAG:
+		case FEATURE_HDR_OUTPUT:
 			return true;
 		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
 			return (os_ver.dwBuildNumber >= 19041); // Fully supported on Windows 10 Vibranium R1 (2004)+ only, captured as black rect on older versions.
@@ -168,6 +169,49 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 
 String DisplayServerWindows::get_name() const {
 	return "Windows";
+}
+
+Vector2i _logical_to_physical(const Vector2i &p_point) {
+	POINT p1;
+	p1.x = p_point.x;
+	p1.y = p_point.y;
+	LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p1);
+	return Vector2i(p1.x, p1.y);
+}
+
+Vector2i DisplayServerWindows::_get_screen_expand_offset(int p_screen) const {
+	Vector2i p1 = _logical_to_physical(screen_get_position(p_screen));
+	Vector2i p2 = _logical_to_physical(screen_get_position(p_screen) + screen_get_size(p_screen));
+
+	int screen_down = -1;
+	int screen_right = -1;
+	for (int i = 0; i < get_screen_count(); i++) {
+		if (i == p_screen) {
+			continue;
+		}
+		Vector2i sp1 = _logical_to_physical(screen_get_position(i));
+		Vector2i sp2 = _logical_to_physical(screen_get_position(i) + screen_get_size(i));
+		if (sp1.y >= p2.y - 5 && sp1.y <= p2.y + 5 && sp1.x <= p2.x && p1.x <= sp2.x) {
+			screen_down = i;
+		}
+		if (sp1.x >= p2.x - 5 && sp1.x <= p2.x + 5 && sp1.y <= p2.y && p1.y <= sp2.y) {
+			screen_right = i;
+		}
+	}
+
+	if (screen_down == -1) {
+		return Vector2i(0, 2);
+	} else if (screen_right == -1) {
+		return Vector2i(2, 0);
+	} else {
+		int diff_d = screen_get_refresh_rate(p_screen) - screen_get_refresh_rate(screen_down);
+		int diff_r = screen_get_refresh_rate(p_screen) - screen_get_refresh_rate(screen_right);
+		if (diff_d < diff_r) {
+			return Vector2i(0, 2);
+		} else {
+			return Vector2i(2, 0);
+		}
+	}
 }
 
 void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
@@ -189,11 +233,12 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 
 		WindowData &wd = windows[window_id];
 
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(window_id)) : Vector2i();
 
 		RECT clipRect;
 		GetClientRect(wd.hWnd, &clipRect);
-		clipRect.right -= off_x;
+		clipRect.right -= off.x;
+		clipRect.bottom -= off.y;
 		ClientToScreen(wd.hWnd, (POINT *)&clipRect.left);
 		ClientToScreen(wd.hWnd, (POINT *)&clipRect.right);
 		ClipCursor(&clipRect);
@@ -1149,6 +1194,24 @@ static BOOL CALLBACK _MonitorEnumProcCount(HMONITOR hMonitor, HDC hdcMonitor, LP
 	return TRUE;
 }
 
+static BOOL CALLBACK _MonitorEnumProcMonitor(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+	EnumScreenData *data = (EnumScreenData *)dwData;
+
+	if (data->screen == data->count) {
+		data->monitor = hMonitor;
+		return FALSE;
+	}
+
+	data->count++;
+	return TRUE;
+}
+
+static HMONITOR _get_hmonitor_of_screen(int p_screen) {
+	EnumScreenData data = { 0, p_screen, nullptr };
+	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcMonitor, (LPARAM)&data);
+	return data.monitor;
+}
+
 int DisplayServerWindows::get_screen_count() const {
 	_THREAD_SAFE_METHOD_
 
@@ -1522,6 +1585,101 @@ Ref<Image> DisplayServerWindows::screen_get_image_rect(const Rect2i &p_rect) con
 	return img;
 }
 
+#ifdef D3D12_ENABLED
+static bool _get_monitor_desc(HMONITOR p_monitor, IDXGIFactory2 *dxgi_factory, DXGI_OUTPUT_DESC1 &r_Desc) {
+	r_Desc = {};
+
+	// Note: As of August, 2025 Microsoft's sample code only checks the default
+	// adapter, but sometimes p_monitor may belong to another adapter.
+	Microsoft::WRL::ComPtr<IDXGIAdapter1> dxgiAdapter;
+	UINT adapter_i = 0;
+	while (dxgi_factory->EnumAdapters1(adapter_i, &dxgiAdapter) == S_OK) {
+		Microsoft::WRL::ComPtr<IDXGIOutput> dxgiOutput;
+		DXGI_OUTPUT_DESC1 desc1;
+		UINT output_i = 0;
+		while (dxgiAdapter->EnumOutputs(output_i, &dxgiOutput) != DXGI_ERROR_NOT_FOUND) {
+			Microsoft::WRL::ComPtr<IDXGIOutput6> output6;
+			if (FAILED(dxgiOutput.As(&output6))) {
+				continue;
+			}
+
+			if (FAILED(output6->GetDesc1(&desc1))) {
+				continue;
+			}
+
+			if (desc1.Monitor == p_monitor) {
+				r_Desc = desc1;
+				return true;
+			}
+
+			output_i++;
+		}
+		adapter_i++;
+	}
+
+	return false;
+}
+#endif // D3D12_ENABLED
+
+// Store a list of displays that have failed to get their SDR white level so we don't spam the error log.
+static HashSet<Vector3i> displays_with_white_level_error;
+
+static float _get_sdr_white_level_for_hmonitor(HMONITOR p_monitor, const LocalVector<DISPLAYCONFIG_PATH_INFO> &p_paths) {
+	if (!p_monitor) {
+		return 0.0f;
+	}
+
+	MONITORINFOEXW minfo;
+	memset(&minfo, 0, sizeof(minfo));
+	minfo.cbSize = sizeof(minfo);
+	if (!GetMonitorInfoW(p_monitor, &minfo)) {
+		ERR_FAIL_V_MSG(0.0f, vformat("Failed to get monitor info for HMONITOR: 0x%X", (intptr_t)p_monitor));
+	}
+
+	for (const DISPLAYCONFIG_PATH_INFO &path : p_paths) {
+		const Vector3i key = Vector3i((int32_t)path.sourceInfo.adapterId.HighPart, (int32_t)path.sourceInfo.adapterId.LowPart, (int32_t)path.sourceInfo.id);
+
+		DISPLAYCONFIG_SOURCE_DEVICE_NAME source_name;
+		memset(&source_name, 0, sizeof(source_name));
+		source_name.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
+		source_name.header.size = sizeof(source_name);
+		source_name.header.adapterId = path.sourceInfo.adapterId;
+		source_name.header.id = path.sourceInfo.id;
+
+		if (DisplayConfigGetDeviceInfo(&source_name.header) != ERROR_SUCCESS) {
+			if (!displays_with_white_level_error.has(key)) {
+				WARN_PRINT(vformat("Failed to get source name for adapterId: 0x%08X%08X, id: %d", (uint32_t)path.sourceInfo.adapterId.HighPart, (uint32_t)path.sourceInfo.adapterId.LowPart, path.sourceInfo.id));
+				displays_with_white_level_error.insert(key);
+			}
+			continue;
+		}
+
+		if (wcscmp(minfo.szDevice, source_name.viewGdiDeviceName) != 0) {
+			continue;
+		}
+
+		// Query the SDR white level.
+		DISPLAYCONFIG_SDR_WHITE_LEVEL sdr_white_level;
+		memset(&sdr_white_level, 0, sizeof(sdr_white_level));
+		sdr_white_level.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL;
+		sdr_white_level.header.size = sizeof(sdr_white_level);
+		sdr_white_level.header.adapterId = path.targetInfo.adapterId;
+		sdr_white_level.header.id = path.targetInfo.id;
+
+		if (DisplayConfigGetDeviceInfo(&sdr_white_level.header) != ERROR_SUCCESS) {
+			if (!displays_with_white_level_error.has(key)) {
+				WARN_PRINT(vformat("Failed to get SDR white level for adapterId: 0x%08X%08X, id: %d", (uint32_t)path.targetInfo.adapterId.HighPart, (uint32_t)path.targetInfo.adapterId.LowPart, path.targetInfo.id));
+				displays_with_white_level_error.insert(key);
+			}
+			continue;
+		}
+
+		return (float)sdr_white_level.SDRWhiteLevel / 1000.0f * 80.0f;
+	}
+
+	return 0.0f;
+}
+
 float DisplayServerWindows::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
@@ -1625,7 +1783,7 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 
 #ifdef RD_ENABLED
 	if (rendering_context != nullptr) {
-		_create_rendering_context_window(window_id);
+		_create_rendering_context_window(window_id, rendering_driver);
 	}
 #endif
 #ifdef GLES3_ENABLED
@@ -1947,7 +2105,7 @@ Size2i DisplayServerWindows::window_get_title_size(const String &p_title, Window
 			size.y = MAX(size.y, rect.bottom - rect.top);
 		}
 	}
-	if (icon.is_valid()) {
+	if (icon_big) {
 		size.x += 32;
 	} else {
 		size.x += 16;
@@ -2030,16 +2188,16 @@ void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_wi
 	if (wd.fullscreen) {
 		Point2 pos = screen_get_position(p_screen) + _get_screens_origin();
 		Size2 size = screen_get_size(p_screen);
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(p_screen) : Vector2i();
 
-		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off_x, size.height, TRUE);
+		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off.x, size.height + off.y, TRUE);
 	} else if (wd.maximized) {
 		Point2 pos = screen_get_position(p_screen) + _get_screens_origin();
 		Size2 size = screen_get_size(p_screen);
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(p_screen) : Vector2i();
 
 		ShowWindow(wd.hWnd, SW_RESTORE);
-		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off_x, size.height, TRUE);
+		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off.x, size.height + off.y, TRUE);
 		ShowWindow(wd.hWnd, SW_MAXIMIZE);
 	} else {
 		Rect2i srect = screen_get_usable_rect(p_screen);
@@ -2288,8 +2446,8 @@ Size2i DisplayServerWindows::window_get_size(WindowID p_window) const {
 
 	RECT r;
 	if (GetClientRect(wd.hWnd, &r)) { // Retrieves area inside of window border, including decoration.
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
-		return Size2(r.right - r.left - off_x, r.bottom - r.top);
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(p_window)) : Vector2i();
+		return Size2(r.right - r.left - off.x, r.bottom - r.top - off.y);
 	}
 	return Size2();
 }
@@ -2307,8 +2465,8 @@ Size2i DisplayServerWindows::window_get_size_with_decorations(WindowID p_window)
 
 	RECT r;
 	if (GetWindowRect(wd.hWnd, &r)) { // Retrieves area inside of window border, including decoration.
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
-		return Size2(r.right - r.left - off_x, r.bottom - r.top);
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(p_window)) : Vector2i();
+		return Size2(r.right - r.left - off.x, r.bottom - r.top - off.y);
 	}
 	return Size2();
 }
@@ -2409,8 +2567,16 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
 
-	if (icon.is_valid()) {
-		set_icon(icon);
+	if (icon_big && !icon_small) {
+		SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+		SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_big);
+	} else {
+		if (icon_big) {
+			SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+		}
+		if (icon_small) {
+			SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_small);
+		}
 	}
 
 	SetWindowPos(wd.hWnd, _is_always_on_top_recursive(p_window) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
@@ -2418,8 +2584,8 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	if (p_repaint) {
 		RECT rect;
 		GetWindowRect(wd.hWnd, &rect);
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
-		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left + off_x, rect.bottom - rect.top, TRUE);
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(p_window)) : Vector2i();
+		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left + off.x, rect.bottom - rect.top - off.y, TRUE);
 	}
 }
 
@@ -2558,8 +2724,8 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 
 		_update_window_style(p_window, false);
 
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
-		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off_x, size.height, TRUE);
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(cs) : Vector2i();
+		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off.x, size.height + off.y, TRUE);
 
 		// If the user has mouse trails enabled in windows, then sometimes the cursor disappears in fullscreen mode.
 		// Save number of trails so we can restore when exiting, then turn off mouse trails
@@ -2767,6 +2933,69 @@ void DisplayServerWindows::window_request_attention(WindowID p_window) {
 	info.dwTimeout = 0;
 	info.uCount = 2;
 	FlashWindowEx(&info);
+}
+
+void DisplayServerWindows::window_set_taskbar_progress_value(float p_value, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	wd.progress_value = p_value;
+	if (wd.progress_state == PROGRESS_STATE_NOPROGRESS) {
+		return;
+	}
+	if (taskbar == nullptr) {
+		if (CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&taskbar) != S_OK) {
+			taskbar = nullptr;
+			return;
+		} else {
+			taskbar->HrInit();
+		}
+	}
+
+	taskbar->SetProgressValue(wd.hWnd, Math::round(p_value * 100000), 100000);
+}
+
+void DisplayServerWindows::window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	wd.progress_state = p_state;
+	if (taskbar == nullptr) {
+		if (CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&taskbar) != S_OK) {
+			taskbar = nullptr;
+			return;
+		} else {
+			taskbar->HrInit();
+		}
+	}
+
+	TBPFLAG tbpf = TBPF_NOPROGRESS;
+	switch (p_state) {
+		case PROGRESS_STATE_NOPROGRESS:
+			tbpf = TBPF_NOPROGRESS;
+			break;
+		case PROGRESS_STATE_INDETERMINATE:
+			tbpf = TBPF_INDETERMINATE;
+			break;
+		case PROGRESS_STATE_ERROR:
+			tbpf = TBPF_ERROR;
+			break;
+		case PROGRESS_STATE_PAUSED:
+			tbpf = TBPF_PAUSED;
+			break;
+		case PROGRESS_STATE_NORMAL:
+			tbpf = TBPF_NORMAL;
+			break;
+		default:
+			break;
+	}
+
+	taskbar->SetProgressState(wd.hWnd, tbpf);
+	if (p_state != PROGRESS_STATE_INDETERMINATE) {
+		taskbar->SetProgressValue(wd.hWnd, Math::round(wd.progress_value * 100000), 100000);
+	}
 }
 
 void DisplayServerWindows::window_move_to_foreground(WindowID p_window) {
@@ -3143,6 +3372,96 @@ HWND DisplayServerWindows::_find_window_from_process_id(OS::ProcessID p_pid, HWN
 	}
 
 	return NULL;
+}
+
+// Get screen HDR capabilities for internal use only.
+DisplayServerWindows::ScreenHdrData DisplayServerWindows::_get_screen_hdr_data(int p_screen) const {
+	ScreenHdrData data;
+	HMONITOR monitor = _get_hmonitor_of_screen(p_screen);
+	if (!monitor) {
+		return data;
+	}
+
+#ifdef D3D12_ENABLED
+	// A dynamic cast is used here because the rendering context is not an Object and Object:cast is not supported.
+	RenderingContextDriverD3D12 *rendering_context_d3d12 = dynamic_cast<RenderingContextDriverD3D12 *>(rendering_context);
+	if (rendering_context_d3d12) {
+		IDXGIFactory2 *dxgi_factory = rendering_context_d3d12->dxgi_factory_get();
+
+		DXGI_OUTPUT_DESC1 desc;
+		if (_get_monitor_desc(monitor, dxgi_factory, desc)) {
+			data.hdr_supported = desc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
+			data.min_luminance = desc.MinLuminance;
+			data.max_luminance = desc.MaxLuminance;
+			data.max_average_luminance = desc.MaxFullFrameLuminance;
+		}
+	}
+#endif // D3D12_ENABLED
+
+	uint32_t path_count = 0;
+	uint32_t mode_count = 0;
+
+	if (GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &path_count, &mode_count) == ERROR_SUCCESS) {
+		LocalVector<DISPLAYCONFIG_PATH_INFO> paths;
+		LocalVector<DISPLAYCONFIG_MODE_INFO> modes;
+		paths.resize(path_count);
+		modes.resize(mode_count);
+
+		if (QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, &path_count, paths.ptr(), &mode_count, modes.ptr(), nullptr) == ERROR_SUCCESS) {
+			data.sdr_white_level = _get_sdr_white_level_for_hmonitor(monitor, paths);
+		}
+	}
+
+	return data;
+}
+
+void DisplayServerWindows::_update_hdr_output_for_window(WindowID p_window, const WindowData &p_window_data, ScreenHdrData p_screen_data) {
+#ifdef RD_ENABLED
+	if (rendering_context) {
+		bool current_hdr_enabled = rendering_context->window_get_hdr_output_enabled(p_window);
+		bool desired_hdr_enabled = p_window_data.hdr_output_requested && p_screen_data.hdr_supported;
+
+		if (current_hdr_enabled != desired_hdr_enabled) {
+			rendering_context->window_set_hdr_output_enabled(p_window, desired_hdr_enabled);
+			rendering_context->window_set_hdr_output_linear_luminance_scale(p_window, 80.0f);
+		}
+
+		// If auto reference luminance is enabled, update it based on the current SDR white level.
+		if (p_window_data.hdr_output_reference_luminance < 0.0f) {
+			if (p_screen_data.sdr_white_level > 0.0f) {
+				rendering_context->window_set_hdr_output_reference_luminance(p_window, p_screen_data.sdr_white_level);
+			}
+			// If we cannot get the SDR white level, leave the previous value unchanged.
+		}
+
+		// If auto max luminance is enabled, update it based on the screen's max luminance.
+		if (p_window_data.hdr_output_max_luminance < 0.0f) {
+			if (p_screen_data.max_luminance > 0.0f) {
+				rendering_context->window_set_hdr_output_max_luminance(p_window, p_screen_data.max_luminance);
+			}
+			// If we cannot get the screen's max luminance, leave the previous value unchanged.
+		}
+	}
+#endif // RD_ENABLED
+}
+
+void DisplayServerWindows::_update_hdr_output_for_tracked_windows() {
+	hdr_output_cache.clear();
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		if (E.value.hdr_output_requested) {
+			int screen = window_get_current_screen(E.key);
+
+			ScreenHdrData data;
+			if (!hdr_output_cache.has(screen)) {
+				data = _get_screen_hdr_data(screen);
+				hdr_output_cache.insert(screen, data);
+			} else {
+				data = hdr_output_cache[screen];
+			}
+
+			_update_hdr_output_for_window(E.key, E.value, data);
+		}
+	}
 }
 
 Error DisplayServerWindows::embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
@@ -3830,6 +4149,10 @@ void DisplayServerWindows::process_events() {
 		Input::get_singleton()->flush_buffered_events();
 	}
 
+	// Poll HDR output state for windows that have requested it.
+	// Needed to detect changes in luminance values due to a lack of Windows events for such changes.
+	_update_hdr_output_for_tracked_windows();
+
 	LocalVector<List<FileDialogData *>::Element *> to_remove;
 	for (List<FileDialogData *>::Element *E = file_dialogs.front(); E; E = E->next()) {
 		FileDialogData *fd = E->get();
@@ -3879,6 +4202,17 @@ void DisplayServerWindows::swap_buffers() {
 
 void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	_THREAD_SAFE_METHOD_
+
+	if (icon_big) {
+		DestroyIcon(icon_big);
+		icon_buffer_big.clear();
+		icon_big = nullptr;
+	}
+	if (icon_small) {
+		DestroyIcon(icon_small);
+		icon_buffer_small.clear();
+		icon_small = nullptr;
+	}
 
 	Ref<FileAccess> f = FileAccess::open(p_filename, FileAccess::READ);
 	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file with icon '" + p_filename + "'.");
@@ -3937,59 +4271,60 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 
 	// Read the big icon.
 	DWORD bytecount_big = icon_dir->idEntries[big_icon_index].dwBytesInRes;
-	Vector<uint8_t> data_big;
-	data_big.resize(bytecount_big);
+	icon_buffer_big.resize(bytecount_big);
 	pos = icon_dir->idEntries[big_icon_index].dwImageOffset;
 	f->seek(pos);
-	f->get_buffer((uint8_t *)&data_big.write[0], bytecount_big);
-	HICON icon_big = CreateIconFromResource((PBYTE)&data_big.write[0], bytecount_big, TRUE, 0x00030000);
+	f->get_buffer((uint8_t *)&icon_buffer_big.write[0], bytecount_big);
+	icon_big = CreateIconFromResourceEx((PBYTE)&icon_buffer_big.write[0], bytecount_big, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
 	ERR_FAIL_NULL_MSG(icon_big, "Could not create " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Read the small icon.
 	DWORD bytecount_small = icon_dir->idEntries[small_icon_index].dwBytesInRes;
-	Vector<uint8_t> data_small;
-	data_small.resize(bytecount_small);
+	icon_buffer_small.resize(bytecount_small);
 	pos = icon_dir->idEntries[small_icon_index].dwImageOffset;
 	f->seek(pos);
-	f->get_buffer((uint8_t *)&data_small.write[0], bytecount_small);
-	HICON icon_small = CreateIconFromResource((PBYTE)&data_small.write[0], bytecount_small, TRUE, 0x00030000);
+	f->get_buffer((uint8_t *)&icon_buffer_small.write[0], bytecount_small);
+	icon_small = CreateIconFromResourceEx((PBYTE)&icon_buffer_small.write[0], bytecount_small, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
 	ERR_FAIL_NULL_MSG(icon_small, "Could not create 16x16 @" + itos(small_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Online tradition says to be sure last error is cleared and set the small icon first.
 	int err = 0;
 	SetLastError(err);
 
-	SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_small);
-	err = GetLastError();
-	ERR_FAIL_COND_MSG(err, "Error setting ICON_SMALL: " + format_error_message(err) + ".");
-
-	SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
-	err = GetLastError();
-	ERR_FAIL_COND_MSG(err, "Error setting ICON_BIG: " + format_error_message(err) + ".");
-
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_small);
+		SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+	}
 	memdelete(icon_dir);
 }
 
 void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 	_THREAD_SAFE_METHOD_
 
+	if (icon_big) {
+		DestroyIcon(icon_big);
+		icon_buffer_big.clear();
+		icon_big = nullptr;
+	}
+	if (icon_small) {
+		DestroyIcon(icon_small);
+		icon_buffer_small.clear();
+		icon_small = nullptr;
+	}
+
 	if (p_icon.is_valid()) {
 		ERR_FAIL_COND(p_icon->get_width() <= 0 || p_icon->get_height() <= 0);
 
-		Ref<Image> img = p_icon;
-		if (img != icon) {
-			img = img->duplicate();
-			img->convert(Image::FORMAT_RGBA8);
-		}
+		Ref<Image> img = p_icon->duplicate();
+		img->convert(Image::FORMAT_RGBA8);
 
 		int w = img->get_width();
 		int h = img->get_height();
 
 		// Create temporary bitmap buffer.
 		int icon_len = 40 + h * w * 4;
-		Vector<BYTE> v;
-		v.resize(icon_len);
-		BYTE *icon_bmp = v.ptrw();
+		icon_buffer_big.resize(icon_len);
+		BYTE *icon_bmp = icon_buffer_big.ptrw();
 
 		encode_uint32(40, &icon_bmp[0]);
 		encode_uint32(w, &icon_bmp[4]);
@@ -4016,26 +4351,23 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 				wpx[3] = rpx[3];
 			}
 		}
+		icon_big = CreateIconFromResourceEx(icon_bmp, icon_len, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
+		ERR_FAIL_NULL(icon_big);
 
-		HICON hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
-		ERR_FAIL_NULL(hicon);
-
-		icon = img;
-
-		// Set the icon for the window.
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
-
-		// Set the icon in the task manager (should we do this?).
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
+		for (const KeyValue<WindowID, WindowData> &E : windows) {
+			SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_big);
+			SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+		}
 	} else {
-		icon = Ref<Image>();
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, 0);
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, 0);
+		for (const KeyValue<WindowID, WindowData> &E : windows) {
+			SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, 0);
+			SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, 0);
+		}
 	}
 }
 
 DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) {
-	HICON hicon = nullptr;
+	IndicatorData idat;
 	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 		Ref<Image> img = p_icon->get_image();
 		img = img->duplicate();
@@ -4049,9 +4381,8 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 
 		// Create temporary bitmap buffer.
 		int icon_len = 40 + h * w * 4;
-		Vector<BYTE> v;
-		v.resize(icon_len);
-		BYTE *icon_bmp = v.ptrw();
+		idat.icon_buffer.resize(icon_len);
+		BYTE *icon_bmp = idat.icon_buffer.ptrw();
 
 		encode_uint32(40, &icon_bmp[0]);
 		encode_uint32(w, &icon_bmp[4]);
@@ -4079,10 +4410,9 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 			}
 		}
 
-		hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+		idat.icon = CreateIconFromResourceEx(icon_bmp, icon_len, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
 	}
 
-	IndicatorData idat;
 	idat.callback = p_callback;
 
 	NOTIFYICONDATAW ndat;
@@ -4092,7 +4422,7 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 	ndat.uID = indicator_id_counter;
 	ndat.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
 	ndat.uCallbackMessage = WM_INDICATOR_CALLBACK_MESSAGE;
-	ndat.hIcon = hicon;
+	ndat.hIcon = idat.icon;
 	memcpy(ndat.szTip, p_tooltip.utf16().get_data(), MIN(p_tooltip.utf16().length(), 127) * sizeof(WCHAR));
 	ndat.uVersion = NOTIFYICON_VERSION;
 
@@ -4108,7 +4438,14 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_COND(!indicators.has(p_id));
 
-	HICON hicon = nullptr;
+	IndicatorData &idat = indicators[p_id];
+
+	if (idat.icon) {
+		DestroyIcon(idat.icon);
+		idat.icon_buffer.clear();
+		idat.icon = nullptr;
+	}
+
 	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 		Ref<Image> img = p_icon->get_image();
 		img = img->duplicate();
@@ -4122,9 +4459,8 @@ void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref
 
 		// Create temporary bitmap buffer.
 		int icon_len = 40 + h * w * 4;
-		Vector<BYTE> v;
-		v.resize(icon_len);
-		BYTE *icon_bmp = v.ptrw();
+		idat.icon_buffer.resize(icon_len);
+		BYTE *icon_bmp = idat.icon_buffer.ptrw();
 
 		encode_uint32(40, &icon_bmp[0]);
 		encode_uint32(w, &icon_bmp[4]);
@@ -4152,7 +4488,7 @@ void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref
 			}
 		}
 
-		hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+		idat.icon = CreateIconFromResourceEx(icon_bmp, icon_len, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
 	}
 
 	NOTIFYICONDATAW ndat;
@@ -4161,7 +4497,7 @@ void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref
 	ndat.hWnd = windows[MAIN_WINDOW_ID].hWnd;
 	ndat.uID = p_id;
 	ndat.uFlags = NIF_ICON;
-	ndat.hIcon = hicon;
+	ndat.hIcon = idat.icon;
 	ndat.uVersion = NOTIFYICON_VERSION;
 
 	Shell_NotifyIconW(NIM_MODIFY, &ndat);
@@ -4221,6 +4557,13 @@ Rect2 DisplayServerWindows::status_indicator_get_rect(IndicatorID p_id) const {
 void DisplayServerWindows::delete_status_indicator(IndicatorID p_id) {
 	ERR_FAIL_COND(!indicators.has(p_id));
 
+	IndicatorData &idat = indicators[p_id];
+	if (idat.icon) {
+		DestroyIcon(idat.icon);
+		idat.icon_buffer.clear();
+		idat.icon = nullptr;
+	}
+
 	NOTIFYICONDATAW ndat;
 	ZeroMemory(&ndat, sizeof(NOTIFYICONDATAW));
 	ndat.cbSize = sizeof(NOTIFYICONDATAW);
@@ -4267,6 +4610,157 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;
+}
+
+bool DisplayServerWindows::window_is_hdr_output_supported(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	if (rendering_device && !rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
+		return false; // HDR output is not supported by the rendering device.
+	}
+#endif
+
+	// The window supports HDR if the screen it is on supports HDR.
+	int screen = window_get_current_screen(p_window);
+	DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(screen);
+	return data.hdr_supported;
+}
+
+void DisplayServerWindows::window_request_hdr_output(const bool p_enable, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	ERR_FAIL_COND_EDMSG(p_enable && (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) == false, "HDR output is not supported by the rendering device.");
+#endif
+
+	WindowData &wd = windows[p_window];
+	wd.hdr_output_requested = p_enable;
+
+	int screen = window_get_current_screen(p_window);
+	DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(screen);
+	_update_hdr_output_for_window(p_window, wd, data);
+}
+
+bool DisplayServerWindows::window_is_hdr_output_requested(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	const WindowData &wd = windows[p_window];
+	return wd.hdr_output_requested;
+}
+
+bool DisplayServerWindows::window_is_hdr_output_enabled(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_enabled(p_window);
+	}
+#endif
+
+	return false;
+}
+
+void DisplayServerWindows::window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	WindowData &wd = windows[p_window];
+
+	if (Math::is_equal_approx(wd.hdr_output_reference_luminance, p_reference_luminance)) {
+		return;
+	}
+
+	wd.hdr_output_reference_luminance = p_reference_luminance;
+
+	// Negative luminance means auto-adjust
+	if (wd.hdr_output_reference_luminance < 0.0f) {
+		int screen = window_get_current_screen(p_window);
+		DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(screen);
+		_update_hdr_output_for_window(p_window, wd, data);
+	} else {
+		// Otherwise, apply the requested luminance
+#if defined(RD_ENABLED)
+		if (rendering_context) {
+			rendering_context->window_set_hdr_output_reference_luminance(p_window, p_reference_luminance);
+		}
+#endif
+	}
+}
+
+float DisplayServerWindows::window_get_hdr_output_reference_luminance(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	const WindowData &wd = windows[p_window];
+	return wd.hdr_output_reference_luminance;
+}
+
+float DisplayServerWindows::window_get_hdr_output_current_reference_luminance(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_reference_luminance(p_window);
+	}
+#endif
+
+	return 0.0f;
+}
+
+void DisplayServerWindows::window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	WindowData &wd = windows[p_window];
+
+	if (Math::is_equal_approx(wd.hdr_output_max_luminance, p_max_luminance)) {
+		return;
+	}
+
+	wd.hdr_output_max_luminance = p_max_luminance;
+
+	// Negative luminance means auto-adjust
+	if (wd.hdr_output_max_luminance < 0.0f) {
+		int screen = window_get_current_screen(p_window);
+		DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(screen);
+		_update_hdr_output_for_window(p_window, wd, data);
+	} else {
+		// Otherwise, apply the requested luminance
+#if defined(RD_ENABLED)
+		if (rendering_context) {
+			rendering_context->window_set_hdr_output_max_luminance(p_window, p_max_luminance);
+		}
+#endif
+	}
+}
+
+float DisplayServerWindows::window_get_hdr_output_max_luminance(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	const WindowData &wd = windows[p_window];
+	return wd.hdr_output_max_luminance;
+}
+
+float DisplayServerWindows::window_get_hdr_output_current_max_luminance(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_max_luminance(p_window);
+	}
+#endif
+
+	return 0.0f;
+}
+
+float DisplayServerWindows::window_get_output_max_linear_value(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_output_max_linear_value(p_window);
+	}
+#endif
+
+	return 1.0f; // SDR
 }
 
 void DisplayServerWindows::window_start_drag(WindowID p_window) {
@@ -5747,10 +6241,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 		} break;
 
+		case WM_DISPLAYCHANGE: {
+			// Update HDR capabilities and reference luminance when display changes.
+			_update_hdr_output_for_tracked_windows();
+		} break;
+
 		case WM_WINDOWPOSCHANGED: {
 			WindowData &window = windows[window_id];
 
-			int off_x = (window.multiwindow_fs || (!window.fullscreen && window.borderless && IsZoomed(hWnd))) ? FS_TRANSP_BORDER : 0;
+			Vector2i off = (window.multiwindow_fs || (!window.fullscreen && window.borderless && window.maximized)) ? _get_screen_expand_offset(window_get_current_screen(window_id)) : Vector2i();
 			Rect2i window_client_rect;
 			Rect2i window_rect;
 			{
@@ -5758,12 +6257,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				GetClientRect(hWnd, &rect);
 				ClientToScreen(hWnd, (POINT *)&rect.left);
 				ClientToScreen(hWnd, (POINT *)&rect.right);
-				window_client_rect = Rect2i(rect.left, rect.top, rect.right - rect.left - off_x, rect.bottom - rect.top);
+				window_client_rect = Rect2i(rect.left, rect.top, rect.right - rect.left - off.x, rect.bottom - rect.top - off.y);
 				window_client_rect.position -= _get_screens_origin();
 
 				RECT wrect;
 				GetWindowRect(hWnd, &wrect);
-				window_rect = Rect2i(wrect.left, wrect.top, wrect.right - wrect.left - off_x, wrect.bottom - wrect.top);
+				window_rect = Rect2i(wrect.left, wrect.top, wrect.right - wrect.left - off.x, wrect.bottom - wrect.top - off.y);
 				window_rect.position -= _get_screens_origin();
 			}
 
@@ -5819,15 +6318,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 #if defined(RD_ENABLED)
 				if (window.create_completed && rendering_context && window.rendering_context_window_created) {
 					// Note: Trigger resize event to update swapchains when window is minimized/restored, even if size is not changed.
-					rendering_context->window_set_size(window_id, window.width, window.height);
+					rendering_context->window_set_size(window_id, window.width + off.x, window.height + off.y);
 				}
 #endif
 #if defined(GLES3_ENABLED)
 				if (window.create_completed && gl_manager_native && window.gl_native_window_created) {
-					gl_manager_native->window_resize(window_id, window.width, window.height);
+					gl_manager_native->window_resize(window_id, window.width + off.x, window.height + off.y);
 				}
 				if (window.create_completed && gl_manager_angle && window.gl_angle_window_created) {
-					gl_manager_angle->window_resize(window_id, window.width, window.height);
+					gl_manager_angle->window_resize(window_id, window.width + off.x, window.height + off.y);
 				}
 #endif
 			}
@@ -5842,11 +6341,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					window.rect_changed_callback.call(Rect2i(window.last_pos.x, window.last_pos.y, window.width, window.height));
 				}
 
+				// Update HDR capabilities and reference luminance when window moves to different screen.
+				_update_hdr_output_for_tracked_windows();
+
 				// Update cursor clip region after window rect has changed.
 				if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 					RECT crect;
 					GetClientRect(window.hWnd, &crect);
-					crect.right -= off_x;
+					crect.right -= off.x;
+					crect.bottom -= off.y;
 					ClientToScreen(window.hWnd, (POINT *)&crect.left);
 					ClientToScreen(window.hWnd, (POINT *)&crect.right);
 					ClipCursor(&crect);
@@ -6343,21 +6846,21 @@ Error DisplayServerWindows::_create_window(WindowID p_window_id, WindowMode p_mo
 
 	RECT WindowRect;
 
-	int off_x = (p_mode == WINDOW_MODE_FULLSCREEN || ((p_flags & WINDOW_FLAG_BORDERLESS_BIT) && p_mode == WINDOW_MODE_MAXIMIZED)) ? FS_TRANSP_BORDER : 0;
+	Vector2i off = (p_mode == WINDOW_MODE_FULLSCREEN || ((p_flags & WINDOW_FLAG_BORDERLESS_BIT) && p_mode == WINDOW_MODE_MAXIMIZED)) ? _get_screen_expand_offset(rq_screen) : Vector2i();
 
 	WindowRect.left = p_rect.position.x;
-	WindowRect.right = p_rect.position.x + p_rect.size.x + off_x;
+	WindowRect.right = p_rect.position.x + p_rect.size.x + off.x;
 	WindowRect.top = p_rect.position.y;
-	WindowRect.bottom = p_rect.position.y + p_rect.size.y;
+	WindowRect.bottom = p_rect.position.y + p_rect.size.y + off.y;
 
 	if (!p_parent_hwnd) {
 		if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 			Rect2i screen_rect = Rect2i(screen_get_position(rq_screen), screen_get_size(rq_screen));
 
 			WindowRect.left = screen_rect.position.x;
-			WindowRect.right = screen_rect.position.x + screen_rect.size.x + off_x;
+			WindowRect.right = screen_rect.position.x + screen_rect.size.x + off.x;
 			WindowRect.top = screen_rect.position.y;
-			WindowRect.bottom = screen_rect.position.y + screen_rect.size.y;
+			WindowRect.bottom = screen_rect.position.y + screen_rect.size.y + off.y;
 		} else {
 			Rect2i srect = screen_get_usable_rect(rq_screen);
 			Point2i wpos = p_rect.position;
@@ -6366,9 +6869,9 @@ Error DisplayServerWindows::_create_window(WindowID p_window_id, WindowMode p_mo
 			}
 
 			WindowRect.left = wpos.x;
-			WindowRect.right = wpos.x + p_rect.size.x + off_x;
+			WindowRect.right = wpos.x + p_rect.size.x + off.x;
 			WindowRect.top = wpos.y;
-			WindowRect.bottom = wpos.y + p_rect.size.y;
+			WindowRect.bottom = wpos.y + p_rect.size.y + off.y;
 		}
 	}
 
@@ -6558,8 +7061,8 @@ Error DisplayServerWindows::_create_window(WindowID p_window_id, WindowMode p_mo
 			ClientToScreen(wd.hWnd, (POINT *)&r.left);
 			ClientToScreen(wd.hWnd, (POINT *)&r.right);
 			wd.last_pos = Point2i(r.left, r.top) - _get_screens_origin();
-			wd.width = r.right - r.left - off_x;
-			wd.height = r.bottom - r.top;
+			wd.width = r.right - r.left - off.x;
+			wd.height = r.bottom - r.top - off.y;
 		} else {
 			wd.last_pos = p_rect.position;
 			wd.width = p_rect.size.width;
@@ -6571,7 +7074,7 @@ Error DisplayServerWindows::_create_window(WindowID p_window_id, WindowMode p_mo
 		wd.create_completed = true;
 		// Set size of maximized borderless window (by default it covers the entire screen).
 		if (!p_parent_hwnd && p_mode == WINDOW_MODE_MAXIMIZED && (p_flags & WINDOW_FLAG_BORDERLESS_BIT)) {
-			SetWindowPos(wd.hWnd, HWND_TOP, usable_rect.position.x - off_x, usable_rect.position.y, usable_rect.size.width + off_x, usable_rect.size.height, SWP_NOZORDER | SWP_NOACTIVATE);
+			SetWindowPos(wd.hWnd, HWND_TOP, usable_rect.position.x - off.x, usable_rect.position.y - off.y, usable_rect.size.width + off.x, usable_rect.size.height + off.y, SWP_NOZORDER | SWP_NOACTIVATE);
 		}
 		_update_window_mouse_passthrough(id);
 	}
@@ -6606,7 +7109,7 @@ void DisplayServerWindows::_destroy_window(WindowID p_window_id) {
 }
 
 #ifdef RD_ENABLED
-Error DisplayServerWindows::_create_rendering_context_window(WindowID p_window_id) {
+Error DisplayServerWindows::_create_rendering_context_window(WindowID p_window_id, const String &p_rendering_driver) {
 	DEV_ASSERT(rendering_context != nullptr);
 
 	WindowData &wd = windows[p_window_id];
@@ -6620,21 +7123,22 @@ Error DisplayServerWindows::_create_rendering_context_window(WindowID p_window_i
 #endif
 	} wpd;
 #ifdef VULKAN_ENABLED
-	if (rendering_driver == "vulkan") {
+	if (p_rendering_driver == "vulkan") {
 		wpd.vulkan.window = wd.hWnd;
 		wpd.vulkan.instance = hInstance;
 	}
 #endif
 #ifdef D3D12_ENABLED
-	if (rendering_driver == "d3d12") {
+	if (p_rendering_driver == "d3d12") {
 		wpd.d3d12.window = wd.hWnd;
 	}
 #endif
 
 	Error err = rendering_context->window_create(p_window_id, &wpd);
-	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to create %s window.", rendering_driver));
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to create %s window.", p_rendering_driver));
 
-	rendering_context->window_set_size(p_window_id, wd.width, wd.height);
+	Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(p_window_id)) : Vector2i();
+	rendering_context->window_set_size(p_window_id, wd.width + off.x, wd.height + off.y);
 	wd.rendering_context_window_created = true;
 
 	return OK;
@@ -7081,6 +7585,11 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	OleInitialize(nullptr);
 
+	HICON default_icon = LoadIconW(GetModuleHandle(nullptr), L"GODOT_ICON");
+	if (default_icon == nullptr) {
+		default_icon = LoadIcon(nullptr, IDI_WINLOGO);
+	}
+
 	memset(&wc, 0, sizeof(WNDCLASSEXW));
 	wc.cbSize = sizeof(WNDCLASSEXW);
 	wc.style = CS_OWNDC | CS_DBLCLKS;
@@ -7088,7 +7597,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
 	wc.hInstance = hInstance ? hInstance : GetModuleHandle(nullptr);
-	wc.hIcon = LoadIcon(nullptr, IDI_WINLOGO);
+	wc.hIcon = default_icon;
 	wc.hCursor = nullptr;
 	wc.hbrBackground = nullptr;
 	wc.lpszMenuName = nullptr;
@@ -7224,7 +7733,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 					main_window_created = true;
 				}
 
-				if (_create_rendering_context_window(MAIN_WINDOW_ID) == OK) {
+				if (_create_rendering_context_window(MAIN_WINDOW_ID, tested_rendering_driver) == OK) {
 					rendering_device = memnew(RenderingDevice);
 					if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) == OK) {
 #ifdef VULKAN_ENABLED
@@ -7238,7 +7747,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 						}
 #endif
 						rendering_driver = tested_rendering_driver;
-						OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+						OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, i > 0 ? OS::RENDERING_SOURCE_FALLBACK : OS::get_singleton()->get_current_rendering_driver_name_source());
 
 						break;
 					}
@@ -7264,8 +7773,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
 			WARN_PRINT("Your video card drivers seem not to support Direct3D 12 or Vulkan, switching to OpenGL 3.");
 			rendering_driver = "opengl3";
-			OS::get_singleton()->set_current_rendering_method("gl_compatibility");
-			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			OS::get_singleton()->set_current_rendering_method("gl_compatibility", OS::RENDERING_SOURCE_FALLBACK);
+			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			rendering_driver_failed = false;
 		}
 	}
@@ -7347,7 +7856,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 				}
 			}
 			rendering_driver = "opengl3_angle";
-			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 		}
 	}
 
@@ -7438,7 +7947,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	window_set_vsync_mode(p_vsync_mode, MAIN_WINDOW_ID);
 
 #ifdef SDL_ENABLED
-	joypad_sdl = memnew(JoypadSDL(windows[MAIN_WINDOW_ID].hWnd));
+	joypad_sdl = memnew(JoypadSDL);
 	if (joypad_sdl->initialize() != OK) {
 		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
 		memdelete(joypad_sdl);
@@ -7609,6 +8118,12 @@ DisplayServerWindows::~DisplayServerWindows() {
 		ndat.uID = E->key;
 		ndat.uVersion = NOTIFYICON_VERSION;
 
+		if (E->value.icon) {
+			DestroyIcon(E->value.icon);
+			E->value.icon_buffer.clear();
+			E->value.icon = nullptr;
+		}
+
 		Shell_NotifyIconW(NIM_DELETE, &ndat);
 	}
 
@@ -7657,6 +8172,17 @@ DisplayServerWindows::~DisplayServerWindows() {
 		rendering_context = nullptr;
 	}
 #endif
+
+	if (icon_big) {
+		DestroyIcon(icon_big);
+		icon_buffer_big.clear();
+		icon_big = nullptr;
+	}
+	if (icon_small) {
+		DestroyIcon(icon_small);
+		icon_buffer_small.clear();
+		icon_small = nullptr;
+	}
 
 	if (restore_mouse_trails > 1) {
 		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, nullptr, 0);

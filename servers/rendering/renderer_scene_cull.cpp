@@ -31,6 +31,7 @@
 #include "renderer_scene_cull.h"
 
 #include "core/config/project_settings.h"
+#include "core/math/geometry_3d.h"
 #include "core/object/worker_thread_pool.h"
 #include "rendering_light_culler.h"
 #include "rendering_server_default.h"
@@ -1956,7 +1957,7 @@ void RendererSceneCull::_unpair_instance(Instance *p_instance) {
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
 		ERR_FAIL_NULL(geom->geometry_instance);
 
-		geom->geometry_instance->pair_light_instances(nullptr, 0);
+		geom->geometry_instance->clear_light_instances();
 		geom->geometry_instance->pair_reflection_probe_instances(nullptr, 0);
 		geom->geometry_instance->pair_decal_instances(nullptr, 0);
 		geom->geometry_instance->pair_voxel_gi_instances(nullptr, 0);
@@ -2589,7 +2590,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 	return animated_material_found;
 }
 
-void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderInfo *r_render_info) {
+void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, float p_window_output_max_value, RenderInfo *r_render_info) {
 #ifndef _3D_DISABLED
 
 	Camera *camera = camera_owner.get_or_null(p_camera);
@@ -2704,7 +2705,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 	// For now just cull on the first camera
 	RendererSceneOcclusionCull::get_singleton()->buffer_update(p_viewport, camera_data.main_transform, camera_data.main_projection, camera_data.is_orthogonal);
 
-	_render_scene(&camera_data, p_render_buffers, environment, camera->attributes, compositor, camera->visible_layers, p_scenario, p_viewport, p_shadow_atlas, RID(), -1, p_screen_mesh_lod_threshold, true, r_render_info);
+	_render_scene(&camera_data, p_render_buffers, environment, camera->attributes, compositor, camera->visible_layers, p_scenario, p_viewport, p_shadow_atlas, RID(), -1, p_screen_mesh_lod_threshold, p_window_output_max_value, true, r_render_info);
 #endif
 }
 
@@ -2822,6 +2823,14 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 
 	RID instance_pair_buffer[MAX_INSTANCE_PAIRS];
 
+	// Minimize allocations when picking the most relevant lights per mesh.
+	// We need to track the score and current index of the best N lights.
+	thread_local LocalVector<Pair<float, uint32_t>> omni_score_idx, spot_score_idx;
+	omni_score_idx.clear();
+	spot_score_idx.clear();
+	uint32_t max_lights_per_mesh = scene_render->get_max_lights_per_mesh();
+	uint32_t max_lights_total = scene_render->get_max_lights_total();
+
 	Transform3D inv_cam_transform = cull_data.cam_transform.inverse();
 	float z_near = cull_data.camera_matrix->get_z_near();
 	bool is_orthogonal = cull_data.camera_matrix->is_orthogonal();
@@ -2933,26 +2942,109 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 
 					if (geometry_instance_pair_mask & (1 << RS::INSTANCE_LIGHT) && (idata.flags & InstanceData::FLAG_GEOM_LIGHTING_DIRTY)) {
 						InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
-						uint32_t idx = 0;
+						ERR_FAIL_NULL(geom->geometry_instance);
+						// Clear any existing light instances for this mesh and find the max count per-mesh, and total (per-scene).
+						geom->geometry_instance->clear_light_instances();
+						if ((max_lights_per_mesh > 0) && (max_lights_total > 0)) {
+							// For the top N lights, track the score and the index into the internal light storage array.
+							uint32_t total_omni_count = 0, total_spot_count = 0;
+							bool omni_needs_heap = true, spot_needs_heap = true;
+							uint32_t omni_count = 0, spot_count = 0;
+							omni_score_idx.clear();
+							spot_score_idx.clear();
+							SortArray<Pair<float, uint32_t>> heapify; // SortArray has heap functions, but no local storage.
+							// Iterate over the lights (possibly > max_renderable_lights), keeping the closest to the mesh center.
+							Vector3 mesh_center = idata.instance->transformed_aabb.get_center();
+							for (const Instance *E : geom->lights) {
+								RS::LightType light_type = RSG::light_storage->light_get_type(E->base);
+								if (((RS::LIGHT_OMNI == light_type) && (total_omni_count++ < max_lights_total)) ||
+										((RS::LIGHT_SPOT == light_type) && (total_spot_count++ < max_lights_total))) {
+									// Perform culling.
+									if (!(RSG::light_storage->light_get_cull_mask(E->base) & idata.layer_mask)) {
+										continue;
+									}
+									if ((RSG::light_storage->light_get_bake_mode(E->base) == RS::LIGHT_BAKE_STATIC) && idata.instance->lightmap) {
+										continue;
+									}
 
-						for (const Instance *E : geom->lights) {
-							InstanceLightData *light = static_cast<InstanceLightData *>(E->base_data);
-							if (!(RSG::light_storage->light_get_cull_mask(E->base) & idata.layer_mask)) {
-								continue;
-							}
-
-							if ((RSG::light_storage->light_get_bake_mode(E->base) == RS::LIGHT_BAKE_STATIC) && idata.instance->lightmap) {
-								continue;
-							}
-
-							instance_pair_buffer[idx++] = light->instance;
-							if (idx == MAX_INSTANCE_PAIRS) {
-								break;
+									InstanceLightData *light = static_cast<InstanceLightData *>(E->base_data);
+									// Large scores are worse, so linear with distance, inverse with energy and range.
+									Vector3 light_center = E->transformed_aabb.get_center();
+									float light_range_energy =
+											RSG::light_storage->light_get_param(E->base, RS::LightParam::LIGHT_PARAM_RANGE) *
+											RSG::light_storage->light_get_param(E->base, RS::LightParam::LIGHT_PARAM_ENERGY);
+									float light_inst_score = mesh_center.distance_to(light_center) / MAX(0.01f, light_range_energy);
+									// Of the N lights (on a per-light-type basis, Omni or Spot) keep only the M "best" lights.
+									// If N <= M, we can simply store the lights, but once we exceed M, we need check each new
+									// light and see if it's score is better than the worst light stored to date.  If the new
+									// light is better, we can replace the current worst light with the new one.  In order to
+									// efficiently track our currently worst light we use a "max heap".  This loosely orders
+									// the elements in an array as a binary-tree structure, and has the properties that finding
+									// the worst score element is O(1) (it will always be stored in element [0]), and removing
+									// the old max and inserting a new value is O(log M).
+#define VERIFY_RELEVANT_LIGHT_HEAP 0
+#if VERIFY_RELEVANT_LIGHT_HEAP
+									WARN_PRINT_ONCE("VERIFY_RELEVANT_LIGHT_HEAP is True");
+#endif
+									switch (light_type) {
+										case RS::LIGHT_OMNI: {
+											if (omni_count < max_lights_per_mesh) {
+												// We have room to just add it, and track the score and where it goes.
+												omni_score_idx.push_back(Pair(light_inst_score, omni_count));
+												geom->geometry_instance->pair_light_instance(light->instance, light_type, omni_count++);
+											} else {
+												if (omni_needs_heap) {
+													// We need to make this a heap one time.
+													heapify.make_heap(0, omni_count, &omni_score_idx[0]);
+													omni_needs_heap = false;
+												}
+												if (light_inst_score < omni_score_idx[0].first) {
+#if VERIFY_RELEVANT_LIGHT_HEAP
+													// The [0] element should have the max score.
+													for (uint32_t vi = 1; vi < max_lights_per_mesh; ++vi) {
+														if (omni_score_idx[vi].first > omni_score_idx[0].first) {
+															ERR_PRINT_ONCE("Relevant Omni Light Heap Error");
+														}
+													}
+#endif
+													uint32_t replace_index = omni_score_idx[0].second;
+													geom->geometry_instance->pair_light_instance(light->instance, light_type, replace_index);
+													heapify.adjust_heap(0, 0, omni_count, Pair(light_inst_score, replace_index), &omni_score_idx[0]);
+												}
+											}
+										} break;
+										case RS::LIGHT_SPOT: {
+											if (spot_count < max_lights_per_mesh) {
+												// We have room to just add it, and track the score and where it goes.
+												spot_score_idx.push_back(Pair(light_inst_score, spot_count));
+												geom->geometry_instance->pair_light_instance(light->instance, light_type, spot_count++);
+											} else {
+												if (spot_needs_heap) {
+													// We need to make this a heap one time.
+													heapify.make_heap(0, spot_count, &spot_score_idx[0]);
+													spot_needs_heap = false;
+												}
+												if (light_inst_score < spot_score_idx[0].first) {
+#if VERIFY_RELEVANT_LIGHT_HEAP
+													// The [0] element should have the max score.
+													for (uint32_t vi = 1; vi < max_lights_per_mesh; ++vi) {
+														if (spot_score_idx[vi].first > spot_score_idx[0].first) {
+															ERR_PRINT_ONCE("Relevant Spot Light Heap Error");
+														}
+													}
+#endif
+													uint32_t replace_index = spot_score_idx[0].second;
+													geom->geometry_instance->pair_light_instance(light->instance, light_type, replace_index);
+													heapify.adjust_heap(0, 0, spot_count, Pair(light_inst_score, replace_index), &spot_score_idx[0]);
+												}
+											}
+										} break;
+										default:
+											break;
+									}
+								}
 							}
 						}
-
-						ERR_FAIL_NULL(geom->geometry_instance);
-						geom->geometry_instance->pair_light_instances(instance_pair_buffer, idx);
 						idata.flags &= ~InstanceData::FLAG_GEOM_LIGHTING_DIRTY;
 					}
 
@@ -3042,10 +3134,10 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 			}
 
 			for (uint32_t j = 0; j < cull_data.cull->shadow_count; j++) {
-				if (!light_culler->cull_directional_light(cull_data.scenario->instance_aabbs[i], j)) {
-					continue;
-				}
 				for (uint32_t k = 0; k < cull_data.cull->shadows[j].cascade_count; k++) {
+					if (!light_culler->cull_directional_light(cull_data.scenario->instance_aabbs[i], j, k)) { // pass the cascade index
+						continue;
+					}
 					if (IN_FRUSTUM(cull_data.cull->shadows[j].cascades[k].frustum) && VIS_CHECK) {
 						uint32_t base_type = idata.flags & InstanceData::FLAG_BASE_TYPE_MASK;
 
@@ -3098,7 +3190,7 @@ void RendererSceneCull::_scene_particles_set_view_axis(RID p_particles, const Ve
 	RSG::particles_storage->particles_set_view_axis(p_particles, p_axis, p_up_axis);
 }
 
-void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, RID p_compositor, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows, RenderingMethod::RenderInfo *r_render_info) {
+void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, RID p_compositor, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, float p_window_output_max_value, bool p_using_shadows, RenderingMethod::RenderInfo *r_render_info) {
 	Instance *render_reflection_probe = instance_owner.get_or_null(p_reflection_probe); //if null, not rendering to it
 
 	// Prepare the light - camera volume culling system.
@@ -3484,7 +3576,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 	}
 
 	RENDER_TIMESTAMP("Render 3D Scene");
-	scene_render->render_scene(p_render_buffers, p_camera_data, prev_camera_data, scene_cull_result.geometry_instances, scene_cull_result.light_instances, scene_cull_result.reflections, scene_cull_result.voxel_gi_instances, scene_cull_result.decals, scene_cull_result.lightmaps, scene_cull_result.fog_volumes, p_environment, camera_attributes, p_compositor, p_shadow_atlas, occluders_tex, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass, p_screen_mesh_lod_threshold, render_shadow_data, max_shadows_used, render_sdfgi_data, cull.sdfgi.region_count, &sdfgi_update_data, r_render_info);
+	scene_render->render_scene(p_render_buffers, p_camera_data, prev_camera_data, scene_cull_result.geometry_instances, scene_cull_result.light_instances, scene_cull_result.reflections, scene_cull_result.voxel_gi_instances, scene_cull_result.decals, scene_cull_result.lightmaps, scene_cull_result.fog_volumes, p_environment, camera_attributes, p_compositor, p_shadow_atlas, occluders_tex, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass, p_screen_mesh_lod_threshold, render_shadow_data, max_shadows_used, render_sdfgi_data, cull.sdfgi.region_count, p_window_output_max_value, &sdfgi_update_data, r_render_info);
 
 	if (p_viewport.is_valid()) {
 		RSG::viewport->viewport_set_prev_camera_data(p_viewport, p_camera_data);
@@ -3535,7 +3627,7 @@ RID RendererSceneCull::_render_get_compositor(RID p_camera, RID p_scenario) {
 	return RID();
 }
 
-void RendererSceneCull::render_empty_scene(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_scenario, RID p_shadow_atlas) {
+void RendererSceneCull::render_empty_scene(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_scenario, RID p_shadow_atlas, float p_window_output_max_value) {
 #ifndef _3D_DISABLED
 	Scenario *scenario = scenario_owner.get_or_null(p_scenario);
 
@@ -3551,7 +3643,7 @@ void RendererSceneCull::render_empty_scene(const Ref<RenderSceneBuffers> &p_rend
 	RendererSceneRender::CameraData camera_data;
 	camera_data.set_camera(Transform3D(), Projection(), true, false, false);
 
-	scene_render->render_scene(p_render_buffers, &camera_data, &camera_data, PagedArray<RenderGeometryInstance *>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), environment, RID(), compositor, p_shadow_atlas, RID(), scenario->reflection_atlas, RID(), 0, 0, nullptr, 0, nullptr, 0, nullptr);
+	scene_render->render_scene(p_render_buffers, &camera_data, &camera_data, PagedArray<RenderGeometryInstance *>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), environment, RID(), compositor, p_shadow_atlas, RID(), scenario->reflection_atlas, RID(), 0, 0, nullptr, 0, nullptr, 0, p_window_output_max_value, nullptr);
 #endif
 }
 
@@ -3573,7 +3665,7 @@ bool RendererSceneCull::_render_reflection_probe_step(Instance *p_instance, int 
 		return true;
 	}
 
-	if (p_step >= 0 && p_step < 6) {
+	if (p_step == 0) {
 		static const Vector3 view_normals[6] = {
 			Vector3(+1, 0, 0),
 			Vector3(-1, 0, 0),
@@ -3596,44 +3688,34 @@ bool RendererSceneCull::_render_reflection_probe_step(Instance *p_instance, int 
 		float max_distance = RSG::light_storage->reflection_probe_get_origin_max_distance(p_instance->base);
 		float atlas_size = RSG::light_storage->reflection_atlas_get_size(scenario->reflection_atlas);
 		float mesh_lod_threshold = RSG::light_storage->reflection_probe_get_mesh_lod_threshold(p_instance->base) / atlas_size;
-
-		Vector3 edge = view_normals[p_step] * probe_size / 2;
-		float distance = Math::abs(view_normals[p_step].dot(edge) - view_normals[p_step].dot(origin_offset)); //distance from origin offset to actual view distance limit
-
-		max_distance = MAX(max_distance, distance);
-
-		//render cubemap side
-		Projection cm;
-		cm.set_perspective(90, 1, 0.01, max_distance);
-
-		Transform3D local_view;
-		local_view.set_look_at(origin_offset, origin_offset + view_normals[p_step], view_up[p_step]);
-
-		Transform3D xform = p_instance->transform * local_view;
-
-		RID shadow_atlas;
-
 		bool use_shadows = RSG::light_storage->reflection_probe_renders_shadows(p_instance->base);
-		if (use_shadows) {
-			shadow_atlas = scenario->reflection_probe_shadow_atlas;
-		}
-
-		RID environment;
-		if (scenario->environment.is_valid()) {
-			environment = scenario->environment;
-		} else {
-			environment = scenario->fallback_environment;
-		}
-
-		RENDER_TIMESTAMP("Render ReflectionProbe, Step " + itos(p_step));
-		RendererSceneRender::CameraData camera_data;
-		camera_data.set_camera(xform, cm, false, false, false);
-
+		RID shadow_atlas = use_shadows ? scenario->reflection_probe_shadow_atlas : RID();
+		RID environment = scenario->environment.is_valid() ? scenario->environment : scenario->fallback_environment;
 		Ref<RenderSceneBuffers> render_buffers = RSG::light_storage->reflection_probe_atlas_get_render_buffers(scenario->reflection_atlas);
-		_render_scene(&camera_data, render_buffers, environment, RID(), RID(), RSG::light_storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, RID(), shadow_atlas, reflection_probe->instance, p_step, mesh_lod_threshold, use_shadows);
+		for (uint32_t face = 0; face < 6; face++) {
+			// Compute distance from origin offset to the actual view distance limit.
+			Vector3 edge = view_normals[face] * probe_size / 2;
+			float distance = Math::abs(view_normals[face].dot(edge) - view_normals[face].dot(origin_offset));
+			max_distance = MAX(max_distance, distance);
 
+			// Render cubemap side.
+			Projection cm;
+			cm.set_perspective(90, 1, 0.01, max_distance);
+
+			Transform3D local_view;
+			local_view.set_look_at(origin_offset, origin_offset + view_normals[face], view_up[face]);
+
+			RendererSceneRender::CameraData camera_data;
+			Transform3D xform = p_instance->transform * local_view;
+			camera_data.set_camera(xform, cm, false, false, false);
+
+			RENDER_TIMESTAMP("Render ReflectionProbe, Face " + itos(face));
+			_render_scene(&camera_data, render_buffers, environment, RID(), RID(), RSG::light_storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, RID(), shadow_atlas, reflection_probe->instance, face, mesh_lod_threshold, use_shadows);
+		}
+
+		RSG::light_storage->reflection_probe_instance_end_render(reflection_probe->instance, scenario->reflection_atlas);
 	} else {
-		//do roughness postprocess step until it believes it's done
+		// Do roughness postprocess step until it believes it's done.
 		RENDER_TIMESTAMP("Post-Process ReflectionProbe, Step " + itos(p_step));
 		return RSG::light_storage->reflection_probe_instance_postprocess_step(reflection_probe->instance);
 	}

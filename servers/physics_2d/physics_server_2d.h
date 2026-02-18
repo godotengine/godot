@@ -112,7 +112,7 @@ public:
 	virtual real_t get_step() const = 0;
 	virtual void integrate_forces();
 
-	virtual PhysicsDirectSpaceState2D *get_space_state() = 0;
+	virtual RequiredResult<PhysicsDirectSpaceState2D> get_space_state() = 0;
 
 	PhysicsDirectBodyState2D();
 };
@@ -124,12 +124,12 @@ class PhysicsShapeQueryParameters2D;
 class PhysicsDirectSpaceState2D : public Object {
 	GDCLASS(PhysicsDirectSpaceState2D, Object);
 
-	Dictionary _intersect_ray(const Ref<PhysicsRayQueryParameters2D> &p_ray_query);
-	TypedArray<Dictionary> _intersect_point(const Ref<PhysicsPointQueryParameters2D> &p_point_query, int p_max_results = 32);
-	TypedArray<Dictionary> _intersect_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
-	Vector<real_t> _cast_motion(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query);
-	TypedArray<Vector2> _collide_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
-	Dictionary _get_rest_info(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query);
+	Dictionary _intersect_ray(RequiredParam<PhysicsRayQueryParameters2D> rp_ray_query);
+	TypedArray<Dictionary> _intersect_point(RequiredParam<PhysicsPointQueryParameters2D> rp_point_query, int p_max_results = 32);
+	TypedArray<Dictionary> _intersect_shape(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results = 32);
+	Vector<real_t> _cast_motion(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query);
+	TypedArray<Vector2> _collide_shape(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results = 32);
+	Dictionary _get_rest_info(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query);
 
 protected:
 	static void _bind_methods();
@@ -216,10 +216,15 @@ class PhysicsServer2D : public Object {
 
 	static PhysicsServer2D *singleton;
 
-	virtual bool _body_test_motion(RID p_body, const Ref<PhysicsTestMotionParameters2D> &p_parameters, const Ref<PhysicsTestMotionResult2D> &p_result = Ref<PhysicsTestMotionResult2D>());
+	virtual bool _body_test_motion(RID p_body, RequiredParam<PhysicsTestMotionParameters2D> rp_parameters, const Ref<PhysicsTestMotionResult2D> &p_result = Ref<PhysicsTestMotionResult2D>());
 
 protected:
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	void _body_set_shape_as_one_way_collision_bind_compat_104736(RID p_body, int p_shape_idx, bool p_enable, real_t p_margin);
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	static PhysicsServer2D *get_singleton();
@@ -380,7 +385,7 @@ public:
 	virtual Transform2D body_get_shape_transform(RID p_body, int p_shape_idx) const = 0;
 
 	virtual void body_set_shape_disabled(RID p_body, int p_shape, bool p_disabled) = 0;
-	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape, bool p_enabled, real_t p_margin = 0) = 0;
+	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape, bool p_enabled, real_t p_margin = 0, const Vector2 &p_direction = Vector2(0, 1)) = 0;
 
 	virtual void body_remove_shape(RID p_body, int p_shape_idx) = 0;
 	virtual void body_clear_shapes(RID p_body) = 0;

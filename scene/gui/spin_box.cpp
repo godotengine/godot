@@ -218,9 +218,9 @@ void SpinBox::_range_click_timeout() {
 void SpinBox::_release_mouse_from_drag_mode() {
 	if (drag.enabled) {
 		drag.enabled = false;
-		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_HIDDEN);
+		Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_HIDDEN);
 		warp_mouse(drag.capture_pos);
-		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+		Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 	}
 }
 
@@ -348,7 +348,7 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 			double diff_y = -0.01 * Math::pow(Math::abs(drag.diff_y), 1.8) * SIGN(drag.diff_y);
 			set_value(CLAMP(drag.base_val + step * diff_y, get_min(), get_max()));
 		} else if (drag.allowed && drag.capture_pos.distance_to(mm->get_position()) > 2) {
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
 			drag.enabled = true;
 			drag.base_val = get_value();
 			drag.diff_y = 0;
@@ -508,6 +508,10 @@ void SpinBox::_notification(int p_what) {
 			_compute_sizes();
 			_update_text();
 			_update_buttons_state_for_current_value();
+		} break;
+
+		case NOTIFICATION_READY: {
+			connect(CoreStringName(changed), callable_mp(this, &SpinBox::_update_buttons_state_for_current_value));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED:

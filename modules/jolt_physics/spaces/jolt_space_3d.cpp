@@ -85,6 +85,15 @@ void JoltSpace3D::_pre_step(float p_step) {
 		JoltObject3D *object = reinterpret_cast<JoltObject3D *>(jolt_body->GetUserData());
 		object->pre_step(p_step, *jolt_body);
 	}
+
+	const JPH::BodyID *active_soft_bodies = physics_system->GetActiveBodiesUnsafe(JPH::EBodyType::SoftBody);
+	const JPH::uint32 active_soft_body_count = physics_system->GetNumActiveBodies(JPH::EBodyType::SoftBody);
+
+	for (JPH::uint32 i = 0; i < active_soft_body_count; i++) {
+		JPH::Body *jolt_body = lock_iface.TryGetBody(active_soft_bodies[i]);
+		JoltObject3D *object = reinterpret_cast<JoltObject3D *>(jolt_body->GetUserData());
+		object->pre_step(p_step, *jolt_body);
+	}
 }
 
 void JoltSpace3D::_post_step(float p_step) {
@@ -126,7 +135,6 @@ JoltSpace3D::JoltSpace3D(JPH::JobSystem *p_job_system) :
 	physics_system->SetGravity(JPH::Vec3::sZero());
 	physics_system->SetContactListener(contact_listener);
 	physics_system->SetSoftBodyContactListener(contact_listener);
-	physics_system->SetBodyActivationListener(body_activation_listener);
 
 	physics_system->SetSimCollideBodyVsBody([](const JPH::Body &p_body1, const JPH::Body &p_body2, JPH::Mat44Arg p_transform_com1, JPH::Mat44Arg p_transform_com2, JPH::CollideShapeSettings &p_collide_shape_settings, JPH::CollideShapeCollector &p_collector, const JPH::ShapeFilter &p_shape_filter) {
 		if (p_body1.IsSensor() || p_body2.IsSensor()) {
@@ -187,6 +195,8 @@ void JoltSpace3D::step(float p_step) {
 
 	_pre_step(p_step);
 
+	physics_system->SetBodyActivationListener(body_activation_listener);
+
 	const JPH::EPhysicsUpdateError update_error = physics_system->Update(p_step, 1, temp_allocator, job_system);
 
 	if ((update_error & JPH::EPhysicsUpdateError::ManifoldCacheFull) != JPH::EPhysicsUpdateError::None) {
@@ -209,6 +219,9 @@ void JoltSpace3D::step(float p_step) {
 								"Maximum number of contact constraints is currently set to %d.",
 				JoltProjectSettings::max_contact_constraints));
 	}
+
+	// We only want a listener during the step, as it will otherwise be called when pending bodies are flushed, which causes issues (e.g. GH-115322).
+	physics_system->SetBodyActivationListener(nullptr);
 
 	_post_step(p_step);
 
@@ -376,22 +389,6 @@ JoltPhysicsDirectSpaceState3D *JoltSpace3D::get_direct_state() {
 	}
 
 	return direct_state;
-}
-
-void JoltSpace3D::set_default_area(JoltArea3D *p_area) {
-	if (default_area == p_area) {
-		return;
-	}
-
-	if (default_area != nullptr) {
-		default_area->set_default_area(false);
-	}
-
-	default_area = p_area;
-
-	if (default_area != nullptr) {
-		default_area->set_default_area(true);
-	}
 }
 
 JPH::Body *JoltSpace3D::add_object(const JoltObject3D &p_object, const JPH::BodyCreationSettings &p_settings, bool p_sleeping) {
@@ -579,8 +576,7 @@ void JoltSpace3D::dump_debug_snapshot(const String &p_dir) {
 		const JoltObject3D *object = reinterpret_cast<const JoltObject3D *>(settings.mUserData);
 
 		if (const JoltBody3D *body = object->as_body()) {
-			// Since we do our own integration of gravity and damping, while leaving Jolt's own values at zero, we need to transfer over the correct values.
-			settings.mGravityFactor = body->get_gravity_scale();
+			// Since we apply our own damping, while leaving Jolt's own values at zero, we need to transfer over the correct values.
 			settings.mLinearDamping = body->get_total_linear_damp();
 			settings.mAngularDamping = body->get_total_angular_damp();
 		}

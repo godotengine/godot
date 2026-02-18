@@ -26,6 +26,7 @@
 				Override this virtual method to implement a custom skeleton modifier. You should do things like get the [Skeleton3D]'s current pose and apply the pose here.
 				[method _process_modification_with_delta] must not apply [member influence] to bone poses because the [Skeleton3D] automatically applies influence to all bone poses set by the modifier.
 				[param delta] is passed from parent [Skeleton3D]. See also [method Skeleton3D.advance].
+				[b]Note:[/b] This method may be called outside [method Node._process] and [method Node._physics_process] with [param delta] is [code]0.0[/code], since the modification should be processed immediately after initialization of the [Skeleton3D].
 			</description>
 		</method>
 		<method name="_skeleton_changed" qualifiers="virtual">
@@ -39,13 +40,13 @@
 		<method name="_validate_bone_names" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Called when bone name and index need to be validated such as the timing of the entering tree or changing skeleton.
+				Called when bone names and indices need to be validated, such as when entering the scene tree or changing skeleton.
 			</description>
 		</method>
 		<method name="get_skeleton" qualifiers="const">
 			<return type="Skeleton3D" />
 			<description>
-				Get parent [Skeleton3D] node if found.
+				Returns the parent [Skeleton3D] node if it exists. Otherwise, returns [code]null[/code].
 			</description>
 		</method>
 	</methods>

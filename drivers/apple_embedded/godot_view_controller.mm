@@ -38,6 +38,7 @@
 #import "os_apple_embedded.h"
 
 #include "core/config/project_settings.h"
+#include "servers/camera/camera_server.h"
 
 #import <AVFoundation/AVFoundation.h>
 #import <GameController/GameController.h>
@@ -237,6 +238,35 @@
 }
 
 // MARK: Orientation
+
+#ifdef IOS_ENABLED
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+	[super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+
+	[coordinator animateAlongsideTransition:nil
+								 completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+									 // Get the new interface orientation after rotation completes (iOS only)
+									 UIInterfaceOrientation orientation = self.view.window.windowScene.interfaceOrientation;
+
+									 // Notify camera server of orientation change
+									 CameraServer *camera_server = CameraServer::get_singleton();
+									 if (camera_server) {
+										 camera_server->handle_display_rotation_change((int)orientation);
+									 }
+
+									 DisplayServer *display_server = DisplayServer::get_singleton();
+									 if (display_server) {
+										 int out = 0;
+										 if (UIInterfaceOrientationIsPortrait(orientation)) {
+											 out = 1;
+										 } else if (UIInterfaceOrientationIsLandscape(orientation)) {
+											 out = 2;
+										 }
+										 display_server->emit_signal("orientation_changed", out);
+									 }
+								 }];
+}
+#endif
 
 - (UIRectEdge)preferredScreenEdgesDeferringSystemGestures {
 	if (GLOBAL_GET("display/window/ios/suppress_ui_gesture")) {

@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "scene/resources/gradient_texture.h"
+#include "scene/resources/sky.h"
 #include "servers/rendering/rendering_server.h"
 
 RID Environment::get_rid() const {
@@ -227,12 +228,30 @@ float Environment::get_tonemap_white() const {
 	return tonemap_white;
 }
 
+void Environment::set_tonemap_agx_white(float p_white) {
+	tonemap_agx_white = p_white;
+	_update_tonemap();
+}
+
+float Environment::get_tonemap_agx_white() const {
+	return tonemap_agx_white;
+}
+
+void Environment::set_tonemap_agx_contrast(float p_agx_contrast) {
+	tonemap_agx_contrast = p_agx_contrast;
+	RS::get_singleton()->environment_set_tonemap_agx_contrast(environment, p_agx_contrast);
+}
+
+float Environment::get_tonemap_agx_contrast() const {
+	return tonemap_agx_contrast;
+}
+
 void Environment::_update_tonemap() {
 	RS::get_singleton()->environment_set_tonemap(
 			environment,
 			RS::EnvironmentToneMapper(tone_mapper),
 			tonemap_exposure,
-			tonemap_white);
+			tone_mapper == TONE_MAPPER_AGX ? tonemap_agx_white : tonemap_white);
 }
 
 // SSR
@@ -1116,7 +1135,14 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	if (p_property.name == "tonemap_white" && (tone_mapper == TONE_MAPPER_LINEAR || tone_mapper == TONE_MAPPER_AGX)) {
-		// Whitepoint adjustment is not available with AgX or linear as it's hardcoded there.
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (p_property.name == "tonemap_agx_white" && tone_mapper != TONE_MAPPER_AGX) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (p_property.name == "tonemap_agx_contrast" && tone_mapper != TONE_MAPPER_AGX) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
@@ -1218,7 +1244,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_camera_feed_id", PROPERTY_HINT_RANGE, "1,10,1"), "set_camera_feed_id", "get_camera_feed_id");
 
 	ADD_GROUP("Sky", "sky_");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sky", PROPERTY_HINT_RESOURCE_TYPE, "Sky"), "set_sky", "get_sky");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sky", PROPERTY_HINT_RESOURCE_TYPE, Sky::get_class_static()), "set_sky", "get_sky");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sky_custom_fov", PROPERTY_HINT_RANGE, "0,180,0.1,degrees"), "set_sky_custom_fov", "get_sky_custom_fov");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "sky_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians_as_degrees"), "set_sky_rotation", "get_sky_rotation");
 
@@ -1252,11 +1278,17 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tonemap_exposure"), &Environment::get_tonemap_exposure);
 	ClassDB::bind_method(D_METHOD("set_tonemap_white", "white"), &Environment::set_tonemap_white);
 	ClassDB::bind_method(D_METHOD("get_tonemap_white"), &Environment::get_tonemap_white);
+	ClassDB::bind_method(D_METHOD("set_tonemap_agx_white", "white"), &Environment::set_tonemap_agx_white);
+	ClassDB::bind_method(D_METHOD("get_tonemap_agx_white"), &Environment::get_tonemap_agx_white);
+	ClassDB::bind_method(D_METHOD("set_tonemap_agx_contrast", "contrast"), &Environment::set_tonemap_agx_contrast);
+	ClassDB::bind_method(D_METHOD("get_tonemap_agx_contrast"), &Environment::get_tonemap_agx_contrast);
 
 	ADD_GROUP("Tonemap", "tonemap_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tonemap_mode", PROPERTY_HINT_ENUM, "Linear,Reinhard,Filmic,ACES,AgX"), "set_tonemapper", "get_tonemapper");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_exposure", PROPERTY_HINT_RANGE, "0,4,0.01,or_greater"), "set_tonemap_exposure", "get_tonemap_exposure");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_white", PROPERTY_HINT_RANGE, "1,16,0.01,or_greater"), "set_tonemap_white", "get_tonemap_white");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_agx_white", PROPERTY_HINT_RANGE, "2,16.5,0.01,or_greater"), "set_tonemap_agx_white", "get_tonemap_agx_white");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_agx_contrast", PROPERTY_HINT_RANGE, "1.0,2.0,0.01,or_greater"), "set_tonemap_agx_contrast", "get_tonemap_agx_contrast");
 
 	// SSR
 
@@ -1419,7 +1451,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_hdr_scale", PROPERTY_HINT_RANGE, "0.0,4.0,0.01"), "set_glow_hdr_bleed_scale", "get_glow_hdr_bleed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_hdr_luminance_cap", PROPERTY_HINT_RANGE, "0.0,256.0,0.01"), "set_glow_hdr_luminance_cap", "get_glow_hdr_luminance_cap");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_map_strength", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_glow_map_strength", "get_glow_map_strength");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "glow_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_glow_map", "get_glow_map");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "glow_map", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_glow_map", "get_glow_map");
 
 	// Fog
 

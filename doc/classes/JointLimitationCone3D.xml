@@ -9,9 +9,9 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="radius_range" type="float" setter="set_radius_range" getter="get_radius_range" default="0.25">
-			The size of the hole made by the cone.
-			[code]0[/code] is no hole, [code]0.5[/code] makes a hemisphere, and [code]1.0[/code] makes a sphere (no limitation).
+		<member name="angle" type="float" setter="set_angle" getter="get_angle" default="1.5707964">
+			The radius range of the hole made by the cone.
+			[code]0[/code] degrees makes a sphere without hole, [code]180[/code] degrees makes a hemisphere, and [code]360[/code] degrees become empty (no limitation).
 		</member>
 	</members>
 </class>

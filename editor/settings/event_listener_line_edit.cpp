@@ -94,7 +94,7 @@ String EventListenerLineEdit::get_event_text(const Ref<InputEvent> &p_event, boo
 		}
 
 		if (text.is_empty()) {
-			text = "(" + TTR("Unset") + ")";
+			text = "(" + TTR("unset") + ")";
 		}
 	} else {
 		text = p_event->as_text();
@@ -268,7 +268,7 @@ void EventListenerLineEdit::_notification(int p_what) {
 
 void EventListenerLineEdit::_bind_methods() {
 	// `event` is either null or a valid InputEvent that is pressed and non-echo.
-	ADD_SIGNAL(MethodInfo("event_changed", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	ADD_SIGNAL(MethodInfo("event_changed", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, InputEvent::get_class_static())));
 }
 
 EventListenerLineEdit::EventListenerLineEdit() {

@@ -32,38 +32,13 @@
 
 #include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
+#include "editor/gui/filter_line_edit.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/line_edit.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/tree.h"
 
 void PropertySelector::_text_changed(const String &p_newtext) {
 	_update_search();
-}
-
-void PropertySelector::_sbox_input(const Ref<InputEvent> &p_event) {
-	// Redirect navigational key events to the tree.
-	Ref<InputEventKey> key = p_event;
-	if (key.is_valid()) {
-		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
-			search_options->gui_input(key);
-			search_box->accept_event();
-
-			TreeItem *root = search_options->get_root();
-			if (!root->get_first_child()) {
-				return;
-			}
-
-			TreeItem *current = search_options->get_selected();
-
-			TreeItem *item = search_options->get_next_selected(root);
-			while (item) {
-				item->deselect(0);
-				item = search_options->get_next_selected(item);
-			}
-
-			current->select(0);
-		}
-	}
 }
 
 void PropertySelector::_update_search() {
@@ -668,19 +643,19 @@ void PropertySelector::_bind_methods() {
 PropertySelector::PropertySelector() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
-	search_box = memnew(LineEdit);
+
+	search_box = memnew(FilterLineEdit);
 	search_box->set_accessibility_name(TTRC("Search:"));
-	search_box->set_clear_button_enabled(true);
-	search_box->connect(SceneStringName(text_changed), callable_mp(this, &PropertySelector::_text_changed));
-	search_box->connect(SceneStringName(gui_input), callable_mp(this, &PropertySelector::_sbox_input));
 	vbc->add_margin_child(TTRC("Search:"), search_box);
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &PropertySelector::_text_changed));
+
 	search_options = memnew(Tree);
+	search_box->set_forward_control(search_options);
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	vbc->add_margin_child(TTRC("Matches:"), search_options, true);
-	set_ok_button_text(TTRC("Open"));
-	get_ok_button()->set_disabled(true);
-	register_text_enter(search_box);
-	set_hide_on_ok(false);
+	search_options->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+	MarginContainer *mc = vbc->add_margin_child(TTRC("Matches:"), search_options, true);
+	mc->set_theme_type_variation("NoBorderHorizontalWindow");
+
 	search_options->connect("item_activated", callable_mp(this, &PropertySelector::_confirmed));
 	search_options->connect("cell_selected", callable_mp(this, &PropertySelector::_item_selected));
 	search_options->set_hide_root(true);
@@ -689,4 +664,9 @@ PropertySelector::PropertySelector() {
 	help_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);
 	help_bit->connect("request_hide", callable_mp(this, &PropertySelector::_hide_requested));
 	vbc->add_margin_child(TTRC("Description:"), help_bit);
+
+	set_ok_button_text(TTRC("Open"));
+	get_ok_button()->set_disabled(true);
+	register_text_enter(search_box);
+	set_hide_on_ok(false);
 }

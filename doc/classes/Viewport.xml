@@ -327,6 +327,7 @@
 		</member>
 		<member name="canvas_cull_mask" type="int" setter="set_canvas_cull_mask" getter="get_canvas_cull_mask" default="4294967295">
 			The rendering layers in which this [Viewport] renders [CanvasItem] nodes.
+			[b]Note:[/b] A [CanvasItem] does not inherit its parents' visibility layers. See [member CanvasItem.visibility_layer]'s description for details.
 		</member>
 		<member name="canvas_item_default_texture_filter" type="int" setter="set_default_canvas_item_texture_filter" getter="get_default_canvas_item_texture_filter" enum="Viewport.DefaultCanvasItemTextureFilter" default="1">
 			The default filter mode used by [CanvasItem] nodes in this viewport.
@@ -712,6 +713,7 @@
 		</constant>
 		<constant name="DEBUG_DRAW_SDFGI_PROBES" value="17" enum="DebugDraw">
 			Draws the probes used for signed distance field global illumination (SDFGI).
+			When in the editor, left-clicking a probe will display additional bright dots that show its occlusion information. A white dot means the light is not occluded at all at the dot's position, while a red dot means the light is fully occluded. Intermediate values are possible.
 			Does nothing if the current environment's [member Environment.sdfgi_enabled] is [code]false[/code].
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>

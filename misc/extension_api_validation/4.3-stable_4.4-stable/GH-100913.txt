@@ -1,0 +1,5 @@
+GH-100913
+---------
+Validate extension JSON: Error: Field 'classes/TextEdit/methods/get_line_column_at_pos/arguments': size changed value in new API, from 2 to 3.
+
+Added optional argument to disallow positions that are outside the column range of the line. Compatibility method registered.

@@ -55,7 +55,6 @@
 #include <avrt.h>
 #include <bcrypt.h>
 #include <direct.h>
-#include <hidsdi.h>
 #include <knownfolders.h>
 #include <process.h>
 #include <psapi.h>
@@ -64,6 +63,15 @@
 #include <wbemcli.h>
 #include <wincrypt.h>
 #include <winternl.h>
+
+// Workaround missing `extern "C"` in MinGW-w64 < 12.0.0.
+#if defined(__MINGW32__) && (!defined(__MINGW64_VERSION_MAJOR) || __MINGW64_VERSION_MAJOR < 12)
+extern "C" {
+#include <hidsdi.h>
+}
+#else
+#include <hidsdi.h>
+#endif
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
@@ -1277,23 +1285,23 @@ Dictionary OS_Windows::get_memory_info() const {
 }
 
 Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking) {
-#define CLEAN_PIPES               \
-	if (pipe_in[0] != 0) {        \
-		CloseHandle(pipe_in[0]);  \
-	}                             \
-	if (pipe_in[1] != 0) {        \
-		CloseHandle(pipe_in[1]);  \
-	}                             \
-	if (pipe_out[0] != 0) {       \
+#define CLEAN_PIPES \
+	if (pipe_in[0] != 0) { \
+		CloseHandle(pipe_in[0]); \
+	} \
+	if (pipe_in[1] != 0) { \
+		CloseHandle(pipe_in[1]); \
+	} \
+	if (pipe_out[0] != 0) { \
 		CloseHandle(pipe_out[0]); \
-	}                             \
-	if (pipe_out[1] != 0) {       \
+	} \
+	if (pipe_out[1] != 0) { \
 		CloseHandle(pipe_out[1]); \
-	}                             \
-	if (pipe_err[0] != 0) {       \
+	} \
+	if (pipe_err[0] != 0) { \
 		CloseHandle(pipe_err[0]); \
-	}                             \
-	if (pipe_err[1] != 0) {       \
+	} \
+	if (pipe_err[1] != 0) { \
 		CloseHandle(pipe_err[1]); \
 	}
 
@@ -2750,6 +2758,12 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 }
 #endif
 
+#ifdef _MSC_VER
+#define IAT_HOOK_CALL __declspec(guard(nocf))
+#else
+#define IAT_HOOK_CALL
+#endif
+
 using GetProcAddressType = FARPROC(__stdcall *)(HMODULE, LPCSTR);
 GetProcAddressType Original_GetProcAddress = nullptr;
 
@@ -2785,7 +2799,7 @@ bool _hid_is_controller(HANDLE p_hid_handle) {
 	return false;
 }
 
-BOOLEAN __stdcall Hook_HidD_GetProductString(HANDLE p_object, void *p_buffer, ULONG p_buffer_length) {
+IAT_HOOK_CALL BOOLEAN __stdcall Hook_HidD_GetProductString(HANDLE p_object, void *p_buffer, ULONG p_buffer_length) {
 	constexpr const wchar_t unknown_product_string[] = L"Unknown HID Device";
 	constexpr size_t unknown_product_length = sizeof(unknown_product_string);
 
@@ -2803,7 +2817,7 @@ BOOLEAN __stdcall Hook_HidD_GetProductString(HANDLE p_object, void *p_buffer, UL
 	return FALSE;
 }
 
-FARPROC __stdcall Hook_GetProcAddress(HMODULE p_module, LPCSTR p_name) {
+IAT_HOOK_CALL FARPROC __stdcall Hook_GetProcAddress(HMODULE p_module, LPCSTR p_name) {
 	if (String(p_name) == "HidD_GetProductString") {
 		return (FARPROC)(LPVOID)Hook_HidD_GetProductString;
 	}

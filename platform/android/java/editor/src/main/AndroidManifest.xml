@@ -52,7 +52,7 @@
             android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
             android:exported="false"
             android:icon="@mipmap/themed_icon"
-            android:launchMode="singleTask"
+            android:launchMode="singleInstancePerTask"
             android:screenOrientation="userLandscape">
             <layout
                 android:defaultWidth="@dimen/editor_default_window_width"
@@ -84,6 +84,15 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+                <data android:mimeType="*/*" />
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.godot" />
             </intent-filter>
         </activity-alias>
         <activity

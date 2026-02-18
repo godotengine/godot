@@ -32,30 +32,30 @@
 
 #include "servers/rendering/rendering_device.h"
 
-#define RD_SETGET(m_type, m_member)            \
+#define RD_SETGET(m_type, m_member) \
 	void set_##m_member(m_type p_##m_member) { \
-		base.m_member = p_##m_member;          \
-	}                                          \
-	m_type get_##m_member() const {            \
-		return base.m_member;                  \
+		base.m_member = p_##m_member; \
+	} \
+	m_type get_##m_member() const { \
+		return base.m_member; \
 	}
 
-#define RD_BIND(m_variant_type, m_class, m_member)                                                          \
+#define RD_BIND(m_variant_type, m_class, m_member) \
 	ClassDB::bind_method(D_METHOD("set_" _MKSTR(m_member), "p_" _MKSTR(member)), &m_class::set_##m_member); \
-	ClassDB::bind_method(D_METHOD("get_" _MKSTR(m_member)), &m_class::get_##m_member);                      \
+	ClassDB::bind_method(D_METHOD("get_" _MKSTR(m_member)), &m_class::get_##m_member); \
 	ADD_PROPERTY(PropertyInfo(m_variant_type, #m_member), "set_" _MKSTR(m_member), "get_" _MKSTR(m_member))
 
-#define RD_SETGET_SUB(m_type, m_sub, m_member)           \
+#define RD_SETGET_SUB(m_type, m_sub, m_member) \
 	void set_##m_sub##_##m_member(m_type p_##m_member) { \
-		base.m_sub.m_member = p_##m_member;              \
-	}                                                    \
-	m_type get_##m_sub##_##m_member() const {            \
-		return base.m_sub.m_member;                      \
+		base.m_sub.m_member = p_##m_member; \
+	} \
+	m_type get_##m_sub##_##m_member() const { \
+		return base.m_sub.m_member; \
 	}
 
-#define RD_BIND_SUB(m_variant_type, m_class, m_sub, m_member)                                                                           \
+#define RD_BIND_SUB(m_variant_type, m_class, m_sub, m_member) \
 	ClassDB::bind_method(D_METHOD("set_" _MKSTR(m_sub) "_" _MKSTR(m_member), "p_" _MKSTR(member)), &m_class::set_##m_sub##_##m_member); \
-	ClassDB::bind_method(D_METHOD("get_" _MKSTR(m_sub) "_" _MKSTR(m_member)), &m_class::get_##m_sub##_##m_member);                      \
+	ClassDB::bind_method(D_METHOD("get_" _MKSTR(m_sub) "_" _MKSTR(m_member)), &m_class::get_##m_sub##_##m_member); \
 	ADD_PROPERTY(PropertyInfo(m_variant_type, _MKSTR(m_sub) "_" _MKSTR(m_member)), "set_" _MKSTR(m_sub) "_" _MKSTR(m_member), "get_" _MKSTR(m_sub) "_" _MKSTR(m_member))
 
 class RDTextureFormat : public RefCounted {
@@ -276,6 +276,11 @@ protected:
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "source_tesselation_control"), "set_stage_source", "get_stage_source", RD::SHADER_STAGE_TESSELATION_CONTROL);
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "source_tesselation_evaluation"), "set_stage_source", "get_stage_source", RD::SHADER_STAGE_TESSELATION_EVALUATION);
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "source_compute"), "set_stage_source", "get_stage_source", RD::SHADER_STAGE_COMPUTE);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "source_raygen"), "set_stage_source", "get_stage_source", RD::SHADER_STAGE_RAYGEN);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "source_any_hit"), "set_stage_source", "get_stage_source", RD::SHADER_STAGE_ANY_HIT);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "source_closest_hit"), "set_stage_source", "get_stage_source", RD::SHADER_STAGE_CLOSEST_HIT);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "source_miss"), "set_stage_source", "get_stage_source", RD::SHADER_STAGE_MISS);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "source_intersection"), "set_stage_source", "get_stage_source", RD::SHADER_STAGE_INTERSECTION);
 		ADD_GROUP("Syntax", "source_");
 		ADD_PROPERTY(PropertyInfo(Variant::INT, "language", PROPERTY_HINT_RANGE, "GLSL,HLSL"), "set_language", "get_language");
 	}
@@ -335,12 +340,22 @@ protected:
 		ADD_PROPERTYI(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytecode_tesselation_control"), "set_stage_bytecode", "get_stage_bytecode", RD::SHADER_STAGE_TESSELATION_CONTROL);
 		ADD_PROPERTYI(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytecode_tesselation_evaluation"), "set_stage_bytecode", "get_stage_bytecode", RD::SHADER_STAGE_TESSELATION_EVALUATION);
 		ADD_PROPERTYI(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytecode_compute"), "set_stage_bytecode", "get_stage_bytecode", RD::SHADER_STAGE_COMPUTE);
+		ADD_PROPERTYI(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytecode_raygen"), "set_stage_bytecode", "get_stage_bytecode", RD::SHADER_STAGE_RAYGEN);
+		ADD_PROPERTYI(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytecode_any_hit"), "set_stage_bytecode", "get_stage_bytecode", RD::SHADER_STAGE_ANY_HIT);
+		ADD_PROPERTYI(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytecode_closest_hit"), "set_stage_bytecode", "get_stage_bytecode", RD::SHADER_STAGE_CLOSEST_HIT);
+		ADD_PROPERTYI(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytecode_miss"), "set_stage_bytecode", "get_stage_bytecode", RD::SHADER_STAGE_MISS);
+		ADD_PROPERTYI(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytecode_intersection"), "set_stage_bytecode", "get_stage_bytecode", RD::SHADER_STAGE_INTERSECTION);
 		ADD_GROUP("Compile Error", "compile_error_");
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "compile_error_vertex"), "set_stage_compile_error", "get_stage_compile_error", RD::SHADER_STAGE_VERTEX);
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "compile_error_fragment"), "set_stage_compile_error", "get_stage_compile_error", RD::SHADER_STAGE_FRAGMENT);
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "compile_error_tesselation_control"), "set_stage_compile_error", "get_stage_compile_error", RD::SHADER_STAGE_TESSELATION_CONTROL);
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "compile_error_tesselation_evaluation"), "set_stage_compile_error", "get_stage_compile_error", RD::SHADER_STAGE_TESSELATION_EVALUATION);
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "compile_error_compute"), "set_stage_compile_error", "get_stage_compile_error", RD::SHADER_STAGE_COMPUTE);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "compile_error_raygen"), "set_stage_compile_error", "get_stage_compile_error", RD::SHADER_STAGE_RAYGEN);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "compile_error_any_hit"), "set_stage_compile_error", "get_stage_compile_error", RD::SHADER_STAGE_ANY_HIT);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "compile_error_closest_hit"), "set_stage_compile_error", "get_stage_compile_error", RD::SHADER_STAGE_CLOSEST_HIT);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "compile_error_miss"), "set_stage_compile_error", "get_stage_compile_error", RD::SHADER_STAGE_MISS);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "compile_error_intersection"), "set_stage_compile_error", "get_stage_compile_error", RD::SHADER_STAGE_INTERSECTION);
 	}
 };
 

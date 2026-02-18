@@ -232,6 +232,9 @@ private:
 	bool debug_mute = false;
 #endif // DEBUG_ENABLED
 
+	bool input_device_active = false;
+	int input_buffer_ofs = 0;
+
 	struct Bus {
 		StringName name;
 		bool solo = false;
@@ -311,6 +314,8 @@ private:
 	SafeList<AudioStreamPlaybackBusDetails *> bus_details_graveyard;
 	void _delete_stream_playback(Ref<AudioStreamPlayback> p_playback);
 	void _delete_stream_playback_list_node(AudioStreamPlaybackListNode *p_node);
+
+	void _cleanup_lists();
 
 	// TODO document if this is necessary.
 	SafeList<AudioStreamPlaybackBusDetails *> bus_details_graveyard_frame_old;
@@ -492,6 +497,10 @@ public:
 	PackedStringArray get_input_device_list();
 	String get_input_device();
 	void set_input_device(const String &p_name);
+	Error set_input_device_active(bool p_is_active);
+	int get_input_frames_available();
+	int get_input_buffer_length_frames();
+	PackedVector2Array get_input_frames(int p_frames);
 
 	void set_enable_tagging_used_audio_streams(bool p_enable);
 

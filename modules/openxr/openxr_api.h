@@ -502,7 +502,7 @@ public:
 	void set_form_factor(XrFormFactor p_form_factor);
 	XrFormFactor get_form_factor() const { return form_factor; }
 
-	uint32_t get_view_count();
+	uint32_t get_view_count() const;
 	void set_view_configuration(XrViewConfigurationType p_view_configuration);
 	XrViewConfigurationType get_view_configuration() const { return view_configuration; }
 
@@ -521,6 +521,7 @@ public:
 	void finish();
 
 	_FORCE_INLINE_ XrSpace get_play_space() const { return play_space; }
+	_FORCE_INLINE_ XrSpace get_view_space() const { return view_space; }
 	_FORCE_INLINE_ XrTime get_predicted_display_time() { return frame_state.predictedDisplayTime; }
 	_FORCE_INLINE_ XrTime get_next_frame_time() { return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod; }
 	_FORCE_INLINE_ bool can_render() {

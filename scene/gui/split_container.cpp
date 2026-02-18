@@ -189,6 +189,7 @@ void SplitContainerDragger::_notification(int p_what) {
 			ERR_FAIL_COND(ae.is_null());
 
 			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SPLITTER);
+			DisplayServer::get_singleton()->accessibility_update_set_name(ae, RTR("Drag to resize"));
 
 			SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
 			if (sc->collapsed || sc->valid_children.size() < 2u || !sc->dragging_enabled) {
@@ -353,6 +354,7 @@ void SplitContainer::_set_desired_sizes(const PackedInt32Array &p_desired_sizes,
 		real_t min_size = 0;
 		real_t stretch_ratio = 0.0;
 		real_t final_size = 0;
+		bool priority = false;
 	};
 
 	// First pass, determine the total stretch amount.
@@ -364,6 +366,7 @@ void SplitContainer::_set_desired_sizes(const PackedInt32Array &p_desired_sizes,
 		sdata.min_size = child->get_combined_minimum_size()[axis];
 		sdata.final_size = MAX(sdata.min_size, p_desired_sizes.is_empty() ? 0 : p_desired_sizes[i]);
 		total_desired_size += sdata.final_size;
+		sdata.priority = i == p_priority_index;
 		// Treat the priority child as not expanded, so it doesn't shrink with other expanded children.
 		if (i != p_priority_index && child->get_stretch_ratio() > 0 && (vertical ? child->get_v_size_flags() : child->get_h_size_flags()).has_flag(SIZE_EXPAND)) {
 			sdata.stretch_ratio = child->get_stretch_ratio();
@@ -407,6 +410,7 @@ void SplitContainer::_set_desired_sizes(const PackedInt32Array &p_desired_sizes,
 		if (Math::is_zero_approx(shrink_amount)) {
 			break;
 		}
+		const real_t prev_available_space = available_space;
 		for (StretchData &sdata : stretch_data) {
 			if (sdata.stretch_ratio <= 0 || sdata.final_size <= sdata.min_size) {
 				continue;
@@ -416,16 +420,21 @@ void SplitContainer::_set_desired_sizes(const PackedInt32Array &p_desired_sizes,
 			const real_t size_diff = prev_size - sdata.final_size;
 			available_space += size_diff;
 		}
+		if (Math::is_equal_approx(available_space, prev_available_space)) {
+			// Shrinking can fail due to values being too small to have an effect but too large for `is_zero_approx`.
+			break;
+		}
 	}
 
 	// Shrink non-expanding children.
+	bool skip_priority_child = true;
 	while (available_space < 0) {
-		// Get largest and target sizes.
+		// Get largest and target sizes. The target size is the second largest size.
 		real_t largest_size = 0;
 		real_t target_size = 0;
 		int largest_count = 0;
 		for (const StretchData &sdata : stretch_data) {
-			if (sdata.final_size <= sdata.min_size) {
+			if (sdata.final_size <= sdata.min_size || (skip_priority_child && sdata.priority)) {
 				continue;
 			}
 			if (sdata.final_size > largest_size) {
@@ -434,18 +443,25 @@ void SplitContainer::_set_desired_sizes(const PackedInt32Array &p_desired_sizes,
 				largest_count = 1;
 			} else if (sdata.final_size == largest_size) {
 				largest_count++;
-			} else if (sdata.final_size < largest_size) {
-				target_size = MAX(sdata.final_size, target_size);
+			} else if (sdata.final_size < largest_size && sdata.final_size > target_size) {
+				target_size = sdata.final_size;
 			}
 		}
 		if (largest_size <= 0) {
-			break;
+			if (skip_priority_child) {
+				// Retry with priority child.
+				skip_priority_child = false;
+				continue;
+			} else {
+				// No more children to shrink.
+				break;
+			}
 		}
 		// Don't shrink smaller than needed.
-		target_size = MAX(target_size, available_space / largest_count);
-		target_size = MIN(target_size, largest_size + (available_space / largest_count));
+		target_size = MAX(target_size, largest_size + available_space / largest_count);
+		const real_t prev_available_space = available_space;
 		for (StretchData &sdata : stretch_data) {
-			if (sdata.final_size <= sdata.min_size) {
+			if (sdata.final_size <= sdata.min_size || (skip_priority_child && sdata.priority)) {
 				continue;
 			}
 			// Shrink all largest elements.
@@ -455,7 +471,7 @@ void SplitContainer::_set_desired_sizes(const PackedInt32Array &p_desired_sizes,
 				available_space += size_diff;
 			}
 		}
-		if (Math::is_zero_approx(available_space)) {
+		if (Math::is_zero_approx(available_space) || Math::is_equal_approx(available_space, prev_available_space)) {
 			break;
 		}
 	}
@@ -993,7 +1009,7 @@ void SplitContainer::_remove_valid_child(Control *p_control) {
 	}
 	// Only use desired sizes to change the split offset after the first time a child is removed.
 	// This allows adding children to not affect the split offsets when creating.
-	can_use_desired_sizes = valid_children.size() > 1u;
+	can_use_desired_sizes = true;
 
 	_update_default_dragger_positions();
 	queue_sort();

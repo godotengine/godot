@@ -37,23 +37,23 @@
 static constexpr char hex_char_table_upper[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 static constexpr char hex_char_table_lower[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
-#define BSEARCH_CHAR_RANGE(m_array)                \
-	int low = 0;                                   \
-	int high = std_size(m_array) - 1;              \
-	int middle = (low + high) / 2;                 \
-                                                   \
-	while (low <= high) {                          \
-		if (p_char < m_array[middle].start) {      \
-			high = middle - 1;                     \
+#define BSEARCH_CHAR_RANGE(m_array) \
+	int low = 0; \
+	int high = std_size(m_array) - 1; \
+	int middle = (low + high) / 2; \
+\
+	while (low <= high) { \
+		if (p_char < m_array[middle].start) { \
+			high = middle - 1; \
 		} else if (p_char > m_array[middle].end) { \
-			low = middle + 1;                      \
-		} else {                                   \
-			return true;                           \
-		}                                          \
-                                                   \
-		middle = (low + high) / 2;                 \
-	}                                              \
-                                                   \
+			low = middle + 1; \
+		} else { \
+			return true; \
+		} \
+\
+		middle = (low + high) / 2; \
+	} \
+\
 	return false
 
 constexpr bool is_unicode_identifier_start(char32_t p_char) {

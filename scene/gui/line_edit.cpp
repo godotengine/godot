@@ -32,6 +32,7 @@
 #include "line_edit.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -659,13 +660,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	Ref<InputEventKey> k = p_event;
-
-	if (k.is_null()) {
-		return;
-	}
-
-	if (editable && !editing && k->is_action_pressed("ui_text_submit", false)) {
+	if (editable && !editing && p_event->is_action_pressed("ui_text_submit", false)) {
 		edit();
 		emit_signal(SNAME("editing_toggled"), true);
 		accept_event();
@@ -674,7 +669,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	// Open context menu.
 	if (context_menu_enabled) {
-		if (k->is_action("ui_menu", true)) {
+		if (p_event->is_action("ui_menu", true)) {
 			_update_context_menu();
 			Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2);
 			menu->set_position(get_screen_transform().xform(pos));
@@ -688,19 +683,19 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (is_shortcut_keys_enabled()) {
-		if (k->is_action("ui_copy", true)) {
+		if (p_event->is_action("ui_copy", true)) {
 			copy_text();
 			accept_event();
 			return;
 		}
 
-		if (k->is_action("ui_text_select_all", true)) {
+		if (p_event->is_action("ui_text_select_all", true)) {
 			select();
 			accept_event();
 			return;
 		}
 
-		if (k->is_action("ui_cut", true)) {
+		if (p_event->is_action("ui_cut", true)) {
 			if (editable) {
 				cut_text();
 			} else {
@@ -712,6 +707,12 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (!editing) {
+		return;
+	}
+
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_null()) {
 		return;
 	}
 
@@ -1311,7 +1312,7 @@ void LineEdit::_notification(int p_what) {
 			float text_off_x = x_ofs + scroll_offset;
 
 			if (accessibility_text_root_element.is_null()) {
-				accessibility_text_root_element = DisplayServer::get_singleton()->accessibility_create_sub_text_edit_elements(ae, using_placeholder ? RID() : text_rid, text_height);
+				accessibility_text_root_element = DisplayServer::get_singleton()->accessibility_create_sub_text_edit_elements(ae, using_placeholder ? RID() : text_rid, text_height, -1, true);
 			}
 
 			Transform2D text_xform;
@@ -2109,22 +2110,39 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 	}
 }
 
-void LineEdit::set_text(String p_text) {
+void LineEdit::_set_text(String p_text, bool p_emit_signal) {
 	clear_internal();
+
+	String previous_text = get_text();
 	insert_text_at_caret(p_text);
-	_create_undo_state();
+
+	if (get_text() != previous_text) {
+		_create_undo_state();
+		if (p_emit_signal) {
+			_text_changed();
+		}
+	}
 
 	queue_redraw();
 	caret_column = 0;
 	scroll_offset = 0.0;
 }
 
+void LineEdit::set_text(String p_text) {
+	_set_text(p_text);
+}
+
 void LineEdit::set_text_with_selection(const String &p_text) {
 	Selection selection_copy = selection;
 
 	clear_internal();
+
+	String previous_text = get_text();
 	insert_text_at_caret(p_text);
-	_create_undo_state();
+
+	if (get_text() != previous_text) {
+		_create_undo_state();
+	}
 
 	int tlen = text.length();
 	selection = selection_copy;
@@ -2556,6 +2574,12 @@ void LineEdit::set_editable(bool p_editable) {
 		unedit();
 		emit_signal(SNAME("editing_toggled"), false);
 	}
+
+	if (editable && has_focus() && !editing) {
+		edit();
+		emit_signal(SNAME("editing_toggled"), true);
+	}
+
 	_validate_caret_can_draw();
 
 	update_minimum_size();
@@ -3239,29 +3263,29 @@ void LineEdit::_update_context_menu() {
 
 	int idx = -1;
 
-#define MENU_ITEM_ACTION_DISABLED(m_menu, m_id, m_action, m_disabled)                                                  \
-	idx = m_menu->get_item_index(m_id);                                                                                \
-	if (idx >= 0) {                                                                                                    \
+#define MENU_ITEM_ACTION_DISABLED(m_menu, m_id, m_action, m_disabled) \
+	idx = m_menu->get_item_index(m_id); \
+	if (idx >= 0) { \
 		m_menu->set_item_accelerator(idx, shortcut_keys_enabled ? _get_menu_action_accelerator(m_action) : Key::NONE); \
-		m_menu->set_item_disabled(idx, m_disabled);                                                                    \
+		m_menu->set_item_disabled(idx, m_disabled); \
 	}
 
-#define MENU_ITEM_ACTION(m_menu, m_id, m_action)                                                                       \
-	idx = m_menu->get_item_index(m_id);                                                                                \
-	if (idx >= 0) {                                                                                                    \
+#define MENU_ITEM_ACTION(m_menu, m_id, m_action) \
+	idx = m_menu->get_item_index(m_id); \
+	if (idx >= 0) { \
 		m_menu->set_item_accelerator(idx, shortcut_keys_enabled ? _get_menu_action_accelerator(m_action) : Key::NONE); \
 	}
 
 #define MENU_ITEM_DISABLED(m_menu, m_id, m_disabled) \
-	idx = m_menu->get_item_index(m_id);              \
-	if (idx >= 0) {                                  \
-		m_menu->set_item_disabled(idx, m_disabled);  \
+	idx = m_menu->get_item_index(m_id); \
+	if (idx >= 0) { \
+		m_menu->set_item_disabled(idx, m_disabled); \
 	}
 
 #define MENU_ITEM_CHECKED(m_menu, m_id, m_checked) \
-	idx = m_menu->get_item_index(m_id);            \
-	if (idx >= 0) {                                \
-		m_menu->set_item_checked(idx, m_checked);  \
+	idx = m_menu->get_item_index(m_id); \
+	if (idx >= 0) { \
+		m_menu->set_item_checked(idx, m_checked); \
 	}
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
@@ -3299,6 +3323,10 @@ void LineEdit::_validate_property(PropertyInfo &p_property) const {
 }
 
 void LineEdit::_bind_methods() {
+	// Private exposed API.
+	ClassDB::bind_method(D_METHOD("_set_text", "text", "emit_signal"), &LineEdit::_set_text, DEFVAL(false));
+
+	// Public API.
 	ClassDB::bind_method(D_METHOD("has_ime_text"), &LineEdit::has_ime_text);
 	ClassDB::bind_method(D_METHOD("cancel_ime"), &LineEdit::cancel_ime);
 	ClassDB::bind_method(D_METHOD("apply_ime"), &LineEdit::apply_ime);
@@ -3496,7 +3524,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
 
 	ADD_GROUP("Icon", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_right_icon", "get_right_icon");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "right_icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_right_icon", "get_right_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_expand_mode", PROPERTY_HINT_ENUM, "Original,Fit to Text,Fit to LineEdit"), "set_icon_expand_mode", "get_icon_expand_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "right_icon_scale", PROPERTY_HINT_RANGE, "0.1,1.0,0.01"), "set_right_icon_scale", "get_right_icon_scale");
 

@@ -36,6 +36,7 @@
 #include "core/profiling/profiling.h"
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
+#include "rendering_device.h"
 #include "rendering_server_globals.h"
 #include "storage/texture_storage.h"
 
@@ -315,7 +316,7 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 	}
 
 	float screen_mesh_lod_threshold = p_viewport->mesh_lod_threshold / float(p_viewport->size.width);
-	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->internal_size, p_viewport->jitter_phase_count, screen_mesh_lod_threshold, p_viewport->shadow_atlas, xr_interface, &p_viewport->render_info);
+	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->internal_size, p_viewport->jitter_phase_count, screen_mesh_lod_threshold, p_viewport->shadow_atlas, xr_interface, p_viewport->window_output_max_value, &p_viewport->render_info);
 
 	RENDER_TIMESTAMP("< Render 3D Scene");
 #endif // _3D_DISABLED
@@ -355,6 +356,15 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			} else if (RSG::scene->environment_get_background(environment) == RS::ENV_BG_CANVAS) {
 				// The scene renderer will still copy over the last frame, so we need to clear the render target.
 				force_clear_render_target = true;
+			}
+		}
+
+		p_viewport->window_output_max_value = 1.0;
+		DisplayServer::WindowID parent_window = _get_containing_window(p_viewport);
+		if (RD::get_singleton() && parent_window != DisplayServer::INVALID_WINDOW_ID) {
+			RenderingContextDriver *context_driver = RD::get_singleton()->get_context_driver();
+			if (context_driver->window_get_hdr_output_enabled(parent_window)) {
+				p_viewport->window_output_max_value = context_driver->window_get_output_max_linear_value(parent_window);
 			}
 		}
 	}
@@ -652,7 +662,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			// Clear now otherwise we copy over garbage from the render target.
 			RSG::texture_storage->render_target_do_clear_request(p_viewport->render_target);
 			if (!can_draw_3d) {
-				RSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas);
+				RSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas, p_viewport->window_output_max_value);
 			} else {
 				_draw_3d(p_viewport);
 			}
@@ -695,7 +705,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				// Clear now otherwise we copy over garbage from the render target.
 				RSG::texture_storage->render_target_do_clear_request(p_viewport->render_target);
 				if (!can_draw_3d) {
-					RSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas);
+					RSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas, p_viewport->window_output_max_value);
 				} else {
 					_draw_3d(p_viewport);
 				}
@@ -709,7 +719,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			// Clear now otherwise we copy over garbage from the render target.
 			RSG::texture_storage->render_target_do_clear_request(p_viewport->render_target);
 			if (!can_draw_3d) {
-				RSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas);
+				RSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas, p_viewport->window_output_max_value);
 			} else {
 				_draw_3d(p_viewport);
 			}
@@ -731,6 +741,21 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		RSG::utilities->capture_timestamp(rt_id);
 		timestamp_vp_map[rt_id] = p_viewport->self;
 	}
+}
+
+DisplayServer::WindowID RendererViewport::_get_containing_window(Viewport *p_viewport) {
+	if (p_viewport->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID) {
+		return p_viewport->viewport_to_screen;
+	}
+
+	if (p_viewport->parent.is_valid()) {
+		Viewport *parent = viewport_owner.get_or_null(p_viewport->parent);
+		if (parent) {
+			return _get_containing_window(parent);
+		}
+	}
+
+	return DisplayServer::INVALID_WINDOW_ID;
 }
 
 void RendererViewport::draw_viewports(bool p_swap_buffers) {
@@ -987,15 +1012,23 @@ void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
 void RendererViewport::viewport_set_scaling_3d_mode(RID p_viewport, RS::ViewportScaling3DMode p_mode) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
+#ifdef DEBUG_ENABLED
 	const String rendering_method = OS::get_singleton()->get_current_rendering_method();
 	if (rendering_method != "forward_plus") {
-		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR, "FSR1 is only available when using the Forward+ renderer.");
-		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2, "FSR2 is only available when using the Forward+ renderer.");
-		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL, "MetalFX Temporal is only available when using the Forward+ renderer.");
+		if (p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR) {
+			WARN_PRINT_ONCE_ED("FSR1 3D scaling is only available when using the Forward+ renderer.");
+		}
+		if (p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2) {
+			WARN_PRINT_ONCE_ED("FSR2 3D scaling is only available when using the Forward+ renderer.");
+		}
+		if (p_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL) {
+			WARN_PRINT_ONCE_ED("MetalFX Temporal 3D scaling is only available when using the Forward+ renderer.");
+		}
 	}
-	if (rendering_method == "gl_compatibility") {
-		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL, "MetalFX Spatial is only available when using the Forward+ and Mobile renderers.");
+	if (rendering_method == "gl_compatibility" && p_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
+		WARN_PRINT_ONCE_ED("MetalFX Spatial 3D scaling is only available when using the Forward+ or Mobile renderer.");
 	}
+#endif
 
 	if (viewport->scaling_3d_mode == p_mode) {
 		return;
@@ -1387,7 +1420,11 @@ bool RendererViewport::viewport_is_using_hdr_2d(RID p_viewport) const {
 void RendererViewport::viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
-	ERR_FAIL_COND_EDMSG(p_mode != RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility", "Screen space AA is currently unavailable on the Compatibility renderer.");
+#ifdef DEBUG_ENABLED
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" && p_mode != RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED) {
+		WARN_PRINT_ONCE_ED("Screen-space AA is only available when using the Forward+ or Mobile renderer.");
+	}
+#endif
 
 	if (viewport->screen_space_aa == p_mode) {
 		return;
@@ -1399,7 +1436,11 @@ void RendererViewport::viewport_set_screen_space_aa(RID p_viewport, RS::Viewport
 void RendererViewport::viewport_set_use_taa(RID p_viewport, bool p_use_taa) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
-	ERR_FAIL_COND_EDMSG(OS::get_singleton()->get_current_rendering_method() != "forward_plus", "TAA is only available when using the Forward+ renderer.");
+#ifdef DEBUG_ENABLED
+	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
+		WARN_PRINT_ONCE_ED("TAA is only available when using the Forward+ renderer.");
+	}
+#endif
 
 	if (viewport->use_taa == p_use_taa) {
 		return;

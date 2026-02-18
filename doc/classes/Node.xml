@@ -1055,6 +1055,7 @@
 		<member name="owner" type="Node" setter="set_owner" getter="get_owner">
 			The owner of this node. The owner must be an ancestor of this node. When packing the owner node in a [PackedScene], all the nodes it owns are also saved with it. See also [member unique_name_in_owner].
 			[b]Note:[/b] In the editor, nodes not owned by the scene root are usually not displayed in the Scene dock, and will [b]not[/b] be saved. To prevent this, remember to set the owner after calling [method add_child].
+			[b]Note:[/b] The owner needs to be the current scene root. See [url=$DOCS_URL/tutorials/plugins/running_code_in_the_editor.html#instancing-scenes]Instancing scenes[/url] in the documentation for more information.
 		</member>
 		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" enum="Node.PhysicsInterpolationMode" default="0">
 			The physics interpolation mode to use for this node. Only effective if [member ProjectSettings.physics/common/physics_interpolation] or [member SceneTree.physics_interpolation] is [code]true[/code].
@@ -1332,16 +1333,16 @@
 			Inherits [member process_mode] from the node's parent. This is the default for any newly created node.
 		</constant>
 		<constant name="PROCESS_MODE_PAUSABLE" value="1" enum="ProcessMode">
-			Stops processing when [member SceneTree.paused] is [code]true[/code]. This is the inverse of [constant PROCESS_MODE_WHEN_PAUSED], and the default for the root node.
+			Processes when [member SceneTree.paused] is [code]false[/code]. This is the inverse of [constant PROCESS_MODE_WHEN_PAUSED], and the default for the root node.
 		</constant>
 		<constant name="PROCESS_MODE_WHEN_PAUSED" value="2" enum="ProcessMode">
-			Process [b]only[/b] when [member SceneTree.paused] is [code]true[/code]. This is the inverse of [constant PROCESS_MODE_PAUSABLE].
+			Processes [b]only[/b] when [member SceneTree.paused] is [code]true[/code]. This is the inverse of [constant PROCESS_MODE_PAUSABLE].
 		</constant>
 		<constant name="PROCESS_MODE_ALWAYS" value="3" enum="ProcessMode">
-			Always process. Keeps processing, ignoring [member SceneTree.paused]. This is the inverse of [constant PROCESS_MODE_DISABLED].
+			Always processes. Keeps processing, ignoring [member SceneTree.paused]. This is the inverse of [constant PROCESS_MODE_DISABLED].
 		</constant>
 		<constant name="PROCESS_MODE_DISABLED" value="4" enum="ProcessMode">
-			Never process. Completely disables processing, ignoring [member SceneTree.paused]. This is the inverse of [constant PROCESS_MODE_ALWAYS].
+			Never processes. Completely disables processing, ignoring [member SceneTree.paused]. This is the inverse of [constant PROCESS_MODE_ALWAYS].
 		</constant>
 		<constant name="PROCESS_THREAD_GROUP_INHERIT" value="0" enum="ProcessThreadGroup">
 			Process this node based on the thread group mode of the first parent (or grandparent) node that has a thread group mode that is not inherit. See [member process_thread_group] for more information.

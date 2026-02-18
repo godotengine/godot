@@ -94,7 +94,7 @@ void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control, cons
 	EditorDock *dock = memnew(EditorDock);
 	dock->set_title(p_control->get_name());
 	dock->set_dock_shortcut(p_shortcut);
-	dock->set_default_slot((DockConstants::DockSlot)p_slot);
+	dock->set_default_slot((EditorDock::DockSlot)p_slot);
 	dock->add_child(p_control);
 	legacy_docks[p_control] = dock;
 
@@ -705,10 +705,10 @@ void EditorPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_enable_plugin);
 	GDVIRTUAL_BIND(_disable_plugin);
 
-	ADD_SIGNAL(MethodInfo("scene_changed", PropertyInfo(Variant::OBJECT, "scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("scene_changed", PropertyInfo(Variant::OBJECT, "scene_root", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static())));
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "filepath")));
 	ADD_SIGNAL(MethodInfo("main_screen_changed", PropertyInfo(Variant::STRING, "screen_name")));
-	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static())));
 	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "filepath")));
 	ADD_SIGNAL(MethodInfo("project_settings_changed"));
 
@@ -725,6 +725,7 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONTAINER_PROJECT_SETTING_TAB_LEFT);
 	BIND_ENUM_CONSTANT(CONTAINER_PROJECT_SETTING_TAB_RIGHT);
 
+#ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(DOCK_SLOT_NONE);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_UL);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_BL);
@@ -736,6 +737,7 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_BR);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_BOTTOM);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_MAX);
+#endif
 
 	BIND_ENUM_CONSTANT(AFTER_GUI_INPUT_PASS);
 	BIND_ENUM_CONSTANT(AFTER_GUI_INPUT_STOP);

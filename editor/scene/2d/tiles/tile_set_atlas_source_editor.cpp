@@ -45,6 +45,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
 
+#include "core/input/input.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 
@@ -107,7 +108,7 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_get_property_list
 	p_list->push_back(PropertyInfo(Variant::NIL, TTR("Atlas"), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
 	p_list->push_back(PropertyInfo(Variant::INT, PNAME("id"), PROPERTY_HINT_RANGE, "0," + itos(INT_MAX) + ",1"));
 	p_list->push_back(PropertyInfo(Variant::STRING, PNAME("name")));
-	p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("texture"), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("texture"), PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2I, PNAME("margins"), PROPERTY_HINT_NONE, "suffix:px"));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2I, PNAME("separation"), PROPERTY_HINT_NONE, "suffix:px"));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2I, PNAME("texture_region_size"), PROPERTY_HINT_NONE, "suffix:px"));
@@ -626,20 +627,20 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	TreeItem *root = tile_data_editors_tree->create_item();
 
 	TreeItem *group;
-#define ADD_TILE_DATA_EDITOR_GROUP(text)               \
+#define ADD_TILE_DATA_EDITOR_GROUP(text) \
 	group = tile_data_editors_tree->create_item(root); \
-	group->set_custom_bg_color(0, group_color);        \
-	group->set_selectable(0, false);                   \
-	group->set_disable_folding(true);                  \
+	group->set_custom_bg_color(0, group_color); \
+	group->set_selectable(0, false); \
+	group->set_disable_folding(true); \
 	group->set_text(0, text);
 
 	TreeItem *item;
-#define ADD_TILE_DATA_EDITOR(parent, text, property)    \
+#define ADD_TILE_DATA_EDITOR(parent, text, property) \
 	item = tile_data_editors_tree->create_item(parent); \
-	item->set_text(0, text);                            \
-	item->set_metadata(0, property);                    \
-	if (property == previously_selected) {              \
-		item->select(0);                                \
+	item->set_text(0, text); \
+	item->set_metadata(0, property); \
+	if (property == previously_selected) { \
+		item->select(0); \
 	}
 
 	// Theming.
@@ -2576,6 +2577,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_inspector->set_show_categories(false, true);
 	tile_inspector->set_use_doc_hints(true);
 	tile_inspector->set_use_folding(true);
+	tile_inspector->set_theme_type_variation("ScrollContainerSecondary");
 	tile_inspector->connect("property_selected", callable_mp(this, &TileSetAtlasSourceEditor::_inspector_property_selected));
 	middle_vbox_container->add_child(tile_inspector);
 
@@ -2591,6 +2593,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_data_editors_scroll = memnew(ScrollContainer);
 	tile_data_editors_scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	tile_data_editors_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	tile_data_editors_scroll->set_theme_type_variation("ScrollContainerSecondary");
 	middle_vbox_container->add_child(tile_data_editors_scroll);
 
 	VBoxContainer *tile_data_editors_vbox = memnew(VBoxContainer);
@@ -2630,6 +2633,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	atlas_source_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	atlas_source_inspector->set_show_categories(false, true);
 	atlas_source_inspector->set_use_doc_hints(true);
+	atlas_source_inspector->set_theme_type_variation("ScrollContainerSecondary");
 	middle_vbox_container->add_child(atlas_source_inspector);
 
 	// -- Right side --

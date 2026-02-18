@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/input/input.h"
 #include "scene/gui/control.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
@@ -192,7 +193,7 @@ void Window::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_fonts") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, "Font", usage));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_fonts") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, Font::get_class_static(), usage));
 		}
 	}
 	{
@@ -216,7 +217,7 @@ void Window::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_icons") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", usage));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_icons") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), usage));
 		}
 	}
 	{
@@ -228,7 +229,7 @@ void Window::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_styles") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", usage));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_styles") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, StyleBox::get_class_static(), usage));
 		}
 	}
 }
@@ -573,6 +574,38 @@ bool Window::is_popup() const {
 	return get_flag(Window::FLAG_POPUP) || get_flag(Window::FLAG_NO_FOCUS);
 }
 
+void Window::set_hdr_output_requested(bool p_requested) {
+	ERR_MAIN_THREAD_GUARD;
+
+	hdr_output_requested = p_requested;
+
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_request_hdr_output(hdr_output_requested, window_id);
+	}
+
+	_update_viewport_for_hdr_output();
+}
+
+bool Window::is_hdr_output_requested() const {
+	ERR_READ_THREAD_GUARD_V(false);
+
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		hdr_output_requested = DisplayServer::get_singleton()->window_is_hdr_output_requested(window_id);
+	}
+
+	return hdr_output_requested;
+}
+
+float Window::get_output_max_linear_value() const {
+	ERR_READ_THREAD_GUARD_V(1.0f);
+
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		return DisplayServer::get_singleton()->window_get_output_max_linear_value(window_id);
+	}
+
+	return 1.0f;
+}
+
 bool Window::is_maximize_allowed() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
@@ -585,6 +618,20 @@ void Window::request_attention() {
 	ERR_MAIN_THREAD_GUARD;
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_request_attention(window_id);
+	}
+}
+
+void Window::set_taskbar_progress_value(float p_value) {
+	ERR_MAIN_THREAD_GUARD;
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_set_taskbar_progress_value(p_value, window_id);
+	}
+}
+
+void Window::set_taskbar_progress_state(DisplayServer::ProgressState p_state) {
+	ERR_MAIN_THREAD_GUARD;
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_set_taskbar_progress_state(p_state);
 	}
 }
 
@@ -672,6 +719,7 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_set_mouse_passthrough(mpath, window_id);
 	DisplayServer::get_singleton()->window_set_title(displayed_title, window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
+	DisplayServer::get_singleton()->window_request_hdr_output(hdr_output_requested, window_id);
 
 	_update_window_size();
 
@@ -701,6 +749,15 @@ void Window::_clear_window() {
 	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
 
 	bool had_focus = has_focus();
+
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)) {
+		float win_scale = DisplayServer::get_singleton()->window_get_scale(window_id);
+
+		Size2i adjusted_size = Size2i(size.width / win_scale, size.height / win_scale);
+		Size2i adjusted_pos = Size2i(position.x / win_scale, position.y / win_scale);
+
+		_rect_changed_callback(Rect2i(adjusted_pos, adjusted_size));
+	}
 
 	if (transient_parent && transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServer::INVALID_WINDOW_ID);
@@ -814,6 +871,17 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 			focused_window = this;
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_IN);
 			emit_signal(SceneStringName(focus_entered));
+			if (get_tree() && get_tree()->is_accessibility_enabled()) {
+				Window *w = exclusive_child;
+				while (w) {
+					if (w->exclusive_child) {
+						w = w->exclusive_child;
+					} else {
+						w->grab_focus();
+						break;
+					}
+				}
+			}
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_OUT: {
 			focused = false;
@@ -945,6 +1013,13 @@ void Window::set_visible(bool p_visible) {
 			}
 			embedder->_sub_window_register(this);
 			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
+
+			// Make sure the sub-window shares the HDR output settings of the embedder.
+			Window *containing_window = embedder->get_window();
+			if (containing_window) {
+				hdr_output_requested = containing_window->is_hdr_output_requested();
+				_update_viewport_for_hdr_output();
+			}
 		} else {
 			embedder->_sub_window_remove(this);
 			embedder = nullptr;
@@ -1532,6 +1607,11 @@ void Window::_notification(int p_what) {
 						size = DisplayServer::get_singleton()->window_get_size(window_id);
 						focused = DisplayServer::get_singleton()->window_is_focused(window_id);
 					}
+					// Update HDR settings to reflect the current state of the window.
+					{
+						hdr_output_requested = DisplayServer::get_singleton()->window_is_hdr_output_requested(window_id);
+						_update_viewport_for_hdr_output();
+					}
 					_update_window_size(); // Inform DisplayServer of minimum and maximum size.
 					_update_viewport_size(); // Then feed back to the viewport.
 					_update_window_callbacks();
@@ -1795,7 +1875,7 @@ Size2 Window::_get_contents_minimum_size() const {
 		}
 	}
 
-	return max * content_scale_factor;
+	return max;
 }
 
 void Window::child_controls_changed() {
@@ -1806,6 +1886,16 @@ void Window::child_controls_changed() {
 
 	updating_child_controls = true;
 	callable_mp(this, &Window::_update_child_controls).call_deferred();
+}
+
+void Window::_update_viewport_for_hdr_output() {
+	// If HDR output is enabled, we need to enable HDR 2D rendering as well.
+	// This is required to get the correct dynamic range for the final output.
+	// We only need to do this if the viewport is not already set up for HDR 2D rendering.
+
+	if (!is_using_hdr_2d()) {
+		RS::get_singleton()->viewport_set_use_hdr_2d(viewport, hdr_output_requested);
+	}
 }
 
 void Window::_update_child_controls() {
@@ -1851,8 +1941,8 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	}
 }
 
-void Window::_window_input_text(const String &p_text) {
-	push_text_input(p_text);
+void Window::_window_input_text(const String &p_text, bool p_emit_signal) {
+	_push_text_input(p_text, p_emit_signal);
 }
 
 void Window::_window_drop_files(const Vector<String> &p_files) {
@@ -2617,18 +2707,6 @@ Variant Window::get_theme_item(Theme::DataType p_data_type, const StringName &p_
 Ref<Texture2D> Window::get_editor_theme_icon(const StringName &p_name) const {
 	return get_theme_icon(p_name, SNAME("EditorIcons"));
 }
-
-Ref<Texture2D> Window::get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const {
-	if (!p_global_menu) {
-		return get_theme_icon(p_name, SNAME("EditorIcons"));
-	}
-	if (p_dark_mode && has_theme_icon(String(p_name) + "Dark", SNAME("EditorIcons"))) {
-		return get_theme_icon(String(p_name) + "Dark", SNAME("EditorIcons"));
-	} else if (!p_dark_mode && has_theme_icon(String(p_name) + "Light", SNAME("EditorIcons"))) {
-		return get_theme_icon(String(p_name) + "Light", SNAME("EditorIcons"));
-	}
-	return get_theme_icon(p_name, SNAME("EditorIcons"));
-}
 #endif
 
 bool Window::has_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
@@ -3225,10 +3303,16 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flag", "flag", "enabled"), &Window::set_flag);
 	ClassDB::bind_method(D_METHOD("get_flag", "flag"), &Window::get_flag);
 
+	ClassDB::bind_method(D_METHOD("set_hdr_output_requested", "requested"), &Window::set_hdr_output_requested);
+	ClassDB::bind_method(D_METHOD("is_hdr_output_requested"), &Window::is_hdr_output_requested);
+	ClassDB::bind_method(D_METHOD("get_output_max_linear_value"), &Window::get_output_max_linear_value);
+
 	ClassDB::bind_method(D_METHOD("is_maximize_allowed"), &Window::is_maximize_allowed);
 
 	ClassDB::bind_method(D_METHOD("request_attention"), &Window::request_attention);
 
+	ClassDB::bind_method(D_METHOD("set_taskbar_progress_value", "value"), &Window::set_taskbar_progress_value);
+	ClassDB::bind_method(D_METHOD("set_taskbar_progress_state", "state"), &Window::set_taskbar_progress_state);
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("move_to_foreground"), &Window::move_to_foreground);
 #endif // DISABLE_DEPRECATED
@@ -3423,6 +3507,9 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_stretch", PROPERTY_HINT_ENUM, "Fractional,Integer"), "set_content_scale_stretch", "get_content_scale_stretch");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "content_scale_factor", PROPERTY_HINT_RANGE, "0.5,8.0,0.01"), "set_content_scale_factor", "get_content_scale_factor");
 
+	ADD_GROUP("HDR Output", "hdr_output_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hdr_output_requested"), "set_hdr_output_requested", "is_hdr_output_requested");
+
 #ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_auto_translate", "is_auto_translating");
 #endif
@@ -3432,11 +3519,11 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "accessibility_description"), "set_accessibility_description", "get_accessibility_description");
 
 	ADD_GROUP("Theme", "theme_");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, Theme::get_class_static()), "set_theme", "get_theme");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "theme_type_variation", PROPERTY_HINT_ENUM_SUGGESTION), "set_theme_type_variation", "get_theme_type_variation");
 
-	ADD_SIGNAL(MethodInfo("window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	ADD_SIGNAL(MethodInfo("nonclient_window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	ADD_SIGNAL(MethodInfo("window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, InputEvent::get_class_static())));
+	ADD_SIGNAL(MethodInfo("nonclient_window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, InputEvent::get_class_static())));
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));

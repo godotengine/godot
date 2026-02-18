@@ -34,37 +34,29 @@
 
 #include "wayland/wayland_thread.h"
 
+#include "servers/display/display_server.h"
+
+class InputEvent;
+class NativeMenu;
+
 #ifdef RD_ENABLED
-#include "servers/rendering/rendering_device.h"
-
-#ifdef VULKAN_ENABLED
-#include "wayland/rendering_context_driver_vulkan_wayland.h"
+class RenderingDevice;
+class RenderingContextDriver;
 #endif
-
-#endif //RD_ENABLED
 
 #ifdef GLES3_ENABLED
-#include "drivers/egl/egl_manager.h"
-#endif
-
-#if defined(SPEECHD_ENABLED)
-#include "tts_linux.h"
+class EGLManager;
 #endif
 
 #ifdef DBUS_ENABLED
-#include "freedesktop_at_spi_monitor.h"
-#include "freedesktop_portal_desktop.h"
-#include "freedesktop_screensaver.h"
+class FreeDesktopPortalDesktop;
+class FreeDesktopAtSPIMonitor;
+class FreeDesktopScreenSaver;
 #endif
 
-#include "core/config/project_settings.h"
-#include "core/input/input.h"
-#include "servers/display/display_server.h"
-
-#include <climits>
-#include <cstdio>
-
-#undef CursorShape
+#ifdef SPEECHD_ENABLED
+class TTS_Linux;
+#endif
 
 class DisplayServerWayland : public DisplayServer {
 	GDSOFTCLASS(DisplayServerWayland, DisplayServer);
@@ -290,6 +282,8 @@ public:
 	virtual Size2i window_get_size(WindowID p_window_id = MAIN_WINDOW_ID) const override;
 	virtual Size2i window_get_size_with_decorations(WindowID p_window_id = MAIN_WINDOW_ID) const override;
 
+	virtual float window_get_scale(WindowID p_window_id = MAIN_WINDOW_ID) const override;
+
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window_id = MAIN_WINDOW_ID) override;
 	virtual WindowMode window_get_mode(WindowID p_window_id = MAIN_WINDOW_ID) const override;
 
@@ -339,6 +333,7 @@ public:
 	virtual String keyboard_get_layout_language(int p_index) const override;
 	virtual String keyboard_get_layout_name(int p_index) const override;
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
+	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
 
 	virtual bool color_picker(const Callable &p_callback) override;
 

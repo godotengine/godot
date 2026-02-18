@@ -445,9 +445,7 @@ struct hb_font_t
 
     if (synthetic && ret)
     {
-      /* Slant */
-      if (slant_xy)
-	*x += roundf (*y * slant_xy);
+      /* Slant is ignored as it does not affect glyph origin */
 
       /* Embolden */
       if (!embolden_in_place)
@@ -471,9 +469,7 @@ struct hb_font_t
 
     if (synthetic && ret)
     {
-      /* Slant */
-      if (slant_xy)
-	*x += roundf (*y * slant_xy);
+      /* Slant is ignored as it does not affect glyph origin */
 
       /* Embolden */
       if (!embolden_in_place)
@@ -508,9 +504,7 @@ struct hb_font_t
       hb_position_t y_shift = y_scale < 0 ? -y_strength : y_strength;
       for (unsigned i = 0; i < count; i++)
       {
-	/* Slant */
-	if (slant_xy)
-	  *first_x += roundf (*first_y * slant_xy);
+	/* Slant is ignored as it does not affect glyph origin */
 
 	/* Embolden */
 	if (!embolden_in_place)
@@ -518,9 +512,9 @@ struct hb_font_t
 	  *first_x += x_shift;
 	  *first_y += y_shift;
 	}
+	first_x = &StructAtOffsetUnaligned<hb_position_t> (first_x, x_stride);
+	first_y = &StructAtOffsetUnaligned<hb_position_t> (first_y, y_stride);
       }
-      first_x = &StructAtOffsetUnaligned<hb_position_t> (first_x, x_stride);
-      first_y = &StructAtOffsetUnaligned<hb_position_t> (first_y, y_stride);
     }
 
     return ret;
@@ -548,9 +542,7 @@ struct hb_font_t
       hb_position_t y_shift = y_scale < 0 ? -y_strength : y_strength;
       for (unsigned i = 0; i < count; i++)
       {
-	/* Slant */
-	if (slant_xy)
-	  *first_x += roundf (*first_y * slant_xy);
+	/* Slant is ignored as it does not affect glyph origin */
 
 	/* Embolden */
 	if (!embolden_in_place)
@@ -558,9 +550,9 @@ struct hb_font_t
 	  *first_x += x_shift;
 	  *first_y += y_shift;
 	}
+	first_x = &StructAtOffsetUnaligned<hb_position_t> (first_x, x_stride);
+	first_y = &StructAtOffsetUnaligned<hb_position_t> (first_y, y_stride);
       }
-      first_x = &StructAtOffsetUnaligned<hb_position_t> (first_x, x_stride);
-      first_y = &StructAtOffsetUnaligned<hb_position_t> (first_y, y_stride);
     }
 
     return ret;
@@ -727,7 +719,13 @@ struct hb_font_t
     // Slant before embolden; produces nicer results.
 
     if (slanted)
+    {
+      hb_position_t xo = 0, yo = 0;
+      get_glyph_h_origin (glyph, &xo, &yo, false);
+      outline.translate (-xo, -yo);
       outline.slant (slant_xy);
+      outline.translate (xo, yo);
+    }
 
     if (embolden)
     {

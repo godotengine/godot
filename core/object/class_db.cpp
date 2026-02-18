@@ -196,6 +196,8 @@ public:
 		obj->_extension = ClassDB::get_placeholder_extension(ti->name);
 		obj->_extension_instance = memnew(PlaceholderExtensionInstance(ti->name));
 
+		obj->_reset_gdtype();
+
 #ifdef TOOLS_ENABLED
 		if (obj->_extension->track_instance) {
 			obj->_extension->track_instance(obj->_extension->tracking_userdata, obj);
@@ -253,7 +255,7 @@ void ClassDB::get_class_list(LocalVector<StringName> &p_classes) {
 		p_classes.push_back(cls.key);
 	}
 
-	SortArray<StringName> sorter;
+	SortArray<StringName, StringName::AlphCompare> sorter;
 	sorter.sort(&p_classes[p_classes.size() - classes.size()], classes.size());
 }
 
@@ -277,7 +279,7 @@ void ClassDB::get_extensions_class_list(LocalVector<StringName> &p_classes) {
 		return;
 	}
 
-	SortArray<StringName> sorter;
+	SortArray<StringName, StringName::AlphCompare> sorter;
 	sorter.sort(&p_classes[original_size], p_classes.size() - original_size);
 }
 
@@ -756,9 +758,18 @@ ObjectGDExtension *ClassDB::get_placeholder_extension(const StringName &p_class)
 	placeholder_extension->call_virtual_with_data = nullptr;
 	placeholder_extension->recreate_instance = &PlaceholderExtensionInstance::placeholder_class_recreate_instance;
 
+	placeholder_extension->create_gdtype();
+
 	return placeholder_extension;
 }
 #endif
+
+const GDType *ClassDB::get_gdtype(const StringName &p_class) {
+	Locker::Lock lock(Locker::STATE_READ);
+	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL_V(type, nullptr);
+	return type->gdtype;
+}
 
 void ClassDB::set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance) {
 	ERR_FAIL_NULL(p_object);
@@ -778,6 +789,8 @@ void ClassDB::set_object_extension_instance(Object *p_object, const StringName &
 
 	p_object->_extension = ti->gdextension;
 	p_object->_extension_instance = p_instance;
+
+	p_object->_reset_gdtype();
 
 #ifdef TOOLS_ENABLED
 	if (p_object->_extension->track_instance) {
@@ -870,17 +883,20 @@ use_script:
 	return scr.is_valid() && scr->is_valid() && scr->is_abstract();
 }
 
-void ClassDB::_add_class(const StringName &p_class, const StringName &p_inherits) {
+void ClassDB::_add_class(const GDType &p_class, const GDType *p_inherits) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 
-	const StringName &name = p_class;
+	const StringName &name = p_class.get_name();
 
-	ERR_FAIL_COND_MSG(classes.has(name), vformat("Class '%s' already exists.", String(p_class)));
+	ERR_FAIL_COND_MSG(classes.has(name), vformat("Class '%s' already exists.", name));
 
 	classes[name] = ClassInfo();
 	ClassInfo &ti = classes[name];
 	ti.name = name;
-	ti.inherits = p_inherits;
+	ti.gdtype = &p_class;
+	if (p_inherits) {
+		ti.inherits = p_inherits->get_name();
+	}
 	ti.api = current_api;
 
 	if (ti.inherits) {
@@ -1002,7 +1018,7 @@ void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List
 #endif // DEBUG_ENABLED
 
 		for (const KeyValue<StringName, LocalVector<MethodBind *, unsigned int, false, false>> &E : type->method_map_compatibility) {
-			LocalVector<MethodBind *> compat = E.value;
+			LocalVector<MethodBind *> compat(E.value);
 			for (MethodBind *method : compat) {
 				MethodInfo minfo = info_from_bind(method);
 
@@ -2350,6 +2366,8 @@ void ClassDB::register_extension_class(ObjectGDExtension *p_extension) {
 	c.is_runtime = p_extension->is_runtime;
 #endif
 
+	c.gdtype = p_extension->gdtype;
+
 	classes[p_extension->class_name] = c;
 }
 
@@ -2402,6 +2420,7 @@ void ClassDB::cleanup_defaults() {
 	default_values_cached.clear();
 }
 
+LocalVector<GDType **> ClassDB::gdtype_autorelease_pool;
 void ClassDB::cleanup() {
 	//OBJTYPE_LOCK; hah not here
 
@@ -2422,6 +2441,15 @@ void ClassDB::cleanup() {
 	resource_base_extensions.clear();
 	compat_classes.clear();
 	native_structs.clear();
+
+	for (GDType **type : gdtype_autorelease_pool) {
+		if (!type) {
+			WARN_PRINT("GDType in autorelease pool was cleaned up before being auto-released. Ignoring.");
+		}
+		memdelete(*type);
+		*type = nullptr;
+	}
+	gdtype_autorelease_pool.clear();
 }
 
 // Array to use in optional parameters on methods and the DEFVAL_ARRAY macro.

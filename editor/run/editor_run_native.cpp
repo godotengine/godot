@@ -49,20 +49,19 @@ void EditorRunNative::_notification(int p_what) {
 				PopupMenu *popup = remote_debug->get_popup();
 				popup->clear();
 				int device_shortcut_id = 1;
-				for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-					Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_preset(i);
-					Ref<EditorExportPlatform> eep = preset->get_platform();
-					if (eep.is_null()) {
+				for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
+					Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(i);
+					Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_runnable_preset_for_platform(eep);
+					if (preset.is_null()) {
 						continue;
 					}
-					const int platform_idx = EditorExport::get_singleton()->get_export_platform_index_by_name(eep->get_name());
 					const int device_count = MIN(eep->get_options_count(), 9000);
 					String error;
-					if (device_count > 0 && preset->is_runnable()) {
+					if (device_count > 0) {
 						popup->add_icon_item(eep->get_run_icon(), eep->get_name(), -1);
 						popup->set_item_disabled(-1, true);
 						for (int j = 0; j < device_count; j++) {
-							popup->add_icon_item(eep->get_option_icon(j), eep->get_option_label(j), EditorExport::encode_platform_device_id(platform_idx, j));
+							popup->add_icon_item(eep->get_option_icon(j), eep->get_option_label(j), EditorExport::encode_platform_device_id(i, j));
 							popup->set_item_tooltip(-1, eep->get_option_tooltip(j));
 							popup->set_item_indent(-1, 2);
 							if (device_shortcut_id <= 4 && eep->is_option_runnable(j)) {
@@ -106,16 +105,7 @@ Error EditorRunNative::start_run_native(int p_id) {
 	Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(platform);
 	ERR_FAIL_COND_V(eep.is_null(), ERR_UNAVAILABLE);
 
-	Ref<EditorExportPreset> preset;
-
-	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-		Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(i);
-		if (ep->is_runnable() && ep->get_platform() == eep) {
-			preset = ep;
-			break;
-		}
-	}
-
+	Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_runnable_preset_for_platform(eep);
 	if (preset.is_null()) {
 		EditorNode::get_singleton()->show_warning(TTR("No runnable export preset found for this platform.\nPlease add a runnable preset in the Export menu or define an existing preset as runnable."));
 		return ERR_UNAVAILABLE;
@@ -176,7 +166,7 @@ void EditorRunNative::resume_run_native() {
 }
 
 void EditorRunNative::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("native_run", PropertyInfo(Variant::OBJECT, "preset", PROPERTY_HINT_RESOURCE_TYPE, "EditorExportPreset")));
+	ADD_SIGNAL(MethodInfo("native_run", PropertyInfo(Variant::OBJECT, "preset", PROPERTY_HINT_RESOURCE_TYPE, EditorExportPreset::get_class_static())));
 }
 
 bool EditorRunNative::is_deploy_debug_remote_enabled() const {

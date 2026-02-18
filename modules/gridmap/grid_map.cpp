@@ -1114,7 +1114,7 @@ void GridMap::_queue_octants_dirty() {
 
 void GridMap::_recreate_octant_data() {
 	recreating_octants = true;
-	HashMap<IndexKey, Cell, IndexKey> cell_copy = cell_map;
+	HashMap<IndexKey, Cell, IndexKey> cell_copy(cell_map);
 	_clear_internal();
 	for (const KeyValue<IndexKey, Cell> &E : cell_copy) {
 		set_cell_item(Vector3i(E.key), E.value.item, E.value.rot);
@@ -1244,9 +1244,9 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_baked_meshes"), &GridMap::clear_baked_meshes);
 	ClassDB::bind_method(D_METHOD("make_baked_meshes", "gen_lightmap_uv", "lightmap_uv_texel_size"), &GridMap::make_baked_meshes, DEFVAL(false), DEFVAL(0.1));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary"), "set_mesh_library", "get_mesh_library");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, MeshLibrary::get_class_static()), "set_mesh_library", "get_mesh_library");
 #ifndef PHYSICS_3D_DISABLED
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material", "get_physics_material");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material", PROPERTY_HINT_RESOURCE_TYPE, PhysicsMaterial::get_class_static()), "set_physics_material", "get_physics_material");
 #endif // PHYSICS_3D_DISABLED
 	ADD_GROUP("Cell", "cell_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "cell_size", PROPERTY_HINT_NONE, "suffix:m"), "set_cell_size", "get_cell_size");

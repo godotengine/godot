@@ -102,6 +102,7 @@ class EditorProperty : public Container {
 		int horizontal_separation = 0;
 		int vertical_separation = 0;
 		int padding = 0;
+		int inspector_property_height = 0;
 
 		Color property_color;
 		Color readonly_property_color;
@@ -481,6 +482,7 @@ class EditorInspectorSection : public Container {
 		Color font_hover_color;
 		Color font_pressed_color;
 		Color font_hover_pressed_color;
+		Color font_hover_mono_color;
 
 		Ref<Font> font;
 		int font_size = 0;
@@ -701,9 +703,7 @@ class EditorInspector : public ScrollContainer {
 	static int inspector_plugin_count;
 
 	struct ThemeCache {
-		int vertical_separation = 0;
 		Color prop_subsection;
-		Ref<Texture2D> icon_add;
 	} theme_cache;
 
 	EditorInspectorSection::ThemeCache section_theme_cache;
@@ -811,7 +811,7 @@ class EditorInspector : public ScrollContainer {
 
 	void _keying_changed();
 
-	void _parse_added_editors(VBoxContainer *current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> ped);
+	void _parse_added_editors(VBoxContainer *p_current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> p_plugin);
 
 	void _vscroll_changed(double);
 

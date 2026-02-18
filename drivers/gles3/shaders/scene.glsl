@@ -48,6 +48,12 @@ RENDER_MOTION_VECTORS = false
 #define SHADER_IS_SRGB true
 #define SHADER_SPACE_FAR -1.0
 
+#ifdef USE_MULTIVIEW
+#define OUTPUT_IS_MULTIVIEW true
+#else
+#define OUTPUT_IS_MULTIVIEW false
+#endif
+
 #if defined(RENDER_SHADOWS) || defined(RENDER_SHADOWS_LINEAR)
 #define IN_SHADOW_PASS true
 #else
@@ -198,7 +204,7 @@ struct SceneData {
 	float fog_aerial_perspective;
 	float time;
 
-	mat3 radiance_inverse_xform;
+	mat3x4 radiance_inverse_xform;
 
 	uint directional_light_count;
 	float z_far;
@@ -224,11 +230,18 @@ struct SceneData {
 	bool pancake_shadows;
 };
 
+// The containing data block is for historic reasons.
 layout(std140) uniform SceneDataBlock { // ubo:2
 	SceneData data;
-	SceneData prev_data;
 }
 scene_data_block;
+
+#ifdef RENDER_MOTION_VECTORS
+layout(std140) uniform PrevSceneDataBlock { // ubo:12
+	SceneData data;
+}
+prev_scene_data_block;
+#endif
 
 #ifndef RENDER_MOTION_VECTORS
 #ifdef USE_ADDITIVE_LIGHTING
@@ -456,10 +469,17 @@ struct MultiviewData {
 
 layout(std140) uniform MultiviewDataBlock { // ubo:8
 	MultiviewData data;
-	MultiviewData prev_data;
 }
 multiview_data_block;
-#endif
+
+#ifdef RENDER_MOTION_VECTORS
+layout(std140) uniform PrevMultiviewDataBlock { // ubo:13
+	MultiviewData data;
+}
+prev_multiview_data_block;
+#endif // RENDER_MOTION_VECTORS
+
+#endif // USE_MULTIVIEW
 
 uniform highp mat4 world_transform;
 uniform highp vec3 compressed_aabb_position;
@@ -901,7 +921,7 @@ void main() {
 			compressed_aabb_position,
 			prev_world_transform,
 			model_flags,
-			scene_data_block.prev_data,
+			prev_scene_data_block.data,
 #ifdef USE_INSTANCING
 			input_instance_xform0, input_instance_xform1, input_instance_xform2,
 			input_instance_color_custom_data,
@@ -919,9 +939,9 @@ void main() {
 			uv2_attrib,
 #endif
 #ifdef USE_MULTIVIEW
-			multiview_data_block.prev_data.projection_matrix_view[ViewIndex],
-			multiview_data_block.prev_data.inv_projection_matrix_view[ViewIndex],
-			multiview_data_block.prev_data.eye_offset[ViewIndex].xyz,
+			prev_multiview_data_block.data.projection_matrix_view[ViewIndex],
+			prev_multiview_data_block.data.inv_projection_matrix_view[ViewIndex],
+			prev_multiview_data_block.data.eye_offset[ViewIndex].xyz,
 #endif
 			uv_scale,
 			prev_clip_position);
@@ -1006,6 +1026,12 @@ void main() {
 
 #define SHADER_IS_SRGB true
 #define SHADER_SPACE_FAR -1.0
+
+#ifdef USE_MULTIVIEW
+#define OUTPUT_IS_MULTIVIEW true
+#else
+#define OUTPUT_IS_MULTIVIEW false
+#endif
 
 #if defined(RENDER_SHADOWS) || defined(RENDER_SHADOWS_LINEAR)
 #define IN_SHADOW_PASS true
@@ -1146,7 +1172,7 @@ struct SceneData {
 	float fog_aerial_perspective;
 	float time;
 
-	mat3 radiance_inverse_xform;
+	mat3x4 radiance_inverse_xform;
 
 	uint directional_light_count;
 	float z_far;
@@ -1174,7 +1200,6 @@ struct SceneData {
 
 layout(std140) uniform SceneDataBlock { // ubo:2
 	SceneData data;
-	SceneData prev_data;
 }
 scene_data_block;
 
@@ -1187,7 +1212,6 @@ struct MultiviewData {
 
 layout(std140) uniform MultiviewDataBlock { // ubo:8
 	MultiviewData data;
-	MultiviewData prev_data;
 }
 multiview_data_block;
 #endif
@@ -1493,6 +1517,11 @@ float SchlickFresnel(float u) {
 	return m2 * m2 * m; // pow(m,5)
 }
 
+float V_Kelemen(float LdotH) {
+	// Kelemen 2001, "A Microfacet Based Coupled Specular-Matte BRDF Model with Importance Sampling"
+	return 0.25 / (LdotH * LdotH + 1e-4);
+}
+
 void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_directional, float attenuation, vec3 f0, float roughness, float metallic, float specular_amount, vec3 albedo, inout float alpha, vec2 screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
 		vec3 backlight,
@@ -1531,6 +1560,8 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 	float NdotV = dot(N, V);
 	float cNdotV = max(NdotV, 1e-4);
 
+	float cc_attenuation = 1.0;
+
 #if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
 	vec3 H = normalize(V + L);
 #endif
@@ -1542,6 +1573,21 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 #if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
 	float cLdotH = clamp(A + dot(L, H), 0.0, 1.0);
 #endif
+
+#if defined(LIGHT_CLEARCOAT_USED)
+	// Clearcoat ignores normal_map, use vertex normal instead
+	float ccNdotL = clamp(A + dot(vertex_normal, L), 0.0, 1.0);
+	float ccNdotH = clamp(A + dot(vertex_normal, H), 0.0, 1.0);
+	float cLdotH5 = SchlickFresnel(cLdotH);
+
+	float Dr = D_GGX(ccNdotH, mix(0.001, 0.1, clearcoat_roughness));
+	float Gr = V_Kelemen(cLdotH);
+	float Fr = mix(0.04, 1.0, cLdotH5) * clearcoat;
+	cc_attenuation = 1.0 - Fr;
+	float clearcoat_specular_brdf_NL = Dr * Gr * Fr * ccNdotL;
+
+	specular_light += clearcoat_specular_brdf_NL * light_color * attenuation * specular_amount;
+#endif // LIGHT_CLEARCOAT_USED
 
 	if (metallic < 1.0) {
 		float diffuse_brdf_NL; // BRDF times N.L for calculating diffuse radiance
@@ -1564,10 +1610,10 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 		diffuse_brdf_NL = cNdotL * (1.0 / M_PI);
 #endif
 
-		diffuse_light += light_color * diffuse_brdf_NL * attenuation;
+		diffuse_light += light_color * diffuse_brdf_NL * attenuation * cc_attenuation;
 
 #if defined(LIGHT_BACKLIGHT_USED)
-		diffuse_light += light_color * (vec3(1.0 / M_PI) - diffuse_brdf_NL) * backlight * attenuation;
+		diffuse_light += light_color * (vec3(1.0 / M_PI) - diffuse_brdf_NL) * backlight * attenuation * cc_attenuation;
 #endif
 
 #if defined(LIGHT_RIM_USED)
@@ -1609,7 +1655,9 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 		float G = V_GGX(cNdotL, cNdotV, alpha_ggx);
 #endif // LIGHT_ANISOTROPY_USED
 	   // F
+#if !defined(LIGHT_CLEARCOAT_USED)
 		float cLdotH5 = SchlickFresnel(cLdotH);
+#endif
 		// Calculate Fresnel using cheap approximate specular occlusion term from Filament:
 		// https://google.github.io/filament/Filament.html#lighting/occlusion/specularocclusion
 		float f90 = clamp(50.0 * f0.g, 0.0, 1.0);
@@ -1617,27 +1665,8 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 
 		vec3 specular_brdf_NL = cNdotL * D * F * G;
 
-		specular_light += specular_brdf_NL * light_color * attenuation * specular_amount;
+		specular_light += specular_brdf_NL * light_color * attenuation * cc_attenuation * specular_amount;
 #endif
-
-#if defined(LIGHT_CLEARCOAT_USED)
-		// Clearcoat ignores normal_map, use vertex normal instead
-		float ccNdotL = max(min(A + dot(vertex_normal, L), 1.0), 0.0);
-		float ccNdotH = clamp(A + dot(vertex_normal, H), 0.0, 1.0);
-		float ccNdotV = max(dot(vertex_normal, V), 1e-4);
-
-#if !defined(SPECULAR_SCHLICK_GGX)
-		float cLdotH5 = SchlickFresnel(cLdotH);
-#endif
-		float Dr = D_GGX(ccNdotH, mix(0.001, 0.1, clearcoat_roughness));
-		float Gr = 0.25 / (cLdotH * cLdotH + 1e-4);
-		float Fr = mix(.04, 1.0, cLdotH5);
-		float clearcoat_specular_brdf_NL = clearcoat * Gr * Fr * Dr * cNdotL;
-
-		specular_light += clearcoat_specular_brdf_NL * light_color * attenuation * specular_amount;
-		// TODO: Clearcoat adds light to the scene right now (it is non-energy conserving), both diffuse and specular need to be scaled by (1.0 - FR)
-		// but to do so we need to rearrange this entire function
-#endif // LIGHT_CLEARCOAT_USED
 	}
 
 #ifdef USE_SHADOW_TO_OPACITY
@@ -2002,9 +2031,7 @@ void main() {
 #ifdef PREMUL_ALPHA_USED
 	float premul_alpha = 1.0;
 #endif // PREMUL_ALPHA_USED
-#ifndef FOG_DISABLED
 	vec4 fog = vec4(0.0);
-#endif // !FOG_DISABLED
 #if defined(CUSTOM_RADIANCE_USED)
 	vec4 custom_radiance = vec4(0.0);
 #endif
@@ -2205,7 +2232,7 @@ void main() {
 #endif
 		ref_vec = mix(ref_vec, normal, roughness * roughness);
 		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
-		ref_vec = scene_data_block.data.radiance_inverse_xform * ref_vec;
+		ref_vec = mat3(scene_data_block.data.radiance_inverse_xform) * ref_vec;
 		specular_light = textureLod(radiance_map, ref_vec, sqrt(roughness) * RADIANCE_MAX_LOD).rgb;
 		specular_light = srgb_to_linear(specular_light);
 		specular_light *= horizon * horizon;
@@ -2250,7 +2277,7 @@ void main() {
 
 #ifdef USE_RADIANCE_MAP
 		if (scene_data_block.data.use_ambient_cubemap) {
-			vec3 ambient_dir = scene_data_block.data.radiance_inverse_xform * normal;
+			vec3 ambient_dir = mat3(scene_data_block.data.radiance_inverse_xform) * normal;
 			vec3 cubemap_ambient = textureLod(radiance_map, ambient_dir, RADIANCE_MAX_LOD).rgb;
 			cubemap_ambient = srgb_to_linear(cubemap_ambient);
 			ambient_light = mix(ambient_light, cubemap_ambient * scene_data_block.data.ambient_light_color_energy.a, scene_data_block.data.ambient_color_sky_mix);
@@ -2534,7 +2561,7 @@ void main() {
 	// Tonemap before writing as we are writing to an sRGB framebuffer
 	frag_color.rgb *= exposure;
 #ifdef APPLY_TONEMAPPING
-	frag_color.rgb = apply_tonemapping(frag_color.rgb, white);
+	frag_color.rgb = apply_tonemapping(frag_color.rgb);
 #endif
 	frag_color.rgb = linear_to_srgb(frag_color.rgb);
 
@@ -2806,7 +2833,7 @@ void main() {
 	// Tonemap before writing as we are writing to an sRGB framebuffer
 	additive_light_color *= exposure;
 #ifdef APPLY_TONEMAPPING
-	additive_light_color = apply_tonemapping(additive_light_color, white);
+	additive_light_color = apply_tonemapping(additive_light_color);
 #endif
 	additive_light_color = linear_to_srgb(additive_light_color);
 

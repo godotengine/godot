@@ -174,7 +174,7 @@ private:
 	NodePath visibility_parent_path;
 
 	_FORCE_INLINE_ uint32_t _read_dirty_mask() const { return is_group_processing() ? data.dirty.mt.get() : data.dirty.st; }
-	_FORCE_INLINE_ bool _test_dirty_bits(uint32_t p_bits) const { return is_group_processing() ? data.dirty.mt.bit_and(p_bits) : (data.dirty.st & p_bits); }
+	_FORCE_INLINE_ bool _test_dirty_bits(uint32_t p_bits) const { return (is_group_processing() ? data.dirty.mt.get() : data.dirty.st) & p_bits; }
 	void _replace_dirty_mask(uint32_t p_mask) const;
 	void _set_dirty_bits(uint32_t p_bits) const;
 	void _clear_dirty_bits(uint32_t p_bits) const;
@@ -289,7 +289,7 @@ public:
 	virtual void set_transform_gizmo_visible(bool p_enabled) { data.transform_gizmo_visible = p_enabled; }
 	virtual bool is_transform_gizmo_visible() const { return data.transform_gizmo_visible; }
 #endif
-	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true) override;
+	virtual void reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform = true) override;
 
 	void set_disable_gizmos(bool p_enabled);
 	void update_gizmos();
