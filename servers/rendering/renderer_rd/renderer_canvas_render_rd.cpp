@@ -2977,7 +2977,7 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 	}
 }
 
-void RendererCanvasRenderRD::_before_evict(RendererCanvasRenderRD::RIDSetKey &p_key, RID &p_rid) {
+void RendererCanvasRenderRD::_before_evict(const RendererCanvasRenderRD::RIDSetKey &p_key, RID &p_rid) {
 	RD::get_singleton()->uniform_set_set_invalidation_callback(p_rid, nullptr, nullptr);
 	RD::get_singleton()->free_rid(p_rid);
 }
@@ -3017,8 +3017,8 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 			RID rid = RD::get_singleton()->uniform_set_create(state.batch_texture_uniforms, shader.default_version_rd_shader, BATCH_UNIFORM_SET);
 			ERR_FAIL_COND_MSG(rid.is_null(), "Failed to create uniform set for batch.");
 
-			const RIDCache::Pair *iter = rid_set_to_uniform_set.insert(key, rid);
-			uniform_set = &iter->data;
+			const RIDCache::Iterator iter = rid_set_to_uniform_set.insert(key, rid);
+			uniform_set = &iter->value;
 			RD::get_singleton()->uniform_set_set_invalidation_callback(rid, RendererCanvasRenderRD::_uniform_set_invalidation_callback, (void *)&iter->key);
 
 			// If this is a CanvasTexture, it must be tracked so that any changes to the diffuse, normal,
