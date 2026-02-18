@@ -2463,11 +2463,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 
 		// Add ScriptMethodRegistry
-		output.append(MEMBER_BEGIN "protected new static readonly ScriptMethodRegistry<");
-		output.append(itype.proxy_name);
-		output.append("> MethodRegistry = new ScriptMethodRegistry<");
-		output.append(itype.proxy_name);
-		output.append(">()");
+		output << MEMBER_BEGIN "protected "
+			   << (is_derived_type ? "new " : "")
+			   << "static readonly ScriptMethodRegistry<"
+			   << itype.proxy_name
+			   << "> MethodRegistry = new ScriptMethodRegistry<"
+			   << itype.proxy_name
+			   << ">()";
 
 		// TODO: this is a 99% copy & paste from above: we need to know if we inherit from someone to "inherit" the base type MethodRegistry
 		if (is_derived_type && !itype.is_singleton) {

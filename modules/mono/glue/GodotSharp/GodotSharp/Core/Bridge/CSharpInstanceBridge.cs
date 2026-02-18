@@ -45,8 +45,7 @@ namespace Godot.Bridge
                 ref readonly var scriptMethod = ref godotObject.TryGetGodotClassMethod(in *method, argCount);
                 if (!Unsafe.IsNullRef(in scriptMethod))
                 {
-
-                    scoped var argsStruct = new NativeVariantPtrArgs(args, argCount);
+                    var argsStruct = new NativeVariantPtrArgs(args, argCount);
                     retValue = scriptMethod(godotObject, in argsStruct);
 
                     return true;
