@@ -1871,15 +1871,18 @@ bool CSharpScript::_unchecked_create_managed_for_godot_object_script_instance(Ob
 	DEV_ASSERT(p_owner != nullptr);
 	DEV_ASSERT(can_instantiate());
 
-	// IMPORTANT:
-	// For compatibility reasons, we only use trampolines for the parameterless constructor.
-	// For constructors with parameters, we cannot guarantee that the overload we got is the
-	// same we would get with the legacy version, and that would be a breaking change.
-	if (p_argcount == 0) {
-		const godotsharp::ConstructorTrampoline *trampoline = constructor_trampolines.getptr(p_argcount);
-		if (trampoline) {
-			return GDMonoCache::managed_callbacks.ScriptManagerBridge_CreateManagedForGodotObjectScriptInstanceWithTrampoline(
-					*trampoline, p_owner, p_args, p_argcount);
+	if (!ProjectSettings::get_singleton()->has_meta(SNAME("DoNotUseCtorTrampolines")) ||
+			!ProjectSettings::get_singleton()->get_meta(SNAME("DoNotUseCtorTrampolines")).operator bool()) {
+		// IMPORTANT:
+		// For compatibility reasons, we only use trampolines for the parameterless constructor.
+		// For constructors with parameters, we cannot guarantee that the overload we got is the
+		// same we would get with the legacy version, and that would be a breaking change.
+		if (p_argcount == 0) {
+			const godotsharp::ConstructorTrampoline *trampoline = constructor_trampolines.getptr(p_argcount);
+			if (trampoline) {
+				return GDMonoCache::managed_callbacks.ScriptManagerBridge_CreateManagedForGodotObjectScriptInstanceWithTrampoline(
+						*trampoline, p_owner, p_args, p_argcount);
+			}
 		}
 	}
 
