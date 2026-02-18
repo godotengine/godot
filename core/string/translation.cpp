@@ -56,6 +56,14 @@ void _check_for_incompatibility(const String &p_msgctxt, const String &p_msgid) 
 	}
 }
 
+HashMap<StringName, Vector<StringName>> Translation::get_translated_message_map() const {
+	HashMap<StringName, Vector<StringName>> map;
+	for (const KeyValue<MessageKey, Vector<StringName>> &E : translation_map) {
+		map[E.key.msgid] = E.value;
+	}
+	return map;
+}
+
 Dictionary Translation::_get_messages() const {
 	Dictionary d;
 	for (const KeyValue<MessageKey, Vector<StringName>> &E : translation_map) {
