@@ -126,92 +126,99 @@ public:
 };
 
 TEST_CASE("[Object] Core getters") {
-	Object object;
+	Object *object = memnew(Object);
 
 	CHECK_MESSAGE(
-			object.is_class("Object"),
+			object->is_class("Object"),
 			"is_class() should return the expected value.");
 	CHECK_MESSAGE(
-			object.get_class() == "Object",
+			object->get_class() == "Object",
 			"The returned class should match the expected value.");
 	CHECK_MESSAGE(
-			object.get_class_name() == "Object",
+			object->get_class_name() == "Object",
 			"The returned class name should match the expected value.");
 	CHECK_MESSAGE(
-			object.get_class_static() == "Object",
+			object->get_class_static() == "Object",
 			"The returned static class should match the expected value.");
 	CHECK_MESSAGE(
-			object.get_save_class() == "Object",
+			object->get_save_class() == "Object",
 			"The returned save class should match the expected value.");
+
+	memdelete(object);
 }
 
 TEST_CASE("[Object] Metadata") {
 	const String meta_path = "complex_metadata_path";
-	Object object;
+	Object *object = memnew(Object);
 
-	object.set_meta(meta_path, Color(0, 1, 0));
+	object->set_meta(meta_path, Color(0, 1, 0));
 	CHECK_MESSAGE(
-			Color(object.get_meta(meta_path)).is_equal_approx(Color(0, 1, 0)),
+			Color(object->get_meta(meta_path)).is_equal_approx(Color(0, 1, 0)),
 			"The returned object metadata after setting should match the expected value.");
 
 	List<StringName> meta_list;
-	object.get_meta_list(&meta_list);
+	object->get_meta_list(&meta_list);
 	CHECK_MESSAGE(
 			meta_list.size() == 1,
 			"The metadata list should only contain 1 item after adding one metadata item.");
 
-	object.remove_meta(meta_path);
+	object->remove_meta(meta_path);
 	// Also try removing nonexistent metadata (it should do nothing, without printing an error message).
-	object.remove_meta("I don't exist");
+	object->remove_meta("I don't exist");
 	ERR_PRINT_OFF;
 	CHECK_MESSAGE(
-			object.get_meta(meta_path) == Variant(),
+			object->get_meta(meta_path) == Variant(),
 			"The returned object metadata after removing should match the expected value.");
 	ERR_PRINT_ON;
 
 	List<StringName> meta_list2;
-	object.get_meta_list(&meta_list2);
+	object->get_meta_list(&meta_list2);
 	CHECK_MESSAGE(
 			meta_list2.size() == 0,
 			"The metadata list should contain 0 items after removing all metadata items.");
 
-	Object other;
-	object.set_meta("conflicting_meta", "string");
-	object.set_meta("not_conflicting_meta", 123);
-	other.set_meta("conflicting_meta", Color(0, 1, 0));
-	other.set_meta("other_meta", "other");
-	object.merge_meta_from(&other);
+	Object *other = memnew(Object);
+	object->set_meta("conflicting_meta", "string");
+	object->set_meta("not_conflicting_meta", 123);
+	other->set_meta("conflicting_meta", Color(0, 1, 0));
+	other->set_meta("other_meta", "other");
+	object->merge_meta_from(other);
 
 	CHECK_MESSAGE(
-			Color(object.get_meta("conflicting_meta")).is_equal_approx(Color(0, 1, 0)),
+			Color(object->get_meta("conflicting_meta")).is_equal_approx(Color(0, 1, 0)),
 			"String meta should be overwritten with Color after merging.");
 
 	CHECK_MESSAGE(
-			int(object.get_meta("not_conflicting_meta")) == 123,
+			int(object->get_meta("not_conflicting_meta")) == 123,
 			"Not conflicting meta on destination should be kept intact.");
 
 	CHECK_MESSAGE(
-			object.get_meta("other_meta", String()) == "other",
+			object->get_meta("other_meta", String()) == "other",
 			"Not conflicting meta name on source should merged.");
 
 	List<StringName> meta_list3;
-	object.get_meta_list(&meta_list3);
+	object->get_meta_list(&meta_list3);
 	CHECK_MESSAGE(
 			meta_list3.size() == 3,
 			"The metadata list should contain 3 items after merging meta from two objects.");
+
+	memdelete(object);
+	memdelete(other);
 }
 
 TEST_CASE("[Object] Construction") {
-	Object object;
+	Object *object = memnew(Object);
 
 	CHECK_MESSAGE(
-			!object.is_ref_counted(),
+			!object->is_ref_counted(),
 			"Object is not a RefCounted.");
 
-	Object *p_db = ObjectDB::get_instance(object.get_instance_id());
+	Object *p_db = ObjectDB::get_instance(object->get_instance_id());
 	CHECK_MESSAGE(
-			p_db == &object,
+			p_db == object,
 			"The database pointer returned by the object id should reference same object.");
+
+	memdelete(object);
 }
 
 TEST_CASE("[Object] Script instance property setter") {
@@ -249,71 +256,83 @@ TEST_CASE("[Object] Script instance property getter") {
 
 TEST_CASE("[Object] Built-in property setter") {
 	GDREGISTER_CLASS(_TestDerivedObject);
-	_TestDerivedObject derived_object;
+	_TestDerivedObject *derived_object = memnew(_TestDerivedObject);
 
 	bool valid = false;
-	derived_object.set("property", 100, &valid);
+	derived_object->set("property", 100, &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
-			derived_object.get_property() == 100,
+			derived_object->get_property() == 100,
 			"The property value should equal the one which was set with built-in setter.");
+
+	memdelete(derived_object);
 }
 
 TEST_CASE("[Object] Built-in property getter") {
 	GDREGISTER_CLASS(_TestDerivedObject);
-	_TestDerivedObject derived_object;
-	derived_object.set_property(100);
+	_TestDerivedObject *derived_object = memnew(_TestDerivedObject);
+	derived_object->set_property(100);
 
 	bool valid = false;
-	const Variant &actual_value = derived_object.get("property", &valid);
+	const Variant &actual_value = derived_object->get("property", &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
 			actual_value == Variant(100),
 			"The returned value should equal the one which was set with built-in setter.");
+
+	memdelete(derived_object);
 }
 
 TEST_CASE("[Object] Script property setter") {
-	Object object;
+	Object *object = memnew(Object);
 	Variant script;
 
 	bool valid = false;
-	object.set(CoreStringName(script), script, &valid);
+	object->set(CoreStringName(script), script, &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
-			object.get_script() == script,
+			object->get_script() == script,
 			"The object script should be equal to the assigned one.");
+
+	memdelete(object);
 }
 
 TEST_CASE("[Object] Script property getter") {
-	Object object;
+	Object *object = memnew(Object);
 	Variant script;
-	object.set_script(script);
+	object->set_script(script);
 
 	bool valid = false;
-	const Variant &actual_value = object.get(CoreStringName(script), &valid);
+	const Variant &actual_value = object->get(CoreStringName(script), &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
 			actual_value == script,
 			"The returned value should be equal to the assigned script.");
+
+	memdelete(object);
 }
 
 TEST_CASE("[Object] Absent name setter") {
-	Object object;
+	Object *object = memnew(Object);
 
 	bool valid = true;
-	object.set("absent_name", 100, &valid);
+	object->set("absent_name", 100, &valid);
 	CHECK(!valid);
+
+	memdelete(object);
 }
 
 TEST_CASE("[Object] Absent name getter") {
-	Object object;
+	Object *object = memnew(Object);
 
 	bool valid = true;
-	const Variant &actual_value = object.get("absent_name", &valid);
+	const Variant &actual_value = object->get("absent_name", &valid);
 	CHECK(!valid);
 	CHECK_MESSAGE(
 			actual_value == Variant(),
 			"The returned value should equal nil variant.");
+
+	memdelete(object);
 }
 
 class SignalReceiver : public Object {
@@ -340,58 +359,58 @@ public:
 };
 
 TEST_CASE("[Object] Signals") {
-	Object object;
+	Object *object = memnew(Object);
 
-	CHECK_FALSE(object.has_signal("my_custom_signal"));
+	CHECK_FALSE(object->has_signal("my_custom_signal"));
 
 	List<MethodInfo> signals_before;
-	object.get_signal_list(&signals_before);
+	object->get_signal_list(&signals_before);
 
-	object.add_user_signal(MethodInfo("my_custom_signal"));
+	object->add_user_signal(MethodInfo("my_custom_signal"));
 
-	CHECK(object.has_signal("my_custom_signal"));
+	CHECK(object->has_signal("my_custom_signal"));
 
 	List<MethodInfo> signals_after;
-	object.get_signal_list(&signals_after);
+	object->get_signal_list(&signals_after);
 
 	// Should be one more signal.
 	CHECK_EQ(signals_before.size() + 1, signals_after.size());
 
 	SUBCASE("Adding the same user signal again should not have any effect") {
-		CHECK(object.has_signal("my_custom_signal"));
+		CHECK(object->has_signal("my_custom_signal"));
 		ERR_PRINT_OFF;
-		object.add_user_signal(MethodInfo("my_custom_signal"));
+		object->add_user_signal(MethodInfo("my_custom_signal"));
 		ERR_PRINT_ON;
-		CHECK(object.has_signal("my_custom_signal"));
+		CHECK(object->has_signal("my_custom_signal"));
 
 		List<MethodInfo> signals_after_existing_added;
-		object.get_signal_list(&signals_after_existing_added);
+		object->get_signal_list(&signals_after_existing_added);
 
 		CHECK_EQ(signals_after.size(), signals_after_existing_added.size());
 	}
 
 	SUBCASE("Trying to add a preexisting signal should not have any effect") {
-		CHECK(object.has_signal("script_changed"));
+		CHECK(object->has_signal("script_changed"));
 		ERR_PRINT_OFF;
-		object.add_user_signal(MethodInfo("script_changed"));
+		object->add_user_signal(MethodInfo("script_changed"));
 		ERR_PRINT_ON;
-		CHECK(object.has_signal("script_changed"));
+		CHECK(object->has_signal("script_changed"));
 
 		List<MethodInfo> signals_after_existing_added;
-		object.get_signal_list(&signals_after_existing_added);
+		object->get_signal_list(&signals_after_existing_added);
 
 		CHECK_EQ(signals_after.size(), signals_after_existing_added.size());
 	}
 
 	SUBCASE("Adding an empty signal should not have any effect") {
-		CHECK_FALSE(object.has_signal(""));
+		CHECK_FALSE(object->has_signal(""));
 		ERR_PRINT_OFF;
-		object.add_user_signal(MethodInfo(""));
+		object->add_user_signal(MethodInfo(""));
 		ERR_PRINT_ON;
-		CHECK_FALSE(object.has_signal(""));
+		CHECK_FALSE(object->has_signal(""));
 
 		List<MethodInfo> signals_after_empty_added;
-		object.get_signal_list(&signals_after_empty_added);
+		object->get_signal_list(&signals_after_empty_added);
 
 		CHECK_EQ(signals_after.size(), signals_after_empty_added.size());
 	}
@@ -400,129 +419,142 @@ TEST_CASE("[Object] Signals") {
 		List<Object::Connection> signal_connections;
 
 		{
-			Object target;
-			target.add_user_signal(MethodInfo("my_custom_signal"));
+			Object *target = memnew(Object);
+			target->add_user_signal(MethodInfo("my_custom_signal"));
 
 			ERR_PRINT_OFF;
-			target.connect("nonexistent_signal1", callable_mp(&object, &Object::notify_property_list_changed));
-			target.connect("my_custom_signal", callable_mp(&object, &Object::notify_property_list_changed));
-			target.connect("nonexistent_signal2", callable_mp(&object, &Object::notify_property_list_changed));
+			target->connect("nonexistent_signal1", callable_mp(object, &Object::notify_property_list_changed));
+			target->connect("my_custom_signal", callable_mp(object, &Object::notify_property_list_changed));
+			target->connect("nonexistent_signal2", callable_mp(object, &Object::notify_property_list_changed));
 			ERR_PRINT_ON;
 
 			signal_connections.clear();
-			object.get_all_signal_connections(&signal_connections);
+			object->get_all_signal_connections(&signal_connections);
 			CHECK(signal_connections.size() == 0);
 			signal_connections.clear();
-			object.get_signals_connected_to_this(&signal_connections);
+			object->get_signals_connected_to_this(&signal_connections);
 			CHECK(signal_connections.size() == 1);
 
 			ERR_PRINT_OFF;
-			object.connect("nonexistent_signal1", callable_mp(&target, &Object::notify_property_list_changed));
-			object.connect("my_custom_signal", callable_mp(&target, &Object::notify_property_list_changed));
-			object.connect("nonexistent_signal2", callable_mp(&target, &Object::notify_property_list_changed));
+			object->connect("nonexistent_signal1", callable_mp(target, &Object::notify_property_list_changed));
+			object->connect("my_custom_signal", callable_mp(target, &Object::notify_property_list_changed));
+			object->connect("nonexistent_signal2", callable_mp(target, &Object::notify_property_list_changed));
 			ERR_PRINT_ON;
 
 			signal_connections.clear();
-			object.get_all_signal_connections(&signal_connections);
+			object->get_all_signal_connections(&signal_connections);
 			CHECK(signal_connections.size() == 1);
 			signal_connections.clear();
-			object.get_signals_connected_to_this(&signal_connections);
+			object->get_signals_connected_to_this(&signal_connections);
 			CHECK(signal_connections.size() == 1);
+
+			memdelete(target);
 		}
 
 		signal_connections.clear();
-		object.get_all_signal_connections(&signal_connections);
+		object->get_all_signal_connections(&signal_connections);
 		CHECK(signal_connections.size() == 0);
 		signal_connections.clear();
-		object.get_signals_connected_to_this(&signal_connections);
+		object->get_signals_connected_to_this(&signal_connections);
 		CHECK(signal_connections.size() == 0);
 	}
 
 	SUBCASE("Emitting a non existing signal will return an error") {
-		Error err = object.emit_signal("some_signal");
+		Error err = object->emit_signal("some_signal");
 		CHECK(err == ERR_UNAVAILABLE);
 	}
 
 	SUBCASE("Emitting an existing signal should call the connected method") {
 		Array empty_signal_args = { {} };
 
-		SIGNAL_WATCH(&object, "my_custom_signal");
+		SIGNAL_WATCH(object, "my_custom_signal");
 		SIGNAL_CHECK_FALSE("my_custom_signal");
 
-		Error err = object.emit_signal("my_custom_signal");
+		Error err = object->emit_signal("my_custom_signal");
 		CHECK(err == OK);
 
 		SIGNAL_CHECK("my_custom_signal", empty_signal_args);
-		SIGNAL_UNWATCH(&object, "my_custom_signal");
+		SIGNAL_UNWATCH(object, "my_custom_signal");
 	}
 
 	SUBCASE("Connecting and then disconnecting many signals should not leave anything behind") {
 		List<Object::Connection> signal_connections;
-		Object targets[100];
+		Object *targets[100];
+		for (int i = 0; i < 100; ++i) {
+			targets[i] = memnew(Object);
+		}
 
 		for (int i = 0; i < 10; i++) {
 			ERR_PRINT_OFF;
-			for (Object &target : targets) {
-				object.connect("my_custom_signal", callable_mp(&target, &Object::notify_property_list_changed));
+			for (Object *target : targets) {
+				object->connect("my_custom_signal", callable_mp(target, &Object::notify_property_list_changed));
 			}
 			ERR_PRINT_ON;
 			signal_connections.clear();
-			object.get_all_signal_connections(&signal_connections);
+			object->get_all_signal_connections(&signal_connections);
 			CHECK(signal_connections.size() == 100);
 		}
 
-		for (Object &target : targets) {
-			object.disconnect("my_custom_signal", callable_mp(&target, &Object::notify_property_list_changed));
+		for (Object *target : targets) {
+			object->disconnect("my_custom_signal", callable_mp(target, &Object::notify_property_list_changed));
 		}
 		signal_connections.clear();
-		object.get_all_signal_connections(&signal_connections);
+		object->get_all_signal_connections(&signal_connections);
 		CHECK(signal_connections.size() == 0);
+
+		for (int i = 0; i < 100; ++i) {
+			memdelete(targets[i]);
+		}
 	}
 
 	SUBCASE("Connecting with CONNECT_APPEND_SOURCE_OBJECT flag") {
-		SignalReceiver target;
+		SignalReceiver *target = memnew(SignalReceiver);
 
-		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback1), Object::CONNECT_APPEND_SOURCE_OBJECT);
-		object.emit_signal("my_custom_signal");
-		CHECK_EQ(target.received_args, Vector<Variant>{ &object });
-		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback1));
+		object->connect("my_custom_signal", callable_mp(target, &SignalReceiver::callback1), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object->emit_signal("my_custom_signal");
+		CHECK_EQ(target->received_args, Vector<Variant>{ object });
+		object->disconnect("my_custom_signal", callable_mp(target, &SignalReceiver::callback1));
 
-		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2), Object::CONNECT_APPEND_SOURCE_OBJECT);
-		object.emit_signal("my_custom_signal", "emit_arg");
-		CHECK_EQ(target.received_args, Vector<Variant>{ "emit_arg", &object });
-		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2));
+		object->connect("my_custom_signal", callable_mp(target, &SignalReceiver::callback2), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object->emit_signal("my_custom_signal", "emit_arg");
+		CHECK_EQ(target->received_args, Vector<Variant>{ "emit_arg", object });
+		object->disconnect("my_custom_signal", callable_mp(target, &SignalReceiver::callback2));
 
-		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2).bind("bind_arg"), Object::CONNECT_APPEND_SOURCE_OBJECT);
-		object.emit_signal("my_custom_signal");
-		CHECK_EQ(target.received_args, Vector<Variant>{ &object, "bind_arg" });
-		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2));
+		object->connect("my_custom_signal", callable_mp(target, &SignalReceiver::callback2).bind("bind_arg"), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object->emit_signal("my_custom_signal");
+		CHECK_EQ(target->received_args, Vector<Variant>{ object, "bind_arg" });
+		object->disconnect("my_custom_signal", callable_mp(target, &SignalReceiver::callback2));
 
-		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback3).bind("bind_arg"), Object::CONNECT_APPEND_SOURCE_OBJECT);
-		object.emit_signal("my_custom_signal", "emit_arg");
-		CHECK_EQ(target.received_args, Vector<Variant>{ "emit_arg", &object, "bind_arg" });
-		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback3));
+		object->connect("my_custom_signal", callable_mp(target, &SignalReceiver::callback3).bind("bind_arg"), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object->emit_signal("my_custom_signal", "emit_arg");
+		CHECK_EQ(target->received_args, Vector<Variant>{ "emit_arg", object, "bind_arg" });
+		object->disconnect("my_custom_signal", callable_mp(target, &SignalReceiver::callback3));
 
-		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback3).bind(&object), Object::CONNECT_APPEND_SOURCE_OBJECT);
-		object.emit_signal("my_custom_signal", &object);
-		CHECK_EQ(target.received_args, Vector<Variant>{ &object, &object, &object });
-		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback3));
+		object->connect("my_custom_signal", callable_mp(target, &SignalReceiver::callback3).bind(object), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object->emit_signal("my_custom_signal", object);
+		CHECK_EQ(target->received_args, Vector<Variant>{ object, object, object });
+		object->disconnect("my_custom_signal", callable_mp(target, &SignalReceiver::callback3));
 
 		// Source should be appended regardless of unbinding.
-		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback1).unbind(1), Object::CONNECT_APPEND_SOURCE_OBJECT);
-		object.emit_signal("my_custom_signal", "emit_arg");
-		CHECK_EQ(target.received_args, Vector<Variant>{ &object });
-		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback1));
+		object->connect("my_custom_signal", callable_mp(target, &SignalReceiver::callback1).unbind(1), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object->emit_signal("my_custom_signal", "emit_arg");
+		CHECK_EQ(target->received_args, Vector<Variant>{ object });
+		object->disconnect("my_custom_signal", callable_mp(target, &SignalReceiver::callback1));
 
-		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2).bind("bind_arg").unbind(1), Object::CONNECT_APPEND_SOURCE_OBJECT);
-		object.emit_signal("my_custom_signal", "emit_arg");
-		CHECK_EQ(target.received_args, Vector<Variant>{ &object, "bind_arg" });
-		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2));
+		object->connect("my_custom_signal", callable_mp(target, &SignalReceiver::callback2).bind("bind_arg").unbind(1), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object->emit_signal("my_custom_signal", "emit_arg");
+		CHECK_EQ(target->received_args, Vector<Variant>{ object, "bind_arg" });
+		object->disconnect("my_custom_signal", callable_mp(target, &SignalReceiver::callback2));
 
-		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2).unbind(1).bind("bind_arg"), Object::CONNECT_APPEND_SOURCE_OBJECT);
-		object.emit_signal("my_custom_signal", "emit_arg");
-		CHECK_EQ(target.received_args, Vector<Variant>{ "emit_arg", &object });
-		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2));
+		object->connect("my_custom_signal", callable_mp(target, &SignalReceiver::callback2).unbind(1).bind("bind_arg"), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object->emit_signal("my_custom_signal", "emit_arg");
+		CHECK_EQ(target->received_args, Vector<Variant>{ "emit_arg", object });
+		object->disconnect("my_custom_signal", callable_mp(target, &SignalReceiver::callback2));
+
+		memdelete(target);
 	}
+
+	memdelete(object);
 }
 
 class NotificationObjectSuperclass : public Object {
@@ -653,10 +685,11 @@ TEST_CASE("[Object] Destruction at the end of the call chain is safe") {
 		object->call_const("some_method", nullptr, 0, call_error);
 	}
 	SUBCASE("Within signal handling (from emit_signalp(), through emit_signal())") {
-		Object emitter;
-		emitter.add_user_signal(MethodInfo("some_signal"));
-		emitter.connect("some_signal", Callable(object, "some_method"));
-		emitter.emit_signal("some_signal");
+		Object *emitter = memnew(Object);
+		emitter->add_user_signal(MethodInfo("some_signal"));
+		emitter->connect("some_signal", Callable(object, "some_method"));
+		emitter->emit_signal("some_signal");
+		memdelete(emitter);
 	}
 
 	CHECK_MESSAGE(
