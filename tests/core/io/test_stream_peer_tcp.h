@@ -80,7 +80,7 @@ public:
 	~MockNetSocket() override;
 
 protected:
-	static NetSocket *_create_func();
+	static Ref<NetSocket> _create_func();
 
 private:
 	bool _is_open = false;
@@ -89,7 +89,7 @@ private:
 	uint8_t *_recv_data = nullptr;
 };
 
-NetSocket *MockNetSocket::_create_func() {
+Ref<NetSocket> MockNetSocket::_create_func() {
 	return memnew(MockNetSocket);
 }
 

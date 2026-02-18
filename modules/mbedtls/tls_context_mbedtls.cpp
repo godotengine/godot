@@ -193,17 +193,17 @@ Error TLSContextMbedTLS::init_client(int p_transport, const String &p_hostname, 
 		mbedtls_ssl_set_hostname(&tls, cn.utf8().get_data());
 	}
 
-	X509CertificateMbedTLS *cas = nullptr;
+	Ref<X509CertificateMbedTLS> cas = nullptr;
 
 	if (p_options->get_trusted_ca_chain().is_valid()) {
 		// Locking CA certificates
 		certs = p_options->get_trusted_ca_chain();
 		certs->lock();
-		cas = certs.ptr();
+		cas = certs;
 	} else {
 		// Fall back to default certificates (no need to lock those).
 		cas = CryptoMbedTLS::get_default_certificates();
-		if (cas == nullptr) {
+		if (cas.is_null()) {
 			clear();
 			ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "SSL module failed to initialize!");
 		}
