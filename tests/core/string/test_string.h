@@ -35,7 +35,7 @@
 #include "tests/test_macros.h"
 
 
-extern void report_animation_name_edited_coverage();
+extern void report_simplify_path_coverage();
 
 
 namespace TestString {
@@ -1828,7 +1828,6 @@ TEST_CASE("[String] Path functions") {
 		CHECK(String(path[i]).is_relative_path() != abs[i]);
 		CHECK(String(path[i]).simplify_path() == String(simplified[i]));
 		// report coverage here
-		report_animation_name_edited_coverage();
 		CHECK(String(path[i]).simplify_path().get_base_dir().path_join(file[i]) == String(path[i]).simplify_path());
 	}
 

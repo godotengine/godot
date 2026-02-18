@@ -232,6 +232,21 @@
 
 #include "servers/rendering/rendering_server_default.h"
 
+
+// Global coverage array, persists across all tests
+bool simplify_path_coverage[30] = {false};
+
+// Function to report coverage at the end
+void report_simplify_path_coverage() {
+    printf("\n=== Simplify Path Coverage ===\n");
+    for (int i = 0; i < 30; i++) {
+        printf("Branch %2d: %s\n", i + 1, simplify_path_coverage[i] ? "taken" : "not taken");
+    }
+    printf("==============================\n");
+}
+
+
+
 int test_main(int argc, char *argv[]) {
 	bool run_tests = true;
 
@@ -300,8 +315,9 @@ int test_main(int argc, char *argv[]) {
 		}
 		delete[] doctest_args;
 	}
-
-	return test_context.run();
+	int run_num = test_context.run();
+	report_simplify_path_coverage();
+	return run_num;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
