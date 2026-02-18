@@ -518,6 +518,8 @@ private:
 			current_stencil_compare = GL_ALWAYS;
 			current_stencil_reference = 0;
 			current_stencil_compare_mask = 255;
+
+			glDisable(GL_POLYGON_OFFSET_FILL);
 		}
 
 		void set_gl_cull_mode(RS::CullMode p_mode) {
