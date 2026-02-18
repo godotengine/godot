@@ -39,6 +39,10 @@
 #include <initializer_list>
 #include <type_traits>
 
+#ifdef ASAN_ENABLED
+#include <sanitizer/asan_interface.h>
+#endif
+
 static_assert(std::is_trivially_destructible_v<std::atomic<uint64_t>>);
 
 // Silences false-positive warnings.
@@ -246,6 +250,12 @@ void CowData<T>::_unref() {
 	T *prev_ptr = _ptr;
 	_ptr = nullptr;
 
+#ifdef ASAN_ENABLED
+	// Access during destruction is illegal in C++, and results in undefined behavior.
+	// In address sanitizer builds, we can poison ourselves (_ptr) to catch this.
+	__asan_poison_memory_region(this, sizeof(CowData));
+#endif
+
 	destruct_arr_placement(prev_ptr, current_size);
 
 	// Safety check; none of the destructors should have added elements during destruction.
@@ -254,9 +264,10 @@ void CowData<T>::_unref() {
 	// Free Memory.
 	Memory::free_static((uint8_t *)prev_ptr - DATA_OFFSET, false);
 
-#ifdef DEBUG_ENABLED
-	// If any destructors access us through pointers, it is a bug.
-	// We can't really test for that, but we can at least check no items have been added.
+#ifdef ASAN_ENABLED
+	__asan_unpoison_memory_region(this, sizeof(CowData));
+#elif defined(DEBUG_ENABLED)
+	// In a non-asan build, the best we can do is catch if elements were added during destruction.
 	ERR_FAIL_COND_MSG(_ptr != nullptr, "Internal bug, please report: CowData was modified during destruction.");
 #endif
 }
