@@ -44,6 +44,11 @@ enum class HatDir;
 enum class HatMask;
 enum class JoyAxis;
 enum class JoyButton;
+enum class JoyModel;
+enum class JoyScheme;
+enum class JoyDeviceType;
+enum class JoyPowerState;
+enum class JoyConnectionState;
 
 enum class MIDIMessage;
 enum class MouseButton;
@@ -118,6 +123,11 @@ VARIANT_ENUM_CAST(HatDir);
 VARIANT_BITFIELD_CAST(HatMask);
 VARIANT_ENUM_CAST(JoyAxis);
 VARIANT_ENUM_CAST(JoyButton);
+VARIANT_ENUM_CAST(JoyModel);
+VARIANT_ENUM_CAST(JoyScheme);
+VARIANT_ENUM_CAST(JoyDeviceType);
+VARIANT_ENUM_CAST(JoyPowerState);
+VARIANT_ENUM_CAST(JoyConnectionState);
 
 VARIANT_ENUM_CAST(MIDIMessage);
 VARIANT_ENUM_CAST(MouseButton);
