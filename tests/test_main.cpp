@@ -234,12 +234,12 @@
 
 
 // Global coverage array, persists across all tests
-bool simplify_path_coverage[30] = {false};
+bool simplify_path_coverage[29] = {false};
 
 // Function to report coverage at the end
 void report_simplify_path_coverage() {
     printf("\n=== Simplify Path Coverage ===\n");
-    for (int i = 0; i < 30; i++) {
+    for (int i = 0; i < 29; i++) {
         printf("Branch %2d: %s\n", i + 1, simplify_path_coverage[i] ? "taken" : "not taken");
     }
     printf("==============================\n");

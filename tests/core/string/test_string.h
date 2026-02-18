@@ -1860,6 +1860,35 @@ TEST_CASE("[String] hash") {
 	CHECK(a.hash64() != c.hash64());
 }
 
+extern bool simplify_path_coverage[];
+
+// Additional unit tests to improve branch coverage for String::simplify_path()
+// The test cases triggers branches not covered by existing tests.
+TEST_CASE("[String] simplify_path - improve branch coverage") {
+
+	// Branch 7: network share path (starts with //) must keep the leading double slash
+	String path2 = "//network/share/file.txt";
+	CHECK(path2.simplify_path() == "//network/share/file.txt");
+
+
+	// Branch 11: Windows-style drive paths such as "C:/" must be keeped.
+	String path3 = "C:/folder/file.txt";
+	CHECK(path3.simplify_path() == "C:/folder/file.txt");
+
+
+	// Branch 12: Windows-style drive paths with backslash such as "C:\" must be keeped
+	String path4 = "C:\\folder\\file.txt";
+	CHECK(path4.simplify_path() == "C:/folder/file.txt");
+
+
+	// Branch 17: extra slashes inside path should be removed
+	String path5 = "folder//subfolder///file.txt";
+	CHECK(path5.simplify_path() == "folder/subfolder/file.txt");
+
+}
+
+
+
 TEST_CASE("[String] uri_encode/unescape") {
 	String s = "Godot Engine:'docs'";
 	String t = "Godot%20Engine%3A%27docs%27";
