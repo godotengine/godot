@@ -249,6 +249,43 @@ TEST_CASE("[Curve2D] Sampling") {
 		CHECK(cross_linear_curve->get_baked_points().size() >= 3);
 		CHECK(cross_linear_curve->sample_baked_with_rotation(cross_linear_curve->get_closest_offset(Vector2(0.5, 0))).is_equal_approx(Transform2D(Vector2(1, 0), Vector2(0, 1), Vector2(0.5, 0))));
 	}
+
+	SUBCASE("get_closest_point, duplicate points at front") {
+		Ref<Curve2D> duplicate_points_curve = memnew(Curve2D);
+		duplicate_points_curve->add_point(Vector2(0, 50));
+		duplicate_points_curve->add_point(Vector2(0, 50));
+		duplicate_points_curve->add_point(Vector2(0, 200));
+
+		CHECK(duplicate_points_curve->sample_baked(duplicate_points_curve->get_closest_offset(Vector2(0, 50))) == Vector2(0, 50));
+	}
+
+	SUBCASE("get_closest_point, duplicate points at back") {
+		Ref<Curve2D> duplicate_points_curve = memnew(Curve2D);
+		duplicate_points_curve->add_point(Vector2(0, 200));
+		duplicate_points_curve->add_point(Vector2(0, 50));
+		duplicate_points_curve->add_point(Vector2(0, 50));
+
+		CHECK(duplicate_points_curve->sample_baked(duplicate_points_curve->get_closest_offset(Vector2(0, 50))) == Vector2(0, 50));
+	}
+
+	SUBCASE("get_closest_point, only duplicates") {
+		Ref<Curve2D> duplicate_points_curve = memnew(Curve2D);
+		duplicate_points_curve->add_point(Vector2(0, 50));
+		duplicate_points_curve->add_point(Vector2(0, 50));
+
+		CHECK(duplicate_points_curve->sample_baked(duplicate_points_curve->get_closest_offset(Vector2(0, 50))) == Vector2(0, 50));
+	}
+
+	SUBCASE("get_closest_point, double duplicates") {
+		Ref<Curve2D> duplicate_points_curve = memnew(Curve2D);
+		duplicate_points_curve->add_point(Vector2(0, 50));
+		duplicate_points_curve->add_point(Vector2(0, 50));
+		duplicate_points_curve->add_point(Vector2(0, 200));
+		duplicate_points_curve->add_point(Vector2(0, 200));
+
+		CHECK(duplicate_points_curve->sample_baked(duplicate_points_curve->get_closest_offset(Vector2(0, 50))) == Vector2(0, 50));
+		CHECK(duplicate_points_curve->sample_baked(duplicate_points_curve->get_closest_offset(Vector2(0, 200))) == Vector2(0, 200));
+	}
 }
 
 TEST_CASE("[Curve2D] Tessellation") {
