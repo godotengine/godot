@@ -68,7 +68,6 @@ struct godotsharp_property_def_val_pair {
 };
 
 struct ManagedCallbacks {
-	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddNameToProxyNameMap = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const StringName *p_name, int32_t p_argc, const StringName *p_proxy_name);
 	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddMethod = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const StringName *p_name, int32_t p_argc, godotsharp::MethodTrampoline p_trampoline, bool p_is_static);
 	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddProperty = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const StringName *p_name,
 			godotsharp::PropertyGetterTrampoline p_getter_trampoline, godotsharp::PropertySetterTrampoline p_setter_trampoline);
@@ -97,7 +96,6 @@ struct ManagedCallbacks {
 	using FuncScriptManagerBridge_RemoveScriptBridge = void(GD_CLR_STDCALL *)(const CSharpScript *);
 	using FuncScriptManagerBridge_TryReloadRegisteredScriptWithClass = bool(GD_CLR_STDCALL *)(const CSharpScript *);
 	using FuncScriptManagerBridge_UpdateScriptTrampolines = void(GD_CLR_STDCALL *)(const CSharpScript *, bool *,
-			Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddNameToProxyNameMap,
 			Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddMethod,
 			Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddProperty,
 			Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddRaiseSignal);

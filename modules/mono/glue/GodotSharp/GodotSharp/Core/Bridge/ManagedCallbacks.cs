@@ -29,7 +29,6 @@ namespace Godot.Bridge
         public delegate* unmanaged<IntPtr, void> ScriptManagerBridge_RemoveScriptBridge;
         public delegate* unmanaged<IntPtr, godot_bool> ScriptManagerBridge_TryReloadRegisteredScriptWithClass;
         public delegate* unmanaged<IntPtr, godot_bool*,
-            delegate* unmanaged<IntPtr, godot_string_name*, int, godot_string_name*, void>,
             delegate* unmanaged<IntPtr, godot_string_name*, int, void*, godot_bool, void>,
             delegate* unmanaged<IntPtr, godot_string_name*, void*, void*, void>,
             delegate* unmanaged<IntPtr, godot_string_name*, int, void*, void>,
