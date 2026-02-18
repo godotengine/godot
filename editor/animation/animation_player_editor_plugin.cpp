@@ -56,6 +56,16 @@
 
 ///////////////////////////////////
 
+bool _animation_name_edited_coverage[40] = {false}; // 40 branches should cover all nested ifs
+
+void _report_animation_name_edited_coverage() {
+    for (int i = 0; i < 40; i++) {
+        printf("Branch %d: %s\n", i+1,_animation_name_edited_coverage[i] ? "taken" : "not taken");
+    }
+}
+
+///////////////////////////////////
+
 void AnimationPlayerEditor::_find_player() {
 	if (!is_visible() || player) {
 		return;
@@ -612,36 +622,51 @@ float AnimationPlayerEditor::_get_editor_step() const {
 
 void AnimationPlayerEditor::_animation_name_edited() {
 	if (player->is_playing()) {
+		_animation_name_edited_coverage[0] = true;
 		player->stop();
+		_animation_name_edited_coverage[1] = true;
 	}
 
 	String new_name = name->get_text();
 	if (!AnimationLibrary::is_valid_animation_name(new_name)) {
+		_animation_name_edited_coverage[2] = true;
 		error_dialog->set_text(TTR("Invalid animation name!"));
 		error_dialog->popup_centered();
 		return;
+	} else {
+		_animation_name_edited_coverage[3] = true;
 	}
 
 	if (name_dialog_op == TOOL_RENAME_ANIM && animation->has_selectable_items() && animation->get_item_text(animation->get_selected()) == new_name) {
+		_animation_name_edited_coverage[4] = true;
 		name_dialog->hide();
 		return;
+	} else {
+		_animation_name_edited_coverage[5] = true;
 	}
 
 	String test_name_prefix = "";
 	if (library->is_visible() && library->get_selected_id() != -1) {
+		_animation_name_edited_coverage[6] = true;
 		test_name_prefix = library->get_item_metadata(library->get_selected_id());
 		test_name_prefix += (test_name_prefix != "") ? "/" : "";
+	} else {
+		_animation_name_edited_coverage[7] = true;
 	}
 
 	if (player->has_animation(test_name_prefix + new_name)) {
+		_animation_name_edited_coverage[8] = true;
 		error_dialog->set_text(vformat(TTR("Animation '%s' already exists!"), test_name_prefix + new_name));
 		error_dialog->popup_centered();
 		return;
+	} else {
+		_animation_name_edited_coverage[9] = true;
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	switch (name_dialog_op) {
 		case TOOL_RENAME_ANIM: {
+			_animation_name_edited_coverage[10] = true;
 			String current = animation->get_item_text(animation->get_selected());
 			Ref<Animation> anim = player->get_animation(current);
 
@@ -651,9 +676,12 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			// Extract library prefix if present.
 			String new_library_prefix = "";
 			if (current.contains_char('/')) {
+				_animation_name_edited_coverage[11] = true;
 				new_library_prefix = current.get_slicec('/', 0) + "/";
 				current = current.get_slicec('/', 1);
-			}
+			} else {
+                _animation_name_edited_coverage[12] = true;
+            }
 
 			undo_redo->create_action(TTR("Rename Animation"));
 			undo_redo->add_do_method(al.ptr(), "rename_animation", current, new_name);
@@ -665,23 +693,33 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			undo_redo->commit_action();
 
 			if (is_dummy) {
+				_animation_name_edited_coverage[13] = true;
 				plugin->_update_dummy_player(original_node);
-			}
+			} else {
+                _animation_name_edited_coverage[14] = true;
+            }
+
 			_select_anim_by_name(new_library_prefix + new_name);
 		} break;
 
 		case TOOL_NEW_ANIM: {
+			_animation_name_edited_coverage[15] = true;
 			Ref<Animation> new_anim = Ref<Animation>(memnew(Animation));
 			new_anim->set_name(new_name);
 
 			if (animation->get_item_count() > 0) {
+				_animation_name_edited_coverage[16] = true
 				String current = animation->get_item_text(animation->get_selected());
 				Ref<Animation> current_anim = player->get_animation(current);
 
 				if (current_anim.is_valid()) {
+					_animation_name_edited_coverage[17] = true;
 					new_anim->set_step(current_anim->get_step());
+				} else {
+					_animation_name_edited_coverage[18] = true;
 				}
 			} else {
+				_animation_name_edited_coverage[19] = true;
 				new_anim->set_step(EDITOR_GET("editors/animation/default_animation_step"));
 			}
 
@@ -690,44 +728,65 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			library_name = library->get_item_metadata(library->get_selected());
 			// It's possible that [Global] was selected, but doesn't exist yet.
 			if (player->has_animation_library(library_name)) {
+				_animation_name_edited_coverage[20] = true;
 				al = player->get_animation_library(library_name);
+			} else {
+                _animation_name_edited_coverage[21] = true;
 			}
 
 			undo_redo->create_action(TTR("Add Animation"));
 
 			bool lib_added = false;
 			if (al.is_null()) {
+				_animation_name_edited_coverage[22] = true;
 				al.instantiate();
 				lib_added = true;
 				undo_redo->add_do_method(fetch_mixer_for_library(), "add_animation_library", "", al);
 				library_name = "";
-			}
+			} else {
+                _animation_name_edited_coverage[23] = true;
+            }
 
 			undo_redo->add_do_method(al.ptr(), "add_animation", new_name, new_anim);
 			undo_redo->add_undo_method(al.ptr(), "remove_animation", new_name);
 			undo_redo->add_do_method(this, "_animation_player_changed", player);
 			undo_redo->add_undo_method(this, "_animation_player_changed", player);
 			if (!animation->has_selectable_items()) {
+				_animation_name_edited_coverage[24] = true;
 				undo_redo->add_do_method(this, "_start_onion_skinning");
 				undo_redo->add_undo_method(this, "_stop_onion_skinning");
-			}
+			} else {
+                _animation_name_edited_coverage[25] = true;
+            } else {
+                _animation_name_edited_coverage[27] = true;
+            }
+
+
 			if (lib_added) {
+				_animation_name_edited_coverage[26] = true;
 				undo_redo->add_undo_method(fetch_mixer_for_library(), "remove_animation_library", "");
 			}
 			undo_redo->commit_action();
 
 			if (library_name != "") {
+				_animation_name_edited_coverage[28] = true;
 				library_name = library_name + "/";
-			}
+			} else {
+                _animation_name_edited_coverage[29] = true;
+            }
 
 			if (is_dummy) {
+				_animation_name_edited_coverage[30] = true;
 				plugin->_update_dummy_player(original_node);
-			}
+			} else {
+                _animation_name_edited_coverage[31] = true;
+            }
 			_select_anim_by_name(library_name + new_name);
 
 		} break;
 
 		case TOOL_DUPLICATE_ANIM: {
+			_animation_name_edited_coverage[32] = true;
 			String current = animation->get_item_text(animation->get_selected());
 			Ref<Animation> anim = player->get_animation(current);
 
@@ -737,22 +796,31 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			String library_name;
 			Ref<AnimationLibrary> al;
 			if (library->is_visible()) {
+				_animation_name_edited_coverage[33] = true;
 				library_name = library->get_item_metadata(library->get_selected());
 				// It's possible that [Global] was selected, but doesn't exist yet.
 				if (player->has_animation_library(library_name)) {
+					_animation_name_edited_coverage[34] = true
 					al = player->get_animation_library(library_name);
-				}
+				} else {
+                    _animation_name_edited_coverage[35] = true;
+                }
 			} else {
+				_animation_name_edited_coverage[36] = true;
 				if (player->has_animation_library("")) {
+					 _animation_name_edited_coverage[37] = true;
 					al = player->get_animation_library("");
 					library_name = "";
-				}
+				} else {
+                    _animation_name_edited_coverage[38] = true;
+                }
 			}
 
 			undo_redo->create_action(TTR("Duplicate Animation"));
 
 			bool lib_added = false;
 			if (al.is_null()) {
+				_animation_name_edited_coverage[39] = true;
 				al.instantiate();
 				lib_added = true;
 				undo_redo->add_do_method(player, "add_animation_library", "", al);

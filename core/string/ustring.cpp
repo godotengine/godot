@@ -4137,6 +4137,14 @@ bool String::is_network_share_path() const {
 	return begins_with("//") || begins_with("\\\\");
 }
 
+bool simplify_path_coverage[30] = {false}; // 40 branches should cover all nested ifs
+
+void report_animation_name_edited_coverage() {
+    for (int i = 0; i < 30; i++) {
+        printf("Branch %d: %s\n", i+1,simplify_path_coverage[i] ? "taken" : "not taken");
+    }
+}
+
 String String::simplify_path() const {
 	String s = *this;
 	String drive;
@@ -4145,47 +4153,68 @@ String String::simplify_path() const {
 	int p = s.find("://");
 	bool found = false;
 	if (p > 0) {
+		simplify_path_coverage[0] = true;
 		bool only_chars = true;
 		for (int i = 0; i < p; i++) {
+			simplify_path_coverage[1] = true;
 			if (!is_ascii_alphanumeric_char(s[i])) {
+				simplify_path_coverage[2] = true;
 				only_chars = false;
 				break;
 			}
 		}
 		if (only_chars) {
+			simplify_path_coverage[3] = true;
 			found = true;
 			drive = s.substr(0, p + 3);
 			s = s.substr(p + 3);
 		}
-	}
+	} else {
+        simplify_path_coverage[4] = true;
+    }
 	if (!found) {
+		simplify_path_coverage[5] = true;
 		if (is_network_share_path()) {
+			simplify_path_coverage[6] = true;
 			// Network path, beginning with // or \\.
 			drive = s.substr(0, 2);
 			s = s.substr(2);
 		} else if (s.begins_with("/") || s.begins_with("\\")) {
+			simplify_path_coverage[7] = true;
 			// Absolute path.
 			drive = s.substr(0, 1);
 			s = s.substr(1);
 		} else {
+			simplify_path_coverage[8] = true;
 			// Windows-style drive path, like C:/ or C:\.
 			p = s.find(":/");
 			if (p == -1) {
+				simplify_path_coverage[9] = true;
 				p = s.find(":\\");
-			}
+			} else {
+                simplify_path_coverage[10] = true;
+            }
 			if (p != -1 && p < s.find_char('/')) {
+				simplify_path_coverage[11] = true;
 				drive = s.substr(0, p + 2);
 				s = s.substr(p + 2);
-			}
+			} else {
+                simplify_path_coverage[12] = true;
+            }
 		}
-	}
+	} else {
+        simplify_path_coverage[13] = true;
+    }
 
 	s = s.replace_char('\\', '/');
 	while (true) { // in case of using 2 or more slash
+		simplify_path_coverage[14] = true;
 		String compare = s.replace("//", "/");
 		if (s == compare) {
+			simplify_path_coverage[15] = true;
 			break;
 		} else {
+			simplify_path_coverage[16] = true;
 			s = compare;
 		}
 	}
@@ -4193,33 +4222,48 @@ String String::simplify_path() const {
 	bool absolute_path = is_absolute_path();
 
 	absolute_path = absolute_path && !begins_with("res://"); // FIXME: Some code (GLTF importer) rely on accessing files up from `res://`, this probably should be disabled in the future.
+	simplify_path_coverage[17] = true;
 
 	for (int i = 0; i < dirs.size(); i++) {
+		simplify_path_coverage[18] = true;
 		String d = dirs[i];
 		if (d == ".") {
+			simplify_path_coverage[19] = true;
 			dirs.remove_at(i);
 			i--;
 		} else if (d == "..") {
+			simplify_path_coverage[20] = true;
 			if (i != 0 && dirs[i - 1] != "..") {
+				simplify_path_coverage[21] = true;
 				dirs.remove_at(i);
 				dirs.remove_at(i - 1);
 				i -= 2;
 			} else if (absolute_path && i == 0) {
+				simplify_path_coverage[22] = true;
 				dirs.remove_at(i);
 				i--;
-			}
-		}
+			} else {
+                simplify_path_coverage[23] = true;
+            }
+		} else {
+            simplify_path_coverage[24] = true;
+        }
 	}
 
 	s = "";
 
 	for (int i = 0; i < dirs.size(); i++) {
+		simplify_path_coverage[25] = true;
 		if (i > 0) {
+			simplify_path_coverage[26] = true;
 			s += "/";
-		}
+		} else {
+            simplify_path_coverage[27] = true;
+        }
 		s += dirs[i];
 	}
 
+	simplify_path_coverage[28] = true;
 	return drive + s;
 }
 
