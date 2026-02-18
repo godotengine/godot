@@ -2008,7 +2008,7 @@ static String encode_resource_reference(const String &path) {
 	}
 }
 
-Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, int p_recursion_count, bool p_compat) {
+Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, bool p_pretty_print, int p_recursion_count, bool p_compat) {
 	switch (p_variant.get_type()) {
 		case Variant::NIL: {
 			p_store_string_func(p_store_string_ud, "null");
@@ -2177,7 +2177,6 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				p_store_string_func(p_store_string_ud, "null");
 				return OK;
 			}
-			p_recursion_count++;
 
 			Object *obj = p_variant.get_validated_object();
 
@@ -2209,29 +2208,33 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				}
 			}
 
-			//store as generic object
+			// pretty print has new lines
+			const String value_suffix = p_pretty_print ? ",\n" : ", ";
+			const String object_start_suffix = p_pretty_print ? "\n" : "";
+			const String value_suffix_last = p_pretty_print ? "\n" : "";
 
-			p_store_string_func(p_store_string_ud, "Object(" + obj->get_class() + ",");
+			//store as generic object
+			p_store_string_func(p_store_string_ud, "Object(" + obj->get_class() + "," + object_start_suffix);
 
 			List<PropertyInfo> props;
 			obj->get_property_list(&props);
-			bool first = true;
-			for (const PropertyInfo &E : props) {
-				if (E.usage & PROPERTY_USAGE_STORAGE || E.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) {
+			for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+				const PropertyInfo &prop = E->get();
+				if (prop.usage & PROPERTY_USAGE_STORAGE || prop.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) {
 					//must be serialized
+					p_store_string_func(p_store_string_ud, "\"" + prop.name + "\": ");
 
-					if (first) {
-						first = false;
+					write(obj->get(prop.name), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_pretty_print, p_recursion_count + 1, p_compat);
+
+					if (E->next()) {
+						p_store_string_func(p_store_string_ud, value_suffix);
 					} else {
-						p_store_string_func(p_store_string_ud, ",");
+						p_store_string_func(p_store_string_ud, value_suffix_last);
 					}
-
-					p_store_string_func(p_store_string_ud, "\"" + E.name + "\":");
-					write(obj->get(E.name), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
 				}
 			}
 
-			p_store_string_func(p_store_string_ud, ")\n");
+			p_store_string_func(p_store_string_ud, ")");
 		} break;
 
 		case Variant::DICTIONARY: {
@@ -2310,19 +2313,25 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					// Avoid unnecessary line break.
 					p_store_string_func(p_store_string_ud, "{}");
 				} else {
-					p_recursion_count++;
+					// pretty print newlines
+					const String value_suffix = p_pretty_print ? ",\n" : ", ";
+					const String dictionary_start_suffix = p_pretty_print ? "\n" : "";
+					const String value_suffix_last = p_pretty_print ? "\n" : "";
 
-					p_store_string_func(p_store_string_ud, "{\n");
+					p_store_string_func(p_store_string_ud, "{" + dictionary_start_suffix);
 
 					for (uint32_t i = 0; i < keys.size(); i++) {
+						// key
 						const Variant &key = keys[i];
-						write(key, p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
+						write(key, p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_pretty_print, p_recursion_count + 1, p_compat);
 						p_store_string_func(p_store_string_ud, ": ");
-						write(dict[key], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
+
+						// value
+						write(dict[key], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_pretty_print, p_recursion_count + 1, p_compat);
 						if (i + 1 < keys.size()) {
-							p_store_string_func(p_store_string_ud, ",\n");
+							p_store_string_func(p_store_string_ud, value_suffix);
 						} else {
-							p_store_string_func(p_store_string_ud, "\n");
+							p_store_string_func(p_store_string_ud, value_suffix_last);
 						}
 					}
 
@@ -2373,8 +2382,6 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				ERR_PRINT("Max recursion reached");
 				p_store_string_func(p_store_string_ud, "[]");
 			} else {
-				p_recursion_count++;
-
 				p_store_string_func(p_store_string_ud, "[");
 
 				bool first = true;
@@ -2384,7 +2391,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					} else {
 						p_store_string_func(p_store_string_ud, ", ");
 					}
-					write(var, p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
+					write(var, p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_pretty_print, p_recursion_count + 1, p_compat);
 				}
 
 				p_store_string_func(p_store_string_ud, "]");
@@ -2567,8 +2574,8 @@ static Error _write_to_str(void *ud, const String &p_string) {
 	return OK;
 }
 
-Error VariantWriter::write_to_string(const Variant &p_variant, String &r_string, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, bool p_compat) {
+Error VariantWriter::write_to_string(const Variant &p_variant, String &r_string, bool p_pretty_print, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, bool p_compat) {
 	r_string = String();
 
-	return write(p_variant, _write_to_str, &r_string, p_encode_res_func, p_encode_res_ud, 0, p_compat);
+	return write(p_variant, _write_to_str, &r_string, p_encode_res_func, p_encode_res_ud, p_pretty_print, 0, p_compat);
 }
