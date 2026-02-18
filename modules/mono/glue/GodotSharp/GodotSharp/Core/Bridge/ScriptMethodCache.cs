@@ -1,6 +1,8 @@
+using Godot.NativeInterop;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Godot.Bridge
 {
@@ -20,11 +22,26 @@ namespace Godot.Bridge
         private static bool _useMixer;
         private static int _finalMaxProbes;
 
-        public static void Initialize((IntPtr NamePtr, int ArgCount, ScriptMethod<GodotObject> Method)[] methods)
+        private static List<string> _mostUsedMethods = [
+            GodotObject.MethodName.Notification,
+            Node.MethodName._Process,
+            Node.MethodName._PhysicsProcess,
+            CanvasItem.MethodName._Draw,
+            Node.MethodName._Input,
+            Node.MethodName._UnhandledInput,
+            Control.MethodName._GuiInput,
+            Node.MethodName._Ready,
+            Node.MethodName._EnterTree,
+            Node.MethodName._ExitTree,
+        ];
+
+        public static void Initialize((StringName NamePtr, int ArgCount, ScriptMethod<GodotObject> Method)[] methods)
         {
             int capacity = methods.Length;
             int maxProbes = int.MaxValue;
             double averageProbes = MaxProbes;
+
+            var sortedMethods = SortMethodsOnExpectedCallCountForImprovedPerformance(methods);
 
             // calculate optimal size (2^n) for optimal masking
             bool requestMoreSize = true;
@@ -49,7 +66,7 @@ namespace Godot.Bridge
                 foreach (var method in methods)
                 {
                     int currentMaxProbes = 0;
-                    int slot = GetSlot(method.NamePtr);
+                    int slot = GetSlot(method.NamePtr.NativeValue._data);
                     while (_keys[slot] != IntPtr.Zero)
                     {
                         currentMaxProbes++;
@@ -67,7 +84,7 @@ namespace Godot.Bridge
                         break;
                     }
 
-                    _keys[slot] = method.NamePtr;
+                    _keys[slot] = method.NamePtr.NativeValue._data;
                     _argCounts[slot] = (byte)method.ArgCount;
                     _methods[slot] = (ScriptMethod<GodotObject>)(object)method.Method;
                 }
@@ -120,7 +137,7 @@ namespace Godot.Bridge
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public static bool TryGet(in IntPtr namePtr, in int argCount, out ScriptMethod<T> method)
+        public static bool TryGet(scoped in IntPtr namePtr, in int argCount, out ScriptMethod<T> method)
         {
             int slot = GetSlot(namePtr);
 
@@ -153,7 +170,7 @@ namespace Godot.Bridge
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public static ref readonly ScriptMethod<GodotObject> TryGetFast(in IntPtr namePtr, int argCount)
+        public static ref readonly ScriptMethod<GodotObject> TryGetFast(scoped in IntPtr namePtr, int argCount)
         {
             int slot = GetSlot(namePtr);
 
@@ -255,6 +272,44 @@ namespace Godot.Bridge
             //GD.Print($"Size: {_keys.Length}, Items: {count}, Avg Probes: {averageProbes:F2}, Max: {maxProbes}");
 
             return (averageProbes, maxProbes, count);
+        }
+
+        private static (StringName NamePtr, int ArgCount, ScriptMethod<GodotObject> Method)[] SortMethodsOnExpectedCallCountForImprovedPerformance((StringName NamePtr, int ArgCount, ScriptMethod<GodotObject> Method)[] methods)
+        {
+            return methods
+                .Select(method => new
+                {
+                    method,
+                    Name = StringHelpers.ConvertStringNameToString((godot_string_name)method.NamePtr.NativeValue)
+                })
+                .OrderBy(x =>
+                {
+                    var index = _mostUsedMethods.IndexOf(x.Name);
+                    if (index > -1)
+                    {
+                        return index;
+                    }
+
+                    return 999;
+                })
+                .Select(x => x.method)
+                .ToArray();
+        }
+
+        private class StringHelpers
+        {
+            internal static string ConvertStringNameToString(in godot_string_name name)
+            {
+                godot_string godotString;
+                NativeFuncs.godotsharp_string_name_as_string(out godotString, in name);
+
+                using (godotString)
+                {
+                    var managedString = Marshaling.ConvertStringToManaged(godotString);
+
+                    return managedString;
+                }
+            }
         }
     }
 }

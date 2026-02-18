@@ -5,12 +5,12 @@ namespace Godot.Bridge
 {
     internal readonly struct MethodKey : IEquatable<MethodKey>
     {
-        public readonly IntPtr Name;
+        public readonly StringName Name;
         public readonly int Argc;
         private readonly int _hashCode;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public MethodKey(IntPtr name, int argc)
+        public MethodKey(StringName name, int argc)
         {
             Name = name;
             Argc = argc;

@@ -13,26 +13,20 @@ namespace Godot.Bridge
 
         internal FrozenDictionary<MethodKey, ScriptMethod<GodotObject>> MethodsByNameAndArgc;
 
-        internal Dictionary<MethodKey, IntPtr> Aliases { get; } = new();
+        internal Dictionary<MethodKey, StringName> Aliases { get; } = new();
 
         private readonly HashSet<IntPtr> _knownMethodNames = new();
 
-        public ScriptMethodRegistry<T> AddAlias(StringName methodName, int argumentCount, StringName alias) =>
-            AddAlias(methodName.NativeValue._data, argumentCount, alias.NativeValue._data);
-
-        public ScriptMethodRegistry<T> Register(StringName methodName, int argumentCount, ScriptMethod<GodotObject> method) =>
-            Register(methodName.NativeValue._data, argumentCount, method);
-
-        internal ScriptMethodRegistry<T> AddAlias(IntPtr methodName, int argumentCount, IntPtr alias)
+        public ScriptMethodRegistry<T> AddAlias(StringName methodName, int argumentCount, StringName alias)
         {
             Aliases[new MethodKey(methodName, argumentCount)] = alias;
             return this;
         }
 
-        internal ScriptMethodRegistry<T> Register(IntPtr methodName, int argumentCount, ScriptMethod<GodotObject> method)
+        public ScriptMethodRegistry<T> Register(StringName methodName, int argumentCount, ScriptMethod<GodotObject> method)
         {
             BuilderMethodsByNameAndArgc[new MethodKey(methodName, argumentCount)] = method;
-            _knownMethodNames.Add(methodName);
+            _knownMethodNames.Add(methodName.NativeValue._data);
             return this;
         }
 
@@ -63,14 +57,14 @@ namespace Godot.Bridge
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public bool ContainsMethod(in godot_string_name name) => _knownMethodNames.Contains(name._data);
+        public bool ContainsMethod(scoped in godot_string_name name) => _knownMethodNames.Contains(name._data);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public bool TryGetMethod(in godot_string_name name, int argumentCount, out ScriptMethod<T> method) =>
+        public bool TryGetMethod(scoped in godot_string_name name, int argumentCount, out ScriptMethod<T> method) =>
             ScriptMethodCache<T>.TryGet(name._data, argumentCount, out method);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public ref readonly ScriptMethod<GodotObject> TryGetMethodFast(in godot_string_name name, int argumentCount)
+        public ref readonly ScriptMethod<GodotObject> TryGetMethodFast(scoped in godot_string_name name, int argumentCount)
         {
             return ref ScriptMethodCache<T>.TryGetFast(name._data, argumentCount);
         }
