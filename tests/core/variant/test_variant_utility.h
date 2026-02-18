@@ -128,4 +128,226 @@ TEST_CASE("[VariantUtility] Type conversion") {
 	}
 }
 
+TEST_CASE("[VariantUtility] error_string") {
+	CHECK(VariantUtilityFunctions::error_string(OK) == "OK");
+	CHECK(VariantUtilityFunctions::error_string(ERR_CANT_OPEN) == "Can't open");
+	CHECK(VariantUtilityFunctions::error_string(ERR_PRINTER_ON_FIRE) == "Printer on fire");
+	CHECK(VariantUtilityFunctions::error_string(ERR_MAX) == "(invalid error code)");
+}
+
+TEST_CASE("[VariantUtility] type_string") {
+	CHECK(VariantUtilityFunctions::type_string(Variant::Type::NIL) == "Nil");
+	CHECK(VariantUtilityFunctions::type_string(Variant::Type::INT) == "int");
+	CHECK(VariantUtilityFunctions::type_string(Variant::Type::FLOAT) == "float");
+	CHECK(VariantUtilityFunctions::type_string(Variant::Type::STRING) == "String");
+	CHECK(VariantUtilityFunctions::type_string(Variant::Type::VECTOR2) == "Vector2");
+	CHECK(VariantUtilityFunctions::type_string(Variant::Type::VECTOR4I) == "Vector4i");
+	CHECK(VariantUtilityFunctions::type_string(Variant::Type::COLOR) == "Color");
+	CHECK(VariantUtilityFunctions::type_string(Variant::Type::ARRAY) == "Array");
+	CHECK(VariantUtilityFunctions::type_string(Variant::Type::DICTIONARY) == "Dictionary");
+	CHECK(VariantUtilityFunctions::type_string(Variant::Type::PACKED_BYTE_ARRAY) == "PackedByteArray");
+	CHECK(VariantUtilityFunctions::type_string(Variant::Type::PACKED_INT32_ARRAY) == "PackedInt32Array");
+	CHECK(VariantUtilityFunctions::type_string(Variant::Type::PACKED_FLOAT64_ARRAY) == "PackedFloat64Array");
+	ERR_PRINT_OFF;
+	CHECK(VariantUtilityFunctions::type_string(Variant::Type::VARIANT_MAX) == "<invalid type>");
+	ERR_PRINT_ON;
+}
+
+TEST_CASE("[VariantUtility] str_to_var") {
+	const Array arr = { 1.2, 3.4, 5.600000000001 };
+	Variant converted = VariantUtilityFunctions::str_to_var("[1.2, 3.4, 5.600000000001]");
+	CHECK(converted.get_type() == Variant::Type::ARRAY);
+	CHECK(converted == arr);
+
+	const PackedFloat64Array packed_arr = { 1.2, 3.4, 5.600000000001 };
+	converted = VariantUtilityFunctions::str_to_var("PackedFloat64Array(1.2, 3.4, 5.600000000001)");
+	CHECK(converted.get_type() == Variant::Type::PACKED_FLOAT64_ARRAY);
+	CHECK(converted == PackedFloat64Array({ 1.2, 3.4, 5.600000000001 }));
+}
+
+TEST_CASE("[VariantUtility] var_to_str") {
+	const Array arr = { 1.2, 3.4, 5.600000000001 };
+	Variant converted = VariantUtilityFunctions::var_to_str(arr);
+	CHECK(converted.get_type() == Variant::Type::STRING);
+	CHECK(converted == Variant("[1.2, 3.4, 5.600000000001]"));
+
+	const PackedFloat64Array packed_arr = { 1.2, 3.4, 5.600000000001 };
+	converted = VariantUtilityFunctions::var_to_str(packed_arr);
+	CHECK(converted.get_type() == Variant::Type::STRING);
+	CHECK(converted == Variant("PackedFloat64Array(1.2, 3.4, 5.600000000001)"));
+}
+
+TEST_CASE("[VariantUtility] var_to_bytes") {
+	const Array array = { 1.2, 3.4, 5.600000000001 };
+	Variant converted = VariantUtilityFunctions::var_to_bytes(array);
+	CHECK(converted.get_type() == Variant::Type::PACKED_BYTE_ARRAY);
+	// clang-format off
+	CHECK(converted == PackedByteArray({
+		0x1c, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00,
+		0x03, 0x00, 0x01, 0x00, 0x33, 0x33, 0x33, 0x33,
+		0x33, 0x33, 0xf3, 0x3f, 0x03, 0x00, 0x01, 0x00,
+		0x33, 0x33, 0x33, 0x33, 0x33, 0x33, 0x0b, 0x40,
+		0x03, 0x00, 0x01, 0x00, 0xcc, 0x6a, 0x66, 0x66,
+		0x66, 0x66, 0x16, 0x40,
+	}));
+	// clang-format on
+}
+
+TEST_CASE("[VariantUtility] var_to_bytes_with_objects") {
+	Ref<Resource> resource = memnew(Resource);
+	resource->set_meta("example", 123.456);
+	const Array array = { 42, resource, true };
+
+	Variant converted = VariantUtilityFunctions::var_to_bytes(array);
+	CHECK(converted.get_type() == Variant::Type::PACKED_BYTE_ARRAY);
+	// clang-format off
+	CHECK(converted == PackedByteArray({
+		0x1c, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00,
+		0x02, 0x00, 0x00, 0x00, 0x2a, 0x00, 0x00, 0x00,
+		0x18, 0x00, 0x01, 0x00, 0x54, 0x00, 0x00, 0x58,
+		0x00, 0x00, 0x00, 0x80, 0x01, 0x00, 0x00, 0x00,
+		0x01, 0x00, 0x00, 0x00,
+	}));
+	// clang-format on
+
+	converted = VariantUtilityFunctions::var_to_bytes_with_objects(array);
+	CHECK(converted.get_type() == Variant::Type::PACKED_BYTE_ARRAY);
+	// clang-format off
+	CHECK(converted == PackedByteArray({
+		0x1c, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00,
+		0x02, 0x00, 0x00, 0x00, 0x2a, 0x00, 0x00, 0x00,
+		0x18, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00,
+		0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65,
+		0x04, 0x00, 0x00, 0x00, 0x17, 0x00, 0x00, 0x00,
+		0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65,
+		0x5f, 0x6c, 0x6f, 0x63, 0x61, 0x6c, 0x5f, 0x74,
+		0x6f, 0x5f, 0x73, 0x63, 0x65, 0x6e, 0x65, 0x00,
+		0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x0d, 0x00, 0x00, 0x00, 0x72, 0x65, 0x73, 0x6f,
+		0x75, 0x72, 0x63, 0x65, 0x5f, 0x6e, 0x61, 0x6d,
+		0x65, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00,
+		0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00,
+		0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61,
+		0x2f, 0x65, 0x78, 0x61, 0x6d, 0x70, 0x6c, 0x65,
+		0x03, 0x00, 0x01, 0x00, 0x77, 0xbe, 0x9f, 0x1a,
+		0x2f, 0xdd, 0x5e, 0x40, 0x01, 0x00, 0x00, 0x00,
+		0x01, 0x00, 0x00, 0x00,
+	}));
+	// clang-format on
+}
+
+TEST_CASE("[VariantUtility] bytes_to_var") {
+	// clang-format off
+	const PackedByteArray packed_array = {
+		0x1c, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00,
+		0x03, 0x00, 0x01, 0x00, 0x33, 0x33, 0x33, 0x33,
+		0x33, 0x33, 0xf3, 0x3f, 0x03, 0x00, 0x01, 0x00,
+		0x33, 0x33, 0x33, 0x33, 0x33, 0x33, 0x0b, 0x40,
+		0x03, 0x00, 0x01, 0x00, 0xcc, 0x6a, 0x66, 0x66,
+		0x66, 0x66, 0x16, 0x40,
+	};
+	// clang-format on
+	const Variant converted = VariantUtilityFunctions::bytes_to_var(packed_array);
+	CHECK(converted.get_type() == Variant::Type::ARRAY);
+	CHECK(converted == Array({ 1.2, 3.4, 5.600000000001 }));
+}
+
+TEST_CASE("[VariantUtility] bytes_to_var_with_objects") {
+	// clang-format off
+	const PackedByteArray packed_byte_array_with_objects = {
+		0x1c, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00,
+		0x02, 0x00, 0x00, 0x00, 0x2a, 0x00, 0x00, 0x00,
+		0x18, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00,
+		0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65,
+		0x04, 0x00, 0x00, 0x00, 0x17, 0x00, 0x00, 0x00,
+		0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65,
+		0x5f, 0x6c, 0x6f, 0x63, 0x61, 0x6c, 0x5f, 0x74,
+		0x6f, 0x5f, 0x73, 0x63, 0x65, 0x6e, 0x65, 0x00,
+		0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x0d, 0x00, 0x00, 0x00, 0x72, 0x65, 0x73, 0x6f,
+		0x75, 0x72, 0x63, 0x65, 0x5f, 0x6e, 0x61, 0x6d,
+		0x65, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00,
+		0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00,
+		0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61,
+		0x2f, 0x65, 0x78, 0x61, 0x6d, 0x70, 0x6c, 0x65,
+		0x03, 0x00, 0x01, 0x00, 0x77, 0xbe, 0x9f, 0x1a,
+		0x2f, 0xdd, 0x5e, 0x40, 0x01, 0x00, 0x00, 0x00,
+		0x01, 0x00, 0x00, 0x00,
+	};
+	// clang-format on
+
+	ERR_PRINT_OFF;
+	// Not allowed with `bytes_to_var()`, as it contains a type that derives from Object.
+	Variant converted = VariantUtilityFunctions::bytes_to_var(packed_byte_array_with_objects);
+	ERR_PRINT_ON;
+	CHECK(converted.get_type() == Variant::Type::NIL);
+
+	converted = VariantUtilityFunctions::bytes_to_var_with_objects(packed_byte_array_with_objects);
+	CHECK(converted.get_type() == Variant::Type::ARRAY);
+	const Array array = converted;
+	CHECK(int(array[0]) == 42);
+	const Ref<Resource> resource = array[1];
+	CHECK(resource.is_valid());
+	CHECK(Math::is_equal_approx(double(resource->get_meta("example")), 123.456));
+	CHECK(bool(array[2]) == true);
+}
+
+TEST_CASE("[VariantUtility] hash") {
+	Variant variant;
+	CHECK(VariantUtilityFunctions::hash(variant) == 0);
+
+	variant = 42;
+	CHECK(VariantUtilityFunctions::hash(variant) == 0x7f576bfb);
+
+	variant = "Hello world!";
+	CHECK(VariantUtilityFunctions::hash(variant) == 0xc11f34e2);
+
+	variant = StringName("Hello world!");
+	CHECK(VariantUtilityFunctions::hash(variant) == 0xc11f34e2);
+
+	variant = { 1, 2, 3 };
+	CHECK(VariantUtilityFunctions::hash(variant) == 0xe61420f0);
+
+	variant = { 1.0, 2.0, 3.0 };
+	CHECK(VariantUtilityFunctions::hash(variant) == 0x1f19e9ff);
+
+	variant = PackedInt32Array({ 1, 2, 3 });
+	CHECK(VariantUtilityFunctions::hash(variant) == 0x3296a8c7);
+
+	variant = PackedInt64Array({ 1, 2, 3 });
+	CHECK(VariantUtilityFunctions::hash(variant) == 0x361c2f77);
+
+	variant = PackedFloat32Array({ 1, 2, 3 });
+	CHECK(VariantUtilityFunctions::hash(variant) == 0x9abe67ed);
+
+	variant = PackedFloat64Array({ 1, 2, 3 });
+	CHECK(VariantUtilityFunctions::hash(variant) == 0xb7b8f019);
+}
+
+TEST_CASE("[VariantUtility] is_same") {
+	const Variant variant1 = 42;
+	const Variant variant2 = 42;
+	const Variant variant3 = "Hello world!";
+	const Variant variant4 = StringName("Hello world!");
+
+	CHECK(VariantUtilityFunctions::is_same(variant1, variant2) == true);
+	CHECK(VariantUtilityFunctions::is_same(variant1, variant3) == false);
+	CHECK(VariantUtilityFunctions::is_same(variant3, variant4) == false);
+	CHECK(VariantUtilityFunctions::is_same(variant1, variant4) == false);
+}
+
+TEST_CASE("[VariantUtility] join_string") {
+	const Variant variant_1 = "Hello ";
+	const Variant variant_2 = "world";
+	const Variant variant_3 = "!";
+	const Variant *variants[3] = { &variant_1, &variant_2, &variant_3 };
+	Variant result = VariantUtilityFunctions::join_string(variants, 3);
+	CHECK(result.get_type() == Variant::Type::STRING);
+	CHECK(result == Variant("Hello world!"));
+}
+
 } // namespace TestVariantUtility
