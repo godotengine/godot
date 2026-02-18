@@ -212,6 +212,20 @@ void CopyEffects::copy_cube_to_panorama(float p_mip_level) {
 	draw_screen_quad();
 }
 
+void CopyEffects::copy_depth_to_rect_and_linearize(const Rect2 &p_rect, float p_z_near, float p_z_far) {
+	CopyShaderGLES3::ShaderVariant variant = CopyShaderGLES3::MODE_COPY_LINEARIZE_DEPTH;
+
+	bool success = copy.shader.version_bind_shader(copy.shader_version, variant);
+	if (!success) {
+		return;
+	}
+
+	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, variant);
+	copy.shader.version_set_uniform(CopyShaderGLES3::Z_NEAR, p_z_near, copy.shader_version, variant);
+	copy.shader.version_set_uniform(CopyShaderGLES3::Z_FAR, p_z_far, copy.shader_version, variant);
+	draw_screen_quad();
+}
+
 // Intended for efficiently mipmapping textures.
 void CopyEffects::bilinear_blur(GLuint p_source_texture, int p_mipmap_count, const Rect2i &p_region) {
 	GLuint framebuffers[2];
