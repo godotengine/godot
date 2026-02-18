@@ -226,7 +226,7 @@ public:
 				points[i] = Vector3(Vector3i((src_points[i] - rect.position) / longest_axis * QUANTIZATION_MAX)) / QUANTIZATION_MAX;
 			}
 
-			const real_t delta_max = Math::sqrt(2.0) * 100.0;
+			const real_t delta_max = Math::SQRT2 * 100.0;
 			Vector3 center = Vector3(0.5, 0.5, 0.5);
 
 			// The larger the root simplex is, the more likely it is that the
@@ -263,6 +263,7 @@ public:
 
 		AHashMap<Triangle, uint32_t, TriangleHasher> triangles_inserted;
 		LocalVector<Triangle> triangles;
+		const Vector3 scale = proportions * ACCEL_GRID_SIZE;
 
 		for (uint32_t i = 0; i < point_count; i++) {
 			bool unique = true;
@@ -276,7 +277,7 @@ public:
 				continue;
 			}
 
-			Vector3i grid_pos = Vector3i(points[i] * proportions * ACCEL_GRID_SIZE);
+			Vector3i grid_pos = Vector3i(points[i] * scale);
 			grid_pos = grid_pos.clampi(0, ACCEL_GRID_SIZE - 1);
 
 			for (List<Simplex *>::Element *E = acceleration_grid[grid_pos.x][grid_pos.y][grid_pos.z].front(); E;) {
@@ -332,8 +333,8 @@ public:
 
 					const real_t radius2 = Math::sqrt(double(new_simplex->circum_r2)) + 0.0001;
 					Vector3 extents = Vector3(radius2, radius2, radius2);
-					Vector3i from = Vector3i((center - extents) * proportions * ACCEL_GRID_SIZE);
-					Vector3i to = Vector3i((center + extents) * proportions * ACCEL_GRID_SIZE);
+					Vector3i from = Vector3i((center - extents) * scale);
+					Vector3i to = Vector3i((center + extents) * scale);
 					from = from.clampi(0, ACCEL_GRID_SIZE - 1);
 					to = to.clampi(0, ACCEL_GRID_SIZE - 1);
 
