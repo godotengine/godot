@@ -3821,6 +3821,17 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		CHECK(code_edit->get_line(0) == "[]");
 		CHECK(code_edit->get_caret_column() == 2);
 
+		/* If braces are not balanced typing close key should not "skip". */
+		code_edit->clear();
+		code_edit->set_text("[[]");
+		code_edit->set_caret_column(2);
+		SEND_GUI_KEY_EVENT(Key::BRACKETRIGHT);
+		CHECK(code_edit->get_line(0) == "[[]]");
+		CHECK(code_edit->get_caret_column() == 3);
+		SEND_GUI_KEY_EVENT(Key::BRACKETRIGHT);
+		CHECK(code_edit->get_line(0) == "[[]]");
+		CHECK(code_edit->get_caret_column() == 4);
+
 		/* If current is char and inserting a string, do not autocomplete. */
 		code_edit->clear();
 		SEND_GUI_KEY_EVENT(Key::A);
