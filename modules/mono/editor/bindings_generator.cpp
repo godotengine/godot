@@ -2476,14 +2476,14 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			if (obj_types.has(itype.base_name)) {
 				TypeInterface base_type = obj_types[itype.base_name];
 
-				output.append("\n");
-				output.append(INDENT2 ".Register(global::Godot.");
-				output.append(base_type.proxy_name);
+				output << "\n"
+				       << INDENT2 ".Register(global::Godot."
+				       << base_type.proxy_name;
 				if (base_type.is_singleton) {
 					// If the type is a singleton, use the instance type.
-					output.append(CS_SINGLETON_INSTANCE_SUFFIX);
+					output << CS_SINGLETON_INSTANCE_SUFFIX;
 				}
-				output.append(".MethodRegistry)");
+				output << ".MethodRegistry)";
 			} else {
 				ERR_PRINT("Base type '" + itype.base_name.operator String() + "' does not exist, for class '" + itype.name + "'.");
 				return ERR_INVALID_DATA;
@@ -2518,12 +2518,12 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			if (!imethod.is_virtual) {
 				continue;
 			}
-			output.append("\n");
-			output.append(INDENT2 ".AddAlias(");
-			output << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name << ", " << itos(imethod.arguments.size()) << ", MethodName." << imethod.proxy_name;
-			output << ")\n";
+			output << "\n"
+			       << INDENT2 ".AddAlias("
+			       << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name << ", " << itos(imethod.arguments.size()) << ", MethodName." << imethod.proxy_name
+			       << ")\n";
 		}
-		output.append(INDENT2 ".Build();\n");
+		output << INDENT2 ".Build();\n";
 
 		already_used.clear();
 
@@ -2597,8 +2597,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			output << INDENT3 << "};\n"
 				   << INDENT2 << "}\n";
 		}
-		output.append(INDENT1);
-		output.append("}\n");
+		output << INDENT1;
+		output << "}\n";
 
 		// Generate TryGetGodotClassMethod
 
@@ -2614,17 +2614,12 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		// Avoid raising diagnostics because of calls to obsolete methods.
 		output << "#pragma warning disable CS0618 // Member is obsolete\n";
 
-		output.append("    /// <inheritdoc/>\n");
-		output.append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-		output.append("    public ");
-		output.append(is_derived_type ? "override" : "virtual");
-		output.append(" ref readonly ScriptMethod<");
-		//output.append(itype.proxy_name);
-		output.append("GodotObject");
-		output.append("> TryGetGodotClassMethod(in godot_string_name method, int argc)\n");
-		output.append("    {\n");
-		output.append("        return ref MethodRegistry.TryGetMethodFast(in method, argc);\n");
-		output.append("    }\n\n");
+		output << INDENT1 << "/// <inheritdoc/>\n"
+			   << INDENT1 << "[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n"
+			   << INDENT1 << "public " << (is_derived_type ? "override" : "virtual") << " ref readonly ScriptMethod<GodotObject> TryGetGodotClassMethod(in godot_string_name method, int argc)\n"
+			   << INDENT1 << "{\n"
+			   << INDENT2 << "return ref MethodRegistry.TryGetMethodFast(in method, argc);\n"
+			   << INDENT1 << "}\n\n";
 
 		output << "#pragma warning restore CS0618\n";
 
@@ -2648,13 +2643,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << " bool " CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(in godot_string_name method, "
 			   << "NativeVariantPtrArgs args, out godot_variant ret)\n"
 			   << INDENT1 << "{\n"
-			   << INDENT1 << "    if (MethodRegistry.TryGetMethod(in method, args.Count, out var scriptMethod))\n"
-			   << INDENT1 << "    {\n"
-			   << INDENT1 << "        ret = scriptMethod(this, args);\n"
-			   << INDENT1 << "        return true;\n"
-			   << INDENT1 << "    }\n\n"
-			   << INDENT1 << "    ret = new godot_variant();\n"
-			   << INDENT1 << "    return false;\n"
+			   << INDENT2 << "if (MethodRegistry.TryGetMethod(in method, args.Count, out var scriptMethod))\n"
+			   << INDENT2 << "{\n"
+			   << INDENT3 << "ret = scriptMethod(this, args);\n"
+			   << INDENT3 << "return true;\n"
+			   << INDENT2 << "}\n\n"
+			   << INDENT2 << "ret = new godot_variant();\n"
+			   << INDENT2 << "return false;\n"
 			   << INDENT1 << "}\n\n";
 
 		// Generate HasGodotClassMethod
