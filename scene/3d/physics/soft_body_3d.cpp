@@ -738,8 +738,6 @@ bool SoftBody3D::is_ray_pickable() const {
 }
 
 void SoftBody3D::set_soft_body_form(PhysicsServer3D::SoftBodyForm p_soft_body_form) {
-	//soft_body_form = p_soft_body_form;
-
 	return PhysicsServer3D::get_singleton()->soft_body_set_form(physics_rid, p_soft_body_form);
 }
 
