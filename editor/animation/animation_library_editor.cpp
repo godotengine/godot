@@ -30,6 +30,9 @@
 
 #include "animation_library_editor.h"
 
+#include <cstdio>
+#include <cstdlib>
+
 #include "core/io/resource_loader.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
@@ -153,39 +156,76 @@ void AnimationLibraryEditor::_load_library() {
 }
 
 void AnimationLibraryEditor::_file_popup_selected(int p_id) {
+	// --- Manual branch coverage instrumentation ---
+	static bool _branch_coverage[30] = { false };
+	static bool _atexit_registered = false;
+	if (!_atexit_registered) {
+		_atexit_registered = true;
+		atexit([]() {
+			fprintf(stderr, "=== Branch Coverage for _file_popup_selected ===\n");
+			for (int i = 0; i < 30; i++) {
+				fprintf(stderr, "Branch %d: %s\n", i, _branch_coverage[i] ? "HIT" : "MISS");
+			}
+			int hit = 0;
+			for (int i = 0; i < 30; i++) {
+				if (_branch_coverage[i]) hit++;
+			}
+			fprintf(stderr, "Total: %d/30 branches hit\n", hit);
+		});
+	}
+	// --- End instrumentation setup ---
+
 	Ref<AnimationLibrary> al = mixer->get_animation_library(file_dialog_library);
 	Ref<Animation> anim;
 	if (file_dialog_animation != StringName()) {
+		_branch_coverage[0] = true; // Branch 0: file_dialog_animation is set
 		anim = al->get_animation(file_dialog_animation);
 		ERR_FAIL_COND(anim.is_null());
+	} else {
+		_branch_coverage[1] = true; // Branch 1: file_dialog_animation is empty
 	}
 	switch (p_id) {
 		case FILE_MENU_SAVE_LIBRARY: {
+			_branch_coverage[2] = true; // Branch 2: case SAVE_LIBRARY
 			if (al->get_path().is_resource_file() && !FileAccess::exists(al->get_path() + ".import")) {
+				_branch_coverage[3] = true; // Branch 3: lib is resource file and not imported
 				EditorNode::get_singleton()->save_resource(al);
 				break;
 			}
+			_branch_coverage[4] = true; // Branch 4: lib save condition false, fallthrough
 			[[fallthrough]];
 		}
 		case FILE_MENU_SAVE_AS_LIBRARY: {
+			_branch_coverage[5] = true; // Branch 5: case SAVE_AS_LIBRARY
 			// Check if we're allowed to save this
 			{
 				String al_path = al->get_path();
 				if (!al_path.is_resource_file()) {
+					_branch_coverage[6] = true; // Branch 6: lib path is not a resource file
 					int srpos = al_path.find("::");
 					if (srpos != -1) {
+						_branch_coverage[8] = true; // Branch 8: lib path contains "::" (embedded)
 						String base = al_path.substr(0, srpos);
 						if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
+							_branch_coverage[10] = true; // Branch 10: lib does not belong to edited scene
 							error_dialog->set_text(TTR("This animation library can't be saved because it does not belong to the edited scene. Make it unique first."));
 							error_dialog->popup_centered();
 							return;
+						} else {
+							_branch_coverage[11] = true; // Branch 11: lib belongs to edited scene
 						}
+					} else {
+						_branch_coverage[9] = true; // Branch 9: lib path has no "::"
 					}
 				} else {
+					_branch_coverage[7] = true; // Branch 7: lib path is a resource file
 					if (FileAccess::exists(al_path + ".import")) {
+						_branch_coverage[12] = true; // Branch 12: lib resource is imported
 						error_dialog->set_text(TTR("This animation library can't be saved because it was imported from another file. Make it unique first."));
 						error_dialog->popup_centered();
 						return;
+					} else {
+						_branch_coverage[13] = true; // Branch 13: lib resource is not imported
 					}
 				}
 			}
@@ -193,8 +233,10 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 			file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 			file_dialog->set_title(TTR("Save Library"));
 			if (al->get_path().is_resource_file()) {
+				_branch_coverage[14] = true; // Branch 14: lib has resource file path for dialog
 				file_dialog->set_current_path(al->get_path());
 			} else {
+				_branch_coverage[15] = true; // Branch 15: lib has no resource file path
 				file_dialog->set_current_file(String(file_dialog_library) + ".res");
 			}
 			file_dialog->clear_filters();
@@ -208,6 +250,7 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 			file_dialog_action = FILE_DIALOG_ACTION_SAVE_LIBRARY;
 		} break;
 		case FILE_MENU_MAKE_LIBRARY_UNIQUE: {
+			_branch_coverage[16] = true; // Branch 16: case MAKE_LIBRARY_UNIQUE
 			StringName lib_name = file_dialog_library;
 			List<StringName> animation_list;
 
@@ -216,7 +259,10 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 			for (const StringName &animation_name : animation_list) {
 				Ref<Animation> animation = al->get_animation(animation_name);
 				if (EditorNode::get_singleton()->is_resource_read_only(animation)) {
+					_branch_coverage[17] = true; // Branch 17: animation is read-only
 					animation = animation->duplicate();
+				} else {
+					_branch_coverage[18] = true; // Branch 18: animation is writable
 				}
 				ald->add_animation(animation_name, animation);
 			}
@@ -235,31 +281,41 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 
 		} break;
 		case FILE_MENU_EDIT_LIBRARY: {
+			_branch_coverage[19] = true; // Branch 19: case EDIT_LIBRARY
 			EditorNode::get_singleton()->push_item(al.ptr());
 		} break;
 
 		case FILE_MENU_SAVE_ANIMATION: {
+			_branch_coverage[20] = true; // Branch 20: case SAVE_ANIMATION
 			if (anim->get_path().is_resource_file() && !FileAccess::exists(anim->get_path() + ".import")) {
+				_branch_coverage[21] = true; // Branch 21: anim is resource file and not imported
 				EditorNode::get_singleton()->save_resource(anim);
 				break;
 			}
+			_branch_coverage[22] = true; // Branch 22: anim save condition false, fallthrough
 			[[fallthrough]];
 		}
 		case FILE_MENU_SAVE_AS_ANIMATION: {
+			_branch_coverage[23] = true; // Branch 23: case SAVE_AS_ANIMATION
 			// Check if we're allowed to save this
 			{
 				String anim_path = al->get_path();
 				if (!anim_path.is_resource_file()) {
+					_branch_coverage[24] = true; // Branch 24: anim path is not a resource file
 					int srpos = anim_path.find("::");
 					if (srpos != -1) {
+						_branch_coverage[26] = true; // Branch 26: anim path contains "::"
 						String base = anim_path.substr(0, srpos);
 						if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
 							error_dialog->set_text(TTR("This animation can't be saved because it does not belong to the edited scene. Make it unique first."));
 							error_dialog->popup_centered();
 							return;
 						}
+					} else {
+						_branch_coverage[27] = true; // Branch 27: anim path has no "::"
 					}
 				} else {
+					_branch_coverage[25] = true; // Branch 25: anim path is a resource file
 					if (FileAccess::exists(anim_path + ".import")) {
 						error_dialog->set_text(TTR("This animation can't be saved because it was imported from another file. Make it unique first."));
 						error_dialog->popup_centered();
@@ -286,6 +342,7 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 			file_dialog_action = FILE_DIALOG_ACTION_SAVE_ANIMATION;
 		} break;
 		case FILE_MENU_MAKE_ANIMATION_UNIQUE: {
+			_branch_coverage[28] = true; // Branch 28: case MAKE_ANIMATION_UNIQUE
 			StringName anim_name = file_dialog_animation;
 
 			Ref<Animation> animd = anim->duplicate();
@@ -303,6 +360,7 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 			update_tree();
 		} break;
 		case FILE_MENU_EDIT_ANIMATION: {
+			_branch_coverage[29] = true; // Branch 29: case EDIT_ANIMATION
 			EditorNode::get_singleton()->push_item(anim.ptr());
 		} break;
 	}
