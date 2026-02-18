@@ -1964,9 +1964,29 @@ void SphereMesh::_update_lightmap_size() {
 		Size2i _lightmap_size_hint;
 		float padding = get_uv2_padding();
 
-		float _width = radius * Math::TAU;
+		// Determine dimensions based on shape mode
+		float _width, _height;
+
+		switch (shape) {
+			case SPHERE:
+				_width = radius * Math::TAU;
+				_height = (is_hemisphere ? 1.0f : 0.5f) * radius * Math::PI;
+				break;
+			case SPHEROID:
+				_width = height * Math::TAU;
+				_height = (is_hemisphere ? height : height * 0.5f) * Math::PI;
+				break;
+			case ELLIPSOID:
+				_width = width * Math::TAU;
+				_height = (is_hemisphere ? height : height * 0.5f) * Math::PI;
+				break;
+			default:
+				_width = _height = 1.0f;
+				break;
+		}
+
 		_lightmap_size_hint.x = MAX(1.0, (_width / texel_size) + padding);
-		float _height = (is_hemisphere ? 1.0 : 0.5) * height * Math::PI; // note, with hemisphere height is our radius, while with a full sphere it is the diameter..
+		_height = (is_hemisphere ? 1.0 : 0.5) * height * Math::PI; // note, with hemisphere height is our radius, while with a full sphere it is the diameter..
 		_lightmap_size_hint.y = MAX(1.0, (_height / texel_size) + padding);
 
 		set_lightmap_size_hint(_lightmap_size_hint);
@@ -1977,21 +1997,45 @@ void SphereMesh::_create_mesh_array(Array &p_arr) const {
 	bool _add_uv2 = get_add_uv2();
 	float _uv2_padding = get_uv2_padding() * texel_size;
 
-	create_mesh_array(p_arr, radius, height, radial_segments, rings, is_hemisphere, _add_uv2, _uv2_padding);
+	create_mesh_array(shape, p_arr, radius, height, width, depth, radial_segments, rings, is_hemisphere, _add_uv2, _uv2_padding);
 }
 
 void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int radial_segments, int rings, bool is_hemisphere, bool p_add_uv2, const float p_uv2_padding) {
+	create_mesh_array(SPHERE, p_arr, radius, height, radius, radius, radial_segments, rings, is_hemisphere, p_add_uv2, p_uv2_padding);
+}
+
+void SphereMesh::create_mesh_array(SphereMesh::Shape shape, Array &p_arr, float radius, float height, float width, float depth, int radial_segments, int rings, bool is_hemisphere, bool p_add_uv2, const float p_uv2_padding) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
 
-	float scale = height / radius * (is_hemisphere ? 1.0 : 0.5);
+	// Determine scales based on shape mode.
+	float scale_x, scale_y, scale_z;
+
+	switch (shape) {
+		case SPHERE:
+			scale_x = scale_y = scale_z = radius;
+			break;
+		case SPHEROID:
+			scale_x = radius;
+			scale_y = is_hemisphere ? height : height * 0.5;
+			scale_z = radius;
+			break;
+		case ELLIPSOID:
+			scale_x = width * 0.5;
+			scale_y = is_hemisphere ? height : height * 0.5;
+			scale_z = depth * 0.5;
+			break;
+		default:
+			scale_x = scale_y = scale_z = 1.0;
+			break;
+	}
 
 	// Only used if we calculate UV2
-	float circumference = radius * Math::TAU;
+	float circumference = scale_x * Math::TAU;
 	float horizontal_length = circumference + p_uv2_padding;
 	float center_h = 0.5 * circumference / horizontal_length;
 
-	float height_v = scale * Math::PI / ((scale * Math::PI) + p_uv2_padding / radius);
+	float height_v = scale_y * Math::PI / ((scale_y * Math::PI) + p_uv2_padding);
 
 	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
 	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
@@ -2027,10 +2071,10 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 		v /= (rings + 1);
 		if (j == (rings + 1)) {
 			w = 0.0;
-			y = -1.0;
+			y = -scale_y;
 		} else {
 			w = Math::sin(Math::PI * v);
-			y = Math::cos(Math::PI * v);
+			y = scale_y * Math::cos(Math::PI * v);
 		}
 
 		for (i = 0; i <= radial_segments; i++) {
@@ -2046,12 +2090,18 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 			}
 
 			if (is_hemisphere && y < 0.0) {
-				points.push_back(Vector3(x * radius * w, 0.0, z * radius * w));
+				points.push_back(Vector3(x * scale_x * w, 0.0, z * scale_z * w));
 				normals.push_back(Vector3(0.0, -1.0, 0.0));
 			} else {
-				Vector3 p = Vector3(x * w, y * scale, z * w);
-				points.push_back(p * radius);
-				Vector3 normal = Vector3(x * w * scale, y, z * w * scale);
+				Vector3 p = Vector3(x * scale_x * w, y, z * scale_z * w);
+				points.push_back(p);
+
+				Vector3 normal;
+				if (shape == SPHERE || shape == SPHEROID) {
+					normal = Vector3(x * w * scale_x, radius * (y / scale_y), z * w * scale_z);
+				} else { // Ellipsoid.
+					normal = Vector3(x * w * scale_x, y / scale_y, z * w * scale_z);
+				}
 				normals.push_back(normal.normalized());
 			}
 			ADD_TANGENT(z, 0.0, -x, 1.0)
@@ -2088,10 +2138,17 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 }
 
 void SphereMesh::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &SphereMesh::set_shape);
+	ClassDB::bind_method(D_METHOD("get_shape"), &SphereMesh::get_shape);
+
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &SphereMesh::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &SphereMesh::get_radius);
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &SphereMesh::set_height);
 	ClassDB::bind_method(D_METHOD("get_height"), &SphereMesh::get_height);
+	ClassDB::bind_method(D_METHOD("set_width", "width"), &SphereMesh::set_width);
+	ClassDB::bind_method(D_METHOD("get_width"), &SphereMesh::get_width);
+	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &SphereMesh::set_depth);
+	ClassDB::bind_method(D_METHOD("get_depth"), &SphereMesh::get_depth);
 
 	ClassDB::bind_method(D_METHOD("set_radial_segments", "radial_segments"), &SphereMesh::set_radial_segments);
 	ClassDB::bind_method(D_METHOD("get_radial_segments"), &SphereMesh::get_radial_segments);
@@ -2101,11 +2158,46 @@ void SphereMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_is_hemisphere", "is_hemisphere"), &SphereMesh::set_is_hemisphere);
 	ClassDB::bind_method(D_METHOD("get_is_hemisphere"), &SphereMesh::get_is_hemisphere);
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "shape", PROPERTY_HINT_ENUM, "Sphere,Spheroid,Ellipsoid"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater,suffix:m"), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater,suffix:m"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater,suffix:m"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater,suffix:m"), "set_depth", "get_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_radial_segments", "get_radial_segments");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_rings", "get_rings");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_hemisphere"), "set_is_hemisphere", "get_is_hemisphere");
+
+	BIND_ENUM_CONSTANT(SPHERE);
+	BIND_ENUM_CONSTANT(SPHEROID);
+	BIND_ENUM_CONSTANT(ELLIPSOID);
+}
+
+void SphereMesh::_validate_property(PropertyInfo &p_property) const {
+	if (shape == SPHERE) {
+		if (p_property.name == "height") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+	if (shape != ELLIPSOID) {
+		if (p_property.name == "width" || p_property.name == "depth") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else {
+		if (p_property.name == "radius") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+}
+
+void SphereMesh::set_shape(SphereMesh::Shape p_shape_mode) {
+	shape = p_shape_mode;
+	_update_lightmap_size();
+	request_update();
+	notify_property_list_changed();
+}
+
+SphereMesh::Shape SphereMesh::get_shape() const {
+	return shape;
 }
 
 void SphereMesh::set_radius(const float p_radius) {
@@ -2132,6 +2224,24 @@ void SphereMesh::set_height(const float p_height) {
 
 float SphereMesh::get_height() const {
 	return height;
+}
+void SphereMesh::set_width(const float p_width) {
+	width = p_width;
+	_update_lightmap_size();
+	request_update();
+}
+
+float SphereMesh::get_width() const {
+	return width;
+}
+void SphereMesh::set_depth(const float p_depth) {
+	depth = p_depth;
+	_update_lightmap_size();
+	request_update();
+}
+
+float SphereMesh::get_depth() const {
+	return depth;
 }
 
 void SphereMesh::set_radial_segments(const int p_radial_segments) {
