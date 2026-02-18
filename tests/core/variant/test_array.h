@@ -281,6 +281,22 @@ TEST_CASE("[Array] map() and reduce()") {
 	CHECK_EQ(int(array.reduce(callable_mp_static(_add), sum)), 15);
 }
 
+static int _get_y_callable(Vector2i const &p_v) {
+	return p_v.y;
+}
+
+TEST_CASE("[Array] sort_by_key()") {
+	Array sort_array = { Vector2i(0, 1), Vector2i(1, 1), Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 2), Vector2i(1, 2) };
+	Array expected = { Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(0, 2), Vector2i(1, 2) };
+	Array expected_reversed = { Vector2i(0, 2), Vector2i(1, 2), Vector2i(0, 1), Vector2i(1, 1), Vector2i(0, 0), Vector2i(1, 0) };
+
+	sort_array.sort_by_key(callable_mp_static(_get_y_callable));
+	CHECK_EQ(sort_array, expected);
+
+	sort_array.sort_by_key(callable_mp_static(_get_y_callable), true);
+	CHECK_EQ(sort_array, expected_reversed);
+}
+
 TEST_CASE("[Array] push_front(), pop_front(), pop_back()") {
 	Array arr;
 	arr.push_front(1);
