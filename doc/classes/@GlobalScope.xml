@@ -406,6 +406,17 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="exp2">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<description>
+				Returns 2 raised to the power of [param x]. This is often faster and more precise than [code]pow(2, x)[/code] for base-2 exponential calculations.
+				[codeblock]
+				var a = exp2(3) # Returns 8.0
+				var b = exp2(-1) # Returns 0.5
+				[/codeblock]
+			</description>
+		</method>
 		<method name="floor">
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
@@ -679,11 +690,35 @@
 			<param index="0" name="x" type="float" />
 			<description>
 				Returns the [url=https://en.wikipedia.org/wiki/Natural_logarithm]natural logarithm[/url] of [param x] (base [url=https://en.wikipedia.org/wiki/E_(mathematical_constant)][i]e[/i][/url], with [i]e[/i] being approximately 2.71828). This is the amount of time needed to reach a certain level of continuous growth.
-				[b]Note:[/b] This is not the same as the "log" function on most calculators, which uses a base 10 logarithm. To use base 10 logarithm, use [code]log(x) / log(10)[/code].
+				[b]Note:[/b] This is not the same as the "log" function on most calculators, which uses a base 10 logarithm. To use base 10 logarithm, use [method log10]. For logarithms to other bases, use the method [method log] with the formula [code]log(x) / log(base)[/code].
 				[codeblock]
 				log(10) # Returns 2.302585
 				[/codeblock]
 				[b]Note:[/b] The logarithm of [code]0[/code] returns [code]-inf[/code], while negative values return [code]-nan[/code].
+			</description>
+		</method>
+		<method name="log2">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<description>
+				Returns the binary logarithm of [param x] (base-2 logarithm). This is effectively the inverse of [method exp2].
+				For logarithms to other bases, use the method [method log] with the formula [code]log(x) / log(base)[/code].
+				[codeblock]
+				var a = log2(8) # Returns 3.0
+				var b = log2(1) # Returns 0.0
+				[/codeblock]
+			</description>
+		</method>
+		<method name="log10">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<description>
+				Returns the common logarithm of [param x] (base-10 logarithm).
+				For logarithms to other bases, use the method [method log] with the formula [code]log(x) / log(base)[/code].
+				[codeblock]
+				var a = log10(100) # Returns 2.0
+				var b = log10(0.1) # Returns -1.0
+				[/codeblock]
 			</description>
 		</method>
 		<method name="max" qualifiers="vararg">

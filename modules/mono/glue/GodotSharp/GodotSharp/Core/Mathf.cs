@@ -886,6 +886,30 @@ namespace Godot
         }
 
         /// <summary>
+        /// The base 2 exponential function. It raises the value 2
+        /// to the power of <paramref name="s"/> and returns it.
+        /// </summary>
+        /// <param name="s">The exponent to raise 2 to.</param>
+        /// <returns>2 raised to the power of <paramref name="s"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Exp2(float s)
+        {
+            return float.Exp2(s);
+        }
+
+        /// <summary>
+        /// The base 2 exponential function. It raises the value 2
+        /// to the power of <paramref name="s"/> and returns it.
+        /// </summary>
+        /// <param name="s">The exponent to raise 2 to.</param>
+        /// <returns>2 raised to the power of <paramref name="s"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double Exp2(double s)
+        {
+            return double.Exp2(s);
+        }
+
+        /// <summary>
         /// Rounds <paramref name="s"/> downward (towards negative infinity).
         /// </summary>
         /// <param name="s">The number to floor.</param>
@@ -1207,6 +1231,55 @@ namespace Godot
         public static double Log(double s)
         {
             return Math.Log(s);
+        }
+
+        /// <summary>
+        /// Base 2 logarithm. Computes the exponent to which the number 2 must be raised to produce a given value s.
+        /// </summary>
+        /// <param name="s">The input value.</param>
+        /// <returns>The base 2 log of <paramref name="s"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Log2(float s)
+        {
+            return MathF.Log2(s);
+        }
+
+        /// <summary>
+        /// Base 2 logarithm. Computes the exponent to which the number 2 must be raised to produce a given value s.
+        /// </summary>
+        /// <param name="s">The input value.</param>
+        /// <returns>The base 2 log of <paramref name="s"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double Log2(double s)
+        {
+            return Math.Log2(s);
+        }
+
+
+        /// <summary>
+        /// Base 10 logarithm. Computes the exponent to which the number 10 must be raised to produce a given value s.
+        ///
+        /// Note: This IS the same as the "log" function on most calculators, which uses a base 10 logarithm.
+        /// </summary>
+        /// <param name="s">The input value.</param>
+        /// <returns>The base 10 log of <paramref name="s"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Log10(float s)
+        {
+            return MathF.Log10(s);
+        }
+
+        /// <summary>
+        /// Base 10 logarithm. Computes the exponent to which the number 10 must be raised to produce a given value s.
+        ///
+        /// Note: This IS the same as the "log" function on most calculators, which uses a base 10 logarithm.
+        /// </summary>
+        /// <param name="s">The input value.</param>
+        /// <returns>The base 10 log of <paramref name="s"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double Log10(double s)
+        {
+            return Math.Log10(s);
         }
 
         /// <summary>
