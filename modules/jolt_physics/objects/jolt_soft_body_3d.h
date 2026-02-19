@@ -51,7 +51,7 @@ class JoltSoftBody3D final : public JoltObject3D {
 	LocalVector<RID> exceptions;
 
 	RID mesh;
-	LocalVector<int> mesh_to_physics_vertex_index;
+	LocalVector<int> mesh_to_physics;
 
 	JPH::SoftBodyCreationSettings *jolt_settings = new JPH::SoftBodyCreationSettings();
 

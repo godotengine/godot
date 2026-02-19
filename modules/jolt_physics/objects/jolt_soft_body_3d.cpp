@@ -158,8 +158,8 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_cloth() {
 	const int mesh_vertex_count = mesh_vertices.size();
 	const int mesh_index_count = mesh_indices.size();
 
-	mesh_to_physics_vertex_index.resize(mesh_vertex_count);
-	for (int &index : mesh_to_physics_vertex_index) {
+	mesh_to_physics.resize(mesh_vertex_count);
+	for (int &index : mesh_to_physics) {
 		index = -1;
 	}
 	physics_vertices.reserve(mesh_vertex_count);
@@ -184,7 +184,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_cloth() {
 			}
 
 			physics_face[j] = iter_physics_index->value;
-			mesh_to_physics_vertex_index[mesh_index] = iter_physics_index->value;
+			mesh_to_physics[mesh_index] = iter_physics_index->value;
 		}
 
 		if (physics_face[0] == physics_face[1] || physics_face[0] == physics_face[2] || physics_face[1] == physics_face[2]) {
@@ -198,7 +198,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_cloth() {
 	// Pin whatever pinned vertices we have currently. This is used during the `Optimize` call below to order the
 	// constraints. Note that it's fine if the pinned vertices change later, but that will reduce the effectiveness
 	// of the constraints a bit.
-	pin_vertices(*this, pinned_vertices, mesh_to_physics_vertex_index, physics_vertices);
+	pin_vertices(*this, pinned_vertices, mesh_to_physics, physics_vertices);
 
 	// Since Godot's stiffness is input as a coefficient between 0 and 1, and Jolt uses actual stiffness for its
 	// edge constraints, we must map one to the other.
@@ -346,8 +346,8 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 	const int mesh_vertex_count = mesh_vertices.size();
 	const int mesh_index_count = mesh_indices.size();
 
-	mesh_to_physics_vertex_index.resize(mesh_vertex_count);
-	for (int &index : mesh_to_physics_vertex_index) {
+	mesh_to_physics.resize(mesh_vertex_count);
+	for (int &index : mesh_to_physics) {
 		index = -1;
 	}
 	settings->mVertices.reserve(mesh_vertex_count);
@@ -416,7 +416,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 			}
 
 			physics_tet[j] = iter_physics_index->value;
-			mesh_to_physics_vertex_index[mesh_vertex_index] = iter_physics_index->value;
+			mesh_to_physics[mesh_vertex_index] = iter_physics_index->value;
 		}
 
 		if (physics_tet[0] == physics_tet[1] || physics_tet[0] == physics_tet[2]
@@ -446,6 +446,25 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		v.mVertex[3] = (JPH::uint32)physics_tet[3];
 		settings->mVolumeConstraints.emplace_back(v);
 	}
+	
+	// Pin whatever pinned vertices we have currently. This is used during the `Optimize` call below to order the
+	// constraints. Note that it's fine if the pinned vertices change later, but that will reduce the effectiveness
+	// of the constraints a bit.
+	pin_vertices(*this, pinned_vertices, mesh_to_physics, settings->mVertices);
+
+	// Since Godot's stiffness is input as a coefficient between 0 and 1, and Jolt uses actual stiffness for its
+	// edge constraints, we crudely map one to the other with an arbitrary constant.
+	const float stiffness = MAX(Math::pow(stiffness_coefficient, 3.0f) * 100000.0f, 0.000001f);
+	const float inverse_stiffness = 1.0f / stiffness;
+
+	JPH::SoftBodySharedSettings::VertexAttributes vertex_attrib;
+	vertex_attrib.mCompliance = vertex_attrib.mShearCompliance = inverse_stiffness;
+
+	settings->CreateConstraints(&vertex_attrib, 1, JPH::SoftBodySharedSettings::EBendType::None);
+	float multiplier = 1.0f - shrinking_factor;
+	for (JPH::SoftBodySharedSettings::Edge &e : settings->mEdgeConstraints) {
+		e.mRestLength *= multiplier;
+	}
 
 	settings->Optimize();
 
@@ -466,7 +485,7 @@ void JoltSoftBody3D::_update_mass() {
 		vertex.mInvMass = inverse_vertex_mass;
 	}
 
-	pin_vertices(*this, pinned_vertices, mesh_to_physics_vertex_index, physics_vertices);
+	pin_vertices(*this, pinned_vertices, mesh_to_physics, physics_vertices);
 }
 
 void JoltSoftBody3D::_update_pressure() {
@@ -653,8 +672,8 @@ bool JoltSoftBody3D::is_sleeping() const {
 void JoltSoftBody3D::apply_vertex_impulse(int p_index, const Vector3 &p_impulse) {
 	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to apply impulse to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
 
-	ERR_FAIL_INDEX(p_index, (int)mesh_to_physics_vertex_index.size());
-	const int physics_index = mesh_to_physics_vertex_index[p_index];
+	ERR_FAIL_INDEX(p_index, (int)mesh_to_physics.size());
+	const int physics_index = mesh_to_physics[p_index];
 	ERR_FAIL_COND_MSG(physics_index < 0, vformat("Soft body vertex %d was not used by a face and has been omitted for '%s'. No impulse can be applied.", p_index, to_string()));
 	ERR_FAIL_COND_MSG(pinned_vertices.has(physics_index), vformat("Failed to apply impulse to point at index %d for '%s'. Point was found to be pinned.", static_cast<int>(physics_index), to_string()));
 
@@ -931,11 +950,11 @@ void JoltSoftBody3D::update_rendering_server(PhysicsServer3DRenderingServerHandl
 		}
 	}
 
-	const int mesh_vertex_count = mesh_to_physics_vertex_index.size();
+	const int mesh_vertex_count = mesh_to_physics.size();
 	const JPH::RVec3 body_position = jolt_body->GetCenterOfMassPosition();
 
 	for (int i = 0; i < mesh_vertex_count; ++i) {
-		const int physics_index = mesh_to_physics_vertex_index[i];
+		const int physics_index = mesh_to_physics[i];
 		if (physics_index >= 0) {
 			const Vector3 vertex = to_godot(body_position + physics_vertices[(size_t)physics_index].mPosition);
 			const Vector3 normal = normals[(uint32_t)physics_index];
@@ -951,8 +970,8 @@ void JoltSoftBody3D::update_rendering_server(PhysicsServer3DRenderingServerHandl
 Vector3 JoltSoftBody3D::get_vertex_position(int p_index) {
 	ERR_FAIL_COND_V_MSG(!in_space(), Vector3(), vformat("Failed to retrieve point position for '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
 
-	ERR_FAIL_INDEX_V(p_index, (int)mesh_to_physics_vertex_index.size(), Vector3());
-	const int physics_index = mesh_to_physics_vertex_index[p_index];
+	ERR_FAIL_INDEX_V(p_index, (int)mesh_to_physics.size(), Vector3());
+	const int physics_index = mesh_to_physics[p_index];
 	ERR_FAIL_COND_V_MSG(physics_index < 0, Vector3(), vformat("Soft body vertex %d was not used by a face and has been omitted for '%s'. Position cannot be returned.", p_index, to_string()));
 
 	const JPH::SoftBodyMotionProperties &motion_properties = static_cast<const JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
@@ -965,8 +984,8 @@ Vector3 JoltSoftBody3D::get_vertex_position(int p_index) {
 void JoltSoftBody3D::set_vertex_position(int p_index, const Vector3 &p_position) {
 	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to set point position for '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
 
-	ERR_FAIL_INDEX(p_index, (int)mesh_to_physics_vertex_index.size());
-	const int physics_index = mesh_to_physics_vertex_index[p_index];
+	ERR_FAIL_INDEX(p_index, (int)mesh_to_physics.size());
+	const int physics_index = mesh_to_physics[p_index];
 	ERR_FAIL_COND_MSG(physics_index < 0, vformat("Soft body vertex %d was not used by a face and has been omitted for '%s'. Position cannot be set.", p_index, to_string()));
 
 	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
@@ -1000,8 +1019,8 @@ void JoltSoftBody3D::unpin_all_vertices() {
 bool JoltSoftBody3D::is_vertex_pinned(int p_index) const {
 	ERR_FAIL_COND_V_MSG(!in_space(), false, vformat("Failed retrieve pin status of point for '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
 
-	ERR_FAIL_INDEX_V(p_index, (int)mesh_to_physics_vertex_index.size(), false);
-	const int physics_index = mesh_to_physics_vertex_index[p_index];
+	ERR_FAIL_INDEX_V(p_index, (int)mesh_to_physics.size(), false);
+	const int physics_index = mesh_to_physics[p_index];
 
 	return pinned_vertices.has(physics_index);
 }
