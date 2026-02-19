@@ -4864,14 +4864,14 @@ bool Main::physics_iteration(double delta) {
 
 #ifndef PHYSICS_3D_DISABLED
 	GodotProfileZoneGrouped(_profile_zone, "3D physics");
-	PhysicsServer3D::get_singleton()->end_sync();
 	PhysicsServer3D::get_singleton()->step(delta);
+	PhysicsServer3D::get_singleton()->end_sync();
 #endif // PHYSICS_3D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
 	GodotProfileZoneGrouped(_profile_zone, "2D physics");
-	PhysicsServer2D::get_singleton()->end_sync();
 	PhysicsServer2D::get_singleton()->step(delta);
+	PhysicsServer2D::get_singleton()->end_sync();
 #endif // PHYSICS_2D_DISABLED
 
 	message_queue->flush();
