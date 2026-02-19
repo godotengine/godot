@@ -79,6 +79,8 @@ namespace Godot.SourceGenerators
 
             source.Append("using Godot;\n");
             source.Append("using Godot.NativeInterop;\n");
+            source.Append("using Godot.Bridge;\n");
+            source.Append("using System.Runtime.CompilerServices;\n");
             source.Append("\n");
 
             if (hasNamespace)
@@ -175,26 +177,32 @@ namespace Godot.SourceGenerators
 
             if (godotClassProperties.Length > 0 || godotClassFields.Length > 0)
             {
-
+                string type = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
                 // Generate SetGodotClassPropertyValue
+
+                source.Append("    protected new static readonly ScriptPropertyRegistry<").Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat))
+                      .Append("> PropertyRegistry = ")
+                      .Append("new ScriptPropertyRegistry<").Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)).Append(">()\n");
+                source.Append("        .Register(").Append(symbol.BaseType.FullQualifiedNameIncludeGlobal()).Append(".PropertyRegistry)\n");
 
                 bool allPropertiesAreReadOnly = godotClassFields.All(fi => fi.FieldSymbol.IsReadOnly) &&
                                                 godotClassProperties.All(pi => pi.PropertySymbol.IsReadOnly || pi.PropertySymbol.SetMethod!.IsInitOnly);
 
                 if (!allPropertiesAreReadOnly)
                 {
-                    source.Append("    /// <inheritdoc/>\n");
-                    source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                    source.Append("    protected override bool SetGodotClassPropertyValue(in godot_string_name name, ");
-                    source.Append("in godot_variant value)\n    {\n");
-
                     foreach (var property in godotClassProperties)
                     {
                         if (property.PropertySymbol.IsReadOnly || property.PropertySymbol.SetMethod!.IsInitOnly)
                             continue;
 
-                        GeneratePropertySetter(property.PropertySymbol.Name,
-                            property.PropertySymbol.Type, property.Type, source);
+                        GeneratePropertySetterMethodRegistryEntry(
+                            type,
+                            property.PropertySymbol.Name,
+                            property.PropertySymbol.Type,
+                            property.Type,
+                            source);
+                        //GeneratePropertySetter(property.PropertySymbol.Name,
+                        //    property.PropertySymbol.Type, property.Type, source);
                     }
 
                     foreach (var field in godotClassFields)
@@ -202,13 +210,15 @@ namespace Godot.SourceGenerators
                         if (field.FieldSymbol.IsReadOnly)
                             continue;
 
-                        GeneratePropertySetter(field.FieldSymbol.Name,
-                            field.FieldSymbol.Type, field.Type, source);
+                        //GeneratePropertySetter(field.FieldSymbol.Name,
+                        //    field.FieldSymbol.Type, field.Type, source);
+                        GeneratePropertySetterMethodRegistryEntry(
+                            type,
+                            field.FieldSymbol.Name,
+                            field.FieldSymbol.Type,
+                            field.Type,
+                            source);
                     }
-
-                    source.Append("        return base.SetGodotClassPropertyValue(name, value);\n");
-
-                    source.Append("    }\n");
                 }
 
                 // Generate GetGodotClassPropertyValue
@@ -216,33 +226,75 @@ namespace Godot.SourceGenerators
 
                 if (!allPropertiesAreWriteOnly)
                 {
-                    source.Append("    /// <inheritdoc/>\n");
-                    source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                    source.Append("    protected override bool GetGodotClassPropertyValue(in godot_string_name name, ");
-                    source.Append("out godot_variant value)\n    {\n");
-
                     foreach (var property in godotClassProperties)
                     {
                         if (property.PropertySymbol.IsWriteOnly)
                             continue;
 
-                        GeneratePropertyGetter(property.PropertySymbol.Name,
-                            property.PropertySymbol.Type, property.Type, source);
+                        //GeneratePropertyGetter(property.PropertySymbol.Name,
+                        //    property.PropertySymbol.Type, property.Type, source);
+
+                        GeneratePropertyGetterMethodRegistryEntry(
+                            type,
+                            property.PropertySymbol.Name,
+                            property.PropertySymbol.Type,
+                            property.Type,
+                            source);
                     }
 
                     foreach (var field in godotClassFields)
                     {
-                        GeneratePropertyGetter(field.FieldSymbol.Name,
-                            field.FieldSymbol.Type, field.Type, source);
+                        //GeneratePropertyGetter(field.FieldSymbol.Name,
+                        //    field.FieldSymbol.Type, field.Type, source);
+                        GeneratePropertyGetterMethodRegistryEntry(
+                            type,
+                            field.FieldSymbol.Name,
+                            field.FieldSymbol.Type,
+                            field.Type,
+                            source);
                     }
+                }
 
-                    source.Append("        return base.GetGodotClassPropertyValue(name, out value);\n");
+                source.Append("        .Build();\n\n");
 
+                if (!allPropertiesAreReadOnly)
+                {
+                    source.Append("    /// <inheritdoc/>\n");
+                    source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+                    source.Append("    protected override bool SetGodotClassPropertyValue(in godot_string_name name, ");
+                    source.Append("in godot_variant value)\n");
+                    source.Append("    {\n");
+                    source.Append("        ref readonly var propertySetter = ref PropertyRegistry.GetMethodOrNullRef(in name, 1);\n");
+                    source.Append("        if (!Unsafe.IsNullRef(in propertySetter))\n");
+                    source.Append("        {\n");
+                    source.Append("            propertySetter(this, value);\n");
+                    source.Append("            return true;\n");
+                    source.Append("        }\n");
+                    source.Append("        return false;\n");
                     source.Append("    }\n");
                 }
-                // Generate GetGodotPropertyList
 
-                const string DictionaryType = "global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
+                if (!allPropertiesAreWriteOnly)
+                {
+                    source.Append("    /// <inheritdoc/>\n");
+                    source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+                    source.Append("    protected override bool GetGodotClassPropertyValue(in godot_string_name name, ");
+                    source.Append("out godot_variant value)\n");
+                    source.Append("    {\n");
+                    source.Append("        ref readonly var propertyGetter = ref PropertyRegistry.GetMethodOrNullRef(in name, 0);\n");
+                    source.Append("        if (!Unsafe.IsNullRef(in propertyGetter))\n");
+                    source.Append("        {\n");
+                    source.Append("            value = propertyGetter(this, default);\n");
+                    source.Append("            return true;\n");
+                    source.Append("        }\n");
+                    source.Append("        value = default;\n");
+                    source.Append("        return false;\n");
+                    source.Append("    }\n");
+                }
+
+                    // Generate GetGodotPropertyList
+
+                    const string DictionaryType = "global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
 
                 source.Append("    /// <summary>\n")
                     .Append("    /// Get the property information for all the properties declared in this class.\n")
@@ -320,25 +372,56 @@ namespace Godot.SourceGenerators
             context.AddSource(uniqueHint, SourceText.From(source.ToString(), Encoding.UTF8));
         }
 
-        private static void GeneratePropertySetter(
+        private static void GeneratePropertySetterMethodRegistryEntry(
+            string type,
             string propertyMemberName,
             ITypeSymbol propertyTypeSymbol,
             MarshalType propertyMarshalType,
             StringBuilder source
         )
         {
-            source.Append("        ");
-
-            source.Append("if (name == PropertyName.@")
-                .Append(propertyMemberName)
-                .Append(") {\n")
-                .Append("            this.@")
-                .Append(propertyMemberName)
-                .Append(" = ")
+            source
+                .Append(
+                $$"""
+                        .Register(MethodName.@{{propertyMemberName}}, 1, 
+                            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+                            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+                            {
+                                Unsafe.As<GodotObject, {{type}}>(ref scriptInstance).@{{propertyMemberName}} = 
+                """)
                 .AppendNativeVariantToManagedExpr("value", propertyTypeSymbol, propertyMarshalType)
                 .Append(";\n")
-                .Append("            return true;\n")
-                .Append("        }\n");
+                .Append("""
+                                return value;
+                            })
+                """)
+                .Append("\n");
+        }
+
+        private static void GeneratePropertyGetterMethodRegistryEntry(
+            string type,
+            string propertyMemberName,
+            ITypeSymbol propertyTypeSymbol,
+            MarshalType propertyMarshalType,
+            StringBuilder source
+        )
+        {
+            source
+                .Append(
+                $$"""
+                        .Register(MethodName.@{{propertyMemberName}}, 0, 
+                            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+                            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+                            {
+                                var ret = Unsafe.As<GodotObject, {{type}}>(ref scriptInstance).@{{propertyMemberName}};
+                                return 
+                """)
+                .AppendManagedToNativeVariantExpr("value", propertyTypeSymbol, propertyMarshalType)
+                .Append(";\n")
+                .Append("""
+                            })
+                """)
+                .Append("\n");
         }
 
         private static void GeneratePropertyGetter(
