@@ -30,9 +30,6 @@
 
 #pragma once
 
-#include "core/templates/rid_owner.h"
-#include "core/templates/self_list.h"
-#include "scene/resources/mesh.h"
 #include "servers/rendering/dummy/environment/fog.h"
 #include "servers/rendering/dummy/environment/gi.h"
 #include "servers/rendering/dummy/rasterizer_canvas_dummy.h"
@@ -44,7 +41,6 @@
 #include "servers/rendering/dummy/storage/texture_storage.h"
 #include "servers/rendering/dummy/storage/utilities.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/rendering_server.h"
 
 class RasterizerDummy : public RendererCompositor {
 private:
@@ -54,15 +50,16 @@ private:
 
 protected:
 	RasterizerCanvasDummy canvas;
-	RendererDummy::Utilities utilities;
+	RasterizerSceneDummy scene;
+
+	RendererDummy::Fog fog;
+	RendererDummy::GI gi;
 	RendererDummy::LightStorage light_storage;
 	RendererDummy::MaterialStorage material_storage;
 	RendererDummy::MeshStorage mesh_storage;
 	RendererDummy::ParticlesStorage particles_storage;
 	RendererDummy::TextureStorage texture_storage;
-	RendererDummy::GI gi;
-	RendererDummy::Fog fog;
-	RasterizerSceneDummy scene;
+	RendererDummy::Utilities utilities;
 
 public:
 	RendererUtilities *get_utilities() override { return &utilities; }

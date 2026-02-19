@@ -34,8 +34,6 @@
 #include "servers/rendering/renderer_rd/shaders/effects/tonemap.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/tonemap_mobile.glsl.gen.h"
 
-#include "servers/rendering/rendering_server.h"
-
 namespace RendererRD {
 
 class ToneMapper {

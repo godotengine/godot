@@ -36,7 +36,6 @@
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/3d/world_boundary_shape_3d.h"
-#include "servers/rendering/rendering_server.h"
 
 void CollisionShape3D::make_convex_from_siblings() {
 	Node *p = get_parent();
@@ -321,11 +320,9 @@ void CollisionShape3D::_shape_changed() {
 #endif // DEBUG_ENABLED
 
 CollisionShape3D::CollisionShape3D() {
-	//indicator = RenderingServer::get_singleton()->mesh_create();
 	set_notify_local_transform(true);
 	debug_color = _get_default_debug_color();
 }
 
 CollisionShape3D::~CollisionShape3D() {
-	//RenderingServer::get_singleton()->free(indicator);
 }

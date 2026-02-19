@@ -41,6 +41,7 @@
 #include "core/math/geometry_3d.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/settings/editor_settings.h"
+#include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_device_binds.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"

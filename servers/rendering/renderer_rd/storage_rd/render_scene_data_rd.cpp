@@ -29,9 +29,11 @@
 /**************************************************************************/
 
 #include "render_scene_data_rd.h"
+
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 Transform3D RenderSceneDataRD::get_cam_transform() const {
 	return cam_transform;

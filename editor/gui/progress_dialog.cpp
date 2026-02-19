@@ -31,14 +31,12 @@
 #include "progress_dialog.h"
 
 #include "core/os/os.h"
-#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
 #include "scene/gui/panel_container.h"
 #include "scene/main/window.h"
 #include "servers/display/display_server.h"
-#include "servers/rendering/rendering_server.h"
 
 void BackgroundProgress::_add_task(const String &p_task, const String &p_label, int p_steps) {
 	_THREAD_SAFE_METHOD_

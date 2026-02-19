@@ -32,7 +32,6 @@
 
 #include "core/variant/typed_array.h"
 #include "servers/camera/camera_feed.h"
-#include "servers/rendering/rendering_server.h"
 
 ////////////////////////////////////////////////////////
 // CameraServer

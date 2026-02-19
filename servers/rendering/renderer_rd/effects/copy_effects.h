@@ -44,9 +44,6 @@
 #include "servers/rendering/renderer_rd/shaders/effects/octmap_roughness.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/octmap_roughness_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/specular_merge.glsl.gen.h"
-#include "servers/rendering/renderer_scene_render.h"
-
-#include "servers/rendering/rendering_server.h"
 
 namespace RendererRD {
 

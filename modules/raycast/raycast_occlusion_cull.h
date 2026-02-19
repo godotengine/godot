@@ -30,12 +30,14 @@
 
 #pragma once
 
-#include "core/math/projection.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_scene_occlusion_cull.h"
 
 #include <embree4/rtcore.h>
+
+struct Projection;
 
 class RaycastOcclusionCull : public RendererSceneOcclusionCull {
 	typedef RTCRayHit16 CameraRayTile;

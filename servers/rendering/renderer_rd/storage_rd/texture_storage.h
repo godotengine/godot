@@ -35,7 +35,7 @@
 #include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/tex_blit.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/forward_id_storage.h"
-#include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/storage/texture_storage.h"
 #include "servers/rendering/storage/utilities.h"
