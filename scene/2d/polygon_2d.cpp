@@ -244,14 +244,13 @@ void Polygon2D::_notification(int p_what) {
 				uvs.resize(len);
 				if (len > 0) {
 					const Vector2 *src = uv_source->ptr();
+					Vector2 *uvs_ptrw = uvs.ptrw();
 					Vector2 min_uv = src[0];
 					Vector2 max_uv = src[0];
 
 					for (int i = 1; i < len; i++) {
-						min_uv.x = MIN(min_uv.x, src[i].x);
-						min_uv.y = MIN(min_uv.y, src[i].y);
-						max_uv.x = MAX(max_uv.x, src[i].x);
-						max_uv.y = MAX(max_uv.y, src[i].y);
+						min_uv = min_uv.min(src[i]);
+						max_uv = max_uv.max(src[i]);
 					}
 
 					Vector2 size = max_uv - min_uv;
@@ -261,7 +260,7 @@ void Polygon2D::_notification(int p_what) {
 						Vector2 normalized;
 						normalized.x = Math::is_zero_approx(size.x) ? 0.5 : (v.x - min_uv.x) / size.x;
 						normalized.y = Math::is_zero_approx(size.y) ? 0.5 : (v.y - min_uv.y) / size.y;
-						uvs.write[i] = normalized;
+						uvs_ptrw[i] = normalized;
 					}
 				}
 			}
