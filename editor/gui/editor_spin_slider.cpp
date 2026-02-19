@@ -581,6 +581,10 @@ String EditorSpinSlider::get_suffix() const {
 }
 
 void EditorSpinSlider::_evaluate_input_text() {
+	if (value_input->get_text().is_empty()) {
+		set_value(0);
+		return;
+	}
 	const String &lang = _get_locale();
 
 	Ref<Expression> expr;
