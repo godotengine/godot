@@ -1099,6 +1099,19 @@ void OS_MacOS_NSApp::start_main() {
 		err = Main::setup(execpath, argc, argv);
 	}
 
+	NSData *list_data = (__bridge NSData *)CFPreferencesCopyAppValue(CFSTR("userBlacklist"), CFSTR("com.crowdcafe.windowmagnet"));
+	if (list_data) {
+		String list = String::utf8((const char *)list_data.bytes, list_data.length);
+		if (list.begins_with("[") && list.ends_with("]") && !list.contains("org.godotengine.godot")) {
+			Vector<String> parts = list.trim_prefix("[").trim_suffix("]").split(",");
+			parts.push_back("\"org.godotengine.godot\"");
+			list = "[" + String(",").join(parts) + "]";
+			CharString cs = list.utf8();
+			NSData *new_list_data = [NSData dataWithBytes:(const void *)cs.get_data() length:(NSUInteger)cs.length()];
+			CFPreferencesSetValue(CFSTR("userBlacklist"), (__bridge CFPropertyListRef)new_list_data, CFSTR("com.crowdcafe.windowmagnet"), kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+		}
+	}
+
 	if (err == OK) {
 		main_started = true;
 
