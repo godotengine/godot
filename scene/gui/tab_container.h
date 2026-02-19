@@ -45,6 +45,8 @@ public:
 	enum TabPosition {
 		POSITION_TOP,
 		POSITION_BOTTOM,
+		POSITION_LEFT,
+		POSITION_RIGHT,
 		POSITION_MAX,
 	};
 
@@ -124,6 +126,7 @@ private:
 	HashMap<Node *, RID> tab_panels;
 
 	int _get_tab_height() const;
+	int _get_tab_width() const;
 	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();
 	void _repaint();

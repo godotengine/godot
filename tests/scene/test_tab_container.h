@@ -588,7 +588,7 @@ TEST_CASE("[SceneTree][TabContainer] layout and offset") {
 		CHECK(internal_container->get_anchor(SIDE_RIGHT) == 1);
 		CHECK(internal_container->get_offset(SIDE_TOP) == 0);
 		CHECK(internal_container->get_offset(SIDE_BOTTOM) == tab_height);
-		CHECK(internal_container->get_offset(SIDE_LEFT) == side_margin);
+		CHECK(internal_container->get_offset(SIDE_LEFT) == 0);
 		CHECK(internal_container->get_offset(SIDE_RIGHT) == 0);
 
 		// Child is expanded and below the tab bar.
@@ -613,7 +613,7 @@ TEST_CASE("[SceneTree][TabContainer] layout and offset") {
 		CHECK(internal_container->get_anchor(SIDE_RIGHT) == 1);
 		CHECK(internal_container->get_offset(SIDE_TOP) == -tab_height);
 		CHECK(internal_container->get_offset(SIDE_BOTTOM) == 0);
-		CHECK(internal_container->get_offset(SIDE_LEFT) == side_margin);
+		CHECK(internal_container->get_offset(SIDE_LEFT) == 0);
 		CHECK(internal_container->get_offset(SIDE_RIGHT) == 0);
 
 		// Child is expanded and above the tab bar.
@@ -638,7 +638,7 @@ TEST_CASE("[SceneTree][TabContainer] layout and offset") {
 		CHECK(internal_container->get_anchor(SIDE_RIGHT) == 1);
 		CHECK(internal_container->get_offset(SIDE_TOP) == 0);
 		CHECK(internal_container->get_offset(SIDE_BOTTOM) == tab_height);
-		CHECK(internal_container->get_offset(SIDE_LEFT) == side_margin);
+		CHECK(internal_container->get_offset(SIDE_LEFT) == 0);
 		CHECK(internal_container->get_offset(SIDE_RIGHT) == 0);
 
 		// Child is expanded and below the tab bar.
@@ -650,6 +650,53 @@ TEST_CASE("[SceneTree][TabContainer] layout and offset") {
 		CHECK(tab0->get_offset(SIDE_BOTTOM) == 0);
 		CHECK(tab0->get_offset(SIDE_LEFT) == 0);
 		CHECK(tab0->get_offset(SIDE_RIGHT) == 0);
+
+		// Left position.
+		tab_container->set_tabs_position(TabContainer::POSITION_LEFT);
+		CHECK(tab_container->get_tabs_position() == TabContainer::POSITION_LEFT);
+		MessageQueue::get_singleton()->flush();
+		CHECK(tab_bar->is_vertical());
+
+		// Tab bar is at the left.
+		CHECK(internal_container->get_anchor(SIDE_LEFT) == 0);
+		CHECK(internal_container->get_anchor(SIDE_RIGHT) == 0);
+		CHECK(internal_container->get_anchor(SIDE_TOP) == 0);
+		CHECK(internal_container->get_anchor(SIDE_BOTTOM) == 1);
+
+		// Child is expanded and to the right of the tab bar.
+		CHECK(tab0->get_anchor(SIDE_TOP) == 0);
+		CHECK(tab0->get_anchor(SIDE_BOTTOM) == 1);
+		CHECK(tab0->get_anchor(SIDE_LEFT) == 0);
+		CHECK(tab0->get_anchor(SIDE_RIGHT) == 1);
+		CHECK(tab0->get_offset(SIDE_LEFT) > 0);
+		CHECK(tab0->get_offset(SIDE_RIGHT) == 0);
+
+		// Tabs are arranged vertically.
+		tab_rects = { tab_bar->get_tab_rect(0), tab_bar->get_tab_rect(1), tab_bar->get_tab_rect(2) };
+		CHECK(tab_rects[0].position.x == tab_rects[1].position.x);
+		CHECK(tab_rects[1].position.x == tab_rects[2].position.x);
+		CHECK(tab_rects[1].position.y == tab_rects[0].size.y);
+		CHECK(tab_rects[2].position.y == tab_rects[1].position.y + tab_rects[1].size.y);
+
+		// Right position.
+		tab_container->set_tabs_position(TabContainer::POSITION_RIGHT);
+		CHECK(tab_container->get_tabs_position() == TabContainer::POSITION_RIGHT);
+		MessageQueue::get_singleton()->flush();
+		CHECK(tab_bar->is_vertical());
+
+		// Tab bar is at the right.
+		CHECK(internal_container->get_anchor(SIDE_LEFT) == 1);
+		CHECK(internal_container->get_anchor(SIDE_RIGHT) == 1);
+		CHECK(internal_container->get_anchor(SIDE_TOP) == 0);
+		CHECK(internal_container->get_anchor(SIDE_BOTTOM) == 1);
+
+		// Child is expanded and to the left of the tab bar.
+		CHECK(tab0->get_anchor(SIDE_TOP) == 0);
+		CHECK(tab0->get_anchor(SIDE_BOTTOM) == 1);
+		CHECK(tab0->get_anchor(SIDE_LEFT) == 0);
+		CHECK(tab0->get_anchor(SIDE_RIGHT) == 1);
+		CHECK(tab0->get_offset(SIDE_LEFT) == 0);
+		CHECK(tab0->get_offset(SIDE_RIGHT) < 0);
 	}
 
 	memdelete(tab_container);
@@ -674,8 +721,10 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 	MessageQueue::get_singleton()->flush();
 
 	const float side_margin = tab_container->get_theme_constant("side_margin");
+	HBoxContainer *internal_container = tab_container->get_internal_container();
 
 	TabBar *tab_bar = tab_container->get_tab_bar();
+	const Point2 tab_bar_pos = internal_container->get_position() + tab_bar->get_position();
 	Vector<Rect2> tab_rects = {
 		tab_bar->get_tab_rect(0),
 		tab_bar->get_tab_rect(1),
@@ -694,7 +743,7 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		SIGNAL_DISCARD("tab_changed");
 
 		// Click to set the current tab.
-		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(side_margin, 0) + tab_rects[1].position, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+		SEND_GUI_MOUSE_BUTTON_EVENT(tab_bar_pos + tab_rects[1].get_center(), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == 0);
 		SIGNAL_CHECK("tab_selected", { { 1 } });
@@ -702,7 +751,7 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		SIGNAL_CHECK("tab_clicked", { { 1 } });
 
 		// Click on the same tab.
-		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(side_margin, 0) + tab_rects[1].position, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+		SEND_GUI_MOUSE_BUTTON_EVENT(tab_bar_pos + tab_rects[1].get_center(), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == 1);
 		SIGNAL_CHECK("tab_selected", { { 1 } });
@@ -710,7 +759,7 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		SIGNAL_CHECK("tab_clicked", { { 1 } });
 
 		// Click outside of tabs.
-		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(0, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(tab_container->get_size().x + 10, 10), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == 1);
 		SIGNAL_CHECK_FALSE("tab_selected");
@@ -721,12 +770,12 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 	SUBCASE("[TabContainer] Drag and drop internally") {
 		// Cannot drag if not enabled.
 		CHECK_FALSE(tab_container->get_drag_to_rearrange_enabled());
-		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
-		SEND_GUI_MOUSE_MOTION_EVENT(Point2(side_margin, 0) + tab_rects[1].position, MouseButtonMask::LEFT, Key::NONE);
+		SEND_GUI_MOUSE_BUTTON_EVENT(tab_bar_pos + tab_rects[0].get_center(), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+		SEND_GUI_MOUSE_MOTION_EVENT(tab_bar_pos + tab_rects[1].get_center(), MouseButtonMask::LEFT, Key::NONE);
 		SIGNAL_CHECK("tab_selected", { { 0 } });
 		SIGNAL_CHECK_FALSE("tab_changed");
 		CHECK_FALSE(tab_container->get_viewport()->gui_is_dragging());
-		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(Point2(side_margin, 0) + tab_rects[1].position, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(tab_bar_pos + tab_rects[1].get_center(), MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
 		CHECK_FALSE(tab_container->get_viewport()->gui_is_dragging());
 		CHECK(tab_container->get_tab_idx_from_control(tab0) == 0);
 		CHECK(tab_container->get_tab_idx_from_control(tab1) == 1);
@@ -739,13 +788,13 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		CHECK(tab_container->get_drag_to_rearrange_enabled());
 
 		// Release over the same tab to not move.
-		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
-		SEND_GUI_MOUSE_MOTION_EVENT(Point2(side_margin, 0) + tab_rects[1].position, MouseButtonMask::LEFT, Key::NONE);
-		SEND_GUI_MOUSE_MOTION_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButtonMask::LEFT, Key::NONE);
+		SEND_GUI_MOUSE_BUTTON_EVENT(tab_bar_pos + tab_rects[0].get_center(), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+		SEND_GUI_MOUSE_MOTION_EVENT(tab_bar_pos + tab_rects[1].get_center(), MouseButtonMask::LEFT, Key::NONE);
+		SEND_GUI_MOUSE_MOTION_EVENT(tab_bar_pos + tab_rects[0].get_center(), MouseButtonMask::LEFT, Key::NONE);
 		SIGNAL_CHECK("tab_selected", { { 0 } });
 		SIGNAL_CHECK_FALSE("tab_changed");
 		CHECK(tab_container->get_viewport()->gui_is_dragging());
-		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(tab_bar_pos + tab_rects[0].get_center(), MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
 		CHECK_FALSE(tab_container->get_viewport()->gui_is_dragging());
 		CHECK(tab_container->get_tab_idx_from_control(tab0) == 0);
 		CHECK(tab_container->get_tab_idx_from_control(tab1) == 1);
@@ -755,12 +804,12 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		SIGNAL_CHECK_FALSE("tab_changed");
 
 		// Move the first tab after the second.
-		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
-		SEND_GUI_MOUSE_MOTION_EVENT(Point2(side_margin, 0) + tab_rects[1].position, MouseButtonMask::LEFT, Key::NONE);
+		SEND_GUI_MOUSE_BUTTON_EVENT(tab_bar_pos + tab_rects[0].get_center(), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+		SEND_GUI_MOUSE_MOTION_EVENT(tab_bar_pos + tab_rects[1].get_center(), MouseButtonMask::LEFT, Key::NONE);
 		SIGNAL_CHECK("tab_selected", { { 0 } });
 		SIGNAL_CHECK_FALSE("tab_changed");
 		CHECK(tab_container->get_viewport()->gui_is_dragging());
-		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(Point2(side_margin, 0) + tab_rects[1].position + Point2(tab_rects[1].size.x / 2 + 1, 0), MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(tab_bar_pos + tab_rects[1].get_center() + Point2(tab_rects[1].size.x / 2 + 1, 0), MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
 		CHECK_FALSE(tab_container->get_viewport()->gui_is_dragging());
 		CHECK(tab_container->get_tab_idx_from_control(tab1) == 0);
 		CHECK(tab_container->get_tab_idx_from_control(tab0) == 1);
@@ -772,12 +821,12 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		tab_rects = { tab_bar->get_tab_rect(0), tab_bar->get_tab_rect(1), tab_bar->get_tab_rect(2) };
 
 		// Move the last tab to be the first.
-		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(side_margin, 0) + tab_rects[2].position, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
-		SEND_GUI_MOUSE_MOTION_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButtonMask::LEFT, Key::NONE);
+		SEND_GUI_MOUSE_BUTTON_EVENT(tab_bar_pos + tab_rects[2].get_center(), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+		SEND_GUI_MOUSE_MOTION_EVENT(tab_bar_pos + tab_rects[0].get_center(), MouseButtonMask::LEFT, Key::NONE);
 		SIGNAL_CHECK("tab_selected", { { 2 } });
 		SIGNAL_CHECK("tab_changed", { { 2 } });
 		CHECK(tab_container->get_viewport()->gui_is_dragging());
-		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(tab_bar_pos + tab_rects[0].get_center(), MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
 		CHECK_FALSE(tab_container->get_viewport()->gui_is_dragging());
 		CHECK(tab_container->get_tab_idx_from_control(tab2) == 0);
 		CHECK(tab_container->get_tab_idx_from_control(tab1) == 1);
@@ -805,7 +854,7 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		tab_container->set_drag_to_rearrange_enabled(true);
 		tab_container->set_tabs_rearrange_group(1);
 
-		Point2 target_tab_after_first = Point2(side_margin, 0) + target_tab_container->get_position() + target_tab_rects[0].position + Point2(target_tab_rects[0].size.x / 2 + 1, 0);
+		Point2 target_tab_after_first = Point2(target_tab_container->get_internal_container()->get_offset(SIDE_LEFT), 0) + target_tab_container->get_position() + target_tab_rects[0].position + Point2(target_tab_rects[0].size.x / 2 + 1, 0);
 
 		// Cannot drag to another TabContainer that does not have drag to rearrange enabled.
 		CHECK_FALSE(target_tab_container->get_drag_to_rearrange_enabled());

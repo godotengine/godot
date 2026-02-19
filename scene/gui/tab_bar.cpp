@@ -49,74 +49,146 @@ Size2 TabBar::get_minimum_size() const {
 		return ms;
 	}
 
-	int y_margin = MAX(MAX(MAX(theme_cache.tab_unselected_style->get_minimum_size().height, theme_cache.tab_hovered_style->get_minimum_size().height), theme_cache.tab_selected_style->get_minimum_size().height), theme_cache.tab_disabled_style->get_minimum_size().height);
-	int max_tab_width = 0;
+	if (vertical) {
+		int x_margin = MAX(MAX(MAX(theme_cache.tab_unselected_style->get_minimum_size().width, theme_cache.tab_hovered_style->get_minimum_size().width), theme_cache.tab_selected_style->get_minimum_size().width), theme_cache.tab_disabled_style->get_minimum_size().width);
+		int max_tab_height = 0;
 
-	for (int i = 0; i < tabs.size(); i++) {
-		if (tabs[i].hidden) {
-			continue;
-		}
-
-		int ofs = ms.width;
-
-		Ref<StyleBox> style;
-		if (tabs[i].disabled) {
-			style = theme_cache.tab_disabled_style;
-		} else if (current == i) {
-			style = theme_cache.tab_selected_style;
-		} else if (hover == i) {
-			style = theme_cache.tab_hovered_style;
-		} else {
-			style = theme_cache.tab_unselected_style;
-		}
-		ms.width += style->get_minimum_size().width;
-
-		if (tabs[i].icon.is_valid()) {
-			const Size2 icon_size = _get_tab_icon_size(i);
-			ms.height = MAX(ms.height, icon_size.height + y_margin);
-			ms.width += icon_size.width + theme_cache.h_separation;
-		}
-
-		if (!tabs[i].text.is_empty()) {
-			ms.width += tabs[i].size_text + theme_cache.h_separation;
-		}
-		ms.height = MAX(ms.height, tabs[i].text_buf->get_size().y + y_margin);
-
-		bool close_visible = cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current);
-
-		if (tabs[i].right_button.is_valid()) {
-			Ref<Texture2D> rb = tabs[i].right_button;
-
-			if (close_visible) {
-				ms.width += theme_cache.button_hl_style->get_minimum_size().width + rb->get_width();
-			} else {
-				ms.width += theme_cache.button_hl_style->get_margin(SIDE_LEFT) + rb->get_width() + theme_cache.h_separation;
+		for (int i = 0; i < tabs.size(); i++) {
+			if (tabs[i].hidden) {
+				continue;
 			}
 
-			ms.height = MAX(ms.height, rb->get_height() + y_margin);
+			int ofs = ms.height;
+
+			Ref<StyleBox> style;
+			if (tabs[i].disabled) {
+				style = theme_cache.tab_disabled_style;
+			} else if (current == i) {
+				style = theme_cache.tab_selected_style;
+			} else if (hover == i) {
+				style = theme_cache.tab_hovered_style;
+			} else {
+				style = theme_cache.tab_unselected_style;
+			}
+			ms.height += style->get_minimum_size().height;
+
+			if (tabs[i].icon.is_valid()) {
+				const Size2 icon_size = _get_tab_icon_size(i);
+				ms.width = MAX(ms.width, icon_size.width + x_margin);
+				ms.height += icon_size.height + theme_cache.h_separation;
+			}
+
+			if (!tabs[i].text.is_empty()) {
+				ms.width = MAX(ms.width, tabs[i].text_buf->get_size().x + x_margin);
+				ms.height += tabs[i].size_text + theme_cache.h_separation;
+			}
+			ms.width = MAX(ms.width, tabs[i].text_buf->get_size().x + x_margin);
+
+			bool close_visible = cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current);
+
+			if (tabs[i].right_button.is_valid()) {
+				Ref<Texture2D> rb = tabs[i].right_button;
+
+				if (close_visible) {
+					ms.height += theme_cache.button_hl_style->get_minimum_size().height + rb->get_height();
+				} else {
+					ms.height += theme_cache.button_hl_style->get_margin(SIDE_TOP) + rb->get_height() + theme_cache.h_separation;
+				}
+
+				ms.width = MAX(ms.width, rb->get_width() + x_margin);
+			}
+
+			if (close_visible) {
+				ms.height += theme_cache.button_hl_style->get_margin(SIDE_TOP) + theme_cache.close_icon->get_height() + theme_cache.h_separation;
+				ms.width = MAX(ms.width, theme_cache.close_icon->get_width() + x_margin);
+			}
+
+			if (ms.height - ofs > style->get_minimum_size().height) {
+				ms.height -= theme_cache.h_separation;
+			}
+
+			if (i < tabs.size() - 1) {
+				ms.height += theme_cache.tab_separation;
+			}
+
+			if (ms.height - ofs > max_tab_height) {
+				max_tab_height = ms.height - ofs;
+			}
 		}
 
-		if (close_visible) {
-			ms.width += theme_cache.button_hl_style->get_margin(SIDE_LEFT) + theme_cache.close_icon->get_width() + theme_cache.h_separation;
+		if (clip_tabs) {
+			ms.height = max_tab_height + (get_tab_count() > 1 ? theme_cache.decrement_icon->get_height() + theme_cache.increment_icon->get_height() : 0);
+		}
+	} else {
+		int y_margin = MAX(MAX(MAX(theme_cache.tab_unselected_style->get_minimum_size().height, theme_cache.tab_hovered_style->get_minimum_size().height), theme_cache.tab_selected_style->get_minimum_size().height), theme_cache.tab_disabled_style->get_minimum_size().height);
+		int max_tab_width = 0;
 
-			ms.height = MAX(ms.height, theme_cache.close_icon->get_height() + y_margin);
+		for (int i = 0; i < tabs.size(); i++) {
+			if (tabs[i].hidden) {
+				continue;
+			}
+
+			int ofs = ms.width;
+
+			Ref<StyleBox> style;
+			if (tabs[i].disabled) {
+				style = theme_cache.tab_disabled_style;
+			} else if (current == i) {
+				style = theme_cache.tab_selected_style;
+			} else if (hover == i) {
+				style = theme_cache.tab_hovered_style;
+			} else {
+				style = theme_cache.tab_unselected_style;
+			}
+			ms.width += style->get_minimum_size().width;
+
+			if (tabs[i].icon.is_valid()) {
+				const Size2 icon_size = _get_tab_icon_size(i);
+				ms.height = MAX(ms.height, icon_size.height + y_margin);
+				ms.width += icon_size.width + theme_cache.h_separation;
+			}
+
+			if (!tabs[i].text.is_empty()) {
+				ms.width += tabs[i].size_text + theme_cache.h_separation;
+			}
+			ms.height = MAX(ms.height, tabs[i].text_buf->get_size().y + y_margin);
+
+			bool close_visible = cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current);
+
+			if (tabs[i].right_button.is_valid()) {
+				Ref<Texture2D> rb = tabs[i].right_button;
+
+				if (close_visible) {
+					ms.width += theme_cache.button_hl_style->get_minimum_size().width + rb->get_width();
+				} else {
+					ms.width += theme_cache.button_hl_style->get_margin(SIDE_LEFT) + rb->get_width() + theme_cache.h_separation;
+				}
+
+				ms.height = MAX(ms.height, rb->get_height() + y_margin);
+			}
+
+			if (close_visible) {
+				ms.width += theme_cache.button_hl_style->get_margin(SIDE_LEFT) + theme_cache.close_icon->get_width() + theme_cache.h_separation;
+
+				ms.height = MAX(ms.height, theme_cache.close_icon->get_height() + y_margin);
+			}
+
+			if (ms.width - ofs > style->get_minimum_size().width) {
+				ms.width -= theme_cache.h_separation;
+			}
+
+			if (i < tabs.size() - 1) {
+				ms.width += theme_cache.tab_separation;
+			}
+
+			if (ms.width - ofs > max_tab_width) {
+				max_tab_width = ms.width - ofs;
+			}
 		}
 
-		if (ms.width - ofs > style->get_minimum_size().width) {
-			ms.width -= theme_cache.h_separation;
+		if (clip_tabs) {
+			ms.width = max_tab_width + (get_tab_count() > 1 ? theme_cache.decrement_icon->get_width() + theme_cache.increment_icon->get_width() : 0);
 		}
-
-		if (i < tabs.size() - 1) {
-			ms.width += theme_cache.tab_separation;
-		}
-
-		if (ms.width - ofs > max_tab_width) {
-			max_tab_width = ms.width - ofs;
-		}
-	}
-
-	if (clip_tabs) {
-		ms.width = max_tab_width + (get_tab_count() > 1 ? theme_cache.decrement_icon->get_width() + theme_cache.increment_icon->get_width() : 0);
 	}
 
 	return ms;
@@ -131,15 +203,23 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 		Point2 pos = mm->get_position();
 
 		if (buttons_visible) {
-			if (is_layout_rtl()) {
-				if (pos.x < theme_cache.decrement_icon->get_width()) {
-					if (highlight_arrow != 1) {
-						highlight_arrow = 1;
-						queue_redraw();
-					}
-				} else if (pos.x < theme_cache.increment_icon->get_width() + theme_cache.decrement_icon->get_width()) {
+			if (vertical) {
+				Size2 dec_rot_size(theme_cache.decrement_icon->get_height(), theme_cache.decrement_icon->get_width());
+				Size2 inc_rot_size(theme_cache.increment_icon->get_height(), theme_cache.increment_icon->get_width());
+				const float buttons_strip_x = vertical_buttons_on_left ? 0.0f : (get_size().width - MAX(dec_rot_size.width, inc_rot_size.width));
+				const float buttons_group_h = dec_rot_size.height + inc_rot_size.height;
+				const float buttons_group_y = (get_size().height - buttons_group_h) * 0.5f;
+				Rect2 dec_rect(Point2(buttons_strip_x, buttons_group_y), dec_rot_size);
+				Rect2 inc_rect(Point2(buttons_strip_x, buttons_group_y + dec_rot_size.height), inc_rot_size);
+
+				if (dec_rect.has_point(pos)) {
 					if (highlight_arrow != 0) {
 						highlight_arrow = 0;
+						queue_redraw();
+					}
+				} else if (inc_rect.has_point(pos)) {
+					if (highlight_arrow != 1) {
+						highlight_arrow = 1;
 						queue_redraw();
 					}
 				} else if (highlight_arrow != -1) {
@@ -147,20 +227,37 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 					queue_redraw();
 				}
 			} else {
-				int limit_minus_buttons = get_size().width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
-				if (pos.x > limit_minus_buttons + theme_cache.decrement_icon->get_width()) {
-					if (highlight_arrow != 1) {
-						highlight_arrow = 1;
+				if (is_layout_rtl()) {
+					if (pos.x < theme_cache.decrement_icon->get_width()) {
+						if (highlight_arrow != 1) {
+							highlight_arrow = 1;
+							queue_redraw();
+						}
+					} else if (pos.x < theme_cache.increment_icon->get_width() + theme_cache.decrement_icon->get_width()) {
+						if (highlight_arrow != 0) {
+							highlight_arrow = 0;
+							queue_redraw();
+						}
+					} else if (highlight_arrow != -1) {
+						highlight_arrow = -1;
 						queue_redraw();
 					}
-				} else if (pos.x > limit_minus_buttons) {
-					if (highlight_arrow != 0) {
-						highlight_arrow = 0;
+				} else {
+					int limit_minus_buttons = get_size().width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
+					if (pos.x > limit_minus_buttons + theme_cache.decrement_icon->get_width()) {
+						if (highlight_arrow != 1) {
+							highlight_arrow = 1;
+							queue_redraw();
+						}
+					} else if (pos.x > limit_minus_buttons) {
+						if (highlight_arrow != 0) {
+							highlight_arrow = 0;
+							queue_redraw();
+						}
+					} else if (highlight_arrow != -1) {
+						highlight_arrow = -1;
 						queue_redraw();
 					}
-				} else if (highlight_arrow != -1) {
-					highlight_arrow = -1;
-					queue_redraw();
 				}
 			}
 		}
@@ -180,7 +277,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::WHEEL_UP || (is_layout_rtl() ? mb->get_button_index() == MouseButton::WHEEL_RIGHT : mb->get_button_index() == MouseButton::WHEEL_LEFT)) && !mb->is_command_or_control_pressed()) {
+		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::WHEEL_UP || (!vertical && (is_layout_rtl() ? mb->get_button_index() == MouseButton::WHEEL_RIGHT : mb->get_button_index() == MouseButton::WHEEL_LEFT))) && !mb->is_command_or_control_pressed()) {
 			if (scrolling_enabled && buttons_visible) {
 				if (offset > 0) {
 					offset--;
@@ -190,7 +287,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::WHEEL_DOWN || mb->get_button_index() == (is_layout_rtl() ? MouseButton::WHEEL_LEFT : MouseButton::WHEEL_RIGHT)) && !mb->is_command_or_control_pressed()) {
+		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::WHEEL_DOWN || (!vertical && mb->get_button_index() == (is_layout_rtl() ? MouseButton::WHEEL_LEFT : MouseButton::WHEEL_RIGHT))) && !mb->is_command_or_control_pressed()) {
 			if (scrolling_enabled && buttons_visible) {
 				if (missing_right && offset < tabs.size()) {
 					offset++;
@@ -229,38 +326,64 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			bool selecting = mb->get_button_index() == MouseButton::LEFT || (select_with_rmb && mb->get_button_index() == MouseButton::RIGHT);
 
 			if (buttons_visible && selecting) {
-				if (is_layout_rtl()) {
-					if (pos.x < theme_cache.decrement_icon->get_width()) {
-						if (missing_right) {
-							offset++;
+				if (vertical) {
+					Size2 dec_rot_size(theme_cache.decrement_icon->get_height(), theme_cache.decrement_icon->get_width());
+					Size2 inc_rot_size(theme_cache.increment_icon->get_height(), theme_cache.increment_icon->get_width());
+					const float buttons_strip_x = vertical_buttons_on_left ? 0.0f : (get_size().width - MAX(dec_rot_size.width, inc_rot_size.width));
+					const float buttons_group_h = dec_rot_size.height + inc_rot_size.height;
+					const float buttons_group_y = (get_size().height - buttons_group_h) * 0.5f;
+					Rect2 dec_rect(Point2(buttons_strip_x, buttons_group_y), dec_rot_size);
+					Rect2 inc_rect(Point2(buttons_strip_x, buttons_group_y + dec_rot_size.height), inc_rot_size);
+
+					if (dec_rect.has_point(pos)) {
+						if (offset > 0) {
+							offset--;
 							_update_cache();
 							queue_redraw();
 						}
 						return;
-					} else if (pos.x < theme_cache.increment_icon->get_width() + theme_cache.decrement_icon->get_width()) {
-						if (offset > 0) {
-							offset--;
+					} else if (inc_rect.has_point(pos)) {
+						if (missing_right) {
+							offset++;
 							_update_cache();
 							queue_redraw();
 						}
 						return;
 					}
 				} else {
-					int limit = get_size().width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
-					if (pos.x > limit + theme_cache.decrement_icon->get_width()) {
-						if (missing_right) {
-							offset++;
-							_update_cache();
-							queue_redraw();
+					if (is_layout_rtl()) {
+						if (pos.x < theme_cache.decrement_icon->get_width()) {
+							if (missing_right) {
+								offset++;
+								_update_cache();
+								queue_redraw();
+							}
+							return;
+						} else if (pos.x < theme_cache.increment_icon->get_width() + theme_cache.decrement_icon->get_width()) {
+							if (offset > 0) {
+								offset--;
+								_update_cache();
+								queue_redraw();
+							}
+							return;
 						}
-						return;
-					} else if (pos.x > limit) {
-						if (offset > 0) {
-							offset--;
-							_update_cache();
-							queue_redraw();
+					} else {
+						int limit = get_size().width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
+						if (pos.x > limit + theme_cache.decrement_icon->get_width()) {
+							if (missing_right) {
+								offset++;
+								_update_cache();
+								queue_redraw();
+							}
+							return;
+						} else if (pos.x > limit) {
+							if (offset > 0) {
+								offset--;
+								_update_cache();
+								queue_redraw();
+							}
+							return;
 						}
-						return;
 					}
 				}
 			}
@@ -460,7 +583,14 @@ void TabBar::_notification(int p_what) {
 					DisplayServer::get_singleton()->accessibility_update_set_flag(item.accessibility_item_element, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, item.hidden);
 					DisplayServer::get_singleton()->accessibility_update_set_tooltip(item.accessibility_item_element, item.tooltip);
 
-					DisplayServer::get_singleton()->accessibility_update_set_bounds(item.accessibility_item_element, Rect2(Point2(item.ofs_cache, 0), Size2(item.size_cache, get_size().height)));
+					if (vertical) {
+						const int buttons_strip = (buttons_visible && clip_tabs) ? MAX(theme_cache.decrement_icon->get_height(), theme_cache.increment_icon->get_height()) : 0;
+						const int content_x = vertical_buttons_on_left ? buttons_strip : 0;
+						const int content_w = get_size().width - buttons_strip;
+						DisplayServer::get_singleton()->accessibility_update_set_bounds(item.accessibility_item_element, Rect2(Point2(content_x, item.ofs_cache), Size2(content_w, item.size_cache)));
+					} else {
+						DisplayServer::get_singleton()->accessibility_update_set_bounds(item.accessibility_item_element, Rect2(Point2(item.ofs_cache, 0), Size2(item.size_cache, get_size().height)));
+					}
 
 					item.accessibility_item_dirty = false;
 				}
@@ -516,14 +646,25 @@ void TabBar::_notification(int p_what) {
 			if (tabs.is_empty()) {
 				// Draw the drop indicator where the first tab would be if there are no tabs.
 				if (dragging_valid_tab) {
-					int x = rtl ? size.x : 0;
-					theme_cache.drop_mark_icon->draw(get_canvas_item(), Point2(x - (theme_cache.drop_mark_icon->get_width() / 2), (size.height - theme_cache.drop_mark_icon->get_height()) / 2), theme_cache.drop_mark_color);
+					if (vertical) {
+						int y = 0;
+						theme_cache.drop_mark_icon->draw(get_canvas_item(), Point2((size.width - theme_cache.drop_mark_icon->get_width()) / 2, y - (theme_cache.drop_mark_icon->get_height() / 2)), theme_cache.drop_mark_color);
+					} else {
+						int x = rtl ? size.x : 0;
+						theme_cache.drop_mark_icon->draw(get_canvas_item(), Point2(x - (theme_cache.drop_mark_icon->get_width() / 2), (size.height - theme_cache.drop_mark_icon->get_height()) / 2), theme_cache.drop_mark_color);
+					}
 				}
 
 				return;
 			}
 
-			int limit_minus_buttons = size.width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
+			int limit_minus_buttons;
+			if (vertical) {
+				// In vertical mode, scroll buttons are on a side strip, so the full height is available for tabs.
+				limit_minus_buttons = size.height;
+			} else {
+				limit_minus_buttons = size.width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
+			}
 
 			// Draw unselected tabs in the back.
 			for (int i = offset; i <= max_drawn_tab; i++) {
@@ -550,7 +691,11 @@ void TabBar::_notification(int p_what) {
 						icn_col = theme_cache.icon_unselected_color;
 					}
 
-					_draw_tab(sb, fnt_col, icn_col, i, rtl ? (size.width - tabs[i].ofs_cache - tabs[i].size_cache) : tabs[i].ofs_cache, false);
+					if (vertical) {
+						_draw_tab(sb, fnt_col, icn_col, i, tabs[i].ofs_cache, false);
+					} else {
+						_draw_tab(sb, fnt_col, icn_col, i, rtl ? (size.width - tabs[i].ofs_cache - tabs[i].size_cache) : tabs[i].ofs_cache, false);
+					}
 				}
 			}
 
@@ -559,35 +704,63 @@ void TabBar::_notification(int p_what) {
 				Ref<StyleBox> sb = tabs[current].disabled ? theme_cache.tab_disabled_style : theme_cache.tab_selected_style;
 				Color col = _select_color(tabs[current].font_color_overrides[DrawMode::DRAW_PRESSED], theme_cache.font_selected_color);
 
-				_draw_tab(sb, col, theme_cache.icon_selected_color, current, rtl ? (size.width - tabs[current].ofs_cache - tabs[current].size_cache) : tabs[current].ofs_cache, has_focus(true));
+				if (vertical) {
+					_draw_tab(sb, col, theme_cache.icon_selected_color, current, tabs[current].ofs_cache, has_focus(true));
+				} else {
+					_draw_tab(sb, col, theme_cache.icon_selected_color, current, rtl ? (size.width - tabs[current].ofs_cache - tabs[current].size_cache) : tabs[current].ofs_cache, has_focus(true));
+				}
 			}
 
 			if (buttons_visible) {
-				int vofs = (size.height - theme_cache.increment_icon->get_size().height) / 2;
+				if (vertical) {
+					Texture2D *dec_icon = (highlight_arrow == 0 ? theme_cache.decrement_hl_icon : theme_cache.decrement_icon).ptr();
+					Texture2D *inc_icon = (highlight_arrow == 1 ? theme_cache.increment_hl_icon : theme_cache.increment_icon).ptr();
+					Size2 dec_rot_size(dec_icon->get_height(), dec_icon->get_width());
+					Size2 inc_rot_size(inc_icon->get_height(), inc_icon->get_width());
+					const float buttons_strip_x = vertical_buttons_on_left ? 0.0f : (size.width - MAX(dec_rot_size.width, inc_rot_size.width));
+					const float buttons_group_h = dec_rot_size.height + inc_rot_size.height;
+					const float buttons_group_y = (size.height - buttons_group_h) * 0.5f;
+					Point2 dec_pos(buttons_strip_x, buttons_group_y);
+					Point2 inc_pos(buttons_strip_x, buttons_group_y + dec_rot_size.height);
 
-				if (rtl) {
-					if (missing_right) {
-						draw_texture(highlight_arrow == 1 ? theme_cache.decrement_hl_icon : theme_cache.decrement_icon, Point2(0, vofs));
-					} else {
-						draw_texture(theme_cache.decrement_icon, Point2(0, vofs), Color(1, 1, 1, 0.5));
-					}
+					float dec_opacity = offset > 0 ? 1.0f : 0.5f;
+					float inc_opacity = missing_right ? 1.0f : 0.5f;
 
-					if (offset > 0) {
-						draw_texture(highlight_arrow == 0 ? theme_cache.increment_hl_icon : theme_cache.increment_icon, Point2(theme_cache.increment_icon->get_size().width, vofs));
-					} else {
-						draw_texture(theme_cache.increment_icon, Point2(theme_cache.increment_icon->get_size().width, vofs), Color(1, 1, 1, 0.5));
-					}
+					// Rotate the horizontal arrow icons so they point up/down in vertical mode.
+					draw_set_transform(dec_pos + dec_rot_size * 0.5f, Math::PI * 0.5f, Vector2(1, 1));
+					draw_texture(dec_icon, -dec_icon->get_size() * 0.5f, Color(1, 1, 1, dec_opacity));
+					draw_set_transform(Point2(), 0.0f, Vector2(1, 1));
+
+					draw_set_transform(inc_pos + inc_rot_size * 0.5f, Math::PI * 0.5f, Vector2(1, 1));
+					draw_texture(inc_icon, -inc_icon->get_size() * 0.5f, Color(1, 1, 1, inc_opacity));
+					draw_set_transform(Point2(), 0.0f, Vector2(1, 1));
 				} else {
-					if (offset > 0) {
-						draw_texture(highlight_arrow == 0 ? theme_cache.decrement_hl_icon : theme_cache.decrement_icon, Point2(limit_minus_buttons, vofs));
-					} else {
-						draw_texture(theme_cache.decrement_icon, Point2(limit_minus_buttons, vofs), Color(1, 1, 1, 0.5));
-					}
+					int vofs = (size.height - theme_cache.increment_icon->get_size().height) / 2;
 
-					if (missing_right) {
-						draw_texture(highlight_arrow == 1 ? theme_cache.increment_hl_icon : theme_cache.increment_icon, Point2(limit_minus_buttons + theme_cache.decrement_icon->get_size().width, vofs));
+					if (rtl) {
+						if (missing_right) {
+							draw_texture(highlight_arrow == 1 ? theme_cache.decrement_hl_icon : theme_cache.decrement_icon, Point2(0, vofs));
+						} else {
+							draw_texture(theme_cache.decrement_icon, Point2(0, vofs), Color(1, 1, 1, 0.5));
+						}
+
+						if (offset > 0) {
+							draw_texture(highlight_arrow == 0 ? theme_cache.increment_hl_icon : theme_cache.increment_icon, Point2(theme_cache.increment_icon->get_size().width, vofs));
+						} else {
+							draw_texture(theme_cache.increment_icon, Point2(theme_cache.increment_icon->get_size().width, vofs), Color(1, 1, 1, 0.5));
+						}
 					} else {
-						draw_texture(theme_cache.increment_icon, Point2(limit_minus_buttons + theme_cache.decrement_icon->get_size().width, vofs), Color(1, 1, 1, 0.5));
+						if (offset > 0) {
+							draw_texture(highlight_arrow == 0 ? theme_cache.decrement_hl_icon : theme_cache.decrement_icon, Point2(limit_minus_buttons, vofs));
+						} else {
+							draw_texture(theme_cache.decrement_icon, Point2(limit_minus_buttons, vofs), Color(1, 1, 1, 0.5));
+						}
+
+						if (missing_right) {
+							draw_texture(highlight_arrow == 1 ? theme_cache.increment_hl_icon : theme_cache.increment_icon, Point2(limit_minus_buttons + theme_cache.decrement_icon->get_size().width, vofs));
+						} else {
+							draw_texture(theme_cache.increment_icon, Point2(limit_minus_buttons + theme_cache.decrement_icon->get_size().width, vofs), Color(1, 1, 1, 0.5));
+						}
 					}
 				}
 			}
@@ -601,140 +774,267 @@ void TabBar::_notification(int p_what) {
 
 void TabBar::_draw_tab_drop(RID p_canvas_item) {
 	Vector2 size = get_size();
-	int x;
 	bool rtl = is_layout_rtl();
 
 	int closest_tab = get_closest_tab_idx_to_point(get_local_mouse_position());
 	if (closest_tab != -1) {
 		Rect2 tab_rect = get_tab_rect(closest_tab);
-		x = tab_rect.position.x;
 
-		// Only add the tab_separation if closest tab is not on the edge.
-		bool not_leftmost_tab = -1 != (rtl ? get_next_available(closest_tab) : get_previous_available(closest_tab));
-		bool not_rightmost_tab = -1 != (rtl ? get_previous_available(closest_tab) : get_next_available(closest_tab));
+		if (vertical) {
+			int y = tab_rect.position.y;
 
-		// Calculate midpoint between tabs.
-		if (get_local_mouse_position().x > tab_rect.get_center().x) {
-			x += tab_rect.size.x;
-			if (not_rightmost_tab) {
-				x += Math::ceil(0.5f * theme_cache.tab_separation);
+			// Only add the tab_separation if closest tab is not on the edge.
+			bool not_topmost_tab = -1 != get_previous_available(closest_tab);
+			bool not_bottommost_tab = -1 != get_next_available(closest_tab);
+
+			// Calculate midpoint between tabs.
+			if (get_local_mouse_position().y > tab_rect.get_center().y) {
+				y += tab_rect.size.y;
+				if (not_bottommost_tab) {
+					y += Math::ceil(0.5f * theme_cache.tab_separation);
+				}
+			} else if (not_topmost_tab) {
+				y -= Math::floor(0.5f * theme_cache.tab_separation);
 			}
-		} else if (not_leftmost_tab) {
-			x -= Math::floor(0.5f * theme_cache.tab_separation);
+
+			theme_cache.drop_mark_icon->draw(p_canvas_item, Point2((size.width - theme_cache.drop_mark_icon->get_width()) / 2, y - theme_cache.drop_mark_icon->get_height() / 2), theme_cache.drop_mark_color);
+		} else {
+			int x = tab_rect.position.x;
+
+			// Only add the tab_separation if closest tab is not on the edge.
+			bool not_leftmost_tab = -1 != (rtl ? get_next_available(closest_tab) : get_previous_available(closest_tab));
+			bool not_rightmost_tab = -1 != (rtl ? get_previous_available(closest_tab) : get_next_available(closest_tab));
+
+			// Calculate midpoint between tabs.
+			if (get_local_mouse_position().x > tab_rect.get_center().x) {
+				x += tab_rect.size.x;
+				if (not_rightmost_tab) {
+					x += Math::ceil(0.5f * theme_cache.tab_separation);
+				}
+			} else if (not_leftmost_tab) {
+				x -= Math::floor(0.5f * theme_cache.tab_separation);
+			}
+
+			theme_cache.drop_mark_icon->draw(p_canvas_item, Point2(x - theme_cache.drop_mark_icon->get_width() / 2, (size.height - theme_cache.drop_mark_icon->get_height()) / 2), theme_cache.drop_mark_color);
 		}
 	} else {
-		if (rtl ^ (get_local_mouse_position().x < get_tab_rect(0).position.x)) {
-			x = get_tab_rect(0).position.x;
-			if (rtl) {
-				x += get_tab_rect(0).size.width;
+		if (vertical) {
+			int y = get_tab_rect(0).position.y;
+			if (get_local_mouse_position().y < get_tab_rect(0).position.y) {
+				// Above first tab
+				theme_cache.drop_mark_icon->draw(p_canvas_item, Point2((size.width - theme_cache.drop_mark_icon->get_width()) / 2, y - theme_cache.drop_mark_icon->get_height() / 2), theme_cache.drop_mark_color);
+			} else {
+				// Below last tab
+				Rect2 tab_rect = get_tab_rect(get_tab_count() - 1);
+				y = tab_rect.position.y + tab_rect.size.y;
+				theme_cache.drop_mark_icon->draw(p_canvas_item, Point2((size.width - theme_cache.drop_mark_icon->get_width()) / 2, y - theme_cache.drop_mark_icon->get_height() / 2), theme_cache.drop_mark_color);
 			}
 		} else {
-			Rect2 tab_rect = get_tab_rect(get_tab_count() - 1);
-
-			x = tab_rect.position.x;
-			if (!rtl) {
-				x += tab_rect.size.width;
+			int x;
+			if (rtl ^ (get_local_mouse_position().x < get_tab_rect(0).position.x)) {
+				x = get_tab_rect(0).position.x;
+				if (rtl) {
+					x += get_tab_rect(0).size.width;
+				}
+			} else {
+				Rect2 tab_rect = get_tab_rect(get_tab_count() - 1);
+				x = tab_rect.position.x;
+				if (!rtl) {
+					x += tab_rect.size.width;
+				}
 			}
+
+			theme_cache.drop_mark_icon->draw(p_canvas_item, Point2(x - theme_cache.drop_mark_icon->get_width() / 2, (size.height - theme_cache.drop_mark_icon->get_height()) / 2), theme_cache.drop_mark_color);
 		}
 	}
-
-	theme_cache.drop_mark_icon->draw(p_canvas_item, Point2(x - theme_cache.drop_mark_icon->get_width() / 2, (size.height - theme_cache.drop_mark_icon->get_height()) / 2), theme_cache.drop_mark_color);
 }
 
 void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, const Color &p_icon_color, int p_index, float p_x, bool p_focus) {
 	RID ci = get_canvas_item();
 	bool rtl = is_layout_rtl();
 
-	Rect2 sb_rect = Rect2(p_x, 0, tabs[p_index].size_cache, get_size().height);
-	if (tab_style_v_flip) {
-		draw_set_transform(Point2(0.0, p_tab_style->get_draw_rect(sb_rect).size.y), 0.0, Size2(1.0, -1.0));
-	}
-	p_tab_style->draw(ci, sb_rect);
-	if (tab_style_v_flip) {
-		draw_set_transform(Point2(), 0.0, Size2(1.0, 1.0));
-	}
-	if (p_focus) {
-		Ref<StyleBox> focus_style = theme_cache.tab_focus_style;
-		focus_style->draw(ci, sb_rect);
-	}
+	if (vertical) {
+		const int buttons_strip = (buttons_visible && clip_tabs) ? MAX(theme_cache.decrement_icon->get_height(), theme_cache.increment_icon->get_height()) : 0;
+		const int content_x = vertical_buttons_on_left ? buttons_strip : 0;
+		const int content_w = get_size().width - buttons_strip;
 
-	p_x += rtl ? tabs[p_index].size_cache - p_tab_style->get_margin(SIDE_LEFT) : p_tab_style->get_margin(SIDE_LEFT);
-
-	Size2i sb_ms = p_tab_style->get_minimum_size();
-
-	// Draw the icon.
-	Ref<Texture2D> icon = tabs[p_index].icon;
-	if (icon.is_valid()) {
-		const Size2 icon_size = _get_tab_icon_size(p_index);
-		const Point2 icon_pos = Point2i(rtl ? p_x - icon_size.width : p_x, p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - icon_size.height) / 2);
-		icon->draw_rect(ci, Rect2(icon_pos, icon_size), false, p_icon_color);
-
-		p_x = rtl ? p_x - icon_size.width - theme_cache.h_separation : p_x + icon_size.width + theme_cache.h_separation;
-	}
-
-	// Draw the text.
-	if (!tabs[p_index].text.is_empty()) {
-		Point2i text_pos = Point2i(rtl ? p_x - tabs[p_index].size_text : p_x,
-				p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[p_index].text_buf->get_size().y) / 2);
-
-		if (theme_cache.outline_size > 0 && theme_cache.font_outline_color.a > 0) {
-			tabs[p_index].text_buf->draw_outline(ci, text_pos, theme_cache.outline_size, theme_cache.font_outline_color);
+		// For vertical tabs, p_x is actually the y position
+		Rect2 sb_rect = Rect2(content_x, p_x, content_w, tabs[p_index].size_cache);
+		p_tab_style->draw(ci, sb_rect);
+		if (p_focus) {
+			Ref<StyleBox> focus_style = theme_cache.tab_focus_style;
+			focus_style->draw(ci, sb_rect);
 		}
-		tabs[p_index].text_buf->draw(ci, text_pos, p_font_color);
 
-		p_x = rtl ? p_x - tabs[p_index].size_text - theme_cache.h_separation : p_x + tabs[p_index].size_text + theme_cache.h_separation;
-	}
+		float p_y = p_x + p_tab_style->get_margin(SIDE_TOP);
+		Size2i sb_ms = p_tab_style->get_minimum_size();
+		const int base_x = sb_rect.position.x;
 
-	// Draw and calculate rect of the right button.
-	if (tabs[p_index].right_button.is_valid()) {
-		Ref<StyleBox> style = theme_cache.button_hl_style;
-		Ref<Texture2D> rb = tabs[p_index].right_button;
+		// Draw the icon.
+		Ref<Texture2D> icon = tabs[p_index].icon;
+		if (icon.is_valid()) {
+			const Size2 icon_size = _get_tab_icon_size(p_index);
+			const Point2 icon_pos = Point2i(base_x + p_tab_style->get_margin(SIDE_LEFT) + ((sb_rect.size.x - sb_ms.x) - icon_size.width) / 2, p_y);
+			icon->draw_rect(ci, Rect2(icon_pos, icon_size), false, p_icon_color);
 
-		Rect2 rb_rect;
-		rb_rect.size = style->get_minimum_size() + rb->get_size();
-		rb_rect.position.x = rtl ? p_x - rb_rect.size.width : p_x;
-		rb_rect.position.y = p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - (rb_rect.size.y)) / 2;
+			p_y += icon_size.height + theme_cache.h_separation;
+		}
 
-		tabs.write[p_index].rb_rect = rb_rect;
+		// Draw the text.
+		if (!tabs[p_index].text.is_empty()) {
+			Point2i text_pos = Point2i(base_x + p_tab_style->get_margin(SIDE_LEFT) + ((sb_rect.size.x - sb_ms.x) - tabs[p_index].text_buf->get_size().x) / 2, p_y);
 
-		if (rb_hover == p_index) {
-			if (rb_pressing) {
-				theme_cache.button_pressed_style->draw(ci, rb_rect);
-			} else {
-				style->draw(ci, rb_rect);
+			if (theme_cache.outline_size > 0 && theme_cache.font_outline_color.a > 0) {
+				tabs[p_index].text_buf->draw_outline(ci, text_pos, theme_cache.outline_size, theme_cache.font_outline_color);
 			}
+			tabs[p_index].text_buf->draw(ci, text_pos, p_font_color);
+
+			p_y += tabs[p_index].size_text + theme_cache.h_separation;
 		}
 
-		rb->draw(ci, Point2i(rb_rect.position.x + style->get_margin(SIDE_LEFT), rb_rect.position.y + style->get_margin(SIDE_TOP)));
+		// Draw and calculate rect of the right button.
+		if (tabs[p_index].right_button.is_valid()) {
+			Ref<StyleBox> style = theme_cache.button_hl_style;
+			Ref<Texture2D> rb = tabs[p_index].right_button;
 
-		p_x = rtl ? rb_rect.position.x : rb_rect.position.x + rb_rect.size.width;
-	} else {
-		tabs.write[p_index].rb_rect = Rect2();
-	}
+			Rect2 rb_rect;
+			rb_rect.size = style->get_minimum_size() + rb->get_size();
+			rb_rect.position.x = base_x + p_tab_style->get_margin(SIDE_LEFT) + ((sb_rect.size.x - sb_ms.x) - rb_rect.size.x) / 2;
+			rb_rect.position.y = p_y;
 
-	// Draw and calculate rect of the close button.
-	if (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && p_index == current)) {
-		Ref<StyleBox> style = theme_cache.button_hl_style;
-		Ref<Texture2D> cb = theme_cache.close_icon;
+			tabs.write[p_index].rb_rect = rb_rect;
 
-		Rect2 cb_rect;
-		cb_rect.size = style->get_minimum_size() + cb->get_size();
-		cb_rect.position.x = rtl ? p_x - cb_rect.size.width : p_x;
-		cb_rect.position.y = p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - (cb_rect.size.y)) / 2;
-
-		tabs.write[p_index].cb_rect = cb_rect;
-
-		if (!tabs[p_index].disabled && cb_hover == p_index) {
-			if (cb_pressing) {
-				theme_cache.button_pressed_style->draw(ci, cb_rect);
-			} else {
-				style->draw(ci, cb_rect);
+			if (rb_hover == p_index) {
+				if (rb_pressing) {
+					theme_cache.button_pressed_style->draw(ci, rb_rect);
+				} else {
+					style->draw(ci, rb_rect);
+				}
 			}
+
+			rb->draw(ci, Point2i(rb_rect.position.x + style->get_margin(SIDE_LEFT), rb_rect.position.y + style->get_margin(SIDE_TOP)));
+
+			p_y = rb_rect.position.y + rb_rect.size.height;
+		} else {
+			tabs.write[p_index].rb_rect = Rect2();
 		}
 
-		cb->draw(ci, Point2i(cb_rect.position.x + style->get_margin(SIDE_LEFT), cb_rect.position.y + style->get_margin(SIDE_TOP)));
+		// Draw and calculate rect of the close button.
+		if (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && p_index == current)) {
+			Ref<StyleBox> style = theme_cache.button_hl_style;
+			Ref<Texture2D> cb = theme_cache.close_icon;
+
+			Rect2 cb_rect;
+			cb_rect.size = style->get_minimum_size() + cb->get_size();
+			cb_rect.position.x = base_x + p_tab_style->get_margin(SIDE_LEFT) + ((sb_rect.size.x - sb_ms.x) - cb_rect.size.x) / 2;
+			cb_rect.position.y = p_y;
+
+			tabs.write[p_index].cb_rect = cb_rect;
+
+			if (!tabs[p_index].disabled && cb_hover == p_index) {
+				if (cb_pressing) {
+					theme_cache.button_pressed_style->draw(ci, cb_rect);
+				} else {
+					style->draw(ci, cb_rect);
+				}
+			}
+
+			cb->draw(ci, Point2i(cb_rect.position.x + style->get_margin(SIDE_LEFT), cb_rect.position.y + style->get_margin(SIDE_TOP)));
+		} else {
+			tabs.write[p_index].cb_rect = Rect2();
+		}
 	} else {
-		tabs.write[p_index].cb_rect = Rect2();
+		Rect2 sb_rect = Rect2(p_x, 0, tabs[p_index].size_cache, get_size().height);
+		if (tab_style_v_flip) {
+			draw_set_transform(Point2(0.0, p_tab_style->get_draw_rect(sb_rect).size.y), 0.0, Size2(1.0, -1.0));
+		}
+		p_tab_style->draw(ci, sb_rect);
+		if (tab_style_v_flip) {
+			draw_set_transform(Point2(), 0.0, Size2(1.0, 1.0));
+		}
+		if (p_focus) {
+			Ref<StyleBox> focus_style = theme_cache.tab_focus_style;
+			focus_style->draw(ci, sb_rect);
+		}
+
+		p_x += rtl ? tabs[p_index].size_cache - p_tab_style->get_margin(SIDE_LEFT) : p_tab_style->get_margin(SIDE_LEFT);
+
+		Size2i sb_ms = p_tab_style->get_minimum_size();
+
+		// Draw the icon.
+		Ref<Texture2D> icon = tabs[p_index].icon;
+		if (icon.is_valid()) {
+			const Size2 icon_size = _get_tab_icon_size(p_index);
+			const Point2 icon_pos = Point2i(rtl ? p_x - icon_size.width : p_x, p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - icon_size.height) / 2);
+			icon->draw_rect(ci, Rect2(icon_pos, icon_size), false, p_icon_color);
+
+			p_x = rtl ? p_x - icon_size.width - theme_cache.h_separation : p_x + icon_size.width + theme_cache.h_separation;
+		}
+
+		// Draw the text.
+		if (!tabs[p_index].text.is_empty()) {
+			Point2i text_pos = Point2i(rtl ? p_x - tabs[p_index].size_text : p_x,
+					p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[p_index].text_buf->get_size().y) / 2);
+
+			if (theme_cache.outline_size > 0 && theme_cache.font_outline_color.a > 0) {
+				tabs[p_index].text_buf->draw_outline(ci, text_pos, theme_cache.outline_size, theme_cache.font_outline_color);
+			}
+			tabs[p_index].text_buf->draw(ci, text_pos, p_font_color);
+
+			p_x = rtl ? p_x - tabs[p_index].size_text - theme_cache.h_separation : p_x + tabs[p_index].size_text + theme_cache.h_separation;
+		}
+
+		// Draw and calculate rect of the right button.
+		if (tabs[p_index].right_button.is_valid()) {
+			Ref<StyleBox> style = theme_cache.button_hl_style;
+			Ref<Texture2D> rb = tabs[p_index].right_button;
+
+			Rect2 rb_rect;
+			rb_rect.size = style->get_minimum_size() + rb->get_size();
+			rb_rect.position.x = rtl ? p_x - rb_rect.size.width : p_x;
+			rb_rect.position.y = p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - (rb_rect.size.y)) / 2;
+
+			tabs.write[p_index].rb_rect = rb_rect;
+
+			if (rb_hover == p_index) {
+				if (rb_pressing) {
+					theme_cache.button_pressed_style->draw(ci, rb_rect);
+				} else {
+					style->draw(ci, rb_rect);
+				}
+			}
+
+			rb->draw(ci, Point2i(rb_rect.position.x + style->get_margin(SIDE_LEFT), rb_rect.position.y + style->get_margin(SIDE_TOP)));
+
+			p_x = rtl ? rb_rect.position.x : rb_rect.position.x + rb_rect.size.width;
+		} else {
+			tabs.write[p_index].rb_rect = Rect2();
+		}
+
+		// Draw and calculate rect of the close button.
+		if (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && p_index == current)) {
+			Ref<StyleBox> style = theme_cache.button_hl_style;
+			Ref<Texture2D> cb = theme_cache.close_icon;
+
+			Rect2 cb_rect;
+			cb_rect.size = style->get_minimum_size() + cb->get_size();
+			cb_rect.position.x = rtl ? p_x - cb_rect.size.width : p_x;
+			cb_rect.position.y = p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - (cb_rect.size.y)) / 2;
+
+			tabs.write[p_index].cb_rect = cb_rect;
+
+			if (!tabs[p_index].disabled && cb_hover == p_index) {
+				if (cb_pressing) {
+					theme_cache.button_pressed_style->draw(ci, cb_rect);
+				} else {
+					style->draw(ci, cb_rect);
+				}
+			}
+
+			cb->draw(ci, Point2i(cb_rect.position.x + style->get_margin(SIDE_LEFT), cb_rect.position.y + style->get_margin(SIDE_TOP)));
+		} else {
+			tabs.write[p_index].cb_rect = Rect2();
+		}
 	}
 }
 
@@ -1200,17 +1500,31 @@ void TabBar::_update_cache(bool p_update_hover) {
 		return;
 	}
 
-	int limit = get_size().width;
-	int limit_minus_buttons = limit - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
+	int limit, limit_minus_buttons;
+	int w = 0; // For horizontal: width, for vertical: height
 
-	int w = 0;
+	if (vertical) {
+		limit = get_size().height;
+		// In vertical mode, scroll buttons are on a side strip, so the full height is available for tabs.
+		limit_minus_buttons = limit;
+	} else {
+		limit = get_size().width;
+		limit_minus_buttons = limit - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
+	}
 
 	max_drawn_tab = tabs.size() - 1;
 
 	for (int i = 0; i < tabs.size(); i++) {
-		tabs.write[i].text_buf->set_width(-1);
-		tabs.write[i].size_text = Math::ceil(tabs[i].text_buf->get_size().x);
-		tabs.write[i].size_cache = get_tab_width(i);
+		if (vertical) {
+			tabs.write[i].text_buf->set_width(-1);
+			// For vertical tabs, we need to calculate height instead of width
+			tabs.write[i].size_text = Math::ceil(tabs[i].text_buf->get_size().y);
+			tabs.write[i].size_cache = get_tab_width(i); // This will now return height for vertical
+		} else {
+			tabs.write[i].text_buf->set_width(-1);
+			tabs.write[i].size_text = Math::ceil(tabs[i].text_buf->get_size().x);
+			tabs.write[i].size_cache = get_tab_width(i);
+		}
 		tabs.write[i].accessibility_item_dirty = true;
 
 		tabs.write[i].truncated = max_width > 0 && tabs[i].size_cache > max_width;
@@ -1219,7 +1533,11 @@ void TabBar::_update_cache(bool p_update_hover) {
 			int mw = MAX(size_textless, max_width);
 
 			tabs.write[i].size_text = MAX(mw - size_textless, 1);
-			tabs.write[i].text_buf->set_width(tabs[i].size_text);
+			if (vertical) {
+				tabs.write[i].text_buf->set_width(-1); // Don't limit width for vertical tabs
+			} else {
+				tabs.write[i].text_buf->set_width(tabs[i].size_text);
+			}
 			tabs.write[i].size_cache = size_textless + tabs[i].size_text;
 		}
 
@@ -1651,12 +1969,12 @@ int TabBar::get_closest_tab_idx_to_point(const Point2 &p_point) const {
 	int closest_tab = get_tab_idx_at_point(p_point);
 	float closest_distance = FLT_MAX;
 
-	// Search along the x-axis since the TabBar is horizontal.
+	// Search along the tab layout axis.
 	if (closest_tab == -1) {
 		for (int i = offset; i <= max_drawn_tab; i++) {
 			if (!tabs[i].hidden) {
-				float center = get_tab_rect(i).get_center().x;
-				float distance = Math::abs(center - p_point.x);
+				float center = vertical ? get_tab_rect(i).get_center().y : get_tab_rect(i).get_center().x;
+				float distance = Math::abs(center - (vertical ? p_point.y : p_point.x));
 				if (distance < closest_distance) {
 					closest_distance = distance;
 					closest_tab = i;
@@ -1710,6 +2028,36 @@ bool TabBar::get_clip_tabs() const {
 
 void TabBar::set_tab_style_v_flip(bool p_tab_style_v_flip) {
 	tab_style_v_flip = p_tab_style_v_flip;
+}
+
+bool TabBar::get_tab_style_v_flip() const {
+	return tab_style_v_flip;
+}
+
+void TabBar::set_vertical(bool p_vertical) {
+	if (vertical == p_vertical) {
+		return;
+	}
+	vertical = p_vertical;
+	_update_cache();
+	queue_redraw();
+	update_minimum_size();
+}
+
+bool TabBar::is_vertical() const {
+	return vertical;
+}
+
+void TabBar::set_vertical_buttons_on_left(bool p_enable) {
+	if (vertical_buttons_on_left == p_enable) {
+		return;
+	}
+	vertical_buttons_on_left = p_enable;
+	queue_redraw();
+}
+
+bool TabBar::is_vertical_buttons_on_left() const {
+	return vertical_buttons_on_left;
 }
 
 void TabBar::move_tab(int p_from, int p_to) {
@@ -1767,41 +2115,80 @@ int TabBar::get_tab_width(int p_idx) const {
 	} else {
 		style = theme_cache.tab_unselected_style;
 	}
-	int x = style->get_minimum_size().width;
 
-	if (tabs[p_idx].icon.is_valid()) {
-		const Size2 icon_size = _get_tab_icon_size(p_idx);
-		x += icon_size.width + theme_cache.h_separation;
-	}
+	if (vertical) {
+		int y = style->get_minimum_size().height;
 
-	if (!tabs[p_idx].text.is_empty()) {
-		x += tabs[p_idx].size_text + theme_cache.h_separation;
-	}
+		if (tabs[p_idx].icon.is_valid()) {
+			const Size2 icon_size = _get_tab_icon_size(p_idx);
+			y += icon_size.height + theme_cache.h_separation;
+		}
 
-	bool close_visible = cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && p_idx == current);
+		if (!tabs[p_idx].text.is_empty()) {
+			y += tabs[p_idx].size_text + theme_cache.h_separation;
+		}
 
-	if (tabs[p_idx].right_button.is_valid()) {
-		Ref<StyleBox> btn_style = theme_cache.button_hl_style;
-		Ref<Texture2D> rb = tabs[p_idx].right_button;
+		bool close_visible = cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && p_idx == current);
+
+		if (tabs[p_idx].right_button.is_valid()) {
+			Ref<StyleBox> btn_style = theme_cache.button_hl_style;
+			Ref<Texture2D> rb = tabs[p_idx].right_button;
+
+			if (close_visible) {
+				y += btn_style->get_minimum_size().height + rb->get_height();
+			} else {
+				y += btn_style->get_margin(SIDE_TOP) + rb->get_height() + theme_cache.h_separation;
+			}
+		}
 
 		if (close_visible) {
-			x += btn_style->get_minimum_size().width + rb->get_width();
-		} else {
-			x += btn_style->get_margin(SIDE_LEFT) + rb->get_width() + theme_cache.h_separation;
+			Ref<StyleBox> btn_style = theme_cache.button_hl_style;
+			Ref<Texture2D> cb = theme_cache.close_icon;
+			y += btn_style->get_margin(SIDE_TOP) + cb->get_height() + theme_cache.h_separation;
 		}
-	}
 
-	if (close_visible) {
-		Ref<StyleBox> btn_style = theme_cache.button_hl_style;
-		Ref<Texture2D> cb = theme_cache.close_icon;
-		x += btn_style->get_margin(SIDE_LEFT) + cb->get_width() + theme_cache.h_separation;
-	}
+		if (y > style->get_minimum_size().height) {
+			y -= theme_cache.h_separation;
+		}
 
-	if (x > style->get_minimum_size().width) {
-		x -= theme_cache.h_separation;
-	}
+		return y;
+	} else {
+		int x = style->get_minimum_size().width;
 
-	return x;
+		if (tabs[p_idx].icon.is_valid()) {
+			const Size2 icon_size = _get_tab_icon_size(p_idx);
+			x += icon_size.width + theme_cache.h_separation;
+		}
+
+		if (!tabs[p_idx].text.is_empty()) {
+			x += tabs[p_idx].size_text + theme_cache.h_separation;
+		}
+
+		bool close_visible = cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && p_idx == current);
+
+		if (tabs[p_idx].right_button.is_valid()) {
+			Ref<StyleBox> btn_style = theme_cache.button_hl_style;
+			Ref<Texture2D> rb = tabs[p_idx].right_button;
+
+			if (close_visible) {
+				x += btn_style->get_minimum_size().width + rb->get_width();
+			} else {
+				x += btn_style->get_margin(SIDE_LEFT) + rb->get_width() + theme_cache.h_separation;
+			}
+		}
+
+		if (close_visible) {
+			Ref<StyleBox> btn_style = theme_cache.button_hl_style;
+			Ref<Texture2D> cb = theme_cache.close_icon;
+			x += btn_style->get_margin(SIDE_LEFT) + cb->get_width() + theme_cache.h_separation;
+		}
+
+		if (x > style->get_minimum_size().width) {
+			x -= theme_cache.h_separation;
+		}
+
+		return x;
+	}
 }
 
 Size2 TabBar::_get_tab_icon_size(int p_index) const {
@@ -1830,8 +2217,16 @@ void TabBar::_ensure_no_over_offset() {
 		return;
 	}
 
-	int limit_with_buttons = get_size().width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
-	int limit_with_no_button = get_size().width;
+	int limit_with_buttons;
+	int limit_with_no_button;
+	if (vertical) {
+		// In vertical mode, scroll buttons are on a side strip, so the full height is available for tabs.
+		limit_with_buttons = get_size().height;
+		limit_with_no_button = get_size().height;
+	} else {
+		limit_with_buttons = get_size().width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
+		limit_with_no_button = get_size().width;
+	}
 	int offset_with_buttons = offset;
 	int offset_with_no_button = offset;
 
@@ -1891,7 +2286,13 @@ void TabBar::ensure_tab_visible(int p_idx) {
 		return;
 	}
 
-	int limit_minus_buttons = get_size().width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
+	int limit_minus_buttons;
+	if (vertical) {
+		// In vertical mode, scroll buttons are on a side strip, so the full height is available for tabs.
+		limit_minus_buttons = get_size().height;
+	} else {
+		limit_minus_buttons = get_size().width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
+	}
 
 	int total_w = tabs[max_drawn_tab].ofs_cache - tabs[offset].ofs_cache;
 	for (int i = max_drawn_tab; i <= p_idx; i++) {
@@ -1926,10 +2327,17 @@ void TabBar::ensure_tab_visible(int p_idx) {
 Rect2 TabBar::get_tab_rect(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Rect2());
 
-	if (is_layout_rtl()) {
-		return Rect2(get_size().width - tabs[p_tab].ofs_cache - tabs[p_tab].size_cache, 0, tabs[p_tab].size_cache, get_size().height);
+	if (vertical) {
+		const int buttons_strip = (buttons_visible && clip_tabs) ? MAX(theme_cache.decrement_icon->get_height(), theme_cache.increment_icon->get_height()) : 0;
+		const int content_x = vertical_buttons_on_left ? buttons_strip : 0;
+		const int content_w = get_size().width - buttons_strip;
+		return Rect2(content_x, tabs[p_tab].ofs_cache, content_w, tabs[p_tab].size_cache);
 	} else {
-		return Rect2(tabs[p_tab].ofs_cache, 0, tabs[p_tab].size_cache, get_size().height);
+		if (is_layout_rtl()) {
+			return Rect2(get_size().width - tabs[p_tab].ofs_cache - tabs[p_tab].size_cache, 0, tabs[p_tab].size_cache, get_size().height);
+		} else {
+			return Rect2(tabs[p_tab].ofs_cache, 0, tabs[p_tab].size_cache, get_size().height);
+		}
 	}
 }
 
@@ -2085,6 +2493,10 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_alignment"), &TabBar::get_tab_alignment);
 	ClassDB::bind_method(D_METHOD("set_clip_tabs", "clip_tabs"), &TabBar::set_clip_tabs);
 	ClassDB::bind_method(D_METHOD("get_clip_tabs"), &TabBar::get_clip_tabs);
+	ClassDB::bind_method(D_METHOD("set_tab_style_v_flip", "tab_style_v_flip"), &TabBar::set_tab_style_v_flip);
+	ClassDB::bind_method(D_METHOD("get_tab_style_v_flip"), &TabBar::get_tab_style_v_flip);
+	ClassDB::bind_method(D_METHOD("set_vertical", "vertical"), &TabBar::set_vertical);
+	ClassDB::bind_method(D_METHOD("is_vertical"), &TabBar::is_vertical);
 	ClassDB::bind_method(D_METHOD("get_tab_offset"), &TabBar::get_tab_offset);
 	ClassDB::bind_method(D_METHOD("get_offset_buttons_visible"), &TabBar::get_offset_buttons_visible);
 	ClassDB::bind_method(D_METHOD("ensure_tab_visible", "idx"), &TabBar::ensure_tab_visible);
@@ -2128,6 +2540,7 @@ void TabBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_close_display_policy", PROPERTY_HINT_ENUM, "Show Never,Show Active Only,Show Always"), "set_tab_close_display_policy", "get_tab_close_display_policy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_tab_width", PROPERTY_HINT_RANGE, "0,99999,1,suffix:px"), "set_max_tab_width", "get_max_tab_width");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrolling_enabled"), "set_scrolling_enabled", "get_scrolling_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_drag_hover"), "set_switch_on_drag_hover", "get_switch_on_drag_hover");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");

@@ -233,7 +233,8 @@
 			The focus access mode for the internal [TabBar] node.
 		</member>
 		<member name="tabs_position" type="int" setter="set_tabs_position" getter="get_tabs_position" enum="TabContainer.TabPosition" default="0">
-			The horizontal alignment of the tabs.
+			The position of the tab bar.
+			[b]Note:[/b] When using [constant POSITION_LEFT] or [constant POSITION_RIGHT], the internal [TabBar] will automatically be set to [member TabBar.vertical] and tabs will be arranged from top to bottom.
 		</member>
 		<member name="tabs_rearrange_group" type="int" setter="set_tabs_rearrange_group" getter="get_tabs_rearrange_group" default="-1">
 			[TabContainer]s with the same rearrange group ID will allow dragging the tabs between them. Enable drag with [member drag_to_rearrange_enabled].
@@ -296,7 +297,13 @@
 		<constant name="POSITION_BOTTOM" value="1" enum="TabPosition">
 			Places the tab bar at the bottom. The tab bar's [StyleBox] will be flipped vertically.
 		</constant>
-		<constant name="POSITION_MAX" value="2" enum="TabPosition">
+		<constant name="POSITION_LEFT" value="2" enum="TabPosition">
+			Places the tab bar at the left. Tabs will be arranged vertically (top to bottom).
+		</constant>
+		<constant name="POSITION_RIGHT" value="3" enum="TabPosition">
+			Places the tab bar at the right. Tabs will be arranged vertically (top to bottom).
+		</constant>
+		<constant name="POSITION_MAX" value="4" enum="TabPosition">
 			Represents the size of the [enum TabPosition] enum.
 		</constant>
 	</constants>

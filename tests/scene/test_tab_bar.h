@@ -760,6 +760,41 @@ TEST_CASE("[SceneTree][TabBar] layout and offset") {
 		CHECK(tab_rects[1].size.y == tab_rects[2].size.y);
 	}
 
+	SUBCASE("[TabBar] vertical tabs are arranged below each other") {
+		tab_bar->set_vertical(true);
+		CHECK(tab_bar->is_vertical());
+		MessageQueue::get_singleton()->flush();
+
+		Vector<Rect2> vertical_tab_rects = {
+			tab_bar->get_tab_rect(0),
+			tab_bar->get_tab_rect(1),
+			tab_bar->get_tab_rect(2)
+		};
+		Size2 vertical_all_tabs_size = tab_bar->get_size();
+
+		// Vertical positions are below each other.
+		CHECK(vertical_tab_rects[0].position.y == 0);
+		CHECK(vertical_tab_rects[1].position.y == vertical_tab_rects[0].size.y);
+		CHECK(vertical_tab_rects[2].position.y == vertical_tab_rects[1].position.y + vertical_tab_rects[1].size.y);
+
+		// Fills the entire height.
+		CHECK(vertical_tab_rects[2].position.y + vertical_tab_rects[2].size.y == vertical_all_tabs_size.y);
+
+		// Vertical sizes are positive.
+		CHECK(vertical_tab_rects[0].size.y > 0);
+		CHECK(vertical_tab_rects[1].size.y > 0);
+		CHECK(vertical_tab_rects[2].size.y > 0);
+
+		// Horizontal positions are at 0.
+		CHECK(vertical_tab_rects[0].position.x == 0);
+		CHECK(vertical_tab_rects[1].position.x == 0);
+		CHECK(vertical_tab_rects[2].position.x == 0);
+
+		// Horizontal sizes are the same.
+		CHECK(vertical_tab_rects[0].size.x == vertical_tab_rects[1].size.x);
+		CHECK(vertical_tab_rects[1].size.x == vertical_tab_rects[2].size.x);
+	}
+
 	SUBCASE("[TabBar] tab alignment") {
 		// Add extra space so the alignment can be seen.
 		tab_bar->set_size(Size2(all_tabs_size.x + 100, all_tabs_size.y));
@@ -826,6 +861,24 @@ TEST_CASE("[SceneTree][TabBar] layout and offset") {
 		CHECK(tab_bar->get_minimum_size().y == all_tabs_size.y);
 		CHECK(tab_bar->get_size().x == offset_button_size + MAX(tab_rects[0].size.x, MAX(tab_rects[1].size.x, tab_rects[2].size.x)));
 		CHECK(tab_bar->get_size().y == all_tabs_size.y);
+	}
+
+	SUBCASE("[TabBar] clip tabs vertical") {
+		tab_bar->set_vertical(true);
+		tab_bar->set_clip_tabs(true);
+		CHECK(tab_bar->is_vertical());
+		CHECK(tab_bar->get_clip_tabs());
+		MessageQueue::get_singleton()->flush();
+
+		Vector<Rect2> vertical_tab_rects = {
+			tab_bar->get_tab_rect(0),
+			tab_bar->get_tab_rect(1),
+			tab_bar->get_tab_rect(2)
+		};
+
+		// Vertical minimum size height gets set to the tallest tab plus arrow icons.
+		const float offset_button_size = tab_bar->get_theme_icon("decrement_icon")->get_height() + tab_bar->get_theme_icon("increment_icon")->get_height();
+		CHECK(tab_bar->get_minimum_size().y == offset_button_size + MAX(vertical_tab_rects[0].size.y, MAX(vertical_tab_rects[1].size.y, vertical_tab_rects[2].size.y)));
 	}
 
 	SUBCASE("[TabBar] ensure tab visible") {
