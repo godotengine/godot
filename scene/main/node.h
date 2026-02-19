@@ -880,6 +880,7 @@ public:
 	virtual void get_signals_connected_to_this(List<Connection> *p_connections) const override;
 
 	virtual Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0) override;
+	virtual void disconnect_all(const StringName &p_signal) override;
 	virtual void disconnect(const StringName &p_signal, const Callable &p_callable) override;
 	virtual bool is_connected(const StringName &p_signal, const Callable &p_callable) const override;
 	virtual bool has_connections(const StringName &p_signal) const override;
