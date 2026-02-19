@@ -83,7 +83,13 @@ String DirectoryCreateDialog::_validate_path(const String &p_path) const {
 		}
 	}
 
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da;
+	if (base_dir.begins_with("editor://")) {
+		da = DirAccess::create(DirAccess::ACCESS_EDITOR_RESOURCES);
+	} else {
+		da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	}
+
 	da->change_dir(base_dir);
 	if (da->file_exists(p_path)) {
 		return TTR("File with that name already exists.");

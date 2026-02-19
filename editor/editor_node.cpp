@@ -1797,6 +1797,11 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 	}
 
 	if (!p_at_path.is_empty()) {
+		if (p_at_path.begins_with("editor://")) {
+			file->set_access(EditorFileDialog::ACCESS_EDITOR_RESOURCES);
+		} else {
+			file->set_access(EditorFileDialog::ACCESS_RESOURCES);
+		}
 		file->set_current_dir(p_at_path);
 		if (is_resource) {
 			file->set_current_file(resource_path.get_file());
@@ -4316,7 +4321,7 @@ void EditorNode::_update_addon_config() {
 void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed) {
 	String addon_path = p_addon;
 
-	if (!addon_path.begins_with("res://")) {
+	if (!addon_path.begins_with("res://") && !addon_path.begins_with("editor://")) {
 		addon_path = "res://addons/" + addon_path + "/plugin.cfg";
 	}
 
@@ -4412,6 +4417,10 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 	if (p_addon.begins_with("res://")) {
+		return addon_name_to_plugin.has(p_addon);
+	}
+
+	if (p_addon.begins_with("editor://")) {
 		return addon_name_to_plugin.has(p_addon);
 	}
 
@@ -4724,8 +4733,8 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		}
 	}
 
-	if (!lpath.begins_with("res://")) {
-		show_accept(TTR("Error loading scene, it must be inside the project path. Use 'Import' to open the scene, then save it inside the project path."), TTR("OK"));
+	if (!lpath.begins_with("res://") && !lpath.begins_with("editor://")) {
+		show_accept(TTR("Error loading scene, it must be inside the project path or the editor path. Use 'Import' to open the scene, then save it inside the project path."), TTR("OK"));
 		return ERR_FILE_NOT_FOUND;
 	}
 
@@ -9444,6 +9453,9 @@ EditorNode::EditorNode() {
 
 	follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
 	use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");
+
+	const String editor_resource_path = EditorPaths::get_singleton()->get_data_dir().path_join("editor_resources").path_join(vformat("%d.%d", GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR));
+	ProjectSettings::get_singleton()->set_editor_resource_path(editor_resource_path);
 }
 
 EditorNode::~EditorNode() {

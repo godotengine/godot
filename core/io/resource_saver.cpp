@@ -141,7 +141,7 @@ Error ResourceSaver::save(RequiredParam<Resource> rp_resource, const String &p_p
 				p_resource->set_path(old_path);
 			}
 
-			if (save_callback && path.begins_with("res://")) {
+			if (save_callback && (path.begins_with("res://") || path.begins_with("editor://"))) {
 				save_callback(p_resource, path);
 			}
 

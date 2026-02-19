@@ -114,6 +114,9 @@ void EditorFileDialog::_dir_contents_changed() {
 		case FileDialog::ACCESS_RESOURCES: {
 			scan_required = true;
 		} break;
+		case FileDialog::ACCESS_EDITOR_RESOURCES: {
+			scan_required = true;
+		} break;
 		case FileDialog::ACCESS_USERDATA: {
 			// Directories within the project dir are unlikely to be accessed.
 		} break;

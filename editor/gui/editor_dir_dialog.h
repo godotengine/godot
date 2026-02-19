@@ -50,6 +50,8 @@ class EditorDirDialog : public ConfirmationDialog {
 	Tree *tree = nullptr;
 	bool updating = false;
 
+	bool show_editor_dir = false;
+
 	void _item_collapsed(Object *p_item);
 	void _item_activated();
 	void _update_dir(const Color &p_default_folder_color, const Dictionary &p_assigned_folder_colors, const HashMap<String, Color> &p_folder_colors, bool p_is_dark_icon_and_font, TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path = String());
@@ -67,7 +69,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void config(const Vector<String> &p_paths);
+	void config(const Vector<String> &p_paths, const bool show_editor_dir);
 	void reload(const String &p_path = "");
 
 	EditorDirDialog();

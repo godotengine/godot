@@ -50,6 +50,7 @@
 EditorFileSystem *EditorFileSystem::singleton = nullptr;
 int EditorFileSystem::nb_files_total = 0;
 EditorFileSystem::ScannedDirectory *EditorFileSystem::first_scan_root_dir = nullptr;
+EditorFileSystem::ScannedDirectory *EditorFileSystem::first_scan_editor_root_dir = nullptr;
 
 //the name is the version, to keep compatibility with different versions of Godot
 #define CACHE_FILE_NAME "filesystem_cache10"
@@ -107,7 +108,7 @@ String EditorFileSystemDirectory::get_path() const {
 	}
 
 	if (parents == 0) {
-		return "res://";
+		return efd->root_path;
 	}
 
 	// Using PackedStringArray, because the path is built in reverse order.
@@ -115,7 +116,7 @@ String EditorFileSystemDirectory::get_path() const {
 	// Allocate an array based on nesting. It will store path bits.
 	path_bits.resize(parents + 2); // Last String is empty, so paths end with /.
 	String *path_write = path_bits.ptrw();
-	path_write[0] = "res:/";
+	path_write[0] = efd->root_path.trim_suffix("/");
 
 	efd = this;
 	for (int i = parents; i > 0; i--) {
@@ -250,7 +251,11 @@ void EditorFileSystem::_load_first_scan_root_dir() {
 	first_scan_root_dir = memnew(ScannedDirectory);
 	first_scan_root_dir->full_path = "res://";
 
-	nb_files_total = _scan_new_dir(first_scan_root_dir, d);
+	Ref<DirAccess> gd = DirAccess::create(DirAccess::ACCESS_EDITOR_RESOURCES);
+	first_scan_editor_root_dir = memnew(ScannedDirectory);
+	first_scan_editor_root_dir->full_path = "editor://";
+
+	nb_files_total = _scan_new_dir(first_scan_root_dir, d) + _scan_new_dir(first_scan_editor_root_dir, gd);
 }
 
 void EditorFileSystem::scan_for_uid() {
@@ -267,6 +272,7 @@ void EditorFileSystem::scan_for_uid() {
 
 	// Scan the file system to load uid.
 	_scan_for_uid_directory(first_scan_root_dir, import_extensions);
+	_scan_for_uid_directory(first_scan_editor_root_dir, import_extensions);
 
 	// It's done, resetting the callback method to prevent a second scan.
 	ResourceUID::scan_for_uid_on_startup = nullptr;
@@ -307,7 +313,7 @@ void EditorFileSystem::_first_scan_filesystem() {
 	HashSet<String> existing_class_names;
 	HashSet<String> extensions;
 
-	if (!first_scan_root_dir) {
+	if (!first_scan_root_dir || !first_scan_editor_root_dir) {
 		ep.step(TTR("Scanning file structure..."), 0, true);
 		_load_first_scan_root_dir();
 	}
@@ -322,6 +328,7 @@ void EditorFileSystem::_first_scan_filesystem() {
 	// At the same time, to prevent looping multiple times in all files, it looks for extensions.
 	ep.step(TTR("Loading global class names..."), 1, true);
 	_first_scan_process_scripts(first_scan_root_dir, gdextension_extensions, existing_class_names, extensions);
+	_first_scan_process_scripts(first_scan_editor_root_dir, gdextension_extensions, existing_class_names, extensions);
 
 	// Removing invalid global class to prevent having invalid paths in ScriptServer.
 	bool save_scripts = _remove_invalid_global_class_names(existing_class_names);
@@ -396,7 +403,7 @@ void EditorFileSystem::_first_scan_process_scripts(const ScannedDirectory *p_sca
 
 void EditorFileSystem::_scan_filesystem() {
 	// On the first scan, the first_scan_root_dir is created in _first_scan_filesystem.
-	ERR_FAIL_COND(!scanning || new_filesystem || (first_scan && !first_scan_root_dir));
+	ERR_FAIL_COND(!scanning || new_filesystem || new_editor_filesystem || (first_scan && !first_scan_root_dir && !first_scan_editor_root_dir));
 
 	//read .fscache
 	String cpath;
@@ -501,24 +508,36 @@ void EditorFileSystem::_scan_filesystem() {
 
 	new_filesystem = memnew(EditorFileSystemDirectory);
 	new_filesystem->parent = nullptr;
+	new_filesystem->root_path = "res://";
+	new_editor_filesystem = memnew(EditorFileSystemDirectory);
+	new_editor_filesystem->parent = nullptr;
+	new_editor_filesystem->root_path = "editor://";
+	new_editor_filesystem->name = "editor://";
 
-	ScannedDirectory *sd;
+	ScannedDirectory *scan_directory;
+	ScannedDirectory *editor_scan_directory;
 	HashSet<String> *processed_files = nullptr;
 	// On the first scan, the first_scan_root_dir is created in _first_scan_filesystem.
 	if (first_scan) {
-		sd = first_scan_root_dir;
+		scan_directory = first_scan_root_dir;
+		editor_scan_directory = first_scan_editor_root_dir;
 		// Will be updated on scan.
 		ResourceUID::get_singleton()->clear();
 		ResourceUID::scan_for_uid_on_startup = nullptr;
 		processed_files = memnew(HashSet<String>());
 	} else {
-		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		sd = memnew(ScannedDirectory);
-		sd->full_path = "res://";
-		nb_files_total = _scan_new_dir(sd, d);
+		Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		scan_directory = memnew(ScannedDirectory);
+		scan_directory->full_path = "res://";
+		Ref<DirAccess> editor_dir = DirAccess::create(DirAccess::ACCESS_EDITOR_RESOURCES);
+		editor_scan_directory = memnew(ScannedDirectory);
+		editor_scan_directory->full_path = "editor://";
+
+		nb_files_total = _scan_new_dir(scan_directory, dir) + _scan_new_dir(editor_scan_directory, editor_dir);
 	}
 
-	_process_file_system(sd, new_filesystem, sp, processed_files);
+	_process_file_system(scan_directory, new_filesystem, sp, processed_files);
+	_process_file_system(editor_scan_directory, new_editor_filesystem, sp, processed_files);
 
 	if (first_scan) {
 		_process_removed_files(*processed_files);
@@ -529,6 +548,8 @@ void EditorFileSystem::_scan_filesystem() {
 	if (first_scan) {
 		memdelete(first_scan_root_dir);
 		first_scan_root_dir = nullptr;
+		memdelete(first_scan_editor_root_dir);
+		first_scan_editor_root_dir = nullptr;
 		memdelete(processed_files);
 	} else {
 		//on the first scan this is done from the main thread after re-importing
@@ -1105,6 +1126,14 @@ void EditorFileSystem::scan() {
 		//file_type_cache.clear();
 		filesystem = new_filesystem;
 		new_filesystem = nullptr;
+
+		if (editor_filesystem) {
+			memdelete(editor_filesystem);
+		}
+
+		editor_filesystem = new_editor_filesystem;
+		new_editor_filesystem = nullptr;
+
 		_update_scan_actions();
 		// Update all icons so they are loaded for the FileSystemDock.
 		_update_files_icon_path();
@@ -1432,7 +1461,8 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 
 		//then scan files and directories and check what's different
 
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> da = DirAccess::create_for_path(cd);
+		ERR_FAIL_COND(da.is_null());
 
 		Error ret = da->change_dir(cd);
 		ERR_FAIL_COND_MSG(ret != OK, "Cannot change to '" + cd + "' folder.");
@@ -1468,7 +1498,9 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 					efd->parent = p_dir;
 					efd->name = f;
 
-					Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+					Ref<DirAccess> d = DirAccess::create_for_path(cd);
+					ERR_FAIL_COND(d.is_null());
+
 					d->change_dir(dir_path);
 					int nb_files_dir = _scan_new_dir(&sd, d);
 					p_progress.hi += nb_files_dir;
@@ -1612,7 +1644,9 @@ void EditorFileSystem::_delete_internal_files(const String &p_file) {
 	if (FileAccess::exists(p_file + ".import")) {
 		List<String> paths;
 		ResourceFormatImporter::get_singleton()->get_internal_resource_path_list(p_file, &paths);
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> da = DirAccess::create_for_path(p_file);
+		ERR_FAIL_COND(da.is_null());
+
 		for (const String &E : paths) {
 			da->remove(E);
 		}
@@ -1643,12 +1677,13 @@ int EditorFileSystem::_insert_actions_delete_files_directory(EditorFileSystemDir
 
 void EditorFileSystem::_thread_func_sources(void *_userdata) {
 	EditorFileSystem *efs = (EditorFileSystem *)_userdata;
-	if (efs->filesystem) {
+	if (efs->filesystem && efs->editor_filesystem) {
 		EditorProgressBG pr("sources", TTR("ScanSources"), 1000);
 		ScanProgress sp;
 		sp.progress = &pr;
 		sp.hi = efs->nb_files_total;
 		efs->_scan_fs_changes(efs->filesystem, sp);
+		efs->_scan_fs_changes(efs->editor_filesystem, sp);
 	}
 	efs->scanning_changes_done.set();
 }
@@ -1698,13 +1733,14 @@ void EditorFileSystem::scan_changes() {
 	scanning_changes_done.clear();
 
 	if (!use_threads) {
-		if (filesystem) {
+		if (filesystem && editor_filesystem) {
 			EditorProgressBG pr("sources", TTR("ScanSources"), 1000);
 			ScanProgress sp;
 			sp.progress = &pr;
 			sp.hi = nb_files_total;
 			scan_total = 0;
 			_scan_fs_changes(filesystem, sp);
+			_scan_fs_changes(editor_filesystem, sp);
 			if (_update_scan_actions()) {
 				emit_signal(SNAME("filesystem_changed"));
 			}
@@ -1743,6 +1779,17 @@ void EditorFileSystem::_notification(int p_what) {
 			}
 			filesystem = nullptr;
 			new_filesystem = nullptr;
+
+			if (editor_filesystem) {
+				memdelete(editor_filesystem);
+			}
+			if (new_editor_filesystem) {
+				memdelete(new_editor_filesystem);
+			}
+
+			editor_filesystem = nullptr;
+			new_editor_filesystem = nullptr;
+
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -1789,6 +1836,12 @@ void EditorFileSystem::_notification(int p_what) {
 					}
 					filesystem = new_filesystem;
 					new_filesystem = nullptr;
+					if (editor_filesystem) {
+						memdelete(editor_filesystem);
+					}
+					editor_filesystem = new_editor_filesystem;
+					new_editor_filesystem = nullptr;
+
 					thread.wait_to_finish();
 					_update_scan_actions();
 					// Update all icons so they are loaded for the FileSystemDock.
@@ -1822,6 +1875,10 @@ float EditorFileSystem::get_scanning_progress() const {
 
 EditorFileSystemDirectory *EditorFileSystem::get_filesystem() {
 	return filesystem;
+}
+
+EditorFileSystemDirectory *EditorFileSystem::get_editor_filesystem() {
+	return editor_filesystem;
 }
 
 void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, Ref<FileAccess> p_file) {
@@ -1863,20 +1920,26 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirectory **r_d, int &r_file_pos) const {
 	//todo make faster
 
-	if (!filesystem || scanning) {
+	if (!filesystem || !editor_filesystem || scanning) {
 		return false;
 	}
 
-	String f = ProjectSettings::get_singleton()->localize_path(p_file);
+	String localize_path = ProjectSettings::get_singleton()->localize_path(p_file);
+	String f = localize_path;
 
 	// Note: Only checks if base directory is case sensitive.
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	bool fs_case_sensitive = dir->is_case_sensitive("res://");
+	bool fs_case_sensitive = dir->is_case_sensitive("res://") || dir->is_case_sensitive("editor://");
 
-	if (!f.begins_with("res://")) {
+	if (!f.begins_with("res://") && !f.begins_with("editor://")) {
 		return false;
 	}
-	f = f.substr(6);
+	if (localize_path.begins_with("res://")) {
+		f = f.substr(6);
+	} else if (localize_path.begins_with("editor://")) {
+		f = f.substr(9);
+	}
+
 	f = f.replace_char('\\', '/');
 
 	Vector<String> path = f.split("/");
@@ -1887,7 +1950,12 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 	String file = path[path.size() - 1];
 	path.resize(path.size() - 1);
 
-	EditorFileSystemDirectory *fs = filesystem;
+	EditorFileSystemDirectory *fs;
+	if (localize_path.begins_with("res://")) {
+		fs = filesystem;
+	} else {
+		fs = editor_filesystem;
+	}
 
 	for (int i = 0; i < path.size(); i++) {
 		if (path[i].begins_with(".")) {
@@ -1971,7 +2039,7 @@ String EditorFileSystem::get_file_type(const String &p_file) const {
 }
 
 EditorFileSystemDirectory *EditorFileSystem::find_file(const String &p_file, int *r_index) const {
-	if (!filesystem || scanning) {
+	if (!filesystem || !editor_filesystem || scanning) {
 		return nullptr;
 	}
 
@@ -1999,19 +2067,28 @@ ResourceUID::ID EditorFileSystem::get_file_uid(const String &p_path) const {
 }
 
 EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p_path) {
-	if (!filesystem || scanning) {
+	if (!filesystem || !editor_filesystem || scanning) {
 		return nullptr;
 	}
 
 	String f = ProjectSettings::get_singleton()->localize_path(p_path);
 
-	if (!f.begins_with("res://")) {
+	if (!f.begins_with("res://") && !f.begins_with("editor://")) {
 		return nullptr;
 	}
 
-	f = f.substr(6);
+	String root_path = f.begins_with("res://") ? "res://" : "editor://";
+
+	if (root_path == "editor://") {
+		f = f.substr(9);
+	} else {
+		f = f.substr(6);
+	}
 	f = f.replace_char('\\', '/');
 	if (f.is_empty()) {
+		if (root_path == "editor://") {
+			return editor_filesystem;
+		}
 		return filesystem;
 	}
 
@@ -2025,7 +2102,12 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 		return nullptr;
 	}
 
-	EditorFileSystemDirectory *fs = filesystem;
+	EditorFileSystemDirectory *fs;
+	if (root_path == "editor://") {
+		fs = editor_filesystem;
+	} else {
+		fs = filesystem;
+	}
 
 	for (int i = 0; i < path.size(); i++) {
 		int idx = -1;
@@ -3091,9 +3173,23 @@ void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file
 }
 
 Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (FileAccess::exists(p_from + ".import")) {
-		Error err = da->copy(p_from, p_to);
+	Ref<DirAccess> da;
+
+	String from_path = p_from;
+	String to_path = p_to;
+
+	if (from_path.begins_with("res://") && to_path.begins_with("res://")) {
+		da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	} else if (from_path.begins_with("editor://") && to_path.begins_with("editor://")) {
+		da = DirAccess::create(DirAccess::ACCESS_EDITOR_RESOURCES);
+	} else {
+		da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		from_path = ProjectSettings::get_singleton()->globalize_path(from_path);
+		to_path = ProjectSettings::get_singleton()->globalize_path(to_path);
+	}
+
+	if (FileAccess::exists(from_path + ".import")) {
+		Error err = da->copy(from_path, to_path);
 		if (err != OK) {
 			return err;
 		}
@@ -3101,36 +3197,36 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 		// Save the new .import file
 		Ref<ConfigFile> cfg;
 		cfg.instantiate();
-		cfg->load(p_from + ".import");
+		cfg->load(from_path + ".import");
 		String importer_name = cfg->get_value("remap", "importer");
 
 		if (importer_name == "keep" || importer_name == "skip") {
-			err = da->copy(p_from + ".import", p_to + ".import");
+			err = da->copy(from_path + ".import", to_path + ".import");
 			return err;
 		}
 
 		// Roll a new uid for this copied .import file to avoid conflict.
-		ResourceUID::ID res_uid = ResourceUID::get_singleton()->create_id_for_path(p_to);
+		ResourceUID::ID res_uid = ResourceUID::get_singleton()->create_id_for_path(to_path);
 		cfg->set_value("remap", "uid", ResourceUID::get_singleton()->id_to_text(res_uid));
-		err = cfg->save(p_to + ".import");
+		err = cfg->save(to_path + ".import");
 		if (err != OK) {
 			return err;
 		}
 
 		// Make sure it's immediately added to the map so we can remap dependencies if we want to after this.
-		ResourceUID::get_singleton()->add_id(res_uid, p_to);
-	} else if (ResourceLoader::get_resource_uid(p_from) == ResourceUID::INVALID_ID) {
+		ResourceUID::get_singleton()->add_id(res_uid, to_path);
+	} else if (ResourceLoader::get_resource_uid(from_path) == ResourceUID::INVALID_ID) {
 		// Files which do not use an uid can just be copied.
-		Error err = da->copy(p_from, p_to);
+		Error err = da->copy(from_path, to_path);
 		if (err != OK) {
 			return err;
 		}
 	} else {
 		// Load the resource and save it again in the new location (this generates a new UID).
 		Error err = OK;
-		Ref<Resource> res = ResourceCache::get_ref(p_from);
+		Ref<Resource> res = ResourceCache::get_ref(from_path);
 		if (res.is_null()) {
-			res = ResourceLoader::load(p_from, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+			res = ResourceLoader::load(from_path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
 		} else {
 			bool edited = false;
 			List<Ref<Resource>> cached;
@@ -3139,7 +3235,7 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 				if (!resource->is_edited()) {
 					continue;
 				}
-				if (!resource->get_path().begins_with(p_from)) {
+				if (!resource->get_path().begins_with(from_path)) {
 					continue;
 				}
 				// The resource or one of its built-in resources is edited.
@@ -3153,7 +3249,7 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 			}
 		}
 		if (err == OK && res.is_valid()) {
-			err = ResourceSaver::save(res, p_to, ResourceSaver::FLAG_COMPRESS);
+			err = ResourceSaver::save(res, to_path, ResourceSaver::FLAG_COMPRESS);
 			if (err != OK) {
 				return err;
 			}
@@ -3373,6 +3469,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	if (groups_to_reimport.size()) {
 		HashMap<String, Vector<String>> group_files;
 		_find_group_files(filesystem, group_files, groups_to_reimport);
+		_find_group_files(editor_filesystem, group_files, groups_to_reimport);
 		for (const KeyValue<String, Vector<String>> &E : group_files) {
 			ep->step(E.key.get_file(), from++, false);
 			Error err = _reimport_group(E.key, E.value);
@@ -3525,7 +3622,21 @@ void EditorFileSystem::move_group_file(const String &p_path, const String &p_new
 
 Error EditorFileSystem::make_dir_recursive(const String &p_path, const String &p_base_path) {
 	Error err;
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da;
+	if (p_base_path.is_empty()) {
+		if (p_path.begins_with("res://")) {
+			da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		} else if (p_path.begins_with("editor://")) {
+			da = DirAccess::create(DirAccess::ACCESS_EDITOR_RESOURCES);
+		}
+	} else {
+		if (p_base_path.begins_with("res://")) {
+			da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		} else if (p_base_path.begins_with("editor://")) {
+			da = DirAccess::create(DirAccess::ACCESS_EDITOR_RESOURCES);
+		}
+	}
+	ERR_FAIL_COND_V(da.is_null(), ERR_CANT_CREATE);
 	if (!p_base_path.is_empty()) {
 		err = da->change_dir(p_base_path);
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot open base directory '" + p_base_path + "'.");
@@ -3556,6 +3667,7 @@ Error EditorFileSystem::make_dir_recursive(const String &p_path, const String &p
 		EditorFileSystemDirectory *efd = memnew(EditorFileSystemDirectory);
 		efd->parent = parent;
 		efd->name = folder;
+		efd->root_path = parent->root_path;
 		parent->subdirs.push_back(efd);
 		parent = efd;
 	}
@@ -3772,8 +3884,12 @@ EditorFileSystem::EditorFileSystem() {
 	singleton = this;
 	filesystem = memnew(EditorFileSystemDirectory); //like, empty
 	filesystem->parent = nullptr;
+	editor_filesystem = memnew(EditorFileSystemDirectory); //like, empty
+	editor_filesystem->parent = nullptr;
+	editor_filesystem->root_path = "editor://";
 
 	new_filesystem = nullptr;
+	new_editor_filesystem = nullptr;
 
 	// This should probably also work on Unix and use the string it returns for FAT32 or exFAT
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
@@ -3792,5 +3908,11 @@ EditorFileSystem::~EditorFileSystem() {
 		memdelete(filesystem);
 	}
 	filesystem = nullptr;
+
+	if (editor_filesystem) {
+		memdelete(editor_filesystem);
+	}
+	editor_filesystem = nullptr;
+
 	ResourceSaver::set_get_resource_id_for_path(nullptr);
 }
