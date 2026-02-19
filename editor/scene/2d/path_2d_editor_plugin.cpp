@@ -659,6 +659,7 @@ void Path2DEditor::edit(Node *p_path2d) {
 void Path2DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_toolbar"), &Path2DEditor::_update_toolbar);
 	ClassDB::bind_method(D_METHOD("_clear_curve_points"), &Path2DEditor::_clear_curve_points);
+	ClassDB::bind_method(D_METHOD("_smooth_curve_points"), &Path2DEditor::_smooth_curve_points);
 	ClassDB::bind_method(D_METHOD("_restore_curve_points"), &Path2DEditor::_restore_curve_points);
 }
 
@@ -806,7 +807,48 @@ void Path2DEditor::_confirm_clear_points() {
 	clear_points_dialog->reset_size();
 	clear_points_dialog->popup_centered();
 }
+void Path2DEditor::_smooth_points() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	PackedVector2Array points = node->get_curve()->get_points().duplicate();
 
+	undo_redo->create_action(TTR("Smooth Curve Points"));
+	undo_redo->add_do_method(this, "_smooth_curve_points");
+	undo_redo->add_undo_method(this, "_restore_curve_points", node, points);
+	undo_redo->commit_action();
+}
+
+void Path2DEditor::_smooth_curve_points() {
+	if (!node || node->get_curve().is_null() || node->get_curve()->get_point_count() <= 2) {
+		return;
+	}
+	// Catmull–Rom smoothing
+	Ref<Curve2D> curve = node->get_curve();
+	int point_count = curve->get_point_count();
+	const float smooth_ratio = 0.5;
+	for (int i = 1; i < point_count - 1; i++) {
+		Vector2 next_p = curve->get_point_position(i - 1);
+		Vector2 prev_p = curve->get_point_position(i + 1);
+		Vector2 curr_p = curve->get_point_position(i);
+		Vector2 tangent = (next_p - prev_p).normalized();
+		curve->set_point_in(i, tangent * curr_p.distance_to(next_p) * smooth_ratio);
+		curve->set_point_out(i, -tangent * curr_p.distance_to(prev_p) * smooth_ratio);
+	}
+	Vector2 begin = node->get_curve()->get_point_position(0);
+	Vector2 end = node->get_curve()->get_point_position(node->get_curve()->get_point_count() - 1);
+
+	if (begin.is_equal_approx(end)) {
+		Vector2 first_p = curve->get_point_position(0);
+		Vector2 last_p = curve->get_point_position(point_count - 1);
+
+		Vector2 first_last_tangent = (last_p - first_p).normalized();
+		curve->set_point_out(0, -first_last_tangent);
+		curve->set_point_in(point_count - 1, first_last_tangent);
+
+	} else {
+		curve->set_point_out(0, Vector2());
+		curve->set_point_in(point_count - 1, Vector2());
+	}
+}
 void Path2DEditor::_clear_curve_points(Path2D *p_path2d) {
 	if (!p_path2d || p_path2d->get_curve().is_null()) {
 		return;
@@ -887,6 +929,13 @@ Path2DEditor::Path2DEditor() {
 	curve_close->set_tooltip_text(TTR("Close Curve"));
 	curve_close->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_CLOSE));
 	toolbar->add_child(curve_close);
+
+	curve_smooth_points = memnew(Button);
+	curve_smooth_points->set_theme_type_variation(SceneStringName(FlatButton));
+	curve_smooth_points->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	curve_smooth_points->set_tooltip_text(TTR("Smooth Points"));
+	curve_smooth_points->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_smooth_points));
+	toolbar->add_child(curve_smooth_points);
 
 	curve_clear_points = memnew(Button);
 	curve_clear_points->set_theme_type_variation(SceneStringName(FlatButton));

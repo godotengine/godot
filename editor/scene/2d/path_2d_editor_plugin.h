@@ -64,6 +64,7 @@ class Path2DEditor : public HBoxContainer {
 	Button *curve_del = nullptr;
 	Button *curve_edit = nullptr;
 	Button *curve_edit_curve = nullptr;
+	Button *curve_smooth_points = nullptr;
 	MenuButton *handle_menu = nullptr;
 
 	Button *create_curve_button = nullptr;
@@ -106,6 +107,9 @@ class Path2DEditor : public HBoxContainer {
 
 	void _node_visibility_changed();
 	void _update_toolbar();
+
+	void _smooth_curve_points();
+	void _smooth_points();
 
 	void _create_curve();
 	void _confirm_clear_points();
