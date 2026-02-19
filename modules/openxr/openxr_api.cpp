@@ -1718,7 +1718,7 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 		// shouldn't be possible...
 		ERR_FAIL_V(false);
 #endif
-	} else if (p_rendering_driver == "opengl3") {
+	} else if (p_rendering_driver == "opengl3" || p_rendering_driver == "opengl3_es") {
 #if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
 		graphics_extension = memnew(OpenXROpenGLExtension);
 		register_extension_wrapper(graphics_extension);
