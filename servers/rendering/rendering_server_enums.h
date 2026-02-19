@@ -887,8 +887,10 @@ enum RenderingInfo {
 	RENDERING_INFO_MAX,
 };
 
-/* MISC */
+/* BACKGROUND */
 
+// If this is modified, review the conversion code in `project_settings.cpp`
+// which is hardcoded to avoid coupling `core` with `servers`.
 enum SplashStretchMode {
 	SPLASH_STRETCH_MODE_DISABLED,
 	SPLASH_STRETCH_MODE_KEEP,
@@ -897,6 +899,8 @@ enum SplashStretchMode {
 	SPLASH_STRETCH_MODE_COVER,
 	SPLASH_STRETCH_MODE_IGNORE,
 };
+
+/* MISC */
 
 #ifndef DISABLE_DEPRECATED
 // Never actually used, should be removed when we can break compatibility.

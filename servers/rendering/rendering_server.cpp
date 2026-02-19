@@ -1888,63 +1888,6 @@ int RenderingServer::global_shader_uniform_type_get_shader_datatype(RSE::GlobalS
 	}
 }
 
-Rect2 RenderingServer::get_splash_stretched_screen_rect(const Size2 &p_image_size, const Size2 &p_window_size, RSE::SplashStretchMode p_stretch_mode) {
-	Size2 imgsize = p_image_size;
-	Rect2 screenrect;
-	switch (p_stretch_mode) {
-		case RSE::SPLASH_STRETCH_MODE_DISABLED: {
-			screenrect.size = imgsize;
-			screenrect.position = ((p_window_size - screenrect.size) / 2.0).floor();
-		} break;
-		case RSE::SPLASH_STRETCH_MODE_KEEP: {
-			if (p_window_size.width > p_window_size.height) {
-				// Scale horizontally.
-				screenrect.size.y = p_window_size.height;
-				screenrect.size.x = imgsize.width * p_window_size.height / imgsize.height;
-				screenrect.position.x = (p_window_size.width - screenrect.size.x) / 2;
-			} else {
-				// Scale vertically.
-				screenrect.size.x = p_window_size.width;
-				screenrect.size.y = imgsize.height * p_window_size.width / imgsize.width;
-				screenrect.position.y = (p_window_size.height - screenrect.size.y) / 2;
-			}
-		} break;
-		case RSE::SPLASH_STRETCH_MODE_KEEP_WIDTH: {
-			// Scale vertically.
-			screenrect.size.x = p_window_size.width;
-			screenrect.size.y = imgsize.height * p_window_size.width / imgsize.width;
-			screenrect.position.y = (p_window_size.height - screenrect.size.y) / 2;
-		} break;
-		case RSE::SPLASH_STRETCH_MODE_KEEP_HEIGHT: {
-			// Scale horizontally.
-			screenrect.size.y = p_window_size.height;
-			screenrect.size.x = imgsize.width * p_window_size.height / imgsize.height;
-			screenrect.position.x = (p_window_size.width - screenrect.size.x) / 2;
-		} break;
-		case RSE::SPLASH_STRETCH_MODE_COVER: {
-			double window_aspect = (double)p_window_size.width / p_window_size.height;
-			double img_aspect = imgsize.width / imgsize.height;
-
-			if (window_aspect > img_aspect) {
-				// Scale vertically.
-				screenrect.size.x = p_window_size.width;
-				screenrect.size.y = imgsize.height * p_window_size.width / imgsize.width;
-				screenrect.position.y = (p_window_size.height - screenrect.size.y) / 2;
-			} else {
-				// Scale horizontally.
-				screenrect.size.y = p_window_size.height;
-				screenrect.size.x = imgsize.width * p_window_size.height / imgsize.height;
-				screenrect.position.x = (p_window_size.width - screenrect.size.x) / 2;
-			}
-		} break;
-		case RSE::SPLASH_STRETCH_MODE_IGNORE: {
-			screenrect.size.x = p_window_size.width;
-			screenrect.size.y = p_window_size.height;
-		} break;
-	}
-	return screenrect;
-}
-
 RenderingDevice *RenderingServer::get_rendering_device() const {
 	// Return the rendering device we're using globally.
 	return RenderingDevice::get_singleton();
@@ -3662,7 +3605,7 @@ void RenderingServer::mesh_add_surface_from_planes(RID p_mesh, const Vector<Plan
 
 #ifndef DISABLE_DEPRECATED
 void RenderingServer::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
-	RSE::SplashStretchMode stretch_mode = map_scaling_option_to_stretch_mode(p_scale);
+	RSE::SplashStretchMode stretch_mode = p_scale ? RSE::SPLASH_STRETCH_MODE_KEEP : RSE::SPLASH_STRETCH_MODE_DISABLED;
 	set_boot_image_with_stretch(p_image, p_color, stretch_mode, p_use_filter);
 }
 #endif

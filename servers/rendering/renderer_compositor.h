@@ -68,7 +68,6 @@ public:
 	virtual RendererUtilities *get_utilities() = 0;
 
 	virtual void set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RSE::SplashStretchMode p_stretch_mode, bool p_use_filter = true) = 0;
-	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
 
 	virtual void initialize() = 0;
 	virtual void begin_frame(double frame_step) = 0;

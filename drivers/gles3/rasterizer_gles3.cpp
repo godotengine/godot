@@ -37,6 +37,7 @@
 #include "core/io/image.h"
 #include "core/os/os.h"
 #include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_types.h"
 
 #define _EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB 0x8242
 #define _EXT_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_ARB 0x8243
@@ -465,7 +466,7 @@ void RasterizerGLES3::set_boot_image_with_stretch(const Ref<Image> &p_image, con
 	RID texture = texture_storage->texture_allocate();
 	texture_storage->texture_2d_initialize(texture, p_image);
 
-	Rect2 screenrect = RenderingServer::get_splash_stretched_screen_rect(p_image->get_size(), win_size, p_stretch_mode);
+	Rect2 screenrect = RenderingServerTypes::get_splash_stretched_screen_rect(p_image->get_size(), win_size, p_stretch_mode);
 
 #ifdef WINDOWS_ENABLED
 	if (!screen_flipped_y)

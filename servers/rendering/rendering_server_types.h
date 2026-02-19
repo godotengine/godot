@@ -35,6 +35,7 @@
 #include "core/math/vector2.h"
 #include "core/string/ustring.h"
 #include "core/templates/rid.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 #include <cstdint>
 
@@ -71,5 +72,65 @@ struct BlitToScreen {
 		float aspect_ratio = 1.0;
 	} lens_distortion;
 };
+
+/* BACKGROUND */
+
+// Helper for RSE::SplashStretchMode, put here for convenience.
+inline Rect2 get_splash_stretched_screen_rect(const Size2 &p_image_size, const Size2 &p_window_size, RSE::SplashStretchMode p_stretch_mode) {
+	Size2 imgsize = p_image_size;
+	Rect2 screenrect;
+	switch (p_stretch_mode) {
+		case RSE::SPLASH_STRETCH_MODE_DISABLED: {
+			screenrect.size = imgsize;
+			screenrect.position = ((p_window_size - screenrect.size) / 2.0).floor();
+		} break;
+		case RSE::SPLASH_STRETCH_MODE_KEEP: {
+			if (p_window_size.width > p_window_size.height) {
+				// Scale horizontally.
+				screenrect.size.y = p_window_size.height;
+				screenrect.size.x = imgsize.width * p_window_size.height / imgsize.height;
+				screenrect.position.x = (p_window_size.width - screenrect.size.x) / 2;
+			} else {
+				// Scale vertically.
+				screenrect.size.x = p_window_size.width;
+				screenrect.size.y = imgsize.height * p_window_size.width / imgsize.width;
+				screenrect.position.y = (p_window_size.height - screenrect.size.y) / 2;
+			}
+		} break;
+		case RSE::SPLASH_STRETCH_MODE_KEEP_WIDTH: {
+			// Scale vertically.
+			screenrect.size.x = p_window_size.width;
+			screenrect.size.y = imgsize.height * p_window_size.width / imgsize.width;
+			screenrect.position.y = (p_window_size.height - screenrect.size.y) / 2;
+		} break;
+		case RSE::SPLASH_STRETCH_MODE_KEEP_HEIGHT: {
+			// Scale horizontally.
+			screenrect.size.y = p_window_size.height;
+			screenrect.size.x = imgsize.width * p_window_size.height / imgsize.height;
+			screenrect.position.x = (p_window_size.width - screenrect.size.x) / 2;
+		} break;
+		case RSE::SPLASH_STRETCH_MODE_COVER: {
+			double window_aspect = (double)p_window_size.width / p_window_size.height;
+			double img_aspect = imgsize.width / imgsize.height;
+
+			if (window_aspect > img_aspect) {
+				// Scale vertically.
+				screenrect.size.x = p_window_size.width;
+				screenrect.size.y = imgsize.height * p_window_size.width / imgsize.width;
+				screenrect.position.y = (p_window_size.height - screenrect.size.y) / 2;
+			} else {
+				// Scale horizontally.
+				screenrect.size.y = p_window_size.height;
+				screenrect.size.x = imgsize.width * p_window_size.height / imgsize.height;
+				screenrect.position.x = (p_window_size.width - screenrect.size.x) / 2;
+			}
+		} break;
+		case RSE::SPLASH_STRETCH_MODE_IGNORE: {
+			screenrect.size.x = p_window_size.width;
+			screenrect.size.y = p_window_size.height;
+		} break;
+	}
+	return screenrect;
+}
 
 } // namespace RenderingServerTypes

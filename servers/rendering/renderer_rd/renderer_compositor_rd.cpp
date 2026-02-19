@@ -32,9 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
-
 #include "servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h"
 #include "servers/rendering/renderer_rd/forward_mobile/render_forward_mobile.h"
+#include "servers/rendering/rendering_server_types.h"
 
 void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const RenderingServerTypes::BlitToScreen *p_render_targets, int p_amount) {
 	Error err = RD::get_singleton()->screen_prepare_for_drawing(p_screen);
@@ -245,7 +245,7 @@ void RendererCompositorRD::set_boot_image_with_stretch(const Ref<Image> &p_image
 
 	Size2 window_size = DisplayServer::get_singleton()->window_get_size();
 
-	Rect2 screenrect = RenderingServer::get_splash_stretched_screen_rect(p_image->get_size(), window_size, p_stretch_mode);
+	Rect2 screenrect = RenderingServerTypes::get_splash_stretched_screen_rect(p_image->get_size(), window_size, p_stretch_mode);
 	screenrect.position /= window_size;
 	screenrect.size /= window_size;
 
