@@ -221,7 +221,7 @@ void OpenXROpenGLExtension::get_usable_depth_formats(Vector<int64_t> &p_usable_d
 	p_usable_depth_formats.push_back(GL_DEPTH_COMPONENT24);
 }
 
-bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, void **r_swapchain_graphics_data) {
+bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, const XrSwapchainCreateInfo &p_swapchain_create_info, void **r_swapchain_graphics_data) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	ERR_FAIL_NULL_V(texture_storage, false);
 
@@ -262,7 +262,7 @@ bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 		return false;
 	}
 	*r_swapchain_graphics_data = data;
-	data->is_multiview = (p_array_size > 1);
+	data->is_multiview = (p_swapchain_create_info.arraySize > 1);
 
 	Image::Format format = Image::FORMAT_RGBA8;
 
@@ -270,13 +270,13 @@ bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 
 	for (uint64_t i = 0; i < swapchain_length; i++) {
 		RID texture_rid = texture_storage->texture_create_from_native_handle(
-				p_array_size == 1 ? RS::TEXTURE_TYPE_2D : RS::TEXTURE_TYPE_LAYERED,
+				p_swapchain_create_info.arraySize == 1 ? RS::TEXTURE_TYPE_2D : RS::TEXTURE_TYPE_LAYERED,
 				format,
 				images[i].image,
-				p_width,
-				p_height,
+				p_swapchain_create_info.width,
+				p_swapchain_create_info.height,
 				1,
-				p_array_size);
+				p_swapchain_create_info.arraySize);
 
 		texture_rids.push_back(texture_rid);
 	}

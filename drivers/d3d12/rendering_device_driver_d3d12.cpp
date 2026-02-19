@@ -1641,9 +1641,6 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create_shared_from_slice(Text
 
 RDD::TextureID RenderingDeviceDriverD3D12::_texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) {
 	TextureInfo *owner_tex_info = (TextureInfo *)p_original_texture.id;
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V(!owner_tex_info->owner_info.allocation, TextureID());
-#endif
 
 	ComPtr<ID3D12Resource> new_texture;
 	ComPtr<D3D12MA::Allocation> new_allocation;

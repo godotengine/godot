@@ -3220,6 +3220,20 @@ RS::ViewportMSAA TextureStorage::render_target_get_msaa(RID p_render_target) con
 	return rt->msaa;
 }
 
+void TextureStorage::render_target_set_msaa_3d(RID p_render_target, RS::ViewportMSAA p_msaa) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	rt->msaa_3d = p_msaa;
+}
+
+RS::ViewportMSAA TextureStorage::render_target_get_msaa_3d(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, RS::VIEWPORT_MSAA_DISABLED);
+
+	return rt->msaa_3d;
+}
+
 void TextureStorage::render_target_set_use_hdr(RID p_render_target, bool p_use_hdr_2d) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);

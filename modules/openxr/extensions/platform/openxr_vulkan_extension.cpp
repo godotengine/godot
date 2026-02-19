@@ -265,7 +265,7 @@ void OpenXRVulkanExtension::get_usable_depth_formats(Vector<int64_t> &p_usable_s
 	p_usable_swap_chains.push_back(VK_FORMAT_D32_SFLOAT);
 }
 
-bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, void **r_swapchain_graphics_data) {
+bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, const XrSwapchainCreateInfo &p_swapchain_create_info, void **r_swapchain_graphics_data) {
 	LocalVector<XrSwapchainImageVulkanKHR> images;
 	LocalVector<XrSwapchainImageFoveationVulkanFB> density_images;
 
@@ -315,13 +315,13 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 		return false;
 	}
 	*r_swapchain_graphics_data = data;
-	data->is_multiview = (p_array_size > 1);
+	data->is_multiview = (p_swapchain_create_info.arraySize > 1);
 
 	RenderingDevice::DataFormat format = RenderingDevice::DATA_FORMAT_R8G8B8A8_SRGB;
 	RenderingDevice::TextureSamples samples = RenderingDevice::TEXTURE_SAMPLES_1;
 	uint64_t usage_flags = RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT;
 
-	switch (p_swapchain_format) {
+	switch (p_swapchain_create_info.format) {
 		case VK_FORMAT_R8G8B8A8_SRGB:
 			// Even though this is an sRGB framebuffer format we're using UNORM here.
 			// The reason here is because Godot does a linear to sRGB conversion while
@@ -331,44 +331,46 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 			// will thus do an sRGB -> Linear conversion as expected.
 			//format = RenderingDevice::DATA_FORMAT_R8G8B8A8_SRGB;
 			format = RenderingDevice::DATA_FORMAT_R8G8B8A8_UNORM;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 			break;
 		case VK_FORMAT_B8G8R8A8_SRGB:
 			//format = RenderingDevice::DATA_FORMAT_B8G8R8A8_SRGB;
 			format = RenderingDevice::DATA_FORMAT_B8G8R8A8_UNORM;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 			break;
 		case VK_FORMAT_R8G8B8A8_UINT:
 			format = RenderingDevice::DATA_FORMAT_R8G8B8A8_UINT;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 			break;
 		case VK_FORMAT_B8G8R8A8_UINT:
 			format = RenderingDevice::DATA_FORMAT_B8G8R8A8_UINT;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 			break;
 		case VK_FORMAT_R16G16B16A16_SFLOAT:
 			format = RenderingDevice::DATA_FORMAT_R16G16B16A16_SFLOAT;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 			break;
 		case VK_FORMAT_D32_SFLOAT:
 			format = RenderingDevice::DATA_FORMAT_D32_SFLOAT;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT;
 			break;
 		case VK_FORMAT_D24_UNORM_S8_UINT:
 			format = RenderingDevice::DATA_FORMAT_D24_UNORM_S8_UINT;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT;
 			break;
 		case VK_FORMAT_D32_SFLOAT_S8_UINT:
 			format = RenderingDevice::DATA_FORMAT_D32_SFLOAT_S8_UINT;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT;
 			break;
 		default:
 			// continue with our default value
-			print_line("OpenXR: Unsupported swapchain format", p_swapchain_format);
+			print_line("OpenXR: Unsupported swapchain format", p_swapchain_create_info.format);
 			break;
 	}
 
-	switch (p_sample_count) {
+	if (p_swapchain_create_info.usageFlags & XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT) {
+		usage_flags |= RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+	}
+	if (p_swapchain_create_info.usageFlags & XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+		usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT;
+	}
+	if (p_swapchain_create_info.usageFlags & XR_SWAPCHAIN_USAGE_UNORDERED_ACCESS_BIT) {
+		usage_flags |= RenderingDevice::TEXTURE_USAGE_STORAGE_BIT;
+	}
+
+	switch (p_swapchain_create_info.sampleCount) {
 		case 1:
 			samples = RenderingDevice::TEXTURE_SAMPLES_1;
 			break;
@@ -392,7 +394,7 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 			break;
 		default:
 			// continue with our default value
-			print_line("OpenXR: Unsupported sample count", p_sample_count);
+			print_line("OpenXR: Unsupported sample count", p_swapchain_create_info.sampleCount);
 			break;
 	}
 
@@ -404,22 +406,22 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 		const XrSwapchainImageVulkanKHR &swapchain_image = images[i];
 
 		RID image_rid = rendering_device->texture_create_from_extension(
-				p_array_size == 1 ? RenderingDevice::TEXTURE_TYPE_2D : RenderingDevice::TEXTURE_TYPE_2D_ARRAY,
+				p_swapchain_create_info.arraySize == 1 ? RenderingDevice::TEXTURE_TYPE_2D : RenderingDevice::TEXTURE_TYPE_2D_ARRAY,
 				format,
 				samples,
 				usage_flags,
 				(uint64_t)swapchain_image.image,
-				p_width,
-				p_height,
+				p_swapchain_create_info.width,
+				p_swapchain_create_info.height,
 				1,
-				p_array_size,
+				p_swapchain_create_info.arraySize,
 				1);
 
 		texture_rids.push_back(image_rid);
 
 		if (OpenXRFBFoveationExtension::get_singleton()->is_enabled() && density_images[i].image != VK_NULL_HANDLE) {
 			RID density_map_rid = rendering_device->texture_create_from_extension(
-					p_array_size == 1 ? RenderingDevice::TEXTURE_TYPE_2D : RenderingDevice::TEXTURE_TYPE_2D_ARRAY,
+					p_swapchain_create_info.arraySize == 1 ? RenderingDevice::TEXTURE_TYPE_2D : RenderingDevice::TEXTURE_TYPE_2D_ARRAY,
 					RD::DATA_FORMAT_R8G8_UNORM,
 					RenderingDevice::TEXTURE_SAMPLES_1,
 					RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT,
@@ -427,7 +429,7 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 					density_images[i].width,
 					density_images[i].height,
 					1,
-					p_array_size,
+					p_swapchain_create_info.arraySize,
 					1);
 
 			density_map_rids.push_back(density_map_rid);

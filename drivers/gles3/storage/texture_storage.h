@@ -383,6 +383,7 @@ struct RenderTarget {
 
 	bool used_in_frame = false;
 	RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
+	RS::ViewportMSAA msaa_3d = RS::VIEWPORT_MSAA_DISABLED;
 	bool reattach_textures = false;
 
 	Rect2i render_region;
@@ -681,6 +682,8 @@ public:
 	void render_target_clear_used(RID p_render_target);
 	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) override;
 	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const override;
+	virtual void render_target_set_msaa_3d(RID p_render_target, RS::ViewportMSAA p_msaa) override;
+	virtual RS::ViewportMSAA render_target_get_msaa_3d(RID p_render_target) const override;
 	virtual void render_target_set_msaa_needs_resolve(RID p_render_target, bool p_needs_resolve) override {}
 	virtual bool render_target_get_msaa_needs_resolve(RID p_render_target) const override { return false; }
 	virtual void render_target_do_msaa_resolve(RID p_render_target) override {}

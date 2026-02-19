@@ -38,6 +38,8 @@
 #include "core/os/memory.h"
 #include "core/profiling/profiling.h"
 #include "core/version.h"
+#include "servers/rendering/rendering_server_globals.h"
+#include "servers/rendering/storage/texture_storage.h"
 
 #include "openxr_platform_inc.h"
 
@@ -122,7 +124,7 @@ bool OpenXRAPI::OpenXRSwapChainInfo::create(XrSwapchainCreateFlags p_create_flag
 		return false;
 	}
 
-	if (!xr_graphics_extension->get_swapchain_image_data(new_swapchain, p_swapchain_format, p_width, p_height, p_sample_count, p_array_size, &swapchain_graphics_data)) {
+	if (!xr_graphics_extension->get_swapchain_image_data(new_swapchain, swapchain_create_info, &swapchain_graphics_data)) {
 		openxr_api->xrDestroySwapchain(new_swapchain);
 		return false;
 	}
@@ -1297,17 +1299,33 @@ bool OpenXRAPI::obtain_swapchain_formats() {
 	return true;
 }
 
-bool OpenXRAPI::create_main_swapchains(const Size2i &p_size) {
+bool OpenXRAPI::ensure_main_swapchains(RID p_render_target) {
 	ERR_NOT_ON_RENDER_THREAD_V(false);
 	ERR_FAIL_NULL_V(graphics_extension, false);
 	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, false);
 
-	render_state.main_swapchain_size = p_size;
+	Size2i swapchain_size = get_recommended_target_size();
+	bool is_forward_plus = OS::get_singleton()->get_current_rendering_method() == "forward_plus";
+	RS::ViewportMSAA msaa_3d = RSG::texture_storage->render_target_get_msaa_3d(p_render_target);
+	bool depth_needs_unordered_access = (msaa_3d != RS::VIEWPORT_MSAA_DISABLED) && is_forward_plus;
+
+	// Check if existing swapchains are still valid.
+	if (render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].get_swapchain() != XR_NULL_HANDLE) {
+		if (swapchain_size == render_state.main_swapchain_size && depth_needs_unordered_access == render_state.main_swapchain_depth_unordered_access) {
+			// Swapchains are still valid, nothing to do.
+			return true;
+		}
+		free_main_swapchains();
+	}
+
+	render_state.main_swapchain_size = swapchain_size;
+	render_state.main_swapchain_depth_unordered_access = depth_needs_unordered_access;
 	uint32_t sample_count = 1;
 
 	// We start with our color swapchain...
 	if (color_swapchain_format != 0) {
-		if (!render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].create(0, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, color_swapchain_format, render_state.main_swapchain_size.width, render_state.main_swapchain_size.height, sample_count, view_configuration_views.size())) {
+		XrSwapchainUsageFlags color_usage_flags = XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT;
+		if (!render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].create(0, color_usage_flags, color_swapchain_format, render_state.main_swapchain_size.width, render_state.main_swapchain_size.height, sample_count, view_configuration_views.size())) {
 			return false;
 		}
 
@@ -1319,7 +1337,14 @@ bool OpenXRAPI::create_main_swapchains(const Size2i &p_size) {
 	// - we support our depth layer extension
 	// Note: Application Space Warp and Frame Synthesis use a separate lower resolution depth buffer.
 	if (depth_swapchain_format != 0 && submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available()) {
-		if (!render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].create(0, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depth_swapchain_format, render_state.main_swapchain_size.width, render_state.main_swapchain_size.height, sample_count, view_configuration_views.size())) {
+		XrSwapchainUsageFlags depth_usage_flags = XR_SWAPCHAIN_USAGE_SAMPLED_BIT;
+		if (depth_needs_unordered_access) {
+			// Forward+ uses compute shaders to resolve the depth buffer, which requires unordered access (storage bit).
+			depth_usage_flags |= XR_SWAPCHAIN_USAGE_UNORDERED_ACCESS_BIT;
+		} else {
+			depth_usage_flags |= XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		}
+		if (!render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].create(0, depth_usage_flags, depth_swapchain_format, render_state.main_swapchain_size.width, render_state.main_swapchain_size.height, sample_count, view_configuration_views.size())) {
 			return false;
 		}
 
@@ -2365,15 +2390,6 @@ void OpenXRAPI::pre_render() {
 	// Process any swapchains that were queued to be freed
 	OpenXRSwapChainInfo::free_queued();
 
-	Size2i swapchain_size = get_recommended_target_size();
-	if (swapchain_size != render_state.main_swapchain_size) {
-		// Out with the old.
-		free_main_swapchains();
-
-		// In with the new.
-		create_main_swapchains(swapchain_size);
-	}
-
 	void *view_locate_info_next_pointer = nullptr;
 	for (OpenXRExtensionWrapper *extension : frame_info_extensions) {
 		void *np = extension->set_view_locate_info_and_get_next_pointer(view_locate_info_next_pointer);
@@ -2458,6 +2474,10 @@ bool OpenXRAPI::pre_draw_viewport(RID p_render_target) {
 	render_state.has_xr_viewport = true;
 
 	if (instance == XR_NULL_HANDLE || session == XR_NULL_HANDLE || !render_state.running || !render_state.view_pose_valid || !render_state.should_render) {
+		return false;
+	}
+
+	if (!ensure_main_swapchains(ensure_main_swapchains)) {
 		return false;
 	}
 

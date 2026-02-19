@@ -367,6 +367,7 @@ private:
 		RID color_multisample; // Needed when 2D MSAA is enabled.
 
 		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED; // 2D MSAA mode
+		RS::ViewportMSAA msaa_3d = RS::VIEWPORT_MSAA_DISABLED; // 3D MSAA mode
 		bool msaa_needs_resolve = false; // 2D MSAA needs resolved
 
 		//used for retrieving from CPU
@@ -794,6 +795,8 @@ public:
 	virtual void render_target_set_as_unused(RID p_render_target) override;
 	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) override;
 	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const override;
+	virtual void render_target_set_msaa_3d(RID p_render_target, RS::ViewportMSAA p_msaa) override;
+	virtual RS::ViewportMSAA render_target_get_msaa_3d(RID p_render_target) const override;
 	virtual void render_target_set_msaa_needs_resolve(RID p_render_target, bool p_needs_resolve) override;
 	virtual bool render_target_get_msaa_needs_resolve(RID p_render_target) const override;
 	virtual void render_target_do_msaa_resolve(RID p_render_target) override;

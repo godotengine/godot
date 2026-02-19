@@ -272,7 +272,7 @@ private:
 	bool load_supported_swapchain_formats();
 	bool is_swapchain_format_supported(int64_t p_swapchain_format);
 	bool obtain_swapchain_formats();
-	bool create_main_swapchains(const Size2i &p_size);
+	bool ensure_main_swapchains(RID p_render_target);
 	void free_main_swapchains();
 	void destroy_session();
 
@@ -377,6 +377,7 @@ private:
 		};
 
 		Size2i main_swapchain_size;
+		bool main_swapchain_depth_unordered_access = false;
 		OpenXRSwapChainInfo main_swapchains[OPENXR_SWAPCHAIN_MAX];
 	} render_state;
 

@@ -1395,6 +1395,7 @@ void RendererViewport::viewport_set_msaa_3d(RID p_viewport, RS::ViewportMSAA p_m
 		return;
 	}
 	viewport->msaa_3d = p_msaa;
+	RSG::texture_storage->render_target_set_msaa_3d(viewport->render_target, p_msaa);
 	_configure_3d_render_buffers(viewport);
 }
 

@@ -41,12 +41,11 @@ void main() {
 
 #ifdef MODE_RESOLVE_DEPTH
 
-	float depth_avg = 0.0;
+	float depth_max = 0.0;
 	for (int i = 0; i < params.sample_count; i++) {
-		depth_avg += texelFetch(source_depth, pos, i).r;
+		depth_max = max(depth_max, texelFetch(source_depth, pos, i).r);
 	}
-	depth_avg /= float(params.sample_count);
-	imageStore(dest_depth, pos, vec4(depth_avg));
+	imageStore(dest_depth, pos, vec4(depth_max));
 
 #endif
 
