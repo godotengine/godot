@@ -794,6 +794,7 @@ protected:
 	static void _add_class_to_classdb(const GDType &p_class, const GDType *p_inherits);
 	static void _get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator);
 
+	bool _disconnect_all(const StringName &p_signal, bool p_force = false);
 	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
 	void _define_ancestry(AncestralClass p_class) { _ancestry |= (uint32_t)p_class; }
 	// Prefer using derives_from.
