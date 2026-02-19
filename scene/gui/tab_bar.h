@@ -161,7 +161,12 @@ private:
 		Ref<Texture2D> increment_hl_icon;
 		Ref<Texture2D> decrement_icon;
 		Ref<Texture2D> decrement_hl_icon;
+		Ref<Texture2D> increment_vertical_icon;
+		Ref<Texture2D> increment_vertical_hl_icon;
+		Ref<Texture2D> decrement_vertical_icon;
+		Ref<Texture2D> decrement_vertical_hl_icon;
 		Ref<Texture2D> drop_mark_icon;
+		Ref<Texture2D> vertical_drop_mark_icon;
 		Color drop_mark_color;
 
 		Ref<Font> font;

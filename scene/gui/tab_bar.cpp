@@ -50,6 +50,11 @@ Size2 TabBar::get_minimum_size() const {
 	}
 
 	if (vertical) {
+		const bool has_vertical_icons = theme_cache.decrement_vertical_icon.is_valid() && theme_cache.increment_vertical_icon.is_valid();
+		Ref<Texture2D> dec_icon = has_vertical_icons ? theme_cache.decrement_vertical_icon : theme_cache.decrement_icon;
+		Ref<Texture2D> inc_icon = has_vertical_icons ? theme_cache.increment_vertical_icon : theme_cache.increment_icon;
+		const int buttons_h = dec_icon->get_height() + inc_icon->get_height();
+
 		int x_margin = MAX(MAX(MAX(theme_cache.tab_unselected_style->get_minimum_size().width, theme_cache.tab_hovered_style->get_minimum_size().width), theme_cache.tab_selected_style->get_minimum_size().width), theme_cache.tab_disabled_style->get_minimum_size().width);
 		int max_tab_height = 0;
 
@@ -117,7 +122,7 @@ Size2 TabBar::get_minimum_size() const {
 		}
 
 		if (clip_tabs) {
-			ms.height = max_tab_height + (get_tab_count() > 1 ? theme_cache.decrement_icon->get_height() + theme_cache.increment_icon->get_height() : 0);
+			ms.height = max_tab_height + (get_tab_count() > 1 ? buttons_h : 0);
 		}
 	} else {
 		int y_margin = MAX(MAX(MAX(theme_cache.tab_unselected_style->get_minimum_size().height, theme_cache.tab_hovered_style->get_minimum_size().height), theme_cache.tab_selected_style->get_minimum_size().height), theme_cache.tab_disabled_style->get_minimum_size().height);
@@ -204,13 +209,16 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (buttons_visible) {
 			if (vertical) {
-				Size2 dec_rot_size(theme_cache.decrement_icon->get_height(), theme_cache.decrement_icon->get_width());
-				Size2 inc_rot_size(theme_cache.increment_icon->get_height(), theme_cache.increment_icon->get_width());
-				const float buttons_strip_x = vertical_buttons_on_left ? 0.0f : (get_size().width - MAX(dec_rot_size.width, inc_rot_size.width));
-				const float buttons_group_h = dec_rot_size.height + inc_rot_size.height;
+				const bool has_vertical_icons = theme_cache.decrement_vertical_icon.is_valid() && theme_cache.increment_vertical_icon.is_valid();
+				Ref<Texture2D> dec_icon = has_vertical_icons ? theme_cache.decrement_vertical_icon : theme_cache.decrement_icon;
+				Ref<Texture2D> inc_icon = has_vertical_icons ? theme_cache.increment_vertical_icon : theme_cache.increment_icon;
+				const Size2 dec_size = dec_icon->get_size();
+				const Size2 inc_size = inc_icon->get_size();
+				const float buttons_strip_x = vertical_buttons_on_left ? 0.0f : (get_size().width - MAX(dec_size.width, inc_size.width));
+				const float buttons_group_h = dec_size.height + inc_size.height;
 				const float buttons_group_y = (get_size().height - buttons_group_h) * 0.5f;
-				Rect2 dec_rect(Point2(buttons_strip_x, buttons_group_y), dec_rot_size);
-				Rect2 inc_rect(Point2(buttons_strip_x, buttons_group_y + dec_rot_size.height), inc_rot_size);
+				Rect2 dec_rect(Point2(buttons_strip_x, buttons_group_y), dec_size);
+				Rect2 inc_rect(Point2(buttons_strip_x, buttons_group_y + dec_size.height), inc_size);
 
 				if (dec_rect.has_point(pos)) {
 					if (highlight_arrow != 0) {
@@ -327,13 +335,16 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 
 			if (buttons_visible && selecting) {
 				if (vertical) {
-					Size2 dec_rot_size(theme_cache.decrement_icon->get_height(), theme_cache.decrement_icon->get_width());
-					Size2 inc_rot_size(theme_cache.increment_icon->get_height(), theme_cache.increment_icon->get_width());
-					const float buttons_strip_x = vertical_buttons_on_left ? 0.0f : (get_size().width - MAX(dec_rot_size.width, inc_rot_size.width));
-					const float buttons_group_h = dec_rot_size.height + inc_rot_size.height;
+					const bool has_vertical_icons = theme_cache.decrement_vertical_icon.is_valid() && theme_cache.increment_vertical_icon.is_valid();
+					Ref<Texture2D> dec_icon = has_vertical_icons ? theme_cache.decrement_vertical_icon : theme_cache.decrement_icon;
+					Ref<Texture2D> inc_icon = has_vertical_icons ? theme_cache.increment_vertical_icon : theme_cache.increment_icon;
+					const Size2 dec_size = dec_icon->get_size();
+					const Size2 inc_size = inc_icon->get_size();
+					const float buttons_strip_x = vertical_buttons_on_left ? 0.0f : (get_size().width - MAX(dec_size.width, inc_size.width));
+					const float buttons_group_h = dec_size.height + inc_size.height;
 					const float buttons_group_y = (get_size().height - buttons_group_h) * 0.5f;
-					Rect2 dec_rect(Point2(buttons_strip_x, buttons_group_y), dec_rot_size);
-					Rect2 inc_rect(Point2(buttons_strip_x, buttons_group_y + dec_rot_size.height), inc_rot_size);
+					Rect2 dec_rect(Point2(buttons_strip_x, buttons_group_y), dec_size);
+					Rect2 inc_rect(Point2(buttons_strip_x, buttons_group_y + dec_size.height), inc_size);
 
 					if (dec_rect.has_point(pos)) {
 						if (offset > 0) {
@@ -584,7 +595,10 @@ void TabBar::_notification(int p_what) {
 					DisplayServer::get_singleton()->accessibility_update_set_tooltip(item.accessibility_item_element, item.tooltip);
 
 					if (vertical) {
-						const int buttons_strip = (buttons_visible && clip_tabs) ? MAX(theme_cache.decrement_icon->get_height(), theme_cache.increment_icon->get_height()) : 0;
+						const bool has_vertical_icons = theme_cache.decrement_vertical_icon.is_valid() && theme_cache.increment_vertical_icon.is_valid();
+						Ref<Texture2D> dec_icon = has_vertical_icons ? theme_cache.decrement_vertical_icon : theme_cache.decrement_icon;
+						Ref<Texture2D> inc_icon = has_vertical_icons ? theme_cache.increment_vertical_icon : theme_cache.increment_icon;
+						const int buttons_strip = (buttons_visible && clip_tabs) ? MAX(dec_icon->get_width(), inc_icon->get_width()) : 0;
 						const int content_x = vertical_buttons_on_left ? buttons_strip : 0;
 						const int content_w = get_size().width - buttons_strip;
 						DisplayServer::get_singleton()->accessibility_update_set_bounds(item.accessibility_item_element, Rect2(Point2(content_x, item.ofs_cache), Size2(content_w, item.size_cache)));
@@ -643,12 +657,19 @@ void TabBar::_notification(int p_what) {
 			bool rtl = is_layout_rtl();
 			Vector2 size = get_size();
 
+			const bool has_vertical_icons = theme_cache.decrement_vertical_icon.is_valid() && theme_cache.increment_vertical_icon.is_valid();
+			Ref<Texture2D> v_dec_icon = has_vertical_icons ? theme_cache.decrement_vertical_icon : theme_cache.decrement_icon;
+			Ref<Texture2D> v_inc_icon = has_vertical_icons ? theme_cache.increment_vertical_icon : theme_cache.increment_icon;
+			Ref<Texture2D> v_dec_hl_icon = theme_cache.decrement_vertical_hl_icon.is_valid() ? theme_cache.decrement_vertical_hl_icon : v_dec_icon;
+			Ref<Texture2D> v_inc_hl_icon = theme_cache.increment_vertical_hl_icon.is_valid() ? theme_cache.increment_vertical_hl_icon : v_inc_icon;
+			Ref<Texture2D> v_drop_mark_icon = theme_cache.vertical_drop_mark_icon.is_valid() ? theme_cache.vertical_drop_mark_icon : theme_cache.drop_mark_icon;
+
 			if (tabs.is_empty()) {
 				// Draw the drop indicator where the first tab would be if there are no tabs.
 				if (dragging_valid_tab) {
 					if (vertical) {
 						int y = 0;
-						theme_cache.drop_mark_icon->draw(get_canvas_item(), Point2((size.width - theme_cache.drop_mark_icon->get_width()) / 2, y - (theme_cache.drop_mark_icon->get_height() / 2)), theme_cache.drop_mark_color);
+						v_drop_mark_icon->draw(get_canvas_item(), Point2((size.width - v_drop_mark_icon->get_width()) / 2, y - (v_drop_mark_icon->get_height() / 2)), theme_cache.drop_mark_color);
 					} else {
 						int x = rtl ? size.x : 0;
 						theme_cache.drop_mark_icon->draw(get_canvas_item(), Point2(x - (theme_cache.drop_mark_icon->get_width() / 2), (size.height - theme_cache.drop_mark_icon->get_height()) / 2), theme_cache.drop_mark_color);
@@ -713,27 +734,21 @@ void TabBar::_notification(int p_what) {
 
 			if (buttons_visible) {
 				if (vertical) {
-					Texture2D *dec_icon = (highlight_arrow == 0 ? theme_cache.decrement_hl_icon : theme_cache.decrement_icon).ptr();
-					Texture2D *inc_icon = (highlight_arrow == 1 ? theme_cache.increment_hl_icon : theme_cache.increment_icon).ptr();
-					Size2 dec_rot_size(dec_icon->get_height(), dec_icon->get_width());
-					Size2 inc_rot_size(inc_icon->get_height(), inc_icon->get_width());
-					const float buttons_strip_x = vertical_buttons_on_left ? 0.0f : (size.width - MAX(dec_rot_size.width, inc_rot_size.width));
-					const float buttons_group_h = dec_rot_size.height + inc_rot_size.height;
+					Texture2D *dec_icon = (highlight_arrow == 0 ? v_dec_hl_icon : v_dec_icon).ptr();
+					Texture2D *inc_icon = (highlight_arrow == 1 ? v_inc_hl_icon : v_inc_icon).ptr();
+					Size2 dec_size(dec_icon->get_size());
+					Size2 inc_size(inc_icon->get_size());
+					const float buttons_strip_x = vertical_buttons_on_left ? 0.0f : (size.width - MAX(dec_size.width, inc_size.width));
+					const float buttons_group_h = dec_size.height + inc_size.height;
 					const float buttons_group_y = (size.height - buttons_group_h) * 0.5f;
 					Point2 dec_pos(buttons_strip_x, buttons_group_y);
-					Point2 inc_pos(buttons_strip_x, buttons_group_y + dec_rot_size.height);
+					Point2 inc_pos(buttons_strip_x, buttons_group_y + dec_size.height);
 
 					float dec_opacity = offset > 0 ? 1.0f : 0.5f;
 					float inc_opacity = missing_right ? 1.0f : 0.5f;
 
-					// Rotate the horizontal arrow icons so they point up/down in vertical mode.
-					draw_set_transform(dec_pos + dec_rot_size * 0.5f, Math::PI * 0.5f, Vector2(1, 1));
-					draw_texture(dec_icon, -dec_icon->get_size() * 0.5f, Color(1, 1, 1, dec_opacity));
-					draw_set_transform(Point2(), 0.0f, Vector2(1, 1));
-
-					draw_set_transform(inc_pos + inc_rot_size * 0.5f, Math::PI * 0.5f, Vector2(1, 1));
-					draw_texture(inc_icon, -inc_icon->get_size() * 0.5f, Color(1, 1, 1, inc_opacity));
-					draw_set_transform(Point2(), 0.0f, Vector2(1, 1));
+					draw_texture(dec_icon, dec_pos, Color(1, 1, 1, dec_opacity));
+					draw_texture(inc_icon, inc_pos, Color(1, 1, 1, inc_opacity));
 				} else {
 					int vofs = (size.height - theme_cache.increment_icon->get_size().height) / 2;
 
@@ -776,6 +791,8 @@ void TabBar::_draw_tab_drop(RID p_canvas_item) {
 	Vector2 size = get_size();
 	bool rtl = is_layout_rtl();
 
+	Ref<Texture2D> v_drop_mark_icon = theme_cache.vertical_drop_mark_icon.is_valid() ? theme_cache.vertical_drop_mark_icon : theme_cache.drop_mark_icon;
+
 	int closest_tab = get_closest_tab_idx_to_point(get_local_mouse_position());
 	if (closest_tab != -1) {
 		Rect2 tab_rect = get_tab_rect(closest_tab);
@@ -797,7 +814,7 @@ void TabBar::_draw_tab_drop(RID p_canvas_item) {
 				y -= Math::floor(0.5f * theme_cache.tab_separation);
 			}
 
-			theme_cache.drop_mark_icon->draw(p_canvas_item, Point2((size.width - theme_cache.drop_mark_icon->get_width()) / 2, y - theme_cache.drop_mark_icon->get_height() / 2), theme_cache.drop_mark_color);
+			v_drop_mark_icon->draw(p_canvas_item, Point2((size.width - v_drop_mark_icon->get_width()) / 2, y - v_drop_mark_icon->get_height() / 2), theme_cache.drop_mark_color);
 		} else {
 			int x = tab_rect.position.x;
 
@@ -822,12 +839,12 @@ void TabBar::_draw_tab_drop(RID p_canvas_item) {
 			int y = get_tab_rect(0).position.y;
 			if (get_local_mouse_position().y < get_tab_rect(0).position.y) {
 				// Above first tab
-				theme_cache.drop_mark_icon->draw(p_canvas_item, Point2((size.width - theme_cache.drop_mark_icon->get_width()) / 2, y - theme_cache.drop_mark_icon->get_height() / 2), theme_cache.drop_mark_color);
+				v_drop_mark_icon->draw(p_canvas_item, Point2((size.width - v_drop_mark_icon->get_width()) / 2, y - v_drop_mark_icon->get_height() / 2), theme_cache.drop_mark_color);
 			} else {
 				// Below last tab
 				Rect2 tab_rect = get_tab_rect(get_tab_count() - 1);
 				y = tab_rect.position.y + tab_rect.size.y;
-				theme_cache.drop_mark_icon->draw(p_canvas_item, Point2((size.width - theme_cache.drop_mark_icon->get_width()) / 2, y - theme_cache.drop_mark_icon->get_height() / 2), theme_cache.drop_mark_color);
+				v_drop_mark_icon->draw(p_canvas_item, Point2((size.width - v_drop_mark_icon->get_width()) / 2, y - v_drop_mark_icon->get_height() / 2), theme_cache.drop_mark_color);
 			}
 		} else {
 			int x;
@@ -854,7 +871,10 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, co
 	bool rtl = is_layout_rtl();
 
 	if (vertical) {
-		const int buttons_strip = (buttons_visible && clip_tabs) ? MAX(theme_cache.decrement_icon->get_height(), theme_cache.increment_icon->get_height()) : 0;
+		const bool has_vertical_icons = theme_cache.decrement_vertical_icon.is_valid() && theme_cache.increment_vertical_icon.is_valid();
+		Ref<Texture2D> dec_icon = has_vertical_icons ? theme_cache.decrement_vertical_icon : theme_cache.decrement_icon;
+		Ref<Texture2D> inc_icon = has_vertical_icons ? theme_cache.increment_vertical_icon : theme_cache.increment_icon;
+		const int buttons_strip = (buttons_visible && clip_tabs) ? MAX(dec_icon->get_width(), inc_icon->get_width()) : 0;
 		const int content_x = vertical_buttons_on_left ? buttons_strip : 0;
 		const int content_w = get_size().width - buttons_strip;
 
@@ -2328,7 +2348,10 @@ Rect2 TabBar::get_tab_rect(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Rect2());
 
 	if (vertical) {
-		const int buttons_strip = (buttons_visible && clip_tabs) ? MAX(theme_cache.decrement_icon->get_height(), theme_cache.increment_icon->get_height()) : 0;
+		const bool use_vertical_icons = theme_cache.decrement_vertical_icon.is_valid() && theme_cache.increment_vertical_icon.is_valid();
+		Ref<Texture2D> dec_icon = use_vertical_icons ? theme_cache.decrement_vertical_icon : theme_cache.decrement_icon;
+		Ref<Texture2D> inc_icon = use_vertical_icons ? theme_cache.increment_vertical_icon : theme_cache.increment_icon;
+		const int buttons_strip = (buttons_visible && clip_tabs) ? (use_vertical_icons ? MAX(dec_icon->get_width(), inc_icon->get_width()) : MAX(dec_icon->get_height(), inc_icon->get_height())) : 0;
 		const int content_x = vertical_buttons_on_left ? buttons_strip : 0;
 		const int content_w = get_size().width - buttons_strip;
 		return Rect2(content_x, tabs[p_tab].ofs_cache, content_w, tabs[p_tab].size_cache);
@@ -2575,7 +2598,12 @@ void TabBar::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, increment_hl_icon, "increment_highlight");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, decrement_icon, "decrement");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, decrement_hl_icon, "decrement_highlight");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, increment_vertical_icon, "increment_vertical");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, increment_vertical_hl_icon, "increment_vertical_highlight");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, decrement_vertical_icon, "decrement_vertical");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, decrement_vertical_hl_icon, "decrement_vertical_highlight");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, drop_mark_icon, "drop_mark");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, vertical_drop_mark_icon, "vertical_drop_mark");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabBar, drop_mark_color);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabBar, font_selected_color);
