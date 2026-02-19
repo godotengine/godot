@@ -880,6 +880,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	files_split = memnew(HSplitContainer);
 	files_split->set_split_offset(200 * EDSCALE);
 	files_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	files_split->set_drag_nested_intersections(true);
 	shader_dock->add_child(files_split);
 
 	context_menu = memnew(PopupMenu);
