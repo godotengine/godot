@@ -335,6 +335,14 @@ void JoypadSDL::Joypad::set_joy_motion_sensors_enabled(bool p_enable) {
 	SDL_SetGamepadSensorEnabled(gamepad, SDL_SENSOR_GYRO, p_enable);
 }
 
+bool JoypadSDL::Joypad::has_joy_triggers_vibration() const {
+	return SDL_GetGamepadTypeForID(sdl_instance_idx) == SDL_GAMEPAD_TYPE_XBOXONE;
+}
+
+void JoypadSDL::Joypad::start_joy_triggers_vibration(float p_left_intensity, float p_right_intensity, float p_duration) {
+	SDL_RumbleJoystickTriggers(get_sdl_joystick(), p_left_intensity * 0xFFFF, p_right_intensity * 0xFFFF, p_duration * 1000);
+}
+
 SDL_Joystick *JoypadSDL::Joypad::get_sdl_joystick() const {
 	return SDL_GetJoystickFromID(sdl_instance_idx);
 }

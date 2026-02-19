@@ -96,6 +96,9 @@ public:
 
 		virtual bool has_joy_motion_sensors() const { return false; }
 		virtual void set_joy_motion_sensors_enabled(bool p_enable) {}
+
+		virtual bool has_joy_triggers_vibration() const { return false; }
+		virtual void start_joy_triggers_vibration(float p_left_intensity, float p_right_intensity, float p_duration) {}
 	};
 
 	static constexpr int32_t JOYPADS_MAX = 16;
@@ -212,6 +215,7 @@ private:
 		int hat_current = 0;
 		Dictionary info;
 		bool has_light = false;
+		bool has_triggers_vibration = false;
 		Input::JoypadFeatures *features = nullptr;
 	};
 
@@ -416,6 +420,10 @@ public:
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
 	void vibrate_handheld(int p_duration_ms = 500, float p_amplitude = -1.0);
+
+	bool has_joy_triggers_vibration(int p_device) const;
+	void start_joy_triggers_vibration(int p_device, float p_left_intensity, float p_right_intensity, float p_duration);
+	void stop_joy_triggers_vibration(int p_device);
 
 	void set_mouse_position(const Point2 &p_posf);
 

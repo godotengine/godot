@@ -286,6 +286,15 @@
 				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
+		<method name="has_joy_triggers_vibration" qualifiers="const" experimental="">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns [code]true[/code] if the joypad has triggers vibration (trigger rumble).
+				[b]Note:[/b] This feature is only supported on Xbox One controllers.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
 		<method name="is_action_just_pressed" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="action" type="StringName" />
@@ -658,6 +667,21 @@
 				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
+		<method name="start_joy_triggers_vibration" experimental="">
+			<return type="void" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="left_intensity" type="float" />
+			<param index="2" name="right_intensity" type="float" />
+			<param index="3" name="duration" type="float" />
+			<description>
+				Starts triggers vibration (trigger rumble) on the specified joypad, if available. Not to be confused with DualSense's adaptive triggers.
+				[param left_intensity] should be in the range from [code]0.0[/code] to [code]1.0[/code] (inclusive).
+				[param right_intensity] should be in the range from [code]0.0[/code] to [code]1.0[/code] (inclusive).
+				[param duration] should not be negative (a duration of [code]0.0[/code] will try to play the vibration indefinitely).
+				[b]Note:[/b] This feature is only supported on Xbox One controllers.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
 		<method name="start_joy_vibration">
 			<return type="void" />
 			<param index="0" name="device" type="int" />
@@ -677,6 +701,15 @@
 				Stops the calibration process of the specified joypad's motion sensors.
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
 				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
+			</description>
+		</method>
+		<method name="stop_joy_triggers_vibration" experimental="">
+			<return type="void" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Stops triggers vibration (trigger rumble) on the specified joypad, if available. See also [method start_joy_triggers_vibration]. Not to be confused with DualSense's adaptive triggers.
+				[b]Note:[/b] This feature is only supported on Xbox One controllers.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
 			</description>
 		</method>
 		<method name="stop_joy_vibration">
