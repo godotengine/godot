@@ -695,7 +695,9 @@ void TabContainer::add_child_notify(Node *p_child) {
 	c->set_meta("_tab_index", tab_bar->get_tab_count() - 1);
 
 	_update_margins();
-	if (get_tab_count() == 1) {
+	update_minimum_size();
+	_repaint();
+	if (get_tab_count() == 1 || tabs_position == POSITION_LEFT || tabs_position == POSITION_RIGHT) {
 		queue_redraw();
 	}
 	queue_accessibility_update();
@@ -752,13 +754,15 @@ void TabContainer::remove_child_notify(Node *p_child) {
 	tab_bar->remove_tab(idx);
 	_refresh_tab_indices();
 
-	children_removing.erase(c);
-
 	_update_margins();
-	if (get_tab_count() == 0) {
+	update_minimum_size();
+	_repaint();
+	if (get_tab_count() == 0 || tabs_position == POSITION_LEFT || tabs_position == POSITION_RIGHT) {
 		queue_redraw();
 	}
 	queue_accessibility_update();
+
+	children_removing.erase(c);
 
 	p_child->remove_meta("_tab_index");
 	p_child->remove_meta("_tab_name");
@@ -972,6 +976,8 @@ void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 		child->set_meta("_tab_name", p_title);
 	}
 
+	_update_margins();
+	update_minimum_size();
 	_repaint();
 	queue_redraw();
 }
@@ -982,6 +988,7 @@ String TabContainer::get_tab_title(int p_tab) const {
 
 void TabContainer::set_tab_tooltip(int p_tab, const String &p_tooltip) {
 	tab_bar->set_tab_tooltip(p_tab, p_tooltip);
+	update_minimum_size();
 }
 
 String TabContainer::get_tab_tooltip(int p_tab) const {
@@ -1002,6 +1009,7 @@ void TabContainer::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 	tab_bar->set_tab_icon(p_tab, p_icon);
 
 	_update_margins();
+	update_minimum_size();
 	_repaint();
 	queue_redraw();
 }
@@ -1018,6 +1026,7 @@ void TabContainer::set_tab_icon_max_width(int p_tab, int p_width) {
 	tab_bar->set_tab_icon_max_width(p_tab, p_width);
 
 	_update_margins();
+	update_minimum_size();
 	_repaint();
 	queue_redraw();
 }
@@ -1040,9 +1049,7 @@ void TabContainer::set_tab_disabled(int p_tab, bool p_disabled) {
 	tab_bar->set_tab_disabled(p_tab, p_disabled);
 
 	_update_margins();
-	if (!get_clip_tabs()) {
-		update_minimum_size();
-	}
+	update_minimum_size();
 }
 
 bool TabContainer::is_tab_disabled(int p_tab) const {
@@ -1065,10 +1072,9 @@ void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 	child->hide();
 
 	_update_margins();
-	if (!get_clip_tabs()) {
-		update_minimum_size();
-	}
-	_repaint_call_deferred();
+	update_minimum_size();
+	_repaint();
+	queue_redraw();
 }
 
 bool TabContainer::is_tab_hidden(int p_tab) const {
@@ -1087,6 +1093,7 @@ void TabContainer::set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon) 
 	tab_bar->set_tab_button_icon(p_tab, p_icon);
 
 	_update_margins();
+	update_minimum_size();
 	_repaint();
 }
 
