@@ -277,9 +277,11 @@
 		<method name="physics_iteration">
 			<return type="bool" />
 			<param index="0" name="delta" type="float" />
+			<param index="1" name="increment_frames" type="bool" default="true" />
 			<description>
 				Runs one physics step: synchronizes the physics servers, calls [method Node._physics_process] on the scene tree, runs navigation and physics stepping, then flushes the message queue. Use this when [member ProjectSettings.physics/common/use_builtin_physics_stepping] is [code]false[/code] to drive physics manually (e.g. for rollback netcode or custom tick rates).
 				[param delta] should typically be the fixed physics step in seconds, e.g. [code]1.0 / Engine.physics_ticks_per_second[/code].
+				If [param increment_frames] is [code]true[/code], [method get_physics_frames] is incremented for this step (default). Set to [code]false[/code] when re-running physics for the same logical frame (e.g. rollback re-simulation) so that input and frame-dependent logic stay consistent.
 				Returns [code]true[/code] if the main loop should exit (e.g. the scene tree requested quit during [method Node._physics_process]); otherwise returns [code]false[/code].
 				[b]Note:[/b] When built-in physics stepping is disabled, you must call this method yourself each time you want to advance the physics simulation. Calling it from [method Node._process] is a common approach.
 			</description>

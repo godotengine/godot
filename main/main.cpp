@@ -4801,7 +4801,7 @@ static uint64_t s_physics_iteration_ticks = 0;
 static uint64_t s_navigation_iteration_ticks = 0;
 #endif
 
-bool Main::physics_iteration(double delta) {
+bool Main::physics_iteration(double delta, bool increment_frames) {
 	GodotProfileZone("Physics Step");
 	GodotProfileZoneGroupedFirst(_physics_zone, "setup");
 	if (Input::get_singleton()->is_agile_input_event_flushing()) {
@@ -4809,7 +4809,9 @@ bool Main::physics_iteration(double delta) {
 	}
 
 	Engine::get_singleton()->_in_physics = true;
-	Engine::get_singleton()->_physics_frames++;
+	if (increment_frames) {
+		Engine::get_singleton()->_physics_frames++;
+	}
 
 	uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 

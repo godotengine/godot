@@ -80,7 +80,7 @@ public:
 	static int start();
 
 	static bool iteration();
-	static bool physics_iteration(double delta);
+	static bool physics_iteration(double delta, bool increment_frames = true);
 	static void force_redraw();
 
 	static bool is_iterating();

@@ -624,7 +624,7 @@ public:
 
 	bool is_embedded_in_editor() const;
 
-	bool physics_iteration(double p_delta);
+	bool physics_iteration(double p_delta, bool p_increment_frames = true);
 
 	// `set_write_movie_path()` is not exposed to the scripting API as changing it at run-time has no effect.
 	String get_write_movie_path() const;

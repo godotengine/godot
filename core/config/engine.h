@@ -42,7 +42,7 @@ class TypedArray;
 
 class Engine {
 	// Called by main loop when built-in stepping is disabled. Set from main.cpp.
-	using PhysicsIterationCallback = bool (*)(double);
+	using PhysicsIterationCallback = bool (*)(double, bool);
 	PhysicsIterationCallback physics_iteration_callback = nullptr;
 
 public:
@@ -231,7 +231,7 @@ public:
 	// Manual physics stepping: call once per physics step when built-in stepping is disabled.
 	// Returns true if the main loop should exit (e.g. scene tree requested quit).
 	void set_physics_iteration_callback(PhysicsIterationCallback p_callback);
-	bool physics_iteration(double p_delta);
+	bool physics_iteration(double p_delta, bool p_increment_frames = true);
 
 	Engine();
 	virtual ~Engine();
