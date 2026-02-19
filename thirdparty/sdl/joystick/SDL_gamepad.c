@@ -55,7 +55,11 @@
 #define SDL_GAMEPAD_SDKLE_FIELD         "sdk<=:"
 #define SDL_GAMEPAD_SDKLE_FIELD_SIZE    SDL_strlen(SDL_GAMEPAD_SDKLE_FIELD)
 
+#define SDL_GAMEPAD_JOYCON_GUID_COUNT	16
+
 static bool SDL_gamepads_initialized;
+static SDL_GUID SDL_joycons_guids[SDL_GAMEPAD_JOYCON_GUID_COUNT] = { 0 };
+static int SDL_joycon_guids_last = 0;
 static SDL_Gamepad *SDL_gamepads SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 
 // The face button style of a gamepad
@@ -742,6 +746,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
     char mapping_string[1024];
     Uint16 vendor;
     Uint16 product;
+    int i;
 
     SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
 
@@ -814,6 +819,16 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                 } else {
                     SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,rightshoulder:b10,start:b6,x:b2,y:b3,paddle1:b12,paddle3:b14,", sizeof(mapping_string));
                 }
+            }
+
+            for (i = 0; i < SDL_joycon_guids_last; i++) {
+                if (memcmp(&guid, &SDL_joycons_guids[i], sizeof(SDL_GUID)) == 0) {
+                    break;
+                }
+            }
+
+            if (i == SDL_joycon_guids_last && SDL_joycon_guids_last < SDL_GAMEPAD_JOYCON_GUID_COUNT) {
+                SDL_joycons_guids[SDL_joycon_guids_last++] = guid;
             }
             break;
         }
@@ -2426,6 +2441,14 @@ static bool SDL_GetGamepadMappingFilePath(char *path, size_t size)
 #endif
 }
 
+static void SDLCALL SDL_GamepadHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint) {
+    for (int i = 0; i < SDL_joycon_guids_last; i++) {
+        if (SDL_joycons_guids[i].data[0] != 0) {
+            SDL_CreateMappingForHIDAPIGamepad(SDL_joycons_guids[i]);
+        }
+    }
+}
+
 /*
  * Initialize the gamepad system, mostly load our DB of gamepad config mappings
  */
@@ -2456,6 +2479,8 @@ bool SDL_InitGamepadMappings(void)
 
     SDL_LoadVIDPIDList(&SDL_allowed_gamepads);
     SDL_LoadVIDPIDList(&SDL_ignored_gamepads);
+
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS, SDL_GamepadHintChanged, NULL);
 
     PopMappingChangeTracking();
 

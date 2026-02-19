@@ -718,6 +718,14 @@
 		<member name="emulate_touch_from_mouse" type="bool" setter="set_emulate_touch_from_mouse" getter="is_emulating_touch_from_mouse">
 			If [code]true[/code], sends touch input events when clicking or dragging the mouse. See also [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse].
 		</member>
+		<member name="joycons_separate" type="bool" setter="set_joycons_separate" getter="is_joycons_separate">
+			If [code]true[/code], each JoyCon pair will be treated as 2 separate joypads.
+			[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+		</member>
+		<member name="joycons_vertical" type="bool" setter="set_joycons_vertical" getter="is_joycons_vertical">
+			If [code]true[/code], separate JoyCons will have their natural button layout as if they were held vertically instead of horizontally.
+			[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+		</member>
 		<member name="mouse_mode" type="int" setter="set_mouse_mode" getter="get_mouse_mode" enum="Input.MouseMode">
 			Controls the mouse mode.
 		</member>

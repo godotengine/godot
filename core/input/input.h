@@ -123,6 +123,8 @@ private:
 	int64_t mouse_window = 0;
 	bool legacy_just_pressed_behavior = false;
 	bool disable_input = false;
+	bool joycons_separate = false;
+	bool joycons_vertical = false;
 
 	struct ActionState {
 		uint64_t pressed_physics_frame = UINT64_MAX;
@@ -317,6 +319,8 @@ private:
 
 	EventDispatchFunc event_dispatch_function = nullptr;
 
+	void _project_settings_changed();
+
 #ifndef DISABLE_DEPRECATED
 	void _vibrate_handheld_bind_compat_91143(int p_duration_ms = 500);
 	static void _bind_compatibility_methods();
@@ -416,6 +420,12 @@ public:
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
 	void vibrate_handheld(int p_duration_ms = 500, float p_amplitude = -1.0);
+
+	void set_joycons_separate(bool p_enable);
+	bool is_joycons_separate() const;
+
+	void set_joycons_vertical(bool p_enable);
+	bool is_joycons_vertical() const;
 
 	void set_mouse_position(const Point2 &p_posf);
 
