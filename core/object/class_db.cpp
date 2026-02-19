@@ -1462,6 +1462,15 @@ bool ClassDB::get_signal(const StringName &p_class, const StringName &p_signal, 
 	return false;
 }
 
+void ClassDB::add_property_category(const StringName &p_class, const String &p_name, const String &p_prefix) {
+	Locker::Lock lock(Locker::STATE_WRITE);
+	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL(type);
+
+	String prefix = p_prefix;
+	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, prefix, PROPERTY_USAGE_CATEGORY));
+}
+
 void ClassDB::add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 	ClassInfo *type = classes.getptr(p_class);
