@@ -446,7 +446,8 @@ void ScriptTextEditor::add_callback(const String &p_function, const PackedString
 	if (pos == -1) {
 		// Function does not exist, create it at the end of the file.
 		int last_line = code_editor->get_text_editor()->get_line_count() - 1;
-		String func = language->make_function("", p_function, p_args);
+		String class_name = script->get_instance_base_type();
+		String func = language->make_function(class_name, p_function, p_args);
 		code_editor->get_text_editor()->insert_text("\n\n" + func, last_line, code_editor->get_text_editor()->get_line(last_line).length());
 		pos = last_line + 3;
 	}

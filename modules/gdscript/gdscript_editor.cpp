@@ -538,7 +538,16 @@ String GDScriptLanguage::make_function(const String &p_class, const String &p_na
 			}
 
 			const String name_unstripped = p_args[i].get_slicec(':', 0);
-			result += name_unstripped.strip_edges();
+			String arg_name = name_unstripped.strip_edges();
+
+			// Avoid shadowing class properties.
+			if (!p_class.is_empty() && ClassDB::class_exists(p_class)) {
+				if (ClassDB::has_property(p_class, arg_name, false)) {
+					arg_name = "p_" + arg_name;
+				}
+			}
+
+			result += arg_name;
 
 			if (type_hints) {
 				const String type_stripped = p_args[i].substr(name_unstripped.length() + 1).strip_edges();
