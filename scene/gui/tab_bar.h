@@ -41,10 +41,14 @@ class TabBar : public Control {
 
 public:
 	enum AlignmentMode {
-		ALIGNMENT_LEFT,
+		ALIGNMENT_BEGIN,
 		ALIGNMENT_CENTER,
-		ALIGNMENT_RIGHT,
+		ALIGNMENT_END,
 		ALIGNMENT_MAX,
+#ifndef DISABLE_DEPRECATED
+		ALIGNMENT_LEFT = ALIGNMENT_BEGIN,
+		ALIGNMENT_RIGHT = ALIGNMENT_END,
+#endif
 	};
 
 	enum CloseButtonDisplayPolicy {
@@ -68,6 +72,21 @@ public:
 		TAB_SIZING_JUSTIFY,
 		TAB_SIZING_EXPAND,
 		TAB_SIZING_MAX
+	};
+
+	enum TabTextRotation {
+		TAB_TEXT_ROTATION_NONE,
+		TAB_TEXT_ROTATION_CLOCKWISE,
+		TAB_TEXT_ROTATION_COUNTER_CLOCKWISE,
+		TAB_TEXT_ROTATION_MAX
+	};
+
+	enum TabStyleSide {
+		TAB_STYLE_SIDE_TOP,
+		TAB_STYLE_SIDE_BOTTOM,
+		TAB_STYLE_SIDE_LEFT,
+		TAB_STYLE_SIDE_RIGHT,
+		TAB_STYLE_SIDE_MAX
 	};
 
 private:
@@ -119,12 +138,14 @@ private:
 	Vector<Tab> tabs;
 	int current = -1;
 	int previous = -1;
-	AlignmentMode tab_alignment = ALIGNMENT_LEFT;
+	AlignmentMode tab_alignment = ALIGNMENT_BEGIN;
 	SizingMode tab_sizing = TAB_SIZING_FIT_CONTENT;
 	bool clip_tabs = true;
 	int rb_hover = -1;
 	bool rb_pressing = false;
-	bool tab_style_v_flip = false;
+	TabStyleSide tab_style_side = TAB_STYLE_SIDE_TOP;
+	bool vertical = false;
+	TabTextRotation tab_text_rotation = TAB_TEXT_ROTATION_NONE;
 
 	bool select_with_rmb = false;
 	bool deselect_enabled = false;
@@ -168,7 +189,12 @@ private:
 		Ref<Texture2D> increment_hl_icon;
 		Ref<Texture2D> decrement_icon;
 		Ref<Texture2D> decrement_hl_icon;
+		Ref<Texture2D> increment_vertical_icon;
+		Ref<Texture2D> increment_vertical_hl_icon;
+		Ref<Texture2D> decrement_vertical_icon;
+		Ref<Texture2D> decrement_vertical_hl_icon;
 		Ref<Texture2D> drop_mark_icon;
+		Ref<Texture2D> vertical_drop_mark_icon;
 		Color drop_mark_color;
 
 		Ref<Font> font;
@@ -193,8 +219,24 @@ private:
 
 	Timer *hover_switch_delay = nullptr;
 
+	struct TabMetrics {
+		int row_width = 0;
+		int row_height = 0;
+		int layout_size = 0;
+	};
+
 	int get_tab_width(int p_idx) const;
 	Size2 _get_tab_icon_size(int p_idx) const;
+	TabMetrics _get_tab_metrics(int p_idx, bool p_for_minimum_size) const;
+	void _get_scroll_button_icons(Ref<Texture2D> &r_dec_icon, Ref<Texture2D> &r_inc_icon) const;
+	void _get_scroll_button_rects(Rect2 &r_dec_rect, Rect2 &r_inc_rect) const;
+	Size2 _get_vertical_popup_button_min_size(const TabBar *p_tab_bar) const;
+	bool _is_point_primary_before_or_at_mid(const Point2 &p_point, const Rect2 &p_rect) const;
+	bool _is_point_primary_after_mid(const Point2 &p_point, const Rect2 &p_rect) const;
+	bool _is_point_before_first_tab(const Point2 &p_point) const;
+	int _get_primary_limit_minus_buttons(int p_primary_limit) const;
+	int _get_reserved_vertical_buttons_row_height(bool p_assume_buttons_visible = false) const;
+	Rect2 _get_tabs_content_rect(bool p_assume_buttons_visible = false) const;
 	void _ensure_no_over_offset();
 	bool _can_deselect() const;
 
@@ -203,6 +245,7 @@ private:
 	void _hover_switch_timeout();
 
 	void _on_mouse_exited();
+	void _on_maximum_size_changed();
 
 	void _shape(int p_tab);
 	void _draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, const Color &p_icon_color, int p_index, float p_x, bool p_focus);
@@ -285,7 +328,18 @@ public:
 	void set_clip_tabs(bool p_clip_tabs);
 	bool get_clip_tabs() const;
 
+	void set_tab_style_side(TabStyleSide p_side);
+	TabStyleSide get_tab_style_side() const;
+
+#ifndef DISABLE_DEPRECATED
 	void set_tab_style_v_flip(bool p_tab_style_v_flip);
+#endif
+
+	void set_vertical(bool p_vertical);
+	bool is_vertical() const;
+
+	void set_tab_text_rotation(TabTextRotation p_rotation);
+	TabTextRotation get_tab_text_rotation() const;
 
 	void move_tab(int p_from, int p_to);
 
@@ -312,6 +366,7 @@ public:
 	void set_tab_offset(int p_offset);
 	int get_tab_offset() const;
 	bool get_offset_buttons_visible() const;
+	int get_vertical_buttons_row_top() const;
 
 	void remove_tab(int p_idx);
 
@@ -353,4 +408,6 @@ public:
 
 VARIANT_ENUM_CAST(TabBar::AlignmentMode);
 VARIANT_ENUM_CAST(TabBar::SizingMode);
+VARIANT_ENUM_CAST(TabBar::TabStyleSide);
+VARIANT_ENUM_CAST(TabBar::TabTextRotation);
 VARIANT_ENUM_CAST(TabBar::CloseButtonDisplayPolicy);
