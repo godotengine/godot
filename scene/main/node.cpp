@@ -4211,8 +4211,8 @@ void Node::disconnect_all(const StringName &p_signal) {
 
 #ifdef TOOLS_ENABLED
 	// Already under thread guard, don't check again.
-	List<Connection> connections;
-	Object::get_signal_connection_list(p_signal, &connections);
+	List<Connection> _connections;
+	Object::get_signal_connection_list(p_signal, &_connections);
 #endif
 	[[maybe_unused]] bool changed = Object::disconnect_all(p_signal);
 
