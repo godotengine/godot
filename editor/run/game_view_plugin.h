@@ -181,6 +181,10 @@ class GameView : public VBoxContainer {
 	bool debug_mute_audio = false;
 
 	bool selection_hide = true;
+
+	int resolution_preset_index = 0;
+	Vector2i custom_resolution;
+
 	bool selection_avoid_locked = false;
 	bool selection_prefer_group = false;
 
