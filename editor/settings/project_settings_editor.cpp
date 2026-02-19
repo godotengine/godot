@@ -72,6 +72,7 @@ void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 	}
 
 	_focus_current_search_box();
+	_settings_popup();
 }
 
 void ProjectSettingsEditor::popup_for_override(const String &p_override) {
@@ -159,6 +160,73 @@ void ProjectSettingsEditor::_setting_selected(const String &p_path) {
 	property_box->set_text(general_settings_inspector->get_current_section() + "/" + p_path);
 
 	_update_property_box(); // set_text doesn't trigger text_changed
+}
+
+void ProjectSettingsEditor::_settings_popup() {
+	int preset = ps->get_setting("display/window/preset", 0);
+	int custom = window_presets.size();
+	if (preset == custom) {
+		GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/preset", PROPERTY_HINT_ENUM, ps->WINDOW_PRESETS + ",Custom"), 0);
+		general_settings_inspector->update_category_list();
+		Preset::set_custom(true);
+	}
+}
+
+void ProjectSettingsEditor::_settings_changed() {
+	if (Preset::is_updating()) {
+		return;
+	}
+
+	if (ps->check_changed_settings_in_group("display/window/preset")) {
+		Preset::set_updating(true);
+		int preset = ps->get_setting("display/window/preset", 0);
+		int custom = window_presets.size();
+		if (preset < custom) {
+			if (Preset::is_custom()) {
+				GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/preset", PROPERTY_HINT_ENUM, ps->WINDOW_PRESETS), 0);
+				general_settings_inspector->update_category_list();
+				Preset::set_custom(false);
+			}
+			for (const KeyValue<StringName, Variant> &E : window_presets[preset].data) {
+				ps->set_setting(E.key, E.value);
+			}
+		}
+		Preset::set_updating(false);
+	} else if (ps->check_changed_settings_in_group("display/window")) {
+		Preset::set_updating(true);
+		if (Preset::is_custom()) {
+			for (int i = 0; i < window_presets.size(); i++) {
+				int same = 0;
+				for (const KeyValue<StringName, Variant> &E : window_presets[i].data) {
+					if (ps->get_setting(E.key) == E.value) {
+						same++;
+					}
+				}
+				if (same == window_presets[i].data.size()) {
+					GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/preset", PROPERTY_HINT_ENUM, ps->WINDOW_PRESETS), 0);
+					general_settings_inspector->update_category_list();
+					ps->set_setting("display/window/preset", i);
+					Preset::set_custom(false);
+					break;
+				}
+			}
+		} else {
+			int preset = ps->get_setting("display/window/preset", 0);
+			int custom = window_presets.size();
+			if (preset < custom) {
+				for (const KeyValue<StringName, Variant> &E : window_presets[preset].data) {
+					if (ps->get_setting(E.key) != E.value) {
+						GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/preset", PROPERTY_HINT_ENUM, ps->WINDOW_PRESETS + ",Custom"), 0);
+						general_settings_inspector->update_category_list();
+						ps->set_setting("display/window/preset", custom);
+						Preset::set_custom(true);
+						break;
+					}
+				}
+			}
+		}
+		Preset::set_updating(false);
+	}
 }
 
 void ProjectSettingsEditor::_add_setting() {
@@ -693,7 +761,35 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	set_clamp_to_embedder(true);
 
+	// Window pressets
+	// Default"
+	window_presets.push_back(Preset());
+	// Desktop Game Non-pixel art 4K
+	window_presets.push_back(Preset(3840, 2160, Preset::CANVAS_ITEMS, Preset::EXPAND, Preset::FRACTIONAL, Preset::LANDSCAPE, 3.0f));
+	// Desktop Game Non-pixel art HD
+	window_presets.push_back(Preset(1920, 1080, Preset::CANVAS_ITEMS, Preset::EXPAND, Preset::FRACTIONAL, Preset::LANDSCAPE));
+	// Desktop Game Pixel art Large
+	window_presets.push_back(Preset(640, 480, Preset::VIEWPORT, Preset::KEEP, Preset::INTEGER, Preset::LANDSCAPE));
+	// Desktop Game Pixel art Medium
+	window_presets.push_back(Preset(640, 360, Preset::VIEWPORT, Preset::KEEP, Preset::INTEGER, Preset::LANDSCAPE));
+	// Desktop Game Pixel art Small
+	window_presets.push_back(Preset(256, 224, Preset::VIEWPORT, Preset::KEEP, Preset::INTEGER, Preset::LANDSCAPE));
+	// Mobile Game Landscape HD
+	window_presets.push_back(Preset(1920, 1080, Preset::CANVAS_ITEMS, Preset::EXPAND, Preset::FRACTIONAL, Preset::LANDSCAPE, 2.0f));
+	// Mobile Game Landscape
+	window_presets.push_back(Preset(1280, 720, Preset::CANVAS_ITEMS, Preset::EXPAND, Preset::FRACTIONAL, Preset::LANDSCAPE));
+	// Mobile Game Landscape Tablets
+	window_presets.push_back(Preset(1280, 960, Preset::CANVAS_ITEMS, Preset::EXPAND, Preset::FRACTIONAL, Preset::LANDSCAPE));
+	// Mobile Game Portrait HD
+	window_presets.push_back(Preset(1080, 1920, Preset::CANVAS_ITEMS, Preset::EXPAND, Preset::FRACTIONAL, Preset::LANDSCAPE, 2.0f));
+	// Mobile Game Portrait
+	window_presets.push_back(Preset(720, 1280, Preset::CANVAS_ITEMS, Preset::EXPAND, Preset::FRACTIONAL, Preset::LANDSCAPE));
+	// Mobile Game Portrait Tablets
+	window_presets.push_back(Preset(960, 1280, Preset::CANVAS_ITEMS, Preset::EXPAND, Preset::FRACTIONAL, Preset::LANDSCAPE));
+
 	ps = ProjectSettings::get_singleton();
+	ps->connect("settings_changed", callable_mp(this, &ProjectSettingsEditor::_settings_changed));
+
 	data = p_data;
 
 	tab_container = memnew(TabContainer);

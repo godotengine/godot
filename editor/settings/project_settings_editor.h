@@ -52,11 +52,112 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	inline static ProjectSettingsEditor *singleton = nullptr;
 
+	struct Preset {
+	private:
+		static inline bool updating = false;
+		static inline bool custom = false;
+
+	public:
+		enum StretchMode {
+			DISABLED,
+			CANVAS_ITEMS,
+			VIEWPORT,
+		};
+
+		enum StretchAspect {
+			IGNORE,
+			KEEP,
+			KEEP_WIDTH,
+			KEEP_HEIGHT,
+			EXPAND,
+		};
+
+		enum StretchScaleMode {
+			FRACTIONAL,
+			INTEGER,
+		};
+
+		enum Orientation {
+			LANDSCAPE,
+			PORTRAIT,
+			REVERSE_LANDSCAPE,
+			REVERSE_PORTRAIT,
+			SENSOR_LANDSCAPE,
+			SENSOR_PORTRAIT,
+			SENSOR,
+		};
+
+		const Vector<String> STRETCH_MODE = {
+			"disabled",
+			"canvas_items",
+			"viewport",
+		};
+		const Vector<String> STRETCH_ASPECT = {
+			"ignore",
+			"keep",
+			"keep_width",
+			"keep_height",
+			"expand",
+		};
+		const Vector<String> STRETCH_SCALE_MODE = {
+			"fractional",
+			"integer",
+		};
+
+		HashMap<StringName, Variant> data;
+
+		Preset(int p_width = 1152, int p_height = 648, StretchMode p_stretch_mode = DISABLED,
+				StretchAspect p_stretch_aspect = KEEP, StretchScaleMode p_scale_mode = FRACTIONAL,
+				Orientation p_orientation = LANDSCAPE, float p_theme_scale = 1.0f) {
+			data["display/window/size/viewport_width"] = p_width;
+			data["display/window/size/viewport_height"] = p_height;
+			data["display/window/size/mode"] = GLOBAL_GET_INIT("display/window/size/mode");
+			data["display/window/size/initial_position_type"] = GLOBAL_GET_INIT("display/window/size/initial_position_type");
+			data["display/window/size/initial_position"] = GLOBAL_GET_INIT("display/window/size/initial_position");
+			data["display/window/size/initial_screen"] = GLOBAL_GET_INIT("display/window/size/initial_screen");
+			data["display/window/size/resizable"] = GLOBAL_GET_INIT("display/window/size/resizable");
+			data["display/window/size/borderless"] = GLOBAL_GET_INIT("display/window/size/borderless");
+			data["display/window/size/always_on_top"] = GLOBAL_GET_INIT("display/window/size/always_on_top");
+			data["display/window/size/transparent"] = GLOBAL_GET_INIT("display/window/size/transparent");
+			data["display/window/size/extend_to_title"] = GLOBAL_GET_INIT("display/window/size/extend_to_title");
+			data["display/window/size/no_focus"] = GLOBAL_GET_INIT("display/window/size/no_focus");
+			data["display/window/size/sharp_corners"] = GLOBAL_GET_INIT("display/window/size/sharp_corners");
+			data["display/window/size/minimize_disabled"] = GLOBAL_GET_INIT("display/window/size/minimize_disabled");
+			data["display/window/size/maximize_disabled"] = GLOBAL_GET_INIT("display/window/size/maximize_disabled");
+			data["display/window/size/window_width_override"] = GLOBAL_GET_INIT("display/window/size/window_width_override");
+			data["display/window/size/window_height_override"] = GLOBAL_GET_INIT("display/window/size/window_height_override");
+			data["display/window/energy_saving/keep_screen_on"] = GLOBAL_GET_INIT("display/window/energy_saving/keep_screen_on");
+			data["display/window/subwindows/embed_subwindows"] = GLOBAL_GET_INIT("display/window/subwindows/embed_subwindows");
+			data["display/window/frame_pacing/android/enable_frame_pacing"] = GLOBAL_GET_INIT("display/window/frame_pacing/android/enable_frame_pacin");
+			data["display/window/frame_pacing/android/swappy_mode"] = GLOBAL_GET_INIT("display/window/frame_pacing/android/swappy_mode");
+			data["display/window/stretch/mode"] = STRETCH_MODE[p_stretch_mode];
+			data["display/window/stretch/aspect"] = STRETCH_ASPECT[p_stretch_aspect];
+			data["display/window/stretch/scale"] = GLOBAL_GET_INIT("display/window/stretch/scale");
+			data["display/window/stretch/scale_mode"] = STRETCH_SCALE_MODE[p_scale_mode];
+			data["display/window/dpi/allow_hidpi"] = GLOBAL_GET_INIT("display/window/dpi/allow_hidpi");
+			data["display/window/per_pixel_transparency/allowed"] = GLOBAL_GET_INIT("display/window/per_pixel_transparency/allowed");
+			data["display/window/handheld/orientation"] = p_orientation;
+			data["display/window/vsync/vsync_mode"] = GLOBAL_GET_INIT("display/window/vsync/vsync_mode");
+			data["display/window/ios/allow_high_refresh_rate"] = GLOBAL_GET_INIT("display/window/ios/allow_high_refresh_rate");
+			data["display/window/ios/hide_home_indicator"] = GLOBAL_GET_INIT("display/window/ios/hide_home_indicator");
+			data["display/window/ios/hide_status_bar"] = GLOBAL_GET_INIT("display/window/ios/hide_status_bar");
+			data["display/window/ios/suppress_ui_gesture"] = GLOBAL_GET_INIT("display/window/ios/suppress_ui_gesture");
+			data["gui/theme/default_theme_scale"] = p_theme_scale;
+		}
+
+		static void set_updating(bool p_updating) { updating = p_updating; }
+		static bool is_updating() { return updating; }
+		static void set_custom(bool p_custom) { custom = p_custom; }
+		static bool is_custom() { return custom; }
+	};
+
 	enum {
 		FEATURE_ALL,
 		FEATURE_CUSTOM,
 		FEATURE_FIRST,
 	};
+
+	Vector<Preset> window_presets;
 
 	ProjectSettings *ps = nullptr;
 	Timer *timer = nullptr;
@@ -107,6 +208,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 	String _get_setting_name() const;
 	void _setting_edited(const String &p_name);
 	void _setting_selected(const String &p_path);
+	void _settings_popup();
+	void _settings_changed();
 	void _add_setting();
 	void _delete_setting();
 

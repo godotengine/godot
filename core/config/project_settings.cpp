@@ -222,6 +222,11 @@ void ProjectSettings::set_initial_value(const String &p_name, const Variant &p_v
 	props[p_name].initial = p_value.duplicate();
 }
 
+Variant ProjectSettings::get_initial_value(const String &p_name) const {
+	ERR_FAIL_COND_V_MSG(!props.has(p_name), Variant(), vformat("Request for nonexistent project setting: '%s'.", p_name));
+	return props[p_name].initial;
+}
+
 void ProjectSettings::set_restart_if_changed(const String &p_name, bool p_restart) {
 	ERR_FAIL_COND_MSG(!props.has(p_name), vformat("Request for nonexistent project setting: '%s'.", p_name));
 	props[p_name].restart_if_changed = p_restart;
@@ -1703,6 +1708,8 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "accessibility/general/accessibility_support", PROPERTY_HINT_ENUM, "Auto (When Screen Reader is Running),Always Active,Disabled"), 0);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "accessibility/general/updates_per_second", PROPERTY_HINT_RANGE, "1,100,1"), 60);
+
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/preset", PROPERTY_HINT_ENUM, WINDOW_PRESETS), 0);
 
 	// The default window size is tuned to:
 	// - Have a 16:9 aspect ratio,

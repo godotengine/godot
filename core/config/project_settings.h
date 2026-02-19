@@ -159,6 +159,8 @@ protected:
 public:
 	static const int CONFIG_VERSION = 5;
 
+	const String WINDOW_PRESETS = "Default,Desktop Game Non-pixel art 4K,Desktop Game Non-pixel art HD,Desktop Game Pixel art Large,Desktop Game Pixel art Medium,Desktop Game Pixel art Small,Mobile Game Landscape HD,Mobile Game Landscape,Mobile Game Landscape Tablets,Mobile Game Portrait HD,Mobile Game Portrait,Mobile Game Portrait Tablets";
+
 #ifdef TOOLS_ENABLED
 	HashMap<String, PropertyInfo> editor_settings_info;
 #endif
@@ -175,6 +177,7 @@ public:
 	String globalize_path(const String &p_path) const;
 
 	void set_initial_value(const String &p_name, const Variant &p_value);
+	Variant get_initial_value(const String &p_name) const;
 	void set_as_basic(const String &p_name, bool p_basic);
 	void set_as_internal(const String &p_name, bool p_internal);
 	void set_restart_if_changed(const String &p_name, bool p_restart);
@@ -262,6 +265,7 @@ Variant _GLOBAL_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p
 #define GLOBAL_DEF_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, true)
 #define GLOBAL_DEF_RST_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true)
 #define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get_setting_with_override(m_var)
+#define GLOBAL_GET_INIT(m_var) ProjectSettings::get_singleton()->get_initial_value(m_var)
 
 #define GLOBAL_DEF_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, false, true)
 #define GLOBAL_DEF_RST_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, false, true)
