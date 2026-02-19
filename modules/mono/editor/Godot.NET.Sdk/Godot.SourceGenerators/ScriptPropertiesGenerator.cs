@@ -175,7 +175,8 @@ namespace Godot.SourceGenerators
 
             source.Append("    }\n"); // class GodotInternal
 
-            if (godotClassProperties.Length > 0 || godotClassFields.Length > 0)
+            if (!symbol.IsStatic &&
+                (godotClassProperties.Length > 0 || godotClassFields.Length > 0))
             {
                 string type = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
                 // Generate SetGodotClassPropertyValue
@@ -383,7 +384,7 @@ namespace Godot.SourceGenerators
             source
                 .Append(
                 $$"""
-                        .Register(MethodName.@{{propertyMemberName}}, 1, 
+                        .Register(PropertyName.@{{propertyMemberName}}, 1, 
                             [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
                             static (GodotObject scriptInstance, scoped in godot_variant value) =>
                             {
@@ -409,14 +410,14 @@ namespace Godot.SourceGenerators
             source
                 .Append(
                 $$"""
-                        .Register(MethodName.@{{propertyMemberName}}, 0, 
+                        .Register(PropertyName.@{{propertyMemberName}}, 0, 
                             [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
                             static (GodotObject scriptInstance, scoped in godot_variant _) =>
                             {
                                 var ret = Unsafe.As<GodotObject, {{type}}>(ref scriptInstance).@{{propertyMemberName}};
                                 return 
                 """)
-                .AppendManagedToNativeVariantExpr("value", propertyTypeSymbol, propertyMarshalType)
+                .AppendManagedToNativeVariantExpr("ret", propertyTypeSymbol, propertyMarshalType)
                 .Append(";\n")
                 .Append("""
                             })
