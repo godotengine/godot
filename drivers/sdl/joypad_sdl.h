@@ -62,6 +62,8 @@ private:
 		virtual bool has_joy_motion_sensors() const override;
 		virtual void set_joy_motion_sensors_enabled(bool p_enable) override;
 
+		bool is_joycons() const;
+
 		SDL_Joystick *get_sdl_joystick() const;
 		SDL_Gamepad *get_sdl_gamepad() const;
 	};
@@ -69,5 +71,12 @@ private:
 	Joypad joypads[Input::JOYPADS_MAX];
 	HashMap<SDL_JoystickID, int> sdl_instance_id_to_joypad_id;
 
+	bool joycons_separate = false;
+	bool joycons_vertical = false;
+	uint8_t joycons_count = 0;
+
+	void open_joypad(SDL_JoystickID p_sdl_instance_idx);
 	void close_joypad(int p_pad_idx);
+
+	void check_joycon_config();
 };

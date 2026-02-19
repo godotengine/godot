@@ -1657,6 +1657,14 @@
 			If [code]false[/code], no input will be lost.
 			[b]Note:[/b] You should in nearly all cases prefer the [code]false[/code] setting. The legacy behavior is to enable supporting old projects that rely on the old logic, without changes to script.
 		</member>
+		<member name="input_devices/joypads/treat_joycons_as_held_vertically" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], separate JoyCons will have their natural button layout as if they were held vertically instead of horizontally.
+			[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+		</member>
+		<member name="input_devices/joypads/treat_joycons_as_separate_joypads" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], each JoyCon pair will be treated as 2 separate joypads.
+			[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+		</member>
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
 			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].

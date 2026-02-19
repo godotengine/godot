@@ -154,6 +154,10 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
 	ClassDB::bind_method(D_METHOD("vibrate_handheld", "duration_ms", "amplitude"), &Input::vibrate_handheld, DEFVAL(500), DEFVAL(-1.0));
+	ClassDB::bind_method(D_METHOD("set_joycons_separate", "enable"), &Input::set_joycons_separate);
+	ClassDB::bind_method(D_METHOD("is_joycons_separate"), &Input::is_joycons_separate);
+	ClassDB::bind_method(D_METHOD("set_joycons_vertical", "enable"), &Input::set_joycons_vertical);
+	ClassDB::bind_method(D_METHOD("is_joycons_vertical"), &Input::is_joycons_vertical);
 	ClassDB::bind_method(D_METHOD("get_gravity"), &Input::get_gravity);
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
 	ClassDB::bind_method(D_METHOD("get_magnetometer"), &Input::get_magnetometer);
@@ -202,6 +206,8 @@ void Input::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_accumulated_input"), "set_use_accumulated_input", "is_using_accumulated_input");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_mouse_from_touch"), "set_emulate_mouse_from_touch", "is_emulating_mouse_from_touch");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_touch_from_mouse"), "set_emulate_touch_from_mouse", "is_emulating_touch_from_mouse");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "joycons_separate"), "set_joycons_separate", "is_joycons_separate");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "joycons_vertical"), "set_joycons_vertical", "is_joycons_vertical");
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
@@ -369,6 +375,11 @@ bool Input::is_mouse_button_pressed(MouseButton p_button) const {
 	}
 
 	return mouse_button_mask.has_flag(mouse_button_to_mask(p_button));
+}
+
+void Input::_project_settings_changed() {
+	joycons_separate = GLOBAL_GET("input_devices/joypads/treat_joycons_as_separate_joypads");
+	joycons_vertical = GLOBAL_GET("input_devices/joypads/treat_joycons_as_held_vertically");
 }
 
 static JoyAxis _combine_device(JoyAxis p_value, int p_device) {
@@ -1253,6 +1264,22 @@ void Input::stop_joy_vibration(int p_device) {
 
 void Input::vibrate_handheld(int p_duration_ms, float p_amplitude) {
 	OS::get_singleton()->vibrate_handheld(p_duration_ms, p_amplitude);
+}
+
+void Input::set_joycons_separate(bool p_enable) {
+	joycons_separate = p_enable;
+}
+
+bool Input::is_joycons_separate() const {
+	return joycons_separate;
+}
+
+void Input::set_joycons_vertical(bool p_enable) {
+	joycons_vertical = p_enable;
+}
+
+bool Input::is_joycons_vertical() const {
+	return joycons_vertical;
 }
 
 void Input::set_gravity(const Vector3 &p_gravity) {
@@ -2240,6 +2267,8 @@ Input::Input() {
 	gravity_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gravity", false);
 	gyroscope_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gyroscope", false);
 	magnetometer_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_magnetometer", false);
+
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Input::_project_settings_changed));
 }
 
 Input::~Input() {
