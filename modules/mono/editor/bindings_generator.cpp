@@ -2615,9 +2615,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		output << INDENT1 << "/// <inheritdoc/>\n"
 			   << INDENT1 << "[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n"
-			   << INDENT1 << "public " << (is_derived_type ? "override" : "virtual") << " ref readonly ScriptMethod<GodotObject> TryGetGodotClassMethod(in godot_string_name method, int argc)\n"
+			   << INDENT1 << "public " << (is_derived_type ? "override" : "virtual") << " ref readonly ScriptMethod<GodotObject> GetGodotClassMethodOrNullRef(in godot_string_name method, int argc)\n"
 			   << INDENT1 << "{\n"
-			   << INDENT2 << "return ref MethodRegistry.TryGetMethodFast(in method, argc);\n"
+			   << INDENT2 << "return ref MethodRegistry.GetMethodOrNullRef(in method, argc);\n"
 			   << INDENT1 << "}\n\n";
 
 		output << "#pragma warning restore CS0618\n";
@@ -2642,7 +2642,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << " bool " CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(in godot_string_name method, "
 			   << "NativeVariantPtrArgs args, out godot_variant ret)\n"
 			   << INDENT1 << "{\n"
-			   << INDENT2 << "if (MethodRegistry.TryGetMethod(in method, args.Count, out var scriptMethod))\n"
+			   << INDENT2 << "ref readonly var scriptMethod = ref GetGodotClassMethodOrNullRef(in method, args.Count);\n"
+			   << INDENT2 << "if (!Unsafe.IsNullRef(in scriptMethod))\n"
 			   << INDENT2 << "{\n"
 			   << INDENT3 << "ret = scriptMethod(this, args);\n"
 			   << INDENT3 << "return true;\n"
@@ -2658,7 +2659,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << INDENT1 "/// This method is used by Godot to check if a method exists before invoking it.\n"
 			   << INDENT1 "/// Do not call or override this method.\n"
 			   << INDENT1 "/// </summary>\n"
-			   << INDENT1 "/// <param name=\"method\">Name of the method to check for.</param>\n";
+			   << INDENT1 "/// <param name=\"method\">Name of the method to check for.</param>";
 
 		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_HAS_GODOT_CLASS_METHOD "(in godot_string_name method)\n"
@@ -2675,7 +2676,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << INDENT1 "/// This method is used by Godot to check if a signal exists before raising it.\n"
 			   << INDENT1 "/// Do not call or override this method.\n"
 			   << INDENT1 "/// </summary>\n"
-			   << INDENT1 "/// <param name=\"signal\">Name of the signal to check for.</param>\n";
+			   << INDENT1 "/// <param name=\"signal\">Name of the signal to check for.</param>";
 
 		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(in godot_string_name signal)\n"

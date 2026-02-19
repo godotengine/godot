@@ -234,17 +234,18 @@ namespace Godot.SourceGenerators
 
                 source.Append("    /// <inheritdoc/>\n");
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append($"    public override ref readonly ScriptMethod<GodotObject> TryGetGodotClassMethod(in godot_string_name method, int argc)\n");
+                source.Append($"    public override ref readonly ScriptMethod<GodotObject> GetGodotClassMethodOrNullRef(in godot_string_name method, int argc)\n");
                 source.Append("    {\n");
-                source.Append("        return ref MethodRegistry.TryGetMethodFast(in method, argc);\n");
+                source.Append("        return ref MethodRegistry.GetMethodOrNullRef(in method, argc);\n");
                 source.Append("    }\n\n");
 
                 // InvokeGodotClassMethod
                 source.Append("    /// <inheritdoc/>\n");
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append("    protected override bool InvokeGodotClassMethod(in godot_string_name method, ");
-                source.Append("NativeVariantPtrArgs args, out godot_variant ret)\n    {\n");
-                source.Append("        if (MethodRegistry.TryGetMethod(in method, args.Count, out var scriptMethod))\n");
+                source.Append("    protected override bool InvokeGodotClassMethod(in godot_string_name method, NativeVariantPtrArgs args, out godot_variant ret)\n");
+                source.Append("    {\n");
+                source.Append("        ref readonly var scriptMethod = ref GetGodotClassMethodOrNullRef(in method, args.Count);\n");
+                source.Append("        if (!Unsafe.IsNullRef(in scriptMethod))\n");
                 source.Append("        {\n");
                 source.Append("            ret = scriptMethod(this, args);\n");
                 source.Append("            return true;\n");

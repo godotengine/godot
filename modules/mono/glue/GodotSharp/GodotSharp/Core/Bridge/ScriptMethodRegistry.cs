@@ -60,13 +60,9 @@ namespace Godot.Bridge
         public bool ContainsMethod(scoped in godot_string_name name) => _knownMethodNames.Contains(name._data);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public bool TryGetMethod(scoped in godot_string_name name, int argumentCount, out ScriptMethod<T> method) =>
-            ScriptMethodCache<T>.TryGet(name._data, argumentCount, out method);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public ref readonly ScriptMethod<GodotObject> TryGetMethodFast(scoped in godot_string_name name, int argumentCount)
+        public ref readonly ScriptMethod<GodotObject> GetMethodOrNullRef(scoped in godot_string_name name, int argumentCount)
         {
-            return ref ScriptMethodCache<T>.TryGetFast(name._data, argumentCount);
+            return ref ScriptMethodCache<T>.GetOrNullRef(name._data, argumentCount);
         }
     }
 

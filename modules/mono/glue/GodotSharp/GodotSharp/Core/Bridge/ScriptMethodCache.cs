@@ -137,35 +137,7 @@ namespace Godot.Bridge
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public static bool TryGet(scoped in IntPtr namePtr, in int argCount, out ScriptMethod<T> method)
-        {
-            int slot = GetSlot(namePtr);
-
-            int i;
-            for (i = 0; i < _finalMaxProbes; i++)
-            {
-                var curr = (slot + i) & _mask;
-                var key = _keys[curr];
-
-                if (key == namePtr &&
-                    _argCounts[curr] == argCount)
-                {
-                    method = (ScriptMethod<T>)(object)_methods[curr];
-                    return true;
-                }
-
-                if (key == IntPtr.Zero)
-                {
-                    break;
-                }
-            }
-
-            method = default;
-            return false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public static ref readonly ScriptMethod<GodotObject> TryGetFast(scoped in IntPtr namePtr, int argCount)
+        public static ref readonly ScriptMethod<GodotObject> GetOrNullRef(scoped in IntPtr namePtr, int argCount)
         {
             int slot = GetSlot(namePtr);
 
