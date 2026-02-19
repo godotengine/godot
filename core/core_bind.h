@@ -624,7 +624,13 @@ public:
 
 	bool is_embedded_in_editor() const;
 
-	bool physics_iteration(double p_delta, bool p_increment_frames = true);
+	enum FlushQueriesOrder {
+		FLUSH_QUERIES_BEFORE_STEP,
+		FLUSH_QUERIES_AFTER_STEP,
+		FLUSH_QUERIES_NEVER
+	};
+
+	bool physics_iteration(double p_delta, bool p_increment_frames = true, FlushQueriesOrder p_flush_queries_order = FLUSH_QUERIES_BEFORE_STEP);
 
 	// `set_write_movie_path()` is not exposed to the scripting API as changing it at run-time has no effect.
 	String get_write_movie_path() const;
@@ -709,5 +715,7 @@ VARIANT_ENUM_CAST(CoreBind::Geometry2D::PolyJoinType);
 VARIANT_ENUM_CAST(CoreBind::Geometry2D::PolyEndType);
 
 VARIANT_ENUM_CAST(CoreBind::Thread::Priority);
+
+VARIANT_ENUM_CAST(CoreBind::Engine::FlushQueriesOrder);
 
 VARIANT_ENUM_CAST(CoreBind::Special::ClassDB::APIType);

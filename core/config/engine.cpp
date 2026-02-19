@@ -434,9 +434,9 @@ void Engine::set_physics_iteration_callback(PhysicsIterationCallback p_callback)
 	physics_iteration_callback = p_callback;
 }
 
-bool Engine::physics_iteration(double p_delta, bool p_increment_frames) {
+bool Engine::physics_iteration(double p_delta, bool p_increment_frames, FlushQueriesOrder p_flush_queries_order) {
 	if (physics_iteration_callback) {
-		return physics_iteration_callback(p_delta, p_increment_frames);
+		return physics_iteration_callback(p_delta, p_increment_frames, p_flush_queries_order);
 	}
 	return false;
 }

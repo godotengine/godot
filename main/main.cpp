@@ -4801,7 +4801,7 @@ static uint64_t s_physics_iteration_ticks = 0;
 static uint64_t s_navigation_iteration_ticks = 0;
 #endif
 
-bool Main::physics_iteration(double delta, bool increment_frames) {
+bool Main::physics_iteration(double delta, bool increment_frames, Engine::FlushQueriesOrder flush_queries_order) {
 	GodotProfileZone("Physics Step");
 	GodotProfileZoneGroupedFirst(_physics_zone, "setup");
 	if (Input::get_singleton()->is_agile_input_event_flushing()) {
@@ -4824,13 +4824,17 @@ bool Main::physics_iteration(double delta, bool increment_frames) {
 #ifndef PHYSICS_3D_DISABLED
 	GodotProfileZoneGrouped(_physics_zone, "PhysicsServer3D::sync");
 	PhysicsServer3D::get_singleton()->sync();
-	PhysicsServer3D::get_singleton()->flush_queries();
+	if (flush_queries_order == Engine::FLUSH_QUERIES_BEFORE_STEP) {
+		PhysicsServer3D::get_singleton()->flush_queries();
+	}
 #endif // PHYSICS_3D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
 	GodotProfileZoneGrouped(_physics_zone, "PhysicsServer2D::sync");
 	PhysicsServer2D::get_singleton()->sync();
-	PhysicsServer2D::get_singleton()->flush_queries();
+	if (flush_queries_order == Engine::FLUSH_QUERIES_BEFORE_STEP) {
+		PhysicsServer2D::get_singleton()->flush_queries();
+	}
 #endif // PHYSICS_2D_DISABLED
 
 	GodotProfileZoneGrouped(_physics_zone, "physics_process");
@@ -4867,12 +4871,18 @@ bool Main::physics_iteration(double delta, bool increment_frames) {
 #ifndef PHYSICS_3D_DISABLED
 	GodotProfileZoneGrouped(_profile_zone, "3D physics");
 	PhysicsServer3D::get_singleton()->step(delta);
+	if (flush_queries_order == Engine::FLUSH_QUERIES_AFTER_STEP) {
+		PhysicsServer3D::get_singleton()->flush_queries();
+	}
 	PhysicsServer3D::get_singleton()->end_sync();
 #endif // PHYSICS_3D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
 	GodotProfileZoneGrouped(_profile_zone, "2D physics");
 	PhysicsServer2D::get_singleton()->step(delta);
+	if (flush_queries_order == Engine::FLUSH_QUERIES_AFTER_STEP) {
+		PhysicsServer2D::get_singleton()->flush_queries();
+	}
 	PhysicsServer2D::get_singleton()->end_sync();
 #endif // PHYSICS_2D_DISABLED
 

@@ -2050,8 +2050,8 @@ bool Engine::is_embedded_in_editor() const {
 	return ::Engine::get_singleton()->is_embedded_in_editor();
 }
 
-bool Engine::physics_iteration(double p_delta, bool p_increment_frames) {
-	return ::Engine::get_singleton()->physics_iteration(p_delta, p_increment_frames);
+bool Engine::physics_iteration(double p_delta, bool p_increment_frames, FlushQueriesOrder p_flush_queries_order) {
+	return ::Engine::get_singleton()->physics_iteration(p_delta, p_increment_frames, (::Engine::FlushQueriesOrder)p_flush_queries_order);
 }
 
 String Engine::get_write_movie_path() const {
@@ -2134,7 +2134,11 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &Engine::is_editor_hint);
 	ClassDB::bind_method(D_METHOD("is_embedded_in_editor"), &Engine::is_embedded_in_editor);
 
-	ClassDB::bind_method(D_METHOD("physics_iteration", "delta", "increment_frames"), &Engine::physics_iteration, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("physics_iteration", "delta", "increment_frames", "flush_queries_order"), &Engine::physics_iteration, DEFVAL(true), DEFVAL(Engine::FLUSH_QUERIES_BEFORE_STEP));
+
+	BIND_ENUM_CONSTANT(FLUSH_QUERIES_BEFORE_STEP);
+	BIND_ENUM_CONSTANT(FLUSH_QUERIES_AFTER_STEP);
+	BIND_ENUM_CONSTANT(FLUSH_QUERIES_NEVER);
 
 	ClassDB::bind_method(D_METHOD("get_write_movie_path"), &Engine::get_write_movie_path);
 

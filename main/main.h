@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/config/engine.h"
 #include "core/os/thread.h"
 #include "core/typedefs.h"
 
@@ -80,7 +81,7 @@ public:
 	static int start();
 
 	static bool iteration();
-	static bool physics_iteration(double delta, bool increment_frames = true);
+	static bool physics_iteration(double delta, bool increment_frames = true, Engine::FlushQueriesOrder flush_queries_order = Engine::FLUSH_QUERIES_BEFORE_STEP);
 	static void force_redraw();
 
 	static bool is_iterating();
