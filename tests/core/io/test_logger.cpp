@@ -36,6 +36,7 @@ TEST_FORCE_LINK(test_logger)
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/logger.h"
+#include "core/os/os.h"
 
 namespace TestLogger {
 

@@ -34,7 +34,9 @@ TEST_FORCE_LINK(test_project_settings)
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/object/message_queue.h"
 #include "core/variant/variant.h"
+#include "tests/signal_watcher.h"
 #include "tests/test_utils.h"
 
 namespace TestProjectSettings {

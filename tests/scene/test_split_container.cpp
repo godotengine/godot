@@ -36,6 +36,8 @@ TEST_FORCE_LINK(test_split_container)
 
 #include "scene/gui/split_container.h"
 #include "scene/main/window.h"
+#include "tests/display_server_mock.h"
+#include "tests/signal_watcher.h"
 
 namespace TestSplitContainer {
 

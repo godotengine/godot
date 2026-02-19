@@ -34,6 +34,7 @@ TEST_FORCE_LINK(test_text_server)
 
 #ifdef TOOLS_ENABLED
 
+#include "core/variant/typed_array.h"
 #include "editor/themes/builtin_fonts.gen.h"
 #include "servers/text/text_server.h"
 

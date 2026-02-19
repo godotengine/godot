@@ -33,7 +33,7 @@
 TEST_FORCE_LINK(test_validate_testing)
 
 #include "core/core_globals.h"
-#include "core/os/os.h"
+#include "core/object/object.h"
 #include "tests/test_tools.h"
 
 namespace TestValidateTesting {

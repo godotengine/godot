@@ -31,6 +31,7 @@
 #include "test_main.h"
 
 #include "core/input/input.h"
+#include "core/input/input_map.h"
 #include "core/io/dir_access.h"
 #include "core/string/translation_server.h"
 #include "scene/main/window.h"
@@ -39,6 +40,7 @@
 #include "servers/rendering/rendering_server_default.h"
 #include "tests/display_server_mock.h"
 #include "tests/force_link.gen.h"
+#include "tests/signal_watcher.h"
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
 
@@ -63,7 +65,7 @@
 #include "servers/physics_3d/physics_server_3d_dummy.h"
 #endif // PHYSICS_3D_DISABLED
 
-#include "modules/modules_tests.gen.h" // TODO: Migrate module tests to compilation files.
+#include "modules/modules_tests.gen.h" // IWYU pragma: keep // TODO: Migrate module tests to compilation files.
 
 int test_main(int argc, char *argv[]) {
 	ForceLink::force_link_tests();

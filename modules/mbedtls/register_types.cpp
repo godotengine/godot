@@ -41,10 +41,6 @@
 #include <psa/crypto.h>
 #endif
 
-#ifdef TESTS_ENABLED
-#include "tests/test_crypto_mbedtls.h"
-#endif
-
 #ifdef GODOT_MBEDTLS_THREADING_ALT
 extern "C" {
 void godot_mbedtls_mutex_init(mbedtls_threading_mutex_t *p_mutex) {

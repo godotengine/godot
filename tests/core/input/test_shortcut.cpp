@@ -34,10 +34,8 @@ TEST_FORCE_LINK(test_shortcut)
 
 #include "core/input/input_event.h"
 #include "core/input/shortcut.h"
-#include "core/io/config_file.h"
 #include "core/object/ref_counted.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
 
 namespace TestShortcut {
 

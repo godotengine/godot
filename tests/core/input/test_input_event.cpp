@@ -33,9 +33,10 @@
 TEST_FORCE_LINK(test_input_event)
 
 #include "core/input/input_event.h"
+#include "core/input/input_map.h"
 #include "core/math/rect2.h"
-#include "core/os/memory.h"
 #include "core/variant/array.h"
+#include "tests/signal_watcher.h"
 
 namespace TestInputEvent {
 

@@ -40,6 +40,7 @@ TEST_FORCE_LINK(test_navigation_server_3d)
 #include "scene/main/window.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
+#include "tests/signal_watcher.h"
 
 namespace TestNavigationServer3D {
 
