@@ -3804,6 +3804,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_split = memnew(HSplitContainer);
 	main_container->add_child(script_split);
 	script_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	script_split->set_drag_nested_intersections(true);
 
 #ifdef ANDROID_ENABLED
 	virtual_keyboard_spacer = memnew(Control);
@@ -3814,6 +3815,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	list_split = memnew(VSplitContainer);
 	script_split->add_child(list_split);
 	list_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	list_split->set_drag_nested_intersections(true);
 
 	scripts_vbox = memnew(VBoxContainer);
 	scripts_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
