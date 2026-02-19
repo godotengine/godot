@@ -6,7 +6,22 @@ using System.Runtime.CompilerServices;
 
 namespace Godot.Bridge
 {
-    internal static class ScriptMethodCache<T>
+    //public class ScriptMethodCache<T> : ScriptCache<T, ScriptMethod<GodotObject>>
+    //    where T : GodotObject
+    //{
+
+    //}
+
+    public delegate godot_variant PropertyAccessMethod<T>(T godotObject, scoped in godot_variant value)
+        where T : GodotObject;
+
+    //public class ScriptPropertyCache<T> : ScriptCache<T, ScriptMethod<GodotObject>>
+    //    where T : GodotObject
+    //{
+
+    //}
+
+    public class ScriptCache<T, TMethod>
         where T : GodotObject
     {
         private const int MaxProbes = 4;
@@ -15,7 +30,7 @@ namespace Godot.Bridge
 
         private static IntPtr[] _keys;
         private static byte[] _argCounts;
-        private static ScriptMethod<GodotObject>[] _methods;
+        private static TMethod[] _methods;
 
         private static int _mask;
         private static int _shift;
@@ -35,7 +50,7 @@ namespace Godot.Bridge
             Node.MethodName._ExitTree,
         ];
 
-        public static void Initialize((StringName NamePtr, int ArgCount, ScriptMethod<GodotObject> Method)[] methods)
+        public static void Initialize((StringName NamePtr, int ArgCount, TMethod Method)[] methods)
         {
             int capacity = methods.Length;
             int maxProbes = int.MaxValue;
@@ -61,7 +76,7 @@ namespace Godot.Bridge
                 _mask = size - 1;
                 _keys = new IntPtr[size];
                 _argCounts = new byte[size];
-                _methods = new ScriptMethod<GodotObject>[size];
+                _methods = new TMethod[size];
 
                 foreach (var method in methods)
                 {
@@ -86,7 +101,7 @@ namespace Godot.Bridge
 
                     _keys[slot] = method.NamePtr.NativeValue._data;
                     _argCounts[slot] = (byte)method.ArgCount;
-                    _methods[slot] = (ScriptMethod<GodotObject>)(object)method.Method;
+                    _methods[slot] = (TMethod)(object)method.Method;
                 }
 
                 if (!requestMoreSize)
@@ -137,7 +152,7 @@ namespace Godot.Bridge
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public static ref readonly ScriptMethod<GodotObject> GetOrNullRef(scoped in IntPtr namePtr, int argCount)
+        public static ref readonly TMethod GetOrNullRef(scoped in IntPtr namePtr, int argCount)
         {
             int slot = GetSlot(namePtr);
 
@@ -159,7 +174,7 @@ namespace Godot.Bridge
                 }
             }
 
-            return ref Unsafe.NullRef<ScriptMethod<GodotObject>>();
+            return ref Unsafe.NullRef<TMethod>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -236,7 +251,7 @@ namespace Godot.Bridge
             return (averageProbes, maxProbes, count);
         }
 
-        private static (StringName NamePtr, int ArgCount, ScriptMethod<GodotObject> Method)[] SortMethodsOnExpectedCallCountForImprovedPerformance((StringName NamePtr, int ArgCount, ScriptMethod<GodotObject> Method)[] methods)
+        private static (StringName NamePtr, int ArgCount, TMethod Method)[] SortMethodsOnExpectedCallCountForImprovedPerformance((StringName NamePtr, int ArgCount, TMethod Method)[] methods)
         {
             return methods
                 .Select(method => new

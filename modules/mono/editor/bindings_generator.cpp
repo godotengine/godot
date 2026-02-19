@@ -2325,6 +2325,204 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 						"' for class '" + itype.name + "'.");
 	}
 
+	// only non-static ones
+	if (!itype.is_singleton) {
+		// Add ScriptPropertyRegistry
+		output << MEMBER_BEGIN "protected "
+			   << (is_derived_type ? "new " : "")
+			   << "static readonly ScriptPropertyRegistry<"
+			   << itype.proxy_name
+			   << "> PropertyRegistry = new ScriptPropertyRegistry<"
+			   << itype.proxy_name
+			   << ">()";
+
+		// TODO: this is a 99% copy & paste from above: we need to know if we inherit from someone to "inherit" the base type MethodRegistry
+		if (is_derived_type && !itype.is_singleton) {
+			if (obj_types.has(itype.base_name)) {
+				TypeInterface base_type = obj_types[itype.base_name];
+
+				output << "\n"
+					   << INDENT2 ".Register(global::Godot."
+					   << base_type.proxy_name;
+				if (base_type.is_singleton) {
+					// If the type is a singleton, use the instance type.
+					output << CS_SINGLETON_INSTANCE_SUFFIX;
+				}
+				output << ".PropertyRegistry)";
+			} else {
+				ERR_PRINT("Base type '" + itype.base_name.operator String() + "' does not exist, for class '" + itype.name + "'.");
+				return ERR_INVALID_DATA;
+			}
+		}
+
+		output.append("\n");
+
+		if (itype.cs_type == "Node") {
+			output.append("\n");
+		}
+
+		for (const PropertyInterface &iprop : itype.properties) {
+			auto p_itype = itype;
+			auto p_iprop = iprop;
+
+			auto &p_output = output;
+
+			const MethodInterface *setter = p_itype.find_method_by_name(p_iprop.setter);
+
+			// Search it in base types too
+			const TypeInterface *current_type = &p_itype;
+			while (!setter && current_type->base_name != StringName()) {
+				HashMap<StringName, TypeInterface>::Iterator base_match = obj_types.find(current_type->base_name);
+				ERR_FAIL_COND_V_MSG(!base_match, ERR_BUG, "Type not found '" + current_type->base_name + "'. Inherited by '" + current_type->name + "'.");
+				current_type = &base_match->value;
+				setter = current_type->find_method_by_name(p_iprop.setter);
+			}
+
+			const MethodInterface *getter = p_itype.find_method_by_name(p_iprop.getter);
+
+			// Search it in base types too
+			current_type = &p_itype;
+			while (!getter && current_type->base_name != StringName()) {
+				HashMap<StringName, TypeInterface>::Iterator base_match = obj_types.find(current_type->base_name);
+				ERR_FAIL_COND_V_MSG(!base_match, ERR_BUG, "Type not found '" + current_type->base_name + "'. Inherited by '" + current_type->name + "'.");
+				current_type = &base_match->value;
+				getter = current_type->find_method_by_name(p_iprop.getter);
+			}
+
+			ERR_FAIL_COND_V(!setter && !getter, ERR_BUG);
+
+			if (setter) {
+				int setter_argc = p_iprop.index != -1 ? 2 : 1;
+				ERR_FAIL_COND_V(setter->arguments.size() != setter_argc, ERR_BUG);
+			}
+
+			if (getter) {
+				int getter_argc = p_iprop.index != -1 ? 1 : 0;
+				ERR_FAIL_COND_V(getter->arguments.size() != getter_argc, ERR_BUG);
+			}
+
+			if (getter && setter) {
+				const ArgumentInterface &setter_first_arg = setter->arguments.back()->get();
+				if (getter->return_type.cname != setter_first_arg.type.cname) {
+					ERR_FAIL_V_MSG(ERR_BUG,
+							"Return type from getter doesn't match first argument of setter for property: '" +
+									p_itype.name + "." + String(p_iprop.cname) + "'.");
+				}
+			}
+
+			const TypeReference &proptype_name = getter ? getter->return_type : setter->arguments.back()->get().type;
+
+			const TypeInterface *prop_itype = _get_type_or_singleton_or_null(proptype_name);
+			ERR_FAIL_NULL_V_MSG(prop_itype, ERR_BUG, "Property type '" + proptype_name.cname + "' was not found.");
+
+			ERR_FAIL_COND_V_MSG(prop_itype->is_singleton, ERR_BUG,
+					"Property type is a singleton: '" + p_itype.name + "." + String(p_iprop.cname) + "'.");
+
+			if (p_itype.api_type == ClassDB::API_CORE) {
+				ERR_FAIL_COND_V_MSG(prop_itype->api_type == ClassDB::API_EDITOR, ERR_BUG,
+						"Property '" + p_itype.name + "." + String(p_iprop.cname) + "' has type '" + prop_itype->name +
+								"' from the editor API. Core API cannot have dependencies on the editor API.");
+			}
+
+			if (getter) {
+				p_output << INDENT2 << ".Register("
+						 << "global::Godot." << itype.proxy_name + ".PropertyName." + iprop.proxy_name << ", " << "1" << ",\n"
+						 << INDENT3 << "[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n"
+						 << INDENT3 << "static (GodotObject scriptInstance, scoped in godot_variant value) =>\n"
+						 << INDENT3 << "{\n"
+						 << INDENT4 << "var callRet = Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance).@" << iprop.proxy_name << ";\n"
+						 << INDENT4 << "return ";
+
+				const TypeInterface *return_interface = _get_type_or_null(getter->return_type);
+				String to_managed = sformat(return_interface->cs_managed_to_variant, "callRet", return_interface->cs_type, return_interface->name)
+											.replacen("params ", "");
+
+				p_output << to_managed << ";\n";
+
+				//if (p_iprop.index != -1) {
+				//	const ArgumentInterface &idx_arg = getter->arguments.front()->get();
+				//	if (idx_arg.type.cname != name_cache.type_int) {
+				//		// Assume the index parameter is an enum
+				//		const TypeInterface *idx_arg_type = _get_type_or_null(idx_arg.type);
+				//		CRASH_COND(idx_arg_type == nullptr);
+				//		p_output.append("(" + idx_arg_type->proxy_name + ")(" + itos(p_iprop.index) + ")");
+				//	} else {
+				//		p_output.append(itos(p_iprop.index));
+				//	}
+				//}
+				p_output << INDENT3 << "})\n";
+			}
+
+			if (setter) {
+				p_output << INDENT2 << ".Register("
+						 << "global::Godot." << itype.proxy_name + ".PropertyName." + iprop.proxy_name << ", " << "1" << ",\n"
+						 << INDENT3 << "[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n"
+						 << INDENT3 << "static (GodotObject scriptInstance, scoped in godot_variant value) =>\n"
+						 << INDENT3 << "{\n"
+						 << INDENT4 << "Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance).@" << iprop.proxy_name;
+
+				//if (p_iprop.index != -1) {
+				//	const ArgumentInterface &idx_arg = setter->arguments.front()->get();
+				//	if (idx_arg.type.cname != name_cache.type_int) {
+				//		// Assume the index parameter is an enum
+				//		const TypeInterface *idx_arg_type = _get_type_or_null(idx_arg.type);
+				//		CRASH_COND(idx_arg_type == nullptr);
+				//		p_output.append("(" + idx_arg_type->proxy_name + ")(" + itos(p_iprop.index) + "), ");
+				//	} else {
+				//		p_output.append(itos(p_iprop.index) + ", ");
+				//	}
+				//}
+
+				p_output << " = ";
+
+				const auto iarg = setter->arguments.back()->get();
+				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+				if (arg_type->cname == name_cache.type_Array_generic || arg_type->cname == name_cache.type_Dictionary_generic) {
+					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+					String to_managed = sformat(arg_type->cs_variant_to_managed, "value", arg_cs_type, arg_type->name)
+												.replacen("params ", "");
+					p_output << "new " << arg_cs_type << "(" << to_managed << ")";
+				} else {
+					p_output << sformat(arg_type->cs_variant_to_managed, "value", arg_type->cs_type, arg_type->name)
+										.replacen("params ", "");
+				}
+
+				p_output << ";\n"
+						 << INDENT4 << "return default;\n"
+						 << INDENT3 "})\n";
+			}
+
+			//if (setter) {
+			//	output << INDENT2 << ".Register("
+			//		   << "global::Godot." << itype.proxy_name + ".PropertyName." + iprop.proxy_name << ", " << 1 << ",\n"
+			//		   << INDENT3 << "[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n"
+			//		   << INDENT3 << "static (GodotObject scriptInstance, scoped in godot_variant value) =>\n"
+			//		   << INDENT3 << "{"
+			//		   << INDENT4 << "Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance).@" << iprop.proxy_name << " = "
+			//		   << imethod.proxy_name << itos(imethod.arguments.size()) << "())\n";
+
+			//	auto arg_type = &iprop;
+			//	if (arg_type->cname == name_cache.type_Array_generic ||
+			//		arg_type->cname == name_cache.type_Dictionary_generic) {
+			//		String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+			//		String to_managed = sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_cs_type, arg_type->name)
+			//									.replacen("params ", "");
+			//		output << "new " << arg_cs_type << "(" << to_managed << ")";
+			//	} else {
+			//		output << sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name)
+			//						  .replacen("params ", "");
+			//	}
+			//}
+
+			//Error prop_err = _generate_property_registry(itype, iprop, output);
+			//ERR_FAIL_COND_V_MSG(prop_err != OK, prop_err,
+			//		"Failed to generate property '" + iprop.cname.operator String() +
+			//				"' for class '" + itype.name + "'.");
+		}
+
+		output << INDENT2 << ".Build();\n";
+	}
+
 	// Add native name static field and cached type.
 
 	if (is_derived_type && !itype.is_singleton) {
@@ -2569,11 +2767,11 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				if (arg_type->cname == name_cache.type_Array_generic || arg_type->cname == name_cache.type_Dictionary_generic) {
 					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
 					String to_managed = sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_cs_type, arg_type->name)
-											   .replacen("params ", "");
+						.replacen("params ", "");
 					output << "new " << arg_cs_type << "(" << to_managed << ")";
 				} else {
 					output << sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name)
-									  .replacen("params ", "");
+						.replacen("params ", "");
 				}
 
 				idx++;
