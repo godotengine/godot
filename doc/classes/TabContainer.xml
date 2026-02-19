@@ -137,6 +137,7 @@
 			<param index="0" name="popup" type="Node" />
 			<description>
 				If set on a [Popup] node instance, a popup menu icon appears in the top-right corner of the [TabContainer] (setting it to [code]null[/code] will make it go away). Clicking it will expand the [Popup] node.
+				[b]Note:[/b] In vertical mode ([member tabs_position] is [constant POSITION_LEFT] or [constant POSITION_RIGHT]), the popup button is positioned next to the scroll buttons (if visible) or centered vertically in the tab bar.
 			</description>
 		</method>
 		<method name="set_tab_button_icon">
@@ -211,6 +212,7 @@
 		</member>
 		<member name="clip_tabs" type="bool" setter="set_clip_tabs" getter="get_clip_tabs" default="true">
 			If [code]true[/code], tabs overflowing this node's width will be hidden, displaying two navigation buttons instead. Otherwise, this node's minimum size is updated so that all tabs are visible.
+			[b]Note:[/b] In vertical mode ([member tabs_position] is [constant POSITION_LEFT] or [constant POSITION_RIGHT]), space is always reserved for a visible popup button (see [method set_popup]) regardless of this setting, to prevent overlap with tab content.
 		</member>
 		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="-1">
 			The current tab index. When set, this index's [Control] node's [code]visible[/code] property is set to [code]true[/code] and all others are set to [code]false[/code].
@@ -249,7 +251,8 @@
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. get_tab_count() - 1[/code] range.
 		</member>
 		<member name="tabs_position" type="int" setter="set_tabs_position" getter="get_tabs_position" enum="TabContainer.TabPosition" default="0">
-			The horizontal alignment of the tabs.
+			The position of the tab bar.
+			[b]Note:[/b] When using [constant POSITION_LEFT] or [constant POSITION_RIGHT], the internal [TabBar] will automatically be set to [member TabBar.vertical] and tabs will be arranged from top to bottom.
 		</member>
 		<member name="tabs_rearrange_group" type="int" setter="set_tabs_rearrange_group" getter="get_tabs_rearrange_group" default="-1">
 			[TabContainer]s with the same rearrange group ID will allow dragging the tabs between them. Enable drag with [member drag_to_rearrange_enabled].
@@ -312,7 +315,13 @@
 		<constant name="POSITION_BOTTOM" value="1" enum="TabPosition">
 			Places the tab bar at the bottom. The tab bar's [StyleBox] will be flipped vertically.
 		</constant>
-		<constant name="POSITION_MAX" value="2" enum="TabPosition">
+		<constant name="POSITION_LEFT" value="2" enum="TabPosition">
+			Places the tab bar at the left. Tabs will be arranged vertically (top to bottom).
+		</constant>
+		<constant name="POSITION_RIGHT" value="3" enum="TabPosition">
+			Places the tab bar at the right. Tabs will be arranged vertically (top to bottom).
+		</constant>
+		<constant name="POSITION_MAX" value="4" enum="TabPosition">
 			Represents the size of the [enum TabPosition] enum.
 		</constant>
 	</constants>
@@ -376,6 +385,12 @@
 		<theme_item name="decrement_highlight" data_type="icon" type="Texture2D">
 			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
+		<theme_item name="decrement_vertical" data_type="icon" type="Texture2D">
+			Icon for the up arrow button that appears when there are too many tabs to fit in the container height (vertical tabs). When the button is disabled (i.e. the first tab is visible), it appears semi-transparent.
+		</theme_item>
+		<theme_item name="decrement_vertical_highlight" data_type="icon" type="Texture2D">
+			Icon for the up arrow button that appears when there are too many tabs to fit in the container height (vertical tabs). Used when the button is being hovered with the cursor.
+		</theme_item>
 		<theme_item name="drop_mark" data_type="icon" type="Texture2D">
 			Icon shown to indicate where a dragged tab will be dropped (see [member drag_to_rearrange_enabled]).
 		</theme_item>
@@ -385,11 +400,20 @@
 		<theme_item name="increment_highlight" data_type="icon" type="Texture2D">
 			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
+		<theme_item name="increment_vertical" data_type="icon" type="Texture2D">
+			Icon for the down arrow button that appears when there are too many tabs to fit in the container height (vertical tabs). When the button is disabled (i.e. the last tab is visible), it appears semi-transparent.
+		</theme_item>
+		<theme_item name="increment_vertical_highlight" data_type="icon" type="Texture2D">
+			Icon for the down arrow button that appears when there are too many tabs to fit in the container height (vertical tabs). Used when the button is being hovered with the cursor.
+		</theme_item>
 		<theme_item name="menu" data_type="icon" type="Texture2D">
 			The icon for the menu button (see [method set_popup]).
 		</theme_item>
 		<theme_item name="menu_highlight" data_type="icon" type="Texture2D">
 			The icon for the menu button (see [method set_popup]) when it's being hovered with the cursor.
+		</theme_item>
+		<theme_item name="vertical_drop_mark" data_type="icon" type="Texture2D">
+			Icon shown to indicate where a dragged tab will be dropped when using vertical tabs (see [member drag_to_rearrange_enabled]).
 		</theme_item>
 		<theme_item name="panel" data_type="style" type="StyleBox">
 			The style for the background fill.
