@@ -857,6 +857,9 @@ void TabContainer::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 }
 
 Ref<Texture2D> TabContainer::get_tab_icon(int p_tab) const {
+	if (!is_ready() && p_tab < pending_tabs.size()) {
+		return pending_tabs[p_tab].icon;
+	}
 	return tab_bar->get_tab_icon(p_tab);
 }
 
@@ -896,6 +899,9 @@ void TabContainer::set_tab_disabled(int p_tab, bool p_disabled) {
 }
 
 bool TabContainer::is_tab_disabled(int p_tab) const {
+	if (!is_ready() && p_tab < pending_tabs.size()) {
+		return pending_tabs[p_tab].disabled;
+	}
 	return tab_bar->is_tab_disabled(p_tab);
 }
 
@@ -922,6 +928,9 @@ void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 }
 
 bool TabContainer::is_tab_hidden(int p_tab) const {
+	if (!is_ready() && p_tab < pending_tabs.size()) {
+		return pending_tabs[p_tab].hidden;
+	}
 	return tab_bar->is_tab_hidden(p_tab);
 }
 
