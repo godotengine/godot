@@ -3709,7 +3709,9 @@ void TextureStorage::render_target_clear_back_buffer(RID p_render_target, const 
 			return; //nothing to do
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
-		GLES3::CopyEffects::get_singleton()->set_color(p_color, region);
+		// set_color takes normalized rect (0..1)
+		Rect2 norm_rect = Rect2(Vector2(region.position) / Vector2(rt->size), Vector2(region.size) / Vector2(rt->size));
+		GLES3::CopyEffects::get_singleton()->set_color(p_color, norm_rect);
 	}
 }
 

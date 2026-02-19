@@ -309,7 +309,7 @@ void CopyEffects::gaussian_blur(GLuint p_source_texture, int p_mipmap_count, con
 	glViewport(0, 0, p_size.x, p_size.y);
 }
 
-void CopyEffects::set_color(const Color &p_color, const Rect2i &p_region) {
+void CopyEffects::set_color(const Color &p_color, const Rect2 &p_region) {
 	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_SIMPLE_COLOR);
 	if (!success) {
 		return;
