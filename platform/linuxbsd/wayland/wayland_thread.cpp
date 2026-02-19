@@ -512,6 +512,12 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 	RegistryState *registry = (RegistryState *)data;
 	ERR_FAIL_NULL(registry);
 
+	if (registry->global_names.has(name)) {
+		WARN_PRINT("Received duplicate Wayland global announcement!");
+	}
+
+	registry->global_names.insert(name);
+
 	if (strcmp(interface, wl_shm_interface.name) == 0) {
 		registry->wl_shm = (struct wl_shm *)wl_registry_bind(wl_registry, name, &wl_shm_interface, 1);
 		registry->wl_shm_name = name;
@@ -673,6 +679,17 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 	if (strcmp(interface, xdg_toplevel_icon_manager_v1_interface.name) == 0) {
 		registry->xdg_toplevel_icon_manager = (struct xdg_toplevel_icon_manager_v1 *)wl_registry_bind(wl_registry, name, &xdg_toplevel_icon_manager_v1_interface, 1);
 		registry->xdg_toplevel_icon_manager_name = name;
+
+		if (registry->wayland_thread->xdg_icon) {
+			xdg_toplevel_icon_v1_destroy(registry->wayland_thread->xdg_icon);
+			registry->wayland_thread->xdg_icon = nullptr;
+		}
+
+		if (registry->wayland_thread->icon_buffer) {
+			wl_buffer_destroy(registry->wayland_thread->icon_buffer);
+			registry->wayland_thread->icon_buffer = nullptr;
+		}
+
 		return;
 	}
 
@@ -774,6 +791,10 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
 	RegistryState *registry = (RegistryState *)data;
 	ERR_FAIL_NULL(registry);
+
+	if (!registry->global_names.erase(name)) {
+		WARN_PRINT("Received remove event for unknown Wayland global!");
+	}
 
 	if (name == registry->wl_shm_name) {
 		if (registry->wl_shm) {
@@ -5806,229 +5827,37 @@ void WaylandThread::destroy() {
 		events_thread.wait_to_finish();
 	}
 
-	for (KeyValue<DisplayServerEnums::WindowID, WindowState> &pair : windows) {
-		WindowState &ws = pair.value;
-		if (ws.wp_fractional_scale) {
-			wp_fractional_scale_v1_destroy(ws.wp_fractional_scale);
+	if (!windows.is_empty()) {
+		WARN_PRINT("Display server did not destroy all windows!");
+		// Destroy all remaining windows.
+		// FIXME: This code does not delete popups in order and might cause protocol
+		// errors, as all the popup tree tracking and signaling is done in the display
+		// server. We should figure whether the Wayland thread is the sole responsible
+		// for cleanup.
+		LocalVector<DisplayServerEnums::WindowID> window_ids;
+		for (KeyValue<DisplayServerEnums::WindowID, WindowState> &pair : windows) {
+			print_verbose(vformat("Window %d still allocated", pair.key));
+			window_ids.push_back(pair.key);
 		}
 
-		if (ws.wp_viewport) {
-			wp_viewport_destroy(ws.wp_viewport);
-		}
-
-		if (ws.frame_callback) {
-			wl_callback_destroy(ws.frame_callback);
-		}
-
-#ifdef LIBDECOR_ENABLED
-		if (ws.libdecor_frame) {
-			libdecor_frame_close(ws.libdecor_frame);
-		}
-#endif // LIBDECOR_ENABLED
-
-		if (ws.xdg_toplevel_decoration) {
-			zxdg_toplevel_decoration_v1_destroy(ws.xdg_toplevel_decoration);
-		}
-
-		if (ws.xdg_toplevel) {
-			xdg_toplevel_destroy(ws.xdg_toplevel);
-		}
-
-		if (ws.xdg_surface) {
-			xdg_surface_destroy(ws.xdg_surface);
-		}
-
-		if (ws.wl_surface) {
-			wl_surface_destroy(ws.wl_surface);
+		for (LocalVector<DisplayServerEnums::WindowID>::Iterator E = window_ids.end(); E != window_ids.begin(); --E) {
+			window_destroy(*E);
 		}
 	}
 
-	for (struct wl_seat *wl_seat : registry.wl_seats) {
-		SeatState *ss = wl_seat_get_seat_state(wl_seat);
-		ERR_FAIL_NULL(ss);
-
-		wl_seat_destroy(wl_seat);
-
-		xkb_context_unref(ss->xkb_context);
-		xkb_state_unref(ss->xkb_state);
-		xkb_keymap_unref(ss->xkb_keymap);
-		xkb_compose_table_unref(ss->xkb_compose_table);
-		xkb_compose_state_unref(ss->xkb_compose_state);
-
-		if (ss->wl_keyboard) {
-			wl_keyboard_destroy(ss->wl_keyboard);
-		}
-
-		if (ss->keymap_buffer) {
-			munmap((void *)ss->keymap_buffer, ss->keymap_buffer_size);
-		}
-
-		if (ss->wl_pointer) {
-			wl_pointer_destroy(ss->wl_pointer);
-		}
-
-		if (ss->cursor_frame_callback) {
-			// We don't need to set a null userdata for safety as the thread is done.
-			wl_callback_destroy(ss->cursor_frame_callback);
-		}
-
-		if (ss->cursor_surface) {
-			wl_surface_destroy(ss->cursor_surface);
-		}
-
-		if (ss->wl_data_device) {
-			wl_data_device_destroy(ss->wl_data_device);
-		}
-
-		if (ss->wp_cursor_shape_device) {
-			wp_cursor_shape_device_v1_destroy(ss->wp_cursor_shape_device);
-		}
-
-		if (ss->wp_relative_pointer) {
-			zwp_relative_pointer_v1_destroy(ss->wp_relative_pointer);
-		}
-
-		if (ss->wp_locked_pointer) {
-			zwp_locked_pointer_v1_destroy(ss->wp_locked_pointer);
-		}
-
-		if (ss->wp_confined_pointer) {
-			zwp_confined_pointer_v1_destroy(ss->wp_confined_pointer);
-		}
-
-		if (ss->wp_tablet_seat) {
-			zwp_tablet_seat_v2_destroy(ss->wp_tablet_seat);
-		}
-
-		for (struct zwp_tablet_tool_v2 *tool : ss->tablet_tools) {
-			TabletToolState *state = wp_tablet_tool_get_state(tool);
-			if (state) {
-				memdelete(state);
-			}
-
-			zwp_tablet_tool_v2_destroy(tool);
-		}
-
-		if (ss->wp_text_input) {
-			zwp_text_input_v3_destroy(ss->wp_text_input);
-		}
-
-		memdelete(ss);
+	// We can't iterate directly on `global_names` as it gets mutated by the global
+	// remove handler.
+	LocalVector<uint32_t> global_names_to_delete;
+	for (uint32_t name : registry.global_names) {
+		global_names_to_delete.push_back(name);
 	}
 
-	if (registry.wp_tablet_manager) {
-		zwp_tablet_manager_v2_destroy(registry.wp_tablet_manager);
-	}
-
-	if (registry.wp_text_input_manager) {
-		zwp_text_input_manager_v3_destroy(registry.wp_text_input_manager);
-	}
-
-	for (struct wl_output *wl_output : registry.wl_outputs) {
-		ERR_FAIL_NULL(wl_output);
-
-		memdelete(wl_output_get_screen_state(wl_output));
-		wl_output_destroy(wl_output);
-	}
-
-	if (registry.godot_embedding_compositor) {
-		EmbeddingCompositorState *es = godot_embedding_compositor_get_state(registry.godot_embedding_compositor);
-		ERR_FAIL_NULL(es);
-
-		es->mapped_clients.clear();
-
-		for (struct godot_embedded_client *client : es->clients) {
-			godot_embedded_client_destroy(client);
-		}
-		es->clients.clear();
-
-		memdelete(es);
-
-		godot_embedding_compositor_destroy(registry.godot_embedding_compositor);
+	for (uint32_t name : global_names_to_delete) {
+		_wl_registry_on_global_remove(wl_registry_get_user_data(wl_registry), wl_registry, name);
 	}
 
 	if (wl_cursor_theme) {
 		wl_cursor_theme_destroy(wl_cursor_theme);
-	}
-
-	if (registry.wp_idle_inhibit_manager) {
-		zwp_idle_inhibit_manager_v1_destroy(registry.wp_idle_inhibit_manager);
-	}
-
-	if (registry.wp_pointer_constraints) {
-		zwp_pointer_constraints_v1_destroy(registry.wp_pointer_constraints);
-	}
-
-	if (registry.wp_pointer_gestures) {
-		zwp_pointer_gestures_v1_destroy(registry.wp_pointer_gestures);
-	}
-
-	if (registry.wp_relative_pointer_manager) {
-		zwp_relative_pointer_manager_v1_destroy(registry.wp_relative_pointer_manager);
-	}
-
-	if (registry.wp_pointer_warp) {
-		wp_pointer_warp_v1_destroy(registry.wp_pointer_warp);
-	}
-
-	if (registry.xdg_activation) {
-		xdg_activation_v1_destroy(registry.xdg_activation);
-	}
-
-	if (registry.xdg_system_bell) {
-		xdg_system_bell_v1_destroy(registry.xdg_system_bell);
-	}
-
-	if (registry.xdg_toplevel_icon_manager) {
-		xdg_toplevel_icon_manager_v1_destroy(registry.xdg_toplevel_icon_manager);
-
-		if (xdg_icon) {
-			xdg_toplevel_icon_v1_destroy(xdg_icon);
-		}
-
-		if (icon_buffer) {
-			wl_buffer_destroy(icon_buffer);
-		}
-	}
-
-	if (registry.xdg_decoration_manager) {
-		zxdg_decoration_manager_v1_destroy(registry.xdg_decoration_manager);
-	}
-
-	if (registry.wp_color_manager) {
-		wp_color_manager_v1_destroy(registry.wp_color_manager);
-	}
-
-	if (registry.wp_cursor_shape_manager) {
-		wp_cursor_shape_manager_v1_destroy(registry.wp_cursor_shape_manager);
-	}
-
-	if (registry.wp_fractional_scale_manager) {
-		wp_fractional_scale_manager_v1_destroy(registry.wp_fractional_scale_manager);
-	}
-
-	if (registry.wp_viewporter) {
-		wp_viewporter_destroy(registry.wp_viewporter);
-	}
-
-	if (registry.xdg_wm_base) {
-		xdg_wm_base_destroy(registry.xdg_wm_base);
-	}
-
-	// NOTE: Deprecated.
-	if (registry.xdg_exporter_v1) {
-		zxdg_exporter_v1_destroy(registry.xdg_exporter_v1);
-	}
-
-	if (registry.xdg_exporter_v2) {
-		zxdg_exporter_v2_destroy(registry.xdg_exporter_v2);
-	}
-	if (registry.wl_shm) {
-		wl_shm_destroy(registry.wl_shm);
-	}
-
-	if (registry.wl_compositor) {
-		wl_compositor_destroy(registry.wl_compositor);
 	}
 
 	if (wl_registry) {
