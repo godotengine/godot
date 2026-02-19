@@ -44,6 +44,19 @@
 #include "scene/resources/image_texture.h"
 #include "servers/rendering/rendering_server_globals.h"
 
+void apply_texture_filter(Ref<Texture2D> &r_texture) {
+	CanvasTexture *canvas = Object::cast_to<CanvasTexture>(r_texture.ptr());
+	if (canvas != nullptr) {
+		canvas->set_texture_filter(CanvasItem::TextureFilter::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+	} else {
+		Ref<CanvasTexture> filter;
+		filter.instantiate();
+		filter->set_diffuse_texture(r_texture);
+		filter->set_texture_filter(CanvasItem::TextureFilter::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+		r_texture = filter;
+	}
+}
+
 bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
 	bool success = false;
 	GDVIRTUAL_CALL(_handles, p_type, success);
@@ -139,7 +152,7 @@ void EditorResourcePreview::_thread_func(void *ud) {
 	erp->_thread();
 }
 
-void EditorResourcePreview::_preview_ready(const String &p_path, int p_hash, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_small_texture, const Callable &p_callback, const Dictionary &p_metadata) {
+void EditorResourcePreview::_preview_ready(const String &p_path, int p_hash, Ref<Texture2D> p_texture, Ref<Texture2D> p_small_texture, const Callable &p_callback, const Dictionary &p_metadata) {
 	{
 		MutexLock lock(preview_mutex);
 
@@ -153,6 +166,17 @@ void EditorResourcePreview::_preview_ready(const String &p_path, int p_hash, con
 			}
 		}
 
+		bool should_apply_filter = false;
+
+		if (p_metadata.has("apply_filter")) {
+			should_apply_filter = p_metadata["apply_filter"];
+		}
+
+		if (should_apply_filter) {
+			apply_texture_filter(p_texture);
+			apply_texture_filter(p_small_texture);
+		}
+
 		Item item;
 		item.preview = p_texture;
 		item.small_preview = p_small_texture;
@@ -162,18 +186,28 @@ void EditorResourcePreview::_preview_ready(const String &p_path, int p_hash, con
 
 		cache[p_path] = item;
 	}
+
 	p_callback.call_deferred(p_path, p_texture, p_small_texture);
 }
 
 void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, const QueueItem &p_item, const String &cache_base, Dictionary &p_metadata) {
 	String type;
+	String extension;
 
 	uint64_t started_at = OS::get_singleton()->get_ticks_usec();
 
 	if (p_item.resource.is_valid()) {
 		type = p_item.resource->get_class();
+		extension = p_item.resource->get_path().get_extension();
+
 	} else {
 		type = ResourceLoader::get_resource_type(p_item.path);
+		extension = p_item.path.get_extension();
+	}
+
+	bool is_svg = extension == "svg" || extension == "svgz";
+	if (ClassDB::is_parent_class(type, "Texture") && !is_svg) {
+		p_metadata["apply_filter"] = true;
 	}
 
 	if (type.is_empty()) {
