@@ -704,7 +704,7 @@ void GroupsEditor::_show_add_group_dialog() {
 		add_group_dialog->register_text_enter(add_group_description);
 
 		add_validation_panel = memnew(EditorValidationPanel);
-		add_validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Group name is valid."));
+		add_validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Group name is valid."));
 		add_validation_panel->set_update_callback(callable_mp(this, &GroupsEditor::_check_add));
 		add_validation_panel->set_accept_button(add_group_dialog->get_ok_button());
 
@@ -745,7 +745,7 @@ void GroupsEditor::_show_rename_group_dialog() {
 		rename_group_dialog->register_text_enter(rename_group);
 
 		rename_validation_panel = memnew(EditorValidationPanel);
-		rename_validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Group name is valid."));
+		rename_validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Group name is valid."));
 		rename_validation_panel->set_update_callback(callable_mp(this, &GroupsEditor::_check_rename));
 		rename_validation_panel->set_accept_button(rename_group_dialog->get_ok_button());
 
@@ -832,9 +832,9 @@ void GroupsEditor::_check_rename() {
 
 void GroupsEditor::_validate_name(const String &p_name, EditorValidationPanel *p_validation_panel) {
 	if (p_name.is_empty()) {
-		p_validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Group can't be empty."), EditorValidationPanel::MSG_ERROR);
+		p_validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Group can't be empty."), EditorValidationPanel::MSG_ERROR);
 	} else if (_has_group(p_name)) {
-		p_validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Group already exists."), EditorValidationPanel::MSG_ERROR);
+		p_validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Group already exists."), EditorValidationPanel::MSG_ERROR);
 	}
 }
 

@@ -131,6 +131,8 @@ void InputEvent::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "device"), "set_device", "get_device");
 
 	BIND_CONSTANT(DEVICE_ID_EMULATION);
+	BIND_CONSTANT(DEVICE_ID_KEYBOARD);
+	BIND_CONSTANT(DEVICE_ID_MOUSE);
 }
 
 ///////////////////////////////////
@@ -662,6 +664,10 @@ void InputEventKey::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "echo"), "set_echo", "is_echo");
 }
 
+InputEventKey::InputEventKey() {
+	set_device(DEVICE_ID_KEYBOARD);
+}
+
 ///////////////////////////////////
 
 void InputEventMouse::set_button_mask(BitField<MouseButtonMask> p_mask) {
@@ -702,6 +708,10 @@ void InputEventMouse::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask"), "set_button_mask", "get_button_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "suffix:px"), "set_global_position", "get_global_position");
+}
+
+InputEventMouse::InputEventMouse() {
+	set_device(DEVICE_ID_MOUSE);
 }
 
 ///////////////////////////////////

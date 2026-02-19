@@ -107,15 +107,15 @@ void PluginConfigDialog::_on_canceled() {
 
 void PluginConfigDialog::_on_required_text_changed() {
 	if (name_edit->get_text().is_empty()) {
-		validation_panel->set_message(MSG_ID_PLUGIN, TTR("Plugin name cannot be blank."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(MSG_ID_PLUGIN, TTRC("Plugin name cannot be blank."), EditorValidationPanel::MSG_ERROR);
 	}
 	if (subfolder_edit->is_visible()) {
 		if (!subfolder_edit->get_text().is_empty() && !subfolder_edit->get_text().is_valid_filename()) {
-			validation_panel->set_message(MSG_ID_SUBFOLDER, TTR("Subfolder name is not a valid folder name."), EditorValidationPanel::MSG_ERROR);
+			validation_panel->set_message(MSG_ID_SUBFOLDER, TTRC("Subfolder name is not a valid folder name."), EditorValidationPanel::MSG_ERROR);
 		} else {
 			String path = "res://addons/" + _get_subfolder();
 			if (!_edit_mode && DirAccess::exists(path)) { // Only show this error if in "create" mode.
-				validation_panel->set_message(MSG_ID_SUBFOLDER, TTR("Subfolder cannot be one which already exists."), EditorValidationPanel::MSG_ERROR);
+				validation_panel->set_message(MSG_ID_SUBFOLDER, TTRC("Subfolder cannot be one which already exists."), EditorValidationPanel::MSG_ERROR);
 			}
 		}
 	} else {
@@ -132,7 +132,7 @@ void PluginConfigDialog::_on_required_text_changed() {
 		validation_panel->set_message(MSG_ID_SCRIPT, vformat(TTR("Script extension must match chosen language extension (.%s)."), ext), EditorValidationPanel::MSG_ERROR);
 	}
 	if (language->get_name() == "GDScript") {
-		validation_panel->set_message(MSG_ID_ENABLE_WARNINGS, TTR("Consider enabling GDScript warnings for this plugin by adding an entry for it to the project setting Debug > GDScript > Warnings > Directory Rules."), EditorValidationPanel::MSG_INFO);
+		validation_panel->set_message(MSG_ID_ENABLE_WARNINGS, TTRC("Consider enabling GDScript warnings for this plugin by adding an entry for it to the project setting Debug > GDScript > Warnings > Directory Rules."), EditorValidationPanel::MSG_INFO);
 	}
 }
 
@@ -316,11 +316,11 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	validation_panel = memnew(EditorValidationPanel);
 	vbox->add_child(validation_panel);
-	validation_panel->add_line(MSG_ID_PLUGIN, TTR("Plugin name is valid."));
-	validation_panel->add_line(MSG_ID_SCRIPT, TTR("Script extension is valid."));
-	validation_panel->add_line(MSG_ID_SUBFOLDER, TTR("Subfolder name is valid."));
-	validation_panel->add_line(MSG_ID_ACTIVE, "");
-	validation_panel->add_line(MSG_ID_ENABLE_WARNINGS, "");
+	validation_panel->add_line(MSG_ID_PLUGIN, TTRC("Plugin name is valid."));
+	validation_panel->add_line(MSG_ID_SCRIPT, TTRC("Script extension is valid."));
+	validation_panel->add_line(MSG_ID_SUBFOLDER, TTRC("Subfolder name is valid."));
+	validation_panel->add_line(MSG_ID_ACTIVE);
+	validation_panel->add_line(MSG_ID_ENABLE_WARNINGS);
 	validation_panel->set_update_callback(callable_mp(this, &PluginConfigDialog::_on_required_text_changed));
 	validation_panel->set_accept_button(get_ok_button());
 

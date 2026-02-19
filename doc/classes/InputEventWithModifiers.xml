@@ -35,6 +35,7 @@
 		<member name="ctrl_pressed" type="bool" setter="set_ctrl_pressed" getter="is_ctrl_pressed" default="false">
 			State of the [kbd]Ctrl[/kbd] modifier.
 		</member>
+		<member name="device" type="int" setter="set_device" getter="get_device" overrides="InputEvent" default="16" />
 		<member name="meta_pressed" type="bool" setter="set_meta_pressed" getter="is_meta_pressed" default="false">
 			State of the [kbd]Meta[/kbd] modifier. On Windows and Linux, this represents the Windows key (sometimes called "meta" or "super" on Linux). On macOS, this represents the Command key.
 		</member>

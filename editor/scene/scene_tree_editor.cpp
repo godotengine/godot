@@ -346,7 +346,7 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 
 	_update_node(p_node, item, part_of_subscene);
 	I->value.dirty = false;
-	I->value.can_process = p_node->can_process();
+	I->value.can_process = is_scene_tree_dock && p_node->can_process();
 
 	// Force update all our children if we are new or if we were forced to update.
 	bool force_update_children = p_force || is_new;
@@ -470,7 +470,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 		p_item->set_text(0, node_name);
 		p_item->set_selectable(0, marked_selectable);
 		_set_item_custom_color(p_item, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
-	} else if (!p_node->can_process()) {
+	} else if (is_scene_tree_dock && !p_node->can_process()) {
 		_set_item_custom_color(p_item, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 	} else if (!marked_selectable && !marked_children_selectable) {
 		Node *node = p_node;

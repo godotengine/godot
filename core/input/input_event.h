@@ -63,6 +63,8 @@ protected:
 public:
 	static constexpr int DEVICE_ID_EMULATION = -1;
 	static constexpr int DEVICE_ID_INTERNAL = -2;
+	static constexpr int DEVICE_ID_KEYBOARD = 16; // IDs 0-15 are reserved for joypads.
+	static constexpr int DEVICE_ID_MOUSE = 32; // IDs 17-31 are reserved for multiple keyboard support in the future.
 
 	void set_device(int p_device);
 	int get_device() const;
@@ -199,6 +201,8 @@ public:
 	static Ref<InputEventKey> create_reference(Key p_keycode_with_modifier_masks, bool p_physical = false);
 
 	InputEventType get_type() const final override { return InputEventType::KEY; }
+
+	InputEventKey();
 };
 
 class InputEventMouse : public InputEventWithModifiers {
@@ -221,6 +225,8 @@ public:
 
 	void set_global_position(const Vector2 &p_global_pos);
 	Vector2 get_global_position() const;
+
+	InputEventMouse();
 };
 
 class InputEventMouseButton : public InputEventMouse {

@@ -103,6 +103,9 @@ public:
 	void register_frame_info_extension(OpenXRExtensionWrapper *p_extension);
 	void unregister_frame_info_extension(OpenXRExtensionWrapper *p_extension);
 
+	void register_projection_layer_extension(OpenXRExtensionWrapper *p_extension);
+	void unregister_projection_layer_extension(OpenXRExtensionWrapper *p_extension);
+
 	double get_render_state_z_near();
 	double get_render_state_z_far();
 
