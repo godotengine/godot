@@ -1127,15 +1127,13 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_rect(Vector2
 	// Get or create the pattern.
 	Ref<TileMapPattern> pattern = p_erase ? erase_pattern : selection_pattern;
 
-	ERR_FAIL_COND_V(pattern->is_empty(), (HashMap<Vector2i, TileMapCell>()));
-
-	// Compute the offset to align things to the bottom or right.
-	bool aligned_right = p_end_cell.x < p_start_cell.x;
-	bool valigned_bottom = p_end_cell.y < p_start_cell.y;
-	Vector2i offset = Vector2i(aligned_right ? -(pattern->get_size().x - (rect.get_size().x % pattern->get_size().x)) : 0, valigned_bottom ? -(pattern->get_size().y - (rect.get_size().y % pattern->get_size().y)) : 0);
-
 	HashMap<Vector2i, TileMapCell> output;
 	if (!pattern->is_empty()) {
+		// Compute the offset to align things to the bottom or right.
+		bool aligned_right = p_end_cell.x < p_start_cell.x;
+		bool valigned_bottom = p_end_cell.y < p_start_cell.y;
+		Vector2i offset = Vector2i(aligned_right ? -(pattern->get_size().x - (rect.get_size().x % pattern->get_size().x)) : 0, valigned_bottom ? -(pattern->get_size().y - (rect.get_size().y % pattern->get_size().y)) : 0);
+
 		if (!p_erase && random_tile_toggle->is_pressed()) {
 			// Paint a random tile.
 			for (int x = 0; x < rect.size.x; x++) {
