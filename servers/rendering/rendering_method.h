@@ -30,9 +30,8 @@
 
 #pragma once
 
-#include "servers/rendering/rendering_server.h"
+#include "core/variant/variant.h"
 #include "servers/rendering/rendering_server_enums.h"
-#include "servers/rendering/storage/render_scene_buffers.h"
 
 #ifdef XR_DISABLED
 // RendererSceneCull::render_camera is empty when XR is disabled, but
@@ -41,6 +40,9 @@
 #else
 class XRInterface;
 #endif // XR_DISABLED
+
+class Image;
+class RenderSceneBuffers;
 
 class RenderingMethod {
 public:

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "servers/display/display_server.h"
 #include "servers/rendering/dummy/environment/fog.h"
 #include "servers/rendering/dummy/environment/gi.h"
 #include "servers/rendering/dummy/rasterizer_canvas_dummy.h"
@@ -41,6 +42,7 @@
 #include "servers/rendering/dummy/storage/texture_storage.h"
 #include "servers/rendering/dummy/storage/utilities.h"
 #include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 class RasterizerDummy : public RendererCompositor {
 private:

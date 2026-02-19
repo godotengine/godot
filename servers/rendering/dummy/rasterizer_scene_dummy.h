@@ -31,9 +31,9 @@
 #pragma once
 
 #include "core/templates/paged_allocator.h"
+#include "servers/rendering/dummy/storage/utilities.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_server_globals.h"
-#include "storage/utilities.h"
 
 class RasterizerSceneDummy : public RendererSceneRender {
 public:

@@ -31,8 +31,9 @@
 #pragma once
 
 #include "servers/rendering/rendering_method.h"
-#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_enums.h"
+
+class RenderingServer;
 
 class RendererCanvasRender {
 public:

@@ -30,6 +30,8 @@
 
 #include "renderer_scene_render.h"
 
+#include "core/variant/typed_array.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CameraData
 

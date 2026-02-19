@@ -30,10 +30,10 @@
 
 #include "utilities.h"
 
-#include "light_storage.h"
-#include "material_storage.h"
-#include "mesh_storage.h"
-#include "texture_storage.h"
+#include "servers/rendering/dummy/storage/light_storage.h"
+#include "servers/rendering/dummy/storage/material_storage.h"
+#include "servers/rendering/dummy/storage/mesh_storage.h"
+#include "servers/rendering/dummy/storage/texture_storage.h"
 
 using namespace RendererDummy;
 

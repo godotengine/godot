@@ -32,6 +32,12 @@
 
 #ifdef GLES3_ENABLED
 
+#include "core/math/aabb.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3i.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+
 using namespace GLES3;
 
 /* VOXEL GI API */

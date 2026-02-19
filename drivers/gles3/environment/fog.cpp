@@ -32,6 +32,9 @@
 
 #ifdef GLES3_ENABLED
 
+#include "core/math/aabb.h"
+#include "core/templates/rid.h"
+
 using namespace GLES3;
 
 /* FOG */

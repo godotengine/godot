@@ -30,7 +30,11 @@
 
 #pragma once
 
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
+
+class RID;
+struct AABB;
+struct Vector3;
 
 class RendererFog {
 public:

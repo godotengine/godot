@@ -30,17 +30,24 @@
 
 #pragma once
 
-#include "servers/rendering/environment/renderer_fog.h"
-#include "servers/rendering/environment/renderer_gi.h"
-#include "servers/rendering/renderer_canvas_render.h"
-#include "servers/rendering/renderer_scene_render.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/rendering_server_types.h"
-#include "servers/rendering/storage/light_storage.h"
-#include "servers/rendering/storage/material_storage.h"
-#include "servers/rendering/storage/mesh_storage.h"
-#include "servers/rendering/storage/particles_storage.h"
-#include "servers/rendering/storage/texture_storage.h"
-#include "servers/rendering/storage/utilities.h"
+
+class RendererCanvasRender;
+class RendererSceneRender;
+
+class RendererFog;
+class RendererGI;
+class RendererLightStorage;
+class RendererMaterialStorage;
+class RendererMeshStorage;
+class RendererParticlesStorage;
+class RendererTextureStorage;
+class RendererUtilities;
+
+class Image;
+struct Color;
 
 class RendererCompositor {
 private:
