@@ -492,7 +492,7 @@ double ScrollBar::get_area_size() const {
 	switch (orientation) {
 		case VERTICAL: {
 			double area = get_size().height;
-			area -= theme_cache.scroll_style->get_minimum_size().height;
+			area -= theme_cache.scroll_style->get_margin(Side::SIDE_TOP) + theme_cache.scroll_style->get_margin(Side::SIDE_BOTTOM);
 			area -= theme_cache.increment_icon->get_height();
 			area -= theme_cache.decrement_icon->get_height();
 			area -= get_grabber_min_size();
@@ -500,7 +500,7 @@ double ScrollBar::get_area_size() const {
 		} break;
 		case HORIZONTAL: {
 			double area = get_size().width;
-			area -= theme_cache.scroll_style->get_minimum_size().width;
+			area -= theme_cache.scroll_style->get_margin(Side::SIDE_LEFT) + theme_cache.scroll_style->get_margin(Side::SIDE_RIGHT);
 			area -= theme_cache.increment_icon->get_width();
 			area -= theme_cache.decrement_icon->get_width();
 			area -= get_grabber_min_size();
