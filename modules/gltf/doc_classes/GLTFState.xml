@@ -295,6 +295,7 @@
 			The folder path associated with this glTF data. This is used to find other files the glTF file references, like images or binary buffers. This will be set during import when appending from a file, and will be set during export when writing to a file.
 		</member>
 		<member name="buffers" type="PackedByteArray[]" setter="set_buffers" getter="get_buffers" default="[]">
+			The buffers of the glTF file's buffers array. Buffer data may be stored in separate files, in data URIs, or in the chunks of a binary glTF .glb file.
 		</member>
 		<member name="copyright" type="String" setter="set_copyright" getter="get_copyright" default="&quot;&quot;">
 			The copyright string in the asset header of the glTF file. This is set during import if present and export if non-empty. See the glTF asset header documentation for more information.
@@ -304,7 +305,7 @@
 		<member name="filename" type="String" setter="set_filename" getter="get_filename" default="&quot;&quot;">
 			The file name associated with this glTF data. If it ends with [code].gltf[/code], this is text-based glTF, otherwise this is binary GLB. This will be set during import when appending from a file, and will be set during export when writing to a file. If writing to a buffer, this will be an empty string.
 		</member>
-		<member name="glb_data" type="PackedByteArray" setter="set_glb_data" getter="get_glb_data" default="PackedByteArray()">
+		<member name="glb_data" type="PackedByteArray" setter="set_glb_data" getter="get_glb_data" default="PackedByteArray()" deprecated="Use [member buffers] instead.">
 			The binary buffer attached to a .glb file.
 		</member>
 		<member name="handle_binary_image_mode" type="int" setter="set_handle_binary_image_mode" getter="get_handle_binary_image_mode" enum="GLTFState.HandleBinaryImageMode" default="1">
