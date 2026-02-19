@@ -1101,6 +1101,8 @@ void SpriteFramesEditor::_animation_selected() {
 	ERR_FAIL_NULL(selected);
 	edited_anim = selected->get_text(0);
 
+	_sync_selected_anims();
+
 	if (animated_sprite) {
 		sprite_node_updating = true;
 		animated_sprite->call("set_animation", edited_anim);
@@ -1115,13 +1117,9 @@ void SpriteFramesEditor::_animation_multi_selected(TreeItem *p_item, int p_colum
 		return;
 	}
 
-	TreeItem *selected = animations->get_next_selected(nullptr);
-	if (!selected) {
-		return;
-	}
+	_sync_selected_anims();
 
-	Vector<StringName> selected_animations = _get_selected_animations();
-	if (selected_animations.is_empty()) {
+	if (selected_anims.is_empty()) {
 		return;
 	}
 
@@ -1129,9 +1127,9 @@ void SpriteFramesEditor::_animation_multi_selected(TreeItem *p_item, int p_colum
 
 	// Update FPS field
 	bool all_same_speed = true;
-	double first_speed = frames->get_animation_speed(selected_animations[0]);
+	double first_speed = frames->get_animation_speed(selected_anims[0]);
 
-	for (const StringName &selected_animation : selected_animations) {
+	for (const StringName &selected_animation : selected_anims) {
 		if (frames->get_animation_speed(selected_animation) != first_speed) {
 			all_same_speed = false;
 			break;
@@ -1148,9 +1146,9 @@ void SpriteFramesEditor::_animation_multi_selected(TreeItem *p_item, int p_colum
 
 	// Update loop button
 	bool all_same_loop = true;
-	bool first_loop = frames->get_animation_loop(selected_animations[0]);
+	bool first_loop = frames->get_animation_loop(selected_anims[0]);
 
-	for (const StringName &selected_animation : selected_animations) {
+	for (const StringName &selected_animation : selected_anims) {
 		if (frames->get_animation_loop(selected_animation) != first_loop) {
 			all_same_loop = false;
 			break;
@@ -1344,9 +1342,7 @@ void SpriteFramesEditor::_animation_duplicate() {
 }
 
 void SpriteFramesEditor::_animation_cut() {
-	Vector<StringName> anims_to_cut = _get_selected_animations();
-
-	if (anims_to_cut.is_empty()) {
+	if (selected_anims.is_empty()) {
 		return;
 	}
 
@@ -1355,7 +1351,7 @@ void SpriteFramesEditor::_animation_cut() {
 
 	HashMap<StringName, Vector<ClipboardSpriteFrames::Frame>> frames_map;
 
-	for (const StringName &anim_name : anims_to_cut) {
+	for (const StringName &anim_name : selected_anims) {
 		Ref<ClipboardAnimation> clipboard_anim = ClipboardAnimation::from_sprite_frames(frames, anim_name);
 		clipboard_anims->add_animation(clipboard_anim);
 
@@ -1365,31 +1361,26 @@ void SpriteFramesEditor::_animation_cut() {
 	// Copy animations to clipboard.
 	EditorSettings::get_singleton()->set_resource_clipboard(clipboard_anims);
 
-	String action_name = anims_to_cut.size() == 1
+	String action_name = selected_anims.size() == 1
 			? TTR("Cut Animation")
-			: vformat(TTR("Cut %d Animations"), anims_to_cut.size());
+			: vformat(TTR("Cut %d Animations"), selected_anims.size());
 
-	_animation_remove_undo_redo(action_name, anims_to_cut, &frames_map);
+	_animation_remove_undo_redo(action_name, selected_anims, &frames_map);
 }
 
 void SpriteFramesEditor::_animation_copy() {
-	TreeItem *selected = animations->get_next_selected(nullptr);
-	if (!selected) {
+	if (selected_anims.is_empty()) {
 		return;
 	}
 
 	Ref<ClipboardAnimationMulti> clipboard_anims;
 	clipboard_anims.instantiate();
 
-	while (selected) {
-		StringName anim_name = selected->get_text(0);
-
+	for (const StringName &anim_name : selected_anims) {
 		if (frames->has_animation(anim_name)) {
 			Ref<ClipboardAnimation> clipboard_anim = ClipboardAnimation::from_sprite_frames(frames, anim_name);
 			clipboard_anims->add_animation(clipboard_anim);
 		}
-
-		selected = animations->get_next_selected(selected);
 	}
 
 	if (clipboard_anims->get_count() > 0) {
@@ -1451,18 +1442,11 @@ void SpriteFramesEditor::_animation_remove() {
 		return;
 	}
 
-	TreeItem *selected = animations->get_next_selected(nullptr);
-	if (!selected) {
+	if (selected_anims.is_empty()) {
 		return;
 	}
 
-	int selection_count = 0;
-	TreeItem *temp = selected;
-	while (temp) {
-		selection_count++;
-		temp = animations->get_next_selected(temp);
-	}
-
+	int selection_count = selected_anims.size();
 	// Update dialog text based on count
 	if (selection_count == 1) {
 		delete_dialog->set_text(TTRC("Delete Animation?"));
@@ -1474,17 +1458,15 @@ void SpriteFramesEditor::_animation_remove() {
 }
 
 void SpriteFramesEditor::_animation_remove_confirmed() {
-	Vector<StringName> anims_to_delete = _get_selected_animations();
-
-	if (anims_to_delete.is_empty()) {
+	if (selected_anims.is_empty()) {
 		return;
 	}
 
-	String action_name = anims_to_delete.size() == 1
+	String action_name = selected_anims.size() == 1
 			? TTR("Remove Animation")
-			: vformat(TTR("Remove %d Animations"), anims_to_delete.size());
+			: vformat(TTR("Remove %d Animations"), selected_anims.size());
 
-	_animation_remove_undo_redo(action_name, anims_to_delete, nullptr);
+	_animation_remove_undo_redo(action_name, selected_anims, nullptr);
 }
 
 void SpriteFramesEditor::_animation_search_text_changed(const String &p_text) {
@@ -1495,8 +1477,6 @@ void SpriteFramesEditor::_animation_loop_changed() {
 	if (updating) {
 		return;
 	}
-
-	Vector<StringName> selected_anims = _get_selected_animations();
 
 	if (selected_anims.is_empty()) {
 		return;
@@ -1531,8 +1511,6 @@ void SpriteFramesEditor::_animation_speed_changed(double p_value) {
 	if (updating) {
 		return;
 	}
-
-	Vector<StringName> selected_anims = _get_selected_animations();
 
 	if (selected_anims.is_empty()) {
 		return;
@@ -2997,18 +2975,14 @@ Ref<ClipboardAnimation> ClipboardAnimation::from_sprite_frames(const Ref<SpriteF
 	return clipboard_anim;
 }
 
-// get all currently selected animations. Returns empty vector if nothing is selected
-Vector<StringName> SpriteFramesEditor::_get_selected_animations() {
-	Vector<StringName> selected_anims;
-	TreeItem *selected = animations->get_next_selected(nullptr);
-
-	while (selected) {
-		StringName anim_name = selected->get_text(0);
+void SpriteFramesEditor::_sync_selected_anims() {
+	selected_anims.clear();
+	TreeItem *sel = animations->get_next_selected(nullptr);
+	while (sel) {
+		StringName anim_name = sel->get_text(0);
 		if (frames->has_animation(anim_name)) {
 			selected_anims.push_back(anim_name);
 		}
-		selected = animations->get_next_selected(selected);
+		sel = animations->get_next_selected(sel);
 	}
-
-	return selected_anims;
 }
