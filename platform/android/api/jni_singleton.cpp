@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  jni_singleton.cpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,44 +28,50 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
-
-#include "mobile_vr_interface.h"
+#include "jni_singleton.h"
 
 #include "core/object/class_db.h"
 
-Ref<MobileVRInterface> mobile_vr;
-
-void initialize_mobile_vr_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-	GDREGISTER_CLASS(MobileVRInterface);
-
-	if (XRServer::get_singleton()) {
-		mobile_vr.instantiate();
-		XRServer::get_singleton()->add_interface(mobile_vr);
-	}
+void JNISingleton::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("has_java_method", "method"), &JNISingleton::has_java_method);
 }
 
-void uninitialize_mobile_vr_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
+Variant JNISingleton::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	// Godot methods take precedence.
+	Variant ret = Object::callp(p_method, p_args, p_argcount, r_error);
+	if (r_error.error == Callable::CallError::CALL_OK) {
+		return ret;
 	}
 
-	if (mobile_vr.is_valid()) {
-		// uninitialize our interface if it is initialized
-		if (mobile_vr->is_initialized()) {
-			mobile_vr->uninitialize();
+	// Check the method we're looking for is in the JNISingleton map.
+	// This is done because JNISingletons register methods differently than wrapped JavaClass / JavaObject to allow
+	// for access to private methods annotated with the @UsedByGodot annotation.
+	// In the future, we should remove access to private methods and require that JNISingletons' methods exposed to
+	// GDScript be all public, similarly to what we do for wrapped JavaClass / JavaObject methods. Doing so will
+	// also allow dropping and deprecating the @UsedByGodot annotation.
+	RBMap<StringName, MethodData>::Element *E = method_map.find(p_method);
+	if (E) {
+		if (wrapped_object.is_valid()) {
+			return wrapped_object->callp(p_method, p_args, p_argcount, r_error);
+		} else {
+			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		}
-
-		// unregister our interface from the XR server
-		if (XRServer::get_singleton()) {
-			XRServer::get_singleton()->remove_interface(mobile_vr);
-		}
-
-		// and release
-		mobile_vr.unref();
 	}
+	return Variant();
+}
+
+void JNISingleton::add_method(const StringName &p_name, const Vector<Variant::Type> &p_args, Variant::Type p_ret_type) {
+	MethodData md;
+	md.argtypes = p_args;
+	md.ret_type = p_ret_type;
+	method_map[p_name] = md;
+}
+
+void JNISingleton::add_signal(const StringName &p_name, const Vector<Variant::Type> &p_args) {
+	MethodInfo mi;
+	mi.name = p_name;
+	for (int i = 0; i < p_args.size(); i++) {
+		mi.arguments.push_back(PropertyInfo(p_args[i], "arg" + itos(i + 1)));
+	}
+	ADD_SIGNAL(mi);
 }

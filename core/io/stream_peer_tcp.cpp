@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 
 void StreamPeerTCP::accept_socket(Ref<NetSocket> p_sock, const NetSocket::Address &p_addr) {
 	_sock = p_sock;
