@@ -52,11 +52,81 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	inline static ProjectSettingsEditor *singleton = nullptr;
 
+	struct Preset {
+		enum StretchMode {
+			DISABLED,
+			CANVAS_ITEMS,
+			VIEWPORT,
+		};
+
+		enum StretchAspect {
+			IGNORE,
+			KEEP,
+			KEEP_WIDTH,
+			KEEP_HEIGHT,
+			EXPAND,
+		};
+
+		enum StretchScaleMode {
+			FRACTIONAL,
+			INTEGER,
+		};
+
+		enum Orientation {
+			LANDSCAPE,
+			PORTRAIT,
+			REVERSE_LANDSCAPE,
+			REVERSE_PORTRAIT,
+			SENSOR_LANDSCAPE,
+			SENSOR_PORTRAIT,
+			SENSOR,
+		};
+
+		const Vector<String> STRETCH_MODE = {
+			"disabled",
+			"canvas_items",
+			"viewport",
+		};
+		const Vector<String> STRETCH_ASPECT = {
+			"ignore",
+			"keep",
+			"keep_width",
+			"keep_height",
+			"expand",
+		};
+		const Vector<String> STRETCH_SCALE_MODE = {
+			"fractional",
+			"integer",
+		};
+
+		int viewport_width = 1152;
+		int viewport_height = 648;
+		String stretch_mode = "disabled";
+		String stretch_aspect = "keep";
+		String stretch_scale_mode = "fractional";
+		Orientation orientation = LANDSCAPE;
+		float theme_scale = 1.0f;
+
+		Preset(int p_width = 1152, int p_height = 648, StretchMode p_stretch_mode = DISABLED,
+				StretchAspect p_stretch_aspect = KEEP, StretchScaleMode p_scale_mode = FRACTIONAL,
+				Orientation p_orientation = LANDSCAPE, float p_theme_scale = 1.0f) {
+			viewport_width = p_width;
+			viewport_height = p_height;
+			stretch_mode = STRETCH_MODE[p_stretch_mode];
+			stretch_aspect = STRETCH_ASPECT[p_stretch_aspect];
+			stretch_scale_mode = STRETCH_SCALE_MODE[p_scale_mode];
+			orientation = p_orientation;
+			theme_scale = p_theme_scale;
+		}
+	};
+
 	enum {
 		FEATURE_ALL,
 		FEATURE_CUSTOM,
 		FEATURE_FIRST,
 	};
+
+	Vector<Preset> window_presets;
 
 	ProjectSettings *ps = nullptr;
 	Timer *timer = nullptr;
@@ -107,6 +177,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	String _get_setting_name() const;
 	void _setting_edited(const String &p_name);
 	void _setting_selected(const String &p_path);
+	void _settings_changed();
 	void _add_setting();
 	void _delete_setting();
 

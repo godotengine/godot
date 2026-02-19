@@ -993,6 +993,8 @@
 		<member name="display/window/per_pixel_transparency/allowed" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], allows per-pixel transparency for the window background. This affects performance, so leave it on [code]false[/code] unless you need it. See also [member display/window/size/transparent] and [member rendering/viewport/transparent_background].
 		</member>
+		<member name="display/window/preset" type="int" setter="" getter="" default="0">
+		</member>
 		<member name="display/window/size/always_on_top" type="bool" setter="" getter="" default="false">
 			Forces the main window to be always on top.
 			[b]Note:[/b] This setting is ignored on iOS, Android, and Web.

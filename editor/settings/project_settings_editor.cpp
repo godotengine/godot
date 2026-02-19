@@ -161,6 +161,19 @@ void ProjectSettingsEditor::_setting_selected(const String &p_path) {
 	_update_property_box(); // set_text doesn't trigger text_changed
 }
 
+void ProjectSettingsEditor::_settings_changed() {
+	if (ps->check_changed_settings_in_group("display/window/preset")) {
+		int preset = ps->get_setting("display/window/preset", 0);
+		ps->set_setting("display/window/size/viewport_width", window_presets[preset].viewport_width);
+		ps->set_setting("display/window/size/viewport_height", window_presets[preset].viewport_height);
+		ps->set_setting("display/window/stretch/mode", window_presets[preset].stretch_mode);
+		ps->set_setting("display/window/stretch/aspect", window_presets[preset].stretch_aspect);
+		ps->set_setting("display/window/stretch/scale_mode", window_presets[preset].stretch_scale_mode);
+		ps->set_setting("display/window/handheld/orientation", window_presets[preset].orientation);
+		ps->set_setting("gui/theme/default_theme_scale", window_presets[preset].theme_scale);
+	}
+}
+
 void ProjectSettingsEditor::_add_setting() {
 	String setting = _get_setting_name();
 
@@ -693,7 +706,36 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	set_clamp_to_embedder(true);
 
+	// Window pressets
+	// Default"
+	window_presets.push_back(Preset());
+	// Desktop Game Non-pixel art HD
+	window_presets.push_back(Preset(3840, 2160, Preset::CANVAS_ITEMS, Preset::EXPAND, Preset::FRACTIONAL, Preset::LANDSCAPE, 3.0f));
+	// Desktop Game Non-pixel art
+	window_presets.push_back(Preset(1920, 1080, Preset::CANVAS_ITEMS, Preset::EXPAND, Preset::FRACTIONAL, Preset::LANDSCAPE));
+	// Desktop Game Pixel art Small
+	window_presets.push_back(Preset(256, 224, Preset::VIEWPORT, Preset::KEEP, Preset::INTEGER, Preset::LANDSCAPE));
+	// Desktop Game Pixel art Medium
+	window_presets.push_back(Preset(640, 360, Preset::VIEWPORT, Preset::KEEP, Preset::INTEGER, Preset::LANDSCAPE));
+	// Desktop Game Pixel art Large
+	window_presets.push_back(Preset(640, 480, Preset::VIEWPORT, Preset::KEEP, Preset::INTEGER, Preset::LANDSCAPE));
+	// Mobile Game Landscape HD
+	window_presets.push_back(Preset(1920, 1080, Preset::CANVAS_ITEMS, Preset::EXPAND, Preset::FRACTIONAL, Preset::LANDSCAPE, 2.0f));
+	// Mobile Game Landscape
+	window_presets.push_back(Preset(1280, 720, Preset::CANVAS_ITEMS, Preset::EXPAND, Preset::FRACTIONAL, Preset::LANDSCAPE));
+	// Mobile Game Landscape Tablets
+	window_presets.push_back(Preset(1280, 960, Preset::CANVAS_ITEMS, Preset::EXPAND, Preset::FRACTIONAL, Preset::LANDSCAPE));
+	// Mobile Game Portrait HD
+	window_presets.push_back(Preset(1080, 1920, Preset::CANVAS_ITEMS, Preset::EXPAND, Preset::FRACTIONAL, Preset::LANDSCAPE, 2.0f));
+	// Mobile Game Portrait
+	window_presets.push_back(Preset(720, 1280, Preset::CANVAS_ITEMS, Preset::EXPAND, Preset::FRACTIONAL, Preset::LANDSCAPE));
+	// Mobile Game Portrait Tablets
+	window_presets.push_back(Preset(960, 1280, Preset::CANVAS_ITEMS, Preset::EXPAND, Preset::FRACTIONAL, Preset::LANDSCAPE));
+	// Non-game Application
+	window_presets.push_back(Preset());
+
 	ps = ProjectSettings::get_singleton();
+	ps->connect("settings_changed", callable_mp(this, &ProjectSettingsEditor::_settings_changed));
 	data = p_data;
 
 	tab_container = memnew(TabContainer);

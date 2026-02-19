@@ -1704,6 +1704,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "accessibility/general/accessibility_support", PROPERTY_HINT_ENUM, "Auto (When Screen Reader is Running),Always Active,Disabled"), 0);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "accessibility/general/updates_per_second", PROPERTY_HINT_RANGE, "1,100,1"), 60);
 
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/preset", PROPERTY_HINT_ENUM, "Default,Desktop Game Non-pixel art HD,Desktop Game Non-pixel art,Desktop Game Pixel art Small,Desktop Game Pixel art Medium,Desktop Game Pixel art Large,Mobile Game Landscape HD,Mobile Game Landscape,Mobile Game Landscape Tablets,Mobile Game Portrait HD,Mobile Game Portrait,Mobile Game Portrait Tablets,Non-game Application"), 0);
 	// The default window size is tuned to:
 	// - Have a 16:9 aspect ratio,
 	// - Have both dimensions divisible by 8 to better play along with video recording,
