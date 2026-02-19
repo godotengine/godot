@@ -15,6 +15,9 @@ namespace Godot.Bridge
     public delegate godot_variant PropertyAccessMethod<T>(T godotObject, scoped in godot_variant value)
         where T : GodotObject;
 
+    public delegate void SignalScriptMethod<T>(T godotObject, scoped in NativeVariantPtrArgs args)
+        where T : GodotObject;
+
     //public class ScriptPropertyCache<T> : ScriptCache<T, ScriptMethod<GodotObject>>
     //    where T : GodotObject
     //{
