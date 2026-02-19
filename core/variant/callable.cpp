@@ -546,6 +546,12 @@ Error Signal::connect(const Callable &p_callable, uint32_t p_flags) {
 	return obj->connect(name, p_callable, p_flags);
 }
 
+void Signal::disconnect_all() {
+	Object *obj = get_object();
+	ERR_FAIL_NULL(obj);
+	obj->disconnect(name);
+}
+
 void Signal::disconnect(const Callable &p_callable) {
 	Object *obj = get_object();
 	ERR_FAIL_NULL(obj);
