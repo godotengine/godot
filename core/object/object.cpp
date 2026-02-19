@@ -1713,6 +1713,33 @@ bool Object::has_connections(const StringName &p_signal) const {
 	return !s->slot_map.is_empty();
 }
 
+void Object::disconnect_all(const StringName &p_signal) {
+	OBJ_SIGNAL_LOCK
+
+	SignalData *s = signal_map.getptr(p_signal);
+	if (!s) {
+		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
+		if (signal_is_valid) {
+			return;
+		}
+
+		if (script_instance && script_instance->get_script()->has_script_signal(p_signal)) {
+			return;
+		}
+
+		ERR_FAIL_MSG(vformat("Nonexistent signal: '%s'.", p_signal));
+	}
+
+	for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
+		Object *target = slot_kv.key.get_object();
+		if (target) {
+			target->connections.erase(slot_kv.value.cE);
+		}
+	}
+
+	s->slot_map.clear();
+}
+
 void Object::disconnect(const StringName &p_signal, const Callable &p_callable) {
 	_disconnect(p_signal, p_callable);
 }
