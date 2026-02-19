@@ -29,13 +29,15 @@
 /**************************************************************************/
 
 #include "material_storage.h"
+
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/math/projection.h"
+#include "core/templates/local_vector.h"
 #include "servers/rendering/renderer_rd/forward_clustered/scene_shader_forward_clustered.h"
 #include "servers/rendering/renderer_rd/forward_mobile/scene_shader_forward_mobile.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
-#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/storage/variant_converters.h"
 
 using namespace RendererRD;
@@ -1376,7 +1378,7 @@ bool MaterialStorage::TexBlitShaderData::casts_shadows() const {
 	return false;
 }
 
-RS::ShaderNativeSourceCode MaterialStorage::TexBlitShaderData::get_native_source_code() const {
+RenderingServerTypes::ShaderNativeSourceCode MaterialStorage::TexBlitShaderData::get_native_source_code() const {
 	return TextureStorage::get_singleton()->tex_blit_shader.shader.version_get_native_source_code(version);
 }
 
@@ -2348,13 +2350,13 @@ MaterialStorage::ShaderData *MaterialStorage::shader_get_data(RID p_shader) cons
 	return shader->data;
 }
 
-RS::ShaderNativeSourceCode MaterialStorage::shader_get_native_source_code(RID p_shader) const {
+RenderingServerTypes::ShaderNativeSourceCode MaterialStorage::shader_get_native_source_code(RID p_shader) const {
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_NULL_V(shader, RS::ShaderNativeSourceCode());
+	ERR_FAIL_NULL_V(shader, RenderingServerTypes::ShaderNativeSourceCode());
 	if (shader->data) {
 		return shader->data->get_native_source_code();
 	}
-	return RS::ShaderNativeSourceCode();
+	return RenderingServerTypes::ShaderNativeSourceCode();
 }
 
 void MaterialStorage::shader_embedded_set_lock() {

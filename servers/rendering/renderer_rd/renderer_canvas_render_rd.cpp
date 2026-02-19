@@ -40,7 +40,6 @@
 #include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/particles_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
-#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_default.h"
 
 void RendererCanvasRenderRD::_update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4) {
@@ -1629,7 +1628,7 @@ bool RendererCanvasRenderRD::CanvasShaderData::casts_shadows() const {
 	return false;
 }
 
-RS::ShaderNativeSourceCode RendererCanvasRenderRD::CanvasShaderData::get_native_source_code() const {
+RenderingServerTypes::ShaderNativeSourceCode RendererCanvasRenderRD::CanvasShaderData::get_native_source_code() const {
 	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
 	MutexLock lock(canvas_singleton->shader.mutex);
 	return canvas_singleton->shader.canvas_shader.version_get_native_source_code(version);

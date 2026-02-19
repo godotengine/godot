@@ -32,15 +32,16 @@
 
 #include "texture_storage.h"
 
-#include "core/math/projection.h"
-#include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
+#include "servers/rendering/rendering_server_types.h"
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/storage/material_storage.h"
 #include "servers/rendering/storage/utilities.h"
+
+struct Projection;
 
 namespace RendererRD {
 
@@ -81,7 +82,7 @@ public:
 		virtual void set_code(const String &p_Code) = 0;
 		virtual bool is_animated() const = 0;
 		virtual bool casts_shadows() const = 0;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const = 0;
+		virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const = 0;
 		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const = 0;
 
 		virtual ~ShaderData() {}
@@ -155,7 +156,7 @@ public:
 		virtual void set_code(const String &p_Code);
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 
 		TexBlitShaderData();
@@ -473,7 +474,7 @@ public:
 	void shader_set_data_request_function(ShaderType p_shader_type, ShaderDataRequestFunction p_function);
 	ShaderData *shader_get_data(RID p_shader) const;
 
-	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override;
+	virtual RenderingServerTypes::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override;
 	virtual void shader_embedded_set_lock() override;
 	virtual const HashSet<RID> &shader_embedded_set_get() const override;
 	virtual void shader_embedded_set_unlock() override;

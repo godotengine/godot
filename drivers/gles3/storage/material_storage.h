@@ -39,6 +39,7 @@
 #include "drivers/gles3/shaders/scene.glsl.gen.h"
 #include "drivers/gles3/shaders/sky.glsl.gen.h"
 #include "drivers/gles3/shaders/tex_blit.glsl.gen.h"
+#include "servers/rendering/rendering_server_types.h"
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/storage/material_storage.h"
@@ -63,7 +64,7 @@ struct ShaderData {
 	virtual void set_code(const String &p_Code) = 0;
 	virtual bool is_animated() const = 0;
 	virtual bool casts_shadows() const = 0;
-	virtual RS::ShaderNativeSourceCode get_native_source_code() const { return RS::ShaderNativeSourceCode(); }
+	virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const { return RenderingServerTypes::ShaderNativeSourceCode(); }
 
 	virtual ~ShaderData() {}
 };
@@ -172,7 +173,7 @@ struct CanvasShaderData : public ShaderData {
 	virtual void set_code(const String &p_Code);
 	virtual bool is_animated() const;
 	virtual bool casts_shadows() const;
-	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+	virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 
 	CanvasShaderData();
 	virtual ~CanvasShaderData();
@@ -217,7 +218,7 @@ struct SkyShaderData : public ShaderData {
 	virtual void set_code(const String &p_Code);
 	virtual bool is_animated() const;
 	virtual bool casts_shadows() const;
-	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+	virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 	SkyShaderData();
 	virtual ~SkyShaderData();
 };
@@ -350,7 +351,7 @@ struct SceneShaderData : public ShaderData {
 	virtual void set_code(const String &p_Code);
 	virtual bool is_animated() const;
 	virtual bool casts_shadows() const;
-	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+	virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 
 	SceneShaderData();
 	virtual ~SceneShaderData();
@@ -402,7 +403,7 @@ struct ParticlesShaderData : public ShaderData {
 	virtual void set_code(const String &p_Code);
 	virtual bool is_animated() const;
 	virtual bool casts_shadows() const;
-	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+	virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 
 	ParticlesShaderData() {}
 	virtual ~ParticlesShaderData();
@@ -449,7 +450,7 @@ struct TexBlitShaderData : public ShaderData {
 	virtual void set_code(const String &p_code);
 	virtual bool is_animated() const;
 	virtual bool casts_shadows() const;
-	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+	virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 
 	TexBlitShaderData();
 	virtual ~TexBlitShaderData();
@@ -658,7 +659,7 @@ public:
 	virtual RID shader_get_default_texture_parameter(RID p_shader, const StringName &p_name, int p_index) const override;
 	virtual Variant shader_get_parameter_default(RID p_shader, const StringName &p_name) const override;
 
-	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override;
+	virtual RenderingServerTypes::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override;
 	virtual void shader_embedded_set_lock() override {}
 	virtual const HashSet<RID> &shader_embedded_set_get() const override { return dummy_embedded_set; }
 	virtual void shader_embedded_set_unlock() override {}

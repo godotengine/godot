@@ -38,6 +38,7 @@
 #include "servers/rendering/renderer_rd/shaders/canvas_occlusion.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_server_types.h"
 #include "servers/rendering/shader_compiler.h"
 
 class RendererCanvasRenderRD : public RendererCanvasRender {
@@ -169,7 +170,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		virtual void set_code(const String &p_Code);
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 		RID get_shader(ShaderVariant p_shader_variant, bool p_ubershader) const;
 		uint64_t get_vertex_input_mask(ShaderVariant p_shader_variant, bool p_ubershader);

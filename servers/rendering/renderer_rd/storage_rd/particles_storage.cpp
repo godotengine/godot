@@ -30,9 +30,9 @@
 
 #include "particles_storage.h"
 
+#include "servers/rendering/renderer_rd/effects/sort_effects.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
-#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 
 using namespace RendererRD;
@@ -1751,7 +1751,7 @@ bool ParticlesStorage::ParticlesShaderData::casts_shadows() const {
 	return false;
 }
 
-RS::ShaderNativeSourceCode ParticlesStorage::ParticlesShaderData::get_native_source_code() const {
+RenderingServerTypes::ShaderNativeSourceCode ParticlesStorage::ParticlesShaderData::get_native_source_code() const {
 	return ParticlesStorage::get_singleton()->particles_shader.shader.version_get_native_source_code(version);
 }
 

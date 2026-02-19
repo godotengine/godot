@@ -31,13 +31,13 @@
 #pragma once
 
 #include "core/os/mutex.h"
-#include "core/string/string_builder.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
-#include "core/templates/self_list.h"
 #include "servers/rendering/rendering_device.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_types.h"
+
+class StringBuilder;
 
 class ShaderRD {
 public:
@@ -263,7 +263,7 @@ public:
 	static PackedByteArray save_shader_cache_bytes(const LocalVector<int> &p_variants, const Vector<Vector<uint8_t>> &p_variant_data);
 
 	Vector<String> version_build_variant_stage_sources(RID p_version, int p_variant);
-	RS::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
+	RenderingServerTypes::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
 	String version_get_cache_file_relative_path(RID p_version, int p_group, const String &p_api_name);
 
 	struct DynamicBuffer {

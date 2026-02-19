@@ -30,10 +30,10 @@
 
 #include "fog.h"
 
-#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+#include "servers/rendering/renderer_rd/cluster_builder_rd.h"
+#include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
-#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_default.h"
 
 using namespace RendererRD;
@@ -407,7 +407,7 @@ bool Fog::FogShaderData::casts_shadows() const {
 	return false;
 }
 
-RS::ShaderNativeSourceCode Fog::FogShaderData::get_native_source_code() const {
+RenderingServerTypes::ShaderNativeSourceCode Fog::FogShaderData::get_native_source_code() const {
 	Fog *fog_singleton = Fog::get_singleton();
 
 	return fog_singleton->volumetric_fog.shader.version_get_native_source_code(version);

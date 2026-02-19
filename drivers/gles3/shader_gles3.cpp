@@ -466,9 +466,9 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 	spec.ok = true;
 }
 
-RS::ShaderNativeSourceCode ShaderGLES3::version_get_native_source_code(RID p_version) {
+RenderingServerTypes::ShaderNativeSourceCode ShaderGLES3::version_get_native_source_code(RID p_version) {
 	Version *version = version_owner.get_or_null(p_version);
-	RS::ShaderNativeSourceCode source_code;
+	RenderingServerTypes::ShaderNativeSourceCode source_code;
 	ERR_FAIL_NULL_V(version, source_code);
 
 	source_code.versions.resize(variant_count);
@@ -480,7 +480,7 @@ RS::ShaderNativeSourceCode ShaderGLES3::version_get_native_source_code(RID p_ver
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, STAGE_TYPE_VERTEX, specialization_default_mask);
 
-			RS::ShaderNativeSourceCode::Version::Stage stage;
+			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "vertex";
 			stage.code = builder.as_string();
 
@@ -492,7 +492,7 @@ RS::ShaderNativeSourceCode ShaderGLES3::version_get_native_source_code(RID p_ver
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, STAGE_TYPE_FRAGMENT, specialization_default_mask);
 
-			RS::ShaderNativeSourceCode::Version::Stage stage;
+			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "fragment";
 			stage.code = builder.as_string();
 

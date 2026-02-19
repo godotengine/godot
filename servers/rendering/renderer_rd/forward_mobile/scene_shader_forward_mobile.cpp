@@ -29,12 +29,12 @@
 /**************************************************************************/
 
 #include "scene_shader_forward_mobile.h"
+
 #include "core/config/project_settings.h"
 #include "core/math/math_defs.h"
-#include "render_forward_mobile.h"
+#include "servers/rendering/renderer_rd/forward_mobile/render_forward_mobile.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
-#include "servers/rendering/rendering_server.h"
 
 using namespace RendererSceneRenderImplementation;
 
@@ -261,12 +261,12 @@ bool SceneShaderForwardMobile::ShaderData::casts_shadows() const {
 	return !has_alpha || (uses_depth_prepass_alpha && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test != DEPTH_TEST_ENABLED));
 }
 
-RS::ShaderNativeSourceCode SceneShaderForwardMobile::ShaderData::get_native_source_code() const {
+RenderingServerTypes::ShaderNativeSourceCode SceneShaderForwardMobile::ShaderData::get_native_source_code() const {
 	if (version.is_valid()) {
 		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
 		return SceneShaderForwardMobile::singleton->shader.version_get_native_source_code(version);
 	} else {
-		return RS::ShaderNativeSourceCode();
+		return RenderingServerTypes::ShaderNativeSourceCode();
 	}
 }
 

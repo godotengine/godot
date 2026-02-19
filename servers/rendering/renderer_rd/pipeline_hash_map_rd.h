@@ -30,8 +30,16 @@
 
 #pragma once
 
+#include "core/object/worker_thread_pool.h"
+#include "core/os/mutex.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/rb_set.h"
-#include "servers/rendering/rendering_server.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 #define PRINT_PIPELINE_COMPILATION_KEYS 0
 

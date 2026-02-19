@@ -33,11 +33,12 @@
 #ifdef GLES3_ENABLED
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_loader.h"
 #include "drivers/gles3/rasterizer_canvas_gles3.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/gles3/storage/config.h"
 #include "drivers/gles3/storage/texture_storage.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_types.h"
 #include "servers/rendering/storage/variant_converters.h"
 
 using namespace GLES3;
@@ -2388,13 +2389,13 @@ Variant MaterialStorage::shader_get_parameter_default(RID p_shader, const String
 	return Variant();
 }
 
-RS::ShaderNativeSourceCode MaterialStorage::shader_get_native_source_code(RID p_shader) const {
+RenderingServerTypes::ShaderNativeSourceCode MaterialStorage::shader_get_native_source_code(RID p_shader) const {
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_NULL_V(shader, RS::ShaderNativeSourceCode());
+	ERR_FAIL_NULL_V(shader, RenderingServerTypes::ShaderNativeSourceCode());
 	if (shader->data) {
 		return shader->data->get_native_source_code();
 	}
-	return RS::ShaderNativeSourceCode();
+	return RenderingServerTypes::ShaderNativeSourceCode();
 }
 
 /* MATERIAL API */
@@ -2723,7 +2724,7 @@ bool CanvasShaderData::casts_shadows() const {
 	return false;
 }
 
-RS::ShaderNativeSourceCode CanvasShaderData::get_native_source_code() const {
+RenderingServerTypes::ShaderNativeSourceCode CanvasShaderData::get_native_source_code() const {
 	return MaterialStorage::get_singleton()->shaders.canvas_shader.version_get_native_source_code(version);
 }
 
@@ -2895,7 +2896,7 @@ bool SkyShaderData::casts_shadows() const {
 	return false;
 }
 
-RS::ShaderNativeSourceCode SkyShaderData::get_native_source_code() const {
+RenderingServerTypes::ShaderNativeSourceCode SkyShaderData::get_native_source_code() const {
 	return MaterialStorage::get_singleton()->shaders.sky_shader.version_get_native_source_code(version);
 }
 
@@ -3203,7 +3204,7 @@ bool SceneShaderData::casts_shadows() const {
 	return !has_alpha || (uses_depth_prepass_alpha && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test != DEPTH_TEST_ENABLED));
 }
 
-RS::ShaderNativeSourceCode SceneShaderData::get_native_source_code() const {
+RenderingServerTypes::ShaderNativeSourceCode SceneShaderData::get_native_source_code() const {
 	return MaterialStorage::get_singleton()->shaders.scene_shader.version_get_native_source_code(version);
 }
 
@@ -3318,7 +3319,7 @@ bool ParticlesShaderData::casts_shadows() const {
 	return false;
 }
 
-RS::ShaderNativeSourceCode ParticlesShaderData::get_native_source_code() const {
+RenderingServerTypes::ShaderNativeSourceCode ParticlesShaderData::get_native_source_code() const {
 	return MaterialStorage::get_singleton()->shaders.particles_process_shader.version_get_native_source_code(version);
 }
 
@@ -3430,7 +3431,7 @@ bool TexBlitShaderData::casts_shadows() const {
 	return false;
 }
 
-RS::ShaderNativeSourceCode TexBlitShaderData::get_native_source_code() const {
+RenderingServerTypes::ShaderNativeSourceCode TexBlitShaderData::get_native_source_code() const {
 	return MaterialStorage::get_singleton()->shaders.tex_blit_shader.version_get_native_source_code(version);
 }
 

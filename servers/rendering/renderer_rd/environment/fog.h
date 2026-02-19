@@ -30,10 +30,8 @@
 
 #pragma once
 
-#include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/environment/renderer_fog.h"
-#include "servers/rendering/renderer_rd/cluster_builder_rd.h"
 #include "servers/rendering/renderer_rd/environment/gi.h"
 #include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
 #include "servers/rendering/renderer_rd/shaders/environment/volumetric_fog.glsl.gen.h"
@@ -42,6 +40,8 @@
 #include "servers/rendering/storage/utilities.h"
 
 #define RB_SCOPE_FOG SNAME("Fog")
+
+class ClusterBuilderRD;
 
 namespace RendererRD {
 
@@ -216,7 +216,7 @@ private:
 		virtual void set_code(const String &p_Code);
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 
 		FogShaderData() {}

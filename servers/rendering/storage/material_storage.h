@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include "servers/rendering/rendering_server.h"
+#include "core/object/object.h"
 #include "servers/rendering/rendering_server_enums.h"
-#include "utilities.h"
+#include "servers/rendering/rendering_server_types.h"
+#include "servers/rendering/storage/utilities.h"
 
 class RendererMaterialStorage {
 public:
@@ -69,7 +70,7 @@ public:
 	virtual RID shader_get_default_texture_parameter(RID p_shader, const StringName &p_name, int p_index) const = 0;
 	virtual Variant shader_get_parameter_default(RID p_material, const StringName &p_param) const = 0;
 
-	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const = 0;
+	virtual RenderingServerTypes::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const = 0;
 	virtual void shader_embedded_set_lock() = 0;
 	virtual const HashSet<RID> &shader_embedded_set_get() const = 0;
 	virtual void shader_embedded_set_unlock() = 0;

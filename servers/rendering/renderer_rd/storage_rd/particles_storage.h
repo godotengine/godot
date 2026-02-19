@@ -33,16 +33,18 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "servers/rendering/renderer_rd/effects/sort_effects.h"
 #include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
 #include "servers/rendering/renderer_rd/shaders/particles.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/particles_copy.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/rendering_server_types.h"
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/storage/particles_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
 namespace RendererRD {
+
+class SortEffects;
 
 class ParticlesStorage : public RendererParticlesStorage {
 private:
@@ -364,7 +366,7 @@ private:
 		virtual void set_code(const String &p_Code);
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 
 		ParticlesShaderData() {}

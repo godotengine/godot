@@ -35,11 +35,25 @@
 #include "core/math/vector2.h"
 #include "core/string/ustring.h"
 #include "core/templates/rid.h"
+#include "core/templates/vector.h"
 #include "servers/rendering/rendering_server_enums.h"
 
 #include <cstdint>
 
 namespace RenderingServerTypes {
+
+/* SHADER API */
+
+struct ShaderNativeSourceCode {
+	struct Version {
+		struct Stage {
+			String name;
+			String code;
+		};
+		Vector<Stage> stages;
+	};
+	Vector<Version> versions;
+};
 
 /* STATUS INFORMATION */
 

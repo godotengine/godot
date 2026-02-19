@@ -314,7 +314,7 @@ public:
 	FUNC3RC(RID, shader_get_default_texture_parameter, RID, const StringName &, int)
 	FUNC2RC(Variant, shader_get_parameter_default, RID, const StringName &)
 
-	FUNC1RC(ShaderNativeSourceCode, shader_get_native_source_code, RID)
+	FUNC1RC(RenderingServerTypes::ShaderNativeSourceCode, shader_get_native_source_code, RID)
 
 	/* COMMON MATERIAL API */
 
