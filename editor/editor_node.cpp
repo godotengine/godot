@@ -1639,9 +1639,15 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 
 	Ref<Resource> res;
 	if (force_textfile_extensions.has(p_resource.get_extension())) {
-		res = ResourceCache::get_ref(p_resource);
-		if (res.is_null() || !res->is_class("TextFile")) {
-			res = ScriptEditor::get_singleton()->open_file(p_resource);
+		const String resource_type = ResourceLoader::get_resource_type(p_resource);
+		if (resource_type != "Translation" && ResourceLoader::exists(p_resource, "")) {
+			res = ResourceLoader::load(p_resource, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+		}
+		if (res.is_null()) {
+			res = ResourceCache::get_ref(p_resource);
+			if (res.is_null() || !res->is_class("TextFile")) {
+				res = ScriptEditor::get_singleton()->open_file(p_resource);
+			}
 		}
 	} else if (ResourceLoader::exists(p_resource, "")) {
 		res = ResourceLoader::load(p_resource, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
