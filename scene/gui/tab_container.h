@@ -35,7 +35,7 @@
 #include "scene/property_list_helper.h"
 
 class Button;
-class HBoxContainer;
+class BoxContainer;
 class Popup;
 
 class TabContainer : public Container {
@@ -45,18 +45,21 @@ public:
 	enum TabPosition {
 		POSITION_TOP,
 		POSITION_BOTTOM,
+		POSITION_LEFT,
+		POSITION_RIGHT,
 		POSITION_MAX,
 	};
 
 private:
 	inline static StringName TAB_CONTAINER_META;
 
-	HBoxContainer *internal_container = nullptr;
+	BoxContainer *internal_container = nullptr;
 	TabBar *tab_bar = nullptr;
 	Button *popup_button = nullptr;
 
 	bool tabs_visible = true;
 	TabPosition tabs_position = POSITION_TOP;
+	bool tab_style_side_manual = false;
 	mutable ObjectID popup_obj_id;
 	bool use_hidden_tabs_for_min_size = false;
 	bool theme_changing = false;
@@ -91,7 +94,12 @@ private:
 		Ref<Texture2D> increment_hl_icon;
 		Ref<Texture2D> decrement_icon;
 		Ref<Texture2D> decrement_hl_icon;
+		Ref<Texture2D> increment_vertical_icon;
+		Ref<Texture2D> increment_vertical_hl_icon;
+		Ref<Texture2D> decrement_vertical_icon;
+		Ref<Texture2D> decrement_vertical_hl_icon;
 		Ref<Texture2D> drop_mark_icon;
+		Ref<Texture2D> vertical_drop_mark_icon;
 		Color drop_mark_color;
 
 		Color font_selected_color;
@@ -126,15 +134,18 @@ private:
 
 	bool _is_tab_bar_owned() const;
 	int _get_tab_height() const;
+	int _get_tab_width() const;
 	Control *_as_tab_control(Node *p_child) const;
 	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();
 	void _repaint_call_deferred();
 	void _repaint();
 	void _repaint_internal();
+	void _on_tab_header_size_changed();
 	void _refresh_tab_indices();
 	void _refresh_tab_names();
 	void _update_margins();
+	void _apply_position_style_side();
 	void _on_tab_changed(int p_tab);
 	void _on_tab_clicked(int p_tab);
 	void _on_tab_hovered(int p_tab);
@@ -151,6 +162,8 @@ private:
 
 	void _popup_button_hovered(bool p_hover);
 	void _popup_button_pressed();
+	void _ensure_popup_button_parent();
+	void _update_vertical_popup_button_layout();
 
 	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
 
@@ -174,7 +187,7 @@ public:
 
 	virtual bool accessibility_override_tree_hierarchy() const override { return true; }
 
-	HBoxContainer *get_internal_container() const { return internal_container; }
+	BoxContainer *get_internal_container() const { return internal_container; }
 	TabBar *get_tab_bar() const;
 
 	int get_tab_idx_at_point(const Point2 &p_point) const;
@@ -185,6 +198,12 @@ public:
 
 	void set_tab_sizing(TabBar::SizingMode p_sizing);
 	TabBar::SizingMode get_tab_sizing() const;
+
+	void set_tab_text_rotation(TabBar::TabTextRotation p_rotation);
+	TabBar::TabTextRotation get_tab_text_rotation() const;
+
+	void set_tab_style_side(TabBar::TabStyleSide p_side);
+	TabBar::TabStyleSide get_tab_style_side() const;
 
 	void set_tabs_position(TabPosition p_tab_position);
 	TabPosition get_tabs_position() const;

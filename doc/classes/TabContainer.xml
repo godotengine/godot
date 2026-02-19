@@ -137,6 +137,7 @@
 			<param index="0" name="popup" type="Node" />
 			<description>
 				If set on a [Popup] node instance, a popup menu icon appears in the top-right corner of the [TabContainer] (setting it to [code]null[/code] will make it go away). Clicking it will expand the [Popup] node.
+				[b]Note:[/b] In vertical mode ([member tabs_position] is [constant POSITION_LEFT] or [constant POSITION_RIGHT]), the popup button is positioned next to the scroll buttons (if visible) or centered vertically in the tab bar.
 			</description>
 		</method>
 		<method name="set_tab_button_icon">
@@ -211,6 +212,7 @@
 		</member>
 		<member name="clip_tabs" type="bool" setter="set_clip_tabs" getter="get_clip_tabs" default="true">
 			If [code]true[/code], tabs overflowing this node's width will be hidden, displaying two navigation buttons instead. Otherwise, this node's minimum size is updated so that all tabs are visible.
+			[b]Note:[/b] In vertical mode ([member tabs_position] is [constant POSITION_LEFT] or [constant POSITION_RIGHT]), space is always reserved for a visible popup button (see [method set_popup]) regardless of this setting, to prevent overlap with tab content.
 		</member>
 		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="-1">
 			The current tab index. When set, this index's [Control] node's [code]visible[/code] property is set to [code]true[/code] and all others are set to [code]false[/code].
@@ -235,6 +237,12 @@
 		<member name="tab_sizing" type="int" setter="set_tab_sizing" getter="get_tab_sizing" enum="TabBar.SizingMode" default="0">
 			The sizing strategy used to determine tab widths.
 		</member>
+		<member name="tab_style_side" type="int" setter="set_tab_style_side" getter="get_tab_style_side" enum="TabBar.TabStyleSide" default="0">
+			Which side of the tab the tab style highlight faces. Set automatically from [member tabs_position] (top, bottom, left, right outer edge). Setting it explicitly overrides the automatic choice; changing [member tabs_position] afterwards will no longer update it.
+		</member>
+		<member name="tab_text_rotation" type="int" setter="set_tab_text_rotation" getter="get_tab_text_rotation" enum="TabBar.TabTextRotation" default="0">
+			Rotation of the tab text. Stacks the tab content vertically with the text rotated 90 degrees clockwise or counter-clockwise. Useful with [member tabs_position] set to a vertical position.
+		</member>
 		<member name="tab_{index}/disabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the tab at [code]index[/code] is disabled.
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. get_tab_count() - 1[/code] range.
@@ -252,7 +260,8 @@
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. get_tab_count() - 1[/code] range.
 		</member>
 		<member name="tabs_position" type="int" setter="set_tabs_position" getter="get_tabs_position" enum="TabContainer.TabPosition" default="0">
-			The horizontal alignment of the tabs.
+			The position of the tab bar.
+			[b]Note:[/b] When using [constant POSITION_LEFT] or [constant POSITION_RIGHT], the internal [TabBar] will automatically be set to [member TabBar.vertical] and tabs will be arranged from top to bottom.
 		</member>
 		<member name="tabs_rearrange_group" type="int" setter="set_tabs_rearrange_group" getter="get_tabs_rearrange_group" default="-1">
 			[TabContainer]s with the same rearrange group ID will allow dragging the tabs between them. Enable drag with [member drag_to_rearrange_enabled].
@@ -315,7 +324,13 @@
 		<constant name="POSITION_BOTTOM" value="1" enum="TabPosition">
 			Places the tab bar at the bottom. The tab bar's [StyleBox] will be flipped vertically.
 		</constant>
-		<constant name="POSITION_MAX" value="2" enum="TabPosition">
+		<constant name="POSITION_LEFT" value="2" enum="TabPosition">
+			Places the tab bar at the left. Tabs will be arranged vertically (top to bottom).
+		</constant>
+		<constant name="POSITION_RIGHT" value="3" enum="TabPosition">
+			Places the tab bar at the right. Tabs will be arranged vertically (top to bottom).
+		</constant>
+		<constant name="POSITION_MAX" value="4" enum="TabPosition">
 			Represents the size of the [enum TabPosition] enum.
 		</constant>
 	</constants>
@@ -361,8 +376,8 @@
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
 		</theme_item>
 		<theme_item name="side_margin" data_type="constant" type="int" default="8">
-			The space at the left or right edges of the tab bar, accordingly with the current [member tab_alignment].
-			The margin is ignored with [constant TabBar.ALIGNMENT_RIGHT] if the tabs are clipped (see [member clip_tabs]) or a popup has been set (see [method set_popup]). The margin is always ignored with [constant TabBar.ALIGNMENT_CENTER].
+			The space at the leading edge (left for horizontal tabs, top for vertical tabs) with [constant TabBar.ALIGNMENT_BEGIN], or at the trailing edge (right for horizontal tabs, bottom for vertical tabs) with [constant TabBar.ALIGNMENT_END], accordingly with the current [member tab_alignment].
+			The margin is ignored if the tabs are clipped (see [member clip_tabs]) or a popup has been set (see [method set_popup]). The margin is always ignored with [constant TabBar.ALIGNMENT_CENTER].
 		</theme_item>
 		<theme_item name="tab_separation" data_type="constant" type="int" default="0">
 			The space between tabs in the tab bar.
@@ -379,6 +394,12 @@
 		<theme_item name="decrement_highlight" data_type="icon" type="Texture2D">
 			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
+		<theme_item name="decrement_vertical" data_type="icon" type="Texture2D">
+			Icon for the up arrow button that appears when there are too many tabs to fit in the container height (vertical tabs). When the button is disabled (i.e. the first tab is visible), it appears semi-transparent.
+		</theme_item>
+		<theme_item name="decrement_vertical_highlight" data_type="icon" type="Texture2D">
+			Icon for the up arrow button that appears when there are too many tabs to fit in the container height (vertical tabs). Used when the button is being hovered with the cursor.
+		</theme_item>
 		<theme_item name="drop_mark" data_type="icon" type="Texture2D">
 			Icon shown to indicate where a dragged tab will be dropped (see [member drag_to_rearrange_enabled]).
 		</theme_item>
@@ -388,11 +409,20 @@
 		<theme_item name="increment_highlight" data_type="icon" type="Texture2D">
 			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
+		<theme_item name="increment_vertical" data_type="icon" type="Texture2D">
+			Icon for the down arrow button that appears when there are too many tabs to fit in the container height (vertical tabs). When the button is disabled (i.e. the last tab is visible), it appears semi-transparent.
+		</theme_item>
+		<theme_item name="increment_vertical_highlight" data_type="icon" type="Texture2D">
+			Icon for the down arrow button that appears when there are too many tabs to fit in the container height (vertical tabs). Used when the button is being hovered with the cursor.
+		</theme_item>
 		<theme_item name="menu" data_type="icon" type="Texture2D">
 			The icon for the menu button (see [method set_popup]).
 		</theme_item>
 		<theme_item name="menu_highlight" data_type="icon" type="Texture2D">
 			The icon for the menu button (see [method set_popup]) when it's being hovered with the cursor.
+		</theme_item>
+		<theme_item name="vertical_drop_mark" data_type="icon" type="Texture2D">
+			Icon shown to indicate where a dragged tab will be dropped when using vertical tabs (see [member drag_to_rearrange_enabled]).
 		</theme_item>
 		<theme_item name="panel" data_type="style" type="StyleBox">
 			The style for the background fill.

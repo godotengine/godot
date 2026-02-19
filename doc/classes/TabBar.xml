@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TabBar" inherits="Control" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A control that provides a horizontal bar with tabs.
+		A control that provides a horizontal or vertical bar with tabs.
 	</brief_description>
 	<description>
-		A control that provides a horizontal bar with tabs. Similar to [TabContainer] but is only in charge of drawing tabs, not interacting with children.
+		A control that provides a horizontal or vertical bar with tabs. Similar to [TabContainer] but is only in charge of drawing tabs, not interacting with children.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -215,6 +215,13 @@
 				Sets the metadata value for the tab at index [param tab_idx], which can be retrieved later using [method get_tab_metadata].
 			</description>
 		</method>
+		<method name="set_tab_style_v_flip">
+			<return type="void" />
+			<param index="0" name="tab_style_v_flip" type="bool" />
+			<description>
+				Deprecated. Use [member tab_style_side] with [constant TAB_STYLE_SIDE_BOTTOM] or [constant TAB_STYLE_SIDE_TOP] instead. If [code]true[/code], the tab style will be flipped vertically. This is used when tabs are positioned at the bottom of the container to ensure the tab style is oriented correctly.
+			</description>
+		</method>
 		<method name="set_tab_text_direction">
 			<return type="void" />
 			<param index="0" name="tab_idx" type="int" />
@@ -285,6 +292,12 @@
 		<member name="tab_sizing" type="int" setter="set_tab_sizing" getter="get_tab_sizing" enum="TabBar.SizingMode" default="0">
 			The sizing strategy used to determine tab widths.
 		</member>
+		<member name="tab_style_side" type="int" setter="set_tab_style_side" getter="get_tab_style_side" enum="TabBar.TabStyleSide" default="0">
+			Which side of the tab the tab style highlight faces. [code]Top[/code] draws the style as-is, [code]Bottom[/code] flips it vertically, [code]Left[/code] and [code]Right[/code] rotate it 90 degrees. Set automatically from [TabContainer] based on the tab position.
+		</member>
+		<member name="tab_text_rotation" type="int" setter="set_tab_text_rotation" getter="get_tab_text_rotation" enum="TabBar.TabTextRotation" default="0">
+			Rotation of the tab text and stacking of the tab content. [code]Clockwise[/code] rotates the text 90 degrees clockwise (reads top-to-bottom), [code]Counter-Clockwise[/code] rotates it 90 degrees counter-clockwise (reads bottom-to-top). Both stack icon, text and buttons vertically; [code]None[/code] keeps the horizontal layout.
+		</member>
 		<member name="tab_{index}/disabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the tab at [code]index[/code] is disabled.
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. tab_count - 1[/code] range.
@@ -304,6 +317,9 @@
 		<member name="tabs_rearrange_group" type="int" setter="set_tabs_rearrange_group" getter="get_tabs_rearrange_group" default="-1">
 			[TabBar]s with the same rearrange group ID will allow dragging the tabs between them. Enable drag with [member drag_to_rearrange_enabled].
 			Setting this to [code]-1[/code] will disable rearranging between [TabBar]s.
+		</member>
+		<member name="vertical" type="bool" setter="set_vertical" getter="is_vertical" default="false">
+			If [code]true[/code], tabs are arranged vertically (top to bottom) instead of horizontally (left to right).
 		</member>
 	</members>
 	<signals>
@@ -366,17 +382,21 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ALIGNMENT_LEFT" value="0" enum="AlignmentMode">
-			Aligns tabs to the left.
+		<constant name="ALIGNMENT_BEGIN" value="0" enum="AlignmentMode">
+			Aligns tabs to the beginning (left in horizontal layouts, top for vertical tabs).
 		</constant>
 		<constant name="ALIGNMENT_CENTER" value="1" enum="AlignmentMode">
 			Aligns tabs in the middle.
 		</constant>
-		<constant name="ALIGNMENT_RIGHT" value="2" enum="AlignmentMode">
-			Aligns tabs to the right.
+		<constant name="ALIGNMENT_END" value="2" enum="AlignmentMode">
+			Aligns tabs to the end (right in horizontal layouts, bottom for vertical tabs).
 		</constant>
 		<constant name="ALIGNMENT_MAX" value="3" enum="AlignmentMode">
 			Represents the size of the [enum AlignmentMode] enum.
+		</constant>
+		<constant name="ALIGNMENT_LEFT" value="0" enum="AlignmentMode" deprecated="Use [constant ALIGNMENT_BEGIN] instead.">
+		</constant>
+		<constant name="ALIGNMENT_RIGHT" value="2" enum="AlignmentMode" deprecated="Use [constant ALIGNMENT_END] instead.">
 		</constant>
 		<constant name="TAB_SIZING_FIT_CONTENT" value="0" enum="SizingMode">
 			Size tabs individually according to the size of their content.
@@ -404,6 +424,33 @@
 		</constant>
 		<constant name="CLOSE_BUTTON_MAX" value="3" enum="CloseButtonDisplayPolicy">
 			Represents the size of the [enum CloseButtonDisplayPolicy] enum.
+		</constant>
+		<constant name="TAB_TEXT_ROTATION_NONE" value="0" enum="TabTextRotation">
+			Tab content is arranged horizontally, text is not rotated.
+		</constant>
+		<constant name="TAB_TEXT_ROTATION_CLOCKWISE" value="1" enum="TabTextRotation">
+			Tab content (icon, text, buttons) is stacked vertically and the text is rotated 90 degrees clockwise, reading top-to-bottom.
+		</constant>
+		<constant name="TAB_TEXT_ROTATION_COUNTER_CLOCKWISE" value="2" enum="TabTextRotation">
+			Tab content (icon, text, buttons) is stacked vertically and the text is rotated 90 degrees counter-clockwise, reading bottom-to-top.
+		</constant>
+		<constant name="TAB_TEXT_ROTATION_MAX" value="3" enum="TabTextRotation">
+			Represents the size of the [enum TabTextRotation] enum.
+		</constant>
+		<constant name="TAB_STYLE_SIDE_TOP" value="0" enum="TabStyleSide">
+			The tab style is drawn as-is, with its highlight edge facing up.
+		</constant>
+		<constant name="TAB_STYLE_SIDE_BOTTOM" value="1" enum="TabStyleSide">
+			The tab style is flipped vertically, with its highlight edge facing down. Used for tabs positioned at the bottom.
+		</constant>
+		<constant name="TAB_STYLE_SIDE_LEFT" value="2" enum="TabStyleSide">
+			The tab style is rotated 90 degrees counter-clockwise, with its highlight edge facing left. Used for tabs positioned on the left.
+		</constant>
+		<constant name="TAB_STYLE_SIDE_RIGHT" value="3" enum="TabStyleSide">
+			The tab style is rotated 90 degrees clockwise, with its highlight edge facing right. Used for tabs positioned on the right.
+		</constant>
+		<constant name="TAB_STYLE_SIDE_MAX" value="4" enum="TabStyleSide">
+			Represents the size of the [enum TabStyleSide] enum.
 		</constant>
 	</constants>
 	<theme_items>
@@ -468,6 +515,12 @@
 		<theme_item name="decrement_highlight" data_type="icon" type="Texture2D">
 			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
+		<theme_item name="decrement_vertical" data_type="icon" type="Texture2D">
+			Icon for the up arrow button that appears when there are too many tabs to fit in the container height (vertical tabs). When the button is disabled (i.e. the first tab is visible), it appears semi-transparent.
+		</theme_item>
+		<theme_item name="decrement_vertical_highlight" data_type="icon" type="Texture2D">
+			Icon for the up arrow button that appears when there are too many tabs to fit in the container height (vertical tabs). Used when the button is being hovered with the cursor.
+		</theme_item>
 		<theme_item name="drop_mark" data_type="icon" type="Texture2D">
 			Icon shown to indicate where a dragged tab will be dropped (see [member drag_to_rearrange_enabled]).
 		</theme_item>
@@ -476,6 +529,15 @@
 		</theme_item>
 		<theme_item name="increment_highlight" data_type="icon" type="Texture2D">
 			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
+		</theme_item>
+		<theme_item name="increment_vertical" data_type="icon" type="Texture2D">
+			Icon for the down arrow button that appears when there are too many tabs to fit in the container height (vertical tabs). When the button is disabled (i.e. the last tab is visible), it appears semi-transparent.
+		</theme_item>
+		<theme_item name="increment_vertical_highlight" data_type="icon" type="Texture2D">
+			Icon for the down arrow button that appears when there are too many tabs to fit in the container height (vertical tabs). Used when the button is being hovered with the cursor.
+		</theme_item>
+		<theme_item name="vertical_drop_mark" data_type="icon" type="Texture2D">
+			Icon shown to indicate where a dragged tab will be dropped when using vertical tabs (see [member drag_to_rearrange_enabled]).
 		</theme_item>
 		<theme_item name="button_highlight" data_type="style" type="StyleBox">
 			Background of the tab and close buttons when they're being hovered with the cursor.
