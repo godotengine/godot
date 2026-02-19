@@ -3772,12 +3772,20 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				}
 			}
 
-			bool material_has_depth_bias = material_data->depth_bias_constant_factor != 0.0f || material_data->depth_bias_slope_factor != 0.0f;
+			bool material_has_depth_bias = material_data->depth_bias_constant_factor != 0.0f || material_data->depth_bias_slope_factor != 0.0f || (material_data->depth_bias_clamp != 0.0f && GLES3::Config::get_singleton()->polygon_offset_clamp_supported);
 			// Before issuing draw calls, apply depth bias from material if needed.
 			// Only GL_POLYGON_OFFSET_FILL is supported on web/mobile, so we can't apply depth bias to lines or points.
 			if (material_has_depth_bias && primitive_gl != GL_LINES && primitive_gl != GL_POINTS) {
 				glEnable(GL_POLYGON_OFFSET_FILL);
-				glPolygonOffset(material_data->depth_bias_slope_factor, material_data->depth_bias_constant_factor);
+				if (GLES3::Config::get_singleton()->polygon_offset_clamp_supported) {
+#ifdef glPolygonOffsetClampEXT
+					glPolygonOffsetClampEXT(material_data->depth_bias_slope_factor, material_data->depth_bias_constant_factor, material_data->depth_bias_clamp);
+#else
+					glPolygonOffsetClamp(material_data->depth_bias_slope_factor, material_data->depth_bias_constant_factor, material_data->depth_bias_clamp);
+#endif
+				} else {
+					glPolygonOffset(material_data->depth_bias_slope_factor, material_data->depth_bias_constant_factor);
+				}
 			} else {
 				glDisable(GL_POLYGON_OFFSET_FILL);
 			}

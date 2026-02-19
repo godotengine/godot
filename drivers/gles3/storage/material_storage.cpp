@@ -2293,6 +2293,7 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 				material->data = material_data_request_func[new_mode](shader->data);
 				material->data->self = material->self;
 				material->data->set_next_pass(material->next_pass);
+				material->data->set_depth_bias_clamp(material->depth_bias_clamp);
 				material->data->set_depth_bias_slope_factor(material->depth_bias_slope_factor);
 				material->data->set_depth_bias_constant_factor(material->depth_bias_constant_factor);
 				material->data->set_render_priority(material->priority);
@@ -2493,6 +2494,7 @@ void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
 	material->data = material_data_request_func[shader->mode](shader->data);
 	material->data->self = p_material;
 	material->data->set_next_pass(material->next_pass);
+	material->data->set_depth_bias_clamp(material->depth_bias_clamp);
 	material->data->set_depth_bias_slope_factor(material->depth_bias_slope_factor);
 	material->data->set_depth_bias_constant_factor(material->depth_bias_constant_factor);
 	material->data->set_render_priority(material->priority);
@@ -2543,6 +2545,16 @@ void MaterialStorage::material_set_next_pass(RID p_material, RID p_next_material
 		material->data->set_next_pass(p_next_material);
 	}
 
+	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
+}
+
+void MaterialStorage::material_set_depth_bias_clamp(RID p_material, float p_clamp) {
+	GLES3::Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL(material);
+	material->depth_bias_clamp = p_clamp;
+	if (material->data) {
+		material->data->set_depth_bias_clamp(p_clamp);
+	}
 	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 }
 
@@ -3258,6 +3270,10 @@ void SceneMaterialData::set_depth_bias_constant_factor(float p_constant_factor) 
 
 void SceneMaterialData::set_depth_bias_slope_factor(float p_slope_factor) {
 	depth_bias_slope_factor = p_slope_factor;
+}
+
+void SceneMaterialData::set_depth_bias_clamp(float p_depth_bias_clamp) {
+	depth_bias_clamp = p_depth_bias_clamp;
 }
 
 void SceneMaterialData::set_next_pass(RID p_pass) {

@@ -44,6 +44,7 @@ typedef void (*PFNGLTEXSTORAGE3DMULTISAMPLEPROC)(GLenum, GLsizei, GLenum, GLsize
 typedef void (*PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC)(GLenum, GLenum, GLenum, GLuint, GLint, GLsizei);
 typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC)(GLenum, GLenum, GLuint, GLint, GLsizei, GLint, GLsizei);
 typedef void (*PFNEGLIMAGETARGETTEXTURE2DOESPROC)(GLenum, void *);
+typedef void (*PFNGLPOLYGONOFFSETCLAMPEXTPROC)(GLfloat factor, GLfloat units, GLfloat clamp);
 #endif
 
 namespace GLES3 {
@@ -99,6 +100,8 @@ public:
 	bool multiview_supported = false;
 	bool external_texture_supported = false;
 
+	bool polygon_offset_clamp_supported = false;
+
 	// Adreno 3XX compatibility.
 	bool disable_particles_workaround = false; // Set to 'true' to disable 'GPUParticles'.
 
@@ -114,12 +117,14 @@ public:
 	PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC eglFramebufferTexture2DMultisampleEXT = nullptr;
 	PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC eglFramebufferTextureMultisampleMultiviewOVR = nullptr;
 	PFNEGLIMAGETARGETTEXTURE2DOESPROC eglEGLImageTargetTexture2DOES = nullptr;
+	PFNGLPOLYGONOFFSETCLAMPEXTPROC eglPolygonOffsetClampEXT = nullptr;
 
 #define glFramebufferTextureMultiviewOVR GLES3::Config::get_singleton()->eglFramebufferTextureMultiviewOVR
 #define glTexStorage3DMultisample GLES3::Config::get_singleton()->eglTexStorage3DMultisample
 #define glFramebufferTexture2DMultisampleEXT GLES3::Config::get_singleton()->eglFramebufferTexture2DMultisampleEXT
 #define glFramebufferTextureMultisampleMultiviewOVR GLES3::Config::get_singleton()->eglFramebufferTextureMultisampleMultiviewOVR
 #define glEGLImageTargetTexture2DOES GLES3::Config::get_singleton()->eglEGLImageTargetTexture2DOES
+#define glPolygonOffsetClampEXT GLES3::Config::get_singleton()->eglPolygonOffsetClampEXT
 #endif // ANDROID_ENABLED
 
 	static Config *get_singleton() { return singleton; }

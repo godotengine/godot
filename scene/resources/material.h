@@ -42,6 +42,7 @@ class Material : public Resource {
 
 	mutable RID material;
 	Ref<Material> next_pass;
+	float depth_bias_clamp;
 	float depth_bias_slope_factor;
 	float depth_bias_constant_factor;
 	int render_priority;
@@ -91,6 +92,9 @@ public:
 
 	void set_depth_bias_slope_factor(float p_depth_bias);
 	float get_depth_bias_slope_factor() const;
+
+	void set_depth_bias_clamp(float p_depth_bias);
+	float get_depth_bias_clamp() const;
 
 	virtual RID get_rid() const override;
 	virtual RID get_shader_rid() const;

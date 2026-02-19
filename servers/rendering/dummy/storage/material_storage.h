@@ -126,6 +126,7 @@ public:
 
 	virtual void material_set_depth_bias_constant_factor(RID p_material, float p_constant_factor) override {}
 	virtual void material_set_depth_bias_slope_factor(RID p_material, float p_slope_factor) override {}
+	virtual void material_set_depth_bias_clamp(RID p_material, float p_clamp) override {}
 
 	virtual bool material_is_animated(RID p_material) override { return false; }
 	virtual bool material_casts_shadows(RID p_material) override { return false; }

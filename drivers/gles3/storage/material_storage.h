@@ -91,6 +91,7 @@ struct MaterialData {
 	virtual void set_render_priority(int p_priority) = 0;
 	virtual void set_depth_bias_constant_factor(float p_constant_factor) = 0;
 	virtual void set_depth_bias_slope_factor(float p_slope_factor) = 0;
+	virtual void set_depth_bias_clamp(float p_clamp) = 0;
 	virtual void set_next_pass(RID p_pass) = 0;
 	virtual void update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) = 0;
 	virtual void bind_uniforms() = 0;
@@ -128,6 +129,7 @@ struct Material {
 	int32_t priority = 0;
 	float depth_bias_constant_factor = 0.0f;
 	float depth_bias_slope_factor = 0.0f;
+	float depth_bias_clamp = 0.0f;
 	RID next_pass;
 	SelfList<Material> update_element;
 
@@ -191,6 +193,7 @@ struct CanvasMaterialData : public MaterialData {
 	virtual void set_render_priority(int p_priority) {}
 	virtual void set_depth_bias_constant_factor(float p_constant_factor) {}
 	virtual void set_depth_bias_slope_factor(float p_slope_factor) {}
+	virtual void set_depth_bias_clamp(float p_clamp) {}
 	virtual void set_next_pass(RID p_pass) {}
 	virtual void update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 	virtual void bind_uniforms();
@@ -238,6 +241,7 @@ struct SkyMaterialData : public MaterialData {
 	virtual void set_render_priority(int p_priority) {}
 	virtual void set_depth_bias_constant_factor(float p_constant_factor) {}
 	virtual void set_depth_bias_slope_factor(float p_slope_factor) {}
+	virtual void set_depth_bias_clamp(float p_clamp) {}
 	virtual void set_next_pass(RID p_pass) {}
 	virtual void update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 	virtual void bind_uniforms();
@@ -375,9 +379,11 @@ struct SceneMaterialData : public MaterialData {
 	uint8_t priority = 0;
 	float depth_bias_constant_factor = 0.0f;
 	float depth_bias_slope_factor = 0.0f;
+	float depth_bias_clamp = 0.0f;
 	virtual void set_render_priority(int p_priority);
 	virtual void set_depth_bias_constant_factor(float p_constant_factor);
 	virtual void set_depth_bias_slope_factor(float p_slope_factor);
+	virtual void set_depth_bias_clamp(float p_clamp);
 	virtual void set_next_pass(RID p_pass);
 	virtual void update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 	virtual void bind_uniforms();
@@ -430,6 +436,7 @@ struct ParticleProcessMaterialData : public MaterialData {
 	virtual void set_render_priority(int p_priority) {}
 	virtual void set_depth_bias_constant_factor(float p_constant_factor) {}
 	virtual void set_depth_bias_slope_factor(float p_slope_factor) {}
+	virtual void set_depth_bias_clamp(float p_clamp) {}
 	virtual void set_next_pass(RID p_pass) {}
 	virtual void update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 	virtual void bind_uniforms();
@@ -478,6 +485,7 @@ struct TexBlitMaterialData : public MaterialData {
 	virtual void set_render_priority(int p_priority) {}
 	virtual void set_depth_bias_constant_factor(float p_constant_factor) {}
 	virtual void set_depth_bias_slope_factor(float p_slope_factor) {}
+	virtual void set_depth_bias_clamp(float p_clamp) {}
 	virtual void set_next_pass(RID p_pass) {}
 	virtual void update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 	virtual void bind_uniforms();
@@ -702,6 +710,7 @@ public:
 
 	virtual void material_set_depth_bias_constant_factor(RID p_material, float p_constant_factor) override;
 	virtual void material_set_depth_bias_slope_factor(RID p_material, float p_slope_factor) override;
+	virtual void material_set_depth_bias_clamp(RID p_material, float p_clamp) override;
 
 	virtual bool material_is_animated(RID p_material) override;
 	virtual bool material_casts_shadows(RID p_material) override;
