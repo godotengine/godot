@@ -1883,7 +1883,7 @@ String TextureStorage::texture_get_path(RID p_texture) const {
 	return texture->path;
 }
 
-void TextureStorage::texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) {
+void TextureStorage::texture_set_detect_3d_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL(texture);
 
@@ -1891,10 +1891,10 @@ void TextureStorage::texture_set_detect_3d_callback(RID p_texture, RS::TextureDe
 	texture->detect_3d_callback_ud = p_userdata;
 }
 
-void TextureStorage::texture_set_detect_srgb_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) {
+void TextureStorage::texture_set_detect_srgb_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) {
 }
 
-void TextureStorage::texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) {
+void TextureStorage::texture_set_detect_normal_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL(texture);
 
@@ -1902,7 +1902,7 @@ void TextureStorage::texture_set_detect_normal_callback(RID p_texture, RS::Textu
 	texture->detect_normal_callback_ud = p_userdata;
 }
 
-void TextureStorage::texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) {
+void TextureStorage::texture_set_detect_roughness_callback(RID p_texture, RenderingServerTypes::TextureDetectRoughnessCallback p_callback, void *p_userdata) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL(texture);
 
@@ -1910,13 +1910,13 @@ void TextureStorage::texture_set_detect_roughness_callback(RID p_texture, RS::Te
 	texture->detect_roughness_callback_ud = p_userdata;
 }
 
-void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
+void TextureStorage::texture_debug_usage(List<RenderingServerTypes::TextureInfo> *r_info) {
 	for (const RID &rid : texture_owner.get_owned_list()) {
 		Texture *t = texture_owner.get_or_null(rid);
 		if (!t) {
 			continue;
 		}
-		RS::TextureInfo tinfo;
+		RenderingServerTypes::TextureInfo tinfo;
 		tinfo.path = t->path;
 		tinfo.format = t->format;
 		tinfo.width = t->alloc_width;

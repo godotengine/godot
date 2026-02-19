@@ -428,10 +428,10 @@ Error ServersDebugger::_capture(void *p_user, const String &p_cmd, const Array &
 void ServersDebugger::_send_resource_usage() {
 	ServersDebugger::ResourceUsage usage;
 
-	List<RS::TextureInfo> tinfo;
+	List<RenderingServerTypes::TextureInfo> tinfo;
 	RS::get_singleton()->texture_debug_usage(&tinfo);
 
-	for (const RS::TextureInfo &E : tinfo) {
+	for (const RenderingServerTypes::TextureInfo &E : tinfo) {
 		ServersDebugger::ResourceInfo info;
 		info.path = E.path;
 		info.vram = E.bytes;

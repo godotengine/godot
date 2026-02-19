@@ -35,7 +35,7 @@
 #include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/tex_blit.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/forward_id_storage.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_types.h"
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/storage/texture_storage.h"
 #include "servers/rendering/storage/utilities.h"
@@ -191,13 +191,13 @@ private:
 
 		HashSet<RID> lightmap_users;
 
-		RS::TextureDetectCallback detect_3d_callback = nullptr;
+		RenderingServerTypes::TextureDetectCallback detect_3d_callback = nullptr;
 		void *detect_3d_callback_ud = nullptr;
 
-		RS::TextureDetectCallback detect_normal_callback = nullptr;
+		RenderingServerTypes::TextureDetectCallback detect_normal_callback = nullptr;
 		void *detect_normal_callback_ud = nullptr;
 
-		RS::TextureDetectRoughnessCallback detect_roughness_callback = nullptr;
+		RenderingServerTypes::TextureDetectRoughnessCallback detect_roughness_callback = nullptr;
 		void *detect_roughness_callback_ud = nullptr;
 
 		CanvasTexture *canvas_texture = nullptr;
@@ -588,11 +588,11 @@ public:
 
 	virtual Image::Format texture_get_format(RID p_texture) const override;
 
-	virtual void texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) override;
-	virtual void texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) override;
-	virtual void texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) override;
+	virtual void texture_set_detect_3d_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) override;
+	virtual void texture_set_detect_normal_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) override;
+	virtual void texture_set_detect_roughness_callback(RID p_texture, RenderingServerTypes::TextureDetectRoughnessCallback p_callback, void *p_userdata) override;
 
-	virtual void texture_debug_usage(List<RS::TextureInfo> *r_info) override;
+	virtual void texture_debug_usage(List<RenderingServerTypes::TextureInfo> *r_info) override;
 
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) override;
 

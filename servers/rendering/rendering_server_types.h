@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/io/image.h"
 #include "core/math/aabb.h"
 #include "core/math/rect2.h"
 #include "core/math/rect2i.h"
@@ -47,6 +48,22 @@ template <typename T>
 class Vector;
 
 namespace RenderingServerTypes {
+
+/* TEXTURE API */
+
+typedef void (*TextureDetectCallback)(void *);
+typedef void (*TextureDetectRoughnessCallback)(void *, const String &, RSE::TextureDetectRoughnessChannel);
+
+struct TextureInfo {
+	RID texture;
+	uint32_t width;
+	uint32_t height;
+	uint32_t depth;
+	Image::Format format;
+	int64_t bytes;
+	String path;
+	RSE::TextureType type;
+};
 
 /* SHADER API */
 

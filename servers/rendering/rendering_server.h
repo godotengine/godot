@@ -141,26 +141,11 @@ public:
 
 	virtual Image::Format texture_get_format(RID p_texture) const = 0;
 
-	typedef void (*TextureDetectCallback)(void *);
+	virtual void texture_set_detect_3d_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) = 0;
+	virtual void texture_set_detect_normal_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) = 0;
+	virtual void texture_set_detect_roughness_callback(RID p_texture, RenderingServerTypes::TextureDetectRoughnessCallback p_callback, void *p_userdata) = 0;
 
-	virtual void texture_set_detect_3d_callback(RID p_texture, TextureDetectCallback p_callback, void *p_userdata) = 0;
-	virtual void texture_set_detect_normal_callback(RID p_texture, TextureDetectCallback p_callback, void *p_userdata) = 0;
-
-	typedef void (*TextureDetectRoughnessCallback)(void *, const String &, RSE::TextureDetectRoughnessChannel);
-	virtual void texture_set_detect_roughness_callback(RID p_texture, TextureDetectRoughnessCallback p_callback, void *p_userdata) = 0;
-
-	struct TextureInfo {
-		RID texture;
-		uint32_t width;
-		uint32_t height;
-		uint32_t depth;
-		Image::Format format;
-		int64_t bytes;
-		String path;
-		RSE::TextureType type;
-	};
-
-	virtual void texture_debug_usage(List<TextureInfo> *r_info) = 0;
+	virtual void texture_debug_usage(List<RenderingServerTypes::TextureInfo> *r_info) = 0;
 	Array _texture_debug_usage_bind();
 
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;

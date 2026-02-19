@@ -57,10 +57,10 @@ RenderingServer *RenderingServer::create() {
 }
 
 Array RenderingServer::_texture_debug_usage_bind() {
-	List<TextureInfo> list;
+	List<RenderingServerTypes::TextureInfo> list;
 	texture_debug_usage(&list);
 	Array arr;
-	for (const TextureInfo &E : list) {
+	for (const RenderingServerTypes::TextureInfo &E : list) {
 		Dictionary dict;
 		dict["texture"] = E.texture;
 		dict["width"] = E.width;

@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_enums.h"
+#include "servers/rendering/rendering_server_types.h"
 
 class RendererTextureStorage {
 private:
@@ -101,11 +101,11 @@ public:
 
 	virtual Image::Format texture_get_format(RID p_texture) const = 0;
 
-	virtual void texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) = 0;
-	virtual void texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) = 0;
-	virtual void texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) = 0;
+	virtual void texture_set_detect_3d_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) = 0;
+	virtual void texture_set_detect_normal_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) = 0;
+	virtual void texture_set_detect_roughness_callback(RID p_texture, RenderingServerTypes::TextureDetectRoughnessCallback p_callback, void *p_userdata) = 0;
 
-	virtual void texture_debug_usage(List<RS::TextureInfo> *r_info) = 0;
+	virtual void texture_debug_usage(List<RenderingServerTypes::TextureInfo> *r_info) = 0;
 
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
 

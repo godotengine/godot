@@ -250,16 +250,16 @@ public:
 	FUNC2(texture_bind, RID, uint32_t)
 #endif
 
-	FUNC3(texture_set_detect_3d_callback, RID, TextureDetectCallback, void *)
-	FUNC3(texture_set_detect_normal_callback, RID, TextureDetectCallback, void *)
-	FUNC3(texture_set_detect_roughness_callback, RID, TextureDetectRoughnessCallback, void *)
+	FUNC3(texture_set_detect_3d_callback, RID, RenderingServerTypes::TextureDetectCallback, void *)
+	FUNC3(texture_set_detect_normal_callback, RID, RenderingServerTypes::TextureDetectCallback, void *)
+	FUNC3(texture_set_detect_roughness_callback, RID, RenderingServerTypes::TextureDetectRoughnessCallback, void *)
 
 	FUNC2(texture_set_path, RID, const String &)
 	FUNC1RC(String, texture_get_path, RID)
 
 	FUNC1RC(Image::Format, texture_get_format, RID)
 
-	FUNC1(texture_debug_usage, List<TextureInfo> *)
+	FUNC1(texture_debug_usage, List<RenderingServerTypes::TextureInfo> *)
 
 	FUNC2(texture_set_force_redraw_if_visible, RID, bool)
 	FUNCRIDTEX2(texture_rd, const RID &, const RSE::TextureLayeredType)
