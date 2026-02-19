@@ -34,9 +34,7 @@ TEST_FORCE_LINK(test_http_client)
 
 #include "core/io/http_client.h"
 
-#ifdef WEB_ENABLED
 #include "modules/modules_enabled.gen.h" // For mbedtls.
-#endif // WEB_ENABLED
 
 namespace TestHTTPClient {
 
@@ -90,7 +88,7 @@ TEST_CASE("[HTTPClient] verify_headers") {
 	ERR_PRINT_ON;
 }
 
-#ifdef MODULE_MBEDTLS_ENABLED
+#if defined(MODULE_MBEDTLS_ENABLED) || defined(WEB_EMABLED)
 TEST_CASE("[HTTPClient] connect_to_host") {
 	Ref<HTTPClient> client = HTTPClient::create();
 	String host = "https://www.example.com";
@@ -101,6 +99,6 @@ TEST_CASE("[HTTPClient] connect_to_host") {
 	Error err = client->connect_to_host(host, port, tls_options);
 	CHECK_MESSAGE(err == OK, "Expected OK for successful connection");
 }
-#endif // MODULE_MBEDTLS_ENABLED
+#endif // defined(MODULE_MBEDTLS_ENABLED) || defined(WEB_EMABLED)
 
 } // namespace TestHTTPClient

@@ -34,7 +34,7 @@ TEST_FORCE_LINK(test_stream_peer_gzip)
 
 #include "core/io/stream_peer_gzip.h"
 
-namespace TestStreamGZIP {
+namespace TestStreamPeerGZIP {
 
 const String hello = "Hello World!!!";
 
@@ -193,4 +193,4 @@ TEST_CASE("[StreamPeerGZIP] Fails to get if nothing was compress/decompress") {
 	ERR_PRINT_ON;
 }
 
-} // namespace TestStreamGZIP
+} // namespace TestStreamPeerGZIP
