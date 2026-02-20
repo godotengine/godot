@@ -9,9 +9,11 @@ namespace Godot.Bridge
 {
     public abstract class ScriptRegistry<T, TMethod, TCache, TSelf>
         where T : GodotObject
-        where TCache : ScriptCache<T, TMethod>
+        where TCache : ScriptCache<TMethod>
         where TSelf : ScriptRegistry<T, TMethod, TCache, TSelf>
     {
+        private static ScriptCache<TMethod> _cache;
+
         internal Dictionary<MethodKey, TMethod> BuilderMethodsByNameAndArgc = new();
 
         internal FrozenDictionary<MethodKey, TMethod> MethodsByNameAndArgc;
@@ -55,12 +57,12 @@ namespace Godot.Bridge
                 .Select(x => (x.Key, x.Value))
                 .ToArray();
 
-            InitializeCache(methods);
+            _cache = InitializeCache(methods);
 
             return (TSelf)this;
         }
 
-        protected abstract void InitializeCache((MethodKey, TMethod)[] methods);
+        protected abstract ScriptCache<TMethod> InitializeCache((MethodKey, TMethod)[] methods);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public bool ContainsName(scoped in godot_string_name name) => _knownMethodNames.Contains(name.GetIntPtr());
@@ -74,7 +76,7 @@ namespace Godot.Bridge
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public ref readonly TMethod GetMethodOrNullRef(scoped in godot_string_name name, int argumentCount)
         {
-            return ref ScriptCache<T, TMethod>.GetOrNullRef(name.GetIntPtr(), argumentCount);
+            return ref _cache.GetOrNullRef(name.GetIntPtr(), argumentCount);
         }
     }
 }

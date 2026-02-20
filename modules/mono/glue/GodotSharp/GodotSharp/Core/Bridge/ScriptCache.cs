@@ -8,33 +8,33 @@ namespace Godot.Bridge
 {
 #pragma warning disable CA1000 // Do not declare static members on generic types
 
-    public class ScriptCache<T, TMethod>
+    public class ScriptCache<TMethod>
     {
         private const int MaxProbes = 4;
         private const double MaxAverageProbes = 1.5;
         private const int SizeLimit = 8192;
 
-        private static IntPtr[] _keys;
-        private static byte[] _argCounts;
-        private static TMethod[] _methods;
+        private readonly IntPtr[] _keys;
+        private readonly byte[] _argCounts;
+        private readonly TMethod[] _methods;
 
-        private static int _mask;
-        private static int _shift;
-        private static bool _useMixer;
-        private static int _finalMaxProbes;
+        private readonly int _mask;
+        private readonly int _shift;
+        private readonly bool _useMixer;
+        private readonly int _finalMaxProbes;
 
-        public static void Initialize((MethodKey Key, TMethod Method)[] methods, List<string> mostUsedMethods)
+        public ScriptCache((MethodKey Key, TMethod Method)[] methods, List<string> mostUsedMethods)
         {
-            int capacity = methods.Length;
-            int maxProbes = int.MaxValue;
+            var capacity = methods.Length;
+            var maxProbes = int.MaxValue;
             double averageProbes = MaxProbes;
 
             var sortedMethods = SortMethodsOnExpectedCallCountForImprovedPerformance(methods, mostUsedMethods);
 
             // calculate optimal size (2^n) for optimal masking
-            bool requestMoreSize = true;
-            int size = 1;
-            int power = 0;
+            var requestMoreSize = true;
+            var size = 1;
+            var power = 0;
             while (size < capacity * 2)
             {
                 size <<= 1;
@@ -80,7 +80,7 @@ namespace Godot.Bridge
                 if (!requestMoreSize)
                 {
                     // check if amount of probes is still reasonable fast
-                    (averageProbes, maxProbes, _) = CalculateDiagnostics();
+                    (averageProbes, maxProbes, _) = CalculateStatistics();
 
                     if (maxProbes > MaxProbes ||
                         averageProbes > MaxAverageProbes)
@@ -113,7 +113,7 @@ namespace Godot.Bridge
                 }
             }
 
-            var (finalAverageProbes, finalMaxProbes, FinalCount) = CalculateDiagnostics();
+            var (finalAverageProbes, finalMaxProbes, finalCount) = CalculateStatistics();
             //GD.Print($"Final: Size: {_keys.Length}, Items: {FinalCount}, Avg Probes: {finalAverageProbes:F2}, Max: {finalMaxProbes}\n");
             _finalMaxProbes = finalMaxProbes; // this is the real worst count of probes
         }
@@ -125,7 +125,7 @@ namespace Godot.Bridge
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public static ref readonly TMethod GetOrNullRef(scoped in IntPtr namePtr, int argCount)
+        public ref readonly TMethod GetOrNullRef(scoped in IntPtr namePtr, int argCount)
         {
             int slot = GetSlot(namePtr);
 
@@ -161,7 +161,7 @@ namespace Godot.Bridge
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        private static int GetSlot(nint namePtr)
+        private int GetSlot(nint namePtr)
         {
             ulong x = (ulong)namePtr;
             if (_useMixer)
@@ -182,7 +182,7 @@ namespace Godot.Bridge
             return (int)((x * 11400714819323198485uL) >> _shift);
         }
 
-        public static (double AverageProbes, int MaxProbes, int Count) CalculateDiagnostics()
+        public (double AverageProbes, int MaxProbes, int Count) CalculateStatistics()
         {
             var totalProbes = 0L;
             var maxProbes = 0;
