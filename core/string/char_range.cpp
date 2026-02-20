@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  char_range.inc                                                        */
+/*  char_range.cpp                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,19 +30,13 @@
 
 // This file was generated using the `misc/scripts/char_range_fetch.py` script.
 
-#pragma once
-
-#include "core/typedefs.h"
+#include "core/string/char_utils.h"
 
 // Unicode Derived Core Properties
 // Source: https://www.unicode.org/Public/17.0.0/ucd/DerivedCoreProperties.txt
 
-struct CharRange {
-	char32_t start;
-	char32_t end;
-};
-
-constexpr inline CharRange xid_start[] = {
+const int xid_start_size = 692;
+const CharRange xid_start[xid_start_size] = {
 	{ 0x41, 0x5a },
 	{ 0x5f, 0x5f },
 	{ 0x61, 0x7a },
@@ -737,7 +731,8 @@ constexpr inline CharRange xid_start[] = {
 	{ 0x31350, 0x33479 },
 };
 
-constexpr inline CharRange xid_continue[] = {
+const int xid_continue_size = 806;
+const CharRange xid_continue[xid_continue_size] = {
 	{ 0x30, 0x39 },
 	{ 0x41, 0x5a },
 	{ 0x5f, 0x5f },
@@ -1546,7 +1541,8 @@ constexpr inline CharRange xid_continue[] = {
 	{ 0xe0100, 0xe01ef },
 };
 
-constexpr inline CharRange uppercase_letter[] = {
+const int uppercase_letter_size = 660;
+const CharRange uppercase_letter[uppercase_letter_size] = {
 	{ 0x41, 0x5a },
 	{ 0xc0, 0xd6 },
 	{ 0xd8, 0xde },
@@ -2209,7 +2205,8 @@ constexpr inline CharRange uppercase_letter[] = {
 	{ 0x1f170, 0x1f189 },
 };
 
-constexpr inline CharRange lowercase_letter[] = {
+const int lowercase_letter_size = 677;
+const CharRange lowercase_letter[lowercase_letter_size] = {
 	{ 0x61, 0x7a },
 	{ 0xaa, 0xaa },
 	{ 0xb5, 0xb5 },
@@ -2889,7 +2886,8 @@ constexpr inline CharRange lowercase_letter[] = {
 	{ 0x1e922, 0x1e943 },
 };
 
-constexpr inline CharRange unicode_letter[] = {
+const int unicode_letter_size = 761;
+const CharRange unicode_letter[unicode_letter_size] = {
 	{ 0x41, 0x5a },
 	{ 0x61, 0x7a },
 	{ 0xaa, 0xaa },
