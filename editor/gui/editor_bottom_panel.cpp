@@ -270,7 +270,7 @@ void EditorBottomPanel::_on_button_visibility_changed(Button *p_button, EditorDo
 EditorBottomPanel::EditorBottomPanel() :
 		DockTabContainer(EditorDock::DOCK_SLOT_BOTTOM) {
 	layout = EditorDock::DOCK_LAYOUT_HORIZONTAL;
-	grid_rect = Rect2i(2, 4, 2, 2);
+	grid_rect = Rect2i(2, 4, 4, 2);
 
 	get_tab_bar()->connect("tab_changed", callable_mp(this, &EditorBottomPanel::_on_tab_changed));
 	set_tabs_position(TabPosition::POSITION_BOTTOM);
