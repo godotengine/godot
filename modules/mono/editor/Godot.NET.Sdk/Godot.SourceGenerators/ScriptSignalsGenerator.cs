@@ -377,7 +377,7 @@ namespace Godot.SourceGenerators
                         [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
                         protected override bool HasGodotClassSignal(in godot_string_name signal)
                         {
-                            return SignalRegistry.ContainsMethod(signal);
+                            return SignalRegistry.ContainsName(signal);
                         }
                     """);
             }

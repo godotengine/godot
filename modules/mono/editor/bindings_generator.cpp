@@ -2861,7 +2861,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << " bool " CS_METHOD_HAS_GODOT_CLASS_METHOD "(in godot_string_name method)\n"
 			   << INDENT1 "{\n";
 
-		output << INDENT2 "return MethodRegistry.ContainsMethod(method);\n";
+		output << INDENT2 "return MethodRegistry.ContainsName(method);\n";
 
 		output << INDENT1 "}\n";
 
@@ -2878,7 +2878,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << " bool " CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(in godot_string_name signal)\n"
 			   << INDENT1 "{\n";
 
-		output << INDENT2 << "return SignalRegistry.ContainsMethod(signal);"
+		output << INDENT2 << "return SignalRegistry.ContainsName(signal);"
 			   << INDENT1 << "}\n\n";
 
 		if (is_derived_type) {

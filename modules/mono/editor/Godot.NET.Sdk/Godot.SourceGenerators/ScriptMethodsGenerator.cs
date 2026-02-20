@@ -296,7 +296,7 @@ namespace Godot.SourceGenerators
                 source.Append("    /// <inheritdoc/>\n");
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
                 source.Append("    protected override bool HasGodotClassMethod(in godot_string_name method)\n    {\n");
-                source.Append("        return MethodRegistry.ContainsMethod(method);\n");
+                source.Append("        return MethodRegistry.ContainsName(method);\n");
                 source.Append("    }\n");
             }
 
