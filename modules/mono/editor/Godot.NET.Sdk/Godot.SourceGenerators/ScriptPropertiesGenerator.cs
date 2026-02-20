@@ -180,7 +180,7 @@ namespace Godot.SourceGenerators
             {
                 string type = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
 
-                // Generate SetGodotClassPropertyValue
+                // Generate PropertyRegistry
                 source.Append(
                     """
                     #pragma warning disable CS0618 // Type or member is obsolete
@@ -194,6 +194,7 @@ namespace Godot.SourceGenerators
                 bool allPropertiesAreReadOnly = godotClassFields.All(fi => fi.FieldSymbol.IsReadOnly) &&
                                                 godotClassProperties.All(pi => pi.PropertySymbol.IsReadOnly || pi.PropertySymbol.SetMethod!.IsInitOnly);
 
+                // handle writable properties and fields
                 if (!allPropertiesAreReadOnly)
                 {
                     foreach (var property in godotClassProperties)
@@ -207,8 +208,6 @@ namespace Godot.SourceGenerators
                             property.PropertySymbol.Type,
                             property.Type,
                             source);
-                        //GeneratePropertySetter(property.PropertySymbol.Name,
-                        //    property.PropertySymbol.Type, property.Type, source);
                     }
 
                     foreach (var field in godotClassFields)
@@ -216,8 +215,6 @@ namespace Godot.SourceGenerators
                         if (field.FieldSymbol.IsReadOnly)
                             continue;
 
-                        //GeneratePropertySetter(field.FieldSymbol.Name,
-                        //    field.FieldSymbol.Type, field.Type, source);
                         GeneratePropertySetterMethodRegistryEntry(
                             type,
                             field.FieldSymbol.Name,
@@ -227,18 +224,15 @@ namespace Godot.SourceGenerators
                     }
                 }
 
-                // Generate GetGodotClassPropertyValue
                 bool allPropertiesAreWriteOnly = godotClassFields.Length == 0 && godotClassProperties.All(pi => pi.PropertySymbol.IsWriteOnly);
 
+                // handle readable properies and fields
                 if (!allPropertiesAreWriteOnly)
                 {
                     foreach (var property in godotClassProperties)
                     {
                         if (property.PropertySymbol.IsWriteOnly)
                             continue;
-
-                        //GeneratePropertyGetter(property.PropertySymbol.Name,
-                        //    property.PropertySymbol.Type, property.Type, source);
 
                         GeneratePropertyGetterMethodRegistryEntry(
                             type,
@@ -250,8 +244,6 @@ namespace Godot.SourceGenerators
 
                     foreach (var field in godotClassFields)
                     {
-                        //GeneratePropertyGetter(field.FieldSymbol.Name,
-                        //    field.FieldSymbol.Type, field.Type, source);
                         GeneratePropertyGetterMethodRegistryEntry(
                             type,
                             field.FieldSymbol.Name,
@@ -268,6 +260,7 @@ namespace Godot.SourceGenerators
 
                     """);
 
+                // Generate SetGodotClassPropertyValue
                 if (!allPropertiesAreReadOnly)
                 {
                     source.Append("    /// <inheritdoc/>\n");
@@ -285,6 +278,7 @@ namespace Godot.SourceGenerators
                     source.Append("    }\n");
                 }
 
+                // Generate GetGodotClassPropertyValue
                 if (!allPropertiesAreWriteOnly)
                 {
                     source.Append("    /// <inheritdoc/>\n");
@@ -394,11 +388,11 @@ namespace Godot.SourceGenerators
             source
                 .Append(
                 $$"""
-                        .Register(PropertyName.@{{propertyMemberName}}, 1, 
+                        .Register(PropertyName.@{{propertyMemberName}}, 1,
                             [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
                             static (GodotObject scriptInstance, scoped in godot_variant value) =>
                             {
-                                Unsafe.As<GodotObject, {{type}}>(ref scriptInstance).@{{propertyMemberName}} = 
+                                Unsafe.As<GodotObject, {{type}}>(ref scriptInstance).@{{propertyMemberName}} =
                 """)
                 .AppendNativeVariantToManagedExpr("value", propertyTypeSymbol, propertyMarshalType)
                 .Append(";\n")
@@ -425,8 +419,8 @@ namespace Godot.SourceGenerators
                             static (GodotObject scriptInstance, scoped in godot_variant _) =>
                             {
                                 var ret = Unsafe.As<GodotObject, {{type}}>(ref scriptInstance).@{{propertyMemberName}};
-                                return 
                 """)
+                .Append("return ")
                 .AppendManagedToNativeVariantExpr("ret", propertyTypeSymbol, propertyMarshalType)
                 .Append(";\n")
                 .Append("""

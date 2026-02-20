@@ -2325,6 +2325,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 						"' for class '" + itype.name + "'.");
 	}
 
+	// Generate ScriptPropertyRegistry
+
 	// only non-static ones
 	if (!itype.is_singleton) {
 		output << "\n#pragma warning disable CS0618 // Type or member is obsolete\n";
@@ -2437,8 +2439,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 						 << INDENT4 << "return ";
 
 				const TypeInterface *return_interface = _get_type_or_null(getter->return_type);
-				String to_managed = sformat(return_interface->cs_managed_to_variant, "callRet", return_interface->cs_type, return_interface->name)
-											.replacen("params ", "");
+				String to_managed = sformat(return_interface->cs_managed_to_variant, "callRet", return_interface->cs_type, return_interface->name).replacen("params ", "");
 
 				p_output << to_managed << ";\n";
 
@@ -2482,49 +2483,20 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
 				if (arg_type->cname == name_cache.type_Array_generic || arg_type->cname == name_cache.type_Dictionary_generic) {
 					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
-					String to_managed = sformat(arg_type->cs_variant_to_managed, "value", arg_cs_type, arg_type->name)
-												.replacen("params ", "");
+					String to_managed = sformat(arg_type->cs_variant_to_managed, "value", arg_cs_type, arg_type->name).replacen("params ", "");
 					p_output << "new " << arg_cs_type << "(" << to_managed << ")";
 				} else {
-					p_output << sformat(arg_type->cs_variant_to_managed, "value", arg_type->cs_type, arg_type->name)
-										.replacen("params ", "");
+					p_output << sformat(arg_type->cs_variant_to_managed, "value", arg_type->cs_type, arg_type->name).replacen("params ", "");
 				}
 
 				p_output << ";\n"
 						 << INDENT4 << "return default;\n"
 						 << INDENT3 "})\n";
 			}
-
-			//if (setter) {
-			//	output << INDENT2 << ".Register("
-			//		   << "global::Godot." << itype.proxy_name + ".PropertyName." + iprop.proxy_name << ", " << 1 << ",\n"
-			//		   << INDENT3 << "[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n"
-			//		   << INDENT3 << "static (GodotObject scriptInstance, scoped in godot_variant value) =>\n"
-			//		   << INDENT3 << "{"
-			//		   << INDENT4 << "Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance).@" << iprop.proxy_name << " = "
-			//		   << imethod.proxy_name << itos(imethod.arguments.size()) << "())\n";
-
-			//	auto arg_type = &iprop;
-			//	if (arg_type->cname == name_cache.type_Array_generic ||
-			//		arg_type->cname == name_cache.type_Dictionary_generic) {
-			//		String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
-			//		String to_managed = sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_cs_type, arg_type->name)
-			//									.replacen("params ", "");
-			//		output << "new " << arg_cs_type << "(" << to_managed << ")";
-			//	} else {
-			//		output << sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name)
-			//						  .replacen("params ", "");
-			//	}
-			//}
-
-			//Error prop_err = _generate_property_registry(itype, iprop, output);
-			//ERR_FAIL_COND_V_MSG(prop_err != OK, prop_err,
-			//		"Failed to generate property '" + iprop.cname.operator String() +
-			//				"' for class '" + itype.name + "'.");
 		}
 
 		output << INDENT2 << ".Build();\n";
-		
+
 		output << "#pragma warning restore CS0618 // Type or member is obsolete\n";
 		output << "#pragma warning restore CS0628 // new protected member declared in sealed class\n";
 	}
@@ -2683,8 +2655,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				TypeInterface base_type = obj_types[itype.base_name];
 
 				output << "\n"
-				       << INDENT2 ".Register(global::Godot."
-				       << base_type.proxy_name;
+					   << INDENT2 ".Register(global::Godot." << base_type.proxy_name;
 				if (base_type.is_singleton) {
 					// If the type is a singleton, use the instance type.
 					output << CS_SINGLETON_INSTANCE_SUFFIX;
@@ -2698,19 +2669,23 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		output.append("\n");
 
-		LocalVector<String> already_used;
+		// Generate Method registrations
+
+		// already_registered prevents methods which have the same argument-count
+		// to be registered twice (undefined behavior)
+		LocalVector<String> already_registered;
 
 		for (const MethodInterface &imethod : itype.methods) {
-			const String method_name = imethod.proxy_name + itos(imethod.arguments.size());
+			const String method_name_with_argc = imethod.proxy_name + itos(imethod.arguments.size());
 			if (imethod.is_static ||
 					imethod.is_virtual ||
 					itype.is_singleton ||
 					itype.is_singleton_instance ||
-					already_used.find(method_name) != -1) {
+					already_registered.find(method_name_with_argc) != -1) {
 				continue;
 			}
 
-			already_used.push_back(method_name);
+			already_registered.push_back(method_name_with_argc);
 
 			output << INDENT2 ".Register("
 				   << "global::Godot." << itype.proxy_name + ".MethodName." + imethod.proxy_name
@@ -2720,22 +2695,25 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				   << "ScriptMethodDispatchHelper.CreateScriptMethod_" << imethod.proxy_name << itos(imethod.arguments.size()) << "())\n";
 		}
 
+		// Generate alias names for methods
+
 		for (const MethodInterface &imethod : itype.methods) {
 			if (!imethod.is_virtual) {
 				continue;
 			}
 			output << "\n"
-			       << INDENT2 ".AddAlias("
-			       << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name << ", " << itos(imethod.arguments.size()) << ", MethodName." << imethod.proxy_name
-			       << ")\n";
+				   << INDENT2 ".AddAlias("
+				   << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name << ", " << itos(imethod.arguments.size()) << ", MethodName." << imethod.proxy_name
+				   << ")\n";
 		}
 		output << INDENT2 ".Build();\n";
 
 		output << "#pragma warning restore CS0618 // Type or member is obsolete\n";
 		output << "#pragma warning restore CS0628 // new protected member declared in sealed class\n";
 
-		already_used.clear();
+		already_registered.clear();
 
+		// Generate ScriptMethodDispatchHelper
 		output << INDENT1 << "\n";
 		output << "#pragma warning disable CS0618 // Type or member is obsolete\n";
 		output << INDENT1 << "private sealed class ScriptMethodDispatchHelper\n";
@@ -2746,15 +2724,20 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 					imethod.is_virtual ||
 					itype.is_singleton ||
 					itype.is_singleton_instance ||
-					already_used.find(method_name) != -1) {
+					already_registered.find(method_name) != -1) {
 				continue;
 			}
 
-			already_used.push_back(method_name);
+			already_registered.push_back(method_name);
+
+			// Generate CreateScriptMethod factory method that creates the actual dispatch method
 
 			output << INDENT2 "public static ScriptMethod<GodotObject> CreateScriptMethod_" << imethod.proxy_name << itos(imethod.arguments.size()) << "()\n"
-				   << INDENT2 << "{\n"
-				   << INDENT3 << "return [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n"
+				   << INDENT2 << "{\n";
+
+			// Generate the actual dispatch method
+
+			output << INDENT3 << "return [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n"
 				   << INDENT3 << "static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>\n"
 				   << INDENT3 << "{\n";
 
@@ -2780,11 +2763,11 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				if (arg_type->cname == name_cache.type_Array_generic || arg_type->cname == name_cache.type_Dictionary_generic) {
 					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
 					String to_managed = sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_cs_type, arg_type->name)
-						.replacen("params ", "");
+												.replacen("params ", "");
 					output << "new " << arg_cs_type << "(" << to_managed << ")";
 				} else {
 					output << sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name)
-						.replacen("params ", "");
+									  .replacen("params ", "");
 				}
 
 				idx++;
@@ -2795,7 +2778,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			if (imethod.return_type.cname != name_cache.type_void) {
 				const TypeInterface *return_interface = _get_type_or_null(imethod.return_type);
 				String to_managed = sformat(return_interface->cs_managed_to_variant, "callRet", return_interface->cs_type, return_interface->name)
-										   .replacen("params ", "");
+											.replacen("params ", "");
 				output << INDENT4 << "var ret = " + to_managed;
 				output << ";\n";
 			} else {
@@ -2812,7 +2795,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		output << "#pragma warning restore CS0618 // Type or member is obsolete\n\n";
 
-		// Generate TryGetGodotClassMethod
+		// Generate GetGodotClassMethodOrNullRef
 
 		// Avoid raising diagnostics because of calls to obsolete methods.
 		output << "#pragma warning disable CS0618 // Member is obsolete\n";
@@ -2912,11 +2895,15 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				   << INDENT1 << "}\n";
 		}
 
+		// Generate SignalRegistry
+
 		if (!itype.is_singleton) {
 			output << "\n#pragma warning disable CS0618 // Type or member is obsolete\n";
 			output << "#pragma warning disable CS0628 // new protected member declared in sealed class\n";
 
 			output << INDENT1 << "protected " << (is_derived_type ? "new" : "") << " static readonly ScriptSignalRegistry<" << itype.proxy_name << "> SignalRegistry = new ScriptSignalRegistry<" << itype.proxy_name << ">()\n ";
+
+			// Copy over base type registration
 
 			if (obj_types.has(itype.base_name)) {
 				TypeInterface base_type = obj_types[itype.base_name];
@@ -2924,9 +2911,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				output << INDENT2 << ".Register(global::Godot." << base_type.proxy_name << (base_type.is_singleton ? CS_SINGLETON_INSTANCE_SUFFIX : "") << ".SignalRegistry)\n";
 			}
 
+			// Generate inline registrations for dispatch methods
+
 			for (const SignalInterface &isignal : itype.signals_) {
-				output << INDENT2 << ".Register(SignalName." << isignal.proxy_name << ", " << itos(isignal.arguments.size()) << ",\n"
-					   << INDENT3 << "[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n"
+				output << INDENT2 << ".Register(SignalName." << isignal.proxy_name << ", " << itos(isignal.arguments.size()) << ",\n";
+
+				// Generate actual dispatch method
+				output << INDENT3 << "[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n"
 					   << INDENT3 << "static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>\n"
 					   << INDENT3 << "{\n"
 					   << INDENT4 << "throw new InvalidOperationException(\"Signal script dispatcher should not be called for built-in types!\");\n"
@@ -2946,11 +2937,11 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 					if (arg_type->cname == name_cache.type_Array_generic || arg_type->cname == name_cache.type_Dictionary_generic) {
 						String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
 						String to_managed = sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_cs_type, arg_type->name)
-							.replacen("params ", "");
+													.replacen("params ", "");
 						output << "new " << arg_cs_type << "(" << to_managed << ")";
 					} else {
 						output << sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name)
-							.replacen("params ", "");
+										  .replacen("params ", "");
 					}
 
 					idx++;
@@ -2958,8 +2949,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 				output.append(");\n");
 
-				output << INDENT3 << "})\n"
-					;
+				output << INDENT3 << "})\n";
 			}
 
 			output << INDENT3 << ".Build();\n";
@@ -2967,28 +2957,6 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			output << "#pragma warning restore CS0618 // Type or member is obsolete\n";
 			output << "#pragma warning restore CS0628 // new protected member declared in sealed class\n";
 		}
-
-		//for (const SignalInterface &isignal : itype.signals_) {
-		//	// We check for native names (snake_case). If we detect one, we call HasGodotClassSignal
-		//	// again, but this time with the respective proxy name (PascalCase). It's the job of
-		//	// user derived classes to override the method and check for those. Our C# source
-		//	// generators take care of generating those override methods.
-		//	output << INDENT2 "if (signal == SignalName." << isignal.proxy_name
-		//		   << ")\n" INDENT2 "{\n"
-		//		   << INDENT3 "if (" CS_METHOD_HAS_GODOT_CLASS_SIGNAL "("
-		//		   << CS_STATIC_FIELD_SIGNAL_PROXY_NAME_PREFIX << isignal.name
-		//		   << ".NativeValue.DangerousSelfRef))\n" INDENT3 "{\n"
-		//		   << INDENT4 "return true;\n"
-		//		   << INDENT3 "}\n" INDENT2 "}\n";
-		//}
-
-		//if (is_derived_type) {
-		//	output << INDENT2 "return base." CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(signal);\n";
-		//} else {
-		//	output << INDENT2 "return false;\n";
-		//}
-		//
-		//output << INDENT1 "}\n";
 	}
 
 	//Generate StringName for all class members
@@ -3013,6 +2981,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << "readonly StringName " << iprop.proxy_name << " = \"" << iprop.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
+
 	//MethodName
 	output << MEMBER_BEGIN "/// <summary>\n"
 		   << INDENT1 "/// Cached StringNames for the methods contained in this class, for fast lookup.\n"
@@ -3039,6 +3008,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << "readonly StringName " << imethod.proxy_name << " = \"" << imethod.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
+
 	//SignalName
 	output << MEMBER_BEGIN "/// <summary>\n"
 		   << INDENT1 "/// Cached StringNames for the signals contained in this class, for fast lookup.\n"
