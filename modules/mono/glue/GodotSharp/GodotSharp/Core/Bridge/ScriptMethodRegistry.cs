@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Godot.Bridge
 {
     public sealed class ScriptMethodRegistry<T> :
-        ScriptRegistry<T, ScriptMethod<GodotObject>, ScriptCache<ScriptMethod<GodotObject>>,
+        ScriptRegistry<T, ScriptMethod, ScriptCache<ScriptMethod>,
             ScriptMethodRegistry<T>>
         where T : GodotObject
     {
@@ -21,9 +21,9 @@ namespace Godot.Bridge
             Node.MethodName._ExitTree,
         ];
 
-        protected override ScriptCache<ScriptMethod<GodotObject>> InitializeCache((MethodKey, ScriptMethod<GodotObject>)[] methods)
+        protected override ScriptCache<ScriptMethod> InitializeCache((MethodKey, ScriptMethod)[] methods)
         {
-            return new ScriptCache<ScriptMethod<GodotObject>>(methods, _mostUsedMethods);
+            return new ScriptCache<ScriptMethod>(methods, _mostUsedMethods);
         }
     }
 }

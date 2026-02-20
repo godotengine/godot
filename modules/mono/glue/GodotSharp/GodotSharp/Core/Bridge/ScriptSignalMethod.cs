@@ -2,6 +2,5 @@ using Godot.NativeInterop;
 
 namespace Godot.Bridge
 {
-    public delegate void ScriptSignalMethod<T>(T godotObject, scoped in NativeVariantPtrArgs args)
-        where T : GodotObject;
+    public delegate void ScriptSignalMethod(GodotObject godotObject, scoped in NativeVariantPtrArgs args);
 }
