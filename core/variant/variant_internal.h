@@ -30,10 +30,10 @@
 
 #pragma once
 
-#include "type_info.h"
-#include "variant.h"
-
 #include "core/templates/simple_type.h"
+#include "core/variant/type_info.h"
+#include "core/variant/variant.h"
+#include "core/variant/variant_pools.h"
 
 // For use when you want to access the internal pointer of a Variant directly.
 // Use with caution. You need to be sure that the type is correct.
@@ -241,7 +241,7 @@ public:
 		v->type = Variant::STRING;
 	}
 	_FORCE_INLINE_ static void init_transform2d(Variant *v) {
-		v->_data._transform2d = (Transform2D *)Variant::Pools::_bucket_small.alloc();
+		v->_data._transform2d = VariantPools::alloc<Transform2D>();
 		memnew_placement(v->_data._transform2d, Transform2D);
 		v->type = Variant::TRANSFORM2D;
 	}
@@ -250,22 +250,22 @@ public:
 		v->type = Variant::QUATERNION;
 	}
 	_FORCE_INLINE_ static void init_aabb(Variant *v) {
-		v->_data._aabb = (AABB *)Variant::Pools::_bucket_small.alloc();
+		v->_data._aabb = VariantPools::alloc<AABB>();
 		memnew_placement(v->_data._aabb, AABB);
 		v->type = Variant::AABB;
 	}
 	_FORCE_INLINE_ static void init_basis(Variant *v) {
-		v->_data._basis = (Basis *)Variant::Pools::_bucket_medium.alloc();
+		v->_data._basis = VariantPools::alloc<Basis>();
 		memnew_placement(v->_data._basis, Basis);
 		v->type = Variant::BASIS;
 	}
 	_FORCE_INLINE_ static void init_transform3d(Variant *v) {
-		v->_data._transform3d = (Transform3D *)Variant::Pools::_bucket_medium.alloc();
+		v->_data._transform3d = VariantPools::alloc<Transform3D>();
 		memnew_placement(v->_data._transform3d, Transform3D);
 		v->type = Variant::TRANSFORM3D;
 	}
 	_FORCE_INLINE_ static void init_projection(Variant *v) {
-		v->_data._projection = (Projection *)Variant::Pools::_bucket_large.alloc();
+		v->_data._projection = VariantPools::alloc<Projection>();
 		memnew_placement(v->_data._projection, Projection);
 		v->type = Variant::PROJECTION;
 	}

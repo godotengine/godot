@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/core_globals.h" // IWYU pragma: Used in macro.
 #include "core/variant/variant.h"
 
 #if defined(_MSC_VER) && !defined(DOCTEST_THREAD_LOCAL)
