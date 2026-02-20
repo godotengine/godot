@@ -205,12 +205,11 @@ namespace Godot.SourceGenerators
 
             source.Append("#pragma warning restore CS0109\n\n");
 
-            // Generate InvokeGodotClassMethod
-
             // TODO: why where static methods in here? does excluding them here break stuff? c++ codegen filters by is_virtual and static methods can't be virtual in C#
             var godotClassNonStaticMethods = godotClassMethods.Where(m => !m.Method.IsStatic).ToArray();
             if (godotClassNonStaticMethods.Length > 0)
             {
+                // ScriptMethodRegistry
                 source.Append(
                     """
                     #pragma warning disable CS0618 // Type or member is obsolete
@@ -227,9 +226,9 @@ namespace Godot.SourceGenerators
                 }
 
                 source.Append("        .Build();\n");
-                
+
+                // ScriptMethodDispatchHelper
                 source.Append("    private sealed class ScriptMethodDispatchHelper\n");
-                //source.Append($"        where T : {symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}\n");
                 source.Append("    {\n");
                 foreach (var method in godotClassNonStaticMethods)
                 {
@@ -237,6 +236,7 @@ namespace Godot.SourceGenerators
                 }
                 source.Append("    }\n\n");
 
+                // GetGodotClassMethodOrNullRef
                 source.Append(
                     """
                     #pragma warning restore CS0618 // Type or member is obsolete
@@ -267,7 +267,7 @@ namespace Godot.SourceGenerators
             }
 
             // Generate InvokeGodotClassStaticMethod
-
+            // TODO: Static methods registry support
             var godotClassStaticMethods = godotClassMethods.Where(m => m.Method.IsStatic).ToArray();
 
             if (godotClassStaticMethods.Length > 0)
@@ -505,7 +505,7 @@ namespace Godot.SourceGenerators
         {
             string methodName = method.Method.Name;
 
-            source.Append("        .Register(MethodName.")
+            source.Append("        .Register(MethodName.@")
                 .Append(methodName)
                 .Append(", ")
                 .Append(method.ParamTypes.Length)
