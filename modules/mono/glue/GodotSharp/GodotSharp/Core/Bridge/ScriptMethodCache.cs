@@ -6,24 +6,6 @@ using System.Runtime.CompilerServices;
 
 namespace Godot.Bridge
 {
-    //public class ScriptMethodCache<T> : ScriptCache<T, ScriptMethod<GodotObject>>
-    //    where T : GodotObject
-    //{
-
-    //}
-
-    public delegate godot_variant PropertyAccessMethod<T>(T godotObject, scoped in godot_variant value)
-        where T : GodotObject;
-
-    public delegate void SignalScriptMethod<T>(T godotObject, scoped in NativeVariantPtrArgs args)
-        where T : GodotObject;
-
-    //public class ScriptPropertyCache<T> : ScriptCache<T, ScriptMethod<GodotObject>>
-    //    where T : GodotObject
-    //{
-
-    //}
-
 #pragma warning disable CA1000 // Do not declare static members on generic types
 
     public class ScriptCache<T, TMethod>
@@ -42,26 +24,13 @@ namespace Godot.Bridge
         private static bool _useMixer;
         private static int _finalMaxProbes;
 
-        private static List<string> _mostUsedMethods = [
-            GodotObject.MethodName.Notification,
-            Node.MethodName._Process,
-            Node.MethodName._PhysicsProcess,
-            CanvasItem.MethodName._Draw,
-            Node.MethodName._Input,
-            Node.MethodName._UnhandledInput,
-            Control.MethodName._GuiInput,
-            Node.MethodName._Ready,
-            Node.MethodName._EnterTree,
-            Node.MethodName._ExitTree,
-        ];
-
-        public static void Initialize((StringName NamePtr, int ArgCount, TMethod Method)[] methods)
+        public static void Initialize((MethodKey Key, TMethod Method)[] methods, List<string> mostUsedMethods)
         {
             int capacity = methods.Length;
             int maxProbes = int.MaxValue;
             double averageProbes = MaxProbes;
 
-            var sortedMethods = SortMethodsOnExpectedCallCountForImprovedPerformance(methods);
+            var sortedMethods = SortMethodsOnExpectedCallCountForImprovedPerformance(methods, mostUsedMethods);
 
             // calculate optimal size (2^n) for optimal masking
             bool requestMoreSize = true;
@@ -86,7 +55,7 @@ namespace Godot.Bridge
                 foreach (var method in methods)
                 {
                     int currentMaxProbes = 0;
-                    int slot = GetSlot(method.NamePtr.NativeValue._data);
+                    int slot = GetSlot(method.Key.Name.NativeValue._data);
                     while (_keys[slot] != IntPtr.Zero)
                     {
                         currentMaxProbes++;
@@ -104,8 +73,8 @@ namespace Godot.Bridge
                         break;
                     }
 
-                    _keys[slot] = method.NamePtr.NativeValue._data;
-                    _argCounts[slot] = (byte)method.ArgCount;
+                    _keys[slot] = method.Key.Name.NativeValue._data;
+                    _argCounts[slot] = (byte)method.Key.Argc;
                     _methods[slot] = (TMethod)(object)method.Method;
                 }
 
@@ -256,17 +225,22 @@ namespace Godot.Bridge
             return (averageProbes, maxProbes, count);
         }
 
-        private static (StringName NamePtr, int ArgCount, TMethod Method)[] SortMethodsOnExpectedCallCountForImprovedPerformance((StringName NamePtr, int ArgCount, TMethod Method)[] methods)
+        private static (MethodKey Key, TMethod Method)[] SortMethodsOnExpectedCallCountForImprovedPerformance((MethodKey Key, TMethod Method)[] methods, List<string> mostUsedMethods)
         {
+            if (mostUsedMethods.Count == 0)
+            {
+                return methods;
+            }
+
             return methods
                 .Select(method => new
                 {
                     method,
-                    Name = StringHelpers.ConvertStringNameToString((godot_string_name)method.NamePtr.NativeValue)
+                    Name = StringHelpers.ConvertStringNameToString((godot_string_name)method.Key.Name.NativeValue)
                 })
                 .OrderBy(x =>
                 {
-                    var index = _mostUsedMethods.IndexOf(x.Name);
+                    var index = mostUsedMethods.IndexOf(x.Name);
                     if (index > -1)
                     {
                         return index;

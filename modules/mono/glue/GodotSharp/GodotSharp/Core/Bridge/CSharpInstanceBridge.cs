@@ -49,7 +49,6 @@ namespace Godot.Bridge
                     retValue = scriptMethod(godotObject, in argsStruct);
 
                     return true;
-
                 }
                 else
                 {

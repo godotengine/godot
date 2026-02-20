@@ -3,11 +3,14 @@ using System.Runtime.CompilerServices;
 
 namespace Godot.Bridge
 {
-    internal readonly struct MethodKey : IEquatable<MethodKey>
+    public readonly struct MethodKey : IEquatable<MethodKey>
     {
+        private readonly int _hashCode;
+
+#pragma warning disable CA1051 // Do not declare visible instance fields
         public readonly StringName Name;
         public readonly int Argc;
-        private readonly int _hashCode;
+#pragma warning restore CA1051 // Do not declare visible instance fields
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public MethodKey(StringName name, int argc)

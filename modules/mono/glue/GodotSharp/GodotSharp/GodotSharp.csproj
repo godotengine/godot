@@ -58,10 +58,16 @@
     <Compile Include="Core\Attributes\ExportToolButtonAttribute.cs" />
     <Compile Include="Core\Bridge\GodotSerializationInfo.cs" />
     <Compile Include="Core\Bridge\MethodInfo.cs" />
+    <Compile Include="Core\Bridge\ScriptPropertyMethod.cs" />
     <Compile Include="Core\Bridge\ScriptMethodCache.cs" />
-    <Compile Include="Core\Bridge\ScriptMethodKey.cs" />
+    <Compile Include="Core\Bridge\MethodKey.cs" />
     <Compile Include="Core\Bridge\ScriptMethod.cs" />
     <Compile Include="Core\Bridge\ScriptMethodRegistry.cs" />
+    <Compile Include="Core\Bridge\ScriptPropertyRegistry.cs" />
+    <Compile Include="Core\Bridge\ScriptRegistry.cs" />
+    <Compile Include="Core\Bridge\ScriptRegistryExtensions.cs" />
+    <Compile Include="Core\Bridge\ScriptSignalRegistry.cs" />
+    <Compile Include="Core\Bridge\ScriptSignalMethod.cs" />
     <Compile Include="Core\Callable.generics.cs" />
     <Compile Include="Core\CustomGCHandle.cs" />
     <Compile Include="Core\Array.cs" />
