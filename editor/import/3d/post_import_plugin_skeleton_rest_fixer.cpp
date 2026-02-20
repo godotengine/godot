@@ -604,7 +604,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 											Vector<StringName> names = anim->track_get_path(i).get_names();
 											names.remove_at(0);
 											for (int j = 0; j < names.size(); j++) {
-												path_string += "/" + names[i].operator String();
+												path_string += "/" + names[j].operator String();
 											}
 										}
 										if (anim->track_get_path(i).get_subname_count() > 0) {
