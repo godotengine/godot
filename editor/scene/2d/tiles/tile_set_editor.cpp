@@ -367,7 +367,9 @@ void TileSetEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_update_sources_list();
-			_update_patterns_list();
+			if (tile_set.is_valid()) {
+				_update_patterns_list();
+			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
