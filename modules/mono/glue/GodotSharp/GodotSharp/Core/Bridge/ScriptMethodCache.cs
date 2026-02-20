@@ -54,7 +54,7 @@ namespace Godot.Bridge
                 foreach (var method in methods)
                 {
                     int currentMaxProbes = 0;
-                    int slot = GetSlot(method.Key.Name.NativeValue._data);
+                    int slot = GetSlot(method.Key.Name.NativeValue.GetIntPtr());
                     while (_keys[slot] != IntPtr.Zero)
                     {
                         currentMaxProbes++;
@@ -72,7 +72,7 @@ namespace Godot.Bridge
                         break;
                     }
 
-                    _keys[slot] = method.Key.Name.NativeValue._data;
+                    _keys[slot] = method.Key.Name.NativeValue.GetIntPtr();
                     _argCounts[slot] = (byte)method.Key.Argc;
                     _methods[slot] = method.Method;
                 }

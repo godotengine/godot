@@ -29,7 +29,7 @@ namespace Godot.Bridge
         public TSelf Register(StringName methodName, int argumentCount, TMethod method)
         {
             BuilderMethodsByNameAndArgc[new MethodKey(methodName, argumentCount)] = method;
-            _knownMethodNames.Add(methodName.NativeValue._data);
+            _knownMethodNames.Add(methodName.NativeValue.GetIntPtr());
             return (TSelf)this;
         }
 
@@ -74,7 +74,7 @@ namespace Godot.Bridge
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public ref readonly TMethod GetMethodOrNullRef(scoped in godot_string_name name, int argumentCount)
         {
-            return ref ScriptCache<T, TMethod>.GetOrNullRef(name._data, argumentCount);
+            return ref ScriptCache<T, TMethod>.GetOrNullRef(name.GetIntPtr(), argumentCount);
         }
     }
 }
