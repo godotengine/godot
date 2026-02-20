@@ -59,7 +59,7 @@
     <Compile Include="Core\Bridge\GodotSerializationInfo.cs" />
     <Compile Include="Core\Bridge\MethodInfo.cs" />
     <Compile Include="Core\Bridge\ScriptPropertyMethod.cs" />
-    <Compile Include="Core\Bridge\ScriptMethodCache.cs" />
+    <Compile Include="Core\Bridge\ScriptCache.cs" />
     <Compile Include="Core\Bridge\MethodKey.cs" />
     <Compile Include="Core\Bridge\ScriptMethod.cs" />
     <Compile Include="Core\Bridge\ScriptMethodRegistry.cs" />
