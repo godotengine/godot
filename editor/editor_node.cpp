@@ -256,7 +256,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 
 	// For each index set with a size > 1, we need to disambiguate.
 	for (int i = 0; i < index_sets.size(); i++) {
-		RBSet<int> iset = index_sets[i];
+		RBSet<int> iset(index_sets[i]);
 		while (iset.size() > 1) {
 			// Append the parent folder to each scene name.
 			for (const int &E : iset) {
