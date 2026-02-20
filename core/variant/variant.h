@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/core_string_names.h"
+#include "core/error/error_macros.h"
 #include "core/io/ip_address.h"
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
@@ -53,9 +54,11 @@
 #include "core/string/node_path.h"
 #include "core/string/ustring.h"
 #include "core/templates/bit_field.h"
+#include "core/templates/hashfuncs.h"
 #include "core/templates/list.h"
 #include "core/templates/paged_allocator.h"
 #include "core/templates/rid.h"
+#include "core/typedefs.h"
 #include "core/variant/array.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
