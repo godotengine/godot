@@ -73,7 +73,7 @@ namespace Godot.Bridge
                     }
 
                     _keys[slot] = method.Key.Name.NativeValue.GetIntPtr();
-                    _argCounts[slot] = (byte)method.Key.Argc;
+                    _argCounts[slot] = (byte)method.Key.ArgCount;
                     _methods[slot] = method.Method;
                 }
 

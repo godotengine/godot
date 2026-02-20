@@ -9,22 +9,22 @@ namespace Godot.Bridge
 
 #pragma warning disable CA1051 // Do not declare visible instance fields
         public readonly StringName Name;
-        public readonly int Argc;
+        public readonly int ArgCount;
 #pragma warning restore CA1051 // Do not declare visible instance fields
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public MethodKey(StringName name, int argc)
+        public MethodKey(StringName name, int argCount)
         {
             Name = name;
-            Argc = argc;
+            ArgCount = argCount;
 
-            _hashCode = HashCode.Combine(name, argc);
+            _hashCode = HashCode.Combine(name, argCount);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(MethodKey other) =>
             _hashCode == other._hashCode && // Quick rejection
-            Argc == other.Argc &&
+            ArgCount == other.ArgCount &&
             Name == other.Name;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

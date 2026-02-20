@@ -2811,9 +2811,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		output << INDENT1 << "/// <inheritdoc/>\n"
 			   << INDENT1 << "[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n"
-			   << INDENT1 << "public " << (is_derived_type ? "override" : "virtual") << " ref readonly ScriptMethod GetGodotClassMethodOrNullRef(in godot_string_name method, int argc)\n"
+			   << INDENT1 << "public " << (is_derived_type ? "override" : "virtual") << " ref readonly ScriptMethod GetGodotClassMethodOrNullRef(in godot_string_name method, int argCount)\n"
 			   << INDENT1 << "{\n"
-			   << INDENT2 << "return ref MethodRegistry.GetMethodOrNullRef(in method, argc);\n"
+			   << INDENT2 << "return ref MethodRegistry.GetMethodOrNullRef(in method, argCount);\n"
 			   << INDENT1 << "}\n\n";
 
 		output << "#pragma warning restore CS0618\n";
