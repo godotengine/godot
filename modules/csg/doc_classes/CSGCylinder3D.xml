@@ -11,6 +11,9 @@
 		<link title="Prototyping levels with CSG">$DOCS_URL/tutorials/3d/csg_tools.html</link>
 	</tutorials>
 	<members>
+		<member name="bottom_material" type="Material" setter="set_bottom_material" getter="get_bottom_material">
+			When not null, sets a custom material for the bottom face of the CSGCylinder. Useful for floors.
+		</member>
 		<member name="cone" type="bool" setter="set_cone" getter="is_cone" default="false">
 			If [code]true[/code] a cone is created, the [member radius] will only apply to one side.
 		</member>
@@ -35,6 +38,9 @@
 		</member>
 		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces" default="true">
 			If [code]true[/code] the normals of the cylinder are set to give a smooth effect making the cylinder seem rounded. If [code]false[/code] the cylinder will have a flat shaded look.
+		</member>
+		<member name="top_material" type="Material" setter="set_top_material" getter="get_top_material">
+			When not null, sets a custom material for the top face of the CSGCylinder. Useful for roofs or ceilings.
 		</member>
 		<member name="top_uv_offset" type="Vector2" setter="set_top_uv_offset" getter="get_top_uv_offset" default="Vector2(0, 0)">
 			Offsets the UVs on the top and bottom faces of the CSGCylinder.

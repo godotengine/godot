@@ -11,10 +11,8 @@
 		<link title="Prototyping levels with CSG">$DOCS_URL/tutorials/3d/csg_tools.html</link>
 	</tutorials>
 	<members>
-		<member name="compatibility_mode" type="bool" setter="set_compatibility_mode" getter="is_compatibility_mode" default="false">
-			Enabling this will use UVs identical to those from previous versions of godot.
-			Disabling this will use UVs better fit for level prototyping, with the side faces aligned along the Y axis and the top and bottom faces aligned along the Z axis.
-			[b]Note:[/b] [member scale_uv] only works when [member compatibility_mode] is disabled.
+		<member name="bottom_material" type="Material" setter="set_bottom_material" getter="get_bottom_material">
+			When not null, sets a custom material for the bottom face of the CSGBox. Useful for floors.
 		</member>
 		<member name="flip_uvs" type="bool" setter="set_flip_uvs" getter="is_flip_uvs" default="false">
 			Mirrors the UVs.
@@ -28,6 +26,14 @@
 		</member>
 		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(1, 1, 1)">
 			The box's width, height and depth.
+		</member>
+		<member name="top_material" type="Material" setter="set_top_material" getter="get_top_material">
+			When not null, sets a custom material for the top face of the CSGBox. Useful for roofs or ceilings.
+		</member>
+		<member name="uv_compatibility_mode" type="bool" setter="set_uv_compatibility_mode" getter="is_uv_compatibility_mode" default="false">
+			Enabling this will use UVs identical to those from previous versions of godot.
+			Disabling this will use UVs better fit for level prototyping, with the side faces aligned along the Y axis and the top and bottom faces aligned along the Z axis.
+			[b]Note:[/b] [member scale_uv] only works when [member uv_compatibility_mode] is disabled.
 		</member>
 		<member name="uv_offset" type="Vector3" setter="set_uv_offset" getter="get_uv_offset" default="Vector3(0, 0, 0)">
 			Offsets the UVs of the CSGBox.

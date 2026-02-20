@@ -274,12 +274,14 @@ class CSGBox3D : public CSGPrimitive3D {
 	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
+	Ref<Material> top_material;
+	Ref<Material> bottom_material;
 	Vector3 size = Vector3(1, 1, 1);
 	bool scale_uv = true;
 	bool flip_uvs = false;
 	Vector3 uv_offset;
 	float uv_size = 1.0;
-	bool compatibility_mode = false;
+	bool uv_compatibility_mode = false;
 
 protected:
 	static void _bind_methods();
@@ -304,11 +306,17 @@ public:
 	void set_uv_size(const float p_size);
 	float get_uv_size() const;
 
-	void set_compatibility_mode(const bool p_compat);
-	bool is_compatibility_mode() const;
+	void set_uv_compatibility_mode(const bool p_compat);
+	bool is_uv_compatibility_mode() const;
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
+
+	void set_top_material(const Ref<Material> &p_material);
+	Ref<Material> get_top_material() const;
+
+	void set_bottom_material(const Ref<Material> &p_material);
+	Ref<Material> get_bottom_material() const;
 
 	CSGBox3D() {}
 };
@@ -318,6 +326,8 @@ class CSGCylinder3D : public CSGPrimitive3D {
 	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
+	Ref<Material> top_material;
+	Ref<Material> bottom_material;
 	float radius;
 	float height;
 	int sides;
@@ -370,6 +380,12 @@ public:
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
+	void set_top_material(const Ref<Material> &p_material);
+	Ref<Material> get_top_material() const;
+
+	void set_bottom_material(const Ref<Material> &p_material);
+	Ref<Material> get_bottom_material() const;
+
 	CSGCylinder3D();
 };
 
@@ -383,6 +399,12 @@ class CSGTorus3D : public CSGPrimitive3D {
 	int sides;
 	int ring_sides;
 	bool smooth_faces;
+	bool scale_uv = true;
+	float uv_size = 1.0;
+	bool flip_uvs = false;
+	int uv_horizontal_divisions = 8;
+	int uv_vertical_divisions = 4;
+	Vector2 uv_offset;
 
 protected:
 	static void _bind_methods();
@@ -402,6 +424,24 @@ public:
 
 	void set_smooth_faces(bool p_smooth_faces);
 	bool get_smooth_faces() const;
+
+	void set_scale_uv(bool p_scale_uv);
+	bool is_scale_uv() const;
+
+	void set_uv_size(const float p_size);
+	float get_uv_size() const;
+
+	void set_flip_uvs(bool p_flip);
+	bool is_flip_uvs() const;
+
+	void set_uv_horizontal_divisions(const int p_sides);
+	int get_uv_horizontal_divisions() const;
+
+	void set_uv_vertical_divisions(const int p_sides);
+	int get_uv_vertical_divisions() const;
+
+	void set_uv_offset(const Vector2 &p_size);
+	Vector2 get_uv_offset() const;
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
