@@ -435,6 +435,7 @@ Error AudioDriverWorklet::create(int &p_buffer_size, int p_channels) {
 }
 
 void AudioDriverWorklet::start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) {
+	Thread::set_name("Audio Worklet");
 	godot_audio_worklet_start(p_in_buf, p_in_buf_size, p_out_buf, p_out_buf_size, state);
 	thread.start(_audio_thread_func, this);
 }

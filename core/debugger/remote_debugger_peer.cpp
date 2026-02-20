@@ -179,6 +179,7 @@ Error RemoteDebuggerPeerTCP::_try_connect(Ref<StreamPeerSocket> tcp_client) {
 }
 
 void RemoteDebuggerPeerTCP::_thread_func(void *p_ud) {
+	Thread::set_name("TCP remote debug");
 	// Update in time for 144hz monitors
 	const uint64_t min_tick = 6900;
 	RemoteDebuggerPeerTCP *peer = static_cast<RemoteDebuggerPeerTCP *>(p_ud);
