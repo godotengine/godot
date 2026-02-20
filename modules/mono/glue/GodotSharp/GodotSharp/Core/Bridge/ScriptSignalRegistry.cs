@@ -1,12 +1,12 @@
 namespace Godot.Bridge
 {
-    public sealed class ScriptSignalRegistry<T> : ScriptRegistry<T, ScriptSignalMethod<GodotObject>, ScriptCache<ScriptSignalMethod<GodotObject>>,
+    public sealed class ScriptSignalRegistry<T> : ScriptRegistry<T, ScriptSignalMethod, ScriptCache<ScriptSignalMethod>,
             ScriptSignalRegistry<T>>
         where T : GodotObject
     {
-        protected override ScriptCache<ScriptSignalMethod<GodotObject>> InitializeCache((MethodKey, ScriptSignalMethod<GodotObject>)[] methods)
+        protected override ScriptCache<ScriptSignalMethod> InitializeCache((MethodKey, ScriptSignalMethod)[] methods)
         {
-            return new ScriptCache<ScriptSignalMethod<GodotObject>>(methods, []);
+            return new ScriptCache<ScriptSignalMethod>(methods, []);
         }
     }
 }
