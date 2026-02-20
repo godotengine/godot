@@ -56,14 +56,14 @@
 		</method>
 	</methods>
 	<members>
-		<member name="depth_bias_clamp" type="float" setter="set_depth_bias_clamp" getter="get_depth_bias_clamp" default="0.0">
+		<member name="depth_bias_clamp" type="float" setter="set_depth_bias_clamp" getter="get_depth_bias_clamp">
 			The maximum (or minimum) depth bias of a fragment. This will clamp the total bias added to each fragment, which helps prevent extreme values that can cause artifacts. It is equivalent to the [code]clamp[/code] parameter of [code]glPolygonOffsetClamp[/code].
 			A value of [code]0[/code] will disable clamping. The sign of [member depth_bias_clamp] should usually match that of [member depth_bias_constant_factor] and [member depth_bias_slope_factor].
 			[b]Note:[/b] This only applies to [StandardMaterial3D]s and [ShaderMaterial]s with type "Spatial".
 			[b]Note:[/b] This will only affect triangle primitives, not lines or points.
 			[b]Note:[/b] This is only supported on some platforms. On unsupported platforms, it will have no effect. To detect whether the current platform supports [member depth_bias_clamp], call [method RenderingServer.has_os_feature] with [code]"depth_bias_clamp"[/code]. It is usually supported on the Forward+ and Mobile renderers. D3D12 and Metal always support this feature, while Vulkan support depends on the GPU and driver. It is inconsistently supported on the Compatibility renderer, but generally works on desktop platforms.
 		</member>
-		<member name="depth_bias_constant_factor" type="float" setter="set_depth_bias_constant_factor" getter="get_depth_bias_constant_factor" default="0.0">
+		<member name="depth_bias_constant_factor" type="float" setter="set_depth_bias_constant_factor" getter="get_depth_bias_constant_factor">
 			The scalar factor controlling the constant depth value added to each fragment. This is commonly used to prevent z-fighting by forcing one mesh to appear on top of the other. It is equivalent to the [code]units[/code] parameter of [code]glPolygonOffset[/code].
 			This will add the same small amount of bias to all fragments, which is useful for meshes that are mostly parallel to the camera.
 			Because Godot uses a "reversed-z" depth buffer, negative values will push fragments away from the camera, while positive values will pull them closer.
@@ -71,7 +71,7 @@
 			[b]Note:[/b] This only applies to [StandardMaterial3D]s and [ShaderMaterial]s with type "Spatial".
 			[b]Note:[/b] This will only affect triangle primitives, not lines or points. To make lines or points appear on top of a triangle mesh, apply a negative depth bias to the triangle mesh, which will push it behind them.
 		</member>
-		<member name="depth_bias_slope_factor" type="float" setter="set_depth_bias_slope_factor" getter="get_depth_bias_slope_factor" default="0.0">
+		<member name="depth_bias_slope_factor" type="float" setter="set_depth_bias_slope_factor" getter="get_depth_bias_slope_factor">
 			The scalar factor applied to a fragment’s slope in depth bias calculations. This is commonly used to prevent z-fighting by forcing one mesh to appear on top of the other. It is equivalent to the [code]factor[/code] parameter of [code]glPolygonOffset[/code].
 			This will add more bias to fragments that are at a steep angle relative to the camera.
 			Because Godot uses a "reversed-z" depth buffer, negative values will push fragments away from the camera, while positive values will pull them closer.
