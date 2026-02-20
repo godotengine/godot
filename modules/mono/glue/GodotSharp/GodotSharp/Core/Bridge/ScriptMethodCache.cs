@@ -9,7 +9,6 @@ namespace Godot.Bridge
 #pragma warning disable CA1000 // Do not declare static members on generic types
 
     public class ScriptCache<T, TMethod>
-        where T : GodotObject
     {
         private const int MaxProbes = 4;
         private const double MaxAverageProbes = 1.5;
@@ -75,7 +74,7 @@ namespace Godot.Bridge
 
                     _keys[slot] = method.Key.Name.NativeValue._data;
                     _argCounts[slot] = (byte)method.Key.Argc;
-                    _methods[slot] = (TMethod)(object)method.Method;
+                    _methods[slot] = method.Method;
                 }
 
                 if (!requestMoreSize)
@@ -130,22 +129,32 @@ namespace Godot.Bridge
         {
             int slot = GetSlot(namePtr);
 
+            // avoid field access by localizing fields
+            var keys = _keys;
+            var argCounts = _argCounts;
+            var methods = _methods;
+            var mask = _mask;
+            int max = _finalMaxProbes;
+
+            int currentSlot = slot;
+
             int i;
-            for (i = 0; i < _finalMaxProbes; i++)
+            for (i = 0; i < max; i++)
             {
-                int currentSlot = (slot + i) & _mask;
-                IntPtr key = _keys[currentSlot];
+                var key = keys[currentSlot];
 
                 if (key == namePtr &&
-                    _argCounts[currentSlot] == argCount)
+                    argCounts[currentSlot] == argCount)
                 {
-                    return ref _methods[currentSlot];
+                    return ref methods[currentSlot];
                 }
 
                 if (key == IntPtr.Zero)
                 {
                     break;
                 }
+
+                currentSlot = (currentSlot + 1) & mask;
             }
 
             return ref Unsafe.NullRef<TMethod>();
@@ -154,7 +163,7 @@ namespace Godot.Bridge
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         private static int GetSlot(nint namePtr)
         {
-            ulong x = (ulong)namePtr.ToInt64();
+            ulong x = (ulong)namePtr;
             if (_useMixer)
             {
                 // SplitMix64 - extremely fast and cracks open pointer patterns
@@ -232,6 +241,10 @@ namespace Godot.Bridge
                 return methods;
             }
 
+            var mostUsedMethodsIndices = mostUsedMethods
+                .Select((name, i) => (name, i))
+                .ToDictionary(x => x.name, x => x.i);
+
             return methods
                 .Select(method => new
                 {
@@ -240,13 +253,12 @@ namespace Godot.Bridge
                 })
                 .OrderBy(x =>
                 {
-                    var index = mostUsedMethods.IndexOf(x.Name);
-                    if (index > -1)
+                    if (mostUsedMethodsIndices.TryGetValue(x.Name, out var index))
                     {
                         return index;
                     }
 
-                    return 999;
+                    return int.MaxValue;
                 })
                 .Select(x => x.method)
                 .ToArray();
