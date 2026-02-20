@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  render_scene_data.cpp                                                 */
+/*  rasterizer_scene_dummy.cpp                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,17 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "render_scene_data.h"
+#include "rasterizer_scene_dummy.h"
 
-#include "core/object/class_db.h"
+#include "core/io/image.h"
+#include "core/variant/typed_array.h"
+#include "servers/rendering/rendering_server_globals.h"
 
-void RenderSceneData::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_cam_transform"), &RenderSceneData::get_cam_transform);
-	ClassDB::bind_method(D_METHOD("get_cam_projection"), &RenderSceneData::get_cam_projection);
+TypedArray<Image> RasterizerSceneDummy::bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) {
+	return TypedArray<Image>();
+}
 
-	ClassDB::bind_method(D_METHOD("get_view_count"), &RenderSceneData::get_view_count);
-	ClassDB::bind_method(D_METHOD("get_view_eye_offset", "view"), &RenderSceneData::get_view_eye_offset);
-	ClassDB::bind_method(D_METHOD("get_view_projection", "view"), &RenderSceneData::get_view_projection);
-
-	ClassDB::bind_method(D_METHOD("get_uniform_buffer"), &RenderSceneData::get_uniform_buffer);
+bool RasterizerSceneDummy::free(RID p_rid) {
+	if (is_environment(p_rid)) {
+		environment_free(p_rid);
+		return true;
+	} else if (is_compositor(p_rid)) {
+		compositor_free(p_rid);
+		return true;
+	} else if (is_compositor_effect(p_rid)) {
+		compositor_effect_free(p_rid);
+		return true;
+	} else if (RSG::camera_attributes->owns_camera_attributes(p_rid)) {
+		RSG::camera_attributes->camera_attributes_free(p_rid);
+		return true;
+	} else {
+		return false;
+	}
 }

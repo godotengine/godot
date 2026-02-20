@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
 #include "servers/rendering/rendering_server_enums.h"
 
@@ -115,27 +114,4 @@ public:
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) = 0;
 	virtual void set_anisotropic_filtering_level(RSE::ViewportAnisotropicFiltering p_anisotropic_filtering_level) = 0;
 	virtual void set_use_debanding(bool p_use_debanding) = 0;
-};
-
-class RenderSceneBuffersExtension : public RenderSceneBuffers {
-	GDCLASS(RenderSceneBuffersExtension, RenderSceneBuffers);
-
-protected:
-	static void _bind_methods();
-
-	GDVIRTUAL1(_configure, const RenderSceneBuffersConfiguration *)
-	GDVIRTUAL1(_set_fsr_sharpness, float)
-	GDVIRTUAL1(_set_texture_mipmap_bias, float)
-	GDVIRTUAL1(_set_anisotropic_filtering_level, int)
-	GDVIRTUAL1(_set_use_debanding, bool)
-
-public:
-	virtual ~RenderSceneBuffersExtension() {}
-
-	virtual void configure(const RenderSceneBuffersConfiguration *p_config) override;
-
-	virtual void set_fsr_sharpness(float p_fsr_sharpness) override;
-	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override;
-	virtual void set_anisotropic_filtering_level(RSE::ViewportAnisotropicFiltering p_anisotropic_filtering_level) override;
-	virtual void set_use_debanding(bool p_use_debanding) override;
 };

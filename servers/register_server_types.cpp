@@ -70,6 +70,7 @@
 #include "rendering/rendering_server.h"
 #include "rendering/shader_include_db.h"
 #include "rendering/storage/render_data.h"
+#include "rendering/storage/render_data_extension.h"
 #include "rendering/storage/render_scene_buffers.h"
 #include "rendering/storage/render_scene_data.h"
 #include "servers/rendering/shader_types.h"

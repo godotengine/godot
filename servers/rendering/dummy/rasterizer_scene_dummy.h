@@ -33,7 +33,11 @@
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/dummy/storage/utilities.h"
 #include "servers/rendering/renderer_scene_render.h"
-#include "servers/rendering/rendering_server_globals.h"
+
+class Image;
+
+template <typename T>
+class TypedArray;
 
 class RasterizerSceneDummy : public RendererSceneRender {
 public:
@@ -173,25 +177,9 @@ public:
 	void sub_surface_scattering_set_quality(RSE::SubSurfaceScatteringQuality p_quality) override {}
 	void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) override {}
 
-	TypedArray<Image> bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) override { return TypedArray<Image>(); }
+	TypedArray<Image> bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) override;
 
-	bool free(RID p_rid) override {
-		if (is_environment(p_rid)) {
-			environment_free(p_rid);
-			return true;
-		} else if (is_compositor(p_rid)) {
-			compositor_free(p_rid);
-			return true;
-		} else if (is_compositor_effect(p_rid)) {
-			compositor_effect_free(p_rid);
-			return true;
-		} else if (RSG::camera_attributes->owns_camera_attributes(p_rid)) {
-			RSG::camera_attributes->camera_attributes_free(p_rid);
-			return true;
-		} else {
-			return false;
-		}
-	}
+	bool free(RID p_rid) override;
 	void update() override {}
 	void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) override {}
 

@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "render_scene_buffers.h"
 #include "servers/rendering/rendering_server_enums.h"
+#include "servers/rendering/storage/render_scene_buffers.h"
 
 class RendererLightStorage {
 public:

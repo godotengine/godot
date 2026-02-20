@@ -36,7 +36,7 @@
 #include "servers/rendering/rendering_method.h"
 #include "servers/rendering/storage/compositor_storage.h"
 #include "servers/rendering/storage/environment_storage.h"
-#include "storage/render_scene_buffers.h"
+#include "servers/rendering/storage/render_scene_buffers.h"
 
 class RendererSceneRender {
 private:
