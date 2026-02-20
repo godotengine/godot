@@ -1126,23 +1126,8 @@ void SpriteFramesEditor::_animation_multi_selected(TreeItem *p_item, int p_colum
 	updating = true;
 
 	// Update FPS field
-	bool all_same_speed = true;
-	double first_speed = frames->get_animation_speed(selected_anims[0]);
-
-	for (const StringName &selected_animation : selected_anims) {
-		if (frames->get_animation_speed(selected_animation) != first_speed) {
-			all_same_speed = false;
-			break;
-		}
-	}
-
-	if (all_same_speed) {
-		anim_speed->set_value_no_signal(first_speed);
-		anim_speed->get_line_edit()->set_placeholder("");
-	} else {
-		anim_speed->get_line_edit()->set_text("");
-		anim_speed->get_line_edit()->set_placeholder(TTR(""));
-	}
+	anim_speed->set_value_no_signal(frames->get_animation_speed(selected_anims[0]));
+	anim_speed->get_line_edit()->set_placeholder(TTR(""));
 
 	// Update loop button
 	bool all_same_loop = true;
@@ -2279,6 +2264,18 @@ void SpriteFramesEditor::_node_removed(Node *p_node) {
 	}
 }
 
+void SpriteFramesEditor::_sync_selected_anims() {
+	selected_anims.clear();
+	TreeItem *sel = animations->get_next_selected(nullptr);
+	while (sel) {
+		StringName anim_name = sel->get_text(0);
+		if (frames->has_animation(anim_name)) {
+			selected_anims.push_back(anim_name);
+		}
+		sel = animations->get_next_selected(sel);
+	}
+}
+
 SpriteFramesEditor::SpriteFramesEditor() {
 	set_name(TTRC("SpriteFrames"));
 	set_icon_name("SpriteFrames");
@@ -2973,16 +2970,4 @@ Ref<ClipboardAnimation> ClipboardAnimation::from_sprite_frames(const Ref<SpriteF
 		clipboard_anim->frames.push_back(frame);
 	}
 	return clipboard_anim;
-}
-
-void SpriteFramesEditor::_sync_selected_anims() {
-	selected_anims.clear();
-	TreeItem *sel = animations->get_next_selected(nullptr);
-	while (sel) {
-		StringName anim_name = sel->get_text(0);
-		if (frames->has_animation(anim_name)) {
-			selected_anims.push_back(anim_name);
-		}
-		sel = animations->get_next_selected(sel);
-	}
 }
