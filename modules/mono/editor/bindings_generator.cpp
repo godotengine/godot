@@ -2880,27 +2880,92 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << " bool " CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(in godot_string_name signal)\n"
 			   << INDENT1 "{\n";
 
-		for (const SignalInterface &isignal : itype.signals_) {
-			// We check for native names (snake_case). If we detect one, we call HasGodotClassSignal
-			// again, but this time with the respective proxy name (PascalCase). It's the job of
-			// user derived classes to override the method and check for those. Our C# source
-			// generators take care of generating those override methods.
-			output << INDENT2 "if (signal == SignalName." << isignal.proxy_name
-				   << ")\n" INDENT2 "{\n"
-				   << INDENT3 "if (" CS_METHOD_HAS_GODOT_CLASS_SIGNAL "("
-				   << CS_STATIC_FIELD_SIGNAL_PROXY_NAME_PREFIX << isignal.name
-				   << ".NativeValue.DangerousSelfRef))\n" INDENT3 "{\n"
-				   << INDENT4 "return true;\n"
-				   << INDENT3 "}\n" INDENT2 "}\n";
-		}
+		output << INDENT2 << "return SignalRegistry.ContainsMethod(signal);"
+			   << INDENT1 << "}\n\n";
 
 		if (is_derived_type) {
-			output << INDENT2 "return base." CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(signal);\n";
-		} else {
-			output << INDENT2 "return false;\n";
+			output << INDENT1 << "/// <inheritdoc/>\n"
+				   << INDENT1 << "[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n"
+				   << INDENT1 << "protected internal override void RaiseGodotClassSignalCallbacks(in godot_string_name signal, NativeVariantPtrArgs args)\n"
+				   << INDENT1 << "{\n"
+				   << INDENT2 << "//ref readonly var signalMethod = ref SignalRegistry.GetMethodOrNullRef(in signal, args.Count);\n"
+				   << INDENT2 << "//if (!Unsafe.IsNullRef(signalMethod))"
+				   << INDENT2 << "//{\n"
+				   << INDENT3 << "//signalMethod(this, args);\n"
+				   << INDENT2 << "//}\n"
+				   << INDENT1 << "}\n";
 		}
 
-		output << INDENT1 "}\n";
+		if (!itype.is_singleton) {
+			output << INDENT1 << "protected " << (is_derived_type ? "new" : "") << " static readonly ScriptSignalRegistry<" << itype.proxy_name << "> SignalRegistry = new ScriptSignalRegistry<" << itype.proxy_name << ">()\n ";
+
+			if (obj_types.has(itype.base_name)) {
+				TypeInterface base_type = obj_types[itype.base_name];
+
+				output << INDENT2 << ".Register(global::Godot." << base_type.proxy_name << (base_type.is_singleton ? CS_SINGLETON_INSTANCE_SUFFIX : "") << ".SignalRegistry)\n";
+			}
+
+			for (const SignalInterface &isignal : itype.signals_) {
+				output << INDENT2 << ".Register(SignalName." << isignal.proxy_name << ", " << itos(isignal.arguments.size()) << ",\n"
+					   << INDENT3 << "[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n"
+					   << INDENT3 << "static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>\n"
+					   << INDENT3 << "{\n"
+					   << INDENT4 << "//Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance).backing_" << isignal.proxy_name << "?.Invoke(";
+
+				auto &imethod = isignal;
+
+				int idx = 0;
+				for (const ArgumentInterface &iarg : imethod.arguments) {
+					const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+					ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
+
+					if (idx != 0) {
+						output << ", ";
+					}
+
+					if (arg_type->cname == name_cache.type_Array_generic || arg_type->cname == name_cache.type_Dictionary_generic) {
+						String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+						String to_managed = sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_cs_type, arg_type->name)
+							.replacen("params ", "");
+						output << "new " << arg_cs_type << "(" << to_managed << ")";
+					} else {
+						output << sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name)
+							.replacen("params ", "");
+					}
+
+					idx++;
+				}
+
+				output.append(");\n");
+
+				output << INDENT3 << "})\n"
+					;
+			}
+
+			output << INDENT3 << ".Build();\n\n";
+		}
+
+		//for (const SignalInterface &isignal : itype.signals_) {
+		//	// We check for native names (snake_case). If we detect one, we call HasGodotClassSignal
+		//	// again, but this time with the respective proxy name (PascalCase). It's the job of
+		//	// user derived classes to override the method and check for those. Our C# source
+		//	// generators take care of generating those override methods.
+		//	output << INDENT2 "if (signal == SignalName." << isignal.proxy_name
+		//		   << ")\n" INDENT2 "{\n"
+		//		   << INDENT3 "if (" CS_METHOD_HAS_GODOT_CLASS_SIGNAL "("
+		//		   << CS_STATIC_FIELD_SIGNAL_PROXY_NAME_PREFIX << isignal.name
+		//		   << ".NativeValue.DangerousSelfRef))\n" INDENT3 "{\n"
+		//		   << INDENT4 "return true;\n"
+		//		   << INDENT3 "}\n" INDENT2 "}\n";
+		//}
+
+		//if (is_derived_type) {
+		//	output << INDENT2 "return base." CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(signal);\n";
+		//} else {
+		//	output << INDENT2 "return false;\n";
+		//}
+		//
+		//output << INDENT1 "}\n";
 	}
 
 	//Generate StringName for all class members

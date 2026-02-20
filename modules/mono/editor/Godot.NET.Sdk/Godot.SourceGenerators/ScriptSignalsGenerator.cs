@@ -428,7 +428,7 @@ namespace Godot.SourceGenerators
 
             source.AppendLine(
                 $$"""
-                        .Register(SignalName.@{{signalMethod.Name}}, 0,
+                        .Register(SignalName.@{{signalMethod.Name}}, {{method.Method.Parameters.Length}},
                             [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
                             static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>
                             {
