@@ -108,6 +108,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	SafeFlag has_runnable_preset;
 
 	static void _check_for_changes_poll_thread(void *ud);
+	void _start_check_for_changes_poll_thread();
+	void _stop_check_for_changes_poll_thread();
 	void _update_preset_status();
 #else // ANDROID_ENABLED
 	AndroidEditorGradleRunner *android_editor_gradle_runner = nullptr;
