@@ -2064,7 +2064,7 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 
 			pg->set_window_id(ws->id);
 
-			pg->set_delta(pd.scroll_vector);
+			pg->set_delta(pd.scroll_vector * scale);
 
 			Ref<InputEventMessage> msg;
 			msg.instantiate();
