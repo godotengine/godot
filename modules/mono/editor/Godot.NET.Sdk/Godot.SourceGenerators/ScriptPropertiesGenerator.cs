@@ -179,12 +179,17 @@ namespace Godot.SourceGenerators
                 (godotClassProperties.Length > 0 || godotClassFields.Length > 0))
             {
                 string type = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-                // Generate SetGodotClassPropertyValue
 
-                source.Append("    protected new static readonly ScriptPropertyRegistry<").Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat))
+                // Generate SetGodotClassPropertyValue
+                source.Append(
+                    """
+                    #pragma warning disable CS0618 // Type or member is obsolete
+                    
+                    """);
+                source.Append($"    {(symbol.IsSealed ? "private" : "protected")} new static readonly ScriptPropertyRegistry<").Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat))
                       .Append("> PropertyRegistry = ")
                       .Append("new ScriptPropertyRegistry<").Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)).Append(">()\n");
-                source.Append("        .Register(").Append(symbol.BaseType.FullQualifiedNameIncludeGlobal()).Append(".PropertyRegistry)\n");
+                source.Append("        .Register(").Append(symbol.BaseType!.FullQualifiedNameIncludeGlobal()).Append(".PropertyRegistry)\n");
 
                 bool allPropertiesAreReadOnly = godotClassFields.All(fi => fi.FieldSymbol.IsReadOnly) &&
                                                 godotClassProperties.All(pi => pi.PropertySymbol.IsReadOnly || pi.PropertySymbol.SetMethod!.IsInitOnly);
@@ -256,7 +261,12 @@ namespace Godot.SourceGenerators
                     }
                 }
 
-                source.Append("        .Build();\n\n");
+                source.Append("        .Build();\n");
+                source.Append(
+                    """
+                    #pragma warning restore CS0618 // Type or member is obsolete
+
+                    """);
 
                 if (!allPropertiesAreReadOnly)
                 {
@@ -293,9 +303,9 @@ namespace Godot.SourceGenerators
                     source.Append("    }\n");
                 }
 
-                    // Generate GetGodotPropertyList
+                // Generate GetGodotPropertyList
 
-                    const string DictionaryType = "global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
+                const string DictionaryType = "global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
 
                 source.Append("    /// <summary>\n")
                     .Append("    /// Get the property information for all the properties declared in this class.\n")

@@ -83,6 +83,12 @@ namespace Godot.Bridge
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public bool ContainsMethod(scoped in godot_string_name name) => _knownMethodNames.Contains(name._data);
 
+        /// <summary>
+        /// Get the script method.
+        /// </summary>
+        /// <param name="name">Name of the script method</param>
+        /// <param name="argumentCount">Argument count</param>
+        /// <returns>Reference to script method</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public ref readonly TMethod GetMethodOrNullRef(scoped in godot_string_name name, int argumentCount)
         {

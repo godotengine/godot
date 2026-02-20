@@ -2328,6 +2328,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 	// only non-static ones
 	if (!itype.is_singleton) {
+		output << "\n#pragma warning disable CS0618 // Type or member is obsolete\n";
+		output << "#pragma warning disable CS0628 // new protected member declared in sealed class\n";
+
 		// Add ScriptPropertyRegistry
 		output << MEMBER_BEGIN "protected "
 			   << (is_derived_type ? "new " : "")
@@ -2522,6 +2525,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 
 		output << INDENT2 << ".Build();\n";
+		
+		output << "#pragma warning restore CS0618 // Type or member is obsolete\n";
+		output << "#pragma warning restore CS0628 // new protected member declared in sealed class\n";
 	}
 
 	// Add native name static field and cached type.
@@ -2661,6 +2667,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 
 		// Add ScriptMethodRegistry
+		output << "\n#pragma warning disable CS0618 // Type or member is obsolete\n";
+		output << "#pragma warning disable CS0628 // new protected member declared in sealed class\n";
+
 		output << MEMBER_BEGIN "protected "
 			   << (is_derived_type ? "new " : "")
 			   << "static readonly ScriptMethodRegistry<"
@@ -2723,9 +2732,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 		output << INDENT2 ".Build();\n";
 
+		output << "#pragma warning restore CS0618 // Type or member is obsolete\n";
+		output << "#pragma warning restore CS0628 // new protected member declared in sealed class\n";
+
 		already_used.clear();
 
 		output << INDENT1 << "\n";
+		output << "#pragma warning disable CS0618 // Type or member is obsolete\n";
 		output << INDENT1 << "private sealed class ScriptMethodDispatchHelper\n";
 		output << INDENT1 << "{\n";
 		for (const MethodInterface &imethod : itype.methods) {
@@ -2798,19 +2811,21 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		output << INDENT1;
 		output << "}\n";
 
+		output << "#pragma warning restore CS0618 // Type or member is obsolete\n\n";
+
 		// Generate TryGetGodotClassMethod
 
+		// Avoid raising diagnostics because of calls to obsolete methods.
+		output << "#pragma warning disable CS0618 // Member is obsolete\n";
+
 		output << MEMBER_BEGIN "/// <summary>\n"
-			   << INDENT1 "/// Invokes the method with the given name, using the given arguments.\n"
+			   << INDENT1 "/// Returns script method. NullRef if not found.\n"
 			   << INDENT1 "/// This method is used by Godot to invoke methods from the engine side.\n"
 			   << INDENT1 "/// Do not call or override this method.\n"
 			   << INDENT1 "/// </summary>\n"
 			   << INDENT1 "/// <param name=\"method\">Name of the method to invoke.</param>\n"
-			   << INDENT1 "/// <param name=\"args\">Arguments to use with the invoked method.</param>\n"
-			   << INDENT1 "/// <param name=\"ret\">Value returned by the invoked method.</param>\n";
-
-		// Avoid raising diagnostics because of calls to obsolete methods.
-		output << "#pragma warning disable CS0618 // Member is obsolete\n";
+			   << INDENT1 "/// <param name=\"argc\">Argument count.</param>\n"
+			   << INDENT1 "/// <returns>Ref to the script method</returns>\n";
 
 		output << INDENT1 << "/// <inheritdoc/>\n"
 			   << INDENT1 << "[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n"
@@ -2825,6 +2840,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		// Generate InvokeGodotClassMethod
 
+		// Avoid raising diagnostics because of calls to obsolete methods.
+		output << "#pragma warning disable CS0618 // Member is obsolete\n";
+
 		output << MEMBER_BEGIN "/// <summary>\n"
 			   << INDENT1 "/// Invokes the method with the given name, using the given arguments.\n"
 			   << INDENT1 "/// This method is used by Godot to invoke methods from the engine side.\n"
@@ -2833,9 +2851,6 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << INDENT1 "/// <param name=\"method\">Name of the method to invoke.</param>\n"
 			   << INDENT1 "/// <param name=\"args\">Arguments to use with the invoked method.</param>\n"
 			   << INDENT1 "/// <param name=\"ret\">Value returned by the invoked method.</param>\n";
-
-		// Avoid raising diagnostics because of calls to obsolete methods.
-		output << "#pragma warning disable CS0618 // Member is obsolete\n";
 
 		output << INDENT1 "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(in godot_string_name method, "
@@ -2889,8 +2904,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				   << INDENT1 << "[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n"
 				   << INDENT1 << "protected internal override void RaiseGodotClassSignalCallbacks(in godot_string_name signal, NativeVariantPtrArgs args)\n"
 				   << INDENT1 << "{\n"
+				   << INDENT2 << "throw new InvalidOperationException(\"RaiseGodotClassSignalCallbacks should not be called for built-in types!\");\n"
 				   << INDENT2 << "//ref readonly var signalMethod = ref SignalRegistry.GetMethodOrNullRef(in signal, args.Count);\n"
-				   << INDENT2 << "//if (!Unsafe.IsNullRef(signalMethod))"
+				   << INDENT2 << "//if (!Unsafe.IsNullRef(in signalMethod))"
 				   << INDENT2 << "//{\n"
 				   << INDENT3 << "//signalMethod(this, args);\n"
 				   << INDENT2 << "//}\n"
@@ -2898,6 +2914,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 
 		if (!itype.is_singleton) {
+			output << "\n#pragma warning disable CS0618 // Type or member is obsolete\n";
+			output << "#pragma warning disable CS0628 // new protected member declared in sealed class\n";
+
 			output << INDENT1 << "protected " << (is_derived_type ? "new" : "") << " static readonly ScriptSignalRegistry<" << itype.proxy_name << "> SignalRegistry = new ScriptSignalRegistry<" << itype.proxy_name << ">()\n ";
 
 			if (obj_types.has(itype.base_name)) {
@@ -2911,6 +2930,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 					   << INDENT3 << "[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n"
 					   << INDENT3 << "static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>\n"
 					   << INDENT3 << "{\n"
+					   << INDENT4 << "throw new InvalidOperationException(\"Signal script dispatcher should not be called for built-in types!\");\n"
 					   << INDENT4 << "//Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance).backing_" << isignal.proxy_name << "?.Invoke(";
 
 				auto &imethod = isignal;
@@ -2943,7 +2963,10 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 					;
 			}
 
-			output << INDENT3 << ".Build();\n\n";
+			output << INDENT3 << ".Build();\n";
+
+			output << "#pragma warning restore CS0618 // Type or member is obsolete\n";
+			output << "#pragma warning restore CS0628 // new protected member declared in sealed class\n";
 		}
 
 		//for (const SignalInterface &isignal : itype.signals_) {

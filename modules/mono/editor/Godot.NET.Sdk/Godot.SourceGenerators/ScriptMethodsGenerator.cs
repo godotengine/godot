@@ -211,18 +211,23 @@ namespace Godot.SourceGenerators
             var godotClassNonStaticMethods = godotClassMethods.Where(m => !m.Method.IsStatic).ToArray();
             if (godotClassNonStaticMethods.Length > 0)
             {
-                source.Append("    protected new static readonly ScriptMethodRegistry<").Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat))
+                source.Append(
+                    """
+                    #pragma warning disable CS0618 // Type or member is obsolete
+
+                    """);
+                source.Append($"    {(symbol.IsSealed ? "private" : "protected")} new static readonly ScriptMethodRegistry<").Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat))
                     .Append("> MethodRegistry = ")
                     .Append("new ScriptMethodRegistry<").Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)).Append(">()");
-                source.Append("\n        .Register(").Append(symbol.BaseType.FullQualifiedNameIncludeGlobal()).Append(".MethodRegistry)\n");
+                source.Append("\n        .Register(").Append(symbol.BaseType!.FullQualifiedNameIncludeGlobal()).Append(".MethodRegistry)\n");
 
                 foreach (var method in godotClassNonStaticMethods)
                 {
                     GenerateScriptMethodRegistryEntry(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), method, source);
                 }
 
-                source.Append("        .Build();\n\n");
-
+                source.Append("        .Build();\n");
+                
                 source.Append("    private sealed class ScriptMethodDispatchHelper\n");
                 //source.Append($"        where T : {symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}\n");
                 source.Append("    {\n");
@@ -231,6 +236,12 @@ namespace Godot.SourceGenerators
                     GenerateScriptMethodDispatchHelperMethod(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), method, source);
                 }
                 source.Append("    }\n\n");
+
+                source.Append(
+                    """
+                    #pragma warning restore CS0618 // Type or member is obsolete
+
+                    """);
 
                 source.Append("    /// <inheritdoc/>\n");
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
