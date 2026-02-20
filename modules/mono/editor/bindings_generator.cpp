@@ -2701,8 +2701,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			if (!imethod.is_virtual) {
 				continue;
 			}
-			output << "\n"
-				   << INDENT2 ".AddAlias("
+			output << INDENT2 ".AddAlias("
 				   << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name << ", " << itos(imethod.arguments.size()) << ", MethodName." << imethod.proxy_name
 				   << ")\n";
 		}
@@ -2958,8 +2957,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			// Generate alias names for signals
 
 			for (const SignalInterface &isignal : itype.signals_) {
-				output << "\n"
-					   << INDENT2 ".AddAlias("
+				output << INDENT2 ".AddAlias("
 					   << CS_STATIC_FIELD_SIGNAL_PROXY_NAME_PREFIX << isignal.name << ", " << itos(isignal.arguments.size()) << ", SignalName." << isignal.proxy_name
 					   << ")\n";
 			}
