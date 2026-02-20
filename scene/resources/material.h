@@ -354,6 +354,13 @@ public:
 		STENCIL_COMPARE_MAX // Not an actual operator, just the amount of operators.
 	};
 
+	enum LayersCullMode {
+		LAYERS_CULL_DISABLED,
+		LAYERS_CULL_VERTEX,
+		LAYERS_CULL_FRAGMENT,
+		LAYERS_CULL_MAX
+	};
+
 private:
 	struct MaterialKey {
 		// enum values
@@ -373,6 +380,7 @@ private:
 		uint64_t roughness_channel : Math::get_num_bits(TEXTURE_CHANNEL_MAX - 1);
 		uint64_t emission_op : Math::get_num_bits(EMISSION_OP_MAX - 1);
 		uint64_t distance_fade : Math::get_num_bits(DISTANCE_FADE_MAX - 1);
+		uint64_t layers_cull_mode : Math::get_num_bits(LAYERS_CULL_MAX - 1);
 
 		// stencil
 		uint64_t stencil_mode : Math::get_num_bits(STENCIL_MODE_MAX - 1);
@@ -440,6 +448,7 @@ private:
 		mk.emission_op = emission_op;
 		mk.alpha_antialiasing_mode = alpha_antialiasing_mode;
 		mk.orm = orm;
+		mk.layers_cull_mode = layers_cull_mode;
 
 		mk.stencil_mode = stencil_mode;
 		mk.stencil_flags = stencil_flags;
@@ -518,6 +527,8 @@ private:
 		StringName albedo_texture_size;
 		StringName z_clip_scale;
 		StringName fov_override;
+
+		StringName layers;
 	};
 
 	static Mutex material_mutex;
@@ -625,6 +636,9 @@ private:
 
 	Color stencil_effect_color;
 	float stencil_effect_outline_thickness = 0.01f;
+
+	LayersCullMode layers_cull_mode;
+	uint32_t layers = 1;
 
 	bool features[FEATURE_MAX] = {};
 
@@ -872,6 +886,13 @@ public:
 	void set_fov_override(float p_fov_override);
 	float get_fov_override() const;
 
+	void set_layers_cull_mode(LayersCullMode p_mode);
+	LayersCullMode get_layers_cull_mode() const;
+	void set_layer_mask(uint32_t p_mask);
+	uint32_t get_layer_mask() const;
+	void set_layer_mask_value(int p_layer_number, bool p_value);
+	bool get_layer_mask_value(int p_layer_number) const;
+
 	static void init_shaders();
 	static void finish_shaders();
 	static void flush_changes();
@@ -908,6 +929,7 @@ VARIANT_ENUM_CAST(BaseMaterial3D::DistanceFadeMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::StencilMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::StencilFlags)
 VARIANT_ENUM_CAST(BaseMaterial3D::StencilCompare)
+VARIANT_ENUM_CAST(BaseMaterial3D::LayersCullMode)
 
 class StandardMaterial3D : public BaseMaterial3D {
 	GDCLASS(StandardMaterial3D, BaseMaterial3D)
