@@ -232,6 +232,7 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	// Service worker
 	const String dir = p_path.get_base_dir();
 	const String name = p_path.get_file().get_basename();
+	const String html_filename = ((bool)p_preset->get("html/name_html_file_as_index")) ? "index.html" : (name + ".html");
 	bool extensions = (bool)p_preset->get("variant/extensions_support");
 	bool ensure_crossorigin_isolation_headers = (bool)p_preset->get("progressive_web_app/ensure_cross_origin_isolation_headers");
 	HashMap<String, String> replaces;
@@ -242,7 +243,7 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 
 	// Files cached during worker install.
 	Array cache_files = {
-		name + ".html",
+		html_filename,
 		name + ".js",
 		name + ".offline.html"
 	};
@@ -306,7 +307,7 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 
 	Dictionary manifest;
 	manifest["name"] = proj_name;
-	manifest["start_url"] = "./" + name + ".html";
+	manifest["start_url"] = "./" + html_filename;
 	manifest["display"] = String::utf8(modes[display]);
 	manifest["orientation"] = String::utf8(orientations[orientation]);
 	manifest["background_color"] = "#" + p_preset->get("progressive_web_app/background_color").operator Color().to_html(false);
@@ -379,6 +380,7 @@ void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "html/canvas_resize_policy", PROPERTY_HINT_ENUM, "None,Project,Adaptive"), 2));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/focus_canvas_on_start"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/experimental_virtual_keyboard"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/name_html_file_as_index"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "progressive_web_app/enabled"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "progressive_web_app/ensure_cross_origin_isolation_headers"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/offline_page", PROPERTY_HINT_FILE, "*.html"), ""));
@@ -480,7 +482,6 @@ bool EditorExportPlatformWeb::has_valid_project_configuration(const Ref<EditorEx
 
 List<String> EditorExportPlatformWeb::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
 	List<String> list;
-	list.push_back("html");
 	return list;
 }
 
@@ -567,14 +568,32 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	f->get_buffer(html.ptrw(), html.size());
 	f.unref(); // close file.
 
+	// Remove the template-extracted HTML now that it's been read into memory.
+	// It will be rewritten with processed content to the final output path.
+	if (custom_html.is_empty()) {
+		DirAccess::remove_file_or_error(html_path);
+	}
+
 	// Generate HTML file with replaced strings.
 	_fix_html(html, p_preset, base_name, p_debug, p_flags, shared_objects, file_sizes);
-	Error err = _write_or_error(html.ptr(), html.size(), p_path);
+
+	const bool name_as_index = (bool)p_preset->get("html/name_html_file_as_index");
+	const String html_output_path = name_as_index ? base_dir.path_join("index.html") : base_path + ".html";
+
+	Error err = _write_or_error(html.ptr(), html.size(), html_output_path);
 	if (err != OK) {
 		// Message is supplied by the subroutine method.
 		return err;
 	}
 	html.resize(0);
+
+	// Remove leftover index.html from a previous export that had the option enabled.
+	if (!name_as_index && base_name != "index") {
+		const String index_html_path = base_dir.path_join("index.html");
+		if (FileAccess::exists(index_html_path)) {
+			DirAccess::remove_file_or_error(index_html_path);
+		}
+	}
 
 	// Export splash (why?)
 	Ref<Image> splash = _get_project_splash(p_preset);
@@ -793,7 +812,7 @@ Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int 
 					if (err != OK) {
 						return err;
 					}
-					return _launch_browser(bind_host, bind_port, use_tls);
+					return _launch_browser(p_preset, bind_host, bind_port, use_tls);
 				} break;
 
 				// Start HTTP Server.
@@ -819,7 +838,7 @@ Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int 
 					if (err != OK) {
 						return err;
 					}
-					return _launch_browser(bind_host, bind_port, use_tls);
+					return _launch_browser(p_preset, bind_host, bind_port, use_tls);
 				} break;
 
 				// Re-export Project.
@@ -854,7 +873,7 @@ Error EditorExportPlatformWeb::_export_project(const Ref<EditorExportPreset> &p_
 	}
 
 	const String basepath = dest.path_join("tmp_js_export");
-	Error err = export_project(p_preset, true, basepath + ".html", p_debug_flags);
+	Error err = export_project(p_preset, true, basepath, p_debug_flags);
 	if (err != OK) {
 		// Export generates several files, clean them up on failure.
 		DirAccess::remove_file_or_error(basepath + ".html");
@@ -873,8 +892,10 @@ Error EditorExportPlatformWeb::_export_project(const Ref<EditorExportPreset> &p_
 	return err;
 }
 
-Error EditorExportPlatformWeb::_launch_browser(const String &p_bind_host, const uint16_t p_bind_port, const bool p_use_tls) {
-	OS::get_singleton()->shell_open(String((p_use_tls ? "https://" : "http://") + p_bind_host + ":" + itos(p_bind_port) + "/tmp_js_export.html"));
+Error EditorExportPlatformWeb::_launch_browser(const Ref<EditorExportPreset> &p_preset, const String &p_bind_host, const uint16_t p_bind_port, const bool p_use_tls) {
+	const bool name_as_index = (bool)p_preset->get("html/name_html_file_as_index");
+	const String html_file = name_as_index ? "index.html" : "tmp_js_export.html";
+	OS::get_singleton()->shell_open(String((p_use_tls ? "https://" : "http://") + p_bind_host + ":" + itos(p_bind_port) + "/" + html_file));
 	// FIXME: Find out how to clean up export files after running the successfully
 	// exported game. Might not be trivial.
 	return OK;
