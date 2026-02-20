@@ -273,14 +273,17 @@ namespace Godot.SourceGenerators
                 source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
                 source.Append("    internal new static bool InvokeGodotClassStaticMethod(in godot_string_name method, ");
-                source.Append("NativeVariantPtrArgs args, out godot_variant ret)\n    {\n");
+                source.Append("NativeVariantPtrArgs args, out godot_variant ret)\n");
+                source.Append("    {\n");
 
-                foreach (var method in godotClassStaticMethods)
-                {
-                    GenerateMethodInvoker(method, source);
-                }
-
-                source.Append("        ret = default;\n");
+                // basically same logic as with normal methods as there should be no overlap anyway
+                source.Append("        ref readonly var scriptMethod = ref MethodRegistry.GetMethodOrNullRef(in method, args.Count);\n");
+                source.Append("        if (!Unsafe.IsNullRef(in scriptMethod))\n");
+                source.Append("        {\n");
+                source.Append("            ret = scriptMethod(null, args);\n");
+                source.Append("            return true;\n");
+                source.Append("        }\n\n");
+                source.Append("        ret = new godot_variant();\n");
                 source.Append("        return false;\n");
                 source.Append("    }\n");
 
