@@ -21,12 +21,17 @@ preview = true
 fix = true
 
 [tool.ruff.lint]
+# NOTE: Starting with `0.15.2`, ruff uses a SIGNIFICANTLY expanded set of default rules for
+#  preview builds. While expanding into these new rulesets is something we're interested in,
+#  we'll adopt them gradually, depending on our needs. As such, our base `select` utilizes the
+#  legacy defaults.
+select = ["E4", "E7", "E9", "F"]
 extend-select = [
-	"I",     # isort
-	"UP006", # Use {to} instead of {from} for type annotation
-	"UP007", # Use `X | Y` for type annotations
-	"UP037", # Remove quotes from type annotation
-	"FA",    # Future annotations
+	"I",     # isort.
+	"UP006", # Use {to} instead of {from} for type annotation.
+	"UP007", # Use `X | Y` for type annotations.
+	"UP037", # Remove quotes from type annotation.
+	"FA",    # flake8-future-annotations.
 ]
 extend-safe-fixes = ["UP006", "UP007", "FA"]
 
