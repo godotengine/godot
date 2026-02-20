@@ -83,7 +83,13 @@ Config::Config() {
 	astc_layered_supported = astc_hdr_supported || extensions.has("GL_KHR_texture_compression_astc_sliced_3d");
 	astc_supported = astc_layered_supported || extensions.has("GL_KHR_texture_compression_astc_ldr") || extensions.has("WEBGL_compressed_texture_astc");
 
-	polygon_offset_clamp_supported = extensions.has("GL_ARB_polygon_offset_clamp") || extensions.has("GL_EXT_polygon_offset_clamp");
+	{
+		int major = 0, minor = 0;
+		glGetIntegerv(GL_MAJOR_VERSION, &major);
+		glGetIntegerv(GL_MINOR_VERSION, &minor);
+		bool gl_version_4_6 = (major > 4) || (major == 4 && minor >= 6);
+		polygon_offset_clamp_supported = gl_version_4_6 || extensions.has("GL_ARB_polygon_offset_clamp") || extensions.has("GL_EXT_polygon_offset_clamp");
+	}
 
 	if (RasterizerGLES3::is_gles_over_gl()) {
 		float_texture_supported = true;
