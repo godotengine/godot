@@ -39,7 +39,7 @@ class Control;
 class NavigationMeshSourceGeometryData2D;
 #endif // NAVIGATION_2D_DISABLED
 class TileMapLayer;
-class TerrainConstraint;
+class TerrainConstraints;
 
 enum TileMapDataFormat {
 	TILE_MAP_DATA_FORMAT_1 = 0,
@@ -185,7 +185,7 @@ public:
 	void set_pattern(int p_layer, const Vector2i &p_position, const Ref<TileMapPattern> p_pattern);
 
 	// Terrains (Not exposed).
-	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_constraints(int p_layer, const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> &p_constraints);
+	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_constraints(int p_layer, const Vector<Vector2i> &p_to_replace, int p_terrain_set, const TerrainConstraints &p_constraints);
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_connect(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true);
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_path(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true);
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_pattern(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern, bool p_ignore_empty_terrains = true);
