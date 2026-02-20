@@ -526,15 +526,6 @@ public:
 
 	virtual RID viewport_create() = 0;
 
-	_ALWAYS_INLINE_ static RSE::ViewportScaling3DType scaling_3d_mode_type(RSE::ViewportScaling3DMode p_mode) {
-		if (p_mode == RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR || p_mode == RSE::VIEWPORT_SCALING_3D_MODE_FSR || p_mode == RSE::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
-			return RSE::VIEWPORT_SCALING_3D_TYPE_SPATIAL;
-		} else if (p_mode == RSE::VIEWPORT_SCALING_3D_MODE_FSR2 || p_mode == RSE::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL) {
-			return RSE::VIEWPORT_SCALING_3D_TYPE_TEMPORAL;
-		}
-		return RSE::VIEWPORT_SCALING_3D_TYPE_NONE;
-	}
-
 #ifndef XR_DISABLED
 	virtual void viewport_set_use_xr(RID p_viewport, bool p_use_xr) = 0;
 #endif // !XR_DISABLED

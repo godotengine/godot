@@ -30,13 +30,14 @@
 
 #pragma once
 
+#include "../effects/vrs.h"
 #ifdef METAL_ENABLED
 #include "../effects/metal_fx.h"
 #endif
-#include "../effects/vrs.h"
+
 #include "core/templates/hash_map.h"
-#include "material_storage.h"
-#include "render_buffer_custom_data_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_buffer_custom_data_rd.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_device_binds.h"
 #include "servers/rendering/storage/render_scene_buffers.h"

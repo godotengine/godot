@@ -35,10 +35,10 @@
 #include "core/object/worker_thread_pool.h"
 #include "core/profiling/profiling.h"
 #include "servers/rendering/renderer_canvas_cull.h"
+#include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_scene_cull.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server_globals.h"
-#include "servers/rendering/rendering_server_types.h"
 #include "servers/rendering/storage/texture_storage.h"
 
 #ifndef XR_DISABLED
@@ -138,7 +138,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			float scaling_3d_scale = p_viewport->scaling_3d_scale;
 			RSE::ViewportScaling3DMode scaling_3d_mode = p_viewport->scaling_3d_mode;
 			bool upscaler_available = p_viewport->fsr_enabled;
-			RSE::ViewportScaling3DType scaling_type = RS::scaling_3d_mode_type(scaling_3d_mode);
+			RSE::ViewportScaling3DType scaling_type = RSE::scaling_3d_mode_type(scaling_3d_mode);
 
 			if ((!upscaler_available || (scaling_type == RSE::VIEWPORT_SCALING_3D_TYPE_SPATIAL)) && scaling_3d_scale >= (1.0 - EPSILON) && scaling_3d_scale <= (1.0 + EPSILON)) {
 				// No 3D scaling for spatial modes? Ignore scaling mode, this just introduces overhead.
@@ -151,7 +151,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 
 			if (scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_OFF && scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 				scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR;
-				scaling_type = RS::scaling_3d_mode_type(scaling_3d_mode);
+				scaling_type = RSE::scaling_3d_mode_type(scaling_3d_mode);
 				WARN_PRINT_ONCE("MetalFX and FSR upscaling are not supported in the Compatibility renderer. Falling back to bilinear scaling.");
 			}
 
@@ -165,7 +165,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 					scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_FSR2;
 					WARN_PRINT_ONCE("MetalFX upscaling is not supported by the current renderer or hardware. Falling back to FSR 2 scaling.");
 				}
-				scaling_type = RS::scaling_3d_mode_type(scaling_3d_mode);
+				scaling_type = RSE::scaling_3d_mode_type(scaling_3d_mode);
 			}
 
 			if (scaling_3d_mode == RSE::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL && !RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_SPATIAL)) {
@@ -196,7 +196,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				// Fall back to bilinear scaling.
 				WARN_PRINT_ONCE("FSR 3D resolution scaling is not designed for downsampling. Falling back to bilinear 3D resolution scaling.");
 				scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR;
-				scaling_type = RS::scaling_3d_mode_type(scaling_3d_mode);
+				scaling_type = RSE::scaling_3d_mode_type(scaling_3d_mode);
 			}
 
 			if (scaling_3d_is_not_bilinear && !upscaler_available) {
@@ -204,7 +204,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				// Fall back to bilinear scaling.
 				WARN_PRINT_ONCE("FSR 3D resolution scaling is not available. Falling back to bilinear 3D resolution scaling.");
 				scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR;
-				scaling_type = RS::scaling_3d_mode_type(scaling_3d_mode);
+				scaling_type = RSE::scaling_3d_mode_type(scaling_3d_mode);
 			}
 
 			if (use_taa && (scaling_type == RSE::VIEWPORT_SCALING_3D_TYPE_TEMPORAL)) {
@@ -1111,7 +1111,7 @@ void RendererViewport::_viewport_set_size(Viewport *p_viewport, int p_width, int
 
 bool RendererViewport::_viewport_requires_motion_vectors(Viewport *p_viewport) {
 	return p_viewport->use_taa ||
-			RS::scaling_3d_mode_type(p_viewport->scaling_3d_mode) == RSE::VIEWPORT_SCALING_3D_TYPE_TEMPORAL ||
+			RSE::scaling_3d_mode_type(p_viewport->scaling_3d_mode) == RSE::VIEWPORT_SCALING_3D_TYPE_TEMPORAL ||
 			p_viewport->debug_draw == RSE::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS || p_viewport->force_motion_vectors;
 }
 

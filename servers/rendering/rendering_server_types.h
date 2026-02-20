@@ -214,4 +214,10 @@ inline Rect2 get_splash_stretched_screen_rect(const Size2 &p_image_size, const S
 	return screenrect;
 }
 
+/* RENDERING METHOD */
+
+struct RenderInfo {
+	int info[RSE::VIEWPORT_RENDER_INFO_TYPE_MAX][RSE::VIEWPORT_RENDER_INFO_MAX] = {};
+};
+
 } // namespace RenderingServerTypes

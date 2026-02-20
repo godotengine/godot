@@ -30,16 +30,17 @@
 
 #include "openxr_composition_layer_extension.h"
 
-#ifdef ANDROID_ENABLED
-#include <openxr/openxr.h>
-#include <openxr/openxr_platform.h>
-#endif
-
 #include "openxr_fb_update_swapchain_extension.h"
+
 #include "platform/android/api/java_class_wrapper.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/xr/xr_server.h"
+
+#ifdef ANDROID_ENABLED
+#include <openxr/openxr.h>
+#include <openxr/openxr_platform.h>
+#endif
 
 ////////////////////////////////////////////////////////////////////////////
 // OpenXRCompositionLayerExtension

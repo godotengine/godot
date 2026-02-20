@@ -42,6 +42,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/main/window.h"
 #include "scene/resources/image_texture.h"
+#include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 

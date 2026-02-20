@@ -32,7 +32,8 @@
 #include "render_scene_buffers_rd.compat.inc"
 
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server.h" // IWYU pragma: Needed to bind RSE enums.
+#include "servers/rendering/rendering_server_enums.h"
 
 RenderSceneBuffersRD::RenderSceneBuffersRD() {
 }
@@ -103,7 +104,7 @@ void RenderSceneBuffersRD::free_named_texture(NamedTexture &p_named_texture) {
 void RenderSceneBuffersRD::update_samplers() {
 	float computed_mipmap_bias = texture_mipmap_bias;
 
-	if (use_taa || (RS::scaling_3d_mode_type(scaling_3d_mode) == RSE::VIEWPORT_SCALING_3D_TYPE_TEMPORAL)) {
+	if (use_taa || (RSE::scaling_3d_mode_type(scaling_3d_mode) == RSE::VIEWPORT_SCALING_3D_TYPE_TEMPORAL)) {
 		// Use negative mipmap LOD bias when TAA or FSR2 is enabled to compensate for loss of sharpness.
 		// This restores sharpness in still images to be roughly at the same level as without TAA,
 		// but moving scenes will still be blurrier.
@@ -514,7 +515,7 @@ void RenderSceneBuffersRD::allocate_blur_textures() {
 	}
 
 	Size2i blur_size = internal_size;
-	if (RS::scaling_3d_mode_type(scaling_3d_mode) == RSE::VIEWPORT_SCALING_3D_TYPE_TEMPORAL) {
+	if (RSE::scaling_3d_mode_type(scaling_3d_mode) == RSE::VIEWPORT_SCALING_3D_TYPE_TEMPORAL) {
 		// The blur texture should be as big as the target size when using an upscaler.
 		blur_size = target_size;
 	}

@@ -31,11 +31,11 @@
 #pragma once
 
 #include "core/templates/rid_owner.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/renderer_scene_render.h"
-#include "servers/rendering/rendering_method.h"
-#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_enums.h"
-#include "storage/render_scene_buffers.h"
+#include "servers/rendering/rendering_server_types.h"
+#include "servers/rendering/storage/render_scene_buffers.h"
 
 class RendererViewport {
 public:
@@ -152,7 +152,7 @@ public:
 
 		HashMap<RID, CanvasData> canvas_map;
 
-		RenderingMethod::RenderInfo render_info;
+		RenderingServerTypes::RenderInfo render_info;
 
 		Viewport() {
 			view_count = 1;

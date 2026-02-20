@@ -35,6 +35,8 @@
 #include "drivers/gles3/storage/config.h"
 #include "drivers/gles3/storage/texture_storage.h"
 #include "drivers/gles3/storage/utilities.h"
+#include "servers/rendering/renderer_viewport.h"
+#include "servers/rendering/rendering_server.h"
 
 using namespace GLES3;
 
