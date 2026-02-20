@@ -2632,6 +2632,8 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 			return true;
 		case SUPPORTS_POINT_SIZE:
 			return true;
+		case SUPPORTS_DEPTH_BIAS_CLAMP:
+			return true;
 		default:
 			return false;
 	}

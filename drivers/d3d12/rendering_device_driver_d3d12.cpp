@@ -5903,6 +5903,8 @@ bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 			return false;
 		case SUPPORTS_HDR_OUTPUT:
 			return true;
+		case SUPPORTS_DEPTH_BIAS_CLAMP:
+			return true;
 		default:
 			return false;
 	}

@@ -424,6 +424,9 @@ bool Utilities::has_os_feature(const String &p_feature) const {
 	if (p_feature == "astc_hdr") {
 		return config->astc_hdr_supported;
 	}
+	if (p_feature == "depth_bias_clamp") {
+		return config->polygon_offset_clamp_supported;
+	}
 
 	return false;
 }

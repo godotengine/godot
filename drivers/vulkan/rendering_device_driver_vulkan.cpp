@@ -7321,6 +7321,8 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 #else
 			return context_driver->is_colorspace_supported();
 #endif // defined(WINDOWS_ENABLED)
+		case SUPPORTS_DEPTH_BIAS_CLAMP:
+			return physical_device_features.depthBiasClamp;
 		default:
 			return false;
 	}
