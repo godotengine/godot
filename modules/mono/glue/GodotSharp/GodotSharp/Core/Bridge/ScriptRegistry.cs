@@ -63,7 +63,7 @@ namespace Godot.Bridge
         protected abstract void InitializeCache((MethodKey, TMethod)[] methods);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public bool ContainsMethod(scoped in godot_string_name name) => _knownMethodNames.Contains(name._data);
+        public bool ContainsName(scoped in godot_string_name name) => _knownMethodNames.Contains(name.GetIntPtr());
 
         /// <summary>
         /// Get the script method.
