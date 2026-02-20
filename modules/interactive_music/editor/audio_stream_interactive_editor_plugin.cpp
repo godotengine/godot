@@ -40,6 +40,7 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
+#include "scene/resources/style_box_flat.h"
 
 void AudioStreamInteractiveTransitionEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_THEME_CHANGED) {
@@ -270,7 +271,8 @@ void AudioStreamInteractiveTransitionEditor::edit(Object *p_obj) {
 	filler_clip->clear();
 	filler_clip->add_item(TTR("Disabled"), -1);
 
-	Color header_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
+	const Ref<StyleBoxFlat> &sb_title = tree->get_theme_stylebox(SNAME("title_button_normal"), SNAME("Tree"));
+	const Color header_color = sb_title.is_valid() ? sb_title->get_bg_color() : Color(0, 0, 0, 0);
 
 	int max_w = 0;
 
@@ -329,9 +331,11 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 	tree = memnew(Tree);
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_hide_root(true);
+	tree->set_hide_folding(true);
 	tree->add_theme_constant_override("draw_guides", 1);
 	tree->set_select_mode(Tree::SELECT_MULTI);
 	tree->set_custom_minimum_size(Size2(400, 0) * EDSCALE);
+	tree->set_theme_type_variation("TreeSecondary");
 	split->add_child(tree);
 
 	tree->set_h_size_flags(Control::SIZE_EXPAND_FILL);
