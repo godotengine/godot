@@ -9,12 +9,12 @@ namespace Godot.Bridge
         {
             foreach (var (methodKey, alias) in baseTypeRegistry.Aliases)
             {
-                registry.AddAlias(methodKey.Name, methodKey.Argc, alias);
+                registry.AddAlias(methodKey.Name, methodKey.ArgCount, alias);
             }
 
             foreach (var (methodKey, value) in baseTypeRegistry.MethodsByNameAndArgc)
             {
-                registry.Register(methodKey.Name, methodKey.Argc, value);
+                registry.Register(methodKey.Name, methodKey.ArgCount, value);
             }
 
             return registry;
@@ -27,12 +27,12 @@ namespace Godot.Bridge
         {
             foreach (var (methodKey, alias) in baseTypeRegistry.Aliases)
             {
-                registry.AddAlias(methodKey.Name, methodKey.Argc, alias);
+                registry.AddAlias(methodKey.Name, methodKey.ArgCount, alias);
             }
 
             foreach (var (methodKey, value) in baseTypeRegistry.MethodsByNameAndArgc)
             {
-                registry.Register(methodKey.Name, methodKey.Argc, value);
+                registry.Register(methodKey.Name, methodKey.ArgCount, value);
             }
 
             return registry;
@@ -45,12 +45,12 @@ namespace Godot.Bridge
         {
             foreach (var (methodKey, alias) in baseTypeRegistry.Aliases)
             {
-                registry.AddAlias(methodKey.Name, methodKey.Argc, alias);
+                registry.AddAlias(methodKey.Name, methodKey.ArgCount, alias);
             }
 
             foreach (var (methodKey, value) in baseTypeRegistry.MethodsByNameAndArgc)
             {
-                registry.Register(methodKey.Name, methodKey.Argc, value);
+                registry.Register(methodKey.Name, methodKey.ArgCount, value);
             }
 
             return registry;

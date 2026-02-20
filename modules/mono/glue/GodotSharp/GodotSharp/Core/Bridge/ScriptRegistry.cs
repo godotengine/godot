@@ -43,9 +43,9 @@ namespace Godot.Bridge
                 if (BuilderMethodsByNameAndArgc.TryGetValue(methodKey, out var scriptMethod))
                 {
                     // don't apply aliases when we have an actual method for the alias already
-                    if (!BuilderMethodsByNameAndArgc.ContainsKey(new MethodKey(alias, methodKey.Argc)))
+                    if (!BuilderMethodsByNameAndArgc.ContainsKey(new MethodKey(alias, methodKey.ArgCount)))
                     {
-                        Register(alias, methodKey.Argc, scriptMethod);
+                        Register(alias, methodKey.ArgCount, scriptMethod);
                         aliasesRegistered++;
                     }
                 }

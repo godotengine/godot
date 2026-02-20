@@ -245,9 +245,9 @@ namespace Godot.SourceGenerators
 
                 source.Append("    /// <inheritdoc/>\n");
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append($"    public override ref readonly ScriptMethod GetGodotClassMethodOrNullRef(in godot_string_name method, int argc)\n");
+                source.Append($"    public override ref readonly ScriptMethod GetGodotClassMethodOrNullRef(in godot_string_name method, int argCount)\n");
                 source.Append("    {\n");
-                source.Append("        return ref MethodRegistry.GetMethodOrNullRef(in method, argc);\n");
+                source.Append("        return ref MethodRegistry.GetMethodOrNullRef(in method, argCount);\n");
                 source.Append("    }\n\n");
 
                 // InvokeGodotClassMethod
