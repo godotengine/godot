@@ -176,6 +176,7 @@ class GDScriptCompiler {
 public:
 	static void convert_to_initializer_type(Variant &p_variant, const GDScriptParser::VariableNode *p_node);
 	static void make_scripts(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);
+	static GDScriptFunction *generate_wrapper(GDScript *p_script, GDScriptFunction *p_previous, const Callable &p_wrapper);
 	Error compile(const GDScriptParser *p_parser, GDScript *p_script, bool p_keep_state = false);
 
 	String get_error() const;

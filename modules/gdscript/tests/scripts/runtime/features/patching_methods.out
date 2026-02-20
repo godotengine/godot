@@ -1,0 +1,43 @@
+GDTEST_OK
+true
+true
+true
+true
+===
+static_test_func <null> 1 0 []
+add_one <null> [1] static_test_func 0
+add_ten <null> [1] static_test_func 1
+11
+---
+static_test_func <null> 1 2 []
+add_one <null> [1, 2] static_test_func 0
+add_ten <null> [1, 2] static_test_func 1
+11
+---
+static_test_func <null> 1 2 [3]
+add_one <null> [1, 2, 3] static_test_func 0
+add_ten <null> [1, 2, 3] static_test_func 1
+11
+===
+test_func <TestClass#1> 1 0 []
+add_one <TestClass#1> [1] test_func 0
+add_ten <TestClass#1> [1] test_func 1
+11
+---
+test_func <TestClass#1> 1 2 []
+add_one <TestClass#1> [1, 2] test_func 0
+add_ten <TestClass#1> [1, 2] test_func 1
+11
+---
+test_func <TestClass#1> 1 2 [3]
+add_one <TestClass#1> [1, 2, 3] test_func 0
+add_ten <TestClass#1> [1, 2, 3] test_func 1
+11
+===
+test_await 1 before await
+true
+test_await 1 after await
+---
+test_await 2 before await
+test_await 2 after await
+modify_async <TestClass#1> [1] test_await

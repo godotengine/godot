@@ -34,12 +34,11 @@
 #include "gdscript_analyzer.h"
 #include "gdscript_byte_codegen.h"
 #include "gdscript_cache.h"
+#include "gdscript_function_wrapper_callable.h"
 #include "gdscript_utility_functions.h"
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
-
-#include "scene/scene_string_names.h"
 
 bool GDScriptCompiler::_is_class_member_property(CodeGen &codegen, const StringName &p_name) {
 	if (codegen.function_node && codegen.function_node->is_static) {
@@ -2169,7 +2168,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				}
 
 				if (return_n->void_return) {
-					// Always return "null", even if the expression is a call to a void function.
+					// Always return `null`, even if the expression is a call to a `void` function.
 					gen->write_return(codegen.add_constant(Variant()));
 				} else {
 					gen->write_return(return_value);
@@ -2669,6 +2668,142 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 	return gd_function;
 }
 
+GDScriptFunction *GDScriptCompiler::generate_wrapper(GDScript *p_script, GDScriptFunction *p_previous, const Callable &p_wrapper) {
+	CodeGen codegen;
+	codegen.generator = memnew(GDScriptByteCodeGenerator);
+
+	//codegen.class_node = p_class; // Not required here.
+	codegen.script = p_script;
+
+	const StringName func_name = p_previous->name;
+	const bool is_static = p_previous->is_static();
+	const Variant rpc_config = p_previous->rpc_config;
+	const GDScriptDataType return_type = p_previous->return_type;
+
+	codegen.function_name = func_name;
+	codegen.is_static = is_static;
+	codegen.generator->write_start(p_script, func_name, is_static, rpc_config, return_type);
+
+	const int total_argc = p_previous->_argument_count;
+	const int mandatory_argc = p_previous->_argument_count - p_previous->_default_arg_count;
+	const int optional_argc = p_previous->_default_arg_count;
+	const bool is_vararg = p_previous->is_vararg();
+	const bool is_void = p_previous->return_type.kind == GDScriptDataType::BUILTIN && p_previous->return_type.builtin_type == Variant::NIL;
+
+	Vector<GDScriptCodeGenerator::Address> normal_arg_addrs;
+	GDScriptCodeGenerator::Address vararg_addr;
+	GDScriptCodeGenerator::Address arg_count_addr;
+
+	for (int i = 0; i < p_previous->argument_types.size(); i++) {
+		String par_name = "@arg" + itos(i);
+		bool is_optional = i >= mandatory_argc;
+		GDScriptDataType par_type = p_previous->argument_types[i];
+		uint32_t par_addr = codegen.generator->add_parameter(par_name, is_optional, par_type);
+		GDScriptCodeGenerator::Address arg_addr(GDScriptCodeGenerator::Address::FUNCTION_PARAMETER, par_addr, par_type);
+		codegen.parameters[par_name] = arg_addr;
+		normal_arg_addrs.append(arg_addr);
+	}
+
+	if (is_vararg) {
+		vararg_addr = codegen.add_local("@vararg", GDScriptDataType());
+	}
+
+	if (optional_argc > 0) {
+		GDScriptDataType int_type;
+		int_type.kind = GDScriptDataType::BUILTIN;
+		int_type.builtin_type = Variant::INT;
+		arg_count_addr = codegen.add_local("@arg_count", int_type);
+		codegen.generator->write_assign(arg_count_addr, codegen.add_constant(total_argc));
+
+		codegen.generator->start_parameters();
+		for (int i = mandatory_argc; i < total_argc; i++) {
+			codegen.generator->write_binary_operator(arg_count_addr, Variant::OP_SUBTRACT, arg_count_addr, codegen.add_constant(1));
+
+			GDScriptCodeGenerator::Address arg_addr = codegen.parameters["@arg" + itos(i)];
+			GDScriptCodeGenerator::Address defval_addr = codegen.add_constant(p_previous->_get_default_variant_for_data_type(arg_addr.type));
+			codegen.generator->write_assign_default_parameter(arg_addr, defval_addr, false);
+		}
+		codegen.generator->end_parameters();
+	}
+
+	GDScriptCodeGenerator::Address result_addr;
+	if (is_void) {
+		result_addr = GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::NIL);
+	} else {
+		result_addr = codegen.add_temporary();
+	}
+
+	GDScriptDataType array_type;
+	array_type.kind = GDScriptDataType::BUILTIN;
+	array_type.builtin_type = Variant::ARRAY;
+	GDScriptCodeGenerator::Address args_arr_addr = codegen.add_temporary(array_type);
+
+	GDScriptCodeGenerator::Address nil_addr(GDScriptCodeGenerator::Address::NIL);
+
+	// Collect arguments.
+	codegen.generator->write_construct_array(args_arr_addr, normal_arg_addrs);
+	if (optional_argc > 0) {
+		codegen.generator->write_call_builtin_type(nil_addr, args_arr_addr, Variant::ARRAY, "resize", { arg_count_addr });
+	}
+	if (is_vararg) {
+		codegen.generator->write_call_builtin_type(nil_addr, args_arr_addr, Variant::ARRAY, "append_array", { vararg_addr });
+	}
+
+	GDScriptCodeGenerator::Address self_addr(GDScriptCodeGenerator::Address::SELF);
+
+	GDScriptDataType callable_type;
+	callable_type.kind = GDScriptDataType::BUILTIN;
+	callable_type.builtin_type = Variant::CALLABLE;
+	GDScriptCodeGenerator::Address previous_addr = codegen.add_temporary(callable_type);
+
+	// Construct the `GDScriptFunctionWrapperCallable(self, p_previous)` callable.
+	GDScriptCodeGenerator::Address make_callable_addr = codegen.add_constant(callable_mp_static(&GDScriptFunctionWrapperCallable::make_callable).bind((int64_t)p_previous));
+	codegen.generator->write_call_builtin_type(previous_addr, make_callable_addr, Variant::CALLABLE, "call", { self_addr });
+
+	// Call the `p_wrapper` callable with `(self, args, previous)` arguments.
+	GDScriptCodeGenerator::Address wrapper_addr = codegen.add_constant(p_wrapper);
+	codegen.generator->write_call_async(result_addr, wrapper_addr, "call", { self_addr, args_arr_addr, previous_addr });
+
+	codegen.generator->pop_temporary(); // Pop `previous_addr`.
+	codegen.generator->pop_temporary(); // Pop `args_arr_addr`.
+
+	if (is_void) {
+		// Always return `null`, even if the expression is a call to a `void` function.
+		codegen.generator->write_return(codegen.add_constant(Variant()));
+	} else if (p_previous->return_type.has_type()) {
+		GDScriptCodeGenerator::Address temp_addr = codegen.add_temporary(p_previous->return_type);
+		codegen.generator->write_assign_with_conversion(temp_addr, result_addr);
+		codegen.generator->write_return(temp_addr);
+		codegen.generator->pop_temporary(); // Pop `temp_addr`.
+		codegen.generator->pop_temporary(); // Pop `result_addr`.
+	} else {
+		codegen.generator->write_return(result_addr);
+		codegen.generator->pop_temporary(); // Pop `result_addr`.
+	}
+
+#ifdef DEBUG_ENABLED
+	if (EngineDebugger::is_active()) {
+		codegen.generator->set_signature(p_previous->profile.signature);
+	}
+#endif // DEBUG_ENABLED
+
+	codegen.generator->set_initial_line(p_previous->_initial_line);
+
+	GDScriptFunction *gd_function = codegen.generator->write_end();
+
+	gd_function->return_type = p_previous->return_type;
+
+	if (is_vararg) {
+		gd_function->_vararg_index = vararg_addr.address;
+	}
+
+	gd_function->method_info = p_previous->method_info;
+
+	memdelete(codegen.generator);
+
+	return gd_function;
+}
+
 Error GDScriptCompiler::_parse_setter_getter(GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::VariableNode *p_variable, bool p_is_setter) {
 	Error err = OK;
 
@@ -2711,12 +2846,14 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 	p_script->members.clear();
 
 	// This makes possible to clear script constants and member_functions without heap-use-after-free errors.
+
 	HashMap<StringName, Variant> constants;
 	for (const KeyValue<StringName, Variant> &E : p_script->constants) {
 		constants.insert(E.key, E.value);
 	}
 	p_script->constants.clear();
 	constants.clear();
+
 	HashMap<StringName, GDScriptFunction *> member_functions;
 	for (const KeyValue<StringName, GDScriptFunction *> &E : p_script->member_functions) {
 		member_functions.insert(E.key, E.value);
@@ -2726,6 +2863,11 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 		memdelete(E.value);
 	}
 	member_functions.clear();
+
+	for (GDScriptFunction *E : p_script->patched_member_functions) {
+		memdelete(E);
+	}
+	p_script->patched_member_functions.clear();
 
 	p_script->static_variables.clear();
 
@@ -2739,7 +2881,6 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 		memdelete(p_script->static_initializer);
 	}
 
-	p_script->member_functions.clear();
 	p_script->member_indices.clear();
 	p_script->static_variables_indices.clear();
 	p_script->static_variables.clear();

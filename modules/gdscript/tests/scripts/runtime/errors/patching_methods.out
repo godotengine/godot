@@ -1,0 +1,8 @@
+GDTEST_RUNTIME_ERROR
+false
+false
+true
+B.my_func
+return_int [] "abc"
+>> SCRIPT ERROR at runtime/errors/patching_methods.gd:5 on B.my_func(): Trying to assign value of type 'int' to a variable of type 'String'.
+""

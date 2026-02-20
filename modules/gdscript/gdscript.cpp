@@ -1078,6 +1078,7 @@ void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 
 void GDScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &GDScript::_new, MethodInfo("new"));
+	ClassDB::bind_method(D_METHOD("patch_method", "method", "wrapper"), &GDScript::patch_method);
 }
 
 void GDScript::set_path_cache(const String &p_path) {
@@ -1307,6 +1308,20 @@ void GDScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 	_get_script_signal_list(r_signals, true);
 }
 
+bool GDScript::patch_method(const StringName &p_method, const Callable &p_wrapper) {
+	//MutexLock lock(GDScriptLanguage::singleton->mutex); // TODO: Check multithreading.
+
+	if (!member_functions.has(p_method) || (member_functions[p_method]->method_info.flags & METHOD_FLAG_VIRTUAL_REQUIRED) || p_method.operator String().begins_with("@")) {
+		return false;
+	}
+
+	GDScriptFunction *previous = member_functions[p_method];
+	member_functions[p_method] = GDScriptCompiler::generate_wrapper(this, previous, p_wrapper);
+	patched_member_functions.push_back(previous);
+
+	return true;
+}
+
 GDScript::GDScript() :
 		script_list(this) {
 	{
@@ -1440,6 +1455,11 @@ void GDScript::clear() {
 		functions_to_clear.insert(E.value);
 	}
 	member_functions.clear();
+
+	for (GDScriptFunction *E : patched_member_functions) {
+		memdelete(E);
+	}
+	patched_member_functions.clear();
 
 	for (KeyValue<StringName, MemberInfo> &E : member_indices) {
 		E.value.data_type.script_type_ref = Ref<Script>();

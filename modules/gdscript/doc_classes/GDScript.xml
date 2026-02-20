@@ -23,5 +23,26 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="patch_method" experimental="">
+			<return type="bool" />
+			<param index="0" name="method" type="StringName" />
+			<param index="1" name="wrapper" type="Callable" />
+			<description>
+				Replaces a script method at runtime with a wrapper. The wrapper must accept the following parameters:
+				- [code]instance[/code]: [Object] - The instance on which the method is called. [code]null[/code] if the method is static.
+				- [code]args[/code]: [Array] - The list of passed arguments.
+				- [code]previous[/code]: [Callable] - The previous function (last applied patch or original implementation).
+				Each wrapper must return a value that matches the expected type of the original function.
+				Returns [code]true[/code] if the replacement was successful. Returns [code]false[/code] on error. You cannot replace non-existent or abstract methods.
+				[codeblock]
+				func my_wrapper(instance, args, previous):
+					prints("my_wrapper", instance, args)
+					return previous.callv(args)
+
+				func load_mod():
+					game_script.patch_method("some_method", my_wrapper)
+				[/codeblock]
+			</description>
+		</method>
 	</methods>
 </class>
