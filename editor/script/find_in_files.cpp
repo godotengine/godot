@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/math/vector2.h"
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -42,12 +43,13 @@
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
-#include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/progress_bar.h"
+#include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
+#include "scene/main/timer.h"
 
 const char *FindInFiles::SIGNAL_RESULT_FOUND = "result_found";
 
@@ -329,65 +331,54 @@ void FindInFiles::_bind_methods() {
 
 //-----------------------------------------------------------------------------
 const char *FindInFilesDialog::SIGNAL_FIND_REQUESTED = "find_requested";
-const char *FindInFilesDialog::SIGNAL_REPLACE_REQUESTED = "replace_requested";
 
 FindInFilesDialog::FindInFilesDialog() {
-	set_min_size(Size2(500 * EDSCALE, 0));
-	set_title(TTRC("Find in Files"));
+	set_custom_minimum_size(Size2(300 * EDSCALE, 50 * EDSCALE));
+	set_name(TTRC("Find in Files"));
+
+	ScrollContainer *sc = memnew(ScrollContainer);
+	sc->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
+	add_child(sc);
+
+	MarginContainer *mc = memnew(MarginContainer);
+	int margin = 6 * EDSCALE;
+	mc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->add_theme_constant_override("margin_left", margin);
+	mc->add_theme_constant_override("margin_right", margin);
+	mc->add_theme_constant_override("margin_top", margin);
+	mc->add_theme_constant_override("margin_bottom", margin);
+	sc->add_child(mc);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_offset(SIDE_TOP, Control::ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -8 * EDSCALE);
-	vbc->set_anchor_and_offset(SIDE_BOTTOM, Control::ANCHOR_END, -8 * EDSCALE);
-	add_child(vbc);
-
-	GridContainer *gc = memnew(GridContainer);
-	gc->set_columns(2);
-	vbc->add_child(gc);
-
-	Label *find_label = memnew(Label);
-	find_label->set_text(TTRC("Find:"));
-	gc->add_child(find_label);
+	vbc->add_theme_constant_override("separation", 0);
+	mc->add_child(vbc);
 
 	_search_text_line_edit = memnew(LineEdit);
 	_search_text_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	_search_text_line_edit->set_accessibility_name(TTRC("Find:"));
-	_search_text_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesDialog::_on_search_text_modified));
-	_search_text_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_text_submitted));
-	gc->add_child(_search_text_line_edit);
+	_search_text_line_edit->set_accessibility_name(TTRC("Find"));
+	_search_text_line_edit->set_placeholder(TTRC("Find"));
+	_search_text_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesDialog::_on_search_modified).unbind(1));
+	_search_text_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_submitted).unbind(1));
+	vbc->add_child(_search_text_line_edit);
 
-	_replace_label = memnew(Label);
-	_replace_label->set_text(TTRC("Replace:"));
-	_replace_label->hide();
-	gc->add_child(_replace_label);
-
-	_replace_text_line_edit = memnew(LineEdit);
-	_replace_text_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	_replace_text_line_edit->set_accessibility_name(TTRC("Replace:"));
-	_replace_text_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_replace_text_submitted));
-	_replace_text_line_edit->hide();
-	gc->add_child(_replace_text_line_edit);
-
-	gc->add_child(memnew(Control)); // Space to maintain the grid alignment.
+	vbc->add_child(memnew(Control)); // Space to maintain the grid alignment.
 
 	{
 		HBoxContainer *hbc = memnew(HBoxContainer);
 
 		_whole_words_checkbox = memnew(CheckBox);
 		_whole_words_checkbox->set_text(TTRC("Whole Words"));
+		_whole_words_checkbox->connect(SceneStringName(toggled), callable_mp(this, &FindInFilesDialog::_on_search_modified).unbind(1));
 		hbc->add_child(_whole_words_checkbox);
 
 		_match_case_checkbox = memnew(CheckBox);
 		_match_case_checkbox->set_text(TTRC("Match Case"));
+		_match_case_checkbox->connect(SceneStringName(toggled), callable_mp(this, &FindInFilesDialog::_on_search_modified).unbind(1));
 		hbc->add_child(_match_case_checkbox);
 
-		gc->add_child(hbc);
+		vbc->add_child(hbc);
 	}
-
-	Label *folder_label = memnew(Label);
-	folder_label->set_text(TTRC("Folder:"));
-	gc->add_child(folder_label);
 
 	{
 		HBoxContainer *hbc = memnew(HBoxContainer);
@@ -399,8 +390,10 @@ FindInFilesDialog::FindInFilesDialog() {
 
 		_folder_line_edit = memnew(LineEdit);
 		_folder_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		_folder_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_text_submitted));
-		_folder_line_edit->set_accessibility_name(TTRC("Folder:"));
+		_folder_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesDialog::_on_search_modified).unbind(1));
+		_folder_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_submitted).unbind(1));
+		_folder_line_edit->set_accessibility_name(TTRC("Folder"));
+		_folder_line_edit->set_placeholder(TTRC("Folder"));
 		hbc->add_child(_folder_line_edit);
 
 		Button *folder_button = memnew(Button);
@@ -414,108 +407,57 @@ FindInFilesDialog::FindInFilesDialog() {
 		_folder_dialog->connect("dir_selected", callable_mp(this, &FindInFilesDialog::_on_folder_selected));
 		add_child(_folder_dialog);
 
-		gc->add_child(hbc);
+		vbc->add_child(hbc);
 	}
 
 	Label *includes_label = memnew(Label);
-	includes_label->set_text(TTRC("Includes:"));
+	includes_label->set_text(TTRC("Includes"));
 	includes_label->set_tooltip_text(TTRC("Include the files with the following expressions. Use \",\" to separate."));
 	includes_label->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-	gc->add_child(includes_label);
+	vbc->add_child(includes_label);
 
 	_includes_line_edit = memnew(LineEdit);
 	_includes_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	_includes_line_edit->set_placeholder(TTRC("example: scripts,scenes/*/test.gd"));
-	_includes_line_edit->set_accessibility_name(TTRC("Includes:"));
-	_includes_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_text_submitted));
-	gc->add_child(_includes_line_edit);
+	_includes_line_edit->set_accessibility_name(TTRC("Includes"));
+	_includes_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesDialog::_on_search_modified).unbind(1));
+	_includes_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_submitted).unbind(1));
+	vbc->add_child(_includes_line_edit);
 
 	Label *excludes_label = memnew(Label);
-	excludes_label->set_text(TTRC("Excludes:"));
+	excludes_label->set_text(TTRC("Excludes"));
 	excludes_label->set_tooltip_text(TTRC("Exclude the files with the following expressions. Use \",\" to separate."));
 	excludes_label->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-	gc->add_child(excludes_label);
+	vbc->add_child(excludes_label);
 
 	_excludes_line_edit = memnew(LineEdit);
 	_excludes_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	_excludes_line_edit->set_placeholder(TTRC("example: res://addons,scenes/test/*.gd"));
-	_excludes_line_edit->set_accessibility_name(TTRC("Excludes:"));
-	_excludes_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_text_submitted));
-	gc->add_child(_excludes_line_edit);
-
-	Label *filter_label = memnew(Label);
-	filter_label->set_text(TTRC("Filters:"));
-	filter_label->set_tooltip_text(TTRC("Include the files with the following extensions. Add or remove them in ProjectSettings."));
-	filter_label->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-	gc->add_child(filter_label);
+	_excludes_line_edit->set_accessibility_name(TTRC("Excludes"));
+	_excludes_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesDialog::_on_search_modified).unbind(1));
+	_excludes_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_submitted).unbind(1));
+	vbc->add_child(_excludes_line_edit);
 
 	_filters_container = memnew(HBoxContainer);
-	gc->add_child(_filters_container);
+	vbc->add_child(_filters_container);
 
-	_find_button = add_button(TTRC("Find..."), false, "find");
-	_find_button->set_disabled(true);
-
-	_replace_button = add_button(TTRC("Replace..."), false, "replace");
-	_replace_button->set_disabled(true);
-
-	Button *cancel_button = get_ok_button();
-	cancel_button->set_text(TTRC("Cancel"));
-
-	_mode = SEARCH_MODE;
+	debounce_timer = memnew(Timer);
+	debounce_timer->set_one_shot(true);
+	debounce_timer->connect("timeout", callable_mp(this, &FindInFilesDialog::_emit_find_requested));
+	add_child(debounce_timer);
 }
 
 void FindInFilesDialog::set_search_text(const String &text) {
-	if (_mode == SEARCH_MODE) {
-		if (!text.is_empty()) {
-			_search_text_line_edit->set_text(text);
-			_on_search_text_modified(text);
-		}
-		callable_mp((Control *)_search_text_line_edit, &Control::grab_focus).call_deferred(false);
-		_search_text_line_edit->select_all();
-	} else if (_mode == REPLACE_MODE) {
-		if (!text.is_empty()) {
-			_search_text_line_edit->set_text(text);
-			callable_mp((Control *)_replace_text_line_edit, &Control::grab_focus).call_deferred(false);
-			_replace_text_line_edit->select_all();
-			_on_search_text_modified(text);
-		} else {
-			callable_mp((Control *)_search_text_line_edit, &Control::grab_focus).call_deferred(false);
-			_search_text_line_edit->select_all();
-		}
+	if (!text.is_empty()) {
+		_search_text_line_edit->set_text(text);
+		_on_search_modified();
 	}
-}
-
-void FindInFilesDialog::set_replace_text(const String &text) {
-	_replace_text_line_edit->set_text(text);
-}
-
-void FindInFilesDialog::set_find_in_files_mode(FindInFilesMode p_mode) {
-	if (_mode == p_mode) {
-		return;
-	}
-
-	_mode = p_mode;
-
-	if (p_mode == SEARCH_MODE) {
-		set_title(TTRC("Find in Files"));
-		_replace_label->hide();
-		_replace_text_line_edit->hide();
-	} else if (p_mode == REPLACE_MODE) {
-		set_title(TTRC("Replace in Files"));
-		_replace_label->show();
-		_replace_text_line_edit->show();
-	}
-
-	// Recalculate the dialog size after hiding child controls.
-	set_size(Size2(get_size().x, 0));
+	callable_mp((Control *)_search_text_line_edit, &Control::grab_focus).call_deferred(false);
+	_search_text_line_edit->select_all();
 }
 
 String FindInFilesDialog::get_search_text() const {
 	return _search_text_line_edit->get_text();
-}
-
-String FindInFilesDialog::get_replace_text() const {
-	return _replace_text_line_edit->get_text();
 }
 
 bool FindInFilesDialog::is_match_case() const {
@@ -575,6 +517,7 @@ HashSet<String> FindInFilesDialog::get_excludes() const {
 
 void FindInFilesDialog::_notification(int p_what) {
 	switch (p_what) {
+		// TODO: also update on `EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED` when setting is moved to editor settings
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
 				// Extensions might have changed in the meantime, we clean them and instance them again.
@@ -589,6 +532,8 @@ void FindInFilesDialog::_notification(int p_what) {
 						_filters_preferences[exts[i]] = true;
 					}
 					cb->set_pressed(_filters_preferences[exts[i]]);
+					cb->connect(SceneStringName(toggled), callable_mp(this, &FindInFilesDialog::_on_search_modified).unbind(1));
+					cb->set_tooltip_text(TTRC("Include the files with this extension. Add or remove them in ProjectSettings (`search_in_file_extensions`)."));
 					_filters_container->add_child(cb);
 				}
 			}
@@ -600,51 +545,20 @@ void FindInFilesDialog::_on_folder_button_pressed() {
 	_folder_dialog->popup_file_dialog();
 }
 
-void FindInFilesDialog::custom_action(const String &p_action) {
+void FindInFilesDialog::_on_search_submitted() {
 	for (int i = 0; i < _filters_container->get_child_count(); ++i) {
 		CheckBox *cb = static_cast<CheckBox *>(_filters_container->get_child(i));
 		_filters_preferences[cb->get_text()] = cb->is_pressed();
 	}
-
-	if (p_action == "find") {
-		emit_signal(SNAME(SIGNAL_FIND_REQUESTED));
-		hide();
-	} else if (p_action == "replace") {
-		emit_signal(SNAME(SIGNAL_REPLACE_REQUESTED));
-		hide();
-	}
+	_emit_find_requested();
 }
 
-void FindInFilesDialog::_on_search_text_modified(const String &text) {
-	ERR_FAIL_NULL(_find_button);
-	ERR_FAIL_NULL(_replace_button);
-
-	_find_button->set_disabled(get_search_text().is_empty());
-	_replace_button->set_disabled(get_search_text().is_empty());
+void FindInFilesDialog::_on_search_modified() {
+	debounce_timer->start(0.5);
 }
 
-void FindInFilesDialog::_on_search_text_submitted(const String &text) {
-	// This allows to trigger a global search without leaving the keyboard.
-	if (!_find_button->is_disabled()) {
-		if (_mode == SEARCH_MODE) {
-			custom_action("find");
-		}
-	}
-
-	if (!_replace_button->is_disabled()) {
-		if (_mode == REPLACE_MODE) {
-			custom_action("replace");
-		}
-	}
-}
-
-void FindInFilesDialog::_on_replace_text_submitted(const String &text) {
-	// This allows to trigger a global search without leaving the keyboard.
-	if (!_replace_button->is_disabled()) {
-		if (_mode == REPLACE_MODE) {
-			custom_action("replace");
-		}
-	}
+void FindInFilesDialog::_emit_find_requested() {
+	emit_signal(SNAME(SIGNAL_FIND_REQUESTED));
 }
 
 void FindInFilesDialog::_on_folder_selected(String path) {
@@ -680,7 +594,6 @@ String FindInFilesDialog::validate_filter_wildcard(const String &p_expression) c
 
 void FindInFilesDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo(SIGNAL_FIND_REQUESTED));
-	ADD_SIGNAL(MethodInfo(SIGNAL_REPLACE_REQUESTED));
 }
 
 //-----------------------------------------------------------------------------
@@ -695,10 +608,6 @@ FindInFilesPanel::FindInFilesPanel() {
 	add_child(_finder);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, 0);
-	vbc->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
-	vbc->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
-	vbc->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
 	add_child(vbc);
 
 	{
@@ -797,6 +706,7 @@ FindInFilesPanel::FindInFilesPanel() {
 
 		vbc->add_child(_replace_container);
 	}
+	set_with_replace(true);
 }
 
 void FindInFilesPanel::set_with_replace(bool with_replace) {
@@ -1329,9 +1239,16 @@ FindInFilesContainer::FindInFilesContainer() {
 	set_closable(true);
 	set_custom_minimum_size(Size2(0, 200 * EDSCALE));
 
+	hsplit = memnew(HSplitContainer);
+	add_child(hsplit);
+
+	search_control = memnew(FindInFilesDialog);
+	search_control->connect(FindInFilesDialog::SIGNAL_FIND_REQUESTED, callable_mp(this, &FindInFilesContainer::_start_find_in_files));
+	hsplit->add_child(search_control);
+
 	_tabs = memnew(TabContainer);
 	_tabs->set_tabs_visible(false);
-	add_child(_tabs);
+	hsplit->add_child(_tabs);
 
 	_tabs->set_drag_to_rearrange_enabled(true);
 	_tabs->get_tab_bar()->set_select_with_rmb(true);
@@ -1368,7 +1285,7 @@ FindInFilesPanel *FindInFilesContainer::_get_current_panel() {
 	return Object::cast_to<FindInFilesPanel>(_tabs->get_current_tab_control());
 }
 
-FindInFilesPanel *FindInFilesContainer::get_panel_for_results(const String &p_label) {
+FindInFilesPanel *FindInFilesContainer::_get_panel_for_results(const String &p_label) {
 	FindInFilesPanel *panel = nullptr;
 	// Prefer the current panel.
 	if (_get_current_panel() && !_get_current_panel()->is_keep_results()) {
@@ -1420,6 +1337,7 @@ void FindInFilesContainer::_on_theme_changed() {
 		add_theme_constant_override("margin_bottom", -bottom_panel_style->get_margin(SIDE_BOTTOM));
 		end_bulk_theme_override();
 	}
+	hsplit->add_theme_style_override("split_bar_background", get_theme_stylebox(SceneStringName(panel), "ItemListSecondary"));
 }
 
 void FindInFilesContainer::_on_find_in_files_result_selected(const String &p_fpath, int p_line_number, int p_begin, int p_end) {
@@ -1438,6 +1356,24 @@ void FindInFilesContainer::_on_find_in_files_close_button_clicked(FindInFilesPan
 	if (_tabs->get_tab_count() == 0) {
 		close();
 	}
+}
+
+void FindInFilesContainer::_start_find_in_files() {
+	if (search_control->get_search_text().is_empty()) {
+		return;
+	}
+	FindInFilesPanel *panel = _get_panel_for_results(TTR("Find:") + " " + search_control->get_search_text());
+	FindInFiles *f = panel->get_finder();
+
+	f->set_search_text(search_control->get_search_text());
+	f->set_match_case(search_control->is_match_case());
+	f->set_whole_words(search_control->is_whole_words());
+	f->set_folder(search_control->get_folder());
+	f->set_filter(search_control->get_filter());
+	f->set_includes(search_control->get_includes());
+	f->set_excludes(search_control->get_excludes());
+
+	panel->start_search();
 }
 
 void FindInFilesContainer::update_layout(EditorDock::DockLayout p_layout) {

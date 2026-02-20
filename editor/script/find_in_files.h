@@ -97,27 +97,17 @@ class FileDialog;
 class HBoxContainer;
 
 // Prompts search parameters
-class FindInFilesDialog : public AcceptDialog {
-	GDCLASS(FindInFilesDialog, AcceptDialog);
+class FindInFilesDialog : public Control {
+	GDCLASS(FindInFilesDialog, Control);
 
 public:
-	enum FindInFilesMode {
-		SEARCH_MODE,
-		REPLACE_MODE
-	};
-
 	static const char *SIGNAL_FIND_REQUESTED;
-	static const char *SIGNAL_REPLACE_REQUESTED;
 
 	FindInFilesDialog();
 
 	void set_search_text(const String &text);
-	void set_replace_text(const String &text);
-
-	void set_find_in_files_mode(FindInFilesMode p_mode);
 
 	String get_search_text() const;
-	String get_replace_text() const;
 	bool is_match_case() const;
 	bool is_whole_words() const;
 	String get_folder() const;
@@ -129,29 +119,23 @@ protected:
 	void _notification(int p_what);
 
 	void _visibility_changed();
-	void custom_action(const String &p_action) override;
 	static void _bind_methods();
 
 private:
 	void _on_folder_button_pressed();
 	void _on_folder_selected(String path);
-	void _on_search_text_modified(const String &text);
-	void _on_search_text_submitted(const String &text);
-	void _on_replace_text_submitted(const String &text);
+	void _on_search_modified();
+	void _on_search_submitted();
+	void _emit_find_requested();
 
 	String validate_filter_wildcard(const String &p_expression) const;
 
-	FindInFilesMode _mode;
+	Timer *debounce_timer = nullptr;
 	LineEdit *_search_text_line_edit = nullptr;
-
-	Label *_replace_label = nullptr;
-	LineEdit *_replace_text_line_edit = nullptr;
 
 	LineEdit *_folder_line_edit = nullptr;
 	CheckBox *_match_case_checkbox = nullptr;
 	CheckBox *_whole_words_checkbox = nullptr;
-	Button *_find_button = nullptr;
-	Button *_replace_button = nullptr;
 	FileDialog *_folder_dialog = nullptr;
 	HBoxContainer *_filters_container = nullptr;
 	LineEdit *_includes_line_edit = nullptr;
@@ -253,6 +237,7 @@ private:
 
 class PopupMenu;
 class TabContainer;
+class HSplitContainer;
 
 // Contains several FindInFilesPanels. A FindInFilesPanel contains the results of a
 // `Find in Files` search or a `Replace in Files` search, while a
@@ -274,7 +259,12 @@ class FindInFilesContainer : public EditorDock {
 	void _bar_menu_option(int p_option);
 	void _bar_input(const Ref<InputEvent> &p_input);
 	void _on_dock_closed();
+	void _start_find_in_files();
 
+	FindInFilesPanel *_get_panel_for_results(const String &p_label);
+
+	HSplitContainer *hsplit = nullptr;
+	FindInFilesDialog *search_control = nullptr;
 	TabContainer *_tabs = nullptr;
 	bool _update_bar = true;
 	PopupMenu *_tabs_context_menu = nullptr;
@@ -295,5 +285,5 @@ protected:
 public:
 	FindInFilesContainer();
 
-	FindInFilesPanel *get_panel_for_results(const String &p_label);
+	FindInFilesDialog *get_search_control() { return search_control; }
 };
