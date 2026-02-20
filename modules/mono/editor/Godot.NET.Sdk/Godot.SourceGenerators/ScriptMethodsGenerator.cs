@@ -205,9 +205,7 @@ namespace Godot.SourceGenerators
 
             source.Append("#pragma warning restore CS0109\n\n");
 
-            // TODO: why where static methods in here? does excluding them here break stuff? c++ codegen filters by is_virtual and static methods can't be virtual in C#
-            var godotClassNonStaticMethods = godotClassMethods.Where(m => !m.Method.IsStatic).ToArray();
-            if (godotClassNonStaticMethods.Length > 0)
+            if (godotClassMethods.Length > 0)
             {
                 // ScriptMethodRegistry
                 source.Append(
@@ -220,7 +218,7 @@ namespace Godot.SourceGenerators
                     .Append("new ScriptMethodRegistry<").Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)).Append(">()");
                 source.Append("\n        .Register(").Append(symbol.BaseType!.FullQualifiedNameIncludeGlobal()).Append(".MethodRegistry)\n");
 
-                foreach (var method in godotClassNonStaticMethods)
+                foreach (var method in godotClassMethods)
                 {
                     GenerateScriptMethodRegistryEntry(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), method, source);
                 }
@@ -230,7 +228,7 @@ namespace Godot.SourceGenerators
                 // ScriptMethodDispatchHelper
                 source.Append("    private sealed class ScriptMethodDispatchHelper\n");
                 source.Append("    {\n");
-                foreach (var method in godotClassNonStaticMethods)
+                foreach (var method in godotClassMethods)
                 {
                     GenerateScriptMethodDispatchHelperMethod(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), method, source);
                 }
@@ -536,7 +534,15 @@ namespace Godot.SourceGenerators
             else
                 source.Append("                ");
 
-            source.Append($"Unsafe.As<GodotObject, {type}>(ref scriptInstance).").Append(methodName);
+            if (!method.Method.IsStatic)
+            {
+                source.Append($"Unsafe.As<GodotObject, {type}>(ref scriptInstance).").Append(methodName);
+            }
+            else
+            {
+                source.Append($"{type}.").Append(methodName);
+            }
+
             source.Append("(");
 
             for (int i = 0; i < method.ParamTypes.Length; i++)

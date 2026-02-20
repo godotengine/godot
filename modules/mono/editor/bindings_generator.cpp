@@ -2677,8 +2677,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		for (const MethodInterface &imethod : itype.methods) {
 			const String method_name_with_argc = imethod.proxy_name + itos(imethod.arguments.size());
-			if (imethod.is_static ||
-					imethod.is_virtual ||
+			if (imethod.is_virtual ||
 					itype.is_singleton ||
 					itype.is_singleton_instance ||
 					already_registered.find(method_name_with_argc) != -1) {
@@ -2720,8 +2719,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		output << INDENT1 << "{\n";
 		for (const MethodInterface &imethod : itype.methods) {
 			const String method_name = imethod.proxy_name + itos(imethod.arguments.size());
-			if (imethod.is_static ||
-					imethod.is_virtual ||
+			if (imethod.is_virtual ||
 					itype.is_singleton ||
 					itype.is_singleton_instance ||
 					already_registered.find(method_name) != -1) {
@@ -2747,9 +2745,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				output << "var callRet = ";
 			}
 
-			output << "Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance)."
-				   << imethod.proxy_name
-				   << "(";
+			if (!imethod.is_static) {
+				output << "Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance).";
+			} else {
+				output << itype.proxy_name << ".";
+			}
+
+			output << imethod.proxy_name << "(";
 
 			int idx = 0;
 			for (const ArgumentInterface &iarg : imethod.arguments) {
@@ -2806,7 +2808,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << INDENT1 "/// Do not call or override this method.\n"
 			   << INDENT1 "/// </summary>\n"
 			   << INDENT1 "/// <param name=\"method\">Name of the method to invoke.</param>\n"
-			   << INDENT1 "/// <param name=\"argc\">Argument count.</param>\n"
+			   << INDENT1 "/// <param name=\"argCount\">Argument count.</param>\n"
 			   << INDENT1 "/// <returns>Ref to the script method</returns>\n";
 
 		output << INDENT1 << "/// <inheritdoc/>\n"
