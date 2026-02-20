@@ -24,6 +24,8 @@ namespace Godot.Bridge
 
     //}
 
+#pragma warning disable CA1000 // Do not declare static members on generic types
+
     public class ScriptCache<T, TMethod>
         where T : GodotObject
     {
@@ -292,4 +294,6 @@ namespace Godot.Bridge
             }
         }
     }
+
+#pragma warning restore CA1000 // Do not declare static members on generic types
 }

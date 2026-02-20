@@ -336,7 +336,8 @@ namespace Godot.SourceGenerators
                 var baseType = symbol.BaseType!.FullQualifiedNameIncludeGlobal();
                 source.Append(
                     $$"""
-                        protected new static readonly ScriptSignalRegistry<{{type}}> SignalRegistry = new ScriptSignalRegistry<{{type}}>()
+                    #pragma warning disable CS0618 // Type or member is obsolete
+                        {{(symbol.IsSealed ? "private" : "protected")}} new static readonly ScriptSignalRegistry<{{type}}> SignalRegistry = new ScriptSignalRegistry<{{type}}>()
                             .Register({{baseType}}.SignalRegistry)
                     
                     """);
@@ -346,7 +347,12 @@ namespace Godot.SourceGenerators
                     GenerateScriptSignalRegistryEntry(type, signalMethod, source);
                 }
 
-                source.Append("        .Build();\n\n");
+                source.Append("        .Build();\n");
+                source.Append(
+                    """
+                    #pragma warning restore CS0618 // Type or member is obsolete
+
+                    """);
 
                 source.Append(
                     """
@@ -355,7 +361,7 @@ namespace Godot.SourceGenerators
                         protected override void RaiseGodotClassSignalCallbacks(in godot_string_name signal, NativeVariantPtrArgs args)
                         {
                             ref readonly var signalMethod = ref SignalRegistry.GetMethodOrNullRef(in signal, args.Count);
-                            if (!Unsafe.IsNullRef(signalMethod))
+                            if (!Unsafe.IsNullRef(in signalMethod))
                             {
                                 signalMethod(this, args);
                             }
