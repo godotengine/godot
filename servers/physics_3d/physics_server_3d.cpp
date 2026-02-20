@@ -780,7 +780,7 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_shape", "body", "shape_idx", "shape"), &PhysicsServer3D::body_set_shape);
 	ClassDB::bind_method(D_METHOD("body_set_shape_transform", "body", "shape_idx", "transform"), &PhysicsServer3D::body_set_shape_transform);
 	ClassDB::bind_method(D_METHOD("body_set_shape_disabled", "body", "shape_idx", "disabled"), &PhysicsServer3D::body_set_shape_disabled);
-	ClassDB::bind_method(D_METHOD("body_set_shape_as_one_way_collision", "body", "shape_idx", "enable", "margin"), &PhysicsServer3D::body_set_shape_as_one_way_collision);
+	ClassDB::bind_method(D_METHOD("body_set_shape_as_one_way_collision", "body", "shape_idx", "enable", "margin", "direction"), &PhysicsServer3D::body_set_shape_as_one_way_collision);
 
 	ClassDB::bind_method(D_METHOD("body_get_shape_count", "body"), &PhysicsServer3D::body_get_shape_count);
 	ClassDB::bind_method(D_METHOD("body_get_shape", "body", "shape_idx"), &PhysicsServer3D::body_get_shape);

@@ -647,11 +647,11 @@ void JoltPhysicsServer3D::body_set_shape_disabled(RID p_body, int p_shape_idx, b
 	body->set_shape_disabled(p_shape_idx, p_disabled);
 }
 
-void JoltPhysicsServer3D::body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enabled, real_t p_margin) {
+void JoltPhysicsServer3D::body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enabled, real_t p_margin, const Vector3 &p_direction) {
 	JoltBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
 
-	body->set_shape_as_one_way_collision(p_shape_idx, p_enabled, p_margin);
+	body->set_shape_as_one_way_collision(p_shape_idx, p_enabled, p_margin, p_direction);
 }
 
 void JoltPhysicsServer3D::body_attach_object_instance_id(RID p_body, ObjectID p_id) {

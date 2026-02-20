@@ -542,13 +542,13 @@ void GodotPhysicsServer3D::body_set_shape_disabled(RID p_body, int p_shape_idx, 
 	body->set_shape_disabled(p_shape_idx, p_disabled);
 }
 
-void GodotPhysicsServer3D::body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable, real_t p_margin) {
+void GodotPhysicsServer3D::body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable, real_t p_margin, const Vector3 &p_direction) {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
 	FLUSH_QUERY_CHECK(body);
 
-	body->set_shape_as_one_way_collision(p_shape_idx, p_enable, p_margin);
+	body->set_shape_as_one_way_collision(p_shape_idx, p_enable, p_margin, p_direction);
 }
 
 Transform3D GodotPhysicsServer3D::body_get_shape_transform(RID p_body, int p_shape_idx) const {

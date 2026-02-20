@@ -68,14 +68,14 @@ JPH::ValidateResult JoltContactListener3D::OnContactValidate(const JPH::Body &p_
 	Vector3 contact_normal = to_godot(-p_collision_result.mPenetrationAxis.Normalized());
 
 	if (shape2->allows_one_way_collision() && body1->is_shape_set_as_one_way_collision(shape1_idx)) {
-		Vector3 direction = -body1->get_shape_transform_scaled(shape1_idx).basis[1].normalized();
+		Vector3 direction = body1->get_shape_transform_unscaled(shape1_idx).basis.xform(body1->get_shape_one_way_collision_direction(shape1_idx)).normalized();
 		if (contact_normal.dot(direction) < CMP_EPSILON) {
 			return JPH::ValidateResult::RejectContact;
 		}
 	}
 
 	if (shape1->allows_one_way_collision() && body2->is_shape_set_as_one_way_collision(shape2_idx)) {
-		Vector3 direction = -body2->get_shape_transform_scaled(shape2_idx).basis[1].normalized();
+		Vector3 direction = body2->get_shape_transform_unscaled(shape2_idx).basis.xform(body2->get_shape_one_way_collision_direction(shape2_idx)).normalized();
 		if (contact_normal.dot(direction) > -CMP_EPSILON) {
 			return JPH::ValidateResult::RejectContact;
 		}

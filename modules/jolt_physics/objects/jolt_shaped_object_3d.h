@@ -131,6 +131,7 @@ public:
 
 	bool has_one_way_collision_shapes() const { return one_way_collision_shape_count > 0; }
 	bool is_shape_set_as_one_way_collision(int p_index) const;
-	void set_shape_as_one_way_collision(int p_index, bool p_enabled, real_t p_margin);
+	void set_shape_as_one_way_collision(int p_index, bool p_enabled, real_t p_margin, const Vector3 &p_direction);
 	real_t get_shape_one_way_collision_margin(int p_index) const;
+	Vector3 get_shape_one_way_collision_direction(int p_index) const;
 };

@@ -755,7 +755,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 					Transform3D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 
 					if (body_shape->allows_one_way_collision() && col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
-						cbk.valid_dir = -col_obj_shape_xform.basis[1].normalized(); // TODO + or -?
+						cbk.valid_dir = col_obj_shape_xform.basis.xform(col_obj->get_shape_one_way_collision_direction(shape_idx)).normalized();
 
 						real_t owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
 						cbk.valid_depth = MAX(owc_margin, margin); //user specified, but never less than actual margin or it won't work
@@ -975,7 +975,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 					cbk.amount = 0;
 					cbk.passed = 0;
 					cbk.ptr = cd;
-					cbk.valid_dir = -col_obj_shape_xform.basis[1].normalized(); // TODO + or -?
+					cbk.valid_dir = col_obj_shape_xform.basis.xform(col_obj->get_shape_one_way_collision_direction(shape_idx)).normalized();
 
 					cbk.valid_depth = 10e20;
 
@@ -1073,7 +1073,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 				Transform3D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 
 				if (body_shape->allows_one_way_collision() && col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
-					rcd.valid_dir = -col_obj_shape_xform.basis[1].normalized(); // TODO + or -?
+					rcd.valid_dir = col_obj_shape_xform.basis.xform(col_obj->get_shape_one_way_collision_direction(shape_idx)).normalized();
 
 					real_t owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
 					rcd.valid_depth = MAX(owc_margin, margin); //user specified, but never less than actual margin or it won't work
