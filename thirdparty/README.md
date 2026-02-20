@@ -408,6 +408,7 @@ a new version of the web instance.
 Patches:
 
 - `0001-enable-both-gl-and-gles.patch` ([GH-72831](https://github.com/godotengine/godot/pull/72831))
+- `0002-egl-windows-inc.patch` ([GH-116690](https://github.com/godotengine/godot/pull/116690))
 
 
 ## glslang

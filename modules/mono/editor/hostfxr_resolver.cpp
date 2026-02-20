@@ -69,8 +69,7 @@ SOFTWARE.
 #include "core/os/os.h"
 
 #ifdef WINDOWS_ENABLED
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include "drivers/windows/windows_inc.h"
 #endif
 
 // We don't use libnethost as it gives us issues with some compilers.

@@ -38,8 +38,7 @@
 #include <cstdlib>
 
 #ifdef WINDOWS_ENABLED
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include "drivers/windows/windows_inc.h"
 
 #define ENV_PATH_SEP ";"
 #else

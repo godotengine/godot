@@ -38,8 +38,8 @@
 
 #include <share.h> // _SH_DENYNO
 #include <shlwapi.h>
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+
+#include "drivers/windows/windows_inc.h"
 
 #include <io.h>
 #include <sys/stat.h>

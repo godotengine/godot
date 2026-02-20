@@ -37,7 +37,7 @@
 #include "core/templates/rb_map.h"
 #include "servers/display/display_server.h"
 
-#include <windows.h>
+#include "drivers/windows/windows_inc.h"
 
 typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
 typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);

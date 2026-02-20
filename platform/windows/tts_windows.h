@@ -41,8 +41,7 @@
 #include <winnls.h>
 #include <cwchar>
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include "drivers/windows/windows_inc.h"
 
 class TTS_Windows {
 	List<DisplayServer::TTSUtterance> queue;

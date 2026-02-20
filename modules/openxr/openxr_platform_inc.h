@@ -80,7 +80,7 @@
 #ifdef WINDOWS_ENABLED
 // Including windows.h here is absolutely evil, we shouldn't be doing this outside of platform
 // however due to the way the openxr headers are put together, we have no choice.
-#include <windows.h>
+#include "drivers/windows/windows_inc.h"
 #endif // WINDOWS_ENABLED
 
 #ifdef ANDROID_ENABLED

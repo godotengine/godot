@@ -40,8 +40,8 @@
 
 #include <cstdio>
 #include <cwchar>
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+
+#include "drivers/windows/windows_inc.h"
 
 typedef struct _NT_IO_STATUS_BLOCK {
 	union {

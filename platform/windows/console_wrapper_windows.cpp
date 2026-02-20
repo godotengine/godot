@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include <windows.h>
+#include "drivers/windows/windows_inc.h"
 
 #include <shlwapi.h>
 #include <cstdio>

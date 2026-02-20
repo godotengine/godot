@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include <windows.h>
+#include "drivers/windows/windows_inc.h"
+
 #ifdef _MSC_VER
 #include <intrin.h> // For builtin __cpuid.
 #else

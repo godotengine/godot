@@ -36,8 +36,8 @@
 #include "core/templates/vector.h"
 
 #include <cstdio>
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+
+#include "drivers/windows/windows_inc.h"
 
 #include <mmsystem.h>
 

@@ -49,10 +49,10 @@
 #include <shellapi.h>
 #include <cstdio>
 
-#define WIN32_LEAN_AND_MEAN
+#include "drivers/windows/windows_inc.h"
+
 #include <dwrite.h>
 #include <dwrite_2.h>
-#include <windows.h>
 #include <windowsx.h>
 
 #ifdef DEBUG_ENABLED

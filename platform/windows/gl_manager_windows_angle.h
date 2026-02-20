@@ -37,7 +37,7 @@
 #include "drivers/egl/egl_manager.h"
 #include "servers/display/display_server.h"
 
-#include <windows.h>
+#include "drivers/windows/windows_inc.h"
 
 class GLManagerANGLE_Windows : public EGLManager {
 private:

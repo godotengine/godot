@@ -63,9 +63,9 @@
 #include <io.h>
 #include <cstdio>
 
-#define WIN32_LEAN_AND_MEAN
+#include "drivers/windows/windows_inc.h"
+
 #include <shobjidl.h>
-#include <windows.h>
 #include <windowsx.h>
 
 // WinTab API

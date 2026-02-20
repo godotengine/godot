@@ -35,8 +35,7 @@
 #include "core/io/file_access.h"
 #include "core/os/memory.h"
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include "drivers/windows/windows_inc.h"
 
 class FileAccessWindowsPipe : public FileAccess {
 	GDSOFTCLASS(FileAccessWindowsPipe, FileAccess);

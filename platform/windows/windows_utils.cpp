@@ -36,9 +36,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#undef FAILED // Overrides Error::FAILED
+#include "drivers/windows/windows_inc.h"
 
 // dbghelp is linked only in DEBUG_ENABLED builds.
 #ifdef DEBUG_ENABLED

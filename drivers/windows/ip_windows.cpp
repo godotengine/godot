@@ -32,8 +32,8 @@
 
 #include "ip_windows.h"
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include "drivers/windows/windows_inc.h"
+
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
