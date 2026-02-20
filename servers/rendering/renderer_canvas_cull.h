@@ -46,17 +46,20 @@ public:
 		List<Item *>::Element *E;
 		int z_index;
 		bool z_relative;
-		bool sort_y;
+		bool sort_axis;
+		bool sort_axis_y_as_main;
+		bool sort_axis_x_ascending;
+		bool sort_axis_y_ascending;
 		Color modulate;
 		Color self_modulate;
 		bool use_parent_material;
 		int index;
 		bool children_order_dirty;
-		int ysort_children_count;
-		Color ysort_modulate;
-		Transform2D ysort_xform; // Relative to y-sorted subtree's root item (identity for such root). Its `origin.y` is used for sorting.
-		int ysort_index;
-		int ysort_parent_abs_z_index; // Absolute Z index of parent. Only populated and used when y-sorting.
+		int axis_sort_children_count;
+		Color axis_sort_modulate;
+		Transform2D axis_sort_xform; // Relative to y-sorted subtree's root item (identity for such root). Its `origin.y` is used for sorting.
+		int axis_sort_index;
+		int axis_sort_parent_abs_z_index; // Absolute Z index of parent. Only populated and used when y-sorting.
 		uint32_t visibility_layer = 0xffffffff;
 
 		Vector<Item *> child_items;
@@ -88,14 +91,14 @@ public:
 			z_index = 0;
 			modulate = Color(1, 1, 1, 1);
 			self_modulate = Color(1, 1, 1, 1);
-			sort_y = false;
+			sort_axis = false;
 			use_parent_material = false;
 			z_relative = true;
 			index = 0;
-			ysort_children_count = -1;
-			ysort_xform = Transform2D();
-			ysort_index = 0;
-			ysort_parent_abs_z_index = 0;
+			axis_sort_children_count = -1;
+			axis_sort_xform = Transform2D();
+			axis_sort_index = 0;
+			axis_sort_parent_abs_z_index = 0;
 
 			dependency_tracker.userdata = this;
 			dependency_tracker.changed_callback = &RendererCanvasCull::_dependency_changed;
@@ -112,15 +115,28 @@ public:
 		}
 	};
 
-	struct ItemYSort {
-		_FORCE_INLINE_ bool operator()(const Item *p_left, const Item *p_right) const {
-			const real_t left_y = p_left->ysort_xform.columns[2].y;
-			const real_t right_y = p_right->ysort_xform.columns[2].y;
-			if (Math::is_equal_approx(left_y, right_y)) {
-				return p_left->ysort_index < p_right->ysort_index;
-			}
+	struct ItemAxisSort {
+		bool y_as_main = true;
+		bool x_ascending = true;
+		bool y_ascending = true;
 
-			return left_y < right_y;
+		_FORCE_INLINE_ bool operator()(const Item *p_left, const Item *p_right) const {
+			const Vector2 left_pos = p_left->axis_sort_xform.columns[2];
+			const Vector2 right_pos = p_right->axis_sort_xform.columns[2];
+			real_t left_main = y_as_main ? left_pos.y : left_pos.x;
+			real_t right_main = y_as_main ? right_pos.y : right_pos.x;
+			real_t left_secondary = y_as_main ? left_pos.x : left_pos.y;
+			real_t right_secondary = y_as_main ? right_pos.x : right_pos.y;
+			bool main_ascending = y_as_main ? y_ascending : x_ascending;
+			bool secondary_ascending = y_as_main ? x_ascending : y_ascending;
+
+			if (Math::is_equal_approx(left_main, right_main)) {
+				if (Math::is_equal_approx(left_secondary, right_secondary)) {
+					return p_left->axis_sort_index < p_right->axis_sort_index;
+				}
+				return secondary_ascending ? left_secondary < right_secondary : left_secondary > right_secondary;
+			}
+			return main_ascending ? left_main < right_main : left_main > right_main;
 		}
 	};
 
@@ -205,11 +221,11 @@ public:
 
 private:
 	void _render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, uint32_t p_canvas_cull_mask, RenderingMethod::RenderInfo *r_render_info = nullptr);
-	void _cull_canvas_item(Item *p_canvas_item, const Transform2D &p_parent_xform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool p_is_already_y_sorted, uint32_t p_canvas_cull_mask, const Point2 &p_repeat_size, int p_repeat_times, RendererCanvasRender::Item *p_repeat_source_item);
+	void _cull_canvas_item(Item *p_canvas_item, const Transform2D &p_parent_xform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool p_is_already_axis_sorted, uint32_t p_canvas_cull_mask, const Point2 &p_repeat_size, int p_repeat_times, RendererCanvasRender::Item *p_repeat_source_item);
 
-	void _collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, RendererCanvasCull::Item *p_material_owner, const Color &p_modulate, RendererCanvasCull::Item **r_items, int &r_index, int &r_ysort_children_count, int p_z, uint32_t p_canvas_cull_mask);
-	int _count_ysort_children(RendererCanvasCull::Item *p_canvas_item);
-	void _mark_ysort_dirty(RendererCanvasCull::Item *ysort_owner);
+	void _collect_axis_sort_children(RendererCanvasCull::Item *p_canvas_item, RendererCanvasCull::Item *p_material_owner, const Color &p_modulate, RendererCanvasCull::Item **r_items, int &r_index, int &r_axis_sort_children_count, int p_z, uint32_t p_canvas_cull_mask);
+	int _count_axis_sort_children(RendererCanvasCull::Item *p_canvas_item);
+	void _mark_axis_sort_dirty(RendererCanvasCull::Item *axis_sort_owner);
 
 	static constexpr int z_range = RS::CANVAS_ITEM_Z_MAX - RS::CANVAS_ITEM_Z_MIN + 1;
 
@@ -276,7 +292,10 @@ public:
 	void canvas_item_add_clip_ignore(RID p_item, bool p_ignore);
 	void canvas_item_add_animation_slice(RID p_item, double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset);
 
-	void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable);
+	void canvas_item_set_sort_children_by_axis(RID p_item, bool p_enable);
+	void canvas_item_set_sort_children_by_axis_y_as_main(RID p_item, bool p_enable);
+	void canvas_item_set_sort_children_by_axis_x_ascending(RID p_item, bool p_enable);
+	void canvas_item_set_sort_children_by_axis_y_ascending(RID p_item, bool p_enable);
 	void canvas_item_set_z_index(RID p_item, int p_z);
 	void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable);
 	void canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable, const Rect2 &p_rect);

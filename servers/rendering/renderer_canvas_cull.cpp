@@ -107,7 +107,7 @@ void RendererCanvasCull::_render_canvas_item_tree(RID p_to_render_target, Canvas
 	}
 }
 
-void RendererCanvasCull::_collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, RendererCanvasCull::Item *p_material_owner, const Color &p_modulate, RendererCanvasCull::Item **r_items, int &r_index, int &r_ysort_children_count, int p_z, uint32_t p_canvas_cull_mask) {
+void RendererCanvasCull::_collect_axis_sort_children(RendererCanvasCull::Item *p_canvas_item, RendererCanvasCull::Item *p_material_owner, const Color &p_modulate, RendererCanvasCull::Item **r_items, int &r_index, int &r_axis_sort_children_count, int p_z, uint32_t p_canvas_cull_mask) {
 	int child_item_count = p_canvas_item->child_items.size();
 	RendererCanvasCull::Item **child_items = p_canvas_item->child_items.ptrw();
 	for (int i = 0; i < child_item_count; i++) {
@@ -128,11 +128,11 @@ void RendererCanvasCull::_collect_ysort_children(RendererCanvasCull::Item *p_can
 				}
 
 				r_items[r_index] = child_items[i];
-				child_items[i]->ysort_xform = p_canvas_item->ysort_xform * child_xform;
+				child_items[i]->axis_sort_xform = p_canvas_item->axis_sort_xform * child_xform;
 				child_items[i]->material_owner = child_items[i]->use_parent_material ? p_material_owner : nullptr;
-				child_items[i]->ysort_modulate = p_modulate;
-				child_items[i]->ysort_index = r_index;
-				child_items[i]->ysort_parent_abs_z_index = p_z;
+				child_items[i]->axis_sort_modulate = p_modulate;
+				child_items[i]->axis_sort_index = r_index;
+				child_items[i]->axis_sort_parent_abs_z_index = p_z;
 
 				if (!child_items[i]->repeat_source) {
 					child_items[i]->repeat_size = p_canvas_item->repeat_size;
@@ -150,42 +150,42 @@ void RendererCanvasCull::_collect_ysort_children(RendererCanvasCull::Item *p_can
 
 				r_index++;
 
-				if (child_items[i]->sort_y) {
-					_collect_ysort_children(child_items[i], child_items[i]->use_parent_material ? p_material_owner : child_items[i], p_modulate * child_items[i]->modulate, r_items, r_index, r_ysort_children_count, abs_z, p_canvas_cull_mask);
+				if (child_items[i]->sort_axis) {
+					_collect_axis_sort_children(child_items[i], child_items[i]->use_parent_material ? p_material_owner : child_items[i], p_modulate * child_items[i]->modulate, r_items, r_index, r_axis_sort_children_count, abs_z, p_canvas_cull_mask);
 				}
 			} else {
-				r_ysort_children_count--;
-				if (child_items[i]->sort_y) {
-					r_ysort_children_count -= child_items[i]->ysort_children_count;
+				r_axis_sort_children_count--;
+				if (child_items[i]->sort_axis) {
+					r_axis_sort_children_count -= child_items[i]->axis_sort_children_count;
 				}
 			}
 		}
 	}
 }
 
-int RendererCanvasCull::_count_ysort_children(RendererCanvasCull::Item *p_canvas_item) {
-	int ysort_children_count = 0;
+int RendererCanvasCull::_count_axis_sort_children(RendererCanvasCull::Item *p_canvas_item) {
+	int axis_sort_children_count = 0;
 	int child_item_count = p_canvas_item->child_items.size();
 	RendererCanvasCull::Item *const *child_items = p_canvas_item->child_items.ptr();
 	for (int i = 0; i < child_item_count; i++) {
 		if (child_items[i]->visible) {
-			ysort_children_count++;
-			if (child_items[i]->sort_y) {
-				if (child_items[i]->ysort_children_count == -1) {
-					child_items[i]->ysort_children_count = _count_ysort_children(child_items[i]);
+			axis_sort_children_count++;
+			if (child_items[i]->sort_axis) {
+				if (child_items[i]->axis_sort_children_count == -1) {
+					child_items[i]->axis_sort_children_count = _count_axis_sort_children(child_items[i]);
 				}
-				ysort_children_count += child_items[i]->ysort_children_count;
+				axis_sort_children_count += child_items[i]->axis_sort_children_count;
 			}
 		}
 	}
-	return ysort_children_count;
+	return axis_sort_children_count;
 }
 
-void RendererCanvasCull::_mark_ysort_dirty(RendererCanvasCull::Item *ysort_owner) {
+void RendererCanvasCull::_mark_axis_sort_dirty(RendererCanvasCull::Item *axis_sort_owner) {
 	do {
-		ysort_owner->ysort_children_count = -1;
-		ysort_owner = canvas_item_owner.owns(ysort_owner->parent) ? canvas_item_owner.get_or_null(ysort_owner->parent) : nullptr;
-	} while (ysort_owner && ysort_owner->sort_y);
+		axis_sort_owner->axis_sort_children_count = -1;
+		axis_sort_owner = canvas_item_owner.owns(axis_sort_owner->parent) ? canvas_item_owner.get_or_null(axis_sort_owner->parent) : nullptr;
+	} while (axis_sort_owner && axis_sort_owner->sort_axis);
 }
 
 void RendererCanvasCull::_attach_canvas_item_for_draw(RendererCanvasCull::Item *ci, RendererCanvasCull::Item *p_canvas_clip, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, const Transform2D &p_transform, const Rect2 &p_clip_rect, Rect2 p_global_rect, const Color &p_modulate, int p_z, RendererCanvasCull::Item *p_material_owner, bool p_use_canvas_group, RendererCanvasRender::Item *r_canvas_group_from) {
@@ -300,7 +300,7 @@ void RendererCanvasCull::_attach_canvas_item_for_draw(RendererCanvasCull::Item *
 	}
 }
 
-void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2D &p_parent_xform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool p_is_already_y_sorted, uint32_t p_canvas_cull_mask, const Point2 &p_repeat_size, int p_repeat_times, RendererCanvasRender::Item *p_repeat_source_item) {
+void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2D &p_parent_xform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool p_is_already_axis_sorted, uint32_t p_canvas_cull_mask, const Point2 &p_repeat_size, int p_repeat_times, RendererCanvasRender::Item *p_repeat_source_item) {
 	Item *ci = p_canvas_item;
 
 	if (!ci->visible) {
@@ -343,7 +343,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	// we can override the transform for rendering purposes for this item only.
 	Transform2D self_xform;
 	Transform2D final_xform;
-	if (p_is_already_y_sorted) {
+	if (p_is_already_axis_sorted) {
 		// Y-sorted item's final transform is calculated before y-sorting,
 		// and is passed as `p_parent_xform` afterwards. No need to recalculate.
 		final_xform = p_parent_xform;
@@ -434,28 +434,31 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		p_z = ci->z_index;
 	}
 
-	if (ci->sort_y) {
-		if (!p_is_already_y_sorted) {
-			if (ci->ysort_children_count == -1) {
-				ci->ysort_children_count = _count_ysort_children(ci);
+	if (ci->sort_axis) {
+		if (!p_is_already_axis_sorted) {
+			if (ci->axis_sort_children_count == -1) {
+				ci->axis_sort_children_count = _count_axis_sort_children(ci);
 			}
 
-			child_item_count = ci->ysort_children_count + 1;
+			child_item_count = ci->axis_sort_children_count + 1;
 			child_items = (Item **)alloca(child_item_count * sizeof(Item *));
 
-			ci->ysort_xform = Transform2D();
-			ci->ysort_modulate = Color(1, 1, 1, 1) / ci->modulate;
-			ci->ysort_index = 0;
-			ci->ysort_parent_abs_z_index = parent_z;
+			ci->axis_sort_xform = Transform2D();
+			ci->axis_sort_modulate = Color(1, 1, 1, 1) / ci->modulate;
+			ci->axis_sort_index = 0;
+			ci->axis_sort_parent_abs_z_index = parent_z;
 			child_items[0] = ci;
 			int i = 1;
-			_collect_ysort_children(ci, p_material_owner, Color(1, 1, 1, 1), child_items, i, child_item_count, p_z, p_canvas_cull_mask);
+			_collect_axis_sort_children(ci, p_material_owner, Color(1, 1, 1, 1), child_items, i, child_item_count, p_z, p_canvas_cull_mask);
 
-			SortArray<Item *, ItemYSort> sorter;
+			SortArray<Item *, ItemAxisSort> sorter;
+			sorter.compare.y_as_main = ci->sort_axis_y_as_main;
+			sorter.compare.x_ascending = ci->sort_axis_x_ascending;
+			sorter.compare.y_ascending = ci->sort_axis_y_ascending;
 			sorter.sort(child_items, child_item_count);
 
 			for (i = 0; i < child_item_count; i++) {
-				_cull_canvas_item(child_items[i], final_xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, child_items[i]->ysort_parent_abs_z_index, r_z_list, r_z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner, true, p_canvas_cull_mask, child_items[i]->repeat_size, child_items[i]->repeat_times, child_items[i]->repeat_source_item);
+				_cull_canvas_item(child_items[i], final_xform * child_items[i]->axis_sort_xform, p_clip_rect, modulate * child_items[i]->axis_sort_modulate, child_items[i]->axis_sort_parent_abs_z_index, r_z_list, r_z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner, true, p_canvas_cull_mask, child_items[i]->repeat_size, child_items[i]->repeat_times, child_items[i]->repeat_source_item);
 			}
 		} else {
 			RendererCanvasRender::Item *canvas_group_from = nullptr;
@@ -588,8 +591,8 @@ void RendererCanvasCull::canvas_item_set_parent(RID p_item, RID p_parent) {
 			Item *item_owner = canvas_item_owner.get_or_null(canvas_item->parent);
 			item_owner->child_items.erase(canvas_item);
 
-			if (item_owner->sort_y) {
-				_mark_ysort_dirty(item_owner);
+			if (item_owner->sort_axis) {
+				_mark_axis_sort_dirty(item_owner);
 			}
 		}
 
@@ -608,8 +611,8 @@ void RendererCanvasCull::canvas_item_set_parent(RID p_item, RID p_parent) {
 			item_owner->child_items.push_back(canvas_item);
 			item_owner->children_order_dirty = true;
 
-			if (item_owner->sort_y) {
-				_mark_ysort_dirty(item_owner);
+			if (item_owner->sort_axis) {
+				_mark_axis_sort_dirty(item_owner);
 			}
 
 		} else {
@@ -626,7 +629,7 @@ void RendererCanvasCull::canvas_item_set_visible(RID p_item, bool p_visible) {
 
 	canvas_item->visible = p_visible;
 
-	_mark_ysort_dirty(canvas_item);
+	_mark_axis_sort_dirty(canvas_item);
 }
 
 void RendererCanvasCull::canvas_item_set_light_mask(RID p_item, int p_mask) {
@@ -1828,13 +1831,40 @@ void RendererCanvasCull::canvas_item_add_animation_slice(RID p_item, double p_an
 	as->offset = p_offset;
 }
 
-void RendererCanvasCull::canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) {
+void RendererCanvasCull::canvas_item_set_sort_children_by_axis(RID p_item, bool p_enable) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
 
-	canvas_item->sort_y = p_enable;
+	canvas_item->sort_axis = p_enable;
 
-	_mark_ysort_dirty(canvas_item);
+	_mark_axis_sort_dirty(canvas_item);
+}
+
+void RendererCanvasCull::canvas_item_set_sort_children_by_axis_y_as_main(RID p_item, bool p_enable) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+
+	canvas_item->sort_axis_y_as_main = p_enable;
+
+	_mark_axis_sort_dirty(canvas_item);
+}
+
+void RendererCanvasCull::canvas_item_set_sort_children_by_axis_x_ascending(RID p_item, bool p_enable) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+
+	canvas_item->sort_axis_x_ascending = p_enable;
+
+	_mark_axis_sort_dirty(canvas_item);
+}
+
+void RendererCanvasCull::canvas_item_set_sort_children_by_axis_y_ascending(RID p_item, bool p_enable) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+
+	canvas_item->sort_axis_y_ascending = p_enable;
+
+	_mark_axis_sort_dirty(canvas_item);
 }
 
 void RendererCanvasCull::canvas_item_set_z_index(RID p_item, int p_z) {
@@ -2604,8 +2634,8 @@ bool RendererCanvasCull::free(RID p_rid) {
 				Item *item_owner = canvas_item_owner.get_or_null(canvas_item->parent);
 				item_owner->child_items.erase(canvas_item);
 
-				if (item_owner->sort_y) {
-					_mark_ysort_dirty(item_owner);
+				if (item_owner->sort_axis) {
+					_mark_axis_sort_dirty(item_owner);
 				}
 			}
 		}

@@ -145,6 +145,12 @@
 				Returns the coordinates of the tile for given physics body RID. Such RID can be retrieved from [method KinematicCollision2D.get_collider_rid], when colliding with a tile.
 			</description>
 		</method>
+		<method name="get_layer_axis_sort_origin" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_layer_for_body_rid">
 			<return type="int" />
 			<param index="0" name="body" type="RID" />
@@ -175,14 +181,6 @@
 				Returns the [RID] of the [NavigationServer2D] navigation map assigned to the specified TileMap layer [param layer].
 				By default the TileMap uses the default [World2D] navigation map for the first TileMap layer. For each additional TileMap layer a new navigation map is created for the additional layer.
 				In order to make [NavigationAgent2D] switch between TileMap layer navigation maps use [method NavigationAgent2D.set_navigation_map] with the navigation map received from [method get_layer_navigation_map].
-				If [param layer] is negative, the layers are accessed from the last one.
-			</description>
-		</method>
-		<method name="get_layer_y_sort_origin" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="layer" type="int" />
-			<description>
-				Returns a TileMap layer's Y sort origin.
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
@@ -285,6 +283,12 @@
 				Returns [code]true[/code] if the cell on layer [param layer] at coordinates [param coords] is transposed. The result is valid only for atlas sources.
 			</description>
 		</method>
+		<method name="is_layer_axis_sort_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="is_layer_enabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer" type="int" />
@@ -298,14 +302,6 @@
 			<param index="0" name="layer" type="int" />
 			<description>
 				Returns if a layer's built-in navigation regions generation is enabled.
-			</description>
-		</method>
-		<method name="is_layer_y_sort_enabled" qualifiers="const">
-			<return type="bool" />
-			<param index="0" name="layer" type="int" />
-			<description>
-				Returns if a layer Y-sorts its tiles.
-				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="local_to_map" qualifiers="const">
@@ -401,6 +397,20 @@
 				[b]Note:[/b] To work correctly, this method requires the TileMap's TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
 			</description>
 		</method>
+		<method name="set_layer_axis_sort_enabled">
+			<return type="void" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="axis_sort_enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_layer_axis_sort_origin">
+			<return type="void" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="axis_sort_origin" type="Vector2i" />
+			<description>
+			</description>
+		</method>
 		<method name="set_layer_enabled">
 			<return type="void" />
 			<param index="0" name="layer" type="int" />
@@ -444,26 +454,6 @@
 				Assigns [param map] as a [NavigationServer2D] navigation map for the specified TileMap layer [param layer].
 				By default the TileMap uses the default [World2D] navigation map for the first TileMap layer. For each additional TileMap layer a new navigation map is created for the additional layer.
 				In order to make [NavigationAgent2D] switch between TileMap layer navigation maps use [method NavigationAgent2D.set_navigation_map] with the navigation map received from [method get_layer_navigation_map].
-				If [param layer] is negative, the layers are accessed from the last one.
-			</description>
-		</method>
-		<method name="set_layer_y_sort_enabled">
-			<return type="void" />
-			<param index="0" name="layer" type="int" />
-			<param index="1" name="y_sort_enabled" type="bool" />
-			<description>
-				Enables or disables a layer's Y-sorting. If a layer is Y-sorted, the layer will behave as a CanvasItem node where each of its tile gets Y-sorted.
-				Y-sorted layers should usually be on different Z-index values than not Y-sorted layers, otherwise, each of those layer will be Y-sorted as whole with the Y-sorted one. This is usually an undesired behavior.
-				If [param layer] is negative, the layers are accessed from the last one.
-			</description>
-		</method>
-		<method name="set_layer_y_sort_origin">
-			<return type="void" />
-			<param index="0" name="layer" type="int" />
-			<param index="1" name="y_sort_origin" type="int" />
-			<description>
-				Sets a layer's Y-sort origin value. This Y-sort origin value is added to each tile's Y-sort origin value.
-				This allows, for example, to fake a different height level on each layer. This can be useful for top-down view games.
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>

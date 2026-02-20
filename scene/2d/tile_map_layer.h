@@ -170,10 +170,25 @@ struct CellData {
 	}
 };
 
-// We use another comparator for Y-sorted layers with reversed X drawing order.
-struct CellDataYSortedXReversedComparator {
+struct CellDataAxisSortComparator {
+	bool y_as_main = true;
+	bool x_ascending = true;
+	bool y_ascending = true;
+
 	_FORCE_INLINE_ bool operator()(const CellData &p_a, const CellData &p_b) const {
-		return p_a.coords.x == p_b.coords.x ? (p_a.coords.y < p_b.coords.y) : (p_a.coords.x > p_b.coords.x);
+		const Vector2i a_coords = p_a.coords;
+		const Vector2i b_coords = p_b.coords;
+		int a_main = y_as_main ? a_coords.y : a_coords.x;
+		int b_main = y_as_main ? b_coords.y : b_coords.x;
+		int a_secondary = y_as_main ? a_coords.x : a_coords.y;
+		int b_secondary = y_as_main ? b_coords.x : b_coords.y;
+		bool main_ascending = y_as_main ? y_ascending : x_ascending;
+		bool secondary_ascending = y_as_main ? x_ascending : y_ascending;
+
+		if (a_main == b_main) {
+			return secondary_ascending ? a_secondary < b_secondary : a_secondary > b_secondary;
+		}
+		return main_ascending ? a_main < b_main : a_main > b_main;
 	}
 };
 
@@ -352,8 +367,8 @@ public:
 		DIRTY_FLAGS_LAYER_LOCAL_TRANSFORM,
 		DIRTY_FLAGS_LAYER_VISIBILITY,
 		DIRTY_FLAGS_LAYER_SELF_MODULATE,
-		DIRTY_FLAGS_LAYER_Y_SORT_ENABLED,
-		DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN,
+		DIRTY_FLAGS_LAYER_AXIS_SORT_ENABLED,
+		DIRTY_FLAGS_LAYER_AXIS_SORT_ORIGIN,
 		DIRTY_FLAGS_LAYER_X_DRAW_ORDER_REVERSED,
 		DIRTY_FLAGS_LAYER_Z_INDEX,
 		DIRTY_FLAGS_LAYER_LIGHT_MASK,
@@ -392,7 +407,7 @@ private:
 
 	HighlightMode highlight_mode = HIGHLIGHT_MODE_DEFAULT;
 
-	int y_sort_origin = 0;
+	Vector2i axis_sort_origin = Vector2i(0, 0);
 	bool x_draw_order_reversed = false;
 	int rendering_quadrant_size = 16;
 
@@ -612,9 +627,9 @@ public:
 	HighlightMode get_highlight_mode() const;
 
 	virtual void set_self_modulate(const Color &p_self_modulate) override;
-	virtual void set_y_sort_enabled(bool p_y_sort_enabled) override;
-	void set_y_sort_origin(int p_y_sort_origin);
-	int get_y_sort_origin() const;
+	virtual void set_axis_sort_enabled(bool p_axis_sort_enabled) override;
+	void set_axis_sort_origin(Vector2i p_axis_sort_origin);
+	Vector2i get_axis_sort_origin() const;
 	void set_x_draw_order_reversed(bool p_x_draw_order_reversed);
 	bool is_x_draw_order_reversed() const;
 	virtual void set_z_index(int p_z_index) override;

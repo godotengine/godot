@@ -617,12 +617,32 @@
 				Multiplies the color of the canvas item specified by the [param item] RID, without affecting its children. See also [method canvas_item_set_modulate]. Equivalent to [member CanvasItem.self_modulate].
 			</description>
 		</method>
-		<method name="canvas_item_set_sort_children_by_y">
+		<method name="canvas_item_set_sort_children_by_axis">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [param enabled] is [code]true[/code], child nodes with the lowest Y position are drawn before those with a higher Y position. Y-sorting only affects children that inherit from the canvas item specified by the [param item] RID, not the canvas item itself. Equivalent to [member CanvasItem.y_sort_enabled].
+			</description>
+		</method>
+		<method name="canvas_item_set_sort_children_by_axis_x_ascending">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_sort_children_by_axis_y_as_main">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_sort_children_by_axis_y_ascending">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
 			</description>
 		</method>
 		<method name="canvas_item_set_transform">
