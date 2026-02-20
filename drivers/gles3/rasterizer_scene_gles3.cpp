@@ -3780,7 +3780,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				if (GLES3::Config::get_singleton()->polygon_offset_clamp_supported) {
 #ifdef glPolygonOffsetClampEXT
 					glPolygonOffsetClampEXT(material_data->depth_bias_slope_factor, material_data->depth_bias_constant_factor, material_data->depth_bias_clamp);
-#else
+#elif !defined(IOS_ENABLED) && !defined(WEB_ENABLED)
 					glPolygonOffsetClamp(material_data->depth_bias_slope_factor, material_data->depth_bias_constant_factor, material_data->depth_bias_clamp);
 #endif
 				} else {
