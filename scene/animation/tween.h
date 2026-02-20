@@ -62,6 +62,7 @@ class CallbackTweener;
 class MethodTweener;
 class SubtweenTweener;
 class AwaitTweener;
+class AssignTweener;
 
 class Tween : public RefCounted {
 	GDCLASS(Tween, RefCounted);
@@ -150,6 +151,7 @@ public:
 	RequiredResult<MethodTweener> tween_method(const Callable &p_callback, const Variant p_from, Variant p_to, double p_duration);
 	RequiredResult<SubtweenTweener> tween_subtween(RequiredParam<Tween> rp_subtween);
 	RequiredResult<AwaitTweener> tween_await(const Signal &p_signal);
+	RequiredResult<AssignTweener> tween_assign(RequiredParam<const Object> rp_target, const NodePath &p_property, Variant p_new_val);
 	void append(Ref<Tweener> p_tweener);
 
 	bool custom_step(double p_delta);
@@ -354,4 +356,26 @@ private:
 	void _signal_received(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	Ref<RefCounted> ref_copy;
+};
+
+class AssignTweener : public Tweener {
+	GDCLASS(AssignTweener, Tweener);
+
+	ObjectID target;
+	Vector<StringName> property;
+	Variant new_val;
+	double delay = 0;
+
+	Ref<RefCounted> ref_copy;
+
+protected:
+	static void _bind_methods();
+
+public:
+	RequiredResult<AssignTweener> set_delay(double p_delay);
+
+	virtual bool step(double &r_delta) override;
+
+	AssignTweener(const Object *p_target, const Vector<StringName> &p_property, const Variant &p_new_val);
+	AssignTweener();
 };

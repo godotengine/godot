@@ -177,6 +177,17 @@ RequiredResult<AwaitTweener> Tween::tween_await(const Signal &p_signal) {
 	return tweener;
 }
 
+RequiredResult<AssignTweener> Tween::tween_assign(RequiredParam<const Object> rp_target, const NodePath &p_property, Variant p_new_val) {
+	EXTRACT_PARAM_OR_FAIL_V(p_target, rp_target, nullptr);
+	CHECK_VALID();
+
+	Vector<StringName> property_subnames = p_property.get_as_property_path().get_subnames();
+	Ref<AssignTweener> tweener;
+	tweener.instantiate(p_target, property_subnames, p_new_val);
+	append(tweener);
+	return tweener;
+}
+
 void Tween::append(Ref<Tweener> p_tweener) {
 	p_tweener->set_tween(this);
 
@@ -483,6 +494,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tween_method", "method", "from", "to", "duration"), &Tween::tween_method);
 	ClassDB::bind_method(D_METHOD("tween_subtween", "subtween"), &Tween::tween_subtween);
 	ClassDB::bind_method(D_METHOD("tween_await", "signal"), &Tween::tween_await);
+	ClassDB::bind_method(D_METHOD("tween_assign", "object", "property", "new_val"), &Tween::tween_assign);
 
 	ClassDB::bind_method(D_METHOD("custom_step", "delta"), &Tween::custom_step);
 	ClassDB::bind_method(D_METHOD("stop"), &Tween::stop);
@@ -996,4 +1008,48 @@ void AwaitTweener::_bind_methods() {
 
 void AwaitTweener::_signal_received(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	received = true;
+}
+
+void AssignTweener::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_delay", "delay"), &AssignTweener::set_delay);
+}
+
+RequiredResult<AssignTweener> AssignTweener::set_delay(double p_delay) {
+	delay = p_delay;
+	return this;
+}
+
+bool AssignTweener::step(double &r_delta) {
+	if (finished) {
+		return false;
+	}
+
+	Object *target_instance = ObjectDB::get_instance(target);
+	if (!target_instance) {
+		_finish();
+		return false;
+	}
+	elapsed_time += r_delta;
+	if (elapsed_time >= delay) {
+		target_instance->set_indexed(property, new_val);
+		r_delta = elapsed_time - delay;
+		_finish();
+		return false;
+	}
+
+	r_delta = 0;
+	return true;
+}
+
+AssignTweener::AssignTweener(const Object *p_target, const Vector<StringName> &p_property, const Variant &p_new_val) {
+	target = p_target->get_instance_id();
+	property = p_property;
+	new_val = p_new_val;
+	if (p_target->is_ref_counted()) {
+		ref_copy = p_target;
+	}
+}
+
+AssignTweener::AssignTweener() {
+	ERR_FAIL_MSG("AssignTweener can't be created directly. Use tween_assign() method in Tween.");
 }
