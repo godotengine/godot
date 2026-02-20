@@ -2952,6 +2952,15 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				output << INDENT3 << "})\n";
 			}
 
+			// Generate alias names for signals
+
+			for (const SignalInterface &isignal : itype.signals_) {
+				output << "\n"
+					   << INDENT2 ".AddAlias("
+					   << CS_STATIC_FIELD_SIGNAL_PROXY_NAME_PREFIX << isignal.name << ", " << itos(isignal.arguments.size()) << ", SignalName." << isignal.proxy_name
+					   << ")\n";
+			}
+
 			output << INDENT3 << ".Build();\n";
 
 			output << "#pragma warning restore CS0618 // Type or member is obsolete\n";
