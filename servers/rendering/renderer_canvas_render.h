@@ -336,6 +336,7 @@ public:
 		bool use_canvas_group = false;
 		int light_mask;
 		int z_final;
+		uint32_t z_render;
 
 		mutable bool custom_rect;
 		mutable bool rect_dirty;
@@ -483,6 +484,7 @@ public:
 			light_masked = false;
 			update_when_visible = false;
 			z_final = 0;
+			z_render = 0;
 			texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
 			texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
 			repeat_source = false;
