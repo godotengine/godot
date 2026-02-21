@@ -2880,7 +2880,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << " bool " CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(in godot_string_name signal)\n"
 			   << INDENT1 "{\n";
 
-		output << INDENT2 << "return SignalRegistry.ContainsName(signal);"
+		output << INDENT2 << "return SignalRegistry.ContainsName(signal);\n"
 			   << INDENT1 << "}\n\n";
 
 		if (is_derived_type) {
@@ -2962,7 +2962,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 					   << ")\n";
 			}
 
-			output << INDENT3 << ".Build();\n";
+			output << INDENT2 << ".Build();\n";
 
 			output << "#pragma warning restore CS0618 // Type or member is obsolete\n";
 			output << "#pragma warning restore CS0628 // new protected member declared in sealed class\n";
