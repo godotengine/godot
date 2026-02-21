@@ -388,19 +388,27 @@ void VoxelGI::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 	}
 }
 
-VoxelGI::BakeBeginFunc VoxelGI::bake_begin_function = nullptr;
-VoxelGI::BakeStepFunc VoxelGI::bake_step_function = nullptr;
-VoxelGI::BakeEndFunc VoxelGI::bake_end_function = nullptr;
+void VoxelGI::bake_begin() {
+	emit_signal(VoxelGI::bake_begin_name);
+}
+
+bool VoxelGI::bake_step(int p_step, const String &p_status) {
+	return emit_signal(VoxelGI::bake_step_name, p_step, p_status);
+}
+
+void VoxelGI::bake_end() {
+	emit_signal(VoxelGI::bake_end_name);
+}
 
 static int voxelizer_plot_bake_base = 0;
 static int voxelizer_plot_bake_total = 0;
 
-static bool voxelizer_plot_bake_step_function(int current, int) {
-	return VoxelGI::bake_step_function((voxelizer_plot_bake_base + current) * 500 / voxelizer_plot_bake_total, RTR("Plotting Meshes"));
+bool VoxelGI::_voxelizer_plot_bake_step_function(int p_current, int p_total) {
+	return bake_step((voxelizer_plot_bake_base + p_current) * 500 / voxelizer_plot_bake_total, RTR("Plotting Meshes"));
 }
 
-static bool voxelizer_sdf_bake_step_function(int current, int total) {
-	return VoxelGI::bake_step_function(500 + current * 500 / total, RTR("Generating Distance Field"));
+bool VoxelGI::_voxelizer_sdf_bake_step_function(int p_current, int p_total) {
+	return bake_step(500 + p_current * 500 / p_total, RTR("Generating Distance Field"));
 }
 
 Vector3i VoxelGI::get_estimated_cell_size() const {
@@ -445,11 +453,11 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 	_find_meshes(p_from_node, mesh_list);
 
-	if (bake_begin_function) {
-		bake_begin_function();
-	}
+	bake_begin();
 
-	Voxelizer::BakeStepFunc voxelizer_step_func = bake_step_function != nullptr ? voxelizer_plot_bake_step_function : nullptr;
+	auto voxelizer_step_func = [&](int current, int total) -> bool {
+		return this->_voxelizer_plot_bake_step_function(current, total);
+	};
 
 	voxelizer_plot_bake_total = voxelizer_plot_bake_base = 0;
 	for (PlotMesh &E : mesh_list) {
@@ -458,16 +466,13 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 	for (PlotMesh &E : mesh_list) {
 		if (baker.plot_mesh(E.local_xform, E.mesh, E.instance_materials, E.override_material, voxelizer_step_func) != Voxelizer::BAKE_RESULT_OK) {
 			baker.end_bake();
-			if (bake_end_function) {
-				bake_end_function();
-			}
+			bake_end();
 			return;
 		}
 		voxelizer_plot_bake_base += baker.get_bake_steps(E.mesh);
 	}
-	if (bake_step_function) {
-		bake_step_function(500, RTR("Finishing Plot"));
-	}
+
+	bake_step(500, RTR("Finishing Plot"));
 
 	baker.end_bake();
 
@@ -494,14 +499,14 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 			probe_data_new.instantiate();
 		}
 
-		if (bake_step_function) {
-			bake_step_function(500, RTR("Generating Distance Field"));
-		}
+		bake_step(500, RTR("Generating Distance Field"));
 
-		voxelizer_step_func = bake_step_function != nullptr ? voxelizer_sdf_bake_step_function : nullptr;
+		auto voxelizer_sdf_step_func = [&](int current, int total) -> bool {
+			return this->_voxelizer_sdf_bake_step_function(current, total);
+		};
 
 		Vector<uint8_t> df;
-		if (baker.get_sdf_3d_image(df, voxelizer_step_func) == Voxelizer::BAKE_RESULT_OK) {
+		if (baker.get_sdf_3d_image(df, voxelizer_sdf_step_func) == Voxelizer::BAKE_RESULT_OK) {
 			RS::get_singleton()->voxel_gi_set_baked_exposure_normalization(probe_data_new->get_rid(), exposure_normalization);
 
 			probe_data_new->allocate(baker.get_to_cell_space_xform(), AABB(-size / 2, size), baker.get_voxel_gi_octree_size(), baker.get_voxel_gi_octree_cells(), baker.get_voxel_gi_data_cells(), df, baker.get_voxel_gi_level_cell_count());
@@ -513,9 +518,7 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 		}
 	}
 
-	if (bake_end_function) {
-		bake_end_function();
-	}
+	bake_end();
 
 	notify_property_list_changed(); //bake property may have changed
 }
@@ -579,6 +582,10 @@ void VoxelGI::_bind_methods() {
 	BIND_ENUM_CONSTANT(SUBDIV_256);
 	BIND_ENUM_CONSTANT(SUBDIV_512);
 	BIND_ENUM_CONSTANT(SUBDIV_MAX);
+
+	ADD_SIGNAL(MethodInfo("bake_begin"));
+	ADD_SIGNAL(MethodInfo("bake_step", PropertyInfo(Variant::INT, "step"), PropertyInfo(Variant::STRING, "status")));
+	ADD_SIGNAL(MethodInfo("bake_end"));
 }
 
 VoxelGI::VoxelGI() {
