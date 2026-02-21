@@ -858,8 +858,6 @@ void ProjectManager::_update_project_buttons() {
 	duplicate_btn->set_disabled(empty_selection || is_missing_project_selected);
 	manage_tags_btn->set_disabled(empty_selection || is_missing_project_selected || selected_projects.size() > 1);
 	run_btn->set_disabled(empty_selection || is_missing_project_selected);
-
-	erase_missing_btn->set_disabled(!project_list->is_any_project_missing());
 }
 
 void ProjectManager::_open_options_popup() {
