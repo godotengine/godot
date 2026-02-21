@@ -360,6 +360,9 @@ void PhysicsServer3DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_soft_body_get_bounds, "body");
 
+	GDVIRTUAL_BIND(_soft_body_set_form, "body", "form");
+	GDVIRTUAL_BIND(_soft_body_get_form, "body");
+
 	GDVIRTUAL_BIND(_soft_body_move_point, "body", "point_index", "global_position");
 	GDVIRTUAL_BIND(_soft_body_get_point_global_position, "body", "point_index");
 
