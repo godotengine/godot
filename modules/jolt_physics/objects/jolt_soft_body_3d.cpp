@@ -30,12 +30,12 @@
 
 #include "jolt_soft_body_3d.h"
 
-#include "../../core/math/geometry_3d.h"
-#include "../../core/math/triangle_mesh.h"
 #include "../jolt_project_settings.h"
 #include "../misc/jolt_type_conversions.h"
 #include "../spaces/jolt_broad_phase_layer.h"
 #include "../spaces/jolt_space_3d.h"
+#include "core/math/geometry_3d.h"
+#include "core/math/triangle_mesh.h"
 #include "jolt_area_3d.h"
 #include "jolt_body_3d.h"
 #include "jolt_group_filter.h"
