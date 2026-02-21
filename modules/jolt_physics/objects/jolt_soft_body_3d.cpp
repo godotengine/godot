@@ -546,9 +546,8 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		}
 
 		for (int i = 0; i < 4; ++i) {
-			Vector3i f = t_info.face_keys[i];
 			if (t_info.neighbors[i] == -1 || !tet_info_list[t_info.neighbors[i]].valid) {
-				face_exterior.emplace(f);
+				face_exterior.emplace(t_info.face_keys[i]);
 			}
 		}
 	}
