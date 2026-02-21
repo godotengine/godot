@@ -933,7 +933,7 @@ Path2DEditor::Path2DEditor() {
 	curve_auto_tangent = memnew(Button);
 	curve_auto_tangent->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_auto_tangent->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	curve_auto_tangent->set_tooltip_text(TTR("Smooth Points"));
+	curve_auto_tangent->set_tooltip_text(TTR("Auto Tangent"));
 	curve_auto_tangent->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_auto_tangent));
 	toolbar->add_child(curve_auto_tangent);
 
