@@ -32,6 +32,8 @@
 
 #include "scene/resources/multimesh.h"
 
+#include <functional>
+
 class Voxelizer {
 public:
 	enum BakeResult {
@@ -120,7 +122,7 @@ private:
 public:
 	void begin_bake(int p_subdiv, const AABB &p_bounds, float p_exposure_normalization);
 	int get_bake_steps(Ref<Mesh> &p_mesh) const;
-	BakeResult plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material, BakeStepFunc p_bake_step_function);
+	BakeResult plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material, std::function<bool(int, int)> p_bake_step_function);
 	void end_bake();
 
 	int get_voxel_gi_octree_depth() const;
@@ -129,7 +131,7 @@ public:
 	Vector<uint8_t> get_voxel_gi_octree_cells() const;
 	Vector<uint8_t> get_voxel_gi_data_cells() const;
 	Vector<int> get_voxel_gi_level_cell_count() const;
-	BakeResult get_sdf_3d_image(Vector<uint8_t> &r_image, BakeStepFunc p_bake_step_function) const;
+	BakeResult get_sdf_3d_image(Vector<uint8_t> &r_image, std::function<bool(int, int)> p_bake_step_function) const;
 
 	Ref<MultiMesh> create_debug_multimesh();
 
