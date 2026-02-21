@@ -86,7 +86,6 @@ Config::Config() {
 	astc_layered_supported = astc_hdr_supported || extensions.has("GL_KHR_texture_compression_astc_sliced_3d");
 	astc_supported = astc_layered_supported || extensions.has("GL_KHR_texture_compression_astc_ldr") || extensions.has("WEBGL_compressed_texture_astc");
 
-<<<<<<< material_depth_bias
 	{
 		int major = 0, minor = 0;
 		glGetIntegerv(GL_MAJOR_VERSION, &major);
@@ -95,10 +94,7 @@ Config::Config() {
 		polygon_offset_clamp_supported = gl_version_4_6 || extensions.has("GL_ARB_polygon_offset_clamp") || extensions.has("GL_EXT_polygon_offset_clamp");
 	}
 
-	if (RasterizerGLES3::is_gles_over_gl()) {
-=======
 	if (RasterizerUtilGLES3::is_gles_over_gl()) {
->>>>>>> master
 		float_texture_supported = true;
 		float_texture_linear_supported = true;
 		etc2_supported = false;
