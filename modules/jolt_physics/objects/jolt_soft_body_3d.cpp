@@ -43,7 +43,11 @@
 
 #include "Jolt/Physics/SoftBody/SoftBodyMotionProperties.h"
 
+#include <array>
 #include <set>
+#include <map>
+#include <vector>
+#include "../../core/math/triangle_mesh.h"
 
 namespace {
 
@@ -336,14 +340,231 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 	const PackedVector3Array mesh_vertices = mesh_data[RenderingServer::ARRAY_VERTEX];
 	ERR_FAIL_COND_V(mesh_vertices.is_empty(), nullptr);
 
-//	std::cout << "entering JoltSoftBody3D::_create_shared_settings_volume()" << std::endl;
-	//WARN_PRINT("entering JoltSoftBody3D::_create_shared_settings_volume()");
+	const Vector3 body_position = Vector3(jolt_settings->mPosition.GetX(), jolt_settings->mPosition.GetY(), jolt_settings->mPosition.GetZ());
 
-	Vector<int32_t> tetrahedra_indices = Geometry3D::tetrahedralize_delaunay(mesh_vertices);
+	//Merge any duplicate vertices in input mesh
+	PackedInt32Array mesh_indices_clean;
+	PackedVector3Array mesh_vertices_clean;
+	std::map<Vector3, int> mesh_vert_to_clean_idx_map;
 
+	for (int i = 0; i < mesh_indices.size(); ++i) {
+		const Vector3 &v = mesh_vertices[mesh_indices[i]] - body_position;
+
+		auto it = mesh_vert_to_clean_idx_map.find(v);
+		if (it == mesh_vert_to_clean_idx_map.end()) {
+			int index = mesh_vertices_clean.size();
+			mesh_vertices_clean.push_back(v);
+			mesh_indices_clean.push_back(index);
+			mesh_vert_to_clean_idx_map[v] = index;
+		} else {
+			int index = it->second;
+			mesh_indices_clean.push_back(index);
+		}
+	}
+
+
+	//Do delaunay tesselation
+	Vector<int32_t> tetrahedra_indices = Geometry3D::tetrahedralize_delaunay(mesh_vertices_clean);
+
+
+	//Find tetrahedra links
+	struct TetrahedraInfo {
+		int index;
+		bool valid;
+		Vector3i face_keys[4];
+		int neighbors[4];
+		int vert_indices[4];
+	};
+	std::vector<TetrahedraInfo> tet_info_list;
+	tet_info_list.reserve(tetrahedra_indices.size() / 4);
+
+	HashMap<Vector3i, int> face_key_to_tet_idx;
+	std::set<Vector3i> face_exterior;
+	std::set<Vector2i> edge_set;
+
+	auto edge_hash_key = [&](int a, int b) {
+		if (b < a) {
+			return Vector2i(b, a);
+		}
+		return Vector2i(a, b);
+	};
+
+	auto face_hash_key = [&](int a, int b, int c) {
+		if (c < a && c < b) {
+			return Vector3i(c, a, b);
+		}
+		if (b < a) {
+			return Vector3i(b, c, a);
+		}
+		return Vector3i(a, b, c);
+	};
+
+	auto face_flipped = [&](Vector3i a) {
+		return Vector3i(a.x, a.z, a.y);
+	};
+
+	
+
+	//Track tetrahedra
+	for (int i = 0; i < tetrahedra_indices.size(); i += 4) {
+		int tet_idx = i / 4;
+
+		int vi0 = tetrahedra_indices[i];
+		int vi1 = tetrahedra_indices[i + 1];
+		int vi2 = tetrahedra_indices[i + 2];
+		int vi3 = tetrahedra_indices[i + 3];
+
+		Vector3 v0 = mesh_vertices_clean[vi0];
+		Vector3 v1 = mesh_vertices_clean[vi1];
+		Vector3 v2 = mesh_vertices_clean[vi2];
+		Vector3 v3 = mesh_vertices_clean[vi3];
+
+		//If volume has incorrect sign, flip order of vertices
+		Basis b(v1 - v0, v2 - v0, v3 - v0);
+		if (b.determinant() < 0) {
+			std::swap(vi2, vi3);
+		}
+
+		//Add edges
+		edge_set.insert(edge_hash_key(vi0, vi1));
+		edge_set.insert(edge_hash_key(vi0, vi2));
+		edge_set.insert(edge_hash_key(vi0, vi3));
+		edge_set.insert(edge_hash_key(vi1, vi2));
+		edge_set.insert(edge_hash_key(vi1, vi3));
+		edge_set.insert(edge_hash_key(vi2, vi3));
+
+		//Add to face-to-tetrahedron map
+		Vector3i f0 = face_hash_key(vi0, vi1, vi2);
+		Vector3i f1 = face_hash_key(vi1, vi0, vi3);
+		Vector3i f2 = face_hash_key(vi2, vi3, vi0);
+		Vector3i f3 = face_hash_key(vi3, vi2, vi1);
+		face_key_to_tet_idx[f0] = tet_idx;
+		face_key_to_tet_idx[f1] = tet_idx;
+		face_key_to_tet_idx[f2] = tet_idx;
+		face_key_to_tet_idx[f3] = tet_idx;
+
+		//Create tetrahedra tracker
+		TetrahedraInfo info;
+		info.index = tet_idx;
+		info.valid = true;
+
+		info.vert_indices[0] = vi0;
+		info.vert_indices[1] = vi1;
+		info.vert_indices[2] = vi2;
+		info.vert_indices[3] = vi3;
+
+		info.face_keys[0] = f0;
+		info.face_keys[1] = f1;
+		info.face_keys[2] = f2;
+		info.face_keys[3] = f3;
+
+		info.neighbors[0] = -1;
+		info.neighbors[1] = -1;
+		info.neighbors[2] = -1;
+		info.neighbors[3] = -1;
+
+		tet_info_list.push_back(info);
+	}
+
+	//Connect tet neighbors
+	for (TetrahedraInfo &t_info : tet_info_list) {
+		for (int i = 0; i < 4; ++i) {
+			Vector3i k0 = t_info.face_keys[i];
+			Vector3i k1 = face_flipped(k0);
+
+			HashMap<Vector3i, int>::ConstIterator it = face_key_to_tet_idx.find(k1);
+			if (it != face_key_to_tet_idx.end()) {
+				t_info.neighbors[i] = it->value;
+			}
+		}
+	}
+
+
+	//Mark exterior tetrahedra
+	bool convex_hull = false;
+	if (!convex_hull) {
+		//Create mesh for inside/outside tests
+		PackedVector3Array surface_tris;
+		surface_tris.reserve(mesh_indices_clean.size());
+
+		PackedVector3Array surface_norms;
+		surface_norms.reserve(mesh_indices_clean.size() / 3);
+
+		for (int i = 0; i < mesh_indices_clean.size(); ++i) {
+			surface_tris.append(mesh_vertices_clean[mesh_indices_clean[i]]);
+		}
+		for (int i = 0; i < surface_tris.size(); i += 3) {
+			Vector3 v0 = surface_tris[i];
+			Vector3 v1 = surface_tris[i + 1];
+			Vector3 v2 = surface_tris[i + 2];
+			surface_norms.append((v1 - v0).cross(v2 - v0).normalized());
+		}
+
+		TriangleMesh surface_mesh;
+		surface_mesh.create_from_faces(surface_tris);
+
+		//Find valid tetrahedra
+		const Vector3 cast_dirs[] = {
+			Vector3(1, 0, 0),
+			Vector3(-1, 0, 0),
+			Vector3(0, 1, 0),
+			Vector3(0, -1, 0),
+			Vector3(0, 0, 1),
+			Vector3(0, 0, -1),
+		};
+
+		for (TetrahedraInfo &t_info : tet_info_list) {
+			Vector3 v0 = mesh_vertices_clean[t_info.vert_indices[0]];
+			Vector3 v1 = mesh_vertices_clean[t_info.vert_indices[1]];
+			Vector3 v2 = mesh_vertices_clean[t_info.vert_indices[2]];
+			Vector3 v3 = mesh_vertices_clean[t_info.vert_indices[3]];
+			Vector3 center = (v0 + v1 + v2 + v3) / 4.0;
+
+			Vector3 point;
+			Vector3 normal;
+			int32_t surf_idx;
+			int32_t face_idx;
+
+//			Vector3 ray_dir = Vector3(1, 0, 0);
+			for (int i = 0; i < 6; ++i) {
+				const Vector3 ray_dir = cast_dirs[i];
+				bool hit = surface_mesh.intersect_ray(center, ray_dir, point, normal, &surf_idx, &face_idx);
+				if (!hit || surface_norms[face_idx].dot(ray_dir) > 0) {
+					//Missed mesh or hit exterior
+					t_info.valid = false;
+					break;
+				}
+			}
+		}
+
+
+	}
+
+	//Find exterior faces
+	for (TetrahedraInfo &t_info : tet_info_list) {
+		if (!t_info.valid) {
+			continue;
+		}
+
+		for (int i = 0; i < 4; ++i) {
+			Vector3i f = t_info.face_keys[i];
+			if (t_info.neighbors[i] == -1 || !tet_info_list[t_info.neighbors[i]].valid) {
+				face_exterior.emplace(f);
+			}
+		}
+	}
 
 	JPH::SoftBodySharedSettings *settings = new JPH::SoftBodySharedSettings();
+	////physics_vertices.emplace_back(JPH::Float3((float)(vertex.x - body_position.GetX())
+	//for (Vector3 v : mesh_vertices_clean) {
+	//	settings->emplace_back(JPH::Float3(v.x, v.y, v.z));
+	//}
 
+
+	return _create_shared_settings_cloth();
+
+	/////////////////
+	/*
 	HashMap<Vector3, int> point_to_physics_index;
 
 	const int mesh_vertex_count = mesh_vertices.size();
@@ -356,10 +577,24 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 	settings->mVertices.reserve(mesh_vertex_count);
 	point_to_physics_index.reserve(mesh_vertex_count);
 
+	// 
+	//int next_phys_vert_idx = 0;
+	//for (int i = 0; i < tetrahedra_indices.size(); ++i) {
+	//	int vi_mesh = tetrahedra_indices[i];
+	//	Vector3 v = mesh_vertices[vi_mesh];
+
+	//	if (point_to_physics_index.find(v) != point_to_physics_index.end()) {
+	//		point_to_physics_index[v] = next_phys_vert_idx++;
+	//	}
+	//}
+
+	JPH::SoftBodySharedSettings *settings = new JPH::SoftBodySharedSettings();
+
 	const JPH::RVec3 body_position = jolt_settings->mPosition;
 
 	std::set<std::tuple<int, int>> scanned_edges;
-//	std::set<std::tuple<int, int, int>> scanned_faces;
+	//	std::set<std::tuple<int, int, int>> scanned_faces;
+	HashMap<std::tuple<int, int, int>, int> scanned_face_count;
 
 	auto append_edge_if_absent = [&](int a, int b) {
 		if (a > b) {
@@ -442,14 +677,17 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		//append_face_if_absent(physics_tet[3], physics_tet[2], physics_tet[1]);
 
 		//Add tetrahedron
+		//det([v1 - v0, v2 - v0, v3 - v0]) should be positive to match tetrahedra in SoftBodySharedSettings::sCreateCube
 		JPH::SoftBodySharedSettings::Volume v;
 		v.mVertex[0] = (JPH::uint32)physics_tet[0];
 		v.mVertex[1] = (JPH::uint32)physics_tet[1];
 		v.mVertex[2] = (JPH::uint32)physics_tet[2];
 		v.mVertex[3] = (JPH::uint32)physics_tet[3];
-		settings->mVolumeConstraints.emplace_back(v);
+		settings->mVolumeConstraints.push_back(v);
 	}
-	/*	
+	settings->CalculateEdgeLengths();
+	settings->CalculateVolumeConstraintVolumes();
+
 	//Add surface faces only
 	for (int i = 0; i < mesh_index_count; i += 3) {
 		int vi0 = mesh_to_physics[i];
@@ -467,8 +705,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		settings->AddFace(f);
 		//settings->mFaces.emplace_back((JPH::uint32)vi2, (JPH::uint32)vi1, (JPH::uint32)vi0);
 	}
-	*/
-
+*/
 	/*
 	// Pin whatever pinned vertices we have currently. This is used during the `Optimize` call below to order the
 	// constraints. Note that it's fine if the pinned vertices change later, but that will reduce the effectiveness
@@ -489,9 +726,9 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		e.mRestLength *= multiplier;
 	}
 	*/
-	settings->Optimize();
+	//settings->Optimize();
 
-	return settings;
+	//return settings;
 }
 
 void JoltSoftBody3D::_update_mass() {
