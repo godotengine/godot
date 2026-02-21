@@ -156,6 +156,7 @@ OccluderPolygon2D::~OccluderPolygon2D() {
 void LightOccluder2D::_poly_changed() {
 #ifdef DEBUG_ENABLED
 	queue_redraw();
+	update_configuration_warnings();
 #endif // DEBUG_ENABLED
 }
 
@@ -229,6 +230,10 @@ bool LightOccluder2D::_edit_is_selected_on_click(const Point2 &p_point, double p
 #endif // DEBUG_ENABLED
 
 void LightOccluder2D::set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polygon) {
+	if (occluder_polygon == p_polygon) {
+		return;
+	}
+
 #ifdef DEBUG_ENABLED
 	if (occluder_polygon.is_valid()) {
 		occluder_polygon->disconnect_changed(callable_mp(this, &LightOccluder2D::_poly_changed));
@@ -247,6 +252,7 @@ void LightOccluder2D::set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polyg
 		occluder_polygon->connect_changed(callable_mp(this, &LightOccluder2D::_poly_changed));
 	}
 	queue_redraw();
+	update_configuration_warnings();
 #endif // DEBUG_ENABLED
 }
 
