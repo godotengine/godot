@@ -2097,6 +2097,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	frame->set_stretch_ratio(2);
 	frame->set_step(0.0001);
 	frame->set_tooltip_text(TTRC("Animation position (in seconds)."));
+	frame->get_line_edit()->add_theme_constant_override("minimum_character_width", 5);
 
 	hb->add_child(memnew(VSeparator));
 
