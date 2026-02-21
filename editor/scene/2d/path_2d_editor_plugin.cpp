@@ -824,11 +824,9 @@ void Path2DEditor::_auto_tangent() {
 
 		undo_redo->add_undo_method(curve.ptr(), "set_point_in", i, curve->get_point_in(i));
 		undo_redo->add_do_method(curve.ptr(), "set_point_in", i, -tangent * curr_p.distance_to(prev_p) * smooth_ratio);
-		// curve->set_point_in(i, -tangent * curr_p.distance_to(prev_p) * smooth_ratio);
 
 		undo_redo->add_undo_method(curve.ptr(), "set_point_out", i, curve->get_point_out(i));
 		undo_redo->add_do_method(curve.ptr(), "set_point_out", i, tangent * curr_p.distance_to(next_p) * smooth_ratio);
-		//curve->set_point_out(i, tangent * curr_p.distance_to(next_p) * smooth_ratio);
 	}
 	Vector2 begin = curve->get_point_position(0);
 	Vector2 end = curve->get_point_position(point_count - 1);
@@ -841,20 +839,16 @@ void Path2DEditor::_auto_tangent() {
 
 		undo_redo->add_undo_method(curve.ptr(), "set_point_in", point_count - 1, curve->get_point_in(point_count - 1));
 		undo_redo->add_do_method(curve.ptr(), "set_point_in", point_count - 1, -first_last_tangent * end.distance_to(prev_p) * smooth_ratio);
-		// curve->set_point_in(point_count - 1, -first_last_tangent * end.distance_to(prev_p) * smooth_ratio);
 
 		undo_redo->add_undo_method(curve.ptr(), "set_point_out", 0, curve->get_point_out(0));
 		undo_redo->add_do_method(curve.ptr(), "set_point_out", 0, first_last_tangent * begin.distance_to(next_p) * smooth_ratio);
-		//curve->set_point_out(0, first_last_tangent * begin.distance_to(next_p) * smooth_ratio);
 
 	} else {
 		undo_redo->add_undo_method(curve.ptr(), "set_point_out", 0, curve->get_point_out(0));
 		undo_redo->add_do_method(curve.ptr(), "set_point_out", 0, Vector2());
-		//curve->set_point_out(0, Vector2());
 
 		undo_redo->add_undo_method(curve.ptr(), "set_point_in", point_count - 1, curve->get_point_in(point_count - 1));
 		undo_redo->add_do_method(curve.ptr(), "set_point_in", point_count - 1, Vector2());
-		//curve->set_point_in(point_count - 1, Vector2());
 	}
 	undo_redo->commit_action();
 }
