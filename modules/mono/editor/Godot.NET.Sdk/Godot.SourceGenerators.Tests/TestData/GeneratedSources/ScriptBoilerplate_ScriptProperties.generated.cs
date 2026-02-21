@@ -1,5 +1,7 @@
 using Godot;
 using Godot.NativeInterop;
+using Godot.Bridge;
+using System.Runtime.CompilerServices;
 
 partial class ScriptBoilerplate
 {
@@ -17,34 +19,69 @@ partial class ScriptBoilerplate
         /// </summary>
         public new static readonly global::Godot.StringName @_velocity = "_velocity";
     }
+#pragma warning restore CS0109 // Disable warning about redundant 'new' keyword
+
+#pragma warning disable CS0618 // Type or member is obsolete
+    protected new static readonly ScriptPropertyRegistry<ScriptBoilerplate> PropertyRegistry = new ScriptPropertyRegistry<ScriptBoilerplate>()
+        .Register(global::Godot.Node.PropertyRegistry)
+        .Register(PropertyName.@_nodePath, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ScriptBoilerplate>(ref scriptInstance).@_nodePath = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath>(value);
+                return value;
+            })
+        .Register(PropertyName.@_velocity, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ScriptBoilerplate>(ref scriptInstance).@_velocity = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
+                return value;
+            })
+        .Register(PropertyName.@_nodePath, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ScriptBoilerplate>(ref scriptInstance).@_nodePath;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath>(ret);
+            })
+        .Register(PropertyName.@_velocity, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ScriptBoilerplate>(ref scriptInstance).@_velocity;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(ret);
+            })
+        .Build();
+#pragma warning restore CS0618 // Type or member is obsolete
+
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
     {
-        if (name == PropertyName.@_nodePath) {
-            this.@_nodePath = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath>(value);
+        ref readonly var propertySetter = ref PropertyRegistry.GetMethodOrNullRef(in name, 1);
+        if (!Unsafe.IsNullRef(in propertySetter))
+        {
+            propertySetter(this, value);
             return true;
         }
-        if (name == PropertyName.@_velocity) {
-            this.@_velocity = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
-            return true;
-        }
-        return base.SetGodotClassPropertyValue(name, value);
+        return false;
     }
+
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
     {
-        if (name == PropertyName.@_nodePath) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath>(this.@_nodePath);
+        ref readonly var propertyGetter = ref PropertyRegistry.GetMethodOrNullRef(in name, 0);
+        if (!Unsafe.IsNullRef(in propertyGetter))
+        {
+            value = propertyGetter(this, default);
             return true;
         }
-        if (name == PropertyName.@_velocity) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this.@_velocity);
-            return true;
-        }
-        return base.GetGodotClassPropertyValue(name, out value);
+        value = default;
+        return false;
     }
+
     /// <summary>
     /// Get the property information for all the properties declared in this class.
     /// This method is used by Godot to register the available properties in the editor.

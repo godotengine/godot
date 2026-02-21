@@ -223,7 +223,7 @@ namespace Godot.SourceGenerators
                     GenerateScriptMethodRegistryEntry(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), method, source);
                 }
 
-                source.Append("        .Build();\n");
+                source.Append("        .Build();\n\n");
 
                 // ScriptMethodDispatchHelper
                 source.Append("    private sealed class ScriptMethodDispatchHelper\n");
@@ -232,15 +232,12 @@ namespace Godot.SourceGenerators
                 {
                     GenerateScriptMethodDispatchHelperMethod(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), method, source);
                 }
-                source.Append("    }\n\n");
+                source.Append("    }\n");
 
                 // GetGodotClassMethodOrNullRef
-                source.Append(
-                    """
-                    #pragma warning restore CS0618 // Type or member is obsolete
+                source.Append("#pragma warning restore CS0618 // Type or member is obsolete");
 
-                    """);
-
+                source.Append("\n\n");
                 source.Append("    /// <inheritdoc/>\n");
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
                 source.Append($"    public override ref readonly ScriptMethod GetGodotClassMethodOrNullRef(in godot_string_name method, int argCount)\n");

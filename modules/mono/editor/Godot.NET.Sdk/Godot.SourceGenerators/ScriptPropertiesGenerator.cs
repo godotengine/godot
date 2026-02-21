@@ -174,6 +174,7 @@ namespace Godot.SourceGenerators
             }
 
             source.Append("    }\n"); // class GodotInternal
+            source.Append("#pragma warning restore CS0109 // Disable warning about redundant 'new' keyword\n\n");
 
             if (!symbol.IsStatic &&
                 (godotClassProperties.Length > 0 || godotClassFields.Length > 0))
@@ -181,11 +182,7 @@ namespace Godot.SourceGenerators
                 string type = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
 
                 // Generate PropertyRegistry
-                source.Append(
-                    """
-                    #pragma warning disable CS0618 // Type or member is obsolete
-                    
-                    """);
+                source.Append("#pragma warning disable CS0618 // Type or member is obsolete\n");
                 source.Append($"    {(symbol.IsSealed ? "private" : "protected")} new static readonly ScriptPropertyRegistry<").Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat))
                       .Append("> PropertyRegistry = ")
                       .Append("new ScriptPropertyRegistry<").Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)).Append(">()\n");
@@ -254,11 +251,7 @@ namespace Godot.SourceGenerators
                 }
 
                 source.Append("        .Build();\n");
-                source.Append(
-                    """
-                    #pragma warning restore CS0618 // Type or member is obsolete
-
-                    """);
+                source.Append("#pragma warning restore CS0618 // Type or member is obsolete\n\n");
 
                 // Generate SetGodotClassPropertyValue
                 if (!allPropertiesAreReadOnly)
@@ -275,7 +268,7 @@ namespace Godot.SourceGenerators
                     source.Append("            return true;\n");
                     source.Append("        }\n");
                     source.Append("        return false;\n");
-                    source.Append("    }\n");
+                    source.Append("    }\n\n");
                 }
 
                 // Generate GetGodotClassPropertyValue
@@ -294,7 +287,7 @@ namespace Godot.SourceGenerators
                     source.Append("        }\n");
                     source.Append("        value = default;\n");
                     source.Append("        return false;\n");
-                    source.Append("    }\n");
+                    source.Append("    }\n\n");
                 }
 
                 // Generate GetGodotPropertyList
@@ -392,7 +385,7 @@ namespace Godot.SourceGenerators
                             [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
                             static (GodotObject scriptInstance, scoped in godot_variant value) =>
                             {
-                                Unsafe.As<GodotObject, {{type}}>(ref scriptInstance).@{{propertyMemberName}} =
+                                Unsafe.As<GodotObject, {{type}}>(ref scriptInstance).@{{propertyMemberName}} = 
                 """)
                 .AppendNativeVariantToManagedExpr("value", propertyTypeSymbol, propertyMarshalType)
                 .Append(";\n")
@@ -414,39 +407,20 @@ namespace Godot.SourceGenerators
             source
                 .Append(
                 $$"""
-                        .Register(PropertyName.@{{propertyMemberName}}, 0, 
+                        .Register(PropertyName.@{{propertyMemberName}}, 0,
                             [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
                             static (GodotObject scriptInstance, scoped in godot_variant _) =>
                             {
                                 var ret = Unsafe.As<GodotObject, {{type}}>(ref scriptInstance).@{{propertyMemberName}};
                 """)
-                .Append("return ")
+                .Append("\n")
+                .Append("                return ")
                 .AppendManagedToNativeVariantExpr("ret", propertyTypeSymbol, propertyMarshalType)
                 .Append(";\n")
                 .Append("""
                             })
                 """)
                 .Append("\n");
-        }
-
-        private static void GeneratePropertyGetter(
-            string propertyMemberName,
-            ITypeSymbol propertyTypeSymbol,
-            MarshalType propertyMarshalType,
-            StringBuilder source
-        )
-        {
-            source.Append("        ");
-
-            source.Append("if (name == PropertyName.@")
-                .Append(propertyMemberName)
-                .Append(") {\n")
-                .Append("            value = ")
-                .AppendManagedToNativeVariantExpr("this.@" + propertyMemberName,
-                    propertyTypeSymbol, propertyMarshalType)
-                .Append(";\n")
-                .Append("            return true;\n")
-                .Append("        }\n");
         }
 
         private static void AppendGroupingPropertyInfo(StringBuilder source, PropertyInfo propertyInfo)
