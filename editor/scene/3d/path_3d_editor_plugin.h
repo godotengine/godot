@@ -155,7 +155,6 @@ class Path3DEditorPlugin : public EditorPlugin {
 	void _confirm_clear_points();
 	void _clear_points();
 	void _auto_tangent();
-	void _auto_tangent_curve();
 	void _clear_curve_points();
 	void _restore_curve_points(const PackedVector3Array &p_points);
 

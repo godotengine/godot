@@ -858,21 +858,15 @@ void Path3DEditorPlugin::_confirm_clear_points() {
 }
 
 void Path3DEditorPlugin::_auto_tangent() {
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	PackedVector3Array points = path->get_curve()->get_points().duplicate();
-
-	undo_redo->create_action(TTR("Auto Tangent"));
-	undo_redo->add_do_method(this, "_auto_tangent_curve");
-	undo_redo->add_undo_method(this, "_restore_curve_points", points);
-	undo_redo->commit_action();
-}
-
-void Path3DEditorPlugin::_auto_tangent_curve() {
 	if (!path || path->get_curve().is_null() || path->get_curve()->get_point_count() <= 2) {
 		return;
 	}
-	// Catmull–Rom smoothing
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	PackedVector3Array points = path->get_curve()->get_points().duplicate();
 	Ref<Curve3D> curve = path->get_curve();
+	undo_redo->create_action(TTR("Auto Tangent"));
+
+	// Catmull–Rom smoothing
 	int point_count = curve->get_point_count();
 	const float smooth_ratio = 0.5;
 	for (int i = 1; i < point_count - 1; i++) {
@@ -880,23 +874,39 @@ void Path3DEditorPlugin::_auto_tangent_curve() {
 		Vector3 prev_p = curve->get_point_position(i - 1);
 		Vector3 curr_p = curve->get_point_position(i);
 		Vector3 tangent = (next_p - prev_p).normalized();
-		curve->set_point_in(i, -tangent * curr_p.distance_to(prev_p) * smooth_ratio);
-		curve->set_point_out(i, tangent * curr_p.distance_to(next_p) * smooth_ratio);
+		undo_redo->add_undo_method(curve.ptr(), "set_point_in", i, curve->get_point_in(i));
+		undo_redo->add_do_method(curve.ptr(), "set_point_in", i, -tangent * curr_p.distance_to(prev_p) * smooth_ratio);
+		undo_redo->add_undo_method(curve.ptr(), "set_point_out", i, curve->get_point_out(i));
+		undo_redo->add_do_method(curve.ptr(), "set_point_out", i, tangent * curr_p.distance_to(next_p) * smooth_ratio);
 	}
 	if (curve->is_closed()) {
 		Vector3 first_p = curve->get_point_position(0);
+		Vector3 second_p = curve->get_point_position(1);
 		Vector3 last_p = curve->get_point_position(point_count - 1);
+		Vector3 tangent_first = (second_p - last_p).normalized();
 
-		Vector3 first_last_tangent = (last_p - first_p).normalized();
-		curve->set_point_out(0, -first_last_tangent);
-		curve->set_point_in(point_count - 1, first_last_tangent);
+		undo_redo->add_undo_method(curve.ptr(), "set_point_in", 0, curve->get_point_in(0));
+		undo_redo->add_do_method(curve.ptr(), "set_point_in", 0, -tangent_first * first_p.distance_to(last_p) * smooth_ratio);
+		undo_redo->add_undo_method(curve.ptr(), "set_point_out", 0, curve->get_point_out(0));
+		undo_redo->add_do_method(curve.ptr(), "set_point_out", 0, tangent_first * first_p.distance_to(second_p) * smooth_ratio);
+
+		Vector3 second_last_p = curve->get_point_position(point_count - 2);
+		Vector3 tangent_last = (first_p - second_last_p).normalized();
+
+		undo_redo->add_undo_method(curve.ptr(), "set_point_in", point_count - 1, curve->get_point_in(point_count - 1));
+		undo_redo->add_do_method(curve.ptr(), "set_point_in", point_count - 1, -tangent_last * last_p.distance_to(second_last_p) * smooth_ratio);
+		undo_redo->add_undo_method(curve.ptr(), "set_point_out", point_count - 1, curve->get_point_out(point_count - 1));
+		undo_redo->add_do_method(curve.ptr(), "set_point_out", point_count - 1, tangent_last * last_p.distance_to(first_p) * smooth_ratio);
 
 	} else {
-		curve->set_point_out(0, Vector3());
-		curve->set_point_in(point_count - 1, Vector3());
-	}
-}
+		undo_redo->add_undo_method(curve.ptr(), "set_point_out", 0, curve->get_point_out(0));
+		undo_redo->add_do_method(curve.ptr(), "set_point_out", 0, Vector3());
 
+		undo_redo->add_undo_method(curve.ptr(), "set_point_in", point_count - 1, curve->get_point_in(point_count - 1));
+		undo_redo->add_do_method(curve.ptr(), "set_point_in", point_count - 1, Vector3());
+	}
+	undo_redo->commit_action();
+}
 void Path3DEditorPlugin::_clear_points() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	PackedVector3Array points = path->get_curve()->get_points().duplicate();
@@ -1020,7 +1030,6 @@ void Path3DEditorPlugin::_notification(int p_what) {
 void Path3DEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_toolbar"), &Path3DEditorPlugin::_update_toolbar);
 	ClassDB::bind_method(D_METHOD("_clear_curve_points"), &Path3DEditorPlugin::_clear_curve_points);
-	ClassDB::bind_method(D_METHOD("_auto_tangent_curve"), &Path3DEditorPlugin::_auto_tangent_curve);
 	ClassDB::bind_method(D_METHOD("_restore_curve_points"), &Path3DEditorPlugin::_restore_curve_points);
 }
 

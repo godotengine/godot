@@ -109,7 +109,6 @@ class Path2DEditor : public HBoxContainer {
 	void _update_toolbar();
 
 	void _auto_tangent();
-	void _auto_tangent_curve();
 
 	void _create_curve();
 	void _confirm_clear_points();

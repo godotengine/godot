@@ -659,7 +659,6 @@ void Path2DEditor::edit(Node *p_path2d) {
 void Path2DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_toolbar"), &Path2DEditor::_update_toolbar);
 	ClassDB::bind_method(D_METHOD("_clear_curve_points"), &Path2DEditor::_clear_curve_points);
-	ClassDB::bind_method(D_METHOD("_auto_tangent_curve"), &Path2DEditor::_auto_tangent_curve);
 	ClassDB::bind_method(D_METHOD("_restore_curve_points"), &Path2DEditor::_restore_curve_points);
 }
 
@@ -808,21 +807,13 @@ void Path2DEditor::_confirm_clear_points() {
 	clear_points_dialog->popup_centered();
 }
 void Path2DEditor::_auto_tangent() {
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	PackedVector2Array points = node->get_curve()->get_points().duplicate();
-
-	undo_redo->create_action(TTR("Auto Tangent"));
-	undo_redo->add_do_method(this, "_auto_tangent_curve");
-	undo_redo->add_undo_method(this, "_restore_curve_points", node, points);
-	undo_redo->commit_action();
-}
-
-void Path2DEditor::_auto_tangent_curve() {
 	if (!node || node->get_curve().is_null() || node->get_curve()->get_point_count() <= 2) {
 		return;
 	}
-	// Catmull–Rom smoothing
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	PackedVector2Array points = node->get_curve()->get_points().duplicate();
 	Ref<Curve2D> curve = node->get_curve();
+	undo_redo->create_action(TTR("Auto Tangent"));
 	int point_count = curve->get_point_count();
 	const float smooth_ratio = 0.5;
 	for (int i = 1; i < point_count - 1; i++) {
@@ -830,8 +821,14 @@ void Path2DEditor::_auto_tangent_curve() {
 		Vector2 next_p = curve->get_point_position(i + 1);
 		Vector2 curr_p = curve->get_point_position(i);
 		Vector2 tangent = (next_p - prev_p).normalized();
-		curve->set_point_in(i, -tangent * curr_p.distance_to(prev_p) * smooth_ratio);
-		curve->set_point_out(i, tangent * curr_p.distance_to(next_p) * smooth_ratio);
+
+		undo_redo->add_undo_method(curve.ptr(), "set_point_in", i, curve->get_point_in(i));
+		undo_redo->add_do_method(curve.ptr(), "set_point_in", i, -tangent * curr_p.distance_to(prev_p) * smooth_ratio);
+		// curve->set_point_in(i, -tangent * curr_p.distance_to(prev_p) * smooth_ratio);
+
+		undo_redo->add_undo_method(curve.ptr(), "set_point_out", i, curve->get_point_out(i));
+		undo_redo->add_do_method(curve.ptr(), "set_point_out", i, tangent * curr_p.distance_to(next_p) * smooth_ratio);
+		//curve->set_point_out(i, tangent * curr_p.distance_to(next_p) * smooth_ratio);
 	}
 	Vector2 begin = curve->get_point_position(0);
 	Vector2 end = curve->get_point_position(point_count - 1);
@@ -841,14 +838,27 @@ void Path2DEditor::_auto_tangent_curve() {
 		Vector2 next_p = curve->get_point_position(1);
 		Vector2 prev_p = curve->get_point_position(point_count - 2);
 		Vector2 first_last_tangent = (next_p - prev_p).normalized();
-		curve->set_point_in(point_count - 1, -first_last_tangent * end.distance_to(prev_p) * smooth_ratio);
-		curve->set_point_out(0, first_last_tangent * begin.distance_to(next_p) * smooth_ratio);
+
+		undo_redo->add_undo_method(curve.ptr(), "set_point_in", point_count - 1, curve->get_point_in(point_count - 1));
+		undo_redo->add_do_method(curve.ptr(), "set_point_in", point_count - 1, -first_last_tangent * end.distance_to(prev_p) * smooth_ratio);
+		// curve->set_point_in(point_count - 1, -first_last_tangent * end.distance_to(prev_p) * smooth_ratio);
+
+		undo_redo->add_undo_method(curve.ptr(), "set_point_out", 0, curve->get_point_out(0));
+		undo_redo->add_do_method(curve.ptr(), "set_point_out", 0, first_last_tangent * begin.distance_to(next_p) * smooth_ratio);
+		//curve->set_point_out(0, first_last_tangent * begin.distance_to(next_p) * smooth_ratio);
 
 	} else {
-		curve->set_point_out(0, Vector2());
-		curve->set_point_in(point_count - 1, Vector2());
+		undo_redo->add_undo_method(curve.ptr(), "set_point_out", 0, curve->get_point_out(0));
+		undo_redo->add_do_method(curve.ptr(), "set_point_out", 0, Vector2());
+		//curve->set_point_out(0, Vector2());
+
+		undo_redo->add_undo_method(curve.ptr(), "set_point_in", point_count - 1, curve->get_point_in(point_count - 1));
+		undo_redo->add_do_method(curve.ptr(), "set_point_in", point_count - 1, Vector2());
+		//curve->set_point_in(point_count - 1, Vector2());
 	}
+	undo_redo->commit_action();
 }
+
 void Path2DEditor::_clear_curve_points(Path2D *p_path2d) {
 	if (!p_path2d || p_path2d->get_curve().is_null()) {
 		return;
