@@ -6533,7 +6533,7 @@ void GDScriptAnalyzer::resolve_pending_lambda_bodies() {
 	GDScriptParser::LambdaNode *previous_lambda = current_lambda;
 	bool previous_static_context = static_context;
 
-	List<GDScriptParser::LambdaNode *> lambdas = pending_body_resolution_lambdas;
+	List<GDScriptParser::LambdaNode *> lambdas = std::move(pending_body_resolution_lambdas);
 	pending_body_resolution_lambdas.clear();
 
 	for (GDScriptParser::LambdaNode *lambda : lambdas) {

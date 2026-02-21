@@ -107,6 +107,9 @@ private:
 	// frame info extensions
 	Vector<OpenXRExtensionWrapper *> frame_info_extensions;
 
+	// projection layer extensions
+	Vector<OpenXRExtensionWrapper *> projection_layer_extensions;
+
 	// view configuration
 	LocalVector<XrViewConfigurationType> supported_view_configuration_types;
 
@@ -502,7 +505,7 @@ public:
 	void set_form_factor(XrFormFactor p_form_factor);
 	XrFormFactor get_form_factor() const { return form_factor; }
 
-	uint32_t get_view_count();
+	uint32_t get_view_count() const;
 	void set_view_configuration(XrViewConfigurationType p_view_configuration);
 	XrViewConfigurationType get_view_configuration() const { return view_configuration; }
 
@@ -631,6 +634,9 @@ public:
 
 	void register_frame_info_extension(OpenXRExtensionWrapper *p_extension);
 	void unregister_frame_info_extension(OpenXRExtensionWrapper *p_extension);
+
+	void register_projection_layer_extension(OpenXRExtensionWrapper *p_extension);
+	void unregister_projection_layer_extension(OpenXRExtensionWrapper *p_extension);
 
 	const Vector<XrEnvironmentBlendMode> get_supported_environment_blend_modes();
 

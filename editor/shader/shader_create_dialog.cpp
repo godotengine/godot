@@ -265,7 +265,7 @@ void ShaderCreateDialog::_browse_path() {
 	file_browse->set_customization_flag_enabled(FileDialog::CUSTOMIZATION_OVERWRITE_WARNING, false);
 	file_browse->clear_filters();
 
-	List<String> extensions = type_data.get(type_menu->get_selected()).extensions;
+	List<String> extensions(type_data.get(type_menu->get_selected()).extensions);
 
 	for (const String &E : extensions) {
 		file_browse->add_filter("*." + E);
@@ -385,25 +385,25 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 	String stripped_file_path = p_path.strip_edges();
 
 	if (stripped_file_path.is_empty()) {
-		return TTR("Path is empty.");
+		return TTRC("Path is empty.");
 	}
 	if (stripped_file_path.get_file().get_basename().is_empty()) {
-		return TTR("Filename is empty.");
+		return TTRC("Filename is empty.");
 	}
 
 	stripped_file_path = ProjectSettings::get_singleton()->localize_path(stripped_file_path);
 	if (!stripped_file_path.begins_with("res://")) {
-		return TTR("Path is not local.");
+		return TTRC("Path is not local.");
 	}
 
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (d->change_dir(stripped_file_path.get_base_dir()) != OK) {
-		return TTR("Invalid base path.");
+		return TTRC("Invalid base path.");
 	}
 
 	Ref<DirAccess> f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (f->dir_exists(stripped_file_path)) {
-		return TTR("A directory with the same name exists.");
+		return TTRC("A directory with the same name exists.");
 	}
 
 	const ShaderCreateDialog::ShaderTypeData &current_type_data = type_data.get(current_type);
@@ -415,17 +415,17 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 		}
 	}
 
-	return TTR("Invalid extension for selected shader type.");
+	return TTRC("Invalid extension for selected shader type.");
 }
 
 void ShaderCreateDialog::_update_dialog() {
 	if (!is_built_in && !is_path_valid) {
-		validation_panel->set_message(MSG_ID_SHADER, TTR("Invalid path."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(MSG_ID_SHADER, TTRC("Invalid path."), EditorValidationPanel::MSG_ERROR);
 	}
 	if (!is_built_in && !path_error.is_empty()) {
 		validation_panel->set_message(MSG_ID_PATH, path_error, EditorValidationPanel::MSG_ERROR);
 	} else if (validation_panel->is_valid() && !is_new_shader_created) {
-		validation_panel->set_message(MSG_ID_SHADER, TTR("File exists, it will be reused."), EditorValidationPanel::MSG_OK);
+		validation_panel->set_message(MSG_ID_SHADER, TTRC("File exists, it will be reused."), EditorValidationPanel::MSG_OK);
 	}
 	if (!built_in_enabled) {
 		internal->set_pressed(false);
@@ -447,22 +447,22 @@ void ShaderCreateDialog::_update_dialog() {
 	internal->set_disabled(!built_in_enabled);
 
 	if (is_built_in) {
-		validation_panel->set_message(MSG_ID_BUILT_IN, TTR("Note: Built-in shaders can't be edited using an external editor."), EditorValidationPanel::MSG_INFO, false);
+		validation_panel->set_message(MSG_ID_BUILT_IN, TTRC("Note: Built-in shaders can't be edited using an external editor."), EditorValidationPanel::MSG_INFO, false);
 	}
 
 	if (is_built_in) {
 		set_ok_button_text(TTR("Create"));
-		validation_panel->set_message(MSG_ID_PATH, TTR("Built-in shader (into scene file)."), EditorValidationPanel::MSG_OK);
+		validation_panel->set_message(MSG_ID_PATH, TTRC("Built-in shader (into scene file)."), EditorValidationPanel::MSG_OK);
 	} else if (is_new_shader_created) {
 		set_ok_button_text(TTR("Create"));
 	} else if (load_enabled) {
 		set_ok_button_text(TTR("Load"));
 		if (is_path_valid) {
-			validation_panel->set_message(MSG_ID_PATH, TTR("Will load an existing shader file."), EditorValidationPanel::MSG_OK);
+			validation_panel->set_message(MSG_ID_PATH, TTRC("Will load an existing shader file."), EditorValidationPanel::MSG_OK);
 		}
 	} else {
 		set_ok_button_text(TTR("Create"));
-		validation_panel->set_message(MSG_ID_PATH, TTR("Shader file already exists."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(MSG_ID_PATH, TTRC("Shader file already exists."), EditorValidationPanel::MSG_ERROR);
 	}
 }
 
@@ -484,8 +484,8 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	// Error Fields.
 
 	validation_panel = memnew(EditorValidationPanel);
-	validation_panel->add_line(MSG_ID_SHADER, TTR("Shader path/name is valid."));
-	validation_panel->add_line(MSG_ID_PATH, TTR("Will create a new shader file."));
+	validation_panel->add_line(MSG_ID_SHADER, TTRC("Shader path/name is valid."));
+	validation_panel->add_line(MSG_ID_PATH, TTRC("Will create a new shader file."));
 	validation_panel->add_line(MSG_ID_BUILT_IN);
 	validation_panel->set_update_callback(callable_mp(this, &ShaderCreateDialog::_update_dialog));
 	validation_panel->set_accept_button(get_ok_button());

@@ -1119,7 +1119,7 @@ uint32_t RenderingDeviceDriverD3D12::_find_max_common_supported_sample_count(Vec
 				msql.SampleCount = (UINT)samples;
 				HRESULT res = device->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &msql, sizeof(msql));
 				if (SUCCEEDED(res) && msql.NumQualityLevels) {
-					int bit = get_shift_from_power_of_2((uint32_t)samples);
+					int bit = Math::get_shift_from_power_of_2((uint32_t)samples);
 					ERR_FAIL_COND_V(bit == -1, 1);
 					mask |= (uint32_t)(1 << bit);
 				}
@@ -1131,7 +1131,7 @@ uint32_t RenderingDeviceDriverD3D12::_find_max_common_supported_sample_count(Vec
 	if (common == UINT32_MAX) {
 		return 1;
 	} else {
-		return ((uint32_t)1 << nearest_shift(common));
+		return ((uint32_t)1 << Math::nearest_shift(common));
 	}
 }
 
@@ -5796,9 +5796,11 @@ uint64_t RenderingDeviceDriverD3D12::get_resource_native_handle(DriverResource p
 }
 
 uint64_t RenderingDeviceDriverD3D12::get_total_memory_used() {
-	D3D12MA::TotalStatistics stats;
-	allocator->CalculateStatistics(&stats);
-	return stats.Total.Stats.BlockBytes;
+	D3D12MA::Budget local_budget;
+	D3D12MA::Budget non_local_budget;
+	allocator->GetBudget(&local_budget, &non_local_budget);
+
+	return local_budget.Stats.AllocationBytes + non_local_budget.Stats.AllocationBytes;
 }
 
 uint64_t RenderingDeviceDriverD3D12::get_lazily_memory_used() {

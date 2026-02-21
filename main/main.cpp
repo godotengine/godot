@@ -722,7 +722,12 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("\n");
 }
 
-#ifdef TESTS_ENABLED
+#ifndef TESTS_ENABLED
+Error Main::test_setup() {
+	ERR_FAIL_V(ERR_UNAVAILABLE);
+}
+void Main::test_cleanup() {}
+#else
 // The order is the same as in `Main::setup()`, only core and some editor types
 // are initialized here. This also combines `Main::setup2()` initialization.
 Error Main::test_setup() {
@@ -931,7 +936,7 @@ void Main::test_cleanup() {
 
 	OS::get_singleton()->finalize_core();
 }
-#endif
+#endif // TESTS_ENABLED
 
 int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
 	for (int x = 0; x < argc; x++) {
@@ -3051,7 +3056,12 @@ Error Main::setup2(bool p_show_boot_logo) {
 								init_custom_scale = value;
 								init_custom_scale_found = true;
 							} else if (!prefer_wayland_found && assign == "run/platforms/linuxbsd/prefer_wayland") {
-								prefer_wayland = value;
+								if (!OS::get_singleton()->get_environment("WAYLAND_DISPLAY").is_empty()) {
+									// Do not prefer Wayland if not currently on a Wayland session.
+									// This avoids error messages on startup when currently on X11
+									// and the Prefer Wayland setting is enabled.
+									prefer_wayland = value;
+								}
 								prefer_wayland_found = true;
 							} else if (!tablet_found && assign == "interface/editor/tablet_driver") {
 								tablet_driver_editor = value;

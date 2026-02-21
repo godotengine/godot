@@ -41,6 +41,7 @@
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/import_dock.h"
 #include "editor/docks/scene_tree_dock.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -58,6 +59,7 @@
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
+#include "editor/settings/editor_settings_dialog.h"
 #include "editor/shader/shader_create_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
@@ -1065,6 +1067,13 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 				if (searched_tokens.is_empty() || _matches_all_search_tokens(text)) {
 					files->add_item(text, icon, true);
 					files->set_item_metadata(-1, favorite);
+
+					const Color folder_color = FileSystemDock::get_dir_icon_color(favorite, default_folder_color);
+					if (!editor_is_dark_icon_and_font && folder_color != default_folder_color) {
+						files->set_item_icon_modulate(-1, folder_color * ITEM_COLOR_SCALE);
+					} else {
+						files->set_item_icon_modulate(-1, folder_color);
+					}
 				}
 			} else {
 				int index;
@@ -1114,19 +1123,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		} else {
 			if (display_mode == DISPLAY_MODE_TREE_ONLY || always_show_folders) {
 				// Check for a folder color to inherit (if one is assigned).
-				Color inherited_folder_color = default_folder_color;
-				String color_scan_dir = directory;
-				while (color_scan_dir != "res://" && inherited_folder_color == default_folder_color) {
-					if (!color_scan_dir.ends_with("/")) {
-						color_scan_dir += "/";
-					}
-
-					if (assigned_folder_colors.has(color_scan_dir)) {
-						inherited_folder_color = folder_colors[assigned_folder_colors[color_scan_dir]];
-					}
-
-					color_scan_dir = color_scan_dir.rstrip("/").get_base_dir();
-				}
+				const Color inherited_folder_color = FileSystemDock::get_dir_icon_color(directory, default_folder_color);
 
 				// Display folders in the list.
 				if (directory != "res://") {
@@ -1860,7 +1857,7 @@ void FileSystemDock::_rename_operation_confirm() {
 		rename_error = true;
 	} else if (to_rename.is_file && to_rename.path.get_extension() != new_name.get_extension()) {
 		if (!EditorFileSystem::get_singleton()->get_valid_extensions().find(new_name.get_extension())) {
-			EditorNode::get_singleton()->show_warning(TTRC("This file extension is not recognized by the editor.\nIf you want to rename it anyway, use your operating system's file manager.\nAfter renaming to an unknown extension, the file won't be shown in the editor anymore."));
+			unrecognized_ext_dialog->popup_centered_clamped();
 			rename_error = true;
 		}
 	}
@@ -4282,6 +4279,17 @@ void FileSystemDock::load_layout_from_config(const Ref<ConfigFile> &p_layout, co
 	}
 }
 
+void FileSystemDock::_on_open_editor_settings_file_exts() {
+	unrecognized_ext_dialog->hide();
+
+	// The FileSystem settings are under "advanced settings", so we have to ensure
+	// that setting is enabled before we attempt to open the menu to them.
+	EditorSettingsDialog *ed_settings = EditorNode::get_singleton()->editor_settings_dialog;
+	ed_settings->set_advanced_mode_enabled(true);
+	ed_settings->popup_edit_settings();
+	ed_settings->set_current_section("docks/filesystem");
+}
+
 void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("navigate_to_path", "path"), &FileSystemDock::navigate_to_path);
 
@@ -4571,6 +4579,12 @@ FileSystemDock::FileSystemDock() {
 	move_confirm_dialog = memnew(ConfirmationDialog);
 	add_child(move_confirm_dialog);
 	move_confirm_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileSystemDock::_move_confirm));
+
+	unrecognized_ext_dialog = memnew(AcceptDialog);
+	add_child(unrecognized_ext_dialog);
+	unrecognized_ext_dialog->set_text(TTRC("This file extension is not recognized by the editor.\nIf you want to rename it anyway, use your operating system's file manager.\nAfter renaming to an unknown extension, the file won't be shown in the editor anymore.\nTo make the editor recognize this file extension, add it to one of the lists of extensions in Editor Settings > Docks > FileSystem."));
+	Button *settings_button = unrecognized_ext_dialog->add_button(TTRC("Open Editor Settings"), false, "open_editor_settings_docks_filesystem");
+	settings_button->connect("pressed", callable_mp(this, &FileSystemDock::_on_open_editor_settings_file_exts));
 
 	uncollapsed_paths_before_search = Vector<String>();
 

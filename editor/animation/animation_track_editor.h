@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/rb_map.h"
 #include "editor/editor_data.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/property_selector.h"

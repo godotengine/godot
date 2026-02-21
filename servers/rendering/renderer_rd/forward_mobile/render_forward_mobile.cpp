@@ -1960,7 +1960,7 @@ void RenderForwardMobile::SceneState::grow_instance_buffer(RenderListType p_rend
 	if (p_req_element_count > 0) {
 		if (instance_buffer[p_render_list].get_size(0u) < p_req_element_count * sizeof(SceneState::InstanceData)) {
 			instance_buffer[p_render_list].uninit();
-			uint32_t new_size = nearest_power_of_2_templated(MAX(uint64_t(INSTANCE_DATA_BUFFER_MIN_SIZE), p_req_element_count));
+			uint32_t new_size = Math::nearest_power_of_2_templated(MAX(uint64_t(INSTANCE_DATA_BUFFER_MIN_SIZE), p_req_element_count));
 			instance_buffer[p_render_list].set_storage_size(0u, new_size * sizeof(SceneState::InstanceData));
 			curr_gpu_ptr[p_render_list] = nullptr;
 		}

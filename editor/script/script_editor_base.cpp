@@ -639,6 +639,7 @@ TextEditorBase::TextEditorBase() {
 	code_editor->get_text_editor()->connect(SceneStringName(gui_input), callable_mp(this, &TextEditorBase::_text_edit_gui_input));
 	code_editor->connect("validate_script", callable_mp(this, &TextEditorBase::_validate_script));
 	code_editor->connect("load_theme_settings", callable_mp(this, &TextEditorBase::_load_theme_settings));
+	code_editor->connect("show_goto_popup", callable_mp(this, &TextEditorBase::_edit_option).bind(SEARCH_GOTO_LINE));
 
 	context_menu = memnew(PopupMenu);
 	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditorBase::_edit_option));

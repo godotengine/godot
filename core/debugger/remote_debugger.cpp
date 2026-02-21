@@ -401,15 +401,17 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			return;
 		}
 
+		if (script_debugger->is_ignoring_error_breaks() && p_is_error_breakpoint) {
+			return;
+		}
+
 		ERR_FAIL_COND_MSG(!is_peer_connected(), "Script Debugger failed to connect, but being used anyway.");
 
 		if (!peer->can_block()) {
 			return; // Peer does not support blocking IO. We could at least send the error though.
 		}
-	}
 
-	if (p_is_error_breakpoint && script_debugger->is_ignoring_error_breaks()) {
-		return;
+		threads_in_break.insert(Thread::get_caller_id());
 	}
 
 	ScriptLanguage *script_lang = script_debugger->get_break_language();
@@ -426,7 +428,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 	Input::MouseMode mouse_mode = Input::MouseMode::MOUSE_MODE_VISIBLE;
 
-	if (Thread::get_caller_id() == Thread::get_main_id()) {
+	if (Thread::is_main_thread()) {
 		mouse_mode = Input::get_singleton()->get_mouse_mode();
 		if (mouse_mode != Input::MouseMode::MOUSE_MODE_VISIBLE) {
 			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
@@ -620,7 +622,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			}
 		} else {
 			OS::get_singleton()->delay_usec(10000);
-			if (Thread::get_caller_id() == Thread::get_main_id()) {
+			if (Thread::is_main_thread()) {
 				// If this is a busy loop on the main thread, events still need to be processed.
 				DisplayServer::get_singleton()->force_process_and_drop_events();
 			}
@@ -629,19 +631,28 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 	send_message("debug_exit", Array());
 
-	if (Thread::get_caller_id() == Thread::get_main_id()) {
-		if (mouse_mode != Input::MouseMode::MOUSE_MODE_VISIBLE) {
-			Input::get_singleton()->set_mouse_mode(mouse_mode);
-		}
-	} else {
+	if (Thread::is_main_thread() && mouse_mode != Input::MouseMode::MOUSE_MODE_VISIBLE) {
+		Input::get_singleton()->set_mouse_mode(mouse_mode);
+	}
+
+	{
 		MutexLock mutex_lock(mutex);
-		messages.erase(Thread::get_caller_id());
+
+		if (!Thread::is_main_thread()) {
+			messages.erase(Thread::get_caller_id());
+		}
+
+		threads_in_break.erase(Thread::get_caller_id());
 	}
 }
 
 void RemoteDebugger::poll_events(bool p_is_idle) {
-	if (peer.is_null()) {
-		return;
+	{
+		MutexLock lock(mutex);
+		if (threads_in_break.has(Thread::get_caller_id())) {
+			// We're already in `RemoteDebugger::debug`, so messages should be handled there instead.
+			return;
+		}
 	}
 
 	flush_output();

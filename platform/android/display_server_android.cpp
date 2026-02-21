@@ -37,6 +37,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/input/input_event.h"
+#include "servers/display/native_menu.h"
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"

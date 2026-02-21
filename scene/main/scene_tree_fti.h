@@ -143,7 +143,7 @@ public:
 		if (!data.enabled) {
 			return;
 		}
-		MutexLock(data.mutex);
+		MutexLock lock(data.mutex);
 
 		if (p_transform_changed) {
 			_node_3d_notify_set_xform(r_node);

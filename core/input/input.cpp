@@ -66,6 +66,11 @@ static const char *_joy_buttons[(size_t)JoyButton::SDL_MAX] = {
 	"paddle3",
 	"paddle4",
 	"touchpad",
+	"misc2",
+	"misc3",
+	"misc4",
+	"misc5",
+	"misc6",
 };
 
 static const char *_joy_axes[(size_t)JoyAxis::SDL_MAX] = {
@@ -146,6 +151,9 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connected_joypads"), &Input::get_connected_joypads);
 	ClassDB::bind_method(D_METHOD("get_joy_vibration_strength", "device"), &Input::get_joy_vibration_strength);
 	ClassDB::bind_method(D_METHOD("get_joy_vibration_duration", "device"), &Input::get_joy_vibration_duration);
+	ClassDB::bind_method(D_METHOD("get_joy_vibration_remaining_duration", "device"), &Input::get_joy_vibration_remaining_duration);
+	ClassDB::bind_method(D_METHOD("is_joy_vibrating", "device"), &Input::is_joy_vibrating);
+	ClassDB::bind_method(D_METHOD("has_joy_vibration", "device"), &Input::has_joy_vibration);
 	ClassDB::bind_method(D_METHOD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
 	ClassDB::bind_method(D_METHOD("vibrate_handheld", "duration_ms", "amplitude"), &Input::vibrate_handheld, DEFVAL(500), DEFVAL(-1.0));
@@ -623,6 +631,33 @@ float Input::get_joy_vibration_duration(int p_device) {
 	} else {
 		return 0.f;
 	}
+}
+
+float Input::get_joy_vibration_remaining_duration(int p_device) {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr || !joypad->has_vibration) {
+		return 0.f;
+	}
+	const VibrationInfo *vibration = joy_vibration.getptr(p_device);
+	if (vibration == nullptr || (vibration->weak_magnitude == 0.f && vibration->strong_magnitude == 0.f) || vibration->duration < 0.f) {
+		return 0.f;
+	}
+	float vibration_duration = vibration->duration;
+	if (vibration_duration > 0xFFFF / 1000.f || vibration_duration == 0.f) {
+		vibration_duration = 0xFFFF / 1000.f; // SDL_MAX_RUMBLE_DURATION_MS / 1000.f
+	}
+	return MAX(vibration_duration - (OS::get_singleton()->get_ticks_usec() - vibration->timestamp) / 1e6, 0.f);
+}
+
+bool Input::is_joy_vibrating(int p_device) {
+	return get_joy_vibration_remaining_duration(p_device) > 0.0f;
+}
+
+bool Input::has_joy_vibration(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	return joypad != nullptr && joypad->has_vibration;
 }
 
 static String _hex_str(uint8_t p_byte) {
@@ -1737,6 +1772,9 @@ void Input::_update_joypad_features(int p_device) {
 	Joypad *joypad = joy_names.getptr(p_device);
 	if (!joypad || joypad->features == nullptr) {
 		return;
+	}
+	if (joypad->features->has_joy_vibration()) {
+		joypad->has_vibration = true;
 	}
 	if (joypad->features->has_joy_light()) {
 		joypad->has_light = true;

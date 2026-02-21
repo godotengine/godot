@@ -95,6 +95,7 @@ void GotoLinePopup::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				text_editor->set_preview_navigation_change(false);
+				text_editor->get_text_editor()->grab_focus();
 			}
 		} break;
 	}
@@ -993,7 +994,7 @@ void CodeTextEditor::_line_col_changed() {
 	sb.append(" : ");
 	sb.append(itos(positional_column + 1).lpad(3));
 
-	line_and_col_txt->set_text(sb.as_string());
+	line_and_col_button->set_text(sb.as_string());
 
 	if (find_replace_bar) {
 		if (!find_replace_bar->line_col_changed_for_result) {
@@ -1633,6 +1634,17 @@ void CodeTextEditor::_update_font_ligatures() {
 				fc->set_opentype_features(ftrs);
 			} break;
 		}
+		Vector<String> variation_tags = String(EDITOR_GET("interface/editor/code_font_custom_variations")).split(",");
+		Dictionary variations_mono;
+		for (int i = 0; i < variation_tags.size(); i++) {
+			Vector<String> subtag_a = variation_tags[i].split("=");
+			if (subtag_a.size() == 2) {
+				variations_mono[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_float();
+			} else if (subtag_a.size() == 1) {
+				variations_mono[TS->name_to_tag(subtag_a[0])] = 1;
+			}
+		}
+		fc->set_variation_opentype(variations_mono);
 	}
 }
 
@@ -1855,11 +1867,16 @@ float CodeTextEditor::get_zoom_factor() {
 	return zoom_factor;
 }
 
+void CodeTextEditor::_show_goto_popup_request() {
+	emit_signal("show_goto_popup");
+}
+
 void CodeTextEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("validate_script"));
 	ADD_SIGNAL(MethodInfo("load_theme_settings"));
 	ADD_SIGNAL(MethodInfo("show_errors_panel"));
 	ADD_SIGNAL(MethodInfo("show_warnings_panel"));
+	ADD_SIGNAL(MethodInfo("show_goto_popup"));
 	ADD_SIGNAL(MethodInfo("navigation_preview_ended"));
 	ADD_SIGNAL(MethodInfo("zoomed", PropertyInfo(Variant::FLOAT, "p_zoom_factor")));
 }
@@ -1982,16 +1999,18 @@ CodeTextEditor::CodeTextEditor() {
 
 	status_bar->add_child(memnew(VSeparator));
 
-	// Line and column
-	line_and_col_txt = memnew(Label);
-	status_bar->add_child(line_and_col_txt);
-	line_and_col_txt->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
-	line_and_col_txt->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	line_and_col_txt->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
-	line_and_col_txt->set_tooltip_text(TTRC("Line and column numbers."));
-	line_and_col_txt->set_accessibility_name(TTRC("Line and column numbers."));
-	line_and_col_txt->set_focus_mode(FOCUS_ACCESSIBILITY);
-	line_and_col_txt->set_mouse_filter(MOUSE_FILTER_STOP);
+	// Line and column.
+	line_and_col_button = memnew(Button);
+	line_and_col_button->set_theme_type_variation("FlatMenuButton");
+	line_and_col_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
+	line_and_col_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	line_and_col_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+	line_and_col_button->set_tooltip_text(TTRC("Line and column numbers."));
+	line_and_col_button->set_accessibility_name(TTRC("Line and column numbers."));
+	line_and_col_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_show_goto_popup_request));
+	line_and_col_button->set_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"));
+	line_and_col_button->set_shortcut_context(this);
+	status_bar->add_child(line_and_col_button);
 
 	status_bar->add_child(memnew(VSeparator));
 

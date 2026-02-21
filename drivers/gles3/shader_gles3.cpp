@@ -34,8 +34,8 @@
 
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-
-#include "drivers/gles3/rasterizer_gles3.h"
+#include "core/string/string_builder.h"
+#include "drivers/gles3/rasterizer_util_gles3.h"
 #include "drivers/gles3/storage/config.h"
 
 static String _mkid(const String &p_id) {
@@ -154,7 +154,7 @@ RID ShaderGLES3::version_create() {
 }
 
 void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant, const Version *p_version, StageType p_stage_type, uint64_t p_specialization) {
-	if (RasterizerGLES3::is_gles_over_gl()) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		builder.append("#version 330\n");
 		builder.append("#define USE_GLES_OVER_GL\n");
 	} else {
@@ -215,7 +215,7 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 	// Default to highp precision unless specified otherwise.
 	builder.append("precision highp float;\n");
 	builder.append("precision highp int;\n");
-	if (!RasterizerGLES3::is_gles_over_gl()) {
+	if (!RasterizerUtilGLES3::is_gles_over_gl()) {
 		builder.append("precision highp sampler2D;\n");
 		builder.append("precision highp samplerCube;\n");
 		builder.append("precision highp sampler2DArray;\n");
@@ -527,7 +527,7 @@ String ShaderGLES3::_version_get_sha1(Version *p_version) const {
 		hash_build.append("[custom_defines:" + itos(i) + "]");
 		hash_build.append(p_version->custom_defines[i].get_data());
 	}
-	if (RasterizerGLES3::is_gles_over_gl()) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		hash_build.append("[gl]");
 	} else {
 		hash_build.append("[gles]");
@@ -546,7 +546,7 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 	return false;
 #else
 #if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED)
-	if (RasterizerGLES3::is_gles_over_gl() && (glProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
+	if (RasterizerUtilGLES3::is_gles_over_gl() && (glProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
 		return false;
 	}
 #endif
@@ -633,7 +633,7 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 #else
 	ERR_FAIL_COND(!shader_cache_dir_valid);
 #if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED)
-	if (RasterizerGLES3::is_gles_over_gl() && (glGetProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
+	if (RasterizerUtilGLES3::is_gles_over_gl() && (glGetProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
 		return;
 	}
 #endif

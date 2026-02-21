@@ -1572,6 +1572,10 @@
 		<member name="GDExtensionManager" type="GDExtensionManager" setter="" getter="">
 			The [GDExtensionManager] singleton.
 		</member>
+		<member name="GDScriptLanguageProtocol" type="GDScriptLanguageProtocol" setter="" getter="">
+			The [GDScriptLanguageProtocol] singleton.
+			[b]Note:[/b] Only available in editor builds.
+		</member>
 		<member name="Geometry2D" type="Geometry2D" setter="" getter="">
 			The [Geometry2D] singleton.
 		</member>
@@ -2514,7 +2518,22 @@
 		<constant name="JOY_BUTTON_TOUCHPAD" value="20" enum="JoyButton">
 			Game controller SDL touchpad button.
 		</constant>
-		<constant name="JOY_BUTTON_SDL_MAX" value="21" enum="JoyButton">
+		<constant name="JOY_BUTTON_MISC2" value="21" enum="JoyButton">
+			Game controller SDL miscellaneous button. Used by Nintendo Switch 2 Pro Controller and Horipad Steam controllers.
+		</constant>
+		<constant name="JOY_BUTTON_MISC3" value="22" enum="JoyButton">
+			Game controller SDL miscellaneous button.
+		</constant>
+		<constant name="JOY_BUTTON_MISC4" value="23" enum="JoyButton">
+			Game controller SDL miscellaneous button.
+		</constant>
+		<constant name="JOY_BUTTON_MISC5" value="24" enum="JoyButton">
+			Game controller SDL miscellaneous button.
+		</constant>
+		<constant name="JOY_BUTTON_MISC6" value="25" enum="JoyButton">
+			Game controller SDL miscellaneous button.
+		</constant>
+		<constant name="JOY_BUTTON_SDL_MAX" value="26" enum="JoyButton">
 			The number of SDL game controller buttons.
 		</constant>
 		<constant name="JOY_BUTTON_MAX" value="128" enum="JoyButton">
@@ -3106,6 +3125,39 @@
 		</constant>
 		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags" is_bitfield="true">
 			Default method flags (normal).
+		</constant>
+		<constant name="UINT8_MAX" value="255">
+			Maximum value of an 8-bit unsigned integer.
+		</constant>
+		<constant name="UINT16_MAX" value="65535">
+			Maximum value of a 16-bit unsigned integer.
+		</constant>
+		<constant name="UINT32_MAX" value="4294967295">
+			Maximum value of a 32-bit unsigned integer.
+		</constant>
+		<constant name="INT8_MIN" value="-128">
+			Minimum value of an 8-bit signed integer.
+		</constant>
+		<constant name="INT8_MAX" value="127">
+			Maximum value of an 8-bit signed integer.
+		</constant>
+		<constant name="INT16_MIN" value="-32768">
+			Minimum value of a 16-bit signed integer.
+		</constant>
+		<constant name="INT16_MAX" value="32767">
+			Maximum value of a 16-bit signed integer.
+		</constant>
+		<constant name="INT32_MIN" value="-2147483648">
+			Minimum value of a 32-bit signed integer.
+		</constant>
+		<constant name="INT32_MAX" value="2147483647">
+			Maximum value of a 32-bit signed integer.
+		</constant>
+		<constant name="INT64_MIN" value="-9223372036854775808">
+			Minimum value of a 64-bit signed integer.
+		</constant>
+		<constant name="INT64_MAX" value="9223372036854775807">
+			Maximum value of a 64-bit signed integer.
 		</constant>
 		<constant name="TYPE_NIL" value="0" enum="Variant.Type">
 			Variable is [code]null[/code].

@@ -32,76 +32,59 @@
 
 #ifdef X11_ENABLED
 
-#include "core/input/input_event.h"
+#include "core/input/input_enums.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/rb_map.h"
-#include "drivers/alsa/audio_driver_alsa.h"
-#include "drivers/alsamidi/midi_driver_alsamidi.h"
-#include "drivers/pulseaudio/audio_driver_pulseaudio.h"
-#include "drivers/unix/os_unix.h"
-#include "servers/audio/audio_server.h"
 #include "servers/display/display_server.h"
-#include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/rendering_server.h"
-
-#if defined(SPEECHD_ENABLED)
-#include "tts_linux.h"
-#endif
-
-#if defined(GLES3_ENABLED)
-#include "x11/gl_manager_x11.h"
-#include "x11/gl_manager_x11_egl.h"
-#endif
-
-#if defined(RD_ENABLED)
-
-#if defined(VULKAN_ENABLED)
-#include "x11/rendering_context_driver_vulkan_x11.h"
-#endif
-#endif
-
-#if defined(DBUS_ENABLED)
-#include "freedesktop_at_spi_monitor.h"
-#include "freedesktop_portal_desktop.h"
-#include "freedesktop_screensaver.h"
-#endif
-
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/keysym.h>
 
 #ifdef SOWRAP_ENABLED
 #include "x11/dynwrappers/xlib-so_wrap.h"
 
 #include "x11/dynwrappers/xcursor-so_wrap.h"
-#include "x11/dynwrappers/xext-so_wrap.h"
-#include "x11/dynwrappers/xinerama-so_wrap.h"
 #include "x11/dynwrappers/xinput2-so_wrap.h"
 #include "x11/dynwrappers/xrandr-so_wrap.h"
-#include "x11/dynwrappers/xrender-so_wrap.h"
 
+#ifdef XKB_ENABLED
 #include "xkbcommon-so_wrap.h"
-#else
-#include <X11/XKBlib.h>
+#endif
+#else // !SOWRAP_ENABLED
 #include <X11/Xlib.h>
-#include <X11/Xutil.h>
 
 #include <X11/Xcursor/Xcursor.h>
 #include <X11/extensions/XInput2.h>
-#include <X11/extensions/Xext.h>
-#include <X11/extensions/Xinerama.h>
 #include <X11/extensions/Xrandr.h>
-#include <X11/extensions/Xrender.h>
-#include <X11/extensions/shape.h>
 
 #ifdef XKB_ENABLED
 #include <xkbcommon/xkbcommon-compose.h>
-#include <xkbcommon/xkbcommon-keysyms.h>
 #include <xkbcommon/xkbcommon.h>
 #endif
+#endif
+
+#undef CursorShape // Xlib macro conflicting with our type.
+
+class InputEvent;
+class InputEventWithModifiers;
+class NativeMenu;
+
+#ifdef RD_ENABLED
+class RenderingDevice;
+class RenderingContextDriver;
+#endif
+
+#ifdef GLES3_ENABLED
+class GLManager_X11;
+class GLManagerEGL_X11;
+#endif
+
+#ifdef DBUS_ENABLED
+class FreeDesktopPortalDesktop;
+class FreeDesktopAtSPIMonitor;
+class FreeDesktopScreenSaver;
+#endif
+
+#ifdef SPEECHD_ENABLED
+class TTS_Linux;
 #endif
 
 typedef struct _xrr_monitor_info {
@@ -117,8 +100,6 @@ typedef struct _xrr_monitor_info {
 	int mheight = 0;
 	RROutput *outputs = nullptr;
 } xrr_monitor_info;
-
-#undef CursorShape
 
 class DisplayServerX11 : public DisplayServer {
 	GDSOFTCLASS(DisplayServerX11, DisplayServer);

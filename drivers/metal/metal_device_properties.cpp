@@ -149,6 +149,7 @@ void MetalDeviceProperties::init_features(MTL::Device *p_device) {
 	features.quadPermute = p_device->supportsFamily(MTL::GPUFamilyApple4);
 	features.simdPermute = p_device->supportsFamily(MTL::GPUFamilyApple6);
 	features.simdReduction = p_device->supportsFamily(MTL::GPUFamilyApple7);
+	features.supports_border_color = p_device->supportsFamily(MTL::GPUFamilyApple7);
 	features.argument_buffers_tier = p_device->argumentBuffersSupport();
 	features.supports_image_atomic_32_bit = p_device->supportsFamily(MTL::GPUFamilyApple6);
 	features.supports_image_atomic_64_bit = p_device->supportsFamily(GPUFamilyApple9) || (p_device->supportsFamily(MTL::GPUFamilyApple8) && p_device->supportsFamily(MTL::GPUFamilyMac2));

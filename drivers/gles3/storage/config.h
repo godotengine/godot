@@ -32,9 +32,11 @@
 
 #ifdef GLES3_ENABLED
 
-#include "core/config/project_settings.h"
-#include "core/string/ustring.h"
 #include "core/templates/hash_set.h"
+
+// FIXME: platform_gl.h includes windows.h via egl.h, which defines ConnectFlags.
+// This breaks include project_settings.h in config.cpp, so we include object.h first.
+#include "core/object/object.h"
 
 #include "platform_gl.h"
 
@@ -46,6 +48,8 @@ typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC)(GLenum, GLenu
 typedef void (*PFNEGLIMAGETARGETTEXTURE2DOESPROC)(GLenum, void *);
 typedef void (*PFNGLPOLYGONOFFSETCLAMPEXTPROC)(GLfloat factor, GLfloat units, GLfloat clamp);
 #endif
+
+class String;
 
 namespace GLES3 {
 

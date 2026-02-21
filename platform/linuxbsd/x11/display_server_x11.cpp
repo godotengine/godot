@@ -32,7 +32,6 @@
 
 #ifdef X11_ENABLED
 
-#include "x11/detect_prime_x11.h"
 #include "x11/key_mapping_x11.h"
 
 #include "core/config/project_settings.h"
@@ -42,17 +41,42 @@
 #include "core/os/main_loop.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
-#include "core/version.h"
 #include "drivers/png/png_driver_common.h"
+#include "drivers/unix/os_unix.h"
 #include "main/main.h"
-
+#include "servers/display/native_menu.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
-#if defined(VULKAN_ENABLED)
+#include <X11/Xatom.h>
+
+#ifdef SOWRAP_ENABLED
+#include "x11/dynwrappers/xext-so_wrap.h"
+#include "x11/dynwrappers/xinerama-so_wrap.h"
+#include "x11/dynwrappers/xrender-so_wrap.h"
+#else // !SOWRAP_ENABLED
+#undef CursorShape
+#include <X11/XKBlib.h>
+#include <X11/Xutil.h>
+
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/Xinerama.h>
+#include <X11/extensions/Xrender.h>
+#include <X11/extensions/shape.h>
+#endif
+
+#ifdef RD_ENABLED
+#ifdef VULKAN_ENABLED
+#include "x11/rendering_context_driver_vulkan_x11.h"
+#endif
+
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
 
-#if defined(GLES3_ENABLED)
+#ifdef GLES3_ENABLED
+#include "x11/detect_prime_x11.h"
+#include "x11/gl_manager_x11.h"
+#include "x11/gl_manager_x11_egl.h"
+
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
@@ -61,6 +85,10 @@
 #endif
 
 #ifdef DBUS_ENABLED
+#include "freedesktop_at_spi_monitor.h"
+#include "freedesktop_portal_desktop.h"
+#include "freedesktop_screensaver.h"
+
 #ifdef SOWRAP_ENABLED
 #include "dbus-so_wrap.h"
 #else
@@ -68,16 +96,17 @@
 #endif
 #endif
 
-#include <dlfcn.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <climits>
-#include <cstdio>
-#include <cstdlib>
+#ifdef SPEECHD_ENABLED
+#include "tts_linux.h"
+#endif
 
-#undef CursorShape
-#include <X11/XKBlib.h>
+#include <dlfcn.h> // dlopen
+//#include <sys/stat.h>
+//#include <sys/types.h>
+//#include <unistd.h>
+#include <climits> // LONG_MAX
+#include <cstdio> // stderr
+#include <cstdlib> // getenv
 
 // ICCCM
 #define WM_NormalState 1L // window normal state
@@ -2146,6 +2175,18 @@ int64_t DisplayServerX11::window_get_native_handle(HandleType p_handle_type, Win
 		case EGL_CONFIG: {
 			if (gl_manager_egl) {
 				return (int64_t)gl_manager_egl->get_config(p_window);
+			}
+			return 0;
+		}
+		case GLX_VISUALID: {
+			if (gl_manager) {
+				return (int64_t)gl_manager->get_glx_visualid(p_window);
+			}
+			return 0;
+		}
+		case GLX_FBCONFIG: {
+			if (gl_manager) {
+				return (int64_t)gl_manager->get_glx_fbconfig(p_window);
 			}
 			return 0;
 		}

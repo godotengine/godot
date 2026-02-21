@@ -36,6 +36,7 @@
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/input/input.h"
+#include "core/input/input_event.h"
 #include "core/math/geometry_3d.h"
 #include "scene/2d/camera_2d.h"
 #include "scene/debugger/scene_debugger_object.h"

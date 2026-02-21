@@ -30,8 +30,10 @@
 
 #pragma once
 
-#include "core/input/input_event.h"
 #include "servers/display/display_server.h"
+
+class InputEvent;
+class NativeMenu;
 
 #if defined(RD_ENABLED)
 class RenderingContextDriver;

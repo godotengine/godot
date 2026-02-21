@@ -260,7 +260,7 @@ Vector<String> EditorExportPreset::get_files_to_export() const {
 }
 
 HashSet<String> EditorExportPreset::get_selected_files() const {
-	return selected_files;
+	return HashSet<String>(selected_files);
 }
 
 void EditorExportPreset::set_selected_files(const HashSet<String> &p_files) {

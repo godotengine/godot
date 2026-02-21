@@ -191,14 +191,14 @@ void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_nex
 	void *display_handle = (void *)display_server->window_get_native_handle(DisplayServer::DISPLAY_HANDLE);
 	void *glxcontext_handle = (void *)display_server->window_get_native_handle(DisplayServer::OPENGL_CONTEXT);
 	void *glxdrawable_handle = (void *)display_server->window_get_native_handle(DisplayServer::WINDOW_HANDLE);
+	void *glx_fbconfig_handle = (void *)display_server->window_get_native_handle(DisplayServer::GLX_FBCONFIG);
+	VisualID glx_visualid = (VisualID)display_server->window_get_native_handle(DisplayServer::GLX_VISUALID);
 
 	graphics_binding_gl.xDisplay = (Display *)display_handle;
 	graphics_binding_gl.glxContext = (GLXContext)glxcontext_handle;
 	graphics_binding_gl.glxDrawable = (GLXDrawable)glxdrawable_handle;
-
-	// spec says to use proper values but runtimes don't care
-	graphics_binding_gl.visualid = 0;
-	graphics_binding_gl.glxFBConfig = nullptr;
+	graphics_binding_gl.glxFBConfig = (GLXFBConfig)glx_fbconfig_handle;
+	graphics_binding_gl.visualid = glx_visualid;
 #endif
 #endif
 
