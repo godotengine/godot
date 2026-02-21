@@ -137,8 +137,11 @@ EditorDock *EditorDockManager::_get_dock_tab_dragged() {
 		if (!source_tab_bar) {
 			return nullptr;
 		}
-
-		DockTabContainer *source_tab_container = Object::cast_to<DockTabContainer>(source_tab_bar->get_parent());
+		HBoxContainer *parent = Object::cast_to<HBoxContainer>(source_tab_bar->get_parent()); // The internal container.
+		if (!parent) {
+			return nullptr;
+		}
+		DockTabContainer *source_tab_container = Object::cast_to<DockTabContainer>(parent->get_parent());
 		if (!source_tab_container) {
 			return nullptr;
 		}
@@ -797,6 +800,15 @@ void DockContextPopup::_notification(int p_what) {
 	}
 }
 
+void DockContextPopup::_slot_clicked(int p_slot) {
+	DockTabContainer *target_tab_container = dock_manager->dock_slots[p_slot];
+	if (context_dock->get_parent_container() != target_tab_container) {
+		dock_manager->_move_dock(context_dock, target_tab_container, target_tab_container->get_tab_count());
+		dock_manager->_update_layout();
+		hide();
+	}
+}
+
 void DockContextPopup::_tab_move_left() {
 	TabContainer *tab_container = context_dock->get_parent_container();
 	if (!tab_container) {
@@ -828,152 +840,6 @@ void DockContextPopup::_close_dock() {
 void DockContextPopup::_float_dock() {
 	hide();
 	dock_manager->_open_dock_in_window(context_dock);
-}
-
-void DockContextPopup::_dock_select_input(const Ref<InputEvent> &p_input) {
-	Ref<InputEventMouse> me = p_input;
-
-	if (me.is_valid()) {
-		Vector2 point = me->get_position();
-
-		int over_dock_slot = -1;
-		for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
-			if (dock_select_rects[i].has_point(point)) {
-				over_dock_slot = i;
-				break;
-			}
-		}
-
-		if (over_dock_slot != dock_select_rect_over_idx) {
-			dock_select->queue_redraw();
-			dock_select_rect_over_idx = over_dock_slot;
-		}
-
-		if (over_dock_slot == -1) {
-			return;
-		}
-
-		Ref<InputEventMouseButton> mb = me;
-		DockTabContainer *target_tab_container = dock_manager->dock_slots[over_dock_slot];
-		if (context_dock->get_parent_container() == target_tab_container) {
-			return;
-		}
-
-		if (!(context_dock->available_layouts & target_tab_container->layout)) {
-			return;
-		}
-
-		if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
-			dock_manager->_move_dock(context_dock, target_tab_container, target_tab_container->get_tab_count());
-			dock_manager->_update_layout();
-			hide();
-		}
-	}
-}
-
-void DockContextPopup::_dock_select_mouse_exited() {
-	dock_select_rect_over_idx = -1;
-	dock_select->queue_redraw();
-}
-
-void DockContextPopup::_dock_select_draw() {
-	Color used_dock_color = Color(0.6, 0.6, 0.6, 0.8);
-	Color hovered_dock_color = Color(0.8, 0.8, 0.8, 0.8);
-	Color tab_selected_color = dock_select->get_theme_color(SNAME("mono_color"), EditorStringName(Editor));
-	Color tab_unselected_color = used_dock_color;
-	Color unused_dock_color = used_dock_color;
-	unused_dock_color.a = 0.4;
-	Color unusable_dock_color = unused_dock_color;
-	unusable_dock_color.a = 0.1;
-
-	// Update sizes.
-	Size2 dock_size = dock_select->get_size();
-	dock_size.x /= 6.0;
-	dock_size.y /= 2.0;
-
-	real_t center_panel_width = dock_size.x * 2.0;
-	Rect2 center_panel_rect(center_panel_width, 0, center_panel_width, dock_size.y);
-
-	if (dock_select->is_layout_rtl()) {
-		dock_select_rects[EditorDock::DOCK_SLOT_RIGHT_UR] = Rect2(Point2(), dock_size);
-		dock_select_rects[EditorDock::DOCK_SLOT_RIGHT_BR] = Rect2(Point2(0, dock_size.y), dock_size);
-		dock_select_rects[EditorDock::DOCK_SLOT_RIGHT_UL] = Rect2(Point2(dock_size.x, 0), dock_size);
-		dock_select_rects[EditorDock::DOCK_SLOT_RIGHT_BL] = Rect2(dock_size, dock_size);
-		dock_select_rects[EditorDock::DOCK_SLOT_LEFT_UR] = Rect2(Point2(dock_size.x * 4, 0), dock_size);
-		dock_select_rects[EditorDock::DOCK_SLOT_LEFT_BR] = Rect2(Point2(dock_size.x * 4, dock_size.y), dock_size);
-		dock_select_rects[EditorDock::DOCK_SLOT_LEFT_UL] = Rect2(Point2(dock_size.x * 5, 0), dock_size);
-		dock_select_rects[EditorDock::DOCK_SLOT_LEFT_BL] = Rect2(Point2(dock_size.x * 5, dock_size.y), dock_size);
-	} else {
-		dock_select_rects[EditorDock::DOCK_SLOT_LEFT_UL] = Rect2(Point2(), dock_size);
-		dock_select_rects[EditorDock::DOCK_SLOT_LEFT_BL] = Rect2(Point2(0, dock_size.y), dock_size);
-		dock_select_rects[EditorDock::DOCK_SLOT_LEFT_UR] = Rect2(Point2(dock_size.x, 0), dock_size);
-		dock_select_rects[EditorDock::DOCK_SLOT_LEFT_BR] = Rect2(dock_size, dock_size);
-		dock_select_rects[EditorDock::DOCK_SLOT_RIGHT_UL] = Rect2(Point2(dock_size.x * 4, 0), dock_size);
-		dock_select_rects[EditorDock::DOCK_SLOT_RIGHT_BL] = Rect2(Point2(dock_size.x * 4, dock_size.y), dock_size);
-		dock_select_rects[EditorDock::DOCK_SLOT_RIGHT_UR] = Rect2(Point2(dock_size.x * 5, 0), dock_size);
-		dock_select_rects[EditorDock::DOCK_SLOT_RIGHT_BR] = Rect2(Point2(dock_size.x * 5, dock_size.y), dock_size);
-	}
-	dock_select_rects[EditorDock::DOCK_SLOT_BOTTOM] = Rect2(center_panel_width, dock_size.y, center_panel_width, dock_size.y);
-
-	int rtl_dir = dock_select->is_layout_rtl() ? -1 : 1;
-	real_t tab_height = 3.0 * EDSCALE;
-	real_t tab_spacing = 1.0 * EDSCALE;
-	real_t dock_spacing = 2.0 * EDSCALE;
-	real_t dock_top_spacing = tab_height + dock_spacing;
-
-	TabContainer *context_tab_container = context_dock->get_parent_container();
-	int context_tab_index = -1;
-	if (context_tab_container && context_tab_container->get_tab_count() > 0) {
-		context_tab_index = context_tab_container->get_tab_idx_from_control(context_dock);
-	}
-
-	// Draw center panel.
-	Rect2 center_panel_draw_rect = center_panel_rect.grow_individual(-dock_spacing, -dock_top_spacing, -dock_spacing, -dock_spacing);
-	dock_select->draw_rect(center_panel_draw_rect, unusable_dock_color);
-
-	// Draw all dock slots.
-	for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
-		int max_tabs = (i == EditorDock::DOCK_SLOT_BOTTOM) ? 6 : 3;
-		const DockTabContainer *dock_slot = dock_manager->dock_slots[i];
-
-		Rect2 dock_slot_draw_rect = dock_select_rects[i].grow_individual(-dock_spacing, -dock_top_spacing, -dock_spacing, -dock_spacing);
-		real_t tab_width = Math::round(dock_slot_draw_rect.size.width / max_tabs);
-		Rect2 tab_draw_rect = Rect2(dock_slot_draw_rect.position.x, dock_select_rects[i].position.y, tab_width - tab_spacing, tab_height);
-
-		real_t max_width = tab_width * max_tabs;
-		// Tabs may not fit perfectly, so they need to be re-centered.
-		if (max_width > dock_slot_draw_rect.size.x) {
-			tab_draw_rect.position.x -= int(max_width - dock_slot_draw_rect.size.x) / 2 * rtl_dir;
-		}
-		if (dock_select->is_layout_rtl()) {
-			tab_draw_rect.position.x += dock_slot_draw_rect.size.x - tab_draw_rect.size.x;
-		}
-
-		int tabs_to_draw = MIN(max_tabs, dock_slot->get_tab_count());
-		bool is_context_dock = context_tab_container == dock_slot;
-		if (i == context_dock->dock_slot_index) {
-			dock_select->draw_rect(dock_slot_draw_rect, tab_selected_color);
-		} else if (!(context_dock->available_layouts & dock_slot->layout)) {
-			dock_select->draw_rect(dock_slot_draw_rect, unusable_dock_color);
-		} else if (i == dock_select_rect_over_idx) {
-			dock_select->draw_rect(dock_slot_draw_rect, hovered_dock_color);
-		} else if (tabs_to_draw == 0) {
-			dock_select->draw_rect(dock_slot_draw_rect, unused_dock_color);
-		} else {
-			dock_select->draw_rect(dock_slot_draw_rect, used_dock_color);
-		}
-
-		// Draw tabs above each used dock slot.
-		for (int j = 0; j < tabs_to_draw; j++) {
-			Color tab_color = tab_unselected_color;
-			if (is_context_dock && context_tab_index == j) {
-				tab_color = tab_selected_color;
-			}
-			Rect2 tabj_draw_rect = tab_draw_rect;
-			tabj_draw_rect.position.x += tab_width * j * rtl_dir;
-			dock_select->draw_rect(tabj_draw_rect, tab_color);
-		}
-	}
 }
 
 void DockContextPopup::_update_buttons() {
@@ -1008,6 +874,7 @@ void DockContextPopup::_update_buttons() {
 
 void DockContextPopup::set_dock(EditorDock *p_dock) {
 	context_dock = p_dock;
+	dock_select->context_dock = p_dock;
 	_update_buttons();
 }
 
@@ -1047,13 +914,9 @@ DockContextPopup::DockContextPopup() {
 	header_hb->add_child(tab_move_right_button);
 	dock_select_popup_vb->add_child(header_hb);
 
-	dock_select = memnew(Control);
-	dock_select->set_custom_minimum_size(Size2(128, 64) * EDSCALE);
-	dock_select->connect(SceneStringName(gui_input), callable_mp(this, &DockContextPopup::_dock_select_input));
-	dock_select->connect(SceneStringName(draw), callable_mp(this, &DockContextPopup::_dock_select_draw));
-	dock_select->connect(SceneStringName(mouse_exited), callable_mp(this, &DockContextPopup::_dock_select_mouse_exited));
-	dock_select->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	dock_select = memnew(DockSlotGrid);
 	dock_select_popup_vb->add_child(dock_select);
+	dock_select->connect("slot_clicked", callable_mp(this, &DockContextPopup::_slot_clicked));
 
 	make_float_button = memnew(Button);
 	make_float_button->set_text(TTRC("Make Floating"));
@@ -1094,4 +957,147 @@ void DockShortcutHandler::shortcut_input(const Ref<InputEvent> &p_event) {
 			break;
 		}
 	}
+}
+
+void DockSlotGrid::_update_rect_cache() {
+	for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
+		Rect2 rect = EditorDockManager::get_singleton()->dock_slots[i]->grid_rect;
+		if (is_layout_rtl()) {
+			rect.position.x = GRID_SIZE.x - rect.position.x - rect.size.x;
+		}
+		rect.position = rect.position * CELL_SIZE * EDSCALE + (rect.position + Vector2i(0, 1)) * MARGINS * EDSCALE;
+		rect.size = rect.size * CELL_SIZE * EDSCALE + (rect.size - Vector2i(1, 1)) * MARGINS * EDSCALE;
+		rect_cache[i] = rect;
+	}
+
+	// Temporarily hard-coded, until main screen is registered as a slot.
+	{
+		Rect2 rect = Rect2i(2, 0, 2, 4);
+		if (is_layout_rtl()) {
+			rect.position.x = GRID_SIZE.x - rect.position.x - rect.size.x;
+		}
+		rect.position = rect.position * CELL_SIZE * EDSCALE + (rect.position + Vector2i(0, 1)) * MARGINS * EDSCALE;
+		rect.size = rect.size * CELL_SIZE * EDSCALE + (rect.size - Vector2i(1, 1)) * MARGINS * EDSCALE;
+		main_screen_rect = rect;
+	}
+}
+
+void DockSlotGrid::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("slot_clicked", PropertyInfo(Variant::INT, "slot")));
+}
+
+void DockSlotGrid::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			rect_cache_dirty = true;
+		} break;
+
+		case NOTIFICATION_DRAW: {
+			if (rect_cache_dirty) {
+				_update_rect_cache();
+				rect_cache_dirty = false;
+			}
+			Color used_dock_color = Color(0.6, 0.6, 0.6, 0.8);
+			Color hovered_dock_color = Color(0.8, 0.8, 0.8, 0.8);
+			Color tab_selected_color = get_theme_color(SNAME("mono_color"), EditorStringName(Editor));
+			Color tab_unselected_color = used_dock_color;
+			Color unused_dock_color = used_dock_color;
+			unused_dock_color.a = 0.4;
+			Color unusable_dock_color = unused_dock_color;
+			unusable_dock_color.a = 0.1;
+
+			TabContainer *context_tab_container = context_dock->get_parent_container();
+			int context_tab_index = -1;
+			if (context_tab_container && context_tab_container->get_tab_count() > 0) {
+				context_tab_index = context_tab_container->get_tab_idx_from_control(context_dock);
+			}
+
+			for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
+				const Rect2i slot_rect = rect_cache[i];
+				int max_tabs = EditorDockManager::get_singleton()->dock_slots[i]->grid_rect.size.x * TABS_PER_CELL;
+
+				DockTabContainer *dock_slot = EditorDockManager::get_singleton()->dock_slots[i];
+				bool is_context_slot = context_tab_container == dock_slot;
+				int tabs_to_draw = MIN(max_tabs, dock_slot->get_tab_count());
+
+				if (i == context_dock->dock_slot_index) {
+					draw_rect(slot_rect, tab_selected_color);
+				} else if (!(context_dock->available_layouts & dock_slot->layout)) {
+					draw_rect(slot_rect, unusable_dock_color);
+				} else if (i == hovered_slot) {
+					draw_rect(slot_rect, hovered_dock_color);
+				} else if (tabs_to_draw == 0) {
+					draw_rect(slot_rect, unused_dock_color);
+				} else {
+					draw_rect(slot_rect, used_dock_color);
+				}
+
+				real_t tab_width = ((slot_rect.size.x - (max_tabs - 1) * TAB_MARGIN) / max_tabs) * EDSCALE;
+				real_t initial_offset = (slot_rect.size.x - (max_tabs * tab_width + (max_tabs - 1) * TAB_MARGIN)) * 0.5;
+
+				for (int j = 0; j < tabs_to_draw; j++) {
+					real_t pos_x = is_layout_rtl()
+							? slot_rect.size.x - (initial_offset + (j + 1) * tab_width + j * TAB_MARGIN)
+							: initial_offset + j * (tab_width + TAB_MARGIN);
+					const Rect2 tab_rect = Rect2(slot_rect.position + Vector2(pos_x, -MARGINS.y + MARGINS.y / 4), Vector2(tab_width, MARGINS.y / 2));
+					if (is_context_slot && context_tab_index == j) {
+						draw_rect(tab_rect, tab_selected_color);
+					} else {
+						draw_rect(tab_rect, tab_unselected_color);
+					}
+				}
+			}
+			draw_rect(main_screen_rect, unusable_dock_color);
+		} break;
+
+		case NOTIFICATION_MOUSE_EXIT: {
+			if (hovered_slot > -1) {
+				hovered_slot = -1;
+				queue_redraw();
+			}
+		} break;
+	}
+}
+
+void DockSlotGrid::gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouse> me = p_event;
+	if (me.is_valid()) {
+		Vector2 point = me->get_position();
+
+		int over_dock_slot = -1;
+		for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
+			if (rect_cache[i].has_point(point)) {
+				over_dock_slot = i;
+				break;
+			}
+		}
+
+		if (over_dock_slot != hovered_slot) {
+			queue_redraw();
+			hovered_slot = over_dock_slot;
+		}
+
+		if (over_dock_slot == -1) {
+			return;
+		}
+
+		Ref<InputEventMouseButton> mb = me;
+		DockTabContainer *target_tab_container = EditorDockManager::get_singleton()->dock_slots[over_dock_slot];
+		if (context_dock->get_parent_container() == target_tab_container) {
+			return;
+		}
+
+		if (!(context_dock->available_layouts & target_tab_container->layout)) {
+			return;
+		}
+
+		if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
+			emit_signal("slot_clicked", over_dock_slot);
+		}
+	}
+}
+
+Size2 DockSlotGrid::get_minimum_size() const {
+	return GRID_SIZE * CELL_SIZE + (GRID_SIZE - Vector2i(1, 0)) * MARGINS;
 }

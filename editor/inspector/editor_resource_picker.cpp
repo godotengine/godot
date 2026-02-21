@@ -647,7 +647,7 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 		int idx = 0;
 
 		_ensure_allowed_types();
-		HashSet<StringName> allowed_types = allowed_types_without_convert;
+		HashSet<StringName> allowed_types(allowed_types_without_convert);
 		if (!allowed_types.is_empty()) {
 			edit_menu->add_separator(TTRC("New"));
 		}
@@ -871,7 +871,7 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 	}
 
 	_ensure_allowed_types();
-	HashSet<StringName> allowed_types = allowed_types_with_convert;
+	HashSet<StringName> allowed_types(allowed_types_with_convert);
 
 	String res_type = _get_resource_type(res);
 
@@ -966,7 +966,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 	Ref<Resource> dropped_resource = _get_dropped_resource(p_data);
 	if (dropped_resource.is_valid()) {
 		_ensure_allowed_types();
-		HashSet<StringName> allowed_types = allowed_types_without_convert;
+		HashSet<StringName> allowed_types(allowed_types_without_convert);
 
 		String res_type = _get_resource_type(dropped_resource);
 
@@ -1110,7 +1110,7 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 	// Keep the value, but warn the user that there is a potential mistake.
 	if (!base_type.is_empty() && edited_resource.is_valid()) {
 		_ensure_allowed_types();
-		HashSet<StringName> allowed_types = allowed_types_with_convert;
+		HashSet<StringName> allowed_types(allowed_types_with_convert);
 
 		StringName custom_class;
 		bool is_custom = false;
@@ -1132,7 +1132,7 @@ String EditorResourcePicker::get_base_type() const {
 
 Vector<String> EditorResourcePicker::get_allowed_types() const {
 	_ensure_allowed_types();
-	HashSet<StringName> allowed_types = allowed_types_without_convert;
+	HashSet<StringName> allowed_types(allowed_types_without_convert);
 
 	Vector<String> types;
 	types.resize(allowed_types.size());
@@ -1154,7 +1154,7 @@ bool EditorResourcePicker::is_resource_allowed(const Ref<Resource> &p_resource) 
 
 	if (!base_type.is_empty()) {
 		_ensure_allowed_types();
-		HashSet<StringName> allowed_types = allowed_types_with_convert;
+		HashSet<StringName> allowed_types(allowed_types_with_convert);
 
 		StringName custom_class;
 		bool is_custom = false;

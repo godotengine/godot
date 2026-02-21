@@ -39,17 +39,26 @@
 #define DEBUG_LOG_WAYLAND(...)
 #endif
 
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/input/input_event.h"
 #include "core/os/main_loop.h"
+#include "servers/display/native_menu.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
+#ifdef RD_ENABLED
 #ifdef VULKAN_ENABLED
+#include "wayland/rendering_context_driver_vulkan_wayland.h"
+#endif
+
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
 
 #ifdef GLES3_ENABLED
-#include "core/io/file_access.h"
 #include "detect_prime_egl.h"
+
+#include "core/io/file_access.h"
+#include "drivers/egl/egl_manager.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "wayland/egl_manager_wayland.h"
 #include "wayland/egl_manager_wayland_gles.h"
@@ -60,11 +69,19 @@
 #endif
 
 #ifdef DBUS_ENABLED
+#include "freedesktop_at_spi_monitor.h"
+#include "freedesktop_portal_desktop.h"
+#include "freedesktop_screensaver.h"
+
 #ifdef SOWRAP_ENABLED
 #include "dbus-so_wrap.h"
 #else
 #include <dbus/dbus.h>
 #endif
+#endif
+
+#ifdef SPEECHD_ENABLED
+#include "tts_linux.h"
 #endif
 
 #define WAYLAND_MAX_FRAME_TIME_US (1'000'000)
@@ -451,20 +468,9 @@ bool DisplayServerWayland::mouse_is_mode_override_enabled() const {
 	return mouse_mode_override_enabled;
 }
 
-// NOTE: This is hacked together (and not guaranteed to work in the first place)
-// as for some reason the there's no proper way to ask the compositor to warp
-// the pointer, although, at the time of writing, there's a proposal for a
-// proper protocol for this. See:
-// https://gitlab.freedesktop.org/wayland/wayland-protocols/-/issues/158
 void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
 	MutexLock mutex_lock(wayland_thread.mutex);
-
-	WaylandThread::PointerConstraint old_constraint = wayland_thread.pointer_get_constraint();
-
-	wayland_thread.pointer_set_constraint(WaylandThread::PointerConstraint::LOCKED);
-	wayland_thread.pointer_set_hint(p_to);
-
-	wayland_thread.pointer_set_constraint(old_constraint);
+	wayland_thread.pointer_warp(p_to);
 }
 
 Point2i DisplayServerWayland::mouse_get_position() const {
@@ -1204,6 +1210,10 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowData &wd = windows[p_window_id];
+
+	if (wd.rect.size == p_size) {
+		return;
+	}
 
 	Size2i new_size = p_size;
 	if (wd.visible) {

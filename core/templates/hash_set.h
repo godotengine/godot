@@ -417,8 +417,26 @@ public:
 
 	/* Constructors */
 
-	HashSet(const HashSet &p_other) {
+	explicit HashSet(const HashSet &p_other) {
 		_init_from(p_other);
+	}
+
+	HashSet(HashSet &&p_other) {
+		_keys = p_other._keys;
+		_hash_idx_to_key_idx = p_other._hash_idx_to_key_idx;
+		_key_idx_to_hash_idx = p_other._key_idx_to_hash_idx;
+		_hashes = p_other._hashes;
+
+		_capacity_idx = p_other._capacity_idx;
+		_size = p_other._size;
+
+		p_other._keys = nullptr;
+		p_other._hash_idx_to_key_idx = nullptr;
+		p_other._hashes = nullptr;
+		p_other._key_idx_to_hash_idx = nullptr;
+
+		p_other._capacity_idx = 0;
+		p_other._size = 0;
 	}
 
 	void operator=(const HashSet &p_other) {
@@ -440,6 +458,20 @@ public:
 		}
 
 		_init_from(p_other);
+	}
+
+	void operator=(HashSet &&p_other) {
+		if (this == &p_other) {
+			return; // Ignore self assignment.
+		}
+
+		SWAP(_keys, p_other._keys);
+		SWAP(_hash_idx_to_key_idx, p_other._hash_idx_to_key_idx);
+		SWAP(_key_idx_to_hash_idx, p_other._key_idx_to_hash_idx);
+		SWAP(_hashes, p_other._hashes);
+
+		SWAP(_capacity_idx, p_other._capacity_idx);
+		SWAP(_size, p_other._size);
 	}
 
 	bool operator==(const HashSet &p_other) const {
@@ -465,7 +497,6 @@ public:
 	HashSet() {
 		_capacity_idx = MIN_CAPACITY_INDEX;
 	}
-
 	HashSet(std::initializer_list<TKey> p_init) {
 		reserve(p_init.size());
 		for (const TKey &E : p_init) {

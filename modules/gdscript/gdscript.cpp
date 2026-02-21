@@ -644,7 +644,7 @@ void GDScript::_update_exports_down(bool p_base_exports_changed) {
 		return;
 	}
 
-	HashSet<ObjectID> copy = inheriters_cache; //might get modified
+	HashSet<ObjectID> copy(inheriters_cache); //might get modified
 
 	for (const ObjectID &E : copy) {
 		Object *id = ObjectDB::get_instance(E);
@@ -941,9 +941,19 @@ Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int 
 		top = top->base.ptr();
 	}
 
-	//none found, regular
+	{
+		Variant ret = Script::callp(p_method, p_args, p_argcount, r_error);
+		if (r_error.error != Callable::CallError::CALL_ERROR_INVALID_METHOD) {
+			return ret;
+		}
+	}
 
-	return Script::callp(p_method, p_args, p_argcount, r_error);
+	if (native.is_valid()) {
+		return native->callp(p_method, p_args, p_argcount, r_error);
+	}
+
+	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+	return Variant();
 }
 
 bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {

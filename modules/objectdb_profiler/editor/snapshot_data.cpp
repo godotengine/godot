@@ -275,11 +275,11 @@ void GameStateSnapshot::_get_rc_cycles(
 
 		SnapshotDataObject *next = objects[next_child.value];
 		if (next != nullptr && next->is_class(RefCounted::get_class_static()) && !next->is_class(WeakRef::get_class_static()) && !p_traversed_objs.has(next)) {
-			HashSet<SnapshotDataObject *> traversed_copy = p_traversed_objs;
+			HashSet<SnapshotDataObject *> traversed_copy(p_traversed_objs);
 			if (p_obj != p_source_obj) {
 				traversed_copy.insert(p_obj);
 			}
-			_get_rc_cycles(next, p_source_obj, traversed_copy, r_ret_val, child_path);
+			_get_rc_cycles(next, p_source_obj, std::move(traversed_copy), r_ret_val, child_path);
 		}
 	}
 }
@@ -310,10 +310,9 @@ void GameStateSnapshot::recompute_references() {
 		if (!obj.value->is_class(RefCounted::get_class_static()) || obj.value->is_class(WeakRef::get_class_static())) {
 			continue;
 		}
-		HashSet<SnapshotDataObject *> traversed_objs;
 		LocalVector<String> cycles;
 
-		_get_rc_cycles(obj.value, obj.value, traversed_objs, cycles, "");
+		_get_rc_cycles(obj.value, obj.value, HashSet<SnapshotDataObject *>(), cycles, "");
 		Array cycles_array;
 		for (const String &cycle : cycles) {
 			cycles_array.push_back(cycle);

@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/core_string_names.h"
+#include "core/error/error_macros.h"
 #include "core/io/ip_address.h"
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
@@ -53,9 +54,11 @@
 #include "core/string/node_path.h"
 #include "core/string/ustring.h"
 #include "core/templates/bit_field.h"
+#include "core/templates/hashfuncs.h"
 #include "core/templates/list.h"
 #include "core/templates/paged_allocator.h"
 #include "core/templates/rid.h"
+#include "core/typedefs.h"
 #include "core/variant/array.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
@@ -833,11 +836,13 @@ public:
 	static void get_utility_function_list(List<StringName> *r_functions);
 	static int get_utility_function_count();
 
-	//argsVariant call()
+	[[nodiscard]] bool operator==(const Variant &p_variant) const;
+	[[nodiscard]] bool operator<(const Variant &p_variant) const;
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator!=(const Variant &p_variant) const { return !(*this == p_variant); }
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator<=(const Variant &p_variant) const { return !(p_variant < *this); }
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator>(const Variant &p_variant) const { return p_variant < *this; }
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator>=(const Variant &p_variant) const { return !(*this < p_variant); }
 
-	bool operator==(const Variant &p_variant) const;
-	bool operator!=(const Variant &p_variant) const;
-	bool operator<(const Variant &p_variant) const;
 	uint32_t hash() const;
 	uint32_t recursive_hash(int recursion_count) const;
 

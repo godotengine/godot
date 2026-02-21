@@ -28,11 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef GLES3_ENABLED
-
 #include "config.h"
 
-#include "../rasterizer_gles3.h"
+#ifdef GLES3_ENABLED
+
+#include "core/config/project_settings.h"
+#include "core/os/os.h"
+#include "core/string/ustring.h"
+#include "drivers/gles3/rasterizer_util_gles3.h"
 
 #ifdef WEB_ENABLED
 #include <emscripten/html5_webgl.h>
@@ -91,7 +94,7 @@ Config::Config() {
 		polygon_offset_clamp_supported = gl_version_4_6 || extensions.has("GL_ARB_polygon_offset_clamp") || extensions.has("GL_EXT_polygon_offset_clamp");
 	}
 
-	if (RasterizerGLES3::is_gles_over_gl()) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		float_texture_supported = true;
 		float_texture_linear_supported = true;
 		etc2_supported = false;

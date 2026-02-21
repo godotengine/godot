@@ -32,10 +32,6 @@
 
 #include "core/typedefs.h"
 
-#ifdef _MSC_VER
-#include <intrin.h> // `__fastfail()`.
-#endif
-
 class String;
 class ObjectID;
 
@@ -95,11 +91,11 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #define FUNCTION_STR __FUNCTION__
 #endif
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(__clang__)
 /**
  * Don't use GENERATE_TRAP() directly, should only be used be the macros below.
  */
-#define GENERATE_TRAP() __fastfail(7 /* FAST_FAIL_FATAL_APP_EXIT */)
+#define GENERATE_TRAP() __debugbreak()
 #else
 /**
  * Don't use GENERATE_TRAP() directly, should only be used be the macros below.

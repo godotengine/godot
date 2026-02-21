@@ -207,8 +207,10 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_PASTE);
 	} else if (ED_IS_SHORTCUT("scene_tree/paste_node_as_sibling", p_event)) {
 		_tool_selected(TOOL_PASTE_AS_SIBLING);
+	} else if (ED_IS_SHORTCUT("scene_tree/paste_node_as_replacement", p_event)) {
+		_tool_selected(TOOL_PASTE_AS_REPLACEMENT);
 	} else if (ED_IS_SHORTCUT("scene_tree/change_node_type", p_event)) {
-		_tool_selected(TOOL_REPLACE);
+		_tool_selected(TOOL_CHANGE_TYPE);
 	} else if (ED_IS_SHORTCUT("scene_tree/duplicate", p_event)) {
 		_tool_selected(TOOL_DUPLICATE);
 	} else if (ED_IS_SHORTCUT("scene_tree/attach_script", p_event)) {
@@ -753,7 +755,22 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		case TOOL_PASTE_AS_SIBLING: {
 			paste_nodes(true);
 		} break;
-		case TOOL_REPLACE: {
+		case TOOL_PASTE_AS_REPLACEMENT: {
+			if (!profile_allow_editing) {
+				break;
+			}
+
+			if (node_clipboard.is_empty()) {
+				break;
+			}
+
+			if (!_validate_no_foreign()) {
+				break;
+			}
+
+			paste_node_as_replacement();
+		} break;
+		case TOOL_CHANGE_TYPE: {
 			if (!profile_allow_editing) {
 				break;
 			}
@@ -2353,7 +2370,7 @@ bool SceneTreeDock::_validate_no_foreign() {
 			// When edited_scene inherits from another one the root Node will be the parent Scene,
 			// we don't want to consider that Node a foreign one otherwise we would not be able to
 			// delete it.
-			if (edited_scene == E && current_option != TOOL_REPLACE) {
+			if (edited_scene == E && current_option != TOOL_CHANGE_TYPE) {
 				continue;
 			}
 
@@ -3073,7 +3090,7 @@ void SceneTreeDock::_create() {
 
 		_do_create(parent);
 
-	} else if (current_option == TOOL_REPLACE) {
+	} else if (current_option == TOOL_CHANGE_TYPE) {
 		const List<Node *> selection = editor_selection->get_top_selected_node_list();
 		ERR_FAIL_COND(selection.is_empty());
 
@@ -3895,15 +3912,48 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		END_SECTION()
 	}
 
+	bool can_rename = true;
+	bool can_replace = true;
+
 	if (profile_allow_editing) {
+		for (Node *E : selection) {
+			if (E != edited_scene && (E->get_owner() != edited_scene || E->is_instance())) {
+				can_replace = false;
+				if (!E->is_instance()) {
+					can_rename = false;
+				}
+			}
+
+			if (edited_scene->get_scene_inherited_state().is_valid()) {
+				if (E == edited_scene || edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E)) >= 0) {
+					can_replace = false;
+					can_rename = false;
+				}
+			}
+
+			if (!can_rename && !can_replace) {
+				break;
+			}
+		}
+
 		BEGIN_SECTION()
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCut")), ED_GET_SHORTCUT("scene_tree/cut_node"), TOOL_CUT);
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("scene_tree/copy_node"), TOOL_COPY);
-		if (selection.size() == 1 && !node_clipboard.is_empty()) {
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("scene_tree/paste_node"), TOOL_PASTE);
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("scene_tree/paste_node_as_sibling"), TOOL_PASTE_AS_SIBLING);
-			if (selection.front()->get() == edited_scene) {
-				menu->set_item_disabled(-1, true);
+		if (!node_clipboard.is_empty()) {
+			if (selection.size() == 1) {
+				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("scene_tree/paste_node"), TOOL_PASTE);
+				menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/paste_node_as_sibling"), TOOL_PASTE_AS_SIBLING);
+				if (selection.front()->get() == edited_scene) {
+					menu->set_item_disabled(-1, true);
+				}
+			}
+			if (selection.size() >= 1) {
+				if (can_rename || can_replace) {
+					menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/paste_node_as_replacement"), TOOL_PASTE_AS_REPLACEMENT);
+				}
+				if (selection.front()->get() == edited_scene) {
+					menu->set_item_disabled(-1, true);
+				}
 			}
 		}
 		END_SECTION()
@@ -3941,36 +3991,13 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	}
 
 	if (profile_allow_editing) {
-		bool can_rename = true;
-		bool can_replace = true;
-
-		for (Node *E : selection) {
-			if (E != edited_scene && (E->get_owner() != edited_scene || E->is_instance())) {
-				can_replace = false;
-				if (!E->is_instance()) {
-					can_rename = false;
-				}
-			}
-
-			if (edited_scene->get_scene_inherited_state().is_valid()) {
-				if (E == edited_scene || edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E)) >= 0) {
-					can_replace = false;
-					can_rename = false;
-				}
-			}
-
-			if (!can_rename && !can_replace) {
-				break;
-			}
-		}
-
 		if (can_rename || can_replace) {
 			BEGIN_SECTION()
 			if (can_rename) {
 				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
 			}
 			if (can_replace) {
-				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Reload")), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_REPLACE);
+				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Reload")), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_CHANGE_TYPE);
 			}
 			END_SECTION()
 		}
@@ -4464,8 +4491,91 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 	return pasted_nodes;
 }
 
+void SceneTreeDock::paste_node_as_replacement() {
+	List<Node *> selected_node_list = editor_selection->get_top_selected_node_list();
+	for (Node *selected : selected_node_list) {
+		Node *clipboard_node = node_clipboard.front()->get();
+		HashMap<const Node *, Node *> duplimap;
+		Node *new_node = clipboard_node->duplicate_from_editor(duplimap);
+		if (!new_node) {
+			continue;
+		}
+		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+		String old_scene_file_path = selected->get_scene_file_path();
+		String new_scene_file_path = clipboard_node->get_scene_file_path();
+
+		bool old_is_scene = !old_scene_file_path.is_empty();
+		bool new_is_scene = !new_scene_file_path.is_empty();
+
+		LocalVector<Node *> old_children;
+
+		ur->create_action(TTR("Paste Node(s) as Replacement"), UndoRedo::MERGE_ALL, selected);
+
+		if (old_is_scene) {
+			for (int i = 0; i < selected->get_child_count(); i++) {
+				Node *child = selected->get_child(i);
+				if (child->get_owner() == selected) {
+					ur->add_do_method(selected, "remove_child", child);
+
+					selected->remove_child(child);
+					old_children.push_back(child);
+				}
+			}
+		}
+
+		ur->add_do_method(this, "replace_node", selected, new_node, false);
+		ur->add_do_method(new_node, "set_scene_file_path", new_scene_file_path);
+		ur->add_do_reference(new_node);
+
+		if (new_is_scene) {
+			for (int i = 0; i < new_node->get_child_count(); i++) {
+				Node *child = new_node->get_child(i);
+				if (child->get_owner() == new_node) {
+					ur->add_undo_method(new_node, "add_child", child, true);
+					ur->add_undo_method(child, "set_owner", new_node);
+					ur->add_undo_reference(child);
+				}
+			}
+		}
+
+		Variant selected_pos;
+		if (selected->has_method("get_position")) {
+			selected_pos = selected->call("get_position");
+		}
+		_replace_node(selected, new_node, false);
+		new_node->set_scene_file_path(new_scene_file_path);
+
+		if (new_node->has_method("set_position")) {
+			new_node->call("set_position", selected_pos);
+		}
+
+		if (new_is_scene) {
+			for (int i = 0; i < new_node->get_child_count(); i++) {
+				Node *child = new_node->get_child(i);
+				if (child->get_owner() == new_node) {
+					ur->add_undo_method(new_node, "remove_child", child);
+				}
+			}
+		}
+
+		ur->add_undo_method(this, "replace_node", new_node, selected, false);
+		ur->add_undo_method(selected, "set_scene_file_path", old_scene_file_path);
+		ur->add_undo_reference(selected);
+
+		if (old_is_scene) {
+			for (Node *child : old_children) {
+				ur->add_undo_method(selected, "add_child", child, true);
+				ur->add_undo_method(child, "set_owner", selected);
+				ur->add_undo_reference(child);
+			}
+		}
+
+		ur->commit_action(false);
+	}
+}
+
 List<Node *> SceneTreeDock::get_node_clipboard() const {
-	return node_clipboard;
+	return List<Node *>(node_clipboard);
 }
 
 void SceneTreeDock::add_remote_tree_editor(Tree *p_remote) {
@@ -4812,6 +4922,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/copy_node", TTRC("Copy"), KeyModifierMask::CMD_OR_CTRL | Key::C);
 	ED_SHORTCUT("scene_tree/paste_node", TTRC("Paste"), KeyModifierMask::CMD_OR_CTRL | Key::V);
 	ED_SHORTCUT("scene_tree/paste_node_as_sibling", TTRC("Paste as Sibling"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::V);
+	ED_SHORTCUT("scene_tree/paste_node_as_replacement", TTRC("Paste as Replacement"), KeyModifierMask::ALT | Key::V);
 	ED_SHORTCUT("scene_tree/change_node_type", TTRC("Change Type..."));
 	ED_SHORTCUT("scene_tree/attach_script", TTRC("Attach Script..."));
 	ED_SHORTCUT("scene_tree/extend_script", TTRC("Extend Script..."));

@@ -726,6 +726,12 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		return;
 	}
 
+	if (strcmp(interface, wp_pointer_warp_v1_interface.name) == 0) {
+		registry->wp_pointer_warp = (struct wp_pointer_warp_v1 *)wl_registry_bind(wl_registry, name, &wp_pointer_warp_v1_interface, 1);
+		registry->wp_pointer_warp_name = name;
+		return;
+	}
+
 	if (strcmp(interface, FIFO_INTERFACE_NAME) == 0) {
 		registry->wp_fifo_manager_name = name;
 	}
@@ -1097,6 +1103,17 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		return;
 	}
 
+	if (name == registry->wp_pointer_warp_name) {
+		if (registry->wp_pointer_warp) {
+			wp_pointer_warp_v1_destroy(registry->wp_pointer_warp);
+			registry->wp_pointer_warp = nullptr;
+		}
+
+		registry->wp_pointer_warp_name = 0;
+
+		return;
+	}
+
 	{
 		// Iterate through all of the seats to find if any got removed.
 		List<struct wl_seat *>::Element *E = registry->wl_seats.front();
@@ -1286,6 +1303,10 @@ void WaylandThread::_wl_output_on_geometry(void *data, struct wl_output *wl_outp
 void WaylandThread::_wl_output_on_mode(void *data, struct wl_output *wl_output, uint32_t flags, int32_t width, int32_t height, int32_t refresh) {
 	ScreenState *ss = (ScreenState *)data;
 	ERR_FAIL_NULL(ss);
+
+	if (!(flags & WL_OUTPUT_MODE_CURRENT)) {
+		return;
+	}
 
 	ss->pending_data.size.width = width;
 	ss->pending_data.size.height = height;
@@ -1853,19 +1874,19 @@ void WaylandThread::_wl_pointer_on_button(void *data, struct wl_pointer *wl_poin
 			button_pressed = MouseButton::LEFT;
 			break;
 
-		case BTN_MIDDLE:
-			button_pressed = MouseButton::MIDDLE;
-			break;
-
 		case BTN_RIGHT:
 			button_pressed = MouseButton::RIGHT;
 			break;
 
-		case BTN_EXTRA:
-			button_pressed = MouseButton::MB_XBUTTON1;
+		case BTN_MIDDLE:
+			button_pressed = MouseButton::MIDDLE;
 			break;
 
 		case BTN_SIDE:
+			button_pressed = MouseButton::MB_XBUTTON1;
+			break;
+
+		case BTN_EXTRA:
 			button_pressed = MouseButton::MB_XBUTTON2;
 			break;
 
@@ -3661,6 +3682,21 @@ void WaylandThread::seat_state_set_hint(SeatState *p_ss, int p_x, int p_y) {
 	zwp_locked_pointer_v1_set_cursor_position_hint(p_ss->wp_locked_pointer, wl_fixed_from_int(p_x), wl_fixed_from_int(p_y));
 }
 
+void WaylandThread::seat_state_warp_pointer(SeatState *p_ss, int p_x, int p_y) {
+	if (registry.wp_pointer_warp == nullptr) {
+		return;
+	}
+
+	if (p_ss->pointer_data.pointed_id == DisplayServer::INVALID_WINDOW_ID) {
+		return;
+	}
+
+	struct wl_surface *surface = window_get_wl_surface(p_ss->pointer_data.pointed_id);
+	ERR_FAIL_NULL(surface);
+
+	wp_pointer_warp_v1_warp_pointer(registry.wp_pointer_warp, surface, p_ss->wl_pointer, wl_fixed_from_int(p_x), wl_fixed_from_int(p_y), p_ss->pointer_enter_serial);
+}
+
 void WaylandThread::seat_state_confine_pointer(SeatState *p_ss) {
 	ERR_FAIL_NULL(p_ss);
 
@@ -4724,22 +4760,57 @@ void WaylandThread::pointer_set_hint(const Point2i &p_hint) {
 	}
 
 	WindowState *ws = window_get_state(ss->pointer_data.pointed_id);
-
-	int hint_x = 0;
-	int hint_y = 0;
-
-	if (ws) {
-		// NOTE: It looks like it's not really recommended to convert from
-		// "godot-space" to "wayland-space" and in general I received mixed feelings
-		// discussing about this. I'm not really sure about the maths behind this but,
-		// oh well, we're setting a cursor hint. ¯\_(ツ)_/¯
-		// See: https://oftc.irclog.whitequark.org/wayland/2023-08-23#1692756914-1692816818
-		hint_x = std::round(p_hint.x / window_state_get_scale_factor(ws));
-		hint_y = std::round(p_hint.y / window_state_get_scale_factor(ws));
+	if (!ws) {
+		return;
 	}
+
+	// NOTE: It looks like it's not really recommended to convert from
+	// "godot-space" to "wayland-space" and in general I received mixed feelings
+	// discussing about this. I'm not really sure about the maths behind this but,
+	// oh well, we're setting a cursor hint. ¯\_(ツ)_/¯
+	// See: https://oftc.irclog.whitequark.org/wayland/2023-08-23#1692756914-1692816818
+	int hint_x = Math::round(p_hint.x / window_state_get_scale_factor(ws));
+	int hint_y = Math::round(p_hint.y / window_state_get_scale_factor(ws));
 
 	if (ss) {
 		seat_state_set_hint(ss, hint_x, hint_y);
+	}
+}
+
+void WaylandThread::pointer_warp(const Point2i &p_to) {
+	// NOTE: This is for compositors that don't support the pointer-warp protocol.
+	// It's hacked together and not guaranteed to work.
+	if (registry.wp_pointer_warp == nullptr) {
+		PointerConstraint old_constraint = pointer_get_constraint();
+
+		pointer_set_constraint(PointerConstraint::LOCKED);
+		pointer_set_hint(p_to);
+
+		pointer_set_constraint(old_constraint);
+
+		return;
+	}
+
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+	if (!ss) {
+		return;
+	}
+
+	WindowState *ws = window_get_state(ss->pointer_data.pointed_id);
+	if (!ws) {
+		return;
+	}
+
+	// NOTE: It looks like it's not really recommended to convert from
+	// "godot-space" to "wayland-space" and in general I received mixed feelings
+	// discussing about this. I'm not really sure about the maths behind this but,
+	// oh well. ¯\_(ツ)_/¯
+	// See: https://oftc.irclog.whitequark.org/wayland/2023-08-23#1692756914-1692816818
+	int wl_pos_x = Math::round(p_to.x / window_state_get_scale_factor(ws));
+	int wl_pos_y = Math::round(p_to.y / window_state_get_scale_factor(ws));
+
+	if (ss) {
+		seat_state_warp_pointer(ss, wl_pos_x, wl_pos_y);
 	}
 }
 
@@ -5606,6 +5677,10 @@ void WaylandThread::destroy() {
 
 	if (registry.wp_relative_pointer_manager) {
 		zwp_relative_pointer_manager_v1_destroy(registry.wp_relative_pointer_manager);
+	}
+
+	if (registry.wp_pointer_warp) {
+		wp_pointer_warp_v1_destroy(registry.wp_pointer_warp);
 	}
 
 	if (registry.xdg_activation) {

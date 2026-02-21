@@ -1307,6 +1307,7 @@ TextShaderEditor::TextShaderEditor() {
 
 	goto_line_popup = memnew(GotoLinePopup);
 	add_child(goto_line_popup);
+	code_editor->connect("show_goto_popup", callable_mp(this, &TextShaderEditor::_menu_option).bind(SEARCH_GOTO_LINE));
 
 	disk_changed = memnew(ConfirmationDialog);
 

@@ -54,8 +54,11 @@
 
 #import "core/config/project_settings.h"
 #import "core/debugger/engine_debugger.h"
+#import "core/input/input.h"
+#import "core/input/input_event.h"
 #import "core/io/marshalls.h"
 #import "core/os/main_loop.h"
+#import "servers/display/native_menu.h"
 
 DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	EmbeddedDebugger::initialize(this);
@@ -703,6 +706,14 @@ bool DisplayServerEmbedded::window_get_flag(WindowFlags p_flag, WindowID p_windo
 
 void DisplayServerEmbedded::window_request_attention(WindowID p_window) {
 	// Not supported
+}
+
+void DisplayServerEmbedded::window_set_taskbar_progress_value(float p_value, WindowID p_window) {
+	// Not supported.
+}
+
+void DisplayServerEmbedded::window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window) {
+	// Not supported.
 }
 
 void DisplayServerEmbedded::window_move_to_foreground(WindowID p_window) {

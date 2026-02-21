@@ -151,7 +151,12 @@ void RenderingDeviceDriverMetal::remove_residency_set_to_main_queue(MTL::Residen
 #pragma mark - Fences
 
 RDD::FenceID RenderingDeviceDriverMetal::fence_create() {
-	Fence *fence = memnew(FenceEvent(NS::TransferPtr(device->newSharedEvent())));
+	Fence *fence = nullptr;
+	if (__builtin_available(macOS 12.0, iOS 15.0, tvOS 15.0, visionOS 1.0, *)) {
+		fence = memnew(FenceEvent(NS::TransferPtr(device->newSharedEvent())));
+	} else {
+		fence = memnew(FenceSemaphore());
+	}
 	return FenceID(fence);
 }
 

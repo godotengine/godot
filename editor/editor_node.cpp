@@ -256,7 +256,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 
 	// For each index set with a size > 1, we need to disambiguate.
 	for (int i = 0; i < index_sets.size(); i++) {
-		RBSet<int> iset = index_sets[i];
+		RBSet<int> iset(index_sets[i]);
 		while (iset.size() > 1) {
 			// Append the parent folder to each scene name.
 			for (const int &E : iset) {
@@ -427,6 +427,26 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 			_open_command_palette();
 		} else if (ED_IS_SHORTCUT("editor/toggle_last_opened_bottom_panel", p_event)) {
 			bottom_panel->toggle_last_opened_bottom_panel();
+		} else if (ED_IS_SHORTCUT("editor/toggle_selected_nodes_visibility", p_event)) {
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Toggle Selected Node(s) Visibility"));
+			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+
+			for (Node *E : selection) {
+				Node *node_with_visibility;
+				node_with_visibility = Object::cast_to<CanvasItem>(E);
+				if (!node_with_visibility || !node_with_visibility->is_inside_tree()) {
+					node_with_visibility = Object::cast_to<Node3D>(E);
+					if (!node_with_visibility || !node_with_visibility->is_inside_tree()) {
+						continue;
+					}
+				}
+
+				undo_redo->add_do_method(node_with_visibility, "set_visible", !node_with_visibility->get("visible"));
+				undo_redo->add_undo_method(node_with_visibility, "set_visible", node_with_visibility->get("visible"));
+			}
+
+			undo_redo->commit_action();
 		} else {
 			is_handled = false;
 		}
@@ -954,8 +974,6 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			started_timestamp = Time::get_singleton()->get_unix_time_from_system();
-
 			// Store the default order of bottom docks. It can only be determined dynamically.
 			PackedStringArray bottom_docks;
 			bottom_docks.reserve_exact(bottom_panel->get_tab_count());
@@ -1621,9 +1639,15 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 
 	Ref<Resource> res;
 	if (force_textfile_extensions.has(p_resource.get_extension())) {
-		res = ResourceCache::get_ref(p_resource);
-		if (res.is_null() || !res->is_class("TextFile")) {
-			res = ScriptEditor::get_singleton()->open_file(p_resource);
+		const String resource_type = ResourceLoader::get_resource_type(p_resource);
+		if (resource_type != "Translation" && ResourceLoader::exists(p_resource, "")) {
+			res = ResourceLoader::load(p_resource, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+		}
+		if (res.is_null()) {
+			res = ResourceCache::get_ref(p_resource);
+			if (res.is_null() || !res->is_class("TextFile")) {
+				res = ScriptEditor::get_singleton()->open_file(p_resource);
+			}
 		}
 	} else if (ResourceLoader::exists(p_resource, "")) {
 		res = ResourceLoader::load(p_resource, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
@@ -1947,7 +1971,7 @@ int EditorNode::get_resource_count(Ref<Resource> p_res) {
 
 List<Node *> EditorNode::get_resource_node_list(Ref<Resource> p_res) {
 	List<Node *> *L = resource_count.getptr(p_res);
-	return L == nullptr ? List<Node *>() : *L;
+	return L == nullptr ? List<Node *>() : List<Node *>(*L);
 }
 
 void EditorNode::update_node_reference(const Variant &p_value, Node *p_node, bool p_remove) {
@@ -3269,13 +3293,15 @@ void EditorNode::_android_explore_build_templates() {
 	OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(export_template_manager->get_android_build_directory(android_export_preset).get_base_dir()), true);
 }
 
-static String _get_unsaved_scene_dialog_text(String p_scene_filename, uint64_t p_started_timestamp) {
+static String _get_unsaved_scene_dialog_text(String p_scene_filename, uint64_t p_opened_timestamp) {
+	const uint64_t scene_modified_time = FileAccess::get_modified_time(p_scene_filename);
 	String unsaved_message;
 
-	// Consider editor startup to be a point of saving, so that when you
+	// Consider scene opening to be a point of saving, so that when you
 	// close and reopen the editor, you don't get an excessively long
 	// "modified X hours ago".
-	const uint64_t last_modified_seconds = Time::get_singleton()->get_unix_time_from_system() - MAX(p_started_timestamp, FileAccess::get_modified_time(p_scene_filename));
+	const uint64_t last_modified_seconds = Time::get_singleton()->get_unix_time_from_system() - MAX(p_opened_timestamp, scene_modified_time);
+
 	String last_modified_string;
 	if (last_modified_seconds < 120) {
 		last_modified_string = vformat(TTRN("%d second ago", "%d seconds ago", last_modified_seconds), last_modified_seconds);
@@ -3284,7 +3310,15 @@ static String _get_unsaved_scene_dialog_text(String p_scene_filename, uint64_t p
 	} else {
 		last_modified_string = vformat(TTRN("%d hour ago", "%d hours ago", last_modified_seconds / 3600), last_modified_seconds / 3600);
 	}
-	unsaved_message = vformat(TTR("Scene \"%s\" has unsaved changes.\nLast saved: %s."), p_scene_filename, last_modified_string);
+
+	String last_action_and_time;
+	if (p_opened_timestamp > scene_modified_time) {
+		last_action_and_time = vformat(TTR("Scene opened: %s."), last_modified_string);
+	} else {
+		last_action_and_time = vformat(TTR("Last saved: %s."), last_modified_string);
+	}
+
+	unsaved_message = vformat(TTR("Scene \"%s\" has unsaved changes.\n%s"), p_scene_filename, last_action_and_time);
 
 	return unsaved_message;
 }
@@ -3526,7 +3560,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 
 		case SCENE_RELOAD_SAVED_SCENE: {
-			const String scene_filename = editor_data.get_scene_path(editor_data.get_edited_scene());
+			const int p_idx = editor_data.get_edited_scene();
+			const uint64_t scene_time_opened = editor_data.get_scene_time_opened(p_idx);
+			const String scene_filename = editor_data.get_scene_path(p_idx);
+
 			if (scene_filename.is_empty()) {
 				show_warning(TTR("Can't reload a scene that was never saved."));
 				break;
@@ -3535,7 +3572,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (unsaved_cache) {
 				if (!p_confirmed) {
 					confirmation->set_ok_button_text(TTRC("Save & Reload"));
-					const String unsaved_message = _get_unsaved_scene_dialog_text(scene_filename, started_timestamp);
+					const String unsaved_message = _get_unsaved_scene_dialog_text(scene_filename, scene_time_opened);
 					confirmation->set_text(unsaved_message + "\n\n" + TTR("Save before reloading the scene?"));
 					confirmation->popup_centered();
 					confirmation_button->show();
@@ -6624,7 +6661,8 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 		if (scene_filename.is_empty()) {
 			unsaved_message = TTR("This scene was never saved.");
 		} else {
-			unsaved_message = _get_unsaved_scene_dialog_text(scene_filename, started_timestamp);
+			uint32_t time_opened = editor_data.get_scene_time_opened(p_tab);
+			unsaved_message = _get_unsaved_scene_dialog_text(scene_filename, time_opened);
 		}
 	} else {
 		// Check if any plugin has unsaved changes in that scene.
@@ -8247,6 +8285,7 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT("editor/unlock_selected_nodes", TTRC("Unlock Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::L);
 	ED_SHORTCUT("editor/group_selected_nodes", TTRC("Group Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | Key::G);
 	ED_SHORTCUT("editor/ungroup_selected_nodes", TTRC("Ungroup Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::G);
+	ED_SHORTCUT("editor/toggle_selected_nodes_visibility", TTRC("Toggle Selected Node(s) Visibility"), Key::H);
 
 	FileAccess::set_backup_save(EDITOR_GET("filesystem/on_save/safe_save_on_backup_then_rename"));
 
@@ -8516,28 +8555,34 @@ EditorNode::EditorNode() {
 	main_vbox->add_child(title_bar);
 #endif
 
+	DockSplitContainer *main_vsplit = memnew(DockSplitContainer);
+	main_vsplit->set_name("DockVSplitMain");
+	main_vsplit->set_vertical(true);
+	main_vsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	main_vbox->add_child(main_vsplit);
+
 	main_hsplit = memnew(DockSplitContainer);
 	main_hsplit->set_name("DockHSplitMain");
 	main_hsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	main_vbox->add_child(main_hsplit);
+	main_vsplit->add_child(main_hsplit);
 
 	left_l_vsplit = memnew(DockSplitContainer);
 	left_l_vsplit->set_name("DockVSplitLeftL");
 	left_l_vsplit->set_vertical(true);
 	main_hsplit->add_child(left_l_vsplit);
 
-	DockTabContainer *dock_slots[EditorDock::DOCK_SLOT_MAX];
+	LocalVector<DockTabContainer *> dock_slots;
 	{
-		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_UL));
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_UL, Rect2i(0, 0, 1, 3)));
 		dock_container->set_name("DockSlotLeftUL");
 		left_l_vsplit->add_child(dock_container);
-		dock_slots[dock_container->dock_slot] = dock_container;
+		dock_slots.push_back(dock_container);
 	}
 	{
-		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_BL));
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_BL, Rect2i(0, 3, 1, 3)));
 		dock_container->set_name("DockSlotLeftBL");
 		left_l_vsplit->add_child(dock_container);
-		dock_slots[dock_container->dock_slot] = dock_container;
+		dock_slots.push_back(dock_container);
 	}
 
 	left_r_vsplit = memnew(DockSplitContainer);
@@ -8545,16 +8590,16 @@ EditorNode::EditorNode() {
 	left_r_vsplit->set_vertical(true);
 	main_hsplit->add_child(left_r_vsplit);
 	{
-		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_UR));
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_UR, Rect2i(1, 0, 1, 3)));
 		dock_container->set_name("DockSlotLeftUR");
 		left_r_vsplit->add_child(dock_container);
-		dock_slots[dock_container->dock_slot] = dock_container;
+		dock_slots.push_back(dock_container);
 	}
 	{
-		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_BR));
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_BR, Rect2i(1, 3, 1, 3)));
 		dock_container->set_name("DockSlotLeftBR");
 		left_r_vsplit->add_child(dock_container);
-		dock_slots[dock_container->dock_slot] = dock_container;
+		dock_slots.push_back(dock_container);
 	}
 
 	VBoxContainer *center_vb = memnew(VBoxContainer);
@@ -8574,16 +8619,16 @@ EditorNode::EditorNode() {
 	right_l_vsplit->set_vertical(true);
 	main_hsplit->add_child(right_l_vsplit);
 	{
-		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_UL));
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_UL, Rect2i(4, 0, 1, 3)));
 		dock_container->set_name("DockSlotRightUL");
 		right_l_vsplit->add_child(dock_container);
-		dock_slots[dock_container->dock_slot] = dock_container;
+		dock_slots.push_back(dock_container);
 	}
 	{
-		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_BL));
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_BL, Rect2i(4, 3, 1, 3)));
 		dock_container->set_name("DockSlotRightBL");
 		right_l_vsplit->add_child(dock_container);
-		dock_slots[dock_container->dock_slot] = dock_container;
+		dock_slots.push_back(dock_container);
 	}
 
 	right_r_vsplit = memnew(DockSplitContainer);
@@ -8591,16 +8636,32 @@ EditorNode::EditorNode() {
 	right_r_vsplit->set_vertical(true);
 	main_hsplit->add_child(right_r_vsplit);
 	{
-		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_UR));
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_UR, Rect2i(5, 0, 1, 3)));
 		dock_container->set_name("DockSlotRightUR");
 		right_r_vsplit->add_child(dock_container);
-		dock_slots[dock_container->dock_slot] = dock_container;
+		dock_slots.push_back(dock_container);
 	}
 	{
-		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_BR));
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_BR, Rect2i(5, 3, 1, 3)));
 		dock_container->set_name("DockSlotRightBR");
 		right_r_vsplit->add_child(dock_container);
-		dock_slots[dock_container->dock_slot] = dock_container;
+		dock_slots.push_back(dock_container);
+	}
+
+	DockSplitContainer *bottom_hsplit = memnew(DockSplitContainer);
+	bottom_hsplit->set_name("DockHSplitBottom");
+	main_vsplit->add_child(bottom_hsplit);
+	{
+		DockTabContainer *dock_container = memnew(BottomSideDockTabContainer(EditorDock::DOCK_SLOT_BOTTOM_L, Rect2i(0, 6, 3, 2)));
+		dock_container->set_name("DockSlotBottomL");
+		bottom_hsplit->add_child(dock_container);
+		dock_slots.push_back(dock_container);
+	}
+	{
+		DockTabContainer *dock_container = memnew(BottomSideDockTabContainer(EditorDock::DOCK_SLOT_BOTTOM_R, Rect2i(3, 6, 3, 2)));
+		dock_container->set_name("DockSlotBottomR");
+		bottom_hsplit->add_child(dock_container);
+		dock_slots.push_back(dock_container);
 	}
 
 	editor_dock_manager = memnew(EditorDockManager);
@@ -8613,8 +8674,8 @@ EditorNode::EditorNode() {
 
 	editor_dock_manager->set_hsplit(main_hsplit);
 
-	for (int i = 0; i < EditorDock::DOCK_SLOT_BOTTOM; i++) {
-		editor_dock_manager->register_dock_slot(dock_slots[i]);
+	for (DockTabContainer *dock_container : dock_slots) {
+		editor_dock_manager->register_dock_slot(dock_container);
 	}
 
 	editor_layout_save_delay_timer = memnew(Timer);
@@ -8686,7 +8747,7 @@ EditorNode::EditorNode() {
 
 	editor_settings_dialog = memnew(EditorSettingsDialog);
 	gui_base->add_child(editor_settings_dialog);
-	editor_settings_dialog->connect("restart_requested", callable_mp(this, &EditorNode::_restart_editor).bind(false));
+	editor_settings_dialog->connect("restart_requested", callable_mp(this, &EditorNode::restart_editor).bind(false));
 
 	project_settings_editor = memnew(ProjectSettingsEditor(&editor_data));
 	gui_base->add_child(project_settings_editor);
@@ -8767,7 +8828,7 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_AND_COMMAND("editor/engine_compilation_configuration_editor", TTRC("Engine Compilation Configuration Editor..."));
 	ED_SHORTCUT_AND_COMMAND("editor/upgrade_project", TTRC("Upgrade Project Files..."));
 
-	ED_SHORTCUT("editor/reload_current_project", TTRC("Reload Current Project"));
+	ED_SHORTCUT_AND_COMMAND("editor/reload_current_project", TTRC("Reload Current Project"));
 	ED_SHORTCUT_AND_COMMAND("editor/quit_to_project_list", TTRC("Quit to Project List"), KeyModifierMask::CTRL + KeyModifierMask::SHIFT + Key::Q);
 	ED_SHORTCUT_OVERRIDE("editor/quit_to_project_list", "macos", KeyModifierMask::META + KeyModifierMask::CTRL + KeyModifierMask::ALT + Key::Q);
 
@@ -8997,9 +9058,22 @@ EditorNode::EditorNode() {
 	const String docks_section = "docks";
 	default_layout.instantiate();
 	// Dock numbers are based on DockSlot enum value + 1.
-	default_layout->set_value(docks_section, "dock_3", "Scene,Import");
-	default_layout->set_value(docks_section, "dock_4", "FileSystem,History");
-	default_layout->set_value(docks_section, "dock_5", "Inspector,Signals,Groups");
+	{
+		const String scene_key = SceneTreeDock::get_singleton()->get_effective_layout_key();
+		const String import_key = ImportDock::get_singleton()->get_effective_layout_key();
+		default_layout->set_value(docks_section, "dock_3", vformat("%s,%s", scene_key, import_key));
+	}
+	{
+		const String filesystem_key = filesystem_dock->get_effective_layout_key();
+		const String history_key = history_dock->get_effective_layout_key();
+		default_layout->set_value(docks_section, "dock_4", vformat("%s,%s", filesystem_key, history_key));
+	}
+	{
+		const String inspector_key = InspectorDock::get_singleton()->get_effective_layout_key();
+		const String signals_key = SignalsDock::get_singleton()->get_effective_layout_key();
+		const String groups_key = GroupsDock::get_singleton()->get_effective_layout_key();
+		default_layout->set_value(docks_section, "dock_5", vformat("%s,%s,%s", inspector_key, signals_key, groups_key));
+	}
 
 	int hsplits[] = { 0, dock_hsize, -dock_hsize, 0 };
 	for (int i = 0; i < (int)std_size(hsplits); i++) {

@@ -44,7 +44,7 @@
 			<description>
 				Clears the calibration information for the specified joypad's motion sensors, if it has any and if they were calibrated.
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="flush_buffered_events">
@@ -128,7 +128,7 @@
 				+Y ... -Y: bottom ... top;
 				+Z ... -Z: farther ... closer.
 				The gravity part value is measured as a vector with length of [code]9.8[/code] away from the center of the Earth, which is a negative Y value.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS. On iOS, joypad accelerometer sensor reading is not supported due to OS limitations.
 			</description>
 		</method>
 		<method name="get_joy_axis" qualifiers="const">
@@ -149,14 +149,14 @@
 				+Y ... -Y: bottom ... top;
 				+Z ... -Z: farther ... closer.
 				The gravity part value is measured as a vector with length of [code]9.8[/code] away from the center of the Earth, which is a negative Y value.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS. On iOS, joypad accelerometer sensor reading is not supported due to OS limitations.
 			</description>
 		</method>
 		<method name="get_joy_guid" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="device" type="int" />
 			<description>
-				Returns an SDL2-compatible device GUID on platforms that use gamepad remapping, e.g. [code]030000004c050000c405000000010000[/code]. Returns an empty string if it cannot be found. Godot uses the [url=https://github.com/gabomdq/SDL_GameControllerDB]SDL2 game controller database[/url] to determine gamepad names and mappings based on this GUID.
+				Returns an SDL-compatible device GUID on platforms that use gamepad remapping, e.g. [code]030000004c050000c405000000010000[/code]. Returns an empty string if it cannot be found. Godot uses SDL's internal mappings, supplemented by community-contributed mappings, to determine gamepad names and mappings based on this GUID.
 				On Windows, all XInput joypad GUIDs will be overridden by Godot to [code]__XINPUT_DEVICE__[/code], because their mappings are the same.
 			</description>
 		</method>
@@ -171,7 +171,7 @@
 				Y: Angular speed around the Y axis (yaw);
 				Z: Angular speed around the Z axis (roll).
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad gyroscope and gyroscope calibration in your games.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="get_joy_info" qualifiers="const">
@@ -179,15 +179,15 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns a dictionary with extra platform-specific information about the device, e.g. the raw gamepad name from the OS or the Steam Input index.
-				On Windows, Linux, and macOS, the dictionary contains the following fields:
+				On Windows, Linux, macOS, and iOS, the dictionary contains the following fields:
 				[code]raw_name[/code]: The name of the controller as it came from the OS, before getting renamed by the controller database.
 				[code]vendor_id[/code]: The USB vendor ID of the device.
 				[code]product_id[/code]: The USB product ID of the device.
 				[code]serial_number[/code]: The serial number of the device. This key won't be present if the serial number is unavailable.
-				[code]steam_input_index[/code]: The Steam Input gamepad index, if the device is not a Steam Input device this key won't be present.
-				On Windows, the dictionary can have an additional field:
-				[code]xinput_index[/code]: The index of the controller in the XInput system. This key won't be present for devices not handled by XInput.
-				[b]Note:[/b] The returned dictionary is always empty on Android, iOS, visionOS, and Web.
+				The dictionary can also include the following fields under selected platforms:
+				[code]steam_input_index[/code]: The Steam Input gamepad index (Windows, Linux, and macOS only). If the device is not a Steam Input device this key won't be present.
+				[code]xinput_index[/code]: The index of the controller in the XInput system (Windows only). This key won't be present for devices not handled by XInput.
+				[b]Note:[/b] The returned dictionary is always empty on Android and Web.
 			</description>
 		</method>
 		<method name="get_joy_motion_sensors_calibration" qualifiers="const" experimental="">
@@ -198,7 +198,7 @@
 				The dictionary contains the following fields:
 				[code]gyroscope_offset[/code]: average offset in gyroscope values from [constant Vector2.ZERO] in rad/s.
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="get_joy_motion_sensors_rate" qualifiers="const" experimental="">
@@ -206,7 +206,7 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns the joypad's motion sensor rate in Hz, if the joypad has motion sensors and they're currently enabled. See also [method set_joy_motion_sensors_enabled].
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="get_joy_name">
@@ -221,6 +221,15 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns the duration of the current vibration effect in seconds.
+				[b]Note:[/b] This method returns the same value that was passed to [method start_joy_vibration], and this value does [b]not[/b] change when the joypad's vibration runs out, it only gets reset after a call to [method stop_joy_vibration].
+				If you want to check if a joypad is still vibrating, use [method is_joy_vibrating] instead.
+			</description>
+		</method>
+		<method name="get_joy_vibration_remaining_duration" experimental="">
+			<return type="float" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns the remaining duration of the current vibration effect in seconds.
 			</description>
 		</method>
 		<method name="get_joy_vibration_strength">
@@ -228,6 +237,8 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns the strength of the joypad vibration: x is the strength of the weak motor, and y is the strength of the strong motor.
+				[b]Note:[/b] This method returns the same values that were passed to [method start_joy_vibration], and these values do [b]not[/b] change when the joypad's vibration runs out, they only get reset after a call to [method stop_joy_vibration].
+				If you want to check if a joypad is still vibrating, use [method is_joy_vibrating] instead.
 			</description>
 		</method>
 		<method name="get_last_mouse_screen_velocity">
@@ -274,7 +285,7 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns [code]true[/code] if the joypad has an LED light that can change colors and/or brightness. See also [method set_joy_light].
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="has_joy_motion_sensors" qualifiers="const" experimental="">
@@ -282,7 +293,16 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns [code]true[/code] if the joypad has motion sensors (accelerometer and gyroscope).
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] On iOS, joypad accelerometer sensor reading is not supported due to OS limitations.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
+			</description>
+		</method>
+		<method name="has_joy_vibration" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns [code]true[/code] if the joypad supports vibration. See also [method start_joy_vibration].
+				[b]Note:[/b] For macOS, vibration is only supported in macOS 11 and later. When connected via USB, vibration is only supported for major brand controllers (except Xbox One and Xbox Series X/S controllers) due to macOS limitations.
 			</description>
 		</method>
 		<method name="is_action_just_pressed" qualifiers="const">
@@ -371,7 +391,7 @@
 			<description>
 				Returns [code]true[/code] if the joypad's motion sensors have been calibrated.
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="is_joy_motion_sensors_calibrating" qualifiers="const" experimental="">
@@ -380,7 +400,7 @@
 			<description>
 				Returns [code]true[/code] if the joypad's motion sensors are currently being calibrated.
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="is_joy_motion_sensors_enabled" qualifiers="const" experimental="">
@@ -389,7 +409,15 @@
 			<description>
 				Returns [code]true[/code] if the requested joypad has motion sensors (accelerometer and gyroscope) and they are currently enabled. See also [method set_joy_motion_sensors_enabled] and [method has_joy_motion_sensors].
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
+			</description>
+		</method>
+		<method name="is_joy_vibrating" experimental="">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns [code]true[/code] if the joypad is still vibrating after a call to [method start_joy_vibration].
+				Unlike [method get_joy_vibration_strength] and [method get_joy_vibration_duration], this method returns [code]false[/code] after the joypad's vibration runs out.
 			</description>
 		</method>
 		<method name="is_key_label_pressed" qualifiers="const">
@@ -508,7 +536,7 @@
 			<description>
 				Sets the joypad's LED light, if available, to the specified color. See also [method has_joy_light].
 				[b]Note:[/b] There is no way to get the color of the light from a joypad. If you need to know the assigned color, store it separately.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="set_joy_motion_sensors_calibration" experimental="">
@@ -518,7 +546,7 @@
 			<description>
 				Sets the specified joypad's calibration information. See also [method get_joy_motion_sensors_calibration].
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="set_joy_motion_sensors_enabled" experimental="">
@@ -529,7 +557,7 @@
 				Enables or disables the motion sensors (accelerometer and gyroscope), if available, on the specified joypad.
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
 				It's recommended to disable the motion sensors when they're no longer being used, because otherwise it might drain the controller battery faster.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="set_magnetometer">
@@ -584,26 +612,26 @@
 				func calibrate_motion():
 					Input.start_joy_motion_sensors_calibration(0)
 
-					# Wait for some time
+					# Wait for some time.
 					await get_tree().create_timer(1.0).timeout
 
 					Input.stop_joy_motion_sensors_calibration(0)
 					# The joypad is now calibrated.
 
 				func move_object(delta):
-					var object: Node3D = ... # Put your object here.
+					var node: Node3D = ... # Put your node here.
 
 					var gyro := Input.get_joy_gyroscope(0)
-					object.rotation.x -= -gyro.y * GYRO_SENSITIVITY * 0.5 * delta # Use rotation around the Y axis (yaw) here
-					object.rotation.y += -gyro.x * GYRO_SENSITIVITY * delta # Use rotation around the X axis (pitch) here
+					node.rotation.x -= -gyro.y * GYRO_SENSITIVITY * delta # Use rotation around the Y axis (yaw) here.
+					node.rotation.y += -gyro.x * GYRO_SENSITIVITY * delta # Use rotation around the X axis (pitch) here.
 				[/gdscript]
 				[csharp]
-				const double GYRO_SENSITIVITY = 10.0;
+				private const float GyroSensitivity = 10.0;
 
 				public override void _Ready()
 				{
 					// In this example we only use the first connected joypad (id 0).
-					if (!Input.GetConnectedJoypads().Has(0))
+					if (!Input.GetConnectedJoypads().Contains(0))
 					{
 						return;
 					}
@@ -631,12 +659,12 @@
 					}
 				}
 
-				private void CalibrateMotion()
+				private async Task CalibrateMotion()
 				{
 					Input.StartJoyMotionSensorsCalibration(0);
 
 					// Wait for some time.
-					await ToSignal(GetTree().CreateTimer(1.0), "timeout");
+					await ToSignal(GetTree().CreateTimer(1.0), SceneTreeTimer.SignalName.Timeout);
 
 					Input.StopJoyMotionSensorsCalibration(0);
 					// The joypad is now calibrated.
@@ -644,17 +672,17 @@
 
 				private void MoveObject(double delta)
 				{
-					Node3D object = ... ; // Put your object here.
+					Node3D node = ... ; // Put your object here.
 					Vector3 gyro = Input.GetJoyGyroscope(0);
-					Vector3 rotation = object.Rotation;
-					rotation.X -= -gyro.Y * GYRO_SENSITIVITY * 0.5 * delta; // Use rotation around the Y axis (yaw) here
-					rotation.Y += -gyro.X * GYRO_SENSITIVITY * delta; // Use rotation around the X axis (pitch) here
-					object.Rotation = rotation;
+					Vector3 rotation = node.Rotation;
+					rotation.X -= -gyro.Y * GyroSensitivity * (float)delta; // Use rotation around the Y axis (yaw) here.
+					rotation.Y += -gyro.X * GyroSensitivity * (float)delta; // Use rotation around the X axis (pitch) here.
+					node.Rotation = rotation;
 				}
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] Accelerometer sensor doesn't usually require calibration.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="start_joy_vibration">
@@ -664,8 +692,13 @@
 			<param index="2" name="strong_magnitude" type="float" />
 			<param index="3" name="duration" type="float" default="0" />
 			<description>
-				Starts to vibrate the joypad. Joypads usually come with two rumble motors, a strong and a weak one. [param weak_magnitude] is the strength of the weak motor (between 0 and 1) and [param strong_magnitude] is the strength of the strong motor (between 0 and 1). [param duration] is the duration of the effect in seconds (a duration of 0 will try to play the vibration indefinitely). The vibration can be stopped early by calling [method stop_joy_vibration].
-				[b]Note:[/b] Not every hardware is compatible with long effect durations; it is recommended to restart an effect if it has to be played for more than a few seconds.
+				Starts to vibrate the joypad. See also [method has_joy_vibration] and [method is_joy_vibrating].
+				Joypads usually come with two rumble motors, a strong and a weak one.
+				[param weak_magnitude] is the strength of the weak motor (between [code]0.0[/code] and [code]1.0[/code]).
+				[param strong_magnitude] is the strength of the strong motor (between [code]0.0[/code] and [code]1.0[/code]).
+				[param duration] is the duration of the effect in seconds (a duration of [code]0.0[/code] will try to play the vibration as long as possible, which is about 65 seconds).
+				The vibration can be stopped early by calling [method stop_joy_vibration].
+				See also [method get_joy_vibration_strength] and [method get_joy_vibration_duration].
 				[b]Note:[/b] For macOS, vibration is only supported in macOS 11 and later. When connected via USB, vibration is only supported for major brand controllers (except Xbox One and Xbox Series X/S controllers) due to macOS limitations.
 			</description>
 		</method>
@@ -675,7 +708,7 @@
 			<description>
 				Stops the calibration process of the specified joypad's motion sensors.
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="stop_joy_vibration">

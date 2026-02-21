@@ -30,15 +30,17 @@ jobs:
           - name: Editor w/ Mono (target=editor)
             cache-name: linux-editor-mono
             target: editor
-            scons-flags: module_mono_enabled=yes
+            scons-flags: module_mono_enabled=yes compiledb=yes
             bin: ./bin/godot.linuxbsd.editor.x86_64.mono
             build-mono: true
             doc-test: true
             proj-conv: true
+            proj-export: true
             api-compat: true
             artifact: true
             # Validate godot-cpp compatibility on one arbitrary editor build.
             godot-cpp: true
+            clang-tidy: true
 
           - name: Editor with doubles and GCC sanitizers (target=editor, dev_build=yes, scu_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=mold)
             cache-name: linux-editor-double-sanitizers
@@ -113,12 +115,27 @@ jobs:
         uses: actions/checkout@v6
         with:
           submodules: recursive
+          fetch-depth: 2 # 2 needed for Get changed files; no trivial way to conditionally use 1
+
+      # Keep in sync with static_checks.yml
+      - name: Get changed files
+        if: matrix.clang-tidy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            files=$(git diff-tree --no-commit-id --name-only -r HEAD^1..HEAD 2> /dev/null || true)
+          elif [ "${{ github.event_name }}" == "push" -a "${{ github.event.forced }}" == "false" -a "${{ github.event.created }}" == "false" ]; then
+            files=$(git diff-tree --no-commit-id --name-only -r ${{ github.event.before }}..${{ github.event.after }} 2> /dev/null || true)
+          fi
+          files=$(echo "$files" | xargs -I {} sh -c 'echo "\"./{}\""' | tr '\n' ' ')
+          echo "CHANGED_FILES=$files" >> $GITHUB_ENV
 
       - name: Setup dependencies
         run: |
           sudo apt-get update
           sudo apt-get install libwayland-bin  # TODO: Figure out somehow how to embed this one.
-          if [ "${{ matrix.proj-test }}" == "true" ]; then
+          if [ "${{ matrix.proj-test }}" == "true" -o "${{ matrix.proj-export }}" == "true" ]; then
             sudo apt-get install mesa-vulkan-drivers
           fi
 
@@ -143,7 +160,7 @@ jobs:
         uses: ./.github/actions/godot-deps
         with:
           # Sync with Ensure*Version in SConstruct.
-          python-version: 3.8
+          python-version: 3.9
           scons-version: 4.0
 
       - name: Force remove preinstalled .NET SDKs
@@ -179,6 +196,12 @@ jobs:
           scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
           platform: linuxbsd
           target: ${{ matrix.target }}
+
+      - name: Style checks via pre-commit
+        if: matrix.clang-tidy
+        uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --files ${{ env.CHANGED_FILES }} --hook-stage manual clang-tidy
 
       - name: Compilation (godot-cpp)
         uses: ./.github/actions/godot-cpp-build
@@ -254,6 +277,13 @@ jobs:
       - name: Test Godot project
         uses: ./.github/actions/godot-project-test
         if: matrix.proj-test
+        with:
+          bin: ${{ matrix.bin }}
+
+      # Test project export
+      - name: Test project export
+        uses: ./.github/actions/godot-project-export
+        if: matrix.proj-export
         with:
           bin: ${{ matrix.bin }}
 

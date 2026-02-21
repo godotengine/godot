@@ -122,6 +122,7 @@ public:
 		NodePath live_edit_root;
 		int history_id = 0;
 		uint64_t last_checked_version = 0;
+		uint64_t time_opened = 0;
 	};
 
 private:
@@ -214,6 +215,7 @@ public:
 	String get_scene_type(int p_idx) const;
 	void set_scene_path(int p_idx, const String &p_path);
 	Ref<Script> get_scene_root_script(int p_idx) const;
+	uint64_t get_scene_time_opened(int p_idx) const;
 	void set_scene_modified_time(int p_idx, uint64_t p_time);
 	uint64_t get_scene_modified_time(int p_idx) const;
 	void clear_edited_scenes();

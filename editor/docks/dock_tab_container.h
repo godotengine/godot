@@ -43,6 +43,7 @@ class EditorDockDragHint : public Control {
 	GDCLASS(EditorDockDragHint, Control);
 
 	DockTabContainer *dock_container = nullptr;
+	Control *drop_tabbar_parent = nullptr;
 	TabBar *drop_tabbar = nullptr;
 
 	Color valid_drop_color;
@@ -89,6 +90,7 @@ public:
 
 	EditorDock::DockSlot dock_slot = EditorDock::DOCK_SLOT_NONE;
 	EditorDock::DockLayout layout = EditorDock::DOCK_LAYOUT_VERTICAL;
+	Rect2i grid_rect;
 
 	static String get_config_key(int p_idx) { return "dock_" + itos(p_idx + 1); }
 
@@ -116,5 +118,12 @@ class SideDockTabContainer : public DockTabContainer {
 	GDCLASS(SideDockTabContainer, DockTabContainer);
 
 public:
-	SideDockTabContainer(EditorDock::DockSlot p_slot);
+	SideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect);
+};
+
+class BottomSideDockTabContainer : public DockTabContainer {
+	GDCLASS(BottomSideDockTabContainer, DockTabContainer);
+
+public:
+	BottomSideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect);
 };

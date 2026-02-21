@@ -35,6 +35,7 @@
 #include "scene/gui/scroll_container.h"
 #include "scene/property_list_helper.h"
 #include "scene/resources/text_line.h"
+#include "servers/display/native_menu.h"
 
 class PanelContainer;
 class Timer;

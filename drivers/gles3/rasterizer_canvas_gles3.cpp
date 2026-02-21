@@ -32,18 +32,17 @@
 
 #ifdef GLES3_ENABLED
 
-#include "rasterizer_gles3.h"
-#include "rasterizer_scene_gles3.h"
-
 #include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/transform_interpolator.h"
+#include "drivers/gles3/rasterizer_util_gles3.h"
+#include "drivers/gles3/storage/config.h"
+#include "drivers/gles3/storage/mesh_storage.h"
+#include "drivers/gles3/storage/particles_storage.h"
+#include "drivers/gles3/storage/texture_storage.h"
+#include "drivers/gles3/storage/utilities.h"
 #include "servers/rendering/rendering_server_default.h"
-#include "storage/config.h"
-#include "storage/material_storage.h"
-#include "storage/mesh_storage.h"
-#include "storage/particles_storage.h"
-#include "storage/texture_storage.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 void RasterizerCanvasGLES3::_update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4) {
 	p_mat4[0] = p_transform.columns[0][0];
@@ -1662,7 +1661,7 @@ void RasterizerCanvasGLES3::light_update_shadow(RID p_rid, int p_shadow_index, c
 	glEnable(GL_SCISSOR_TEST);
 	glScissor(0, p_shadow_index * 2, state.shadow_texture_size, 2);
 	glClearColor(p_far, p_far, p_far, 1.0);
-	RasterizerGLES3::clear_depth(1.0);
+	RasterizerUtilGLES3::clear_depth(1.0);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -1795,7 +1794,7 @@ void RasterizerCanvasGLES3::light_update_directional_shadow(RID p_rid, int p_sha
 	glEnable(GL_SCISSOR_TEST);
 	glScissor(0, p_shadow_index * 2, state.shadow_texture_size, 2);
 	glClearColor(1.0, 1.0, 1.0, 1.0);
-	RasterizerGLES3::clear_depth(1.0);
+	RasterizerUtilGLES3::clear_depth(1.0);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -2161,7 +2160,7 @@ void RasterizerCanvasGLES3::occluder_polygon_set_cull_mode(RID p_occluder, RS::C
 
 void RasterizerCanvasGLES3::set_shadow_texture_size(int p_size) {
 	GLES3::Config *config = GLES3::Config::get_singleton();
-	p_size = nearest_power_of_2_templated(p_size);
+	p_size = Math::nearest_power_of_2_templated(p_size);
 
 	if (p_size > config->max_texture_size) {
 		p_size = config->max_texture_size;

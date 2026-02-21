@@ -41,7 +41,7 @@ class GDScriptWorkspace : public RefCounted {
 
 private:
 #ifndef DISABLE_DEPRECATED
-	void didDeleteFiles() {}
+	void didDeleteFiles(const Dictionary &p_params) {}
 	Error parse_script(const String &p_path, const String &p_content) {
 		WARN_DEPRECATED;
 		return Error::FAILED;

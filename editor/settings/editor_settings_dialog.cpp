@@ -238,6 +238,14 @@ void EditorSettingsDialog::popup_edit_settings() {
 	_focus_current_search_box();
 }
 
+void EditorSettingsDialog::set_advanced_mode_enabled(bool p_enabled) {
+	advanced_switch->set_pressed(p_enabled);
+}
+
+void EditorSettingsDialog::set_current_section(const String &p_section) {
+	inspector->set_current_section(p_section);
+}
+
 void EditorSettingsDialog::_undo_redo_callback(void *p_self, const String &p_name) {
 	EditorNode::get_log()->add_message(p_name, EditorLog::MSG_TYPE_EDITOR);
 }
@@ -362,7 +370,7 @@ bool EditorSettingsDialog::_is_in_project_manager() const {
 void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Array &p_events) {
 	Array old_input_array = EditorSettings::get_singleton()->get_builtin_action_overrides(p_name);
 	if (old_input_array.is_empty()) {
-		List<Ref<InputEvent>> defaults = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied()[current_edited_identifier];
+		List<Ref<InputEvent>> defaults(InputMap::get_singleton()->get_builtins_with_feature_overrides_applied()[current_edited_identifier]);
 		old_input_array = _event_list_to_array_helper(defaults);
 	}
 
@@ -439,6 +447,7 @@ TreeItem *EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, co
 	TreeItem *shortcut_item = shortcuts->create_item(p_parent);
 	shortcut_item->set_collapsed(p_is_collapsed);
 	shortcut_item->set_text(0, p_display);
+	shortcut_item->set_tooltip_text(0, p_shortcut_identifier);
 
 	Ref<InputEvent> primary = p_events.size() > 0 ? Ref<InputEvent>(p_events[0]) : Ref<InputEvent>();
 	Ref<InputEvent> secondary = p_events.size() > 1 ? Ref<InputEvent>(p_events[1]) : Ref<InputEvent>();
@@ -742,7 +751,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 		case EditorSettingsDialog::SHORTCUT_REVERT: {
 			// Only for "shortcut" types
 			if (is_editing_action) {
-				List<Ref<InputEvent>> defaults = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied()[current_edited_identifier];
+				List<Ref<InputEvent>> defaults(InputMap::get_singleton()->get_builtins_with_feature_overrides_applied()[current_edited_identifier]);
 				Array events = _event_list_to_array_helper(defaults);
 
 				_update_builtin_action(current_edited_identifier, events);

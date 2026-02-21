@@ -34,6 +34,7 @@
 #include "core/extension/gdextension_manager.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/os/time.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
@@ -617,6 +618,7 @@ int EditorData::add_edited_scene(int p_at_pos) {
 	es.history_current = -1;
 	es.live_edit_root = NodePath(String("/root"));
 	es.history_id = last_created_scene++;
+	es.time_opened = Time::get_singleton()->get_unix_time_from_system();
 
 	if (p_at_pos == edited_scene.size()) {
 		edited_scene.push_back(es);
@@ -814,6 +816,11 @@ Vector<EditorData::EditedScene> EditorData::get_edited_scenes() const {
 	}
 
 	return out_edited_scenes_list;
+}
+
+uint64_t EditorData::get_scene_time_opened(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), 0);
+	return edited_scene[p_idx].time_opened;
 }
 
 void EditorData::set_scene_modified_time(int p_idx, uint64_t p_time) {

@@ -32,6 +32,7 @@
 
 #include "core/templates/hash_map.h"
 #include "core/templates/paged_allocator.h"
+#include "core/templates/rb_map.h"
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"
 #include "drivers/vulkan/rendering_shader_container_vulkan.h"
 #include "servers/rendering/rendering_device_driver.h"

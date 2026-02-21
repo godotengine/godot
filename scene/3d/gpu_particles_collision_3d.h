@@ -33,6 +33,8 @@
 #include "core/templates/local_vector.h"
 #include "scene/3d/visual_instance_3d.h"
 
+class Mesh;
+
 class GPUParticlesCollision3D : public VisualInstance3D {
 	GDCLASS(GPUParticlesCollision3D, VisualInstance3D);
 

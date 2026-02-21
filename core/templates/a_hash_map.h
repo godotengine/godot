@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/math/math_funcs_binary.h"
 #include "core/os/memory.h"
 #include "core/string/print_string.h"
 #include "core/templates/hashfuncs.h"
@@ -210,7 +211,7 @@ private:
 		uint32_t real_old_capacity = _capacity_mask + 1;
 		// Capacity can't be 0 and must be 2^n - 1.
 		_capacity_mask = MAX(4u, p_new_capacity);
-		uint32_t real_capacity = next_power_of_2(_capacity_mask);
+		uint32_t real_capacity = Math::next_power_of_2(_capacity_mask);
 		_capacity_mask = real_capacity - 1;
 
 		Metadata *old_map_data = _metadata;
@@ -412,7 +413,7 @@ public:
 	void reserve(uint32_t p_new_capacity) {
 		if (_elements == nullptr) {
 			_capacity_mask = MAX(4u, p_new_capacity);
-			_capacity_mask = next_power_of_2(_capacity_mask) - 1;
+			_capacity_mask = Math::next_power_of_2(_capacity_mask) - 1;
 			return; // Unallocated yet.
 		}
 		if (p_new_capacity <= get_capacity()) {
@@ -690,7 +691,7 @@ public:
 	AHashMap(uint32_t p_initial_capacity) {
 		// Capacity can't be 0 and must be 2^n - 1.
 		_capacity_mask = MAX(4u, p_initial_capacity);
-		_capacity_mask = next_power_of_2(_capacity_mask) - 1;
+		_capacity_mask = Math::next_power_of_2(_capacity_mask) - 1;
 	}
 	AHashMap() :
 			_capacity_mask(INITIAL_CAPACITY - 1) {

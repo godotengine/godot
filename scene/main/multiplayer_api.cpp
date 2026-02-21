@@ -31,6 +31,7 @@
 #include "multiplayer_api.h"
 
 #include "core/io/marshalls.h"
+
 StringName MultiplayerAPI::default_interface;
 
 void MultiplayerAPI::set_default_interface(const StringName &p_interface) {

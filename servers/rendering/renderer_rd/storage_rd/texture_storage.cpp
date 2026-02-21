@@ -3431,7 +3431,7 @@ void TextureStorage::update_decal_atlas() {
 			si.pixel_size = Size2i(src_tex->width, src_tex->height);
 
 			if (base_size < (uint32_t)si.size.width) {
-				base_size = nearest_power_of_2_templated(si.size.width);
+				base_size = Math::nearest_power_of_2_templated(si.size.width);
 			}
 
 			si.texture = E.key;
@@ -3501,7 +3501,7 @@ void TextureStorage::update_decal_atlas() {
 		}
 
 		decal_atlas.size.width = base_size * border;
-		decal_atlas.size.height = nearest_power_of_2_templated(atlas_height * border);
+		decal_atlas.size.height = Math::nearest_power_of_2_templated(atlas_height * border);
 
 		for (int i = 0; i < item_count; i++) {
 			DecalAtlas::Texture *t = decal_atlas.textures.getptr(items[i].texture);
@@ -4678,7 +4678,7 @@ void TextureStorage::render_target_sdf_process(RID p_render_target) {
 
 	/* Process */
 
-	int stride = nearest_power_of_2_templated(MAX(push_constant.size[0], push_constant.size[1]) / 2);
+	int stride = Math::nearest_power_of_2_templated(MAX(push_constant.size[0], push_constant.size[1]) / 2);
 
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, rt_sdf.pipelines[RenderTargetSDF::SHADER_PROCESS]);
 

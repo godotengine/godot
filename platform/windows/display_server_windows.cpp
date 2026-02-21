@@ -31,8 +31,8 @@
 #include "display_server_windows.h"
 
 #include "drop_target_windows.h"
+#include "native_menu_windows.h"
 #include "os_windows.h"
-#include "scene/main/window.h"
 #include "wgl_detect_version.h"
 
 #include "core/config/project_settings.h"
@@ -44,13 +44,13 @@
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
+#include "scene/main/window.h"
 #include "scene/resources/texture.h"
+#include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #ifdef SDL_ENABLED
 #include "drivers/sdl/joypad_sdl.h"
 #endif
-
-#include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #if defined(VULKAN_ENABLED)
 #include "rendering_context_driver_vulkan_windows.h"
@@ -2933,6 +2933,69 @@ void DisplayServerWindows::window_request_attention(WindowID p_window) {
 	info.dwTimeout = 0;
 	info.uCount = 2;
 	FlashWindowEx(&info);
+}
+
+void DisplayServerWindows::window_set_taskbar_progress_value(float p_value, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	wd.progress_value = p_value;
+	if (wd.progress_state == PROGRESS_STATE_NOPROGRESS) {
+		return;
+	}
+	if (taskbar == nullptr) {
+		if (CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&taskbar) != S_OK) {
+			taskbar = nullptr;
+			return;
+		} else {
+			taskbar->HrInit();
+		}
+	}
+
+	taskbar->SetProgressValue(wd.hWnd, Math::round(p_value * 100000), 100000);
+}
+
+void DisplayServerWindows::window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	wd.progress_state = p_state;
+	if (taskbar == nullptr) {
+		if (CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&taskbar) != S_OK) {
+			taskbar = nullptr;
+			return;
+		} else {
+			taskbar->HrInit();
+		}
+	}
+
+	TBPFLAG tbpf = TBPF_NOPROGRESS;
+	switch (p_state) {
+		case PROGRESS_STATE_NOPROGRESS:
+			tbpf = TBPF_NOPROGRESS;
+			break;
+		case PROGRESS_STATE_INDETERMINATE:
+			tbpf = TBPF_INDETERMINATE;
+			break;
+		case PROGRESS_STATE_ERROR:
+			tbpf = TBPF_ERROR;
+			break;
+		case PROGRESS_STATE_PAUSED:
+			tbpf = TBPF_PAUSED;
+			break;
+		case PROGRESS_STATE_NORMAL:
+			tbpf = TBPF_NORMAL;
+			break;
+		default:
+			break;
+	}
+
+	taskbar->SetProgressState(wd.hWnd, tbpf);
+	if (p_state != PROGRESS_STATE_INDETERMINATE) {
+		taskbar->SetProgressValue(wd.hWnd, Math::round(wd.progress_value * 100000), 100000);
+	}
 }
 
 void DisplayServerWindows::window_move_to_foreground(WindowID p_window) {

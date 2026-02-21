@@ -870,17 +870,17 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 		// Could not find texture to fit, create one.
 		int texsize = MAX(p_data->size.x * 0.125, 256);
 
-		texsize = next_power_of_2((uint32_t)texsize);
+		texsize = Math::next_power_of_2((uint32_t)texsize);
 		if (p_msdf) {
 			texsize = MIN(texsize, 2048);
 		} else {
 			texsize = MIN(texsize, 1024);
 		}
 		if (mw > texsize) { // Special case, adapt to it?
-			texsize = next_power_of_2((uint32_t)mw);
+			texsize = Math::next_power_of_2((uint32_t)mw);
 		}
 		if (mh > texsize) { // Special case, adapt to it?
-			texsize = next_power_of_2((uint32_t)mh);
+			texsize = Math::next_power_of_2((uint32_t)mh);
 		}
 
 		ShelfPackTexture tex = ShelfPackTexture(texsize, texsize);
@@ -6270,13 +6270,18 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 		int i = 0;
 		int span_size = sd->spans.size();
 		while (i < span_size) {
+			bool start_with_obj = sd->spans[i].embedded_key != Variant();
 			String language = sd->spans[i].language;
 			int r_start = sd->spans[i].start;
 			if (r_start == sd->spans[i].end) {
 				i++;
 				continue;
 			}
-			while (i + 1 < span_size && (language == sd->spans[i + 1].language || sd->spans[i + 1].start == sd->spans[i + 1].end)) {
+			while (i + 1 < span_size && (language == sd->spans[i + 1].language || start_with_obj || sd->spans[i + 1].embedded_key != Variant() || sd->spans[i + 1].start == sd->spans[i + 1].end)) {
+				if (start_with_obj && sd->spans[i + 1].embedded_key == Variant()) {
+					language = sd->spans[i + 1].language;
+					start_with_obj = false;
+				}
 				i++;
 			}
 			int r_end = sd->spans[i].end;
