@@ -372,7 +372,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		}
 	}
 
-	//Do delaunay tesselation
+	//Do delaunay tessellation
 	Vector<int32_t> tetrahedra_indices = Geometry3D::tetrahedralize_delaunay(mesh_vertices_clean);
 
 	//Find tetrahedra links
