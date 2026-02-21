@@ -124,6 +124,15 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	invert_y_axis = p_settings.get("editors/3d/navigation/invert_y_axis", false);
 	warped_mouse_panning_3d = p_settings.get("editors/3d/navigation/warped_mouse_panning", true);
 
+	freelook_forward_sc = DebuggerMarshalls::deserialize_key_shortcut(p_settings.get("spatial_editor/freelook_forward", Array()));
+	freelook_back_sc = DebuggerMarshalls::deserialize_key_shortcut(p_settings.get("spatial_editor/freelook_backwards", Array()));
+	freelook_left_sc = DebuggerMarshalls::deserialize_key_shortcut(p_settings.get("spatial_editor/freelook_left", Array()));
+	freelook_right_sc = DebuggerMarshalls::deserialize_key_shortcut(p_settings.get("spatial_editor/freelook_right", Array()));
+	freelook_up_sc = DebuggerMarshalls::deserialize_key_shortcut(p_settings.get("spatial_editor/freelook_up", Array()));
+	freelook_down_sc = DebuggerMarshalls::deserialize_key_shortcut(p_settings.get("spatial_editor/freelook_down", Array()));
+	freelook_speed_sc = DebuggerMarshalls::deserialize_key_shortcut(p_settings.get("spatial_editor/freelook_speed_modifier", Array()));
+	freelook_slow_sc = DebuggerMarshalls::deserialize_key_shortcut(p_settings.get("spatial_editor/freelook_slow_modifier", Array()));
+
 	freelook_base_speed = p_settings.get("editors/3d/freelook/freelook_base_speed", 5);
 	freelook_sensitivity = Math::deg_to_rad((real_t)p_settings.get("editors/3d/freelook/freelook_sensitivity", 0.25));
 	orbit_sensitivity = Math::deg_to_rad((real_t)p_settings.get("editors/3d/navigation_feel/orbit_sensitivity", 0.004));
@@ -320,30 +329,30 @@ void RuntimeNodeSelect::_process_frame() {
 			input->set_disable_input(false);
 		}
 
-		if (input->is_physical_key_pressed(Key::A)) {
+		if (_is_freelook_input_pressed(freelook_left_sc, camera_freelook)) {
 			direction -= right;
 		}
-		if (input->is_physical_key_pressed(Key::D)) {
+		if (_is_freelook_input_pressed(freelook_right_sc, camera_freelook)) {
 			direction += right;
 		}
-		if (input->is_physical_key_pressed(Key::W)) {
+		if (_is_freelook_input_pressed(freelook_forward_sc, camera_freelook)) {
 			direction += forward;
 		}
-		if (input->is_physical_key_pressed(Key::S)) {
+		if (_is_freelook_input_pressed(freelook_back_sc, camera_freelook)) {
 			direction -= forward;
 		}
-		if (input->is_physical_key_pressed(Key::E)) {
+		if (_is_freelook_input_pressed(freelook_up_sc, camera_freelook)) {
 			direction += up;
 		}
-		if (input->is_physical_key_pressed(Key::Q)) {
+		if (_is_freelook_input_pressed(freelook_down_sc, camera_freelook)) {
 			direction -= up;
 		}
 
 		real_t speed = freelook_base_speed;
-		if (input->is_physical_key_pressed(Key::SHIFT)) {
+		if (_is_freelook_input_pressed(freelook_speed_sc, camera_freelook)) {
 			speed *= 3.0;
 		}
-		if (input->is_physical_key_pressed(Key::ALT)) {
+		if (_is_freelook_input_pressed(freelook_slow_sc, camera_freelook)) {
 			speed *= 0.333333;
 		}
 
@@ -1630,6 +1639,44 @@ void RuntimeNodeSelect::_reset_camera_3d() {
 		override_camera->set_perspective(camera_fov * cursor.fov_scale, camera_znear, camera_zfar);
 	}
 }
+
+// Helper function to check if shortcut key is pressed (in game debug window)
+bool RuntimeNodeSelect::_is_freelook_input_pressed(const Ref<Shortcut> &sc, bool freelook_active) {
+	if (!freelook_active || sc.is_null()) {
+		print_line("Freelook inactive or shortcut null");
+		return false;
+	}
+
+	const Array events = sc->get_events();
+
+	for (int i = 0; i < events.size(); i++) {
+		Ref<InputEvent> ev = events[i];
+		if (!ev.is_valid()) {
+			continue;
+		}
+
+		Ref<InputEventKey> key = ev;
+		if (key.is_valid()) {
+			Key kc = (key->get_physical_keycode());
+			bool pressed = Input::get_singleton()->is_physical_key_pressed(kc);
+			if (pressed) {
+				return true;
+			}
+		}
+
+		Ref<InputEventMouseButton> mb = ev;
+		if (mb.is_valid()) {
+			MouseButton btn = mb->get_button_index();
+			bool pressed = Input::get_singleton()->is_mouse_button_pressed(btn);
+			if (pressed) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 #endif // _3D_DISABLED
 
 #endif // DEBUG_ENABLED

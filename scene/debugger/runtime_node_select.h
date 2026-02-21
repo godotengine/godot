@@ -160,6 +160,15 @@ private:
 	real_t orbit_sensitivity = 0;
 	real_t translation_sensitivity = 0;
 
+	Ref<Shortcut> freelook_forward_sc;
+	Ref<Shortcut> freelook_back_sc;
+	Ref<Shortcut> freelook_left_sc;
+	Ref<Shortcut> freelook_right_sc;
+	Ref<Shortcut> freelook_up_sc;
+	Ref<Shortcut> freelook_down_sc;
+	Ref<Shortcut> freelook_speed_sc;
+	Ref<Shortcut> freelook_slow_sc;
+
 	Vector2 previous_mouse_position;
 
 	struct SelectionBox3D : public RefCounted {
@@ -240,6 +249,9 @@ private:
 	Point2 _get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_event, Rect2 p_border) const;
 	Transform3D _get_cursor_transform();
 	void _reset_camera_3d();
+
+	bool _is_freelook_input_pressed(const Ref<Shortcut> &sc, bool freelook_active);
+
 #endif // _3D_DISABLED
 
 	RuntimeNodeSelect() { singleton = this; }
