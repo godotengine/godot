@@ -766,7 +766,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		RID dest_fb;
 		RD::DataFormat dest_fb_format;
-		if (spatial_upscaler != nullptr || use_smaa) {
+		if (spatial_upscaler || use_smaa) {
 			// If we use a spatial upscaler to upscale or SMAA to antialias we need to write our result into an intermediate buffer.
 			// Note that this is cached so we only create the texture the first time.
 			dest_fb_format = rb->get_base_data_format();
@@ -785,6 +785,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 				dest_fb = texture_storage->render_target_get_rd_framebuffer(render_target);
 			}
 			tonemap.dest_texture_size = texture_storage->render_target_get_size(render_target);
+
+			tonemap.bilinear_filtering = scale_mode != RS::VIEWPORT_SCALING_3D_MODE_NEAREST;
 		}
 
 		tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_DISABLED;
