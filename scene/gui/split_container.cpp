@@ -185,6 +185,9 @@ void SplitContainerDragger::update_touch_dragger() {
 void SplitContainerDragger::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			if (dragger_index < 0) {
+				return;
+			}
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
@@ -765,6 +768,9 @@ void SplitContainer::_resort() {
 }
 
 void SplitContainer::_update_draggers() {
+	if (!is_visible_in_tree()) {
+		return;
+	}
 	const int valid_child_count = (int)valid_children.size();
 	const int dragger_count = MAX(valid_child_count - 1, 1);
 	const int draggers_size_diff = dragger_count - (int)dragging_area_controls.size();
