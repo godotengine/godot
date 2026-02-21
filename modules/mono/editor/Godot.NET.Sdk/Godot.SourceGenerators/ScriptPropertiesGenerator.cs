@@ -302,7 +302,7 @@ namespace Godot.SourceGenerators
 
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
 
-                source.Append("    internal new static ")
+                source.Append("    internal static ")
                     .Append(DictionaryType)
                     .Append(" GetGodotPropertyList()\n    {\n");
 
