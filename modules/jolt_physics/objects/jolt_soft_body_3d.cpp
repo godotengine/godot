@@ -367,11 +367,10 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 
 	//Find tetrahedra links
 	struct TetrahedraInfo {
-		int index;
 		bool valid;
+		int vert_indices[4];
 		Vector3i face_keys[4];
 		int neighbors[4];
-		int vert_indices[4];
 	};
 	std::vector<TetrahedraInfo> tet_info_list;
 	tet_info_list.reserve(tetrahedra_indices.size() / 4);
@@ -443,7 +442,6 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 
 		//Create tetrahedra tracker
 		TetrahedraInfo info;
-		info.index = tet_idx;
 		info.valid = true;
 
 		info.vert_indices[0] = vi0;
