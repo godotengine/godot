@@ -98,8 +98,6 @@ private:
 	bool simulation_started = false;
 	bool pinned_points_cache_dirty = true;
 
-//	PhysicsServer3D::SoftBodyForm soft_body_form = PhysicsServer3D::SOFT_BODY_FORM_CLOTH;
-
 	Ref<ArrayMesh> debug_mesh_cache;
 	class MeshInstance3D *debug_mesh = nullptr;
 
