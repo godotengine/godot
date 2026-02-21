@@ -38,6 +38,7 @@
 #include "jolt_body_3d.h"
 #include "jolt_group_filter.h"
 #include "../../core/math/geometry_3d.h"
+#include "../../core/math/triangle_mesh.h"
 
 #include "servers/rendering/rendering_server.h"
 
@@ -47,7 +48,6 @@
 #include <set>
 #include <map>
 #include <vector>
-#include "../../core/math/triangle_mesh.h"
 
 namespace {
 
@@ -362,10 +362,8 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		}
 	}
 
-
 	//Do delaunay tesselation
 	Vector<int32_t> tetrahedra_indices = Geometry3D::tetrahedralize_delaunay(mesh_vertices_clean);
-
 
 	//Find tetrahedra links
 	struct TetrahedraInfo {
@@ -479,10 +477,9 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		}
 	}
 
-
 	//Mark exterior tetrahedra
-	bool convex_hull = false;
-	if (!convex_hull) {
+	bool use_convex_hull = false;
+	if (!use_convex_hull) {
 		//Create mesh for inside/outside tests
 		PackedVector3Array surface_tris;
 		surface_tris.reserve(mesh_indices_clean.size());
@@ -525,7 +522,6 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 			int32_t surf_idx;
 			int32_t face_idx;
 
-//			Vector3 ray_dir = Vector3(1, 0, 0);
 			for (int i = 0; i < 6; ++i) {
 				const Vector3 ray_dir = cast_dirs[i];
 				bool hit = surface_mesh.intersect_ray(center, ray_dir, point, normal, &surf_idx, &face_idx);
@@ -536,8 +532,6 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 				}
 			}
 		}
-
-
 	}
 
 	//Find exterior faces
@@ -556,7 +550,6 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 
 	//Populate settings
 	JPH::SoftBodySharedSettings *settings = new JPH::SoftBodySharedSettings();
-	////physics_vertices.emplace_back(JPH::Float3((float)(vertex.x - body_position.GetX())
 	for (const Vector3& v : mesh_vertices_clean) {
 		settings->mVertices.emplace_back(JPH::Float3(v.x, v.y, v.z));
 	}
@@ -570,7 +563,6 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		v.mVertex[2] = (JPH::uint32)t_info.vert_indices[2];
 		v.mVertex[3] = (JPH::uint32)t_info.vert_indices[3];
 		settings->mVolumeConstraints.push_back(v);
-		//settings->mEdgeConstraints.emplace_back(JPH::SoftBodySharedSettings::Edge((JPH::uint32)e.x, (JPH::uint32)e.y));
 	}
 	for (const Vector3i &fv : face_exterior) {
 		JPH::SoftBodySharedSettings::Face f;
@@ -582,154 +574,8 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 
 	settings->CalculateEdgeLengths();
 	settings->CalculateVolumeConstraintVolumes();
-	settings->Optimize();
 
-	return _create_shared_settings_cloth();
 
-	/////////////////
-	/*
-	HashMap<Vector3, int> point_to_physics_index;
-
-	const int mesh_vertex_count = mesh_vertices.size();
-	const int mesh_index_count = mesh_indices.size();
-
-	mesh_to_physics.resize(mesh_vertex_count);
-	for (int &index : mesh_to_physics) {
-		index = -1;
-	}
-	settings->mVertices.reserve(mesh_vertex_count);
-	point_to_physics_index.reserve(mesh_vertex_count);
-
-	// 
-	//int next_phys_vert_idx = 0;
-	//for (int i = 0; i < tetrahedra_indices.size(); ++i) {
-	//	int vi_mesh = tetrahedra_indices[i];
-	//	Vector3 v = mesh_vertices[vi_mesh];
-
-	//	if (point_to_physics_index.find(v) != point_to_physics_index.end()) {
-	//		point_to_physics_index[v] = next_phys_vert_idx++;
-	//	}
-	//}
-
-	JPH::SoftBodySharedSettings *settings = new JPH::SoftBodySharedSettings();
-
-	const JPH::RVec3 body_position = jolt_settings->mPosition;
-
-	std::set<std::tuple<int, int>> scanned_edges;
-	//	std::set<std::tuple<int, int, int>> scanned_faces;
-	HashMap<std::tuple<int, int, int>, int> scanned_face_count;
-
-	auto append_edge_if_absent = [&](int a, int b) {
-		if (a > b) {
-			std::swap(a, b);
-		}
-		std::tuple<int, int> edge_tup(a, b);
-
-		if (scanned_edges.find(edge_tup) == scanned_edges.end()) {
-			scanned_edges.emplace(edge_tup);
-
-			JPH::SoftBodySharedSettings::Edge e;
-			e.mVertex[0] = (JPH::uint32)a;
-			e.mVertex[1] = (JPH::uint32)b;
-			settings->mEdgeConstraints.push_back(e);
-		}
-	};
-
-	//auto append_face_if_absent = [&](int a, int b, int c) {
-	//	if (a > b) {
-	//		std::swap(a, b);
-	//	}
-	//	if (b > c) {
-	//		std::swap(b, c);
-	//	}
-	//	if (a > b) {
-	//		std::swap(a, b);
-	//	}
-	//	std::tuple<int, int, int> face_tup(a, b, c);
-
-	//	if (scanned_faces.find(face_tup) == scanned_faces.end()) {
-	//		scanned_faces.emplace(face_tup);
-
-	//		JPH::SoftBodySharedSettings::Face f;
-	//		f.mVertex[0] = (JPH::uint32)a;
-	//		f.mVertex[1] = (JPH::uint32)b;
-	//		f.mVertex[2] = (JPH::uint32)c;
-	//		settings->AddFace(f);
-	//	}
-	//};
-
-	//Validate vertices, merging any that may be coincident
-	int phys_vert_index_count = 0;
-
-	for (int i = 0; i < tetrahedra_indices.size(); i += 4) {
-		int physics_tet[4];
-
-		for (int j = 0; j < 4; ++j) {
-			const int mesh_vertex_index = tetrahedra_indices[i + j];
-			const Vector3 vertex = mesh_vertices[mesh_vertex_index];
-
-			HashMap<Vector3, int>::Iterator iter_physics_index = point_to_physics_index.find(vertex);
-
-			if (iter_physics_index == point_to_physics_index.end()) {
-				settings->mVertices.emplace_back(
-					JPH::Float3((float)(vertex.x - body_position.GetX()), (float)(vertex.y - body_position.GetY()), (float)(vertex.z - body_position.GetZ())), JPH::Float3(0.0f, 0.0f, 0.0f), 1.0f);
-				iter_physics_index = point_to_physics_index.insert(vertex, phys_vert_index_count++);
-			}
-
-			physics_tet[j] = iter_physics_index->value;
-			mesh_to_physics[mesh_vertex_index] = iter_physics_index->value;
-		}
-
-		if (physics_tet[0] == physics_tet[1] || physics_tet[0] == physics_tet[2]
-			|| physics_tet[0] == physics_tet[3] || physics_tet[1] == physics_tet[2]
-			|| physics_tet[1] == physics_tet[3] || physics_tet[2] == physics_tet[3]) {
-			continue; // Skip degenerate tetrahedra
-		}
-
-		//Add edges
-		for (int vi0 = 0; vi0 < 3; ++vi0) {
-			for (int vi1 = vi0 + 1; vi1 < 4; ++vi1) {
-				append_edge_if_absent(physics_tet[vi0], physics_tet[vi1]);
-			}
-		}
-
-		//Add faces
-		//append_face_if_absent(physics_tet[0], physics_tet[1], physics_tet[2]);
-		//append_face_if_absent(physics_tet[1], physics_tet[0], physics_tet[3]);
-		//append_face_if_absent(physics_tet[2], physics_tet[3], physics_tet[0]);
-		//append_face_if_absent(physics_tet[3], physics_tet[2], physics_tet[1]);
-
-		//Add tetrahedron
-		//det([v1 - v0, v2 - v0, v3 - v0]) should be positive to match tetrahedra in SoftBodySharedSettings::sCreateCube
-		JPH::SoftBodySharedSettings::Volume v;
-		v.mVertex[0] = (JPH::uint32)physics_tet[0];
-		v.mVertex[1] = (JPH::uint32)physics_tet[1];
-		v.mVertex[2] = (JPH::uint32)physics_tet[2];
-		v.mVertex[3] = (JPH::uint32)physics_tet[3];
-		settings->mVolumeConstraints.push_back(v);
-	}
-	settings->CalculateEdgeLengths();
-	settings->CalculateVolumeConstraintVolumes();
-
-	//Add surface faces only
-	for (int i = 0; i < mesh_index_count; i += 3) {
-		int vi0 = mesh_to_physics[i];
-		int vi1 = mesh_to_physics[i + 1];
-		int vi2 = mesh_to_physics[i + 2];
-
-		if (vi0 == vi1 || vi0 == vi2 || vi1 == vi2)
-			continue;
-
-		// Jolt uses a different winding order, so we swap the indices to account for that.
-		JPH::SoftBodySharedSettings::Face f;
-		f.mVertex[0] = (JPH::uint32)vi0;
-		f.mVertex[1] = (JPH::uint32)vi1;
-		f.mVertex[2] = (JPH::uint32)vi2;
-		settings->AddFace(f);
-		//settings->mFaces.emplace_back((JPH::uint32)vi2, (JPH::uint32)vi1, (JPH::uint32)vi0);
-	}
-*/
-	/*
 	// Pin whatever pinned vertices we have currently. This is used during the `Optimize` call below to order the
 	// constraints. Note that it's fine if the pinned vertices change later, but that will reduce the effectiveness
 	// of the constraints a bit.
@@ -748,10 +594,11 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 	for (JPH::SoftBodySharedSettings::Edge &e : settings->mEdgeConstraints) {
 		e.mRestLength *= multiplier;
 	}
-	*/
-	//settings->Optimize();
 
-	//return settings;
+	settings->Optimize();
+
+	return settings;
+	//return _create_shared_settings_cloth();
 }
 
 void JoltSoftBody3D::_update_mass() {
