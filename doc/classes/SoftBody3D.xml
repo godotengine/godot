@@ -164,6 +164,7 @@
 			Increasing this value will improve the resulting simulation, but can affect performance. Use with care.
 		</member>
 		<member name="soft_body_form" type="int" setter="set_soft_body_form" getter="get_soft_body_form" enum="PhysicsServer3D.SoftBodyForm" default="0">
+			Changes how the mesh structure is interpreted - as either cloth or a volumetric form.
 		</member>
 		<member name="total_mass" type="float" setter="set_total_mass" getter="get_total_mass" default="1.0">
 			The SoftBody3D's mass.
