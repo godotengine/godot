@@ -1301,7 +1301,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="mode" type="int" enum="PhysicsServer3D.SoftBodyForm" />
 			<description>
-				Sets the gometric form of the soft body.  Choose between either cloth or volumetric.
+				Sets the geometric form of the soft body.  Choose between either cloth or volumetric.
 				[b]Note:[/b] This value is currently unused by Godot's default physics implementation.
 			</description>
 		</method>
