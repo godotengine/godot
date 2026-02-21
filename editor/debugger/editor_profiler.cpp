@@ -342,6 +342,10 @@ void EditorProfiler::_update_plot() {
 	graph->queue_redraw();
 }
 
+void EditorProfiler::_filter_metrics_text_changed(const String &p_newtext) {
+	_update_frame();
+}
+
 void EditorProfiler::_update_frame() {
 	int cursor_metric = cursor_metric_edit->get_value() - _get_frame_metric(0).frame_number;
 
@@ -352,6 +356,8 @@ void EditorProfiler::_update_frame() {
 	const Metric &m = _get_frame_metric(cursor_metric);
 
 	int dtime = display_time->get_selected();
+
+	String filter = filter_metrics->get_text();
 
 	for (int i = 0; i < m.categories.size(); i++) {
 		TreeItem *category = variables->create_item(root);
@@ -369,6 +375,10 @@ void EditorProfiler::_update_frame() {
 
 		for (int j = 0; j < m.categories[i].items.size(); j++) {
 			const Metric::Category::Item &it = m.categories[i].items[j];
+
+			if (!filter.is_empty() && !it.name.contains(filter)) {
+				continue;
+			}
 
 			if (it.internal == it.total && !display_internal_profiles->is_pressed() && m.categories[i].name == "Script Functions") {
 				continue;
@@ -455,6 +465,8 @@ void EditorProfiler::_notification(int p_what) {
 			theme_cache.seek_line_color.a = 0.8;
 			theme_cache.seek_line_hover_color = theme_cache.seek_line_color;
 			theme_cache.seek_line_hover_color.a = 0.4;
+
+			filter_metrics->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 			if (total_metrics > 0) {
 				_update_plot();
@@ -753,10 +765,21 @@ EditorProfiler::EditorProfiler() {
 	add_child(h_split);
 	h_split->set_v_size_flags(SIZE_EXPAND_FILL);
 
+	v_split = memnew(VBoxContainer);
+	h_split->add_child(v_split);
+
+	filter_metrics = memnew(LineEdit);
+	filter_metrics->set_placeholder(TTRC("Filter Metrics"));
+	filter_metrics->set_accessibility_name(TTRC("Filter Metrics"));
+	filter_metrics->set_clear_button_enabled(true);
+	filter_metrics->connect(SceneStringName(text_changed), callable_mp(this, &EditorProfiler::_filter_metrics_text_changed));
+	v_split->add_child(filter_metrics);
+
 	variables = memnew(Tree);
 	variables->set_custom_minimum_size(Size2(320, 0) * EDSCALE);
 	variables->set_hide_folding(true);
-	h_split->add_child(variables);
+	v_split->add_child(variables);
+	variables->set_v_size_flags(SIZE_EXPAND_FILL);
 	variables->set_hide_root(true);
 	variables->set_columns(3);
 	variables->set_column_titles_visible(true);
