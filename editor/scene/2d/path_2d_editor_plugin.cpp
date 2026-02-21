@@ -49,7 +49,7 @@ void Path2DEditor::_notification(int p_what) {
 			curve_del->set_button_icon(get_editor_theme_icon(SNAME("CurveDelete")));
 			curve_close->set_button_icon(get_editor_theme_icon(SNAME("CurveClose")));
 			curve_clear_points->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
-
+			curve_auto_tangent->set_button_icon(get_editor_theme_icon(SNAME("CurveAutoTangent")));
 			create_curve_button->set_button_icon(get_editor_theme_icon(SNAME("Curve2D")));
 		} break;
 	}
@@ -659,7 +659,7 @@ void Path2DEditor::edit(Node *p_path2d) {
 void Path2DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_toolbar"), &Path2DEditor::_update_toolbar);
 	ClassDB::bind_method(D_METHOD("_clear_curve_points"), &Path2DEditor::_clear_curve_points);
-	ClassDB::bind_method(D_METHOD("_smooth_curve_points"), &Path2DEditor::_smooth_curve_points);
+	ClassDB::bind_method(D_METHOD("_auto_tangent_curve"), &Path2DEditor::_auto_tangent_curve);
 	ClassDB::bind_method(D_METHOD("_restore_curve_points"), &Path2DEditor::_restore_curve_points);
 }
 
@@ -807,17 +807,17 @@ void Path2DEditor::_confirm_clear_points() {
 	clear_points_dialog->reset_size();
 	clear_points_dialog->popup_centered();
 }
-void Path2DEditor::_smooth_points() {
+void Path2DEditor::_auto_tangent() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	PackedVector2Array points = node->get_curve()->get_points().duplicate();
 
-	undo_redo->create_action(TTR("Smooth Curve Points"));
-	undo_redo->add_do_method(this, "_smooth_curve_points");
+	undo_redo->create_action(TTR("Auto Tangent"));
+	undo_redo->add_do_method(this, "_auto_tangent_curve");
 	undo_redo->add_undo_method(this, "_restore_curve_points", node, points);
 	undo_redo->commit_action();
 }
 
-void Path2DEditor::_smooth_curve_points() {
+void Path2DEditor::_auto_tangent_curve() {
 	if (!node || node->get_curve().is_null() || node->get_curve()->get_point_count() <= 2) {
 		return;
 	}
@@ -930,12 +930,12 @@ Path2DEditor::Path2DEditor() {
 	curve_close->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_CLOSE));
 	toolbar->add_child(curve_close);
 
-	curve_smooth_points = memnew(Button);
-	curve_smooth_points->set_theme_type_variation(SceneStringName(FlatButton));
-	curve_smooth_points->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	curve_smooth_points->set_tooltip_text(TTR("Smooth Points"));
-	curve_smooth_points->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_smooth_points));
-	toolbar->add_child(curve_smooth_points);
+	curve_auto_tangent = memnew(Button);
+	curve_auto_tangent->set_theme_type_variation(SceneStringName(FlatButton));
+	curve_auto_tangent->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	curve_auto_tangent->set_tooltip_text(TTR("Smooth Points"));
+	curve_auto_tangent->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_auto_tangent));
+	toolbar->add_child(curve_auto_tangent);
 
 	curve_clear_points = memnew(Button);
 	curve_clear_points->set_theme_type_variation(SceneStringName(FlatButton));
