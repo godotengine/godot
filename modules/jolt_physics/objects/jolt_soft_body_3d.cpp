@@ -44,10 +44,6 @@
 
 #include "Jolt/Physics/SoftBody/SoftBodyMotionProperties.h"
 
-#include <map>
-#include <set>
-#include <vector>
-
 namespace {
 
 template <typename TJoltVertex>
@@ -261,7 +257,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 	//Merge any duplicate vertices in input mesh
 	PackedInt32Array mesh_indices_clean;
 	PackedVector3Array mesh_vertices_clean;
-	std::map<Vector3, int> mesh_vert_to_clean_idx_map;
+	HashMap<Vector3, int> mesh_vert_to_clean_idx_map;
 
 	for (int i = 0; i < mesh_indices.size(); ++i) {
 		const Vector3 &v = mesh_vertices[mesh_indices[i]] - body_position;
@@ -273,7 +269,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 			mesh_vertices_clean.push_back(v);
 			mesh_vert_to_clean_idx_map[v] = index;
 		} else {
-			index = it->second;
+			index = it->value;
 		}
 		mesh_indices_clean.push_back(index);
 	}
@@ -284,7 +280,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 	for (int i = 0; i < mesh_vertices.size(); ++i) {
 		auto it = mesh_vert_to_clean_idx_map.find(mesh_vertices[i]);
 		if (it != mesh_vert_to_clean_idx_map.end()) {
-			mesh_to_physics[i] = it->second;
+			mesh_to_physics[i] = it->value;
 		} else {
 			mesh_to_physics[i] = -1;
 		}
@@ -300,12 +296,12 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		Vector3i face_keys[4];
 		int neighbors[4];
 	};
-	std::vector<TetrahedraInfo> tet_info_list;
+	LocalVector<TetrahedraInfo> tet_info_list;
 	tet_info_list.reserve(tetrahedra_indices.size() / 4);
 
 	HashMap<Vector3i, int> face_key_to_tet_idx;
-	std::set<Vector3i> face_exterior;
-	std::set<Vector2i> edge_set;
+	HashSet<Vector3i> face_exterior;
+	HashSet<Vector2i> edge_set;
 
 	auto edge_hash_key = [&](int a, int b) {
 		if (b < a) {
@@ -466,7 +462,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 
 		for (int i = 0; i < 4; ++i) {
 			if (t_info.neighbors[i] == -1 || !tet_info_list[t_info.neighbors[i]].valid) {
-				face_exterior.emplace(t_info.face_keys[i]);
+				face_exterior.insert(t_info.face_keys[i]);
 			}
 		}
 	}
