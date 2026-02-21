@@ -554,12 +554,35 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		}
 	}
 
+	//Populate settings
 	JPH::SoftBodySharedSettings *settings = new JPH::SoftBodySharedSettings();
 	////physics_vertices.emplace_back(JPH::Float3((float)(vertex.x - body_position.GetX())
-	//for (Vector3 v : mesh_vertices_clean) {
-	//	settings->emplace_back(JPH::Float3(v.x, v.y, v.z));
-	//}
+	for (const Vector3& v : mesh_vertices_clean) {
+		settings->mVertices.emplace_back(JPH::Float3(v.x, v.y, v.z));
+	}
+	for (const Vector2i &e : edge_set) {
+		settings->mEdgeConstraints.emplace_back(JPH::SoftBodySharedSettings::Edge((JPH::uint32)e.x, (JPH::uint32)e.y));
+	}
+	for (const TetrahedraInfo &t_info : tet_info_list) {
+		JPH::SoftBodySharedSettings::Volume v;
+		v.mVertex[0] = (JPH::uint32)t_info.vert_indices[0];
+		v.mVertex[1] = (JPH::uint32)t_info.vert_indices[1];
+		v.mVertex[2] = (JPH::uint32)t_info.vert_indices[2];
+		v.mVertex[3] = (JPH::uint32)t_info.vert_indices[3];
+		settings->mVolumeConstraints.push_back(v);
+		//settings->mEdgeConstraints.emplace_back(JPH::SoftBodySharedSettings::Edge((JPH::uint32)e.x, (JPH::uint32)e.y));
+	}
+	for (const Vector3i &fv : face_exterior) {
+		JPH::SoftBodySharedSettings::Face f;
+		f.mVertex[0] = (JPH::uint32)fv.x;
+		f.mVertex[1] = (JPH::uint32)fv.y;
+		f.mVertex[2] = (JPH::uint32)fv.z;
+		settings->AddFace(f);
+	}
 
+	settings->CalculateEdgeLengths();
+	settings->CalculateVolumeConstraintVolumes();
+	settings->Optimize();
 
 	return _create_shared_settings_cloth();
 
