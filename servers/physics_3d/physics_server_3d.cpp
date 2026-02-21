@@ -857,6 +857,12 @@ void PhysicsServer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("soft_body_get_bounds", "body"), &PhysicsServer3D::soft_body_get_bounds);
 
+	ClassDB::bind_method(D_METHOD("soft_body_set_form", "body", "form"), &PhysicsServer3D::soft_body_set_form);
+	ClassDB::bind_method(D_METHOD("soft_body_get_form", "body"), &PhysicsServer3D::soft_body_get_form);
+
+	BIND_ENUM_CONSTANT(SOFT_BODY_FORM_CLOTH);
+	BIND_ENUM_CONSTANT(SOFT_BODY_FORM_VOLUME);
+
 	ClassDB::bind_method(D_METHOD("soft_body_set_collision_layer", "body", "layer"), &PhysicsServer3D::soft_body_set_collision_layer);
 	ClassDB::bind_method(D_METHOD("soft_body_get_collision_layer", "body"), &PhysicsServer3D::soft_body_get_collision_layer);
 

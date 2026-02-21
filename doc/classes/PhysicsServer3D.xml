@@ -1299,7 +1299,7 @@
 		<method name="soft_body_set_form">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
-			<param index="1" name="mode" type="int" enum="PhysicsServer3D.SoftBodyForm" />
+			<param index="1" name="form" type="int" enum="PhysicsServer3D.SoftBodyForm" />
 			<description>
 				Sets the geometric form of the soft body.  Choose between either cloth or volumetric.
 				[b]Note:[/b] This value is currently unused by Godot's default physics implementation.
@@ -1454,6 +1454,12 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="SOFT_BODY_FORM_CLOTH" value="0" enum="SoftBodyForm">
+			Soft body simulates cloth.
+		</constant>
+		<constant name="SOFT_BODY_FORM_VOLUME" value="1" enum="SoftBodyForm">
+			Soft body simulates a volumetric form.
+		</constant>
 		<constant name="JOINT_TYPE_PIN" value="0" enum="JointType">
 			The [Joint3D] is a [PinJoint3D].
 		</constant>
@@ -1839,12 +1845,6 @@
 		</constant>
 		<constant name="BODY_STATE_CAN_SLEEP" value="4" enum="BodyState">
 			Constant to set/get whether the body can sleep.
-		</constant>
-		<constant name="SOFT_BODY_FORM_CLOTH" value="0" enum="SoftBodyForm">
-			Soft body simulates cloth.
-		</constant>
-		<constant name="SOFT_BODY_FORM_VOLUME" value="1" enum="SoftBodyForm">
-			Soft body simulates a volumetric form.
 		</constant>
 		<constant name="AREA_BODY_ADDED" value="0" enum="AreaBodyStatus">
 			The value of the first parameter and area callback function receives, when an object enters one of its shapes.

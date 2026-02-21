@@ -1183,7 +1183,7 @@
 		<method name="_soft_body_set_form" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
-			<param index="1" name="mode" type="int" enum="PhysicsServer3D.SoftBodyForm" />
+			<param index="1" name="form" type="int" enum="PhysicsServer3D.SoftBodyForm" />
 			<description>
 			</description>
 		</method>
