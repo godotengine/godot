@@ -924,6 +924,9 @@ void EditorNode3DGizmoPlugin::create_material(const String &p_name, const Color 
 		material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 		material->set_render_priority(StandardMaterial3D::RENDER_PRIORITY_MIN + 1);
+		// Prevent z-fighting of collision shape triangles with overlapping geometry by pulling the fragments slightly toward the camera.
+		material->set_depth_bias_constant_factor(1.0f);
+		material->set_depth_bias_slope_factor(1.0f);
 		material->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
 		material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 
