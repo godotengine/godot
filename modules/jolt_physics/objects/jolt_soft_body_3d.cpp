@@ -327,8 +327,6 @@ void JoltSoftBody3D::_apply_environmental_forces(float p_step, JPH::Body &p_jolt
 }
 
 JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
-//	return _create_shared_settings_cloth();
-
 	RenderingServer *rendering = RenderingServer::get_singleton();
 
 	const Array mesh_data = rendering->mesh_surface_get_arrays(mesh, 0);
@@ -351,14 +349,27 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		const Vector3 &v = mesh_vertices[mesh_indices[i]] - body_position;
 
 		auto it = mesh_vert_to_clean_idx_map.find(v);
+		int index;
 		if (it == mesh_vert_to_clean_idx_map.end()) {
-			int index = mesh_vertices_clean.size();
+			index = mesh_vertices_clean.size();
 			mesh_vertices_clean.push_back(v);
-			mesh_indices_clean.push_back(index);
 			mesh_vert_to_clean_idx_map[v] = index;
 		} else {
-			int index = it->second;
-			mesh_indices_clean.push_back(index);
+			index = it->second;
+		}
+		mesh_indices_clean.push_back(index);
+	}
+
+	//Build mesh_to_physics
+	mesh_to_physics.resize(mesh_vertices.size());
+	for (int &index : mesh_to_physics) {
+		index = -1;
+	}
+
+	for (int i = 0; i < mesh_vertices.size(); ++i) {
+		auto it = mesh_vert_to_clean_idx_map.find(mesh_vertices[i]);
+		if (it != mesh_vert_to_clean_idx_map.end()) {
+			mesh_to_physics[i] = it->second;
 		}
 	}
 
@@ -400,7 +411,6 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		return Vector3i(a.x, a.z, a.y);
 	};
 
-	
 
 	//Track tetrahedra
 	for (int i = 0; i < tetrahedra_indices.size(); i += 4) {
@@ -563,10 +573,11 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		settings->mVolumeConstraints.push_back(v);
 	}
 	for (const Vector3i &fv : face_exterior) {
+		//Reverse face winding
 		JPH::SoftBodySharedSettings::Face f;
 		f.mVertex[0] = (JPH::uint32)fv.x;
-		f.mVertex[1] = (JPH::uint32)fv.y;
-		f.mVertex[2] = (JPH::uint32)fv.z;
+		f.mVertex[1] = (JPH::uint32)fv.z;
+		f.mVertex[2] = (JPH::uint32)fv.y;
 		settings->AddFace(f);
 	}
 
@@ -596,7 +607,6 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 	settings->Optimize();
 
 	return settings;
-	//return _create_shared_settings_cloth();
 }
 
 void JoltSoftBody3D::_update_mass() {
