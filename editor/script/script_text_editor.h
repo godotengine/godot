@@ -31,15 +31,10 @@
 #pragma once
 
 #include "editor/script/script_editor_base.h"
-#include "script_editor_plugin.h"
 
-#include "editor/gui/code_editor.h"
-#include "scene/gui/color_picker.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/tree.h"
-
+class ColorPicker;
 class RichTextLabel;
+class Tree;
 
 class ConnectionInfoDialog : public AcceptDialog {
 	GDCLASS(ConnectionInfoDialog, AcceptDialog);
@@ -58,7 +53,6 @@ public:
 class ScriptTextEditor : public CodeEditorBase {
 	GDCLASS(ScriptTextEditor, CodeEditorBase);
 
-	Variant pending_state;
 	bool script_is_valid = false;
 
 	RichTextLabel *errors_panel = nullptr;
@@ -75,15 +69,8 @@ class ScriptTextEditor : public CodeEditorBase {
 	int inline_color_line = -1;
 	int inline_color_start = -1;
 	int inline_color_end = -1;
-	PopupPanel *inline_color_popup = nullptr;
-	ColorPicker *inline_color_picker = nullptr;
-	OptionButton *inline_color_options = nullptr;
-	Ref<Texture2D> color_alpha_texture;
 
-	ScriptEditorQuickOpen *quick_open = nullptr;
-	ConnectionInfoDialog *connection_info_dialog = nullptr;
-
-	int connection_gutter = -1;
+	int connection_gutter = 1;
 	void _gutter_clicked(int p_line, int p_gutter);
 	void _update_gutter_indexes();
 
@@ -142,8 +129,6 @@ class ScriptTextEditor : public CodeEditorBase {
 		EditMenusSTE();
 	};
 
-	void _enable_code_editor();
-
 	struct DraggedExport {
 		ObjectID obj_id;
 		String variable_name;
@@ -181,7 +166,6 @@ protected:
 	void _inline_object_draw(const Dictionary &p_info, const Rect2 &p_rect);
 	void _inline_object_handle_click(const Dictionary &p_info, const Rect2 &p_rect);
 	String _picker_color_stringify(const Color &p_color, COLOR_MODE p_mode);
-	void _picker_color_changed(const Color &p_color);
 	void _update_color_constructor_options();
 	void _update_background_color();
 	void _update_color_text();
@@ -219,14 +203,12 @@ public:
 
 	virtual void apply_code() override;
 	virtual void set_edited_resource(const Ref<Resource> &p_res) override;
-	virtual void enable_editor() override;
 	virtual Vector<String> get_functions() override;
 
 	virtual Control *get_edit_menu() override;
 
 	virtual Ref<Texture2D> get_theme_icon() override;
 
-	virtual Variant get_edit_state() override;
 	virtual void set_edit_state(const Variant &p_state) override;
 
 	virtual PackedInt32Array get_breakpoints() override;
@@ -241,6 +223,7 @@ public:
 	Variant get_previous_state();
 	void store_previous_state();
 
+	void picker_color_changed();
+
 	ScriptTextEditor();
-	~ScriptTextEditor();
 };

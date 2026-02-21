@@ -271,6 +271,12 @@ TextEditorBase::EditMenus::EditMenus() {
 }
 
 void TextEditorBase::_make_context_menu(bool p_selection, bool p_foldable, const Vector2 &p_position, bool p_show) {
+	if (context_menu == nullptr) {
+		context_menu = memnew(PopupMenu);
+		context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditorBase::_edit_option));
+		add_child(context_menu);
+	}
+
 	context_menu->clear();
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
 		context_menu->add_item(TTRC("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
@@ -469,7 +475,7 @@ bool TextEditorBase::_edit_option(int p_op) {
 			emit_signal(SNAME("replace_in_files_requested"), selected_text);
 		} break;
 		case SEARCH_GOTO_LINE: {
-			goto_line_popup->popup_find_line(code_editor);
+			ScriptEditor::get_singleton()->get_goto_line_popup()->popup_find_line(code_editor);
 		} break;
 		case BOOKMARK_TOGGLE: {
 			code_editor->toggle_bookmark();
@@ -591,9 +597,7 @@ void TextEditorBase::reload_text() {
 	te->tag_saved_version();
 
 	code_editor->update_line_and_column();
-	if (editor_enabled) {
-		_validate_script();
-	}
+	_validate_script();
 }
 
 void TextEditorBase::enable_editor() {
@@ -641,14 +645,7 @@ TextEditorBase::TextEditorBase() {
 	code_editor->connect("load_theme_settings", callable_mp(this, &TextEditorBase::_load_theme_settings));
 	code_editor->connect("show_goto_popup", callable_mp(this, &TextEditorBase::_edit_option).bind(SEARCH_GOTO_LINE));
 
-	context_menu = memnew(PopupMenu);
-	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditorBase::_edit_option));
-	add_child(context_menu);
-
 	edit_hb = memnew(HBoxContainer);
-
-	goto_line_popup = memnew(GotoLinePopup);
-	add_child(goto_line_popup);
 
 	Ref<EditorPlainTextSyntaxHighlighter> plain_highlighter;
 	plain_highlighter.instantiate();
@@ -694,9 +691,9 @@ CodeEditorBase::CodeEditorBase() {
 	warnings_panel->connect("meta_clicked", callable_mp(this, &CodeEditorBase::_warning_clicked));
 
 	editor_box = memnew(VSplitContainer);
-	add_child(editor_box);
 	editor_box->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
 	editor_box->add_child(code_editor);
 	editor_box->add_child(warnings_panel);
+	add_child(editor_box);
 }

@@ -71,6 +71,8 @@
 #include "editor/shader/text_shader_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/color_picker.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
@@ -78,13 +80,10 @@
 #include "scene/main/window.h"
 #include "servers/display/display_server.h"
 
-void ScriptEditorQuickOpen::popup_dialog(const Vector<String> &p_functions, bool p_dontclear) {
+void ScriptEditorQuickOpen::popup_dialog(const Vector<String> &p_functions, CodeTextEditor *p_text_editor) {
+	text_editor = p_text_editor;
 	popup_centered_ratio(0.6);
-	if (p_dontclear) {
-		search_box->select_all();
-	} else {
-		search_box->clear();
-	}
+	search_box->clear();
 	search_box->grab_focus();
 	functions = p_functions;
 	_update_search();
@@ -119,7 +118,7 @@ void ScriptEditorQuickOpen::_confirmed() {
 	}
 	int line = ti->get_text(0).get_slicec(':', 1).to_int();
 
-	emit_signal(SNAME("goto_line"), line - 1);
+	text_editor->goto_line_centered(line - 1);
 	hide();
 }
 
@@ -133,10 +132,6 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 			disconnect(SceneStringName(confirmed), callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
 		} break;
 	}
-}
-
-void ScriptEditorQuickOpen::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("goto_line", PropertyInfo(Variant::INT, "line")));
 }
 
 ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
@@ -3529,6 +3524,13 @@ bool ScriptEditor::script_goto_method(Ref<Script> p_script, const String &p_meth
 	return edit(p_script, line, 0);
 }
 
+Ref<Texture2D> ScriptEditor::get_color_alpha_texture() {
+	if (color_alpha_texture.is_null()) {
+		color_alpha_texture = inline_color_picker->get_theme_icon("sample_bg", "ColorPicker");
+	}
+	return color_alpha_texture;
+}
+
 void ScriptEditor::set_live_auto_reload_running_scripts(bool p_enabled) {
 	auto_reload_running_scripts = p_enabled;
 }
@@ -3727,6 +3729,13 @@ void ScriptEditor::_update_code_editor_zoom_factor(CodeTextEditor *p_code_text_e
 void ScriptEditor::_window_changed(bool p_visible) {
 	make_floating->set_visible(!p_visible);
 	is_floating = p_visible;
+}
+
+void ScriptEditor::_picker_color_changed() {
+	ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(_get_current_editor());
+	if (ste) {
+		ste->picker_color_changed();
+	}
 }
 
 void ScriptEditor::_filter_scripts_text_changed(const String &p_newtext) {
@@ -4121,6 +4130,33 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	find_in_files->close();
 	find_in_files->connect("result_selected", callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
 	find_in_files->connect("files_modified", callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));
+
+	inline_color_popup = memnew(PopupPanel);
+	add_child(inline_color_popup);
+
+	inline_color_picker = memnew(ColorPicker);
+	inline_color_picker->set_mouse_filter(MOUSE_FILTER_STOP);
+	inline_color_picker->set_deferred_mode(true);
+	inline_color_picker->set_hex_visible(false);
+	inline_color_picker->connect("color_changed", callable_mp(this, &ScriptEditor::_picker_color_changed).unbind(1));
+	inline_color_popup->add_child(inline_color_picker);
+
+	inline_color_options = memnew(OptionButton);
+	inline_color_options->set_h_size_flags(SIZE_FILL);
+	inline_color_options->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+	inline_color_options->set_fit_to_longest_item(false);
+	inline_color_options->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditor::_picker_color_changed).unbind(1));
+	inline_color_picker->get_slider_container()->add_sibling(inline_color_options);
+
+	goto_line_popup = memnew(GotoLinePopup);
+	add_child(goto_line_popup);
+
+	quick_open = memnew(ScriptEditorQuickOpen);
+	quick_open->set_title(TTRC("Go to Function"));
+	add_child(quick_open);
+
+	connection_info_dialog = memnew(ConnectionInfoDialog);
+	add_child(connection_info_dialog);
 
 	history_pos = -1;
 

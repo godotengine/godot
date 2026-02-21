@@ -163,8 +163,6 @@ protected:
 	CodeTextEditor *code_editor = nullptr;
 	HBoxContainer *edit_hb = nullptr;
 
-	GotoLinePopup *goto_line_popup = nullptr;
-
 	LocalVector<Ref<EditorSyntaxHighlighter>> highlighters;
 
 	PopupMenu *context_menu = nullptr;
