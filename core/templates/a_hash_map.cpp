@@ -37,3 +37,4 @@ template class AHashMap<String, int>;
 template class AHashMap<StringName, StringName>;
 template class AHashMap<StringName, Variant>;
 template class AHashMap<StringName, int>;
+template class AHashMap<int, bool>;

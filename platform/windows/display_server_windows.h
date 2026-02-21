@@ -248,6 +248,7 @@ class DisplayServerWindows : public DisplayServer {
 
 	struct KeyEvent {
 		WindowID window_id;
+		int keyboard_handle;
 		bool alt, shift, control, meta, altgr;
 		UINT uMsg;
 		WPARAM wParam;
