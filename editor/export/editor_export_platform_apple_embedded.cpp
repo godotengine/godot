@@ -1621,6 +1621,7 @@ Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Re
 }
 
 Error EditorExportPlatformAppleEmbedded::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+	check_disk_space(p_path);
 	return _export_project_helper(p_preset, p_debug, p_path, p_flags, false);
 }
 
