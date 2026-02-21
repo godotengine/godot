@@ -77,6 +77,7 @@ partial class AllReadOnly
         return false;
     }
 
+#pragma warning disable CS0109 // The member 'member' does not hide an inherited member. The new keyword is not required
     /// <summary>
     /// Get the property information for all the properties declared in this class.
     /// This method is used by Godot to register the available properties in the editor.
@@ -92,5 +93,5 @@ partial class AllReadOnly
         properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@InitOnlyAutoProperty, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
         return properties;
     }
-#pragma warning restore CS0109
+#pragma warning restore CS0109 // The member 'member' does not hide an inherited member. The new keyword is not required
 }
