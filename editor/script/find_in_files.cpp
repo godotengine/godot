@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
-#include "core/math/vector2.h"
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -358,6 +357,7 @@ FindInFilesDialog::FindInFilesDialog() {
 	_search_text_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	_search_text_line_edit->set_accessibility_name(TTRC("Find"));
 	_search_text_line_edit->set_placeholder(TTRC("Find"));
+	_search_text_line_edit->set_keep_editing_on_text_submit(true);
 	_search_text_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesDialog::_on_search_modified).unbind(1));
 	_search_text_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_submitted).unbind(1));
 	vbc->add_child(_search_text_line_edit);
@@ -394,6 +394,7 @@ FindInFilesDialog::FindInFilesDialog() {
 		_folder_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_submitted).unbind(1));
 		_folder_line_edit->set_accessibility_name(TTRC("Folder"));
 		_folder_line_edit->set_placeholder(TTRC("Folder"));
+		_folder_line_edit->set_keep_editing_on_text_submit(true);
 		hbc->add_child(_folder_line_edit);
 
 		Button *folder_button = memnew(Button);
@@ -420,6 +421,7 @@ FindInFilesDialog::FindInFilesDialog() {
 	_includes_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	_includes_line_edit->set_placeholder(TTRC("example: scripts,scenes/*/test.gd"));
 	_includes_line_edit->set_accessibility_name(TTRC("Includes"));
+	_includes_line_edit->set_keep_editing_on_text_submit(true);
 	_includes_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesDialog::_on_search_modified).unbind(1));
 	_includes_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_submitted).unbind(1));
 	vbc->add_child(_includes_line_edit);
@@ -434,6 +436,7 @@ FindInFilesDialog::FindInFilesDialog() {
 	_excludes_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	_excludes_line_edit->set_placeholder(TTRC("example: res://addons,scenes/test/*.gd"));
 	_excludes_line_edit->set_accessibility_name(TTRC("Excludes"));
+	_excludes_line_edit->set_keep_editing_on_text_submit(true);
 	_excludes_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesDialog::_on_search_modified).unbind(1));
 	_excludes_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_submitted).unbind(1));
 	vbc->add_child(_excludes_line_edit);
@@ -528,10 +531,7 @@ void FindInFilesDialog::_notification(int p_what) {
 				for (int i = 0; i < exts.size(); ++i) {
 					CheckBox *cb = memnew(CheckBox);
 					cb->set_text(exts[i]);
-					if (!_filters_preferences.has(exts[i])) {
-						_filters_preferences[exts[i]] = true;
-					}
-					cb->set_pressed(_filters_preferences[exts[i]]);
+					cb->set_pressed(true);
 					cb->connect(SceneStringName(toggled), callable_mp(this, &FindInFilesDialog::_on_search_modified).unbind(1));
 					cb->set_tooltip_text(TTRC("Include the files with this extension. Add or remove them in ProjectSettings (`search_in_file_extensions`)."));
 					_filters_container->add_child(cb);
@@ -546,10 +546,7 @@ void FindInFilesDialog::_on_folder_button_pressed() {
 }
 
 void FindInFilesDialog::_on_search_submitted() {
-	for (int i = 0; i < _filters_container->get_child_count(); ++i) {
-		CheckBox *cb = static_cast<CheckBox *>(_filters_container->get_child(i));
-		_filters_preferences[cb->get_text()] = cb->is_pressed();
-	}
+	debounce_timer->stop();
 	_emit_find_requested();
 }
 

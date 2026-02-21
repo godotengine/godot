@@ -140,8 +140,6 @@ private:
 	HBoxContainer *_filters_container = nullptr;
 	LineEdit *_includes_line_edit = nullptr;
 	LineEdit *_excludes_line_edit = nullptr;
-
-	HashMap<String, bool> _filters_preferences;
 };
 
 class Button;
