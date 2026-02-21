@@ -876,12 +876,12 @@ void Path3DEditorPlugin::_smooth_curve_points() {
 	int point_count = curve->get_point_count();
 	const float smooth_ratio = 0.5;
 	for (int i = 1; i < point_count - 1; i++) {
-		Vector3 next_p = curve->get_point_position(i - 1);
-		Vector3 prev_p = curve->get_point_position(i + 1);
+		Vector3 next_p = curve->get_point_position(i + 1);
+		Vector3 prev_p = curve->get_point_position(i - 1);
 		Vector3 curr_p = curve->get_point_position(i);
 		Vector3 tangent = (next_p - prev_p).normalized();
-		curve->set_point_in(i, tangent * curr_p.distance_to(next_p) * smooth_ratio);
-		curve->set_point_out(i, -tangent * curr_p.distance_to(prev_p) * smooth_ratio);
+		curve->set_point_in(i, -tangent * curr_p.distance_to(prev_p) * smooth_ratio);
+		curve->set_point_out(i, tangent * curr_p.distance_to(next_p) * smooth_ratio);
 	}
 	if (curve->is_closed()) {
 		Vector3 first_p = curve->get_point_position(0);
