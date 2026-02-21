@@ -144,6 +144,9 @@
 			The body's drag coefficient. Higher values increase this body's air resistance.
 			[b]Note:[/b] This value is currently unused by Godot's default physics implementation.
 		</member>
+		<member name="form" type="int" setter="set_form" getter="get_form" enum="PhysicsServer3D.SoftBodyForm" default="0">
+			Changes how the mesh structure is interpreted - either as cloth or a volumetric form.
+		</member>
 		<member name="linear_stiffness" type="float" setter="set_linear_stiffness" getter="get_linear_stiffness" default="0.5">
 			Higher values will result in a stiffer body, while lower values will increase the body's ability to bend. The value can be between [code]0.0[/code] and [code]1.0[/code] (inclusive).
 		</member>
@@ -162,9 +165,6 @@
 		</member>
 		<member name="simulation_precision" type="int" setter="set_simulation_precision" getter="get_simulation_precision" default="5">
 			Increasing this value will improve the resulting simulation, but can affect performance. Use with care.
-		</member>
-		<member name="soft_body_form" type="int" setter="set_soft_body_form" getter="get_soft_body_form" enum="PhysicsServer3D.SoftBodyForm" default="0">
-			Changes how the mesh structure is interpreted - as either cloth or a volumetric form.
 		</member>
 		<member name="total_mass" type="float" setter="set_total_mass" getter="get_total_mass" default="1.0">
 			The SoftBody3D's mass.

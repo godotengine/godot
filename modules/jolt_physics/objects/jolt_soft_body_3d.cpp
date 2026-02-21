@@ -127,7 +127,7 @@ void JoltSoftBody3D::_add_to_space() {
 }
 
 JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
-	switch (soft_body_form) {
+	switch (form) {
 		default:
 		case PhysicsServer3D::SOFT_BODY_FORM_CLOTH:
 			return _create_shared_settings_cloth();
@@ -988,12 +988,12 @@ void JoltSoftBody3D::set_state(PhysicsServer3D::BodyState p_state, const Variant
 	}
 }
 
-PhysicsServer3D::SoftBodyForm JoltSoftBody3D::get_soft_body_form() const {
-	return soft_body_form;
+PhysicsServer3D::SoftBodyForm JoltSoftBody3D::get_form() const {
+	return form;
 }
 
-void JoltSoftBody3D::set_soft_body_form(PhysicsServer3D::SoftBodyForm p_soft_body_form) {
-	soft_body_form = p_soft_body_form;
+void JoltSoftBody3D::set_form(PhysicsServer3D::SoftBodyForm p_form) {
+	form = p_form;
 	_try_rebuild();
 }
 

@@ -190,8 +190,8 @@ public:
 	void set_ray_pickable(bool p_ray_pickable);
 	bool is_ray_pickable() const;
 
-	void set_soft_body_form(PhysicsServer3D::SoftBodyForm p_soft_body_form);
-	PhysicsServer3D::SoftBodyForm get_soft_body_form() const;
+	void set_form(PhysicsServer3D::SoftBodyForm p_form);
+	PhysicsServer3D::SoftBodyForm get_form() const;
 
 	void apply_impulse(int p_point_index, const Vector3 &p_impulse);
 	void apply_force(int p_point_index, const Vector3 &p_force);
