@@ -529,7 +529,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 			int32_t face_idx;
 
 			for (int i = 0; i < 6; ++i) {
-				const Vector3 ray_dir = cast_dirs[i];
+				const Vector3 &ray_dir = cast_dirs[i];
 				bool hit = surface_mesh.intersect_ray(center, ray_dir, point, normal, &surf_idx, &face_idx);
 				if (!hit || surface_norms[face_idx].dot(ray_dir) > 0) {
 					//Missed mesh or hit exterior
