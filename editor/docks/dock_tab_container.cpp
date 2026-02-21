@@ -159,6 +159,8 @@ void DockTabContainer::_tab_rmb_clicked(int p_tab_idx) {
 	}
 
 	// Right click context menu.
+	int id = DisplayServer::get_singleton()->get_screen_from_rect(Rect2(DisplayServer::get_singleton()->mouse_get_position(), Vector2(1, 1)));
+	dock_context_popup->set_forced_parent_screen(id);
 	dock_context_popup->set_dock(hovered_dock);
 	dock_context_popup->set_position(get_tab_bar()->get_screen_position() + get_tab_bar()->get_local_mouse_position());
 	dock_context_popup->popup();

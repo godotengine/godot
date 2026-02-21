@@ -2387,6 +2387,8 @@ Rect2i Window::get_usable_parent_rect() const {
 	Rect2i parent_rect;
 	if (is_embedded()) {
 		parent_rect = get_embedder()->get_visible_rect();
+	} else if (forced_parent_screen > -1) {
+		parent_rect = DisplayServer::get_singleton()->screen_get_usable_rect(forced_parent_screen);
 	} else {
 		const Window *w = is_visible() ? this : get_parent_visible_window();
 		//find a parent that can contain us

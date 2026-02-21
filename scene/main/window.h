@@ -178,6 +178,7 @@ private:
 	Size2i max_size_used;
 
 	Rect2i nonclient_area;
+	int forced_parent_screen = -1;
 
 	Size2i _clamp_limit_size(const Size2i &p_limit_size);
 	Size2i _clamp_window_size(const Size2i &p_size);
@@ -406,6 +407,8 @@ public:
 
 	void set_nonclient_area(const Rect2i &p_rect);
 	Rect2i get_nonclient_area() const;
+
+	void set_forced_parent_screen(int p_screen) { forced_parent_screen = p_screen; }
 
 	void set_mouse_passthrough_polygon(const Vector<Vector2> &p_region);
 	Vector<Vector2> get_mouse_passthrough_polygon() const;
