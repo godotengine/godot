@@ -573,8 +573,10 @@ void EditorSettingsDialog::_update_shortcuts() {
 		}
 	}
 
+	String prev_selected_section;
 	String prev_selected_shortcut;
 	if (shortcuts->get_selected()) {
+		prev_selected_section = shortcuts->get_selected()->get_parent()->get_text(0);
 		prev_selected_shortcut = shortcuts->get_selected()->get_text(0);
 	}
 
@@ -680,7 +682,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 		bool collapse = !collapsed.has(E) || (collapsed.has(E) && collapsed[E]);
 
 		TreeItem *shortcut_item = _create_shortcut_treeitem(section, E, sc->get_name(), shortcuts_array, !same_as_defaults, false, collapse);
-		if (!prev_selected_shortcut.is_empty() && sc->get_name() == prev_selected_shortcut) {
+		if (!prev_selected_shortcut.is_empty() && sc->get_name() == prev_selected_shortcut && section->get_text(0) == prev_selected_section) {
 			shortcut_item->select(0);
 		}
 	}
