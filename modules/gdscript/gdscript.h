@@ -307,6 +307,9 @@ public:
 	String get_script_path() const;
 	Error load_source_code(const String &p_path);
 
+	bool has_owner() const { return _owner != nullptr && _owner->is_valid(); }
+	GDScript *get_owner() const { return _owner; }
+
 	void set_binary_tokens_source(const Vector<uint8_t> &p_binary_tokens);
 	const Vector<uint8_t> &get_binary_tokens_source() const;
 	Vector<uint8_t> get_as_binary_tokens() const;

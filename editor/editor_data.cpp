@@ -1164,33 +1164,35 @@ Ref<Texture2D> EditorData::get_script_icon(const String &p_script_path) {
 		}
 	}
 
-	Ref<Script> base_scr = ResourceLoader::load(p_script_path, "Script");
-	while (base_scr.is_valid()) {
-		// Check for scripted classes.
-		String icon_path;
-		StringName base_class_name = script_class_get_name(base_scr->get_path());
-		if (base_scr->is_built_in() || base_class_name == StringName()) {
-			icon_path = base_scr->get_class_icon_path();
-		} else {
-			icon_path = script_class_get_icon_path(base_class_name);
-		}
+	if (!p_script_path.is_empty()) {
+		Ref<Script> base_scr = ResourceLoader::load(p_script_path, "Script");
+		while (base_scr.is_valid()) {
+			// Check for scripted classes.
+			String icon_path;
+			StringName base_class_name = script_class_get_name(base_scr->get_path());
+			if (base_scr->is_built_in() || base_class_name == StringName()) {
+				icon_path = base_scr->get_class_icon_path();
+			} else {
+				icon_path = script_class_get_icon_path(base_class_name);
+			}
 
-		Ref<Texture2D> icon = _load_script_icon(icon_path);
-		if (icon.is_valid()) {
-			_script_icon_cache[p_script_path] = icon;
-			return icon;
-		}
+			Ref<Texture2D> icon = _load_script_icon(icon_path);
+			if (icon.is_valid()) {
+				_script_icon_cache[p_script_path] = icon;
+				return icon;
+			}
 
-		// Check for legacy custom classes defined by plugins.
-		// TODO: Should probably be deprecated in 4.x
-		const EditorData::CustomType *ctype = get_custom_type_by_path(base_scr->get_path());
-		if (ctype && ctype->icon.is_valid()) {
-			_script_icon_cache[p_script_path] = ctype->icon;
-			return ctype->icon;
-		}
+			// Check for legacy custom classes defined by plugins.
+			// TODO: Should probably be deprecated in 4.x
+			const EditorData::CustomType *ctype = get_custom_type_by_path(base_scr->get_path());
+			if (ctype && ctype->icon.is_valid()) {
+				_script_icon_cache[p_script_path] = ctype->icon;
+				return ctype->icon;
+			}
 
-		// Move to the base class.
-		base_scr = base_scr->get_base_script();
+			// Move to the base class.
+			base_scr = base_scr->get_base_script();
+		}
 	}
 
 	// Check if the base type is an extension-defined type.

@@ -78,6 +78,12 @@
 #include "scene/main/window.h"
 #include "servers/display/display_server.h"
 
+#include "modules/modules_enabled.gen.h" // for gdscript
+
+#ifdef MODULE_GDSCRIPT_ENABLED
+#include "modules/gdscript/gdscript.h"
+#endif
+
 void ScriptEditorQuickOpen::popup_dialog(const Vector<String> &p_functions, bool p_dontclear) {
 	popup_centered_ratio(0.6);
 	if (p_dontclear) {
@@ -2161,6 +2167,16 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	if (p_resource.is_null()) {
 		return false;
 	}
+
+	// Ignore inner classes for the purpose of opening in the editor, as they are not separate resources.
+#ifdef MODULE_GDSCRIPT_ENABLED
+	Ref<GDScript> gdscript = p_resource;
+	if (gdscript.is_valid() && gdscript->is_built_in() && gdscript->has_owner()) {
+		Ref<GDScript> owner_script = gdscript->get_owner();
+		int inner_line = owner_script->get_member_line(gdscript->get_local_name());
+		return edit(owner_script, inner_line - 1, p_col, p_grab_focus);
+	}
+#endif
 
 	Ref<Script> scr = p_resource;
 
