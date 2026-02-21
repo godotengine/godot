@@ -294,6 +294,7 @@ namespace Godot.SourceGenerators
 
                 const string DictionaryType = "global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
 
+                source.Append("#pragma warning disable CS0109 // The member 'member' does not hide an inherited member. The new keyword is not required\n");
                 source.Append("    /// <summary>\n")
                     .Append("    /// Get the property information for all the properties declared in this class.\n")
                     .Append("    /// This method is used by Godot to register the available properties in the editor.\n")
@@ -302,7 +303,7 @@ namespace Godot.SourceGenerators
 
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
 
-                source.Append("    internal static ")
+                source.Append("    internal new static ")
                     .Append(DictionaryType)
                     .Append(" GetGodotPropertyList()\n    {\n");
 
@@ -345,7 +346,7 @@ namespace Godot.SourceGenerators
                 source.Append("        return properties;\n");
                 source.Append("    }\n");
 
-                source.Append("#pragma warning restore CS0109\n");
+                source.Append("#pragma warning restore CS0109 // The member 'member' does not hide an inherited member. The new keyword is not required\n");
             }
 
             source.Append("}\n"); // partial class
