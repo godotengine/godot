@@ -5390,7 +5390,11 @@ void EditorNode::_quick_opened(const String &p_file_path) {
 	load_scene_or_resource(p_file_path);
 }
 
-void EditorNode::_project_run_started() {
+// Applies editor configuration and updates editor docks that must be
+// processed before starting a run. This is intentionally separated from
+// the play_pressed signal to allow layout and state updates to complete prior to
+// executing the run logic.
+void EditorNode::open_dock_editor_config() {
 	if (bool(EDITOR_GET("run/output/always_clear_output_on_play"))) {
 		log->clear();
 	}
@@ -8946,7 +8950,6 @@ EditorNode::EditorNode() {
 	project_run_bar = memnew(EditorRunBar);
 	project_run_bar->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(project_run_bar);
-	project_run_bar->connect("play_pressed", callable_mp(this, &EditorNode::_project_run_started));
 	project_run_bar->connect("stop_pressed", callable_mp(this, &EditorNode::_project_run_stopped));
 
 	right_menu_hb = memnew(HBoxContainer);

@@ -109,6 +109,10 @@ class EditorRunBar : public MarginContainer {
 private:
 	static Vector<String> _get_xr_mode_play_args(RunXRModeMenuItem p_menu_item);
 
+	void _play_main_scene_deferred(bool p_from_native, const Vector<String> &p_play_args);
+	void _play_current_scene_deferred(bool p_reload, const Vector<String> &p_play_args);
+	void _play_custom_scene_deferred(const String &p_custom, const Vector<String> &p_play_args);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

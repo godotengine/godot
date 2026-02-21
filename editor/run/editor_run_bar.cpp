@@ -401,11 +401,19 @@ void EditorRunBar::play_main_scene(bool p_from_native, const Vector<String> &p_p
 		return;
 	}
 
+	// Ensure editor configuration and layout are fully applied before running.
+	// This avoids starting the run with a partially initialized editor state.
+	EditorNode::get_singleton()->open_dock_editor_config();
+
+	// Defer execution to the next frame to ensure editor layout and configuration.
+	get_tree()->connect(SNAME("process_frame"), callable_mp(this, &EditorRunBar::_play_main_scene_deferred).bind(p_from_native, p_play_args), CONNECT_ONE_SHOT);
+}
+
+void EditorRunBar::_play_main_scene_deferred(bool p_from_native, const Vector<String> &p_play_args) {
 	if (p_from_native) {
 		run_native->resume_run_native();
 	} else {
 		stop_playing();
-
 		current_mode = RunMode::RUN_MAIN;
 		_run_scene("", p_play_args);
 	}
@@ -417,12 +425,21 @@ void EditorRunBar::play_current_scene(bool p_reload, const Vector<String> &p_pla
 		return;
 	}
 
-	String last_current_scene = run_current_filename; // This is necessary to have a copy of the string.
+	// Ensure editor configuration and layout are fully applied before running.
+	// This avoids starting the run with a partially initialized editor state.
+	EditorNode::get_singleton()->open_dock_editor_config();
 
+	// Defer execution to the next frame to ensure editor layout and configuration.
+	get_tree()->connect(SNAME("process_frame"), callable_mp(this, &EditorRunBar::_play_current_scene_deferred).bind(p_reload, p_play_args), CONNECT_ONE_SHOT);
+}
+
+void EditorRunBar::_play_current_scene_deferred(bool p_reload, const Vector<String> &p_play_args) {
+	String last_current_scene = run_current_filename; // This is necessary to have a copy of the string.
 	EditorNode::get_singleton()->save_default_environment();
 	stop_playing();
 
 	current_mode = RunMode::RUN_CURRENT;
+
 	if (p_reload) {
 		_run_scene(last_current_scene, p_play_args);
 	} else {
@@ -436,8 +453,16 @@ void EditorRunBar::play_custom_scene(const String &p_custom, const Vector<String
 		return;
 	}
 
-	stop_playing();
+	// Ensure editor configuration and layout are fully applied before running.
+	// This avoids starting the run with a partially initialized editor state.
+	EditorNode::get_singleton()->open_dock_editor_config();
 
+	// Defer execution to the next frame to ensure editor layout and configuration.
+	get_tree()->connect(SNAME("process_frame"), callable_mp(this, &EditorRunBar::_play_custom_scene_deferred).bind(p_custom, p_play_args), CONNECT_ONE_SHOT);
+}
+
+void EditorRunBar::_play_custom_scene_deferred(const String &p_custom, const Vector<String> &p_play_args) {
+	stop_playing();
 	current_mode = RunMode::RUN_CUSTOM;
 	_run_scene(p_custom, p_play_args);
 }

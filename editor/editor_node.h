@@ -603,7 +603,6 @@ private:
 	void _quick_opened(const String &p_file_path);
 	void _open_command_palette();
 
-	void _project_run_started();
 	void _project_run_stopped();
 
 	void _update_prev_closed_scenes(const String &p_scene_path, bool p_add_scene);
@@ -1045,6 +1044,8 @@ public:
 	bool ensure_main_scene(bool p_from_native);
 	bool validate_custom_directory();
 	void run_editor_script(const Ref<Script> &p_script);
+
+	void open_dock_editor_config();
 };
 
 struct EditorProgressBG {
