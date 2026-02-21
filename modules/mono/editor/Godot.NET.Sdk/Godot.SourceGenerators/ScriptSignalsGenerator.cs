@@ -408,7 +408,7 @@ namespace Godot.SourceGenerators
                 .Append("            {\n")
                 .Append($"                Unsafe.As<GodotObject, {type}>(ref scriptInstance).backing_{signalName}?.Invoke(\n")
                 .Append("                    ");
-            
+
             for (var i = 0; i < method.ParamTypes.Length; i++)
             {
                 if (i != 0)
