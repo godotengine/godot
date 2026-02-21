@@ -223,7 +223,7 @@ namespace Godot.SourceGenerators
 
                 bool allPropertiesAreWriteOnly = godotClassFields.Length == 0 && godotClassProperties.All(pi => pi.PropertySymbol.IsWriteOnly);
 
-                // handle readable properies and fields
+                // handle readable properties and fields
                 if (!allPropertiesAreWriteOnly)
                 {
                     foreach (var property in godotClassProperties)
@@ -386,8 +386,9 @@ namespace Godot.SourceGenerators
                             [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
                             static (GodotObject scriptInstance, scoped in godot_variant value) =>
                             {
-                                Unsafe.As<GodotObject, {{type}}>(ref scriptInstance).@{{propertyMemberName}} = 
+                                Unsafe.As<GodotObject, {{type}}>(ref scriptInstance).@{{propertyMemberName}} =
                 """)
+                .Append(" ")
                 .AppendNativeVariantToManagedExpr("value", propertyTypeSymbol, propertyMarshalType)
                 .Append(";\n")
                 .Append("""
