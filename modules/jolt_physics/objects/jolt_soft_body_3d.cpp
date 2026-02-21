@@ -30,6 +30,8 @@
 
 #include "jolt_soft_body_3d.h"
 
+#include "../../core/math/geometry_3d.h"
+#include "../../core/math/triangle_mesh.h"
 #include "../jolt_project_settings.h"
 #include "../misc/jolt_type_conversions.h"
 #include "../spaces/jolt_broad_phase_layer.h"
@@ -37,16 +39,13 @@
 #include "jolt_area_3d.h"
 #include "jolt_body_3d.h"
 #include "jolt_group_filter.h"
-#include "../../core/math/geometry_3d.h"
-#include "../../core/math/triangle_mesh.h"
 
 #include "servers/rendering/rendering_server.h"
 
 #include "Jolt/Physics/SoftBody/SoftBodyMotionProperties.h"
 
-#include <array>
-#include <set>
 #include <map>
+#include <set>
 #include <vector>
 
 namespace {
@@ -411,7 +410,6 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		return Vector3i(a.x, a.z, a.y);
 	};
 
-
 	//Track tetrahedra
 	for (int i = 0; i < tetrahedra_indices.size(); i += 4) {
 		int tet_idx = i / 4;
@@ -558,7 +556,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 
 	//Populate settings
 	JPH::SoftBodySharedSettings *settings = new JPH::SoftBodySharedSettings();
-	for (const Vector3& v : mesh_vertices_clean) {
+	for (const Vector3 &v : mesh_vertices_clean) {
 		settings->mVertices.emplace_back(JPH::Float3(v.x, v.y, v.z));
 	}
 	for (const Vector2i &e : edge_set) {
@@ -583,7 +581,6 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 
 	settings->CalculateEdgeLengths();
 	settings->CalculateVolumeConstraintVolumes();
-
 
 	// Pin whatever pinned vertices we have currently. This is used during the `Optimize` call below to order the
 	// constraints. Note that it's fine if the pinned vertices change later, but that will reduce the effectiveness
