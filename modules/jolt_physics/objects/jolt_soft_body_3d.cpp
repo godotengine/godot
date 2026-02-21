@@ -361,14 +361,13 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 
 	//Build mesh_to_physics
 	mesh_to_physics.resize(mesh_vertices.size());
-	for (int &index : mesh_to_physics) {
-		index = -1;
-	}
 
 	for (int i = 0; i < mesh_vertices.size(); ++i) {
 		auto it = mesh_vert_to_clean_idx_map.find(mesh_vertices[i]);
 		if (it != mesh_vert_to_clean_idx_map.end()) {
 			mesh_to_physics[i] = it->second;
+		} else {
+			mesh_to_physics[i] = -1;
 		}
 	}
 
