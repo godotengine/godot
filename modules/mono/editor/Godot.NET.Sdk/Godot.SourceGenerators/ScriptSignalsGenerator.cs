@@ -214,7 +214,7 @@ namespace Godot.SourceGenerators
                 source.Append("\";\n");
             }
 
-            source.Append("    }\n"); // class GodotInternal
+            source.Append("    }\n\n"); // class GodotInternal
 
             // Generate GetGodotSignalList
 
@@ -250,7 +250,7 @@ namespace Godot.SourceGenerators
                 source.Append("    }\n");
             }
 
-            source.Append("#pragma warning restore CS0109\n");
+            source.Append("#pragma warning restore CS0109\n\n");
 
             // Generate signal event
 
@@ -275,14 +275,14 @@ namespace Godot.SourceGenerators
                     .Append(signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal())
                     .Append(" @")
                     .Append(signalName)
-                    .Append(" {\n")
+                    .Append("\n    {\n")
                     .Append("        add => backing_")
                     .Append(signalName)
                     .Append(" += value;\n")
                     .Append("        remove => backing_")
                     .Append(signalName)
                     .Append(" -= value;\n")
-                    .Append("}\n");
+                    .Append("    }\n\n");
 
                 // Generate EmitSignal{EventName} method to raise the event
 
@@ -343,11 +343,7 @@ namespace Godot.SourceGenerators
                 }
 
                 source.Append("        .Build();\n");
-                source.Append(
-                    """
-                    #pragma warning restore CS0618 // Type or member is obsolete
-
-                    """);
+                source.Append("#pragma warning restore CS0618 // Type or member is obsolete\n\n");
 
                 source.Append(
                     """
@@ -361,20 +357,21 @@ namespace Godot.SourceGenerators
                                 signalMethod(this, args);
                             }
                         }
-
-                    """);
+                    """)
+                    .Append("\n\n");
 
                 // Generate HasGodotClassSignal
 
                 source.Append(
                     """
-                        // <inheritdoc/>
+                        /// <inheritdoc/>
                         [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
                         protected override bool HasGodotClassSignal(in godot_string_name signal)
                         {
                             return SignalRegistry.ContainsName(signal);
                         }
-                    """);
+                    """)
+                    .Append("\n");
             }
 
             source.Append("}\n"); // partial class
@@ -404,15 +401,14 @@ namespace Godot.SourceGenerators
             var signalName = signalMethod.Name;
             var method = signalMethod.InvokeMethodData;
 
-            source.AppendLine(
-                $$"""
-                        .Register(SignalName.@{{signalMethod.Name}}, {{method.Method.Parameters.Length}},
-                            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-                            static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>
-                            {
-                                Unsafe.As<GodotObject, {{type}}>(ref scriptInstance).backing_{{signalName}}?.Invoke(
-                """);
-
+            source
+                .Append($"        .Register(SignalName.@{signalMethod.Name}, {method.Method.Parameters.Length},\n")
+                .Append("            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n")
+                .Append("            static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>\n")
+                .Append("            {\n")
+                .Append($"                Unsafe.As<GodotObject, {type}>(ref scriptInstance).backing_{signalName}?.Invoke(\n")
+                .Append("                    ");
+            
             for (var i = 0; i < method.ParamTypes.Length; i++)
             {
                 if (i != 0)
@@ -428,7 +424,8 @@ namespace Godot.SourceGenerators
                 """
                 );
                             })
-                """);
+                """)
+                .Append("\n");
         }
 
         private static void AppendMethodInfo(StringBuilder source, MethodInfo methodInfo)

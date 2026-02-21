@@ -1,5 +1,7 @@
 using Godot;
 using Godot.NativeInterop;
+using Godot.Bridge;
+using System.Runtime.CompilerServices;
 
 partial class ExportDiagnostics_GD0111
 {
@@ -41,62 +43,118 @@ partial class ExportDiagnostics_GD0111
         /// </summary>
         public new static readonly global::Godot.StringName @_backingField = "_backingField";
     }
+#pragma warning restore CS0109 // Disable warning about redundant 'new' keyword
+
+#pragma warning disable CS0618 // Type or member is obsolete
+    protected new static readonly ScriptPropertyRegistry<ExportDiagnostics_GD0111> PropertyRegistry = new ScriptPropertyRegistry<ExportDiagnostics_GD0111>()
+        .Register(global::Godot.Node.PropertyRegistry)
+        .Register(PropertyName.@MyButtonGetSet, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportDiagnostics_GD0111>(ref scriptInstance).@MyButtonGetSet = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
+                return value;
+            })
+        .Register(PropertyName.@MyButtonGetSetWithBackingField, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportDiagnostics_GD0111>(ref scriptInstance).@MyButtonGetSetWithBackingField = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
+                return value;
+            })
+        .Register(PropertyName.@_backingField, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportDiagnostics_GD0111>(ref scriptInstance).@_backingField = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
+                return value;
+            })
+        .Register(PropertyName.@MyButtonGet, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportDiagnostics_GD0111>(ref scriptInstance).@MyButtonGet;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            })
+        .Register(PropertyName.@MyButtonGetSet, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportDiagnostics_GD0111>(ref scriptInstance).@MyButtonGetSet;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            })
+        .Register(PropertyName.@MyButtonGetWithBackingField, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportDiagnostics_GD0111>(ref scriptInstance).@MyButtonGetWithBackingField;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            })
+        .Register(PropertyName.@MyButtonGetSetWithBackingField, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportDiagnostics_GD0111>(ref scriptInstance).@MyButtonGetSetWithBackingField;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            })
+        .Register(PropertyName.@MyButtonOkWithCallableCreationExpression, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportDiagnostics_GD0111>(ref scriptInstance).@MyButtonOkWithCallableCreationExpression;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            })
+        .Register(PropertyName.@MyButtonOkWithImplicitCallableCreationExpression, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportDiagnostics_GD0111>(ref scriptInstance).@MyButtonOkWithImplicitCallableCreationExpression;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            })
+        .Register(PropertyName.@MyButtonOkWithCallableFromExpression, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportDiagnostics_GD0111>(ref scriptInstance).@MyButtonOkWithCallableFromExpression;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            })
+        .Register(PropertyName.@_backingField, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportDiagnostics_GD0111>(ref scriptInstance).@_backingField;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            })
+        .Build();
+#pragma warning restore CS0618 // Type or member is obsolete
+
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
     {
-        if (name == PropertyName.@MyButtonGetSet) {
-            this.@MyButtonGetSet = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
+        ref readonly var propertySetter = ref PropertyRegistry.GetMethodOrNullRef(in name, 1);
+        if (!Unsafe.IsNullRef(in propertySetter))
+        {
+            propertySetter(this, value);
             return true;
         }
-        if (name == PropertyName.@MyButtonGetSetWithBackingField) {
-            this.@MyButtonGetSetWithBackingField = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
-            return true;
-        }
-        if (name == PropertyName.@_backingField) {
-            this.@_backingField = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
-            return true;
-        }
-        return base.SetGodotClassPropertyValue(name, value);
+        return false;
     }
+
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
     {
-        if (name == PropertyName.@MyButtonGet) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@MyButtonGet);
+        ref readonly var propertyGetter = ref PropertyRegistry.GetMethodOrNullRef(in name, 0);
+        if (!Unsafe.IsNullRef(in propertyGetter))
+        {
+            value = propertyGetter(this, default);
             return true;
         }
-        if (name == PropertyName.@MyButtonGetSet) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@MyButtonGetSet);
-            return true;
-        }
-        if (name == PropertyName.@MyButtonGetWithBackingField) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@MyButtonGetWithBackingField);
-            return true;
-        }
-        if (name == PropertyName.@MyButtonGetSetWithBackingField) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@MyButtonGetSetWithBackingField);
-            return true;
-        }
-        if (name == PropertyName.@MyButtonOkWithCallableCreationExpression) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@MyButtonOkWithCallableCreationExpression);
-            return true;
-        }
-        if (name == PropertyName.@MyButtonOkWithImplicitCallableCreationExpression) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@MyButtonOkWithImplicitCallableCreationExpression);
-            return true;
-        }
-        if (name == PropertyName.@MyButtonOkWithCallableFromExpression) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@MyButtonOkWithCallableFromExpression);
-            return true;
-        }
-        if (name == PropertyName.@_backingField) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@_backingField);
-            return true;
-        }
-        return base.GetGodotClassPropertyValue(name, out value);
+        value = default;
+        return false;
     }
+
     /// <summary>
     /// Get the property information for all the properties declared in this class.
     /// This method is used by Godot to register the available properties in the editor.

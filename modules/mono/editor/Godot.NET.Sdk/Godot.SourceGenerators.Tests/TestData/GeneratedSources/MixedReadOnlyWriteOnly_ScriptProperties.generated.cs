@@ -1,5 +1,7 @@
 using Godot;
 using Godot.NativeInterop;
+using Godot.Bridge;
+using System.Runtime.CompilerServices;
 
 partial class MixedReadOnlyWriteOnly
 {
@@ -33,46 +35,90 @@ partial class MixedReadOnlyWriteOnly
         /// </summary>
         public new static readonly global::Godot.StringName @_writeOnlyBackingField = "_writeOnlyBackingField";
     }
+#pragma warning restore CS0109 // Disable warning about redundant 'new' keyword
+
+#pragma warning disable CS0618 // Type or member is obsolete
+    protected new static readonly ScriptPropertyRegistry<MixedReadOnlyWriteOnly> PropertyRegistry = new ScriptPropertyRegistry<MixedReadOnlyWriteOnly>()
+        .Register(global::Godot.GodotObject.PropertyRegistry)
+        .Register(PropertyName.@WriteOnlyProperty, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, MixedReadOnlyWriteOnly>(ref scriptInstance).@WriteOnlyProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
+                return value;
+            })
+        .Register(PropertyName.@_writeOnlyBackingField, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, MixedReadOnlyWriteOnly>(ref scriptInstance).@_writeOnlyBackingField = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
+                return value;
+            })
+        .Register(PropertyName.@ReadOnlyAutoProperty, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, MixedReadOnlyWriteOnly>(ref scriptInstance).@ReadOnlyAutoProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            })
+        .Register(PropertyName.@ReadOnlyProperty, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, MixedReadOnlyWriteOnly>(ref scriptInstance).@ReadOnlyProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            })
+        .Register(PropertyName.@InitOnlyAutoProperty, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, MixedReadOnlyWriteOnly>(ref scriptInstance).@InitOnlyAutoProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            })
+        .Register(PropertyName.@ReadOnlyField, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, MixedReadOnlyWriteOnly>(ref scriptInstance).@ReadOnlyField;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            })
+        .Register(PropertyName.@_writeOnlyBackingField, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, MixedReadOnlyWriteOnly>(ref scriptInstance).@_writeOnlyBackingField;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<bool>(ret);
+            })
+        .Build();
+#pragma warning restore CS0618 // Type or member is obsolete
+
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
     {
-        if (name == PropertyName.@WriteOnlyProperty) {
-            this.@WriteOnlyProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
+        ref readonly var propertySetter = ref PropertyRegistry.GetMethodOrNullRef(in name, 1);
+        if (!Unsafe.IsNullRef(in propertySetter))
+        {
+            propertySetter(this, value);
             return true;
         }
-        if (name == PropertyName.@_writeOnlyBackingField) {
-            this.@_writeOnlyBackingField = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
-            return true;
-        }
-        return base.SetGodotClassPropertyValue(name, value);
+        return false;
     }
+
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
     {
-        if (name == PropertyName.@ReadOnlyAutoProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@ReadOnlyAutoProperty);
+        ref readonly var propertyGetter = ref PropertyRegistry.GetMethodOrNullRef(in name, 0);
+        if (!Unsafe.IsNullRef(in propertyGetter))
+        {
+            value = propertyGetter(this, default);
             return true;
         }
-        if (name == PropertyName.@ReadOnlyProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@ReadOnlyProperty);
-            return true;
-        }
-        if (name == PropertyName.@InitOnlyAutoProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@InitOnlyAutoProperty);
-            return true;
-        }
-        if (name == PropertyName.@ReadOnlyField) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@ReadOnlyField);
-            return true;
-        }
-        if (name == PropertyName.@_writeOnlyBackingField) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<bool>(this.@_writeOnlyBackingField);
-            return true;
-        }
-        return base.GetGodotClassPropertyValue(name, out value);
+        value = default;
+        return false;
     }
+
     /// <summary>
     /// Get the property information for all the properties declared in this class.
     /// This method is used by Godot to register the available properties in the editor.

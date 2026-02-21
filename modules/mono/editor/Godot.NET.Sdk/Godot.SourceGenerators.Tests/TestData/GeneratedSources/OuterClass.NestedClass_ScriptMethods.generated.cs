@@ -32,15 +32,15 @@ partial class NestedClass
     }
 #pragma warning restore CS0109
 
+#pragma warning disable CS0618 // Type or member is obsolete
     protected new static readonly ScriptMethodRegistry<NestedClass> MethodRegistry = new ScriptMethodRegistry<NestedClass>()
         .Register(global::Godot.RefCounted.MethodRegistry)
-        .Register(MethodName._Get, 1, ScriptMethodDispatchHelper.CreateScriptMethod__Get1())
+        .Register(MethodName.@_Get, 1, ScriptMethodDispatchHelper.CreateScriptMethod__Get1())
         .Build();
 
     private sealed class ScriptMethodDispatchHelper
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public static ScriptMethod<GodotObject> CreateScriptMethod__Get1()
+        public static ScriptMethod CreateScriptMethod__Get1()
         {
             return [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
             static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>
@@ -51,19 +51,21 @@ partial class NestedClass
             };
         }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    public override ref readonly ScriptMethod<GodotObject> TryGetGodotClassMethod(in godot_string_name method, int argc)
+    public override ref readonly ScriptMethod GetGodotClassMethodOrNullRef(in godot_string_name method, int argCount)
     {
-        return ref MethodRegistry.TryGetMethodFast(in method, argc);
+        return ref MethodRegistry.GetMethodOrNullRef(in method, argCount);
     }
 
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool InvokeGodotClassMethod(in godot_string_name method, NativeVariantPtrArgs args, out godot_variant ret)
     {
-        if (MethodRegistry.TryGetMethod(in method, args.Count, out var scriptMethod))
+        ref readonly var scriptMethod = ref GetGodotClassMethodOrNullRef(in method, args.Count);
+        if (!Unsafe.IsNullRef(in scriptMethod))
         {
             ret = scriptMethod(this, args);
             return true;
@@ -77,7 +79,7 @@ partial class NestedClass
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool HasGodotClassMethod(in godot_string_name method)
     {
-        return MethodRegistry.ContainsMethod(method);
+        return MethodRegistry.ContainsName(method);
     }
 }
 }

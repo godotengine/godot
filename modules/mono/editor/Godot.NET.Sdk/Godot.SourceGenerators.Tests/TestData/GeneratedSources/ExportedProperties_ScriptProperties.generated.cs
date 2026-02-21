@@ -1,5 +1,7 @@
 using Godot;
 using Godot.NativeInterop;
+using Godot.Bridge;
+using System.Runtime.CompilerServices;
 
 partial class ExportedProperties
 {
@@ -321,642 +323,1133 @@ partial class ExportedProperties
         /// </summary>
         public new static readonly global::Godot.StringName @_lambdaPropertyStaticImport = "_lambdaPropertyStaticImport";
     }
+#pragma warning restore CS0109 // Disable warning about redundant 'new' keyword
+
+#pragma warning disable CS0618 // Type or member is obsolete
+    protected new static readonly ScriptPropertyRegistry<ExportedProperties> PropertyRegistry = new ScriptPropertyRegistry<ExportedProperties>()
+        .Register(global::Godot.GodotObject.PropertyRegistry)
+        .Register(PropertyName.@NotGenerateComplexLamdaProperty, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@NotGenerateComplexLamdaProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+                return value;
+            })
+        .Register(PropertyName.@NotGenerateLamdaNoFieldProperty, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@NotGenerateLamdaNoFieldProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+                return value;
+            })
+        .Register(PropertyName.@NotGenerateComplexReturnProperty, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@NotGenerateComplexReturnProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+                return value;
+            })
+        .Register(PropertyName.@NotGenerateReturnsProperty, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@NotGenerateReturnsProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+                return value;
+            })
+        .Register(PropertyName.@FullPropertyString, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@FullPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+                return value;
+            })
+        .Register(PropertyName.@FullPropertyString_Complex, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@FullPropertyString_Complex = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+                return value;
+            })
+        .Register(PropertyName.@FullPropertyStaticImport, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@FullPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+                return value;
+            })
+        .Register(PropertyName.@LamdaPropertyString, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@LamdaPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+                return value;
+            })
+        .Register(PropertyName.@LambdaPropertyStaticImport, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@LambdaPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+                return value;
+            })
+        .Register(PropertyName.@PrimaryCtorParameter, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PrimaryCtorParameter = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+                return value;
+            })
+        .Register(PropertyName.@ConstantMath, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@ConstantMath = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+                return value;
+            })
+        .Register(PropertyName.@ConstantMathStaticImport, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@ConstantMathStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+                return value;
+            })
+        .Register(PropertyName.@StaticStringAddition, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@StaticStringAddition = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyBoolean, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyBoolean = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyChar, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyChar = global::Godot.NativeInterop.VariantUtils.ConvertTo<char>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertySByte, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertySByte = global::Godot.NativeInterop.VariantUtils.ConvertTo<sbyte>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyInt16, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyInt16 = global::Godot.NativeInterop.VariantUtils.ConvertTo<short>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyInt32, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyInt32 = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyInt64, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyInt64 = global::Godot.NativeInterop.VariantUtils.ConvertTo<long>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyByte, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyByte = global::Godot.NativeInterop.VariantUtils.ConvertTo<byte>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyUInt16, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyUInt16 = global::Godot.NativeInterop.VariantUtils.ConvertTo<ushort>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyUInt32, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyUInt32 = global::Godot.NativeInterop.VariantUtils.ConvertTo<uint>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyUInt64, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyUInt64 = global::Godot.NativeInterop.VariantUtils.ConvertTo<ulong>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertySingle, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertySingle = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyDouble, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyDouble = global::Godot.NativeInterop.VariantUtils.ConvertTo<double>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyString, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyVector2, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyVector2 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyVector2I, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyVector2I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2I>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyRect2, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyRect2 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rect2>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyRect2I, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyRect2I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rect2I>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyTransform2D, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyTransform2D = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Transform2D>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyVector3, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyVector3 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyVector3I, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyVector3I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3I>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyBasis, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyBasis = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Basis>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyQuaternion, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyQuaternion = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Quaternion>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyTransform3D, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyTransform3D = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Transform3D>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyVector4, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyVector4 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector4>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyVector4I, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyVector4I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector4I>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyProjection, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyProjection = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Projection>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyAabb, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyAabb = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Aabb>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyColor, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyColor = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Color>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyPlane, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyPlane = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Plane>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyCallable, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyCallable = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertySignal, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertySignal = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Signal>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyEnum, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::ExportedProperties.MyEnum>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyFlagsEnum, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyFlagsEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::ExportedProperties.MyFlagsEnum>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyByteArray, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyByteArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<byte[]>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyInt32Array, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyInt32Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<int[]>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyInt64Array, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyInt64Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<long[]>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertySingleArray, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertySingleArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<float[]>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyDoubleArray, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyDoubleArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<double[]>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyStringArray, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyStringArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<string[]>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyStringArrayEnum, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyStringArrayEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<string[]>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyVector2Array, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyVector2Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2[]>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyVector3Array, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyVector3Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3[]>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyColorArray, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyColorArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Color[]>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyGodotObjectOrDerivedArray, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyGodotObjectOrDerivedArray = global::Godot.NativeInterop.VariantUtils.ConvertToSystemArrayOfGodotObject<global::Godot.GodotObject>(value);
+                return value;
+            })
+        .Register(PropertyName.@field_StringNameArray, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@field_StringNameArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName[]>(value);
+                return value;
+            })
+        .Register(PropertyName.@field_NodePathArray, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@field_NodePathArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath[]>(value);
+                return value;
+            })
+        .Register(PropertyName.@field_RidArray, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@field_RidArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rid[]>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyVariant, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyVariant = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Variant>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyGodotObjectOrDerived, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyGodotObjectOrDerived = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.GodotObject>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyGodotResourceTexture, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyGodotResourceTexture = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Texture>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyGodotResourceTextureWithInitializer, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyGodotResourceTextureWithInitializer = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Texture>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyStringName, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyStringName = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyNodePath, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyNodePath = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyRid, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyRid = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rid>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyGodotDictionary, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyGodotDictionary = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Collections.Dictionary>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyGodotArray, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyGodotArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Collections.Array>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyGodotGenericDictionary, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyGodotGenericDictionary = global::Godot.NativeInterop.VariantUtils.ConvertToDictionary<string, bool>(value);
+                return value;
+            })
+        .Register(PropertyName.@PropertyGodotGenericArray, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyGodotGenericArray = global::Godot.NativeInterop.VariantUtils.ConvertToArray<int>(value);
+                return value;
+            })
+        .Register(PropertyName.@_notGeneratePropertyString, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@_notGeneratePropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+                return value;
+            })
+        .Register(PropertyName.@_notGeneratePropertyInt, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@_notGeneratePropertyInt = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
+                return value;
+            })
+        .Register(PropertyName.@_fullPropertyString, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@_fullPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+                return value;
+            })
+        .Register(PropertyName.@_fullPropertyStringComplex, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@_fullPropertyStringComplex = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+                return value;
+            })
+        .Register(PropertyName.@_fullPropertyStaticImport, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@_fullPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+                return value;
+            })
+        .Register(PropertyName.@_lamdaPropertyString, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@_lamdaPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+                return value;
+            })
+        .Register(PropertyName.@_lambdaPropertyStaticImport, 1,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant value) =>
+            {
+                Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@_lambdaPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+                return value;
+            })
+        .Register(PropertyName.@NotGenerateComplexLamdaProperty, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@NotGenerateComplexLamdaProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            })
+        .Register(PropertyName.@NotGenerateLamdaNoFieldProperty, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@NotGenerateLamdaNoFieldProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            })
+        .Register(PropertyName.@NotGenerateComplexReturnProperty, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@NotGenerateComplexReturnProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            })
+        .Register(PropertyName.@NotGenerateReturnsProperty, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@NotGenerateReturnsProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            })
+        .Register(PropertyName.@FullPropertyString, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@FullPropertyString;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            })
+        .Register(PropertyName.@FullPropertyString_Complex, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@FullPropertyString_Complex;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            })
+        .Register(PropertyName.@FullPropertyStaticImport, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@FullPropertyStaticImport;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(ret);
+            })
+        .Register(PropertyName.@LamdaPropertyString, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@LamdaPropertyString;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            })
+        .Register(PropertyName.@LambdaPropertyStaticImport, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@LambdaPropertyStaticImport;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(ret);
+            })
+        .Register(PropertyName.@PrimaryCtorParameter, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PrimaryCtorParameter;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            })
+        .Register(PropertyName.@ConstantMath, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@ConstantMath;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(ret);
+            })
+        .Register(PropertyName.@ConstantMathStaticImport, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@ConstantMathStaticImport;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(ret);
+            })
+        .Register(PropertyName.@StaticStringAddition, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@StaticStringAddition;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            })
+        .Register(PropertyName.@PropertyBoolean, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyBoolean;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<bool>(ret);
+            })
+        .Register(PropertyName.@PropertyChar, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyChar;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<char>(ret);
+            })
+        .Register(PropertyName.@PropertySByte, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertySByte;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<sbyte>(ret);
+            })
+        .Register(PropertyName.@PropertyInt16, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyInt16;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<short>(ret);
+            })
+        .Register(PropertyName.@PropertyInt32, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyInt32;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(ret);
+            })
+        .Register(PropertyName.@PropertyInt64, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyInt64;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<long>(ret);
+            })
+        .Register(PropertyName.@PropertyByte, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyByte;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<byte>(ret);
+            })
+        .Register(PropertyName.@PropertyUInt16, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyUInt16;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<ushort>(ret);
+            })
+        .Register(PropertyName.@PropertyUInt32, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyUInt32;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<uint>(ret);
+            })
+        .Register(PropertyName.@PropertyUInt64, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyUInt64;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<ulong>(ret);
+            })
+        .Register(PropertyName.@PropertySingle, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertySingle;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(ret);
+            })
+        .Register(PropertyName.@PropertyDouble, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyDouble;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<double>(ret);
+            })
+        .Register(PropertyName.@PropertyString, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyString;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            })
+        .Register(PropertyName.@PropertyVector2, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyVector2;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2>(ret);
+            })
+        .Register(PropertyName.@PropertyVector2I, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyVector2I;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2I>(ret);
+            })
+        .Register(PropertyName.@PropertyRect2, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyRect2;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rect2>(ret);
+            })
+        .Register(PropertyName.@PropertyRect2I, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyRect2I;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rect2I>(ret);
+            })
+        .Register(PropertyName.@PropertyTransform2D, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyTransform2D;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Transform2D>(ret);
+            })
+        .Register(PropertyName.@PropertyVector3, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyVector3;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3>(ret);
+            })
+        .Register(PropertyName.@PropertyVector3I, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyVector3I;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3I>(ret);
+            })
+        .Register(PropertyName.@PropertyBasis, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyBasis;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Basis>(ret);
+            })
+        .Register(PropertyName.@PropertyQuaternion, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyQuaternion;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Quaternion>(ret);
+            })
+        .Register(PropertyName.@PropertyTransform3D, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyTransform3D;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Transform3D>(ret);
+            })
+        .Register(PropertyName.@PropertyVector4, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyVector4;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector4>(ret);
+            })
+        .Register(PropertyName.@PropertyVector4I, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyVector4I;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector4I>(ret);
+            })
+        .Register(PropertyName.@PropertyProjection, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyProjection;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Projection>(ret);
+            })
+        .Register(PropertyName.@PropertyAabb, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyAabb;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Aabb>(ret);
+            })
+        .Register(PropertyName.@PropertyColor, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyColor;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Color>(ret);
+            })
+        .Register(PropertyName.@PropertyPlane, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyPlane;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Plane>(ret);
+            })
+        .Register(PropertyName.@PropertyCallable, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyCallable;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            })
+        .Register(PropertyName.@PropertySignal, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertySignal;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Signal>(ret);
+            })
+        .Register(PropertyName.@PropertyEnum, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyEnum;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::ExportedProperties.MyEnum>(ret);
+            })
+        .Register(PropertyName.@PropertyFlagsEnum, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyFlagsEnum;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::ExportedProperties.MyFlagsEnum>(ret);
+            })
+        .Register(PropertyName.@PropertyByteArray, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyByteArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<byte[]>(ret);
+            })
+        .Register(PropertyName.@PropertyInt32Array, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyInt32Array;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<int[]>(ret);
+            })
+        .Register(PropertyName.@PropertyInt64Array, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyInt64Array;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<long[]>(ret);
+            })
+        .Register(PropertyName.@PropertySingleArray, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertySingleArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float[]>(ret);
+            })
+        .Register(PropertyName.@PropertyDoubleArray, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyDoubleArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<double[]>(ret);
+            })
+        .Register(PropertyName.@PropertyStringArray, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyStringArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string[]>(ret);
+            })
+        .Register(PropertyName.@PropertyStringArrayEnum, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyStringArrayEnum;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string[]>(ret);
+            })
+        .Register(PropertyName.@PropertyVector2Array, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyVector2Array;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2[]>(ret);
+            })
+        .Register(PropertyName.@PropertyVector3Array, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyVector3Array;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3[]>(ret);
+            })
+        .Register(PropertyName.@PropertyColorArray, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyColorArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Color[]>(ret);
+            })
+        .Register(PropertyName.@PropertyGodotObjectOrDerivedArray, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyGodotObjectOrDerivedArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFromSystemArrayOfGodotObject(ret);
+            })
+        .Register(PropertyName.@field_StringNameArray, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@field_StringNameArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.StringName[]>(ret);
+            })
+        .Register(PropertyName.@field_NodePathArray, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@field_NodePathArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath[]>(ret);
+            })
+        .Register(PropertyName.@field_RidArray, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@field_RidArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rid[]>(ret);
+            })
+        .Register(PropertyName.@PropertyVariant, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyVariant;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Variant>(ret);
+            })
+        .Register(PropertyName.@PropertyGodotObjectOrDerived, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyGodotObjectOrDerived;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.GodotObject>(ret);
+            })
+        .Register(PropertyName.@PropertyGodotResourceTexture, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyGodotResourceTexture;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Texture>(ret);
+            })
+        .Register(PropertyName.@PropertyGodotResourceTextureWithInitializer, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyGodotResourceTextureWithInitializer;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Texture>(ret);
+            })
+        .Register(PropertyName.@PropertyStringName, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyStringName;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.StringName>(ret);
+            })
+        .Register(PropertyName.@PropertyNodePath, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyNodePath;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath>(ret);
+            })
+        .Register(PropertyName.@PropertyRid, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyRid;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rid>(ret);
+            })
+        .Register(PropertyName.@PropertyGodotDictionary, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyGodotDictionary;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Collections.Dictionary>(ret);
+            })
+        .Register(PropertyName.@PropertyGodotArray, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyGodotArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Collections.Array>(ret);
+            })
+        .Register(PropertyName.@PropertyGodotGenericDictionary, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyGodotGenericDictionary;
+                return global::Godot.NativeInterop.VariantUtils.CreateFromDictionary(ret);
+            })
+        .Register(PropertyName.@PropertyGodotGenericArray, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@PropertyGodotGenericArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFromArray(ret);
+            })
+        .Register(PropertyName.@_notGeneratePropertyString, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@_notGeneratePropertyString;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            })
+        .Register(PropertyName.@_notGeneratePropertyInt, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@_notGeneratePropertyInt;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(ret);
+            })
+        .Register(PropertyName.@_fullPropertyString, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@_fullPropertyString;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            })
+        .Register(PropertyName.@_fullPropertyStringComplex, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@_fullPropertyStringComplex;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            })
+        .Register(PropertyName.@_fullPropertyStaticImport, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@_fullPropertyStaticImport;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(ret);
+            })
+        .Register(PropertyName.@_lamdaPropertyString, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@_lamdaPropertyString;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            })
+        .Register(PropertyName.@_lambdaPropertyStaticImport, 0,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in godot_variant _) =>
+            {
+                var ret = Unsafe.As<GodotObject, ExportedProperties>(ref scriptInstance).@_lambdaPropertyStaticImport;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(ret);
+            })
+        .Build();
+#pragma warning restore CS0618 // Type or member is obsolete
+
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
     {
-        if (name == PropertyName.@NotGenerateComplexLamdaProperty) {
-            this.@NotGenerateComplexLamdaProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+        ref readonly var propertySetter = ref PropertyRegistry.GetMethodOrNullRef(in name, 1);
+        if (!Unsafe.IsNullRef(in propertySetter))
+        {
+            propertySetter(this, value);
             return true;
         }
-        if (name == PropertyName.@NotGenerateLamdaNoFieldProperty) {
-            this.@NotGenerateLamdaNoFieldProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@NotGenerateComplexReturnProperty) {
-            this.@NotGenerateComplexReturnProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@NotGenerateReturnsProperty) {
-            this.@NotGenerateReturnsProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@FullPropertyString) {
-            this.@FullPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@FullPropertyString_Complex) {
-            this.@FullPropertyString_Complex = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@FullPropertyStaticImport) {
-            this.@FullPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
-            return true;
-        }
-        if (name == PropertyName.@LamdaPropertyString) {
-            this.@LamdaPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@LambdaPropertyStaticImport) {
-            this.@LambdaPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
-            return true;
-        }
-        if (name == PropertyName.@PrimaryCtorParameter) {
-            this.@PrimaryCtorParameter = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@ConstantMath) {
-            this.@ConstantMath = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
-            return true;
-        }
-        if (name == PropertyName.@ConstantMathStaticImport) {
-            this.@ConstantMathStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
-            return true;
-        }
-        if (name == PropertyName.@StaticStringAddition) {
-            this.@StaticStringAddition = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyBoolean) {
-            this.@PropertyBoolean = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyChar) {
-            this.@PropertyChar = global::Godot.NativeInterop.VariantUtils.ConvertTo<char>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertySByte) {
-            this.@PropertySByte = global::Godot.NativeInterop.VariantUtils.ConvertTo<sbyte>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt16) {
-            this.@PropertyInt16 = global::Godot.NativeInterop.VariantUtils.ConvertTo<short>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt32) {
-            this.@PropertyInt32 = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt64) {
-            this.@PropertyInt64 = global::Godot.NativeInterop.VariantUtils.ConvertTo<long>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyByte) {
-            this.@PropertyByte = global::Godot.NativeInterop.VariantUtils.ConvertTo<byte>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyUInt16) {
-            this.@PropertyUInt16 = global::Godot.NativeInterop.VariantUtils.ConvertTo<ushort>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyUInt32) {
-            this.@PropertyUInt32 = global::Godot.NativeInterop.VariantUtils.ConvertTo<uint>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyUInt64) {
-            this.@PropertyUInt64 = global::Godot.NativeInterop.VariantUtils.ConvertTo<ulong>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertySingle) {
-            this.@PropertySingle = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyDouble) {
-            this.@PropertyDouble = global::Godot.NativeInterop.VariantUtils.ConvertTo<double>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyString) {
-            this.@PropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector2) {
-            this.@PropertyVector2 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector2I) {
-            this.@PropertyVector2I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2I>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyRect2) {
-            this.@PropertyRect2 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rect2>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyRect2I) {
-            this.@PropertyRect2I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rect2I>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyTransform2D) {
-            this.@PropertyTransform2D = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Transform2D>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector3) {
-            this.@PropertyVector3 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector3I) {
-            this.@PropertyVector3I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3I>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyBasis) {
-            this.@PropertyBasis = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Basis>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyQuaternion) {
-            this.@PropertyQuaternion = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Quaternion>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyTransform3D) {
-            this.@PropertyTransform3D = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Transform3D>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector4) {
-            this.@PropertyVector4 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector4>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector4I) {
-            this.@PropertyVector4I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector4I>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyProjection) {
-            this.@PropertyProjection = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Projection>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyAabb) {
-            this.@PropertyAabb = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Aabb>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyColor) {
-            this.@PropertyColor = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Color>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyPlane) {
-            this.@PropertyPlane = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Plane>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyCallable) {
-            this.@PropertyCallable = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertySignal) {
-            this.@PropertySignal = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Signal>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyEnum) {
-            this.@PropertyEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::ExportedProperties.MyEnum>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyFlagsEnum) {
-            this.@PropertyFlagsEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::ExportedProperties.MyFlagsEnum>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyByteArray) {
-            this.@PropertyByteArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<byte[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt32Array) {
-            this.@PropertyInt32Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<int[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt64Array) {
-            this.@PropertyInt64Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<long[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertySingleArray) {
-            this.@PropertySingleArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<float[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyDoubleArray) {
-            this.@PropertyDoubleArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<double[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyStringArray) {
-            this.@PropertyStringArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<string[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyStringArrayEnum) {
-            this.@PropertyStringArrayEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<string[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector2Array) {
-            this.@PropertyVector2Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector3Array) {
-            this.@PropertyVector3Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyColorArray) {
-            this.@PropertyColorArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Color[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotObjectOrDerivedArray) {
-            this.@PropertyGodotObjectOrDerivedArray = global::Godot.NativeInterop.VariantUtils.ConvertToSystemArrayOfGodotObject<global::Godot.GodotObject>(value);
-            return true;
-        }
-        if (name == PropertyName.@field_StringNameArray) {
-            this.@field_StringNameArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@field_NodePathArray) {
-            this.@field_NodePathArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@field_RidArray) {
-            this.@field_RidArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rid[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVariant) {
-            this.@PropertyVariant = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Variant>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotObjectOrDerived) {
-            this.@PropertyGodotObjectOrDerived = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.GodotObject>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotResourceTexture) {
-            this.@PropertyGodotResourceTexture = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Texture>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotResourceTextureWithInitializer) {
-            this.@PropertyGodotResourceTextureWithInitializer = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Texture>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyStringName) {
-            this.@PropertyStringName = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyNodePath) {
-            this.@PropertyNodePath = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyRid) {
-            this.@PropertyRid = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rid>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotDictionary) {
-            this.@PropertyGodotDictionary = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Collections.Dictionary>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotArray) {
-            this.@PropertyGodotArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Collections.Array>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotGenericDictionary) {
-            this.@PropertyGodotGenericDictionary = global::Godot.NativeInterop.VariantUtils.ConvertToDictionary<string, bool>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotGenericArray) {
-            this.@PropertyGodotGenericArray = global::Godot.NativeInterop.VariantUtils.ConvertToArray<int>(value);
-            return true;
-        }
-        if (name == PropertyName.@_notGeneratePropertyString) {
-            this.@_notGeneratePropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@_notGeneratePropertyInt) {
-            this.@_notGeneratePropertyInt = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fullPropertyString) {
-            this.@_fullPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fullPropertyStringComplex) {
-            this.@_fullPropertyStringComplex = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fullPropertyStaticImport) {
-            this.@_fullPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
-            return true;
-        }
-        if (name == PropertyName.@_lamdaPropertyString) {
-            this.@_lamdaPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@_lambdaPropertyStaticImport) {
-            this.@_lambdaPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
-            return true;
-        }
-        return base.SetGodotClassPropertyValue(name, value);
+        return false;
     }
+
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
     {
-        if (name == PropertyName.@NotGenerateComplexLamdaProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@NotGenerateComplexLamdaProperty);
+        ref readonly var propertyGetter = ref PropertyRegistry.GetMethodOrNullRef(in name, 0);
+        if (!Unsafe.IsNullRef(in propertyGetter))
+        {
+            value = propertyGetter(this, default);
             return true;
         }
-        if (name == PropertyName.@NotGenerateLamdaNoFieldProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@NotGenerateLamdaNoFieldProperty);
-            return true;
-        }
-        if (name == PropertyName.@NotGenerateComplexReturnProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@NotGenerateComplexReturnProperty);
-            return true;
-        }
-        if (name == PropertyName.@NotGenerateReturnsProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@NotGenerateReturnsProperty);
-            return true;
-        }
-        if (name == PropertyName.@FullPropertyString) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@FullPropertyString);
-            return true;
-        }
-        if (name == PropertyName.@FullPropertyString_Complex) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@FullPropertyString_Complex);
-            return true;
-        }
-        if (name == PropertyName.@FullPropertyStaticImport) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@FullPropertyStaticImport);
-            return true;
-        }
-        if (name == PropertyName.@LamdaPropertyString) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@LamdaPropertyString);
-            return true;
-        }
-        if (name == PropertyName.@LambdaPropertyStaticImport) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@LambdaPropertyStaticImport);
-            return true;
-        }
-        if (name == PropertyName.@PrimaryCtorParameter) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@PrimaryCtorParameter);
-            return true;
-        }
-        if (name == PropertyName.@ConstantMath) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@ConstantMath);
-            return true;
-        }
-        if (name == PropertyName.@ConstantMathStaticImport) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@ConstantMathStaticImport);
-            return true;
-        }
-        if (name == PropertyName.@StaticStringAddition) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@StaticStringAddition);
-            return true;
-        }
-        if (name == PropertyName.@PropertyBoolean) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<bool>(this.@PropertyBoolean);
-            return true;
-        }
-        if (name == PropertyName.@PropertyChar) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<char>(this.@PropertyChar);
-            return true;
-        }
-        if (name == PropertyName.@PropertySByte) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<sbyte>(this.@PropertySByte);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt16) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<short>(this.@PropertyInt16);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt32) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this.@PropertyInt32);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt64) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<long>(this.@PropertyInt64);
-            return true;
-        }
-        if (name == PropertyName.@PropertyByte) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<byte>(this.@PropertyByte);
-            return true;
-        }
-        if (name == PropertyName.@PropertyUInt16) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<ushort>(this.@PropertyUInt16);
-            return true;
-        }
-        if (name == PropertyName.@PropertyUInt32) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<uint>(this.@PropertyUInt32);
-            return true;
-        }
-        if (name == PropertyName.@PropertyUInt64) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<ulong>(this.@PropertyUInt64);
-            return true;
-        }
-        if (name == PropertyName.@PropertySingle) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@PropertySingle);
-            return true;
-        }
-        if (name == PropertyName.@PropertyDouble) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<double>(this.@PropertyDouble);
-            return true;
-        }
-        if (name == PropertyName.@PropertyString) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@PropertyString);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector2) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2>(this.@PropertyVector2);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector2I) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2I>(this.@PropertyVector2I);
-            return true;
-        }
-        if (name == PropertyName.@PropertyRect2) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rect2>(this.@PropertyRect2);
-            return true;
-        }
-        if (name == PropertyName.@PropertyRect2I) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rect2I>(this.@PropertyRect2I);
-            return true;
-        }
-        if (name == PropertyName.@PropertyTransform2D) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Transform2D>(this.@PropertyTransform2D);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector3) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3>(this.@PropertyVector3);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector3I) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3I>(this.@PropertyVector3I);
-            return true;
-        }
-        if (name == PropertyName.@PropertyBasis) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Basis>(this.@PropertyBasis);
-            return true;
-        }
-        if (name == PropertyName.@PropertyQuaternion) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Quaternion>(this.@PropertyQuaternion);
-            return true;
-        }
-        if (name == PropertyName.@PropertyTransform3D) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Transform3D>(this.@PropertyTransform3D);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector4) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector4>(this.@PropertyVector4);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector4I) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector4I>(this.@PropertyVector4I);
-            return true;
-        }
-        if (name == PropertyName.@PropertyProjection) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Projection>(this.@PropertyProjection);
-            return true;
-        }
-        if (name == PropertyName.@PropertyAabb) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Aabb>(this.@PropertyAabb);
-            return true;
-        }
-        if (name == PropertyName.@PropertyColor) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Color>(this.@PropertyColor);
-            return true;
-        }
-        if (name == PropertyName.@PropertyPlane) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Plane>(this.@PropertyPlane);
-            return true;
-        }
-        if (name == PropertyName.@PropertyCallable) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@PropertyCallable);
-            return true;
-        }
-        if (name == PropertyName.@PropertySignal) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Signal>(this.@PropertySignal);
-            return true;
-        }
-        if (name == PropertyName.@PropertyEnum) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::ExportedProperties.MyEnum>(this.@PropertyEnum);
-            return true;
-        }
-        if (name == PropertyName.@PropertyFlagsEnum) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::ExportedProperties.MyFlagsEnum>(this.@PropertyFlagsEnum);
-            return true;
-        }
-        if (name == PropertyName.@PropertyByteArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<byte[]>(this.@PropertyByteArray);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt32Array) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int[]>(this.@PropertyInt32Array);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt64Array) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<long[]>(this.@PropertyInt64Array);
-            return true;
-        }
-        if (name == PropertyName.@PropertySingleArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float[]>(this.@PropertySingleArray);
-            return true;
-        }
-        if (name == PropertyName.@PropertyDoubleArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<double[]>(this.@PropertyDoubleArray);
-            return true;
-        }
-        if (name == PropertyName.@PropertyStringArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string[]>(this.@PropertyStringArray);
-            return true;
-        }
-        if (name == PropertyName.@PropertyStringArrayEnum) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string[]>(this.@PropertyStringArrayEnum);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector2Array) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2[]>(this.@PropertyVector2Array);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector3Array) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3[]>(this.@PropertyVector3Array);
-            return true;
-        }
-        if (name == PropertyName.@PropertyColorArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Color[]>(this.@PropertyColorArray);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotObjectOrDerivedArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFromSystemArrayOfGodotObject(this.@PropertyGodotObjectOrDerivedArray);
-            return true;
-        }
-        if (name == PropertyName.@field_StringNameArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.StringName[]>(this.@field_StringNameArray);
-            return true;
-        }
-        if (name == PropertyName.@field_NodePathArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath[]>(this.@field_NodePathArray);
-            return true;
-        }
-        if (name == PropertyName.@field_RidArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rid[]>(this.@field_RidArray);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVariant) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Variant>(this.@PropertyVariant);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotObjectOrDerived) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.GodotObject>(this.@PropertyGodotObjectOrDerived);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotResourceTexture) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Texture>(this.@PropertyGodotResourceTexture);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotResourceTextureWithInitializer) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Texture>(this.@PropertyGodotResourceTextureWithInitializer);
-            return true;
-        }
-        if (name == PropertyName.@PropertyStringName) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.StringName>(this.@PropertyStringName);
-            return true;
-        }
-        if (name == PropertyName.@PropertyNodePath) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath>(this.@PropertyNodePath);
-            return true;
-        }
-        if (name == PropertyName.@PropertyRid) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rid>(this.@PropertyRid);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotDictionary) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Collections.Dictionary>(this.@PropertyGodotDictionary);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Collections.Array>(this.@PropertyGodotArray);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotGenericDictionary) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFromDictionary(this.@PropertyGodotGenericDictionary);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotGenericArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFromArray(this.@PropertyGodotGenericArray);
-            return true;
-        }
-        if (name == PropertyName.@_notGeneratePropertyString) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@_notGeneratePropertyString);
-            return true;
-        }
-        if (name == PropertyName.@_notGeneratePropertyInt) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this.@_notGeneratePropertyInt);
-            return true;
-        }
-        if (name == PropertyName.@_fullPropertyString) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@_fullPropertyString);
-            return true;
-        }
-        if (name == PropertyName.@_fullPropertyStringComplex) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@_fullPropertyStringComplex);
-            return true;
-        }
-        if (name == PropertyName.@_fullPropertyStaticImport) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@_fullPropertyStaticImport);
-            return true;
-        }
-        if (name == PropertyName.@_lamdaPropertyString) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@_lamdaPropertyString);
-            return true;
-        }
-        if (name == PropertyName.@_lambdaPropertyStaticImport) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@_lambdaPropertyStaticImport);
-            return true;
-        }
-        return base.GetGodotClassPropertyValue(name, out value);
+        value = default;
+        return false;
     }
+
     /// <summary>
     /// Get the property information for all the properties declared in this class.
     /// This method is used by Godot to register the available properties in the editor.

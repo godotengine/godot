@@ -32,17 +32,17 @@ partial class Methods
     }
 #pragma warning restore CS0109
 
+#pragma warning disable CS0618 // Type or member is obsolete
     protected new static readonly ScriptMethodRegistry<Methods> MethodRegistry = new ScriptMethodRegistry<Methods>()
         .Register(global::Godot.GodotObject.MethodRegistry)
-        .Register(MethodName.MethodWithOverload, 0, ScriptMethodDispatchHelper.CreateScriptMethod_MethodWithOverload0())
-        .Register(MethodName.MethodWithOverload, 1, ScriptMethodDispatchHelper.CreateScriptMethod_MethodWithOverload1())
-        .Register(MethodName.MethodWithOverload, 2, ScriptMethodDispatchHelper.CreateScriptMethod_MethodWithOverload2())
+        .Register(MethodName.@MethodWithOverload, 0, ScriptMethodDispatchHelper.CreateScriptMethod_MethodWithOverload0())
+        .Register(MethodName.@MethodWithOverload, 1, ScriptMethodDispatchHelper.CreateScriptMethod_MethodWithOverload1())
+        .Register(MethodName.@MethodWithOverload, 2, ScriptMethodDispatchHelper.CreateScriptMethod_MethodWithOverload2())
         .Build();
 
     private sealed class ScriptMethodDispatchHelper
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public static ScriptMethod<GodotObject> CreateScriptMethod_MethodWithOverload0()
+        public static ScriptMethod CreateScriptMethod_MethodWithOverload0()
         {
             return [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
             static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>
@@ -52,8 +52,7 @@ partial class Methods
                 return ret;
             };
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public static ScriptMethod<GodotObject> CreateScriptMethod_MethodWithOverload1()
+        public static ScriptMethod CreateScriptMethod_MethodWithOverload1()
         {
             return [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
             static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>
@@ -63,8 +62,7 @@ partial class Methods
                 return ret;
             };
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public static ScriptMethod<GodotObject> CreateScriptMethod_MethodWithOverload2()
+        public static ScriptMethod CreateScriptMethod_MethodWithOverload2()
         {
             return [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
             static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>
@@ -75,19 +73,21 @@ partial class Methods
             };
         }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    public override ref readonly ScriptMethod<GodotObject> TryGetGodotClassMethod(in godot_string_name method, int argc)
+    public override ref readonly ScriptMethod GetGodotClassMethodOrNullRef(in godot_string_name method, int argCount)
     {
-        return ref MethodRegistry.TryGetMethodFast(in method, argc);
+        return ref MethodRegistry.GetMethodOrNullRef(in method, argCount);
     }
 
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool InvokeGodotClassMethod(in godot_string_name method, NativeVariantPtrArgs args, out godot_variant ret)
     {
-        if (MethodRegistry.TryGetMethod(in method, args.Count, out var scriptMethod))
+        ref readonly var scriptMethod = ref GetGodotClassMethodOrNullRef(in method, args.Count);
+        if (!Unsafe.IsNullRef(in scriptMethod))
         {
             ret = scriptMethod(this, args);
             return true;
@@ -101,6 +101,6 @@ partial class Methods
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool HasGodotClassMethod(in godot_string_name method)
     {
-        return MethodRegistry.ContainsMethod(method);
+        return MethodRegistry.ContainsName(method);
     }
 }

@@ -35,16 +35,16 @@ partial class ScriptBoilerplate
     }
 #pragma warning restore CS0109
 
+#pragma warning disable CS0618 // Type or member is obsolete
     protected new static readonly ScriptMethodRegistry<ScriptBoilerplate> MethodRegistry = new ScriptMethodRegistry<ScriptBoilerplate>()
         .Register(global::Godot.Node.MethodRegistry)
-        .Register(MethodName._Process, 1, ScriptMethodDispatchHelper.CreateScriptMethod__Process1())
-        .Register(MethodName.Bazz, 1, ScriptMethodDispatchHelper.CreateScriptMethod_Bazz1())
+        .Register(MethodName.@_Process, 1, ScriptMethodDispatchHelper.CreateScriptMethod__Process1())
+        .Register(MethodName.@Bazz, 1, ScriptMethodDispatchHelper.CreateScriptMethod_Bazz1())
         .Build();
 
     private sealed class ScriptMethodDispatchHelper
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public static ScriptMethod<GodotObject> CreateScriptMethod__Process1()
+        public static ScriptMethod CreateScriptMethod__Process1()
         {
             return [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
             static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>
@@ -54,8 +54,7 @@ partial class ScriptBoilerplate
                 return ret;
             };
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public static ScriptMethod<GodotObject> CreateScriptMethod_Bazz1()
+        public static ScriptMethod CreateScriptMethod_Bazz1()
         {
             return [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
             static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>
@@ -66,19 +65,21 @@ partial class ScriptBoilerplate
             };
         }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    public override ref readonly ScriptMethod<GodotObject> TryGetGodotClassMethod(in godot_string_name method, int argc)
+    public override ref readonly ScriptMethod GetGodotClassMethodOrNullRef(in godot_string_name method, int argCount)
     {
-        return ref MethodRegistry.TryGetMethodFast(in method, argc);
+        return ref MethodRegistry.GetMethodOrNullRef(in method, argCount);
     }
 
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool InvokeGodotClassMethod(in godot_string_name method, NativeVariantPtrArgs args, out godot_variant ret)
     {
-        if (MethodRegistry.TryGetMethod(in method, args.Count, out var scriptMethod))
+        ref readonly var scriptMethod = ref GetGodotClassMethodOrNullRef(in method, args.Count);
+        if (!Unsafe.IsNullRef(in scriptMethod))
         {
             ret = scriptMethod(this, args);
             return true;
@@ -92,6 +93,6 @@ partial class ScriptBoilerplate
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool HasGodotClassMethod(in godot_string_name method)
     {
-        return MethodRegistry.ContainsMethod(method);
+        return MethodRegistry.ContainsName(method);
     }
 }

@@ -1,5 +1,7 @@
 using Godot;
 using Godot.NativeInterop;
+using Godot.Bridge;
+using System.Runtime.CompilerServices;
 
 partial class EventSignals
 {
@@ -13,6 +15,7 @@ partial class EventSignals
         /// </summary>
         public new static readonly global::Godot.StringName @MySignal = "MySignal";
     }
+
     /// <summary>
     /// Get the signal information for all the signals declared in this class.
     /// This method is used by Godot to register the available signals in the editor.
@@ -26,33 +29,48 @@ partial class EventSignals
         return signals;
     }
 #pragma warning restore CS0109
-    private global::EventSignals.MySignalEventHandler backing_MySignal;
+
+    protected global::EventSignals.MySignalEventHandler backing_MySignal;
     /// <inheritdoc cref="global::EventSignals.MySignalEventHandler"/>
-    public event global::EventSignals.MySignalEventHandler @MySignal {
+    public event global::EventSignals.MySignalEventHandler @MySignal
+    {
         add => backing_MySignal += value;
         remove => backing_MySignal -= value;
-}
+    }
+
     protected void EmitSignalMySignal(string @str, int @num)
     {
         EmitSignal(SignalName.MySignal, @str, @num);
     }
+
+#pragma warning disable CS0618 // Type or member is obsolete
+    protected new static readonly ScriptSignalRegistry<EventSignals> SignalRegistry = new ScriptSignalRegistry<EventSignals>()
+        .Register(global::Godot.GodotObject.SignalRegistry)
+        .Register(SignalName.@MySignal, 2,
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>
+            {
+                Unsafe.As<GodotObject, EventSignals>(ref scriptInstance).backing_MySignal?.Invoke(
+                    global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(args[0]), global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(args[1]));
+            })
+        .Build();
+#pragma warning restore CS0618 // Type or member is obsolete
+
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override void RaiseGodotClassSignalCallbacks(in godot_string_name signal, NativeVariantPtrArgs args)
     {
-        if (signal == SignalName.@MySignal && args.Count == 2) {
-            backing_MySignal?.Invoke(global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(args[0]), global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(args[1]));
-            return;
+        ref readonly var signalMethod = ref SignalRegistry.GetMethodOrNullRef(in signal, args.Count);
+        if (!Unsafe.IsNullRef(in signalMethod))
+        {
+            signalMethod(this, args);
         }
-        base.RaiseGodotClassSignalCallbacks(signal, args);
     }
+
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool HasGodotClassSignal(in godot_string_name signal)
     {
-        if (signal == SignalName.@MySignal) {
-           return true;
-        }
-        return base.HasGodotClassSignal(signal);
+        return SignalRegistry.ContainsName(signal);
     }
 }
