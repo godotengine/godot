@@ -84,6 +84,7 @@ bool TabContainer::_property_get_revert(const StringName &p_name, Variant &r_pro
 
 void TabContainer::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_EXIT_TREE:
 		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
 			tab_panels.clear();
 		} break;
