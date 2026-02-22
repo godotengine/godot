@@ -458,15 +458,15 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		settings->AddFace(f);
 	}
 
-	settings->CalculateEdgeLengths();
-	settings->CalculateVolumeConstraintVolumes();
-
 	// Pin whatever pinned vertices we have currently. This is used during the `Optimize` call below to order the
 	// constraints. Note that it's fine if the pinned vertices change later, but that will reduce the effectiveness
 	// of the constraints a bit.
 	pin_vertices(*this, pinned_vertices, mesh_to_physics, settings->mVertices);
 
 	_apply_physics_values(settings);
+
+	settings->CalculateEdgeLengths();
+	settings->CalculateVolumeConstraintVolumes();
 
 	settings->Optimize();
 
