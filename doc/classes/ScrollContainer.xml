@@ -120,6 +120,9 @@
 		<constant name="SCROLL_MODE_RESERVE" value="4" enum="ScrollMode">
 			Combines [constant SCROLL_MODE_AUTO] and [constant SCROLL_MODE_SHOW_ALWAYS]. The scrollbar is only visible if necessary, but the content size is adjusted as if it was always visible. It's useful for ensuring that content size stays the same regardless if the scrollbar is visible.
 		</constant>
+		<constant name="SCROLL_MODE_MAXIMIZE_FIRST" value="5" enum="ScrollMode">
+			Behaves like [constant SCROLL_MODE_AUTO], but makes the [ScrollContainer] report a minimum size based on its content (limited by [member Control.custom_maximum_size] when set on the corresponding axis). This allows it to grow first and only start scrolling once constrained.
+		</constant>
 		<constant name="SCROLL_HINT_MODE_DISABLED" value="0" enum="ScrollHintMode">
 			Scroll hints will never be shown.
 		</constant>
