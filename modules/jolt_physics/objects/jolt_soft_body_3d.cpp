@@ -363,59 +363,55 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		}
 	}
 
-	//Mark exterior tetrahedra
-	bool use_convex_hull = false;
-	if (!use_convex_hull) {
-		//Create mesh for inside/outside tests
-		PackedVector3Array surface_tris;
-		surface_tris.reserve(mesh_indices_clean.size());
+	//Create mesh for inside/outside tests
+	PackedVector3Array surface_tris;
+	surface_tris.reserve(mesh_indices_clean.size());
 
-		PackedVector3Array surface_norms;
-		surface_norms.reserve(mesh_indices_clean.size() / 3);
+	PackedVector3Array surface_norms;
+	surface_norms.reserve(mesh_indices_clean.size() / 3);
 
-		for (int i = 0; i < mesh_indices_clean.size(); ++i) {
-			surface_tris.append(mesh_vertices_clean[mesh_indices_clean[i]]);
-		}
-		for (int i = 0; i < surface_tris.size(); i += 3) {
-			Vector3 v0 = surface_tris[i];
-			Vector3 v1 = surface_tris[i + 1];
-			Vector3 v2 = surface_tris[i + 2];
-			surface_norms.append((v1 - v0).cross(v2 - v0).normalized());
-		}
+	for (int i = 0; i < mesh_indices_clean.size(); ++i) {
+		surface_tris.append(mesh_vertices_clean[mesh_indices_clean[i]]);
+	}
+	for (int i = 0; i < surface_tris.size(); i += 3) {
+		Vector3 v0 = surface_tris[i];
+		Vector3 v1 = surface_tris[i + 1];
+		Vector3 v2 = surface_tris[i + 2];
+		surface_norms.append((v1 - v0).cross(v2 - v0).normalized());
+	}
 
-		TriangleMesh surface_mesh;
-		surface_mesh.create_from_faces(surface_tris);
+	TriangleMesh surface_mesh;
+	surface_mesh.create_from_faces(surface_tris);
 
-		//Find valid tetrahedra
-		const Vector3 cast_dirs[] = {
-			Vector3(1, 0, 0),
-			Vector3(-1, 0, 0),
-			Vector3(0, 1, 0),
-			Vector3(0, -1, 0),
-			Vector3(0, 0, 1),
-			Vector3(0, 0, -1),
-		};
+	//Find valid (interior) tetrahedra
+	const Vector3 cast_dirs[] = {
+		Vector3(1, 0, 0),
+		Vector3(-1, 0, 0),
+		Vector3(0, 1, 0),
+		Vector3(0, -1, 0),
+		Vector3(0, 0, 1),
+		Vector3(0, 0, -1),
+	};
 
-		for (TetrahedraInfo &t_info : tet_info_list) {
-			Vector3 v0 = mesh_vertices_clean[t_info.vert_indices[0]];
-			Vector3 v1 = mesh_vertices_clean[t_info.vert_indices[1]];
-			Vector3 v2 = mesh_vertices_clean[t_info.vert_indices[2]];
-			Vector3 v3 = mesh_vertices_clean[t_info.vert_indices[3]];
-			Vector3 center = (v0 + v1 + v2 + v3) / 4.0;
+	for (TetrahedraInfo &t_info : tet_info_list) {
+		Vector3 v0 = mesh_vertices_clean[t_info.vert_indices[0]];
+		Vector3 v1 = mesh_vertices_clean[t_info.vert_indices[1]];
+		Vector3 v2 = mesh_vertices_clean[t_info.vert_indices[2]];
+		Vector3 v3 = mesh_vertices_clean[t_info.vert_indices[3]];
+		Vector3 center = (v0 + v1 + v2 + v3) / 4.0;
 
-			Vector3 point;
-			Vector3 normal;
-			int32_t surf_idx;
-			int32_t face_idx;
+		Vector3 point;
+		Vector3 normal;
+		int32_t surf_idx;
+		int32_t face_idx;
 
-			for (int i = 0; i < 6; ++i) {
-				const Vector3 &ray_dir = cast_dirs[i];
-				bool hit = surface_mesh.intersect_ray(center, ray_dir, point, normal, &surf_idx, &face_idx);
-				if (!hit || surface_norms[face_idx].dot(ray_dir) > 0) {
-					//Missed mesh or hit exterior
-					t_info.valid = false;
-					break;
-				}
+		for (int i = 0; i < 6; ++i) {
+			const Vector3 &ray_dir = cast_dirs[i];
+			bool hit = surface_mesh.intersect_ray(center, ray_dir, point, normal, &surf_idx, &face_idx);
+			if (!hit || surface_norms[face_idx].dot(ray_dir) > 0) {
+				//Missed mesh or hit exterior
+				t_info.valid = false;
+				break;
 			}
 		}
 	}
@@ -463,9 +459,10 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 	// of the constraints a bit.
 	pin_vertices(*this, pinned_vertices, mesh_to_physics, settings->mVertices);
 
+	settings->CalculateEdgeLengths();
+
 	_apply_physics_values(settings);
 
-	settings->CalculateEdgeLengths();
 	settings->CalculateVolumeConstraintVolumes();
 
 	settings->Optimize();
