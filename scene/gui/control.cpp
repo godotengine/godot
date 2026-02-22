@@ -1502,6 +1502,14 @@ void Control::set_size(const Size2 &p_size, bool p_keep_offsets) {
 		new_size.y = min.y;
 	}
 
+	Size2 max = get_combined_maximum_size();
+	if (max.x > 0 && new_size.x > max.x) {
+		new_size.x = max.x;
+	}
+	if (max.y > 0 && new_size.y > max.y) {
+		new_size.y = max.y;
+	}
+
 #ifdef TOOLS_ENABLED
 	// Can't compute anchors, set size directly and return immediately.
 	if (saving && !is_inside_tree()) {
@@ -1657,6 +1665,152 @@ Vector2 Control::get_combined_pivot_offset() const {
 
 /// Sizes.
 
+void Control::set_propagate_maximum_size(bool p_propagate) {
+	ERR_MAIN_THREAD_GUARD;
+	if (data.propagate_maximum_size == p_propagate) {
+		return;
+	}
+	data.propagate_maximum_size = p_propagate;
+	update_maximum_size();
+}
+
+bool Control::is_propagating_maximum_size() {
+	ERR_READ_THREAD_GUARD_V(false);
+	return data.propagate_maximum_size;
+}
+
+void Control::_update_maximum_size() {
+	if (!is_inside_tree()) {
+		data.updating_last_maximum_size = false;
+		return;
+	}
+
+	Size2 maxsize = get_combined_maximum_size();
+	data.updating_last_maximum_size = false;
+
+	if (maxsize != data.last_maximum_size) {
+		data.last_maximum_size = maxsize;
+		_size_changed();
+		emit_signal(SceneStringName(maximum_size_changed));
+	}
+}
+
+void Control::update_maximum_size() {
+	ERR_MAIN_THREAD_GUARD;
+	if (!is_inside_tree() || data.block_maximum_size_adjust) {
+		return;
+	}
+
+	data.maximum_size_valid = false;
+
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *child_control = Object::cast_to<Control>(get_child(i));
+		if (child_control && !child_control->is_set_as_top_level() && child_control->data.maximum_size_valid) {
+			child_control->data.maximum_size_valid = false;
+			child_control->update_maximum_size();
+		}
+	}
+
+	// Keep minimum size propagation in sync so parent containers can relayout correctly.
+	update_minimum_size();
+
+	if (!is_visible_in_tree()) {
+		// Invalidate the last maximum size so it will update when made visible.
+		data.last_maximum_size = Size2(-1, -1);
+		return;
+	}
+
+	if (data.updating_last_maximum_size) {
+		return;
+	}
+	data.updating_last_maximum_size = true;
+
+	callable_mp(this, &Control::_update_maximum_size).call_deferred();
+}
+
+void Control::set_block_maximum_size_adjust(bool p_block) {
+	ERR_MAIN_THREAD_GUARD;
+	data.block_maximum_size_adjust = p_block;
+}
+
+void Control::set_custom_maximum_size(const Size2 &p_custom) {
+	ERR_MAIN_THREAD_GUARD;
+	if (p_custom == data.custom_maximum_size) {
+		return;
+	}
+
+	if (!p_custom.is_finite()) {
+		// Prevent infinite loop.
+		return;
+	}
+
+	data.custom_maximum_size = p_custom.max(Size2());
+	update_maximum_size();
+	update_configuration_warnings();
+}
+
+Size2 Control::get_custom_maximum_size() const {
+	ERR_READ_THREAD_GUARD_V(Size2());
+	return data.custom_maximum_size;
+}
+
+Size2 Control::get_maximum_size() const {
+	ERR_READ_THREAD_GUARD_V(Size2());
+	Vector2 ms;
+	GDVIRTUAL_CALL(_get_maximum_size, ms);
+	return ms;
+}
+
+void Control::_update_maximum_size_cache() const {
+	Size2 maxsize = get_maximum_size();
+	if (data.custom_maximum_size.x > 0) {
+		if (maxsize.x > 0) {
+			maxsize.x = MIN(maxsize.x, data.custom_maximum_size.x);
+		} else {
+			maxsize.x = data.custom_maximum_size.x;
+		}
+	}
+	if (data.custom_maximum_size.y > 0) {
+		if (maxsize.y > 0) {
+			maxsize.y = MIN(maxsize.y, data.custom_maximum_size.y);
+		} else {
+			maxsize.y = data.custom_maximum_size.y;
+		}
+	}
+
+	Control *parent = get_parent_control();
+	Size2 parent_max_size = (parent && parent->data.propagate_maximum_size) ? parent->get_inner_combined_maximum_size().min(parent->get_combined_maximum_size()) : Size2();
+	if (parent_max_size.x > 0) {
+		if (maxsize.x > 0) {
+			maxsize.x = MIN(maxsize.x, parent_max_size.x);
+		} else {
+			maxsize.x = parent_max_size.x;
+		}
+	}
+	if (parent_max_size.y > 0) {
+		if (maxsize.y > 0) {
+			maxsize.y = MIN(maxsize.y, parent_max_size.y);
+		} else {
+			maxsize.y = parent_max_size.y;
+		}
+	}
+
+	data.maximum_size_cache = maxsize;
+	data.maximum_size_valid = true;
+}
+
+Size2 Control::get_combined_maximum_size() const {
+	ERR_READ_THREAD_GUARD_V(Size2());
+	if (!data.maximum_size_valid) {
+		_update_maximum_size_cache();
+	}
+	return data.maximum_size_cache;
+}
+
+Size2 Control::get_inner_combined_maximum_size() const {
+	return get_combined_maximum_size();
+}
+
 void Control::_update_minimum_size() {
 	if (!is_inside_tree()) {
 		data.updating_last_minimum_size = false;
@@ -1728,7 +1882,7 @@ void Control::set_custom_minimum_size(const Size2 &p_custom) {
 		return;
 	}
 
-	if (!std::isfinite(p_custom.x) || !std::isfinite(p_custom.y)) {
+	if (!p_custom.is_finite()) {
 		// Prevent infinite loop.
 		return;
 	}
@@ -1746,6 +1900,14 @@ Size2 Control::get_custom_minimum_size() const {
 void Control::_update_minimum_size_cache() const {
 	Size2 minsize = get_minimum_size();
 	minsize = minsize.max(data.custom_minimum_size);
+
+	Size2 maxsize = get_combined_maximum_size();
+	if (maxsize.x > 0) {
+		minsize.x = MIN(minsize.x, maxsize.x);
+	}
+	if (maxsize.y > 0) {
+		minsize.y = MIN(minsize.y, maxsize.y);
+	}
 
 	data.minimum_size_cache = minsize;
 	data.minimum_size_valid = true;
@@ -1772,6 +1934,7 @@ void Control::_size_changed() {
 	Point2 new_pos_cache = Point2(edge_pos[0], edge_pos[1]);
 	Size2 new_size_cache = Point2(edge_pos[2], edge_pos[3]) - new_pos_cache;
 
+	Size2 maximum_size = get_combined_maximum_size();
 	Size2 minimum_size = get_combined_minimum_size();
 
 	if (minimum_size.width > new_size_cache.width) {
@@ -1782,6 +1945,16 @@ void Control::_size_changed() {
 		}
 
 		new_size_cache.width = minimum_size.width;
+	}
+
+	if (maximum_size.width > 0 && maximum_size.width < new_size_cache.width) {
+		if (data.h_grow == GROW_DIRECTION_BEGIN) {
+			new_pos_cache.x += new_size_cache.width - maximum_size.width;
+		} else if (data.h_grow == GROW_DIRECTION_BOTH) {
+			new_pos_cache.x += 0.5 * (new_size_cache.width - maximum_size.width);
+		}
+
+		new_size_cache.width = maximum_size.width;
 	}
 
 	if (is_layout_rtl()) {
@@ -1796,6 +1969,16 @@ void Control::_size_changed() {
 		}
 
 		new_size_cache.height = minimum_size.height;
+	}
+
+	if (maximum_size.height > 0 && maximum_size.height < new_size_cache.height) {
+		if (data.v_grow == GROW_DIRECTION_BEGIN) {
+			new_pos_cache.y += new_size_cache.height - maximum_size.height;
+		} else if (data.v_grow == GROW_DIRECTION_BOTH) {
+			new_pos_cache.y += 0.5 * (new_size_cache.height - maximum_size.height);
+		}
+
+		new_size_cache.height = maximum_size.height;
 	}
 
 	bool pos_changed = new_pos_cache != data.pos_cache;
@@ -3853,7 +4036,7 @@ void Control::_notification(int p_notification) {
 
 		case NOTIFICATION_POST_ENTER_TREE: {
 			data.is_rtl_dirty = true;
-			update_minimum_size();
+			update_maximum_size();
 			_size_changed();
 		} break;
 
@@ -3978,7 +4161,7 @@ void Control::_notification(int p_notification) {
 					get_viewport()->_gui_hide_control(this);
 				}
 			} else {
-				update_minimum_size();
+				update_maximum_size();
 				_size_changed();
 			}
 		} break;
@@ -4001,8 +4184,12 @@ void Control::_notification(int p_notification) {
 
 void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("accept_event"), &Control::accept_event);
+	ClassDB::bind_method(D_METHOD("get_maximum_size"), &Control::get_maximum_size);
+	ClassDB::bind_method(D_METHOD("get_combined_maximum_size"), &Control::get_combined_maximum_size);
 	ClassDB::bind_method(D_METHOD("get_minimum_size"), &Control::get_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_combined_minimum_size"), &Control::get_combined_minimum_size);
+	ClassDB::bind_method(D_METHOD("set_propagate_maximum_size", "enable"), &Control::set_propagate_maximum_size);
+	ClassDB::bind_method(D_METHOD("is_propagating_maximum_size"), &Control::is_propagating_maximum_size);
 
 	ClassDB::bind_method(D_METHOD("_set_layout_mode", "mode"), &Control::_set_layout_mode);
 	ClassDB::bind_method(D_METHOD("_get_layout_mode"), &Control::_get_layout_mode);
@@ -4026,6 +4213,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size", "keep_offsets"), &Control::set_size, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("reset_size"), &Control::reset_size);
 	ClassDB::bind_method(D_METHOD("_set_size", "size"), &Control::_set_size);
+	ClassDB::bind_method(D_METHOD("set_custom_maximum_size", "size"), &Control::set_custom_maximum_size);
 	ClassDB::bind_method(D_METHOD("set_custom_minimum_size", "size"), &Control::set_custom_minimum_size);
 	ClassDB::bind_method(D_METHOD("set_global_position", "position", "keep_offsets"), &Control::set_global_position, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("_set_global_position", "position"), &Control::_set_global_position);
@@ -4044,6 +4232,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pivot_offset"), &Control::get_pivot_offset);
 	ClassDB::bind_method(D_METHOD("get_pivot_offset_ratio"), &Control::get_pivot_offset_ratio);
 	ClassDB::bind_method(D_METHOD("get_combined_pivot_offset"), &Control::get_combined_pivot_offset);
+	ClassDB::bind_method(D_METHOD("get_custom_maximum_size"), &Control::get_custom_maximum_size);
 	ClassDB::bind_method(D_METHOD("get_custom_minimum_size"), &Control::get_custom_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_parent_area_size"), &Control::get_parent_area_size);
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Control::get_global_position);
@@ -4191,6 +4380,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shortcut_context", "node"), &Control::set_shortcut_context);
 	ClassDB::bind_method(D_METHOD("get_shortcut_context"), &Control::get_shortcut_context);
 
+	ClassDB::bind_method(D_METHOD("update_maximum_size"), &Control::update_maximum_size);
 	ClassDB::bind_method(D_METHOD("update_minimum_size"), &Control::update_minimum_size);
 
 	ClassDB::bind_method(D_METHOD("set_layout_direction", "direction"), &Control::set_layout_direction);
@@ -4207,6 +4397,8 @@ void Control::_bind_methods() {
 
 	ADD_GROUP("Layout", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_contents"), "set_clip_contents", "is_clipping_contents");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "propagate_maximum_size"), "set_propagate_maximum_size", "is_propagating_maximum_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "custom_maximum_size", PROPERTY_HINT_NONE, "suffix:px"), "set_custom_maximum_size", "get_custom_maximum_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "custom_minimum_size", PROPERTY_HINT_NONE, "suffix:px"), "set_custom_minimum_size", "get_custom_minimum_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Based on Application Locale,Left-to-Right,Right-to-Left,Based on System Locale"), "set_layout_direction", "get_layout_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_mode", PROPERTY_HINT_ENUM, "Position,Anchors,Container,Uncontrolled", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_layout_mode", "_get_layout_mode");
@@ -4426,11 +4618,13 @@ void Control::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("focus_entered"));
 	ADD_SIGNAL(MethodInfo("focus_exited"));
 	ADD_SIGNAL(MethodInfo("size_flags_changed"));
+	ADD_SIGNAL(MethodInfo("maximum_size_changed"));
 	ADD_SIGNAL(MethodInfo("minimum_size_changed"));
 	ADD_SIGNAL(MethodInfo("theme_changed"));
 
 	GDVIRTUAL_BIND(_has_point, "point");
 	GDVIRTUAL_BIND(_structured_text_parser, "args", "text");
+	GDVIRTUAL_BIND(_get_maximum_size);
 	GDVIRTUAL_BIND(_get_minimum_size);
 	GDVIRTUAL_BIND(_get_tooltip, "at_position");
 

@@ -53,6 +53,16 @@ Size2 FoldableContainer::get_minimum_size() const {
 	return Size2(MAX(ms.width, title_minimum_size.width), ms.height + title_minimum_size.height);
 }
 
+Size2 FoldableContainer::get_inner_combined_maximum_size() const {
+	Size2 ms = Container::get_inner_combined_maximum_size();
+
+	if (theme_cache.panel_style.is_valid()) {
+		ms -= theme_cache.panel_style->get_minimum_size();
+	}
+
+	return ms;
+}
+
 void FoldableContainer::fold() {
 	set_folded(true);
 	emit_signal(SNAME("folding_changed"), folded);

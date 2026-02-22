@@ -36,6 +36,7 @@
 
 struct _MinSizeCache {
 	int min_size = 0;
+	int max_size = 0;
 	bool will_stretch = false;
 	int final_size = 0;
 };
@@ -61,17 +62,24 @@ void BoxContainer::_resort() {
 		}
 
 		Size2i size = c->get_combined_minimum_size();
+		Size2 max_size = c->get_combined_maximum_size();
 		_MinSizeCache msc;
 
 		if (vertical) { /* VERTICAL */
 			stretch_min += size.height;
 			msc.min_size = size.height;
+			msc.max_size = max_size.height > 0 ? int(max_size.height) : 0;
 			msc.will_stretch = c->get_v_size_flags().has_flag(SIZE_EXPAND);
 
 		} else { /* HORIZONTAL */
 			stretch_min += size.width;
 			msc.min_size = size.width;
+			msc.max_size = max_size.width > 0 ? int(max_size.width) : 0;
 			msc.will_stretch = c->get_h_size_flags().has_flag(SIZE_EXPAND);
+		}
+
+		if (msc.max_size > 0 && msc.max_size < msc.min_size) {
+			msc.max_size = msc.min_size;
 		}
 
 		if (msc.will_stretch) {
@@ -98,10 +106,7 @@ void BoxContainer::_resort() {
 	/** Second, pass successively to discard elements that can't be stretched, this will run while stretchable
 		elements exist */
 
-	bool has_stretched = false;
 	while (stretch_ratio_total > 0) { // first of all, don't even be here if no stretchable objects exist
-
-		has_stretched = true;
 		bool refit_successful = true; //assume refit-test will go well
 		float error = 0.0; // Keep track of accumulated error in pixels
 
@@ -116,22 +121,32 @@ void BoxContainer::_resort() {
 
 			if (msc.will_stretch) { //wants to stretch
 				//let's see if it can really stretch
-				float final_pixel_size = stretch_avail * c->get_stretch_ratio() / stretch_ratio_total;
+				float stretch_ratio = c->get_stretch_ratio();
+				float final_pixel_size = stretch_avail * stretch_ratio / stretch_ratio_total;
 				// Add leftover fractional pixels to error accumulator
 				error += final_pixel_size - (int)final_pixel_size;
 				if (final_pixel_size < msc.min_size) {
 					//if available stretching area is too small for widget,
 					//then remove it from stretching area
 					msc.will_stretch = false;
-					stretch_ratio_total -= c->get_stretch_ratio();
+					stretch_ratio_total -= stretch_ratio;
 					refit_successful = false;
 					stretch_avail -= msc.min_size;
 					msc.final_size = msc.min_size;
 					break;
+				} else if (msc.max_size > 0 && final_pixel_size > msc.max_size) {
+					// If stretching would exceed the Control's maximum size,
+					// cap it and redistribute its unused share.
+					msc.will_stretch = false;
+					stretch_ratio_total -= stretch_ratio;
+					refit_successful = false;
+					stretch_avail -= msc.max_size;
+					msc.final_size = msc.max_size;
+					break;
 				} else {
 					msc.final_size = final_pixel_size;
 					// Dump accumulated error if one pixel or more
-					if (error >= 1) {
+					if (error >= 1 && (msc.max_size <= 0 || msc.final_size < msc.max_size)) {
 						msc.final_size += 1;
 						error -= 1;
 					}
@@ -147,34 +162,48 @@ void BoxContainer::_resort() {
 	/** Final pass, draw and stretch elements **/
 
 	int ofs = 0;
-	if (!has_stretched) {
-		if (!vertical) {
-			switch (alignment) {
-				case ALIGNMENT_BEGIN:
-					if (rtl) {
-						ofs = stretch_diff;
-					}
-					break;
-				case ALIGNMENT_CENTER:
-					ofs = stretch_diff / 2;
-					break;
-				case ALIGNMENT_END:
-					if (!rtl) {
-						ofs = stretch_diff;
-					}
-					break;
-			}
-		} else {
-			switch (alignment) {
-				case ALIGNMENT_BEGIN:
-					break;
-				case ALIGNMENT_CENTER:
-					ofs = stretch_diff / 2;
-					break;
-				case ALIGNMENT_END:
-					ofs = stretch_diff;
-					break;
-			}
+	int final_stretch_diff = stretch_max - stretch_min;
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *c = as_sortable_control(get_child(i));
+		if (!c) {
+			continue;
+		}
+
+		ERR_FAIL_COND(!min_size_cache.has(c));
+		_MinSizeCache &msc = min_size_cache[c];
+		final_stretch_diff -= msc.final_size - msc.min_size;
+	}
+
+	if (final_stretch_diff < 0) {
+		final_stretch_diff = 0;
+	}
+
+	if (!vertical) {
+		switch (alignment) {
+			case ALIGNMENT_BEGIN:
+				if (rtl) {
+					ofs = final_stretch_diff;
+				}
+				break;
+			case ALIGNMENT_CENTER:
+				ofs = final_stretch_diff / 2;
+				break;
+			case ALIGNMENT_END:
+				if (!rtl) {
+					ofs = final_stretch_diff;
+				}
+				break;
+		}
+	} else {
+		switch (alignment) {
+			case ALIGNMENT_BEGIN:
+				break;
+			case ALIGNMENT_CENTER:
+				ofs = final_stretch_diff / 2;
+				break;
+			case ALIGNMENT_END:
+				ofs = final_stretch_diff;
+				break;
 		}
 	}
 
@@ -340,9 +369,7 @@ Control *BoxContainer::add_spacer(bool p_begin) {
 Vector<int> BoxContainer::get_allowed_size_flags_horizontal() const {
 	Vector<int> flags;
 	flags.append(SIZE_FILL);
-	if (!vertical) {
-		flags.append(SIZE_EXPAND);
-	}
+	flags.append(SIZE_EXPAND);
 	flags.append(SIZE_SHRINK_BEGIN);
 	flags.append(SIZE_SHRINK_CENTER);
 	flags.append(SIZE_SHRINK_END);
@@ -352,9 +379,7 @@ Vector<int> BoxContainer::get_allowed_size_flags_horizontal() const {
 Vector<int> BoxContainer::get_allowed_size_flags_vertical() const {
 	Vector<int> flags;
 	flags.append(SIZE_FILL);
-	if (vertical) {
-		flags.append(SIZE_EXPAND);
-	}
+	flags.append(SIZE_EXPAND);
 	flags.append(SIZE_SHRINK_BEGIN);
 	flags.append(SIZE_SHRINK_CENTER);
 	flags.append(SIZE_SHRINK_END);

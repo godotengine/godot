@@ -984,6 +984,25 @@ Size2 TabContainer::get_minimum_size() const {
 	return ms;
 }
 
+Size2 TabContainer::get_inner_combined_maximum_size() const {
+	Size2 ms = Container::get_inner_combined_maximum_size();
+
+	if (tabs_visible) {
+		Size2 tab_bar_ms = tab_bar->get_minimum_size();
+		ms.height -= tab_bar_ms.height;
+
+		if (theme_cache.tabbar_style.is_valid()) {
+			ms.height -= theme_cache.tabbar_style->get_margin(SIDE_TOP) + theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);
+		}
+	}
+
+	if (theme_cache.panel_style.is_valid()) {
+		ms -= theme_cache.panel_style->get_minimum_size();
+	}
+
+	return ms;
+}
+
 void TabContainer::set_popup(Node *p_popup) {
 	bool had_popup = get_popup();
 

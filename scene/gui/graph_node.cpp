@@ -181,11 +181,16 @@ void GraphNode::_resort() {
 		}
 
 		Size2i size = child->get_combined_minimum_size() + (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size() : Size2());
+		Size2 max_size = child->get_combined_maximum_size();
 
 		stretch_min += size.height;
 
 		_MinSizeCache msc;
 		msc.min_size = size.height;
+		msc.max_size = max_size.height > 0 ? int(max_size.height) + (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size().height : 0) : 0;
+		if (msc.max_size > 0 && msc.max_size < msc.min_size) {
+			msc.max_size = msc.min_size;
+		}
 		msc.will_stretch = child->get_v_size_flags().has_flag(SIZE_EXPAND);
 		msc.final_size = msc.min_size;
 		min_size_cache[child] = msc;
@@ -226,15 +231,25 @@ void GraphNode::_resort() {
 			_MinSizeCache &msc = min_size_cache[child];
 
 			if (msc.will_stretch) {
-				int final_pixel_size = available_stretch_space * child->get_stretch_ratio() / stretch_ratio_total;
+				float stretch_ratio = child->get_stretch_ratio();
+				int final_pixel_size = available_stretch_space * stretch_ratio / stretch_ratio_total;
 				if (final_pixel_size < msc.min_size) {
 					// If the available stretching area is too small for a Control,
 					// then remove it from stretching area.
 					msc.will_stretch = false;
-					stretch_ratio_total -= child->get_stretch_ratio();
+					stretch_ratio_total -= stretch_ratio;
 					refit_successful = false;
 					available_stretch_space -= msc.min_size;
 					msc.final_size = msc.min_size;
+					break;
+				} else if (msc.max_size > 0 && final_pixel_size > msc.max_size) {
+					// If stretching would exceed the Control's maximum size,
+					// cap it and redistribute its unused share.
+					msc.will_stretch = false;
+					stretch_ratio_total -= stretch_ratio;
+					refit_successful = false;
+					available_stretch_space -= msc.max_size;
+					msc.final_size = msc.max_size;
 					break;
 				} else {
 					msc.final_size = final_pixel_size;

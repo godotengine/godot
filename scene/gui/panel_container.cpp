@@ -50,6 +50,16 @@ Size2 PanelContainer::get_minimum_size() const {
 	return ms;
 }
 
+Size2 PanelContainer::get_inner_combined_maximum_size() const {
+	Size2 ms = Container::get_inner_combined_maximum_size();
+
+	if (theme_cache.panel_style.is_valid()) {
+		ms -= theme_cache.panel_style->get_minimum_size();
+	}
+
+	return ms;
+}
+
 Vector<int> PanelContainer::get_allowed_size_flags_horizontal() const {
 	Vector<int> flags;
 	flags.append(SIZE_FILL);
