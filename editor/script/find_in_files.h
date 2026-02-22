@@ -108,6 +108,7 @@ public:
 	void set_search_text(const String &text);
 
 	String get_search_text() const;
+	bool is_replace_pressed() const;
 	bool is_match_case() const;
 	bool is_whole_words() const;
 	String get_folder() const;
@@ -131,6 +132,7 @@ private:
 	String validate_filter_wildcard(const String &p_expression) const;
 
 	Timer *debounce_timer = nullptr;
+	CheckBox *replace_checkbox = nullptr;
 	LineEdit *_search_text_line_edit = nullptr;
 
 	LineEdit *_folder_line_edit = nullptr;

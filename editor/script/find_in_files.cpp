@@ -353,19 +353,29 @@ FindInFilesDialog::FindInFilesDialog() {
 	vbc->add_theme_constant_override("separation", 0);
 	mc->add_child(vbc);
 
-	_search_text_line_edit = memnew(LineEdit);
-	_search_text_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	_search_text_line_edit->set_accessibility_name(TTRC("Find"));
-	_search_text_line_edit->set_placeholder(TTRC("Find"));
-	_search_text_line_edit->set_keep_editing_on_text_submit(true);
-	_search_text_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesDialog::_on_search_modified).unbind(1));
-	_search_text_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_submitted).unbind(1));
-	vbc->add_child(_search_text_line_edit);
+	{
+		HBoxContainer *hbc = memnew(HBoxContainer);
+		vbc->add_child(hbc);
 
-	vbc->add_child(memnew(Control)); // Space to maintain the grid alignment.
+		replace_checkbox = memnew(CheckBox);
+		replace_checkbox->set_pressed(true);
+		replace_checkbox->set_tooltip_text(TTRC("Toggle Replace Mode"));
+		replace_checkbox->connect(SceneStringName(toggled), callable_mp(this, &FindInFilesDialog::_on_search_modified).unbind(1));
+		hbc->add_child(replace_checkbox);
+
+		_search_text_line_edit = memnew(LineEdit);
+		_search_text_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		_search_text_line_edit->set_accessibility_name(TTRC("Find"));
+		_search_text_line_edit->set_placeholder(TTRC("Find"));
+		_search_text_line_edit->set_keep_editing_on_text_submit(true);
+		_search_text_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesDialog::_on_search_modified).unbind(1));
+		_search_text_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_submitted).unbind(1));
+		hbc->add_child(_search_text_line_edit);
+	}
 
 	{
 		HBoxContainer *hbc = memnew(HBoxContainer);
+		vbc->add_child(hbc);
 
 		_whole_words_checkbox = memnew(CheckBox);
 		_whole_words_checkbox->set_text(TTRC("Whole Words"));
@@ -376,8 +386,6 @@ FindInFilesDialog::FindInFilesDialog() {
 		_match_case_checkbox->set_text(TTRC("Match Case"));
 		_match_case_checkbox->connect(SceneStringName(toggled), callable_mp(this, &FindInFilesDialog::_on_search_modified).unbind(1));
 		hbc->add_child(_match_case_checkbox);
-
-		vbc->add_child(hbc);
 	}
 
 	{
@@ -461,6 +469,10 @@ void FindInFilesDialog::set_search_text(const String &text) {
 
 String FindInFilesDialog::get_search_text() const {
 	return _search_text_line_edit->get_text();
+}
+
+bool FindInFilesDialog::is_replace_pressed() const {
+	return replace_checkbox->is_pressed();
 }
 
 bool FindInFilesDialog::is_match_case() const {
@@ -703,7 +715,6 @@ FindInFilesPanel::FindInFilesPanel() {
 
 		vbc->add_child(_replace_container);
 	}
-	set_with_replace(true);
 }
 
 void FindInFilesPanel::set_with_replace(bool with_replace) {
@@ -1360,8 +1371,9 @@ void FindInFilesContainer::_start_find_in_files() {
 		return;
 	}
 	FindInFilesPanel *panel = _get_panel_for_results(TTR("Find:") + " " + search_control->get_search_text());
-	FindInFiles *f = panel->get_finder();
+	panel->set_with_replace(search_control->is_replace_pressed());
 
+	FindInFiles *f = panel->get_finder();
 	f->set_search_text(search_control->get_search_text());
 	f->set_match_case(search_control->is_match_case());
 	f->set_whole_words(search_control->is_whole_words());
