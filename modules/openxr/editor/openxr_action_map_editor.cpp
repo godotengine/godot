@@ -86,6 +86,7 @@ OpenXRActionSetEditor *OpenXRActionMapEditor::_add_action_set_editor(const Ref<O
 	OpenXRActionSetEditor *action_set_editor = memnew(OpenXRActionSetEditor(action_map, p_action_set));
 	action_set_editor->connect("remove", callable_mp(this, &OpenXRActionMapEditor::_on_remove_action_set));
 	action_set_editor->connect("action_removed", callable_mp(this, &OpenXRActionMapEditor::_on_action_removed));
+	action_set_editor->connect("action_renamed", callable_mp(this, &OpenXRActionMapEditor::_on_action_renamed));
 
 	actionsets_vb->add_child(action_set_editor);
 
@@ -244,6 +245,15 @@ void OpenXRActionMapEditor::_on_action_removed(const Ref<OpenXRAction> &p_action
 		OpenXRInteractionProfileEditorBase *interaction_profile_editor = Object::cast_to<OpenXRInteractionProfileEditorBase>(tabs->get_tab_control(i));
 		if (interaction_profile_editor) {
 			interaction_profile_editor->remove_all_for_action(p_action);
+		}
+	}
+}
+
+void OpenXRActionMapEditor::_on_action_renamed(const Ref<OpenXRAction> &p_action) {
+	for (int i = 0; i < tabs->get_tab_count(); i++) {
+		OpenXRInteractionProfileEditorBase *interaction_profile_editor = Object::cast_to<OpenXRInteractionProfileEditorBase>(tabs->get_tab_control(i));
+		if (interaction_profile_editor) {
+			interaction_profile_editor->_do_update_interaction_profile();
 		}
 	}
 }
