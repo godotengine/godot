@@ -48,6 +48,7 @@ class EditorSettings;
 class EditorToaster;
 class EditorUndoRedoManager;
 class FileSystemDock;
+class RunInstancesDialog;
 class Mesh;
 class Node;
 class PropertySelector;
@@ -114,6 +115,8 @@ public:
 
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
+
+	RunInstancesDialog *get_run_instances_dialog() const;
 
 	// Editor GUI.
 

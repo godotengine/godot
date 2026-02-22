@@ -46,6 +46,7 @@
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/inspector/property_selector.h"
 #include "editor/run/editor_run_bar.h"
+#include "editor/run/run_instances_dialog.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/scene/scene_tree_editor.h"
@@ -393,6 +394,10 @@ void EditorInterface::set_plugin_enabled(const String &p_plugin, bool p_enabled)
 
 bool EditorInterface::is_plugin_enabled(const String &p_plugin) const {
 	return EditorNode::get_singleton()->is_addon_plugin_enabled(p_plugin);
+}
+
+RunInstancesDialog *EditorInterface::get_run_instances_dialog() const {
+	return RunInstancesDialog::get_singleton();
 }
 
 // Editor GUI.
@@ -884,6 +889,8 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("popup_method_selector", "object", "callback", "current_value"), &EditorInterface::popup_method_selector, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("popup_quick_open", "callback", "base_types"), &EditorInterface::popup_quick_open, DEFVAL(TypedArray<StringName>()));
 	ClassDB::bind_method(D_METHOD("popup_create_dialog", "callback", "base_type", "current_type", "dialog_title", "type_blocklist"), &EditorInterface::popup_create_dialog, DEFVAL(""), DEFVAL(""), DEFVAL(""), DEFVAL(TypedArray<StringName>()));
+
+	ClassDB::bind_method(D_METHOD("get_run_instances_dialog"), &EditorInterface::get_run_instances_dialog);
 
 	// Editor docks.
 

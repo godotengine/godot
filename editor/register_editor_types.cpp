@@ -74,6 +74,7 @@
 #include "editor/inspector/input_event_editor_plugin.h"
 #include "editor/inspector/sub_viewport_preview_editor_plugin.h"
 #include "editor/inspector/tool_button_editor_plugin.h"
+#include "editor/run/run_instances_dialog.h"
 #include "editor/scene/2d/camera_2d_editor_plugin.h"
 #include "editor/scene/2d/light_occluder_2d_editor_plugin.h"
 #include "editor/scene/2d/line_2d_editor_plugin.h"
@@ -212,6 +213,8 @@ void register_editor_types() {
 	GDREGISTER_CLASS(ResourceImporterTexture);
 	GDREGISTER_CLASS(ResourceImporterTextureAtlas);
 	GDREGISTER_CLASS(ResourceImporterWAV);
+
+	GDREGISTER_CLASS(RunInstancesDialog);
 
 	// This list is alphabetized, and plugins that depend on Node2D are in their own section below.
 	EditorPlugins::add_by_type<AnimationTreeEditorPlugin>();
