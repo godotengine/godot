@@ -33,12 +33,9 @@
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/input/input.h"
-#include "core/math/vector2.h"
-#include "core/os/memory.h"
 #include "scene/gui/control.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
-#include "servers/display/display_server.h"
 
 // Editor integration.
 
