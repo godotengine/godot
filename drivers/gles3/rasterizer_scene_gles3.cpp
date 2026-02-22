@@ -2675,11 +2675,11 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	// Need to clear framebuffer unless:
 	// a) We explicitly request not to (i.e. ENV_BG_KEEP).
 	// b) We are rendering to a non-intermediate framebuffer with ENV_BG_CANVAS (shared between 2D and 3D).
-	if (!keep_color && (!draw_canvas || fbo != rt->fbo)) {
+	if (!keep_color && (!draw_canvas || (rt && fbo != rt->fbo))) {
 		clear_color.a = render_data.transparent_bg ? 0.0f : 1.0f;
 		glClearBufferfv(GL_COLOR, 0, clear_color.components);
 	}
-	if ((keep_color || draw_canvas) && fbo != rt->fbo) {
+	if ((keep_color || draw_canvas) && rt && fbo != rt->fbo) {
 		// Need to copy our current contents to our intermediate/MSAA buffer
 		GLES3::CopyEffects *copy_effects = GLES3::CopyEffects::get_singleton();
 
