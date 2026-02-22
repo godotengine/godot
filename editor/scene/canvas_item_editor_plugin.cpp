@@ -515,7 +515,7 @@ void CanvasItemEditor::shortcut_input(const Ref<InputEvent> &p_ev) {
 	}
 
 	if (k.is_valid()) {
-		if (k->get_keycode() == Key::CTRL || k->get_keycode() == Key::ALT || k->get_keycode() == Key::SHIFT) {
+		if (!k->is_echo() && (k->get_keycode() == Key::CTRL || k->get_keycode() == Key::ALT || k->get_keycode() == Key::SHIFT)) {
 			viewport->queue_redraw();
 		}
 
