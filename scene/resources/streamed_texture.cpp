@@ -134,7 +134,7 @@ void StreamedTexture2D::texture_reload(uint8_t p_mip_level) {
 	}
 
 	RenderingServer::get_singleton()->texture_set_path(new_texture, path_to_file);
-	RS::get_singleton()->texture_replace(texture, new_texture);
+	RS::get_singleton()->texture_replace_compatible(texture, new_texture);
 
 #ifdef MODULE_TEXTURE_STREAMING_ENABLED
 	// Re-attach streaming state after texture replacement if streaming is active
