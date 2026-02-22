@@ -96,10 +96,6 @@ void AnimationNodeBlendTreeEditor::_update_options_menu(bool p_has_input_ports) 
 	use_position_from_popup_menu = false;
 }
 
-Size2 AnimationNodeBlendTreeEditor::get_minimum_size() const {
-	return Size2(10, 200);
-}
-
 void AnimationNodeBlendTreeEditor::_property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing) {
 	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
 	if (!tree) {
@@ -1014,6 +1010,7 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 
 			if (error != error_label->get_text()) {
 				error_label->set_text(error);
+				error_label->set_tooltip_text(error);
 				if (!error.is_empty()) {
 					error_panel->show();
 				} else {
@@ -1272,8 +1269,12 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	add_child(error_panel);
 	error_label = memnew(Label);
 	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	error_label->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+	error_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	error_label->set_mouse_filter(MOUSE_FILTER_PASS);
+	error_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	error_panel->add_child(error_label);
-	error_label->set_text("eh");
+	error_panel->hide();
 
 	filter_dialog = memnew(AcceptDialog);
 	add_child(filter_dialog);

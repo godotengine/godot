@@ -43,6 +43,7 @@
 #include "scene/animation/animation_player.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
@@ -845,6 +846,7 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 
 			if (error != error_label->get_text()) {
 				error_label->set_text(error);
+				error_label->set_tooltip_text(error);
 				if (!error.is_empty()) {
 					error_panel->show();
 				} else {
@@ -890,8 +892,11 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	singleton = this;
 	updating = false;
 
-	HBoxContainer *top_hb = memnew(HBoxContainer);
-	add_child(top_hb);
+	FlowContainer *top_fc = memnew(FlowContainer);
+	add_child(top_fc);
+
+	HBoxContainer *left_hb = memnew(HBoxContainer);
+	top_fc->add_child(left_hb);
 
 	Ref<ButtonGroup> bg;
 	bg.instantiate();
@@ -900,7 +905,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_select->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_select->set_toggle_mode(true);
 	tool_select->set_button_group(bg);
-	top_hb->add_child(tool_select);
+	left_hb->add_child(tool_select);
 	tool_select->set_pressed(true);
 	tool_select->set_tooltip_text(TTR("Select and move points.\nRMB: Create point at position clicked.\nShift+LMB+Drag: Set the blending position within the space."));
 	tool_select->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(0));
@@ -909,7 +914,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_create->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
-	top_hb->add_child(tool_create);
+	left_hb->add_child(tool_create);
 	tool_create->set_tooltip_text(TTR("Create points."));
 	tool_create->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(1));
 
@@ -917,7 +922,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_blend->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_blend->set_toggle_mode(true);
 	tool_blend->set_button_group(bg);
-	top_hb->add_child(tool_blend);
+	left_hb->add_child(tool_blend);
 	tool_blend->set_tooltip_text(TTR("Set the blending position within the space."));
 	tool_blend->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(2));
 
@@ -925,40 +930,40 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_triangle->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_triangle->set_toggle_mode(true);
 	tool_triangle->set_button_group(bg);
-	top_hb->add_child(tool_triangle);
+	left_hb->add_child(tool_triangle);
 	tool_triangle->set_tooltip_text(TTR("Create triangles by connecting points."));
 	tool_triangle->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(3));
 
-	tool_erase_sep = memnew(VSeparator);
-	top_hb->add_child(tool_erase_sep);
+	left_hb->add_child(memnew(VSeparator));
+
 	tool_erase = memnew(Button);
 	tool_erase->set_theme_type_variation(SceneStringName(FlatButton));
-	top_hb->add_child(tool_erase);
+	left_hb->add_child(tool_erase);
 	tool_erase->set_tooltip_text(TTR("Erase points and triangles."));
 	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_erase_selected));
 	tool_erase->set_disabled(true);
 
-	top_hb->add_child(memnew(VSeparator));
+	left_hb->add_child(memnew(VSeparator));
 
 	auto_triangles = memnew(Button);
 	auto_triangles->set_theme_type_variation(SceneStringName(FlatButton));
-	top_hb->add_child(auto_triangles);
+	left_hb->add_child(auto_triangles);
 	auto_triangles->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled));
 	auto_triangles->set_toggle_mode(true);
 	auto_triangles->set_tooltip_text(TTR("Generate blend triangles automatically (instead of manually)"));
 
-	top_hb->add_child(memnew(VSeparator));
+	left_hb->add_child(memnew(VSeparator));
 
 	snap = memnew(Button);
 	snap->set_theme_type_variation(SceneStringName(FlatButton));
 	snap->set_toggle_mode(true);
-	top_hb->add_child(snap);
+	left_hb->add_child(snap);
 	snap->set_pressed(true);
 	snap->set_tooltip_text(TTR("Enable snap and show grid."));
 	snap->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_snap_toggled));
 
 	snap_x = memnew(SpinBox);
-	top_hb->add_child(snap_x);
+	left_hb->add_child(snap_x);
 	snap_x->set_prefix("x:");
 	snap_x->set_min(0.01);
 	snap_x->set_step(0.01);
@@ -966,29 +971,35 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	snap_x->set_accessibility_name(TTRC("Grid X Step"));
 
 	snap_y = memnew(SpinBox);
-	top_hb->add_child(snap_y);
+	left_hb->add_child(snap_y);
 	snap_y->set_prefix("y:");
 	snap_y->set_min(0.01);
 	snap_y->set_step(0.01);
 	snap_y->set_max(1000);
 	snap_y->set_accessibility_name(TTRC("Grid Y Step"));
 
-	top_hb->add_child(memnew(VSeparator));
+	left_hb->add_child(memnew(VSeparator));
 
-	top_hb->add_child(memnew(Label(TTR("Sync:"))));
+	HBoxContainer *sync_hb = memnew(HBoxContainer);
+	top_fc->add_child(sync_hb);
+
 	sync = memnew(CheckBox);
-	top_hb->add_child(sync);
+	sync->set_text(TTRC("Sync"));
+	sync_hb->add_child(sync);
 	sync->connect(SceneStringName(toggled), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
 
-	top_hb->add_child(memnew(VSeparator));
+	sync_hb->add_child(memnew(VSeparator));
 
-	top_hb->add_child(memnew(Label(TTR("Blend:"))));
+	HBoxContainer *blend_hb = memnew(HBoxContainer);
+	top_fc->add_child(blend_hb);
+
+	blend_hb->add_child(memnew(Label(TTR("Blend:"))));
 	interpolation = memnew(OptionButton);
-	top_hb->add_child(interpolation);
+	blend_hb->add_child(interpolation);
 	interpolation->connect(SceneStringName(item_selected), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
 
 	edit_hb = memnew(HBoxContainer);
-	top_hb->add_child(edit_hb);
+	top_fc->add_child(edit_hb);
 	edit_hb->add_child(memnew(VSeparator));
 	edit_hb->add_child(memnew(Label(TTR("Point"))));
 	edit_x = memnew(SpinBox);
@@ -1017,6 +1028,8 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	main_hb->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	GridContainer *main_grid = memnew(GridContainer);
+	main_grid->add_theme_constant_override(SNAME("h_separation"), 0);
+	main_grid->add_theme_constant_override(SNAME("v_separation"), 0);
 	main_grid->set_columns(2);
 	main_hb->add_child(main_grid);
 	main_grid->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1098,10 +1111,12 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	add_child(error_panel);
 	error_label = memnew(Label);
 	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	error_label->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+	error_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	error_label->set_mouse_filter(MOUSE_FILTER_PASS);
+	error_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	error_panel->add_child(error_label);
 	error_panel->hide();
-
-	set_custom_minimum_size(Size2(0, 300 * EDSCALE));
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
