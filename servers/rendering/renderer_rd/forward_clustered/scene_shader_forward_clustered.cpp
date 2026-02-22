@@ -496,18 +496,16 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 	specialization_constants.push_back(sc);
 
 	RID shader_rid = get_shader_variant(p_pipeline_key.version, p_pipeline_key.color_pass_flags, p_pipeline_key.ubershader);
-	ERR_FAIL_COND(shader_rid.is_null()); // If this happens, the renderer will probably crash somewhere else.
-
+	ERR_FAIL_COND(shader_rid.is_null());
 
 	RID pipeline = RD::get_singleton()->render_pipeline_create(shader_rid, p_pipeline_key.framebuffer_format_id, p_pipeline_key.vertex_format_id, primitive_rd, raster_state, multisample_state, depth_stencil_state, blend_state, 0, 0, specialization_constants);
-	ERR_FAIL_COND_MSG( // Made a clearer error message. but. I haven't tested this yet. so it may be possible for a compilation fail of the engine code.
-    pipeline.is_null(),
-    vformat("Forward+ pipeline creation failed for key %llu (version=%d, flags=%u, ubershader=%d).",
-        (unsigned long long)p_pipeline_key.hash(),
-        p_pipeline_key.version,
-        p_pipeline_key.color_pass_flags,
-        (int)p_pipeline_key.ubershader)
-	);
+	ERR_FAIL_COND_MSG(
+			pipeline.is_null(),
+			vformat("Forward+ pipeline creation failed for key %llu (version=%d, flags=%u, ubershader=%d).",
+					(unsigned long long)p_pipeline_key.hash(),
+					p_pipeline_key.version,
+					p_pipeline_key.color_pass_flags,
+					(int)p_pipeline_key.ubershader));
 
 	pipeline_hash_map.add_compiled_pipeline(p_pipeline_key.hash(), pipeline);
 }
