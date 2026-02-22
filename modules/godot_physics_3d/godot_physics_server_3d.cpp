@@ -1214,7 +1214,7 @@ PhysicsServer3D::SoftBodyForm GodotPhysicsServer3D::soft_body_get_form(RID p_bod
 	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL_V(soft_body, PhysicsServer3D::SOFT_BODY_FORM_CLOTH);
 
-	//For now, GodotPhysicsServer3D only handles cloth deformation
+	// GodotPhysicsServer3D only handles cloth deformation
 	return PhysicsServer3D::SOFT_BODY_FORM_CLOTH;
 }
 

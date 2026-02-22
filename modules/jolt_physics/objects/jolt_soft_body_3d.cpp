@@ -199,42 +199,8 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_cloth() {
 	// of the constraints a bit.
 	pin_vertices(*this, pinned_vertices, mesh_to_physics, physics_vertices);
 
-	// Since Godot's stiffness is input as a coefficient between 0 and 1, and Jolt uses actual stiffness for its
-	// edge constraints, we must map one to the other.
-	//
-	// Godot uses classic PBD edge constraints, which have a stiffness parameter k that is used in the position correction formula as follows:
-	// delta_x1 = -k * w1 / (w1 + w2) * (l - l0) / l * (x2 - x1)
-	// where k is the stiffness, w1 and w2 are the inverse masses of the two vertices, l is the current length of the edge = |x2 - x1|, l0 is the rest length of the edge, and x1 and x2 are the vertex positions.
-	//
-	// Note that the actual formula used in Godot physics seems to use an approximation of this which avoids calculating the square root:
-	// delta_x1 = -k * w1 / (w1 + w2) * (l^2 - l0^2) / (l^2 + l0^2) * (x2 - x1)
-	//
-	// Jolt uses XPBD which goes as follows:
-	// delta_x1 = -w1 / (w1 + w2 + compliance / dt^2) * (l - l0) / l * (x2 - x1)
-	// where compliance is the inverse of stiffness and dt is the timestep.
-	//
-	// We can derive Jolt's compliance from Godot's stiffness by evaluating:
-	// k * w1 / (w1 + w2) = w1 / (w1 + w2 + compliance / dt^2)
-	// which simplifies to:
-	// compliance = dt^2 * (1 / k - 1) * (w1 + w2)
-
-	// Assuming that the vertices have the same mass:
-	const float w1_plus_w2 = 2.0f * physics_vertices.size() / mass;
-
-	// Calculate time step of a single XPBD iteration
-	const float dt = 1.0f / Engine::get_singleton()->get_user_physics_ticks_per_second() / simulation_precision;
-
-	// Now calculate the compliance
-	const float inverse_stiffness = dt * dt * (1.0f / stiffness_coefficient - 1.0f) * w1_plus_w2;
-
-	JPH::SoftBodySharedSettings::VertexAttributes vertex_attrib;
-	vertex_attrib.mCompliance = vertex_attrib.mShearCompliance = inverse_stiffness;
-
-	settings->CreateConstraints(&vertex_attrib, 1, JPH::SoftBodySharedSettings::EBendType::None);
-	float multiplier = 1.0f - shrinking_factor;
-	for (JPH::SoftBodySharedSettings::Edge &e : settings->mEdgeConstraints) {
-		e.mRestLength *= multiplier;
-	}
+	_apply_physics_values(settings);
+	
 	settings->Optimize();
 
 	return settings;
@@ -500,6 +466,14 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 	// of the constraints a bit.
 	pin_vertices(*this, pinned_vertices, mesh_to_physics, settings->mVertices);
 
+	_apply_physics_values(settings);
+
+	settings->Optimize();
+
+	return settings;
+}
+
+void JoltSoftBody3D::_apply_physics_values(JPH::SoftBodySharedSettings *settings) {
 	// Since Godot's stiffness is input as a coefficient between 0 and 1, and Jolt uses actual stiffness for its
 	// edge constraints, we must map one to the other.
 	//
@@ -536,11 +510,8 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 	for (JPH::SoftBodySharedSettings::Edge &e : settings->mEdgeConstraints) {
 		e.mRestLength *= multiplier;
 	}
-
-	settings->Optimize();
-
-	return settings;
 }
+
 
 void JoltSoftBody3D::_apply_environmental_forces(float p_step, JPH::Body &p_jolt_body) {
 	// Get approximation of the center of the soft body.
