@@ -230,6 +230,7 @@ public:
 
 	EXBIND0(init)
 	EXBIND0RC(String, get_type)
+	EXBIND0RC(String, get_generated_name)
 	EXBIND0RC(String, get_extension)
 	EXBIND0(finish)
 
