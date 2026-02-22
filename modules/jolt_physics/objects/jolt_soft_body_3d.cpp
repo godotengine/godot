@@ -200,7 +200,6 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_cloth() {
 	pin_vertices(*this, pinned_vertices, mesh_to_physics, physics_vertices);
 
 	_apply_physics_values(settings);
-	
 	settings->Optimize();
 
 	return settings;
