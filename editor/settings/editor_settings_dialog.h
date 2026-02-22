@@ -130,7 +130,7 @@ protected:
 
 public:
 	void popup_edit_settings();
-	static void update_navigation_preset();
+	static void update_3d_navigation_preset();
 	void set_current_section(const String &p_section);
 	void set_advanced_mode_enabled(bool p_enabled);
 
