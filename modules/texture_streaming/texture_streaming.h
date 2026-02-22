@@ -71,7 +71,7 @@ private:
 		struct Command : public CommandBase {
 			T *instance;
 			M method;
-			Tuple<GetSimpleTypeT<Args>...> args;
+			Tuple<std::decay_t<Args>...> args;
 
 			template <typename... FwdArgs>
 			_FORCE_INLINE_ Command([[maybe_unused]] const char *p_method_name, T *p_instance, M p_method, FwdArgs &&...p_args) :
