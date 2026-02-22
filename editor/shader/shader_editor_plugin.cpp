@@ -868,7 +868,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	shader_dock->set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_editor_bottom_panel", TTRC("Toggle Shader Editor Dock"), KeyModifierMask::ALT | Key::S));
 	shader_dock->set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	shader_dock->set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
-	shader_dock->set_custom_minimum_size(Size2(460, 300) * EDSCALE);
+	shader_dock->set_custom_minimum_size(Size2(150, 220) * EDSCALE);
 	EditorDockManager::get_singleton()->add_dock(shader_dock);
 
 	set_process_shortcut_input(true);
@@ -888,7 +888,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	shader_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	shader_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	shader_list->set_theme_type_variation("ItemListSecondary");
-	shader_list->set_custom_minimum_size(Size2(100, 60) * EDSCALE);
+	shader_list->set_custom_minimum_size(Size2(60 * EDSCALE, 0));
 	shader_list->connect(SceneStringName(item_selected), callable_mp(this, &ShaderEditorPlugin::_shader_selected).bind(true));
 	shader_list->connect("item_clicked", callable_mp(this, &ShaderEditorPlugin::_shader_list_clicked));
 	shader_list->set_allow_rmb_select(true);
