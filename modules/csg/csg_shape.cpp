@@ -2107,7 +2107,7 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 			}
 		}
 
-		if (flip_uvs) {
+		if (!flip_uvs) { //Invert uvs by default because it's easier.
 			for (int i = 0; i < face_count * 3; i++) {
 				uvsw[i].x *= -1;
 			}
