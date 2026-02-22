@@ -3798,7 +3798,7 @@ _FORCE_INLINE_ float RichTextLabel::_update_scroll_exceeds(float p_total_height,
 	updating_scroll = true;
 
 	float total_height = p_total_height;
-	bool exceeds = p_total_height > p_ctrl_height && scroll_active;
+	bool exceeds = scroll_active && p_total_height > p_ctrl_height && p_width > vscroll->get_combined_minimum_size().width;
 	if (exceeds != scroll_visible) {
 		if (exceeds) {
 			scroll_visible = true;

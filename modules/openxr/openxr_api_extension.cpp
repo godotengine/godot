@@ -76,6 +76,9 @@ void OpenXRAPIExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("register_frame_info_extension", "extension"), &OpenXRAPIExtension::register_frame_info_extension);
 	ClassDB::bind_method(D_METHOD("unregister_frame_info_extension", "extension"), &OpenXRAPIExtension::unregister_frame_info_extension);
 
+	ClassDB::bind_method(D_METHOD("register_projection_layer_extension", "extension"), &OpenXRAPIExtension::register_projection_layer_extension);
+	ClassDB::bind_method(D_METHOD("unregister_projection_layer_extension", "extension"), &OpenXRAPIExtension::unregister_projection_layer_extension);
+
 	ClassDB::bind_method(D_METHOD("get_render_state_z_near"), &OpenXRAPIExtension::get_render_state_z_near);
 	ClassDB::bind_method(D_METHOD("get_render_state_z_far"), &OpenXRAPIExtension::get_render_state_z_far);
 
@@ -279,6 +282,16 @@ void OpenXRAPIExtension::register_frame_info_extension(OpenXRExtensionWrapper *p
 void OpenXRAPIExtension::unregister_frame_info_extension(OpenXRExtensionWrapper *p_extension) {
 	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 	OpenXRAPI::get_singleton()->unregister_frame_info_extension(p_extension);
+}
+
+void OpenXRAPIExtension::register_projection_layer_extension(OpenXRExtensionWrapper *p_extension) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->register_projection_layer_extension(p_extension);
+}
+
+void OpenXRAPIExtension::unregister_projection_layer_extension(OpenXRExtensionWrapper *p_extension) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->unregister_projection_layer_extension(p_extension);
 }
 
 double OpenXRAPIExtension::get_render_state_z_near() {

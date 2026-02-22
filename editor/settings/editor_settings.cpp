@@ -788,7 +788,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Appearance: Whitespace
 	_initial_set("text_editor/appearance/whitespace/draw_tabs", true, true);
 	_initial_set("text_editor/appearance/whitespace/draw_spaces", false, true);
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/whitespace/line_spacing", 4, "0,50,1")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/whitespace/line_spacing", 4, "-10,50,1")
 
 	// Behavior
 	// Behavior: General
@@ -1361,6 +1361,7 @@ void EditorSettings::setup_language(bool p_initial_setup) {
 
 	if (lang == "en") {
 		TranslationServer::get_singleton()->set_locale(lang);
+		emit_signal("_translation_changed");
 		return; // Default, nothing to do.
 	}
 
@@ -1368,6 +1369,7 @@ void EditorSettings::setup_language(bool p_initial_setup) {
 	load_doc_translations(lang);
 
 	TranslationServer::get_singleton()->set_locale(lang);
+	emit_signal("_translation_changed");
 }
 
 void EditorSettings::setup_network() {
@@ -2308,6 +2310,7 @@ void EditorSettings::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 	ADD_SIGNAL(MethodInfo("_favorites_changed"));
+	ADD_SIGNAL(MethodInfo("_translation_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_EDITOR_SETTINGS_CHANGED);
 }

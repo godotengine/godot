@@ -81,7 +81,10 @@ class AccessibilityDriverAccessKit : public AccessibilityDriver {
 #endif
 
 		RID root_id;
+		bool initial_update_completed = false;
 		HashSet<RID> update;
+		Callable activate;
+		Callable deactivate;
 	};
 
 	RID focus;
@@ -127,6 +130,9 @@ public:
 
 	void accessibility_set_window_rect(DisplayServer::WindowID p_window_id, const Rect2 &p_rect_out, const Rect2 &p_rect_in) override;
 	void accessibility_set_window_focused(DisplayServer::WindowID p_window_id, bool p_focused) override;
+	void accessibility_set_window_callbacks(DisplayServer::WindowID p_window_id, const Callable &p_activate_callable, const Callable &p_deativate_callable) override;
+	void accessibility_window_activation_completed(DisplayServer::WindowID p_window_id) override;
+	void accessibility_window_deactivation_completed(DisplayServer::WindowID p_window_id) override;
 
 	void accessibility_update_set_role(const RID &p_id, DisplayServer::AccessibilityRole p_role) override;
 	void accessibility_update_set_name(const RID &p_id, const String &p_name) override;

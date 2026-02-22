@@ -27,6 +27,9 @@
 /drivers/winmidi/                             @godotengine/audio
 /drivers/xaudio2/                             @godotengine/audio
 
+## Input
+/drivers/sdl/                                 @godotengine/input
+
 ## Rendering
 /drivers/d3d12/                               @godotengine/rendering
 /drivers/dummy/                               @godotengine/rendering

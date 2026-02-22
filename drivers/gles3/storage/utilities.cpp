@@ -28,17 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef GLES3_ENABLED
-
 #include "utilities.h"
 
-#include "../rasterizer_gles3.h"
-#include "config.h"
-#include "light_storage.h"
-#include "material_storage.h"
-#include "mesh_storage.h"
-#include "particles_storage.h"
-#include "texture_storage.h"
+#ifdef GLES3_ENABLED
+
+#include "drivers/gles3/rasterizer_util_gles3.h"
+#include "drivers/gles3/storage/config.h"
+#include "drivers/gles3/storage/light_storage.h"
+#include "drivers/gles3/storage/material_storage.h"
+#include "drivers/gles3/storage/mesh_storage.h"
+#include "drivers/gles3/storage/particles_storage.h"
+#include "drivers/gles3/storage/texture_storage.h"
 
 using namespace GLES3;
 
@@ -325,7 +325,7 @@ void Utilities::capture_timestamp(const String &p_name) {
 	ERR_FAIL_COND(frames[frame].timestamp_count >= max_timestamp_query_elements);
 
 #ifdef GL_API_ENABLED
-	if (RasterizerGLES3::is_gles_over_gl()) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		glQueryCounter(frames[frame].queries[frames[frame].timestamp_count], GL_TIMESTAMP);
 	}
 #endif // GL_API_ENABLED
@@ -339,7 +339,7 @@ void Utilities::_capture_timestamps_begin() {
 	// frame is incremented at the end of the frame so this gives us the queries for frame - 2. By then they should be ready.
 	if (frames[frame].timestamp_count) {
 #ifdef GL_API_ENABLED
-		if (RasterizerGLES3::is_gles_over_gl()) {
+		if (RasterizerUtilGLES3::is_gles_over_gl()) {
 			for (uint32_t i = 0; i < frames[frame].timestamp_count; i++) {
 				uint64_t temp = 0;
 				glGetQueryObjectui64v(frames[frame].queries[i], GL_QUERY_RESULT, &temp);

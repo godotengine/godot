@@ -107,6 +107,9 @@ private:
 	// frame info extensions
 	Vector<OpenXRExtensionWrapper *> frame_info_extensions;
 
+	// projection layer extensions
+	Vector<OpenXRExtensionWrapper *> projection_layer_extensions;
+
 	// view configuration
 	LocalVector<XrViewConfigurationType> supported_view_configuration_types;
 
@@ -631,6 +634,9 @@ public:
 
 	void register_frame_info_extension(OpenXRExtensionWrapper *p_extension);
 	void unregister_frame_info_extension(OpenXRExtensionWrapper *p_extension);
+
+	void register_projection_layer_extension(OpenXRExtensionWrapper *p_extension);
+	void unregister_projection_layer_extension(OpenXRExtensionWrapper *p_extension);
 
 	const Vector<XrEnvironmentBlendMode> get_supported_environment_blend_modes();
 

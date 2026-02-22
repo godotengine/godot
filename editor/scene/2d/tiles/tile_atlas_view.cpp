@@ -648,7 +648,7 @@ TileAtlasView::TileAtlasView() {
 	button_center_view->connect(SceneStringName(pressed), callable_mp(this, &TileAtlasView::_center_view));
 	button_center_view->set_flat(true);
 	button_center_view->set_disabled(true);
-	button_center_view->set_tooltip_text(TTR("Center View"));
+	button_center_view->set_tooltip_text(TTRC("Center View"));
 	add_child(button_center_view);
 
 	panner.instantiate();
@@ -665,7 +665,7 @@ TileAtlasView::TileAtlasView() {
 
 	missing_source_label = memnew(Label);
 	missing_source_label->set_focus_mode(FOCUS_ACCESSIBILITY);
-	missing_source_label->set_text(TTR("The selected atlas source has no valid texture. Assign a texture in the TileSet bottom tab."));
+	missing_source_label->set_text(TTRC("The selected atlas source has no valid texture. Assign a texture in the TileSet bottom tab."));
 	center_container->add_child(missing_source_label);
 
 	margin_container = memnew(MarginContainer);
@@ -689,7 +689,7 @@ TileAtlasView::TileAtlasView() {
 	// Base tiles.
 	Label *base_tile_label = memnew(Label);
 	base_tile_label->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-	base_tile_label->set_text(TTR("Base Tiles"));
+	base_tile_label->set_text(TTRC("Base Tiles"));
 	base_tile_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	left_vbox->add_child(base_tile_label);
 
@@ -732,7 +732,7 @@ TileAtlasView::TileAtlasView() {
 	// Alternative tiles.
 	Label *alternative_tiles_label = memnew(Label);
 	alternative_tiles_label->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	alternative_tiles_label->set_text(TTR("Alternative Tiles"));
+	alternative_tiles_label->set_text(TTRC("Alternative Tiles"));
 	alternative_tiles_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	right_vbox->add_child(alternative_tiles_label);
 

@@ -2223,16 +2223,15 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				}
 
 				String variable_name = String(node->get_name()).to_snake_case().validate_unicode_identifier();
-				StringName class_name = node->get_class_name();
+				StringName custom_class_name;
 				Ref<Script> node_script = node->get_script();
-				if (node_script.is_valid()) {
-					StringName global_node_script_name = node_script->get_global_name();
-					if (!global_node_script_name.is_empty()) {
-						class_name = global_node_script_name;
-					}
+				while (node_script.is_valid() && custom_class_name.is_empty()) {
+					custom_class_name = node_script->get_global_name();
+					node_script = node_script->get_base_script();
 				}
-
+				const StringName class_name = custom_class_name.is_empty() ? node->get_class_name() : custom_class_name;
 				text_to_drop += vformat("@export var %s: %s\n", variable_name, class_name);
+
 				for (ObjectID obj_id : obj_ids) {
 					pending_dragged_exports.push_back(DraggedExport{ obj_id, variable_name, node, class_name });
 				}

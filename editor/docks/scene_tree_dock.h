@@ -59,9 +59,10 @@ class SceneTreeDock : public EditorDock {
 		TOOL_COPY,
 		TOOL_PASTE,
 		TOOL_PASTE_AS_SIBLING,
+		TOOL_PASTE_AS_REPLACEMENT,
 		TOOL_RENAME,
 		TOOL_BATCH_RENAME,
-		TOOL_REPLACE,
+		TOOL_CHANGE_TYPE,
 		TOOL_EXTEND_SCRIPT,
 		TOOL_ATTACH_SCRIPT,
 		TOOL_DETACH_SCRIPT,
@@ -356,6 +357,7 @@ public:
 	void open_instance_child_dialog();
 
 	List<Node *> paste_nodes(bool p_paste_as_sibling = false);
+	void paste_node_as_replacement();
 	List<Node *> get_node_clipboard() const;
 
 	ScriptCreateDialog *get_script_create_dialog() {

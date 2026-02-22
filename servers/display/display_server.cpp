@@ -726,6 +726,24 @@ void DisplayServer::accessibility_set_window_focused(DisplayServer::WindowID p_w
 	}
 }
 
+void DisplayServer::accessibility_set_window_callbacks(DisplayServer::WindowID p_window_id, const Callable &p_activate_callable, const Callable &p_deativate_callable) {
+	if (accessibility_driver) {
+		accessibility_driver->accessibility_set_window_callbacks(p_window_id, p_activate_callable, p_deativate_callable);
+	}
+}
+
+void DisplayServer::accessibility_window_activation_completed(DisplayServer::WindowID p_window_id) {
+	if (accessibility_driver) {
+		accessibility_driver->accessibility_window_activation_completed(p_window_id);
+	}
+}
+
+void DisplayServer::accessibility_window_deactivation_completed(DisplayServer::WindowID p_window_id) {
+	if (accessibility_driver) {
+		accessibility_driver->accessibility_window_deactivation_completed(p_window_id);
+	}
+}
+
 void DisplayServer::accessibility_update_set_role(const RID &p_id, DisplayServer::AccessibilityRole p_role) {
 	if (accessibility_driver) {
 		accessibility_driver->accessibility_update_set_role(p_id, p_role);
