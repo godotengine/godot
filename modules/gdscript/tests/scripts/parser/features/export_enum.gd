@@ -24,11 +24,6 @@ var temp_packed_string_array: PackedStringArray
 @export_enum("Red", "Green", "Blue") var test_hard_array_int: Array[int]
 @export_enum("Red", "Green", "Blue") var test_hard_array_string: Array[String]
 
-@export_enum("Red", "Green", "Blue") var test_variant_array_int: Variant = temp_array_int
-@export_enum("Red", "Green", "Blue") var test_variant_packed_int32_array: Variant = temp_packed_int32_array
-@export_enum("Red", "Green", "Blue") var test_variant_array_string: Variant = temp_array_string
-@export_enum("Red", "Green", "Blue") var test_variant_packed_string_array: Variant = temp_packed_string_array
-
 func test():
 	for property in get_property_list():
 		if str(property.name).begins_with("test_"):

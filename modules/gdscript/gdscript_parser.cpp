@@ -4725,7 +4725,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	DataType export_type = variable->get_datatype();
 
 	// Use initializer type if specified type is `Variant`.
-	if (export_type.is_variant() && variable->initializer != nullptr && variable->initializer->datatype.is_set()) {
+	if (export_type.is_variant() && !export_type.is_hard_type() && variable->initializer != nullptr && variable->initializer->datatype.is_set()) {
 		export_type = variable->initializer->get_datatype();
 		export_type.type_source = DataType::INFERRED;
 	}
