@@ -6765,6 +6765,11 @@ void EditorNode::_restart_editor(bool p_goto_project_manager) {
 			args.push_back("--path");
 			args.push_back(exec_dir);
 		}
+
+		List<String>::Element *vbf = args.find("--verbose");
+		if (vbf) {
+			args.erase(vbf);
+		}
 	} else {
 		args.push_back("--path");
 		args.push_back(ProjectSettings::get_singleton()->get_resource_path());
