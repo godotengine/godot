@@ -32,6 +32,7 @@
 
 #include "core/object/script_language.h"
 #include "editor/animation/animation_tree_editor_plugin.h"
+#include "editor/audio/audio_play_button_editor_plugin.h"
 #include "editor/audio/audio_stream_editor_plugin.h"
 #include "editor/audio/audio_stream_randomizer_editor_plugin.h"
 #include "editor/debugger/debug_adapter/debug_adapter_server.h"
@@ -215,6 +216,7 @@ void register_editor_types() {
 
 	// This list is alphabetized, and plugins that depend on Node2D are in their own section below.
 	EditorPlugins::add_by_type<AnimationTreeEditorPlugin>();
+	EditorPlugins::add_by_type<AudioPlayButtonEditorPlugin>();
 	EditorPlugins::add_by_type<AudioStreamEditorPlugin>();
 	EditorPlugins::add_by_type<AudioStreamRandomizerEditorPlugin>();
 	EditorPlugins::add_by_type<BitMapEditorPlugin>();
