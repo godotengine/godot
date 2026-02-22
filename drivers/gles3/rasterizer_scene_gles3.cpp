@@ -3406,6 +3406,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_SPOT;
 						spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL;
 						spec_constants |= SceneShaderGLES3::DISABLE_LIGHTMAP;
+						spec_constants |= SceneShaderGLES3::DISABLE_REFLECTION_PROBE;
+						// SECOND_REFLECTION_PROBE will be turned on during REFPROBE2 shader setup below, if cache.size() > 1
+						inst->reflection_probe_rid_cache.clear();
 					} else {
 						if (inst->omni_light_gl_cache.is_empty()) {
 							spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_OMNI;
