@@ -508,7 +508,6 @@ void JoltSoftBody3D::_apply_physics_values(JPH::SoftBodySharedSettings *settings
 	}
 }
 
-
 void JoltSoftBody3D::_apply_environmental_forces(float p_step, JPH::Body &p_jolt_body) {
 	// Get approximation of the center of the soft body.
 	Vector3 com_position = to_godot(p_jolt_body.GetCenterOfMassPosition());
