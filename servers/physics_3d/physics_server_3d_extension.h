@@ -470,6 +470,8 @@ public:
 	EXBIND3(soft_body_move_point, RID, int, const Vector3 &)
 	EXBIND2RC(Vector3, soft_body_get_point_global_position, RID, int)
 
+	EXBIND1RC(uint32_t, soft_body_get_point_count, RID)
+
 	EXBIND1(soft_body_remove_all_pinned_points, RID)
 	EXBIND3(soft_body_pin_point, RID, int, bool)
 	EXBIND2RC(bool, soft_body_is_point_pinned, RID, int)
