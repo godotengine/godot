@@ -1251,6 +1251,7 @@ bool EditorProperty::is_cache_valid() const {
 	}
 	return true;
 }
+
 void EditorProperty::update_cache() {
 	cache.clear();
 	if (object && property != StringName()) {
@@ -1261,6 +1262,15 @@ void EditorProperty::update_cache() {
 		}
 	}
 }
+
+void EditorProperty::set_deferred_drag_mode_enabled(bool p_enabled) {
+	deferred_drag_mode = p_enabled;
+}
+
+bool EditorProperty::is_deferred_drag_mode_enabled() const {
+	return deferred_drag_mode;
+}
+
 Variant EditorProperty::get_drag_data(const Point2 &p_point) {
 	if (property == StringName()) {
 		return Variant();
