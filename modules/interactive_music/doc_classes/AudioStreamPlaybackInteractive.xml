@@ -9,6 +9,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_clip_playback" qualifiers="const">
+			<return type="AudioStreamPlayback" />
+			<param index="0" name="clip_index" type="int" />
+			<description>
+				Return the [AudioStreamPlayback] used to play the clip at [param clip_index].
+			</description>
+		</method>
 		<method name="get_current_clip_index" qualifiers="const">
 			<return type="int" />
 			<description>
