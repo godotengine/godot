@@ -635,8 +635,8 @@ float RendererSceneRender::environment_get_ssao_ao_channel_affect(RID p_env) con
 
 // SSIL
 
-void RendererSceneRender::environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_normal_rejection) {
-	environment_storage.environment_set_ssil(p_env, p_enable, p_radius, p_intensity, p_sharpness, p_normal_rejection);
+void RendererSceneRender::environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_thickness, bool p_backface_rejection, float p_normal_rejection) {
+	environment_storage.environment_set_ssil(p_env, p_enable, p_radius, p_intensity, p_sharpness, p_thickness, p_backface_rejection, p_normal_rejection);
 }
 
 bool RendererSceneRender::environment_get_ssil_enabled(RID p_env) const {
@@ -653,6 +653,14 @@ float RendererSceneRender::environment_get_ssil_intensity(RID p_env) const {
 
 float RendererSceneRender::environment_get_ssil_sharpness(RID p_env) const {
 	return environment_storage.environment_get_ssil_sharpness(p_env);
+}
+
+float RendererSceneRender::environment_get_ssil_thickness(RID p_env) const {
+	return environment_storage.environment_get_ssil_thickness(p_env);
+}
+
+bool RendererSceneRender::environment_get_ssil_backface_rejection_enabled(RID p_env) const {
+	return environment_storage.environment_get_ssil_backface_rejection_enabled(p_env);
 }
 
 float RendererSceneRender::environment_get_ssil_normal_rejection(RID p_env) const {

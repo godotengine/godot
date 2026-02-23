@@ -6,7 +6,6 @@
 
 /* Include half precision types. */
 #include "../half_inc.glsl"
-
 #include "scene_forward_clustered_inc.glsl"
 
 #define SHADER_IS_SRGB false
@@ -877,7 +876,6 @@ void main() {
 
 /* Include half precision types. */
 #include "../half_inc.glsl"
-
 #include "scene_forward_clustered_inc.glsl"
 
 /* Varyings */
@@ -1080,9 +1078,8 @@ layout(location = 2) out vec2 motion_vector;
 #define SPECULAR_SCHLICK_GGX
 #endif
 
-#include "../scene_forward_lights_inc.glsl"
-
 #include "../scene_forward_gi_inc.glsl"
+#include "../scene_forward_lights_inc.glsl"
 
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
@@ -2167,7 +2164,6 @@ void fragment_shader(in SceneData scene_data) {
 #else
 			vec4 ssil = textureLod(sampler2D(ssil_buffer, SAMPLER_LINEAR_CLAMP), screen_uv, 0.0);
 #endif // USE_MULTIVIEW
-			ambient_light *= 1.0 - ssil.a;
 			ambient_light += ssil.rgb * albedo.rgb;
 		}
 
