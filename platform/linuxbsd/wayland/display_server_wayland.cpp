@@ -1742,6 +1742,10 @@ void DisplayServerWayland::process_events() {
 
 		Ref<WaylandThread::WindowRectMessage> winrect_msg = msg;
 		if (winrect_msg.is_valid()) {
+			WaylandThread::WindowState *ws = wayland_thread.window_get_state(winrect_msg->id);
+			ERR_CONTINUE(ws == nullptr);
+			wl_surface_set_buffer_scale(ws->wl_surface, winrect_msg->buffer_scale);
+
 			_update_window_rect(winrect_msg->rect, winrect_msg->id);
 			continue;
 		}
