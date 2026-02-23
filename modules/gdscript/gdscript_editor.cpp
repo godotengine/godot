@@ -542,7 +542,7 @@ String GDScriptLanguage::make_function(const String &p_class, const String &p_na
 
 			// Avoid shadowing class properties.
 			if (!p_class.is_empty() && ClassDB::class_exists(p_class)) {
-				if (ClassDB::has_property(p_class, arg_name, false)) {
+				if (ClassDB::has_property(p_class, arg_name)) {
 					arg_name = "p_" + arg_name;
 				}
 			}
