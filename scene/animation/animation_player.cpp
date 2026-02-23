@@ -336,9 +336,16 @@ void AnimationPlayer::_blend_post_process() {
 	if (end_reached) {
 		// If the method track changes current animation, the animation is not finished.
 		if (tmp_from == animation_set[playback.current.animation_name].animation->get_instance_id()) {
-			if (playback_queue.size()) {
+			if (!playback_queue.is_empty()) {
 				if (!finished_anim.is_empty()) {
 					emit_signal(SceneStringName(animation_finished), finished_anim);
+					// Abort if playback_queue is cleared by animation_finished signal.
+					if (playback_queue.is_empty()) {
+						end_reached = false;
+						end_notify = false;
+						tmp_from = ObjectID();
+						return;
+					}
 				}
 				String old = playback.assigned;
 				play(playback_queue.front()->get());
