@@ -36,6 +36,7 @@
 #include "core/templates/list.h"
 #include "core/templates/rb_map.h"
 #include "core/templates/safe_refcount.h"
+#include "core/templates/vset.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 
@@ -901,7 +902,7 @@ public:
 
 	struct ModeInfo {
 		StringName name;
-		Vector<StringName> options;
+		VSet<StringName> options;
 
 		ModeInfo() {}
 
@@ -911,48 +912,48 @@ public:
 
 		ModeInfo(const StringName &p_name, const StringName &p_arg1, const StringName &p_arg2) :
 				name(p_name) {
-			options.push_back(p_arg1);
-			options.push_back(p_arg2);
+			options.insert(p_arg1);
+			options.insert(p_arg2);
 		}
 
 		ModeInfo(const StringName &p_name, const StringName &p_arg1, const StringName &p_arg2, const StringName &p_arg3) :
 				name(p_name) {
-			options.push_back(p_arg1);
-			options.push_back(p_arg2);
-			options.push_back(p_arg3);
+			options.insert(p_arg1);
+			options.insert(p_arg2);
+			options.insert(p_arg3);
 		}
 
 		ModeInfo(const StringName &p_name, const StringName &p_arg1, const StringName &p_arg2, const StringName &p_arg3, const StringName &p_arg4) :
 				name(p_name) {
-			options.push_back(p_arg1);
-			options.push_back(p_arg2);
-			options.push_back(p_arg3);
-			options.push_back(p_arg4);
+			options.insert(p_arg1);
+			options.insert(p_arg2);
+			options.insert(p_arg3);
+			options.insert(p_arg4);
 		}
 
 		ModeInfo(const StringName &p_name, const StringName &p_arg1, const StringName &p_arg2, const StringName &p_arg3, const StringName &p_arg4, const StringName &p_arg5) :
 				name(p_name) {
-			options.push_back(p_arg1);
-			options.push_back(p_arg2);
-			options.push_back(p_arg3);
-			options.push_back(p_arg4);
-			options.push_back(p_arg5);
+			options.insert(p_arg1);
+			options.insert(p_arg2);
+			options.insert(p_arg3);
+			options.insert(p_arg4);
+			options.insert(p_arg5);
 		}
 
 		ModeInfo(const StringName &p_name, const StringName &p_arg1, const StringName &p_arg2, const StringName &p_arg3, const StringName &p_arg4, const StringName &p_arg5, const StringName &p_arg6) :
 				name(p_name) {
-			options.push_back(p_arg1);
-			options.push_back(p_arg2);
-			options.push_back(p_arg3);
-			options.push_back(p_arg4);
-			options.push_back(p_arg5);
-			options.push_back(p_arg6);
+			options.insert(p_arg1);
+			options.insert(p_arg2);
+			options.insert(p_arg3);
+			options.insert(p_arg4);
+			options.insert(p_arg5);
+			options.insert(p_arg6);
 		}
 
 		ModeInfo(const StringName &p_name, std::initializer_list<StringName> p_args) :
 				name(p_name) {
 			for (const StringName &arg : p_args) {
-				options.push_back(arg);
+				options.insert(arg);
 			}
 		}
 	};

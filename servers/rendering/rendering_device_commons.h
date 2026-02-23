@@ -776,7 +776,8 @@ public:
 		BLEND_FACTOR_ONE_MINUS_SRC1_COLOR,
 		BLEND_FACTOR_SRC1_ALPHA,
 		BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA,
-		BLEND_FACTOR_MAX
+		BLEND_FACTOR_MAX,
+		BLEND_FACTOR_MIN
 	};
 
 	enum BlendOperation {
@@ -850,6 +851,8 @@ public:
 			bool write_g = true;
 			bool write_b = true;
 			bool write_a = true;
+			bool uses_blend_alpha = false;
+			bool uses_blend_color = false;
 		};
 
 		static PipelineColorBlendState create_disabled(int p_attachments = 1) {

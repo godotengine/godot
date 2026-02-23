@@ -148,7 +148,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	struct CanvasShaderData : public RendererRD::MaterialStorage::ShaderData {
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
-		int blend_mode = 0;
+		StringName blend_mode;
 
 		Vector<uint32_t> ubo_offsets;
 		uint32_t ubo_size = 0;

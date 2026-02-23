@@ -35,6 +35,7 @@
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
 #include "servers/display/display_server.h"
+#include "servers/rendering/rendering_device_binds.h"
 #include "servers/rendering/rendering_device_enums.h"
 #include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/rendering_server_types.h"
@@ -170,6 +171,10 @@ public:
 	virtual RID shader_get_default_texture_parameter(RID p_shader, const StringName &p_name, int p_index = 0) const = 0;
 
 	virtual RenderingServerTypes::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const = 0;
+
+	/* BLEND REGISTRY API */
+
+	virtual void register_blend_mode(RSE::ShaderMode p_mode, const StringName blend_mode, RDPipelineColorBlendStateAttachment *attachment) = 0;
 
 	/* COMMON MATERIAL API */
 

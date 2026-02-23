@@ -267,13 +267,21 @@ public:
 	FUNC2RC(RID, texture_get_rd_texture, RID, bool)
 	FUNC2RC(uint64_t, texture_get_native_handle, RID, bool)
 
-	/* SHADER API */
+	/* BLEND REGISTRY API */
 
 #undef ServerName
 #undef server_name
 
 #define ServerName RendererMaterialStorage
 #define server_name RSG::material_storage
+	void register_blend_mode(RSE::ShaderMode p_mode, const StringName blend_mode, RDPipelineColorBlendStateAttachment *attachment) override {
+		RSG::material_storage->register_blend_mode(
+				p_mode,
+				blend_mode,
+				attachment->get_base());
+	}
+
+	/* SHADER API */
 
 	virtual RID shader_create() override {
 		RID ret = RSG::material_storage->shader_allocate();

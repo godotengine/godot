@@ -684,6 +684,8 @@ public:
 	RD_SETGET(bool, write_g)
 	RD_SETGET(bool, write_b)
 	RD_SETGET(bool, write_a)
+	RD_SETGET(bool, uses_blend_alpha)
+	RD_SETGET(bool, uses_blend_color)
 
 	void set_as_mix() {
 		base = RD::PipelineColorBlendState::Attachment();
@@ -692,6 +694,12 @@ public:
 		base.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 		base.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
 		base.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+		base.uses_blend_alpha = false;
+		base.uses_blend_color = false;
+	}
+
+	RD::PipelineColorBlendState::Attachment get_base() {
+		return base;
 	}
 
 protected:
@@ -709,6 +717,8 @@ protected:
 		RD_BIND(Variant::BOOL, RDPipelineColorBlendStateAttachment, write_g);
 		RD_BIND(Variant::BOOL, RDPipelineColorBlendStateAttachment, write_b);
 		RD_BIND(Variant::BOOL, RDPipelineColorBlendStateAttachment, write_a);
+		RD_BIND(Variant::BOOL, RDPipelineColorBlendStateAttachment, uses_blend_alpha);
+		RD_BIND(Variant::BOOL, RDPipelineColorBlendStateAttachment, uses_blend_color);
 	}
 };
 

@@ -31,8 +31,10 @@
 #pragma once
 
 #include "core/object/object.h"
+#include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/rendering_server_types.h"
+#include "servers/rendering/shader_types.h"
 #include "servers/rendering/storage/utilities.h"
 
 class RendererMaterialStorage {
@@ -102,4 +104,40 @@ public:
 	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) = 0;
 
 	virtual void material_update_dependency(RID p_material, DependencyTracker *p_instance) = 0;
+
+	/* BLENDING */
+
+	struct BlendData {
+		RenderingDeviceCommons::PipelineColorBlendState::Attachment attachment;
+		RenderingDeviceCommons::PipelineColorBlendState::Attachment transparent_attachment;
+
+		BlendData(RenderingDeviceCommons::PipelineColorBlendState::Attachment p_attachment) :
+				attachment(p_attachment), transparent_attachment(p_attachment) {}
+
+		BlendData(RenderingDeviceCommons::PipelineColorBlendState::Attachment p_attachment, RenderingDeviceCommons::PipelineColorBlendState::Attachment p_transparent) :
+				attachment(p_attachment), transparent_attachment(p_transparent) {}
+	};
+
+	struct BlendRegistry {
+		HashMap<StringName, BlendData> canvas_blend_mode;
+		HashMap<StringName, BlendData> spatial_blend_mode;
+		HashMap<StringName, BlendData> texture_blit_blend_mode;
+
+		HashMap<StringName, BlendData> *get(const RSE::ShaderMode &p_key);
+	};
+
+	void
+	register_blend_mode(const RSE::ShaderMode p_mode, StringName p_name, BlendData p_data, const bool p_shader_enabled = true);
+
+	void
+	register_blend_mode(const RSE::ShaderMode p_mode, RSE::BlendMode p_blend_mode, BlendData p_data, const bool p_shader_enabled = true);
+
+	void register_blend_mode(const RSE::ShaderMode p_mode, StringName p_name, RenderingDeviceCommons::PipelineColorBlendState::Attachment p_attachment);
+
+	Vector<StringName> get_blend_modes(const RSE::ShaderMode p_mode);
+
+	RenderingDeviceCommons::PipelineColorBlendState::Attachment get_blend_attachment(const RSE::ShaderMode p_mode, StringName p_blend_mode, bool p_transparent = false);
+
+private:
+	BlendRegistry blend_mode_registry;
 };

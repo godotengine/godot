@@ -56,5 +56,7 @@ public:
 	const HashSet<String> &get_types() const;
 	const List<String> &get_types_list() const;
 
+	void add_blend_mode(RSE::ShaderMode p_mode, StringName p_blend);
+
 	ShaderTypes();
 };

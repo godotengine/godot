@@ -909,6 +909,21 @@ enum SplashStretchMode {
 	SPLASH_STRETCH_MODE_IGNORE,
 };
 
+/* BLENDING */
+// predefined supported blend modes
+enum BlendMode {
+	BLEND_MODE_MIX,
+	BLEND_MODE_ADD,
+	BLEND_MODE_SUB,
+	BLEND_MODE_MUL,
+	BLEND_MODE_PREMULTIPLIED_ALPHA,
+	BLEND_MODE_DISABLED,
+
+	// internal only
+	BLEND_MODE_LCD,
+	BLEND_MODE_ALPHA_TO_COVERAGE
+};
+
 /* MISC */
 
 #ifndef DISABLE_DEPRECATED

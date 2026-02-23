@@ -136,16 +136,6 @@ struct Material {
 /* CanvasItem Materials */
 
 struct CanvasShaderData : public ShaderData {
-	enum BlendMode { // Used internally.
-		BLEND_MODE_MIX,
-		BLEND_MODE_ADD,
-		BLEND_MODE_SUB,
-		BLEND_MODE_MUL,
-		BLEND_MODE_PMALPHA,
-		BLEND_MODE_DISABLED,
-		BLEND_MODE_LCD,
-	};
-
 	// All these members are (re)initialized in `set_code`.
 	// Make sure to add the init to `set_code` whenever adding new members.
 
@@ -159,7 +149,7 @@ struct CanvasShaderData : public ShaderData {
 
 	String code;
 
-	BlendMode blend_mode;
+	StringName blend_mode;
 
 	bool uses_screen_texture;
 	bool uses_screen_texture_mipmaps;
@@ -241,15 +231,6 @@ MaterialData *_create_sky_material_func(ShaderData *p_shader);
 /* Scene Materials */
 
 struct SceneShaderData : public ShaderData {
-	enum BlendMode { // Used internally.
-		BLEND_MODE_MIX,
-		BLEND_MODE_ADD,
-		BLEND_MODE_SUB,
-		BLEND_MODE_MUL,
-		BLEND_MODE_PREMULT_ALPHA,
-		BLEND_MODE_ALPHA_TO_COVERAGE
-	};
-
 	enum DepthDraw {
 		DEPTH_DRAW_DISABLED,
 		DEPTH_DRAW_OPAQUE,
@@ -298,7 +279,7 @@ struct SceneShaderData : public ShaderData {
 
 	String code;
 
-	BlendMode blend_mode;
+	StringName blend_mode;
 	AlphaAntiAliasing alpha_antialiasing_mode;
 	DepthDraw depth_draw;
 	DepthTest depth_test;
@@ -427,14 +408,6 @@ MaterialData *_create_particles_material_func(ShaderData *p_shader);
 /* Texture Blit Shader */
 
 struct TexBlitShaderData : public ShaderData {
-	enum BlendMode { // Used internally.
-		BLEND_MODE_MIX,
-		BLEND_MODE_ADD,
-		BLEND_MODE_SUB,
-		BLEND_MODE_MUL,
-		BLEND_MODE_DISABLED,
-	};
-
 	bool valid;
 	RID version;
 
@@ -445,7 +418,7 @@ struct TexBlitShaderData : public ShaderData {
 
 	String code;
 
-	BlendMode blend_mode;
+	StringName blend_mode;
 
 	virtual void set_code(const String &p_code);
 	virtual bool is_animated() const;

@@ -1455,32 +1455,23 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 	material_storage->shaders.tex_blit_shader.version_set_uniform(TexBlitShaderGLES3::TIME, RasterizerGLES3::get_singleton()->get_total_time(), version, variant, specialization);
 
 	// Set Blend_Mode correctly
-	GLES3::TexBlitShaderData::BlendMode blend_mode = m->shader_data->blend_mode;
-	glEnable(GL_BLEND);
-	switch (blend_mode) {
-		case GLES3::TexBlitShaderData::BLEND_MODE_ADD:
-			glBlendEquation(GL_FUNC_ADD);
-			glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
-			break;
+	StringName blend_mode = m->shader_data->blend_mode;
+	auto attachment = material_storage->get_blend_attachment(RSE::SHADER_TEXTURE_BLIT, blend_mode);
 
-		case GLES3::TexBlitShaderData::BLEND_MODE_SUB:
-			glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-			glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
-			break;
+	if (attachment.enable_blend) {
+		glEnable(GL_BLEND);
 
-		case GLES3::TexBlitShaderData::BLEND_MODE_MIX:
-			glBlendEquation(GL_FUNC_ADD);
-			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-			break;
+		glBlendEquationSeparate(
+				RasterizerUtilGLES3::RD_TO_GL_BLEND_FUNC(attachment.color_blend_op),
+				RasterizerUtilGLES3::RD_TO_GL_BLEND_FUNC(attachment.alpha_blend_op));
 
-		case GLES3::TexBlitShaderData::BLEND_MODE_MUL:
-			glBlendEquation(GL_FUNC_ADD);
-			glBlendFuncSeparate(GL_DST_COLOR, GL_ZERO, GL_DST_ALPHA, GL_ZERO);
-			break;
-
-		case GLES3::TexBlitShaderData::BLEND_MODE_DISABLED:
-			glDisable(GL_BLEND);
-			break;
+		glBlendFuncSeparate(
+				RasterizerUtilGLES3::RD_TO_GL_BLEND_FACTOR(attachment.src_color_blend_factor),
+				RasterizerUtilGLES3::RD_TO_GL_BLEND_FACTOR(attachment.dst_color_blend_factor),
+				RasterizerUtilGLES3::RD_TO_GL_BLEND_FACTOR(attachment.src_alpha_blend_factor),
+				RasterizerUtilGLES3::RD_TO_GL_BLEND_FACTOR(attachment.dst_alpha_blend_factor));
+	} else {
+		glDisable(GL_BLEND);
 	}
 
 	glDrawBuffers(draw_buffers.size(), draw_buffers.ptr());
