@@ -1,6 +1,6 @@
 diff -ruN original/Foundation/NSData.hpp patched/Foundation/NSData.hpp
---- original/Foundation/NSData.hpp	2026-02-16 15:06:52
-+++ patched/Foundation/NSData.hpp	2026-02-16 15:06:52
+--- original/Foundation/NSData.hpp	2026-02-18 06:41:30
++++ patched/Foundation/NSData.hpp	2026-02-18 06:41:30
 @@ -34,6 +34,7 @@
  public:
      void*    mutableBytes() const;
@@ -22,8 +22,8 @@ diff -ruN original/Foundation/NSData.hpp patched/Foundation/NSData.hpp
  
  //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 diff -ruN original/Foundation/NSDefines.hpp patched/Foundation/NSDefines.hpp
---- original/Foundation/NSDefines.hpp	2026-02-16 15:06:52
-+++ patched/Foundation/NSDefines.hpp	2026-02-16 15:06:52
+--- original/Foundation/NSDefines.hpp	2026-02-18 06:41:30
++++ patched/Foundation/NSDefines.hpp	2026-02-18 06:41:30
 @@ -22,6 +22,16 @@
  
  //-------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -42,8 +42,8 @@ diff -ruN original/Foundation/NSDefines.hpp patched/Foundation/NSDefines.hpp
  #ifdef METALCPP_SYMBOL_VISIBILITY_HIDDEN
  #define _NS_EXPORT __attribute__((visibility("hidden")))
 diff -ruN original/Foundation/NSObject.hpp patched/Foundation/NSObject.hpp
---- original/Foundation/NSObject.hpp	2026-02-16 15:06:52
-+++ patched/Foundation/NSObject.hpp	2026-02-16 15:06:52
+--- original/Foundation/NSObject.hpp	2026-02-18 06:41:30
++++ patched/Foundation/NSObject.hpp	2026-02-18 06:41:30
 @@ -68,6 +68,12 @@
      class String* description() const;
      class String* debugDescription() const;
@@ -69,8 +69,8 @@ diff -ruN original/Foundation/NSObject.hpp patched/Foundation/NSObject.hpp
  private:
      Object() = delete;
 diff -ruN original/Foundation/NSPrivate.hpp patched/Foundation/NSPrivate.hpp
---- original/Foundation/NSPrivate.hpp	2026-02-16 15:06:52
-+++ patched/Foundation/NSPrivate.hpp	2026-02-16 15:06:52
+--- original/Foundation/NSPrivate.hpp	2026-02-18 06:41:30
++++ patched/Foundation/NSPrivate.hpp	2026-02-18 06:41:30
 @@ -184,6 +184,8 @@
              "bundleWithPath:");
          _NS_PRIVATE_DEF_SEL(bundleWithURL_,
@@ -90,8 +90,8 @@ diff -ruN original/Foundation/NSPrivate.hpp patched/Foundation/NSPrivate.hpp
              "initWithBytes:objCType:");
          _NS_PRIVATE_DEF_SEL(initWithBytesNoCopy_length_encoding_freeWhenDone_,
 diff -ruN original/Foundation/NSString.hpp patched/Foundation/NSString.hpp
---- original/Foundation/NSString.hpp	2026-02-16 15:06:52
-+++ patched/Foundation/NSString.hpp	2026-02-16 15:06:52
+--- original/Foundation/NSString.hpp	2026-02-18 06:41:30
++++ patched/Foundation/NSString.hpp	2026-02-18 06:41:30
 @@ -104,6 +104,7 @@
  
      String*          stringByAppendingString(const String* pString) const;
@@ -114,7 +114,7 @@ diff -ruN original/Foundation/NSString.hpp patched/Foundation/NSString.hpp
  //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 diff -ruN original/QuartzCore/CALayer.hpp patched/QuartzCore/CALayer.hpp
 --- original/QuartzCore/CALayer.hpp	1970-01-01 11:00:00
-+++ patched/QuartzCore/CALayer.hpp	2026-02-16 15:06:52
++++ patched/QuartzCore/CALayer.hpp	2026-02-18 06:41:30
 @@ -0,0 +1,79 @@
 +#pragma once
 +
@@ -191,13 +191,13 @@ diff -ruN original/QuartzCore/CALayer.hpp patched/QuartzCore/CALayer.hpp
 +    Object::sendMessage<void>(this, _CA_PRIVATE_SEL(setOpaque_), opaque);
 +}
 +
-+_CA_PRIVATE_DEF_STR(CA::DynamicRange, DynamicRangeAutomatic);
-+_CA_PRIVATE_DEF_STR(CA::DynamicRange, DynamicRangeStandard);
-+_CA_PRIVATE_DEF_STR(CA::DynamicRange, DynamicRangeConstrainedHigh);
-+_CA_PRIVATE_DEF_STR(CA::DynamicRange, DynamicRangeHigh);
++_CA_PRIVATE_DEF_CONST(CA::DynamicRange, DynamicRangeAutomatic);
++_CA_PRIVATE_DEF_CONST(CA::DynamicRange, DynamicRangeStandard);
++_CA_PRIVATE_DEF_CONST(CA::DynamicRange, DynamicRangeConstrainedHigh);
++_CA_PRIVATE_DEF_CONST(CA::DynamicRange, DynamicRangeHigh);
 diff -ruN original/QuartzCore/CAMetalLayer.hpp patched/QuartzCore/CAMetalLayer.hpp
---- original/QuartzCore/CAMetalLayer.hpp	2026-02-16 15:06:52
-+++ patched/QuartzCore/CAMetalLayer.hpp	2026-02-16 15:06:52
+--- original/QuartzCore/CAMetalLayer.hpp	2026-02-18 06:41:30
++++ patched/QuartzCore/CAMetalLayer.hpp	2026-02-18 06:41:31
 @@ -32,13 +32,14 @@
  #include "CADefines.hpp"
  #include "CAMetalDrawable.hpp"
@@ -215,9 +215,59 @@ diff -ruN original/QuartzCore/CAMetalLayer.hpp patched/QuartzCore/CAMetalLayer.h
  public:
      static class MetalLayer* layer();
 diff -ruN original/QuartzCore/CAPrivate.hpp patched/QuartzCore/CAPrivate.hpp
---- original/QuartzCore/CAPrivate.hpp	2026-02-16 15:06:52
-+++ patched/QuartzCore/CAPrivate.hpp	2026-02-16 15:06:52
-@@ -76,6 +76,7 @@
+--- original/QuartzCore/CAPrivate.hpp	2026-02-18 06:41:30
++++ patched/QuartzCore/CAPrivate.hpp	2026-02-18 06:41:31
+@@ -54,16 +54,49 @@
+ #define _CA_PRIVATE_DEF_CLS(symbol) void* s_k##symbol _CA_PRIVATE_VISIBILITY = _CA_PRIVATE_OBJC_LOOKUP_CLASS(symbol)
+ #define _CA_PRIVATE_DEF_PRO(symbol) void* s_k##symbol _CA_PRIVATE_VISIBILITY = _CA_PRIVATE_OBJC_GET_PROTOCOL(symbol)
+ #define _CA_PRIVATE_DEF_SEL(accessor, symbol) SEL s_k##accessor _CA_PRIVATE_VISIBILITY = sel_registerName(symbol)
++
++#include <dlfcn.h>
++
++namespace CA::Private
++{
++    template <typename _Type>
++    inline _Type const LoadSymbol(const char* pSymbol)
++    {
++        const _Type* pAddress = static_cast<_Type*>(dlsym(RTLD_DEFAULT, pSymbol));
++
++        return pAddress ? *pAddress : nullptr;
++    }
++} // CA::Private
++
++#if defined(__MAC_26_0) || defined(__IPHONE_26_0) || defined(__TVOS_26_0)
++
+ #define _CA_PRIVATE_DEF_STR(type, symbol)                \
+     _CA_EXTERN type const CA##symbol _CA_PRIVATE_IMPORT; \
+     type const                       CA::symbol = (nullptr != &CA##symbol) ? CA##symbol : nullptr
+ 
++#define _CA_PRIVATE_DEF_CONST(type, symbol)              \
++    _CA_EXTERN type const CA##symbol _CA_PRIVATE_IMPORT; \
++    type const                         CA::symbol = (nullptr != &CA##symbol) ? CA##symbol : nullptr
++
+ #else
+ 
++#define _CA_PRIVATE_DEF_STR(type, symbol)    \
++    _CA_EXTERN type const CA##symbol;    \
++    type const             CA::symbol = CA::Private::LoadSymbol<type>("CA" #symbol)
++
++#define _CA_PRIVATE_DEF_CONST(type, symbol)    \
++    _CA_EXTERN type const CA##symbol;    \
++    type const             CA::symbol = CA::Private::LoadSymbol<type>("CA" #symbol)
++
++#endif
++
++#else
++
+ #define _CA_PRIVATE_DEF_CLS(symbol) extern void* s_k##symbol
+ #define _CA_PRIVATE_DEF_PRO(symbol) extern void* s_k##symbol
+ #define _CA_PRIVATE_DEF_SEL(accessor, symbol) extern SEL s_k##accessor
+ #define _CA_PRIVATE_DEF_STR(type, symbol) extern type const CA::symbol
++#define _CA_PRIVATE_DEF_CONST(type, symbol) extern type const CA::symbol
+ 
+ #endif // CA_PRIVATE_IMPLEMENTATION
+ 
+@@ -76,6 +109,7 @@
      namespace Class
      {
          _CA_PRIVATE_DEF_CLS(CAMetalLayer);
@@ -225,7 +275,7 @@ diff -ruN original/QuartzCore/CAPrivate.hpp patched/QuartzCore/CAPrivate.hpp
      } // Class
  } // Private
  } // CA
-@@ -107,6 +108,8 @@
+@@ -107,6 +141,8 @@
              "allowsNextDrawableTimeout");
          _CA_PRIVATE_DEF_SEL(colorspace,
              "colorspace");
@@ -234,7 +284,7 @@ diff -ruN original/QuartzCore/CAPrivate.hpp patched/QuartzCore/CAPrivate.hpp
          _CA_PRIVATE_DEF_SEL(device,
              "device");
          _CA_PRIVATE_DEF_SEL(displaySyncEnabled,
-@@ -121,14 +124,20 @@
+@@ -121,14 +157,20 @@
              "maximumDrawableCount");
          _CA_PRIVATE_DEF_SEL(nextDrawable,
              "nextDrawable");
@@ -255,7 +305,7 @@ diff -ruN original/QuartzCore/CAPrivate.hpp patched/QuartzCore/CAPrivate.hpp
          _CA_PRIVATE_DEF_SEL(setDevice_,
              "setDevice:");
          _CA_PRIVATE_DEF_SEL(setDisplaySyncEnabled_,
-@@ -139,10 +148,19 @@
+@@ -139,10 +181,19 @@
              "setFramebufferOnly:");
          _CA_PRIVATE_DEF_SEL(setMaximumDrawableCount_,
              "setMaximumDrawableCount:");
@@ -276,8 +326,8 @@ diff -ruN original/QuartzCore/CAPrivate.hpp patched/QuartzCore/CAPrivate.hpp
  } // Private
  } // CA
 diff -ruN original/QuartzCore/QuartzCore.hpp patched/QuartzCore/QuartzCore.hpp
---- original/QuartzCore/QuartzCore.hpp	2026-02-16 15:06:52
-+++ patched/QuartzCore/QuartzCore.hpp	2026-02-16 15:06:52
+--- original/QuartzCore/QuartzCore.hpp	2026-02-18 06:41:30
++++ patched/QuartzCore/QuartzCore.hpp	2026-02-18 06:41:31
 @@ -22,6 +22,7 @@
  
  //-------------------------------------------------------------------------------------------------------------------------------------------------------------

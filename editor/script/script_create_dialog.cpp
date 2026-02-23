@@ -237,28 +237,28 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 	}
 
 	if (p.is_empty()) {
-		return TTR("Path is empty.");
+		return TTRC("Path is empty.");
 	}
 	if (p.get_file().get_basename().is_empty()) {
-		return TTR("Filename is empty.");
+		return TTRC("Filename is empty.");
 	}
 
 	if (!p.get_file().get_basename().is_valid_filename()) {
-		return TTR("Filename is invalid.");
+		return TTRC("Filename is invalid.");
 	}
 	if (p.get_file().begins_with(".")) {
-		return TTR("Name begins with a dot.");
+		return TTRC("Name begins with a dot.");
 	}
 
 	p = ProjectSettings::get_singleton()->localize_path(p);
 	if (!p.begins_with("res://")) {
-		return TTR("Path is not local.");
+		return TTRC("Path is not local.");
 	}
 
 	{
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (da->change_dir(p.get_base_dir()) != OK) {
-			return TTR("Base path is invalid.");
+			return TTRC("Base path is invalid.");
 		}
 	}
 
@@ -266,9 +266,9 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 		// Check if file exists.
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (da->dir_exists(p)) {
-			return TTR("A directory with the same name exists.");
+			return TTRC("A directory with the same name exists.");
 		} else if (p_file_must_exist && !da->file_exists(p)) {
-			return TTR("File does not exist.");
+			return TTRC("File does not exist.");
 		}
 	}
 
@@ -298,10 +298,10 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 	}
 
 	if (!found) {
-		return TTR("Invalid extension.");
+		return TTRC("Invalid extension.");
 	}
 	if (!match) {
-		return TTR("Extension doesn't match chosen language.");
+		return TTRC("Extension doesn't match chosen language.");
 	}
 
 	// Let ScriptLanguage do custom validation.
@@ -619,15 +619,15 @@ void ScriptCreateDialog::_update_dialog() {
 	// Is script path/name valid (order from top to bottom)?
 
 	if (!is_built_in && !is_path_valid) {
-		validation_panel->set_message(MSG_ID_SCRIPT, TTR("Invalid path."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(MSG_ID_SCRIPT, TTRC("Invalid path."), EditorValidationPanel::MSG_ERROR);
 	}
 
 	if (!is_parent_name_valid && is_new_script_created) {
-		validation_panel->set_message(MSG_ID_SCRIPT, TTR("Invalid inherited parent name or path."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(MSG_ID_SCRIPT, TTRC("Invalid inherited parent name or path."), EditorValidationPanel::MSG_ERROR);
 	}
 
 	if (validation_panel->is_valid() && !is_new_script_created) {
-		validation_panel->set_message(MSG_ID_SCRIPT, TTR("File exists, it will be reused."), EditorValidationPanel::MSG_OK);
+		validation_panel->set_message(MSG_ID_SCRIPT, TTRC("File exists, it will be reused."), EditorValidationPanel::MSG_OK);
 	}
 
 	if (!is_built_in && !path_error.is_empty()) {
@@ -657,9 +657,9 @@ void ScriptCreateDialog::_update_dialog() {
 	// Is Script created or loaded from existing file?
 
 	if (is_built_in) {
-		validation_panel->set_message(MSG_ID_BUILT_IN, TTR("Note: Built-in scripts have some limitations and can't be edited using an external editor."), EditorValidationPanel::MSG_INFO, false);
+		validation_panel->set_message(MSG_ID_BUILT_IN, TTRC("Note: Built-in scripts have some limitations and can't be edited using an external editor."), EditorValidationPanel::MSG_INFO, false);
 	} else if (file_path->get_text().get_file().get_basename() == parent_name->get_text()) {
-		validation_panel->set_message(MSG_ID_BUILT_IN, TTR("Warning: Having the script name be the same as a built-in type is usually not desired."), EditorValidationPanel::MSG_WARNING, false);
+		validation_panel->set_message(MSG_ID_BUILT_IN, TTRC("Warning: Having the script name be the same as a built-in type is usually not desired."), EditorValidationPanel::MSG_WARNING, false);
 	}
 
 	path_controls[0]->set_visible(!is_built_in);
@@ -678,16 +678,16 @@ void ScriptCreateDialog::_update_dialog() {
 
 	if (is_new_file) {
 		if (is_built_in) {
-			validation_panel->set_message(MSG_ID_PATH, TTR("Built-in script (into scene file)."), EditorValidationPanel::MSG_OK);
+			validation_panel->set_message(MSG_ID_PATH, TTRC("Built-in script (into scene file)."), EditorValidationPanel::MSG_OK);
 		}
 	} else {
 		template_inactive_message = TTRC("Using existing script file.");
 		if (load_enabled) {
 			if (is_path_valid) {
-				validation_panel->set_message(MSG_ID_PATH, TTR("Will load an existing script file."), EditorValidationPanel::MSG_OK);
+				validation_panel->set_message(MSG_ID_PATH, TTRC("Will load an existing script file."), EditorValidationPanel::MSG_OK);
 			}
 		} else {
-			validation_panel->set_message(MSG_ID_PATH, TTR("Script file already exists."), EditorValidationPanel::MSG_ERROR);
+			validation_panel->set_message(MSG_ID_PATH, TTRC("Script file already exists."), EditorValidationPanel::MSG_ERROR);
 		}
 	}
 
@@ -860,8 +860,8 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	/* Information Messages Field */
 
 	validation_panel = memnew(EditorValidationPanel);
-	validation_panel->add_line(MSG_ID_SCRIPT, TTR("Script path/name is valid."));
-	validation_panel->add_line(MSG_ID_PATH, TTR("Will create a new script file."));
+	validation_panel->add_line(MSG_ID_SCRIPT, TTRC("Script path/name is valid."));
+	validation_panel->add_line(MSG_ID_PATH, TTRC("Will create a new script file."));
 	validation_panel->add_line(MSG_ID_BUILT_IN);
 	validation_panel->add_line(MSG_ID_TEMPLATE);
 	validation_panel->set_update_callback(callable_mp(this, &ScriptCreateDialog::_update_dialog));

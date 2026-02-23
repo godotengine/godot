@@ -73,7 +73,7 @@ _CA_INLINE void CA::Layer::setOpaque(bool opaque)
     Object::sendMessage<void>(this, _CA_PRIVATE_SEL(setOpaque_), opaque);
 }
 
-_CA_PRIVATE_DEF_STR(CA::DynamicRange, DynamicRangeAutomatic);
-_CA_PRIVATE_DEF_STR(CA::DynamicRange, DynamicRangeStandard);
-_CA_PRIVATE_DEF_STR(CA::DynamicRange, DynamicRangeConstrainedHigh);
-_CA_PRIVATE_DEF_STR(CA::DynamicRange, DynamicRangeHigh);
+_CA_PRIVATE_DEF_CONST(CA::DynamicRange, DynamicRangeAutomatic);
+_CA_PRIVATE_DEF_CONST(CA::DynamicRange, DynamicRangeStandard);
+_CA_PRIVATE_DEF_CONST(CA::DynamicRange, DynamicRangeConstrainedHigh);
+_CA_PRIVATE_DEF_CONST(CA::DynamicRange, DynamicRangeHigh);

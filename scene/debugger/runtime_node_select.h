@@ -32,11 +32,16 @@
 
 #ifdef DEBUG_ENABLED
 
+#include "core/object/object.h"
 #include "scene/gui/view_panner.h"
+
 #ifndef _3D_DISABLED
 #include "scene/resources/mesh.h"
 #endif // _3D_DISABLED
 
+class InputEvent;
+class InputEventMouseMotion;
+class InputEventWithModifiers;
 class Node;
 class PopupMenu;
 

@@ -28,10 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "glow.h"
+
 #ifdef GLES3_ENABLED
 
-#include "glow.h"
-#include "../storage/texture_storage.h"
+#include "drivers/gles3/storage/texture_storage.h"
 
 using namespace GLES3;
 
@@ -88,7 +89,7 @@ void Glow::_draw_screen_triangle() {
 	glBindVertexArray(0);
 }
 
-void Glow::process_glow(GLuint p_source_color, Size2i p_size, const Glow::GLOWLEVEL *p_glow_buffers, uint32_t p_view, bool p_use_multiview) {
+void Glow::process_glow(GLuint p_source_color, Size2i p_size, const Glow::Level *p_glow_buffers, uint32_t p_view, bool p_use_multiview) {
 	ERR_FAIL_COND(p_source_color == 0);
 	ERR_FAIL_COND(p_glow_buffers[3].color == 0);
 

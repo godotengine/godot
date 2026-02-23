@@ -1634,6 +1634,17 @@ void CodeTextEditor::_update_font_ligatures() {
 				fc->set_opentype_features(ftrs);
 			} break;
 		}
+		Vector<String> variation_tags = String(EDITOR_GET("interface/editor/code_font_custom_variations")).split(",");
+		Dictionary variations_mono;
+		for (int i = 0; i < variation_tags.size(); i++) {
+			Vector<String> subtag_a = variation_tags[i].split("=");
+			if (subtag_a.size() == 2) {
+				variations_mono[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_float();
+			} else if (subtag_a.size() == 1) {
+				variations_mono[TS->name_to_tag(subtag_a[0])] = 1;
+			}
+		}
+		fc->set_variation_opentype(variations_mono);
 	}
 }
 

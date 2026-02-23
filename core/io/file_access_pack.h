@@ -132,11 +132,11 @@ public:
 	_FORCE_INLINE_ bool is_disabled() const { return disabled; }
 
 	static PackedData *get_singleton() { return singleton; }
-	Error add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset);
+	Error add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key = Vector<uint8_t>());
 
 	void clear();
 
-	_FORCE_INLINE_ Ref<FileAccess> try_open_path(const String &p_path);
+	_FORCE_INLINE_ Ref<FileAccess> try_open_path(const String &p_path, const Vector<uint8_t> &p_decryption_key = Vector<uint8_t>());
 	_FORCE_INLINE_ bool has_path(const String &p_path);
 
 	_FORCE_INLINE_ int64_t get_size(const String &p_path);
@@ -150,23 +150,23 @@ public:
 
 class PackSource {
 public:
-	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) = 0;
-	virtual Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file) = 0;
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key = Vector<uint8_t>()) = 0;
+	virtual Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file, const Vector<uint8_t> &p_decryption_key = Vector<uint8_t>()) = 0;
 	virtual ~PackSource() {}
 };
 
 class PackedSourcePCK : public PackSource {
 public:
-	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) override;
-	virtual Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file) override;
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key = Vector<uint8_t>()) override;
+	virtual Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file, const Vector<uint8_t> &p_decryption_key = Vector<uint8_t>()) override;
 };
 
 class PackedSourceDirectory : public PackSource {
 	void add_directory(const String &p_path, bool p_replace_files);
 
 public:
-	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) override;
-	virtual Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file) override;
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key = Vector<uint8_t>()) override;
+	virtual Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file, const Vector<uint8_t> &p_decryption_key = Vector<uint8_t>()) override;
 };
 
 class FileAccessPack : public FileAccess {
@@ -218,7 +218,7 @@ public:
 
 	virtual void close() override;
 
-	FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file);
+	FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file, const Vector<uint8_t> &p_decryption_key = Vector<uint8_t>());
 };
 
 int64_t PackedData::get_size(const String &p_path) {
@@ -234,7 +234,7 @@ int64_t PackedData::get_size(const String &p_path) {
 	return E->value.size;
 }
 
-Ref<FileAccess> PackedData::try_open_path(const String &p_path) {
+Ref<FileAccess> PackedData::try_open_path(const String &p_path, const Vector<uint8_t> &p_decryption_key) {
 	String simplified_path = p_path.simplify_path().trim_prefix("res://");
 	PathMD5 pmd5(simplified_path.md5_buffer());
 	HashMap<PathMD5, PackedFile, PathMD5>::Iterator E = files.find(pmd5);
@@ -242,7 +242,7 @@ Ref<FileAccess> PackedData::try_open_path(const String &p_path) {
 		return nullptr; // Not found.
 	}
 
-	return E->value.src->get_file(p_path, &E->value);
+	return E->value.src->get_file(p_path, &E->value, p_decryption_key);
 }
 
 bool PackedData::has_path(const String &p_path) {

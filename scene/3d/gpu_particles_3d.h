@@ -33,6 +33,8 @@
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/3d/skin.h"
 
+class Mesh;
+
 class GPUParticles3D : public GeometryInstance3D {
 private:
 	GDCLASS(GPUParticles3D, GeometryInstance3D);

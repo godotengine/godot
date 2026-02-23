@@ -43,6 +43,7 @@
 #import "godot_window.h"
 #import "godot_window_delegate.h"
 #import "key_mapping_macos.h"
+#import "native_menu_macos.h"
 #import "os_macos.h"
 
 #ifdef TOOLS_ENABLED
@@ -50,6 +51,7 @@
 #endif
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
@@ -58,15 +60,12 @@
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
 #include "scene/resources/image_texture.h"
+#include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #ifdef TOOLS_ENABLED
 #import "display_server_embedded.h"
 #import "editor/embedded_process_macos.h"
 #endif
-
-#include <AppKit/AppKit.h>
-
-#include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -81,6 +80,7 @@
 #include "drivers/accesskit/accessibility_driver_accesskit.h"
 #endif
 
+#include <AppKit/AppKit.h>
 #import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 #import <IOKit/IOCFPlugIn.h>

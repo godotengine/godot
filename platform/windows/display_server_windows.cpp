@@ -31,8 +31,8 @@
 #include "display_server_windows.h"
 
 #include "drop_target_windows.h"
+#include "native_menu_windows.h"
 #include "os_windows.h"
-#include "scene/main/window.h"
 #include "wgl_detect_version.h"
 
 #include "core/config/project_settings.h"
@@ -44,13 +44,13 @@
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
+#include "scene/main/window.h"
 #include "scene/resources/texture.h"
+#include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #ifdef SDL_ENABLED
 #include "drivers/sdl/joypad_sdl.h"
 #endif
-
-#include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #if defined(VULKAN_ENABLED)
 #include "rendering_context_driver_vulkan_windows.h"

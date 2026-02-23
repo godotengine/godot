@@ -137,7 +137,7 @@
 			Allows placing the dock in the vertical dock slots on either side of the editor.
 		</constant>
 		<constant name="DOCK_LAYOUT_HORIZONTAL" value="2" enum="DockLayout" is_bitfield="true">
-			Allows placing the dock in the editor's bottom panel.
+			Allows placing the dock in the horizontal dock slots at the bottom.
 		</constant>
 		<constant name="DOCK_LAYOUT_FLOATING" value="4" enum="DockLayout" is_bitfield="true">
 			Allows making the dock floating (opened as a separate window).
@@ -175,7 +175,13 @@
 		<constant name="DOCK_SLOT_BOTTOM" value="8" enum="DockSlot">
 			Bottom panel.
 		</constant>
-		<constant name="DOCK_SLOT_MAX" value="9" enum="DockSlot">
+		<constant name="DOCK_SLOT_BOTTOM_L" value="9" enum="DockSlot">
+			Dock slot at the bottom, below bottom panel, on the left side.
+		</constant>
+		<constant name="DOCK_SLOT_BOTTOM_R" value="10" enum="DockSlot">
+			Dock slot at the bottom, below bottom panel, on the right side.
+		</constant>
+		<constant name="DOCK_SLOT_MAX" value="11" enum="DockSlot">
 			Represents the size of the [enum DockSlot] enum.
 		</constant>
 	</constants>

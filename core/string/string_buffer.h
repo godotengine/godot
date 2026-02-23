@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/math/math_funcs_binary.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
 

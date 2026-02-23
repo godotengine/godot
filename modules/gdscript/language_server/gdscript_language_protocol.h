@@ -47,9 +47,7 @@
 class GDScriptLanguageProtocol : public JSONRPC {
 	GDCLASS(GDScriptLanguageProtocol, JSONRPC)
 
-#ifdef TESTS_ENABLED
 	friend class TestGDScriptLanguageProtocolInitializer;
-#endif
 
 private:
 	struct LSPeer : RefCounted {

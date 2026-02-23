@@ -45,18 +45,18 @@
 #include "scene/resources/dpi_texture.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/text_line.h"
-#include "scene/resources/world_2d.h"
 #include "servers/audio/audio_server.h"
-#include "servers/rendering/rendering_server_globals.h"
 
 // 2D.
 #include "scene/2d/audio_listener_2d.h"
 #include "scene/2d/camera_2d.h"
+#include "scene/resources/world_2d.h"
 
 #ifndef _3D_DISABLED
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/world_environment.h"
+#include "scene/resources/3d/world_3d.h"
 #endif // _3D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
@@ -66,6 +66,10 @@
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_object_3d.h"
 #endif // PHYSICS_3D_DISABLED
+
+#ifndef XR_DISABLED
+#include "servers/rendering/rendering_server_globals.h"
+#endif // XR_DISABLED
 
 void ViewportTexture::setup_local_to_scene() {
 	// For the same target viewport, setup is only allowed once to prevent multiple free or multiple creations.

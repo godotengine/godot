@@ -40,7 +40,7 @@ class Glow {
 private:
 	static Glow *singleton;
 
-	struct GLOW {
+	struct GlowShader {
 		GlowShaderGLES3 shader;
 		RID shader_version;
 	} glow;
@@ -60,7 +60,7 @@ private:
 	void _draw_screen_triangle();
 
 public:
-	struct GLOWLEVEL {
+	struct Level {
 		Size2i size;
 		GLuint color = 0;
 		GLuint fbo = 0;
@@ -78,7 +78,7 @@ public:
 	void set_glow_hdr_bleed_scale(float p_scale) { glow_hdr_bleed_scale = p_scale; }
 	void set_glow_hdr_luminance_cap(float p_cap) { glow_hdr_luminance_cap = p_cap; }
 
-	void process_glow(GLuint p_source_color, Size2i p_size, const GLOWLEVEL *p_glow_buffers, uint32_t p_view = 0, bool p_use_multiview = false);
+	void process_glow(GLuint p_source_color, Size2i p_size, const Level *p_glow_buffers, uint32_t p_view = 0, bool p_use_multiview = false);
 };
 
 } //namespace GLES3

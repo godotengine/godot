@@ -32,10 +32,15 @@
 #include "display_server.compat.inc"
 
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Input);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, NativeMenu);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Texture2D);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
 #include "core/input/input.h"
 #include "scene/resources/texture.h"
 #include "servers/display/display_server_headless.h"
+#include "servers/display/native_menu.h"
+#include "servers/rendering/rendering_server.h"
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
@@ -43,7 +48,6 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Input);
 
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"
-#undef CursorShape
 #endif
 #if defined(D3D12_ENABLED)
 #include "drivers/d3d12/rendering_context_driver_d3d12.h"
@@ -719,6 +723,24 @@ void DisplayServer::accessibility_set_window_rect(DisplayServer::WindowID p_wind
 void DisplayServer::accessibility_set_window_focused(DisplayServer::WindowID p_window_id, bool p_focused) {
 	if (accessibility_driver) {
 		accessibility_driver->accessibility_set_window_focused(p_window_id, p_focused);
+	}
+}
+
+void DisplayServer::accessibility_set_window_callbacks(DisplayServer::WindowID p_window_id, const Callable &p_activate_callable, const Callable &p_deativate_callable) {
+	if (accessibility_driver) {
+		accessibility_driver->accessibility_set_window_callbacks(p_window_id, p_activate_callable, p_deativate_callable);
+	}
+}
+
+void DisplayServer::accessibility_window_activation_completed(DisplayServer::WindowID p_window_id) {
+	if (accessibility_driver) {
+		accessibility_driver->accessibility_window_activation_completed(p_window_id);
+	}
+}
+
+void DisplayServer::accessibility_window_deactivation_completed(DisplayServer::WindowID p_window_id) {
+	if (accessibility_driver) {
+		accessibility_driver->accessibility_window_deactivation_completed(p_window_id);
 	}
 }
 

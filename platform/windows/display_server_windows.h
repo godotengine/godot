@@ -60,8 +60,6 @@
 #include "gl_manager_windows_native.h"
 #endif // GLES3_ENABLED
 
-#include "native_menu_windows.h"
-
 #include <io.h>
 #include <cstdio>
 
@@ -192,6 +190,7 @@ typedef struct {
 } ICONDIR, *LPICONDIR;
 
 class DropTargetWindows;
+class NativeMenuWindows;
 
 #ifndef WDA_EXCLUDEFROMCAPTURE
 #define WDA_EXCLUDEFROMCAPTURE 0x00000011

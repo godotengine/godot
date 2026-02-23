@@ -34,7 +34,9 @@
 
 @class CAContext;
 @class CALayer;
+class InputEvent;
 class GLManagerEmbedded;
+class NativeMenu;
 class RenderingContextDriver;
 class RenderingDevice;
 

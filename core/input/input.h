@@ -91,6 +91,8 @@ public:
 	public:
 		virtual ~JoypadFeatures() {}
 
+		virtual bool has_joy_vibration() const { return false; }
+
 		virtual bool has_joy_light() const { return false; }
 		virtual void set_joy_light(const Color &p_color) {}
 
@@ -212,6 +214,7 @@ private:
 		int hat_current = 0;
 		Dictionary info;
 		bool has_light = false;
+		bool has_vibration = false;
 		Input::JoypadFeatures *features = nullptr;
 	};
 
@@ -362,7 +365,10 @@ public:
 	TypedArray<int> get_connected_joypads();
 	Vector2 get_joy_vibration_strength(int p_device);
 	float get_joy_vibration_duration(int p_device);
+	float get_joy_vibration_remaining_duration(int p_device);
 	uint64_t get_joy_vibration_timestamp(int p_device);
+	bool is_joy_vibrating(int p_device);
+	bool has_joy_vibration(int p_device) const;
 	void joy_connection_changed(int p_idx, bool p_connected, const String &p_name, const String &p_guid = "", const Dictionary &p_joypad_info = Dictionary());
 
 	Vector3 get_gravity() const;
