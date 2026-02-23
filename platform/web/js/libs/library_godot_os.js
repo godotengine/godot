@@ -614,16 +614,16 @@ class AsyncPCKResource {
 
 			const jsonDataSize
 				= this.size
-				+ dependenciesResources.reduce(
-					(pAccumulator, pDependencyResource) => pAccumulator + pDependencyResource.size,
-					0
-				);
+					+ dependenciesResources.reduce(
+						(pAccumulator, pDependencyResource) => pAccumulator + pDependencyResource.size,
+						0
+					);
 			const jsonDataProgress
 				= this.progress
-				+ dependenciesResources.reduce(
-					(pAccumulator, pDependencyResource) => pAccumulator + pDependencyResource.progress,
-					0
-				);
+					+ dependenciesResources.reduce(
+						(pAccumulator, pDependencyResource) => pAccumulator + pDependencyResource.progress,
+						0
+					);
 			let jsonDataProgressRatio = 0;
 			if (jsonDataSize > 0) {
 				jsonDataProgressRatio = jsonDataProgress / jsonDataSize;
