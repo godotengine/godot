@@ -31,12 +31,6 @@
 				Return the compression mode used (valid after initialized).
 			</description>
 		</method>
-		<method name="get_format" qualifiers="const">
-			<return type="int" enum="Image.Format" />
-			<description>
-				Return the image format used (valid after initialized).
-			</description>
-		</method>
 		<method name="is_keeping_all_compressed_buffers" qualifiers="static">
 			<return type="bool" />
 			<description>

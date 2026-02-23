@@ -38,6 +38,40 @@
 				Re-calculates the mipmaps for this texture on demand.
 			</description>
 		</method>
+		<method name="get_use_mipmaps" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if mipmaps are set to be used on this DrawableTexture.
+			</description>
+		</method>
+		<method name="set_format">
+			<return type="void" />
+			<param index="0" name="format" type="int" enum="DrawableTexture2D.DrawableFormat" />
+			<description>
+				Sets the format of this DrawableTexture.
+			</description>
+		</method>
+		<method name="set_height">
+			<return type="void" />
+			<param index="0" name="height" type="int" />
+			<description>
+				Sets the height of this DrawableTexture.
+			</description>
+		</method>
+		<method name="set_use_mipmaps">
+			<return type="void" />
+			<param index="0" name="mipmaps" type="bool" />
+			<description>
+				Sets if mipmaps should be used on this DrawableTexture.
+			</description>
+		</method>
+		<method name="set_width">
+			<return type="void" />
+			<param index="0" name="width" type="int" />
+			<description>
+				Sets the width of this DrawableTexture.
+			</description>
+		</method>
 		<method name="setup" experimental="This function and its parameters are likely to change in the 4.7 Dev Cycle">
 			<return type="void" />
 			<param index="0" name="width" type="int" />
