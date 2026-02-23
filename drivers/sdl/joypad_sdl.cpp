@@ -95,6 +95,17 @@ void JoypadSDL::process_events() {
 
 				SDL_Joystick *sdl_joy = SDL_GetJoystickFromID(joypads[i].sdl_instance_idx);
 				Vector2 strength = Input::get_singleton()->get_joy_vibration_strength(i);
+				// Invalid values for strength are filtered by Input::start_joy_vibration().
+
+				float duration = Input::get_singleton()->get_joy_vibration_duration(i);
+				Uint32 duration_ms = 0;
+				if (duration < 0.0f) {
+					continue; // Invalid duration.
+				} else if (duration == 0.0f) {
+					duration_ms = 0xFFFF; // SDL_MAX_RUMBLE_DURATION_MS
+				} else {
+					duration_ms = duration * 1000;
+				}
 
 				/*
 					If the vibration was requested to start, SDL_RumbleJoystick will start it.
@@ -103,13 +114,10 @@ void JoypadSDL::process_events() {
 					Here strength.y goes first and then strength.x, because Input.get_joy_vibration_strength().x
 					is vibration's weak magnitude (high frequency rumble), and .y is strong magnitude (low frequency rumble),
 					SDL_RumbleJoystick takes low frequency rumble first and then high frequency rumble.
+
+					Rumble strength goes from 0 to 0xFFFF.
 				*/
-				SDL_RumbleJoystick(
-						sdl_joy,
-						// Rumble strength goes from 0 to 0xFFFF
-						strength.y * UINT16_MAX,
-						strength.x * UINT16_MAX,
-						Input::get_singleton()->get_joy_vibration_duration(i) * 1000);
+				SDL_RumbleJoystick(sdl_joy, strength.y * UINT16_MAX, strength.x * UINT16_MAX, duration_ms);
 			}
 		}
 	}
@@ -333,6 +341,10 @@ void JoypadSDL::Joypad::set_joy_motion_sensors_enabled(bool p_enable) {
 	SDL_Gamepad *gamepad = get_sdl_gamepad();
 	SDL_SetGamepadSensorEnabled(gamepad, SDL_SENSOR_ACCEL, p_enable);
 	SDL_SetGamepadSensorEnabled(gamepad, SDL_SENSOR_GYRO, p_enable);
+}
+
+bool JoypadSDL::Joypad::has_joy_vibration() const {
+	return supports_force_feedback;
 }
 
 SDL_Joystick *JoypadSDL::Joypad::get_sdl_joystick() const {

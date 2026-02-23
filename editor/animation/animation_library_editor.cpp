@@ -50,7 +50,6 @@ void AnimationLibraryEditor::set_animation_mixer(Object *p_mixer) {
 }
 
 void AnimationLibraryEditor::_add_library() {
-	add_library_dialog->set_title(TTR("Library Name:"));
 	add_library_name->set_text("");
 	add_library_dialog->popup_centered();
 	add_library_name->grab_focus();
@@ -542,7 +541,6 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 		Ref<AnimationLibrary> al = mixer->get_animation_library(lib_name);
 		switch (p_id) {
 			case LIB_BUTTON_ADD: {
-				add_library_dialog->set_title(TTR("Animation Name:"));
 				add_library_name->set_text("");
 				add_library_dialog->popup_centered();
 				add_library_name->grab_focus();
@@ -917,7 +915,12 @@ void AnimationLibraryEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			new_library_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			load_library_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
-		}
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			tree->set_column_title(0, TTR("Resource"));
+			tree->set_column_title(1, TTR("Storage"));
+		} break;
 	}
 }
 
@@ -952,7 +955,7 @@ void AnimationLibraryEditor::_bind_methods() {
 }
 
 AnimationLibraryEditor::AnimationLibraryEditor() {
-	set_title(TTR("Edit Animation Libraries"));
+	set_title(TTRC("Edit Animation Libraries"));
 	set_process_shortcut_input(true);
 
 	file_dialog = memnew(EditorFileDialog);
@@ -961,6 +964,8 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	file_dialog->connect("files_selected", callable_mp(this, &AnimationLibraryEditor::_load_files));
 
 	add_library_dialog = memnew(ConfirmationDialog);
+	add_library_dialog->set_title(TTRC("Library Name:"));
+
 	VBoxContainer *dialog_vb = memnew(VBoxContainer);
 	add_library_name = memnew(LineEdit);
 	dialog_vb->add_child(add_library_name);
@@ -976,12 +981,12 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->add_spacer(true);
-	new_library_button = memnew(Button(TTR("New Library")));
-	new_library_button->set_tooltip_text(TTR("Create new empty animation library."));
+	new_library_button = memnew(Button(TTRC("New Library")));
+	new_library_button->set_tooltip_text(TTRC("Create new empty animation library."));
 	new_library_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationLibraryEditor::_add_library));
 	hb->add_child(new_library_button);
-	load_library_button = memnew(Button(TTR("Load Library")));
-	load_library_button->set_tooltip_text(TTR("Load animation library from disk."));
+	load_library_button = memnew(Button(TTRC("Load Library")));
+	load_library_button->set_tooltip_text(TTRC("Load animation library from disk."));
 	load_library_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationLibraryEditor::_load_library));
 	hb->add_child(load_library_button);
 	vb->add_child(hb);
@@ -992,8 +997,6 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	tree->set_theme_type_variation("TreeTable");
 	tree->set_columns(2);
 	tree->set_column_titles_visible(true);
-	tree->set_column_title(0, TTR("Resource"));
-	tree->set_column_title(1, TTR("Storage"));
 	tree->set_column_expand(0, true);
 	tree->set_column_custom_minimum_width(1, EDSCALE * 250);
 	tree->set_column_expand(1, false);
@@ -1012,6 +1015,6 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	add_child(vb);
 
 	error_dialog = memnew(AcceptDialog);
-	error_dialog->set_title(TTR("Error:"));
+	error_dialog->set_title(TTRC("Error:"));
 	add_child(error_dialog);
 }

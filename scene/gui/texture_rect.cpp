@@ -30,6 +30,8 @@
 
 #include "texture_rect.h"
 
+#include "scene/resources/atlas_texture.h"
+
 void TextureRect::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
@@ -95,7 +97,23 @@ void TextureRect::_notification(int p_what) {
 			if (region.has_area()) {
 				draw_texture_rect_region(texture, Rect2(offset, size), region);
 			} else {
-				draw_texture_rect(texture, Rect2(offset, size), tile);
+				// `draw_texture_rect` doesn't support tiling an AtlasTexture.
+				// Workaround using nine patch. Doesn't work properly for non-zero margin, nesting AtlasTextures is fine otherwise.
+				if (tile && Object::cast_to<AtlasTexture>(*texture)) {
+					Rect2 src_rect(Vector2(), texture->get_size());
+					Rect2 dst_rect(offset, size);
+					Ref<AtlasTexture> at = texture;
+					bool anything_to_draw = true;
+					while (anything_to_draw && at.is_valid()) {
+						anything_to_draw = at->get_rect_region(dst_rect, src_rect, dst_rect, src_rect);
+						at = at->get_atlas();
+					}
+					if (anything_to_draw) {
+						RS::get_singleton()->canvas_item_add_nine_patch(get_canvas_item(), dst_rect, src_rect, texture->get_scaled_rid(), Vector2(), Vector2(), RS::NINE_PATCH_TILE, RS::NINE_PATCH_TILE, true);
+					}
+				} else {
+					draw_texture_rect(texture, Rect2(offset, size), tile);
+				}
 			}
 		} break;
 		case NOTIFICATION_RESIZED: {
@@ -130,6 +148,23 @@ Size2 TextureRect::get_minimum_size() const {
 		}
 	}
 	return Size2();
+}
+
+PackedStringArray TextureRect::get_configuration_warnings() const {
+	PackedStringArray warnings = Control::get_configuration_warnings();
+
+	if (stretch_mode == STRETCH_TILE) {
+		Ref<AtlasTexture> at = texture;
+		while (at.is_valid()) {
+			if (at->get_margin() != Rect2()) {
+				warnings.push_back(vformat(RTR("STRETCH_TILE mode is not supported for an AtlasTexture with non-zero margin.")));
+				break;
+			}
+			at = at->get_atlas();
+		}
+	}
+
+	return warnings;
 }
 
 void TextureRect::_bind_methods() {
@@ -179,6 +214,7 @@ bool TextureRect::_set(const StringName &p_name, const Variant &p_value) {
 void TextureRect::_texture_changed() {
 	queue_redraw();
 	update_minimum_size();
+	update_configuration_warnings();
 }
 
 void TextureRect::set_texture(const Ref<Texture2D> &p_tex) {
@@ -196,8 +232,7 @@ void TextureRect::set_texture(const Ref<Texture2D> &p_tex) {
 		texture->connect_changed(callable_mp(this, &TextureRect::_texture_changed));
 	}
 
-	queue_redraw();
-	update_minimum_size();
+	_texture_changed();
 }
 
 Ref<Texture2D> TextureRect::get_texture() const {
@@ -225,6 +260,7 @@ void TextureRect::set_stretch_mode(StretchMode p_mode) {
 
 	stretch_mode = p_mode;
 	queue_redraw();
+	update_configuration_warnings();
 }
 
 TextureRect::StretchMode TextureRect::get_stretch_mode() const {

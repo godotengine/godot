@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Base class of [SkeletonModifier3D] that automatically generates a joint list from the bones between the root bone and the end bone.
+		[b]Note:[/b] All the methods in this class take an [code]index[/code] parameter. This parameter specifies which setting list entry to return if the IK has multiple entries (e.g. [code]settings/&lt;index&gt;/root_bone_name[/code]).
 	</description>
 	<tutorials>
 	</tutorials>

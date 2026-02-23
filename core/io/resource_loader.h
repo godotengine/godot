@@ -264,25 +264,15 @@ public:
 	static bool get_timestamp_on_load() { return timestamp_on_load; }
 
 	// Loaders can safely use this regardless which thread they are running on.
-	static void notify_load_error(const String &p_err) {
-		if (err_notify) {
-			MessageQueue::get_main_singleton()->push_callable(callable_mp_static(err_notify).bind(p_err));
-		}
-	}
+	static void notify_load_error(const String &p_err);
+
 	static void set_error_notify_func(ResourceLoadErrorNotify p_err_notify) {
 		err_notify = p_err_notify;
 	}
 
 	// Loaders can safely use this regardless which thread they are running on.
-	static void notify_dependency_error(const String &p_path, const String &p_dependency, const String &p_type) {
-		if (dep_err_notify) {
-			if (Thread::get_caller_id() == Thread::get_main_id()) {
-				dep_err_notify(p_path, p_dependency, p_type);
-			} else {
-				MessageQueue::get_main_singleton()->push_callable(callable_mp_static(dep_err_notify).bind(p_path, p_dependency, p_type));
-			}
-		}
-	}
+	static void notify_dependency_error(const String &p_path, const String &p_dependency, const String &p_type);
+
 	static void set_dependency_error_notify_func(DependencyErrorNotify p_err_notify) {
 		dep_err_notify = p_err_notify;
 	}

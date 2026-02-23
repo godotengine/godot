@@ -431,6 +431,20 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 		} break;
 	}
 
+	Vector<String> variation_tags = String(EDITOR_GET("interface/editor/code_font_custom_variations")).split(",");
+	Dictionary variations_mono;
+	for (int i = 0; i < variation_tags.size(); i++) {
+		Vector<String> subtag_a = variation_tags[i].split("=");
+		if (subtag_a.size() == 2) {
+			variations_mono[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_float();
+		} else if (subtag_a.size() == 1) {
+			variations_mono[TS->name_to_tag(subtag_a[0])] = 1;
+		}
+	}
+	if (!variations_mono.is_empty()) {
+		mono_fc->set_variation_opentype(variations_mono);
+	}
+
 	{
 		// Disable contextual alternates (coding ligatures).
 		Dictionary ftrs;

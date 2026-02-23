@@ -30,17 +30,17 @@
 
 #pragma once
 
-#include "core/math/projection.h"
-#include "core/os/mutex.h"
-#include "core/string/string_builder.h"
+#ifdef GLES3_ENABLED
+
+#include "core/templates/a_hash_map.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/rendering_server.h"
 
-#ifdef GLES3_ENABLED
-
 #include "platform_gl.h"
+
+class StringBuilder;
 
 class ShaderGLES3 {
 public:
@@ -104,8 +104,6 @@ private:
 
 		LocalVector<AHashMap<uint64_t, Specialization>> variants;
 	};
-
-	Mutex variant_set_mutex;
 
 	void _get_uniform_locations(Version::Specialization &spec, Version *p_version);
 	void _compile_specialization(Version::Specialization &spec, uint32_t p_variant, Version *p_version, uint64_t p_specialization);

@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "rasterizer_gles3.h"
-#include "storage/utilities.h"
 
 #ifdef GLES3_ENABLED
 
@@ -37,7 +36,6 @@
 #include "core/io/dir_access.h"
 #include "core/io/image.h"
 #include "core/os/os.h"
-#include "storage/texture_storage.h"
 
 #define _EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB 0x8242
 #define _EXT_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_ARB 0x8243
@@ -92,8 +90,6 @@
 bool RasterizerGLES3::screen_flipped_y = false;
 #endif
 
-bool RasterizerGLES3::gles_over_gl = true;
-
 void RasterizerGLES3::begin_frame(double frame_step) {
 	frame++;
 	delta = frame_step;
@@ -123,23 +119,6 @@ void RasterizerGLES3::gl_end_frame(bool p_swap_buffers) {
 	} else {
 		glFinish();
 	}
-}
-
-void RasterizerGLES3::clear_depth(float p_depth) {
-#ifdef GL_API_ENABLED
-	if (is_gles_over_gl()) {
-		glClearDepth(p_depth);
-	}
-#endif // GL_API_ENABLED
-#ifdef GLES_API_ENABLED
-	if (!is_gles_over_gl()) {
-		glClearDepthf(p_depth);
-	}
-#endif // GLES_API_ENABLED
-}
-
-void RasterizerGLES3::clear_stencil(int32_t p_stencil) {
-	glClearStencil(p_stencil);
 }
 
 #ifdef CAN_DEBUG
@@ -255,7 +234,7 @@ RasterizerGLES3::RasterizerGLES3() {
 	bool has_egl = (eglGetProcAddress != nullptr);
 #endif
 
-	if (gles_over_gl) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		if (has_egl && !glad_loaded && gladLoadGL((GLADloadfunc)&_egl_load_function_wrapper)) {
 			glad_loaded = true;
 		}
@@ -266,7 +245,7 @@ RasterizerGLES3::RasterizerGLES3() {
 	}
 #endif // EGL_ENABLED
 
-	if (gles_over_gl) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		if (!glad_loaded && gladLoaderLoadGL()) {
 			glad_loaded = true;
 		}
@@ -281,7 +260,7 @@ RasterizerGLES3::RasterizerGLES3() {
 	// or we need to actually test for this situation before constructing this.
 	ERR_FAIL_COND_MSG(!glad_loaded, "Error initializing GLAD.");
 
-	if (gles_over_gl) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			if (GLAD_GL_ARB_debug_output) {
 				glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
@@ -297,7 +276,7 @@ RasterizerGLES3::RasterizerGLES3() {
 	// For debugging
 #ifdef CAN_DEBUG
 #ifdef GL_API_ENABLED
-	if (gles_over_gl) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		if (OS::get_singleton()->is_stdout_verbose() && GLAD_GL_ARB_debug_output) {
 			glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
 			glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
@@ -309,7 +288,7 @@ RasterizerGLES3::RasterizerGLES3() {
 	}
 #endif // GL_API_ENABLED
 #ifdef GLES_API_ENABLED
-	if (!gles_over_gl) {
+	if (!RasterizerUtilGLES3::is_gles_over_gl()) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			DebugMessageCallbackARB callback = (DebugMessageCallbackARB)eglGetProcAddress("glDebugMessageCallback");
 			if (!callback) {

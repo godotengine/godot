@@ -2096,7 +2096,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	frame->set_custom_minimum_size(Size2(80, 0) * EDSCALE);
 	frame->set_stretch_ratio(2);
 	frame->set_step(0.0001);
-	frame->set_tooltip_text(TTR("Animation position (in seconds)."));
+	frame->set_tooltip_text(TTRC("Animation position (in seconds)."));
 
 	hb->add_child(memnew(VSeparator));
 
@@ -2104,7 +2104,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	hb->add_child(scale);
 	scale->set_h_size_flags(SIZE_EXPAND_FILL);
 	scale->set_stretch_ratio(1);
-	scale->set_tooltip_text(TTR("Scale animation playback globally for the node."));
+	scale->set_tooltip_text(TTRC("Scale animation playback globally for the node."));
 	scale->hide();
 
 	delete_dialog = memnew(ConfirmationDialog);
@@ -2114,8 +2114,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	tool_anim = memnew(MenuButton);
 	tool_anim->set_shortcut_context(this);
 	tool_anim->set_flat(false);
-	tool_anim->set_tooltip_text(TTR("Animation Tools"));
-	tool_anim->set_text(TTR("Animation"));
+	tool_anim->set_tooltip_text(TTRC("Animation Tools"));
+	tool_anim->set_text(TTRC("Animation"));
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/new_animation", TTRC("New...")), TOOL_NEW_ANIM);
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/animation_libraries", TTRC("Manage Animations...")), TOOL_ANIM_LIBRARY);
@@ -2135,14 +2135,14 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	hb->add_child(animation);
 	animation->set_accessibility_name(TTRC("Animation"));
 	animation->set_h_size_flags(SIZE_EXPAND_FILL);
-	animation->set_tooltip_text(TTR("Display list of animations in player."));
+	animation->set_tooltip_text(TTRC("Display list of animations in player."));
 	animation->set_clip_text(true);
 	animation->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 	autoplay = memnew(Button);
 	autoplay->set_theme_type_variation(SceneStringName(FlatButton));
 	hb->add_child(autoplay);
-	autoplay->set_tooltip_text(TTR("Autoplay on Load"));
+	autoplay->set_tooltip_text(TTRC("Autoplay on Load"));
 
 	hb->add_child(memnew(VSeparator));
 
@@ -2154,7 +2154,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	onion_toggle = memnew(Button);
 	onion_toggle->set_theme_type_variation(SceneStringName(FlatButton));
 	onion_toggle->set_toggle_mode(true);
-	onion_toggle->set_tooltip_text(TTR("Enable Onion Skinning"));
+	onion_toggle->set_tooltip_text(TTRC("Enable Onion Skinning"));
 	onion_toggle->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu).bind(ONION_SKINNING_ENABLE));
 	hb->add_child(onion_toggle);
 
@@ -2162,22 +2162,22 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	onion_skinning->set_accessibility_name(TTRC("Onion Skinning Options"));
 	onion_skinning->set_flat(false);
 	onion_skinning->set_theme_type_variation("FlatMenuButton");
-	onion_skinning->set_tooltip_text(TTR("Onion Skinning Options"));
-	onion_skinning->get_popup()->add_separator(TTR("Directions"));
+	onion_skinning->set_tooltip_text(TTRC("Onion Skinning Options"));
+	onion_skinning->get_popup()->add_separator(TTRC("Directions"));
 	// TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
-	onion_skinning->get_popup()->add_check_item(TTR("Past"), ONION_SKINNING_PAST);
+	onion_skinning->get_popup()->add_check_item(TTRC("Past"), ONION_SKINNING_PAST);
 	onion_skinning->get_popup()->set_item_checked(-1, true);
 	// TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
-	onion_skinning->get_popup()->add_check_item(TTR("Future"), ONION_SKINNING_FUTURE);
-	onion_skinning->get_popup()->add_separator(TTR("Depth"));
-	onion_skinning->get_popup()->add_radio_check_item(TTR("1 step"), ONION_SKINNING_1_STEP);
+	onion_skinning->get_popup()->add_check_item(TTRC("Future"), ONION_SKINNING_FUTURE);
+	onion_skinning->get_popup()->add_separator(TTRC("Depth"));
+	onion_skinning->get_popup()->add_radio_check_item(TTRC("1 step"), ONION_SKINNING_1_STEP);
 	onion_skinning->get_popup()->set_item_checked(-1, true);
-	onion_skinning->get_popup()->add_radio_check_item(TTR("2 steps"), ONION_SKINNING_2_STEPS);
-	onion_skinning->get_popup()->add_radio_check_item(TTR("3 steps"), ONION_SKINNING_3_STEPS);
+	onion_skinning->get_popup()->add_radio_check_item(TTRC("2 steps"), ONION_SKINNING_2_STEPS);
+	onion_skinning->get_popup()->add_radio_check_item(TTRC("3 steps"), ONION_SKINNING_3_STEPS);
 	onion_skinning->get_popup()->add_separator();
-	onion_skinning->get_popup()->add_check_item(TTR("Differences Only"), ONION_SKINNING_DIFFERENCES_ONLY);
-	onion_skinning->get_popup()->add_check_item(TTR("Force White Modulate"), ONION_SKINNING_FORCE_WHITE_MODULATE);
-	onion_skinning->get_popup()->add_check_item(TTR("Include Gizmos (3D)"), ONION_SKINNING_INCLUDE_GIZMOS);
+	onion_skinning->get_popup()->add_check_item(TTRC("Differences Only"), ONION_SKINNING_DIFFERENCES_ONLY);
+	onion_skinning->get_popup()->add_check_item(TTRC("Force White Modulate"), ONION_SKINNING_FORCE_WHITE_MODULATE);
+	onion_skinning->get_popup()->add_check_item(TTRC("Include Gizmos (3D)"), ONION_SKINNING_INCLUDE_GIZMOS);
 	onion_skinning->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu));
 	hb->add_child(onion_skinning);
 
@@ -2186,7 +2186,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	pin = memnew(Button);
 	pin->set_theme_type_variation(SceneStringName(FlatButton));
 	pin->set_toggle_mode(true);
-	pin->set_tooltip_text(TTR("Pin AnimationPlayer"));
+	pin->set_tooltip_text(TTRC("Pin AnimationPlayer"));
 	hb->add_child(pin);
 	pin->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_pin_pressed));
 
@@ -2194,13 +2194,13 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	add_child(file);
 
 	name_dialog = memnew(ConfirmationDialog);
-	name_dialog->set_title(TTR("Create New Animation"));
+	name_dialog->set_title(TTRC("Create New Animation"));
 	name_dialog->set_hide_on_ok(false);
 	add_child(name_dialog);
 	VBoxContainer *vb = memnew(VBoxContainer);
 	name_dialog->add_child(vb);
 
-	name_title = memnew(Label(TTR("Animation Name:")));
+	name_title = memnew(Label(TTRC("Animation Name:")));
 	vb->add_child(name_title);
 
 	HBoxContainer *name_hb = memnew(HBoxContainer);
@@ -2214,15 +2214,15 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	name_dialog->register_text_enter(name);
 
 	error_dialog = memnew(AcceptDialog);
-	error_dialog->set_ok_button_text(TTR("Close"));
-	error_dialog->set_title(TTR("Error!"));
+	error_dialog->set_ok_button_text(TTRC("Close"));
+	error_dialog->set_title(TTRC("Error!"));
 	name_dialog->add_child(error_dialog);
 
 	name_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationPlayerEditor::_animation_name_edited));
 
 	blend_editor.dialog = memnew(AcceptDialog);
-	blend_editor.dialog->set_title(TTR("Cross-Animation Blend Times"));
-	blend_editor.dialog->set_ok_button_text(TTR("Close"));
+	blend_editor.dialog->set_title(TTRC("Cross-Animation Blend Times"));
+	blend_editor.dialog->set_ok_button_text(TTRC("Close"));
 	blend_editor.dialog->set_hide_on_ok(true);
 	add_child(blend_editor.dialog);
 
@@ -2237,13 +2237,13 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	blend_editor.tree->set_column_clip_content(0, true);
 	blend_editor.tree->set_column_expand_ratio(1, 3);
 	blend_editor.tree->set_column_clip_content(1, true);
-	blend_vb->add_margin_child(TTR("Blend Times:"), blend_editor.tree, true);
+	blend_vb->add_margin_child(TTRC("Blend Times:"), blend_editor.tree, true);
 	blend_editor.tree->connect(SNAME("item_edited"), callable_mp(this, &AnimationPlayerEditor::_blend_edited));
 
 	blend_editor.next = memnew(OptionButton);
 	blend_editor.next->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	blend_editor.next->connect(SceneStringName(item_selected), callable_mp(this, &AnimationPlayerEditor::_blend_editor_next_changed));
-	blend_vb->add_margin_child(TTR("Next (Auto Queue):"), blend_editor.next);
+	blend_vb->add_margin_child(TTRC("Next (Auto Queue):"), blend_editor.next);
 
 	autoplay->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_autoplay_pressed));
 	autoplay->set_toggle_mode(true);

@@ -720,6 +720,7 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_set_title(displayed_title, window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 	DisplayServer::get_singleton()->window_request_hdr_output(hdr_output_requested, window_id);
+	DisplayServer::get_singleton()->accessibility_set_window_callbacks(window_id, callable_mp(this, &Window::_accessibility_activate), callable_mp(this, &Window::_accessibility_deactivate));
 
 	_update_window_size();
 
@@ -943,6 +944,16 @@ void Window::hide() {
 	set_visible(false);
 }
 
+void Window::_accessibility_activate() {
+	_accessibility_notify_enter(this);
+	DisplayServer::get_singleton()->accessibility_window_activation_completed(get_window_id());
+}
+
+void Window::_accessibility_deactivate() {
+	_accessibility_notify_exit(this);
+	DisplayServer::get_singleton()->accessibility_window_deactivation_completed(get_window_id());
+}
+
 void Window::_accessibility_notify_enter(Node *p_node) {
 	p_node->queue_accessibility_update();
 
@@ -1032,10 +1043,12 @@ void Window::set_visible(bool p_visible) {
 		if (get_tree() && get_tree()->is_accessibility_supported()) {
 			get_tree()->_accessibility_force_update();
 			_accessibility_notify_enter(this);
+			DisplayServer::get_singleton()->accessibility_window_activation_completed(get_window_id());
 		}
 	} else {
 		if (get_tree() && get_tree()->is_accessibility_supported()) {
 			_accessibility_notify_exit(this);
+			DisplayServer::get_singleton()->accessibility_window_deactivation_completed(get_window_id());
 		}
 		focused = false;
 		if (focused_window == this) {
@@ -1479,8 +1492,14 @@ void Window::_notification(int p_what) {
 	ERR_MAIN_THREAD_GUARD;
 	switch (p_what) {
 		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
-			accessibility_title_element = RID();
-			accessibility_announcement_element = RID();
+			if (accessibility_title_element.is_valid()) {
+				DisplayServer::get_singleton()->accessibility_free_element(accessibility_title_element);
+				accessibility_title_element = RID();
+			}
+			if (accessibility_announcement_element.is_valid()) {
+				DisplayServer::get_singleton()->accessibility_free_element(accessibility_announcement_element);
+				accessibility_announcement_element = RID();
+			}
 		} break;
 
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
@@ -1600,6 +1619,7 @@ void Window::_notification(int p_what) {
 					window_id = DisplayServer::MAIN_WINDOW_ID;
 					focused_window = this;
 					DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
+					DisplayServer::get_singleton()->accessibility_set_window_callbacks(window_id, callable_mp(this, &Window::_accessibility_activate), callable_mp(this, &Window::_accessibility_deactivate));
 					_update_from_window();
 					// Since this window already exists (created on start), we must update pos and size from it.
 					{
@@ -1638,6 +1658,7 @@ void Window::_notification(int p_what) {
 				if (window_id != DisplayServer::MAIN_WINDOW_ID && get_tree() && get_tree()->is_accessibility_supported()) {
 					get_tree()->_accessibility_force_update();
 					_accessibility_notify_enter(this);
+					DisplayServer::get_singleton()->accessibility_window_activation_completed(get_window_id());
 				}
 				notification(NOTIFICATION_VISIBILITY_CHANGED);
 				emit_signal(SceneStringName(visibility_changed));
@@ -1692,6 +1713,7 @@ void Window::_notification(int p_what) {
 			if (visible && window_id != DisplayServer::MAIN_WINDOW_ID) {
 				if (get_tree() && get_tree()->is_accessibility_supported()) {
 					_accessibility_notify_exit(this);
+					DisplayServer::get_singleton()->accessibility_window_deactivation_completed(get_window_id());
 					if (get_parent()) {
 						get_parent()->queue_accessibility_update();
 					}

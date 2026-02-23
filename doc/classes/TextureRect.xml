@@ -51,6 +51,7 @@
 		</constant>
 		<constant name="STRETCH_TILE" value="1" enum="StretchMode">
 			Tile inside the node's bounding rectangle.
+			[b]Note:[/b] [constant STRETCH_TILE] mode is not supported for [member texture] set to an [AtlasTexture] with non-zero [member AtlasTexture.margin].
 		</constant>
 		<constant name="STRETCH_KEEP" value="2" enum="StretchMode">
 			The texture keeps its original size and stays in the bounding rectangle's top-left corner.

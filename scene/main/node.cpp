@@ -39,17 +39,21 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, OS);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Engine);
 
 #include "core/config/project_settings.h"
+#include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
 #include "core/string/print_string.h"
-#include "instance_placeholder.h"
 #include "scene/animation/tween.h"
-#include "scene/debugger/scene_debugger.h"
+#include "scene/main/instance_placeholder.h"
 #include "scene/main/multiplayer_api.h"
+#include "scene/main/viewport.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
-#include "viewport.h"
+
+#ifdef DEBUG_ENABLED
+#include "scene/debugger/scene_debugger.h"
+#endif
 
 #ifdef DEBUG_ENABLED
 SafeNumeric<uint64_t> Node::total_node_count{ 0 };

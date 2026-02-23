@@ -1,10 +1,10 @@
 Checks:
   - -*
-  - cppcoreguidelines-pro-type-member-init
+  - bugprone-use-after-move
   - modernize-deprecated-headers
   - modernize-redundant-void-arg
   - modernize-use-bool-literals
-  - modernize-use-default-member-init
+#  - modernize-use-default-member-init # TODO Re-activate
   - modernize-use-nullptr
   - readability-braces-around-statements
   - readability-redundant-member-init
@@ -13,8 +13,6 @@ ImplementationFileExtensions: [c, cc, cpp, cxx, m, mm, java]
 HeaderFilterRegex: (core|doc|drivers|editor|main|modules|platform|scene|servers|tests)/
 FormatStyle: file
 CheckOptions:
-  cppcoreguidelines-pro-type-member-init.IgnoreArrays: true
-  cppcoreguidelines-pro-type-member-init.UseAssignment: true
   modernize-deprecated-headers.CheckHeaderFile: true
   modernize-use-bool-literals.IgnoreMacros: false
   modernize-use-default-member-init.IgnoreMacros: false

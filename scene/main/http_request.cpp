@@ -31,6 +31,8 @@
 #include "http_request.h"
 
 #include "core/io/file_access.h"
+#include "core/io/stream_peer_gzip.h"
+#include "core/os/thread.h"
 #include "scene/main/timer.h"
 
 Error HTTPRequest::_request() {

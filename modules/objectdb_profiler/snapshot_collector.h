@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/variant/dictionary.h"
 #include "scene/debugger/scene_debugger_object.h"
 
 struct SnapshotDataTransportObject : public SceneDebuggerObject {

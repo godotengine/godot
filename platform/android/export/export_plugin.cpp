@@ -292,6 +292,12 @@ static const int DEFAULT_TARGET_SDK_VERSION = 36; // Should match the value in '
 
 #ifndef ANDROID_ENABLED
 void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
+	if (!EditorSettings::get_singleton()) {
+		// Some methods called here query editor settings, so we need it to be ready first.
+		// If it's not ready yet, just wait for the next iteration.
+		return;
+	}
+
 	EditorExportPlatformAndroid *ea = static_cast<EditorExportPlatformAndroid *>(ud);
 
 	while (!ea->quit_request.is_set()) {

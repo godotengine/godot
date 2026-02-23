@@ -3126,6 +3126,39 @@
 		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags" is_bitfield="true">
 			Default method flags (normal).
 		</constant>
+		<constant name="UINT8_MAX" value="255">
+			Maximum value of an 8-bit unsigned integer.
+		</constant>
+		<constant name="UINT16_MAX" value="65535">
+			Maximum value of a 16-bit unsigned integer.
+		</constant>
+		<constant name="UINT32_MAX" value="4294967295">
+			Maximum value of a 32-bit unsigned integer.
+		</constant>
+		<constant name="INT8_MIN" value="-128">
+			Minimum value of an 8-bit signed integer.
+		</constant>
+		<constant name="INT8_MAX" value="127">
+			Maximum value of an 8-bit signed integer.
+		</constant>
+		<constant name="INT16_MIN" value="-32768">
+			Minimum value of a 16-bit signed integer.
+		</constant>
+		<constant name="INT16_MAX" value="32767">
+			Maximum value of a 16-bit signed integer.
+		</constant>
+		<constant name="INT32_MIN" value="-2147483648">
+			Minimum value of a 32-bit signed integer.
+		</constant>
+		<constant name="INT32_MAX" value="2147483647">
+			Maximum value of a 32-bit signed integer.
+		</constant>
+		<constant name="INT64_MIN" value="-9223372036854775808">
+			Minimum value of a 64-bit signed integer.
+		</constant>
+		<constant name="INT64_MAX" value="9223372036854775807">
+			Maximum value of a 64-bit signed integer.
+		</constant>
 		<constant name="TYPE_NIL" value="0" enum="Variant.Type">
 			Variable is [code]null[/code].
 		</constant>

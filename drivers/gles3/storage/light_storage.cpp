@@ -28,14 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "light_storage.h"
+
 #ifdef GLES3_ENABLED
 
-#include "light_storage.h"
-#include "../rasterizer_gles3.h"
-#include "../rasterizer_scene_gles3.h"
 #include "core/config/project_settings.h"
 #include "core/math/geometry_3d.h"
-#include "texture_storage.h"
+#include "drivers/gles3/effects/cubemap_filter.h"
+#include "drivers/gles3/rasterizer_scene_gles3.h"
+#include "drivers/gles3/rasterizer_util_gles3.h"
+#include "drivers/gles3/storage/render_scene_buffers_gles3.h"
+#include "drivers/gles3/storage/utilities.h"
 
 using namespace GLES3;
 
@@ -856,7 +859,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 			atlas->reflections.write[i].color = color;
 
 #ifdef GL_API_ENABLED
-			if (RasterizerGLES3::is_gles_over_gl()) {
+			if (RasterizerUtilGLES3::is_gles_over_gl()) {
 				for (int s = 0; s < 6; s++) {
 					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + s, 0, GL_RGB10_A2, atlas->size, atlas->size, 0, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, nullptr);
 				}
@@ -864,7 +867,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 			}
 #endif
 #ifdef GLES_API_ENABLED
-			if (!RasterizerGLES3::is_gles_over_gl()) {
+			if (!RasterizerUtilGLES3::is_gles_over_gl()) {
 				glTexStorage2D(GL_TEXTURE_CUBE_MAP, atlas->mipmap_count, GL_RGB10_A2, atlas->size, atlas->size);
 			}
 #endif // GLES_API_ENABLED
@@ -894,7 +897,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 			atlas->reflections.write[i].radiance = radiance;
 
 #ifdef GL_API_ENABLED
-			if (RasterizerGLES3::is_gles_over_gl()) {
+			if (RasterizerUtilGLES3::is_gles_over_gl()) {
 				for (int s = 0; s < 6; s++) {
 					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + s, 0, GL_RGB10_A2, atlas->size, atlas->size, 0, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, nullptr);
 				}
@@ -902,7 +905,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 			}
 #endif
 #ifdef GLES_API_ENABLED
-			if (!RasterizerGLES3::is_gles_over_gl()) {
+			if (!RasterizerUtilGLES3::is_gles_over_gl()) {
 				glTexStorage2D(GL_TEXTURE_CUBE_MAP, atlas->mipmap_count, GL_RGB10_A2, atlas->size, atlas->size);
 			}
 #endif // GLES_API_ENABLED
@@ -1667,7 +1670,7 @@ void LightStorage::update_directional_shadow_atlas() {
 	glUseProgram(0);
 	glDepthMask(GL_TRUE);
 	glBindFramebuffer(GL_FRAMEBUFFER, directional_shadow.fbo);
-	RasterizerGLES3::clear_depth(0.0);
+	RasterizerUtilGLES3::clear_depth(0.0);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	glBindTexture(GL_TEXTURE_2D, 0);

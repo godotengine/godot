@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Script used to dump char ranges from
-# the Unicode Character Database to the `char_range.inc` file.
+# the Unicode Character Database to the `unicode_ranges.inc` file.
 # NOTE: This script is deliberately not integrated into the build system;
 # you should run it manually whenever you want to update the data.
 from __future__ import annotations

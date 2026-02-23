@@ -33,11 +33,11 @@
 #include "core/input/input.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/gui/filter_line_edit.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
@@ -804,8 +804,8 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 			return EditorPlugin::AFTER_GUI_INPUT_STOP;
 		}
 		for (int i = 0; i < options->get_popup()->get_item_count(); ++i) {
-			const Ref<Shortcut> &shortcut = options->get_popup()->get_item_shortcut(i);
-			if (shortcut.is_valid() && shortcut->matches_event(p_event)) {
+			const Ref<Shortcut> &option_shortcut = options->get_popup()->get_item_shortcut(i);
+			if (option_shortcut.is_valid() && option_shortcut->matches_event(p_event)) {
 				// Consume input to avoid conflicts with other plugins.
 				accept_event();
 				_menu_option(options->get_popup()->get_item_id(i));
@@ -1392,6 +1392,16 @@ void GridMapEditor::_bind_methods() {
 }
 
 GridMapEditor::GridMapEditor() {
+	set_name(TTRC("GridMap"));
+	set_icon_name("GridMapDock");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_grid_map_bottom_panel", TTRC("Toggle GridMap Dock")));
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_global(false);
+	set_transient(true);
+	set_custom_minimum_size(Size2(0, 200 * EDSCALE));
+	set_theme_type_variation("NoBorderBottomPanel");
+
 	ED_SHORTCUT("grid_map/previous_floor", TTRC("Previous Floor"), Key::KEY_1, true);
 	ED_SHORTCUT("grid_map/next_floor", TTRC("Next Floor"), Key::KEY_3, true);
 	ED_SHORTCUT("grid_map/edit_x_axis", TTRC("Edit X Axis"), KeyModifierMask::SHIFT + Key::Z, true);
@@ -1432,9 +1442,12 @@ GridMapEditor::GridMapEditor() {
 
 	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &GridMapEditor::_menu_option));
 
+	VBoxContainer *main_vb = memnew(VBoxContainer);
+	add_child(main_vb);
+
 	toolbar = memnew(HBoxContainer);
-	add_child(toolbar);
 	toolbar->set_h_size_flags(SIZE_EXPAND_FILL);
+	main_vb->add_child(toolbar);
 
 	HBoxContainer *mode_buttons = memnew(HBoxContainer);
 	toolbar->add_child(mode_buttons);
@@ -1630,16 +1643,12 @@ GridMapEditor::GridMapEditor() {
 
 	toolbar->add_child(options);
 
-	MarginContainer *mc = memnew(MarginContainer);
-	mc->set_theme_type_variation("NoBorderBottomPanel");
-	mc->set_v_size_flags(SIZE_EXPAND_FILL);
-	add_child(mc);
-
 	mesh_library_palette = memnew(ItemList);
 	search_box->set_forward_control(mesh_library_palette);
 	mesh_library_palette->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	mesh_library_palette->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
-	mc->add_child(mesh_library_palette);
+	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
+	main_vb->add_child(mesh_library_palette);
 	mesh_library_palette->connect(SceneStringName(gui_input), callable_mp(this, &GridMapEditor::_mesh_library_palette_input));
 	mesh_library_palette->connect(SceneStringName(item_selected), callable_mp(this, &GridMapEditor::_item_selected_cbk));
 
@@ -1852,19 +1861,13 @@ void GridMapEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			grid_map_editor = memnew(GridMapEditor);
-			grid_map_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			grid_map_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-			grid_map_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
-			grid_map_editor->hide();
-
-			panel_button = EditorNode::get_bottom_panel()->add_item(TTRC("GridMap"), grid_map_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_grid_map_bottom_panel", TTRC("Toggle GridMap Bottom Panel")));
-			panel_button->hide();
+			EditorDockManager::get_singleton()->add_dock(grid_map_editor);
+			grid_map_editor->close();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			EditorNode::get_bottom_panel()->remove_item(grid_map_editor);
+			EditorDockManager::get_singleton()->remove_dock(grid_map_editor);
 			memdelete_notnull(grid_map_editor);
 			grid_map_editor = nullptr;
-			panel_button = nullptr;
 		} break;
 	}
 }
@@ -1897,16 +1900,12 @@ void GridMapEditorPlugin::make_visible(bool p_visible) {
 			grid_map_editor->select_mode_button->set_pressed(true);
 		}
 		grid_map_editor->_on_tool_mode_changed();
-		panel_button->show();
-		EditorNode::get_bottom_panel()->make_item_visible(grid_map_editor);
+		grid_map_editor->make_visible();
 		grid_map_editor->set_process(true);
 	} else {
 		grid_map_editor->_cancel_pending_move();
 		grid_map_editor->_show_viewports_transform_gizmo(true);
-		panel_button->hide();
-		if (grid_map_editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
-		}
+		grid_map_editor->close();
 		grid_map_editor->set_process(false);
 	}
 }

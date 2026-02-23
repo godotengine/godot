@@ -2382,7 +2382,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_constrain
 	}
 
 	// Copy the constraints set.
-	RBSet<TerrainConstraint> constraints = p_constraints;
+	RBSet<TerrainConstraint> constraints(p_constraints);
 
 	// Output map.
 	HashMap<Vector2i, TileSet::TerrainsPattern> output;

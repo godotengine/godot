@@ -1067,6 +1067,13 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 				if (searched_tokens.is_empty() || _matches_all_search_tokens(text)) {
 					files->add_item(text, icon, true);
 					files->set_item_metadata(-1, favorite);
+
+					const Color folder_color = FileSystemDock::get_dir_icon_color(favorite, default_folder_color);
+					if (!editor_is_dark_icon_and_font && folder_color != default_folder_color) {
+						files->set_item_icon_modulate(-1, folder_color * ITEM_COLOR_SCALE);
+					} else {
+						files->set_item_icon_modulate(-1, folder_color);
+					}
 				}
 			} else {
 				int index;
@@ -1116,19 +1123,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		} else {
 			if (display_mode == DISPLAY_MODE_TREE_ONLY || always_show_folders) {
 				// Check for a folder color to inherit (if one is assigned).
-				Color inherited_folder_color = default_folder_color;
-				String color_scan_dir = directory;
-				while (color_scan_dir != "res://" && inherited_folder_color == default_folder_color) {
-					if (!color_scan_dir.ends_with("/")) {
-						color_scan_dir += "/";
-					}
-
-					if (assigned_folder_colors.has(color_scan_dir)) {
-						inherited_folder_color = folder_colors[assigned_folder_colors[color_scan_dir]];
-					}
-
-					color_scan_dir = color_scan_dir.rstrip("/").get_base_dir();
-				}
+				const Color inherited_folder_color = FileSystemDock::get_dir_icon_color(directory, default_folder_color);
 
 				// Display folders in the list.
 				if (directory != "res://") {

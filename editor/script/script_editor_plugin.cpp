@@ -2348,6 +2348,11 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	return true;
 }
 
+void ScriptEditor::reload_open_files() {
+	_test_script_times_on_disk();
+	_update_modified_scripts_for_external_editor();
+}
+
 PackedStringArray ScriptEditor::get_unsaved_scripts() const {
 	PackedStringArray unsaved_list;
 
@@ -2615,6 +2620,9 @@ void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const 
 		// Save the current script so the changes can be picked up by an external editor.
 		if (!scr.ptr()->is_built_in()) { // But only if it's not built-in script.
 			save_current_script();
+		} else {
+			ste->apply_code();
+			scr->reload(true);
 		}
 
 		break;
@@ -3742,6 +3750,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_script"), &ScriptEditor::_get_current_script);
 	ClassDB::bind_method(D_METHOD("get_open_scripts"), &ScriptEditor::_get_open_scripts);
 	ClassDB::bind_method(D_METHOD("open_script_create_dialog", "base_name", "base_path"), &ScriptEditor::open_script_create_dialog);
+	ClassDB::bind_method(D_METHOD("reload_open_files"), &ScriptEditor::reload_open_files);
 
 	ClassDB::bind_method(D_METHOD("goto_help", "topic"), &ScriptEditor::goto_help);
 	ClassDB::bind_method(D_METHOD("update_docs_from_script", "script"), &ScriptEditor::update_docs_from_script);

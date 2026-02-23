@@ -30,24 +30,18 @@
 
 #pragma once
 
-#include "platform_gl.h"
 #ifdef GLES3_ENABLED
 
 #include "core/math/projection.h"
 #include "core/templates/paged_allocator.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "drivers/gles3/shaders/effects/cubemap_filter.glsl.gen.h"
-#include "drivers/gles3/shaders/sky.glsl.gen.h"
-#include "scene/resources/mesh.h"
-#include "servers/rendering/renderer_compositor.h"
+#include "drivers/gles3/storage/light_storage.h"
+#include "drivers/gles3/storage/material_storage.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_server.h"
-#include "shader_gles3.h"
-#include "storage/light_storage.h"
-#include "storage/material_storage.h"
-#include "storage/render_scene_buffers_gles3.h"
-#include "storage/utilities.h"
+
+class RenderSceneBuffersGLES3;
 
 enum RenderListType {
 	RENDER_LIST_OPAQUE, //used for opaque objects

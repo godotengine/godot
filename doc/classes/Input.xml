@@ -221,6 +221,15 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns the duration of the current vibration effect in seconds.
+				[b]Note:[/b] This method returns the same value that was passed to [method start_joy_vibration], and this value does [b]not[/b] change when the joypad's vibration runs out, it only gets reset after a call to [method stop_joy_vibration].
+				If you want to check if a joypad is still vibrating, use [method is_joy_vibrating] instead.
+			</description>
+		</method>
+		<method name="get_joy_vibration_remaining_duration" experimental="">
+			<return type="float" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns the remaining duration of the current vibration effect in seconds.
 			</description>
 		</method>
 		<method name="get_joy_vibration_strength">
@@ -228,6 +237,8 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns the strength of the joypad vibration: x is the strength of the weak motor, and y is the strength of the strong motor.
+				[b]Note:[/b] This method returns the same values that were passed to [method start_joy_vibration], and these values do [b]not[/b] change when the joypad's vibration runs out, they only get reset after a call to [method stop_joy_vibration].
+				If you want to check if a joypad is still vibrating, use [method is_joy_vibrating] instead.
 			</description>
 		</method>
 		<method name="get_last_mouse_screen_velocity">
@@ -284,6 +295,14 @@
 				Returns [code]true[/code] if the joypad has motion sensors (accelerometer and gyroscope).
 				[b]Note:[/b] On iOS, joypad accelerometer sensor reading is not supported due to OS limitations.
 				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
+			</description>
+		</method>
+		<method name="has_joy_vibration" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns [code]true[/code] if the joypad supports vibration. See also [method start_joy_vibration].
+				[b]Note:[/b] For macOS, vibration is only supported in macOS 11 and later. When connected via USB, vibration is only supported for major brand controllers (except Xbox One and Xbox Series X/S controllers) due to macOS limitations.
 			</description>
 		</method>
 		<method name="is_action_just_pressed" qualifiers="const">
@@ -391,6 +410,14 @@
 				Returns [code]true[/code] if the requested joypad has motion sensors (accelerometer and gyroscope) and they are currently enabled. See also [method set_joy_motion_sensors_enabled] and [method has_joy_motion_sensors].
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
 				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
+			</description>
+		</method>
+		<method name="is_joy_vibrating" experimental="">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns [code]true[/code] if the joypad is still vibrating after a call to [method start_joy_vibration].
+				Unlike [method get_joy_vibration_strength] and [method get_joy_vibration_duration], this method returns [code]false[/code] after the joypad's vibration runs out.
 			</description>
 		</method>
 		<method name="is_key_label_pressed" qualifiers="const">
@@ -665,8 +692,13 @@
 			<param index="2" name="strong_magnitude" type="float" />
 			<param index="3" name="duration" type="float" default="0" />
 			<description>
-				Starts to vibrate the joypad. Joypads usually come with two rumble motors, a strong and a weak one. [param weak_magnitude] is the strength of the weak motor (between 0 and 1) and [param strong_magnitude] is the strength of the strong motor (between 0 and 1). [param duration] is the duration of the effect in seconds (a duration of 0 will try to play the vibration indefinitely). The vibration can be stopped early by calling [method stop_joy_vibration].
-				[b]Note:[/b] Not every hardware is compatible with long effect durations; it is recommended to restart an effect if it has to be played for more than a few seconds.
+				Starts to vibrate the joypad. See also [method has_joy_vibration] and [method is_joy_vibrating].
+				Joypads usually come with two rumble motors, a strong and a weak one.
+				[param weak_magnitude] is the strength of the weak motor (between [code]0.0[/code] and [code]1.0[/code]).
+				[param strong_magnitude] is the strength of the strong motor (between [code]0.0[/code] and [code]1.0[/code]).
+				[param duration] is the duration of the effect in seconds (a duration of [code]0.0[/code] will try to play the vibration as long as possible, which is about 65 seconds).
+				The vibration can be stopped early by calling [method stop_joy_vibration].
+				See also [method get_joy_vibration_strength] and [method get_joy_vibration_duration].
 				[b]Note:[/b] For macOS, vibration is only supported in macOS 11 and later. When connected via USB, vibration is only supported for major brand controllers (except Xbox One and Xbox Series X/S controllers) due to macOS limitations.
 			</description>
 		</method>

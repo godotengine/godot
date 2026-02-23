@@ -32,19 +32,20 @@
 
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/input/shortcut.h"
 #include "core/io/dir_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/math/math_fieldwise.h"
 #include "core/os/time.h"
 #include "core/templates/local_vector.h"
+#include "core/variant/array.h"
 #include "scene/2d/camera_2d.h"
 #include "scene/debugger/scene_debugger_object.h"
-#include "scene/main/canvas_layer.h"
+#include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/window.h"
+#include "scene/main/window.h" // SceneTree:get_root()
 #include "scene/resources/packed_scene.h"
-#include "scene/theme/theme_db.h"
 #include "servers/audio/audio_server.h"
 
 #ifndef _3D_DISABLED

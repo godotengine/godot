@@ -30,17 +30,13 @@
 
 #pragma once
 
-#include "core/input/shortcut.h"
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
-#include "core/variant/array.h"
 
-class CanvasItem;
-class LiveEditor;
-class PopupMenu;
-class RuntimeNodeSelect;
-class Script;
-class SceneTree;
+class Array;
+class InputEvent;
+class Node;
+class Shortcut;
 
 class SceneDebugger {
 private:

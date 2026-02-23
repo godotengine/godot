@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/message_queue.h"
 #include "core/object/ref_counted.h"
 #include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
@@ -39,22 +40,19 @@
 
 #include <cstdlib>
 
-#undef Window
-
 class ArrayMesh;
-class PackedScene;
 class InputEvent;
+class Material;
+class MultiplayerAPI;
 class Node;
+class PackedScene;
+class Tween;
+class Viewport;
+class Window;
+
 #ifndef _3D_DISABLED
 class Node3D;
 #endif
-class Window;
-class Material;
-class Mesh;
-class MultiplayerAPI;
-class SceneDebugger;
-class Tween;
-class Viewport;
 
 class SceneTreeTimer : public RefCounted {
 	GDCLASS(SceneTreeTimer, RefCounted);

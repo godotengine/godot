@@ -757,11 +757,32 @@ public:
 	}
 
 	void operator=(const RBMap &p_map) {
+		if (this == &p_map) {
+			return;
+		}
+
 		_copy_from(p_map);
 	}
 
-	RBMap(const RBMap &p_map) {
+	void operator=(RBMap &&p_map) {
+		if (this == &p_map) {
+			return;
+		}
+
+		SWAP(_data._root, p_map._data._root);
+		SWAP(_data.size_cache, p_map._data.size_cache);
+	}
+
+	explicit RBMap(const RBMap &p_map) {
 		_copy_from(p_map);
+	}
+
+	RBMap(RBMap &&p_map) {
+		_data._root = p_map._data._root;
+		_data.size_cache = p_map._data.size_cache;
+
+		p_map._data._root = nullptr;
+		p_map._data.size_cache = 0;
 	}
 
 	RBMap(std::initializer_list<KeyValue<K, V>> p_init) {

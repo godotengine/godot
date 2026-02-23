@@ -423,6 +423,24 @@
 		<theme_item name="list_mode" data_type="icon" type="Texture2D">
 			Icon for the button that enables list mode.
 		</theme_item>
+		<theme_item name="menu_copy_path" data_type="icon" type="Texture2D">
+			Icon for the "Copy Path" context menu option.
+		</theme_item>
+		<theme_item name="menu_delete" data_type="icon" type="Texture2D">
+			Icon for the "Delete" context menu option.
+		</theme_item>
+		<theme_item name="menu_new_folder" data_type="icon" type="Texture2D">
+			Icon for the "New Folder..." context menu option. Usually it should be the same as [theme_item create_folder]; leave it empty if you want the context menu to show no icons.
+		</theme_item>
+		<theme_item name="menu_open_bundle" data_type="icon" type="Texture2D">
+			Icon for the "Show Package Contents" context menu option. The option only appears for macOS bundles.
+		</theme_item>
+		<theme_item name="menu_refresh" data_type="icon" type="Texture2D">
+			Icon for the "Refresh" context menu option. Usually it should be the same as [theme_item reload]; leave it empty if you want the context menu to show no icons.
+		</theme_item>
+		<theme_item name="menu_show_in_file_manager" data_type="icon" type="Texture2D">
+			Icon for the "Show in File Manager" context menu option.
+		</theme_item>
 		<theme_item name="parent_folder" data_type="icon" type="Texture2D">
 			Custom icon for the parent folder arrow.
 		</theme_item>

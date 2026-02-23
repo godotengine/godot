@@ -70,7 +70,7 @@ HashMap<String, bool *> OpenXRFBUpdateSwapchainExtension::get_requested_extensio
 #ifdef XR_USE_GRAPHICS_API_VULKAN
 		request_extensions[XR_FB_SWAPCHAIN_UPDATE_STATE_VULKAN_EXTENSION_NAME] = &fb_swapchain_update_state_vulkan_ext;
 #endif
-	} else if (rendering_driver == "opengl3") {
+	} else if (rendering_driver == "opengl3" || rendering_driver == "opengl3_es") {
 #ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 		request_extensions[XR_FB_SWAPCHAIN_UPDATE_STATE_OPENGL_ES_EXTENSION_NAME] = &fb_swapchain_update_state_opengles_ext;
 #endif
@@ -146,7 +146,7 @@ void OpenXRFBUpdateSwapchainExtension::update_swapchain_state(XrSwapchain p_swap
 			return;
 		}
 #endif
-	} else if (rendering_driver == "opengl3") {
+	} else if (rendering_driver == "opengl3" || rendering_driver == "opengl3_es") {
 #ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 		if (!fb_swapchain_update_state_ext || !fb_swapchain_update_state_opengles_ext) {
 			return;

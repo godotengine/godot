@@ -32,23 +32,24 @@
 
 #ifdef GLES3_ENABLED
 
-#include "effects/copy_effects.h"
-#include "effects/cubemap_filter.h"
-#include "effects/feed_effects.h"
-#include "effects/glow.h"
-#include "effects/post_effects.h"
-#include "environment/fog.h"
-#include "environment/gi.h"
-#include "rasterizer_canvas_gles3.h"
-#include "rasterizer_scene_gles3.h"
+#include "drivers/gles3/effects/copy_effects.h"
+#include "drivers/gles3/effects/cubemap_filter.h"
+#include "drivers/gles3/effects/feed_effects.h"
+#include "drivers/gles3/effects/glow.h"
+#include "drivers/gles3/effects/post_effects.h"
+#include "drivers/gles3/environment/fog.h"
+#include "drivers/gles3/environment/gi.h"
+#include "drivers/gles3/rasterizer_canvas_gles3.h"
+#include "drivers/gles3/rasterizer_scene_gles3.h"
+#include "drivers/gles3/rasterizer_util_gles3.h"
+#include "drivers/gles3/storage/config.h"
+#include "drivers/gles3/storage/light_storage.h"
+#include "drivers/gles3/storage/material_storage.h"
+#include "drivers/gles3/storage/mesh_storage.h"
+#include "drivers/gles3/storage/particles_storage.h"
+#include "drivers/gles3/storage/texture_storage.h"
+#include "drivers/gles3/storage/utilities.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "storage/config.h"
-#include "storage/light_storage.h"
-#include "storage/material_storage.h"
-#include "storage/mesh_storage.h"
-#include "storage/particles_storage.h"
-#include "storage/texture_storage.h"
-#include "storage/utilities.h"
 
 class RasterizerGLES3 : public RendererCompositor {
 private:
@@ -60,8 +61,6 @@ private:
 #ifdef WINDOWS_ENABLED
 	static bool screen_flipped_y;
 #endif
-
-	static bool gles_over_gl;
 
 protected:
 	GLES3::Config *config = nullptr;
@@ -113,13 +112,9 @@ public:
 		return memnew(RasterizerGLES3);
 	}
 
-	static bool is_gles_over_gl() { return gles_over_gl; }
-	static void clear_depth(float p_depth);
-	static void clear_stencil(int32_t p_stencil);
-
 	static void make_current(bool p_gles_over_gl) {
-		gles_over_gl = p_gles_over_gl;
-		OS::get_singleton()->set_gles_over_gl(gles_over_gl);
+		RasterizerUtilGLES3::set_gles_over_gl(p_gles_over_gl);
+		OS::get_singleton()->set_gles_over_gl(p_gles_over_gl);
 		_create_func = _create_current;
 		low_end = true;
 	}

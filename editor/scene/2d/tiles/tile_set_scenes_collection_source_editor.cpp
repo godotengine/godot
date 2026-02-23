@@ -358,13 +358,17 @@ void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			scenes_collection_source_inspector->edit(scenes_collection_source_proxy_object);
-			scenes_collection_source_inspector->add_custom_property_description("TileSetScenesCollectionProxyObject", "id", TTR("The tile's unique identifier within this TileSet. Each tile stores its source ID, so changing one may make tiles invalid."));
-			scenes_collection_source_inspector->add_custom_property_description("TileSetScenesCollectionProxyObject", "name", TTR("The human-readable name for the scene collection. Use a descriptive name here for organizational purposes (such as \"obstacles\", \"decoration\", etc.)."));
+			scenes_collection_source_inspector->add_custom_property_description("TileSetScenesCollectionProxyObject", "id", TTRC("The tile's unique identifier within this TileSet. Each tile stores its source ID, so changing one may make tiles invalid."));
+			scenes_collection_source_inspector->add_custom_property_description("TileSetScenesCollectionProxyObject", "name", TTRC("The human-readable name for the scene collection. Use a descriptive name here for organizational purposes (such as \"obstacles\", \"decoration\", etc.)."));
 
 			tile_inspector->edit(tile_proxy_object);
-			tile_inspector->add_custom_property_description("SceneTileProxyObject", "id", TTR("ID of the scene tile in the collection. Each painted tile has associated ID, so changing this property may cause your TileMaps to not display properly."));
-			tile_inspector->add_custom_property_description("SceneTileProxyObject", "scene", TTR("Absolute path to the scene associated with this tile."));
-			tile_inspector->add_custom_property_description("SceneTileProxyObject", "display_placeholder", TTR("If [code]true[/code], a placeholder marker will be displayed on top of the scene's preview. The marker is displayed anyway if the scene has no valid preview."));
+			tile_inspector->add_custom_property_description("SceneTileProxyObject", "id", TTRC("ID of the scene tile in the collection. Each painted tile has associated ID, so changing this property may cause your TileMaps to not display properly."));
+			tile_inspector->add_custom_property_description("SceneTileProxyObject", "scene", TTRC("Absolute path to the scene associated with this tile."));
+			tile_inspector->add_custom_property_description("SceneTileProxyObject", "display_placeholder", TTRC("If [code]true[/code], a placeholder marker will be displayed on top of the scene's preview. The marker is displayed anyway if the scene has no valid preview."));
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_update_scenes_list();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -525,7 +529,7 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	// Scenes collection source inspector.
 	scenes_collection_source_inspector_label = memnew(Label);
 	scenes_collection_source_inspector_label->set_focus_mode(FOCUS_ACCESSIBILITY);
-	scenes_collection_source_inspector_label->set_text(TTR("Scenes collection properties:"));
+	scenes_collection_source_inspector_label->set_text(TTRC("Scenes collection properties:"));
 	middle_vbox_container->add_child(scenes_collection_source_inspector_label);
 
 	scenes_collection_source_proxy_object = memnew(TileSetScenesCollectionProxyObject());
@@ -538,7 +542,7 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 
 	// Tile inspector.
 	tile_inspector_label = memnew(Label);
-	tile_inspector_label->set_text(TTR("Tile properties:"));
+	tile_inspector_label->set_text(TTRC("Tile properties:"));
 	tile_inspector_label->hide();
 	middle_vbox_container->add_child(tile_inspector_label);
 

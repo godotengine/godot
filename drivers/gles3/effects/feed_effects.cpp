@@ -28,15 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef GLES3_ENABLED
-
 #include "feed_effects.h"
 
-#ifdef ANDROID_ENABLED
-#include <GLES3/gl3ext.h>
-#endif
-
-#define GL_PROGRAM_POINT_SIZE 0x8642
+#ifdef GLES3_ENABLED
 
 using namespace GLES3;
 
