@@ -271,7 +271,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 	HashSet<Vector2i> edge_set;
 
 	std::function<Vector2i(int, int)> edge_hash_key = [&](int a, int b) {
-			if (b < a) {
+		if (b < a) {
 			return Vector2i(b, a);
 		}
 		return Vector2i(a, b);
