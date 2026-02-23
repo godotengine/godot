@@ -445,13 +445,14 @@ Vector2 ScenePaint2DEditor::_get_mouse_grid_cell() {
 
 void ScenePaint2DEditor::_edit_properties() {
 	if (!_is_instance_valid() || !edit_properties) {
-		InspectorDock::get_singleton()->set_info("", "", false);
 		return;
 	}
-	InspectorDock::get_inspector_singleton()->edit(instance);
-	InspectorDock::get_singleton()->set_info(
-			TTR("Editing instance properties"),
-			TTR("Edit the properties of the scene instance being painted.\nEdited properties will be stored locally in the current scene. If overused, this can significantly increase the scene's size and its loading time."), true);
+	if (InspectorDock::get_inspector_singleton()->get_edited_object() != instance) {
+		InspectorDock::get_inspector_singleton()->edit(instance);
+		InspectorDock::get_singleton()->set_info(
+				TTR("Editing instance properties"),
+				TTR("Edit the properties of the scene instance being painted.\nEdited properties will be stored locally in the current scene. If overused, this can significantly increase the scene's size and its loading time."), true);
+	}
 }
 
 void ScenePaint2DEditor::_scene_picker_toggled(bool p_pressed) {
@@ -637,6 +638,10 @@ void ScenePaint2DEditor::_edit_properties_toggled(bool p_pressed) {
 		} else if (node) {
 			InspectorDock::get_inspector_singleton()->edit(node);
 		}
+		Object *edited_object = InspectorDock::get_inspector_singleton()->get_edited_object();
+		if (edited_object == node || edited_object == selected_node) {
+			InspectorDock::get_singleton()->set_info("", "", false);
+		}
 	}
 	_edit_properties();
 }
@@ -735,6 +740,9 @@ void ScenePaint2DEditor::_set_picked_scene(Node2D *p_scene) {
 	input_tool = INPUT_TOOL_NONE;
 	if (!selected_scene) {
 		recent_scenes_button->select(-1);
+		if (edit_properties) {
+			edit_properties_button->set_pressed(false);
+		}
 	}
 	String scene_path = selected_scene ? selected_scene->get_scene_file_path() : String();
 	callable_mp(this, &ScenePaint2DEditor::_add_to_recent_scenes).call_deferred(scene_path);
