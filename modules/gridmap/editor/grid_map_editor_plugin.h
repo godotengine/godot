@@ -92,6 +92,7 @@ class GridMapEditor : public EditorDock {
 	Button *rotate_x_button = nullptr;
 	Button *rotate_y_button = nullptr;
 	Button *rotate_z_button = nullptr;
+	Button *clear_rotation_button = nullptr;
 
 	EditorZoomWidget *zoom_widget = nullptr;
 	Button *mode_thumbnail = nullptr;
