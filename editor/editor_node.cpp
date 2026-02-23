@@ -4941,6 +4941,29 @@ HashMap<StringName, Variant> EditorNode::get_modified_properties_reference_to_no
 	p_node->get_property_list(&pinfo);
 	for (const PropertyInfo &E : pinfo) {
 		if (E.usage & PROPERTY_USAGE_STORAGE) {
+			// Store array of node as array of node paths.
+			if (E.type == Variant::ARRAY) {
+				Array current_value = p_node->get(E.name);
+				if (current_value.size() == 0) {
+					continue;
+				}
+
+				bool contains_nodes = Object::cast_to<Node>(current_value[0]);
+				if (!contains_nodes) {
+					continue;
+				}
+
+				Array node_paths;
+				node_paths.resize(current_value.size());
+
+				for (int i = 0; i < current_value.size(); i++) {
+					Node *target_node = Object::cast_to<Node>(current_value[i]);
+					node_paths[i] = p_node->get_path_to(target_node);
+				}
+
+				modified_property_map[E.name] = node_paths;
+			}
+
 			if (E.type != Variant::OBJECT || E.hint != PROPERTY_HINT_NODE_TYPE) {
 				continue;
 			}
@@ -4990,7 +5013,24 @@ void EditorNode::update_node_from_node_modification_entry(Node *p_node, Modifica
 						p_node->set(E.key, p_node->get_node_or_null(E.value));
 					}
 				} else {
-					p_node->set(E.key, E.value);
+					Variant new_value = E.value;
+
+					if (new_value.get_type() == Variant::ARRAY) {
+						Array value = E.value;
+
+						// If this array contains node paths, transform it into an array of actual node references.
+						bool contains_node_paths = value.size() > 0 && value[0].get_type() == Variant::NODE_PATH;
+						if (contains_node_paths) {
+							Array nodes;
+							nodes.resize(value.size());
+							for (int i = 0; i < value.size(); i++) {
+								nodes[i] = p_node->get_node_or_null(value[i]);
+							}
+							new_value = nodes;
+						}
+					}
+
+					p_node->set(E.key, new_value);
 				}
 			}
 		}
