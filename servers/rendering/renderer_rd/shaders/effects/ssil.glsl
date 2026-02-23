@@ -24,417 +24,347 @@
 
 #VERSION_DEFINES
 
-#define SSIL_MAIN_DISK_SAMPLE_COUNT (32)
-const vec4 sample_pattern[SSIL_MAIN_DISK_SAMPLE_COUNT] = {
-	vec4(0.78488064, 0.56661671, 1.500000, -0.126083), vec4(0.26022232, -0.29575172, 1.500000, -1.064030), vec4(0.10459357, 0.08372527, 1.110000, -2.730563), vec4(-0.68286800, 0.04963045, 1.090000, -0.498827),
-	vec4(-0.13570161, -0.64190155, 1.250000, -0.532765), vec4(-0.26193795, -0.08205118, 0.670000, -1.783245), vec4(-0.61177456, 0.66664219, 0.710000, -0.044234), vec4(0.43675563, 0.25119025, 0.610000, -1.167283),
-	vec4(0.07884444, 0.86618668, 0.640000, -0.459002), vec4(-0.12790935, -0.29869005, 0.600000, -1.729424), vec4(-0.04031125, 0.02413622, 0.600000, -4.792042), vec4(0.16201244, -0.52851415, 0.790000, -1.067055),
-	vec4(-0.70991218, 0.47301072, 0.640000, -0.335236), vec4(0.03277707, -0.22349690, 0.600000, -1.982384), vec4(0.68921727, 0.36800742, 0.630000, -0.266718), vec4(0.29251814, 0.37775412, 0.610000, -1.422520),
-	vec4(-0.12224089, 0.96582592, 0.600000, -0.426142), vec4(0.11071457, -0.16131058, 0.600000, -2.165947), vec4(0.46562141, -0.59747696, 0.600000, -0.189760), vec4(-0.51548797, 0.11804193, 0.600000, -1.246800),
-	vec4(0.89141309, -0.42090443, 0.600000, 0.028192), vec4(-0.32402530, -0.01591529, 0.600000, -1.543018), vec4(0.60771245, 0.41635221, 0.600000, -0.605411), vec4(0.02379565, -0.08239821, 0.600000, -3.809046),
-	vec4(0.48951152, -0.23657045, 0.600000, -1.189011), vec4(-0.17611565, -0.81696892, 0.600000, -0.513724), vec4(-0.33930185, -0.20732205, 0.600000, -1.698047), vec4(-0.91974425, 0.05403209, 0.600000, 0.062246),
-	vec4(-0.15064627, -0.14949332, 0.600000, -1.896062), vec4(0.53180975, -0.35210401, 0.600000, -0.758838), vec4(0.41487166, 0.81442589, 0.600000, -0.505648), vec4(-0.24106961, -0.32721516, 0.600000, -1.665244)
-};
+#define PI 3.14159265359
 
-// these values can be changed (up to SSIL_MAX_TAPS) with no changes required elsewhere; values for 4th and 5th preset are ignored but array needed to avoid compilation errors
-// the actual number of texture samples is two times this value (each "tap" has two symmetrical depth texture samples)
-const int num_taps[5] = { 3, 5, 12, 0, 0 };
-
-#define SSIL_TILT_SAMPLES_ENABLE_AT_QUALITY_PRESET (99) // to disable simply set to 99 or similar
-#define SSIL_TILT_SAMPLES_AMOUNT (0.4)
-//
-#define SSIL_HALOING_REDUCTION_ENABLE_AT_QUALITY_PRESET (1) // to disable simply set to 99 or similar
-#define SSIL_HALOING_REDUCTION_AMOUNT (0.8) // values from 0.0 - 1.0, 1.0 means max weighting (will cause artifacts, 0.8 is more reasonable)
-//
-#define SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET (2)
-#define SSIL_DEPTH_MIPS_GLOBAL_OFFSET (-4.3) // best noise/quality/performance tradeoff, found empirically
-//
-// WARNING: The edge handling is hard-coded to 'disabled' on quality level 0, and enabled above,
-// on the C++ side; while toggling it here will work for testing purposes, it will not yield
-// performance gains (or correct results).
-#define SSIL_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET (1)
-//
-#define SSIL_REDUCE_RADIUS_NEAR_SCREEN_BORDER_ENABLE_AT_QUALITY_PRESET (1)
-
-#define SSIL_MAX_TAPS 32
-#define SSIL_ADAPTIVE_TAP_BASE_COUNT 5
-#define SSIL_ADAPTIVE_TAP_FLEXIBLE_COUNT (SSIL_MAX_TAPS - SSIL_ADAPTIVE_TAP_BASE_COUNT)
-#define SSIL_DEPTH_MIP_LEVELS 4
+const int num_samples[5] = { 4, 8, 16, 32, 48 };
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
-layout(set = 0, binding = 0) uniform sampler2DArray source_depth_mipmaps;
-layout(rgba8, set = 0, binding = 1) uniform restrict readonly image2D source_normal;
-layout(set = 0, binding = 2) uniform Constants { //get into a lower set
-	vec4 rotation_matrices[20];
+layout(rgba16, set = 0, binding = 0) uniform restrict writeonly image2D dest_image;
+
+// Buffers
+layout(set = 1, binding = 0) uniform sampler2D depth_buffer;
+layout(rgba8, set = 1, binding = 1) uniform restrict readonly image2D normal_buffer;
+
+layout(set = 2, binding = 0) uniform sampler2D last_frame;
+layout(set = 2, binding = 1) uniform Matrices {
+	mat4 last_frame_reproj;
 }
-constants;
+matrices;
 
-#ifdef ADAPTIVE
-layout(rgba16, set = 1, binding = 0) uniform restrict readonly image2DArray source_ssil;
-layout(set = 1, binding = 1) uniform sampler2D source_importance;
-layout(set = 1, binding = 2, std430) buffer Counter {
-	uint sum;
-}
-counter;
-#endif
-
-layout(rgba16, set = 2, binding = 0) uniform restrict writeonly image2D dest_image;
-layout(r8, set = 2, binding = 1) uniform image2D edges_weights_image;
-
-layout(set = 3, binding = 0) uniform sampler2D last_frame;
-layout(set = 3, binding = 1) uniform ProjectionConstants {
-	mat4 reprojection;
-}
-projection_constants;
-
+// Push constant
 layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
-	int pass;
 	int quality;
-
-	vec2 half_screen_pixel_size;
-	vec2 half_screen_pixel_size_x025;
-
-	vec2 NDC_to_view_mul;
-	vec2 NDC_to_view_add;
-
-	vec2 pad2;
-	float z_near;
-	float z_far;
-
-	float radius;
-	float intensity;
-	int size_multiplier;
 	int pad;
 
-	float fade_out_mul;
-	float fade_out_add;
-	float normal_rejection_amount;
-	float inv_radius_near_limit;
+	float z_near;
+	float z_far;
+	float radius;
+	float thickness;
 
+	float intensity;
+	float normal_rejection;
+	bool backface_rejection;
 	bool is_orthogonal;
-	float neg_inv_radius;
-	float load_counter_avg_div;
-	float adaptive_sample_limit;
 
-	ivec2 pass_coord_offset;
-	vec2 pass_uv_offset;
+	vec2 NDC_to_view_mul;
+	ivec2 full_screen_size;
 }
 params;
 
-float pack_edges(vec4 p_edgesLRTB) {
-	p_edgesLRTB = round(clamp(p_edgesLRTB, 0.0, 1.0) * 3.05);
-	return dot(p_edgesLRTB, vec4(64.0 / 255.0, 16.0 / 255.0, 4.0 / 255.0, 1.0 / 255.0));
-}
+// Projection conversions
+vec3 viewspace_to_screenspace(vec3 p_vpos) {
+	vec2 half_ndc;
+	vec2 tex_coord;
 
-vec3 NDC_to_view_space(vec2 p_pos, float p_viewspace_depth) {
 	if (params.is_orthogonal) {
-		return vec3((params.NDC_to_view_mul * p_pos.xy + params.NDC_to_view_add), p_viewspace_depth);
+		half_ndc = p_vpos.xy / (params.NDC_to_view_mul);
+		tex_coord = vec2(0.5) - half_ndc;
 	} else {
-		return vec3((params.NDC_to_view_mul * p_pos.xy + params.NDC_to_view_add) * p_viewspace_depth, p_viewspace_depth);
+		half_ndc = p_vpos.xy / (params.NDC_to_view_mul * p_vpos.z);
+		tex_coord = vec2(0.5) - half_ndc;
 	}
+
+	return (vec3(tex_coord * vec2(params.screen_size), -p_vpos.z));
 }
 
-// calculate effect radius and fit our screen sampling pattern inside it
-void calculate_radius_parameters(const float p_pix_center_length, const vec2 p_pixel_size_at_center, out float r_lookup_radius, out float r_radius, out float r_fallof_sq) {
-	r_radius = params.radius;
+vec3 clipspace_to_viewspace(vec2 p_tex_coord, float p_linear_depth) {
+	vec2 half_ndc_position = vec2(0.5) - p_tex_coord;
+	vec3 view_space_position;
 
-	// when too close, on-screen sampling disk will grow beyond screen size; limit this to avoid closeup temporal artifacts
-	const float too_close_limit = clamp(p_pix_center_length * params.inv_radius_near_limit, 0.0, 1.0) * 0.8 + 0.2;
+	//-p_linear_depth since cam points at -z
+	if (params.is_orthogonal) {
+		view_space_position = vec3(half_ndc_position * params.NDC_to_view_mul, -p_linear_depth);
+	} else {
+		view_space_position = vec3(half_ndc_position * params.NDC_to_view_mul * -p_linear_depth, -p_linear_depth);
+	}
 
-	r_radius *= too_close_limit;
-
-	// 0.85 is to reduce the radius to allow for more samples on a slope to still stay within influence
-	r_lookup_radius = (0.85 * r_radius) / p_pixel_size_at_center.x;
-
-	// used to calculate falloff (both for AO samples and per-sample weights)
-	r_fallof_sq = -1.0 / (r_radius * r_radius);
+	return (view_space_position);
 }
 
-vec4 calculate_edges(const float p_center_z, const float p_left_z, const float p_right_z, const float p_top_z, const float p_bottom_z) {
-	// slope-sensitive depth-based edge detection
-	vec4 edgesLRTB = vec4(p_left_z, p_right_z, p_top_z, p_bottom_z) - p_center_z;
-	vec4 edgesLRTB_slope_adjusted = edgesLRTB + edgesLRTB.yxwz;
-	edgesLRTB = min(abs(edgesLRTB), abs(edgesLRTB_slope_adjusted));
-	return clamp((1.3 - edgesLRTB / (p_center_z * 0.040)), 0.0, 1.0);
+// Quaternion utils
+vec4 get_quaternion(vec3 p_to) {
+	//vec3 from = vec3(0.0, 0.0,-1.0);
+
+	vec3 xyz = vec3(p_to.y, -p_to.x, 0.0); // cross(from, p_to);
+	float s = -p_to.z; // dot(from, p_to);
+
+	float u = inversesqrt(max(0.0, s * 0.5 + 0.5)); // rcp(cosine half-angle formula)
+
+	s = 1.0 / u;
+	xyz *= u * 0.5;
+
+	return vec4(xyz, s);
 }
 
+// transform p_v.xy0 by unit quaternion q.xy0s
+vec3 transform_vz0qz0(vec2 p_v, vec4 p_q) {
+	float o = p_q.x * p_v.y;
+	float c = p_q.y * p_v.x;
+
+	vec3 b = vec3(o - c,
+			-o + c,
+			o - c);
+
+	return vec3(p_v, 0.0) + 2.0 * (b * p_q.yxw);
+}
+
+// Helper functions
 vec3 load_normal(ivec2 p_pos) {
-	vec3 encoded_normal = normalize(imageLoad(source_normal, p_pos).xyz * 2.0 - 1.0);
+	vec3 encoded_normal = normalize(imageLoad(normal_buffer, p_pos).xyz * 2.0 - 1.0);
 	encoded_normal.z = -encoded_normal.z;
 	return encoded_normal;
 }
 
-vec3 load_normal(ivec2 p_pos, ivec2 p_offset) {
-	vec3 encoded_normal = normalize(imageLoad(source_normal, p_pos + p_offset).xyz * 2.0 - 1.0);
-	encoded_normal.z = -encoded_normal.z;
-	return encoded_normal;
+// noise
+float ign(ivec2 p_pixel, uint p_n) {
+	float offset = float(p_n);
+
+	float x = float(p_pixel.x) + 5.588238f * offset;
+	float y = float(p_pixel.y) + 5.588238f * offset;
+
+	float rnd01 = mod(52.9829189 * mod(0.06711056 * x + 0.00583715 * y, 1.0), 1.0);
+
+	return rnd01;
 }
 
-// all vectors in viewspace
-float calculate_pixel_obscurance(vec3 p_pixel_normal, vec3 p_hit_delta, float p_fallof_sq) {
-	float length_sq = dot(p_hit_delta, p_hit_delta);
-	float NdotD = dot(p_pixel_normal, p_hit_delta) / sqrt(length_sq);
-
-	float falloff_mult = max(0.0, length_sq * p_fallof_sq + 1.0);
-
-	return max(0, NdotD - 0.05) * falloff_mult;
+vec2 ign_01x4(ivec2 p_pixel, uint p_n) {
+	return vec2(ign(p_pixel, p_n), ign(p_pixel, p_n + 1u));
 }
 
-void SSIL_tap_inner(const int p_quality_level, inout vec3 r_color_sum, inout float r_obscurance_sum, inout float r_weight_sum, const vec2 p_sampling_uv, const float p_mip_level, const vec3 p_pix_center_pos, vec3 p_pixel_normal, const float p_fallof_sq, const float p_weight_mod) {
-	// get depth at sample
-	float viewspace_sample_z = textureLod(source_depth_mipmaps, vec3(p_sampling_uv, params.pass), p_mip_level).x;
-	vec3 sample_normal = load_normal(ivec2(p_sampling_uv * vec2(params.screen_size)));
+// rnd01.x/rnd01.xy -> used to sample a slice direction (exact importance sampling needs 2 rnd numbers)
+// rnd01.z -> used to jitter sample positions along ray marching direction
+// rnd01.w -> used to jitter sample positions radially around slice normal
+vec4 rnd_01x4(ivec2 p_pixel, uint p_n) {
+	vec4 rnd01 = vec4(0.0);
 
-	// convert to viewspace
-	vec3 hit_pos = NDC_to_view_space(p_sampling_uv.xy, viewspace_sample_z);
-	vec3 hit_delta = hit_pos - p_pix_center_pos;
+	rnd01.x = ign(p_pixel, p_n);
+	rnd01.zw = ign_01x4(p_pixel, p_n + 1u);
 
-	float obscurance = calculate_pixel_obscurance(p_pixel_normal, hit_delta, p_fallof_sq);
-	float weight = 1.0;
-
-	if (p_quality_level >= SSIL_HALOING_REDUCTION_ENABLE_AT_QUALITY_PRESET) {
-		float reduce = max(0, -hit_delta.z);
-		reduce = clamp(reduce * params.neg_inv_radius + 2.0, 0.0, 1.0);
-		weight = SSIL_HALOING_REDUCTION_AMOUNT * reduce + (1.0 - SSIL_HALOING_REDUCTION_AMOUNT);
-	}
-
-	// Translate sampling_uv to last screen's coordinates
-	const vec4 sample_pos = projection_constants.reprojection * vec4(p_sampling_uv * 2.0 - 1.0, (viewspace_sample_z - params.z_near) / (params.z_far - params.z_near) * 2.0 - 1.0, 1.0);
-	vec2 reprojected_sampling_uv = (sample_pos.xy / sample_pos.w) * 0.5 + 0.5;
-
-	weight *= p_weight_mod;
-
-	r_obscurance_sum += obscurance * weight;
-
-	vec3 sample_color = textureLod(last_frame, reprojected_sampling_uv, 5.0).rgb;
-	// Reduce impact of fireflies by tonemapping before averaging: http://graphicrants.blogspot.com/2013/12/tone-mapping.html
-	sample_color /= (1.0 + dot(sample_color, vec3(0.299, 0.587, 0.114)));
-	r_color_sum += sample_color * obscurance * weight * mix(1.0, smoothstep(0.0, 0.1, -dot(sample_normal, normalize(hit_delta))), params.normal_rejection_amount);
-	r_weight_sum += weight;
+	return rnd01;
 }
 
-void SSILTap(const int p_quality_level, inout vec3 r_color_sum, inout float r_obscurance_sum, inout float r_weight_sum, const int p_tap_index, const mat2 p_rot_scale, const vec3 p_pix_center_pos, vec3 p_pixel_normal, const vec2 p_normalized_screen_pos, const float p_mip_offset, const float p_fallof_sq, float p_weight_mod, vec2 p_norm_xy, float p_norm_xy_length) {
-	vec2 sample_offset;
-	float sample_pow_2_len;
+vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
+	ivec2 uvi = ivec2(p_pos * vec2(params.screen_size));
+	ivec2 full_res_uvi = ivec2(p_pos * vec2(params.full_screen_size));
 
-	// patterns
-	{
-		vec4 new_sample = sample_pattern[p_tap_index];
-		sample_offset = new_sample.xy * p_rot_scale;
-		sample_pow_2_len = new_sample.w; // precalculated, same as: sample_pow_2_len = log2( length( new_sample.xy ) );
-		p_weight_mod *= new_sample.z;
-	}
+	uint count = uint(num_samples[p_quality]);
 
-	// snap to pixel center (more correct obscurance math, avoids artifacts)
-	sample_offset = round(sample_offset);
+	float near_radius = params.radius * 20.0;
+	float far_radius = params.radius * 40.0;
+	float radius_distance_factor = clamp(p_linear_depth / (params.z_far * 0.1), 0.0, 1.0);
+	float adaptive_radius = mix(near_radius, far_radius, radius_distance_factor);
 
-	// calculate MIP based on the sample distance from the center, similar to as described
-	// in http://graphics.cs.williams.edu/papers/SAOHPG12/.
-	float mip_level = (p_quality_level < SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET) ? (0) : (sample_pow_2_len + p_mip_offset);
+	const float s = pow(adaptive_radius, 1.0 / float(count));
+	uint OxFFFFFFFFu = 0xFFFFFFFFu;
 
-	vec2 sampling_uv = sample_offset * params.half_screen_pixel_size + p_normalized_screen_pos;
+	vec3 vs_normal = load_normal(full_res_uvi);
 
-	SSIL_tap_inner(p_quality_level, r_color_sum, r_obscurance_sum, r_weight_sum, sampling_uv, mip_level, p_pix_center_pos, p_pixel_normal, p_fallof_sq, p_weight_mod);
-
-	// for the second tap, just use the mirrored offset
-	vec2 sample_offset_mirrored_uv = -sample_offset;
-
-	// tilt the second set of samples so that the disk is effectively rotated by the normal
-	// effective at removing one set of artifacts, but too expensive for lower quality settings
-	if (p_quality_level >= SSIL_TILT_SAMPLES_ENABLE_AT_QUALITY_PRESET) {
-		float dot_norm = dot(sample_offset_mirrored_uv, p_norm_xy);
-		sample_offset_mirrored_uv -= dot_norm * p_norm_xy_length * p_norm_xy;
-		sample_offset_mirrored_uv = round(sample_offset_mirrored_uv);
-	}
-
-	// snap to pixel center (more correct obscurance math, avoids artifacts)
-	vec2 sampling_mirrored_uv = sample_offset_mirrored_uv * params.half_screen_pixel_size + p_normalized_screen_pos;
-
-	SSIL_tap_inner(p_quality_level, r_color_sum, r_obscurance_sum, r_weight_sum, sampling_mirrored_uv, mip_level, p_pix_center_pos, p_pixel_normal, p_fallof_sq, p_weight_mod);
-}
-
-void generate_SSIL(out vec3 r_color, out vec4 r_edges, out float r_obscurance, out float r_weight, const vec2 p_pos, int p_quality_level, bool p_adaptive_base) {
-	vec2 pos_rounded = trunc(p_pos);
-	uvec2 upos = uvec2(pos_rounded);
-
-	const int number_of_taps = (p_adaptive_base) ? (SSIL_ADAPTIVE_TAP_BASE_COUNT) : (num_taps[p_quality_level]);
-	float pix_z, pix_left_z, pix_top_z, pix_right_z, pix_bottom_z;
-
-	vec4 valuesUL = textureGather(source_depth_mipmaps, vec3(pos_rounded * params.half_screen_pixel_size, params.pass));
-	vec4 valuesBR = textureGather(source_depth_mipmaps, vec3((pos_rounded + vec2(1.0)) * params.half_screen_pixel_size, params.pass));
-
-	// get this pixel's viewspace depth
-	pix_z = valuesUL.y;
-
-	// get left right top bottom neighboring pixels for edge detection (gets compiled out on quality_level == 0)
-	pix_left_z = valuesUL.x;
-	pix_top_z = valuesUL.z;
-	pix_right_z = valuesBR.z;
-	pix_bottom_z = valuesBR.x;
-
-	vec2 normalized_screen_pos = pos_rounded * params.half_screen_pixel_size + params.half_screen_pixel_size_x025;
-	vec3 pix_center_pos = NDC_to_view_space(normalized_screen_pos, pix_z);
-
-	// Load this pixel's viewspace normal
-	uvec2 full_res_coord = upos * 2 * params.size_multiplier + params.pass_coord_offset.xy;
-	vec3 pixel_normal = load_normal(ivec2(full_res_coord));
-
-	const vec2 pixel_size_at_center = NDC_to_view_space(normalized_screen_pos.xy + params.half_screen_pixel_size, pix_center_pos.z).xy - pix_center_pos.xy;
-
-	float pixel_lookup_radius;
-	float fallof_sq;
-
-	// calculate effect radius and fit our screen sampling pattern inside it
-	float viewspace_radius;
-	calculate_radius_parameters(length(pix_center_pos), pixel_size_at_center, pixel_lookup_radius, viewspace_radius, fallof_sq);
-
-	// calculate samples rotation/scaling
-	mat2 rot_scale_matrix;
-	uint pseudo_random_index;
-
-	{
-		vec4 rotation_scale;
-		// reduce effect radius near the screen edges slightly; ideally, one would render a larger depth buffer (5% on each side) instead
-		if (!p_adaptive_base && (p_quality_level >= SSIL_REDUCE_RADIUS_NEAR_SCREEN_BORDER_ENABLE_AT_QUALITY_PRESET)) {
-			float near_screen_border = min(min(normalized_screen_pos.x, 1.0 - normalized_screen_pos.x), min(normalized_screen_pos.y, 1.0 - normalized_screen_pos.y));
-			near_screen_border = clamp(10.0 * near_screen_border + 0.6, 0.0, 1.0);
-			pixel_lookup_radius *= near_screen_border;
-		}
-
-		// load & update pseudo-random rotation matrix
-		pseudo_random_index = uint(pos_rounded.y * 2 + pos_rounded.x) % 5;
-		rotation_scale = constants.rotation_matrices[params.pass * 5 + pseudo_random_index];
-		rot_scale_matrix = mat2(rotation_scale.x * pixel_lookup_radius, rotation_scale.y * pixel_lookup_radius, rotation_scale.z * pixel_lookup_radius, rotation_scale.w * pixel_lookup_radius);
-	}
-
-	// the main obscurance & sample weight storage
-	vec3 color_sum = vec3(0.0);
-	float obscurance_sum = 0.0;
-	float weight_sum = 0.0;
-
-	// edge mask for between this and left/right/top/bottom neighbor pixels - not used in quality level 0 so initialize to "no edge" (1 is no edge, 0 is edge)
-	vec4 edgesLRTB = vec4(1.0, 1.0, 1.0, 1.0);
+	vec3 vs_pos = clipspace_to_viewspace(p_pos, p_linear_depth);
 
 	// Move center pixel slightly towards camera to avoid imprecision artifacts due to using of 16bit depth buffer.
-	pix_center_pos *= 0.99;
+	vs_pos *= 0.99;
 
-	if (!p_adaptive_base && (p_quality_level >= SSIL_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET)) {
-		edgesLRTB = calculate_edges(pix_z, pix_left_z, pix_right_z, pix_top_z, pix_bottom_z);
-	}
+	vec3 v = params.is_orthogonal ? vec3(0.0, 0.0, -1.0) : -normalize(vs_pos);
+	vec4 q_to_v = get_quaternion(v);
 
-	const float global_mip_offset = SSIL_DEPTH_MIPS_GLOBAL_OFFSET;
-	float mip_offset = (p_quality_level < SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET) ? (0) : (log2(pixel_lookup_radius) + global_mip_offset);
+	// Micro optimization by taking this out of the inner loop to avoid doing this multiply more than necessary.
+	vec3 v_mul_thickness = v * params.thickness;
 
-	// Used to tilt the second set of samples so that the disk is effectively rotated by the normal
-	// effective at removing one set of artifacts, but too expensive for lower quality settings
-	vec2 norm_xy = vec2(pixel_normal.x, pixel_normal.y);
-	float norm_xy_length = length(norm_xy);
-	norm_xy /= vec2(norm_xy_length, -norm_xy_length);
-	norm_xy_length *= SSIL_TILT_SAMPLES_AMOUNT;
+	vec2 ray_start = viewspace_to_screenspace(vs_pos).xy;
+	vec3 ray_start_vc3 = vec3(ray_start, p_linear_depth);
 
-	// standard, non-adaptive approach
-	if ((p_quality_level != 3) || p_adaptive_base) {
-		for (int i = 0; i < number_of_taps; i++) {
-			SSILTap(p_quality_level, color_sum, obscurance_sum, weight_sum, i, rot_scale_matrix, pix_center_pos, pixel_normal, normalized_screen_pos, mip_offset, fallof_sq, 1.0, norm_xy, norm_xy_length);
+	vec3 gi = vec3(0.0);
+
+	// Hardcoded, since its only intended to change if there is temporal accumulation.
+	uint frame = 0u;
+
+	// Also hardcoded to 1u, as that is the best tradeoff between quality and performance.
+	for (uint i = 0u; i < 1u; ++i) {
+		uint n = frame * 1u + i;
+		vec4 rnd01 = rnd_01x4(uvi, n);
+
+		vec3 sample_dir_vs;
+		vec2 dir;
+
+		dir = vec2(cos(rnd01.x * PI), sin(rnd01.x * PI));
+		sample_dir_vs = vec3(dir, 0.0);
+
+		if (!params.is_orthogonal) {
+			sample_dir_vs = transform_vz0qz0(dir, q_to_v);
+
+			vec3 ray_end = viewspace_to_screenspace(vs_pos + sample_dir_vs * (params.z_near * 0.5));
+
+			vec3 ray_dir = ray_end - ray_start_vc3;
+			ray_dir /= length(ray_dir.xy);
+
+			dir = ray_dir.xy;
 		}
-	}
-#ifdef ADAPTIVE
-	else {
-		// add new ones if needed
-		vec2 full_res_uv = normalized_screen_pos + params.pass_uv_offset.xy;
-		float importance = textureLod(source_importance, full_res_uv, 0.0).x;
 
-		//Need to store obscurance from base pass
-		// load existing base values
-		vec4 base_values = imageLoad(source_ssil, ivec3(upos, params.pass));
-		weight_sum += imageLoad(edges_weights_image, ivec2(upos)).r * float(SSIL_ADAPTIVE_TAP_BASE_COUNT * 4.0);
-		color_sum += (base_values.rgb) * weight_sum;
-		obscurance_sum += (base_values.a) * weight_sum;
+		// Slice construction
+		vec3 slice_n = cross(v, sample_dir_vs);
+		vec3 proj_n = vs_normal - slice_n * dot(vs_normal, slice_n);
 
-		// increase importance around edges
-		float edge_count = dot(1.0 - edgesLRTB, vec4(1.0, 1.0, 1.0, 1.0));
-
-		float avg_total_importance = float(counter.sum) * params.load_counter_avg_div;
-
-		float importance_limiter = clamp(params.adaptive_sample_limit / avg_total_importance, 0.0, 1.0);
-		importance *= importance_limiter;
-
-		float additional_sample_count = SSIL_ADAPTIVE_TAP_FLEXIBLE_COUNT * importance;
-
-		const float blend_range = 3.0;
-		const float blend_range_inv = 1.0 / blend_range;
-
-		additional_sample_count += 0.5;
-		uint additional_samples = uint(additional_sample_count);
-		uint additional_samples_to = min(SSIL_MAX_TAPS, additional_samples + SSIL_ADAPTIVE_TAP_BASE_COUNT);
-
-		for (uint i = SSIL_ADAPTIVE_TAP_BASE_COUNT; i < additional_samples_to; i++) {
-			additional_sample_count -= 1.0f;
-			float weight_mod = clamp(additional_sample_count * blend_range_inv, 0.0, 1.0);
-			SSILTap(p_quality_level, color_sum, obscurance_sum, weight_sum, int(i), rot_scale_matrix, pix_center_pos, pixel_normal, normalized_screen_pos, mip_offset, fallof_sq, weight_mod, norm_xy, norm_xy_length);
+		float proj_n_sqr_len = dot(proj_n, proj_n);
+		if (proj_n_sqr_len == 0.0) {
+			return vec4(0.0, 0.0, 0.0, 1.0);
 		}
+
+		vec3 t = cross(slice_n, proj_n);
+
+		float proj_nr_cp_len = inversesqrt(proj_n_sqr_len);
+		float cos_n = dot(proj_n, v) * proj_nr_cp_len;
+		float sin_n = dot(t, v) * proj_nr_cp_len;
+
+		vec3 gi0 = vec3(0.0);
+		uint occ_bits = 0u;
+
+		for (float d = -1.0; d <= 1.0; d += 2.0) {
+			vec2 ray_dir0 = dir * d;
+
+			float t1 = pow(s, rnd01.z);
+			rnd01.z = 1.0 - rnd01.z;
+
+			float d05 = d * 0.5;
+
+			for (int i = 0; i < int(count); ++i) {
+				vec2 sample_pos = ray_start + ray_dir0 * t1;
+
+				t1 *= s;
+
+				// handle out of bounds samples
+				if (sample_pos.x < 0.0 || sample_pos.x >= float(params.screen_size.x) ||
+						sample_pos.y < 0.0 || sample_pos.y >= float(params.screen_size.y)) {
+					break;
+				}
+
+				vec2 sample_uv = sample_pos / vec2(params.screen_size);
+
+				float sample_depth = textureLod(depth_buffer, sample_uv, 0.0).r;
+
+				if (sample_depth <= 0.001) {
+					continue;
+				}
+
+				// Get view-space position
+				vec3 sample_pos_vs = clipspace_to_viewspace(sample_uv, sample_depth);
+
+				vec3 delta_pos_front = sample_pos_vs - vs_pos;
+				vec3 delta_pos_back = delta_pos_front - v_mul_thickness;
+
+				// Normalize to get horizon angles
+				vec2 hor_cos = vec2(
+						dot(normalize(delta_pos_front), v),
+						dot(normalize(delta_pos_back), v));
+
+				hor_cos = d >= 0.0 ? hor_cos.xy : hor_cos.yx;
+
+				vec2 hor01 = ((0.5 + 0.5 * sin_n) + d05) - d05 * hor_cos;
+				hor01 = clamp(hor01 + rnd01.w * (1.0 / 32.0), 0.0, 1.0);
+
+				uvec2 hor_int = uvec2(floor(hor01 * 32.0));
+
+				uint m_x = hor_int.x < 32u ? OxFFFFFFFFu << hor_int.x : 0u;
+				uint m_y = hor_int.y != 0u ? OxFFFFFFFFu >> (32u - hor_int.y) : 0u;
+
+				uint occ_bits0 = m_x & m_y;
+				uint vis_bits0 = occ_bits0 & (~occ_bits);
+
+				// compute GI contribution
+				if (vis_bits0 != 0u) {
+					if (params.backface_rejection) {
+						vec3 n0 = load_normal(ivec2(sample_uv * vec2(params.full_screen_size)));
+
+						vec3 proj_n0 = n0 - slice_n * dot(n0, slice_n);
+						float proj_n0_sqr_len = dot(proj_n0, proj_n0);
+
+						if (proj_n0_sqr_len != 0.0) {
+							float proj_n0r_cp_len = inversesqrt(proj_n0_sqr_len);
+
+							float n_1 = proj_nr_cp_len * proj_n0r_cp_len;
+
+							float sin_phi = dot(proj_n, proj_n0) * n_1;
+							float cos_phi = dot(t, proj_n0) * n_1;
+
+							bool flip_t = cos_phi < 0.0;
+
+							sin_phi = !flip_t ? -sin_phi : sin_phi;
+
+							bool c = sin_phi > sin_n;
+
+							float m0 = c ? 1.0 : 0.0;
+							float m1 = c ? -0.5 : 0.5;
+
+							float hor_01 = m0 + m1 * (cos_n * abs(cos_phi) + sin_n * sin_phi) + (0.5 * sin_n);
+							float rejection_flip = flip_t ? 0.0 : 1.0; // Need this because vis_bits_n can get inverted by flip_t, so we need to account for flip_t's value
+							hor_01 = mix(rejection_flip, hor_01, params.normal_rejection); // blend between the rejection output and no rejection
+							hor_01 = clamp(hor_01 + rnd01.w * (1.0 / 32.0), 0.0, 1.0);
+
+							uint hor_int_0 = uint(floor(hor_01 * 32.0));
+							uint vis_bits_n = hor_int_0 < 32u ? 0xFFFFFFFFu << hor_int_0 : 0u;
+
+							vis_bits_n = !flip_t ? ~vis_bits_n : vis_bits_n;
+							vis_bits0 = vis_bits0 & vis_bits_n;
+						}
+					}
+
+					if (vis_bits0 != 0u) {
+						vec4 reprojected_sample_pos = matrices.last_frame_reproj * vec4(sample_uv * 2.0 - 1.0, (sample_depth - params.z_near) / (params.z_far - params.z_near) * 2.0 - 1.0, 1.0);
+						vec2 reprojected_sample_uv = (reprojected_sample_pos.xy / reprojected_sample_pos.w) * 0.5 + 0.5;
+
+						vec3 sample_color = textureLod(last_frame, reprojected_sample_uv, 5.0).rgb;
+
+						// Reduce impact of fireflies by tonemapping before averaging: http://graphicrants.blogspot.com/2013/12/tone-mapping.html
+						sample_color /= (1.0 + dot(sample_color, vec3(0.299, 0.587, 0.114)));
+
+						float vis0 = float(bitCount(vis_bits0)) * (1.0 / 32.0);
+						gi0 += sample_color * vis0;
+					}
+				}
+
+				occ_bits = occ_bits | occ_bits0;
+			}
+		}
+
+		gi += gi0;
 	}
-#endif
 
-	// Early out for adaptive base
-	if (p_adaptive_base) {
-		vec3 color = color_sum / weight_sum;
-
-		r_color = color;
-		r_edges = vec4(0.0);
-		r_obscurance = obscurance_sum / weight_sum;
-		r_weight = weight_sum;
-		return;
-	}
-
-	// Calculate weighted average
-	vec3 color = color_sum / weight_sum;
-	color /= 1.0 - dot(color, vec3(0.299, 0.587, 0.114));
-
-	// Calculate fadeout (1 close, gradient, 0 far)
-	float fade_out = clamp(pix_center_pos.z * params.fade_out_mul + params.fade_out_add, 0.0, 1.0);
-
-	// Reduce the SSIL if we're on the edge to remove artifacts on edges (we don't care for the lower quality one)
-	if (!p_adaptive_base && (p_quality_level >= SSIL_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET)) {
-		// when there's more than 2 opposite edges, start fading out the occlusion to reduce aliasing artifacts
-		float edge_fadeout_factor = clamp((1.0 - edgesLRTB.x - edgesLRTB.y) * 0.35, 0.0, 1.0) + clamp((1.0 - edgesLRTB.z - edgesLRTB.w) * 0.35, 0.0, 1.0);
-
-		fade_out *= clamp(1.0 - edge_fadeout_factor, 0.0, 1.0);
-	}
-
-	color = params.intensity * color;
-
-	color *= fade_out;
-
-	// outputs!
-	r_color = color;
-	r_edges = edgesLRTB; // These are used to prevent blurring across edges, 1 means no edge, 0 means edge, 0.5 means half way there, etc.
-	r_obscurance = clamp((obscurance_sum / weight_sum) * params.intensity, 0.0, 1.0);
-	r_weight = weight_sum;
+	// inverse tonemap
+	gi /= 1.0 - dot(gi, vec3(0.299, 0.587, 0.114));
+	gi *= params.intensity;
+	return vec4(gi, 1.0);
 }
 
 void main() {
-	vec3 out_color;
-	float out_obscurance;
-	float out_weight;
-	vec4 out_edges;
 	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
+
 	if (any(greaterThanEqual(ssC, params.screen_size))) { //too large, do nothing
 		return;
 	}
 
-	vec2 uv = vec2(gl_GlobalInvocationID) + vec2(0.5);
-#ifdef SSIL_BASE
-	generate_SSIL(out_color, out_edges, out_obscurance, out_weight, uv, params.quality, true);
+	vec2 uv = ((vec2(ssC) + 0.5) / vec2(params.screen_size));
 
-	imageStore(dest_image, ssC, vec4(out_color, out_obscurance));
-	imageStore(edges_weights_image, ssC, vec4(out_weight / (float(SSIL_ADAPTIVE_TAP_BASE_COUNT) * 4.0)));
-#else
-	generate_SSIL(out_color, out_edges, out_obscurance, out_weight, uv, params.quality, false); // pass in quality levels
+	vec4 lighting;
+	float depth = textureLod(depth_buffer, uv, 0.0).r;
 
-	imageStore(dest_image, ssC, vec4(out_color, out_obscurance));
-	imageStore(edges_weights_image, ssC, vec4(pack_edges(out_edges)));
-#endif
+	if (depth <= 0.001) {
+		imageStore(dest_image, ssC, vec4(0.0, 0.0, 0.0, 1.0));
+		return;
+	}
+
+	lighting = ssilvb(uv, params.quality, depth);
+	//lighting.rgb *= params.intensity;
+
+	imageStore(dest_image, ssC, lighting);
 }
