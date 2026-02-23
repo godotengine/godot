@@ -68,8 +68,6 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 		}
 		event = p_event;
 		original_event = p_original_event;
-		event = p_event;
-		original_event = p_original_event;
 		// Update Label
 		event_as_text->set_text(EventListenerLineEdit::get_event_text(event, true));
 
