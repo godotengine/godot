@@ -58,7 +58,7 @@ void ScriptEditorBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("go_to_method", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::STRING, "method")));
 }
 
-String ScriptEditorBase::get_name() {
+String ScriptEditorBase::get_name() const {
 	String name;
 
 	name = edited_res->get_path().get_file();
@@ -72,10 +72,6 @@ String ScriptEditorBase::get_name() {
 			// display the built-in text_file name as follows: `ResourceName (scene_file.tscn)`
 			name = vformat("%s (%s)", text_file_name, name.get_slice("::", 0));
 		}
-	}
-
-	if (is_unsaved()) {
-		name += "(*)";
 	}
 
 	return name;

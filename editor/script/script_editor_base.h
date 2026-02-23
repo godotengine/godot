@@ -51,7 +51,7 @@ public:
 		uint64_t last_modified_time = -1;
 	} edited_file_data;
 
-	virtual String get_name();
+	String get_name() const;
 	virtual Ref<Texture2D> get_theme_icon();
 
 	virtual void set_toggle_list_control(Control *p_toggle_list_control) = 0;

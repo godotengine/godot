@@ -76,6 +76,97 @@ public:
 	ScriptEditorQuickOpen();
 };
 
+class DocumentList : public VBoxContainer {
+	GDCLASS(DocumentList, VBoxContainer);
+
+	enum SortMode {
+		SORT_BY_NAME,
+		SORT_BY_PATH,
+		SORT_BY_NONE,
+	};
+
+	enum NameDisplayMode {
+		DISPLAY_NAME,
+		DISPLAY_DIR_AND_NAME,
+		DISPLAY_FULL_PATH,
+	};
+
+	struct ItemData {
+		String display_name;
+		String name;
+		String tooltip;
+		String sort_key;
+		int category = 0;
+		Ref<Texture2D> icon;
+		Node *editor = nullptr;
+		int index = 0;
+		bool hidden = false;
+		bool tool = false;
+		bool used_in_scene = false;
+		bool unsaved = false;
+
+		bool operator<(const ItemData &id) const {
+			if (category == id.category) {
+				if (sort_key == id.sort_key) {
+					return index < id.index;
+				} else {
+					return sort_key.filenocasecmp_to(id.sort_key) < 0;
+				}
+			} else {
+				return category < id.category;
+			}
+		}
+	};
+
+	LocalVector<ItemData> items;
+
+	ItemList *item_list = nullptr;
+	LineEdit *filter = nullptr;
+	PopupMenu *context_menu = nullptr;
+
+	bool queue_update_list = false;
+	bool pending_sort = true;
+
+	bool highlight_scene_scripts = false;
+	bool split_script_help = false;
+	SortMode sort_by_mode = SORT_BY_NAME;
+	NameDisplayMode display_name_mode = DISPLAY_NAME;
+	bool script_temperature_enabled = false;
+	int temperature_history_size = 0;
+
+	TabContainer *_get_tab_container() const;
+
+	void _script_selected(int p_index);
+	void _script_list_clicked(int p_index, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index);
+	void _make_context_menu();
+	void _update_script_colors();
+
+	void _update_item_list();
+
+	void _connect_to_scene();
+	void _connect_to_scene_recursive(Node *p_current, Node *p_base);
+	void _queue_update_list();
+
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+
+protected:
+	void _notification(int p_what);
+
+public:
+	void update_list();
+	void sort();
+	void sort_on_update() { pending_sort = true; }
+	void ensure_current_is_visible();
+	void goto_next_document(bool p_previous = false);
+	void update_editor_settings();
+
+	String get_display_name(int p_index) const;
+
+	DocumentList();
+};
+
 class EditorScriptCodeCompletionCache;
 class FindInFilesContainer;
 class FindInFilesDialog;
@@ -136,23 +227,10 @@ class ScriptEditor : public PanelContainer {
 		THEME_SAVE_AS,
 	};
 
-	enum ScriptSortBy {
-		SORT_BY_NAME,
-		SORT_BY_PATH,
-		SORT_BY_NONE,
-	};
-
-	enum ScriptListName {
-		DISPLAY_NAME,
-		DISPLAY_DIR_AND_NAME,
-		DISPLAY_FULL_PATH,
-	};
-
 	HBoxContainer *menu_hb = nullptr;
 	MenuButton *file_menu = nullptr;
 	MenuButton *script_search_menu = nullptr;
 	MenuButton *debug_menu = nullptr;
-	PopupMenu *context_menu = nullptr;
 	Timer *autosave_timer = nullptr;
 	LocalVector<Control *> editor_menus;
 
@@ -165,12 +243,12 @@ class ScriptEditor : public PanelContainer {
 	bool is_floating = false;
 	EditorHelpSearch *help_search_dialog = nullptr;
 
-	ItemList *script_list = nullptr;
+	friend class DocumentList;
+
+	DocumentList *document_list = nullptr;
 	HSplitContainer *script_split = nullptr;
 	ItemList *members_overview = nullptr;
-	LineEdit *filter_scripts = nullptr;
 	LineEdit *filter_methods = nullptr;
-	VBoxContainer *scripts_vbox = nullptr;
 	VBoxContainer *overview_vbox = nullptr;
 	HBoxContainer *buttons_hbox = nullptr;
 	Button *members_overview_alphabeta_sort_button = nullptr;
@@ -226,6 +304,10 @@ class ScriptEditor : public PanelContainer {
 	List<String> previous_scripts;
 	List<int> script_close_queue;
 
+	bool restoring_layout = false;
+
+	int edit_pass = 0;
+
 	List<String> _get_recognized_extensions();
 
 	void _tab_changed(int p_which);
@@ -239,8 +321,6 @@ class ScriptEditor : public PanelContainer {
 
 	Tree *disk_changed_list = nullptr;
 	ConfirmationDialog *disk_changed = nullptr;
-
-	bool restoring_layout;
 
 	void _resave_scripts(const String &p_str);
 
@@ -269,8 +349,6 @@ class ScriptEditor : public PanelContainer {
 
 	void _ask_close_current_unsaved_tab(ScriptEditorBase *current);
 
-	bool grab_focus_block;
-
 	bool pending_auto_reload;
 	bool auto_reload_running_scripts;
 	Vector<String> script_paths_to_reload;
@@ -278,7 +356,7 @@ class ScriptEditor : public PanelContainer {
 
 	void _update_selected_editor_menu();
 
-	int edit_pass;
+	bool _can_open_file(const String &p_file) const;
 
 	void _add_callback(Object *p_obj, const String &p_function, const PackedStringArray &p_args);
 	void _res_saved_callback(const Ref<Resource> &p_res);
@@ -308,7 +386,7 @@ class ScriptEditor : public PanelContainer {
 	void _save_editor_state(ScriptEditorBase *p_editor);
 	void _save_layout();
 	void _apply_editor_settings();
-	void _filesystem_changed();
+	void _update_filenames();
 	void _files_moved(const String &p_old_file, const String &p_new_file);
 	void _file_removed(const String &p_file);
 	void _autosave_scripts();
@@ -319,13 +397,9 @@ class ScriptEditor : public PanelContainer {
 	void _update_members_overview_visibility();
 	void _update_members_overview();
 	void _toggle_members_overview_alpha_sort(bool p_alphabetic_sort);
-	void _filter_scripts_text_changed(const String &p_newtext);
 	void _filter_methods_text_changed(const String &p_newtext);
-	void _update_script_names();
-	bool _sort_list_on_update;
 
 	void _members_overview_selected(int p_idx);
-	void _script_selected(int p_idx);
 
 	void _update_help_overview_visibility();
 	void _update_help_overview();
@@ -333,21 +407,10 @@ class ScriptEditor : public PanelContainer {
 
 	void _update_online_doc();
 
-	void _find_scripts(Node *p_base, Node *p_current, HashSet<Ref<Script>> &used);
-
-	void _tree_changed();
-
 	void _split_dragged(float);
-
-	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
-	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
-	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
-
-	void _script_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index);
-	void _make_script_list_context_menu();
 
 	void _calculate_script_name_button_size();
 	void _calculate_script_name_button_ratio();
@@ -357,7 +420,6 @@ class ScriptEditor : public PanelContainer {
 	void _history_forward();
 	void _history_back();
 
-	bool waiting_update_names;
 	bool lock_history = false;
 	void _unlock_history();
 
@@ -369,7 +431,6 @@ class ScriptEditor : public PanelContainer {
 	void _save_previous_state(Dictionary p_state);
 	void _go_to_tab(int p_idx);
 	void _update_history_pos(int p_new_pos);
-	void _update_script_colors();
 	void _update_modified_scripts_for_external_editor(Ref<Script> p_for_script = Ref<Script>());
 
 	void _script_changed();
