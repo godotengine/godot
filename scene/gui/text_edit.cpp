@@ -2458,7 +2458,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					menu->set_position(get_screen_transform().xform(mpos));
 					menu->reset_size();
 					menu->popup();
-					grab_focus();
+					grab_focus(true);
 				}
 			}
 		} else {
@@ -3578,7 +3578,7 @@ void TextEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 		insert_text_at_caret(p_data);
 
 		select(drop_at_line, drop_at_column, get_caret_line(), get_caret_column());
-		grab_focus();
+		grab_focus(true);
 		adjust_viewport_to_caret();
 		end_multicaret_edit();
 		end_complex_operation();
