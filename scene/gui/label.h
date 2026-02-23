@@ -101,6 +101,7 @@ private:
 	void _update_visible() const;
 	void _shape() const;
 	void _invalidate();
+	void _maximum_size_changed();
 
 protected:
 	RID get_line_rid(int p_line) const;
