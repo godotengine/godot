@@ -84,7 +84,7 @@ void Camera3DPreview::_update_sub_viewport_size() {
 }
 
 Camera3DPreview::Camera3DPreview(Camera3D *p_camera) :
-		TexturePreview(nullptr, false), camera(p_camera), sub_viewport(memnew(SubViewport)) {
+		TexturePreview(nullptr, false, false), camera(p_camera), sub_viewport(memnew(SubViewport)) {
 	RenderingServer::get_singleton()->viewport_attach_camera(sub_viewport->get_viewport_rid(), camera->get_camera());
 	add_child(sub_viewport);
 
