@@ -5339,9 +5339,7 @@ void Viewport::_validate_property(PropertyInfo &p_property) const {
 	}
 	if (vrs_mode != VRS_TEXTURE && (p_property.name == "vrs_texture")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-
-	if (vrs_mode == VRS_DISABLED && (p_property.name == "vrs_update_mode")) {
+	} else if (vrs_mode == VRS_DISABLED && (p_property.name == "vrs_update_mode")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }

@@ -3584,7 +3584,7 @@ void Node::_call_unhandled_key_input(const Ref<InputEvent> &p_event) {
 
 void Node::_validate_property(PropertyInfo &p_property) const {
 	if ((p_property.name == "process_thread_group_order" || p_property.name == "process_thread_messages") && data.process_thread_group == PROCESS_THREAD_GROUP_INHERIT) {
-		p_property.usage = 0;
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 

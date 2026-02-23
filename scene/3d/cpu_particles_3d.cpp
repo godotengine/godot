@@ -590,38 +590,38 @@ void CPUParticles3D::request_particles_process(real_t p_requested_process_time) 
 void CPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "emitting") {
 		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
-	}
-
-	if (p_property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_box_extents" && emission_shape != EMISSION_SHAPE_BOX) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if ((p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture" || p_property.name == "emission_points") && (emission_shape != EMISSION_SHAPE_POINTS && (emission_shape != EMISSION_SHAPE_DIRECTED_POINTS))) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_normals" && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name.begins_with("emission_ring_") && emission_shape != EMISSION_SHAPE_RING) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name.begins_with("orbit_") && !particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name.begins_with("scale_curve_") && !split_scale) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "seed" && !use_fixed_seed) {
-		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (p_property.name == "emission_sphere_radius") {
+		if (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_box_extents") {
+		if (emission_shape != EMISSION_SHAPE_BOX) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture" || p_property.name == "emission_points") {
+		if (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_normals") {
+		if (emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name.begins_with("emission_ring_")) {
+		if (emission_shape != EMISSION_SHAPE_RING) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name.begins_with("orbit_")) {
+		if (!particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name.begins_with("scale_curve_")) {
+		if (!split_scale) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "seed") {
+		if (!use_fixed_seed) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
 	}
 }
 

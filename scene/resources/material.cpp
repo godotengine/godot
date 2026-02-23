@@ -84,8 +84,7 @@ RID Material::get_rid() const {
 void Material::_validate_property(PropertyInfo &p_property) const {
 	if (!_can_do_next_pass() && p_property.name == "next_pass") {
 		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	if (!_can_use_render_priority() && p_property.name == "render_priority") {
+	} else if (!_can_use_render_priority() && p_property.name == "render_priority") {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }

@@ -641,9 +641,7 @@ void TextureProgressBar::_validate_property(PropertyInfo &p_property) const {
 	}
 	if (p_property.name.begins_with("stretch_margin_") && !nine_patch_stretch) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-
-	if (p_property.name.begins_with("radial_") && (mode != FillMode::FILL_CLOCKWISE && mode != FillMode::FILL_COUNTER_CLOCKWISE && mode != FillMode::FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE)) {
+	} else if (p_property.name.begins_with("radial_") && (mode != FillMode::FILL_CLOCKWISE && mode != FillMode::FILL_COUNTER_CLOCKWISE && mode != FillMode::FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE)) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }

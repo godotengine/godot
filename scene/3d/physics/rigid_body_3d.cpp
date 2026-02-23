@@ -813,9 +813,7 @@ void RigidBody3D::_validate_property(PropertyInfo &p_property) const {
 	}
 	if (center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM && p_property.name == "center_of_mass") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-
-	if (!contact_monitor && p_property.name == "max_contacts_reported") {
+	} else if (!contact_monitor && p_property.name == "max_contacts_reported") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }

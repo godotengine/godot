@@ -327,9 +327,7 @@ void Light3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	} else if (get_light_type() == RS::LIGHT_DIRECTIONAL && p_property.name == "light_intensity_lumens") {
 		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (!GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units") && (p_property.name == "light_intensity_lumens" || p_property.name == "light_intensity_lux" || p_property.name == "light_temperature")) {
+	} else if (!GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units") && (p_property.name == "light_intensity_lumens" || p_property.name == "light_intensity_lux" || p_property.name == "light_temperature")) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
@@ -551,14 +549,10 @@ void DirectionalLight3D::_validate_property(PropertyInfo &p_property) const {
 			// Splits 3 and 4 are only used with the PSSM 4 Splits shadow mode.
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
-	}
-
-	if (p_property.name == "light_size" || p_property.name == "light_projector") {
+	} else if (p_property.name == "light_size" || p_property.name == "light_projector") {
 		// Not implemented in DirectionalLight3D (`light_size` is replaced by `light_angular_distance`).
 		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "distance_fade_enabled" || p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_shadow" || p_property.name == "distance_fade_length") {
+	} else if (p_property.name == "distance_fade_enabled" || p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_shadow" || p_property.name == "distance_fade_length") {
 		// Not relevant for DirectionalLight3D, as the light LOD system only pertains to point lights.
 		// For DirectionalLight3D, `directional_shadow_max_distance` can be used instead.
 		p_property.usage = PROPERTY_USAGE_NONE;

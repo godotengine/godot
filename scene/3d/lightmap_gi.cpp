@@ -1828,23 +1828,30 @@ void LightmapGI::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
-	if (p_property.name == "supersampling_factor" && !supersampling_enabled) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (p_property.name == "environment_custom_sky" && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (p_property.name == "environment_custom_color" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (p_property.name == "environment_custom_energy" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (p_property.name == "denoiser_strength" && !use_denoiser) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (p_property.name == "denoiser_range" && !use_denoiser) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (p_property.name == "supersampling_factor") {
+		if (!supersampling_enabled) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else if (p_property.name == "environment_custom_sky") {
+		if (environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else if (p_property.name == "environment_custom_color") {
+		if (environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else if (p_property.name == "environment_custom_energy") {
+		if (environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else if (p_property.name == "denoiser_strength") {
+		if (!use_denoiser) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else if (p_property.name == "denoiser_range") {
+		if (!use_denoiser) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
 }
 

@@ -316,8 +316,7 @@ void InputEventWithModifiers::_validate_property(PropertyInfo &p_property) const
 		if (p_property.name == "meta_pressed") {
 			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
-		}
-		if (p_property.name == "ctrl_pressed") {
+		} else if (p_property.name == "ctrl_pressed") {
 			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
