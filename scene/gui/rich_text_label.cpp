@@ -206,6 +206,20 @@ Rect2 RichTextLabel::_get_text_rect() {
 	return Rect2(theme_cache.normal_style->get_offset(), get_size() - theme_cache.normal_style->get_minimum_size());
 }
 
+int RichTextLabel::_get_wrap_width(const Rect2 &p_text_rect) const {
+	int wrap_width = p_text_rect.get_size().width;
+	float combined_maximum_width = get_combined_maximum_size().x;
+	if (autowrap_mode != TextServer::AUTOWRAP_OFF && combined_maximum_width > 0.0) {
+		int maximum_width = int(combined_maximum_width - theme_cache.normal_style->get_minimum_size().width);
+		if (maximum_width <= 0) {
+			maximum_width = 1;
+		}
+		wrap_width = MIN(wrap_width, maximum_width);
+		wrap_width = MAX(wrap_width, 1);
+	}
+	return wrap_width;
+}
+
 RichTextLabel::Item *RichTextLabel::_get_item_at_pos(RichTextLabel::Item *p_item_from, RichTextLabel::Item *p_item_to, int p_position) {
 	int offset = 0;
 	for (Item *it = p_item_from; it && it != p_item_to; it = _get_next_item(it)) {
@@ -4015,6 +4029,7 @@ bool RichTextLabel::_validate_line_caches() {
 	if (main->first_invalid_line.load() == (int)main->lines.size()) {
 		MutexLock data_lock(data_mutex);
 		Rect2 text_rect = _get_text_rect();
+		int wrap_width = _get_wrap_width(text_rect);
 
 		float ctrl_height = get_size().height;
 
@@ -4043,8 +4058,8 @@ bool RichTextLabel::_validate_line_caches() {
 
 		float total_height = (fi == 0) ? 0 : _calculate_line_vertical_offset(main->lines[fi - 1]);
 		for (int i = fi; i < (int)main->lines.size(); i++) {
-			total_height = _resize_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height);
-			total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width, i, old_scroll, text_rect.size.height);
+			total_height = _resize_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, wrap_width - scroll_w, total_height);
+			total_height = _update_scroll_exceeds(total_height, ctrl_height, wrap_width, i, old_scroll, text_rect.size.height);
 			main->first_resized_line.store(i);
 		}
 
@@ -4091,6 +4106,7 @@ void RichTextLabel::_process_line_caches() {
 
 	MutexLock data_lock(data_mutex);
 	Rect2 text_rect = _get_text_rect();
+	int wrap_width = _get_wrap_width(text_rect);
 
 	float ctrl_height = get_size().height;
 	int fi = main->first_invalid_line.load();
@@ -4119,8 +4135,8 @@ void RichTextLabel::_process_line_caches() {
 		}
 
 		for (int i = sr; i < fi; i++) {
-			total_height = _resize_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height);
-			total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width, i, old_scroll, text_rect.size.height);
+			total_height = _resize_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, wrap_width - scroll_w, total_height);
+			total_height = _update_scroll_exceeds(total_height, ctrl_height, wrap_width, i, old_scroll, text_rect.size.height);
 
 			main->first_resized_line.store(i);
 
@@ -4133,8 +4149,8 @@ void RichTextLabel::_process_line_caches() {
 
 	total_height = (fi == 0) ? 0 : _calculate_line_vertical_offset(main->lines[fi - 1]);
 	for (int i = fi; i < (int)main->lines.size(); i++) {
-		total_height = _shape_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
-		total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width, i, old_scroll, text_rect.size.height);
+		total_height = _shape_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, wrap_width - scroll_w, total_height, &total_chars);
+		total_height = _update_scroll_exceeds(total_height, ctrl_height, wrap_width, i, old_scroll, text_rect.size.height);
 
 		main->first_invalid_line.store(i);
 		main->first_resized_line.store(i);
@@ -7571,6 +7587,7 @@ void RichTextLabel::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 		_invalidate_accessibility();
 		_validate_line_caches();
 		queue_redraw();
+		update_minimum_size();
 	}
 }
 
@@ -7586,6 +7603,7 @@ void RichTextLabel::set_autowrap_trim_flags(BitField<TextServer::LineBreakFlag> 
 		main->first_invalid_line = 0; // Invalidate all lines.
 		_validate_line_caches();
 		queue_redraw();
+		update_minimum_size();
 	}
 }
 
@@ -7762,6 +7780,19 @@ bool RichTextLabel::_set(const StringName &p_name, const Variant &p_value) {
 	return false;
 }
 #endif
+
+void RichTextLabel::_maximum_size_changed() {
+	if (!fit_content || autowrap_mode == TextServer::AUTOWRAP_OFF) {
+		return;
+	}
+
+	_stop_thread();
+	main->first_resized_line.store(0); // Invalidate all lines.
+	_invalidate_accessibility();
+	_validate_line_caches();
+	queue_redraw();
+	update_minimum_size();
+}
 
 void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_parsed_text"), &RichTextLabel::get_parsed_text);
@@ -8231,14 +8262,34 @@ int RichTextLabel::get_total_glyph_count() const {
 Size2 RichTextLabel::get_minimum_size() const {
 	Size2 sb_min_size = theme_cache.normal_style->get_minimum_size();
 	Size2 min_size;
+	bool wrap_with_max_width = autowrap_mode != TextServer::AUTOWRAP_OFF && get_combined_maximum_size().x > 0.0;
 
 	if (fit_content) {
-		min_size.x = get_content_width();
+		if (!wrap_with_max_width) {
+			min_size.x = get_content_width();
+		}
 		min_size.y = get_content_height();
 	}
 
+	if (wrap_with_max_width) {
+		const_cast<RichTextLabel *>(this)->_validate_line_caches();
+
+		int natural_width = 0;
+		int to_line = main->first_invalid_line.load();
+		for (int i = 0; i < to_line; i++) {
+			MutexLock lock(main->lines[i].text_buf->get_mutex());
+			natural_width = MAX(natural_width, int(Math::ceil(main->lines[i].offset.x + main->lines[i].text_buf->get_non_wrapped_size().x)));
+		}
+
+		int maximum_width = int(get_combined_maximum_size().x - sb_min_size.width);
+		if (maximum_width <= 0) {
+			maximum_width = 1;
+		}
+		min_size.x = MIN(natural_width, maximum_width);
+	}
+
 	return sb_min_size +
-			((autowrap_mode != TextServer::AUTOWRAP_OFF) ? Size2(1, min_size.height) : min_size);
+			((autowrap_mode != TextServer::AUTOWRAP_OFF) ? Size2(wrap_with_max_width ? MAX(1, min_size.x) : 1, min_size.height) : min_size);
 }
 
 // Context menu.
@@ -8387,6 +8438,8 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 }
 
 RichTextLabel::RichTextLabel(const String &p_text) {
+	connect(SceneStringName(maximum_size_changed), callable_mp(this, &RichTextLabel::_maximum_size_changed));
+
 	main = memnew(ItemFrame);
 	main->owner = get_instance_id();
 	main->rid = items.make_rid(main);
