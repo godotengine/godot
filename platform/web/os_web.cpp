@@ -179,8 +179,7 @@ bool OS_Web::async_pck_is_file_installed(const String &p_path) const {
 	}
 
 	String pck_base_dir = pck_path.get_base_dir().get_base_dir();
-	err = static_cast<Error>(godot_js_os_async_pck_is_file_installed(pck_base_dir.utf8().get_data(), path.utf8().get_data()));
-	return err;
+	return static_cast<Error>(godot_js_os_async_pck_is_file_installed(pck_base_dir.utf8().get_data(), path.utf8().get_data()));
 }
 
 Error OS_Web::async_pck_install_file(const String &p_path) const {
@@ -198,8 +197,7 @@ Error OS_Web::async_pck_install_file(const String &p_path) const {
 	}
 
 	String pck_base_dir = pck_path.get_base_dir().get_base_dir();
-	err = static_cast<Error>(godot_js_os_async_pck_install_file(pck_base_dir.utf8().get_data(), path.utf8().get_data()));
-	return err;
+	return static_cast<Error>(godot_js_os_async_pck_install_file(pck_base_dir.utf8().get_data(), path.utf8().get_data()));
 }
 
 Dictionary OS_Web::async_pck_install_file_get_status(const String &p_path) const {
@@ -243,8 +241,7 @@ Dictionary OS_Web::async_pck_install_file_get_status(const String &p_path) const
 		status["errors"] = Dictionary();
 		return status;
 	}
-	Dictionary status = JSON::parse_string(String::utf8(status_text_ptr, status_text_length));
-	return status;
+	return JSON::parse_string(String::utf8(status_text_ptr, status_text_length));
 }
 
 bool OS_Web::_check_internal_feature_support(const String &p_feature) {
@@ -361,11 +358,11 @@ char *OS_Web::get_config_as_json_callback(const char *p_config_file_data_ptr) {
 
 	Dictionary json_config_file_data;
 	for (const String &section : config_file->get_sections()) {
-		Dictionary sectionData;
+		Dictionary section_data;
 		for (const String &key : config_file->get_section_keys(section)) {
-			sectionData[key] = config_file->get_value(section, key);
+			section_data[key] = config_file->get_value(section, key);
 		}
-		json_config_file_data[section] = sectionData;
+		json_config_file_data[section] = section_data;
 	}
 	String json_config_file_data_as_string = JSON::stringify(json_config_file_data, String(" ").repeat(2));
 	size_t json_config_file_data_len = json_config_file_data_as_string.utf8().size();

@@ -76,17 +76,15 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 	PackedDir *cd = root;
 
 	if (simplified_path.contains_char('/')) { // In a subdirectory.
-		Vector<String> ds = simplified_path.get_base_dir().split("/");
-
-		for (int j = 0; j < ds.size(); j++) {
-			if (!cd->subdirs.has(ds[j])) {
+		for (const String &dir : simplified_path.get_base_dir().split("/")) {
+			if (!cd->subdirs.has(dir)) {
 				PackedDir *pd = memnew(PackedDir);
-				pd->name = ds[j];
+				pd->name = dir;
 				pd->parent = cd;
 				cd->subdirs[pd->name] = pd;
 				cd = pd;
 			} else {
-				cd = cd->subdirs[ds[j]];
+				cd = cd->subdirs[dir];
 			}
 		}
 	}

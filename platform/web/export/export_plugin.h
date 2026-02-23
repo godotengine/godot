@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/io/file_access.h"
 #include "editor/export/editor_export_preset.h"
 #include "editor_http_server.h"
 
@@ -76,8 +75,6 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 			Dictionary get_as_dictionary() const {
 				Dictionary data;
 				data["size"] = size;
-				// data["md5"] = md5;
-				// data["sha256"] = sha256;
 				return data;
 			}
 		};

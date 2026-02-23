@@ -33,7 +33,6 @@
 #include "core/io/file_access_pack.h"
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
-#include "core/templates/bit_field.h"
 #include "editor/export/editor_export_platform_utils.h"
 #include "editor/export/editor_export_preset.h"
 

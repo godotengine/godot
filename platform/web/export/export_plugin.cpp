@@ -31,14 +31,10 @@
 #include "export_plugin.h"
 
 #include "core/crypto/hashing_context.h"
-#include "core/error/error_list.h"
-#include "core/error/error_macros.h"
 #include "core/extension/gdextension.h"
 #include "core/io/config_file.h"
-#include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/io/resource_loader.h"
-#include "core/os/memory.h"
 #include "core/string/string_builder.h"
 #include "editor/export/editor_export_platform.h"
 #include "logo_svg.gen.h"
@@ -191,13 +187,6 @@ EditorExportPlatformWeb::ExportData::ResourceData *EditorExportPlatformWeb::Expo
 
 		Ref<ConfigFile> remap_file;
 		remap_file.instantiate();
-		// if (p_is_encrypted) {
-		// 	Ref<FileAccessEncrypted> remap_file_access_encrypted;
-		// 	remap_file_access_encrypted.instantiate();
-		// 	Error err = remap_file_access_encrypted->open_and_parse(remap_file_access, p_key, FileAccessEncrypted::MODE_READ, false);
-		// 	ERR_FAIL_COND_V(err != OK, err);
-		// 	remap_file_access = remap_file_access_encrypted;
-		// }
 		remap_file->parse(remap_file_access->get_as_text());
 
 		const String PREFIX_PATH = "path.";
@@ -252,7 +241,7 @@ EditorExportPlatformWeb::ExportData::ResourceData *EditorExportPlatformWeb::Expo
 			Error error;
 			String remapped_dependency_path = EditorExportPlatformUtils::get_path_from_dependency(remapped_dependency);
 			ResourceData *dependency = add_dependency(remapped_dependency_path, p_features_set, p_uid_cache, &error);
-			_HANDLE_ERR_COND_V_MSG(error != OK, error, vformat(R"*(Error while processing remapped dependencies of "%s": couldn't add dependency of "%s")*", resource_file->absolute_path, remapped_dependency_path));
+			_HANDLE_ERR_COND_V_MSG(error != OK, error, vformat(R"*(Error while processing remapped dependencies of "%s": couldn't add dependency of "%s".)*", resource_file->absolute_path, remapped_dependency_path));
 			data->dependencies.push_back(dependency);
 		}
 	}
@@ -1758,14 +1747,16 @@ void EditorExportPlatformWeb::initialize() {
 
 	server.instantiate();
 
-	Ref<Image> img = memnew(Image);
+	Ref<Image> image;
+	image.instantiate();
+
 	const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-	ImageLoaderSVG::create_image_from_string(img, _web_logo_svg, EDSCALE, upsample, false);
-	logo = ImageTexture::create_from_image(img);
+	ImageLoaderSVG::create_image_from_string(image, _web_logo_svg, EDSCALE, upsample, false);
+	logo = ImageTexture::create_from_image(image);
 
-	ImageLoaderSVG::create_image_from_string(img, _web_run_icon_svg, EDSCALE, upsample, false);
-	run_icon = ImageTexture::create_from_image(img);
+	ImageLoaderSVG::create_image_from_string(image, _web_run_icon_svg, EDSCALE, upsample, false);
+	run_icon = ImageTexture::create_from_image(image);
 
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 	if (theme.is_valid()) {

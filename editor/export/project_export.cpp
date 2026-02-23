@@ -501,7 +501,7 @@ void ProjectExportDialog::_on_result_dialog_custom_action(const StringName &p_ac
 		return;
 	}
 
-	ERR_FAIL();
+	ERR_FAIL_MSG(vformat(R"*(Could not find any action bound to "%s" for `ProjectExportDialog`.)*", p_action));
 }
 
 void ProjectExportDialog::_update_parameters(const String &p_edited_property) {

@@ -32,10 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
-#include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "core/io/resource.h"
 #include "core/io/resource_importer.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"

@@ -122,7 +122,7 @@ int EditorExportPlatformUtils::get_pad(int p_alignment, int p_n) {
 	int pad = 0;
 	if (rest > 0) {
 		pad = p_alignment - rest;
-	};
+	}
 
 	return pad;
 }
