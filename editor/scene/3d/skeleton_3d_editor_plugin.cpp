@@ -752,13 +752,18 @@ Variant Skeleton3DEditor::get_drag_data_fw(const Point2 &p_point, Control *p_fro
 
 	set_drag_preview(vb);
 	Dictionary drag_data;
-	drag_data["type"] = "nodes";
-	drag_data["node"] = selected;
+	drag_data["type"] = "skeleton_bone";
+	drag_data["source"] = selected->get_instance_id();
 
 	return drag_data;
 }
 
 bool Skeleton3DEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	Dictionary drag_data = p_data;
+	if (!drag_data.has("type") || drag_data["type"] != "skeleton_bone" || !drag_data.has("source")) {
+		return false;
+	}
+
 	TreeItem *target = (p_point == Vector2(Math::INF, Math::INF)) ? joint_tree->get_selected() : joint_tree->get_item_at_position(p_point);
 	if (!target) {
 		return false;
@@ -769,13 +774,13 @@ bool Skeleton3DEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 		return false;
 	}
 
-	TreeItem *selected = Object::cast_to<TreeItem>(Dictionary(p_data)["node"]);
-	if (target == selected) {
+	TreeItem *selected = ObjectDB::get_instance<TreeItem>(drag_data["source"]);
+	if (!selected || selected->get_tree() != joint_tree || target == selected) {
 		return false;
 	}
 
-	const String path2 = target->get_metadata(0);
-	if (!path2.begins_with("bones/")) {
+	const String selected_path = selected->get_metadata(0);
+	if (!selected_path.begins_with("bones/")) {
 		return false;
 	}
 
@@ -787,11 +792,22 @@ void Skeleton3DEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		return;
 	}
 
-	TreeItem *target = (p_point == Vector2(Math::INF, Math::INF)) ? joint_tree->get_selected() : joint_tree->get_item_at_position(p_point);
-	TreeItem *selected = Object::cast_to<TreeItem>(Dictionary(p_data)["node"]);
+	Dictionary drag_data = p_data;
 
-	const BoneId target_boneidx = String(target->get_metadata(0)).get_slicec('/', 1).to_int();
-	const BoneId selected_boneidx = String(selected->get_metadata(0)).get_slicec('/', 1).to_int();
+	TreeItem *target = (p_point == Vector2(Math::INF, Math::INF)) ? joint_tree->get_selected() : joint_tree->get_item_at_position(p_point);
+	TreeItem *selected = ObjectDB::get_instance<TreeItem>(drag_data["source"]);
+	if (!target || !selected || selected->get_tree() != joint_tree || !skeleton) {
+		return;
+	}
+
+	const String target_path = target->get_metadata(0);
+	const String selected_path = selected->get_metadata(0);
+	if (!target_path.begins_with("bones/") || !selected_path.begins_with("bones/")) {
+		return;
+	}
+
+	const BoneId target_boneidx = target_path.get_slicec('/', 1).to_int();
+	const BoneId selected_boneidx = selected_path.get_slicec('/', 1).to_int();
 
 	move_skeleton_bone(skeleton->get_path(), selected_boneidx, target_boneidx);
 }
