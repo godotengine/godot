@@ -2575,7 +2575,7 @@ void EditorNode::restart_editor(bool p_goto_project_manager) {
 void EditorNode::_save_all_scenes() {
 	scenes_to_save_as.clear(); // In case saving was canceled before.
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-		if (!_is_scene_unsaved(i)) {
+		if (!is_scene_unsaved(i)) {
 			continue;
 		}
 
@@ -2619,7 +2619,7 @@ void EditorNode::_mark_unsaved_scenes() {
 	scene_tabs->update_scene_tabs();
 }
 
-bool EditorNode::_is_scene_unsaved(int p_idx) {
+bool EditorNode::is_scene_unsaved(int p_idx) {
 	const Node *scene = editor_data.get_edited_scene_root(p_idx);
 	if (!scene) {
 		return false;
@@ -4153,7 +4153,7 @@ void EditorNode::_discard_changes(const String &p_str) {
 void EditorNode::_update_file_menu_opened() {
 	bool has_unsaved = false;
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-		if (_is_scene_unsaved(i)) {
+		if (is_scene_unsaved(i)) {
 			has_unsaved = true;
 			break;
 		}
