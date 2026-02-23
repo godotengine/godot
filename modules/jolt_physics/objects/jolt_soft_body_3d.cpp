@@ -44,8 +44,6 @@
 
 #include "Jolt/Physics/SoftBody/SoftBodyMotionProperties.h"
 
-#include <functional>
-
 namespace {
 
 template <typename TJoltVertex>
@@ -270,14 +268,14 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 	HashSet<Vector3i> face_exterior;
 	HashSet<Vector2i> edge_set;
 
-	std::function<Vector2i(int, int)> edge_hash_key = [&](int a, int b) {
+	auto edge_hash_key = [](int a, int b) {
 		if (b < a) {
 			return Vector2i(b, a);
 		}
 		return Vector2i(a, b);
 	};
 
-	std::function<Vector3i(int, int, int)> face_hash_key = [&](int a, int b, int c) {
+	auto face_hash_key = [](int a, int b, int c) {
 		if (c < a && c < b) {
 			return Vector3i(c, a, b);
 		}
@@ -287,7 +285,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		return Vector3i(a, b, c);
 	};
 
-	std::function<Vector3i(Vector3i)> face_flipped = [&](Vector3i a) {
+	auto face_flipped = [](Vector3i a) {
 		return Vector3i(a.x, a.z, a.y);
 	};
 
