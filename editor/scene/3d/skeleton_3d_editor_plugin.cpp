@@ -790,7 +790,7 @@ void Skeleton3DEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	Dictionary drag_data = p_data;
 
 	TreeItem *target = (p_point == Vector2(Math::INF, Math::INF)) ? joint_tree->get_selected() : joint_tree->get_item_at_position(p_point);
-	TreeItem *selected = Object::cast_to<TreeItem>(ObjectDB::get_instance(drag_data["source"]));
+	TreeItem *selected = ObjectDB::get_instance<TreeItem>(drag_data["source"]);
 	if (!target || !selected || selected->get_tree() != joint_tree || !skeleton) {
 		return;
 	}
