@@ -623,6 +623,10 @@ class GDScriptFunctionState : public RefCounted {
 	SelfList<GDScriptFunctionState> scripts_list;
 	SelfList<GDScriptFunctionState> instances_list;
 
+#ifdef DEBUG_ENABLED
+	bool _handled = false;
+#endif
+
 protected:
 	static void _bind_methods();
 
