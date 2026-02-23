@@ -263,6 +263,244 @@ void Variant::set_named(const StringName &p_member, const Variant &p_value, bool
 	}
 }
 
+static char32_t vec_members[] = { 'x', 'y', 'z', 'w' };
+
+bool Variant::check_swizzling(bool p_is_setter, Variant::Type p_type, const StringName &p_member, int &r_component_count, Variant::Type &r_component_type, bool &r_valid_type, String &r_error) {
+	r_valid_type = true;
+
+	int max_components = 0;
+	Variant::Type component_type;
+
+	switch (p_type) {
+		case Variant::VECTOR2: {
+			max_components = 2;
+			component_type = Variant::FLOAT;
+		} break;
+		case Variant::VECTOR2I: {
+			max_components = 2;
+			component_type = Variant::INT;
+		} break;
+		case Variant::VECTOR3: {
+			max_components = 3;
+			component_type = Variant::FLOAT;
+		} break;
+		case Variant::VECTOR3I: {
+			max_components = 3;
+			component_type = Variant::INT;
+		} break;
+		case Variant::VECTOR4: {
+			max_components = 4;
+			component_type = Variant::FLOAT;
+		} break;
+		case Variant::VECTOR4I: {
+			max_components = 4;
+			component_type = Variant::INT;
+		} break;
+		default: {
+			r_valid_type = false;
+			return false;
+		} break;
+	}
+
+	if (p_member.length() > max_components) {
+		r_error = vformat("Swizzling failed. Length is exceeded.");
+		return false;
+	}
+
+	LocalVector<char32_t> buffer;
+	const char32_t *ptr = ((String)p_member).ptr();
+
+	for (int i = 0; i < p_member.length(); i++) {
+		const char32_t symbol = ptr[i];
+
+		bool found = false;
+		for (int j = 0; j < max_components; j++) {
+			if (vec_members[j] == symbol) {
+				found = true;
+				break;
+			}
+		}
+
+		if (found) {
+			if (p_is_setter) {
+				for (uint32_t j = 0; j < buffer.size(); j++) {
+					if (buffer[j] == symbol) {
+						r_error = vformat("Swizzling failed. Duplicated symbol found: '%c'.", symbol);
+						return false;
+					}
+				}
+			}
+			buffer.push_back(symbol);
+		} else {
+			r_error = vformat("Swizzling failed. Invalid symbol found: '%c'.", symbol);
+			return false;
+		}
+	}
+
+	r_component_count = buffer.size();
+	r_component_type = component_type;
+
+	return true;
+}
+
+bool Variant::set_swizzled(const StringName &p_member, const Variant &p_value, bool &r_valid_type, String &r_error) {
+	int component_count;
+	Variant::Type component_type;
+
+	if (!Variant::check_swizzling(true, type, p_member, component_count, component_type, r_valid_type, r_error)) {
+		return false;
+	}
+
+	Variant::Type val_component_type = Variant::NIL;
+	int val_component_count = 0;
+
+	switch (p_value.type) {
+		case Variant::VECTOR2: {
+			val_component_count = 2;
+			val_component_type = Variant::FLOAT;
+		} break;
+		case Variant::VECTOR2I: {
+			val_component_count = 2;
+			val_component_type = Variant::INT;
+		} break;
+		case Variant::VECTOR3: {
+			val_component_count = 3;
+			val_component_type = Variant::FLOAT;
+		} break;
+		case Variant::VECTOR3I: {
+			val_component_count = 3;
+			val_component_type = Variant::INT;
+		} break;
+		case Variant::VECTOR4: {
+			val_component_count = 4;
+			val_component_type = Variant::FLOAT;
+		} break;
+		case Variant::VECTOR4I: {
+			val_component_count = 4;
+			val_component_type = Variant::INT;
+		} break;
+		default: {
+		} break;
+	}
+
+	if (val_component_type != component_type || val_component_count != component_count) {
+		r_error = vformat("Swizzling failed. Invalid assigned type: '%s'.", Variant::get_type_name(p_value.get_type()));
+		return false;
+	}
+
+	uint32_t s = variant_setters_getters[type].size();
+	if (!s) {
+		return false;
+	}
+
+	LocalVector<Variant> values;
+	for (uint64_t i = 0; i < p_value.get_indexed_size(); i++) {
+		bool valid;
+		bool oob;
+
+		values.push_back(p_value.get_indexed(i, valid, oob));
+		if (!valid || oob) {
+			return false;
+		}
+	}
+
+	for (int i = 0, k = 0; i < p_member.length(); i++) {
+		for (uint32_t j = 0; j < s; j++) {
+			if (variant_setters_getters_names[type][j] == String::chr(p_member[i])) {
+				const Variant val = values[k++];
+				bool valid;
+
+				variant_setters_getters[type][j].setter(this, &val, valid);
+				if (!valid) {
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+
+Variant Variant::get_swizzled(const StringName &p_member, bool &r_valid, bool &r_valid_type, String &r_error) const {
+	int component_count;
+	Variant::Type component_type;
+
+	if (!Variant::check_swizzling(false, type, p_member, component_count, component_type, r_valid_type, r_error)) {
+		r_valid = false;
+		return Variant();
+	}
+
+	uint32_t s = variant_setters_getters[type].size();
+	if (!s) {
+		return Variant();
+	}
+
+	LocalVector<Variant> values;
+	for (int i = 0; i < p_member.length(); i++) {
+		for (uint32_t j = 0; j < s; j++) {
+			if (variant_setters_getters_names[type][j] == String::chr(p_member[i])) {
+				Variant ret;
+				variant_setters_getters[type][j].getter(this, &ret);
+				values.push_back(ret);
+			}
+		}
+	}
+
+	Variant::Type new_var_type;
+	switch (values.size()) {
+		case 2:
+			switch (component_type) {
+				case Variant::FLOAT:
+					new_var_type = Variant::VECTOR2;
+					break;
+				case Variant::INT:
+					new_var_type = Variant::VECTOR2I;
+					break;
+				default:
+					return Variant();
+			}
+			break;
+		case 3:
+			switch (component_type) {
+				case Variant::FLOAT:
+					new_var_type = Variant::VECTOR3;
+					break;
+				case Variant::INT:
+					new_var_type = Variant::VECTOR3I;
+					break;
+				default:
+					return Variant();
+			}
+			break;
+		case 4:
+			switch (component_type) {
+				case Variant::FLOAT:
+					new_var_type = Variant::VECTOR4;
+					break;
+				case Variant::INT:
+					new_var_type = Variant::VECTOR4I;
+					break;
+				default:
+					return Variant();
+			}
+			break;
+		default:
+			return Variant();
+	}
+
+	LocalVector<const Variant *> value_pointers;
+	for (uint32_t i = 0; i < values.size(); i++) {
+		value_pointers.push_back(&(values.ptr()[i]));
+	}
+
+	Variant new_var;
+	Callable::CallError err;
+
+	Variant::construct(new_var_type, new_var, (const Variant **)value_pointers.ptr(), value_pointers.size(), err);
+	r_valid = true;
+
+	return new_var;
+}
+
 Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 	uint32_t s = variant_setters_getters[type].size();
 	if (s) {

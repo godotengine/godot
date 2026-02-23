@@ -4007,6 +4007,58 @@ Ref<GDScript> GDScriptAnalyzer::get_depended_shallow_script(const String &p_path
 	return scr;
 }
 
+void GDScriptAnalyzer::reduce_swizzling(GDScriptParser::IdentifierNode *p_identifier, int p_component_count, Variant::Type p_component_type) {
+	const String name = (String)p_identifier->name;
+	Variant::Type type;
+
+	switch (p_component_count) {
+		case 2:
+			switch (p_component_type) {
+				case Variant::FLOAT:
+					type = Variant::VECTOR2;
+					break;
+				case Variant::INT:
+					type = Variant::VECTOR2I;
+					break;
+				default:
+					return;
+			}
+			break;
+		case 3:
+			switch (p_component_type) {
+				case Variant::FLOAT:
+					type = Variant::VECTOR3;
+					break;
+				case Variant::INT:
+					type = Variant::VECTOR3I;
+					break;
+				default:
+					return;
+			}
+			break;
+		case 4:
+			switch (p_component_type) {
+				case Variant::FLOAT:
+					type = Variant::VECTOR4;
+					break;
+				case Variant::INT:
+					type = Variant::VECTOR4I;
+					break;
+				default:
+					return;
+			}
+			break;
+		default:
+			return;
+	}
+
+	Callable::CallError err;
+	Variant value;
+
+	Variant::construct(type, value, nullptr, 0, err);
+	p_identifier->set_datatype(type_from_variant(value, nullptr, false));
+}
+
 void GDScriptAnalyzer::reduce_identifier_from_base_set_class(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType p_identifier_datatype) {
 	ERR_FAIL_NULL(p_identifier);
 
@@ -4126,6 +4178,18 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					if (Variant::has_builtin_method(base.builtin_type, name)) {
 						p_identifier->set_datatype(make_callable_type(Variant::get_builtin_method_info(base.builtin_type, name)));
 						return;
+					}
+
+					int component_count;
+					Variant::Type component_type;
+					bool valid_type;
+					String swizzle_error;
+
+					if (Variant::check_swizzling(false, base.builtin_type, name, component_count, component_type, valid_type, swizzle_error)) {
+						reduce_swizzling(p_identifier, component_count, component_type);
+						return;
+					} else if (valid_type) {
+						push_error(swizzle_error);
 					}
 					if (base.is_hard_type()) {
 #ifdef SUGGEST_GODOT4_RENAMES
@@ -5698,9 +5762,9 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_script(const Ref<Script> &p
 	return result;
 }
 
-GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_value, const GDScriptParser::Node *p_source) {
+GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_value, const GDScriptParser::Node *p_source, bool p_is_constant) {
 	GDScriptParser::DataType result;
-	result.is_constant = true;
+	result.is_constant = p_is_constant;
 	result.kind = GDScriptParser::DataType::BUILTIN;
 	result.builtin_type = p_value.get_type();
 	result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT; // Constant has explicit type.

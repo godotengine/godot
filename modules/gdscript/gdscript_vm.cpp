@@ -1209,20 +1209,30 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				bool valid;
 				dst->set_named(*index, *value, valid);
 
+				String swizzle_error;
+				bool valid_swizzle_type = false;
+
+				if (!valid) {
+					valid = dst->set_swizzled(*index, *value, valid_swizzle_type, swizzle_error);
+				}
 #ifdef DEBUG_ENABLED
 				if (!valid) {
 					if (dst->is_read_only()) {
 						err_text = "Invalid assignment on read-only value (on base: '" + _get_var_type(dst) + "').";
 					} else {
-						Object *obj = dst->get_validated_object();
-						bool read_only_property = false;
-						if (obj) {
-							read_only_property = ClassDB::has_property(obj->get_class_name(), *index) && (ClassDB::get_property_setter(obj->get_class_name(), *index) == StringName());
-						}
-						if (read_only_property) {
-							err_text = vformat(R"(Cannot set value into property "%s" (on base "%s") because it is read-only.)", String(*index), _get_var_type(dst));
+						if (valid_swizzle_type) {
+							err_text = swizzle_error;
 						} else {
-							err_text = "Invalid assignment of property or key '" + String(*index) + "' with value of type '" + _get_var_type(value) + "' on a base object of type '" + _get_var_type(dst) + "'.";
+							Object *obj = dst->get_validated_object();
+							bool read_only_property = false;
+							if (obj) {
+								read_only_property = ClassDB::has_property(obj->get_class_name(), *index) && (ClassDB::get_property_setter(obj->get_class_name(), *index) == StringName());
+							}
+							if (read_only_property) {
+								err_text = vformat(R"(Cannot set value into property "%s" (on base "%s") because it is read-only.)", String(*index), _get_var_type(dst));
+							} else {
+								err_text = "Invalid assignment of property or key '" + String(*index) + "' with value of type '" + _get_var_type(value) + "' on a base object of type '" + _get_var_type(dst) + "'.";
+							}
 						}
 					}
 					OPCODE_BREAK;
@@ -1259,16 +1269,31 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				const StringName *index = &_global_names_ptr[indexname];
 
 				bool valid;
+
+				String swizzle_error;
+				bool valid_swizzle_type = false;
+
 #ifdef DEBUG_ENABLED
 				//allow better error message in cases where src and dst are the same stack position
 				Variant ret = src->get_named(*index, valid);
 
+				if (!valid) {
+					ret = src->get_swizzled(*index, valid, valid_swizzle_type, swizzle_error);
+				}
 #else
 				*dst = src->get_named(*index, valid);
+
+				if (!valid) {
+					*dst = src->get_swizzled(*index, valid, valid_swizzle_type, swizzle_error);
+				}
 #endif
 #ifdef DEBUG_ENABLED
 				if (!valid) {
-					err_text = "Invalid access to property or key '" + index->operator String() + "' on a base object of type '" + _get_var_type(src) + "'.";
+					if (valid_swizzle_type) {
+						err_text = swizzle_error;
+					} else {
+						err_text = "Invalid access to property or key '" + index->operator String() + "' on a base object of type '" + _get_var_type(src) + "'.";
+					}
 					OPCODE_BREAK;
 				}
 				*dst = ret;

@@ -692,8 +692,13 @@ public:
 
 	/* Properties */
 
+	static bool check_swizzling(bool p_is_setter, Variant::Type p_type, const StringName &p_member, int &r_component_count, Variant::Type &r_component_type, bool &r_valid_type, String &r_error);
+
 	void set_named(const StringName &p_member, const Variant &p_value, bool &r_valid);
 	Variant get_named(const StringName &p_member, bool &r_valid) const;
+
+	bool set_swizzled(const StringName &p_member, const Variant &p_value, bool &r_valid_type, String &r_error);
+	Variant get_swizzled(const StringName &p_member, bool &r_valid, bool &r_valid_type, String &r_error) const;
 
 	typedef void (*ValidatedSetter)(Variant *base, const Variant *value);
 	typedef void (*ValidatedGetter)(const Variant *base, Variant *value);
