@@ -1263,6 +1263,7 @@ void GridMapEditor::_update_theme() {
 	rotate_x_button->set_button_icon(get_theme_icon(SNAME("RotateLeft"), EditorStringName(EditorIcons)));
 	rotate_y_button->set_button_icon(get_theme_icon(SNAME("ToolRotate"), EditorStringName(EditorIcons)));
 	rotate_z_button->set_button_icon(get_theme_icon(SNAME("RotateRight"), EditorStringName(EditorIcons)));
+	clear_rotation_button->set_button_icon(get_theme_icon(SNAME("UndoRedo"), EditorStringName(EditorIcons)));
 	mode_thumbnail->set_button_icon(get_theme_icon(SNAME("FileThumbnail"), EditorStringName(EditorIcons)));
 	mode_list->set_button_icon(get_theme_icon(SNAME("FileList"), EditorStringName(EditorIcons)));
 	options->set_button_icon(get_theme_icon(SNAME("Tools"), EditorStringName(EditorIcons)));
@@ -1451,7 +1452,7 @@ GridMapEditor::GridMapEditor() {
 	ED_SHORTCUT("grid_map/edit_y_axis", TTRC("Edit Y Axis"), KeyModifierMask::SHIFT + Key::X, true);
 	ED_SHORTCUT("grid_map/edit_z_axis", TTRC("Edit Z Axis"), KeyModifierMask::SHIFT + Key::C, true);
 	ED_SHORTCUT("grid_map/keep_selected", TTRC("Keep Selection"));
-	ED_SHORTCUT("grid_map/clear_rotation", TTRC("Clear Rotation"));
+	ED_SHORTCUT("grid_map/clear_rotation", TTRC("Clear Rotation"), KeyModifierMask::ALT | Key::G, true);
 
 	options = memnew(MenuButton);
 	options->set_theme_type_variation(SceneStringName(FlatButton));
@@ -1628,6 +1629,15 @@ GridMapEditor::GridMapEditor() {
 			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_CURSOR_ROTATE_Z));
 	rotation_buttons->add_child(rotate_z_button);
 	viewport_shortcut_buttons.push_back(rotate_z_button);
+
+	clear_rotation_button = memnew(Button);
+	clear_rotation_button->set_theme_type_variation(SceneStringName(FlatButton));
+	clear_rotation_button->set_shortcut(ED_GET_SHORTCUT("grid_map/clear_rotation"));
+	clear_rotation_button->set_accessibility_name(TTRC("Cursor Reset Rotation"));
+	clear_rotation_button->connect(SceneStringName(pressed),
+			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_CURSOR_CLEAR_ROTATION));
+	rotation_buttons->add_child(clear_rotation_button);
+	viewport_shortcut_buttons.push_back(clear_rotation_button);
 
 	// Wide empty separation control. (like BoxContainer::add_spacer())
 	Control *c = memnew(Control);
