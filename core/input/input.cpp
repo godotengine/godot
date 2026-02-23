@@ -691,23 +691,25 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 	js.info = p_connected ? p_joypad_info : Dictionary();
 
 	if (p_connected) {
-		String uidname = p_guid;
-		if (p_guid.is_empty()) {
-			int uidlen = MIN(p_name.length(), 16);
-			for (int i = 0; i < uidlen; i++) {
-				uidname = uidname + _hex_str(p_name[i]);
-			}
+		String uid_from_name;
+		int uidlen = MIN(p_name.length(), 16);
+		for (int i = 0; i < uidlen; i++) {
+			uid_from_name = uid_from_name + _hex_str(p_name[i]);
 		}
-		js.uid = uidname;
+		js.uid = !p_guid.is_empty() ? p_guid : uid_from_name;
 		js.connected = true;
 		int mapping = fallback_mapping;
 		// Bypass the mapping system if the joypad's mapping is already handled by its driver
 		// (for example, the SDL joypad driver).
 		if (p_joypad_info.get("mapping_handled", false)) {
 			js.is_known = true;
-		} else {
+		}
+		// We don't want this setting to be exposed to the user, because it's not very useful outside of this method.
+		js.info.erase("mapping_handled");
+
+		if (!js.is_known && !p_guid.is_empty()) {
 			for (int i = 0; i < map_db.size(); i++) {
-				if (js.uid == map_db[i].uid) {
+				if (p_guid == map_db[i].uid) {
 					mapping = i;
 					if (mapping != fallback_mapping) {
 						js.is_known = true;
@@ -716,8 +718,23 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 				}
 			}
 		}
-		// We don't want this setting to be exposed to the user, because it's not very useful outside of this method.
-		js.info.erase("mapping_handled");
+
+		if (!js.is_known) {
+			for (int i = 0; i < map_db.size(); i++) {
+				if (uid_from_name == map_db[i].uid) {
+					mapping = i;
+					if (mapping != fallback_mapping) {
+						js.is_known = true;
+					}
+					break;
+				}
+			}
+		}
+
+#ifdef ANDROID_ENABLED
+		// Currently GUID fallback is only used on Android.
+		js.info["fallback_guid"] = uid_from_name;
+#endif
 
 		_set_joypad_mapping(js, mapping);
 	} else {

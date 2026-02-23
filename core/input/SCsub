@@ -8,6 +8,7 @@ import input_builders
 # Order matters here. Higher index controller database files write on top of lower index database files.
 controller_databases = [
     "gamecontrollerdb.txt",
+    "../../thirdparty/sdl/joystick/SDL_gamepad_db.h",
     "godotcontrollerdb.txt",
 ]
 
