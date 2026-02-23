@@ -769,7 +769,7 @@ bool Skeleton3DEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 		return false;
 	}
 
-	TreeItem *selected = Object::cast_to<TreeItem>(ObjectDB::get_instance(drag_data["source"]));
+	TreeItem *selected = ObjectDB::get_instance<TreeItem>(drag_data["source"]);
 	if (!selected || selected->get_tree() != joint_tree || target == selected) {
 		return false;
 	}
