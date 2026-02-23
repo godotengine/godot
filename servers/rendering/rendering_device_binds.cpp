@@ -37,7 +37,7 @@
 
 #include "shader_include_db.h"
 
-Error RDShaderFile::parse_versions_from_text(const String &p_text, const String p_defines, OpenIncludeFunction p_include_func, void *p_include_func_userdata) {
+Error RDShaderFile::parse_versions_from_text(const String &p_text, const String p_defines, const String &p_source_file_path, const Vector<String> &p_include_dirs) {
 	Vector<String> lines = p_text.split("\n");
 
 	bool reading_versions = false;
@@ -142,33 +142,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 			}
 
 			if (stage != RD::SHADER_STAGE_MAX) {
-				if (line.strip_edges().begins_with("#include")) {
-					if (p_include_func) {
-						//process include
-						String include = line.replace("#include", "").strip_edges();
-						if (!include.begins_with("\"") || !include.ends_with("\"")) {
-							base_error = "Malformed #include syntax, expected #include \"<path>\", found instead: " + include;
-							break;
-						}
-						include = include.substr(1, include.length() - 2).strip_edges();
-
-						String include_code = ShaderIncludeDB::get_built_in_include_file(include);
-						if (!include_code.is_empty()) {
-							stage_code[stage] += "\n" + include_code + "\n";
-						} else {
-							String include_text = p_include_func(include, p_include_func_userdata);
-							if (!include_text.is_empty()) {
-								stage_code[stage] += "\n" + include_text + "\n";
-							} else {
-								base_error = "#include failed for file '" + include + "'.";
-							}
-						}
-					} else {
-						base_error = "#include used, but no include function provided.";
-					}
-				} else {
-					stage_code[stage] += line + "\n";
-				}
+				stage_code[stage] += line + "\n";
 			}
 		}
 	}
@@ -198,7 +172,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 				code = code.replace("VERSION_DEFINES", E.value);
 				String error;
 #ifdef MODULE_GLSLANG_ENABLED
-				Vector<uint8_t> spirv = compile_glslang_shader(RD::ShaderStage(i), ShaderIncludeDB::parse_include_files(code), RD::SHADER_LANGUAGE_VULKAN_VERSION_1_1, RD::SHADER_SPIRV_VERSION_1_4, &error);
+				Vector<uint8_t> spirv = compile_glslang_shader(RD::ShaderStage(i), ShaderIncludeDB::parse_include_files(code), RD::SHADER_LANGUAGE_VULKAN_VERSION_1_1, RD::SHADER_SPIRV_VERSION_1_4, &error, p_source_file_path, p_include_dirs);
 				bytecode->set_stage_bytecode(RD::ShaderStage(i), spirv);
 #else
 				error = "Shader compilation is not supported because glslang was not enabled.";

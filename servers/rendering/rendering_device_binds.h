@@ -429,7 +429,7 @@ public:
 	}
 
 	typedef String (*OpenIncludeFunction)(const String &, void *userdata);
-	Error parse_versions_from_text(const String &p_text, const String p_defines = String(), OpenIncludeFunction p_include_func = nullptr, void *p_include_func_userdata = nullptr);
+	Error parse_versions_from_text(const String &p_text, const String p_defines = String(), const String &p_source_file_path = "", const Vector<String> &p_include_dirs = {});
 
 protected:
 	Dictionary _get_versions() const {

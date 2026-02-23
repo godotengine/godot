@@ -65,27 +65,11 @@ String ResourceImporterShaderFile::get_preset_name(int p_idx) const {
 }
 
 void ResourceImporterShaderFile::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
+	r_options->push_back(ImportOption(PropertyInfo(Variant::ARRAY, "include_directories", PropertyHint::PROPERTY_HINT_TYPE_STRING, vformat("%d/%d:", Variant::STRING, PropertyHint::PROPERTY_HINT_DIR)), PackedStringArray()));
 }
 
 bool ResourceImporterShaderFile::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	return true;
-}
-
-static String _include_function(const String &p_path, void *userpointer) {
-	Error err;
-
-	String *base_path = (String *)userpointer;
-
-	String include = p_path;
-	if (include.is_relative_path()) {
-		include = base_path->path_join(include);
-	}
-
-	Ref<FileAccess> file_inc = FileAccess::open(include, FileAccess::READ, &err);
-	if (err != OK) {
-		return String();
-	}
-	return file_inc->get_as_utf8_string();
 }
 
 Error ResourceImporterShaderFile::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
@@ -97,8 +81,18 @@ Error ResourceImporterShaderFile::import(ResourceUID::ID p_source_id, const Stri
 	String file_txt = file->get_as_utf8_string();
 	Ref<RDShaderFile> shader_file;
 	shader_file.instantiate();
-	String base_path = p_source_file.get_base_dir();
-	err = shader_file->parse_versions_from_text(file_txt, "", _include_function, &base_path);
+
+	TypedArray<String> option_include_directories = p_options["include_directories"];
+
+	Vector<String> include_directories;
+	include_directories.resize(option_include_directories.size());
+
+	for (int i = 0; i < option_include_directories.size(); ++i) {
+		String dir = option_include_directories[i];
+		include_directories.set(i, dir);
+	}
+
+	err = shader_file->parse_versions_from_text(file_txt, "", p_source_file, include_directories);
 
 	if (err != OK) {
 		if (!ShaderFileEditor::singleton->is_visible_in_tree()) {
