@@ -43,12 +43,12 @@
 
 void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, const Ref<InputEvent> &p_original_event, bool p_update_input_list_selection) {
 	if (p_event.is_valid()) {
-		// if there is already a binding set, let enter or escape confirm/cancel the popup.
+		// If there is already a binding set, let enter or escape confirm/cancel the popup.
 		if (event.is_valid()) {
 			Ref<InputEventKey> current_key = p_event;
-			// without this is_visible() check, the gui would not open if the already bound
+			// Without this is_visible() check, the gui would not open if the already bound
 			// keybind was escape.
-			if (this->is_visible()) {
+			if (is_visible()) {
 				if (current_key->get_physical_keycode() == Key::ENTER) {
 					_ok_pressed();
 					return;
