@@ -1314,17 +1314,6 @@ void WaylandThread::_frame_wl_callback_on_done(void *data, struct wl_callback *w
 
 	ws->frame_callback = wl_surface_frame(ws->wl_surface);
 	wl_callback_add_listener(ws->frame_callback, &frame_wl_callback_listener, ws);
-
-	if (ws->wl_surface && ws->buffer_scale_changed) {
-		// NOTE: We're only now setting the buffer scale as the idea is to get this
-		// data committed together with the new frame, all by the rendering driver.
-		// This is important because we might otherwise set an invalid combination of
-		// buffer size and scale (e.g. odd size and 2x scale). We're pretty much
-		// guaranteed to get a proper buffer in the next render loop as the rescaling
-		// method also informs the engine of a "window rect change", triggering
-		// rendering if needed.
-		wl_surface_set_buffer_scale(ws->wl_surface, window_state_get_preferred_buffer_scale(ws));
-	}
 }
 
 void WaylandThread::_wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
@@ -1597,6 +1586,7 @@ void WaylandThread::_xdg_popup_on_configure(void *data, struct xdg_popup *xdg_po
 		rect_msg->id = ws->id;
 		rect_msg->rect.position = scale_vector2i(ws->rect.position, parent_scale);
 		rect_msg->rect.size = scale_vector2i(ws->rect.size, parent_scale);
+		rect_msg->buffer_scale = window_state_get_preferred_buffer_scale(ws);
 
 		ws->wayland_thread->push_message(rect_msg);
 	}
@@ -3793,7 +3783,6 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 	if (p_ws->buffer_scale != preferred_buffer_scale) {
 		// The buffer scale is always important, even if we use frac scaling.
 		p_ws->buffer_scale = preferred_buffer_scale;
-		p_ws->buffer_scale_changed = true;
 
 		if (!using_fractional) {
 			// We don't bother updating everything else if it's turned on though.
@@ -3838,6 +3827,7 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 		rect_msg->id = p_ws->id;
 		rect_msg->rect.position = scale_vector2i(p_ws->rect.position, win_scale);
 		rect_msg->rect.size = scaled_size;
+		rect_msg->buffer_scale = preferred_buffer_scale;
 		p_ws->wayland_thread->push_message(rect_msg);
 	}
 
@@ -3847,6 +3837,18 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 		dpi_msg->id = p_ws->id;
 		dpi_msg->event = DisplayServerEnums::WINDOW_EVENT_DPI_CHANGE;
 		p_ws->wayland_thread->push_message(dpi_msg);
+	}
+}
+
+void WaylandThread::window_state_set_buffer_scale(WindowState *p_ws, int p_buffer_scale) {
+	ERR_FAIL_NULL(p_ws);
+	ERR_FAIL_COND(p_buffer_scale <= 0);
+
+	ERR_FAIL_NULL(p_ws->wl_surface);
+
+	if (p_ws->buffer_scale != p_buffer_scale) {
+		p_ws->buffer_scale = p_buffer_scale;
+		wl_surface_set_buffer_scale(p_ws->wl_surface, p_buffer_scale);
 	}
 }
 
