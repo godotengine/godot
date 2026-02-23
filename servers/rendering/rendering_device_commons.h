@@ -776,7 +776,8 @@ public:
 		BLEND_FACTOR_ONE_MINUS_SRC1_COLOR,
 		BLEND_FACTOR_SRC1_ALPHA,
 		BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA,
-		BLEND_FACTOR_MAX
+		BLEND_FACTOR_MAX,
+		BLEND_FACTOR_MIN
 	};
 
 	enum BlendOperation {
@@ -850,6 +851,24 @@ public:
 			bool write_g = true;
 			bool write_b = true;
 			bool write_a = true;
+			bool uses_blend_alpha = false;
+			bool uses_blend_color = false;
+
+			Attachment() {}
+
+			Attachment(
+					BlendFactor p_src_color_blend_factor, BlendFactor p_dst_color_blend_factor, BlendOperation p_color_blend_op,
+					BlendFactor p_src_alpha_blend_factor, BlendFactor p_dst_alpha_blend_factor, BlendOperation p_alpha_blend_op,
+					bool p_uses_blend_color = false, bool p_uses_blend_alpha = false) :
+					enable_blend(true),
+					src_color_blend_factor(p_src_color_blend_factor),
+					dst_color_blend_factor(p_dst_color_blend_factor),
+					color_blend_op(p_color_blend_op),
+					src_alpha_blend_factor(p_src_alpha_blend_factor),
+					dst_alpha_blend_factor(p_dst_alpha_blend_factor),
+					alpha_blend_op(p_alpha_blend_op),
+					uses_blend_alpha(p_uses_blend_alpha),
+					uses_blend_color(p_uses_blend_color) {}
 		};
 
 		static PipelineColorBlendState create_disabled(int p_attachments = 1) {

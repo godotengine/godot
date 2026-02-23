@@ -39,6 +39,7 @@
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/gles3/storage/config.h"
 #include "drivers/gles3/storage/texture_storage.h"
+#include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/rendering_server_types.h"
 #include "servers/rendering/storage/variant_converters.h"
 
@@ -1589,6 +1590,251 @@ MaterialStorage::MaterialStorage() {
 
 		shaders.compiler_tex_blit.initialize(actions);
 	}
+
+	// register default blend modes
+	// canvas blends
+	{
+		register_blend_mode(
+				RSE::SHADER_CANVAS_ITEM,
+				RSE::BLEND_MODE_MIX,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_ZERO,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_ADD),
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_CANVAS_ITEM,
+				RSE::BLEND_MODE_ADD,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_ZERO,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_ADD),
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_CANVAS_ITEM,
+				RSE::BLEND_MODE_SUB,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_REVERSE_SUBTRACT,
+						RenderingDeviceCommons::BLEND_FACTOR_ZERO,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_REVERSE_SUBTRACT),
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_REVERSE_SUBTRACT,
+						RenderingDeviceCommons::BLEND_FACTOR_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_REVERSE_SUBTRACT));
+		register_blend_mode(
+				RSE::SHADER_CANVAS_ITEM,
+				RSE::BLEND_MODE_MUL,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_DST_COLOR,
+						RenderingDeviceCommons::BLEND_FACTOR_ZERO,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_ZERO,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_ADD),
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_DST_COLOR,
+						RenderingDeviceCommons::BLEND_FACTOR_ZERO,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_DST_ALPHA,
+						RenderingDeviceCommons::BLEND_FACTOR_ZERO,
+						RenderingDeviceCommons::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_CANVAS_ITEM,
+				RSE::BLEND_MODE_PREMULTIPLIED_ALPHA,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_ZERO,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_ADD),
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_CANVAS_ITEM,
+				RSE::BLEND_MODE_LCD,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_CONSTANT_COLOR,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE_MINUS_SRC_COLOR,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_ZERO,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						true),
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_CONSTANT_COLOR,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE_MINUS_SRC_COLOR,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						true),
+				false);
+		register_blend_mode(
+				RSE::SHADER_CANVAS_ITEM,
+				RSE::BLEND_MODE_DISABLED,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment());
+	}
+	// spatial blends
+	{
+		register_blend_mode(
+				RSE::SHADER_SPATIAL,
+				RSE::BLEND_MODE_MIX,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_ZERO,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_ADD),
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_SPATIAL,
+				RSE::BLEND_MODE_ADD,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_FACTOR_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						false,
+						true));
+		register_blend_mode(
+				RSE::SHADER_SPATIAL,
+				RSE::BLEND_MODE_SUB,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_REVERSE_SUBTRACT,
+						RenderingDeviceCommons::BLEND_FACTOR_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_REVERSE_SUBTRACT,
+						false,
+						true));
+		register_blend_mode(
+				RSE::SHADER_SPATIAL,
+				RSE::BLEND_MODE_MUL,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_DST_COLOR,
+						RenderingDeviceCommons::BLEND_FACTOR_ZERO,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_ZERO,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						false,
+						true),
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_DST_COLOR,
+						RenderingDeviceCommons::BLEND_FACTOR_ZERO,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_DST_ALPHA,
+						RenderingDeviceCommons::BLEND_FACTOR_ZERO,
+						RenderingDeviceCommons::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_SPATIAL,
+				RSE::BLEND_MODE_PREMULTIPLIED_ALPHA,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_SPATIAL,
+				RSE::BLEND_MODE_DISABLED,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment());
+	}
+
+	// texture blit
+	{
+		register_blend_mode(
+				RSE::SHADER_TEXTURE_BLIT,
+				RSE::BLEND_MODE_MIX,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_FACTOR_SRC_ALPHA,
+						RenderingDeviceCommons::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_TEXTURE_BLIT,
+				RSE::BLEND_MODE_ADD,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						false,
+						true));
+		register_blend_mode(
+				RSE::SHADER_TEXTURE_BLIT,
+				RSE::BLEND_MODE_SUB,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_REVERSE_SUBTRACT,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_FACTOR_ONE,
+						RenderingDeviceCommons::BLEND_OP_REVERSE_SUBTRACT,
+						false,
+						true));
+		register_blend_mode(
+				RSE::SHADER_TEXTURE_BLIT,
+				RSE::BLEND_MODE_MUL,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RenderingDeviceCommons::BLEND_FACTOR_DST_COLOR,
+						RenderingDeviceCommons::BLEND_FACTOR_ZERO,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						RenderingDeviceCommons::BLEND_FACTOR_DST_ALPHA,
+						RenderingDeviceCommons::BLEND_FACTOR_ZERO,
+						RenderingDeviceCommons::BLEND_OP_ADD,
+						false,
+						true));
+		register_blend_mode(
+				RSE::SHADER_TEXTURE_BLIT,
+				RSE::BLEND_MODE_DISABLED,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment());
+	}
 }
 
 MaterialStorage::~MaterialStorage() {
@@ -2646,6 +2892,8 @@ LocalVector<ShaderGLES3::TextureUniformData> get_texture_uniform_data(const Vect
 /* Canvas Shader Data */
 
 void CanvasShaderData::set_code(const String &p_code) {
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+
 	// Initialize and compile the shader.
 
 	code = p_code;
@@ -2667,19 +2915,19 @@ void CanvasShaderData::set_code(const String &p_code) {
 	ShaderCompiler::GeneratedCode gen_code;
 
 	// Actual enum set further down after compilation.
-	int blend_modei = BLEND_MODE_MIX;
-
 	ShaderCompiler::IdentifierActions actions;
 	actions.entry_point_stages["vertex"] = ShaderCompiler::STAGE_VERTEX;
 	actions.entry_point_stages["fragment"] = ShaderCompiler::STAGE_FRAGMENT;
 	actions.entry_point_stages["light"] = ShaderCompiler::STAGE_FRAGMENT;
 
-	actions.render_mode_values["blend_add"] = Pair<int *, int>(&blend_modei, BLEND_MODE_ADD);
-	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MIX);
-	actions.render_mode_values["blend_sub"] = Pair<int *, int>(&blend_modei, BLEND_MODE_SUB);
-	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MUL);
-	actions.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&blend_modei, BLEND_MODE_PMALPHA);
-	actions.render_mode_values["blend_disabled"] = Pair<int *, int>(&blend_modei, BLEND_MODE_DISABLED);
+	blend_mode = RenderingServerTypes::blend_mode_name(RSE::BLEND_MODE_MIX);
+
+	int blend_modei = -1;
+	auto modes = material_storage->get_blend_modes(RSE::SHADER_CANVAS_ITEM);
+	for (int i = 0; i < modes.size(); i++) {
+		StringName name = modes[i];
+		actions.render_mode_values[name] = Pair<int *, int>(&blend_modei, i);
+	}
 
 	actions.usage_flag_pointers["texture_sdf"] = &uses_sdf;
 	actions.usage_flag_pointers["TIME"] = &uses_time;
@@ -2687,14 +2935,17 @@ void CanvasShaderData::set_code(const String &p_code) {
 	actions.usage_flag_pointers["CUSTOM1"] = &uses_custom1;
 
 	actions.uniforms = &uniforms;
-	Error err = MaterialStorage::get_singleton()->shaders.compiler_canvas.compile(RSE::SHADER_CANVAS_ITEM, code, &actions, path, gen_code);
+	Error err = material_storage->shaders.compiler_canvas.compile(RSE::SHADER_CANVAS_ITEM, code, &actions, path, gen_code);
 	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
 
 	if (version.is_null()) {
-		version = MaterialStorage::get_singleton()->shaders.canvas_shader.version_create();
+		version = material_storage->shaders.canvas_shader.version_create();
 	}
 
-	blend_mode = BlendMode(blend_modei);
+	if (blend_modei >= 0) {
+		blend_mode = modes[blend_modei];
+	}
+
 	uses_screen_texture = gen_code.uses_screen_texture;
 	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
 
@@ -2718,8 +2969,8 @@ void CanvasShaderData::set_code(const String &p_code) {
 
 	LocalVector<ShaderGLES3::TextureUniformData> texture_uniform_data = get_texture_uniform_data(gen_code.texture_uniforms);
 
-	MaterialStorage::get_singleton()->shaders.canvas_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_data);
-	ERR_FAIL_COND(!MaterialStorage::get_singleton()->shaders.canvas_shader.version_is_valid(version));
+	material_storage->shaders.canvas_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_data);
+	ERR_FAIL_COND(!material_storage->shaders.canvas_shader.version_is_valid(version));
 
 	vertex_input_mask = RSE::ARRAY_FORMAT_VERTEX | RSE::ARRAY_FORMAT_COLOR | RSE::ARRAY_FORMAT_TEX_UV;
 	vertex_input_mask |= uses_custom0 << RSE::ARRAY_CUSTOM0;
@@ -2959,6 +3210,8 @@ void SkyMaterialData::bind_uniforms() {
 // Scene SHADER
 
 void SceneShaderData::set_code(const String &p_code) {
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+
 	// Initialize and compile the shader.
 
 	code = p_code;
@@ -3010,7 +3263,6 @@ void SceneShaderData::set_code(const String &p_code) {
 	ShaderCompiler::GeneratedCode gen_code;
 
 	// Actual enums set further down after compilation.
-	int blend_modei = BLEND_MODE_MIX;
 	int depth_test_disabledi = 0;
 	int depth_test_invertedi = 0;
 	int alpha_antialiasing_modei = ALPHA_ANTIALIASING_OFF;
@@ -3028,11 +3280,14 @@ void SceneShaderData::set_code(const String &p_code) {
 	actions.entry_point_stages["fragment"] = ShaderCompiler::STAGE_FRAGMENT;
 	actions.entry_point_stages["light"] = ShaderCompiler::STAGE_FRAGMENT;
 
-	actions.render_mode_values["blend_add"] = Pair<int *, int>(&blend_modei, BLEND_MODE_ADD);
-	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MIX);
-	actions.render_mode_values["blend_sub"] = Pair<int *, int>(&blend_modei, BLEND_MODE_SUB);
-	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MUL);
-	actions.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&blend_modei, BLEND_MODE_PREMULT_ALPHA);
+	blend_mode = RenderingServerTypes::blend_mode_name(RSE::BLEND_MODE_MIX);
+
+	int blend_modei = -1;
+	auto modes = material_storage->get_blend_modes(RSE::SHADER_SPATIAL);
+	for (int i = 0; i < modes.size(); i++) {
+		StringName name = modes[i];
+		actions.render_mode_values[name] = Pair<int *, int>(&blend_modei, i);
+	}
 
 	actions.render_mode_values["alpha_to_coverage"] = Pair<int *, int>(&alpha_antialiasing_modei, ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE);
 	actions.render_mode_values["alpha_to_coverage_and_one"] = Pair<int *, int>(&alpha_antialiasing_modei, ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE);
@@ -3108,14 +3363,16 @@ void SceneShaderData::set_code(const String &p_code) {
 
 	actions.uniforms = &uniforms;
 
-	Error err = MaterialStorage::get_singleton()->shaders.compiler_scene.compile(RSE::SHADER_SPATIAL, code, &actions, path, gen_code);
+	Error err = material_storage->shaders.compiler_scene.compile(RSE::SHADER_SPATIAL, code, &actions, path, gen_code);
 	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
 
 	if (version.is_null()) {
-		version = MaterialStorage::get_singleton()->shaders.scene_shader.version_create();
+		version = material_storage->shaders.scene_shader.version_create();
 	}
 
-	blend_mode = BlendMode(blend_modei);
+	if (blend_modei >= 0) {
+		blend_mode = modes[blend_modei];
+	}
 	alpha_antialiasing_mode = AlphaAntiAliasing(alpha_antialiasing_modei);
 	depth_draw = DepthDraw(depth_drawi);
 	if (depth_test_disabledi) {
@@ -3189,8 +3446,8 @@ void SceneShaderData::set_code(const String &p_code) {
 
 	LocalVector<ShaderGLES3::TextureUniformData> texture_uniform_data = get_texture_uniform_data(gen_code.texture_uniforms);
 
-	MaterialStorage::get_singleton()->shaders.scene_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_data);
-	ERR_FAIL_COND(!MaterialStorage::get_singleton()->shaders.scene_shader.version_is_valid(version));
+	material_storage->shaders.scene_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_data);
+	ERR_FAIL_COND(!material_storage->shaders.scene_shader.version_is_valid(version));
 
 	ubo_size = gen_code.uniform_total_size;
 	ubo_offsets = gen_code.uniform_offsets;
@@ -3198,12 +3455,11 @@ void SceneShaderData::set_code(const String &p_code) {
 
 	// If any form of Alpha Antialiasing is enabled, set the blend mode to alpha to coverage.
 	if (alpha_antialiasing_mode != ALPHA_ANTIALIASING_OFF) {
-		blend_mode = BLEND_MODE_ALPHA_TO_COVERAGE;
+		blend_mode = RenderingServerTypes::blend_mode_name(RSE::BLEND_MODE_ALPHA_TO_COVERAGE);
 	}
 
-	if (blend_mode == BLEND_MODE_ADD || blend_mode == BLEND_MODE_SUB || blend_mode == BLEND_MODE_MUL) {
-		uses_blend_alpha = true; // Force alpha used because of blend.
-	}
+	auto attachment = material_storage->get_blend_attachment(RSE::SHADER_SPATIAL, blend_mode, false);
+	uses_blend_alpha = attachment.uses_blend_alpha;
 
 	valid = true;
 }
@@ -3374,6 +3630,8 @@ void ParticleProcessMaterialData::bind_uniforms() {
 /* TextureBlit SHADER */
 
 void TexBlitShaderData::set_code(const String &p_code) {
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+
 	// Initialize and compile the shader.
 
 	code = p_code;
@@ -3388,26 +3646,29 @@ void TexBlitShaderData::set_code(const String &p_code) {
 	ShaderCompiler::GeneratedCode gen_code;
 
 	// Actual enum set further down after compilation.
-	int blend_modei = BLEND_MODE_MIX;
+	blend_mode = RenderingServerTypes::blend_mode_name(RSE::BLEND_MODE_MIX);
 
 	ShaderCompiler::IdentifierActions actions;
 	actions.entry_point_stages["blit"] = ShaderCompiler::STAGE_FRAGMENT;
 
-	actions.render_mode_values["blend_add"] = Pair<int *, int>(&blend_modei, BLEND_MODE_ADD);
-	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MIX);
-	actions.render_mode_values["blend_sub"] = Pair<int *, int>(&blend_modei, BLEND_MODE_SUB);
-	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MUL);
-	actions.render_mode_values["blend_disabled"] = Pair<int *, int>(&blend_modei, BLEND_MODE_DISABLED);
+	int blend_modei = -1;
+	auto modes = material_storage->get_blend_modes(RSE::SHADER_TEXTURE_BLIT);
+	for (int i = 0; i < modes.size(); i++) {
+		StringName name = modes[i];
+		actions.render_mode_values[name] = Pair<int *, int>(&blend_modei, i);
+	}
 
 	actions.uniforms = &uniforms;
-	Error err = MaterialStorage::get_singleton()->shaders.compiler_tex_blit.compile(RSE::SHADER_TEXTURE_BLIT, code, &actions, path, gen_code);
+	Error err = material_storage->shaders.compiler_tex_blit.compile(RSE::SHADER_TEXTURE_BLIT, code, &actions, path, gen_code);
 	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
 
 	if (version.is_null()) {
-		version = MaterialStorage::get_singleton()->shaders.tex_blit_shader.version_create();
+		version = material_storage->shaders.tex_blit_shader.version_create();
 	}
 
-	blend_mode = BlendMode(blend_modei);
+	if (blend_modei >= 0) {
+		blend_mode = modes[blend_modei];
+	}
 
 #if 0
 	print_line("**compiling shader:");

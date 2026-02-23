@@ -220,4 +220,38 @@ struct RenderInfo {
 	int info[RSE::VIEWPORT_RENDER_INFO_TYPE_MAX][RSE::VIEWPORT_RENDER_INFO_MAX] = {};
 };
 
+/* BLENDING METHOD */
+
+inline bool is_predefined_blend_mode(const StringName p_mode) {
+	return p_mode == "mix" || p_mode == "add" || p_mode == "sub" || p_mode == "mul" || p_mode == "premul_alpha" || p_mode == "lcd" || p_mode == "alpha_to_coverage" || p_mode == "disabled";
+}
+
+inline String blend_mode_to_string(RSE::BlendMode p_mode) {
+	switch (p_mode) {
+		case RSE::BLEND_MODE_MIX:
+			return "mix";
+		case RSE::BLEND_MODE_ADD:
+			return "add";
+		case RSE::BLEND_MODE_SUB:
+			return "sub";
+		case RSE::BLEND_MODE_MUL:
+			return "mul";
+		case RSE::BLEND_MODE_PREMULTIPLIED_ALPHA:
+			return "premul_alpha";
+		case RSE::BLEND_MODE_LCD:
+			return "lcd";
+		case RSE::BLEND_MODE_ALPHA_TO_COVERAGE:
+			return "alpha_to_coverage";
+		case RSE::BLEND_MODE_DISABLED:
+			return "disabled";
+		default:
+			break;
+	}
+	return "mix";
+}
+
+inline StringName blend_mode_name(RSE::BlendMode p_mode) {
+	return "blend_" + blend_mode_to_string(p_mode);
+}
+
 } // namespace RenderingServerTypes
