@@ -45,6 +45,7 @@
 #include "servers/text/text_server.h"
 
 #ifdef TOOLS_ENABLED
+#include "editor/gui/editor_toaster.h"
 #include "editor/scene/gui/control_editor_plugin.h"
 #endif // TOOLS_ENABLED
 
@@ -132,10 +133,21 @@ Size2 Control::_edit_get_scale() const {
 
 void Control::_edit_set_rect(const Rect2 &p_edit_rect) {
 	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
+
+	bool anchors_mode = ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled();
+	if (anchors_mode) {
+		Size2 parent_rect_size = get_parent_anchorable_rect().size;
+		if (parent_rect_size.x == 0.0 || parent_rect_size.y == 0.0) {
+			EditorToaster::get_singleton()->popup_str(TTR("Can't modify anchor offsets when the parent has a size of 0. Disable the anchors mode in the toolbar."), EditorToaster::SEVERITY_WARNING);
+			return;
+		}
+	}
+
 	// Changing the size might change the internal transform (in case of non-zero `pivot_offset_ratio`),
 	// hence `position` (which is in the parent space, and is not always equivalent to the Control's rect top-left corner)
 	// needs to be changed after `size` (which is local) and needs to account for the possibly changed internal transform.
 	Vector2 rect_new_pos_in_parent_space = get_transform().xform(p_edit_rect.position);
+
 	set_size(p_edit_rect.size, ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled());
 	set_position(rect_new_pos_in_parent_space - _get_internal_transform().get_origin(), ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled());
 }
