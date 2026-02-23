@@ -49,6 +49,66 @@ real_t Vector2::length_squared() const {
 	return x * x + y * y;
 }
 
+real_t Vector2::safe_normalize() {
+	// Don't allow Inf / NaN to propagate.
+	if (!is_finite()) {
+		x = y = 0;
+		return 0;
+	}
+
+	real_t lengthsq = length_squared();
+
+	// Extra paranoid checks for NaN.
+	if (!Math::is_finite(lengthsq)) {
+		x = y = 0;
+		return 0;
+	}
+
+#ifdef REAL_T_IS_DOUBLE
+	// Threshold where standard normalization is safe & accurate in float64
+	// (should be the same as the 32 bit lower threshold, in order to preserve
+	// behavior between the two builds).
+	if (lengthsq >= (real_t)Math::NORMALIZE_32_RESCUE_THRESHOLD) {
+		real_t length = Math::sqrt(lengthsq);
+		*this /= length;
+		return length;
+	}
+#else
+	// Threshold where standard normalization is safe & accurate in float32
+	if (lengthsq >= (real_t)Math::NORMALIZE_32_SAFE_THRESHOLD) {
+		real_t length = Math::sqrt(lengthsq);
+		*this /= length;
+		return length;
+	}
+
+	// Rescue branch: try to preserve tiny direction.
+	if (lengthsq >= (real_t)Math::NORMALIZE_32_RESCUE_THRESHOLD) {
+		double x_d = (double)x;
+		double y_d = (double)y;
+
+		double len_sq_d = x_d * x_d + y_d * y_d;
+		double len_d = Math::sqrt(len_sq_d);
+		x = (real_t)(x_d / len_d);
+		y = (real_t)(y_d / len_d);
+
+		// Grok warns that if NORMALIZE_32_RESCUE_THRESHOLD is low enough,
+		// we may need to perform another 32 bit normalization step to ensure we
+		// pass is_normalized() checks in all cases with precise math checks.
+
+		// Note: If pushing NORMALIZE_32_RESCUE_THRESHOLD to very low values,
+		// for super robustness you could add another is_finite() check to the 32 bit length.
+		*this /= length(); // Forces length exactly to 1 (in single precision)
+
+		return (real_t)len_d;
+	}
+#endif
+
+	// Give up, length not enough to give a reasonable result.
+	// Zero vector is cleaner than leaving non-zero result.
+	x = y = 0;
+	return 0;
+}
+
 void Vector2::normalize() {
 	real_t l = x * x + y * y;
 	if (l != 0) {
