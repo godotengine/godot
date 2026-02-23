@@ -651,12 +651,12 @@ void GridMapEditor::_update_paste_indicator() {
 		}
 		xf = Transform3D();
 		xf.origin = (paste_indicator.current - paste_indicator.distance_from_cursor + center) * node->get_cell_size();
-		xf.basis = rot * xf.basis;
+		xf.basis = rot;
 		xf.translate_local(item.grid_offset * node->get_cell_size());
 
 		Basis item_rot;
 		item_rot = node->get_basis_with_orthogonal_index(item.orientation);
-		xf.basis = item_rot * xf.basis * node->get_cell_scale();
+		xf.basis *= item_rot * node->get_cell_scale();
 
 		RenderingServer::get_singleton()->instance_set_transform(item.instance, node->get_global_transform() * xf);
 	}
