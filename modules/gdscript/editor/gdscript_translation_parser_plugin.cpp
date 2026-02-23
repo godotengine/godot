@@ -343,9 +343,9 @@ void GDScriptEditorTranslationParserPlugin::_assess_call(const GDScriptParser::C
 
 	bool is_translation_class_call = false;
 	if (p_call->callee->type == GDScriptParser::Node::SUBSCRIPT) {
-		const auto *sub = static_cast<const GDScriptParser::SubscriptNode *>(p_call->callee);
+		const GDScriptParser::SubscriptNode *sub = static_cast<const GDScriptParser::SubscriptNode *>(p_call->callee);
 		if (sub->is_attribute && sub->base && sub->base->type == GDScriptParser::Node::IDENTIFIER) {
-			const auto *base_id = static_cast<const GDScriptParser::IdentifierNode *>(sub->base);
+			const GDScriptParser::IdentifierNode *base_id = static_cast<const GDScriptParser::IdentifierNode *>(sub->base);
 			if (base_id->name == SNAME("TranslationServer") || base_id->name == SNAME("TranslationDomain")) {
 				is_translation_class_call = true;
 			}
