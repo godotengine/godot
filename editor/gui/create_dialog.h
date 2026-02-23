@@ -48,6 +48,11 @@ class CreateDialog : public ConfirmationDialog {
 		OTHER_TYPE
 	};
 
+	enum ItemButton {
+		BUTTON_WARNING,
+		BUTTON_SCRIPT,
+	};
+
 	struct TypeInfo {
 		StringName type_name;
 		PackedStringArray search_keywords;

@@ -149,8 +149,7 @@ void CreateDialog::_script_button_clicked(TreeItem *p_item, int p_column, int p_
 	if (p_mouse_button_index != MouseButton::LEFT) {
 		return;
 	}
-	// The id of opening-script button is 1.
-	if (p_button_id != 1) {
+	if (p_button_id != BUTTON_SCRIPT) {
 		return;
 	}
 
@@ -383,7 +382,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 			tooltip = TTR("The script will run in the editor.") + "\n" + tooltip;
 		}
 		const String script_path = ScriptServer::get_global_class_path(p_type);
-		r_item->add_button(0, get_editor_theme_icon(SNAME("Script")), 1, false, vformat(tooltip, script_path));
+		r_item->add_button(0, get_editor_theme_icon(SNAME("Script")), BUTTON_SCRIPT, false, vformat(tooltip, script_path));
 		r_item->set_meta(SNAME("_script_path"), script_path);
 		if (is_tool) {
 			int button_index = r_item->get_button_count(0) - 1;
@@ -422,9 +421,9 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 	bool is_experimental = (class_doc && class_doc->value.is_experimental);
 
 	if (is_deprecated) {
-		r_item->add_button(0, get_editor_theme_icon("StatusError"), 0, false, TTR("This class is marked as deprecated."));
+		r_item->add_button(0, get_editor_theme_icon("StatusError"), BUTTON_WARNING, false, TTR("This class is marked as deprecated."));
 	} else if (is_experimental) {
-		r_item->add_button(0, get_editor_theme_icon("NodeWarning"), 0, false, TTR("This class is marked as experimental."));
+		r_item->add_button(0, get_editor_theme_icon("NodeWarning"), BUTTON_WARNING, false, TTR("This class is marked as experimental."));
 	}
 
 	if (!search_box->get_text().is_empty()) {
