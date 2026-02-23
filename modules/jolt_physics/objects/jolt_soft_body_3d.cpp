@@ -44,6 +44,8 @@
 
 #include "Jolt/Physics/SoftBody/SoftBodyMotionProperties.h"
 
+#include <functional>
+
 namespace {
 
 template <typename TJoltVertex>
@@ -227,7 +229,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 	for (int i = 0; i < mesh_indices.size(); ++i) {
 		const Vector3 &v = mesh_vertices[mesh_indices[i]] - body_position;
 
-		auto it = mesh_vert_to_clean_idx_map.find(v);
+		HashMap<Vector3, int>::Iterator it = mesh_vert_to_clean_idx_map.find(v);
 		int index;
 		if (it == mesh_vert_to_clean_idx_map.end()) {
 			index = mesh_vertices_clean.size();
@@ -243,7 +245,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 	mesh_to_physics.resize(mesh_vertices.size());
 
 	for (int i = 0; i < mesh_vertices.size(); ++i) {
-		auto it = mesh_vert_to_clean_idx_map.find(mesh_vertices[i]);
+		HashMap<Vector3, int>::Iterator it = mesh_vert_to_clean_idx_map.find(mesh_vertices[i]);
 		if (it != mesh_vert_to_clean_idx_map.end()) {
 			mesh_to_physics[i] = it->value;
 		} else {
@@ -268,14 +270,14 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 	HashSet<Vector3i> face_exterior;
 	HashSet<Vector2i> edge_set;
 
-	auto edge_hash_key = [&](int a, int b) {
-		if (b < a) {
+	std::function<Vector2i(int, int)> edge_hash_key = [&](int a, int b) {
+			if (b < a) {
 			return Vector2i(b, a);
 		}
 		return Vector2i(a, b);
 	};
 
-	auto face_hash_key = [&](int a, int b, int c) {
+	std::function<Vector3i(int, int, int)> face_hash_key = [&](int a, int b, int c) {
 		if (c < a && c < b) {
 			return Vector3i(c, a, b);
 		}
@@ -285,7 +287,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 		return Vector3i(a, b, c);
 	};
 
-	auto face_flipped = [&](Vector3i a) {
+	std::function<Vector3i(Vector3i)> face_flipped = [&](Vector3i a) {
 		return Vector3i(a.x, a.z, a.y);
 	};
 

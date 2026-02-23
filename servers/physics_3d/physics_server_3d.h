@@ -590,7 +590,7 @@ public:
 
 	virtual AABB soft_body_get_bounds(RID p_body) const = 0;
 
-	virtual void soft_body_set_form(RID p_body, SoftBodyForm form) = 0;
+	virtual void soft_body_set_form(RID p_body, SoftBodyForm p_form) = 0;
 	virtual SoftBodyForm soft_body_get_form(RID p_body) const = 0;
 
 	virtual void soft_body_set_collision_layer(RID p_body, uint32_t p_layer) = 0;
