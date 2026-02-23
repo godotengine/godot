@@ -2090,12 +2090,20 @@ void ScriptEditor::_update_script_names() {
 		}
 	}
 
+	bool has_active_tab = false;
+
 	for (const _ScriptEditorItemData &sedata_i : sedata) {
 		if (tab_container->get_current_tab() == sedata_i.index) {
 			script_name_button->set_text(sedata_i.name);
+			script_name_button->show();
 			_calculate_script_name_button_size();
+			has_active_tab = true;
 			break;
 		}
+	}
+
+	if (!has_active_tab) {
+		script_name_button->hide();
 	}
 
 	if (!waiting_update_names) {
