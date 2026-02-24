@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/version.h"
+#include "editor/inspector/editor_property_name_processor.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/texture.h"
 
@@ -274,7 +275,7 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 					if (!groups.has(last_group)) {
 						PropertyInfo info;
 						info.usage = PROPERTY_USAGE_GROUP;
-						info.name = last_group.capitalize();
+						info.name = EditorPropertyNameProcessor::get_singleton()->process_name(last_group, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
 						info.hint_string = "shader_parameter/";
 
 						List<PropertyInfo> none_subgroup;
@@ -290,7 +291,7 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 					if (!groups[last_group].has(last_subgroup)) {
 						PropertyInfo info;
 						info.usage = PROPERTY_USAGE_SUBGROUP;
-						info.name = last_subgroup.capitalize();
+						info.name = EditorPropertyNameProcessor::get_singleton()->process_name(last_group, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
 						info.hint_string = "shader_parameter/";
 
 						List<PropertyInfo> subgroup;
