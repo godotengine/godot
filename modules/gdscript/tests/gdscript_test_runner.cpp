@@ -38,10 +38,13 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_globals.h"
+#include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access_pack.h"
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
+#include "core/variant/callable.h"
+#include "modules/gdscript/gdscript_cache.h"
 #include "scene/resources/packed_scene.h"
 
 #include "tests/test_macros.h"
@@ -201,11 +204,23 @@ int GDScriptTestRunner::run_tests() {
 		return -1;
 	}
 
+	Error load_err;
+	Ref<GDScript> script = GDScriptCache::get_full_script("res://config.notest.gd", load_err);
+	ERR_FAIL_COND_V_MSG(load_err != OK, 1, "Error loading config.notest.gd");
+	Callable::CallError call_err;
+	Variant test_config = script->_new(nullptr, 0, call_err);
+	ERR_FAIL_COND_V_MSG(call_err.error != Callable::CallError::CALL_OK, 1, "Error instantiating config.notest.gd");
+	StringName should_run_test_function_name = StringName("should_run_test");
+
 	int failed = 0;
 	for (int i = 0; i < tests.size(); i++) {
 		GDScriptTest test = tests[i];
 		if (print_filenames) {
 			print_line(test.get_source_relative_filepath());
+		}
+		if (!test_config.call(should_run_test_function_name, test.get_source_relative_filepath())) {
+			WARN_PRINT(vformat("Skipping test %s", test.get_source_relative_filepath()));
+			continue;
 		}
 		GDScriptTest::TestResult result = test.run_test();
 
@@ -280,29 +295,16 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 				return false;
 			}
 		} else {
-			// `*.notest.gd` files are skipped.
-			if (next.ends_with(".notest.gd")) {
-				next = dir->get_next();
-				continue;
-			} else if (binary_tokens && next.ends_with(".textonly.gd")) {
-				next = dir->get_next();
-				continue;
-			} else if (next.has_extension("gd")) {
-#ifndef DEBUG_ENABLED
-				// On release builds, skip tests marked as debug only.
-				Error open_err = OK;
-				Ref<FileAccess> script_file(FileAccess::open(current_dir.path_join(next), FileAccess::READ, &open_err));
-				if (open_err != OK) {
-					ERR_PRINT(vformat(R"(Couldn't open test file "%s".)", next));
+			if (next.has_extension("gd")) {
+				// `*.notest.*` files are skipped.
+				if (next.contains(".notest.")) {
 					next = dir->get_next();
 					continue;
-				} else {
-					if (script_file->get_line() == "#debug-only") {
-						next = dir->get_next();
-						continue;
-					}
 				}
-#endif
+				if (binary_tokens && next.contains(".textonly.")) {
+					next = dir->get_next();
+					continue;
+				}
 
 				String out_file = next.get_basename() + ".out";
 				ERR_FAIL_COND_V_MSG(!is_generating && !dir->file_exists(out_file), false, "Could not find output file for " + next);
