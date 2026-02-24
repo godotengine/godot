@@ -410,6 +410,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 
 	if (EditorHelp *eh = Object::cast_to<EditorHelp>(c)) {
 		script_name_button->set_text(eh->get_class());
+		script_name_button->set_disabled(false);
 		_calculate_script_name_button_size();
 
 		if (is_visible_in_tree()) {
@@ -588,6 +589,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 			_update_selected_editor_menu();
 			_update_online_doc();
 			script_name_button->set_text(String());
+			script_name_button->set_disabled(true);
 			_calculate_script_name_button_size();
 		}
 
@@ -1663,6 +1665,7 @@ void ScriptEditor::_script_selected(int p_idx) {
 
 	_go_to_tab(script_list->get_item_metadata(p_idx));
 	script_name_button->set_text(script_list->get_item_text(p_idx));
+	script_name_button->set_disabled(false);
 	_calculate_script_name_button_size();
 	grab_focus_block = false;
 }
@@ -2093,6 +2096,7 @@ void ScriptEditor::_update_script_names() {
 	for (const _ScriptEditorItemData &sedata_i : sedata) {
 		if (tab_container->get_current_tab() == sedata_i.index) {
 			script_name_button->set_text(sedata_i.name);
+			script_name_button->set_disabled(false);
 			_calculate_script_name_button_size();
 			break;
 		}
@@ -4006,6 +4010,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_name_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	script_name_button->set_tooltip_text(TTRC("Navigate to script list."));
 	script_name_button->connect(SceneStringName(pressed), callable_mp(script_list, &ItemList::ensure_current_is_visible));
+	script_name_button->set_disabled(true);
 	script_name_button_hbox->add_child(script_name_button);
 
 	script_name_button_right_spacer = memnew(Control);
