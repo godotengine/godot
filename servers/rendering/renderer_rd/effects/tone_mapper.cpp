@@ -331,6 +331,7 @@ void ToneMapper::tonemapper_subpass(RD::DrawListID p_subpass_draw_list, RID p_so
 	tonemap_mobile.push_constant.exposure = p_settings.exposure;
 	tonemap_mobile.push_constant.white = p_settings.white;
 	tonemap_mobile.push_constant.luminance_multiplier = p_settings.luminance_multiplier;
+	tonemap_mobile.push_constant.output_max_value = MAX(p_settings.max_value, 1.0f);
 
 	tonemap_mobile.push_constant.tonemapper_params[0] = p_settings.tonemapper_params[0];
 	tonemap_mobile.push_constant.tonemapper_params[1] = p_settings.tonemapper_params[1];
