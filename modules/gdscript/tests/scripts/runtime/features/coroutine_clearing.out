@@ -1,0 +1,8 @@
+GDTEST_OK
+test begin
+LocalOwner _init
+interrupted_coroutine begin
+Instance _init
+LocalOwner predelete
+Instance predelete
+test end
