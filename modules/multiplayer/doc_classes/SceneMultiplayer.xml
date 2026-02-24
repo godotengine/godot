@@ -109,5 +109,14 @@
 				Emitted when this MultiplayerAPI's [member MultiplayerAPI.multiplayer_peer] receives a [param packet] with custom data (see [method send_bytes]). ID is the peer ID of the peer that sent the packet.
 			</description>
 		</signal>
+		<signal name="peer_packet_with_channel">
+			<param index="0" name="id" type="int" />
+			<param index="1" name="packet" type="PackedByteArray" />
+			<param index="2" name="channel" type="int" />
+			<description>
+				Emitted when this MultiplayerAPI's [member MultiplayerAPI.multiplayer_peer] receives a [param packet] with custom data (see [method send_bytes]). ID is the peer ID of the peer that sent the packet and 
+				[param channel] is the channel the packet was sent on.
+			</description>
+		</signal>
 	</signals>
 </class>
