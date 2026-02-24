@@ -291,7 +291,7 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 					if (!groups[last_group].has(last_subgroup)) {
 						PropertyInfo info;
 						info.usage = PROPERTY_USAGE_SUBGROUP;
-						info.name = EditorPropertyNameProcessor::get_singleton()->process_name(last_group, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
+						info.name = EditorPropertyNameProcessor::get_singleton()->process_name(last_subgroup, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
 						info.hint_string = "shader_parameter/";
 
 						List<PropertyInfo> subgroup;
