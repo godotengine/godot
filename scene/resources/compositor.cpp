@@ -74,14 +74,18 @@ void CompositorEffect::_bind_methods() {
 }
 
 void CompositorEffect::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "access_resolved_color" && effect_callback_type == EFFECT_CALLBACK_TYPE_POST_TRANSPARENT) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	if (p_property.name == "access_resolved_depth" && effect_callback_type == EFFECT_CALLBACK_TYPE_POST_TRANSPARENT) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	if (p_property.name == "needs_separate_specular" && effect_callback_type != EFFECT_CALLBACK_TYPE_POST_SKY) {
-		p_property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "access_resolved_color") {
+		if (effect_callback_type == EFFECT_CALLBACK_TYPE_POST_TRANSPARENT) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "access_resolved_depth") {
+		if (effect_callback_type == EFFECT_CALLBACK_TYPE_POST_TRANSPARENT) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "needs_separate_specular") {
+		if (effect_callback_type != EFFECT_CALLBACK_TYPE_POST_SKY) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
 	}
 }
 

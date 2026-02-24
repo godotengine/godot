@@ -97,13 +97,14 @@
 # Adriano Inghingolo <adriano.inghi@gmail.com>, 2025.
 # Pietro Marini <pietromarinivr2006@gmail.com>, 2025.
 # shifenis <dedi.ceka99@gmail.com>, 2026.
+# Alex B <alexius.barresi@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-05 13:02+0000\n"
-"Last-Translator: shifenis <dedi.ceka99@gmail.com>\n"
+"PO-Revision-Date: 2026-01-18 16:02+0000\n"
+"Last-Translator: Alex B <alexius.barresi@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/it/>\n"
 "Language: it\n"
@@ -111,7 +112,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.15.2\n"
 
 msgid "Application"
 msgstr "Applicazione"
@@ -424,6 +425,9 @@ msgstr "Comune"
 
 msgid "Snap Controls to Pixels"
 msgstr "Scatta i nodi Control ai pixel"
+
+msgid "Show Focus State on Pointer Event"
+msgstr "Mostra lo stato di messa a fuoco sull'evento del puntatore"
 
 msgid "Fonts"
 msgstr "Font"
@@ -1609,6 +1613,9 @@ msgstr "Modalità di scala"
 
 msgid "Delimiter"
 msgstr "Delimitatore"
+
+msgid "Unescape Keys"
+msgstr "Tasti di Escape"
 
 msgid "Character Ranges"
 msgstr "Intervalli dei caratteri"

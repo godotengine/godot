@@ -659,12 +659,21 @@ XrResult OpenXRAPI::attempt_create_instance(XrVersion p_version) {
 bool OpenXRAPI::create_instance() {
 	// Create our OpenXR instance, this will query any registered extension wrappers for extensions we need to enable.
 
-	XrResult result = attempt_create_instance(XR_API_VERSION_1_1);
-	if (result == XR_ERROR_API_VERSION_UNSUPPORTED) {
-		// Couldn't initialize OpenXR 1.1, try 1.0
+	XrVersion init_version = XR_API_VERSION_1_1;
+
+	String custom_version = GLOBAL_GET("xr/openxr/target_api_version");
+	if (!custom_version.is_empty()) {
+		Vector<int> ints = custom_version.split_ints(".", false);
+		ERR_FAIL_COND_V_MSG(ints.size() != 3, false, "OpenXR target API version must be major.minor.patch.");
+		init_version = XR_MAKE_VERSION(ints[0], ints[1], ints[2]);
+	}
+
+	XrResult result = attempt_create_instance(init_version);
+	if (result == XR_ERROR_API_VERSION_UNSUPPORTED && init_version == XR_API_VERSION_1_1) {
 		print_verbose("OpenXR: Falling back to OpenXR 1.0");
 
-		result = attempt_create_instance(XR_API_VERSION_1_0);
+		init_version = XR_API_VERSION_1_0;
+		result = attempt_create_instance(init_version);
 	}
 	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "Failed to create XR instance [" + get_error_string(result) + "].");
 
@@ -1264,7 +1273,7 @@ bool OpenXRAPI::obtain_swapchain_formats() {
 		print_verbose(String("Using color swap chain format:") + get_swapchain_format_name(color_swapchain_format));
 	}
 
-	{
+	if (submit_depth_buffer) {
 		// Build a vector with swapchain formats we want to use, from best fit to worst
 		Vector<int64_t> usable_swapchain_formats;
 		depth_swapchain_format = 0;
@@ -1278,9 +1287,11 @@ bool OpenXRAPI::obtain_swapchain_formats() {
 			}
 		}
 
-		ERR_FAIL_COND_V_MSG(depth_swapchain_format == 0, false, "OpenXR: No usable depth swap chain format available!");
-
-		print_verbose(String("Using depth swap chain format:") + get_swapchain_format_name(depth_swapchain_format));
+		if (depth_swapchain_format == 0) {
+			WARN_PRINT("OpenXR: No usable depth swap chain format available!");
+		} else {
+			print_verbose(String("Using depth swap chain format:") + get_swapchain_format_name(depth_swapchain_format));
+		}
 	}
 
 	return true;
@@ -1290,21 +1301,6 @@ bool OpenXRAPI::create_main_swapchains(const Size2i &p_size) {
 	ERR_NOT_ON_RENDER_THREAD_V(false);
 	ERR_FAIL_NULL_V(graphics_extension, false);
 	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, false);
-
-	/*
-		TODO: We need to improve on this, for now we're taking our old approach of creating our main swapchains and substituting
-		those for the ones Godot normally creates.
-		This however means we can only use swapchains for our main XR view.
-
-		It would have been nicer if we could override the swapchain creation in Godot with ours but we have a timing issue here.
-		We can't create XR swapchains until after our XR session is fully instantiated, yet Godot creates its swapchain much earlier.
-
-		We only creates a swapchain for the main output here.
-		Additional swapchains may be created through our composition layer extension.
-
-		Finally an area we need to expand upon is that Foveated rendering is only enabled for the swap chain we create,
-		as we render 3D content into internal buffers that are copied into the swapchain, we do now have (basic) VRS support
-	*/
 
 	render_state.main_swapchain_size = p_size;
 	uint32_t sample_count = 1;
@@ -1321,19 +1317,13 @@ bool OpenXRAPI::create_main_swapchains(const Size2i &p_size) {
 	// We create our depth swapchain if:
 	// - we've enabled submitting depth buffer
 	// - we support our depth layer extension
-	// - we have our spacewarp extension (not yet implemented)
+	// Note: Application Space Warp and Frame Synthesis use a separate lower resolution depth buffer.
 	if (depth_swapchain_format != 0 && submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available()) {
 		if (!render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].create(0, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depth_swapchain_format, render_state.main_swapchain_size.width, render_state.main_swapchain_size.height, sample_count, view_configuration_views.size())) {
 			return false;
 		}
 
 		set_object_name(XR_OBJECT_TYPE_SWAPCHAIN, uint64_t(render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].get_swapchain()), "Main depth swapchain");
-	}
-
-	// We create our velocity swapchain if:
-	// - we have our spacewarp extension (not yet implemented)
-	{
-		// TBD
 	}
 
 	for (uint32_t i = 0; i < render_state.views.size(); i++) {
@@ -1571,7 +1561,7 @@ void OpenXRAPI::set_form_factor(XrFormFactor p_form_factor) {
 	form_factor = p_form_factor;
 }
 
-uint32_t OpenXRAPI::get_view_count() {
+uint32_t OpenXRAPI::get_view_count() const {
 	return view_configuration_views.size();
 }
 
@@ -1728,7 +1718,7 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 		// shouldn't be possible...
 		ERR_FAIL_V(false);
 #endif
-	} else if (p_rendering_driver == "opengl3") {
+	} else if (p_rendering_driver == "opengl3" || p_rendering_driver == "opengl3_es") {
 #if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
 		graphics_extension = memnew(OpenXROpenGLExtension);
 		register_extension_wrapper(graphics_extension);
@@ -2665,6 +2655,15 @@ void OpenXRAPI::end_frame() {
 		layer_flags |= XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
 	}
 
+	void *projection_layer_next_pointer = nullptr;
+	for (OpenXRExtensionWrapper *extension : projection_layer_extensions) {
+		void *np = extension->set_projection_layer_and_get_next_pointer(projection_layer_next_pointer);
+		if (np != nullptr) {
+			projection_layer_next_pointer = np;
+		}
+	}
+
+	render_state.projection_layer.next = projection_layer_next_pointer;
 	render_state.projection_layer.layerFlags = layer_flags;
 	render_state.projection_layer.space = render_state.play_space;
 	render_state.projection_layer.viewCount = (uint32_t)render_state.projection_views.size();
@@ -2915,6 +2914,7 @@ OpenXRAPI::OpenXRAPI() {
 OpenXRAPI::~OpenXRAPI() {
 	composition_layer_providers.clear();
 	frame_info_extensions.clear();
+	projection_layer_extensions.clear();
 	supported_extensions.clear();
 	layer_properties.clear();
 
@@ -3967,6 +3967,14 @@ void OpenXRAPI::register_frame_info_extension(OpenXRExtensionWrapper *p_extensio
 void OpenXRAPI::unregister_frame_info_extension(OpenXRExtensionWrapper *p_extension) {
 	ERR_FAIL_COND_MSG(running, "Cannot unregister OpenXR frame info extensions while the session is running.");
 	frame_info_extensions.erase(p_extension);
+}
+
+void OpenXRAPI::register_projection_layer_extension(OpenXRExtensionWrapper *p_extension) {
+	projection_layer_extensions.append(p_extension);
+}
+
+void OpenXRAPI::unregister_projection_layer_extension(OpenXRExtensionWrapper *p_extension) {
+	projection_layer_extensions.erase(p_extension);
 }
 
 const Vector<XrEnvironmentBlendMode> OpenXRAPI::get_supported_environment_blend_modes() {

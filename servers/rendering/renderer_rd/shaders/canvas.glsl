@@ -36,7 +36,8 @@ layout(location = 4) out flat uvec4 varying_C;
 #ifdef USE_NINEPATCH
 layout(location = 5) out flat vec4 varying_D;
 layout(location = 6) out flat vec4 varying_E;
-layout(location = 7) out vec2 pixel_size_interp;
+layout(location = 7) out flat vec4 varying_F;
+layout(location = 8) out vec2 pixel_size_interp;
 #endif // USE_NINEPATCH
 #endif // !USE_ATTRIBUTES
 
@@ -131,6 +132,7 @@ void main() {
 #ifdef USE_NINEPATCH
 	varying_D = read_draw_data_ninepatch_margins;
 	varying_E = vec4(read_draw_data_dst_rect.z, read_draw_data_dst_rect.w, read_draw_data_ninepatch_pixel_size.x, read_draw_data_ninepatch_pixel_size.y);
+	varying_F = read_draw_data_src_rect;
 #endif // USE_NINEPATCH
 #endif // !USE_ATTRIBUTES
 
@@ -339,11 +341,14 @@ layout(location = 4) in flat uvec4 varying_C;
 #ifdef USE_NINEPATCH
 layout(location = 5) in flat vec4 varying_D;
 layout(location = 6) in flat vec4 varying_E;
-layout(location = 7) in vec2 pixel_size_interp;
+layout(location = 7) in flat vec4 varying_F;
+layout(location = 8) in vec2 pixel_size_interp;
 #define read_draw_data_ninepatch_margins varying_D
 #define read_draw_data_dst_rect_z varying_E.x
 #define read_draw_data_dst_rect_w varying_E.y
 #define read_draw_data_ninepatch_pixel_size (varying_E.zw)
+#define read_draw_data_src_rect_ninepatch (varying_F);
+
 #endif // USE_NINEPATCH
 
 #endif // USE_ATTRIBUTES
@@ -586,7 +591,9 @@ void main() {
 		color.a = 0.0;
 	}
 
-	uv = uv * src_rect.zw + src_rect.xy; //apply region if needed
+	vec4 ninepatch_src_rect = read_draw_data_src_rect_ninepatch;
+
+	uv = uv * ninepatch_src_rect.zw + ninepatch_src_rect.xy; //apply region if needed
 
 #endif
 	if (bool(read_draw_data_flags & INSTANCE_FLAGS_CLIP_RECT_UV)) {

@@ -71,32 +71,33 @@
 # Gaetan Deglorie <gaetan@rhinox.training>, 2023.
 # Bert Heymans <bert.heymans@gmail.com>, 2023.
 # Gert-dev <Gert-dev@users.noreply.hosted.weblate.org>, 2023.
-# Adriaan de Jongh <adriaan@users.noreply.hosted.weblate.org>, 2024.
+# Adriaan de Jongh <adriaan@users.noreply.hosted.weblate.org>, 2024, 2026.
 # Luka van der Plas <lukavdplas@users.noreply.hosted.weblate.org>, 2024.
 # steven pince <pincesteven@gmail.com>, 2024.
 # "Vampie C." <devamp@gmail.com>, 2024.
 # Philip Goto <philip.goto@gmail.com>, 2024, 2025.
 # Tycho <tychoschurink@outlook.com>, 2024.
 # Leroy <Leroyvanraaij@gmail.com>, 2024.
-# pim wagemans <pimwagemans09@gmail.com>, 2024, 2025.
+# pim wagemans <pimwagemans09@gmail.com>, 2024, 2025, 2026.
 # Yannick Kartodikromo <yannickkartodikromo0001@gmail.com>, 2024.
 # NicolasDed <nicolas-dedoyard@outlook.com>, 2024.
 # "Julian F." <info@julianfitzpatrick.nl>, 2024.
 # bas van den burg <basburgoss@gmail.com>, 2024.
 # Luka Verbrugghe <verbruggheluka0@gmail.com>, 2024.
 # tristanvong <tristan.vong@student.ehb.be>, 2025.
-# Cas Vankrunkelsven <cas.vankrunkelsven@protonmail.com>, 2025.
-# Sven Slootweg <admin@cryto.net>, 2025.
+# Cas Vankrunkelsven <cas.vankrunkelsven@protonmail.com>, 2025, 2026.
+# Sven Slootweg <admin@cryto.net>, 2025, 2026.
 # Max de Kroon <dekroon.mja@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # penggrin12 <miner.sidor@gmail.com>, 2025.
+# Marijn Scholtus <linkable@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-22 09:42+0000\n"
-"Last-Translator: penggrin12 <miner.sidor@gmail.com>\n"
+"PO-Revision-Date: 2026-01-16 10:02+0000\n"
+"Last-Translator: Cas Vankrunkelsven <cas.vankrunkelsven@protonmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -104,16 +105,157 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.15.2\n"
 
 msgid "OK"
 msgstr "Oké"
 
+msgid "Failed"
+msgstr "Mislukt"
+
+msgid "Unavailable"
+msgstr "Niet beschikbaar"
+
+msgid "Unconfigured"
+msgstr "Niet ingesteld"
+
+msgid "Unauthorized"
+msgstr "Onbevoegd"
+
+msgid "Parameter out of range"
+msgstr "Parameter buiten bereik"
+
+msgid "Out of memory"
+msgstr "Geheugen is vol"
+
+msgid "File not found"
+msgstr "Bestand niet gevonden"
+
+msgid "File: Bad drive"
+msgstr "Bestand: Foute harde schijf"
+
+msgid "File: Bad path"
+msgstr "Bestand: fout pad"
+
+msgid "File: Permission denied"
+msgstr "Bestand: Geen toestemming"
+
+msgid "File already in use"
+msgstr "Bestand reeds in gebruik"
+
+msgid "Can't open file"
+msgstr "Kan het bestand niet openen"
+
+msgid "Can't write file"
+msgstr "Kan het bestand niet opslaan"
+
+msgid "Can't read file"
+msgstr "Kan het bestand niet lezen"
+
+msgid "File unrecognized"
+msgstr "Bestand wordt niet herkend"
+
+msgid "File corrupt"
+msgstr "Bestand corrupt"
+
+msgid "Missing dependencies for file"
+msgstr "Missende afhankelijkheden voor het bestand"
+
+msgid "End of file"
+msgstr "Einde van het bestand"
+
+msgid "Can't open"
+msgstr "Openen mislukt"
+
+msgid "Can't create"
+msgstr "Creëren mislukt"
+
+msgid "Query failed"
+msgstr "Aanvraag mislukt"
+
+msgid "Already in use"
+msgstr "Reeds in gebruik"
+
 msgid "Locked"
 msgstr "Vergrendeld"
 
+msgid "Timeout"
+msgstr "Tijdslimiet"
+
+msgid "Can't connect"
+msgstr "Kan niet verbinden"
+
+msgid "Can't resolve"
+msgstr "Oplossen mislukt"
+
+msgid "Connection error"
+msgstr "Foutmelding met verbinden"
+
+msgid "Can't acquire resource"
+msgstr "Kan bron niet verkrijgen"
+
+msgid "Can't fork"
+msgstr "Kan niet vertakken"
+
+msgid "Invalid data"
+msgstr "Ongeldige data"
+
+msgid "Invalid parameter"
+msgstr "Ongeldige parameter"
+
+msgid "Already exists"
+msgstr "Bestaat al"
+
+msgid "Does not exist"
+msgstr "Bestaat niet"
+
+msgid "Can't read database"
+msgstr "Database lezen mislukt"
+
+msgid "Can't write database"
+msgstr "Schrijven naar database mislukt"
+
+msgid "Compilation failed"
+msgstr "Compilatie mislukt"
+
+msgid "Method not found"
+msgstr "Methode niet gevonden"
+
+msgid "Link failed"
+msgstr "Koppeling mislukt"
+
+msgid "Script failed"
+msgstr "Script is mislukt"
+
+msgid "Cyclic link detected"
+msgstr "Cyclische link gedetecteerd"
+
+msgid "Invalid declaration"
+msgstr "Ongeldige verklaring"
+
+msgid "Duplicate symbol"
+msgstr "Dupliceer symbool"
+
+msgid "Parse error"
+msgstr "Verwerk foutmelding"
+
+msgid "Busy"
+msgstr "Bezig"
+
+msgid "Skip"
+msgstr "Overslaan"
+
 msgid "Help"
-msgstr "Hulp"
+msgstr "Help"
+
+msgid "Bug"
+msgstr "Fout"
+
+msgid "Printer on fire"
+msgstr "Printer staat in de fik"
+
+msgid "unset"
+msgstr "ondefineren"
 
 msgid "Physical"
 msgstr "Fysiek"
@@ -128,16 +270,16 @@ msgid "Middle Mouse Button"
 msgstr "Middelmuisknop"
 
 msgid "Mouse Wheel Up"
-msgstr "Scrollwiel omhoog"
+msgstr "Scrollwiel Omhoog"
 
 msgid "Mouse Wheel Down"
-msgstr "Scrollwiel omlaag"
+msgstr "Scrollwiel Omlaag"
 
 msgid "Mouse Wheel Left"
-msgstr "Scrollwiel links"
+msgstr "Scrollwiel Links"
 
 msgid "Mouse Wheel Right"
-msgstr "Scrollwiel rechts"
+msgstr "Scrollwiel Rechts"
 
 msgid "Mouse Thumb Button 1"
 msgstr "Duimknop muis 1"
@@ -303,6 +445,9 @@ msgstr "Selecteren"
 
 msgid "Cancel"
 msgstr "Annuleren"
+
+msgid "Close Dialog"
+msgstr "Sluit Dialoog"
 
 msgid "Focus Next"
 msgstr "Volgende focussen"
@@ -490,6 +635,9 @@ msgstr "Invoerrichting wisselen"
 msgid "Start Unicode Character Input"
 msgstr "Start invoegen van Unicode karakters"
 
+msgid "ColorPicker: Delete Preset"
+msgstr "KleurenKiezer: Verwijder Preset"
+
 msgid "Accessibility: Keyboard Drag and Drop"
 msgstr "Toegankelijkheid: Verslepen Met Toetsenbord"
 
@@ -629,8 +777,16 @@ msgstr "Laden..."
 msgid "Move Node Point"
 msgstr "Knooppunt bewegen"
 
+msgid "Change BlendSpace1D Config"
+msgstr "Wijzig BlendSpace1D Configuratie"
+
 msgid "Change BlendSpace1D Labels"
 msgstr "Wijzig BlendSpace1D labels"
+
+msgid "This type of node can't be used. Only animation nodes are allowed."
+msgstr ""
+"Deze soort node kan niet worden gebruikt. Alleen animatie nodes zijn "
+"toegestaan."
 
 msgid "This type of node can't be used. Only root nodes are allowed."
 msgstr ""
@@ -657,14 +813,29 @@ msgstr "Discreet"
 msgid "Capture"
 msgstr "Opnemen"
 
+msgid ""
+"Select and move points.\n"
+"RMB: Create point at position clicked.\n"
+"Shift+LMB+Drag: Set the blending position within the space."
+msgstr ""
+"Selecteer en beweeg punten.\n"
+"Rechtermuisknop: Maak een punt op de geklikte positie.\n"
+"Shift+Linkermuisknop+Sleep: Zet de mengpositie binnen de ruimte."
+
 msgid "Create points."
 msgstr "Punten aanmaken."
+
+msgid "Set the blending position within the space."
+msgstr "Zet de mengpositie binnen de ruimte."
 
 msgid "Erase points."
 msgstr "Punten wissen."
 
 msgid "Enable snap and show grid."
 msgstr "Kleven inschakelen en raster weergeven."
+
+msgid "Grid Step"
+msgstr "Raster Stap"
 
 msgid "Sync:"
 msgstr "Sync:"
@@ -675,8 +846,17 @@ msgstr "Mengen:"
 msgid "Point"
 msgstr "Punt"
 
+msgid "Blend Value"
+msgstr "Mengwaarde"
+
 msgid "Open Editor"
 msgstr "Editor Openen"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
 
 msgid "Value"
 msgstr "Waarde"
@@ -689,6 +869,9 @@ msgstr "Driehoek bestaat al."
 
 msgid "Add Triangle"
 msgstr "Driehoek Toevoegen"
+
+msgid "Change BlendSpace2D Config"
+msgstr "Wijzig BlendSpace2D Configuratie"
 
 msgid "Change BlendSpace2D Labels"
 msgstr "Wijzig BlendSpace2D labels"
@@ -714,8 +897,41 @@ msgstr "Punten en driehoeken wissen."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Genereer geblende driehoeken automatisch (in plaats van handmatig)"
 
+msgid "Grid X Step"
+msgstr "Raster X Stap"
+
+msgid "Grid Y Step"
+msgstr "Raster Y Stap"
+
+msgid "Blend X Value"
+msgstr "Meng X Waarde"
+
+msgid "Blend Y Value"
+msgstr "Meng Y Waarde"
+
+msgid "Max Y"
+msgstr "Max Y"
+
+msgid "Y Value"
+msgstr "Y Waarde"
+
+msgid "Min Y"
+msgstr "Min Y"
+
+msgid "Min X"
+msgstr "Min X"
+
+msgid "X Value"
+msgstr "X Waarde"
+
+msgid "Max X"
+msgstr "Max X"
+
 msgid "Parameter Changed: %s"
 msgstr "Parameter veranderd: %s"
+
+msgid "Inspect Filters"
+msgstr "Inspecteer Filters"
 
 msgid "Edit Filters"
 msgstr "Filters berwerken"
@@ -755,6 +971,15 @@ msgstr "Filter aan-/uitzetten"
 msgid "Change Filter"
 msgstr "Verander Filter"
 
+msgid "Fill Selected Filter Children"
+msgstr "Vul Geselecteerde Filter Kinderen"
+
+msgid "Invert Filter Selection"
+msgstr "Draai Filter Selectie Om"
+
+msgid "Clear Filter Selection"
+msgstr "Filter Selectie Wissen"
+
 msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
 "names."
@@ -771,6 +996,9 @@ msgstr "Audioclips"
 msgid "Functions"
 msgstr "Functies"
 
+msgid "Inspect Filtered Tracks:"
+msgstr "Gefilterde Sporen Inspecteren:"
+
 msgid "Edit Filtered Tracks:"
 msgstr "Bewerk gefilterde sporen:"
 
@@ -783,14 +1011,57 @@ msgstr "Voeg knoop toe..."
 msgid "Enable Filtering"
 msgstr "Activeer Filtering"
 
+msgid "Fill Selected Children"
+msgstr "Vul Geselecteerde Kinderen"
+
 msgid "Invert"
 msgstr "Omkeren"
 
 msgid "Clear"
 msgstr "Wissen"
 
+msgid "Start of Animation"
+msgstr "Animatie Start"
+
+msgid "End of Animation"
+msgstr "Animatie Einde"
+
+msgid "Set Custom Timeline from Marker"
+msgstr "Zet Aangepaste Tijdlijn vanaf Markering"
+
+msgid "Select Markers"
+msgstr "Selecteer Markeringen"
+
+msgid "Start Marker"
+msgstr "Start Markering"
+
+msgid "End Marker"
+msgstr "Eind Markering"
+
+msgid "Library Name:"
+msgstr "Bibliotheek Naam:"
+
+msgid "Animation name can't be empty."
+msgstr "Animatienaam kan niet leeg zijn."
+
+msgid "Animation name contains invalid characters: '/', ':', ',' or '['."
+msgstr "De animatienaam bevat ongeldige tekens: '/', ':', ',' of '['."
+
 msgid "Animation with the same name already exists."
 msgstr "Er bestaat al een animatie met dezelfde naam."
+
+msgid "Enter a library name."
+msgstr "Vul de naam van de bibliotheek in."
+
+msgid "Library name contains invalid characters: '/', ':', ',' or '['."
+msgstr ""
+"De naam van de bibliotheek bevat ongeldige tekens: '/', ':', ',' of '['."
+
+msgid "Library with the same name already exists."
+msgstr "Er bestaat al een bibliotheek met deze naam."
+
+msgid "Animation name is valid."
+msgstr "Animatienaam is geldig."
 
 msgid "Add Animation to Library: %s"
 msgstr "Animatie toevoegen aan bibliotheek: %s"
@@ -1121,7 +1392,7 @@ msgid "Animation length (seconds)"
 msgstr "Animatielengte (seconden)"
 
 msgid "Select a new track by type to add to this animation."
-msgstr "Kies een nieuw spoor op type om aan deze animatie toe te voegen."
+msgstr "Kies een nieuw type spoor om aan deze animatie toe te voegen."
 
 msgid "Filter Tracks"
 msgstr "Filter Sporen"
@@ -1496,7 +1767,7 @@ msgid "Group tracks by node or display them as plain list."
 msgstr "Sporen groeperen op knoop of als een normale lijst tonen."
 
 msgid "Apply snapping to timeline cursor."
-msgstr "Tijdlijncursor laten kleven aan dichtstbijzijnde frame."
+msgstr "Pas snapping naar tijdlijn cursor toe."
 
 msgid "Apply snapping to selected key(s)."
 msgstr "Geselecteerde sleutel(s) laten kleven aan dichtstbijzijnde frame."
@@ -3025,6 +3296,9 @@ msgstr "Deze klasse is gemarkeerd als verouderd."
 
 msgid "This class is marked as experimental."
 msgstr "Deze klasse is gemarkeerd als experimenteel."
+
+msgid "Matches the \"%s\" keyword."
+msgstr "Correspondeert met het \"%s\" sleutelwoord."
 
 msgid "This member is marked as deprecated."
 msgstr "Dit lid is gemarkeerd als verouderd."
@@ -8022,7 +8296,7 @@ msgid "Action %s"
 msgstr "Actie %s"
 
 msgid "Cannot Revert - Action is same as initial"
-msgstr "Kan niet terugdraaien - Actie is hetzelfde als de oorspronkelijke"
+msgstr "Kan niet ongedaan maken - Actie is zoals begin"
 
 msgid "Revert Action"
 msgstr "Actie ongedaan maken"
@@ -8065,9 +8339,7 @@ msgstr ""
 "Mag niet in conflict komen met een bestaande naam van een engine-klasse."
 
 msgid "Must not collide with an existing global script class name."
-msgstr ""
-"Mag niet in conflict komen met een bestaande naam van een globale script-"
-"klasse."
+msgstr "Mag niet botsen met een bestaande naam van een globale script klasse."
 
 msgid "Must not collide with an existing built-in type name."
 msgstr ""
@@ -8460,7 +8732,7 @@ msgstr ""
 
 msgid "Provides tools for selecting and debugging nodes at runtime."
 msgstr ""
-"Biedt hulpmiddelen om knopen te selecteren en debuggen terwijl het spel "
+"Biedt hulpmiddelen voor het selecteren en debuggen van nodes terwijl de game "
 "draait."
 
 msgid "(current)"
@@ -9654,6 +9926,13 @@ msgid ""
 msgstr ""
 "Geen Android bouwsjabloon geïnstalleerd in dit project. Vanuit het "
 "projectmenu kan het geïnstalleerd worden."
+
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+"Ofwel Debug Keystore, Debug Gebruiker EN Debug Wachtwoord moeten "
+"geconfigureerd zijn, OF geen van alle mogen geconfigureerd zijn."
 
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr "Debug Keystore is niet ingesteld of aanwezig in de editor-instellingen."

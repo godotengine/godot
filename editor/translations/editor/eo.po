@@ -29,7 +29,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2026-01-12 20:12+0000\n"
+"PO-Revision-Date: 2026-01-18 16:02+0000\n"
 "Last-Translator: Julián Lacomba <julian_alberto93@yahoo.com.ar>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
@@ -37,7 +37,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.2-dev\n"
+"X-Generator: Weblate 5.15.2\n"
 
 msgid "OK"
 msgstr "Bone"
@@ -612,10 +612,10 @@ msgid "Set the blending position within the space."
 msgstr "Agordi pozicion de transiro en la spacon."
 
 msgid "Erase points."
-msgstr "Forigi punktojn."
+msgstr "Forigi la punktojn."
 
 msgid "Enable snap and show grid."
-msgstr "Ŝalti kradokapton kaj vidi kradon."
+msgstr "Ŝalti kradokapton kaj malkaŝi la kradon."
 
 msgid "Blend:"
 msgstr "Mikso:"
@@ -637,6 +637,9 @@ msgstr "Triangulo jam ekzistas."
 
 msgid "Add Triangle"
 msgstr "Aldoni triangulon"
+
+msgid "Change BlendSpace2D Config"
+msgstr "Ŝanĝi agordojn de BlendSpace2D"
 
 msgid "Change BlendSpace2D Labels"
 msgstr "Ŝanĝi etikedojn de BlendSpace2D"
@@ -1905,28 +1908,40 @@ msgid "Errors"
 msgstr "Eraroj"
 
 msgid "Main Thread"
-msgstr "Ĉefa Fadeno"
+msgstr "Ĉefa fadeno"
 
 msgid "Bytes:"
-msgstr "Bitokoj:"
+msgstr "Bajtoj:"
+
+msgid "Warning:"
+msgstr "Averto:"
 
 msgid "Stack Trace"
 msgstr "Stakspuro"
 
+msgid "Delete Breakpoint"
+msgstr "Forigi la kontrolpunkton"
+
+msgid "Delete All Breakpoints in:"
+msgstr "Forigi ĉiujn kontrolpunktojn en:"
+
+msgid "Delete All Breakpoints"
+msgstr "Forigi ĉiujn kontrolpunktojn"
+
 msgid "Copy Error"
-msgstr "Kopii eraro"
+msgstr "Kopii la problemon"
 
 msgid "C++ Source"
 msgstr "C++ Fonto"
 
 msgid "Skip Breakpoints"
-msgstr "Pasi preter paŭzpunktojn"
+msgstr "Pasi preter kontrolpunktoj"
 
 msgid "Stack Frames"
 msgstr "Stakaj Framoj"
 
 msgid "Breakpoints"
-msgstr "Paŭzpunktoj"
+msgstr "Kontrolpunktoj"
 
 msgid "Expand All"
 msgstr "Etendi tuton"
@@ -2946,16 +2961,40 @@ msgid "Save before closing?"
 msgstr "Ĉu konservi ĝin antaŭ ol fermi ĝin?"
 
 msgid "%d more files or folders"
-msgstr "%d plu dosiero(j) aŭ dosierujo(j)"
+msgstr "%d pliaj dosier(uj)oj"
 
 msgid "%d more folders"
-msgstr "%d plu dosierujo(j)"
+msgstr "%d pliaj dosierujoj"
 
 msgid "%d more files"
-msgstr "%d plu dosiero(j)"
+msgstr "%d pliaj dosieroj"
 
 msgid "Save & Restart"
-msgstr "Konservi kaj rekomenci"
+msgstr "Konservi kaj relanĉi"
+
+msgid ""
+"Changing the renderer requires restarting the editor.\n"
+"\n"
+"Choosing Save & Restart will change the renderer to:\n"
+"- Desktop platforms: %s\n"
+"- Mobile platforms: %s\n"
+"- Web platform: %s"
+msgstr ""
+"Ŝanĝi la bildigilon postulus restartigi la redaktilon.\n"
+"\n"
+"Elekti «Konservi kaj relanĉi» ŝanĝos la bildigilon al:\n"
+"- Komputilaj platformoj: %s\n"
+"- Poŝtelefonaj platformoj: %s\n"
+"- Enreta platformo: %s"
+
+msgid "Forward+"
+msgstr "Forward+"
+
+msgid "Mobile"
+msgstr "Poŝtelefonoj"
+
+msgid "Compatibility"
+msgstr "Kongrua plien"
 
 msgid "Open Recent"
 msgstr "Lastaj malfermoj"
@@ -2964,7 +3003,13 @@ msgid "Export As..."
 msgstr "Eksporti kiel..."
 
 msgid "Version Control"
-msgstr "Versikontrolo"
+msgstr "Versi-teno"
+
+msgid "Create/Override Version Control Metadata..."
+msgstr "Krei/anstataŭigi versitenajn metadatenojn..."
+
+msgid "Version Control Settings..."
+msgstr "Versitenaj agordoj..."
 
 msgid "Install Android Build Template..."
 msgstr "Instali Androidan muntadan ŝablonon..."
@@ -2975,20 +3020,38 @@ msgstr "Iloj"
 msgid "Editor Layout"
 msgstr "Aranĝo de la redaktilo"
 
+msgid "Screenshots are stored in the user data folder (\"user://\")."
+msgstr "Ekrankopioj konserviĝas en la uzulan daten-dosierujon (\"user://\")."
+
 msgid "Open Editor Data/Settings Folder"
-msgstr "Malfermi datumajn/agordajn dosierujon de la redaktilo"
+msgstr "Malfermi la redaktilan agord- kaj daten-dosierujon"
 
 msgid "Open Editor Data Folder"
-msgstr "Malfermi datumajn dosierujon de la redaktilo"
+msgstr "Malfermi la redaktilan daten-dosierujon"
 
 msgid "Open Editor Settings Folder"
-msgstr "Malfermi agordajn dosierujon de la redaktilo"
+msgstr "Malfermi la redaktilan agordo-dosierujon"
 
 msgid "Manage Editor Features..."
 msgstr "Mastrumi eblecojn de la redaktilo..."
 
 msgid "Manage Export Templates..."
 msgstr "Mastrumi eksportaj ŝablonoj..."
+
+msgid "Main Menu"
+msgstr "Ĉefmenuo"
+
+msgid "Lock Selected Node(s)"
+msgstr "Fiksi elektita(j)n nodo(j)n"
+
+msgid "Unlock Selected Node(s)"
+msgstr "Malfiksi elektita(j)n nodo(j)n"
+
+msgid "Group Selected Node(s)"
+msgstr "Grupigi elektita(j)n nodo(j)n"
+
+msgid "Ungroup Selected Node(s)"
+msgstr "Malgrupigi elektita(j)n nodo(j)n"
 
 msgid "Pan View"
 msgstr "Panoramada vido"
@@ -3240,9 +3303,9 @@ msgid ""
 "Depending on your filesystem configuration, the files will either be moved to "
 "the system trash or deleted permanently."
 msgstr ""
-"Forigi la elektitajn dosierojn el la projekto? (ne malfareblas)\n"
-"Depende de la agordo de via dosiersistemo, la dosierojn aŭ movos al rubujo de "
-"la sistemo aŭ forigos ĉiame."
+"Ĉu forigi la elektitajn dosierojn el la projekto? (Ne malfareble!)\n"
+"Depende de la agordo de via dosiersistemo, la dosieroj aŭ iros al la rubujo "
+"de la sistemo aŭ foriĝos por ĉiam."
 
 msgid ""
 "The files being removed are required by other resources in order for them to "
@@ -3251,11 +3314,10 @@ msgid ""
 "Depending on your filesystem configuration, the files will either be moved to "
 "the system trash or deleted permanently."
 msgstr ""
-"La forigotaj dosieroj estas bezoni de aliaj risurcoj por ke ili eblas "
-"funkciadi.\n"
-"Forigi ilin iel? (ne malfareblas)\n"
-"Depende de la agordo de via dosiersistemo, la dosierojn aŭ movos al rubujo de "
-"la sistemo aŭ forigos ĉiame."
+"Iuj rimedoj dependas de la forigotaj dosieroj por funkciadi.\n"
+"Ĉu egale forigi ilin? (Ne malfareble!)\n"
+"Depende de la agordo de via dosiersistemo, la dosieroj aŭ iros al la rubujo "
+"de la sistemo aŭ foriĝos por ĉiam."
 
 msgid "Cannot remove:"
 msgstr "Ne eblas forigi ĉi tion:"
@@ -3267,7 +3329,7 @@ msgid "Error loading: %s"
 msgstr "Eraro dum la ŝargo de: %s"
 
 msgid "Fix Dependencies"
-msgstr "Ripari dependojn"
+msgstr "Ripari la dependaĵojn"
 
 msgid "Load failed due to missing dependencies:"
 msgstr "La ŝargo malsukcesis pro manko de dependaĵoj:"

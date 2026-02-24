@@ -726,6 +726,12 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		return;
 	}
 
+	if (strcmp(interface, wp_pointer_warp_v1_interface.name) == 0) {
+		registry->wp_pointer_warp = (struct wp_pointer_warp_v1 *)wl_registry_bind(wl_registry, name, &wp_pointer_warp_v1_interface, 1);
+		registry->wp_pointer_warp_name = name;
+		return;
+	}
+
 	if (strcmp(interface, FIFO_INTERFACE_NAME) == 0) {
 		registry->wp_fifo_manager_name = name;
 	}
@@ -1097,6 +1103,17 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		return;
 	}
 
+	if (name == registry->wp_pointer_warp_name) {
+		if (registry->wp_pointer_warp) {
+			wp_pointer_warp_v1_destroy(registry->wp_pointer_warp);
+			registry->wp_pointer_warp = nullptr;
+		}
+
+		registry->wp_pointer_warp_name = 0;
+
+		return;
+	}
+
 	{
 		// Iterate through all of the seats to find if any got removed.
 		List<struct wl_seat *>::Element *E = registry->wl_seats.front();
@@ -1197,7 +1214,7 @@ void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surfa
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
-	DEBUG_LOG_WAYLAND_THREAD(vformat("Window entered output %x.\n", (size_t)wl_output));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Window entered output %x.", (size_t)wl_output));
 
 	ws->wl_outputs.insert(wl_output);
 
@@ -1287,6 +1304,10 @@ void WaylandThread::_wl_output_on_mode(void *data, struct wl_output *wl_output, 
 	ScreenState *ss = (ScreenState *)data;
 	ERR_FAIL_NULL(ss);
 
+	if (!(flags & WL_OUTPUT_MODE_CURRENT)) {
+		return;
+	}
+
 	ss->pending_data.size.width = width;
 	ss->pending_data.size.height = height;
 
@@ -1348,6 +1369,13 @@ void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *
 	// Expect the window to be in a plain state. It will get properly set if the
 	// compositor reports otherwise below.
 	ws->mode = DisplayServer::WINDOW_MODE_WINDOWED;
+	ws->maximized = false;
+	ws->fullscreen = false;
+	ws->resizing = false;
+	ws->tiled_left = false;
+	ws->tiled_right = false;
+	ws->tiled_top = false;
+	ws->tiled_bottom = false;
 	ws->suspended = false;
 
 	uint32_t *state = nullptr;
@@ -1355,10 +1383,32 @@ void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *
 		switch (*state) {
 			case XDG_TOPLEVEL_STATE_MAXIMIZED: {
 				ws->mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+				ws->maximized = true;
 			} break;
 
 			case XDG_TOPLEVEL_STATE_FULLSCREEN: {
 				ws->mode = DisplayServer::WINDOW_MODE_FULLSCREEN;
+				ws->fullscreen = true;
+			} break;
+
+			case XDG_TOPLEVEL_STATE_RESIZING: {
+				ws->resizing = true;
+			} break;
+
+			case XDG_TOPLEVEL_STATE_TILED_LEFT: {
+				ws->tiled_left = true;
+			} break;
+
+			case XDG_TOPLEVEL_STATE_TILED_RIGHT: {
+				ws->tiled_right = true;
+			} break;
+
+			case XDG_TOPLEVEL_STATE_TILED_TOP: {
+				ws->tiled_top = true;
+			} break;
+
+			case XDG_TOPLEVEL_STATE_TILED_BOTTOM: {
+				ws->tiled_bottom = true;
 			} break;
 
 			case XDG_TOPLEVEL_STATE_SUSPENDED: {
@@ -1537,15 +1587,42 @@ void WaylandThread::libdecor_frame_on_configure(struct libdecor_frame *frame, st
 	// Expect the window to be in a plain state. It will get properly set if the
 	// compositor reports otherwise below.
 	ws->mode = DisplayServer::WINDOW_MODE_WINDOWED;
+	ws->maximized = false;
+	ws->fullscreen = false;
+	ws->resizing = false;
+	ws->tiled_left = false;
+	ws->tiled_right = false;
+	ws->tiled_top = false;
+	ws->tiled_bottom = false;
 	ws->suspended = false;
 
 	if (libdecor_configuration_get_window_state(configuration, &window_state)) {
 		if (window_state & LIBDECOR_WINDOW_STATE_MAXIMIZED) {
 			ws->mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+			ws->maximized = true;
 		}
 
 		if (window_state & LIBDECOR_WINDOW_STATE_FULLSCREEN) {
 			ws->mode = DisplayServer::WINDOW_MODE_FULLSCREEN;
+			ws->fullscreen = true;
+		}
+
+		// libdecor doesn't have the resizing state for whatever reason.
+
+		if (window_state & LIBDECOR_WINDOW_STATE_TILED_LEFT) {
+			ws->tiled_left = true;
+		}
+
+		if (window_state & LIBDECOR_WINDOW_STATE_TILED_RIGHT) {
+			ws->tiled_right = true;
+		}
+
+		if (window_state & LIBDECOR_WINDOW_STATE_TILED_TOP) {
+			ws->tiled_top = true;
+		}
+
+		if (window_state & LIBDECOR_WINDOW_STATE_TILED_BOTTOM) {
+			ws->tiled_bottom = true;
 		}
 
 		if (window_state & LIBDECOR_WINDOW_STATE_SUSPENDED) {
@@ -1797,19 +1874,19 @@ void WaylandThread::_wl_pointer_on_button(void *data, struct wl_pointer *wl_poin
 			button_pressed = MouseButton::LEFT;
 			break;
 
-		case BTN_MIDDLE:
-			button_pressed = MouseButton::MIDDLE;
-			break;
-
 		case BTN_RIGHT:
 			button_pressed = MouseButton::RIGHT;
 			break;
 
-		case BTN_EXTRA:
-			button_pressed = MouseButton::MB_XBUTTON1;
+		case BTN_MIDDLE:
+			button_pressed = MouseButton::MIDDLE;
 			break;
 
 		case BTN_SIDE:
+			button_pressed = MouseButton::MB_XBUTTON1;
+			break;
+
+		case BTN_EXTRA:
 			button_pressed = MouseButton::MB_XBUTTON2;
 			break;
 
@@ -3035,10 +3112,6 @@ void WaylandThread::_wp_text_input_on_enter(void *data, struct zwp_text_input_v3
 		return;
 	}
 
-	if (ss->ime_window_id == DisplayServer::INVALID_WINDOW_ID) {
-		return;
-	}
-
 	WindowState *ws = wl_surface_get_window_state(surface);
 	if (!ws) {
 		return;
@@ -3609,6 +3682,21 @@ void WaylandThread::seat_state_set_hint(SeatState *p_ss, int p_x, int p_y) {
 	zwp_locked_pointer_v1_set_cursor_position_hint(p_ss->wp_locked_pointer, wl_fixed_from_int(p_x), wl_fixed_from_int(p_y));
 }
 
+void WaylandThread::seat_state_warp_pointer(SeatState *p_ss, int p_x, int p_y) {
+	if (registry.wp_pointer_warp == nullptr) {
+		return;
+	}
+
+	if (p_ss->pointer_data.pointed_id == DisplayServer::INVALID_WINDOW_ID) {
+		return;
+	}
+
+	struct wl_surface *surface = window_get_wl_surface(p_ss->pointer_data.pointed_id);
+	ERR_FAIL_NULL(surface);
+
+	wp_pointer_warp_v1_warp_pointer(registry.wp_pointer_warp, surface, p_ss->wl_pointer, wl_fixed_from_int(p_x), wl_fixed_from_int(p_y), p_ss->pointer_enter_serial);
+}
+
 void WaylandThread::seat_state_confine_pointer(SeatState *p_ss) {
 	ERR_FAIL_NULL(p_ss);
 
@@ -3861,6 +3949,12 @@ void WaylandThread::window_create_popup(DisplayServer::WindowID p_window_id, Dis
 	p_rect.position = scale_vector2i(p_rect.position, 1.0 / parent_scale);
 	p_rect.size = scale_vector2i(p_rect.size, 1.0 / parent_scale);
 
+	// We manually scaled based on the parent. If we don't set the relevant fields,
+	// the resizing routines will get confused and scale once more.
+	ws.preferred_fractional_scale = parent.preferred_fractional_scale;
+	ws.fractional_scale = parent.fractional_scale;
+	ws.buffer_scale = parent.buffer_scale;
+
 	ws.id = p_window_id;
 	ws.parent_id = p_parent_id;
 	ws.registry = &registry;
@@ -3995,6 +4089,58 @@ WaylandThread::WindowState *WaylandThread::window_get_state(DisplayServer::Windo
 
 const WaylandThread::WindowState *WaylandThread::window_get_state(DisplayServer::WindowID p_window_id) const {
 	return windows.getptr(p_window_id);
+}
+
+Size2i WaylandThread::window_set_size(DisplayServer::WindowID p_window_id, const Size2i &p_size) {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), p_size);
+	WindowState &ws = windows[p_window_id];
+
+	double window_scale = window_state_get_scale_factor(&ws);
+
+	if (ws.maximized) {
+		// Can't do anything.
+		return scale_vector2i(ws.rect.size, window_scale);
+	}
+
+	Size2i new_size = scale_vector2i(p_size, 1 / window_scale);
+
+	if (ws.tiled_left && ws.tiled_right) {
+		// Tiled left and right, we shouldn't change from our current width or else
+		// it'll look wonky.
+		new_size.width = ws.rect.size.width;
+	}
+
+	if (ws.tiled_top && ws.tiled_bottom) {
+		// Tiled top and bottom. Same as above, but for the height.
+		new_size.height = ws.rect.size.height;
+	}
+
+	if (ws.resizing && ws.rect.size.width > 0 && ws.rect.size.height > 0) {
+		// The spec says that we shall not resize further than the config size. We can
+		// resize less than that though.
+		new_size = new_size.min(ws.rect.size);
+	}
+
+	// NOTE: Older versions of libdecor (~2022) do not have a way to get the max
+	// content size. Let's also check for its pointer so that we can preserve
+	// compatibility with older distros.
+	if (ws.libdecor_frame && libdecor_frame_get_max_content_size) {
+		int max_width = new_size.width;
+		int max_height = new_size.height;
+
+		// NOTE: Max content size is dynamic on libdecor, as plugins can override it
+		// to accommodate their decorations.
+		libdecor_frame_get_max_content_size(ws.libdecor_frame, &max_width, &max_height);
+
+		if (max_width > 0 && max_height > 0) {
+			new_size.width = MIN(new_size.width, max_width);
+			new_size.height = MIN(new_size.height, max_height);
+		}
+	}
+
+	window_state_update_size(&ws, new_size.width, new_size.height);
+
+	return scale_vector2i(new_size, window_scale);
 }
 
 void WaylandThread::beep() const {
@@ -4177,8 +4323,12 @@ bool WaylandThread::window_can_set_mode(DisplayServer::WindowID p_window_id, Dis
 		};
 
 		case DisplayServer::WINDOW_MODE_MAXIMIZED: {
-			// NOTE: libdecor doesn't seem to have a maximize capability query?
-			// The fact that there's a fullscreen one makes me suspicious.
+			if (ws.libdecor_frame) {
+				// NOTE: libdecor doesn't seem to have a maximize capability query?
+				// The fact that there's a fullscreen one makes me suspicious. Anyways,
+				// let's act as if we always can.
+				return true;
+			}
 			return ws.can_maximize;
 		};
 
@@ -4610,22 +4760,57 @@ void WaylandThread::pointer_set_hint(const Point2i &p_hint) {
 	}
 
 	WindowState *ws = window_get_state(ss->pointer_data.pointed_id);
-
-	int hint_x = 0;
-	int hint_y = 0;
-
-	if (ws) {
-		// NOTE: It looks like it's not really recommended to convert from
-		// "godot-space" to "wayland-space" and in general I received mixed feelings
-		// discussing about this. I'm not really sure about the maths behind this but,
-		// oh well, we're setting a cursor hint. ¯\_(ツ)_/¯
-		// See: https://oftc.irclog.whitequark.org/wayland/2023-08-23#1692756914-1692816818
-		hint_x = std::round(p_hint.x / window_state_get_scale_factor(ws));
-		hint_y = std::round(p_hint.y / window_state_get_scale_factor(ws));
+	if (!ws) {
+		return;
 	}
+
+	// NOTE: It looks like it's not really recommended to convert from
+	// "godot-space" to "wayland-space" and in general I received mixed feelings
+	// discussing about this. I'm not really sure about the maths behind this but,
+	// oh well, we're setting a cursor hint. ¯\_(ツ)_/¯
+	// See: https://oftc.irclog.whitequark.org/wayland/2023-08-23#1692756914-1692816818
+	int hint_x = Math::round(p_hint.x / window_state_get_scale_factor(ws));
+	int hint_y = Math::round(p_hint.y / window_state_get_scale_factor(ws));
 
 	if (ss) {
 		seat_state_set_hint(ss, hint_x, hint_y);
+	}
+}
+
+void WaylandThread::pointer_warp(const Point2i &p_to) {
+	// NOTE: This is for compositors that don't support the pointer-warp protocol.
+	// It's hacked together and not guaranteed to work.
+	if (registry.wp_pointer_warp == nullptr) {
+		PointerConstraint old_constraint = pointer_get_constraint();
+
+		pointer_set_constraint(PointerConstraint::LOCKED);
+		pointer_set_hint(p_to);
+
+		pointer_set_constraint(old_constraint);
+
+		return;
+	}
+
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+	if (!ss) {
+		return;
+	}
+
+	WindowState *ws = window_get_state(ss->pointer_data.pointed_id);
+	if (!ws) {
+		return;
+	}
+
+	// NOTE: It looks like it's not really recommended to convert from
+	// "godot-space" to "wayland-space" and in general I received mixed feelings
+	// discussing about this. I'm not really sure about the maths behind this but,
+	// oh well. ¯\_(ツ)_/¯
+	// See: https://oftc.irclog.whitequark.org/wayland/2023-08-23#1692756914-1692816818
+	int wl_pos_x = Math::round(p_to.x / window_state_get_scale_factor(ws));
+	int wl_pos_y = Math::round(p_to.y / window_state_get_scale_factor(ws));
+
+	if (ss) {
+		seat_state_warp_pointer(ss, wl_pos_x, wl_pos_y);
 	}
 }
 
@@ -5436,7 +5621,9 @@ void WaylandThread::destroy() {
 			zwp_tablet_tool_v2_destroy(tool);
 		}
 
-		zwp_text_input_v3_destroy(ss->wp_text_input);
+		if (ss->wp_text_input) {
+			zwp_text_input_v3_destroy(ss->wp_text_input);
+		}
 
 		memdelete(ss);
 	}
@@ -5490,6 +5677,10 @@ void WaylandThread::destroy() {
 
 	if (registry.wp_relative_pointer_manager) {
 		zwp_relative_pointer_manager_v1_destroy(registry.wp_relative_pointer_manager);
+	}
+
+	if (registry.wp_pointer_warp) {
+		wp_pointer_warp_v1_destroy(registry.wp_pointer_warp);
 	}
 
 	if (registry.xdg_activation) {

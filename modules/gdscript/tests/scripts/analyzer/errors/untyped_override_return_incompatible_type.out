@@ -1,0 +1,6 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 8: A void function cannot return a value.
+>> ERROR at line 9: Cannot return a value of type "String" as "int".
+>> ERROR at line 9: Cannot return value of type "String" because the function return type is "int".
+>> ERROR at line 10: Cannot return value of type "Resource" because the function return type is "Node".
+>> ERROR at line 11: Not all code paths return a value.

@@ -200,6 +200,9 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 		for (const KeyValue<Variant, int> &K : constant_map) {
 			function->constants.write[K.value] = K.key;
 		}
+		for (const KeyValue<StringName, int> &K : local_constants) {
+			function->constant_map.insert(K.key, function->constants[K.value]);
+		}
 	} else {
 		function->_constants_ptr = nullptr;
 		function->_constant_count = 0;

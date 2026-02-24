@@ -126,9 +126,9 @@ void GroupSettingsEditor::_check_rename() {
 	}
 
 	if (new_name.is_empty()) {
-		rename_validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Group can't be empty."), EditorValidationPanel::MSG_ERROR);
+		rename_validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Group can't be empty."), EditorValidationPanel::MSG_ERROR);
 	} else if (ProjectSettings::get_singleton()->has_global_group(new_name)) {
-		rename_validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Group already exists."), EditorValidationPanel::MSG_ERROR);
+		rename_validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Group already exists."), EditorValidationPanel::MSG_ERROR);
 	}
 }
 
@@ -189,7 +189,7 @@ void GroupSettingsEditor::_group_name_text_changed(const String &p_name) {
 void GroupSettingsEditor::_modify_references(const StringName &p_name, const StringName &p_new_name, bool p_is_rename) {
 	HashSet<String> scenes;
 
-	HashMap<StringName, HashSet<StringName>> scene_groups_cache = ProjectSettings::get_singleton()->get_scene_groups_cache();
+	HashMap<StringName, HashSet<StringName>> scene_groups_cache(ProjectSettings::get_singleton()->get_scene_groups_cache());
 	for (const KeyValue<StringName, HashSet<StringName>> &E : scene_groups_cache) {
 		if (E.value.has(p_name)) {
 			scenes.insert(E.key);
@@ -449,7 +449,7 @@ void GroupSettingsEditor::_show_rename_dialog() {
 		rename_group_dialog->register_text_enter(rename_group);
 
 		rename_validation_panel = memnew(EditorValidationPanel);
-		rename_validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Group name is valid."));
+		rename_validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Group name is valid."));
 		rename_validation_panel->set_update_callback(callable_mp(this, &GroupSettingsEditor::_check_rename));
 		rename_validation_panel->set_accept_button(rename_group_dialog->get_ok_button());
 

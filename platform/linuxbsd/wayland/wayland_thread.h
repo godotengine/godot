@@ -59,6 +59,7 @@
 #include "wayland/protocol/cursor_shape.gen.h"
 #include "wayland/protocol/pointer_constraints.gen.h"
 #include "wayland/protocol/pointer_gestures.gen.h"
+#include "wayland/protocol/pointer_warp.gen.h"
 #include "wayland/protocol/relative_pointer.gen.h"
 #undef pointer
 #include "wayland/protocol/fractional_scale.gen.h"
@@ -86,6 +87,7 @@
 #endif // SOWRAP_ENABLED
 #endif // LIBDECOR_ENABLED
 
+#include "core/input/input_event.h"
 #include "core/os/thread.h"
 #include "servers/display/display_server.h"
 
@@ -230,6 +232,9 @@ public:
 		struct zwp_text_input_manager_v3 *wp_text_input_manager = nullptr;
 		uint32_t wp_text_input_manager_name = 0;
 
+		struct wp_pointer_warp_v1 *wp_pointer_warp = nullptr;
+		uint32_t wp_pointer_warp_name = 0;
+
 		// We're really not meant to use this one directly but we still need to know
 		// whether it's available.
 		uint32_t wp_fifo_manager_name = 0;
@@ -247,15 +252,25 @@ public:
 
 		Rect2i rect;
 		DisplayServer::WindowMode mode = DisplayServer::WINDOW_MODE_WINDOWED;
-		bool suspended = false;
+
+		// Toplevel states.
+		bool maximized = false; // MUST obey configure size.
+		bool fullscreen = false; // Can be smaller than configure size.
+		bool resizing = false; // Configure size is a max.
+		// No need for `activated` (yet)
+		bool tiled_left = false;
+		bool tiled_right = false;
+		bool tiled_top = false;
+		bool tiled_bottom = false;
+		bool suspended = false; // We can stop drawing.
 
 		// These are true by default as it isn't guaranteed that we'll find an
 		// xdg-shell implementation with wm_capabilities available. If and once we
 		// receive a wm_capabilities event these will get reset and updated with
 		// whatever the compositor says.
-		bool can_minimize = false;
-		bool can_maximize = false;
-		bool can_fullscreen = false;
+		bool can_minimize = true;
+		bool can_maximize = true;
+		bool can_fullscreen = true;
 
 		HashSet<struct wl_output *> wl_outputs;
 
@@ -294,6 +309,9 @@ public:
 
 		// NOTE: The preferred buffer scale is currently only dynamically calculated.
 		// It can be accessed by calling `window_state_get_preferred_buffer_scale`.
+
+		// NOTE: Popups manually inherit the parent's scale on creation. Make sure to
+		// sync them up with any new fields.
 
 		// Override used by the fractional scale add-on object. If less or equal to 0
 		// (default) then the normal output-based scale is used instead.
@@ -1072,6 +1090,7 @@ public:
 	void seat_state_unlock_pointer(SeatState *p_ss);
 	void seat_state_lock_pointer(SeatState *p_ss);
 	void seat_state_set_hint(SeatState *p_ss, int p_x, int p_y);
+	void seat_state_warp_pointer(SeatState *p_ss, int p_x, int p_y);
 	void seat_state_confine_pointer(SeatState *p_ss);
 
 	static void seat_state_update_cursor(SeatState *p_ss);
@@ -1101,6 +1120,7 @@ public:
 	struct wl_surface *window_get_wl_surface(DisplayServer::WindowID p_window_id) const;
 	WindowState *window_get_state(DisplayServer::WindowID p_window_id);
 	const WindowState *window_get_state(DisplayServer::WindowID p_window_id) const;
+	Size2i window_set_size(DisplayServer::WindowID p_window_id, const Size2i &p_size);
 
 	void window_start_resize(DisplayServer::WindowResizeEdge p_edge, DisplayServer::WindowID p_window);
 
@@ -1131,6 +1151,7 @@ public:
 
 	void pointer_set_constraint(PointerConstraint p_constraint);
 	void pointer_set_hint(const Point2i &p_hint);
+	void pointer_warp(const Point2i &p_to);
 	PointerConstraint pointer_get_constraint() const;
 	DisplayServer::WindowID pointer_get_pointed_window_id() const;
 	DisplayServer::WindowID pointer_get_last_pointed_window_id() const;

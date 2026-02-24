@@ -1608,6 +1608,11 @@ void AudioServer::update() {
 	for (CallbackItem *ci : update_callback_list) {
 		ci->callback(ci->userdata);
 	}
+
+	_cleanup_lists();
+}
+
+void AudioServer::_cleanup_lists() {
 	mix_callback_list.maybe_cleanup();
 	update_callback_list.maybe_cleanup();
 	listener_changed_callback_list.maybe_cleanup();
@@ -2124,6 +2129,10 @@ AudioServer::AudioServer() {
 }
 
 AudioServer::~AudioServer() {
+	// Cleanup resources while we still have an active AudioServer singleton,
+	// for resources that depend on the singleton still existing.
+	_cleanup_lists();
+
 	singleton = nullptr;
 }
 

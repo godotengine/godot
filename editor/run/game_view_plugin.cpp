@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
-#include "core/debugger/engine_debugger.h"
 #include "core/string/translation_server.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
@@ -81,7 +80,6 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	settings["editors/3d/navigation_feel/orbit_sensitivity"] = EDITOR_GET("editors/3d/navigation_feel/orbit_sensitivity");
 	settings["editors/3d/navigation_feel/translation_sensitivity"] = EDITOR_GET("editors/3d/navigation_feel/translation_sensitivity");
 	settings["editors/3d/selection_box_color"] = EDITOR_GET("editors/3d/selection_box_color");
-	settings["editors/3d/freelook/freelook_base_speed"] = EDITOR_GET("editors/3d/freelook/freelook_base_speed");
 
 	Array setup_data;
 	setup_data.append(settings);
@@ -563,7 +561,9 @@ void GameView::_update_debugger_buttons() {
 	suspend_button->set_disabled(empty);
 	camera_override_button->set_disabled(empty);
 	speed_state_button->set_disabled(empty);
-	reset_speed_button->set_disabled(empty);
+	bool disabled = time_scale_index == DEFAULT_TIME_SCALE_INDEX;
+
+	reset_speed_button->set_disabled(empty || disabled);
 
 	PopupMenu *menu = camera_override_menu->get_popup();
 
@@ -678,12 +678,11 @@ void GameView::_embed_options_menu_menu_id_pressed(int p_id) {
 }
 
 void GameView::_reset_time_scales() {
-	if (!is_visible_in_tree()) {
-		return;
-	}
 	time_scale_index = DEFAULT_TIME_SCALE_INDEX;
 	debugger->reset_time_scale();
-	_update_speed_buttons();
+	if (is_inside_tree()) {
+		_update_speed_buttons();
+	}
 }
 
 void GameView::_speed_state_menu_pressed(int p_id) {
@@ -1163,7 +1162,7 @@ void GameView::_window_close_request() {
 	if (window_wrapper->get_window_enabled()) {
 		// Stop the embedded process timer before closing the window wrapper,
 		// so the signal to focus EDITOR_GAME isn't sent when the window is not enabled.
-		embedded_process->reset();
+		embedded_process->reset_timers();
 		window_wrapper->set_window_enabled(false);
 	}
 
@@ -1175,6 +1174,7 @@ void GameView::_window_close_request() {
 		if (paused || embedded_process->is_embedding_in_progress()) {
 			// Call deferred to prevent the _stop_pressed callback to be executed before the wrapper window
 			// actually closes.
+			embedded_process->reset();
 			callable_mp(EditorRunBar::get_singleton(), &EditorRunBar::stop_playing).call_deferred();
 		} else {
 			// Try to gracefully close the window. That way, the NOTIFICATION_WM_CLOSE_REQUEST

@@ -30,6 +30,7 @@
 
 #include "grid_container.h"
 
+#include "core/templates/rb_map.h"
 #include "core/templates/rb_set.h"
 #include "scene/theme/theme_db.h"
 

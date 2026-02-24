@@ -49,7 +49,7 @@ hb_vector_t<unsigned> actuate_subtable_split (Context& split_context,
     if (id == (unsigned) -1)
     {
       new_objects.reset ();
-      new_objects.allocated = -1; // mark error
+      new_objects.ensure_error ();
       return new_objects;
     }
     new_objects.push (id);
@@ -58,7 +58,7 @@ hb_vector_t<unsigned> actuate_subtable_split (Context& split_context,
   if (!split_context.shrink (split_points[0]))
   {
     new_objects.reset ();
-    new_objects.allocated = -1; // mark error
+    new_objects.ensure_error ();
   }
 
   return new_objects;

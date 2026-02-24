@@ -41,6 +41,7 @@
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/gui/filter_line_edit.h"
 #include "editor/gui/progress_dialog.h"
 #include "editor/inspector/editor_resource_picker.h"
 #include "editor/settings/editor_command_palette.h"
@@ -2130,6 +2131,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 
 	// Import Items tab.
 	TabContainer *import_tc = memnew(TabContainer);
+	import_tc->set_theme_type_variation("TabContainerInner");
 	import_tc->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	tc->add_child(import_tc);
 	tc->set_tab_title(1, TTR("Import Items"));
@@ -2232,17 +2234,6 @@ void ThemeTypeDialog::_add_type_filter_cbk(const String &p_value) {
 	_update_add_type_options(p_value);
 }
 
-void ThemeTypeDialog::_type_filter_input(const Ref<InputEvent> &p_event) {
-	// Redirect navigational key events to the item list.
-	Ref<InputEventKey> key = p_event;
-	if (key.is_valid()) {
-		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
-			add_type_options->gui_input(key);
-			add_type_filter->accept_event();
-		}
-	}
-}
-
 void ThemeTypeDialog::_add_type_options_cbk(int p_index) {
 	add_type_filter->set_text(add_type_options->get_item_text(p_index));
 	add_type_filter->set_caret_column(add_type_filter->get_text().length());
@@ -2311,11 +2302,10 @@ ThemeTypeDialog::ThemeTypeDialog() {
 	add_type_filter_label->set_text(TTR("Filter the list of types or create a new custom type:"));
 	add_type_vb->add_child(add_type_filter_label);
 
-	add_type_filter = memnew(LineEdit);
+	add_type_filter = memnew(FilterLineEdit);
 	add_type_vb->add_child(add_type_filter);
 	add_type_filter->connect(SceneStringName(text_changed), callable_mp(this, &ThemeTypeDialog::_add_type_filter_cbk));
 	add_type_filter->connect(SceneStringName(text_submitted), callable_mp(this, &ThemeTypeDialog::_add_type_dialog_entered));
-	add_type_filter->connect(SceneStringName(gui_input), callable_mp(this, &ThemeTypeDialog::_type_filter_input));
 
 	Label *add_type_options_label = memnew(Label);
 	add_type_options_label->set_text(TTR("Available Node-based types:"));
@@ -2327,6 +2317,7 @@ ThemeTypeDialog::ThemeTypeDialog() {
 	add_type_vb->add_child(mc);
 
 	add_type_options = memnew(ItemList);
+	add_type_filter->set_forward_control(add_type_options);
 	add_type_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_type_options->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
 	mc->add_child(add_type_options);
@@ -3071,7 +3062,7 @@ void ThemeTypeEditor::_item_add_lineedit_cbk(String p_value, int p_data_type, Co
 
 void ThemeTypeEditor::_item_override_cbk(int p_data_type, String p_item_name) {
 	// Avoid errors if the action is triggered multiple times.
-	if (edited_theme->has_theme_item((Theme::DataType)p_data_type, p_item_name, edited_type)) {
+	if (edited_theme->has_theme_item_nocheck((Theme::DataType)p_data_type, p_item_name, edited_type)) {
 		return;
 	}
 
@@ -3115,7 +3106,7 @@ void ThemeTypeEditor::_item_override_cbk(int p_data_type, String p_item_name) {
 
 void ThemeTypeEditor::_item_remove_cbk(int p_data_type, String p_item_name) {
 	// Avoid errors if the action is triggered multiple times.
-	if (!edited_theme->has_theme_item((Theme::DataType)p_data_type, p_item_name, edited_type)) {
+	if (!edited_theme->has_theme_item_nocheck((Theme::DataType)p_data_type, p_item_name, edited_type)) {
 		return;
 	}
 
@@ -3971,6 +3962,18 @@ void ThemeEditor::_notification(int p_what) {
 	}
 }
 
+void ThemeEditor::save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const {
+	const int split_offset = Math::round(main_hs->get_split_offset() / EDSCALE);
+	p_layout->set_value(p_section, "split_offset", split_offset);
+}
+
+void ThemeEditor::load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) {
+	if (p_layout->has_section_key(p_section, "split_offset")) {
+		const int split_offset = p_layout->get_value(p_section, "split_offset");
+		main_hs->set_split_offset(split_offset * EDSCALE);
+	}
+}
+
 ThemeEditor::ThemeEditor() {
 	set_name(TTRC("Theme"));
 	set_icon_name("ThemeDock");
@@ -4035,7 +4038,7 @@ ThemeEditor::ThemeEditor() {
 	theme_edit_dialog->hide();
 	top_menu->add_child(theme_edit_dialog);
 
-	HSplitContainer *main_hs = memnew(HSplitContainer);
+	main_hs = memnew(HSplitContainer);
 	main_hs->set_v_size_flags(SIZE_EXPAND_FILL);
 	content_vb->add_child(main_hs);
 

@@ -28,14 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef GLES3_ENABLED
-
 #include "texture_storage.h"
 
-#include "../effects/copy_effects.h"
-#include "../rasterizer_gles3.h"
-#include "config.h"
-#include "utilities.h"
+#ifdef GLES3_ENABLED
+
+#include "drivers/gles3/effects/copy_effects.h"
+#include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/gles3/rasterizer_util_gles3.h"
+#include "drivers/gles3/storage/material_storage.h"
+#include "drivers/gles3/storage/utilities.h"
 
 using namespace GLES3;
 
@@ -283,7 +284,7 @@ TextureStorage::TextureStorage() {
 	}
 
 #ifdef GL_API_ENABLED
-	if (RasterizerGLES3::is_gles_over_gl()) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		glEnable(GL_PROGRAM_POINT_SIZE);
 	}
 #endif // GL_API_ENABLED
@@ -301,6 +302,94 @@ TextureStorage::~TextureStorage() {
 	glDeleteFramebuffers(1, &texture_atlas.framebuffer);
 	texture_atlas.framebuffer = 0;
 	sdf_shader.shader.version_free(sdf_shader.shader_version);
+}
+
+// Has to be a separate call from TextureStorage initialization due to interacting with MaterialStorage
+void TextureStorage::_tex_blit_shader_initialize() {
+	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
+
+	{
+		String global_defines;
+		global_defines += "#define MAX_GLOBAL_SHADER_UNIFORMS 256\n"; // TODO: this is arbitrary for now
+		material_storage->shaders.tex_blit_shader.initialize(global_defines, 1);
+	}
+
+	{
+		// default material and shader for Texture Blit shader
+		tex_blit_shader.default_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(tex_blit_shader.default_shader);
+		material_storage->shader_set_code(tex_blit_shader.default_shader, R"(
+// Default Texture Blit shader.
+
+shader_type texture_blit;
+render_mode blend_mix;
+
+uniform sampler2D source_texture0 : hint_blit_source0;
+uniform sampler2D source_texture1 : hint_blit_source1;
+uniform sampler2D source_texture2 : hint_blit_source2;
+uniform sampler2D source_texture3 : hint_blit_source3;
+
+void blit() {
+	// Copies from each whole source texture to a rect on each output texture.
+	COLOR0 = texture(source_texture0, UV) * MODULATE;
+	COLOR1 = texture(source_texture1, UV) * MODULATE;
+	COLOR2 = texture(source_texture2, UV) * MODULATE;
+	COLOR3 = texture(source_texture3, UV) * MODULATE;
+}
+)");
+		tex_blit_shader.default_material = material_storage->material_allocate();
+		material_storage->material_initialize(tex_blit_shader.default_material);
+		material_storage->material_set_shader(tex_blit_shader.default_material, tex_blit_shader.default_shader);
+	}
+
+	{
+		// Set up Frame & Vertex Buffers for TextureBlit Shaders
+		// Just a 1x1 Quad to draw
+		glGenFramebuffers(1, &tex_blit_fbo);
+
+		glGenBuffers(1, &tex_blit_quad);
+		glBindBuffer(GL_ARRAY_BUFFER, tex_blit_quad);
+
+		const float qv[12] = {
+			-1.0f,
+			-1.0f,
+			1.0f,
+			-1.0f,
+			1.0f,
+			1.0f,
+			-1.0f,
+			-1.0f,
+			1.0f,
+			1.0f,
+			-1.0f,
+			1.0f,
+		};
+
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, qv, GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+
+		glGenVertexArrays(1, &tex_blit_quad_array);
+		glBindVertexArray(tex_blit_quad_array);
+		glBindBuffer(GL_ARRAY_BUFFER, tex_blit_quad);
+		glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		glEnableVertexAttribArray(RS::ARRAY_VERTEX);
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+	}
+
+	tex_blit_shader.initialized = true;
+}
+
+// Has to be a separate call from TextureStorage destruction due to interacting with Material Storage
+void TextureStorage::_tex_blit_shader_free() {
+	if (tex_blit_shader.initialized) {
+		GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
+		glDeleteFramebuffers(1, &tex_blit_fbo);
+		glDeleteBuffers(1, &tex_blit_quad);
+		glDeleteVertexArrays(1, &tex_blit_quad_array);
+		material_storage->material_free(tex_blit_shader.default_material);
+		material_storage->shader_free(tex_blit_shader.default_shader);
+	}
 }
 
 /* Canvas Texture API */
@@ -365,7 +454,7 @@ static inline Error _get_gl_uncompressed_format(const Ref<Image> &p_image, Image
 
 	switch (p_format) {
 		case Image::FORMAT_L8: {
-			if (RasterizerGLES3::is_gles_over_gl()) {
+			if (RasterizerUtilGLES3::is_gles_over_gl()) {
 				r_gl_internal_format = GL_R8;
 				r_gl_format = GL_RED;
 				r_gl_type = GL_UNSIGNED_BYTE;
@@ -376,7 +465,7 @@ static inline Error _get_gl_uncompressed_format(const Ref<Image> &p_image, Image
 			}
 		} break;
 		case Image::FORMAT_LA8: {
-			if (RasterizerGLES3::is_gles_over_gl()) {
+			if (RasterizerUtilGLES3::is_gles_over_gl()) {
 				r_gl_internal_format = GL_RG8;
 				r_gl_format = GL_RG;
 				r_gl_type = GL_UNSIGNED_BYTE;
@@ -1113,6 +1202,51 @@ void TextureStorage::texture_proxy_initialize(RID p_texture, RID p_base) {
 	texture_owner.initialize_rid(p_texture, proxy_tex);
 }
 
+void TextureStorage::texture_drawable_initialize(RID p_texture, int p_width, int p_height, RS::TextureDrawableFormat p_format, const Color &p_color, bool p_with_mipmaps) {
+	// Behaves identically to Texture_2D_Initialize by generating a white image based on parameters.
+
+	// GUARDRAIL: Bad Widths/Heights
+	ERR_FAIL_COND_MSG(p_width <= 0 || p_height <= 0, "Drawable Texture Width or Height cannot be less than 1.");
+	ERR_FAIL_COND_MSG(p_width >= 16384 || p_height >= 16384, "Drawable Texture Width or Height cannot be greater than 16383.");
+
+	Image::Format format;
+	switch (p_format) {
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBA8:
+			format = Image::FORMAT_RGBA8;
+			break;
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB:
+			format = Image::FORMAT_RGBA8;
+			break;
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBAH:
+			format = Image::FORMAT_RGBAH;
+			break;
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBAF:
+			format = Image::FORMAT_RGBAF;
+			break;
+		default:
+			format = Image::FORMAT_RGBA8;
+	}
+
+	Ref<Image> image = Image::create_empty(p_width, p_height, p_with_mipmaps, format);
+	image->fill(p_color);
+	Texture texture;
+	texture.width = image->get_width();
+	texture.height = image->get_height();
+	texture.alloc_width = texture.width;
+	texture.alloc_height = texture.height;
+	texture.mipmaps = image->get_mipmap_count() + 1;
+	texture.format = image->get_format();
+	texture.type = Texture::TYPE_2D;
+	texture.target = GL_TEXTURE_2D;
+	_get_gl_image_and_format(Ref<Image>(), texture.format, texture.real_format, texture.gl_format_cache, texture.gl_internal_format_cache, texture.gl_type_cache, texture.compressed, false);
+	texture.total_data_size = image->get_image_data_size(texture.width, texture.height, texture.format, texture.mipmaps);
+	texture.active = true;
+	glGenTextures(1, &texture.tex_id);
+	GLES3::Utilities::get_singleton()->texture_allocated_data(texture.tex_id, texture.total_data_size, "Texture 2D");
+	texture_owner.initialize_rid(p_texture, texture);
+	texture_set_data(p_texture, image);
+}
+
 RID TextureStorage::texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers, RS::TextureLayeredType p_layered_type) {
 	Texture texture;
 	texture.active = true;
@@ -1223,12 +1357,141 @@ void TextureStorage::texture_remap_proxies(RID p_from_texture, RID p_to_texture)
 	}
 
 	// Make a local copy, we're about to change the content of the original.
-	thread_local LocalVector<RID> proxies = from_tex->proxies;
+	thread_local LocalVector<RID> proxies(from_tex->proxies);
 
 	// Now change them to our new texture.
 	for (RID &proxy : proxies) {
 		texture_proxy_update(proxy, p_to_texture);
 	}
+}
+
+// Output textures in p_textures must ALL BE THE SAME SIZE
+void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_textures, const Rect2i &p_rect, RID p_material, const Color &p_modulate, const TypedArray<RID> &p_source_textures, int p_to_mipmap) {
+	ERR_FAIL_COND_MSG(!tex_blit_shader.initialized, "Texture Blit shader & materials not yet initialized.");
+	ERR_FAIL_COND_MSG(p_textures.size() == 0 || p_source_textures.size() == 0, "Blit Rect texture output and source arrays must contain at least 1 texture.");
+	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
+
+	TexBlitMaterialData *m = static_cast<TexBlitMaterialData *>(material_storage->material_get_data(p_material, RS::SHADER_TEXTURE_BLIT));
+	if (!m) {
+		m = static_cast<TexBlitMaterialData *>(material_storage->material_get_data(tex_blit_shader.default_material, RS::SHADER_TEXTURE_BLIT));
+	}
+	// GUARDRAIL: p_material MUST BE ShaderType TextureBlit
+	ERR_FAIL_NULL(m);
+
+	TexBlitShaderGLES3::ShaderVariant variant = TexBlitShaderGLES3::MODE_DEFAULT;
+	RID version = tex_blit_shader.default_shader_version;
+	if (m->shader_data->version.is_valid() && m->shader_data->valid) {
+		// Must be called to force user ShaderMaterials to actually populate uniform buffer before binding
+		// NOTE: Not an ideal work around, maybe in the future this can only update this MaterialData and remove it from the queue, instead of processing all queued updates
+		material_storage->_update_queued_materials();
+		// Bind material uniform buffer and textures.
+		m->bind_uniforms();
+		version = m->shader_data->version;
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, tex_blit_fbo);
+	TightLocalVector<GLenum> draw_buffers;
+
+	Texture *tar_textures[4];
+	int convert_to_srgb_mask = 0;
+	Texture *src_textures[4];
+
+	int i = 0;
+	uint32_t specialization = 0;
+	const int outputFlagArray[4] = { 0, TexBlitShaderGLES3::USE_OUTPUT1, TexBlitShaderGLES3::USE_OUTPUT2, TexBlitShaderGLES3::USE_OUTPUT3 };
+	const int srgbMaskArray[4] = { 1, 2, 4, 8 };
+	while (i < 4) {
+		// Attach Targets to Framebuffer
+		if (i < p_textures.size()) {
+			tar_textures[i] = get_texture(p_textures[i]);
+			ERR_FAIL_NULL_MSG(tar_textures[i], "Drawable Texture target cannot be null.");
+			if (i > 0) {
+				ERR_FAIL_COND_MSG(texture_get_size(p_textures[i - 1]) != texture_get_size(p_textures[i]), "All Blit_Rect output textures must be same size.");
+			}
+			specialization |= outputFlagArray[i];
+			draw_buffers.push_back(GL_COLOR_ATTACHMENT0 + i);
+			ERR_FAIL_COND_MSG(p_to_mipmap >= tar_textures[i]->mipmaps, vformat("Drawable Texture Target does not have mipmap level %d.", p_to_mipmap));
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, tar_textures[i]->tex_id, p_to_mipmap);
+			convert_to_srgb_mask += tar_textures[i]->drawable_type == RS::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB ? srgbMaskArray[i] : 0;
+		}
+
+		// Bind Sources to buffer. Use placeholder Black Texture if source is bad.
+		if (i < p_source_textures.size()) {
+			src_textures[i] = get_texture(p_source_textures[i]);
+			if (!src_textures[i]) {
+				src_textures[i] = get_texture(default_gl_textures[DEFAULT_GL_TEXTURE_WHITE]);
+			}
+		} else {
+			src_textures[i] = get_texture(default_gl_textures[DEFAULT_GL_TEXTURE_WHITE]);
+		}
+		int shift = i == 0 ? 0 : GLES3::Config::get_singleton()->max_texture_image_units - i;
+		glActiveTexture(GL_TEXTURE0 + shift);
+		glBindTexture(GL_TEXTURE_2D, src_textures[i]->tex_id);
+
+		i += 1;
+	}
+
+	bool success = material_storage->shaders.tex_blit_shader.version_bind_shader(version, variant, specialization);
+	if (!success) {
+		return;
+	}
+
+	// Calculates the Rects Offset & Size in UV space for Shader to scale Vertex Quad correctly
+	Vector3 size = texture_get_size(p_textures[0]);
+	Vector2 offset = Vector2(p_rect.position.x / size.x, p_rect.position.y / size.y);
+	Vector2 rect_size = Vector2(p_rect.size.x / size.x, p_rect.size.y / size.y);
+	Vector2i vp_size = Vector2i(tar_textures[0]->alloc_width, tar_textures[0]->alloc_height);
+	if (p_to_mipmap != 0) {
+		vp_size.x >>= p_to_mipmap;
+		vp_size.y >>= p_to_mipmap;
+	}
+
+	glViewport(0, 0, vp_size.x, vp_size.y);
+
+	material_storage->shaders.tex_blit_shader.version_set_uniform(TexBlitShaderGLES3::CONVERT_TO_SRGB, convert_to_srgb_mask, version, variant, specialization);
+	material_storage->shaders.tex_blit_shader.version_set_uniform(TexBlitShaderGLES3::SIZE, rect_size, version, variant, specialization);
+	material_storage->shaders.tex_blit_shader.version_set_uniform(TexBlitShaderGLES3::OFFSET, offset, version, variant, specialization);
+	material_storage->shaders.tex_blit_shader.version_set_uniform(TexBlitShaderGLES3::MODULATE, p_modulate, version, variant, specialization);
+	material_storage->shaders.tex_blit_shader.version_set_uniform(TexBlitShaderGLES3::TIME, RasterizerGLES3::get_singleton()->get_total_time(), version, variant, specialization);
+
+	// Set Blend_Mode correctly
+	GLES3::TexBlitShaderData::BlendMode blend_mode = m->shader_data->blend_mode;
+	glEnable(GL_BLEND);
+	switch (blend_mode) {
+		case GLES3::TexBlitShaderData::BLEND_MODE_ADD:
+			glBlendEquation(GL_FUNC_ADD);
+			glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
+			break;
+
+		case GLES3::TexBlitShaderData::BLEND_MODE_SUB:
+			glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+			glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
+			break;
+
+		case GLES3::TexBlitShaderData::BLEND_MODE_MIX:
+			glBlendEquation(GL_FUNC_ADD);
+			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+			break;
+
+		case GLES3::TexBlitShaderData::BLEND_MODE_MUL:
+			glBlendEquation(GL_FUNC_ADD);
+			glBlendFuncSeparate(GL_DST_COLOR, GL_ZERO, GL_DST_ALPHA, GL_ZERO);
+			break;
+
+		case GLES3::TexBlitShaderData::BLEND_MODE_DISABLED:
+			glDisable(GL_BLEND);
+			break;
+	}
+
+	glDrawBuffers(draw_buffers.size(), draw_buffers.ptr());
+
+	// DRAW!!
+	glBindVertexArray(tex_blit_quad_array);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+
+	// Reset to system FBO
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 }
 
 void TextureStorage::texture_2d_placeholder_initialize(RID p_texture) {
@@ -1259,7 +1522,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 
 	Ref<Image> image;
 #ifdef GL_API_ENABLED
-	if (RasterizerGLES3::is_gles_over_gl()) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		// OpenGL 3.3 supports glGetTexImage which is faster and simpler than glReadPixels.
 		// It also allows for reading compressed textures, mipmaps, and more formats.
 		Vector<uint8_t> data;
@@ -1302,7 +1565,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 	}
 #endif // GL_API_ENABLED
 #ifdef GLES_API_ENABLED
-	if (!RasterizerGLES3::is_gles_over_gl()) {
+	if (!RasterizerUtilGLES3::is_gles_over_gl()) {
 		Vector<uint8_t> data;
 
 		// On web and mobile we always read an RGBA8 image with no mipmaps.
@@ -1537,6 +1800,17 @@ Vector<Ref<Image>> TextureStorage::texture_3d_get(RID p_texture) const {
 	return ret;
 }
 
+void TextureStorage::texture_drawable_generate_mipmaps(RID p_texture) {
+	Texture *texture = get_texture(p_texture);
+	Vector3i size = texture_get_size(p_texture);
+	CopyEffects::get_singleton()->bilinear_blur(texture->tex_id, texture->mipmaps, Rect2i(0, 0, size.x, size.y));
+}
+
+RID TextureStorage::texture_drawable_get_default_material() const {
+	// This should never be called before DrawableTexture stuff is initialized.
+	return tex_blit_shader.default_material;
+}
+
 void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 	Texture *tex_to = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL(tex_to);
@@ -1728,7 +2002,7 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 	bool needs_decompress = texture->resize_to_po2;
 
 	// Support for RGTC-compressed Texture Arrays isn't mandated by GLES3/WebGL.
-	if (!RasterizerGLES3::is_gles_over_gl() && texture->target == GL_TEXTURE_2D_ARRAY) {
+	if (!RasterizerUtilGLES3::is_gles_over_gl() && texture->target == GL_TEXTURE_2D_ARRAY) {
 		if (p_image->get_format() == Image::FORMAT_RGTC_R || p_image->get_format() == Image::FORMAT_RGTC_RG) {
 			needs_decompress = true;
 		}
@@ -1900,7 +2174,7 @@ void TextureStorage::_texture_set_swizzle(GLES3::Texture *p_texture, Image::Form
 #ifndef WEB_ENABLED
 	switch (p_texture->format) {
 		case Image::FORMAT_L8: {
-			if (RasterizerGLES3::is_gles_over_gl()) {
+			if (RasterizerUtilGLES3::is_gles_over_gl()) {
 				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
 				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
 				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
@@ -1913,7 +2187,7 @@ void TextureStorage::_texture_set_swizzle(GLES3::Texture *p_texture, Image::Form
 			}
 		} break;
 		case Image::FORMAT_LA8: {
-			if (RasterizerGLES3::is_gles_over_gl()) {
+			if (RasterizerUtilGLES3::is_gles_over_gl()) {
 				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
 				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
 				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
@@ -2083,7 +2357,7 @@ void TextureStorage::update_texture_atlas() {
 			si.pixel_size = Size2i(src_tex->width, src_tex->height);
 
 			if (base_size < (uint32_t)si.size.width) {
-				base_size = nearest_power_of_2_templated(si.size.width);
+				base_size = Math::nearest_power_of_2_templated(si.size.width);
 			}
 
 			si.texture = E.key;
@@ -2153,7 +2427,7 @@ void TextureStorage::update_texture_atlas() {
 		}
 
 		texture_atlas.size.width = base_size * border;
-		texture_atlas.size.height = nearest_power_of_2_templated(atlas_height * border);
+		texture_atlas.size.height = Math::nearest_power_of_2_templated(atlas_height * border);
 
 		for (int i = 0; i < item_count; i++) {
 			TextureAtlas::Texture *t = texture_atlas.textures.getptr(items[i].texture);
@@ -3325,7 +3599,7 @@ void TextureStorage::render_target_sdf_process(RID p_render_target) {
 
 	// Process
 
-	int stride = nearest_power_of_2_templated(MAX(size.width, size.height) / 2);
+	int stride = Math::nearest_power_of_2_templated(MAX(size.width, size.height) / 2);
 
 	variant = CanvasSdfShaderGLES3::MODE_PROCESS;
 	success = sdf_shader.shader.version_bind_shader(sdf_shader.shader_version, variant);

@@ -188,9 +188,32 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 	pin_vertices(*this, pinned_vertices, mesh_to_physics, physics_vertices);
 
 	// Since Godot's stiffness is input as a coefficient between 0 and 1, and Jolt uses actual stiffness for its
-	// edge constraints, we crudely map one to the other with an arbitrary constant.
-	const float stiffness = MAX(Math::pow(stiffness_coefficient, 3.0f) * 100000.0f, 0.000001f);
-	const float inverse_stiffness = 1.0f / stiffness;
+	// edge constraints, we must map one to the other.
+	//
+	// Godot uses classic PBD edge constraints, which have a stiffness parameter k that is used in the position correction formula as follows:
+	// delta_x1 = -k * w1 / (w1 + w2) * (l - l0) / l * (x2 - x1)
+	// where k is the stiffness, w1 and w2 are the inverse masses of the two vertices, l is the current length of the edge = |x2 - x1|, l0 is the rest length of the edge, and x1 and x2 are the vertex positions.
+	//
+	// Note that the actual formula used in Godot physics seems to use an approximation of this which avoids calculating the square root:
+	// delta_x1 = -k * w1 / (w1 + w2) * (l^2 - l0^2) / (l^2 + l0^2) * (x2 - x1)
+	//
+	// Jolt uses XPBD which goes as follows:
+	// delta_x1 = -w1 / (w1 + w2 + compliance / dt^2) * (l - l0) / l * (x2 - x1)
+	// where compliance is the inverse of stiffness and dt is the timestep.
+	//
+	// We can derive Jolt's compliance from Godot's stiffness by evaluating:
+	// k * w1 / (w1 + w2) = w1 / (w1 + w2 + compliance / dt^2)
+	// which simplifies to:
+	// compliance = dt^2 * (1 / k - 1) * (w1 + w2)
+
+	// Assuming that the vertices have the same mass:
+	const float w1_plus_w2 = 2.0f * physics_vertices.size() / mass;
+
+	// Calculate time step of a single XPBD iteration
+	const float dt = 1.0f / Engine::get_singleton()->get_user_physics_ticks_per_second() / simulation_precision;
+
+	// Now calculate the compliance
+	const float inverse_stiffness = dt * dt * (1.0f / stiffness_coefficient - 1.0f) * w1_plus_w2;
 
 	JPH::SoftBodySharedSettings::VertexAttributes vertex_attrib;
 	vertex_attrib.mCompliance = vertex_attrib.mShearCompliance = inverse_stiffness;
@@ -205,6 +228,87 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 	return settings;
 }
 
+void JoltSoftBody3D::_apply_environmental_forces(float p_step, JPH::Body &p_jolt_body) {
+	// Get approximation of the center of the soft body.
+	Vector3 com_position = to_godot(p_jolt_body.GetCenterOfMassPosition());
+
+	// Calculate gravity and which areas affect the soft body through wind.
+	bool gravity_done = false;
+	Vector3 gravity;
+	LocalVector<JoltArea3D *> wind_areas;
+	for (JoltArea3D *area : areas) {
+		if (!gravity_done) {
+			gravity_done = JoltArea3D::apply_override(gravity, area->get_gravity_mode(), [&]() {
+				return area->compute_gravity(com_position);
+			});
+		}
+
+		if (area->get_wind_pressure() > CMP_EPSILON) {
+			wind_areas.push_back(area);
+		}
+	}
+
+	// Add default gravity.
+	if (!gravity_done) {
+		gravity += space->get_default_area()->compute_gravity(com_position);
+	}
+
+	// Apply gravity to soft body. Note that this only works so long as vertices have uniform mass (excluding pinned vertices).
+	p_jolt_body.AddForce(to_jolt(gravity) * mass);
+
+	if (!wind_areas.is_empty()) {
+		JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*p_jolt_body.GetMotionPropertiesUnchecked());
+		JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
+
+		for (const JPH::SoftBodySharedSettings::Face &physics_face : motion_properties.GetFaces()) {
+			JPH::SoftBodyVertex &physics_vertex0 = physics_vertices[physics_face.mVertex[0]];
+			JPH::SoftBodyVertex &physics_vertex1 = physics_vertices[physics_face.mVertex[1]];
+			JPH::SoftBodyVertex &physics_vertex2 = physics_vertices[physics_face.mVertex[2]];
+
+			// Calculate the triangle centroid.
+			Vector3 v0 = to_godot(physics_vertex0.mPosition);
+			Vector3 v1 = to_godot(physics_vertex1.mPosition);
+			Vector3 v2 = to_godot(physics_vertex2.mPosition);
+			Vector3 centroid = com_position + (v0 + v1 + v2) * real_t(1.0 / 3.0);
+
+			// Calculate the triangle normal.
+			Vector3 normal = (v2 - v0).cross(v1 - v0);
+			real_t normal_length = normal.length();
+			if (normal_length > real_t(1.0e-6)) { // If the normal is near zero, the area is near zero so we can skip this triangle.
+				normal /= normal_length;
+
+				// Area is half the length of the cross product of two sides.
+				real_t triangle_area = real_t(0.5) * normal_length;
+
+				// Accumulate wind forces from all wind areas.
+				Vector3 wind_force;
+				for (const JoltArea3D *area : wind_areas) {
+					const Vector3 &wind_direction = area->get_wind_direction();
+					const Vector3 &wind_source = area->get_wind_source();
+
+					// Calculate attenuation factor based on distance from wind source to triangle centroid.
+					// We do not allow a projection below 1 to ensure that we never amplify and to avoid NaNs when the value would be negative.
+					real_t projection_toward_centroid = MAX((centroid - wind_source).dot(wind_direction), real_t(1.0));
+					real_t attenuation_over_distance = Math::pow(projection_toward_centroid, -real_t(area->get_wind_attenuation_factor()));
+
+					// Calculate force magnitude.
+					real_t force_magnitude = area->get_wind_pressure() * triangle_area;
+
+					// Calculate the resulting wind force on the triangle by projecting wind direction onto triangle normal.
+					// Divide by 3 to distribute force equally over each vertex.
+					wind_force += (force_magnitude * attenuation_over_distance * real_t(1.0 / 3.0) * normal.dot(wind_direction)) * normal;
+				}
+
+				// Apply the force as an impulse over the timestep.
+				JPH::Vec3 impulse = to_jolt(wind_force * p_step);
+				physics_vertex0.mVelocity += impulse * physics_vertex0.mInvMass;
+				physics_vertex1.mVelocity += impulse * physics_vertex1.mInvMass;
+				physics_vertex2.mVelocity += impulse * physics_vertex2.mInvMass;
+			}
+		}
+	}
+}
+
 void JoltSoftBody3D::_update_mass() {
 	if (!in_space()) {
 		return;
@@ -213,7 +317,7 @@ void JoltSoftBody3D::_update_mass() {
 	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
 	JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
 
-	const float inverse_vertex_mass = mass == 0.0f ? 1.0f : (float)physics_vertices.size() / mass;
+	const float inverse_vertex_mass = (float)physics_vertices.size() / mass;
 
 	for (JPH::SoftBodyVertex &vertex : physics_vertices) {
 		vertex.mInvMass = inverse_vertex_mass;
@@ -277,6 +381,7 @@ void JoltSoftBody3D::_simulation_precision_changed() {
 }
 
 void JoltSoftBody3D::_mass_changed() {
+	_update_mass();
 	wake_up();
 }
 
@@ -304,6 +409,14 @@ void JoltSoftBody3D::_exceptions_changed() {
 }
 
 void JoltSoftBody3D::_motion_changed() {
+	wake_up();
+}
+
+void JoltSoftBody3D::_transform_changed() {
+	wake_up();
+}
+
+void JoltSoftBody3D::_areas_changed() {
 	wake_up();
 }
 
@@ -338,6 +451,25 @@ bool JoltSoftBody3D::has_collision_exception(const RID &p_excepted_body) const {
 	return exceptions.find(p_excepted_body) >= 0;
 }
 
+void JoltSoftBody3D::add_area(JoltArea3D *p_area) {
+	int i = 0;
+	for (; i < (int)areas.size(); i++) {
+		if (p_area->get_priority() > areas[i]->get_priority()) {
+			break;
+		}
+	}
+
+	areas.insert(i, p_area);
+
+	_areas_changed();
+}
+
+void JoltSoftBody3D::remove_area(JoltArea3D *p_area) {
+	areas.erase(p_area);
+
+	_areas_changed();
+}
+
 bool JoltSoftBody3D::can_interact_with(const JoltBody3D &p_other) const {
 	return (can_collide_with(p_other) || p_other.can_collide_with(*this)) && !has_collision_exception(p_other.get_rid()) && !p_other.has_collision_exception(rid);
 }
@@ -352,6 +484,10 @@ bool JoltSoftBody3D::can_interact_with(const JoltArea3D &p_other) const {
 
 Vector3 JoltSoftBody3D::get_velocity_at_position(const Vector3 &p_position) const {
 	return Vector3();
+}
+
+void JoltSoftBody3D::pre_step(float p_step, JPH::Body &p_jolt_body) {
+	_apply_environmental_forces(p_step, p_jolt_body);
 }
 
 void JoltSoftBody3D::set_mesh(const RID &p_mesh) {
@@ -455,11 +591,13 @@ void JoltSoftBody3D::set_simulation_precision(int p_precision) {
 }
 
 void JoltSoftBody3D::set_mass(float p_mass) {
+	ERR_FAIL_COND(p_mass <= 0.0); // A mass of zero would result in infinite inverse mass.
+
 	if (unlikely(mass == p_mass)) {
 		return;
 	}
 
-	mass = MAX(p_mass, 0.0f);
+	mass = p_mass;
 
 	_mass_changed();
 }
@@ -582,7 +720,8 @@ void JoltSoftBody3D::set_transform(const Transform3D &p_transform) {
 		vertex.mPosition = vertex.mPreviousPosition = relative_transform.Multiply3x3(vertex.mPosition);
 		vertex.mVelocity = JPH::Vec3::sZero();
 	}
-	wake_up();
+
+	_transform_changed();
 }
 
 AABB JoltSoftBody3D::get_bounds() const {

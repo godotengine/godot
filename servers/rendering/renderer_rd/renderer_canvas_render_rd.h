@@ -615,6 +615,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		InstanceData *prev_instance_data = nullptr;
 		uint32_t prev_instance_data_index = 0;
 
+		InstanceData intermediary_instance_data;
+
 		uint32_t max_instances_per_buffer = 16384;
 		uint32_t max_instance_buffer_size = 16384 * sizeof(InstanceData);
 

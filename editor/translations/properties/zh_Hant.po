@@ -51,13 +51,14 @@
 # STENYIN lee <stenyin@gmail.com>, 2025.
 # Myeongjin <aranet100@gmail.com>, 2025.
 # RogerFang <newlag@gmail.com>, 2025.
+# Wei-Fu Chen <410477jimmy@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-08 20:00+0000\n"
-"Last-Translator: RogerFang <newlag@gmail.com>\n"
+"PO-Revision-Date: 2026-01-25 00:39+0000\n"
+"Last-Translator: Wei-Fu Chen <410477jimmy@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot-properties/zh_Hant/>\n"
 "Language: zh_Hant\n"
@@ -65,7 +66,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 msgid "Application"
 msgstr "應用"
@@ -114,6 +115,9 @@ msgstr "自訂使用者目錄名稱"
 
 msgid "Project Settings Override"
 msgstr "覆寫專案設定"
+
+msgid "Disable Project Settings Override"
+msgstr "停用覆寫專案設定"
 
 msgid "Main Loop Type"
 msgstr "主迴圈型別"
@@ -216,6 +220,9 @@ msgstr "檢查角度插值類型衝突"
 
 msgid "Compatibility"
 msgstr "編譯"
+
+msgid "Default Parent Skeleton in Mesh Instance 3D"
+msgstr "Mesh Instance 3D 的預設父骨架"
 
 msgid "Audio"
 msgstr "音訊"

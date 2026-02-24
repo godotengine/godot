@@ -114,6 +114,29 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 		Vector3 inters;
 		// Special case for primary handle, the handle id equals control point id.
 		const int idx = p_id;
+		if (!Path3DEditorPlugin::singleton->_edit.waiting_handle_physics || !Path3DEditorPlugin::singleton->_edit.in_physics_frame) {
+			Path3DEditorPlugin::singleton->_edit.waiting_handle_physics = true;
+			Path3DEditorPlugin::singleton->_edit.gizmo_handle = p_id;
+			Path3DEditorPlugin::singleton->_edit.gizmo_handle_secondary = p_secondary;
+			Path3DEditorPlugin::singleton->_edit.gizmo_camera = p_camera;
+			Path3DEditorPlugin::singleton->_edit.mouse_pos = p_point;
+			return;
+			// Only continue if inside physics frame and waiting for physics.
+		}
+		if (Path3DEditorPlugin::singleton->snap_to_collider) {
+			PhysicsDirectSpaceState3D *ss = p_camera->get_world_3d()->get_direct_space_state();
+
+			PhysicsDirectSpaceState3D::RayParameters ray_params;
+			ray_params.from = ray_from;
+			ray_params.to = ray_from + ray_dir * p_camera->get_far();
+			PhysicsDirectSpaceState3D::RayResult result;
+			if (ss->intersect_ray(ray_params, result)) {
+				Vector3 local = gi.xform(result.position);
+				c->set_point_position(idx, local);
+				return;
+			}
+			// Will continue and do the plane intersect_ray if doesn't hit anything.
+		}
 		if (p.intersects_ray(ray_from, ray_dir, &inters)) {
 			if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 				float snap = Node3DEditor::get_singleton()->get_translate_snap();
@@ -219,6 +242,10 @@ void Path3DGizmo::commit_handle(int p_id, bool p_secondary, const Variant &p_res
 
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
+		return;
+	}
+
+	if (!Path3DEditorPlugin::singleton) {
 		return;
 	}
 
@@ -549,6 +576,7 @@ Path3DGizmo::Path3DGizmo(Path3D *p_path) {
 
 	// Connecting to a signal once, rather than plaguing the implementation with calls to `Node3DEditor::update_transform_gizmo`.
 	path->connect("curve_changed", callable_mp(this, &Path3DGizmo::_update_transform_gizmo));
+	path->connect("curve_changed", callable_mp(Path3DEditorPlugin::singleton, &Path3DEditorPlugin::_update_toolbar));
 	path->connect("debug_color_changed", callable_mp(this, &Path3DGizmo::redraw));
 
 	Path3DEditorPlugin::singleton->curve_edit->connect(SceneStringName(pressed), callable_mp(this, &Path3DGizmo::redraw));
@@ -669,9 +697,20 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 				} else {
 					origin = gt.xform(c->get_point_position(c->get_point_count() - 1));
 				}
-				Plane p(p_camera->get_transform().basis.get_column(2), origin);
+
 				Vector3 ray_from = viewport->get_ray_pos(mbpos);
 				Vector3 ray_dir = viewport->get_ray(mbpos);
+
+				if (snap_to_collider) {
+					_edit.click_ray_pos = ray_from;
+					_edit.click_ray_dir = ray_dir * p_camera->get_far();
+					_edit.gizmo_camera = p_camera;
+					_edit.origin = origin;
+					_edit.waiting_point_physics = true;
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
+				}
+
+				Plane p(p_camera->get_transform().basis.get_column(2), origin);
 
 				Vector3 inters;
 				if (p.intersects_ray(ray_from, ray_dir, &inters)) {
@@ -731,6 +770,12 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 	return EditorPlugin::AFTER_GUI_INPUT_PASS;
 }
 
+void Path3DEditorPlugin::update_handles() {
+	if (_edit.gizmo.is_valid()) {
+		callable_mp(_edit.gizmo.ptr(), &Path3DGizmo::redraw).call_deferred();
+	}
+}
+
 void Path3DEditorPlugin::edit(Object *p_object) {
 	path = Object::cast_to<Path3D>(p_object);
 	_update_toolbar();
@@ -748,6 +793,7 @@ void Path3DEditorPlugin::make_visible(bool p_visible) {
 		topmenu_bar->hide();
 		path = nullptr;
 	}
+	set_physics_process(p_visible);
 }
 
 void Path3DEditorPlugin::_mode_changed(int p_mode) {
@@ -790,6 +836,11 @@ void Path3DEditorPlugin::_handle_option_pressed(int p_option) {
 			bool is_checked = pm->is_item_checked(HANDLE_OPTION_LENGTH);
 			mirror_handle_length = !is_checked;
 			pm->set_item_checked(HANDLE_OPTION_LENGTH, mirror_handle_length);
+		} break;
+		case HANDLE_OPTION_SNAP_COLLIDER: {
+			bool is_checked = pm->is_item_checked(HANDLE_OPTION_SNAP_COLLIDER);
+			snap_to_collider = !is_checked;
+			pm->set_item_checked(HANDLE_OPTION_SNAP_COLLIDER, snap_to_collider);
 		} break;
 	}
 }
@@ -884,6 +935,55 @@ void Path3DEditorPlugin::_notification(int p_what) {
 
 			path->update_gizmos();
 		} break;
+		case NOTIFICATION_PHYSICS_PROCESS: {
+			if (_edit.waiting_point_physics) {
+				_edit.waiting_point_physics = false;
+				const Transform3D gt = path->get_global_transform();
+				const Transform3D it = gt.affine_inverse();
+				Ref<Curve3D> c = path->get_curve();
+				EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+				PhysicsDirectSpaceState3D *ss = get_tree()->get_root()->get_world_3d()->get_direct_space_state();
+				if (ss) {
+					PhysicsDirectSpaceState3D::RayParameters ray_params;
+					PhysicsDirectSpaceState3D::RayResult result;
+					ray_params.from = _edit.click_ray_pos;
+					ray_params.to = ray_params.from + _edit.click_ray_dir;
+					bool hit_something = false;
+					Vector3 inters;
+					if (ss->intersect_ray(ray_params, result)) {
+						inters = result.position;
+						hit_something = true;
+					} else {
+						Plane p(_edit.gizmo_camera->get_transform().basis.get_column(2), _edit.origin);
+						if (p.intersects_ray(ray_params.from, _edit.click_ray_dir, &inters)) {
+							hit_something = true;
+						}
+					}
+					if (hit_something) {
+						ur->create_action(TTR("Add Point to Curve"));
+						ur->add_do_method(c.ptr(), "add_point", it.xform(inters), Vector3(), Vector3(), -1);
+						ur->add_undo_method(c.ptr(), "remove_point", c->get_point_count());
+						ur->commit_action();
+					}
+				}
+			}
+			if (_edit.waiting_handle_physics) {
+				_edit.in_physics_frame = true;
+
+				// Find gizmo reference.
+				Vector<Ref<Node3DGizmo>> gizmos = path->get_gizmos();
+				for (Ref<EditorNode3DGizmo> seg : gizmos) {
+					if (seg.is_valid()) {
+						_edit.gizmo = seg;
+						break;
+					}
+				}
+
+				_edit.gizmo->set_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_camera, _edit.mouse_pos);
+				_edit.in_physics_frame = false;
+				_edit.waiting_handle_physics = false;
+			}
+		}
 	}
 }
 
@@ -989,6 +1089,8 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	menu->set_item_checked(HANDLE_OPTION_ANGLE, mirror_handle_angle);
 	menu->add_check_item(TTR("Mirror Handle Lengths"));
 	menu->set_item_checked(HANDLE_OPTION_LENGTH, mirror_handle_length);
+	menu->add_check_item(TTR("Snap to Colliders"));
+	menu->set_item_checked(HANDLE_OPTION_SNAP_COLLIDER, snap_to_collider);
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &Path3DEditorPlugin::_handle_option_pressed));
 
 	curve_edit->set_pressed_no_signal(true);
@@ -1026,54 +1128,41 @@ void Path3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Ref<StandardMaterial3D> first_pt_handle_material = get_material("first_pt_handle", p_gizmo);
 	Ref<StandardMaterial3D> last_pt_handle_material = get_material("last_pt_handle", p_gizmo);
 	Ref<StandardMaterial3D> closed_pt_handle_material = get_material("closed_pt_handle", p_gizmo);
+	Ref<StandardMaterial3D> selected_pt_handle_material = get_material("selected_pt_handle", p_gizmo);
 
 	first_pt_handle_material->set_albedo(Color(0.2, 1.0, 0.0));
 	last_pt_handle_material->set_albedo(Color(1.0, 0.2, 0.0));
 	closed_pt_handle_material->set_albedo(Color(1.0, 0.8, 0.0));
+	selected_pt_handle_material->set_albedo(Color(0.2, 0.5, 1.0));
 
-	PackedVector3Array handles;
-
-	if (Path3DEditorPlugin::singleton->curve_edit->is_pressed()) {
-		for (int idx = 0; idx < curve->get_point_count(); ++idx) {
-			// Collect handles.
-			const Vector3 pos = curve->get_point_position(idx);
-
-			handles.append(pos);
+	PackedInt32Array selected_points = p_gizmo->get_subgizmo_selection();
+	PackedVector3Array first_pt;
+	PackedVector3Array last_pt;
+	PackedVector3Array common_pt;
+	PackedVector3Array selected_pt;
+	int last = curve->get_point_count() - 1;
+	for (int i = 0; i <= last; i++) {
+		if (selected_points.has(i)) {
+			selected_pt.push_back(curve->get_point_position(i));
+		} else if (i == 0) {
+			first_pt.push_back(curve->get_point_position(i));
+		} else if (i == last) {
+			last_pt.push_back(curve->get_point_position(i));
+		} else {
+			common_pt.push_back(curve->get_point_position(i));
 		}
 	}
-
-	if (handles.size()) {
-		// Point count.
-		const int pc = handles.size();
-
-		// Initialize arrays for first point.
-		PackedVector3Array first_pt;
-		first_pt.append(handles[0]);
-
-		// Initialize arrays and add handle for last point if needed.
-		if (pc > 1) {
-			PackedVector3Array last_pt;
-			last_pt.append(handles[handles.size() - 1]);
-			handles.remove_at(handles.size() - 1);
-			if (curve->is_closed()) {
-				p_gizmo->add_vertices(last_pt, handle_material, Mesh::PRIMITIVE_POINTS);
-			} else {
-				p_gizmo->add_vertices(last_pt, last_pt_handle_material, Mesh::PRIMITIVE_POINTS);
-			}
-		}
-
-		// Add handle for first point.
-		handles.remove_at(0);
-		if (curve->is_closed()) {
-			p_gizmo->add_vertices(first_pt, closed_pt_handle_material, Mesh::PRIMITIVE_POINTS);
-		} else {
-			p_gizmo->add_vertices(first_pt, first_pt_handle_material, Mesh::PRIMITIVE_POINTS);
-		}
-
-		// Add handles for remaining intermediate points.
-		if (!handles.is_empty()) {
-			p_gizmo->add_vertices(handles, handle_material, Mesh::PRIMITIVE_POINTS);
-		}
+	if (first_pt.size()) {
+		p_gizmo->add_vertices(first_pt, curve->is_closed() ? closed_pt_handle_material : first_pt_handle_material, Mesh::PRIMITIVE_POINTS);
+	}
+	if (last_pt.size()) {
+		p_gizmo->add_vertices(last_pt, curve->is_closed() ? handle_material : last_pt_handle_material, Mesh::PRIMITIVE_POINTS);
+	}
+	if (common_pt.size()) {
+		p_gizmo->add_vertices(common_pt, handle_material, Mesh::PRIMITIVE_POINTS);
+	}
+	if (selected_pt.size()) {
+		p_gizmo->add_vertices(selected_pt, selected_pt_handle_material, Mesh::PRIMITIVE_POINTS);
 	}
 }
 
@@ -1083,15 +1172,22 @@ int Path3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gizmo,
 	Ref<Curve3D> curve = path->get_curve();
 	ERR_FAIL_COND_V(curve.is_null(), -1);
 
+	int ret = -1;
 	if (Path3DEditorPlugin::singleton->curve_edit->is_pressed()) {
 		for (int idx = 0; idx < curve->get_point_count(); ++idx) {
 			Vector3 pos = path->get_global_transform().xform(curve->get_point_position(idx));
 			if (p_camera->unproject_position(pos).distance_to(p_point) < 20) {
-				return idx;
+				ret = idx;
+				break;
 			}
 		}
 	}
-	return -1;
+
+	if (Path3DEditorPlugin::singleton) {
+		Path3DEditorPlugin::singleton->update_handles();
+	}
+
+	return ret;
 }
 
 Vector<int> Path3DGizmoPlugin::subgizmos_intersect_frustum(const EditorNode3DGizmo *p_gizmo, const Camera3D *p_camera, const Vector<Plane> &p_frustum) const {
@@ -1117,6 +1213,10 @@ Vector<int> Path3DGizmoPlugin::subgizmos_intersect_frustum(const EditorNode3DGiz
 				contained_points.push_back(idx);
 			}
 		}
+	}
+
+	if (Path3DEditorPlugin::singleton) {
+		Path3DEditorPlugin::singleton->update_handles();
 	}
 
 	return contained_points;
@@ -1192,5 +1292,6 @@ Path3DGizmoPlugin::Path3DGizmoPlugin() {
 	create_handle_material("first_pt_handle", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorPathSmoothHandle"), EditorStringName(EditorIcons)));
 	create_handle_material("last_pt_handle", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorPathSmoothHandle"), EditorStringName(EditorIcons)));
 	create_handle_material("closed_pt_handle", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorPathSmoothHandle"), EditorStringName(EditorIcons)));
+	create_handle_material("selected_pt_handle", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorPathSmoothHandle"), EditorStringName(EditorIcons)));
 	create_handle_material("sec_handles", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorCurveHandle"), EditorStringName(EditorIcons)));
 }

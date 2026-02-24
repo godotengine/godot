@@ -34,13 +34,6 @@
 #include "scene/resources/texture.h"
 #include "servers/display/display_server.h"
 
-#ifndef _3D_DISABLED
-class Camera3D;
-class CollisionObject3D;
-class AudioListener3D;
-class World3D;
-#endif // _3D_DISABLED
-
 class AudioListener2D;
 class Camera2D;
 class CanvasItem;
@@ -51,6 +44,13 @@ class SceneTreeTimer;
 class Viewport;
 class Window;
 class World2D;
+
+#ifndef _3D_DISABLED
+class AudioListener3D;
+class Camera3D;
+class CollisionObject3D;
+class World3D;
+#endif // _3D_DISABLED
 
 class ViewportTexture : public Texture2D {
 	GDCLASS(ViewportTexture, Texture2D);

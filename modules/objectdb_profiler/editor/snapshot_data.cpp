@@ -33,7 +33,7 @@
 #include "core/core_bind.h"
 #include "core/io/compression.h"
 #include "core/object/script_language.h"
-#include "scene/debugger/scene_debugger.h"
+#include "scene/debugger/scene_debugger_object.h"
 
 #if defined(MODULE_GDSCRIPT_ENABLED) && defined(DEBUG_ENABLED)
 #include "modules/gdscript/gdscript.h"
@@ -58,14 +58,18 @@ SnapshotDataObject::SnapshotDataObject(SceneDebuggerObject &p_obj, GameStateSnap
 				// Built-in resource.
 				String base_path = path.get_slice("::", 0);
 				if (!resource_cache.cache.has(base_path)) {
-					resource_cache.cache[base_path] = ResourceLoader::load(base_path);
+					if (ResourceLoader::exists(path)) {
+						resource_cache.cache[base_path] = ResourceLoader::load(base_path);
+					}
 					resource_cache.misses++;
 				} else {
 					resource_cache.hits++;
 				}
 			}
 			if (!resource_cache.cache.has(path)) {
-				resource_cache.cache[path] = ResourceLoader::load(path);
+				if (ResourceLoader::exists(path)) {
+					resource_cache.cache[path] = ResourceLoader::load(path);
+				}
 				resource_cache.misses++;
 			} else {
 				resource_cache.hits++;
@@ -271,11 +275,11 @@ void GameStateSnapshot::_get_rc_cycles(
 
 		SnapshotDataObject *next = objects[next_child.value];
 		if (next != nullptr && next->is_class(RefCounted::get_class_static()) && !next->is_class(WeakRef::get_class_static()) && !p_traversed_objs.has(next)) {
-			HashSet<SnapshotDataObject *> traversed_copy = p_traversed_objs;
+			HashSet<SnapshotDataObject *> traversed_copy(p_traversed_objs);
 			if (p_obj != p_source_obj) {
 				traversed_copy.insert(p_obj);
 			}
-			_get_rc_cycles(next, p_source_obj, traversed_copy, r_ret_val, child_path);
+			_get_rc_cycles(next, p_source_obj, std::move(traversed_copy), r_ret_val, child_path);
 		}
 	}
 }
@@ -306,10 +310,9 @@ void GameStateSnapshot::recompute_references() {
 		if (!obj.value->is_class(RefCounted::get_class_static()) || obj.value->is_class(WeakRef::get_class_static())) {
 			continue;
 		}
-		HashSet<SnapshotDataObject *> traversed_objs;
 		LocalVector<String> cycles;
 
-		_get_rc_cycles(obj.value, obj.value, traversed_objs, cycles, "");
+		_get_rc_cycles(obj.value, obj.value, HashSet<SnapshotDataObject *>(), cycles, "");
 		Array cycles_array;
 		for (const String &cycle : cycles) {
 			cycles_array.push_back(cycle);

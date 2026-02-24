@@ -175,7 +175,6 @@ class Godot private constructor(val context: Context) {
 	 */
 	private var renderViewInitialized = false
 	private var primaryHost: GodotHost? = null
-	private var currentConfig = context.resources.configuration
 
 	/**
 	 * Tracks whether we're in the RESUMED lifecycle state.
@@ -197,6 +196,7 @@ class Godot private constructor(val context: Context) {
 	private var useDebugOpengl = false
 	private var darkMode = false
 	private var backgroundColor: Int = Color.BLACK
+	private var orientation = Configuration.ORIENTATION_UNDEFINED
 
 	internal var containerLayout: FrameLayout? = null
 	var renderView: GodotRenderView? = null
@@ -234,7 +234,9 @@ class Godot private constructor(val context: Context) {
 
 		Log.v(TAG, "InitEngine with params: $commandLineParams")
 
-		darkMode = context.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+		val config = context.resources.configuration
+		darkMode = (config.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+		orientation = config.orientation
 
 		beginBenchmarkMeasure("Startup", "Godot::initEngine")
 		try {
@@ -565,19 +567,14 @@ class Godot private constructor(val context: Context) {
 					!isEditorHint() &&
 					java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/per_pixel_transparency/allowed"))
 			Log.d(TAG, "Render view should be transparent: $shouldBeTransparent")
-			renderView = if (usesVulkan()) {
-				if (meetsVulkanRequirements(context.packageManager)) {
-					GodotVulkanRenderView(this, godotInputHandler, shouldBeTransparent)
-				} else if (canFallbackToOpenGL()) {
-					// Fallback to OpenGl.
-					GodotGLRenderView(this, godotInputHandler, xrMode, useDebugOpengl, shouldBeTransparent)
-				} else {
-					throw IllegalStateException(context.getString(R.string.error_missing_vulkan_requirements_message))
-				}
 
+			val nativeRenderer = getNativeRenderer();
+			if (nativeRenderer == "vulkan") {
+				renderView = GodotVulkanRenderView(this, godotInputHandler, shouldBeTransparent)
+			} else if (nativeRenderer == "opengl3") {
+				renderView = GodotGLRenderView(this, godotInputHandler, xrMode, useDebugOpengl, shouldBeTransparent)
 			} else {
-				// Fallback to OpenGl.
-				GodotGLRenderView(this, godotInputHandler, xrMode, useDebugOpengl, shouldBeTransparent)
+				throw IllegalStateException("No native renderer is available.")
 			}
 
 			renderView?.let {
@@ -775,12 +772,12 @@ class Godot private constructor(val context: Context) {
 			}
 		}
 
-		if (currentConfig.orientation != newConfig.orientation) {
+		if (orientation != newConfig.orientation) {
+			orientation = newConfig.orientation
 			runOnRenderThread {
-				GodotLib.onScreenRotationChange(newConfig.orientation)
+				GodotLib.onOrientationChange(orientation)
 			}
 		}
-		currentConfig = newConfig
 	}
 
 	/**
@@ -790,10 +787,8 @@ class Godot private constructor(val context: Context) {
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainActivityResult(requestCode, resultCode, data)
 		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-			runOnRenderThread {
-				FilePicker.handleActivityResult(context, requestCode, resultCode, data)
-			}
+		runOnRenderThread {
+			FilePicker.handleActivityResult(context, requestCode, resultCode, data)
 		}
 	}
 
@@ -934,31 +929,25 @@ class Godot private constructor(val context: Context) {
 	 */
 	private fun isOnUiThread() = Looper.myLooper() == Looper.getMainLooper()
 
-	/**
-	 * Returns true if `Vulkan` is used for rendering.
+/**
+	 * Returns the native rendering driver.
 	 */
-	private fun usesVulkan(): Boolean {
-		val rendererInfo = GodotLib.getRendererInfo()
-		var renderingDeviceSource = "ProjectSettings"
-		var renderingDevice = rendererInfo[0]
-		var rendererSource = "ProjectSettings"
-		var renderer = rendererInfo[1]
-		val cmdline = commandLine
-		var index = cmdline.indexOf("--rendering-method")
-		if (index > -1 && cmdline.size > index + 1) {
-			rendererSource = "CommandLine"
-			renderer = cmdline.get(index + 1)
+	private fun getNativeRenderer(): String {
+		val rendererInfo = GodotLib.getRendererInfo(meetsVulkanRequirements(context.packageManager))
+		var renderingDriverChosen = rendererInfo[0]
+		var renderingDriverOriginal = rendererInfo[1]
+		var renderingMethod = rendererInfo[2]
+		var renderingDriverSource = rendererInfo[3]
+		var renderingMethodSource = rendererInfo[4]
+		Log.d(TAG, """renderingDevice: ${renderingDriverChosen} (${renderingDriverSource})
+			renderer: ${renderingMethod} (${renderingMethodSource})""")
+
+		if (renderingDriverOriginal == "vulkan" && renderingDriverChosen == "") {
+			// Throw the exception for the case where Vulkan failed to create and no fallback was available.
+			throw IllegalStateException(context.getString(R.string.error_missing_vulkan_requirements_message))
 		}
-		index = cmdline.indexOf("--rendering-driver")
-		if (index > -1 && cmdline.size > index + 1) {
-			renderingDeviceSource = "CommandLine"
-			renderingDevice = cmdline.get(index + 1)
-		}
-		val result = ("forward_plus" == renderer || "mobile" == renderer) && "vulkan" == renderingDevice
-		Log.d(TAG, """usesVulkan(): ${result}
-			renderingDevice: ${renderingDevice} (${renderingDeviceSource})
-			renderer: ${renderer} (${rendererSource})""")
-		return result
+
+		return renderingDriverChosen;
 	}
 
 	/**
@@ -1041,9 +1030,7 @@ class Godot private constructor(val context: Context) {
 
 	@Keep
 	private fun showFilePicker(currentDirectory: String, filename: String, fileMode: Int, filters: Array<String>) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-			FilePicker.showFilePicker(context, getActivity(), currentDirectory, filename, fileMode, filters)
-		}
+		FilePicker.showFilePicker(context, getActivity(), currentDirectory, filename, fileMode, filters)
 	}
 
 	/**

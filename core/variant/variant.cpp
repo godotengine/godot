@@ -35,10 +35,7 @@
 #include "core/io/resource.h"
 #include "core/math/math_funcs.h"
 #include "core/variant/variant_parser.h"
-
-PagedAllocator<Variant::Pools::BucketSmall, true> Variant::Pools::_bucket_small;
-PagedAllocator<Variant::Pools::BucketMedium, true> Variant::Pools::_bucket_medium;
-PagedAllocator<Variant::Pools::BucketLarge, true> Variant::Pools::_bucket_large;
+#include "core/variant/variant_pools.h"
 
 String Variant::get_type_name(Variant::Type p_type) {
 	switch (p_type) {
@@ -868,17 +865,6 @@ bool Variant::operator==(const Variant &p_variant) const {
 	return hash_compare(p_variant);
 }
 
-bool Variant::operator!=(const Variant &p_variant) const {
-	// Don't use `!hash_compare(p_variant)` given it makes use of OP_EQUAL
-	if (type != p_variant.type) { //evaluation of operator== needs to be more strict
-		return true;
-	}
-	bool v;
-	Variant r;
-	evaluate(OP_NOT_EQUAL, *this, p_variant, r, v);
-	return r;
-}
-
 bool Variant::operator<(const Variant &p_variant) const {
 	if (type != p_variant.type) { //if types differ, then order by type first
 		return type < p_variant.type;
@@ -1183,7 +1169,7 @@ void Variant::reference(const Variant &p_variant) {
 			memnew_placement(_data._mem, Rect2i(*reinterpret_cast<const Rect2i *>(p_variant._data._mem)));
 		} break;
 		case TRANSFORM2D: {
-			_data._transform2d = (Transform2D *)Pools::_bucket_small.alloc();
+			_data._transform2d = VariantPools::alloc<Transform2D>();
 			memnew_placement(_data._transform2d, Transform2D(*p_variant._data._transform2d));
 		} break;
 		case VECTOR3: {
@@ -1202,22 +1188,22 @@ void Variant::reference(const Variant &p_variant) {
 			memnew_placement(_data._mem, Plane(*reinterpret_cast<const Plane *>(p_variant._data._mem)));
 		} break;
 		case AABB: {
-			_data._aabb = (::AABB *)Pools::_bucket_small.alloc();
+			_data._aabb = VariantPools::alloc<::AABB>();
 			memnew_placement(_data._aabb, ::AABB(*p_variant._data._aabb));
 		} break;
 		case QUATERNION: {
 			memnew_placement(_data._mem, Quaternion(*reinterpret_cast<const Quaternion *>(p_variant._data._mem)));
 		} break;
 		case BASIS: {
-			_data._basis = (Basis *)Pools::_bucket_medium.alloc();
+			_data._ptr = VariantPools::alloc<Basis>();
 			memnew_placement(_data._basis, Basis(*p_variant._data._basis));
 		} break;
 		case TRANSFORM3D: {
-			_data._transform3d = (Transform3D *)Pools::_bucket_medium.alloc();
+			_data._ptr = VariantPools::alloc<Transform3D>();
 			memnew_placement(_data._transform3d, Transform3D(*p_variant._data._transform3d));
 		} break;
 		case PROJECTION: {
-			_data._projection = (Projection *)Pools::_bucket_large.alloc();
+			_data._ptr = VariantPools::alloc<Projection>();
 			memnew_placement(_data._projection, Projection(*p_variant._data._projection));
 		} break;
 
@@ -1388,35 +1374,35 @@ void Variant::_clear_internal() {
 		case TRANSFORM2D: {
 			if (_data._transform2d) {
 				_data._transform2d->~Transform2D();
-				Pools::_bucket_small.free((Pools::BucketSmall *)_data._transform2d);
+				VariantPools::free(_data._transform2d);
 				_data._transform2d = nullptr;
 			}
 		} break;
 		case AABB: {
 			if (_data._aabb) {
 				_data._aabb->~AABB();
-				Pools::_bucket_small.free((Pools::BucketSmall *)_data._aabb);
+				VariantPools::free(_data._aabb);
 				_data._aabb = nullptr;
 			}
 		} break;
 		case BASIS: {
 			if (_data._basis) {
 				_data._basis->~Basis();
-				Pools::_bucket_medium.free((Pools::BucketMedium *)_data._basis);
+				VariantPools::free(_data._basis);
 				_data._basis = nullptr;
 			}
 		} break;
 		case TRANSFORM3D: {
 			if (_data._transform3d) {
 				_data._transform3d->~Transform3D();
-				Pools::_bucket_medium.free((Pools::BucketMedium *)_data._transform3d);
+				VariantPools::free(_data._transform3d);
 				_data._transform3d = nullptr;
 			}
 		} break;
 		case PROJECTION: {
 			if (_data._projection) {
 				_data._projection->~Projection();
-				Pools::_bucket_large.free((Pools::BucketLarge *)_data._projection);
+				VariantPools::free(_data._projection);
 				_data._projection = nullptr;
 			}
 		} break;
@@ -2448,13 +2434,13 @@ Variant::Variant(const Plane &p_plane) :
 
 Variant::Variant(const ::AABB &p_aabb) :
 		type(AABB) {
-	_data._aabb = (::AABB *)Pools::_bucket_small.alloc();
+	_data._aabb = VariantPools::alloc<::AABB>();
 	memnew_placement(_data._aabb, ::AABB(p_aabb));
 }
 
 Variant::Variant(const Basis &p_matrix) :
 		type(BASIS) {
-	_data._basis = (Basis *)Pools::_bucket_medium.alloc();
+	_data._basis = VariantPools::alloc<Basis>();
 	memnew_placement(_data._basis, Basis(p_matrix));
 }
 
@@ -2466,19 +2452,19 @@ Variant::Variant(const Quaternion &p_quaternion) :
 
 Variant::Variant(const Transform3D &p_transform) :
 		type(TRANSFORM3D) {
-	_data._transform3d = (Transform3D *)Pools::_bucket_medium.alloc();
+	_data._transform3d = VariantPools::alloc<Transform3D>();
 	memnew_placement(_data._transform3d, Transform3D(p_transform));
 }
 
 Variant::Variant(const Projection &pp_projection) :
 		type(PROJECTION) {
-	_data._projection = (Projection *)Pools::_bucket_large.alloc();
+	_data._projection = VariantPools::alloc<Projection>();
 	memnew_placement(_data._projection, Projection(pp_projection));
 }
 
 Variant::Variant(const Transform2D &p_transform) :
 		type(TRANSFORM2D) {
-	_data._transform2d = (Transform2D *)Pools::_bucket_small.alloc();
+	_data._transform2d = VariantPools::alloc<Transform2D>();
 	memnew_placement(_data._transform2d, Transform2D(p_transform));
 }
 
@@ -3155,18 +3141,18 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 #define hash_compare_packed_array(p_lhs, p_rhs, p_type, p_compare_func) \
 	const Vector<p_type> &l = PackedArrayRef<p_type>::get_array(p_lhs); \
 	const Vector<p_type> &r = PackedArrayRef<p_type>::get_array(p_rhs); \
-                                                                        \
-	if (l.size() != r.size())                                           \
-		return false;                                                   \
-                                                                        \
-	const p_type *lr = l.ptr();                                         \
-	const p_type *rr = r.ptr();                                         \
-                                                                        \
-	for (int i = 0; i < l.size(); ++i) {                                \
-		if (!p_compare_func((lr[i]), (rr[i])))                          \
-			return false;                                               \
-	}                                                                   \
-                                                                        \
+\
+	if (l.size() != r.size()) \
+		return false; \
+\
+	const p_type *lr = l.ptr(); \
+	const p_type *rr = r.ptr(); \
+\
+	for (int i = 0; i < l.size(); ++i) { \
+		if (!p_compare_func((lr[i]), (rr[i]))) \
+			return false; \
+	} \
+\
 	return true
 
 bool Variant::hash_compare(const Variant &p_variant, int recursion_count, bool semantic_comparison) const {
@@ -3433,14 +3419,24 @@ bool Variant::is_ref_counted() const {
 bool Variant::is_type_shared(Variant::Type p_type) {
 	switch (p_type) {
 		case OBJECT:
-		case ARRAY:
 		case DICTIONARY:
+		case ARRAY:
+		// NOTE: Packed array constructors **do** copies (unlike `Array()` and `Dictionary()`),
+		// whereas they pass by reference when inside a `Variant`.
+		case PACKED_BYTE_ARRAY:
+		case PACKED_INT32_ARRAY:
+		case PACKED_INT64_ARRAY:
+		case PACKED_FLOAT32_ARRAY:
+		case PACKED_FLOAT64_ARRAY:
+		case PACKED_STRING_ARRAY:
+		case PACKED_VECTOR2_ARRAY:
+		case PACKED_VECTOR3_ARRAY:
+		case PACKED_COLOR_ARRAY:
+		case PACKED_VECTOR4_ARRAY:
 			return true;
-		default: {
-		}
+		default:
+			return false;
 	}
-
-	return false;
 }
 
 bool Variant::is_shared() const {

@@ -76,7 +76,7 @@
 # twoBornottwoB <305766341@qq.com>, 2021.
 # Magian <magian1127@gmail.com>, 2021, 2025.
 # Weiduo Xie <xwditfr@gmail.com>, 2021.
-# suplife <2634557184@qq.com>, 2021, 2022, 2023.
+# suplife <2634557184@qq.com>, 2021, 2022, 2023, 2026.
 # luoji <564144019@qq.com>, 2021.
 # zeng haochen <m18621006730@163.com>, 2021.
 # Sam Sun <oppositenormal@outlook.com>, 2021.
@@ -84,7 +84,7 @@
 # nitenook <admin@alterbaum.net>, 2021.
 # jker <cxgmfy@163.com>, 2021.
 # Ankar <1511276198@qq.com>, 2022.
-# 风青山 <idleman@yeah.net>, 2022, 2023, 2024.
+# 风青山 <idleman@yeah.net>, 2022, 2023, 2024, 2026.
 # 1104 EXSPIRAVIT_ <m18621006730@gmail.com>, 2022.
 # ChairC <974833488@qq.com>, 2022.
 # dmit-225 <c3204835842@icloud.com>, 2023.
@@ -105,8 +105,8 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2026-01-01 14:55+0000\n"
-"Last-Translator: Zhen Luo <461652354@qq.com>\n"
+"PO-Revision-Date: 2026-01-24 01:46+0000\n"
+"Last-Translator: 风青山 <idleman@yeah.net>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot-properties/zh_Hans/>\n"
 "Language: zh_Hans\n"
@@ -114,7 +114,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 msgid "Application"
 msgstr "应用"
@@ -2958,6 +2958,9 @@ msgstr "操作小工具大小"
 msgid "Manipulator Gizmo Opacity"
 msgstr "操作小工具不透明度"
 
+msgid "Show Gizmo During Rotation"
+msgstr "旋转时显示小工具"
+
 msgid "Grid Color"
 msgstr "栅格颜色"
 
@@ -2999,6 +3002,9 @@ msgstr "缩放速度系数"
 
 msgid "Ruler Width"
 msgstr "标尺宽度"
+
+msgid "Auto Resample Delay"
+msgstr "自动重采样延时"
 
 msgid "Bone Mapper"
 msgstr "骨骼映射器"
@@ -3437,6 +3443,9 @@ msgstr "XR"
 
 msgid "OpenXR"
 msgstr "OpenXR"
+
+msgid "Target API Version"
+msgstr "目标API版本"
 
 msgid "Default Action Map"
 msgstr "默认动作映射"
@@ -8462,6 +8471,12 @@ msgstr "系统菜单 ID"
 msgid "Prefer Native Menu"
 msgstr "首选原生菜单"
 
+msgid "Shrink Height"
+msgstr "收缩高度"
+
+msgid "Shrink Width"
+msgstr "收缩宽度"
+
 msgid "Fill Mode"
 msgstr "填充模式"
 
@@ -11070,6 +11085,12 @@ msgstr "垂直滚动提示"
 msgid "Scroll Hint Horizontal"
 msgstr "水平滚动提示"
 
+msgid "Scroll Hint Vertical Color"
+msgstr "垂直滚动提示颜色"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "水平滚动提示颜色"
+
 msgid "Embedded Border"
 msgstr "嵌入式边框"
 
@@ -11334,6 +11355,9 @@ msgstr "子高亮线颜色"
 msgid "Custom Button Font Highlight"
 msgstr "自定义按钮字体高亮"
 
+msgid "Scroll Hint Color"
+msgstr "滚动提示颜色"
+
 msgid "Item Margin"
 msgstr "项目边距"
 
@@ -11348,6 +11372,12 @@ msgstr "内部项目右边距"
 
 msgid "Inner Item Margin Top"
 msgstr "内部项目上边距"
+
+msgid "Check H Separation"
+msgstr "检查水平间距"
+
+msgid "Icon H Separation"
+msgstr "水平间距图标"
 
 msgid "Button Margin"
 msgstr "按钮边距"

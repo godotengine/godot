@@ -30,18 +30,28 @@
 
 #pragma once
 
-#include "core/input/input_enums.h"
 #include "core/object/object.h"
-#include "core/os/keyboard.h"
 #include "core/templates/simple_type.h"
 #include "core/typedefs.h"
 #include "core/variant/method_ptrcall.h"
-#include "core/variant/required_ptr.h"
 #include "core/variant/type_info.h"
 #include "core/variant/variant.h"
 #include "core/variant/variant_internal.h"
 
 #include <cstdio>
+
+enum class HatDir;
+enum class HatMask;
+enum class JoyAxis;
+enum class JoyButton;
+
+enum class MIDIMessage;
+enum class MouseButton;
+enum class MouseButtonMask;
+
+enum class Key;
+enum class KeyModifierMask;
+enum class KeyLocation;
 
 // Variant cannot define an implicit cast operator for every Object subclass, so the
 // casting is done here, to allow binding methods with parameters more specific than Object *
@@ -82,8 +92,11 @@ struct VariantCaster<const T &> {
 	}
 };
 
-#define VARIANT_ENUM_CAST(m_enum) MAKE_ENUM_TYPE_INFO(m_enum)
+#define VARIANT_ENUM_CAST(m_enum) MAKE_ENUM_TYPE_INFO(m_enum, m_enum)
 #define VARIANT_BITFIELD_CAST(m_enum) MAKE_BITFIELD_TYPE_INFO(m_enum)
+
+// Use only for backwards compatibility when the location of an enum changes.
+#define VARIANT_ENUM_CAST_EXT(m_enum, m_bound_name) MAKE_ENUM_TYPE_INFO(m_enum, m_bound_name)
 
 // Object enum casts must go here
 VARIANT_ENUM_CAST(Object::ConnectFlags);

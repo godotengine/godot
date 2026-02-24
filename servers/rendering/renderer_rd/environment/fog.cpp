@@ -1127,7 +1127,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 	{
 		uint32_t cluster_size = p_settings.cluster_builder->get_cluster_size();
-		params.cluster_shift = get_shift_from_power_of_2(cluster_size);
+		params.cluster_shift = Math::get_shift_from_power_of_2(cluster_size);
 
 		uint32_t cluster_screen_width = Math::division_round_up((uint32_t)p_settings.rb_size.x, cluster_size);
 		uint32_t cluster_screen_height = Math::division_round_up((uint32_t)p_settings.rb_size.y, cluster_size);

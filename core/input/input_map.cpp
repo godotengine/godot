@@ -54,6 +54,8 @@ void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("action_get_events", "action"), &InputMap::_action_get_events);
 	ClassDB::bind_method(D_METHOD("event_is_action", "event", "action", "exact_match"), &InputMap::event_is_action, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("load_from_project_settings"), &InputMap::load_from_project_settings);
+
+	ADD_SIGNAL(MethodInfo("project_settings_loaded"));
 }
 
 /**
@@ -203,6 +205,22 @@ void InputMap::action_add_event(const StringName &p_action, RequiredParam<InputE
 		return; // Already added.
 	}
 
+	// Normalize legacy device IDs: before the device ID change,
+	// keyboard and mouse events defaulted to device=0.
+	if (p_event->get_device() == 0) {
+		switch (p_event->get_type()) {
+			case InputEventType::KEY:
+				p_event->set_device(InputEvent::DEVICE_ID_KEYBOARD);
+				break;
+			case InputEventType::MOUSE_BUTTON:
+			case InputEventType::MOUSE_MOTION:
+				p_event->set_device(InputEvent::DEVICE_ID_MOUSE);
+				break;
+			default:
+				break;
+		}
+	}
+
 	input_map[p_action].inputs.push_back(p_event);
 }
 
@@ -317,6 +335,11 @@ void InputMap::load_from_project_settings() {
 		String name = pi.name.substr(pi.name.find_char('/') + 1);
 
 		Dictionary action = GLOBAL_GET(pi.name);
+
+		if (!action.has("events")) {
+			continue;
+		}
+
 		float deadzone = action.has("deadzone") ? (float)action["deadzone"] : DEFAULT_DEADZONE;
 		Array events = action["events"];
 
@@ -329,6 +352,8 @@ void InputMap::load_from_project_settings() {
 			action_add_event(name, event);
 		}
 	}
+
+	emit_signal("project_settings_loaded");
 }
 
 struct _BuiltinActionDisplayName {
@@ -900,7 +925,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_featur
 }
 
 void InputMap::load_default() {
-	HashMap<String, List<Ref<InputEvent>>> builtins = get_builtins_with_feature_overrides_applied();
+	HashMap<String, List<Ref<InputEvent>>> builtins(get_builtins_with_feature_overrides_applied());
 
 	for (const KeyValue<String, List<Ref<InputEvent>>> &E : builtins) {
 		String name = E.key;

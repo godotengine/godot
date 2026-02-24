@@ -479,6 +479,7 @@ private:
 	Vector<int> code;
 	Vector<int> default_arguments;
 	Vector<Variant> constants;
+	HashMap<StringName, Variant> constant_map;
 	Vector<StringName> global_names;
 	Vector<Variant::ValidatedOperatorEvaluator> operator_funcs;
 	Vector<Variant::ValidatedSetter> setters;

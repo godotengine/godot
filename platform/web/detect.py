@@ -183,12 +183,15 @@ def configure(env: "SConsEnvironment"):
 
     # Sanitizers
     if env["use_ubsan"]:
+        env.Append(CPPDEFINES=["UBSAN_ENABLED"])
         env.Append(CCFLAGS=["-fsanitize=undefined"])
         env.Append(LINKFLAGS=["-fsanitize=undefined"])
     if env["use_asan"]:
+        env.Append(CPPDEFINES=["ASAN_ENABLED"])
         env.Append(CCFLAGS=["-fsanitize=address"])
         env.Append(LINKFLAGS=["-fsanitize=address"])
     if env["use_lsan"]:
+        env.Append(CPPDEFINES=["LSAN_ENABLED"])
         env.Append(CCFLAGS=["-fsanitize=leak"])
         env.Append(LINKFLAGS=["-fsanitize=leak"])
     if env["use_safe_heap"]:

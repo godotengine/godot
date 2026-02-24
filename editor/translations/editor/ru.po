@@ -231,13 +231,14 @@
 # Ivan <ctapiuxleb3@gmail.com>, 2025.
 # cofeek-codes <11kormyshev11@gmail.com>, 2025.
 # daodan <karovich16@gmail.com>, 2026.
+# Artyom <artem.natharov@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-08 18:02+0000\n"
-"Last-Translator: Russian Rage <acexform@gmail.com>\n"
+"PO-Revision-Date: 2026-01-23 06:34+0000\n"
+"Last-Translator: Artyom <artem.natharov@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -246,16 +247,145 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 msgid "OK"
 msgstr "OK"
 
+msgid "Failed"
+msgstr "Не удалось"
+
+msgid "Unavailable"
+msgstr "Недоступен"
+
+msgid "Unconfigured"
+msgstr "Не настроено"
+
+msgid "Parameter out of range"
+msgstr "Параметр вне диапазона"
+
+msgid "Out of memory"
+msgstr "Недостаточно памяти"
+
+msgid "File not found"
+msgstr "Файл не найден"
+
+msgid "File: Bad drive"
+msgstr "Файл: Диск повреждён"
+
+msgid "File: Bad path"
+msgstr "Файл: Неправильный путь"
+
+msgid "File: Permission denied"
+msgstr "Файл: Отказано в доступе"
+
+msgid "File already in use"
+msgstr "Файл уже используется"
+
+msgid "Can't open file"
+msgstr "Не удалось открыть файл"
+
+msgid "Can't write file"
+msgstr "Не удалось записать файл"
+
+msgid "Can't read file"
+msgstr "Не удалось прочитать файл"
+
+msgid "File unrecognized"
+msgstr "Файл нераспознан"
+
+msgid "File corrupt"
+msgstr "Файл повреждён"
+
+msgid "Missing dependencies for file"
+msgstr "Отсутствующие зависимости для файла"
+
+msgid "End of file"
+msgstr "Конец файла"
+
+msgid "Can't open"
+msgstr "Не удалось открыть"
+
+msgid "Can't create"
+msgstr "Не удалось создать"
+
+msgid "Query failed"
+msgstr "Не удалось выполнить запрос"
+
+msgid "Already in use"
+msgstr "Уже используется"
+
 msgid "Locked"
 msgstr "Заблокирован"
 
+msgid "Timeout"
+msgstr "Превышено время ожидания"
+
+msgid "Can't connect"
+msgstr "Не удалось подключиться"
+
+msgid "Can't resolve"
+msgstr "Не удалось разрешить"
+
+msgid "Connection error"
+msgstr "Ошибка подключения"
+
+msgid "Can't acquire resource"
+msgstr "Не удалось получить ресурс"
+
+msgid "Can't fork"
+msgstr "Не удалось форкнуть"
+
+msgid "Invalid data"
+msgstr "Неверные данные"
+
+msgid "Invalid parameter"
+msgstr "Неверный параметр"
+
+msgid "Already exists"
+msgstr "Уже существует"
+
+msgid "Does not exist"
+msgstr "Не существует"
+
+msgid "Can't read database"
+msgstr "Не удалось прочитать базу данных"
+
+msgid "Can't write database"
+msgstr "Не удалось записать в базу данных"
+
+msgid "Compilation failed"
+msgstr "Ошибка компиляции"
+
+msgid "Method not found"
+msgstr "Метод не найден"
+
+msgid "Script failed"
+msgstr "Ошибка выполнения скрипта"
+
+msgid "Cyclic link detected"
+msgstr "Обнаружена циклическая ссылка"
+
+msgid "Invalid declaration"
+msgstr "Недопустимое объявление"
+
+msgid "Duplicate symbol"
+msgstr "Символ уже существует"
+
+msgid "Parse error"
+msgstr "Ошибка синтаксического анализа"
+
+msgid "Busy"
+msgstr "Занят"
+
 msgid "Help"
 msgstr "Справка"
+
+msgid "Bug"
+msgstr "Баг"
+
+msgid "unset"
+msgstr "Не задано"
 
 msgid "Physical"
 msgstr "Физический"
@@ -20872,15 +21002,6 @@ msgstr ""
 
 msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s нельзя перетащить сюда. Используйте %s для отмены."
-
-msgid ""
-"Please be aware that GraphEdit and GraphNode will undergo extensive "
-"refactoring in a future 4.x version involving compatibility-breaking API "
-"changes."
-msgstr ""
-"Учтите, что в предстоящей версии 4.x GraphEdit и GraphNode подвергнутся "
-"обширному рефакторингу, который включает нарушающие совместимость изменения "
-"API."
 
 msgid ""
 "Labels with autowrapping enabled must have a custom minimum size configured "

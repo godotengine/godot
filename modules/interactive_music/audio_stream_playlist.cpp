@@ -128,9 +128,8 @@ bool AudioStreamPlaylist::has_loop() const {
 }
 
 void AudioStreamPlaylist::_validate_property(PropertyInfo &r_property) const {
-	String prop = r_property.name;
-	if (prop != "stream_count" && prop.begins_with("stream_")) {
-		int stream = prop.get_slicec('/', 0).get_slicec('_', 1).to_int();
+	if (r_property.name != "stream_count" && r_property.name.begins_with("stream_")) {
+		int stream = r_property.name.get_slicec('/', 0).get_slicec('_', 1).to_int();
 		if (stream >= stream_count) {
 			r_property.usage = PROPERTY_USAGE_INTERNAL;
 		}
@@ -162,7 +161,7 @@ void AudioStreamPlaylist::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stream_count", PROPERTY_HINT_RANGE, "0," + itos(MAX_STREAMS), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Streams,stream_,unfoldable,page_size=999,add_button_text=" + String(TTRC("Add Stream"))), "set_stream_count", "get_stream_count");
 
 	for (int i = 0; i < MAX_STREAMS; i++) {
-		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "stream_" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_list_stream", "get_list_stream", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "stream_" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_list_stream", "get_list_stream", i);
 	}
 
 	BIND_CONSTANT(MAX_STREAMS);

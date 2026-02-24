@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/string/string_builder.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/safe_refcount.h"
 #include "scene/gui/control.h"
 #include "scene/resources/shader.h"
@@ -53,6 +54,7 @@ public:
 		TYPE_PROCESS_CUSTOM,
 		TYPE_SKY,
 		TYPE_FOG,
+		TYPE_TEXTURE_BLIT,
 		TYPE_MAX
 	};
 

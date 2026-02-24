@@ -44,6 +44,7 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
+class AcceptDialog;
 class CreateDialog;
 class DependencyEditor;
 class DependencyEditorOwners;
@@ -211,6 +212,8 @@ private:
 	ShaderCreateDialog *make_shader_dialog = nullptr;
 	CreateDialog *new_resource_dialog = nullptr;
 
+	AcceptDialog *unrecognized_ext_dialog = nullptr;
+
 	String confirm_move_to_dir;
 	bool confirm_to_copy = false;
 
@@ -275,6 +278,7 @@ private:
 	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_scroll_to_selected = true);
 	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false, bool p_grab_focus = false);
 	bool _update_filtered_items(TreeItem *p_tree_item = nullptr);
+	void _append_favorite_items();
 
 	void _file_list_gui_input(Ref<InputEvent> p_event);
 	void _tree_gui_input(Ref<InputEvent> p_event);
@@ -366,6 +370,7 @@ private:
 	void _preview_invalidated(const String &p_path);
 	void _file_list_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_index, const String &p_filename);
 	void _tree_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_update_id, ObjectID p_item);
+	Ref<Texture2D> _apply_thumbnail_filter(const Ref<Texture2D> &p_thumbnail, const String &p_file_path) const;
 
 	void _update_display_mode(bool p_force = false);
 
@@ -378,11 +383,14 @@ private:
 	void _project_settings_changed();
 	static Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
 
+	void _on_open_editor_settings_file_exts();
+
 private:
 	inline static FileSystemDock *singleton = nullptr;
 
 public:
 	static FileSystemDock *get_singleton() { return singleton; }
+	static DependencyEditorOwners *get_owners_dialog() { return singleton->owners_editor; }
 
 protected:
 	void _notification(int p_what);
@@ -436,6 +444,7 @@ public:
 	FileListDisplayMode get_file_list_display_mode() const { return file_list_display_mode; }
 
 	Tree *get_tree_control() { return tree; }
+	ItemList *get_list_control() { return files; }
 
 	void add_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);
 	void remove_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);

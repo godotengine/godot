@@ -31,6 +31,7 @@
 #include "gi.h"
 
 #include "core/config/project_settings.h"
+#include "core/math/geometry_3d.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
@@ -483,7 +484,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	RD::TextureFormat tf_aniso1 = tf_sdf;
 	tf_aniso1.format = RD::DATA_FORMAT_R8G8_UNORM;
 
-	int passes = nearest_shift(cascade_size) - 1;
+	int passes = Math::nearest_shift(cascade_size) - 1;
 
 	//store lightprobe SH
 	RD::TextureFormat tf_probes;
@@ -2658,7 +2659,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 			{
 				uint32_t dynamic_map_size = MAX(MAX(octree_size.x, octree_size.y), octree_size.z);
-				uint32_t oversample = nearest_power_of_2_templated(4);
+				uint32_t oversample = Math::nearest_power_of_2_templated(4);
 				int mipmap_index = 0;
 
 				while (mipmap_index < mipmaps.size()) {
