@@ -336,7 +336,9 @@ void LayerHost::gui_input(const Ref<InputEvent> &p_event) {
 			DisplayServer *ds = DisplayServer::get_singleton();
 			if (ds->mouse_get_mode() != DisplayServer::MOUSE_MODE_VISIBLE) {
 				ds->mouse_set_mode(DisplayServer::MOUSE_MODE_VISIBLE);
-				script_debugger->send_message("embed:mouse_set_mode", { DisplayServer::MOUSE_MODE_VISIBLE });
+				if (script_debugger != nullptr) {
+					script_debugger->send_message("embed:mouse_set_mode", { DisplayServer::MOUSE_MODE_VISIBLE });
+				}
 			}
 			accept_event();
 			return;
@@ -352,7 +354,9 @@ void LayerHost::gui_input(const Ref<InputEvent> &p_event) {
 
 	PackedByteArray data;
 	if (encode_input_event(p_event, data)) {
-		script_debugger->send_message("embed:event", { data });
+		if (script_debugger != nullptr) {
+			script_debugger->send_message("embed:event", { data });
+		}
 		accept_event();
 	}
 }
