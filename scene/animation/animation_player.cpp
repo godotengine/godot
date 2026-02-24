@@ -32,6 +32,7 @@
 #include "animation_player.compat.inc"
 
 #include "core/config/engine.h"
+#include "core/os/os.h"
 
 bool AnimationPlayer::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;

@@ -568,7 +568,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		auto_exposure_scale = RSG::camera_attributes->camera_attributes_get_auto_exposure_scale(p_render_data->camera_attributes);
 
-		RenderingServerDefault::redraw_request(); // Redraw all the time if auto exposure rendering is on.
+		RenderingServerDefault::redraw_request(false); // Redraw all the time if auto exposure rendering is on.
 		RD::get_singleton()->draw_command_end_label();
 	}
 
