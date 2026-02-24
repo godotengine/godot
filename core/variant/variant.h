@@ -412,10 +412,12 @@ public:
 	operator int32_t() const;
 	operator int16_t() const;
 	operator int8_t() const;
+	operator Math::int_alt_t() const;
 	operator uint64_t() const;
 	operator uint32_t() const;
 	operator uint16_t() const;
 	operator uint8_t() const;
+	operator Math::uint_alt_t() const;
 
 	operator ObjectID() const;
 
@@ -488,10 +490,12 @@ public:
 	Variant(int32_t p_int32);
 	Variant(int16_t p_int16);
 	Variant(int8_t p_int8);
+	Variant(Math::int_alt_t p_int_alt);
 	Variant(uint64_t p_uint64);
 	Variant(uint32_t p_uint32);
 	Variant(uint16_t p_uint16);
 	Variant(uint8_t p_uint8);
+	Variant(Math::uint_alt_t p_uint_alt);
 	Variant(float p_float);
 	Variant(double p_double);
 	Variant(const ObjectID &p_id);
