@@ -300,6 +300,12 @@
 				Returns mesh previews rendered at the given size as an [Array] of [Texture2D]s.
 			</description>
 		</method>
+		<method name="mark_scene_as_saved">
+			<return type="void" />
+			<description>
+				Marks the current scene tab as saved.
+			</description>
+		</method>
 		<method name="mark_scene_as_unsaved">
 			<return type="void" />
 			<description>

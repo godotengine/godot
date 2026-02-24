@@ -384,6 +384,7 @@ bool EditorUndoRedoManager::redo_history(int p_id) {
 void EditorUndoRedoManager::set_history_as_saved(int p_id) {
 	History &history = get_or_create_history(p_id);
 	history.saved_version = history.undo_redo->get_version();
+	emit_signal(SNAME("history_changed"));
 }
 
 void EditorUndoRedoManager::set_history_as_unsaved(int p_id) {
