@@ -32,6 +32,7 @@
 
 #include "core/io/resource.h"
 #include "core/templates/rb_map.h"
+#include "scene/property_list_helper.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/navigation_mesh.h"
 #include "servers/rendering/rendering_server.h"
@@ -59,23 +60,36 @@ public:
 #ifndef PHYSICS_3D_DISABLED
 		Vector<ShapeData> shapes;
 #endif // PHYSICS_3D_DISABLED
-		Ref<Texture2D> preview;
 		Ref<NavigationMesh> navigation_mesh;
 		Transform3D navigation_mesh_transform;
 		uint32_t navigation_layers = 1;
+		Ref<Texture2D> preview;
+		bool hide_from_list = false; // Needs to be last.
 	};
 
+private:
 	RBMap<int, Item> item_map;
+
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
 
 #ifndef PHYSICS_3D_DISABLED
 	void _set_item_shapes(int p_item, const Array &p_shapes);
 	Array _get_item_shapes(int p_item) const;
 #endif // PHYSICS_3D_DISABLED
 
+	void _set_item_hide_from_list(int p_item, bool p_hide);
+	bool _get_item_hide_from_list(int p_item) const;
+
+	void _set_item_count(int p_count);
+	int _get_item_count() const;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list); }
+	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 
 	virtual void reset_state() override;
 	static void _bind_methods();
@@ -93,6 +107,7 @@ public:
 	void set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes);
 #endif // PHYSICS_3D_DISABLED
 	void set_item_preview(int p_item, const Ref<Texture2D> &p_preview);
+
 	String get_item_name(int p_item) const;
 	Ref<Mesh> get_item_mesh(int p_item) const;
 	Transform3D get_item_mesh_transform(int p_item) const;
@@ -116,5 +131,4 @@ public:
 	int get_last_unused_item_id() const;
 
 	MeshLibrary();
-	~MeshLibrary();
 };

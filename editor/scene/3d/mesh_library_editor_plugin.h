@@ -44,15 +44,12 @@ class MeshLibraryEditor : public Control {
 	Ref<MeshLibrary> mesh_library;
 
 	MenuButton *menu = nullptr;
-	ConfirmationDialog *cd_remove = nullptr;
 	ConfirmationDialog *cd_update = nullptr;
 	EditorFileDialog *file = nullptr;
 	bool apply_xforms = false;
 	int to_erase = 0;
 
 	enum {
-		MENU_OPTION_ADD_ITEM,
-		MENU_OPTION_REMOVE_ITEM,
 		MENU_OPTION_UPDATE_FROM_SCENE,
 		MENU_OPTION_IMPORT_FROM_SCENE,
 		MENU_OPTION_IMPORT_FROM_SCENE_APPLY_XFORMS
@@ -61,7 +58,6 @@ class MeshLibraryEditor : public Control {
 	int option = 0;
 	void _import_scene_cbk(const String &p_str);
 	void _menu_cbk(int p_option);
-	void _menu_remove_confirm();
 	void _menu_update_confirm(bool p_apply_xforms);
 
 	static void _import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge, bool p_apply_xforms);
