@@ -76,6 +76,16 @@ float AudioStreamSynchronized::get_sync_stream_volume(int p_stream_index) const 
 	return audio_stream_volume_db[p_stream_index];
 }
 
+void AudioStreamSynchronized::set_sync_stream_offset(int p_stream_index, float p_offset) {
+	ERR_FAIL_INDEX(p_stream_index, MAX_STREAMS);
+	audio_stream_offset[p_stream_index] = p_offset;
+}
+
+float AudioStreamSynchronized::get_sync_stream_offset(int p_stream_index) const {
+	ERR_FAIL_INDEX_V(p_stream_index, MAX_STREAMS, 0);
+	return audio_stream_offset[p_stream_index];
+}
+
 double AudioStreamSynchronized::get_bpm() const {
 	for (int i = 0; i < stream_count; i++) {
 		if (audio_streams[i].is_valid()) {
@@ -161,12 +171,15 @@ void AudioStreamSynchronized::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_sync_stream", "stream_index"), &AudioStreamSynchronized::get_sync_stream);
 	ClassDB::bind_method(D_METHOD("set_sync_stream_volume", "stream_index", "volume_db"), &AudioStreamSynchronized::set_sync_stream_volume);
 	ClassDB::bind_method(D_METHOD("get_sync_stream_volume", "stream_index"), &AudioStreamSynchronized::get_sync_stream_volume);
+	ClassDB::bind_method(D_METHOD("set_sync_stream_offset", "stream_index", "offset"), &AudioStreamSynchronized::set_sync_stream_offset);
+	ClassDB::bind_method(D_METHOD("get_sync_stream_offset", "stream_index"), &AudioStreamSynchronized::get_sync_stream_offset);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stream_count", PROPERTY_HINT_RANGE, "0," + itos(MAX_STREAMS), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Streams,stream_,unfoldable,page_size=999,add_button_text=" + String(TTRC("Add Stream"))), "set_stream_count", "get_stream_count");
 
 	for (int i = 0; i < MAX_STREAMS; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "stream_" + itos(i) + "/stream", PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_sync_stream", "get_sync_stream", i);
 		ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "stream_" + itos(i) + "/volume", PROPERTY_HINT_RANGE, "-60,12,0.01,suffix:db", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_sync_stream_volume", "get_sync_stream_volume", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "stream_" + itos(i) + "/offset", PROPERTY_HINT_RANGE, "0,600,0.00001,or_greater,suffix:sec", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_sync_stream_offset", "get_sync_stream_offset", i);
 	}
 
 	BIND_CONSTANT(MAX_STREAMS);
@@ -198,9 +211,11 @@ void AudioStreamPlaybackSynchronized::start(double p_from_pos) {
 		stop();
 	}
 
+	playback_position = p_from_pos;
 	for (int i = 0; i < stream->stream_count; i++) {
 		if (playback[i].is_valid()) {
-			playback[i]->start(p_from_pos);
+			double offset_time = MAX(p_from_pos - stream->audio_stream_offset[i], 0.0);
+			playback[i]->start(offset_time);
 			active = true;
 		}
 	}
@@ -209,9 +224,15 @@ void AudioStreamPlaybackSynchronized::start(double p_from_pos) {
 void AudioStreamPlaybackSynchronized::seek(double p_time) {
 	for (int i = 0; i < stream->stream_count; i++) {
 		if (playback[i].is_valid()) {
-			playback[i]->seek(p_time);
+			double offset_time = MAX(p_time - stream->audio_stream_offset[i], 0.0);
+			if (playback[i]->is_playing()) {
+				playback[i]->seek(offset_time);
+			} else if (active) {
+				playback[i]->start(offset_time);
+			}
 		}
 	}
+	playback_position = p_time;
 }
 
 int AudioStreamPlaybackSynchronized::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
@@ -224,36 +245,44 @@ int AudioStreamPlaybackSynchronized::mix(AudioFrame *p_buffer, float p_rate_scal
 	bool any_active = false;
 	while (todo) {
 		int to_mix = MIN(todo, MIX_BUFFER_SIZE);
+		double playback_step = double(to_mix) / AudioServer::get_singleton()->get_mix_rate();
 
-		bool first = true;
+		// Initialize buffer; this could maybe be optimized to only happen if necessary.
+		for (int j = 0; j < to_mix; j++) {
+			p_buffer[j] = AudioFrame(0, 0);
+		}
+
 		for (int i = 0; i < stream->stream_count; i++) {
 			if (playback[i].is_valid() && playback[i]->is_playing()) {
 				float volume = Math::db_to_linear(stream->audio_stream_volume_db[i]);
-				if (first) {
-					playback[i]->mix(p_buffer, p_rate_scale, to_mix);
-					for (int j = 0; j < to_mix; j++) {
-						p_buffer[j] *= volume;
-					}
-					first = false;
-					any_active = true;
-				} else {
-					playback[i]->mix(mix_buffer, p_rate_scale, to_mix);
-					for (int j = 0; j < to_mix; j++) {
-						p_buffer[j] += mix_buffer[j] * volume;
+				int mix_offset = 0;
+
+				any_active = true;
+
+				if (playback_position < stream->audio_stream_offset[i]) {
+					if (playback_position + playback_step > stream->audio_stream_offset[i]) {
+						mix_offset = (stream->audio_stream_offset[i] - playback_position) * AudioServer::get_singleton()->get_mix_rate();
+					} else {
+						continue;
 					}
 				}
-			}
-		}
 
-		if (first) {
-			// Nothing mixed, put zeroes.
-			for (int j = 0; j < to_mix; j++) {
-				p_buffer[j] = AudioFrame(0, 0);
+				if (mix_offset > 0) {
+					for (int j = 0; j < mix_offset; j++) {
+						mix_buffer[j] = AudioFrame(0, 0);
+					}
+				}
+
+				playback[i]->mix(&mix_buffer[mix_offset], p_rate_scale, to_mix - mix_offset);
+				for (int j = mix_offset; j < to_mix; j++) {
+					p_buffer[j] += mix_buffer[j] * volume;
+				}
 			}
 		}
 
 		p_buffer += to_mix;
 		todo -= to_mix;
+		playback_position += playback_step;
 	}
 
 	if (!any_active) {
@@ -289,18 +318,7 @@ int AudioStreamPlaybackSynchronized::get_loop_count() const {
 }
 
 double AudioStreamPlaybackSynchronized::get_playback_position() const {
-	float max_pos = 0;
-	bool pos_found = false;
-	for (int i = 0; i < stream->stream_count; i++) {
-		if (playback[i].is_valid() && playback[i]->is_playing()) {
-			float pos = playback[i]->get_playback_position();
-			if (!pos_found || pos > max_pos) {
-				max_pos = pos;
-				pos_found = true;
-			}
-		}
-	}
-	return max_pos;
+	return playback_position;
 }
 
 bool AudioStreamPlaybackSynchronized::is_playing() const {

@@ -16,6 +16,13 @@
 				Get one of the synchronized streams, by index.
 			</description>
 		</method>
+		<method name="get_sync_stream_offset" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="stream_index" type="int" />
+			<description>
+				Get the start offset of one of the synchronized streams, by index.
+			</description>
+		</method>
 		<method name="get_sync_stream_volume" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="stream_index" type="int" />
@@ -29,6 +36,14 @@
 			<param index="1" name="audio_stream" type="AudioStream" />
 			<description>
 				Set one of the synchronized streams, by index.
+			</description>
+		</method>
+		<method name="set_sync_stream_offset">
+			<return type="void" />
+			<param index="0" name="stream_index" type="int" />
+			<param index="1" name="offset" type="float" />
+			<description>
+				Set the start offset of one of the synchronized streams, by index.
 			</description>
 		</method>
 		<method name="set_sync_stream_volume">
