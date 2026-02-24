@@ -230,13 +230,18 @@ RID RenderingDevice::blas_create(RID p_vertex_array, RID p_index_array, BitField
 	RDD::VertexFormatID vertex_format;
 
 	if (vertex_array->description != INVALID_ID) {
-		ERR_FAIL_COND_V(!vertex_formats.has(vertex_array->description), RID());
-		const VertexDescriptionCache &vd_cache = vertex_formats[vertex_array->description];
-		vertex_format = vd_cache.driver_id;
+		const VertexDescriptionCache *vd_cache;
+		{
+			_THREAD_SAFE_METHOD_
+			vd_cache = vertex_formats.getptr(vertex_array->description);
+		}
+		ERR_FAIL_NULL_V(vd_cache, RID());
+
+		vertex_format = vd_cache->driver_id;
 
 		const VertexAttribute *position_attribute = nullptr;
-		for (int i = 0; i < vd_cache.vertex_formats.size(); i++) {
-			const VertexAttribute &attr = vd_cache.vertex_formats[i];
+		for (int i = 0; i < vd_cache->vertex_formats.size(); i++) {
+			const VertexAttribute &attr = vd_cache->vertex_formats[i];
 			if (attr.location == p_position_attribute_location) {
 				position_attribute = &attr;
 				break;
@@ -3357,8 +3362,6 @@ RID RenderingDevice::framebuffer_create_multipass(const Vector<RID> &p_texture_a
 }
 
 RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_get_format(RID p_framebuffer) {
-	_THREAD_SAFE_METHOD_
-
 	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
 	ERR_FAIL_NULL_V(framebuffer, INVALID_ID);
 
@@ -3366,8 +3369,6 @@ RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_get_format(RID
 }
 
 Size2 RenderingDevice::framebuffer_get_size(RID p_framebuffer) {
-	_THREAD_SAFE_METHOD_
-
 	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
 	ERR_FAIL_NULL_V(framebuffer, Size2(0, 0));
 
@@ -3375,14 +3376,10 @@ Size2 RenderingDevice::framebuffer_get_size(RID p_framebuffer) {
 }
 
 bool RenderingDevice::framebuffer_is_valid(RID p_framebuffer) const {
-	_THREAD_SAFE_METHOD_
-
 	return framebuffer_owner.owns(p_framebuffer);
 }
 
 void RenderingDevice::framebuffer_set_invalidation_callback(RID p_framebuffer, InvalidationCallback p_callback, void *p_userdata) {
-	_THREAD_SAFE_METHOD_
-
 	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
 	ERR_FAIL_NULL(framebuffer);
 
@@ -3414,8 +3411,6 @@ RID RenderingDevice::sampler_create(const SamplerState &p_state) {
 }
 
 bool RenderingDevice::sampler_is_format_supported_for_filter(DataFormat p_format, SamplerFilter p_sampler_filter) const {
-	_THREAD_SAFE_METHOD_
-
 	ERR_FAIL_INDEX_V(p_format, DATA_FORMAT_MAX, false);
 
 	return driver->sampler_is_format_supported_for_filter(p_format, p_sampler_filter);
@@ -3875,15 +3870,11 @@ void RenderingDevice::shader_destroy_modules(RID p_shader) {
 }
 
 RID RenderingDevice::shader_create_placeholder() {
-	_THREAD_SAFE_METHOD_
-
 	Shader shader;
 	return shader_owner.make_rid(shader);
 }
 
 uint64_t RenderingDevice::shader_get_vertex_input_attribute_mask(RID p_shader) {
-	_THREAD_SAFE_METHOD_
-
 	const Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_NULL_V(shader, 0);
 	return shader->vertex_input_mask;
@@ -4391,14 +4382,10 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 }
 
 bool RenderingDevice::uniform_set_is_valid(RID p_uniform_set) {
-	_THREAD_SAFE_METHOD_
-
 	return uniform_set_owner.owns(p_uniform_set);
 }
 
 void RenderingDevice::uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata) {
-	_THREAD_SAFE_METHOD_
-
 	UniformSet *us = uniform_set_owner.get_or_null(p_uniform_set);
 	ERR_FAIL_NULL(us);
 	us->invalidated_callback = p_callback;
@@ -4452,9 +4439,14 @@ RID RenderingDevice::render_pipeline_create(RID p_shader, FramebufferFormatID p_
 	RDD::VertexFormatID driver_vertex_format;
 	if (p_vertex_format != INVALID_ID) {
 		// Uses vertices, else it does not.
-		ERR_FAIL_COND_V(!vertex_formats.has(p_vertex_format), RID());
-		const VertexDescriptionCache &vd = vertex_formats[p_vertex_format];
-		driver_vertex_format = vertex_formats[p_vertex_format].driver_id;
+		const VertexDescriptionCache *vd;
+		{
+			_THREAD_SAFE_METHOD_
+			vd = vertex_formats.getptr(p_vertex_format);
+		}
+		ERR_FAIL_NULL_V(vd, RID());
+
+		driver_vertex_format = vd->driver_id;
 
 		// Validate with inputs.
 		for (uint32_t i = 0; i < 64; i++) {
@@ -4462,8 +4454,8 @@ RID RenderingDevice::render_pipeline_create(RID p_shader, FramebufferFormatID p_
 				continue;
 			}
 			bool found = false;
-			for (int j = 0; j < vd.vertex_formats.size(); j++) {
-				if (vd.vertex_formats[j].location == i) {
+			for (int j = 0; j < vd->vertex_formats.size(); j++) {
+				if (vd->vertex_formats[j].location == i) {
 					found = true;
 					break;
 				}
@@ -4583,8 +4575,6 @@ RID RenderingDevice::render_pipeline_create(RID p_shader, FramebufferFormatID p_
 	// Create ID to associate with this pipeline.
 	RID id = render_pipeline_owner.make_rid(pipeline);
 	{
-		_THREAD_SAFE_METHOD_
-
 #ifdef DEV_ENABLED
 		set_resource_name(id, "RID:" + itos(id.get_id()));
 #endif
@@ -4596,24 +4586,15 @@ RID RenderingDevice::render_pipeline_create(RID p_shader, FramebufferFormatID p_
 }
 
 bool RenderingDevice::render_pipeline_is_valid(RID p_pipeline) {
-	_THREAD_SAFE_METHOD_
-
 	return render_pipeline_owner.owns(p_pipeline);
 }
 
 RID RenderingDevice::compute_pipeline_create(RID p_shader, const Vector<PipelineSpecializationConstant> &p_specialization_constants) {
-	Shader *shader;
+	Shader *shader = shader_owner.get_or_null(p_shader);
+	ERR_FAIL_NULL_V(shader, RID());
 
-	{
-		_THREAD_SAFE_METHOD_
-
-		// Needs a shader.
-		shader = shader_owner.get_or_null(p_shader);
-		ERR_FAIL_NULL_V(shader, RID());
-
-		ERR_FAIL_COND_V_MSG(shader->pipeline_type != PIPELINE_TYPE_COMPUTE, RID(),
-				"Non-compute shaders can't be used in compute pipelines");
-	}
+	ERR_FAIL_COND_V_MSG(shader->pipeline_type != PIPELINE_TYPE_COMPUTE, RID(),
+			"Non-compute shaders can't be used in compute pipelines");
 
 	for (int i = 0; i < shader->specialization_constants.size(); i++) {
 		const ShaderSpecializationConstant &sc = shader->specialization_constants[i];
@@ -4646,8 +4627,6 @@ RID RenderingDevice::compute_pipeline_create(RID p_shader, const Vector<Pipeline
 	// Create ID to associate with this pipeline.
 	RID id = compute_pipeline_owner.make_rid(pipeline);
 	{
-		_THREAD_SAFE_METHOD_
-
 #ifdef DEV_ENABLED
 		set_resource_name(id, "RID:" + itos(id.get_id()));
 #endif
@@ -4659,14 +4638,10 @@ RID RenderingDevice::compute_pipeline_create(RID p_shader, const Vector<Pipeline
 }
 
 bool RenderingDevice::compute_pipeline_is_valid(RID p_pipeline) {
-	_THREAD_SAFE_METHOD_
-
 	return compute_pipeline_owner.owns(p_pipeline);
 }
 
 RID RenderingDevice::raytracing_pipeline_create(RID p_shader, const Vector<PipelineSpecializationConstant> &p_specialization_constants) {
-	_THREAD_SAFE_METHOD_
-
 	// Needs a shader.
 	Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_NULL_V(shader, RID());
@@ -4710,8 +4685,6 @@ RID RenderingDevice::raytracing_pipeline_create(RID p_shader, const Vector<Pipel
 }
 
 bool RenderingDevice::raytracing_pipeline_is_valid(RID p_pipeline) {
-	_THREAD_SAFE_METHOD_
-
 	return raytracing_pipeline_owner.owns(p_pipeline);
 }
 
@@ -4912,7 +4885,12 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
 	ERR_FAIL_NULL_V(framebuffer, INVALID_ID);
 
-	const FramebufferFormatKey &framebuffer_key = framebuffer_formats[framebuffer->format_id].E->key();
+	const FramebufferFormatKey *framebuffer_key;
+	{
+		_THREAD_SAFE_METHOD_
+		framebuffer_key = &framebuffer_formats[framebuffer->format_id].E->key();
+	}
+
 	Point2i viewport_offset;
 	Point2i viewport_size = framebuffer->size;
 
@@ -4958,10 +4936,10 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 
 		RDG::AttachmentOperation operation = RDG::ATTACHMENT_OPERATION_DEFAULT;
 		RDD::RenderPassClearValue clear_value;
-		if (framebuffer_key.vrs_attachment == i && (texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT)) {
+		if (framebuffer_key->vrs_attachment == i && (texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT)) {
 			resource_trackers.push_back(texture->draw_tracker);
-			resource_usages.push_back(_vrs_usage_from_method(framebuffer_key.vrs_method));
-			stages.set_flag(_vrs_stages_from_method(framebuffer_key.vrs_method));
+			resource_usages.push_back(_vrs_usage_from_method(framebuffer_key->vrs_method));
+			stages.set_flag(_vrs_stages_from_method(framebuffer_key->vrs_method));
 		} else if (texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 			if (p_draw_flags.has_flag(DrawFlags(DRAW_CLEAR_COLOR_0 << color_index))) {
 				ERR_FAIL_COND_V_MSG(color_index >= p_clear_color_values.size(), INVALID_ID, vformat("Color texture (%d) was specified to be cleared but no color value was provided.", color_index));
@@ -5015,7 +4993,7 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 	draw_list_framebuffer_format = framebuffer->format_id;
 #endif
 	draw_list_current_subpass = 0;
-	draw_list_subpass_count = framebuffer_key.passes.size();
+	draw_list_subpass_count = framebuffer_key->passes.size();
 
 	Rect2i viewport_rect(viewport_offset, viewport_size);
 	draw_graph.add_draw_list_set_viewport(viewport_rect);
@@ -5197,7 +5175,11 @@ void RenderingDevice::draw_list_bind_vertex_buffers_format(DrawListID p_list, Ve
 
 	ERR_FAIL_COND(!draw_list.active);
 
-	const VertexDescriptionCache *vertex_description = vertex_formats.getptr(p_vertex_format);
+	const VertexDescriptionCache *vertex_description;
+	{
+		_THREAD_SAFE_METHOD_
+		vertex_description = vertex_formats.getptr(p_vertex_format);
+	}
 	ERR_FAIL_NULL_MSG(vertex_description, "Supplied vertex format does not exist.");
 
 	Span<uint64_t> offsets_span = p_offsets;
