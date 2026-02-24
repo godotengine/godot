@@ -586,21 +586,7 @@ int RichTextLabel::_get_line_max_width(ItemFrame *p_frame, int p_line) const {
 		const int col_count = table->columns.size();
 		max_width += theme_cache.table_h_separation * col_count;
 
-		if (table->column_max_width_dirty) {
-			int idx = 0;
-			for (Item *E : table->subitems) {
-				ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
-				ItemFrame *frame = static_cast<ItemFrame *>(E);
-				int column = idx % col_count;
-				ItemTable::Column &C = table->columns[column];
-				for (int i = 0; i < (int)frame->lines.size(); i++) {
-					C.max_width = MAX(C.max_width, _get_line_max_width(frame, i));
-				}
-				idx++;
-			}
-			table->column_max_width_dirty = false;
-		}
-
+		// The columns in the nested table have already been calculated in _shape_line().
 		for (ItemTable::Column &C : table->columns) {
 			max_width += C.max_width;
 		}
@@ -756,7 +742,6 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 					table->columns[i].width = 0;
 				}
 
-				table->column_max_width_dirty = true;
 				// Compute minimum width for each cell.
 				int idx = 0;
 				for (Item *E : table->subitems) {
