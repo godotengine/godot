@@ -151,7 +151,7 @@ void TextureLayeredEditor::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && mm->get_button_mask().has_flag(MouseButtonMask::RIGHT)) {
+	if (mm.is_valid() && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT) || mm->get_button_mask().has_flag(MouseButtonMask::MIDDLE) || mm->get_button_mask().has_flag(MouseButtonMask::RIGHT))) {
 		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_VISIBLE) {
 			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
 		}
@@ -163,7 +163,7 @@ void TextureLayeredEditor::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT) {
+	if (mb.is_valid() && (mb->get_button_index() == MouseButton::LEFT || mb->get_button_index() == MouseButton::MIDDLE || mb->get_button_index() == MouseButton::RIGHT)) {
 		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
 			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 			Input::get_singleton()->warp_mouse(original_mouse_pos);
@@ -286,6 +286,20 @@ void TextureLayeredEditor::_texture_changed() {
 }
 
 void TextureLayeredEditor::_update_material(bool p_texture_changed) {
+	if (p_texture_changed) {
+		const TextureLayered::LayeredType type = texture->get_layered_type();
+		use_rotation = type == TextureLayered::LAYERED_TYPE_CUBEMAP || type == TextureLayered::LAYERED_TYPE_CUBEMAP_ARRAY;
+		if (use_rotation) {
+			// Apply a rotation to make it more obvious that a cubemap is being previewed.
+			// This way, multiple faces can be seen without having to interact with the preview.
+			// The values are chosen to make X+, Y+ and Z+ visible at the same time,
+			// with an equal area of the faces visible.
+			x_rot = Math::TAU * 0.1;
+			y_rot = Math::TAU * 0.625;
+		}
+		materials[texture->get_layered_type()]->set_shader_parameter("tex", texture->get_rid());
+	}
+
 	materials[0]->set_shader_parameter("layer", layer->get_value());
 	materials[2]->set_shader_parameter("layer", layer->get_value());
 
@@ -300,13 +314,6 @@ void TextureLayeredEditor::_update_material(bool p_texture_changed) {
 	materials[1]->set_shader_parameter("rot", b);
 	materials[2]->set_shader_parameter("normal", v);
 	materials[2]->set_shader_parameter("rot", b);
-
-	if (p_texture_changed) {
-		const TextureLayered::LayeredType type = texture->get_layered_type();
-		use_rotation = type == TextureLayered::LAYERED_TYPE_CUBEMAP || type == TextureLayered::LAYERED_TYPE_CUBEMAP_ARRAY;
-
-		materials[texture->get_layered_type()]->set_shader_parameter("tex", texture->get_rid());
-	}
 
 	const Vector4 channel_factors = channel_selector->get_selected_channel_factors();
 	for (unsigned int i = 0; i < 3; ++i) {
