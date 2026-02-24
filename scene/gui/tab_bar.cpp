@@ -503,7 +503,19 @@ void TabBar::_notification(int p_what) {
 			[[fallthrough]];
 		}
 
+		case NOTIFICATION_DRAG_BEGIN:
+		case NOTIFICATION_MOUSE_ENTER: {
+			if (get_viewport()->gui_is_dragging() && can_drop_data(get_local_mouse_position(), get_viewport()->gui_get_drag_data())) {
+				dragging_valid_tab = true;
+				queue_redraw();
+			}
+		} break;
+
 		case NOTIFICATION_MOUSE_EXIT: {
+			if (dragging_valid_tab) {
+				dragging_valid_tab = false;
+				queue_redraw();
+			}
 			if (!hover_switch_delay->is_stopped()) {
 				hover_switch_delay->stop();
 			}
