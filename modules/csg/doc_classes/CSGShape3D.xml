@@ -74,6 +74,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="autosmooth" type="bool" setter="set_autosmooth" getter="is_autosmooth" default="false">
+			Enables automatic smoothing. This overrides any smoothing on the CSG node and instead uses [member smoothing_angle] to calculate normals based on the angle between faces.
+			Children of a [CSGCombiner3D] node will be treated as a single mesh.
+		</member>
 		<member name="calculate_tangents" type="bool" setter="set_calculate_tangents" getter="is_calculating_tangents" default="true">
 			Calculate tangents for the CSG shape which allows the use of normal and height maps. This is only applied on the root shape, this setting is ignored on any child. Setting this to [code]false[/code] can speed up shape generation slightly.
 		</member>
@@ -90,6 +94,10 @@
 		</member>
 		<member name="operation" type="int" setter="set_operation" getter="get_operation" enum="CSGShape3D.Operation" default="0">
 			The operation that is performed on this shape. This is ignored for the first CSG child node as the operation is between this node and the previous child of this nodes parent.
+		</member>
+		<member name="smoothing_angle" type="float" setter="set_smoothing_angle" getter="get_smoothing_angle" default="50.0">
+			When autosmooth is enabled, faces with an angle between them greater than this will be smoothed, while faces with a smaller angle will remain sharp.
+			Note: An angle lower than 0.1 will cause all smoothing to be disabled, this can be used to increase performance.
 		</member>
 		<member name="snap" type="float" setter="set_snap" getter="get_snap" deprecated="The CSG library no longer uses snapping.">
 			This property does nothing.
