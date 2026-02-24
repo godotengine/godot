@@ -783,7 +783,7 @@ void CanvasItemEditor::find_canvas_items_at_pos(const Point2 &p_pos, Node *p_nod
 			}
 			if (gizmo->intersect_point(point, local_grab_distance)) {
 				Node2D *node = Object::cast_to<Node2D>(ci);
-				_SelectResult res;
+				SelectResult res;
 				res.item = ci;
 				res.z_index = node ? node->get_z_index() : 0;
 				res.has_z = true;
