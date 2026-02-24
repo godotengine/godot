@@ -199,7 +199,17 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_cloth() {
 	// of the constraints a bit.
 	pin_vertices(*this, pinned_vertices, mesh_to_physics, physics_vertices);
 
-	_apply_physics_values(settings);
+	float compliance = _calculate_compliance(settings);
+
+	JPH::SoftBodySharedSettings::VertexAttributes vertex_attrib;
+	vertex_attrib.mCompliance = vertex_attrib.mShearCompliance = compliance;
+
+	settings->CreateConstraints(&vertex_attrib, 1, JPH::SoftBodySharedSettings::EBendType::None);
+	float multiplier = 1.0f - shrinking_factor;
+	for (JPH::SoftBodySharedSettings::Edge &e : settings->mEdgeConstraints) {
+		e.mRestLength *= multiplier;
+	}
+
 	settings->Optimize();
 
 	return settings;
@@ -433,11 +443,15 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 	for (const Vector3 &v : mesh_vertices_clean) {
 		settings->mVertices.emplace_back(JPH::Float3(v.x, v.y, v.z));
 	}
+
+	float compliance = _calculate_compliance(settings);
+
 	for (const Vector2i &e : edge_set) {
-		settings->mEdgeConstraints.emplace_back(JPH::SoftBodySharedSettings::Edge((JPH::uint32)e.x, (JPH::uint32)e.y));
+		settings->mEdgeConstraints.emplace_back(JPH::SoftBodySharedSettings::Edge((JPH::uint32)e.x, (JPH::uint32)e.y, compliance));
 	}
 	for (const TetrahedraInfo &t_info : tet_info_list) {
 		JPH::SoftBodySharedSettings::Volume v;
+		v.mCompliance = compliance;
 		v.mVertex[0] = (JPH::uint32)t_info.vert_indices[0];
 		v.mVertex[1] = (JPH::uint32)t_info.vert_indices[1];
 		v.mVertex[2] = (JPH::uint32)t_info.vert_indices[2];
@@ -459,17 +473,19 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 	pin_vertices(*this, pinned_vertices, mesh_to_physics, settings->mVertices);
 
 	settings->CalculateEdgeLengths();
-
-	_apply_physics_values(settings);
-
 	settings->CalculateVolumeConstraintVolumes();
+
+	float multiplier_pow_3 = compliance * compliance * compliance;
+	for (JPH::SoftBodySharedSettings::Volume &v : settings->mVolumeConstraints) {
+		v.mSixRestVolume *= multiplier_pow_3;
+	}
 
 	settings->Optimize();
 
 	return settings;
 }
 
-void JoltSoftBody3D::_apply_physics_values(JPH::SoftBodySharedSettings *settings) {
+float JoltSoftBody3D::_calculate_compliance(JPH::SoftBodySharedSettings *settings) {
 	// Since Godot's stiffness is input as a coefficient between 0 and 1, and Jolt uses actual stiffness for its
 	// edge constraints, we must map one to the other.
 	//
@@ -497,15 +513,7 @@ void JoltSoftBody3D::_apply_physics_values(JPH::SoftBodySharedSettings *settings
 
 	// Now calculate the compliance
 	const float inverse_stiffness = dt * dt * (1.0f / stiffness_coefficient - 1.0f) * w1_plus_w2;
-
-	JPH::SoftBodySharedSettings::VertexAttributes vertex_attrib;
-	vertex_attrib.mCompliance = vertex_attrib.mShearCompliance = inverse_stiffness;
-
-	settings->CreateConstraints(&vertex_attrib, 1, JPH::SoftBodySharedSettings::EBendType::None);
-	float multiplier = 1.0f - shrinking_factor;
-	for (JPH::SoftBodySharedSettings::Edge &e : settings->mEdgeConstraints) {
-		e.mRestLength *= multiplier;
-	}
+	return inverse_stiffness;
 }
 
 void JoltSoftBody3D::_apply_environmental_forces(float p_step, JPH::Body &p_jolt_body) {

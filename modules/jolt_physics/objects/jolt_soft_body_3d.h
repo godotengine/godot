@@ -75,7 +75,7 @@ class JoltSoftBody3D final : public JoltObject3D {
 	JPH::SoftBodySharedSettings *_create_shared_settings();
 	JPH::SoftBodySharedSettings *_create_shared_settings_cloth();
 	JPH::SoftBodySharedSettings *_create_shared_settings_volume();
-	void _apply_physics_values(JPH::SoftBodySharedSettings *settings);
+	float _calculate_compliance(JPH::SoftBodySharedSettings *settings);
 
 	void _apply_environmental_forces(float p_step, JPH::Body &p_jolt_body);
 
