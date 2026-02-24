@@ -130,7 +130,7 @@ Error SceneMultiplayer::poll() {
 			_process_sys(sender, packet, len, mode, channel);
 		} else {
 			remote_sender_id = sender;
-			_process_packet(sender, packet, len);
+			_process_packet(sender, packet, len, channel);
 			remote_sender_id = 0;
 		}
 
@@ -210,7 +210,7 @@ Ref<MultiplayerPeer> SceneMultiplayer::get_multiplayer_peer() {
 	return multiplayer_peer;
 }
 
-void SceneMultiplayer::_process_packet(int p_from, const uint8_t *p_packet, int p_packet_len) {
+void SceneMultiplayer::_process_packet(int p_from, const uint8_t *p_packet, int p_packet_len, int p_channel) {
 	ERR_FAIL_COND_MSG(root_path.is_empty(), "Multiplayer root was not initialized. If you are using custom multiplayer, remember to set the root path via SceneMultiplayer.set_root_path before using it.");
 	ERR_FAIL_COND_MSG(p_packet_len < 1, "Invalid packet received. Size too small.");
 
@@ -231,7 +231,7 @@ void SceneMultiplayer::_process_packet(int p_from, const uint8_t *p_packet, int 
 		} break;
 
 		case NETWORK_COMMAND_RAW: {
-			_process_raw(p_from, p_packet, p_packet_len);
+			_process_raw(p_from, p_packet, p_packet_len, p_channel);
 		} break;
 		case NETWORK_COMMAND_SPAWN: {
 			replicator->on_spawn_receive(p_from, p_packet, p_packet_len);
@@ -342,7 +342,7 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 			}
 			if (should_process) {
 				remote_sender_id = peer;
-				_process_packet(peer, packet, len);
+				_process_packet(peer, packet, len, p_channel);
 				remote_sender_id = 0;
 			}
 		} break;
@@ -512,7 +512,7 @@ double SceneMultiplayer::get_auth_timeout() const {
 	return double(auth_timeout) / 1000.0;
 }
 
-void SceneMultiplayer::_process_raw(int p_from, const uint8_t *p_packet, int p_packet_len) {
+void SceneMultiplayer::_process_raw(int p_from, const uint8_t *p_packet, int p_packet_len, int p_channel) {
 	ERR_FAIL_COND_MSG(p_packet_len < 2, "Invalid packet received. Size too small.");
 
 	Vector<uint8_t> out;
@@ -523,6 +523,7 @@ void SceneMultiplayer::_process_raw(int p_from, const uint8_t *p_packet, int p_p
 		memcpy(&w[0], &p_packet[1], len);
 	}
 	emit_signal(SNAME("peer_packet"), p_from, out);
+	emit_signal(SNAME("peer_packet_with_channel"), p_from, out, p_channel);
 }
 
 int SceneMultiplayer::get_unique_id() {
@@ -676,6 +677,7 @@ void SceneMultiplayer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("peer_authenticating", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("peer_authentication_failed", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("peer_packet", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::PACKED_BYTE_ARRAY, "packet")));
+	ADD_SIGNAL(MethodInfo("peer_packet_with_channel", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::PACKED_BYTE_ARRAY, "packet"), PropertyInfo(Variant::INT, "channel")));
 }
 
 SceneMultiplayer::SceneMultiplayer() {
