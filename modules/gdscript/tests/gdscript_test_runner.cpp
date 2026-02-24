@@ -149,7 +149,7 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 		init_language(p_source_dir);
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	// Set all warning levels to "Warn" in order to test them properly, even the ones that default to error.
 	ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/enable", true);
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
@@ -164,7 +164,7 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 	// Force the call, since the language is initialized **before** applying project settings
 	// and the `settings_changed` signal is emitted with `call_deferred()`.
 	GDScriptParser::update_project_settings();
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	// Enable printing to show results.
 	CoreGlobals::print_line_enabled = true;
@@ -178,7 +178,7 @@ GDScriptTestRunner::~GDScriptTestRunner() {
 	}
 }
 
-#ifndef DEBUG_ENABLED
+#ifndef GDSCRIPT_DEBUG_ENABLED
 static String strip_warnings(const String &p_expected) {
 	// On release builds we don't have warnings. Here we remove them from the output before comparison
 	// so it doesn't fail just because of difference in warnings.
@@ -225,7 +225,7 @@ int GDScriptTestRunner::run_tests() {
 		GDScriptTest::TestResult result = test.run_test();
 
 		String expected = FileAccess::get_file_as_string(test.get_output_file());
-#ifndef DEBUG_ENABLED
+#ifndef GDSCRIPT_DEBUG_ENABLED
 		expected = strip_warnings(expected);
 #endif
 		INFO(test.get_source_file());
@@ -489,7 +489,7 @@ bool GDScriptTest::check_output(const String &p_output) const {
 	String got = p_output.strip_edges(); // TODO: may be hacky.
 	got += "\n"; // Make sure to insert newline for CI static checks.
 
-#ifndef DEBUG_ENABLED
+#ifndef GDSCRIPT_DEBUG_ENABLED
 	expected = strip_warnings(expected);
 #endif
 
@@ -586,7 +586,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		return result;
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	StringBuilder warning_string;
 	for (const GDScriptWarning &warning : parser.get_warnings()) {
 		warning_string.append(vformat("~~ WARNING at line %d: (%s) %s\n", warning.start_line, warning.get_name(), warning.get_message()));

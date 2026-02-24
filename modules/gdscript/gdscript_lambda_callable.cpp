@@ -121,7 +121,7 @@ void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, V
 		switch (r_call_error.error) {
 			case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
 				r_call_error.argument -= captures_amount;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 				if (r_call_error.argument < 0) {
 					ERR_PRINT(vformat("GDScript bug (please report): Invalid value of lambda capture at index %d.", captures_amount + r_call_error.argument));
 					r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; // TODO: Add a more suitable error code.
@@ -133,7 +133,7 @@ void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, V
 			case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
 			case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
 				r_call_error.expected -= captures_amount;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 				if (r_call_error.expected < 0) {
 					ERR_PRINT("GDScript bug (please report): Invalid lambda captures count.");
 					r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; // TODO: Add a more suitable error code.
@@ -214,7 +214,7 @@ int GDScriptLambdaSelfCallable::get_argument_count(bool &r_is_valid) const {
 }
 
 void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (object->get_script_instance() == nullptr || object->get_script_instance()->get_language() != GDScriptLanguage::get_singleton()) {
 		ERR_PRINT("Trying to call a lambda with an invalid instance.");
 		r_call_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
@@ -253,7 +253,7 @@ void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcoun
 		switch (r_call_error.error) {
 			case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
 				r_call_error.argument -= captures_amount;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 				if (r_call_error.argument < 0) {
 					ERR_PRINT(vformat("GDScript bug (please report): Invalid value of lambda capture at index %d.", captures_amount + r_call_error.argument));
 					r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; // TODO: Add a more suitable error code.
@@ -265,7 +265,7 @@ void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcoun
 			case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
 			case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
 				r_call_error.expected -= captures_amount;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 				if (r_call_error.expected < 0) {
 					ERR_PRINT("GDScript bug (please report): Invalid lambda captures count.");
 					r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; // TODO: Add a more suitable error code.

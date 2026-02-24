@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 
 #include "gdscript.h"
 #include "gdscript_function.h"
@@ -1330,4 +1330,4 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 	}
 }
 
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED

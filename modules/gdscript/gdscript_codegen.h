@@ -85,7 +85,7 @@ public:
 	virtual void write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, Variant p_rpc_config, const GDScriptDataType &p_return_type) = 0;
 	virtual GDScriptFunction *write_end() = 0;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	virtual void set_signature(const String &p_signature) = 0;
 #endif
 	virtual void set_initial_line(int p_line) = 0;
