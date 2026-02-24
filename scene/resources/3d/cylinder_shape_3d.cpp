@@ -125,5 +125,6 @@ void CylinderShape3D::_bind_methods() {
 
 CylinderShape3D::CylinderShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_CYLINDER)) {
+	set_use_shared_copy(false);
 	_update_shape();
 }

@@ -37,6 +37,7 @@ const char *Curve::SIGNAL_DOMAIN_CHANGED = "domain_changed";
 
 Curve::Curve() {
 	property_helper.setup_for_instance(base_property_helper, this);
+	set_use_shared_copy(false);
 }
 
 void Curve::set_point_count(int p_count) {
@@ -1346,6 +1347,7 @@ void Curve2D::_bind_methods() {
 
 Curve2D::Curve2D() {
 	property_helper.setup_for_instance(base_property_helper, this);
+	set_use_shared_copy(false);
 }
 
 /***********************************************************************************/
@@ -2390,4 +2392,5 @@ void Curve3D::_bind_methods() {
 
 Curve3D::Curve3D() {
 	property_helper.setup_for_instance(base_property_helper, this);
+	set_use_shared_copy(false);
 }

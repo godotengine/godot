@@ -170,6 +170,14 @@
 			[b]Note:[/b] Setting this property does not emit the [signal changed] signal.
 			[b]Warning:[/b] When setting, the ID must only consist of letters, numbers, and underscores. Otherwise, it will fail and default to a randomly generated ID.
 		</member>
+		<member name="resource_shared_copy" type="bool" setter="set_use_shared_copy" getter="get_use_shared_copy" default="true">
+			Controls how resource is copied to a newly duplicated Node.
+			This option only affects internal resources, external resources (Saved as .tres, .res files, or embedded in other .tscn scene) will still use shared copy.
+			If [code]true[/code], uses a shared copy of the resource.
+			If [code]false[/code], uses a full copy of the resource.
+			[b]Note:[/b] Changing this property afterwards does not affect any resource duplicates before.
+			[b]Note:[/b] To have full copy of resources in instanced scenes, use [code]Local to Scene[/code] instead.
+		</member>
 	</members>
 	<signals>
 		<signal name="changed">

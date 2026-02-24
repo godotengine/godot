@@ -61,5 +61,6 @@
 		<member name="map_width" type="int" setter="set_map_width" getter="get_map_width" default="2">
 			Number of vertices in the width of the heightmap. Changing this will resize the [member map_data].
 		</member>
+		<member name="resource_shared_copy" type="bool" setter="set_use_shared_copy" getter="get_use_shared_copy" overrides="Resource" default="true" />
 	</members>
 </class>
