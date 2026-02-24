@@ -936,7 +936,7 @@ void CodeTextEditor::input(const Ref<InputEvent> &event) {
 void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid()) {
+	if (mouse_wheel_zoom && mb.is_valid()) {
 		if (mb->is_pressed() && mb->is_command_or_control_pressed()) {
 			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				_zoom_in();
@@ -953,7 +953,7 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 
 #ifndef ANDROID_ENABLED
 	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
-	if (magnify_gesture.is_valid()) {
+	if (mouse_wheel_zoom && magnify_gesture.is_valid()) {
 		_zoom_to(zoom_factor * std::pow(magnify_gesture->get_factor(), 0.25f));
 		accept_event();
 		return;
@@ -1157,6 +1157,7 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_use_default_word_separators(EDITOR_GET("text_editor/behavior/navigation/use_default_word_separators"));
 	text_editor->set_use_custom_word_separators(EDITOR_GET("text_editor/behavior/navigation/use_custom_word_separators"));
 	text_editor->set_custom_word_separators(EDITOR_GET("text_editor/behavior/navigation/custom_word_separators"));
+	mouse_wheel_zoom = EDITOR_GET("text_editor/behavior/navigation/mouse_wheel_zoom");
 
 	// Behavior: Indent
 	set_indent_using_spaces(EDITOR_GET("text_editor/behavior/indent/type"));

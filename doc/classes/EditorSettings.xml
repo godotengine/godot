@@ -1508,6 +1508,9 @@
 		<member name="text_editor/behavior/navigation/drag_and_drop_selection" type="bool" setter="" getter="">
 			If [code]true[/code], allows drag-and-dropping text in the script editor to move text. Disable this if you find yourself accidentally drag-and-dropping text in the script editor.
 		</member>
+		<member name="text_editor/behavior/navigation/mouse_wheel_zoom" type="bool" setter="" getter="">
+			If [code]true[/code], allows zooming in the script editor by scrolling the mouse wheel while holding [kbd]Ctrl[/kbd] ([kbd]Cmd[/kbd] on macOS). Also allows zooming with the magnify gesture [InputEventMagnifyGesture].
+		</member>
 		<member name="text_editor/behavior/navigation/move_caret_on_right_click" type="bool" setter="" getter="">
 			If [code]true[/code], the caret will be moved when right-clicking somewhere in the script editor (like when left-clicking or middle-clicking). If [code]false[/code], the caret will only be moved when left-clicking or middle-clicking somewhere.
 		</member>
