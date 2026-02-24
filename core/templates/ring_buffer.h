@@ -35,12 +35,12 @@
 template <typename T>
 class RingBuffer {
 	LocalVector<T> data;
-	int read_pos = 0;
-	int write_pos = 0;
-	int size_mask;
+	uint32_t read_pos = 0;
+	uint32_t write_pos = 0;
+	uint32_t size_mask;
 
-	inline int inc(int &p_var, int p_size) const {
-		int ret = p_var;
+	inline uint32_t inc(uint32_t &p_var, uint32_t p_size) const {
+		const uint32_t ret = p_var;
 		p_var += p_size;
 		p_var = p_var & size_mask;
 		return ret;
@@ -52,18 +52,19 @@ public:
 		return data.ptr()[inc(read_pos, 1)];
 	}
 
-	int read(T *p_buf, int p_size, bool p_advance = true) {
-		int left = data_left();
+	uint32_t read(T *p_buf, uint32_t p_size, bool p_advance = true) {
+		const uint32_t left = data_left();
+
 		p_size = MIN(left, p_size);
-		int pos = read_pos;
-		int to_read = p_size;
-		int dst = 0;
+		uint32_t pos = read_pos;
+		uint32_t to_read = p_size;
+		uint32_t dst = 0;
 		while (to_read) {
-			int end = pos + to_read;
+			uint32_t end = pos + to_read;
 			end = MIN(end, size());
-			int total = end - pos;
+			uint32_t total = end - pos;
 			const T *read = data.ptr();
-			for (int i = 0; i < total; i++) {
+			for (uint32_t i = 0; i < total; i++) {
 				p_buf[dst++] = read[pos + i];
 			}
 			to_read -= total;
@@ -75,8 +76,8 @@ public:
 		return p_size;
 	}
 
-	int copy(T *p_buf, int p_offset, int p_size) const {
-		int left = data_left();
+	uint32_t copy(T *p_buf, uint32_t p_offset, uint32_t p_size) const {
+		const uint32_t left = data_left();
 		if ((p_offset + p_size) > left) {
 			p_size -= left - p_offset;
 			if (p_size <= 0) {
@@ -84,15 +85,15 @@ public:
 			}
 		}
 		p_size = MIN(left, p_size);
-		int pos = read_pos;
+		uint32_t pos = read_pos;
 		inc(pos, p_offset);
-		int to_read = p_size;
-		int dst = 0;
+		uint32_t to_read = p_size;
+		uint32_t dst = 0;
 		while (to_read) {
-			int end = pos + to_read;
+			uint32_t end = pos + to_read;
 			end = MIN(end, size());
-			int total = end - pos;
-			for (int i = 0; i < total; i++) {
+			uint32_t total = end - pos;
+			for (uint32_t i = 0; i < total; i++) {
 				p_buf[dst++] = data[pos + i];
 			}
 			to_read -= total;
@@ -101,8 +102,9 @@ public:
 		return p_size;
 	}
 
-	int find(const T &t, int p_offset, int p_max_size) const {
-		int left = data_left();
+	// TODO: This sucks
+	uint32_t find(const T &t, uint32_t p_offset, uint32_t p_max_size) const {
+		const uint32_t left = data_left();
 		if ((p_offset + p_max_size) > left) {
 			p_max_size -= left - p_offset;
 			if (p_max_size <= 0) {
@@ -110,14 +112,14 @@ public:
 			}
 		}
 		p_max_size = MIN(left, p_max_size);
-		int pos = read_pos;
+		uint32_t pos = read_pos;
 		inc(pos, p_offset);
-		int to_read = p_max_size;
+		uint32_t to_read = p_max_size;
 		while (to_read) {
-			int end = pos + to_read;
+			uint32_t end = pos + to_read;
 			end = MIN(end, size());
-			int total = end - pos;
-			for (int i = 0; i < total; i++) {
+			uint32_t total = end - pos;
+			for (uint32_t i = 0; i < total; i++) {
 				if (data[pos + i] == t) {
 					return i + (p_max_size - to_read);
 				}
@@ -128,13 +130,13 @@ public:
 		return -1;
 	}
 
-	inline int advance_read(int p_n) {
+	inline uint32_t advance_read(uint32_t p_n) {
 		p_n = MIN(p_n, data_left());
 		inc(read_pos, p_n);
 		return p_n;
 	}
 
-	inline int decrease_write(int p_n) {
+	inline uint32_t decrease_write(uint32_t p_n) {
 		p_n = MIN(p_n, data_left());
 		inc(write_pos, size_mask + 1 - p_n);
 		return p_n;
@@ -146,19 +148,18 @@ public:
 		return OK;
 	}
 
-	int write(const T *p_buf, int p_size) {
-		int left = space_left();
+	uint32_t write(const T *p_buf, uint32_t p_size) {
+		uint32_t left = space_left();
 		p_size = MIN(left, p_size);
 
-		int pos = write_pos;
-		int to_write = p_size;
-		int src = 0;
+		uint32_t pos = write_pos;
+		uint32_t to_write = p_size;
+		uint32_t src = 0;
 		while (to_write) {
-			int end = pos + to_write;
+			uint32_t end = pos + to_write;
 			end = MIN(end, size());
-			int total = end - pos;
-
-			for (int i = 0; i < total; i++) {
+			uint32_t total = end - pos;
+			for (uint32_t i = 0; i < total; i++) {
 				data[pos + i] = p_buf[src++];
 			}
 			to_write -= total;
@@ -169,21 +170,22 @@ public:
 		return p_size;
 	}
 
-	inline int space_left() const {
-		int left = read_pos - write_pos;
+	inline uint32_t space_left() const {
+		int32_t left = int32_t(read_pos) - int32_t(write_pos);
 		if (left < 0) {
-			return size() + left - 1;
+			return uint32_t(size() + left - 1);
 		}
 		if (left == 0) {
-			return size() - 1;
+			return uint32_t(size() - 1);
 		}
-		return left - 1;
+		return uint32_t(left - 1);
 	}
-	inline int data_left() const {
+
+	inline uint32_t data_left() const {
 		return size() - space_left() - 1;
 	}
 
-	inline int size() const {
+	inline uint32_t size() const {
 		return data.size();
 	}
 
@@ -192,13 +194,13 @@ public:
 		write_pos = 0;
 	}
 
-	void resize(int p_power) {
-		int old_size = size();
-		int new_size = 1 << p_power;
-		int mask = new_size - 1;
-		data.resize(int64_t(1) << int64_t(p_power));
+	void resize(uint32_t p_power) {
+		uint32_t old_size = size();
+		uint32_t new_size = 1 << p_power;
+		uint32_t mask = new_size - 1;
+		data.resize(uint32_t(1) << uint32_t(p_power));
 		if (old_size < new_size && read_pos > write_pos) {
-			for (int i = 0; i < write_pos; i++) {
+			for (uint32_t i = 0; i < write_pos; i++) {
 				data[(old_size + i) & mask] = data[i];
 			}
 			write_pos = (old_size + write_pos) & mask;
@@ -210,7 +212,7 @@ public:
 		size_mask = mask;
 	}
 
-	RingBuffer(int p_power = 0) {
+	RingBuffer(uint32_t p_power = 0) {
 		resize(p_power);
 	}
 };
