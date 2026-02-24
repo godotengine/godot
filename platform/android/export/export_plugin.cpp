@@ -3883,7 +3883,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				// Since the keystore can be anywhere in the filesystem, so we need to copy this to temp file.
 				String new_debug_keystore = _copy_keystore_to_temp(debug_keystore, build_path, "debug.keystore");
 				if (new_debug_keystore.is_empty()) {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Failed to copy debug keystore to temp directory."));
+					add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Failed to copy debug keystore to temp directory."));
 				} else {
 					debug_keystore = new_debug_keystore;
 				}
@@ -3909,7 +3909,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				// Since the keystore can be anywhere in the filesystem, so we need to copy this to temp file.
 				String new_release_keystore = _copy_keystore_to_temp(release_keystore, build_path, "release.keystore");
 				if (new_release_keystore.is_empty()) {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Failed to copy release keystore to temp directory."));
+					add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Failed to copy release keystore to temp directory."));
 				} else {
 					release_keystore = new_release_keystore;
 				}
