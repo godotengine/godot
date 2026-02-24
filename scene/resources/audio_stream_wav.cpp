@@ -655,21 +655,16 @@ Ref<AudioSample> AudioStreamWAV::generate_sample() const {
 	return sample;
 }
 
-Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_stream_data, const Dictionary &p_options) {
+Ref<AudioStreamWAV> AudioStreamWAV::_load_from_file_access(const Ref<FileAccess> &p_file, const Dictionary &p_options) {
 	// /* STEP 1, READ WAVE FILE */
-
-	Ref<FileAccessMemory> file;
-	file.instantiate();
-	Error err = file->open_custom(p_stream_data.ptr(), p_stream_data.size());
-	ERR_FAIL_COND_V_MSG(err != OK, Ref<AudioStreamWAV>(), "Cannot create memfile for WAV file buffer.");
 
 	/* CHECK RIFF */
 	char riff[5];
 	riff[4] = 0;
-	file->get_buffer((uint8_t *)&riff, 4); //RIFF
+	p_file->get_buffer((uint8_t *)&riff, 4); //RIFF
 
 	if (riff[0] != 'R' || riff[1] != 'I' || riff[2] != 'F' || riff[3] != 'F') {
-		ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), vformat("Not a WAV file. File should start with 'RIFF', but found '%s', in file of size %d bytes", riff, file->get_length()));
+		ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), vformat("Not a WAV file. File should start with 'RIFF', but found '%s', in file of size %d bytes", riff, p_file->get_length()));
 	}
 
 	/* GET FILESIZE */
@@ -677,8 +672,8 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 	// The file size in header is 8 bytes less than the actual size.
 	// See https://docs.fileformat.com/audio/wav/
 	const int FILE_SIZE_HEADER_OFFSET = 8;
-	uint32_t file_size_header = file->get_32() + FILE_SIZE_HEADER_OFFSET;
-	uint64_t file_size = file->get_length();
+	uint32_t file_size_header = p_file->get_32() + FILE_SIZE_HEADER_OFFSET;
+	uint64_t file_size = p_file->get_length();
 	if (file_size != file_size_header) {
 		WARN_PRINT(vformat("File size %d is %s than the expected size %d.", file_size, file_size > file_size_header ? "larger" : "smaller", file_size_header));
 	}
@@ -687,10 +682,10 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 
 	char wave[5];
 	wave[4] = 0;
-	file->get_buffer((uint8_t *)&wave, 4); //WAVE
+	p_file->get_buffer((uint8_t *)&wave, 4); //WAVE
 
 	if (wave[0] != 'W' || wave[1] != 'A' || wave[2] != 'V' || wave[3] != 'E') {
-		ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), vformat("Not a WAV file. Header should contain 'WAVE', but found '%s', in file of size %d bytes", wave, file->get_length()));
+		ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), vformat("Not a WAV file. Header should contain 'WAVE', but found '%s', in file of size %d bytes", wave, p_file->get_length()));
 	}
 
 	// Let users override potential loop points from the WAV.
@@ -713,16 +708,16 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 
 	HashMap<String, String> tag_map;
 
-	while (!file->eof_reached()) {
+	while (!p_file->eof_reached()) {
 		/* chunk */
 		char chunk_id[4];
-		file->get_buffer((uint8_t *)&chunk_id, 4); //RIFF
+		p_file->get_buffer((uint8_t *)&chunk_id, 4); //RIFF
 
 		/* chunk size */
-		uint32_t chunksize = file->get_32();
-		uint32_t file_pos = file->get_position(); //save file pos, so we can skip to next chunk safely
+		uint32_t chunksize = p_file->get_32();
+		uint32_t file_pos = p_file->get_position(); //save file pos, so we can skip to next chunk safely
 
-		if (file->eof_reached()) {
+		if (p_file->eof_reached()) {
 			//ERR_PRINT("EOF REACH");
 			break;
 		}
@@ -732,21 +727,21 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 
 			//Issue: #7755 : Not a bug - usage of other formats (format codes) are unsupported in current importer version.
 			//Consider revision for engine version 3.0
-			compression_code = file->get_16();
+			compression_code = p_file->get_16();
 			if (compression_code != 1 && compression_code != 3) {
 				ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), "Format not supported for WAVE file (not PCM). Save WAVE files as uncompressed PCM or IEEE float instead.");
 			}
 
-			format_channels = file->get_16();
+			format_channels = p_file->get_16();
 			if (format_channels != 1 && format_channels != 2) {
 				ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), "Format not supported for WAVE file (not stereo or mono).");
 			}
 
-			format_freq = file->get_32(); //sampling rate
+			format_freq = p_file->get_32(); //sampling rate
 
-			file->get_32(); // average bits/second (unused)
-			file->get_16(); // block align (unused)
-			format_bits = file->get_16(); // bits per sample
+			p_file->get_32(); // average bits/second (unused)
+			p_file->get_16(); // block align (unused)
+			format_bits = p_file->get_16(); // bits per sample
 
 			if (format_bits % 8 || format_bits == 0) {
 				ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), "Invalid amount of bits in the sample (should be one of 8, 16, 24 or 32).");
@@ -786,54 +781,73 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 			*/
 
 			ERR_FAIL_COND_V(data.resize(frames * format_channels) != OK, Ref<AudioStreamWAV>());
+			float *data_ptr = data.ptrw();
 
-			if (compression_code == 1) {
-				if (format_bits == 8) {
-					for (int64_t i = 0; i < frames * format_channels; i++) {
-						// 8 bit samples are UNSIGNED
+			// Temporary memory buffer to speed up reading from file.
+			LocalVector<uint8_t> sample_data;
+			sample_data.resize(4096);
+			Ref<FileAccessMemory> temp_file;
+			temp_file.instantiate();
+			ERR_FAIL_COND_V(temp_file->open_custom(sample_data.ptr(), sample_data.size()) != OK, Ref<AudioStreamWAV>());
+			uint32_t bytes_per_frame = format_channels * (format_bits >> 3);
+			int64_t frames_to_read = frames;
+			int64_t samples_read = 0;
 
-						data.write[i] = int8_t(file->get_8() - 128) / 128.f;
-					}
-				} else if (format_bits == 16) {
-					for (int64_t i = 0; i < frames * format_channels; i++) {
-						//16 bit SIGNED
+			while (frames_to_read > 0) {
+				uint32_t frames_this_read = MIN(frames_to_read, uint32_t(sample_data.size() / bytes_per_frame));
+				uint32_t frames_read = p_file->get_buffer(sample_data.ptr(), frames_this_read * bytes_per_frame) / bytes_per_frame;
 
-						data.write[i] = int16_t(file->get_16()) / 32768.f;
-					}
-				} else {
-					for (int64_t i = 0; i < frames * format_channels; i++) {
-						//16+ bits samples are SIGNED
-						// if sample is > 16 bits, just read extra bytes
+				if (frames_read == 0) {
+					break;
+				}
 
-						uint32_t s = 0;
-						for (int b = 0; b < (format_bits >> 3); b++) {
-							s |= ((uint32_t)file->get_8()) << (b * 8);
+				DEV_ASSERT(frames_read <= frames_this_read);
+
+				temp_file->seek(0);
+				samples_read = frames_read * format_channels;
+
+				if (compression_code == 1) {
+					if (format_bits == 8) {
+						for (int64_t i = 0; i < samples_read; i++) {
+							// 8 bit samples are UNSIGNED
+							data_ptr[i] = int8_t(temp_file->get_8() - 128) / 128.f;
 						}
-						s <<= (32 - format_bits);
-
-						data.write[i] = (int32_t(s) >> 16) / 32768.f;
+					} else if (format_bits == 16) {
+						for (int64_t i = 0; i < samples_read; i++) {
+							//16 bit SIGNED
+							data_ptr[i] = int16_t(temp_file->get_16()) / 32768.f;
+						}
+					} else {
+						for (int64_t i = 0; i < samples_read; i++) {
+							//16+ bits samples are SIGNED
+							// if sample is > 16 bits, just read extra bytes
+							uint32_t s = 0;
+							for (int b = 0; b < (format_bits >> 3); b++) {
+								s |= ((uint32_t)temp_file->get_8()) << (b * 8);
+							}
+							s <<= (32 - format_bits);
+							data_ptr[i] = (int32_t(s) >> 16) / 32768.f;
+						}
+					}
+				} else if (compression_code == 3) {
+					if (format_bits == 32) {
+						for (int64_t i = 0; i < samples_read; i++) {
+							//32 bit IEEE Float
+							data_ptr[i] = temp_file->get_float();
+						}
+					} else if (format_bits == 64) {
+						for (int64_t i = 0; i < samples_read; i++) {
+							//64 bit IEEE Float
+							data_ptr[i] = temp_file->get_double();
+						}
 					}
 				}
-			} else if (compression_code == 3) {
-				if (format_bits == 32) {
-					for (int64_t i = 0; i < frames * format_channels; i++) {
-						//32 bit IEEE Float
 
-						data.write[i] = file->get_float();
-					}
-				} else if (format_bits == 64) {
-					for (int64_t i = 0; i < frames * format_channels; i++) {
-						//64 bit IEEE Float
-
-						data.write[i] = file->get_double();
-					}
-				}
+				data_ptr += samples_read;
+				frames_to_read -= frames_read;
 			}
 
-			// This is commented out due to some weird edge case seemingly in FileAccessMemory, doesn't seem to have any side effects though.
-			// if (file->eof_reached()) {
-			// 	ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), "Premature end of file.");
-			// }
+			sample_data.clear();
 		}
 
 		if (import_loop_mode == 0 && chunk_id[0] == 's' && chunk_id[1] == 'm' && chunk_id[2] == 'p' && chunk_id[3] == 'l') {
@@ -849,13 +863,13 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 			 **/
 
 			for (int i = 0; i < 10; i++) {
-				file->get_32(); // i wish to know why should i do this... no doc!
+				p_file->get_32(); // i wish to know why should i do this... no doc!
 			}
 
 			// only read 0x00 (loop forward), 0x01 (loop ping-pong) and 0x02 (loop backward)
 			// Skip anything else because it's not supported, reserved for future uses or sampler specific
 			// from https://sites.google.com/site/musicgapi/technical-documents/wav-file-format#smpl (loop type values table)
-			uint32_t loop_type = file->get_32();
+			uint32_t loop_type = p_file->get_32();
 			if (loop_type == 0x00 || loop_type == 0x01 || loop_type == 0x02) {
 				if (loop_type == 0x00) {
 					loop_mode = AudioStreamWAV::LOOP_FORWARD;
@@ -864,8 +878,8 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 				} else if (loop_type == 0x02) {
 					loop_mode = AudioStreamWAV::LOOP_BACKWARD;
 				}
-				loop_begin = file->get_32();
-				loop_end = file->get_32();
+				loop_begin = p_file->get_32();
+				loop_end = p_file->get_32();
 			}
 		}
 
@@ -874,28 +888,28 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 			// See https://www.recordingblogs.com/wiki/list-chunk-of-a-wave-file
 
 			char list_id[4];
-			file->get_buffer((uint8_t *)&list_id, 4);
+			p_file->get_buffer((uint8_t *)&list_id, 4);
 			uint32_t end_of_chunk = file_pos + chunksize - 8;
 
 			if (list_id[0] == 'I' && list_id[1] == 'N' && list_id[2] == 'F' && list_id[3] == 'O') {
 				// 'INFO' list type.
 				// The size of an entry can be arbitrary.
-				while (file->get_position() < end_of_chunk) {
+				while (p_file->get_position() < end_of_chunk) {
 					char info_id[4];
-					file->get_buffer((uint8_t *)&info_id, 4);
+					p_file->get_buffer((uint8_t *)&info_id, 4);
 
-					uint32_t text_size = file->get_32();
+					uint32_t text_size = p_file->get_32();
 					if (text_size == 0) {
 						continue;
 					}
 
 					Vector<char> text;
 					ERR_FAIL_COND_V(text.resize(text_size) != OK, Ref<AudioStreamWAV>());
-					file->get_buffer((uint8_t *)&text[0], text_size);
+					p_file->get_buffer((uint8_t *)&text[0], text_size);
 
 					// Skip padding byte if text_size is odd
 					if (text_size & 1) {
-						file->get_8();
+						p_file->get_8();
 					}
 
 					// The data is always an ASCII string. ASCII is a subset of UTF-8.
@@ -912,7 +926,7 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 
 		// Move to the start of the next chunk. Note that RIFF requires a padding byte for odd
 		// chunk sizes.
-		file->seek(file_pos + chunksize + (chunksize & 1));
+		p_file->seek(file_pos + chunksize + (chunksize & 1));
 	}
 
 	// STEP 2, APPLY CONVERSIONS
@@ -1198,10 +1212,19 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 	return sample;
 }
 
+Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_stream_data, const Dictionary &p_options) {
+	Ref<FileAccessMemory> file;
+	file.instantiate();
+	Error err = file->open_custom(p_stream_data.ptr(), p_stream_data.size());
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<AudioStreamWAV>(), "Cannot create memfile for WAV file buffer.");
+	return _load_from_file_access(file, p_options);
+}
+
 Ref<AudioStreamWAV> AudioStreamWAV::load_from_file(const String &p_path, const Dictionary &p_options) {
-	const Vector<uint8_t> stream_data = FileAccess::get_file_as_bytes(p_path);
-	ERR_FAIL_COND_V_MSG(stream_data.is_empty(), Ref<AudioStreamWAV>(), vformat("Cannot open file '%s'.", p_path));
-	return load_from_buffer(stream_data, p_options);
+	Error err;
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<AudioStreamWAV>(), vformat("Cannot open file '%s'.", p_path));
+	return _load_from_file_access(file, p_options);
 }
 
 void AudioStreamWAV::_bind_methods() {
