@@ -71,13 +71,12 @@ public:
 class DockTabContainer : public TabContainer {
 	GDCLASS(DockTabContainer, TabContainer);
 
-	EditorDockDragHint *drag_hint = nullptr;
-
 	void _pre_popup();
 	void _tab_rmb_clicked(int p_tab_idx);
 
 protected:
 	DockContextPopup *dock_context_popup = nullptr;
+	EditorDockDragHint *drag_hint = nullptr;
 
 	void _notification(int p_what);
 
@@ -88,12 +87,14 @@ public:
 		TEXT_AND_ICON,
 	};
 
-	EditorDock::DockSlot dock_slot = EditorDock::DOCK_SLOT_NONE;
+	int dock_slot = EditorDock::DOCK_SLOT_NONE;
 	EditorDock::DockLayout layout = EditorDock::DOCK_LAYOUT_VERTICAL;
 	Rect2i grid_rect;
 
 	static String get_config_key(int p_idx) { return "dock_" + itos(p_idx + 1); }
 
+	virtual void dock_added(EditorDock *p_dock) {}
+	virtual void dock_removed(EditorDock *p_dock) {}
 	virtual void dock_closed(EditorDock *p_dock) {}
 	virtual void dock_focused(EditorDock *p_dock, bool p_was_visible) {}
 	virtual void update_visibility();
@@ -111,14 +112,14 @@ public:
 	EditorDock *get_dock(int p_idx) const;
 	void show_drag_hint();
 
-	DockTabContainer(EditorDock::DockSlot p_slot);
+	DockTabContainer(int p_slot);
 };
 
 class SideDockTabContainer : public DockTabContainer {
 	GDCLASS(SideDockTabContainer, DockTabContainer);
 
 public:
-	SideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect);
+	SideDockTabContainer(int p_slot, const Rect2i &p_slot_rect);
 };
 
 class BottomSideDockTabContainer : public DockTabContainer {

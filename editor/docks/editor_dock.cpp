@@ -268,9 +268,6 @@ void EditorDock::update_tab_style() {
 	if (!enabled || !is_open) {
 		return; // Disabled by feature profile or manually closed by user.
 	}
-	if (dock_window) {
-		return; // Floating.
-	}
 
 	ERR_FAIL_NULL(parent_dock_container);
 
