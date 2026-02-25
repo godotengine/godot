@@ -292,12 +292,12 @@ String OS_LinuxBSD::get_name() const {
 #endif
 }
 
-String OS_LinuxBSD::get_systemd_os_release_info_value(const String &key) const {
+String OS_LinuxBSD::get_systemd_os_release_info_value(const String &p_key) const {
 	Ref<FileAccess> f = FileAccess::open("/etc/os-release", FileAccess::READ);
 	if (f.is_valid()) {
 		while (!f->eof_reached()) {
 			const String line = f->get_line();
-			if (line.contains(key)) {
+			if (line.contains(p_key)) {
 				String value = line.get_slicec('=', 1).strip_edges();
 				value = value.trim_prefix("\"");
 				return value.trim_suffix("\"");
@@ -330,8 +330,8 @@ String OS_LinuxBSD::get_version() const {
 }
 
 Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
-	if (RenderingServer::get_singleton() == nullptr) {
-		return Vector<String>();
+	if (RenderingServer::get_singleton() == nullptr || RSG::utilities == nullptr) {
+		return Vector<String>({ "", "" });
 	}
 
 	static Vector<String> info;
@@ -339,12 +339,285 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 		return info;
 	}
 
-	const String rendering_device_name = RenderingServer::get_singleton()->get_video_adapter_name(); // e.g. `NVIDIA GeForce GTX 970`
-	const String rendering_device_vendor = RenderingServer::get_singleton()->get_video_adapter_vendor(); // e.g. `NVIDIA`
-	const String card_name = rendering_device_name.trim_prefix(rendering_device_vendor).strip_edges(); // -> `GeForce GTX 970`
+	String device; // In the vendor-device-id-format: `10de:13c2`.
+	String driver_name;
+	String driver_version;
 
+	// Get driver name, but filter out invalid ones, because some adapters are dummys used only for passthrough.
+	// And they have no indicator besides certain driver names.
+	const String kernel_lit = "Kernel driver in use"; // line of interest
+	const String disallow_list = "vfio"; // for e.g. pci passthrough dummy kernel driver `vfio-pci`
+
+	const uint32_t vendor_id = RSG::utilities->get_video_adapter_vendor_id();
+	const uint32_t device_id = RSG::utilities->get_video_adapter_id();
+	if (vendor_id > 0x0 && device_id > 0x0) {
+		// We got all the info we need to get the driver name.
+		// This should be the case when the computer uses Vulkan.
+		device = String(String::num_uint64(vendor_id, 16) + ":" + String::num_uint64(device_id, 16));
+		driver_name = OS_LinuxBSD::lspci_get_device_value(device, kernel_lit, disallow_list);
+		// if (!driver_name.is_empty()), then Driver name found!
+	}
+
+	Vector<String> device_candidates;
+	if (device.is_empty()) {
+		// Check if there's only 1 graphics card.
+		device_candidates = OS_LinuxBSD::lspci_get_graphics_cards();
+
+		// Filter out duplicates. Some people have the same graphics card multiple times…
+		Vector<String> _device_candidates;
+		for (const String &e : device_candidates) {
+			if (!_device_candidates.find(e)) {
+				_device_candidates.push_back(e);
+			}
+		}
+		device_candidates = _device_candidates;
+
+		if (device_candidates.size() == 1) {
+			// Only 1 graphics card, we're in luck.
+			// Graphics card found!
+			device = device_candidates[0];
+			driver_name = OS_LinuxBSD::lspci_get_device_value(device, kernel_lit, disallow_list);
+			// if (!driver_name.is_empty()), then Driver name found!
+		}
+	} else {
+		device_candidates.push_back(device); // For driver name checks below.
+	}
+
+	if (driver_name.is_empty()) {
+		// Check if all graphics cards have the same driver.
+
+		const String dummy_name = "_dummy_";
+		String unique_driver = dummy_name;
+		Vector<String> _device_candidates; // We'll reduce the candidate to those with valid drivers.
+		Vector<String> driver_candidates;
+		for (const String &candidate : device_candidates) {
+			String _driver_name = OS_LinuxBSD::lspci_get_device_value(candidate, kernel_lit, disallow_list);
+			if (_driver_name.is_empty()) {
+				continue;
+			}
+
+			_device_candidates.push_back(_driver_name);
+
+			if (unique_driver == dummy_name) {
+				unique_driver = _driver_name;
+			} else if (_driver_name != unique_driver) {
+				// Not unique after all…
+				unique_driver = "";
+			}
+		}
+
+		device_candidates = _device_candidates; // Flushing the cleaned list.
+
+		if (device_candidates.size() == 1) {
+			// Only 1 graphics card after all, we're still in luck!
+			// Graphics card found!
+			device = device_candidates[0];
+		}
+
+		if (!unique_driver.is_empty() && unique_driver != dummy_name) {
+			// Driver name found!
+			driver_name = unique_driver;
+		}
+	}
+
+	if (!driver_name.is_empty()) {
+		driver_version = OS_LinuxBSD::get_video_adapter_driver_version(driver_name);
+		if (!driver_version.is_empty()) {
+			// Driver version found!
+			info.push_back(driver_name);
+			info.push_back(driver_version);
+			return info;
+		}
+	}
+
+	// For later, if we get desperate:
+	String vendor_name;
+	String device_name;
+
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		// If we're using the compatibility renderer, we can make use of DRI_PRIME to get the driver version:
+
+		String dri_prime;
+		const String ds_name = DisplayServer::get_singleton()->get_name();
+		if (ds_name == "Wayland") {
+			auto server = Object::cast_to<DisplayServerWayland>(DisplayServer::get_singleton());
+			dri_prime = server->get_dri_prime();
+		} else if (ds_name == "X11") {
+			auto server = Object::cast_to<DisplayServerX11>(DisplayServer::get_singleton());
+			dri_prime = server->get_dri_prime();
+		}
+
+		// Let's try glxinfo (available for as long as X11 is installed on the system).
+		// The biggest benefit of glxinfo: it gives you the vendor and device id!
+		Vector<String> glxinfo = OS_LinuxBSD::glxinfo_get_device_info(dri_prime);
+		if (glxinfo.size() == 3) {
+			if (device.is_empty()) {
+				device = glxinfo[0];
+				// Once more with feeling:
+				driver_name = OS_LinuxBSD::lspci_get_device_value(device, kernel_lit, disallow_list);
+			}
+
+			vendor_name = glxinfo[1];
+			device_name = glxinfo[2];
+		} else {
+			// X11 is probably not installed, let's use eglinfo to get vendor name and device name instead:
+			Vector<String> eglinfo = OS_LinuxBSD::eglinfo_get_vendor_and_device(dri_prime);
+			if (eglinfo.size() == 2) {
+				vendor_name = glxinfo[0];
+				device_name = glxinfo[1];
+			}
+		}
+	}
+
+	driver_version = OS_LinuxBSD::get_video_adapter_driver_version(driver_name);
+	if (!driver_version.is_empty()) {
+		// Driver version found!
+		info.push_back(driver_name);
+		info.push_back(driver_version);
+		return info;
+	}
+
+	if (device_candidates.size() > 1) {
+		// At this point, we have multiple viable graphics cards and no idea which one.
+
+		// We need to guess the graphics card…
+		const String rendering_device_name = RenderingServer::get_singleton()->get_video_adapter_name(); // e.g. `NVIDIA GeForce GTX 970`
+		const String rendering_device_vendor = RenderingServer::get_singleton()->get_video_adapter_vendor(); // e.g. `NVIDIA`
+		const String card_name = rendering_device_name.trim_prefix(rendering_device_vendor).strip_edges(); // -> `GeForce GTX 970`
+
+		// FIXME:
+		// * find current graphics card. also check using vendor_name and device_name
+		//   * attempt exact name matches first.
+		//   * then filter by vendor name.
+		//   * if more than one is left, split the name by space and take the one who has the most overlaps.
+		// * then attempt getting its version using modinfo. then using mesa as a fallback.
+	}
+
+	return Vector<String>();
+}
+
+String OS_LinuxBSD::get_video_adapter_driver_version(const String &p_driver_name) const {
+	String driver_version;
+
+	if (!p_driver_name.is_empty()) {
+		String modinfo;
+		List<String> modinfo_args;
+		modinfo_args.push_back(p_driver_name);
+		Error err = const_cast<OS_LinuxBSD *>(this)->execute("modinfo", modinfo_args, &modinfo);
+		if (err != OK || modinfo.is_empty()) {
+			return "";
+		}
+		Vector<String> lines = modinfo.split("\n", false);
+		for (const String &line : lines) {
+			Vector<String> columns = line.split(":", false, 1);
+			if (columns.size() < 2) {
+				continue;
+			}
+			if (columns[0].strip_edges() == "version") {
+				driver_version = columns[1].strip_edges(); // example value: `510.85.02` on Linux/BSD
+				break;
+			}
+		}
+
+		if (!driver_version.is_empty()) {
+			return driver_version;
+		}
+	}
+
+	// If we reach this point, we should have an open-source driver at hand.
+	// Getting the version using uname and eglinfo.
+
+	// Detects Mesa and DRM version based on DisplayServer.
+	// Detects LLVM version based on Mesa driver.
+	String os_info = OS::get_singleton()->get_name();
+	String mesa_version;
+	String llvm_version;
+	String drm_version;
+
+	String kernel_version;
+	Error err = const_cast<OS_LinuxBSD *>(this)->execute("uname", List<String>{ "-r" }, &kernel_version);
+	if (err == OK && !kernel_version.is_empty()) {
+		os_info += " " + kernel_version.strip_edges();
+	}
+
+	String eglinfo;
+	err = const_cast<OS_LinuxBSD *>(this)->execute("eglinfo", List<String>{ "-B" }, &eglinfo);
+	if (err != OK || eglinfo.is_empty()) {
+		return os_info;
+	}
+
+	const String target_platform = DisplayServer::get_singleton()->get_name() + " platform:"; // e.g. `Wayland platform:"
+	bool check_block_content = false;
+	Vector<String> lines = eglinfo.split("\n", false);
+	for (const String &line : lines) {
+		if (!check_block_content && line != target_platform) {
+			continue; // Content is not in our target block.
+		}
+		check_block_content = line != "";
+		if (!check_block_content) {
+			// End of block.
+			break;
+		}
+
+		Vector<String> columns = line.split(":", false, 1);
+		if (columns.size() < 2) {
+			continue;
+		}
+
+		const String left_hand = columns[0].strip_edges();
+		const String right_hand = columns[1].strip_edges();
+		if (left_hand.contains("core profile renderer")) {
+			if (right_hand.contains("DRM")) {
+				// example value: `AMD Radeon RX 7600M XT (radeonsi, navi33, LLVM 21.1.4, DRM 3.64, 6.17.7-300.fc43.x86_64)`
+				drm_version = OS_LinuxBSD::extract_version_from_text(right_hand, "DRM");
+			}
+		} else if (left_hand.contains("core profile version")) {
+			// example value: `4.6 (Core Profile) Mesa 25.2.6`
+			mesa_version = OS_LinuxBSD::extract_version_from_text(right_hand, "Mesa");
+		}
+		if (!mesa_version.is_empty() && !drm_version.is_empty()) {
+			break;
+		}
+	}
+
+	// Checking backwards: Mesa registers itself as the last device.
+	for (int i = lines.size() - 1; i >= 0; i--) {
+		Vector<String> columns = lines[i].split(":", false, 1);
+		if (columns.size() < 2) {
+			continue;
+		}
+
+		const String left_hand = columns[0].strip_edges();
+		const String right_hand = columns[1].strip_edges();
+		if (left_hand.contains("core profile renderer")) {
+			if (right_hand.contains("LLVM")) {
+				// example value: `llvmpipe (LLVM 21.1.4, 256 bits)`
+				llvm_version = OS_LinuxBSD::extract_version_from_text(right_hand, "LLVM");
+			}
+			break;
+		}
+	}
+
+	// example: `Linux 6.17.7-300 | Mesa 25.2.6 (LLVM 21.1.4, DRM 3.64)`
+	driver_version = os_info + " | Mesa";
+	if (!mesa_version.is_empty()) {
+		driver_version += " " + mesa_version;
+	}
+	if (!llvm_version.is_empty()) {
+		if (drm_version.is_empty()) { // NOTE: It is highly unlikely that we get the version of DRM but not LLVM.
+			driver_version += " (LLVM " + llvm_version + ")";
+		} else {
+			driver_version += " (LLVM " + llvm_version + ", DRM " + drm_version + ")";
+		}
+	}
+
+	return driver_version;
+}
+
+Vector<String> OS_LinuxBSD::lspci_get_graphics_cards() const {
 	String vendor_device_id_mappings;
 	List<String> lspci_args;
+	lspci_args.push_back("-d ::03xx");
 	lspci_args.push_back("-n");
 	Error err = const_cast<OS_LinuxBSD *>(this)->execute("lspci", lspci_args, &vendor_device_id_mappings);
 	if (err != OK || vendor_device_id_mappings.is_empty()) {
@@ -356,178 +629,202 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 	const String dc_display = "0302"; // Display controller
 	const String dc_3d = "0380"; // 3D controller
 
-	// splitting results by device class allows prioritizing, if multiple devices are found.
-	Vector<String> class_vga_device_candidates;
-	Vector<String> class_display_device_candidates;
-	Vector<String> class_3d_device_candidates;
+	Vector<String> device_candidates;
 
 #ifdef MODULE_REGEX_ENABLED
 	RegEx regex_id_format = RegEx();
 	regex_id_format.compile("^[a-f0-9]{4}:[a-f0-9]{4}$"); // e.g. `10de:13c2`; IDs are always in hexadecimal
 #endif
 
-	Vector<String> value_lines = vendor_device_id_mappings.split("\n", false); // example: `02:00.0 0300: 10de:13c2 (rev a1)`
+	Vector<String> value_lines = vendor_device_id_mappings.split("\n", false); // e.g. `02:00.0 0300: 10de:13c2 (rev a1)`
 	for (const String &line : value_lines) {
 		Vector<String> columns = line.split(" ", false);
 		if (columns.size() < 3) {
 			continue;
 		}
-		String device_class = columns[1].trim_suffix(":");
-		const String &vendor_device_id_mapping = columns[2];
+		String device_class = columns[1].trim_suffix(":"); // e.g. `0300`
+		const String &vendor_device_id_mapping = columns[2]; // e.g. `10de:13c2`
 
+		// Simple sanity check.
 #ifdef MODULE_REGEX_ENABLED
 		if (regex_id_format.search(vendor_device_id_mapping).is_null()) {
 			continue;
 		}
+#else
+		if (vendor_device_id_mapping.length() != 9) {
+			continue;
+		}
 #endif
 
-		if (device_class == dc_vga) {
-			class_vga_device_candidates.push_back(vendor_device_id_mapping);
-		} else if (device_class == dc_display) {
-			class_display_device_candidates.push_back(vendor_device_id_mapping);
-		} else if (device_class == dc_3d) {
-			class_3d_device_candidates.push_back(vendor_device_id_mapping);
+		if (device_class == dc_vga || device_class == dc_display || device_class == dc_3d) {
+			device_candidates.push_back(vendor_device_id_mapping);
 		}
 	}
 
-	// Check results against currently used device (`card_name`), in case the user has multiple graphics cards.
-	const String device_lit = "Device"; // line of interest
-	class_vga_device_candidates = OS_LinuxBSD::lspci_device_filter(class_vga_device_candidates, dc_vga, device_lit, card_name);
-	class_display_device_candidates = OS_LinuxBSD::lspci_device_filter(class_display_device_candidates, dc_display, device_lit, card_name);
-	class_3d_device_candidates = OS_LinuxBSD::lspci_device_filter(class_3d_device_candidates, dc_3d, device_lit, card_name);
+	return device_candidates;
+}
 
-	// Get driver names and filter out invalid ones, because some adapters are dummys used only for passthrough.
-	// And they have no indicator besides certain driver names.
-	const String kernel_lit = "Kernel driver in use"; // line of interest
-	const String dummys = "vfio"; // for e.g. pci passthrough dummy kernel driver `vfio-pci`
-	Vector<String> class_vga_device_drivers = OS_LinuxBSD::lspci_get_device_value(class_vga_device_candidates, kernel_lit, dummys);
-	Vector<String> class_display_device_drivers = OS_LinuxBSD::lspci_get_device_value(class_display_device_candidates, kernel_lit, dummys);
-	Vector<String> class_3d_device_drivers = OS_LinuxBSD::lspci_get_device_value(class_3d_device_candidates, kernel_lit, dummys);
+String OS_LinuxBSD::extract_version_from_text(const String &p_text, const String &p_delimiter) const {
+	String version;
 
-	String driver_name;
-	String driver_version;
-
-	// Use first valid value:
-	for (const String &driver : class_3d_device_drivers) {
-		driver_name = driver;
-		break;
+	Vector<String> value_parts = p_text.split(p_delimiter, false, 1);
+	if (value_parts.size() < 2) {
+		return "";
 	}
-	if (driver_name.is_empty()) {
-		for (const String &driver : class_display_device_drivers) {
-			driver_name = driver;
+
+	String text_part_with_version = value_parts[1].strip_edges(true, false);
+	int pos = 0;
+	for (int i = 0; i < text_part_with_version.length(); i++) {
+		if (!is_digit(text_part_with_version[i]) && text_part_with_version[i] != '.') {
 			break;
 		}
-	}
-	if (driver_name.is_empty()) {
-		for (const String &driver : class_vga_device_drivers) {
-			driver_name = driver;
-			break;
-		}
+		pos++;
 	}
 
-	info.push_back(driver_name);
+	return text_part_with_version.substr(0, pos);
+}
 
-	String modinfo;
-	List<String> modinfo_args;
-	modinfo_args.push_back(driver_name);
-	err = const_cast<OS_LinuxBSD *>(this)->execute("modinfo", modinfo_args, &modinfo);
-	if (err != OK || modinfo.is_empty()) {
-		info.push_back(""); // So that this method always either returns an empty array, or an array of length 2.
-		return info;
+Vector<String> OS_LinuxBSD::eglinfo_get_vendor_and_device(const String &p_dri_prime) const {
+	String eglinfo;
+	Error err = const_cast<OS_LinuxBSD *>(this)->execute("eglinfo", List<String>{ "-B" }, &eglinfo);
+	if (err != OK || eglinfo.is_empty()) {
+		return Vector<String>();
 	}
-	Vector<String> lines = modinfo.split("\n", false);
+
+	String dri_prime = "0";
+	if (p_dri_prime.is_numeric()) {
+		dri_prime = p_dri_prime;
+	}
+
+	String vendor;
+	String device;
+
+	const String target_block = "Device #" + dri_prime + ":"; // e.g. `Device 0#:"
+	bool check_block_content = false;
+	Vector<String> lines = eglinfo.split("\n", false);
 	for (const String &line : lines) {
+		if (!check_block_content && line != target_block) {
+			continue; // Content is not in our target block.
+		}
+		check_block_content = line != "";
+		if (!check_block_content) {
+			// End of block.
+			break;
+		}
+
 		Vector<String> columns = line.split(":", false, 1);
 		if (columns.size() < 2) {
 			continue;
 		}
-		if (columns[0].strip_edges() == "version") {
-			driver_version = columns[1].strip_edges(); // example value: `510.85.02` on Linux/BSD
+
+		const String left_hand = columns[0].strip_edges(); // e.g. `Intel`
+		const String right_hand = columns[1].strip_edges(); // e.g. `Mesa Intel(R) Arc(tm) Graphics (MTL)`
+		if (left_hand.contains("core profile vendor")) {
+			vendor = right_hand;
+		} else if (left_hand.contains("core profile renderer")) {
+			device = right_hand;
+		}
+		if (!vendor.is_empty() && !device.is_empty()) {
 			break;
 		}
 	}
 
-	info.push_back(driver_version);
-
-	return info;
+	return Vector<String>{ vendor, device };
 }
 
-Vector<String> OS_LinuxBSD::lspci_device_filter(Vector<String> vendor_device_id_mapping, String class_suffix, String check_column, String whitelist) const {
-	// NOTE: whitelist can be changed to `Vector<String>`, if the need arises.
+String OS_LinuxBSD::lspci_get_device_value(const String &p_vendor_device_id_mapping, const String &p_check_column, const String &p_disallow_list) const {
+	// NOTE: p_disallow_list can be changed to `Vector<String>`, if the need arises.
 	const String sep = ":";
-	Vector<String> devices;
-	for (const String &mapping : vendor_device_id_mapping) {
-		String device;
-		List<String> d_args;
-		d_args.push_back("-d");
-		d_args.push_back(mapping + sep + class_suffix);
-		d_args.push_back("-vmm");
-		Error err = const_cast<OS_LinuxBSD *>(this)->execute("lspci", d_args, &device); // e.g. `lspci -d 10de:13c2:0300 -vmm`
-		if (err != OK) {
-			return Vector<String>();
-		} else if (device.is_empty()) {
+	String value;
+
+	String device;
+	List<String> d_args;
+	d_args.push_back("-d");
+	d_args.push_back(p_vendor_device_id_mapping);
+	d_args.push_back("-k");
+	Error err = const_cast<OS_LinuxBSD *>(this)->execute("lspci", d_args, &device); // e.g. `lspci -d 10de:13c2 -k`
+	if (err != OK || device.is_empty()) {
+		return "";
+	}
+
+	Vector<String> device_lines = device.split("\n", false);
+	for (const String &line : device_lines) {
+		Vector<String> columns = line.split(":", false, 1);
+		if (columns.size() < 2) {
 			continue;
 		}
-
-		Vector<String> device_lines = device.split("\n", false);
-		for (const String &line : device_lines) {
-			Vector<String> columns = line.split(":", false, 1);
-			if (columns.size() < 2) {
-				continue;
+		if (columns[0].strip_edges() == p_check_column) {
+			// for `column[0] == "Kernel driver in use"` this may contain `nvidia`, `amdgpu`, `i915`, etc.
+			bool is_valid = true;
+			const String option = columns[1].strip_edges();
+			if (!p_disallow_list.is_empty()) {
+				is_valid = !option.contains(p_disallow_list);
 			}
-			if (columns[0].strip_edges() == check_column) {
-				// for `column[0] == "Device"` this may contain `GM204 [GeForce GTX 970]`
-				bool is_valid = true;
-				if (!whitelist.is_empty()) {
-					is_valid = columns[1].strip_edges().contains(whitelist);
-				}
-				if (is_valid) {
-					devices.push_back(mapping);
-				}
+			if (is_valid) {
+				value = option;
+			}
+			break;
+		}
+	}
+
+	return value;
+}
+
+Vector<String> OS_LinuxBSD::glxinfo_get_device_info(const String &p_dri_prime) const {
+	const String sep = ":";
+	Vector<String> values = { "", "", "" }; // values: vendor-device-id, vendor name, device name.
+	String vendor_id;
+	String device_id;
+
+	String glxinfo;
+	List<String> d_args;
+	d_args.push_back("-B");
+	String env_setting;
+	if (p_dri_prime.is_numeric() && p_dri_prime != "0") {
+		env_setting = "DRI_PRIME=" + p_dri_prime + " ";
+	}
+	Error err = const_cast<OS_LinuxBSD *>(this)->execute(env_setting + "glxinfo", d_args, &glxinfo); // e.g. `DRI_PRIME=1 glxinfo -B`
+	if (err != OK || glxinfo.is_empty()) {
+		return Vector<String>();
+	}
+
+	Vector<String> glxinfo_lines = glxinfo.split("\n", false);
+	for (const String &line : glxinfo_lines) {
+		Vector<String> columns = line.split(":", false, 1);
+		if (columns.size() < 2) {
+			continue;
+		}
+		const String column_name = columns[0].strip_edges();
+		const String column_value = columns[1].strip_edges(); // e.g. `Intel (0x8086)` / `Mesa Intel(R) Arc(tm) Graphics (MTL) (0x7d55)`
+		const Vector<String> column_value_split = column_value.split(" ");
+
+		if (column_name == "Vendor" || column_name == "Device") {
+			String id = column_value_split[column_value_split.size() - 1];
+			String name = column_value.trim_suffix(" " + id);
+			id = id.trim_prefix("(0x").trim_suffix(")");
+			if (id.length() != 4) {
+				id = "";
+			}
+
+			if (column_name == "Vendor") {
+				vendor_id = id;
+				values.set(1, name);
+			}
+			if (column_name == "Device") {
+				device_id = id;
+				values.set(2, name);
+			}
+
+			if (values[1].size() > 0 && values[2].size() > 0) {
 				break;
 			}
 		}
 	}
-	return devices;
-}
 
-Vector<String> OS_LinuxBSD::lspci_get_device_value(Vector<String> vendor_device_id_mapping, String check_column, String blacklist) const {
-	// NOTE: blacklist can be changed to `Vector<String>`, if the need arises.
-	const String sep = ":";
-	Vector<String> values;
-	for (const String &mapping : vendor_device_id_mapping) {
-		String device;
-		List<String> d_args;
-		d_args.push_back("-d");
-		d_args.push_back(mapping);
-		d_args.push_back("-k");
-		Error err = const_cast<OS_LinuxBSD *>(this)->execute("lspci", d_args, &device); // e.g. `lspci -d 10de:13c2 -k`
-		if (err != OK) {
-			return Vector<String>();
-		} else if (device.is_empty()) {
-			continue;
-		}
-
-		Vector<String> device_lines = device.split("\n", false);
-		for (const String &line : device_lines) {
-			Vector<String> columns = line.split(":", false, 1);
-			if (columns.size() < 2) {
-				continue;
-			}
-			if (columns[0].strip_edges() == check_column) {
-				// for `column[0] == "Kernel driver in use"` this may contain `nvidia`
-				bool is_valid = true;
-				const String value = columns[1].strip_edges();
-				if (!blacklist.is_empty()) {
-					is_valid = !value.contains(blacklist);
-				}
-				if (is_valid) {
-					values.push_back(value);
-				}
-				break;
-			}
-		}
+	if (!vendor_id.is_empty() && !device_id.is_empty()) {
+		values.set(0, vendor_id + ":" + device_id);
 	}
+
 	return values;
 }
 
