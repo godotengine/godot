@@ -50,6 +50,7 @@
 			<return type="Dictionary" />
 			<description>
 				Override this method to return the current state of the gizmo. This is used to restore the gizmo to its previous state when the user cancels an edit.
+				[b]Note:[/b] The underlying CanvasItem may have its own state saved. To preserve editor functionality, the built-in state has precedence over state saved by the Gizmo.
 			</description>
 		</method>
 		<method name="_edit_set_rect" qualifiers="virtual">
@@ -65,6 +66,7 @@
 			<param index="0" name="state" type="Dictionary" />
 			<description>
 				Override this method to restore the gizmo to its previous state when the user cancels an edit.
+				[b]Note:[/b] The underlying CanvasItem may have its own state saved. To preserve editor functionality, the built-in state has precedence over state saved by the Gizmo. The dictionary given to this method may contain additional items to what was saved in [method _edit_get_state].
 			</description>
 		</method>
 		<method name="_edit_use_rect" qualifiers="virtual const">

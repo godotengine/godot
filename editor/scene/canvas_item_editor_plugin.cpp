@@ -759,19 +759,6 @@ void CanvasItemEditor::find_canvas_items_at_pos(const Point2 &p_pos, Node *p_nod
 		const Vector2 point = xform.xform(p_pos);
 		const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length() / zoom;
 
-		// legacy way
-		// TODO: GIZMOS: we should probably reverse order here, first try gizmo and use this as fallback logic
-		//  this would also fix the duplicate issue (see below).
-		if (ci->_edit_is_selected_on_click(point, local_grab_distance)) {
-			Node2D *node = Object::cast_to<Node2D>(ci);
-
-			SelectResult res;
-			res.item = ci;
-			res.z_index = node ? node->get_z_index() : 0;
-			res.has_z = node;
-			r_items.push_back(res);
-		}
-
 		// gizmos way
 		// note: this may produce duplicate entries but the calling
 		// function is filtering for duplicates anyways, so we're not spending
@@ -789,6 +776,17 @@ void CanvasItemEditor::find_canvas_items_at_pos(const Point2 &p_pos, Node *p_nod
 				res.has_z = true;
 				r_items.push_back(res);
 			}
+		}
+
+		// legacy way
+		if (ci->_edit_is_selected_on_click(point, local_grab_distance)) {
+			Node2D *node = Object::cast_to<Node2D>(ci);
+
+			SelectResult res;
+			res.item = ci;
+			res.z_index = node ? node->get_z_index() : 0;
+			res.has_z = node;
+			r_items.push_back(res);
 		}
 	}
 }
@@ -889,9 +887,6 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 
 		// legacy way - this deliberately does not use the _get_bounding_rect function, as with gizmos we use
 		// gizmo collision shapes rather than bounding boxes for hit detection
-		// TODO: GIZMOS: when we add gizmos to a built-in object the gizmo should use the bounding rect of the
-		//  built-in object as additional collision shape. then we can move this down and delegate to the gizmo
-		//  if present and only use this as fallback.
 		if (ci->_edit_use_rect()) {
 			Rect2 rect = ci->_edit_get_rect();
 			if (p_rect.has_point(xform.xform(rect.position)) &&
@@ -1138,10 +1133,9 @@ void CanvasItemEditor::_save_drag_selection_state() {
 }
 
 void CanvasItemEditor::_restore_drag_selection_state() {
+	// restore any subgizmo state, if we have a gizmo selected
 	for (CanvasItem *ci : drag_selection) {
 		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
-		// TODO: GIZMOS: this should probably move out here as subgizmo workflow is slightly different from
-		//  normal workflow and this is just making things hard to read.
 		if (se->gizmo.is_valid()) {
 			// if the gizmo is valid, we have transformed subgizmos, not the canvas item(s) themselves, so
 			// we restore the subgizmos, only and end it here.
@@ -3196,6 +3190,8 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 					EditorNode::get_singleton()->push_item(selitems.front()->get());
 				}
 				for (CanvasItem *E : selitems) {
+					// add_node filters out duplicates, this is important
+					// as _find_canvas_items_in_rect may produce duplicates
 					editor_selection->add_node(E);
 				}
 			}
