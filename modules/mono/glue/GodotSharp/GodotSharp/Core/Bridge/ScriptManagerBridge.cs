@@ -499,8 +499,23 @@ namespace Godot.Bridge
                     {
                         // Use existing
                         NativeFuncs.godotsharp_ref_new_from_ref_counted_ptr(out *outScript, scriptPtr);
-                        scriptPath = null;
-                        return false;
+
+                        if (!outScript->IsNull)
+                        {
+                            scriptPath = null;
+                            return false;
+                        }
+
+                        // Treat an invalid ref the same as not found
+                        _scriptTypeBiMap.ReadWriteLock.EnterWriteLock();
+                        try
+                        {
+                            _scriptTypeBiMap.Remove(scriptPtr);
+                        }
+                        finally
+                        {
+                            _scriptTypeBiMap.ReadWriteLock.ExitWriteLock();
+                        }
                     }
 
                     // This path is slower, but it's only executed for the first instantiation of the type
