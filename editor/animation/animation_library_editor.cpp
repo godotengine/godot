@@ -484,6 +484,8 @@ void AnimationLibraryEditor::_item_renamed() {
 			// Renamed library
 
 			if (mixer->has_animation_library(text)) {
+				error_dialog->set_text(vformat(TTR("Animation '%s' already exists!"), text));
+				error_dialog->popup_centered();
 				restore_text = true;
 			} else {
 				undo_redo->create_action(vformat(TTR("Rename Animation Library: %s"), text));
@@ -508,6 +510,8 @@ void AnimationLibraryEditor::_item_renamed() {
 
 			if (al.is_valid()) {
 				if (al->has_animation(text)) {
+					error_dialog->set_text(vformat(TTR("Animation '%s' already exists!"), text));
+					error_dialog->popup_centered();
 					restore_text = true;
 				} else {
 					undo_redo->create_action(vformat(TTR("Rename Animation: %s"), text));
