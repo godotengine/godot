@@ -346,6 +346,9 @@
 		<member name="refraction_texture_channel" type="int" setter="set_refraction_texture_channel" getter="get_refraction_texture_channel" enum="BaseMaterial3D.TextureChannel" default="0">
 			Specifies the channel of the [member refraction_texture] in which the refraction information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored refraction in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
 		</member>
+		<member name="rgss_use_supersampling" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], enables RGSS (Rotated Grid Super Sampling) for texture sampling. RGSS reduces aliasing by sampling the texture at four rotated grid positions and averaging the results. This is particularly useful for 2D elements rendered in 3D space like [Sprite3D] and [Label3D].
+		</member>
 		<member name="rim" type="float" setter="set_rim" getter="get_rim" default="1.0">
 			Sets the strength of the rim lighting effect.
 		</member>
@@ -775,7 +778,10 @@
 		<constant name="FLAG_USE_FOV_OVERRIDE" value="24" enum="Flags">
 			Enables using [member fov_override].
 		</constant>
-		<constant name="FLAG_MAX" value="25" enum="Flags">
+		<constant name="FLAG_USE_RGSS_SUPERSAMPLING" value="25" enum="Flags">
+			Enables RGSS (Rotated Grid Super Sampling) for texture sampling to reduce aliasing.
+		</constant>
+		<constant name="FLAG_MAX" value="26" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">

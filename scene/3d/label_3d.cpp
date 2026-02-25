@@ -128,6 +128,9 @@ void Label3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &Label3D::generate_triangle_mesh);
 
+	ClassDB::bind_method(D_METHOD("set_use_rgss_supersampling", "flag"), &Label3D::set_use_rgss_supersampling);
+	ClassDB::bind_method(D_METHOD("get_use_rgss_supersampling"), &Label3D::get_use_rgss_supersampling);
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001,suffix:m"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 
@@ -145,6 +148,7 @@ void Label3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_outline_render_priority", "get_outline_render_priority");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rgss_supersampling"), "set_use_rgss_supersampling", "get_use_rgss_supersampling");
 
 	ADD_GROUP("Text", "");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
@@ -391,7 +395,7 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 			}
 
 			RID shader_rid;
-			StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, msdf, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), texture_filter, alpha_antialiasing_mode, false, &shader_rid);
+			StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, msdf, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), texture_filter, alpha_antialiasing_mode, false, rgss_use_supersampling, &shader_rid);
 
 			RS::get_singleton()->material_set_shader(surf.material, shader_rid);
 			RS::get_singleton()->material_set_param(surf.material, "texture_albedo", tex);
@@ -1073,6 +1077,17 @@ void Label3D::set_alpha_antialiasing_edge(float p_edge) {
 
 float Label3D::get_alpha_antialiasing_edge() const {
 	return alpha_antialiasing_edge;
+}
+
+void Label3D::set_use_rgss_supersampling(bool p_flag) {
+	if (rgss_use_supersampling != p_flag) {
+		rgss_use_supersampling = p_flag;
+		_queue_update();
+	}
+}
+
+bool Label3D::get_use_rgss_supersampling() const {
+	return rgss_use_supersampling;
 }
 
 Label3D::Label3D() {
