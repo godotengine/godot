@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorCanvasItemGizmoPlugin" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A class used by the editor to define CanvasItem gizmo types.
+	</brief_description>
+	<description>
+		[EditorCanvasItemGizmoPlugin] allows you to define a new type of Gizmo. There are two main ways to do so: extending [EditorCanvasItemGizmoPlugin] for the simpler gizmos, or creating a new [EditorCanvasItemGizmo] type.
+		To use [EditorCanvasItemGizmoPlugin], register it using the [method EditorPlugin.add_canvas_item_gizmo_plugin] method first.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_begin_handle_action" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<param index="1" name="handle_id" type="int" />
+			<param index="2" name="secondary" type="bool" />
+			<description>
+				Override this method to run code when the user starts dragging a handle (handles must have been previously added by [method EditorCanvasItemGizmo.add_handles]).
+			</description>
+		</method>
+		<method name="_can_be_hidden" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Override this method to define whether the gizmos handled by this plugin can be hidden or not. Returns [code]true[/code] if not overridden.
+			</description>
+		</method>
+		<method name="_commit_handle" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<param index="1" name="handle_id" type="int" />
+			<param index="2" name="secondary" type="bool" />
+			<param index="3" name="restore" type="Variant" />
+			<param index="4" name="cancel" type="bool" />
+			<description>
+				Override this method to commit a handle being edited (handles must have been previously added by [method EditorCanvasItemGizmo.add_handles] during [method _redraw]). This usually means creating an [UndoRedo] action for the change, using the current handle value as "do" and the [param restore] argument as "undo".
+				If the [param cancel] argument is [code]true[/code], the [param restore] value should be directly set, without any [UndoRedo] action.
+				The [param secondary] argument is [code]true[/code] when the committed handle is secondary (see [method EditorCanvasItemGizmo.add_handles] for more information).
+				Called for this plugin's active gizmos.
+			</description>
+		</method>
+		<method name="_commit_subgizmos" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<param index="1" name="ids" type="PackedInt32Array" />
+			<param index="2" name="restores" type="Transform2D[]" />
+			<param index="3" name="cancel" type="bool" />
+			<description>
+				Override this method to commit a group of subgizmos being edited (see [method _subgizmos_intersect_point] and [method _subgizmos_intersect_rect]). This usually means creating an [UndoRedo] action for the change, using the current transforms as "do" and the [param restores] transforms as "undo".
+				If the [param cancel] argument is [code]true[/code], the [param restores] transforms should be directly set, without any [UndoRedo] action. As with all subgizmo methods, transforms are given in local space respect to the gizmo's CanvasItem. Called for this plugin's active gizmos.
+			</description>
+		</method>
+		<method name="_create_gizmo" qualifiers="virtual const">
+			<return type="EditorCanvasItemGizmo" />
+			<param index="0" name="for_canvas_item" type="CanvasItem" />
+			<description>
+				Override this method to return a custom [EditorCanvasItemGizmo] for the 2D nodes of your choice, return [code]null[/code] for the rest of nodes. See also [method _has_gizmo].
+			</description>
+		</method>
+		<method name="_edit_get_rect" qualifiers="virtual const">
+			<return type="Rect2" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<description>
+				Override this method to return the bounding rectangle of the CanvasItem. The returned value is used to draw the selection rectangle and provide handles to change the bounding rectangle.
+			</description>
+		</method>
+		<method name="_edit_get_state" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<description>
+				Override this method to return the current state of the gizmo. This is used to restore the gizmo to its previous state when the user cancels an edit.
+			</description>
+		</method>
+		<method name="_edit_set_rect" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<param index="1" name="boundary" type="Rect2" />
+			<description>
+				Override this method to apply a new boundary to the CanvasItem. It is called by the editor when the user changes the bounding rectangle.
+				[b]Note:[/b] The editor fully handles undo/redo for this method calling [method _edit_set_state] as necessary. You only need to apply the change to the node's transform.
+			</description>
+		</method>
+		<method name="_edit_set_state" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<param index="1" name="state" type="Dictionary" />
+			<description>
+				Override this method to restore the gizmo to its previous state when the user cancels an edit.
+			</description>
+		</method>
+		<method name="_edit_use_rect" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<description>
+				Override this method to return [code]true[/code] if the gizmo should be drawn with a bounding rectangle. This is used to draw the selection rectangle and provide handles to change the bounding rectangle.
+			</description>
+		</method>
+		<method name="_get_gizmo_name" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+				Override this method to provide the name that will appear in the gizmo visibility menu.
+			</description>
+		</method>
+		<method name="_get_handle_name" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<param index="1" name="handle_id" type="int" />
+			<param index="2" name="secondary" type="bool" />
+			<description>
+				Override this method to provide gizmo's handle names. The [param secondary] argument is [code]true[/code] when the requested handle is secondary (see [method EditorCanvasItemGizmo.add_handles] for more information). Called for this plugin's active gizmos.
+			</description>
+		</method>
+		<method name="_get_handle_value" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<param index="1" name="handle_id" type="int" />
+			<param index="2" name="secondary" type="bool" />
+			<description>
+				Override this method to return the current value of a handle. This value will be requested at the start of an edit and used as the [code]restore[/code] argument in [method _commit_handle].
+				The [param secondary] argument is [code]true[/code] when the requested handle is secondary (see [method EditorCanvasItemGizmo.add_handles] for more information).
+				Called for this plugin's active gizmos.
+			</description>
+		</method>
+		<method name="_get_pivot" qualifiers="virtual const">
+			<return type="Vector2" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<description>
+				Override this method to return the pivot point of the CanvasItem. This is used to draw the pivot point and provide handles to change the pivot point.
+			</description>
+		</method>
+		<method name="_get_priority" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Override this method to set the gizmo's priority. Gizmos with higher priority will have precedence when processing inputs like handles or subgizmos selection.
+				All built-in editor gizmos return a priority of [code]-1[/code]. If not overridden, this method will return [code]0[/code], which means custom gizmos will automatically get higher priority than built-in gizmos.
+			</description>
+		</method>
+		<method name="_get_subgizmo_transform" qualifiers="virtual const">
+			<return type="Transform2D" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<param index="1" name="subgizmo_id" type="int" />
+			<description>
+				Override this method to return the current transform of a subgizmo. As with all subgizmo methods, the transform should be in local space respect to the gizmo's CanvasItem. This transform will be requested at the start of an edit and used in the [code]restore[/code] argument in [method _commit_subgizmos]. Called for this plugin's active gizmos.
+			</description>
+		</method>
+		<method name="_has_gizmo" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="for_canvas_item" type="CanvasItem" />
+			<description>
+				Override this method to define which CanvasItem nodes have a gizmo from this plugin. Whenever a [CanvasItem] node is added to a scene this method is called, if it returns [code]true[/code] the node gets a generic [EditorCanvasItemGizmo] assigned and is added to this plugin's list of active gizmos.
+			</description>
+		</method>
+		<method name="_has_pivot" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<description>
+				Override this method to return [code]true[/code] if the CanvasItem has a pivot point. This is used to draw the pivot point and provide handles to change the pivot point.
+			</description>
+		</method>
+		<method name="_is_handle_highlighted" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<param index="1" name="handle_id" type="int" />
+			<param index="2" name="secondary" type="bool" />
+			<description>
+				Override this method to return [code]true[/code] whenever to given handle should be highlighted in the editor. The [param secondary] argument is [code]true[/code] when the requested handle is secondary (see [method EditorCanvasItemGizmo.add_handles] for more information). Called for this plugin's active gizmos.
+			</description>
+		</method>
+		<method name="_is_selectable_when_hidden" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Override this method to define whether CanvasItem with this gizmo should be selectable even when the gizmo is hidden.
+			</description>
+		</method>
+		<method name="_redraw" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<description>
+				Override this method to add all the gizmo elements whenever a gizmo update is requested. It's common to call [method EditorCanvasItemGizmo.clear] at the beginning of this method and then add visual elements depending on the node's properties.
+			</description>
+		</method>
+		<method name="_set_handle" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<param index="1" name="handle_id" type="int" />
+			<param index="2" name="secondary" type="bool" />
+			<param index="3" name="position" type="Vector2" />
+			<description>
+				Override this method to update the node's properties when the user drags a gizmo handle (previously added with [method EditorCanvasItemGizmo.add_handles]). The provided [param position] is the mouse position in screen coordinates.
+				The [param secondary] argument is [code]true[/code] when the edited handle is secondary (see [method EditorCanvasItemGizmo.add_handles] for more information).
+				Called for this plugin's active gizmos.
+			</description>
+		</method>
+		<method name="_set_pivot" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<param index="1" name="pivot" type="Vector2" />
+			<description>
+				Override this method to set the pivot point of the CanvasItem when the user drags the pivot handle.
+			</description>
+		</method>
+		<method name="_set_subgizmo_transform" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<param index="1" name="subgizmo_id" type="int" />
+			<param index="2" name="transform" type="Transform2D" />
+			<description>
+				Override this method to update the node properties during subgizmo editing (see [method _subgizmos_intersect_point] and [method _subgizmos_intersect_rect]). The [param transform] is given in the CanvasItem's local coordinate system. Called for this plugin's active gizmos.
+			</description>
+		</method>
+		<method name="_subgizmos_intersect_point" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<param index="1" name="point" type="Vector2" />
+			<param index="2" name="distance" type="float" />
+			<description>
+				Override this method to allow selecting subgizmos using mouse clicks. Given a [param point] and a [param distance] in local coordinates (relative to the CanvasItem), this method should return which subgizmo should be selected. The returned value should be a unique subgizmo identifier, which can have any non-negative value and will be used in other virtual methods like [method _get_subgizmo_transform] or [method _commit_subgizmos]. Called for this plugin's active gizmos.
+			</description>
+		</method>
+		<method name="_subgizmos_intersect_rect" qualifiers="virtual const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="gizmo" type="EditorCanvasItemGizmo" />
+			<param index="1" name="rect" type="Rect2" />
+			<description>
+				Override this method to allow selecting subgizmos using mouse drag box selection. Given a [param rect] in global coordinates (canvas coordinates), this method should return which subgizmos should be selected. The returned value should be an array of unique subgizmo identifiers, which can have any non-negative value and will be used in other virtual methods like [method _get_subgizmo_transform] or [method _commit_subgizmos]. Called for this plugin's active gizmos.
+			</description>
+		</method>
+		<method name="boundary_change_to_transform" qualifiers="static">
+			<return type="Transform2D" />
+			<param index="0" name="before" type="Rect2" />
+			<param index="1" name="after" type="Rect2" />
+			<description>
+				<!-- TODO: GIZMOS: docs -->
+			</description>
+		</method>
+	</methods>
+</class>
