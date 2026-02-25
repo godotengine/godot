@@ -7563,6 +7563,7 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 		case MENU_TOOL_ROTATE:
 		case MENU_TOOL_SCALE:
 		case MENU_TOOL_SELECT:
+		case MENU_TOOL_SCENE_PAINT:
 		case MENU_TOOL_LIST_SELECT: {
 			for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
 				if (viewports[i]->_edit.mode != Node3DEditorViewport::TRANSFORM_NONE) {
@@ -9110,6 +9111,7 @@ void Node3DEditor::_update_theme() {
 	tool_button[TOOL_MODE_ROTATE]->set_button_icon(get_editor_theme_icon(SNAME("ToolRotate")));
 	tool_button[TOOL_MODE_SCALE]->set_button_icon(get_editor_theme_icon(SNAME("ToolScale")));
 	tool_button[TOOL_MODE_SELECT]->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
+	tool_button[TOOL_MODE_SCENE_PAINT]->set_button_icon(get_editor_theme_icon(SNAME("Paint")));
 	tool_button[TOOL_MODE_LIST_SELECT]->set_button_icon(get_editor_theme_icon(SNAME("ListSelect")));
 	tool_button[TOOL_LOCK_SELECTED]->set_button_icon(get_editor_theme_icon(SNAME("Lock")));
 	tool_button[TOOL_UNLOCK_SELECTED]->set_button_icon(get_editor_theme_icon(SNAME("Unlock")));
@@ -10011,6 +10013,16 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_SELECT]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_select", TTRC("Select Mode"), Key::V, true));
 	tool_button[TOOL_MODE_SELECT]->set_shortcut_context(this);
 	tool_button[TOOL_MODE_SELECT]->set_accessibility_name(TTRC("Select Mode"));
+
+	tool_button[TOOL_MODE_SCENE_PAINT] = memnew(Button);
+	main_menu_hbox->add_child(tool_button[TOOL_MODE_SCENE_PAINT]);
+	tool_button[TOOL_MODE_SCENE_PAINT]->set_toggle_mode(true);
+	tool_button[TOOL_MODE_SCENE_PAINT]->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	tool_button[TOOL_MODE_SCENE_PAINT]->set_theme_type_variation(SceneStringName(FlatButton));
+	tool_button[TOOL_MODE_SCENE_PAINT]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_SCENE_PAINT));
+	tool_button[TOOL_MODE_SCENE_PAINT]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_scene_paint", TTRC("Scene Paint Mode"), Key::B, true));
+	tool_button[TOOL_MODE_SCENE_PAINT]->set_shortcut_context(this);
+	tool_button[TOOL_MODE_SCENE_PAINT]->set_accessibility_name(TTRC("Scene Paint Mode"));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
