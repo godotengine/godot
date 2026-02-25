@@ -118,6 +118,7 @@ private:
 
 	void _add_dependency(RID p_id, RID p_depends_on);
 	void _free_dependencies(RID p_id);
+	void _replace_dependency(RID p_dependent, RID p_old_dependency, RID p_new_dependency);
 
 private:
 	/***************************/
@@ -454,6 +455,7 @@ public:
 	RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
 	RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_usage, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers, uint64_t p_mipmaps = 1);
 	RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D, uint32_t p_layers = 0);
+	RID texture_create_from_existing_mipchain(RID p_existing_texture, const TextureFormat &p_format, const TextureView &p_view, uint32_t p_copy_mips_count, const Vector<Vector<uint8_t>> &p_new_mip_data = Vector<Vector<uint8_t>>());
 	Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data);
 	Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer); // CPU textures will return immediately, while GPU textures will most likely force a flush
 	Error texture_get_data_async(RID p_texture, uint32_t p_layer, const Callable &p_callback);
@@ -1156,6 +1158,10 @@ private:
 		LocalVector<RID> pending_clear_textures;
 		InvalidationCallback invalidated_callback = nullptr;
 		void *invalidated_callback_userdata = nullptr;
+
+		// Stored for uniform set re-creation during texture replacement.
+		LocalVector<Uniform> bound_uniforms;
+		bool is_linear_pool = false;
 	};
 
 	RID_Owner<UniformSet, true> uniform_set_owner;
@@ -1789,6 +1795,7 @@ public:
 	void _set_max_fps(int p_max_fps);
 
 	void free_rid(RID p_rid);
+	void texture_replace_rid(RID p_old_texture, RID p_new_texture);
 #ifndef DISABLE_DEPRECATED
 	[[deprecated("Use `free_rid()` instead.")]] void free(RID p_rid) {
 		free_rid(p_rid);
@@ -1878,6 +1885,7 @@ private:
 	RID _texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const TypedArray<PackedByteArray> &p_data = Array());
 	RID _texture_create_shared(const Ref<RDTextureView> &p_view, RID p_with_texture);
 	RID _texture_create_shared_from_slice(const Ref<RDTextureView> &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
+	RID _texture_create_from_existing_mipchain(RID p_existing_texture, const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, uint32_t p_copy_mips_count, const TypedArray<PackedByteArray> &p_new_mip_data = Array());
 	Ref<RDTextureFormat> _texture_get_format(RID p_rd_texture);
 
 	FramebufferFormatID _framebuffer_format_create(const TypedArray<RDAttachmentFormat> &p_attachments, uint32_t p_view_count);

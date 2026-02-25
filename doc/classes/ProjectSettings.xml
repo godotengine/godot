@@ -3454,6 +3454,30 @@
 		<member name="rendering/textures/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
 		</member>
+		<member name="rendering/textures/streaming/enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables texture streaming. This system dynamically loads and unloads texture mipmaps based on visibility, reducing VRAM usage. Useful for projects with many large textures.
+			[b]Note:[/b] Textures must be reimported after enabling this setting.
+		</member>
+		<member name="rendering/textures/streaming/inactivity_decay_rate_ms" type="int" setter="" getter="" default="5000">
+			The time (in milliseconds) per mipmap level of quality decay for textures that are no longer visible. When a streamed texture is not requested by the feedback system (i.e., it's off-screen or occluded), its resolution will gradually decrease by one mipmap level for each interval of this duration.
+			For example, with the default value of [code]5000[/code] ms, a texture that hasn't been visible for 10 seconds will have its quality reduced by 2 mipmap levels.
+			Set to [code]0[/code] to disable inactivity decay entirely, keeping textures at their last requested resolution indefinitely.
+		</member>
+		<member name="rendering/textures/streaming/max_lod" type="int" setter="" getter="" default="3">
+			The maximum LOD (mipmap level) that streamed textures can load. Lower values allow higher resolution textures but use more VRAM. Valid values are [code]0[/code] (full resolution) to [code]13[/code] (lowest resolution).
+		</member>
+		<member name="rendering/textures/streaming/max_ops_per_second" type="int" setter="" getter="" default="5000">
+			The maximum number of texture streaming operations (loading/unloading mipmaps) per second. Higher values allow faster adaptation to scene changes but may impact performance.
+		</member>
+		<member name="rendering/textures/streaming/memory_budget_mb" type="int" setter="" getter="" default="512">
+			The maximum VRAM (in megabytes) allocated for streamed textures. If exceeded, the system reduces the resolution of less important textures to stay within budget.
+		</member>
+		<member name="rendering/textures/streaming/min_lod" type="int" setter="" getter="" default="0">
+			The minimum LOD (mipmap level) that streamed textures start at when loaded. Higher values result in lower initial resolution and faster loading. Valid values are [code]0[/code] (full resolution) to [code]13[/code] (lowest resolution).
+		</member>
+		<member name="rendering/textures/streaming/wait_time" type="int" setter="" getter="" default="100">
+			The minimum time (in milliseconds) to wait before changing a texture's resolution again. This prevents rapid resolution switching (thrashing) which can cause visual artifacts and performance issues.
+		</member>
 		<member name="rendering/textures/vram_compression/cache_gpu_compressor" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the GPU texture compressor will cache the local RenderingDevice and its resources (shaders and pipelines), making subsequent imports faster at the cost of increased memory usage.
 		</member>

@@ -30,6 +30,9 @@
 
 #include "texture_editor_plugin.h"
 
+#include "core/io/image_loader.h"
+#include "core/io/resource.h"
+#include "core/io/resource_loader.h"
 #include "editor/editor_string_names.h"
 #include "editor/scene/texture/color_channel_selector.h"
 #include "editor/themes/editor_scale.h"
@@ -44,6 +47,7 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/material.h"
 #include "scene/resources/portable_compressed_texture.h"
+#include "scene/resources/streamed_texture.h"
 
 constexpr const char *texture_2d_shader_code = R"(
 shader_type canvas_item;
@@ -136,6 +140,11 @@ static Image::Format get_texture_2d_format(const Ref<Texture2D> &p_texture) {
 	const Ref<CompressedTexture2D> compressed_texture = p_texture;
 	if (compressed_texture.is_valid()) {
 		return compressed_texture->get_format();
+	}
+
+	const Ref<StreamedTexture2D> streamed_texture = p_texture;
+	if (streamed_texture.is_valid()) {
+		return streamed_texture->get_format();
 	}
 
 	const Ref<PortableCompressedTexture2D> portable_compressed_texture = p_texture;
@@ -312,7 +321,7 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 }
 
 bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
-	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr || Object::cast_to<DPITexture>(p_object) != nullptr || Object::cast_to<Image>(p_object) != nullptr;
+	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr || Object::cast_to<DPITexture>(p_object) != nullptr || Object::cast_to<Image>(p_object) != nullptr || Object::cast_to<StreamedTexture2D>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginTexture::parse_begin(Object *p_object) {

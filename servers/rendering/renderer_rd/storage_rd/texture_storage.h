@@ -202,6 +202,8 @@ private:
 
 		CanvasTexture *canvas_texture = nullptr;
 
+		RID streaming_state;
+
 		void cleanup();
 	};
 
@@ -581,6 +583,7 @@ public:
 	virtual RID texture_drawable_get_default_material() const override;
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) override;
+	virtual void texture_replace_compatible(RID p_texture, RID p_by_texture) override;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) override;
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) override;
@@ -599,6 +602,7 @@ public:
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override;
 
 	virtual void texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RS::TextureLayeredType p_layer_type = RS::TEXTURE_LAYERED_2D_ARRAY) override;
+	RID texture_2d_create_from_texture(RID p_src_texture, int p_new_width, int p_new_height, uint32_t p_copy_mips_count, const Vector<uint8_t> &p_new_mip_data = Vector<uint8_t>()) override;
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override;
 
@@ -859,6 +863,8 @@ public:
 
 	static RD::DataFormat render_target_get_color_format(bool p_use_hdr, bool p_srgb);
 	static uint32_t render_target_get_color_usage_bits(bool p_msaa);
+
+	void texture_2d_attach_streaming_state(RID p_texture, RID p_streaming_state) override;
 };
 
 } // namespace RendererRD

@@ -1234,7 +1234,74 @@ void RenderingDeviceDriverD3D12::_discard_texture_subresources(const TextureInfo
 	}
 }
 
+bool RenderingDeviceDriverD3D12::_data_format_is_compressed(DataFormat p_format) {
+	switch (p_format) {
+		case DATA_FORMAT_BC1_RGB_UNORM_BLOCK:
+		case DATA_FORMAT_BC1_RGB_SRGB_BLOCK:
+		case DATA_FORMAT_BC1_RGBA_UNORM_BLOCK:
+		case DATA_FORMAT_BC1_RGBA_SRGB_BLOCK:
+		case DATA_FORMAT_BC2_UNORM_BLOCK:
+		case DATA_FORMAT_BC2_SRGB_BLOCK:
+		case DATA_FORMAT_BC3_UNORM_BLOCK:
+		case DATA_FORMAT_BC3_SRGB_BLOCK:
+		case DATA_FORMAT_BC4_UNORM_BLOCK:
+		case DATA_FORMAT_BC4_SNORM_BLOCK:
+		case DATA_FORMAT_BC5_UNORM_BLOCK:
+		case DATA_FORMAT_BC5_SNORM_BLOCK:
+		case DATA_FORMAT_BC6H_UFLOAT_BLOCK:
+		case DATA_FORMAT_BC6H_SFLOAT_BLOCK:
+		case DATA_FORMAT_BC7_UNORM_BLOCK:
+		case DATA_FORMAT_BC7_SRGB_BLOCK:
+		case DATA_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
+		case DATA_FORMAT_ETC2_R8G8B8_SRGB_BLOCK:
+		case DATA_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK:
+		case DATA_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK:
+		case DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK:
+		case DATA_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK:
+		case DATA_FORMAT_EAC_R11_UNORM_BLOCK:
+		case DATA_FORMAT_EAC_R11_SNORM_BLOCK:
+		case DATA_FORMAT_EAC_R11G11_UNORM_BLOCK:
+		case DATA_FORMAT_EAC_R11G11_SNORM_BLOCK:
+		case DATA_FORMAT_ASTC_4x4_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_4x4_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_5x4_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_5x4_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_5x5_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_5x5_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_6x5_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_6x5_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_6x6_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_6x6_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_8x5_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_8x5_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_8x6_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_8x6_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_8x8_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_8x8_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_10x5_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_10x5_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_10x6_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_10x6_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_10x8_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_10x8_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_10x10_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_10x10_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_12x10_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_12x10_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_12x12_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_12x12_SRGB_BLOCK:
+			return true;
+		default:
+			return false;
+	}
+}
+
 bool RenderingDeviceDriverD3D12::_unordered_access_supported_by_format(DataFormat p_format) {
+	// Compressed formats don't support UAV.
+	if (_data_format_is_compressed(p_format)) {
+		return false;
+	}
+
 	switch (p_format) {
 		case DATA_FORMAT_R4G4_UNORM_PACK8:
 		case DATA_FORMAT_R4G4B4A4_UNORM_PACK16:
@@ -1366,6 +1433,7 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 		resource_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 	}
 	if ((p_format.usage_bits & TEXTURE_USAGE_STORAGE_BIT)) {
+		ERR_FAIL_COND_V_MSG(_data_format_is_compressed(p_format.format), TextureID(), "Storage textures are not supported for this format.");
 		resource_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 	}
 	if ((p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT)) {
@@ -2263,7 +2331,18 @@ static void _rd_stages_and_access_to_d3d12(BitField<RDD::PipelineStageBits> p_st
 	}
 }
 
-static D3D12_BARRIER_LAYOUT _rd_texture_layout_to_d3d12_barrier_layout(RDD::TextureLayout p_texture_layout) {
+static D3D12_BARRIER_LAYOUT _rd_texture_layout_to_d3d12_barrier_layout(RDD::TextureLayout p_texture_layout, D3D12_COMMAND_LIST_TYPE p_list_type) {
+	// Copy queues can only use COMMON or UNDEFINED layouts - they don't support COPY_SOURCE/COPY_DEST with enhanced barriers.
+	if (p_list_type == D3D12_COMMAND_LIST_TYPE_COPY) {
+		switch (p_texture_layout) {
+			case RDD::TEXTURE_LAYOUT_UNDEFINED:
+				return D3D12_BARRIER_LAYOUT_UNDEFINED;
+			default:
+				// All other layouts must be COMMON for copy queues.
+				return D3D12_BARRIER_LAYOUT_COMMON;
+		}
+	}
+
 	switch (p_texture_layout) {
 		case RDD::TEXTURE_LAYOUT_UNDEFINED:
 			return D3D12_BARRIER_LAYOUT_UNDEFINED;
@@ -2315,6 +2394,8 @@ void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_
 		return;
 	}
 
+	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)(p_cmd_buffer.id);
+
 	// Convert the RDD barriers to D3D12 enhanced barriers.
 	thread_local LocalVector<D3D12_GLOBAL_BARRIER> global_barriers;
 	thread_local LocalVector<D3D12_BUFFER_BARRIER> buffer_barriers;
@@ -2356,8 +2437,8 @@ void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_
 		}
 		_rd_stages_and_access_to_d3d12(p_src_stages, texture_barrier_rd.prev_layout, texture_barrier_rd.src_access, texture_barrier_d3d12.SyncBefore, texture_barrier_d3d12.AccessBefore);
 		_rd_stages_and_access_to_d3d12(p_dst_stages, texture_barrier_rd.next_layout, texture_barrier_rd.dst_access, texture_barrier_d3d12.SyncAfter, texture_barrier_d3d12.AccessAfter);
-		texture_barrier_d3d12.LayoutBefore = _rd_texture_layout_to_d3d12_barrier_layout(texture_barrier_rd.prev_layout);
-		texture_barrier_d3d12.LayoutAfter = _rd_texture_layout_to_d3d12_barrier_layout(texture_barrier_rd.next_layout);
+		texture_barrier_d3d12.LayoutBefore = _rd_texture_layout_to_d3d12_barrier_layout(texture_barrier_rd.prev_layout, cmd_buf_info->list_type);
+		texture_barrier_d3d12.LayoutAfter = _rd_texture_layout_to_d3d12_barrier_layout(texture_barrier_rd.next_layout, cmd_buf_info->list_type);
 		texture_barrier_d3d12.pResource = texture_info->resource;
 		if (texture_barrier_rd.subresources.mipmap_count == texture_info->mipmaps && texture_barrier_rd.subresources.layer_count == texture_info->layers) {
 			// So, all resources. Then, let's be explicit about it so D3D12 doesn't think
@@ -2404,7 +2485,6 @@ void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_
 	}
 
 	if (barrier_groups_count) {
-		const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)(p_cmd_buffer.id);
 		cmd_buf_info->cmd_list_7->Barrier(barrier_groups_count, barrier_groups);
 	}
 }
@@ -2648,6 +2728,7 @@ RDD::CommandBufferID RenderingDeviceDriverD3D12::command_buffer_create(CommandPo
 	// Bookkeep
 
 	CommandBufferInfo *cmd_buf_info = VersatileResource::allocate<CommandBufferInfo>(resources_allocator);
+	cmd_buf_info->list_type = list_type;
 	cmd_buf_info->cmd_allocator = cmd_allocator;
 	cmd_buf_info->cmd_list = cmd_list;
 

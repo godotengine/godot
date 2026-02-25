@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StreamedTexture2D" inherits="Texture2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A texture that supports dynamic mipmap streaming for optimized VRAM usage.
+	</brief_description>
+	<description>
+		StreamedTexture2D is a texture type that supports dynamic mipmap streaming. When texture streaming is enabled in the Project Settings ([member ProjectSettings.rendering/textures/streaming/enabled]), these textures can have their mipmap levels dynamically loaded and unloaded based on usage.
+		The texture streaming system monitors which textures are visible in each frame and at what resolution they're being displayed. Textures that are far from the camera or not currently visible have their higher-resolution mipmap levels unloaded to save VRAM, while textures being displayed up close are loaded at higher resolutions.
+		This texture type is automatically created when importing images with the streaming-compatible importer.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="load">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Loads the texture from the specified [param path].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="load_path" type="String" setter="load" getter="get_load_path" default="&quot;&quot;">
+			The [StreamedTexture2D]'s file path to a [code].stex[/code] file.
+		</member>
+		<member name="max_lod_override" type="int" setter="set_max_lod_override" getter="get_max_lod_override" default="0">
+			Overrides the maximum LOD (mipmap level) that can be loaded for this specific texture. Lower values allow higher resolution. A value of [code]0[/code] uses the global setting from [member ProjectSettings.rendering/textures/streaming/max_lod]. Values [code]1[/code] to [code]14[/code] correspond to LOD levels [code]0[/code] to [code]13[/code].
+		</member>
+		<member name="min_lod_override" type="int" setter="set_min_lod_override" getter="get_min_lod_override" default="0">
+			Overrides the minimum LOD (mipmap level) this texture starts at when loaded. Higher values result in lower initial resolution. A value of [code]0[/code] uses the global setting from [member ProjectSettings.rendering/textures/streaming/min_lod]. Values [code]1[/code] to [code]14[/code] correspond to LOD levels [code]0[/code] to [code]13[/code].
+		</member>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
+	</members>
+</class>

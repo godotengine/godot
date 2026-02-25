@@ -241,6 +241,7 @@ public:
 	FUNC0RC(RID, texture_drawable_get_default_material)
 
 	FUNC2(texture_replace, RID, RID)
+	FUNC2(texture_replace_compatible, RID, RID)
 
 	FUNC3(texture_set_size_override, RID, int, int)
 // FIXME: Disabled during Vulkan refactoring, should be ported.
@@ -263,6 +264,9 @@ public:
 	FUNCRIDTEX2(texture_rd, const RID &, const RS::TextureLayeredType)
 	FUNC2RC(RID, texture_get_rd_texture, RID, bool)
 	FUNC2RC(uint64_t, texture_get_native_handle, RID, bool)
+
+	FUNC2(texture_2d_attach_streaming_state, RID, RID);
+	FUNC5R(RID, texture_2d_create_from_texture, RID, int, int, uint32_t, const Vector<uint8_t> &);
 
 	/* SHADER API */
 

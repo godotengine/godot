@@ -70,6 +70,55 @@ void UniformSetCacheRD::_uniform_set_invalidation_callback(void *p_userdata) {
 	singleton->_invalidate(reinterpret_cast<Cache *>(p_userdata));
 }
 
+void UniformSetCacheRD::texture_replaced_in_uniform_set(void *p_cache_userdata, RID p_old_texture, RID p_new_texture) {
+	if (!p_cache_userdata) {
+		// Not a cache-managed uniform set, nothing to do.
+		return;
+	}
+
+	Cache *found = reinterpret_cast<Cache *>(p_cache_userdata);
+
+	// Remove from old hash bucket.
+	if (found->prev) {
+		found->prev->next = found->next;
+	} else {
+		uint32_t old_table_idx = found->hash % HASH_TABLE_SIZE;
+		hash_table[old_table_idx] = found->next;
+	}
+	if (found->next) {
+		found->next->prev = found->prev;
+	}
+
+	// Patch the uniforms: replace old texture RID with new.
+	for (uint32_t i = 0; i < found->uniforms.size(); i++) {
+		RD::Uniform &u = found->uniforms[i];
+		uint32_t id_count = u.get_id_count();
+		for (uint32_t j = 0; j < id_count; j++) {
+			if (u.get_id(j) == p_old_texture) {
+				u.set_id(j, p_new_texture);
+			}
+		}
+	}
+
+	// Recompute hash.
+	uint32_t h = hash_murmur3_one_64(found->shader.get_id());
+	h = hash_murmur3_one_32(found->set, h);
+	for (uint32_t i = 0; i < found->uniforms.size(); i++) {
+		h = _hash_uniform(found->uniforms[i], h);
+	}
+	h = hash_fmix32(h);
+	found->hash = h;
+
+	// Insert into new hash bucket.
+	uint32_t new_table_idx = h % HASH_TABLE_SIZE;
+	found->prev = nullptr;
+	found->next = hash_table[new_table_idx];
+	if (hash_table[new_table_idx]) {
+		hash_table[new_table_idx]->prev = found;
+	}
+	hash_table[new_table_idx] = found;
+}
+
 UniformSetCacheRD::UniformSetCacheRD() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;

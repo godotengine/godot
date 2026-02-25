@@ -133,6 +133,9 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(NAVIGATION_3D_EDGE_FREE_COUNT);
 	BIND_ENUM_CONSTANT(NAVIGATION_3D_OBSTACLE_COUNT);
 #endif // NAVIGATION_3D_DISABLED
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+	BIND_ENUM_CONSTANT(RENDER_STREAMING_TEXTURE_MEM_USED);
+#endif
 	BIND_ENUM_CONSTANT(MONITOR_MAX);
 
 	BIND_ENUM_CONSTANT(MONITOR_TYPE_QUANTITY);
@@ -228,6 +231,9 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		PNAME("navigation_3d/edges_free"),
 		PNAME("navigation_3d/obstacles"),
 #endif // NAVIGATION_3D_DISABLED
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+		PNAME("video/streaming_texture_mem_used"),
+#endif
 	};
 	static_assert(std_size(names) == MONITOR_MAX);
 
@@ -452,7 +458,10 @@ double Performance::get_monitor(Monitor p_monitor) const {
 		case NAVIGATION_3D_OBSTACLE_COUNT:
 			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_OBSTACLE_COUNT);
 #endif // NAVIGATION_3D_DISABLED
-
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+		case RENDER_STREAMING_TEXTURE_MEM_USED:
+			return TextureStreaming::get_singleton()->get_memory_budget_bytes_used();
+#endif
 		default: {
 		}
 	}
@@ -525,7 +534,9 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 #endif // _3D_DISABLED
-
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+		MONITOR_TYPE_MEMORY,
+#endif // MODULE_TEXTURE_STREAMING_ENABLED
 	};
 	static_assert((sizeof(types) / sizeof(MonitorType)) == MONITOR_MAX);
 
