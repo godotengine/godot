@@ -34,6 +34,7 @@
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/shader_preprocessor.h"
 
 using namespace RendererRD;
 
@@ -365,6 +366,38 @@ void Fog::FogShaderData::set_code(const String &p_code) {
 		return; //just invalid, but no error
 	}
 
+	// Preprocess the shader to handle #unsafe directives
+	ShaderPreprocessor preprocessor;
+	String preprocessed_code;
+	RBMap<String, String> unsafe_identifiers;
+	String preprocess_error;
+	List<ShaderPreprocessor::FilePosition> preprocess_error_positions;
+
+	Error preprocess_err = preprocessor.preprocess(
+			code, path, preprocessed_code,
+			&preprocess_error, &preprocess_error_positions,
+			nullptr, nullptr, nullptr, nullptr, nullptr,
+			&unsafe_identifiers);
+
+	if (preprocess_err != OK) {
+		ERR_FAIL_MSG("Fog shader preprocessing failed: " + preprocess_error);
+	}
+
+	// Inject uniform declarations for unsafe variables into the preprocessed code
+	// This allows the shader compiler to recognize them as valid uniforms
+	String unsafe_uniforms;
+	for (const KeyValue<String, String> &kv : unsafe_identifiers) {
+		unsafe_uniforms += vformat("uniform %s %s;\n", kv.value, kv.key);
+	}
+
+	// Insert after shader_type line
+	if (!unsafe_uniforms.is_empty()) {
+		int shader_type_end = preprocessed_code.find_char('\n');
+		if (shader_type_end > 0) {
+			preprocessed_code = preprocessed_code.substr(0, shader_type_end + 1) + unsafe_uniforms + preprocessed_code.substr(shader_type_end + 1);
+		}
+	}
+
 	ShaderCompiler::GeneratedCode gen_code;
 	ShaderCompiler::IdentifierActions actions;
 	actions.entry_point_stages["fog"] = ShaderCompiler::STAGE_COMPUTE;
@@ -375,9 +408,63 @@ void Fog::FogShaderData::set_code(const String &p_code) {
 
 	actions.uniforms = &uniforms;
 
+	// Register unsafe identifiers as uniforms so the shader compiler recognizes them
+	for (const KeyValue<String, String> &kv : unsafe_identifiers) {
+		ShaderLanguage::ShaderNode::Uniform uniform;
+
+		// Convert type string to ShaderLanguage::DataType
+		if (kv.value == "bool") {
+			uniform.type = ShaderLanguage::TYPE_BOOL;
+		} else if (kv.value == "int") {
+			uniform.type = ShaderLanguage::TYPE_INT;
+		} else if (kv.value == "uint") {
+			uniform.type = ShaderLanguage::TYPE_UINT;
+		} else if (kv.value == "float") {
+			uniform.type = ShaderLanguage::TYPE_FLOAT;
+		} else if (kv.value == "bvec2") {
+			uniform.type = ShaderLanguage::TYPE_BVEC2;
+		} else if (kv.value == "bvec3") {
+			uniform.type = ShaderLanguage::TYPE_BVEC3;
+		} else if (kv.value == "bvec4") {
+			uniform.type = ShaderLanguage::TYPE_BVEC4;
+		} else if (kv.value == "ivec2") {
+			uniform.type = ShaderLanguage::TYPE_IVEC2;
+		} else if (kv.value == "ivec3") {
+			uniform.type = ShaderLanguage::TYPE_IVEC3;
+		} else if (kv.value == "ivec4") {
+			uniform.type = ShaderLanguage::TYPE_IVEC4;
+		} else if (kv.value == "uvec2") {
+			uniform.type = ShaderLanguage::TYPE_UVEC2;
+		} else if (kv.value == "uvec3") {
+			uniform.type = ShaderLanguage::TYPE_UVEC3;
+		} else if (kv.value == "uvec4") {
+			uniform.type = ShaderLanguage::TYPE_UVEC4;
+		} else if (kv.value == "vec2") {
+			uniform.type = ShaderLanguage::TYPE_VEC2;
+		} else if (kv.value == "vec3") {
+			uniform.type = ShaderLanguage::TYPE_VEC3;
+		} else if (kv.value == "vec4") {
+			uniform.type = ShaderLanguage::TYPE_VEC4;
+		} else if (kv.value == "mat2") {
+			uniform.type = ShaderLanguage::TYPE_MAT2;
+		} else if (kv.value == "mat3") {
+			uniform.type = ShaderLanguage::TYPE_MAT3;
+		} else if (kv.value == "mat4") {
+			uniform.type = ShaderLanguage::TYPE_MAT4;
+		} else if (kv.value == "sampler2D") {
+			uniform.type = ShaderLanguage::TYPE_SAMPLER2D;
+		} else {
+			// Default to vec3 for unknown types
+			uniform.type = ShaderLanguage::TYPE_VEC3;
+		}
+
+		uniform.precision = ShaderLanguage::PRECISION_DEFAULT;
+		uniforms[kv.key] = uniform;
+	}
+
 	Fog *fog_singleton = Fog::get_singleton();
 
-	Error err = fog_singleton->volumetric_fog.compiler.compile(RS::SHADER_FOG, code, &actions, path, gen_code);
+	Error err = fog_singleton->volumetric_fog.compiler.compile(RS::SHADER_FOG, preprocessed_code, &actions, path, gen_code, unsafe_identifiers);
 	ERR_FAIL_COND_MSG(err != OK, "Fog shader compilation failed.");
 
 	if (version.is_null()) {
