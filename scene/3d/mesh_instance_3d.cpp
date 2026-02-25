@@ -341,6 +341,7 @@ void MeshInstance3D::create_multiple_convex_collisions(const Ref<MeshConvexDecom
 
 void MeshInstance3D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_WORLD:
 		case NOTIFICATION_ENTER_TREE: {
 #ifndef DISABLE_DEPRECATED
 			if (upgrading_skeleton_compat) {
