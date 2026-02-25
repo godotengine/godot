@@ -66,6 +66,7 @@ class GridMapEditor : public VBoxContainer {
 	};
 
 	InputAction input_action = INPUT_NONE;
+	bool valid_mb_press = false;
 	Panel *panel = nullptr;
 	MenuButton *options = nullptr;
 	SpinBox *floor = nullptr;
