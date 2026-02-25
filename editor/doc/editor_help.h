@@ -36,7 +36,6 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/rich_text_label.h"
-#include "scene/gui/split_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
 
@@ -90,7 +89,13 @@ class EditorHelp : public VBoxContainer {
 		METHOD_TYPE_METHOD,
 		METHOD_TYPE_CONSTRUCTOR,
 		METHOD_TYPE_OPERATOR,
-		METHOD_TYPE_MAX
+		METHOD_TYPE_MAX,
+	};
+
+	enum MethodPlace {
+		METHOD_PLACE_OVERVIEW,
+		METHOD_PLACE_DESCRIPTION,
+		METHOD_PLACE_PROPERTY_SETGET,
 	};
 
 	bool select_locked = false;
@@ -155,10 +160,9 @@ class EditorHelp : public VBoxContainer {
 	void _add_text(const String &p_bbcode);
 	bool scroll_locked = false;
 
-	//void _button_pressed(int p_idx);
 	void _add_type(const String &p_type, const String &p_enum = String(), bool p_is_bitfield = false);
 	void _add_type_icon(const String &p_type, int p_size = 0, const String &p_fallback = "");
-	void _add_method(const DocData::MethodDoc &p_method, bool p_overview, bool p_override = true);
+	void _add_method(const DocData::MethodDoc &p_method, MethodPlace p_method_place, bool p_allow_link, bool p_override);
 
 	void _add_bulletpoint();
 
@@ -177,9 +181,10 @@ class EditorHelp : public VBoxContainer {
 	int display_margin = 0;
 
 	Error _goto_desc(const String &p_class);
-	//void _update_history_buttons();
+
 	void _update_method_list(MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods);
 	void _update_method_descriptions(const DocData::ClassDoc &p_classdoc, MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods);
+
 	void _update_doc();
 
 	void _request_help(const String &p_string);
