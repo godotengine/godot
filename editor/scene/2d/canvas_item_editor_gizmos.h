@@ -128,8 +128,8 @@ public:
 	virtual void _set_handle(int p_id, bool p_secondary, const Point2 &p_point);
 	virtual void _commit_handle(int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false);
 
-	virtual int _subgizmos_intersect_point(const Point2 &p_point, real_t p_max_distance) const; // TODO: GIZMOS: docs -> this position is in local space.
-	virtual Vector<int> _subgizmos_intersect_rect(const Rect2 &p_rect) const; // TODO: GIZMOS: docs -> this rect is in canvas space
+	virtual int _subgizmos_intersect_point(const Point2 &p_point, real_t p_max_distance) const;
+	virtual Vector<int> _subgizmos_intersect_rect(const Rect2 &p_rect) const;
 	virtual Transform2D _get_subgizmo_transform(int p_id) const;
 	virtual void _set_subgizmo_transform(int p_id, const Transform2D &p_xform);
 	virtual void _commit_subgizmos(const Vector<int> &p_ids, const Vector<Transform2D> &p_transforms, bool p_cancel = false);
@@ -142,9 +142,9 @@ public:
 
 	Ref<EditorCanvasItemGizmoPlugin> get_plugin() const { return gizmo_plugin; }
 
-	bool intersect_rect(const Rect2 &p_rect) const; // TODO: GIZMOS: docs -> this rect is in canvas space
-	void handles_intersect_point(const Point2 &p_point, real_t p_max_distance, bool p_shift_pressed, int &r_id, bool &r_secondary); // TODO: GIZMOS: docs -> this position is in local space, so is distance
-	bool intersect_point(const Point2 &p_point, real_t p_max_distance) const; // TODO: GIZMOS: docs -> this position is in local space, so is max_distance
+	bool intersect_rect(const Rect2 &p_rect) const;
+	void handles_intersect_point(const Point2 &p_point, real_t p_max_distance, bool p_shift_pressed, int &r_id, bool &r_secondary);
+	bool intersect_point(const Point2 &p_point, real_t p_max_distance) const;
 	bool is_subgizmo_selected(int p_id) const;
 	Vector<int> get_subgizmo_selection() const;
 

@@ -148,7 +148,6 @@ Dictionary EditorCanvasItemGizmo::_edit_get_state() const {
 	// because the gdscript method has no way of calling super back into c++ code, we
 	// implicitly merge what the gdscript implementation has returned with the returns from
 	// the c++ implementation, letting the c++ implementation win in case of conflicts.
-	// TODO: GIZMOS: docs - this needs to be in the docs as its non-obvious behavior
 	Dictionary ret;
 	if (GDVIRTUAL_IS_OVERRIDDEN(_edit_get_state)) {
 		GDVIRTUAL_CALL(_edit_get_state, ret);
@@ -170,7 +169,6 @@ void EditorCanvasItemGizmo::_edit_set_state(const Dictionary &p_state) {
 	// this is a bit different, because gdscript methods cannot call super into c++ code, so
 	// when the method is overridden, we still call the gizmo plugin afterward (which in turn calls the CanvasItem)
 	// to ensure the canvas item also gets its state restored.
-	// TODO: GIZMOS: docs - should probably state in the docs that the dictionary may contain additional items.
 	if (GDVIRTUAL_IS_OVERRIDDEN(_edit_set_state)) {
 		GDVIRTUAL_CALL(_edit_set_state, p_state);
 	}
@@ -893,7 +891,6 @@ Dictionary EditorCanvasItemGizmoPlugin::_edit_get_state(const EditorCanvasItemGi
 	}
 
 	// similar to EditorCanvasItemGizmo::_edit_get_state, we merge the results
-	// TODO: GIZMOS: docs - be sure to mention this in the docs
 	Dictionary base = ci->_edit_get_state();
 
 	if (ret.is_empty()) {
@@ -912,7 +909,6 @@ void EditorCanvasItemGizmoPlugin::_edit_set_state(const EditorCanvasItemGizmo *p
 	ci->_edit_set_state(p_state);
 
 	// then allow GDScript code to do their own restores on a known good state
-	// TODO: GIZMOS: docs - mention that the dictionary may contain extra elements
 	if (GDVIRTUAL_IS_OVERRIDDEN(_edit_set_state)) {
 		GDVIRTUAL_CALL(_edit_set_state, Ref<EditorCanvasItemGizmo>(p_gizmo), p_state);
 	}
