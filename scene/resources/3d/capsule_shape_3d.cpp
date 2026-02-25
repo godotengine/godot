@@ -137,6 +137,182 @@ real_t CapsuleShape3D::get_mid_height() const {
 	return height - radius * 2.0f;
 }
 
+Vector<Vector3> CapsuleShape3D::get_triangles() const {
+	if (!triangle_cache_dirty) {
+		return triangle_cache;
+	}
+
+	int radial_segments = 32;
+	int rings = 16;
+
+	triangle_cache = CapsuleShape3D::create_triangles(radius, height, radial_segments, rings);
+	triangle_cache_dirty = false;
+	return triangle_cache;
+}
+
+Vector<Vector3> CapsuleShape3D::create_triangles(float p_radius, float p_height, int p_segments, int p_rings) {
+	float radius = p_radius;
+	float height = p_height;
+	int radial_segments = p_segments;
+	int rings = p_rings;
+
+	int i, j, prevrow, thisrow, point;
+	float x, y, z, u, v, w;
+
+	int num_points = (rings + 2) * (radial_segments + 1) * 2;
+	LocalVector<Vector3> points;
+	points.reserve(num_points);
+	LocalVector<int> indices;
+	indices.reserve((rings + 1) * (radial_segments) * 6 * 2);
+	point = 0;
+
+	/* top hemisphere */
+	thisrow = 0;
+	prevrow = 0;
+	for (j = 0; j <= (rings + 1); j++) {
+		v = j;
+
+		v /= (rings + 1);
+		if (j == (rings + 1)) {
+			w = 1.0;
+			y = 0.0;
+		} else {
+			w = Math::sin(0.5 * Math::PI * v);
+			y = Math::cos(0.5 * Math::PI * v);
+		}
+
+		for (i = 0; i <= radial_segments; i++) {
+			u = i;
+			u /= radial_segments;
+
+			if (i == radial_segments) {
+				x = 0.0;
+				z = 1.0;
+			} else {
+				x = -Math::sin(u * Math::TAU);
+				z = Math::cos(u * Math::TAU);
+			}
+
+			Vector3 p = Vector3(x * w, y, -z * w);
+			points.push_back(p * radius + Vector3(0.0, 0.5 * height - radius, 0.0));
+			point++;
+
+			if (i > 0 && j > 0) {
+				indices.push_back(prevrow + i - 1);
+				indices.push_back(prevrow + i);
+				indices.push_back(thisrow + i - 1);
+
+				indices.push_back(prevrow + i);
+				indices.push_back(thisrow + i);
+				indices.push_back(thisrow + i - 1);
+			}
+		}
+
+		prevrow = thisrow;
+		thisrow = point;
+	}
+
+	/* cylinder */
+	thisrow = point;
+	prevrow = 0;
+	for (j = 0; j <= (rings + 1); j++) {
+		v = j;
+		v /= (rings + 1);
+
+		y = (height - 2.0 * radius) * v;
+		y = (0.5 * height - radius) - y;
+
+		for (i = 0; i <= radial_segments; i++) {
+			u = i;
+			u /= radial_segments;
+
+			if (i == radial_segments) {
+				x = 0.0;
+				z = 1.0;
+			} else {
+				x = -Math::sin(u * Math::TAU);
+				z = Math::cos(u * Math::TAU);
+			}
+
+			Vector3 p = Vector3(x * radius, y, -z * radius);
+			points.push_back(p);
+			point++;
+
+			if (i > 0 && j > 0) {
+				indices.push_back(prevrow + i - 1);
+				indices.push_back(prevrow + i);
+				indices.push_back(thisrow + i - 1);
+
+				indices.push_back(prevrow + i);
+				indices.push_back(thisrow + i);
+				indices.push_back(thisrow + i - 1);
+			}
+		}
+
+		prevrow = thisrow;
+		thisrow = point;
+	}
+
+	/* bottom hemisphere */
+	thisrow = point;
+	prevrow = 0;
+	for (j = 0; j <= (rings + 1); j++) {
+		v = j;
+
+		v /= (rings + 1);
+		if (j == (rings + 1)) {
+			w = 0.0;
+			y = -1.0;
+		} else {
+			w = Math::cos(0.5 * Math::PI * v);
+			y = -Math::sin(0.5 * Math::PI * v);
+		}
+
+		for (i = 0; i <= radial_segments; i++) {
+			u = i;
+			u /= radial_segments;
+
+			if (i == radial_segments) {
+				x = 0.0;
+				z = 1.0;
+			} else {
+				x = -Math::sin(u * Math::TAU);
+				z = Math::cos(u * Math::TAU);
+			}
+
+			Vector3 p = Vector3(x * w, y, -z * w);
+			points.push_back(p * radius + Vector3(0.0, -0.5 * height + radius, 0.0));
+			point++;
+
+			if (i > 0 && j > 0) {
+				indices.push_back(prevrow + i - 1);
+				indices.push_back(prevrow + i);
+				indices.push_back(thisrow + i - 1);
+
+				indices.push_back(prevrow + i);
+				indices.push_back(thisrow + i);
+				indices.push_back(thisrow + i - 1);
+			}
+		}
+
+		prevrow = thisrow;
+		thisrow = point;
+	}
+
+	const int *indices_ptr = indices.ptr();
+	const Vector3 *points_ptr = points.ptr();
+
+	Vector<Vector3> triangles;
+	triangles.resize(indices.size());
+	Vector3 *triangles_ptrw = triangles.ptrw();
+
+	for (uint32_t idx = 0; idx < indices.size(); idx++) {
+		triangles_ptrw[idx] = points_ptr[indices_ptr[idx]];
+	}
+
+	return triangles;
+}
+
 void CapsuleShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CapsuleShape3D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &CapsuleShape3D::get_radius);

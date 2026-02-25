@@ -58,6 +58,9 @@ protected:
 	_FORCE_INLINE_ RID get_shape() const { return shape; }
 	Shape3D(RID p_shape);
 
+	mutable Vector<Vector3> triangle_cache;
+	mutable bool triangle_cache_dirty = true;
+
 	virtual void _update_shape();
 
 public:
@@ -82,6 +85,8 @@ public:
 
 	void set_debug_fill(bool p_fill);
 	bool get_debug_fill() const;
+
+	virtual Vector<Vector3> get_triangles() const { return Vector<Vector3>(); }
 
 #ifdef DEBUG_ENABLED
 	_FORCE_INLINE_ bool are_debug_properties_edited() const { return debug_properties_edited; }

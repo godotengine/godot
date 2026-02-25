@@ -117,6 +117,45 @@ Vector<Vector3> ConvexPolygonShape3D::get_points() const {
 	return points;
 }
 
+Vector<Vector3> ConvexPolygonShape3D::get_triangles() const {
+	if (!triangle_cache_dirty) {
+		return triangle_cache;
+	}
+	triangle_cache = ConvexPolygonShape3D::create_triangles(points);
+	triangle_cache_dirty = false;
+	return triangle_cache;
+}
+
+Vector<Vector3> ConvexPolygonShape3D::create_triangles(const Vector<Vector3> &p_points) {
+	Vector<Vector3> triangles;
+
+	if (p_points.is_empty()) {
+		return triangles;
+	}
+
+	Geometry3D::MeshData md;
+	Error err = ConvexHullComputer::convex_hull(p_points, md);
+	if (err != OK) {
+		return triangles;
+	}
+
+	triangles.reserve(md.faces.size() * 3);
+
+	for (const Geometry3D::MeshData::Face &face : md.faces) {
+		// Convex hull lib is cursed in that it can rarely return faces
+		// with more than 3 edges so we need to account for that to not implode.
+		const Vector3 first_vertex = md.vertices[face.indices[0]];
+		const int indices_count = face.indices.size();
+		for (int i = 1; i < indices_count - 1; i++) {
+			triangles.push_back(first_vertex);
+			triangles.push_back(md.vertices[face.indices[i]]);
+			triangles.push_back(md.vertices[face.indices[i + 1]]);
+		}
+	}
+
+	return triangles;
+}
+
 void ConvexPolygonShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_points", "points"), &ConvexPolygonShape3D::set_points);
 	ClassDB::bind_method(D_METHOD("get_points"), &ConvexPolygonShape3D::get_points);

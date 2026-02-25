@@ -17,6 +17,13 @@
 				Returns the [ArrayMesh] used to draw the debug collision for this [Shape3D].
 			</description>
 		</method>
+		<method name="get_triangles" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<description>
+				Returns the shape as an array of vertices to form triangles. Useful for shape parsers and geometry tests. The array (with a length divisible by three) is naturally divided into triples; each triple of vertices defines a triangle. The triangles will be created on the first call to this function and cached. Further calls to this functions without changes to the shape will return the cached copy.
+				[b]Note:[/b] For shapes with rounded elements (e.g. circles or capsules) this will create very coarse geometry with limited roundness. If more detail is needed consider using an actual [Mesh].
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="custom_solver_bias" type="float" setter="set_custom_solver_bias" getter="get_custom_solver_bias" default="0.0">

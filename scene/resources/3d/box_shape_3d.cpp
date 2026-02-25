@@ -107,6 +107,85 @@ Vector3 BoxShape3D::get_size() const {
 	return size;
 }
 
+Vector<Vector3> BoxShape3D::get_triangles() const {
+	if (!triangle_cache_dirty) {
+		return triangle_cache;
+	}
+	triangle_cache = BoxShape3D::create_triangles(size);
+	triangle_cache_dirty = false;
+	return triangle_cache;
+}
+
+Vector<Vector3> BoxShape3D::create_triangles(Vector3 p_size) {
+	float extend_x = p_size.x / 2.0;
+	float extend_y = p_size.y / 2.0;
+	float extend_z = p_size.z / 2.0;
+
+	LocalVector<Vector3> vertices;
+	vertices.resize(8);
+	vertices[0] = Vector3(-extend_x, extend_y, extend_z); // front-top-left
+	vertices[1] = Vector3(extend_x, extend_y, extend_z); // front-top-right
+	vertices[2] = Vector3(extend_x, -extend_y, extend_z); // front-bottom-right
+	vertices[3] = Vector3(-extend_x, -extend_y, extend_z); // front-bottom-left
+	vertices[4] = Vector3(-extend_x, extend_y, -extend_z); // back-top-left
+	vertices[5] = Vector3(extend_x, extend_y, -extend_z); // back-top-right
+	vertices[6] = Vector3(extend_x, -extend_y, -extend_z); // back-bottom-right
+	vertices[7] = Vector3(-extend_x, -extend_y, -extend_z); // back-bottom-left
+
+	LocalVector<int> face_indices = {
+		0,
+		1,
+		3,
+		2, // front
+		5,
+		4,
+		6,
+		7, // back
+		1,
+		5,
+		2,
+		6, // right
+		4,
+		0,
+		7,
+		3, // left
+		0,
+		4,
+		1,
+		5, // top
+		3,
+		2,
+		7,
+		6, // bottom
+	};
+
+	Vector<Vector3> triangles;
+	triangles.resize(36);
+	Vector3 *triangles_ptrw = triangles.ptrw();
+
+	const Vector3 *vertices_ptr = vertices.ptr();
+	const int *face_indices_ptr = face_indices.ptr();
+
+	int vertex_index = 0;
+
+	for (uint32_t i = 0; i < face_indices.size() / 4; i++) {
+		int a = face_indices_ptr[i * 4 + 0];
+		int b = face_indices_ptr[i * 4 + 1];
+		int c = face_indices_ptr[i * 4 + 2];
+		int d = face_indices_ptr[i * 4 + 3];
+
+		triangles_ptrw[vertex_index++] = vertices_ptr[a];
+		triangles_ptrw[vertex_index++] = vertices_ptr[b];
+		triangles_ptrw[vertex_index++] = vertices_ptr[c];
+
+		triangles_ptrw[vertex_index++] = vertices_ptr[b];
+		triangles_ptrw[vertex_index++] = vertices_ptr[d];
+		triangles_ptrw[vertex_index++] = vertices_ptr[c];
+	}
+
+	return triangles;
+}
+
 void BoxShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &BoxShape3D::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &BoxShape3D::get_size);

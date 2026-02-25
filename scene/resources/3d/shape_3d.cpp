@@ -141,6 +141,7 @@ Ref<ArrayMesh> Shape3D::get_debug_mesh() {
 void Shape3D::_update_shape() {
 	emit_changed();
 	debug_mesh_cache.unref();
+	triangle_cache_dirty = true;
 }
 
 void Shape3D::_bind_methods() {
@@ -151,6 +152,7 @@ void Shape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_margin"), &Shape3D::get_margin);
 
 	ClassDB::bind_method(D_METHOD("get_debug_mesh"), &Shape3D::get_debug_mesh);
+	ClassDB::bind_method(D_METHOD("get_triangles"), &Shape3D::get_triangles);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_solver_bias", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_custom_solver_bias", "get_custom_solver_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0,10,0.001,or_greater,suffix:m"), "set_margin", "get_margin");

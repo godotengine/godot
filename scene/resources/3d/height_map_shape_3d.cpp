@@ -341,6 +341,46 @@ void HeightMapShape3D::update_map_data_from_image(const Ref<Image> &p_image, rea
 	emit_changed();
 }
 
+Vector<Vector3> HeightMapShape3D::get_triangles() const {
+	if (!triangle_cache_dirty) {
+		return triangle_cache;
+	}
+	triangle_cache = HeightMapShape3D::create_triangles(map_width, map_depth, map_data);
+	triangle_cache_dirty = false;
+	return triangle_cache;
+}
+
+Vector<Vector3> HeightMapShape3D::create_triangles(int p_width, int p_depth, const Vector<real_t> &p_heights) {
+	Vector<Vector3> triangles;
+
+	if (p_depth < 2 || p_width < 2) {
+		return triangles;
+	}
+
+	triangles.resize((p_depth - 1) * (p_width - 1) * 6);
+	Vector3 *triangles_ptrw = triangles.ptrw();
+
+	const real_t *heights_ptr = p_heights.ptr();
+	int vertex_index = 0;
+
+	Vector2 heightmap_gridsize(p_width - 1, p_depth - 1);
+	Vector3 start = Vector3(heightmap_gridsize.x, 0, heightmap_gridsize.y) * -0.5;
+
+	for (int d = 0; d < p_depth - 1; d++) {
+		for (int w = 0; w < p_width - 1; w++) {
+			triangles_ptrw[vertex_index] = start + Vector3(w, heights_ptr[(p_width * d) + w], d);
+			triangles_ptrw[vertex_index + 1] = start + Vector3(w + 1, heights_ptr[(p_width * d) + w + 1], d);
+			triangles_ptrw[vertex_index + 2] = start + Vector3(w, heights_ptr[(p_width * d) + p_width + w], d + 1);
+			triangles_ptrw[vertex_index + 3] = start + Vector3(w + 1, heights_ptr[(p_width * d) + w + 1], d);
+			triangles_ptrw[vertex_index + 4] = start + Vector3(w + 1, heights_ptr[(p_width * d) + p_width + w + 1], d + 1);
+			triangles_ptrw[vertex_index + 5] = start + Vector3(w, heights_ptr[(p_width * d) + p_width + w], d + 1);
+			vertex_index += 6;
+		}
+	}
+
+	return triangles;
+}
+
 void HeightMapShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_map_width", "width"), &HeightMapShape3D::set_map_width);
 	ClassDB::bind_method(D_METHOD("get_map_width"), &HeightMapShape3D::get_map_width);

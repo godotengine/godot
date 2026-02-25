@@ -119,6 +119,10 @@ bool ConcavePolygonShape3D::is_backface_collision_enabled() const {
 	return backface_collision;
 }
 
+Vector<Vector3> ConcavePolygonShape3D::get_triangles() const {
+	return get_faces();
+}
+
 void ConcavePolygonShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_faces", "faces"), &ConcavePolygonShape3D::set_faces);
 	ClassDB::bind_method(D_METHOD("get_faces"), &ConcavePolygonShape3D::get_faces);

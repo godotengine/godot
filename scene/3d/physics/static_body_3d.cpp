@@ -135,94 +135,57 @@ void StaticBody3D::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_na
 
 				BoxShape3D *box = Object::cast_to<BoxShape3D>(*s);
 				if (box) {
-					Array arr;
-					arr.resize(RS::ARRAY_MAX);
-					BoxMesh::create_mesh_array(arr, box->get_size());
-					p_source_geometry_data->add_mesh_array(arr, transform);
+					Vector<Vector3> triangles = box->get_triangles();
+					if (!triangles.is_empty()) {
+						p_source_geometry_data->add_faces(triangles, transform);
+					}
 				}
 
 				CapsuleShape3D *capsule = Object::cast_to<CapsuleShape3D>(*s);
 				if (capsule) {
-					Array arr;
-					arr.resize(RS::ARRAY_MAX);
-					CapsuleMesh::create_mesh_array(arr, capsule->get_radius(), capsule->get_height());
-					p_source_geometry_data->add_mesh_array(arr, transform);
+					Vector<Vector3> triangles = capsule->get_triangles();
+					if (!triangles.is_empty()) {
+						p_source_geometry_data->add_faces(triangles, transform);
+					}
 				}
 
 				CylinderShape3D *cylinder = Object::cast_to<CylinderShape3D>(*s);
 				if (cylinder) {
-					Array arr;
-					arr.resize(RS::ARRAY_MAX);
-					CylinderMesh::create_mesh_array(arr, cylinder->get_radius(), cylinder->get_radius(), cylinder->get_height());
-					p_source_geometry_data->add_mesh_array(arr, transform);
+					Vector<Vector3> triangles = cylinder->get_triangles();
+					if (!triangles.is_empty()) {
+						p_source_geometry_data->add_faces(triangles, transform);
+					}
 				}
 
 				SphereShape3D *sphere = Object::cast_to<SphereShape3D>(*s);
 				if (sphere) {
-					Array arr;
-					arr.resize(RS::ARRAY_MAX);
-					SphereMesh::create_mesh_array(arr, sphere->get_radius(), sphere->get_radius() * 2.0);
-					p_source_geometry_data->add_mesh_array(arr, transform);
+					Vector<Vector3> triangles = sphere->get_triangles();
+					if (!triangles.is_empty()) {
+						p_source_geometry_data->add_faces(triangles, transform);
+					}
 				}
 
 				ConcavePolygonShape3D *concave_polygon = Object::cast_to<ConcavePolygonShape3D>(*s);
 				if (concave_polygon) {
-					p_source_geometry_data->add_faces(concave_polygon->get_faces(), transform);
+					Vector<Vector3> triangles = concave_polygon->get_triangles();
+					if (!triangles.is_empty()) {
+						p_source_geometry_data->add_faces(triangles, transform);
+					}
 				}
 
 				ConvexPolygonShape3D *convex_polygon = Object::cast_to<ConvexPolygonShape3D>(*s);
 				if (convex_polygon) {
-					Vector<Vector3> varr = Variant(convex_polygon->get_points());
-					Geometry3D::MeshData md;
-
-					Error err = ConvexHullComputer::convex_hull(varr, md);
-
-					if (err == OK) {
-						PackedVector3Array faces;
-
-						for (const Geometry3D::MeshData::Face &face : md.faces) {
-							for (uint32_t k = 2; k < face.indices.size(); ++k) {
-								faces.push_back(md.vertices[face.indices[0]]);
-								faces.push_back(md.vertices[face.indices[k - 1]]);
-								faces.push_back(md.vertices[face.indices[k]]);
-							}
-						}
-
-						p_source_geometry_data->add_faces(faces, transform);
+					Vector<Vector3> triangles = convex_polygon->get_triangles();
+					if (!triangles.is_empty()) {
+						p_source_geometry_data->add_faces(triangles, transform);
 					}
 				}
 
 				HeightMapShape3D *heightmap_shape = Object::cast_to<HeightMapShape3D>(*s);
 				if (heightmap_shape) {
-					int heightmap_depth = heightmap_shape->get_map_depth();
-					int heightmap_width = heightmap_shape->get_map_width();
-
-					if (heightmap_depth >= 2 && heightmap_width >= 2) {
-						const Vector<real_t> &map_data = heightmap_shape->get_map_data();
-
-						Vector2 heightmap_gridsize(heightmap_width - 1, heightmap_depth - 1);
-						Vector3 start = Vector3(heightmap_gridsize.x, 0, heightmap_gridsize.y) * -0.5;
-
-						Vector<Vector3> vertex_array;
-						vertex_array.resize((heightmap_depth - 1) * (heightmap_width - 1) * 6);
-						Vector3 *vertex_array_ptrw = vertex_array.ptrw();
-						const real_t *map_data_ptr = map_data.ptr();
-						int vertex_index = 0;
-
-						for (int d = 0; d < heightmap_depth - 1; d++) {
-							for (int w = 0; w < heightmap_width - 1; w++) {
-								vertex_array_ptrw[vertex_index] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + w], d);
-								vertex_array_ptrw[vertex_index + 1] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + w + 1], d);
-								vertex_array_ptrw[vertex_index + 2] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + heightmap_width + w], d + 1);
-								vertex_array_ptrw[vertex_index + 3] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + w + 1], d);
-								vertex_array_ptrw[vertex_index + 4] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + heightmap_width + w + 1], d + 1);
-								vertex_array_ptrw[vertex_index + 5] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + heightmap_width + w], d + 1);
-								vertex_index += 6;
-							}
-						}
-						if (vertex_array.size() > 0) {
-							p_source_geometry_data->add_faces(vertex_array, transform);
-						}
+					Vector<Vector3> triangles = heightmap_shape->get_triangles();
+					if (!triangles.is_empty()) {
+						p_source_geometry_data->add_faces(triangles, transform);
 					}
 				}
 			}

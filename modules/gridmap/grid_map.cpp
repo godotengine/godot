@@ -1530,69 +1530,90 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 	}
 #ifndef PHYSICS_3D_DISABLED
 	else if ((parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS || parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_BOTH) && (gridmap->get_collision_layer() & parsed_collision_mask)) {
+		AHashMap<RID, Vector<Vector3>> shape_triangles_cache;
+
 		Array shapes = gridmap->get_collision_shapes();
 		for (int i = 0; i < shapes.size(); i += 2) {
+			const Transform3D &shape_transform = shapes[i];
 			RID shape = shapes[i + 1];
+
+			Vector<Vector3> *cached_triangles = shape_triangles_cache.getptr(shape);
+			if (cached_triangles) {
+				p_source_geometry_data->add_faces(*cached_triangles, shape_transform);
+				continue;
+			}
+
 			PhysicsServer3D::ShapeType type = PhysicsServer3D::get_singleton()->shape_get_type(shape);
 			Variant data = PhysicsServer3D::get_singleton()->shape_get_data(shape);
 
 			switch (type) {
 				case PhysicsServer3D::SHAPE_SPHERE: {
 					real_t radius = data;
-					Array arr;
-					arr.resize(RS::ARRAY_MAX);
-					SphereMesh::create_mesh_array(arr, radius, radius * 2.0);
-					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
+
+					int radial_segments = 16;
+					int rings = 8;
+
+					Vector<Vector3> triangles = SphereShape3D::create_triangles(radius, radial_segments, rings);
+					shape_triangles_cache.insert(shape, triangles);
+					if (!triangles.is_empty()) {
+						p_source_geometry_data->add_faces(triangles, shape_transform);
+					}
 				} break;
 				case PhysicsServer3D::SHAPE_BOX: {
 					Vector3 extents = data;
-					Array arr;
-					arr.resize(RS::ARRAY_MAX);
-					BoxMesh::create_mesh_array(arr, extents * 2.0);
-					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
+
+					Vector3 box_size = extents * 2.0;
+
+					Vector<Vector3> triangles = BoxShape3D::create_triangles(box_size);
+					shape_triangles_cache.insert(shape, triangles);
+					if (!triangles.is_empty()) {
+						p_source_geometry_data->add_faces(triangles, shape_transform);
+					}
 				} break;
 				case PhysicsServer3D::SHAPE_CAPSULE: {
 					Dictionary dict = data;
 					real_t radius = dict["radius"];
 					real_t height = dict["height"];
-					Array arr;
-					arr.resize(RS::ARRAY_MAX);
-					CapsuleMesh::create_mesh_array(arr, radius, height);
-					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
+
+					int radial_segments = 16;
+					int rings = 4; // top&bottom hemisphere and cylinder all loop over rings.
+
+					Vector<Vector3> triangles = CapsuleShape3D::create_triangles(radius, height, radial_segments, rings);
+					shape_triangles_cache.insert(shape, triangles);
+					if (!triangles.is_empty()) {
+						p_source_geometry_data->add_faces(triangles, shape_transform);
+					}
 				} break;
 				case PhysicsServer3D::SHAPE_CYLINDER: {
 					Dictionary dict = data;
 					real_t radius = dict["radius"];
 					real_t height = dict["height"];
-					Array arr;
-					arr.resize(RS::ARRAY_MAX);
-					CylinderMesh::create_mesh_array(arr, radius, radius, height);
-					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
+
+					int radial_segments = 16;
+
+					Vector<Vector3> triangles = CylinderShape3D::create_triangles(radius, height, radial_segments);
+					shape_triangles_cache.insert(shape, triangles);
+					if (!triangles.is_empty()) {
+						p_source_geometry_data->add_faces(triangles, shape_transform);
+					}
 				} break;
 				case PhysicsServer3D::SHAPE_CONVEX_POLYGON: {
-					PackedVector3Array vertices = data;
-					Geometry3D::MeshData md;
+					Vector<Vector3> points = data;
 
-					Error err = ConvexHullComputer::convex_hull(vertices, md);
+					Vector<Vector3> triangles = ConvexPolygonShape3D::create_triangles(points);
 
-					if (err == OK) {
-						PackedVector3Array faces;
-
-						for (const Geometry3D::MeshData::Face &face : md.faces) {
-							for (uint32_t k = 2; k < face.indices.size(); ++k) {
-								faces.push_back(md.vertices[face.indices[0]]);
-								faces.push_back(md.vertices[face.indices[k - 1]]);
-								faces.push_back(md.vertices[face.indices[k]]);
-							}
-						}
-
-						p_source_geometry_data->add_faces(faces, shapes[i]);
+					if (!triangles.is_empty()) {
+						p_source_geometry_data->add_faces(triangles, shape_transform);
 					}
 				} break;
 				case PhysicsServer3D::SHAPE_CONCAVE_POLYGON: {
 					Dictionary dict = data;
-					PackedVector3Array faces = Variant(dict["faces"]);
-					p_source_geometry_data->add_faces(faces, shapes[i]);
+
+					Vector<Vector3> triangles = Variant(dict["faces"]);
+					shape_triangles_cache.insert(shape, triangles);
+					if (!triangles.is_empty()) {
+						p_source_geometry_data->add_faces(triangles, shape_transform);
+					}
 				} break;
 				case PhysicsServer3D::SHAPE_HEIGHTMAP: {
 					Dictionary dict = data;
@@ -1603,28 +1624,10 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 					if (heightmap_depth >= 2 && heightmap_width >= 2) {
 						const Vector<real_t> &map_data = dict["heights"];
 
-						Vector2 heightmap_gridsize(heightmap_width - 1, heightmap_depth - 1);
-						Vector3 start = Vector3(heightmap_gridsize.x, 0, heightmap_gridsize.y) * -0.5;
-
-						Vector<Vector3> vertex_array;
-						vertex_array.resize((heightmap_depth - 1) * (heightmap_width - 1) * 6);
-						Vector3 *vertex_array_ptrw = vertex_array.ptrw();
-						const real_t *map_data_ptr = map_data.ptr();
-						int vertex_index = 0;
-
-						for (int d = 0; d < heightmap_depth - 1; d++) {
-							for (int w = 0; w < heightmap_width - 1; w++) {
-								vertex_array_ptrw[vertex_index] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + w], d);
-								vertex_array_ptrw[vertex_index + 1] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + w + 1], d);
-								vertex_array_ptrw[vertex_index + 2] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + heightmap_width + w], d + 1);
-								vertex_array_ptrw[vertex_index + 3] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + w + 1], d);
-								vertex_array_ptrw[vertex_index + 4] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + heightmap_width + w + 1], d + 1);
-								vertex_array_ptrw[vertex_index + 5] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + heightmap_width + w], d + 1);
-								vertex_index += 6;
-							}
-						}
-						if (vertex_array.size() > 0) {
-							p_source_geometry_data->add_faces(vertex_array, shapes[i]);
+						Vector<Vector3> triangles = HeightMapShape3D::create_triangles(heightmap_depth, heightmap_depth, map_data);
+						shape_triangles_cache.insert(shape, triangles);
+						if (!triangles.is_empty()) {
+							p_source_geometry_data->add_faces(triangles, shape_transform);
 						}
 					}
 				} break;

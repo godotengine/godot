@@ -56,5 +56,8 @@ public:
 	virtual Ref<ArrayMesh> get_debug_arraymesh_faces(const Color &p_modulate) const override;
 	virtual real_t get_enclosing_radius() const override;
 
+	virtual Vector<Vector3> get_triangles() const override;
+	static Vector<Vector3> create_triangles(float p_radius, float p_height, int p_segments, int p_rings);
+
 	CapsuleShape3D();
 };

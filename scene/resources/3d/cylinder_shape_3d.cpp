@@ -113,6 +113,74 @@ float CylinderShape3D::get_height() const {
 	return height;
 }
 
+Vector<Vector3> CylinderShape3D::get_triangles() const {
+	if (!triangle_cache_dirty) {
+		return triangle_cache;
+	}
+
+	int radial_segments = 32;
+
+	triangle_cache = CylinderShape3D::create_triangles(radius, height, radial_segments);
+	triangle_cache_dirty = false;
+	return triangle_cache;
+}
+
+Vector<Vector3> CylinderShape3D::create_triangles(float p_radius, float p_height, int p_segments) {
+	Vector<Vector3> triangles;
+
+	float radius = p_radius;
+	float height = p_height;
+	int segments = p_segments;
+
+	float half_height = height * 0.5;
+	float step = 2.0 * Math::PI / segments;
+
+	triangles.resize(segments * 12);
+	Vector3 *triangles_ptrw = triangles.ptrw();
+
+	int vertex_index = 0;
+
+	const Vector3 top_center = Vector3(0.0, half_height, 0.0);
+	const Vector3 bottom_center = Vector3(0.0, -half_height, 0.0);
+
+	for (int i = 0; i < segments; i++) {
+		float a1 = i * step;
+		float a2 = (i + 1) * step;
+
+		float x1 = Math::cos(a1) * radius;
+		float z1 = Math::sin(a1) * radius;
+
+		float x2 = Math::cos(a2) * radius;
+		float z2 = Math::sin(a2) * radius;
+
+		Vector3 top_left = Vector3(x1, half_height, z1);
+		Vector3 bottom_left = Vector3(x1, -half_height, z1);
+		Vector3 top_right = Vector3(x2, half_height, z2);
+		Vector3 bottom_right = Vector3(x2, -half_height, z2);
+
+		// Sidequad.
+		triangles_ptrw[vertex_index++] = top_left;
+		triangles_ptrw[vertex_index++] = bottom_left;
+		triangles_ptrw[vertex_index++] = top_right;
+
+		triangles_ptrw[vertex_index++] = top_right;
+		triangles_ptrw[vertex_index++] = bottom_left;
+		triangles_ptrw[vertex_index++] = bottom_right;
+
+		// Top.
+		triangles_ptrw[vertex_index++] = top_center;
+		triangles_ptrw[vertex_index++] = top_left;
+		triangles_ptrw[vertex_index++] = top_right;
+
+		// Bottom.
+		triangles_ptrw[vertex_index++] = bottom_center;
+		triangles_ptrw[vertex_index++] = bottom_right;
+		triangles_ptrw[vertex_index++] = bottom_left;
+	}
+
+	return triangles;
+}
+
 void CylinderShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CylinderShape3D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &CylinderShape3D::get_radius);

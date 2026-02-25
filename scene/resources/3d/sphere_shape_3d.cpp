@@ -93,6 +93,97 @@ float SphereShape3D::get_radius() const {
 	return radius;
 }
 
+Vector<Vector3> SphereShape3D::get_triangles() const {
+	if (!triangle_cache_dirty) {
+		return triangle_cache;
+	}
+
+	int radial_segments = 32;
+	int rings = 16;
+
+	triangle_cache = SphereShape3D::create_triangles(radius, radial_segments, rings);
+	triangle_cache_dirty = false;
+	return triangle_cache;
+}
+
+Vector<Vector3> SphereShape3D::create_triangles(float p_radius, int p_segments, int p_rings) {
+	float radius = p_radius;
+	int radial_segments = p_segments;
+	int rings = p_rings;
+
+	int i, j, prevrow, thisrow, point;
+	float x, y, z;
+
+	int num_points = (rings + 2) * (radial_segments + 1);
+	LocalVector<Vector3> points;
+	points.reserve(num_points);
+
+	LocalVector<int> indices;
+	indices.reserve((rings + 1) * (radial_segments) * 6);
+
+	point = 0;
+
+	thisrow = 0;
+	prevrow = 0;
+	for (j = 0; j <= (rings + 1); j++) {
+		float v = j;
+		float w;
+
+		v /= (rings + 1);
+		if (j == (rings + 1)) {
+			w = 0.0;
+			y = -1.0;
+		} else {
+			w = Math::sin(Math::PI * v);
+			y = Math::cos(Math::PI * v);
+		}
+
+		for (i = 0; i <= radial_segments; i++) {
+			float u = i;
+			u /= radial_segments;
+
+			if (i == radial_segments) {
+				x = 0.0;
+				z = 1.0;
+			} else {
+				x = Math::sin(u * Math::TAU);
+				z = Math::cos(u * Math::TAU);
+			}
+
+			Vector3 p = Vector3(x * w, y, z * w);
+			points.push_back(p * radius);
+
+			point++;
+
+			if (i > 0 && j > 0) {
+				indices.push_back(prevrow + i - 1);
+				indices.push_back(prevrow + i);
+				indices.push_back(thisrow + i - 1);
+
+				indices.push_back(prevrow + i);
+				indices.push_back(thisrow + i);
+				indices.push_back(thisrow + i - 1);
+			}
+		}
+
+		prevrow = thisrow;
+		thisrow = point;
+	}
+
+	const int *indices_ptr = indices.ptr();
+	const Vector3 *points_ptr = points.ptr();
+
+	Vector<Vector3> triangles;
+	triangles.resize(indices.size());
+	Vector3 *triangles_ptrw = triangles.ptrw();
+
+	for (uint32_t idx = 0; idx < indices.size(); idx++) {
+		triangles_ptrw[idx] = points_ptr[indices_ptr[idx]];
+	}
+
+	return triangles;
+}
+
 void SphereShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &SphereShape3D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &SphereShape3D::get_radius);
