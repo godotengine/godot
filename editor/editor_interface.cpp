@@ -715,6 +715,21 @@ bool EditorInterface::is_object_edited(Object *p_object) const {
 	return p_object->is_edited();
 }
 
+void EditorInterface::reload_all_scenes() {
+	auto current_scene = get_edited_scene_root();
+
+	for (const EditorData::EditedScene &edited_scene : EditorNode::get_editor_data().get_edited_scenes()) {
+		if (edited_scene.root == nullptr || edited_scene.root == current_scene) {
+			continue;
+		}
+		EditorNode::get_singleton()->reload_scene(edited_scene.root->get_scene_file_path());
+	}
+	// Current scene gets reloaded last so it will be switched to last.
+	if (current_scene) {
+		EditorNode::get_singleton()->reload_scene(current_scene->get_scene_file_path());
+	}
+}
+
 Node *EditorInterface::get_edited_scene_root() const {
 	return EditorNode::get_singleton()->get_edited_scene();
 }
@@ -913,6 +928,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("edit_script", "script", "line", "column", "grab_focus"), &EditorInterface::edit_script, DEFVAL(-1), DEFVAL(0), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("open_scene_from_path", "scene_filepath", "set_inherited"), &EditorInterface::open_scene_from_path, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorInterface::reload_scene_from_path);
+	ClassDB::bind_method(D_METHOD("reload_all_scenes"), &EditorInterface::reload_all_scenes);
 
 	ClassDB::bind_method(D_METHOD("set_object_edited", "object", "edited"), &EditorInterface::set_object_edited);
 	ClassDB::bind_method(D_METHOD("is_object_edited", "object"), &EditorInterface::is_object_edited);
