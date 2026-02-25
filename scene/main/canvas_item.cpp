@@ -1511,7 +1511,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_gizmo", "gizmo"), &CanvasItem::add_gizmo);
 	ClassDB::bind_method(D_METHOD("get_gizmos"), &CanvasItem::get_gizmos_bind);
 	ClassDB::bind_method(D_METHOD("clear_gizmos"), &CanvasItem::clear_gizmos);
-	ClassDB::bind_method(D_METHOD("set_subgizmo_selection"), &CanvasItem::set_subgizmo_selection);
+	ClassDB::bind_method(D_METHOD("set_subgizmo_selection", "gizmo", "id", "transform"), &CanvasItem::set_subgizmo_selection);
 	ClassDB::bind_method(D_METHOD("clear_subgizmo_selection"), &CanvasItem::clear_subgizmo_selection);
 
 	ClassDB::bind_method(D_METHOD("get_canvas_item"), &CanvasItem::get_canvas_item);
