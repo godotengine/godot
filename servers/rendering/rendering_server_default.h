@@ -501,6 +501,7 @@ public:
 
 	FUNCRIDSPLIT(reflection_probe)
 
+	FUNC1(reflection_probe_queue_update, RID)
 	FUNC2(reflection_probe_set_update_mode, RID, ReflectionProbeUpdateMode)
 	FUNC2(reflection_probe_set_intensity, RID, float)
 	FUNC2(reflection_probe_set_blend_distance, RID, float)

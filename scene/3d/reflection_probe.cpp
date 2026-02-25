@@ -200,6 +200,10 @@ AABB ReflectionProbe::get_aabb() const {
 	return aabb;
 }
 
+void ReflectionProbe::queue_update() {
+	RS::get_singleton()->reflection_probe_queue_update(probe);
+}
+
 void ReflectionProbe::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
@@ -256,6 +260,7 @@ void ReflectionProbe::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_update_mode", "mode"), &ReflectionProbe::set_update_mode);
 	ClassDB::bind_method(D_METHOD("get_update_mode"), &ReflectionProbe::get_update_mode);
+	ClassDB::bind_method(D_METHOD("queue_update"), &ReflectionProbe::queue_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "Once (Fast),Always (Slow)"), "set_update_mode", "get_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "intensity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_intensity", "get_intensity");
