@@ -271,7 +271,7 @@ static bool debug_mute_audio = false;
 static int max_fps = -1;
 static int frame_delay = 0;
 static int audio_output_latency = 0;
-static int speaker_mode_override = -1;
+static int speaker_mode_override = -2;
 static bool disable_render_loop = false;
 static int fixed_fps = -1;
 static MovieWriter *movie_writer = nullptr;
@@ -606,7 +606,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("].\n");
 	print_help_option("--audio-output-latency <ms>", "Override audio output latency in milliseconds (default is 15 ms).\n");
 	print_help_option("", "Lower values make sound playback more reactive but increase CPU usage, and may result in audio cracking if the CPU can't keep up.\n");
-	print_help_option("--speaker-mode-override <mode>", "Override speaker mode used by the audio engine to mix audio (0: driver default (disable override), 1: force stereo, 2: force 3.1 surround, 3: force 5.1 surround, 4: force 7.1 surround).\n");
+	print_help_option("--speaker-mode-override <mode>", "Override speaker mode [\"disabled\", \"stereo\", \"3.1\", \"5.1\", \"7.1\"].\n");
 
 	print_help_option("--rendering-method <renderer>", "Renderer name. Requires driver support.\n");
 	print_help_option("--rendering-driver <driver>", "Rendering driver (depends on display driver).\n");
@@ -1231,10 +1231,24 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (arg == "--speaker-mode-override") {
 			if (N) {
-				speaker_mode_override = N->get().to_int();
+				String override_mode = N->get().to_lower();
 				N = N->next();
+				if (override_mode == "disabled") {
+					speaker_mode_override = -1;
+				} else if (override_mode == "stereo") {
+					speaker_mode_override = AudioServer::SPEAKER_MODE_STEREO;
+				} else if (override_mode == "3.1") {
+					speaker_mode_override = AudioServer::SPEAKER_SURROUND_31;
+				} else if (override_mode == "5.1") {
+					speaker_mode_override = AudioServer::SPEAKER_SURROUND_51;
+				} else if (override_mode == "7.1") {
+					speaker_mode_override = AudioServer::SPEAKER_SURROUND_71;
+				} else {
+					OS::get_singleton()->print("Unknown --speaker-mode-override argument \"%s\", aborting.\n", override_mode.ascii().get_data());
+					goto error;
+				}
 			} else {
-				OS::get_singleton()->print("Missing speaker mode override argument, aborting.\n");
+				OS::get_singleton()->print("Missing --speaker-mode-override argument, aborting.\n");
 				goto error;
 			}
 		} else if (arg == "--text-driver") {
@@ -3474,7 +3488,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 		// Right moment to create and initialize the audio server.
 		audio_server = memnew(AudioServer);
 		audio_server->init();
-		audio_server->set_speaker_mode_config(speaker_mode_override);
+		if (speaker_mode_override >= -1) {
+			audio_server->set_speaker_mode_config(speaker_mode_override);
+		}
 
 		OS::get_singleton()->benchmark_end_measure("Servers", "Audio");
 	}

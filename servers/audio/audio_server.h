@@ -224,8 +224,8 @@ private:
 	int channel_count = 0;
 	int to_mix = 0;
 
-	// Either '1 + SpeakerMode' for any SpeakerMode enum value, or any other value for default.
-	int speaker_mode_config = 0;
+	// Either a SpeakerMode value, or any other value for default.
+	int speaker_mode_config = -1;
 
 	float playback_speed_scale = 1.0f;
 
