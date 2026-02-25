@@ -475,7 +475,12 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
 	settings->CalculateEdgeLengths();
 	settings->CalculateVolumeConstraintVolumes();
 
-	float multiplier_pow_3 = compliance * compliance * compliance;
+	float multiplier = 1.0f - shrinking_factor;
+	for (JPH::SoftBodySharedSettings::Edge &e : settings->mEdgeConstraints) {
+		e.mRestLength *= multiplier;
+	}
+
+	float multiplier_pow_3 = multiplier * multiplier * multiplier;
 	for (JPH::SoftBodySharedSettings::Volume &v : settings->mVolumeConstraints) {
 		v.mSixRestVolume *= multiplier_pow_3;
 	}
