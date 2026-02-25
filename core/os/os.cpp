@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
+#include "core/logstream/log_stream_logger.h"
 #include "core/os/midi_driver.h"
 #include "core/version_generated.gen.h"
 
@@ -78,6 +79,9 @@ void OS::_set_logger(CompositeLogger *p_logger) {
 		memdelete(_logger);
 	}
 	_logger = p_logger;
+	if (_logger) {
+		_logger->add_logger(memnew(LogStreamLogger));
+	}
 }
 
 void OS::add_logger(Logger *p_logger) {
