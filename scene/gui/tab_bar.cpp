@@ -31,6 +31,7 @@
 #include "tab_bar.h"
 
 #include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"

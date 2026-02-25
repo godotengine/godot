@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/object/class_db.h"
 #include "core/os/time.h"
 #include "core/templates/rb_set.h"
 #include "scene/main/window.h"

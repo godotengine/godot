@@ -32,6 +32,8 @@
 
 #include "parallax_layer.h"
 
+#include "core/object/class_db.h"
+
 void ParallaxBackground::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {

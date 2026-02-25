@@ -30,6 +30,7 @@
 
 #include "gdscript.h"
 
+#include "core/object/class_db.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
 #include "gdscript_compiler.h"

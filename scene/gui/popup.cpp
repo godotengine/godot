@@ -33,6 +33,8 @@
 #ifdef TOOLS_ENABLED
 #include "core/config/project_settings.h"
 #endif
+
+#include "core/object/class_db.h"
 #include "scene/gui/panel.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"

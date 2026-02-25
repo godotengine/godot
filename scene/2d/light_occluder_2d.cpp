@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/class_db.h"
 #include "servers/rendering/rendering_server.h"
 
 #define LINE_GRAB_WIDTH 8

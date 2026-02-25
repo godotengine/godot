@@ -34,6 +34,7 @@
 #include "editor_network_profiler.h"
 #include "replication_editor.h"
 
+#include "core/object/class_db.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"

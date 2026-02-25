@@ -34,6 +34,7 @@
 #include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/version_generated.gen.h"
 #include "editor/docks/filesystem_dock.h"

@@ -32,6 +32,7 @@
 
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/import/audio_stream_import_settings.h"

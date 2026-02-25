@@ -30,6 +30,8 @@
 
 #include "crypto.h"
 
+#include "core/object/class_db.h"
+
 /// Resources
 
 CryptoKey *(*CryptoKey::_create)(bool p_notify_postinitialize) = nullptr;

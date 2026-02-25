@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/object/class_db.h"
 
 /* helpers / binders */
 

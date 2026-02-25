@@ -35,6 +35,7 @@
 #include "core/extension/gdextension.h"
 #include "core/input/input.h"
 #include "core/io/json.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"

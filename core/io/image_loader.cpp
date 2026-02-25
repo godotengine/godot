@@ -30,6 +30,8 @@
 
 #include "image_loader.h"
 
+#include "core/object/class_db.h"
+
 void ImageFormatLoader::_bind_methods() {
 	BIND_BITFIELD_FLAG(FLAG_NONE);
 	BIND_BITFIELD_FLAG(FLAG_FORCE_LINEAR);

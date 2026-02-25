@@ -30,6 +30,7 @@
 
 #include "color_channel_selector.h"
 
+#include "core/object/class_db.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"

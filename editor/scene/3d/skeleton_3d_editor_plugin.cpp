@@ -31,6 +31,7 @@
 #include "skeleton_3d_editor_plugin.h"
 
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"

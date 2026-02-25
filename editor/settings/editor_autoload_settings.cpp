@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
+#include "core/object/class_db.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"

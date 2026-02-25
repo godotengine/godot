@@ -30,6 +30,7 @@
 
 #include "gltf_mesh.h"
 
+#include "core/object/class_db.h"
 #include "scene/resources/3d/importer_mesh.h"
 
 void GLTFMesh::_bind_methods() {

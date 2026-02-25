@@ -30,6 +30,7 @@
 
 #include "editor_command_palette.h"
 
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"

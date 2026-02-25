@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "rendering_server.h"
+
+#include "core/object/class_db.h"
+
 void RenderingServer::_multimesh_allocate_data_bind_compat_99455(RID p_multimesh, int p_instances, RSE::MultimeshTransformFormat p_transform_format, bool p_use_colors, bool p_use_custom_data) {
 	multimesh_allocate_data(p_multimesh, p_instances, p_transform_format, p_use_colors, p_use_custom_data, false);
 }
@@ -73,4 +77,4 @@ void RenderingServer::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("viewport_set_size", "viewport", "width", "height"), &RenderingServer::_viewport_set_size_compat_115799);
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

@@ -31,6 +31,7 @@
 #include "image_texture.h"
 
 #include "core/io/image_loader.h"
+#include "core/object/class_db.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/placeholder_textures.h"
 #include "servers/rendering/rendering_server.h"

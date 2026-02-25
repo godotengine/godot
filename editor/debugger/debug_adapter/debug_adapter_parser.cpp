@@ -30,6 +30,7 @@
 
 #include "debug_adapter_parser.h"
 
+#include "core/object/class_db.h"
 #include "editor/debugger/debug_adapter/debug_adapter_protocol.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"

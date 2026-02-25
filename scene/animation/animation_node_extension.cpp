@@ -30,6 +30,8 @@
 
 #include "animation_node_extension.h"
 
+#include "core/object/class_db.h"
+
 AnimationNode::NodeTimeInfo AnimationNodeExtension::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	PackedFloat32Array r_ret;
 

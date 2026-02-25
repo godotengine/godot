@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "control.h"
+
+#include "core/object/class_db.h"
+
 bool Control::_has_focus_bind_compat_110250() const {
 	return has_focus(false);
 }

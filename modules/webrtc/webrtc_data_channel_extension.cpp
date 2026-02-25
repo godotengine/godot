@@ -30,6 +30,8 @@
 
 #include "webrtc_data_channel_extension.h"
 
+#include "core/object/class_db.h"
+
 void WebRTCDataChannelExtension::_bind_methods() {
 	ADD_PROPERTY_DEFAULT("write_mode", WRITE_MODE_BINARY);
 

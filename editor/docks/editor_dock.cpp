@@ -32,6 +32,7 @@
 
 #include "core/input/shortcut.h"
 #include "core/io/config_file.h"
+#include "core/object/class_db.h"
 #include "editor/docks/dock_tab_container.h"
 #include "editor/docks/editor_dock_manager.h"
 

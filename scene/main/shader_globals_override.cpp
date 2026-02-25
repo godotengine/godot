@@ -30,6 +30,7 @@
 
 #include "shader_globals_override.h"
 
+#include "core/object/class_db.h"
 #include "servers/rendering/rendering_server.h"
 
 StringName *ShaderGlobalsOverride::_remap(const StringName &p_name) const {

@@ -29,9 +29,12 @@
 /**************************************************************************/
 
 #include "openxr_valve_analog_threshold_extension.h"
+
 #include "../action_map/openxr_action_set.h"
 #include "../action_map/openxr_interaction_profile.h"
 #include "../openxr_api.h"
+
+#include "core/object/class_db.h"
 
 // Implementation for:
 // https://registry.khronos.org/OpenXR/specs/1.1/html/xrspec.html#XR_VALVE_analog_threshold

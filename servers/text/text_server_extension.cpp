@@ -30,6 +30,8 @@
 
 #include "text_server_extension.h"
 
+#include "core/object/class_db.h"
+
 void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_has_feature, "feature");
 	GDVIRTUAL_BIND(_get_name);

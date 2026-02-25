@@ -30,6 +30,8 @@
 
 #include "physics_server_2d_extension.h"
 
+#include "core/object/class_db.h"
+
 bool PhysicsDirectSpaceState2DExtension::is_body_excluded_from_query(const RID &p_body) const {
 	return exclude && exclude->has(p_body);
 }

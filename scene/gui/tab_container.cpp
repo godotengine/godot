@@ -30,6 +30,7 @@
 
 #include "tab_container.h"
 
+#include "core/object/class_db.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/popup.h"

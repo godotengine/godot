@@ -30,6 +30,7 @@
 
 #include "optimized_translation.h"
 
+#include "core/object/class_db.h"
 #include "core/templates/pair.h"
 
 extern "C" {

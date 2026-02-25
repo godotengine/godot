@@ -31,6 +31,7 @@
 #include "fastnoise_lite.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 
 _FastNoiseLite::FractalType FastNoiseLite::_convert_domain_warp_fractal_type_enum(DomainWarpFractalType p_domain_warp_fractal_type) {
 	_FastNoiseLite::FractalType type;

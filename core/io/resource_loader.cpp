@@ -35,6 +35,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_importer.h"
+#include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
 #include "core/os/condition_variable.h"

@@ -30,6 +30,8 @@
 
 #include "script_language_extension.h"
 
+#include "core/object/class_db.h"
+
 void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_editor_can_reload_from_file);
 	GDVIRTUAL_BIND(_placeholder_erased, "placeholder");

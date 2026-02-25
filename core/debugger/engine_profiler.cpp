@@ -31,6 +31,7 @@
 #include "engine_profiler.h"
 
 #include "core/debugger/engine_debugger.h"
+#include "core/object/class_db.h"
 
 void EngineProfiler::_bind_methods() {
 	GDVIRTUAL_BIND(_toggle, "enable", "options");

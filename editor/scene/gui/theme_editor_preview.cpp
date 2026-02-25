@@ -31,6 +31,7 @@
 #include "theme_editor_preview.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"

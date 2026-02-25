@@ -30,6 +30,7 @@
 
 #include "link_button.h"
 
+#include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
 
 void LinkButton::_shape() {

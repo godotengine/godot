@@ -33,6 +33,7 @@
 #include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"

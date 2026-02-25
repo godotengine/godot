@@ -30,6 +30,7 @@
 
 #include "openxr_action.h"
 
+#include "core/object/class_db.h"
 #include "openxr_action_set.h"
 
 void OpenXRAction::_bind_methods() {

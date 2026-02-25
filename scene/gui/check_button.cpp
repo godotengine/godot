@@ -30,6 +30,7 @@
 
 #include "check_button.h"
 
+#include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
 
 Size2 CheckButton::get_icon_size() const {

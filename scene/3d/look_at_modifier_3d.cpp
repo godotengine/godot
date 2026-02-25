@@ -31,6 +31,7 @@
 #include "look_at_modifier_3d.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/resources/animation.h"
 
 void LookAtModifier3D::_validate_property(PropertyInfo &p_property) const {

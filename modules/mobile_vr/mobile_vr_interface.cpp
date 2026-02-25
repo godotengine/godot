@@ -31,6 +31,7 @@
 #include "mobile_vr_interface.h"
 
 #include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server_types.h"

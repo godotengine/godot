@@ -32,6 +32,7 @@
 
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 

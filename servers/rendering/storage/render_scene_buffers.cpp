@@ -30,7 +30,8 @@
 
 #include "render_scene_buffers.h"
 
-#include "servers/rendering/rendering_server.h" // IWYU pragma: Needed to bind RSE enums.
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h" // IWYU pragma: keep // Needed to bind RSE enums.
 
 void RenderSceneBuffersConfiguration::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_render_target"), &RenderSceneBuffersConfiguration::get_render_target);

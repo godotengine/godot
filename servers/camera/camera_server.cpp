@@ -30,6 +30,7 @@
 
 #include "camera_server.h"
 
+#include "core/object/class_db.h"
 #include "core/variant/typed_array.h"
 #include "servers/camera/camera_feed.h"
 

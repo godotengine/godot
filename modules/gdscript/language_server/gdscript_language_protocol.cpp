@@ -31,6 +31,7 @@
 #include "gdscript_language_protocol.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "editor/doc/doc_tools.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_log.h"

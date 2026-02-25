@@ -32,6 +32,7 @@
 #include "cpu_particles_3d.compat.inc"
 
 #include "core/math/random_number_generator.h"
+#include "core/object/class_db.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/main/viewport.h"

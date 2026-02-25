@@ -32,6 +32,8 @@
 
 #include "xr_controller_tracker.h"
 
+#include "core/object/class_db.h"
+
 void XRPositionalTracker::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRACKER_HAND_UNKNOWN);
 	BIND_ENUM_CONSTANT(TRACKER_HAND_LEFT);

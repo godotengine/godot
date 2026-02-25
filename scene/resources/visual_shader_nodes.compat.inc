@@ -30,6 +30,9 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "visual_shader_nodes.h"
+
+#include "core/object/class_db.h"
 #include "scene/resources/image_texture.h"
 
 // VisualShaderNodeCubemap

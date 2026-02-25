@@ -30,6 +30,7 @@
 
 #include "camera_texture.h"
 
+#include "core/object/class_db.h"
 #include "servers/camera/camera_feed.h"
 #include "servers/rendering/rendering_server.h"
 

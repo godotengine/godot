@@ -30,6 +30,7 @@
 
 #include "xr_interface_extension.h"
 
+#include "core/object/class_db.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 
 void XRInterfaceExtension::_bind_methods() {

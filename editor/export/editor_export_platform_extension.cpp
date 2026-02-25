@@ -30,6 +30,7 @@
 
 #include "editor_export_platform_extension.h"
 
+#include "core/object/class_db.h"
 #include "scene/resources/image_texture.h"
 
 void EditorExportPlatformExtension::_bind_methods() {

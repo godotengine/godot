@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
+#include "core/object/class_db.h"
 #include "core/string/translation_server.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"

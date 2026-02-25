@@ -30,6 +30,8 @@
 
 #include "navigation_path_query_result_2d.h"
 
+#include "core/object/class_db.h"
+
 void NavigationPathQueryResult2D::set_path(const Vector<Vector2> &p_path) {
 	path = p_path;
 }

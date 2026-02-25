@@ -32,6 +32,7 @@
 
 #include "core/io/file_access_memory.h"
 #include "core/io/marshalls.h"
+#include "core/object/class_db.h"
 
 const float TRIM_DB_LIMIT = -50;
 const int TRIM_FADE_OUT_FRAMES = 500;

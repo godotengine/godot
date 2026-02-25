@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
+#include "core/object/class_db.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/main/timer.h"
 

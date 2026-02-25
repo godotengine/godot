@@ -30,6 +30,7 @@
 
 #include "margin_container.h"
 
+#include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
 
 Size2 MarginContainer::get_minimum_size() const {

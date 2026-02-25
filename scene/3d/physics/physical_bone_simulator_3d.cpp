@@ -31,6 +31,7 @@
 #include "physical_bone_simulator_3d.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/3d/physics/physical_bone_3d.h"
 
 void PhysicalBoneSimulator3D::_skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) {

@@ -30,6 +30,8 @@
 
 #include "physics_server_3d_extension.h"
 
+#include "core/object/class_db.h"
+
 bool PhysicsDirectSpaceState3DExtension::is_body_excluded_from_query(const RID &p_body) const {
 	return exclude && exclude->has(p_body);
 }

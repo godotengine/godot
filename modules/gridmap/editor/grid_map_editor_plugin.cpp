@@ -32,6 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_main_screen.h"

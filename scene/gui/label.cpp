@@ -30,6 +30,7 @@
 
 #include "label.h"
 
+#include "core/object/class_db.h"
 #include "scene/gui/container.h"
 #include "scene/theme/theme_db.h"
 #include "servers/rendering/rendering_server.h"

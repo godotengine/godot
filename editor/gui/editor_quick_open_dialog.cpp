@@ -31,6 +31,7 @@
 #include "editor_quick_open_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "core/string/fuzzy_search.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_node.h"

@@ -30,6 +30,7 @@
 
 #include "gltf_document.h"
 
+#include "core/object/class_db.h"
 #include "extensions/gltf_document_extension_convert_importer_mesh.h"
 #include "extensions/gltf_spec_gloss.h"
 #include "gltf_state.h"

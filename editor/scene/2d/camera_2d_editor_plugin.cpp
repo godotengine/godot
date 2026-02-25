@@ -31,6 +31,7 @@
 #include "camera_2d_editor_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
