@@ -1343,7 +1343,7 @@ public:
 
 	// SDFGI
 
-	PASS11(environment_set_sdfgi, RID, bool, int, float, RS::EnvironmentSDFGIYScale, bool, float, bool, float, float, float)
+	PASS12(environment_set_sdfgi, RID, bool, int, float, RS::EnvironmentSDFGIYScale, bool, float, bool, float, float, float, float)
 
 	PASS1RC(bool, environment_get_sdfgi_enabled, RID)
 	PASS1RC(int, environment_get_sdfgi_cascades, RID)
@@ -1351,6 +1351,7 @@ public:
 	PASS1RC(bool, environment_get_sdfgi_use_occlusion, RID)
 	PASS1RC(float, environment_get_sdfgi_bounce_feedback, RID)
 	PASS1RC(bool, environment_get_sdfgi_read_sky_light, RID)
+	PASS1RC(float, environment_get_sdfgi_sky_energy_multiplier, RID)
 	PASS1RC(float, environment_get_sdfgi_energy, RID)
 	PASS1RC(float, environment_get_sdfgi_normal_bias, RID)
 	PASS1RC(float, environment_get_sdfgi_probe_bias, RID)

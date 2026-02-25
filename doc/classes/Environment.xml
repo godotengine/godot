@@ -240,6 +240,9 @@
 		<member name="sdfgi_read_sky_light" type="bool" setter="set_sdfgi_read_sky_light" getter="is_sdfgi_reading_sky_light" default="true">
 			If [code]true[/code], SDFGI takes the environment lighting into account. This should be set to [code]false[/code] for interior scenes.
 		</member>
+		<member name="sdfgi_sky_energy_multiplier" type="float" setter="set_sdfgi_sky_energy_multiplier" getter="get_sdfgi_sky_energy_multiplier" default="1.0">
+			The sky energy multiplier to use for SDFGI. See also [member sdfgi_energy].
+		</member>
 		<member name="sdfgi_use_occlusion" type="bool" setter="set_sdfgi_use_occlusion" getter="is_sdfgi_using_occlusion" default="false">
 			If [code]true[/code], SDFGI uses an occlusion detection approach to reduce light leaking. Occlusion may however introduce dark blotches in certain spots, which may be undesired in mostly outdoor scenes. [member sdfgi_use_occlusion] has a performance impact and should only be enabled when needed.
 		</member>

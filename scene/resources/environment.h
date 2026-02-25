@@ -157,6 +157,7 @@ private:
 	bool sdfgi_use_occlusion = false;
 	float sdfgi_bounce_feedback = 0.5;
 	bool sdfgi_read_sky_light = true;
+	float sdfgi_sky_energy_multiplier = 1.0;
 	float sdfgi_energy = 1.0;
 	float sdfgi_normal_bias = 1.1;
 	float sdfgi_probe_bias = 1.1;
@@ -342,6 +343,8 @@ public:
 	float get_sdfgi_bounce_feedback() const;
 	void set_sdfgi_read_sky_light(bool p_enabled);
 	bool is_sdfgi_reading_sky_light() const;
+	void set_sdfgi_sky_energy_multiplier(float p_sky_energy_multiplier);
+	float get_sdfgi_sky_energy_multiplier() const;
 	void set_sdfgi_energy(float p_energy);
 	float get_sdfgi_energy() const;
 	void set_sdfgi_normal_bias(float p_bias);

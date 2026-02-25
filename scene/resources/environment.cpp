@@ -557,6 +557,15 @@ bool Environment::is_sdfgi_reading_sky_light() const {
 	return sdfgi_read_sky_light;
 }
 
+void Environment::set_sdfgi_sky_energy_multiplier(float p_sky_energy_multiplier) {
+	sdfgi_sky_energy_multiplier = p_sky_energy_multiplier;
+	_update_sdfgi();
+}
+
+float Environment::get_sdfgi_sky_energy_multiplier() const {
+	return sdfgi_sky_energy_multiplier;
+}
+
 void Environment::set_sdfgi_energy(float p_energy) {
 	sdfgi_energy = p_energy;
 	_update_sdfgi();
@@ -594,6 +603,7 @@ void Environment::_update_sdfgi() {
 			sdfgi_use_occlusion,
 			sdfgi_bounce_feedback,
 			sdfgi_read_sky_light,
+			sdfgi_sky_energy_multiplier,
 			sdfgi_energy,
 			sdfgi_normal_bias,
 			sdfgi_probe_bias);
@@ -1403,6 +1413,8 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_sdfgi_bounce_feedback"), &Environment::get_sdfgi_bounce_feedback);
 	ClassDB::bind_method(D_METHOD("set_sdfgi_read_sky_light", "enable"), &Environment::set_sdfgi_read_sky_light);
 	ClassDB::bind_method(D_METHOD("is_sdfgi_reading_sky_light"), &Environment::is_sdfgi_reading_sky_light);
+	ClassDB::bind_method(D_METHOD("set_sdfgi_sky_energy_multiplier", "amount"), &Environment::set_sdfgi_sky_energy_multiplier);
+	ClassDB::bind_method(D_METHOD("get_sdfgi_sky_energy_multiplier"), &Environment::get_sdfgi_sky_energy_multiplier);
 	ClassDB::bind_method(D_METHOD("set_sdfgi_energy", "amount"), &Environment::set_sdfgi_energy);
 	ClassDB::bind_method(D_METHOD("get_sdfgi_energy"), &Environment::get_sdfgi_energy);
 	ClassDB::bind_method(D_METHOD("set_sdfgi_normal_bias", "bias"), &Environment::set_sdfgi_normal_bias);
@@ -1422,6 +1434,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_cascade0_distance", PROPERTY_HINT_RANGE, "0.1,16384,0.1,or_greater", PROPERTY_USAGE_EDITOR), "set_sdfgi_cascade0_distance", "get_sdfgi_cascade0_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_max_distance", PROPERTY_HINT_RANGE, "0.1,16384,0.1,or_greater", PROPERTY_USAGE_EDITOR), "set_sdfgi_max_distance", "get_sdfgi_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdfgi_y_scale", PROPERTY_HINT_ENUM, "50% (Compact),75% (Balanced),100% (Sparse)"), "set_sdfgi_y_scale", "get_sdfgi_y_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_sky_energy_multiplier"), "set_sdfgi_sky_energy_multiplier", "get_sdfgi_sky_energy_multiplier");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_energy"), "set_sdfgi_energy", "get_sdfgi_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_normal_bias"), "set_sdfgi_normal_bias", "get_sdfgi_normal_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_probe_bias"), "set_sdfgi_probe_bias", "get_sdfgi_probe_bias");
