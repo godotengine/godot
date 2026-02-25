@@ -1165,6 +1165,7 @@ void main() {
 
 	float ao_highp = 1.0;
 	float ao_light_affect_highp = 0.0;
+	float micro_shadows_highp = 0.0;
 
 	float alpha_highp = 1.0;
 
@@ -1288,6 +1289,7 @@ void main() {
 	hvec2 anisotropy_flow = hvec2(anisotropy_flow_highp);
 	half ao = half(ao_highp);
 	half ao_light_affect = half(ao_light_affect_highp);
+	half micro_shadows = half(micro_shadows_highp);
 	half alpha = half(alpha_highp);
 	half normal_map_depth = half(normal_map_depth_highp);
 	half sss_strength = half(sss_strength_highp);
@@ -1850,7 +1852,7 @@ void main() {
 #endif // !AMBIENT_LIGHT_DISABLED
 
 	// convert ao to direct light ao
-	ao = mix(half(1.0), ao, ao_light_affect);
+	half direct_ao = mix(half(1.0), ao, ao_light_affect);
 
 	//this saves some VGPRs
 	hvec3 f0 = F0(metallic, specular, albedo);
@@ -2117,6 +2119,12 @@ void main() {
 			shadow = half(1.0);
 #endif
 
+#if defined(MICRO_SHADOWS_USED) && defined(ENABLE_MICRO_SHADOWS)
+			half NdotL = dot(normal, hvec3(directional_lights.data[i].direction));
+			// Disable microshadowing when facing away from light.
+			shadow *= NdotL >= half(0.0) ? half(compute_micro_shadowing(NdotL, ao, micro_shadows)) : half(1.0);
+#endif
+
 			float size_A = sc_use_light_soft_shadows() ? directional_lights.data[i].size : 0.0;
 
 			light_compute(normal, hvec3(directional_lights.data[i].direction), view, saturateHalf(size_A),
@@ -2249,7 +2257,7 @@ void main() {
 	normal_output_buffer.a = 0.0;
 	depth_output_buffer.r = -vertex.z;
 
-	orm_output_buffer.r = ao;
+	orm_output_buffer.r = direct_ao;
 	orm_output_buffer.g = roughness;
 	orm_output_buffer.b = metallic;
 	orm_output_buffer.a = sss_strength;
@@ -2264,8 +2272,8 @@ void main() {
 	diffuse_light *= albedo; // ambient must be multiplied by albedo at the end
 
 	// apply direct light AO
-	diffuse_light *= ao;
-	direct_specular_light *= ao;
+	diffuse_light *= direct_ao;
+	direct_specular_light *= direct_ao;
 
 	// apply metallic
 	diffuse_light *= half(1.0) - metallic;
