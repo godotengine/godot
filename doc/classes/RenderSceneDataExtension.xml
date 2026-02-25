@@ -9,7 +9,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_get_cam_projection" qualifiers="virtual const">
+		<method name="_get_aspect" qualifiers="virtual const">
+			<return type="float" />
+			<description>
+				Implement this in GDExtension to return the X:Y aspect ratio of camera projection used to render this frame.
+			</description>
+		</method>
+		<method name="_get_cam_projection" qualifiers="virtual const" deprecated="Use [method RenderSceneDataExtension._get_transformed_projection_data] instead.">
 			<return type="Projection" />
 			<description>
 				Implement this in GDExtension to return the camera [Projection].
@@ -19,6 +25,25 @@
 			<return type="Transform3D" />
 			<description>
 				Implement this in GDExtension to return the camera [Transform3D].
+			</description>
+		</method>
+		<method name="_get_far_plane_half_extents" qualifiers="virtual const">
+			<return type="Vector2" />
+			<description>
+				Implement this in GDExtension to return the dimensions of the far clipping plane of the projection used to render this frame, divided by two.
+			</description>
+		</method>
+		<method name="_get_pixels_per_meter" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="for_pixel_width" type="int" />
+			<description>
+				Implement this in GDExtension to return [param for_pixel_width] divided by the viewport's width measured in meters on the near plane, after this view's projection is applied.
+			</description>
+		</method>
+		<method name="_get_transformed_projection_data" qualifiers="virtual const">
+			<return type="PackedFloat32Array" />
+			<description>
+				Implement this in GDExtension to return the camera transformed projection data.
 			</description>
 		</method>
 		<method name="_get_uniform_buffer" qualifiers="virtual const">
@@ -45,6 +70,24 @@
 			<param index="0" name="view" type="int" />
 			<description>
 				Implement this in GDExtension to return the view [Projection] for the given [param view].
+			</description>
+		</method>
+		<method name="_get_viewport_half_extents" qualifiers="virtual const">
+			<return type="Vector2" />
+			<description>
+				Implement this in GDExtension to return the dimensions of the viewport plane used to render this frame, divided by two.
+			</description>
+		</method>
+		<method name="_get_z_far" qualifiers="virtual const">
+			<return type="float" />
+			<description>
+				Implement this in GDExtension to return the distance beyond which positions are clipped, used to render this frame.
+			</description>
+		</method>
+		<method name="_get_z_near" qualifiers="virtual const">
+			<return type="float" />
+			<description>
+				Implement this in GDExtension to return the distance before which positions are clipped, used to render this frame.
 			</description>
 		</method>
 	</methods>

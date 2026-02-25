@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "render_scene_data_rd.h"
+#include "core/error/error_macros.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
@@ -38,11 +39,53 @@ Transform3D RenderSceneDataRD::get_cam_transform() const {
 }
 
 Projection RenderSceneDataRD::get_cam_projection() const {
+	WARN_DEPRECATED_MSG(R"*(RenderSceneDataRD::get_cam_projection() is deprecated. Use RenderSceneDataRD::get_transformed_projection_data() instead.)*");
+	WARN_PRINT_ONCE(R"*(RenderSceneDataRD.get_cam_projection() returns a transformed projection and is only suitable for copying to the GPU.)*");
 	Projection correction;
 	correction.set_depth_correction(flip_y);
 	correction.add_jitter_offset(taa_jitter);
 
 	return correction * cam_projection;
+}
+
+PackedFloat32Array RenderSceneDataRD::get_transformed_projection_data() const {
+	Projection correction;
+	correction.set_depth_correction(flip_y);
+	correction.add_jitter_offset(taa_jitter);
+	Projection corrected = correction * cam_projection;
+
+	PackedFloat32Array ret;
+	ret.reserve_exact(16);
+	for (int col = 0; col < 4; col++) {
+		for (int row = 0; row < 4; row++) {
+			ret.append(static_cast<float>(corrected[col][row]));
+		}
+	}
+	return ret;
+}
+
+float RenderSceneDataRD::get_z_far() const {
+	return z_far;
+}
+
+float RenderSceneDataRD::get_z_near() const {
+	return z_near;
+}
+
+float RenderSceneDataRD::get_aspect() const {
+	return cam_projection.get_aspect();
+}
+
+Vector2 RenderSceneDataRD::get_viewport_half_extents() const {
+	return cam_projection.get_viewport_half_extents();
+}
+
+Vector2 RenderSceneDataRD::get_far_plane_half_extents() const {
+	return cam_projection.get_far_plane_half_extents();
+}
+
+int RenderSceneDataRD::get_pixels_per_meter(int p_for_pixel_width) const {
+	return cam_projection.get_pixels_per_meter(p_for_pixel_width);
 }
 
 uint32_t RenderSceneDataRD::get_view_count() const {
