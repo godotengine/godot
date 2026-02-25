@@ -491,4 +491,45 @@ void RasterizerGLES3::set_boot_image_with_stretch(const Ref<Image> &p_image, con
 	texture_storage->texture_free(texture);
 }
 
+void RasterizerGLES3::blit_to_texture(RID p_src_texture, RID p_dst_texture, uint32_t p_src_layer, bool p_linear_to_srgb) {
+	GLES3::TextureStorage *ts = GLES3::TextureStorage::get_singleton();
+
+	GLES3::Texture *src = ts->get_texture(p_src_texture);
+	GLES3::Texture *dst = ts->get_texture(p_dst_texture);
+	ERR_FAIL_NULL(src);
+	ERR_FAIL_NULL(dst);
+
+	// Build a transient FBO targeting the destination texture.
+	GLuint fbo = 0;
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dst->tex_id, 0);
+	ERR_FAIL_COND_MSG(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE,
+			"blit_to_texture: destination framebuffer incomplete.");
+
+	glViewport(0, 0, dst->width, dst->height);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+	glDepthMask(GL_FALSE);
+
+	// Bind the source texture and blit via copy_effects.
+	glActiveTexture(GL_TEXTURE0);
+	GLenum target = (src->type == GLES3::Texture::TYPE_LAYERED) ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
+	glBindTexture(target, src->tex_id);
+
+	Rect2 full_rect(0.0f, 0.0f, 1.0f, 1.0f);
+
+	if (src->type == GLES3::Texture::TYPE_LAYERED) {
+		copy_effects->copy_to_rect_3d(full_rect, p_src_layer, src->type, 0.0f, p_linear_to_srgb);
+	} else {
+		copy_effects->copy_to_rect(full_rect, p_linear_to_srgb);
+	}
+
+	glBindTexture(target, 0);
+
+	// Restore default FBO and clean up.
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	glDeleteFramebuffers(1, &fbo);
+}
+
 #endif // GLES3_ENABLED

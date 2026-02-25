@@ -11,6 +11,48 @@
 		<link title="Setting up XR">$DOCS_URL/tutorials/xr/setting_up_xr.html</link>
 	</tutorials>
 	<methods>
+		<method name="capture_frame">
+			<return type="void" />
+			<param index="0" name="rd_texture" type="RID" />
+			<param index="1" name="convert_to_srgb" type="bool" />
+			<description>
+				Requests a single-frame capture of the left eye from the XR swapchain. The provided [param rd_texture] must be a valid [RenderingDevice] texture created by the caller with [constant RenderingDevice.TEXTURE_USAGE_COLOR_ATTACHMENT_BIT] and [constant RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT], and must match the dimensions returned by [method XRInterface.get_render_target_size].
+				The capture is performed via an internal blit during XRInterface post_draw_viewport, before the swapchain image is released back to the OpenXR runtime. The result is delivered asynchronously — the [signal frame_captured] signal is emitted on the next XRInterface process tick once the blit is complete.
+				Only one capture may be in flight at a time. Calling this again before [signal frame_captured] is emitted will overwrite the pending request.
+				[b]Note:[/b] The caller owns [param rd_texture] and is responsible for freeing it when no longer needed.
+				[codeblock]
+				var xr: OpenXRInterface
+				var capture_tex: RID
+
+				func _ready():
+				    xr = XRServer.find_interface("OpenXR") as OpenXRInterface
+				    xr.frame_captured.connect(_on_frame_captured)
+
+				func take_screenshot():
+				    var rd := RenderingServer.get_rendering_device()
+				    var size := xr.get_render_target_size()
+				    var fmt := RDTextureFormat.new()
+				    fmt.width = int(size.x)
+				    fmt.height = int(size.y)
+				    fmt.format = RenderingDevice.DATA_FORMAT_R8G8B8A8_SRGB
+				    fmt.usage_bits = (
+				        RenderingDevice.TEXTURE_USAGE_COLOR_ATTACHMENT_BIT
+				        | RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT)
+				    capture_tex = rd.texture_create(fmt, RDTextureView.new())
+				    xr.capture_frame(capture_tex)
+
+				func _on_frame_captured(rd_texture: RID):
+				    var rd := RenderingServer.get_rendering_device()
+				    var data := rd.texture_get_data(rd_texture, 0)
+				    var size := xr.get_render_target_size()
+				    var img := Image.create_from_data(
+				        int(size.x), int(size.y), false,
+				        Image.FORMAT_RGBA8, data)
+				    img.save_jpg("user://screenshot.jpg")
+				    rd.free_rid(capture_tex)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="get_action_sets" qualifiers="const">
 			<return type="Array" />
 			<description>
@@ -201,6 +243,13 @@
 			<param index="2" name="to_level" type="int" />
 			<description>
 				Informs the device CPU performance level has changed in the specified subdomain.
+			</description>
+		</signal>
+		<signal name="frame_captured">
+			<param index="0" name="rd_texture" type="RID" />
+			<description>
+				Emitted on the main thread during method XRInterface process after a frame capture requested via [method capture_frame] has completed. The [param rd_texture] is the same [RenderingDevice] texture RID that was passed to [method capture_frame], now containing the rendered left eye image.
+				Use [method RenderingDevice.texture_get_data] or [method RenderingDevice.texture_get_data_async] to read the pixel data. The caller remains responsible for freeing [param rd_texture] when done.
 			</description>
 		</signal>
 		<signal name="gpu_level_changed">

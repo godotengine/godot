@@ -101,6 +101,7 @@ public:
 	void begin_frame(double frame_step);
 
 	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
+	void blit_to_texture(RID p_src_texture, RID p_dst_texture, uint32_t p_src_layer = 0, bool p_linear_to_srgb = false);
 
 	bool is_opengl() { return true; }
 	void gl_end_frame(bool p_swap_buffers);

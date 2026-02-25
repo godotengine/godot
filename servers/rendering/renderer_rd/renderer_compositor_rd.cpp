@@ -117,6 +117,69 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 	RD::get_singleton()->draw_list_end();
 }
 
+void RendererCompositorRD::blit_to_texture(RID p_src_texture, RID p_dst_texture, uint32_t p_src_layer, bool p_linear_to_srgb) {
+	ERR_FAIL_COND(p_src_texture.is_null());
+	ERR_FAIL_COND(p_dst_texture.is_null());
+
+	RenderingDevice *rd = RD::get_singleton();
+
+	// Build a transient framebuffer around the destination texture.
+	Vector<RID> fb_textures;
+	fb_textures.push_back(p_dst_texture);
+	RID framebuffer = rd->framebuffer_create(fb_textures);
+	ERR_FAIL_COND(framebuffer.is_null());
+
+	// Lazy-create pipeline for this framebuffer format.
+	RD::FramebufferFormatID fb_format = rd->framebuffer_get_format(framebuffer);
+	BlitPipelines blit_pipelines = _get_blit_pipelines_for_format(fb_format);
+
+	// Uniform set — source texture sampled via the blit shader.
+	Vector<RD::Uniform> uniforms;
+	RD::Uniform u;
+	u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+	u.binding = 0;
+	u.append_id(blit.sampler);
+	u.append_id(p_src_texture);
+	uniforms.push_back(u);
+	RID uniform_set = rd->uniform_set_create(uniforms,
+			blit.shader.version_get_shader(blit.shader_version, BLIT_MODE_USE_LAYER), 0);
+
+	if (uniform_set.is_null()) {
+		rd->free_rid(framebuffer);
+		ERR_FAIL_MSG("Failed to create uniform set for blit_to_texture.");
+	}
+
+	// Draw.
+	RD::DrawListID draw_list = rd->draw_list_begin(framebuffer);
+	if (draw_list == RD::INVALID_ID) {
+		rd->free_rid(uniform_set);
+		rd->free_rid(framebuffer);
+		ERR_FAIL_MSG("Failed to begin draw list for blit_to_texture.");
+	}
+
+	rd->draw_list_bind_render_pipeline(draw_list, blit_pipelines.pipelines[BLIT_MODE_USE_LAYER]);
+	rd->draw_list_bind_index_array(draw_list, blit.array);
+	rd->draw_list_bind_uniform_set(draw_list, uniform_set, 0);
+
+	BlitPushConstant push = {};
+	push.src_rect[2] = 1.0f;
+	push.src_rect[3] = 1.0f;
+	push.dst_rect[2] = 1.0f;
+	push.dst_rect[3] = 1.0f;
+	push.rotation_cos = 1.0f;
+	push.source_is_srgb = p_linear_to_srgb ? 1u : 0u;
+	push.layer = p_src_layer;
+	push.reference_multiplier = 1.0f;
+	push.output_max_value = 1.0f;
+
+	rd->draw_list_set_push_constant(draw_list, &push, sizeof(BlitPushConstant));
+	rd->draw_list_draw(draw_list, true);
+	rd->draw_list_end();
+
+	rd->free_rid(uniform_set);
+	rd->free_rid(framebuffer);
+}
+
 void RendererCompositorRD::begin_frame(double frame_step) {
 	frame++;
 	delta = frame_step;

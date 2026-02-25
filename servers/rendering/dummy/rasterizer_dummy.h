@@ -87,6 +87,7 @@ public:
 	}
 
 	void blit_render_targets_to_screen(int p_screen, const BlitToScreen *p_render_targets, int p_amount) override {}
+	void blit_to_texture(RID p_src_texture, RID p_dst_texture, uint32_t p_src_layer, bool p_linear_to_srgb) override {}
 
 	bool is_opengl() override { return false; }
 	void gl_end_frame(bool p_swap_buffers) override {}
