@@ -181,7 +181,9 @@ private:
 
 	struct LightmapData {
 		float normal_xform[12];
-		float texture_size[2];
+		uint32_t light_texture_size[2];
+		uint32_t shadow_texture_size[2];
+		uint32_t direction_texture_size[2];
 		float exposure_normalization;
 		uint32_t flags;
 	};
