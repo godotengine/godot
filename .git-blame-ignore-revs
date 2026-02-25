@@ -81,3 +81,6 @@ c5df0cb82bc539eff7dcfb2add99d60771fc50c5
 
 # Move RenderingServer enums to a dedicated RenderingServerEnums (`RSE`) namespace
 f5a290ac462765afca34e64dd39f883511510147
+
+# Style: Add `class_db.h` includes explicitly
+e380a417526c11f15a9ddb3997292409b10da2af
