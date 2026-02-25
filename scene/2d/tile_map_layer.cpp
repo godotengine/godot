@@ -314,6 +314,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 				Ref<Material> prev_material;
 				int prev_z_index = 0;
 				RID prev_ci;
+				RendererCanvasHelper::tilemap_begin();
 
 				for (SelfList<CellData> *cell_data_quadrant_list_element = rendering_quadrant->cells.first(); cell_data_quadrant_list_element; cell_data_quadrant_list_element = cell_data_quadrant_list_element->next()) {
 					CellData &cell_data = *cell_data_quadrant_list_element->self();
@@ -384,6 +385,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 					draw_tile(ci, local_tile_pos - rendering_quadrant->canvas_items_position, tile_set, cell_data.cell.source_id, cell_data.cell.get_atlas_coords(), cell_data.cell.alternative_tile, -1, tile_data, random_animation_offset);
 				}
 
+				RendererCanvasHelper::tilemap_end();
 				// Reset physics interpolation for any recreated canvas items.
 				if (is_physics_interpolated_and_enabled() && is_visible_in_tree()) {
 					for (const RID &ci : rendering_quadrant->canvas_items) {
@@ -2697,10 +2699,18 @@ void TileMapLayer::draw_tile(RID p_canvas_item, const Vector2 &p_position, const
 		// Draw the tile.
 		if (p_frame >= 0) {
 			Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, p_frame);
-			tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
+			if (RendererCanvasHelper::_active_tilemap) {
+				RendererCanvasHelper::tilemap_add_rect(p_canvas_item, dest_rect, tex->get_rid(), source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
+			} else {
+				tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
+			}
 		} else if (atlas_source->get_tile_animation_frames_count(p_atlas_coords) == 1) {
 			Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, 0);
-			tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
+			if (RendererCanvasHelper::_active_tilemap) {
+				RendererCanvasHelper::tilemap_add_rect(p_canvas_item, dest_rect, tex->get_rid(), source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
+			} else {
+				tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
+			}
 		} else {
 			real_t speed = atlas_source->get_tile_animation_speed(p_atlas_coords);
 			real_t animation_duration = atlas_source->get_tile_animation_total_duration(p_atlas_coords) / speed;
