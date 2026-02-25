@@ -104,7 +104,6 @@ struct RenderDataGLES3 {
 	Transform3D inv_cam_transform;
 	Projection cam_projection;
 	bool cam_orthogonal = false;
-	bool cam_frustum = false;
 	uint32_t camera_visible_layers = 0xFFFFFFFF;
 
 	// For billboards to cast correct shadows.

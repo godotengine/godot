@@ -195,7 +195,7 @@ void main() {
 #else
 	cube_normal.z = -1.0;
 	cube_normal.x = (uv_interp.x + projection.x) / projection.y;
-	cube_normal.y = (-uv_interp.y - projection.z) / projection.w;
+	cube_normal.y = (uv_interp.y + projection.z) / projection.w;
 #endif
 	cube_normal = mat3(orientation) * cube_normal;
 	cube_normal = normalize(cube_normal);

@@ -216,8 +216,8 @@ void main() {
 	cube_normal += sky_scene_data.view_eye_offsets[ViewIndex].xyz;
 #else
 	cube_normal.z = -1.0;
-	cube_normal.x = (cube_normal.z * (-uv_interp.x - params.projection.x)) / params.projection.y;
-	cube_normal.y = -(cube_normal.z * (uv_interp.y - params.projection.z)) / params.projection.w;
+	cube_normal.x = (uv_interp.x + params.projection.x) / params.projection.y;
+	cube_normal.y = (uv_interp.y + params.projection.z) / params.projection.w;
 #endif
 	cube_normal = mat3(params.orientation) * cube_normal;
 	cube_normal = normalize(cube_normal);
