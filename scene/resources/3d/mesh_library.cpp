@@ -38,69 +38,40 @@
 
 bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 	String prop_name = p_name;
-	if (prop_name.begins_with("item/")) {
-		int idx = prop_name.get_slicec('/', 1).to_int();
-		String what = prop_name.get_slicec('/', 2);
-		if (!item_map.has(idx)) {
-			create_item(idx);
-		}
-
-		if (what == "name") {
-			set_item_name(idx, p_value);
-		} else if (what == "mesh") {
-			set_item_mesh(idx, p_value);
-		} else if (what == "mesh_transform") {
-			set_item_mesh_transform(idx, p_value);
-		} else if (what == "mesh_cast_shadow") {
-			switch ((int)p_value) {
-				case 0: {
-					set_item_mesh_cast_shadow(idx, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_OFF);
-				} break;
-				case 1: {
-					set_item_mesh_cast_shadow(idx, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON);
-				} break;
-				case 2: {
-					set_item_mesh_cast_shadow(idx, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_DOUBLE_SIDED);
-				} break;
-				case 3: {
-					set_item_mesh_cast_shadow(idx, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_SHADOWS_ONLY);
-				} break;
-				default: {
-					set_item_mesh_cast_shadow(idx, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON);
-				} break;
-			}
-#ifndef PHYSICS_3D_DISABLED
-		} else if (what == "shape") {
-			Vector<ShapeData> shapes;
-			ShapeData sd;
-			sd.shape = p_value;
-			shapes.push_back(sd);
-			set_item_shapes(idx, shapes);
-		} else if (what == "shapes") {
-			_set_item_shapes(idx, p_value);
-#endif // PHYSICS_3D_DISABLED
-		} else if (what == "preview") {
-			set_item_preview(idx, p_value);
-		} else if (what == "navigation_mesh") {
-			set_item_navigation_mesh(idx, p_value);
-		} else if (what == "navigation_mesh_transform") {
-			set_item_navigation_mesh_transform(idx, p_value);
-#ifndef DISABLE_DEPRECATED
-		} else if (what == "navmesh") { // Renamed in 4.0 beta 9.
-			set_item_navigation_mesh(idx, p_value);
-		} else if (what == "navmesh_transform") { // Renamed in 4.0 beta 9.
-			set_item_navigation_mesh_transform(idx, p_value);
-#endif // DISABLE_DEPRECATED
-		} else if (what == "navigation_layers") {
-			set_item_navigation_layers(idx, p_value);
-		} else {
-			return false;
-		}
-
-		return true;
+	if (!prop_name.begins_with("item/")) {
+		return false;
 	}
 
-	return false;
+	int idx = prop_name.get_slicec('/', 1).to_int();
+	String what = prop_name.get_slicec('/', 2);
+	if (!item_map.has(idx)) {
+		_set_item_count(idx + 1);
+	}
+	item_map[idx].hide_from_list = false;
+
+#ifndef PHYSICS_3D_DISABLED
+	if (what == "shape") {
+		Vector<ShapeData> shapes;
+		ShapeData sd;
+		sd.shape = p_value;
+		shapes.push_back(sd);
+		set_item_shapes(idx, shapes);
+		return true;
+	}
+#endif // PHYSICS_3D_DISABLED
+
+#ifndef DISABLE_DEPRECATED
+	if (what == "navmesh") { // Renamed in 4.0 beta 9.
+		set_item_navigation_mesh(idx, p_value);
+		return true;
+	}
+	if (what == "navmesh_transform") { // Renamed in 4.0 beta 9.
+		set_item_navigation_mesh_transform(idx, p_value);
+		return true;
+	}
+#endif // DISABLE_DEPRECATED
+
+	return property_helper.property_set_value(p_name, p_value);
 }
 
 bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
@@ -109,52 +80,18 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 	ERR_FAIL_COND_V(!item_map.has(idx), false);
 	String what = prop_name.get_slicec('/', 2);
 
-	if (what == "name") {
-		r_ret = get_item_name(idx);
-	} else if (what == "mesh") {
-		r_ret = get_item_mesh(idx);
-	} else if (what == "mesh_transform") {
-		r_ret = get_item_mesh_transform(idx);
-	} else if (what == "mesh_cast_shadow") {
-		r_ret = (int)get_item_mesh_cast_shadow(idx);
-#ifndef PHYSICS_3D_DISABLED
-	} else if (what == "shapes") {
-		r_ret = _get_item_shapes(idx);
-#endif // PHYSICS_3D_DISABLED
-	} else if (what == "navigation_mesh") {
-		r_ret = get_item_navigation_mesh(idx);
-	} else if (what == "navigation_mesh_transform") {
-		r_ret = get_item_navigation_mesh_transform(idx);
 #ifndef DISABLE_DEPRECATED
-	} else if (what == "navmesh") { // Renamed in 4.0 beta 9.
+	if (what == "navmesh") { // Renamed in 4.0 beta 9.
 		r_ret = get_item_navigation_mesh(idx);
-	} else if (what == "navmesh_transform") { // Renamed in 4.0 beta 9.
+		return true;
+	}
+	if (what == "navmesh_transform") { // Renamed in 4.0 beta 9.
 		r_ret = get_item_navigation_mesh_transform(idx);
+		return true;
+	}
 #endif // DISABLE_DEPRECATED
-	} else if (what == "navigation_layers") {
-		r_ret = get_item_navigation_layers(idx);
-	} else if (what == "preview") {
-		r_ret = get_item_preview(idx);
-	} else {
-		return false;
-	}
 
-	return true;
-}
-
-void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (const KeyValue<int, Item> &E : item_map) {
-		String prop_name = vformat("%s/%d/", PNAME("item"), E.key);
-		p_list->push_back(PropertyInfo(Variant::STRING, prop_name + PNAME("name")));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, Mesh::get_class_static()));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
-		p_list->push_back(PropertyInfo(Variant::INT, prop_name + PNAME("mesh_cast_shadow"), PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"));
-		p_list->push_back(PropertyInfo(Variant::ARRAY, prop_name + PNAME("shapes")));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("navigation_mesh"), PROPERTY_HINT_RESOURCE_TYPE, NavigationMesh::get_class_static()));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("navigation_mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
-		p_list->push_back(PropertyInfo(Variant::INT, prop_name + PNAME("navigation_layers"), PROPERTY_HINT_LAYERS_3D_NAVIGATION));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("preview"), PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), PROPERTY_USAGE_DEFAULT));
-	}
+	return property_helper.property_get_value(prop_name, r_ret);
 }
 
 void MeshLibrary::create_item(int p_item) {
@@ -289,9 +226,16 @@ void MeshLibrary::clear() {
 Vector<int> MeshLibrary::get_item_list() const {
 	Vector<int> ret;
 	ret.resize(item_map.size());
+
 	int idx = 0;
 	for (const KeyValue<int, Item> &E : item_map) {
-		ret.write[idx++] = E.key;
+		if (!E.value.hide_from_list) {
+			ret.write[idx++] = E.key;
+		}
+	}
+
+	if (ret.size() > idx) {
+		ret.resize(idx);
 	}
 
 	return ret;
@@ -366,9 +310,58 @@ Array MeshLibrary::_get_item_shapes(int p_item) const {
 }
 #endif // PHYSICS_3D_DISABLED
 
+void MeshLibrary::_set_item_hide_from_list(int p_item, bool p_hide) {
+	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	item_map[p_item].hide_from_list = p_hide;
+	emit_changed();
+}
+
+bool MeshLibrary::_get_item_hide_from_list(int p_item) const {
+	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), false, "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	return item_map[p_item].hide_from_list;
+}
+
+void MeshLibrary::_set_item_count(int p_count) {
+	ERR_FAIL_COND(p_count < 0);
+	int prev_size = item_map.size();
+	if (prev_size == p_count) {
+		return;
+	}
+
+	if (prev_size < p_count) {
+		// Fill in potential gaps between indexes.
+		for (int i = 0; i < p_count; i++) {
+			if (!item_map.has(i)) {
+				item_map[i] = Item();
+				// We don't want to show fillers in the `GridMap` editor.
+				item_map[i].hide_from_list = true;
+				prev_size++;
+			}
+			if (prev_size == p_count) {
+				// Avoid hiding ones created by the user.
+				item_map[i].hide_from_list = false;
+				break;
+			}
+		}
+	} else {
+		while (prev_size > p_count) {
+			item_map.remove(item_map.back());
+			prev_size--;
+		}
+	}
+
+	emit_changed();
+	notify_property_list_changed();
+}
+
+int MeshLibrary::_get_item_count() const {
+	return item_map.size();
+}
+
 void MeshLibrary::reset_state() {
 	clear();
 }
+
 void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_item", "id"), &MeshLibrary::create_item);
 	ClassDB::bind_method(D_METHOD("set_item_name", "id", "name"), &MeshLibrary::set_item_name);
@@ -382,6 +375,7 @@ void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_shapes", "id", "shapes"), &MeshLibrary::_set_item_shapes);
 #endif // PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_item_preview", "id", "texture"), &MeshLibrary::set_item_preview);
+	ClassDB::bind_method(D_METHOD("_set_item_count", "count"), &MeshLibrary::_set_item_count);
 	ClassDB::bind_method(D_METHOD("get_item_name", "id"), &MeshLibrary::get_item_name);
 	ClassDB::bind_method(D_METHOD("get_item_mesh", "id"), &MeshLibrary::get_item_mesh);
 	ClassDB::bind_method(D_METHOD("get_item_mesh_transform", "id"), &MeshLibrary::get_item_mesh_transform);
@@ -393,16 +387,37 @@ void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_shapes", "id"), &MeshLibrary::_get_item_shapes);
 #endif // PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_item_preview", "id"), &MeshLibrary::get_item_preview);
+	ClassDB::bind_method(D_METHOD("_get_item_count"), &MeshLibrary::_get_item_count);
 	ClassDB::bind_method(D_METHOD("remove_item", "id"), &MeshLibrary::remove_item);
 	ClassDB::bind_method(D_METHOD("find_item_by_name", "name"), &MeshLibrary::find_item_by_name);
 
 	ClassDB::bind_method(D_METHOD("clear"), &MeshLibrary::clear);
 	ClassDB::bind_method(D_METHOD("get_item_list"), &MeshLibrary::get_item_list);
 	ClassDB::bind_method(D_METHOD("get_last_unused_item_id"), &MeshLibrary::get_last_unused_item_id);
+
+	ADD_ARRAY_COUNT_WITH_USAGE_FLAGS("Items", "item_count", "_set_item_count", "_get_item_count", "item/", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL);
+
+	base_property_helper.set_prefix("item/");
+	base_property_helper.set_array_length_getter(&MeshLibrary::_get_item_count);
+
+	Item defaults;
+
+	base_property_helper.register_property(PropertyInfo(Variant::STRING, "name"), defaults.name, &MeshLibrary::set_item_name, &MeshLibrary::get_item_name);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, Mesh::get_class_static()), defaults.mesh, &MeshLibrary::set_item_mesh, &MeshLibrary::get_item_mesh);
+	base_property_helper.register_property(PropertyInfo(Variant::TRANSFORM3D, "mesh_transform", PROPERTY_HINT_NONE, "suffix:m"), defaults.mesh_transform, &MeshLibrary::set_item_mesh_transform, &MeshLibrary::get_item_mesh_transform);
+	base_property_helper.register_property(PropertyInfo(Variant::INT, "mesh_cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), defaults.mesh_cast_shadow, &MeshLibrary::set_item_mesh_cast_shadow, &MeshLibrary::get_item_mesh_cast_shadow);
+#ifndef PHYSICS_3D_DISABLED
+	base_property_helper.register_property(PropertyInfo(Variant::ARRAY, "shapes"), Array(), &MeshLibrary::_set_item_shapes, &MeshLibrary::_get_item_shapes);
+#endif // PHYSICS_3D_DISABLED
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "navigation_mesh", PROPERTY_HINT_RESOURCE_TYPE, NavigationMesh::get_class_static()), defaults.navigation_mesh, &MeshLibrary::set_item_navigation_mesh, &MeshLibrary::get_item_navigation_mesh);
+	base_property_helper.register_property(PropertyInfo(Variant::TRANSFORM3D, "navigation_mesh_transform", PROPERTY_HINT_NONE, "suffix:m"), defaults.navigation_mesh_transform, &MeshLibrary::set_item_navigation_mesh_transform, &MeshLibrary::get_item_navigation_mesh_transform);
+	base_property_helper.register_property(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), defaults.navigation_layers, &MeshLibrary::set_item_navigation_layers, &MeshLibrary::get_item_navigation_layers);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "preview", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.preview, &MeshLibrary::set_item_preview, &MeshLibrary::get_item_preview);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "hide_from_list", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), defaults.hide_from_list, &MeshLibrary::_set_item_hide_from_list, &MeshLibrary::_get_item_hide_from_list);
+
+	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 
 MeshLibrary::MeshLibrary() {
-}
-
-MeshLibrary::~MeshLibrary() {
+	property_helper.setup_for_instance(base_property_helper, this);
 }

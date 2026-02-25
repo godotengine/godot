@@ -51,16 +51,6 @@ void MeshLibraryEditor::edit(const Ref<MeshLibrary> &p_mesh_library) {
 	}
 }
 
-void MeshLibraryEditor::_menu_remove_confirm() {
-	switch (option) {
-		case MENU_OPTION_REMOVE_ITEM: {
-			mesh_library->remove_item(to_erase);
-		} break;
-		default: {
-		};
-	}
-}
-
 void MeshLibraryEditor::_menu_update_confirm(bool p_apply_xforms) {
 	cd_update->hide();
 	apply_xforms = p_apply_xforms;
@@ -233,17 +223,6 @@ Error MeshLibraryEditor::update_library_file(Node *p_base_scene, Ref<MeshLibrary
 void MeshLibraryEditor::_menu_cbk(int p_option) {
 	option = p_option;
 	switch (p_option) {
-		case MENU_OPTION_ADD_ITEM: {
-			mesh_library->create_item(mesh_library->get_last_unused_item_id());
-		} break;
-		case MENU_OPTION_REMOVE_ITEM: {
-			String p = InspectorDock::get_inspector_singleton()->get_selected_path();
-			if (p.begins_with("item") && p.get_slice_count("/") >= 2) {
-				to_erase = p.get_slicec('/', 1).to_int();
-				cd_remove->set_text(vformat(TTR("Remove item %d?"), to_erase));
-				cd_remove->popup_centered(Size2(300, 60));
-			}
-		} break;
 		case MENU_OPTION_IMPORT_FROM_SCENE: {
 			apply_xforms = false;
 			file->popup_file_dialog();
@@ -280,9 +259,6 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	menu->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MeshLibrary"), EditorStringName(EditorIcons)));
 	menu->set_flat(false);
 	menu->set_theme_type_variation("FlatMenuButtonNoIconTint");
-	menu->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
-	menu->get_popup()->add_item(TTR("Remove Selected Item"), MENU_OPTION_REMOVE_ITEM);
-	menu->get_popup()->add_separator();
 	menu->get_popup()->add_item(TTR("Import from Scene (Ignore Transforms)"), MENU_OPTION_IMPORT_FROM_SCENE);
 	menu->get_popup()->add_item(TTR("Import from Scene (Apply Transforms)"), MENU_OPTION_IMPORT_FROM_SCENE_APPLY_XFORMS);
 	menu->get_popup()->add_item(TTR("Update from Scene"), MENU_OPTION_UPDATE_FROM_SCENE);
@@ -290,9 +266,6 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &MeshLibraryEditor::_menu_cbk));
 	menu->hide();
 
-	cd_remove = memnew(ConfirmationDialog);
-	add_child(cd_remove);
-	cd_remove->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &MeshLibraryEditor::_menu_remove_confirm));
 	cd_update = memnew(ConfirmationDialog);
 	add_child(cd_update);
 	cd_update->set_ok_button_text(TTR("Apply without Transforms"));
