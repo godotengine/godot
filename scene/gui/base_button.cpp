@@ -35,6 +35,7 @@
 #include "core/object/class_db.h"
 #include "scene/gui/label.h"
 #include "scene/main/timer.h"
+#include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 
 void BaseButton::_unpress_group() {
@@ -359,6 +360,15 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 	}
 }
 
+bool BaseButton::has_point(const Point2 &p_point) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	bool ret;
+	if (GDVIRTUAL_CALL(_has_point, p_point, ret)) {
+		return ret;
+	}
+	return Rect2(Point2(), get_size()).grow(theme_cache.hit_margin).has_point(p_point);
+}
+
 void BaseButton::set_toggle_mode(bool p_on) {
 	// Make sure to set 'pressed' to false if we are not in toggle mode
 	if (!p_on) {
@@ -588,6 +598,8 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, Shortcut::get_class_static()), "set_shortcut", "get_shortcut");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_feedback"), "set_shortcut_feedback", "is_shortcut_feedback");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_in_tooltip"), "set_shortcut_in_tooltip", "is_shortcut_in_tooltip_enabled");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, BaseButton, hit_margin);
 
 	BIND_ENUM_CONSTANT(DRAW_NORMAL);
 	BIND_ENUM_CONSTANT(DRAW_PRESSED);
