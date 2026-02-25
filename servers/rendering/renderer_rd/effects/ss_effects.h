@@ -31,6 +31,9 @@
 #pragma once
 
 #include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
+#include "servers/rendering/renderer_rd/shaders/effects/gtao.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/gtao_blur.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/gtao_interleave.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection_downsample.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection_filter.glsl.gen.h"
@@ -52,6 +55,7 @@
 #define RB_SCOPE_SSDS SNAME("rb_ssds")
 #define RB_SCOPE_SSIL SNAME("rb_ssil")
 #define RB_SCOPE_SSAO SNAME("rb_ssao")
+#define RB_SCOPE_GTAO SNAME("rb_gtao")
 #define RB_SCOPE_SSR SNAME("rb_ssr")
 
 #define RB_LINEAR_DEPTH SNAME("linear_depth")
@@ -62,6 +66,8 @@
 #define RB_EDGES SNAME("edges")
 #define RB_IMPORTANCE_MAP SNAME("importance_map")
 #define RB_IMPORTANCE_PONG SNAME("importance_pong")
+#define RB_AO_TERM SNAME("gtao_term")
+#define RB_AO_TERM_PONG SNAME("gtao_term_pong")
 
 #define RB_NORMAL_ROUGHNESS SNAME("normal_roughness")
 #define RB_HIZ SNAME("hiz")
@@ -117,9 +123,9 @@ public:
 	void screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_render_buffers, SSILRenderBuffers &p_ssil_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const Projection &p_last_projection, const SSILSettings &p_settings);
 
 	/* SSAO */
-	void ssao_set_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to);
+	void ssao_set_quality(RS::EnvironmentSSAOQuality p_quality, RS::EnvironmentSSAOType p_type, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to);
 
-	struct SSAORenderBuffers {
+	struct AORenderBuffers {
 		bool half_size = false;
 		int buffer_width;
 		int buffer_height;
@@ -127,19 +133,24 @@ public:
 		int half_buffer_height;
 	};
 
-	struct SSAOSettings {
+	struct AOSettings {
 		float radius = 1.0;
 		float intensity = 2.0;
 		float power = 1.5;
 		float detail = 0.5;
 		float horizon = 0.06;
 		float sharpness = 0.98;
+		float thickness = 0.5;
 
 		Size2i full_screen_size;
 	};
 
-	void ssao_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORenderBuffers &p_ssao_buffers, const SSAOSettings &p_settings);
-	void generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORenderBuffers &p_ssao_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const SSAOSettings &p_settings);
+	void ao_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, AORenderBuffers &p_ssao_buffers, const AOSettings &p_settings);
+	void generate_assao(Ref<RenderSceneBuffersRD> p_render_buffers, AORenderBuffers &p_ssao_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const AOSettings &p_settings);
+
+	void generate_gtao(Ref<RenderSceneBuffersRD> p_render_buffers, AORenderBuffers &p_gtao_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const AOSettings &p_settings);
+
+	void generate_ao(Ref<RenderSceneBuffersRD> p_render_buffers, AORenderBuffers &p_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const AOSettings &p_settings);
 
 	/* Screen Space Reflection */
 	void ssr_set_half_size(bool p_half_size);
@@ -164,6 +175,7 @@ private:
 	/* Settings */
 
 	RS::EnvironmentSSAOQuality ssao_quality = RS::ENV_SSAO_QUALITY_MEDIUM;
+	RS::EnvironmentSSAOType ssao_type = RS::ENV_SSAO_TYPE_ASSAO;
 	bool ssao_half_size = false;
 	float ssao_adaptive_target = 0.5;
 	int ssao_blur_passes = 2;
@@ -415,7 +427,73 @@ private:
 		PipelineDeferredRD pipelines[SSAO_MAX];
 	} ssao;
 
-	void gather_ssao(RD::ComputeListID p_compute_list, const RID *p_ao_slices, const SSAOSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set);
+	void gather_ssao(RD::ComputeListID p_compute_list, const RID *p_ao_slices, const AOSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set);
+
+	/* GTAO */
+
+	struct GTAOBasePushConstant {
+		int32_t screen_size[2];
+		int32_t quality;
+		uint32_t is_orthogonal;
+
+		float viewport_pixel_size[2];
+		int pass;
+		int pad;
+
+		int pass_coord_offset[2];
+		int size_multiplier;
+		float fov_scale;
+
+		float NDC_to_view_mul[2];
+		float NDC_to_view_add[2];
+
+		float radius;
+		float intensity;
+		float shadow_power;
+		float shadow_clamp;
+
+		float fade_out_mul;
+		float fade_out_add;
+		float inv_radius_near_limit;
+		float thickness_heuristic;
+	};
+
+	struct GTAOBlurPushConstant {
+		float viewport_pixel_size[2];
+		float blur_beta;
+		int pad;
+	};
+
+	struct GTAOInterleavePushConstant {
+		float pixel_size[2];
+		uint32_t size_modifier;
+		int pad;
+	};
+
+	enum GTAOMode {
+		GTAO_BASE,
+		GTAO_BLUR,
+		GTAO_BLUR_FINAL,
+		GTAO_INTERLEAVE,
+		GTAO_MAX
+	};
+
+	struct GTAO {
+		GTAOBasePushConstant base_push_constant;
+		GtaoShaderRD base_shader;
+		RID base_shader_version;
+
+		GTAOBlurPushConstant blur_push_constant;
+		GtaoBlurShaderRD blur_shader;
+		RID blur_shader_version;
+
+		GTAOInterleavePushConstant interleave_push_constant;
+		GtaoInterleaveShaderRD interleave_shader;
+		RID interleave_shader_version;
+
+		PipelineDeferredRD pipelines[GTAO_MAX];
+		RID point_clamp_sampler;
+	} gtao;
 
 	/* Screen Space Reflection */
 
