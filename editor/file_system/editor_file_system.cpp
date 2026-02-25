@@ -3697,6 +3697,8 @@ void EditorFileSystem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_filesystem_path", "path"), &EditorFileSystem::get_filesystem_path);
 	ClassDB::bind_method(D_METHOD("get_file_type", "path"), &EditorFileSystem::get_file_type);
 	ClassDB::bind_method(D_METHOD("reimport_files", "files"), &EditorFileSystem::reimport_files);
+	ClassDB::bind_method(D_METHOD("add_import_format_support_query", "query"), &EditorFileSystem::add_import_format_support_query);
+	ClassDB::bind_method(D_METHOD("remove_import_format_support_query", "query"), &EditorFileSystem::remove_import_format_support_query);
 
 	ADD_SIGNAL(MethodInfo("filesystem_changed"));
 	ADD_SIGNAL(MethodInfo("script_classes_updated"));
