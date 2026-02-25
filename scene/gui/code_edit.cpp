@@ -1368,6 +1368,7 @@ bool CodeEdit::is_drawing_executing_lines_gutter() const {
 }
 
 void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
+	// Note: this method uses pre-sorted draw, draw call order is ignored, use `canvas_item_set_presort_level` to specify draw order. See TextEdit::DrawStep.
 	bool hovering = get_hovered_gutter() == Vector2i(main_gutter, p_line);
 	RID ci = get_text_canvas_item();
 	if (draw_breakpoints && theme_cache.breakpoint_icon.is_valid()) {
@@ -1558,6 +1559,7 @@ int CodeEdit::get_line_numbers_min_digits() const {
 }
 
 void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
+	// Note: this method uses pre-sorted draw, draw call order is ignored, use `canvas_item_set_presort_level` to specify draw order. See TextEdit::DrawStep.
 	if (!Rect2(Vector2(0, 0), get_size()).intersects(p_region)) {
 		return;
 	}
@@ -1620,6 +1622,7 @@ bool CodeEdit::is_drawing_fold_gutter() const {
 }
 
 void CodeEdit::_fold_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_region) {
+	// Note: this method uses pre-sorted draw, draw call order is ignored, use `canvas_item_set_presort_level` to specify draw order. See TextEdit::DrawStep.
 	if (!can_fold_line(p_line) && !is_line_folded(p_line)) {
 		set_line_gutter_clickable(p_line, fold_gutter, false);
 		return;

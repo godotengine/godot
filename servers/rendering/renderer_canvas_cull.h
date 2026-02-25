@@ -63,6 +63,78 @@ public:
 
 		Vector<Item *> child_items;
 
+		struct PresortData {
+			Item::Command *command = nullptr;
+			int64_t level = 0;
+		};
+		struct PresortDataCompare {
+			_FORCE_INLINE_ bool operator()(const PresortData &l, const PresortData &r) const {
+				if (l.level == r.level) {
+					uint64_t l_rid = 0;
+					uint64_t r_rid = 0;
+					switch (l.command->type) {
+						case Item::Command::Type::TYPE_RECT: {
+							l_rid = static_cast<CommandRect *>(l.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_NINEPATCH: {
+							l_rid = static_cast<CommandNinePatch *>(l.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_POLYGON: {
+							l_rid = static_cast<CommandPolygon *>(l.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_PRIMITIVE: {
+							l_rid = static_cast<CommandPrimitive *>(l.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_MESH: {
+							l_rid = static_cast<CommandMesh *>(l.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_MULTIMESH: {
+							l_rid = static_cast<CommandMultiMesh *>(l.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_PARTICLES: {
+							l_rid = static_cast<CommandParticles *>(l.command)->texture.get_id();
+						} break;
+						default: {
+							l_rid = 0;
+						} break;
+					}
+					switch (r.command->type) {
+						case Item::Command::Type::TYPE_RECT: {
+							r_rid = static_cast<CommandRect *>(r.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_NINEPATCH: {
+							r_rid = static_cast<CommandNinePatch *>(r.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_POLYGON: {
+							r_rid = static_cast<CommandPolygon *>(r.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_PRIMITIVE: {
+							r_rid = static_cast<CommandPrimitive *>(r.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_MESH: {
+							r_rid = static_cast<CommandMesh *>(r.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_MULTIMESH: {
+							r_rid = static_cast<CommandMultiMesh *>(r.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_PARTICLES: {
+							r_rid = static_cast<CommandParticles *>(r.command)->texture.get_id();
+						} break;
+						default: {
+							r_rid = 0;
+						} break;
+					}
+					return l_rid < r_rid;
+				} else {
+					return l.level < r.level;
+				}
+			}
+		};
+
+		int64_t presort_level = -1;
+		Item::Command *presort_prev_command = nullptr;
+		LocalVector<PresortData> presort_commands;
+
 		struct VisibilityNotifierData {
 			Rect2 area;
 			Callable enter_callable;
@@ -277,6 +349,9 @@ public:
 	void canvas_item_add_set_transform(RID p_item, const Transform2D &p_transform);
 	void canvas_item_add_clip_ignore(RID p_item, bool p_ignore);
 	void canvas_item_add_animation_slice(RID p_item, double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset);
+
+	void canvas_item_set_presort_level(RID p_item, int64_t p_order);
+	void canvas_item_flush_presort(RID p_item);
 
 	void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable);
 	void canvas_item_set_z_index(RID p_item, int p_z);

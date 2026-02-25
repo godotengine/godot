@@ -374,7 +374,8 @@ public:
 
 		const Rect2 &get_rect() const;
 
-		Command *commands = nullptr;
+		Command *heap_command = nullptr;
+		Command *first_command = nullptr;
 		Command *last_command = nullptr;
 		Vector<CommandBlock> blocks;
 		uint32_t current_block;
@@ -385,13 +386,14 @@ public:
 		template <typename T>
 		T *alloc_command() {
 			T *command = nullptr;
-			if (commands == nullptr) {
+			if (heap_command == nullptr) {
 				// As the most common use case of canvas items is to
 				// use only one command, the first is done with it's
 				// own allocation. The rest of them use blocks.
 				command = memnew(T);
 				command->next = nullptr;
-				commands = command;
+				heap_command = command;
+				first_command = command;
 				last_command = command;
 			} else {
 				//Subsequent commands go into a block.
@@ -430,14 +432,14 @@ public:
 		}
 
 		void clear() {
-			// The first one is always allocated on heap
+			// The `heap_command` is always allocated on heap
 			// the rest go in the blocks
-			Command *c = commands;
+			Command *c = first_command;
 			while (c) {
 				Command *n = c->next;
-				if (c == commands) {
-					memdelete(commands);
-					commands = nullptr;
+				if (c == heap_command) {
+					memdelete(heap_command);
+					heap_command = nullptr;
 				} else {
 					c->~Command();
 				}
@@ -451,8 +453,9 @@ public:
 				}
 			}
 
+			heap_command = nullptr;
 			last_command = nullptr;
-			commands = nullptr;
+			first_command = nullptr;
 			current_block = 0;
 			clip = false;
 			rect_dirty = true;
@@ -465,8 +468,9 @@ public:
 		RSE::CanvasItemTextureRepeat texture_repeat;
 
 		Item() {
-			commands = nullptr;
+			heap_command = nullptr;
 			last_command = nullptr;
+			first_command = nullptr;
 			current_block = 0;
 			light_mask = 1;
 			vp_render = nullptr;

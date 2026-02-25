@@ -1323,6 +1323,7 @@ void TextEdit::_notification(int p_what) {
 			_draw_guidelines();
 
 			// Draw main text.
+			// Note: the rest of this method uses pre-sorted draw, draw call order is ignored, use `canvas_item_set_presort_level` to specify draw order.
 			line_drawing_cache.clear();
 			int row_height = draw_placeholder ? placeholder_line_height + theme_cache.line_spacing : get_line_height();
 			int line = first_vis_line;
@@ -1395,6 +1396,7 @@ void TextEdit::_notification(int p_what) {
 						break;
 					}
 
+					RenderingServer::get_singleton()->canvas_item_set_presort_level(text_ci, DRAW_STEP_LINE_BACKGROUND);
 					if (text.get_line_background_color(line).a > 0.0) {
 						if (rtl) {
 							RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - xmargin_end, ofs_y, xmargin_end - xmargin_beg, row_height), text.get_line_background_color(line));
@@ -1404,6 +1406,7 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					// Draw current line highlight.
+					RenderingServer::get_singleton()->canvas_item_set_presort_level(text_ci, DRAW_STEP_LINE_HIGHLIGHT);
 					if (highlight_current_line && highlighted_lines.has(Pair<int, int>(line, line_wrap_index))) {
 						if (rtl) {
 							RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - xmargin_end, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
@@ -1438,8 +1441,10 @@ void TextEdit::_notification(int p_what) {
 
 									int yofs = ofs_y + (row_height - tl->get_size().y) / 2;
 									if (theme_cache.outline_size > 0 && theme_cache.outline_color.a > 0) {
+										RenderingServer::get_singleton()->canvas_item_set_presort_level(text_ci, DRAW_STEP_TEXT_OUTLINE);
 										tl->draw_outline(text_ci, Point2(gutter_offset, yofs), theme_cache.outline_size, theme_cache.outline_color);
 									}
+									RenderingServer::get_singleton()->canvas_item_set_presort_level(text_ci, DRAW_STEP_TEXT);
 									tl->draw(text_ci, Point2(gutter_offset, yofs), get_line_gutter_item_color(line, g));
 								} break;
 								case GUTTER_TYPE_ICON: {
@@ -1467,7 +1472,7 @@ void TextEdit::_notification(int p_what) {
 									if (rtl) {
 										gutter_rect.position.x = size.width - gutter_rect.position.x - gutter_rect.size.x;
 									}
-
+									RenderingServer::get_singleton()->canvas_item_set_presort_level(text_ci, DRAW_STEP_TEXT);
 									icon->draw_rect(text_ci, gutter_rect, false, get_line_gutter_item_color(line, g));
 								} break;
 								case GUTTER_TYPE_CUSTOM: {
@@ -1476,6 +1481,7 @@ void TextEdit::_notification(int p_what) {
 										if (rtl) {
 											gutter_rect.position.x = size.width - gutter_rect.position.x - gutter_rect.size.x;
 										}
+										RenderingServer::get_singleton()->canvas_item_set_presort_level(text_ci, DRAW_STEP_TEXT);
 										gutter.custom_draw_callback.call(line, g, Rect2(gutter_rect));
 									}
 								} break;
@@ -1509,6 +1515,7 @@ void TextEdit::_notification(int p_what) {
 
 					// Draw selections.
 					float char_w = theme_cache.font->get_char_size(' ', theme_cache.font_size).width;
+					RenderingServer::get_singleton()->canvas_item_set_presort_level(text_ci, DRAW_STEP_TEXT_SELECTION);
 					for (int c = 0; c < get_caret_count(); c++) {
 						if (!clipped && has_selection(c) && line >= get_selection_from_line(c) && line <= get_selection_to_line(c)) {
 							int sel_from = (line > get_selection_from_line(c)) ? TS->shaped_text_get_range(rid).x : get_selection_from_column(c);
@@ -1551,6 +1558,7 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					int start = TS->shaped_text_get_range(rid).x;
+					RenderingServer::get_singleton()->canvas_item_set_presort_level(text_ci, DRAW_STEP_SEARCH_HIGHLIGHT);
 					if (!clipped && !search_text.is_empty()) { // Search highlight
 						int search_text_col = _get_column_pos_of_word(search_text, str, search_flags, 0);
 						int search_text_len = search_text.length();
@@ -1637,6 +1645,7 @@ void TextEdit::_notification(int p_what) {
 					int last_visible_char = TS->shaped_text_get_range(rid).x;
 
 					float char_ofs = 0;
+					RenderingServer::get_singleton()->canvas_item_set_presort_level(text_ci, DRAW_STEP_TEXT_OUTLINE);
 					if (theme_cache.outline_size > 0 && theme_cache.outline_color.a > 0) {
 						for (int j = 0; j < gl_size; j++) {
 							for (int k = 0; k < glyphs[j].repeat; k++) {
@@ -1663,6 +1672,7 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
+					RenderingServer::get_singleton()->canvas_item_set_presort_level(text_ci, DRAW_STEP_TEXT);
 					for (int j = 0; j < gl_size; j++) {
 						for (const Pair<int64_t, Color> &color_data : color_map) {
 							if (color_data.first <= glyphs[j].start) {
@@ -1753,6 +1763,7 @@ void TextEdit::_notification(int p_what) {
 					cache_entry.first_visible_chars.push_back(first_visible_char);
 					cache_entry.last_visible_chars.push_back(last_visible_char);
 
+					RenderingServer::get_singleton()->canvas_item_set_presort_level(text_ci, DRAW_STEP_TEXT_OVERLAY);
 					// is_line_folded
 					if (line_wrap_index == line_wrap_amount && line < text.size() - 1 && _is_line_hidden(line + 1)) {
 						int xofs = char_ofs + char_margin + (_get_folded_eol_icon()->get_width() / 2);
@@ -1937,6 +1948,7 @@ void TextEdit::_notification(int p_what) {
 					line_drawing_cache[line] = cache_entry;
 				}
 			}
+			RenderingServer::get_singleton()->canvas_item_flush_presort(text_ci);
 
 			if (has_focus()) {
 				_update_ime_window_position();

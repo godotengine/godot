@@ -789,6 +789,7 @@ void Label::_notification(int p_what) {
 			int visible_glyphs = total_glyphs * visible_ratio;
 
 			int line_index = 0;
+			// Note: the rest of this method uses pre-sorted draw, draw call order is ignored, use `canvas_item_set_presort_level` to specify draw order.
 			for (int p = 0; p < paragraphs.size(); p++) {
 				const Paragraph &para = paragraphs[p];
 				if (line_index + para.lines_rid.size() <= lines_skipped) {
@@ -828,12 +829,17 @@ void Label::_notification(int p_what) {
 						int processed_glyphs_step = 0;
 
 						// Draw shadow outline.
+						int draw_step = 0;
 						if (font_shadow_color.a != 0 && shadow_outline_size > 0) {
+							RenderingServer::get_singleton()->canvas_item_set_presort_level(ci, draw_step);
+							draw_step++;
 							draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_shadow_color, draw_glyph_shadow_outline, shadow_outline_size, shadow_ofs);
 						}
 
 						// Draw shadow.
 						if (font_shadow_color.a > 0) {
+							RenderingServer::get_singleton()->canvas_item_set_presort_level(ci, draw_step);
+							draw_step++;
 							draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_shadow_color, draw_glyph_shadow, shadow_ofs);
 						}
 
@@ -844,9 +850,12 @@ void Label::_notification(int p_what) {
 							for (int draw_iteration_index = draw_iterations - 1; draw_iteration_index >= 0; --draw_iteration_index) {
 								LabelSettings::StackedShadowData stacked_shadow_data = stacked_shadow_datas[draw_iteration_index];
 								if (stacked_shadow_data.outline_size > 0) {
+									RenderingServer::get_singleton()->canvas_item_set_presort_level(ci, draw_step);
+									draw_step++;
 									draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, stacked_shadow_data.color, draw_glyph_shadow_outline, stacked_shadow_data.outline_size, stacked_shadow_data.offset);
 								}
-
+								RenderingServer::get_singleton()->canvas_item_set_presort_level(ci, draw_step);
+								draw_step++;
 								draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, stacked_shadow_data.color, draw_glyph_shadow, stacked_shadow_data.offset);
 							}
 						}
@@ -870,6 +879,8 @@ void Label::_notification(int p_what) {
 								if (stacked_outline_data.size <= 0) {
 									continue;
 								}
+								RenderingServer::get_singleton()->canvas_item_set_presort_level(ci, draw_step);
+								draw_step++;
 								draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, stacked_outline_data.color, draw_glyph_outline, stacked_outline_draw_size);
 								stacked_outline_draw_size -= stacked_outline_data.size;
 							}
@@ -877,11 +888,15 @@ void Label::_notification(int p_what) {
 
 						// Draw outline.
 						if (outline_size > 0 && font_outline_color.a != 0) {
+							RenderingServer::get_singleton()->canvas_item_set_presort_level(ci, draw_step);
+							draw_step++;
 							draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_outline_color, draw_glyph_outline, outline_size);
 						}
 
 						// Draw text.
 						{
+							RenderingServer::get_singleton()->canvas_item_set_presort_level(ci, draw_step);
+							draw_step++;
 							draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_color, draw_glyph);
 						}
 
@@ -892,6 +907,7 @@ void Label::_notification(int p_what) {
 					line_index += para.lines_rid.size();
 				}
 			}
+			RenderingServer::get_singleton()->canvas_item_flush_presort(ci);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
