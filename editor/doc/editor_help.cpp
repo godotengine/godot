@@ -149,6 +149,11 @@ static String _fix_constant(const String &p_constant) {
 	return p_constant;
 }
 
+static String _format_contributing_message(const String &p_message, const String &p_link_color_text) {
+	const String url_replacement = vformat(R"([url href="%s" tooltip="%s"])", CONTRIBUTE_URL, String(CONTRIBUTE_URL) + "\n\n" + TTR("Click to open in browser."));
+	return p_message.replace("[url=$url]", url_replacement).replace("$color", p_link_color_text);
+}
+
 static void _add_qualifiers_to_rt(const String &p_qualifiers, RichTextLabel *p_rt) {
 	for (const String &qualifier : p_qualifiers.split_spaces()) {
 		String hint;
@@ -947,7 +952,7 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 						TTRC("There is currently no description for this constructor. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"),
 						TTRC("There is currently no description for this operator. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"),
 					};
-					message = TTRGET(messages_by_type[p_method_type]).replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text);
+					message = _format_contributing_message(TTRGET(messages_by_type[p_method_type]), link_color_text);
 				}
 
 				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
@@ -1107,7 +1112,7 @@ void EditorHelp::_update_doc() {
 		if (cd.is_script_doc) {
 			class_desc->add_text(TTR("There is currently no description for this class."));
 		} else {
-			class_desc->append_text(TTR("There is currently no description for this class. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+			class_desc->append_text(_format_contributing_message(TTR("There is currently no description for this class. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"), link_color_text));
 		}
 		class_desc->pop(); // color
 
@@ -1118,12 +1123,13 @@ void EditorHelp::_update_doc() {
 	if (classes_with_csharp_differences.has(cd.name)) {
 		class_desc->add_newline();
 
-		const String &csharp_differences_url = vformat("%s/tutorials/scripting/c_sharp/c_sharp_differences.html", GODOT_VERSION_DOCS_URL);
+		const String csharp_differences_url = vformat("%s/tutorials/scripting/c_sharp/c_sharp_differences.html", GODOT_VERSION_DOCS_URL);
+		const String url_replacement = vformat(R"([url href="%s" tooltip="%s"])", csharp_differences_url, csharp_differences_url + "\n\n" + TTR("Click to open in browser."));
 
 		_push_normal_font();
 		class_desc->push_color(theme_cache.text_color);
 
-		class_desc->append_text("[b]" + TTR("Note:") + "[/b] " + vformat(TTR("There are notable differences when using this API with C#. See [url=%s]C# API differences to GDScript[/url] for more information."), csharp_differences_url));
+		class_desc->append_text("[b]" + TTR("Note:") + "[/b] " + TTR("There are notable differences when using this API with C#. See [url=%s]C# API differences to GDScript[/url] for more information.").replace("[url=%s]", url_replacement));
 
 		class_desc->pop(); // color
 		_pop_normal_font();
@@ -1169,7 +1175,9 @@ void EditorHelp::_update_doc() {
 			}
 
 			_add_bulletpoint();
-			class_desc->append_text("[url=" + link + "]" + link_text + "[/url]");
+			class_desc->push_meta(link, RichTextLabel::META_UNDERLINE_ON_HOVER, link + "\n\n" + TTR("Click to open in browser."));
+			class_desc->add_text(link_text);
+			class_desc->pop(); // meta
 		}
 
 		class_desc->pop(); // color
@@ -1515,7 +1523,7 @@ void EditorHelp::_update_doc() {
 				if (cd.is_script_doc) {
 					class_desc->add_text(TTR("There is currently no description for this theme property."));
 				} else {
-					class_desc->append_text(TTR("There is currently no description for this theme property. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+					class_desc->append_text(_format_contributing_message(TTR("There is currently no description for this theme property. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"), link_color_text));
 				}
 				class_desc->pop(); // color
 			}
@@ -1651,7 +1659,7 @@ void EditorHelp::_update_doc() {
 				if (cd.is_script_doc) {
 					class_desc->add_text(TTR("There is currently no description for this signal."));
 				} else {
-					class_desc->append_text(TTR("There is currently no description for this signal. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+					class_desc->append_text(_format_contributing_message(TTR("There is currently no description for this signal. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"), link_color_text));
 				}
 				class_desc->pop(); // color
 			}
@@ -2089,7 +2097,7 @@ void EditorHelp::_update_doc() {
 				if (cd.is_script_doc) {
 					class_desc->add_text(TTR("There is currently no description for this annotation."));
 				} else {
-					class_desc->append_text(TTR("There is currently no description for this annotation. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+					class_desc->append_text(_format_contributing_message(TTR("There is currently no description for this annotation. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"), link_color_text));
 				}
 				class_desc->pop(); // color
 			}
@@ -2291,7 +2299,7 @@ void EditorHelp::_update_doc() {
 				if (cd.is_script_doc) {
 					class_desc->add_text(TTR("There is currently no description for this property."));
 				} else {
-					class_desc->append_text(TTR("There is currently no description for this property. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+					class_desc->append_text(_format_contributing_message(TTR("There is currently no description for this property. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"), link_color_text));
 				}
 				class_desc->pop(); // color
 			}
