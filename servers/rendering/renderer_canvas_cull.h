@@ -63,6 +63,95 @@ public:
 
 		Vector<Item *> child_items;
 
+		struct PresortData {
+			Item::Command *command = nullptr;
+			int32_t level = 0;
+			int32_t state = -1;
+		};
+		struct PresortDataCompare {
+			_FORCE_INLINE_ bool operator()(const PresortData &l, const PresortData &r) const {
+				if (l.level == r.level) {
+					uint64_t l_rid = 0;
+					uint64_t r_rid = 0;
+					switch (l.command->type) {
+						case Item::Command::Type::TYPE_RECT: {
+							l_rid = static_cast<CommandRect *>(l.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_NINEPATCH: {
+							l_rid = static_cast<CommandNinePatch *>(l.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_POLYGON: {
+							l_rid = static_cast<CommandPolygon *>(l.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_PRIMITIVE: {
+							l_rid = static_cast<CommandPrimitive *>(l.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_MESH: {
+							l_rid = static_cast<CommandMesh *>(l.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_MULTIMESH: {
+							l_rid = static_cast<CommandMultiMesh *>(l.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_PARTICLES: {
+							l_rid = static_cast<CommandParticles *>(l.command)->texture.get_id();
+						} break;
+						default: {
+							l_rid = 0;
+						} break;
+					}
+					switch (r.command->type) {
+						case Item::Command::Type::TYPE_RECT: {
+							r_rid = static_cast<CommandRect *>(r.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_NINEPATCH: {
+							r_rid = static_cast<CommandNinePatch *>(r.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_POLYGON: {
+							r_rid = static_cast<CommandPolygon *>(r.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_PRIMITIVE: {
+							r_rid = static_cast<CommandPrimitive *>(r.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_MESH: {
+							r_rid = static_cast<CommandMesh *>(r.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_MULTIMESH: {
+							r_rid = static_cast<CommandMultiMesh *>(r.command)->texture.get_id();
+						} break;
+						case Item::Command::Type::TYPE_PARTICLES: {
+							r_rid = static_cast<CommandParticles *>(r.command)->texture.get_id();
+						} break;
+						default: {
+							r_rid = 0;
+						} break;
+					}
+					return l_rid < r_rid;
+				} else {
+					return l.level < r.level;
+				}
+			}
+		};
+
+		struct PresortState {
+			Transform2D transform;
+			bool clip_ignore = false;
+			double animation_length = 0.0;
+			double slice_begin = 0.0;
+			double slice_end = 0.0;
+			double offset = 0.0;
+
+			_FORCE_INLINE_ bool is_base_state() const {
+				return transform == Transform2D() && !clip_ignore && animation_length == 0.0 && slice_begin == 0.0 && slice_end == 0.0 && offset == 0.0;
+			}
+		};
+
+		int32_t presort_level = -1;
+		int32_t presort_state = -1;
+		Item::Command *presort_prev_command = nullptr;
+		Item::PresortState presort_prev_state;
+		LocalVector<PresortData> presort_commands;
+		LocalVector<PresortState> presort_states;
+
 		struct VisibilityNotifierData {
 			Rect2 area;
 			Callable enter_callable;
@@ -104,6 +193,16 @@ public:
 			dependency_tracker.deleted_callback = &RendererCanvasCull::_dependency_deleted;
 		}
 	};
+
+	_FORCE_INLINE_ void _insert_command(Item *p_canvas_item, Item::Command **r_prev_command, Item::Command *p_command) const {
+		if (*r_prev_command) {
+			(*r_prev_command)->next = p_command;
+		} else {
+			p_canvas_item->first_command = p_command;
+		}
+		*r_prev_command = p_command;
+	}
+	void _update_presort_state(Item *p_canvas_item, int32_t p_old_state, int32_t p_new_state, Item::Command **r_prev_command);
 
 	void _item_queue_update(Item *p_item, bool p_update_dependencies);
 	SelfList<Item>::List _item_update_list;
@@ -279,6 +378,9 @@ public:
 	void canvas_item_add_set_transform(RID p_item, const Transform2D &p_transform);
 	void canvas_item_add_clip_ignore(RID p_item, bool p_ignore);
 	void canvas_item_add_animation_slice(RID p_item, double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset);
+
+	void canvas_item_set_presort_level(RID p_item, int64_t p_order);
+	void canvas_item_flush_presort(RID p_item);
 
 	void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable);
 	void canvas_item_set_z_index(RID p_item, int p_z);

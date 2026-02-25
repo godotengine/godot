@@ -1519,11 +1519,13 @@ void LineEdit::_notification(int p_what) {
 			int gl_size = TS->shaped_text_get_glyph_count(text_rid);
 
 			// Draw text.
+			// Note: part of this method between this comment and `canvas_item_flush_presort` call uses pre-sorted draw, draw call order is ignored, use `canvas_item_set_presort_level` to specify draw order.
 			ofs.y += TS->shaped_text_get_ascent(text_rid);
 			Color font_outline_color = theme_cache.font_outline_color;
 			int outline_size = theme_cache.font_outline_size;
 			if (outline_size > 0 && font_outline_color.a > 0) {
 				Vector2 oofs = ofs;
+				RenderingServer::get_singleton()->canvas_item_set_presort_level(ci, DRAW_STEP_OUTLINE);
 				for (int i = 0; i < gl_size; i++) {
 					for (int j = 0; j < glyphs[i].repeat; j++) {
 						if (std::ceil(oofs.x) >= x_ofs && (oofs.x + glyphs[i].advance) <= ofs_max) {
@@ -1538,6 +1540,7 @@ void LineEdit::_notification(int p_what) {
 					}
 				}
 			}
+			RenderingServer::get_singleton()->canvas_item_set_presort_level(ci, DRAW_STEP_TEXT);
 			for (int i = 0; i < gl_size; i++) {
 				bool selected = selection.enabled && glyphs[i].start >= selection.begin && glyphs[i].end <= selection.end;
 				for (int j = 0; j < glyphs[i].repeat; j++) {
@@ -1554,6 +1557,7 @@ void LineEdit::_notification(int p_what) {
 					break;
 				}
 			}
+			RenderingServer::get_singleton()->canvas_item_flush_presort(ci);
 
 			// Draw carets.
 			ofs.x = x_ofs + scroll_offset;
