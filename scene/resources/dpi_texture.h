@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/templates/lru.h"
 #include "scene/resources/texture.h"
 
 class BitMap;
@@ -70,6 +69,7 @@ protected:
 
 public:
 	static Ref<DPITexture> create_from_string(const String &p_source, float p_scale = 1.0, float p_saturation = 1.0, const Dictionary &p_color_map = Dictionary());
+	void update(const String &p_source, float p_scale = 1.0, float p_saturation = 1.0, const Dictionary &p_color_map = Dictionary());
 
 	void set_source(const String &p_source);
 	String get_source() const;
