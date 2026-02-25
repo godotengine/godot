@@ -7,7 +7,7 @@
 		[Decal]s are used to project a texture onto a [Mesh] in the scene. Use Decals to add detail to a scene without affecting the underlying [Mesh]. They are often used to add weathering to building, add dirt or mud to the ground, or add variety to props. Decals can be moved at any time, making them suitable for things like blob shadows or laser sight dots.
 		They are made of an [AABB] and a group of [Texture2D]s specifying [Color], normal, ORM (ambient occlusion, roughness, metallic), and emission. Decals are projected within their [AABB] so altering the orientation of the Decal affects the direction in which they are projected. By default, Decals are projected down (i.e. from positive Y to negative Y).
 		The [Texture2D]s associated with the Decal are automatically stored in a texture atlas which is used for drawing the decals so all decals can be drawn at once. Godot uses clustered decals, meaning they are stored in cluster data and drawn when the mesh is drawn, they are not drawn as a post-processing effect after.
-		[b]Note:[/b] Decals cannot affect an underlying material's transparency, regardless of its transparency mode (alpha blend, alpha scissor, alpha hash, opaque pre-pass). This means translucent or transparent areas of a material will remain translucent or transparent even if an opaque decal is applied on them.
+		[b]Note:[/b] Decals can modify an underlying material's transparency based on their own alpha. If a decal's alpha is greater than the surface alpha at a given pixel, the decal's alpha will be used, allowing decals to make surfaces more opaque. This can be toggled using the [member keep_decal_opacity] property.
 		[b]Note:[/b] Decals are only supported in the Forward+ and Mobile rendering methods, not Compatibility. When using the Mobile rendering method, only 8 decals can be displayed on each mesh resource. Attempting to display more than 8 decals on a single mesh resource will result in decals flickering in and out as the camera moves.
 		[b]Note:[/b] When using the Mobile rendering method, decals will only correctly affect meshes whose visibility AABB intersects with the decal's AABB. If using a shader to deform the mesh in a way that makes it go outside its AABB, [member GeometryInstance3D.extra_cull_margin] must be increased on the mesh. Otherwise, the decal may not be visible on the mesh.
 	</description>
@@ -76,6 +76,9 @@
 		</member>
 		<member name="emission_energy" type="float" setter="set_emission_energy" getter="get_emission_energy" default="1.0">
 			Energy multiplier for the emission texture. This will make the decal emit light at a higher or lower intensity, independently of the albedo color. See also [member modulate].
+		</member>
+		<member name="keep_decal_opacity" type="bool" setter="set_keep_decal_opacity" getter="is_keep_decal_opacity_enabled" default="false">
+			If [code]true[/code], the alpha from the decal's [member texture_albedo] will override the surface's alpha for any pixel where the decal's alpha is greater. This ensures that the resulting pixels are at least as opaque as the decal, never less.
 		</member>
 		<member name="lower_fade" type="float" setter="set_lower_fade" getter="get_lower_fade" default="0.3">
 			Sets the curve over which the decal will fade as the surface gets further from the center of the [AABB]. Only positive values are valid (negative values will be clamped to [code]0.0[/code]). See also [member upper_fade].
