@@ -239,3 +239,136 @@ void DrawableTexture2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DRAWABLE_FORMAT_RGBAH);
 	BIND_ENUM_CONSTANT(DRAWABLE_FORMAT_RGBAF);
 }
+
+Image::Format DrawableTextureArray::get_format() const {
+	Image::Format ret_format;
+	switch (format) {
+		case DrawableTexture2D::DRAWABLE_FORMAT_RGBA8:
+			ret_format = Image::FORMAT_RGBA8;
+			break;
+		case DrawableTexture2D::DRAWABLE_FORMAT_RGBA8_SRGB:
+			ret_format = Image::FORMAT_RGBA8;
+			break;
+		case DrawableTexture2D::DRAWABLE_FORMAT_RGBAH:
+			ret_format = Image::FORMAT_RGBAH;
+			break;
+		case DrawableTexture2D::DRAWABLE_FORMAT_RGBAF:
+			ret_format = Image::FORMAT_RGBAF;
+			break;
+		default:
+			ret_format = Image::FORMAT_RGBA8;
+	}
+
+	return ret_format;
+}
+
+int DrawableTextureArray::get_width() const {
+	return width;
+}
+
+int DrawableTextureArray::get_height() const {
+	return height;
+}
+
+int DrawableTextureArray::get_layers() const {
+	return layers;
+}
+
+bool DrawableTextureArray::has_mipmaps() const {
+	return mipmaps;
+}
+
+DrawableTextureArray::LayeredType DrawableTextureArray::get_layered_type() const {
+	return layered_type;
+}
+
+TypedArray<Image> DrawableTextureArray::_get_images() const {
+	TypedArray<Image> images;
+	for (int i = 0; i < layers; i++) {
+		images.push_back(get_layer_data(i));
+	}
+	return images;
+}
+
+// Setup basic parameters on the Drawable Texture
+void DrawableTextureArray::setup(int p_width, int p_height, DrawableTexture2D::DrawableFormat p_format, int p_layers, DrawableTextureArray::LayeredType p_layer_type, bool p_use_mipmaps) {
+	ERR_FAIL_COND_MSG(p_width <= 0 || p_width > 16384, "Texture dimensions have to be within 1 to 16384 range.");
+	ERR_FAIL_COND_MSG(p_height <= 0 || p_height > 16384, "Texture dimensions have to be within 1 to 16384 range.");
+	width = p_width;
+	height = p_height;
+	format = p_format;
+	layers = p_layers;
+	layered_type = p_layer_type;
+	mipmaps = p_use_mipmaps;
+	if (texture.is_valid()) {
+		RID new_texture = RS::get_singleton()->texture_drawable_layered_create(width, height, (RS::TextureDrawableFormat)format, layers, RS::TextureLayeredType(p_layer_type), mipmaps);
+		RS::get_singleton()->texture_replace(texture, new_texture);
+	} else {
+		texture = RS::get_singleton()->texture_drawable_layered_create(width, height, (RS::TextureDrawableFormat)format, layers, RS::TextureLayeredType(p_layer_type), mipmaps);
+	}
+	notify_property_list_changed();
+	emit_changed();
+}
+
+void DrawableTextureArray::blit_rect_layers(const Vector<int> &p_layers, const Rect2i p_rect, const TypedArray<Texture2D> &p_sources, const Color &p_modulate, int p_mipmap, const Ref<Material> &p_material) {
+	RID material = default_material;
+	if (!p_material.is_null()) {
+		material = p_material->get_rid();
+		if (p_material->get_shader_mode() != Shader::MODE_TEXTURE_BLIT) {
+			WARN_PRINT("ShaderMaterial passed to blit_rect() is not a texture_blit shader. Using default instead");
+		}
+	}
+
+	int i = 0;
+	Array src_textures;
+	while (i < p_sources.size()) {
+		if (Ref<AtlasTexture>(p_sources[i]).is_valid()) {
+			WARN_PRINT("AtlasTexture not supported as a source for blit_rect. Using default Black");
+			src_textures.push_back(RID());
+		} else {
+			src_textures.push_back(RID(p_sources[i]));
+		}
+		ERR_FAIL_COND_MSG(texture == RID(src_textures[i]), "Cannot use self as a source");
+		i += 1;
+	}
+
+	RS::get_singleton()->texture_drawable_layered_blit_rect_layers(texture, p_layers, p_rect, material, p_modulate, src_textures, p_mipmap);
+	notify_property_list_changed();
+}
+
+Ref<Image> DrawableTextureArray::get_layer_data(int p_layer) const {
+	ERR_FAIL_INDEX_V(p_layer, layers, Ref<Image>());
+	return RS::get_singleton()->texture_2d_layer_get(texture, p_layer);
+}
+
+RID DrawableTextureArray::get_rid() const {
+	if (texture.is_null()) {
+		texture = RS::get_singleton()->texture_2d_layered_placeholder_create(RS::TextureLayeredType(RS::TEXTURE_LAYERED_2D_ARRAY));
+	}
+	return texture;
+}
+
+void DrawableTextureArray::generate_mipmaps() {
+	if (texture.is_valid()) {
+		RS::get_singleton()->texture_drawable_generate_mipmaps(texture);
+	}
+}
+
+void DrawableTextureArray::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("setup", "width", "height", "format", "layers", "layers_type", "use_mipmaps"), &DrawableTextureArray::setup);
+	ClassDB::bind_method(D_METHOD("blit_rect_layers", "layers", "rect", "sources", "modulate", "mipmap", "material"), &DrawableTextureArray::blit_rect_layers, DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Ref<Material>()));
+	ClassDB::bind_method(D_METHOD("generate_mipmaps"), &DrawableTextureArray::generate_mipmaps);
+
+	ClassDB::bind_method(D_METHOD("_get_images"), &DrawableTextureArray::_get_images);
+}
+
+DrawableTextureArray::DrawableTextureArray() {
+	default_material = RS::get_singleton()->texture_drawable_get_default_material();
+}
+
+DrawableTextureArray::~DrawableTextureArray() {
+	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
+		RS::get_singleton()->free_rid(texture);
+	}
+}

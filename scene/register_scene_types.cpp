@@ -1063,6 +1063,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CameraTexture);
 	GDREGISTER_CLASS(ExternalTexture);
 	GDREGISTER_CLASS(DrawableTexture2D);
+	GDREGISTER_CLASS(DrawableTextureArray);
 	GDREGISTER_VIRTUAL_CLASS(TextureLayered);
 	GDREGISTER_ABSTRACT_CLASS(ImageTextureLayered);
 	GDREGISTER_VIRTUAL_CLASS(Texture3D);

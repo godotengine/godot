@@ -551,6 +551,7 @@ public:
 	virtual void texture_external_initialize(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_initialize(RID p_texture, RID p_base) override; //all slices, then all the mipmaps, must be coherent
 	virtual void texture_drawable_initialize(RID p_texture, int p_width, int p_height, RS::TextureDrawableFormat p_format, const Color &p_color, bool p_with_mipmaps) override;
+	virtual void texture_drawable_layered_initialize(RID p_texture, int p_width, int p_height, RS::TextureDrawableFormat p_format, int p_layers, RS::TextureLayeredType p_layered_type, bool p_with_mipmaps) override;
 
 	virtual RID texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY) override;
 
@@ -561,6 +562,7 @@ public:
 	void texture_remap_proxies(RID p_from_texture, RID p_to_texture);
 
 	virtual void texture_drawable_blit_rect(const TypedArray<RID> &p_textures, const Rect2i &p_rect, RID p_material, const Color &p_modulate, const TypedArray<RID> &p_source_textures, int p_to_mipmap) override;
+	virtual void texture_drawable_layered_blit_rect_layers(RID p_texture, const Vector<int> &p_layers, const Rect2i &p_rect, RID p_material, const Color &p_modulate, const TypedArray<RID> &p_source_textures, int p_to_mipmap) override;
 
 	Ref<Image> texture_2d_placeholder;
 	Vector<Ref<Image>> texture_2d_array_placeholder;
