@@ -117,7 +117,9 @@ void Parallax2D::_update_scroll() {
 		}
 	}
 
+	Point2 diff_ofs = screen_offset - scroll_ofs;
 	scroll_ofs *= scroll_scale;
+	scroll_ofs += diff_ofs * limit_scale;
 
 	if (repeat_size.x) {
 		real_t mod = Math::fposmod(scroll_ofs.x - scroll_offset.x, repeat_size.x * get_scale().x);
@@ -246,6 +248,14 @@ Point2 Parallax2D::get_limit_end() const {
 	return limit_end;
 }
 
+void Parallax2D::set_limit_scale(const Size2 &p_scale) {
+	limit_scale = p_scale;
+}
+
+Size2 Parallax2D::get_limit_scale() const {
+	return limit_scale;
+}
+
 void Parallax2D::set_follow_viewport(bool p_follow) {
 	follow_viewport = p_follow;
 }
@@ -280,6 +290,8 @@ void Parallax2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_limit_begin"), &Parallax2D::get_limit_begin);
 	ClassDB::bind_method(D_METHOD("set_limit_end", "offset"), &Parallax2D::set_limit_end);
 	ClassDB::bind_method(D_METHOD("get_limit_end"), &Parallax2D::get_limit_end);
+	ClassDB::bind_method(D_METHOD("set_limit_scale", "scale"), &Parallax2D::set_limit_scale);
+	ClassDB::bind_method(D_METHOD("get_limit_scale"), &Parallax2D::get_limit_scale);
 	ClassDB::bind_method(D_METHOD("set_follow_viewport", "follow"), &Parallax2D::set_follow_viewport);
 	ClassDB::bind_method(D_METHOD("get_follow_viewport"), &Parallax2D::get_follow_viewport);
 	ClassDB::bind_method(D_METHOD("set_ignore_camera_scroll", "ignore"), &Parallax2D::set_ignore_camera_scroll);
@@ -296,6 +308,7 @@ void Parallax2D::_bind_methods() {
 	ADD_GROUP("Limit", "limit_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "limit_begin", PROPERTY_HINT_NONE, "suffix:px"), "set_limit_begin", "get_limit_begin");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "limit_end", PROPERTY_HINT_NONE, "suffix:px"), "set_limit_end", "get_limit_end");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "limit_scale", PROPERTY_HINT_LINK), "set_limit_scale", "get_limit_scale");
 
 	ADD_GROUP("Override", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_viewport"), "set_follow_viewport", "get_follow_viewport");
