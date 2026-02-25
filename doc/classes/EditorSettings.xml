@@ -830,12 +830,12 @@
 			To enable this feature for your specific project, use [member ProjectSettings.filesystem/import/blender/enabled].
 			If this setting is empty, Blender's default paths will be detected and used automatically if present in this order:
 			[b]Windows:[/b]
-			[codeblock]
+			[codeblock lang=text]
 			- C:\Program Files\Blender Foundation\blender.exe
 			- C:\Program Files (x86)\Blender Foundation\blender.exe
 			[/codeblock]
 			[b]macOS:[/b]
-			[codeblock]
+			[codeblock lang=text]
 			- /opt/homebrew/bin/blender
 			- /opt/local/bin/blender
 			- /usr/local/bin/blender
@@ -843,7 +843,7 @@
 			- /Applications/Blender.app/Contents/MacOS/Blender
 			[/codeblock]
 			[b]Linux/*BSD:[/b]
-			[codeblock]
+			[codeblock lang=text]
 			- /usr/bin/blender
 			- /usr/local/bin/blender
 			- /opt/blender/bin/blender
