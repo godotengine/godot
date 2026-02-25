@@ -1773,6 +1773,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.renames["SHADOW_VERTEX"] = "shadow_vertex";
 		actions.renames["UV"] = "uv";
 		actions.renames["POINT_SIZE"] = "point_size";
+		actions.renames["POSITION"] = "position";
 
 		actions.renames["MODEL_MATRIX"] = "model_matrix";
 		actions.renames["CANVAS_MATRIX"] = "canvas_data.canvas_transform";
@@ -1826,6 +1827,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.usage_defines["POINT_SIZE"] = "#define USE_POINT_SIZE\n";
 		actions.usage_defines["CUSTOM0"] = "#define CUSTOM0_USED\n";
 		actions.usage_defines["CUSTOM1"] = "#define CUSTOM1_USED\n";
+		actions.usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
 
 		actions.render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
