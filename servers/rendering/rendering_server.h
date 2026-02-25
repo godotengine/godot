@@ -942,6 +942,15 @@ public:
 	virtual void camera_set_compositor(RID p_camera, RID p_compositor) = 0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
 
+	/* VIEWPORT UPSCALER API */
+
+	virtual RID viewport_upscaler_create() = 0;
+
+	virtual void viewport_upscaler_set_render_callback(RID p_viewport_upscaler, const Callable &p_callback) = 0;
+	virtual void viewport_upscaler_set_requires_motion_vectors(RID p_viewport_upscaler, bool p_requires_motion_vectors) = 0;
+	virtual void viewport_upscaler_set_mipmap_bias(RID p_viewport_upscaler, float p_mipmap_bias) = 0;
+	virtual void viewport_upscaler_set_jitter_phase_count(RID p_viewport_upscaler, uint32_t p_jitter_phase_count) = 0;
+
 	/* VIEWPORT API */
 
 	enum CanvasItemTextureFilter {
@@ -971,6 +980,7 @@ public:
 		VIEWPORT_SCALING_3D_MODE_FSR2,
 		VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL,
 		VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL,
+		VIEWPORT_SCALING_3D_MODE_CUSTOM,
 		VIEWPORT_SCALING_3D_MODE_MAX,
 		VIEWPORT_SCALING_3D_MODE_OFF = 255, // for internal use only
 	};
@@ -988,11 +998,14 @@ public:
 		VIEWPORT_SCALING_3D_TYPE_NONE,
 		VIEWPORT_SCALING_3D_TYPE_TEMPORAL,
 		VIEWPORT_SCALING_3D_TYPE_SPATIAL,
+		VIEWPORT_SCALING_3D_TYPE_CUSTOM,
 		VIEWPORT_SCALING_3D_TYPE_MAX,
 	};
 
 	_ALWAYS_INLINE_ static ViewportScaling3DType scaling_3d_mode_type(ViewportScaling3DMode p_mode) {
-		if (p_mode == VIEWPORT_SCALING_3D_MODE_BILINEAR || p_mode == VIEWPORT_SCALING_3D_MODE_FSR || p_mode == VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
+		if (p_mode == VIEWPORT_SCALING_3D_MODE_CUSTOM) {
+			return VIEWPORT_SCALING_3D_TYPE_CUSTOM;
+		} else if (p_mode == VIEWPORT_SCALING_3D_MODE_BILINEAR || p_mode == VIEWPORT_SCALING_3D_MODE_FSR || p_mode == VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
 			return VIEWPORT_SCALING_3D_TYPE_SPATIAL;
 		} else if (p_mode == VIEWPORT_SCALING_3D_MODE_FSR2 || p_mode == VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL) {
 			return VIEWPORT_SCALING_3D_TYPE_TEMPORAL;
@@ -1014,6 +1027,7 @@ public:
 
 	virtual void viewport_set_scaling_3d_mode(RID p_viewport, ViewportScaling3DMode p_scaling_3d_mode) = 0;
 	virtual void viewport_set_scaling_3d_scale(RID p_viewport, float p_scaling_3d_scale) = 0;
+	virtual void viewport_set_scaling_3d_custom_upscaler(RID p_viewport, RID p_viewport_upscaler) = 0;
 	virtual void viewport_set_fsr_sharpness(RID p_viewport, float p_fsr_sharpness) = 0;
 	virtual void viewport_set_texture_mipmap_bias(RID p_viewport, float p_texture_mipmap_bias) = 0;
 	virtual void viewport_set_anisotropic_filtering_level(RID p_viewport, ViewportAnisotropicFiltering p_anisotropic_filtering_level) = 0;

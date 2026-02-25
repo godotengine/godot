@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ViewportUpscaler" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for implementing viewport upscalers.
+	</brief_description>
+	<description>
+		This resource type allows you to implement a viewport upscaler that can be used if the 3D scaling mode of a viewport is set to [constant Viewport.SCALING_3D_MODE_CUSTOM].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_render_callback" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="render_data" type="RenderData" />
+			<description>
+				This method is called by the rendering thread, implement your upscale logic here. Use [method RenderSceneBuffersRD.get_color_layer] to access the rendering result and [method RenderSceneBuffersRD.get_upscaled_layer] to access the destination buffer.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="jitter_phase_count" type="int" setter="set_jitter_phase_count" getter="get_jitter_phase_count">
+			The jitter phase count that will be used for a viewport using this upscaler.
+		</member>
+		<member name="mipmap_bias" type="float" setter="set_mipmap_bias" getter="get_mipmap_bias">
+			The mipmap bias that will be subtracted from the computer mipmap bias for a viewport using this upscaler.
+		</member>
+		<member name="requires_motion_vectors" type="bool" setter="set_requires_motion_vectors" getter="get_requires_motion_vectors">
+			If [code]true[/code] this upscaler requires motion vectors.
+		</member>
+	</members>
+</class>

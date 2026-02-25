@@ -1759,8 +1759,10 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		SCALE_NONE,
 		SCALE_FSR2,
 		SCALE_MFX,
+		SCALE_CUSTOM,
 	} scale_type = SCALE_NONE;
 
+	RID custom_upscaler = rb->get_scaling_3d_custom_upscaler();
 	switch (rb->get_scaling_3d_mode()) {
 		case RS::VIEWPORT_SCALING_3D_MODE_FSR2:
 			scale_type = SCALE_FSR2;
@@ -1771,6 +1773,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 #else
 			scale_type = SCALE_NONE;
 #endif
+			break;
+		case RS::VIEWPORT_SCALING_3D_MODE_CUSTOM:
+			if (custom_upscaler.is_valid()) {
+				scale_type = SCALE_CUSTOM;
+			}
 			break;
 		default:
 			break;
@@ -1786,6 +1793,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		motion_vectors_required = true;
 	} else if (!is_reflection_probe && using_taa) {
 		motion_vectors_required = true;
+	} else if (!is_reflection_probe && scale_type == SCALE_CUSTOM) {
+		motion_vectors_required = RSG::viewport->viewport_upscaler_get_requires_motion_vectors(custom_upscaler);
 	} else if (!is_reflection_probe && using_upscaling) {
 		motion_vectors_required = true;
 	} else {
@@ -1812,7 +1821,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	bool using_voxelgi = false;
 	bool reverse_cull = p_render_data->scene_data->cam_transform.basis.determinant() < 0;
 	bool using_ssil = !is_reflection_probe && p_render_data->environment.is_valid() && environment_get_ssil_enabled(p_render_data->environment);
-	bool using_motion_pass = rb_data.is_valid() && using_upscaling;
+	bool using_motion_pass = rb_data.is_valid() && using_upscaling && motion_vectors_required;
 
 	if (is_reflection_probe) {
 		uint32_t resolution = light_storage->reflection_probe_instance_get_resolution(p_render_data->reflection_probe);
@@ -2430,7 +2439,10 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 
 	if (rb_data.is_valid() && (using_upscaling || using_taa)) {
-		if (scale_type == SCALE_FSR2) {
+		if (scale_type == SCALE_CUSTOM) {
+			Callable callback = RSG::viewport->viewport_upscaler_get_render_callback(custom_upscaler);
+			callback.call(p_render_data);
+		} else if (scale_type == SCALE_FSR2) {
 			rb_data->ensure_fsr2(fsr2_effect);
 
 			RID exposure;
@@ -2455,7 +2467,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				params.velocity = rb->get_velocity_buffer(false, v);
 				params.reactive = rb->get_internal_texture_reactive(v);
 				params.exposure = exposure;
-				params.output = rb->get_upscaled_texture(v);
+				params.output = rb->get_upscaled_layer(v);
 				params.z_near = p_render_data->scene_data->z_near;
 				params.z_far = p_render_data->scene_data->z_far;
 				params.fovy = fovy;
@@ -2496,7 +2508,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				params.depth = rb->get_depth_texture(v);
 				params.motion = rb->get_velocity_buffer(false, v);
 				params.exposure = exposure;
-				params.dst = rb->get_upscaled_texture(v);
+				params.dst = rb->get_upscaled_layer(v);
 				params.jitter_offset = jitter;
 				params.reset = reset;
 

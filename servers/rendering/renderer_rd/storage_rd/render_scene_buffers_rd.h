@@ -79,6 +79,7 @@ private:
 	// The internal size of the textures we render 3D to in case we render at a lower resolution and upscale
 	Size2i internal_size = Size2i(0, 0);
 	RS::ViewportScaling3DMode scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
+	RID scaling_3d_custom_upscaler;
 	float fsr_sharpness = 0.2f;
 	float texture_mipmap_bias = 0.0f;
 	RS::ViewportAnisotropicFiltering anisotropic_filtering_level = RS::VIEWPORT_ANISOTROPY_4X;
@@ -235,6 +236,7 @@ public:
 	_FORCE_INLINE_ Size2i get_internal_size() const { return internal_size; }
 	_FORCE_INLINE_ Size2i get_target_size() const { return target_size; }
 	_FORCE_INLINE_ RS::ViewportScaling3DMode get_scaling_3d_mode() const { return scaling_3d_mode; }
+	_FORCE_INLINE_ RID get_scaling_3d_custom_upscaler() const { return scaling_3d_custom_upscaler; }
 	_FORCE_INLINE_ float get_fsr_sharpness() const { return fsr_sharpness; }
 	_FORCE_INLINE_ RS::ViewportMSAA get_msaa_3d() const { return msaa_3d; }
 	_FORCE_INLINE_ RD::TextureSamples get_texture_samples() const { return texture_samples; }
@@ -303,7 +305,7 @@ public:
 	_FORCE_INLINE_ RID get_upscaled_texture() const {
 		return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_UPSCALED);
 	}
-	_FORCE_INLINE_ RID get_upscaled_texture(const uint32_t p_layer) {
+	_FORCE_INLINE_ RID get_upscaled_layer(const uint32_t p_layer) {
 		return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_UPSCALED, p_layer, 0);
 	}
 

@@ -32,6 +32,7 @@
 
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
+#include "scene/resources/viewport_upscaler.h"
 #include "servers/display/display_server.h"
 
 class AudioListener2D;
@@ -102,6 +103,7 @@ public:
 		SCALING_3D_MODE_FSR2,
 		SCALING_3D_MODE_METALFX_SPATIAL,
 		SCALING_3D_MODE_METALFX_TEMPORAL,
+		SCALING_3D_MODE_CUSTOM,
 		SCALING_3D_MODE_MAX
 	};
 
@@ -313,6 +315,7 @@ private:
 
 	Scaling3DMode scaling_3d_mode = SCALING_3D_MODE_BILINEAR;
 	float scaling_3d_scale = 1.0;
+	Ref<ViewportUpscaler> scaling_3d_custom_upscaler;
 	float fsr_sharpness = 0.2f;
 	float texture_mipmap_bias = 0.0f;
 	AnisotropicFiltering anisotropic_filtering_level = ANISOTROPY_4X;
@@ -586,6 +589,9 @@ public:
 
 	void set_scaling_3d_scale(float p_scaling_3d_scale);
 	float get_scaling_3d_scale() const;
+
+	void set_scaling_3d_custom_upscaler(const Ref<ViewportUpscaler> &p_upscaler);
+	Ref<ViewportUpscaler> get_scaling_3d_custom_upscaler() const;
 
 	void set_fsr_sharpness(float p_fsr_sharpness);
 	float get_fsr_sharpness() const;

@@ -63,6 +63,8 @@ void RenderSceneBuffersRD::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_depth_layer", "layer", "msaa"), &RenderSceneBuffersRD::_get_depth_layer, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_velocity_texture", "msaa"), &RenderSceneBuffersRD::_get_velocity_texture, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_velocity_layer", "layer", "msaa"), &RenderSceneBuffersRD::_get_velocity_layer, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_upscaled_texture"), &RenderSceneBuffersRD::get_upscaled_texture);
+	ClassDB::bind_method(D_METHOD("get_upscaled_layer", "layer"), &RenderSceneBuffersRD::get_upscaled_layer);
 
 	// Expose a few properties we're likely to use externally
 	ClassDB::bind_method(D_METHOD("get_render_target"), &RenderSceneBuffersRD::get_render_target);
@@ -70,6 +72,7 @@ void RenderSceneBuffersRD::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_internal_size"), &RenderSceneBuffersRD::get_internal_size);
 	ClassDB::bind_method(D_METHOD("get_target_size"), &RenderSceneBuffersRD::get_target_size);
 	ClassDB::bind_method(D_METHOD("get_scaling_3d_mode"), &RenderSceneBuffersRD::get_scaling_3d_mode);
+	ClassDB::bind_method(D_METHOD("get_scaling_3d_custom_upscaler"), &RenderSceneBuffersRD::get_scaling_3d_custom_upscaler);
 	ClassDB::bind_method(D_METHOD("get_fsr_sharpness"), &RenderSceneBuffersRD::get_fsr_sharpness);
 	ClassDB::bind_method(D_METHOD("get_msaa_3d"), &RenderSceneBuffersRD::get_msaa_3d);
 	ClassDB::bind_method(D_METHOD("get_texture_samples"), &RenderSceneBuffersRD::get_texture_samples);
@@ -102,7 +105,10 @@ void RenderSceneBuffersRD::free_named_texture(NamedTexture &p_named_texture) {
 void RenderSceneBuffersRD::update_samplers() {
 	float computed_mipmap_bias = texture_mipmap_bias;
 
-	if (use_taa || (RS::scaling_3d_mode_type(scaling_3d_mode) == RS::VIEWPORT_SCALING_3D_TYPE_TEMPORAL)) {
+	// Q: How do we do this for custom upscalers?
+	if (scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_CUSTOM && scaling_3d_custom_upscaler.is_valid()) {
+		computed_mipmap_bias -= RSG::viewport->viewport_upscaler_get_mipmap_bias(scaling_3d_custom_upscaler);
+	} else if (use_taa || (RS::scaling_3d_mode_type(scaling_3d_mode) == RS::VIEWPORT_SCALING_3D_TYPE_TEMPORAL)) {
 		// Use negative mipmap LOD bias when TAA or FSR2 is enabled to compensate for loss of sharpness.
 		// This restores sharpness in still images to be roughly at the same level as without TAA,
 		// but moving scenes will still be blurrier.
@@ -159,6 +165,7 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 	view_count = p_config->get_view_count();
 
 	scaling_3d_mode = p_config->get_scaling_3d_mode();
+	scaling_3d_custom_upscaler = p_config->get_scaling_3d_custom_upscaler();
 	msaa_3d = p_config->get_msaa_3d();
 	screen_space_aa = p_config->get_screen_space_aa();
 
@@ -513,7 +520,8 @@ void RenderSceneBuffersRD::allocate_blur_textures() {
 	}
 
 	Size2i blur_size = internal_size;
-	if (RS::scaling_3d_mode_type(scaling_3d_mode) == RS::VIEWPORT_SCALING_3D_TYPE_TEMPORAL) {
+	RS::ViewportScaling3DType scaling_3d_mode_type = RS::scaling_3d_mode_type(scaling_3d_mode);
+	if ((scaling_3d_mode_type == RS::VIEWPORT_SCALING_3D_TYPE_TEMPORAL) || (scaling_3d_mode_type == RS::VIEWPORT_SCALING_3D_TYPE_CUSTOM)) {
 		// The blur texture should be as big as the target size when using an upscaler.
 		blur_size = target_size;
 	}
