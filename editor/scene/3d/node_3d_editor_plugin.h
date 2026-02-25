@@ -267,6 +267,7 @@ private:
 	bool freelook_active;
 	real_t freelook_speed;
 	Vector2 previous_mouse_position;
+	bool emulated_nav_mouse_captured = false;
 
 	PanelContainer *info_panel = nullptr;
 	Label *info_label = nullptr;
@@ -460,6 +461,7 @@ private:
 	};
 
 	NavigationMode _get_nav_mode_from_shortcut_check(ViewportNavMouseButton p_mouse_button, Vector<ShortcutCheckSet> p_shortcut_check_sets, bool p_use_not_empty);
+	NavigationMode _get_emulated_nav_mode();
 
 	void set_freelook_active(bool active_now);
 	void scale_freelook_speed(real_t scale);

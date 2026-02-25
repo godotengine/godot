@@ -1836,12 +1836,52 @@ static bool _redirect_freelook_input(const Ref<InputEvent> &p_event, Node3DEdito
 // This is only active during instant transforms,
 // to capture and wrap mouse events outside the control.
 void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(!_edit.instant);
+	if (!_edit.instant && !emulated_nav_mouse_captured) {
+		return;
+	}
+
 	Ref<InputEventMouseMotion> m = p_event;
 
 	if (m.is_valid()) {
-		_edit.mouse_pos += _get_warped_mouse_motion(p_event);
-		update_transform(_get_key_modifier(m) == Key::SHIFT);
+		if (_edit.instant) {
+			_edit.mouse_pos += _get_warped_mouse_motion(p_event);
+			update_transform(_get_key_modifier(m) == Key::SHIFT);
+			return;
+		}
+
+		if (emulated_nav_mouse_captured) {
+			NavigationMode emulated_nav_mode = _get_emulated_nav_mode();
+			if (emulated_nav_mode == NAVIGATION_NONE) {
+				emulated_nav_mouse_captured = false;
+				set_process_input(_edit.instant);
+				return;
+			}
+
+			if (surface->get_global_rect().has_point(m->get_global_position())) {
+				return;
+			}
+
+			switch (emulated_nav_mode) {
+				case NAVIGATION_PAN: {
+					_nav_pan(m, _get_warped_mouse_motion(m));
+				} break;
+
+				case NAVIGATION_ZOOM: {
+					_nav_zoom(m, m->get_relative());
+				} break;
+
+				case NAVIGATION_ORBIT: {
+					_nav_orbit(m, _get_warped_mouse_motion(m));
+				} break;
+
+				case NAVIGATION_LOOK: {
+					_nav_look(m, _get_warped_mouse_motion(m));
+				} break;
+
+				default: {
+				} break;
+			}
+		}
 	}
 }
 
@@ -2227,6 +2267,15 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					surface->queue_redraw();
 				} else {
+					if (emulated_nav_mouse_captured) {
+						emulated_nav_mouse_captured = false;
+						set_process_input(_edit.instant);
+						Input::MouseMode mouse_mode = Input::get_singleton()->get_mouse_mode();
+						if (mouse_mode == Input::MouseMode::MOUSE_MODE_CAPTURED || mouse_mode == Input::MouseMode::MOUSE_MODE_CONFINED || mouse_mode == Input::MouseMode::MOUSE_MODE_CONFINED_HIDDEN) {
+							Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
+						}
+					}
+
 					if (ruler->is_inside_tree()) {
 						EditorNode::get_singleton()->get_scene_root()->remove_child(ruler);
 						ruler_start_point->set_visible(false);
@@ -2297,7 +2346,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 	Vector<ShortcutCheckSet> shortcut_check_sets;
 
-	if (Input::get_singleton()->get_mouse_mode() != Input::MouseMode::MOUSE_MODE_CAPTURED) {
+	if (Input::get_singleton()->get_mouse_mode() != Input::MouseMode::MOUSE_MODE_CAPTURED || emulated_nav_mouse_captured) {
 		ViewportNavMouseButton orbit_mouse_preference = (ViewportNavMouseButton)EDITOR_GET("editors/3d/navigation/orbit_mouse_button").operator int();
 		ViewportNavMouseButton pan_mouse_preference = (ViewportNavMouseButton)EDITOR_GET("editors/3d/navigation/pan_mouse_button").operator int();
 		ViewportNavMouseButton zoom_mouse_preference = (ViewportNavMouseButton)EDITOR_GET("editors/3d/navigation/zoom_mouse_button").operator int();
@@ -2361,6 +2410,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 
 		NavigationMode nav_mode = NAVIGATION_NONE;
+		bool nav_from_3_button_emulation = false;
 
 		if (_edit.gizmo.is_valid()) {
 			_edit.gizmo->set_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, camera, m->get_position());
@@ -2439,7 +2489,22 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			NavigationMode change_nav_from_shortcut = _get_nav_mode_from_shortcut_check(NAVIGATION_LEFT_MOUSE, shortcut_check_sets, true);
 			if (change_nav_from_shortcut != NAVIGATION_NONE) {
 				nav_mode = change_nav_from_shortcut;
+				nav_from_3_button_emulation = true;
 			}
+		}
+
+		const bool emulate_3_button_mouse = bool(EDITOR_GET("editors/3d/navigation/emulate_3_button_mouse"));
+		const bool emulated_nav_active = emulate_3_button_mouse && nav_from_3_button_emulation &&
+				(nav_mode == NAVIGATION_PAN || nav_mode == NAVIGATION_ORBIT || nav_mode == NAVIGATION_ZOOM || nav_mode == NAVIGATION_LOOK);
+
+		if (!freelook_active && emulated_nav_active && !emulated_nav_mouse_captured && Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_VISIBLE) {
+			emulated_nav_mouse_captured = true;
+			set_process_input(true);
+		}
+
+		if (emulated_nav_mouse_captured && !emulated_nav_active) {
+			emulated_nav_mouse_captured = false;
+			set_process_input(_edit.instant);
 		}
 
 		switch (nav_mode) {
@@ -2850,6 +2915,38 @@ Node3DEditorViewport::NavigationMode Node3DEditorViewport::_get_nav_mode_from_sh
 	return NAVIGATION_NONE;
 }
 
+Node3DEditorViewport::NavigationMode Node3DEditorViewport::_get_emulated_nav_mode() {
+	if (!bool(EDITOR_GET("editors/3d/navigation/emulate_3_button_mouse"))) {
+		return NAVIGATION_NONE;
+	}
+
+	ViewportNavMouseButton orbit_mouse_preference = (ViewportNavMouseButton)EDITOR_GET("editors/3d/navigation/orbit_mouse_button").operator int();
+	ViewportNavMouseButton pan_mouse_preference = (ViewportNavMouseButton)EDITOR_GET("editors/3d/navigation/pan_mouse_button").operator int();
+	ViewportNavMouseButton zoom_mouse_preference = (ViewportNavMouseButton)EDITOR_GET("editors/3d/navigation/zoom_mouse_button").operator int();
+	bool orbit_mod_pressed = _is_nav_modifier_pressed("spatial_editor/viewport_orbit_modifier_1") && _is_nav_modifier_pressed("spatial_editor/viewport_orbit_modifier_2");
+	bool pan_mod_pressed = _is_nav_modifier_pressed("spatial_editor/viewport_pan_modifier_1") && _is_nav_modifier_pressed("spatial_editor/viewport_pan_modifier_2");
+	bool zoom_mod_pressed = _is_nav_modifier_pressed("spatial_editor/viewport_zoom_modifier_1") && _is_nav_modifier_pressed("spatial_editor/viewport_zoom_modifier_2");
+	int orbit_mod_input_count = _get_shortcut_input_count("spatial_editor/viewport_orbit_modifier_1") + _get_shortcut_input_count("spatial_editor/viewport_orbit_modifier_2");
+	int pan_mod_input_count = _get_shortcut_input_count("spatial_editor/viewport_pan_modifier_1") + _get_shortcut_input_count("spatial_editor/viewport_pan_modifier_2");
+	int zoom_mod_input_count = _get_shortcut_input_count("spatial_editor/viewport_zoom_modifier_1") + _get_shortcut_input_count("spatial_editor/viewport_zoom_modifier_2");
+	bool orbit_not_empty = !_is_shortcut_empty("spatial_editor/viewport_orbit_modifier_1") || !_is_shortcut_empty("spatial_editor/viewport_orbit_modifier_2");
+	bool pan_not_empty = !_is_shortcut_empty("spatial_editor/viewport_pan_modifier_1") || !_is_shortcut_empty("spatial_editor/viewport_pan_modifier_2");
+	bool zoom_not_empty = !_is_shortcut_empty("spatial_editor/viewport_zoom_modifier_1") || !_is_shortcut_empty("spatial_editor/viewport_zoom_modifier_2");
+
+	Vector<ShortcutCheckSet> shortcut_check_sets;
+	shortcut_check_sets.push_back(ShortcutCheckSet(orbit_mod_pressed, orbit_not_empty, orbit_mod_input_count, orbit_mouse_preference, NAVIGATION_ORBIT));
+	shortcut_check_sets.push_back(ShortcutCheckSet(pan_mod_pressed, pan_not_empty, pan_mod_input_count, pan_mouse_preference, NAVIGATION_PAN));
+	shortcut_check_sets.push_back(ShortcutCheckSet(zoom_mod_pressed, zoom_not_empty, zoom_mod_input_count, zoom_mouse_preference, NAVIGATION_ZOOM));
+	shortcut_check_sets.sort_custom<ShortcutCheckSetComparator>();
+
+	NavigationMode nav_mode = _get_nav_mode_from_shortcut_check(NAVIGATION_LEFT_MOUSE, shortcut_check_sets, true);
+	if (nav_mode == NAVIGATION_PAN || nav_mode == NAVIGATION_ORBIT || nav_mode == NAVIGATION_ZOOM || nav_mode == NAVIGATION_LOOK) {
+		return nav_mode;
+	}
+
+	return NAVIGATION_NONE;
+}
+
 void Node3DEditorViewport::_nav_pan(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative) {
 	const NavigationScheme nav_scheme = (NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
 	const real_t translation_sensitivity = EDITOR_GET("editors/3d/navigation_feel/translation_sensitivity");
@@ -3110,7 +3207,10 @@ bool Node3DEditorViewport::_is_shortcut_empty(const String &p_name) {
 
 Point2 Node3DEditorViewport::_get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const {
 	Point2 relative;
-	if (bool(EDITOR_GET("editors/3d/navigation/warped_mouse_panning"))) {
+	const bool warped_enabled = bool(EDITOR_GET("editors/3d/navigation/warped_mouse_panning"));
+	const bool captured_mode = Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED;
+
+	if (warped_enabled && !captured_mode) {
 		relative = Input::get_singleton()->warp_mouse_motion(p_ev_mouse_motion, surface->get_global_rect());
 	} else {
 		relative = p_ev_mouse_motion->get_relative();

@@ -3496,6 +3496,16 @@ void Viewport::push_input(RequiredParam<InputEvent> rp_event, bool p_local_coord
 
 	Ref<InputEventMouse> me = ev;
 	if (me.is_valid()) {
+		if (is_sub_viewport() && !is_attached_in_viewport() && !viewport_textures.is_empty()) {
+			const Rect2 r(Point2(), size);
+			const bool inside = r.has_point(me->get_position());
+			if (inside && !gui.mouse_in_viewport) {
+				notify_mouse_entered();
+			} else if (!inside && gui.mouse_in_viewport) {
+				notify_mouse_exited();
+			}
+		}
+
 		_update_mouse_over(me);
 	}
 
