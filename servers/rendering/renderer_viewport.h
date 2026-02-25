@@ -186,6 +186,7 @@ public:
 	};
 
 	HashMap<String, RID> timestamp_vp_map;
+	HashMap<DisplayServer::WindowID, Vector<BlitToScreen>> blit_to_screen_list;
 
 	uint64_t draw_viewports_pass = 0;
 

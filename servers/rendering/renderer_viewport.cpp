@@ -761,6 +761,7 @@ DisplayServer::WindowID RendererViewport::_get_containing_window(Viewport *p_vie
 void RendererViewport::draw_viewports(bool p_swap_buffers) {
 	GodotProfileZoneGroupedFirst(_profile_zone, "prepare viewports");
 	timestamp_vp_map.clear();
+	blit_to_screen_list.clear();
 
 #ifndef XR_DISABLED
 	// get our xr interface in case we need it
@@ -782,7 +783,6 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 		sorted_active_viewports_dirty = false;
 	}
 
-	HashMap<DisplayServer::WindowID, Vector<BlitToScreen>> blit_to_screen_list;
 	//draw viewports
 	RENDER_TIMESTAMP("> Render Viewports");
 
