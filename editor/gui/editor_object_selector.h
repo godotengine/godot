@@ -61,6 +61,8 @@ protected:
 public:
 	virtual Size2 get_minimum_size() const override;
 
+	bool has_object() const;
+
 	void update_path();
 	void clear_path();
 	void enable_path();
