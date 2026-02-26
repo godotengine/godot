@@ -102,7 +102,7 @@
 			<return type="void" />
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
-				Adjust the viewport so the caret is visible.
+				Adjust the viewport so the caret is visible. To center on the caret instead, see [method center_viewport_to_caret].
 			</description>
 		</method>
 		<method name="apply_ime">
@@ -150,7 +150,7 @@
 			<return type="void" />
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
-				Centers the viewport on the line the editing caret is at. This also resets the [member scroll_horizontal] value to [code]0[/code].
+				Centers the viewport on the caret vertically. This also adjusts the viewport horizontally to ensure the caret is visible. See also [method adjust_viewport_to_caret].
 			</description>
 		</method>
 		<method name="clear">
@@ -1021,7 +1021,7 @@
 			<param index="2" name="caret_index" type="int" default="0" />
 			<description>
 				Moves the caret to the specified [param column] index.
-				If [param adjust_viewport] is [code]true[/code], the viewport will center at the caret position after the move occurs.
+				If [param adjust_viewport] is [code]true[/code], the viewport will adjust to make the caret visible after the move. See [method adjust_viewport_to_caret] and [method center_viewport_to_caret].
 				[b]Note:[/b] If supporting multiple carets this will not check for any overlap. See [method merge_overlapping_carets].
 			</description>
 		</method>
@@ -1034,7 +1034,7 @@
 			<param index="4" name="caret_index" type="int" default="0" />
 			<description>
 				Moves the caret to the specified [param line] index. The caret column will be moved to the same visual position it was at the last time [method set_caret_column] was called, or clamped to the end of the line.
-				If [param adjust_viewport] is [code]true[/code], the viewport will center at the caret position after the move occurs.
+				If [param adjust_viewport] is [code]true[/code], the viewport will adjust to make the caret visible after the move. See [method adjust_viewport_to_caret] and [method center_viewport_to_caret].
 				If [param can_be_hidden] is [code]true[/code], the specified [param line] can be hidden.
 				If [param wrap_index] is [code]-1[/code], the caret column will be clamped to the [param line]'s length. If [param wrap_index] is greater than [code]-1[/code], the column will be moved to attempt to match the visual x position on the line's [param wrap_index] to the position from the last time [method set_caret_column] was called.
 				[b]Note:[/b] If supporting multiple carets this will not check for any overlap. See [method merge_overlapping_carets].
