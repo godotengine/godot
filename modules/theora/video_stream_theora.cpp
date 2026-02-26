@@ -32,15 +32,25 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/image.h"
+#include "core/os/time.h"
 #include "scene/resources/image_texture.h"
 
+#include "thirdparty/libyuv/include/libyuv.h"
 #include "thirdparty/misc/yuv2rgb.h"
+
+#define START_TIMER(ID) uint64_t timer_start_time_##ID = Time::get_singleton()->get_ticks_usec();
+#define STOP_PRINT_TIMER(ID, MSG)                                                     \
+	uint64_t timer_stop_time_##ID = Time::get_singleton()->get_ticks_usec();          \
+	uint64_t timer_duration_time_##ID = timer_stop_time_##ID - timer_start_time_##ID; \
+	print_line(vformat(MSG, timer_duration_time_##ID / 1000.f));
 
 int VideoStreamPlaybackTheora::buffer_data() {
 	char *buffer = ogg_sync_buffer(&oy, 4096);
 
+	START_TIMER(read)
 	uint64_t bytes = file->get_buffer((uint8_t *)buffer, 4096);
 	ogg_sync_wrote(&oy, bytes);
+	STOP_PRINT_TIMER(read, "Read data: %f ms")
 	return bytes;
 }
 
@@ -232,21 +242,25 @@ int64_t VideoStreamPlaybackTheora::seek_streams(double p_time, int64_t &cur_vide
 }
 
 void VideoStreamPlaybackTheora::video_write(th_ycbcr_buffer yuv) {
-	uint8_t *w = frame_data.ptrw();
-	char *dst = (char *)w;
+	uint8_t *dst = frame_data.ptrw();
 	uint32_t y_offset = region.position.y * yuv[0].stride + region.position.x;
 	uint32_t uv_offset = 0;
 
+	START_TIMER(yuv)
 	if (px_fmt == TH_PF_444) {
 		uv_offset += region.position.y * yuv[1].stride + region.position.x;
-		yuv444_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data + y_offset, (uint8_t *)yuv[1].data + uv_offset, (uint8_t *)yuv[2].data + uv_offset, region.size.x, region.size.y, yuv[0].stride, yuv[1].stride, region.size.x << 2);
+		//yuv444_2_rgb8888(dst, (uint8_t *)yuv[0].data + y_offset, (uint8_t *)yuv[1].data + uv_offset, (uint8_t *)yuv[2].data + uv_offset, region.size.x, region.size.y, yuv[0].stride, yuv[1].stride, region.size.x << 2);
+		libyuv::I444ToABGR((uint8_t *)yuv[0].data + y_offset, yuv[0].stride, (uint8_t *)yuv[1].data + uv_offset, yuv[1].stride, (uint8_t *)yuv[2].data + uv_offset, yuv[2].stride, dst, region.size.x << 2, region.size.x, region.size.y);
 	} else if (px_fmt == TH_PF_422) {
 		uv_offset += region.position.y * yuv[1].stride + region.position.x / 2;
-		yuv422_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data + y_offset, (uint8_t *)yuv[1].data + uv_offset, (uint8_t *)yuv[2].data + uv_offset, region.size.x, region.size.y, yuv[0].stride, yuv[1].stride, region.size.x << 2);
+		//yuv422_2_rgb8888(dst, (uint8_t *)yuv[0].data + y_offset, (uint8_t *)yuv[1].data + uv_offset, (uint8_t *)yuv[2].data + uv_offset, region.size.x, region.size.y, yuv[0].stride, yuv[1].stride, region.size.x << 2);
+		libyuv::I422ToABGR((uint8_t *)yuv[0].data + y_offset, yuv[0].stride, (uint8_t *)yuv[1].data + uv_offset, yuv[1].stride, (uint8_t *)yuv[2].data + uv_offset, yuv[2].stride, dst, region.size.x << 2, region.size.x, region.size.y);
 	} else if (px_fmt == TH_PF_420) {
 		uv_offset += region.position.y * yuv[1].stride / 2 + region.position.x / 2;
-		yuv420_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data + y_offset, (uint8_t *)yuv[1].data + uv_offset, (uint8_t *)yuv[2].data + uv_offset, region.size.x, region.size.y, yuv[0].stride, yuv[1].stride, region.size.x << 2);
+		//yuv420_2_rgb8888(dst, (uint8_t *)yuv[0].data + y_offset, (uint8_t *)yuv[1].data + uv_offset, (uint8_t *)yuv[2].data + uv_offset, region.size.x, region.size.y, yuv[0].stride, yuv[1].stride, region.size.x << 2);
+		libyuv::I420ToABGR((uint8_t *)yuv[0].data + y_offset, yuv[0].stride, (uint8_t *)yuv[1].data + uv_offset, yuv[1].stride, (uint8_t *)yuv[2].data + uv_offset, yuv[2].stride, dst, region.size.x << 2, region.size.x, region.size.y);
 	}
+	STOP_PRINT_TIMER(yuv, "YUV conversion: %f ms");
 
 	Ref<Image> img;
 	img.instantiate(region.size.x, region.size.y, false, Image::FORMAT_RGBA8, frame_data); //zero copy image creation
@@ -513,6 +527,7 @@ void VideoStreamPlaybackTheora::update(double p_delta) {
 	while ((!audio_ready && !audio_done) || (!video_ready && !video_done)) {
 		ogg_packet op;
 
+		START_TIMER(audio)
 		while (!audio_ready && !audio_done) {
 			// Send remaining frames
 			if (!send_audio()) {
@@ -552,7 +567,9 @@ void VideoStreamPlaybackTheora::update(double p_delta) {
 				}
 			}
 		}
+		STOP_PRINT_TIMER(audio, "Audio: %f ms")
 
+		START_TIMER(video1)
 		while (!video_ready && !video_done) {
 			if (ogg_stream_packetout(&to, &op) > 0) {
 				if (op.granulepos >= 0) {
@@ -575,6 +592,7 @@ void VideoStreamPlaybackTheora::update(double p_delta) {
 				break;
 			}
 		}
+		STOP_PRINT_TIMER(video1, "Video 1: %f ms")
 
 		if (!video_ready || !audio_ready) {
 			int ret = feed_pages();
@@ -603,7 +621,9 @@ void VideoStreamPlaybackTheora::update(double p_delta) {
 	if (video_ready && comp_time >= current_frame_time) {
 		if (!dup_frame) {
 			th_ycbcr_buffer yuv;
+			START_TIMER(video2)
 			th_decode_ycbcr_out(td, yuv);
+			STOP_PRINT_TIMER(video2, "Video 2: %f ms")
 			video_write(yuv);
 		}
 		dup_frame = false;
