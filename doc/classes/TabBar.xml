@@ -435,7 +435,7 @@
 			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
 		<theme_item name="drop_mark" data_type="icon" type="Texture2D">
-			Icon shown to indicate where a dragged tab is gonna be dropped (see [member drag_to_rearrange_enabled]).
+			Icon shown to indicate where a dragged tab will be dropped (see [member drag_to_rearrange_enabled]).
 		</theme_item>
 		<theme_item name="increment" data_type="icon" type="Texture2D">
 			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the last tab is visible) it appears semi-transparent.
