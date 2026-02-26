@@ -53,8 +53,8 @@
 /editor/audio/                                @godotengine/editor @godotengine/audio
 /editor/debugger/                             @godotengine/editor @godotengine/debugger
 /editor/doc/                                  @godotengine/editor @godotengine/documentation
-/editor/gui/                                  @godotengine/editor @godotengine/usability @godotengine/gui-nodes
-/editor/icons/                                @godotengine/editor @godotengine/usability
+/editor/gui/                                  @godotengine/editor @godotengine/gui-nodes
+/editor/icons/                                @godotengine/editor
 /editor/import/                               @godotengine/editor @godotengine/asset-pipeline
 /editor/scene/2d/                             @godotengine/editor @godotengine/2d-nodes
 /editor/scene/2d/physics/                     @godotengine/editor @godotengine/physics
@@ -63,7 +63,7 @@
 /editor/scene/gui/                            @godotengine/editor @godotengine/gui-nodes
 /editor/script/                               @godotengine/editor @godotengine/script-editor
 /editor/shader/                               @godotengine/editor @godotengine/script-editor @godotengine/shaders
-/editor/themes/                               @godotengine/editor @godotengine/usability @godotengine/gui-nodes
+/editor/themes/                               @godotengine/editor @godotengine/gui-nodes
 /editor/translations/                         @godotengine/i18n
 
 # Main
@@ -125,7 +125,7 @@
 /modules/multiplayer/                         @godotengine/network
 /modules/multiplayer/doc_classes/             @godotengine/network @godotengine/documentation
 /modules/multiplayer/editor/                  @godotengine/network @godotengine/editor
-/modules/multiplayer/icons/                   @godotengine/network @godotengine/usability
+/modules/multiplayer/icons/                   @godotengine/network
 /modules/multiplayer/tests/                   @godotengine/network @godotengine/tests
 /modules/upnp/                                @godotengine/network
 /modules/upnp/doc_classes/                    @godotengine/network @godotengine/documentation
@@ -152,14 +152,14 @@
 /modules/gdscript/                            @godotengine/gdscript
 /modules/gdscript/doc_classes/                @godotengine/gdscript @godotengine/documentation
 /modules/gdscript/editor/                     @godotengine/gdscript @godotengine/script-editor
-/modules/gdscript/icons/                      @godotengine/gdscript @godotengine/usability
+/modules/gdscript/icons/                      @godotengine/gdscript
 /modules/gdscript/tests/                      @godotengine/gdscript @godotengine/tests
 /modules/jsonrpc/                             @godotengine/gdscript @godotengine/network
 /modules/jsonrpc/tests/                       @godotengine/gdscript @godotengine/network @godotengine/tests
 /modules/mono/                                @godotengine/dotnet
 /modules/mono/doc_classes/                    @godotengine/dotnet @godotengine/documentation
 /modules/mono/editor/                         @godotengine/dotnet @godotengine/script-editor
-/modules/mono/icons/                          @godotengine/dotnet @godotengine/usability
+/modules/mono/icons/                          @godotengine/dotnet
 
 ## Text
 /modules/freetype/                            @godotengine/buildsystem
@@ -183,12 +183,12 @@
 /modules/csg/                                 @godotengine/3d-nodes
 /modules/csg/doc_classes/                     @godotengine/3d-nodes @godotengine/documentation
 /modules/csg/editor/                          @godotengine/3d-nodes @godotengine/editor
-/modules/csg/icons/                           @godotengine/3d-nodes @godotengine/usability
+/modules/csg/icons/                           @godotengine/3d-nodes
 /modules/csg/tests/                           @godotengine/3d-nodes @godotengine/tests
 /modules/gridmap/                             @godotengine/3d-nodes
 /modules/gridmap/doc_classes/                 @godotengine/3d-nodes @godotengine/documentation
 /modules/gridmap/editor/                      @godotengine/3d-nodes @godotengine/editor
-/modules/gridmap/icons/                       @godotengine/3d-nodes @godotengine/usability
+/modules/gridmap/icons/                       @godotengine/3d-nodes
 /modules/navigation_2d/                       @godotengine/navigation
 /modules/navigation_2d/editor/                @godotengine/navigation @godotengine/editor
 /modules/navigation_3d/                       @godotengine/navigation
@@ -196,13 +196,13 @@
 /modules/noise/                               @godotengine/core
 /modules/noise/doc_classes/                   @godotengine/core @godotengine/documentation
 /modules/noise/editor/                        @godotengine/core @godotengine/editor
-/modules/noise/icons/                         @godotengine/core @godotengine/usability
+/modules/noise/icons/                         @godotengine/core
 /modules/noise/tests/                         @godotengine/core @godotengine/tests
 /modules/objectdb_profiler/                   @godotengine/debugger
 /modules/objectdb_profiler/editor/            @godotengine/debugger @godotengine/editor
 /modules/regex/                               @godotengine/core
 /modules/regex/doc_classes/                   @godotengine/core @godotengine/documentation
-/modules/regex/icons/                         @godotengine/core @godotengine/usability
+/modules/regex/icons/                         @godotengine/core
 /modules/regex/tests/                         @godotengine/core @godotengine/tests
 /modules/zip/                                 @godotengine/core
 /modules/zip/doc_classes/                     @godotengine/core @godotengine/documentation
@@ -248,7 +248,7 @@
 /scene/resources/text_*                       @godotengine/gui-nodes
 /scene/resources/visual_shader*               @godotengine/shaders
 /scene/theme/                                 @godotengine/gui-nodes
-/scene/theme/icons/                           @godotengine/gui-nodes @godotengine/usability
+/scene/theme/icons/                           @godotengine/gui-nodes
 
 # Servers
 
