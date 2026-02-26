@@ -5257,6 +5257,7 @@ void VisualShaderEditor::_param_selected() {
 	prop->connect("property_changed", callable_mp(this, &VisualShaderEditor::_param_property_changed));
 	prop->set_h_size_flags(SIZE_EXPAND_FILL);
 	prop->set_object_and_property(preview_material.ptr(), "shader_parameter/" + pi.name);
+	prop->set_deferred_drag_mode_enabled();
 
 	prop->set_label(TTR("Value:"));
 	prop->update_property();
