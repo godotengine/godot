@@ -41,7 +41,7 @@ private:
 	friend class DisplayServer;
 
 	Point2i mouse_position = Point2i(-1, -1); // Outside of Window.
-	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
+	DisplayServerEnums::CursorShape cursor_shape = DisplayServerEnums::CursorShape::CURSOR_ARROW;
 	bool window_over = false;
 	Callable event_callback;
 
@@ -49,14 +49,14 @@ private:
 	String primary_clipboard_text;
 
 	static Vector<String> get_rendering_drivers_func();
-	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
+	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error);
 
 	void _set_mouse_position(const Point2i &p_position);
 	void _set_window_over(bool p_over);
-	void _send_window_event(WindowEvent p_event);
+	void _send_window_event(DisplayServerEnums::WindowEvent p_event);
 
 public:
-	bool has_feature(Feature p_feature) const override;
+	bool has_feature(DisplayServerEnums::Feature p_feature) const override;
 
 	String get_name() const override { return "mock"; }
 
@@ -67,7 +67,7 @@ public:
 	void simulate_event(Ref<InputEvent> p_event);
 
 	// Returns the current cursor shape.
-	CursorShape get_cursor_shape() {
+	DisplayServerEnums::CursorShape get_cursor_shape() {
 		return cursor_shape;
 	}
 
@@ -78,15 +78,15 @@ public:
 	virtual void clipboard_set_primary(const String &p_text) override { primary_clipboard_text = p_text; }
 	virtual String clipboard_get_primary() const override { return primary_clipboard_text; }
 
-	virtual Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const override {
+	virtual Size2i window_get_size(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override {
 		return Size2i(1920, 1080);
 	}
 
-	virtual void cursor_set_shape(CursorShape p_shape) override {
+	virtual void cursor_set_shape(DisplayServerEnums::CursorShape p_shape) override {
 		cursor_shape = p_shape;
 	}
 
-	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override {
+	virtual void window_set_window_event_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override {
 		event_callback = p_callable;
 	}
 

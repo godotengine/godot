@@ -188,7 +188,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 				if (String("mock") == DisplayServer::get_create_function_name(i)) {
-					DisplayServer::create(i, "", DisplayServer::WindowMode::WINDOW_MODE_MINIMIZED, DisplayServer::VSyncMode::VSYNC_ENABLED, 0, nullptr, Vector2i(0, 0), DisplayServer::SCREEN_PRIMARY, DisplayServer::CONTEXT_EDITOR, 0, err);
+					DisplayServer::create(i, "", DisplayServerEnums::WindowMode::WINDOW_MODE_MINIMIZED, DisplayServerEnums::VSyncMode::VSYNC_ENABLED, 0, nullptr, Vector2i(0, 0), DisplayServerEnums::SCREEN_PRIMARY, DisplayServerEnums::CONTEXT_EDITOR, 0, err);
 					break;
 				}
 			}
@@ -232,7 +232,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 			memnew(SceneTree);
 			SceneTree::get_singleton()->initialize();
-			if (!DisplayServer::get_singleton()->has_feature(DisplayServer::Feature::FEATURE_SUBWINDOWS)) {
+			if (!DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SUBWINDOWS)) {
 				SceneTree::get_singleton()->get_root()->set_embedding_subwindows(true);
 			}
 

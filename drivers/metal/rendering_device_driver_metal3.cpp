@@ -243,7 +243,7 @@ Error RenderingDeviceDriverMetal::_execute_and_present_barriers(CommandQueueID p
 
 	struct DrawRequest {
 		NS::SharedPtr<MTL::Drawable> drawable;
-		DisplayServer::VSyncMode vsync_mode;
+		DisplayServerEnums::VSyncMode vsync_mode;
 		double duration;
 	};
 
@@ -268,7 +268,7 @@ Error RenderingDeviceDriverMetal::_execute_and_present_barriers(CommandQueueID p
 		cb->addCompletedHandler([drawables = std::move(drawables)](MTL::CommandBuffer *) {
 			for (const DrawRequest &dr : drawables) {
 				switch (dr.vsync_mode) {
-					case DisplayServer::VSYNC_DISABLED: {
+					case DisplayServerEnums::VSYNC_DISABLED: {
 						dr.drawable->present();
 					} break;
 					default: {
