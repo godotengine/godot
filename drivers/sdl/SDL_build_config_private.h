@@ -110,10 +110,11 @@
 #define SDL_HAPTIC_LINUX 1
 #define SDL_TIMER_UNIX 1
 #define SDL_JOYSTICK_LINUX 1
+#define SDL_JOYSTICK_HIDAPI 1
 #define SDL_INPUT_LINUXEV 1
 #define SDL_THREAD_PTHREAD 1
 
-// MacOS defines
+// macOS defines
 #elif defined(SDL_PLATFORM_MACOS)
 
 #define SDL_PLATFORM_PRIVATE_NAME "macOS"
@@ -123,8 +124,10 @@
 #define SDL_HAPTIC_IOKIT 1
 #define SDL_JOYSTICK_IOKIT 1
 #define SDL_JOYSTICK_MFI 1
+#define SDL_JOYSTICK_HIDAPI 1
 #define SDL_TIMER_UNIX 1
 #define SDL_THREAD_PTHREAD 1
+#define SDL_THREAD_PTHREAD_RECURSIVE_MUTEX 1
 
 // Other platforms are not supported (for now)
 #else
