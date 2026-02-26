@@ -41,6 +41,7 @@
 #include "scene/gui/panel.h"
 #include "scene/gui/popup.h"
 #include "scene/main/window.h"
+#include "servers/display/display_server.h"
 
 // WindowWrapper
 

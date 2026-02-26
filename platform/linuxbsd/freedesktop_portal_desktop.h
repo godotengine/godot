@@ -32,9 +32,10 @@
 
 #ifdef DBUS_ENABLED
 
+#include "core/object/object.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 
 struct DBusMessage;
 struct DBusConnection;

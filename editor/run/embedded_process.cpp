@@ -33,11 +33,13 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "editor/editor_string_names.h"
 #include "scene/main/timer.h"
 #include "scene/main/window.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/display_server.h"
 
 void EmbeddedProcessBase::_notification(int p_what) {
 	switch (p_what) {

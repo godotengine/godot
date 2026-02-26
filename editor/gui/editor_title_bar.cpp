@@ -31,6 +31,7 @@
 #include "editor_title_bar.h"
 
 #include "core/object/callable_method_pointer.h"
+#include "servers/display/display_server.h"
 
 void EditorTitleBar::gui_input(const Ref<InputEvent> &p_event) {
 	if (!can_move) {

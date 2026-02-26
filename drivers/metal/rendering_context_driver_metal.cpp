@@ -34,6 +34,7 @@
 #include "metal_objects_shared.h"
 #include "rendering_device_driver_metal3.h"
 
+#include "core/os/os.h"
 #include "core/templates/sort_array.h"
 
 #include <os/log.h>

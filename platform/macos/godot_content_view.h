@@ -30,7 +30,9 @@
 
 #pragma once
 
-#include "servers/display/display_server.h"
+#include "core/input/input_enums.h"
+#include "core/typedefs.h"
+#include "servers/display/display_server_enums.h"
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>

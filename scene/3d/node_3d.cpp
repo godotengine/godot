@@ -30,6 +30,7 @@
 
 #include "node_3d.h"
 
+#include "core/config/engine.h"
 #include "core/math/transform_interpolator.h"
 #include "core/object/class_db.h"
 #include "scene/3d/visual_instance_3d.h"

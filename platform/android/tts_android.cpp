@@ -34,6 +34,8 @@
 #include "os_android.h"
 #include "thread_jandroid.h"
 
+#include "servers/display/display_server.h"
+
 bool TTS_Android::initialized = false;
 jobject TTS_Android::tts = nullptr;
 jclass TTS_Android::cls = nullptr;

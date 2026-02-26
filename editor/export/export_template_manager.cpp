@@ -52,6 +52,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 #include "scene/main/http_request.h"
+#include "servers/display/display_server.h"
 
 enum DownloadsAvailability {
 	DOWNLOADS_AVAILABLE,

@@ -36,7 +36,7 @@
 #include "platform_gl.h"
 
 #include "core/templates/local_vector.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 
 class EGLManager {
 private:

@@ -33,7 +33,9 @@
 #include "accessibility_server_accesskit.h"
 
 #ifdef ACCESSKIT_DYNAMIC
+#include "core/config/engine.h"
 #include "core/io/file_access.h"
+#include "core/os/os.h"
 #endif
 
 #include "servers/text/text_server.h"

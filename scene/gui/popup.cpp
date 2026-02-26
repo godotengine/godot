@@ -30,14 +30,16 @@
 
 #include "popup.h"
 
-#ifdef TOOLS_ENABLED
-#include "core/config/project_settings.h"
-#endif
-
+#include "core/config/engine.h"
 #include "core/object/class_db.h"
 #include "scene/gui/panel.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/display_server.h"
+
+#ifdef TOOLS_ENABLED
+#include "core/config/project_settings.h"
+#endif
 
 void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 	if (get_flag(FLAG_POPUP) && p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
