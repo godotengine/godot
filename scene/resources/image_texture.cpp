@@ -160,6 +160,20 @@ void ImageTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 	RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, texture, p_src_rect, p_modulate, p_transpose, p_clip_uv);
 }
 
+void ImageTexture::draw_msdf_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, int p_outline_size, float p_px_range, float p_scale) const {
+	if ((w | h) == 0) {
+		return;
+	}
+	RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas_item, p_rect, texture, p_src_rect, p_modulate, p_outline_size, p_px_range, p_scale);
+}
+
+void ImageTexture::draw_lcd_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate) const {
+	if ((w | h) == 0) {
+		return;
+	}
+	RenderingServer::get_singleton()->canvas_item_add_lcd_texture_rect_region(p_canvas_item, p_rect, texture, p_src_rect, p_modulate);
+}
+
 bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 	if (alpha_cache.is_null()) {
 		Ref<Image> img = get_image();

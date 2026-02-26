@@ -36,7 +36,6 @@
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/translation_server.hpp>
 #include <godot_cpp/core/error_macros.hpp>
 
@@ -54,7 +53,6 @@ using namespace godot;
 #include "core/io/file_access.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
-#include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
 
@@ -2458,28 +2456,26 @@ RID TextServerFallback::_font_get_glyph_texture_rid(const RID &p_font_rid, const
 
 	ERR_FAIL_COND_V(fgl.texture_idx < -1 || fgl.texture_idx >= ffsd->textures.size(), RID());
 
-	if (RenderingServer::get_singleton() != nullptr) {
-		if (fgl.texture_idx != -1) {
-			if (ffsd->textures[fgl.texture_idx].dirty) {
-				ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
-				Ref<Image> img = tex.image;
-				if (fgl.from_svg) {
-					// Same as the "fix alpha border" process option when importing SVGs
-					img->fix_alpha_edges();
-				}
-				if (fd->mipmaps && !img->has_mipmaps()) {
-					img = tex.image->duplicate();
-					img->generate_mipmaps();
-				}
-				if (tex.texture.is_null()) {
-					tex.texture = ImageTexture::create_from_image(img);
-				} else {
-					tex.texture->update(img);
-				}
-				tex.dirty = false;
+	if (fgl.texture_idx != -1) {
+		if (ffsd->textures[fgl.texture_idx].dirty) {
+			ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
+			Ref<Image> img = tex.image;
+			if (fgl.from_svg) {
+				// Same as the "fix alpha border" process option when importing SVGs
+				img->fix_alpha_edges();
 			}
-			return ffsd->textures[fgl.texture_idx].texture->get_rid();
+			if (fd->mipmaps && !img->has_mipmaps()) {
+				img = tex.image->duplicate();
+				img->generate_mipmaps();
+			}
+			if (tex.texture.is_null()) {
+				tex.texture = ImageTexture::create_from_image(img);
+			} else {
+				tex.texture->update(img);
+			}
+			tex.dirty = false;
 		}
+		return ffsd->textures[fgl.texture_idx].texture->get_rid();
 	}
 
 	return RID();
@@ -2510,28 +2506,26 @@ Size2 TextServerFallback::_font_get_glyph_texture_size(const RID &p_font_rid, co
 
 	ERR_FAIL_COND_V(fgl.texture_idx < -1 || fgl.texture_idx >= ffsd->textures.size(), Size2());
 
-	if (RenderingServer::get_singleton() != nullptr) {
-		if (fgl.texture_idx != -1) {
-			if (ffsd->textures[fgl.texture_idx].dirty) {
-				ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
-				Ref<Image> img = tex.image;
-				if (fgl.from_svg) {
-					// Same as the "fix alpha border" process option when importing SVGs
-					img->fix_alpha_edges();
-				}
-				if (fd->mipmaps && !img->has_mipmaps()) {
-					img = tex.image->duplicate();
-					img->generate_mipmaps();
-				}
-				if (tex.texture.is_null()) {
-					tex.texture = ImageTexture::create_from_image(img);
-				} else {
-					tex.texture->update(img);
-				}
-				tex.dirty = false;
+	if (fgl.texture_idx != -1) {
+		if (ffsd->textures[fgl.texture_idx].dirty) {
+			ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
+			Ref<Image> img = tex.image;
+			if (fgl.from_svg) {
+				// Same as the "fix alpha border" process option when importing SVGs
+				img->fix_alpha_edges();
 			}
-			return ffsd->textures[fgl.texture_idx].texture->get_size();
+			if (fd->mipmaps && !img->has_mipmaps()) {
+				img = tex.image->duplicate();
+				img->generate_mipmaps();
+			}
+			if (tex.texture.is_null()) {
+				tex.texture = ImageTexture::create_from_image(img);
+			} else {
+				tex.texture->update(img);
+			}
+			tex.dirty = false;
 		}
+		return ffsd->textures[fgl.texture_idx].texture->get_size();
 	}
 
 	return Size2();
@@ -2942,67 +2936,64 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
-			if (RenderingServer::get_singleton() != nullptr) {
-				if (ffsd->textures[fgl.texture_idx].dirty) {
-					ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
-					Ref<Image> img = tex.image;
-					if (fgl.from_svg) {
-						// Same as the "fix alpha border" process option when importing SVGs
-						img->fix_alpha_edges();
-					}
-					if (fd->mipmaps && !img->has_mipmaps()) {
-						img = tex.image->duplicate();
-						img->generate_mipmaps();
-					}
-					if (tex.texture.is_null()) {
-						tex.texture = ImageTexture::create_from_image(img);
-					} else {
-						tex.texture->update(img);
-					}
-					tex.dirty = false;
+			if (ffsd->textures[fgl.texture_idx].dirty) {
+				ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
+				Ref<Image> img = tex.image;
+				if (fgl.from_svg) {
+					// Same as the "fix alpha border" process option when importing SVGs
+					img->fix_alpha_edges();
 				}
-				RID texture = ffsd->textures[fgl.texture_idx].texture->get_rid();
-				if (fd->msdf) {
-					Point2 cpos = p_pos;
-					cpos += fgl.rect.position * (double)p_size / (double)fd->msdf_source_size;
-					Size2 csize = fgl.rect.size * (double)p_size / (double)fd->msdf_source_size;
-					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, 0, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
+				if (fd->mipmaps && !img->has_mipmaps()) {
+					img = tex.image->duplicate();
+					img->generate_mipmaps();
+				}
+				if (tex.texture.is_null()) {
+					tex.texture = ImageTexture::create_from_image(img);
 				} else {
-					Point2 cpos = p_pos;
-					double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
-					if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
-						cpos.x = cpos.x + 0.125;
-					} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
-						cpos.x = cpos.x + 0.25;
-					}
-					if (scale == 1.0) {
-						cpos.y = Math::floor(cpos.y);
-						cpos.x = Math::floor(cpos.x);
-					}
-					Vector2 gpos = fgl.rect.position;
-					Size2 csize = fgl.rect.size;
-					if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE) {
-						if (size.x != p_size * 64) {
-							if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
-								double gl_scale = (double)p_size / (double)fd->fixed_size;
-								gpos *= gl_scale;
-								csize *= gl_scale;
-							} else {
-								double gl_scale = Math::round((double)p_size / (double)fd->fixed_size);
-								gpos *= gl_scale;
-								csize *= gl_scale;
-							}
+					tex.texture->update(img);
+				}
+				tex.dirty = false;
+			}
+			if (fd->msdf) {
+				Point2 cpos = p_pos;
+				cpos += fgl.rect.position * (double)p_size / (double)fd->msdf_source_size;
+				Size2 csize = fgl.rect.size * (double)p_size / (double)fd->msdf_source_size;
+				ffsd->textures[fgl.texture_idx].texture->draw_msdf_rect_region(p_canvas, Rect2(cpos, csize), fgl.uv_rect, modulate, 0, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
+			} else {
+				Point2 cpos = p_pos;
+				double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
+				if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
+					cpos.x = cpos.x + 0.125;
+				} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
+					cpos.x = cpos.x + 0.25;
+				}
+				if (scale == 1.0) {
+					cpos.y = Math::floor(cpos.y);
+					cpos.x = Math::floor(cpos.x);
+				}
+				Vector2 gpos = fgl.rect.position;
+				Size2 csize = fgl.rect.size;
+				if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE) {
+					if (size.x != p_size * 64) {
+						if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
+							double gl_scale = (double)p_size / (double)fd->fixed_size;
+							gpos *= gl_scale;
+							csize *= gl_scale;
+						} else {
+							double gl_scale = Math::round((double)p_size / (double)fd->fixed_size);
+							gpos *= gl_scale;
+							csize *= gl_scale;
 						}
-					} else {
-						gpos /= oversampling_factor;
-						csize /= oversampling_factor;
 					}
-					cpos += gpos;
-					if (lcd_aa) {
-						RenderingServer::get_singleton()->canvas_item_add_lcd_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate);
-					} else {
-						RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, false, false);
-					}
+				} else {
+					gpos /= oversampling_factor;
+					csize /= oversampling_factor;
+				}
+				cpos += gpos;
+				if (lcd_aa) {
+					ffsd->textures[fgl.texture_idx].texture->draw_lcd_rect_region(p_canvas, Rect2(cpos, csize), fgl.uv_rect, modulate);
+				} else {
+					ffsd->textures[fgl.texture_idx].texture->draw_rect_region(p_canvas, Rect2(cpos, csize), fgl.uv_rect, modulate, false, false);
 				}
 			}
 		}
@@ -3088,63 +3079,60 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
-			if (RenderingServer::get_singleton() != nullptr) {
-				if (ffsd->textures[fgl.texture_idx].dirty) {
-					ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
-					Ref<Image> img = tex.image;
-					if (fd->mipmaps && !img->has_mipmaps()) {
-						img = tex.image->duplicate();
-						img->generate_mipmaps();
-					}
-					if (tex.texture.is_null()) {
-						tex.texture = ImageTexture::create_from_image(img);
-					} else {
-						tex.texture->update(img);
-					}
-					tex.dirty = false;
+			if (ffsd->textures[fgl.texture_idx].dirty) {
+				ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
+				Ref<Image> img = tex.image;
+				if (fd->mipmaps && !img->has_mipmaps()) {
+					img = tex.image->duplicate();
+					img->generate_mipmaps();
 				}
-				RID texture = ffsd->textures[fgl.texture_idx].texture->get_rid();
-				if (fd->msdf) {
-					Point2 cpos = p_pos;
-					cpos += fgl.rect.position * (double)p_size / (double)fd->msdf_source_size;
-					Size2 csize = fgl.rect.size * (double)p_size / (double)fd->msdf_source_size;
-					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, p_outline_size, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
+				if (tex.texture.is_null()) {
+					tex.texture = ImageTexture::create_from_image(img);
 				} else {
-					Point2 cpos = p_pos;
-					double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
-					if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
-						cpos.x = cpos.x + 0.125;
-					} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
-						cpos.x = cpos.x + 0.25;
-					}
-					if (scale == 1.0) {
-						cpos.y = Math::floor(cpos.y);
-						cpos.x = Math::floor(cpos.x);
-					}
-					Vector2 gpos = fgl.rect.position;
-					Size2 csize = fgl.rect.size;
-					if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE) {
-						if (size.x != p_size * 64) {
-							if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
-								double gl_scale = (double)p_size / (double)fd->fixed_size;
-								gpos *= gl_scale;
-								csize *= gl_scale;
-							} else {
-								double gl_scale = Math::round((double)p_size / (double)fd->fixed_size);
-								gpos *= gl_scale;
-								csize *= gl_scale;
-							}
+					tex.texture->update(img);
+				}
+				tex.dirty = false;
+			}
+			if (fd->msdf) {
+				Point2 cpos = p_pos;
+				cpos += fgl.rect.position * (double)p_size / (double)fd->msdf_source_size;
+				Size2 csize = fgl.rect.size * (double)p_size / (double)fd->msdf_source_size;
+				ffsd->textures[fgl.texture_idx].texture->draw_msdf_rect_region(p_canvas, Rect2(cpos, csize), fgl.uv_rect, modulate, p_outline_size, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
+			} else {
+				Point2 cpos = p_pos;
+				double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
+				if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
+					cpos.x = cpos.x + 0.125;
+				} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
+					cpos.x = cpos.x + 0.25;
+				}
+				if (scale == 1.0) {
+					cpos.y = Math::floor(cpos.y);
+					cpos.x = Math::floor(cpos.x);
+				}
+				Vector2 gpos = fgl.rect.position;
+				Size2 csize = fgl.rect.size;
+				if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE) {
+					if (size.x != p_size * 64) {
+						if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
+							double gl_scale = (double)p_size / (double)fd->fixed_size;
+							gpos *= gl_scale;
+							csize *= gl_scale;
+						} else {
+							double gl_scale = Math::round((double)p_size / (double)fd->fixed_size);
+							gpos *= gl_scale;
+							csize *= gl_scale;
 						}
-					} else {
-						gpos /= oversampling_factor;
-						csize /= oversampling_factor;
 					}
-					cpos += gpos;
-					if (lcd_aa) {
-						RenderingServer::get_singleton()->canvas_item_add_lcd_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate);
-					} else {
-						RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, false, false);
-					}
+				} else {
+					gpos /= oversampling_factor;
+					csize /= oversampling_factor;
+				}
+				cpos += gpos;
+				if (lcd_aa) {
+					ffsd->textures[fgl.texture_idx].texture->draw_lcd_rect_region(p_canvas, Rect2(cpos, csize), fgl.uv_rect, modulate);
+				} else {
+					ffsd->textures[fgl.texture_idx].texture->draw_rect_region(p_canvas, Rect2(cpos, csize), fgl.uv_rect, modulate, false, false);
 				}
 			}
 		}
