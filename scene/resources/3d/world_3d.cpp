@@ -34,6 +34,8 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"
+#include "servers/rendering/rendering_server.h"
+
 #ifndef NAVIGATION_3D_DISABLED
 #include "servers/navigation_3d/navigation_server_3d.h"
 #endif // NAVIGATION_3D_DISABLED

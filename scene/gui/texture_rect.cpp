@@ -31,6 +31,7 @@
 #include "texture_rect.h"
 
 #include "scene/resources/atlas_texture.h"
+#include "servers/rendering/rendering_server.h"
 
 void TextureRect::_notification(int p_what) {
 	switch (p_what) {
@@ -109,7 +110,7 @@ void TextureRect::_notification(int p_what) {
 						at = at->get_atlas();
 					}
 					if (anything_to_draw) {
-						RS::get_singleton()->canvas_item_add_nine_patch(get_canvas_item(), dst_rect, src_rect, texture->get_scaled_rid(), Vector2(), Vector2(), RS::NINE_PATCH_TILE, RS::NINE_PATCH_TILE, true);
+						RS::get_singleton()->canvas_item_add_nine_patch(get_canvas_item(), dst_rect, src_rect, texture->get_scaled_rid(), Vector2(), Vector2(), RSE::NINE_PATCH_TILE, RSE::NINE_PATCH_TILE, true);
 					}
 				} else {
 					draw_texture_rect(texture, Rect2(offset, size), tile);

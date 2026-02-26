@@ -42,7 +42,9 @@
 #include "scene/debugger/scene_debugger_object.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/main/canvas_layer.h"
+#include "scene/resources/mesh.h"
 #include "scene/theme/theme_db.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef PHYSICS_2D_DISABLED
 #include "scene/2d/physics/collision_object_2d.h"
@@ -677,21 +679,21 @@ void RuntimeNodeSelect::_set_selected_nodes(const Vector<Node *> &p_nodes) {
 
 			sb->instance = RS::get_singleton()->instance_create2(sbox_3d_mesh->get_rid(), scenario);
 			sb->instance_ofs = RS::get_singleton()->instance_create2(sbox_3d_mesh->get_rid(), scenario);
-			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sb->instance, RS::SHADOW_CASTING_SETTING_OFF);
-			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sb->instance_ofs, RS::SHADOW_CASTING_SETTING_OFF);
-			RS::get_singleton()->instance_geometry_set_flag(sb->instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-			RS::get_singleton()->instance_geometry_set_flag(sb->instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-			RS::get_singleton()->instance_geometry_set_flag(sb->instance_ofs, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-			RS::get_singleton()->instance_geometry_set_flag(sb->instance_ofs, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sb->instance, RSE::SHADOW_CASTING_SETTING_OFF);
+			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sb->instance_ofs, RSE::SHADOW_CASTING_SETTING_OFF);
+			RS::get_singleton()->instance_geometry_set_flag(sb->instance, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+			RS::get_singleton()->instance_geometry_set_flag(sb->instance, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+			RS::get_singleton()->instance_geometry_set_flag(sb->instance_ofs, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+			RS::get_singleton()->instance_geometry_set_flag(sb->instance_ofs, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
 			sb->instance_xray = RS::get_singleton()->instance_create2(sbox_3d_mesh_xray->get_rid(), scenario);
 			sb->instance_xray_ofs = RS::get_singleton()->instance_create2(sbox_3d_mesh_xray->get_rid(), scenario);
-			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sb->instance_xray, RS::SHADOW_CASTING_SETTING_OFF);
-			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sb->instance_xray_ofs, RS::SHADOW_CASTING_SETTING_OFF);
-			RS::get_singleton()->instance_geometry_set_flag(sb->instance_xray, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-			RS::get_singleton()->instance_geometry_set_flag(sb->instance_xray, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-			RS::get_singleton()->instance_geometry_set_flag(sb->instance_xray_ofs, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-			RS::get_singleton()->instance_geometry_set_flag(sb->instance_xray_ofs, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sb->instance_xray, RSE::SHADOW_CASTING_SETTING_OFF);
+			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sb->instance_xray_ofs, RSE::SHADOW_CASTING_SETTING_OFF);
+			RS::get_singleton()->instance_geometry_set_flag(sb->instance_xray, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+			RS::get_singleton()->instance_geometry_set_flag(sb->instance_xray, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+			RS::get_singleton()->instance_geometry_set_flag(sb->instance_xray_ofs, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+			RS::get_singleton()->instance_geometry_set_flag(sb->instance_xray_ofs, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 #endif // _3D_DISABLED
 		}
 	}
@@ -1154,6 +1156,7 @@ void RuntimeNodeSelect::_update_view_2d() {
 }
 
 #ifndef _3D_DISABLED
+
 void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<SelectResult> &r_items) {
 	Window *root = SceneTree::get_singleton()->get_root();
 
@@ -1630,6 +1633,16 @@ void RuntimeNodeSelect::_reset_camera_3d() {
 		override_camera->set_perspective(camera_fov * cursor.fov_scale, camera_znear, camera_zfar);
 	}
 }
+
+RuntimeNodeSelect::SelectionBox3D::~SelectionBox3D() {
+	if (instance.is_valid()) {
+		RS::get_singleton()->free_rid(instance);
+		RS::get_singleton()->free_rid(instance_ofs);
+		RS::get_singleton()->free_rid(instance_xray);
+		RS::get_singleton()->free_rid(instance_xray_ofs);
+	}
+}
+
 #endif // _3D_DISABLED
 
 #endif // DEBUG_ENABLED

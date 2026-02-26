@@ -94,7 +94,7 @@ void FSR::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_rd_te
 	RID shader = fsr_shader.version_get_shader(shader_version, 0);
 	ERR_FAIL_COND(shader.is_null());
 
-	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	//FSR Easc
 	RD::Uniform u_source_rd_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, { default_sampler, p_source_rd_texture });

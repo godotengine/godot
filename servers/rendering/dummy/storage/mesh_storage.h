@@ -36,9 +36,9 @@
 namespace RendererDummy {
 
 struct DummyMesh {
-	Vector<RS::SurfaceData> surfaces;
+	Vector<RenderingServerTypes::SurfaceData> surfaces;
 	int blend_shape_count;
-	RS::BlendShapeMode blend_shape_mode;
+	RSE::BlendShapeMode blend_shape_mode;
 	PackedFloat32Array blend_shape_values;
 	Dependency dependency;
 };
@@ -76,11 +76,11 @@ public:
 	}
 	virtual bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton) override { return false; }
 
-	virtual void mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) override {
+	virtual void mesh_add_surface(RID p_mesh, const RenderingServerTypes::SurfaceData &p_surface) override {
 		DummyMesh *m = mesh_owner.get_or_null(p_mesh);
 		ERR_FAIL_NULL(m);
-		m->surfaces.push_back(RS::SurfaceData());
-		RS::SurfaceData *s = &m->surfaces.write[m->surfaces.size() - 1];
+		m->surfaces.push_back(RenderingServerTypes::SurfaceData());
+		RenderingServerTypes::SurfaceData *s = &m->surfaces.write[m->surfaces.size() - 1];
 		s->format = p_surface.format;
 		s->primitive = p_surface.primitive;
 		s->vertex_data = p_surface.vertex_data;
@@ -105,15 +105,15 @@ public:
 		return m->blend_shape_count;
 	}
 
-	virtual void mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) override {
+	virtual void mesh_set_blend_shape_mode(RID p_mesh, RSE::BlendShapeMode p_mode) override {
 		DummyMesh *m = mesh_owner.get_or_null(p_mesh);
 		ERR_FAIL_NULL(m);
 		m->blend_shape_mode = p_mode;
 	}
 
-	virtual RS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const override {
+	virtual RSE::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const override {
 		DummyMesh *m = mesh_owner.get_or_null(p_mesh);
-		ERR_FAIL_NULL_V(m, RS::BLEND_SHAPE_MODE_NORMALIZED);
+		ERR_FAIL_NULL_V(m, RSE::BLEND_SHAPE_MODE_NORMALIZED);
 		return m->blend_shape_mode;
 	}
 
@@ -125,11 +125,11 @@ public:
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) override {}
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const override { return RID(); }
 
-	virtual RS::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const override {
+	virtual RenderingServerTypes::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const override {
 		DummyMesh *m = mesh_owner.get_or_null(p_mesh);
-		ERR_FAIL_NULL_V(m, RS::SurfaceData());
-		ERR_FAIL_INDEX_V(p_surface, m->surfaces.size(), RS::SurfaceData());
-		RS::SurfaceData s = m->surfaces[p_surface];
+		ERR_FAIL_NULL_V(m, RenderingServerTypes::SurfaceData());
+		ERR_FAIL_INDEX_V(p_surface, m->surfaces.size(), RenderingServerTypes::SurfaceData());
+		RenderingServerTypes::SurfaceData s = m->surfaces[p_surface];
 		return s;
 	}
 
@@ -150,7 +150,7 @@ public:
 
 	virtual void mesh_surface_remove(RID p_mesh, int p_surface) override;
 	virtual void mesh_clear(RID p_mesh) override;
-	virtual void mesh_debug_usage(List<RS::MeshInfo> *r_info) override {}
+	virtual void mesh_debug_usage(List<RenderingServerTypes::MeshInfo> *r_info) override {}
 
 	/* MESH INSTANCE */
 
@@ -171,7 +171,7 @@ public:
 	virtual void _multimesh_initialize(RID p_rid) override;
 	virtual void _multimesh_free(RID p_rid) override;
 
-	virtual void _multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false, bool p_use_indirect = false) override {}
+	virtual void _multimesh_allocate_data(RID p_multimesh, int p_instances, RSE::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false, bool p_use_indirect = false) override {}
 	virtual int _multimesh_get_instance_count(RID p_multimesh) const override { return 0; }
 
 	virtual void _multimesh_set_mesh(RID p_multimesh, RID p_mesh) override {}

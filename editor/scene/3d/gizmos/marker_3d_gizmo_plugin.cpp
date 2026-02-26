@@ -88,7 +88,7 @@ Marker3DGizmoPlugin::Marker3DGizmoPlugin() {
 	mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 
 	Array d;
-	d.resize(RS::ARRAY_MAX);
+	d.resize(RSE::ARRAY_MAX);
 	d[Mesh::ARRAY_VERTEX] = cursor_points;
 	d[Mesh::ARRAY_COLOR] = cursor_colors;
 	pos3d_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, d);

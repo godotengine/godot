@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/templates/rid_owner.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 class RendererCameraAttributes {
 private:
@@ -58,8 +58,8 @@ private:
 		float dof_blur_amount = 0.1;
 	};
 
-	RS::DOFBlurQuality dof_blur_quality = RS::DOF_BLUR_QUALITY_MEDIUM;
-	RS::DOFBokehShape dof_blur_bokeh_shape = RS::DOF_BOKEH_HEXAGON;
+	RSE::DOFBlurQuality dof_blur_quality = RSE::DOF_BLUR_QUALITY_MEDIUM;
+	RSE::DOFBokehShape dof_blur_bokeh_shape = RSE::DOF_BOKEH_HEXAGON;
 	bool dof_blur_use_jitter = false;
 	static uint64_t auto_exposure_counter;
 
@@ -78,8 +78,8 @@ public:
 	void camera_attributes_initialize(RID p_rid);
 	void camera_attributes_free(RID p_rid);
 
-	void camera_attributes_set_dof_blur_quality(RS::DOFBlurQuality p_quality, bool p_use_jitter);
-	void camera_attributes_set_dof_blur_bokeh_shape(RS::DOFBokehShape p_shape);
+	void camera_attributes_set_dof_blur_quality(RSE::DOFBlurQuality p_quality, bool p_use_jitter);
+	void camera_attributes_set_dof_blur_bokeh_shape(RSE::DOFBokehShape p_shape);
 
 	void camera_attributes_set_dof_blur(RID p_camera_attributes, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount);
 	bool camera_attributes_get_dof_far_enabled(RID p_camera_attributes);
@@ -112,11 +112,11 @@ public:
 		return cam_attributes && cam_attributes->use_auto_exposure;
 	}
 
-	_FORCE_INLINE_ RS::DOFBlurQuality camera_attributes_get_dof_blur_quality() {
+	_FORCE_INLINE_ RSE::DOFBlurQuality camera_attributes_get_dof_blur_quality() {
 		return dof_blur_quality;
 	}
 
-	_FORCE_INLINE_ RS::DOFBokehShape camera_attributes_get_dof_blur_bokeh_shape() {
+	_FORCE_INLINE_ RSE::DOFBokehShape camera_attributes_get_dof_blur_bokeh_shape() {
 		return dof_blur_bokeh_shape;
 	}
 

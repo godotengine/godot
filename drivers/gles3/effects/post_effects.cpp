@@ -68,8 +68,8 @@ PostEffects::PostEffects() {
 		glGenVertexArrays(1, &screen_triangle_array);
 		glBindVertexArray(screen_triangle_array);
 		glBindBuffer(GL_ARRAY_BUFFER, screen_triangle);
-		glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
-		glEnableVertexAttribArray(RS::ARRAY_VERTEX);
+		glVertexAttribPointer(RSE::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		glEnableVertexAttribArray(RSE::ARRAY_VERTEX);
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 	}
@@ -91,7 +91,7 @@ void PostEffects::_draw_screen_triangle() {
 void PostEffects::post_copy(
 		GLuint p_dest_framebuffer, Size2i p_dest_size, GLuint p_source_color,
 		GLuint p_source_depth, bool p_ssao_enabled, int p_ssao_quality_level, float p_ssao_strength, float p_ssao_radius,
-		Size2i p_source_size, float p_luminance_multiplier, const Glow::GLOWLEVEL *p_glow_buffers, float p_glow_intensity,
+		Size2i p_source_size, float p_luminance_multiplier, const Glow::Level *p_glow_buffers, float p_glow_intensity,
 		float p_srgb_white, uint32_t p_view, bool p_use_multiview, uint64_t p_spec_constants) {
 	glDisable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);
@@ -109,13 +109,13 @@ void PostEffects::post_copy(
 		flags |= PostShaderGLES3::USE_GLOW;
 	}
 	if (p_ssao_enabled) {
-		if (p_ssao_quality_level == RS::ENV_SSAO_QUALITY_VERY_LOW) {
+		if (p_ssao_quality_level == RSE::ENV_SSAO_QUALITY_VERY_LOW) {
 			flags |= PostShaderGLES3::USE_SSAO_ABYSS;
-		} else if (p_ssao_quality_level == RS::ENV_SSAO_QUALITY_LOW) {
+		} else if (p_ssao_quality_level == RSE::ENV_SSAO_QUALITY_LOW) {
 			flags |= PostShaderGLES3::USE_SSAO_LOW;
-		} else if (p_ssao_quality_level == RS::ENV_SSAO_QUALITY_HIGH) {
+		} else if (p_ssao_quality_level == RSE::ENV_SSAO_QUALITY_HIGH) {
 			flags |= PostShaderGLES3::USE_SSAO_HIGH;
-		} else if (p_ssao_quality_level == RS::ENV_SSAO_QUALITY_ULTRA) {
+		} else if (p_ssao_quality_level == RSE::ENV_SSAO_QUALITY_ULTRA) {
 			flags |= PostShaderGLES3::USE_SSAO_MEGA;
 		} else {
 			flags |= PostShaderGLES3::USE_SSAO_MED;

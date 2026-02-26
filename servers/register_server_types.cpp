@@ -70,6 +70,7 @@
 #include "rendering/rendering_server.h"
 #include "rendering/shader_include_db.h"
 #include "rendering/storage/render_data.h"
+#include "rendering/storage/render_data_extension.h"
 #include "rendering/storage/render_scene_buffers.h"
 #include "rendering/storage/render_scene_data.h"
 #include "servers/rendering/shader_types.h"
@@ -99,6 +100,8 @@
 #include "servers/physics_3d/physics_server_3d_dummy.h"
 #include "servers/physics_3d/physics_server_3d_extension.h"
 #endif // PHYSICS_3D_DISABLED
+
+// XR
 #ifndef XR_DISABLED
 #include "xr/xr_body_tracker.h"
 #include "xr/xr_controller_tracker.h"
@@ -108,6 +111,7 @@
 #include "xr/xr_interface_extension.h"
 #include "xr/xr_positional_tracker.h"
 #include "xr/xr_server.h"
+#include "xr/xr_vrs.h"
 #endif // XR_DISABLED
 
 ShaderTypes *shader_types = nullptr;

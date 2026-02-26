@@ -170,6 +170,7 @@ protected:
 
 	void _add_row_button(HBoxContainer *p_row, const int p_preset, const String &p_name);
 	void _add_separator(BoxContainer *p_box, Separator *p_separator);
+	void _update_preset_button_state(int p_preset);
 };
 
 class AnchorPresetPicker : public ControlEditorPresetPicker {
@@ -182,6 +183,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_selected_preset(int p_preset);
+
 	AnchorPresetPicker();
 };
 
@@ -201,6 +204,7 @@ protected:
 
 public:
 	void set_allowed_flags(Vector<SizeFlags> &p_flags);
+	void set_selected_preset(int p_preset);
 	void set_expand_flag(bool p_expand);
 
 	SizeFlagPresetPicker(bool p_vertical);
@@ -215,6 +219,8 @@ class ControlEditorToolbar : public HBoxContainer {
 	ControlEditorPopupButton *containers_button = nullptr;
 	Button *anchor_mode_button = nullptr;
 
+	AnchorPresetPicker *anchors_picker = nullptr;
+
 	SizeFlagPresetPicker *container_h_picker = nullptr;
 	SizeFlagPresetPicker *container_v_picker = nullptr;
 
@@ -225,6 +231,8 @@ class ControlEditorToolbar : public HBoxContainer {
 	void _anchor_mode_toggled(bool p_status);
 	void _container_flags_selected(int p_flags, bool p_vertical);
 	void _expand_flag_toggled(bool p_expand, bool p_vertical);
+	void _update_anchor_selection_ui(bool p_pressed);
+	void _update_container_sizing_selection_ui(bool p_pressed);
 
 	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
 	bool _is_node_locked(const Node *p_node);

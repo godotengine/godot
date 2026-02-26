@@ -30,13 +30,8 @@
 
 #pragma once
 
-#include "core/math/projection.h"
+#include "core/object/ref_counted.h"
 #include "core/os/thread_safe.h"
-#include "servers/xr/xr_server.h"
-#include "xr_vrs.h"
-
-// forward declaration
-struct BlitToScreen;
 
 /**
 	The XR interface is a template class on top of which we build interface to different AR, VR and tracking SDKs.
@@ -47,6 +42,12 @@ struct BlitToScreen;
 
 	Note that we may make this into a fully instantiable class for GDExtension support.
 */
+
+struct Projection;
+
+namespace RenderingServerTypes {
+struct BlitToScreen;
+}
 
 class XRInterface : public RefCounted {
 	GDCLASS(XRInterface, RefCounted);
@@ -148,7 +149,7 @@ public:
 	virtual Rect2i get_render_region();
 	virtual void pre_render() {}
 	virtual bool pre_draw_viewport(RID p_render_target) { return true; } /* inform XR interface we are about to start our viewport draw process */
-	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) = 0; /* inform XR interface we finished our viewport draw process */
+	virtual Vector<RenderingServerTypes::BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) = 0; /* inform XR interface we finished our viewport draw process */
 	virtual void end_frame() {}
 
 	/** passthrough **/

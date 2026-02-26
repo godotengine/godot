@@ -51,6 +51,7 @@
 #include "scene/gui/spin_box.h"
 
 #include "servers/navigation_2d/navigation_server_2d.h"
+#include "servers/rendering/rendering_server.h"
 
 void TileDataEditor::_tile_set_changed_plan_update() {
 	_tile_set_changed_update_needed = true;

@@ -30,6 +30,8 @@
 
 #include "marker_2d.h"
 
+#include "core/config/engine.h"
+
 void Marker2D::_draw_cross() {
 	const real_t extents = get_gizmo_extents();
 

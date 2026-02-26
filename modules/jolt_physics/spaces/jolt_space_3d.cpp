@@ -42,7 +42,6 @@
 #include "jolt_contact_listener_3d.h"
 #include "jolt_layers.h"
 #include "jolt_physics_direct_space_state_3d.h"
-#include "jolt_temp_allocator.h"
 
 #include "core/io/file_access.h"
 #include "core/os/time.h"
@@ -106,9 +105,9 @@ void JoltSpace3D::_post_step(float p_step) {
 	}
 }
 
-JoltSpace3D::JoltSpace3D(JPH::JobSystem *p_job_system) :
+JoltSpace3D::JoltSpace3D(JPH::JobSystem *p_job_system, JPH::TempAllocator *p_temp_allocator) :
 		job_system(p_job_system),
-		temp_allocator(new JoltTempAllocator()),
+		temp_allocator(p_temp_allocator),
 		layers(new JoltLayers()),
 		contact_listener(new JoltContactListener3D(this)),
 		body_activation_listener(new JoltBodyActivationListener3D()),
@@ -181,11 +180,6 @@ JoltSpace3D::~JoltSpace3D() {
 	if (layers != nullptr) {
 		delete layers;
 		layers = nullptr;
-	}
-
-	if (temp_allocator != nullptr) {
-		delete temp_allocator;
-		temp_allocator = nullptr;
 	}
 }
 

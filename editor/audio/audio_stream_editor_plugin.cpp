@@ -35,6 +35,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/audio_stream_wav.h"
+#include "servers/rendering/rendering_server.h"
 
 // AudioStreamEditor
 

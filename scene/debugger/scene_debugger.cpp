@@ -47,6 +47,7 @@
 #include "scene/main/window.h" // SceneTree:get_root()
 #include "scene/resources/packed_scene.h"
 #include "servers/audio/audio_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef _3D_DISABLED
 #include "scene/3d/camera_3d.h"

@@ -72,7 +72,7 @@ public:
 	virtual void light_free(RID p_rid) override {}
 
 	virtual void light_set_color(RID p_light, const Color &p_color) override {}
-	virtual void light_set_param(RID p_light, RS::LightParam p_param, float p_value) override {}
+	virtual void light_set_param(RID p_light, RSE::LightParam p_param, float p_value) override {}
 	virtual void light_set_shadow(RID p_light, bool p_enabled) override {}
 	virtual void light_set_projector(RID p_light, RID p_texture) override {}
 	virtual void light_set_negative(RID p_light, bool p_enable) override {}
@@ -81,29 +81,29 @@ public:
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) override {}
 	virtual void light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) override {}
 	virtual uint32_t light_get_shadow_caster_mask(RID p_light) const override { return 0xFFFFFFFF; }
-	virtual void light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) override {}
+	virtual void light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mode) override {}
 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) override {}
 
-	virtual void light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMode p_mode) override {}
+	virtual void light_omni_set_shadow_mode(RID p_light, RSE::LightOmniShadowMode p_mode) override {}
 
-	virtual void light_directional_set_shadow_mode(RID p_light, RS::LightDirectionalShadowMode p_mode) override {}
+	virtual void light_directional_set_shadow_mode(RID p_light, RSE::LightDirectionalShadowMode p_mode) override {}
 	virtual void light_directional_set_blend_splits(RID p_light, bool p_enable) override {}
 	virtual bool light_directional_get_blend_splits(RID p_light) const override { return false; }
-	virtual void light_directional_set_sky_mode(RID p_light, RS::LightDirectionalSkyMode p_mode) override {}
-	virtual RS::LightDirectionalSkyMode light_directional_get_sky_mode(RID p_light) const override { return RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY; }
+	virtual void light_directional_set_sky_mode(RID p_light, RSE::LightDirectionalSkyMode p_mode) override {}
+	virtual RSE::LightDirectionalSkyMode light_directional_get_sky_mode(RID p_light) const override { return RSE::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY; }
 
-	virtual RS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light) override { return RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL; }
-	virtual RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) override { return RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID; }
+	virtual RSE::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light) override { return RSE::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL; }
+	virtual RSE::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) override { return RSE::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID; }
 
 	virtual bool light_has_shadow(RID p_light) const override { return false; }
 	virtual bool light_has_projector(RID p_light) const override { return false; }
 
-	virtual RS::LightType light_get_type(RID p_light) const override { return RS::LIGHT_OMNI; }
+	virtual RSE::LightType light_get_type(RID p_light) const override { return RSE::LIGHT_OMNI; }
 	virtual AABB light_get_aabb(RID p_light) const override { return AABB(); }
-	virtual float light_get_param(RID p_light, RS::LightParam p_param) override { return 0.0; }
+	virtual float light_get_param(RID p_light, RSE::LightParam p_param) override { return 0.0; }
 	virtual Color light_get_color(RID p_light) override { return Color(); }
 	virtual bool light_get_reverse_cull_face_mode(RID p_light) const override { return false; }
-	virtual RS::LightBakeMode light_get_bake_mode(RID p_light) override { return RS::LIGHT_BAKE_DISABLED; }
+	virtual RSE::LightBakeMode light_get_bake_mode(RID p_light) override { return RSE::LIGHT_BAKE_DISABLED; }
 	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) override { return 0; }
 	virtual uint64_t light_get_version(RID p_light) const override { return 0; }
 	virtual uint32_t light_get_cull_mask(RID p_light) const override { return 0; }
@@ -123,10 +123,10 @@ public:
 	virtual void reflection_probe_initialize(RID p_rid) override {}
 	virtual void reflection_probe_free(RID p_rid) override {}
 
-	virtual void reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) override {}
+	virtual void reflection_probe_set_update_mode(RID p_probe, RSE::ReflectionProbeUpdateMode p_mode) override {}
 	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity) override {}
 	virtual void reflection_probe_set_blend_distance(RID p_probe, float p_blend_distance) override {}
-	virtual void reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) override {}
+	virtual void reflection_probe_set_ambient_mode(RID p_probe, RSE::ReflectionProbeAmbientMode p_mode) override {}
 	virtual void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) override {}
 	virtual void reflection_probe_set_ambient_energy(RID p_probe, float p_energy) override {}
 	virtual void reflection_probe_set_max_distance(RID p_probe, float p_distance) override {}
@@ -142,7 +142,7 @@ public:
 	virtual float reflection_probe_get_mesh_lod_threshold(RID p_probe) const override { return 0.0; }
 
 	virtual AABB reflection_probe_get_aabb(RID p_probe) const override { return AABB(); }
-	virtual RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const override { return RenderingServer::REFLECTION_PROBE_UPDATE_ONCE; }
+	virtual RSE::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const override { return RSE::REFLECTION_PROBE_UPDATE_ONCE; }
 	virtual uint32_t reflection_probe_get_cull_mask(RID p_probe) const override { return 0; }
 	virtual uint32_t reflection_probe_get_reflection_mask(RID p_probe) const override { return 0; }
 	virtual Vector3 reflection_probe_get_size(RID p_probe) const override { return Vector3(); }
@@ -195,8 +195,8 @@ public:
 	virtual float lightmap_get_probe_capture_update_speed() const override { return 0; }
 
 	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) override {}
-	virtual RS::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) override { return RS::SHADOWMASK_MODE_NONE; }
-	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMode p_mode) override {}
+	virtual RSE::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) override { return RSE::SHADOWMASK_MODE_NONE; }
+	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RSE::ShadowmaskMode p_mode) override {}
 
 	/* LIGHTMAP INSTANCE */
 

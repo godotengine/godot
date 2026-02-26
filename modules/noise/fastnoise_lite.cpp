@@ -482,18 +482,24 @@ void FastNoiseLite::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
-	if (p_property.name.begins_with("cellular") && get_noise_type() != TYPE_CELLULAR) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (p_property.name.begins_with("cellular")) {
+		if (get_noise_type() != TYPE_CELLULAR) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 		return;
 	}
 
-	if (p_property.name != "fractal_type" && p_property.name.begins_with("fractal") && get_fractal_type() == FRACTAL_NONE) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (p_property.name != "fractal_type" && p_property.name.begins_with("fractal")) {
+		if (get_fractal_type() == FRACTAL_NONE) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 		return;
 	}
 
-	if (p_property.name == "fractal_ping_pong_strength" && get_fractal_type() != FRACTAL_PING_PONG) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (p_property.name == "fractal_ping_pong_strength") {
+		if (get_fractal_type() != FRACTAL_PING_PONG) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 		return;
 	}
 }

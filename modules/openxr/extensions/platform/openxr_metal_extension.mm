@@ -34,7 +34,7 @@
 
 #import "drivers/metal/rendering_device_driver_metal.h"
 #include "servers/rendering/rendering_device.h"
-#include "servers/rendering/rendering_server_globals.h"
+#include "servers/rendering/rendering_server.h"
 
 HashMap<String, bool *> OpenXRMetalExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;

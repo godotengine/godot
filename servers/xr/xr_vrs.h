@@ -30,10 +30,10 @@
 
 #pragma once
 
-#include "core/object/class_db.h"
+#include "core/math/vector2i.h"
 #include "core/object/object.h"
 #include "core/templates/rid.h"
-#include "core/variant/variant.h"
+#include "core/templates/vector.h"
 
 /* This is a helper class for generating stereoscopic VRS images */
 
@@ -48,7 +48,7 @@ private:
 
 	RID vrs_texture;
 	Size2i target_size;
-	PackedVector2Array eye_foci;
+	Vector<Vector2> eye_foci;
 
 protected:
 	static void _bind_methods();
@@ -63,5 +63,5 @@ public:
 	Rect2i get_vrs_render_region() const;
 	void set_vrs_render_region(const Rect2i &p_vrs_render_region);
 
-	RID make_vrs_texture(const Size2 &p_target_size, const PackedVector2Array &p_eye_foci);
+	RID make_vrs_texture(const Size2 &p_target_size, const Vector<Vector2> &p_eye_foci);
 };

@@ -32,6 +32,9 @@
 
 #ifdef GLES3_ENABLED
 
+#include "core/os/os.h"
+#include "servers/rendering/rendering_server_enums.h"
+
 using namespace GLES3;
 
 FeedEffects *FeedEffects::singleton = nullptr;
@@ -66,8 +69,8 @@ FeedEffects::FeedEffects() {
 		glGenVertexArrays(1, &screen_triangle_array);
 		glBindVertexArray(screen_triangle_array);
 		glBindBuffer(GL_ARRAY_BUFFER, screen_triangle);
-		glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
-		glEnableVertexAttribArray(RS::ARRAY_VERTEX);
+		glVertexAttribPointer(RSE::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		glEnableVertexAttribArray(RSE::ARRAY_VERTEX);
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 	}

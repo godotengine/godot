@@ -31,10 +31,11 @@
 #pragma once
 
 #include "core/templates/rid_owner.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/renderer_scene_render.h"
-#include "servers/rendering/rendering_method.h"
-#include "servers/rendering/rendering_server.h"
-#include "storage/render_scene_buffers.h"
+#include "servers/rendering/rendering_server_enums.h"
+#include "servers/rendering/rendering_server_types.h"
+#include "servers/rendering/storage/render_scene_buffers.h"
 
 class RendererViewport {
 public:
@@ -54,21 +55,21 @@ public:
 		RID camera;
 		RID scenario;
 
-		RS::ViewportScaling3DMode scaling_3d_mode = RenderingServer::VIEWPORT_SCALING_3D_MODE_BILINEAR;
+		RSE::ViewportScaling3DMode scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 		float scaling_3d_scale = 1.0;
 		float fsr_sharpness = 0.2f;
 		float texture_mipmap_bias = 0.0f;
-		RS::ViewportAnisotropicFiltering anisotropic_filtering_level = RenderingServer::VIEWPORT_ANISOTROPY_4X;
+		RSE::ViewportAnisotropicFiltering anisotropic_filtering_level = RSE::VIEWPORT_ANISOTROPY_4X;
 		bool fsr_enabled = false;
 		uint32_t jitter_phase_count = 0;
-		RS::ViewportUpdateMode update_mode = RenderingServer::VIEWPORT_UPDATE_WHEN_VISIBLE;
+		RSE::ViewportUpdateMode update_mode = RSE::VIEWPORT_UPDATE_WHEN_VISIBLE;
 		RID render_target;
 		RID render_target_texture;
 		Ref<RenderSceneBuffers> render_buffers;
 
-		RS::ViewportMSAA msaa_2d = RenderingServer::VIEWPORT_MSAA_DISABLED;
-		RS::ViewportMSAA msaa_3d = RenderingServer::VIEWPORT_MSAA_DISABLED;
-		RS::ViewportScreenSpaceAA screen_space_aa = RenderingServer::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
+		RSE::ViewportMSAA msaa_2d = RSE::VIEWPORT_MSAA_DISABLED;
+		RSE::ViewportMSAA msaa_3d = RSE::VIEWPORT_MSAA_DISABLED;
+		RSE::ViewportScreenSpaceAA screen_space_aa = RSE::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 		bool use_taa = false;
 		bool use_debanding = false;
 		bool force_motion_vectors = false;
@@ -84,7 +85,7 @@ public:
 		bool viewport_render_direct_to_screen = false;
 
 		bool disable_2d = false;
-		RS::ViewportEnvironmentMode disable_environment = RS::VIEWPORT_ENVIRONMENT_INHERIT;
+		RSE::ViewportEnvironmentMode disable_environment = RSE::VIEWPORT_ENVIRONMENT_INHERIT;
 		bool disable_3d = false;
 		bool measure_render_time = false;
 
@@ -107,12 +108,12 @@ public:
 
 		uint64_t last_pass = 0;
 
-		RS::ViewportDebugDraw debug_draw = RenderingServer::VIEWPORT_DEBUG_DRAW_DISABLED;
+		RSE::ViewportDebugDraw debug_draw = RSE::VIEWPORT_DEBUG_DRAW_DISABLED;
 
-		RS::ViewportClearMode clear_mode = RenderingServer::VIEWPORT_CLEAR_ALWAYS;
+		RSE::ViewportClearMode clear_mode = RSE::VIEWPORT_CLEAR_ALWAYS;
 
-		RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
-		RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+		RSE::CanvasItemTextureFilter texture_filter = RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+		RSE::CanvasItemTextureRepeat texture_repeat = RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 
 		bool transparent_bg = false;
 		bool use_hdr_2d = false;
@@ -151,12 +152,12 @@ public:
 
 		HashMap<RID, CanvasData> canvas_map;
 
-		RenderingMethod::RenderInfo render_info;
+		RenderingServerTypes::RenderInfo render_info;
 
 		Viewport() {
 			view_count = 1;
-			update_mode = RS::VIEWPORT_UPDATE_WHEN_VISIBLE;
-			clear_mode = RS::VIEWPORT_CLEAR_ALWAYS;
+			update_mode = RSE::VIEWPORT_UPDATE_WHEN_VISIBLE;
+			clear_mode = RSE::VIEWPORT_CLEAR_ALWAYS;
 			transparent_bg = false;
 			use_hdr_2d = false;
 			window_output_max_value = 1.0;
@@ -165,8 +166,8 @@ public:
 			shadow_atlas_size = 0;
 			measure_render_time = false;
 
-			debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
-			screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
+			debug_draw = RSE::VIEWPORT_DEBUG_DRAW_DISABLED;
+			screen_space_aa = RSE::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 			use_debanding = false;
 			use_occlusion_culling = false;
 			occlusion_buffer_dirty = true;
@@ -231,17 +232,17 @@ public:
 	void viewport_set_active(RID p_viewport, bool p_active);
 	void viewport_set_parent_viewport(RID p_viewport, RID p_parent_viewport);
 
-	void viewport_set_scaling_3d_mode(RID p_viewport, RS::ViewportScaling3DMode p_mode);
+	void viewport_set_scaling_3d_mode(RID p_viewport, RSE::ViewportScaling3DMode p_mode);
 	void viewport_set_scaling_3d_scale(RID p_viewport, float p_scaling_3d_scale);
 	void viewport_set_fsr_sharpness(RID p_viewport, float p_sharpness);
 	void viewport_set_texture_mipmap_bias(RID p_viewport, float p_mipmap_bias);
-	void viewport_set_anisotropic_filtering_level(RID p_viewport, RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level);
+	void viewport_set_anisotropic_filtering_level(RID p_viewport, RSE::ViewportAnisotropicFiltering p_anisotropic_filtering_level);
 
-	void viewport_set_update_mode(RID p_viewport, RS::ViewportUpdateMode p_mode);
-	RS::ViewportUpdateMode viewport_get_update_mode(RID p_viewport) const;
+	void viewport_set_update_mode(RID p_viewport, RSE::ViewportUpdateMode p_mode);
+	RSE::ViewportUpdateMode viewport_get_update_mode(RID p_viewport) const;
 	void viewport_set_vflip(RID p_viewport, bool p_enable);
 
-	void viewport_set_clear_mode(RID p_viewport, RS::ViewportClearMode p_clear_mode);
+	void viewport_set_clear_mode(RID p_viewport, RSE::ViewportClearMode p_clear_mode);
 
 	RID viewport_get_render_target(RID p_viewport) const;
 	RID viewport_get_texture(RID p_viewport) const;
@@ -251,7 +252,7 @@ public:
 	const RendererSceneRender::CameraData *viewport_get_prev_camera_data(RID p_viewport);
 
 	void viewport_set_disable_2d(RID p_viewport, bool p_disable);
-	void viewport_set_environment_mode(RID p_viewport, RS::ViewportEnvironmentMode p_mode);
+	void viewport_set_environment_mode(RID p_viewport, RSE::ViewportEnvironmentMode p_mode);
 	void viewport_set_disable_3d(RID p_viewport, bool p_disable);
 
 	bool viewport_is_environment_disabled(Viewport *viewport);
@@ -274,19 +275,19 @@ public:
 	void viewport_set_positional_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = true);
 	void viewport_set_positional_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv);
 
-	void viewport_set_msaa_2d(RID p_viewport, RS::ViewportMSAA p_msaa);
-	void viewport_set_msaa_3d(RID p_viewport, RS::ViewportMSAA p_msaa);
-	void viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode);
+	void viewport_set_msaa_2d(RID p_viewport, RSE::ViewportMSAA p_msaa);
+	void viewport_set_msaa_3d(RID p_viewport, RSE::ViewportMSAA p_msaa);
+	void viewport_set_screen_space_aa(RID p_viewport, RSE::ViewportScreenSpaceAA p_mode);
 	void viewport_set_use_taa(RID p_viewport, bool p_use_taa);
 	void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding);
 	void viewport_set_force_motion_vectors(RID p_viewport, bool p_force_motion_vectors);
 	void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_occlusion_culling);
 	void viewport_set_occlusion_rays_per_thread(int p_rays_per_thread);
-	void viewport_set_occlusion_culling_build_quality(RS::ViewportOcclusionCullingBuildQuality p_quality);
+	void viewport_set_occlusion_culling_build_quality(RSE::ViewportOcclusionCullingBuildQuality p_quality);
 	void viewport_set_mesh_lod_threshold(RID p_viewport, float p_pixels);
 
-	virtual int viewport_get_render_info(RID p_viewport, RS::ViewportRenderInfoType p_type, RS::ViewportRenderInfo p_info);
-	virtual void viewport_set_debug_draw(RID p_viewport, RS::ViewportDebugDraw p_draw);
+	virtual int viewport_get_render_info(RID p_viewport, RSE::ViewportRenderInfoType p_type, RSE::ViewportRenderInfo p_info);
+	virtual void viewport_set_debug_draw(RID p_viewport, RSE::ViewportDebugDraw p_draw);
 
 	void viewport_set_measure_render_time(RID p_viewport, bool p_enable);
 	float viewport_get_measured_render_time_cpu(RID p_viewport) const;
@@ -295,15 +296,15 @@ public:
 	void viewport_set_snap_2d_transforms_to_pixel(RID p_viewport, bool p_enabled);
 	void viewport_set_snap_2d_vertices_to_pixel(RID p_viewport, bool p_enabled);
 
-	void viewport_set_default_canvas_item_texture_filter(RID p_viewport, RS::CanvasItemTextureFilter p_filter);
-	void viewport_set_default_canvas_item_texture_repeat(RID p_viewport, RS::CanvasItemTextureRepeat p_repeat);
+	void viewport_set_default_canvas_item_texture_filter(RID p_viewport, RSE::CanvasItemTextureFilter p_filter);
+	void viewport_set_default_canvas_item_texture_repeat(RID p_viewport, RSE::CanvasItemTextureRepeat p_repeat);
 
-	void viewport_set_sdf_oversize_and_scale(RID p_viewport, RS::ViewportSDFOversize p_over_size, RS::ViewportSDFScale p_scale);
+	void viewport_set_sdf_oversize_and_scale(RID p_viewport, RSE::ViewportSDFOversize p_over_size, RSE::ViewportSDFScale p_scale);
 
 	virtual RID viewport_find_from_screen_attachment(DisplayServer::WindowID p_id = DisplayServer::MAIN_WINDOW_ID) const;
 
-	void viewport_set_vrs_mode(RID p_viewport, RS::ViewportVRSMode p_mode);
-	void viewport_set_vrs_update_mode(RID p_viewport, RS::ViewportVRSUpdateMode p_mode);
+	void viewport_set_vrs_mode(RID p_viewport, RSE::ViewportVRSMode p_mode);
+	void viewport_set_vrs_update_mode(RID p_viewport, RSE::ViewportVRSUpdateMode p_mode);
 	void viewport_set_vrs_texture(RID p_viewport, RID p_texture);
 
 	void handle_timestamp(String p_timestamp, uint64_t p_cpu_time, uint64_t p_gpu_time);

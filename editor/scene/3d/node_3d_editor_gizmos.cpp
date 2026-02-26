@@ -37,6 +37,7 @@
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/resources/3d/primitive_meshes.h"
+#include "servers/rendering/rendering_server.h"
 
 #define HANDLE_HALF_SIZE 9.5
 
@@ -218,11 +219,11 @@ void EditorNode3DGizmo::Instance::create_instance(Node3D *p_base, bool p_hidden)
 	if (extra_margin) {
 		RS::get_singleton()->instance_set_extra_visibility_margin(instance, 1);
 	}
-	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(instance, RS::SHADOW_CASTING_SETTING_OFF);
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(instance, RSE::SHADOW_CASTING_SETTING_OFF);
 	int layer = p_hidden ? 0 : 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER;
 	RS::get_singleton()->instance_set_layer_mask(instance, layer); //gizmos are 26
-	RS::get_singleton()->instance_geometry_set_flag(instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-	RS::get_singleton()->instance_geometry_set_flag(instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+	RS::get_singleton()->instance_geometry_set_flag(instance, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	RS::get_singleton()->instance_geometry_set_flag(instance, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 }
 
 void EditorNode3DGizmo::add_mesh(const Ref<Mesh> &p_mesh, const Ref<Material> &p_material, const Transform3D &p_xform, const Ref<SkinReference> &p_skin_reference) {
@@ -417,8 +418,8 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
 
 	Array a;
-	a.resize(RS::ARRAY_MAX);
-	a[RS::ARRAY_VERTEX] = p_handles;
+	a.resize(RSE::ARRAY_MAX);
+	a[RSE::ARRAY_VERTEX] = p_handles;
 	Vector<Color> colors;
 	{
 		colors.resize(p_handles.size());
@@ -438,7 +439,7 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 			w[i] = col;
 		}
 	}
-	a[RS::ARRAY_COLOR] = colors;
+	a[RSE::ARRAY_COLOR] = colors;
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_POINTS, a);
 	mesh->surface_set_material(0, p_material);
 
@@ -479,17 +480,17 @@ void EditorNode3DGizmo::add_solid_box(const Ref<Material> &p_material, Vector3 p
 	ERR_FAIL_NULL(spatial_node);
 
 	Array arrays;
-	arrays.resize(RS::ARRAY_MAX);
+	arrays.resize(RSE::ARRAY_MAX);
 	BoxMesh::create_mesh_array(arrays, p_size);
 
-	PackedVector3Array vertex = arrays[RS::ARRAY_VERTEX];
+	PackedVector3Array vertex = arrays[RSE::ARRAY_VERTEX];
 	Vector3 *w = vertex.ptrw();
 
 	for (int i = 0; i < vertex.size(); ++i) {
 		w[i] += p_position;
 	}
 
-	arrays[RS::ARRAY_VERTEX] = vertex;
+	arrays[RSE::ARRAY_VERTEX] = vertex;
 
 	Ref<ArrayMesh> m;
 	m.instantiate();

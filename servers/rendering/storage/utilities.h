@@ -30,7 +30,17 @@
 
 #pragma once
 
-#include "servers/rendering/rendering_server.h"
+#include "core/math/aabb.h"
+#include "core/math/vector2i.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/hash_set.h"
+#include "core/templates/list.h"
+#include "core/templates/pair.h"
+#include "core/templates/rid.h"
+#include "core/variant/callable.h"
+#include "servers/rendering/rendering_device_enums.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 class DependencyTracker;
 
@@ -125,7 +135,7 @@ public:
 
 	/* INSTANCES */
 
-	virtual RS::InstanceType get_base_type(RID p_rid) const = 0;
+	virtual RSE::InstanceType get_base_type(RID p_rid) const = 0;
 	virtual bool free(RID p_rid) = 0;
 
 	/* DEPENDENCIES */
@@ -177,7 +187,7 @@ public:
 
 	virtual void update_memory_info() = 0;
 
-	virtual uint64_t get_rendering_info(RS::RenderingInfo p_info) = 0;
+	virtual uint64_t get_rendering_info(RSE::RenderingInfo p_info) = 0;
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
 	virtual RenderingDeviceEnums::DeviceType get_video_adapter_type() const = 0;

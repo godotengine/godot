@@ -190,8 +190,7 @@ void ProgressBar::_notification(int p_what) {
 void ProgressBar::_validate_property(PropertyInfo &p_property) const {
 	if (Engine::get_singleton()->is_editor_hint() && indeterminate && p_property.name == "show_percentage") {
 		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
-	}
-	if (!indeterminate && p_property.name == "editor_preview_indeterminate") {
+	} else if (!indeterminate && p_property.name == "editor_preview_indeterminate") {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }

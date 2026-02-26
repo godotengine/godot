@@ -45,7 +45,7 @@
 			The [FoldableGroup] associated with the container. When multiple [FoldableContainer] nodes share the same group, only one of them is allowed to be unfolded.
 		</member>
 		<member name="folded" type="bool" setter="set_folded" getter="is_folded" default="false">
-			If [code]true[/code], the container will becomes folded and will hide all its children.
+			If [code]true[/code], the container will become folded and will hide all its children.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for text shaping algorithms. If left empty, the current locale is used instead.

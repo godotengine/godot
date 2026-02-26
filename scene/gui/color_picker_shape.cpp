@@ -33,6 +33,8 @@
 #include "core/input/input.h"
 #include "scene/gui/margin_container.h"
 #include "scene/resources/material.h"
+#include "servers/rendering/rendering_server.h"
+
 #include "thirdparty/misc/ok_color_shader.h"
 
 void ColorPickerShape::init_shaders() {

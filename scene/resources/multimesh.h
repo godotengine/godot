@@ -31,7 +31,7 @@
 #pragma once
 
 #include "scene/resources/mesh.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 class MultiMesh : public Resource {
 	GDCLASS(MultiMesh, Resource);
@@ -39,8 +39,8 @@ class MultiMesh : public Resource {
 
 public:
 	enum TransformFormat {
-		TRANSFORM_2D = RS::MULTIMESH_TRANSFORM_2D,
-		TRANSFORM_3D = RS::MULTIMESH_TRANSFORM_3D
+		TRANSFORM_2D = RSE::MULTIMESH_TRANSFORM_2D,
+		TRANSFORM_3D = RSE::MULTIMESH_TRANSFORM_3D
 	};
 
 	enum PhysicsInterpolationQuality {

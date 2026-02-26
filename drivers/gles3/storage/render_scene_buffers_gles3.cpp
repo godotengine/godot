@@ -156,28 +156,28 @@ void RenderSceneBuffersGLES3::configure(const RenderSceneBuffersConfiguration *p
 	}
 
 	// Check our scaling mode
-	if (scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_OFF && internal_size.x == 0 && internal_size.y == 0) {
+	if (scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_OFF && internal_size.x == 0 && internal_size.y == 0) {
 		// Disable, no size set.
-		scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
-	} else if (scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_OFF && internal_size == target_size) {
+		scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_OFF;
+	} else if (scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_OFF && internal_size == target_size) {
 		// If size matches, we won't use scaling.
-		scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
-	} else if (scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_OFF && scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_BILINEAR) {
+		scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_OFF;
+	} else if (scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_OFF && scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR) {
 		// We only support bilinear scaling atm.
 		WARN_PRINT_ONCE("GLES only supports bilinear scaling.");
-		scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
+		scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 	}
 
 	// Check if we support MSAA.
-	if (msaa3d.mode != RS::VIEWPORT_MSAA_DISABLED && internal_size.x == 0 && internal_size.y == 0) {
+	if (msaa3d.mode != RSE::VIEWPORT_MSAA_DISABLED && internal_size.x == 0 && internal_size.y == 0) {
 		// Disable, no size set.
-		msaa3d.mode = RS::VIEWPORT_MSAA_DISABLED;
-	} else if (!use_multiview && msaa3d.mode != RS::VIEWPORT_MSAA_DISABLED && !config->msaa_supported && !config->rt_msaa_supported) {
+		msaa3d.mode = RSE::VIEWPORT_MSAA_DISABLED;
+	} else if (!use_multiview && msaa3d.mode != RSE::VIEWPORT_MSAA_DISABLED && !config->msaa_supported && !config->rt_msaa_supported) {
 		WARN_PRINT_ONCE("MSAA is not supported on this device.");
-		msaa3d.mode = RS::VIEWPORT_MSAA_DISABLED;
-	} else if (use_multiview && msaa3d.mode != RS::VIEWPORT_MSAA_DISABLED && !config->msaa_multiview_supported && !config->rt_msaa_multiview_supported) {
+		msaa3d.mode = RSE::VIEWPORT_MSAA_DISABLED;
+	} else if (use_multiview && msaa3d.mode != RSE::VIEWPORT_MSAA_DISABLED && !config->msaa_multiview_supported && !config->rt_msaa_multiview_supported) {
 		WARN_PRINT_ONCE("Multiview MSAA is not supported on this device.");
-		msaa3d.mode = RS::VIEWPORT_MSAA_DISABLED;
+		msaa3d.mode = RSE::VIEWPORT_MSAA_DISABLED;
 	}
 
 	// We don't create our buffers right away because post effects can be made active at any time and change our buffer configuration.
@@ -189,7 +189,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 
 	ERR_FAIL_COND(view_count == 0);
 
-	bool use_internal_buffer = scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_OFF || apply_color_adjustments_in_post;
+	bool use_internal_buffer = scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_OFF || apply_color_adjustments_in_post;
 	GLenum depth_format = GL_DEPTH24_STENCIL8;
 	uint32_t depth_format_size = 4;
 	bool use_multiview = view_count > 1;
@@ -198,7 +198,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 		_clear_intermediate_buffers();
 	}
 
-	if ((!use_internal_buffer || internal3d.color != 0) && (msaa3d.mode == RS::VIEWPORT_MSAA_DISABLED || msaa3d.color != 0)) {
+	if ((!use_internal_buffer || internal3d.color != 0) && (msaa3d.mode == RSE::VIEWPORT_MSAA_DISABLED || msaa3d.color != 0)) {
 		// already setup!
 		return;
 	}
@@ -268,7 +268,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	}
 
-	if (msaa3d.mode != RS::VIEWPORT_MSAA_DISABLED && msaa3d.color == 0) {
+	if (msaa3d.mode != RSE::VIEWPORT_MSAA_DISABLED && msaa3d.color == 0) {
 		// Setup MSAA.
 		const GLsizei samples[] = { 1, 2, 4, 8 };
 		msaa3d.samples = samples[msaa3d.mode];
@@ -311,7 +311,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			if (status != GL_FRAMEBUFFER_COMPLETE) {
 				_clear_msaa3d_buffers();
-				msaa3d.mode = RS::VIEWPORT_MSAA_DISABLED;
+				msaa3d.mode = RSE::VIEWPORT_MSAA_DISABLED;
 				WARN_PRINT("Could not create 3D MSAA buffers, status: " + texture_storage->get_framebuffer_error(status));
 			}
 
@@ -357,7 +357,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			if (status != GL_FRAMEBUFFER_COMPLETE) {
 				_clear_msaa3d_buffers();
-				msaa3d.mode = RS::VIEWPORT_MSAA_DISABLED;
+				msaa3d.mode = RSE::VIEWPORT_MSAA_DISABLED;
 				WARN_PRINT("Could not create 3D MSAA buffers, status: " + texture_storage->get_framebuffer_error(status));
 			}
 
@@ -386,7 +386,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			if (status != GL_FRAMEBUFFER_COMPLETE) {
 				_clear_msaa3d_buffers();
-				msaa3d.mode = RS::VIEWPORT_MSAA_DISABLED;
+				msaa3d.mode = RSE::VIEWPORT_MSAA_DISABLED;
 				WARN_PRINT("Could not create 3D MSAA framebuffer, status: " + texture_storage->get_framebuffer_error(status));
 			}
 
@@ -395,7 +395,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 		} else {
 			// HUH? how did we get here?
 			WARN_PRINT_ONCE("MSAA is not supported on this device.");
-			msaa3d.mode = RS::VIEWPORT_MSAA_DISABLED;
+			msaa3d.mode = RSE::VIEWPORT_MSAA_DISABLED;
 			msaa3d.samples = 1;
 			msaa3d.check_fbo_cache = false;
 		}
@@ -408,7 +408,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 void RenderSceneBuffersGLES3::configure_for_probe(Size2i p_size) {
 	internal_size = p_size;
 	target_size = p_size;
-	scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
+	scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_OFF;
 	view_count = 1;
 }
 

@@ -157,19 +157,19 @@ void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, Has
 	GeometryInstance3D::ShadowCastingSetting gi3d_cast_shadows_setting = mesh_instance_node->get_cast_shadows_setting();
 	switch (gi3d_cast_shadows_setting) {
 		case GeometryInstance3D::ShadowCastingSetting::SHADOW_CASTING_SETTING_OFF: {
-			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_OFF);
+			p_library->set_item_mesh_cast_shadow(item_id, RSE::ShadowCastingSetting::SHADOW_CASTING_SETTING_OFF);
 		} break;
 		case GeometryInstance3D::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON: {
-			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON);
+			p_library->set_item_mesh_cast_shadow(item_id, RSE::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON);
 		} break;
 		case GeometryInstance3D::ShadowCastingSetting::SHADOW_CASTING_SETTING_DOUBLE_SIDED: {
-			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_DOUBLE_SIDED);
+			p_library->set_item_mesh_cast_shadow(item_id, RSE::ShadowCastingSetting::SHADOW_CASTING_SETTING_DOUBLE_SIDED);
 		} break;
 		case GeometryInstance3D::ShadowCastingSetting::SHADOW_CASTING_SETTING_SHADOWS_ONLY: {
-			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_SHADOWS_ONLY);
+			p_library->set_item_mesh_cast_shadow(item_id, RSE::ShadowCastingSetting::SHADOW_CASTING_SETTING_SHADOWS_ONLY);
 		} break;
 		default: {
-			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON);
+			p_library->set_item_mesh_cast_shadow(item_id, RSE::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON);
 		} break;
 	}
 

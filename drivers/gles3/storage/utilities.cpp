@@ -145,25 +145,25 @@ Vector<uint8_t> Utilities::buffer_get_data(GLenum p_target, GLuint p_buffer, uin
 
 /* INSTANCES */
 
-RS::InstanceType Utilities::get_base_type(RID p_rid) const {
+RSE::InstanceType Utilities::get_base_type(RID p_rid) const {
 	if (GLES3::MeshStorage::get_singleton()->owns_mesh(p_rid)) {
-		return RS::INSTANCE_MESH;
+		return RSE::INSTANCE_MESH;
 	} else if (GLES3::MeshStorage::get_singleton()->owns_multimesh(p_rid)) {
-		return RS::INSTANCE_MULTIMESH;
+		return RSE::INSTANCE_MULTIMESH;
 	} else if (GLES3::LightStorage::get_singleton()->owns_light(p_rid)) {
-		return RS::INSTANCE_LIGHT;
+		return RSE::INSTANCE_LIGHT;
 	} else if (GLES3::LightStorage::get_singleton()->owns_lightmap(p_rid)) {
-		return RS::INSTANCE_LIGHTMAP;
+		return RSE::INSTANCE_LIGHTMAP;
 	} else if (GLES3::ParticlesStorage::get_singleton()->owns_particles(p_rid)) {
-		return RS::INSTANCE_PARTICLES;
+		return RSE::INSTANCE_PARTICLES;
 	} else if (GLES3::LightStorage::get_singleton()->owns_reflection_probe(p_rid)) {
-		return RS::INSTANCE_REFLECTION_PROBE;
+		return RSE::INSTANCE_REFLECTION_PROBE;
 	} else if (GLES3::ParticlesStorage::get_singleton()->owns_particles_collision(p_rid)) {
-		return RS::INSTANCE_PARTICLES_COLLISION;
+		return RSE::INSTANCE_PARTICLES_COLLISION;
 	} else if (owns_visibility_notifier(p_rid)) {
-		return RS::INSTANCE_VISIBLITY_NOTIFIER;
+		return RSE::INSTANCE_VISIBLITY_NOTIFIER;
 	}
-	return RS::INSTANCE_NONE;
+	return RSE::INSTANCE_NONE;
 }
 
 bool Utilities::free(RID p_rid) {
@@ -431,12 +431,12 @@ bool Utilities::has_os_feature(const String &p_feature) const {
 void Utilities::update_memory_info() {
 }
 
-uint64_t Utilities::get_rendering_info(RS::RenderingInfo p_info) {
-	if (p_info == RS::RENDERING_INFO_TEXTURE_MEM_USED) {
+uint64_t Utilities::get_rendering_info(RSE::RenderingInfo p_info) {
+	if (p_info == RSE::RENDERING_INFO_TEXTURE_MEM_USED) {
 		return texture_mem_cache + render_buffer_mem_cache; // Add render buffer memory to our texture mem.
-	} else if (p_info == RS::RENDERING_INFO_BUFFER_MEM_USED) {
+	} else if (p_info == RSE::RENDERING_INFO_BUFFER_MEM_USED) {
 		return buffer_mem_cache;
-	} else if (p_info == RS::RENDERING_INFO_VIDEO_MEM_USED) {
+	} else if (p_info == RSE::RENDERING_INFO_VIDEO_MEM_USED) {
 		return texture_mem_cache + buffer_mem_cache + render_buffer_mem_cache;
 	}
 	return 0;

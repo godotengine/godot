@@ -53,6 +53,7 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/view_panner.h"
+#include "servers/rendering/rendering_server.h"
 
 Node2D *Polygon2DEditor::_get_node() const {
 	return node;

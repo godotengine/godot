@@ -35,7 +35,10 @@
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_toaster.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
+#include "editor/settings/project_settings_editor.h"
 #include "editor/translations/editor_translation_parser.h"
 #include "editor/translations/template_generator.h"
 #include "scene/gui/control.h"
@@ -400,6 +403,17 @@ void LocalizationEditor::_template_source_file_open() {
 
 void LocalizationEditor::_template_generate_open() {
 	template_generate_dialog->popup_file_dialog();
+}
+
+void LocalizationEditor::_template_generate_command() {
+	const String current_path = template_generate_dialog->get_current_path();
+	if (!current_path.is_empty() && current_path.get_file().is_valid_filename()) {
+		_template_generate(current_path);
+		EditorToaster::get_singleton()->popup_str(TTR("Template generated."));
+	} else {
+		ProjectSettingsEditor::get_singleton()->popup_centered();
+		_template_generate_open();
+	}
 }
 
 void LocalizationEditor::_template_add_builtin_toggled() {
@@ -899,4 +913,6 @@ LocalizationEditor::LocalizationEditor() {
 	for (Tree *tree : trees) {
 		SET_DRAG_FORWARDING_GCD(tree, LocalizationEditor);
 	}
+
+	EditorCommandPalette::get_singleton()->add_command(TTRC("Generate Translation Template"), "editor/template_generator/generate", callable_mp(this, &LocalizationEditor::_template_generate_command));
 }

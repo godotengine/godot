@@ -45,6 +45,7 @@
 #include "core/os/main_loop.h"
 #include "servers/display/native_menu.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef RD_ENABLED
 #ifdef VULKAN_ENABLED

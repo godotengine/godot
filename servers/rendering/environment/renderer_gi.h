@@ -30,7 +30,16 @@
 
 #pragma once
 
-#include "servers/rendering/rendering_server.h"
+#include <cstdint>
+
+class RID;
+struct AABB;
+struct Transform3D;
+struct Vector3;
+struct Vector3i;
+
+template <typename T>
+class Vector;
 
 class RendererGI {
 public:

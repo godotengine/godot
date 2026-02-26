@@ -35,8 +35,6 @@
 #include "webxr_interface.h"
 
 #include "core/templates/rb_map.h"
-#include "servers/xr/xr_controller_tracker.h"
-#include "servers/xr/xr_hand_tracker.h"
 
 /**
 	The WebXR interface is a VR/AR interface that can be used on the web.
@@ -45,6 +43,8 @@
 namespace GLES3 {
 class TextureStorage;
 }
+
+class XRHandTracker;
 
 class WebXRInterfaceJS : public WebXRInterface {
 	GDCLASS(WebXRInterfaceJS, WebXRInterface);
@@ -134,7 +134,7 @@ public:
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
 	virtual bool pre_draw_viewport(RID p_render_target) override;
-	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
+	virtual Vector<RenderingServerTypes::BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
 	virtual RID get_color_texture() override;
 	virtual RID get_depth_texture() override;
 	virtual RID get_velocity_texture() override;

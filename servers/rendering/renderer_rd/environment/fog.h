@@ -30,10 +30,8 @@
 
 #pragma once
 
-#include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/environment/renderer_fog.h"
-#include "servers/rendering/renderer_rd/cluster_builder_rd.h"
 #include "servers/rendering/renderer_rd/environment/gi.h"
 #include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
 #include "servers/rendering/renderer_rd/shaders/environment/volumetric_fog.glsl.gen.h"
@@ -42,6 +40,8 @@
 #include "servers/rendering/storage/utilities.h"
 
 #define RB_SCOPE_FOG SNAME("Fog")
+
+class ClusterBuilderRD;
 
 namespace RendererRD {
 
@@ -59,7 +59,7 @@ private:
 		RID material;
 		Vector3 size = Vector3(2, 2, 2);
 
-		RS::FogVolumeShape shape = RS::FOG_VOLUME_SHAPE_BOX;
+		RSE::FogVolumeShape shape = RSE::FOG_VOLUME_SHAPE_BOX;
 
 		Dependency dependency;
 	};
@@ -216,7 +216,7 @@ private:
 		virtual void set_code(const String &p_Code);
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 
 		FogShaderData() {}
@@ -255,10 +255,10 @@ public:
 	virtual void fog_volume_free(RID p_rid) override;
 	Dependency *fog_volume_get_dependency(RID p_fog_volume) const;
 
-	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) override;
+	virtual void fog_volume_set_shape(RID p_fog_volume, RSE::FogVolumeShape p_shape) override;
 	virtual void fog_volume_set_size(RID p_fog_volume, const Vector3 &p_size) override;
 	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material) override;
-	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const override;
+	virtual RSE::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const override;
 	RID fog_volume_get_material(RID p_fog_volume) const;
 	virtual AABB fog_volume_get_aabb(RID p_fog_volume) const override;
 	Vector3 fog_volume_get_size(RID p_fog_volume) const;

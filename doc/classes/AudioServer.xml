@@ -186,13 +186,13 @@
 		<method name="get_time_since_last_mix" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the relative time since the last mix occurred.
+				Returns the relative time since the last mix occurred, in seconds.
 			</description>
 		</method>
 		<method name="get_time_to_next_mix" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the relative time until the next mix occurs.
+				Returns the relative time until the next mix occurs, in seconds.
 			</description>
 		</method>
 		<method name="is_bus_bypassing_effects" qualifiers="const">

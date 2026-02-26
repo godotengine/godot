@@ -662,6 +662,7 @@
 		<constant name="DEBUG_DRAW_WIREFRAME" value="4" enum="DebugDraw">
 			Objects are displayed as wireframe models.
 			[b]Note:[/b] [method RenderingServer.set_debug_generate_wireframes] must be called before loading any meshes for wireframes to be visible when using the Compatibility renderer.
+			[b]Note:[/b] In the Compatibility renderer, backfaces are always visible when using wireframe rendering. In the Forward+ and Mobile renderers, wireframes follow the material's backface culling properties instead.
 		</constant>
 		<constant name="DEBUG_DRAW_NORMAL_BUFFER" value="5" enum="DebugDraw">
 			Objects are displayed without lighting information and their textures replaced by normal mapping.

@@ -35,6 +35,7 @@
 #include "core/math/geometry_3d.h"
 #include "core/variant/typed_array.h"
 #include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_server_types.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_warnings.h"
 
@@ -56,10 +57,10 @@ RenderingServer *RenderingServer::create() {
 }
 
 Array RenderingServer::_texture_debug_usage_bind() {
-	List<TextureInfo> list;
+	List<RenderingServerTypes::TextureInfo> list;
 	texture_debug_usage(&list);
 	Array arr;
-	for (const TextureInfo &E : list) {
+	for (const RenderingServerTypes::TextureInfo &E : list) {
 		Dictionary dict;
 		dict["texture"] = E.texture;
 		dict["width"] = E.width;
@@ -209,20 +210,20 @@ RID RenderingServer::_make_test_cube() {
 	RID test_cube = mesh_create();
 
 	Array d;
-	d.resize(RS::ARRAY_MAX);
-	d[RenderingServer::ARRAY_NORMAL] = normals;
-	d[RenderingServer::ARRAY_TANGENT] = tangents;
-	d[RenderingServer::ARRAY_TEX_UV] = uvs;
-	d[RenderingServer::ARRAY_VERTEX] = vertices;
+	d.resize(RSE::ARRAY_MAX);
+	d[RSE::ARRAY_NORMAL] = normals;
+	d[RSE::ARRAY_TANGENT] = tangents;
+	d[RSE::ARRAY_TEX_UV] = uvs;
+	d[RSE::ARRAY_VERTEX] = vertices;
 
 	Vector<int> indices;
 	indices.resize(vertices.size());
 	for (int i = 0; i < vertices.size(); i++) {
 		indices.set(i, i);
 	}
-	d[RenderingServer::ARRAY_INDEX] = indices;
+	d[RSE::ARRAY_INDEX] = indices;
 
-	mesh_add_surface_from_arrays(test_cube, PRIMITIVE_TRIANGLES, d);
+	mesh_add_surface_from_arrays(test_cube, RSE::PRIMITIVE_TRIANGLES, d);
 
 	/*
 	test_material = fixed_material_create();
@@ -286,12 +287,12 @@ RID RenderingServer::make_sphere_mesh(int p_lats, int p_lons, real_t p_radius) {
 
 	RID mesh = mesh_create();
 	Array d;
-	d.resize(RS::ARRAY_MAX);
+	d.resize(RSE::ARRAY_MAX);
 
-	d[ARRAY_VERTEX] = vertices;
-	d[ARRAY_NORMAL] = normals;
+	d[RSE::ARRAY_VERTEX] = vertices;
+	d[RSE::ARRAY_NORMAL] = normals;
 
-	mesh_add_surface_from_arrays(mesh, PRIMITIVE_TRIANGLES, d);
+	mesh_add_surface_from_arrays(mesh, RSE::PRIMITIVE_TRIANGLES, d);
 
 	return mesh;
 }
@@ -376,16 +377,16 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 	int max_bone = 0;
 
 	// Preprocess UVs if compression is enabled
-	if (p_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES && ((p_format & RS::ARRAY_FORMAT_TEX_UV) || (p_format & RS::ARRAY_FORMAT_TEX_UV2))) {
+	if (p_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES && ((p_format & RSE::ARRAY_FORMAT_TEX_UV) || (p_format & RSE::ARRAY_FORMAT_TEX_UV2))) {
 		const Vector2 *uv_src = nullptr;
-		if (p_format & RS::ARRAY_FORMAT_TEX_UV) {
-			Vector<Vector2> array = p_arrays[RS::ARRAY_TEX_UV];
+		if (p_format & RSE::ARRAY_FORMAT_TEX_UV) {
+			Vector<Vector2> array = p_arrays[RSE::ARRAY_TEX_UV];
 			uv_src = array.ptr();
 		}
 
 		const Vector2 *uv2_src = nullptr;
-		if (p_format & RS::ARRAY_FORMAT_TEX_UV2) {
-			Vector<Vector2> array = p_arrays[RS::ARRAY_TEX_UV2];
+		if (p_format & RSE::ARRAY_FORMAT_TEX_UV2) {
+			Vector<Vector2> array = p_arrays[RSE::ARRAY_TEX_UV2];
 			uv2_src = array.ptr();
 		}
 
@@ -395,11 +396,11 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 		Vector2 min_val2 = Vector2(0.0, 0.0);
 
 		for (int i = 0; i < p_vertex_array_len; i++) {
-			if (p_format & RS::ARRAY_FORMAT_TEX_UV) {
+			if (p_format & RSE::ARRAY_FORMAT_TEX_UV) {
 				max_val = max_val.max(uv_src[i]);
 				min_val = min_val.min(uv_src[i]);
 			}
-			if (p_format & RS::ARRAY_FORMAT_TEX_UV2) {
+			if (p_format & RSE::ARRAY_FORMAT_TEX_UV2) {
 				max_val2 = max_val2.max(uv2_src[i]);
 				min_val2 = min_val2.min(uv2_src[i]);
 			}
@@ -418,14 +419,14 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 		}
 	}
 
-	for (int ai = 0; ai < RS::ARRAY_MAX; ai++) {
+	for (int ai = 0; ai < RSE::ARRAY_MAX; ai++) {
 		if (!(p_format & (1ULL << ai))) { // No array
 			continue;
 		}
 
 		switch (ai) {
-			case RS::ARRAY_VERTEX: {
-				if (p_format & RS::ARRAY_FLAG_USE_2D_VERTICES) {
+			case RSE::ARRAY_VERTEX: {
+				if (p_format & RSE::ARRAY_FLAG_USE_2D_VERTICES) {
 					Vector<Vector2> array = p_arrays[ai];
 					ERR_FAIL_COND_V(array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER);
 
@@ -459,8 +460,8 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 					r_aabb = _compute_aabb_from_points(src, p_vertex_array_len);
 					r_aabb.size = r_aabb.size.max(SMALL_VEC3);
 
-					if (p_format & ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
-						if (!(p_format & RS::ARRAY_FORMAT_NORMAL)) {
+					if (p_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+						if (!(p_format & RSE::ARRAY_FORMAT_NORMAL)) {
 							// Early out if we are only setting vertex positions.
 							for (int i = 0; i < p_vertex_array_len; i++) {
 								Vector3 pos = (src[i] - r_aabb.position) / r_aabb.size;
@@ -477,18 +478,18 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 						}
 
 						// Validate normal and tangent arrays.
-						ERR_FAIL_COND_V(p_arrays[RS::ARRAY_NORMAL].get_type() != Variant::PACKED_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
+						ERR_FAIL_COND_V(p_arrays[RSE::ARRAY_NORMAL].get_type() != Variant::PACKED_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
 
-						Vector<Vector3> normal_array = p_arrays[RS::ARRAY_NORMAL];
+						Vector<Vector3> normal_array = p_arrays[RSE::ARRAY_NORMAL];
 						ERR_FAIL_COND_V(normal_array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER);
 						const Vector3 *normal_src = normal_array.ptr();
 
-						Variant::Type tangent_type = p_arrays[RS::ARRAY_TANGENT].get_type();
+						Variant::Type tangent_type = p_arrays[RSE::ARRAY_TANGENT].get_type();
 						ERR_FAIL_COND_V(tangent_type != Variant::PACKED_FLOAT32_ARRAY && tangent_type != Variant::PACKED_FLOAT64_ARRAY && tangent_type != Variant::NIL, ERR_INVALID_PARAMETER);
 
 						// We need a different version if using double precision tangents.
 						if (tangent_type == Variant::PACKED_FLOAT32_ARRAY) {
-							Vector<float> tangent_array = p_arrays[RS::ARRAY_TANGENT];
+							Vector<float> tangent_array = p_arrays[RSE::ARRAY_TANGENT];
 							ERR_FAIL_COND_V(tangent_array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
 							const float *tangent_src = tangent_array.ptr();
 
@@ -507,7 +508,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 										(uint16_t)CLAMP(res.y * 65535, 0, 65535),
 									};
 
-									memcpy(&vw[p_offsets[RS::ARRAY_NORMAL] + i * p_normal_stride], vector, 4);
+									memcpy(&vw[p_offsets[RSE::ARRAY_NORMAL] + i * p_normal_stride], vector, 4);
 								}
 
 								// Store vertex position + angle.
@@ -524,7 +525,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 								}
 							}
 						} else if (tangent_type == Variant::PACKED_FLOAT64_ARRAY) {
-							Vector<double> tangent_array = p_arrays[RS::ARRAY_TANGENT];
+							Vector<double> tangent_array = p_arrays[RSE::ARRAY_TANGENT];
 							ERR_FAIL_COND_V(tangent_array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
 							const double *tangent_src = tangent_array.ptr();
 
@@ -543,7 +544,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 										(uint16_t)CLAMP(res.y * 65535, 0, 65535),
 									};
 
-									memcpy(&vw[p_offsets[RS::ARRAY_NORMAL] + i * p_normal_stride], vector, 4);
+									memcpy(&vw[p_offsets[RSE::ARRAY_NORMAL] + i * p_normal_stride], vector, 4);
 								}
 
 								// Store vertex position + angle.
@@ -578,7 +579,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 										(uint16_t)CLAMP(res.y * 65535, 0, 65535),
 									};
 
-									memcpy(&vw[p_offsets[RS::ARRAY_NORMAL] + i * p_normal_stride], vector, 4);
+									memcpy(&vw[p_offsets[RSE::ARRAY_NORMAL] + i * p_normal_stride], vector, 4);
 								}
 
 								// Store vertex position + angle.
@@ -605,9 +606,9 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 				}
 
 			} break;
-			case RS::ARRAY_NORMAL: {
+			case RSE::ARRAY_NORMAL: {
 				// If using compression we store normal while storing vertices.
-				if (!(p_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
+				if (!(p_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
 					ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
 
 					Vector<Vector3> array = p_arrays[ai];
@@ -626,9 +627,9 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 				}
 			} break;
 
-			case RS::ARRAY_TANGENT: {
+			case RSE::ARRAY_TANGENT: {
 				// If using compression we store tangent while storing vertices.
-				if (!(p_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
+				if (!(p_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
 					Variant::Type type = p_arrays[ai].get_type();
 					ERR_FAIL_COND_V(type != Variant::PACKED_FLOAT32_ARRAY && type != Variant::PACKED_FLOAT64_ARRAY && type != Variant::NIL, ERR_INVALID_PARAMETER);
 
@@ -675,9 +676,9 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 							memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
 						}
 					} else { // No tangent array.
-						ERR_FAIL_COND_V(p_arrays[RS::ARRAY_NORMAL].get_type() != Variant::PACKED_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
+						ERR_FAIL_COND_V(p_arrays[RSE::ARRAY_NORMAL].get_type() != Variant::PACKED_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
 
-						Vector<Vector3> normal_array = p_arrays[RS::ARRAY_NORMAL];
+						Vector<Vector3> normal_array = p_arrays[RSE::ARRAY_NORMAL];
 						ERR_FAIL_COND_V(normal_array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER);
 						const Vector3 *normal_src = normal_array.ptr();
 						// Set data for tangent.
@@ -702,7 +703,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 					}
 				}
 			} break;
-			case RS::ARRAY_COLOR: {
+			case RSE::ARRAY_COLOR: {
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_COLOR_ARRAY, ERR_INVALID_PARAMETER);
 
 				Vector<Color> array = p_arrays[ai];
@@ -720,7 +721,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 					memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], color8, 4);
 				}
 			} break;
-			case RS::ARRAY_TEX_UV: {
+			case RSE::ARRAY_TEX_UV: {
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_VECTOR3_ARRAY && p_arrays[ai].get_type() != Variant::PACKED_VECTOR2_ARRAY, ERR_INVALID_PARAMETER);
 
 				Vector<Vector2> array = p_arrays[ai];
@@ -728,7 +729,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 				ERR_FAIL_COND_V(array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER);
 
 				const Vector2 *src = array.ptr();
-				if (p_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+				if (p_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 					for (int i = 0; i < p_vertex_array_len; i++) {
 						Vector2 vec = src[i];
 						if (!r_uv_scale.is_zero_approx()) {
@@ -747,7 +748,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 				}
 			} break;
 
-			case RS::ARRAY_TEX_UV2: {
+			case RSE::ARRAY_TEX_UV2: {
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_VECTOR3_ARRAY && p_arrays[ai].get_type() != Variant::PACKED_VECTOR2_ARRAY, ERR_INVALID_PARAMETER);
 
 				Vector<Vector2> array = p_arrays[ai];
@@ -756,7 +757,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 
 				const Vector2 *src = array.ptr();
 
-				if (p_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+				if (p_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 					for (int i = 0; i < p_vertex_array_len; i++) {
 						Vector2 vec = src[i];
 						if (!r_uv_scale.is_zero_approx()) {
@@ -773,15 +774,15 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 					}
 				}
 			} break;
-			case RS::ARRAY_CUSTOM0:
-			case RS::ARRAY_CUSTOM1:
-			case RS::ARRAY_CUSTOM2:
-			case RS::ARRAY_CUSTOM3: {
-				uint32_t type = (p_format >> (ARRAY_FORMAT_CUSTOM_BASE + ARRAY_FORMAT_CUSTOM_BITS * (ai - RS::ARRAY_CUSTOM0))) & ARRAY_FORMAT_CUSTOM_MASK;
+			case RSE::ARRAY_CUSTOM0:
+			case RSE::ARRAY_CUSTOM1:
+			case RSE::ARRAY_CUSTOM2:
+			case RSE::ARRAY_CUSTOM3: {
+				uint32_t type = (p_format >> (RSE::ARRAY_FORMAT_CUSTOM_BASE + RSE::ARRAY_FORMAT_CUSTOM_BITS * (ai - RSE::ARRAY_CUSTOM0))) & RSE::ARRAY_FORMAT_CUSTOM_MASK;
 				switch (type) {
-					case ARRAY_CUSTOM_RGBA8_UNORM:
-					case ARRAY_CUSTOM_RGBA8_SNORM:
-					case ARRAY_CUSTOM_RG_HALF: {
+					case RSE::ARRAY_CUSTOM_RGBA8_UNORM:
+					case RSE::ARRAY_CUSTOM_RGBA8_SNORM:
+					case RSE::ARRAY_CUSTOM_RG_HALF: {
 						// Size 4
 						ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_BYTE_ARRAY, ERR_INVALID_PARAMETER);
 
@@ -796,7 +797,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 						}
 
 					} break;
-					case ARRAY_CUSTOM_RGBA_HALF: {
+					case RSE::ARRAY_CUSTOM_RGBA_HALF: {
 						// Size 8
 						ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_BYTE_ARRAY, ERR_INVALID_PARAMETER);
 
@@ -810,15 +811,15 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 							memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], &src[i * 8], 8);
 						}
 					} break;
-					case ARRAY_CUSTOM_R_FLOAT:
-					case ARRAY_CUSTOM_RG_FLOAT:
-					case ARRAY_CUSTOM_RGB_FLOAT:
-					case ARRAY_CUSTOM_RGBA_FLOAT: {
+					case RSE::ARRAY_CUSTOM_R_FLOAT:
+					case RSE::ARRAY_CUSTOM_RG_FLOAT:
+					case RSE::ARRAY_CUSTOM_RGB_FLOAT:
+					case RSE::ARRAY_CUSTOM_RGBA_FLOAT: {
 						// RF
 						ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_FLOAT32_ARRAY, ERR_INVALID_PARAMETER);
 
 						Vector<float> array = p_arrays[ai];
-						int32_t s = type - ARRAY_CUSTOM_R_FLOAT + 1;
+						int32_t s = type - RSE::ARRAY_CUSTOM_R_FLOAT + 1;
 
 						ERR_FAIL_COND_V(array.size() != p_vertex_array_len * s, ERR_INVALID_PARAMETER);
 
@@ -833,10 +834,10 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 				}
 
 			} break;
-			case RS::ARRAY_WEIGHTS: {
+			case RSE::ARRAY_WEIGHTS: {
 				Variant::Type type = p_arrays[ai].get_type();
 				ERR_FAIL_COND_V(type != Variant::PACKED_FLOAT32_ARRAY && type != Variant::PACKED_FLOAT64_ARRAY, ERR_INVALID_PARAMETER);
-				uint32_t bone_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+				uint32_t bone_count = (p_format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
 				if (type == Variant::PACKED_FLOAT32_ARRAY) {
 					Vector<float> array = p_arrays[ai];
 					ERR_FAIL_COND_V(array.size() != (int32_t)(p_vertex_array_len * bone_count), ERR_INVALID_PARAMETER);
@@ -867,12 +868,12 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 					}
 				}
 			} break;
-			case RS::ARRAY_BONES: {
+			case RSE::ARRAY_BONES: {
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_INT32_ARRAY && p_arrays[ai].get_type() != Variant::PACKED_FLOAT32_ARRAY, ERR_INVALID_PARAMETER);
 
 				Vector<int> array = p_arrays[ai];
 
-				uint32_t bone_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+				uint32_t bone_count = (p_format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
 
 				ERR_FAIL_COND_V(array.size() != (int32_t)(p_vertex_array_len * bone_count), ERR_INVALID_PARAMETER);
 
@@ -891,7 +892,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 
 			} break;
 
-			case RS::ARRAY_INDEX: {
+			case RSE::ARRAY_INDEX: {
 				ERR_FAIL_NULL_V(iw, ERR_INVALID_DATA);
 				ERR_FAIL_COND_V(p_index_array_len <= 0, ERR_INVALID_DATA);
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_INT32_ARRAY, ERR_INVALID_PARAMETER);
@@ -922,7 +923,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 		}
 	}
 
-	if (p_format & RS::ARRAY_FORMAT_BONES) {
+	if (p_format & RSE::ARRAY_FORMAT_BONES) {
 		// Create AABBs for each detected bone.
 		int total_bones = max_bone + 1;
 
@@ -930,7 +931,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 
 		r_bone_aabb.resize(total_bones);
 
-		int weight_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+		int weight_count = (p_format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
 
 		if (first) {
 			for (int i = 0; i < total_bones; i++) {
@@ -938,9 +939,9 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 			}
 		}
 
-		Vector<Vector3> vertices = p_arrays[RS::ARRAY_VERTEX];
-		Vector<int> bones = p_arrays[RS::ARRAY_BONES];
-		Vector<float> weights = p_arrays[RS::ARRAY_WEIGHTS];
+		Vector<Vector3> vertices = p_arrays[RSE::ARRAY_VERTEX];
+		Vector<int> bones = p_arrays[RSE::ARRAY_BONES];
+		Vector<float> weights = p_arrays[RSE::ARRAY_WEIGHTS];
 
 		bool any_valid = false;
 
@@ -980,10 +981,10 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 	return OK;
 }
 
-uint32_t RenderingServer::mesh_surface_get_format_offset(BitField<ArrayFormat> p_format, int p_vertex_len, int p_array_index) const {
-	ERR_FAIL_INDEX_V(p_array_index, ARRAY_MAX, 0);
-	p_format = uint64_t(p_format) & ~ARRAY_FORMAT_INDEX;
-	uint32_t offsets[ARRAY_MAX];
+uint32_t RenderingServer::mesh_surface_get_format_offset(BitField<RSE::ArrayFormat> p_format, int p_vertex_len, int p_array_index) const {
+	ERR_FAIL_INDEX_V(p_array_index, RSE::ARRAY_MAX, 0);
+	p_format = uint64_t(p_format) & ~RSE::ARRAY_FORMAT_INDEX;
+	uint32_t offsets[RSE::ARRAY_MAX];
 	uint32_t vstr;
 	uint32_t ntstr;
 	uint32_t astr;
@@ -992,9 +993,9 @@ uint32_t RenderingServer::mesh_surface_get_format_offset(BitField<ArrayFormat> p
 	return offsets[p_array_index];
 }
 
-uint32_t RenderingServer::mesh_surface_get_format_vertex_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const {
-	p_format = uint64_t(p_format) & ~ARRAY_FORMAT_INDEX;
-	uint32_t offsets[ARRAY_MAX];
+uint32_t RenderingServer::mesh_surface_get_format_vertex_stride(BitField<RSE::ArrayFormat> p_format, int p_vertex_len) const {
+	p_format = uint64_t(p_format) & ~RSE::ARRAY_FORMAT_INDEX;
+	uint32_t offsets[RSE::ARRAY_MAX];
 	uint32_t vstr;
 	uint32_t ntstr;
 	uint32_t astr;
@@ -1003,9 +1004,9 @@ uint32_t RenderingServer::mesh_surface_get_format_vertex_stride(BitField<ArrayFo
 	return vstr;
 }
 
-uint32_t RenderingServer::mesh_surface_get_format_normal_tangent_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const {
-	p_format = uint64_t(p_format) & ~ARRAY_FORMAT_INDEX;
-	uint32_t offsets[ARRAY_MAX];
+uint32_t RenderingServer::mesh_surface_get_format_normal_tangent_stride(BitField<RSE::ArrayFormat> p_format, int p_vertex_len) const {
+	p_format = uint64_t(p_format) & ~RSE::ARRAY_FORMAT_INDEX;
+	uint32_t offsets[RSE::ARRAY_MAX];
 	uint32_t vstr;
 	uint32_t ntstr;
 	uint32_t astr;
@@ -1014,9 +1015,9 @@ uint32_t RenderingServer::mesh_surface_get_format_normal_tangent_stride(BitField
 	return ntstr;
 }
 
-uint32_t RenderingServer::mesh_surface_get_format_attribute_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const {
-	p_format = uint64_t(p_format) & ~ARRAY_FORMAT_INDEX;
-	uint32_t offsets[ARRAY_MAX];
+uint32_t RenderingServer::mesh_surface_get_format_attribute_stride(BitField<RSE::ArrayFormat> p_format, int p_vertex_len) const {
+	p_format = uint64_t(p_format) & ~RSE::ARRAY_FORMAT_INDEX;
+	uint32_t offsets[RSE::ARRAY_MAX];
 	uint32_t vstr;
 	uint32_t ntstr;
 	uint32_t astr;
@@ -1025,9 +1026,9 @@ uint32_t RenderingServer::mesh_surface_get_format_attribute_stride(BitField<Arra
 	return astr;
 }
 
-uint32_t RenderingServer::mesh_surface_get_format_skin_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const {
-	p_format = uint64_t(p_format) & ~ARRAY_FORMAT_INDEX;
-	uint32_t offsets[ARRAY_MAX];
+uint32_t RenderingServer::mesh_surface_get_format_skin_stride(BitField<RSE::ArrayFormat> p_format, int p_vertex_len) const {
+	p_format = uint64_t(p_format) & ~RSE::ARRAY_FORMAT_INDEX;
+	uint32_t offsets[RSE::ARRAY_MAX];
 	uint32_t vstr;
 	uint32_t ntstr;
 	uint32_t astr;
@@ -1036,8 +1037,8 @@ uint32_t RenderingServer::mesh_surface_get_format_skin_stride(BitField<ArrayForm
 	return sstr;
 }
 
-uint32_t RenderingServer::mesh_surface_get_format_index_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const {
-	if (!(p_format & ARRAY_FORMAT_INDEX)) {
+uint32_t RenderingServer::mesh_surface_get_format_index_stride(BitField<RSE::ArrayFormat> p_format, int p_vertex_len) const {
+	if (!(p_format & RSE::ARRAY_FORMAT_INDEX)) {
 		return 0;
 	}
 
@@ -1057,16 +1058,16 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint64_t p_format, i
 
 	uint32_t *size_accum = nullptr;
 
-	for (int i = 0; i < RS::ARRAY_MAX; i++) {
+	for (int i = 0; i < RSE::ARRAY_MAX; i++) {
 		r_offsets[i] = 0; // Reset
 
-		if (i == RS::ARRAY_VERTEX) {
+		if (i == RSE::ARRAY_VERTEX) {
 			size_accum = &r_vertex_element_size;
-		} else if (i == RS::ARRAY_NORMAL) {
+		} else if (i == RSE::ARRAY_NORMAL) {
 			size_accum = &r_normal_element_size;
-		} else if (i == RS::ARRAY_COLOR) {
+		} else if (i == RSE::ARRAY_COLOR) {
 			size_accum = &r_attrib_element_size;
-		} else if (i == RS::ARRAY_BONES) {
+		} else if (i == RSE::ARRAY_BONES) {
 			size_accum = &r_skin_element_size;
 		}
 
@@ -1077,72 +1078,72 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint64_t p_format, i
 		int elem_size = 0;
 
 		switch (i) {
-			case RS::ARRAY_VERTEX: {
-				if (p_format & ARRAY_FLAG_USE_2D_VERTICES) {
+			case RSE::ARRAY_VERTEX: {
+				if (p_format & RSE::ARRAY_FLAG_USE_2D_VERTICES) {
 					elem_size = 2;
 				} else {
-					elem_size = (p_format & ARRAY_FLAG_COMPRESS_ATTRIBUTES) ? 2 : 3;
+					elem_size = (p_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) ? 2 : 3;
 				}
 
 				elem_size *= sizeof(float);
 			} break;
-			case RS::ARRAY_NORMAL: {
+			case RSE::ARRAY_NORMAL: {
 				elem_size = 4;
 			} break;
-			case RS::ARRAY_TANGENT: {
-				elem_size = (p_format & ARRAY_FLAG_COMPRESS_ATTRIBUTES) ? 0 : 4;
+			case RSE::ARRAY_TANGENT: {
+				elem_size = (p_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) ? 0 : 4;
 			} break;
-			case RS::ARRAY_COLOR: {
+			case RSE::ARRAY_COLOR: {
 				elem_size = 4;
 			} break;
-			case RS::ARRAY_TEX_UV: {
-				elem_size = (p_format & ARRAY_FLAG_COMPRESS_ATTRIBUTES) ? 4 : 8;
+			case RSE::ARRAY_TEX_UV: {
+				elem_size = (p_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) ? 4 : 8;
 			} break;
-			case RS::ARRAY_TEX_UV2: {
-				elem_size = (p_format & ARRAY_FLAG_COMPRESS_ATTRIBUTES) ? 4 : 8;
+			case RSE::ARRAY_TEX_UV2: {
+				elem_size = (p_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) ? 4 : 8;
 			} break;
-			case RS::ARRAY_CUSTOM0:
-			case RS::ARRAY_CUSTOM1:
-			case RS::ARRAY_CUSTOM2:
-			case RS::ARRAY_CUSTOM3: {
-				uint64_t format = (p_format >> (ARRAY_FORMAT_CUSTOM_BASE + (ARRAY_FORMAT_CUSTOM_BITS * (i - ARRAY_CUSTOM0)))) & ARRAY_FORMAT_CUSTOM_MASK;
+			case RSE::ARRAY_CUSTOM0:
+			case RSE::ARRAY_CUSTOM1:
+			case RSE::ARRAY_CUSTOM2:
+			case RSE::ARRAY_CUSTOM3: {
+				uint64_t format = (p_format >> (RSE::ARRAY_FORMAT_CUSTOM_BASE + (RSE::ARRAY_FORMAT_CUSTOM_BITS * (i - RSE::ARRAY_CUSTOM0)))) & RSE::ARRAY_FORMAT_CUSTOM_MASK;
 				switch (format) {
-					case ARRAY_CUSTOM_RGBA8_UNORM: {
+					case RSE::ARRAY_CUSTOM_RGBA8_UNORM: {
 						elem_size = 4;
 					} break;
-					case ARRAY_CUSTOM_RGBA8_SNORM: {
+					case RSE::ARRAY_CUSTOM_RGBA8_SNORM: {
 						elem_size = 4;
 					} break;
-					case ARRAY_CUSTOM_RG_HALF: {
+					case RSE::ARRAY_CUSTOM_RG_HALF: {
 						elem_size = 4;
 					} break;
-					case ARRAY_CUSTOM_RGBA_HALF: {
+					case RSE::ARRAY_CUSTOM_RGBA_HALF: {
 						elem_size = 8;
 					} break;
-					case ARRAY_CUSTOM_R_FLOAT: {
+					case RSE::ARRAY_CUSTOM_R_FLOAT: {
 						elem_size = 4;
 					} break;
-					case ARRAY_CUSTOM_RG_FLOAT: {
+					case RSE::ARRAY_CUSTOM_RG_FLOAT: {
 						elem_size = 8;
 					} break;
-					case ARRAY_CUSTOM_RGB_FLOAT: {
+					case RSE::ARRAY_CUSTOM_RGB_FLOAT: {
 						elem_size = 12;
 					} break;
-					case ARRAY_CUSTOM_RGBA_FLOAT: {
+					case RSE::ARRAY_CUSTOM_RGBA_FLOAT: {
 						elem_size = 16;
 					} break;
 				}
 			} break;
-			case RS::ARRAY_WEIGHTS: {
-				uint32_t bone_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+			case RSE::ARRAY_WEIGHTS: {
+				uint32_t bone_count = (p_format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
 				elem_size = sizeof(uint16_t) * bone_count;
 
 			} break;
-			case RS::ARRAY_BONES: {
-				uint32_t bone_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+			case RSE::ARRAY_BONES: {
+				uint32_t bone_count = (p_format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
 				elem_size = sizeof(uint16_t) * bone_count;
 			} break;
-			case RS::ARRAY_INDEX: {
+			case RSE::ARRAY_INDEX: {
 				if (p_index_len <= 0) {
 					ERR_PRINT("index_array_len==NO_INDEX_ARRAY");
 					break;
@@ -1163,7 +1164,7 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint64_t p_format, i
 
 		if (size_accum != nullptr) {
 			r_offsets[i] = (*size_accum);
-			if (i == RS::ARRAY_NORMAL || i == RS::ARRAY_TANGENT) {
+			if (i == RSE::ARRAY_NORMAL || i == RSE::ARRAY_TANGENT) {
 				r_offsets[i] += r_vertex_element_size * p_vertex_len;
 			}
 			(*size_accum) += elem_size;
@@ -1173,9 +1174,9 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint64_t p_format, i
 	}
 }
 
-Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surface_data, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, const Dictionary &p_lods, uint64_t p_compress_format) {
-	ERR_FAIL_INDEX_V(p_primitive, RS::PRIMITIVE_MAX, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(p_arrays.size() != RS::ARRAY_MAX, ERR_INVALID_PARAMETER);
+Error RenderingServer::mesh_create_surface_data_from_arrays(RenderingServerTypes::SurfaceData *r_surface_data, RSE::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, const Dictionary &p_lods, uint64_t p_compress_format) {
+	ERR_FAIL_INDEX_V(p_primitive, RSE::PRIMITIVE_MAX, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_arrays.size() != RSE::ARRAY_MAX, ERR_INVALID_PARAMETER);
 
 	uint64_t format = 0;
 
@@ -1190,15 +1191,15 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 
 		format |= (1ULL << i);
 
-		if (i == RS::ARRAY_VERTEX) {
+		if (i == RSE::ARRAY_VERTEX) {
 			switch (p_arrays[i].get_type()) {
 				case Variant::PACKED_VECTOR2_ARRAY: {
 					Vector<Vector2> v2 = p_arrays[i];
 					array_len = v2.size();
-					format |= ARRAY_FLAG_USE_2D_VERTICES;
+					format |= RSE::ARRAY_FLAG_USE_2D_VERTICES;
 				} break;
 				case Variant::PACKED_VECTOR3_ARRAY: {
-					ERR_FAIL_COND_V(p_compress_format & ARRAY_FLAG_USE_2D_VERTICES, ERR_INVALID_PARAMETER);
+					ERR_FAIL_COND_V(p_compress_format & RSE::ARRAY_FLAG_USE_2D_VERTICES, ERR_INVALID_PARAMETER);
 					Vector<Vector3> v3 = p_arrays[i];
 					array_len = v3.size();
 				} break;
@@ -1207,27 +1208,27 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 				} break;
 			}
 			ERR_FAIL_COND_V(array_len == 0, ERR_INVALID_DATA);
-		} else if (i == RS::ARRAY_NORMAL) {
-			if (p_arrays[RS::ARRAY_TANGENT].get_type() == Variant::NIL) {
+		} else if (i == RSE::ARRAY_NORMAL) {
+			if (p_arrays[RSE::ARRAY_TANGENT].get_type() == Variant::NIL) {
 				// We must use tangents if using normals.
-				format |= (1ULL << RS::ARRAY_TANGENT);
+				format |= (1ULL << RSE::ARRAY_TANGENT);
 			}
-		} else if (i == RS::ARRAY_BONES) {
+		} else if (i == RSE::ARRAY_BONES) {
 			switch (p_arrays[i].get_type()) {
 				case Variant::PACKED_INT32_ARRAY: {
-					Vector<Vector3> vertices = p_arrays[RS::ARRAY_VERTEX];
+					Vector<Vector3> vertices = p_arrays[RSE::ARRAY_VERTEX];
 					Vector<int32_t> bones = p_arrays[i];
-					int32_t bone_8_group_count = bones.size() / (ARRAY_WEIGHTS_SIZE * 2);
+					int32_t bone_8_group_count = bones.size() / (RSE::ARRAY_WEIGHTS_SIZE * 2);
 					int32_t vertex_count = vertices.size();
 					if (vertex_count == bone_8_group_count) {
-						format |= RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+						format |= RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
 					}
 				} break;
 				default: {
 					ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Bones array must be a PackedInt32Array.");
 				} break;
 			}
-		} else if (i == RS::ARRAY_INDEX) {
+		} else if (i == RSE::ARRAY_INDEX) {
 			index_array_len = PackedInt32Array(p_arrays[i]).size();
 		}
 	}
@@ -1242,54 +1243,54 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 					bsformat |= (1 << j);
 				}
 			}
-			if (bsformat & RS::ARRAY_FORMAT_NORMAL) {
+			if (bsformat & RSE::ARRAY_FORMAT_NORMAL) {
 				// We must use tangents if using normals.
-				bsformat |= RS::ARRAY_FORMAT_TANGENT;
+				bsformat |= RSE::ARRAY_FORMAT_TANGENT;
 			}
 
-			ERR_FAIL_COND_V_MSG(bsformat != (format & RS::ARRAY_FORMAT_BLEND_SHAPE_MASK), ERR_INVALID_PARAMETER, "Blend shape format must match the main array format for Vertex, Normal and Tangent arrays.");
+			ERR_FAIL_COND_V_MSG(bsformat != (format & RSE::ARRAY_FORMAT_BLEND_SHAPE_MASK), ERR_INVALID_PARAMETER, "Blend shape format must match the main array format for Vertex, Normal and Tangent arrays.");
 		}
 	}
 
-	for (uint32_t i = 0; i < RS::ARRAY_CUSTOM_COUNT; ++i) {
+	for (uint32_t i = 0; i < RSE::ARRAY_CUSTOM_COUNT; ++i) {
 		// Include custom array format type.
-		if (format & (1ULL << (ARRAY_CUSTOM0 + i))) {
-			format |= (RS::ARRAY_FORMAT_CUSTOM_MASK << (RS::ARRAY_FORMAT_CUSTOM_BASE + i * RS::ARRAY_FORMAT_CUSTOM_BITS)) & p_compress_format;
+		if (format & (1ULL << (RSE::ARRAY_CUSTOM0 + i))) {
+			format |= (RSE::ARRAY_FORMAT_CUSTOM_MASK << (RSE::ARRAY_FORMAT_CUSTOM_BASE + i * RSE::ARRAY_FORMAT_CUSTOM_BITS)) & p_compress_format;
 		}
 	}
 
-	uint32_t offsets[RS::ARRAY_MAX];
+	uint32_t offsets[RSE::ARRAY_MAX];
 
 	uint32_t vertex_element_size;
 	uint32_t normal_element_size;
 	uint32_t attrib_element_size;
 	uint32_t skin_element_size;
 
-	uint64_t mask = (1ULL << ARRAY_MAX) - 1ULL;
+	uint64_t mask = (1ULL << RSE::ARRAY_MAX) - 1ULL;
 	format |= (~mask) & p_compress_format; // Make the full format.
 
 	// Force version to the current version as this function will always return a surface with the current version.
-	format &= ~(ARRAY_FLAG_FORMAT_VERSION_MASK << ARRAY_FLAG_FORMAT_VERSION_SHIFT);
-	format |= ARRAY_FLAG_FORMAT_CURRENT_VERSION & (ARRAY_FLAG_FORMAT_VERSION_MASK << ARRAY_FLAG_FORMAT_VERSION_SHIFT);
+	format &= ~(RSE::ARRAY_FLAG_FORMAT_VERSION_MASK << RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
+	format |= RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION & (RSE::ARRAY_FLAG_FORMAT_VERSION_MASK << RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
 
 	mesh_surface_make_offsets_from_format(format, array_len, index_array_len, offsets, vertex_element_size, normal_element_size, attrib_element_size, skin_element_size);
 
-	if ((format & RS::ARRAY_FORMAT_VERTEX) == 0 && !(format & RS::ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY)) {
-		ERR_PRINT("Mesh created without vertex array. This mesh will not be visible with the default shader. If using an empty vertex array is intentional, create the mesh with the ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY flag to silence this error.");
+	if ((format & RSE::ARRAY_FORMAT_VERTEX) == 0 && !(format & RSE::ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY)) {
+		ERR_PRINT("Mesh created without vertex array. This mesh will not be visible with the default shader. If using an empty vertex array is intentional, create the mesh with the RSE::ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY flag to silence this error.");
 		// Set the flag here after warning to suppress errors down the pipeline.
-		format |= RS::ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY;
+		format |= RSE::ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY;
 	}
 
-	if ((format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && ((format & RS::ARRAY_FORMAT_NORMAL) || (format & RS::ARRAY_FORMAT_TANGENT))) {
+	if ((format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && ((format & RSE::ARRAY_FORMAT_NORMAL) || (format & RSE::ARRAY_FORMAT_TANGENT))) {
 		// If using normals or tangents, then we need all three.
-		ERR_FAIL_COND_V_MSG(!(format & RS::ARRAY_FORMAT_VERTEX), ERR_INVALID_PARAMETER, "Can't use compression flag 'ARRAY_FLAG_COMPRESS_ATTRIBUTES' while using normals or tangents without vertex array.");
-		ERR_FAIL_COND_V_MSG(!(format & RS::ARRAY_FORMAT_NORMAL), ERR_INVALID_PARAMETER, "Can't use compression flag 'ARRAY_FLAG_COMPRESS_ATTRIBUTES' while using tangents without normal array.");
+		ERR_FAIL_COND_V_MSG(!(format & RSE::ARRAY_FORMAT_VERTEX), ERR_INVALID_PARAMETER, "Can't use compression flag 'RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES' while using normals or tangents without vertex array.");
+		ERR_FAIL_COND_V_MSG(!(format & RSE::ARRAY_FORMAT_NORMAL), ERR_INVALID_PARAMETER, "Can't use compression flag 'RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES' while using tangents without normal array.");
 	}
 
 	int vertex_array_size = (vertex_element_size + normal_element_size) * array_len;
 	int attrib_array_size = attrib_element_size * array_len;
 	int skin_array_size = skin_element_size * array_len;
-	int index_array_size = offsets[RS::ARRAY_INDEX] * index_array_len;
+	int index_array_size = offsets[RSE::ARRAY_INDEX] * index_array_len;
 
 	Vector<uint8_t> vertex_array;
 	vertex_array.resize(vertex_array_size);
@@ -1314,7 +1315,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 	Vector<uint8_t> blend_shape_data;
 
 	if (p_blend_shapes.size()) {
-		uint32_t bs_format = format & RS::ARRAY_FORMAT_BLEND_SHAPE_MASK;
+		uint32_t bs_format = format & RSE::ARRAY_FORMAT_BLEND_SHAPE_MASK;
 		for (int i = 0; i < p_blend_shapes.size(); i++) {
 			Vector<uint8_t> vertex_array_shape;
 			vertex_array_shape.resize(vertex_array_size);
@@ -1331,7 +1332,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 			blend_shape_data.append_array(vertex_array_shape);
 		}
 	}
-	Vector<SurfaceData::LOD> lods;
+	Vector<RenderingServerTypes::SurfaceData::LOD> lods;
 	if (index_array_len) {
 		LocalVector<Variant> keys = p_lods.get_key_list();
 		keys.sort(); // otherwise lod levels may get skipped
@@ -1364,14 +1365,14 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 				}
 			}
 
-			SurfaceData::LOD lod;
+			RenderingServerTypes::SurfaceData::LOD lod;
 			lod.edge_length = distance;
 			lod.index_data = data;
 			lods.push_back(lod);
 		}
 	}
 
-	SurfaceData &surface_data = *r_surface_data;
+	RenderingServerTypes::SurfaceData &surface_data = *r_surface_data;
 	surface_data.format = format;
 	surface_data.primitive = p_primitive;
 	surface_data.aabb = aabb;
@@ -1389,8 +1390,8 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 	return OK;
 }
 
-void RenderingServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, const Dictionary &p_lods, BitField<ArrayFormat> p_compress_format) {
-	SurfaceData sd;
+void RenderingServer::mesh_add_surface_from_arrays(RID p_mesh, RSE::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, const Dictionary &p_lods, BitField<RSE::ArrayFormat> p_compress_format) {
+	RenderingServerTypes::SurfaceData sd;
 	Error err = mesh_create_surface_data_from_arrays(&sd, p_primitive, p_arrays, p_blend_shapes, p_lods, p_compress_format);
 	if (err != OK) {
 		return;
@@ -1399,7 +1400,7 @@ void RenderingServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_p
 }
 
 Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len, const AABB &p_aabb, const Vector4 &p_uv_scale) const {
-	uint32_t offsets[RS::ARRAY_MAX];
+	uint32_t offsets[RSE::ARRAY_MAX];
 
 	uint32_t vertex_elem_size;
 	uint32_t normal_elem_size;
@@ -1408,20 +1409,20 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 	mesh_surface_make_offsets_from_format(p_format, p_vertex_len, p_index_len, offsets, vertex_elem_size, normal_elem_size, attrib_elem_size, skin_elem_size);
 
 	Array ret;
-	ret.resize(RS::ARRAY_MAX);
+	ret.resize(RSE::ARRAY_MAX);
 
 	const uint8_t *r = p_vertex_data.ptr();
 	const uint8_t *ar = p_attrib_data.ptr();
 	const uint8_t *sr = p_skin_data.ptr();
 
-	for (int i = 0; i < RS::ARRAY_MAX; i++) {
+	for (int i = 0; i < RSE::ARRAY_MAX; i++) {
 		if (!(p_format & (1ULL << i))) {
 			continue;
 		}
 
 		switch (i) {
-			case RS::ARRAY_VERTEX: {
-				if (p_format & ARRAY_FLAG_USE_2D_VERTICES) {
+			case RSE::ARRAY_VERTEX: {
+				if (p_format & RSE::ARRAY_FLAG_USE_2D_VERTICES) {
 					Vector<Vector2> arr_2d;
 					arr_2d.resize(p_vertex_len);
 
@@ -1442,9 +1443,9 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 					{
 						Vector3 *w = arr_3d.ptrw();
 
-						if (p_format & ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+						if (p_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 							// We only have vertices to read, so just read them and skip everything else.
-							if (!(p_format & RS::ARRAY_FORMAT_NORMAL)) {
+							if (!(p_format & RSE::ARRAY_FORMAT_NORMAL)) {
 								for (int j = 0; j < p_vertex_len; j++) {
 									const uint16_t *v = reinterpret_cast<const uint16_t *>(&r[j * vertex_elem_size + offsets[i]]);
 									Vector3 vec = Vector3(float(v[0]) / 65535.0, float(v[1]) / 65535.0, float(v[2]) / 65535.0);
@@ -1462,7 +1463,7 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 							float *tangentsw = tangents.ptrw();
 
 							for (int j = 0; j < p_vertex_len; j++) {
-								const uint32_t n = *(const uint32_t *)&r[j * normal_elem_size + offsets[RS::ARRAY_NORMAL]];
+								const uint32_t n = *(const uint32_t *)&r[j * normal_elem_size + offsets[RSE::ARRAY_NORMAL]];
 								Vector3 axis = Vector3::octahedron_decode(Vector2((n & 0xFFFF) / 65535.0, ((n >> 16) & 0xFFFF) / 65535.0));
 
 								const uint16_t *v = reinterpret_cast<const uint16_t *>(&r[j * vertex_elem_size + offsets[i]]);
@@ -1480,8 +1481,8 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 								tangentsw[j * 4 + 2] = tan.z;
 								tangentsw[j * 4 + 3] = tan.w;
 							}
-							ret[RS::ARRAY_NORMAL] = normals;
-							ret[RS::ARRAY_TANGENT] = tangents;
+							ret[RSE::ARRAY_NORMAL] = normals;
+							ret[RSE::ARRAY_TANGENT] = tangents;
 
 						} else {
 							for (int j = 0; j < p_vertex_len; j++) {
@@ -1495,8 +1496,8 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 				}
 
 			} break;
-			case RS::ARRAY_NORMAL: {
-				if (!(p_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
+			case RSE::ARRAY_NORMAL: {
+				if (!(p_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
 					Vector<Vector3> arr;
 					arr.resize(p_vertex_len);
 
@@ -1512,8 +1513,8 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 				}
 			} break;
 
-			case RS::ARRAY_TANGENT: {
-				if (!(p_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
+			case RSE::ARRAY_TANGENT: {
+				if (!(p_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
 					Vector<float> arr;
 					arr.resize(p_vertex_len * 4);
 
@@ -1532,7 +1533,7 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 					ret[i] = arr;
 				}
 			} break;
-			case RS::ARRAY_COLOR: {
+			case RSE::ARRAY_COLOR: {
 				Vector<Color> arr;
 				arr.resize(p_vertex_len);
 
@@ -1546,12 +1547,12 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 
 				ret[i] = arr;
 			} break;
-			case RS::ARRAY_TEX_UV: {
+			case RSE::ARRAY_TEX_UV: {
 				Vector<Vector2> arr;
 				arr.resize(p_vertex_len);
 
 				Vector2 *w = arr.ptrw();
-				if (p_format & ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+				if (p_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 					for (int j = 0; j < p_vertex_len; j++) {
 						const uint16_t *v = reinterpret_cast<const uint16_t *>(&ar[j * attrib_elem_size + offsets[i]]);
 						Vector2 vec = Vector2(float(v[0]) / 65535.0, float(v[1]) / 65535.0);
@@ -1570,13 +1571,13 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 				ret[i] = arr;
 			} break;
 
-			case RS::ARRAY_TEX_UV2: {
+			case RSE::ARRAY_TEX_UV2: {
 				Vector<Vector2> arr;
 				arr.resize(p_vertex_len);
 
 				Vector2 *w = arr.ptrw();
 
-				if (p_format & ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+				if (p_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 					for (int j = 0; j < p_vertex_len; j++) {
 						const uint16_t *v = reinterpret_cast<const uint16_t *>(&ar[j * attrib_elem_size + offsets[i]]);
 						Vector2 vec = Vector2(float(v[0]) / 65535.0, float(v[1]) / 65535.0);
@@ -1595,18 +1596,18 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 				ret[i] = arr;
 
 			} break;
-			case RS::ARRAY_CUSTOM0:
-			case RS::ARRAY_CUSTOM1:
-			case RS::ARRAY_CUSTOM2:
-			case RS::ARRAY_CUSTOM3: {
-				uint32_t type = (p_format >> (ARRAY_FORMAT_CUSTOM_BASE + ARRAY_FORMAT_CUSTOM_BITS * (i - RS::ARRAY_CUSTOM0))) & ARRAY_FORMAT_CUSTOM_MASK;
+			case RSE::ARRAY_CUSTOM0:
+			case RSE::ARRAY_CUSTOM1:
+			case RSE::ARRAY_CUSTOM2:
+			case RSE::ARRAY_CUSTOM3: {
+				uint32_t type = (p_format >> (RSE::ARRAY_FORMAT_CUSTOM_BASE + RSE::ARRAY_FORMAT_CUSTOM_BITS * (i - RSE::ARRAY_CUSTOM0))) & RSE::ARRAY_FORMAT_CUSTOM_MASK;
 				switch (type) {
-					case ARRAY_CUSTOM_RGBA8_UNORM:
-					case ARRAY_CUSTOM_RGBA8_SNORM:
-					case ARRAY_CUSTOM_RG_HALF:
-					case ARRAY_CUSTOM_RGBA_HALF: {
+					case RSE::ARRAY_CUSTOM_RGBA8_UNORM:
+					case RSE::ARRAY_CUSTOM_RGBA8_SNORM:
+					case RSE::ARRAY_CUSTOM_RG_HALF:
+					case RSE::ARRAY_CUSTOM_RGBA_HALF: {
 						// Size 4
-						int s = type == ARRAY_CUSTOM_RGBA_HALF ? 8 : 4;
+						int s = type == RSE::ARRAY_CUSTOM_RGBA_HALF ? 8 : 4;
 						Vector<uint8_t> arr;
 						arr.resize(p_vertex_len * s);
 
@@ -1620,11 +1621,11 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 						ret[i] = arr;
 
 					} break;
-					case ARRAY_CUSTOM_R_FLOAT:
-					case ARRAY_CUSTOM_RG_FLOAT:
-					case ARRAY_CUSTOM_RGB_FLOAT:
-					case ARRAY_CUSTOM_RGBA_FLOAT: {
-						uint32_t s = type - ARRAY_CUSTOM_R_FLOAT + 1;
+					case RSE::ARRAY_CUSTOM_R_FLOAT:
+					case RSE::ARRAY_CUSTOM_RG_FLOAT:
+					case RSE::ARRAY_CUSTOM_RGB_FLOAT:
+					case RSE::ARRAY_CUSTOM_RGBA_FLOAT: {
+						uint32_t s = type - RSE::ARRAY_CUSTOM_R_FLOAT + 1;
 
 						Vector<float> arr;
 						arr.resize(s * p_vertex_len);
@@ -1643,8 +1644,8 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 				}
 
 			} break;
-			case RS::ARRAY_WEIGHTS: {
-				uint32_t bone_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+			case RSE::ARRAY_WEIGHTS: {
+				uint32_t bone_count = (p_format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
 
 				Vector<float> arr;
 				arr.resize(p_vertex_len * bone_count);
@@ -1662,8 +1663,8 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 				ret[i] = arr;
 
 			} break;
-			case RS::ARRAY_BONES: {
-				uint32_t bone_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+			case RSE::ARRAY_BONES: {
+				uint32_t bone_count = (p_format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
 
 				Vector<int> arr;
 				arr.resize(p_vertex_len * bone_count);
@@ -1680,7 +1681,7 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 				ret[i] = arr;
 
 			} break;
-			case RS::ARRAY_INDEX: {
+			case RSE::ARRAY_INDEX: {
 				/* determine whether using 16 or 32 bits indices */
 
 				const uint8_t *ir = p_index_data.ptr();
@@ -1714,12 +1715,12 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 }
 
 Array RenderingServer::mesh_surface_get_arrays(RID p_mesh, int p_surface) const {
-	SurfaceData sd = mesh_get_surface(p_mesh, p_surface);
+	RenderingServerTypes::SurfaceData sd = mesh_get_surface(p_mesh, p_surface);
 	return mesh_create_arrays_from_surface_data(sd);
 }
 
 Dictionary RenderingServer::mesh_surface_get_lods(RID p_mesh, int p_surface) const {
-	SurfaceData sd = mesh_get_surface(p_mesh, p_surface);
+	RenderingServerTypes::SurfaceData sd = mesh_get_surface(p_mesh, p_surface);
 	ERR_FAIL_COND_V(sd.vertex_count == 0, Dictionary());
 
 	Dictionary ret;
@@ -1753,14 +1754,14 @@ Dictionary RenderingServer::mesh_surface_get_lods(RID p_mesh, int p_surface) con
 }
 
 TypedArray<Array> RenderingServer::mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const {
-	SurfaceData sd = mesh_get_surface(p_mesh, p_surface);
+	RenderingServerTypes::SurfaceData sd = mesh_get_surface(p_mesh, p_surface);
 	ERR_FAIL_COND_V(sd.vertex_count == 0, Array());
 
 	Vector<uint8_t> blend_shape_data = sd.blend_shape_data;
 
 	if (blend_shape_data.size() > 0) {
-		uint32_t bs_offsets[RS::ARRAY_MAX];
-		uint32_t bs_format = (sd.format & RS::ARRAY_FORMAT_BLEND_SHAPE_MASK);
+		uint32_t bs_offsets[RSE::ARRAY_MAX];
+		uint32_t bs_format = (sd.format & RSE::ARRAY_FORMAT_BLEND_SHAPE_MASK);
 		uint32_t vertex_elem_size;
 		uint32_t normal_elem_size;
 		uint32_t attrib_elem_size;
@@ -1789,12 +1790,12 @@ TypedArray<Array> RenderingServer::mesh_surface_get_blend_shape_arrays(RID p_mes
 	}
 }
 
-Array RenderingServer::mesh_create_arrays_from_surface_data(const SurfaceData &p_data) const {
+Array RenderingServer::mesh_create_arrays_from_surface_data(const RenderingServerTypes::SurfaceData &p_data) const {
 	Vector<uint8_t> vertex_data = p_data.vertex_data;
 	Vector<uint8_t> attrib_data = p_data.attribute_data;
 	Vector<uint8_t> skin_data = p_data.skin_data;
 
-	ERR_FAIL_COND_V(vertex_data.is_empty() && (p_data.format & RS::ARRAY_FORMAT_VERTEX), Array());
+	ERR_FAIL_COND_V(vertex_data.is_empty() && (p_data.format & RSE::ARRAY_FORMAT_VERTEX), Array());
 	int vertex_len = p_data.vertex_count;
 
 	Vector<uint8_t> index_data = p_data.index_data;
@@ -1804,16 +1805,6 @@ Array RenderingServer::mesh_create_arrays_from_surface_data(const SurfaceData &p
 
 	return _get_array_from_surface(format, vertex_data, attrib_data, skin_data, vertex_len, index_data, index_len, p_data.aabb, p_data.uv_scale);
 }
-#if 0
-Array RenderingServer::_mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_surface) const {
-	Vector<AABB> vec = RS::get_singleton()->mesh_surface_get_skeleton_aabb(p_mesh, p_surface);
-	Array arr;
-	for (int i = 0; i < vec.size(); i++) {
-		arr[i] = vec[i];
-	}
-	return arr;
-}
-#endif
 
 Rect2 RenderingServer::debug_canvas_item_get_rect(RID p_item) {
 #ifdef TOOLS_ENABLED
@@ -1823,126 +1814,69 @@ Rect2 RenderingServer::debug_canvas_item_get_rect(RID p_item) {
 #endif
 }
 
-int RenderingServer::global_shader_uniform_type_get_shader_datatype(GlobalShaderParameterType p_type) {
+int RenderingServer::global_shader_uniform_type_get_shader_datatype(RSE::GlobalShaderParameterType p_type) {
 	switch (p_type) {
-		case RS::GLOBAL_VAR_TYPE_BOOL:
+		case RSE::GLOBAL_VAR_TYPE_BOOL:
 			return ShaderLanguage::TYPE_BOOL;
-		case RS::GLOBAL_VAR_TYPE_BVEC2:
+		case RSE::GLOBAL_VAR_TYPE_BVEC2:
 			return ShaderLanguage::TYPE_BVEC2;
-		case RS::GLOBAL_VAR_TYPE_BVEC3:
+		case RSE::GLOBAL_VAR_TYPE_BVEC3:
 			return ShaderLanguage::TYPE_BVEC3;
-		case RS::GLOBAL_VAR_TYPE_BVEC4:
+		case RSE::GLOBAL_VAR_TYPE_BVEC4:
 			return ShaderLanguage::TYPE_BVEC4;
-		case RS::GLOBAL_VAR_TYPE_INT:
+		case RSE::GLOBAL_VAR_TYPE_INT:
 			return ShaderLanguage::TYPE_INT;
-		case RS::GLOBAL_VAR_TYPE_IVEC2:
+		case RSE::GLOBAL_VAR_TYPE_IVEC2:
 			return ShaderLanguage::TYPE_IVEC2;
-		case RS::GLOBAL_VAR_TYPE_IVEC3:
+		case RSE::GLOBAL_VAR_TYPE_IVEC3:
 			return ShaderLanguage::TYPE_IVEC3;
-		case RS::GLOBAL_VAR_TYPE_IVEC4:
+		case RSE::GLOBAL_VAR_TYPE_IVEC4:
 			return ShaderLanguage::TYPE_IVEC4;
-		case RS::GLOBAL_VAR_TYPE_RECT2I:
+		case RSE::GLOBAL_VAR_TYPE_RECT2I:
 			return ShaderLanguage::TYPE_IVEC4;
-		case RS::GLOBAL_VAR_TYPE_UINT:
+		case RSE::GLOBAL_VAR_TYPE_UINT:
 			return ShaderLanguage::TYPE_UINT;
-		case RS::GLOBAL_VAR_TYPE_UVEC2:
+		case RSE::GLOBAL_VAR_TYPE_UVEC2:
 			return ShaderLanguage::TYPE_UVEC2;
-		case RS::GLOBAL_VAR_TYPE_UVEC3:
+		case RSE::GLOBAL_VAR_TYPE_UVEC3:
 			return ShaderLanguage::TYPE_UVEC3;
-		case RS::GLOBAL_VAR_TYPE_UVEC4:
+		case RSE::GLOBAL_VAR_TYPE_UVEC4:
 			return ShaderLanguage::TYPE_UVEC4;
-		case RS::GLOBAL_VAR_TYPE_FLOAT:
+		case RSE::GLOBAL_VAR_TYPE_FLOAT:
 			return ShaderLanguage::TYPE_FLOAT;
-		case RS::GLOBAL_VAR_TYPE_VEC2:
+		case RSE::GLOBAL_VAR_TYPE_VEC2:
 			return ShaderLanguage::TYPE_VEC2;
-		case RS::GLOBAL_VAR_TYPE_VEC3:
+		case RSE::GLOBAL_VAR_TYPE_VEC3:
 			return ShaderLanguage::TYPE_VEC3;
-		case RS::GLOBAL_VAR_TYPE_VEC4:
+		case RSE::GLOBAL_VAR_TYPE_VEC4:
 			return ShaderLanguage::TYPE_VEC4;
-		case RS::GLOBAL_VAR_TYPE_COLOR:
+		case RSE::GLOBAL_VAR_TYPE_COLOR:
 			return ShaderLanguage::TYPE_VEC4;
-		case RS::GLOBAL_VAR_TYPE_RECT2:
+		case RSE::GLOBAL_VAR_TYPE_RECT2:
 			return ShaderLanguage::TYPE_VEC4;
-		case RS::GLOBAL_VAR_TYPE_MAT2:
+		case RSE::GLOBAL_VAR_TYPE_MAT2:
 			return ShaderLanguage::TYPE_MAT2;
-		case RS::GLOBAL_VAR_TYPE_MAT3:
+		case RSE::GLOBAL_VAR_TYPE_MAT3:
 			return ShaderLanguage::TYPE_MAT3;
-		case RS::GLOBAL_VAR_TYPE_MAT4:
+		case RSE::GLOBAL_VAR_TYPE_MAT4:
 			return ShaderLanguage::TYPE_MAT4;
-		case RS::GLOBAL_VAR_TYPE_TRANSFORM_2D:
+		case RSE::GLOBAL_VAR_TYPE_TRANSFORM_2D:
 			return ShaderLanguage::TYPE_MAT3;
-		case RS::GLOBAL_VAR_TYPE_TRANSFORM:
+		case RSE::GLOBAL_VAR_TYPE_TRANSFORM:
 			return ShaderLanguage::TYPE_MAT4;
-		case RS::GLOBAL_VAR_TYPE_SAMPLER2D:
+		case RSE::GLOBAL_VAR_TYPE_SAMPLER2D:
 			return ShaderLanguage::TYPE_SAMPLER2D;
-		case RS::GLOBAL_VAR_TYPE_SAMPLER2DARRAY:
+		case RSE::GLOBAL_VAR_TYPE_SAMPLER2DARRAY:
 			return ShaderLanguage::TYPE_SAMPLER2DARRAY;
-		case RS::GLOBAL_VAR_TYPE_SAMPLER3D:
+		case RSE::GLOBAL_VAR_TYPE_SAMPLER3D:
 			return ShaderLanguage::TYPE_SAMPLER3D;
-		case RS::GLOBAL_VAR_TYPE_SAMPLERCUBE:
+		case RSE::GLOBAL_VAR_TYPE_SAMPLERCUBE:
 			return ShaderLanguage::TYPE_SAMPLERCUBE;
-		case RS::GLOBAL_VAR_TYPE_SAMPLEREXT:
+		case RSE::GLOBAL_VAR_TYPE_SAMPLEREXT:
 			return ShaderLanguage::TYPE_SAMPLEREXT;
 		default:
 			return ShaderLanguage::TYPE_MAX; // Invalid or not found.
 	}
-}
-
-Rect2 RenderingServer::get_splash_stretched_screen_rect(const Size2 &p_image_size, const Size2 &p_window_size, SplashStretchMode p_stretch_mode) {
-	Size2 imgsize = p_image_size;
-	Rect2 screenrect;
-	switch (p_stretch_mode) {
-		case SplashStretchMode::SPLASH_STRETCH_MODE_DISABLED: {
-			screenrect.size = imgsize;
-			screenrect.position = ((p_window_size - screenrect.size) / 2.0).floor();
-		} break;
-		case SplashStretchMode::SPLASH_STRETCH_MODE_KEEP: {
-			if (p_window_size.width > p_window_size.height) {
-				// Scale horizontally.
-				screenrect.size.y = p_window_size.height;
-				screenrect.size.x = imgsize.width * p_window_size.height / imgsize.height;
-				screenrect.position.x = (p_window_size.width - screenrect.size.x) / 2;
-			} else {
-				// Scale vertically.
-				screenrect.size.x = p_window_size.width;
-				screenrect.size.y = imgsize.height * p_window_size.width / imgsize.width;
-				screenrect.position.y = (p_window_size.height - screenrect.size.y) / 2;
-			}
-		} break;
-		case SplashStretchMode::SPLASH_STRETCH_MODE_KEEP_WIDTH: {
-			// Scale vertically.
-			screenrect.size.x = p_window_size.width;
-			screenrect.size.y = imgsize.height * p_window_size.width / imgsize.width;
-			screenrect.position.y = (p_window_size.height - screenrect.size.y) / 2;
-		} break;
-		case SplashStretchMode::SPLASH_STRETCH_MODE_KEEP_HEIGHT: {
-			// Scale horizontally.
-			screenrect.size.y = p_window_size.height;
-			screenrect.size.x = imgsize.width * p_window_size.height / imgsize.height;
-			screenrect.position.x = (p_window_size.width - screenrect.size.x) / 2;
-		} break;
-		case SplashStretchMode::SPLASH_STRETCH_MODE_COVER: {
-			double window_aspect = (double)p_window_size.width / p_window_size.height;
-			double img_aspect = imgsize.width / imgsize.height;
-
-			if (window_aspect > img_aspect) {
-				// Scale vertically.
-				screenrect.size.x = p_window_size.width;
-				screenrect.size.y = imgsize.height * p_window_size.width / imgsize.width;
-				screenrect.position.y = (p_window_size.height - screenrect.size.y) / 2;
-			} else {
-				// Scale horizontally.
-				screenrect.size.y = p_window_size.height;
-				screenrect.size.x = imgsize.width * p_window_size.height / imgsize.height;
-				screenrect.position.x = (p_window_size.width - screenrect.size.x) / 2;
-			}
-		} break;
-		case SplashStretchMode::SPLASH_STRETCH_MODE_IGNORE: {
-			screenrect.size.x = p_window_size.width;
-			screenrect.size.y = p_window_size.height;
-		} break;
-	}
-	return screenrect;
 }
 
 RenderingDevice *RenderingServer::get_rendering_device() const {
@@ -1966,7 +1900,8 @@ static Vector<Ref<Image>> _get_imgvec(const TypedArray<Image> &p_layers) {
 	}
 	return images;
 }
-RID RenderingServer::_texture_2d_layered_create(const TypedArray<Image> &p_layers, TextureLayeredType p_layered_type) {
+
+RID RenderingServer::_texture_2d_layered_create(const TypedArray<Image> &p_layers, RSE::TextureLayeredType p_layered_type) {
 	return texture_2d_layered_create(_get_imgvec(p_layers), p_layered_type);
 }
 RID RenderingServer::_texture_3d_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const TypedArray<Image> &p_data) {
@@ -1993,16 +1928,16 @@ TypedArray<Dictionary> RenderingServer::_shader_get_shader_parameter_list(RID p_
 	return convert_property_list(&l);
 }
 
-static RS::SurfaceData _dict_to_surf(const Dictionary &p_dictionary) {
-	ERR_FAIL_COND_V(!p_dictionary.has("primitive"), RS::SurfaceData());
-	ERR_FAIL_COND_V(!p_dictionary.has("format"), RS::SurfaceData());
-	ERR_FAIL_COND_V(!p_dictionary.has("vertex_data"), RS::SurfaceData());
-	ERR_FAIL_COND_V(!p_dictionary.has("vertex_count"), RS::SurfaceData());
-	ERR_FAIL_COND_V(!p_dictionary.has("aabb"), RS::SurfaceData());
+static RenderingServerTypes::SurfaceData _dict_to_surf(const Dictionary &p_dictionary) {
+	ERR_FAIL_COND_V(!p_dictionary.has("primitive"), RenderingServerTypes::SurfaceData());
+	ERR_FAIL_COND_V(!p_dictionary.has("format"), RenderingServerTypes::SurfaceData());
+	ERR_FAIL_COND_V(!p_dictionary.has("vertex_data"), RenderingServerTypes::SurfaceData());
+	ERR_FAIL_COND_V(!p_dictionary.has("vertex_count"), RenderingServerTypes::SurfaceData());
+	ERR_FAIL_COND_V(!p_dictionary.has("aabb"), RenderingServerTypes::SurfaceData());
 
-	RS::SurfaceData sd;
+	RenderingServerTypes::SurfaceData sd;
 
-	sd.primitive = RS::PrimitiveType(int(p_dictionary["primitive"]));
+	sd.primitive = RSE::PrimitiveType(int(p_dictionary["primitive"]));
 	sd.format = p_dictionary["format"];
 	sd.vertex_data = p_dictionary["vertex_data"];
 	if (p_dictionary.has("attribute_data")) {
@@ -2016,7 +1951,7 @@ static RS::SurfaceData _dict_to_surf(const Dictionary &p_dictionary) {
 
 	if (p_dictionary.has("index_data")) {
 		sd.index_data = p_dictionary["index_data"];
-		ERR_FAIL_COND_V(!p_dictionary.has("index_count"), RS::SurfaceData());
+		ERR_FAIL_COND_V(!p_dictionary.has("index_count"), RenderingServerTypes::SurfaceData());
 		sd.index_count = p_dictionary["index_count"];
 	}
 
@@ -2031,7 +1966,7 @@ static RS::SurfaceData _dict_to_surf(const Dictionary &p_dictionary) {
 			Dictionary lod = lods[i];
 			ERR_CONTINUE(!lod.has("edge_length"));
 			ERR_CONTINUE(!lod.has("index_data"));
-			RS::SurfaceData::LOD l;
+			RenderingServerTypes::SurfaceData::LOD l;
 			l.edge_length = lod["edge_length"];
 			l.index_data = lod["index_data"];
 			sd.lods.push_back(l);
@@ -2057,7 +1992,7 @@ static RS::SurfaceData _dict_to_surf(const Dictionary &p_dictionary) {
 	return sd;
 }
 RID RenderingServer::_mesh_create_from_surfaces(const TypedArray<Dictionary> &p_surfaces, int p_blend_shape_count) {
-	Vector<RS::SurfaceData> surfaces;
+	Vector<RenderingServerTypes::SurfaceData> surfaces;
 	for (int i = 0; i < p_surfaces.size(); i++) {
 		surfaces.push_back(_dict_to_surf(p_surfaces[i]));
 	}
@@ -2067,7 +2002,7 @@ void RenderingServer::_mesh_add_surface(RID p_mesh, const Dictionary &p_surface)
 	mesh_add_surface(p_mesh, _dict_to_surf(p_surface));
 }
 Dictionary RenderingServer::_mesh_get_surface(RID p_mesh, int p_idx) {
-	RS::SurfaceData sd = mesh_get_surface(p_mesh, p_idx);
+	RenderingServerTypes::SurfaceData sd = mesh_get_surface(p_mesh, p_idx);
 
 	Dictionary d;
 	d["primitive"] = sd.primitive;
@@ -2164,13 +2099,13 @@ Vector<uint8_t> _convert_surface_version_1_to_surface_version_2(uint64_t p_forma
 
 	uint32_t position_size = p_position_stride * p_vertex_count;
 
-	for (uint32_t j = 0; j < RS::ARRAY_COLOR; j++) {
+	for (uint32_t j = 0; j < RSE::ARRAY_COLOR; j++) {
 		if (!(p_format & (1ULL << j))) {
 			continue;
 		}
 		switch (j) {
-			case RS::ARRAY_VERTEX: {
-				if (p_format & RS::ARRAY_FLAG_USE_2D_VERTICES) {
+			case RSE::ARRAY_VERTEX: {
+				if (p_format & RSE::ARRAY_FLAG_USE_2D_VERTICES) {
 					for (uint32_t i = 0; i < p_vertex_count; i++) {
 						const float *src = (const float *)&src_vertex_ptr[i * p_old_stride];
 						float *dst = (float *)&dst_vertex_ptr[i * p_position_stride];
@@ -2187,7 +2122,7 @@ Vector<uint8_t> _convert_surface_version_1_to_surface_version_2(uint64_t p_forma
 					}
 				}
 			} break;
-			case RS::ARRAY_NORMAL: {
+			case RSE::ARRAY_NORMAL: {
 				for (uint32_t i = 0; i < p_vertex_count; i++) {
 					const uint16_t *src = (const uint16_t *)&src_vertex_ptr[i * p_old_stride + p_vertex_size];
 					uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * p_normal_tangent_stride + position_size];
@@ -2196,7 +2131,7 @@ Vector<uint8_t> _convert_surface_version_1_to_surface_version_2(uint64_t p_forma
 					dst[1] = src[1];
 				}
 			} break;
-			case RS::ARRAY_TANGENT: {
+			case RSE::ARRAY_TANGENT: {
 				for (uint32_t i = 0; i < p_vertex_count; i++) {
 					const uint16_t *src = (const uint16_t *)&src_vertex_ptr[i * p_old_stride + p_vertex_size + p_normal_size];
 					uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * p_normal_tangent_stride + position_size + p_normal_size];
@@ -2221,9 +2156,9 @@ void RenderingServer::set_warn_on_surface_upgrade(bool p_warn) {
 #endif
 
 #ifndef DISABLE_DEPRECATED
-void RenderingServer::fix_surface_compatibility(SurfaceData &p_surface, const String &p_path) {
-	uint64_t surface_version = p_surface.format & (ARRAY_FLAG_FORMAT_VERSION_MASK << ARRAY_FLAG_FORMAT_VERSION_SHIFT);
-	ERR_FAIL_COND_MSG(surface_version > ARRAY_FLAG_FORMAT_CURRENT_VERSION, "Cannot convert surface with version provided (" + itos((surface_version >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK) + ") to current version (" + itos((RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK) + ")");
+void RenderingServer::fix_surface_compatibility(RenderingServerTypes::SurfaceData &p_surface, const String &p_path) {
+	uint64_t surface_version = p_surface.format & (RSE::ARRAY_FLAG_FORMAT_VERSION_MASK << RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
+	ERR_FAIL_COND_MSG(surface_version > RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION, "Cannot convert surface with version provided (" + itos((surface_version >> RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RSE::ARRAY_FLAG_FORMAT_VERSION_MASK) + ") to current version (" + itos((RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RSE::ARRAY_FLAG_FORMAT_VERSION_MASK) + ")");
 
 #ifdef TOOLS_ENABLED
 	// Editor callback to ask user about re-saving all meshes.
@@ -2240,7 +2175,7 @@ void RenderingServer::fix_surface_compatibility(SurfaceData &p_surface, const St
 	}
 #endif
 
-	if (surface_version == ARRAY_FLAG_FORMAT_VERSION_1) {
+	if (surface_version == RSE::ARRAY_FLAG_FORMAT_VERSION_1) {
 		// The only difference for now is that Version 1 uses interleaved vertex positions while version 2 does not.
 		// I.e. PNTPNTPNT -> PPPNTNTNT.
 
@@ -2248,17 +2183,17 @@ void RenderingServer::fix_surface_compatibility(SurfaceData &p_surface, const St
 			int vertex_size = 0;
 			int normal_size = 0;
 			int tangent_size = 0;
-			if (p_surface.format & ARRAY_FORMAT_VERTEX) {
-				if (p_surface.format & ARRAY_FLAG_USE_2D_VERTICES) {
+			if (p_surface.format & RSE::ARRAY_FORMAT_VERTEX) {
+				if (p_surface.format & RSE::ARRAY_FLAG_USE_2D_VERTICES) {
 					vertex_size = sizeof(float) * 2;
 				} else {
 					vertex_size = sizeof(float) * 3;
 				}
 			}
-			if (p_surface.format & ARRAY_FORMAT_NORMAL) {
+			if (p_surface.format & RSE::ARRAY_FORMAT_NORMAL) {
 				normal_size += sizeof(uint16_t) * 2;
 			}
-			if (p_surface.format & ARRAY_FORMAT_TANGENT) {
+			if (p_surface.format & RSE::ARRAY_FORMAT_TANGENT) {
 				tangent_size = sizeof(uint16_t) * 2;
 			}
 			int stride = p_surface.vertex_data.size() / p_surface.vertex_count;
@@ -2287,8 +2222,8 @@ void RenderingServer::fix_surface_compatibility(SurfaceData &p_surface, const St
 			}
 		}
 	}
-	p_surface.format &= ~(ARRAY_FLAG_FORMAT_VERSION_MASK << ARRAY_FLAG_FORMAT_VERSION_SHIFT);
-	p_surface.format |= ARRAY_FLAG_FORMAT_CURRENT_VERSION & (ARRAY_FLAG_FORMAT_VERSION_MASK << ARRAY_FLAG_FORMAT_VERSION_SHIFT);
+	p_surface.format &= ~(RSE::ARRAY_FLAG_FORMAT_VERSION_MASK << RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
+	p_surface.format |= RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION & (RSE::ARRAY_FLAG_FORMAT_VERSION_MASK << RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
 }
 #endif
 
@@ -2312,16 +2247,16 @@ void RenderingServer::get_argument_options(const StringName &p_function, int p_i
 #endif
 
 void RenderingServer::_bind_methods() {
-	BIND_CONSTANT(NO_INDEX_ARRAY);
-	BIND_CONSTANT(ARRAY_WEIGHTS_SIZE);
-	BIND_CONSTANT(CANVAS_ITEM_Z_MIN);
-	BIND_CONSTANT(CANVAS_ITEM_Z_MAX);
-	BIND_CONSTANT(CANVAS_LAYER_MIN);
-	BIND_CONSTANT(CANVAS_LAYER_MAX);
-	BIND_CONSTANT(MAX_GLOW_LEVELS);
-	BIND_CONSTANT(MAX_CURSORS);
-	BIND_CONSTANT(MAX_2D_DIRECTIONAL_LIGHTS);
-	BIND_CONSTANT(MAX_MESH_SURFACES);
+	BIND_CONSTANT(RSE::NO_INDEX_ARRAY);
+	BIND_CONSTANT(RSE::ARRAY_WEIGHTS_SIZE);
+	BIND_CONSTANT(RSE::CANVAS_ITEM_Z_MIN);
+	BIND_CONSTANT(RSE::CANVAS_ITEM_Z_MAX);
+	BIND_CONSTANT(RSE::CANVAS_LAYER_MIN);
+	BIND_CONSTANT(RSE::CANVAS_LAYER_MAX);
+	BIND_CONSTANT(RSE::MAX_GLOW_LEVELS);
+	BIND_CONSTANT(RSE::MAX_CURSORS);
+	BIND_CONSTANT(RSE::MAX_2D_DIRECTIONAL_LIGHTS);
+	BIND_CONSTANT(RSE::MAX_MESH_SURFACES);
 
 	/* TEXTURE */
 
@@ -2329,7 +2264,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_2d_layered_create", "layers", "layered_type"), &RenderingServer::_texture_2d_layered_create);
 	ClassDB::bind_method(D_METHOD("texture_3d_create", "format", "width", "height", "depth", "mipmaps", "data"), &RenderingServer::_texture_3d_create);
 	ClassDB::bind_method(D_METHOD("texture_proxy_create", "base"), &RenderingServer::texture_proxy_create);
-	ClassDB::bind_method(D_METHOD("texture_create_from_native_handle", "type", "format", "native_handle", "width", "height", "depth", "layers", "layered_type"), &RenderingServer::texture_create_from_native_handle, DEFVAL(1), DEFVAL(TEXTURE_LAYERED_2D_ARRAY));
+	ClassDB::bind_method(D_METHOD("texture_create_from_native_handle", "type", "format", "native_handle", "width", "height", "depth", "layers", "layered_type"), &RenderingServer::texture_create_from_native_handle, DEFVAL(1), DEFVAL(RSE::TEXTURE_LAYERED_2D_ARRAY));
 	ClassDB::bind_method(D_METHOD("texture_drawable_create", "width", "height", "format", "color", "with_mipmaps"), &RenderingServer::texture_drawable_create, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("texture_2d_update", "texture", "image", "layer"), &RenderingServer::texture_2d_update);
@@ -2358,29 +2293,29 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_get_format", "texture"), &RenderingServer::texture_get_format);
 
 	ClassDB::bind_method(D_METHOD("texture_set_force_redraw_if_visible", "texture", "enable"), &RenderingServer::texture_set_force_redraw_if_visible);
-	ClassDB::bind_method(D_METHOD("texture_rd_create", "rd_texture", "layer_type"), &RenderingServer::texture_rd_create, DEFVAL(RenderingServer::TEXTURE_LAYERED_2D_ARRAY));
+	ClassDB::bind_method(D_METHOD("texture_rd_create", "rd_texture", "layer_type"), &RenderingServer::texture_rd_create, DEFVAL(RSE::TEXTURE_LAYERED_2D_ARRAY));
 	ClassDB::bind_method(D_METHOD("texture_get_rd_texture", "texture", "srgb"), &RenderingServer::texture_get_rd_texture, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("texture_get_native_handle", "texture", "srgb"), &RenderingServer::texture_get_native_handle, DEFVAL(false));
 
-	BIND_ENUM_CONSTANT(TEXTURE_TYPE_2D);
-	BIND_ENUM_CONSTANT(TEXTURE_TYPE_LAYERED);
-	BIND_ENUM_CONSTANT(TEXTURE_TYPE_3D);
+	BIND_ENUM_CONSTANT(RSE::TEXTURE_TYPE_2D);
+	BIND_ENUM_CONSTANT(RSE::TEXTURE_TYPE_LAYERED);
+	BIND_ENUM_CONSTANT(RSE::TEXTURE_TYPE_3D);
 
-	BIND_ENUM_CONSTANT(TEXTURE_LAYERED_2D_ARRAY);
-	BIND_ENUM_CONSTANT(TEXTURE_LAYERED_CUBEMAP);
-	BIND_ENUM_CONSTANT(TEXTURE_LAYERED_CUBEMAP_ARRAY);
+	BIND_ENUM_CONSTANT(RSE::TEXTURE_LAYERED_2D_ARRAY);
+	BIND_ENUM_CONSTANT(RSE::TEXTURE_LAYERED_CUBEMAP);
+	BIND_ENUM_CONSTANT(RSE::TEXTURE_LAYERED_CUBEMAP_ARRAY);
 
-	BIND_ENUM_CONSTANT(CUBEMAP_LAYER_LEFT);
-	BIND_ENUM_CONSTANT(CUBEMAP_LAYER_RIGHT);
-	BIND_ENUM_CONSTANT(CUBEMAP_LAYER_BOTTOM);
-	BIND_ENUM_CONSTANT(CUBEMAP_LAYER_TOP);
-	BIND_ENUM_CONSTANT(CUBEMAP_LAYER_FRONT);
-	BIND_ENUM_CONSTANT(CUBEMAP_LAYER_BACK);
+	BIND_ENUM_CONSTANT(RSE::CUBEMAP_LAYER_LEFT);
+	BIND_ENUM_CONSTANT(RSE::CUBEMAP_LAYER_RIGHT);
+	BIND_ENUM_CONSTANT(RSE::CUBEMAP_LAYER_BOTTOM);
+	BIND_ENUM_CONSTANT(RSE::CUBEMAP_LAYER_TOP);
+	BIND_ENUM_CONSTANT(RSE::CUBEMAP_LAYER_FRONT);
+	BIND_ENUM_CONSTANT(RSE::CUBEMAP_LAYER_BACK);
 
-	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBA8);
-	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB);
-	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBAH);
-	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBAF);
+	BIND_ENUM_CONSTANT(RSE::TEXTURE_DRAWABLE_FORMAT_RGBA8);
+	BIND_ENUM_CONSTANT(RSE::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB);
+	BIND_ENUM_CONSTANT(RSE::TEXTURE_DRAWABLE_FORMAT_RGBAH);
+	BIND_ENUM_CONSTANT(RSE::TEXTURE_DRAWABLE_FORMAT_RGBAF);
 
 	/* SHADER */
 
@@ -2394,13 +2329,13 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shader_set_default_texture_parameter", "shader", "name", "texture", "index"), &RenderingServer::shader_set_default_texture_parameter, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("shader_get_default_texture_parameter", "shader", "name", "index"), &RenderingServer::shader_get_default_texture_parameter, DEFVAL(0));
 
-	BIND_ENUM_CONSTANT(SHADER_SPATIAL);
-	BIND_ENUM_CONSTANT(SHADER_CANVAS_ITEM);
-	BIND_ENUM_CONSTANT(SHADER_PARTICLES);
-	BIND_ENUM_CONSTANT(SHADER_SKY);
-	BIND_ENUM_CONSTANT(SHADER_FOG);
-	BIND_ENUM_CONSTANT(SHADER_TEXTURE_BLIT);
-	BIND_ENUM_CONSTANT(SHADER_MAX);
+	BIND_ENUM_CONSTANT(RSE::SHADER_SPATIAL);
+	BIND_ENUM_CONSTANT(RSE::SHADER_CANVAS_ITEM);
+	BIND_ENUM_CONSTANT(RSE::SHADER_PARTICLES);
+	BIND_ENUM_CONSTANT(RSE::SHADER_SKY);
+	BIND_ENUM_CONSTANT(RSE::SHADER_FOG);
+	BIND_ENUM_CONSTANT(RSE::SHADER_TEXTURE_BLIT);
+	BIND_ENUM_CONSTANT(RSE::SHADER_MAX);
 
 	/* MATERIAL */
 
@@ -2414,8 +2349,8 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("material_set_use_debanding", "enable"), &RenderingServer::material_set_use_debanding);
 
-	BIND_CONSTANT(MATERIAL_RENDER_PRIORITY_MIN);
-	BIND_CONSTANT(MATERIAL_RENDER_PRIORITY_MAX);
+	BIND_CONSTANT(RSE::MATERIAL_RENDER_PRIORITY_MIN);
+	BIND_CONSTANT(RSE::MATERIAL_RENDER_PRIORITY_MAX);
 
 	/* MESH API */
 
@@ -2451,82 +2386,82 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("mesh_set_shadow_mesh", "mesh", "shadow_mesh"), &RenderingServer::mesh_set_shadow_mesh);
 
-	BIND_ENUM_CONSTANT(ARRAY_VERTEX);
-	BIND_ENUM_CONSTANT(ARRAY_NORMAL);
-	BIND_ENUM_CONSTANT(ARRAY_TANGENT);
-	BIND_ENUM_CONSTANT(ARRAY_COLOR);
-	BIND_ENUM_CONSTANT(ARRAY_TEX_UV);
-	BIND_ENUM_CONSTANT(ARRAY_TEX_UV2);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM0);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM1);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM2);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM3);
-	BIND_ENUM_CONSTANT(ARRAY_BONES);
-	BIND_ENUM_CONSTANT(ARRAY_WEIGHTS);
-	BIND_ENUM_CONSTANT(ARRAY_INDEX);
-	BIND_ENUM_CONSTANT(ARRAY_MAX);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_VERTEX);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_NORMAL);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_TANGENT);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_COLOR);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_TEX_UV);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_TEX_UV2);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_CUSTOM0);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_CUSTOM1);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_CUSTOM2);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_CUSTOM3);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_BONES);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_WEIGHTS);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_INDEX);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_MAX);
 
-	BIND_CONSTANT(ARRAY_CUSTOM_COUNT);
+	BIND_CONSTANT(RSE::ARRAY_CUSTOM_COUNT);
 
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGBA8_UNORM);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGBA8_SNORM);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RG_HALF);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGBA_HALF);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_R_FLOAT);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RG_FLOAT);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGB_FLOAT);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGBA_FLOAT);
-	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_MAX);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_CUSTOM_RGBA8_UNORM);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_CUSTOM_RGBA8_SNORM);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_CUSTOM_RG_HALF);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_CUSTOM_RGBA_HALF);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_CUSTOM_R_FLOAT);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_CUSTOM_RG_FLOAT);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_CUSTOM_RGB_FLOAT);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_CUSTOM_RGBA_FLOAT);
+	BIND_ENUM_CONSTANT(RSE::ARRAY_CUSTOM_MAX);
 
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_VERTEX);
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_NORMAL);
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_TANGENT);
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_COLOR);
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_TEX_UV);
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_TEX_UV2);
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM0);
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM1);
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM2);
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM3);
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_BONES);
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_WEIGHTS);
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_INDEX);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_VERTEX);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_NORMAL);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_TANGENT);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_COLOR);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_TEX_UV);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_TEX_UV2);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_CUSTOM0);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_CUSTOM1);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_CUSTOM2);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_CUSTOM3);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_BONES);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_WEIGHTS);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_INDEX);
 
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_BLEND_SHAPE_MASK);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_BLEND_SHAPE_MASK);
 
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM_BASE);
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM_BITS);
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM0_SHIFT);
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM1_SHIFT);
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM2_SHIFT);
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM3_SHIFT);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_CUSTOM_BASE);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_CUSTOM_BITS);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_CUSTOM0_SHIFT);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_CUSTOM1_SHIFT);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_CUSTOM2_SHIFT);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_CUSTOM3_SHIFT);
 
-	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM_MASK);
-	BIND_BITFIELD_FLAG(ARRAY_COMPRESS_FLAGS_BASE);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FORMAT_CUSTOM_MASK);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_COMPRESS_FLAGS_BASE);
 
-	BIND_BITFIELD_FLAG(ARRAY_FLAG_USE_2D_VERTICES);
-	BIND_BITFIELD_FLAG(ARRAY_FLAG_USE_DYNAMIC_UPDATE);
-	BIND_BITFIELD_FLAG(ARRAY_FLAG_USE_8_BONE_WEIGHTS);
-	BIND_BITFIELD_FLAG(ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FLAG_USE_2D_VERTICES);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FLAG_USE_DYNAMIC_UPDATE);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY);
 
-	BIND_BITFIELD_FLAG(ARRAY_FLAG_COMPRESS_ATTRIBUTES);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES);
 
-	BIND_BITFIELD_FLAG(ARRAY_FLAG_FORMAT_VERSION_BASE);
-	BIND_BITFIELD_FLAG(ARRAY_FLAG_FORMAT_VERSION_SHIFT);
-	BIND_BITFIELD_FLAG(ARRAY_FLAG_FORMAT_VERSION_1);
-	BIND_BITFIELD_FLAG(ARRAY_FLAG_FORMAT_VERSION_2);
-	BIND_BITFIELD_FLAG(ARRAY_FLAG_FORMAT_CURRENT_VERSION);
-	BIND_BITFIELD_FLAG(ARRAY_FLAG_FORMAT_VERSION_MASK);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FLAG_FORMAT_VERSION_BASE);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FLAG_FORMAT_VERSION_1);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FLAG_FORMAT_VERSION_2);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION);
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FLAG_FORMAT_VERSION_MASK);
 
-	BIND_ENUM_CONSTANT(PRIMITIVE_POINTS);
-	BIND_ENUM_CONSTANT(PRIMITIVE_LINES);
-	BIND_ENUM_CONSTANT(PRIMITIVE_LINE_STRIP);
-	BIND_ENUM_CONSTANT(PRIMITIVE_TRIANGLES);
-	BIND_ENUM_CONSTANT(PRIMITIVE_TRIANGLE_STRIP);
-	BIND_ENUM_CONSTANT(PRIMITIVE_MAX);
+	BIND_ENUM_CONSTANT(RSE::PRIMITIVE_POINTS);
+	BIND_ENUM_CONSTANT(RSE::PRIMITIVE_LINES);
+	BIND_ENUM_CONSTANT(RSE::PRIMITIVE_LINE_STRIP);
+	BIND_ENUM_CONSTANT(RSE::PRIMITIVE_TRIANGLES);
+	BIND_ENUM_CONSTANT(RSE::PRIMITIVE_TRIANGLE_STRIP);
+	BIND_ENUM_CONSTANT(RSE::PRIMITIVE_MAX);
 
-	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_NORMALIZED);
-	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_RELATIVE);
+	BIND_ENUM_CONSTANT(RSE::BLEND_SHAPE_MODE_NORMALIZED);
+	BIND_ENUM_CONSTANT(RSE::BLEND_SHAPE_MODE_RELATIVE);
 
 	/* MULTIMESH API */
 
@@ -2559,10 +2494,10 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("multimesh_instance_reset_physics_interpolation", "multimesh", "index"), &RenderingServer::multimesh_instance_reset_physics_interpolation);
 	ClassDB::bind_method(D_METHOD("multimesh_instances_reset_physics_interpolation", "multimesh"), &RenderingServer::multimesh_instances_reset_physics_interpolation);
 
-	BIND_ENUM_CONSTANT(MULTIMESH_TRANSFORM_2D);
-	BIND_ENUM_CONSTANT(MULTIMESH_TRANSFORM_3D);
-	BIND_ENUM_CONSTANT(MULTIMESH_INTERP_QUALITY_FAST);
-	BIND_ENUM_CONSTANT(MULTIMESH_INTERP_QUALITY_HIGH);
+	BIND_ENUM_CONSTANT(RSE::MULTIMESH_TRANSFORM_2D);
+	BIND_ENUM_CONSTANT(RSE::MULTIMESH_TRANSFORM_3D);
+	BIND_ENUM_CONSTANT(RSE::MULTIMESH_INTERP_QUALITY_FAST);
+	BIND_ENUM_CONSTANT(RSE::MULTIMESH_INTERP_QUALITY_HIGH);
 
 	/* SKELETON API */
 
@@ -2602,66 +2537,66 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("light_projectors_set_filter", "filter"), &RenderingServer::light_projectors_set_filter);
 	ClassDB::bind_method(D_METHOD("lightmaps_set_bicubic_filter", "enable"), &RenderingServer::lightmaps_set_bicubic_filter);
 
-	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_NEAREST);
-	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_LINEAR);
-	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS);
-	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS);
-	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS_ANISOTROPIC);
-	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS_ANISOTROPIC);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PROJECTOR_FILTER_NEAREST);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PROJECTOR_FILTER_LINEAR);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS_ANISOTROPIC);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS_ANISOTROPIC);
 
-	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL);
-	BIND_ENUM_CONSTANT(LIGHT_OMNI);
-	BIND_ENUM_CONSTANT(LIGHT_SPOT);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_DIRECTIONAL);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_OMNI);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_SPOT);
 
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_ENERGY);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_INDIRECT_ENERGY);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_SPECULAR);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_RANGE);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_SIZE);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_ATTENUATION);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_SPOT_ANGLE);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_SPOT_ATTENUATION);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_MAX_DISTANCE);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_FADE_START);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_NORMAL_BIAS);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_BIAS);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_PANCAKE_SIZE);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_OPACITY);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_BLUR);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_TRANSMITTANCE_BIAS);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_INTENSITY);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_MAX);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_ENERGY);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_INDIRECT_ENERGY);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_SPECULAR);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_RANGE);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_SIZE);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_ATTENUATION);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_SPOT_ANGLE);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_SPOT_ATTENUATION);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_SHADOW_FADE_START);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_SHADOW_NORMAL_BIAS);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_SHADOW_BIAS);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_SHADOW_PANCAKE_SIZE);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_SHADOW_OPACITY);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_SHADOW_BLUR);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_TRANSMITTANCE_BIAS);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_INTENSITY);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_MAX);
 
-	BIND_ENUM_CONSTANT(LIGHT_BAKE_DISABLED);
-	BIND_ENUM_CONSTANT(LIGHT_BAKE_STATIC);
-	BIND_ENUM_CONSTANT(LIGHT_BAKE_DYNAMIC);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_BAKE_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_BAKE_STATIC);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_BAKE_DYNAMIC);
 
-	BIND_ENUM_CONSTANT(LIGHT_OMNI_SHADOW_DUAL_PARABOLOID);
-	BIND_ENUM_CONSTANT(LIGHT_OMNI_SHADOW_CUBE);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_OMNI_SHADOW_CUBE);
 
-	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL);
-	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS);
-	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS);
 
-	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY);
-	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY);
-	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY);
 
 	ClassDB::bind_method(D_METHOD("positional_soft_shadow_filter_set_quality", "quality"), &RenderingServer::positional_soft_shadow_filter_set_quality);
 	ClassDB::bind_method(D_METHOD("directional_soft_shadow_filter_set_quality", "quality"), &RenderingServer::directional_soft_shadow_filter_set_quality);
 	ClassDB::bind_method(D_METHOD("directional_shadow_atlas_set_size", "size", "is_16bits"), &RenderingServer::directional_shadow_atlas_set_size);
 
-	BIND_ENUM_CONSTANT(SHADOW_QUALITY_HARD);
-	BIND_ENUM_CONSTANT(SHADOW_QUALITY_SOFT_VERY_LOW);
-	BIND_ENUM_CONSTANT(SHADOW_QUALITY_SOFT_LOW);
-	BIND_ENUM_CONSTANT(SHADOW_QUALITY_SOFT_MEDIUM);
-	BIND_ENUM_CONSTANT(SHADOW_QUALITY_SOFT_HIGH);
-	BIND_ENUM_CONSTANT(SHADOW_QUALITY_SOFT_ULTRA);
-	BIND_ENUM_CONSTANT(SHADOW_QUALITY_MAX);
+	BIND_ENUM_CONSTANT(RSE::SHADOW_QUALITY_HARD);
+	BIND_ENUM_CONSTANT(RSE::SHADOW_QUALITY_SOFT_VERY_LOW);
+	BIND_ENUM_CONSTANT(RSE::SHADOW_QUALITY_SOFT_LOW);
+	BIND_ENUM_CONSTANT(RSE::SHADOW_QUALITY_SOFT_MEDIUM);
+	BIND_ENUM_CONSTANT(RSE::SHADOW_QUALITY_SOFT_HIGH);
+	BIND_ENUM_CONSTANT(RSE::SHADOW_QUALITY_SOFT_ULTRA);
+	BIND_ENUM_CONSTANT(RSE::SHADOW_QUALITY_MAX);
 
 	/* REFLECTION PROBE */
 
@@ -2683,12 +2618,12 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_resolution", "probe", "resolution"), &RenderingServer::reflection_probe_set_resolution);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_mesh_lod_threshold", "probe", "pixels"), &RenderingServer::reflection_probe_set_mesh_lod_threshold);
 
-	BIND_ENUM_CONSTANT(REFLECTION_PROBE_UPDATE_ONCE);
-	BIND_ENUM_CONSTANT(REFLECTION_PROBE_UPDATE_ALWAYS);
+	BIND_ENUM_CONSTANT(RSE::REFLECTION_PROBE_UPDATE_ONCE);
+	BIND_ENUM_CONSTANT(RSE::REFLECTION_PROBE_UPDATE_ALWAYS);
 
-	BIND_ENUM_CONSTANT(REFLECTION_PROBE_AMBIENT_DISABLED);
-	BIND_ENUM_CONSTANT(REFLECTION_PROBE_AMBIENT_ENVIRONMENT);
-	BIND_ENUM_CONSTANT(REFLECTION_PROBE_AMBIENT_COLOR);
+	BIND_ENUM_CONSTANT(RSE::REFLECTION_PROBE_AMBIENT_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::REFLECTION_PROBE_AMBIENT_ENVIRONMENT);
+	BIND_ENUM_CONSTANT(RSE::REFLECTION_PROBE_AMBIENT_COLOR);
 
 	/* DECAL */
 
@@ -2705,18 +2640,18 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("decals_set_filter", "filter"), &RenderingServer::decals_set_filter);
 
-	BIND_ENUM_CONSTANT(DECAL_TEXTURE_ALBEDO);
-	BIND_ENUM_CONSTANT(DECAL_TEXTURE_NORMAL);
-	BIND_ENUM_CONSTANT(DECAL_TEXTURE_ORM);
-	BIND_ENUM_CONSTANT(DECAL_TEXTURE_EMISSION);
-	BIND_ENUM_CONSTANT(DECAL_TEXTURE_MAX);
+	BIND_ENUM_CONSTANT(RSE::DECAL_TEXTURE_ALBEDO);
+	BIND_ENUM_CONSTANT(RSE::DECAL_TEXTURE_NORMAL);
+	BIND_ENUM_CONSTANT(RSE::DECAL_TEXTURE_ORM);
+	BIND_ENUM_CONSTANT(RSE::DECAL_TEXTURE_EMISSION);
+	BIND_ENUM_CONSTANT(RSE::DECAL_TEXTURE_MAX);
 
-	BIND_ENUM_CONSTANT(DECAL_FILTER_NEAREST);
-	BIND_ENUM_CONSTANT(DECAL_FILTER_LINEAR);
-	BIND_ENUM_CONSTANT(DECAL_FILTER_NEAREST_MIPMAPS);
-	BIND_ENUM_CONSTANT(DECAL_FILTER_LINEAR_MIPMAPS);
-	BIND_ENUM_CONSTANT(DECAL_FILTER_NEAREST_MIPMAPS_ANISOTROPIC);
-	BIND_ENUM_CONSTANT(DECAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC);
+	BIND_ENUM_CONSTANT(RSE::DECAL_FILTER_NEAREST);
+	BIND_ENUM_CONSTANT(RSE::DECAL_FILTER_LINEAR);
+	BIND_ENUM_CONSTANT(RSE::DECAL_FILTER_NEAREST_MIPMAPS);
+	BIND_ENUM_CONSTANT(RSE::DECAL_FILTER_LINEAR_MIPMAPS);
+	BIND_ENUM_CONSTANT(RSE::DECAL_FILTER_NEAREST_MIPMAPS_ANISOTROPIC);
+	BIND_ENUM_CONSTANT(RSE::DECAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC);
 
 	/* GI API (affects VoxelGI and SDFGI) */
 
@@ -2744,8 +2679,8 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("voxel_gi_set_quality", "quality"), &RenderingServer::voxel_gi_set_quality);
 
-	BIND_ENUM_CONSTANT(VOXEL_GI_QUALITY_LOW);
-	BIND_ENUM_CONSTANT(VOXEL_GI_QUALITY_HIGH);
+	BIND_ENUM_CONSTANT(RSE::VOXEL_GI_QUALITY_LOW);
+	BIND_ENUM_CONSTANT(RSE::VOXEL_GI_QUALITY_HIGH);
 
 	/* LIGHTMAP */
 
@@ -2803,24 +2738,24 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("particles_get_current_aabb", "particles"), &RenderingServer::particles_get_current_aabb);
 	ClassDB::bind_method(D_METHOD("particles_set_emission_transform", "particles", "transform"), &RenderingServer::particles_set_emission_transform);
 
-	BIND_ENUM_CONSTANT(PARTICLES_MODE_2D);
-	BIND_ENUM_CONSTANT(PARTICLES_MODE_3D);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_MODE_2D);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_MODE_3D);
 
-	BIND_ENUM_CONSTANT(PARTICLES_TRANSFORM_ALIGN_DISABLED);
-	BIND_ENUM_CONSTANT(PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD);
-	BIND_ENUM_CONSTANT(PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY);
-	BIND_ENUM_CONSTANT(PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_TRANSFORM_ALIGN_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY);
 
-	BIND_CONSTANT(PARTICLES_EMIT_FLAG_POSITION);
-	BIND_CONSTANT(PARTICLES_EMIT_FLAG_ROTATION_SCALE);
-	BIND_CONSTANT(PARTICLES_EMIT_FLAG_VELOCITY);
-	BIND_CONSTANT(PARTICLES_EMIT_FLAG_COLOR);
-	BIND_CONSTANT(PARTICLES_EMIT_FLAG_CUSTOM);
+	BIND_CONSTANT(RSE::PARTICLES_EMIT_FLAG_POSITION);
+	BIND_CONSTANT(RSE::PARTICLES_EMIT_FLAG_ROTATION_SCALE);
+	BIND_CONSTANT(RSE::PARTICLES_EMIT_FLAG_VELOCITY);
+	BIND_CONSTANT(RSE::PARTICLES_EMIT_FLAG_COLOR);
+	BIND_CONSTANT(RSE::PARTICLES_EMIT_FLAG_CUSTOM);
 
-	BIND_ENUM_CONSTANT(PARTICLES_DRAW_ORDER_INDEX);
-	BIND_ENUM_CONSTANT(PARTICLES_DRAW_ORDER_LIFETIME);
-	BIND_ENUM_CONSTANT(PARTICLES_DRAW_ORDER_REVERSE_LIFETIME);
-	BIND_ENUM_CONSTANT(PARTICLES_DRAW_ORDER_VIEW_DEPTH);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_DRAW_ORDER_INDEX);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_DRAW_ORDER_LIFETIME);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_DRAW_ORDER_VIEW_DEPTH);
 
 	/* PARTICLES COLLISION */
 
@@ -2838,21 +2773,21 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("particles_collision_set_height_field_resolution", "particles_collision", "resolution"), &RenderingServer::particles_collision_set_height_field_resolution);
 	ClassDB::bind_method(D_METHOD("particles_collision_set_height_field_mask", "particles_collision", "mask"), &RenderingServer::particles_collision_set_height_field_mask);
 
-	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT);
-	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_TYPE_BOX_ATTRACT);
-	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_TYPE_VECTOR_FIELD_ATTRACT);
-	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_TYPE_SPHERE_COLLIDE);
-	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_TYPE_BOX_COLLIDE);
-	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_TYPE_SDF_COLLIDE);
-	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_COLLISION_TYPE_BOX_ATTRACT);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_COLLISION_TYPE_VECTOR_FIELD_ATTRACT);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_COLLISION_TYPE_SPHERE_COLLIDE);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_COLLISION_TYPE_BOX_COLLIDE);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_COLLISION_TYPE_SDF_COLLIDE);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE);
 
-	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_256);
-	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_512);
-	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024);
-	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_2048);
-	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_4096);
-	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_8192);
-	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_MAX);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_256);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_512);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_2048);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_4096);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_8192);
+	BIND_ENUM_CONSTANT(RSE::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_MAX);
 
 	/* FOG VOLUMES */
 
@@ -2861,12 +2796,12 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("fog_volume_set_size", "fog_volume", "size"), &RenderingServer::fog_volume_set_size);
 	ClassDB::bind_method(D_METHOD("fog_volume_set_material", "fog_volume", "material"), &RenderingServer::fog_volume_set_material);
 
-	BIND_ENUM_CONSTANT(FOG_VOLUME_SHAPE_ELLIPSOID);
-	BIND_ENUM_CONSTANT(FOG_VOLUME_SHAPE_CONE);
-	BIND_ENUM_CONSTANT(FOG_VOLUME_SHAPE_CYLINDER);
-	BIND_ENUM_CONSTANT(FOG_VOLUME_SHAPE_BOX);
-	BIND_ENUM_CONSTANT(FOG_VOLUME_SHAPE_WORLD);
-	BIND_ENUM_CONSTANT(FOG_VOLUME_SHAPE_MAX);
+	BIND_ENUM_CONSTANT(RSE::FOG_VOLUME_SHAPE_ELLIPSOID);
+	BIND_ENUM_CONSTANT(RSE::FOG_VOLUME_SHAPE_CONE);
+	BIND_ENUM_CONSTANT(RSE::FOG_VOLUME_SHAPE_CYLINDER);
+	BIND_ENUM_CONSTANT(RSE::FOG_VOLUME_SHAPE_BOX);
+	BIND_ENUM_CONSTANT(RSE::FOG_VOLUME_SHAPE_WORLD);
+	BIND_ENUM_CONSTANT(RSE::FOG_VOLUME_SHAPE_MAX);
 
 	/* VISIBILITY NOTIFIER */
 
@@ -2960,108 +2895,108 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_vrs_update_mode", "viewport", "mode"), &RenderingServer::viewport_set_vrs_update_mode);
 	ClassDB::bind_method(D_METHOD("viewport_set_vrs_texture", "viewport", "texture"), &RenderingServer::viewport_set_vrs_texture);
 
-	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_BILINEAR);
-	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_FSR);
-	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_FSR2);
-	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL);
-	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL);
-	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_MAX);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SCALING_3D_MODE_FSR);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SCALING_3D_MODE_FSR2);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SCALING_3D_MODE_MAX);
 
-	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_DISABLED);
-	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_ONCE); // Then goes to disabled, must be manually updated.
-	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_WHEN_VISIBLE); // Default
-	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
-	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_ALWAYS);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_UPDATE_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_UPDATE_ONCE); // Then goes to disabled, must be manually updated.
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_UPDATE_WHEN_VISIBLE); // Default
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_UPDATE_ALWAYS);
 
-	BIND_ENUM_CONSTANT(VIEWPORT_CLEAR_ALWAYS);
-	BIND_ENUM_CONSTANT(VIEWPORT_CLEAR_NEVER);
-	BIND_ENUM_CONSTANT(VIEWPORT_CLEAR_ONLY_NEXT_FRAME);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_CLEAR_ALWAYS);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_CLEAR_NEVER);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_CLEAR_ONLY_NEXT_FRAME);
 
-	BIND_ENUM_CONSTANT(VIEWPORT_ENVIRONMENT_DISABLED);
-	BIND_ENUM_CONSTANT(VIEWPORT_ENVIRONMENT_ENABLED);
-	BIND_ENUM_CONSTANT(VIEWPORT_ENVIRONMENT_INHERIT);
-	BIND_ENUM_CONSTANT(VIEWPORT_ENVIRONMENT_MAX);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_ENVIRONMENT_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_ENVIRONMENT_ENABLED);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_ENVIRONMENT_INHERIT);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_ENVIRONMENT_MAX);
 
-	BIND_ENUM_CONSTANT(VIEWPORT_SDF_OVERSIZE_100_PERCENT);
-	BIND_ENUM_CONSTANT(VIEWPORT_SDF_OVERSIZE_120_PERCENT);
-	BIND_ENUM_CONSTANT(VIEWPORT_SDF_OVERSIZE_150_PERCENT);
-	BIND_ENUM_CONSTANT(VIEWPORT_SDF_OVERSIZE_200_PERCENT);
-	BIND_ENUM_CONSTANT(VIEWPORT_SDF_OVERSIZE_MAX);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SDF_OVERSIZE_100_PERCENT);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SDF_OVERSIZE_120_PERCENT);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SDF_OVERSIZE_150_PERCENT);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SDF_OVERSIZE_200_PERCENT);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SDF_OVERSIZE_MAX);
 
-	BIND_ENUM_CONSTANT(VIEWPORT_SDF_SCALE_100_PERCENT);
-	BIND_ENUM_CONSTANT(VIEWPORT_SDF_SCALE_50_PERCENT);
-	BIND_ENUM_CONSTANT(VIEWPORT_SDF_SCALE_25_PERCENT);
-	BIND_ENUM_CONSTANT(VIEWPORT_SDF_SCALE_MAX);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SDF_SCALE_100_PERCENT);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SDF_SCALE_50_PERCENT);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SDF_SCALE_25_PERCENT);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SDF_SCALE_MAX);
 
-	BIND_ENUM_CONSTANT(VIEWPORT_MSAA_DISABLED);
-	BIND_ENUM_CONSTANT(VIEWPORT_MSAA_2X);
-	BIND_ENUM_CONSTANT(VIEWPORT_MSAA_4X);
-	BIND_ENUM_CONSTANT(VIEWPORT_MSAA_8X);
-	BIND_ENUM_CONSTANT(VIEWPORT_MSAA_MAX);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_MSAA_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_MSAA_2X);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_MSAA_4X);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_MSAA_8X);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_MSAA_MAX);
 
-	BIND_ENUM_CONSTANT(VIEWPORT_ANISOTROPY_DISABLED);
-	BIND_ENUM_CONSTANT(VIEWPORT_ANISOTROPY_2X);
-	BIND_ENUM_CONSTANT(VIEWPORT_ANISOTROPY_4X);
-	BIND_ENUM_CONSTANT(VIEWPORT_ANISOTROPY_8X);
-	BIND_ENUM_CONSTANT(VIEWPORT_ANISOTROPY_16X);
-	BIND_ENUM_CONSTANT(VIEWPORT_ANISOTROPY_MAX);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_ANISOTROPY_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_ANISOTROPY_2X);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_ANISOTROPY_4X);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_ANISOTROPY_8X);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_ANISOTROPY_16X);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_ANISOTROPY_MAX);
 
-	BIND_ENUM_CONSTANT(VIEWPORT_SCREEN_SPACE_AA_DISABLED);
-	BIND_ENUM_CONSTANT(VIEWPORT_SCREEN_SPACE_AA_FXAA);
-	BIND_ENUM_CONSTANT(VIEWPORT_SCREEN_SPACE_AA_SMAA);
-	BIND_ENUM_CONSTANT(VIEWPORT_SCREEN_SPACE_AA_MAX);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SCREEN_SPACE_AA_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SCREEN_SPACE_AA_FXAA);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SCREEN_SPACE_AA_SMAA);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SCREEN_SPACE_AA_MAX);
 
-	BIND_ENUM_CONSTANT(VIEWPORT_OCCLUSION_BUILD_QUALITY_LOW);
-	BIND_ENUM_CONSTANT(VIEWPORT_OCCLUSION_BUILD_QUALITY_MEDIUM);
-	BIND_ENUM_CONSTANT(VIEWPORT_OCCLUSION_BUILD_QUALITY_HIGH);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_OCCLUSION_BUILD_QUALITY_LOW);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_OCCLUSION_BUILD_QUALITY_MEDIUM);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_OCCLUSION_BUILD_QUALITY_HIGH);
 
-	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME);
-	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME);
-	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME);
-	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_MAX);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_RENDER_INFO_MAX);
 
-	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_TYPE_VISIBLE);
-	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_TYPE_SHADOW);
-	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_TYPE_CANVAS);
-	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_TYPE_MAX);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_RENDER_INFO_TYPE_VISIBLE);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_RENDER_INFO_TYPE_SHADOW);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_RENDER_INFO_TYPE_CANVAS);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_RENDER_INFO_TYPE_MAX);
 
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_DISABLED);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_UNSHADED);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_LIGHTING);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_OVERDRAW);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_WIREFRAME);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_VOXEL_GI_ALBEDO);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_VOXEL_GI_LIGHTING);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SSAO);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SSIL);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_PSSM_SPLITS);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_DECAL_ATLAS);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SDFGI);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SDFGI_PROBES);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_GI_BUFFER);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_DISABLE_LOD);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_OCCLUDERS);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_MOTION_VECTORS);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_UNSHADED);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_LIGHTING);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_WIREFRAME);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_VOXEL_GI_ALBEDO);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_VOXEL_GI_LIGHTING);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_SSAO);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_SSIL);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_DECAL_ATLAS);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_SDFGI);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_SDFGI_PROBES);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_GI_BUFFER);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_DISABLE_LOD);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_OCCLUDERS);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER);
 
-	BIND_ENUM_CONSTANT(VIEWPORT_VRS_DISABLED);
-	BIND_ENUM_CONSTANT(VIEWPORT_VRS_TEXTURE);
-	BIND_ENUM_CONSTANT(VIEWPORT_VRS_XR);
-	BIND_ENUM_CONSTANT(VIEWPORT_VRS_MAX);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_VRS_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_VRS_TEXTURE);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_VRS_XR);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_VRS_MAX);
 
-	BIND_ENUM_CONSTANT(VIEWPORT_VRS_UPDATE_DISABLED);
-	BIND_ENUM_CONSTANT(VIEWPORT_VRS_UPDATE_ONCE); // Then goes to disabled, must be manually updated.
-	BIND_ENUM_CONSTANT(VIEWPORT_VRS_UPDATE_ALWAYS);
-	BIND_ENUM_CONSTANT(VIEWPORT_VRS_UPDATE_MAX);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_VRS_UPDATE_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_VRS_UPDATE_ONCE); // Then goes to disabled, must be manually updated.
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_VRS_UPDATE_ALWAYS);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_VRS_UPDATE_MAX);
 
 	/* SKY API */
 
@@ -3071,10 +3006,10 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("sky_set_material", "sky", "material"), &RenderingServer::sky_set_material);
 	ClassDB::bind_method(D_METHOD("sky_bake_panorama", "sky", "energy", "bake_irradiance", "size"), &RenderingServer::sky_bake_panorama);
 
-	BIND_ENUM_CONSTANT(SKY_MODE_AUTOMATIC);
-	BIND_ENUM_CONSTANT(SKY_MODE_QUALITY);
-	BIND_ENUM_CONSTANT(SKY_MODE_INCREMENTAL);
-	BIND_ENUM_CONSTANT(SKY_MODE_REALTIME);
+	BIND_ENUM_CONSTANT(RSE::SKY_MODE_AUTOMATIC);
+	BIND_ENUM_CONSTANT(RSE::SKY_MODE_QUALITY);
+	BIND_ENUM_CONSTANT(RSE::SKY_MODE_INCREMENTAL);
+	BIND_ENUM_CONSTANT(RSE::SKY_MODE_REALTIME);
 
 	/* COMPOSITOR EFFECT API */
 
@@ -3083,18 +3018,18 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("compositor_effect_set_callback", "effect", "callback_type", "callback"), &RenderingServer::compositor_effect_set_callback);
 	ClassDB::bind_method(D_METHOD("compositor_effect_set_flag", "effect", "flag", "set"), &RenderingServer::compositor_effect_set_flag);
 
-	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_COLOR);
-	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH);
-	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS);
-	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_FLAG_NEEDS_ROUGHNESS);
-	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_FLAG_NEEDS_SEPARATE_SPECULAR);
+	BIND_ENUM_CONSTANT(RSE::COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_COLOR);
+	BIND_ENUM_CONSTANT(RSE::COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH);
+	BIND_ENUM_CONSTANT(RSE::COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS);
+	BIND_ENUM_CONSTANT(RSE::COMPOSITOR_EFFECT_FLAG_NEEDS_ROUGHNESS);
+	BIND_ENUM_CONSTANT(RSE::COMPOSITOR_EFFECT_FLAG_NEEDS_SEPARATE_SPECULAR);
 
-	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_OPAQUE);
-	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_OPAQUE);
-	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_SKY);
-	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT);
-	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT);
-	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY);
+	BIND_ENUM_CONSTANT(RSE::COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_OPAQUE);
+	BIND_ENUM_CONSTANT(RSE::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_OPAQUE);
+	BIND_ENUM_CONSTANT(RSE::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_SKY);
+	BIND_ENUM_CONSTANT(RSE::COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT);
+	BIND_ENUM_CONSTANT(RSE::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT);
+	BIND_ENUM_CONSTANT(RSE::COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY);
 
 	/* COMPOSITOR */
 
@@ -3113,14 +3048,14 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_bg_color", "env", "color"), &RenderingServer::environment_set_bg_color);
 	ClassDB::bind_method(D_METHOD("environment_set_bg_energy", "env", "multiplier", "exposure_value"), &RenderingServer::environment_set_bg_energy);
 	ClassDB::bind_method(D_METHOD("environment_set_canvas_max_layer", "env", "max_layer"), &RenderingServer::environment_set_canvas_max_layer);
-	ClassDB::bind_method(D_METHOD("environment_set_ambient_light", "env", "color", "ambient", "energy", "sky_contribution", "reflection_source"), &RenderingServer::environment_set_ambient_light, DEFVAL(RS::ENV_AMBIENT_SOURCE_BG), DEFVAL(1.0), DEFVAL(0.0), DEFVAL(RS::ENV_REFLECTION_SOURCE_BG));
+	ClassDB::bind_method(D_METHOD("environment_set_ambient_light", "env", "color", "ambient", "energy", "sky_contribution", "reflection_source"), &RenderingServer::environment_set_ambient_light, DEFVAL(RSE::ENV_AMBIENT_SOURCE_BG), DEFVAL(1.0), DEFVAL(0.0), DEFVAL(RSE::ENV_REFLECTION_SOURCE_BG));
 	ClassDB::bind_method(D_METHOD("environment_set_glow", "env", "enable", "levels", "intensity", "strength", "mix", "bloom_threshold", "blend_mode", "hdr_bleed_threshold", "hdr_bleed_scale", "hdr_luminance_cap", "glow_map_strength", "glow_map"), &RenderingServer::environment_set_glow);
 	ClassDB::bind_method(D_METHOD("environment_set_tonemap", "env", "tone_mapper", "exposure", "white"), &RenderingServer::environment_set_tonemap);
 	ClassDB::bind_method(D_METHOD("environment_set_tonemap_agx_contrast", "env", "agx_contrast"), &RenderingServer::environment_set_tonemap_agx_contrast);
 	ClassDB::bind_method(D_METHOD("environment_set_adjustment", "env", "enable", "brightness", "contrast", "saturation", "use_1d_color_correction", "color_correction"), &RenderingServer::environment_set_adjustment);
 	ClassDB::bind_method(D_METHOD("environment_set_ssr", "env", "enable", "max_steps", "fade_in", "fade_out", "depth_tolerance"), &RenderingServer::environment_set_ssr);
 	ClassDB::bind_method(D_METHOD("environment_set_ssao", "env", "enable", "radius", "intensity", "power", "detail", "horizon", "sharpness", "light_affect", "ao_channel_affect"), &RenderingServer::environment_set_ssao);
-	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective", "sky_affect", "fog_mode"), &RenderingServer::environment_set_fog, DEFVAL(RS::ENV_FOG_MODE_EXPONENTIAL));
+	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective", "sky_affect", "fog_mode"), &RenderingServer::environment_set_fog, DEFVAL(RSE::ENV_FOG_MODE_EXPONENTIAL));
 	ClassDB::bind_method(D_METHOD("environment_set_fog_depth", "env", "curve", "begin", "end"), &RenderingServer::environment_set_fog_depth);
 	ClassDB::bind_method(D_METHOD("environment_set_sdfgi", "env", "enable", "cascades", "min_cell_size", "y_scale", "use_occlusion", "bounce_feedback", "read_sky", "energy", "normal_bias", "probe_bias"), &RenderingServer::environment_set_sdfgi);
 	ClassDB::bind_method(D_METHOD("environment_set_volumetric_fog", "env", "enable", "density", "albedo", "emission", "emission_energy", "anisotropy", "length", "p_detail_spread", "gi_inject", "temporal_reprojection", "temporal_reprojection_amount", "ambient_inject", "sky_affect"), &RenderingServer::environment_set_volumetric_fog);
@@ -3142,87 +3077,87 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("sub_surface_scattering_set_quality", "quality"), &RenderingServer::sub_surface_scattering_set_quality);
 	ClassDB::bind_method(D_METHOD("sub_surface_scattering_set_scale", "scale", "depth_scale"), &RenderingServer::sub_surface_scattering_set_scale);
 
-	BIND_ENUM_CONSTANT(ENV_BG_CLEAR_COLOR);
-	BIND_ENUM_CONSTANT(ENV_BG_COLOR);
-	BIND_ENUM_CONSTANT(ENV_BG_SKY);
-	BIND_ENUM_CONSTANT(ENV_BG_CANVAS);
-	BIND_ENUM_CONSTANT(ENV_BG_KEEP);
-	BIND_ENUM_CONSTANT(ENV_BG_CAMERA_FEED);
-	BIND_ENUM_CONSTANT(ENV_BG_MAX);
+	BIND_ENUM_CONSTANT(RSE::ENV_BG_CLEAR_COLOR);
+	BIND_ENUM_CONSTANT(RSE::ENV_BG_COLOR);
+	BIND_ENUM_CONSTANT(RSE::ENV_BG_SKY);
+	BIND_ENUM_CONSTANT(RSE::ENV_BG_CANVAS);
+	BIND_ENUM_CONSTANT(RSE::ENV_BG_KEEP);
+	BIND_ENUM_CONSTANT(RSE::ENV_BG_CAMERA_FEED);
+	BIND_ENUM_CONSTANT(RSE::ENV_BG_MAX);
 
-	BIND_ENUM_CONSTANT(ENV_AMBIENT_SOURCE_BG);
-	BIND_ENUM_CONSTANT(ENV_AMBIENT_SOURCE_DISABLED);
-	BIND_ENUM_CONSTANT(ENV_AMBIENT_SOURCE_COLOR);
-	BIND_ENUM_CONSTANT(ENV_AMBIENT_SOURCE_SKY);
+	BIND_ENUM_CONSTANT(RSE::ENV_AMBIENT_SOURCE_BG);
+	BIND_ENUM_CONSTANT(RSE::ENV_AMBIENT_SOURCE_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::ENV_AMBIENT_SOURCE_COLOR);
+	BIND_ENUM_CONSTANT(RSE::ENV_AMBIENT_SOURCE_SKY);
 
-	BIND_ENUM_CONSTANT(ENV_REFLECTION_SOURCE_BG);
-	BIND_ENUM_CONSTANT(ENV_REFLECTION_SOURCE_DISABLED);
-	BIND_ENUM_CONSTANT(ENV_REFLECTION_SOURCE_SKY);
+	BIND_ENUM_CONSTANT(RSE::ENV_REFLECTION_SOURCE_BG);
+	BIND_ENUM_CONSTANT(RSE::ENV_REFLECTION_SOURCE_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::ENV_REFLECTION_SOURCE_SKY);
 
-	BIND_ENUM_CONSTANT(ENV_GLOW_BLEND_MODE_ADDITIVE);
-	BIND_ENUM_CONSTANT(ENV_GLOW_BLEND_MODE_SCREEN);
-	BIND_ENUM_CONSTANT(ENV_GLOW_BLEND_MODE_SOFTLIGHT);
-	BIND_ENUM_CONSTANT(ENV_GLOW_BLEND_MODE_REPLACE);
-	BIND_ENUM_CONSTANT(ENV_GLOW_BLEND_MODE_MIX);
+	BIND_ENUM_CONSTANT(RSE::ENV_GLOW_BLEND_MODE_ADDITIVE);
+	BIND_ENUM_CONSTANT(RSE::ENV_GLOW_BLEND_MODE_SCREEN);
+	BIND_ENUM_CONSTANT(RSE::ENV_GLOW_BLEND_MODE_SOFTLIGHT);
+	BIND_ENUM_CONSTANT(RSE::ENV_GLOW_BLEND_MODE_REPLACE);
+	BIND_ENUM_CONSTANT(RSE::ENV_GLOW_BLEND_MODE_MIX);
 
-	BIND_ENUM_CONSTANT(ENV_FOG_MODE_EXPONENTIAL);
-	BIND_ENUM_CONSTANT(ENV_FOG_MODE_DEPTH);
+	BIND_ENUM_CONSTANT(RSE::ENV_FOG_MODE_EXPONENTIAL);
+	BIND_ENUM_CONSTANT(RSE::ENV_FOG_MODE_DEPTH);
 
-	BIND_ENUM_CONSTANT(ENV_TONE_MAPPER_LINEAR);
-	BIND_ENUM_CONSTANT(ENV_TONE_MAPPER_REINHARD);
-	BIND_ENUM_CONSTANT(ENV_TONE_MAPPER_FILMIC);
-	BIND_ENUM_CONSTANT(ENV_TONE_MAPPER_ACES);
-	BIND_ENUM_CONSTANT(ENV_TONE_MAPPER_AGX);
+	BIND_ENUM_CONSTANT(RSE::ENV_TONE_MAPPER_LINEAR);
+	BIND_ENUM_CONSTANT(RSE::ENV_TONE_MAPPER_REINHARD);
+	BIND_ENUM_CONSTANT(RSE::ENV_TONE_MAPPER_FILMIC);
+	BIND_ENUM_CONSTANT(RSE::ENV_TONE_MAPPER_ACES);
+	BIND_ENUM_CONSTANT(RSE::ENV_TONE_MAPPER_AGX);
 
-	BIND_ENUM_CONSTANT(ENV_SSR_ROUGHNESS_QUALITY_DISABLED);
-	BIND_ENUM_CONSTANT(ENV_SSR_ROUGHNESS_QUALITY_LOW);
-	BIND_ENUM_CONSTANT(ENV_SSR_ROUGHNESS_QUALITY_MEDIUM);
-	BIND_ENUM_CONSTANT(ENV_SSR_ROUGHNESS_QUALITY_HIGH);
+	BIND_ENUM_CONSTANT(RSE::ENV_SSR_ROUGHNESS_QUALITY_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::ENV_SSR_ROUGHNESS_QUALITY_LOW);
+	BIND_ENUM_CONSTANT(RSE::ENV_SSR_ROUGHNESS_QUALITY_MEDIUM);
+	BIND_ENUM_CONSTANT(RSE::ENV_SSR_ROUGHNESS_QUALITY_HIGH);
 
-	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_VERY_LOW);
-	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_LOW);
-	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_MEDIUM);
-	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_HIGH);
-	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_ULTRA);
+	BIND_ENUM_CONSTANT(RSE::ENV_SSAO_QUALITY_VERY_LOW);
+	BIND_ENUM_CONSTANT(RSE::ENV_SSAO_QUALITY_LOW);
+	BIND_ENUM_CONSTANT(RSE::ENV_SSAO_QUALITY_MEDIUM);
+	BIND_ENUM_CONSTANT(RSE::ENV_SSAO_QUALITY_HIGH);
+	BIND_ENUM_CONSTANT(RSE::ENV_SSAO_QUALITY_ULTRA);
 
-	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_VERY_LOW);
-	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_LOW);
-	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_MEDIUM);
-	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_HIGH);
-	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_ULTRA);
+	BIND_ENUM_CONSTANT(RSE::ENV_SSIL_QUALITY_VERY_LOW);
+	BIND_ENUM_CONSTANT(RSE::ENV_SSIL_QUALITY_LOW);
+	BIND_ENUM_CONSTANT(RSE::ENV_SSIL_QUALITY_MEDIUM);
+	BIND_ENUM_CONSTANT(RSE::ENV_SSIL_QUALITY_HIGH);
+	BIND_ENUM_CONSTANT(RSE::ENV_SSIL_QUALITY_ULTRA);
 
-	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_50_PERCENT);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_75_PERCENT);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_100_PERCENT);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_Y_SCALE_50_PERCENT);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_Y_SCALE_75_PERCENT);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_Y_SCALE_100_PERCENT);
 
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_4);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_8);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_16);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_32);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_64);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_96);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_128);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_MAX);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_RAY_COUNT_4);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_RAY_COUNT_8);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_RAY_COUNT_16);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_RAY_COUNT_32);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_RAY_COUNT_64);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_RAY_COUNT_96);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_RAY_COUNT_128);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_RAY_COUNT_MAX);
 
-	BIND_ENUM_CONSTANT(ENV_SDFGI_CONVERGE_IN_5_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_CONVERGE_IN_10_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_CONVERGE_IN_15_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_CONVERGE_IN_20_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_CONVERGE_IN_25_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_CONVERGE_IN_30_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_CONVERGE_MAX);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_CONVERGE_IN_5_FRAMES);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_CONVERGE_IN_10_FRAMES);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_CONVERGE_IN_15_FRAMES);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_CONVERGE_IN_20_FRAMES);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_CONVERGE_IN_25_FRAMES);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_CONVERGE_IN_30_FRAMES);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_CONVERGE_MAX);
 
-	BIND_ENUM_CONSTANT(ENV_SDFGI_UPDATE_LIGHT_IN_1_FRAME);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_UPDATE_LIGHT_IN_2_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_UPDATE_LIGHT_IN_8_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_UPDATE_LIGHT_IN_16_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_UPDATE_LIGHT_MAX);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_UPDATE_LIGHT_IN_1_FRAME);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_UPDATE_LIGHT_IN_2_FRAMES);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_UPDATE_LIGHT_IN_8_FRAMES);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_UPDATE_LIGHT_IN_16_FRAMES);
+	BIND_ENUM_CONSTANT(RSE::ENV_SDFGI_UPDATE_LIGHT_MAX);
 
-	BIND_ENUM_CONSTANT(SUB_SURFACE_SCATTERING_QUALITY_DISABLED);
-	BIND_ENUM_CONSTANT(SUB_SURFACE_SCATTERING_QUALITY_LOW);
-	BIND_ENUM_CONSTANT(SUB_SURFACE_SCATTERING_QUALITY_MEDIUM);
-	BIND_ENUM_CONSTANT(SUB_SURFACE_SCATTERING_QUALITY_HIGH);
+	BIND_ENUM_CONSTANT(RSE::SUB_SURFACE_SCATTERING_QUALITY_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::SUB_SURFACE_SCATTERING_QUALITY_LOW);
+	BIND_ENUM_CONSTANT(RSE::SUB_SURFACE_SCATTERING_QUALITY_MEDIUM);
+	BIND_ENUM_CONSTANT(RSE::SUB_SURFACE_SCATTERING_QUALITY_HIGH);
 
 	/* CAMERA EFFECTS */
 
@@ -3235,14 +3170,14 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("camera_attributes_set_exposure", "camera_attributes", "multiplier", "normalization"), &RenderingServer::camera_attributes_set_exposure);
 	ClassDB::bind_method(D_METHOD("camera_attributes_set_auto_exposure", "camera_attributes", "enable", "min_sensitivity", "max_sensitivity", "speed", "scale"), &RenderingServer::camera_attributes_set_auto_exposure);
 
-	BIND_ENUM_CONSTANT(DOF_BOKEH_BOX);
-	BIND_ENUM_CONSTANT(DOF_BOKEH_HEXAGON);
-	BIND_ENUM_CONSTANT(DOF_BOKEH_CIRCLE);
+	BIND_ENUM_CONSTANT(RSE::DOF_BOKEH_BOX);
+	BIND_ENUM_CONSTANT(RSE::DOF_BOKEH_HEXAGON);
+	BIND_ENUM_CONSTANT(RSE::DOF_BOKEH_CIRCLE);
 
-	BIND_ENUM_CONSTANT(DOF_BLUR_QUALITY_VERY_LOW);
-	BIND_ENUM_CONSTANT(DOF_BLUR_QUALITY_LOW);
-	BIND_ENUM_CONSTANT(DOF_BLUR_QUALITY_MEDIUM);
-	BIND_ENUM_CONSTANT(DOF_BLUR_QUALITY_HIGH);
+	BIND_ENUM_CONSTANT(RSE::DOF_BLUR_QUALITY_VERY_LOW);
+	BIND_ENUM_CONSTANT(RSE::DOF_BLUR_QUALITY_LOW);
+	BIND_ENUM_CONSTANT(RSE::DOF_BLUR_QUALITY_MEDIUM);
+	BIND_ENUM_CONSTANT(RSE::DOF_BLUR_QUALITY_HIGH);
 
 	/* SCENARIO */
 
@@ -3293,46 +3228,46 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("instances_cull_ray", "from", "to", "scenario"), &RenderingServer::_instances_cull_ray_bind, DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("instances_cull_convex", "convex", "scenario"), &RenderingServer::_instances_cull_convex_bind, DEFVAL(RID()));
 
-	BIND_ENUM_CONSTANT(INSTANCE_NONE);
-	BIND_ENUM_CONSTANT(INSTANCE_MESH);
-	BIND_ENUM_CONSTANT(INSTANCE_MULTIMESH);
-	BIND_ENUM_CONSTANT(INSTANCE_PARTICLES);
-	BIND_ENUM_CONSTANT(INSTANCE_PARTICLES_COLLISION);
-	BIND_ENUM_CONSTANT(INSTANCE_LIGHT);
-	BIND_ENUM_CONSTANT(INSTANCE_REFLECTION_PROBE);
-	BIND_ENUM_CONSTANT(INSTANCE_DECAL);
-	BIND_ENUM_CONSTANT(INSTANCE_VOXEL_GI);
-	BIND_ENUM_CONSTANT(INSTANCE_LIGHTMAP);
-	BIND_ENUM_CONSTANT(INSTANCE_OCCLUDER);
-	BIND_ENUM_CONSTANT(INSTANCE_VISIBLITY_NOTIFIER);
-	BIND_ENUM_CONSTANT(INSTANCE_FOG_VOLUME);
-	BIND_ENUM_CONSTANT(INSTANCE_MAX);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_NONE);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_MESH);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_MULTIMESH);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_PARTICLES);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_PARTICLES_COLLISION);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_LIGHT);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_REFLECTION_PROBE);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_DECAL);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_VOXEL_GI);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_LIGHTMAP);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_OCCLUDER);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_VISIBLITY_NOTIFIER);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_FOG_VOLUME);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_MAX);
 
-	BIND_ENUM_CONSTANT(INSTANCE_GEOMETRY_MASK);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_GEOMETRY_MASK);
 
-	BIND_ENUM_CONSTANT(INSTANCE_FLAG_USE_BAKED_LIGHT);
-	BIND_ENUM_CONSTANT(INSTANCE_FLAG_USE_DYNAMIC_GI);
-	BIND_ENUM_CONSTANT(INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE);
-	BIND_ENUM_CONSTANT(INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING);
-	BIND_ENUM_CONSTANT(INSTANCE_FLAG_MAX);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_FLAG_USE_BAKED_LIGHT);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_FLAG_USE_DYNAMIC_GI);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING);
+	BIND_ENUM_CONSTANT(RSE::INSTANCE_FLAG_MAX);
 
-	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_OFF);
-	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_ON);
-	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_DOUBLE_SIDED);
-	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_SHADOWS_ONLY);
+	BIND_ENUM_CONSTANT(RSE::SHADOW_CASTING_SETTING_OFF);
+	BIND_ENUM_CONSTANT(RSE::SHADOW_CASTING_SETTING_ON);
+	BIND_ENUM_CONSTANT(RSE::SHADOW_CASTING_SETTING_DOUBLE_SIDED);
+	BIND_ENUM_CONSTANT(RSE::SHADOW_CASTING_SETTING_SHADOWS_ONLY);
 
-	BIND_ENUM_CONSTANT(VISIBILITY_RANGE_FADE_DISABLED);
-	BIND_ENUM_CONSTANT(VISIBILITY_RANGE_FADE_SELF);
-	BIND_ENUM_CONSTANT(VISIBILITY_RANGE_FADE_DEPENDENCIES);
+	BIND_ENUM_CONSTANT(RSE::VISIBILITY_RANGE_FADE_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::VISIBILITY_RANGE_FADE_SELF);
+	BIND_ENUM_CONSTANT(RSE::VISIBILITY_RANGE_FADE_DEPENDENCIES);
 
 	/* Bake 3D Object */
 
 	ClassDB::bind_method(D_METHOD("bake_render_uv2", "base", "material_overrides", "image_size"), &RenderingServer::bake_render_uv2);
 
-	BIND_ENUM_CONSTANT(BAKE_CHANNEL_ALBEDO_ALPHA);
-	BIND_ENUM_CONSTANT(BAKE_CHANNEL_NORMAL);
-	BIND_ENUM_CONSTANT(BAKE_CHANNEL_ORM);
-	BIND_ENUM_CONSTANT(BAKE_CHANNEL_EMISSION);
+	BIND_ENUM_CONSTANT(RSE::BAKE_CHANNEL_ALBEDO_ALPHA);
+	BIND_ENUM_CONSTANT(RSE::BAKE_CHANNEL_NORMAL);
+	BIND_ENUM_CONSTANT(RSE::BAKE_CHANNEL_ORM);
+	BIND_ENUM_CONSTANT(RSE::BAKE_CHANNEL_EMISSION);
 
 	/* CANVAS (2D) */
 
@@ -3351,9 +3286,9 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_texture_set_texture_filter", "canvas_texture", "filter"), &RenderingServer::canvas_texture_set_texture_filter);
 	ClassDB::bind_method(D_METHOD("canvas_texture_set_texture_repeat", "canvas_texture", "repeat"), &RenderingServer::canvas_texture_set_texture_repeat);
 
-	BIND_ENUM_CONSTANT(CANVAS_TEXTURE_CHANNEL_DIFFUSE);
-	BIND_ENUM_CONSTANT(CANVAS_TEXTURE_CHANNEL_NORMAL);
-	BIND_ENUM_CONSTANT(CANVAS_TEXTURE_CHANNEL_SPECULAR);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_TEXTURE_CHANNEL_DIFFUSE);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_TEXTURE_CHANNEL_NORMAL);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_TEXTURE_CHANNEL_SPECULAR);
 
 	/* CANVAS ITEM */
 
@@ -3387,7 +3322,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_item_add_msdf_texture_rect_region", "item", "rect", "texture", "src_rect", "modulate", "outline_size", "px_range", "scale"), &RenderingServer::canvas_item_add_msdf_texture_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(1.0), DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_lcd_texture_rect_region", "item", "rect", "texture", "src_rect", "modulate"), &RenderingServer::canvas_item_add_lcd_texture_rect_region);
 	ClassDB::bind_method(D_METHOD("canvas_item_add_texture_rect_region", "item", "rect", "texture", "src_rect", "modulate", "transpose", "clip_uv"), &RenderingServer::canvas_item_add_texture_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("canvas_item_add_nine_patch", "item", "rect", "source", "texture", "topleft", "bottomright", "x_axis_mode", "y_axis_mode", "draw_center", "modulate"), &RenderingServer::canvas_item_add_nine_patch, DEFVAL(NINE_PATCH_STRETCH), DEFVAL(NINE_PATCH_STRETCH), DEFVAL(true), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("canvas_item_add_nine_patch", "item", "rect", "source", "texture", "topleft", "bottomright", "x_axis_mode", "y_axis_mode", "draw_center", "modulate"), &RenderingServer::canvas_item_add_nine_patch, DEFVAL(RSE::NINE_PATCH_STRETCH), DEFVAL(RSE::NINE_PATCH_STRETCH), DEFVAL(true), DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_primitive", "item", "points", "colors", "uvs", "texture"), &RenderingServer::canvas_item_add_primitive);
 	ClassDB::bind_method(D_METHOD("canvas_item_add_polygon", "item", "points", "colors", "uvs", "texture"), &RenderingServer::canvas_item_add_polygon, DEFVAL(Vector<Point2>()), DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_triangle_array", "item", "indices", "points", "colors", "uvs", "bones", "weights", "texture", "count"), &RenderingServer::canvas_item_add_triangle_array, DEFVAL(Vector<Point2>()), DEFVAL(Vector<int>()), DEFVAL(Vector<float>()), DEFVAL(RID()), DEFVAL(-1));
@@ -3418,29 +3353,29 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("debug_canvas_item_get_rect", "item"), &RenderingServer::debug_canvas_item_get_rect);
 
-	BIND_ENUM_CONSTANT(NINE_PATCH_STRETCH);
-	BIND_ENUM_CONSTANT(NINE_PATCH_TILE);
-	BIND_ENUM_CONSTANT(NINE_PATCH_TILE_FIT);
+	BIND_ENUM_CONSTANT(RSE::NINE_PATCH_STRETCH);
+	BIND_ENUM_CONSTANT(RSE::NINE_PATCH_TILE);
+	BIND_ENUM_CONSTANT(RSE::NINE_PATCH_TILE_FIT);
 
-	BIND_ENUM_CONSTANT(CANVAS_ITEM_TEXTURE_FILTER_DEFAULT);
-	BIND_ENUM_CONSTANT(CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
-	BIND_ENUM_CONSTANT(CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
-	BIND_ENUM_CONSTANT(CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
-	BIND_ENUM_CONSTANT(CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
-	BIND_ENUM_CONSTANT(CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC);
-	BIND_ENUM_CONSTANT(CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC);
-	BIND_ENUM_CONSTANT(CANVAS_ITEM_TEXTURE_FILTER_MAX);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_ITEM_TEXTURE_FILTER_MAX);
 
-	BIND_ENUM_CONSTANT(CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT);
-	BIND_ENUM_CONSTANT(CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-	BIND_ENUM_CONSTANT(CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-	BIND_ENUM_CONSTANT(CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
-	BIND_ENUM_CONSTANT(CANVAS_ITEM_TEXTURE_REPEAT_MAX);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_ITEM_TEXTURE_REPEAT_MAX);
 
-	BIND_ENUM_CONSTANT(CANVAS_GROUP_MODE_DISABLED);
-	BIND_ENUM_CONSTANT(CANVAS_GROUP_MODE_CLIP_ONLY);
-	BIND_ENUM_CONSTANT(CANVAS_GROUP_MODE_CLIP_AND_DRAW);
-	BIND_ENUM_CONSTANT(CANVAS_GROUP_MODE_TRANSPARENT);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_GROUP_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_GROUP_MODE_CLIP_ONLY);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_GROUP_MODE_CLIP_AND_DRAW);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_GROUP_MODE_TRANSPARENT);
 
 	/* CANVAS LIGHT */
 
@@ -3468,17 +3403,17 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_light_reset_physics_interpolation", "light"), &RenderingServer::canvas_light_reset_physics_interpolation);
 	ClassDB::bind_method(D_METHOD("canvas_light_transform_physics_interpolation", "light", "transform"), &RenderingServer::canvas_light_transform_physics_interpolation);
 
-	BIND_ENUM_CONSTANT(CANVAS_LIGHT_MODE_POINT);
-	BIND_ENUM_CONSTANT(CANVAS_LIGHT_MODE_DIRECTIONAL);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_LIGHT_MODE_POINT);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_LIGHT_MODE_DIRECTIONAL);
 
-	BIND_ENUM_CONSTANT(CANVAS_LIGHT_BLEND_MODE_ADD);
-	BIND_ENUM_CONSTANT(CANVAS_LIGHT_BLEND_MODE_SUB);
-	BIND_ENUM_CONSTANT(CANVAS_LIGHT_BLEND_MODE_MIX);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_LIGHT_BLEND_MODE_ADD);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_LIGHT_BLEND_MODE_SUB);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_LIGHT_BLEND_MODE_MIX);
 
-	BIND_ENUM_CONSTANT(CANVAS_LIGHT_FILTER_NONE);
-	BIND_ENUM_CONSTANT(CANVAS_LIGHT_FILTER_PCF5);
-	BIND_ENUM_CONSTANT(CANVAS_LIGHT_FILTER_PCF13);
-	BIND_ENUM_CONSTANT(CANVAS_LIGHT_FILTER_MAX);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_LIGHT_FILTER_NONE);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_LIGHT_FILTER_PCF5);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_LIGHT_FILTER_PCF13);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_LIGHT_FILTER_MAX);
 
 	/* CANVAS OCCLUDER */
 
@@ -3501,9 +3436,9 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("canvas_set_shadow_texture_size", "size"), &RenderingServer::canvas_set_shadow_texture_size);
 
-	BIND_ENUM_CONSTANT(CANVAS_OCCLUDER_POLYGON_CULL_DISABLED);
-	BIND_ENUM_CONSTANT(CANVAS_OCCLUDER_POLYGON_CULL_CLOCKWISE);
-	BIND_ENUM_CONSTANT(CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_OCCLUDER_POLYGON_CULL_CLOCKWISE);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE);
 
 	/* GLOBAL SHADER UNIFORMS */
 
@@ -3515,36 +3450,36 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("global_shader_parameter_get", "name"), &RenderingServer::global_shader_parameter_get);
 	ClassDB::bind_method(D_METHOD("global_shader_parameter_get_type", "name"), &RenderingServer::global_shader_parameter_get_type);
 
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_BOOL);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_BVEC2);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_BVEC3);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_BVEC4);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_INT);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_IVEC2);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_IVEC3);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_IVEC4);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_RECT2I);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_UINT);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_UVEC2);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_UVEC3);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_UVEC4);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_FLOAT);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_VEC2);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_VEC3);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_VEC4);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_COLOR);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_RECT2);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_MAT2);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_MAT3);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_MAT4);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_TRANSFORM_2D);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_TRANSFORM);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_SAMPLER2D);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_SAMPLER2DARRAY);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_SAMPLER3D);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_SAMPLERCUBE);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_SAMPLEREXT);
-	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_MAX);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_BOOL);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_BVEC2);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_BVEC3);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_BVEC4);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_INT);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_IVEC2);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_IVEC3);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_IVEC4);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_RECT2I);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_UINT);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_UVEC2);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_UVEC3);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_UVEC4);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_FLOAT);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_VEC2);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_VEC3);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_VEC4);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_COLOR);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_RECT2);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_MAT2);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_MAT3);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_MAT4);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_TRANSFORM_2D);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_TRANSFORM);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_SAMPLER2D);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_SAMPLER2DARRAY);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_SAMPLER3D);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_SAMPLERCUBE);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_SAMPLEREXT);
+	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_MAX);
 
 	/* Free */
 	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &RenderingServer::free_rid);
@@ -3585,31 +3520,31 @@ void RenderingServer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "render_loop_enabled"), "set_render_loop_enabled", "is_render_loop_enabled");
 
-	BIND_ENUM_CONSTANT(RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDERING_INFO_TEXTURE_MEM_USED);
-	BIND_ENUM_CONSTANT(RENDERING_INFO_BUFFER_MEM_USED);
-	BIND_ENUM_CONSTANT(RENDERING_INFO_VIDEO_MEM_USED);
-	BIND_ENUM_CONSTANT(RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS);
-	BIND_ENUM_CONSTANT(RENDERING_INFO_PIPELINE_COMPILATIONS_MESH);
-	BIND_ENUM_CONSTANT(RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE);
-	BIND_ENUM_CONSTANT(RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW);
-	BIND_ENUM_CONSTANT(RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION);
+	BIND_ENUM_CONSTANT(RSE::RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME);
+	BIND_ENUM_CONSTANT(RSE::RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME);
+	BIND_ENUM_CONSTANT(RSE::RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME);
+	BIND_ENUM_CONSTANT(RSE::RENDERING_INFO_TEXTURE_MEM_USED);
+	BIND_ENUM_CONSTANT(RSE::RENDERING_INFO_BUFFER_MEM_USED);
+	BIND_ENUM_CONSTANT(RSE::RENDERING_INFO_VIDEO_MEM_USED);
+	BIND_ENUM_CONSTANT(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS);
+	BIND_ENUM_CONSTANT(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_MESH);
+	BIND_ENUM_CONSTANT(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE);
+	BIND_ENUM_CONSTANT(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW);
+	BIND_ENUM_CONSTANT(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION);
 
-	BIND_ENUM_CONSTANT(PIPELINE_SOURCE_CANVAS);
-	BIND_ENUM_CONSTANT(PIPELINE_SOURCE_MESH);
-	BIND_ENUM_CONSTANT(PIPELINE_SOURCE_SURFACE);
-	BIND_ENUM_CONSTANT(PIPELINE_SOURCE_DRAW);
-	BIND_ENUM_CONSTANT(PIPELINE_SOURCE_SPECIALIZATION);
-	BIND_ENUM_CONSTANT(PIPELINE_SOURCE_MAX);
+	BIND_ENUM_CONSTANT(RSE::PIPELINE_SOURCE_CANVAS);
+	BIND_ENUM_CONSTANT(RSE::PIPELINE_SOURCE_MESH);
+	BIND_ENUM_CONSTANT(RSE::PIPELINE_SOURCE_SURFACE);
+	BIND_ENUM_CONSTANT(RSE::PIPELINE_SOURCE_DRAW);
+	BIND_ENUM_CONSTANT(RSE::PIPELINE_SOURCE_SPECIALIZATION);
+	BIND_ENUM_CONSTANT(RSE::PIPELINE_SOURCE_MAX);
 
-	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_DISABLED);
-	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_KEEP);
-	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_KEEP_WIDTH);
-	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_KEEP_HEIGHT);
-	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_COVER);
-	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_IGNORE);
+	BIND_ENUM_CONSTANT(RSE::SPLASH_STRETCH_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(RSE::SPLASH_STRETCH_MODE_KEEP);
+	BIND_ENUM_CONSTANT(RSE::SPLASH_STRETCH_MODE_KEEP_WIDTH);
+	BIND_ENUM_CONSTANT(RSE::SPLASH_STRETCH_MODE_KEEP_HEIGHT);
+	BIND_ENUM_CONSTANT(RSE::SPLASH_STRETCH_MODE_COVER);
+	BIND_ENUM_CONSTANT(RSE::SPLASH_STRETCH_MODE_IGNORE);
 
 	ADD_SIGNAL(MethodInfo("frame_pre_draw"));
 	ADD_SIGNAL(MethodInfo("frame_post_draw"));
@@ -3625,8 +3560,8 @@ void RenderingServer::_bind_methods() {
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &RenderingServer::has_feature);
 
-	BIND_ENUM_CONSTANT(FEATURE_SHADERS);
-	BIND_ENUM_CONSTANT(FEATURE_MULTITHREADED);
+	BIND_ENUM_CONSTANT(RSE::FEATURE_SHADERS);
+	BIND_ENUM_CONSTANT(RSE::FEATURE_MULTITHREADED);
 #endif
 }
 
@@ -3648,10 +3583,10 @@ void RenderingServer::mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry
 	}
 
 	Array d;
-	d.resize(RS::ARRAY_MAX);
-	d[ARRAY_VERTEX] = vertices;
-	d[ARRAY_NORMAL] = normals;
-	mesh_add_surface_from_arrays(p_mesh, PRIMITIVE_TRIANGLES, d);
+	d.resize(RSE::ARRAY_MAX);
+	d[RSE::ARRAY_VERTEX] = vertices;
+	d[RSE::ARRAY_NORMAL] = normals;
+	mesh_add_surface_from_arrays(p_mesh, RSE::PRIMITIVE_TRIANGLES, d);
 }
 
 void RenderingServer::mesh_add_surface_from_planes(RID p_mesh, const Vector<Plane> &p_planes) {
@@ -3661,7 +3596,7 @@ void RenderingServer::mesh_add_surface_from_planes(RID p_mesh, const Vector<Plan
 
 #ifndef DISABLE_DEPRECATED
 void RenderingServer::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
-	SplashStretchMode stretch_mode = map_scaling_option_to_stretch_mode(p_scale);
+	RSE::SplashStretchMode stretch_mode = p_scale ? RSE::SPLASH_STRETCH_MODE_KEEP : RSE::SPLASH_STRETCH_MODE_DISABLED;
 	set_boot_image_with_stretch(p_image, p_color, stretch_mode, p_use_filter);
 }
 #endif
@@ -3815,8 +3750,8 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/scaling_3d/fsr_sharpness", PROPERTY_HINT_RANGE, "0,2,0.1"), 0.2f);
 
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/textures/default_filters/texture_mipmap_bias", PROPERTY_HINT_RANGE, "-2,2,0.001"), 0.0f);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/decals/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"), DECAL_FILTER_LINEAR_MIPMAPS);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/light_projectors/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"), LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/decals/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"), RSE::DECAL_FILTER_LINEAR_MIPMAPS);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/light_projectors/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"), RSE::LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS);
 
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/occlusion_culling/occlusion_rays_per_thread", PROPERTY_HINT_RANGE, "1,2048,1,or_greater"), 512);
 

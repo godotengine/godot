@@ -30,6 +30,8 @@
 
 #include "animatable_body_3d.h"
 
+#include "core/config/engine.h"
+
 Vector3 AnimatableBody3D::get_linear_velocity() const {
 	return linear_velocity;
 }

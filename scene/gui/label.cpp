@@ -32,6 +32,7 @@
 
 #include "scene/gui/container.h"
 #include "scene/theme/theme_db.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/text/text_server.h"
 
 void Label::set_autowrap_mode(TextServer::AutowrapMode p_mode) {

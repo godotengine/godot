@@ -36,6 +36,8 @@
 #include "core/io/dir_access.h"
 #include "core/io/image.h"
 #include "core/os/os.h"
+#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_types.h"
 
 #define _EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB 0x8242
 #define _EXT_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_ARB 0x8243
@@ -365,7 +367,7 @@ RasterizerGLES3::RasterizerGLES3() {
 RasterizerGLES3::~RasterizerGLES3() {
 }
 
-void RasterizerGLES3::_blit_render_target_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen &p_blit, bool p_first) {
+void RasterizerGLES3::_blit_render_target_to_screen(DisplayServer::WindowID p_screen, const RenderingServerTypes::BlitToScreen &p_blit, bool p_first) {
 	GLES3::RenderTarget *rt = GLES3::TextureStorage::get_singleton()->get_render_target(p_blit.render_target);
 
 	ERR_FAIL_NULL(rt);
@@ -440,13 +442,13 @@ void RasterizerGLES3::_blit_render_target_to_screen(DisplayServer::WindowID p_sc
 }
 
 // is this p_screen useless in a multi window environment?
-void RasterizerGLES3::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
+void RasterizerGLES3::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const RenderingServerTypes::BlitToScreen *p_render_targets, int p_amount) {
 	for (int i = 0; i < p_amount; i++) {
 		_blit_render_target_to_screen(p_screen, p_render_targets[i], i == 0);
 	}
 }
 
-void RasterizerGLES3::set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter) {
+void RasterizerGLES3::set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RSE::SplashStretchMode p_stretch_mode, bool p_use_filter) {
 	if (p_image.is_null() || p_image->is_empty()) {
 		return;
 	}
@@ -464,7 +466,7 @@ void RasterizerGLES3::set_boot_image_with_stretch(const Ref<Image> &p_image, con
 	RID texture = texture_storage->texture_allocate();
 	texture_storage->texture_2d_initialize(texture, p_image);
 
-	Rect2 screenrect = RenderingServer::get_splash_stretched_screen_rect(p_image->get_size(), win_size, p_stretch_mode);
+	Rect2 screenrect = RenderingServerTypes::get_splash_stretched_screen_rect(p_image->get_size(), win_size, p_stretch_mode);
 
 #ifdef WINDOWS_ENABLED
 	if (!screen_flipped_y)
@@ -480,7 +482,7 @@ void RasterizerGLES3::set_boot_image_with_stretch(const Ref<Image> &p_image, con
 	screenrect.size /= win_size;
 
 	GLES3::Texture *t = texture_storage->get_texture(texture);
-	t->gl_set_filter(p_use_filter ? RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR : RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+	t->gl_set_filter(p_use_filter ? RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR : RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, t->tex_id);
 	copy_effects->copy_to_rect(screenrect);

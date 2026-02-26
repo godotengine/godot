@@ -50,6 +50,7 @@
 #include "scene/property_utils.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
+#include "servers/rendering/rendering_server.h"
 
 static bool _has_sub_resources(const Ref<Resource> &p_res) {
 	List<PropertyInfo> property_list;

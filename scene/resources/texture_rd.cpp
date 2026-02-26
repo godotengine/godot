@@ -198,22 +198,22 @@ void TextureLayeredRD::_set_texture_rd_rid(RID p_texture_rd_rid) {
 	ERR_FAIL_NULL(RD::get_singleton());
 	ERR_FAIL_COND(!RD::get_singleton()->texture_is_valid(p_texture_rd_rid));
 
-	RS::TextureLayeredType rs_layer_type;
+	RSE::TextureLayeredType rs_layer_type;
 	RD::TextureFormat tf = RD::get_singleton()->texture_get_format(p_texture_rd_rid);
 	ERR_FAIL_COND(tf.texture_type != RD::TEXTURE_TYPE_2D_ARRAY && tf.texture_type != RD::TEXTURE_TYPE_CUBE && tf.texture_type != RD::TEXTURE_TYPE_CUBE_ARRAY);
 	ERR_FAIL_COND(tf.depth > 1);
 	switch (layer_type) {
 		case LAYERED_TYPE_2D_ARRAY: {
 			ERR_FAIL_COND(tf.array_layers <= 1);
-			rs_layer_type = RS::TEXTURE_LAYERED_2D_ARRAY;
+			rs_layer_type = RSE::TEXTURE_LAYERED_2D_ARRAY;
 		} break;
 		case LAYERED_TYPE_CUBEMAP: {
 			ERR_FAIL_COND(tf.array_layers != 6);
-			rs_layer_type = RS::TEXTURE_LAYERED_CUBEMAP;
+			rs_layer_type = RSE::TEXTURE_LAYERED_CUBEMAP;
 		} break;
 		case LAYERED_TYPE_CUBEMAP_ARRAY: {
 			ERR_FAIL_COND((tf.array_layers == 0) || ((tf.array_layers % 6) != 0));
-			rs_layer_type = RS::TEXTURE_LAYERED_CUBEMAP_ARRAY;
+			rs_layer_type = RSE::TEXTURE_LAYERED_CUBEMAP_ARRAY;
 		} break;
 		default: {
 			ERR_FAIL_MSG("Unknown layer type selected");

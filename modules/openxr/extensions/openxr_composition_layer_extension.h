@@ -44,28 +44,6 @@ typedef XrResult(XRAPI_PTR *PFN_xrCreateSwapchainAndroidSurfaceKHR)(XrSession se
 
 class JavaObject;
 
-// This extension provides access to composition layers for displaying 2D content through the XR compositor.
-
-#define OPENXR_LAYER_FUNC1(m_name, m_arg1) \
-	void _composition_layer_##m_name##_rt(RID p_layer, m_arg1 p1) { \
-		CompositionLayer *layer = composition_layer_owner.get_or_null(p_layer); \
-		ERR_FAIL_NULL(layer); \
-		layer->m_name(p1); \
-	} \
-	void composition_layer_##m_name(RID p_layer, m_arg1 p1) { \
-		RenderingServer::get_singleton()->call_on_render_thread(callable_mp(this, &OpenXRCompositionLayerExtension::_composition_layer_##m_name##_rt).bind(p_layer, p1)); \
-	}
-
-#define OPENXR_LAYER_FUNC2(m_name, m_arg1, m_arg2) \
-	void _composition_layer_##m_name##_rt(RID p_layer, m_arg1 p1, m_arg2 p2) { \
-		CompositionLayer *layer = composition_layer_owner.get_or_null(p_layer); \
-		ERR_FAIL_NULL(layer); \
-		layer->m_name(p1, p2); \
-	} \
-	void composition_layer_##m_name(RID p_layer, m_arg1 p1, m_arg2 p2) { \
-		RenderingServer::get_singleton()->call_on_render_thread(callable_mp(this, &OpenXRCompositionLayerExtension::_composition_layer_##m_name##_rt).bind(p_layer, p1, p2)); \
-	}
-
 // OpenXRCompositionLayerExtension enables the extensions related to this functionality
 class OpenXRCompositionLayerExtension : public OpenXRExtensionWrapper {
 	GDCLASS(OpenXRCompositionLayerExtension, OpenXRExtensionWrapper);
@@ -155,38 +133,52 @@ public:
 	void composition_layer_register(RID p_layer);
 	void composition_layer_unregister(RID p_layer);
 
-	OPENXR_LAYER_FUNC2(set_viewport, RID, const Size2i &);
-	OPENXR_LAYER_FUNC2(set_use_android_surface, bool, const Size2i &);
-	OPENXR_LAYER_FUNC1(set_sort_order, int);
-	OPENXR_LAYER_FUNC1(set_alpha_blend, bool);
-	OPENXR_LAYER_FUNC1(set_transform, const Transform3D &);
-	OPENXR_LAYER_FUNC1(set_protected_content, bool);
-	OPENXR_LAYER_FUNC1(set_extension_property_values, Dictionary);
+	// This extension provides access to composition layers for displaying 2D content through the XR compositor.
+	// Declarations are made here, and implementations in the .cpp, to avoid having to include RenderingServer in a header.
 
-	OPENXR_LAYER_FUNC1(set_min_filter, Filter);
-	OPENXR_LAYER_FUNC1(set_mag_filter, Filter);
-	OPENXR_LAYER_FUNC1(set_mipmap_mode, MipmapMode);
-	OPENXR_LAYER_FUNC1(set_horizontal_wrap, Wrap);
-	OPENXR_LAYER_FUNC1(set_vertical_wrap, Wrap);
-	OPENXR_LAYER_FUNC1(set_red_swizzle, Swizzle);
-	OPENXR_LAYER_FUNC1(set_blue_swizzle, Swizzle);
-	OPENXR_LAYER_FUNC1(set_green_swizzle, Swizzle);
-	OPENXR_LAYER_FUNC1(set_alpha_swizzle, Swizzle);
-	OPENXR_LAYER_FUNC1(set_max_anisotropy, float);
-	OPENXR_LAYER_FUNC1(set_border_color, const Color &);
-	OPENXR_LAYER_FUNC1(set_pose_space, PoseSpace);
-	OPENXR_LAYER_FUNC1(set_eye_visibility, EyeVisibility);
+#define OPENXR_LAYER_FUNC1_DECL(m_name, m_arg1) \
+	void _composition_layer_##m_name##_rt(RID p_layer, m_arg1 p1); \
+	void composition_layer_##m_name(RID p_layer, m_arg1 p1);
 
-	OPENXR_LAYER_FUNC1(set_quad_size, const Size2 &);
+#define OPENXR_LAYER_FUNC2_DECL(m_name, m_arg1, m_arg2) \
+	void _composition_layer_##m_name##_rt(RID p_layer, m_arg1 p1, m_arg2 p2); \
+	void composition_layer_##m_name(RID p_layer, m_arg1 p1, m_arg2 p2);
 
-	OPENXR_LAYER_FUNC1(set_cylinder_radius, float);
-	OPENXR_LAYER_FUNC1(set_cylinder_aspect_ratio, float);
-	OPENXR_LAYER_FUNC1(set_cylinder_central_angle, float);
+	OPENXR_LAYER_FUNC2_DECL(set_viewport, RID, const Size2i &);
+	OPENXR_LAYER_FUNC2_DECL(set_use_android_surface, bool, const Size2i &);
+	OPENXR_LAYER_FUNC1_DECL(set_sort_order, int);
+	OPENXR_LAYER_FUNC1_DECL(set_alpha_blend, bool);
+	OPENXR_LAYER_FUNC1_DECL(set_transform, const Transform3D &);
+	OPENXR_LAYER_FUNC1_DECL(set_protected_content, bool);
+	OPENXR_LAYER_FUNC1_DECL(set_extension_property_values, Dictionary);
 
-	OPENXR_LAYER_FUNC1(set_equirect_radius, float);
-	OPENXR_LAYER_FUNC1(set_equirect_central_horizontal_angle, float);
-	OPENXR_LAYER_FUNC1(set_equirect_upper_vertical_angle, float);
-	OPENXR_LAYER_FUNC1(set_equirect_lower_vertical_angle, float);
+	OPENXR_LAYER_FUNC1_DECL(set_min_filter, Filter);
+	OPENXR_LAYER_FUNC1_DECL(set_mag_filter, Filter);
+	OPENXR_LAYER_FUNC1_DECL(set_mipmap_mode, MipmapMode);
+	OPENXR_LAYER_FUNC1_DECL(set_horizontal_wrap, Wrap);
+	OPENXR_LAYER_FUNC1_DECL(set_vertical_wrap, Wrap);
+	OPENXR_LAYER_FUNC1_DECL(set_red_swizzle, Swizzle);
+	OPENXR_LAYER_FUNC1_DECL(set_blue_swizzle, Swizzle);
+	OPENXR_LAYER_FUNC1_DECL(set_green_swizzle, Swizzle);
+	OPENXR_LAYER_FUNC1_DECL(set_alpha_swizzle, Swizzle);
+	OPENXR_LAYER_FUNC1_DECL(set_max_anisotropy, float);
+	OPENXR_LAYER_FUNC1_DECL(set_border_color, const Color &);
+	OPENXR_LAYER_FUNC1_DECL(set_pose_space, PoseSpace);
+	OPENXR_LAYER_FUNC1_DECL(set_eye_visibility, EyeVisibility);
+
+	OPENXR_LAYER_FUNC1_DECL(set_quad_size, const Size2 &);
+
+	OPENXR_LAYER_FUNC1_DECL(set_cylinder_radius, float);
+	OPENXR_LAYER_FUNC1_DECL(set_cylinder_aspect_ratio, float);
+	OPENXR_LAYER_FUNC1_DECL(set_cylinder_central_angle, float);
+
+	OPENXR_LAYER_FUNC1_DECL(set_equirect_radius, float);
+	OPENXR_LAYER_FUNC1_DECL(set_equirect_central_horizontal_angle, float);
+	OPENXR_LAYER_FUNC1_DECL(set_equirect_upper_vertical_angle, float);
+	OPENXR_LAYER_FUNC1_DECL(set_equirect_lower_vertical_angle, float);
+
+#undef OPENXR_LAYER_FUNC1_DECL
+#undef OPENXR_LAYER_FUNC2_DECL
 
 	Ref<JavaObject> composition_layer_get_android_surface(RID p_layer);
 
@@ -311,6 +303,3 @@ VARIANT_ENUM_CAST(OpenXRCompositionLayerExtension::Wrap);
 VARIANT_ENUM_CAST(OpenXRCompositionLayerExtension::Swizzle);
 VARIANT_ENUM_CAST(OpenXRCompositionLayerExtension::PoseSpace);
 VARIANT_ENUM_CAST(OpenXRCompositionLayerExtension::EyeVisibility);
-
-#undef OPENXR_LAYER_FUNC1
-#undef OPENXR_LAYER_FUNC2

@@ -31,7 +31,8 @@
 #include "polygon_2d.h"
 
 #include "core/math/geometry_2d.h"
-#include "skeleton_2d.h"
+#include "scene/2d/skeleton_2d.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef NAVIGATION_2D_DISABLED
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
@@ -358,23 +359,23 @@ void Polygon2D::_notification(int p_what) {
 
 			if (index_array.size()) {
 				Array arr;
-				arr.resize(RS::ARRAY_MAX);
-				arr[RS::ARRAY_VERTEX] = points;
+				arr.resize(RSE::ARRAY_MAX);
+				arr[RSE::ARRAY_VERTEX] = points;
 				if (uvs.size() == points.size()) {
-					arr[RS::ARRAY_TEX_UV] = uvs;
+					arr[RSE::ARRAY_TEX_UV] = uvs;
 				}
 				if (colors.size() == points.size()) {
-					arr[RS::ARRAY_COLOR] = colors;
+					arr[RSE::ARRAY_COLOR] = colors;
 				}
 
 				if (bones.size() == points.size() * 4) {
-					arr[RS::ARRAY_BONES] = bones;
-					arr[RS::ARRAY_WEIGHTS] = weights;
+					arr[RSE::ARRAY_BONES] = bones;
+					arr[RSE::ARRAY_WEIGHTS] = weights;
 				}
 
-				arr[RS::ARRAY_INDEX] = index_array;
+				arr[RSE::ARRAY_INDEX] = index_array;
 
-				RS::SurfaceData sd;
+				RenderingServerTypes::SurfaceData sd;
 
 				if (skeleton_node) {
 					// Compute transform between mesh and skeleton for runtime AABB compute.
@@ -392,7 +393,7 @@ void Polygon2D::_notification(int p_what) {
 					sd.mesh_to_skeleton_xform.origin.y = mesh_to_sk2d.get_origin().y;
 				}
 
-				Error err = RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RS::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+				Error err = RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RSE::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
 				if (err != OK) {
 					return;
 				}

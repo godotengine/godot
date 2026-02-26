@@ -30,12 +30,16 @@
 
 #include "window.h"
 
+STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
+
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/input/input.h"
 #include "scene/gui/control.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
+#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 // Editor integration.
 
@@ -734,7 +738,7 @@ void Window::_make_window() {
 
 	_update_window_callbacks();
 
-	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
+	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_WHEN_VISIBLE);
 	DisplayServer::get_singleton()->show_window(window_id);
 }
 
@@ -781,7 +785,7 @@ void Window::_clear_window() {
 	}
 
 	_update_viewport_size();
-	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
+	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_DISABLED);
 
 	if (transient && transient_to_focused) {
 		_clear_transient();
@@ -1023,7 +1027,7 @@ void Window::set_visible(bool p_visible) {
 				}
 			}
 			embedder->_sub_window_register(this);
-			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
+			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
 
 			// Make sure the sub-window shares the HDR output settings of the embedder.
 			Window *containing_window = embedder->get_window();
@@ -1034,7 +1038,7 @@ void Window::set_visible(bool p_visible) {
 		} else {
 			embedder->_sub_window_remove(this);
 			embedder = nullptr;
-			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
+			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_DISABLED);
 		}
 		_update_window_size();
 	}
@@ -1608,7 +1612,7 @@ void Window::_notification(int p_what) {
 						}
 					}
 					embedder->_sub_window_register(this);
-					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
+					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
 					_update_window_size();
 				}
 
@@ -1639,7 +1643,7 @@ void Window::_notification(int p_what) {
 					if (!mouse_in_window && Rect2(position, size).has_point(DisplayServer::get_singleton()->mouse_get_position())) {
 						_event_callback(DisplayServer::WINDOW_EVENT_MOUSE_ENTER);
 					}
-					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
+					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_WHEN_VISIBLE);
 					if (DisplayServer::get_singleton()->window_get_flag(DisplayServer::WindowFlags(FLAG_TRANSPARENT), window_id)) {
 						set_transparent_background(true);
 					}
@@ -1732,7 +1736,7 @@ void Window::_notification(int p_what) {
 
 			if (!is_embedded() && window_id != DisplayServer::INVALID_WINDOW_ID) {
 				if (window_id == DisplayServer::MAIN_WINDOW_ID) {
-					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
+					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_DISABLED);
 					_update_window_callbacks();
 				} else {
 					_clear_window();
@@ -1741,7 +1745,7 @@ void Window::_notification(int p_what) {
 				if (embedder) {
 					embedder->_sub_window_remove(this);
 					embedder = nullptr;
-					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
+					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_DISABLED);
 				}
 				_update_viewport_size(); //called by clear and make, which does not happen here
 			}
@@ -3642,7 +3646,7 @@ Window::Window() {
 	}
 
 	theme_owner = memnew(ThemeOwner(this));
-	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
+	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_DISABLED);
 }
 
 Window::~Window() {

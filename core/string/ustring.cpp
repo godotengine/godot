@@ -351,7 +351,7 @@ bool operator==(const wchar_t *p_chr, const String &p_str) {
 	// wchar_t is 16-bit
 	return p_str == String::utf16((const char16_t *)p_chr);
 #else
-	// wchar_t is 32-bi
+	// wchar_t is 32-bit
 	return p_str == (const char32_t *)p_chr;
 #endif
 }
@@ -365,7 +365,7 @@ bool operator!=(const wchar_t *p_chr, const String &p_str) {
 	// wchar_t is 16-bit
 	return !(p_str == String::utf16((const char16_t *)p_chr));
 #else
-	// wchar_t is 32-bi
+	// wchar_t is 32-bit
 	return !(p_str == String((const char32_t *)p_chr));
 #endif
 }

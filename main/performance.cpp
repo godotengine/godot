@@ -261,27 +261,27 @@ double Performance::get_monitor(Monitor p_monitor) const {
 		case OBJECT_ORPHAN_NODE_COUNT:
 			return _get_orphan_node_count();
 		case RENDER_TOTAL_OBJECTS_IN_FRAME:
-			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME);
+			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME);
 		case RENDER_TOTAL_PRIMITIVES_IN_FRAME:
-			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME);
+			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME);
 		case RENDER_TOTAL_DRAW_CALLS_IN_FRAME:
-			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME);
+			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME);
 		case RENDER_VIDEO_MEM_USED:
-			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_VIDEO_MEM_USED);
+			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_VIDEO_MEM_USED);
 		case RENDER_TEXTURE_MEM_USED:
-			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_TEXTURE_MEM_USED);
+			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_TEXTURE_MEM_USED);
 		case RENDER_BUFFER_MEM_USED:
-			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_BUFFER_MEM_USED);
+			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_BUFFER_MEM_USED);
 		case PIPELINE_COMPILATIONS_CANVAS:
-			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS);
+			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS);
 		case PIPELINE_COMPILATIONS_MESH:
-			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_PIPELINE_COMPILATIONS_MESH);
+			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_MESH);
 		case PIPELINE_COMPILATIONS_SURFACE:
-			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE);
+			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE);
 		case PIPELINE_COMPILATIONS_DRAW:
-			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW);
+			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW);
 		case PIPELINE_COMPILATIONS_SPECIALIZATION:
-			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION);
+			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION);
 #ifndef PHYSICS_2D_DISABLED
 		case PHYSICS_2D_ACTIVE_OBJECTS:
 			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_ACTIVE_OBJECTS);

@@ -45,6 +45,7 @@
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "servers/audio/audio_stream.h"
+#include "servers/rendering/rendering_server.h"
 
 void post_process_preview(Ref<Image> p_image) {
 	if (p_image->get_format() != Image::FORMAT_RGBA8) {
@@ -361,7 +362,7 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	scenario = RS::get_singleton()->scenario_create();
 
 	viewport = RS::get_singleton()->viewport_create();
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_DISABLED);
+	RS::get_singleton()->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_DISABLED);
 	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
 	RS::get_singleton()->viewport_set_size(viewport, 128, 128);
 	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
@@ -465,12 +466,12 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	}
 
 	Array arr;
-	arr.resize(RS::ARRAY_MAX);
-	arr[RS::ARRAY_VERTEX] = vertices;
-	arr[RS::ARRAY_NORMAL] = normals;
-	arr[RS::ARRAY_TANGENT] = tangents;
-	arr[RS::ARRAY_TEX_UV] = uvs;
-	RS::get_singleton()->mesh_add_surface_from_arrays(sphere, RS::PRIMITIVE_TRIANGLES, arr);
+	arr.resize(RSE::ARRAY_MAX);
+	arr[RSE::ARRAY_VERTEX] = vertices;
+	arr[RSE::ARRAY_NORMAL] = normals;
+	arr[RSE::ARRAY_TANGENT] = tangents;
+	arr[RSE::ARRAY_TEX_UV] = uvs;
+	RS::get_singleton()->mesh_add_surface_from_arrays(sphere, RSE::PRIMITIVE_TRIANGLES, arr);
 }
 
 EditorMaterialPreviewPlugin::~EditorMaterialPreviewPlugin() {
@@ -781,7 +782,7 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 	scenario = RS::get_singleton()->scenario_create();
 
 	viewport = RS::get_singleton()->viewport_create();
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_DISABLED);
+	RS::get_singleton()->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_DISABLED);
 	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
 	RS::get_singleton()->viewport_set_size(viewport, 128, 128);
 	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
@@ -806,7 +807,7 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 
 	light2 = RS::get_singleton()->directional_light_create();
 	RS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
-	//RS::get_singleton()->light_set_color(light2, RS::LIGHT_COLOR_SPECULAR, Color(0.0, 0.0, 0.0));
+	//RS::get_singleton()->light_set_color(light2, RSE::LIGHT_COLOR_SPECULAR, Color(0.0, 0.0, 0.0));
 	light_instance2 = RS::get_singleton()->instance_create2(light2, scenario);
 
 	RS::get_singleton()->instance_set_transform(light_instance2, Transform3D().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
@@ -897,7 +898,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate(const Ref<Resource> &p_from, co
 
 EditorFontPreviewPlugin::EditorFontPreviewPlugin() {
 	viewport = RS::get_singleton()->viewport_create();
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_DISABLED);
+	RS::get_singleton()->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_DISABLED);
 	RS::get_singleton()->viewport_set_size(viewport, 128, 128);
 	RS::get_singleton()->viewport_set_active(viewport, true);
 	viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);

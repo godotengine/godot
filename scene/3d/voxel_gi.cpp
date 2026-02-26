@@ -35,6 +35,7 @@
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/3d/voxelizer.h"
 #include "scene/resources/camera_attributes.h"
+#include "servers/rendering/rendering_server.h"
 
 void VoxelGIData::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("bounds"));

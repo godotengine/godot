@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/templates/rid_owner.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 class RendererEnvironmentStorage {
 public:
@@ -67,7 +67,7 @@ private:
 		// Not all renderers support all effects and should just ignore the bits they don't support.
 
 		// Background
-		RS::EnvironmentBG background = RS::ENV_BG_CLEAR_COLOR;
+		RSE::EnvironmentBG background = RSE::ENV_BG_CLEAR_COLOR;
 		RID sky;
 		float sky_custom_fov = 0.0;
 		Basis sky_orientation;
@@ -75,15 +75,15 @@ private:
 		float bg_energy_multiplier = 1.0;
 		float bg_intensity = 1.0; // Measured in nits or candela/m^2. Default to 1.0 so this doesn't impact rendering when Physical Light Units disabled.
 		int canvas_max_layer = 0;
-		RS::EnvironmentAmbientSource ambient_source = RS::ENV_AMBIENT_SOURCE_BG;
+		RSE::EnvironmentAmbientSource ambient_source = RSE::ENV_AMBIENT_SOURCE_BG;
 		Color ambient_light;
 		float ambient_light_energy = 1.0;
 		float ambient_sky_contribution = 1.0;
-		RS::EnvironmentReflectionSource reflection_source = RS::ENV_REFLECTION_SOURCE_BG;
+		RSE::EnvironmentReflectionSource reflection_source = RSE::ENV_REFLECTION_SOURCE_BG;
 		int camera_feed_id = 0;
 
 		// Tonemap
-		RS::EnvironmentToneMapper tone_mapper;
+		RSE::EnvironmentToneMapper tone_mapper;
 		float exposure = 1.0;
 		float white = 1.0;
 		float tonemap_agx_contrast = 1.25; // Default to approximately Blender's AgX contrast
@@ -91,7 +91,7 @@ private:
 
 		// Fog
 		bool fog_enabled = false;
-		RS::EnvironmentFogMode fog_mode = RS::EnvironmentFogMode::ENV_FOG_MODE_EXPONENTIAL;
+		RSE::EnvironmentFogMode fog_mode = RSE::EnvironmentFogMode::ENV_FOG_MODE_EXPONENTIAL;
 		Color fog_light_color = Color(0.518, 0.553, 0.608);
 		float fog_light_energy = 1.0;
 		float fog_sun_scatter = 0.0;
@@ -128,7 +128,7 @@ private:
 		float glow_strength = 1.0;
 		float glow_bloom = 0.0;
 		float glow_mix = 0.01;
-		RS::EnvironmentGlowBlendMode glow_blend_mode = RS::ENV_GLOW_BLEND_MODE_SCREEN;
+		RSE::EnvironmentGlowBlendMode glow_blend_mode = RSE::ENV_GLOW_BLEND_MODE_SCREEN;
 		float glow_hdr_bleed_threshold = 1.0;
 		float glow_hdr_luminance_cap = 12.0;
 		float glow_hdr_bleed_scale = 2.0;
@@ -170,7 +170,7 @@ private:
 		float sdfgi_energy = 1.0;
 		float sdfgi_normal_bias = 1.1;
 		float sdfgi_probe_bias = 1.1;
-		RS::EnvironmentSDFGIYScale sdfgi_y_scale = RS::ENV_SDFGI_Y_SCALE_75_PERCENT;
+		RSE::EnvironmentSDFGIYScale sdfgi_y_scale = RSE::ENV_SDFGI_Y_SCALE_75_PERCENT;
 
 		// Adjustments
 		bool adjustments_enabled = false;
@@ -199,18 +199,18 @@ public:
 	}
 
 	// Background
-	void environment_set_background(RID p_env, RS::EnvironmentBG p_bg);
+	void environment_set_background(RID p_env, RSE::EnvironmentBG p_bg);
 	void environment_set_sky(RID p_env, RID p_sky);
 	void environment_set_sky_custom_fov(RID p_env, float p_scale);
 	void environment_set_sky_orientation(RID p_env, const Basis &p_orientation);
 	void environment_set_bg_color(RID p_env, const Color &p_color);
 	void environment_set_bg_energy(RID p_env, float p_multiplier, float p_exposure_value);
 	void environment_set_canvas_max_layer(RID p_env, int p_max_layer);
-	void environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient = RS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, RS::EnvironmentReflectionSource p_reflection_source = RS::ENV_REFLECTION_SOURCE_BG);
+	void environment_set_ambient_light(RID p_env, const Color &p_color, RSE::EnvironmentAmbientSource p_ambient = RSE::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, RSE::EnvironmentReflectionSource p_reflection_source = RSE::ENV_REFLECTION_SOURCE_BG);
 	void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id);
 	int environment_get_camera_feed_id(RID p_env) const;
 
-	RS::EnvironmentBG environment_get_background(RID p_env) const;
+	RSE::EnvironmentBG environment_get_background(RID p_env) const;
 	RID environment_get_sky(RID p_env) const;
 	float environment_get_sky_custom_fov(RID p_env) const;
 	Basis environment_get_sky_orientation(RID p_env) const;
@@ -218,15 +218,15 @@ public:
 	float environment_get_bg_energy_multiplier(RID p_env) const;
 	float environment_get_bg_intensity(RID p_env) const;
 	int environment_get_canvas_max_layer(RID p_env) const;
-	RS::EnvironmentAmbientSource environment_get_ambient_source(RID p_env) const;
+	RSE::EnvironmentAmbientSource environment_get_ambient_source(RID p_env) const;
 	Color environment_get_ambient_light(RID p_env) const;
 	float environment_get_ambient_light_energy(RID p_env) const;
 	float environment_get_ambient_sky_contribution(RID p_env) const;
-	RS::EnvironmentReflectionSource environment_get_reflection_source(RID p_env) const;
+	RSE::EnvironmentReflectionSource environment_get_reflection_source(RID p_env) const;
 
 	// Tonemap
-	void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white);
-	RS::EnvironmentToneMapper environment_get_tone_mapper(RID p_env) const;
+	void environment_set_tonemap(RID p_env, RSE::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white);
+	RSE::EnvironmentToneMapper environment_get_tone_mapper(RID p_env) const;
 	float environment_get_exposure(RID p_env) const;
 	float environment_get_white(RID p_env, bool p_limit_agx_white, float p_output_max_value) const;
 	void environment_set_tonemap_agx_contrast(RID p_env, float p_agx_contrast);
@@ -234,9 +234,9 @@ public:
 	TonemapParameters environment_get_tonemap_parameters(RID p_env, bool p_limit_agx_white, float p_output_max_value) const;
 
 	// Fog
-	void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect, RS::EnvironmentFogMode p_mode);
+	void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect, RSE::EnvironmentFogMode p_mode);
 	bool environment_get_fog_enabled(RID p_env) const;
-	RS::EnvironmentFogMode environment_get_fog_mode(RID p_env) const;
+	RSE::EnvironmentFogMode environment_get_fog_mode(RID p_env) const;
 	Color environment_get_fog_light_color(RID p_env) const;
 	float environment_get_fog_light_energy(RID p_env) const;
 	float environment_get_fog_sun_scatter(RID p_env) const;
@@ -269,14 +269,14 @@ public:
 	float environment_get_volumetric_fog_ambient_inject(RID p_env) const;
 
 	// GLOW
-	void environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map);
+	void environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RSE::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map);
 	bool environment_get_glow_enabled(RID p_env) const;
 	Vector<float> environment_get_glow_levels(RID p_env) const;
 	float environment_get_glow_intensity(RID p_env) const;
 	float environment_get_glow_strength(RID p_env) const;
 	float environment_get_glow_bloom(RID p_env) const;
 	float environment_get_glow_mix(RID p_env) const;
-	RS::EnvironmentGlowBlendMode environment_get_glow_blend_mode(RID p_env) const;
+	RSE::EnvironmentGlowBlendMode environment_get_glow_blend_mode(RID p_env) const;
 	float environment_get_glow_hdr_bleed_threshold(RID p_env) const;
 	float environment_get_glow_hdr_luminance_cap(RID p_env) const;
 	float environment_get_glow_hdr_bleed_scale(RID p_env) const;
@@ -312,7 +312,7 @@ public:
 	float environment_get_ssil_normal_rejection(RID p_env) const;
 
 	// SDFGI
-	void environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias);
+	void environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RSE::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias);
 	bool environment_get_sdfgi_enabled(RID p_env) const;
 	int environment_get_sdfgi_cascades(RID p_env) const;
 	float environment_get_sdfgi_min_cell_size(RID p_env) const;
@@ -322,7 +322,7 @@ public:
 	float environment_get_sdfgi_energy(RID p_env) const;
 	float environment_get_sdfgi_normal_bias(RID p_env) const;
 	float environment_get_sdfgi_probe_bias(RID p_env) const;
-	RS::EnvironmentSDFGIYScale environment_get_sdfgi_y_scale(RID p_env) const;
+	RSE::EnvironmentSDFGIYScale environment_get_sdfgi_y_scale(RID p_env) const;
 
 	// Adjustment
 	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction);

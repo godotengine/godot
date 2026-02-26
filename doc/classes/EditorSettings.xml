@@ -830,12 +830,12 @@
 			To enable this feature for your specific project, use [member ProjectSettings.filesystem/import/blender/enabled].
 			If this setting is empty, Blender's default paths will be detected and used automatically if present in this order:
 			[b]Windows:[/b]
-			[codeblock]
+			[codeblock lang=text]
 			- C:\Program Files\Blender Foundation\blender.exe
 			- C:\Program Files (x86)\Blender Foundation\blender.exe
 			[/codeblock]
 			[b]macOS:[/b]
-			[codeblock]
+			[codeblock lang=text]
 			- /opt/homebrew/bin/blender
 			- /opt/local/bin/blender
 			- /usr/local/bin/blender
@@ -843,7 +843,7 @@
 			- /Applications/Blender.app/Contents/MacOS/Blender
 			[/codeblock]
 			[b]Linux/*BSD:[/b]
-			[codeblock]
+			[codeblock lang=text]
 			- /usr/bin/blender
 			- /usr/local/bin/blender
 			- /opt/blender/bin/blender
@@ -1240,6 +1240,9 @@
 		</member>
 		<member name="interface/theme/style" type="String" setter="" getter="">
 			The editor theme style to use.
+		</member>
+		<member name="interface/theme/use_monospace_font_for_editor_symbols" type="bool" setter="" getter="">
+			If [code]true[/code], use the monospace font for some labels in the editor that display code symbols, such as signals, properties, and methods.
 		</member>
 		<member name="interface/theme/use_system_accent_color" type="bool" setter="" getter="">
 			If [code]true[/code], set accent color based on system settings.

@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include "../storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/pipeline_hash_map_rd.h"
 #include "servers/rendering/renderer_rd/shaders/forward_mobile/scene_forward_mobile.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/rendering_server_types.h"
 
 namespace RendererSceneRenderImplementation {
 
@@ -195,7 +196,7 @@ public:
 			RD::VertexFormatID vertex_format_id;
 			RD::FramebufferFormatID framebuffer_format_id;
 			RD::PolygonCullMode cull_mode = RD::POLYGON_CULL_MAX;
-			RS::PrimitiveType primitive_type = RS::PRIMITIVE_MAX;
+			RSE::PrimitiveType primitive_type = RSE::PRIMITIVE_MAX;
 			ShaderSpecialization shader_specialization = {};
 			ShaderVersion version = SHADER_VERSION_MAX;
 			uint32_t render_pass = 0;
@@ -240,7 +241,7 @@ public:
 		int depth_test_disabledi = 0;
 		int depth_test_invertedi = 0;
 		int alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
-		int cull_mode = RS::CULL_MODE_BACK;
+		int cull_mode = RSE::CULL_MODE_BACK;
 
 		bool uses_point_size = false;
 		bool uses_alpha = false;
@@ -296,14 +297,14 @@ public:
 		}
 
 		_FORCE_INLINE_ bool uses_shared_shadow_material() const {
-			bool backface_culling = cull_mode == RS::CULL_MODE_BACK;
+			bool backface_culling = cull_mode == RSE::CULL_MODE_BACK;
 			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && !uses_point_size && !uses_world_coordinates && !wireframe && !stencil_enabled && backface_culling;
 		}
 
 		virtual void set_code(const String &p_Code);
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 		RD::PolygonCullMode get_cull_mode_from_cull_variant(CullVariant p_cull_variant);
 		void _clear_vertex_input_mask_cache();
@@ -374,11 +375,11 @@ public:
 
 	ShaderSpecialization default_specialization = {};
 
-	uint32_t pipeline_compilations[RS::PIPELINE_SOURCE_MAX] = {};
+	uint32_t pipeline_compilations[RSE::PIPELINE_SOURCE_MAX] = {};
 
 	void init(const String p_defines);
 	void set_default_specialization(const ShaderSpecialization &p_specialization);
-	uint32_t get_pipeline_compilations(RS::PipelineSource p_source);
+	uint32_t get_pipeline_compilations(RSE::PipelineSource p_source);
 	void enable_fp32_shader_group();
 	void enable_fp16_shader_group();
 	void enable_multiview_shader_group();

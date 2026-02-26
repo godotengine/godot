@@ -39,6 +39,7 @@
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/material.h"
 #include "scene/resources/world_2d.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_2d/physics_server_2d.h"
@@ -164,7 +165,7 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 			if (needs_set_not_interpolated) {
 				rs->canvas_item_set_interpolated(ci, false);
 			}
-			rs->canvas_item_set_z_index(ci, RS::CANVAS_ITEM_Z_MAX - 1);
+			rs->canvas_item_set_z_index(ci, RSE::CANVAS_ITEM_Z_MAX - 1);
 			rs->canvas_item_set_parent(ci, get_canvas_item());
 		}
 		const Vector2 quadrant_pos = tile_set->map_to_local(debug_quadrant->quadrant_coords * TILE_MAP_DEBUG_QUADRANT_SIZE);
@@ -357,8 +358,8 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 						rs->canvas_item_set_z_index(ci, tile_z_index);
 						rs->canvas_item_set_self_modulate(ci, layer_modulate);
 
-						rs->canvas_item_set_default_texture_filter(ci, RS::CanvasItemTextureFilter(get_texture_filter_in_tree()));
-						rs->canvas_item_set_default_texture_repeat(ci, RS::CanvasItemTextureRepeat(get_texture_repeat_in_tree()));
+						rs->canvas_item_set_default_texture_filter(ci, RSE::CanvasItemTextureFilter(get_texture_filter_in_tree()));
+						rs->canvas_item_set_default_texture_repeat(ci, RSE::CanvasItemTextureRepeat(get_texture_repeat_in_tree()));
 
 						rendering_quadrant->canvas_items.push_back(ci);
 
@@ -444,8 +445,8 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 				Ref<RenderingQuadrant> &rendering_quadrant = kv.value;
 				for (const RID &ci : rendering_quadrant->canvas_items) {
 					rs->canvas_item_set_light_mask(ci, get_light_mask());
-					rs->canvas_item_set_default_texture_filter(ci, RS::CanvasItemTextureFilter(get_texture_filter_in_tree()));
-					rs->canvas_item_set_default_texture_repeat(ci, RS::CanvasItemTextureRepeat(get_texture_repeat_in_tree()));
+					rs->canvas_item_set_default_texture_filter(ci, RSE::CanvasItemTextureFilter(get_texture_filter_in_tree()));
+					rs->canvas_item_set_default_texture_repeat(ci, RSE::CanvasItemTextureRepeat(get_texture_repeat_in_tree()));
 					rs->canvas_item_set_self_modulate(ci, layer_modulate);
 				}
 			}
@@ -1266,18 +1267,18 @@ void TileMapLayer::_physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQ
 
 			if (face_index_array.size() > 2) {
 				Array face_mesh_array;
-				face_mesh_array.resize(RS::ARRAY_MAX);
-				face_mesh_array[RS::ARRAY_VERTEX] = Vector<Vector2>(face_vertex_array);
-				face_mesh_array[RS::ARRAY_INDEX] = Vector<int32_t>(face_index_array);
-				face_mesh_array[RS::ARRAY_COLOR] = Vector<Color>(face_color_array);
-				rs->mesh_add_surface_from_arrays(r_debug_quadrant.physics_mesh, RS::PRIMITIVE_TRIANGLES, face_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+				face_mesh_array.resize(RSE::ARRAY_MAX);
+				face_mesh_array[RSE::ARRAY_VERTEX] = Vector<Vector2>(face_vertex_array);
+				face_mesh_array[RSE::ARRAY_INDEX] = Vector<int32_t>(face_index_array);
+				face_mesh_array[RSE::ARRAY_COLOR] = Vector<Color>(face_color_array);
+				rs->mesh_add_surface_from_arrays(r_debug_quadrant.physics_mesh, RSE::PRIMITIVE_TRIANGLES, face_mesh_array, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
 
 				Array line_mesh_array;
-				line_mesh_array.resize(RS::ARRAY_MAX);
-				line_mesh_array[RS::ARRAY_VERTEX] = Vector<Vector2>(line_vertex_array);
-				line_mesh_array[RS::ARRAY_COLOR] = Vector<Color>(line_color_array);
+				line_mesh_array.resize(RSE::ARRAY_MAX);
+				line_mesh_array[RSE::ARRAY_VERTEX] = Vector<Vector2>(line_vertex_array);
+				line_mesh_array[RSE::ARRAY_COLOR] = Vector<Color>(line_color_array);
 
-				rs->mesh_add_surface_from_arrays(r_debug_quadrant.physics_mesh, RS::PRIMITIVE_LINES, line_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+				rs->mesh_add_surface_from_arrays(r_debug_quadrant.physics_mesh, RSE::PRIMITIVE_LINES, line_mesh_array, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
 			}
 		}
 	}
@@ -2308,7 +2309,7 @@ void TileMapLayer::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-void TileMapLayer::_update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter) {
+void TileMapLayer::_update_self_texture_filter(RSE::CanvasItemTextureFilter p_texture_filter) {
 	// Set a default texture filter for the whole tilemap.
 	CanvasItem::_update_self_texture_filter(p_texture_filter);
 	dirty.flags[DIRTY_FLAGS_LAYER_TEXTURE_FILTER] = true;
@@ -2316,7 +2317,7 @@ void TileMapLayer::_update_self_texture_filter(RS::CanvasItemTextureFilter p_tex
 	emit_signal(CoreStringName(changed));
 }
 
-void TileMapLayer::_update_self_texture_repeat(RS::CanvasItemTextureRepeat p_texture_repeat) {
+void TileMapLayer::_update_self_texture_repeat(RSE::CanvasItemTextureRepeat p_texture_repeat) {
 	// Set a default texture repeat for the whole tilemap.
 	CanvasItem::_update_self_texture_repeat(p_texture_repeat);
 	dirty.flags[DIRTY_FLAGS_LAYER_TEXTURE_REPEAT] = true;

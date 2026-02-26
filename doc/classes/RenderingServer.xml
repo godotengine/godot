@@ -3559,7 +3559,7 @@
 			<param index="0" name="generate" type="bool" />
 			<description>
 				If [param generate] is [code]true[/code], generates debug wireframes for all meshes that are loaded when using the Compatibility renderer. By default, the engine does not generate debug wireframes at runtime, since they slow down loading of assets and take up VRAM.
-				[b]Note:[/b] You must call this method before loading any meshes when using the Compatibility renderer, otherwise wireframes will not be used.
+				[b]Note:[/b] You must call this method before loading any meshes when using the Compatibility renderer. Otherwise, wireframes will not be used.
 			</description>
 		</method>
 		<method name="set_default_clear_color">
@@ -5447,6 +5447,7 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_WIREFRAME" value="4" enum="ViewportDebugDraw">
 			Debug draw draws objects in wireframe.
 			[b]Note:[/b] [method set_debug_generate_wireframes] must be called before loading any meshes for wireframes to be visible when using the Compatibility renderer.
+			[b]Note:[/b] In the Compatibility renderer, backfaces are always visible when using wireframe rendering. In the Forward+ and Mobile renderers, wireframes follow the material's backface culling properties instead.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER" value="5" enum="ViewportDebugDraw">
 			Normal buffer is drawn instead of regular scene so you can see the per-pixel normals that will be used by post-processing effects.

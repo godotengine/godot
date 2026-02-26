@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
 #include "scene/gui/control.h"
 
 class ScriptEditorDebugger;

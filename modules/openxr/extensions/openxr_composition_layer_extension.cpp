@@ -30,17 +30,76 @@
 
 #include "openxr_composition_layer_extension.h"
 
+#include "openxr_fb_update_swapchain_extension.h"
+
+#include "platform/android/api/java_class_wrapper.h"
+#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_globals.h"
+#include "servers/xr/xr_server.h"
+
 #ifdef ANDROID_ENABLED
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
 #endif
 
-#include "openxr_fb_update_swapchain_extension.h"
-#include "platform/android/api/java_class_wrapper.h"
-#include "servers/rendering/rendering_server_globals.h"
-
 ////////////////////////////////////////////////////////////////////////////
 // OpenXRCompositionLayerExtension
+
+#define OPENXR_LAYER_FUNC1_IMPL(m_name, m_arg1) \
+	void OpenXRCompositionLayerExtension::_composition_layer_##m_name##_rt(RID p_layer, m_arg1 p1) { \
+		CompositionLayer *layer = composition_layer_owner.get_or_null(p_layer); \
+		ERR_FAIL_NULL(layer); \
+		layer->m_name(p1); \
+	} \
+	void OpenXRCompositionLayerExtension::composition_layer_##m_name(RID p_layer, m_arg1 p1) { \
+		RenderingServer::get_singleton()->call_on_render_thread(callable_mp(this, &OpenXRCompositionLayerExtension::_composition_layer_##m_name##_rt).bind(p_layer, p1)); \
+	}
+
+#define OPENXR_LAYER_FUNC2_IMPL(m_name, m_arg1, m_arg2) \
+	void OpenXRCompositionLayerExtension::_composition_layer_##m_name##_rt(RID p_layer, m_arg1 p1, m_arg2 p2) { \
+		CompositionLayer *layer = composition_layer_owner.get_or_null(p_layer); \
+		ERR_FAIL_NULL(layer); \
+		layer->m_name(p1, p2); \
+	} \
+	void OpenXRCompositionLayerExtension::composition_layer_##m_name(RID p_layer, m_arg1 p1, m_arg2 p2) { \
+		RenderingServer::get_singleton()->call_on_render_thread(callable_mp(this, &OpenXRCompositionLayerExtension::_composition_layer_##m_name##_rt).bind(p_layer, p1, p2)); \
+	}
+
+OPENXR_LAYER_FUNC2_IMPL(set_viewport, RID, const Size2i &);
+OPENXR_LAYER_FUNC2_IMPL(set_use_android_surface, bool, const Size2i &);
+OPENXR_LAYER_FUNC1_IMPL(set_sort_order, int);
+OPENXR_LAYER_FUNC1_IMPL(set_alpha_blend, bool);
+OPENXR_LAYER_FUNC1_IMPL(set_transform, const Transform3D &);
+OPENXR_LAYER_FUNC1_IMPL(set_protected_content, bool);
+OPENXR_LAYER_FUNC1_IMPL(set_extension_property_values, Dictionary);
+
+OPENXR_LAYER_FUNC1_IMPL(set_min_filter, Filter);
+OPENXR_LAYER_FUNC1_IMPL(set_mag_filter, Filter);
+OPENXR_LAYER_FUNC1_IMPL(set_mipmap_mode, MipmapMode);
+OPENXR_LAYER_FUNC1_IMPL(set_horizontal_wrap, Wrap);
+OPENXR_LAYER_FUNC1_IMPL(set_vertical_wrap, Wrap);
+OPENXR_LAYER_FUNC1_IMPL(set_red_swizzle, Swizzle);
+OPENXR_LAYER_FUNC1_IMPL(set_blue_swizzle, Swizzle);
+OPENXR_LAYER_FUNC1_IMPL(set_green_swizzle, Swizzle);
+OPENXR_LAYER_FUNC1_IMPL(set_alpha_swizzle, Swizzle);
+OPENXR_LAYER_FUNC1_IMPL(set_max_anisotropy, float);
+OPENXR_LAYER_FUNC1_IMPL(set_border_color, const Color &);
+OPENXR_LAYER_FUNC1_IMPL(set_pose_space, PoseSpace);
+OPENXR_LAYER_FUNC1_IMPL(set_eye_visibility, EyeVisibility);
+
+OPENXR_LAYER_FUNC1_IMPL(set_quad_size, const Size2 &);
+
+OPENXR_LAYER_FUNC1_IMPL(set_cylinder_radius, float);
+OPENXR_LAYER_FUNC1_IMPL(set_cylinder_aspect_ratio, float);
+OPENXR_LAYER_FUNC1_IMPL(set_cylinder_central_angle, float);
+
+OPENXR_LAYER_FUNC1_IMPL(set_equirect_radius, float);
+OPENXR_LAYER_FUNC1_IMPL(set_equirect_central_horizontal_angle, float);
+OPENXR_LAYER_FUNC1_IMPL(set_equirect_upper_vertical_angle, float);
+OPENXR_LAYER_FUNC1_IMPL(set_equirect_lower_vertical_angle, float);
+
+#undef OPENXR_LAYER_FUNC1_IMPL
+#undef OPENXR_LAYER_FUNC2_IMPL
 
 OpenXRCompositionLayerExtension *OpenXRCompositionLayerExtension::singleton = nullptr;
 
@@ -496,10 +555,10 @@ void OpenXRCompositionLayerExtension::CompositionLayer::on_pre_render() {
 	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
 
 	if (subviewport.viewport.is_valid() && openxr_api && openxr_api->is_running()) {
-		RS::ViewportUpdateMode update_mode = rs->viewport_get_update_mode(subviewport.viewport);
-		if (update_mode == RS::VIEWPORT_UPDATE_ONCE || update_mode == RS::VIEWPORT_UPDATE_ALWAYS) {
+		RSE::ViewportUpdateMode update_mode = rs->viewport_get_update_mode(subviewport.viewport);
+		if (update_mode == RSE::VIEWPORT_UPDATE_ONCE || update_mode == RSE::VIEWPORT_UPDATE_ALWAYS) {
 			// Update our XR swapchain
-			if (update_and_acquire_swapchain(update_mode == RS::VIEWPORT_UPDATE_ONCE)) {
+			if (update_and_acquire_swapchain(update_mode == RSE::VIEWPORT_UPDATE_ONCE)) {
 				// Render to our XR swapchain image.
 				RID rt = rs->viewport_get_render_target(subviewport.viewport);
 				RSG::texture_storage->render_target_set_override(rt, get_current_swapchain_texture(), RID(), RID(), RID());

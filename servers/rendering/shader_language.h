@@ -38,10 +38,9 @@
 #include "core/templates/safe_refcount.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
-#include "scene/resources/shader_include.h"
 
 #ifdef DEBUG_ENABLED
-#include "shader_warnings.h"
+#include "servers/rendering/shader_warnings.h"
 #endif // DEBUG_ENABLED
 
 class ShaderLanguage {

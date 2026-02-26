@@ -8,6 +8,8 @@
 		An instance of this class can be obtained with [method AudioServer.get_bus_effect_instance].
 	</description>
 	<tutorials>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
+		<link title="Audio effects">$DOCS_URL/tutorials/audio/audio_effects.html</link>
 		<link title="Audio Spectrum Visualizer Demo">https://godotengine.org/asset-library/asset/2762</link>
 	</tutorials>
 	<methods>

@@ -195,6 +195,7 @@ private:
 	bool selectable = true;
 	bool selected = false;
 	int selected_focusable;
+	bool deferred_drag_mode = false;
 
 	float split_ratio;
 
@@ -307,6 +308,9 @@ public:
 	virtual Variant get_drag_data(const Point2 &p_point) override;
 	virtual void update_cache();
 	virtual bool is_cache_valid() const;
+
+	virtual void set_deferred_drag_mode_enabled(bool p_enabled = true);
+	bool is_deferred_drag_mode_enabled() const;
 
 	void set_selectable(bool p_selectable);
 	bool is_selectable() const;

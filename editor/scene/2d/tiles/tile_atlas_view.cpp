@@ -37,6 +37,8 @@
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/view_panner.h"
+#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
 	if (panner->gui_input(p_event, get_global_rect())) {
@@ -308,7 +310,7 @@ RID TileAtlasView::_get_canvas_item_to_draw(const TileData *p_for_data, const Ca
 		RID ci_rid = RS::get_singleton()->canvas_item_create();
 		RS::get_singleton()->canvas_item_set_parent(ci_rid, p_base_item->get_canvas_item());
 		RS::get_singleton()->canvas_item_set_material(ci_rid, mat->get_rid());
-		RS::get_singleton()->canvas_item_set_default_texture_filter(ci_rid, RS::CanvasItemTextureFilter(p_base_item->get_texture_filter_in_tree()));
+		RS::get_singleton()->canvas_item_set_default_texture_filter(ci_rid, RSE::CanvasItemTextureFilter(p_base_item->get_texture_filter_in_tree()));
 		p_material_map[mat] = ci_rid;
 		return ci_rid;
 	}

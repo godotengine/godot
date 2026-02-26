@@ -43,6 +43,7 @@
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/rendering/rendering_server.h"
 
 Callable MeshInstance3D::_navmesh_source_geometry_parsing_callback;
 RID MeshInstance3D::_navmesh_source_geometry_parser;
@@ -562,7 +563,7 @@ Ref<ArrayMesh> MeshInstance3D::bake_mesh_from_current_blend_shape_mix(Ref<ArrayM
 
 		const Array &source_mesh_arrays = source_mesh->surface_get_arrays(surface_index);
 
-		ERR_FAIL_COND_V(source_mesh_arrays.size() != RS::ARRAY_MAX, Ref<ArrayMesh>());
+		ERR_FAIL_COND_V(source_mesh_arrays.size() != RSE::ARRAY_MAX, Ref<ArrayMesh>());
 
 		const Vector<Vector3> &source_mesh_vertex_array = source_mesh_arrays[Mesh::ARRAY_VERTEX];
 		const Vector<Vector3> &source_mesh_normal_array = source_mesh_arrays[Mesh::ARRAY_NORMAL];
@@ -739,7 +740,7 @@ Ref<ArrayMesh> MeshInstance3D::bake_mesh_from_current_skeleton_pose(Ref<ArrayMes
 
 		const Array &source_mesh_arrays = source_mesh->surface_get_arrays(surface_index);
 
-		ERR_FAIL_COND_V(source_mesh_arrays.size() != RS::ARRAY_MAX, Ref<ArrayMesh>());
+		ERR_FAIL_COND_V(source_mesh_arrays.size() != RSE::ARRAY_MAX, Ref<ArrayMesh>());
 
 		const Vector<Vector3> &source_mesh_vertex_array = source_mesh_arrays[Mesh::ARRAY_VERTEX];
 		const Vector<Vector3> &source_mesh_normal_array = source_mesh_arrays[Mesh::ARRAY_NORMAL];

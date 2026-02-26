@@ -399,7 +399,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 				}
 			}
 		} else if (/*l.begins_with("g ") ||*/ l.begins_with("usemtl ") || (l.begins_with("o ") || f->eof_reached())) { //commit group to mesh
-			uint64_t mesh_flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+			uint64_t mesh_flags = RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 
 			if (p_disable_compression) {
 				mesh_flags = 0;
@@ -445,7 +445,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 
 				Array array = surf_tool->commit_to_arrays();
 
-				if (mesh_flags & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES && generate_tangents && uses_uvs) {
+				if (mesh_flags & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES && generate_tangents && uses_uvs) {
 					// Compression is enabled, so let's validate that the normals and generated tangents are correct.
 					Vector<Vector3> norms = array[Mesh::ARRAY_NORMAL];
 					Vector<float> tangents = array[Mesh::ARRAY_TANGENT];
@@ -454,7 +454,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 						Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
 						if (std::abs(tan.dot(norms[vert])) > 0.0001) {
 							// Tangent is not perpendicular to the normal, so we can't use compression.
-							mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+							mesh_flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 						}
 					}
 				}
