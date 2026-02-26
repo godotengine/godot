@@ -47,8 +47,8 @@ void Control::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("has_focus"), &Control::_has_focus_bind_compat_110250);
 	ClassDB::bind_compatibility_method(D_METHOD("grab_focus"), &Control::_grab_focus_bind_compat_110250);
 
-	ClassDB::bind_compatibility_method(D_METHOD("set_accessibility_live", "mode"), (void (Control::*)(DisplayServer::AccessibilityLiveMode))&Control::set_accessibility_live);
-	ClassDB::bind_compatibility_method(D_METHOD("get_accessibility_live"), (DisplayServer::AccessibilityLiveMode (Control::*)() const) & Control::get_accessibility_live);
+	ClassDB::bind_compatibility_method(D_METHOD("set_accessibility_live", "mode"), (void (Control::*)(DisplayServerEnums::AccessibilityLiveMode))&Control::set_accessibility_live);
+	ClassDB::bind_compatibility_method(D_METHOD("get_accessibility_live"), (DisplayServerEnums::AccessibilityLiveMode (Control::*)() const) & Control::get_accessibility_live);
 }
 
 #endif // DISABLE_DEPRECATED

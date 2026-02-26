@@ -34,7 +34,6 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 #include "core/variant/array.h"
-#include "servers/display/display_server.h"
 
 #include <objbase.h>
 #include <sapi.h>
@@ -44,8 +43,10 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+struct TTSUtterance;
+
 class TTS_Windows {
-	List<DisplayServer::TTSUtterance> queue;
+	List<TTSUtterance> queue;
 	ISpVoice *synth = nullptr;
 	bool paused = false;
 	struct UTData {

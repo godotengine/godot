@@ -77,9 +77,9 @@ struct MetadataInfo {
 	String value;
 };
 
-int _get_android_orientation_value(DisplayServer::ScreenOrientation screen_orientation);
+int _get_android_orientation_value(DisplayServerEnums::ScreenOrientation screen_orientation);
 
-String _get_android_orientation_label(DisplayServer::ScreenOrientation screen_orientation);
+String _get_android_orientation_label(DisplayServerEnums::ScreenOrientation screen_orientation);
 
 int _get_app_category_value(int category_index);
 

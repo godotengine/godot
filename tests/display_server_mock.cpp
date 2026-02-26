@@ -52,21 +52,21 @@ void DisplayServerMock::_set_window_over(bool p_over) {
 		return;
 	}
 	window_over = p_over;
-	_send_window_event(p_over ? WINDOW_EVENT_MOUSE_ENTER : WINDOW_EVENT_MOUSE_EXIT);
+	_send_window_event(p_over ? DisplayServerEnums::WINDOW_EVENT_MOUSE_ENTER : DisplayServerEnums::WINDOW_EVENT_MOUSE_EXIT);
 }
-void DisplayServerMock::_send_window_event(WindowEvent p_event) {
+void DisplayServerMock::_send_window_event(DisplayServerEnums::WindowEvent p_event) {
 	if (event_callback.is_valid()) {
 		Variant event = int(p_event);
 		event_callback.call(event);
 	}
 }
 
-bool DisplayServerMock::has_feature(Feature p_feature) const {
+bool DisplayServerMock::has_feature(DisplayServerEnums::Feature p_feature) const {
 	switch (p_feature) {
-		case FEATURE_MOUSE:
-		case FEATURE_CURSOR_SHAPE:
-		case FEATURE_CLIPBOARD:
-		case FEATURE_CLIPBOARD_PRIMARY:
+		case DisplayServerEnums::FEATURE_MOUSE:
+		case DisplayServerEnums::FEATURE_CURSOR_SHAPE:
+		case DisplayServerEnums::FEATURE_CLIPBOARD:
+		case DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY:
 			return true;
 		default: {
 		}
@@ -74,7 +74,7 @@ bool DisplayServerMock::has_feature(Feature p_feature) const {
 	return false;
 }
 
-DisplayServer *DisplayServerMock::create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+DisplayServer *DisplayServerMock::create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error) {
 	r_error = OK;
 	RasterizerDummy::make_current();
 	return memnew(DisplayServerMock());

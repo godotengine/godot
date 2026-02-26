@@ -57,7 +57,7 @@ public class GodotEditText extends EditText {
 	private final static int HANDLER_OPEN_IME_KEYBOARD = 2;
 	private final static int HANDLER_CLOSE_IME_KEYBOARD = 3;
 
-	// Enum must be kept up-to-date with DisplayServer::VirtualKeyboardType
+	// Enum must be kept up-to-date with DisplayServerEnums::VirtualKeyboardType
 	public enum VirtualKeyboardType {
 		KEYBOARD_TYPE_DEFAULT,
 		KEYBOARD_TYPE_MULTILINE,

@@ -33,8 +33,8 @@
 RenderingContextDriver::~RenderingContextDriver() {
 }
 
-RenderingContextDriver::SurfaceID RenderingContextDriver::surface_get_from_window(DisplayServer::WindowID p_window) const {
-	HashMap<DisplayServer::WindowID, SurfaceID>::ConstIterator it = window_surface_map.find(p_window);
+RenderingContextDriver::SurfaceID RenderingContextDriver::surface_get_from_window(DisplayServerEnums::WindowID p_window) const {
+	HashMap<DisplayServerEnums::WindowID, SurfaceID>::ConstIterator it = window_surface_map.find(p_window);
 	if (it != window_surface_map.end()) {
 		return it->value;
 	} else {
@@ -42,7 +42,7 @@ RenderingContextDriver::SurfaceID RenderingContextDriver::surface_get_from_windo
 	}
 }
 
-Error RenderingContextDriver::window_create(DisplayServer::WindowID p_window, const void *p_platform_data) {
+Error RenderingContextDriver::window_create(DisplayServerEnums::WindowID p_window, const void *p_platform_data) {
 	SurfaceID surface = surface_create(p_platform_data);
 	if (surface != 0) {
 		window_surface_map[p_window] = surface;
@@ -52,37 +52,37 @@ Error RenderingContextDriver::window_create(DisplayServer::WindowID p_window, co
 	}
 }
 
-void RenderingContextDriver::window_set_size(DisplayServer::WindowID p_window, uint32_t p_width, uint32_t p_height) {
+void RenderingContextDriver::window_set_size(DisplayServerEnums::WindowID p_window, uint32_t p_width, uint32_t p_height) {
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {
 		surface_set_size(surface, p_width, p_height);
 	}
 }
 
-void RenderingContextDriver::window_set_vsync_mode(DisplayServer::WindowID p_window, DisplayServer::VSyncMode p_vsync_mode) {
+void RenderingContextDriver::window_set_vsync_mode(DisplayServerEnums::WindowID p_window, DisplayServerEnums::VSyncMode p_vsync_mode) {
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {
 		surface_set_vsync_mode(surface, p_vsync_mode);
 	}
 }
 
-DisplayServer::VSyncMode RenderingContextDriver::window_get_vsync_mode(DisplayServer::WindowID p_window) const {
+DisplayServerEnums::VSyncMode RenderingContextDriver::window_get_vsync_mode(DisplayServerEnums::WindowID p_window) const {
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {
 		return surface_get_vsync_mode(surface);
 	} else {
-		return DisplayServer::VSYNC_DISABLED;
+		return DisplayServerEnums::VSYNC_DISABLED;
 	}
 }
 
-void RenderingContextDriver::window_set_hdr_output_enabled(DisplayServer::WindowID p_window, bool p_enabled) {
+void RenderingContextDriver::window_set_hdr_output_enabled(DisplayServerEnums::WindowID p_window, bool p_enabled) {
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {
 		surface_set_hdr_output_enabled(surface, p_enabled);
 	}
 }
 
-bool RenderingContextDriver::window_get_hdr_output_enabled(DisplayServer::WindowID p_window) const {
+bool RenderingContextDriver::window_get_hdr_output_enabled(DisplayServerEnums::WindowID p_window) const {
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {
 		return surface_get_hdr_output_enabled(surface);
@@ -91,14 +91,14 @@ bool RenderingContextDriver::window_get_hdr_output_enabled(DisplayServer::Window
 	}
 }
 
-void RenderingContextDriver::window_set_hdr_output_reference_luminance(DisplayServer::WindowID p_window, float p_reference_luminance) {
+void RenderingContextDriver::window_set_hdr_output_reference_luminance(DisplayServerEnums::WindowID p_window, float p_reference_luminance) {
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {
 		surface_set_hdr_output_reference_luminance(surface, p_reference_luminance);
 	}
 }
 
-float RenderingContextDriver::window_get_hdr_output_reference_luminance(DisplayServer::WindowID p_window) const {
+float RenderingContextDriver::window_get_hdr_output_reference_luminance(DisplayServerEnums::WindowID p_window) const {
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {
 		return surface_get_hdr_output_reference_luminance(surface);
@@ -107,14 +107,14 @@ float RenderingContextDriver::window_get_hdr_output_reference_luminance(DisplayS
 	}
 }
 
-void RenderingContextDriver::window_set_hdr_output_max_luminance(DisplayServer::WindowID p_window, float p_max_luminance) {
+void RenderingContextDriver::window_set_hdr_output_max_luminance(DisplayServerEnums::WindowID p_window, float p_max_luminance) {
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {
 		surface_set_hdr_output_max_luminance(surface, p_max_luminance);
 	}
 }
 
-float RenderingContextDriver::window_get_hdr_output_max_luminance(DisplayServer::WindowID p_window) const {
+float RenderingContextDriver::window_get_hdr_output_max_luminance(DisplayServerEnums::WindowID p_window) const {
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {
 		return surface_get_hdr_output_max_luminance(surface);
@@ -123,14 +123,14 @@ float RenderingContextDriver::window_get_hdr_output_max_luminance(DisplayServer:
 	}
 }
 
-void RenderingContextDriver::window_set_hdr_output_linear_luminance_scale(DisplayServer::WindowID p_window, float p_linear_luminance_scale) {
+void RenderingContextDriver::window_set_hdr_output_linear_luminance_scale(DisplayServerEnums::WindowID p_window, float p_linear_luminance_scale) {
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {
 		surface_set_hdr_output_linear_luminance_scale(surface, p_linear_luminance_scale);
 	}
 }
 
-float RenderingContextDriver::window_get_hdr_output_linear_luminance_scale(DisplayServer::WindowID p_window) const {
+float RenderingContextDriver::window_get_hdr_output_linear_luminance_scale(DisplayServerEnums::WindowID p_window) const {
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {
 		return surface_get_hdr_output_linear_luminance_scale(surface);
@@ -139,7 +139,7 @@ float RenderingContextDriver::window_get_hdr_output_linear_luminance_scale(Displ
 	}
 }
 
-float RenderingContextDriver::window_get_output_max_linear_value(DisplayServer::WindowID p_window) const {
+float RenderingContextDriver::window_get_output_max_linear_value(DisplayServerEnums::WindowID p_window) const {
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {
 		if (surface_get_hdr_output_enabled(surface)) {
@@ -149,7 +149,7 @@ float RenderingContextDriver::window_get_output_max_linear_value(DisplayServer::
 	return 1.0f; // SDR
 }
 
-void RenderingContextDriver::window_destroy(DisplayServer::WindowID p_window) {
+void RenderingContextDriver::window_destroy(DisplayServerEnums::WindowID p_window) {
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {
 		surface_destroy(surface);

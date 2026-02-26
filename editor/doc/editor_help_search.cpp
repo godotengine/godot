@@ -197,13 +197,13 @@ void EditorHelpSearch::_confirmed() {
 void EditorHelpSearch::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_HELP)) {
+			if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_HELP)) {
 				DisplayServer::get_singleton()->help_set_search_callbacks(callable_mp(this, &EditorHelpSearch::_native_search_cb), callable_mp(this, &EditorHelpSearch::_native_action_cb));
 			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_HELP)) {
+			if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_HELP)) {
 				DisplayServer::get_singleton()->help_set_search_callbacks();
 			}
 		} break;

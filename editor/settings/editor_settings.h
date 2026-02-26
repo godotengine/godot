@@ -60,6 +60,7 @@ public:
 		NETWORK_ONLINE,
 	};
 
+	// Keep values synced with DisplayServerEnums constants.
 	enum InitialScreen {
 		INITIAL_SCREEN_AUTO = -5, // Remembers last screen position.
 		INITIAL_SCREEN_WITH_MOUSE_FOCUS = -4,
