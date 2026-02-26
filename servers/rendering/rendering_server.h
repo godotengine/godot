@@ -213,6 +213,7 @@ public:
 	virtual Error mesh_create_surface_data_from_arrays(RenderingServerTypes::SurfaceData *r_surface_data, RSE::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint64_t p_compress_format = 0);
 	Array mesh_create_arrays_from_surface_data(const RenderingServerTypes::SurfaceData &p_data) const;
 	Array mesh_surface_get_arrays(RID p_mesh, int p_surface) const;
+	Array mesh_all_surfaces_get_arrays(RID p_mesh) const;
 	TypedArray<Array> mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const;
 	Dictionary mesh_surface_get_lods(RID p_mesh, int p_surface) const;
 
@@ -233,6 +234,7 @@ public:
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const = 0;
 
 	virtual RenderingServerTypes::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const = 0;
+	virtual LocalVector<RenderingServerTypes::SurfaceData> mesh_get_surfaces(RID p_mesh) const = 0;
 
 	virtual int mesh_get_surface_count(RID p_mesh) const = 0;
 
@@ -1087,6 +1089,7 @@ private:
 	RID _mesh_create_from_surfaces(const TypedArray<Dictionary> &p_surfaces, int p_blend_shape_count);
 	void _mesh_add_surface(RID p_mesh, const Dictionary &p_surface);
 	Dictionary _mesh_get_surface(RID p_mesh, int p_idx);
+	TypedArray<Dictionary> _mesh_get_surfaces(RID p_mesh);
 	TypedArray<Dictionary> _instance_geometry_get_shader_parameter_list(RID p_instance) const;
 	TypedArray<Dictionary> _canvas_item_get_instance_shader_parameter_list(RID p_item) const;
 	TypedArray<Image> _bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size);

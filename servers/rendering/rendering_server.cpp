@@ -1722,6 +1722,17 @@ Array RenderingServer::mesh_surface_get_arrays(RID p_mesh, int p_surface) const 
 	return mesh_create_arrays_from_surface_data(sd);
 }
 
+Array RenderingServer::mesh_all_surfaces_get_arrays(RID p_mesh) const {
+	Array ret;
+	LocalVector<RenderingServerTypes::SurfaceData> sd_list = mesh_get_surfaces(p_mesh);
+
+	for (unsigned int i = 0; i < sd_list.size(); i++) {
+		ret.push_back(mesh_create_arrays_from_surface_data(sd_list[i]));
+	}
+
+	return ret;
+}
+
 Dictionary RenderingServer::mesh_surface_get_lods(RID p_mesh, int p_surface) const {
 	RenderingServerTypes::SurfaceData sd = mesh_get_surface(p_mesh, p_surface);
 	ERR_FAIL_COND_V(sd.vertex_count == 0, Dictionary());
@@ -2056,6 +2067,64 @@ Dictionary RenderingServer::_mesh_get_surface(RID p_mesh, int p_idx) {
 	return d;
 }
 
+TypedArray<Dictionary> RenderingServer::_mesh_get_surfaces(RID p_mesh) {
+	Array ret;
+	LocalVector<RenderingServerTypes::SurfaceData> sd_list = mesh_get_surfaces(p_mesh);
+
+	for (unsigned int sd_idx = 0; sd_idx < sd_list.size(); sd_idx++) {
+		Dictionary d;
+		RenderingServerTypes::SurfaceData sd = sd_list[sd_idx];
+
+		d["primitive"] = sd.primitive;
+		d["format"] = sd.format;
+		d["vertex_data"] = sd.vertex_data;
+		if (sd.attribute_data.size()) {
+			d["attribute_data"] = sd.attribute_data;
+		}
+		if (sd.skin_data.size()) {
+			d["skin_data"] = sd.skin_data;
+		}
+		d["vertex_count"] = sd.vertex_count;
+		if (sd.index_count) {
+			d["index_data"] = sd.index_data;
+			d["index_count"] = sd.index_count;
+		}
+		d["aabb"] = sd.aabb;
+		d["uv_scale"] = sd.uv_scale;
+
+		if (sd.lods.size()) {
+			Array lods;
+			for (int i = 0; i < sd.lods.size(); i++) {
+				Dictionary ld;
+				ld["edge_length"] = sd.lods[i].edge_length;
+				ld["index_data"] = sd.lods[i].index_data;
+				lods.push_back(ld);
+			}
+			d["lods"] = lods;
+		}
+
+		if (sd.bone_aabbs.size()) {
+			Array aabbs;
+			for (int i = 0; i < sd.bone_aabbs.size(); i++) {
+				aabbs.push_back(sd.bone_aabbs[i]);
+			}
+			d["bone_aabbs"] = aabbs;
+		}
+
+		if (sd.blend_shape_data.size()) {
+			d["blend_shape_data"] = sd.blend_shape_data;
+		}
+
+		if (sd.material.is_valid()) {
+			d["material"] = sd.material;
+		}
+
+		ret.push_back(d);
+	}
+
+	return ret;
+}
+
 TypedArray<Dictionary> RenderingServer::_instance_geometry_get_shader_parameter_list(RID p_instance) const {
 	List<PropertyInfo> params;
 	instance_geometry_get_shader_parameter_list(p_instance, &params);
@@ -2377,7 +2446,9 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mesh_surface_set_material", "mesh", "surface", "material"), &RenderingServer::mesh_surface_set_material);
 	ClassDB::bind_method(D_METHOD("mesh_surface_get_material", "mesh", "surface"), &RenderingServer::mesh_surface_get_material);
 	ClassDB::bind_method(D_METHOD("mesh_get_surface", "mesh", "surface"), &RenderingServer::_mesh_get_surface);
+	ClassDB::bind_method(D_METHOD("mesh_get_surfaces", "mesh"), &RenderingServer::_mesh_get_surfaces);
 	ClassDB::bind_method(D_METHOD("mesh_surface_get_arrays", "mesh", "surface"), &RenderingServer::mesh_surface_get_arrays);
+	ClassDB::bind_method(D_METHOD("mesh_all_surfaces_get_arrays", "mesh"), &RenderingServer::mesh_all_surfaces_get_arrays);
 	ClassDB::bind_method(D_METHOD("mesh_surface_get_blend_shape_arrays", "mesh", "surface"), &RenderingServer::mesh_surface_get_blend_shape_arrays);
 	ClassDB::bind_method(D_METHOD("mesh_get_surface_count", "mesh"), &RenderingServer::mesh_get_surface_count);
 	ClassDB::bind_method(D_METHOD("mesh_set_custom_aabb", "mesh", "aabb"), &RenderingServer::mesh_set_custom_aabb);

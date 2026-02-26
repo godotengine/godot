@@ -391,17 +391,32 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 	return mc;
 }
 
-int Voxelizer::get_bake_steps(Ref<Mesh> &p_mesh) const {
+Array Voxelizer::_get_surface_arrays(Ref<Mesh> &p_mesh) {
+	if (mesh_surface_cache.has(p_mesh)) {
+		return mesh_surface_cache.get(p_mesh);
+	}
+
+	Array surfaces = p_mesh->all_surfaces_get_arrays();
+
+	mesh_surface_cache.insert(p_mesh, surfaces);
+
+	return surfaces;
+}
+
+int Voxelizer::get_bake_steps(Ref<Mesh> &p_mesh) {
+	Array surfaces = _get_surface_arrays(p_mesh);
 	int bake_total = 0;
-	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
+
+	for (int i = 0; i < surfaces.size(); i++) {
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue; // Only triangles.
 		}
-		Array a = p_mesh->surface_get_arrays(i);
+		Array a = surfaces[i];
 		Vector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
 		Vector<int> index = a[Mesh::ARRAY_INDEX];
 		bake_total += (index.size() > 0 ? index.size() : vertices.size()) / 3;
 	}
+
 	return bake_total;
 }
 
@@ -410,10 +425,11 @@ Voxelizer::BakeResult Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh>
 
 	// Precalculate for transforming vertex normals
 	Basis normal_xform = p_xform.basis.inverse().transposed();
+	Array surface_arrays = _get_surface_arrays(p_mesh);
 
 	int bake_total = get_bake_steps(p_mesh), bake_current = 0;
 
-	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
+	for (int i = 0; i < surface_arrays.size(); i++) {
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue; //only triangles
 		}
@@ -429,7 +445,7 @@ Voxelizer::BakeResult Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh>
 		}
 		MaterialCache material = _get_material_cache(src_material);
 
-		Array a = p_mesh->surface_get_arrays(i);
+		Array a = surface_arrays[i];
 
 		Vector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
 		const Vector3 *vr = vertices.ptr();
@@ -711,6 +727,7 @@ void Voxelizer::end_bake() {
 		_sort();
 	}
 	_fixup_plot(0, 0);
+	mesh_surface_cache.clear();
 }
 
 //create the data for rendering server

@@ -2493,6 +2493,13 @@
 				[b]Note:[/b] When using indices, it is recommended to only use points, lines, or triangles.
 			</description>
 		</method>
+		<method name="mesh_all_surfaces_get_arrays" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="mesh" type="RID" />
+			<description>
+				Returns an array of buffer arrays for all surfaces of a mesh.
+			</description>
+		</method>
 		<method name="mesh_clear">
 			<return type="void" />
 			<param index="0" name="mesh" type="RID" />
@@ -2555,6 +2562,13 @@
 			<param index="0" name="mesh" type="RID" />
 			<description>
 				Returns a mesh's number of surfaces.
+			</description>
+		</method>
+		<method name="mesh_get_surfaces">
+			<return type="Dictionary[]" />
+			<param index="0" name="mesh" type="RID" />
+			<description>
+				Returns all surfaces of a mesh as an array of dictionaries following the same structure as described in [method mesh_add_surface].
 			</description>
 		</method>
 		<method name="mesh_set_blend_shape_mode">
