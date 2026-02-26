@@ -245,6 +245,17 @@ void GameViewDebugger::set_camera_manipulate_mode(EditorDebuggerNode::CameraOver
 	}
 }
 
+void GameViewDebugger::report_window_focused(bool p_focused) {
+	Array message;
+	message.append(p_focused);
+
+	for (Ref<EditorDebuggerSession> &I : sessions) {
+		if (I->is_active()) {
+			I->send_message("scene:report_window_focused", message);
+		}
+	}
+}
+
 void GameViewDebugger::reset_camera_2d_position() {
 	for (Ref<EditorDebuggerSession> &I : sessions) {
 		if (I->is_active()) {
@@ -984,6 +995,14 @@ void GameView::_notification(int p_what) {
 
 			_update_ui();
 		} break;
+
+		case NOTIFICATION_WM_WINDOW_FOCUS_IN:
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			if (embed_on_play) {
+				debugger->report_window_focused(p_what == NOTIFICATION_WM_WINDOW_FOCUS_IN);
+			}
+		} break;
+
 		case NOTIFICATION_WM_POSITION_CHANGED: {
 			if (window_wrapper->get_window_enabled()) {
 				_update_floating_window_settings();
