@@ -34,6 +34,7 @@
 
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
+#include "core/os/os.h"
 #include "core/templates/fixed_vector.h"
 
 #include "thirdparty/spirv-reflect/spirv_reflect.h"

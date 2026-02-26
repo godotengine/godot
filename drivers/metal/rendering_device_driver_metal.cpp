@@ -56,6 +56,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/os/os.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "drivers/apple/foundation_helpers.h"

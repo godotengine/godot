@@ -43,6 +43,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
+#include "servers/display/display_server.h"
 
 void QuickSettingsDialog::_fetch_setting_values() {
 #ifndef ANDROID_ENABLED

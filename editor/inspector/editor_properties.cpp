@@ -63,6 +63,7 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/visual_shader_nodes.h"
+#include "servers/display/display_server.h"
 
 ///////////////////// NIL /////////////////////////
 

@@ -37,7 +37,9 @@
 #include "core/object/callable_method_pointer.h"
 #include "core/os/os.h"
 #include "core/string/ustring.h"
+#include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
+#include "servers/display/display_server.h"
 
 #ifdef SOWRAP_ENABLED
 #include "dbus-so_wrap.h"

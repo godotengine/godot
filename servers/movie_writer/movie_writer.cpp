@@ -37,7 +37,7 @@
 #include "core/templates/rb_set.h"
 #include "scene/main/window.h"
 #include "servers/audio/audio_driver_dummy.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 #include "servers/rendering/rendering_server.h"
 
 MovieWriter *MovieWriter::writers[MovieWriter::MAX_WRITERS];

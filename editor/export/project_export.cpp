@@ -57,6 +57,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
+#include "servers/display/display_server.h"
 
 #include <zstd.h>
 

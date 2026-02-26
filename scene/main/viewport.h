@@ -32,7 +32,7 @@
 
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 
 class AudioListener2D;
 class Camera2D;

@@ -30,8 +30,10 @@
 
 #include "rendering_device_driver_vulkan.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/os/os.h"
 #include "core/templates/fixed_vector.h"
 #include "vulkan_hooks.h"
 

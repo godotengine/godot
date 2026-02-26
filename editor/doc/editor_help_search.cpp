@@ -41,6 +41,7 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
+#include "servers/display/display_server.h"
 
 bool EditorHelpSearch::_all_terms_in_name(const Vector<String> &p_terms, const String &p_name) const {
 	for (int i = 0; i < p_terms.size(); i++) {

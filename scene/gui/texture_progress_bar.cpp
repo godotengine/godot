@@ -30,6 +30,7 @@
 
 #include "texture_progress_bar.h"
 
+#include "core/config/engine.h"
 #include "core/object/class_db.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"

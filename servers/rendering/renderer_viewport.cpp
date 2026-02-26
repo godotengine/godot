@@ -34,6 +34,7 @@
 #include "core/math/transform_interpolator.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/profiling/profiling.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/renderer_canvas_cull.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_scene_cull.h"

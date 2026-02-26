@@ -88,10 +88,13 @@
 #endif // LIBDECOR_ENABLED
 
 #include "core/input/input_event.h"
+#include "core/os/os.h"
 #include "core/os/thread.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 
 #include "wayland_embedder.h"
+
+class Image;
 
 class WaylandThread {
 public:

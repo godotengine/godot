@@ -33,7 +33,7 @@
 #include "control.h"
 
 #include "core/object/class_db.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server.h" // IWYU pragma: keep // Needed to bind DisplayServerEnums enums.
 
 bool Control::_has_focus_bind_compat_110250() const {
 	return has_focus(false);

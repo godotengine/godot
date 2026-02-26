@@ -47,6 +47,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/project_settings_editor.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/display/display_server.h"
 
 EditorFileSystem *EditorFileSystem::singleton = nullptr;
 int EditorFileSystem::nb_files_total = 0;
