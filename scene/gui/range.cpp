@@ -287,7 +287,7 @@ double Range::get_page() const {
 	return shared->page;
 }
 
-void Range::set_as_ratio(double p_value) {
+void Range::_set_as_ratio(double p_value, bool p_emit_signal) {
 	double v;
 
 	if (shared->exp_ratio && get_min() >= 0) {
@@ -304,7 +304,19 @@ void Range::set_as_ratio(double p_value) {
 		}
 	}
 	v = CLAMP(v, get_min(), get_max());
-	set_value(v);
+	if (p_emit_signal) {
+		set_value(v);
+	} else {
+		set_value_no_signal(v);
+	}
+}
+
+void Range::set_as_ratio(double p_value) {
+	_set_as_ratio(p_value, true);
+}
+
+void Range::set_as_ratio_no_signal(double p_value) {
+	_set_as_ratio(p_value, false);
 }
 
 double Range::get_as_ratio() const {
@@ -389,6 +401,7 @@ void Range::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_step", "step"), &Range::set_step);
 	ClassDB::bind_method(D_METHOD("set_page", "pagesize"), &Range::set_page);
 	ClassDB::bind_method(D_METHOD("set_as_ratio", "value"), &Range::set_as_ratio);
+	ClassDB::bind_method(D_METHOD("set_as_ratio_no_signal", "value"), &Range::set_as_ratio_no_signal);
 	ClassDB::bind_method(D_METHOD("set_use_rounded_values", "enabled"), &Range::set_use_rounded_values);
 	ClassDB::bind_method(D_METHOD("is_using_rounded_values"), &Range::is_using_rounded_values);
 	ClassDB::bind_method(D_METHOD("set_exp_ratio", "enabled"), &Range::set_exp_ratio);

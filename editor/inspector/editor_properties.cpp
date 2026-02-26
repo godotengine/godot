@@ -2758,6 +2758,15 @@ void EditorPropertyTransform3D::_value_changed(double val, const String &p_name)
 	emit_changed(get_edited_property(), p, p_name);
 }
 
+void EditorPropertyTransform3D::set_deferred_drag_mode_enabled(bool p_enabled) {
+	EditorProperty::set_deferred_drag_mode_enabled(p_enabled);
+	const int count = sizeof(spin) / sizeof(spin[0]);
+
+	for (int i = 0; i < count; i++) {
+		spin[i]->set_deferred_drag_mode_enabled(p_enabled);
+	}
+}
+
 void EditorPropertyTransform3D::update_property() {
 	update_using_transform(get_edited_property_value());
 }
@@ -2851,6 +2860,15 @@ void EditorPropertyProjection::_value_changed(double val, const String &p_name) 
 	p.columns[3][3] = spin[15]->get_value();
 
 	emit_changed(get_edited_property(), p, p_name);
+}
+
+void EditorPropertyProjection::set_deferred_drag_mode_enabled(bool p_enabled) {
+	EditorProperty::set_deferred_drag_mode_enabled(p_enabled);
+	const int count = sizeof(spin) / sizeof(spin[0]);
+
+	for (int i = 0; i < count; i++) {
+		spin[i]->set_deferred_drag_mode_enabled(p_enabled);
+	}
 }
 
 void EditorPropertyProjection::update_property() {

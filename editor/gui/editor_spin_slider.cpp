@@ -99,7 +99,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 				_grab_end();
 
 				if (deferred_drag_mode && grabbing) {
-					_notify_shared_value_changed(); // Need to be emitted at the end, since the signal doesn't emitted in `set_value_no_signal` method.
+					_notify_shared_value_changed(); // Need to be emitted at the end, since the signal doesn't emit in `set_value_no_signal` method.
 				}
 			}
 		} else if (mb->get_button_index() == MouseButton::RIGHT) {
@@ -243,6 +243,9 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 				if (!mouse_over_grabber) {
 					queue_redraw();
 				}
+				if (deferred_drag_mode) {
+					_notify_shared_value_changed(); // Need to be emitted at the end, since the signal doesn't emit in `set_as_ratio_no_signal` method.
+				}
 			}
 			mousewheel_over_grabber = false;
 			emit_signal("ungrabbed");
@@ -265,7 +268,12 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 		float scale_x = get_global_transform_with_canvas().get_scale().x;
 		ERR_FAIL_COND(Math::is_zero_approx(scale_x));
 		float grabbing_ofs = (grabber->get_transform().xform(mm->get_position()).x - grabbing_from) / float(grabber_range) / scale_x;
-		set_as_ratio(grabbing_ratio + grabbing_ofs);
+		double value = grabbing_ratio + grabbing_ofs;
+		if (deferred_drag_mode) {
+			set_as_ratio_no_signal(value);
+		} else {
+			set_as_ratio(value);
+		}
 		queue_redraw();
 	}
 }
