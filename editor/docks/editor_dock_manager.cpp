@@ -1062,8 +1062,8 @@ void DockSlotGrid::_notification(int p_what) {
 					draw_rect(slot_rect, used_dock_color);
 				}
 
-				real_t tab_width = ((slot_rect.size.x - (max_tabs - 1) * TAB_MARGIN) / max_tabs) * EDSCALE;
-				real_t initial_offset = (slot_rect.size.x - (max_tabs * tab_width + (max_tabs - 1) * TAB_MARGIN)) * 0.5;
+				real_t tab_width = ((slot_rect.size.x - (max_tabs - 1) * TAB_MARGIN) / max_tabs);
+				real_t initial_offset = (slot_rect.size.x - (max_tabs * tab_width + (max_tabs - 1) * TAB_MARGIN * EDSCALE)) * 0.5;
 
 				for (int j = 0; j < tabs_to_draw; j++) {
 					real_t pos_x = is_layout_rtl()
@@ -1130,5 +1130,5 @@ void DockSlotGrid::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 Size2 DockSlotGrid::get_minimum_size() const {
-	return GRID_SIZE * CELL_SIZE + (GRID_SIZE - Vector2i(1, 0)) * MARGINS;
+	return Vector2(GRID_SIZE * CELL_SIZE) * EDSCALE + Vector2((GRID_SIZE - Vector2i(1, 0)) * MARGINS) * EDSCALE;
 }
