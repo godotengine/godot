@@ -30,7 +30,11 @@
 
 #pragma once
 
-#include "servers/display/display_server.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "servers/display/display_server_enums.h"
+
+#include <cstdint>
 
 class RenderingDeviceDriver;
 

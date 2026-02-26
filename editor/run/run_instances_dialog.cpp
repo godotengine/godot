@@ -31,6 +31,7 @@
 #include "run_instances_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/os/os.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"

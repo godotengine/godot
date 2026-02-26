@@ -31,6 +31,7 @@
 #include "wayland_thread.h"
 
 #include "core/config/engine.h"
+#include "core/io/image.h"
 
 #ifdef WAYLAND_ENABLED
 

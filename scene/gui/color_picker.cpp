@@ -55,6 +55,7 @@
 #include "scene/resources/style_box_texture.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 
 static inline bool is_color_overbright(const Color &color) {
 	return (color.r > 1.0) || (color.g > 1.0) || (color.b > 1.0);

@@ -32,6 +32,7 @@
 
 #ifdef GLES3_ENABLED
 
+#include "core/os/os.h"
 #include "drivers/gles3/effects/copy_effects.h"
 #include "drivers/gles3/effects/cubemap_filter.h"
 #include "drivers/gles3/effects/feed_effects.h"

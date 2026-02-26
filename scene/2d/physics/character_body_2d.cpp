@@ -30,6 +30,7 @@
 
 #include "character_body_2d.h"
 
+#include "core/config/engine.h"
 #include "core/object/class_db.h"
 
 #ifndef DISABLE_DEPRECATED

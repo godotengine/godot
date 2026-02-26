@@ -52,6 +52,7 @@
 
 #include "metal_utils.h"
 
+#include "core/os/os.h"
 #include "servers/rendering/renderer_rd/effects/metal_fx.h"
 
 #include <MetalFX/MetalFX.hpp>

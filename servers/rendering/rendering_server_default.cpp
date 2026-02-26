@@ -33,10 +33,11 @@
 #include "core/object/callable_method_pointer.h"
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
-#include "renderer_canvas_cull.h"
-#include "renderer_scene_cull.h"
-#include "rendering_device.h"
-#include "rendering_server_globals.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/renderer_canvas_cull.h"
+#include "servers/rendering/renderer_scene_cull.h"
+#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 #ifndef XR_DISABLED
 #include "servers/xr/xr_server.h"

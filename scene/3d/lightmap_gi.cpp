@@ -43,6 +43,7 @@
 #include "scene/resources/environment.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/sky.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For lightmapper_rd.

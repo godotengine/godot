@@ -46,6 +46,7 @@
 #include "scene/gui/item_list.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
+#include "servers/display/display_server.h"
 
 Ref<Resource> ShaderEditorPlugin::_get_current_shader() {
 	int index = shader_tabs->get_current_tab();

@@ -32,6 +32,8 @@
 
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
+#include "core/os/os.h"
+
 #include <dlfcn.h>
 #include <cstdio>
 #include <cstdlib>

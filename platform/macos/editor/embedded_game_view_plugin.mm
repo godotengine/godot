@@ -35,6 +35,7 @@
 #include "core/input/input.h"
 #include "editor/editor_node.h"
 #include "editor/gui/window_wrapper.h"
+#include "servers/display/display_server.h"
 
 HashMap<String, GameViewDebuggerMacOS::ParseMessageFunc> GameViewDebuggerMacOS::parse_message_handlers;
 

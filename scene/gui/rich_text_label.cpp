@@ -44,6 +44,7 @@
 #include "scene/resources/atlas_texture.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.

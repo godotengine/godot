@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/io/resource.h"
 #include "core/object/class_db.h"
 #include "servers/rendering/rendering_device.h"
 

@@ -50,6 +50,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "scene/resources/mesh.h"
 #include "scene/resources/text_line.h"
 #include "servers/audio/audio_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/rendering_server_globals.h"

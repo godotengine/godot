@@ -42,6 +42,7 @@
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
 #include "scene/gui/line_edit.h"
+#include "servers/display/display_server.h"
 
 #ifdef WINDOWS_ENABLED
 #include <shlwapi.h>

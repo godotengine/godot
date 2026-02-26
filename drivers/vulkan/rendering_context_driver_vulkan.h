@@ -32,6 +32,8 @@
 
 #ifdef VULKAN_ENABLED
 
+#include "core/templates/hash_set.h"
+#include "core/templates/local_vector.h"
 #include "servers/rendering/rendering_context_driver.h"
 
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)

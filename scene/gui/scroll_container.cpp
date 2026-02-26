@@ -37,6 +37,7 @@
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 
 Size2 ScrollContainer::get_minimum_size() const {
 	// Calculated in this function, as it needs to traverse all child controls once to calculate;

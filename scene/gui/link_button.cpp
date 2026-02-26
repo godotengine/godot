@@ -31,6 +31,7 @@
 #include "link_button.h"
 
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 
