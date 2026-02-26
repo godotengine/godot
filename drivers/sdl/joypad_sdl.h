@@ -78,8 +78,6 @@ public:
 	JoypadSDL(InputDefault *in);
 	~JoypadSDL();
 
-	static JoypadSDL *get_singleton();
-
 	Error initialize();
 	void process_events();
 
@@ -95,7 +93,6 @@ private:
 	};
 
 	InputDefault *input;
-	static JoypadSDL *singleton;
 
 	Joypad joypads[InputDefault::JOYPADS_MAX];
 	HashMap<SDL_JoystickID, int> sdl_instance_id_to_joypad_id;
