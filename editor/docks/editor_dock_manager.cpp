@@ -325,6 +325,11 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 			DockTabContainer *parent_tabs = Object::cast_to<DockTabContainer>(parent);
 			if (parent_tabs) {
 				p_dock->previous_tab_index = parent_tabs->get_tab_idx_from_control(p_dock);
+
+				// Swap to previous tab when closing current tab.
+				if (parent_tabs->get_current_tab() == p_dock->previous_tab_index) {
+					parent_tabs->set_current_tab(parent_tabs->get_previous_tab());
+				}
 			}
 			parent->set_block_signals(true);
 			parent->remove_child(p_dock);
@@ -339,6 +344,9 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 		p_dock->is_open = false;
 		return;
 	}
+
+	// Prevent extra visibility signals from firing.
+	p_dock->hide();
 
 	DockTabContainer *dock_tab_container = Object::cast_to<DockTabContainer>(p_target);
 	if (p_target != closed_dock_parent) {
@@ -587,8 +595,6 @@ void EditorDockManager::close_dock(EditorDock *p_dock) {
 		parent_container->dock_closed(p_dock);
 	}
 
-	// Hide before moving to remove inconsistent signals.
-	p_dock->hide();
 	_move_dock(p_dock, closed_dock_parent);
 
 	_update_layout();
@@ -651,8 +657,10 @@ void EditorDockManager::_make_dock_visible(EditorDock *p_dock, bool p_grab_focus
 		tab_container->get_tab_bar()->grab_focus();
 	}
 
-	int tab_index = tab_container->get_tab_idx_from_control(p_dock);
-	tab_container->set_current_tab(tab_index);
+	if (!p_dock->is_visible_in_tree()) {
+		int tab_index = tab_container->get_tab_idx_from_control(p_dock);
+		tab_container->set_current_tab(tab_index);
+	}
 }
 
 void EditorDockManager::focus_dock(EditorDock *p_dock) {

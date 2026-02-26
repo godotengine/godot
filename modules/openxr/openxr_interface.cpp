@@ -30,14 +30,15 @@
 
 #include "openxr_interface.h"
 
-#include "core/io/resource_loader.h"
-#include "core/io/resource_saver.h"
-
 #include "extensions/openxr_eye_gaze_interaction.h"
 #include "extensions/openxr_hand_interaction_extension.h"
 #include "extensions/openxr_performance_settings_extension.h"
 #include "extensions/openxr_user_presence_extension.h"
-#include "servers/rendering/renderer_compositor.h"
+
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server_types.h"
 
 #include <openxr/openxr.h>
 
@@ -1253,13 +1254,13 @@ bool OpenXRInterface::pre_draw_viewport(RID p_render_target) {
 	}
 }
 
-Vector<BlitToScreen> OpenXRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
-	Vector<BlitToScreen> blit_to_screen;
+Vector<RenderingServerTypes::BlitToScreen> OpenXRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
+	Vector<RenderingServerTypes::BlitToScreen> blit_to_screen;
 
 #ifndef ANDROID_ENABLED
 	// If separate HMD we should output one eye to screen
 	if (p_screen_rect != Rect2()) {
-		BlitToScreen blit;
+		RenderingServerTypes::BlitToScreen blit;
 
 		blit.render_target = p_render_target;
 		blit.multi_view.use_layer = true;

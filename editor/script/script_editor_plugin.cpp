@@ -1459,6 +1459,14 @@ void ScriptEditor::_notification(int p_what) {
 
 			members_overview_alphabeta_sort_button->set_button_icon(get_editor_theme_icon(SNAME("Sort")));
 
+			bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
+			Ref<Font> monospace_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
+			if (use_monospace_font) {
+				members_overview->add_theme_font_override(SceneStringName(font), monospace_font);
+			} else {
+				members_overview->remove_theme_font_override(SceneStringName(font));
+			}
+
 			filter_scripts->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			filter_methods->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
@@ -2082,12 +2090,20 @@ void ScriptEditor::_update_script_names() {
 		}
 	}
 
+	bool has_active_tab = false;
+
 	for (const _ScriptEditorItemData &sedata_i : sedata) {
 		if (tab_container->get_current_tab() == sedata_i.index) {
 			script_name_button->set_text(sedata_i.name);
+			script_name_button->show();
 			_calculate_script_name_button_size();
+			has_active_tab = true;
 			break;
 		}
+	}
+
+	if (!has_active_tab) {
+		script_name_button->hide();
 	}
 
 	if (!waiting_update_names) {

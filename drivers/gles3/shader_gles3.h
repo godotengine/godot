@@ -36,7 +36,7 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_types.h"
 
 #include "platform_gl.h"
 
@@ -248,7 +248,7 @@ public:
 	static void set_shader_cache_save_compressed_zstd(bool p_enable);
 	static void set_shader_cache_save_debug(bool p_enable);
 
-	RS::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
+	RenderingServerTypes::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
 
 	void initialize(const String &p_general_defines = "", int p_base_texture_index = 0);
 	virtual ~ShaderGLES3();

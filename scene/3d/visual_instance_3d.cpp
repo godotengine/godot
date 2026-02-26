@@ -30,8 +30,11 @@
 
 #include "visual_instance_3d.h"
 
+STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
+
 #include "core/config/project_settings.h"
 #include "scene/resources/material.h"
+#include "servers/rendering/rendering_server.h"
 
 AABB VisualInstance3D::get_aabb() const {
 	AABB ret;
@@ -245,7 +248,7 @@ float GeometryInstance3D::get_transparency() const {
 
 void GeometryInstance3D::set_visibility_range_begin(float p_dist) {
 	visibility_range_begin = p_dist;
-	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RS::VisibilityRangeFadeMode)visibility_range_fade_mode);
+	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RSE::VisibilityRangeFadeMode)visibility_range_fade_mode);
 	update_configuration_warnings();
 }
 
@@ -255,7 +258,7 @@ float GeometryInstance3D::get_visibility_range_begin() const {
 
 void GeometryInstance3D::set_visibility_range_end(float p_dist) {
 	visibility_range_end = p_dist;
-	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RS::VisibilityRangeFadeMode)visibility_range_fade_mode);
+	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RSE::VisibilityRangeFadeMode)visibility_range_fade_mode);
 	update_configuration_warnings();
 }
 
@@ -265,7 +268,7 @@ float GeometryInstance3D::get_visibility_range_end() const {
 
 void GeometryInstance3D::set_visibility_range_begin_margin(float p_dist) {
 	visibility_range_begin_margin = p_dist;
-	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RS::VisibilityRangeFadeMode)visibility_range_fade_mode);
+	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RSE::VisibilityRangeFadeMode)visibility_range_fade_mode);
 	update_configuration_warnings();
 }
 
@@ -275,7 +278,7 @@ float GeometryInstance3D::get_visibility_range_begin_margin() const {
 
 void GeometryInstance3D::set_visibility_range_end_margin(float p_dist) {
 	visibility_range_end_margin = p_dist;
-	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RS::VisibilityRangeFadeMode)visibility_range_fade_mode);
+	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RSE::VisibilityRangeFadeMode)visibility_range_fade_mode);
 	update_configuration_warnings();
 }
 
@@ -285,7 +288,7 @@ float GeometryInstance3D::get_visibility_range_end_margin() const {
 
 void GeometryInstance3D::set_visibility_range_fade_mode(VisibilityRangeFadeMode p_mode) {
 	visibility_range_fade_mode = p_mode;
-	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RS::VisibilityRangeFadeMode)visibility_range_fade_mode);
+	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RSE::VisibilityRangeFadeMode)visibility_range_fade_mode);
 	update_configuration_warnings();
 }
 
@@ -367,7 +370,7 @@ void GeometryInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 void GeometryInstance3D::set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting) {
 	shadow_casting_setting = p_shadow_casting_setting;
 
-	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(get_instance(), (RS::ShadowCastingSetting)p_shadow_casting_setting);
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(get_instance(), (RSE::ShadowCastingSetting)p_shadow_casting_setting);
 }
 
 GeometryInstance3D::ShadowCastingSetting GeometryInstance3D::get_cast_shadows_setting() const {
@@ -473,17 +476,17 @@ GeometryInstance3D::LightmapScale GeometryInstance3D::get_lightmap_scale() const
 void GeometryInstance3D::set_gi_mode(GIMode p_mode) {
 	switch (p_mode) {
 		case GI_MODE_DISABLED: {
-			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
 		} break;
 		case GI_MODE_STATIC: {
-			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_BAKED_LIGHT, true);
-			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, true);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
 
 		} break;
 		case GI_MODE_DYNAMIC: {
-			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_DYNAMIC_GI, true);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_USE_DYNAMIC_GI, true);
 		} break;
 	}
 
@@ -496,7 +499,7 @@ GeometryInstance3D::GIMode GeometryInstance3D::get_gi_mode() const {
 
 void GeometryInstance3D::set_ignore_occlusion_culling(bool p_enabled) {
 	ignore_occlusion_culling = p_enabled;
-	RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, ignore_occlusion_culling);
+	RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, ignore_occlusion_culling);
 }
 
 bool GeometryInstance3D::is_ignoring_occlusion_culling() {

@@ -90,13 +90,13 @@ TEST_CASE("[SceneTree][Primitive][Capsule] Capsule Primitive") {
 
 	SUBCASE("[Primitive][Capsule] Check mesh is correct") {
 		Array data{};
-		data.resize(RS::ARRAY_MAX);
+		data.resize(RSE::ARRAY_MAX);
 		float radius{ 0.5f };
 		float height{ 4.f };
 		int num_radial_segments{ 4 };
 		int num_rings{ 8 };
 		CapsuleMesh::create_mesh_array(data, radius, height, num_radial_segments, num_rings);
-		Vector<Vector3> points = data[RS::ARRAY_VERTEX];
+		Vector<Vector3> points = data[RSE::ARRAY_VERTEX];
 
 		SUBCASE("[Primitive][Capsule] Ensure all vertices positions are within bounding radius and height") {
 			// Get mesh data
@@ -128,7 +128,7 @@ TEST_CASE("[SceneTree][Primitive][Capsule] Capsule Primitive") {
 		}
 
 		SUBCASE("[Primitive][Capsule] If normal.y == 0, then mesh makes a cylinder.") {
-			Vector<Vector3> normals = data[RS::ARRAY_NORMAL];
+			Vector<Vector3> normals = data[RSE::ARRAY_NORMAL];
 			for (int ii = 0; ii < points.size(); ++ii) {
 				float point_dist_from_yaxis = Math::sqrt(points[ii].x * points[ii].x + points[ii].z * points[ii].z);
 				Vector3 yaxis_to_point{ points[ii].x / point_dist_from_yaxis, 0.f, points[ii].z / point_dist_from_yaxis };
@@ -184,14 +184,14 @@ TEST_CASE("[SceneTree][Primitive][Box] Box Primitive") {
 
 	SUBCASE("[Primitive][Box] Check mesh is correct.") {
 		Array data{};
-		data.resize(RS::ARRAY_MAX);
+		data.resize(RSE::ARRAY_MAX);
 		Vector3 size{ 0.5f, 1.2f, .9f };
 		int subdivide_width{ 3 };
 		int subdivide_height{ 2 };
 		int subdivide_depth{ 8 };
 		BoxMesh::create_mesh_array(data, size, subdivide_width, subdivide_height, subdivide_depth);
-		Vector<Vector3> points = data[RS::ARRAY_VERTEX];
-		Vector<Vector3> normals = data[RS::ARRAY_NORMAL];
+		Vector<Vector3> points = data[RSE::ARRAY_VERTEX];
+		Vector<Vector3> normals = data[RSE::ARRAY_NORMAL];
 
 		SUBCASE("Only 6 distinct normals.") {
 			Vector<Vector3> distinct_normals{};
@@ -276,7 +276,7 @@ TEST_CASE("[SceneTree][Primitive][Cylinder] Cylinder Primitive") {
 
 	SUBCASE("[Primitive][Cylinder] Actual cylinder mesh tests (top and bottom radius the same).") {
 		Array data{};
-		data.resize(RS::ARRAY_MAX);
+		data.resize(RSE::ARRAY_MAX);
 		real_t radius = .9f;
 		real_t height = 3.2f;
 		int radial_segments = 8;
@@ -284,8 +284,8 @@ TEST_CASE("[SceneTree][Primitive][Cylinder] Cylinder Primitive") {
 		bool top_cap = true;
 		bool bottom_cap = true;
 		CylinderMesh::create_mesh_array(data, radius, radius, height, radial_segments, rings, top_cap, bottom_cap);
-		Vector<Vector3> points = data[RS::ARRAY_VERTEX];
-		Vector<Vector3> normals = data[RS::ARRAY_NORMAL];
+		Vector<Vector3> points = data[RSE::ARRAY_VERTEX];
+		Vector<Vector3> normals = data[RSE::ARRAY_NORMAL];
 
 		SUBCASE("[Primitive][Cylinder] Side points are radius away from y-axis.") {
 			bool is_radius_correct{ true };
@@ -344,8 +344,8 @@ TEST_CASE("[SceneTree][Primitive][Cylinder] Cylinder Primitive") {
 
 		SUBCASE("[Primitive][Cylinder] Does mesh obey cap parameters?") {
 			CylinderMesh::create_mesh_array(data, radius, radius, height, radial_segments, rings, top_cap, false);
-			points = data[RS::ARRAY_VERTEX];
-			normals = data[RS::ARRAY_NORMAL];
+			points = data[RSE::ARRAY_VERTEX];
+			normals = data[RSE::ARRAY_NORMAL];
 			bool no_bottom_cap{ true };
 
 			for (int index = 0; index < normals.size(); ++index) {
@@ -361,8 +361,8 @@ TEST_CASE("[SceneTree][Primitive][Cylinder] Cylinder Primitive") {
 					"Check there is no bottom cap.");
 
 			CylinderMesh::create_mesh_array(data, radius, radius, height, radial_segments, rings, false, bottom_cap);
-			points = data[RS::ARRAY_VERTEX];
-			normals = data[RS::ARRAY_NORMAL];
+			points = data[RSE::ARRAY_VERTEX];
+			normals = data[RSE::ARRAY_NORMAL];
 			bool no_top_cap{ true };
 
 			for (int index = 0; index < normals.size(); ++index) {
@@ -381,15 +381,15 @@ TEST_CASE("[SceneTree][Primitive][Cylinder] Cylinder Primitive") {
 
 	SUBCASE("[Primitive][Cylinder] Slanted cylinder mesh (top and bottom radius different).") {
 		Array data{};
-		data.resize(RS::ARRAY_MAX);
+		data.resize(RSE::ARRAY_MAX);
 		real_t top_radius = 2.f;
 		real_t bottom_radius = 1.f;
 		real_t height = 1.f;
 		int radial_segments = 8;
 		int rings = 5;
 		CylinderMesh::create_mesh_array(data, top_radius, bottom_radius, height, radial_segments, rings, false, false);
-		Vector<Vector3> points = data[RS::ARRAY_VERTEX];
-		Vector<Vector3> normals = data[RS::ARRAY_NORMAL];
+		Vector<Vector3> points = data[RSE::ARRAY_VERTEX];
+		Vector<Vector3> normals = data[RSE::ARRAY_NORMAL];
 
 		SUBCASE("[Primitive][Cylinder] Side points lie correct distance from y-axis") {
 			bool is_radius_correct{ true };
@@ -549,13 +549,13 @@ TEST_CASE("[SceneTree][Primitive][Sphere] Sphere Primitive") {
 
 	SUBCASE("[Primitive][Sphere] Sphere mesh tests.") {
 		Array data{};
-		data.resize(RS::ARRAY_MAX);
+		data.resize(RSE::ARRAY_MAX);
 		real_t radius = 1.1f;
 		int radial_segments = 8;
 		int rings = 5;
 		SphereMesh::create_mesh_array(data, radius, 2 * radius, radial_segments, rings);
-		Vector<Vector3> points = data[RS::ARRAY_VERTEX];
-		Vector<Vector3> normals = data[RS::ARRAY_NORMAL];
+		Vector<Vector3> points = data[RSE::ARRAY_VERTEX];
+		Vector<Vector3> normals = data[RSE::ARRAY_NORMAL];
 
 		SUBCASE("[Primitive][Sphere] All points lie radius away from origin.") {
 			bool is_radius_correct = true;

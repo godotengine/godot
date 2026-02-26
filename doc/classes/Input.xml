@@ -94,6 +94,7 @@
 			<return type="int[]" />
 			<description>
 				Returns an [Array] containing the device IDs of all currently connected joypads.
+				[b]Note:[/b] The order of connected joypads can not be guaranteed to be the same after a project and/or the editor is restarted, because Godot doesn't save the order of joypad connections. Joypads are registered in the order they are discovered by Godot.
 			</description>
 		</method>
 		<method name="get_current_cursor_shape" qualifiers="const">

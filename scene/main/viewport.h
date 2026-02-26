@@ -254,6 +254,7 @@ private:
 	Transform2D stretch_transform;
 
 	Size2i size = Size2i(512, 512);
+	int view_count = 1;
 	Size2 size_2d_override;
 	bool size_allocated = false;
 
@@ -502,10 +503,12 @@ private:
 	void _window_start_resize(SubWindowResize p_edge, Window *p_window);
 
 protected:
-	bool _set_size(const Size2i &p_size, const Size2 &p_size_2d_override, bool p_allocated);
+	bool _set_size(const Size2i &p_size, const int p_view_count, const Size2 &p_size_2d_override, bool p_allocated);
+	void _check_xr_size();
 
 	Size2i _get_size() const;
 	Size2 _get_size_2d_override() const;
+	int _get_view_count() const;
 	bool _is_size_allocated() const;
 
 	void _notification(int p_what);
@@ -513,6 +516,9 @@ protected:
 	void _process_picking();
 #endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+#endif
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:
@@ -856,7 +862,11 @@ public:
 
 #ifndef XR_DISABLED
 	void set_use_xr(bool p_use_xr);
-	bool is_using_xr();
+	bool is_using_xr() const;
+
+#ifndef DISABLE_DEPRECATED
+	bool _is_using_xr_115799();
+#endif
 #endif // XR_DISABLED
 #endif // _3D_DISABLED
 
@@ -887,7 +897,7 @@ private:
 	ClearMode clear_mode = CLEAR_MODE_ALWAYS;
 	bool size_2d_override_stretch = false;
 
-	void _internal_set_size(const Size2i &p_size, bool p_force = false);
+	void _internal_set_size(const Size2i &p_size, const int p_view_count = 1, bool p_force = false);
 
 protected:
 	static void _bind_methods();
@@ -898,6 +908,9 @@ public:
 	void set_size(const Size2i &p_size);
 	Size2i get_size() const;
 	void set_size_force(const Size2i &p_size);
+
+	void set_view_count(const int p_view_count);
+	int get_view_count() const;
 
 	void set_size_2d_override(const Size2i &p_size);
 	Size2i get_size_2d_override() const;

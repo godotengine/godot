@@ -81,7 +81,7 @@ protected:
 	RasterizerSceneGLES3 *scene = nullptr;
 	static RasterizerGLES3 *singleton;
 
-	void _blit_render_target_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen &p_blit, bool p_first = true);
+	void _blit_render_target_to_screen(DisplayServer::WindowID p_screen, const RenderingServerTypes::BlitToScreen &p_blit, bool p_first = true);
 
 public:
 	RendererUtilities *get_utilities() { return utilities; }
@@ -95,12 +95,12 @@ public:
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }
 
-	void set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter = true);
+	void set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RSE::SplashStretchMode p_stretch_mode, bool p_use_filter = true);
 
 	void initialize();
 	void begin_frame(double frame_step);
 
-	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
+	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const RenderingServerTypes::BlitToScreen *p_render_targets, int p_amount);
 
 	bool is_opengl() { return true; }
 	void gl_end_frame(bool p_swap_buffers);

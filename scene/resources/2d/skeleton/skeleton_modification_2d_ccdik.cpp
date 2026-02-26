@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "skeleton_modification_2d_ccdik.h"
+
+#include "core/config/engine.h"
 #include "scene/2d/skeleton_2d.h"
 
 bool SkeletonModification2DCCDIK::_set(const StringName &p_path, const Variant &p_value) {

@@ -31,6 +31,7 @@
 #include "fog_material.h"
 
 #include "core/version.h"
+#include "servers/rendering/rendering_server.h"
 
 Mutex FogMaterial::shader_mutex;
 RID FogMaterial::shader;

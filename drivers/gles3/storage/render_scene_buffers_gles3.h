@@ -43,9 +43,9 @@ class RenderSceneBuffersGLES3 : public RenderSceneBuffers {
 public:
 	Size2i internal_size; // Size of the buffer we render 3D content to.
 	Size2i target_size; // Size of our output buffer (render target).
-	RS::ViewportScaling3DMode scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
+	RSE::ViewportScaling3DMode scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_OFF;
 	//float fsr_sharpness = 0.2f;
-	//RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
+	//RSE::ViewportScreenSpaceAA screen_space_aa = RSE::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 	//bool use_taa = false;
 	//bool use_debanding = false;
 	uint32_t view_count = 1;
@@ -66,7 +66,7 @@ public:
 	};
 
 	struct RTMSAA3D {
-		RS::ViewportMSAA mode = RS::VIEWPORT_MSAA_DISABLED;
+		RSE::ViewportMSAA mode = RSE::VIEWPORT_MSAA_DISABLED;
 		bool needs_resolve = false;
 		GLsizei samples = 1;
 		GLuint color = 0;
@@ -102,7 +102,7 @@ public:
 	virtual void configure(const RenderSceneBuffersConfiguration *p_config) override;
 	void configure_for_probe(Size2i p_size);
 
-	virtual void set_anisotropic_filtering_level(RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level) override {}
+	virtual void set_anisotropic_filtering_level(RSE::ViewportAnisotropicFiltering p_anisotropic_filtering_level) override {}
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) override {}
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override {}
 	virtual void set_use_debanding(bool p_use_debanding) override {}
@@ -154,10 +154,10 @@ public:
 	_FORCE_INLINE_ uint32_t get_view_count() const { return view_count; }
 	_FORCE_INLINE_ Size2i get_internal_size() const { return internal_size; }
 	_FORCE_INLINE_ Size2i get_target_size() const { return target_size; }
-	_FORCE_INLINE_ RS::ViewportScaling3DMode get_scaling_3d_mode() const { return scaling_3d_mode; }
+	_FORCE_INLINE_ RSE::ViewportScaling3DMode get_scaling_3d_mode() const { return scaling_3d_mode; }
 	//_FORCE_INLINE_ float get_fsr_sharpness() const { return fsr_sharpness; }
-	_FORCE_INLINE_ RS::ViewportMSAA get_msaa_3d() const { return msaa3d.mode; }
-	//_FORCE_INLINE_ RS::ViewportScreenSpaceAA get_screen_space_aa() const { return screen_space_aa; }
+	_FORCE_INLINE_ RSE::ViewportMSAA get_msaa_3d() const { return msaa3d.mode; }
+	//_FORCE_INLINE_ RSE::ViewportScreenSpaceAA get_screen_space_aa() const { return screen_space_aa; }
 	//_FORCE_INLINE_ bool get_use_taa() const { return use_taa; }
 	//_FORCE_INLINE_ bool get_use_debanding() const { return use_debanding; }
 };

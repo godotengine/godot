@@ -31,6 +31,8 @@
 #include "control.h"
 #include "control.compat.inc"
 
+STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
+
 #include "container.h"
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
@@ -514,6 +516,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		}
 
 		p_property.hint_string = hint_string;
+		return;
 	}
 
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "mouse_force_pass_scroll_events") {
@@ -521,6 +524,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		if (data.mouse_filter != MOUSE_FILTER_STOP) {
 			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 		}
+		return;
 	}
 
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "scale") {

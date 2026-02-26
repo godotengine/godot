@@ -417,6 +417,10 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array, int p_off
 			type = "Locals/";
 			break;
 		case 1:
+			if (n.begins_with("@")) {
+				return; // Skip groups.
+			}
+
 			type = "Members/";
 			break;
 		case 2:

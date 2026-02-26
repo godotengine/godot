@@ -30,6 +30,8 @@
 
 #include "xr_interface.h"
 
+#include "servers/xr/xr_server.h"
+
 void XRInterface::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("play_area_changed", PropertyInfo(Variant::INT, "mode")));
 

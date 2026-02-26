@@ -37,6 +37,7 @@
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 #include "servers/audio/audio_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "tests/display_server_mock.h"
 #include "tests/force_link.gen.h"

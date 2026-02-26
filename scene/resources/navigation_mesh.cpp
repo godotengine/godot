@@ -630,9 +630,7 @@ void NavigationMesh::_validate_property(PropertyInfo &p_property) const {
 			p_property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
-	}
-
-	if (p_property.name == "geometry_source_group_name") {
+	} else if (p_property.name == "geometry_source_group_name") {
 		if (source_geometry_mode == SOURCE_GEOMETRY_ROOT_NODE_CHILDREN) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 			return;

@@ -30,6 +30,8 @@
 
 #include "light_2d.h"
 
+#include "servers/rendering/rendering_server.h"
+
 void Light2D::owner_changed_notify() {
 	// For cases where owner changes _after_ entering tree (as example, editor editing).
 	_update_light_visibility();
@@ -170,7 +172,7 @@ bool Light2D::is_shadow_enabled() const {
 void Light2D::set_shadow_filter(ShadowFilter p_filter) {
 	ERR_FAIL_INDEX(p_filter, SHADOW_FILTER_MAX);
 	shadow_filter = p_filter;
-	RS::get_singleton()->canvas_light_set_shadow_filter(canvas_light, RS::CanvasLightShadowFilter(p_filter));
+	RS::get_singleton()->canvas_light_set_shadow_filter(canvas_light, RSE::CanvasLightShadowFilter(p_filter));
 	notify_property_list_changed();
 }
 
@@ -189,7 +191,7 @@ Color Light2D::get_shadow_color() const {
 
 void Light2D::set_blend_mode(BlendMode p_mode) {
 	blend_mode = p_mode;
-	RS::get_singleton()->canvas_light_set_blend_mode(_get_light(), RS::CanvasLightBlendMode(p_mode));
+	RS::get_singleton()->canvas_light_set_blend_mode(_get_light(), RSE::CanvasLightBlendMode(p_mode));
 }
 
 Light2D::BlendMode Light2D::get_blend_mode() const {
@@ -306,10 +308,10 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_energy", "get_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Add,Subtract,Mix"), "set_blend_mode", "get_blend_mode");
 	ADD_GROUP("Range", "range_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_min", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_min", "get_z_range_min");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_max", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_max", "get_z_range_max");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_layer_min", PROPERTY_HINT_RANGE, itos(RS::CANVAS_LAYER_MIN) + "," + itos(RS::CANVAS_LAYER_MAX) + ",1"), "set_layer_range_min", "get_layer_range_min");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_layer_max", PROPERTY_HINT_RANGE, itos(RS::CANVAS_LAYER_MIN) + "," + itos(RS::CANVAS_LAYER_MAX) + ",1"), "set_layer_range_max", "get_layer_range_max");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_min", PROPERTY_HINT_RANGE, itos(RSE::CANVAS_ITEM_Z_MIN) + "," + itos(RSE::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_min", "get_z_range_min");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_max", PROPERTY_HINT_RANGE, itos(RSE::CANVAS_ITEM_Z_MIN) + "," + itos(RSE::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_max", "get_z_range_max");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_layer_min", PROPERTY_HINT_RANGE, itos(RSE::CANVAS_LAYER_MIN) + "," + itos(RSE::CANVAS_LAYER_MAX) + ",1"), "set_layer_range_min", "get_layer_range_min");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_layer_max", PROPERTY_HINT_RANGE, itos(RSE::CANVAS_LAYER_MIN) + "," + itos(RSE::CANVAS_LAYER_MAX) + ",1"), "set_layer_range_max", "get_layer_range_max");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_item_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_item_cull_mask", "get_item_cull_mask");
 
 	ADD_GROUP("Shadow", "shadow_");
@@ -481,7 +483,7 @@ void PointLight2D::_bind_methods() {
 }
 
 PointLight2D::PointLight2D() {
-	RS::get_singleton()->canvas_light_set_mode(_get_light(), RS::CANVAS_LIGHT_MODE_POINT);
+	RS::get_singleton()->canvas_light_set_mode(_get_light(), RSE::CANVAS_LIGHT_MODE_POINT);
 	set_hide_clip_children(true);
 }
 
@@ -505,7 +507,7 @@ void DirectionalLight2D::_bind_methods() {
 }
 
 DirectionalLight2D::DirectionalLight2D() {
-	RS::get_singleton()->canvas_light_set_mode(_get_light(), RS::CANVAS_LIGHT_MODE_DIRECTIONAL);
+	RS::get_singleton()->canvas_light_set_mode(_get_light(), RSE::CANVAS_LIGHT_MODE_DIRECTIONAL);
 	set_max_distance(max_distance); // Update RenderingServer.
 	set_hide_clip_children(true);
 }

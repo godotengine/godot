@@ -49,15 +49,17 @@ class RendererCompositorRD : public RendererCompositor {
 protected:
 	UniformSetCacheRD *uniform_set_cache = nullptr;
 	FramebufferCacheRD *framebuffer_cache = nullptr;
+
 	RendererCanvasRenderRD *canvas = nullptr;
-	RendererRD::Utilities *utilities = nullptr;
+	RendererSceneRenderRD *scene = nullptr;
+
+	RendererRD::Fog *fog = nullptr;
 	RendererRD::LightStorage *light_storage = nullptr;
 	RendererRD::MaterialStorage *material_storage = nullptr;
 	RendererRD::MeshStorage *mesh_storage = nullptr;
 	RendererRD::ParticlesStorage *particles_storage = nullptr;
 	RendererRD::TextureStorage *texture_storage = nullptr;
-	RendererRD::Fog *fog = nullptr;
-	RendererSceneRenderRD *scene = nullptr;
+	RendererRD::Utilities *utilities = nullptr;
 
 	enum BlitMode {
 		BLIT_MODE_NORMAL,
@@ -130,11 +132,11 @@ public:
 	virtual RendererCanvasRender *get_canvas() override { return canvas; }
 	virtual RendererSceneRender *get_scene() override { return scene; }
 
-	virtual void set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter) override;
+	virtual void set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RSE::SplashStretchMode p_stretch_mode, bool p_use_filter) override;
 
 	virtual void initialize() override;
 	virtual void begin_frame(double frame_step) override;
-	virtual void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) override;
+	virtual void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const RenderingServerTypes::BlitToScreen *p_render_targets, int p_amount) override;
 
 	virtual bool is_opengl() override { return false; }
 	virtual void gl_end_frame(bool p_swap_buffers) override {}

@@ -31,6 +31,8 @@
 #include "canvas_item.h"
 #include "canvas_item.compat.inc"
 
+STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
+
 #include "scene/2d/canvas_group.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
@@ -40,6 +42,7 @@
 #include "scene/resources/multimesh.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/world_2d.h"
+#include "servers/rendering/rendering_server.h"
 
 #define ERR_DRAW_GUARD \
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside this node's `_draw()`, functions connected to its `draw` signal, or when it receives NOTIFICATION_DRAW.")
@@ -666,8 +669,8 @@ void CanvasItem::item_rect_changed(bool p_size_changed) {
 
 void CanvasItem::set_z_index(int p_z) {
 	ERR_THREAD_GUARD;
-	ERR_FAIL_COND(p_z < RS::CANVAS_ITEM_Z_MIN);
-	ERR_FAIL_COND(p_z > RS::CANVAS_ITEM_Z_MAX);
+	ERR_FAIL_COND(p_z < RSE::CANVAS_ITEM_Z_MIN);
+	ERR_FAIL_COND(p_z > RSE::CANVAS_ITEM_Z_MAX);
 	z_index = p_z;
 	RS::get_singleton()->canvas_item_set_z_index(canvas_item, z_index);
 	update_configuration_warnings();
@@ -1482,7 +1485,7 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_layer", PROPERTY_HINT_LAYERS_2D_RENDER), "set_visibility_layer", "get_visibility_layer");
 
 	ADD_GROUP("Ordering", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_index", "get_z_index");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index", PROPERTY_HINT_RANGE, itos(RSE::CANVAS_ITEM_Z_MIN) + "," + itos(RSE::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_index", "get_z_index");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "z_as_relative"), "set_z_as_relative", "is_z_relative");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "y_sort_enabled"), "set_y_sort_enabled", "is_y_sort_enabled");
 
@@ -1636,14 +1639,14 @@ void CanvasItem::_refresh_texture_filter_cache() const {
 		if (parent_item) {
 			texture_filter_cache = parent_item->texture_filter_cache;
 		} else {
-			texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
+			texture_filter_cache = RSE::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
 		}
 	} else {
-		texture_filter_cache = RS::CanvasItemTextureFilter(texture_filter);
+		texture_filter_cache = RSE::CanvasItemTextureFilter(texture_filter);
 	}
 }
 
-void CanvasItem::_update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter) {
+void CanvasItem::_update_self_texture_filter(RSE::CanvasItemTextureFilter p_texture_filter) {
 	RS::get_singleton()->canvas_item_set_default_texture_filter(get_canvas_item(), p_texture_filter);
 	queue_redraw();
 }
@@ -1692,14 +1695,14 @@ void CanvasItem::_refresh_texture_repeat_cache() const {
 		if (parent_item) {
 			texture_repeat_cache = parent_item->texture_repeat_cache;
 		} else {
-			texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
+			texture_repeat_cache = RSE::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
 		}
 	} else {
-		texture_repeat_cache = RS::CanvasItemTextureRepeat(texture_repeat);
+		texture_repeat_cache = RSE::CanvasItemTextureRepeat(texture_repeat);
 	}
 }
 
-void CanvasItem::_update_self_texture_repeat(RS::CanvasItemTextureRepeat p_texture_repeat) {
+void CanvasItem::_update_self_texture_repeat(RSE::CanvasItemTextureRepeat p_texture_repeat) {
 	RS::get_singleton()->canvas_item_set_default_texture_repeat(get_canvas_item(), p_texture_repeat);
 	queue_redraw();
 }
@@ -1748,7 +1751,7 @@ void CanvasItem::set_clip_children_mode(ClipChildrenMode p_clip_mode) {
 		return;
 	}
 
-	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CanvasGroupMode(clip_children_mode));
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RSE::CanvasGroupMode(clip_children_mode));
 }
 
 CanvasItem::ClipChildrenMode CanvasItem::get_clip_children_mode() const {
@@ -1795,7 +1798,7 @@ void CanvasTexture::set_diffuse_texture(const Ref<Texture2D> &p_diffuse) {
 	diffuse_texture = p_diffuse;
 
 	RID tex_rid = diffuse_texture.is_valid() ? diffuse_texture->get_rid() : RID();
-	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RS::CANVAS_TEXTURE_CHANNEL_DIFFUSE, tex_rid);
+	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RSE::CANVAS_TEXTURE_CHANNEL_DIFFUSE, tex_rid);
 	emit_changed();
 }
 Ref<Texture2D> CanvasTexture::get_diffuse_texture() const {
@@ -1809,7 +1812,7 @@ void CanvasTexture::set_normal_texture(const Ref<Texture2D> &p_normal) {
 	}
 	normal_texture = p_normal;
 	RID tex_rid = normal_texture.is_valid() ? normal_texture->get_rid() : RID();
-	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RS::CANVAS_TEXTURE_CHANNEL_NORMAL, tex_rid);
+	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RSE::CANVAS_TEXTURE_CHANNEL_NORMAL, tex_rid);
 	emit_changed();
 }
 Ref<Texture2D> CanvasTexture::get_normal_texture() const {
@@ -1823,7 +1826,7 @@ void CanvasTexture::set_specular_texture(const Ref<Texture2D> &p_specular) {
 	}
 	specular_texture = p_specular;
 	RID tex_rid = specular_texture.is_valid() ? specular_texture->get_rid() : RID();
-	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RS::CANVAS_TEXTURE_CHANNEL_SPECULAR, tex_rid);
+	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RSE::CANVAS_TEXTURE_CHANNEL_SPECULAR, tex_rid);
 	emit_changed();
 }
 
@@ -1862,7 +1865,7 @@ void CanvasTexture::set_texture_filter(CanvasItem::TextureFilter p_filter) {
 		return;
 	}
 	texture_filter = p_filter;
-	RS::get_singleton()->canvas_texture_set_texture_filter(canvas_texture, RS::CanvasItemTextureFilter(p_filter));
+	RS::get_singleton()->canvas_texture_set_texture_filter(canvas_texture, RSE::CanvasItemTextureFilter(p_filter));
 	emit_changed();
 }
 CanvasItem::TextureFilter CanvasTexture::get_texture_filter() const {
@@ -1874,7 +1877,7 @@ void CanvasTexture::set_texture_repeat(CanvasItem::TextureRepeat p_repeat) {
 		return;
 	}
 	texture_repeat = p_repeat;
-	RS::get_singleton()->canvas_texture_set_texture_repeat(canvas_texture, RS::CanvasItemTextureRepeat(p_repeat));
+	RS::get_singleton()->canvas_texture_set_texture_repeat(canvas_texture, RSE::CanvasItemTextureRepeat(p_repeat));
 	emit_changed();
 }
 CanvasItem::TextureRepeat CanvasTexture::get_texture_repeat() const {

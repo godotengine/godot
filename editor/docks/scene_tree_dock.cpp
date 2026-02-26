@@ -2316,6 +2316,32 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 								}
 							}
 						}
+
+						// key.get_path() of p_renames is like:
+						//  /root/@EditorNode@18033/@Panel@14/.../Scene/TheOldName
+						// value of p_renames is like:
+						//  /root/@EditorNode@18033/@Panel@14/.../Scene/TheNewName
+						for (const KeyValue<Node *, NodePath> &rename : *p_renames) {
+							NodePath old_path = rename.key->get_path();
+							NodePath new_path = rename.value;
+							Vector<StringName> rel_path = old_path.rel_path_to(new_path).get_names();
+
+							StringName old_node_name = rename.key->get_name();
+							StringName new_node_name = rel_path[rel_path.size() - 1];
+
+							anim->editor_set_group_folded(new_node_name, anim->editor_is_group_folded(old_node_name));
+							anim->editor_set_group_folded(old_node_name, false);
+						}
+
+						if (!anim->get_path().is_resource_file()) {
+							EditorNode::get_editor_folding().save_scene_folding(
+									EditorNode::get_singleton()->get_edited_scene(),
+									EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path());
+						} else {
+							EditorNode::get_editor_folding().save_resource_folding(
+									anim,
+									anim->get_path());
+						}
 					}
 				}
 			}

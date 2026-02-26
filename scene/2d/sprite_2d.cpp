@@ -468,9 +468,7 @@ void Sprite2D::_validate_property(PropertyInfo &p_property) const {
 		p_property.hint = PROPERTY_HINT_RANGE;
 		p_property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
 		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
-	}
-
-	if (p_property.name == "frame_coords") {
+	} else if (p_property.name == "frame_coords") {
 		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 }

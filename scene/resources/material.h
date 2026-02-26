@@ -33,7 +33,7 @@
 #include "core/io/resource.h"
 #include "core/templates/self_list.h"
 #include "scene/resources/shader.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 class Material : public Resource {
 	GDCLASS(Material, Resource);
@@ -70,8 +70,8 @@ protected:
 	GDVIRTUAL0RC(bool, _can_use_render_priority)
 public:
 	enum {
-		RENDER_PRIORITY_MAX = RS::MATERIAL_RENDER_PRIORITY_MAX,
-		RENDER_PRIORITY_MIN = RS::MATERIAL_RENDER_PRIORITY_MIN,
+		RENDER_PRIORITY_MAX = RSE::MATERIAL_RENDER_PRIORITY_MAX,
+		RENDER_PRIORITY_MIN = RSE::MATERIAL_RENDER_PRIORITY_MIN,
 	};
 
 	bool _is_initialized() { return init_state == INIT_STATE_READY; }

@@ -128,9 +128,8 @@ bool AudioStreamPlaylist::has_loop() const {
 }
 
 void AudioStreamPlaylist::_validate_property(PropertyInfo &r_property) const {
-	String prop = r_property.name;
-	if (prop != "stream_count" && prop.begins_with("stream_")) {
-		int stream = prop.get_slicec('/', 0).get_slicec('_', 1).to_int();
+	if (r_property.name != "stream_count" && r_property.name.begins_with("stream_")) {
+		int stream = r_property.name.get_slicec('/', 0).get_slicec('_', 1).to_int();
 		if (stream >= stream_count) {
 			r_property.usage = PROPERTY_USAGE_INTERNAL;
 		}

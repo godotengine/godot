@@ -30,6 +30,8 @@
 
 #include "decal.h"
 
+#include "servers/rendering/rendering_server.h"
+
 void Decal::set_size(const Vector3 &p_size) {
 	size = p_size.maxf(0.001);
 	RS::get_singleton()->decal_set_size(decal, size);
@@ -58,7 +60,7 @@ void Decal::set_texture(DecalTexture p_type, const Ref<Texture2D> &p_texture) {
 	}
 #endif
 
-	RS::get_singleton()->decal_set_texture(decal, RS::DecalTexture(p_type), texture_rid);
+	RS::get_singleton()->decal_set_texture(decal, RSE::DecalTexture(p_type), texture_rid);
 	update_configuration_warnings();
 }
 

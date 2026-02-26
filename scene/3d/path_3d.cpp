@@ -31,6 +31,7 @@
 #include "path_3d.h"
 
 #include "scene/resources/mesh.h"
+#include "servers/rendering/rendering_server.h"
 
 Path3D::Path3D() {
 	SceneTree *st = SceneTree::get_singleton();

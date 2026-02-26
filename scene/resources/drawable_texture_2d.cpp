@@ -30,6 +30,8 @@
 
 #include "drawable_texture_2d.h"
 
+#include "servers/rendering/rendering_server.h"
+
 DrawableTexture2D::DrawableTexture2D() {
 	default_material = RS::get_singleton()->texture_drawable_get_default_material();
 }
@@ -44,10 +46,10 @@ DrawableTexture2D::~DrawableTexture2D() {
 // Initialize Texture Resource with a call to rendering server. Overwrite existing.
 void DrawableTexture2D::_initialize() {
 	if (texture.is_valid()) {
-		RID new_texture = RS::get_singleton()->texture_drawable_create(width, height, (RS::TextureDrawableFormat)format, base_color, mipmaps);
+		RID new_texture = RS::get_singleton()->texture_drawable_create(width, height, (RSE::TextureDrawableFormat)format, base_color, mipmaps);
 		RS::get_singleton()->texture_replace(texture, new_texture);
 	} else {
-		texture = RS::get_singleton()->texture_drawable_create(width, height, (RS::TextureDrawableFormat)format, base_color, mipmaps);
+		texture = RS::get_singleton()->texture_drawable_create(width, height, (RSE::TextureDrawableFormat)format, base_color, mipmaps);
 	}
 }
 

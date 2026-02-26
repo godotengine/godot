@@ -31,6 +31,7 @@
 #include "skeleton_2d.h"
 
 #include "core/math/transform_interpolator.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_data.h"

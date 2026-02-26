@@ -920,7 +920,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 			uint64_t mesh_flags = 0;
 
 			if (p_use_compression) {
-				mesh_flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+				mesh_flags = RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			}
 
 			// We can't generate tangents without UVs, so create dummy tangents.
@@ -958,10 +958,10 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 				if (has_weights) {
 					Vector<float> weights;
 					Vector<int> bones;
-					weights.resize(RS::ARRAY_WEIGHTS_SIZE);
-					bones.resize(RS::ARRAY_WEIGHTS_SIZE);
+					weights.resize(RSE::ARRAY_WEIGHTS_SIZE);
+					bones.resize(RSE::ARRAY_WEIGHTS_SIZE);
 					//float sum=0.0;
-					for (int l = 0; l < RS::ARRAY_WEIGHTS_SIZE; l++) {
+					for (int l = 0; l < RSE::ARRAY_WEIGHTS_SIZE; l++) {
 						if (l < vertex_array[k].weights.size()) {
 							weights.write[l] = vertex_array[k].weights[l].weight;
 							bones.write[l] = vertex_array[k].weights[l].bone_idx;
@@ -1005,7 +1005,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 
 			if (p_mesh->get_blend_shape_count() != 0 || p_skin_controller || is_mesh_2d) {
 				// Can't compress if attributes missing or if using vertex weights.
-				mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+				mesh_flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			}
 
 			////////////////////////////
@@ -1013,9 +1013,9 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 			////////////////////////////
 
 			Array d = surftool->commit_to_arrays();
-			d.resize(RS::ARRAY_MAX);
+			d.resize(RSE::ARRAY_MAX);
 
-			if (mesh_flags & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES && (generate_dummy_tangents || generate_tangents)) {
+			if (mesh_flags & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES && (generate_dummy_tangents || generate_tangents)) {
 				// Compression is enabled, so let's validate that the normals and tangents are correct.
 				Vector<Vector3> normals = d[Mesh::ARRAY_NORMAL];
 				Vector<float> tangents = d[Mesh::ARRAY_TANGENT];
@@ -1023,7 +1023,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 					Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
 					if (std::abs(tan.dot(normals[vert])) > 0.0001) {
 						// Tangent is not perpendicular to the normal, so we can't use compression.
-						mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+						mesh_flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 					}
 				}
 			}

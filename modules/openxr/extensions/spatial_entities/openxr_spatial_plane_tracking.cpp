@@ -447,9 +447,9 @@ Ref<Mesh> OpenXRPlaneTracker::get_mesh() {
 		}
 
 		// Build our array with data.
-		arr.resize(RS::ARRAY_MAX);
-		arr[RS::ARRAY_VERTEX] = vertices;
-		arr[RS::ARRAY_INDEX] = mesh.indices;
+		arr.resize(RSE::ARRAY_MAX);
+		arr[RSE::ARRAY_VERTEX] = vertices;
+		arr[RSE::ARRAY_INDEX] = mesh.indices;
 
 		// Create our array mesh.
 		array_mesh.instantiate();

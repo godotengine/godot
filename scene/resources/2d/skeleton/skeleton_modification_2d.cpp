@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "skeleton_modification_2d.h"
+
+#include "core/config/engine.h"
 #include "scene/2d/skeleton_2d.h"
 
 #ifdef TOOLS_ENABLED

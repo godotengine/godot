@@ -70,18 +70,18 @@ Vector<Vector3> CapsuleShape3D::get_debug_mesh_lines() const {
 
 Ref<ArrayMesh> CapsuleShape3D::get_debug_arraymesh_faces(const Color &p_modulate) const {
 	Array capsule_array;
-	capsule_array.resize(RS::ARRAY_MAX);
+	capsule_array.resize(RSE::ARRAY_MAX);
 	CapsuleMesh::create_mesh_array(capsule_array, radius, height, 32, 8);
 
 	Vector<Color> colors;
-	const PackedVector3Array &verts = capsule_array[RS::ARRAY_VERTEX];
+	const PackedVector3Array &verts = capsule_array[RSE::ARRAY_VERTEX];
 	const int32_t verts_size = verts.size();
 	for (int i = 0; i < verts_size; i++) {
 		colors.append(p_modulate);
 	}
 
 	Ref<ArrayMesh> capsule_mesh = memnew(ArrayMesh);
-	capsule_array[RS::ARRAY_COLOR] = colors;
+	capsule_array[RSE::ARRAY_COLOR] = colors;
 	capsule_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, capsule_array);
 	return capsule_mesh;
 }

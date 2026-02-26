@@ -68,8 +68,8 @@ PostEffects::PostEffects() {
 		glGenVertexArrays(1, &screen_triangle_array);
 		glBindVertexArray(screen_triangle_array);
 		glBindBuffer(GL_ARRAY_BUFFER, screen_triangle);
-		glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
-		glEnableVertexAttribArray(RS::ARRAY_VERTEX);
+		glVertexAttribPointer(RSE::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		glEnableVertexAttribArray(RSE::ARRAY_VERTEX);
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 	}
@@ -109,13 +109,13 @@ void PostEffects::post_copy(
 		flags |= PostShaderGLES3::USE_GLOW;
 	}
 	if (p_ssao_enabled) {
-		if (p_ssao_quality_level == RS::ENV_SSAO_QUALITY_VERY_LOW) {
+		if (p_ssao_quality_level == RSE::ENV_SSAO_QUALITY_VERY_LOW) {
 			flags |= PostShaderGLES3::USE_SSAO_ABYSS;
-		} else if (p_ssao_quality_level == RS::ENV_SSAO_QUALITY_LOW) {
+		} else if (p_ssao_quality_level == RSE::ENV_SSAO_QUALITY_LOW) {
 			flags |= PostShaderGLES3::USE_SSAO_LOW;
-		} else if (p_ssao_quality_level == RS::ENV_SSAO_QUALITY_HIGH) {
+		} else if (p_ssao_quality_level == RSE::ENV_SSAO_QUALITY_HIGH) {
 			flags |= PostShaderGLES3::USE_SSAO_HIGH;
-		} else if (p_ssao_quality_level == RS::ENV_SSAO_QUALITY_ULTRA) {
+		} else if (p_ssao_quality_level == RSE::ENV_SSAO_QUALITY_ULTRA) {
 			flags |= PostShaderGLES3::USE_SSAO_MEGA;
 		} else {
 			flags |= PostShaderGLES3::USE_SSAO_MED;

@@ -45,6 +45,7 @@
 #include "scene/main/timer.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
+#include "servers/rendering/rendering_server.h"
 
 #include <climits>
 

@@ -52,6 +52,7 @@ void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
 			p_property.hint = PROPERTY_HINT_NONE;
 			p_property.hint_string = "";
 		}
+		return;
 	}
 
 	if (p_property.name == "external_skeleton" && !use_external_skeleton) {

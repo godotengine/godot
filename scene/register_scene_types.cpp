@@ -164,6 +164,8 @@
 #include "scene/resources/visual_shader_particle_nodes.h"
 #include "scene/resources/visual_shader_sdf_nodes.h"
 #include "scene/theme/theme_db.h"
+#include "servers/rendering/rendering_server.h"
+
 #ifndef DISABLE_DEPRECATED
 #include "scene/resources/animated_texture.h"
 #endif

@@ -36,6 +36,7 @@ TEST_FORCE_LINK(test_arraymesh)
 
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/mesh.h"
+#include "servers/rendering/rendering_server.h"
 
 namespace TestArrayMesh {
 
@@ -230,13 +231,13 @@ TEST_CASE("[SceneTree][ArrayMesh] Surface metadata tests.") {
 	}
 
 	SUBCASE("Get the array length of a particular surface.") {
-		CHECK(mesh->surface_get_array_len(0) == static_cast<Vector<Vector3>>(cylinder_array[RenderingServer::ARRAY_VERTEX]).size());
-		CHECK(mesh->surface_get_array_len(1) == static_cast<Vector<Vector3>>(box_array[RenderingServer::ARRAY_VERTEX]).size());
+		CHECK(mesh->surface_get_array_len(0) == static_cast<Vector<Vector3>>(cylinder_array[RSE::ARRAY_VERTEX]).size());
+		CHECK(mesh->surface_get_array_len(1) == static_cast<Vector<Vector3>>(box_array[RSE::ARRAY_VERTEX]).size());
 	}
 
 	SUBCASE("Get the index array length of a particular surface.") {
-		CHECK(mesh->surface_get_array_index_len(0) == static_cast<Vector<Vector3>>(cylinder_array[RenderingServer::ARRAY_INDEX]).size());
-		CHECK(mesh->surface_get_array_index_len(1) == static_cast<Vector<Vector3>>(box_array[RenderingServer::ARRAY_INDEX]).size());
+		CHECK(mesh->surface_get_array_index_len(0) == static_cast<Vector<Vector3>>(cylinder_array[RSE::ARRAY_INDEX]).size());
+		CHECK(mesh->surface_get_array_index_len(1) == static_cast<Vector<Vector3>>(box_array[RSE::ARRAY_INDEX]).size());
 	}
 
 	SUBCASE("Get correct primitive type") {
@@ -247,7 +248,7 @@ TEST_CASE("[SceneTree][ArrayMesh] Surface metadata tests.") {
 	}
 
 	SUBCASE("Returns correct format for the mesh") {
-		int format = RS::ARRAY_FORMAT_BLEND_SHAPE_MASK | RS::ARRAY_FORMAT_TEX_UV | RS::ARRAY_FORMAT_INDEX;
+		int format = RSE::ARRAY_FORMAT_BLEND_SHAPE_MASK | RSE::ARRAY_FORMAT_TEX_UV | RSE::ARRAY_FORMAT_INDEX;
 		CHECK((mesh->surface_get_format(0) & format) != 0);
 		CHECK((mesh->surface_get_format(1) & format) != 0);
 	}
@@ -396,7 +397,7 @@ TEST_CASE("[SceneTree][ArrayMesh] Get/Set mesh metadata and actions") {
 
 	SUBCASE("Create surface from raw SurfaceData data.") {
 		RID mesh_rid = mesh->get_rid();
-		RS::SurfaceData surface_data = RS::get_singleton()->mesh_get_surface(mesh_rid, 0);
+		RenderingServerTypes::SurfaceData surface_data = RS::get_singleton()->mesh_get_surface(mesh_rid, 0);
 		Ref<ArrayMesh> mesh2;
 		mesh2.instantiate();
 		mesh2->add_surface(surface_data.format, Mesh::PRIMITIVE_TRIANGLES, surface_data.vertex_data, surface_data.attribute_data,

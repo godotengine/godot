@@ -142,7 +142,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 			RD::VertexAttribute vd;
 			vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
 			vd.offset = base_offset * sizeof(float);
-			vd.location = RS::ARRAY_VERTEX;
+			vd.location = RSE::ARRAY_VERTEX;
 			vd.stride = stride * sizeof(float);
 
 			descriptions.write[0] = vd;
@@ -162,7 +162,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 			RD::VertexAttribute vd;
 			vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
 			vd.offset = base_offset * sizeof(float);
-			vd.location = RS::ARRAY_COLOR;
+			vd.location = RSE::ARRAY_COLOR;
 			vd.stride = stride * sizeof(float);
 
 			descriptions.write[1] = vd;
@@ -190,7 +190,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 			RD::VertexAttribute vd;
 			vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
 			vd.offset = 0;
-			vd.location = RS::ARRAY_COLOR;
+			vd.location = RSE::ARRAY_COLOR;
 			vd.stride = 0;
 
 			descriptions.write[1] = vd;
@@ -202,7 +202,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 			RD::VertexAttribute vd;
 			vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
 			vd.offset = base_offset * sizeof(float);
-			vd.location = RS::ARRAY_TEX_UV;
+			vd.location = RSE::ARRAY_TEX_UV;
 			vd.stride = stride * sizeof(float);
 
 			descriptions.write[2] = vd;
@@ -218,7 +218,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 			RD::VertexAttribute vd;
 			vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
 			vd.offset = 0;
-			vd.location = RS::ARRAY_TEX_UV;
+			vd.location = RSE::ARRAY_TEX_UV;
 			vd.stride = 0;
 
 			descriptions.write[2] = vd;
@@ -230,7 +230,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 			RD::VertexAttribute vd;
 			vd.format = RD::DATA_FORMAT_R16G16B16A16_UINT;
 			vd.offset = base_offset * sizeof(float);
-			vd.location = RS::ARRAY_BONES;
+			vd.location = RSE::ARRAY_BONES;
 			vd.stride = stride * sizeof(float);
 
 			descriptions.write[3] = vd;
@@ -251,7 +251,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 			RD::VertexAttribute vd;
 			vd.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
 			vd.offset = 0;
-			vd.location = RS::ARRAY_BONES;
+			vd.location = RSE::ARRAY_BONES;
 			vd.stride = 0;
 
 			descriptions.write[3] = vd;
@@ -263,7 +263,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 			RD::VertexAttribute vd;
 			vd.format = RD::DATA_FORMAT_R16G16B16A16_UNORM;
 			vd.offset = base_offset * sizeof(float);
-			vd.location = RS::ARRAY_WEIGHTS;
+			vd.location = RSE::ARRAY_WEIGHTS;
 			vd.stride = stride * sizeof(float);
 
 			descriptions.write[4] = vd;
@@ -284,7 +284,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 			RD::VertexAttribute vd;
 			vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
 			vd.offset = 0;
-			vd.location = RS::ARRAY_WEIGHTS;
+			vd.location = RSE::ARRAY_WEIGHTS;
 			vd.stride = 0;
 
 			descriptions.write[4] = vd;
@@ -352,26 +352,26 @@ void RendererCanvasRenderRD::free_polygon(PolygonID p_polygon) {
 
 ////////////////////
 
-static RD::RenderPrimitive _primitive_type_to_render_primitive(RS::PrimitiveType p_primitive) {
+static RD::RenderPrimitive _primitive_type_to_render_primitive(RSE::PrimitiveType p_primitive) {
 	switch (p_primitive) {
-		case RS::PRIMITIVE_POINTS:
+		case RSE::PRIMITIVE_POINTS:
 			return RD::RENDER_PRIMITIVE_POINTS;
-		case RS::PRIMITIVE_LINES:
+		case RSE::PRIMITIVE_LINES:
 			return RD::RENDER_PRIMITIVE_LINES;
-		case RS::PRIMITIVE_LINE_STRIP:
+		case RSE::PRIMITIVE_LINE_STRIP:
 			return RD::RENDER_PRIMITIVE_LINESTRIPS;
-		case RS::PRIMITIVE_TRIANGLES:
+		case RSE::PRIMITIVE_TRIANGLES:
 			return RD::RENDER_PRIMITIVE_TRIANGLES;
-		case RS::PRIMITIVE_TRIANGLE_STRIP:
+		case RSE::PRIMITIVE_TRIANGLE_STRIP:
 			return RD::RENDER_PRIMITIVE_TRIANGLE_STRIPS;
 		default:
 			return RD::RENDER_PRIMITIVE_MAX;
 	}
 }
 
-_FORCE_INLINE_ static uint32_t _indices_to_primitives(RS::PrimitiveType p_primitive, uint32_t p_indices) {
-	static const uint32_t divisor[RS::PRIMITIVE_MAX] = { 1, 2, 1, 3, 1 };
-	static const uint32_t subtractor[RS::PRIMITIVE_MAX] = { 0, 0, 1, 0, 2 };
+_FORCE_INLINE_ static uint32_t _indices_to_primitives(RSE::PrimitiveType p_primitive, uint32_t p_indices) {
+	static const uint32_t divisor[RSE::PRIMITIVE_MAX] = { 1, 2, 1, 3, 1 };
+	static const uint32_t subtractor[RSE::PRIMITIVE_MAX] = { 0, 0, 1, 0, 2 };
 	return (p_indices - subtractor[p_primitive]) / divisor[p_primitive];
 }
 
@@ -492,7 +492,7 @@ RID RendererCanvasRenderRD::_get_pipeline_specialization_or_ubershader(CanvasSha
 		}
 
 		bool wait_for_compilation = r_pipeline_key.ubershader || ubershader_iterations == 1;
-		RS::PipelineSource source = RS::PIPELINE_SOURCE_CANVAS;
+		RSE::PipelineSource source = RSE::PIPELINE_SOURCE_CANVAS;
 		RID pipeline = p_shader_data->pipeline_hash_map.get_pipeline(r_pipeline_key, r_pipeline_key.hash(), wait_for_compilation, source);
 		if (pipeline.is_valid()) {
 			return pipeline;
@@ -505,7 +505,7 @@ RID RendererCanvasRenderRD::_get_pipeline_specialization_or_ubershader(CanvasSha
 	return RID();
 }
 
-void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info) {
+void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RSE::CanvasItemTextureFilter p_default_filter, RSE::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingServerTypes::RenderInfo *r_render_info) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
@@ -819,10 +819,10 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				_render_batch_items(to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, false, r_render_info);
 				item_count = 0;
 
-				if (ci->canvas_group_owner->canvas_group->mode != RS::CANVAS_GROUP_MODE_TRANSPARENT) {
+				if (ci->canvas_group_owner->canvas_group->mode != RSE::CANVAS_GROUP_MODE_TRANSPARENT) {
 					Rect2i group_rect = ci->canvas_group_owner->global_rect_cache;
 					texture_storage->render_target_copy_to_back_buffer(p_to_render_target, group_rect, false);
-					if (ci->canvas_group_owner->canvas_group->mode == RS::CANVAS_GROUP_MODE_CLIP_AND_DRAW) {
+					if (ci->canvas_group_owner->canvas_group->mode == RSE::CANVAS_GROUP_MODE_CLIP_AND_DRAW) {
 						ci->canvas_group_owner->use_canvas_group = false;
 						items[item_count++] = ci->canvas_group_owner;
 					}
@@ -838,7 +838,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			ci->canvas_group_owner = nullptr; //must be cleared
 		}
 
-		if (canvas_group_owner == nullptr && ci->canvas_group != nullptr && ci->canvas_group->mode != RS::CANVAS_GROUP_MODE_CLIP_AND_DRAW) {
+		if (canvas_group_owner == nullptr && ci->canvas_group != nullptr && ci->canvas_group->mode != RSE::CANVAS_GROUP_MODE_CLIP_AND_DRAW) {
 			skip_item = true;
 		}
 
@@ -1278,7 +1278,7 @@ RID RendererCanvasRenderRD::occluder_polygon_create() {
 	occluder.line_point_count = 0;
 	occluder.sdf_point_count = 0;
 	occluder.sdf_index_count = 0;
-	occluder.cull_mode = RS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED;
+	occluder.cull_mode = RSE::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED;
 	return occluder_polygon_owner.make_rid(occluder);
 }
 
@@ -1474,7 +1474,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 	}
 }
 
-void RendererCanvasRenderRD::occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) {
+void RendererCanvasRenderRD::occluder_polygon_set_cull_mode(RID p_occluder, RSE::CanvasOccluderPolygonCullMode p_mode) {
 	OccluderPolygon *oc = occluder_polygon_owner.get_or_null(p_occluder);
 	ERR_FAIL_NULL(oc);
 	oc->cull_mode = p_mode;
@@ -1578,7 +1578,7 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
 	MutexLock lock(canvas_singleton->shader.mutex);
 
-	Error err = canvas_singleton->shader.compiler.compile(RS::SHADER_CANVAS_ITEM, code, &actions, path, gen_code);
+	Error err = canvas_singleton->shader.compiler.compile(RSE::SHADER_CANVAS_ITEM, code, &actions, path, gen_code);
 	if (err != OK) {
 		if (version.is_valid()) {
 			canvas_singleton->shader.canvas_shader.version_free(version);
@@ -1628,7 +1628,7 @@ bool RendererCanvasRenderRD::CanvasShaderData::casts_shadows() const {
 	return false;
 }
 
-RS::ShaderNativeSourceCode RendererCanvasRenderRD::CanvasShaderData::get_native_source_code() const {
+RenderingServerTypes::ShaderNativeSourceCode RendererCanvasRenderRD::CanvasShaderData::get_native_source_code() const {
 	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
 	MutexLock lock(canvas_singleton->shader.mutex);
 	return canvas_singleton->shader.canvas_shader.version_get_native_source_code(version);
@@ -1730,8 +1730,8 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 
 	{ //create default samplers
 
-		default_samplers.default_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
-		default_samplers.default_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+		default_samplers.default_filter = RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+		default_samplers.default_repeat = RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 	}
 
 	// preallocate slots for uniform set 3
@@ -2176,13 +2176,13 @@ void RendererCanvasRenderRD::set_debug_redraw(bool p_enabled, double p_time, con
 	debug_redraw_color = p_color;
 }
 
-uint32_t RendererCanvasRenderRD::get_pipeline_compilations(RS::PipelineSource p_source) {
+uint32_t RendererCanvasRenderRD::get_pipeline_compilations(RSE::PipelineSource p_source) {
 	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
 	MutexLock lock(canvas_singleton->shader.mutex);
 	return shader.pipeline_compilations[p_source];
 }
 
-void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer, RenderingMethod::RenderInfo *r_render_info) {
+void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer, RenderingServerTypes::RenderInfo *r_render_info) {
 	// Record batches
 	{
 		RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
@@ -2205,11 +2205,11 @@ void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target
 			RID material = ci->material_owner == nullptr ? ci->material : ci->material_owner->material;
 
 			if (ci->use_canvas_group) {
-				if (ci->canvas_group->mode == RS::CANVAS_GROUP_MODE_CLIP_AND_DRAW) {
+				if (ci->canvas_group->mode == RSE::CANVAS_GROUP_MODE_CLIP_AND_DRAW) {
 					material = default_clip_children_material;
 				} else {
 					if (material.is_null()) {
-						if (ci->canvas_group->mode == RS::CANVAS_GROUP_MODE_CLIP_ONLY) {
+						if (ci->canvas_group->mode == RSE::CANVAS_GROUP_MODE_CLIP_ONLY) {
 							material = default_clip_children_material;
 						} else {
 							material = default_canvas_group_material;
@@ -2340,8 +2340,8 @@ void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target
 }
 
 void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTarget p_render_target, const Transform2D &p_base_transform, Item *&r_current_clip, Light *p_lights, bool &r_batch_broken, bool &r_sdf_used, Batch *&r_current_batch) {
-	const RenderingServer::CanvasItemTextureFilter texture_filter = p_item->texture_filter == RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT ? default_filter : p_item->texture_filter;
-	const RenderingServer::CanvasItemTextureRepeat texture_repeat = p_item->texture_repeat == RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT ? default_repeat : p_item->texture_repeat;
+	const RSE::CanvasItemTextureFilter texture_filter = p_item->texture_filter == RSE::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT ? default_filter : p_item->texture_filter;
+	const RSE::CanvasItemTextureRepeat texture_repeat = p_item->texture_repeat == RSE::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT ? default_repeat : p_item->texture_repeat;
 
 	Transform2D base_transform = p_base_transform;
 
@@ -2417,9 +2417,9 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 					r_current_batch->flags = 0;
 				}
 
-				RenderingServer::CanvasItemTextureRepeat rect_repeat = texture_repeat;
+				RSE::CanvasItemTextureRepeat rect_repeat = texture_repeat;
 				if (bool(rect->flags & CANVAS_RECT_TILE)) {
-					rect_repeat = RenderingServer::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED;
+					rect_repeat = RSE::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED;
 				}
 
 				Color modulated = rect->modulate * base_color;
@@ -2635,8 +2635,8 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 
 				// pipeline variant
 				{
-					ERR_CONTINUE(polygon->primitive < 0 || polygon->primitive >= RS::PRIMITIVE_MAX);
-					r_current_batch->shader_variant = polygon->primitive == RS::PRIMITIVE_POINTS ? SHADER_VARIANT_ATTRIBUTES_POINTS : SHADER_VARIANT_ATTRIBUTES;
+					ERR_CONTINUE(polygon->primitive < 0 || polygon->primitive >= RSE::PRIMITIVE_MAX);
+					r_current_batch->shader_variant = polygon->primitive == RSE::PRIMITIVE_POINTS ? SHADER_VARIANT_ATTRIBUTES_POINTS : SHADER_VARIANT_ATTRIBUTES;
 					r_current_batch->render_primitive = _primitive_type_to_render_primitive(polygon->primitive);
 				}
 
@@ -2772,7 +2772,7 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 					const Item::CommandMultiMesh *mm = static_cast<const Item::CommandMultiMesh *>(c);
 					RID multimesh = mm->multimesh;
 
-					if (mesh_storage->multimesh_get_transform_format(multimesh) != RS::MULTIMESH_TRANSFORM_2D) {
+					if (mesh_storage->multimesh_get_transform_format(multimesh) != RSE::MULTIMESH_TRANSFORM_2D) {
 						break;
 					}
 
@@ -3003,7 +3003,7 @@ void RendererCanvasRenderRD::_canvas_texture_invalidation_callback(bool p_delete
 	}
 }
 
-void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasShaderData *p_shader_data, RenderingDevice::FramebufferFormatID p_framebuffer_format, Light *p_lights, Batch const *p_batch, RenderingMethod::RenderInfo *r_render_info) {
+void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasShaderData *p_shader_data, RenderingDevice::FramebufferFormatID p_framebuffer_format, Light *p_lights, Batch const *p_batch, RenderingServerTypes::RenderInfo *r_render_info) {
 	{
 		RendererRD::TextureStorage *ts = RendererRD::TextureStorage::get_singleton();
 
@@ -3074,9 +3074,9 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 			RD::get_singleton()->draw_list_draw(p_draw_list, true, p_batch->instance_count);
 
 			if (r_render_info) {
-				r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] += p_batch->instance_count;
-				r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += 2 * p_batch->instance_count;
-				r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME]++;
+				r_render_info->info[RSE::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RSE::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] += p_batch->instance_count;
+				r_render_info->info[RSE::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RSE::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += 2 * p_batch->instance_count;
+				r_render_info->info[RSE::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RSE::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME]++;
 			}
 		} break;
 
@@ -3101,9 +3101,9 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 
 			RD::get_singleton()->draw_list_draw(p_draw_list, pb->indices.is_valid());
 			if (r_render_info) {
-				r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME]++;
-				r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += _indices_to_primitives(polygon->primitive, pb->primitive_count);
-				r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME]++;
+				r_render_info->info[RSE::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RSE::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME]++;
+				r_render_info->info[RSE::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RSE::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += _indices_to_primitives(polygon->primitive, pb->primitive_count);
+				r_render_info->info[RSE::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RSE::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME]++;
 			}
 		} break;
 
@@ -3126,10 +3126,10 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 			RD::get_singleton()->draw_list_draw(p_draw_list, true, instance_count);
 
 			if (r_render_info) {
-				const RenderingServer::PrimitiveType rs_primitive[5] = { RS::PRIMITIVE_POINTS, RS::PRIMITIVE_POINTS, RS::PRIMITIVE_LINES, RS::PRIMITIVE_TRIANGLES, RS::PRIMITIVE_TRIANGLES };
-				r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] += instance_count;
-				r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += _indices_to_primitives(rs_primitive[p_batch->primitive_points], p_batch->primitive_points) * instance_count;
-				r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME]++;
+				const RSE::PrimitiveType rs_primitive[5] = { RSE::PRIMITIVE_POINTS, RSE::PRIMITIVE_POINTS, RSE::PRIMITIVE_LINES, RSE::PRIMITIVE_TRIANGLES, RSE::PRIMITIVE_TRIANGLES };
+				r_render_info->info[RSE::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RSE::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] += instance_count;
+				r_render_info->info[RSE::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RSE::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += _indices_to_primitives(rs_primitive[p_batch->primitive_points], p_batch->primitive_points) * instance_count;
+				r_render_info->info[RSE::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RSE::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME]++;
 			}
 		} break;
 
@@ -3162,7 +3162,7 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 				RID particles = pt->particles;
 				mesh = particles_storage->particles_get_draw_pass_mesh(particles, 0);
 
-				ERR_BREAK(particles_storage->particles_get_mode(particles) != RS::PARTICLES_MODE_2D);
+				ERR_BREAK(particles_storage->particles_get_mode(particles) != RSE::PARTICLES_MODE_2D);
 				particles_storage->particles_request_process(particles);
 
 				if (particles_storage->particles_is_inactive(particles)) {
@@ -3189,11 +3189,11 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 			for (uint32_t j = 0; j < surf_count; j++) {
 				void *surface = mesh_storage->mesh_get_surface(mesh, j);
 
-				RS::PrimitiveType primitive = mesh_storage->mesh_surface_get_primitive(surface);
-				ERR_CONTINUE(primitive < 0 || primitive >= RS::PRIMITIVE_MAX);
+				RSE::PrimitiveType primitive = mesh_storage->mesh_surface_get_primitive(surface);
+				ERR_CONTINUE(primitive < 0 || primitive >= RSE::PRIMITIVE_MAX);
 
 				RID vertex_array;
-				pipeline_key.variant = primitive == RS::PRIMITIVE_POINTS ? SHADER_VARIANT_ATTRIBUTES_POINTS : SHADER_VARIANT_ATTRIBUTES;
+				pipeline_key.variant = primitive == RSE::PRIMITIVE_POINTS ? SHADER_VARIANT_ATTRIBUTES_POINTS : SHADER_VARIANT_ATTRIBUTES;
 				pipeline_key.render_primitive = _primitive_type_to_render_primitive(primitive);
 				pipeline_key.vertex_format_id = RD::INVALID_FORMAT_ID;
 
@@ -3212,9 +3212,9 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 				RD::get_singleton()->draw_list_draw(p_draw_list, index_array.is_valid(), p_batch->mesh_instance_count);
 
 				if (r_render_info) {
-					r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME]++;
-					r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += _indices_to_primitives(primitive, mesh_storage->mesh_surface_get_vertices_drawn_count(surface)) * p_batch->mesh_instance_count;
-					r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME]++;
+					r_render_info->info[RSE::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RSE::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME]++;
+					r_render_info->info[RSE::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RSE::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += _indices_to_primitives(primitive, mesh_storage->mesh_surface_get_vertices_drawn_count(surface)) * p_batch->mesh_instance_count;
+					r_render_info->info[RSE::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RSE::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME]++;
 				}
 			}
 		} break;

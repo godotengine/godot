@@ -74,14 +74,18 @@ void CompositorEffect::_bind_methods() {
 }
 
 void CompositorEffect::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "access_resolved_color" && effect_callback_type == EFFECT_CALLBACK_TYPE_POST_TRANSPARENT) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	if (p_property.name == "access_resolved_depth" && effect_callback_type == EFFECT_CALLBACK_TYPE_POST_TRANSPARENT) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	if (p_property.name == "needs_separate_specular" && effect_callback_type != EFFECT_CALLBACK_TYPE_POST_SKY) {
-		p_property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "access_resolved_color") {
+		if (effect_callback_type == EFFECT_CALLBACK_TYPE_POST_TRANSPARENT) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "access_resolved_depth") {
+		if (effect_callback_type == EFFECT_CALLBACK_TYPE_POST_TRANSPARENT) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "needs_separate_specular") {
+		if (effect_callback_type != EFFECT_CALLBACK_TYPE_POST_SKY) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
 	}
 }
 
@@ -109,7 +113,7 @@ void CompositorEffect::set_effect_callback_type(EffectCallbackType p_callback_ty
 	if (rid.is_valid()) {
 		RenderingServer *rs = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rs);
-		rs->compositor_effect_set_callback(rid, RenderingServer::CompositorEffectCallbackType(effect_callback_type), callable_mp(this, &CompositorEffect::_call_render_callback));
+		rs->compositor_effect_set_callback(rid, RSE::CompositorEffectCallbackType(effect_callback_type), callable_mp(this, &CompositorEffect::_call_render_callback));
 	}
 }
 
@@ -122,7 +126,7 @@ void CompositorEffect::set_access_resolved_color(bool p_enabled) {
 	if (rid.is_valid()) {
 		RenderingServer *rs = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rs);
-		rs->compositor_effect_set_flag(rid, RS::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_COLOR, access_resolved_color);
+		rs->compositor_effect_set_flag(rid, RSE::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_COLOR, access_resolved_color);
 	}
 }
 
@@ -135,7 +139,7 @@ void CompositorEffect::set_access_resolved_depth(bool p_enabled) {
 	if (rid.is_valid()) {
 		RenderingServer *rs = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rs);
-		rs->compositor_effect_set_flag(rid, RS::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH, access_resolved_depth);
+		rs->compositor_effect_set_flag(rid, RSE::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH, access_resolved_depth);
 	}
 }
 
@@ -148,7 +152,7 @@ void CompositorEffect::set_needs_motion_vectors(bool p_enabled) {
 	if (rid.is_valid()) {
 		RenderingServer *rs = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rs);
-		rs->compositor_effect_set_flag(rid, RS::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS, needs_motion_vectors);
+		rs->compositor_effect_set_flag(rid, RSE::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS, needs_motion_vectors);
 	}
 }
 
@@ -161,7 +165,7 @@ void CompositorEffect::set_needs_normal_roughness(bool p_enabled) {
 	if (rid.is_valid()) {
 		RenderingServer *rs = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rs);
-		rs->compositor_effect_set_flag(rid, RS::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_NEEDS_ROUGHNESS, needs_normal_roughness);
+		rs->compositor_effect_set_flag(rid, RSE::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_NEEDS_ROUGHNESS, needs_normal_roughness);
 	}
 }
 
@@ -174,7 +178,7 @@ void CompositorEffect::set_needs_separate_specular(bool p_enabled) {
 	if (rid.is_valid()) {
 		RenderingServer *rs = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rs);
-		rs->compositor_effect_set_flag(rid, RS::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_NEEDS_SEPARATE_SPECULAR, needs_separate_specular);
+		rs->compositor_effect_set_flag(rid, RSE::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_NEEDS_SEPARATE_SPECULAR, needs_separate_specular);
 	}
 }
 
@@ -186,7 +190,7 @@ CompositorEffect::CompositorEffect() {
 	RenderingServer *rs = RenderingServer::get_singleton();
 	if (rs != nullptr) {
 		rid = rs->compositor_effect_create();
-		rs->compositor_effect_set_callback(rid, RenderingServer::CompositorEffectCallbackType(effect_callback_type), callable_mp(this, &CompositorEffect::_call_render_callback));
+		rs->compositor_effect_set_callback(rid, RSE::CompositorEffectCallbackType(effect_callback_type), callable_mp(this, &CompositorEffect::_call_render_callback));
 	}
 }
 

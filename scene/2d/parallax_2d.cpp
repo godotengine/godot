@@ -31,6 +31,7 @@
 #include "parallax_2d.h"
 
 #include "scene/main/viewport.h"
+#include "servers/rendering/rendering_server.h"
 
 void Parallax2D::_notification(int p_what) {
 	switch (p_what) {

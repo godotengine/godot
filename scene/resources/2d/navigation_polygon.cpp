@@ -625,14 +625,13 @@ void NavigationPolygon::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "parsed_collision_mask") {
 		if (parsed_geometry_type == PARSED_GEOMETRY_MESH_INSTANCES) {
 			p_property.usage = PROPERTY_USAGE_NONE;
-			return;
 		}
+		return;
 	}
 
 	if (p_property.name == "parsed_source_group_name") {
 		if (source_geometry_mode == SOURCE_GEOMETRY_ROOT_NODE_CHILDREN) {
 			p_property.usage = PROPERTY_USAGE_NONE;
-			return;
 		}
 	}
 }

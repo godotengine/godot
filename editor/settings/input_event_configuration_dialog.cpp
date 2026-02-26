@@ -762,7 +762,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	location_container = memnew(HBoxContainer);
 	location_container->hide();
 
-	location_container->add_child(memnew(Label(TTRC("Physical location"))));
+	location_container->add_child(memnew(Label(TTRC("Physical Location"))));
 
 	key_location = memnew(OptionButton);
 	key_location->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -772,7 +772,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	key_location->add_item(String(), (int)KeyLocation::LEFT);
 	key_location->add_item(String(), (int)KeyLocation::RIGHT);
 	key_location->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_key_location_selected));
-	key_location->set_accessibility_name(TTRC("Physical location"));
+	key_location->set_accessibility_name(TTRC("Physical Location"));
 
 	location_container->add_child(key_location);
 	additional_options_container->add_child(location_container);

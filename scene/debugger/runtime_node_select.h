@@ -35,15 +35,15 @@
 #include "core/object/object.h"
 #include "scene/gui/view_panner.h"
 
-#ifndef _3D_DISABLED
-#include "scene/resources/mesh.h"
-#endif // _3D_DISABLED
-
 class InputEvent;
 class InputEventMouseMotion;
 class InputEventWithModifiers;
 class Node;
 class PopupMenu;
+
+#ifndef _3D_DISABLED
+class ArrayMesh;
+#endif
 
 class RuntimeNodeSelect : public Object {
 	GDCLASS(RuntimeNodeSelect, Object);
@@ -171,14 +171,7 @@ private:
 		Transform3D transform;
 		AABB bounds;
 
-		~SelectionBox3D() {
-			if (instance.is_valid()) {
-				RS::get_singleton()->free_rid(instance);
-				RS::get_singleton()->free_rid(instance_ofs);
-				RS::get_singleton()->free_rid(instance_xray);
-				RS::get_singleton()->free_rid(instance_xray_ofs);
-			}
-		}
+		~SelectionBox3D();
 	};
 	HashMap<ObjectID, Ref<SelectionBox3D>> selected_3d_nodes;
 
