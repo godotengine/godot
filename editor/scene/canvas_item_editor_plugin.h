@@ -747,8 +747,6 @@ protected:
 	void _notification(int p_what);
 
 public:
-	static constexpr int32_t GIZMO_EDIT_LAYER = 26;
-
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 

@@ -299,8 +299,7 @@ void EditorCanvasItemGizmo::Instance::create_instance(CanvasItem *p_base, bool p
 
 	instance = RS::get_singleton()->canvas_item_create();
 	RS::get_singleton()->canvas_item_set_parent(instance, p_base->get_canvas_item());
-	int layer = p_visible ? (1 << CanvasItemEditorViewport::GIZMO_EDIT_LAYER) : 0;
-	RS::get_singleton()->canvas_item_set_visibility_layer(instance, layer);
+	RS::get_singleton()->canvas_item_set_visible(instance, p_visible);
 }
 
 void EditorCanvasItemGizmo::add_circle(const Vector2 &p_pos, float p_radius, const Color &p_color) {
@@ -419,7 +418,6 @@ void EditorCanvasItemGizmo::add_handles(const Vector<Vector2> &p_handles, Ref<Te
 			modulate.a = 0.8;
 		}
 
-		// TODO: GIZMOS - the handles currently draw over the rulers when panning, we probably don't want this.
 		RS::get_singleton()->canvas_item_add_texture_rect(ins.instance, Rect2(position - texture_size / 2, texture_size), texture->get_rid(), false, modulate);
 	}
 
@@ -605,9 +603,8 @@ void EditorCanvasItemGizmo::free() {
 
 void EditorCanvasItemGizmo::set_visible(bool p_visible) {
 	visible = p_visible;
-	int layer = p_visible ? (1 << CanvasItemEditorViewport::GIZMO_EDIT_LAYER) : 0;
 	for (const Instance &instance : instances) {
-		RS::get_singleton()->canvas_item_set_visibility_layer(instance.instance, layer);
+		RS::get_singleton()->canvas_item_set_visible(instance.instance, p_visible);
 	}
 }
 
