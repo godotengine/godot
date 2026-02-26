@@ -47,6 +47,7 @@ protected:
 
 	Color debug_color;
 	bool debug_fill = true;
+	bool used_default_debug_color = true;
 
 	Color _get_default_debug_color() const;
 

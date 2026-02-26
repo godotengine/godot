@@ -203,7 +203,7 @@ void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {
 			set_debug_color(shape->get_debug_color());
 			set_debug_fill_enabled(shape->get_debug_fill());
 		} else {
-			shape->set_debug_color(debug_color);
+			shape->set_debug_color(get_debug_color());
 			shape->set_debug_fill(debug_fill);
 		}
 #endif // DEBUG_ENABLED
@@ -255,13 +255,17 @@ void CollisionShape3D::set_debug_color(const Color &p_color) {
 	}
 
 	debug_color = p_color;
+	used_default_debug_color = debug_color == _get_default_debug_color();
 
 	if (shape.is_valid()) {
-		shape->set_debug_color(p_color);
+		shape->set_debug_color(get_debug_color());
 	}
 }
 
 Color CollisionShape3D::get_debug_color() const {
+	if (used_default_debug_color) {
+		return _get_default_debug_color();
+	}
 	return debug_color;
 }
 
@@ -300,7 +304,7 @@ bool CollisionShape3D::_property_get_revert(const StringName &p_name, Variant &r
 
 void CollisionShape3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "debug_color") {
-		if (debug_color == _get_default_debug_color()) {
+		if (used_default_debug_color) {
 			p_property.usage = PROPERTY_USAGE_DEFAULT & ~PROPERTY_USAGE_STORAGE;
 		} else {
 			p_property.usage = PROPERTY_USAGE_DEFAULT;
