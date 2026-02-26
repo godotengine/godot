@@ -186,6 +186,7 @@
 #include "scene/2d/marker_2d.h"
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
+#include "scene/2d/nine_patch_sprite.h"
 #include "scene/2d/parallax_2d.h"
 #include "scene/2d/path_2d.h"
 #include "scene/2d/polygon_2d.h"
@@ -907,6 +908,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(GPUParticles2D);
 	GDREGISTER_CLASS(Sprite2D);
 	GDREGISTER_CLASS(SpriteFrames);
+	GDREGISTER_CLASS(NinePatchSprite);
 	GDREGISTER_CLASS(AnimatedSprite2D);
 	GDREGISTER_CLASS(Marker2D);
 	GDREGISTER_CLASS(Line2D);
