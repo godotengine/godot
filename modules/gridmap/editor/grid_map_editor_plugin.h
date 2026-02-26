@@ -255,6 +255,7 @@ class GridMapEditor : public EditorDock {
 	void _delete_selection();
 	void _delete_selection_with_undo();
 	void _fill_selection();
+	void _clear_selection_with_undo();
 	void _setup_paste_mode();
 
 	bool do_input_action(Camera3D *p_camera, const Point2 &p_point, bool p_click);
