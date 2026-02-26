@@ -101,20 +101,29 @@ void JoypadSDL::process_events() {
 
 				SDL_Joystick *sdl_joy = SDL_GetJoystickFromID(joypads[i].sdl_instance_idx);
 				Vector2 strength = input->get_joy_vibration_strength(i);
+				// Invalid values for strength are filtered by Input::start_joy_vibration().
+
+				float duration = input->get_joy_vibration_duration(i);
+				Uint32 duration_ms = 0;
+				if (duration < 0.0f) {
+					continue; // Invalid duration.
+				} else if (duration == 0.0f) {
+					duration_ms = 0xFFFF; // SDL_MAX_RUMBLE_DURATION_MS
+				} else {
+					duration_ms = duration * 1000;
+				}
 
 				/*
 					If the vibration was requested to start, SDL_RumbleJoystick will start it.
 					If the vibration was requested to stop, strength and duration will be 0, so SDL will stop the rumble.
+
 					Here strength.y goes first and then strength.x, because Input.get_joy_vibration_strength().x
 					is vibration's weak magnitude (high frequency rumble), and .y is strong magnitude (low frequency rumble),
 					SDL_RumbleJoystick takes low frequency rumble first and then high frequency rumble.
+
+					Rumble strength goes from 0 to 0xFFFF.
 				*/
-				SDL_RumbleJoystick(
-						sdl_joy,
-						// Rumble strength goes from 0 to 0xFFFF
-						strength.y * UINT16_MAX,
-						strength.x * UINT16_MAX,
-						input->get_joy_vibration_duration(i) * 1000);
+				SDL_RumbleJoystick(sdl_joy, strength.y * UINT16_MAX, strength.x * UINT16_MAX, duration_ms);
 			}
 		}
 	}
@@ -129,11 +138,12 @@ void JoypadSDL::process_events() {
 				print_error("A new joypad was attached but couldn't allocate a new id for it because joypad limit was reached.");
 			} else {
 				SDL_Joystick *joy = nullptr;
+				SDL_Gamepad *gamepad = nullptr;
 				String device_name;
 
 				// Gamepads must be opened with SDL_OpenGamepad to get their special remapped events
 				if (SDL_IsGamepad(sdl_event.jdevice.which)) {
-					SDL_Gamepad *gamepad = SDL_OpenGamepad(sdl_event.jdevice.which);
+					gamepad = SDL_OpenGamepad(sdl_event.jdevice.which);
 
 					ERR_CONTINUE_MSG(!gamepad,
 							vformat("Error opening gamepad at index %d: %s", sdl_event.jdevice.which, SDL_GetError()));
