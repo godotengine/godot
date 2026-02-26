@@ -156,6 +156,8 @@ protected:
 
 	Button *add_control_to_bottom_panel(Control *p_control, const String &p_title, const Ref<Shortcut> &p_shortcut = nullptr);
 	void remove_control_from_bottom_panel(Control *p_control);
+
+	void make_bottom_panel_item_visible(Control *p_item);
 #endif
 
 public:
@@ -227,7 +229,6 @@ public:
 
 	void queue_save_layout();
 
-	void make_bottom_panel_item_visible(Control *p_item);
 	void hide_bottom_panel();
 
 	void add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
