@@ -751,6 +751,141 @@ void EditorExportPlatform::_edit_filter_list(HashSet<String> &r_list, const Stri
 	_edit_files_with_filter(da, filters, r_list, exclude);
 }
 
+const Vector<uint8_t> EditorExportPlatform::_get_key(const Ref<EditorExportPreset> &p_preset) const {
+	Vector<uint8_t> key;
+	key.resize_initialized(32);
+
+	String script_key = _get_script_encryption_key(p_preset);
+	if (script_key.length() == 64) {
+		for (int i = 0; i < 32; i++) {
+			int v = 0;
+			if (i * 2 < script_key.length()) {
+				char32_t ct = script_key[i * 2];
+				if (is_digit(ct)) {
+					ct = ct - '0';
+				} else if (ct >= 'a' && ct <= 'f') {
+					ct = 10 + ct - 'a';
+				}
+				v |= ct << 4;
+			}
+
+			if (i * 2 + 1 < script_key.length()) {
+				char32_t ct = script_key[i * 2 + 1];
+				if (is_digit(ct)) {
+					ct = ct - '0';
+				} else if (ct >= 'a' && ct <= 'f') {
+					ct = 10 + ct - 'a';
+				}
+				v |= ct;
+			}
+			key.write[i] = v;
+		}
+	}
+	return key;
+}
+
+Error EditorExportPlatform::find_and_replace_key_file(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
+	if (!p_preset->get_enc_pck()) {
+		return OK;
+	}
+
+	Error err = OK;
+	Ref<FileAccess> template_file = FileAccess::open(p_path, FileAccess::READ_WRITE, &err);
+	if (err == OK) {
+		if (_find_and_replace(template_file, key_template, _get_key(p_preset), 0) == 0) {
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("Unable to find ecryption key in the file \"%s\"."), p_path));
+		}
+	}
+	return err;
+}
+
+Error EditorExportPlatform::find_and_replace_key_data(const Ref<EditorExportPreset> &p_preset, PackedByteArray &r_data, const String &p_name) {
+	if (!p_preset->get_enc_pck()) {
+		return OK;
+	}
+
+	PackedByteArray key = _get_key(p_preset);
+	ERR_FAIL_COND_V(key.size() != key_template.size(), ERR_CANT_CREATE);
+
+	int find_count = 0;
+
+	const uint8_t *pat_ptr = key_template.ptr();
+	const int pat_size = key_template.size();
+
+	uint8_t *data_ptr = r_data.ptrw();
+	const int data_size = r_data.size();
+	int data_pos = 0;
+	while (data_pos < data_size - pat_size) {
+		bool found = true;
+		for (int i = 0; i < pat_size; i++) {
+			if (data_ptr[data_pos + i] != pat_ptr[i]) {
+				found = false;
+				break;
+			}
+		}
+		if (found) {
+			for (int i = 0; i < pat_size; i++) {
+				data_ptr[data_pos + i] = key[i];
+			}
+			find_count++;
+
+			data_pos += pat_size;
+		}
+		data_pos++;
+	}
+	if (find_count == 0) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("Unable to find ecryption key in the file \"%s\"."), p_name));
+	}
+	return OK;
+}
+
+int EditorExportPlatform::_find_and_replace(const Ref<FileAccess> &p_file, const PackedByteArray &p_old, const PackedByteArray &p_new, uint64_t p_start) const {
+	ERR_FAIL_COND_V(p_file.is_null(), 0);
+	ERR_FAIL_COND_V(p_old.is_empty(), 0);
+	ERR_FAIL_COND_V(p_old.size() != p_new.size(), 0);
+
+	int find_count = 0;
+
+	const uint8_t *pat_ptr = p_old.ptr();
+	const int pat_size = p_old.size();
+
+	uint64_t old_pos = p_file->get_position();
+	p_file->seek(p_start);
+	while (!p_file->eof_reached()) {
+		uint64_t segment_start = p_file->get_position();
+		PackedByteArray data = p_file->get_buffer(10 * 1024 * 1024);
+		const uint8_t *data_ptr = data.ptr();
+		uint64_t segment_end = p_file->get_position();
+		if (!p_file->eof_reached()) {
+			segment_end -= p_old.size();
+		}
+
+		const int data_size = data.size();
+		int data_pos = 0;
+		while (data_pos < data_size - pat_size) {
+			bool found = true;
+			for (int i = 0; i < pat_size; i++) {
+				if (data_ptr[data_pos + i] != pat_ptr[i]) {
+					found = false;
+					break;
+				}
+			}
+			if (found) {
+				p_file->seek(segment_start + data_pos);
+				p_file->store_buffer(p_new);
+				p_file->seek(segment_end);
+				find_count++;
+
+				data_pos += pat_size;
+			}
+			data_pos++;
+		}
+	}
+
+	p_file->seek(old_pos);
+	return find_count;
+}
+
 HashSet<String> EditorExportPlatform::get_features(const Ref<EditorExportPreset> &p_preset, bool p_debug) const {
 	Ref<EditorExportPlatform> platform = p_preset->get_platform();
 	List<String> feature_list;
@@ -2693,6 +2828,8 @@ void EditorExportPlatform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save_zip", "preset", "debug", "path"), &EditorExportPlatform::_save_zip);
 	ClassDB::bind_method(D_METHOD("save_pack_patch", "preset", "debug", "path"), &EditorExportPlatform::_save_pack_patch);
 	ClassDB::bind_method(D_METHOD("save_zip_patch", "preset", "debug", "path"), &EditorExportPlatform::_save_zip_patch);
+
+	ClassDB::bind_method(D_METHOD("find_and_replace_key", "preset", "path"), &EditorExportPlatform::find_and_replace_key_file);
 
 	ClassDB::bind_method(D_METHOD("gen_export_flags", "flags"), &EditorExportPlatform::gen_export_flags);
 

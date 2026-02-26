@@ -191,6 +191,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	LineEdit *enc_in_filters = nullptr;
 	LineEdit *enc_ex_filters = nullptr;
 	LineEdit *seed_input = nullptr;
+	Button *pck_key_gen = nullptr;
 
 	OptionButton *script_mode = nullptr;
 
@@ -218,6 +219,8 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _script_encryption_key_changed(const String &p_key);
 	void _script_encryption_key_visibility_changed(bool p_visible);
 	bool _validate_script_encryption_key(const String &p_key);
+
+	void _script_key_gen();
 
 	void _script_export_mode_changed(EditorExportPreset::ScriptExportMode p_mode);
 

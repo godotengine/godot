@@ -2039,6 +2039,9 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 					err = ERR_CANT_CREATE;
 				}
 			}
+			if (err == OK && file == "Contents/MacOS/" + pkg_name) {
+				find_and_replace_key_file(p_preset, file);
+			}
 		}
 
 		ret = unzGoToNextFile(src_pkg_zip);

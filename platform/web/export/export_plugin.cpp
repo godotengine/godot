@@ -45,7 +45,7 @@
 #include "modules/modules_enabled.gen.h" // For mono.
 #include "modules/svg/image_loader_svg.h"
 
-Error EditorExportPlatformWeb::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
+Error EditorExportPlatformWeb::_extract_template(const Ref<EditorExportPreset> &p_preset, const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
 	Ref<FileAccess> io_fa;
 	zlib_filefunc_def io = zipio_create_io(&io_fa);
 	unzFile pkg = unzOpen2(p_template.utf8().get_data(), &io);
@@ -85,6 +85,10 @@ Error EditorExportPlatformWeb::_extract_template(const String &p_template, const
 		unzOpenCurrentFile(pkg);
 		unzReadCurrentFile(pkg, data.ptrw(), data.size());
 		unzCloseCurrentFile(pkg);
+
+		if (file.contains("godot") && file.ends_with(".wasm")) {
+			find_and_replace_key_data(p_preset, data, file);
+		}
 
 		//write
 		String dst = p_dir.path_join(file.replace("godot", p_name));
@@ -538,7 +542,7 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	}
 
 	// Extract templates.
-	error = _extract_template(template_path, base_dir, base_name, pwa);
+	error = _extract_template(p_preset, template_path, base_dir, base_name, pwa);
 	if (error) {
 		// Message is supplied by the subroutine method.
 		return error;
