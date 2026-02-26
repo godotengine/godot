@@ -1148,7 +1148,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_rect(Vector2
 				for (int y = 0; y <= rect.size.y / pattern->get_size().y; y++) {
 					Vector2i pattern_coords = rect.position + Vector2i(x, y) * pattern->get_size() + offset;
 					for (int j = 0; j < used_cells.size(); j++) {
-						Vector2i coords = pattern_coords + used_cells[j];
+						Vector2i coords = pattern_coords + static_cast<Vector2i>(used_cells[j]);
 						if (rect.has_point(coords)) {
 							_add_to_output_if_tile_changed(output, edited_layer, coords, TileMapCell(pattern->get_cell_source_id(used_cells[j]), pattern->get_cell_atlas_coords(used_cells[j]), pattern->get_cell_alternative_tile(used_cells[j])));
 						}

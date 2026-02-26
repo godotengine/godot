@@ -546,6 +546,12 @@
 				[/codeblock]
 			</description>
 		</operator>
+		<operator name="operator +">
+			<return type="Vector3" />
+			<param index="0" name="right" type="float" />
+			<description>
+			</description>
+		</operator>
 		<operator name="operator -">
 			<return type="Vector3" />
 			<param index="0" name="right" type="Vector3" />
@@ -554,6 +560,12 @@
 				[codeblock]
 				print(Vector3(10, 20, 30) - Vector3(3, 4, 5)) # Prints (7.0, 16.0, 25.0)
 				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator -">
+			<return type="Vector3" />
+			<param index="0" name="right" type="float" />
+			<description>
 			</description>
 		</operator>
 		<operator name="operator /">

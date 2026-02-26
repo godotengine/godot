@@ -262,6 +262,27 @@ TEST_CASE("[Vector2] Operators") {
 			"Vector2 division with integers should give exact results.");
 
 	CHECK_MESSAGE(
+			(Vector2(1.5f, 2.25f) + 1.5f) == Vector2(3.0f, 3.75f),
+			"Vector2 + float should give expected results.");
+	CHECK_MESSAGE(
+			(Vector2(1.5f, 2.25f) - 1.5f) == Vector2(0.0f, 0.75f),
+			"Vector2 - float should give expected results.");
+	{
+		Vector2 v(1.5f, 2.25f);
+		v += -5.0f;
+		CHECK_MESSAGE(
+				v == Vector2(-3.5f, -2.75f),
+				"Vector2 += float should give expected results.");
+	}
+	{
+		Vector2 v(1.5f, 2.25f);
+		v -= -1.75f;
+		CHECK_MESSAGE(
+				v == Vector2(3.25f, 4.0f),
+				"Vector2 -= float should give expected results.");
+	}
+
+	CHECK_MESSAGE(
 			((Vector2i)decimal1) == Vector2i(2, 4),
 			"Vector2 cast to Vector2i should work as expected.");
 	CHECK_MESSAGE(

@@ -145,6 +145,12 @@ struct [[nodiscard]] Vector2 {
 	constexpr void operator-=(const Vector2 &p_v);
 	constexpr Vector2 operator*(const Vector2 &p_v1) const;
 
+	constexpr Vector2 operator+(real_t p_rvalue) const;
+	constexpr void operator+=(real_t p_rvalue);
+
+	constexpr Vector2 operator-(real_t p_rvalue) const;
+	constexpr void operator-=(real_t p_rvalue);
+
 	constexpr Vector2 operator*(real_t p_rvalue) const;
 	constexpr void operator*=(real_t p_rvalue);
 	constexpr void operator*=(const Vector2 &p_rvalue) { *this = *this * p_rvalue; }
@@ -234,6 +240,24 @@ constexpr void Vector2::operator-=(const Vector2 &p_v) {
 
 constexpr Vector2 Vector2::operator*(const Vector2 &p_v1) const {
 	return Vector2(x * p_v1.x, y * p_v1.y);
+}
+
+constexpr Vector2 Vector2::operator+(real_t p_rvalue) const {
+	return Vector2(x + p_rvalue, y + p_rvalue);
+}
+
+constexpr void Vector2::operator+=(real_t p_rvalue) {
+	x += p_rvalue;
+	y += p_rvalue;
+}
+
+constexpr Vector2 Vector2::operator-(real_t p_rvalue) const {
+	return Vector2(x - p_rvalue, y - p_rvalue);
+}
+
+constexpr void Vector2::operator-=(real_t p_rvalue) {
+	x -= p_rvalue;
+	y -= p_rvalue;
 }
 
 constexpr Vector2 Vector2::operator*(real_t p_rvalue) const {

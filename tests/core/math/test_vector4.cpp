@@ -205,6 +205,26 @@ TEST_CASE("[Vector4] Operators") {
 			"Vector4 division with integers should give exact results.");
 
 	CHECK_MESSAGE(
+			(Vector4(1.5f, 2.25f, -1.0f, 0.5f) + 1.5f) == Vector4(3.0f, 3.75f, 0.5f, 2.0f),
+			"Vector4 + float should give expected results.");
+	CHECK_MESSAGE(
+			(Vector4(1.5f, 2.25f, -1.0f, 0.5f) - 1.5f) == Vector4(0.0f, 0.75f, -2.5f, -1.0f),
+			"Vector4 - float should give expected results.");
+	{
+		Vector4 v(1.5f, 2.25f, -1.0f, 0.5f);
+		v += -5.0f;
+		CHECK_MESSAGE(
+				v == Vector4(-3.5f, -2.75f, -6.0f, -4.5f),
+				"Vector4 += float should give expected results.");
+	}
+	{
+		Vector4 v(1.5f, 2.25f, -1.0f, 0.5f);
+		v -= -1.75f;
+		CHECK_MESSAGE(
+				v == Vector4(3.25f, 4.0f, 0.75f, 2.25f),
+				"Vector4 -= float should give expected results.");
+	}
+	CHECK_MESSAGE(
 			((String)decimal1) == "(2.3, 4.9, 7.8, 3.2)",
 			"Vector4 cast to String should work as expected.");
 	CHECK_MESSAGE(

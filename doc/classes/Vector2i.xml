@@ -266,6 +266,12 @@
 				[/codeblock]
 			</description>
 		</operator>
+		<operator name="operator +">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="int" />
+			<description>
+			</description>
+		</operator>
 		<operator name="operator -">
 			<return type="Vector2i" />
 			<param index="0" name="right" type="Vector2i" />
@@ -274,6 +280,12 @@
 				[codeblock]
 				print(Vector2i(10, 20) - Vector2i(3, 4)) # Prints (7, 16)
 				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator -">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="int" />
+			<description>
 			</description>
 		</operator>
 		<operator name="operator /">
