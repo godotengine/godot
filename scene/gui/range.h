@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "scene/animation/tween.h"
 #include "scene/gui/control.h"
 
 class Range : public Control {
@@ -41,6 +42,8 @@ class Range : public Control {
 		double max = 100.0;
 		double step = 1.0;
 		double page = 0.0;
+		double target_val = 0.0;
+		double smooth_time = 0.0;
 		bool exp_ratio = false;
 		bool allow_greater = false;
 		bool allow_lesser = false;
@@ -51,6 +54,9 @@ class Range : public Control {
 	};
 
 	Shared *shared = nullptr;
+	Ref<Tween> tween;
+
+	void smooth_frame_call(double);
 
 	void _ref_shared(Shared *p_shared);
 	void _unref_shared();
@@ -86,6 +92,7 @@ public:
 	void set_step(double p_step);
 	void set_page(double p_page);
 	void set_as_ratio(double p_value);
+	void set_smooth_time(double p_smoothing);
 
 	double get_value() const;
 	double get_min() const;
@@ -93,6 +100,10 @@ public:
 	double get_step() const;
 	double get_page() const;
 	double get_as_ratio() const;
+	double get_target_value() const;
+	double get_smooth_time() const;
+
+	void set_use_default_smooth_time(bool p_enable = true);
 
 	void set_use_rounded_values(bool p_enable);
 	bool is_using_rounded_values() const;

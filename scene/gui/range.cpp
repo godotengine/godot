@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 #include "range.h"
-
+#include "core/config/project_settings.h"
 #include "thirdparty/misc/r128.h"
 
 double Range::_snapped_r128(double p_value, double p_step) {
@@ -163,12 +163,43 @@ void Range::Shared::redraw_owners() {
 	}
 }
 
-void Range::set_value(double p_val) {
-	double prev_val = shared->val;
-	_set_value_no_signal(p_val);
+void Range::smooth_frame_call(double) {
+	double dt = get_process_delta_time();
+	double alpha = 1.0 - Math::exp(-dt / shared->smooth_time);
+	double new_val = Math::lerp(shared->val, shared->target_val, alpha);
+	if (Math::is_equal_approx(new_val, shared->target_val)) {
+		new_val = shared->target_val;
+		if (tween.is_valid() && tween->is_running()) {
+			tween->kill();
+		}
+	}
+	_set_value_no_signal(new_val);
+	shared->emit_value_changed();
+}
 
-	if (shared->val != prev_val) {
-		shared->emit_value_changed();
+void Range::set_value(double p_val) {
+	double prev_target = shared->target_val;
+	p_val = _calc_value(p_val, shared->step);
+	shared->target_val = p_val;
+	bool began_tween = false;
+	if (shared->smooth_time > 0) {
+		if (is_inside_tree()) {
+			if (tween.is_valid() && tween->is_running()) {
+				tween->kill();
+			}
+			tween = create_tween();
+			if (tween.is_valid()) {
+				tween->tween_method(callable_mp(this, &Range::smooth_frame_call), 0, 1, 10);
+				smooth_frame_call(0);
+				began_tween = true;
+			}
+		}
+	}
+	if (!began_tween) {
+		_set_value_no_signal(p_val);
+		if (prev_target != shared->target_val) {
+			shared->emit_value_changed();
+		}
 	}
 	queue_accessibility_update();
 }
@@ -322,6 +353,32 @@ double Range::get_as_ratio() const {
 	}
 }
 
+void Range::set_smooth_time(double p_smoothing) {
+	shared->smooth_time = p_smoothing;
+}
+
+double Range::get_smooth_time() const {
+	return shared->smooth_time;
+}
+
+void Range::set_use_default_smooth_time(bool p_enable) {
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	Callable connection = callable_mp(this, &Range::set_use_default_smooth_time).bind(true);
+	if (p_enable) {
+		set_smooth_time(GLOBAL_GET("gui/common/default_scroll_smooth_time"));
+		if (ps && !ps->is_connected(SNAME("settings_changed"), connection)) {
+			ps->connect(SNAME("settings_changed"), connection);
+		}
+	} else {
+		set_smooth_time(0);
+		ps->disconnect(SNAME("settings_changed"), connection);
+	}
+}
+
+double Range::get_target_value() const {
+	return shared->target_val;
+}
+
 void Range::_share(Node *p_range) {
 	Range *r = Object::cast_to<Range>(p_range);
 	ERR_FAIL_NULL(r);
@@ -418,6 +475,8 @@ void Range::_bind_methods() {
 	ADD_LINKED_PROPERTY("min_value", "page");
 	ADD_LINKED_PROPERTY("max_value", "value");
 	ADD_LINKED_PROPERTY("max_value", "page");
+
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "gui/common/default_scroll_smooth_time", PROPERTY_HINT_RANGE, "0,.3,.01"), 0.0);
 }
 
 void Range::set_use_rounded_values(bool p_enable) {
