@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Godot.SourceGenerators
@@ -18,6 +20,8 @@ namespace Godot.SourceGenerators
         {
             if (context.IsGodotSourceGeneratorDisabled("ScriptMethods"))
                 return;
+
+            bool enableExportNullChecks = context.IsGodotEnableExportNullChecks();
 
             INamedTypeSymbol[] godotClasses = context
                 .Compilation.SyntaxTrees
@@ -50,7 +54,7 @@ namespace Godot.SourceGenerators
 
                 foreach (var godotClass in godotClasses)
                 {
-                    VisitGodotScriptClass(context, typeCache, godotClass);
+                    VisitGodotScriptClass(context, typeCache, godotClass, enableExportNullChecks);
                 }
             }
         }
@@ -72,7 +76,8 @@ namespace Godot.SourceGenerators
         private static void VisitGodotScriptClass(
             GeneratorExecutionContext context,
             MarshalUtils.TypeCache typeCache,
-            INamedTypeSymbol symbol
+            INamedTypeSymbol symbol,
+            bool enableExportNullChecks
         )
         {
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
@@ -133,6 +138,39 @@ namespace Godot.SourceGenerators
             var godotClassMethods = methodSymbols.WhereHasGodotCompatibleSignature(typeCache)
                 .Distinct(new MethodOverloadEqualityComparer())
                 .ToArray();
+
+            // Collect exported properties/fields for null checks if feature is enabled
+            List<(string Name, ITypeSymbol Type)>? exportedNonNullableGodotTypes = null;
+            if (enableExportNullChecks)
+            {
+                exportedNonNullableGodotTypes = new List<(string, ITypeSymbol)>();
+
+                // Collect exported properties
+                var propertySymbols = members
+                    .Where(s => !s.IsStatic && s.Kind == SymbolKind.Property)
+                    .Cast<IPropertySymbol>();
+
+                foreach (var property in propertySymbols)
+                {
+                    if (NullableUtils.IsExportedNonNullableGodotType(property, property.Type, syntaxTree => context.Compilation.GetSemanticModel(syntaxTree)))
+                    {
+                        exportedNonNullableGodotTypes.Add((property.Name, property.Type));
+                    }
+                }
+
+                // Collect exported fields
+                var fieldSymbols = members
+                    .Where(s => !s.IsStatic && s is { Kind: SymbolKind.Field, IsImplicitlyDeclared: false })
+                    .Cast<IFieldSymbol>();
+
+                foreach (var field in fieldSymbols)
+                {
+                    if (NullableUtils.IsExportedNonNullableGodotType(field, field.Type, syntaxTree => context.Compilation.GetSemanticModel(syntaxTree)))
+                    {
+                        exportedNonNullableGodotTypes.Add((field.Name, field.Type));
+                    }
+                }
+            }
 
             source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
@@ -202,6 +240,20 @@ namespace Godot.SourceGenerators
             }
 
             source.Append("#pragma warning restore CS0109\n");
+
+            // Generate ValidateExportedProperties
+
+            if (exportedNonNullableGodotTypes is { Count: > 0 })
+            {
+                source.Append("    /// <inheritdoc/>\n");
+                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+                source.Append("    protected override void ValidateExportedProperties()\n    {\n");
+
+                GenerateNullChecksForValidation(source, exportedNonNullableGodotTypes);
+
+                source.Append("        base.ValidateExportedProperties();\n");
+                source.Append("    }\n");
+            }
 
             // Generate InvokeGodotClassMethod
 
@@ -419,6 +471,58 @@ namespace Godot.SourceGenerators
             source.Append(") {\n           return true;\n        }\n");
         }
 
+        private static void GenerateNullChecksForValidation(
+            StringBuilder source,
+            List<(string Name, ITypeSymbol Type)> exportedNonNullableGodotTypes
+        )
+        {
+            foreach (var (memberName, memberType) in exportedNonNullableGodotTypes)
+            {
+                // Check if this is a string type
+                bool isString = memberType.SpecialType == SpecialType.System_String;
+
+                // Check if this is a StringName type
+                bool isStringName = MarshalUtils.IsStringNameType(memberType);
+
+                // Check if this is a packed array type
+                bool isPackedArray = MarshalUtils.IsPackedArrayType(memberType);
+
+                // Check if this is a NodePath type
+                bool isNodePath = MarshalUtils.IsNodePathType(memberType);
+
+                source.Append("        ");
+
+                if (isString)
+                {
+                    // For string, initialize with string.Empty instead of throwing
+                    source.Append($"this.{memberName} ??= string.Empty;\n");
+                }
+                else if (isStringName)
+                {
+                    // For StringName, initialize with new StringName() instead of throwing
+                    source.Append($"this.{memberName} ??= new global::Godot.StringName();\n");
+                }
+                else if (isNodePath)
+                {
+                    // For NodePath, initialize with new NodePath() instead of throwing
+                    source.Append($"this.{memberName} ??= new global::Godot.NodePath();\n");
+                }
+                else if (isPackedArray)
+                {
+                    // For packed arrays, initialize with Array.Empty instead of throwing
+                    source.Append($"this.{memberName} ??= global::System.Array.Empty<");
+
+                    var arrayType = (IArrayTypeSymbol)memberType;
+                    source.Append(arrayType.ElementType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                    source.Append(">();\n");
+                }
+                else
+                {
+                    // For other types (Node, Resource, NodePath, Collections), throw NullReferenceException
+                    source.Append($"global::System.ArgumentNullException.ThrowIfNull(this.{memberName}, \"{memberName}\");\n");
+                }
+            }
+        }
         private static void GenerateMethodInvoker(
             GodotMethodData method,
             StringBuilder source
@@ -469,6 +573,119 @@ namespace Godot.SourceGenerators
             }
 
             source.Append("        }\n");
+        }
+    }
+
+    [DiagnosticAnalyzer(LanguageNames.CSharp)]
+    public class NullabilitySuppressor : DiagnosticSuppressor
+    {
+        private static readonly SuppressionDescriptor _suppressionMessage =
+            new(
+                id: "GDSPR001",
+                suppressedDiagnosticId: "CS8618",
+                justification: "Member's nullability has been checked by Godot when initialized."
+            );
+
+        public override ImmutableArray<SuppressionDescriptor> SupportedSuppressions =>
+            ImmutableArray.Create(_suppressionMessage);
+
+        public override void ReportSuppressions(SuppressionAnalysisContext context)
+        {
+            // Check if the feature is enabled
+            var enableExportNullChecks = context.IsGodotEnableExportNullChecks();
+
+            if (!enableExportNullChecks)
+                return;
+
+            foreach (var diagnostic in context.ReportedDiagnostics)
+            {
+                if (diagnostic.Id != "CS8618")
+                    continue;
+
+                // Get the symbol that triggered the diagnostic
+                var syntaxTree = diagnostic.Location.SourceTree;
+                if (syntaxTree == null)
+                    continue;
+
+                var semanticModel = context.GetSemanticModel(syntaxTree);
+                var root = syntaxTree.GetRoot(context.CancellationToken);
+                var node = root.FindNode(diagnostic.Location.SourceSpan);
+
+                // Check if the diagnostic is on a constructor
+                if (node is ConstructorDeclarationSyntax ctorDecl)
+                {
+                    var ctorSymbol = semanticModel.GetDeclaredSymbol(ctorDecl, context.CancellationToken);
+                    if (ctorSymbol == null)
+                        continue;
+
+                    var containingType = ctorSymbol.ContainingType;
+                    if (containingType == null || !containingType.InheritsFrom("GodotSharp", GodotClasses.GodotObject))
+                        continue;
+
+                    // Check if the containing type has any exported non-nullable Godot types
+                    // that would trigger CS8618 on the constructor
+                    bool hasExportedNonNullableMembers = containingType.GetMembers()
+                        .Where(m => m is IPropertySymbol or IFieldSymbol)
+                        .Any(m =>
+                        {
+                            ITypeSymbol? memberType = m switch
+                            {
+                                IPropertySymbol prop => prop.Type,
+                                IFieldSymbol field => field.Type,
+                                _ => null
+                            };
+
+                            return memberType != null && NullableUtils.IsExportedNonNullableGodotType(m, memberType, syntaxTree2 => context.GetSemanticModel(syntaxTree2), requireNullableContext: false);
+                        });
+
+                    if (hasExportedNonNullableMembers)
+                    {
+                        context.ReportSuppression(Suppression.Create(_suppressionMessage, diagnostic));
+                    }
+
+                    continue;
+                }
+
+                // Try to get the member symbol (property or field)
+                ISymbol? memberSymbol = null;
+
+                if (node is PropertyDeclarationSyntax propertyDecl)
+                {
+                    memberSymbol = semanticModel.GetDeclaredSymbol(propertyDecl, context.CancellationToken);
+                }
+                else if (node is VariableDeclaratorSyntax variableDecl)
+                {
+                    memberSymbol = semanticModel.GetDeclaredSymbol(variableDecl, context.CancellationToken);
+                }
+
+                if (memberSymbol == null)
+                    continue;
+
+                // Get the type symbol
+                ITypeSymbol? memberType = null;
+                if (memberSymbol is IPropertySymbol propertySymbol)
+                {
+                    memberType = propertySymbol.Type;
+                }
+                else if (memberSymbol is IFieldSymbol fieldSymbol)
+                {
+                    memberType = fieldSymbol.Type;
+                }
+
+                if (memberType == null)
+                    continue;
+
+                // Check if this is an exported non-nullable Godot type
+                if (NullableUtils.IsExportedNonNullableGodotType(memberSymbol, memberType, syntaxTree2 => context.GetSemanticModel(syntaxTree2), requireNullableContext: false))
+                {
+                    // Check if the containing type is a Godot script class
+                    var containingType = memberSymbol.ContainingType;
+                    if (containingType != null && containingType.InheritsFrom("GodotSharp", GodotClasses.GodotObject))
+                    {
+                        context.ReportSuppression(Suppression.Create(_suppressionMessage, diagnostic));
+                    }
+                }
+            }
         }
     }
 }
