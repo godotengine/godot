@@ -457,16 +457,13 @@ AABB GPUParticles3D::capture_aabb() const {
 void GPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "emitting") {
 		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
-	}
-
-	if (p_property.name.begins_with("draw_pass_")) {
+	} else if (p_property.name.begins_with("draw_pass_")) {
 		int index = p_property.name.get_slicec('_', 2).to_int() - 1;
 		if (index >= draw_passes.size()) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
-	}
-	if (p_property.name == "seed" && !use_fixed_seed) {
+	} else if (p_property.name == "seed" && !use_fixed_seed) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }

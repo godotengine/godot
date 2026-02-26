@@ -191,9 +191,7 @@ void Label3D::_validate_property(PropertyInfo &p_property) const {
 			p_property.name == "gi_mode" ||
 			p_property.name == "gi_lightmap_scale") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-
-	if (p_property.name == "cast_shadow" && alpha_cut == ALPHA_CUT_DISABLED) {
+	} else if (p_property.name == "cast_shadow" && alpha_cut == ALPHA_CUT_DISABLED) {
 		// Alpha-blended materials can't cast shadows.
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}

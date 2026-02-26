@@ -4235,10 +4235,14 @@ void TileSet::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
-	if (p_property.name == "tile_layout" && tile_shape == TILE_SHAPE_SQUARE) {
-		p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
-	} else if (p_property.name == "tile_offset_axis" && tile_shape == TILE_SHAPE_SQUARE) {
-		p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
+	if (p_property.name == "tile_layout") {
+		if (tile_shape == TILE_SHAPE_SQUARE) {
+			p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
+		}
+	} else if (p_property.name == "tile_offset_axis") {
+		if (tile_shape == TILE_SHAPE_SQUARE) {
+			p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
+		}
 	}
 }
 

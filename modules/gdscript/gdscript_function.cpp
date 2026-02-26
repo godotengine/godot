@@ -277,5 +277,6 @@ GDScriptFunctionState::~GDScriptFunctionState() {
 		MutexLock lock(GDScriptLanguage::singleton->mutex);
 		scripts_list.remove_from_list();
 		instances_list.remove_from_list();
+		_clear_stack();
 	}
 }

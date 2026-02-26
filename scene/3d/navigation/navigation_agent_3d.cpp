@@ -347,7 +347,6 @@ void NavigationAgent3D::_notification(int p_what) {
 void NavigationAgent3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "keep_y_velocity" && use_3d_avoidance) {
 		p_property.usage = PROPERTY_USAGE_NONE;
-		return;
 	}
 }
 

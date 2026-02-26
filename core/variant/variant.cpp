@@ -35,10 +35,7 @@
 #include "core/io/resource.h"
 #include "core/math/math_funcs.h"
 #include "core/variant/variant_parser.h"
-
-PagedAllocator<Variant::Pools::BucketSmall, true> Variant::Pools::_bucket_small;
-PagedAllocator<Variant::Pools::BucketMedium, true> Variant::Pools::_bucket_medium;
-PagedAllocator<Variant::Pools::BucketLarge, true> Variant::Pools::_bucket_large;
+#include "core/variant/variant_pools.h"
 
 String Variant::get_type_name(Variant::Type p_type) {
 	switch (p_type) {
@@ -1172,7 +1169,7 @@ void Variant::reference(const Variant &p_variant) {
 			memnew_placement(_data._mem, Rect2i(*reinterpret_cast<const Rect2i *>(p_variant._data._mem)));
 		} break;
 		case TRANSFORM2D: {
-			_data._transform2d = (Transform2D *)Pools::_bucket_small.alloc();
+			_data._transform2d = VariantPools::alloc<Transform2D>();
 			memnew_placement(_data._transform2d, Transform2D(*p_variant._data._transform2d));
 		} break;
 		case VECTOR3: {
@@ -1191,22 +1188,22 @@ void Variant::reference(const Variant &p_variant) {
 			memnew_placement(_data._mem, Plane(*reinterpret_cast<const Plane *>(p_variant._data._mem)));
 		} break;
 		case AABB: {
-			_data._aabb = (::AABB *)Pools::_bucket_small.alloc();
+			_data._aabb = VariantPools::alloc<::AABB>();
 			memnew_placement(_data._aabb, ::AABB(*p_variant._data._aabb));
 		} break;
 		case QUATERNION: {
 			memnew_placement(_data._mem, Quaternion(*reinterpret_cast<const Quaternion *>(p_variant._data._mem)));
 		} break;
 		case BASIS: {
-			_data._basis = (Basis *)Pools::_bucket_medium.alloc();
+			_data._ptr = VariantPools::alloc<Basis>();
 			memnew_placement(_data._basis, Basis(*p_variant._data._basis));
 		} break;
 		case TRANSFORM3D: {
-			_data._transform3d = (Transform3D *)Pools::_bucket_medium.alloc();
+			_data._ptr = VariantPools::alloc<Transform3D>();
 			memnew_placement(_data._transform3d, Transform3D(*p_variant._data._transform3d));
 		} break;
 		case PROJECTION: {
-			_data._projection = (Projection *)Pools::_bucket_large.alloc();
+			_data._ptr = VariantPools::alloc<Projection>();
 			memnew_placement(_data._projection, Projection(*p_variant._data._projection));
 		} break;
 
@@ -1377,35 +1374,35 @@ void Variant::_clear_internal() {
 		case TRANSFORM2D: {
 			if (_data._transform2d) {
 				_data._transform2d->~Transform2D();
-				Pools::_bucket_small.free((Pools::BucketSmall *)_data._transform2d);
+				VariantPools::free(_data._transform2d);
 				_data._transform2d = nullptr;
 			}
 		} break;
 		case AABB: {
 			if (_data._aabb) {
 				_data._aabb->~AABB();
-				Pools::_bucket_small.free((Pools::BucketSmall *)_data._aabb);
+				VariantPools::free(_data._aabb);
 				_data._aabb = nullptr;
 			}
 		} break;
 		case BASIS: {
 			if (_data._basis) {
 				_data._basis->~Basis();
-				Pools::_bucket_medium.free((Pools::BucketMedium *)_data._basis);
+				VariantPools::free(_data._basis);
 				_data._basis = nullptr;
 			}
 		} break;
 		case TRANSFORM3D: {
 			if (_data._transform3d) {
 				_data._transform3d->~Transform3D();
-				Pools::_bucket_medium.free((Pools::BucketMedium *)_data._transform3d);
+				VariantPools::free(_data._transform3d);
 				_data._transform3d = nullptr;
 			}
 		} break;
 		case PROJECTION: {
 			if (_data._projection) {
 				_data._projection->~Projection();
-				Pools::_bucket_large.free((Pools::BucketLarge *)_data._projection);
+				VariantPools::free(_data._projection);
 				_data._projection = nullptr;
 			}
 		} break;
@@ -1493,6 +1490,10 @@ Variant::operator int8_t() const {
 	return _to_int<int8_t>();
 }
 
+Variant::operator Math::int_alt_t() const {
+	return _to_int<Math::int_alt_t>();
+}
+
 Variant::operator uint64_t() const {
 	return _to_int<uint64_t>();
 }
@@ -1507,6 +1508,10 @@ Variant::operator uint16_t() const {
 
 Variant::operator uint8_t() const {
 	return _to_int<uint8_t>();
+}
+
+Variant::operator Math::uint_alt_t() const {
+	return _to_int<Math::uint_alt_t>();
 }
 
 Variant::operator ObjectID() const {
@@ -2322,6 +2327,11 @@ Variant::Variant(int8_t p_int8) :
 	_data._int = p_int8;
 }
 
+Variant::Variant(Math::int_alt_t p_int_alt) :
+		type(INT) {
+	_data._int = p_int_alt;
+}
+
 Variant::Variant(uint64_t p_uint64) :
 		type(INT) {
 	_data._int = int64_t(p_uint64);
@@ -2340,6 +2350,11 @@ Variant::Variant(uint16_t p_uint16) :
 Variant::Variant(uint8_t p_uint8) :
 		type(INT) {
 	_data._int = int64_t(p_uint8);
+}
+
+Variant::Variant(Math::uint_alt_t p_uint_alt) :
+		type(INT) {
+	_data._int = p_uint_alt;
 }
 
 Variant::Variant(float p_float) :
@@ -2437,13 +2452,13 @@ Variant::Variant(const Plane &p_plane) :
 
 Variant::Variant(const ::AABB &p_aabb) :
 		type(AABB) {
-	_data._aabb = (::AABB *)Pools::_bucket_small.alloc();
+	_data._aabb = VariantPools::alloc<::AABB>();
 	memnew_placement(_data._aabb, ::AABB(p_aabb));
 }
 
 Variant::Variant(const Basis &p_matrix) :
 		type(BASIS) {
-	_data._basis = (Basis *)Pools::_bucket_medium.alloc();
+	_data._basis = VariantPools::alloc<Basis>();
 	memnew_placement(_data._basis, Basis(p_matrix));
 }
 
@@ -2455,19 +2470,19 @@ Variant::Variant(const Quaternion &p_quaternion) :
 
 Variant::Variant(const Transform3D &p_transform) :
 		type(TRANSFORM3D) {
-	_data._transform3d = (Transform3D *)Pools::_bucket_medium.alloc();
+	_data._transform3d = VariantPools::alloc<Transform3D>();
 	memnew_placement(_data._transform3d, Transform3D(p_transform));
 }
 
 Variant::Variant(const Projection &pp_projection) :
 		type(PROJECTION) {
-	_data._projection = (Projection *)Pools::_bucket_large.alloc();
+	_data._projection = VariantPools::alloc<Projection>();
 	memnew_placement(_data._projection, Projection(pp_projection));
 }
 
 Variant::Variant(const Transform2D &p_transform) :
 		type(TRANSFORM2D) {
-	_data._transform2d = (Transform2D *)Pools::_bucket_small.alloc();
+	_data._transform2d = VariantPools::alloc<Transform2D>();
 	memnew_placement(_data._transform2d, Transform2D(p_transform));
 }
 

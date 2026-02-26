@@ -3405,6 +3405,7 @@ void VisualShaderEditor::_edit_port_default_input(Object *p_button, int p_node, 
 	// TODO: Define these properties with actual PropertyInfo and feed it to the property editor widget.
 	property_editor = EditorInspector::instantiate_property_editor(edited_property_holder.ptr(), value.get_type(), "edited_property", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, true);
 	ERR_FAIL_NULL_MSG(property_editor, "Failed to create property editor for type: " + Variant::get_type_name(value.get_type()));
+	property_editor->set_deferred_drag_mode_enabled();
 
 	// Determine the best size for the popup based on the property type.
 	// This is done here, since the property editors are also used in the inspector where they have different layout requirements, so we can't just change their default minimum size.
@@ -8237,6 +8238,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 		if (!prop) {
 			return nullptr;
 		}
+		prop->set_deferred_drag_mode_enabled();
 
 		if (Object::cast_to<EditorPropertyResource>(prop)) {
 			Object::cast_to<EditorPropertyResource>(prop)->set_use_sub_inspector(false);

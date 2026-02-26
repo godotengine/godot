@@ -6648,8 +6648,8 @@ void Node3DEditorViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 			int mid_w = size.width * ratio_h;
 			int mid_h = size.height * ratio_v;
 
-			dragging_h = mb->get_position().x > (mid_w - h_sep / 2) && mb->get_position().x < (mid_w + h_sep / 2);
-			dragging_v = mb->get_position().y > (mid_h - v_sep / 2) && mb->get_position().y < (mid_h + v_sep / 2);
+			dragging_h = mb->get_position().x >= (mid_w - h_sep / 2) && mb->get_position().x < (mid_w + h_sep / 2);
+			dragging_v = mb->get_position().y >= (mid_h - v_sep / 2) && mb->get_position().y < (mid_h + v_sep / 2);
 
 			drag_begin_pos = mb->get_position();
 			drag_begin_ratio.x = ratio_h;
@@ -6696,8 +6696,8 @@ void Node3DEditorViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 
 			bool was_hovering_h = hovering_h;
 			bool was_hovering_v = hovering_v;
-			hovering_h = mm->get_position().x > (mid_w - h_sep / 2) && mm->get_position().x < (mid_w + h_sep / 2);
-			hovering_v = mm->get_position().y > (mid_h - v_sep / 2) && mm->get_position().y < (mid_h + v_sep / 2);
+			hovering_h = mm->get_position().x >= (mid_w - h_sep / 2) && mm->get_position().x < (mid_w + h_sep / 2);
+			hovering_v = mm->get_position().y >= (mid_h - v_sep / 2) && mm->get_position().y < (mid_h + v_sep / 2);
 
 			if (was_hovering_h != hovering_h || was_hovering_v != hovering_v) {
 				queue_redraw();

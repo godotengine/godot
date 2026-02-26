@@ -83,7 +83,7 @@ public:
 
 	// Buffers for our glow implementation
 	struct GLOW {
-		GLES3::Glow::GLOWLEVEL levels[4];
+		GLES3::Glow::Level levels[4];
 	} glow;
 
 private:
@@ -146,7 +146,7 @@ public:
 	GLuint get_backbuffer() const { return backbuffer3d.color; }
 	GLuint get_backbuffer_depth() const { return backbuffer3d.depth; }
 
-	const GLES3::Glow::GLOWLEVEL *get_glow_buffers() const { return &glow.levels[0]; }
+	const GLES3::Glow::Level *get_glow_buffers() const { return &glow.levels[0]; }
 
 	// Getters
 

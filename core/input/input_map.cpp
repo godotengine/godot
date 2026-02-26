@@ -205,6 +205,22 @@ void InputMap::action_add_event(const StringName &p_action, RequiredParam<InputE
 		return; // Already added.
 	}
 
+	// Normalize legacy device IDs: before the device ID change,
+	// keyboard and mouse events defaulted to device=0.
+	if (p_event->get_device() == 0) {
+		switch (p_event->get_type()) {
+			case InputEventType::KEY:
+				p_event->set_device(InputEvent::DEVICE_ID_KEYBOARD);
+				break;
+			case InputEventType::MOUSE_BUTTON:
+			case InputEventType::MOUSE_MOTION:
+				p_event->set_device(InputEvent::DEVICE_ID_MOUSE);
+				break;
+			default:
+				break;
+		}
+	}
+
 	input_map[p_action].inputs.push_back(p_event);
 }
 

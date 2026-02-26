@@ -645,8 +645,6 @@ TextEditorBase::TextEditorBase() {
 	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditorBase::_edit_option));
 	add_child(context_menu);
 
-	edit_hb = memnew(HBoxContainer);
-
 	goto_line_popup = memnew(GotoLinePopup);
 	add_child(goto_line_popup);
 

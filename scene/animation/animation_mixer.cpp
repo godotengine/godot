@@ -137,6 +137,7 @@ void AnimationMixer::_validate_property(PropertyInfo &p_property) const {
 #ifdef TOOLS_ENABLED // `editing` is surrounded by TOOLS_ENABLED so this should also be.
 	if (Engine::get_singleton()->is_editor_hint() && editing && (p_property.name == "active" || p_property.name == "deterministic" || p_property.name == "root_motion_track")) {
 		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+		return;
 	}
 #endif // TOOLS_ENABLED
 	if (root_motion_track.is_empty() && p_property.name == "root_motion_local") {

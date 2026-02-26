@@ -1795,6 +1795,8 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	patch_dialog = memnew(EditorFileDialog);
 	patch_dialog->add_filter("*.pck", TTR("Godot Project Pack"));
+	patch_dialog->add_filter("*.aab", TTR("Android App Bundle"));
+	patch_dialog->add_filter("*.apk", TTR("Android Package"));
 	patch_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	patch_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	patch_dialog->connect("file_selected", callable_mp(this, &ProjectExportDialog::_patch_file_selected));

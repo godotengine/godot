@@ -215,16 +215,12 @@ void EditorCommandPalette::remove_command(String p_key_name) {
 	commands.erase(p_key_name);
 }
 
-void EditorCommandPalette::add_command(String p_command_name, String p_key_name, Callable p_action, Vector<Variant> arguments, const Ref<Shortcut> &p_shortcut) {
+void EditorCommandPalette::add_command(String p_command_name, String p_key_name, Callable p_action, const Ref<Shortcut> &p_shortcut) {
 	ERR_FAIL_COND_MSG(commands.has(p_key_name), "The Command '" + String(p_command_name) + "' already exists. Unable to add it.");
 
-	const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * arguments.size());
-	for (int i = 0; i < arguments.size(); i++) {
-		argptrs[i] = &arguments[i];
-	}
 	Command command;
 	command.name = p_command_name;
-	command.callable = p_action.bindp(argptrs, arguments.size());
+	command.callable = p_action;
 	if (p_shortcut.is_null()) {
 		command.shortcut_text = "None";
 	} else {
@@ -274,7 +270,7 @@ void EditorCommandPalette::register_shortcuts_as_command() {
 		Ref<InputEventShortcut> ev;
 		ev.instantiate();
 		ev->set_shortcut(shortcut);
-		add_command(command_name, E.key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::push_input), varray(ev, false), shortcut);
+		add_command(command_name, E.key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::push_input).bind(ev, false), shortcut);
 	}
 	unregistered_shortcuts.clear();
 
@@ -293,7 +289,7 @@ Ref<Shortcut> EditorCommandPalette::add_shortcut_command(const String &p_command
 		Ref<InputEventShortcut> ev;
 		ev.instantiate();
 		ev->set_shortcut(p_shortcut);
-		add_command(p_command, p_key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::push_input), varray(ev, false), p_shortcut);
+		add_command(p_command, p_key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::push_input).bind(ev, false), p_shortcut);
 	} else {
 		const String key_name = String(p_key);
 		const String command_name = String(p_command);

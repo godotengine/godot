@@ -51,7 +51,6 @@ void FogVolume::_bind_methods() {
 void FogVolume::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "size" && shape == RS::FOG_VOLUME_SHAPE_WORLD) {
 		p_property.usage = PROPERTY_USAGE_NONE;
-		return;
 	}
 }
 

@@ -428,10 +428,11 @@ Ref<Texture2D> GPUParticles2D::get_texture() const {
 }
 
 void GPUParticles2D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "seed" && !use_fixed_seed) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "emitting") {
+	if (p_property.name == "seed") {
+		if (!use_fixed_seed) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (Engine::get_singleton()->is_editor_hint() && p_property.name == "emitting") {
 		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
 	}
 }

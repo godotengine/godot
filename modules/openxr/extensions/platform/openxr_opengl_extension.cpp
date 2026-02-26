@@ -59,7 +59,7 @@
 HashMap<String, bool *> OpenXROpenGLExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
-#ifdef ANDROID_ENABLED
+#ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 	request_extensions[XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME] = nullptr;
 #else
 	request_extensions[XR_KHR_OPENGL_ENABLE_EXTENSION_NAME] = nullptr;
@@ -75,7 +75,7 @@ void OpenXROpenGLExtension::on_instance_created(const XrInstance p_instance) {
 	// Obtain pointers to functions we're accessing here.
 	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 
-#ifdef ANDROID_ENABLED
+#ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 	EXT_INIT_XR_FUNC(xrGetOpenGLESGraphicsRequirementsKHR);
 #else
 	EXT_INIT_XR_FUNC(xrGetOpenGLGraphicsRequirementsKHR);
@@ -89,7 +89,7 @@ bool OpenXROpenGLExtension::check_graphics_api_support(XrVersion p_desired_versi
 	XrSystemId system_id = OpenXRAPI::get_singleton()->get_system_id();
 	XrInstance instance = OpenXRAPI::get_singleton()->get_instance();
 
-#ifdef ANDROID_ENABLED
+#ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 	XrGraphicsRequirementsOpenGLESKHR opengl_requirements;
 	opengl_requirements.type = XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_ES_KHR;
 	opengl_requirements.next = nullptr;
@@ -232,14 +232,14 @@ bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 		return false;
 	}
 
-#ifdef ANDROID_ENABLED
+#ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 	LocalVector<XrSwapchainImageOpenGLESKHR> images;
 #else
 	LocalVector<XrSwapchainImageOpenGLKHR> images;
 #endif
 	images.resize(swapchain_length);
 
-#ifdef ANDROID_ENABLED
+#ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 	for (XrSwapchainImageOpenGLESKHR &image : images) {
 		image.type = XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_ES_KHR;
 #else
@@ -334,7 +334,7 @@ void OpenXROpenGLExtension::cleanup_swapchain_graphics_data(void **p_swapchain_g
 String OpenXROpenGLExtension::get_swapchain_format_name(int64_t p_swapchain_format) const {
 	// These are somewhat different per platform, will need to weed some stuff out...
 	switch (p_swapchain_format) {
-#ifdef ANDROID_ENABLED
+#ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 		// using definitions from GLES3/gl3.h
 
 		ENUM_TO_STRING_CASE(GL_RGBA4)

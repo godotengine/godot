@@ -44,7 +44,7 @@ static String _mkid(const String &p_id) {
 }
 
 void ShaderGLES3::_add_stage(const char *p_code, StageType p_stage_type) {
-	Vector<String> lines = String(p_code).split("\n");
+	Vector<String> lines = String::utf8(p_code).split("\n");
 
 	String text;
 
@@ -130,9 +130,9 @@ void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code,
 
 	StringBuilder tohash;
 	tohash.append("[Vertex]");
-	tohash.append(p_vertex_code ? p_vertex_code : "");
+	tohash.append(p_vertex_code ? String::utf8(p_vertex_code) : "");
 	tohash.append("[Fragment]");
-	tohash.append(p_fragment_code ? p_fragment_code : "");
+	tohash.append(p_fragment_code ? String::utf8(p_fragment_code) : "");
 
 	tohash.append("[gl_implementation]");
 	const String &vendor = String::utf8((const char *)glGetString(GL_VENDOR));
@@ -227,21 +227,21 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 		const StageTemplate::Chunk &chunk = stage_template.chunks[i];
 		switch (chunk.type) {
 			case StageTemplate::Chunk::TYPE_MATERIAL_UNIFORMS: {
-				builder.append(p_version->uniforms.get_data()); //uniforms (same for vertex and fragment)
+				builder.append(String::utf8(p_version->uniforms.get_data())); //uniforms (same for vertex and fragment)
 			} break;
 			case StageTemplate::Chunk::TYPE_VERTEX_GLOBALS: {
-				builder.append(p_version->vertex_globals.get_data()); // vertex globals
+				builder.append(String::utf8(p_version->vertex_globals.get_data())); // vertex globals
 			} break;
 			case StageTemplate::Chunk::TYPE_FRAGMENT_GLOBALS: {
-				builder.append(p_version->fragment_globals.get_data()); // fragment globals
+				builder.append(String::utf8(p_version->fragment_globals.get_data())); // fragment globals
 			} break;
 			case StageTemplate::Chunk::TYPE_CODE: {
 				if (p_version->code_sections.has(chunk.code)) {
-					builder.append(p_version->code_sections[chunk.code].get_data());
+					builder.append(String::utf8(p_version->code_sections[chunk.code].get_data()));
 				}
 			} break;
 			case StageTemplate::Chunk::TYPE_TEXT: {
-				builder.append(chunk.text.get_data());
+				builder.append(String::utf8(chunk.text.get_data()));
 			} break;
 		}
 	}

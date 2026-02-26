@@ -2943,7 +2943,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 			// We need to pass this in for SSAO.
 			GLuint depth_buffer = fbo_int != 0 ? rb->get_internal_depth() : texture_storage->render_target_get_depth(render_target);
 
-			const GLES3::Glow::GLOWLEVEL *glow_buffers = nullptr;
+			const GLES3::Glow::Level *glow_buffers = nullptr;
 			if (glow_enabled) {
 				glow_buffers = rb->get_glow_buffers();
 
@@ -3006,7 +3006,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 		// Rendered to intermediate buffer, must copy to our render target
 		if (fbo_int != 0) {
 			// Apply glow/bloom if requested? then populate our glow buffers
-			const GLES3::Glow::GLOWLEVEL *glow_buffers = nullptr;
+			const GLES3::Glow::Level *glow_buffers = nullptr;
 			GLuint source_color = fbo_int != 0 ? rb->get_internal_color() : texture_storage->render_target_get_color(render_target);
 
 			// Moved this up so SSAO could use it too.

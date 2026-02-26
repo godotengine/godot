@@ -1350,19 +1350,15 @@ NodePath Node3D::get_visibility_parent() const {
 
 void Node3D::_validate_property(PropertyInfo &p_property) const {
 	if (data.rotation_edit_mode != ROTATION_EDIT_MODE_BASIS && p_property.name == "basis") {
-		p_property.usage = 0;
-	}
-	if (data.rotation_edit_mode == ROTATION_EDIT_MODE_BASIS && p_property.name == "scale") {
-		p_property.usage = 0;
-	}
-	if (data.rotation_edit_mode != ROTATION_EDIT_MODE_QUATERNION && p_property.name == "quaternion") {
-		p_property.usage = 0;
-	}
-	if (data.rotation_edit_mode != ROTATION_EDIT_MODE_EULER && p_property.name == "rotation") {
-		p_property.usage = 0;
-	}
-	if (data.rotation_edit_mode != ROTATION_EDIT_MODE_EULER && p_property.name == "rotation_order") {
-		p_property.usage = 0;
+		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (data.rotation_edit_mode == ROTATION_EDIT_MODE_BASIS && p_property.name == "scale") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (data.rotation_edit_mode != ROTATION_EDIT_MODE_QUATERNION && p_property.name == "quaternion") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (data.rotation_edit_mode != ROTATION_EDIT_MODE_EULER && p_property.name == "rotation") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (data.rotation_edit_mode != ROTATION_EDIT_MODE_EULER && p_property.name == "rotation_order") {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 

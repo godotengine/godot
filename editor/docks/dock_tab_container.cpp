@@ -228,7 +228,7 @@ void DockTabContainer::move_dock_index(EditorDock *p_dock, int p_to_index, bool 
 	int target_index = CLAMP(p_to_index, 0, get_tab_count() - 1);
 	move_child(p_dock, get_dock(target_index)->get_index(false));
 
-	if (p_set_current) {
+	if (p_set_current && !p_dock->is_visible_in_tree()) {
 		set_current_tab(target_index);
 	}
 	set_block_signals(false);

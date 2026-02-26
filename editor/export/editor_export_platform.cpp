@@ -220,22 +220,154 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 	return has_messages;
 }
 
-Error EditorExportPlatform::_load_patches(const Vector<String> &p_patches) {
+Error EditorExportPlatform::_extract_android_assets(const String &p_bundle_path, String &r_pck_path, String &r_temp_dir) {
 	Error err = OK;
+
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
+	unzFile zip_file = unzOpen2(p_bundle_path.utf8().get_data(), &io);
+	if (!zip_file) {
+		return ERR_FILE_CANT_OPEN;
+	}
+
+	const char *pck_name = "assets.sparsepck";
+	String pck_base_dir;
+
+	int ret = unzGoToFirstFile(zip_file);
+	while (ret == UNZ_OK) {
+		unz_file_info64 file_info = {};
+		char file_name_buf[16384];
+		ret = unzGetCurrentFileInfo64(zip_file, &file_info, file_name_buf, sizeof(file_name_buf), nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
+
+		String file_name = String::utf8(file_name_buf);
+		if (file_name.ends_with(pck_name)) {
+			pck_base_dir = file_name.trim_suffix(pck_name);
+			break;
+		}
+
+		ret = unzGoToNextFile(zip_file);
+	}
+
+	if (ret != UNZ_OK || pck_base_dir.is_empty()) {
+		unzClose(zip_file);
+		return ERR_FILE_UNRECOGNIZED;
+	}
+
+	Ref<DirAccess> temp_dir = DirAccess::create_temp("export_patch_base", true, &err);
+	if (err != OK) {
+		unzClose(zip_file);
+		return err;
+	}
+
+	String temp_dir_path = temp_dir->get_current_dir();
+
+	ret = unzGoToFirstFile(zip_file);
+	while (ret == UNZ_OK) {
+		unz_file_info64 zip_file_info = {};
+		char file_name_buf[16384];
+		if (unzGetCurrentFileInfo64(zip_file, &zip_file_info, file_name_buf, sizeof(file_name_buf), nullptr, 0, nullptr, 0) != UNZ_OK) {
+			err = ERR_FILE_CORRUPT;
+			break;
+		}
+
+		String file_name = String::utf8(file_name_buf);
+		if (!file_name.begins_with(pck_base_dir)) {
+			ret = unzGoToNextFile(zip_file);
+			continue;
+		}
+
+		String file_path_relative = file_name.trim_prefix(pck_base_dir).simplify_path();
+		if (file_path_relative.is_empty()) {
+			ret = unzGoToNextFile(zip_file);
+			continue;
+		}
+
+		String file_output_path = temp_dir_path.path_join(file_path_relative);
+		err = DirAccess::make_dir_recursive_absolute(file_output_path.get_base_dir());
+		if (err != OK) {
+			break;
+		}
+
+		if (unzOpenCurrentFile(zip_file) != UNZ_OK) {
+			err = ERR_FILE_CANT_OPEN;
+			break;
+		}
+
+		LocalVector<uint8_t> uncomp_data;
+		uncomp_data.resize(zip_file_info.uncompressed_size);
+		int read_bytes = unzReadCurrentFile(zip_file, uncomp_data.ptr(), uncomp_data.size());
+		unzCloseCurrentFile(zip_file);
+
+		if (read_bytes < 0 || read_bytes != (int)uncomp_data.size()) {
+			err = ERR_FILE_CANT_READ;
+			break;
+		}
+
+		Ref<FileAccess> temp_file = FileAccess::open(file_output_path, FileAccess::WRITE, &err);
+		if (err != OK) {
+			break;
+		}
+
+		if (!temp_file->store_buffer(uncomp_data.ptr(), uncomp_data.size())) {
+			err = ERR_FILE_CANT_WRITE;
+			break;
+		}
+
+		ret = unzGoToNextFile(zip_file);
+	}
+
+	unzClose(zip_file);
+
+	r_pck_path = temp_dir_path.path_join(pck_name);
+	r_temp_dir = temp_dir_path;
+
+	return err;
+}
+
+Error EditorExportPlatform::_load_patches(const Ref<EditorExportPreset> &p_preset, const Vector<String> &p_patches) {
 	if (!p_patches.is_empty()) {
 		for (const String &path : p_patches) {
-			err = PackedData::get_singleton()->add_pack(path, true, 0);
+			String pck_path = path;
+
+			if (path.ends_with(".apk") || path.ends_with(".aab")) {
+				String temp_dir;
+				Error err = _extract_android_assets(path, pck_path, temp_dir);
+				if (err != OK) {
+					_unload_patches();
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Patch Creation"), vformat(TTR("Could not extract assets from Android bundle \"%s\", due to error \"%s\"."), path, error_names[err]));
+					return err;
+				}
+
+				patch_temp_dirs.push_back(temp_dir);
+			}
+
+			Error err = PackedData::get_singleton()->add_pack(pck_path, true, 0, _get_script_encryption_key_bytes(p_preset));
 			if (err != OK) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Patch Creation"), vformat(TTR("Could not load patch pack with path \"%s\"."), path));
+				_unload_patches();
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Patch Creation"), vformat(TTR("Could not load patch pack with path \"%s\"."), pck_path));
 				return err;
 			}
 		}
 	}
-	return err;
+
+	return OK;
 }
 
 void EditorExportPlatform::_unload_patches() {
 	PackedData::get_singleton()->clear();
+
+	for (const String &temp_dir : patch_temp_dirs) {
+		Ref<DirAccess> temp_dir_da = DirAccess::open(temp_dir);
+		if (temp_dir_da.is_valid()) {
+			temp_dir_da->erase_contents_recursive();
+			temp_dir_da->remove(temp_dir);
+		}
+	}
+
+	patch_temp_dirs.clear();
 }
 
 Error EditorExportPlatform::_encrypt_and_store_data(Ref<FileAccess> p_fd, const String &p_path, const Vector<uint8_t> &p_data, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool &r_encrypt) {
@@ -347,7 +479,7 @@ Error EditorExportPlatform::_save_pack_file(const Ref<EditorExportPreset> &p_pre
 }
 
 Error EditorExportPlatform::_save_pack_patch_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta) {
-	Ref<FileAccess> old_file = PackedData::get_singleton()->try_open_path(p_path);
+	Ref<FileAccess> old_file = PackedData::get_singleton()->try_open_path(p_path, _get_script_encryption_key_bytes(p_preset));
 	if (old_file.is_null()) {
 		return _save_pack_file(p_preset, p_userdata, p_path, p_data, p_file, p_total, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, false);
 	}
@@ -993,12 +1125,45 @@ String EditorExportPlatform::_export_customize(const String &p_path, LocalVector
 	return save_path.is_empty() ? p_path : save_path;
 }
 
-String EditorExportPlatform::_get_script_encryption_key(const Ref<EditorExportPreset> &p_preset) const {
+String EditorExportPlatform::_get_script_encryption_key(const Ref<EditorExportPreset> &p_preset) {
 	const String from_env = OS::get_singleton()->get_environment(ENV_SCRIPT_ENCRYPTION_KEY);
 	if (!from_env.is_empty()) {
 		return from_env.to_lower();
 	}
 	return p_preset->get_script_encryption_key().to_lower();
+}
+
+Vector<uint8_t> EditorExportPlatform::_get_script_encryption_key_bytes(const Ref<EditorExportPreset> &p_preset) {
+	Vector<uint8_t> key;
+	String script_key = _get_script_encryption_key(p_preset);
+	if (script_key.length() == 64) {
+		key.resize(32);
+		for (int i = 0; i < 32; i++) {
+			int v = 0;
+			if (i * 2 < script_key.length()) {
+				char32_t ct = script_key[i * 2];
+				if (is_digit(ct)) {
+					ct = ct - '0';
+				} else if (ct >= 'a' && ct <= 'f') {
+					ct = 10 + ct - 'a';
+				}
+				v |= ct << 4;
+			}
+
+			if (i * 2 + 1 < script_key.length()) {
+				char32_t ct = script_key[i * 2 + 1];
+				if (is_digit(ct)) {
+					ct = ct - '0';
+				} else if (ct >= 'a' && ct <= 'f') {
+					ct = 10 + ct - 'a';
+				}
+				v |= ct;
+			}
+			key.write[i] = v;
+		}
+	}
+
+	return key;
 }
 
 Dictionary EditorExportPlatform::get_internal_export_files(const Ref<EditorExportPreset> &p_preset, bool p_debug) {
@@ -1229,33 +1394,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		}
 
 		// Get encryption key.
-		String script_key = _get_script_encryption_key(p_preset);
-		key.resize(32);
-		if (script_key.length() == 64) {
-			for (int i = 0; i < 32; i++) {
-				int v = 0;
-				if (i * 2 < script_key.length()) {
-					char32_t ct = script_key[i * 2];
-					if (is_digit(ct)) {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = 10 + ct - 'a';
-					}
-					v |= ct << 4;
-				}
-
-				if (i * 2 + 1 < script_key.length()) {
-					char32_t ct = script_key[i * 2 + 1];
-					if (is_digit(ct)) {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = 10 + ct - 'a';
-					}
-					v |= ct;
-				}
-				key.write[i] = v;
-			}
-		}
+		key = _get_script_encryption_key_bytes(p_preset);
 	}
 
 	EditorExportSaveProxy save_proxy(p_save_func, p_remove_func != nullptr);
@@ -2168,33 +2307,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 
 	Vector<uint8_t> key;
 	if (p_preset->get_enc_pck() && p_preset->get_enc_directory()) {
-		String script_key = _get_script_encryption_key(p_preset);
-		key.resize(32);
-		if (script_key.length() == 64) {
-			for (int i = 0; i < 32; i++) {
-				int v = 0;
-				if (i * 2 < script_key.length()) {
-					char32_t ct = script_key[i * 2];
-					if (is_digit(ct)) {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = 10 + ct - 'a';
-					}
-					v |= ct << 4;
-				}
-
-				if (i * 2 + 1 < script_key.length()) {
-					char32_t ct = script_key[i * 2 + 1];
-					if (is_digit(ct)) {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = 10 + ct - 'a';
-					}
-					v |= ct;
-				}
-				key.write[i] = v;
-			}
-		}
+		key = _get_script_encryption_key_bytes(p_preset);
 	}
 
 	if (!_encrypt_and_store_directory(f, pd, key, p_preset->get_seed(), file_base)) {
@@ -2288,7 +2401,7 @@ Error EditorExportPlatform::export_zip(const Ref<EditorExportPreset> &p_preset, 
 
 Error EditorExportPlatform::export_pack_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
-	Error err = _load_patches(p_patches.is_empty() ? p_preset->get_patches() : p_patches);
+	Error err = _load_patches(p_preset, p_patches.is_empty() ? p_preset->get_patches() : p_patches);
 	if (err != OK) {
 		return err;
 	}
@@ -2299,7 +2412,7 @@ Error EditorExportPlatform::export_pack_patch(const Ref<EditorExportPreset> &p_p
 
 Error EditorExportPlatform::export_zip_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
-	Error err = _load_patches(p_patches.is_empty() ? p_preset->get_patches() : p_patches);
+	Error err = _load_patches(p_preset, p_patches.is_empty() ? p_preset->get_patches() : p_patches);
 	if (err != OK) {
 		return err;
 	}
