@@ -999,7 +999,6 @@ void GDScriptParser::parse_class_name() {
 		/// [Monarch] Reginleif addition. Parses a comma-separated, rectangular bracket-bound identifier list.
 		/// Should do nothing if there is no generic parameter list to parse.
 		parse_generic_parameters();
-
 	}
 
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {

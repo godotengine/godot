@@ -746,7 +746,7 @@ public:
 
 		IdentifierNode *identifier = nullptr;
 
-		/// [Monarch] Added an extra field for storing generic parameters.
+		/// [Monarch] A field for storing generic parameters.
 		Vector<IdentifierNode*> generic_parameters;
 
 		String icon_path;
@@ -789,6 +789,12 @@ public:
 		bool has_function(const StringName &p_name) const {
 			return has_member(p_name) && members[members_indices[p_name]].type == Member::FUNCTION;
 		}
+
+		/// [Monarch] Reginleif addition. Checks if this class has any generic parameters declared.
+		bool has_generic_parameters() {
+			return generic_parameters.size() > 0;
+		}
+
 		template <typename T>
 		void add_member(T *p_member_node) {
 			members_indices[p_member_node->identifier->name] = members.size();
