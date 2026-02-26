@@ -33,6 +33,7 @@
 #include "../../gltf_state.h"
 
 #include "core/math/convex_hull.h"
+#include "core/os/thread.h"
 #include "scene/3d/physics/area_3d.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
@@ -253,10 +254,12 @@ Ref<Shape3D> GLTFPhysicsShape::to_resource(bool p_cache_shapes) {
 			sphere->set_radius(radius);
 			_shape_cache = sphere;
 		} else if (shape_type == "convex") {
+			ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), _shape_cache, "GLTFPhysicsShape: Convex hull shapes must be created on the main thread. Creating collision shapes from a thread may cause a deadlock.");
 			ERR_FAIL_COND_V_MSG(importer_mesh.is_null(), _shape_cache, "GLTFPhysicsShape: Error converting convex hull shape to a shape resource: The mesh resource is null.");
 			Ref<ConvexPolygonShape3D> convex = importer_mesh->get_mesh()->create_convex_shape();
 			_shape_cache = convex;
 		} else if (shape_type == "trimesh") {
+			ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), _shape_cache, "GLTFPhysicsShape: Concave mesh shapes must be created on the main thread. Creating collision shapes from a thread may cause a deadlock.");
 			ERR_FAIL_COND_V_MSG(importer_mesh.is_null(), _shape_cache, "GLTFPhysicsShape: Error converting concave mesh shape to a shape resource: The mesh resource is null.");
 			Ref<ConcavePolygonShape3D> concave = importer_mesh->create_trimesh_shape();
 			_shape_cache = concave;
