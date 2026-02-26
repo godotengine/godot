@@ -11,3 +11,12 @@ func test():
 	print(local_var)
 	local_var = 1 as MyEnum
 	print(local_var)
+
+	class_var += 1 as MyEnum
+	print(class_var)
+	class_var -= 1 as MyEnum
+	print(class_var)
+	class_var += MyEnum.ENUM_VALUE_2
+	print(class_var)
+	class_var -= MyEnum.ENUM_VALUE_2
+	print(class_var)

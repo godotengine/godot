@@ -6283,7 +6283,11 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 	if (p_source_node) {
 		if (p_target.kind == GDScriptParser::DataType::ENUM) {
 			if (p_source.kind == GDScriptParser::DataType::BUILTIN && p_source.builtin_type == Variant::INT) {
-				parser->push_warning(p_source_node, GDScriptWarning::INT_AS_ENUM_WITHOUT_CAST);
+				GDScriptParser::DataType source_node_data = p_source_node->get_datatype();
+				bool is_valid_cast = source_node_data.kind == GDScriptParser::DataType::ENUM && source_node_data.enum_type == p_target.enum_type;
+				if (!is_valid_cast) {
+					parser->push_warning(p_source_node, GDScriptWarning::INT_AS_ENUM_WITHOUT_CAST);
+				}
 			}
 		}
 	}
