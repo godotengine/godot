@@ -126,6 +126,9 @@ private:
 	int64_t mouse_window = 0;
 	bool legacy_just_pressed_behavior = false;
 	bool disable_input = false;
+	bool ignore_joypad_on_unfocused_application = false;
+	bool application_focused = true;
+	bool embedder_focused = false;
 
 	struct ActionState {
 		uint64_t pressed_physics_frame = UINT64_MAX;
@@ -140,6 +143,7 @@ private:
 			bool pressed[MAX_EVENT] = { false };
 			float strength[MAX_EVENT] = { 0.0 };
 			float raw_strength[MAX_EVENT] = { 0.0 };
+			InputEventType event_type[MAX_EVENT] = { InputEventType::INVALID };
 		};
 		bool api_pressed = false;
 		float api_strength = 0.0;
@@ -307,6 +311,8 @@ private:
 #endif
 
 	friend class DisplayServer;
+	friend class SceneTree;
+	friend class SceneDebugger;
 
 	static void (*set_mouse_mode_func)(MouseMode);
 	static MouseMode (*get_mouse_mode_func)();
@@ -320,6 +326,8 @@ private:
 	static void (*set_custom_mouse_cursor_func)(const Ref<Resource> &, CursorShape, const Vector2 &);
 
 	EventDispatchFunc event_dispatch_function = nullptr;
+
+	bool _should_ignore_joypad_events() const;
 
 #ifndef DISABLE_DEPRECATED
 	void _vibrate_handheld_bind_compat_91143(int p_duration_ms = 500);
@@ -423,6 +431,9 @@ public:
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
 	void vibrate_handheld(int p_duration_ms = 500, float p_amplitude = -1.0);
+
+	void set_ignore_joypad_on_unfocused_application(bool p_ignore);
+	bool is_ignoring_joypad_on_unfocused_application() const;
 
 	void set_mouse_position(const Point2 &p_posf);
 
