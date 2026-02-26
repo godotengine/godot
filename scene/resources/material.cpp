@@ -120,17 +120,13 @@ RID Material::get_rid() const {
 void Material::_validate_property(PropertyInfo &p_property) const {
 	if (!_can_do_next_pass() && p_property.name == "next_pass") {
 		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	else if (!_can_use_depth_bias() && p_property.name == "depth_bias_constant_factor") {
+	} else if (!_can_use_depth_bias() && p_property.name == "depth_bias_constant_factor") {
 		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	else if (!_can_use_depth_bias() && p_property.name == "depth_bias_slope_factor") {
+	} else if (!_can_use_depth_bias() && p_property.name == "depth_bias_slope_factor") {
 		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	else if (!_can_use_depth_bias() && p_property.name == "depth_bias_clamp") {
+	} else if (!_can_use_depth_bias() && p_property.name == "depth_bias_clamp") {
 		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	else if (!_can_use_render_priority() && p_property.name == "render_priority") {
+	} else if (!_can_use_render_priority() && p_property.name == "render_priority") {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
