@@ -1257,6 +1257,11 @@ void GridMapEditor::_notification(int p_what) {
 			_update_selection_transform();
 			_update_paste_indicator();
 			_update_theme();
+
+			if (node) {
+				_draw_grids(node->get_cell_size());
+				update_grid();
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
