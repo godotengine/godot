@@ -397,13 +397,16 @@ void RichTextLabel::_update_line_font(ItemFrame *p_frame, int p_line, const Ref<
 					if (font_it->font.is_valid()) {
 						font = font_it->font;
 					}
-					if (font_it->font_size > 0) {
+					if (font_it->font_size > 0 && !font_it->def_size) {
 						font_size = font_it->font_size;
 					}
 				}
 				ItemFontSize *font_size_it = _find_font_size(it);
 				if (font_size_it && font_size_it->font_size > 0) {
 					font_size = font_size_it->font_size;
+				}
+				if (resize_font_to_fit && theme_cache.normal_font_size > 0 && font_size != p_base_font_size) {
+					font_size = MAX(1, font_size * p_base_font_size / theme_cache.normal_font_size);
 				}
 				TS->shaped_set_span_update_font(t, i, font->get_rids(), font_size, font->get_opentype_features());
 			} else {
@@ -426,13 +429,16 @@ void RichTextLabel::_update_line_font(ItemFrame *p_frame, int p_line, const Ref<
 					if (font_it->font.is_valid()) {
 						font = font_it->font;
 					}
-					if (font_it->font_size > 0) {
+					if (font_it->font_size > 0 && !font_it->def_size) {
 						font_size = font_it->font_size;
 					}
 				}
 				ItemFontSize *font_size_it = _find_font_size(it);
 				if (font_size_it && font_size_it->font_size > 0) {
 					font_size = font_size_it->font_size;
+				}
+				if (resize_font_to_fit && theme_cache.normal_font_size > 0 && font_size != p_base_font_size) {
+					font_size = MAX(1, font_size * p_base_font_size / theme_cache.normal_font_size);
 				}
 				TS->shaped_set_span_update_font(t, i, font->get_rids(), font_size, font->get_opentype_features());
 			} else {
@@ -682,6 +688,9 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				if (font_size_it && font_size_it->font_size > 0) {
 					font_size = font_size_it->font_size;
 				}
+				if (resize_font_to_fit && theme_cache.normal_font_size > 0 && font_size != p_base_font_size) {
+					font_size = MAX(1, font_size * p_base_font_size / theme_cache.normal_font_size);
+				}
 				l.text_buf->add_string(String::chr(0x200B), font, font_size, String(), it->rid);
 				txt += "\n";
 				l.char_count++;
@@ -697,13 +706,16 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 					if (font_it->font.is_valid()) {
 						font = font_it->font;
 					}
-					if (font_it->font_size > 0) {
+					if (font_it->font_size > 0 && !font_it->def_size) {
 						font_size = font_it->font_size;
 					}
 				}
 				ItemFontSize *font_size_it = _find_font_size(it);
 				if (font_size_it && font_size_it->font_size > 0) {
 					font_size = font_size_it->font_size;
+				}
+				if (resize_font_to_fit && theme_cache.normal_font_size > 0 && font_size != p_base_font_size) {
+					font_size = MAX(1, font_size * p_base_font_size / theme_cache.normal_font_size);
 				}
 				String lang = _find_language(it);
 				String tx = t->text;
@@ -2555,7 +2567,10 @@ void RichTextLabel::_notification(int p_what) {
 
 		case NOTIFICATION_RESIZED: {
 			_stop_thread();
-			main->first_resized_line.store(0); // Invalidate all lines.
+			if (resize_font_to_fit) {
+				main->first_invalid_line.store(0);
+			}
+			main->first_resized_line.store(0);
 			_invalidate_accessibility();
 			queue_accessibility_update();
 			queue_redraw();
@@ -2563,7 +2578,13 @@ void RichTextLabel::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			_stop_thread();
-			main->first_invalid_font_line.store(0); // Invalidate all lines.
+			if (resize_font_to_fit) {
+				main->first_invalid_line.store(0);
+			} else {
+				current_fitted_font_size = 0;
+			}
+			main->first_invalid_font_line.store(0);
+			main->first_resized_line.store(0);
 			for (const RID &E : hr_list) {
 				Item *it = items.get_or_null(E);
 				if (it) {
@@ -3890,7 +3911,7 @@ _FORCE_INLINE_ float RichTextLabel::_update_scroll_exceeds(float p_total_height,
 
 		total_height = 0;
 		for (int j = 0; j <= p_idx; j++) {
-			total_height = _resize_line(main, j, theme_cache.normal_font, theme_cache.normal_font_size, p_width - scroll_w, total_height);
+			total_height = _resize_line(main, j, theme_cache.normal_font, current_fitted_font_size > 0 ? current_fitted_font_size : theme_cache.normal_font_size, p_width - scroll_w, total_height);
 
 			main->first_resized_line.store(j);
 		}
@@ -3922,7 +3943,7 @@ bool RichTextLabel::_validate_line_caches() {
 		float old_scroll = vscroll->get_value();
 		if (main->first_invalid_font_line.load() != (int)main->lines.size()) {
 			for (int i = main->first_invalid_font_line.load(); i < (int)main->lines.size(); i++) {
-				_update_line_font(main, i, theme_cache.normal_font, theme_cache.normal_font_size);
+				_update_line_font(main, i, theme_cache.normal_font, current_fitted_font_size > 0 ? current_fitted_font_size : theme_cache.normal_font_size);
 			}
 			main->first_resized_line.store(main->first_invalid_font_line.load());
 			main->first_invalid_font_line.store(main->lines.size());
@@ -3943,7 +3964,7 @@ bool RichTextLabel::_validate_line_caches() {
 
 		float total_height = (fi == 0) ? 0 : _calculate_line_vertical_offset(main->lines[fi - 1]);
 		for (int i = fi; i < (int)main->lines.size(); i++) {
-			total_height = _resize_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height);
+			total_height = _resize_line(main, i, theme_cache.normal_font, current_fitted_font_size > 0 ? current_fitted_font_size : theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height);
 			total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width, i, old_scroll, text_rect.size.height);
 			main->first_resized_line.store(i);
 		}
@@ -3998,12 +4019,49 @@ void RichTextLabel::_process_line_caches() {
 	float old_scroll = vscroll->get_value();
 
 	float total_height = 0;
+
+	if (resize_font_to_fit && (main->first_invalid_line.load() == 0 || main->first_invalid_font_line.load() == 0 || main->first_resized_line.load() == 0)) {
+		int low = minimum_font_size;
+		int high = maximum_font_size;
+		int best = minimum_font_size;
+
+		while (low <= high) {
+			int mid = low + (high - low) / 2;
+			current_fitted_font_size = mid;
+
+			float total_h = 0;
+			int max_w = 0;
+			int dummy_chars = 0;
+
+			for (int i = 0; i < (int)main->lines.size(); i++) {
+				total_h = _shape_line(main, i, theme_cache.normal_font, current_fitted_font_size, text_rect.get_size().width - scroll_w, total_h, &dummy_chars);
+				max_w = MAX(max_w, _get_line_max_width(main, i));
+			}
+
+			if (total_h <= text_rect.size.height) {
+				best = mid;
+				low = mid + 1;
+			} else {
+				high = mid - 1;
+			}
+		}
+
+		current_fitted_font_size = best;
+		fi = 0;
+		total_chars = 0;
+		main->first_invalid_line.store(0);
+		main->first_invalid_font_line.store(0);
+		main->first_resized_line.store(0);
+	} else if (!resize_font_to_fit) {
+		current_fitted_font_size = theme_cache.normal_font_size;
+	}
+
 	if (fi != 0) {
 		int sr = MIN(main->first_invalid_font_line.load(), main->first_resized_line.load());
 
 		// Update fonts.
 		for (int i = main->first_invalid_font_line.load(); i < fi; i++) {
-			_update_line_font(main, i, theme_cache.normal_font, theme_cache.normal_font_size);
+			_update_line_font(main, i, theme_cache.normal_font, current_fitted_font_size);
 
 			main->first_invalid_font_line.store(i);
 
@@ -4019,7 +4077,7 @@ void RichTextLabel::_process_line_caches() {
 		}
 
 		for (int i = sr; i < fi; i++) {
-			total_height = _resize_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height);
+			total_height = _resize_line(main, i, theme_cache.normal_font, current_fitted_font_size, text_rect.get_size().width - scroll_w, total_height);
 			total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width, i, old_scroll, text_rect.size.height);
 
 			main->first_resized_line.store(i);
@@ -4033,7 +4091,7 @@ void RichTextLabel::_process_line_caches() {
 
 	total_height = (fi == 0) ? 0 : _calculate_line_vertical_offset(main->lines[fi - 1]);
 	for (int i = fi; i < (int)main->lines.size(); i++) {
-		total_height = _shape_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
+		total_height = _shape_line(main, i, theme_cache.normal_font, current_fitted_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
 		total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width, i, old_scroll, text_rect.size.height);
 
 		main->first_invalid_line.store(i);
@@ -5219,6 +5277,64 @@ void RichTextLabel::set_fit_content(bool p_enabled) {
 
 	fit_content = p_enabled;
 	update_minimum_size();
+}
+
+void RichTextLabel::set_resize_font_to_fit(bool p_enabled) {
+	if (resize_font_to_fit == p_enabled) {
+		return;
+	}
+	resize_font_to_fit = p_enabled;
+	if (!p_enabled) {
+		current_fitted_font_size = 0;
+	}
+	_stop_thread();
+	main->first_invalid_line.store(0);
+	_validate_line_caches();
+	queue_redraw();
+	update_minimum_size();
+}
+
+bool RichTextLabel::is_resize_font_to_fit_enabled() const {
+	return resize_font_to_fit;
+}
+
+void RichTextLabel::set_minimum_font_size(int p_size) {
+	if (minimum_font_size == p_size) {
+		return;
+	}
+	minimum_font_size = p_size;
+	if (resize_font_to_fit) {
+		main->first_invalid_line.store(0);
+		main->first_resized_line.store(0);
+		main->first_invalid_font_line.store(0);
+		queue_redraw();
+	}
+}
+
+int RichTextLabel::get_minimum_font_size() const {
+	return minimum_font_size;
+}
+
+void RichTextLabel::set_maximum_font_size(int p_size) {
+	if (maximum_font_size == p_size) {
+		return;
+	}
+
+	maximum_font_size = p_size;
+	if (resize_font_to_fit) {
+		main->first_invalid_line.store(0);
+		main->first_resized_line.store(0);
+		main->first_invalid_font_line.store(0);
+		queue_redraw();
+	}
+}
+
+int RichTextLabel::get_maximum_font_size() const {
+	return maximum_font_size;
+}
+
+int RichTextLabel::get_rendered_font_size() const {
+	return current_fitted_font_size;
 }
 
 bool RichTextLabel::is_fit_content_enabled() const {
@@ -7752,6 +7868,17 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fit_content", "enabled"), &RichTextLabel::set_fit_content);
 	ClassDB::bind_method(D_METHOD("is_fit_content_enabled"), &RichTextLabel::is_fit_content_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_resize_font_to_fit", "enabled"), &RichTextLabel::set_resize_font_to_fit);
+	ClassDB::bind_method(D_METHOD("is_resize_font_to_fit_enabled"), &RichTextLabel::is_resize_font_to_fit_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_minimum_font_size", "size"), &RichTextLabel::set_minimum_font_size);
+	ClassDB::bind_method(D_METHOD("get_minimum_font_size"), &RichTextLabel::get_minimum_font_size);
+
+	ClassDB::bind_method(D_METHOD("set_maximum_font_size", "size"), &RichTextLabel::set_maximum_font_size);
+	ClassDB::bind_method(D_METHOD("get_maximum_font_size"), &RichTextLabel::get_maximum_font_size);
+
+	ClassDB::bind_method(D_METHOD("get_rendered_font_size"), &RichTextLabel::get_rendered_font_size);
+
 	ClassDB::bind_method(D_METHOD("set_selection_enabled", "enabled"), &RichTextLabel::set_selection_enabled);
 	ClassDB::bind_method(D_METHOD("is_selection_enabled"), &RichTextLabel::is_selection_enabled);
 
@@ -7868,6 +7995,11 @@ void RichTextLabel::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selection_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_selection_enabled", "is_selection_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_and_drop_selection_enabled"), "set_drag_and_drop_selection_enabled", "is_drag_and_drop_selection_enabled");
+
+	ADD_GROUP("Resize Font to Fit", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resize_font_to_fit", PROPERTY_HINT_GROUP_ENABLE), "set_resize_font_to_fit", "is_resize_font_to_fit_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "minimum_font_size", PROPERTY_HINT_RANGE, "1,256,1,or_greater"), "set_minimum_font_size", "get_minimum_font_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "maximum_font_size", PROPERTY_HINT_RANGE, "1,256,1,or_greater"), "set_maximum_font_size", "get_maximum_font_size");
 
 	ADD_GROUP("Displayed Text", "");
 	// Note: "visible_characters" and "visible_ratio" should be set after "text" to be correctly applied.
@@ -8125,7 +8257,13 @@ Size2 RichTextLabel::get_minimum_size() const {
 
 	if (fit_content) {
 		min_size.x = get_content_width();
-		min_size.y = get_content_height();
+		if (!resize_font_to_fit) {
+			min_size.y = get_content_height();
+		}
+	}
+
+	if (resize_font_to_fit) {
+		min_size.height = MAX(min_size.height, theme_cache.normal_font->get_height(minimum_font_size));
 	}
 
 	return sb_min_size +

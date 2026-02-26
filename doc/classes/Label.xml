@@ -33,6 +33,12 @@
 				If there are no lines, returns font size in pixels.
 			</description>
 		</method>
+		<method name="get_rendered_font_size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the font size that is currently used for rendering. When [member resize_font_to_fit] is enabled, this returns the automatically calculated font size. Otherwise, it returns the theme font size.
+			</description>
+		</method>
 		<method name="get_total_character_count" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -77,9 +83,18 @@
 		<member name="max_lines_visible" type="int" setter="set_max_lines_visible" getter="get_max_lines_visible" default="-1">
 			Limits the lines of text the node shows on screen.
 		</member>
+		<member name="maximum_font_size" type="int" setter="set_maximum_font_size" getter="get_maximum_font_size" default="60">
+			The maximum font size used when [member resize_font_to_fit] is enabled. If [member minimum_font_size] is greater than [member maximum_font_size], the minimum font size takes precedence.
+		</member>
+		<member name="minimum_font_size" type="int" setter="set_minimum_font_size" getter="get_minimum_font_size" default="10">
+			The minimum font size used when [member resize_font_to_fit] is enabled. Also determines the minimum vertical size of this [Label], potentially used by a parent [Container]. If [member minimum_font_size] is greater than [member maximum_font_size], the minimum font size takes precedence.
+		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="2" />
 		<member name="paragraph_separator" type="String" setter="set_paragraph_separator" getter="get_paragraph_separator" default="&quot;\\n&quot;">
 			String used as a paragraph separator. Each paragraph is processed independently, in its own BiDi context.
+		</member>
+		<member name="resize_font_to_fit" type="bool" setter="set_resize_font_to_fit" getter="is_resize_font_to_fit_enabled" default="false">
+			If [code]true[/code], the text size will automatically shrink or grow to fit within the node's bounding rectangle. It will pick the largest font size between [member minimum_font_size] and [member maximum_font_size] that doesn't cause the text to be truncated.
 		</member>
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" enum="Control.SizeFlags" is_bitfield="true" default="4" />
 		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="TextServer.StructuredTextParser" default="0">
