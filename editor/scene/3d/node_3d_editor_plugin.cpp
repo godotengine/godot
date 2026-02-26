@@ -3908,7 +3908,8 @@ void Node3DEditorViewport::_draw() {
 					_edit.mouse_pos,
 					center,
 					handle_color,
-					Math::round(2 * EDSCALE));
+					Math::round(1.5 * EDSCALE),
+					true);
 		}
 	}
 	if (previewing) {
