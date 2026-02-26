@@ -33,6 +33,9 @@ doc_classes/*                       @godotengine/documentation
 /drivers/winmidi/                   @godotengine/audio
 /drivers/xaudio2/                   @godotengine/audio
 
+## Input
+/drivers/sdl/                                 @godotengine/input
+
 ## Rendering
 /drivers/dummy/                     @godotengine/rendering
 /drivers/gl_context/                @godotengine/rendering
