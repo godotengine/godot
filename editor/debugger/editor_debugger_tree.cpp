@@ -280,18 +280,14 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		if (debugger_id == p_debugger) { // Can use remote id.
 			if (inspected_object_ids.has(uint64_t(node.id))) {
 				ids_present.append(node.id);
-
-				if (selection_uncollapse_all) {
+				select_items.push_back(item);
+				if (should_scroll) {
 					selection_uncollapse_all = false;
 
 					// Temporarily set to `false`, to allow caching the unfolds.
 					updating_scene_tree = false;
 					item->uncollapse_tree();
 					updating_scene_tree = true;
-				}
-
-				select_items.push_back(item);
-				if (should_scroll) {
 					scroll_item = item;
 				}
 			}
