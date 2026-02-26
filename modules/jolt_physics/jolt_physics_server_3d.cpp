@@ -31,6 +31,7 @@
 #include "jolt_physics_server_3d.h"
 
 #include "joints/jolt_cone_twist_joint_3d.h"
+#include "joints/jolt_distance_joint_3d.h"
 #include "joints/jolt_generic_6dof_joint_3d.h"
 #include "joints/jolt_hinge_joint_3d.h"
 #include "joints/jolt_joint_3d.h"
@@ -1547,6 +1548,41 @@ bool JoltPhysicsServer3D::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis
 	return g6dof_joint->get_flag(p_axis, p_flag);
 }
 
+void JoltPhysicsServer3D::joint_make_distance(
+		RID p_joint,
+		RID p_body_a,
+		const Vector3 &p_local_a,
+		RID p_body_b,
+		const Vector3 &p_local_b) {
+	JoltJoint3D *old_joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL(old_joint);
+
+	JoltBody3D *body_a = body_owner.get_or_null(p_body_a);
+	JoltBody3D *body_b = body_owner.get_or_null(p_body_b);
+	ERR_FAIL_COND(body_a == body_b);
+
+	JoltJoint3D *new_joint = memnew(
+			JoltDistanceJoint3D(*old_joint, body_a, body_b, p_local_a, p_local_b));
+
+	memdelete(old_joint);
+	old_joint = nullptr;
+
+	joint_owner.replace(p_joint, new_joint);
+}
+
+void JoltPhysicsServer3D::distance_joint_set_param(
+		RID p_joint,
+		PhysicsServer3D::DistanceJointParam p_param,
+		real_t p_value) {
+	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL(joint);
+
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_DISTANCE_JOINT);
+	auto *distance_joint = static_cast<JoltDistanceJoint3D *>(joint);
+
+	return distance_joint->set_jolt_param(p_param, p_value);
+}
+
 PhysicsServer3D::JointType JoltPhysicsServer3D::joint_get_type(RID p_joint) const {
 	const JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL_V(joint, JOINT_TYPE_PIN);
@@ -2024,4 +2060,14 @@ float JoltPhysicsServer3D::generic_6dof_joint_get_applied_torque(RID p_joint) {
 	JoltGeneric6DOFJoint3D *g6dof_joint = static_cast<JoltGeneric6DOFJoint3D *>(joint);
 
 	return g6dof_joint->get_applied_torque();
+}
+
+float JoltPhysicsServer3D::distance_joint_get_applied_force(RID p_joint) {
+	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0.0f);
+
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_DISTANCE_JOINT, 0.0f);
+	JoltDistanceJoint3D *distance_joint = static_cast<JoltDistanceJoint3D *>(joint);
+
+	return distance_joint->get_applied_force();
 }
