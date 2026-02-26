@@ -34,7 +34,7 @@
 
 - (id)init {
 	self = [super init];
-	pr_state = DisplayServer::PROGRESS_STATE_NOPROGRESS;
+	pr_state = DisplayServerEnums::PROGRESS_STATE_NOPROGRESS;
 	pr_value = 0.f;
 	pr_offset = 0.f;
 	return self;
@@ -44,7 +44,7 @@
 	pr_value = value;
 }
 
-- (void)setState:(DisplayServer::ProgressState)state {
+- (void)setState:(DisplayServerEnums::ProgressState)state {
 	pr_state = state;
 }
 
@@ -53,7 +53,7 @@
 	[[NSGraphicsContext currentContext] setImageInterpolation:NSImageInterpolationHigh];
 	[[NSApp applicationIconImage] drawInRect:self.bounds];
 
-	if (pr_state == DisplayServer::PROGRESS_STATE_NOPROGRESS) {
+	if (pr_state == DisplayServerEnums::PROGRESS_STATE_NOPROGRESS) {
 		return;
 	}
 
@@ -71,7 +71,7 @@
 	[bezier_path addClip];
 
 	// Fill draw.
-	if (pr_state == DisplayServer::PROGRESS_STATE_INDETERMINATE) {
+	if (pr_state == DisplayServerEnums::PROGRESS_STATE_INDETERMINATE) {
 		rect.size.width /= 5.0;
 		pr_offset += rect.size.width / 10.0;
 		if (pr_offset > self.bounds.size.width - rect.size.width) {
@@ -81,9 +81,9 @@
 	} else {
 		rect.size.width = Math::floor(rect.size.width * pr_value);
 	}
-	if (pr_state == DisplayServer::PROGRESS_STATE_ERROR) {
+	if (pr_state == DisplayServerEnums::PROGRESS_STATE_ERROR) {
 		[[NSColor colorWithSRGBRed:1.0 green:0.2 blue:0.2 alpha:1.0] set];
-	} else if (pr_state == DisplayServer::PROGRESS_STATE_PAUSED) {
+	} else if (pr_state == DisplayServerEnums::PROGRESS_STATE_PAUSED) {
 		[[NSColor colorWithSRGBRed:1.0 green:1.0 blue:0.2 alpha:1.0] set];
 	} else {
 		[[NSColor colorWithSRGBRed:0.2 green:0.6 blue:1.0 alpha:1.0] set];

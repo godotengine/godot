@@ -338,7 +338,7 @@ public:
 	void _accessibility_force_update();
 	void _accessibility_notify_change(const Node *p_node, bool p_remove = false);
 	void _flush_accessibility_changes();
-	void _process_accessibility_changes(int p_window_id); // Effectively DisplayServer::WindowID
+	void _process_accessibility_changes(int p_window_id); // Effectively DisplayServerEnums::WindowID
 
 	virtual void initialize() override;
 

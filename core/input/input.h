@@ -41,7 +41,7 @@
 class GamepadMotion;
 
 namespace InputClassEnums {
-// Keep synced with "DisplayServer::MouseMode" enum.
+// Keep synced with DisplayServerEnums::MouseMode enum.
 enum MouseMode : int {
 	MOUSE_MODE_VISIBLE,
 	MOUSE_MODE_HIDDEN,
@@ -51,6 +51,7 @@ enum MouseMode : int {
 	MOUSE_MODE_MAX,
 };
 
+// Keep synced with DisplayServerEnums and Control enums.
 #undef CursorShape
 enum CursorShape : int {
 	CURSOR_ARROW,

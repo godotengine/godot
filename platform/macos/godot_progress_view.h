@@ -36,10 +36,10 @@
 #import <Foundation/Foundation.h>
 
 @interface GodotProgressView : NSView {
-	DisplayServer::ProgressState pr_state;
+	DisplayServerEnums::ProgressState pr_state;
 	float pr_value;
 	float pr_offset;
 }
 - (void)setValue:(float)value;
-- (void)setState:(DisplayServer::ProgressState)state;
+- (void)setState:(DisplayServerEnums::ProgressState)state;
 @end

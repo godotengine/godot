@@ -64,33 +64,33 @@ DisplayServerAndroid *DisplayServerAndroid::get_singleton() {
 	return static_cast<DisplayServerAndroid *>(DisplayServer::get_singleton());
 }
 
-bool DisplayServerAndroid::has_feature(Feature p_feature) const {
+bool DisplayServerAndroid::has_feature(DisplayServerEnums::Feature p_feature) const {
 	switch (p_feature) {
 #ifndef DISABLE_DEPRECATED
-		case FEATURE_GLOBAL_MENU: {
+		case DisplayServerEnums::FEATURE_GLOBAL_MENU: {
 			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
 		} break;
 #endif
-		case FEATURE_CURSOR_SHAPE:
-		//case FEATURE_CUSTOM_CURSOR_SHAPE:
-		//case FEATURE_HIDPI:
-		//case FEATURE_ICON:
-		//case FEATURE_IME:
-		case FEATURE_MOUSE:
-		//case FEATURE_MOUSE_WARP:
-		case FEATURE_NATIVE_DIALOG:
-		case FEATURE_NATIVE_DIALOG_INPUT:
-		case FEATURE_NATIVE_DIALOG_FILE:
-		//case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
-		case FEATURE_NATIVE_DIALOG_FILE_MIME:
-		//case FEATURE_NATIVE_ICON:
-		case FEATURE_WINDOW_TRANSPARENCY:
-		case FEATURE_CLIPBOARD:
-		case FEATURE_KEEP_SCREEN_ON:
-		case FEATURE_ORIENTATION:
-		case FEATURE_TOUCHSCREEN:
-		case FEATURE_VIRTUAL_KEYBOARD:
-		case FEATURE_TEXT_TO_SPEECH:
+		case DisplayServerEnums::FEATURE_CURSOR_SHAPE:
+		//case DisplayServerEnums::FEATURE_CUSTOM_CURSOR_SHAPE:
+		//case DisplayServerEnums::FEATURE_HIDPI:
+		//case DisplayServerEnums::FEATURE_ICON:
+		//case DisplayServerEnums::FEATURE_IME:
+		case DisplayServerEnums::FEATURE_MOUSE:
+		//case DisplayServerEnums::FEATURE_MOUSE_WARP:
+		case DisplayServerEnums::FEATURE_NATIVE_DIALOG:
+		case DisplayServerEnums::FEATURE_NATIVE_DIALOG_INPUT:
+		case DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE:
+		//case DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_EXTRA:
+		case DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_MIME:
+		//case DisplayServerEnums::FEATURE_NATIVE_ICON:
+		case DisplayServerEnums::FEATURE_WINDOW_TRANSPARENCY:
+		case DisplayServerEnums::FEATURE_CLIPBOARD:
+		case DisplayServerEnums::FEATURE_KEEP_SCREEN_ON:
+		case DisplayServerEnums::FEATURE_ORIENTATION:
+		case DisplayServerEnums::FEATURE_TOUCHSCREEN:
+		case DisplayServerEnums::FEATURE_VIRTUAL_KEYBOARD:
+		case DisplayServerEnums::FEATURE_TEXT_TO_SPEECH:
 			return true;
 		default:
 			return false;
@@ -222,7 +222,7 @@ void DisplayServerAndroid::emit_input_dialog_callback(String p_text) {
 	}
 }
 
-Error DisplayServerAndroid::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) {
+Error DisplayServerAndroid::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_NULL_V(godot_java, FAILED);
 	file_picker_callback = p_callback;
@@ -271,7 +271,7 @@ bool DisplayServerAndroid::screen_is_kept_on() const {
 	return keep_screen_on;
 }
 
-void DisplayServerAndroid::screen_set_orientation(DisplayServer::ScreenOrientation p_orientation, int p_screen) {
+void DisplayServerAndroid::screen_set_orientation(DisplayServerEnums::ScreenOrientation p_orientation, int p_screen) {
 	p_screen = _get_screen_index(p_screen);
 	int screen_count = get_screen_count();
 	ERR_FAIL_INDEX(p_screen, screen_count);
@@ -282,17 +282,17 @@ void DisplayServerAndroid::screen_set_orientation(DisplayServer::ScreenOrientati
 	godot_io_java->set_screen_orientation(p_orientation);
 }
 
-DisplayServer::ScreenOrientation DisplayServerAndroid::screen_get_orientation(int p_screen) const {
+DisplayServerEnums::ScreenOrientation DisplayServerAndroid::screen_get_orientation(int p_screen) const {
 	p_screen = _get_screen_index(p_screen);
 	int screen_count = get_screen_count();
-	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_LANDSCAPE);
+	ERR_FAIL_INDEX_V(p_screen, screen_count, DisplayServerEnums::SCREEN_LANDSCAPE);
 
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
-	ERR_FAIL_NULL_V(godot_io_java, SCREEN_LANDSCAPE);
+	ERR_FAIL_NULL_V(godot_io_java, DisplayServerEnums::SCREEN_LANDSCAPE);
 
 	const int orientation = godot_io_java->get_screen_orientation();
-	ERR_FAIL_INDEX_V_MSG(orientation, 7, SCREEN_LANDSCAPE, "Unrecognized screen orientation");
-	return (ScreenOrientation)orientation;
+	ERR_FAIL_INDEX_V_MSG(orientation, 7, DisplayServerEnums::SCREEN_LANDSCAPE, "Unrecognized screen orientation");
+	return (DisplayServerEnums::ScreenOrientation)orientation;
 }
 
 int DisplayServerAndroid::get_display_rotation() const {
@@ -385,7 +385,7 @@ bool DisplayServerAndroid::is_touchscreen_available() const {
 	return true;
 }
 
-void DisplayServerAndroid::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, VirtualKeyboardType p_type, int p_max_length, int p_cursor_start, int p_cursor_end) {
+void DisplayServerAndroid::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, DisplayServerEnums::VirtualKeyboardType p_type, int p_max_length, int p_cursor_start, int p_cursor_end) {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL(godot_io_java);
 
@@ -421,23 +421,23 @@ bool DisplayServerAndroid::has_hardware_keyboard() const {
 	return godot_io_java->has_hardware_keyboard();
 }
 
-void DisplayServerAndroid::window_set_window_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
+void DisplayServerAndroid::window_set_window_event_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	window_event_callback = p_callable;
 }
 
-void DisplayServerAndroid::window_set_input_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
+void DisplayServerAndroid::window_set_input_event_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	input_event_callback = p_callable;
 }
 
-void DisplayServerAndroid::window_set_input_text_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
+void DisplayServerAndroid::window_set_input_text_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	input_text_callback = p_callable;
 }
 
-void DisplayServerAndroid::window_set_rect_changed_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
+void DisplayServerAndroid::window_set_rect_changed_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	rect_changed_callback = p_callable;
 }
 
-void DisplayServerAndroid::window_set_drop_files_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
+void DisplayServerAndroid::window_set_drop_files_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	// Not supported on Android.
 }
 
@@ -452,7 +452,7 @@ void DisplayServerAndroid::_window_callback(const Callable &p_callable, bool p_d
 	}
 }
 
-void DisplayServerAndroid::send_window_event(DisplayServer::WindowEvent p_event, bool p_deferred) const {
+void DisplayServerAndroid::send_window_event(DisplayServerEnums::WindowEvent p_event, bool p_deferred) const {
 	_window_callback(window_event_callback, p_deferred, int(p_event));
 }
 
@@ -468,43 +468,43 @@ void DisplayServerAndroid::_dispatch_input_events(const Ref<InputEvent> &p_event
 	DisplayServerAndroid::get_singleton()->send_input_event(p_event);
 }
 
-Vector<DisplayServer::WindowID> DisplayServerAndroid::get_window_list() const {
-	Vector<WindowID> ret;
-	ret.push_back(MAIN_WINDOW_ID);
+Vector<DisplayServerEnums::WindowID> DisplayServerAndroid::get_window_list() const {
+	Vector<DisplayServerEnums::WindowID> ret;
+	ret.push_back(DisplayServerEnums::MAIN_WINDOW_ID);
 	return ret;
 }
 
-DisplayServer::WindowID DisplayServerAndroid::get_window_at_screen_position(const Point2i &p_position) const {
-	return MAIN_WINDOW_ID;
+DisplayServerEnums::WindowID DisplayServerAndroid::get_window_at_screen_position(const Point2i &p_position) const {
+	return DisplayServerEnums::MAIN_WINDOW_ID;
 }
 
-int64_t DisplayServerAndroid::window_get_native_handle(HandleType p_handle_type, WindowID p_window) const {
-	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, 0);
+int64_t DisplayServerAndroid::window_get_native_handle(DisplayServerEnums::HandleType p_handle_type, DisplayServerEnums::WindowID p_window) const {
+	ERR_FAIL_COND_V(p_window != DisplayServerEnums::MAIN_WINDOW_ID, 0);
 	switch (p_handle_type) {
-		case WINDOW_HANDLE: {
+		case DisplayServerEnums::WINDOW_HANDLE: {
 			return reinterpret_cast<int64_t>(static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity());
 		}
-		case WINDOW_VIEW: {
+		case DisplayServerEnums::WINDOW_VIEW: {
 			return 0; // Not supported.
 		}
 #ifdef GLES3_ENABLED
-		case DISPLAY_HANDLE: {
+		case DisplayServerEnums::DISPLAY_HANDLE: {
 			if (rendering_driver == "opengl3") {
 				return reinterpret_cast<int64_t>(eglGetCurrentDisplay());
 			}
 			return 0;
 		}
-		case OPENGL_CONTEXT: {
+		case DisplayServerEnums::OPENGL_CONTEXT: {
 			if (rendering_driver == "opengl3") {
 				return reinterpret_cast<int64_t>(eglGetCurrentContext());
 			}
 			return 0;
 		}
-		case EGL_DISPLAY: {
+		case DisplayServerEnums::EGL_DISPLAY: {
 			// @todo Find a way to get this from the Java side.
 			return 0;
 		}
-		case EGL_CONFIG: {
+		case DisplayServerEnums::EGL_CONFIG: {
 			// @todo Find a way to get this from the Java side.
 			return 0;
 		}
@@ -515,95 +515,95 @@ int64_t DisplayServerAndroid::window_get_native_handle(HandleType p_handle_type,
 	}
 }
 
-void DisplayServerAndroid::window_attach_instance_id(ObjectID p_instance, DisplayServer::WindowID p_window) {
+void DisplayServerAndroid::window_attach_instance_id(ObjectID p_instance, DisplayServerEnums::WindowID p_window) {
 	window_attached_instance_id = p_instance;
 }
 
-ObjectID DisplayServerAndroid::window_get_attached_instance_id(DisplayServer::WindowID p_window) const {
+ObjectID DisplayServerAndroid::window_get_attached_instance_id(DisplayServerEnums::WindowID p_window) const {
 	return window_attached_instance_id;
 }
 
-void DisplayServerAndroid::window_set_title(const String &p_title, DisplayServer::WindowID p_window) {
+void DisplayServerAndroid::window_set_title(const String &p_title, DisplayServerEnums::WindowID p_window) {
 	// Not supported on Android.
 }
 
-int DisplayServerAndroid::window_get_current_screen(DisplayServer::WindowID p_window) const {
-	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, INVALID_SCREEN);
+int DisplayServerAndroid::window_get_current_screen(DisplayServerEnums::WindowID p_window) const {
+	ERR_FAIL_COND_V(p_window != DisplayServerEnums::MAIN_WINDOW_ID, DisplayServerEnums::INVALID_SCREEN);
 	return 0;
 }
 
-void DisplayServerAndroid::window_set_current_screen(int p_screen, DisplayServer::WindowID p_window) {
+void DisplayServerAndroid::window_set_current_screen(int p_screen, DisplayServerEnums::WindowID p_window) {
 	// Not supported on Android.
 }
 
-Point2i DisplayServerAndroid::window_get_position(DisplayServer::WindowID p_window) const {
+Point2i DisplayServerAndroid::window_get_position(DisplayServerEnums::WindowID p_window) const {
 	return Point2i();
 }
 
-Point2i DisplayServerAndroid::window_get_position_with_decorations(DisplayServer::WindowID p_window) const {
+Point2i DisplayServerAndroid::window_get_position_with_decorations(DisplayServerEnums::WindowID p_window) const {
 	return Point2i();
 }
 
-void DisplayServerAndroid::window_set_position(const Point2i &p_position, DisplayServer::WindowID p_window) {
+void DisplayServerAndroid::window_set_position(const Point2i &p_position, DisplayServerEnums::WindowID p_window) {
 	// Not supported on Android.
 }
 
-void DisplayServerAndroid::window_set_transient(DisplayServer::WindowID p_window, DisplayServer::WindowID p_parent) {
+void DisplayServerAndroid::window_set_transient(DisplayServerEnums::WindowID p_window, DisplayServerEnums::WindowID p_parent) {
 	// Not supported on Android.
 }
 
-void DisplayServerAndroid::window_set_max_size(const Size2i p_size, DisplayServer::WindowID p_window) {
+void DisplayServerAndroid::window_set_max_size(const Size2i p_size, DisplayServerEnums::WindowID p_window) {
 	// Not supported on Android.
 }
 
-Size2i DisplayServerAndroid::window_get_max_size(DisplayServer::WindowID p_window) const {
+Size2i DisplayServerAndroid::window_get_max_size(DisplayServerEnums::WindowID p_window) const {
 	return Size2i();
 }
 
-void DisplayServerAndroid::window_set_min_size(const Size2i p_size, DisplayServer::WindowID p_window) {
+void DisplayServerAndroid::window_set_min_size(const Size2i p_size, DisplayServerEnums::WindowID p_window) {
 	// Not supported on Android.
 }
 
-Size2i DisplayServerAndroid::window_get_min_size(DisplayServer::WindowID p_window) const {
+Size2i DisplayServerAndroid::window_get_min_size(DisplayServerEnums::WindowID p_window) const {
 	return Size2i();
 }
 
-void DisplayServerAndroid::window_set_size(const Size2i p_size, DisplayServer::WindowID p_window) {
+void DisplayServerAndroid::window_set_size(const Size2i p_size, DisplayServerEnums::WindowID p_window) {
 	// Not supported on Android.
 }
 
-Size2i DisplayServerAndroid::window_get_size(DisplayServer::WindowID p_window) const {
+Size2i DisplayServerAndroid::window_get_size(DisplayServerEnums::WindowID p_window) const {
 	return OS_Android::get_singleton()->get_display_size();
 }
 
-Size2i DisplayServerAndroid::window_get_size_with_decorations(DisplayServer::WindowID p_window) const {
+Size2i DisplayServerAndroid::window_get_size_with_decorations(DisplayServerEnums::WindowID p_window) const {
 	return OS_Android::get_singleton()->get_display_size();
 }
 
-void DisplayServerAndroid::window_set_mode(DisplayServer::WindowMode p_mode, DisplayServer::WindowID p_window) {
-	OS_Android::get_singleton()->get_godot_java()->enable_immersive_mode(p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN);
+void DisplayServerAndroid::window_set_mode(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::WindowID p_window) {
+	OS_Android::get_singleton()->get_godot_java()->enable_immersive_mode(p_mode == DisplayServerEnums::WINDOW_MODE_FULLSCREEN || p_mode == DisplayServerEnums::WINDOW_MODE_EXCLUSIVE_FULLSCREEN);
 }
 
-DisplayServer::WindowMode DisplayServerAndroid::window_get_mode(DisplayServer::WindowID p_window) const {
+DisplayServerEnums::WindowMode DisplayServerAndroid::window_get_mode(DisplayServerEnums::WindowID p_window) const {
 	if (OS_Android::get_singleton()->get_godot_java()->is_in_immersive_mode()) {
-		return WINDOW_MODE_FULLSCREEN;
+		return DisplayServerEnums::WINDOW_MODE_FULLSCREEN;
 	} else {
-		return WINDOW_MODE_MAXIMIZED;
+		return DisplayServerEnums::WINDOW_MODE_MAXIMIZED;
 	}
 }
 
-bool DisplayServerAndroid::window_is_maximize_allowed(DisplayServer::WindowID p_window) const {
+bool DisplayServerAndroid::window_is_maximize_allowed(DisplayServerEnums::WindowID p_window) const {
 	return false;
 }
 
-void DisplayServerAndroid::window_set_flag(DisplayServer::WindowFlags p_flag, bool p_enabled, DisplayServer::WindowID p_window) {
+void DisplayServerAndroid::window_set_flag(DisplayServerEnums::WindowFlags p_flag, bool p_enabled, DisplayServerEnums::WindowID p_window) {
 	// Not supported on Android.
 }
 
-bool DisplayServerAndroid::window_get_flag(DisplayServer::WindowFlags p_flag, DisplayServer::WindowID p_window) const {
-	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, false);
+bool DisplayServerAndroid::window_get_flag(DisplayServerEnums::WindowFlags p_flag, DisplayServerEnums::WindowID p_window) const {
+	ERR_FAIL_COND_V(p_window != DisplayServerEnums::MAIN_WINDOW_ID, false);
 	switch (p_flag) {
-		case WindowFlags::WINDOW_FLAG_TRANSPARENT:
+		case DisplayServerEnums::WindowFlags::WINDOW_FLAG_TRANSPARENT:
 			return is_window_transparency_available();
 
 		default:
@@ -611,19 +611,19 @@ bool DisplayServerAndroid::window_get_flag(DisplayServer::WindowFlags p_flag, Di
 	}
 }
 
-void DisplayServerAndroid::window_request_attention(DisplayServer::WindowID p_window) {
+void DisplayServerAndroid::window_request_attention(DisplayServerEnums::WindowID p_window) {
 	// Not supported on Android.
 }
 
-void DisplayServerAndroid::window_move_to_foreground(DisplayServer::WindowID p_window) {
+void DisplayServerAndroid::window_move_to_foreground(DisplayServerEnums::WindowID p_window) {
 	// Not supported on Android.
 }
 
-bool DisplayServerAndroid::window_is_focused(WindowID p_window) const {
+bool DisplayServerAndroid::window_is_focused(DisplayServerEnums::WindowID p_window) const {
 	return true;
 }
 
-bool DisplayServerAndroid::window_can_draw(DisplayServer::WindowID p_window) const {
+bool DisplayServerAndroid::window_can_draw(DisplayServerEnums::WindowID p_window) const {
 	return true;
 }
 
@@ -654,7 +654,7 @@ Vector<String> DisplayServerAndroid::get_rendering_drivers_func() {
 	return drivers;
 }
 
-DisplayServer *DisplayServerAndroid::create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+DisplayServer *DisplayServerAndroid::create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerAndroid(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
@@ -722,11 +722,11 @@ void DisplayServerAndroid::reset_window() {
 #if defined(RD_ENABLED)
 	if (rendering_context_global) {
 		if (rendering_device) {
-			rendering_device->screen_free(MAIN_WINDOW_ID);
+			rendering_device->screen_free(DisplayServerEnums::MAIN_WINDOW_ID);
 		}
 
-		VSyncMode last_vsync_mode = rendering_context_global->window_get_vsync_mode(MAIN_WINDOW_ID);
-		rendering_context_global->window_destroy(MAIN_WINDOW_ID);
+		DisplayServerEnums::VSyncMode last_vsync_mode = rendering_context_global->window_get_vsync_mode(DisplayServerEnums::MAIN_WINDOW_ID);
+		rendering_context_global->window_destroy(DisplayServerEnums::MAIN_WINDOW_ID);
 
 		union {
 #ifdef VULKAN_ENABLED
@@ -741,17 +741,17 @@ void DisplayServerAndroid::reset_window() {
 		}
 #endif
 
-		if (rendering_context_global->window_create(MAIN_WINDOW_ID, &wpd) != OK) {
+		if (rendering_context_global->window_create(DisplayServerEnums::MAIN_WINDOW_ID, &wpd) != OK) {
 			ERR_PRINT(vformat("Failed to reset %s window.", rendering_driver));
 			return;
 		}
 
 		Size2i display_size = OS_Android::get_singleton()->get_display_size();
-		rendering_context_global->window_set_size(MAIN_WINDOW_ID, display_size.width, display_size.height);
-		rendering_context_global->window_set_vsync_mode(MAIN_WINDOW_ID, last_vsync_mode);
+		rendering_context_global->window_set_size(DisplayServerEnums::MAIN_WINDOW_ID, display_size.width, display_size.height);
+		rendering_context_global->window_set_vsync_mode(DisplayServerEnums::MAIN_WINDOW_ID, last_vsync_mode);
 
 		if (rendering_device) {
-			rendering_device->screen_create(MAIN_WINDOW_ID);
+			rendering_device->screen_create(DisplayServerEnums::MAIN_WINDOW_ID);
 		}
 	}
 #endif
@@ -771,7 +771,7 @@ void DisplayServerAndroid::notify_application_paused() {
 #endif // defined(RD_ENABLED)
 }
 
-DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error) {
 	rendering_driver = p_rendering_driver;
 
 	keep_screen_on = GLOBAL_GET("display/window/energy_saving/keep_screen_on");
@@ -793,24 +793,24 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 		RenderingContextDriverVulkanAndroid::WindowPlatformData wpd;
 		wpd.window = native_window;
 
-		if (rendering_context_global->window_create(MAIN_WINDOW_ID, &wpd) != OK) {
+		if (rendering_context_global->window_create(DisplayServerEnums::MAIN_WINDOW_ID, &wpd) != OK) {
 			ERR_PRINT(vformat("Failed to create %s window.", rendering_driver));
 			r_error = ERR_UNAVAILABLE;
 			return;
 		}
 
 		Size2i display_size = OS_Android::get_singleton()->get_display_size();
-		rendering_context_global->window_set_size(MAIN_WINDOW_ID, display_size.width, display_size.height);
-		rendering_context_global->window_set_vsync_mode(MAIN_WINDOW_ID, p_vsync_mode);
+		rendering_context_global->window_set_size(DisplayServerEnums::MAIN_WINDOW_ID, display_size.width, display_size.height);
+		rendering_context_global->window_set_vsync_mode(DisplayServerEnums::MAIN_WINDOW_ID, p_vsync_mode);
 
 		rendering_device = memnew(RenderingDevice);
-		if (rendering_device->initialize(rendering_context_global, MAIN_WINDOW_ID) != OK) {
+		if (rendering_device->initialize(rendering_context_global, DisplayServerEnums::MAIN_WINDOW_ID) != OK) {
 			rendering_device = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			return;
 		}
 
-		rendering_device->screen_create(MAIN_WINDOW_ID);
+		rendering_device->screen_create(DisplayServerEnums::MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
 	}
@@ -859,7 +859,7 @@ void DisplayServerAndroid::process_gyroscope(const Vector3 &p_gyroscope) {
 }
 
 void DisplayServerAndroid::_mouse_update_mode() {
-	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
+	DisplayServerEnums::MouseMode wanted_mouse_mode = mouse_mode_override_enabled
 			? mouse_mode_override
 			: mouse_mode_base;
 
@@ -870,13 +870,13 @@ void DisplayServerAndroid::_mouse_update_mode() {
 		return;
 	}
 
-	if (wanted_mouse_mode == MouseMode::MOUSE_MODE_HIDDEN) {
+	if (wanted_mouse_mode == DisplayServerEnums::MouseMode::MOUSE_MODE_HIDDEN) {
 		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->set_pointer_icon(CURSOR_TYPE_NULL);
 	} else {
 		cursor_set_shape(cursor_shape);
 	}
 
-	if (wanted_mouse_mode == MouseMode::MOUSE_MODE_CAPTURED) {
+	if (wanted_mouse_mode == DisplayServerEnums::MouseMode::MOUSE_MODE_CAPTURED) {
 		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->request_pointer_capture();
 	} else {
 		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->release_pointer_capture();
@@ -885,8 +885,8 @@ void DisplayServerAndroid::_mouse_update_mode() {
 	mouse_mode = wanted_mouse_mode;
 }
 
-void DisplayServerAndroid::mouse_set_mode(MouseMode p_mode) {
-	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+void DisplayServerAndroid::mouse_set_mode(DisplayServerEnums::MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, DisplayServerEnums::MouseMode::MOUSE_MODE_MAX);
 	if (p_mode == mouse_mode_base) {
 		return;
 	}
@@ -894,12 +894,12 @@ void DisplayServerAndroid::mouse_set_mode(MouseMode p_mode) {
 	_mouse_update_mode();
 }
 
-DisplayServer::MouseMode DisplayServerAndroid::mouse_get_mode() const {
+DisplayServerEnums::MouseMode DisplayServerAndroid::mouse_get_mode() const {
 	return mouse_mode;
 }
 
-void DisplayServerAndroid::mouse_set_mode_override(MouseMode p_mode) {
-	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+void DisplayServerAndroid::mouse_set_mode_override(DisplayServerEnums::MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, DisplayServerEnums::MouseMode::MOUSE_MODE_MAX);
 	if (p_mode == mouse_mode_override) {
 		return;
 	}
@@ -907,7 +907,7 @@ void DisplayServerAndroid::mouse_set_mode_override(MouseMode p_mode) {
 	_mouse_update_mode();
 }
 
-DisplayServer::MouseMode DisplayServerAndroid::mouse_get_mode_override() const {
+DisplayServerEnums::MouseMode DisplayServerAndroid::mouse_get_mode_override() const {
 	return mouse_mode_override;
 }
 
@@ -928,7 +928,7 @@ BitField<MouseButtonMask> DisplayServerAndroid::mouse_get_button_state() const {
 	return Input::get_singleton()->get_mouse_button_mask();
 }
 
-void DisplayServerAndroid::_cursor_set_shape_helper(CursorShape p_shape, bool force) {
+void DisplayServerAndroid::_cursor_set_shape_helper(DisplayServerEnums::CursorShape p_shape, bool force) {
 	if (!OS_Android::get_singleton()->get_godot_java()->get_godot_view()->can_update_pointer_icon()) {
 		return;
 	}
@@ -938,22 +938,22 @@ void DisplayServerAndroid::_cursor_set_shape_helper(CursorShape p_shape, bool fo
 
 	cursor_shape = p_shape;
 
-	if (mouse_mode == MouseMode::MOUSE_MODE_VISIBLE || mouse_mode == MouseMode::MOUSE_MODE_CONFINED) {
+	if (mouse_mode == DisplayServerEnums::MouseMode::MOUSE_MODE_VISIBLE || mouse_mode == DisplayServerEnums::MouseMode::MOUSE_MODE_CONFINED) {
 		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->set_pointer_icon(android_cursors[cursor_shape]);
 	}
 }
 
-void DisplayServerAndroid::cursor_set_shape(DisplayServer::CursorShape p_shape) {
-	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
+void DisplayServerAndroid::cursor_set_shape(DisplayServerEnums::CursorShape p_shape) {
+	ERR_FAIL_INDEX(p_shape, DisplayServerEnums::CURSOR_MAX);
 	_cursor_set_shape_helper(p_shape);
 }
 
-DisplayServer::CursorShape DisplayServerAndroid::cursor_get_shape() const {
+DisplayServerEnums::CursorShape DisplayServerAndroid::cursor_get_shape() const {
 	return cursor_shape;
 }
 
-void DisplayServerAndroid::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
-	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
+void DisplayServerAndroid::cursor_set_custom_image(const Ref<Resource> &p_cursor, DisplayServerEnums::CursorShape p_shape, const Vector2 &p_hotspot) {
+	ERR_FAIL_INDEX(p_shape, DisplayServerEnums::CURSOR_MAX);
 	String cursor_path = p_cursor.is_valid() ? p_cursor->get_path() : "";
 	if (!cursor_path.is_empty()) {
 		cursor_path = ProjectSettings::get_singleton()->globalize_path(cursor_path);
@@ -962,7 +962,7 @@ void DisplayServerAndroid::cursor_set_custom_image(const Ref<Resource> &p_cursor
 	_cursor_set_shape_helper(p_shape, true);
 }
 
-void DisplayServerAndroid::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
+void DisplayServerAndroid::window_set_vsync_mode(DisplayServerEnums::VSyncMode p_vsync_mode, DisplayServerEnums::WindowID p_window) {
 #if defined(RD_ENABLED)
 	if (rendering_context_global) {
 		rendering_context_global->window_set_vsync_mode(p_window, p_vsync_mode);
@@ -970,13 +970,13 @@ void DisplayServerAndroid::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 #endif
 }
 
-DisplayServer::VSyncMode DisplayServerAndroid::window_get_vsync_mode(WindowID p_window) const {
+DisplayServerEnums::VSyncMode DisplayServerAndroid::window_get_vsync_mode(DisplayServerEnums::WindowID p_window) const {
 #if defined(RD_ENABLED)
 	if (rendering_context_global) {
 		return rendering_context_global->window_get_vsync_mode(p_window);
 	}
 #endif
-	return DisplayServer::VSYNC_ENABLED;
+	return DisplayServerEnums::VSYNC_ENABLED;
 }
 
 void DisplayServerAndroid::reset_swap_buffers_flag() {

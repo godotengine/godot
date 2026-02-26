@@ -38,19 +38,19 @@
 #include "servers/display/accessibility_server.h"
 
 @implementation GodotWindowDelegate {
-	DisplayServer::WindowID window_id;
+	DisplayServerEnums::WindowID window_id;
 	DisplayServerMacOS *ds;
 }
 
 - (instancetype)initWithDisplayServer:(DisplayServerMacOS *)p_ds {
 	if (self = [super init]) {
 		ds = p_ds;
-		window_id = DisplayServerMacOS::INVALID_WINDOW_ID;
+		window_id = DisplayServerEnums::INVALID_WINDOW_ID;
 	}
 	return self;
 }
 
-- (void)setWindowID:(DisplayServer::WindowID)wid {
+- (void)setWindowID:(DisplayServerEnums::WindowID)wid {
 	window_id = wid;
 }
 
@@ -59,7 +59,7 @@
 		return YES;
 	}
 
-	ds->send_window_event(ds->get_window(window_id), DisplayServerMacOS::WINDOW_EVENT_CLOSE_REQUEST);
+	ds->send_window_event(ds->get_window(window_id), DisplayServerEnums::WINDOW_EVENT_CLOSE_REQUEST);
 	return NO;
 }
 
@@ -72,11 +72,11 @@
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	while (wd.transient_children.size()) {
-		ds->window_set_transient(*wd.transient_children.begin(), DisplayServerMacOS::INVALID_WINDOW_ID);
+		ds->window_set_transient(*wd.transient_children.begin(), DisplayServerEnums::INVALID_WINDOW_ID);
 	}
 
-	if (wd.transient_parent != DisplayServerMacOS::INVALID_WINDOW_ID) {
-		ds->window_set_transient(window_id, DisplayServerMacOS::INVALID_WINDOW_ID);
+	if (wd.transient_parent != DisplayServerEnums::INVALID_WINDOW_ID) {
+		ds->window_set_transient(window_id, DisplayServerEnums::INVALID_WINDOW_ID);
 	}
 
 	ds->mouse_exit_window(window_id);
@@ -127,7 +127,7 @@
 		ds->window_set_custom_window_buttons(wd, false);
 	}
 
-	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_TITLEBAR_CHANGE);
+	ds->send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_TITLEBAR_CHANGE);
 
 	// Force window resize event and redraw.
 	[self windowDidResize:notification];
@@ -146,7 +146,7 @@
 		ds->window_set_custom_window_buttons(wd, true);
 	}
 
-	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_TITLEBAR_CHANGE);
+	ds->send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_TITLEBAR_CHANGE);
 }
 
 - (void)windowDidFailToExitFullScreen:(NSWindow *)window {
@@ -161,7 +161,7 @@
 		ds->window_set_custom_window_buttons(wd, false);
 	}
 
-	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_TITLEBAR_CHANGE);
+	ds->send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_TITLEBAR_CHANGE);
 }
 
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
@@ -238,7 +238,7 @@
 		wd.size.width = content_rect.size.width * scale;
 		wd.size.height = content_rect.size.height * scale;
 
-		ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_DPI_CHANGE);
+		ds->send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_DPI_CHANGE);
 
 		CALayer *layer = [wd.window_view layer];
 		if (layer) {
@@ -317,7 +317,7 @@
 		[wd.window_button_view displayButtons];
 	}
 
-	if (ds->mouse_get_mode() == DisplayServer::MOUSE_MODE_CAPTURED) {
+	if (ds->mouse_get_mode() == DisplayServerEnums::MOUSE_MODE_CAPTURED) {
 		const NSRect content_rect = [wd.window_view frame];
 		NSRect point_in_window_rect = NSMakeRect(content_rect.size.width / 2, content_rect.size.height / 2, 0, 0);
 		NSPoint point_on_screen = [[wd.window_view window] convertRectToScreen:point_in_window_rect].origin;
@@ -333,7 +333,7 @@
 	ds->set_last_focused_window(window_id);
 	AccessibilityServer::get_singleton()->set_window_focused(window_id, true);
 
-	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_IN);
+	ds->send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 }
 
 - (void)windowDidResignKey:(NSNotification *)notification {
@@ -351,7 +351,7 @@
 	ds->release_pressed_events();
 	AccessibilityServer::get_singleton()->set_window_focused(window_id, false);
 
-	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_OUT);
+	ds->send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 }
 
 - (void)windowDidMiniaturize:(NSNotification *)notification {
@@ -365,7 +365,7 @@
 	ds->release_pressed_events();
 	AccessibilityServer::get_singleton()->set_window_focused(window_id, false);
 
-	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_OUT);
+	ds->send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 }
 
 - (void)windowDidDeminiaturize:(NSNotification *)notification {
@@ -380,7 +380,7 @@
 		ds->set_last_focused_window(window_id);
 		AccessibilityServer::get_singleton()->set_window_focused(window_id, true);
 
-		ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_IN);
+		ds->send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 	}
 }
 

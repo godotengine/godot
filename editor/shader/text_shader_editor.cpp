@@ -1161,7 +1161,7 @@ void TextShaderEditor::_bookmark_item_pressed(int p_idx) {
 
 void TextShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 	context_menu->clear();
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
+	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
 		context_menu->add_item(TTR("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
 		context_menu->add_separator();
 	}

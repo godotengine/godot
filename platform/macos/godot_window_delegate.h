@@ -39,7 +39,7 @@ class DisplayServerMacOS;
 
 @interface GodotWindowDelegate : NSObject <NSWindowDelegate>
 
-- (void)setWindowID:(DisplayServer::WindowID)wid;
+- (void)setWindowID:(DisplayServerEnums::WindowID)wid;
 
 - (instancetype)initWithDisplayServer:(DisplayServerMacOS *)p_ds;
 

@@ -4741,7 +4741,7 @@ void EditorHelpBitTooltip::popup_under_position(const Point2 &p_point) {
 		vr = window->get_usable_parent_rect();
 	}
 
-	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS) || is_embedded()) {
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS) || is_embedded()) {
 		if (r.size.x + r.position.x > vr.size.x + vr.position.x) {
 			// Place it in the opposite direction. If it fails, just hug the border.
 			r.position.x = p_point.x - r.size.x - tooltip_offset.x;

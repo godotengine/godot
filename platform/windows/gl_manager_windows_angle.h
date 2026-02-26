@@ -48,7 +48,7 @@ private:
 	virtual Vector<EGLint> _get_platform_context_attribs() const override;
 
 public:
-	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
+	void window_resize(DisplayServerEnums::WindowID p_window_id, int p_width, int p_height);
 
 	GLManagerANGLE_Windows() {}
 	~GLManagerANGLE_Windows() {}

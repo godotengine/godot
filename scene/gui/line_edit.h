@@ -72,6 +72,7 @@ public:
 		MENU_MAX
 	};
 
+	// Keep synced with DisplayServerEnums::VirtualKeyboardType enum.
 	enum VirtualKeyboardType {
 		KEYBOARD_TYPE_DEFAULT,
 		KEYBOARD_TYPE_MULTILINE,

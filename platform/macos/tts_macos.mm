@@ -30,6 +30,8 @@
 
 #import "tts_macos.h"
 
+#include "servers/display/display_server.h"
+
 @implementation TTS_MacOS
 
 - (id)init {
@@ -65,13 +67,13 @@
 		pos++;
 	}
 
-	DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_BOUNDARY, ids[utterance], pos);
+	DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_BOUNDARY, ids[utterance], pos);
 }
 
 // AVSpeechSynthesizer callback (macOS 10.14+)
 
 - (void)speechSynthesizer:(AVSpeechSynthesizer *)av_synth didCancelSpeechUtterance:(AVSpeechUtterance *)utterance API_AVAILABLE(macosx(10.14)) {
-	DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, ids[utterance]);
+	DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_CANCELED, ids[utterance]);
 	ids.erase(utterance);
 	speaking = false;
 	[self update];
@@ -80,7 +82,7 @@
 // AVSpeechSynthesizer callback (macOS 10.14+)
 
 - (void)speechSynthesizer:(AVSpeechSynthesizer *)av_synth didFinishSpeechUtterance:(AVSpeechUtterance *)utterance API_AVAILABLE(macosx(10.14)) {
-	DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_ENDED, ids[utterance]);
+	DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_ENDED, ids[utterance]);
 	ids.erase(utterance);
 	speaking = false;
 	[self update];
@@ -100,16 +102,16 @@
 			pos++;
 		}
 
-		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_BOUNDARY, last_utterance, pos);
+		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_BOUNDARY, last_utterance, pos);
 	}
 }
 
 - (void)speechSynthesizer:(NSSpeechSynthesizer *)ns_synth didFinishSpeaking:(BOOL)success {
 	if (!paused && have_utterance) {
 		if (success) {
-			DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_ENDED, last_utterance);
+			DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_ENDED, last_utterance);
 		} else {
-			DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, last_utterance);
+			DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_CANCELED, last_utterance);
 		}
 		have_utterance = false;
 	}
@@ -119,7 +121,7 @@
 
 - (void)update {
 	if (!speaking && queue.size() > 0) {
-		DisplayServer::TTSUtterance &message = queue.front()->get();
+		TTSUtterance &message = queue.front()->get();
 
 		if (@available(macOS 10.14, *)) {
 			AVSpeechSynthesizer *av_synth = synth;
@@ -148,7 +150,7 @@
 			have_utterance = true;
 			[ns_synth startSpeakingString:[NSString stringWithUTF8String:message.text.utf8().get_data()]];
 		}
-		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_STARTED, message.id);
+		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_STARTED, message.id);
 		queue.pop_front();
 
 		speaking = true;
@@ -178,8 +180,8 @@
 }
 
 - (void)stopSpeaking {
-	for (DisplayServer::TTSUtterance &message : queue) {
-		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, message.id);
+	for (TTSUtterance &message : queue) {
+		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_CANCELED, message.id);
 	}
 	queue.clear();
 	if (@available(macOS 10.14, *)) {
@@ -188,7 +190,7 @@
 	} else {
 		NSSpeechSynthesizer *ns_synth = synth;
 		if (have_utterance) {
-			DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, last_utterance);
+			DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_CANCELED, last_utterance);
 		}
 		[ns_synth stopSpeaking];
 	}
@@ -216,11 +218,11 @@
 	}
 
 	if (text.is_empty()) {
-		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, utterance_id);
+		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_CANCELED, utterance_id);
 		return;
 	}
 
-	DisplayServer::TTSUtterance message;
+	TTSUtterance message;
 	message.text = text;
 	message.voice = voice;
 	message.volume = CLAMP(volume, 0, 100);
