@@ -2167,7 +2167,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 		Label *label = memnew(Label);
 		label->set_theme_type_variation("HeaderSmall");
 		label->set_position(Point2(10, 0));
-		label->set_text(TTR("Scene Tree (Nodes):"));
+		label->set_text(TTRC("Scene Tree (Nodes):"));
 
 		add_child(label);
 	}
@@ -2201,7 +2201,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 
 	warning = memnew(AcceptDialog);
 	add_child(warning);
-	warning->set_title(TTR("Node Configuration Warning!"));
+	warning->set_title(TTRC("Node Configuration Warning!"));
 	warning->set_flag(Window::FLAG_POPUP, true);
 
 	last_hash = 0;
@@ -2219,7 +2219,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	add_child(update_node_tooltip_delay);
 
 	revoke_dialog = memnew(ConfirmationDialog);
-	revoke_dialog->set_ok_button_text(TTR("Revoke"));
+	revoke_dialog->set_ok_button_text(TTRC("Revoke"));
 	add_child(revoke_dialog);
 	revoke_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeEditor::_update_ask_before_revoking_unique_name));
 	VBoxContainer *vb = memnew(VBoxContainer);
@@ -2227,8 +2227,8 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	revoke_dialog_label = memnew(Label);
 	revoke_dialog_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	vb->add_child(revoke_dialog_label);
-	ask_before_revoke_checkbox = memnew(CheckBox(TTR("Don't Ask Again")));
-	ask_before_revoke_checkbox->set_tooltip_text(TTR("This dialog can also be enabled/disabled in the Editor Settings: Docks > Scene Tree > Ask Before Revoking Unique Name."));
+	ask_before_revoke_checkbox = memnew(CheckBox(TTRC("Don't Ask Again")));
+	ask_before_revoke_checkbox->set_tooltip_text(TTRC("This dialog can also be enabled/disabled in the Editor Settings: Docks > Scene Tree > Ask Before Revoking Unique Name."));
 	vb->add_child(ask_before_revoke_checkbox);
 
 	script_types = memnew(LocalVector<StringName>);
