@@ -39,7 +39,11 @@
 
 class Callable;
 class StringName;
+class RandomNumberGenerator;
 class Variant;
+
+template <typename T>
+class Ref;
 
 struct ArrayPrivate;
 struct ContainerType;
@@ -135,6 +139,7 @@ public:
 	void sort();
 	void sort_custom(const Callable &p_callable);
 	void shuffle();
+	void rng_shuffle(RandomNumberGenerator *p_rng);
 	int bsearch(const Variant &p_value, bool p_before = true) const;
 	int bsearch_custom(const Variant &p_value, const Callable &p_callable, bool p_before = true) const;
 	void reverse();
