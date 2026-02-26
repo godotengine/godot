@@ -33,6 +33,8 @@
 TEST_FORCE_LINK(test_color)
 
 #include "core/math/color.h"
+#include "core/math/vector3.h"
+#include "core/math/vector4.h"
 
 namespace TestColor {
 
@@ -66,6 +68,16 @@ TEST_CASE("[Color] Constructor methods") {
 	CHECK_MESSAGE(
 			green_rgba.is_equal_approx(green_hsva),
 			"Creation with HSV notation should result in components approximately equal to the default constructor.");
+
+	CHECK_MESSAGE(
+			Color(Vector3(0.5f, 0.5f, 1.0f)).get_rgba() == Vector4(0.5f, 0.5f, 1.0f, 1.0f),
+			"Creation with a Vector3 should result in correct RGBA");
+	CHECK_MESSAGE(
+			Color(Vector3(0.5f, 0.5f, 1.0f), 0.75f).get_rgba() == Vector4(0.5f, 0.5f, 1.0f, 0.75f),
+			"Creation with a Vector3 and a float should result in correct RGBA");
+	CHECK_MESSAGE(
+			Color(Vector4(0.5f, 0.5f, 1.0f, 0.5f)).get_rgba() == Vector4(0.5f, 0.5f, 1.0f, 0.5),
+			"Creation with a Vector4 should result in correct RGBA");
 }
 
 TEST_CASE("[Color] Operators") {
