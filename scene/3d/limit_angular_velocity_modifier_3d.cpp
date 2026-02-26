@@ -147,7 +147,7 @@ void LimitAngularVelocityModifier3D::set_root_bone(int p_index, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (chains[p_index].root_bone.bone <= -1 || chains[p_index].root_bone.bone >= sk->get_bone_count()) {
-			WARN_PRINT("Root bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + ": Root bone index '" + itos(p_bone) + "' is out of range!");
 			chains[p_index].root_bone.bone = -1;
 		} else {
 			chains[p_index].root_bone.name = sk->get_bone_name(chains[p_index].root_bone.bone);
@@ -184,7 +184,7 @@ void LimitAngularVelocityModifier3D::set_end_bone(int p_index, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (chains[p_index].end_bone.bone <= -1 || chains[p_index].end_bone.bone >= sk->get_bone_count()) {
-			WARN_PRINT("End bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + ": End bone index '" + itos(p_bone) + "' is out of range!");
 			chains[p_index].end_bone.bone = -1;
 		} else {
 			chains[p_index].end_bone.name = sk->get_bone_name(chains[p_index].end_bone.bone);

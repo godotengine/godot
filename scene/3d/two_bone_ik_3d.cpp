@@ -229,7 +229,7 @@ void TwoBoneIK3D::set_root_bone(int p_index, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (tb_settings[p_index]->root_bone.bone <= -1 || tb_settings[p_index]->root_bone.bone >= sk->get_bone_count()) {
-			WARN_PRINT("Root bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + ": Root bone index '" + itos(p_bone) + "' is out of range!");
 			tb_settings[p_index]->root_bone.bone = -1;
 		} else {
 			tb_settings[p_index]->root_bone.name = sk->get_bone_name(tb_settings[p_index]->root_bone.bone);
@@ -266,7 +266,7 @@ void TwoBoneIK3D::set_middle_bone(int p_index, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (tb_settings[p_index]->middle_bone.bone <= -1 || tb_settings[p_index]->middle_bone.bone >= sk->get_bone_count()) {
-			WARN_PRINT("Middle bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + ": Middle bone index '" + itos(p_bone) + "' is out of range!");
 			tb_settings[p_index]->middle_bone.bone = -1;
 			tb_settings[p_index]->use_virtual_end = false; // To sync inspector.
 		} else {
@@ -305,7 +305,7 @@ void TwoBoneIK3D::set_end_bone(int p_index, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (tb_settings[p_index]->end_bone.bone <= -1 || tb_settings[p_index]->end_bone.bone >= sk->get_bone_count()) {
-			WARN_PRINT("End bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + ": End bone index '" + itos(p_bone) + "' is out of range!");
 			tb_settings[p_index]->end_bone.bone = -1;
 		} else {
 			tb_settings[p_index]->end_bone.name = sk->get_bone_name(tb_settings[p_index]->end_bone.bone);
@@ -403,6 +403,9 @@ float TwoBoneIK3D::get_end_bone_length(int p_index) const {
 void TwoBoneIK3D::set_target_node(int p_index, const NodePath &p_node_path) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	tb_settings[p_index]->target_node = p_node_path;
+	if (should_check_node_path() && !p_node_path.is_empty() && !Object::cast_to<Node3D>(get_node_or_null(p_node_path))) {
+		WARN_PRINT_ED("Setting: " + itos(p_index) + ": Target node '" + String(p_node_path) + "' not found.");
+	}
 	update_configuration_warnings();
 }
 
@@ -414,6 +417,9 @@ NodePath TwoBoneIK3D::get_target_node(int p_index) const {
 void TwoBoneIK3D::set_pole_node(int p_index, const NodePath &p_node_path) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	tb_settings[p_index]->pole_node = p_node_path;
+	if (should_check_node_path() && !p_node_path.is_empty() && !Object::cast_to<Node3D>(get_node_or_null(p_node_path))) {
+		WARN_PRINT_ED("Setting: " + itos(p_index) + ": Pole node '" + String(p_node_path) + "' not found.");
+	}
 	update_configuration_warnings();
 }
 

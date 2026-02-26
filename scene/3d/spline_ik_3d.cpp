@@ -122,6 +122,9 @@ PackedStringArray SplineIK3D::get_configuration_warnings() const {
 void SplineIK3D::set_path_3d(int p_index, const NodePath &p_path_3d) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	sp_settings[p_index]->path_3d = p_path_3d;
+	if (should_check_node_path() && !p_path_3d.is_empty() && !Object::cast_to<Path3D>(get_node_or_null(p_path_3d))) {
+		WARN_PRINT_ED("Setting: " + itos(p_index) + ": Path3D '" + String(p_path_3d) + "' not found.");
+	}
 	notify_property_list_changed();
 	update_configuration_warnings();
 }
