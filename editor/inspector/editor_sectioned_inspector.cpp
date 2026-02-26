@@ -30,6 +30,7 @@
 
 #include "editor_sectioned_inspector.h"
 
+#include "editor/doc/editor_help.h"
 #include "editor/editor_string_names.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/editor_property_name_processor.h"
@@ -58,6 +59,11 @@ class SectionedInspectorFilter : public Object {
 	Object *edited = nullptr;
 	String section;
 	bool allow_sub = false;
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("_get_property_warning", "name"), &SectionedInspectorFilter::_get_property_warning);
+	}
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
 		if (!edited) {
@@ -124,6 +130,17 @@ class SectionedInspectorFilter : public Object {
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const {
 		r_property = edited->property_get_revert(section + "/" + p_name);
 		return true;
+	}
+
+	String _get_property_warning(const StringName &p_name) const {
+		if (!edited || !edited->has_method("_get_property_warning")) {
+			return String();
+		}
+		String name = p_name;
+		if (!section.is_empty()) {
+			name = section + "/" + name;
+		}
+		return edited->call("_get_property_warning", name);
 	}
 
 public:

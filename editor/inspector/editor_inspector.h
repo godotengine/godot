@@ -96,6 +96,7 @@ class EditorProperty : public Container {
 		Ref<Texture2D> override_icon;
 		Ref<Texture2D> remove_icon;
 		Ref<Texture2D> help_icon;
+		Ref<Texture2D> warning_icon;
 
 		int font_size = 0;
 		int font_offset = 0;
