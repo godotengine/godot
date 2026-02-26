@@ -745,6 +745,10 @@ public:
 		};
 
 		IdentifierNode *identifier = nullptr;
+
+		/// [Monarch] Added an extra field for storing generic parameters.
+		Vector<IdentifierNode*> generic_parameters;
+
 		String icon_path;
 		String simplified_icon_path;
 		Vector<Member> members;
@@ -1537,6 +1541,10 @@ private:
 	void parse_program();
 	ClassNode *parse_class(bool p_is_static);
 	void parse_class_name();
+
+	/// [Monarch] Reginleif addition. Grants ability to parse generic parameter lists.
+	void parse_generic_parameters();
+
 	void parse_extends();
 	void parse_class_body(bool p_is_multiline);
 	template <typename T>

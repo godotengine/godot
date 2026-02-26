@@ -988,9 +988,18 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 }
 
 void GDScriptParser::parse_class_name() {
+
+	/// [Monarch] this means that after "class_name", it expects Token::IDENTIFIER
+	/// so right after the fqcn ("Fully Qualified Class Name") is parsed, let's add a hook
+	/// that parses up the generic parameter list.
 	if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier for the global class name after "class_name".)")) {
 		current_class->identifier = parse_identifier();
 		current_class->fqcn = String(current_class->identifier->name);
+
+		/// [Monarch] Reginleif addition. Parses a comma-separated, rectangular bracket-bound identifier list.
+		/// Should do nothing if there is no generic parameter list to parse.
+		parse_generic_parameters();
+
 	}
 
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {
@@ -1001,6 +1010,44 @@ void GDScriptParser::parse_class_name() {
 		end_statement("class_name statement");
 	}
 }
+
+/// [Monarch] Here's where Reginleif adds the ability to parse generics parameters! 
+/// So parsing [T] and [T,U,V] and so on is possible. It'll collect the identifiers into a Vec<IdentifierNode*>,
+/// then expect a bracket close.
+
+void GDScriptParser::parse_generic_parameters() {
+
+	if (!match(GDScriptTokenizer::Token::BRACKET_OPEN)) {
+		return; ///no generics
+	}
+
+	///must have at least one ident ahead for proper generic parameter capture.
+	if (!consume(GDScriptTokenizer::Token::IDENTIFIER,  
+		R"([Reginleif] Expected at least one generic parameter.)")){	
+		return;
+	}
+
+	current_class->generic_parameters.push_back(parse_identifier());
+
+	///grab other idents...
+	while (match(GDScriptTokenizer::Token::COMMA)) {
+
+		/// [Monarch] If the next token is a comma, collect the next identifier, 
+		/// then keep repeating until no more commas.
+
+        if (!consume(GDScriptTokenizer::Token::IDENTIFIER,
+                R"([Reginleif] Expected identifier after ',' in generic parameter list.)")) {
+            return;
+        }
+
+        current_class->generic_parameters.push_back(parse_identifier());
+    }
+
+    consume(GDScriptTokenizer::Token::BRACKET_CLOSE,
+            R"([Reginleif] Expected ']' after generic parameter list.)");
+
+}
+
 
 void GDScriptParser::parse_extends() {
 	current_class->extends_used = true;
