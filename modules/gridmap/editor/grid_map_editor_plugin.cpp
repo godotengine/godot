@@ -519,9 +519,10 @@ void GridMapEditor::_delete_selection() {
 		return;
 	}
 
-	for (int i = selection.begin.x; i <= selection.end.x; i++) {
-		for (int j = selection.begin.y; j <= selection.end.y; j++) {
-			for (int k = selection.begin.z; k <= selection.end.z; k++) {
+	Vector3 expand = Vector3(real_t(!node->get_center_x()), real_t(!node->get_center_y()), real_t(!node->get_center_z()));
+	for (int i = selection.begin.x; i <= selection.end.x + expand.x; i++) {
+		for (int j = selection.begin.y; j <= selection.end.y + expand.y; j++) {
+			for (int k = selection.begin.z; k <= selection.end.z + expand.z; k++) {
 				Vector3i selected = Vector3i(i, j, k);
 				node->set_cell_item(selected, GridMap::INVALID_CELL_ITEM);
 			}
@@ -536,15 +537,18 @@ void GridMapEditor::_delete_selection_with_undo() {
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("GridMap Delete Selection"));
-	for (int i = selection.begin.x; i <= selection.end.x; i++) {
-		for (int j = selection.begin.y; j <= selection.end.y; j++) {
-			for (int k = selection.begin.z; k <= selection.end.z; k++) {
+
+	Vector3 expand = Vector3(real_t(!node->get_center_x()), real_t(!node->get_center_y()), real_t(!node->get_center_z()));
+	for (int i = selection.begin.x; i <= selection.end.x + expand.x; i++) {
+		for (int j = selection.begin.y; j <= selection.end.y + expand.y; j++) {
+			for (int k = selection.begin.z; k <= selection.end.z + expand.z; k++) {
 				Vector3i selected = Vector3i(i, j, k);
 				undo_redo->add_do_method(node, "set_cell_item", selected, GridMap::INVALID_CELL_ITEM);
 				undo_redo->add_undo_method(node, "set_cell_item", selected, node->get_cell_item(selected), node->get_cell_item_orientation(selected));
 			}
 		}
 	}
+
 	undo_redo->add_do_method(this, "_set_selection", !selection.active, selection.begin, selection.end);
 	undo_redo->add_undo_method(this, "_set_selection", selection.active, selection.begin, selection.end);
 	undo_redo->commit_action();
@@ -598,12 +602,12 @@ void GridMapEditor::_set_clipboard_data() {
 	_clear_clipboard_data();
 
 	Ref<MeshLibrary> meshLibrary = node->get_mesh_library();
-
 	const RID scenario = get_tree()->get_root()->get_world_3d()->get_scenario();
+	Vector3 expand = Vector3(real_t(!node->get_center_x()), real_t(!node->get_center_y()), real_t(!node->get_center_z()));
 
-	for (int i = selection.begin.x; i <= selection.end.x; i++) {
-		for (int j = selection.begin.y; j <= selection.end.y; j++) {
-			for (int k = selection.begin.z; k <= selection.end.z; k++) {
+	for (int i = selection.begin.x; i <= selection.end.x + expand.x; i++) {
+		for (int j = selection.begin.y; j <= selection.end.y + expand.y; j++) {
+			for (int k = selection.begin.z; k <= selection.end.z + expand.z; k++) {
 				Vector3i selected = Vector3i(i, j, k);
 				int itm = node->get_cell_item(selected);
 				if (itm == GridMap::INVALID_CELL_ITEM) {
