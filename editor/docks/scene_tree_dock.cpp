@@ -5150,7 +5150,6 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	set_process(true);
 
 	EDITOR_DEF("_use_favorites_root_selection", false);
-	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &SceneTreeDock::_update_show_create_root));
 	_update_show_create_root();
 
 	Resource::_update_configuration_warning = _update_configuration_warning;
