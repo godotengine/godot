@@ -142,7 +142,7 @@
 			<param index="3" name="to_node" type="int" />
 			<param index="4" name="to_port" type="int" />
 			<description>
-				Returns [code]true[/code] if the specified node and port connection exist.
+				Returns [code]true[/code] if the specified node and port connection exists.
 			</description>
 		</method>
 		<method name="remove_node">

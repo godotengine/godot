@@ -41,6 +41,7 @@
 #include "editor/shader/shader_create_dialog.h"
 #include "editor/shader/text_shader_editor.h"
 #include "editor/shader/text_shader_language_plugin.h"
+#include "editor/shader/visual_shader_editor_plugin.h"
 #include "editor/shader/visual_shader_language_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
@@ -528,6 +529,11 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 					editor->trim_final_newlines();
 				}
 			}
+			VisualShaderEditor *vs_editor = Object::cast_to<VisualShaderEditor>(edited_shaders[index].shader_editor);
+			if (vs_editor) {
+				vs_editor->save_external_data(); // Saves the whole edited group stack.
+			}
+
 			if (edited_shaders[index].shader.is_valid()) {
 				EditorNode::get_singleton()->save_resource(edited_shaders[index].shader);
 			} else {
@@ -550,6 +556,11 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 					editor->trim_final_newlines();
 				}
 			}
+			VisualShaderEditor *vs_editor = Object::cast_to<VisualShaderEditor>(edited_shaders[index].shader_editor);
+			if (vs_editor) {
+				vs_editor->save_external_data(); // Saves the whole edited group stack.
+			}
+
 			String path;
 			if (edited_shaders[index].shader.is_valid()) {
 				path = edited_shaders[index].shader->get_path();
