@@ -38,6 +38,7 @@
 #include "core/input/input.h"
 #include "core/io/file_access.h"
 #include "core/math/math_funcs.h"
+#include "core/object/callable_method_pointer.h"
 #include "core/os/main_loop.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"

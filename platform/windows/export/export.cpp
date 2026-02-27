@@ -32,6 +32,7 @@
 
 #include "export_plugin.h"
 
+#include "core/object/class_db.h"
 #include "editor/export/editor_export.h"
 
 void register_windows_exporter_types() {

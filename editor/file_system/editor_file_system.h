@@ -121,11 +121,7 @@ protected:
 	GDVIRTUAL0RC_REQUIRED(bool, _is_active)
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_file_extensions)
 	GDVIRTUAL0RC_REQUIRED(bool, _query)
-	static void _bind_methods() {
-		GDVIRTUAL_BIND(_is_active);
-		GDVIRTUAL_BIND(_get_file_extensions);
-		GDVIRTUAL_BIND(_query);
-	}
+	static void _bind_methods();
 
 public:
 	virtual bool is_active() const {

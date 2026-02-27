@@ -32,6 +32,8 @@
 
 #include "scene/main/viewport.h"
 
+#include "core/object/callable_method_pointer.h"
+
 bool EditorInspectorPluginSubViewportPreview::can_handle(Object *p_object) {
 	return Object::cast_to<SubViewport>(p_object) != nullptr;
 }

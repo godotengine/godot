@@ -35,6 +35,7 @@ TEST_FORCE_LINK(test_resource)
 #include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "scene/main/node.h"
 #include "tests/test_utils.h"
 

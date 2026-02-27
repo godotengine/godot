@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/variant/variant.h"
 

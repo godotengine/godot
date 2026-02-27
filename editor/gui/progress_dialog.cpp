@@ -30,6 +30,7 @@
 
 #include "progress_dialog.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"

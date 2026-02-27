@@ -38,6 +38,14 @@
 #include "core/variant/container_type_validate.h"
 #include "scene/main/node.h" //only so casting works
 
+void Resource::register_custom_data_to_otdb() {
+	ClassDB::add_resource_base_extension("res", get_class_static());
+}
+
+void Resource::_add_resource_base_extension_to_classdb(const String &p_extension, const String &p_class) {
+	ClassDB::add_resource_base_extension(p_extension, p_class);
+}
+
 void Resource::emit_changed() {
 	if (emit_changed_state != EMIT_CHANGED_UNBLOCKED) {
 		emit_changed_state = EMIT_CHANGED_BLOCKED_PENDING_EMIT;

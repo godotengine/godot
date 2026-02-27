@@ -30,6 +30,7 @@
 
 #include "editor_bottom_panel.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/docks/editor_dock_manager.h"

@@ -66,6 +66,10 @@
 #include "android_editor_gradle_runner.h"
 #endif
 
+#ifndef ANDROID_ENABLED
+#include "core/object/callable_method_pointer.h"
+#endif
+
 static const char *ANDROID_PERMS[] = {
 	"ACCESS_CHECKIN_PROPERTIES",
 	"ACCESS_COARSE_LOCATION",

@@ -34,6 +34,7 @@
 #include "core/donors.gen.h"
 #include "core/input/input.h"
 #include "core/license.gen.h"
+#include "core/object/callable_method_pointer.h"
 #include "core/string/string_builder.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"

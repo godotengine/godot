@@ -31,6 +31,7 @@
 #include "tts_linux.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_method_pointer.h"
 #include "servers/text/text_server.h"
 
 TTS_Linux *TTS_Linux::singleton = nullptr;

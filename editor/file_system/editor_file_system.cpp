@@ -240,6 +240,12 @@ EditorFileSystemDirectory::~EditorFileSystemDirectory() {
 	}
 }
 
+void EditorFileSystemImportFormatSupportQuery::_bind_methods() {
+	GDVIRTUAL_BIND(_is_active);
+	GDVIRTUAL_BIND(_get_file_extensions);
+	GDVIRTUAL_BIND(_query);
+}
+
 EditorFileSystem::ScannedDirectory::~ScannedDirectory() {
 	for (ScannedDirectory *dir : subdirs) {
 		memdelete(dir);

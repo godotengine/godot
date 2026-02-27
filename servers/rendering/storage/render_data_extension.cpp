@@ -32,6 +32,8 @@
 
 #include "servers/rendering/rendering_server.h" // IWYU pragma: Needed to bind RSE enums.
 
+#include "core/object/class_db.h"
+
 // RenderSceneBuffersExtension
 
 void RenderSceneBuffersExtension::_bind_methods() {

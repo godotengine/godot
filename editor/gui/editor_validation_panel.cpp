@@ -30,6 +30,7 @@
 
 #include "editor_validation_panel.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"

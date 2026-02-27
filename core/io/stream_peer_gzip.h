@@ -32,7 +32,6 @@
 
 #include "core/io/stream_peer.h"
 
-#include "core/core_bind.h"
 #include "core/io/compression.h"
 #include "core/templates/ring_buffer.h"
 
