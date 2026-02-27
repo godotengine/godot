@@ -30,6 +30,7 @@
 
 #include "dock_tab_container.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"

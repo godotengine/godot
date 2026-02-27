@@ -32,6 +32,8 @@
 
 #include "objectdb_profiler_panel.h"
 
+#include "core/object/callable_method_pointer.h"
+
 bool ObjectDBProfilerDebuggerPlugin::has_capture(const String &p_capture) const {
 	return p_capture == "snapshot";
 }

@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/core_bind.h"
 #include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "core/io/resource_loader.h"

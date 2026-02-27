@@ -31,6 +31,7 @@
 #ifdef ANDROID_ENABLED
 #include "android_editor_gradle_runner.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "editor/editor_interface.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/dialogs.h"

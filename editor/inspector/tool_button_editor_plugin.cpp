@@ -30,6 +30,7 @@
 
 #include "tool_button_editor_plugin.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "editor/editor_node.h"
 #include "editor/inspector/multi_node_edit.h"
 

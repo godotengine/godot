@@ -30,6 +30,7 @@
 
 #include "rendering_server_default.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "renderer_canvas_cull.h"

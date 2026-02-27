@@ -42,6 +42,7 @@
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_context_driver.h"
 #include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_device_binds.h"
 #include "servers/rendering/rendering_server.h"
 
 #if defined(VULKAN_ENABLED)

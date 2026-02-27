@@ -30,6 +30,7 @@
 
 #include "packed_scene_editor_plugin.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "editor/editor_node.h"
 #include "scene/resources/packed_scene.h"
 

@@ -34,6 +34,7 @@
 #import "godot_menu_item.h"
 #import "key_mapping_macos.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "scene/resources/image_texture.h"
 
 void NativeMenuMacOS::_register_system_menus(NSMenu *p_main_menu, NSMenu *p_application_menu, NSMenu *p_window_menu, NSMenu *p_help_menu, NSMenu *p_dock_menu) {

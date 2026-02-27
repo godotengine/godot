@@ -30,6 +30,8 @@
 
 #include "text_server_fb.h"
 
+#include "core/object/callable_method_pointer.h"
+
 #ifdef GDEXTENSION
 // Headers for building as GDExtension plug-in.
 

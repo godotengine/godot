@@ -31,6 +31,7 @@
 #include "editor_main_screen.h"
 
 #include "core/io/config_file.h"
+#include "core/object/callable_method_pointer.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/plugins/editor_plugin.h"

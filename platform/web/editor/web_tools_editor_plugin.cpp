@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/object/callable_method_pointer.h"
 #include "core/os/time.h"
 #include "editor/editor_node.h"
 #include "editor/export/project_zip_packer.h"

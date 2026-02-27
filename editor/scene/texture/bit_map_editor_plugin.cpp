@@ -30,6 +30,7 @@
 
 #include "bit_map_editor_plugin.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/aspect_ratio_container.h"
