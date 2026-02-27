@@ -502,6 +502,11 @@ void SoftBody3D::_become_mesh_owner() {
 
 	Ref<ArrayMesh> soft_mesh;
 	soft_mesh.instantiate();
+
+	for (int i = 0; i < mesh->get_blend_shape_count(); ++i) {
+		soft_mesh->add_blend_shape(mesh->get_blend_shape_name(i));
+	}
+
 	soft_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays, surface_blend_arrays, surface_lods, surface_format);
 	soft_mesh->surface_set_material(0, mesh->surface_get_material(0));
 
