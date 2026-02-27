@@ -2094,6 +2094,7 @@ void TextureStorage::texture_debug_usage(List<RenderingServerTypes::TextureInfo>
 }
 
 void TextureStorage::texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {
+	// This API appears to do nothing, in this or GLES3 in Godot 4.6
 }
 
 Size2 TextureStorage::texture_size_with_proxy(RID p_proxy) {

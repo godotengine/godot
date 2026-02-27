@@ -36,9 +36,8 @@
 #include "servers/rendering/rendering_server.h"
 
 void AnimatedTexture::_update_proxy() {
-	RWLockRead r(rw_lock);
-
 	float delta;
+
 	if (prev_ticks == 0) {
 		delta = 0;
 		prev_ticks = OS::get_singleton()->get_ticks_usec();
@@ -48,51 +47,58 @@ void AnimatedTexture::_update_proxy() {
 		prev_ticks = ticks;
 	}
 
-	time += delta;
-
-	float speed = speed_scale == 0 ? 0 : std::abs(1.0 / speed_scale);
-
-	int iter_max = frame_count;
-	while (iter_max && !pause) {
-		float frame_limit = frames[current_frame].duration * speed;
-
-		if (time > frame_limit) {
-			if (speed_scale > 0.0) {
-				current_frame++;
-			} else {
-				current_frame--;
-			}
-			if (current_frame >= frame_count) {
-				if (one_shot) {
-					current_frame = frame_count - 1;
-				} else {
-					current_frame = 0;
-				}
-			} else if (current_frame < 0) {
-				if (one_shot) {
-					current_frame = 0;
-				} else {
-					current_frame = frame_count - 1;
-				}
-			}
-			time -= frame_limit;
-
-		} else {
-			break;
-		}
-		iter_max--;
+	if (current_frame == frame_count - 1 && one_shot) {
+		// Return early, we're at the end
+		return;
 	}
 
-	if (frames[current_frame].texture.is_valid()) {
-		RenderingServer::get_singleton()->texture_proxy_update(proxy, frames[current_frame].texture->get_rid());
+	float time_change = (delta * speed_scale);
+	// Possible Optimization - time_change %= full_duration, to save iterations
+	if (!pause) {
+		time += time_change;
+	}
+
+	bool frame_update = false;
+	while (time < 0 || time >= frames[current_frame].duration) {
+		if (time < 0) {
+			current_frame -= 1;
+			if (current_frame < 0) {
+				current_frame = frame_count - 1;
+			}
+			time += frames[current_frame].duration;
+			frame_update = true;
+		} else if (time >= frames[current_frame].duration) {
+			time -= frames[current_frame].duration;
+			current_frame += 1;
+			if (current_frame >= frame_count) {
+				current_frame = 0;
+			}
+			frame_update = true;
+		}
+	}
+
+	if (frame_update) {
+		_blit_frame(current_frame);
+	}
+}
+
+void AnimatedTexture::_blit_frame(int p_frame) {
+	if (frames[p_frame].texture.is_valid()) {
+		// Rendering server expects textureParameters as a TypedArray[RID]
+		Array textures;
+		textures.push_back(proxy);
+
+		Array src_textures;
+		src_textures.push_back(frames[p_frame].texture);
+
+		// Could Copy_Effects or Texture_Update_Partial be more effective?
+		RenderingServer::get_singleton()->texture_drawable_blit_rect(textures, Rect2(0, 0, proxy_width, proxy_height), blit_material, Color(1, 1, 1, 1), src_textures, 0);
+		// Maybe have to generate mipmaps here if we enable those
 	}
 }
 
 void AnimatedTexture::set_frames(int p_frames) {
 	ERR_FAIL_COND(p_frames < 1 || p_frames > MAX_FRAMES);
-
-	RWLockWrite r(rw_lock);
-
 	frame_count = p_frames;
 }
 
@@ -102,10 +108,8 @@ int AnimatedTexture::get_frames() const {
 
 void AnimatedTexture::set_current_frame(int p_frame) {
 	ERR_FAIL_COND(p_frame < 0 || p_frame >= frame_count);
-
-	RWLockWrite r(rw_lock);
-
 	current_frame = p_frame;
+	_blit_frame(current_frame);
 	time = 0;
 }
 
@@ -114,7 +118,6 @@ int AnimatedTexture::get_current_frame() const {
 }
 
 void AnimatedTexture::set_pause(bool p_pause) {
-	RWLockWrite r(rw_lock);
 	pause = p_pause;
 }
 
@@ -123,7 +126,6 @@ bool AnimatedTexture::get_pause() const {
 }
 
 void AnimatedTexture::set_one_shot(bool p_one_shot) {
-	RWLockWrite r(rw_lock);
 	one_shot = p_one_shot;
 }
 
@@ -134,41 +136,40 @@ bool AnimatedTexture::get_one_shot() const {
 void AnimatedTexture::set_frame_texture(int p_frame, const Ref<Texture2D> &p_texture) {
 	ERR_FAIL_COND(p_texture == this);
 	ERR_FAIL_INDEX(p_frame, MAX_FRAMES);
-
-	RWLockWrite w(rw_lock);
-
 	frames[p_frame].texture = p_texture;
+	if (p_frame == 0 && p_texture.is_valid()) {
+		// Possible Optimization: Don't rebuild if new Texture is same size
+		if (proxy.is_valid()) {
+			RID new_proxy = RenderingServer::get_singleton()->texture_drawable_create(p_texture->get_width(), p_texture->get_height(), RS::TEXTURE_DRAWABLE_FORMAT_RGBA8, Color(1, 1, 1, 0), false);
+			RenderingServer::get_singleton()->texture_replace(proxy, new_proxy);
+		} else {
+			proxy = RenderingServer::get_singleton()->texture_drawable_create(p_texture->get_width(), p_texture->get_height(), RS::TEXTURE_DRAWABLE_FORMAT_RGBA8, Color(1, 1, 1, 0), false);
+		}
+		proxy_width = p_texture->get_width();
+		proxy_height = p_texture->get_height();
+		notify_property_list_changed();
+		emit_changed();
+	}
+	_blit_frame(current_frame);
 }
 
 Ref<Texture2D> AnimatedTexture::get_frame_texture(int p_frame) const {
 	ERR_FAIL_INDEX_V(p_frame, MAX_FRAMES, Ref<Texture2D>());
-
-	RWLockRead r(rw_lock);
-
 	return frames[p_frame].texture;
 }
 
 void AnimatedTexture::set_frame_duration(int p_frame, float p_duration) {
 	ERR_FAIL_INDEX(p_frame, MAX_FRAMES);
-
-	RWLockWrite r(rw_lock);
-
 	frames[p_frame].duration = p_duration;
 }
 
 float AnimatedTexture::get_frame_duration(int p_frame) const {
 	ERR_FAIL_INDEX_V(p_frame, MAX_FRAMES, 0);
-
-	RWLockRead r(rw_lock);
-
 	return frames[p_frame].duration;
 }
 
 void AnimatedTexture::set_speed_scale(float p_scale) {
 	ERR_FAIL_COND(p_scale < -1000 || p_scale >= 1000);
-
-	RWLockWrite r(rw_lock);
-
 	speed_scale = p_scale;
 }
 
@@ -177,23 +178,11 @@ float AnimatedTexture::get_speed_scale() const {
 }
 
 int AnimatedTexture::get_width() const {
-	RWLockRead r(rw_lock);
-
-	if (frames[current_frame].texture.is_null()) {
-		return 1;
-	}
-
-	return frames[current_frame].texture->get_width();
+	return proxy_width;
 }
 
 int AnimatedTexture::get_height() const {
-	RWLockRead r(rw_lock);
-
-	if (frames[current_frame].texture.is_null()) {
-		return 1;
-	}
-
-	return frames[current_frame].texture->get_height();
+	return proxy_height;
 }
 
 RID AnimatedTexture::get_rid() const {
@@ -201,8 +190,6 @@ RID AnimatedTexture::get_rid() const {
 }
 
 bool AnimatedTexture::has_alpha() const {
-	RWLockRead r(rw_lock);
-
 	if (frames[current_frame].texture.is_null()) {
 		return false;
 	}
@@ -211,8 +198,6 @@ bool AnimatedTexture::has_alpha() const {
 }
 
 Ref<Image> AnimatedTexture::get_image() const {
-	RWLockRead r(rw_lock);
-
 	if (frames[current_frame].texture.is_null()) {
 		return Ref<Image>();
 	}
@@ -221,8 +206,6 @@ Ref<Image> AnimatedTexture::get_image() const {
 }
 
 bool AnimatedTexture::is_pixel_opaque(int p_x, int p_y) const {
-	RWLockRead r(rw_lock);
-
 	if (frames[current_frame].texture.is_valid()) {
 		return frames[current_frame].texture->is_pixel_opaque(p_x, p_y);
 	}
@@ -237,6 +220,21 @@ void AnimatedTexture::_validate_property(PropertyInfo &p_property) const {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
+}
+
+void AnimatedTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
+	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, get_size()), get_rid(), false, p_modulate, p_transpose);
+	RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, 1.0, 0.0, 1.0, 0.0);
+}
+
+void AnimatedTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) const {
+	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, get_rid(), p_tile, p_modulate, p_transpose);
+	RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, 1.0, 0.0, 1.0, 0.0);
+}
+
+void AnimatedTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) const {
+	RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, get_rid(), p_src_rect, p_modulate, p_transpose, p_clip_uv);
+	RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, 1.0, 0.0, 1.0, 0.0);
 }
 
 void AnimatedTexture::_bind_methods() {
@@ -280,17 +278,32 @@ void AnimatedTexture::_finish_non_thread_safe_setup() {
 }
 
 AnimatedTexture::AnimatedTexture() {
-	//proxy = RS::get_singleton()->texture_create();
-	proxy_ph = RS::get_singleton()->texture_2d_placeholder_create();
-	proxy = RS::get_singleton()->texture_proxy_create(proxy_ph);
+	String code = R"(
+// AnimatedTexture Blit Shader.
 
-	RenderingServer::get_singleton()->texture_set_force_redraw_if_visible(proxy, true);
+shader_type texture_blit;
+render_mode blend_disabled;
 
+uniform sampler2D source_texture0 : hint_blit_source0;
+
+void blit() {
+	// Copies from each whole source texture to a rect on each output texture.
+	COLOR0 = texture(source_texture0, UV);
+}
+)";
+
+	blit_shader = RS::get_singleton()->shader_create_from_code(code);
+	blit_material = RS::get_singleton()->material_create_from_shader(RID(), 0, blit_shader);
+
+	proxy = RenderingServer::get_singleton()->texture_drawable_create(proxy_width, proxy_height, RS::TEXTURE_DRAWABLE_FORMAT_RGBA8, Color(1, 1, 1, 0), false);
 	MessageQueue::get_main_singleton()->push_callable(callable_mp(this, &AnimatedTexture::_finish_non_thread_safe_setup));
 }
 
 AnimatedTexture::~AnimatedTexture() {
-	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free_rid(proxy);
-	RS::get_singleton()->free_rid(proxy_ph);
+	if (proxy.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
+		RenderingServer::get_singleton()->free_rid(proxy);
+	}
+	RS::get_singleton()->free_rid(blit_material);
+	RS::get_singleton()->free_rid(blit_shader);
 }
