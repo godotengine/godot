@@ -30,6 +30,7 @@
 
 #include "video_stream_player.h"
 
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "servers/audio/audio_server.h"
 

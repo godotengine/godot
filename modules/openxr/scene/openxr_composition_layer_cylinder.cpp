@@ -33,6 +33,7 @@
 #include "../extensions/openxr_composition_layer_extension.h"
 #include "../openxr_interface.h"
 
+#include "core/object/class_db.h"
 #include "scene/resources/mesh.h"
 
 OpenXRCompositionLayerCylinder::OpenXRCompositionLayerCylinder() {

@@ -30,6 +30,7 @@
 
 #include "triangle_mesh.h"
 
+#include "core/object/class_db.h"
 #include "core/templates/sort_array.h"
 
 int TriangleMesh::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, int p_depth, int &r_max_depth, int &r_max_alloc) {

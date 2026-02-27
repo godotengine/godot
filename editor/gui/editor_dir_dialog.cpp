@@ -30,6 +30,7 @@
 
 #include "editor_dir_dialog.h"
 
+#include "core/object/class_db.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/directory_create_dialog.h"

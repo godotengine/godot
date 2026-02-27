@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "text_paragraph.h"
+
+#include "core/object/class_db.h"
+
 void TextParagraph::_draw_bind_compat_104872(RID p_canvas, const Vector2 &p_pos, const Color &p_color, const Color &p_dc_color) const {
 	draw(p_canvas, p_pos, p_color, p_dc_color, 0.0);
 }
@@ -65,4 +69,4 @@ void TextParagraph::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("draw_dropcap_outline", "canvas", "pos", "outline_size", "color"), &TextParagraph::_draw_dropcap_outline_bind_compat_104872, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

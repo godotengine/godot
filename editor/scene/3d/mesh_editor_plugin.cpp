@@ -31,6 +31,7 @@
 #include "mesh_editor_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/main/viewport.h"
@@ -69,12 +70,6 @@ void MeshEditor::_update_rotation() {
 	t.basis.rotate(Vector3(0, 1, 0), -rot_y);
 	t.basis.rotate(Vector3(1, 0, 0), -rot_x);
 	rotation->set_transform(t);
-}
-
-void MeshEditor::_project_settings_changed() {
-	const bool hdr_requested = GLOBAL_GET("display/window/hdr/request_hdr_output");
-	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
-	viewport->set_use_hdr_2d(use_hdr_2d || hdr_requested);
 }
 
 void MeshEditor::edit(Ref<Mesh> p_mesh) {
@@ -170,8 +165,7 @@ MeshEditor::MeshEditor() {
 	rot_x = 0;
 	rot_y = 0;
 
-	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &MeshEditor::_project_settings_changed));
-	_project_settings_changed();
+	EditorNode::get_singleton()->register_hdr_viewport(viewport);
 }
 
 ///////////////////////

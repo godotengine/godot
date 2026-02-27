@@ -30,6 +30,7 @@
 
 #include "progress_bar.h"
 
+#include "core/object/class_db.h"
 #include "core/string/translation_server.h"
 #include "scene/resources/text_line.h"
 #include "scene/theme/theme_db.h"

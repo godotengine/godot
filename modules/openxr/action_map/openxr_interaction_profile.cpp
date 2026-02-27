@@ -30,6 +30,8 @@
 
 #include "openxr_interaction_profile.h"
 
+#include "core/object/class_db.h"
+
 void OpenXRIPBinding::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_action", "action"), &OpenXRIPBinding::set_action);
 	ClassDB::bind_method(D_METHOD("get_action"), &OpenXRIPBinding::get_action);

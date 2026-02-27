@@ -33,7 +33,9 @@
 #define DR_MP3_NO_STDIO
 
 #include "audio_stream_mp3.h"
+
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
 
 #include "thirdparty/dr_libs/dr_bridge.h"
 

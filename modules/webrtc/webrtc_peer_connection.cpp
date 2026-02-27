@@ -36,6 +36,8 @@
 
 #include "webrtc_peer_connection_extension.h"
 
+#include "core/object/class_db.h"
+
 StringName WebRTCPeerConnection::default_extension;
 
 void WebRTCPeerConnection::set_default_extension(const StringName &p_extension) {

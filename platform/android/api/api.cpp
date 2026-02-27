@@ -30,6 +30,7 @@
 
 #include "api.h"
 
+#include "core/object/class_db.h"
 #include "java_class_wrapper.h"
 #include "jni_singleton.h"
 

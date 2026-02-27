@@ -30,6 +30,7 @@
 
 #include "node_2d.h"
 
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
 #include "servers/rendering/rendering_server.h"
 

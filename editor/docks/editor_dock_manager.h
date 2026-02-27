@@ -155,7 +155,7 @@ public:
 class DockSlotGrid : public Control {
 	GDCLASS(DockSlotGrid, Control);
 
-	static constexpr Vector2i GRID_SIZE = Vector2i(6, 8);
+	static constexpr Vector2i GRID_SIZE = Vector2i(8, 8);
 	static constexpr Vector2i MARGINS = Vector2i(4, 8);
 	static constexpr Vector2i CELL_SIZE = Vector2i(24, 12);
 	static constexpr int TABS_PER_CELL = 3;

@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "panel.h"
+
+#include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
 
 void Panel::_notification(int p_what) {

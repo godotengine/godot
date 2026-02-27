@@ -30,6 +30,7 @@
 
 #include "decal.h"
 
+#include "core/object/class_db.h"
 #include "servers/rendering/rendering_server.h"
 
 void Decal::set_size(const Vector3 &p_size) {

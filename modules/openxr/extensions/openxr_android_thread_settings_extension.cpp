@@ -31,6 +31,7 @@
 #include "openxr_android_thread_settings_extension.h"
 
 #include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
 #include "core/string/print_string.h"
 #include "servers/rendering/rendering_server.h"
 

@@ -30,6 +30,7 @@
 
 #include "editor_dock_manager.h"
 
+#include "core/object/class_db.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -926,6 +927,10 @@ DockContextPopup::DockContextPopup() {
 	dock_select_popup_vb->add_child(dock_select);
 	dock_select->connect("slot_clicked", callable_mp(this, &DockContextPopup::_slot_clicked));
 
+	Control *separator = memnew(Control);
+	separator->set_custom_minimum_size(Vector2(0, 8 * EDSCALE));
+	dock_select_popup_vb->add_child(separator);
+
 	make_float_button = memnew(Button);
 	make_float_button->set_text(TTRC("Make Floating"));
 	if (!EditorNode::get_singleton()->is_multi_window_enabled()) {
@@ -980,7 +985,7 @@ void DockSlotGrid::_update_rect_cache() {
 
 	// Temporarily hard-coded, until main screen is registered as a slot.
 	{
-		Rect2 rect = Rect2i(2, 0, 2, 4);
+		Rect2 rect = Rect2i(2, 0, 4, 4);
 		if (is_layout_rtl()) {
 			rect.position.x = GRID_SIZE.x - rect.position.x - rect.size.x;
 		}

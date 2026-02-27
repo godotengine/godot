@@ -29,7 +29,9 @@
 /**************************************************************************/
 
 #include "convex_polygon_shape_3d.h"
+
 #include "core/math/convex_hull.h"
+#include "core/object/class_db.h"
 #include "scene/resources/mesh.h"
 #include "servers/physics_3d/physics_server_3d.h"
 

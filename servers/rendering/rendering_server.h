@@ -95,6 +95,7 @@ protected:
 	void _canvas_item_add_circle_bind_compat_84523(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color);
 	void _instance_set_interpolated_bind_compat_104269(RID p_instance, bool p_interpolated);
 	void _instance_reset_physics_interpolation_bind_compat_104269(RID p_instance);
+	void _viewport_set_size_compat_115799(RID p_viewport, int p_width, int p_height);
 
 	static void _bind_compatibility_methods();
 #endif
@@ -530,7 +531,7 @@ public:
 	virtual void viewport_set_use_xr(RID p_viewport, bool p_use_xr) = 0;
 #endif // !XR_DISABLED
 
-	virtual void viewport_set_size(RID p_viewport, int p_width, int p_height) = 0;
+	virtual void viewport_set_size(RID p_viewport, int p_width, int p_height, int p_view_count = 1) = 0;
 	virtual void viewport_set_active(RID p_viewport, bool p_active) = 0;
 	virtual void viewport_set_parent_viewport(RID p_viewport, RID p_parent_viewport) = 0;
 	virtual void viewport_set_canvas_cull_mask(RID p_viewport, uint32_t p_canvas_cull_mask) = 0;

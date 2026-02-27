@@ -31,6 +31,7 @@
 #include "editor_export_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "editor/export/editor_export_platform.h"
 
 void EditorExportPlugin::set_export_base_path(const String &p_export_base_path) {

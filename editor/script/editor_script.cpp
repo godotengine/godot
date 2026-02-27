@@ -30,6 +30,7 @@
 
 #include "editor_script.h"
 
+#include "core/object/class_db.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"

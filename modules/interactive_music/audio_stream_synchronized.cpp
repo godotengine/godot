@@ -31,6 +31,7 @@
 #include "audio_stream_synchronized.h"
 
 #include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
 
 AudioStreamSynchronized::AudioStreamSynchronized() {
 }

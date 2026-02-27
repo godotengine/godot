@@ -32,6 +32,8 @@
 
 #include "gdscript.h"
 
+#include "core/object/class_db.h"
+
 Variant GDScriptFunction::get_constant(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, constants.size(), "<errconst>");
 	return constants[p_idx];

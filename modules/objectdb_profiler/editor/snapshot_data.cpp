@@ -32,6 +32,7 @@
 
 #include "core/core_bind.h"
 #include "core/io/compression.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "scene/debugger/scene_debugger_object.h"
 

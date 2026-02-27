@@ -30,6 +30,7 @@
 
 #include "quick_settings_dialog.h"
 
+#include "core/object/class_db.h"
 #include "core/string/translation_server.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_string_names.h"

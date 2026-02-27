@@ -33,6 +33,8 @@
 #include "../openxr_api.h"
 #include "../openxr_api_extension.h"
 
+#include "core/object/class_db.h"
+
 void OpenXRExtensionWrapper::_bind_methods() {
 	GDVIRTUAL_BIND(_get_requested_extensions, "xr_version");
 	GDVIRTUAL_BIND(_set_system_properties_and_get_next_pointer, "next_pointer");

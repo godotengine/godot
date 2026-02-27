@@ -1,3 +1,6 @@
+# If you change this file, please format all files of the codebase as part of your PR:
+# pre-commit run --hook-stage manual clang-tidy --all
+
 Checks:
   - -*
   - bugprone-use-after-move

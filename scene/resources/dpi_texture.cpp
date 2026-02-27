@@ -31,6 +31,7 @@
 #include "dpi_texture.h"
 
 #include "core/io/image_loader.h"
+#include "core/object/class_db.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/bit_map.h"

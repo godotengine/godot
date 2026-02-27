@@ -30,6 +30,8 @@
 
 #include "enet_multiplayer_peer.h"
 
+#include "core/object/class_db.h"
+
 void ENetMultiplayerPeer::set_target_peer(int p_peer) {
 	target_peer = p_peer;
 }

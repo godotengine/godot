@@ -30,6 +30,8 @@
 
 #include "multimesh_instance_3d.h"
 
+#include "core/object/class_db.h"
+
 #ifndef NAVIGATION_3D_DISABLED
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"

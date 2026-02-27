@@ -30,6 +30,7 @@
 
 #include "menu_button.h"
 
+#include "core/object/class_db.h"
 #include "scene/main/window.h"
 #include "servers/rendering/rendering_server.h"
 

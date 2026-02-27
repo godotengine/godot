@@ -30,6 +30,7 @@
 
 #include "damped_spring_joint_2d.h"
 
+#include "core/object/class_db.h"
 #include "scene/2d/physics/physics_body_2d.h"
 
 void DampedSpringJoint2D::_notification(int p_what) {

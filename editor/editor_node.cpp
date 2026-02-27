@@ -569,6 +569,24 @@ void EditorNode::_update_from_settings() {
 	tree->set_debug_collisions_color(GLOBAL_GET("debug/shapes/collision/shape_color"));
 	tree->set_debug_collision_contact_color(GLOBAL_GET("debug/shapes/collision/contact_color"));
 
+	if (ProjectSettings::get_singleton()->check_changed_settings_in_group("display/window/hdr/request_hdr_output") || ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/viewport/hdr_2d")) {
+		const bool use_hdr = GLOBAL_GET("display/window/hdr/request_hdr_output").operator bool() || GLOBAL_GET("rendering/viewport/hdr_2d").operator bool();
+
+		LocalVector<ObjectID> invalid_viewports;
+		for (const ObjectID &id : hdr_viewports) {
+			Viewport *vp = ObjectDB::get_instance<Viewport>(id);
+			if (vp) {
+				vp->set_use_hdr_2d(use_hdr);
+			} else {
+				invalid_viewports.push_back(id);
+			}
+		}
+
+		for (const ObjectID &id : invalid_viewports) {
+			hdr_viewports.erase(id);
+		}
+	}
+
 	ResourceImporterTexture::get_singleton()->update_imports();
 
 	_update_translations();
@@ -4701,6 +4719,14 @@ void EditorNode::setup_color_picker(ColorPicker *p_picker) {
 	palette_file_selected_callback = callable_mp(p_picker, &ColorPicker::_quick_open_palette_file_selected);
 }
 
+void EditorNode::register_hdr_viewport(Viewport *p_viewport) {
+	const bool hdr_requested = GLOBAL_GET("display/window/hdr/request_hdr_output");
+	const bool hdr_2d_enabled = GLOBAL_GET("rendering/viewport/hdr_2d");
+	p_viewport->set_use_hdr_2d(hdr_2d_enabled || hdr_requested);
+
+	hdr_viewports.push_back(p_viewport->get_instance_id());
+}
+
 bool EditorNode::is_scene_open(const String &p_path) {
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		if (editor_data.get_scene_path(i) == p_path) {
@@ -8620,13 +8646,13 @@ EditorNode::EditorNode() {
 	right_l_vsplit->set_vertical(true);
 	main_hsplit->add_child(right_l_vsplit);
 	{
-		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_UL, Rect2i(4, 0, 1, 3)));
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_UL, Rect2i(6, 0, 1, 3)));
 		dock_container->set_name("DockSlotRightUL");
 		right_l_vsplit->add_child(dock_container);
 		dock_slots.push_back(dock_container);
 	}
 	{
-		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_BL, Rect2i(4, 3, 1, 3)));
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_BL, Rect2i(6, 3, 1, 3)));
 		dock_container->set_name("DockSlotRightBL");
 		right_l_vsplit->add_child(dock_container);
 		dock_slots.push_back(dock_container);
@@ -8637,13 +8663,13 @@ EditorNode::EditorNode() {
 	right_r_vsplit->set_vertical(true);
 	main_hsplit->add_child(right_r_vsplit);
 	{
-		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_UR, Rect2i(5, 0, 1, 3)));
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_UR, Rect2i(7, 0, 1, 3)));
 		dock_container->set_name("DockSlotRightUR");
 		right_r_vsplit->add_child(dock_container);
 		dock_slots.push_back(dock_container);
 	}
 	{
-		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_BR, Rect2i(5, 3, 1, 3)));
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_BR, Rect2i(7, 3, 1, 3)));
 		dock_container->set_name("DockSlotRightBR");
 		right_r_vsplit->add_child(dock_container);
 		dock_slots.push_back(dock_container);
@@ -8653,13 +8679,13 @@ EditorNode::EditorNode() {
 	bottom_hsplit->set_name("DockHSplitBottom");
 	main_vsplit->add_child(bottom_hsplit);
 	{
-		DockTabContainer *dock_container = memnew(BottomSideDockTabContainer(EditorDock::DOCK_SLOT_BOTTOM_L, Rect2i(0, 6, 3, 2)));
+		DockTabContainer *dock_container = memnew(BottomSideDockTabContainer(EditorDock::DOCK_SLOT_BOTTOM_L, Rect2i(0, 6, 4, 2)));
 		dock_container->set_name("DockSlotBottomL");
 		bottom_hsplit->add_child(dock_container);
 		dock_slots.push_back(dock_container);
 	}
 	{
-		DockTabContainer *dock_container = memnew(BottomSideDockTabContainer(EditorDock::DOCK_SLOT_BOTTOM_R, Rect2i(3, 6, 3, 2)));
+		DockTabContainer *dock_container = memnew(BottomSideDockTabContainer(EditorDock::DOCK_SLOT_BOTTOM_R, Rect2i(4, 6, 4, 2)));
 		dock_container->set_name("DockSlotBottomR");
 		bottom_hsplit->add_child(dock_container);
 		dock_slots.push_back(dock_container);

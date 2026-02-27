@@ -31,6 +31,7 @@
 #include "script_editor_base.h"
 
 #include "core/io/json.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/script/syntax_highlighters.h"

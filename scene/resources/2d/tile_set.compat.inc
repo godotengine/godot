@@ -32,6 +32,8 @@
 
 #include "tile_set.h"
 
+#include "core/object/class_db.h"
+
 #ifndef NAVIGATION_2D_DISABLED
 Ref<NavigationPolygon> TileData::_get_navigation_polygon_bind_compat_84660(int p_layer_id) const {
 	return get_navigation_polygon(p_layer_id, false, false, false);
@@ -49,4 +51,4 @@ void TileData::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("get_occluder"), &TileData::_get_occluder_bind_compat_84660);
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

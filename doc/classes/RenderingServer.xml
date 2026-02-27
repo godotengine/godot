@@ -4360,8 +4360,9 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="width" type="int" />
 			<param index="2" name="height" type="int" />
+			<param index="3" name="view_count" type="int" default="1" />
 			<description>
-				Sets the viewport's width and height in pixels.
+				Sets the viewport's [param width] and [param height] in pixels. Optionally the [param view_count] can be set to increase the number of view layers for stereo rendering.
 			</description>
 		</method>
 		<method name="viewport_set_snap_2d_transforms_to_pixel">

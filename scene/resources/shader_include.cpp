@@ -31,6 +31,7 @@
 #include "shader_include.h"
 
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
 #include "servers/rendering/shader_preprocessor.h"
 
 void ShaderInclude::_dependency_changed() {

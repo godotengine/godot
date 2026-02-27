@@ -30,6 +30,7 @@
 
 #include "ray_cast_3d.h"
 
+#include "core/object/class_db.h"
 #include "scene/3d/physics/collision_object_3d.h"
 #include "scene/resources/mesh.h"
 #include "servers/rendering/rendering_server.h"

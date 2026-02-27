@@ -1,8 +1,10 @@
 Upstream:
 https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator
 
-commit d26c54a6f40c66611dd33c77df4198784b53a8e2
-Author: Adam Sawicki <adam.sawicki@amd.com>
-Date:   Wed Apr 9 15:07:43 2025 +0200
+commit 0fa62ed3a0a69b73230a8ec1faa752d4061c8dc8
+Author: jlacroixAMD <45055644+jlacroixAMD@users.noreply.github.com>
+Date:   Tue Feb 24 11:41:07 2026 +0900
 
-    Minor fixes after #71
+    Merge pull request #87 from sawickiap/master
+
+    New updates to D3D12 Memory Allocator (v3.1.0)

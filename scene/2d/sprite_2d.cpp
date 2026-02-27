@@ -31,6 +31,7 @@
 #include "sprite_2d.h"
 
 #include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
 
 #ifdef TOOLS_ENABLED

@@ -31,6 +31,7 @@
 #include "world_2d.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "scene/2d/visible_on_screen_notifier_2d.h"
 #include "servers/rendering/rendering_server.h"
 

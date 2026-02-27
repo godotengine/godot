@@ -30,6 +30,7 @@
 
 #include "openxr_action_set_editor.h"
 
+#include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/themes/editor_scale.h"

@@ -30,6 +30,7 @@
 
 #include "visual_shader_particle_nodes.h"
 
+#include "core/object/class_db.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/mesh.h"
 

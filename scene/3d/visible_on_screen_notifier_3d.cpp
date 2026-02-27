@@ -31,6 +31,7 @@
 #include "visible_on_screen_notifier_3d.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "servers/rendering/rendering_server.h"
 
 void VisibleOnScreenNotifier3D::_visibility_enter() {

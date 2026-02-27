@@ -30,6 +30,7 @@
 
 #include "tile_proxies_manager_dialog.h"
 
+#include "core/object/class_db.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_properties_vector.h"
 #include "editor/settings/editor_settings.h"

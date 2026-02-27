@@ -224,7 +224,7 @@ public:
 	void viewport_set_use_xr(RID p_viewport, bool p_use_xr);
 #endif // XR_DISABLED
 
-	void viewport_set_size(RID p_viewport, int p_width, int p_height);
+	void viewport_set_size(RID p_viewport, int p_width, int p_height, int p_view_count = 1);
 
 	void viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect = Rect2(), DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
 	void viewport_set_render_direct_to_screen(RID p_viewport, bool p_enable);

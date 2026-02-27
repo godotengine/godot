@@ -30,6 +30,7 @@
 
 #include "navigation_path_query_parameters_2d.h"
 
+#include "core/object/class_db.h"
 #include "core/variant/typed_array.h"
 
 void NavigationPathQueryParameters2D::set_pathfinding_algorithm(const NavigationPathQueryParameters2D::PathfindingAlgorithm p_pathfinding_algorithm) {

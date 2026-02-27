@@ -37,6 +37,7 @@
 
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server_types.h"
 

@@ -30,6 +30,7 @@
 
 #include "collision_shape_3d.h"
 
+#include "core/object/class_db.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics/character_body_3d.h"
 #include "scene/3d/physics/vehicle_body_3d.h"

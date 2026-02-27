@@ -30,6 +30,8 @@
 
 #include "animation_node_state_machine.h"
 
+#include "core/object/class_db.h"
+
 /////////////////////////////////////////////////
 
 void AnimationNodeStateMachineTransition::set_switch_mode(SwitchMode p_mode) {

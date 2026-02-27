@@ -31,6 +31,7 @@
 #include "editor_file_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/dependency_editor.h"

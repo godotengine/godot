@@ -33,6 +33,7 @@
 #include "core/debugger/debugger_marshalls.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/variant/typed_dictionary.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
@@ -417,6 +418,10 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array, int p_off
 			type = "Locals/";
 			break;
 		case 1:
+			if (n.begins_with("@")) {
+				return; // Skip groups.
+			}
+
 			type = "Members/";
 			break;
 		case 2:

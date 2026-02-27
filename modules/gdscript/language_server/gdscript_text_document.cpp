@@ -34,6 +34,7 @@
 #include "gdscript_extend_parser.h"
 #include "gdscript_language_protocol.h"
 
+#include "core/object/class_db.h"
 #include "editor/script/script_text_editor.h"
 #include "editor/settings/editor_settings.h"
 #include "servers/display/display_server.h"

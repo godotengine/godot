@@ -31,6 +31,7 @@
 #include "render_scene_buffers_rd.h"
 #include "render_scene_buffers_rd.compat.inc"
 
+#include "core/object/class_db.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server.h" // IWYU pragma: Needed to bind RSE enums.
 #include "servers/rendering/rendering_server_enums.h"

@@ -30,6 +30,8 @@
 
 #include "multimesh_instance_2d.h"
 
+#include "core/object/class_db.h"
+
 #ifndef NAVIGATION_2D_DISABLED
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"

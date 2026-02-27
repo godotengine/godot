@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "code_edit.h"
+
+#include "core/object/class_db.h"
+
 String CodeEdit::_get_text_for_symbol_lookup_bind_compat_73196() {
 	return get_text_for_symbol_lookup();
 }
@@ -43,4 +47,4 @@ void CodeEdit::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("add_code_completion_option", "type", "display_text", "insert_text", "text_color", "icon", "value", "location"), &CodeEdit::_add_code_completion_option_compat_84906, DEFVAL(Color(1, 1, 1)), DEFVAL(Ref<Resource>()), DEFVAL(Variant::NIL), DEFVAL(LOCATION_OTHER));
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

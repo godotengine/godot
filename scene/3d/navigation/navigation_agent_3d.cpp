@@ -31,6 +31,7 @@
 #include "navigation_agent_3d.h"
 
 #include "core/math/geometry_3d.h"
+#include "core/object/class_db.h"
 #include "scene/3d/navigation/navigation_link_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 #include "servers/rendering/rendering_server.h"

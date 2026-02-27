@@ -31,7 +31,9 @@
 #include "animation_blend_space_2d.h"
 
 #include "animation_blend_tree.h"
+
 #include "core/math/geometry_2d.h"
+#include "core/object/class_db.h"
 #include "scene/resources/material.h"
 
 void AnimationNodeBlendSpace2D::get_parameter_list(List<PropertyInfo> *r_list) const {

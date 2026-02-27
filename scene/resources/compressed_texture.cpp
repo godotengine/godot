@@ -31,6 +31,7 @@
 #include "compressed_texture.h"
 
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
 #include "scene/resources/bit_map.h"
 #include "servers/rendering/rendering_server.h"
 

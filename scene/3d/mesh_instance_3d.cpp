@@ -30,6 +30,7 @@
 
 #include "mesh_instance_3d.h"
 
+#include "core/object/class_db.h"
 #include "scene/3d/skeleton_3d.h"
 
 #ifndef PHYSICS_3D_DISABLED
