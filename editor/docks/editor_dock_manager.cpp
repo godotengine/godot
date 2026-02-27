@@ -327,7 +327,7 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 				p_dock->previous_tab_index = parent_tabs->get_tab_idx_from_control(p_dock);
 
 				// Swap to previous tab when closing current tab.
-				if (parent_tabs->get_current_tab() == p_dock->previous_tab_index) {
+				if (parent_tabs->get_current_tab() == p_dock->previous_tab_index && parent_tabs->get_previous_tab() != -1) {
 					parent_tabs->set_current_tab(parent_tabs->get_previous_tab());
 				}
 			}
@@ -529,7 +529,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 					_move_dock(dock, closed_dock_parent);
 				} else {
 					dock->is_open = true;
-					_move_dock(dock, dock_slots[i], 0);
+					_move_dock(dock, dock_slots[i], 0, false);
 				}
 			}
 			dock->load_layout_from_config(p_layout, section_name);
@@ -541,7 +541,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 
 	// Set the selected tabs.
 	for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
-		int selected_tab_idx = p_layout->get_value(p_section, DockTabContainer::get_config_key(i) + "_selected_tab_idx", -1);
+		int selected_tab_idx = p_layout->get_value(p_section, DockTabContainer::get_config_key(i) + "_selected_tab_idx", 0);
 		dock_slots[i]->load_selected_tab(selected_tab_idx);
 	}
 
