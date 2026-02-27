@@ -1019,6 +1019,7 @@ void DockSlotGrid::_notification(int p_what) {
 			unused_dock_color.a = 0.4;
 			Color unusable_dock_color = unused_dock_color;
 			unusable_dock_color.a = 0.1;
+			Color tab_unusable_color = unusable_dock_color;
 
 			TabContainer *context_tab_container = context_dock->get_parent_container();
 			int context_tab_index = -1;
@@ -1032,11 +1033,12 @@ void DockSlotGrid::_notification(int p_what) {
 
 				DockTabContainer *dock_slot = EditorDockManager::get_singleton()->dock_slots[i];
 				bool is_context_slot = context_tab_container == dock_slot;
+				bool is_slot_available = context_dock->available_layouts & dock_slot->layout;
 				int tabs_to_draw = MIN(max_tabs, dock_slot->get_tab_count());
 
 				if (i == context_dock->dock_slot_index) {
 					draw_rect(slot_rect, tab_selected_color);
-				} else if (!(context_dock->available_layouts & dock_slot->layout)) {
+				} else if (!is_slot_available) {
 					draw_rect(slot_rect, unusable_dock_color);
 				} else if (i == hovered_slot) {
 					draw_rect(slot_rect, hovered_dock_color);
@@ -1056,8 +1058,10 @@ void DockSlotGrid::_notification(int p_what) {
 					const Rect2 tab_rect = Rect2(slot_rect.position + Vector2(pos_x, -MARGINS.y + MARGINS.y / 4), Vector2(tab_width, MARGINS.y / 2));
 					if (is_context_slot && context_tab_index == j) {
 						draw_rect(tab_rect, tab_selected_color);
-					} else {
+					} else if (is_slot_available) {
 						draw_rect(tab_rect, tab_unselected_color);
+					} else {
+						draw_rect(tab_rect, tab_unusable_color);
 					}
 				}
 			}
