@@ -2625,7 +2625,7 @@ void OS_Windows::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
 	// previous frame time into account for a smoother result.
 	uint64_t dynamic_delay = 0;
 	if (is_in_low_processor_usage_mode() || !p_can_draw) {
-		dynamic_delay = get_low_processor_usage_mode_sleep_usec();
+		dynamic_delay = get_effective_low_processor_usage_mode_sleep_usec();
 	}
 	const int max_fps = Engine::get_singleton()->get_max_fps();
 	if (max_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {

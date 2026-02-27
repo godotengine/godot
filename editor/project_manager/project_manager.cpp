@@ -1384,7 +1384,12 @@ ProjectManager::ProjectManager() {
 			AcceptDialog::set_swap_cancel_ok(swap_cancel_ok == 2);
 		}
 
+		const DisplayServer::VSyncMode window_vsync_mode = DisplayServer::VSyncMode(int(EDITOR_GET("interface/editor/vsync_mode")));
+		DisplayServer::get_singleton()->window_set_vsync_mode(window_vsync_mode);
+
 		OS::get_singleton()->set_low_processor_usage_mode(true);
+		OS::get_singleton()->set_low_processor_usage_mode_sleep_usec_mode(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec_mode"));
+		OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(1'000'000.0 / int(EDITOR_GET("interface/editor/custom_low_processor_mode_max_fps")));
 	}
 
 #if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)

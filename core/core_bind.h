@@ -188,12 +188,20 @@ public:
 		STD_HANDLE_UNKNOWN,
 	};
 
+	enum LowProcessorModeSleepUsecMode {
+		LOW_PROCESSOR_SLEEP_USEC_MODE_AUTOMATIC,
+		LOW_PROCESSOR_SLEEP_USEC_MODE_CUSTOM,
+	};
+
 	virtual PackedStringArray get_connected_midi_inputs();
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
 
 	void set_low_processor_usage_mode(bool p_enabled);
 	bool is_in_low_processor_usage_mode() const;
+
+	void set_low_processor_usage_mode_sleep_usec_mode(LowProcessorModeSleepUsecMode p_mode);
+	LowProcessorModeSleepUsecMode get_low_processor_usage_mode_sleep_usec_mode() const;
 
 	void set_low_processor_usage_mode_sleep_usec(int p_usec);
 	int get_low_processor_usage_mode_sleep_usec() const;
@@ -701,6 +709,7 @@ VARIANT_BITFIELD_CAST(CoreBind::ResourceSaver::SaverFlags);
 VARIANT_ENUM_CAST(CoreBind::OS::RenderingDriver);
 VARIANT_ENUM_CAST(CoreBind::OS::SystemDir);
 VARIANT_ENUM_CAST(CoreBind::OS::StdHandleType);
+VARIANT_ENUM_CAST(CoreBind::OS::LowProcessorModeSleepUsecMode);
 
 VARIANT_ENUM_CAST(CoreBind::Geometry2D::PolyBooleanOperation);
 VARIANT_ENUM_CAST(CoreBind::Geometry2D::PolyJoinType);

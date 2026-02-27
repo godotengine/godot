@@ -161,12 +161,34 @@ bool OS::is_in_low_processor_usage_mode() const {
 	return low_processor_usage_mode;
 }
 
+void OS::set_low_processor_usage_mode_sleep_usec_mode(LowProcessorModeSleepUsecMode p_mode) {
+	low_processor_usage_mode_sleep_usec_mode = p_mode;
+}
+
+OS::LowProcessorModeSleepUsecMode OS::get_low_processor_usage_mode_sleep_usec_mode() const {
+	return LOW_PROCESSOR_SLEEP_USEC_MODE_CUSTOM;
+}
+
 void OS::set_low_processor_usage_mode_sleep_usec(int p_usec) {
 	low_processor_usage_mode_sleep_usec = p_usec;
 }
 
 int OS::get_low_processor_usage_mode_sleep_usec() const {
 	return low_processor_usage_mode_sleep_usec;
+}
+
+void OS::set_low_processor_usage_mode_sleep_usec_automatic(int p_usec) {
+	low_processor_usage_mode_sleep_usec_automatic = p_usec;
+}
+
+int OS::get_effective_low_processor_usage_mode_sleep_usec() const {
+	switch (low_processor_usage_mode_sleep_usec_mode) {
+		case LOW_PROCESSOR_SLEEP_USEC_MODE_AUTOMATIC:
+			return low_processor_usage_mode_sleep_usec_automatic;
+		case LOW_PROCESSOR_SLEEP_USEC_MODE_CUSTOM:
+		default:
+			return low_processor_usage_mode_sleep_usec;
+	}
 }
 
 void OS::set_delta_smoothing(bool p_enabled) {
@@ -689,7 +711,7 @@ uint64_t OS::get_frame_delay(bool p_can_draw) const {
 	// previous frame time into account for a smoother result.
 	uint64_t dynamic_delay = 0;
 	if (is_in_low_processor_usage_mode() || !p_can_draw) {
-		dynamic_delay = get_low_processor_usage_mode_sleep_usec();
+		dynamic_delay = get_effective_low_processor_usage_mode_sleep_usec();
 	}
 	const int max_fps = Engine::get_singleton()->get_max_fps();
 	if (max_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {
@@ -714,7 +736,7 @@ void OS::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
 	// previous frame time into account for a smoother result.
 	uint64_t dynamic_delay = 0;
 	if (is_in_low_processor_usage_mode() || !p_can_draw) {
-		dynamic_delay = get_low_processor_usage_mode_sleep_usec();
+		dynamic_delay = get_effective_low_processor_usage_mode_sleep_usec();
 	}
 	const int max_fps = Engine::get_singleton()->get_max_fps();
 	if (max_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {

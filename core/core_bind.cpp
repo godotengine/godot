@@ -309,6 +309,14 @@ void OS::set_use_file_access_save_and_swap(bool p_enable) {
 	FileAccess::set_backup_save(p_enable);
 }
 
+void OS::set_low_processor_usage_mode_sleep_usec_mode(LowProcessorModeSleepUsecMode p_mode) {
+	::OS::get_singleton()->set_low_processor_usage_mode_sleep_usec_mode(::OS::LowProcessorModeSleepUsecMode(p_mode));
+}
+
+OS::LowProcessorModeSleepUsecMode OS::get_low_processor_usage_mode_sleep_usec_mode() const {
+	return (LowProcessorModeSleepUsecMode)::OS::get_singleton()->get_low_processor_usage_mode_sleep_usec_mode();
+}
+
 void OS::set_low_processor_usage_mode(bool p_enabled) {
 	::OS::get_singleton()->set_low_processor_usage_mode(p_enabled);
 }
@@ -759,6 +767,8 @@ void OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode_sleep_usec", "usec"), &OS::set_low_processor_usage_mode_sleep_usec);
 	ClassDB::bind_method(D_METHOD("get_low_processor_usage_mode_sleep_usec"), &OS::get_low_processor_usage_mode_sleep_usec);
+	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode_sleep_usec_mode", "mode"), &OS::set_low_processor_usage_mode_sleep_usec_mode);
+	ClassDB::bind_method(D_METHOD("get_low_processor_usage_mode_sleep_usec_mode"), &OS::get_low_processor_usage_mode_sleep_usec_mode);
 
 	ClassDB::bind_method(D_METHOD("set_delta_smoothing", "delta_smoothing_enabled"), &OS::set_delta_smoothing);
 	ClassDB::bind_method(D_METHOD("is_delta_smoothing_enabled"), &OS::is_delta_smoothing_enabled);
@@ -854,6 +864,7 @@ void OS::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec_mode", PROPERTY_HINT_ENUM, "Automatic,Automatic (Optimized for Variable Refresh Rate),Custom"), "set_low_processor_usage_mode_sleep_usec_mode", "get_low_processor_usage_mode_sleep_usec_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "delta_smoothing"), "set_delta_smoothing", "is_delta_smoothing_enabled");
 
 	// Those default values need to be specified for the docs generator,
@@ -880,6 +891,9 @@ void OS::_bind_methods() {
 	BIND_ENUM_CONSTANT(STD_HANDLE_FILE);
 	BIND_ENUM_CONSTANT(STD_HANDLE_PIPE);
 	BIND_ENUM_CONSTANT(STD_HANDLE_UNKNOWN);
+
+	BIND_ENUM_CONSTANT(LOW_PROCESSOR_SLEEP_USEC_MODE_AUTOMATIC);
+	BIND_ENUM_CONSTANT(LOW_PROCESSOR_SLEEP_USEC_MODE_CUSTOM);
 }
 
 OS::OS() {

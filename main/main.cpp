@@ -2192,6 +2192,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->ensure_user_data_dir();
 
 	OS::get_singleton()->set_low_processor_usage_mode(GLOBAL_DEF("application/run/low_processor_mode", false));
+	OS::get_singleton()->set_low_processor_usage_mode_sleep_usec_mode(GLOBAL_DEF("application/run/low_processor_mode_sleep_usec_mode", OS::LowProcessorModeSleepUsecMode::LOW_PROCESSOR_SLEEP_USEC_MODE_CUSTOM));
 	OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(
 			GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "0,33200,1,or_greater"), 6900)); // Roughly 144 FPS
 
@@ -3555,6 +3556,24 @@ Error Main::setup2(bool p_show_boot_logo) {
 			if (editor) {
 				id->set_emulate_mouse_from_touch(true);
 			}
+		}
+
+		int highest_refresh_rate = 0;
+		for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {
+			highest_refresh_rate = MAX(highest_refresh_rate, Math::ceil(DisplayServer::get_singleton()->screen_get_refresh_rate(i)));
+		}
+		print_verbose(vformat("Detected highest screen refresh rate (rounded up): %d Hz", highest_refresh_rate));
+
+		if (highest_refresh_rate >= 30) {
+			// If at least one refresh rate was successfully detected, limit the rendered framerate
+			// to (roughly) the monitor refresh rate by default. A slightly higher value is used to ensure
+			// the display is always fed with frames if the CPU and GPU can keep up, without introducing too much tearing.
+			//
+			// This is helpful to reduce power consumption, heat and noise emissions
+			// when V-Sync is disabled or fails to kick in.
+			// This can also reduce input lag in GPU-bottlenecked situations by preventing 100% GPU load
+			// (which causes pipeline stalls in most configurations).
+			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec_automatic(1'000'000.0 / (highest_refresh_rate + 1));
 		}
 
 		OS::get_singleton()->benchmark_end_measure("Startup", "Setup Window and Boot");
