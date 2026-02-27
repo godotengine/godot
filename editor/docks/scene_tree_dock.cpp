@@ -1766,6 +1766,9 @@ void SceneTreeDock::_notification(int p_what) {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor")) {
 				inspect_hovered_node_delay->set_wait_time(EDITOR_GET("interface/editor/dragging_hover_wait_seconds"));
 			}
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editors")) {
+				_update_show_create_root();
+			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1799,10 +1802,10 @@ void SceneTreeDock::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PROCESS: {
-			bool show_create_root = bool(EDITOR_GET("interface/editors/show_scene_tree_root_selection")) && get_tree()->get_edited_scene_root() == nullptr;
+			const bool show_create_root_dialog = show_create_root && get_tree()->get_edited_scene_root() == nullptr;
 
-			if (show_create_root != create_root_dialog->is_visible_in_tree() && !remote_tree->is_visible()) {
-				if (show_create_root) {
+			if (show_create_root_dialog != create_root_dialog->is_visible_in_tree() && !remote_tree->is_visible()) {
+				if (show_create_root_dialog) {
 					main_mc->set_theme_type_variation("");
 					create_root_dialog->show();
 					scene_tree->hide();
@@ -4617,7 +4620,7 @@ void SceneTreeDock::_remote_tree_selected() {
 }
 
 void SceneTreeDock::_local_tree_selected() {
-	if (!bool(EDITOR_GET("interface/editors/show_scene_tree_root_selection")) || get_tree()->get_edited_scene_root() != nullptr) {
+	if (!show_create_root || get_tree()->get_edited_scene_root() != nullptr) {
 		scene_tree->show();
 	}
 	if (remote_tree) {
@@ -4699,6 +4702,10 @@ void SceneTreeDock::_feature_profile_changed() {
 	}
 
 	_queue_update_script_button();
+}
+
+void SceneTreeDock::_update_show_create_root() {
+	show_create_root = bool(EDITOR_GET("interface/editors/show_scene_tree_root_selection"));
 }
 
 void SceneTreeDock::_clear_clipboard() {
@@ -5143,6 +5150,8 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	set_process(true);
 
 	EDITOR_DEF("_use_favorites_root_selection", false);
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &SceneTreeDock::_update_show_create_root));
+	_update_show_create_root();
 
 	Resource::_update_configuration_warning = _update_configuration_warning;
 }
