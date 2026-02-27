@@ -745,3 +745,33 @@ protected:
 		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "attachments", PROPERTY_HINT_ARRAY_TYPE, "RDPipelineColorBlendStateAttachment"), "set_attachments", "get_attachments");
 	}
 };
+
+class RDAccelerationStructureGeometry : public RefCounted {
+	GDCLASS(RDAccelerationStructureGeometry, RefCounted)
+	friend class RenderingDevice;
+	RD::AccelerationStructureGeometry base;
+
+public:
+	RD_SETGET(BitField<RD::AccelerationStructureGeometryFlagBits>, flags)
+	RD_SETGET(RID, vertex_buffer)
+	RD_SETGET(uint32_t, vertex_offset)
+	RD_SETGET(uint32_t, vertex_stride)
+	RD_SETGET(uint32_t, vertex_count)
+	RD_SETGET(RD::DataFormat, vertex_format)
+	RD_SETGET(RID, index_buffer)
+	RD_SETGET(uint32_t, index_offset)
+	RD_SETGET(uint32_t, index_count)
+
+protected:
+	static void _bind_methods() {
+		RD_BIND(Variant::INT, RDAccelerationStructureGeometry, flags);
+		RD_BIND(Variant::RID, RDAccelerationStructureGeometry, vertex_buffer);
+		RD_BIND(Variant::INT, RDAccelerationStructureGeometry, vertex_offset);
+		RD_BIND(Variant::INT, RDAccelerationStructureGeometry, vertex_stride);
+		RD_BIND(Variant::INT, RDAccelerationStructureGeometry, vertex_count);
+		RD_BIND(Variant::INT, RDAccelerationStructureGeometry, vertex_format);
+		RD_BIND(Variant::RID, RDAccelerationStructureGeometry, index_buffer);
+		RD_BIND(Variant::INT, RDAccelerationStructureGeometry, index_offset);
+		RD_BIND(Variant::INT, RDAccelerationStructureGeometry, index_count);
+	}
+};
