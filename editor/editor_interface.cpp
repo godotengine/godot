@@ -785,6 +785,54 @@ Error EditorInterface::close_scene() {
 	return EditorNode::get_singleton()->close_scene() ? OK : ERR_DOES_NOT_EXIST;
 }
 
+Vector<String> EditorInterface::import_and_save_resource(const String &p_path, const String &p_importer_name, const Dictionary &p_params, const String &p_import_base_path) {
+	Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(p_importer_name);
+	ERR_FAIL_COND_V_MSG(importer.is_null(), {}, "Importer not found");
+
+	String base_dir = p_import_base_path.get_base_dir();
+	// make dir recursive
+	DirAccess::make_dir_recursive_absolute(base_dir);
+
+	HashMap<StringName, Variant> params;
+	for (const KeyValue<Variant, Variant> &E : p_params) {
+		params[E.key] = E.value;
+	}
+
+	// set the default values for the import options in case they are not present
+	// in the import file
+	List<ResourceImporter::ImportOption> opts;
+	importer->get_import_options(p_path, &opts);
+
+	for (const ResourceImporter::ImportOption &E : opts) {
+		if (!params.has(E.option.name)) { // this one is not present
+			params[E.option.name] = E.default_value;
+		}
+	}
+	List<String> import_variants;
+	List<String> gen_files;
+
+	Variant md;
+	ERR_FAIL_COND_V_MSG(importer->import(ResourceUID::INVALID_ID, p_path, p_import_base_path,
+								params, &import_variants, &gen_files, &md) != OK,
+			{}, "Failed to import resource");
+
+	Vector<String> ret;
+	if (import_variants.size()) {
+		//import with variants
+		for (const String &E : import_variants) {
+			String path = p_import_base_path + "." + E + "." + importer->get_save_extension();
+			ret.push_back(path);
+		}
+	} else {
+		ret.push_back(p_import_base_path + "." + importer->get_save_extension());
+	}
+	for (const String &E : gen_files) {
+		ret.push_back(base_dir.path_join(E));
+	}
+
+	return ret;
+}
+
 // Scene playback.
 
 void EditorInterface::play_main_scene() {
@@ -930,6 +978,8 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("save_all_scenes"), &EditorInterface::save_all_scenes);
 	ClassDB::bind_method(D_METHOD("close_scene"), &EditorInterface::close_scene);
+
+	ClassDB::bind_method(D_METHOD("import_and_save_resource", "path", "importer_name", "params", "save_base_path"), &EditorInterface::import_and_save_resource);
 
 	ClassDB::bind_method(D_METHOD("mark_scene_as_unsaved"), &EditorInterface::mark_scene_as_unsaved);
 
