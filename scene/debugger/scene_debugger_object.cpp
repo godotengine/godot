@@ -181,6 +181,10 @@ void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 		PropertyHint hint = pi.hint;
 		String hint_string = pi.hint_string;
 		if (res.is_valid() && !res->get_path().is_empty()) {
+			// HACK: Overwrite `PropertyInfo` with the current runtime type.
+			// This allows untyped variables to be displayed correctly.
+			prop[1] = Variant::OBJECT;
+
 			var = res->get_path();
 		} else { //only send information that can be sent..
 			int len = 0; //test how big is this to encode
