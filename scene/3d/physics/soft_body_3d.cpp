@@ -207,7 +207,8 @@ bool SoftBody3D::_set_property_pinned_points_indices(const Array &p_indices) {
 			bool insert = false;
 			if (w[i].point_index != -1 && p_indices.find(w[i].point_index) == -1) {
 				pin_point(w[i].point_index, false);
-				insert = true;
+				// If it's the last one, we need to push back to the end
+				insert = i < p_indices_size - 1;
 			}
 			w[i].point_index = point_index;
 			if (insert) {
