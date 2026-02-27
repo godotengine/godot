@@ -857,6 +857,7 @@ void SpringBoneSimulator3D::set_setting_count(int p_count) {
 		}
 	}
 	notify_property_list_changed();
+	_make_collisions_dirty();
 }
 
 int SpringBoneSimulator3D::get_setting_count() const {
