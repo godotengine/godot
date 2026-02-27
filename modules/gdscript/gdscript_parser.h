@@ -111,6 +111,10 @@ public:
 			VARIANT, // Can be any type.
 			RESOLVING, // Currently resolving.
 			UNRESOLVED,
+
+			/// [Monarch] Reginleif addition. Allows us to tell Godot that this type is 
+			/// generic and links against a specified generic parameter.
+			GENERIC_TYPE,
 		};
 		Kind kind = UNRESOLVED;
 
@@ -137,6 +141,9 @@ public:
 
 		MethodInfo method_info; // For callable/signals.
 		HashMap<StringName, int64_t> enum_values; // For enums.
+
+		// [Monarch] Reginleif addition. A dedicated generic parameter field!
+		StringName generic_param;
 
 		_FORCE_INLINE_ bool is_set() const { return kind != RESOLVING && kind != UNRESOLVED; }
 		_FORCE_INLINE_ bool is_resolving() const { return kind == RESOLVING; }
@@ -218,6 +225,12 @@ public:
 					return script_type == p_other.script_type;
 				case CLASS:
 					return class_type == p_other.class_type || class_type->fqcn == p_other.class_type->fqcn;
+
+					/// [Monarch] Dumbly declare equatable if both have the same generic param name.
+					/// Probably best to change it up down the line.
+				case GENERIC_TYPE:
+					return generic_param == p_other.generic_param;
+				
 				case RESOLVING:
 				case UNRESOLVED:
 					break;
@@ -247,6 +260,7 @@ public:
 			method_info = p_other.method_info;
 			enum_values = p_other.enum_values;
 			container_element_types = p_other.container_element_types;
+			generic_param = p_other.generic_param;
 		}
 
 		DataType() = default;
@@ -793,6 +807,17 @@ public:
 		/// [Monarch] Reginleif addition. Checks if this class has any generic parameters declared.
 		bool has_generic_parameters() {
 			return generic_parameters.size() > 0;
+		}
+
+		/// [Monarch] Reginleif addition. Checks if the given identifier is recognised as a generic
+		/// parameter for this class's scope.
+		bool is_generic_parameter(const IdentifierNode* p_identifier) const {
+			for (IdentifierNode* generic_id : generic_parameters) {
+				if (generic_id->name == p_identifier->name) {
+					return true;
+				}
+			}
+			return false;
 		}
 
 		template <typename T>

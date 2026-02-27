@@ -673,6 +673,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 	resolving_datatype.kind = GDScriptParser::DataType::RESOLVING;
 	p_type->set_datatype(resolving_datatype);
 
+	/// This is the result we'll be ferrying out the function.
 	GDScriptParser::DataType result;
 	result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 
@@ -687,6 +688,16 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 	const GDScriptParser::IdentifierNode *first_id = p_type->type_chain[0];
 	StringName first = first_id->name;
 	bool type_found = false;
+
+	/// [Monarch] if the first identifier in the chain is a generic, then
+	/// make the generic_param StringName point at that generic, so that the DataType
+	/// fully registers itself as being "a proper Generic"
+	if (parser->current_class && parser->current_class->is_generic_parameter(first_id)) {
+		result.kind = GDScriptParser::DataType::GENERIC_TYPE;
+		result.generic_param = first;
+		p_type->set_datatype(result);
+		return result;
+	}
 
 	if (first_id->suite && first_id->suite->has_local(first)) {
 		const GDScriptParser::SuiteNode::Local &local = first_id->suite->get_local(first);
@@ -1050,7 +1061,12 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				check_class_member_name_conflict(p_class, member.variable->identifier->name, member.variable);
 
 				member.variable->set_datatype(resolving_datatype);
+
+
+				/// [Monarch] This is where the variable actually gets resolved. So you can surgically plug
+				/// The implementation of generics in here.
 				resolve_variable(member.variable, false);
+
 				resolve_pending_lambda_bodies();
 
 				// Apply annotations.
