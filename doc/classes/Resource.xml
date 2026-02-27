@@ -194,5 +194,22 @@
 		<constant name="DEEP_DUPLICATE_ALL" value="2" enum="DeepDuplicateMode">
 			Every subresource found will be duplicated, even if it has a non-local path. In other words, even potentially big resources stored separately will be duplicated.
 		</constant>
+		<constant name="NOTIFICATION_RESOURCE_DESERIALIZED" value="3200">
+			Notification received after the [Resource] is loaded and all its exported variables have been initialized. All sub-resources will also receive this notification. If a resource is newly created and not loaded, it won't receive this notification.
+			[codeblock]
+			extends Resource
+
+			@export var a = 0
+			@export var b = 0
+
+			func _init():
+				print(a + b) # Always 0.
+
+			func _notification(what):
+				if what == NOTIFICATION_RESOURCE_DESERIALIZED:
+					print(a + b) # Depends on values stored in the Resource.
+			[/codeblock]
+			[b]Note:[/b] This notification is sent by text and binary format loaders. If you load a [Resource] from a custom format, its loader needs to send the notification manually.
+		</constant>
 	</constants>
 </class>
