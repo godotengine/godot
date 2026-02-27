@@ -140,13 +140,32 @@ Error GDScriptLanguageProtocol::on_client_connected() {
 	ERR_FAIL_COND_V_MSG(clients.size() >= LSP_MAX_CLIENTS, FAILED, "Max client limits reached");
 	Ref<LSPeer> peer = memnew(LSPeer);
 	peer->connection = tcp_peer;
-	clients.insert(next_client_id, peer);
+	int client_id = next_client_id;
+	clients.insert(client_id, peer);
 	next_client_id++;
+
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+	int peer_fd = tcp_peer->get_native_fd();
+	if (peer_fd >= 0) {
+		SocketMonitorGCD *monitor = memnew(SocketMonitorGCD);
+		monitor->start(peer_fd, callable_mp(this, &GDScriptLanguageProtocol::_on_peer_readable).bind(client_id));
+		_peer_monitors.insert(client_id, monitor);
+	}
+#endif
+
 	EditorNode::get_log()->add_message("[LSP] Connection Taken", EditorLog::MSG_TYPE_EDITOR);
 	return OK;
 }
 
 void GDScriptLanguageProtocol::on_client_disconnected(const int &p_client_id) {
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+	if (_peer_monitors.has(p_client_id)) {
+		SocketMonitorGCD *monitor = _peer_monitors[p_client_id];
+		monitor->stop();
+		memdelete(monitor);
+		_peer_monitors.erase(p_client_id);
+	}
+#endif
 	clients.erase(p_client_id);
 	if (clients.is_empty()) {
 		scene_cache.clear();
@@ -268,6 +287,74 @@ void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
 	notify_client("gdscript/capabilities", capabilities.to_json());
 }
 
+void GDScriptLanguageProtocol::_flush_peer(const Ref<LSPeer> &p_peer) {
+	p_peer->send_data();
+}
+
+void GDScriptLanguageProtocol::_flush_all_peers() {
+	for (const KeyValue<int, Ref<LSPeer>> &E : clients) {
+		_flush_peer(E.value);
+	}
+}
+
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+void GDScriptLanguageProtocol::_on_server_readable() {
+	if (_handling) {
+		return;
+	}
+	_handling = true;
+
+	if (server->is_connection_available()) {
+		on_client_connected();
+	}
+
+	_handling = false;
+}
+
+void GDScriptLanguageProtocol::_on_peer_readable(int p_client_id) {
+	if (_handling) {
+		return;
+	}
+	_handling = true;
+
+	if (!clients.has(p_client_id)) {
+		_handling = false;
+		return;
+	}
+
+	Ref<LSPeer> peer = clients[p_client_id];
+	peer->connection->poll();
+	StreamPeerTCP::Status status = peer->connection->get_status();
+	if (status == StreamPeerTCP::STATUS_NONE || status == StreamPeerTCP::STATUS_ERROR) {
+		on_client_disconnected(p_client_id);
+	} else {
+		Error err = OK;
+		while (peer->connection->get_available_bytes() > 0) {
+			latest_client_id = p_client_id;
+			err = peer->handle_data();
+			if (err != OK) {
+				break;
+			}
+		}
+
+		if (err != OK && err != ERR_BUSY) {
+			on_client_disconnected(p_client_id);
+			_handling = false;
+			return;
+		}
+
+		err = peer->send_data();
+		if (err != OK && err != ERR_BUSY) {
+			on_client_disconnected(p_client_id);
+			_handling = false;
+			return;
+		}
+	}
+
+	_handling = false;
+}
+#endif
+
 void GDScriptLanguageProtocol::poll(int p_limit_usec) {
 	uint64_t target_ticks = OS::get_singleton()->get_ticks_usec() + p_limit_usec;
 
@@ -314,10 +401,37 @@ void GDScriptLanguageProtocol::poll(int p_limit_usec) {
 }
 
 Error GDScriptLanguageProtocol::start(int p_port, const IPAddress &p_bind_ip) {
-	return server->listen(p_port, p_bind_ip);
+	Error err = server->listen(p_port, p_bind_ip);
+	if (err != OK) {
+		return err;
+	}
+
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+	int server_fd = server->get_native_fd();
+	if (server_fd >= 0) {
+		_server_monitor = memnew(SocketMonitorGCD);
+		_server_monitor->start(server_fd, callable_mp(this, &GDScriptLanguageProtocol::_on_server_readable));
+	}
+#endif
+
+	return OK;
 }
 
 void GDScriptLanguageProtocol::stop() {
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+	for (KeyValue<int, SocketMonitorGCD *> &E : _peer_monitors) {
+		E.value->stop();
+		memdelete(E.value);
+	}
+	_peer_monitors.clear();
+
+	if (_server_monitor) {
+		_server_monitor->stop();
+		memdelete(_server_monitor);
+		_server_monitor = nullptr;
+	}
+#endif
+
 	for (const KeyValue<int, Ref<LSPeer>> &E : clients) {
 		Ref<LSPeer> peer = clients.get(E.key);
 		peer->connection->disconnect_from_host();
@@ -345,6 +459,7 @@ void GDScriptLanguageProtocol::notify_client(const String &p_method, const Varia
 	String msg = Variant(message).to_json_string();
 	msg = format_output(msg);
 	peer->res_queue.push_back(msg.utf8());
+	_flush_peer(peer);
 }
 
 void GDScriptLanguageProtocol::request_client(const String &p_method, const Variant &p_params, int p_client_id) {
@@ -366,6 +481,7 @@ void GDScriptLanguageProtocol::request_client(const String &p_method, const Vari
 	String msg = Variant(message).to_json_string();
 	msg = format_output(msg);
 	peer->res_queue.push_back(msg.utf8());
+	_flush_peer(peer);
 }
 
 bool GDScriptLanguageProtocol::is_smart_resolve_enabled() const {

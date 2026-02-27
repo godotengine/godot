@@ -118,5 +118,7 @@ public:
 	virtual Error join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) = 0;
 	virtual Error leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) = 0;
 
+	virtual int get_native_fd() const { return -1; }
+
 	virtual ~NetSocket() {}
 };

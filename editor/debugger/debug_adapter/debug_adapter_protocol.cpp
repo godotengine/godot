@@ -151,12 +151,30 @@ Error DebugAdapterProtocol::on_client_connected() {
 	peer->connection = tcp_peer;
 	clients.push_back(peer);
 
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+	int peer_fd = tcp_peer->get_native_fd();
+	if (peer_fd >= 0) {
+		SocketMonitorGCD *monitor = memnew(SocketMonitorGCD);
+		monitor->start(peer_fd, callable_mp(this, &DebugAdapterProtocol::_on_peer_readable).bind(peer_fd));
+		_peer_monitors.insert(peer_fd, monitor);
+	}
+#endif
+
 	EditorDebuggerNode::get_singleton()->get_default_debugger()->set_move_to_foreground(false);
 	EditorNode::get_log()->add_message("[DAP] Connection Taken", EditorLog::MSG_TYPE_EDITOR);
 	return OK;
 }
 
 void DebugAdapterProtocol::on_client_disconnected(const Ref<DAPeer> &p_peer) {
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+	int peer_fd = p_peer->connection->get_native_fd();
+	if (_peer_monitors.has(peer_fd)) {
+		SocketMonitorGCD *monitor = _peer_monitors[peer_fd];
+		monitor->stop();
+		memdelete(monitor);
+		_peer_monitors.erase(peer_fd);
+	}
+#endif
 	clients.erase(p_peer);
 	if (!clients.size()) {
 		reset_ids();
@@ -888,6 +906,7 @@ bool DebugAdapterProtocol::process_message(const String &p_text) {
 void DebugAdapterProtocol::notify_initialized() {
 	Dictionary event = parser->ev_initialized();
 	_current_peer->res_queue.push_back(event);
+	_flush_peer(_current_peer);
 }
 
 void DebugAdapterProtocol::notify_process() {
@@ -897,6 +916,7 @@ void DebugAdapterProtocol::notify_process() {
 	for (const Ref<DAPeer> &peer : clients) {
 		peer->res_queue.push_back(event);
 	}
+	_flush_all_peers();
 }
 
 void DebugAdapterProtocol::notify_terminated() {
@@ -907,6 +927,7 @@ void DebugAdapterProtocol::notify_terminated() {
 		}
 		peer->res_queue.push_back(event);
 	}
+	_flush_all_peers();
 }
 
 void DebugAdapterProtocol::notify_exited(const int &p_exitcode) {
@@ -917,6 +938,7 @@ void DebugAdapterProtocol::notify_exited(const int &p_exitcode) {
 		}
 		peer->res_queue.push_back(event);
 	}
+	_flush_all_peers();
 }
 
 void DebugAdapterProtocol::notify_stopped_paused() {
@@ -924,6 +946,7 @@ void DebugAdapterProtocol::notify_stopped_paused() {
 	for (const Ref<DAPeer> &peer : clients) {
 		peer->res_queue.push_back(event);
 	}
+	_flush_all_peers();
 }
 
 void DebugAdapterProtocol::notify_stopped_exception(const String &p_error) {
@@ -931,6 +954,7 @@ void DebugAdapterProtocol::notify_stopped_exception(const String &p_error) {
 	for (const Ref<DAPeer> &peer : clients) {
 		peer->res_queue.push_back(event);
 	}
+	_flush_all_peers();
 }
 
 void DebugAdapterProtocol::notify_stopped_breakpoint(const int &p_id) {
@@ -938,6 +962,7 @@ void DebugAdapterProtocol::notify_stopped_breakpoint(const int &p_id) {
 	for (const Ref<DAPeer> &peer : clients) {
 		peer->res_queue.push_back(event);
 	}
+	_flush_all_peers();
 }
 
 void DebugAdapterProtocol::notify_stopped_step() {
@@ -945,6 +970,7 @@ void DebugAdapterProtocol::notify_stopped_step() {
 	for (const Ref<DAPeer> &peer : clients) {
 		peer->res_queue.push_back(event);
 	}
+	_flush_all_peers();
 }
 
 void DebugAdapterProtocol::notify_continued() {
@@ -955,6 +981,7 @@ void DebugAdapterProtocol::notify_continued() {
 		}
 		peer->res_queue.push_back(event);
 	}
+	_flush_all_peers();
 
 	reset_stack_info();
 }
@@ -964,6 +991,7 @@ void DebugAdapterProtocol::notify_output(const String &p_message, RemoteDebugger
 	for (const Ref<DAPeer> &peer : clients) {
 		peer->res_queue.push_back(event);
 	}
+	_flush_all_peers();
 }
 
 void DebugAdapterProtocol::notify_custom_data(const String &p_msg, const Array &p_data) {
@@ -973,6 +1001,7 @@ void DebugAdapterProtocol::notify_custom_data(const String &p_msg, const Array &
 			peer->res_queue.push_back(event);
 		}
 	}
+	_flush_all_peers();
 }
 
 void DebugAdapterProtocol::notify_breakpoint(const DAP::Breakpoint &p_breakpoint, const bool &p_enabled) {
@@ -983,6 +1012,7 @@ void DebugAdapterProtocol::notify_breakpoint(const DAP::Breakpoint &p_breakpoint
 		}
 		peer->res_queue.push_back(event);
 	}
+	_flush_all_peers();
 }
 
 Array DebugAdapterProtocol::update_breakpoints(const String &p_path, const Array &p_lines) {
@@ -1199,6 +1229,75 @@ void DebugAdapterProtocol::on_debug_data(const String &p_msg, const Array &p_dat
 	notify_custom_data(p_msg, p_data);
 }
 
+void DebugAdapterProtocol::_flush_peer(const Ref<DAPeer> &p_peer) {
+	p_peer->send_data();
+}
+
+void DebugAdapterProtocol::_flush_all_peers() {
+	for (const Ref<DAPeer> &peer : clients) {
+		_flush_peer(peer);
+	}
+}
+
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+void DebugAdapterProtocol::_on_server_readable() {
+	if (_handling) {
+		return;
+	}
+	_handling = true;
+
+	if (server->is_connection_available()) {
+		on_client_connected();
+	}
+
+	_handling = false;
+}
+
+Ref<DAPeer> DebugAdapterProtocol::_find_peer_by_fd(int p_fd) const {
+	for (const Ref<DAPeer> &peer : clients) {
+		if (peer->connection->get_native_fd() == p_fd) {
+			return peer;
+		}
+	}
+	return Ref<DAPeer>();
+}
+
+void DebugAdapterProtocol::_on_peer_readable(int p_fd) {
+	if (_handling) {
+		return;
+	}
+	_handling = true;
+
+	Ref<DAPeer> p_peer = _find_peer_by_fd(p_fd);
+	if (p_peer.is_null()) {
+		_handling = false;
+		return;
+	}
+
+	p_peer->connection->poll();
+	StreamPeerTCP::Status status = p_peer->connection->get_status();
+	if (status == StreamPeerTCP::STATUS_NONE || status == StreamPeerTCP::STATUS_ERROR) {
+		on_client_disconnected(p_peer);
+	} else {
+		_current_peer = p_peer;
+		Error err = p_peer->handle_data();
+		if (err != OK && err != ERR_BUSY) {
+			on_client_disconnected(p_peer);
+			_handling = false;
+			return;
+		}
+		err = p_peer->send_data();
+		if (err != OK && err != ERR_BUSY) {
+			on_client_disconnected(p_peer);
+			_handling = false;
+			return;
+		}
+	}
+
+	_handling = false;
+}
+#endif
+
 void DebugAdapterProtocol::poll() {
 	if (server->is_connection_available()) {
 		on_client_connected();
@@ -1232,10 +1331,37 @@ Error DebugAdapterProtocol::start(int p_port, const IPAddress &p_bind_ip) {
 	_request_timeout = (uint64_t)_EDITOR_GET("network/debug_adapter/request_timeout");
 	_sync_breakpoints = (bool)_EDITOR_GET("network/debug_adapter/sync_breakpoints");
 	_initialized = true;
-	return server->listen(p_port, p_bind_ip);
+	Error err = server->listen(p_port, p_bind_ip);
+	if (err != OK) {
+		return err;
+	}
+
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+	int server_fd = server->get_native_fd();
+	if (server_fd >= 0) {
+		_server_monitor = memnew(SocketMonitorGCD);
+		_server_monitor->start(server_fd, callable_mp(this, &DebugAdapterProtocol::_on_server_readable));
+	}
+#endif
+
+	return OK;
 }
 
 void DebugAdapterProtocol::stop() {
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+	for (KeyValue<int, SocketMonitorGCD *> &E : _peer_monitors) {
+		E.value->stop();
+		memdelete(E.value);
+	}
+	_peer_monitors.clear();
+
+	if (_server_monitor) {
+		_server_monitor->stop();
+		memdelete(_server_monitor);
+		_server_monitor = nullptr;
+	}
+#endif
+
 	for (const Ref<DAPeer> &peer : clients) {
 		peer->connection->disconnect_from_host();
 	}

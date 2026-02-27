@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  tcp_server.cpp                                                        */
+/*  socket_monitor_gcd.mm                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,47 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "tcp_server.h"
+#include "socket_monitor_gcd.h"
 
-void TCPServer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &TCPServer::listen, DEFVAL("*"));
-	ClassDB::bind_method(D_METHOD("get_local_port"), &TCPServer::get_local_port);
-	ClassDB::bind_method(D_METHOD("take_connection"), &TCPServer::take_connection);
-}
+#include "core/variant/variant.h"
 
-Error TCPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
-	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
-	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
-	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
+void SocketMonitorGCD::start(int p_fd, const Callable &p_on_readable) {
+	stop();
 
-	Error err;
-	IP::Type ip_type = IP::TYPE_ANY;
-
-	// If the bind address is valid use its type as the socket type
-	if (p_bind_address.is_valid()) {
-		ip_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+	_source = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, p_fd, 0, dispatch_get_main_queue());
+	if (!_source) {
+		return;
 	}
 
-	err = _sock->open(NetSocket::Family::INET, NetSocket::TYPE_TCP, ip_type);
+	Callable cb = p_on_readable;
+	dispatch_source_set_event_handler(_source, ^{
+		cb.call_deferred();
+	});
 
-	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
-
-	_sock->set_reuse_address_enabled(true);
-
-	return _listen(NetSocket::Address(p_bind_address, p_port));
+	dispatch_resume(_source);
+	_active = true;
 }
 
-int TCPServer::get_local_port() const {
-	NetSocket::Address addr;
-	_sock->get_socket_address(&addr);
-	return addr.port();
+void SocketMonitorGCD::stop() {
+	if (_source) {
+		dispatch_source_cancel(_source);
+		_source = nullptr;
+	}
+	_active = false;
 }
 
-Ref<StreamPeerTCP> TCPServer::take_connection() {
-	return _take_connection<StreamPeerTCP>();
-}
-
-int TCPServer::get_native_fd() const {
-	ERR_FAIL_COND_V(_sock.is_null(), -1);
-	return _sock->get_native_fd();
+SocketMonitorGCD::~SocketMonitorGCD() {
+	stop();
 }

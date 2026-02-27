@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  tcp_server.cpp                                                        */
+/*  socket_monitor_gcd.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,47 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "tcp_server.h"
+#pragma once
 
-void TCPServer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &TCPServer::listen, DEFVAL("*"));
-	ClassDB::bind_method(D_METHOD("get_local_port"), &TCPServer::get_local_port);
-	ClassDB::bind_method(D_METHOD("take_connection"), &TCPServer::take_connection);
-}
+#include <dispatch/dispatch.h>
 
-Error TCPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
-	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
-	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
-	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
+#include "core/variant/callable.h"
 
-	Error err;
-	IP::Type ip_type = IP::TYPE_ANY;
+class SocketMonitorGCD {
+	dispatch_source_t _source = nullptr;
+	bool _active = false;
 
-	// If the bind address is valid use its type as the socket type
-	if (p_bind_address.is_valid()) {
-		ip_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
-	}
-
-	err = _sock->open(NetSocket::Family::INET, NetSocket::TYPE_TCP, ip_type);
-
-	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
-
-	_sock->set_reuse_address_enabled(true);
-
-	return _listen(NetSocket::Address(p_bind_address, p_port));
-}
-
-int TCPServer::get_local_port() const {
-	NetSocket::Address addr;
-	_sock->get_socket_address(&addr);
-	return addr.port();
-}
-
-Ref<StreamPeerTCP> TCPServer::take_connection() {
-	return _take_connection<StreamPeerTCP>();
-}
-
-int TCPServer::get_native_fd() const {
-	ERR_FAIL_COND_V(_sock.is_null(), -1);
-	return _sock->get_native_fd();
-}
+public:
+	// Start monitoring fd for readability. Callback is invoked via
+	// call_deferred() so it runs during Godot's MessageQueue flush.
+	void start(int p_fd, const Callable &p_on_readable);
+	void stop();
+	bool is_active() const { return _active; }
+	~SocketMonitorGCD();
+};

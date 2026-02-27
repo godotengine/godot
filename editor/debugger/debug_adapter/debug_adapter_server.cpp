@@ -54,6 +54,7 @@ void DebugAdapterServer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
+#if !defined(MACOS_ENABLED) && !defined(APPLE_EMBEDDED_ENABLED)
 			// The main loop can be run again during request processing, which modifies internal state of the protocol.
 			// Thus, "polling" is needed to prevent it from parsing other requests while the current one isn't finished.
 			if (started && !polling) {
@@ -61,6 +62,7 @@ void DebugAdapterServer::_notification(int p_what) {
 				protocol.poll();
 				polling = false;
 			}
+#endif
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -82,7 +84,9 @@ void DebugAdapterServer::start() {
 	remote_port = (DebugAdapterServer::port_override > -1) ? DebugAdapterServer::port_override : (int)_EDITOR_GET("network/debug_adapter/remote_port");
 	if (protocol.start(remote_port, IPAddress("127.0.0.1")) == OK) {
 		EditorNode::get_log()->add_message("--- Debug adapter server started on port " + itos(remote_port) + " ---", EditorLog::MSG_TYPE_EDITOR);
+#if !defined(MACOS_ENABLED) && !defined(APPLE_EMBEDDED_ENABLED)
 		set_process_internal(true);
+#endif
 		started = true;
 	}
 }

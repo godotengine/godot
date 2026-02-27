@@ -52,4 +52,6 @@ public:
 	int get_local_port() const;
 
 	void set_no_delay(bool p_enabled);
+
+	int get_native_fd() const;
 };

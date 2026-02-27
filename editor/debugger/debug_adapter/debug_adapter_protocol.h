@@ -37,6 +37,10 @@
 #include "editor/debugger/debug_adapter/debug_adapter_types.h"
 #include "scene/debugger/scene_debugger_object.h"
 
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+#include "drivers/apple/socket_monitor_gcd.h"
+#endif
+
 #define DAP_MAX_BUFFER_SIZE 4194304 // 4MB
 #define DAP_MAX_CLIENTS 8
 
@@ -83,6 +87,16 @@ private:
 
 	List<Ref<DAPeer>> clients;
 	Ref<TCPServer> server;
+
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+	SocketMonitorGCD *_server_monitor = nullptr;
+	HashMap<int, SocketMonitorGCD *> _peer_monitors; // keyed by native fd
+	bool _handling = false;
+
+	void _on_server_readable();
+	void _on_peer_readable(int p_fd);
+	Ref<DAPeer> _find_peer_by_fd(int p_fd) const;
+#endif
 
 	Error on_client_connected();
 	void on_client_disconnected(const Ref<DAPeer> &p_peer);
@@ -164,6 +178,9 @@ public:
 	void notify_breakpoint(const DAP::Breakpoint &p_breakpoint, const bool &p_enabled);
 
 	Array update_breakpoints(const String &p_path, const Array &p_lines);
+
+	void _flush_peer(const Ref<DAPeer> &p_peer);
+	void _flush_all_peers();
 
 	void poll();
 	Error start(int p_port, const IPAddress &p_bind_ip);
