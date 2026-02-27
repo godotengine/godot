@@ -318,7 +318,7 @@ public:
 	// Adds an editor plugin which can provide metadata for selected nodes.
 	void add_editor_plugin(Object *p_object);
 
-	void update();
+	void update(bool p_deferred = true);
 	void clear();
 
 	// Returns only the top level selected nodes.
