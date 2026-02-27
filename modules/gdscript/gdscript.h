@@ -105,6 +105,7 @@ class GDScript : public Script {
 
 	HashMap<StringName, Variant> constants;
 	HashMap<StringName, GDScriptFunction *> member_functions;
+	LocalVector<GDScriptFunction *> patched_member_functions;
 	HashMap<StringName, Ref<GDScript>> subclasses;
 	HashMap<StringName, MethodInfo> _signals;
 	Dictionary rpc_config;
@@ -342,6 +343,8 @@ public:
 #ifdef TOOLS_ENABLED
 	virtual bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
 #endif
+
+	bool patch_method(const StringName &p_method, const Callable &p_wrapper);
 
 	GDScript();
 	~GDScript();
