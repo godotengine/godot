@@ -136,6 +136,11 @@ void FlowContainer::_resort() {
 	ofs.x = 0;
 	ofs.y = 0;
 
+#ifdef TOOLS_ENABLED
+	cell_sizes.clear();
+	LocalVector<int32_t> current_cell_sizes;
+#endif
+	_LineData line_data;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *child = as_sortable_control(get_child(i));
 		if (!child) {
@@ -143,17 +148,27 @@ void FlowContainer::_resort() {
 		}
 		Size2i child_size = children_minsize_cache[child];
 
-		_LineData line_data = lines_data[current_line_idx];
+		line_data = lines_data[current_line_idx];
 		if (child_idx_in_line >= lines_data[current_line_idx].child_count) {
 			current_line_idx++;
 			child_idx_in_line = 0;
 			if (vertical) {
 				ofs.x += line_data.min_line_height + theme_cache.h_separation;
+#ifdef TOOLS_ENABLED
+				current_cell_sizes.push_back(ofs.x);
+#endif
 				ofs.y = 0;
 			} else {
 				ofs.x = 0;
 				ofs.y += line_data.min_line_height + theme_cache.v_separation;
+#ifdef TOOLS_ENABLED
+				current_cell_sizes.push_back(ofs.y);
+#endif
 			}
+#ifdef TOOLS_ENABLED
+			cell_sizes.push_back(std::move(current_cell_sizes));
+			current_cell_sizes = Vector<int32_t>();
+#endif
 			line_data = lines_data[current_line_idx];
 		}
 
@@ -254,12 +269,28 @@ void FlowContainer::_resort() {
 
 		if (vertical) { /* VERTICAL */
 			ofs.y += child_size.height + theme_cache.v_separation;
+			// Main axis position.
+#ifdef TOOLS_ENABLED
+			current_cell_sizes.push_back(ofs.y);
+#endif
 		} else { /* HORIZONTAL */
 			ofs.x += child_size.width + theme_cache.h_separation;
+#ifdef TOOLS_ENABLED
+			current_cell_sizes.push_back(ofs.x);
+#endif
 		}
 
 		child_idx_in_line++;
 	}
+#ifdef TOOLS_ENABLED
+	if (vertical) {
+		// Cross axis position.
+		current_cell_sizes.push_back(ofs.x + line_data.min_line_height + theme_cache.h_separation);
+	} else {
+		current_cell_sizes.push_back(ofs.y + line_data.min_line_height + theme_cache.v_separation);
+	}
+	cell_sizes.push_back(std::move(current_cell_sizes));
+#endif
 	cached_size = (vertical ? ofs.x : ofs.y) + line_height;
 	cached_line_count = lines_data.size();
 	cached_line_max_child_count = lines_data.size() > 0 ? lines_data[0].child_count : 0;
