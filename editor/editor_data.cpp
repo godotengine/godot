@@ -1330,16 +1330,20 @@ void EditorSelection::_update_node_list() {
 	node_list_changed = false;
 }
 
-void EditorSelection::update() {
+void EditorSelection::update(bool p_deferred) {
 	_update_node_list();
 
 	if (!changed) {
 		return;
 	}
 	changed = false;
-	if (!emitted) {
-		emitted = true;
-		callable_mp(this, &EditorSelection::_emit_change).call_deferred();
+	if (p_deferred) {
+		if (!emitted) {
+			emitted = true;
+			callable_mp(this, &EditorSelection::_emit_change).call_deferred();
+		}
+	} else {
+		_emit_change();
 	}
 }
 
