@@ -30,7 +30,9 @@
 
 #include "sprite_frames_editor_plugin.h"
 
+#include "core/input/input.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/string/translation_server.h"
 #include "editor/docks/editor_dock_manager.h"

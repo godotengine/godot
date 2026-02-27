@@ -30,6 +30,7 @@
 
 #include "animation_bezier_editor.h"
 
+#include "core/object/class_db.h"
 #include "core/string/translation_server.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/editor_node.h"
@@ -274,15 +275,6 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			bezier_icon = get_editor_theme_icon(SNAME("KeyBezierPoint"));
 			bezier_handle_icon = get_editor_theme_icon(SNAME("KeyBezierHandle"));
 			selected_icon = get_editor_theme_icon(SNAME("KeyBezierSelected"));
-		} break;
-
-		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
-			RID ae = get_accessibility_element();
-			ERR_FAIL_COND(ae.is_null());
-
-			//TODO
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, TTR(vformat("The %s is not accessible at this time.", "Animation bezier track editor")));
 		} break;
 
 		case NOTIFICATION_DRAW: {

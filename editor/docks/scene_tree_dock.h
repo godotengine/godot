@@ -59,9 +59,10 @@ class SceneTreeDock : public EditorDock {
 		TOOL_COPY,
 		TOOL_PASTE,
 		TOOL_PASTE_AS_SIBLING,
+		TOOL_PASTE_AS_REPLACEMENT,
 		TOOL_RENAME,
 		TOOL_BATCH_RENAME,
-		TOOL_REPLACE,
+		TOOL_CHANGE_TYPE,
 		TOOL_EXTEND_SCRIPT,
 		TOOL_ATTACH_SCRIPT,
 		TOOL_DETACH_SCRIPT,
@@ -306,7 +307,7 @@ class SceneTreeDock : public EditorDock {
 	void _check_object_properties_recursive(Node *p_root_node, Object *p_obj, HashMap<Node *, NodePath> *p_renames, bool p_inside_resource = false) const;
 	bool _check_node_path_recursive(Node *p_root_node, Variant &r_variant, HashMap<Node *, NodePath> *p_renames, bool p_inside_resource = false) const;
 	bool _check_node_recursive(Variant &r_variant, Node *p_node, Node *p_by_node, const String type_hint, String &r_warn_message);
-	void _replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties = true, bool p_remove_old = true);
+	void _replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties = true);
 
 private:
 	static SceneTreeDock *singleton;
@@ -356,6 +357,7 @@ public:
 	void open_instance_child_dialog();
 
 	List<Node *> paste_nodes(bool p_paste_as_sibling = false);
+	void paste_node_as_replacement();
 	List<Node *> get_node_clipboard() const;
 
 	ScriptCreateDialog *get_script_create_dialog() {

@@ -58,6 +58,7 @@
 #include "protocol/linux_explicit_synchronization_unstable_v1.gen.h"
 #include "protocol/pointer_constraints.gen.h"
 #include "protocol/pointer_gestures.gen.h"
+#include "protocol/pointer_warp.gen.h"
 #include "protocol/primary_selection.gen.h"
 #include "protocol/relative_pointer.gen.h"
 #include "protocol/tablet.gen.h"
@@ -451,6 +452,9 @@ class WaylandEmbedder {
 		&wp_tearing_control_manager_v1_interface,
 		&wp_tearing_control_v1_interface,
 
+		// pointer-warp-v1
+		&wp_pointer_warp_v1_interface,
+
 		// Our custom things.
 		&godot_embedding_compositor_interface,
 		&godot_embedded_client_interface,
@@ -610,7 +614,7 @@ class WaylandEmbedder {
 	void shutdown();
 
 	bool handle_generic_msg(Client *client, const WaylandObject *p_object, const struct wl_message *message, const struct msg_info *info, uint32_t *buf, uint32_t instance_id = INVALID_ID);
-	Error handle_msg_info(Client *client, const struct msg_info *info, uint32_t *buf, int *fds_requested);
+	Error handle_msg_info(Client *client, const struct msg_info *info, uint32_t *buf, LocalVector<int> &r_fds_requested);
 	Error handle_sock(int p_fd);
 	void handle_fd(int p_fd, int p_revents);
 

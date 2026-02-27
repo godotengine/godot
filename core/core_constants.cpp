@@ -69,183 +69,183 @@ static HashMap<StringName, Vector<_CoreConstant>> _global_enums;
 
 #ifdef DEBUG_ENABLED
 
-#define BIND_CORE_CONSTANT(m_constant)                                                 \
+#define BIND_CORE_CONSTANT(m_constant) \
 	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant)); \
 	_global_constants_map[#m_constant] = _global_constants.size() - 1;
 
-#define BIND_CORE_ENUM_CONSTANT(m_constant)                                                          \
-	{                                                                                                \
-		StringName enum_name = __constant_get_enum_name(m_constant);                                 \
-		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant));              \
-		_global_constants_map[#m_constant] = _global_constants.size() - 1;                           \
+#define BIND_CORE_ENUM_CONSTANT(m_constant) \
+	{ \
+		StringName enum_name = __constant_get_enum_name(m_constant); \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant)); \
+		_global_constants_map[#m_constant] = _global_constants.size() - 1; \
 		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
 	}
 
-#define BIND_CORE_BITFIELD_FLAG(m_constant)                                                          \
-	{                                                                                                \
-		StringName enum_name = __constant_get_bitfield_name(m_constant);                             \
+#define BIND_CORE_BITFIELD_FLAG(m_constant) \
+	{ \
+		StringName enum_name = __constant_get_bitfield_name(m_constant); \
 		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant, false, true)); \
-		_global_constants_map[#m_constant] = _global_constants.size() - 1;                           \
+		_global_constants_map[#m_constant] = _global_constants.size() - 1; \
 		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
 	}
 
 // This just binds enum classes as if they were regular enum constants.
-#define BIND_CORE_ENUM_CLASS_CONSTANT(m_enum, m_prefix, m_member)                                                  \
-	{                                                                                                              \
-		StringName enum_name = __constant_get_enum_name(m_enum::m_member);                                         \
+#define BIND_CORE_ENUM_CLASS_CONSTANT(m_enum, m_prefix, m_member) \
+	{ \
+		StringName enum_name = __constant_get_enum_name(m_enum::m_member); \
 		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member)); \
-		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1;                             \
-		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);               \
+		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1; \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
 	}
 
-#define BIND_CORE_BITFIELD_CLASS_FLAG(m_enum, m_prefix, m_member)                                                               \
-	{                                                                                                                           \
-		StringName enum_name = __constant_get_bitfield_name(m_enum::m_member);                                                  \
+#define BIND_CORE_BITFIELD_CLASS_FLAG(m_enum, m_prefix, m_member) \
+	{ \
+		StringName enum_name = __constant_get_bitfield_name(m_enum::m_member); \
 		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member, false, true)); \
-		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1;                                          \
-		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);                            \
-	}
-
-#define BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(m_enum, m_name, m_member)                               \
-	{                                                                                                \
-		StringName enum_name = __constant_get_enum_name(m_enum::m_member);                           \
-		_global_constants.push_back(_CoreConstant(enum_name, #m_name, (int64_t)m_enum::m_member));   \
-		_global_constants_map[#m_name] = _global_constants.size() - 1;                               \
+		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1; \
 		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
 	}
 
-#define BIND_CORE_BITFIELD_CLASS_FLAG_CUSTOM(m_enum, m_name, m_member)                                          \
-	{                                                                                                           \
-		StringName enum_name = __constant_get_bitfield_name(m_enum::m_member);                                  \
+#define BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(m_enum, m_name, m_member) \
+	{ \
+		StringName enum_name = __constant_get_enum_name(m_enum::m_member); \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_name, (int64_t)m_enum::m_member)); \
+		_global_constants_map[#m_name] = _global_constants.size() - 1; \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
+
+#define BIND_CORE_BITFIELD_CLASS_FLAG_CUSTOM(m_enum, m_name, m_member) \
+	{ \
+		StringName enum_name = __constant_get_bitfield_name(m_enum::m_member); \
 		_global_constants.push_back(_CoreConstant(enum_name, #m_name, (int64_t)m_enum::m_member, false, true)); \
-		_global_constants_map[#m_name] = _global_constants.size() - 1;                                          \
-		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);            \
-	}
-
-#define BIND_CORE_ENUM_CLASS_CONSTANT_NO_VAL(m_enum, m_prefix, m_member)                                                 \
-	{                                                                                                                    \
-		StringName enum_name = __constant_get_enum_name(m_enum::m_member);                                               \
-		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member, true)); \
-		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1;                                   \
-		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);                     \
-	}
-
-#define BIND_CORE_ENUM_CONSTANT_CUSTOM(m_custom_name, m_constant)                                    \
-	{                                                                                                \
-		StringName enum_name = __constant_get_enum_name(m_constant);                                 \
-		_global_constants.push_back(_CoreConstant(enum_name, m_custom_name, m_constant));            \
-		_global_constants_map[m_custom_name] = _global_constants.size() - 1;                         \
+		_global_constants_map[#m_name] = _global_constants.size() - 1; \
 		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
 	}
 
-#define BIND_CORE_CONSTANT_NO_VAL(m_constant)                                                \
+#define BIND_CORE_ENUM_CLASS_CONSTANT_NO_VAL(m_enum, m_prefix, m_member) \
+	{ \
+		StringName enum_name = __constant_get_enum_name(m_enum::m_member); \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member, true)); \
+		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1; \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
+
+#define BIND_CORE_ENUM_CONSTANT_CUSTOM(m_custom_name, m_constant) \
+	{ \
+		StringName enum_name = __constant_get_enum_name(m_constant); \
+		_global_constants.push_back(_CoreConstant(enum_name, m_custom_name, m_constant)); \
+		_global_constants_map[m_custom_name] = _global_constants.size() - 1; \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
+
+#define BIND_CORE_CONSTANT_NO_VAL(m_constant) \
 	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant, true)); \
 	_global_constants_map[#m_constant] = _global_constants.size() - 1;
 
-#define BIND_CORE_ENUM_CONSTANT_NO_VAL(m_constant)                                                   \
-	{                                                                                                \
-		StringName enum_name = __constant_get_enum_name(m_constant);                                 \
-		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant, true));        \
-		_global_constants_map[#m_constant] = _global_constants.size() - 1;                           \
+#define BIND_CORE_ENUM_CONSTANT_NO_VAL(m_constant) \
+	{ \
+		StringName enum_name = __constant_get_enum_name(m_constant); \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant, true)); \
+		_global_constants_map[#m_constant] = _global_constants.size() - 1; \
 		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
 	}
 
-#define BIND_CORE_ENUM_CONSTANT_CUSTOM_NO_VAL(m_custom_name, m_constant)                             \
-	{                                                                                                \
-		StringName enum_name = __constant_get_enum_name(m_constant);                                 \
-		_global_constants.push_back(_CoreConstant(enum_name, m_custom_name, m_constant, true));      \
-		_global_constants_map[m_custom_name] = _global_constants.size() - 1;                         \
+#define BIND_CORE_ENUM_CONSTANT_CUSTOM_NO_VAL(m_custom_name, m_constant) \
+	{ \
+		StringName enum_name = __constant_get_enum_name(m_constant); \
+		_global_constants.push_back(_CoreConstant(enum_name, m_custom_name, m_constant, true)); \
+		_global_constants_map[m_custom_name] = _global_constants.size() - 1; \
 		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
 	}
 
 #else
 
-#define BIND_CORE_CONSTANT(m_constant)                                                 \
+#define BIND_CORE_CONSTANT(m_constant) \
 	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant)); \
 	_global_constants_map[#m_constant] = _global_constants.size() - 1;
 
-#define BIND_CORE_ENUM_CONSTANT(m_constant)                                                          \
-	{                                                                                                \
-		StringName enum_name = __constant_get_enum_name(m_constant);                                 \
-		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant));              \
-		_global_constants_map[#m_constant] = _global_constants.size() - 1;                           \
+#define BIND_CORE_ENUM_CONSTANT(m_constant) \
+	{ \
+		StringName enum_name = __constant_get_enum_name(m_constant); \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant)); \
+		_global_constants_map[#m_constant] = _global_constants.size() - 1; \
 		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
 	}
 
-#define BIND_CORE_BITFIELD_FLAG(m_constant)                                                          \
-	{                                                                                                \
-		StringName enum_name = __constant_get_bitfield_name(m_constant);                             \
-		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant));              \
-		_global_constants_map[#m_constant] = _global_constants.size() - 1;                           \
+#define BIND_CORE_BITFIELD_FLAG(m_constant) \
+	{ \
+		StringName enum_name = __constant_get_bitfield_name(m_constant); \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant)); \
+		_global_constants_map[#m_constant] = _global_constants.size() - 1; \
 		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
 	}
 
 // This just binds enum classes as if they were regular enum constants.
-#define BIND_CORE_ENUM_CLASS_CONSTANT(m_enum, m_prefix, m_member)                                                  \
-	{                                                                                                              \
-		StringName enum_name = __constant_get_enum_name(m_enum::m_member);                                         \
+#define BIND_CORE_ENUM_CLASS_CONSTANT(m_enum, m_prefix, m_member) \
+	{ \
+		StringName enum_name = __constant_get_enum_name(m_enum::m_member); \
 		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member)); \
-		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1;                             \
-		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);               \
-	}
-
-#define BIND_CORE_BITFIELD_CLASS_FLAG(m_enum, m_prefix, m_member)                                                  \
-	{                                                                                                              \
-		StringName enum_name = __constant_get_bitfield_name(m_enum::m_member);                                     \
-		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member)); \
-		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1;                             \
-		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);               \
-	}
-
-#define BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(m_enum, m_name, m_member)                               \
-	{                                                                                                \
-		StringName enum_name = __constant_get_enum_name(m_enum::m_member);                           \
-		_global_constants.push_back(_CoreConstant(enum_name, #m_name, (int64_t)m_enum::m_member));   \
-		_global_constants_map[#m_name] = _global_constants.size() - 1;                               \
+		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1; \
 		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
 	}
 
-#define BIND_CORE_BITFIELD_CLASS_FLAG_CUSTOM(m_enum, m_name, m_member)                               \
-	{                                                                                                \
-		StringName enum_name = __constant_get_bitfield_name(m_enum::m_member);                       \
-		_global_constants.push_back(_CoreConstant(enum_name, #m_name, (int64_t)m_enum::m_member));   \
-		_global_constants_map[#m_name] = _global_constants.size() - 1;                               \
-		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
-	}
-
-#define BIND_CORE_ENUM_CLASS_CONSTANT_NO_VAL(m_enum, m_prefix, m_member)                                           \
-	{                                                                                                              \
-		StringName enum_name = __constant_get_enum_name(m_enum::m_member);                                         \
+#define BIND_CORE_BITFIELD_CLASS_FLAG(m_enum, m_prefix, m_member) \
+	{ \
+		StringName enum_name = __constant_get_bitfield_name(m_enum::m_member); \
 		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member)); \
-		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1;                             \
-		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);               \
-	}
-
-#define BIND_CORE_ENUM_CONSTANT_CUSTOM(m_custom_name, m_constant)                                    \
-	{                                                                                                \
-		StringName enum_name = __constant_get_enum_name(m_constant);                                 \
-		_global_constants.push_back(_CoreConstant(enum_name, m_custom_name, m_constant));            \
-		_global_constants_map[m_custom_name] = _global_constants.size() - 1;                         \
+		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1; \
 		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
 	}
 
-#define BIND_CORE_CONSTANT_NO_VAL(m_constant)                                          \
+#define BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(m_enum, m_name, m_member) \
+	{ \
+		StringName enum_name = __constant_get_enum_name(m_enum::m_member); \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_name, (int64_t)m_enum::m_member)); \
+		_global_constants_map[#m_name] = _global_constants.size() - 1; \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
+
+#define BIND_CORE_BITFIELD_CLASS_FLAG_CUSTOM(m_enum, m_name, m_member) \
+	{ \
+		StringName enum_name = __constant_get_bitfield_name(m_enum::m_member); \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_name, (int64_t)m_enum::m_member)); \
+		_global_constants_map[#m_name] = _global_constants.size() - 1; \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
+
+#define BIND_CORE_ENUM_CLASS_CONSTANT_NO_VAL(m_enum, m_prefix, m_member) \
+	{ \
+		StringName enum_name = __constant_get_enum_name(m_enum::m_member); \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member)); \
+		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1; \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
+
+#define BIND_CORE_ENUM_CONSTANT_CUSTOM(m_custom_name, m_constant) \
+	{ \
+		StringName enum_name = __constant_get_enum_name(m_constant); \
+		_global_constants.push_back(_CoreConstant(enum_name, m_custom_name, m_constant)); \
+		_global_constants_map[m_custom_name] = _global_constants.size() - 1; \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
+
+#define BIND_CORE_CONSTANT_NO_VAL(m_constant) \
 	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant)); \
 	_global_constants_map[#m_constant] = _global_constants.size() - 1;
 
-#define BIND_CORE_ENUM_CONSTANT_NO_VAL(m_constant)                                                   \
-	{                                                                                                \
-		StringName enum_name = __constant_get_enum_name(m_constant);                                 \
-		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant));              \
-		_global_constants_map[#m_constant] = _global_constants.size() - 1;                           \
+#define BIND_CORE_ENUM_CONSTANT_NO_VAL(m_constant) \
+	{ \
+		StringName enum_name = __constant_get_enum_name(m_constant); \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant)); \
+		_global_constants_map[#m_constant] = _global_constants.size() - 1; \
 		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
 	}
 
-#define BIND_CORE_ENUM_CONSTANT_CUSTOM_NO_VAL(m_custom_name, m_constant)                             \
-	{                                                                                                \
-		StringName enum_name = __constant_get_enum_name(m_constant);                                 \
-		_global_constants.push_back(_CoreConstant(enum_name, m_custom_name, m_constant));            \
-		_global_constants_map[m_custom_name] = _global_constants.size() - 1;                         \
+#define BIND_CORE_ENUM_CONSTANT_CUSTOM_NO_VAL(m_custom_name, m_constant) \
+	{ \
+		StringName enum_name = __constant_get_enum_name(m_constant); \
+		_global_constants.push_back(_CoreConstant(enum_name, m_custom_name, m_constant)); \
+		_global_constants_map[m_custom_name] = _global_constants.size() - 1; \
 		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
 	}
 
@@ -549,6 +549,11 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, PADDLE3);
 	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, PADDLE4);
 	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, TOUCHPAD);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, MISC2);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, MISC3);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, MISC4);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, MISC5);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, MISC6);
 	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, SDL_MAX);
 	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, MAX);
 
@@ -728,6 +733,18 @@ void register_global_constants() {
 	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_OBJECT_CORE);
 	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_VIRTUAL_REQUIRED);
 	BIND_CORE_BITFIELD_FLAG(METHOD_FLAGS_DEFAULT);
+
+	BIND_CORE_CONSTANT(UINT8_MAX);
+	BIND_CORE_CONSTANT(UINT16_MAX);
+	BIND_CORE_CONSTANT(UINT32_MAX);
+	BIND_CORE_CONSTANT(INT8_MIN);
+	BIND_CORE_CONSTANT(INT8_MAX);
+	BIND_CORE_CONSTANT(INT16_MIN);
+	BIND_CORE_CONSTANT(INT16_MAX);
+	BIND_CORE_CONSTANT(INT32_MIN);
+	BIND_CORE_CONSTANT(INT32_MAX);
+	BIND_CORE_CONSTANT(INT64_MIN);
+	BIND_CORE_CONSTANT(INT64_MAX);
 
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_NIL", Variant::NIL);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_BOOL", Variant::BOOL);

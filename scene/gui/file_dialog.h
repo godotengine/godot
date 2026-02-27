@@ -280,6 +280,13 @@ private:
 		Ref<Texture2D> file_thumbnail;
 		Ref<Texture2D> folder_thumbnail;
 
+		Ref<Texture2D> menu_copy_path;
+		Ref<Texture2D> menu_delete;
+		Ref<Texture2D> menu_refresh;
+		Ref<Texture2D> menu_new_folder;
+		Ref<Texture2D> menu_show_in_file_manager;
+		Ref<Texture2D> menu_open_bundle;
+
 		Color folder_icon_color;
 		Color file_icon_color;
 		Color file_disabled_color;

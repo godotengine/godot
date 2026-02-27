@@ -30,8 +30,6 @@
 
 #include "image_compress_betsy.h"
 
-#include "core/config/project_settings.h"
-
 #include "betsy_bc1.h"
 
 #include "alpha_stitch.glsl.gen.h"
@@ -39,7 +37,19 @@
 #include "bc4.glsl.gen.h"
 #include "bc6h.glsl.gen.h"
 #include "rgb_to_rgba.glsl.gen.h"
+
+#include "core/config/project_settings.h"
 #include "servers/display/display_server.h"
+#include "servers/rendering/rendering_context_driver.h"
+#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_server.h"
+
+#if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
+#endif
+#if defined(METAL_ENABLED)
+#include "drivers/metal/rendering_context_driver_metal.h"
+#endif
 
 static Mutex betsy_mutex;
 static BetsyCompressor *betsy = nullptr;

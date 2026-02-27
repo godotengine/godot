@@ -1613,7 +1613,7 @@ struct ClipBox
                const ItemVarStoreInstancer &instancer) const
   {
     TRACE_SUBSET (this);
-    switch (u.format) {
+    switch (u.format.v) {
     case 1: return_trace (u.format1.subset (c, instancer, VarIdx::NO_VARIATION));
     case 2: return_trace (u.format2.subset (c, instancer));
     default:return_trace (c->default_return_value ());
@@ -1622,7 +1622,7 @@ struct ClipBox
 
   void closurev1 (hb_colrv1_closure_context_t* c) const
   {
-    switch (u.format) {
+    switch (u.format.v) {
     case 2: u.format2.closurev1 (c); return;
     default:return;
     }
@@ -1631,9 +1631,9 @@ struct ClipBox
   template <typename context_t, typename ...Ts>
   typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
   {
-    if (unlikely (!c->may_dispatch (this, &u.format))) return c->no_dispatch_return_value ();
-    TRACE_DISPATCH (this, u.format);
-    switch (u.format) {
+    if (unlikely (!c->may_dispatch (this, &u.format.v))) return c->no_dispatch_return_value ();
+    TRACE_DISPATCH (this, u.format.v);
+    switch (u.format.v) {
     case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
     case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
     default:return_trace (c->default_return_value ());
@@ -1644,7 +1644,7 @@ struct ClipBox
                     const ItemVarStoreInstancer &instancer) const
   {
     ClipBoxData clip_box;
-    switch (u.format) {
+    switch (u.format.v) {
     case 1:
       u.format1.get_clip_box (clip_box, instancer);
       break;
@@ -1664,7 +1664,7 @@ struct ClipBox
 
   protected:
   union {
-  HBUINT8		format;         /* Format identifier */
+  struct { HBUINT8 v; }	format;         /* Format identifier */
   ClipBoxFormat1	format1;
   ClipBoxFormat2	format2;
   } u;
@@ -1844,9 +1844,9 @@ struct Paint
   template <typename context_t, typename ...Ts>
   typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
   {
-    if (unlikely (!c->may_dispatch (this, &u.format))) return c->no_dispatch_return_value ();
-    TRACE_DISPATCH (this, u.format);
-    switch (u.format) {
+    if (unlikely (!c->may_dispatch (this, &u.format.v))) return c->no_dispatch_return_value ();
+    TRACE_DISPATCH (this, u.format.v);
+    switch (u.format.v) {
     case 1: return_trace (c->dispatch (u.paintformat1, std::forward<Ts> (ds)...));
     case 2: return_trace (c->dispatch (u.paintformat2, std::forward<Ts> (ds)...));
     case 3: return_trace (c->dispatch (u.paintformat3, std::forward<Ts> (ds)...));
@@ -1885,7 +1885,7 @@ struct Paint
 
   protected:
   union {
-  HBUINT8					format;
+  struct { HBUINT8 v; }				format;
   PaintColrLayers				paintformat1;
   NoVariable<PaintSolid>			paintformat2;
   Variable<PaintSolid>				paintformat3;

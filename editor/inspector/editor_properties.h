@@ -404,6 +404,7 @@ protected:
 	virtual void _set_read_only(bool p_read_only) override;
 
 public:
+	virtual void set_deferred_drag_mode_enabled(bool p_enabled = true) override;
 	virtual void update_property() override;
 	void setup(const EditorPropertyRangeHint &p_range_hint);
 	EditorPropertyInteger();
@@ -455,6 +456,7 @@ protected:
 	virtual void _set_read_only(bool p_read_only) override;
 
 public:
+	virtual void set_deferred_drag_mode_enabled(bool p_enabled = true) override;
 	virtual void update_property() override;
 	void setup(const EditorPropertyRangeHint &p_range_hint);
 	EditorPropertyFloat();
@@ -746,6 +748,7 @@ class EditorPropertyResource : public EditorProperty {
 	void _resource_selected(const Ref<Resource> &p_resource, bool p_inspect);
 	void _resource_changed(const Ref<Resource> &p_resource);
 
+	Node *_get_base_node();
 	void _viewport_selected(const NodePath &p_path);
 
 	void _sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool p_advance);

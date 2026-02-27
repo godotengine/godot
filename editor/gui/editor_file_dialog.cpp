@@ -31,6 +31,7 @@
 #include "editor_file_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/dependency_editor.h"
@@ -73,7 +74,7 @@ bool EditorFileDialog::_should_use_native_popup() const {
 }
 
 bool EditorFileDialog::_should_hide_file(const String &p_file) const {
-	if (Engine::get_singleton()->is_project_manager_hint()) {
+	if (get_access() != FileDialog::ACCESS_RESOURCES) {
 		return false;
 	}
 	const String full_path = dir_access->get_current_dir().path_join(p_file);

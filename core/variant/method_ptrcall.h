@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/object.h"
 #include "core/object/object_id.h"
 #include "core/templates/simple_type.h"
 #include "core/typedefs.h"

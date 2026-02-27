@@ -30,6 +30,8 @@
 
 #include "editor_debugger_tree.h"
 
+#include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
@@ -37,7 +39,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/settings/editor_settings.h"
-#include "scene/debugger/scene_debugger.h"
+#include "scene/debugger/scene_debugger_object.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display/display_server.h"

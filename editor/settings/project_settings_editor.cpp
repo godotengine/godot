@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -612,6 +613,11 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 		// Strip the "input/" from the left.
 		String display_name = property_name.substr(String("input/").size() - 1);
 		Dictionary action = GLOBAL_GET(property_name);
+
+		if (!action.has("events")) {
+			WARN_PRINT_ONCE_ED(vformat("Attempted to load invalid input action from setting at \"%s\". The `input/` prefix should only be used for input actions, and cannot be changed in the settings editor. Consider changing the category.", property_name));
+			continue;
+		}
 
 		ActionMapEditor::ActionInfo action_info;
 		action_info.action = action;

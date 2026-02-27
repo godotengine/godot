@@ -616,9 +616,8 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 
 	_get_property_listv(p_list, p_reversed);
 
-	if (!is_class("Script")) { // can still be set, but this is for user-friendliness
-		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NEVER_DUPLICATE));
-	}
+	const uint32_t base_script_usage = is_class(Script::get_class_static()) ? PROPERTY_USAGE_NO_EDITOR : PROPERTY_USAGE_DEFAULT;
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static(), base_script_usage | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_NEVER_DUPLICATE));
 
 	if (script_instance && !p_reversed) {
 		script_instance->get_property_list(p_list);
@@ -630,10 +629,10 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 			Object *obj = K.value;
 			if (Object::cast_to<Script>(obj)) {
-				pi.hint_string = "Script";
+				pi.hint_string = Script::get_class_static();
 				pi.usage |= PROPERTY_USAGE_NEVER_DUPLICATE;
 			} else {
-				pi.hint_string = "Resource";
+				pi.hint_string = Resource::get_class_static();
 			}
 		}
 		p_list->push_back(pi);
@@ -2080,6 +2079,10 @@ void Object::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONNECT_APPEND_SOURCE_OBJECT);
 }
 
+void Object::call_deferredp(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error) {
+	MessageQueue::get_singleton()->push_callp(this, p_method, p_args, p_argcount);
+}
+
 void Object::set_deferred(const StringName &p_property, const Variant &p_value) {
 	MessageQueue::get_singleton()->push_set(this, p_property, p_value);
 }
@@ -2259,8 +2262,8 @@ void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindi
 		}
 	}
 	if (unlikely(!binding && p_callbacks)) {
-		uint32_t current_size = next_power_of_2(_instance_binding_count);
-		uint32_t new_size = next_power_of_2(_instance_binding_count + 1);
+		uint32_t current_size = Math::next_power_of_2(_instance_binding_count);
+		uint32_t new_size = Math::next_power_of_2(_instance_binding_count + 1);
 
 		if (current_size == 0 || new_size > current_size) {
 			_instance_bindings = (InstanceBinding *)memrealloc(_instance_bindings, new_size * sizeof(InstanceBinding));

@@ -30,6 +30,7 @@
 
 #include "texture.h"
 
+#include "core/object/class_db.h"
 #include "scene/resources/placeholder_textures.h"
 #include "servers/rendering/rendering_server.h"
 

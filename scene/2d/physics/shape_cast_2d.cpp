@@ -31,6 +31,7 @@
 #include "shape_cast_2d.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/2d/physics/collision_object_2d.h"
 #include "scene/resources/world_2d.h"
 #include "servers/physics_2d/physics_server_2d.h"
@@ -466,7 +467,7 @@ void ShapeCast2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_result"), &ShapeCast2D::get_collision_result);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, Shape2D::get_class_static()), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "target_position", PROPERTY_HINT_NONE, "suffix:px"), "set_target_position", "get_target_position");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0,100,0.01,suffix:px"), "set_margin", "get_margin");

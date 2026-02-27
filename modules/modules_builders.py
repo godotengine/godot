@@ -15,24 +15,20 @@ def modules_enabled_builder(target, source, env):
 def register_module_types_builder(target, source, env):
     modules = source[0].read()
     mod_inc = "\n".join([f'#include "{value}/register_types.h"' for value in modules.values()])
-    mod_init = "\n".join(
-        [
-            f"""\
+    mod_init = "\n".join([
+        f"""\
 #ifdef MODULE_{key.upper()}_ENABLED
 	initialize_{key}_module(p_level);
 #endif"""
-            for key in modules.keys()
-        ]
-    )
-    mod_uninit = "\n".join(
-        [
-            f"""\
+        for key in modules.keys()
+    ])
+    mod_uninit = "\n".join([
+        f"""\
 #ifdef MODULE_{key.upper()}_ENABLED
 	uninitialize_{key}_module(p_level);
 #endif"""
-            for key in modules.keys()
-        ]
-    )
+        for key in modules.keys()
+    ])
     with methods.generated_wrapper(str(target[0])) as file:
         file.write(
             f"""\

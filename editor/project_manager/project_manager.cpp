@@ -31,6 +31,7 @@
 #include "project_manager.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
@@ -38,6 +39,7 @@
 #include "core/os/os.h"
 #include "core/version.h"
 #include "editor/asset_library/asset_library_editor_plugin.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_about.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -74,6 +76,8 @@
 #ifndef PHYSICS_3D_DISABLED
 #include "servers/physics_3d/physics_server_3d.h"
 #endif // PHYSICS_3D_DISABLED
+
+#include "modules/modules_enabled.gen.h" // For gdscript, mono. (For editor help highlighter).
 
 constexpr int GODOT4_CONFIG_VERSION = 5;
 
@@ -1191,7 +1195,7 @@ void ProjectManager::_perform_full_project_conversion() {
 	args.push_back(path);
 	args.push_back("--convert-3to4");
 	args.push_back("--rendering-driver");
-	args.push_back(Main::get_rendering_driver_name());
+	args.push_back(OS::get_singleton()->get_current_rendering_driver_name());
 
 	Error err = OS::get_singleton()->create_instance(args);
 	ERR_FAIL_COND(err);
@@ -1382,6 +1386,10 @@ ProjectManager::ProjectManager() {
 
 		OS::get_singleton()->set_low_processor_usage_mode(true);
 	}
+
+#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
+	EditorHelpHighlighter::create_singleton();
+#endif
 
 	SceneTree::get_singleton()->get_root()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
 
@@ -1970,6 +1978,11 @@ ProjectManager::ProjectManager() {
 ProjectManager::~ProjectManager() {
 	singleton = nullptr;
 	EditorInspector::cleanup_plugins();
+
+#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
+	EditorHelpHighlighter::free_singleton();
+#endif
+
 	if (EditorSettings::get_singleton()) {
 		EditorSettings::destroy();
 	}

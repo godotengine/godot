@@ -10,7 +10,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 2
 
@@ -19,6 +19,7 @@ jobs:
         run: |
           bash ./misc/scripts/gitignore_check.sh
 
+      # Keep in sync with linux_builds.yml
       - name: Get changed files
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

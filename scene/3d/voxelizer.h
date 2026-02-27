@@ -32,6 +32,8 @@
 
 #include "scene/resources/multimesh.h"
 
+class Image;
+
 class Voxelizer {
 public:
 	enum BakeResult {

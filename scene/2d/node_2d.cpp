@@ -30,7 +30,9 @@
 
 #include "node_2d.h"
 
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary Node2D::_edit_get_state() const {

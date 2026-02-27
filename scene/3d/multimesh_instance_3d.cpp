@@ -30,6 +30,8 @@
 
 #include "multimesh_instance_3d.h"
 
+#include "core/object/class_db.h"
+
 #ifndef NAVIGATION_3D_DISABLED
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
@@ -54,7 +56,7 @@ void MultiMeshInstance3D::_physics_interpolated_changed() {
 void MultiMeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_multimesh", "multimesh"), &MultiMeshInstance3D::set_multimesh);
 	ClassDB::bind_method(D_METHOD("get_multimesh"), &MultiMeshInstance3D::get_multimesh);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multimesh", PROPERTY_HINT_RESOURCE_TYPE, "MultiMesh"), "set_multimesh", "get_multimesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multimesh", PROPERTY_HINT_RESOURCE_TYPE, MultiMesh::get_class_static()), "set_multimesh", "get_multimesh");
 }
 
 void MultiMeshInstance3D::_notification(int p_what) {

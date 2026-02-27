@@ -78,6 +78,7 @@ private:
 		GLManager_X11_Private *context = nullptr;
 		::Display *x11_display = nullptr;
 		XVisualInfo x_vi = {};
+		void *x_fbconfig = nullptr;
 	};
 
 	// just for convenience, window and display struct
@@ -126,6 +127,8 @@ public:
 	bool is_using_vsync() const;
 
 	void *get_glx_context(DisplayServer::WindowID p_window_id);
+	void *get_glx_fbconfig(DisplayServer::WindowID p_window_id);
+	VisualID get_glx_visualid(DisplayServer::WindowID p_window_id);
 
 	Error open_display(Display *p_display);
 	GLManager_X11(const Vector2i &p_size, ContextType p_context_type);

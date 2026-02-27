@@ -38,10 +38,12 @@
 #import "godot_menu_delegate.h"
 #import "godot_menu_item.h"
 #import "godot_open_save_delegate.h"
+#import "godot_progress_view.h"
 #import "godot_status_item.h"
 #import "godot_window.h"
 #import "godot_window_delegate.h"
 #import "key_mapping_macos.h"
+#import "native_menu_macos.h"
 #import "os_macos.h"
 
 #ifdef TOOLS_ENABLED
@@ -49,6 +51,7 @@
 #endif
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
@@ -57,15 +60,12 @@
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
 #include "scene/resources/image_texture.h"
+#include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #ifdef TOOLS_ENABLED
 #import "display_server_embedded.h"
 #import "editor/embedded_process_macos.h"
 #endif
-
-#include <AppKit/AppKit.h>
-
-#include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -73,12 +73,14 @@
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+#include "servers/rendering/rendering_device.h"
 #endif
 
 #if defined(ACCESSKIT_ENABLED)
 #include "drivers/accesskit/accessibility_driver_accesskit.h"
 #endif
 
+#include <AppKit/AppKit.h>
 #import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 #import <IOKit/IOCFPlugIn.h>
@@ -185,7 +187,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 #endif
 #ifdef METAL_ENABLED
 			if (rendering_driver == "metal") {
-				wpd.metal.layer = (CAMetalLayer *)layer;
+				wpd.metal.layer = (__bridge CA::MetalLayer *)layer;
 			}
 #endif
 			Error err = rendering_context->window_create(window_id_counter, &wpd);
@@ -1056,6 +1058,7 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 		[panel setCanCreateDirectories:YES];
 		[panel setCanChooseFiles:(p_mode != FILE_DIALOG_MODE_OPEN_DIR)];
 		[panel setCanChooseDirectories:(p_mode == FILE_DIALOG_MODE_OPEN_DIR || p_mode == FILE_DIALOG_MODE_OPEN_ANY)];
+		[panel setTreatsFilePackagesAsDirectories:YES];
 		[panel setShowsHiddenFiles:p_show_hidden];
 		[panel setDelegate:panel_delegate];
 		if (p_filename != "") {
@@ -1354,17 +1357,24 @@ bool DisplayServerMacOS::update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, N
 
 		// Confine mouse position to the window, and update delta.
 		NSRect frame = [p_wd.window_view frame];
-		NSPoint conf_pos = r_mpos;
-		conf_pos.x = CLAMP(conf_pos.x + r_delta.x, 0.f, frame.size.width);
-		conf_pos.y = CLAMP(conf_pos.y - r_delta.y, 0.f, frame.size.height);
-		r_delta.x = conf_pos.x - r_mpos.x;
-		r_delta.y = r_mpos.y - conf_pos.y;
-		r_mpos = conf_pos;
+		NSRect frameOnScreen = [[p_wd.window_view window] convertRectToScreen:frame];
+		frameOnScreen.origin.y = CGDisplayBounds(CGMainDisplayID()).size.height - frameOnScreen.origin.y;
+
+		CGEventRef ourEvent = CGEventCreate(nullptr);
+		NSPoint conf_pos = CGEventGetLocation(ourEvent);
+		CFRelease(ourEvent);
+
+		NSPoint prev_conf_pos = conf_pos;
+
+		conf_pos.x = CLAMP(conf_pos.x + r_delta.x, frameOnScreen.origin.x, frameOnScreen.origin.x + frameOnScreen.size.width);
+		conf_pos.y = CLAMP(conf_pos.y + r_delta.y, frameOnScreen.origin.y - frameOnScreen.size.height, frameOnScreen.origin.y);
+		r_delta.x = conf_pos.x - prev_conf_pos.x;
+		r_delta.y = conf_pos.y - prev_conf_pos.y;
+
+		NSPoint wnd_point = NSMakePoint(conf_pos.x, CGDisplayBounds(CGMainDisplayID()).size.height - conf_pos.y);
+		r_mpos = [[p_wd.window_view window] convertPointFromScreen:wnd_point];
 
 		// Move mouse cursor.
-		NSRect point_in_window_rect = NSMakeRect(conf_pos.x, conf_pos.y, 0, 0);
-		conf_pos = [[p_wd.window_view window] convertRectToScreen:point_in_window_rect].origin;
-		conf_pos.y = CGDisplayBounds(CGMainDisplayID()).size.height - conf_pos.y;
 		CGWarpMouseCursorPosition(conf_pos);
 
 		// Save warp data.
@@ -2713,6 +2723,28 @@ void DisplayServerMacOS::window_request_attention(WindowID p_window) {
 	[NSApp requestUserAttention:NSCriticalRequest];
 }
 
+void DisplayServerMacOS::window_set_taskbar_progress_value(float p_value, WindowID p_window) {
+	ERR_FAIL_COND(p_window != MAIN_WINDOW_ID);
+
+	if (!dock_progress) {
+		dock_progress = [[GodotProgressView alloc] init];
+		[NSApp.dockTile setContentView:dock_progress];
+	}
+
+	[dock_progress setValue:p_value];
+}
+
+void DisplayServerMacOS::window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window) {
+	ERR_FAIL_COND(p_window != MAIN_WINDOW_ID);
+
+	if (!dock_progress) {
+		dock_progress = [[GodotProgressView alloc] init];
+		[NSApp.dockTile setContentView:dock_progress];
+	}
+
+	[dock_progress setState:p_state];
+}
+
 void DisplayServerMacOS::window_move_to_foreground(WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -3097,9 +3129,9 @@ void DisplayServerMacOS::enable_for_stealing_focus(OS::ProcessID pid) {
 }
 
 #define GET_OR_FAIL_V(m_val, m_map, m_key, m_retval) \
-	m_val = m_map.getptr(m_key);                     \
-	if (m_val == nullptr) {                          \
-		ERR_FAIL_V(m_retval);                        \
+	m_val = m_map.getptr(m_key); \
+	if (m_val == nullptr) { \
+		ERR_FAIL_V(m_retval); \
 	}
 
 uint32_t DisplayServerMacOS::window_get_display_id(WindowID p_window) const {
@@ -3256,6 +3288,11 @@ void DisplayServerMacOS::_process_events(bool p_pump) {
 				[wd.window_object setIgnoresMouseEvents:NO];
 			}
 		}
+	}
+
+	if (dock_progress) {
+		dock_progress.needsDisplay = true;
+		[NSApp.dockTile display];
 	}
 
 	_THREAD_SAFE_UNLOCK_
@@ -3808,7 +3845,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	// Metal rendering driver not available on Intel.
 	if (rendering_driver == "metal") {
 		rendering_driver = "vulkan";
-		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 	}
 #endif
 	if (rendering_driver == "vulkan") {
@@ -3830,8 +3867,8 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
 				WARN_PRINT("Your device does not seem to support MoltenVK or Metal, switching to OpenGL 3.");
 				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility", OS::RENDERING_SOURCE_FALLBACK);
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else
 #endif
 			{
@@ -3856,7 +3893,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE or ANGLE dynamic libraries (libEGL.dylib and libGLESv2.dylib) are missing, switching to native OpenGL.");
 #endif
 				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else {
 				r_error = ERR_UNAVAILABLE;
 				ERR_FAIL_MSG("Could not initialize ANGLE OpenGL.");

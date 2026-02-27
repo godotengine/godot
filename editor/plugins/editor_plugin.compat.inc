@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "editor_plugin.h"
+
+#include "core/object/class_db.h"
+
 Button *EditorPlugin::_add_control_to_bottom_panel_compat_88081(Control *p_control, const String &p_title) {
 	return add_control_to_bottom_panel(p_control, p_title, nullptr);
 }
@@ -43,4 +47,4 @@ void EditorPlugin::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("add_control_to_dock", "slot", "control"), &EditorPlugin::_add_control_to_dock_compat_88081);
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

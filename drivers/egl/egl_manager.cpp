@@ -33,7 +33,10 @@
 #include "core/crypto/crypto_core.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+
+#ifdef WINDOWS_ENABLED
 #include "drivers/gles3/rasterizer_gles3.h"
+#endif
 
 #ifdef EGL_ENABLED
 

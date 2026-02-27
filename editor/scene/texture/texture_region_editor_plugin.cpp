@@ -31,6 +31,7 @@
 #include "texture_region_editor_plugin.h"
 
 #include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -47,6 +48,7 @@
 #include "scene/gui/view_panner.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/style_box_texture.h"
+#include "servers/rendering/rendering_server.h"
 
 Transform2D TextureRegionEditor::_get_offset_transform() const {
 	Transform2D mtx;
@@ -908,18 +910,23 @@ void TextureRegionEditor::_node_removed(Node *p_node) {
 void TextureRegionEditor::_clear_edited_object() {
 	if (node_sprite_2d) {
 		node_sprite_2d->disconnect(SceneStringName(texture_changed), callable_mp(this, &TextureRegionEditor::_texture_changed));
+		node_sprite_2d->disconnect(SceneStringName(item_rect_changed), callable_mp(this, &TextureRegionEditor::_edit_region));
 	}
 	if (node_sprite_3d) {
 		node_sprite_3d->disconnect(SceneStringName(texture_changed), callable_mp(this, &TextureRegionEditor::_texture_changed));
+		node_sprite_3d->disconnect(SceneStringName(item_rect_changed), callable_mp(this, &TextureRegionEditor::_edit_region));
 	}
 	if (node_ninepatch) {
 		node_ninepatch->disconnect(SceneStringName(texture_changed), callable_mp(this, &TextureRegionEditor::_texture_changed));
+		node_ninepatch->disconnect(SceneStringName(item_rect_changed), callable_mp(this, &TextureRegionEditor::_edit_region));
 	}
 	if (res_stylebox.is_valid()) {
 		res_stylebox->disconnect_changed(callable_mp(this, &TextureRegionEditor::_texture_changed));
+		res_stylebox->disconnect_changed(callable_mp(this, &TextureRegionEditor::_edit_region));
 	}
 	if (res_atlas_texture.is_valid()) {
 		res_atlas_texture->disconnect_changed(callable_mp(this, &TextureRegionEditor::_texture_changed));
+		res_atlas_texture->disconnect_changed(callable_mp(this, &TextureRegionEditor::_edit_region));
 	}
 
 	node_sprite_2d = nullptr;
@@ -949,8 +956,10 @@ void TextureRegionEditor::edit(Object *p_obj) {
 
 		if (is_resource) {
 			Object::cast_to<Resource>(p_obj)->connect_changed(callable_mp(this, &TextureRegionEditor::_texture_changed));
+			Object::cast_to<Resource>(p_obj)->connect_changed(callable_mp(this, &TextureRegionEditor::_edit_region));
 		} else {
 			p_obj->connect(SceneStringName(texture_changed), callable_mp(this, &TextureRegionEditor::_texture_changed));
+			p_obj->connect(SceneStringName(item_rect_changed), callable_mp(this, &TextureRegionEditor::_edit_region));
 		}
 		_edit_region();
 	}

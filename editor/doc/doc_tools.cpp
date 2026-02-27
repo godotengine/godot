@@ -508,7 +508,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				}
 
 				if (properties_from_instance) {
-					if (E.name == "resource_local_to_scene" || E.name == "resource_name" || E.name == "resource_path" || E.name == "script" || E.name == "resource_scene_unique_id") {
+					if (E.name == "resource_local_to_scene" || E.name == "resource_name" || E.name == "resource_path" || E.name == "resource_scene_unique_id") {
 						// Don't include spurious properties from Object property list.
 						continue;
 					}
@@ -988,7 +988,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			}
 			pd.name = s.name;
 			pd.type = s.ptr->get_class();
-			while (String(ClassDB::get_parent_class(pd.type)) != "Object") {
+			while (!ClassDB::is_class_exposed(pd.type)) {
 				pd.type = ClassDB::get_parent_class(pd.type);
 			}
 			c.properties.push_back(pd);

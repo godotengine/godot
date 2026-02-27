@@ -37,6 +37,8 @@
 #import <UIKit/UIKit.h>
 #include <sys/sysctl.h>
 
+#include "core/object/class_db.h"
+
 void AppleEmbedded::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rate_url", "app_id"), &AppleEmbedded::get_rate_url);
 	ClassDB::bind_method(D_METHOD("supports_haptic_engine"), &AppleEmbedded::supports_haptic_engine);

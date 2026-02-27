@@ -31,6 +31,7 @@
 #include "stream_peer_uds.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 
 void StreamPeerUDS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("bind", "path"), &StreamPeerUDS::bind);

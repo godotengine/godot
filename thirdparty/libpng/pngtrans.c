@@ -802,8 +802,8 @@ png_do_check_palette_indexes(png_structrp png_ptr, png_row_infop row_info)
     defined(PNG_WRITE_USER_TRANSFORM_SUPPORTED)
 #ifdef PNG_USER_TRANSFORM_PTR_SUPPORTED
 void PNGAPI
-png_set_user_transform_info(png_structrp png_ptr, png_voidp
-   user_transform_ptr, int user_transform_depth, int user_transform_channels)
+png_set_user_transform_info(png_structrp png_ptr, png_voidp user_transform_ptr,
+    int user_transform_depth, int user_transform_channels)
 {
    png_debug(1, "in png_set_user_transform_info");
 

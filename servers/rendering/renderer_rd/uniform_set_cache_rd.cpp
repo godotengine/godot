@@ -30,6 +30,8 @@
 
 #include "uniform_set_cache_rd.h"
 
+#include "core/object/class_db.h"
+
 UniformSetCacheRD *UniformSetCacheRD::singleton = nullptr;
 
 void UniformSetCacheRD::_bind_methods() {
