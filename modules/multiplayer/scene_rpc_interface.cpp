@@ -310,7 +310,7 @@ void SceneRPCInterface::_send_rpc(Node *p_node, int p_to, uint16_t p_rpc_id, con
 
 	ERR_FAIL_COND_MSG(p_argcount > 255, "Too many arguments (>255).");
 
-	if (p_to != 0 && !multiplayer->get_connected_peers().has(Math::abs(p_to))) {
+	if (p_to != MultiplayerPeer::TARGET_PEER_BROADCAST && !multiplayer->get_connected_peers().has(Math::abs(p_to))) {
 		ERR_FAIL_COND_MSG(p_to == multiplayer->get_unique_id(), "Attempt to call RPC on yourself! Peer unique ID: " + itos(multiplayer->get_unique_id()) + ".");
 
 		ERR_FAIL_MSG("Attempt to call RPC with unknown peer ID: " + itos(p_to) + ".");
@@ -486,7 +486,7 @@ Error SceneRPCInterface::rpcp(Object *p_obj, int p_peer_id, const StringName &p_
 
 	ERR_FAIL_COND_V_MSG(p_peer_id == caller_id && !config.call_local, ERR_INVALID_PARAMETER, "RPC '" + p_method + "' on yourself is not allowed by selected mode.");
 
-	if (p_peer_id == 0 || p_peer_id == caller_id || (p_peer_id < 0 && p_peer_id != -caller_id)) {
+	if (p_peer_id == MultiplayerPeer::TARGET_PEER_BROADCAST || p_peer_id == caller_id || (p_peer_id < 0 && p_peer_id != -caller_id)) {
 		if (rpc_id & (1 << 15)) {
 			call_local_native = config.call_local;
 		} else {

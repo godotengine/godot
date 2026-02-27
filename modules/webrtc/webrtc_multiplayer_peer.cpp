@@ -59,10 +59,6 @@ MultiplayerPeer::TransferMode WebRTCMultiplayerPeer::get_packet_mode() const {
 	return channels_modes.get(next_packet_channel);
 }
 
-bool WebRTCMultiplayerPeer::is_server() const {
-	return unique_id == TARGET_PEER_SERVER;
-}
-
 void WebRTCMultiplayerPeer::poll() {
 	if (peer_map.is_empty()) {
 		return;
@@ -188,11 +184,11 @@ MultiplayerPeer::ConnectionStatus WebRTCMultiplayerPeer::get_connection_status()
 }
 
 Error WebRTCMultiplayerPeer::create_server(const Array &p_channels_config) {
-	return _initialize(1, MODE_SERVER, p_channels_config);
+	return _initialize(TARGET_PEER_SERVER, MODE_SERVER, p_channels_config);
 }
 
 Error WebRTCMultiplayerPeer::create_client(int p_self_id, const Array &p_channels_config) {
-	ERR_FAIL_COND_V_MSG(p_self_id == 1, ERR_INVALID_PARAMETER, "Clients cannot have ID 1.");
+	ERR_FAIL_COND_V_MSG(p_self_id == TARGET_PEER_SERVER, ERR_INVALID_PARAMETER, "Clients cannot have ID 'MultiplayerPeer.TARGET_PEER_SERVER'");
 	return _initialize(p_self_id, MODE_CLIENT, p_channels_config);
 }
 
@@ -287,8 +283,8 @@ Dictionary WebRTCMultiplayerPeer::get_peers() {
 
 Error WebRTCMultiplayerPeer::add_peer(const Ref<WebRTCPeerConnection> &p_peer, int p_peer_id, int p_unreliable_lifetime) {
 	ERR_FAIL_COND_V(network_mode == MODE_NONE, ERR_UNCONFIGURED);
-	ERR_FAIL_COND_V(network_mode == MODE_CLIENT && p_peer_id != 1, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(network_mode == MODE_SERVER && p_peer_id == 1, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(network_mode == MODE_CLIENT && p_peer_id != TARGET_PEER_SERVER, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(network_mode == MODE_SERVER && p_peer_id == TARGET_PEER_SERVER, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_peer_id < 1 || p_peer_id > ~(1 << 31), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_unreliable_lifetime < 0, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(is_refusing_new_connections(), ERR_UNAUTHORIZED);
@@ -404,8 +400,8 @@ Error WebRTCMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_si
 		int exclude = -target_peer;
 
 		for (KeyValue<int, Ref<ConnectedPeer>> &F : peer_map) {
-			// Exclude packet. If target_peer == 0 then don't exclude any packets
-			if (target_peer != 0 && F.key == exclude) {
+			// Exclude packet. If target_peer == TARGET_PEER_BROADCAST then don't exclude any packets
+			if (target_peer != TARGET_PEER_BROADCAST && F.key == exclude) {
 				continue;
 			}
 

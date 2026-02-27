@@ -256,14 +256,14 @@ _FORCE_INLINE_ Error SceneMultiplayer::_send(const uint8_t *p_packet, int p_pack
 #endif
 
 Error SceneMultiplayer::send_command(int p_to, const uint8_t *p_packet, int p_packet_len) {
-	if (server_relay && get_unique_id() != 1 && p_to != 1 && multiplayer_peer->is_server_relay_supported()) {
+	if (server_relay && !is_server() && p_to != MultiplayerPeer::TARGET_PEER_SERVER && multiplayer_peer->is_server_relay_supported()) {
 		// Send relay packet.
 		relay_buffer->seek(0);
 		relay_buffer->put_u8(NETWORK_COMMAND_SYS);
 		relay_buffer->put_u8(SYS_COMMAND_RELAY);
 		relay_buffer->put_32(p_to); // Set the destination.
 		relay_buffer->put_data(p_packet, p_packet_len);
-		multiplayer_peer->set_target_peer(1);
+		multiplayer_peer->set_target_peer(MultiplayerPeer::TARGET_PEER_SERVER);
 		const Vector<uint8_t> data = relay_buffer->get_data_array();
 		return _send(data.ptr(), relay_buffer->get_position());
 	}
@@ -289,11 +289,11 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 	int32_t peer = int32_t(decode_uint32(&p_packet[2]));
 	switch (sys_cmd_type) {
 		case SYS_COMMAND_ADD_PEER: {
-			ERR_FAIL_COND(!server_relay || !multiplayer_peer->is_server_relay_supported() || get_unique_id() == 1 || p_from != 1);
+			ERR_FAIL_COND(!server_relay || !multiplayer_peer->is_server_relay_supported() || is_server() || p_from != MultiplayerPeer::TARGET_PEER_SERVER);
 			_admit_peer(peer); // Relayed peers are automatically accepted.
 		} break;
 		case SYS_COMMAND_DEL_PEER: {
-			ERR_FAIL_COND(!server_relay || !multiplayer_peer->is_server_relay_supported() || get_unique_id() == 1 || p_from != 1);
+			ERR_FAIL_COND(!server_relay || !multiplayer_peer->is_server_relay_supported() || is_server() || p_from != MultiplayerPeer::TARGET_PEER_SERVER);
 			_del_peer(peer);
 		} break;
 		case SYS_COMMAND_RELAY: {
@@ -302,7 +302,7 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 			const uint8_t *packet = p_packet + SYS_CMD_SIZE;
 			int len = p_packet_len - SYS_CMD_SIZE;
 			bool should_process = false;
-			if (get_unique_id() == 1) { // I am the server.
+			if (is_server()) {
 				// The requested target might have disconnected while the packet was in transit.
 				if (unlikely(peer > 0 && !connected_peers.has(peer))) {
 					return;
@@ -330,14 +330,14 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 						multiplayer_peer->set_target_peer(P);
 						_send(data.ptr(), relay_buffer->get_position());
 					}
-					if (peer != -1) {
+					if (peer != -MultiplayerPeer::TARGET_PEER_SERVER) {
 						// The server is one of the targets, process the packet with sender as source.
 						should_process = true;
 						peer = p_from;
 					}
 				}
 			} else {
-				ERR_FAIL_COND(p_from != 1); // Bug.
+				ERR_FAIL_COND(p_from != MultiplayerPeer::TARGET_PEER_SERVER); // Bug.
 				should_process = true;
 			}
 			if (should_process) {
@@ -364,7 +364,7 @@ void SceneMultiplayer::_add_peer(int p_id) {
 }
 
 void SceneMultiplayer::_admit_peer(int p_id) {
-	if (server_relay && get_unique_id() == 1 && multiplayer_peer->is_server_relay_supported()) {
+	if (server_relay && is_server() && multiplayer_peer->is_server_relay_supported()) {
 		// Notify others of connection, and send connected peers to newly connected one.
 		uint8_t buf[SYS_CMD_SIZE];
 		buf[0] = NETWORK_COMMAND_SYS;
@@ -386,7 +386,7 @@ void SceneMultiplayer::_admit_peer(int p_id) {
 	connected_peers.insert(p_id);
 	cache->on_peer_change(p_id, true);
 	replicator->on_peer_change(p_id, true);
-	if (p_id == 1) {
+	if (p_id == MultiplayerPeer::TARGET_PEER_SERVER) {
 		emit_signal(SNAME("connected_to_server"));
 	}
 	emit_signal(SNAME("peer_connected"), p_id);
@@ -401,7 +401,7 @@ void SceneMultiplayer::_del_peer(int p_id) {
 		return;
 	}
 
-	if (server_relay && get_unique_id() == 1 && multiplayer_peer->is_server_relay_supported()) {
+	if (server_relay && is_server() && multiplayer_peer->is_server_relay_supported()) {
 		// Notify others of disconnection.
 		uint8_t buf[SYS_CMD_SIZE];
 		buf[0] = NETWORK_COMMAND_SYS;

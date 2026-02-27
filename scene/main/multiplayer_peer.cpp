@@ -214,7 +214,6 @@ void MultiplayerPeerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_set_target_peer, "p_peer");
 
 	GDVIRTUAL_BIND(_get_packet_peer);
-	GDVIRTUAL_BIND(_is_server);
 	GDVIRTUAL_BIND(_poll);
 	GDVIRTUAL_BIND(_close);
 	GDVIRTUAL_BIND(_disconnect_peer, "p_peer", "p_force");
