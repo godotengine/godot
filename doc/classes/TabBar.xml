@@ -248,6 +248,9 @@
 		<member name="close_with_middle_mouse" type="bool" setter="set_close_with_middle_mouse" getter="get_close_with_middle_mouse" default="true">
 			If [code]true[/code], middle-clicking on a tab will emit the [signal tab_close_pressed] signal.
 		</member>
+		<member name="continuous_scroll_enabled" type="bool" setter="set_continuous_scroll_enabled" getter="get_continuous_scroll_enabled" default="false">
+			If [code]true[/code], enables scrolling tabs continuously instead of hard stops.
+		</member>
 		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="-1">
 			The index of the current selected tab. A value of [code]-1[/code] means that no tab is selected and can only be set when [member deselect_enabled] is [code]true[/code] or if all tabs are hidden or disabled.
 		</member>

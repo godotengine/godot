@@ -35,6 +35,7 @@
 #include "scene/resources/text_line.h"
 
 class Timer;
+class HScrollBar;
 
 class TabBar : public Control {
 	GDCLASS(TabBar, Control);
@@ -135,6 +136,8 @@ private:
 	int tabs_rearrange_group = -1;
 	bool switch_on_drag_hover = true;
 
+	HScrollBar *hscroll = nullptr;
+
 	static const int CURRENT_TAB_UNINITIALIZED = -2;
 	bool initialized = false;
 	int queued_current = CURRENT_TAB_UNINITIALIZED;
@@ -193,6 +196,7 @@ private:
 	void _update_cache(bool p_update_hover = true);
 	void _hover_switch_timeout();
 
+	void _scrolled(double);
 	void _on_mouse_exited();
 
 	void _shape(int p_tab);
@@ -307,6 +311,9 @@ public:
 
 	void set_scrolling_enabled(bool p_enabled);
 	bool get_scrolling_enabled() const;
+
+	void set_continuous_scroll_enabled(bool p_enabled);
+	bool get_continuous_scroll_enabled();
 
 	void set_drag_to_rearrange_enabled(bool p_enabled);
 	bool get_drag_to_rearrange_enabled() const;
