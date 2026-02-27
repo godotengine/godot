@@ -747,12 +747,20 @@ public:
 		ACCELERATION_STRUCTURE_TYPE_TLAS,
 	};
 
-	enum AccelerationStructureGeometryBits {
-		ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE = 1 << 0,
-		ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION = 1 << 1,
+	struct AccelerationStructureGeometry {
+		BitField<AccelerationStructureGeometryFlagBits> flags = {};
+		BufferID vertex_buffer;
+		uint32_t vertex_offset = 0;
+		uint32_t vertex_stride = 0;
+		uint32_t vertex_count = 0;
+		DataFormat vertex_format = DATA_FORMAT_MAX;
+		BufferID index_buffer;
+		uint32_t index_offset = 0;
+		uint32_t index_count = 0;
+		IndexBufferFormat index_format = {};
 	};
 
-	virtual AccelerationStructureID blas_create(BufferID p_vertex_buffer, uint64_t p_vertex_offset, VertexFormatID p_vertex_format, uint32_t p_vertex_count, uint32_t p_position_attribute_location, BufferID p_index_buffer, IndexBufferFormat p_index_format, uint64_t p_index_offset, uint32_t p_index_count, BitField<AccelerationStructureGeometryBits> p_geometry_bits) = 0;
+	virtual AccelerationStructureID blas_create(VectorView<AccelerationStructureGeometry> p_geometries) = 0;
 	virtual uint32_t tlas_instances_buffer_get_size_bytes(uint32_t p_instance_count) = 0;
 	virtual void tlas_instances_buffer_fill(BufferID p_instances_buffer, VectorView<AccelerationStructureID> p_blases, VectorView<Transform3D> p_transforms) = 0;
 	virtual AccelerationStructureID tlas_create(BufferID p_instances_buffer) = 0;

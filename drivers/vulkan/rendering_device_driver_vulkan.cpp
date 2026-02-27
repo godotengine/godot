@@ -6183,85 +6183,65 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 /********************/
 
 // RDD::AccelerationStructureGeometryBits == VkGeometryFlagsKHR.
-static_assert(ENUM_MEMBERS_EQUAL(RDD::ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE, VK_GEOMETRY_OPAQUE_BIT_KHR));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION, VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_KHR));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT, VK_GEOMETRY_OPAQUE_BIT_KHR));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT, VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_KHR));
 
-RDD::AccelerationStructureID RenderingDeviceDriverVulkan::blas_create(BufferID p_vertex_buffer, uint64_t p_vertex_offset, VertexFormatID p_vertex_format, uint32_t p_vertex_count, uint32_t p_position_attribute_location, BufferID p_index_buffer, IndexBufferFormat p_index_format, uint64_t p_index_offset_bytes, uint32_t p_index_count, BitField<AccelerationStructureGeometryBits> p_geometry_bits) {
+RDD::AccelerationStructureID RenderingDeviceDriverVulkan::blas_create(VectorView<AccelerationStructureGeometry> p_geometries) {
 #if VULKAN_RAYTRACING_ENABLED
-	const VertexFormatInfo *vf_info = (const VertexFormatInfo *)p_vertex_format.id;
-
-	const VkVertexInputAttributeDescription *position_attribute = nullptr;
-	for (const VkVertexInputAttributeDescription &attribute : vf_info->vk_attributes) {
-		if (attribute.location == p_position_attribute_location) {
-			position_attribute = &attribute;
-			break;
-		}
-	}
-	ERR_FAIL_NULL_V_MSG(position_attribute, AccelerationStructureID(), "BLAS position attribute location is missing from the vertex format.");
-
-	uint32_t position_binding_index = position_attribute->binding;
-	if (position_binding_index == UINT32_MAX) {
-		position_binding_index = p_position_attribute_location;
-	}
-
-	const VkVertexInputBindingDescription *position_binding = nullptr;
-	for (const VkVertexInputBindingDescription &binding : vf_info->vk_bindings) {
-		if (binding.binding == position_binding_index) {
-			position_binding = &binding;
-			break;
-		}
-	}
-	ERR_FAIL_NULL_V_MSG(position_binding, AccelerationStructureID(), "BLAS position attribute binding is missing from the vertex format.");
-
-	VkDeviceSize buffer_offset = position_attribute->offset;
-
-	VkDeviceAddress vertex_address = buffer_get_device_address(p_vertex_buffer) + buffer_offset;
-	VkDeviceAddress index_address = buffer_get_device_address(p_index_buffer) + p_index_offset_bytes;
-
-	VkDeviceSize vertex_stride = position_binding->stride;
-	VkFormat vertex_format = position_attribute->format;
-	uint32_t max_vertex = p_vertex_count ? p_vertex_count - 1 : 0;
-
 	AccelerationStructureInfo *accel_info = VersatileResource::allocate<AccelerationStructureInfo>(resources_allocator);
 
-	accel_info->geometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
-	accel_info->geometry.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_KHR;
-	accel_info->geometry.flags = p_geometry_bits;
+	accel_info->geometries.resize(p_geometries.size());
+	accel_info->range_infos.resize(p_geometries.size());
 
-	accel_info->geometry.geometry.triangles.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR;
-	accel_info->geometry.geometry.triangles.vertexFormat = vertex_format;
-	accel_info->geometry.geometry.triangles.vertexData.deviceAddress = vertex_address;
-	accel_info->geometry.geometry.triangles.vertexStride = vertex_stride;
-	accel_info->geometry.geometry.triangles.indexType = p_index_format == INDEX_BUFFER_FORMAT_UINT16 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32;
-	accel_info->geometry.geometry.triangles.indexData.deviceAddress = index_address;
-	accel_info->geometry.geometry.triangles.transformData.deviceAddress = 0;
-	// Number of vertices in vertexData minus one, aka max vertex index.
-	accel_info->geometry.geometry.triangles.maxVertex = max_vertex;
+	thread_local LocalVector<uint32_t> max_primitive_counts;
+	max_primitive_counts.resize(p_geometries.size());
 
-	// Info for building BLAS.
-	uint32_t primitive_count = p_vertex_count / 3;
-	if (p_index_buffer) {
-		primitive_count = p_index_count / 3;
+	for (uint32_t i = 0; i < p_geometries.size(); i++) {
+		const AccelerationStructureGeometry &geometry = p_geometries[i];
+
+		VkAccelerationStructureGeometryKHR &vk_geometry = accel_info->geometries[i];
+		vk_geometry = {};
+		vk_geometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
+		vk_geometry.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_KHR;
+		vk_geometry.flags = geometry.flags;
+
+		vk_geometry.geometry.triangles.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR;
+		vk_geometry.geometry.triangles.vertexFormat = RD_TO_VK_FORMAT[geometry.vertex_format];
+		vk_geometry.geometry.triangles.vertexData.deviceAddress = buffer_get_device_address(geometry.vertex_buffer) + geometry.vertex_offset;
+		vk_geometry.geometry.triangles.vertexStride = geometry.vertex_stride;
+		// Number of vertices in vertexData minus one, aka max vertex index.
+		vk_geometry.geometry.triangles.maxVertex = (geometry.vertex_count ? (geometry.vertex_count - 1) : 0);
+
+		// Info for building BLAS.
+		uint32_t primitive_count;
+		if (geometry.index_buffer != BufferID()) {
+			vk_geometry.geometry.triangles.indexType = (geometry.index_format == INDEX_BUFFER_FORMAT_UINT16 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
+			vk_geometry.geometry.triangles.indexData.deviceAddress = buffer_get_device_address(geometry.index_buffer) + geometry.index_offset;
+			primitive_count = geometry.index_count / 3;
+		} else {
+			vk_geometry.geometry.triangles.indexType = VK_INDEX_TYPE_NONE_KHR;
+			primitive_count = geometry.vertex_count / 3;
+		}
+
+		VkAccelerationStructureBuildRangeInfoKHR &vk_range_info = accel_info->range_infos[i];
+		vk_range_info = {};
+		vk_range_info.primitiveCount = primitive_count;
+
+		max_primitive_counts[i] = primitive_count;
 	}
-	// The vertex offset is expressed in bytes.
-	uint32_t first_vertex = p_vertex_offset / vertex_stride;
-	accel_info->range_info.firstVertex = first_vertex;
-	accel_info->range_info.primitiveCount = primitive_count;
-	accel_info->range_info.primitiveOffset = 0;
-	accel_info->range_info.transformOffset = 0;
-	uint32_t max_primitive_count = accel_info->range_info.primitiveCount;
 
+	accel_info->build_info = {};
 	accel_info->build_info.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
 	accel_info->build_info.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
 	accel_info->build_info.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
-	accel_info->build_info.pGeometries = &accel_info->geometry;
-	accel_info->build_info.geometryCount = 1;
+	accel_info->build_info.pGeometries = accel_info->geometries.ptr();
+	accel_info->build_info.geometryCount = p_geometries.size();
 	accel_info->build_info.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
 
 	VkAccelerationStructureBuildSizesInfoKHR size_info = {};
 	size_info.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
 
-	vkGetAccelerationStructureBuildSizesKHR(vk_device, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accel_info->build_info, &max_primitive_count, &size_info);
+	vkGetAccelerationStructureBuildSizesKHR(vk_device, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accel_info->build_info, max_primitive_counts.ptr(), &size_info);
 	_acceleration_structure_create(VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR, size_info, accel_info);
 
 	return AccelerationStructureID(accel_info);
@@ -6331,15 +6311,17 @@ RDD::AccelerationStructureID RenderingDeviceDriverVulkan::tlas_create(BufferID p
 
 	AccelerationStructureInfo *accel_info = VersatileResource::allocate<AccelerationStructureInfo>(resources_allocator);
 
-	accel_info->geometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
-	accel_info->geometry.geometryType = VK_GEOMETRY_TYPE_INSTANCES_KHR;
-	accel_info->geometry.geometry.instances.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_INSTANCES_DATA_KHR;
-	accel_info->geometry.geometry.instances.data.deviceAddress = buffer_get_device_address(p_instances_buffer);
+	accel_info->geometries.resize_initialized(1);
+	accel_info->geometries[0].sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
+	accel_info->geometries[0].geometryType = VK_GEOMETRY_TYPE_INSTANCES_KHR;
+	accel_info->geometries[0].geometry.instances.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_INSTANCES_DATA_KHR;
+	accel_info->geometries[0].geometry.instances.data.deviceAddress = buffer_get_device_address(p_instances_buffer);
 
+	accel_info->build_info = {};
 	accel_info->build_info.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
 	accel_info->build_info.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
 	accel_info->build_info.geometryCount = 1;
-	accel_info->build_info.pGeometries = &accel_info->geometry;
+	accel_info->build_info.pGeometries = &accel_info->geometries[0];
 	accel_info->build_info.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
 	accel_info->build_info.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
 
@@ -6347,7 +6329,9 @@ RDD::AccelerationStructureID RenderingDeviceDriverVulkan::tlas_create(BufferID p
 	VkAccelerationStructureBuildSizesInfoKHR size_info = {};
 	size_info.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
 	vkGetAccelerationStructureBuildSizesKHR(vk_device, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accel_info->build_info, &instance_count, &size_info);
-	accel_info->range_info.primitiveCount = instance_count;
+
+	accel_info->range_infos.resize_initialized(1);
+	accel_info->range_infos[0].primitiveCount = instance_count;
 
 	_acceleration_structure_create(VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR, size_info, accel_info);
 	return AccelerationStructureID(accel_info);
@@ -6416,9 +6400,9 @@ void RenderingDeviceDriverVulkan::command_build_acceleration_structure(CommandBu
 	VkDeviceAddress scratch_address = buffer_get_device_address(p_scratch_buffer);
 	build_info->scratchData.deviceAddress = _align_up_address(scratch_address, accel_info->scratch_alignment);
 
-	const VkAccelerationStructureBuildRangeInfoKHR *range_info_ptr = &accel_info->range_info;
+	const VkAccelerationStructureBuildRangeInfoKHR *range_infos = accel_info->range_infos.ptr();
 
-	vkCmdBuildAccelerationStructuresKHR(command_buffer->vk_command_buffer, 1, build_info, &range_info_ptr);
+	vkCmdBuildAccelerationStructuresKHR(command_buffer->vk_command_buffer, 1, build_info, &range_infos);
 #endif
 }
 
