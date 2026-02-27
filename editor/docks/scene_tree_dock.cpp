@@ -4199,6 +4199,11 @@ void SceneTreeDock::save_branch_to_file(const String &p_directory) {
 
 void SceneTreeDock::_focus_node() {
 	Node *node = scene_tree->get_selected();
+
+	if(!node){
+		return;
+	}
+
 	ERR_FAIL_NULL(node);
 
 	if (node->is_class("CanvasItem")) {
