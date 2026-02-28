@@ -191,7 +191,7 @@ Error GDExtensionLibraryLoader::open_library(const String &p_path) {
 	OS::GDExtensionData data = {
 		true, // also_set_library_path
 		&library_path, // r_resolved_path
-		Engine::get_singleton()->is_editor_hint(), // generate_temp_files
+		Engine::get_singleton()->is_extension_reloading_enabled(), // generate_temp_files
 		&abs_dependencies_paths, // library_dependencies
 	};
 

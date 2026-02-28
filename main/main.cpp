@@ -2152,7 +2152,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 	if (editor) {
 		Engine::get_singleton()->set_editor_hint(true);
-		Engine::get_singleton()->set_extension_reloading_enabled(true);
+		bool script_mode = (main_args.find("--script") != nullptr);
+		Engine::get_singleton()->set_extension_reloading_enabled(!script_mode);
 
 		// Create initialization lock file to detect crashes during startup.
 		OS::get_singleton()->create_lock_file();

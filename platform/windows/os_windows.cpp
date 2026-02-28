@@ -492,24 +492,31 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 	if (p_data != nullptr && p_data->generate_temp_files) {
 		// Copy the file to the same directory as the original with a prefix in the name.
 		// This is so relative path to dependencies are satisfied.
-		load_path = path.get_base_dir().path_join("~" + path.get_file());
+		for (int idx = 0; idx < 10; idx++) {
+			String candidate_load_path = path.get_base_dir().path_join(vformat("~%d~%s", idx, path.get_file()));
 
-		// If there's a left-over copy (possibly from a crash) then delete it first.
-		if (FileAccess::exists(load_path)) {
-			DirAccess::remove_absolute(load_path);
-		}
+			// If there's a left-over copy (possibly from a crash) then delete it first.
+			if (FileAccess::exists(candidate_load_path)) {
+				DirAccess::remove_absolute(candidate_load_path);
+			}
 
-		Error copy_err = DirAccess::copy_absolute(path, load_path);
-		if (copy_err) {
-			ERR_PRINT("Error copying library: " + path);
-			return ERR_CANT_CREATE;
-		}
+			// Try to copy the library to a temporary location.
+			Error copy_err = DirAccess::copy_absolute(path, candidate_load_path);
+			if (copy_err == 0) {
+				// Only change the load path if the copy succeeded.
+				load_path = candidate_load_path;
 
-		FileAccess::set_hidden_attribute(load_path, true);
+				FileAccess::set_hidden_attribute(load_path, true);
 
-		Error pdb_err = WindowsUtils::copy_and_rename_pdb(load_path);
-		if (pdb_err != OK && pdb_err != ERR_SKIP) {
-			WARN_PRINT(vformat("Failed to rename the PDB file. The original PDB file for '%s' will be loaded.", path));
+				Error pdb_err = WindowsUtils::copy_and_rename_pdb(load_path);
+				if (pdb_err != OK && pdb_err != ERR_SKIP) {
+					WARN_PRINT(vformat("Failed to rename the PDB file. The original PDB file for '%s' will be loaded.", path));
+				}
+				break;
+			}
+
+			// This can often fail if the file is locked by another process.
+			WARN_PRINT(vformat("Error %d copying library '%s' to temporary location '%s'. Will try the next index.", copy_err, path, candidate_load_path));
 		}
 	}
 
