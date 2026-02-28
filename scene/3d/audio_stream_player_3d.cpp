@@ -372,8 +372,6 @@ static float _get_max_volume(const FixedVector<AudioFrame, AudioServer::MAX_CHAN
 	return max_vol;
 }
 
-static constexpr int64_t volume_vector_size = AudioServer::MAX_CHANNELS_PER_BUS;
-
 // Interacts with PhysicsServer3D, so can only be called during _physics_process.
 Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	Vector<AudioFrame> output_volume_vector;
@@ -391,7 +389,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		linear_velocity = velocity_tracker->get_tracked_linear_velocity();
 	}
 
-	const Vector3 global_pos = get_global_transform().origin;
+	Vector3 global_pos = get_global_transform().origin;
 
 	Ref<World3D> world_3d = get_world_3d();
 	ERR_FAIL_COND_V(world_3d.is_null(), output_volume_vector);
@@ -437,9 +435,9 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			listener_node = listener;
 		}
 
-		const Vector3 local_pos = listener_node->get_global_transform().orthonormalized().affine_inverse().xform(global_pos);
+		Vector3 local_pos = listener_node->get_global_transform().orthonormalized().affine_inverse().xform(global_pos);
 
-		const float dist = local_pos.length();
+		float dist = local_pos.length();
 
 #ifndef PHYSICS_3D_DISABLED
 		Vector3 area_sound_pos;
