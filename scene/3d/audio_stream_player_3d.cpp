@@ -550,7 +550,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		AudioServer::get_singleton()->set_playback_highshelf_params(playback, linear_attenuation, attenuation_filter_cutoff_hz);
 	}
 
-	HashMap<StringName, Vector<AudioFrame>> bus_volumes;
+	bus_volumes.clear();
 	if (has_any_listener_in_range) {
 #ifndef PHYSICS_3D_DISABLED
 		if (area) {

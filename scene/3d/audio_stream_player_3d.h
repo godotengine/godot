@@ -124,6 +124,10 @@ private:
 	float panning_strength = 1.0f;
 	float cached_global_panning_strength = 0.5f;
 
+	/// Hash map storing the bus volumes during the panning update.
+	/// This hash map is stored as member for efficiency reasons.
+	HashMap<StringName, Vector<AudioFrame>> bus_volumes{};
+
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
