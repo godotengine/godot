@@ -450,6 +450,7 @@ GDScriptEditorTranslationParserPlugin::GDScriptEditorTranslationParserPlugin() {
 	first_arg_patterns.insert("add_radio_check_item");
 	first_arg_patterns.insert("add_separator");
 	first_arg_patterns.insert("add_submenu_item");
+	first_arg_patterns.insert("add_submenu_node_item");
 
 	second_arg_patterns.insert("set_tab_title");
 	second_arg_patterns.insert("add_icon_check_item");
