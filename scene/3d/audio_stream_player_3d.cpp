@@ -523,7 +523,9 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 				static constexpr float speed_of_sound = 343.0F;
 
 				float doppler_pitch_scale = internal->pitch_scale * speed_of_sound / (speed_of_sound + velocity * approaching);
-				doppler_pitch_scale = CLAMP(doppler_pitch_scale, (1.0F / 8.0F), 8.0F); //avoid crazy stuff
+
+				// limit the pitch scale, so we do not get execeedingly extreme pitch effects in edge cases
+				doppler_pitch_scale = CLAMP(doppler_pitch_scale, (1.0F / 8.0F), 8.0F);
 
 				// just use the maximum volume of the current volume vector as weight
 				// so the pitch effect fades out with lower volumes
