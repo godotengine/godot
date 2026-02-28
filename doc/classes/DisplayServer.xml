@@ -2751,7 +2751,7 @@
 			Display server supports interaction with screen reader or Braille display. [b]Linux (X11/Wayland), macOS, Windows[/b]
 		</constant>
 		<constant name="FEATURE_HDR_OUTPUT" value="35" enum="Feature">
-			Display server supports HDR output. [b]Windows[/b]
+			Display server supports HDR output. [b]Windows, Linux (Wayland)[/b]
 		</constant>
 		<constant name="ROLE_UNKNOWN" value="0" enum="AccessibilityRole">
 			Unknown or custom role.
@@ -3332,6 +3332,10 @@
 		<constant name="WINDOW_EVENT_FORCE_CLOSE" value="8" enum="WindowEvent">
 			Sent when the window has been forcibly closed by the display server. The window will immediately hide and clean any internal rendering references.
 			[b]Note:[/b] This flag is implemented only on Linux (Wayland).
+		</constant>
+		<constant name="WINDOW_EVENT_HDR_OUTPUT_CHANGED" value="9" enum="WindowEvent">
+			Sent when the HDR output parameters (enabled, luminance, max output color value) of the display where the window is located has changed.
+			[b]Note:[/b] This flag is implemented only on Windows and Linux (Wayland).
 		</constant>
 		<constant name="WINDOW_EDGE_TOP_LEFT" value="0" enum="WindowResizeEdge">
 			Top-left edge of a window.
