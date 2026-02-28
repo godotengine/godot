@@ -121,6 +121,7 @@ public:
 	// this function only works on physics process, errors and returns null otherwise
 	PhysicsDirectSpaceState3D *space_get_direct_state(RID p_space) override {
 		ERR_FAIL_COND_V(!Thread::is_main_thread(), nullptr);
+		command_queue.flush_if_pending();
 		return physics_server_3d->space_get_direct_state(p_space);
 	}
 
@@ -273,12 +274,14 @@ public:
 
 	bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override {
 		ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
+		command_queue.flush_if_pending();
 		return physics_server_3d->body_test_motion(p_body, p_parameters, r_result);
 	}
 
 	// this function only works on physics process, errors and returns null otherwise
 	PhysicsDirectBodyState3D *body_get_direct_state(RID p_body) override {
 		ERR_FAIL_COND_V(!Thread::is_main_thread(), nullptr);
+		command_queue.flush_if_pending();
 		return physics_server_3d->body_get_direct_state(p_body);
 	}
 
