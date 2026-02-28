@@ -105,7 +105,7 @@ static const Vector3 speaker_directions[7] = {
 	Vector3(1.0, 0.0, 0.0).normalized(), // side-right
 };
 
-void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tightness, FixedVector<AudioFrame, volume_vector_size> &output) {
+void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tightness, FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> &output) {
 	unsigned int speaker_count = 0; // only main speakers (no LFE)
 	switch (AudioServer::get_singleton()->get_speaker_mode()) {
 		case AudioServer::SPEAKER_MODE_STEREO:
@@ -159,8 +159,8 @@ AudioFrame AudioStreamPlayer3D::_calc_output_vol_stereo(const Vector3 &source_di
 }
 
 #ifndef PHYSICS_3D_DISABLED
-void AudioStreamPlayer3D::_calc_reverb_vol(Area3D *area, Vector3 listener_area_pos, const FixedVector<AudioFrame, volume_vector_size> &direct_path_vol, FixedVector<AudioFrame, volume_vector_size> &reverb_vol) {
-	reverb_vol.resize_uninitialized(volume_vector_size);
+void AudioStreamPlayer3D::_calc_reverb_vol(Area3D *area, Vector3 listener_area_pos, const FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> &direct_path_vol, FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> &reverb_vol) {
+	reverb_vol.resize_uninitialized(VOLUME_VECTOR_SIZE);
 	for (AudioFrame &frame : reverb_vol) {
 		frame = AudioFrame(0, 0);
 	}
@@ -375,7 +375,7 @@ static float _get_max_volume(const FixedVector<AudioFrame, AudioServer::MAX_CHAN
 // Interacts with PhysicsServer3D, so can only be called during _physics_process.
 Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	Vector<AudioFrame> output_volume_vector;
-	output_volume_vector.resize(volume_vector_size);
+	output_volume_vector.resize(VOLUME_VECTOR_SIZE);
 	output_volume_vector.fill(AudioFrame(0, 0));
 
 	if (!internal->active.is_set() || internal->stream.is_null()) {
@@ -407,7 +407,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	actual_pitch_scale = internal->pitch_scale;
 
 	Vector<AudioFrame> output_reverb_vector;
-	output_reverb_vector.resize(volume_vector_size);
+	output_reverb_vector.resize(VOLUME_VECTOR_SIZE);
 	output_reverb_vector.fill(AudioFrame(0, 0));
 
 	// keep track of a weighted average of the pitch
@@ -481,8 +481,8 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 
 		linear_attenuation = MAX(linear_attenuation, Math::db_to_linear(db_att));
 
-		FixedVector<AudioFrame, volume_vector_size> listener_volume_vector{};
-		listener_volume_vector.resize_uninitialized(volume_vector_size);
+		FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> listener_volume_vector{};
+		listener_volume_vector.resize_uninitialized(VOLUME_VECTOR_SIZE);
 		for (AudioFrame &frame : listener_volume_vector) {
 			frame = AudioFrame(0, 0);
 		}
@@ -505,7 +505,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 #ifndef PHYSICS_3D_DISABLED
 
 		if (area && area->is_using_reverb_bus()) {
-			FixedVector<AudioFrame, volume_vector_size> listener_reverb_vector{};
+			FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> listener_reverb_vector{};
 			_calc_reverb_vol(area, listener_area_pos, listener_volume_vector, listener_reverb_vector);
 			_apply_max_volume_from_vector(output_reverb_vector, listener_reverb_vector);
 		}

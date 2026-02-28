@@ -67,7 +67,7 @@ private:
 
 	};
 
-	static constexpr int64_t volume_vector_size = AudioServer::MAX_CHANNELS_PER_BUS;
+	static constexpr int64_t VOLUME_VECTOR_SIZE = AudioServer::MAX_CHANNELS_PER_BUS;
 
 	AudioStreamPlayerInternal *internal = nullptr;
 
@@ -83,11 +83,11 @@ private:
 	uint64_t last_mix_count = -1;
 	bool force_update_panning = false;
 
-	static void _calc_output_vol(const Vector3 &source_dir, real_t tightness, FixedVector<AudioFrame, volume_vector_size> &output);
+	static void _calc_output_vol(const Vector3 &source_dir, real_t tightness, FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> &output);
 	static AudioFrame _calc_output_vol_stereo(const Vector3 &source_dir, real_t panning_strength);
 
 #ifndef PHYSICS_3D_DISABLED
-	void _calc_reverb_vol(Area3D *area, Vector3 listener_area_pos, const FixedVector<AudioFrame, volume_vector_size> &direct_path_vol, FixedVector<AudioFrame, volume_vector_size> &reverb_vol);
+	void _calc_reverb_vol(Area3D *area, Vector3 listener_area_pos, const FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> &direct_path_vol, FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> &reverb_vol);
 #endif // PHYSICS_3D_DISABLED
 
 	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer3D *>(self)->force_update_panning = true; }
