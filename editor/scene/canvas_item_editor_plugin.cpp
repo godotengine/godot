@@ -1663,7 +1663,7 @@ bool CanvasItemEditor::_gui_input_open_scene_on_double_click(const Ref<InputEven
 		if (selection.size() == 1) {
 			CanvasItem *ci = selection.front()->get();
 			if (ci->is_instance() && ci != EditorNode::get_singleton()->get_edited_scene()) {
-				EditorNode::get_singleton()->load_scene(ci->get_scene_file_path());
+				EditorNode::get_singleton()->open_scene(ci->get_scene_file_path());
 				return true;
 			}
 		}
@@ -6462,7 +6462,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 		Ref<PackedScene> scene = res;
 		if (scene.is_valid()) {
 			// Without root node act the same as "Load Inherited Scene".
-			Error err = EditorNode::get_singleton()->load_scene(path, false, true);
+			Error err = EditorNode::get_singleton()->open_scene(path, false, true);
 			if (err != OK) {
 				accept->set_text(vformat(TTR("Error instantiating scene from %s."), path.get_file()));
 				accept->popup_centered();
