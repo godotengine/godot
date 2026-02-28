@@ -355,20 +355,20 @@ StringName AudioStreamPlayer3D::_get_actual_bus() {
 }
 
 static void _apply_max_volume_from_vector(Vector<AudioFrame> &r_tgt_volume_vector, const Vector<AudioFrame> &p_src_volume_vector) {
-	for (int64_t i = 0; i < r_tgt_volume_vector.size(); i++) {
-		const AudioFrame frame = AudioFrame(
-				MAX(r_tgt_volume_vector[i].left, p_src_volume_vector[i].left),
-				MAX(r_tgt_volume_vector[i].right, p_src_volume_vector[i].right));
+	// note: indexed loops with Vector are slow, so we use raw pointers on purpose here
+	AudioFrame *tgt_ptr = r_tgt_volume_vector.ptrw();
+	const AudioFrame *src_ptr = p_src_volume_vector.ptr();
 
-		r_tgt_volume_vector.write[i] = frame;
+	for (int64_t i = 0; i < r_tgt_volume_vector.size(); i++) {
+		tgt_ptr[i].left = MAX(src_ptr[i].left, tgt_ptr[i].left);
+		tgt_ptr[i].right = MAX(src_ptr[i].right, tgt_ptr[i].right);
 	}
 }
 
 static float _get_max_volume(const Vector<AudioFrame> &p_src_volume_vector) {
 	float max_vol = 0.0;
-	for (int64_t i = 0; i < p_src_volume_vector.size(); i++) {
-		max_vol = MAX(max_vol, p_src_volume_vector[i].left);
-		max_vol = MAX(max_vol, p_src_volume_vector[i].right);
+	for (const AudioFrame &frame : p_src_volume_vector) {
+		max_vol = MAX(max_vol, MAX(frame.left, frame.right));
 	}
 	return max_vol;
 }
@@ -379,9 +379,7 @@ static constexpr int64_t volume_vector_size = AudioServer::MAX_CHANNELS_PER_BUS;
 Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	Vector<AudioFrame> output_volume_vector;
 	output_volume_vector.resize(volume_vector_size);
-	for (AudioFrame &frame : output_volume_vector) {
-		frame = AudioFrame(0, 0);
-	}
+	output_volume_vector.fill(AudioFrame(0, 0));
 
 	if (!internal->active.is_set() || internal->stream.is_null()) {
 		return output_volume_vector;
@@ -413,9 +411,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 
 	Vector<AudioFrame> output_reverb_vector;
 	output_reverb_vector.resize(volume_vector_size);
-	for (AudioFrame &frame : output_reverb_vector) {
-		frame = AudioFrame(0, 0);
-	}
+	output_reverb_vector.fill(AudioFrame(0, 0));
 
 	// keep track of a weighted average of the pitch
 	float pitch_scale_sum = 0.0F;
@@ -488,10 +484,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 
 		linear_attenuation = MAX(linear_attenuation, Math::db_to_linear(db_att));
 
-		for (AudioFrame &frame : listener_volume_vector) {
-			frame = AudioFrame(0, 0);
-		}
-
+		listener_volume_vector.fill(AudioFrame(0, 0));
 		if (AudioServer::get_singleton()->get_speaker_mode() == AudioServer::SPEAKER_MODE_STEREO) {
 			listener_volume_vector.write[0] = _calc_output_vol_stereo(local_pos, cached_global_panning_strength * panning_strength);
 		} else {
