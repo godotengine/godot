@@ -1,0 +1,16 @@
+name: Request Usability Review
+
+on:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  requestReview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request review from @godotengine/usability
+        if: ${{ github.event.label.name == 'usability' }}
+        uses: kunihiko-t/review-request-action@8ea4c28c7e8e0e84a2f02f9e803d2c8c9f937cbf
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          team-reviewers: usability
