@@ -1664,8 +1664,6 @@ void LineEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_FOCUS_ENTER: {
-			set_process_internal(caret_blink_enabled);
-
 			// Only allow editing if the LineEdit is not focused with arrow keys.
 			if (!(Input::get_singleton()->is_action_pressed("ui_up") || Input::get_singleton()->is_action_pressed("ui_down") || Input::get_singleton()->is_action_pressed("ui_left") || Input::get_singleton()->is_action_pressed("ui_right"))) {
 				_edit(virtual_keyboard_show_on_focus);
@@ -1674,8 +1672,6 @@ void LineEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_FOCUS_EXIT: {
-			set_process_internal(false);
-
 			if (editing) {
 				unedit();
 				emit_signal(SNAME("editing_toggled"), false);
@@ -2021,7 +2017,7 @@ void LineEdit::set_caret_blink_enabled(const bool p_enabled) {
 	}
 
 	caret_blink_enabled = p_enabled;
-	set_process_internal(p_enabled && has_focus());
+	set_process_internal(p_enabled);
 
 	draw_caret = !caret_blink_enabled;
 	if (caret_blink_enabled) {
