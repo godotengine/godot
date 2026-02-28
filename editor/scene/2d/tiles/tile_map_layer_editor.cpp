@@ -1488,39 +1488,35 @@ void TileMapLayerEditorTilesPlugin::_stop_dragging() {
 }
 
 void TileMapLayerEditorTilesPlugin::_apply_transform(TileTransformType p_type) {
-	if (selection_pattern.is_null() || selection_pattern->is_empty()) {
+	Ref<TileMapPattern> &active_pattern = (drag_type == DRAG_TYPE_CLIPBOARD_PASTE) ? tile_map_clipboard : selection_pattern;
+
+	if (active_pattern.is_null() || active_pattern->is_empty()) {
 		return;
 	}
 
 	Ref<TileMapPattern> transformed_pattern;
 	transformed_pattern.instantiate();
 
-	Vector2i size = selection_pattern->get_size();
-	for (int y = 0; y < size.y; y++) {
-		for (int x = 0; x < size.x; x++) {
-			Vector2i src_coords = Vector2i(x, y);
-			if (!selection_pattern->has_cell(src_coords)) {
-				continue;
-			}
+	Vector2i size = active_pattern->get_size();
+	for (const KeyValue<Vector2i, TileMapCell> &kv : active_pattern->get_pattern()) {
+		const Vector2i &src_coords = kv.key;
+		const TileMapCell &cell = kv.value;
 
-			Vector2i dst_coords;
+		Vector2i dst_coords;
 
-			if (p_type == TRANSFORM_ROTATE_LEFT) {
-				dst_coords = Vector2i(y, size.x - x - 1);
-			} else if (p_type == TRANSFORM_ROTATE_RIGHT) {
-				dst_coords = Vector2i(size.y - y - 1, x);
-			} else if (p_type == TRANSFORM_FLIP_H) {
-				dst_coords = Vector2i(size.x - x - 1, y);
-			} else if (p_type == TRANSFORM_FLIP_V) {
-				dst_coords = Vector2i(x, size.y - y - 1);
-			}
-
-			transformed_pattern->set_cell(dst_coords,
-					selection_pattern->get_cell_source_id(src_coords), selection_pattern->get_cell_atlas_coords(src_coords),
-					_get_transformed_alternative(selection_pattern->get_cell_alternative_tile(src_coords), p_type));
+		if (p_type == TRANSFORM_ROTATE_LEFT) {
+			dst_coords = Vector2i(src_coords.y, size.x - src_coords.x - 1);
+		} else if (p_type == TRANSFORM_ROTATE_RIGHT) {
+			dst_coords = Vector2i(size.y - src_coords.y - 1, src_coords.x);
+		} else if (p_type == TRANSFORM_FLIP_H) {
+			dst_coords = Vector2i(size.x - src_coords.x - 1, src_coords.y);
+		} else if (p_type == TRANSFORM_FLIP_V) {
+			dst_coords = Vector2i(src_coords.x, size.y - src_coords.y - 1);
 		}
+
+		transformed_pattern->set_cell(dst_coords, cell.source_id, cell.get_atlas_coords(), _get_transformed_alternative(cell.alternative_tile, p_type));
 	}
-	selection_pattern = transformed_pattern;
+	active_pattern = transformed_pattern;
 	CanvasItemEditor::get_singleton()->update_viewport();
 }
 
