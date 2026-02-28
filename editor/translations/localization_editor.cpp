@@ -499,7 +499,7 @@ void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const
 	if (remaps_changed) {
 		ProjectSettings::get_singleton()->set_setting("internationalization/locale/translation_remaps", remaps);
 		update_translations();
-		emit_signal("localization_changed");
+		emit_signal(localization_changed);
 	}
 }
 
@@ -539,7 +539,7 @@ void LocalizationEditor::_filesystem_file_removed(const String &p_file) {
 
 	if (remaps_changed) {
 		update_translations();
-		emit_signal("localization_changed");
+		emit_signal(localization_changed);
 	}
 }
 

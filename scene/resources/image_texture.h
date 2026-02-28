@@ -55,7 +55,7 @@ public:
 	void set_image(const Ref<Image> &p_image);
 	static Ref<ImageTexture> create_from_image(const Ref<Image> &p_image);
 
-	Image::Format get_format() const;
+	virtual Image::Format get_format() const override;
 
 	void update(const Ref<Image> &p_image);
 	Ref<Image> get_image() const override;

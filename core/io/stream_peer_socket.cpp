@@ -32,6 +32,7 @@
 #include "stream_peer_socket.compat.inc"
 
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 
 Error StreamPeerSocket::poll() {
 	if (status == STATUS_CONNECTED) {

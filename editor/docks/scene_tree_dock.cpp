@@ -72,6 +72,7 @@
 
 void SceneTreeDock::_nodes_drag_begin() {
 	pending_click_select = nullptr;
+	edited_object_at_drag_start = InspectorDock::get_inspector_singleton()->get_edited_object();
 }
 
 void SceneTreeDock::_quick_open(const String &p_file_path) {
@@ -96,7 +97,6 @@ void SceneTreeDock::_inspect_hovered_node() {
 		return;
 	}
 
-	select_node_hovered_at_end_of_drag = true;
 	TreeItem *item = tree->get_item_with_metadata(node_hovered_now->get_path());
 
 	_restore_treeitem_custom_color(tree_item_inspected);
@@ -1768,8 +1768,8 @@ void SceneTreeDock::_notification(int p_what) {
 				scene_tree->set_hide_filtered_out_parents(EDITOR_GET("docks/scene_tree/hide_filtered_out_parents"), false);
 				scene_tree->set_accessibility_warnings(EDITOR_GET("docks/scene_tree/accessibility_warnings"), false);
 			}
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor")) {
-				inspect_hovered_node_delay->set_wait_time(EDITOR_GET("interface/editor/dragging_hover_wait_seconds"));
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/timers")) {
+				inspect_hovered_node_delay->set_wait_time(EDITOR_GET("interface/editor/timers/dragging_hover_wait_seconds"));
 			}
 		} break;
 
@@ -1824,30 +1824,31 @@ void SceneTreeDock::_notification(int p_what) {
 			if (tree_item_inspected) {
 				_restore_treeitem_custom_color(tree_item_inspected);
 				tree_item_inspected = nullptr;
-			} else {
-				return;
 			}
-			if (!hovered_but_reparenting) {
-				InspectorDock *inspector_dock = InspectorDock::get_singleton();
-				if (!inspector_dock->get_rect().has_point(inspector_dock->get_local_mouse_position())) {
-					List<Node *> full_selection = editor_selection->get_full_selected_node_list();
-					editor_selection->clear();
-					for (Node *E : full_selection) {
-						editor_selection->add_node(E);
-					}
+
+			InspectorDock *inspector_dock = InspectorDock::get_singleton();
+			if (!inspector_dock->get_rect().has_point(inspector_dock->get_local_mouse_position())) {
+				Node *node_edited = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
+				if (editor_selection->get_full_selected_node_list().size() == 1 && !editor_selection->is_selected(node_edited)) {
+					Node *node_selected = scene_tree->get_selected();
+					EditorNode::get_singleton()->push_node_item(node_selected);
 					return;
 				}
-				if (select_node_hovered_at_end_of_drag) {
-					Node *node_inspected = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
-					if (node_inspected) {
-						editor_selection->clear();
-						editor_selection->add_node(node_inspected);
-						scene_tree->set_selected(node_inspected);
-						select_node_hovered_at_end_of_drag = false;
-					}
+				if (edited_object_at_drag_start) {
+					EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
+					editor_history->add_object(edited_object_at_drag_start->get_instance_id());
+					InspectorDock::get_inspector_singleton()->edit(edited_object_at_drag_start);
+					InspectorDock::get_singleton()->update(edited_object_at_drag_start);
 				}
+				return;
 			}
-			hovered_but_reparenting = false;
+
+			Node *node_edited = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
+			if (node_edited) {
+				editor_selection->clear();
+				editor_selection->add_node(node_edited);
+				scene_tree->set_selected(node_edited);
+			}
 		} break;
 	}
 }
@@ -2487,9 +2488,6 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		return; // Position and parent didn't change.
 	}
 
-	// Prevent selecting the hovered node and keep the reparented node(s) selected instead.
-	hovered_but_reparenting = true;
-
 	Node *validate = p_new_parent;
 	while (validate) {
 		ERR_FAIL_COND_MSG(p_nodes.has(validate), "Selection changed at some point. Can't reparent.");
@@ -2506,7 +2504,6 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	Vector<StringName> former_names;
 
 	int inc = 0;
-	bool need_edit = false;
 
 	for (int ni = 0; ni < p_nodes.size(); ni++) {
 		// No undo implemented for this yet.
@@ -2527,11 +2524,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			inc--; // If the child will generate a gap when moved, adjust.
 		}
 
-		if (same_parent) {
-			// When node is reparented to the same parent, EditorSelection does not change.
-			// After hovering another node, the inspector has to be manually updated in this case.
-			need_edit = select_node_hovered_at_end_of_drag;
-		} else {
+		if (!same_parent) {
 			undo_redo->add_do_method(node->get_parent(), "remove_child", node);
 			undo_redo->add_do_method(p_new_parent, "add_child", node, true);
 		}
@@ -2645,11 +2638,6 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	for (Node *E : full_selection) {
 		undo_redo->add_do_method(editor_selection, "add_node", E);
 		undo_redo->add_undo_method(editor_selection, "add_node", E);
-	}
-
-	if (need_edit) {
-		EditorNode::get_singleton()->edit_current();
-		editor_selection->clear();
 	}
 
 	undo_redo->commit_action();
@@ -4952,7 +4940,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/expand_collapse_all", TTRC("Expand/Collapse Branch"));
 	ED_SHORTCUT("scene_tree/cut_node", TTRC("Cut"), KeyModifierMask::CMD_OR_CTRL | Key::X);
 	ED_SHORTCUT("scene_tree/copy_node", TTRC("Copy"), KeyModifierMask::CMD_OR_CTRL | Key::C);
-	ED_SHORTCUT("scene_tree/paste_node", TTRC("Paste"), KeyModifierMask::CMD_OR_CTRL | Key::V);
+	ED_SHORTCUT("scene_tree/paste_node", TTRC("Paste (as Child)"), KeyModifierMask::CMD_OR_CTRL | Key::V);
 	ED_SHORTCUT("scene_tree/paste_node_as_sibling", TTRC("Paste as Sibling"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::V);
 	ED_SHORTCUT("scene_tree/paste_node_as_replacement", TTRC("Paste as Replacement"), KeyModifierMask::ALT | Key::V);
 	ED_SHORTCUT("scene_tree/change_node_type", TTRC("Change Type..."));

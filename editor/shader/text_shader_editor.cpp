@@ -442,9 +442,6 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 		}
 		return;
 	}
-	for (const ScriptLanguage::CodeCompletionOption &E : pp_defines) {
-		r_options->push_back(E);
-	}
 
 	ShaderLanguage sl;
 	String calltip;
@@ -455,6 +452,12 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 		comp_info.is_include = true;
 
 		sl.complete(code, comp_info, r_options, calltip);
+		if (sl.get_completion_type() == ShaderLanguage::COMPLETION_IDENTIFIER) {
+			for (const ScriptLanguage::CodeCompletionOption &E : pp_defines) {
+				r_options->push_back(E);
+			}
+		}
+
 		get_text_editor()->set_code_hint(calltip);
 		return;
 	}
@@ -465,6 +468,12 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	comp_info.shader_types = ShaderTypes::get_singleton()->get_types();
 
 	sl.complete(code, comp_info, r_options, calltip);
+	if (sl.get_completion_type() == ShaderLanguage::COMPLETION_IDENTIFIER) {
+		for (const ScriptLanguage::CodeCompletionOption &E : pp_defines) {
+			r_options->push_back(E);
+		}
+	}
+
 	get_text_editor()->set_code_hint(calltip);
 }
 
@@ -781,6 +790,9 @@ void TextShaderEditor::_menu_option(int p_option) {
 		case EDIT_EMOJI_AND_SYMBOL: {
 			code_editor->get_text_editor()->show_emoji_and_symbol_picker();
 		} break;
+		case EDIT_JOIN_LINES: {
+			code_editor->get_text_editor()->join_lines();
+		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
 		callable_mp((Control *)code_editor->get_text_editor(), &Control::grab_focus).call_deferred(false);
@@ -798,7 +810,7 @@ void TextShaderEditor::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorThemeManager::is_generated_theme_outdated() ||
-					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/fonts") ||
 					EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor")) {
 				_apply_editor_settings();
 			}
@@ -1230,6 +1242,7 @@ TextShaderEditor::TextShaderEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent"), EDIT_INDENT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unindent"), EDIT_UNINDENT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/join_lines"), EDIT_JOIN_LINES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_selection"), EDIT_DUPLICATE_SELECTION);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_lines"), EDIT_DUPLICATE_LINES);

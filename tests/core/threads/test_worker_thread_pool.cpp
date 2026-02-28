@@ -32,6 +32,7 @@
 
 TEST_FORCE_LINK(test_worker_thread_pool)
 
+#include "core/object/callable_method_pointer.h"
 #include "core/object/worker_thread_pool.h"
 
 namespace TestWorkerThreadPool {

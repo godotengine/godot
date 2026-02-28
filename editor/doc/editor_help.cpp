@@ -219,8 +219,8 @@ void EditorHelp::_update_theme_item_cache() {
 	theme_cache.qualifier_color = get_theme_color(SNAME("qualifier_color"), SNAME("EditorHelp"));
 	theme_cache.type_color = get_theme_color(SNAME("type_color"), SNAME("EditorHelp"));
 	theme_cache.override_color = get_theme_color(SNAME("override_color"), SNAME("EditorHelp"));
-	theme_cache.primary_hr_color = Color(theme_cache.title_color, 0.25);
-	theme_cache.secondary_hr_color = Color(theme_cache.comment_color, 0.25);
+	theme_cache.primary_hr_color = get_theme_color(SNAME("primary_hr_color"), SNAME("EditorHelp"));
+	theme_cache.secondary_hr_color = get_theme_color(SNAME("secondary_hr_color"), SNAME("EditorHelp"));
 
 	theme_cache.doc_font = get_theme_font(SNAME("doc"), EditorStringName(EditorFonts));
 	theme_cache.doc_bold_font = get_theme_font(SNAME("doc_bold"), EditorStringName(EditorFonts));

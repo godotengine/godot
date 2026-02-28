@@ -99,7 +99,7 @@
 			The shortcut used to open the dock.
 		</member>
 		<member name="force_show_icon" type="bool" setter="set_force_show_icon" getter="get_force_show_icon" default="false">
-			If [code]true[/code], the dock will always display an icon, regardless of [member EditorSettings.interface/editor/dock_tab_style] or [member EditorSettings.interface/editor/bottom_dock_tab_style].
+			If [code]true[/code], the dock will always display an icon, regardless of [member EditorSettings.interface/editor/docks/dock_tab_style] or [member EditorSettings.interface/editor/docks/bottom_dock_tab_style].
 		</member>
 		<member name="global" type="bool" setter="set_global" getter="is_global" default="true">
 			If [code]true[/code], the dock appears in the [b]Editor &gt; Editor Docks[/b] menu and can be closed. Non-global docks can still be closed using [method close] or when [member closable] is [code]true[/code].

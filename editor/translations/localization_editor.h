@@ -58,7 +58,7 @@ class LocalizationEditor : public VBoxContainer {
 	Button *template_generate_button = nullptr;
 
 	bool updating_translations = false;
-	String localization_changed;
+	StringName localization_changed;
 
 	LocalVector<Tree *> trees;
 	HashMap<Tree *, String> tree_data_types;

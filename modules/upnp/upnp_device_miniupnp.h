@@ -38,7 +38,7 @@ class UPNPDeviceMiniUPNP : public UPNPDevice {
 	GDCLASS(UPNPDeviceMiniUPNP, UPNPDevice);
 
 private:
-	static UPNPDevice *_create(bool p_notify_postinitialize) { return static_cast<UPNPDevice *>(ClassDB::creator<UPNPDeviceMiniUPNP>(p_notify_postinitialize)); }
+	static UPNPDevice *_create(bool p_notify_postinitialize);
 
 	String description_url;
 	String service_type;
