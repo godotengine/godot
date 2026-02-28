@@ -63,6 +63,7 @@ JoypadSDL::~JoypadSDL() {
 
 Error JoypadSDL::initialize() {
 	SDL_SetHint(SDL_HINT_JOYSTICK_THREAD, "1");
+	SDL_SetHint(SDL_HINT_JOYSTICK_GAMEINPUT, "1");
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 	ERR_FAIL_COND_V_MSG(!SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD), FAILED, SDL_GetError());
 
@@ -137,15 +138,15 @@ void JoypadSDL::process_events() {
 					device_name = SDL_GetGamepadName(gamepad);
 					joy = SDL_GetGamepadJoystick(gamepad);
 
-					print_verbose(vformat("SDL: Gamepad %s connected", SDL_GetGamepadName(gamepad)));
+					print_verbose(vformat("SDL: Gamepad %s connected", device_name));
 				} else {
 					joy = SDL_OpenJoystick(sdl_event.jdevice.which);
 					ERR_CONTINUE_MSG(!joy,
 							vformat("Error opening joystick at index %d: %s", sdl_event.jdevice.which, SDL_GetError()));
 
-					device_name = SDL_GetJoystickName(joy);
+					device_name = String::utf8(SDL_GetJoystickName(joy));
 
-					print_verbose(vformat("SDL: Joystick %s connected", SDL_GetJoystickName(joy)));
+					print_verbose(vformat("SDL: Joystick %s connected", device_name));
 				}
 
 				const int MAX_GUID_SIZE = 64;

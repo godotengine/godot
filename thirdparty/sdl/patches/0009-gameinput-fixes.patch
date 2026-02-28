@@ -1,0 +1,160 @@
+diff --git a/thirdparty/sdl/joystick/SDL_joystick.c b/thirdparty/sdl/joystick/SDL_joystick.c
+--- a/thirdparty/sdl/joystick/SDL_joystick.c
++++ b/thirdparty/sdl/joystick/SDL_joystick.c
+@@ -3115,6 +3115,11 @@ bool SDL_IsJoystickWGI(SDL_GUID guid)
+     return (guid.data[14] == 'w') ? true : false;
+ }
+ 
++bool SDL_IsJoystickGameInputGamepad(SDL_GUID guid)
++{
++    return (guid.data[14] == 'g') ? true : false;
++}
++
+ bool SDL_IsJoystickHIDAPI(SDL_GUID guid)
+ {
+     return (guid.data[14] == 'h') ? true : false;
+@@ -3208,6 +3213,10 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_GUID guid)
+         return (SDL_JoystickType)guid.data[15];
+     }
+ 
++    if (SDL_IsJoystickGameInputGamepad(guid)) {
++        return (SDL_JoystickType)guid.data[15];
++    }
++
+     if (SDL_IsJoystickVIRTUAL(guid)) {
+         return (SDL_JoystickType)guid.data[15];
+     }
+diff --git a/thirdparty/sdl/joystick/gdk/SDL_gameinputjoystick.cpp b/thirdparty/sdl/joystick/gdk/SDL_gameinputjoystick.cpp
+--- a/thirdparty/sdl/joystick/gdk/SDL_gameinputjoystick.cpp
++++ b/thirdparty/sdl/joystick/gdk/SDL_gameinputjoystick.cpp
+@@ -84,6 +84,24 @@ static bool GAMEINPUT_InternalIsGamepad(const GameInputDeviceInfo *info)
+     return false;
+ }
+ 
++static Uint8 GAMEINPUT_GetDeviceSubtype(const GameInputDeviceInfo *info) {
++    GameInputKind supportedInput = info->supportedInput;
++    if (supportedInput & GameInputKindRacingWheel) {
++        return SDL_JOYSTICK_TYPE_WHEEL;
++    }
++    if (supportedInput & GameInputKindArcadeStick) {
++        return SDL_JOYSTICK_TYPE_ARCADE_STICK;
++    }
++    if (supportedInput & GameInputKindFlightStick) {
++        return SDL_JOYSTICK_TYPE_FLIGHT_STICK;
++    }
++    if (supportedInput & (GameInputKindGamepad | GameInputKindController)) {
++        return SDL_JOYSTICK_TYPE_GAMEPAD;
++    }
++    // Other device subtypes don't have their own GameInputKind enum entries.
++    return 0;
++}
++
+ #if GAMEINPUT_API_VERSION >= 1
+ static int GetSteamVirtualGamepadSlot(const char *device_path)
+ {
+@@ -105,8 +123,9 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
+     Uint16 vendor = 0;
+     Uint16 product = 0;
+     Uint16 version = 0;
+-    const char *manufacturer_string = NULL;
+     const char *product_string = NULL;
++    Uint8 driver_signature = 'g';
++    Uint8 subtype = 0;
+     char tmp[4];
+     int idx = 0;
+ 
+@@ -128,10 +147,41 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
+     vendor = info->vendorId;
+     product = info->productId;
+     //version = (info->firmwareVersion.major << 8) | info->firmwareVersion.minor;
++    subtype = GAMEINPUT_GetDeviceSubtype(info);
++
++#if GAMEINPUT_API_VERSION >= 1
++    if (info->displayName) {
++        product_string = info->displayName;
++    }
++#else
++    if (info->displayName) {
++        product_string = info->displayName->data;
++    }
++#endif
++
++    if (SDL_ShouldIgnoreJoystick(vendor, product, version, product_string)
++        || SDL_JoystickHandledByAnotherDriver(&SDL_GAMEINPUT_JoystickDriver, vendor, product, version, product_string)) {
++        return true;
++    }
+ 
+-    if (SDL_JoystickHandledByAnotherDriver(&SDL_GAMEINPUT_JoystickDriver, vendor, product, version, "")) {
++#if defined(SDL_JOYSTICK_DINPUT) && defined(SDL_HAPTIC_DINPUT)
++    // This joystick backend currently doesn't provide a haptic backend,
++    // so fallback to DirectInput for haptic-capable devices.
++    if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_DIRECTINPUT, true) && info->forceFeedbackMotorCount > 0 && pDevice->IsForceFeedbackMotorPoweredOn(0)) {
+         return true;
+     }
++#endif
++
++    if (!GAMEINPUT_InternalIsGamepad(info)) {
++        if (info->supportedInput & GameInputKindController) {
++            // Maintain GUID compatibility with DirectInput controller mappings.
++            driver_signature = 0;
++            subtype = 0;
++        } else {
++            // This joystick backend currently doesn't provide proper reading of other joystick types.
++            return true;
++        }
++    }
+ 
+     for (idx = 0; idx < g_GameInputList.count; ++idx) {
+         elem = g_GameInputList.devices[idx];
+@@ -159,20 +209,10 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
+         SDL_strlcat(elem->path, tmp, SDL_arraysize(elem->path));
+     }
+ 
+-#if GAMEINPUT_API_VERSION >= 1
+-    if (info->displayName) {
+-        product_string = info->displayName;
+-    }
+-#else
+-    if (info->displayName) {
+-        product_string = info->displayName->data;
+-    }
+-#endif
+-
+     pDevice->AddRef();
+     elem->device = pDevice;
+-    elem->name = SDL_CreateJoystickName(vendor, product, manufacturer_string, product_string);
+-    elem->guid = SDL_CreateJoystickGUID(bus, vendor, product, version, manufacturer_string, product_string, 'g', 0);
++    elem->name = SDL_CreateJoystickName(vendor, product, NULL, product_string);
++    elem->guid = SDL_CreateJoystickGUID(bus, vendor, product, version, NULL, product_string, driver_signature, subtype);
+     elem->device_instance = SDL_GetNextObjectID();
+     elem->info = info;
+ #if GAMEINPUT_API_VERSION >= 1
+diff --git a/thirdparty/sdl/joystick/windows/SDL_dinputjoystick.c b/thirdparty/sdl/joystick/windows/SDL_dinputjoystick.c
+--- a/thirdparty/sdl/joystick/windows/SDL_dinputjoystick.c
++++ b/thirdparty/sdl/joystick/windows/SDL_dinputjoystick.c
+@@ -468,6 +468,7 @@ static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInsta
+     char *manufacturer_string = NULL;
+     char *product_string = NULL;
+     LPDIRECTINPUTDEVICE8 device = NULL;
++    DIDEVCAPS capabilities;
+ 
+     // We are only supporting HID devices.
+     CHECK(pDeviceInstance->dwDevType & DIDEVTYPE_HID);
+@@ -481,6 +482,17 @@ static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInsta
+     CHECK(!SDL_ShouldIgnoreJoystick(vendor, product, version, product_string));
+     CHECK(!SDL_JoystickHandledByAnotherDriver(&SDL_WINDOWS_JoystickDriver, vendor, product, version, product_string));
+ 
++#ifdef SDL_JOYSTICK_GAMEINPUT
++    // If GameInput is enabled, use DirectInput only for haptic-capable devices.
++    if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT, false)) {
++#ifdef SDL_HAPTIC_DINPUT
++        CHECK(SUCCEEDED(IDirectInputDevice8_GetCapabilities(device, &capabilities)) && capabilities.dwFlags & (DIDC_ATTACHED | DIDC_FORCEFEEDBACK) != 0);
++#else
++        CHECK(false);
++#endif
++    }
++#endif
++
+     pNewJoystick = *(JoyStick_DeviceData **)pContext;
+     while (pNewJoystick) {
+         // update GUIDs of joysticks with matching paths, in case they're not open yet

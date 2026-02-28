@@ -468,6 +468,7 @@ static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInsta
     char *manufacturer_string = NULL;
     char *product_string = NULL;
     LPDIRECTINPUTDEVICE8 device = NULL;
+    DIDEVCAPS capabilities;
 
     // We are only supporting HID devices.
     CHECK(pDeviceInstance->dwDevType & DIDEVTYPE_HID);
@@ -480,6 +481,17 @@ static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInsta
     CHECK(!SDL_IsXInputDevice(vendor, product, hidPath));
     CHECK(!SDL_ShouldIgnoreJoystick(vendor, product, version, product_string));
     CHECK(!SDL_JoystickHandledByAnotherDriver(&SDL_WINDOWS_JoystickDriver, vendor, product, version, product_string));
+
+#ifdef SDL_JOYSTICK_GAMEINPUT
+    // If GameInput is enabled, use DirectInput only for haptic-capable devices.
+    if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT, false)) {
+#ifdef SDL_HAPTIC_DINPUT
+        CHECK(SUCCEEDED(IDirectInputDevice8_GetCapabilities(device, &capabilities)) && capabilities.dwFlags & (DIDC_ATTACHED | DIDC_FORCEFEEDBACK) != 0);
+#else
+        CHECK(false);
+#endif
+    }
+#endif
 
     pNewJoystick = *(JoyStick_DeviceData **)pContext;
     while (pNewJoystick) {

@@ -439,6 +439,11 @@ bool SDL_XINPUT_JoystickInit(void)
     return true;
 }
 
+int SDL_XINPUT_GetSteamVirtualGamepadSlot(Uint8 userid)
+{
+	return -1;
+}
+
 void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
 {
 }

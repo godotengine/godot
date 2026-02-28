@@ -166,10 +166,10 @@ def get_opts():
 
     mingw = os.getenv("MINGW_PREFIX", "")
 
-    # Direct3D 12 SDK dependencies folder.
-    d3d12_deps_folder = os.getenv("LOCALAPPDATA")
-    if d3d12_deps_folder:
-        d3d12_deps_folder = os.path.join(d3d12_deps_folder, "Godot", "build_deps")
+    # Direct3D 12 SDK and GameInput dependencies folder.
+    deps_folder = os.getenv("LOCALAPPDATA")
+    if deps_folder:
+        deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
     else:
         # Cross-compiling, the deps install script puts things in `bin`.
         # Getting an absolute path to it is a bit hacky in Python.
@@ -178,9 +178,9 @@ def get_opts():
 
             caller_frame = inspect.stack()[1]
             caller_script_dir = os.path.dirname(os.path.abspath(caller_frame[1]))
-            d3d12_deps_folder = os.path.join(caller_script_dir, "bin", "build_deps")
+            deps_folder = os.path.join(caller_script_dir, "bin", "build_deps")
         except Exception:  # Give up.
-            d3d12_deps_folder = ""
+            deps_folder = ""
 
     return [
         ("mingw_prefix", "MinGW prefix", mingw),
@@ -199,12 +199,12 @@ def get_opts():
         (
             "mesa_libs",
             "Path to the MESA/NIR static libraries (required for D3D12)",
-            os.path.join(d3d12_deps_folder, "mesa"),
+            os.path.join(deps_folder, "mesa"),
         ),
         (
             "agility_sdk_path",
             "Path to the Agility SDK distribution (optional for D3D12)",
-            os.path.join(d3d12_deps_folder, "agility_sdk"),
+            os.path.join(deps_folder, "agility_sdk"),
         ),
         BoolVariable(
             "agility_sdk_multiarch",
@@ -215,7 +215,12 @@ def get_opts():
         (
             "pix_path",
             "Path to the PIX runtime distribution (optional for D3D12)",
-            os.path.join(d3d12_deps_folder, "pix"),
+            os.path.join(deps_folder, "pix"),
+        ),
+        (
+            "gameinput_path",
+            "Path to the GameInput libraries",
+            os.path.join(deps_folder, "gameinput"),
         ),
     ]
 
@@ -236,6 +241,7 @@ def get_flags():
     return {
         "arch": arch,
         "d3d12": True,
+        "gameinput": True,
         "supported": ["d3d12", "dcomp", "library", "mono", "xaudio2"],
     }
 
@@ -443,6 +449,14 @@ def configure_msvc(env: "SConsEnvironment"):
 
     if env["sdl"]:
         env.Append(CPPDEFINES=["SDL_ENABLED"])
+
+    if env["gameinput"]:
+        if env["sdl"]:
+            check_gameinput_installed(env)
+            # Do nothing else, GameInput is only used inside SDL, so the rest is handled in "drivers/sdl/SCsub".
+        else:
+            print("GameInput API is enabled, but SDL was explicitly disabled. Disabling GameInput API.")
+            env["gameinput"] = False
 
     if env["d3d12"]:
         check_d3d12_installed(env, env["arch"] + "-msvc")
@@ -831,6 +845,14 @@ def configure_mingw(env: "SConsEnvironment"):
     if env["sdl"]:
         env.Append(CPPDEFINES=["SDL_ENABLED"])
 
+    if env["gameinput"]:
+        if env["sdl"]:
+            check_gameinput_installed(env)
+            # Do nothing else, GameInput is only used inside SDL, so the rest is handled in "drivers/sdl/SCsub".
+        else:
+            print("GameInput API is enabled, but SDL was explicitly disabled. Disabling GameInput API.")
+            env["gameinput"] = False
+
     if env["d3d12"]:
         if env["use_llvm"]:
             check_d3d12_installed(env, env["arch"] + "-llvm")
@@ -931,5 +953,15 @@ def check_d3d12_installed(env, suffix):
             "See the documentation for more information:\n"
             "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
             "Alternatively, disable this driver by compiling with `d3d12=no` explicitly."
+        )
+        sys.exit(255)
+
+
+def check_gameinput_installed(env):
+    if not os.path.exists(env["gameinput_path"]):
+        print_error(
+            "The GameInput API dependencies are not installed.\n"
+            "You can install them by running `python misc\\scripts\\install_gameinput_windows.py`.\n"
+            "Alternatively, disable this driver by compiling with `gameinput=no` explicitly."
         )
         sys.exit(255)

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
+import os
+
 Import("env")
 
 env_sdl = env.Clone()
@@ -163,7 +165,6 @@ if env["builtin_sdl"]:
     elif env["platform"] == "windows":
         env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_WINDOWS"])
         thirdparty_sources += [
-            "core/windows/SDL_gameinput.c",
             "core/windows/SDL_hid.c",
             "core/windows/SDL_immdevice.c",
             "core/windows/SDL_windows.c",
@@ -172,10 +173,9 @@ if env["builtin_sdl"]:
             "haptic/windows/SDL_dinputhaptic.c",
             "haptic/windows/SDL_windowshaptic.c",
             "joystick/windows/SDL_dinputjoystick.c",
-            "joystick/windows/SDL_rawinputjoystick.c",
-            "joystick/windows/SDL_windows_gaming_input.c",
             "joystick/windows/SDL_windowsjoystick.c",
             "joystick/windows/SDL_xinputjoystick.c",
+            "loadso/windows/SDL_sysloadso.c",
             "thread/generic/SDL_syscond.c",
             "thread/generic/SDL_sysrwlock.c",
             "sensor/windows/SDL_windowssensor.c",
@@ -187,6 +187,16 @@ if env["builtin_sdl"]:
             "thread/windows/SDL_systls.c",
             "timer/windows/SDL_systimer.c",
         ]
+
+        gameinput_path = env["gameinput_path"]
+        if env["gameinput"] and os.path.exists(gameinput_path):
+            thirdparty_sources += [
+                "core/windows/SDL_gameinput.cpp",
+                "joystick/gdk/SDL_gameinputjoystick.cpp",
+            ]
+
+            env_sdl.Prepend(CPPPATH=[os.path.join(gameinput_path, "native", "include", "v2")])
+            env_sdl.Prepend(CPPDEFINES=["HAVE_GAMEINPUT_H"])
 
     elif env["platform"] in ["ios", "visionos"]:
         if env["platform"] == "ios":

@@ -55,10 +55,12 @@ mkdir $target/haptic
 cp -rv haptic/{*.{c,h},darwin,dummy,linux,windows} $target/haptic
 
 mkdir $target/joystick
-cp -rv joystick/{*.{c,h},apple,darwin,hidapi,linux,windows} $target/joystick
+cp -rv joystick/{*.{c,h},apple,darwin,gdk,hidapi,linux} $target/joystick
+mkdir $target/joystick/windows
+cp -rv joystick/windows/SDL_{{dinput,windows,xinput}joystick*.{c,h},rawinputjoystick_c.h} $target/joystick/windows
 
 mkdir $target/loadso
-cp -rv loadso/{dlopen,dummy} $target/loadso
+cp -rv loadso/{dlopen,dummy,windows} $target/loadso
 
 mkdir $target/sensor
 cp -rv sensor/{*.{c,h},dummy,windows} $target/sensor
