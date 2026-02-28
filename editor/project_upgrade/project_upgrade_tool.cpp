@@ -124,7 +124,7 @@ void ProjectUpgradeTool::finish_upgrade() {
 		int step = 0;
 		for (const String &file_path : paths) {
 			ep.step(TTR("Re-saving scene:") + " " + file_path, step++);
-			EditorNode::get_singleton()->load_scene(file_path);
+			EditorNode::get_singleton()->open_scene(file_path);
 			EditorNode::get_singleton()->trigger_menu_option(EditorNode::SCENE_SAVE_SCENE, true);
 			EditorNode::get_singleton()->trigger_menu_option(EditorNode::SCENE_CLOSE, true);
 		}
