@@ -3695,7 +3695,7 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 				scan_line--;
 			}
 
-			EditorNode::get_singleton()->load_scene(fpath);
+			EditorNode::get_singleton()->open_scene(fpath);
 			if (!script_id.is_empty()) {
 				Ref<Script> scr = ResourceLoader::load(fpath + "::" + script_id, "Script");
 				if (scr.is_valid()) {

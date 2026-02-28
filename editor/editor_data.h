@@ -162,6 +162,7 @@ public:
 
 	Dictionary get_editor_plugin_states() const;
 	Dictionary get_scene_editor_states(int p_idx) const;
+	Dictionary get_scene_editor_states_with_selection(int p_idx) const;
 	void set_editor_plugin_states(const Dictionary &p_states);
 	void get_editor_breakpoints(List<String> *p_breakpoints);
 	void clear_editor_states();
@@ -187,8 +188,6 @@ public:
 	void remove_move_array_element_function(const StringName &p_class);
 	Callable get_move_array_element_function(const StringName &p_class) const;
 
-	void save_editor_global_states();
-
 	void add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	Variant instantiate_custom_type(const String &p_type, const String &p_inherits);
 	void remove_custom_type(const String &p_type);
@@ -200,8 +199,8 @@ public:
 	void instantiate_object_properties(Object *p_object);
 
 	int add_edited_scene(int p_at_pos);
-	void move_edited_scene_index(int p_idx, int p_to_idx);
 	void remove_scene(int p_idx);
+	void set_scene_root(int p_idx, Node *p_root);
 	void set_edited_scene(int p_idx);
 	void set_edited_scene_root(Node *p_root);
 	int get_edited_scene() const;
@@ -223,6 +222,7 @@ public:
 	NodePath get_edited_scene_live_edit_root();
 	bool check_and_update_scene(int p_idx);
 	bool reload_scene_from_memory(int p_idx, bool p_mark_unsaved);
+	void move_scene_to_index(int p_idx, int p_to_idx);
 	void move_edited_scene_to_index(int p_idx);
 
 	bool call_build();
@@ -242,6 +242,7 @@ public:
 	void notify_edited_scene_changed();
 	void notify_resource_saved(const Ref<Resource> &p_resource);
 	void notify_scene_saved(const String &p_path);
+	void load_editor_plugin_states_from_config(const Ref<ConfigFile> &p_config_file, int p_idx);
 
 	bool script_class_is_parent(const String &p_class, const String &p_inherits);
 	Variant script_class_instance(const String &p_class);

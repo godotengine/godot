@@ -4712,7 +4712,7 @@ int Main::start() {
 #ifdef TOOLS_ENABLED
 			if (editor) {
 				if (!recovery_mode && (game_path != ResourceUID::ensure_path(String(GLOBAL_GET("application/run/main_scene"))) || !editor_node->has_scenes_in_session())) {
-					Error serr = editor_node->load_scene(local_game_path);
+					Error serr = editor_node->open_scene(local_game_path);
 					if (serr != OK) {
 						ERR_PRINT("Failed to load scene");
 					}
