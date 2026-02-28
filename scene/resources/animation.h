@@ -110,6 +110,7 @@ public:
 		bool loop_wrap = true;
 		NodePath path; // Path to something.
 		TypeHash thash = 0; // Hash by Path + SubPath + TrackType.
+		TypeHash probe = 0; // Probe value that will be added later to the hash on hash collisions
 		bool imported = false;
 		bool enabled = true;
 		virtual ~Track() {}
@@ -250,6 +251,7 @@ private:
 	HashMap<StringName, Color> marker_colors; // name -> color
 
 	LocalVector<Track *> tracks;
+	static inline AHashMap<TypeHash, StringName> track_hash_map;
 
 	template <typename T, typename V>
 	int _insert(double p_time, T &p_keys, const V &p_value);

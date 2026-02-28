@@ -999,6 +999,7 @@ void Animation::remove_track(int p_track) {
 	}
 
 	memdelete(t);
+	track_hash_map.erase(tracks[p_track]->thash);
 	tracks.remove_at(p_track);
 	emit_changed();
 	_check_capture_included();
@@ -1064,7 +1065,21 @@ Animation::TrackType Animation::get_cache_type(TrackType p_type) {
 void Animation::_track_update_hash(int p_track) {
 	const NodePath &track_path = tracks[p_track]->path;
 	const TrackType track_cache_type = get_cache_type(tracks[p_track]->type);
-	tracks[p_track]->thash = HashMapHasherDefault::hash(Pair<const NodePath &, TrackType>(track_path, track_cache_type));
+	TypeHash thash = HashMapHasherDefault::hash(Pair<const NodePath &, TrackType>(track_path, track_cache_type));
+	StringName tname = StringName(StringName(String(track_path) + itos(track_cache_type)));
+
+	if (track_hash_map.has(thash)) {
+		StringName cached_path = track_hash_map.get(thash);
+		if(cached_path != tname) {
+			do {
+				thash = hash_murmur3_one_32(thash, tracks[p_track]->probe++);
+			} while (track_hash_map.has(thash));
+			track_hash_map.insert(thash, tname);
+		}
+	} else {
+		track_hash_map.insert(thash, tname);
+	}
+	tracks[p_track]->thash = thash;
 }
 
 Animation::TypeHash Animation::track_get_type_hash(int p_track) const {
