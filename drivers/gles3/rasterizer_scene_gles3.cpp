@@ -1555,6 +1555,8 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 	//time global variables
 	scene_state.data.time = time;
 
+	scene_state.data.debug_draw_unshaded = false;
+
 	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UNSHADED) {
 		scene_state.data.use_ambient_light = true;
 		scene_state.data.ambient_light_color_energy[0] = 1;
@@ -1563,6 +1565,7 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 		scene_state.data.ambient_light_color_energy[3] = 1.0;
 		scene_state.data.use_ambient_cubemap = false;
 		scene_state.data.use_reflection_cubemap = false;
+		scene_state.data.debug_draw_unshaded = true;
 	} else if (is_environment(p_render_data->environment)) {
 		RSE::EnvironmentBG env_bg = environment_get_background(p_render_data->environment);
 		RSE::EnvironmentAmbientSource ambient_src = environment_get_ambient_source(p_render_data->environment);

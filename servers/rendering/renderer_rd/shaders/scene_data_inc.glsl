@@ -11,6 +11,7 @@
 #define SCENE_DATA_FLAGS_USE_UV2_MATERIAL (1 << 5)
 #define SCENE_DATA_FLAGS_USE_PANCAKE_SHADOWS (1 << 6)
 #define SCENE_DATA_FLAGS_IN_SHADOW_PASS (1 << 7)
+#define SCENE_DATA_FLAGS_DEBUG_DRAW_UNSHADED (1 << 8)
 
 struct SceneData {
 	mat4 projection_matrix;
