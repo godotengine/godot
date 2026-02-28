@@ -589,7 +589,6 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			}
 		}
 	}
-
 	return output_volume_vector;
 }
 
