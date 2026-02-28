@@ -30,7 +30,9 @@
 
 #pragma once
 
+#include "core/math/vector2i.h"
 #include "core/object/ref_counted.h"
+#include "core/templates/rid.h"
 #include "servers/rendering/rendering_server_enums.h"
 
 class RenderSceneBuffersConfiguration : public RefCounted {

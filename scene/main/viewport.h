@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/math/rect2i.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 #include "servers/display/display_server_enums.h"

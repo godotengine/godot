@@ -30,6 +30,7 @@
 
 #include "multi_node_edit.h"
 
+#include "core/core_string_names.h"
 #include "core/math/math_fieldwise.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"

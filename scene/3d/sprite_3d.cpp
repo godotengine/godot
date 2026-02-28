@@ -30,6 +30,7 @@
 
 #include "sprite_3d.h"
 
+#include "core/core_string_names.h"
 #include "core/object/class_db.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/mesh.h"

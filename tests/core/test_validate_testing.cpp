@@ -33,7 +33,25 @@
 TEST_FORCE_LINK(test_validate_testing)
 
 #include "core/core_globals.h"
+#include "core/math/aabb.h"
+#include "core/math/basis.h"
+#include "core/math/color.h"
+#include "core/math/plane.h"
+#include "core/math/projection.h"
+#include "core/math/quaternion.h"
+#include "core/math/rect2.h"
+#include "core/math/rect2i.h"
+#include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3.h"
+#include "core/math/vector3i.h"
+#include "core/math/vector4.h"
+#include "core/math/vector4i.h"
 #include "core/object/object.h"
+#include "core/string/node_path.h"
+#include "core/templates/rid.h"
 #include "tests/test_tools.h"
 
 namespace TestValidateTesting {
@@ -81,6 +99,12 @@ TEST_SUITE("Validate tests") {
 		Vector3i vec3i(1, 2, 3);
 		INFO(vec3i);
 
+		Vector4 vec4(0.5, 1.0, 2.0, 3.333);
+		INFO(vec4);
+
+		Vector4i vec4i(1, 2, 3, 4);
+		INFO(vec4i);
+
 		Transform2D trans2d(0.5, Vector2(100, 100));
 		INFO(trans2d);
 
@@ -98,6 +122,9 @@ TEST_SUITE("Validate tests") {
 
 		Transform3D trans(basis);
 		INFO(trans);
+
+		Projection proj(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+		INFO(proj);
 
 		Color color(1, 0.5, 0.2, 0.3);
 		INFO(color);

@@ -30,12 +30,12 @@
 
 #pragma once
 
+#include "core/math/vector3.h"
 #include "core/os/mutex.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/hashfuncs.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/safe_refcount.h"
 #include "core/variant/variant.h"
 
 #include "Jolt/Jolt.h"

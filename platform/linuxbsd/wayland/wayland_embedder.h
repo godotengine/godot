@@ -34,6 +34,8 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "core/math/rect2i.h"
+#include "core/math/vector2i.h"
 #include "core/templates/a_hash_map.h"
 #include "core/templates/pooled_list.h"
 

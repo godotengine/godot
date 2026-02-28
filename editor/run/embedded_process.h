@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/math/rect2i.h"
 #include "core/os/os.h"
 #include "scene/gui/control.h"
 

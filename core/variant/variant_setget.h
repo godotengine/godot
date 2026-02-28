@@ -33,6 +33,7 @@
 #include "variant.h"
 
 #include "core/debugger/engine_debugger.h"
+#include "core/math/rect2i.h"
 #include "core/object/class_db.h"
 #include "core/variant/variant_internal.h"
 

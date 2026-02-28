@@ -34,6 +34,7 @@ TEST_FORCE_LINK(test_image)
 
 #include "core/io/file_access.h"
 #include "core/io/image.h"
+#include "core/math/rect2i.h"
 #include "tests/test_utils.h"
 
 #include "modules/modules_enabled.gen.h" // For bmp, jpg, svg, webp, tga.

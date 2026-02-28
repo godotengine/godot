@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/ref_counted.h"
+#include "core/string/node_path.h"
 
 class Node;
 class SceneMultiplayer;

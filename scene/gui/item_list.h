@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/math/rect2i.h"
 #include "scene/gui/control.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/property_list_helper.h"

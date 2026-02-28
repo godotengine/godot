@@ -42,6 +42,7 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/marshalls.h"
+#include "core/math/rect2i.h"
 #include "core/object/class_db.h"
 #include "core/object/method_bind.h"
 #include "core/os/os.h"

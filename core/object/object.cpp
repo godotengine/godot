@@ -30,6 +30,7 @@
 
 #include "object.h"
 
+#include "core/core_string_names.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/io/resource.h"
 #include "core/object/class_db.h"

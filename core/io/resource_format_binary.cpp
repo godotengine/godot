@@ -31,9 +31,11 @@
 #include "resource_format_binary.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_string_names.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access_compressed.h"
 #include "core/io/missing_resource.h"
+#include "core/math/rect2i.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/version.h"

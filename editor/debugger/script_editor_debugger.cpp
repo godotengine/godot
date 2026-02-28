@@ -31,6 +31,7 @@
 #include "script_editor_debugger.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_string_names.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/remote_debugger.h"
 #include "core/object/class_db.h"

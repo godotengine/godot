@@ -32,6 +32,8 @@
 #include "gdscript_function.h"
 #include "gdscript_lambda_callable.h"
 
+#include "core/core_string_names.h"
+#include "core/math/rect2i.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"

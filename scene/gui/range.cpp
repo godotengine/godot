@@ -30,6 +30,7 @@
 
 #include "range.h"
 
+#include "core/core_string_names.h"
 #include "core/object/class_db.h"
 #include "servers/display/accessibility_server.h"
 #include "thirdparty/misc/r128.h"

@@ -31,6 +31,7 @@
 #include "resource_format_text.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_string_names.h"
 #include "core/io/dir_access.h"
 #include "core/io/missing_resource.h"
 #include "core/object/class_db.h"

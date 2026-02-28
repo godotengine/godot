@@ -30,39 +30,35 @@
 
 #pragma once
 
-#include "core/core_string_names.h"
-#include "core/error/error_macros.h"
-#include "core/io/ip_address.h"
-#include "core/math/aabb.h"
-#include "core/math/basis.h"
-#include "core/math/color.h"
-#include "core/math/face3.h"
-#include "core/math/plane.h"
-#include "core/math/projection.h"
-#include "core/math/quaternion.h"
-#include "core/math/rect2.h"
-#include "core/math/rect2i.h"
-#include "core/math/transform_2d.h"
-#include "core/math/transform_3d.h"
-#include "core/math/vector2.h"
-#include "core/math/vector2i.h"
-#include "core/math/vector3.h"
-#include "core/math/vector3i.h"
-#include "core/math/vector4.h"
-#include "core/math/vector4i.h"
 #include "core/object/object_id.h"
-#include "core/string/node_path.h"
 #include "core/string/ustring.h"
 #include "core/templates/bit_field.h"
 #include "core/templates/hashfuncs.h"
 #include "core/templates/list.h"
-#include "core/templates/rid.h"
 #include "core/typedefs.h"
 #include "core/variant/array.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
 #include "core/variant/variant_deep_duplicate.h"
 
+struct Vector2;
+struct Vector2i;
+struct Rect2;
+struct Rect2i;
+struct Vector3;
+struct Vector3i;
+struct Vector4;
+struct Vector4i;
+struct Plane;
+struct AABB;
+struct Quaternion;
+struct Basis;
+struct Transform2D;
+struct Transform3D;
+struct Projection;
+struct Color;
+class NodePath;
+class RID;
 class Object;
 class RefCounted;
 
@@ -77,6 +73,8 @@ class TypedDictionary;
 
 struct PropertyInfo;
 struct MethodInfo;
+struct Face3;
+struct IPAddress;
 
 typedef Vector<uint8_t> PackedByteArray;
 typedef Vector<int32_t> PackedInt32Array;
@@ -89,6 +87,11 @@ typedef Vector<Vector2> PackedVector2Array;
 typedef Vector<Vector3> PackedVector3Array;
 typedef Vector<Color> PackedColorArray;
 typedef Vector<Vector4> PackedVector4Array;
+
+typedef Vector2 Size2;
+typedef Vector2 Point2;
+typedef Vector2i Size2i;
+typedef Vector2i Point2i;
 
 class Variant {
 public:

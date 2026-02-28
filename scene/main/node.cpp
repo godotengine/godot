@@ -41,6 +41,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, OS);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Engine);
 
 #include "core/config/project_settings.h"
+#include "core/core_string_names.h"
 #include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 #include "core/object/message_queue.h"

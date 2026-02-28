@@ -30,6 +30,15 @@
 
 #pragma once
 
+#include "core/io/ip_address.h"
+#include "core/math/aabb.h"
+#include "core/math/basis.h"
+#include "core/math/color.h"
+#include "core/math/projection.h"
+#include "core/math/quaternion.h"
+#include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
+#include "core/string/node_path.h"
 #include "core/templates/simple_type.h"
 #include "core/variant/type_info.h"
 #include "core/variant/variant.h"

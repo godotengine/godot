@@ -30,7 +30,9 @@
 
 #include "marshalls.h"
 
+#include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
+#include "core/math/rect2i.h"
 #include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"

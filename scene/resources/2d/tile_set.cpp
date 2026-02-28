@@ -31,6 +31,7 @@
 #include "tile_set.h"
 #include "tile_set.compat.inc"
 
+#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/object/class_db.h"

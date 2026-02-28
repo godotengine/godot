@@ -31,6 +31,7 @@
 #include "variant_utility.h"
 
 #include "core/io/marshalls.h"
+#include "core/math/rect2i.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"

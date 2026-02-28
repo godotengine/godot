@@ -30,6 +30,7 @@
 
 #include "grid_map_editor_plugin.h"
 
+#include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/math/geometry_2d.h"
 #include "core/object/class_db.h"

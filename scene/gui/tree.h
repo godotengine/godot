@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/math/rect2i.h"
 #include "scene/gui/control.h"
 #include "scene/resources/text_paragraph.h"
 #include "servers/display/accessibility_server.h"

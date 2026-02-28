@@ -31,6 +31,7 @@
 #include "print_string.h"
 
 #include "core/core_globals.h"
+#include "core/math/color.h"
 #include "core/os/os.h"
 
 #include <cstdio>

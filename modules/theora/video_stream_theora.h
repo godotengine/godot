@@ -32,6 +32,7 @@
 
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/math/rect2i.h"
 #include "core/os/thread.h"
 #include "scene/resources/video_stream.h"
 

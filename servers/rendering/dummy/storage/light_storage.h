@@ -32,6 +32,11 @@
 
 #include "core/templates/rid_owner.h"
 
+#include "core/math/aabb.h"
+#include "core/math/color.h"
+#include "core/math/projection.h"
+#include "core/math/transform_3d.h"
+#include "core/templates/rid.h"
 #include "servers/rendering/storage/light_storage.h"
 
 namespace RendererDummy {

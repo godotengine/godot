@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/math/rect2i.h"
+#include "core/math/vector2.h"
 #include "core/math/vector2i.h"
 #include "core/object/object.h"
 #include "core/templates/rid.h"

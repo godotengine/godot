@@ -33,6 +33,7 @@
 TEST_FORCE_LINK(test_json_native)
 
 #include "core/io/json.h"
+#include "core/math/rect2i.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/typed_dictionary.h"
 

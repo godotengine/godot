@@ -32,6 +32,7 @@
 
 #include "core/io/image.h"
 #include "core/io/resource.h"
+#include "core/math/rect2i.h"
 #include "core/object/object.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"

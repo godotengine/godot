@@ -31,6 +31,7 @@
 #include "script_editor_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/io/config_file.h"
 #include "core/io/file_access.h"

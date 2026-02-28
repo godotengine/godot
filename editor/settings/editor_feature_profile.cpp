@@ -30,6 +30,7 @@
 
 #include "editor_feature_profile.h"
 
+#include "core/core_string_names.h"
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "core/object/class_db.h"

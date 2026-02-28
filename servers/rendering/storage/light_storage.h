@@ -30,6 +30,11 @@
 
 #pragma once
 
+#include "core/math/aabb.h"
+#include "core/math/projection.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/templates/rid.h"
 #include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/storage/render_scene_buffers.h"
 

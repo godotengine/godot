@@ -32,7 +32,13 @@
 
 #ifdef DEBUG_ENABLED
 
+#include "core/math/aabb.h"
+#include "core/math/color.h"
+#include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
 #include "core/object/object.h"
+#include "core/templates/rid.h"
 #include "scene/gui/view_panner.h"
 
 class InputEvent;

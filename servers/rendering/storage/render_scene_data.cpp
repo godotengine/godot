@@ -31,6 +31,7 @@
 #include "render_scene_data.h"
 
 #include "core/object/class_db.h"
+#include "core/templates/rid.h" // IWYU pragma: keep // `get_uniform_buffer` return type.
 
 void RenderSceneData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cam_transform"), &RenderSceneData::get_cam_transform);
