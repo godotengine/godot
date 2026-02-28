@@ -633,12 +633,6 @@ int EditorData::add_edited_scene(int p_at_pos) {
 	return p_at_pos;
 }
 
-void EditorData::move_edited_scene_index(int p_idx, int p_to_idx) {
-	ERR_FAIL_INDEX(p_idx, edited_scene.size());
-	ERR_FAIL_INDEX(p_to_idx, edited_scene.size());
-	SWAP(edited_scene.write[p_idx], edited_scene.write[p_to_idx]);
-}
-
 void EditorData::remove_scene(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
 	if (edited_scene[p_idx].root) {
@@ -667,6 +661,24 @@ void EditorData::remove_scene(int p_idx) {
 		undo_redo_manager->discard_history(edited_scene[p_idx].history_id);
 	}
 	edited_scene.remove_at(p_idx);
+}
+
+void EditorData::set_scene_root(int p_idx, Node *p_root) {
+	ERR_FAIL_INDEX(p_idx, edited_scene.size());
+	EditedScene &scene_info = edited_scene.write[p_idx];
+
+	scene_info.root = p_root;
+	if (p_root) {
+		if (p_root->is_instance()) {
+			scene_info.path = p_root->get_scene_file_path();
+		} else {
+			p_root->set_scene_file_path(scene_info.path);
+		}
+	}
+
+	if (!scene_info.path.is_empty()) {
+		scene_info.file_modified_time = FileAccess::get_modified_time(scene_info.path);
+	}
 }
 
 bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, HashSet<String> &checked_paths) {
@@ -760,6 +772,15 @@ bool EditorData::reload_scene_from_memory(int p_idx, bool p_mark_unsaved) {
 	return true;
 }
 
+void EditorData::move_scene_to_index(int p_idx, int p_to_idx) {
+	ERR_FAIL_INDEX(p_idx, edited_scene.size());
+	ERR_FAIL_INDEX(p_to_idx, edited_scene.size());
+
+	EditedScene es = edited_scene[p_idx];
+	edited_scene.remove_at(p_idx);
+	edited_scene.insert(p_to_idx, es);
+}
+
 int EditorData::get_edited_scene() const {
 	return current_edited_scene;
 }
@@ -790,19 +811,7 @@ Node *EditorData::get_edited_scene_root(int p_idx) {
 }
 
 void EditorData::set_edited_scene_root(Node *p_root) {
-	ERR_FAIL_INDEX(current_edited_scene, edited_scene.size());
-	edited_scene.write[current_edited_scene].root = p_root;
-	if (p_root) {
-		if (p_root->is_instance()) {
-			edited_scene.write[current_edited_scene].path = p_root->get_scene_file_path();
-		} else {
-			p_root->set_scene_file_path(edited_scene[current_edited_scene].path);
-		}
-	}
-
-	if (!edited_scene[current_edited_scene].path.is_empty()) {
-		edited_scene.write[current_edited_scene].file_modified_time = FileAccess::get_modified_time(edited_scene[current_edited_scene].path);
-	}
+	set_scene_root(current_edited_scene, p_root);
 }
 
 int EditorData::get_edited_scene_count() const {
@@ -850,9 +859,7 @@ void EditorData::move_edited_scene_to_index(int p_idx) {
 	ERR_FAIL_INDEX(current_edited_scene, edited_scene.size());
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
 
-	EditedScene es = edited_scene[current_edited_scene];
-	edited_scene.remove_at(current_edited_scene);
-	edited_scene.insert(p_idx, es);
+	move_scene_to_index(current_edited_scene, p_idx);
 	current_edited_scene = p_idx;
 }
 

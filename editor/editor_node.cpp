@@ -1500,7 +1500,7 @@ void EditorNode::_sources_changed(bool p_exist) {
 		if (!defer_load_scene.is_empty()) {
 			OS::get_singleton()->benchmark_begin_measure("Editor", "Load Scene");
 
-			load_scene(defer_load_scene);
+			open_scene(defer_load_scene);
 			defer_load_scene = "";
 
 			OS::get_singleton()->benchmark_end_measure("Editor", "Load Scene");
@@ -1604,7 +1604,7 @@ void EditorNode::_reload_modified_scenes() {
 			editor_data.set_edited_scene(i);
 			_remove_edited_scene(false);
 
-			Error err = load_scene(filename, false, false, false, true);
+			Error err = open_scene(filename, false, false, false, true);
 			if (err != OK) {
 				ERR_PRINT(vformat("Failed to load scene: %s", filename));
 			}
@@ -1706,7 +1706,7 @@ Error EditorNode::load_scene_or_resource(const String &p_path, bool p_ignore_bro
 		if (!p_change_scene_tab_if_already_open && EditorNode::get_singleton()->is_scene_open(p_path)) {
 			return OK;
 		}
-		return EditorNode::get_singleton()->load_scene(p_path, p_ignore_broken_deps);
+		return EditorNode::get_singleton()->open_scene(p_path, p_ignore_broken_deps);
 	}
 	return EditorNode::get_singleton()->load_resource(p_path, p_ignore_broken_deps);
 }
@@ -2681,10 +2681,10 @@ void EditorNode::_dialog_action(String p_file) {
 				_menu_option_confirm(SCENE_CLOSE, true);
 			}
 
-			load_scene(p_file, false, true);
+			open_scene(p_file, false, true);
 		} break;
 		case SCENE_OPEN_SCENE: {
-			load_scene(p_file);
+			open_scene(p_file);
 		} break;
 		case SETTINGS_PICK_MAIN_SCENE: {
 			ProjectSettings::get_singleton()->set("application/run/main_scene", ResourceUID::path_to_uid(p_file));
@@ -3393,7 +3393,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case SCENE_OPEN_PREV: {
 			if (!prev_closed_scenes.is_empty()) {
-				load_scene(prev_closed_scenes.back()->get());
+				open_scene(prev_closed_scenes.back()->get());
 			}
 		} break;
 		case EditorSceneTabs::SCENE_CLOSE_OTHERS: {
@@ -4157,7 +4157,7 @@ void EditorNode::_discard_changes(const String &p_str) {
 
 			_remove_edited_scene();
 
-			Error err = load_scene(scene_filename);
+			Error err = open_scene(scene_filename);
 			if (err != OK) {
 				ERR_PRINT("Failed to load scene");
 			}
@@ -4763,19 +4763,14 @@ int EditorNode::new_scene() {
 	return idx;
 }
 
-Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, bool p_set_inherited, bool p_force_open_imported, bool p_silent_change_tab) {
-	if (!is_inside_tree()) {
-		defer_load_scene = p_scene;
-		return OK;
-	}
-
-	String lpath = ProjectSettings::get_singleton()->localize_path(ResourceUID::ensure_path(p_scene));
+Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, bool p_set_inherited, bool p_force_open_imported, bool p_update_tabs) {
+	const String lpath = ProjectSettings::get_singleton()->localize_path(ResourceUID::ensure_path(p_scene));
 	_update_prev_closed_scenes(lpath, false);
 
 	if (!p_set_inherited) {
 		for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 			if (editor_data.get_scene_path(i) == lpath) {
-				_set_current_scene(i);
+				// Already loaded, do nothing.
 				return OK;
 			}
 		}
@@ -4794,24 +4789,6 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	int prev = editor_data.get_edited_scene();
-	int idx = prev;
-
-	if (prev == -1 || editor_data.get_edited_scene_root() || !editor_data.get_scene_path(prev).is_empty()) {
-		idx = editor_data.add_edited_scene(-1);
-
-		if (p_silent_change_tab) {
-			_set_current_scene_nocheck(idx);
-		} else {
-			_set_current_scene(idx);
-		}
-	} else {
-		EditorUndoRedoManager::get_singleton()->clear_history(editor_data.get_current_edited_scene_history_id(), false);
-
-		Dictionary state = editor_data.restore_edited_scene_state(editor_selection, &editor_history);
-		callable_mp(this, &EditorNode::_set_main_scene_state).call_deferred(state, get_edited_scene()); // Do after everything else is done setting up.
-	}
-
 	dependency_errors.clear();
 
 	Error err;
@@ -4821,21 +4798,11 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		current_menu_option = -1;
 		dependency_error->show(lpath, dependency_errors);
 		dependency_errors.clear();
-
-		if (prev != -1 && prev != idx) {
-			_set_current_scene(prev);
-			editor_data.remove_scene(idx);
-		}
 		return ERR_FILE_MISSING_DEPENDENCIES;
 	}
 
 	if (sdata.is_null()) {
 		_dialog_display_load_error(lpath, err);
-
-		if (prev != -1 && prev != idx) {
-			_set_current_scene(prev);
-			editor_data.remove_scene(idx);
-		}
 		return ERR_FILE_NOT_FOUND;
 	}
 
@@ -4857,7 +4824,6 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 			ps->set_last_modified_time(sdata->get_last_modified_time());
 			sdata = ps;
 		}
-
 	} else {
 		sdata->set_path(lpath, true); // Take over path.
 	}
@@ -4866,10 +4832,6 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	if (!new_scene) {
 		sdata.unref();
 		_dialog_display_load_error(lpath, ERR_FILE_CORRUPT);
-		if (prev != -1 && prev != idx) {
-			_set_current_scene(prev);
-			editor_data.remove_scene(idx);
-		}
 		return ERR_FILE_CORRUPT;
 	}
 
@@ -4881,6 +4843,63 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	}
 
 	new_scene->set_scene_instance_state(Ref<SceneState>());
+
+	if (!restoring_scenes) {
+		save_editor_layout_delayed();
+		_add_to_recent_scenes(lpath);
+	}
+
+	int idx = editor_data.get_edited_scene();
+	if (idx == -1 || editor_data.get_edited_scene_root() || !editor_data.get_scene_path(idx).is_empty()) {
+		idx = editor_data.add_edited_scene(-1);
+	}
+	editor_data.set_scene_root(idx, new_scene);
+
+	if (p_update_tabs) {
+		scene_tabs->update_scene_tabs();
+	}
+	return OK;
+}
+
+Error EditorNode::open_scene(const String &p_scene, bool p_ignore_broken_deps, bool p_set_inherited, bool p_force_open_imported, bool p_silent_change_tab) {
+	if (!is_inside_tree()) {
+		defer_load_scene = p_scene;
+		return OK;
+	}
+
+	const String lpath = ProjectSettings::get_singleton()->localize_path(ResourceUID::ensure_path(p_scene));
+	if (!p_set_inherited) {
+		for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+			if (editor_data.get_scene_path(i) == lpath) {
+				_set_current_scene(i);
+				return OK;
+			}
+		}
+	}
+
+	Error err = load_scene(p_scene, p_ignore_broken_deps, p_set_inherited, p_force_open_imported);
+	if (err != OK) {
+		return err;
+	}
+
+	int current_scene_idx = editor_data.get_edited_scene_count() - 1;
+	Node *new_scene = editor_data.get_edited_scene_root(current_scene_idx);
+	ERR_FAIL_NULL_V(new_scene, ERR_BUG);
+
+	int prev = editor_data.get_edited_scene();
+
+	if (prev == -1 || editor_data.get_edited_scene_root() || !editor_data.get_scene_path(prev).is_empty()) {
+		if (p_silent_change_tab) {
+			_set_current_scene_nocheck(current_scene_idx);
+		} else {
+			_set_current_scene(current_scene_idx);
+		}
+	} else {
+		EditorUndoRedoManager::get_singleton()->clear_history(editor_data.get_current_edited_scene_history_id(), false);
+
+		Dictionary state = editor_data.restore_edited_scene_state(editor_selection, &editor_history);
+		callable_mp(this, &EditorNode::_set_main_scene_state).call_deferred(state, get_edited_scene()); // Do after everything else is done setting up.
+	}
 
 	set_edited_scene(new_scene);
 	// When editor plugins load in, they might use node transforms during their own setup, so make sure they're up to date.
@@ -4923,20 +4942,11 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		}
 	}
 
-	if (!restoring_scenes) {
-		save_editor_layout_delayed();
-	}
-
 	if (p_set_inherited) {
 		EditorUndoRedoManager::get_singleton()->set_history_as_unsaved(editor_data.get_current_edited_scene_history_id());
 	}
 
 	_update_title();
-	scene_tabs->update_scene_tabs();
-	if (!restoring_scenes) {
-		_add_to_recent_scenes(lpath);
-	}
-
 	return OK;
 }
 
@@ -5286,7 +5296,7 @@ bool EditorNode::has_previous_closed_scenes() const {
 }
 
 void EditorNode::edit_foreign_resource(Ref<Resource> p_resource) {
-	load_scene(p_resource->get_path().get_slice("::", 0));
+	open_scene(p_resource->get_path().get_slice("::", 0));
 	callable_mp(InspectorDock::get_singleton(), &InspectorDock::edit_resource).call_deferred(p_resource);
 }
 
@@ -5396,7 +5406,7 @@ void EditorNode::_open_recent_scene(int p_idx) {
 		Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
 		ERR_FAIL_INDEX(p_idx, rc.size());
 
-		if (load_scene(rc[p_idx]) != OK) {
+		if (open_scene(rc[p_idx]) != OK) {
 			rc.remove_at(p_idx);
 			EditorSettings::get_singleton()->set_project_metadata("recent_files", "scenes", rc);
 			_update_recent_scenes();
@@ -6349,7 +6359,7 @@ void EditorNode::_load_open_scenes_from_config(Ref<ConfigFile> p_layout) {
 	PackedStringArray scenes = p_layout->get_value(EDITOR_NODE_CONFIG_SECTION, "open_scenes");
 	for (int i = 0; i < scenes.size(); i++) {
 		if (FileAccess::exists(scenes[i])) {
-			load_scene(scenes[i]);
+			open_scene(scenes[i]);
 		}
 	}
 
@@ -7015,8 +7025,7 @@ void EditorNode::_notify_nodes_scene_reimported(Node *p_node, Array p_reimported
 void EditorNode::reload_scene(const String &p_path) {
 	int scene_idx = -1;
 
-	String lpath = ProjectSettings::get_singleton()->localize_path(p_path);
-
+	const String lpath = ProjectSettings::get_singleton()->localize_path(p_path);
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		if (editor_data.get_scene_path(i) == lpath) {
 			scene_idx = i;
@@ -7040,21 +7049,29 @@ void EditorNode::reload_scene(const String &p_path) {
 		return;
 	}
 
-	if (current_tab == scene_idx) {
+	bool is_current_scene = current_tab == scene_idx;
+	if (is_current_scene) {
 		editor_data.apply_changes_in_editors();
 		_save_editor_states(p_path);
 	}
 
 	// Reload scene.
 	_remove_scene(scene_idx, false);
-	load_scene(p_path, true, false, true);
+	Error err = load_scene(p_path, true, false, false, false);
+	if (err != OK) {
+		return;
+	}
 
 	// Adjust index so tab is back a the previous position.
-	editor_data.move_edited_scene_to_index(scene_idx);
+	editor_data.move_scene_to_index(editor_data.get_edited_scene_count() - 1, scene_idx);
 	EditorUndoRedoManager::get_singleton()->clear_history(editor_data.get_scene_history_id(scene_idx), false);
 
-	// Recover the tab.
-	scene_tabs->set_current_tab(current_tab);
+	if (is_current_scene) {
+		// Recover the tab.
+		_set_current_scene_nocheck(current_tab);
+	} else {
+		scene_tabs->update_scene_tabs();
+	}
 }
 
 void EditorNode::find_all_instances_inheriting_path_in_node(Node *p_root, Node *p_node, const String &p_instance_path, HashSet<Node *> &p_instance_list) {
@@ -7588,11 +7605,11 @@ void EditorNode::call_run_scene(const String &p_scene, Vector<String> &r_args) {
 
 void EditorNode::_inherit_imported(const String &p_action) {
 	open_imported->hide();
-	load_scene(open_import_request, true, true);
+	open_scene(open_import_request, true, true);
 }
 
 void EditorNode::_open_imported() {
-	load_scene(open_import_request, true, false, true);
+	open_scene(open_import_request, true, false, true);
 }
 
 void EditorNode::dim_editor(bool p_dimming) {
