@@ -450,7 +450,7 @@
 			<return type="void" />
 			<param index="0" name="scene_filepath" type="String" />
 			<description>
-				Reloads the scene at the given path.
+				Reloads the scene at the given path. Fails if the scene is not open.
 			</description>
 		</method>
 		<method name="restart_editor">
