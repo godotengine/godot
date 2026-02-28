@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/fixed_vector.h"
 #include "scene/3d/node_3d.h"
 #include "servers/audio/audio_server.h"
 
@@ -66,6 +67,8 @@ private:
 
 	};
 
+	static constexpr int64_t volume_vector_size = AudioServer::MAX_CHANNELS_PER_BUS;
+
 	AudioStreamPlayerInternal *internal = nullptr;
 
 	SafeNumeric<float> setplay{ -1.0 };
@@ -80,11 +83,11 @@ private:
 	uint64_t last_mix_count = -1;
 	bool force_update_panning = false;
 
-	static void _calc_output_vol(const Vector3 &source_dir, real_t tightness, Vector<AudioFrame> &output);
+	static void _calc_output_vol(const Vector3 &source_dir, real_t tightness, FixedVector<AudioFrame, volume_vector_size> &output);
 	static AudioFrame _calc_output_vol_stereo(const Vector3 &source_dir, real_t panning_strength);
 
 #ifndef PHYSICS_3D_DISABLED
-	void _calc_reverb_vol(Area3D *area, Vector3 listener_area_pos, Vector<AudioFrame> direct_path_vol, Vector<AudioFrame> &reverb_vol);
+	void _calc_reverb_vol(Area3D *area, Vector3 listener_area_pos, const FixedVector<AudioFrame, volume_vector_size> &direct_path_vol, FixedVector<AudioFrame, volume_vector_size> &reverb_vol);
 #endif // PHYSICS_3D_DISABLED
 
 	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer3D *>(self)->force_update_panning = true; }
@@ -120,16 +123,6 @@ private:
 
 	float panning_strength = 1.0f;
 	float cached_global_panning_strength = 0.5f;
-
-	/// Vector storing the output volume for individual listeners in the range
-	/// of this audio stream player.
-	/// This vector is stored as member for efficiency reasons.
-	Vector<AudioFrame> listener_volume_vector;
-
-	/// Vector storing the reverb volume for individual listeners in the range
-	/// of this audio stream player.
-	/// This vector is stored as member for efficiency reasons.
-	Vector<AudioFrame> listener_reverb_vector;
 
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
