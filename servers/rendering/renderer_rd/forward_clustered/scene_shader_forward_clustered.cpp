@@ -502,7 +502,7 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 	ERR_FAIL_COND_MSG(
 			pipeline.is_null(),
 			vformat("Forward+ pipeline creation failed for key %llu (version=%d, flags=%u, ubershader=%d).",
-					(unsigned long long)p_pipeline_key.hash(),
+					(int64_t)p_pipeline_key.hash(),
 					p_pipeline_key.version,
 					p_pipeline_key.color_pass_flags,
 					(int)p_pipeline_key.ubershader));
