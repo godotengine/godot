@@ -37,6 +37,8 @@ class VirtualController : public Control {
 	GDCLASS(VirtualController, Control);
 
 private:
+	int device_id = -1;
+
 	VirtualJoystick *left_joystick = nullptr;
 	VirtualJoystick *right_joystick = nullptr;
 	Button *left_joystick_button = nullptr;

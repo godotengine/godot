@@ -41,10 +41,6 @@
 #include "core/os/thread.h"
 #endif
 
-#include "scene/gui/virtual_controller.h"
-#include "scene/main/scene_tree.h"
-#include "scene/main/window.h"
-
 #include "thirdparty/gamepadmotionhelpers/GamepadMotion.hpp"
 
 #define STANDARD_GRAVITY 9.80665f
@@ -211,6 +207,7 @@ void Input::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_mode"), "set_mouse_mode", "get_mouse_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_accumulated_input"), "set_use_accumulated_input", "is_using_accumulated_input");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_mouse_from_touch"), "set_emulate_mouse_from_touch", "is_emulating_mouse_from_touch");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_touch_from_mouse"), "set_emulate_touch_from_mouse", "is_emulating_touch_from_mouse");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "virtual_controller_enabled"), "set_virtual_controller_enabled", "is_virtual_controller_enabled");
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
@@ -1298,21 +1295,6 @@ void Input::vibrate_handheld(int p_duration_ms, float p_amplitude) {
 
 void Input::set_virtual_controller_enabled(bool p_enabled) {
 	virtual_controller_enabled = p_enabled;
-
-	if (Engine::get_singleton()->is_editor_hint()) {
-		return;
-	}
-
-	if (!virtual_controller_enabled && virtual_controller != nullptr) {
-		virtual_controller->queue_free();
-		virtual_controller = nullptr;
-	}
-
-	if (virtual_controller_enabled && virtual_controller == nullptr) {
-		virtual_controller = memnew(VirtualController);
-		SceneTree::get_singleton()->get_root()->add_child(virtual_controller, false, Node::INTERNAL_MODE_FRONT);
-		virtual_controller->set_name("_VirtualController");
-	}
 }
 
 bool Input::is_virtual_controller_enabled() const {

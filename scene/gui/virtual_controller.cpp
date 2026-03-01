@@ -44,6 +44,11 @@ void VirtualController::_notification(int p_notification) {
 				return;
 			}
 
+			device_id = Input::get_singleton()->get_unused_joy_id();
+			Dictionary info;
+			info["mapping_handled"] = true;
+			Input::get_singleton()->joy_connection_changed(device_id, true, "Virtual Controller", "virtual_controller", info);
+
 			left_joystick->connect("motion", callable_mp(this, &VirtualController::_on_left_joystick_motion));
 			left_joystick_button->connect("button_down", callable_mp(this, &VirtualController::_on_left_joystick_pressed));
 			left_joystick_button->connect("button_up", callable_mp(this, &VirtualController::_on_left_joystick_released));
@@ -81,6 +86,22 @@ void VirtualController::_notification(int p_notification) {
 			guide_button->connect("button_down", callable_mp(this, &VirtualController::_on_guide_button_pressed));
 			guide_button->connect("button_up", callable_mp(this, &VirtualController::_on_guide_button_released));
 		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				return;
+			}
+
+			Input::get_singleton()->joy_connection_changed(device_id, false, "", "", Dictionary());
+			device_id = -1;
+		} break;
+
+		case NOTIFICATION_PROCESS: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				return;
+			}
+			set_visible(Input::get_singleton()->is_virtual_controller_enabled());
+		} break;
 	}
 }
 
@@ -89,7 +110,7 @@ void VirtualController::_create_button_event(JoyButton p_button, bool p_pressed)
 	button_event.instantiate();
 	button_event->set_button_index(p_button);
 	button_event->set_pressed(p_pressed);
-	button_event->set_device(-1);
+	button_event->set_device(device_id);
 
 	Input::get_singleton()->parse_input_event(button_event);
 }
@@ -99,7 +120,7 @@ void VirtualController::_create_motion_event(JoyAxis p_axis, float p_value) {
 	motion_event.instantiate();
 	motion_event->set_axis(p_axis);
 	motion_event->set_axis_value(p_value);
-	motion_event->set_device(-1);
+	motion_event->set_device(device_id);
 
 	Input::get_singleton()->parse_input_event(motion_event);
 }
@@ -255,6 +276,7 @@ VirtualController::VirtualController() {
 		return;
 	}
 
+	set_process(true);
 	set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
 	int margin = 20;
