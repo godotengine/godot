@@ -481,7 +481,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 
 		linear_attenuation = MAX(linear_attenuation, Math::db_to_linear(db_att));
 
-		FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> listener_volume_vector{};
+		FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> listener_volume_vector;
 		listener_volume_vector.resize_uninitialized(VOLUME_VECTOR_SIZE);
 		for (AudioFrame &frame : listener_volume_vector) {
 			frame = AudioFrame(0, 0);
@@ -505,7 +505,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 #ifndef PHYSICS_3D_DISABLED
 
 		if (area && area->is_using_reverb_bus()) {
-			FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> listener_reverb_vector{};
+			FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> listener_reverb_vector;
 			_calc_reverb_vol(area, listener_area_pos, listener_volume_vector, listener_reverb_vector);
 			_apply_max_volume_from_vector(output_reverb_vector, listener_reverb_vector);
 		}
@@ -568,7 +568,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		}
 	}
 
-	// if no listeners are in range and this was the case last frame, then we can skip setting any audio
+	// If no listeners are in range and this was the case last frame, then we can skip setting any audio.
 	const bool skip_setting_volumes = !has_any_listener_in_range && was_further_than_max_distance_last_frame;
 	was_further_than_max_distance_last_frame = !has_any_listener_in_range;
 
