@@ -51,6 +51,7 @@ void register_android_exporter() {
 	EDITOR_DEF_BASIC("export/android/debug_keystore_user", DEFAULT_ANDROID_KEYSTORE_DEBUG_USER);
 	EDITOR_DEF_BASIC("export/android/debug_keystore_pass", DEFAULT_ANDROID_KEYSTORE_DEBUG_PASSWORD);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/debug_keystore_pass", PROPERTY_HINT_PASSWORD));
+	EDITOR_DEF_BASIC("export/android/build/automatically_delete_build_directory", false);
 
 #ifdef ANDROID_ENABLED
 	EDITOR_DEF_BASIC("export/android/install_exported_apk", !OS::get_singleton()->has_feature("horizonos"));

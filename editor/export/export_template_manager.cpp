@@ -1404,8 +1404,43 @@ bool ExportTemplateManager::is_android_template_installed(const Ref<EditorExport
 	return DirAccess::exists(get_android_build_directory(p_preset));
 }
 
+bool ExportTemplateManager::is_android_build_version_valid(const Ref<EditorExportPreset> &p_preset) {
+	String build_version_path = get_android_build_directory(p_preset).get_base_dir().path_join(".build_version");
+	Ref<FileAccess> f = FileAccess::open(build_version_path, FileAccess::READ);
+	if (f.is_valid()) {
+		String current_version = get_android_template_identifier(p_preset);
+		String installed_version = f->get_line().strip_edges();
+		if (current_version == installed_version) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool ExportTemplateManager::can_install_android_template(const Ref<EditorExportPreset> &p_preset) {
 	return FileAccess::exists(get_android_source_zip(p_preset));
+}
+
+Error ExportTemplateManager::delete_android_build_directory(const Ref<EditorExportPreset> &p_preset) {
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	ERR_FAIL_COND_V(da.is_null(), ERR_CANT_CREATE);
+
+	String build_dir = get_android_build_directory(p_preset);
+	String parent_dir = build_dir.get_base_dir();
+	print_verbose("Deleting android build directory " + build_dir);
+
+	ProgressDialog::get_singleton()->add_task("deleting_android_build_dir", TTR("Deleting Android Build Directory"), 1);
+
+	// Make parent of the build dir (if it does not exist).
+	Error err = da->change_dir(parent_dir);
+	ERR_FAIL_COND_V(err != OK, err);
+
+	err = da->erase_contents_recursive();
+	ERR_FAIL_COND_V(err != OK, err);
+
+	ProgressDialog::get_singleton()->end_task("deleting_android_build_dir");
+	EditorFileSystem::get_singleton()->scan_changes();
+	return OK;
 }
 
 Error ExportTemplateManager::install_android_template(const Ref<EditorExportPreset> &p_preset) {
@@ -1423,6 +1458,7 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 
 	String build_dir = get_android_build_directory(p_preset);
 	String parent_dir = build_dir.get_base_dir();
+	print_verbose("Installing android build directory " + build_dir);
 
 	// Make parent of the build dir (if it does not exist).
 	da->make_dir_recursive(parent_dir);
