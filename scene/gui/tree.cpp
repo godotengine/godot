@@ -5274,10 +5274,18 @@ void Tree::_notification(int p_what) {
 		case NOTIFICATION_RESIZED:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (popup_edited_item != nullptr) {
+				Size2 scale = popup_editor->get_parent_viewport()->get_popup_base_transform().get_scale()
+                            * get_global_transform_with_canvas().get_scale();
+				real_t popup_scale = MIN(scale.x, scale.y);
 				Rect2 rect = _get_item_focus_rect(popup_edited_item);
+				rect.position *= popup_scale;
 
-				popup_editor->set_position(get_global_position() + rect.position);
-				popup_editor->set_size(rect.size);
+
+				popup_editor->set_position(get_screen_position() + rect.position);
+				popup_editor->set_size(rect.size * popup_scale);
+				if (!popup_editor->is_embedded()) {
+                    popup_editor->set_content_scale_factor(popup_scale);
+                }
 				popup_editor->child_controls_changed();
 			}
 		} break;
