@@ -57,6 +57,14 @@ public:
 	}
 };
 
+/**
+ * @brief A one-dimensional list-like datatype, roughly equivalent to `std::vector`.
+ * Use this as the "default" vector type.
+ *
+ * Uses copy-on-write (COW) semantics. This means it's generally slower but can
+ * be copied around almost for free. Use `LocalVector` instead where COW isn't
+ * needed and performance matters.
+ */
 template <typename T>
 class Vector {
 	friend class VectorWriteProxy<T>;

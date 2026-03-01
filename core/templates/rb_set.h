@@ -35,9 +35,20 @@
 
 #include <initializer_list>
 
-// based on the very nice implementation of rb-trees by:
-// https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
-
+/**
+ * @brief An unordered collection of items, roughly equivalent to `std::set`.
+ *
+ * In most cases, `HashSet` is better.
+ * Use `RBSet` instead only if the following conditions are met:
+ *
+ * - You need to keep an iterator or const pointer to a key, and you intend to add/remove elements in the meantime.
+ *
+ * - Iteration order does matter (via `operator<`).
+ *
+ * `RBSet` uses a very nice implementation of red-black trees based on
+ * https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html,
+ * which allows accesses to be faster.
+ */
 template <typename T, typename C = Comparator<T>, typename A = DefaultAllocator>
 class RBSet {
 	enum Color {
