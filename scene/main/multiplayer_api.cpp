@@ -295,6 +295,7 @@ void MultiplayerAPI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rpc", "peer", "object", "method", "arguments"), &MultiplayerAPI::_rpc_bind, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("object_configuration_add", "object", "configuration"), &MultiplayerAPI::object_configuration_add);
 	ClassDB::bind_method(D_METHOD("object_configuration_remove", "object", "configuration"), &MultiplayerAPI::object_configuration_remove);
+	ClassDB::bind_method(D_METHOD("disconnect_peer", "id"), &MultiplayerAPI::disconnect_peer);
 
 	ClassDB::bind_method(D_METHOD("get_peers"), &MultiplayerAPI::get_peer_ids);
 
@@ -376,6 +377,10 @@ Error MultiplayerAPIExtension::object_configuration_remove(Object *p_object, Var
 	return err;
 }
 
+void MultiplayerAPIExtension::disconnect_peer(int p_id) {
+	GDVIRTUAL_CALL(_disconnect_peer, p_id);
+}
+
 void MultiplayerAPIExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_poll);
 	GDVIRTUAL_BIND(_set_multiplayer_peer, "multiplayer_peer");
@@ -386,4 +391,5 @@ void MultiplayerAPIExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_remote_sender_id);
 	GDVIRTUAL_BIND(_object_configuration_add, "object", "configuration");
 	GDVIRTUAL_BIND(_object_configuration_remove, "object", "configuration");
+	GDVIRTUAL_BIND(_disconnect_peer, "id");
 }

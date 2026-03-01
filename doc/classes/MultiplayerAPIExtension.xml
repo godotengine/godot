@@ -82,6 +82,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_disconnect_peer" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Callback for [method MultiplayerAPI.disconnect_peer].
+			</description>
+		</method>
 		<method name="_get_multiplayer_peer" qualifiers="virtual">
 			<return type="MultiplayerPeer" />
 			<description>

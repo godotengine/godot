@@ -638,8 +638,6 @@ void SceneMultiplayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root_path"), &SceneMultiplayer::get_root_path);
 	ClassDB::bind_method(D_METHOD("clear"), &SceneMultiplayer::clear);
 
-	ClassDB::bind_method(D_METHOD("disconnect_peer", "id"), &SceneMultiplayer::disconnect_peer);
-
 	ClassDB::bind_method(D_METHOD("get_authenticating_peers"), &SceneMultiplayer::get_authenticating_peer_ids);
 	ClassDB::bind_method(D_METHOD("send_auth", "id", "data"), &SceneMultiplayer::send_auth);
 	ClassDB::bind_method(D_METHOD("complete_auth", "id"), &SceneMultiplayer::complete_auth);
