@@ -216,7 +216,8 @@ EditorNode *EditorNode::singleton = nullptr;
 
 static const String EDITOR_NODE_CONFIG_SECTION = "EditorNode";
 
-static const String REMOVE_ANDROID_BUILD_TEMPLATE_MESSAGE = TTRC("The Android build template is already installed in this project and it won't be overwritten.\nRemove the \"%s\" directory manually before attempting this operation again.");
+static const String ANDROID_BUILD_TEMPLATE_ALREADY_INSTALLED_MESSAGE = TTRC("The Android build template is already installed.");
+static const String REMOVE_ANDROID_BUILD_TEMPLATE_MESSAGE = TTRC("Remove the \"%s\" directory manually, or enable automatic deletion in the Editor Settings (Export > Android > Build > Automatically Delete Build Directory) before attempting this operation again.");
 static const String INSTALL_ANDROID_BUILD_TEMPLATE_MESSAGE = TTRC("This will set up your project for gradle Android builds by installing the source template to \"%s\".\nNote that in order to make gradle builds instead of using pre-built APKs, the \"Use Gradle Build\" option should be enabled in the Android export preset.");
 
 constexpr int LARGE_RESOURCE_WARNING_SIZE_THRESHOLD = 512'000; // 500 KB
@@ -3386,6 +3387,58 @@ void EditorNode::_android_explore_build_templates() {
 	OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(export_template_manager->get_android_build_directory(android_export_preset).get_base_dir()), true);
 }
 
+void EditorNode::_android_remove_build_templates(bool p_prompt_for_removal) {
+	String removal_text = ANDROID_BUILD_TEMPLATE_ALREADY_INSTALLED_MESSAGE;
+	if (p_prompt_for_removal) {
+		removal_text += "\n" + vformat(TTR(REMOVE_ANDROID_BUILD_TEMPLATE_MESSAGE), export_template_manager->get_android_build_directory(android_export_preset));
+	}
+	remove_android_build_template->set_text(removal_text);
+	remove_android_build_template->popup_centered_clamped(Size2(600, 200) * EDSCALE, 0.7);
+}
+
+Error EditorNode::setup_android_build_template(const Ref<EditorExportPreset> &p_preset, bool p_confirmed) {
+	android_export_preset = p_preset;
+	if (export_template_manager->is_android_template_installed(p_preset)) {
+		if (export_template_manager->is_android_build_version_valid(p_preset)) {
+			if (!p_confirmed) {
+				// The setup is valid, maybe the user wants to delete and reinstall it...
+				_android_remove_build_templates(false);
+			}
+			return OK;
+		}
+
+		// If we get here, then the installed android build directory is no longer valid (e.g. editor upgrade).
+		// Let's check whether we can automatically delete the build directory. If not, we return an error and let the
+		// user handle the deletion.
+		bool can_delete_automatically = EDITOR_GET("export/android/build/automatically_delete_build_directory");
+		if (can_delete_automatically) {
+			if (!p_confirmed) {
+				install_android_build_template->popup_centered();
+				return ERR_UNCONFIGURED;
+			}
+
+			if (export_template_manager->delete_android_build_directory(android_export_preset) == OK) {
+				return setup_android_build_template(android_export_preset, p_confirmed);
+			}
+		}
+
+		// If we get here, we need to prompt the user to delete the android build directory, either because we cannot do
+		// it automatically, or because we tried to do it automatically and failed.
+		_android_remove_build_templates(true);
+		return ERR_UNCONFIGURED;
+	} else if (!export_template_manager->can_install_android_template(p_preset)) {
+		gradle_build_manage_templates->popup_centered();
+	} else {
+		if (p_confirmed) {
+			return export_template_manager->install_android_template(p_preset);
+		} else {
+			install_android_build_template->popup_centered();
+		}
+	}
+
+	return ERR_UNCONFIGURED;
+}
+
 static String _get_unsaved_scene_dialog_text(String p_scene_filename, uint64_t p_opened_timestamp) {
 	const uint64_t scene_modified_time = FileAccess::get_modified_time(p_scene_filename);
 	String unsaved_message;
@@ -3722,14 +3775,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		case PROJECT_INSTALL_ANDROID_SOURCE: {
 			if (p_confirmed) {
-				if (export_template_manager->is_android_template_installed(android_export_preset)) {
-					remove_android_build_template->set_text(vformat(TTR(REMOVE_ANDROID_BUILD_TEMPLATE_MESSAGE), export_template_manager->get_android_build_directory(android_export_preset)));
-					remove_android_build_template->popup_centered();
-				} else if (!export_template_manager->can_install_android_template(android_export_preset)) {
-					gradle_build_manage_templates->popup_centered();
-				} else {
-					export_template_manager->install_android_template(android_export_preset);
-				}
+				setup_android_build_template(android_export_preset, p_confirmed);
 			} else {
 				bool has_custom_gradle_build = false;
 				choose_android_export_profile->clear();
@@ -3753,14 +3799,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				} else {
 					choose_android_export_profile->hide();
 
-					if (export_template_manager->is_android_template_installed(android_export_preset)) {
-						remove_android_build_template->set_text(vformat(TTR(REMOVE_ANDROID_BUILD_TEMPLATE_MESSAGE), export_template_manager->get_android_build_directory(android_export_preset)));
-						remove_android_build_template->popup_centered();
-					} else if (export_template_manager->can_install_android_template(android_export_preset)) {
-						install_android_build_template->popup_centered();
-					} else {
-						gradle_build_manage_templates->popup_centered();
-					}
+					setup_android_build_template(android_export_preset, p_confirmed);
 				}
 			}
 		} break;
@@ -9372,6 +9411,7 @@ EditorNode::EditorNode() {
 
 	remove_android_build_template = memnew(ConfirmationDialog);
 	remove_android_build_template->set_ok_button_text(OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN));
+	remove_android_build_template->set_autowrap(true);
 	remove_android_build_template->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_android_explore_build_templates));
 	gui_base->add_child(remove_android_build_template);
 
