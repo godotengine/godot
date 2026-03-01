@@ -484,6 +484,7 @@ void WebSocketMultiplayerPeer::disconnect_peer(int p_peer_id, bool p_force) {
 	peers_map[p_peer_id]->close();
 	if (p_force) {
 		peers_map.erase(p_peer_id);
+		emit_signal(SNAME("peer_disconnected"), p_peer_id);
 		if (!is_server()) {
 			_clear();
 		}

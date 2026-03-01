@@ -346,6 +346,7 @@ void WebRTCMultiplayerPeer::disconnect_peer(int p_peer_id, bool p_force) {
 	ERR_FAIL_COND(!peer_map.has(p_peer_id));
 	if (p_force) {
 		peer_map.erase(p_peer_id);
+		emit_signal(SNAME("peer_disconnected"), p_peer_id);
 		if (network_mode == MODE_CLIENT && p_peer_id == TARGET_PEER_SERVER) {
 			connection_status = CONNECTION_DISCONNECTED;
 		}

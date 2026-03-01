@@ -280,6 +280,7 @@ void ENetMultiplayerPeer::disconnect_peer(int p_peer, bool p_force) {
 		if (hosts.has(p_peer)) {
 			hosts.erase(p_peer);
 		}
+		emit_signal(SNAME("peer_disconnected"), p_peer);
 		if (active_mode == MODE_CLIENT) {
 			hosts.clear(); // Avoid flushing again.
 			close();
