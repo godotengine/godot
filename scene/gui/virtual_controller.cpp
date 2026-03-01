@@ -33,6 +33,261 @@
 #include "core/input/input.h"
 #include "scene/gui/virtual_joystick.h"
 
+void VirtualController::_setup_controls() {
+	int margin = 20;
+
+	float min_size = MIN(get_size().x, get_size().y);
+
+	Size2 joystick_size(min_size * 0.2f, min_size * 0.2f);
+
+	left_joystick = memnew(VirtualJoystick);
+	left_joystick->set_joystick_size(joystick_size.x);
+	left_joystick->set_h_grow_direction(Control::GROW_DIRECTION_END);
+	left_joystick->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	left_joystick->set_custom_minimum_size(joystick_size);
+	left_joystick->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
+	left_joystick->set_offset(Side::SIDE_BOTTOM, -margin);
+	left_joystick->set_offset(Side::SIDE_LEFT, 200);
+	add_child(left_joystick, true, Node::INTERNAL_MODE_FRONT);
+
+	right_joystick = memnew(VirtualJoystick);
+	right_joystick->set_joystick_size(joystick_size.x);
+	right_joystick->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	right_joystick->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	right_joystick->set_custom_minimum_size(joystick_size);
+	right_joystick->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT);
+	right_joystick->set_offset(Side::SIDE_BOTTOM, -margin);
+	right_joystick->set_offset(Side::SIDE_RIGHT, -200);
+	add_child(right_joystick, true, Node::INTERNAL_MODE_FRONT);
+
+	Size2 button_size(min_size * 0.1f, min_size * 0.1f);
+
+	left_joystick_button = memnew(Button);
+	left_joystick_button->set_text("L3");
+	left_joystick_button->set_focus_mode(FOCUS_NONE);
+	left_joystick_button->set_h_grow_direction(Control::GROW_DIRECTION_END);
+	left_joystick_button->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	left_joystick_button->set_custom_minimum_size(button_size);
+	left_joystick_button->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
+	left_joystick_button->set_offset(SIDE_BOTTOM, -margin);
+	left_joystick_button->set_offset(SIDE_LEFT, margin);
+	add_child(left_joystick_button, true, Node::INTERNAL_MODE_FRONT);
+
+	right_joystick_button = memnew(Button);
+	right_joystick_button->set_text("R3");
+	right_joystick_button->set_focus_mode(FOCUS_NONE);
+	right_joystick_button->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	right_joystick_button->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	right_joystick_button->set_custom_minimum_size(button_size);
+	right_joystick_button->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT);
+	right_joystick_button->set_offset(SIDE_BOTTOM, -margin);
+	right_joystick_button->set_offset(SIDE_RIGHT, -margin);
+	add_child(right_joystick_button, true, Node::INTERNAL_MODE_FRONT);
+
+	float start_bottom_offset = min_size * -0.25f;
+
+	dpad_down = memnew(Button);
+	dpad_down->set_text("D");
+	dpad_down->set_focus_mode(FOCUS_NONE);
+	dpad_down->set_h_grow_direction(Control::GROW_DIRECTION_END);
+	dpad_down->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	dpad_down->set_custom_minimum_size(button_size);
+	dpad_down->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
+	dpad_down->set_offset(SIDE_BOTTOM, start_bottom_offset);
+	dpad_down->set_offset(SIDE_LEFT, margin + button_size.x);
+	add_child(dpad_down, true, Node::INTERNAL_MODE_FRONT);
+
+	dpad_up = memnew(Button);
+	dpad_up->set_text("U");
+	dpad_up->set_focus_mode(FOCUS_NONE);
+	dpad_up->set_h_grow_direction(Control::GROW_DIRECTION_END);
+	dpad_up->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	dpad_up->set_custom_minimum_size(button_size);
+	dpad_up->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
+	dpad_up->set_offset(SIDE_BOTTOM, start_bottom_offset - 2 * button_size.y);
+	dpad_up->set_offset(SIDE_LEFT, margin + button_size.x);
+	add_child(dpad_up, true, Node::INTERNAL_MODE_FRONT);
+
+	dpad_left = memnew(Button);
+	dpad_left->set_text("L");
+	dpad_left->set_focus_mode(FOCUS_NONE);
+	dpad_left->set_h_grow_direction(Control::GROW_DIRECTION_END);
+	dpad_left->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	dpad_left->set_custom_minimum_size(button_size);
+	dpad_left->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
+	dpad_left->set_offset(SIDE_BOTTOM, start_bottom_offset - button_size.y);
+	dpad_left->set_offset(SIDE_LEFT, margin);
+	add_child(dpad_left, true, Node::INTERNAL_MODE_FRONT);
+
+	dpad_right = memnew(Button);
+	dpad_right->set_text("R");
+	dpad_right->set_focus_mode(FOCUS_NONE);
+	dpad_right->set_h_grow_direction(Control::GROW_DIRECTION_END);
+	dpad_right->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	dpad_right->set_custom_minimum_size(button_size);
+	dpad_right->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
+	dpad_right->set_offset(SIDE_BOTTOM, start_bottom_offset - button_size.y);
+	dpad_right->set_offset(SIDE_LEFT, margin + 2 * button_size.x);
+	add_child(dpad_right, true, Node::INTERNAL_MODE_FRONT);
+
+	button_a = memnew(Button);
+	button_a->set_text("A");
+	button_a->set_focus_mode(FOCUS_NONE);
+	button_a->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	button_a->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	button_a->set_custom_minimum_size(button_size);
+	button_a->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT);
+	button_a->set_offset(SIDE_BOTTOM, start_bottom_offset);
+	button_a->set_offset(SIDE_RIGHT, -margin - button_size.x);
+	add_child(button_a, true, Node::INTERNAL_MODE_FRONT);
+
+	button_y = memnew(Button);
+	button_y->set_text("Y");
+	button_y->set_focus_mode(FOCUS_NONE);
+	button_y->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	button_y->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	button_y->set_custom_minimum_size(button_size);
+	button_y->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT);
+	button_y->set_offset(SIDE_BOTTOM, start_bottom_offset - 2 * button_size.y);
+	button_y->set_offset(SIDE_RIGHT, -margin - button_size.x);
+	add_child(button_y, true, Node::INTERNAL_MODE_FRONT);
+
+	button_b = memnew(Button);
+	button_b->set_text("B");
+	button_b->set_focus_mode(FOCUS_NONE);
+	button_b->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	button_b->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	button_b->set_custom_minimum_size(button_size);
+	button_b->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT);
+	button_b->set_offset(SIDE_BOTTOM, start_bottom_offset - button_size.y);
+	button_b->set_offset(SIDE_RIGHT, -margin);
+	add_child(button_b, true, Node::INTERNAL_MODE_FRONT);
+
+	button_x = memnew(Button);
+	button_x->set_text("X");
+	button_x->set_focus_mode(FOCUS_NONE);
+	button_x->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	button_x->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	button_x->set_custom_minimum_size(button_size);
+	button_x->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT);
+	button_x->set_offset(SIDE_BOTTOM, start_bottom_offset - button_size.y);
+	button_x->set_offset(SIDE_RIGHT, -margin - 2 * button_size.x);
+	add_child(button_x, true, Node::INTERNAL_MODE_FRONT);
+
+	left_trigger = memnew(Button);
+	left_trigger->set_text("LT");
+	left_trigger->set_focus_mode(FOCUS_NONE);
+	left_trigger->set_h_grow_direction(Control::GROW_DIRECTION_END);
+	left_trigger->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	left_trigger->set_custom_minimum_size(button_size);
+	left_trigger->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
+	left_trigger->set_offset(SIDE_BOTTOM, start_bottom_offset - 3 * button_size.y - margin);
+	left_trigger->set_offset(SIDE_LEFT, margin);
+	add_child(left_trigger, true, Node::INTERNAL_MODE_FRONT);
+
+	left_shoulder = memnew(Button);
+	left_shoulder->set_text("LB");
+	left_shoulder->set_focus_mode(FOCUS_NONE);
+	left_shoulder->set_h_grow_direction(Control::GROW_DIRECTION_END);
+	left_shoulder->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	left_shoulder->set_custom_minimum_size(button_size);
+	left_shoulder->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
+	left_shoulder->set_offset(SIDE_BOTTOM, start_bottom_offset - 3 * button_size.y - margin);
+	left_shoulder->set_offset(SIDE_LEFT, margin + 2 * button_size.x);
+	add_child(left_shoulder, true, Node::INTERNAL_MODE_FRONT);
+
+	right_trigger = memnew(Button);
+	right_trigger->set_text("RT");
+	right_trigger->set_focus_mode(FOCUS_NONE);
+	right_trigger->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	right_trigger->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	right_trigger->set_custom_minimum_size(button_size);
+	right_trigger->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT);
+	right_trigger->set_offset(SIDE_BOTTOM, start_bottom_offset - 3 * button_size.y - margin);
+	right_trigger->set_offset(SIDE_RIGHT, -margin);
+	add_child(right_trigger, true, Node::INTERNAL_MODE_FRONT);
+
+	right_shoulder = memnew(Button);
+	right_shoulder->set_text("RB");
+	right_shoulder->set_focus_mode(FOCUS_NONE);
+	right_shoulder->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	right_shoulder->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	right_shoulder->set_custom_minimum_size(button_size);
+	right_shoulder->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT);
+	right_shoulder->set_offset(SIDE_BOTTOM, start_bottom_offset - 3 * button_size.y - margin);
+	right_shoulder->set_offset(SIDE_RIGHT, -margin - 2 * button_size.x);
+	add_child(right_shoulder, true, Node::INTERNAL_MODE_FRONT);
+
+	guide_button = memnew(Button);
+	guide_button->set_text("G");
+	guide_button->set_focus_mode(FOCUS_NONE);
+	guide_button->set_h_grow_direction(Control::GROW_DIRECTION_BOTH);
+	guide_button->set_v_grow_direction(Control::GROW_DIRECTION_END);
+	guide_button->set_custom_minimum_size(button_size);
+	guide_button->set_anchors_and_offsets_preset(Control::PRESET_CENTER_TOP);
+	guide_button->set_offset(SIDE_TOP, margin);
+	add_child(guide_button, true, Node::INTERNAL_MODE_FRONT);
+
+	back_button = memnew(Button);
+	back_button->set_text("<-");
+	back_button->set_focus_mode(FOCUS_NONE);
+	back_button->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	back_button->set_v_grow_direction(Control::GROW_DIRECTION_END);
+	back_button->set_custom_minimum_size(button_size);
+	back_button->set_anchors_and_offsets_preset(Control::PRESET_CENTER_TOP);
+	back_button->set_offset(SIDE_TOP, margin);
+	back_button->set_offset(SIDE_RIGHT, -button_size.x - margin);
+	add_child(back_button, true, Node::INTERNAL_MODE_FRONT);
+
+	start_button = memnew(Button);
+	start_button->set_text("->");
+	start_button->set_focus_mode(FOCUS_NONE);
+	start_button->set_h_grow_direction(Control::GROW_DIRECTION_END);
+	start_button->set_v_grow_direction(Control::GROW_DIRECTION_END);
+	start_button->set_custom_minimum_size(button_size);
+	start_button->set_anchors_and_offsets_preset(Control::PRESET_CENTER_TOP);
+	start_button->set_offset(SIDE_TOP, margin);
+	start_button->set_offset(SIDE_LEFT, button_size.x + margin);
+	add_child(start_button, true, Node::INTERNAL_MODE_FRONT);
+
+	left_joystick->connect("motion", callable_mp(this, &VirtualController::_on_left_joystick_motion));
+	left_joystick_button->connect("button_down", callable_mp(this, &VirtualController::_on_left_joystick_pressed));
+	left_joystick_button->connect("button_up", callable_mp(this, &VirtualController::_on_left_joystick_released));
+	right_joystick->connect("motion", callable_mp(this, &VirtualController::_on_right_joystick_motion));
+	right_joystick_button->connect("button_down", callable_mp(this, &VirtualController::_on_right_joystick_pressed));
+	right_joystick_button->connect("button_up", callable_mp(this, &VirtualController::_on_right_joystick_released));
+	dpad_up->connect("button_down", callable_mp(this, &VirtualController::_on_dpad_up_pressed));
+	dpad_up->connect("button_up", callable_mp(this, &VirtualController::_on_dpad_up_released));
+	dpad_down->connect("button_down", callable_mp(this, &VirtualController::_on_dpad_down_pressed));
+	dpad_down->connect("button_up", callable_mp(this, &VirtualController::_on_dpad_down_released));
+	dpad_left->connect("button_down", callable_mp(this, &VirtualController::_on_dpad_left_pressed));
+	dpad_left->connect("button_up", callable_mp(this, &VirtualController::_on_dpad_left_released));
+	dpad_right->connect("button_down", callable_mp(this, &VirtualController::_on_dpad_right_pressed));
+	dpad_right->connect("button_up", callable_mp(this, &VirtualController::_on_dpad_right_released));
+	button_a->connect("button_down", callable_mp(this, &VirtualController::_on_button_a_pressed));
+	button_a->connect("button_up", callable_mp(this, &VirtualController::_on_button_a_released));
+	button_b->connect("button_down", callable_mp(this, &VirtualController::_on_button_b_pressed));
+	button_b->connect("button_up", callable_mp(this, &VirtualController::_on_button_b_released));
+	button_x->connect("button_down", callable_mp(this, &VirtualController::_on_button_x_pressed));
+	button_x->connect("button_up", callable_mp(this, &VirtualController::_on_button_x_released));
+	button_y->connect("button_down", callable_mp(this, &VirtualController::_on_button_y_pressed));
+	button_y->connect("button_up", callable_mp(this, &VirtualController::_on_button_y_released));
+	left_shoulder->connect("button_down", callable_mp(this, &VirtualController::_on_left_shoulder_pressed));
+	left_shoulder->connect("button_up", callable_mp(this, &VirtualController::_on_left_shoulder_released));
+	right_shoulder->connect("button_down", callable_mp(this, &VirtualController::_on_right_shoulder_pressed));
+	right_shoulder->connect("button_up", callable_mp(this, &VirtualController::_on_right_shoulder_released));
+	left_trigger->connect("button_down", callable_mp(this, &VirtualController::_on_left_trigger_pressed));
+	left_trigger->connect("button_up", callable_mp(this, &VirtualController::_on_left_trigger_released));
+	right_trigger->connect("button_down", callable_mp(this, &VirtualController::_on_right_trigger_pressed));
+	right_trigger->connect("button_up", callable_mp(this, &VirtualController::_on_right_trigger_released));
+	start_button->connect("button_down", callable_mp(this, &VirtualController::_on_start_button_pressed));
+	start_button->connect("button_up", callable_mp(this, &VirtualController::_on_start_button_released));
+	back_button->connect("button_down", callable_mp(this, &VirtualController::_on_back_button_pressed));
+	back_button->connect("button_up", callable_mp(this, &VirtualController::_on_back_button_released));
+	guide_button->connect("button_down", callable_mp(this, &VirtualController::_on_guide_button_pressed));
+	guide_button->connect("button_up", callable_mp(this, &VirtualController::_on_guide_button_released));
+}
+
 void VirtualController::_bind_methods() {
 }
 
@@ -48,43 +303,6 @@ void VirtualController::_notification(int p_notification) {
 			Dictionary info;
 			info["mapping_handled"] = true;
 			Input::get_singleton()->joy_connection_changed(device_id, true, "Virtual Controller", "virtual_controller", info);
-
-			left_joystick->connect("motion", callable_mp(this, &VirtualController::_on_left_joystick_motion));
-			left_joystick_button->connect("button_down", callable_mp(this, &VirtualController::_on_left_joystick_pressed));
-			left_joystick_button->connect("button_up", callable_mp(this, &VirtualController::_on_left_joystick_released));
-			right_joystick->connect("motion", callable_mp(this, &VirtualController::_on_right_joystick_motion));
-			right_joystick_button->connect("button_down", callable_mp(this, &VirtualController::_on_right_joystick_pressed));
-			right_joystick_button->connect("button_up", callable_mp(this, &VirtualController::_on_right_joystick_released));
-			dpad_up->connect("button_down", callable_mp(this, &VirtualController::_on_dpad_up_pressed));
-			dpad_up->connect("button_up", callable_mp(this, &VirtualController::_on_dpad_up_released));
-			dpad_down->connect("button_down", callable_mp(this, &VirtualController::_on_dpad_down_pressed));
-			dpad_down->connect("button_up", callable_mp(this, &VirtualController::_on_dpad_down_released));
-			dpad_left->connect("button_down", callable_mp(this, &VirtualController::_on_dpad_left_pressed));
-			dpad_left->connect("button_up", callable_mp(this, &VirtualController::_on_dpad_left_released));
-			dpad_right->connect("button_down", callable_mp(this, &VirtualController::_on_dpad_right_pressed));
-			dpad_right->connect("button_up", callable_mp(this, &VirtualController::_on_dpad_right_released));
-			button_a->connect("button_down", callable_mp(this, &VirtualController::_on_button_a_pressed));
-			button_a->connect("button_up", callable_mp(this, &VirtualController::_on_button_a_released));
-			button_b->connect("button_down", callable_mp(this, &VirtualController::_on_button_b_pressed));
-			button_b->connect("button_up", callable_mp(this, &VirtualController::_on_button_b_released));
-			button_x->connect("button_down", callable_mp(this, &VirtualController::_on_button_x_pressed));
-			button_x->connect("button_up", callable_mp(this, &VirtualController::_on_button_x_released));
-			button_y->connect("button_down", callable_mp(this, &VirtualController::_on_button_y_pressed));
-			button_y->connect("button_up", callable_mp(this, &VirtualController::_on_button_y_released));
-			left_shoulder->connect("button_down", callable_mp(this, &VirtualController::_on_left_shoulder_pressed));
-			left_shoulder->connect("button_up", callable_mp(this, &VirtualController::_on_left_shoulder_released));
-			right_shoulder->connect("button_down", callable_mp(this, &VirtualController::_on_right_shoulder_pressed));
-			right_shoulder->connect("button_up", callable_mp(this, &VirtualController::_on_right_shoulder_released));
-			left_trigger->connect("button_down", callable_mp(this, &VirtualController::_on_left_trigger_pressed));
-			left_trigger->connect("button_up", callable_mp(this, &VirtualController::_on_left_trigger_released));
-			right_trigger->connect("button_down", callable_mp(this, &VirtualController::_on_right_trigger_pressed));
-			right_trigger->connect("button_up", callable_mp(this, &VirtualController::_on_right_trigger_released));
-			start_button->connect("button_down", callable_mp(this, &VirtualController::_on_start_button_pressed));
-			start_button->connect("button_up", callable_mp(this, &VirtualController::_on_start_button_released));
-			back_button->connect("button_down", callable_mp(this, &VirtualController::_on_back_button_pressed));
-			back_button->connect("button_up", callable_mp(this, &VirtualController::_on_back_button_released));
-			guide_button->connect("button_down", callable_mp(this, &VirtualController::_on_guide_button_pressed));
-			guide_button->connect("button_up", callable_mp(this, &VirtualController::_on_guide_button_released));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -280,213 +498,5 @@ VirtualController::VirtualController() {
 	set_focus_mode(FOCUS_NONE);
 	set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
-	int margin = 20;
-
-	left_joystick = memnew(VirtualJoystick);
-	left_joystick->set_joystick_size(150);
-	left_joystick->set_h_grow_direction(Control::GROW_DIRECTION_END);
-	left_joystick->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	left_joystick->set_custom_minimum_size(Size2(150, 150));
-	left_joystick->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
-	left_joystick->set_offset(Side::SIDE_BOTTOM, -margin);
-	left_joystick->set_offset(Side::SIDE_LEFT, 200);
-	add_child(left_joystick, true, Node::INTERNAL_MODE_FRONT);
-
-	right_joystick = memnew(VirtualJoystick);
-	right_joystick->set_joystick_size(150);
-	right_joystick->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	right_joystick->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	right_joystick->set_custom_minimum_size(Size2(150, 150));
-	right_joystick->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT);
-	right_joystick->set_offset(Side::SIDE_BOTTOM, -margin);
-	right_joystick->set_offset(Side::SIDE_RIGHT, -200);
-	add_child(right_joystick, true, Node::INTERNAL_MODE_FRONT);
-
-	Size2 button_size(80, 80);
-
-	left_joystick_button = memnew(Button);
-	left_joystick_button->set_text("L3");
-	left_joystick_button->set_focus_mode(FOCUS_NONE);
-	left_joystick_button->set_h_grow_direction(Control::GROW_DIRECTION_END);
-	left_joystick_button->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	left_joystick_button->set_custom_minimum_size(button_size);
-	left_joystick_button->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
-	left_joystick_button->set_offset(SIDE_BOTTOM, -margin);
-	left_joystick_button->set_offset(SIDE_LEFT, margin);
-	add_child(left_joystick_button, true, Node::INTERNAL_MODE_FRONT);
-
-	right_joystick_button = memnew(Button);
-	right_joystick_button->set_text("R3");
-	right_joystick_button->set_focus_mode(FOCUS_NONE);
-	right_joystick_button->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	right_joystick_button->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	right_joystick_button->set_custom_minimum_size(button_size);
-	right_joystick_button->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT);
-	right_joystick_button->set_offset(SIDE_BOTTOM, -margin);
-	right_joystick_button->set_offset(SIDE_RIGHT, -margin);
-	add_child(right_joystick_button, true, Node::INTERNAL_MODE_FRONT);
-
-	dpad_down = memnew(Button);
-	dpad_down->set_text("D");
-	dpad_down->set_focus_mode(FOCUS_NONE);
-	dpad_down->set_h_grow_direction(Control::GROW_DIRECTION_END);
-	dpad_down->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	dpad_down->set_custom_minimum_size(button_size);
-	dpad_down->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
-	dpad_down->set_offset(SIDE_BOTTOM, -150);
-	dpad_down->set_offset(SIDE_LEFT, margin + button_size.x);
-	add_child(dpad_down, true, Node::INTERNAL_MODE_FRONT);
-
-	dpad_up = memnew(Button);
-	dpad_up->set_text("U");
-	dpad_up->set_focus_mode(FOCUS_NONE);
-	dpad_up->set_h_grow_direction(Control::GROW_DIRECTION_END);
-	dpad_up->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	dpad_up->set_custom_minimum_size(button_size);
-	dpad_up->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
-	dpad_up->set_offset(SIDE_BOTTOM, -150 - 2 * button_size.y);
-	dpad_up->set_offset(SIDE_LEFT, margin + button_size.x);
-	add_child(dpad_up, true, Node::INTERNAL_MODE_FRONT);
-
-	dpad_left = memnew(Button);
-	dpad_left->set_text("L");
-	dpad_left->set_focus_mode(FOCUS_NONE);
-	dpad_left->set_h_grow_direction(Control::GROW_DIRECTION_END);
-	dpad_left->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	dpad_left->set_custom_minimum_size(button_size);
-	dpad_left->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
-	dpad_left->set_offset(SIDE_BOTTOM, -150 - button_size.y);
-	dpad_left->set_offset(SIDE_LEFT, margin);
-	add_child(dpad_left, true, Node::INTERNAL_MODE_FRONT);
-
-	dpad_right = memnew(Button);
-	dpad_right->set_text("R");
-	dpad_right->set_focus_mode(FOCUS_NONE);
-	dpad_right->set_h_grow_direction(Control::GROW_DIRECTION_END);
-	dpad_right->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	dpad_right->set_custom_minimum_size(button_size);
-	dpad_right->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
-	dpad_right->set_offset(SIDE_BOTTOM, -150 - button_size.y);
-	dpad_right->set_offset(SIDE_LEFT, margin + 2 * button_size.x);
-	add_child(dpad_right, true, Node::INTERNAL_MODE_FRONT);
-
-	button_a = memnew(Button);
-	button_a->set_text("A");
-	button_a->set_focus_mode(FOCUS_NONE);
-	button_a->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	button_a->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	button_a->set_custom_minimum_size(button_size);
-	button_a->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT);
-	button_a->set_offset(SIDE_BOTTOM, -150);
-	button_a->set_offset(SIDE_RIGHT, -margin - button_size.x);
-	add_child(button_a, true, Node::INTERNAL_MODE_FRONT);
-
-	button_y = memnew(Button);
-	button_y->set_text("Y");
-	button_y->set_focus_mode(FOCUS_NONE);
-	button_y->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	button_y->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	button_y->set_custom_minimum_size(button_size);
-	button_y->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT);
-	button_y->set_offset(SIDE_BOTTOM, -150 - 2 * button_size.y);
-	button_y->set_offset(SIDE_RIGHT, -margin - button_size.x);
-	add_child(button_y, true, Node::INTERNAL_MODE_FRONT);
-
-	button_b = memnew(Button);
-	button_b->set_text("B");
-	button_b->set_focus_mode(FOCUS_NONE);
-	button_b->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	button_b->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	button_b->set_custom_minimum_size(button_size);
-	button_b->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT);
-	button_b->set_offset(SIDE_BOTTOM, -150 - button_size.y);
-	button_b->set_offset(SIDE_RIGHT, -margin);
-	add_child(button_b, true, Node::INTERNAL_MODE_FRONT);
-
-	button_x = memnew(Button);
-	button_x->set_text("X");
-	button_x->set_focus_mode(FOCUS_NONE);
-	button_x->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	button_x->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	button_x->set_custom_minimum_size(button_size);
-	button_x->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT);
-	button_x->set_offset(SIDE_BOTTOM, -150 - button_size.y);
-	button_x->set_offset(SIDE_RIGHT, -margin - 2 * button_size.x);
-	add_child(button_x, true, Node::INTERNAL_MODE_FRONT);
-
-	left_trigger = memnew(Button);
-	left_trigger->set_text("LT");
-	left_trigger->set_focus_mode(FOCUS_NONE);
-	left_trigger->set_h_grow_direction(Control::GROW_DIRECTION_END);
-	left_trigger->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	left_trigger->set_custom_minimum_size(button_size);
-	left_trigger->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
-	left_trigger->set_offset(SIDE_BOTTOM, -150 - 3 * button_size.y - margin);
-	left_trigger->set_offset(SIDE_LEFT, margin);
-	add_child(left_trigger, true, Node::INTERNAL_MODE_FRONT);
-
-	left_shoulder = memnew(Button);
-	left_shoulder->set_text("LB");
-	left_shoulder->set_focus_mode(FOCUS_NONE);
-	left_shoulder->set_h_grow_direction(Control::GROW_DIRECTION_END);
-	left_shoulder->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	left_shoulder->set_custom_minimum_size(button_size);
-	left_shoulder->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
-	left_shoulder->set_offset(SIDE_BOTTOM, -150 - 3 * button_size.y - margin);
-	left_shoulder->set_offset(SIDE_LEFT, margin + 2 * button_size.x);
-	add_child(left_shoulder, true, Node::INTERNAL_MODE_FRONT);
-
-	right_trigger = memnew(Button);
-	right_trigger->set_text("RT");
-	right_trigger->set_focus_mode(FOCUS_NONE);
-	right_trigger->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	right_trigger->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	right_trigger->set_custom_minimum_size(button_size);
-	right_trigger->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT);
-	right_trigger->set_offset(SIDE_BOTTOM, -150 - 3 * button_size.y - margin);
-	right_trigger->set_offset(SIDE_RIGHT, -margin);
-	add_child(right_trigger, true, Node::INTERNAL_MODE_FRONT);
-
-	right_shoulder = memnew(Button);
-	right_shoulder->set_text("RB");
-	right_shoulder->set_focus_mode(FOCUS_NONE);
-	right_shoulder->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	right_shoulder->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	right_shoulder->set_custom_minimum_size(button_size);
-	right_shoulder->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT);
-	right_shoulder->set_offset(SIDE_BOTTOM, -150 - 3 * button_size.y - margin);
-	right_shoulder->set_offset(SIDE_RIGHT, -margin - 2 * button_size.x);
-	add_child(right_shoulder, true, Node::INTERNAL_MODE_FRONT);
-
-	guide_button = memnew(Button);
-	guide_button->set_text("G");
-	guide_button->set_focus_mode(FOCUS_NONE);
-	guide_button->set_h_grow_direction(Control::GROW_DIRECTION_BOTH);
-	guide_button->set_v_grow_direction(Control::GROW_DIRECTION_END);
-	guide_button->set_custom_minimum_size(button_size);
-	guide_button->set_anchors_and_offsets_preset(Control::PRESET_CENTER_TOP);
-	guide_button->set_offset(SIDE_TOP, margin);
-	add_child(guide_button, true, Node::INTERNAL_MODE_FRONT);
-
-	back_button = memnew(Button);
-	back_button->set_text("<-");
-	back_button->set_focus_mode(FOCUS_NONE);
-	back_button->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	back_button->set_v_grow_direction(Control::GROW_DIRECTION_END);
-	back_button->set_custom_minimum_size(button_size);
-	back_button->set_anchors_and_offsets_preset(Control::PRESET_CENTER_TOP);
-	back_button->set_offset(SIDE_TOP, margin);
-	back_button->set_offset(SIDE_RIGHT, -button_size.x - margin);
-	add_child(back_button, true, Node::INTERNAL_MODE_FRONT);
-
-	start_button = memnew(Button);
-	start_button->set_text("->");
-	start_button->set_focus_mode(FOCUS_NONE);
-	start_button->set_h_grow_direction(Control::GROW_DIRECTION_END);
-	start_button->set_v_grow_direction(Control::GROW_DIRECTION_END);
-	start_button->set_custom_minimum_size(button_size);
-	start_button->set_anchors_and_offsets_preset(Control::PRESET_CENTER_TOP);
-	start_button->set_offset(SIDE_TOP, margin);
-	start_button->set_offset(SIDE_LEFT, button_size.x + margin);
-	add_child(start_button, true, Node::INTERNAL_MODE_FRONT);
+	callable_mp(this, &VirtualController::_setup_controls).call_deferred();
 }
