@@ -34,21 +34,11 @@
 #include "core/os/mutex.h"
 #include "core/string/print_string.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/rid.h"
 #include "core/templates/safe_refcount.h"
+#include "core/variant/variant.h"
 
 #include <cstdio>
 #include <typeinfo> // IWYU pragma: keep // Used in macro.
-
-#ifdef SANITIZERS_ENABLED
-#ifdef __has_feature
-#if __has_feature(thread_sanitizer)
-#define TSAN_ENABLED
-#endif
-#elif defined(__SANITIZE_THREAD__)
-#define TSAN_ENABLED
-#endif
-#endif
 
 #ifdef TSAN_ENABLED
 #include <sanitizer/tsan_interface.h>
@@ -75,7 +65,7 @@
 #endif
 
 class RID_AllocBase {
-	static SafeNumeric<uint64_t> base_id;
+	static inline SafeNumeric<uint64_t> base_id{ 1 };
 
 protected:
 	static RID _make_from_id(uint64_t p_id) {

@@ -9,4 +9,13 @@
 	<tutorials>
 		<link title="Creating Android plugins">$DOCS_URL/tutorials/platform/android/android_plugin.html#doc-android-plugin</link>
 	</tutorials>
+	<methods>
+		<method name="has_java_method" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the given [param method] name exists in the JNISingleton's Java methods.
+			</description>
+		</method>
+	</methods>
 </class>

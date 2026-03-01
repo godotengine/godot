@@ -168,7 +168,7 @@
 	</signals>
 	<constants>
 		<constant name="TRACKER_HEAD" value="1" enum="TrackerType">
-			The tracker tracks the location of the players head. This is usually a location centered between the players eyes. Note that for handheld AR devices this can be the current location of the device.
+			The tracker tracks the location of the player's head. This is usually a location centered between the player's eyes. Note that for handheld AR devices this can be the current location of the device.
 		</constant>
 		<constant name="TRACKER_CONTROLLER" value="2" enum="TrackerType">
 			The tracker tracks the location of a controller.

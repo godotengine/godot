@@ -31,8 +31,10 @@
 #include "navigation_region_3d.h"
 
 #include "core/math/random_pcg.h"
+#include "core/object/class_db.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/rendering/rendering_server.h"
 
 RID NavigationRegion3D::get_rid() const {
 	return region;
@@ -295,7 +297,7 @@ void NavigationRegion3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_bounds"), &NavigationRegion3D::get_bounds);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_mesh", PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"), "set_navigation_mesh", "get_navigation_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_mesh", PROPERTY_HINT_RESOURCE_TYPE, NavigationMesh::get_class_static()), "set_navigation_mesh", "get_navigation_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_edge_connections"), "set_use_edge_connections", "get_use_edge_connections");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
@@ -445,7 +447,7 @@ NavigationRegion3D::~NavigationRegion3D() {
 		navigation_mesh->disconnect_changed(callable_mp(this, &NavigationRegion3D::_navigation_mesh_changed));
 	}
 	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
-	NavigationServer3D::get_singleton()->free(region);
+	NavigationServer3D::get_singleton()->free_rid(region);
 
 #ifdef DEBUG_ENABLED
 	NavigationServer3D::get_singleton()->disconnect(SNAME("map_changed"), callable_mp(this, &NavigationRegion3D::_navigation_map_changed));
@@ -453,16 +455,16 @@ NavigationRegion3D::~NavigationRegion3D() {
 
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (debug_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_instance);
+		RenderingServer::get_singleton()->free_rid(debug_instance);
 	}
 	if (debug_mesh.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_mesh->get_rid());
+		RenderingServer::get_singleton()->free_rid(debug_mesh->get_rid());
 	}
 	if (debug_edge_connections_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_edge_connections_instance);
+		RenderingServer::get_singleton()->free_rid(debug_edge_connections_instance);
 	}
 	if (debug_edge_connections_mesh.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_edge_connections_mesh->get_rid());
+		RenderingServer::get_singleton()->free_rid(debug_edge_connections_mesh->get_rid());
 	}
 #endif // DEBUG_ENABLED
 }

@@ -34,7 +34,7 @@
 
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 
 void EditorDebuggerServerWebSocket::poll() {
 	if (pending_peer.is_null() && tcp_server->is_connection_available()) {

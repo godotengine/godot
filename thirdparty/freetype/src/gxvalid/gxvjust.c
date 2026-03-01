@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT just table validation (body).
  *
- * Copyright (C) 2005-2024 by
+ * Copyright (C) 2005-2025 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -672,7 +672,7 @@
     FT_TRACE3(( "validating `just' table\n" ));
     GXV_INIT;
 
-    limit      = gxvalid->root->limit;
+    limit = gxvalid->root->limit;
 
     GXV_LIMIT_CHECK( 4 + 2 + 2 + 2 );
     version     = FT_NEXT_ULONG( p );

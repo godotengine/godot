@@ -30,6 +30,9 @@
 
 #include "decal.h"
 
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
+
 void Decal::set_size(const Vector3 &p_size) {
 	size = p_size.maxf(0.001);
 	RS::get_singleton()->decal_set_size(decal, size);
@@ -58,7 +61,7 @@ void Decal::set_texture(DecalTexture p_type, const Ref<Texture2D> &p_texture) {
 	}
 #endif
 
-	RS::get_singleton()->decal_set_texture(decal, RS::DecalTexture(p_type), texture_rid);
+	RS::get_singleton()->decal_set_texture(decal, RSE::DecalTexture(p_type), texture_rid);
 	update_configuration_warnings();
 }
 
@@ -167,10 +170,6 @@ AABB Decal::get_aabb() const {
 }
 
 void Decal::_validate_property(PropertyInfo &p_property) const {
-	if (Engine::get_singleton()->is_editor_hint() && !distance_fade_enabled && (p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_length")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-
 	if (p_property.name == "sorting_offset") {
 		p_property.usage = PROPERTY_USAGE_DEFAULT;
 	}
@@ -180,7 +179,7 @@ PackedStringArray Decal::get_configuration_warnings() const {
 	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
 	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy") {
-		warnings.push_back(RTR("Decals are only available when using the Forward+ or Mobile renderers."));
+		warnings.push_back(RTR("Decals are only available when using the Forward+ or Mobile renderer."));
 		return warnings;
 	}
 
@@ -259,7 +258,7 @@ void Decal::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lower_fade", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_lower_fade", "get_lower_fade");
 
 	ADD_GROUP("Distance Fade", "distance_fade_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distance_fade_enabled"), "set_enable_distance_fade", "is_distance_fade_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distance_fade_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_enable_distance_fade", "is_distance_fade_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_begin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_distance_fade_begin", "get_distance_fade_begin");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_length", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_distance_fade_length", "get_distance_fade_length");
 
@@ -298,5 +297,5 @@ Decal::Decal() {
 
 Decal::~Decal() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(decal);
+	RS::get_singleton()->free_rid(decal);
 }

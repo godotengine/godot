@@ -40,6 +40,7 @@ class SkeletonModifier3D : public Node3D {
 	void rebind();
 
 public:
+	// For the case to indicate bone axis on basis without custom vector.
 	enum BoneAxis {
 		BONE_AXIS_PLUS_X,
 		BONE_AXIS_MINUS_X,
@@ -48,6 +49,42 @@ public:
 		BONE_AXIS_PLUS_Z,
 		BONE_AXIS_MINUS_Z,
 	};
+	static String get_hint_bone_axis() { return "+X,-X,+Y,-Y,+Z,-Z"; }
+
+	// For the case to indicate Head-Tail of the bone.
+	enum BoneDirection {
+		BONE_DIRECTION_PLUS_X,
+		BONE_DIRECTION_MINUS_X,
+		BONE_DIRECTION_PLUS_Y,
+		BONE_DIRECTION_MINUS_Y,
+		BONE_DIRECTION_PLUS_Z,
+		BONE_DIRECTION_MINUS_Z,
+		BONE_DIRECTION_FROM_PARENT,
+	};
+	static String get_hint_bone_direction() { return "+X,-X,+Y,-Y,+Z,-Z,FromParent"; }
+
+	// For the case to define secondary axis of the bone local space.
+	enum SecondaryDirection {
+		SECONDARY_DIRECTION_NONE,
+		SECONDARY_DIRECTION_PLUS_X,
+		SECONDARY_DIRECTION_MINUS_X,
+		SECONDARY_DIRECTION_PLUS_Y,
+		SECONDARY_DIRECTION_MINUS_Y,
+		SECONDARY_DIRECTION_PLUS_Z,
+		SECONDARY_DIRECTION_MINUS_Z,
+		SECONDARY_DIRECTION_CUSTOM,
+	};
+	static String get_hint_secondary_direction() { return "None,+X,-X,+Y,-Y,+Z,-Z,Custom"; }
+
+	// For the case to define rotation direction without identification plus/minus.
+	enum RotationAxis {
+		ROTATION_AXIS_X,
+		ROTATION_AXIS_Y,
+		ROTATION_AXIS_Z,
+		ROTATION_AXIS_ALL,
+		ROTATION_AXIS_CUSTOM,
+	};
+	static String get_hint_rotation_axis() { return "X,Y,Z,All,Custom"; }
 
 protected:
 	bool active = true;
@@ -96,10 +133,16 @@ public:
 	static Vector3 get_vector_from_axis(Vector3::Axis p_axis);
 	static Vector3::Axis get_axis_from_bone_axis(BoneAxis p_axis);
 
+	// 3D math.
 	static Vector3 limit_length(const Vector3 &p_origin, const Vector3 &p_destination, float p_length);
 	static Quaternion get_local_pose_rotation(Skeleton3D *p_skeleton, int p_bone, const Quaternion &p_global_pose_rotation);
 	static Quaternion get_from_to_rotation(const Vector3 &p_from, const Vector3 &p_to, const Quaternion &p_prev_rot);
+	static Quaternion get_from_to_rotation_by_axis(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_axis);
+	static Quaternion get_swing(const Quaternion &p_rotation, const Vector3 &p_axis);
 	static Vector3 snap_vector_to_plane(const Vector3 &p_plane_normal, const Vector3 &p_vector);
+	static double symmetrize_angle(double p_angle);
+	static double get_roll_angle(const Quaternion &p_rotation, const Vector3 &p_roll_axis);
+	static Vector3 get_projected_normal(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_point);
 
 #ifdef TOOLS_ENABLED
 	virtual bool is_processed_on_saving() const { return false; }
@@ -109,3 +152,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(SkeletonModifier3D::BoneAxis);
+VARIANT_ENUM_CAST(SkeletonModifier3D::BoneDirection);
+VARIANT_ENUM_CAST(SkeletonModifier3D::SecondaryDirection);
+VARIANT_ENUM_CAST(SkeletonModifier3D::RotationAxis);

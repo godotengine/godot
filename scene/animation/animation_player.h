@@ -52,6 +52,8 @@ public:
 private:
 	AHashMap<StringName, StringName> animation_next_set; // For auto advance.
 
+	StringName finished_anim;
+
 	float speed_scale = 1.0;
 	double default_blend_time = 0.0;
 
@@ -60,23 +62,23 @@ private:
 	Tween::TransitionType auto_capture_transition_type = Tween::TRANS_LINEAR;
 	Tween::EaseType auto_capture_ease_type = Tween::EASE_IN;
 
-	bool is_stopping = false;
-
 	struct PlaybackData {
-		AnimationData *from = nullptr;
+		bool is_enabled = false;
+		String animation_name;
+		double animation_length = 0.0;
 		double pos = 0.0;
 		float speed_scale = 1.0;
 		double start_time = 0.0;
 		double end_time = 0.0;
 		double get_start_time() const {
-			if (from && (Animation::is_less_approx(start_time, 0) || Animation::is_greater_approx(start_time, from->animation->get_length()))) {
+			if (is_enabled && (Animation::is_less_approx(start_time, 0) || Animation::is_greater_approx(start_time, animation_length))) {
 				return 0;
 			}
 			return start_time;
 		}
 		double get_end_time() const {
-			if (from && (Animation::is_less_approx(end_time, 0) || Animation::is_greater_approx(end_time, from->animation->get_length()))) {
-				return from->animation->get_length();
+			if (is_enabled && (Animation::is_less_approx(end_time, 0) || Animation::is_greater_approx(end_time, animation_length))) {
+				return animation_length;
 			}
 			return end_time;
 		}
@@ -124,7 +126,6 @@ private:
 
 	StringName autoplay;
 
-	bool reset_on_save = true;
 	bool movie_quit_on_finish = false;
 
 	void _play(const StringName &p_name, double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
@@ -166,6 +167,14 @@ protected:
 	void _play_compat_84906(const StringName &p_name = StringName(), double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
 	void _play_backwards_compat_84906(const StringName &p_name = StringName(), double p_custom_blend = -1);
 
+	Vector<String> _get_queue_compat_110767();
+	String _get_current_animation_compat_110767() const;
+	void _set_current_animation_compat_110767(const String &p_animation);
+	String _get_assigned_animation_compat_110767() const;
+	void _set_assigned_animation_compat_110767(const String &p_animation);
+	String _get_autoplay_compat_110767() const;
+	void _set_autoplay_compat_110767(const String &p_name);
+
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
@@ -200,23 +209,23 @@ public:
 	void play_section_backwards(const StringName &p_name = StringName(), double p_start_time = -1, double p_end_time = -1, double p_custom_blend = -1);
 	void play_with_capture(const StringName &p_name = StringName(), double p_duration = -1.0, double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false, Tween::TransitionType p_trans_type = Tween::TRANS_LINEAR, Tween::EaseType p_ease_type = Tween::EASE_IN);
 	void queue(const StringName &p_name);
-	Vector<String> get_queue();
+	TypedArray<StringName> get_queue();
 	void clear_queue();
 	void pause();
 	void stop(bool p_keep_state = false);
 	bool is_playing() const;
-	String get_current_animation() const;
-	void set_current_animation(const String &p_animation);
-	String get_assigned_animation() const;
-	void set_assigned_animation(const String &p_animation);
+	StringName get_current_animation() const;
+	void set_current_animation(const StringName &p_animation);
+	StringName get_assigned_animation() const;
+	void set_assigned_animation(const StringName &p_animation);
 	bool is_valid() const;
 
 	void set_speed_scale(float p_speed);
 	float get_speed_scale() const;
 	float get_playing_speed() const;
 
-	void set_autoplay(const String &p_name);
-	String get_autoplay() const;
+	void set_autoplay(const StringName &p_name);
+	StringName get_autoplay() const;
 
 	void set_movie_quit_on_finish_enabled(bool p_enabled);
 	bool is_movie_quit_on_finish_enabled() const;

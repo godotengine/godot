@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/rb_set.h"
 #include "core/templates/rid.h"
 #include "core/templates/self_list.h"
 #include "scene/resources/curve_texture.h"
@@ -333,8 +334,6 @@ private:
 	int emission_point_count = 1;
 	Vector3 emission_shape_offset;
 	Vector3 emission_shape_scale;
-
-	bool anim_loop = false;
 
 	bool turbulence_enabled;
 	Vector3 turbulence_noise_speed;

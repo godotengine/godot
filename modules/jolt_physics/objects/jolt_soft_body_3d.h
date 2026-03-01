@@ -32,35 +32,29 @@
 
 #include "jolt_object_3d.h"
 
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 #include "Jolt/Jolt.h"
 
 #include "Jolt/Physics/SoftBody/SoftBodyCreationSettings.h"
 #include "Jolt/Physics/SoftBody/SoftBodySharedSettings.h"
 
+class JoltArea3D;
 class JoltSpace3D;
 
 class JoltSoftBody3D final : public JoltObject3D {
-	struct Shared {
-		LocalVector<int> mesh_to_physics;
-		JPH::Ref<JPH::SoftBodySharedSettings> settings = new JPH::SoftBodySharedSettings();
-		int ref_count = 1;
-	};
-
-	inline static HashMap<RID, Shared> mesh_to_shared;
-
 	HashSet<int> pinned_vertices;
-	LocalVector<RID> exceptions;
-	LocalVector<Vector3> normals;
 
-	const Shared *shared = nullptr;
+	LocalVector<int> mesh_to_physics;
+	LocalVector<JoltArea3D *> areas;
+	LocalVector<Vector3> normals;
+	LocalVector<RID> exceptions;
 
 	RID mesh;
 
 	JPH::SoftBodyCreationSettings *jolt_settings = new JPH::SoftBodyCreationSettings();
 
-	float mass = 0.0f;
+	float mass = 1.0f;
 	float pressure = 0.0f;
 	float linear_damping = 0.01f;
 	float stiffness_coefficient = 0.5f;
@@ -76,8 +70,9 @@ class JoltSoftBody3D final : public JoltObject3D {
 
 	virtual void _add_to_space() override;
 
-	bool _ref_shared_data();
-	void _deref_shared_data();
+	JPH::SoftBodySharedSettings *_create_shared_settings();
+
+	void _apply_environmental_forces(float p_step, JPH::Body &p_jolt_body);
 
 	void _update_mass();
 	void _update_pressure();
@@ -96,18 +91,21 @@ class JoltSoftBody3D final : public JoltObject3D {
 	void _vertices_changed();
 	void _exceptions_changed();
 	void _motion_changed();
+	void _transform_changed();
+	void _areas_changed();
 
 public:
 	JoltSoftBody3D();
 	virtual ~JoltSoftBody3D() override;
-
-	bool in_space() const;
 
 	void add_collision_exception(const RID &p_excepted_body);
 	void remove_collision_exception(const RID &p_excepted_body);
 	bool has_collision_exception(const RID &p_excepted_body) const;
 
 	const LocalVector<RID> &get_collision_exceptions() const { return exceptions; }
+
+	void add_area(JoltArea3D *p_area);
+	void remove_area(JoltArea3D *p_area);
 
 	virtual bool can_interact_with(const JoltBody3D &p_other) const override;
 	virtual bool can_interact_with(const JoltSoftBody3D &p_other) const override;
@@ -116,6 +114,8 @@ public:
 	virtual bool reports_contacts() const override { return false; }
 
 	virtual Vector3 get_velocity_at_position(const Vector3 &p_position) const override;
+
+	virtual void pre_step(float p_step, JPH::Body &p_jolt_body) override;
 
 	void set_mesh(const RID &p_mesh);
 

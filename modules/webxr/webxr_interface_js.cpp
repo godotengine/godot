@@ -40,8 +40,6 @@
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
-#include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/rendering_server_globals.h"
 #include "servers/xr/xr_hand_tracker.h"
 
 #include <emscripten.h>
@@ -121,7 +119,7 @@ void WebXRInterfaceJS::is_session_supported(const String &p_session_mode) {
 	godot_webxr_is_session_supported(p_session_mode.utf8().get_data(), &_emwebxr_on_session_supported);
 }
 
-void WebXRInterfaceJS::set_session_mode(String p_session_mode) {
+void WebXRInterfaceJS::set_session_mode(const String &p_session_mode) {
 	session_mode = p_session_mode;
 }
 
@@ -129,7 +127,7 @@ String WebXRInterfaceJS::get_session_mode() const {
 	return session_mode;
 }
 
-void WebXRInterfaceJS::set_required_features(String p_required_features) {
+void WebXRInterfaceJS::set_required_features(const String &p_required_features) {
 	required_features = p_required_features;
 }
 
@@ -137,7 +135,7 @@ String WebXRInterfaceJS::get_required_features() const {
 	return required_features;
 }
 
-void WebXRInterfaceJS::set_optional_features(String p_optional_features) {
+void WebXRInterfaceJS::set_optional_features(const String &p_optional_features) {
 	optional_features = p_optional_features;
 }
 
@@ -145,7 +143,7 @@ String WebXRInterfaceJS::get_optional_features() const {
 	return optional_features;
 }
 
-void WebXRInterfaceJS::set_requested_reference_space_types(String p_requested_reference_space_types) {
+void WebXRInterfaceJS::set_requested_reference_space_types(const String &p_requested_reference_space_types) {
 	requested_reference_space_types = p_requested_reference_space_types;
 }
 
@@ -251,7 +249,7 @@ bool WebXRInterfaceJS::set_environment_blend_mode(EnvironmentBlendMode p_new_env
 	return false;
 }
 
-void WebXRInterfaceJS::_set_environment_blend_mode(String p_blend_mode_string) {
+void WebXRInterfaceJS::_set_environment_blend_mode(const String &p_blend_mode_string) {
 	if (p_blend_mode_string == "opaque") {
 		environment_blend_mode = XRInterface::XR_ENV_BLEND_MODE_OPAQUE;
 	} else if (p_blend_mode_string == "additive") {
@@ -523,8 +521,8 @@ bool WebXRInterfaceJS::pre_draw_viewport(RID p_render_target) {
 	return true;
 }
 
-Vector<BlitToScreen> WebXRInterfaceJS::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
-	Vector<BlitToScreen> blit_to_screen;
+Vector<RenderingServerTypes::BlitToScreen> WebXRInterfaceJS::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
+	Vector<RenderingServerTypes::BlitToScreen> blit_to_screen;
 
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	if (texture_storage == nullptr) {
@@ -569,7 +567,7 @@ RID WebXRInterfaceJS::_get_texture(unsigned int p_texture_id) {
 	Size2 texture_size = get_render_target_size();
 
 	RID texture = texture_storage->texture_create_from_native_handle(
-			view_count == 1 ? RS::TEXTURE_TYPE_2D : RS::TEXTURE_TYPE_LAYERED,
+			view_count == 1 ? RSE::TEXTURE_TYPE_2D : RSE::TEXTURE_TYPE_LAYERED,
 			Image::FORMAT_RGBA8,
 			p_texture_id,
 			(int)texture_size.width,

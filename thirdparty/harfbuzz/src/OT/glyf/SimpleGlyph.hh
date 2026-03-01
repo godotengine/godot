@@ -189,7 +189,7 @@ struct SimpleGlyph
 
     unsigned old_length = points.length;
     points.alloc (points.length + num_points + 4); // Allocate for phantom points, to avoid a possible copy
-    if (unlikely (!points.resize (points.length + num_points, false))) return false;
+    if (unlikely (!points.resize_dirty (points.length + num_points))) return false;
     auto points_ = points.as_array ().sub_array (old_length);
     if (!phantom_only)
       hb_memset (points_.arrayZ, 0, sizeof (contour_point_t) * num_points);

@@ -12,7 +12,7 @@ allprojects {
         mavenCentral()
         gradlePluginPortal()
         maven { url "https://plugins.gradle.org/m2/" }
-        maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/"}
+        maven { url "https://central.sonatype.com/repository/maven-snapshots/"}
 
         // Godot user plugins custom maven repos
         String[] mavenRepos = getGodotPluginsMavenRepos()
@@ -27,13 +27,18 @@ allprojects {
 }
 
 configurations {
-    // Initializes a placeholder for the devImplementation dependency configuration.
-    devImplementation {}
     // Initializes a placeholder for the monoImplementation dependency configuration.
     monoImplementation {}
 }
 
 dependencies {
+    // Android instrumented test dependencies
+    androidTestImplementation "androidx.test.ext:junit:$versions.junitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$versions.espressoCoreVersion"
+    androidTestImplementation "org.jetbrains.kotlin:kotlin-test:$versions.kotlinTestVersion"
+    androidTestImplementation "androidx.test:runner:$versions.testRunnerVersion"
+    androidTestUtil "androidx.test:orchestrator:$versions.testOrchestratorVersion"
+
     implementation "androidx.fragment:fragment:$versions.fragmentVersion"
     implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
 
@@ -45,15 +50,32 @@ dependencies {
         // Godot gradle build mode. In this scenario this project is the only one around and the Godot
         // library is available through the pre-generated godot-lib.*.aar android archive files.
         debugImplementation fileTree(dir: 'libs/debug', include: ['**/*.jar', '*.aar'])
-        devImplementation fileTree(dir: 'libs/dev', include: ['**/*.jar', '*.aar'])
         releaseImplementation fileTree(dir: 'libs/release', include: ['**/*.jar', '*.aar'])
     }
 
     // Godot user plugins remote dependencies
     String[] remoteDeps = getGodotPluginsRemoteBinaries()
     if (remoteDeps != null && remoteDeps.size() > 0) {
+        def platformPattern = /^\s*(platform|enforcedPlatform)\s*\(\s*['"]*(\S+)['"]*\s*\)$/
         for (String dep : remoteDeps) {
-            implementation dep
+            def matcher = dep =~ platformPattern
+            if (matcher) {
+                switch (matcher[0][1]) {
+                    case "platform":
+                        implementation platform(matcher[0][2])
+                        break
+
+                    case "enforcedPlatform":
+                        implementation enforcedPlatform(matcher[0][2])
+                        break
+
+                    default:
+                        throw new GradleException("Invalid remote platform dependency: $dep")
+                        break
+                }
+            } else {
+                implementation dep
+            }
         }
     }
 
@@ -97,11 +119,11 @@ android {
     defaultConfig {
         // The default ignore pattern for the 'assets' directory includes hidden files and directories which are used by Godot projects.
         aaptOptions {
-            ignoreAssetsPattern "!.svn:!.git:!.gitignore:!.ds_store:!*.scc:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"
+            ignoreAssetsPattern "!.svn:!.git:!.gitignore:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~"
         }
 
         ndk {
-            debugSymbolLevel 'FULL'
+            debugSymbolLevel 'NONE'
             String[] export_abi_list = getExportEnabledABIs()
             abiFilters export_abi_list
         }
@@ -114,6 +136,17 @@ android {
         targetSdkVersion getExportTargetSdkVersion()
 
         missingDimensionStrategy 'products', 'template'
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // The following argument makes the Android Test Orchestrator run its
+        // "pm clear" command after each test invocation. This command ensures
+        // that the app's state is completely cleared between tests.
+        testInstrumentationRunnerArguments clearPackageData: 'true'
+    }
+
+    testOptions {
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
     }
 
     lintOptions {
@@ -127,9 +160,19 @@ android {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
 
-        // 'doNotStrip' is enabled for development within Android Studio
+        // Debug symbols are kept for development within Android Studio.
         if (shouldNotStrip()) {
-            doNotStrip '**/*.so'
+            jniLibs {
+                keepDebugSymbols += '**/*.so'
+            }
+        }
+
+        jniLibs {
+            // Setting this to true causes AGP to package compressed native libraries when building the app
+            // For more background, see:
+            // - https://developer.android.com/build/releases/past-releases/agp-3-6-0-release-notes#extractNativeLibs
+            // - https://stackoverflow.com/a/44704840
+            useLegacyPackaging shouldUseLegacyPackaging()
         }
 
         // Always select Godot's version of libc++_shared.so in case deps have their own
@@ -177,18 +220,6 @@ android {
             }
         }
 
-        dev {
-            initWith debug
-            // Signing and zip-aligning are skipped for prebuilt builds, but
-            // performed for Godot gradle builds.
-            zipAlignEnabled shouldZipAlign()
-            if (shouldSign()) {
-                signingConfig signingConfigs.debug
-            } else {
-                signingConfig null
-            }
-        }
-
         release {
             // Signing and zip-aligning are skipped for prebuilt builds, but
             // performed for Godot gradle builds.
@@ -204,22 +235,24 @@ android {
     flavorDimensions 'edition'
 
     productFlavors {
+        // Product flavor for the standard (no .net support) builds.
         standard {
             getIsDefault().set(true)
         }
+
+        // Product flavor for the Mono (.net) builds.
         mono {}
+
+        // Product flavor used for running instrumented tests.
+        instrumented {
+            applicationIdSuffix ".instrumented"
+            versionNameSuffix "-instrumented"
+        }
     }
 
     sourceSets {
-        main {
-            manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src']
-            res.srcDirs = ['res']
-            aidl.srcDirs = ['aidl']
-            assets.srcDirs = ['assets']
-        }
+        main.res.srcDirs += ['res']
         debug.jniLibs.srcDirs = ['libs/debug', 'libs/debug/vulkan_validation_layers']
-        dev.jniLibs.srcDirs = ['libs/dev']
         release.jniLibs.srcDirs = ['libs/release']
     }
 
@@ -251,7 +284,7 @@ task copyAndRenameBinary(type: Copy) {
         filenameSuffix = isAab ? "${exportEdition}-${exportBuildType}" : "${exportEdition}${exportBuildTypeCapitalized}"
     }
 
-    String sourceFilename = isAab ? "build-${filenameSuffix}.aab" : "android_${filenameSuffix}.apk"
+    String sourceFilename = isAab ? "${project.name}-${filenameSuffix}.aab" : "android_${filenameSuffix}.apk"
     String sourceFilepath = isAab ? "$buildDir/outputs/bundle/${exportEdition}${exportBuildTypeCapitalized}/$sourceFilename" : "$buildDir/outputs/apk/$exportEdition/$exportBuildType/$sourceFilename"
 
     from sourceFilepath
@@ -269,14 +302,34 @@ task validateJavaVersion {
 }
 
 /*
+ * Older versions of our vendor plugin include a loader that we no longer need.
+ * This code ensures those are removed.
+ */
+tasks.withType( com.android.build.gradle.internal.tasks.MergeNativeLibsTask) {
+    doFirst {
+        externalLibNativeLibs.each { jniDir ->
+            if (jniDir.getCanonicalPath().contains("godot-openxr-") || jniDir.getCanonicalPath().contains("godotopenxr")) {
+                // Delete the 'libopenxr_loader.so' files from the vendors plugin so we only use the version from the
+                // openxr loader dependency.
+                File armFile = new File(jniDir, "arm64-v8a/libopenxr_loader.so")
+                if (armFile.exists()) {
+                    armFile.delete()
+                }
+                File x86File = new File(jniDir, "x86_64/libopenxr_loader.so")
+                if (x86File.exists()) {
+                    x86File.delete()
+                }
+            }
+        }
+    }
+}
+
+/*
 When they're scheduled to run, the copy*AARToAppModule tasks generate dependencies for the 'app'
 module, so we're ensuring the ':app:preBuild' task is set to run after those tasks.
  */
 if (rootProject.tasks.findByPath("copyDebugAARToAppModule") != null) {
     preBuild.mustRunAfter(rootProject.tasks.named("copyDebugAARToAppModule"))
-}
-if (rootProject.tasks.findByPath("copyDevAARToAppModule") != null) {
-    preBuild.mustRunAfter(rootProject.tasks.named("copyDevAARToAppModule"))
 }
 if (rootProject.tasks.findByPath("copyReleaseAARToAppModule") != null) {
     preBuild.mustRunAfter(rootProject.tasks.named("copyReleaseAARToAppModule"))

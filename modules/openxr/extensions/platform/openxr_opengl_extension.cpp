@@ -34,10 +34,7 @@
 
 #include "../../openxr_util.h"
 
-#include "drivers/gles3/effects/copy_effects.h"
 #include "drivers/gles3/storage/texture_storage.h"
-#include "servers/rendering/rendering_server_globals.h"
-#include "servers/rendering_server.h"
 
 // OpenXR requires us to submit sRGB textures so that it recognizes the content
 // as being in sRGB color space. We do fall back on "normal" textures but this
@@ -56,10 +53,10 @@
 // feature off.
 // See: https://registry.khronos.org/OpenGL/extensions/EXT/EXT_sRGB_write_control.txt
 
-HashMap<String, bool *> OpenXROpenGLExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXROpenGLExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
-#ifdef ANDROID_ENABLED
+#ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 	request_extensions[XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME] = nullptr;
 #else
 	request_extensions[XR_KHR_OPENGL_ENABLE_EXTENSION_NAME] = nullptr;
@@ -75,7 +72,7 @@ void OpenXROpenGLExtension::on_instance_created(const XrInstance p_instance) {
 	// Obtain pointers to functions we're accessing here.
 	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 
-#ifdef ANDROID_ENABLED
+#ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 	EXT_INIT_XR_FUNC(xrGetOpenGLESGraphicsRequirementsKHR);
 #else
 	EXT_INIT_XR_FUNC(xrGetOpenGLGraphicsRequirementsKHR);
@@ -89,7 +86,7 @@ bool OpenXROpenGLExtension::check_graphics_api_support(XrVersion p_desired_versi
 	XrSystemId system_id = OpenXRAPI::get_singleton()->get_system_id();
 	XrInstance instance = OpenXRAPI::get_singleton()->get_instance();
 
-#ifdef ANDROID_ENABLED
+#ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 	XrGraphicsRequirementsOpenGLESKHR opengl_requirements;
 	opengl_requirements.type = XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_ES_KHR;
 	opengl_requirements.next = nullptr;
@@ -191,14 +188,14 @@ void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_nex
 	void *display_handle = (void *)display_server->window_get_native_handle(DisplayServer::DISPLAY_HANDLE);
 	void *glxcontext_handle = (void *)display_server->window_get_native_handle(DisplayServer::OPENGL_CONTEXT);
 	void *glxdrawable_handle = (void *)display_server->window_get_native_handle(DisplayServer::WINDOW_HANDLE);
+	void *glx_fbconfig_handle = (void *)display_server->window_get_native_handle(DisplayServer::GLX_FBCONFIG);
+	VisualID glx_visualid = (VisualID)display_server->window_get_native_handle(DisplayServer::GLX_VISUALID);
 
 	graphics_binding_gl.xDisplay = (Display *)display_handle;
 	graphics_binding_gl.glxContext = (GLXContext)glxcontext_handle;
 	graphics_binding_gl.glxDrawable = (GLXDrawable)glxdrawable_handle;
-
-	// spec says to use proper values but runtimes don't care
-	graphics_binding_gl.visualid = 0;
-	graphics_binding_gl.glxFBConfig = nullptr;
+	graphics_binding_gl.glxFBConfig = (GLXFBConfig)glx_fbconfig_handle;
+	graphics_binding_gl.visualid = glx_visualid;
 #endif
 #endif
 
@@ -228,18 +225,18 @@ bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 	uint32_t swapchain_length;
 	XrResult result = xrEnumerateSwapchainImages(p_swapchain, 0, &swapchain_length, nullptr);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to get swapchaim image count [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
+		print_line("OpenXR: Failed to get swapchain image count [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
-#ifdef ANDROID_ENABLED
+#ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 	LocalVector<XrSwapchainImageOpenGLESKHR> images;
 #else
 	LocalVector<XrSwapchainImageOpenGLKHR> images;
 #endif
 	images.resize(swapchain_length);
 
-#ifdef ANDROID_ENABLED
+#ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 	for (XrSwapchainImageOpenGLESKHR &image : images) {
 		image.type = XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_ES_KHR;
 #else
@@ -252,7 +249,7 @@ bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 
 	result = xrEnumerateSwapchainImages(p_swapchain, swapchain_length, &swapchain_length, (XrSwapchainImageBaseHeader *)images.ptr());
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to get swapchaim images [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
+		print_line("OpenXR: Failed to get swapchain images [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
@@ -270,7 +267,7 @@ bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 
 	for (uint64_t i = 0; i < swapchain_length; i++) {
 		RID texture_rid = texture_storage->texture_create_from_native_handle(
-				p_array_size == 1 ? RS::TEXTURE_TYPE_2D : RS::TEXTURE_TYPE_LAYERED,
+				p_array_size == 1 ? RSE::TEXTURE_TYPE_2D : RSE::TEXTURE_TYPE_LAYERED,
 				format,
 				images[i].image,
 				p_width,
@@ -288,7 +285,7 @@ bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 
 bool OpenXROpenGLExtension::create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) {
 	OpenXRUtil::XrMatrix4x4f matrix;
-	OpenXRUtil::XrMatrix4x4f_CreateProjectionFov(&matrix, OpenXRUtil::GRAPHICS_OPENGL, p_fov, (float)p_z_near, (float)p_z_far);
+	OpenXRUtil::XrMatrix4x4f_CreateProjectionFov(&matrix, p_fov, (float)p_z_near, (float)p_z_far);
 
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
@@ -327,14 +324,14 @@ void OpenXROpenGLExtension::cleanup_swapchain_graphics_data(void **p_swapchain_g
 }
 
 #define ENUM_TO_STRING_CASE(e) \
-	case e: {                  \
-		return String(#e);     \
+	case e: { \
+		return String(#e); \
 	} break;
 
 String OpenXROpenGLExtension::get_swapchain_format_name(int64_t p_swapchain_format) const {
 	// These are somewhat different per platform, will need to weed some stuff out...
 	switch (p_swapchain_format) {
-#ifdef ANDROID_ENABLED
+#ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 		// using definitions from GLES3/gl3.h
 
 		ENUM_TO_STRING_CASE(GL_RGBA4)

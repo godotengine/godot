@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/image.h"
+#include "core/object/class_db.h"
 #include "scene/resources/image_texture.h"
 
 #include "thirdparty/misc/yuv2rgb.h"
@@ -819,8 +820,7 @@ bool ResourceFormatLoaderTheora::handles_type(const String &p_type) const {
 }
 
 String ResourceFormatLoaderTheora::get_resource_type(const String &p_path) const {
-	String el = p_path.get_extension().to_lower();
-	if (el == "ogv") {
+	if (p_path.has_extension("ogv")) {
 		return "VideoStreamTheora";
 	}
 	return "";

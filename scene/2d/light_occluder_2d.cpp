@@ -32,6 +32,8 @@
 
 #include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
 
 #define LINE_GRAB_WIDTH 8
 
@@ -114,7 +116,7 @@ bool OccluderPolygon2D::is_closed() const {
 
 void OccluderPolygon2D::set_cull_mode(CullMode p_mode) {
 	cull = p_mode;
-	RS::get_singleton()->canvas_occluder_polygon_set_cull_mode(occ_polygon, RS::CanvasOccluderPolygonCullMode(p_mode));
+	RS::get_singleton()->canvas_occluder_polygon_set_cull_mode(occ_polygon, RSE::CanvasOccluderPolygonCullMode(p_mode));
 }
 
 OccluderPolygon2D::CullMode OccluderPolygon2D::get_cull_mode() const {
@@ -150,7 +152,7 @@ OccluderPolygon2D::OccluderPolygon2D() {
 
 OccluderPolygon2D::~OccluderPolygon2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(occ_polygon);
+	RS::get_singleton()->free_rid(occ_polygon);
 }
 
 void LightOccluder2D::_poly_changed() {
@@ -206,7 +208,7 @@ void LightOccluder2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
-			if (is_visible_in_tree() && is_physics_interpolated()) {
+			if (is_visible_in_tree() && is_physics_interpolated_and_enabled()) {
 				// Explicitly make sure the transform is up to date in RenderingServer before
 				// resetting. This is necessary because NOTIFICATION_TRANSFORM_CHANGED
 				// is normally deferred, and a client change to transform will not always be sent
@@ -295,7 +297,7 @@ void LightOccluder2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_as_sdf_collision", "enable"), &LightOccluder2D::set_as_sdf_collision);
 	ClassDB::bind_method(D_METHOD("is_set_as_sdf_collision"), &LightOccluder2D::is_set_as_sdf_collision);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "occluder", PROPERTY_HINT_RESOURCE_TYPE, "OccluderPolygon2D"), "set_occluder_polygon", "get_occluder_polygon");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "occluder", PROPERTY_HINT_RESOURCE_TYPE, OccluderPolygon2D::get_class_static()), "set_occluder_polygon", "get_occluder_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdf_collision"), "set_as_sdf_collision", "is_set_as_sdf_collision");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "occluder_light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_occluder_light_mask", "get_occluder_light_mask");
 }
@@ -310,5 +312,5 @@ LightOccluder2D::LightOccluder2D() {
 LightOccluder2D::~LightOccluder2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 
-	RS::get_singleton()->free(occluder);
+	RS::get_singleton()->free_rid(occluder);
 }

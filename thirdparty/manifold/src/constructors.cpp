@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "csg_tree.h"
+#include "disjoint_sets.h"
 #include "impl.h"
 #include "manifold/manifold.h"
 #include "manifold/polygon.h"
@@ -466,11 +467,11 @@ Manifold Manifold::Compose(const std::vector<Manifold>& manifolds) {
  */
 std::vector<Manifold> Manifold::Decompose() const {
   ZoneScoped;
-  UnionFind<> uf(NumVert());
+  DisjointSets uf(NumVert());
   // Graph graph;
   auto pImpl_ = GetCsgLeafNode().GetImpl();
   for (const Halfedge& halfedge : pImpl_->halfedge_) {
-    if (halfedge.IsForward()) uf.unionXY(halfedge.startVert, halfedge.endVert);
+    if (halfedge.IsForward()) uf.unite(halfedge.startVert, halfedge.endVert);
   }
   std::vector<int> componentIndices;
   const int numComponents = uf.connectedComponents(componentIndices);

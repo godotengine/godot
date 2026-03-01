@@ -90,7 +90,7 @@
 	<members>
 		<member name="alpha_curve" type="Texture2D" setter="set_alpha_curve" getter="get_alpha_curve">
 			The alpha value of each particle's color will be multiplied by this [CurveTexture] over its lifetime.
-			[b]Note:[/b] [member alpha_curve] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member alpha_curve] will have no visible effect.
+			[b]Note:[/b] [member alpha_curve] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALPHA *= COLOR.a;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member alpha_curve] will have no visible effect.
 		</member>
 		<member name="angle_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's rotation will be animated along this [CurveTexture].
@@ -519,14 +519,19 @@
 			Use with [method set_param_texture] to set the turbulence influence over the particles life time.
 		</constant>
 		<constant name="SUB_EMITTER_DISABLED" value="0" enum="SubEmitterMode">
+			The subemitter is disabled.
 		</constant>
 		<constant name="SUB_EMITTER_CONSTANT" value="1" enum="SubEmitterMode">
+			The submitter is emitted on the constant interval defined by [member sub_emitter_frequency].
 		</constant>
 		<constant name="SUB_EMITTER_AT_END" value="2" enum="SubEmitterMode">
+			The subemitter is emitted at the end of the particle's lifetime.
 		</constant>
 		<constant name="SUB_EMITTER_AT_COLLISION" value="3" enum="SubEmitterMode">
+			The subemitter is emitted when the particle collides.
 		</constant>
 		<constant name="SUB_EMITTER_AT_START" value="4" enum="SubEmitterMode">
+			The subemitter is emitted when the particle spawns.
 		</constant>
 		<constant name="SUB_EMITTER_MAX" value="5" enum="SubEmitterMode">
 			Represents the size of the [enum SubEmitterMode] enum.

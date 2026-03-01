@@ -59,6 +59,18 @@ hvec3 F0(half metallic, half specular, hvec3 albedo) {
 	return mix(hvec3(dielectric), albedo, hvec3(metallic));
 }
 
+half V_Kelemen(half LdotH) {
+	// Kelemen 2001, "A Microfacet Based Coupled Specular-Matte BRDF Model with Importance Sampling"
+	return saturateHalf(half(0.25) / (LdotH * LdotH + half(1e-4)));
+}
+
+hvec3 f0_Clear_Coat_To_Surface(hvec3 f0) {
+	// Approximation of iorTof0(f0ToIor(f0), 1.5)
+	// This assumes that the clear coat layer has an IOR of 1.5
+	// see https://github.com/google/filament/blob/837b2715a05f4656d4f524bce50d1b23ff8f84c9/shaders/src/surface_material.fs#L54-L62
+	return clamp(f0 * (f0 * (half(0.941892) - half(0.263008) * f0) + half(0.346479)) - half(0.0285998), half(0.0), half(1.0));
+}
+
 void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is_directional, half attenuation, hvec3 f0, half roughness, half metallic, half specular_amount, hvec3 albedo, inout half alpha, vec2 screen_uv, hvec3 energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 		hvec3 backlight,
@@ -81,14 +93,25 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 		inout hvec3 diffuse_light, inout hvec3 specular_light) {
 #if defined(LIGHT_CODE_USED)
 	// Light is written by the user shader.
-	mat4 inv_view_matrix = scene_data_block.data.inv_view_matrix;
-	mat4 read_view_matrix = scene_data_block.data.view_matrix;
+	mat4 inv_view_matrix = transpose(mat4(scene_data_block.data.inv_view_matrix[0],
+			scene_data_block.data.inv_view_matrix[1],
+			scene_data_block.data.inv_view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+	mat4 read_view_matrix = transpose(mat4(scene_data_block.data.view_matrix[0],
+			scene_data_block.data.view_matrix[1],
+			scene_data_block.data.view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
 
 #ifdef USING_MOBILE_RENDERER
-	mat4 read_model_matrix = instances.data[draw_call.instance_index].transform;
+	uint instance_index = draw_call.instance_index;
 #else
-	mat4 read_model_matrix = instances.data[instance_index_interp].transform;
+	uint instance_index = instance_index_interp;
 #endif
+
+	mat4 read_model_matrix = transpose(mat4(instances.data[instance_index].transform[0],
+			instances.data[instance_index].transform[1],
+			instances.data[instance_index].transform[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
 
 #undef projection_matrix
 #define projection_matrix scene_data_block.data.projection_matrix
@@ -152,6 +175,8 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 	diffuse_light += rim_light * rim * mix(hvec3(1.0), albedo, rim_tint) * light_color;
 #endif
 
+	half cc_attenuation = half(1.0);
+
 	// We skip checking on attenuation on directional lights to avoid a branch that is not as beneficial for directional lights as the other ones.
 	if (is_directional || attenuation > HALF_FLT_MIN) {
 		half cNdotL = max(NdotL, half(0.0));
@@ -159,22 +184,19 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 		hvec3 H = normalize(V + L);
 		half cLdotH = clamp(A + dot(L, H), half(0.0), half(1.0));
 #endif
+
 #if defined(LIGHT_CLEARCOAT_USED)
 		// Clearcoat ignores normal_map, use vertex normal instead
 		half ccNdotL = clamp(A + dot(vertex_normal, L), half(0.0), half(1.0));
 		half ccNdotH = clamp(A + dot(vertex_normal, H), half(0.0), half(1.0));
-		half ccNdotV = max(dot(vertex_normal, V), half(1e-4));
 		half cLdotH5 = SchlickFresnel(cLdotH);
 
 		half Dr = D_GGX(ccNdotH, half(mix(half(0.001), half(0.1), clearcoat_roughness)), vertex_normal, H);
-		half Gr = half(0.25) / (cLdotH * cLdotH);
-		half Fr = mix(half(0.04), half(1.0), cLdotH5);
-		half clearcoat_specular_brdf_NL = clearcoat * Gr * Fr * Dr * cNdotL;
-
+		half Gr = V_Kelemen(cLdotH);
+		half Fr = mix(half(0.04), half(1.0), cLdotH5) * clearcoat;
+		cc_attenuation = half(1.0) - Fr;
+		half clearcoat_specular_brdf_NL = Dr * Gr * Fr * ccNdotL;
 		specular_light += clearcoat_specular_brdf_NL * light_color * attenuation * specular_amount;
-
-		// TODO: Clearcoat adds light to the scene right now (it is non-energy conserving), both diffuse and specular need to be scaled by (1.0 - FR)
-		// but to do so we need to rearrange this entire function
 #endif // LIGHT_CLEARCOAT_USED
 
 		if (metallic < half(1.0)) {
@@ -201,7 +223,7 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 			diffuse_brdf_NL = cNdotL * half(1.0 / M_PI);
 #endif
 
-			diffuse_light += light_color * diffuse_brdf_NL * attenuation;
+			diffuse_light += light_color * diffuse_brdf_NL * attenuation * cc_attenuation;
 
 #if defined(LIGHT_BACKLIGHT_USED)
 			diffuse_light += light_color * (hvec3(1.0 / M_PI) - diffuse_brdf_NL) * backlight * attenuation;
@@ -249,7 +271,7 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 			half f90 = clamp(dot(f0, hvec3(50.0 * 0.33)), metallic, half(1.0));
 			hvec3 F = f0 + (f90 - f0) * cLdotH5;
 			hvec3 specular_brdf_NL = energy_compensation * cNdotL * D * F * G;
-			specular_light += specular_brdf_NL * light_color * attenuation * specular_amount;
+			specular_light += specular_brdf_NL * light_color * attenuation * cc_attenuation * specular_amount;
 #endif
 		}
 
@@ -643,6 +665,10 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 		local_v.xy = local_v.xy * 0.5 + 0.5;
 		vec2 proj_uv = local_v.xy * atlas_rect.zw;
 
+		// Clamp the uv coordinates to prevent bleeding from neighboring decals.
+		vec2 texel_size = 1.0 / vec2(textureSize(sampler2D(decal_atlas_srgb, light_projector_sampler), 0));
+		proj_uv = clamp(proj_uv, texel_size * 0.5, atlas_rect.zw - texel_size * 0.5);
+
 		if (sc_projector_use_mipmaps()) {
 			vec2 proj_uv_ddx;
 			vec2 proj_uv_ddy;
@@ -746,12 +772,12 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	float light_length = length(light_rel_vec);
 	hvec3 light_rel_vec_norm = hvec3(light_rel_vec / light_length);
 	half spot_attenuation = get_omni_attenuation(light_length, spot_lights.data[idx].inv_radius, spot_lights.data[idx].attenuation);
-	hvec3 spot_dir = hvec3(spot_lights.data[idx].direction);
-	half cone_angle = half(spot_lights.data[idx].cone_angle);
-	half scos = max(dot(-light_rel_vec_norm, spot_dir), cone_angle);
+	vec3 spot_dir = spot_lights.data[idx].direction;
+	float cone_angle = spot_lights.data[idx].cone_angle;
+	float scos = max(dot(-vec3(light_rel_vec_norm), spot_dir), cone_angle);
 
 	// This conversion to a highp float is crucial to prevent light leaking due to precision errors.
-	float spot_rim = max(1e-4, float(half(1.0) - scos) / float(half(1.0) - cone_angle));
+	float spot_rim = max(1e-4, (1.0 - scos) / (1.0 - cone_angle));
 	spot_attenuation *= half(1.0 - pow(spot_rim, spot_lights.data[idx].cone_attenuation));
 
 	// Compute size.
@@ -779,7 +805,7 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 			//soft shadow
 
 			//find blocker
-			float z_norm = dot(vec3(spot_dir), -light_rel_vec) * spot_lights.data[idx].inv_radius;
+			float z_norm = dot(spot_dir, -light_rel_vec) * spot_lights.data[idx].inv_radius;
 
 			vec2 shadow_uv = splane.xy * spot_lights.data[idx].atlas_rect.zw + spot_lights.data[idx].atlas_rect.xy;
 
@@ -857,7 +883,7 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 		shadow_z = 2.0 * z_near * z_far / (z_far + z_near - shadow_z * (z_far - z_near));
 
 		//distance to light plane
-		float z = dot(vec3(spot_dir), -light_rel_vec);
+		float z = dot(spot_dir, -light_rel_vec);
 		transmittance_z = half(z - shadow_z);
 	}
 #endif // !SHADOWS_DISABLED
@@ -909,7 +935,11 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 			diffuse_light, specular_light);
 }
 
-void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal, half roughness, hvec3 ambient_light, hvec3 specular_light, inout hvec4 ambient_accum, inout hvec4 reflection_accum) {
+void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal, half roughness, hvec3 ambient_light, hvec3 specular_light,
+#ifdef LIGHT_CLEARCOAT_USED
+		hvec3 cc_specular_light, hvec3 cc_ref_vec, half cc_roughness, inout hvec3 cc_reflection_accum,
+#endif
+		inout hvec4 ambient_accum, inout hvec4 reflection_accum) {
 	vec3 box_extents = reflections.data[ref_index].box_extents;
 	vec3 local_pos = (reflections.data[ref_index].local_matrix * vec4(vertex, 1.0)).xyz;
 
@@ -926,6 +956,7 @@ void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal
 		blend = pow(blend_axes.x * blend_axes.y * blend_axes.z, half(2.0));
 	}
 
+	vec2 border_size = scene_data_block.data.reflection_atlas_border_size;
 	if (reflections.data[ref_index].intensity > 0.0 && reflection_accum.a < half(1.0)) { // compute reflection
 
 		vec3 local_ref_vec = (reflections.data[ref_index].local_matrix * vec4(ref_vec, 0.0)).xyz;
@@ -946,7 +977,9 @@ void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal
 		hvec4 reflection;
 		half reflection_blend = max(half(0.0), blend - reflection_accum.a);
 
-		reflection.rgb = hvec3(textureLod(samplerCubeArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(local_ref_vec, reflections.data[ref_index].index), sqrt(roughness) * MAX_ROUGHNESS_LOD).rgb) * sc_luminance_multiplier();
+		float roughness_lod = sqrt(roughness) * MAX_ROUGHNESS_LOD;
+		vec2 reflection_uv = vec3_to_oct_with_border(local_ref_vec, border_size);
+		reflection.rgb = hvec3(textureLod(sampler2DArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(reflection_uv, reflections.data[ref_index].index), roughness_lod).rgb) * REFLECTION_MULTIPLIER;
 		reflection.rgb *= half(reflections.data[ref_index].exposure_normalization);
 		reflection.a = reflection_blend;
 
@@ -955,6 +988,33 @@ void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal
 
 		reflection_accum += reflection;
 	}
+
+#ifdef LIGHT_CLEARCOAT_USED
+	vec3 local_cc_ref_vec = (reflections.data[ref_index].local_matrix * vec4(cc_ref_vec, 0.0)).xyz;
+
+	if (reflections.data[ref_index].box_project) { // Box project.
+
+		vec3 nrdir = normalize(local_cc_ref_vec);
+		vec3 rbmax = (box_extents - local_pos) / nrdir;
+		vec3 rbmin = (-box_extents - local_pos) / nrdir;
+
+		vec3 rbminmax = mix(rbmin, rbmax, greaterThan(nrdir, vec3(0.0, 0.0, 0.0)));
+
+		float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
+		vec3 posonbox = local_pos + nrdir * fa;
+		local_cc_ref_vec = posonbox - reflections.data[ref_index].box_offset;
+	}
+
+	float cc_roughness_lod = sqrt(cc_roughness) * MAX_ROUGHNESS_LOD;
+	vec2 cc_reflection_uv = vec3_to_oct_with_border(local_cc_ref_vec, border_size);
+	hvec3 cc_reflection = hvec3(textureLod(sampler2DArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(cc_reflection_uv, reflections.data[ref_index].index), cc_roughness_lod).rgb) * REFLECTION_MULTIPLIER;
+	cc_reflection *= half(reflections.data[ref_index].exposure_normalization);
+	if (reflections.data[ref_index].exterior) {
+		cc_reflection = mix(cc_specular_light, cc_reflection, blend);
+	}
+	cc_reflection *= half(reflections.data[ref_index].intensity) * blend;
+	cc_reflection_accum += cc_reflection;
+#endif // LIGHT_CLEARCOAT_USED
 
 	if (ambient_accum.a >= half(1.0)) {
 		return;
@@ -969,7 +1029,9 @@ void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal
 			hvec4 ambient_out;
 			half ambient_blend = max(half(0.0), blend - ambient_accum.a);
 
-			ambient_out.rgb = hvec3(textureLod(samplerCubeArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(local_amb_vec, reflections.data[ref_index].index), MAX_ROUGHNESS_LOD).rgb);
+			float roughness_lod = MAX_ROUGHNESS_LOD;
+			vec2 ambient_uv = vec3_to_oct_with_border(local_amb_vec, border_size);
+			ambient_out.rgb = hvec3(textureLod(sampler2DArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ambient_uv, reflections.data[ref_index].index), roughness_lod).rgb);
 			ambient_out.rgb *= half(reflections.data[ref_index].exposure_normalization);
 			ambient_out.a = ambient_blend;
 			ambient_out.rgb *= ambient_out.a;

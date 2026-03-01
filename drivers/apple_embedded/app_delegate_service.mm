@@ -31,20 +31,19 @@
 #import "app_delegate_service.h"
 
 #import "godot_view_apple_embedded.h"
+#import "godot_view_controller.h"
 #import "os_apple_embedded.h"
-#import "view_controller.h"
 
 #include "core/config/project_settings.h"
+#include "core/os/main_loop.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "main/main.h"
 
 #import <AVFoundation/AVFoundation.h>
 #import <AudioToolbox/AudioServices.h>
 
-#define kRenderingFrequency 60
-
-extern int gargc;
-extern char **gargv;
+int gargc;
+char **gargv;
 
 extern int apple_embedded_main(int, char **);
 extern void apple_embedded_finish();
@@ -66,18 +65,23 @@ static GDTViewController *mainViewController = nil;
 	return mainViewController;
 }
 
++ (void)setViewController:(GDTViewController *)viewController {
+	mainViewController = viewController;
+}
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 	// TODO: might be required to make an early return, so app wouldn't crash because of timeout.
 	// TODO: logo screen is not displayed while shaders are compiling
 	// DummyViewController(Splash/LoadingViewController) -> setup -> GodotViewController
 
-#if !defined(VISIONOS_ENABLED)
-	// Create a full-screen window
-	CGRect windowBounds = [[UIScreen mainScreen] bounds];
-	self.window = [[UIWindow alloc] initWithFrame:windowBounds];
-#else
-	self.window = [[UIWindow alloc] init];
-#endif
+	// Fetch the command-line arguments from NSProcessInfo
+	NSArray *arguments = [[NSProcessInfo processInfo] arguments];
+	gargc = (int)[arguments count];
+	gargv = (char **)malloc(sizeof(char *) * gargc);
+	for (int i = 0; i < gargc; i++) {
+		NSString *arg = arguments[i];
+		gargv[i] = strdup([arg UTF8String]);
+	}
 
 	int err = apple_embedded_main(gargc, gargv);
 
@@ -87,22 +91,11 @@ static GDTViewController *mainViewController = nil;
 		return NO;
 	}
 
-	GDTViewController *viewController = [[GDTViewController alloc] init];
-	viewController.godotView.useCADisplayLink = bool(GLOBAL_DEF("display.iOS/use_cadisplaylink", true)) ? YES : NO;
-	viewController.godotView.renderingInterval = 1.0 / kRenderingFrequency;
-
-	self.window.rootViewController = viewController;
-
-	// Show the window
-	[self.window makeKeyAndVisible];
-
 	[[NSNotificationCenter defaultCenter]
 			addObserver:self
 			   selector:@selector(onAudioInterruption:)
 				   name:AVAudioSessionInterruptionNotification
 				 object:[AVAudioSession sharedInstance]];
-
-	mainViewController = viewController;
 
 	int sessionCategorySetting = GLOBAL_GET("audio/general/ios/session_category");
 
@@ -165,6 +158,26 @@ static GDTViewController *mainViewController = nil;
 // sequence is called without the app going to background. For example, that happens
 // if you open the app list without switching to another app or open/close the
 // notification panel by swiping from the upper part of the screen.
+
+- (void)sceneDidDisconnect:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	OS_AppleEmbedded::get_singleton()->on_focus_out();
+}
+
+- (void)sceneWillResignActive:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	OS_AppleEmbedded::get_singleton()->on_focus_out();
+}
+
+- (void)sceneDidBecomeActive:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	OS_AppleEmbedded::get_singleton()->on_focus_in();
+}
+
+- (void)sceneDidEnterBackground:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	OS_AppleEmbedded::get_singleton()->on_enter_background();
+}
+
+- (void)sceneWillEnterForeground:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	OS_AppleEmbedded::get_singleton()->on_exit_background();
+}
 
 - (void)applicationWillResignActive:(UIApplication *)application {
 	OS_AppleEmbedded::get_singleton()->on_focus_out();

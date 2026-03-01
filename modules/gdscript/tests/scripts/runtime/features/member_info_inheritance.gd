@@ -2,9 +2,9 @@
 
 @warning_ignore_start("unused_signal")
 
-abstract class A:
-	abstract func test_abstract_func_1()
-	abstract func test_abstract_func_2()
+@abstract class A:
+	@abstract func test_abstract_func_1()
+	@abstract func test_abstract_func_2()
 	func test_override_func_1(): pass
 	func test_override_func_2(): pass
 

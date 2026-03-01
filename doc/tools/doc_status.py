@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import fnmatch
 import math
 import os
 import re
 import sys
 import xml.etree.ElementTree as ET
-from typing import Dict, List, Set
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
 
@@ -137,7 +138,7 @@ class ClassStatusProgress:
         self.described: int = described
         self.total: int = total
 
-    def __add__(self, other: "ClassStatusProgress"):
+    def __add__(self, other: ClassStatusProgress):
         return ClassStatusProgress(self.described + other.described, self.total + other.total)
 
     def increment(self, described: bool):
@@ -178,7 +179,7 @@ class ClassStatus:
         self.name: str = name
         self.has_brief_description: bool = True
         self.has_description: bool = True
-        self.progresses: Dict[str, ClassStatusProgress] = {
+        self.progresses: dict[str, ClassStatusProgress] = {
             "methods": ClassStatusProgress(),
             "constants": ClassStatusProgress(),
             "members": ClassStatusProgress(),
@@ -188,7 +189,7 @@ class ClassStatus:
             "constructors": ClassStatusProgress(),
         }
 
-    def __add__(self, other: "ClassStatus"):
+    def __add__(self, other: ClassStatus):
         new_status = ClassStatus()
         new_status.name = self.name
         new_status.has_brief_description = self.has_brief_description and other.has_brief_description
@@ -213,8 +214,8 @@ class ClassStatus:
             sum += self.progresses[k].total
         return sum < 1
 
-    def make_output(self) -> Dict[str, str]:
-        output: Dict[str, str] = {}
+    def make_output(self) -> dict[str, str]:
+        output: dict[str, str] = {}
         output["name"] = color("name", self.name)
 
         ok_string = color("part_good", "OK")
@@ -295,8 +296,8 @@ class ClassStatus:
 #                                  Arguments                                   #
 ################################################################################
 
-input_file_list: List[str] = []
-input_class_list: List[str] = []
+input_file_list: list[str] = []
+input_class_list: list[str] = []
 merged_file: str = ""
 
 for arg in sys.argv[1:]:
@@ -372,8 +373,8 @@ if len(input_file_list) < 1 or flags["h"]:
 #                               Parse class list                               #
 ################################################################################
 
-class_names: List[str] = []
-classes: Dict[str, ET.Element] = {}
+class_names: list[str] = []
+classes: dict[str, ET.Element] = {}
 
 for file in input_file_list:
     tree = ET.parse(file)
@@ -389,7 +390,7 @@ class_names.sort()
 if len(input_class_list) < 1:
     input_class_list = ["*"]
 
-filtered_classes_set: Set[str] = set()
+filtered_classes_set: set[str] = set()
 for pattern in input_class_list:
     filtered_classes_set |= set(fnmatch.filter(class_names, pattern))
 filtered_classes = list(filtered_classes_set)
@@ -419,7 +420,7 @@ for cn in filtered_classes:
         continue
 
     out = status.make_output()
-    row: List[str] = []
+    row: list[str] = []
     for column in table_columns:
         if column in out:
             row.append(out[column])
@@ -456,7 +457,7 @@ if flags["a"]:
     # without having to scroll back to the top.
     table.append(table_column_names)
 
-table_column_sizes: List[int] = []
+table_column_sizes: list[int] = []
 for row in table:
     for cell_i, cell in enumerate(row):
         if cell_i >= len(table_column_sizes):

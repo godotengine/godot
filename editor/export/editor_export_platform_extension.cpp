@@ -30,6 +30,9 @@
 
 #include "editor_export_platform_extension.h"
 
+#include "core/object/class_db.h"
+#include "scene/resources/image_texture.h"
+
 void EditorExportPlatformExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_config_error", "error_text"), &EditorExportPlatformExtension::set_config_error);
 	ClassDB::bind_method(D_METHOD("get_config_error"), &EditorExportPlatformExtension::get_config_error);
@@ -53,6 +56,10 @@ void EditorExportPlatformExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_options_tooltip);
 
 	GDVIRTUAL_BIND(_get_option_icon, "device");
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND_COMPAT(_get_option_icon_bind_compat_108825, "device");
+#endif
+
 	GDVIRTUAL_BIND(_get_option_label, "device");
 	GDVIRTUAL_BIND(_get_option_tooltip, "device");
 	GDVIRTUAL_BIND(_get_device_architecture, "device");
@@ -77,6 +84,8 @@ void EditorExportPlatformExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_platform_features);
 
 	GDVIRTUAL_BIND(_get_debug_protocol);
+
+	GDVIRTUAL_BIND(_initialize);
 }
 
 void EditorExportPlatformExtension::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
@@ -178,11 +187,17 @@ String EditorExportPlatformExtension::get_options_tooltip() const {
 	return ret;
 }
 
-Ref<ImageTexture> EditorExportPlatformExtension::get_option_icon(int p_index) const {
-	Ref<ImageTexture> ret;
+Ref<Texture2D> EditorExportPlatformExtension::get_option_icon(int p_index) const {
+	Ref<Texture2D> ret;
 	if (GDVIRTUAL_CALL(_get_option_icon, p_index, ret)) {
 		return ret;
 	}
+#ifndef DISABLE_DEPRECATED
+	Ref<ImageTexture> comp_ret;
+	if (GDVIRTUAL_CALL(_get_option_icon_bind_compat_108825, p_index, comp_ret)) {
+		return comp_ret;
+	}
+#endif
 	return EditorExportPlatform::get_option_icon(p_index);
 }
 
@@ -296,7 +311,7 @@ Error EditorExportPlatformExtension::export_zip(const Ref<EditorExportPreset> &p
 Error EditorExportPlatformExtension::export_pack_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
-	Error err = _load_patches(p_patches.is_empty() ? p_preset->get_patches() : p_patches);
+	Error err = _load_patches(p_preset, p_patches.is_empty() ? p_preset->get_patches() : p_patches);
 	if (err != OK) {
 		return err;
 	}
@@ -315,7 +330,7 @@ Error EditorExportPlatformExtension::export_pack_patch(const Ref<EditorExportPre
 Error EditorExportPlatformExtension::export_zip_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
-	Error err = _load_patches(p_patches.is_empty() ? p_preset->get_patches() : p_patches);
+	Error err = _load_patches(p_preset, p_patches.is_empty() ? p_preset->get_patches() : p_patches);
 	if (err != OK) {
 		return err;
 	}
@@ -346,6 +361,10 @@ String EditorExportPlatformExtension::get_debug_protocol() const {
 		return ret;
 	}
 	return EditorExportPlatform::get_debug_protocol();
+}
+
+void EditorExportPlatformExtension::initialize() {
+	GDVIRTUAL_CALL(_initialize);
 }
 
 EditorExportPlatformExtension::EditorExportPlatformExtension() {

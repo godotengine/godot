@@ -30,6 +30,8 @@
 
 #include "joint_3d.h"
 
+#include "core/object/class_db.h"
+
 void Joint3D::_disconnect_signals() {
 	Node *node_a = get_node_or_null(a);
 	PhysicsBody3D *body_a = Object::cast_to<PhysicsBody3D>(node_a);
@@ -239,5 +241,5 @@ Joint3D::Joint3D() {
 
 Joint3D::~Joint3D() {
 	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
-	PhysicsServer3D::get_singleton()->free(joint);
+	PhysicsServer3D::get_singleton()->free_rid(joint);
 }

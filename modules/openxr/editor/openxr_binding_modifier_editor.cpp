@@ -30,6 +30,7 @@
 
 #include "openxr_binding_modifier_editor.h"
 
+#include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
 #include "scene/gui/option_button.h"
 
@@ -263,7 +264,6 @@ OpenXRBindingModifierEditor::OpenXRBindingModifierEditor() {
 	rem_binding_modifier_btn = memnew(Button);
 	rem_binding_modifier_btn->set_tooltip_text(TTR("Remove this binding modifier."));
 	rem_binding_modifier_btn->connect(SceneStringName(pressed), callable_mp(this, &OpenXRBindingModifierEditor::_on_remove_binding_modifier));
-	rem_binding_modifier_btn->set_accessibility_name(TTRC("Remove"));
 	rem_binding_modifier_btn->set_flat(true);
 	header_hb->add_child(rem_binding_modifier_btn);
 
@@ -274,7 +274,7 @@ OpenXRBindingModifierEditor::OpenXRBindingModifierEditor() {
 	main_vb->add_child(editor_inspector);
 }
 
-void OpenXRBindingModifierEditor::setup(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRBindingModifier> p_binding_modifier) {
+void OpenXRBindingModifierEditor::setup(const Ref<OpenXRActionMap> &p_action_map, const Ref<OpenXRBindingModifier> &p_binding_modifier) {
 	ERR_FAIL_NULL(binding_modifier_title);
 	ERR_FAIL_NULL(editor_inspector);
 

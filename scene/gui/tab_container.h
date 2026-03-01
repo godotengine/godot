@@ -31,8 +31,12 @@
 #pragma once
 
 #include "scene/gui/container.h"
-#include "scene/gui/popup.h"
 #include "scene/gui/tab_bar.h"
+#include "scene/property_list_helper.h"
+
+class Button;
+class HBoxContainer;
+class Popup;
 
 class TabContainer : public Container {
 	GDCLASS(TabContainer, Container);
@@ -45,11 +49,13 @@ public:
 	};
 
 private:
+	HBoxContainer *internal_container = nullptr;
 	TabBar *tab_bar = nullptr;
+	Button *popup_button = nullptr;
+
 	bool tabs_visible = true;
 	bool all_tabs_in_front = false;
 	TabPosition tabs_position = POSITION_TOP;
-	bool menu_hovered = false;
 	mutable ObjectID popup_obj_id;
 	bool use_hidden_tabs_for_min_size = false;
 	bool theme_changing = false;
@@ -93,21 +99,38 @@ private:
 		Color font_disabled_color;
 		Color font_outline_color;
 
+		Color icon_selected_color;
+		Color icon_hovered_color;
+		Color icon_unselected_color;
+		Color icon_disabled_color;
+
 		Ref<Font> tab_font;
 		int tab_font_size;
 	} theme_cache;
+	struct CachedTab {
+		bool has_title = false;
+		String title;
+		Ref<Texture2D> icon;
+		bool disabled = false;
+		bool hidden = false;
+	};
+
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
+
+	mutable Vector<CachedTab> pending_tabs;
+	CachedTab &get_pending_tab(int p_idx) const;
 
 	HashMap<Node *, RID> tab_panels;
 
-	Rect2 _get_tab_rect() const;
 	int _get_tab_height() const;
+	Control *_as_tab_control(Node *p_child) const;
 	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();
 	void _repaint();
 	void _refresh_tab_indices();
 	void _refresh_tab_names();
 	void _update_margins();
-	void _on_mouse_exited();
 	void _on_tab_changed(int p_tab);
 	void _on_tab_clicked(int p_tab);
 	void _on_tab_hovered(int p_tab);
@@ -122,8 +145,15 @@ private:
 	void _drag_move_tab(int p_from_index, int p_to_index);
 	void _drag_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index);
 
+	void _popup_button_hovered(bool p_hover);
+	void _popup_button_pressed();
+
 protected:
-	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	bool _set(const StringName &p_name, const Variant &p_value) { return property_helper.property_set_value(p_name, p_value); }
+	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child) override;
@@ -134,6 +164,7 @@ protected:
 public:
 	virtual bool accessibility_override_tree_hierarchy() const override { return true; }
 
+	HBoxContainer *get_internal_container() { return internal_container; }
 	TabBar *get_tab_bar() const;
 
 	int get_tab_idx_at_point(const Point2 &p_point) const;
@@ -202,6 +233,8 @@ public:
 
 	void move_tab_from_tab_container(TabContainer *p_from, int p_from_index, int p_to_index = -1);
 
+	void set_switch_on_drag_hover(bool p_enabled);
+	bool get_switch_on_drag_hover() const;
 	void set_drag_to_rearrange_enabled(bool p_enabled);
 	bool get_drag_to_rearrange_enabled() const;
 	void set_tabs_rearrange_group(int p_group_id);

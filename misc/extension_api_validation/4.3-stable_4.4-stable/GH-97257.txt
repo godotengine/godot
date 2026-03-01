@@ -1,0 +1,5 @@
+GH-97257
+--------
+Validate extension JSON: Error: Field 'classes/EditorFeatureProfile/enums/Feature/values/FEATURE_MAX': value changed value in new API, from 8.0 to 9.
+
+New entry to the `EditorFeatureProfile.Feature` enum added. Those need to go before `FEATURE_MAX`, which will always cause a compatibility break.

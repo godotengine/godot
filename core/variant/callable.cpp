@@ -30,6 +30,7 @@
 
 #include "callable.h"
 
+#include "core/object/message_queue.h"
 #include "core/object/object.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"

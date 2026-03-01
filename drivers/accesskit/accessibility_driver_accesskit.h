@@ -33,7 +33,7 @@
 #ifdef ACCESSKIT_ENABLED
 
 #include "core/templates/rid_owner.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #ifdef ACCESSKIT_DYNAMIC
 #ifdef LINUXBSD_ENABLED
@@ -81,7 +81,10 @@ class AccessibilityDriverAccessKit : public AccessibilityDriver {
 #endif
 
 		RID root_id;
+		bool initial_update_completed = false;
 		HashSet<RID> update;
+		Callable activate;
+		Callable deactivate;
 	};
 
 	RID focus;
@@ -113,7 +116,7 @@ public:
 
 	RID accessibility_create_element(DisplayServer::WindowID p_window_id, DisplayServer::AccessibilityRole p_role) override;
 	RID accessibility_create_sub_element(const RID &p_parent_rid, DisplayServer::AccessibilityRole p_role, int p_insert_pos = -1) override;
-	virtual RID accessibility_create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1) override;
+	virtual RID accessibility_create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1, bool p_is_last_line = false) override;
 	bool accessibility_has_element(const RID &p_id) const override;
 	void accessibility_free_element(const RID &p_id) override;
 
@@ -127,6 +130,9 @@ public:
 
 	void accessibility_set_window_rect(DisplayServer::WindowID p_window_id, const Rect2 &p_rect_out, const Rect2 &p_rect_in) override;
 	void accessibility_set_window_focused(DisplayServer::WindowID p_window_id, bool p_focused) override;
+	void accessibility_set_window_callbacks(DisplayServer::WindowID p_window_id, const Callable &p_activate_callable, const Callable &p_deativate_callable) override;
+	void accessibility_window_activation_completed(DisplayServer::WindowID p_window_id) override;
+	void accessibility_window_deactivation_completed(DisplayServer::WindowID p_window_id) override;
 
 	void accessibility_update_set_role(const RID &p_id, DisplayServer::AccessibilityRole p_role) override;
 	void accessibility_update_set_name(const RID &p_id, const String &p_name) override;

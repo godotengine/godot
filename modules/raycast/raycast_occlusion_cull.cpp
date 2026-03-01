@@ -31,8 +31,8 @@
 #include "raycast_occlusion_cull.h"
 
 #include "core/config/project_settings.h"
+#include "core/math/projection.h"
 #include "core/object/worker_thread_pool.h"
-#include "core/templates/local_vector.h"
 
 #ifdef __SSE2__
 #include <pmmintrin.h>
@@ -174,8 +174,7 @@ void RaycastOcclusionCull::RaycastHZBuffer::sort_rays(const Vector3 &p_camera_di
 					int k = tile_i * TILE_SIZE + tile_j;
 					int tile_index = i * tile_grid_size.x + j;
 
-					Vector3 ray_dir(camera_rays[tile_index].ray.dir_x[k], camera_rays[tile_index].ray.dir_y[k], camera_rays[tile_index].ray.dir_z[k]);
-					mips[0][y * buffer_size.x + x] = camera_rays[tile_index].ray.tfar[k] * p_camera_dir.dot(ray_dir); // Store z-depth in view space.
+					mips[0][y * buffer_size.x + x] = camera_rays[tile_index].ray.tfar[k];
 				}
 			}
 		}
@@ -632,7 +631,7 @@ RID RaycastOcclusionCull::buffer_get_debug_texture(RID p_buffer) {
 
 ////////////////////////////////////////////////////////
 
-void RaycastOcclusionCull::set_build_quality(RS::ViewportOcclusionCullingBuildQuality p_quality) {
+void RaycastOcclusionCull::set_build_quality(RSE::ViewportOcclusionCullingBuildQuality p_quality) {
 	if (build_quality == p_quality) {
 		return;
 	}
@@ -658,7 +657,7 @@ RaycastOcclusionCull::RaycastOcclusionCull() {
 	raycast_singleton = this;
 	int default_quality = GLOBAL_GET("rendering/occlusion_culling/bvh_build_quality");
 	_jitter_enabled = GLOBAL_GET("rendering/occlusion_culling/jitter_projection");
-	build_quality = RS::ViewportOcclusionCullingBuildQuality(default_quality);
+	build_quality = RSE::ViewportOcclusionCullingBuildQuality(default_quality);
 }
 
 RaycastOcclusionCull::~RaycastOcclusionCull() {

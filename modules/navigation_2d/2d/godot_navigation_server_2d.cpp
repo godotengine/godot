@@ -38,43 +38,43 @@
 #include "nav_mesh_generator_2d.h"
 #endif // CLIPPER2_ENABLED
 
-#define COMMAND_1(F_NAME, T_0, D_0)                                     \
-	struct MERGE(F_NAME, _command_2d) : public SetCommand2D {           \
-		T_0 d_0;                                                        \
-		MERGE(F_NAME, _command_2d)                                      \
-		(T_0 p_d_0) :                                                   \
-				d_0(p_d_0) {}                                           \
+#define COMMAND_1(F_NAME, T_0, D_0) \
+	struct MERGE(F_NAME, _command_2d) : public SetCommand2D { \
+		T_0 d_0; \
+		MERGE(F_NAME, _command_2d) \
+		(T_0 p_d_0) : \
+				d_0(p_d_0) {} \
 		virtual void exec(GodotNavigationServer2D *p_server) override { \
-			p_server->MERGE(_cmd_, F_NAME)(d_0);                        \
-		}                                                               \
-	};                                                                  \
-	void GodotNavigationServer2D::F_NAME(T_0 D_0) {                     \
-		auto cmd = memnew(MERGE(F_NAME, _command_2d)(                   \
-				D_0));                                                  \
-		add_command(cmd);                                               \
-	}                                                                   \
+			p_server->MERGE(_cmd_, F_NAME)(d_0); \
+		} \
+	}; \
+	void GodotNavigationServer2D::F_NAME(T_0 D_0) { \
+		auto cmd = memnew(MERGE(F_NAME, _command_2d)( \
+				D_0)); \
+		add_command(cmd); \
+	} \
 	void GodotNavigationServer2D::MERGE(_cmd_, F_NAME)(T_0 D_0)
 
-#define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1)                           \
-	struct MERGE(F_NAME, _command_2d) : public SetCommand2D {           \
-		T_0 d_0;                                                        \
-		T_1 d_1;                                                        \
-		MERGE(F_NAME, _command_2d)                                      \
-		(                                                               \
-				T_0 p_d_0,                                              \
-				T_1 p_d_1) :                                            \
-				d_0(p_d_0),                                             \
-				d_1(p_d_1) {}                                           \
+#define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1) \
+	struct MERGE(F_NAME, _command_2d) : public SetCommand2D { \
+		T_0 d_0; \
+		T_1 d_1; \
+		MERGE(F_NAME, _command_2d) \
+		( \
+				T_0 p_d_0, \
+				T_1 p_d_1) : \
+				d_0(p_d_0), \
+				d_1(p_d_1) {} \
 		virtual void exec(GodotNavigationServer2D *p_server) override { \
-			p_server->MERGE(_cmd_, F_NAME)(d_0, d_1);                   \
-		}                                                               \
-	};                                                                  \
-	void GodotNavigationServer2D::F_NAME(T_0 D_0, T_1 D_1) {            \
-		auto cmd = memnew(MERGE(F_NAME, _command_2d)(                   \
-				D_0,                                                    \
-				D_1));                                                  \
-		add_command(cmd);                                               \
-	}                                                                   \
+			p_server->MERGE(_cmd_, F_NAME)(d_0, d_1); \
+		} \
+	}; \
+	void GodotNavigationServer2D::F_NAME(T_0 D_0, T_1 D_1) { \
+		auto cmd = memnew(MERGE(F_NAME, _command_2d)( \
+				D_0, \
+				D_1)); \
+		add_command(cmd); \
+	} \
 	void GodotNavigationServer2D::MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
 
 void GodotNavigationServer2D::init() {
@@ -82,7 +82,7 @@ void GodotNavigationServer2D::init() {
 	navmesh_generator_2d = memnew(NavMeshGenerator2D);
 	ERR_FAIL_NULL_MSG(navmesh_generator_2d, "Failed to init NavMeshGenerator2D.");
 	RWLockRead read_lock(geometry_parser_rwlock);
-	navmesh_generator_2d->set_generator_parsers(generator_parsers);
+	navmesh_generator_2d->set_generator_parsers(LocalVector<NavMeshGeometryParser2D *>(generator_parsers));
 #endif // CLIPPER2_ENABLED
 	// TODO
 }
@@ -251,7 +251,7 @@ TypedArray<RID> GodotNavigationServer2D::map_get_obstacles(RID p_map) const {
 	TypedArray<RID> obstacles_rids;
 	const NavMap2D *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_NULL_V(map, obstacles_rids);
-	const LocalVector<NavObstacle2D *> obstacles = map->get_obstacles();
+	const LocalVector<NavObstacle2D *> obstacles(map->get_obstacles());
 	obstacles_rids.resize(obstacles.size());
 	for (uint32_t i = 0; i < obstacles.size(); i++) {
 		obstacles_rids[i] = obstacles[i]->get_self();
@@ -351,6 +351,20 @@ real_t GodotNavigationServer2D::map_get_cell_size(RID p_map) const {
 	ERR_FAIL_NULL_V(map, 0);
 
 	return map->get_cell_size();
+}
+
+COMMAND_2(map_set_merge_rasterizer_cell_scale, RID, p_map, float, p_value) {
+	NavMap2D *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_NULL(map);
+
+	map->set_merge_rasterizer_cell_scale(p_value);
+}
+
+float GodotNavigationServer2D::map_get_merge_rasterizer_cell_scale(RID p_map) const {
+	NavMap2D *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_NULL_V(map, false);
+
+	return map->get_merge_rasterizer_cell_scale();
 }
 
 COMMAND_2(map_set_use_edge_connections, RID, p_map, bool, p_enabled) {
@@ -1175,7 +1189,7 @@ void GodotNavigationServer2D::flush_queries() {
 	commands.clear();
 }
 
-COMMAND_1(free, RID, p_object) {
+COMMAND_1(free_rid, RID, p_object) {
 	if (geometry_parser_owner.owns(p_object)) {
 		RWLockWrite write_lock(geometry_parser_rwlock);
 
@@ -1183,7 +1197,7 @@ COMMAND_1(free, RID, p_object) {
 		ERR_FAIL_NULL(parser);
 
 		generator_parsers.erase(parser);
-#ifndef CLIPPER2_ENABLED
+#ifdef CLIPPER2_ENABLED
 		NavMeshGenerator2D::get_singleton()->set_generator_parsers(generator_parsers);
 #endif
 		geometry_parser_owner.free(parser->self);

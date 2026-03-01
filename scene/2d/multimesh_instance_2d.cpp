@@ -30,10 +30,12 @@
 
 #include "multimesh_instance_2d.h"
 
+#include "core/object/class_db.h"
+
 #ifndef NAVIGATION_2D_DISABLED
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 
 #include "thirdparty/clipper2/include/clipper2/clipper.h"
 #include "thirdparty/misc/polypartition.h"
@@ -42,8 +44,24 @@
 Callable MultiMeshInstance2D::_navmesh_source_geometry_parsing_callback;
 RID MultiMeshInstance2D::_navmesh_source_geometry_parser;
 
+void MultiMeshInstance2D::_refresh_interpolated() {
+	if (is_inside_tree() && multimesh.is_valid()) {
+		bool interpolated = is_physics_interpolated_and_enabled();
+		multimesh->set_physics_interpolated(interpolated);
+	}
+}
+
+void MultiMeshInstance2D::_physics_interpolated_changed() {
+	CanvasItem::_physics_interpolated_changed();
+	_refresh_interpolated();
+}
+
 void MultiMeshInstance2D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			_refresh_interpolated();
+			break;
+		}
 		case NOTIFICATION_DRAW: {
 			if (multimesh.is_valid()) {
 				draw_multimesh(multimesh, texture);
@@ -61,8 +79,8 @@ void MultiMeshInstance2D::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multimesh", PROPERTY_HINT_RESOURCE_TYPE, "MultiMesh"), "set_multimesh", "get_multimesh");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multimesh", PROPERTY_HINT_RESOURCE_TYPE, MultiMesh::get_class_static()), "set_multimesh", "get_multimesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_texture", "get_texture");
 }
 
 void MultiMeshInstance2D::set_multimesh(const Ref<MultiMesh> &p_multimesh) {
@@ -75,6 +93,7 @@ void MultiMeshInstance2D::set_multimesh(const Ref<MultiMesh> &p_multimesh) {
 	// Connect to the multimesh so the AABB can update when instance transforms are changed.
 	if (multimesh.is_valid()) {
 		multimesh->connect_changed(callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+		_refresh_interpolated();
 	}
 	queue_redraw();
 }

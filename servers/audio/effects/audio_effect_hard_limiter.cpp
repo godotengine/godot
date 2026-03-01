@@ -30,7 +30,8 @@
 
 #include "audio_effect_hard_limiter.h"
 
-#include "servers/audio_server.h"
+#include "core/object/class_db.h"
+#include "servers/audio/audio_server.h"
 
 void AudioEffectHardLimiterInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	float sample_rate = AudioServer::get_singleton()->get_mix_rate();

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialComponentPersistenceList" inherits="OpenXRSpatialComponentData" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Object for storing the query persistence result data.
+	</brief_description>
+	<description>
+		Object for storing the query persistence result data when calling [method OpenXRSpatialEntityExtension.query_snapshot].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_persistent_state" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the persistent state ([code]XrSpatialPersistenceStateEXT[/code]) for the entity at this [param index].
+			</description>
+		</method>
+		<method name="get_persistent_uuid" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the persistent uuid for the entity at this [param index].
+			</description>
+		</method>
+	</methods>
+</class>

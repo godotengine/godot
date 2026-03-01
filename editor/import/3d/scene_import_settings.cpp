@@ -31,18 +31,21 @@
 #include "scene_import_settings.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_file_system.h"
-#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
-#include "editor/plugins/skeleton_3d_editor_plugin.h"
+#include "editor/inspector/editor_inspector.h"
+#include "editor/scene/3d/skeleton_3d_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/3d/multimesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/subviewport_container.h"
+#include "scene/main/timer.h"
 #include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/sky.h"
 #include "scene/resources/surface_tool.h"
 
 class SceneImportSettingsData : public Object {
@@ -74,25 +77,14 @@ class SceneImportSettingsData : public Object {
 				SceneImportSettingsDialog::get_singleton()->request_generate_collider();
 			}
 
-			if (SceneImportSettingsDialog::get_singleton()->is_editing_animation()) {
-				if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
-					if (ResourceImporterScene::get_animation_singleton()->get_option_visibility(path, p_name, current)) {
-						SceneImportSettingsDialog::get_singleton()->update_view();
-					}
-				} else {
-					if (ResourceImporterScene::get_animation_singleton()->get_internal_option_update_view_required(category, p_name, current)) {
-						SceneImportSettingsDialog::get_singleton()->update_view();
-					}
+			ResourceImporterScene *resource_importer_scene = SceneImportSettingsDialog::get_singleton()->get_resource_importer_scene();
+			if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
+				if (resource_importer_scene->get_option_visibility(path, p_name, current)) {
+					SceneImportSettingsDialog::get_singleton()->update_view();
 				}
 			} else {
-				if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
-					if (ResourceImporterScene::get_scene_singleton()->get_option_visibility(path, p_name, current)) {
-						SceneImportSettingsDialog::get_singleton()->update_view();
-					}
-				} else {
-					if (ResourceImporterScene::get_scene_singleton()->get_internal_option_update_view_required(category, p_name, current)) {
-						SceneImportSettingsDialog::get_singleton()->update_view();
-					}
+				if (resource_importer_scene->get_internal_option_update_view_required(category, p_name, current)) {
+					SceneImportSettingsDialog::get_singleton()->update_view();
 				}
 			}
 
@@ -170,31 +162,18 @@ class SceneImportSettingsData : public Object {
 		if (hide_options) {
 			return;
 		}
+		ResourceImporterScene *resource_importer_scene = SceneImportSettingsDialog::get_singleton()->get_resource_importer_scene();
 		for (const ResourceImporter::ImportOption &E : options) {
 			PropertyInfo option = E.option;
-			if (SceneImportSettingsDialog::get_singleton()->is_editing_animation()) {
-				if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
-					if (ResourceImporterScene::get_animation_singleton()->get_option_visibility(path, E.option.name, current)) {
-						handle_special_properties(option);
-						r_list->push_back(option);
-					}
-				} else {
-					if (ResourceImporterScene::get_animation_singleton()->get_internal_option_visibility(category, E.option.name, current)) {
-						handle_special_properties(option);
-						r_list->push_back(option);
-					}
+			if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
+				if (resource_importer_scene->get_option_visibility(path, E.option.name, current)) {
+					handle_special_properties(option);
+					r_list->push_back(option);
 				}
 			} else {
-				if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
-					if (ResourceImporterScene::get_scene_singleton()->get_option_visibility(path, E.option.name, current)) {
-						handle_special_properties(option);
-						r_list->push_back(option);
-					}
-				} else {
-					if (ResourceImporterScene::get_scene_singleton()->get_internal_option_visibility(category, E.option.name, current)) {
-						handle_special_properties(option);
-						r_list->push_back(option);
-					}
+				if (resource_importer_scene->get_internal_option_visibility(category, E.option.name, current)) {
+					handle_special_properties(option);
+					r_list->push_back(option);
 				}
 			}
 		}
@@ -366,6 +345,13 @@ void SceneImportSettingsDialog::_fill_animation(Tree *p_tree, const Ref<Animatio
 		ad.animation = p_anim;
 
 		_load_default_subresource_settings(ad.settings, "animations", p_name, ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION);
+		Animation::LoopMode loop_mode = p_anim->get_loop_mode();
+		if (!ad.settings.has("settings/loop_mode") && loop_mode != Animation::LoopMode::LOOP_NONE) {
+			// Update the loop mode to match detected mode (from import hints).
+			// This is necessary on the first import of a scene, otherwise the
+			// default (0/NONE) is set when filling out defaults.
+			ad.settings["settings/loop_mode"] = loop_mode;
+		}
 
 		animation_map[p_name] = ad;
 	}
@@ -491,9 +477,17 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_fill_scene(p_node->get_child(i), item);
 	}
+	Transform3D accum_xform;
+	Node3D *base = Object::cast_to<Node3D>(p_node);
+	while (base) {
+		accum_xform = base->get_transform() * accum_xform;
+		base = Object::cast_to<Node3D>(base->get_parent());
+	}
 	MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(p_node);
 	if (mesh_node && mesh_node->get_mesh().is_valid()) {
-		if (!editing_animation) {
+		// This controls the display of mesh resources in the import settings dialog tree (the white mesh icon).
+		// We want to show these icons for any import type that preserves meshes.
+		if (_resource_importer_scene->get_scene_import_type() != "AnimationLibrary") {
 			_fill_mesh(scene_tree, mesh_node->get_mesh(), item);
 		}
 
@@ -504,15 +498,23 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 		mesh_node->add_child(collider_view, true);
 		collider_view->set_owner(mesh_node);
 
-		Transform3D accum_xform;
-		Node3D *base = mesh_node;
-		while (base) {
-			accum_xform = base->get_transform() * accum_xform;
-			base = Object::cast_to<Node3D>(base->get_parent());
-		}
-
 		AABB aabb = accum_xform.xform(mesh_node->get_mesh()->get_aabb());
 
+		if (first_aabb) {
+			contents_aabb = aabb;
+			first_aabb = false;
+		} else {
+			contents_aabb.merge_with(aabb);
+		}
+	}
+	MultiMeshInstance3D *multi_mesh_node = Object::cast_to<MultiMeshInstance3D>(p_node);
+	if (multi_mesh_node && multi_mesh_node->get_multimesh().is_valid()) {
+		const Ref<MultiMesh> multi_mesh = multi_mesh_node->get_multimesh();
+		const Ref<Mesh> mm_mesh = multi_mesh->get_mesh();
+		if (mm_mesh.is_valid()) {
+			_fill_mesh(scene_tree, mm_mesh, item);
+		}
+		const AABB aabb = accum_xform.xform(multi_mesh->get_aabb());
 		if (first_aabb) {
 			contents_aabb = aabb;
 			first_aabb = false;
@@ -526,14 +528,6 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 		Ref<ArrayMesh> bones_mesh = Skeleton3DGizmoPlugin::get_bones_mesh(skeleton, -1, true);
 
 		bones_mesh_preview->set_mesh(bones_mesh);
-
-		Transform3D accum_xform;
-		Node3D *base = skeleton;
-		while (base) {
-			accum_xform = base->get_transform() * accum_xform;
-			base = Object::cast_to<Node3D>(base->get_parent());
-		}
-
 		bones_mesh_preview->set_transform(accum_xform * skeleton->get_transform());
 
 		AABB aabb = accum_xform.xform(bones_mesh->get_aabb());
@@ -720,11 +714,7 @@ void SceneImportSettingsDialog::_load_default_subresource_settings(HashMap<Strin
 		if (d.has(p_import_id)) {
 			d = d[p_import_id];
 			List<ResourceImporterScene::ImportOption> options;
-			if (editing_animation) {
-				ResourceImporterScene::get_animation_singleton()->get_internal_import_options(p_category, &options);
-			} else {
-				ResourceImporterScene::get_scene_singleton()->get_internal_import_options(p_category, &options);
-			}
+			_resource_importer_scene->get_internal_import_options(p_category, &options);
 			for (const ResourceImporterScene::ImportOption &E : options) {
 				String key = E.option.name;
 				if (d.has(key)) {
@@ -750,19 +740,23 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, const String
 		scene = nullptr;
 	}
 
-	editing_animation = p_scene_import_type == "AnimationLibrary";
 	scene_import_settings_data->settings = nullptr;
 	scene_import_settings_data->path = p_path;
 
-	// Visibility.
-	data_mode->set_tab_hidden(1, editing_animation);
-	data_mode->set_tab_hidden(2, editing_animation);
-	if (editing_animation) {
+	// AnimationLibrary cannot make use of the mesh and material tabs.
+	const bool disable_mesh_mat_tabs = p_scene_import_type == "AnimationLibrary";
+	data_mode->set_tab_hidden(1, disable_mesh_mat_tabs);
+	data_mode->set_tab_hidden(2, disable_mesh_mat_tabs);
+	if (disable_mesh_mat_tabs) {
 		data_mode->set_current_tab(0);
 	}
 
-	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_EXTRACT_MATERIALS), editing_animation);
-	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_CHOOSE_MESH_SAVE_PATHS), editing_animation);
+	// Only show the save data options for PackedScene imports of scenes, not resource imports.
+	const bool disable_save_mesh_mat = p_scene_import_type != "PackedScene";
+	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_EXTRACT_MATERIALS), disable_save_mesh_mat);
+	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_CHOOSE_MESH_SAVE_PATHS), disable_save_mesh_mat);
+	const bool disable_save_anim = disable_save_mesh_mat && p_scene_import_type != "AnimationLibrary";
+	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_CHOOSE_ANIMATION_SAVE_PATHS), disable_save_anim);
 
 	base_path = p_path;
 
@@ -802,7 +796,10 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, const String
 		}
 	}
 
-	scene = ResourceImporterScene::get_scene_singleton()->pre_import(p_path, defaults); // Use the scene singleton here because we want to see the full thing.
+	// Regardless of p_scene_import_type, use PackedScene for pre_import because we want to see the full thing.
+	_resource_importer_scene->set_scene_import_type("PackedScene");
+	scene = _resource_importer_scene->pre_import(p_path, defaults);
+	_resource_importer_scene->set_scene_import_type(p_scene_import_type);
 	if (scene == nullptr) {
 		EditorNode::get_singleton()->show_warning(TTR("Error opening scene"));
 		return;
@@ -835,11 +832,7 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, const String
 	// Start with the root item (Scene) selected.
 	scene_tree->get_root()->select(0);
 
-	if (editing_animation) {
-		set_title(vformat(TTR("Advanced Import Settings for AnimationLibrary '%s'"), base_path.get_file()));
-	} else {
-		set_title(vformat(TTR("Advanced Import Settings for Scene '%s'"), base_path.get_file()));
-	}
+	set_title(vformat(TTR("Advanced Import Settings for %s '%s'"), _resource_importer_scene->get_visible_name(), base_path.get_file()));
 }
 
 SceneImportSettingsDialog *SceneImportSettingsDialog::singleton = nullptr;
@@ -858,6 +851,10 @@ Node *SceneImportSettingsDialog::get_selected_node() {
 void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, const String &p_id) {
 	selecting = true;
 	scene_import_settings_data->hide_options = false;
+	// Only AnimationLibrary and actual scenes can make use of the animation and skeleton options.
+	const bool hide_anim_and_skel_options = _resource_importer_scene->get_scene_import_type() != "PackedScene" && _resource_importer_scene->get_scene_import_type() != "AnimationLibrary";
+	// Only actual scenes can make use of the node generation options such as generating physics colliders on meshes or setting a script.
+	const bool hide_node_gen_options = _resource_importer_scene->get_scene_import_type() != "PackedScene";
 
 	bones_mesh_preview->hide();
 	if (p_type == "Node") {
@@ -894,15 +891,17 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 			scene_import_settings_data->settings = &nd.settings;
 			if (mi) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE;
-				scene_import_settings_data->hide_options = editing_animation;
+				scene_import_settings_data->hide_options = hide_node_gen_options;
 			} else if (Object::cast_to<AnimationPlayer>(nd.node)) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE;
+				scene_import_settings_data->hide_options = hide_anim_and_skel_options;
 			} else if (Object::cast_to<Skeleton3D>(nd.node)) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE;
 				bones_mesh_preview->show();
+				scene_import_settings_data->hide_options = hide_anim_and_skel_options;
 			} else {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE;
-				scene_import_settings_data->hide_options = editing_animation;
+				scene_import_settings_data->hide_options = hide_node_gen_options;
 			}
 		}
 	} else if (p_type == "Animation") {
@@ -919,6 +918,7 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 
 		scene_import_settings_data->settings = &ad.settings;
 		scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION;
+		scene_import_settings_data->hide_options = hide_anim_and_skel_options;
 
 		_animation_update_skeleton_visibility();
 	} else if (p_type == "Mesh") {
@@ -992,19 +992,10 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 
 	List<ResourceImporter::ImportOption> options;
 
-	if (editing_animation) {
-		if (scene_import_settings_data->category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
-			ResourceImporterScene::get_animation_singleton()->get_import_options(base_path, &options);
-		} else {
-			ResourceImporterScene::get_animation_singleton()->get_internal_import_options(scene_import_settings_data->category, &options);
-		}
-
+	if (scene_import_settings_data->category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
+		_resource_importer_scene->get_import_options(base_path, &options);
 	} else {
-		if (scene_import_settings_data->category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
-			ResourceImporterScene::get_scene_singleton()->get_import_options(base_path, &options);
-		} else {
-			ResourceImporterScene::get_scene_singleton()->get_internal_import_options(scene_import_settings_data->category, &options);
-		}
+		_resource_importer_scene->get_internal_import_options(scene_import_settings_data->category, &options);
 	}
 
 	scene_import_settings_data->defaults.clear();
@@ -1032,7 +1023,7 @@ void SceneImportSettingsDialog::_inspector_property_edited(const String &p_name)
 		if (!animation_map.has(selected_id)) {
 			return;
 		}
-		HashMap<StringName, Variant> settings = animation_map[selected_id].settings;
+		HashMap<StringName, Variant> settings(animation_map[selected_id].settings);
 		if (settings.has(p_name)) {
 			animation_loop_mode = static_cast<Animation::LoopMode>((int)settings[p_name]);
 		} else {
@@ -1116,7 +1107,7 @@ void SceneImportSettingsDialog::_reset_animation(const String &p_animation_name)
 		animation_pingpong = false;
 
 		if (animation_map.has(p_animation_name)) {
-			HashMap<StringName, Variant> settings = animation_map[p_animation_name].settings;
+			HashMap<StringName, Variant> settings(animation_map[p_animation_name].settings);
 			if (settings.has("settings/loop_mode")) {
 				animation_loop_mode = static_cast<Animation::LoopMode>((int)settings["settings/loop_mode"]);
 			}
@@ -1149,7 +1140,9 @@ void SceneImportSettingsDialog::_animation_slider_value_changed(double p_value) 
 
 void SceneImportSettingsDialog::_skeleton_tree_entered(Skeleton3D *p_skeleton) {
 	bones_mesh_preview->set_skeleton_path(p_skeleton->get_path());
-	bones_mesh_preview->set_skin(p_skeleton->register_skin(p_skeleton->create_skin_from_rest_transforms()));
+	Ref<Skin> skin = p_skeleton->create_skin_from_rest_transforms();
+	p_skeleton->register_skin(skin);
+	bones_mesh_preview->set_skin(skin);
 }
 
 void SceneImportSettingsDialog::_animation_finished(const StringName &p_name) {
@@ -1366,7 +1359,7 @@ void SceneImportSettingsDialog::_re_import() {
 	main_settings["_subresources"] = subresources;
 
 	_cleanup(); // Prevent skeletons and other pointers from pointing to dangling references.
-	EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(base_path, editing_animation ? "animation_library" : "scene", main_settings);
+	EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(base_path, _resource_importer_scene->get_importer_name(), main_settings);
 }
 
 void SceneImportSettingsDialog::_update_theme_item_cache() {
@@ -1383,12 +1376,6 @@ void SceneImportSettingsDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			action_menu->begin_bulk_theme_override();
-			action_menu->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), "Button"));
-			action_menu->add_theme_style_override(SceneStringName(hover), get_theme_stylebox(SceneStringName(hover), "Button"));
-			action_menu->add_theme_style_override(SceneStringName(pressed), get_theme_stylebox(SceneStringName(pressed), "Button"));
-			action_menu->end_bulk_theme_override();
-
 			if (animation_player != nullptr && animation_player->is_playing()) {
 				animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 			} else {
@@ -1699,6 +1686,7 @@ void SceneImportSettingsDialog::_save_dir_confirm() {
 
 SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	singleton = this;
+	_resource_importer_scene = memnew(ResourceImporterScene("PackedScene"));
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
@@ -1780,7 +1768,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_play_button = memnew(Button);
 	animation_hbox->add_child(animation_play_button);
 	animation_play_button->set_flat(true);
-	animation_play_button->set_accessibility_name(TTRC("Play"));
+	animation_play_button->set_accessibility_name(TTRC("Selected Animation Play/Pause"));
 	animation_play_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	animation_play_button->set_shortcut(ED_SHORTCUT("scene_import_settings/play_selected_animation", TTRC("Selected Animation Play/Pause"), Key::SPACE));
 	animation_play_button->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_play_animation));
@@ -1788,7 +1776,6 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_stop_button = memnew(Button);
 	animation_hbox->add_child(animation_stop_button);
 	animation_stop_button->set_flat(true);
-	animation_stop_button->set_accessibility_name(TTRC("Stop"));
 	animation_stop_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	animation_stop_button->set_tooltip_text(TTR("Selected Animation Stop"));
 	animation_stop_button->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_stop_current_animation));
@@ -1810,7 +1797,6 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_toggle_skeleton_visibility->set_theme_type_variation("FlatButton");
 	animation_toggle_skeleton_visibility->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	animation_toggle_skeleton_visibility->set_tooltip_text(TTR("Toggle Animation Skeleton Visibility"));
-	animation_toggle_skeleton_visibility->set_accessibility_name(TTRC("Skeleton Visibility"));
 
 	animation_toggle_skeleton_visibility->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_animation_update_skeleton_visibility));
 
@@ -1831,7 +1817,6 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	light_rotate_switch->set_toggle_mode(true);
 	light_rotate_switch->set_pressed(true);
 	light_rotate_switch->set_tooltip_text(TTR("Rotate Lights With Model"));
-	light_rotate_switch->set_accessibility_name(TTRC("Rotate Lights With Model"));
 	light_rotate_switch->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_on_light_rotate_switch_pressed));
 	vb_light->add_child(light_rotate_switch);
 
@@ -1840,7 +1825,6 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	light_1_switch->set_toggle_mode(true);
 	light_1_switch->set_pressed(true);
 	light_1_switch->set_tooltip_text(TTR("Primary Light"));
-	light_1_switch->set_accessibility_name(TTRC("Primary Light"));
 	light_1_switch->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_on_light_1_switch_pressed));
 	vb_light->add_child(light_1_switch);
 
@@ -1849,7 +1833,6 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	light_2_switch->set_toggle_mode(true);
 	light_2_switch->set_pressed(true);
 	light_2_switch->set_tooltip_text(TTR("Secondary Light"));
-	light_2_switch->set_accessibility_name(TTRC("Secondary Light"));
 	light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_on_light_2_switch_pressed));
 	vb_light->add_child(light_2_switch);
 
@@ -1957,6 +1940,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	// Display the same tooltips as in the Import dock.
 	inspector->set_object_class(ResourceImporterScene::get_class_static());
 	inspector->set_use_doc_hints(true);
+	inspector->set_theme_type_variation(SNAME("EditorInspectorForeground"));
 
 	property_split->add_child(inspector);
 
@@ -2010,8 +1994,11 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	update_view_timer->set_one_shot(true);
 	update_view_timer->connect("timeout", callable_mp(this, &SceneImportSettingsDialog::_update_view_gizmos));
 	add_child(update_view_timer);
+
+	EditorNode::get_singleton()->register_hdr_viewport(base_viewport);
 }
 
 SceneImportSettingsDialog::~SceneImportSettingsDialog() {
 	memdelete(scene_import_settings_data);
+	memdelete(_resource_importer_scene);
 }

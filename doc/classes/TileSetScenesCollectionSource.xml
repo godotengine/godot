@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		When placed on a [TileMapLayer], tiles from [TileSetScenesCollectionSource] will automatically instantiate an associated scene at the cell's position in the TileMapLayer.
-		Scenes are instantiated as children of the [TileMapLayer] when it enters the tree. If you add/remove a scene tile in the [TileMapLayer] that is already inside the tree, the [TileMapLayer] will automatically instantiate/free the scene accordingly.
+		Scenes are instantiated as children of the [TileMapLayer] after it enters the tree, at the end of the frame (their creation is deferred). If you add/remove a scene tile in the [TileMapLayer] that is already inside the tree, the [TileMapLayer] will automatically instantiate/free the scene accordingly.
 		[b]Note:[/b] Scene tiles all occupy one tile slot and instead use alternate tile ID to identify scene index. [method TileSetSource.get_tiles_count] will always return [code]1[/code]. Use [method get_scene_tiles_count] to get a number of scenes in a [TileSetScenesCollectionSource].
 		Use this code if you want to find the scene path at a given tile in [TileMapLayer]:
 		[codeblocks]

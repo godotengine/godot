@@ -6,6 +6,7 @@
 
 #include <Jolt/Physics/Ragdoll/Ragdoll.h>
 #include <Jolt/Physics/Constraints/SwingTwistConstraint.h>
+#include <Jolt/Physics/Constraints/HingeConstraint.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Body/BodyLockMulti.h>
 #include <Jolt/Physics/Collision/GroupFilterTable.h>
@@ -187,6 +188,38 @@ bool RagdollSettings::Stabilize()
 	}
 
 	return true;
+}
+
+void RagdollSettings::CalculateConstraintPriorities(uint32 inBasePriority)
+{
+	JPH_ASSERT(inBasePriority + (uint32)mParts.size() > inBasePriority, "Base priority is too high and will cause overflows");
+	JPH_ASSERT(mSkeleton->AreJointsCorrectlyOrdered());
+
+	// Calculate priority for each part. Start with the base priority and increment towards the root
+	Array<uint32> priorities;
+	priorities.resize(mParts.size(), inBasePriority);
+	for (int i = (int)mParts.size() - 1; i >= 0; --i)
+	{
+		uint32 cur_priority = inBasePriority;
+		int j = i;
+		do
+		{
+			priorities[j] = max(priorities[j], cur_priority);
+			cur_priority++;
+
+			j = mSkeleton->GetJoint(j).mParentJointIndex;
+		}
+		while (j != -1);
+	}
+
+	// Copy the priorities to the constraints
+	for (uint i = 0, n = (uint)mParts.size(); i < n; ++i)
+		if (mParts[i].mToParent != nullptr)
+			mParts[i].mToParent->mConstraintPriority = priorities[i];
+
+	// Use the minimum of the priorities of connected bodies for additional constraints
+	for (AdditionalConstraint &constraint : mAdditionalConstraints)
+		constraint.mConstraint->mConstraintPriority = min(priorities[constraint.mBodyIdx[0]], priorities[constraint.mBodyIdx[1]]);
 }
 
 void RagdollSettings::DisableParentChildCollisions(const Mat44 *inJointMatrices, float inMinSeparationDistance)
@@ -634,6 +667,12 @@ void Ragdoll::DriveToPoseUsingMotors(const SkeletonPose &inPose)
 				st_constraint->SetSwingMotorState(EMotorState::Position);
 				st_constraint->SetTwistMotorState(EMotorState::Position);
 				st_constraint->SetTargetOrientationBS(joint_state.mRotation);
+			}
+			else if (sub_type == EConstraintSubType::Hinge)
+			{
+				HingeConstraint *h_constraint = static_cast<HingeConstraint *>(constraint);
+				h_constraint->SetMotorState(EMotorState::Position);
+				h_constraint->SetTargetOrientationBS(joint_state.mRotation);
 			}
 			else
 				JPH_ASSERT(false, "Constraint type not implemented!");

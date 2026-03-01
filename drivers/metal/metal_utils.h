@@ -30,9 +30,17 @@
 
 #pragma once
 
-#import <os/log.h>
+#include <os/log.h>
 
-#import <functional>
+#include <functional>
+
+/// Godot limits the number of dynamic buffers to 8.
+///
+/// This is a minimum guarantee for Vulkan.
+constexpr uint32_t MAX_DYNAMIC_BUFFERS = 8;
+
+// From rendering/rendering_device/vsync/frame_queue_size
+static constexpr uint32_t MAX_FRAME_COUNT = 3;
 
 #pragma mark - Boolean flags
 
@@ -85,20 +93,68 @@ static constexpr uint64_t round_up_to_alignment(uint64_t p_value, uint64_t p_ali
 	return aligned_value;
 }
 
+template <typename F>
 class Defer {
 public:
-	Defer(std::function<void()> func) :
-			func_(func) {}
+	explicit Defer(F &&f) :
+			func_(std::forward<F>(f)) {}
 	~Defer() { func_(); }
 
+	// Non-copyable (correct RAII semantics)
+	Defer(const Defer &) = delete;
+	Defer &operator=(const Defer &) = delete;
+
+	// Movable
+	Defer(Defer &&) = default;
+	Defer &operator=(Defer &&) = default;
+
 private:
-	std::function<void()> func_;
+	F func_;
 };
+
+// C++17 class template argument deduction.
+template <typename F>
+Defer(F &&) -> Defer<std::decay_t<F>>;
 
 #define CONCAT_INTERNAL(x, y) x##y
 #define CONCAT(x, y) CONCAT_INTERNAL(x, y)
-#define DEFER const Defer &CONCAT(defer__, __LINE__) = Defer
+#define DEFER const auto &CONCAT(defer__, __LINE__) = Defer
 
 extern os_log_t LOG_DRIVER;
 // Used for dynamic tracing.
 extern os_log_t LOG_INTERVALS;
+
+_FORCE_INLINE_ static constexpr uint32_t make_msl_version(uint32_t p_major, uint32_t p_minor = 0, uint32_t p_patch = 0) {
+	return (p_major * 10000) + (p_minor * 100) + p_patch;
+}
+
+_FORCE_INLINE_ static constexpr void parse_msl_version(uint32_t p_version, uint32_t &r_major, uint32_t &r_minor) {
+	r_major = p_version / 10000;
+	r_minor = (p_version % 10000) / 100;
+}
+
+constexpr uint32_t MSL_VERSION_23 = make_msl_version(2, 3);
+constexpr uint32_t MSL_VERSION_24 = make_msl_version(2, 4);
+constexpr uint32_t MSL_VERSION_30 = make_msl_version(3, 0);
+constexpr uint32_t MSL_VERSION_31 = make_msl_version(3, 1);
+constexpr uint32_t MSL_VERSION_32 = make_msl_version(3, 2);
+constexpr uint32_t MSL_VERSION_40 = make_msl_version(4, 0);
+
+/* MSL Language version table
+ *
+ * | Version |  macOS  |   iOS   |
+ * |---------|---------|---------|
+ * |   1.0   |         |   9.0   |
+ * |   1.1   |  10.11  |   9.0   |
+ * |   1.2   |  10.12  |  10.0   |
+ * |   2.0   |  10.13  |  11.0   |
+ * |   2.1   |  10.14  |  12.0   |
+ * |   2.2   |  10.15  |  13.0   |
+ * |   2.3   |  11.0   |  14.0   |
+ * |   2.4   |  12.0   |  15.0   |
+ * |   3.0   |  13.0   |  16.0   |
+ * |   3.1   |  14.0   |  17.0   |
+ * |   3.2   |  15.0   |  18.0   |
+ * |   4.0   |  26.0   |  26.0   |
+ * |---------|---------|---------|
+ */

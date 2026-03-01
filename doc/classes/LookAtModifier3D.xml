@@ -74,40 +74,44 @@
 			If [code]1.0[/code], no damping is performed. If [code]0.0[/code], damping is always performed.
 		</member>
 		<member name="primary_limit_angle" type="float" setter="set_primary_limit_angle" getter="get_primary_limit_angle">
-			The limit angle of the primary rotation when [member symmetry_limitation] is [code]true[/code].
+			The limit angle of the primary rotation when [member symmetry_limitation] is [code]true[/code], in radians.
 		</member>
 		<member name="primary_negative_damp_threshold" type="float" setter="set_primary_negative_damp_threshold" getter="get_primary_negative_damp_threshold">
 			The threshold to start damping for [member primary_negative_limit_angle].
 		</member>
 		<member name="primary_negative_limit_angle" type="float" setter="set_primary_negative_limit_angle" getter="get_primary_negative_limit_angle">
-			The limit angle of negative side of the primary rotation when [member symmetry_limitation] is [code]false[/code].
+			The limit angle of negative side of the primary rotation when [member symmetry_limitation] is [code]false[/code], in radians.
 		</member>
 		<member name="primary_positive_damp_threshold" type="float" setter="set_primary_positive_damp_threshold" getter="get_primary_positive_damp_threshold">
 			The threshold to start damping for [member primary_positive_limit_angle].
 		</member>
 		<member name="primary_positive_limit_angle" type="float" setter="set_primary_positive_limit_angle" getter="get_primary_positive_limit_angle">
-			The limit angle of positive side of the primary rotation when [member symmetry_limitation] is [code]false[/code].
+			The limit angle of positive side of the primary rotation when [member symmetry_limitation] is [code]false[/code], in radians.
 		</member>
 		<member name="primary_rotation_axis" type="int" setter="set_primary_rotation_axis" getter="get_primary_rotation_axis" enum="Vector3.Axis" default="1">
 			The axis of the first rotation. This [SkeletonModifier3D] works by compositing the rotation by Euler angles to prevent to rotate the [member forward_axis].
+		</member>
+		<member name="relative" type="bool" setter="set_relative" getter="is_relative" default="false">
+			The relative option. If [code]true[/code], the rotation is applied relative to the pose. If [code]false[/code], the rotation is applied relative to the rest. It means to replace the current pose with the [LookAtModifier3D]'s result.
+			[b]Note:[/b] This option affects the base angle for [member use_angle_limitation] unlike [IterateIK3D]'s [JointLimitation3D]. Since the [LookAtModifier3D] relies strongly on Euler rotation, the axis that determines the limitation and the actual rotation are strongly tied together.
 		</member>
 		<member name="secondary_damp_threshold" type="float" setter="set_secondary_damp_threshold" getter="get_secondary_damp_threshold">
 			The threshold to start damping for [member secondary_limit_angle].
 		</member>
 		<member name="secondary_limit_angle" type="float" setter="set_secondary_limit_angle" getter="get_secondary_limit_angle">
-			The limit angle of the secondary rotation when [member symmetry_limitation] is [code]true[/code].
+			The limit angle of the secondary rotation when [member symmetry_limitation] is [code]true[/code], in radians.
 		</member>
 		<member name="secondary_negative_damp_threshold" type="float" setter="set_secondary_negative_damp_threshold" getter="get_secondary_negative_damp_threshold">
 			The threshold to start damping for [member secondary_negative_limit_angle].
 		</member>
 		<member name="secondary_negative_limit_angle" type="float" setter="set_secondary_negative_limit_angle" getter="get_secondary_negative_limit_angle">
-			The limit angle of negative side of the secondary rotation when [member symmetry_limitation] is [code]false[/code].
+			The limit angle of negative side of the secondary rotation when [member symmetry_limitation] is [code]false[/code], in radians.
 		</member>
 		<member name="secondary_positive_damp_threshold" type="float" setter="set_secondary_positive_damp_threshold" getter="get_secondary_positive_damp_threshold">
 			The threshold to start damping for [member secondary_positive_limit_angle].
 		</member>
 		<member name="secondary_positive_limit_angle" type="float" setter="set_secondary_positive_limit_angle" getter="get_secondary_positive_limit_angle">
-			The limit angle of positive side of the secondary rotation when [member symmetry_limitation] is [code]false[/code].
+			The limit angle of positive side of the secondary rotation when [member symmetry_limitation] is [code]false[/code], in radians.
 		</member>
 		<member name="symmetry_limitation" type="bool" setter="set_symmetry_limitation" getter="is_limitation_symmetry">
 			If [code]true[/code], the limitations are spread from the bone symmetrically.
@@ -121,7 +125,7 @@
 		</member>
 		<member name="use_angle_limitation" type="bool" setter="set_use_angle_limitation" getter="is_using_angle_limitation" default="false">
 			If [code]true[/code], limits the amount of rotation. For example, this helps to prevent a character's neck from rotating 360 degrees.
-			[b]Note:[/b] As with [AnimationTree] blending, interpolation is provided that favors [method Skeleton3D.get_bone_rest]. This means that interpolation does not select the shortest path in some cases.
+			[b]Note:[/b] As with [AnimationTree] blending, interpolation is provided that favors [method Skeleton3D.get_bone_rest] or [method Skeleton3D.get_bone_pose] depends on the [member relative] option. This means that interpolation does not select the shortest path in some cases.
 			[b]Note:[/b] Some values for [member transition_type] (such as [constant Tween.TRANS_BACK], [constant Tween.TRANS_ELASTIC], and [constant Tween.TRANS_SPRING]) may exceed the limitations. If interpolation occurs while overshooting the limitations, the result might not respect the bone rest.
 		</member>
 		<member name="use_secondary_rotation" type="bool" setter="set_use_secondary_rotation" getter="is_using_secondary_rotation" default="true">

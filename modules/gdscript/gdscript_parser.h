@@ -269,7 +269,10 @@ public:
 		// };
 		// Type type = NO_ERROR;
 		String message;
-		int line = 0, column = 0;
+		int start_line = 0;
+		int start_column = 0;
+		int end_line = 0;
+		int end_column = 0;
 	};
 
 #ifdef TOOLS_ENABLED
@@ -337,8 +340,10 @@ public:
 		};
 
 		Type type = NONE;
-		int start_line = 0, end_line = 0;
-		int start_column = 0, end_column = 0;
+		int start_line = 0;
+		int start_column = 0;
+		int end_line = 0;
+		int end_column = 0;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
 
@@ -904,6 +909,7 @@ public:
 			MEMBER_CLASS,
 			INHERITED_VARIABLE,
 			STATIC_VARIABLE,
+			NATIVE_CLASS,
 		};
 		Source source = UNDEFINED_SOURCE;
 
@@ -1107,8 +1113,10 @@ public:
 			StringName name;
 			FunctionNode *source_function = nullptr;
 
-			int start_line = 0, end_line = 0;
-			int start_column = 0, end_column = 0;
+			int start_line = 0;
+			int start_column = 0;
+			int end_line = 0;
+			int end_column = 0;
 
 			DataType get_datatype() const;
 			String get_name() const;
@@ -1300,6 +1308,7 @@ public:
 		COMPLETION_PROPERTY_METHOD, // Property setter or getter (list available methods).
 		COMPLETION_RESOURCE_PATH, // For load/preload.
 		COMPLETION_SUBSCRIPT, // Inside id[|].
+		COMPLETION_SUPER, // super(), used for lookup.
 		COMPLETION_SUPER_METHOD, // After super.
 		COMPLETION_TYPE_ATTRIBUTE, // Attribute in type name (Type.|).
 		COMPLETION_TYPE_NAME, // Name of type (after :).
@@ -1317,7 +1326,10 @@ public:
 		FunctionNode *current_function = nullptr;
 		SuiteNode *current_suite = nullptr;
 		int current_line = -1;
-		int current_argument = -1;
+		union {
+			int current_argument = -1;
+			int type_chain_index;
+		};
 		Variant::Type builtin_type = Variant::VARIANT_MAX;
 		Node *node = nullptr;
 		Object *base = nullptr;
@@ -1344,6 +1356,19 @@ private:
 	List<ParserError> errors;
 
 #ifdef DEBUG_ENABLED
+public:
+	struct WarningDirectoryRule {
+		enum Decision {
+			DECISION_EXCLUDE,
+			DECISION_INCLUDE,
+			DECISION_MAX,
+		};
+
+		String directory_path; // With a trailing slash.
+		Decision decision = DECISION_EXCLUDE;
+	};
+
+private:
 	struct PendingWarning {
 		const Node *source = nullptr;
 		GDScriptWarning::Code code = GDScriptWarning::WARNING_MAX;
@@ -1351,13 +1376,17 @@ private:
 		Vector<String> symbols;
 	};
 
-	bool is_ignoring_warnings = false;
+	static bool is_project_ignoring_warnings;
+	static GDScriptWarning::WarnLevel warning_levels[GDScriptWarning::WARNING_MAX];
+	static LocalVector<WarningDirectoryRule> warning_directory_rules;
+
 	List<GDScriptWarning> warnings;
 	List<PendingWarning> pending_warnings;
+	bool is_script_ignoring_warnings = false;
 	HashSet<int> warning_ignored_lines[GDScriptWarning::WARNING_MAX];
 	int warning_ignore_start_lines[GDScriptWarning::WARNING_MAX];
 	HashSet<int> unsafe_lines;
-#endif
+#endif // DEBUG_ENABLED
 
 	GDScriptTokenizer *tokenizer = nullptr;
 	GDScriptTokenizer::Token previous;
@@ -1468,6 +1497,7 @@ private:
 	}
 
 	void clear();
+
 	void push_error(const String &p_message, const Node *p_origin = nullptr);
 #ifdef DEBUG_ENABLED
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
@@ -1476,7 +1506,9 @@ private:
 		push_warning(p_source, p_code, Vector<String>{ p_symbols... });
 	}
 	void apply_pending_warnings();
-#endif
+	void evaluate_warning_directory_rules_for_script_path();
+#endif // DEBUG_ENABLED
+
 	// Setting p_force to false will prevent the completion context from being update if a context was already set before.
 	// This should only be done when we push context before we consumed any tokens for the corresponding structure.
 	// See parse_precedence for an example.
@@ -1503,17 +1535,17 @@ private:
 
 	// Main blocks.
 	void parse_program();
-	ClassNode *parse_class(bool p_is_abstract, bool p_is_static);
+	ClassNode *parse_class(bool p_is_static);
 	void parse_class_name();
 	void parse_extends();
-	void parse_class_body(bool p_first_is_abstract, bool p_is_multiline);
+	void parse_class_body(bool p_is_multiline);
 	template <typename T>
-	void parse_class_member(T *(GDScriptParser::*p_parse_function)(bool, bool), AnnotationInfo::TargetKind p_target, const String &p_member_kind, bool p_is_abstract = false, bool p_is_static = false);
-	SignalNode *parse_signal(bool p_is_abstract, bool p_is_static);
-	EnumNode *parse_enum(bool p_is_abstract, bool p_is_static);
+	void parse_class_member(T *(GDScriptParser::*p_parse_function)(bool), AnnotationInfo::TargetKind p_target, const String &p_member_kind, bool p_is_static = false);
+	SignalNode *parse_signal(bool p_is_static);
+	EnumNode *parse_enum(bool p_is_static);
 	ParameterNode *parse_parameter();
-	FunctionNode *parse_function(bool p_is_abstract, bool p_is_static);
-	void parse_function_signature(FunctionNode *p_function, SuiteNode *p_body, const String &p_type, int p_signature_start);
+	FunctionNode *parse_function(bool p_is_static);
+	bool parse_function_signature(FunctionNode *p_function, SuiteNode *p_body, const String &p_type, int p_signature_start);
 	SuiteNode *parse_suite(const String &p_context, SuiteNode *p_suite = nullptr, bool p_for_lambda = false);
 	// Annotations
 	AnnotationNode *parse_annotation(uint32_t p_valid_targets);
@@ -1523,6 +1555,7 @@ private:
 	bool tool_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool icon_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool abstract_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
@@ -1536,12 +1569,12 @@ private:
 	bool rpc_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	// Statements.
 	Node *parse_statement();
-	VariableNode *parse_variable(bool p_is_abstract, bool p_is_static);
-	VariableNode *parse_variable(bool p_is_abstract, bool p_is_static, bool p_allow_property);
+	VariableNode *parse_variable(bool p_is_static);
+	VariableNode *parse_variable(bool p_is_static, bool p_allow_property);
 	VariableNode *parse_property(VariableNode *p_variable, bool p_need_indent);
 	void parse_property_getter(VariableNode *p_variable);
 	void parse_property_setter(VariableNode *p_variable);
-	ConstantNode *parse_constant(bool p_is_abstract, bool p_is_static);
+	ConstantNode *parse_constant(bool p_is_static);
 	AssertNode *parse_assert();
 	BreakNode *parse_break();
 	ContinueNode *parse_continue();
@@ -1609,11 +1642,13 @@ public:
 		// TODO: Keep track of deps.
 		return List<String>();
 	}
+
 #ifdef DEBUG_ENABLED
+	static void update_project_settings();
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }
 	const HashSet<int> &get_unsafe_lines() const { return unsafe_lines; }
 	int get_last_line_number() const { return current.end_line; }
-#endif
+#endif // DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
 	static HashMap<String, String> theme_color_names;

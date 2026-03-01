@@ -30,10 +30,12 @@
 
 #include "openxr_interaction_profile.h"
 
+#include "core/object/class_db.h"
+
 void OpenXRIPBinding::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_action", "action"), &OpenXRIPBinding::set_action);
 	ClassDB::bind_method(D_METHOD("get_action"), &OpenXRIPBinding::get_action);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "action", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRAction"), "set_action", "get_action");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "action", PROPERTY_HINT_RESOURCE_TYPE, OpenXRAction::get_class_static()), "set_action", "get_action");
 
 	ClassDB::bind_method(D_METHOD("set_binding_path", "binding_path"), &OpenXRIPBinding::set_binding_path);
 	ClassDB::bind_method(D_METHOD("get_binding_path"), &OpenXRIPBinding::get_binding_path);
@@ -43,7 +45,7 @@ void OpenXRIPBinding::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_binding_modifier", "index"), &OpenXRIPBinding::get_binding_modifier);
 	ClassDB::bind_method(D_METHOD("set_binding_modifiers", "binding_modifiers"), &OpenXRIPBinding::set_binding_modifiers);
 	ClassDB::bind_method(D_METHOD("get_binding_modifiers"), &OpenXRIPBinding::get_binding_modifiers);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "binding_modifiers", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRActionBindingModifier", PROPERTY_USAGE_NO_EDITOR), "set_binding_modifiers", "get_binding_modifiers");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "binding_modifiers", PROPERTY_HINT_RESOURCE_TYPE, OpenXRActionBindingModifier::get_class_static(), PROPERTY_USAGE_NO_EDITOR), "set_binding_modifiers", "get_binding_modifiers");
 
 	// Deprecated
 #ifndef DISABLE_DEPRECATED
@@ -58,7 +60,7 @@ void OpenXRIPBinding::_bind_methods() {
 #endif // DISABLE_DEPRECATED
 }
 
-Ref<OpenXRIPBinding> OpenXRIPBinding::new_binding(const Ref<OpenXRAction> p_action, const String &p_binding_path) {
+Ref<OpenXRIPBinding> OpenXRIPBinding::new_binding(const Ref<OpenXRAction> &p_action, const String &p_binding_path) {
 	// This is a helper function to help build our default action sets
 
 	Ref<OpenXRIPBinding> binding;
@@ -78,8 +80,15 @@ Ref<OpenXRAction> OpenXRIPBinding::get_action() const {
 	return action;
 }
 
-void OpenXRIPBinding::set_binding_path(const String &path) {
-	binding_path = path;
+void OpenXRIPBinding::set_binding_path(const String &p_path) {
+	OpenXRInteractionProfileMetadata *pmd = OpenXRInteractionProfileMetadata::get_singleton();
+	if (pmd) {
+		binding_path = pmd->check_path_name(p_path);
+	} else {
+		// OpenXR not enabled, ignore checks.
+		binding_path = p_path;
+	}
+
 	emit_changed();
 }
 
@@ -158,7 +167,7 @@ void OpenXRIPBinding::remove_binding_modifier(const Ref<OpenXRActionBindingModif
 
 #ifndef DISABLE_DEPRECATED
 
-void OpenXRIPBinding::set_paths(const PackedStringArray p_paths) { // Deprecated, but needed for loading old action maps.
+void OpenXRIPBinding::set_paths(const PackedStringArray &p_paths) { // Deprecated, but needed for loading old action maps.
 	// Fallback logic, this should ONLY be called when loading older action maps.
 	// We'll parse this momentarily and extract individual bindings.
 	binding_path = "";
@@ -184,12 +193,12 @@ int OpenXRIPBinding::get_path_count() const { // Deprecated.
 	return binding_path.is_empty() ? 0 : 1;
 }
 
-bool OpenXRIPBinding::has_path(const String p_path) const { // Deprecated.
+bool OpenXRIPBinding::has_path(const String &p_path) const { // Deprecated.
 	// Fallback logic, return true if this is our path.
 	return binding_path == p_path;
 }
 
-void OpenXRIPBinding::add_path(const String p_path) { // Deprecated.
+void OpenXRIPBinding::add_path(const String &p_path) { // Deprecated.
 	// Fallback logic, only assign first time this is called.
 	if (binding_path != p_path) {
 		ERR_FAIL_COND_MSG(!binding_path.is_empty(), "Method add_path has been deprecated. A binding path was already set, create separate binding resources for each path and use set_binding_path instead.");
@@ -199,7 +208,7 @@ void OpenXRIPBinding::add_path(const String p_path) { // Deprecated.
 	}
 }
 
-void OpenXRIPBinding::remove_path(const String p_path) { // Deprecated.
+void OpenXRIPBinding::remove_path(const String &p_path) { // Deprecated.
 	ERR_FAIL_COND_MSG(binding_path != p_path, "Method remove_path has been deprecated. Attempt at removing a different binding path, remove the correct binding record from the interaction profile instead.");
 
 	// Fallback logic, clear if this is our path.
@@ -222,13 +231,13 @@ void OpenXRInteractionProfile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_binding", "index"), &OpenXRInteractionProfile::get_binding);
 	ClassDB::bind_method(D_METHOD("set_bindings", "bindings"), &OpenXRInteractionProfile::set_bindings);
 	ClassDB::bind_method(D_METHOD("get_bindings"), &OpenXRInteractionProfile::get_bindings);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "bindings", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRIPBinding", PROPERTY_USAGE_NO_EDITOR), "set_bindings", "get_bindings");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "bindings", PROPERTY_HINT_RESOURCE_TYPE, OpenXRIPBinding::get_class_static(), PROPERTY_USAGE_NO_EDITOR), "set_bindings", "get_bindings");
 
 	ClassDB::bind_method(D_METHOD("get_binding_modifier_count"), &OpenXRInteractionProfile::get_binding_modifier_count);
 	ClassDB::bind_method(D_METHOD("get_binding_modifier", "index"), &OpenXRInteractionProfile::get_binding_modifier);
 	ClassDB::bind_method(D_METHOD("set_binding_modifiers", "binding_modifiers"), &OpenXRInteractionProfile::set_binding_modifiers);
 	ClassDB::bind_method(D_METHOD("get_binding_modifiers"), &OpenXRInteractionProfile::get_binding_modifiers);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "binding_modifiers", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRIPBindingModifier", PROPERTY_USAGE_NO_EDITOR), "set_binding_modifiers", "get_binding_modifiers");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "binding_modifiers", PROPERTY_HINT_RESOURCE_TYPE, OpenXRIPBindingModifier::get_class_static(), PROPERTY_USAGE_NO_EDITOR), "set_binding_modifiers", "get_binding_modifiers");
 }
 
 Ref<OpenXRInteractionProfile> OpenXRInteractionProfile::new_profile(const char *p_input_profile_path) {
@@ -239,12 +248,12 @@ Ref<OpenXRInteractionProfile> OpenXRInteractionProfile::new_profile(const char *
 	return profile;
 }
 
-void OpenXRInteractionProfile::set_interaction_profile_path(const String p_input_profile_path) {
+void OpenXRInteractionProfile::set_interaction_profile_path(const String &p_input_profile_path) {
 	OpenXRInteractionProfileMetadata *pmd = OpenXRInteractionProfileMetadata::get_singleton();
 	if (pmd) {
 		interaction_profile_path = pmd->check_profile_name(p_input_profile_path);
 	} else {
-		// OpenXR module not enabled, ignore checks.
+		// OpenXR not enabled, ignore checks.
 		interaction_profile_path = p_input_profile_path;
 	}
 	emit_changed();

@@ -167,6 +167,9 @@ void JoltShapedObject3D::_dequeue_needs_optimization() {
 
 void JoltShapedObject3D::_shapes_changed() {
 	commit_shapes(false);
+}
+
+void JoltShapedObject3D::_shapes_committed() {
 	_update_object_layer();
 }
 
@@ -192,7 +195,6 @@ JoltShapedObject3D::JoltShapedObject3D(ObjectType p_object_type) :
 	jolt_settings->mRestitution = 0.0f;
 	jolt_settings->mLinearDamping = 0.0f;
 	jolt_settings->mAngularDamping = 0.0f;
-	jolt_settings->mGravityFactor = 0.0f;
 }
 
 JoltShapedObject3D::~JoltShapedObject3D() {
@@ -284,7 +286,7 @@ JPH::ShapeRefC JoltShapedObject3D::build_shapes(bool p_optimize_compound) {
 
 	if (new_shape == nullptr) {
 		if (has_custom_center_of_mass()) {
-			new_shape = JPH::EmptyShapeSettings(to_jolt(get_center_of_mass_custom())).Create().Get();
+			new_shape = new JPH::EmptyShape(to_jolt(get_center_of_mass_custom()));
 		} else {
 			new_shape = new JPH::EmptyShape();
 		}

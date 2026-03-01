@@ -32,6 +32,7 @@
 #include "../action_map/openxr_interaction_profile_metadata.h"
 #include "openxr_action_map_editor.h"
 
+#include "core/object/class_db.h"
 #include "editor/themes/editor_scale.h"
 
 void OpenXRBindingModifiersDialog::_bind_methods() {
@@ -53,7 +54,7 @@ void OpenXRBindingModifiersDialog::_notification(int p_what) {
 	}
 }
 
-OpenXRBindingModifierEditor *OpenXRBindingModifiersDialog::_add_binding_modifier_editor(Ref<OpenXRBindingModifier> p_binding_modifier) {
+OpenXRBindingModifierEditor *OpenXRBindingModifiersDialog::_add_binding_modifier_editor(const Ref<OpenXRBindingModifier> &p_binding_modifier) {
 	ERR_FAIL_COND_V(p_binding_modifier.is_null(), nullptr);
 
 	String class_name = p_binding_modifier->get_class();
@@ -222,7 +223,7 @@ OpenXRBindingModifiersDialog::OpenXRBindingModifiersDialog() {
 	add_child(create_dialog);
 }
 
-void OpenXRBindingModifiersDialog::setup(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRInteractionProfile> p_interaction_profile, Ref<OpenXRIPBinding> p_ip_binding) {
+void OpenXRBindingModifiersDialog::setup(const Ref<OpenXRActionMap> &p_action_map, const Ref<OpenXRInteractionProfile> &p_interaction_profile, const Ref<OpenXRIPBinding> &p_ip_binding) {
 	OpenXRInteractionProfileMetadata *meta_data = OpenXRInteractionProfileMetadata::get_singleton();
 	action_map = p_action_map;
 	interaction_profile = p_interaction_profile;

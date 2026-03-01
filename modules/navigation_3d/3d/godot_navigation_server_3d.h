@@ -39,20 +39,20 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
 #include "core/templates/rid_owner.h"
-#include "servers/navigation/navigation_path_query_parameters_3d.h"
-#include "servers/navigation/navigation_path_query_result_3d.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
+#include "servers/navigation_3d/navigation_path_query_result_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 /// The commands are functions executed during the `sync` phase.
 
 #define MERGE_INTERNAL(A, B) A##B
 #define MERGE(A, B) MERGE_INTERNAL(A, B)
 
-#define COMMAND_1(F_NAME, T_0, D_0)        \
+#define COMMAND_1(F_NAME, T_0, D_0) \
 	virtual void F_NAME(T_0 D_0) override; \
 	void MERGE(_cmd_, F_NAME)(T_0 D_0)
 
-#define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1)       \
+#define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1) \
 	virtual void F_NAME(T_0 D_0, T_1 D_1) override; \
 	void MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
 
@@ -280,7 +280,7 @@ public:
 	virtual Vector<Vector3> simplify_path(const Vector<Vector3> &p_path, real_t p_epsilon) override;
 
 public:
-	COMMAND_1(free, RID, p_object);
+	COMMAND_1(free_rid, RID, p_object);
 
 	virtual void set_active(bool p_active) override;
 

@@ -368,7 +368,8 @@ static SwOutline* _genDashOutline(const RenderShape* rshape, const Matrix& trans
         }
     }
 
-    dash.outline = mpoolReqDashOutline(mpool, tid);
+    mpoolRetOutline(mpool, tid);  //retreive the outline cache and use it for dash outline.
+    dash.outline = mpoolReqOutline(mpool, tid);
 
     //must begin with moveTo
     if (cmds[0] == PathCommand::MoveTo) {
@@ -516,7 +517,7 @@ bool shapePrepared(const SwShape* shape)
 }
 
 
-bool shapeGenRle(SwShape* shape, TVG_UNUSED const RenderShape* rshape, bool antiAlias)
+bool shapeGenRle(SwShape* shape, TVG_UNUSED const RenderShape* rshape, SwMpool* mpool, unsigned tid, bool antiAlias)
 {
     //FIXME: Should we draw it?
     //Case: Stroke Line
@@ -526,7 +527,7 @@ bool shapeGenRle(SwShape* shape, TVG_UNUSED const RenderShape* rshape, bool anti
     if (shape->fastTrack) return true;
 
     //Case B: Normal Shape RLE Drawing
-    if ((shape->rle = rleRender(shape->rle, shape->outline, shape->bbox, antiAlias))) return true;
+    if ((shape->rle = rleRender(shape->rle, shape->outline, shape->bbox, mpool, tid, antiAlias))) return true;
 
     return false;
 }
@@ -587,17 +588,13 @@ void shapeResetStroke(SwShape* shape, const RenderShape* rshape, const Matrix& t
 bool shapeGenStrokeRle(SwShape* shape, const RenderShape* rshape, const Matrix& transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid)
 {
     SwOutline* shapeOutline = nullptr;
-    SwOutline* strokeOutline = nullptr;
-    auto dashStroking = false;
-    auto ret = true;
 
     //Dash style (+trimming)
     auto trimmed = rshape->strokeTrim();
     if (rshape->stroke->dashCnt > 0 || trimmed) {
         shapeOutline = _genDashOutline(rshape, transform, trimmed, mpool, tid);
         if (!shapeOutline) return false;
-        dashStroking = true;
-    //Normal style
+    //Trimming & Normal style
     } else {
         if (!shape->outline) {
             if (!_genOutline(shape, rshape, transform, mpool, tid, false)) return false;
@@ -605,24 +602,11 @@ bool shapeGenStrokeRle(SwShape* shape, const RenderShape* rshape, const Matrix& 
         shapeOutline = shape->outline;
     }
 
-    if (!strokeParseOutline(shape->stroke, *shapeOutline)) {
-        ret = false;
-        goto clear;
-    }
-
-    strokeOutline = strokeExportOutline(shape->stroke, mpool, tid);
-
-    if (!mathUpdateOutlineBBox(strokeOutline, clipRegion, renderRegion, false)) {
-        ret = false;
-        goto clear;
-    }
-
-    shape->strokeRle = rleRender(shape->strokeRle, strokeOutline, renderRegion, true);
-
-clear:
-    if (dashStroking) mpoolRetDashOutline(mpool, tid);
+    if (!strokeParseOutline(shape->stroke, *shapeOutline)) return false;
+    auto strokeOutline = strokeExportOutline(shape->stroke, mpool, tid);
+    auto ret = mathUpdateOutlineBBox(strokeOutline, clipRegion, renderRegion, false);
+    shape->strokeRle = rleRender(shape->strokeRle, strokeOutline, renderRegion, mpool, tid, true);
     mpoolRetStrokeOutline(mpool, tid);
-
     return ret;
 }
 

@@ -33,13 +33,17 @@
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/math/delaunay_3d.h"
+#include "core/math/geometry_3d.h"
+#include "core/object/class_db.h"
 #include "core/object/object.h"
+#include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_probe.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/sky.h"
+#include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For lightmapper_rd.
 
@@ -212,14 +216,14 @@ bool LightmapGIData::_is_using_packed_directional() const {
 }
 
 void LightmapGIData::update_shadowmask_mode(ShadowmaskMode p_mode) {
-	RS::get_singleton()->lightmap_set_shadowmask_mode(lightmap, (RS::ShadowmaskMode)p_mode);
+	RS::get_singleton()->lightmap_set_shadowmask_mode(lightmap, (RSE::ShadowmaskMode)p_mode);
 }
 
 LightmapGIData::ShadowmaskMode LightmapGIData::get_shadowmask_mode() const {
 	return (ShadowmaskMode)RS::get_singleton()->lightmap_get_shadowmask_mode(lightmap);
 }
 
-void LightmapGIData::set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree, float p_baked_exposure) {
+void LightmapGIData::set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree, float p_baked_exposure, uint32_t p_lightprobe_hash) {
 	if (p_points.size()) {
 		int pc = p_points.size();
 		ERR_FAIL_COND(pc * 9 != p_point_sh.size());
@@ -235,6 +239,7 @@ void LightmapGIData::set_capture_data(const AABB &p_bounds, bool p_interior, con
 	}
 	RS::get_singleton()->lightmap_set_baked_exposure_normalization(lightmap, p_baked_exposure);
 	baked_exposure = p_baked_exposure;
+	lightprobe_hash = p_lightprobe_hash;
 	interior = p_interior;
 	bounds = p_bounds;
 }
@@ -253,6 +258,10 @@ PackedInt32Array LightmapGIData::get_capture_tetrahedra() const {
 
 PackedInt32Array LightmapGIData::get_capture_bsp_tree() const {
 	return RS::get_singleton()->lightmap_get_probe_capture_bsp_tree(lightmap);
+}
+
+uint32_t LightmapGIData::get_lightprobe_hash() const {
+	return lightprobe_hash;
 }
 
 AABB LightmapGIData::get_capture_bounds() const {
@@ -275,7 +284,12 @@ void LightmapGIData::_set_probe_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("sh"));
 	ERR_FAIL_COND(!p_data.has("interior"));
 	ERR_FAIL_COND(!p_data.has("baked_exposure"));
-	set_capture_data(p_data["bounds"], p_data["interior"], p_data["points"], p_data["sh"], p_data["tetrahedra"], p_data["bsp"], p_data["baked_exposure"]);
+
+	uint32_t phash = 0;
+	if (p_data.has("lightprobe_hash")) { // Older versions will not have it.
+		phash = p_data["lightprobe_hash"];
+	}
+	set_capture_data(p_data["bounds"], p_data["interior"], p_data["points"], p_data["sh"], p_data["tetrahedra"], p_data["bsp"], p_data["baked_exposure"], phash);
 }
 
 Dictionary LightmapGIData::_get_probe_data() const {
@@ -287,6 +301,7 @@ Dictionary LightmapGIData::_get_probe_data() const {
 	d["sh"] = get_capture_sh();
 	d["interior"] = is_interior();
 	d["baked_exposure"] = get_baked_exposure();
+	d["lightprobe_hash"] = lightprobe_hash;
 	return d;
 }
 
@@ -350,7 +365,7 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_light_textures_data", "data"), &LightmapGIData::_set_light_textures_data);
 	ClassDB::bind_method(D_METHOD("_get_light_textures_data"), &LightmapGIData::_get_light_textures_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_texture", PROPERTY_HINT_RESOURCE_TYPE, "TextureLayered", PROPERTY_USAGE_NONE), "set_light_texture", "get_light_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_texture", PROPERTY_HINT_RESOURCE_TYPE, TextureLayered::get_class_static(), PROPERTY_USAGE_NONE), "set_light_texture", "get_light_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "light_textures", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_INTERNAL), "_set_light_textures_data", "_get_light_textures_data");
 #endif
 
@@ -365,7 +380,7 @@ LightmapGIData::LightmapGIData() {
 
 LightmapGIData::~LightmapGIData() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(lightmap);
+	RS::get_singleton()->free_rid(lightmap);
 }
 
 ///////////////////////////
@@ -468,7 +483,7 @@ void LightmapGI::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &m
 	}
 }
 
-int LightmapGI::_bsp_get_simplex_side(const Vector<Vector3> &p_points, const LocalVector<BSPSimplex> &p_simplices, const Plane &p_plane, uint32_t p_simplex) const {
+int LightmapGI::_bsp_get_simplex_side(const LocalVector<Vector3> &p_points, const LocalVector<BSPSimplex> &p_simplices, const Plane &p_plane, uint32_t p_simplex) const {
 	int over = 0;
 	int under = 0;
 	const BSPSimplex &s = p_simplices[p_simplex];
@@ -498,7 +513,7 @@ int LightmapGI::_bsp_get_simplex_side(const Vector<Vector3> &p_points, const Loc
 
 //#define DEBUG_BSP
 
-int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const LocalVector<Plane> &p_planes, LocalVector<int32_t> &planes_tested, const LocalVector<BSPSimplex> &p_simplices, const LocalVector<int32_t> &p_simplex_indices, LocalVector<BSPNode> &bsp_nodes) {
+int32_t LightmapGI::_compute_bsp_tree(const LocalVector<Vector3> &p_points, const LocalVector<Plane> &p_planes, LocalVector<int32_t> &planes_tested, const LocalVector<BSPSimplex> &p_simplices, const LocalVector<int32_t> &p_simplex_indices, LocalVector<BSPNode> &bsp_nodes) {
 	ERR_FAIL_COND_V(p_simplex_indices.size() < 2, -1);
 
 	int32_t node_index = (int32_t)bsp_nodes.size();
@@ -950,8 +965,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 			ERR_FAIL_COND_V(images.is_empty(), BAKE_ERROR_CANT_CREATE_IMAGE);
 
-			Ref<Image> albedo = images[RS::BAKE_CHANNEL_ALBEDO_ALPHA];
-			Ref<Image> orm = images[RS::BAKE_CHANNEL_ORM];
+			Ref<Image> albedo = images[RSE::BAKE_CHANNEL_ALBEDO_ALPHA];
+			Ref<Image> orm = images[RSE::BAKE_CHANNEL_ORM];
 
 			//multiply albedo by metal
 
@@ -994,7 +1009,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				md.albedo_on_uv2->set_data(lightmap_size.width, lightmap_size.height, false, Image::FORMAT_RGBA8, albedom);
 			}
 
-			md.emission_on_uv2 = images[RS::BAKE_CHANNEL_EMISSION];
+			md.emission_on_uv2 = images[RSE::BAKE_CHANNEL_EMISSION];
 			if (md.emission_on_uv2->get_format() != Image::FORMAT_RGBAH) {
 				md.emission_on_uv2->convert(Image::FORMAT_RGBAH);
 			}
@@ -1332,34 +1347,46 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		gi_data->add_user(np, uv_scale, slice_index, subindex);
 	}
 
-	{
-		// Create tetrahedrons.
-		Vector<Vector3> points;
-		Vector<Color> sh;
-		points.resize(lightmapper->get_bake_probe_count());
-		sh.resize(lightmapper->get_bake_probe_count() * 9);
-		for (int i = 0; i < lightmapper->get_bake_probe_count(); i++) {
-			points.write[i] = lightmapper->get_bake_probe_point(i);
-			Vector<Color> colors = lightmapper->get_bake_probe_sh(i);
-			ERR_CONTINUE(colors.size() != 9);
-			for (int j = 0; j < 9; j++) {
-				sh.write[i * 9 + j] = colors[j];
-			}
-		}
+	int probe_count = lightmapper->get_bake_probe_count();
 
+	// Probe SH may change between bakes.
+	LocalVector<Color> probe_sh;
+	LocalVector<Vector3> probe_points;
+	probe_sh.resize(probe_count * 9);
+	probe_points.resize(probe_count);
+
+	uint32_t bake_probe_hash = HASH_MURMUR3_SEED;
+	for (int i = 0; i < probe_count; i++) {
+		// Calculate the hash from probe positions.
+		Vector3 point = lightmapper->get_bake_probe_point(i);
+		bake_probe_hash = hash_murmur3_one_double(point.x, bake_probe_hash);
+		bake_probe_hash = hash_murmur3_one_double(point.y, bake_probe_hash);
+		bake_probe_hash = hash_murmur3_one_double(point.z, bake_probe_hash);
+
+		probe_points[i] = point;
+		Vector<Color> colors = lightmapper->get_bake_probe_sh(i);
+		ERR_CONTINUE(colors.size() != 9);
+		for (int j = 0; j < 9; j++) {
+			probe_sh[i * 9 + j] = colors[j];
+		}
+	}
+
+	// If the probe hash doesn't match, build the BSP tree from scratch.
+	if (bake_probe_hash != gi_data->get_lightprobe_hash()) {
 		// Obtain solved simplices.
 		if (p_bake_step) {
 			p_bake_step(0.8, RTR("Generating Probe Volumes"), p_bake_userdata, true);
 		}
 
-		Vector<Delaunay3D::OutputSimplex> solved_simplices = Delaunay3D::tetrahedralize(points);
+		Vector<Delaunay3D::OutputSimplex> solved_simplices = Delaunay3D::tetrahedralize(Vector<Vector3>(probe_points));
+		int64_t simplex_count = solved_simplices.size();
 
 		LocalVector<BSPSimplex> bsp_simplices;
 		LocalVector<Plane> bsp_planes;
 		LocalVector<int32_t> bsp_simplex_indices;
 		PackedInt32Array tetrahedrons;
 
-		for (int i = 0; i < solved_simplices.size(); i++) {
+		for (int i = 0; i < simplex_count; i++) {
 			//Prepare a special representation of the simplex, which uses a BSP Tree
 			BSPSimplex bsp_simplex;
 			for (int j = 0; j < 4; j++) {
@@ -1372,9 +1399,9 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 					{ 0, 1, 3 },
 					{ 1, 2, 3 }
 				};
-				Vector3 a = points[solved_simplices[i].points[face_order[j][0]]];
-				Vector3 b = points[solved_simplices[i].points[face_order[j][1]]];
-				Vector3 c = points[solved_simplices[i].points[face_order[j][2]]];
+				Vector3 a = probe_points[solved_simplices[i].points[face_order[j][0]]];
+				Vector3 b = probe_points[solved_simplices[i].points[face_order[j][1]]];
+				Vector3 c = probe_points[solved_simplices[i].points[face_order[j][2]]];
 
 				//store planes in an array, but ensure they are reused, to speed up processing
 
@@ -1409,7 +1436,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			for (uint32_t i = 0; i < bsp_simplices.size(); i++) {
 				f->store_line("o Simplex" + itos(i));
 				for (int j = 0; j < 4; j++) {
-					f->store_line(vformat("v %f %f %f", points[bsp_simplices[i].vertices[j]].x, points[bsp_simplices[i].vertices[j]].y, points[bsp_simplices[i].vertices[j]].z));
+					f->store_line(vformat("v %f %f %f", probe_points[bsp_simplices[i].vertices[j]].x, probe_points[bsp_simplices[i].vertices[j]].y, probe_points[bsp_simplices[i].vertices[j]].z));
 				}
 				static const int face_order[4][3] = {
 					{ 1, 2, 3 },
@@ -1436,7 +1463,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			p_bake_step(0.9, RTR("Generating Probe Acceleration Structures"), p_bake_userdata, true);
 		}
 
-		_compute_bsp_tree(points, bsp_planes, planes_tested, bsp_simplices, bsp_simplex_indices, bsp_nodes);
+		// Compute a BSP tree of the simplices, so it's easy to find the exact one.
+		_compute_bsp_tree(probe_points, bsp_planes, planes_tested, bsp_simplices, bsp_simplex_indices, bsp_nodes);
 
 		PackedInt32Array bsp_array;
 		bsp_array.resize(bsp_nodes.size() * 6); // six 32 bits values used for each BSP node
@@ -1460,10 +1488,9 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 #endif
 		}
 
-		/* Obtain the colors from the images, they will be re-created as cubemaps on the server, depending on the driver */
-
-		gi_data->set_capture_data(bounds, interior, points, sh, tetrahedrons, bsp_array, exposure_normalization);
-		/* Compute a BSP tree of the simplices, so it's easy to find the exact one */
+		gi_data->set_capture_data(bounds, interior, Vector<Vector3>(probe_points), Vector<Color>(probe_sh), tetrahedrons, bsp_array, exposure_normalization, bake_probe_hash);
+	} else {
+		gi_data->set_capture_data(bounds, interior, Vector<Vector3>(probe_points), Vector<Color>(probe_sh), gi_data->get_capture_tetrahedra(), gi_data->get_capture_bsp_tree(), exposure_normalization, bake_probe_hash);
 	}
 
 	gi_data->set_path(p_image_data_path, true);
@@ -1803,23 +1830,30 @@ void LightmapGI::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
-	if (p_property.name == "supersampling_factor" && !supersampling_enabled) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (p_property.name == "environment_custom_sky" && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (p_property.name == "environment_custom_color" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (p_property.name == "environment_custom_energy" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (p_property.name == "denoiser_strength" && !use_denoiser) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (p_property.name == "denoiser_range" && !use_denoiser) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (p_property.name == "supersampling_factor") {
+		if (!supersampling_enabled) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else if (p_property.name == "environment_custom_sky") {
+		if (environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else if (p_property.name == "environment_custom_color") {
+		if (environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else if (p_property.name == "environment_custom_energy") {
+		if (environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else if (p_property.name == "denoiser_strength") {
+		if (!use_denoiser) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else if (p_property.name == "denoiser_range") {
+		if (!use_denoiser) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
 }
 
@@ -1910,14 +1944,14 @@ void LightmapGI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_texture_size", PROPERTY_HINT_RANGE, "2048,16384,1"), "set_max_texture_size", "get_max_texture_size");
 	ADD_GROUP("Environment", "environment_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "environment_mode", PROPERTY_HINT_ENUM, "Disabled,Scene,Custom Sky,Custom Color"), "set_environment_mode", "get_environment_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment_custom_sky", PROPERTY_HINT_RESOURCE_TYPE, "Sky"), "set_environment_custom_sky", "get_environment_custom_sky");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment_custom_sky", PROPERTY_HINT_RESOURCE_TYPE, Sky::get_class_static()), "set_environment_custom_sky", "get_environment_custom_sky");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "environment_custom_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_environment_custom_color", "get_environment_custom_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "environment_custom_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_environment_custom_energy", "get_environment_custom_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_camera_attributes", "get_camera_attributes");
 	ADD_GROUP("Gen Probes", "generate_probes_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "generate_probes_subdiv", PROPERTY_HINT_ENUM, "Disabled,4,8,16,32"), "set_generate_probes", "get_generate_probes");
 	ADD_GROUP("Data", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_data", PROPERTY_HINT_RESOURCE_TYPE, "LightmapGIData"), "set_light_data", "get_light_data");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_data", PROPERTY_HINT_RESOURCE_TYPE, LightmapGIData::get_class_static()), "set_light_data", "get_light_data");
 
 	BIND_ENUM_CONSTANT(BAKE_QUALITY_LOW);
 	BIND_ENUM_CONSTANT(BAKE_QUALITY_MEDIUM);

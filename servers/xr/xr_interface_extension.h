@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/gdvirtual.gen.h"
 #include "servers/xr/xr_interface.h"
 
 class XRInterfaceExtension : public XRInterface {
@@ -38,7 +39,7 @@ class XRInterfaceExtension : public XRInterface {
 public:
 private:
 	bool can_add_blits = false;
-	Vector<BlitToScreen> blits;
+	Vector<RenderingServerTypes::BlitToScreen> blits;
 
 protected:
 	_THREAD_SAFE_CLASS_
@@ -124,7 +125,7 @@ public:
 	virtual void process() override;
 	virtual void pre_render() override;
 	virtual bool pre_draw_viewport(RID p_render_target) override;
-	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
+	virtual Vector<RenderingServerTypes::BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
 	virtual void end_frame() override;
 
 	GDVIRTUAL0(_process);

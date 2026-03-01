@@ -32,6 +32,7 @@
 
 #include "core/math/plane.h"
 #include "core/math/vector3.h"
+#include "core/templates/hashfuncs.h"
 
 /**
  * AABB (Axis Aligned Bounding Box)
@@ -129,6 +130,16 @@ struct [[nodiscard]] AABB {
 
 	_FORCE_INLINE_ Vector3 get_center() const {
 		return position + (size * 0.5f);
+	}
+
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_real(position.x);
+		h = hash_murmur3_one_real(position.y, h);
+		h = hash_murmur3_one_real(position.z, h);
+		h = hash_murmur3_one_real(size.x, h);
+		h = hash_murmur3_one_real(size.y, h);
+		h = hash_murmur3_one_real(size.z, h);
+		return hash_fmix32(h);
 	}
 
 	explicit operator String() const;

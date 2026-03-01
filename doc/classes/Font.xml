@@ -133,7 +133,7 @@
 			<return type="float" />
 			<param index="0" name="font_size" type="int" default="16" />
 			<description>
-				Returns the average font ascent (number of pixels above the baseline).
+				Returns the maximum font ascent (number of pixels above the baseline) of this font and all fallback fonts.
 				[b]Note:[/b] Real ascent of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the ascent of empty line).
 			</description>
 		</method>
@@ -150,7 +150,7 @@
 			<return type="float" />
 			<param index="0" name="font_size" type="int" default="16" />
 			<description>
-				Returns the average font descent (number of pixels below the baseline).
+				Returns the maximum font descent (number of pixels below the baseline) of this font and all fallback fonts.
 				[b]Note:[/b] Real descent of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the descent of empty line).
 			</description>
 		</method>
@@ -322,14 +322,14 @@
 			<return type="bool" />
 			<param index="0" name="language" type="String" />
 			<description>
-				Returns [code]true[/code], if font supports given language ([url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
+				Returns [code]true[/code] if the font supports the given language (as a [url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
 			</description>
 		</method>
 		<method name="is_script_supported" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="script" type="String" />
 			<description>
-				Returns [code]true[/code], if font supports given script ([url=https://en.wikipedia.org/wiki/ISO_15924]ISO 15924[/url] code).
+				Returns [code]true[/code] if the font supports the given script (as a [url=https://en.wikipedia.org/wiki/ISO_15924]ISO 15924[/url] code).
 			</description>
 		</method>
 		<method name="set_cache_capacity">

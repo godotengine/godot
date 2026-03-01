@@ -8,7 +8,7 @@ class B extends A:
 class C extends CanvasItem:
 	pass
 
-abstract class X:
+@abstract class X:
 	pass
 
 class Y extends X:

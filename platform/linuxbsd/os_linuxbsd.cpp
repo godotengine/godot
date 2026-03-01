@@ -32,9 +32,15 @@
 
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/os/main_loop.h"
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
+#include "core/profiling/profiling.h"
 #include "main/main.h"
-#include "servers/display_server.h"
-#include "servers/rendering_server.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef X11_ENABLED
 #include "x11/detect_prime_x11.h"
@@ -91,7 +97,7 @@ void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	String program;
 
 	for (int i = 0; i < path_elems.size(); i++) {
-		for (uint64_t k = 0; k < std::size(message_programs); k++) {
+		for (uint64_t k = 0; k < std_size(message_programs); k++) {
 			String tested_path = path_elems[i].path_join(message_programs[k]);
 
 			if (FileAccess::exists(tested_path)) {
@@ -158,8 +164,13 @@ void OS_LinuxBSD::initialize() {
 }
 
 void OS_LinuxBSD::initialize_joypads() {
-#ifdef JOYDEV_ENABLED
-	joypad = memnew(JoypadLinux(Input::get_singleton()));
+#ifdef SDL_ENABLED
+	joypad_sdl = memnew(JoypadSDL());
+	if (joypad_sdl->initialize() != OK) {
+		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
+		memdelete(joypad_sdl);
+		joypad_sdl = nullptr;
+	}
 #endif
 }
 
@@ -202,7 +213,7 @@ String OS_LinuxBSD::get_processor_name() const {
 	while (!f->eof_reached()) {
 		const String line = f->get_line();
 		if (line.to_lower().contains("model name")) {
-			return line.split(":")[1].strip_edges();
+			return line.get_slicec(':', 1).strip_edges();
 		}
 	}
 #endif
@@ -241,9 +252,9 @@ void OS_LinuxBSD::finalize() {
 	driver_alsamidi.close();
 #endif
 
-#ifdef JOYDEV_ENABLED
-	if (joypad) {
-		memdelete(joypad);
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		memdelete(joypad_sdl);
 	}
 #endif
 }
@@ -287,7 +298,7 @@ String OS_LinuxBSD::get_systemd_os_release_info_value(const String &key) const {
 		while (!f->eof_reached()) {
 			const String line = f->get_line();
 			if (line.contains(key)) {
-				String value = line.split("=")[1].strip_edges();
+				String value = line.get_slicec('=', 1).strip_edges();
 				value = value.trim_prefix("\"");
 				return value.trim_suffix("\"");
 			}
@@ -521,40 +532,41 @@ Vector<String> OS_LinuxBSD::lspci_get_device_value(Vector<String> vendor_device_
 }
 
 Error OS_LinuxBSD::shell_open(const String &p_uri) {
-	Error ok;
-	int err_code;
 	List<String> args;
 	args.push_back(p_uri);
 
-	// Agnostic
-	ok = execute("xdg-open", args, nullptr, &err_code);
-	if (ok == OK && !err_code) {
+	// Use create_process() instead of execute() to avoid blocking the main thread.
+	// This prevents the UI from freezing when opening file managers or other applications.
+	Error ok = create_process("xdg-open", args);
+	if (ok == OK) {
 		return OK;
-	} else if (err_code == 2) {
-		return ERR_FILE_NOT_FOUND;
 	}
 	// GNOME
 	args.push_front("open"); // The command is `gio open`, so we need to add it to args
-	ok = execute("gio", args, nullptr, &err_code);
-	if (ok == OK && !err_code) {
+	ok = create_process("gio", args);
+	if (ok == OK) {
 		return OK;
-	} else if (err_code == 2) {
-		return ERR_FILE_NOT_FOUND;
 	}
 	args.pop_front();
-	ok = execute("gvfs-open", args, nullptr, &err_code);
-	if (ok == OK && !err_code) {
+	ok = create_process("gvfs-open", args);
+	if (ok == OK) {
 		return OK;
-	} else if (err_code == 2) {
-		return ERR_FILE_NOT_FOUND;
 	}
 	// KDE
-	ok = execute("kde-open5", args, nullptr, &err_code);
-	if (ok == OK && !err_code) {
+	ok = create_process("kde-open5", args);
+	if (ok == OK) {
 		return OK;
 	}
-	ok = execute("kde-open", args, nullptr, &err_code);
-	return !err_code ? ok : FAILED;
+	ok = create_process("kde-open", args);
+	if (ok == OK) {
+		return OK;
+	}
+	// XFCE
+	ok = create_process("exo-open", args);
+	if (ok == OK) {
+		return OK;
+	}
+	return FAILED;
 }
 
 bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
@@ -768,7 +780,7 @@ Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_n
 
 	Vector<String> ret;
 	static const char *allowed_formats[] = { "TrueType", "CFF" };
-	for (size_t i = 0; i < std::size(allowed_formats); i++) {
+	for (size_t i = 0; i < std_size(allowed_formats); i++) {
 		FcPattern *pattern = FcPatternCreate();
 		if (pattern) {
 			FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
@@ -972,9 +984,13 @@ void OS_LinuxBSD::run() {
 	//uint64_t frame=0;
 
 	while (true) {
+		GodotProfileFrameMark;
+		GodotProfileZone("OS_LinuxBSD::run");
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
-#ifdef JOYDEV_ENABLED
-		joypad->process_joypads();
+#ifdef SDL_ENABLED
+		if (joypad_sdl) {
+			joypad_sdl->process_events();
+		}
 #endif
 		if (Main::iteration()) {
 			break;

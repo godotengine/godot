@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2024 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2025 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -113,7 +113,7 @@ DLLEXPORT int GET_NAME(tj3Compress, BITS_IN_JSAMPLE)
 #endif
     cinfo->data_precision = this->precision;
 
-  setCompDefaults(this, pixelFormat);
+  setCompDefaults(this, pixelFormat, FALSE);
   if (this->noRealloc) alloc = FALSE;
   jpeg_mem_dest_tj(cinfo, jpegBuf, jpegSize, alloc);
 

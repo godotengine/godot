@@ -49,7 +49,6 @@ struct PairPosFormat1 : public OT::Layout::GPOS_impl::PairPosFormat1_3<SmallType
   }
 
   hb_vector_t<unsigned> split_subtables (gsubgpos_graph_context_t& c,
-                                         unsigned parent_index,
                                          unsigned this_index)
   {
     hb_set_t visited;
@@ -84,7 +83,7 @@ struct PairPosFormat1 : public OT::Layout::GPOS_impl::PairPosFormat1_3<SmallType
     split_context_t split_context {
       c,
       this,
-      c.graph.duplicate_if_shared (parent_index, this_index),
+      this_index,
     };
 
     return actuate_subtable_split<split_context_t> (split_context, split_points);
@@ -207,7 +206,6 @@ struct PairPosFormat2 : public OT::Layout::GPOS_impl::PairPosFormat2_4<SmallType
   }
 
   hb_vector_t<unsigned> split_subtables (gsubgpos_graph_context_t& c,
-                                         unsigned parent_index,
                                          unsigned this_index)
   {
     const unsigned base_size = OT::Layout::GPOS_impl::PairPosFormat2_4<SmallTypes>::min_size;
@@ -291,7 +289,7 @@ struct PairPosFormat2 : public OT::Layout::GPOS_impl::PairPosFormat2_4<SmallType
     split_context_t split_context {
       c,
       this,
-      c.graph.duplicate_if_shared (parent_index, this_index),
+      this_index,
       class1_record_size,
       total_value_len,
       value_1_len,
@@ -423,7 +421,7 @@ struct PairPosFormat2 : public OT::Layout::GPOS_impl::PairPosFormat2_4<SmallType
     class_def_link->width = SmallTypes::size;
     class_def_link->objidx = class_def_2_id;
     class_def_link->position = 10;
-    graph.vertices_[class_def_2_id].add_parent (pair_pos_prime_id);
+    graph.vertices_[class_def_2_id].add_parent (pair_pos_prime_id, false);
     graph.duplicate (pair_pos_prime_id, class_def_2_id);
 
     return pair_pos_prime_id;
@@ -607,14 +605,13 @@ struct PairPosFormat2 : public OT::Layout::GPOS_impl::PairPosFormat2_4<SmallType
 struct PairPos : public OT::Layout::GPOS_impl::PairPos
 {
   hb_vector_t<unsigned> split_subtables (gsubgpos_graph_context_t& c,
-                                         unsigned parent_index,
                                          unsigned this_index)
   {
-    switch (u.format) {
+    switch (u.format.v) {
     case 1:
-      return ((PairPosFormat1*)(&u.format1))->split_subtables (c, parent_index, this_index);
+      return ((PairPosFormat1*)(&u.format1))->split_subtables (c, this_index);
     case 2:
-      return ((PairPosFormat2*)(&u.format2))->split_subtables (c, parent_index, this_index);
+      return ((PairPosFormat2*)(&u.format2))->split_subtables (c, this_index);
 #ifndef HB_NO_BEYOND_64K
     case 3: HB_FALLTHROUGH;
     case 4: HB_FALLTHROUGH;
@@ -628,10 +625,10 @@ struct PairPos : public OT::Layout::GPOS_impl::PairPos
   bool sanitize (graph_t::vertex_t& vertex) const
   {
     int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
-    if (vertex_len < u.format.get_size ()) return false;
+    if (vertex_len < u.format.v.get_size ()) return false;
     hb_barrier ();
 
-    switch (u.format) {
+    switch (u.format.v) {
     case 1:
       return ((PairPosFormat1*)(&u.format1))->sanitize (vertex);
     case 2:

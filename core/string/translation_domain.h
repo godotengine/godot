@@ -71,14 +71,24 @@ public:
 	StringName get_message_from_translations(const String &p_locale, const StringName &p_message, const StringName &p_context) const;
 	StringName get_message_from_translations(const String &p_locale, const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const;
 	PackedStringArray get_loaded_locales() const;
-	HashSet<Ref<Translation>> get_potential_translations(const String &p_locale) const;
 
 public:
+	// These two methods are public for easier TranslationServer bindings.
+	TypedArray<Translation> get_translations_bind() const;
+	TypedArray<Translation> find_translations_bind(const String &p_locale, bool p_exact) const;
+
+#ifndef DISABLE_DEPRECATED
 	Ref<Translation> get_translation_object(const String &p_locale) const;
+#endif
 
 	void add_translation(const Ref<Translation> &p_translation);
 	void remove_translation(const Ref<Translation> &p_translation);
 	void clear();
+
+	bool has_translation(const Ref<Translation> &p_translation) const;
+	const HashSet<Ref<Translation>> get_translations() const;
+	HashSet<Ref<Translation>> find_translations(const String &p_locale, bool p_exact) const;
+	bool has_translation_for_locale(const String &p_locale, bool p_exact) const;
 
 	StringName translate(const StringName &p_message, const StringName &p_context) const;
 	StringName translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const;
@@ -109,6 +119,4 @@ public:
 	void set_pseudolocalization_suffix(const String &p_suffix);
 
 	StringName pseudolocalize(const StringName &p_message) const;
-
-	TranslationDomain();
 };

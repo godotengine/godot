@@ -30,7 +30,10 @@
 
 #include "physical_bone_3d.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/3d/physics/physical_bone_simulator_3d.h"
+
 #ifndef DISABLE_DEPRECATED
 #include "scene/3d/skeleton_3d.h"
 #endif //_DISABLE_DEPRECATED
@@ -1287,7 +1290,7 @@ PhysicalBone3D::~PhysicalBone3D() {
 		memdelete(joint_data);
 	}
 	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
-	PhysicsServer3D::get_singleton()->free(joint);
+	PhysicsServer3D::get_singleton()->free_rid(joint);
 }
 
 void PhysicalBone3D::update_bone_id() {

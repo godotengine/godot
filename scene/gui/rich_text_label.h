@@ -37,6 +37,10 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/text_paragraph.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/themes/editor_scale.h"
+#endif
+
 class CharFXTransform;
 class RichTextEffect;
 
@@ -153,12 +157,16 @@ protected:
 private:
 	struct Item;
 
-	struct Line {
-		Item *from = nullptr;
+	struct Line { // Line is a paragraph.
+		Item *from = nullptr; // `from` is main if this Line is the first Line in the doc, otherwise `from` is the previous Item in the doc of any type.
 
 		Ref<TextLine> text_prefix;
+		Color prefix_color = Color(0, 0, 0, 0);
+		int prefix_outline_size = -1;
+		Color prefix_outline_color = Color(0, 0, 0, 0);
 		float prefix_width = 0;
 		Ref<TextParagraph> text_buf;
+		Ref<TextParagraph> text_buf_disp;
 
 		RID accessibility_line_element;
 		RID accessibility_text_element;
@@ -185,24 +193,24 @@ private:
 		}
 
 		_FORCE_INLINE_ float get_height(float p_line_separation, float p_paragraph_separation) const {
-			return offset.y + text_buf->get_size().y + (text_buf->get_line_count() - 1) * p_line_separation + p_paragraph_separation;
+			return offset.y + text_buf->get_size().y + text_buf->get_line_count() * p_line_separation + p_paragraph_separation;
 		}
 	};
 
 	struct Item {
 		int index = 0;
 		int char_ofs = 0;
-		Item *parent = nullptr;
+		Item *parent = nullptr; // "parent" means "enclosing item tag", if any. It is an interval predecessor, not a hierarchical parent.
 		ItemType type = ITEM_FRAME;
 		List<Item *> subitems;
 		List<Item *>::Element *E = nullptr;
 		ObjectID owner;
-		int line = 0;
+		int line = 0; // `line` is the index number of the paragraph (Line) this item is inside of (zero if the first paragraph).
 		RID rid;
 
 		RID accessibility_item_element;
 
-		void _clear_children() {
+		void _clear_children() { // Only ever called on main or a paragraph (Line).
 			RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
 			while (subitems.size()) {
 				Item *subitem = subitems.front()->get();
@@ -400,7 +408,6 @@ private:
 
 		LocalVector<Column> columns;
 		LocalVector<float> rows;
-		LocalVector<float> rows_no_padding;
 		LocalVector<float> rows_baseline;
 		String name;
 
@@ -503,6 +510,29 @@ private:
 	struct ItemContext : public Item {
 		ItemContext() { type = ITEM_CONTEXT; }
 	};
+	const Array formatting_items = {
+		// all ITEM types affecting glyph appearance.
+		ITEM_FONT,
+		ITEM_FONT_SIZE,
+		ITEM_FONT_FEATURES,
+		ITEM_COLOR,
+		ITEM_OUTLINE_SIZE,
+		ITEM_OUTLINE_COLOR,
+		ITEM_UNDERLINE,
+		ITEM_STRIKETHROUGH,
+		ITEM_FADE,
+		ITEM_SHAKE,
+		ITEM_WAVE,
+		ITEM_TORNADO,
+		ITEM_RAINBOW,
+		ITEM_BGCOLOR,
+		ITEM_FGCOLOR,
+		ITEM_META,
+		ITEM_HINT,
+		ITEM_CUSTOMFX,
+		ITEM_LANGUAGE,
+		ITEM_PULSE,
+	};
 
 	ItemFrame *main = nullptr;
 	Item *current = nullptr;
@@ -527,6 +557,8 @@ private:
 
 	bool scroll_visible = false;
 	bool scroll_follow = false;
+	bool scroll_follow_visible_characters = false;
+	int follow_vc_pos = 0;
 	bool scroll_following = false;
 	bool scroll_active = true;
 	int scroll_w = 0;
@@ -536,6 +568,7 @@ private:
 	int current_char_ofs = 0;
 	int visible_paragraph_count = 0;
 	int visible_line_count = 0;
+	Rect2i visible_rect;
 
 	int tab_size = 4;
 	bool underline_meta = true;
@@ -554,8 +587,11 @@ private:
 
 	HashMap<RID, Rect2> ac_element_bounds_cache;
 
+	void _update_follow_vc();
 	void _invalidate_accessibility();
 	void _invalidate_current_line(ItemFrame *p_frame);
+
+	void _prepare_scroll_anchor();
 
 	void _thread_function(void *p_userdata);
 	void _thread_end();
@@ -588,11 +624,13 @@ private:
 		int from_line = 0;
 		Item *from_item = nullptr;
 		int from_char = 0;
+		mutable bool from_line_found = false;
 
 		ItemFrame *to_frame = nullptr;
 		int to_line = 0;
 		Item *to_item = nullptr;
 		int to_char = 0;
+		mutable bool to_line_found = false;
 
 		bool double_click = false; // Selecting whole words?
 		bool active = false; // anything selected? i.e. from, to, etc. valid?
@@ -626,14 +664,17 @@ private:
 	bool _is_click_inside_selection() const;
 	void _find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr, bool p_meta = false);
 
-	String _get_line_text(ItemFrame *p_frame, int p_line, Selection p_sel) const;
-	bool _search_line(ItemFrame *p_frame, int p_line, const String &p_string, int p_char_idx, bool p_reverse_search);
+	String _get_line_text(ItemFrame *p_frame, int p_line) const;
+	bool _search_table_cell(ItemTable *p_table, List<Item *>::Element *p_cell, const String &p_string, bool p_reverse_search, int p_from_line);
 	bool _search_table(ItemTable *p_table, List<Item *>::Element *p_from, const String &p_string, bool p_reverse_search);
+	bool _search_line(ItemFrame *p_frame, int p_line, const String &p_string, int p_char_idx, bool p_reverse_search);
 
 	float _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h, int *r_char_offset);
 	float _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h);
 
-	void _set_table_size(ItemTable *p_table, int p_available_width);
+	int _get_line_max_width(ItemFrame *p_frame, int p_line) const;
+	void _update_table_column_width(ItemTable *p_table, int p_available_width);
+	void _update_table_size(ItemTable *p_table);
 
 	void _update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size);
 	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, float p_vsep, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs);
@@ -675,6 +716,17 @@ private:
 	void _scroll_changed(double);
 	int _find_first_line(int p_from, int p_to, int p_vofs) const;
 
+#ifdef TOOLS_ENABLED
+	const real_t auto_scroll_speed = EDSCALE * 2.0f;
+#else
+	const real_t auto_scroll_speed = 2.0f;
+#endif
+	Vector2 last_clamped_mouse_pos;
+	Timer *click_select_held = nullptr;
+	Vector2 local_mouse_pos;
+	bool is_selecting_text = false;
+	void _update_selection();
+
 	_FORCE_INLINE_ float _calculate_line_vertical_offset(const Line &line) const;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
@@ -691,6 +743,7 @@ private:
 	Size2 _get_image_size(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Rect2 &p_region = Rect2());
 
 	String _get_prefix(Item *p_item, const Vector<int> &p_list_index, const Vector<ItemList *> &p_list_items);
+	void _add_list_prefixes(ItemFrame *p_frame, int p_line, Line &r_l);
 
 	static int _find_unquoted(const String &p_src, char32_t p_chr, int p_from);
 	static Vector<String> _split_unquoted(const String &p_src, char32_t p_splitter);
@@ -839,6 +892,9 @@ public:
 	void set_scroll_follow(bool p_follow);
 	bool is_scroll_following() const;
 
+	void set_scroll_follow_visible_characters(bool p_follow);
+	bool is_scroll_following_visible_characters() const;
+
 	void set_tab_size(int p_spaces);
 	int get_tab_size() const;
 
@@ -870,6 +926,8 @@ public:
 
 	int get_line_height(int p_line) const;
 	int get_line_width(int p_line) const;
+
+	Rect2i get_visible_content_rect() const;
 
 	void scroll_to_selection();
 
@@ -950,7 +1008,7 @@ public:
 	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
-	void set_structured_text_bidi_override_options(Array p_args);
+	void set_structured_text_bidi_override_options(const Array &p_args);
 	Array get_structured_text_bidi_override_options() const;
 
 	void set_visible_characters(int p_visible);
@@ -966,7 +1024,7 @@ public:
 	TextServer::VisibleCharactersBehavior get_visible_characters_behavior() const;
 	void set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior);
 
-	void set_effects(Array p_effects);
+	void set_effects(const Array &p_effects);
 	Array get_effects();
 
 	void install_effect(const Variant effect);

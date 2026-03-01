@@ -338,6 +338,7 @@ protected:
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
+	virtual uint32_t _get_libraries_property_usage() const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
 	virtual void _validate_property(PropertyInfo &p_property) const;
@@ -398,12 +399,9 @@ protected:
 
 public:
 	/* ---- Data lists ---- */
-	Dictionary *get_animation_libraries();
-
 	void get_animation_library_list(List<StringName> *p_animations) const;
 	Ref<AnimationLibrary> get_animation_library(const StringName &p_name) const;
 	bool has_animation_library(const StringName &p_name) const;
-	StringName get_animation_library_name(const Ref<AnimationLibrary> &p_animation_library) const;
 	StringName find_animation_library(const Ref<Animation> &p_animation) const;
 	Error add_animation_library(const StringName &p_name, const Ref<AnimationLibrary> &p_animation_library);
 	void remove_animation_library(const StringName &p_name);

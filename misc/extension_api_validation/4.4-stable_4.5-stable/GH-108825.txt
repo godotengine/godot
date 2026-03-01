@@ -1,0 +1,5 @@
+GH-108825
+---------
+Validate extension JSON: Error: Field 'classes/EditorExportPlatformExtension/methods/_get_option_icon/return_value': type changed value in new API, from "ImageTexture" to "Texture2D".
+
+Return type changed to allow returning both ImageTexture and DPITexture. Compatibility method registered.

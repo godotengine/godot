@@ -32,9 +32,8 @@
 
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
-#include "core/os/os.h"
-#include "core/templates/local_vector.h"
-#include "servers/display_server.h"
+#include "core/templates/rb_map.h"
+#include "servers/display/display_server.h"
 
 #import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>

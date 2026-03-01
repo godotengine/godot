@@ -30,6 +30,8 @@
 
 #include "animation_node_state_machine.h"
 
+#include "core/object/class_db.h"
+
 /////////////////////////////////////////////////
 
 void AnimationNodeStateMachineTransition::set_switch_mode(SwitchMode p_mode) {
@@ -163,7 +165,7 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_advance_expression"), &AnimationNodeStateMachineTransition::get_advance_expression);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,240,0.01,suffix:s"), "set_xfade_time", "get_xfade_time");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "xfade_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_xfade_curve", "get_xfade_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "xfade_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()), "set_xfade_curve", "get_xfade_curve");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "break_loop_at_end"), "set_break_loop_at_end", "is_loop_broken_at_end");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset"), "set_reset", "is_reset");
@@ -334,11 +336,11 @@ float AnimationNodeStateMachinePlayback::get_current_length() const {
 	return current_nti.length;
 }
 
-float AnimationNodeStateMachinePlayback::get_fade_from_play_pos() const {
+float AnimationNodeStateMachinePlayback::get_fading_from_play_pos() const {
 	return fadeing_from_nti.position;
 }
 
-float AnimationNodeStateMachinePlayback::get_fade_from_length() const {
+float AnimationNodeStateMachinePlayback::get_fading_from_length() const {
 	return fadeing_from_nti.length;
 }
 
@@ -1215,6 +1217,10 @@ void AnimationNodeStateMachinePlayback::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_play_position"), &AnimationNodeStateMachinePlayback::get_current_play_pos);
 	ClassDB::bind_method(D_METHOD("get_current_length"), &AnimationNodeStateMachinePlayback::get_current_length);
 	ClassDB::bind_method(D_METHOD("get_fading_from_node"), &AnimationNodeStateMachinePlayback::get_fading_from_node);
+	ClassDB::bind_method(D_METHOD("get_fading_from_play_position"), &AnimationNodeStateMachinePlayback::get_fading_from_play_pos);
+	ClassDB::bind_method(D_METHOD("get_fading_from_length"), &AnimationNodeStateMachinePlayback::get_fading_from_length);
+	ClassDB::bind_method(D_METHOD("get_fading_position"), &AnimationNodeStateMachinePlayback::get_fading_pos);
+	ClassDB::bind_method(D_METHOD("get_fading_length"), &AnimationNodeStateMachinePlayback::get_fading_time);
 	ClassDB::bind_method(D_METHOD("get_travel_path"), &AnimationNodeStateMachinePlayback::_get_travel_path);
 
 	ADD_SIGNAL(MethodInfo(SceneStringName(state_started), PropertyInfo(Variant::STRING_NAME, "state")));
@@ -1234,7 +1240,7 @@ AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {
 
 void AnimationNodeStateMachine::get_parameter_list(List<PropertyInfo> *r_list) const {
 	AnimationNode::get_parameter_list(r_list);
-	r_list->push_back(PropertyInfo(Variant::OBJECT, playback, PROPERTY_HINT_RESOURCE_TYPE, "AnimationNodeStateMachinePlayback", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ALWAYS_DUPLICATE)); // Don't store this object in .tres, it always needs to be made as unique object.
+	r_list->push_back(PropertyInfo(Variant::OBJECT, playback, PROPERTY_HINT_RESOURCE_TYPE, AnimationNodeStateMachinePlayback::get_class_static(), PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ALWAYS_DUPLICATE)); // Don't store this object in .tres, it always needs to be made as unique object.
 	List<StringName> advance_conditions;
 	for (int i = 0; i < transitions.size(); i++) {
 		StringName ac = transitions[i].transition->get_advance_condition_name();
@@ -1534,9 +1540,7 @@ bool AnimationNodeStateMachine::_can_connect(const StringName &p_name) {
 	}
 
 	String node_name = p_name;
-	Vector<String> path = node_name.split("/");
-
-	if (path.size() < 2) {
+	if (node_name.get_slice_count("/") < 2) {
 		return false;
 	}
 
@@ -1738,7 +1742,7 @@ void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) c
 	names.sort_custom<StringName::AlphCompare>();
 
 	for (const StringName &prop_name : names) {
-		p_list->push_back(PropertyInfo(Variant::OBJECT, "states/" + prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "states/" + prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, AnimationNode::get_class_static(), PROPERTY_USAGE_NO_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, "states/" + prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 

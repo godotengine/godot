@@ -4,7 +4,7 @@
 		A node that provides a polygon shape to a [CollisionObject2D] parent.
 	</brief_description>
 	<description>
-		A node that provides a polygon shape to a [CollisionObject2D] parent and allows to edit it. The polygon can be concave or convex. This can give a detection shape to an [Area2D], turn [PhysicsBody2D] into a solid object, or give a hollow shape to a [StaticBody2D].
+		A node that provides a polygon shape to a [CollisionObject2D] parent and allows it to be edited. The polygon can be concave or convex. This can give a detection shape to an [Area2D], turn a [PhysicsBody2D] into a solid object, or give a hollow shape to a [StaticBody2D].
 		[b]Warning:[/b] A non-uniformly scaled [CollisionPolygon2D] will likely not behave as expected. Make sure to keep its scale the same on all axes and adjust its polygon instead.
 	</description>
 	<tutorials>
@@ -19,6 +19,10 @@
 		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" default="false">
 			If [code]true[/code], only edges that face up, relative to [CollisionPolygon2D]'s rotation, will collide with other objects.
 			[b]Note:[/b] This property has no effect if this [CollisionPolygon2D] is a child of an [Area2D] node.
+			[b]Note:[/b] The one way collision direction can be configured by setting [member one_way_collision_direction].
+		</member>
+		<member name="one_way_collision_direction" type="Vector2" setter="set_one_way_collision_direction" getter="get_one_way_collision_direction" default="Vector2(0, 1)">
+			The direction used for one-way collision.
 		</member>
 		<member name="one_way_collision_margin" type="float" setter="set_one_way_collision_margin" getter="get_one_way_collision_margin" default="1.0">
 			The margin used for one-way collision (in pixels). Higher values will make the shape thicker, and work better for colliders that enter the polygon at a high velocity.

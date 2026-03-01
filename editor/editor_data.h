@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/templates/list.h"
+#include "scene/main/node.h"
 #include "scene/resources/texture.h"
 
 class ConfigFile;
@@ -121,6 +122,7 @@ public:
 		NodePath live_edit_root;
 		int history_id = 0;
 		uint64_t last_checked_version = 0;
+		uint64_t time_opened = 0;
 	};
 
 private:
@@ -213,12 +215,14 @@ public:
 	String get_scene_type(int p_idx) const;
 	void set_scene_path(int p_idx, const String &p_path);
 	Ref<Script> get_scene_root_script(int p_idx) const;
+	uint64_t get_scene_time_opened(int p_idx) const;
 	void set_scene_modified_time(int p_idx, uint64_t p_time);
 	uint64_t get_scene_modified_time(int p_idx) const;
 	void clear_edited_scenes();
 	void set_edited_scene_live_edit_root(const NodePath &p_root);
 	NodePath get_edited_scene_live_edit_root();
 	bool check_and_update_scene(int p_idx);
+	bool reload_scene_from_memory(int p_idx, bool p_mark_unsaved);
 	void move_edited_scene_to_index(int p_idx);
 
 	bool call_build();
@@ -273,7 +277,7 @@ class EditorSelection : public Object {
 
 	// Contains the selected nodes and corresponding metadata.
 	// Metadata objects come from calling _get_editor_data on the editor_plugins, passing the selected node.
-	HashMap<Node *, Object *> selection;
+	HashMap<ObjectID, Object *> selection;
 
 	// Tracks whether the selection change signal has been emitted.
 	// Prevents multiple signals being called in one frame.
@@ -286,7 +290,7 @@ class EditorSelection : public Object {
 
 	// Editor plugins which are related to selection.
 	List<Object *> editor_plugins;
-	List<Node *> top_selected_node_list;
+	LocalVector<ObjectID> top_selected_node_list;
 
 	void _update_node_list();
 	void _emit_change();
@@ -301,10 +305,14 @@ public:
 
 	template <typename T>
 	T *get_node_editor_data(Node *p_node) {
-		if (!selection.has(p_node)) {
+		if (!p_node) {
 			return nullptr;
 		}
-		return Object::cast_to<T>(selection[p_node]);
+		ObjectID nid = p_node->get_instance_id();
+		if (!selection.has(nid)) {
+			return nullptr;
+		}
+		return Object::cast_to<T>(selection[nid]);
 	}
 
 	// Adds an editor plugin which can provide metadata for selected nodes.
@@ -315,7 +323,7 @@ public:
 
 	// Returns only the top level selected nodes.
 	// That is, if the selection includes some node and a child of that node, only the parent is returned.
-	const List<Node *> &get_top_selected_node_list();
+	List<Node *> get_top_selected_node_list();
 	// Same as get_top_selected_node_list but returns a copy in a TypedArray for binding to scripts.
 	TypedArray<Node> get_top_selected_nodes();
 	// Returns all the selected nodes (list version of "get_selected_nodes").
@@ -323,7 +331,7 @@ public:
 	// Same as get_full_selected_node_list but returns a copy in a TypedArray for binding to scripts.
 	TypedArray<Node> get_selected_nodes();
 	// Returns the map of selected objects and their metadata.
-	HashMap<Node *, Object *> &get_selection() { return selection; }
+	HashMap<ObjectID, Object *> &get_selection() { return selection; }
 
 	~EditorSelection();
 };

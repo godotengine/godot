@@ -31,11 +31,13 @@
 #include "skeleton_2d.h"
 
 #include "core/math/transform_interpolator.h"
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_data.h"
-#include "editor/editor_settings.h"
-#include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/scene/canvas_item_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #endif //TOOLS_ENABLED
 
 bool Bone2D::_set(const StringName &p_path, const Variant &p_value) {
@@ -504,7 +506,7 @@ Bone2D::~Bone2D() {
 #ifdef TOOLS_ENABLED
 	if (!editor_gizmo_rid.is_null()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(editor_gizmo_rid);
+		RenderingServer::get_singleton()->free_rid(editor_gizmo_rid);
 	}
 #endif // TOOLS_ENABLED
 }
@@ -838,5 +840,5 @@ Skeleton2D::Skeleton2D() {
 
 Skeleton2D::~Skeleton2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(skeleton);
+	RS::get_singleton()->free_rid(skeleton);
 }

@@ -37,7 +37,7 @@
 using GLTFShapeIndex = int64_t;
 
 // Import process.
-Error GLTFDocumentExtensionPhysics::import_preflight(Ref<GLTFState> p_state, Vector<String> p_extensions) {
+Error GLTFDocumentExtensionPhysics::import_preflight(Ref<GLTFState> p_state, const Vector<String> &p_extensions) {
 	if (!p_extensions.has("OMI_collider") && !p_extensions.has("OMI_physics_body") && !p_extensions.has("OMI_physics_shape")) {
 		return ERR_SKIP;
 	}
@@ -83,7 +83,7 @@ Vector<String> GLTFDocumentExtensionPhysics::get_supported_extensions() {
 	return ret;
 }
 
-Error GLTFDocumentExtensionPhysics::parse_node_extensions(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &p_extensions) {
+Error GLTFDocumentExtensionPhysics::parse_node_extensions(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, const Dictionary &p_extensions) {
 #ifndef DISABLE_DEPRECATED
 	if (p_extensions.has("OMI_collider")) {
 		Dictionary node_collider_ext = p_extensions["OMI_collider"];
@@ -145,16 +145,16 @@ Error GLTFDocumentExtensionPhysics::parse_node_extensions(Ref<GLTFState> p_state
 	return OK;
 }
 
-bool _will_gltf_shape_become_subnode(Ref<GLTFState> p_state, const Ref<GLTFNode> p_gltf_node, GLTFNodeIndex p_gltf_node_index) {
+bool _will_gltf_shape_become_subnode(const Ref<GLTFState> &p_state, const Ref<GLTFNode> &p_gltf_node, GLTFNodeIndex p_gltf_node_index) {
 	if (p_gltf_node->has_additional_data(StringName("GLTFPhysicsBody"))) {
 		return true;
 	}
-	const TypedArray<GLTFNode> state_gltf_nodes = p_state->get_nodes();
+	const Vector<Ref<GLTFNode>> &state_gltf_nodes = p_state->get_nodes();
 	const GLTFNodeIndex parent_index = p_gltf_node->get_parent();
 	if (parent_index == -1 || parent_index >= state_gltf_nodes.size()) {
 		return true;
 	}
-	const Ref<GLTFNode> parent_gltf_node = state_gltf_nodes[parent_index];
+	const Ref<GLTFNode> &parent_gltf_node = state_gltf_nodes[parent_index];
 	const Variant parent_body_maybe = parent_gltf_node->get_additional_data(StringName("GLTFPhysicsBody"));
 	if (parent_body_maybe.get_type() != Variant::NIL) {
 		Ref<GLTFPhysicsBody> parent_body = parent_body_maybe;
@@ -181,10 +181,10 @@ bool _will_gltf_shape_become_subnode(Ref<GLTFState> p_state, const Ref<GLTFNode>
 	return true;
 }
 
-NodePath _get_scene_node_path_for_shape_index(Ref<GLTFState> p_state, const GLTFNodeIndex p_shape_index) {
-	TypedArray<GLTFNode> state_gltf_nodes = p_state->get_nodes();
+NodePath _get_scene_node_path_for_shape_index(const Ref<GLTFState> &p_state, const GLTFNodeIndex p_shape_index) {
+	const Vector<Ref<GLTFNode>> &state_gltf_nodes = p_state->get_nodes();
 	for (GLTFNodeIndex node_index = 0; node_index < state_gltf_nodes.size(); node_index++) {
-		const Ref<GLTFNode> gltf_node = state_gltf_nodes[node_index];
+		const Ref<GLTFNode> &gltf_node = state_gltf_nodes[node_index];
 		ERR_CONTINUE(gltf_node.is_null());
 		// Check if this node has a shape index and if it matches the one we are looking for.
 		Variant shape_index_maybe = gltf_node->get_additional_data(StringName("GLTFPhysicsColliderShapeIndex"));
@@ -247,9 +247,9 @@ Ref<GLTFObjectModelProperty> GLTFDocumentExtensionPhysics::import_object_model_p
 	} else if (p_split_json_pointer[0] == "nodes" && p_split_json_pointer[2] == "extensions" && p_split_json_pointer[4] == "motion") {
 		if (p_split_json_pointer[3] == "OMI_physics_body" || p_split_json_pointer[3] == "KHR_physics_rigid_bodies") {
 			const GLTFNodeIndex node_index = p_split_json_pointer[1].to_int();
-			const TypedArray<GLTFNode> all_gltf_nodes = p_state->get_nodes();
+			const Vector<Ref<GLTFNode>> &all_gltf_nodes = p_state->get_nodes();
 			ERR_FAIL_INDEX_V_MSG(node_index, all_gltf_nodes.size(), ret, "GLTF Physics: The node index " + itos(node_index) + " is not in the state nodes (size: " + itos(all_gltf_nodes.size()) + ").");
-			const Ref<GLTFNode> gltf_node = all_gltf_nodes[node_index];
+			const Ref<GLTFNode> &gltf_node = all_gltf_nodes[node_index];
 			NodePath node_path;
 			if (p_partial_paths.is_empty()) {
 				node_path = gltf_node->get_scene_node_path(p_state);
@@ -283,7 +283,7 @@ Ref<GLTFObjectModelProperty> GLTFDocumentExtensionPhysics::import_object_model_p
 	return ret;
 }
 
-void _setup_shape_mesh_resource_from_index_if_needed(Ref<GLTFState> p_state, Ref<GLTFPhysicsShape> p_gltf_shape) {
+void _setup_shape_mesh_resource_from_index_if_needed(const Ref<GLTFState> &p_state, const Ref<GLTFPhysicsShape> &p_gltf_shape) {
 	GLTFMeshIndex shape_mesh_index = p_gltf_shape->get_mesh_index();
 	if (shape_mesh_index == -1) {
 		return; // No mesh for this shape.
@@ -292,9 +292,9 @@ void _setup_shape_mesh_resource_from_index_if_needed(Ref<GLTFState> p_state, Ref
 	if (importer_mesh.is_valid()) {
 		return; // The mesh resource is already set up.
 	}
-	TypedArray<GLTFMesh> state_meshes = p_state->get_meshes();
+	const Vector<Ref<GLTFMesh>> &state_meshes = p_state->get_meshes();
 	ERR_FAIL_INDEX_MSG(shape_mesh_index, state_meshes.size(), "glTF Physics: When importing '" + p_state->get_scene_name() + "', the shape mesh index " + itos(shape_mesh_index) + " is not in the state meshes (size: " + itos(state_meshes.size()) + ").");
-	Ref<GLTFMesh> gltf_mesh = state_meshes[shape_mesh_index];
+	const Ref<GLTFMesh> &gltf_mesh = state_meshes[shape_mesh_index];
 	ERR_FAIL_COND(gltf_mesh.is_null());
 	importer_mesh = gltf_mesh->get_mesh();
 	ERR_FAIL_COND(importer_mesh.is_null());
@@ -346,7 +346,7 @@ CollisionObject3D *_get_ancestor_collision_object(Node *p_scene_parent) {
 	return nullptr;
 }
 
-Node3D *_generate_shape_node_and_body_if_needed(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Ref<GLTFPhysicsShape> p_physics_shape, CollisionObject3D *p_col_object, bool p_is_trigger) {
+Node3D *_generate_shape_node_and_body_if_needed(const Ref<GLTFState> &p_state, const Ref<GLTFNode> &p_gltf_node, const Ref<GLTFPhysicsShape> &p_physics_shape, CollisionObject3D *p_col_object, bool p_is_trigger) {
 	// If we need to generate a body node, do so.
 	CollisionObject3D *body_node = nullptr;
 	if (p_is_trigger || p_physics_shape->get_is_trigger()) {
@@ -372,7 +372,7 @@ Node3D *_generate_shape_node_and_body_if_needed(Ref<GLTFState> p_state, Ref<GLTF
 }
 
 // Either add the child to the parent, or return the child if there is no parent.
-Node3D *_add_physics_node_to_given_node(Node3D *p_current_node, Node3D *p_child, Ref<GLTFNode> p_gltf_node) {
+Node3D *_add_physics_node_to_given_node(Node3D *p_current_node, Node3D *p_child, const Ref<GLTFNode> &p_gltf_node) {
 	if (!p_current_node) {
 		return p_child;
 	}
@@ -389,10 +389,10 @@ Node3D *_add_physics_node_to_given_node(Node3D *p_current_node, Node3D *p_child,
 	return p_current_node;
 }
 
-Array _get_ancestor_compound_trigger_nodes(Ref<GLTFState> p_state, TypedArray<GLTFNode> p_state_nodes, CollisionObject3D *p_ancestor_col_obj) {
+Array _get_ancestor_compound_trigger_nodes(const Ref<GLTFState> &p_state, const Vector<Ref<GLTFNode>> &p_state_nodes, CollisionObject3D *p_ancestor_col_obj) {
 	GLTFNodeIndex ancestor_index = p_state->get_node_index(p_ancestor_col_obj);
 	ERR_FAIL_INDEX_V(ancestor_index, p_state_nodes.size(), Array());
-	Ref<GLTFNode> ancestor_gltf_node = p_state_nodes[ancestor_index];
+	const Ref<GLTFNode> &ancestor_gltf_node = p_state_nodes[ancestor_index];
 	Variant compound_trigger_nodes = ancestor_gltf_node->get_additional_data(StringName("GLTFPhysicsCompoundTriggerNodes"));
 	if (compound_trigger_nodes.is_array()) {
 		return compound_trigger_nodes;
@@ -439,7 +439,7 @@ Node3D *GLTFDocumentExtensionPhysics::generate_scene_node(Ref<GLTFState> p_state
 		ancestor_col_obj = _get_ancestor_collision_object(p_scene_parent);
 		if (Object::cast_to<Area3D>(ancestor_col_obj) && gltf_physics_trigger_shape.is_valid()) {
 			// At this point, we found an ancestor Area3D node. But do we want to use it for this trigger shape?
-			TypedArray<GLTFNode> state_nodes = p_state->get_nodes();
+			const Vector<Ref<GLTFNode>> &state_nodes = p_state->get_nodes();
 			GLTFNodeIndex self_index = state_nodes.find(p_gltf_node);
 			Array compound_trigger_nodes = _get_ancestor_compound_trigger_nodes(p_state, state_nodes, ancestor_col_obj);
 			// Check if the ancestor specifies compound trigger nodes, and if this node is in there.
@@ -497,13 +497,13 @@ bool _are_all_faces_equal(const Vector<Face3> &p_a, const Vector<Face3> &p_b) {
 	return true;
 }
 
-GLTFMeshIndex _get_or_insert_mesh_in_state(Ref<GLTFState> p_state, Ref<ImporterMesh> p_mesh) {
+GLTFMeshIndex _get_or_insert_mesh_in_state(const Ref<GLTFState> &p_state, const Ref<ImporterMesh> &p_mesh) {
 	ERR_FAIL_COND_V(p_mesh.is_null(), -1);
-	TypedArray<GLTFMesh> state_meshes = p_state->get_meshes();
+	Vector<Ref<GLTFMesh>> state_meshes = p_state->get_meshes();
 	Vector<Face3> mesh_faces = p_mesh->get_faces();
 	// De-duplication: If the state already has the mesh we need, use that one.
 	for (GLTFMeshIndex i = 0; i < state_meshes.size(); i++) {
-		Ref<GLTFMesh> state_gltf_mesh = state_meshes[i];
+		const Ref<GLTFMesh> &state_gltf_mesh = state_meshes[i];
 		ERR_CONTINUE(state_gltf_mesh.is_null());
 		Ref<ImporterMesh> state_importer_mesh = state_gltf_mesh->get_mesh();
 		ERR_CONTINUE(state_importer_mesh.is_null());
@@ -540,7 +540,7 @@ void GLTFDocumentExtensionPhysics::convert_scene_node(Ref<GLTFState> p_state, Re
 		if (cast_to<Area3D>(ancestor_col_obj)) {
 			p_gltf_node->set_additional_data(StringName("GLTFPhysicsTriggerShape"), gltf_shape);
 			// Write explicit member shape nodes to the ancestor compound trigger node.
-			TypedArray<GLTFNode> state_nodes = p_state->get_nodes();
+			const Vector<Ref<GLTFNode>> &state_nodes = p_state->get_nodes();
 			GLTFNodeIndex self_index = state_nodes.size(); // The current p_gltf_node will be inserted next.
 			Array compound_trigger_nodes = _get_ancestor_compound_trigger_nodes(p_state, p_state->get_nodes(), ancestor_col_obj);
 			compound_trigger_nodes.push_back(double(self_index));
@@ -553,7 +553,7 @@ void GLTFDocumentExtensionPhysics::convert_scene_node(Ref<GLTFState> p_state, Re
 	}
 }
 
-Array _get_or_create_state_shapes_in_state(Ref<GLTFState> p_state) {
+Array _get_or_create_state_shapes_in_state(const Ref<GLTFState> &p_state) {
 	Dictionary state_json = p_state->get_json();
 	Dictionary state_extensions;
 	if (state_json.has("extensions")) {
@@ -577,7 +577,7 @@ Array _get_or_create_state_shapes_in_state(Ref<GLTFState> p_state) {
 	return state_shapes;
 }
 
-GLTFShapeIndex _export_node_shape(Ref<GLTFState> p_state, Ref<GLTFPhysicsShape> p_physics_shape) {
+GLTFShapeIndex _export_node_shape(const Ref<GLTFState> &p_state, const Ref<GLTFPhysicsShape> &p_physics_shape) {
 	Array state_shapes = _get_or_create_state_shapes_in_state(p_state);
 	GLTFShapeIndex size = state_shapes.size();
 	Dictionary shape_property;
@@ -597,14 +597,14 @@ GLTFShapeIndex _export_node_shape(Ref<GLTFState> p_state, Ref<GLTFPhysicsShape> 
 
 Error GLTFDocumentExtensionPhysics::export_preserialize(Ref<GLTFState> p_state) {
 	// Note: Need to do _export_node_shape before exporting animations, so export_node is too late.
-	TypedArray<GLTFNode> state_gltf_nodes = p_state->get_nodes();
+	const Vector<Ref<GLTFNode>> &state_gltf_nodes = p_state->get_nodes();
 	for (Ref<GLTFNode> gltf_node : state_gltf_nodes) {
-		Ref<GLTFPhysicsShape> collider_shape = gltf_node->get_additional_data(StringName("GLTFPhysicsColliderShape"));
+		const Ref<GLTFPhysicsShape> collider_shape = gltf_node->get_additional_data(StringName("GLTFPhysicsColliderShape"));
 		if (collider_shape.is_valid()) {
 			GLTFShapeIndex collider_shape_index = _export_node_shape(p_state, collider_shape);
 			gltf_node->set_additional_data(StringName("GLTFPhysicsColliderShapeIndex"), collider_shape_index);
 		}
-		Ref<GLTFPhysicsShape> trigger_shape = gltf_node->get_additional_data(StringName("GLTFPhysicsTriggerShape"));
+		const Ref<GLTFPhysicsShape> trigger_shape = gltf_node->get_additional_data(StringName("GLTFPhysicsTriggerShape"));
 		if (trigger_shape.is_valid()) {
 			GLTFShapeIndex trigger_shape_index = _export_node_shape(p_state, trigger_shape);
 			gltf_node->set_additional_data(StringName("GLTFPhysicsTriggerShapeIndex"), trigger_shape_index);
@@ -661,9 +661,9 @@ Ref<GLTFObjectModelProperty> GLTFDocumentExtensionPhysics::export_object_model_p
 		split_json_pointer.append("extensions");
 		split_json_pointer.append("OMI_physics_shape");
 		split_json_pointer.append("shapes");
-		TypedArray<GLTFNode> state_gltf_nodes = p_state->get_nodes();
+		const Vector<Ref<GLTFNode>> &state_gltf_nodes = p_state->get_nodes();
 		ERR_FAIL_INDEX_V(p_gltf_node_index, state_gltf_nodes.size(), ret);
-		Ref<GLTFNode> gltf_node = state_gltf_nodes[p_gltf_node_index];
+		const Ref<GLTFNode> &gltf_node = state_gltf_nodes[p_gltf_node_index];
 		Variant shape_index_maybe = gltf_node->get_additional_data(StringName("GLTFPhysicsColliderShapeIndex"));
 		String shape_type;
 		if (shape_index_maybe.get_type() == Variant::INT) {

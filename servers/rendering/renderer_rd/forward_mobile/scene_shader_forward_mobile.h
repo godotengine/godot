@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include "../storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/pipeline_hash_map_rd.h"
 #include "servers/rendering/renderer_rd/shaders/forward_mobile/scene_forward_mobile.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/rendering_server_types.h"
 
 namespace RendererSceneRenderImplementation {
 
@@ -89,21 +90,27 @@ public:
 				uint32_t use_light_soft_shadows : 1;
 				uint32_t use_directional_soft_shadows : 1;
 				uint32_t decal_use_mipmaps : 1;
+
 				uint32_t projector_use_mipmaps : 1;
 				uint32_t disable_fog : 1;
 				uint32_t use_depth_fog : 1;
 				uint32_t use_fog_aerial_perspective : 1;
+
 				uint32_t use_fog_sun_scatter : 1;
 				uint32_t use_fog_height_density : 1;
 				uint32_t use_lightmap_bicubic_filter : 1;
+				uint32_t use_material_debanding : 1;
+
 				uint32_t multimesh : 1;
 				uint32_t multimesh_format_2d : 1;
 				uint32_t multimesh_has_color : 1;
 				uint32_t multimesh_has_custom_data : 1;
+
 				uint32_t scene_use_ambient_cubemap : 1;
 				uint32_t scene_use_reflection_cubemap : 1;
 				uint32_t scene_roughness_limiter_enabled : 1;
-				uint32_t padding_0 : 2;
+				uint32_t padding_0 : 1;
+
 				uint32_t soft_shadow_samples : 6;
 				uint32_t penumbra_shadow_samples : 6;
 			};
@@ -189,7 +196,7 @@ public:
 			RD::VertexFormatID vertex_format_id;
 			RD::FramebufferFormatID framebuffer_format_id;
 			RD::PolygonCullMode cull_mode = RD::POLYGON_CULL_MAX;
-			RS::PrimitiveType primitive_type = RS::PRIMITIVE_MAX;
+			RSE::PrimitiveType primitive_type = RSE::PRIMITIVE_MAX;
 			ShaderSpecialization shader_specialization = {};
 			ShaderVersion version = SHADER_VERSION_MAX;
 			uint32_t render_pass = 0;
@@ -234,7 +241,7 @@ public:
 		int depth_test_disabledi = 0;
 		int depth_test_invertedi = 0;
 		int alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
-		int cull_mode = RS::CULL_MODE_BACK;
+		int cull_mode = RSE::CULL_MODE_BACK;
 
 		bool uses_point_size = false;
 		bool uses_alpha = false;
@@ -290,13 +297,14 @@ public:
 		}
 
 		_FORCE_INLINE_ bool uses_shared_shadow_material() const {
-			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && !uses_world_coordinates && !wireframe;
+			bool backface_culling = cull_mode == RSE::CULL_MODE_BACK;
+			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && !uses_point_size && !uses_world_coordinates && !wireframe && !stencil_enabled && backface_culling;
 		}
 
 		virtual void set_code(const String &p_Code);
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 		RD::PolygonCullMode get_cull_mode_from_cull_variant(CullVariant p_cull_variant);
 		void _clear_vertex_input_mask_cache();
@@ -338,6 +346,7 @@ public:
 	SceneForwardMobileShaderRD shader;
 	ShaderCompiler compiler;
 	bool use_fp16 = false;
+	bool emulate_point_size = false;
 
 	RID default_shader;
 	RID default_material;
@@ -366,11 +375,11 @@ public:
 
 	ShaderSpecialization default_specialization = {};
 
-	uint32_t pipeline_compilations[RS::PIPELINE_SOURCE_MAX] = {};
+	uint32_t pipeline_compilations[RSE::PIPELINE_SOURCE_MAX] = {};
 
 	void init(const String p_defines);
 	void set_default_specialization(const ShaderSpecialization &p_specialization);
-	uint32_t get_pipeline_compilations(RS::PipelineSource p_source);
+	uint32_t get_pipeline_compilations(RSE::PipelineSource p_source);
 	void enable_fp32_shader_group();
 	void enable_fp16_shader_group();
 	void enable_multiview_shader_group();

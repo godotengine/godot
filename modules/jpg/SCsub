@@ -8,98 +8,96 @@ env_jpg = env_modules.Clone()
 
 thirdparty_obj = []
 
-thirdparty_dir = "#thirdparty/libjpeg-turbo"
+if env["builtin_libjpeg_turbo"]:
+    thirdparty_dir = "#thirdparty/libjpeg-turbo"
 
-thirdparty_sources_common = [
-    "jaricom.c",
-    "jcapimin.c",
-    "jcarith.c",
-    "jchuff.c",
-    "jcicc.c",
-    "jcinit.c",
-    "jcmarker.c",
-    "jcmaster.c",
-    "jcomapi.c",
-    "jcparam.c",
-    "jcphuff.c",
-    "jctrans.c",
-    "jdapimin.c",
-    "jdarith.c",
-    "jdatadst.c",
-    "jdatadst-tj.c",
-    "jdatasrc.c",
-    "jdatasrc-tj.c",
-    "jdhuff.c",
-    "jdicc.c",
-    "jdinput.c",
-    "jdmarker.c",
-    "jdmaster.c",
-    "jdphuff.c",
-    "jdtrans.c",
-    "jerror.c",
-    "jfdctflt.c",
-    "jmemmgr.c",
-    "jmemnobs.c",
-    "jpeg_nbits.c",
-    "transupp.c",
-    "turbojpeg.c",
-]
+    thirdparty_sources_common = [
+        "jaricom.c",
+        "jcapimin.c",
+        "jcarith.c",
+        "jchuff.c",
+        "jcicc.c",
+        "jcinit.c",
+        "jcmarker.c",
+        "jcmaster.c",
+        "jcomapi.c",
+        "jcparam.c",
+        "jcphuff.c",
+        "jctrans.c",
+        "jdapimin.c",
+        "jdarith.c",
+        "jdatadst.c",
+        "jdatadst-tj.c",
+        "jdatasrc.c",
+        "jdatasrc-tj.c",
+        "jdhuff.c",
+        "jdicc.c",
+        "jdinput.c",
+        "jdmarker.c",
+        "jdmaster.c",
+        "jdphuff.c",
+        "jdtrans.c",
+        "jerror.c",
+        "jfdctflt.c",
+        "jmemmgr.c",
+        "jmemnobs.c",
+        "jpeg_nbits.c",
+        "transupp.c",
+        "turbojpeg.c",
+    ]
 
-thirdparty_sources_bit_dependent = [
-    "jcapistd.c",
-    "jccoefct.c",
-    "jccolor.c",
-    "jcdctmgr.c",
-    "jcmainct.c",
-    "jcprepct.c",
-    "jcsample.c",
-    "jdcoefct.c",
-    "jdcolor.c",
-    "jdapistd.c",
-    "jddctmgr.c",
-    "jdmainct.c",
-    "jdmerge.c",
-    "jdpostct.c",
-    "jdsample.c",
-    "jfdctfst.c",
-    "jfdctint.c",
-    "jidctflt.c",
-    "jidctfst.c",
-    "jidctint.c",
-    "jidctred.c",
-    "jutils.c",
-    "jquant1.c",
-    "jquant2.c",
-]
+    thirdparty_sources_bit_dependent = [
+        "jcapistd.c",
+        "jccoefct.c",
+        "jccolor.c",
+        "jcdctmgr.c",
+        "jcmainct.c",
+        "jcprepct.c",
+        "jcsample.c",
+        "jdcoefct.c",
+        "jdcolor.c",
+        "jdapistd.c",
+        "jddctmgr.c",
+        "jdmainct.c",
+        "jdmerge.c",
+        "jdpostct.c",
+        "jdsample.c",
+        "jfdctfst.c",
+        "jfdctint.c",
+        "jidctflt.c",
+        "jidctfst.c",
+        "jidctint.c",
+        "jidctred.c",
+        "jutils.c",
+        "jquant1.c",
+        "jquant2.c",
+    ]
 
-thirdparty_sources_by_bits = {
-    8: list(thirdparty_sources_bit_dependent),
-    12: list(thirdparty_sources_bit_dependent),
-}
+    thirdparty_sources_by_bits = {
+        8: list(thirdparty_sources_bit_dependent),
+        12: list(thirdparty_sources_bit_dependent),
+    }
 
+    def source_paths(files):
+        return [thirdparty_dir + "/src/" + f for f in files]
 
-def source_paths(files):
-    return [thirdparty_dir + "/src/" + f for f in files]
+    env_jpg.Prepend(CPPPATH=[thirdparty_dir + "/src"])
 
+    def add_bit_depth(bit_depth: int):
+        env_bit_depth = env_jpg.Clone()
+        env_bit_depth.disable_warnings()
+        env_bit_depth["OBJSUFFIX"] = f"_{bit_depth}{env_bit_depth['OBJSUFFIX']}"
+        env_bit_depth.Append(CPPDEFINES=[f"BITS_IN_JSAMPLE={bit_depth}"])
+        env_bit_depth.add_source_files(thirdparty_obj, source_paths(thirdparty_sources_by_bits[bit_depth]))
 
-env_jpg.Prepend(CPPEXTPATH=[thirdparty_dir + "/src"])
+    add_bit_depth(8)
+    add_bit_depth(12)
 
+    env_thirdparty = env_jpg.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(thirdparty_obj, source_paths(thirdparty_sources_common))
+    env.modules_sources += thirdparty_obj
 
-def add_bit_depth(bit_depth: int):
-    env_bit_depth = env_jpg.Clone()
-    env_bit_depth.disable_warnings()
-    env_bit_depth["OBJSUFFIX"] = f"_{bit_depth}{env_bit_depth['OBJSUFFIX']}"
-    env_bit_depth.Append(CPPDEFINES=[f"BITS_IN_JSAMPLE={bit_depth}"])
-    env_bit_depth.add_source_files(thirdparty_obj, source_paths(thirdparty_sources_by_bits[bit_depth]))
-
-
-add_bit_depth(8)
-add_bit_depth(12)
-
-env_thirdparty = env_jpg.Clone()
-env_thirdparty.disable_warnings()
-env_thirdparty.add_source_files(thirdparty_obj, source_paths(thirdparty_sources_common))
-env.modules_sources += thirdparty_obj
 
 # Godot source files
 

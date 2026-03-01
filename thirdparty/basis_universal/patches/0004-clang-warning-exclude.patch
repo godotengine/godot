@@ -1,0 +1,142 @@
+diff --git a/thirdparty/basis_universal/encoder/basisu_pvrtc1_4.h b/thirdparty/basis_universal/encoder/basisu_pvrtc1_4.h
+index a9fe6b27aa..4b8ffb0817 100644
+--- a/thirdparty/basis_universal/encoder/basisu_pvrtc1_4.h
++++ b/thirdparty/basis_universal/encoder/basisu_pvrtc1_4.h
+@@ -231,18 +231,7 @@ namespace basisu
+ 
+ 		inline void set_to_black()
+ 		{
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
+-#endif                          
+-#endif
+-			memset(m_blocks.get_ptr(), 0, m_blocks.size_in_bytes());
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic pop
+-#endif                
+-#endif
++			memset((void *)m_blocks.get_ptr(), 0, m_blocks.size_in_bytes());
+ 		}
+ 
+ 		inline bool get_block_uses_transparent_modulation(uint32_t bx, uint32_t by) const
+diff --git a/thirdparty/basis_universal/transcoder/basisu.h b/thirdparty/basis_universal/transcoder/basisu.h
+index e1f7161141..31b20d2734 100644
+--- a/thirdparty/basis_universal/transcoder/basisu.h
++++ b/thirdparty/basis_universal/transcoder/basisu.h
+@@ -107,21 +107,8 @@ namespace basisu
+ 		debug_puts(res.c_str());
+ 	}
+ 
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
+-#endif                  
+-#endif
+-		
+ 	template <typename T> inline void clear_obj(T& obj) { memset((void *)&obj, 0, sizeof(obj)); }
+ 
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic pop
+-#endif                            
+-#endif
+-
+ 	constexpr double cPiD = 3.14159265358979323846264338327950288;
+ 	constexpr float REALLY_SMALL_FLOAT_VAL = .000000125f;
+ 	constexpr float SMALL_FLOAT_VAL = .0000125f;
+diff --git a/thirdparty/basis_universal/transcoder/basisu_containers.h b/thirdparty/basis_universal/transcoder/basisu_containers.h
+index 82b78cba62..9ea5917dfb 100644
+--- a/thirdparty/basis_universal/transcoder/basisu_containers.h
++++ b/thirdparty/basis_universal/transcoder/basisu_containers.h
+@@ -1503,22 +1503,10 @@ namespace basisu
+ 
+ 			if (BASISU_IS_BITWISE_COPYABLE(T))
+ 			{
+-
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
+-#endif                  
+-#endif
+ 				if ((m_p) && (other.m_p))
+ 				{
+-					memcpy(m_p, other.m_p, m_size * sizeof(T));
++					memcpy((void *)m_p, other.m_p, m_size * sizeof(T));
+ 				}
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic pop
+-#endif                
+-#endif
+ 			}
+ 			else
+ 			{
+@@ -1649,19 +1637,8 @@ namespace basisu
+ 
+ 			if (BASISU_IS_BITWISE_COPYABLE(T))
+ 			{
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
+-#endif         
+-#endif
+ 				if ((m_p) && (other.m_p))
+ 					memcpy((void *)m_p, other.m_p, other.m_size * sizeof(T));
+-#ifndef __EMSCRIPTEN__          
+-#ifdef __GNUC__
+-#pragma GCC diagnostic pop
+-#endif                            
+-#endif
+ 			}
+ 			else
+ 			{
+@@ -2233,21 +2210,7 @@ namespace basisu
+ 				}
+ 
+ 				// Copy "down" the objects to preserve, filling in the empty slots.
+-
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
+-#endif
+-#endif
+-
+ 				memmove((void *)pDst, pSrc, num_to_move * sizeof(T));
+-
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic pop
+-#endif            
+-#endif
+ 			}
+ 			else
+ 			{
+@@ -2492,18 +2455,13 @@ namespace basisu
+ 		{
+ 			if ((sizeof(T) == 1) && (scalar_type<T>::cFlag))
+ 			{
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
++#if defined(__GNUC__) && !defined(__clang__)
+ #pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
+-#endif              
++#pragma GCC diagnostic ignored "-Wclass-memaccess"
+ #endif
+ 				memset(m_p, *reinterpret_cast<const uint8_t*>(&o), m_size);
+-
+-#ifndef __EMSCRIPTEN__            
+-#ifdef __GNUC__
++#if defined(__GNUC__) && !defined(__clang__)
+ #pragma GCC diagnostic pop
+-#endif                        
+ #endif
+ 			}
+ 			else

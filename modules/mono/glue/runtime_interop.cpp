@@ -48,7 +48,7 @@
 #include "core/string/string_name.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 #endif
 
 #ifdef __cplusplus
@@ -203,6 +203,11 @@ void godotsharp_internal_refcounted_disposed(Object *p_ptr, GCHandleIntPtr p_gch
 			CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
 			if (script_binding.inited) {
 				if (!script_binding.gchandle.is_released()) {
+					if (rc->get_reference_count() == 1 && script_binding.gchandle.is_weak()) {
+						// The GCHandle is just swapped, so get the swapped handle to release
+						// See: CSharpLanguage::_instance_binding_reference_callback(void *p_token, void *p_binding, GDExtensionBool p_reference)
+						p_gchandle_to_free = script_binding.gchandle.get_intptr();
+					}
 					CSharpLanguage::release_binding_gchandle_thread_safe(p_gchandle_to_free, script_binding);
 				}
 			}
@@ -1563,6 +1568,54 @@ void godotsharp_object_to_string(Object *p_ptr, godot_string *r_str) {
 }
 #endif
 
+int64_t godotsharp_string_size(const String *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_byte_array_size(const PackedByteArray *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_int32_array_size(const PackedInt32Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_int64_array_size(const PackedInt64Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_float32_array_size(const PackedFloat32Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_float64_array_size(const PackedFloat64Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_string_array_size(const PackedStringArray *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_vector2_array_size(const PackedVector2Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_vector3_array_size(const PackedVector3Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_vector4_array_size(const PackedVector4Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_color_array_size(const PackedColorArray *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_array_size(const Array *p_self) {
+	return p_self->size();
+}
+
 // The order in this array must match the declaration order of
 // the methods in 'GodotSharp/Core/NativeInterop/NativeFuncs.cs'.
 static const void *unmanaged_callbacks[]{
@@ -1791,6 +1844,18 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_var_to_str,
 	(void *)godotsharp_err_print_error,
 	(void *)godotsharp_object_to_string,
+	(void *)godotsharp_string_size,
+	(void *)godotsharp_packed_byte_array_size,
+	(void *)godotsharp_packed_int32_array_size,
+	(void *)godotsharp_packed_int64_array_size,
+	(void *)godotsharp_packed_float32_array_size,
+	(void *)godotsharp_packed_float64_array_size,
+	(void *)godotsharp_packed_string_array_size,
+	(void *)godotsharp_packed_vector2_array_size,
+	(void *)godotsharp_packed_vector3_array_size,
+	(void *)godotsharp_packed_vector4_array_size,
+	(void *)godotsharp_packed_color_array_size,
+	(void *)godotsharp_array_size,
 };
 
 const void **godotsharp::get_runtime_interop_funcs(int32_t &r_size) {

@@ -34,15 +34,19 @@
 
 @class CAContext;
 @class CALayer;
+class InputEvent;
 class GLManagerEmbedded;
+class NativeMenu;
 class RenderingContextDriver;
 class RenderingDevice;
 
 struct DisplayServerEmbeddedState {
-	/// Default to a scale of 2.0, which is the most common.
+	/*! Default to a scale of 2.0, which is the most common. */
 	float screen_max_scale = 2.0f;
 	float screen_dpi = 96.0f;
-	/// The display ID of the window which is displaying the embedded process content.
+	/*! Scale for window displaying embedded content */
+	float screen_window_scale = 2.0f;
+	/*! The display ID of the window which is displaying the embedded process content. */
 	uint32_t display_id = -1;
 
 	void serialize(PackedByteArray &r_data);
@@ -112,6 +116,8 @@ public:
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 
+	void _window_set_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID);
+
 	// MARK: - Events
 
 	virtual void process_events() override;
@@ -138,13 +144,9 @@ public:
 	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
 	virtual bool mouse_is_mode_override_enabled() const override;
 
+	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
-
-	// MARK: - Joystick
-
-	void joy_add(int p_idx, const String &p_name);
-	void joy_del(int p_idx);
 
 	// MARK: - Window
 
@@ -157,6 +159,7 @@ public:
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
@@ -196,6 +199,8 @@ public:
 	virtual bool window_get_flag(WindowFlags p_flag, WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_taskbar_progress_value(float p_value, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const override;
 

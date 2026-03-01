@@ -186,13 +186,11 @@ struct _FaceClassify {
 			face = -1;
 			edge = -1;
 		}
-		_Link() {}
 	};
 	bool valid = false;
 	int group = -1;
 	_Link links[3];
 	Face3 face;
-	_FaceClassify() {}
 };
 
 /*** GEOMETRY WRAPPER ***/
@@ -239,15 +237,15 @@ static inline void _plot_face(uint8_t ***p_cell_status, int x, int y, int z, int
 	int div_z = len_z > 1 ? 2 : 1;
 
 #define SPLIT_DIV(m_i, m_div, m_v, m_len_v, m_new_v, m_new_len_v) \
-	if (m_div == 1) {                                             \
-		m_new_v = m_v;                                            \
-		m_new_len_v = 1;                                          \
-	} else if (m_i == 0) {                                        \
-		m_new_v = m_v;                                            \
-		m_new_len_v = m_len_v / 2;                                \
-	} else {                                                      \
-		m_new_v = m_v + m_len_v / 2;                              \
-		m_new_len_v = m_len_v - m_len_v / 2;                      \
+	if (m_div == 1) { \
+		m_new_v = m_v; \
+		m_new_len_v = 1; \
+	} else if (m_i == 0) { \
+		m_new_v = m_v; \
+		m_new_len_v = m_len_v / 2; \
+	} else { \
+		m_new_v = m_v + m_len_v / 2; \
+		m_new_len_v = m_len_v - m_len_v / 2; \
 	}
 
 	int new_x;

@@ -30,6 +30,7 @@
 
 #include "theme.h"
 
+#include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
 
 // Dynamic properties.
@@ -120,21 +121,21 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 	// Icons.
 	for (const KeyValue<StringName, ThemeIconMap> &E : icon_map) {
 		for (const KeyValue<StringName, Ref<Texture2D>> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/icons/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/icons/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
 
 	// Styles.
 	for (const KeyValue<StringName, ThemeStyleMap> &E : style_map) {
 		for (const KeyValue<StringName, Ref<StyleBox>> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/styles/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/styles/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, StyleBox::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
 
 	// Fonts.
 	for (const KeyValue<StringName, ThemeFontMap> &E : font_map) {
 		for (const KeyValue<StringName, Ref<Font>> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/fonts/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, "Font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/fonts/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, Font::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
 
@@ -176,8 +177,10 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 
 // Static helpers.
 bool Theme::is_valid_type_name(const String &p_name) {
-	for (int i = 0; i < p_name.length(); i++) {
-		if (!is_ascii_identifier_char(p_name[i])) {
+	int len = p_name.length();
+	const char32_t *str = p_name.ptr();
+	for (int i = 0; i < len; i++) {
+		if (!is_ascii_identifier_char(str[i])) {
 			return false;
 		}
 	}
@@ -188,12 +191,26 @@ bool Theme::is_valid_item_name(const String &p_name) {
 	if (p_name.is_empty()) {
 		return false;
 	}
-	for (int i = 0; i < p_name.length(); i++) {
-		if (!is_ascii_identifier_char(p_name[i])) {
+	int len = p_name.length();
+	const char32_t *str = p_name.ptr();
+	for (int i = 0; i < len; i++) {
+		if (!is_ascii_identifier_char(str[i])) {
 			return false;
 		}
 	}
 	return true;
+}
+
+String Theme::validate_type_name(const String &p_name) {
+	String type_name = p_name.strip_edges();
+	int len = type_name.length();
+	char32_t *buffer = type_name.ptrw();
+	for (int i = 0; i < len; i++) {
+		if (!is_ascii_identifier_char(buffer[i])) {
+			buffer[i] = '_';
+		}
+	}
+	return type_name;
 }
 
 // Fallback values for theme item types, configurable per theme.
@@ -1896,7 +1913,7 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &Theme::clear);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "default_base_scale", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_greater"), "set_default_base_scale", "get_default_base_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_default_font", "get_default_font");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, Font::get_class_static()), "set_default_font", "get_default_font");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_font_size", PROPERTY_HINT_RANGE, "0,256,1,or_greater,suffix:px"), "set_default_font_size", "get_default_font_size");
 
 	BIND_ENUM_CONSTANT(DATA_TYPE_COLOR);

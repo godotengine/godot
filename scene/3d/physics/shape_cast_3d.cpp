@@ -30,8 +30,11 @@
 
 #include "shape_cast_3d.h"
 
+#include "core/object/class_db.h"
 #include "scene/3d/physics/collision_object_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
+#include "scene/resources/mesh.h"
+#include "servers/rendering/rendering_server.h"
 
 void ShapeCast3D::_notification(int p_what) {
 	switch (p_what) {
@@ -162,7 +165,7 @@ void ShapeCast3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_debug_shape_custom_color"), &ShapeCast3D::get_debug_shape_custom_color);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D"), "set_shape", "get_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, Shape3D::get_class_static()), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "target_position", PROPERTY_HINT_NONE, "suffix:m"), "set_target_position", "get_target_position");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0,100,0.01,suffix:m"), "set_margin", "get_margin");
@@ -440,8 +443,8 @@ void ShapeCast3D::add_exception_rid(const RID &p_rid) {
 	exclude.insert(p_rid);
 }
 
-void ShapeCast3D::add_exception(const CollisionObject3D *p_node) {
-	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject3D.");
+void ShapeCast3D::add_exception(RequiredParam<const CollisionObject3D> rp_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject3D.");
 	add_exception_rid(p_node->get_rid());
 }
 
@@ -449,8 +452,8 @@ void ShapeCast3D::remove_exception_rid(const RID &p_rid) {
 	exclude.erase(p_rid);
 }
 
-void ShapeCast3D::remove_exception(const CollisionObject3D *p_node) {
-	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject3D.");
+void ShapeCast3D::remove_exception(RequiredParam<const CollisionObject3D> rp_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject3D.");
 	remove_exception_rid(p_node->get_rid());
 }
 
@@ -633,11 +636,11 @@ void ShapeCast3D::_update_debug_shape() {
 void ShapeCast3D::_clear_debug_shape() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (debug_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_instance);
+		RenderingServer::get_singleton()->free_rid(debug_instance);
 		debug_instance = RID();
 	}
 	if (debug_mesh.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_mesh->get_rid());
+		RenderingServer::get_singleton()->free_rid(debug_mesh->get_rid());
 		debug_mesh = Ref<ArrayMesh>();
 	}
 }

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/plugins/editor_debugger_plugin.h"
+#include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/plugins/editor_plugin.h"
 
 class EditorNetworkProfiler;
@@ -58,7 +58,6 @@ class MultiplayerEditorPlugin : public EditorPlugin {
 	GDCLASS(MultiplayerEditorPlugin, EditorPlugin);
 
 private:
-	Button *button = nullptr;
 	ReplicationEditor *repl_editor = nullptr;
 	Ref<MultiplayerEditorDebugger> debugger;
 

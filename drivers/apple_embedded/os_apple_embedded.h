@@ -34,10 +34,9 @@
 
 #import "apple_embedded.h"
 
-#import "drivers/apple/joypad_apple.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 #include "servers/rendering/renderer_compositor.h"
 
 #if defined(RD_ENABLED)
@@ -48,6 +47,8 @@
 #endif
 #endif
 
+class JoypadSDL;
+
 class OS_AppleEmbedded : public OS_Unix {
 private:
 	static HashMap<String, void *> dynamic_symbol_lookup_table;
@@ -57,7 +58,9 @@ private:
 
 	AppleEmbedded *apple_embedded = nullptr;
 
-	JoypadApple *joypad_apple = nullptr;
+#ifdef SDL_ENABLED
+	JoypadSDL *joypad_sdl = nullptr;
+#endif
 
 	MainLoop *main_loop = nullptr;
 
@@ -118,6 +121,7 @@ public:
 	virtual String get_cache_path() const override;
 	virtual String get_temp_path() const override;
 	virtual String get_resource_dir() const override;
+	virtual String get_bundle_resource_dir() const override;
 
 	virtual String get_locale() const override;
 
@@ -137,6 +141,9 @@ public:
 	void on_exit_background();
 
 	virtual Rect2 calculate_boot_screen_rect(const Size2 &p_window_size, const Size2 &p_imgrect_size) const override;
+
+	virtual bool request_permission(const String &p_name) override;
+	virtual Vector<String> get_granted_permissions() const override;
 };
 
 #endif // APPLE_EMBEDDED_ENABLED

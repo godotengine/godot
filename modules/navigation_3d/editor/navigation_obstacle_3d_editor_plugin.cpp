@@ -30,16 +30,18 @@
 
 #include "navigation_obstacle_3d_editor_plugin.h"
 
+#include "core/input/input.h"
 #include "core/math/geometry_2d.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/3d/navigation/navigation_obstacle_3d.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/rendering/rendering_server.h"
 
 bool NavigationObstacle3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
 	return Object::cast_to<NavigationObstacle3D>(p_spatial) != nullptr;
@@ -752,7 +754,7 @@ void NavigationObstacle3DEditorPlugin::redraw() {
 
 	point_lines_mesh_array[Mesh::ARRAY_VERTEX] = point_lines_mesh_vertices;
 
-	rs->mesh_add_surface_from_arrays(point_lines_mesh_rid, RS::PRIMITIVE_LINES, point_lines_mesh_array);
+	rs->mesh_add_surface_from_arrays(point_lines_mesh_rid, RSE::PRIMITIVE_LINES, point_lines_mesh_array);
 	rs->instance_set_surface_override_material(point_lines_instance_rid, 0, line_material->get_rid());
 	const Vector3 safe_scale = obstacle_node->get_global_basis().get_scale().abs().maxf(0.001);
 	const Transform3D gt = Transform3D(Basis().scaled(safe_scale).rotated(Vector3(0.0, 1.0, 0.0), obstacle_node->get_global_rotation().y), obstacle_node->get_global_position());
@@ -779,7 +781,7 @@ void NavigationObstacle3DEditorPlugin::redraw() {
 
 	point_handle_mesh_array[Mesh::ARRAY_VERTEX] = point_handle_mesh_vertices;
 
-	rs->mesh_add_surface_from_arrays(point_handle_mesh_rid, RS::PRIMITIVE_POINTS, point_handle_mesh_array);
+	rs->mesh_add_surface_from_arrays(point_handle_mesh_rid, RSE::PRIMITIVE_POINTS, point_handle_mesh_array);
 	rs->instance_set_surface_override_material(point_handles_instance_rid, 0, handle_material->get_rid());
 	rs->instance_set_transform(point_handles_instance_rid, gt);
 }
@@ -830,7 +832,6 @@ NavigationObstacle3DEditorPlugin::NavigationObstacle3DEditorPlugin() {
 	button_create->set_theme_type_variation(SceneStringName(FlatButton));
 	obstacle_editor->add_child(button_create);
 	button_create->set_tooltip_text(TTR("Add Vertex"));
-	button_create->set_accessibility_name(TTRC("Add Vertex"));
 	button_create->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditorPlugin::set_mode).bind(NavigationObstacle3DEditorPlugin::MODE_CREATE));
 	button_create->set_toggle_mode(true);
 	button_create->set_button_group(bg);
@@ -883,20 +884,20 @@ NavigationObstacle3DEditorPlugin::~NavigationObstacle3DEditorPlugin() {
 	ERR_FAIL_NULL(rs);
 
 	if (point_lines_instance_rid.is_valid()) {
-		rs->free(point_lines_instance_rid);
+		rs->free_rid(point_lines_instance_rid);
 		point_lines_instance_rid = RID();
 	}
 	if (point_lines_mesh_rid.is_valid()) {
-		rs->free(point_lines_mesh_rid);
+		rs->free_rid(point_lines_mesh_rid);
 		point_lines_mesh_rid = RID();
 	}
 
 	if (point_handles_instance_rid.is_valid()) {
-		rs->free(point_handles_instance_rid);
+		rs->free_rid(point_handles_instance_rid);
 		point_handles_instance_rid = RID();
 	}
 	if (point_handle_mesh_rid.is_valid()) {
-		rs->free(point_handle_mesh_rid);
+		rs->free_rid(point_handle_mesh_rid);
 		point_handle_mesh_rid = RID();
 	}
 }

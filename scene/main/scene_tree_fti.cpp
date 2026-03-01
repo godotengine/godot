@@ -83,10 +83,21 @@ void SceneTreeFTI::set_enabled(Node *p_root, bool p_enabled) {
 	if (data.enabled == p_enabled) {
 		return;
 	}
-	MutexLock(data.mutex);
+	MutexLock lock(data.mutex);
 
 	data.tick_xform_list[0].clear();
 	data.tick_xform_list[1].clear();
+
+	data.frame_xform_list.clear();
+	data.frame_xform_list_forced.clear();
+
+	data.tick_property_list[0].clear();
+	data.tick_property_list[1].clear();
+
+	data.frame_property_list.clear();
+	data.request_reset_list.clear();
+
+	_clear_depth_lists();
 
 	// Node3D flags must be reset.
 	if (p_root) {
@@ -100,7 +111,7 @@ void SceneTreeFTI::tick_update() {
 	if (!data.enabled) {
 		return;
 	}
-	MutexLock(data.mutex);
+	MutexLock lock(data.mutex);
 
 	_update_request_resets();
 
@@ -210,7 +221,7 @@ void SceneTreeFTI::node_3d_request_reset(Node3D *p_node) {
 	DEV_CHECK_ONCE(data.enabled);
 	DEV_ASSERT(p_node);
 
-	MutexLock(data.mutex);
+	MutexLock lock(data.mutex);
 
 	if (!p_node->_is_physics_interpolation_reset_requested()) {
 		p_node->_set_physics_interpolation_reset_requested(true);
@@ -275,7 +286,7 @@ void SceneTreeFTI::_create_depth_lists() {
 
 			// This shouldn't happen, but wouldn't be terrible if it did.
 			DEV_ASSERT(depth >= 0);
-			depth = MIN(depth, (int32_t)data.scene_tree_depth_limit);
+			depth = MIN(depth, (int32_t)data.scene_tree_depth_limit - 1);
 
 			LocalVector<Node3D *> &dest_list = data.dirty_node_depth_lists[depth];
 #ifdef GODOT_SCENE_TREE_FTI_EXTRA_CHECKS
@@ -404,7 +415,7 @@ void SceneTreeFTI::node_3d_notify_delete(Node3D *p_node) {
 
 	ERR_FAIL_NULL(p_node);
 
-	MutexLock(data.mutex);
+	MutexLock lock(data.mutex);
 
 	// Remove from frame lists.
 	if (p_node->data.fti_on_frame_xform_list) {
@@ -465,19 +476,12 @@ void SceneTreeFTI::_update_dirty_nodes(Node *p_node, uint32_t p_current_half_fra
 		return;
 	}
 
-	// Temporary direct access to children cache for speed.
-	// Maybe replaced later by a more generic fast access method
-	// for children.
-	p_node->_update_children_cache();
-	Span<Node *> children = p_node->data.children_cache.span();
-	uint32_t num_children = children.size();
-
 	// Not a Node3D.
 	// Could be e.g. a viewport or something
 	// so we should still recurse to children.
 	if (!s) {
-		for (uint32_t n = 0; n < num_children; n++) {
-			_update_dirty_nodes(children.ptr()[n], p_current_half_frame, p_interpolation_fraction, p_active, nullptr, p_depth + 1);
+		for (Node *node : p_node->iterate_children()) {
+			_update_dirty_nodes(node, p_current_half_frame, p_interpolation_fraction, p_active, nullptr, p_depth + 1);
 		}
 		return;
 	}
@@ -592,8 +596,8 @@ void SceneTreeFTI::_update_dirty_nodes(Node *p_node, uint32_t p_current_half_fra
 	s->_clear_dirty_bits(Node3D::DIRTY_GLOBAL_INTERPOLATED_TRANSFORM);
 
 	// Recurse to children.
-	for (uint32_t n = 0; n < num_children; n++) {
-		_update_dirty_nodes(children.ptr()[n], p_current_half_frame, p_interpolation_fraction, p_active, s->data.fti_global_xform_interp_set ? &s->data.global_transform_interpolated : &s->data.global_transform, p_depth + 1);
+	for (Node *node : p_node->iterate_children()) {
+		_update_dirty_nodes(node, p_current_half_frame, p_interpolation_fraction, p_active, s->data.fti_global_xform_interp_set ? &s->data.global_transform_interpolated : &s->data.global_transform, p_depth + 1);
 	}
 }
 
@@ -601,7 +605,7 @@ void SceneTreeFTI::frame_update(Node *p_root, bool p_frame_start) {
 	if (!data.enabled || !p_root) {
 		return;
 	}
-	MutexLock(data.mutex);
+	MutexLock lock(data.mutex);
 
 	data.frame_start = p_frame_start;
 	data.in_frame = true;

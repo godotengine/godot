@@ -34,6 +34,10 @@
 #import "godot_window.h"
 #import "key_mapping_macos.h"
 
+#include "core/input/input.h"
+#include "core/input/input_event.h"
+#include "core/os/keyboard.h"
+#include "core/profiling/profiling.h"
 #include "main/main.h"
 
 @implementation GodotContentLayerDelegate
@@ -56,6 +60,9 @@
 - (void)displayLayer:(CALayer *)layer {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (OS::get_singleton()->get_main_loop() && ds->get_is_resizing() && need_redraw) {
+		GodotProfileFrameMark;
+		GodotProfileZone("[GodotContentLayerDelegate displayLayer]");
+
 		Main::force_redraw();
 		if (!Main::is_iterating()) { // Avoid cyclic loop.
 			Main::iteration();
@@ -254,6 +261,10 @@
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+	if (!wd.im_active) {
+		return NSMakeRect(0, 0, 0, 0);
+	}
+
 	const NSRect content_rect = [wd.window_view frame];
 	const float scale = ds->screen_get_max_scale();
 	NSRect point_in_window_rect = NSMakeRect(wd.im_position.x / scale, content_rect.size.height - (wd.im_position.y / scale) - 1, 0, 0);
@@ -543,7 +554,7 @@
 	ds->get_key_modifier_state([event modifierFlags], mm);
 
 	const NSRect contentRect = [wd.window_view frame];
-	if (NSPointInRect([event locationInWindow], contentRect)) {
+	if (NSPointInRect([event locationInWindow], contentRect) && [NSWindow windowNumberAtPoint:[NSEvent mouseLocation] belowWindowWithWindowNumber:0 /*topmost*/] == [wd.window_object windowNumber]) {
 		ds->mouse_enter_window(window_id);
 	}
 

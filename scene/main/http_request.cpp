@@ -30,6 +30,10 @@
 
 #include "http_request.h"
 
+#include "core/io/file_access.h"
+#include "core/io/stream_peer_gzip.h"
+#include "core/object/class_db.h"
+#include "core/os/thread.h"
 #include "scene/main/timer.h"
 
 Error HTTPRequest::_request() {
@@ -208,6 +212,42 @@ void HTTPRequest::cancel_request() {
 	requesting = false;
 }
 
+bool HTTPRequest::_is_content_header(const String &p_header) const {
+	return (p_header.begins_with("content-type:") || p_header.begins_with("content-length:") || p_header.begins_with("content-location:") || p_header.begins_with("content-encoding:") ||
+			p_header.begins_with("transfer-encoding:") || p_header.begins_with("connection:") || p_header.begins_with("authorization:"));
+}
+
+bool HTTPRequest::_is_method_safe() const {
+	return (method == HTTPClient::METHOD_GET || method == HTTPClient::METHOD_HEAD || method == HTTPClient::METHOD_OPTIONS || method == HTTPClient::METHOD_TRACE);
+}
+
+Error HTTPRequest::_get_redirect_headers(Vector<String> *r_headers) {
+	for (const String &E : headers) {
+		const String h = E.to_lower();
+		// We strip content headers when changing a redirect to GET.
+		if (!_is_content_header(h)) {
+			r_headers->push_back(E);
+		}
+	}
+	return OK;
+}
+
+bool HTTPRequest::_is_automatic_redirect() const {
+	if (unlikely(method == HTTPClient::METHOD_CONNECT)) {
+		// Never automatically redirect CONNECT requests.
+		return false;
+	} else if (response_code == 301 || response_code == 302 || response_code == 303 || response_code == 305) {
+		// We change unsafe methods to GET for 301, 302, and 303, so these are always redirected.
+		// 305 is deprecated and treated as equivalent to 302.
+		return true;
+	} else if ((response_code == 307 || response_code == 308) && _is_method_safe()) {
+		// We only automatically redirect for safe methods on method-preserving status codes.
+		return true;
+	} else {
+		return false;
+	}
+}
+
 bool HTTPRequest::_handle_response(bool *ret_value) {
 	if (!client->has_response()) {
 		_defer_done(RESULT_NO_RESPONSE, 0, PackedStringArray(), PackedByteArray());
@@ -228,8 +268,8 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 		response_headers.push_back(E);
 	}
 
-	if (response_code == 301 || response_code == 302) {
-		// Handle redirect.
+	if (_is_automatic_redirect()) {
+		// Follow redirect.
 
 		if (max_redirects >= 0 && redirections >= max_redirects) {
 			_defer_done(RESULT_REDIRECT_LIMIT_REACHED, response_code, response_headers, PackedByteArray());
@@ -240,7 +280,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 		String new_request;
 
 		for (const String &E : rheaders) {
-			if (E.containsn("Location: ")) {
+			if (E.to_lower().begins_with("location: ")) {
 				new_request = E.substr(9).strip_edges();
 			}
 		}
@@ -267,6 +307,16 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 				final_body_size.set(0);
 				redirections = new_redirs;
 				*ret_value = false;
+				if (!_is_method_safe()) {
+					// 301, 302, and 303 are changed to GET for unsafe methods.
+					// See: https://www.rfc-editor.org/rfc/rfc9110#section-15.4-3.1
+					method = HTTPClient::METHOD_GET;
+					// Content headers should be dropped if changing method.
+					// See: https://www.rfc-editor.org/rfc/rfc9110#section-15.4-6.2.1
+					Vector<String> req_headers;
+					_get_redirect_headers(&req_headers);
+					headers = req_headers;
+				}
 				return true;
 			}
 		}
@@ -666,6 +716,7 @@ HTTPRequest::HTTPRequest() {
 	tls_options = TLSOptions::client();
 	timer = memnew(Timer);
 	timer->set_one_shot(true);
+	timer->set_ignore_time_scale(true);
 	timer->connect("timeout", callable_mp(this, &HTTPRequest::_timeout));
 	add_child(timer);
 }

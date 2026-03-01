@@ -33,6 +33,7 @@
 #include "core/debugger/engine_profiler.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "core/object/script_backtrace.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
@@ -109,7 +110,7 @@ public:
 
 	static ResourceSaver *get_singleton() { return singleton; }
 
-	Error save(const Ref<Resource> &p_resource, const String &p_path, BitField<SaverFlags> p_flags);
+	Error save(RequiredParam<Resource> p_resource, const String &p_path, BitField<SaverFlags> p_flags);
 	Error set_uid(const String &p_path, ResourceUID::ID p_uid);
 	Vector<String> get_recognized_extensions(const Ref<Resource> &p_resource);
 	void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front);
@@ -147,8 +148,6 @@ class OS : public Object {
 	mutable HashMap<String, bool> feature_cache;
 
 	class LoggerBind : public ::Logger {
-		inline static thread_local bool is_logging = false;
-
 	public:
 		LocalVector<Ref<CoreBind::Logger>> loggers;
 
@@ -313,6 +312,7 @@ public:
 
 	void add_logger(const Ref<Logger> &p_logger);
 	void remove_logger(const Ref<Logger> &p_logger);
+	void remove_script_loggers(const ScriptLanguage *p_script);
 
 	static OS *get_singleton() { return singleton; }
 
@@ -496,6 +496,7 @@ public:
 	Variant wait_to_finish();
 
 	static void set_thread_safety_checks_enabled(bool p_enabled);
+	static bool is_main_thread();
 };
 
 namespace Special {
@@ -559,9 +560,6 @@ public:
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif
-
-	ClassDB() {}
-	~ClassDB() {}
 };
 
 } // namespace Special

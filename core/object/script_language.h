@@ -35,7 +35,6 @@
 #include "core/object/script_backtrace.h"
 #include "core/object/script_instance.h"
 #include "core/templates/pair.h"
-#include "core/templates/safe_refcount.h"
 #include "core/variant/typed_array.h"
 
 class ScriptLanguage;
@@ -71,8 +70,6 @@ class ScriptServer {
 	static bool inheriters_cache_dirty;
 
 public:
-	static ScriptEditRequestFunction edit_request_func;
-
 	static void set_scripting_enabled(bool p_enabled);
 	static bool is_scripting_enabled();
 	_FORCE_INLINE_ static int get_language_count() { return _language_count; }
@@ -98,8 +95,9 @@ public:
 	static StringName get_global_class_native_base(const String &p_class);
 	static bool is_global_class_abstract(const String &p_class);
 	static bool is_global_class_tool(const String &p_class);
-	static void get_global_class_list(List<StringName> *r_global_classes);
+	static void get_global_class_list(LocalVector<StringName> &r_global_classes);
 	static void get_inheriters_list(const StringName &p_base_type, List<StringName> *r_classes);
+	static void get_indirect_inheriters_list(const StringName &p_base_type, List<StringName> *r_classes);
 	static void save_global_classes();
 
 	static Vector<Ref<ScriptBacktrace>> capture_script_backtraces(bool p_include_variables = false);
@@ -140,6 +138,8 @@ protected:
 	}
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::SCRIPT;
+
 	virtual void reload_from_file() override;
 
 	virtual bool can_instantiate() const = 0;
@@ -197,7 +197,9 @@ public:
 
 	virtual const Variant get_rpc_config() const = 0;
 
-	Script() {}
+	Script() {
+		_define_ancestry(AncestralClass::SCRIPT);
+	}
 };
 
 class ScriptLanguage : public Object {
@@ -217,7 +219,8 @@ public:
 
 	/* EDITOR FUNCTIONS */
 	struct Warning {
-		int start_line = -1, end_line = -1;
+		int start_line = 0;
+		int end_line = 0;
 		int code;
 		String string_code;
 		String message;
@@ -268,10 +271,6 @@ public:
 	virtual bool is_using_templates() { return false; }
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const = 0;
 	virtual String validate_path(const String &p_path) const { return ""; }
-	virtual Script *create_script() const = 0;
-#ifndef DISABLE_DEPRECATED
-	virtual bool has_named_classes() const = 0;
-#endif
 	virtual bool supports_builtin_mode() const = 0;
 	virtual bool supports_documentation() const { return false; }
 	virtual bool can_inherit_from_file() const { return false; }
@@ -314,7 +313,7 @@ public:
 		Ref<Resource> icon;
 		Variant default_value;
 		Vector<Pair<int, int>> matches;
-		Vector<Pair<int, int>> last_matches = { { -1, -1 } }; // This value correspond to an impossible match
+		bool matches_dirty = true; // Must be set when mutating `matches`, so that sorting characteristics are recalculated.
 		int location = LOCATION_OTHER;
 		String theme_color_name;
 

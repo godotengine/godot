@@ -33,13 +33,15 @@
 #include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/rid_owner.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 class Node;
 class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
 
 class NavMeshGenerator3D : public Object {
+	GDSOFTCLASS(NavMeshGenerator3D, Object);
+
 	static NavMeshGenerator3D *singleton;
 
 	static Mutex baking_navmesh_mutex;
@@ -108,7 +110,7 @@ public:
 	static void cleanup();
 	static void finish();
 
-	static void set_generator_parsers(LocalVector<NavMeshGeometryParser3D *> p_parsers);
+	static void set_generator_parsers(const LocalVector<NavMeshGeometryParser3D *> &p_parsers);
 
 	static void parse_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable());
 	static void bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, const Callable &p_callback = Callable());

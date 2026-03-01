@@ -36,6 +36,9 @@
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "drivers/gles3/shaders/skeleton.glsl.gen.h"
+#include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/rendering_server_enums.h"
+#include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/storage/mesh_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
@@ -56,7 +59,7 @@ struct Mesh {
 			GLsizei stride;
 			uint32_t offset;
 		};
-		RS::PrimitiveType primitive = RS::PRIMITIVE_POINTS;
+		RSE::PrimitiveType primitive = RSE::PRIMITIVE_POINTS;
 		uint64_t format = 0;
 
 		GLuint vertex_buffer = 0;
@@ -70,9 +73,12 @@ struct Mesh {
 		// Cache vertex arrays so they can be created
 		struct Version {
 			uint32_t input_mask = 0;
+			bool uses_motion_vectors = false;
+			uint32_t current_vertex_buffer = 0;
+			uint32_t prev_vertex_buffer = 0;
 			GLuint vertex_array = 0;
 
-			Attrib attribs[RS::ARRAY_MAX];
+			Attrib attribs[RSE::ARRAY_MAX];
 		};
 
 		SpinLock version_lock; //needed to access versions
@@ -123,7 +129,7 @@ struct Mesh {
 	};
 
 	uint32_t blend_shape_count = 0;
-	RS::BlendShapeMode blend_shape_mode = RS::BLEND_SHAPE_MODE_NORMALIZED;
+	RSE::BlendShapeMode blend_shape_mode = RSE::BLEND_SHAPE_MODE_NORMALIZED;
 
 	Surface **surfaces = nullptr;
 	uint32_t surface_count = 0;
@@ -152,9 +158,9 @@ struct MeshInstance {
 	Mesh *mesh = nullptr;
 	RID skeleton;
 	struct Surface {
-		GLuint vertex_buffers[2] = { 0, 0 };
+		GLuint blend_shape_vertex_buffers[2] = { 0, 0 };
 		GLuint vertex_arrays[2] = { 0, 0 };
-		GLuint vertex_buffer = 0;
+		GLuint vertex_buffers[2] = { 0, 0 };
 		int vertex_stride_cache = 0;
 		int vertex_size_cache = 0;
 		int vertex_normal_offset_cache = 0;
@@ -163,6 +169,11 @@ struct MeshInstance {
 
 		Mesh::Surface::Version *versions = nullptr; //allocated on demand
 		uint32_t version_count = 0;
+
+		bool uses_motion_vectors = false;
+		int current_vertex_buffer = 0;
+		int prev_vertex_buffer = 0;
+		uint64_t last_change = 0;
 	};
 	LocalVector<Surface> surfaces;
 	LocalVector<float> blend_weights;
@@ -183,7 +194,7 @@ struct MeshInstance {
 struct MultiMesh {
 	RID mesh;
 	int instances = 0;
-	RS::MultimeshTransformFormat xform_format = RS::MULTIMESH_TRANSFORM_3D;
+	RSE::MultimeshTransformFormat xform_format = RSE::MULTIMESH_TRANSFORM_3D;
 	bool uses_colors = false;
 	bool uses_custom_data = false;
 	int visible_instances = -1;
@@ -199,7 +210,10 @@ struct MultiMesh {
 	bool *data_cache_dirty_regions = nullptr;
 	uint32_t data_cache_used_dirty_regions = 0;
 
-	GLuint buffer = 0;
+	GLuint buffer[2] = { 0, 0 };
+	int current_buffer = 0;
+	int prev_buffer = 0;
+	uint64_t last_change = 0;
 
 	bool dirty = false;
 	MultiMesh *dirty_list = nullptr;
@@ -239,7 +253,7 @@ private:
 
 	mutable RID_Owner<Mesh, true> mesh_owner;
 
-	void _mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, MeshInstance::Surface *mis = nullptr);
+	void _mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, bool p_uses_motion_vectors, MeshInstance::Surface *mis = nullptr, int p_current_vertex_buffer = 0, int p_prev_vertex_buffer = 0);
 	void _mesh_surface_clear(Mesh *mesh, int p_surface);
 
 	/* Mesh Instance API */
@@ -291,12 +305,12 @@ public:
 	virtual void mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) override;
 	virtual bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton) override;
 
-	virtual void mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) override;
+	virtual void mesh_add_surface(RID p_mesh, const RenderingServerTypes::SurfaceData &p_surface) override;
 
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const override;
 
-	virtual void mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) override;
-	virtual RS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const override;
+	virtual void mesh_set_blend_shape_mode(RID p_mesh, RSE::BlendShapeMode p_mode) override;
+	virtual RSE::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const override;
 
 	virtual void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
 	virtual void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
@@ -306,7 +320,7 @@ public:
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) override;
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const override;
 
-	virtual RS::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const override;
+	virtual RenderingServerTypes::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const override;
 	virtual int mesh_get_surface_count(RID p_mesh) const override;
 
 	virtual void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) override;
@@ -320,7 +334,7 @@ public:
 
 	virtual void mesh_clear(RID p_mesh) override;
 	virtual void mesh_surface_remove(RID p_mesh, int p_surface) override;
-	virtual void mesh_debug_usage(List<RS::MeshInfo> *r_info) override {}
+	virtual void mesh_debug_usage(List<RenderingServerTypes::MeshInfo> *r_info) override {}
 
 	_FORCE_INLINE_ const RID *mesh_get_surface_count_and_materials(RID p_mesh, uint32_t &r_surface_count) {
 		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
@@ -354,7 +368,7 @@ public:
 		return mesh->shadow_mesh;
 	}
 
-	_FORCE_INLINE_ RS::PrimitiveType mesh_surface_get_primitive(void *p_surface) {
+	_FORCE_INLINE_ RSE::PrimitiveType mesh_surface_get_primitive(void *p_surface) {
 		Mesh::Surface *surface = reinterpret_cast<Mesh::Surface *>(p_surface);
 		return surface->primitive;
 	}
@@ -418,7 +432,7 @@ public:
 	}
 
 	// Use this to cache Vertex Array Objects so they are only generated once
-	_FORCE_INLINE_ void mesh_surface_get_vertex_arrays_and_format(void *p_surface, uint64_t p_input_mask, GLuint &r_vertex_array_gl) {
+	_FORCE_INLINE_ void mesh_surface_get_vertex_arrays_and_format(void *p_surface, uint64_t p_input_mask, bool p_uses_motion_vectors, GLuint &r_vertex_array_gl) {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 
 		s->version_lock.lock();
@@ -426,7 +440,7 @@ public:
 		// There will never be more than 3 or 4 versions, so iterating is the fastest way.
 
 		for (uint32_t i = 0; i < s->version_count; i++) {
-			if (s->versions[i].input_mask != p_input_mask) {
+			if (s->versions[i].input_mask != p_input_mask || s->versions[i].uses_motion_vectors != p_uses_motion_vectors) {
 				continue;
 			}
 			// We have this version, hooray.
@@ -439,7 +453,7 @@ public:
 		s->version_count++;
 		s->versions = (Mesh::Surface::Version *)memrealloc(s->versions, sizeof(Mesh::Surface::Version) * s->version_count);
 
-		_mesh_surface_generate_version_for_input_mask(s->versions[version], s, p_input_mask);
+		_mesh_surface_generate_version_for_input_mask(s->versions[version], s, p_input_mask, p_uses_motion_vectors);
 
 		r_vertex_array_gl = s->versions[version].vertex_array;
 
@@ -461,7 +475,7 @@ public:
 
 	// TODO: considering hashing versions with multimesh buffer RID.
 	// Doing so would allow us to avoid specifying multimesh buffer pointers every frame and may improve performance.
-	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint32_t p_surface_index, uint64_t p_input_mask, GLuint &r_vertex_array_gl) {
+	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint32_t p_surface_index, uint64_t p_input_mask, bool p_uses_motion_vectors, GLuint &r_vertex_array_gl) {
 		MeshInstance *mi = mesh_instance_owner.get_or_null(p_mesh_instance);
 		ERR_FAIL_NULL(mi);
 		Mesh *mesh = mi->mesh;
@@ -470,14 +484,24 @@ public:
 		MeshInstance::Surface *mis = &mi->surfaces[p_surface_index];
 		Mesh::Surface *s = mesh->surfaces[p_surface_index];
 
+		uint32_t current_buffer = mis->current_vertex_buffer;
+
+		// Using the previous buffer is only allowed if the surface was updated this frame and motion vectors are required.
+		uint32_t previous_buffer = p_uses_motion_vectors && (RSG::rasterizer->get_frame_number() == mis->last_change) ? mis->prev_vertex_buffer : current_buffer;
+
 		s->version_lock.lock();
 
 		//there will never be more than, at much, 3 or 4 versions, so iterating is the fastest way
 
 		for (uint32_t i = 0; i < mis->version_count; i++) {
-			if (mis->versions[i].input_mask != p_input_mask) {
+			if (mis->versions[i].input_mask != p_input_mask || mis->versions[i].uses_motion_vectors != p_uses_motion_vectors) {
 				continue;
 			}
+
+			if (mis->versions[i].current_vertex_buffer != current_buffer || mis->versions[i].prev_vertex_buffer != previous_buffer) {
+				continue;
+			}
+
 			//we have this version, hooray
 			r_vertex_array_gl = mis->versions[i].vertex_array;
 			s->version_lock.unlock();
@@ -488,7 +512,7 @@ public:
 		mis->version_count++;
 		mis->versions = (Mesh::Surface::Version *)memrealloc(mis->versions, sizeof(Mesh::Surface::Version) * mis->version_count);
 
-		_mesh_surface_generate_version_for_input_mask(mis->versions[version], s, p_input_mask, mis);
+		_mesh_surface_generate_version_for_input_mask(mis->versions[version], s, p_input_mask, p_uses_motion_vectors, mis, current_buffer, previous_buffer);
 
 		r_vertex_array_gl = mis->versions[version].vertex_array;
 
@@ -503,7 +527,7 @@ public:
 	virtual RID _multimesh_allocate() override;
 	virtual void _multimesh_initialize(RID p_rid) override;
 	virtual void _multimesh_free(RID p_rid) override;
-	virtual void _multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false, bool p_use_indirect = false) override;
+	virtual void _multimesh_allocate_data(RID p_multimesh, int p_instances, RSE::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false, bool p_use_indirect = false) override;
 	virtual int _multimesh_get_instance_count(RID p_multimesh) const override;
 
 	virtual void _multimesh_set_mesh(RID p_multimesh, RID p_mesh) override;
@@ -532,24 +556,31 @@ public:
 	virtual MultiMeshInterpolator *_multimesh_get_interpolator(RID p_multimesh) const override;
 
 	void _update_dirty_multimeshes();
+	void _update_dirty_multimesh(MultiMesh *p_multimesh, bool p_uses_motion_vectors);
 
-	_FORCE_INLINE_ RS::MultimeshTransformFormat multimesh_get_transform_format(RID p_multimesh) const {
+	void multimesh_vertex_attrib_setup(GLuint p_instance_buffer, uint32_t p_stride, bool p_uses_format_2d, bool p_has_color_or_custom_data, int p_attrib_base_index);
+
+	_FORCE_INLINE_ RSE::MultimeshTransformFormat multimesh_get_transform_format(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, RSE::MULTIMESH_TRANSFORM_3D);
 		return multimesh->xform_format;
 	}
 
 	_FORCE_INLINE_ bool multimesh_uses_colors(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, false);
 		return multimesh->uses_colors;
 	}
 
 	_FORCE_INLINE_ bool multimesh_uses_custom_data(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, false);
 		return multimesh->uses_custom_data;
 	}
 
 	_FORCE_INLINE_ uint32_t multimesh_get_instances_to_draw(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, 0);
 		if (multimesh->visible_instances >= 0) {
 			return multimesh->visible_instances;
 		}
@@ -558,21 +589,35 @@ public:
 
 	_FORCE_INLINE_ GLuint multimesh_get_gl_buffer(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
-		return multimesh->buffer;
+		ERR_FAIL_NULL_V(multimesh, 0);
+		return multimesh->buffer[multimesh->current_buffer];
+	}
+
+	_FORCE_INLINE_ GLuint multimesh_get_prev_gl_buffer(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->buffer[multimesh->prev_buffer];
+	}
+
+	_FORCE_INLINE_ uint64_t multimesh_get_last_change(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->last_change;
 	}
 
 	_FORCE_INLINE_ uint32_t multimesh_get_stride(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, 0);
 		return multimesh->stride_cache;
 	}
 
 	_FORCE_INLINE_ uint32_t multimesh_get_color_offset(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, 0);
 		return multimesh->color_offset_cache;
 	}
 
 	_FORCE_INLINE_ uint32_t multimesh_get_custom_data_offset(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, 0);
 		return multimesh->custom_data_offset_cache;
 	}
 

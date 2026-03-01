@@ -69,7 +69,7 @@ class CsgLeafNode;
  *
  * If you don't have merge vectors, you can create them with the Merge() method,
  * however this will fail if the mesh is not already manifold within the set
- * tolerance. For maximum reliablility, always store the merge vectors with the
+ * tolerance. For maximum reliability, always store the merge vectors with the
  * mesh, e.g. using the EXT_mesh_manifold extension in glTF.
  *
  * You can have any number of arbitrary floating-point properties per vertex,

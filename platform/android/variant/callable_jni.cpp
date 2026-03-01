@@ -91,8 +91,7 @@ JNIEXPORT jobject JNICALL Java_org_godotengine_godot_variant_Callable_nativeCall
 		Callable::CallError err;
 		Variant result;
 		callable.callp(argptrs, count, result, err);
-		jvalret jresult = _variant_to_jvalue(p_env, result.get_type(), &result, true);
-		ret = jresult.obj;
+		ret = _variant_to_jobject(p_env, result.get_type(), &result);
 	}
 
 	// Manually invoke the destructor to decrease the reference counts for the variant arguments.
@@ -107,8 +106,7 @@ JNIEXPORT jobject JNICALL Java_org_godotengine_godot_variant_Callable_nativeCall
 	Callable callable = _generate_callable(p_env, p_object_id, p_method_name, p_parameters);
 	if (callable.is_valid()) {
 		Variant result = callable.call();
-		jvalret jresult = _variant_to_jvalue(p_env, result.get_type(), &result, true);
-		return jresult.obj;
+		return _variant_to_jobject(p_env, result.get_type(), &result);
 	} else {
 		return nullptr;
 	}

@@ -90,7 +90,7 @@ struct hb_ft_paint_context_t
     funcs (paint_funcs), data (paint_data),
     palette (palette), palette_index (palette_index), foreground (foreground)
   {
-    if (font->is_synthetic ())
+    if (font->is_synthetic)
     {
       font = hb_font_create_sub_font (font);
       hb_font_set_synthetic_bold (font, 0, 0, true);
@@ -412,9 +412,9 @@ _hb_ft_paint (hb_ft_paint_context_t *c,
       float dx = paint.u.translate.dx / 65536.f;
       float dy = paint.u.translate.dy / 65536.f;
 
-      bool p1 = c->funcs->push_translate (c->data, dx, dy);
+      c->funcs->push_translate (c->data, dx, dy);
       c->recurse (paint.u.translate.paint);
-      if (p1) c->funcs->pop_transform (c->data);
+      c->funcs->pop_transform (c->data);
     }
     break;
     case FT_COLR_PAINTFORMAT_SCALE:
@@ -424,13 +424,9 @@ _hb_ft_paint (hb_ft_paint_context_t *c,
       float sx = paint.u.scale.scale_x / 65536.f;
       float sy = paint.u.scale.scale_y / 65536.f;
 
-      bool p1 = c->funcs->push_translate (c->data, +dx, +dy);
-      bool p2 = c->funcs->push_scale (c->data, sx, sy);
-      bool p3 = c->funcs->push_translate (c->data, -dx, -dy);
+      c->funcs->push_scale_around_center (c->data, sx, sy, dx, dy);
       c->recurse (paint.u.scale.paint);
-      if (p3) c->funcs->pop_transform (c->data);
-      if (p2) c->funcs->pop_transform (c->data);
-      if (p1) c->funcs->pop_transform (c->data);
+      c->funcs->pop_transform (c->data);
     }
     break;
     case FT_COLR_PAINTFORMAT_ROTATE:
@@ -439,13 +435,9 @@ _hb_ft_paint (hb_ft_paint_context_t *c,
       float dy = paint.u.rotate.center_y / 65536.f;
       float a = paint.u.rotate.angle / 65536.f;
 
-      bool p1 = c->funcs->push_translate (c->data, +dx, +dy);
-      bool p2 = c->funcs->push_rotate (c->data, a);
-      bool p3 = c->funcs->push_translate (c->data, -dx, -dy);
+      c->funcs->push_rotate_around_center (c->data, a, dx, dy);
       c->recurse (paint.u.rotate.paint);
-      if (p3) c->funcs->pop_transform (c->data);
-      if (p2) c->funcs->pop_transform (c->data);
-      if (p1) c->funcs->pop_transform (c->data);
+      c->funcs->pop_transform (c->data);
     }
     break;
     case FT_COLR_PAINTFORMAT_SKEW:
@@ -455,13 +447,9 @@ _hb_ft_paint (hb_ft_paint_context_t *c,
       float sx = paint.u.skew.x_skew_angle / 65536.f;
       float sy = paint.u.skew.y_skew_angle / 65536.f;
 
-      bool p1 = c->funcs->push_translate (c->data, +dx, +dy);
-      bool p2 = c->funcs->push_skew (c->data, sx, sy);
-      bool p3 = c->funcs->push_translate (c->data, -dx, -dy);
+      c->funcs->push_skew_around_center (c->data, sx, sy, dx, dy);
       c->recurse (paint.u.skew.paint);
-      if (p3) c->funcs->pop_transform (c->data);
-      if (p2) c->funcs->pop_transform (c->data);
-      if (p1) c->funcs->pop_transform (c->data);
+      c->funcs->pop_transform (c->data);
     }
     break;
     case FT_COLR_PAINTFORMAT_COMPOSITE:

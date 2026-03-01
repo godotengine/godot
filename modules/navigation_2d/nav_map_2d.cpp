@@ -40,7 +40,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 
 #include <Obstacle2d.h>
 
@@ -55,16 +55,16 @@ using namespace Nav2D;
 #define NAVMAP_ITERATION_ZERO_ERROR_MSG()
 #endif // DEBUG_ENABLED
 
-#define GET_MAP_ITERATION()                                                   \
-	iteration_slot_rwlock.read_lock();                                        \
+#define GET_MAP_ITERATION() \
+	iteration_slot_rwlock.read_lock(); \
 	NavMapIteration2D &map_iteration = iteration_slots[iteration_slot_index]; \
-	NavMapIterationRead2D iteration_read_lock(map_iteration);                 \
+	NavMapIterationRead2D iteration_read_lock(map_iteration); \
 	iteration_slot_rwlock.read_unlock();
 
-#define GET_MAP_ITERATION_CONST()                                                   \
-	iteration_slot_rwlock.read_lock();                                              \
+#define GET_MAP_ITERATION_CONST() \
+	iteration_slot_rwlock.read_lock(); \
 	const NavMapIteration2D &map_iteration = iteration_slots[iteration_slot_index]; \
-	NavMapIterationRead2D iteration_read_lock(map_iteration);                       \
+	NavMapIterationRead2D iteration_read_lock(map_iteration); \
 	iteration_slot_rwlock.read_unlock();
 
 void NavMap2D::set_cell_size(real_t p_cell_size) {
@@ -80,7 +80,7 @@ void NavMap2D::set_merge_rasterizer_cell_scale(float p_value) {
 	if (merge_rasterizer_cell_scale == p_value) {
 		return;
 	}
-	merge_rasterizer_cell_scale = MAX(p_value, NavigationDefaults2D::NAV_MESH_CELL_SIZE_MIN);
+	merge_rasterizer_cell_scale = MAX(MIN(p_value, 0.1), NavigationDefaults2D::NAV_MESH_CELL_SIZE_MIN);
 	_update_merge_rasterizer_cell_dimensions();
 	map_settings_dirty = true;
 }
@@ -444,6 +444,9 @@ void NavMap2D::_update_rvo_obstacles_tree() {
 	// The following block is modified copy from RVO2D::AddObstacle()
 	// Obstacles are linked and depend on all other obstacles.
 	for (NavObstacle2D *obstacle : obstacles) {
+		if (!obstacle->is_avoidance_enabled()) {
+			continue;
+		}
 		const Vector2 &_obstacle_position = obstacle->get_position();
 		const Vector<Vector2> &_obstacle_vertices = obstacle->get_vertices();
 

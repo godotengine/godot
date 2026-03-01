@@ -30,10 +30,17 @@
 
 #include "rendering_server_default.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "core/os/os.h"
+#include "core/profiling/profiling.h"
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
+#include "rendering_device.h"
 #include "rendering_server_globals.h"
+
+#ifndef XR_DISABLED
+#include "servers/xr/xr_server.h"
+#endif
 
 // careful, these may run in different threads than the rendering server
 
@@ -66,6 +73,7 @@ void RenderingServerDefault::request_frame_drawn_callback(const Callable &p_call
 }
 
 void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
+	GodotProfileZoneGroupedFirst(_profile_zone, "rasterizer->begin_frame");
 	RSG::rasterizer->begin_frame(frame_step);
 
 	TIMESTAMP_BEGIN()
@@ -75,6 +83,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	RENDER_TIMESTAMP("Prepare Render Frame");
 
 #ifndef XR_DISABLED
+	GodotProfileZoneGrouped(_profile_zone, "xr_server->pre_render");
 	XRServer *xr_server = XRServer::get_singleton();
 	if (xr_server != nullptr) {
 		// Let XR server know we're about to render a frame.
@@ -82,30 +91,41 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	}
 #endif // XR_DISABLED
 
+	GodotProfileZoneGrouped(_profile_zone, "scene->update");
 	RSG::scene->update(); //update scenes stuff before updating instances
+	GodotProfileZoneGrouped(_profile_zone, "canvas->update");
 	RSG::canvas->update();
 
 	frame_setup_time = double(OS::get_singleton()->get_ticks_usec() - time_usec) / 1000.0;
 
+	GodotProfileZoneGrouped(_profile_zone, "particles_storage->update_particles");
 	RSG::particles_storage->update_particles(); //need to be done after instances are updated (colliders and particle transforms), and colliders are rendered
 
+	GodotProfileZoneGrouped(_profile_zone, "scene->render_probes");
 	RSG::scene->render_probes();
 
+	GodotProfileZoneGrouped(_profile_zone, "viewport->draw_viewports");
 	RSG::viewport->draw_viewports(p_swap_buffers);
+
+	GodotProfileZoneGrouped(_profile_zone, "canvas_render->update");
 	RSG::canvas_render->update();
 
+	GodotProfileZoneGrouped(_profile_zone, "rasterizer->end_frame");
 	RSG::rasterizer->end_frame(p_swap_buffers);
 
 #ifndef XR_DISABLED
 	if (xr_server != nullptr) {
+		GodotProfileZone("xr_server->end_frame");
 		// let our XR server know we're done so we can get our frame timing
 		xr_server->end_frame();
 	}
 #endif // XR_DISABLED
 
+	GodotProfileZoneGrouped(_profile_zone, "update_visibility_notifiers");
 	RSG::canvas->update_visibility_notifiers();
 	RSG::scene->update_visibility_notifiers();
 
+	GodotProfileZoneGrouped(_profile_zone, "post_draw_steps");
 	if (create_thread) {
 		callable_mp(this, &RenderingServerDefault::_run_post_draw_steps).call_deferred();
 	} else {
@@ -113,7 +133,8 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	}
 
 	if (RSG::utilities->get_captured_timestamps_count()) {
-		Vector<FrameProfileArea> new_profile;
+		GodotProfileZoneGrouped(_profile_zone, "frame_profile");
+		Vector<RenderingServerTypes::FrameProfileArea> new_profile;
 		if (RSG::utilities->capturing_timestamps) {
 			new_profile.resize(RSG::utilities->get_captured_timestamps_count());
 		}
@@ -143,6 +164,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	frame_profile_frame = RSG::utilities->get_captured_timestamps_frame();
 
 	if (print_gpu_profile) {
+		GodotProfileZoneGrouped(_profile_zone, "gpu_profile");
 		if (print_frame_profile_ticks_from == 0) {
 			print_frame_profile_ticks_from = OS::get_singleton()->get_ticks_usec();
 		}
@@ -185,6 +207,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 		}
 	}
 
+	GodotProfileZoneGrouped(_profile_zone, "memory_info");
 	RSG::utilities->update_memory_info();
 }
 
@@ -237,7 +260,7 @@ void RenderingServerDefault::_init() {
 
 void RenderingServerDefault::_finish() {
 	if (test_cube.is_valid()) {
-		free(test_cube);
+		free_rid(test_cube);
 	}
 
 	RSG::canvas->finalize();
@@ -253,7 +276,7 @@ void RenderingServerDefault::init() {
 	if (create_thread) {
 		print_verbose("RenderingServerWrapMT: Starting render thread");
 		DisplayServer::get_singleton()->release_rendering_thread();
-		WorkerThreadPool::TaskID tid = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &RenderingServerDefault::_thread_loop), true);
+		WorkerThreadPool::TaskID tid = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &RenderingServerDefault::_thread_loop), true, "Rendering Server pump task", true);
 		command_queue.set_pump_task_id(tid);
 		command_queue.push(this, &RenderingServerDefault::_assign_mt_ids, tid);
 		command_queue.push_and_sync(this, &RenderingServerDefault::_init);
@@ -280,28 +303,28 @@ void RenderingServerDefault::finish() {
 
 /* STATUS INFORMATION */
 
-uint64_t RenderingServerDefault::get_rendering_info(RenderingInfo p_info) {
-	if (p_info == RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME) {
+uint64_t RenderingServerDefault::get_rendering_info(RSE::RenderingInfo p_info) {
+	if (p_info == RSE::RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME) {
 		return RSG::viewport->get_total_objects_drawn();
-	} else if (p_info == RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME) {
+	} else if (p_info == RSE::RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME) {
 		return RSG::viewport->get_total_primitives_drawn();
-	} else if (p_info == RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME) {
+	} else if (p_info == RSE::RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME) {
 		return RSG::viewport->get_total_draw_calls_used();
-	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS) {
-		return RSG::canvas_render->get_pipeline_compilations(PIPELINE_SOURCE_CANVAS);
-	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_MESH) {
-		return RSG::canvas_render->get_pipeline_compilations(PIPELINE_SOURCE_MESH) + RSG::scene->get_pipeline_compilations(PIPELINE_SOURCE_MESH);
-	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE) {
-		return RSG::scene->get_pipeline_compilations(PIPELINE_SOURCE_SURFACE);
-	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW) {
-		return RSG::canvas_render->get_pipeline_compilations(PIPELINE_SOURCE_DRAW) + RSG::scene->get_pipeline_compilations(PIPELINE_SOURCE_DRAW);
-	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION) {
-		return RSG::canvas_render->get_pipeline_compilations(PIPELINE_SOURCE_SPECIALIZATION) + RSG::scene->get_pipeline_compilations(PIPELINE_SOURCE_SPECIALIZATION);
+	} else if (p_info == RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS) {
+		return RSG::canvas_render->get_pipeline_compilations(RSE::PIPELINE_SOURCE_CANVAS);
+	} else if (p_info == RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_MESH) {
+		return RSG::canvas_render->get_pipeline_compilations(RSE::PIPELINE_SOURCE_MESH) + RSG::scene->get_pipeline_compilations(RSE::PIPELINE_SOURCE_MESH);
+	} else if (p_info == RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE) {
+		return RSG::scene->get_pipeline_compilations(RSE::PIPELINE_SOURCE_SURFACE);
+	} else if (p_info == RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW) {
+		return RSG::canvas_render->get_pipeline_compilations(RSE::PIPELINE_SOURCE_DRAW) + RSG::scene->get_pipeline_compilations(RSE::PIPELINE_SOURCE_DRAW);
+	} else if (p_info == RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION) {
+		return RSG::canvas_render->get_pipeline_compilations(RSE::PIPELINE_SOURCE_SPECIALIZATION) + RSG::scene->get_pipeline_compilations(RSE::PIPELINE_SOURCE_SPECIALIZATION);
 	}
 	return RSG::utilities->get_rendering_info(p_info);
 }
 
-RenderingDevice::DeviceType RenderingServerDefault::get_video_adapter_type() const {
+RenderingDeviceEnums::DeviceType RenderingServerDefault::get_video_adapter_type() const {
 	return RSG::utilities->get_video_adapter_type();
 }
 
@@ -313,7 +336,7 @@ uint64_t RenderingServerDefault::get_frame_profile_frame() {
 	return frame_profile_frame;
 }
 
-Vector<RenderingServer::FrameProfileArea> RenderingServerDefault::get_frame_profile() {
+Vector<RenderingServerTypes::FrameProfileArea> RenderingServerDefault::get_frame_profile() {
 	return frame_profile;
 }
 
@@ -328,7 +351,7 @@ void RenderingServerDefault::set_default_clear_color(const Color &p_color) {
 }
 
 #ifndef DISABLE_DEPRECATED
-bool RenderingServerDefault::has_feature(Features p_feature) const {
+bool RenderingServerDefault::has_feature(RSE::Features p_feature) const {
 	return false;
 }
 #endif
@@ -376,8 +399,12 @@ Size2i RenderingServerDefault::get_maximum_viewport_size() const {
 void RenderingServerDefault::_assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id) {
 	server_thread = Thread::get_caller_id();
 	server_task_id = p_pump_task_id;
-	// This is needed because the main RD is created on the main thread.
-	RenderingDevice::get_singleton()->make_current();
+
+	RenderingDevice *rd = RenderingDevice::get_singleton();
+	if (rd) {
+		// This is needed because the main RD is created on the main thread.
+		rd->make_current();
+	}
 }
 
 void RenderingServerDefault::_thread_exit() {

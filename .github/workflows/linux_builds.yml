@@ -1,18 +1,26 @@
 name: 🐧 Linux Builds
 on:
   workflow_call:
+    inputs:
+      changed-files:
+        description: A list of changed files.
+        required: true
+        type: string
+  workflow_dispatch:
 
 # Global Settings
 env:
   SCONS_FLAGS: >-
     dev_mode=yes
     module_text_server_fb_enabled=yes
-    "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.16.0/"
-  GODOT_CPP_BRANCH: 4.4
+    "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.18.0/"
+  GODOT_CPP_BRANCH: 4.5
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
-  TSAN_OPTIONS: suppressions=${{ github.workspace }}/misc/error_suppressions/tsan.txt
-  UBSAN_OPTIONS: suppressions=${{ github.workspace }}/misc/error_suppressions/ubsan.txt
+  ASAN_OPTIONS: color=always:print_suppressions=1:suppressions=${{ github.workspace }}/misc/error_suppressions/asan.txt
+  LSAN_OPTIONS: color=always:print_suppressions=1:suppressions=${{ github.workspace }}/misc/error_suppressions/lsan.txt
+  TSAN_OPTIONS: color=always:print_suppressions=1:suppressions=${{ github.workspace }}/misc/error_suppressions/tsan.txt
+  UBSAN_OPTIONS: color=always:print_suppressions=1:suppressions=${{ github.workspace }}/misc/error_suppressions/ubsan.txt
 
 jobs:
   build-linux:
@@ -27,15 +35,17 @@ jobs:
           - name: Editor w/ Mono (target=editor)
             cache-name: linux-editor-mono
             target: editor
-            scons-flags: module_mono_enabled=yes
+            scons-flags: module_mono_enabled=yes compiledb=yes
             bin: ./bin/godot.linuxbsd.editor.x86_64.mono
             build-mono: true
             doc-test: true
             proj-conv: true
+            proj-export: true
             api-compat: true
             artifact: true
             # Validate godot-cpp compatibility on one arbitrary editor build.
             godot-cpp: true
+            clang-tidy: true
 
           - name: Editor with doubles and GCC sanitizers (target=editor, dev_build=yes, scu_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=mold)
             cache-name: linux-editor-double-sanitizers
@@ -107,20 +117,17 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
-      - name: Linux dependencies for tests
-        if: matrix.proj-test
+      - name: Setup dependencies
         run: |
-          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
-          sudo apt-get install mesa-vulkan-drivers
-
-      # TODO: Figure out somehow how to embed this one.
-      - name: wayland-scanner dependency
-        run: |
-          sudo apt-get install libwayland-bin
+          sudo apt-get update
+          sudo apt-get install libwayland-bin  # TODO: Figure out somehow how to embed this one.
+          if [ "${{ matrix.proj-test }}" == "true" -o "${{ matrix.proj-export }}" == "true" ]; then
+            sudo apt-get install mesa-vulkan-drivers
+          fi
 
       - name: Free disk space on runner
         run: |
@@ -143,7 +150,7 @@ jobs:
         uses: ./.github/actions/godot-deps
         with:
           # Sync with Ensure*Version in SConstruct.
-          python-version: 3.8
+          python-version: 3.9
           scons-version: 4.0
 
       - name: Force remove preinstalled .NET SDKs
@@ -162,12 +169,12 @@ jobs:
         uses: dsaltares/fetch-gh-release-asset@1.1.2
         with:
           repo: AccessKit/accesskit-c
-          version: tags/0.16.0
-          file: accesskit-c-0.16.0.zip
-          target: accesskit-c-0.16.0/accesskit_c.zip
+          version: tags/0.18.0
+          file: accesskit-c-0.18.0.zip
+          target: accesskit-c-0.18.0/accesskit_c.zip
 
       - name: Extract pre-built AccessKit
-        run: unzip -o accesskit-c-0.16.0/accesskit_c.zip
+        run: unzip -o accesskit-c-0.18.0/accesskit_c.zip
 
       - name: Install mold linker
         if: matrix.proj-test
@@ -179,6 +186,12 @@ jobs:
           scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
           platform: linuxbsd
           target: ${{ matrix.target }}
+
+      - name: Style checks via pre-commit
+        if: matrix.clang-tidy
+        uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --files ${{ inputs.changed-files }} --hook-stage manual clang-tidy
 
       - name: Compilation (godot-cpp)
         uses: ./.github/actions/godot-cpp-build
@@ -238,15 +251,29 @@ jobs:
           git diff --color --exit-code && ! git ls-files --others --exclude-standard | sed -e 's/^/New doc file missing in PR: /' | grep 'xml$'
 
       # Check API backwards compatibility
-      - name: Check for GDExtension compatibility
+      - name: Check for GDExtension compatibility – JSON check
         if: matrix.api-compat
         run: |
           ./misc/scripts/validate_extension_api.sh "${{ matrix.bin }}"
+
+      - name: Test GDExtension compatibility – load methods
+        uses: ./.github/actions/godot-compat-test
+        if: matrix.api-compat
+        with:
+          bin: ${{ matrix.bin }}
+          reftags: "4.5-stable,4.4-stable"
 
       # Download and run the test project
       - name: Test Godot project
         uses: ./.github/actions/godot-project-test
         if: matrix.proj-test
+        with:
+          bin: ${{ matrix.bin }}
+
+      # Test project export
+      - name: Test project export
+        uses: ./.github/actions/godot-project-export
+        if: matrix.proj-export
         with:
           bin: ${{ matrix.bin }}
 

@@ -32,14 +32,14 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/multi_node_edit.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/inspector/multi_node_edit.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "scene/3d/navigation/navigation_region_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 void NavigationRegion3DEditor::_node_removed(Node *p_node) {
 	if (selected_regions.is_empty()) {
@@ -265,7 +265,7 @@ void NavigationRegion3DEditorPlugin::edit(Object *p_object) {
 		NavigationRegion3D *region = Object::cast_to<NavigationRegion3D>(p_object);
 		if (region) {
 			regions.push_back(region);
-			navigation_region_editor->edit(regions);
+			navigation_region_editor->edit(std::move(regions));
 			return;
 		}
 	}
@@ -281,7 +281,7 @@ void NavigationRegion3DEditorPlugin::edit(Object *p_object) {
 		}
 	}
 
-	navigation_region_editor->edit(regions);
+	navigation_region_editor->edit(std::move(regions));
 }
 
 bool NavigationRegion3DEditorPlugin::handles(Object *p_object) const {

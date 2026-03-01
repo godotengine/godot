@@ -54,7 +54,11 @@
 
 #import "core/config/project_settings.h"
 #import "core/debugger/engine_debugger.h"
+#import "core/input/input.h"
+#import "core/input/input_event.h"
 #import "core/io/marshalls.h"
+#import "core/os/main_loop.h"
+#import "servers/display/native_menu.h"
 
 DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	EmbeddedDebugger::initialize(this);
@@ -77,7 +81,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 	// Metal rendering driver not available on Intel.
 	if (rendering_driver == "metal") {
 		rendering_driver = "vulkan";
-		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 	}
 #endif
 	if (rendering_driver == "vulkan") {
@@ -97,10 +101,10 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 #if defined(GLES3_ENABLED)
 			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
 			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
-				WARN_PRINT("Your device seem not to support MoltenVK or Metal, switching to OpenGL 3.");
+				WARN_PRINT("Your device does not seem to support MoltenVK or Metal, switching to OpenGL 3.");
 				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility", OS::RENDERING_SOURCE_FALLBACK);
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else
 #endif
 			{
@@ -115,7 +119,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 	if (rendering_driver == "opengl3_angle") {
 		WARN_PRINT("ANGLE not supported for embedded display, switching to native OpenGL.");
 		rendering_driver = "opengl3";
-		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 	}
 
 	if (rendering_driver == "opengl3") {
@@ -159,7 +163,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 #endif
 #ifdef METAL_ENABLED
 		if (rendering_driver == "metal") {
-			wpd.metal.layer = (CAMetalLayer *)layer;
+			wpd.metal.layer = (__bridge CA::MetalLayer *)layer;
 		}
 #endif
 		Error err = rendering_context->window_create(window_id_counter, &wpd);
@@ -320,6 +324,12 @@ bool DisplayServerEmbedded::mouse_is_mode_override_enabled() const {
 	return mouse_mode_override_enabled;
 }
 
+void DisplayServerEmbedded::warp_mouse(const Point2i &p_position) {
+	_THREAD_SAFE_METHOD_
+	Input::get_singleton()->set_mouse_position(p_position);
+	EngineDebugger::get_singleton()->send_message("game_view:warp_mouse", { p_position });
+}
+
 Point2i DisplayServerEmbedded::mouse_get_position() const {
 	_THREAD_SAFE_METHOD_
 
@@ -383,36 +393,8 @@ void DisplayServerEmbedded::window_set_drop_files_callback(const Callable &p_cal
 	// Not supported
 }
 
-void DisplayServerEmbedded::joy_add(int p_idx, const String &p_name) {
-	Joy *joy = joysticks.getptr(p_idx);
-	if (joy == nullptr) {
-		joysticks[p_idx] = Joy(p_name);
-		Input::get_singleton()->joy_connection_changed(p_idx, true, p_name);
-	}
-}
-
-void DisplayServerEmbedded::joy_del(int p_idx) {
-	if (joysticks.erase(p_idx)) {
-		Input::get_singleton()->joy_connection_changed(p_idx, false, String());
-	}
-}
-
 void DisplayServerEmbedded::process_events() {
 	Input *input = Input::get_singleton();
-	for (KeyValue<int, Joy> &kv : joysticks) {
-		uint64_t ts = input->get_joy_vibration_timestamp(kv.key);
-		if (ts > kv.value.timestamp) {
-			kv.value.timestamp = ts;
-			Vector2 strength = input->get_joy_vibration_strength(kv.key);
-			if (strength == Vector2()) {
-				EngineDebugger::get_singleton()->send_message("game_view:joy_stop", { kv.key });
-			} else {
-				float duration = input->get_joy_vibration_duration(kv.key);
-				EngineDebugger::get_singleton()->send_message("game_view:joy_start", { kv.key, duration, strength });
-			}
-		}
-	}
-
 	input->flush_buffered_events();
 }
 
@@ -470,19 +452,19 @@ bool DisplayServerEmbedded::has_feature(Feature p_feature) const {
 #endif
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_IME:
-			// case FEATURE_CUSTOM_CURSOR_SHAPE:
+		case FEATURE_CUSTOM_CURSOR_SHAPE:
 			// case FEATURE_HIDPI:
 			// case FEATURE_ICON:
 			// case FEATURE_MOUSE:
-			// case FEATURE_MOUSE_WARP:
+		case FEATURE_MOUSE_WARP:
 			// case FEATURE_NATIVE_DIALOG:
 			// case FEATURE_NATIVE_ICON:
 			// case FEATURE_WINDOW_TRANSPARENCY:
-			// case FEATURE_CLIPBOARD:
+		case FEATURE_CLIPBOARD:
 			// case FEATURE_KEEP_SCREEN_ON:
 			// case FEATURE_ORIENTATION:
 			// case FEATURE_VIRTUAL_KEYBOARD:
-			// case FEATURE_TEXT_TO_SPEECH:
+		case FEATURE_TEXT_TO_SPEECH:
 			// case FEATURE_TOUCHSCREEN:
 			return true;
 		default:
@@ -540,6 +522,21 @@ int DisplayServerEmbedded::screen_get_dpi(int p_screen) const {
 	ERR_FAIL_INDEX_V(p_screen, screen_count, 72);
 
 	return 96;
+}
+
+float DisplayServerEmbedded::screen_get_scale(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	switch (p_screen) {
+		case SCREEN_WITH_MOUSE_FOCUS:
+		case SCREEN_WITH_KEYBOARD_FOCUS:
+		case SCREEN_PRIMARY:
+		case SCREEN_OF_MAIN_WINDOW:
+		case 0:
+			return state.screen_window_scale;
+		default:
+			return 1.0;
+	}
 }
 
 float DisplayServerEmbedded::screen_get_refresh_rate(int p_screen) const {
@@ -627,6 +624,10 @@ Size2i DisplayServerEmbedded::window_get_min_size(WindowID p_window) const {
 }
 
 void DisplayServerEmbedded::window_set_size(const Size2i p_size, WindowID p_window) {
+	print_line("Embedded window can't be resized.");
+}
+
+void DisplayServerEmbedded::_window_set_size(const Size2i p_size, WindowID p_window) {
 	[CATransaction begin];
 	[CATransaction setDisableActions:YES];
 
@@ -705,6 +706,14 @@ bool DisplayServerEmbedded::window_get_flag(WindowFlags p_flag, WindowID p_windo
 
 void DisplayServerEmbedded::window_request_attention(WindowID p_window) {
 	// Not supported
+}
+
+void DisplayServerEmbedded::window_set_taskbar_progress_value(float p_value, WindowID p_window) {
+	// Not supported.
+}
+
+void DisplayServerEmbedded::window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window) {
+	// Not supported.
 }
 
 void DisplayServerEmbedded::window_move_to_foreground(WindowID p_window) {
@@ -811,7 +820,14 @@ DisplayServer::CursorShape DisplayServerEmbedded::cursor_get_shape() const {
 }
 
 void DisplayServerEmbedded::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
-	WARN_PRINT_ONCE("Custom cursor images are not supported in embedded mode.");
+	PackedByteArray data;
+	if (p_cursor.is_valid()) {
+		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot);
+		if (image.is_valid()) {
+			data = image->save_png_to_buffer();
+		}
+	}
+	EngineDebugger::get_singleton()->send_message("game_view:cursor_set_custom_image", { data, p_shape, p_hotspot });
 }
 
 void DisplayServerEmbedded::swap_buffers() {
@@ -823,15 +839,16 @@ void DisplayServerEmbedded::swap_buffers() {
 }
 
 void DisplayServerEmbeddedState::serialize(PackedByteArray &r_data) {
-	r_data.resize(12);
+	r_data.resize(16);
 
 	uint8_t *data = r_data.ptrw();
 	data += encode_float(screen_max_scale, data);
 	data += encode_float(screen_dpi, data);
+	data += encode_float(screen_window_scale, data);
 	data += encode_uint32(display_id, data);
 
 	// Assert we had enough space.
-	DEV_ASSERT((data - r_data.ptrw()) >= r_data.size());
+	DEV_ASSERT(r_data.size() >= (data - r_data.ptrw()));
 }
 
 Error DisplayServerEmbeddedState::deserialize(const PackedByteArray &p_data) {
@@ -840,6 +857,8 @@ Error DisplayServerEmbeddedState::deserialize(const PackedByteArray &p_data) {
 	screen_max_scale = decode_float(data);
 	data += sizeof(float);
 	screen_dpi = decode_float(data);
+	data += sizeof(float);
+	screen_window_scale = decode_float(data);
 	data += sizeof(float);
 	display_id = decode_uint32(data);
 

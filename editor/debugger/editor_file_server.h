@@ -32,7 +32,7 @@
 
 #include "core/io/tcp_server.h"
 #include "core/os/thread.h"
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 
 class EditorFileServer : public Object {
 	GDCLASS(EditorFileServer, Object);

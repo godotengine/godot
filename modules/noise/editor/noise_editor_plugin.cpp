@@ -33,7 +33,8 @@
 #include "../noise.h"
 #include "../noise_texture_2d.h"
 
-#include "editor/editor_inspector.h"
+#include "core/object/callable_method_pointer.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/texture_rect.h"

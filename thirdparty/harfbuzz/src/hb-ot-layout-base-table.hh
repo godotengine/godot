@@ -165,13 +165,13 @@ struct BaseCoordFormat3
 
 struct BaseCoord
 {
-  bool has_data () const { return u.format; }
+  bool has_data () const { return u.format.v; }
 
   hb_position_t get_coord (hb_font_t            *font,
 			   const ItemVariationStore &var_store,
 			   hb_direction_t        direction) const
   {
-    switch (u.format) {
+    switch (u.format.v) {
     case 1: hb_barrier (); return u.format1.get_coord (font, direction);
     case 2: hb_barrier (); return u.format2.get_coord (font, direction);
     case 3: hb_barrier (); return u.format3.get_coord (font, var_store, direction);
@@ -181,7 +181,7 @@ struct BaseCoord
 
   void collect_variation_indices (hb_set_t& varidx_set /* OUT */) const
   {
-    switch (u.format) {
+    switch (u.format.v) {
     case 3: hb_barrier (); u.format3.collect_variation_indices (varidx_set); return;
     default:return;
     }
@@ -190,9 +190,9 @@ struct BaseCoord
   template <typename context_t, typename ...Ts>
   typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
   {
-    if (unlikely (!c->may_dispatch (this, &u.format))) return c->no_dispatch_return_value ();
-    TRACE_DISPATCH (this, u.format);
-    switch (u.format) {
+    if (unlikely (!c->may_dispatch (this, &u.format.v))) return c->no_dispatch_return_value ();
+    TRACE_DISPATCH (this, u.format.v);
+    switch (u.format.v) {
     case 1: hb_barrier (); return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
     case 2: hb_barrier (); return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
     case 3: hb_barrier (); return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
@@ -203,9 +203,9 @@ struct BaseCoord
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    if (unlikely (!u.format.sanitize (c))) return_trace (false);
+    if (unlikely (!u.format.v.sanitize (c))) return_trace (false);
     hb_barrier ();
-    switch (u.format) {
+    switch (u.format.v) {
     case 1: hb_barrier (); return_trace (u.format1.sanitize (c));
     case 2: hb_barrier (); return_trace (u.format2.sanitize (c));
     case 3: hb_barrier (); return_trace (u.format3.sanitize (c));
@@ -215,13 +215,13 @@ struct BaseCoord
 
   protected:
   union {
-  HBUINT16		format;
+  struct { HBUINT16 v; }	format;
   BaseCoordFormat1	format1;
   BaseCoordFormat2	format2;
   BaseCoordFormat3	format3;
   } u;
   public:
-  DEFINE_SIZE_UNION (2, format);
+  DEFINE_SIZE_UNION (2, format.v);
 };
 
 struct FeatMinMaxRecord

@@ -225,9 +225,8 @@
 	information to warp the pointer upon unlock in order to avoid pointer
 	jumps.
 
-	The cursor position hint is double buffered. The new hint will only take
-	effect when the associated surface gets it pending state applied. See
-	wl_surface.commit for details.
+	The cursor position hint is double-buffered state, see
+	wl_surface.commit.
       </description>
       <arg name="surface_x" type="fixed"
 	   summary="surface-local x coordinate"/>
@@ -239,9 +238,7 @@
       <description summary="set a new lock region">
 	Set a new region used to lock the pointer.
 
-	The new lock region is double-buffered. The new lock region will
-	only take effect when the associated surface gets its pending state
-	applied. See wl_surface.commit for details.
+	The new lock region is double-buffered, see wl_surface.commit.
 
 	For details about the lock region, see wp_locked_pointer.
       </description>
@@ -298,9 +295,7 @@
       <description summary="set a new confine region">
 	Set a new region used to confine the pointer.
 
-	The new confine region is double-buffered. The new confine region will
-	only take effect when the associated surface gets its pending state
-	applied. See wl_surface.commit for details.
+	The new confine region is double-buffered, see wl_surface.commit.
 
 	If the confinement is active when the new confinement region is applied
 	and the pointer ends up outside of newly applied region, the pointer may

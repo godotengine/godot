@@ -74,7 +74,7 @@ struct ClassDef : public OT::ClassDef
     class_def_link->width = SmallTypes::size;
     class_def_link->objidx = class_def_prime_id;
     class_def_link->position = link_position;
-    class_def_prime_vertex.add_parent (parent_id);
+    class_def_prime_vertex.add_parent (parent_id, false);
 
     return true;
   }
@@ -117,7 +117,7 @@ struct ClassDef : public OT::ClassDef
     int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
     if (vertex_len < OT::ClassDef::min_size) return false;
     hb_barrier ();
-    switch (u.format)
+    switch (u.format.v)
     {
     case 1: return ((ClassDefFormat1*)this)->sanitize (vertex);
     case 2: return ((ClassDefFormat2*)this)->sanitize (vertex);

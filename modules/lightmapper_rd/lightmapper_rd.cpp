@@ -38,9 +38,12 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/math/geometry_2d.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
+#include "core/math/geometry_3d.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/settings/editor_settings.h"
+#include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_device_binds.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 
 #if defined(VULKAN_ENABLED)
@@ -225,7 +228,7 @@ void LightmapperRD::_sort_triangle_clusters(uint32_t p_cluster_size, uint32_t p_
 				break;
 		}
 
-		uint32_t left_cluster_count = next_power_of_2(p_count / 2);
+		uint32_t left_cluster_count = Math::next_power_of_2(p_count / 2);
 		left_cluster_count = MAX(left_cluster_count, p_cluster_size);
 		left_cluster_count = MIN(left_cluster_count, p_count);
 		_sort_triangle_clusters(p_cluster_size, p_cluster_index, p_index_start, left_cluster_count, p_triangle_sort, p_cluster_aabb);
@@ -256,8 +259,8 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 		atlas_size = atlas_size.max(s + Size2i(2, 2).maxi(p_denoiser_range) * p_supersampling_factor);
 	}
 
-	int max = nearest_power_of_2_templated(atlas_size.width);
-	max = MAX(max, nearest_power_of_2_templated(atlas_size.height));
+	int max = Math::nearest_power_of_2_templated(atlas_size.width);
+	max = MAX(max, Math::nearest_power_of_2_templated(atlas_size.height));
 
 	if (max > p_max_texture_size) {
 		return BAKE_ERROR_TEXTURE_EXCEEDS_MAX_SIZE;
@@ -495,7 +498,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 			t.max_bounds[1] = taabb.position.y + MAX(taabb.size.y, 0.0001);
 			t.max_bounds[2] = taabb.position.z + MAX(taabb.size.z, 0.0001);
 
-			t.cull_mode = RS::CULL_MODE_BACK;
+			t.cull_mode = RSE::CULL_MODE_BACK;
 
 			RID material = mi.data.material[i];
 			if (material.is_valid()) {
@@ -642,21 +645,30 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	}
 
 	{ //buffers
-		vertex_buffer = rd->storage_buffer_create(vertex_array.size(), vertex_array.span().reinterpret<uint8_t>());
+		vertex_buffer = rd->storage_buffer_create(vertex_array.size() * sizeof(Vertex), vertex_array.span().reinterpret<uint8_t>());
 
-		triangle_buffer = rd->storage_buffer_create(triangles.size(), triangles.span().reinterpret<uint8_t>());
+		triangle_buffer = rd->storage_buffer_create(triangles.size() * sizeof(Triangle), triangles.span().reinterpret<uint8_t>());
 
-		r_triangle_indices_buffer = rd->storage_buffer_create(triangle_indices.size(), triangle_indices.span().reinterpret<uint8_t>());
+		r_triangle_indices_buffer = rd->storage_buffer_create(triangle_indices.size() * sizeof(uint32_t), triangle_indices.span().reinterpret<uint8_t>());
 
-		r_cluster_indices_buffer = rd->storage_buffer_create(cluster_indices.size(), cluster_indices.span().reinterpret<uint8_t>());
+		r_cluster_indices_buffer = rd->storage_buffer_create(cluster_indices.size() * sizeof(uint32_t), cluster_indices.span().reinterpret<uint8_t>());
 
-		r_cluster_aabbs_buffer = rd->storage_buffer_create(cluster_aabbs.size(), cluster_aabbs.span().reinterpret<uint8_t>());
+		r_cluster_aabbs_buffer = rd->storage_buffer_create(cluster_aabbs.size() * sizeof(ClusterAABB), cluster_aabbs.span().reinterpret<uint8_t>());
 
-		lights_buffer = rd->storage_buffer_create(lights.size() * sizeof(Light), lights.span().reinterpret<uint8_t>());
+		// Even when there are no lights, the buffer must exist.
+		static const Light empty_lights[1];
+		Span<uint8_t> lb = (lights.is_empty() ? Span(empty_lights) : lights.span()).reinterpret<uint8_t>();
+		lights_buffer = rd->storage_buffer_create(lb.size(), lb);
 
-		seams_buffer = rd->storage_buffer_create(seam_buffer_vec.size() * sizeof(Vector2i) * 2, seam_buffer_vec.span().reinterpret<uint8_t>());
+		// Even when there are no seams, the buffer must exist.
+		static const Vector2i empty_seams[2];
+		Span<uint8_t> sb = (seam_buffer_vec.is_empty() ? Span(empty_seams) : seam_buffer_vec.span()).reinterpret<uint8_t>();
+		seams_buffer = rd->storage_buffer_create(sb.size(), sb);
 
-		probe_positions_buffer = rd->storage_buffer_create(p_probe_positions.size() * sizeof(Probe), p_probe_positions.span().reinterpret<uint8_t>());
+		// Even when there are no probes, the buffer must exist.
+		static const Probe empty_probes[1];
+		Span<uint8_t> pb = (p_probe_positions.is_empty() ? Span(empty_probes) : p_probe_positions.span()).reinterpret<uint8_t>();
+		probe_positions_buffer = rd->storage_buffer_create(pb.size(), pb);
 	}
 
 	{ //grid
@@ -795,7 +807,7 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 		//no barrier, let them run all together
 	}
 	rd->compute_list_end();
-	rd->free(compute_shader_dilate);
+	rd->free_rid(compute_shader_dilate);
 
 #ifdef DEBUG_TEXTURES
 	for (int i = 0; i < atlas_slices; i++) {
@@ -832,7 +844,7 @@ LightmapperRD::BakeError LightmapperRD::_pack_l1(RenderingDevice *rd, Ref<RDShad
 		//no barrier, let them run all together
 	}
 	rd->compute_list_end();
-	rd->free(compute_shader_pack);
+	rd->free_rid(compute_shader_pack);
 
 	return BAKE_OK;
 }
@@ -971,6 +983,7 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 	denoise_params.normal_bandwidth = 0.1f;
 	denoise_params.filter_strength = 10.0f;
 	denoise_params.half_search_window = p_denoiser_range;
+	denoise_params.slice_count = p_bake_sh ? 4 : 1;
 	p_rd->buffer_update(denoise_params_buffer, 0, sizeof(DenoiseParams), &denoise_params);
 
 	Vector<RD::Uniform> uniforms = dilate_or_denoise_common_uniforms(p_source_light_tex, p_dest_light_tex);
@@ -1005,7 +1018,7 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 	// We denoise in fixed size regions and synchronize execution to avoid GPU timeouts.
 	// We use a region with 1/4 the amount of pixels if we're denoising SH lightmaps, as
 	// all four of them are denoised in the shader in one dispatch.
-	const int user_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
+	const int user_region_size = Math::nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
 	const int max_region_size = p_bake_sh ? user_region_size / 2 : user_region_size;
 	int x_regions = Math::division_round_up(p_atlas_size.width, max_region_size);
 	int y_regions = Math::division_round_up(p_atlas_size.height, max_region_size);
@@ -1042,8 +1055,8 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 		}
 	}
 
-	p_rd->free(compute_shader_denoise);
-	p_rd->free(denoise_params_buffer);
+	p_rd->free_rid(compute_shader_denoise);
+	p_rd->free_rid(denoise_params_buffer);
 
 	return BAKE_OK;
 }
@@ -1158,19 +1171,19 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	RID shadowmask_tex;
 	RID shadowmask_tex2;
 
-#define FREE_TEXTURES                \
-	rd->free(albedo_array_tex);      \
-	rd->free(emission_array_tex);    \
-	rd->free(normal_tex);            \
-	rd->free(position_tex);          \
-	rd->free(unocclude_tex);         \
-	rd->free(light_source_tex);      \
-	rd->free(light_accum_tex2);      \
-	rd->free(light_accum_tex);       \
-	rd->free(light_environment_tex); \
-	if (p_bake_shadowmask) {         \
-		rd->free(shadowmask_tex);    \
-		rd->free(shadowmask_tex2);   \
+#define FREE_TEXTURES \
+	rd->free_rid(albedo_array_tex); \
+	rd->free_rid(emission_array_tex); \
+	rd->free_rid(normal_tex); \
+	rd->free_rid(position_tex); \
+	rd->free_rid(unocclude_tex); \
+	rd->free_rid(light_source_tex); \
+	rd->free_rid(light_accum_tex2); \
+	rd->free_rid(light_accum_tex); \
+	rd->free_rid(light_environment_tex); \
+	if (p_bake_shadowmask) { \
+		rd->free_rid(shadowmask_tex); \
+		rd->free_rid(shadowmask_tex2); \
 	}
 
 	{ // create all textures
@@ -1275,17 +1288,17 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	Vector<int> slice_seam_count;
 
-#define FREE_BUFFERS                   \
-	rd->free(bake_parameters_buffer);  \
-	rd->free(vertex_buffer);           \
-	rd->free(triangle_buffer);         \
-	rd->free(lights_buffer);           \
-	rd->free(triangle_indices_buffer); \
-	rd->free(cluster_indices_buffer);  \
-	rd->free(cluster_aabbs_buffer);    \
-	rd->free(grid_texture);            \
-	rd->free(seams_buffer);            \
-	rd->free(probe_positions_buffer);
+#define FREE_BUFFERS \
+	rd->free_rid(bake_parameters_buffer); \
+	rd->free_rid(vertex_buffer); \
+	rd->free_rid(triangle_buffer); \
+	rd->free_rid(lights_buffer); \
+	rd->free_rid(triangle_indices_buffer); \
+	rd->free_rid(cluster_indices_buffer); \
+	rd->free_rid(cluster_aabbs_buffer); \
+	rd->free_rid(grid_texture); \
+	rd->free_rid(seams_buffer); \
+	rd->free_rid(probe_positions_buffer);
 
 	const uint32_t cluster_size = 16;
 	_create_acceleration_structures(rd, atlas_size, atlas_slices, bounds, grid_size, cluster_size, probe_positions, p_generate_probes, slice_triangle_count, slice_seam_count, vertex_buffer, triangle_buffer, lights_buffer, triangle_indices_buffer, cluster_indices_buffer, cluster_aabbs_buffer, probe_positions_buffer, grid_texture, seams_buffer, p_step_function, p_bake_userdata);
@@ -1526,10 +1539,10 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 #endif
 
-#define FREE_RASTER_RESOURCES   \
-	rd->free(rasterize_shader); \
-	rd->free(sampler);          \
-	rd->free(raster_depth_buffer);
+#define FREE_RASTER_RESOURCES \
+	rd->free_rid(rasterize_shader); \
+	rd->free_rid(sampler); \
+	rd->free_rid(raster_depth_buffer);
 
 	/* Plot direct light */
 
@@ -1587,11 +1600,11 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	RID compute_base_uniform_set = rd->uniform_set_create(base_uniforms, compute_shader_primary, 0);
 
-#define FREE_COMPUTE_RESOURCES          \
-	rd->free(compute_shader_unocclude); \
-	rd->free(compute_shader_primary);   \
-	rd->free(compute_shader_secondary); \
-	rd->free(compute_shader_light_probes);
+#define FREE_COMPUTE_RESOURCES \
+	rd->free_rid(compute_shader_unocclude); \
+	rd->free_rid(compute_shader_primary); \
+	rd->free_rid(compute_shader_secondary); \
+	rd->free_rid(compute_shader_light_probes);
 
 	Vector3i group_size(Math::division_round_up(atlas_size.x, 8), Math::division_round_up(atlas_size.y, 8), 1);
 	rd->submit();
@@ -1672,7 +1685,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		}
 	}
 
-	const int max_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
+	const int max_region_size = Math::nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
 	const int x_regions = Math::division_round_up(atlas_size.width, max_region_size);
 	const int y_regions = Math::division_round_up(atlas_size.height, max_region_size);
 
@@ -1948,7 +1961,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				FREE_RASTER_RESOURCES
 				FREE_COMPUTE_RESOURCES
 				if (probe_positions.size() > 0) {
-					rd->free(light_probe_buffer);
+					rd->free_rid(light_probe_buffer);
 				}
 				memdelete(rd);
 				if (rcd != nullptr) {
@@ -2029,7 +2042,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 					FREE_RASTER_RESOURCES
 					FREE_COMPUTE_RESOURCES
 					if (probe_positions.size() > 0) {
-						rd->free(light_probe_buffer);
+						rd->free_rid(light_probe_buffer);
 					}
 					memdelete(rd);
 					if (rcd != nullptr) {
@@ -2056,6 +2069,14 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	/* DENOISE */
 
+	if (p_bake_sh) {
+		SWAP(light_accum_tex, light_accum_tex2);
+		BakeError error = _pack_l1(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, light_accum_tex, atlas_size, atlas_slices);
+		if (unlikely(error != BAKE_OK)) {
+			return error;
+		}
+	}
+
 	if (p_use_denoiser) {
 		if (p_step_function) {
 			if (p_step_function(0.8, RTR("Denoising"), p_bake_userdata, true)) {
@@ -2064,7 +2085,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				FREE_RASTER_RESOURCES
 				FREE_COMPUTE_RESOURCES
 				if (probe_positions.size() > 0) {
-					rd->free(light_probe_buffer);
+					rd->free_rid(light_probe_buffer);
 				}
 				memdelete(rd);
 				if (rcd != nullptr) {
@@ -2160,9 +2181,9 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	ERR_FAIL_COND_V(blendseams_triangle_raster_shader.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
-#define FREE_BLENDSEAMS_RESOURCES            \
-	rd->free(blendseams_line_raster_shader); \
-	rd->free(blendseams_triangle_raster_shader);
+#define FREE_BLENDSEAMS_RESOURCES \
+	rd->free_rid(blendseams_line_raster_shader); \
+	rd->free_rid(blendseams_triangle_raster_shader);
 
 	{
 		//pre copy
@@ -2281,14 +2302,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		}
 	}
 
-	if (p_bake_sh) {
-		SWAP(light_accum_tex, light_accum_tex2);
-		BakeError error = _pack_l1(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, light_accum_tex, atlas_size, atlas_slices);
-		if (unlikely(error != BAKE_OK)) {
-			return error;
-		}
-	}
-
 #ifdef DEBUG_TEXTURES
 
 	for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
@@ -2322,7 +2335,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		probe_values.resize(probe_positions.size() * 9);
 		Vector<uint8_t> probe_data = rd->buffer_get_data(light_probe_buffer);
 		memcpy(probe_values.ptrw(), probe_data.ptr(), probe_data.size());
-		rd->free(light_probe_buffer);
+		rd->free_rid(light_probe_buffer);
 
 #ifdef DEBUG_TEXTURES
 		{

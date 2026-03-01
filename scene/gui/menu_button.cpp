@@ -30,7 +30,9 @@
 
 #include "menu_button.h"
 
+#include "core/object/class_db.h"
 #include "scene/main/window.h"
+#include "servers/rendering/rendering_server.h"
 
 void MenuButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
@@ -85,8 +87,15 @@ void MenuButton::show_popup() {
 		Transform2D xform = get_viewport()->get_popup_base_transform_native();
 		rect = xform.xform(rect);
 	}
-	rect.size.height = 0;
-	popup->set_size(rect.size);
+	Rect2i scr_usable = DisplayServer::get_singleton()->screen_get_usable_rect(get_window()->get_current_screen());
+	Size2i max_size;
+	if (scr_usable.has_area()) {
+		real_t max_h = scr_usable.get_end().y - rect.position.y;
+		if (max_h >= 4 * rect.size.height) {
+			max_size = Size2(RS::get_singleton()->get_maximum_viewport_size().width, max_h);
+		}
+	}
+	popup->set_max_size(max_size);
 	if (is_layout_rtl()) {
 		rect.position.x += rect.size.width - popup->get_size().width;
 	}
@@ -206,7 +215,7 @@ void MenuButton::_bind_methods() {
 	base_property_helper.set_prefix("popup/item_");
 	base_property_helper.set_array_length_getter(&MenuButton::get_item_count);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text);
-	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.icon);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "checkable", PROPERTY_HINT_ENUM, "No,As Checkbox,As Radio Button"), defaults.checkable_type);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "checked"), defaults.checked);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL), defaults.id);

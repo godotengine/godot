@@ -30,6 +30,7 @@
 
 #include "box_container.h"
 
+#include "core/object/class_db.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
 #include "scene/theme/theme_db.h"
@@ -388,7 +389,6 @@ MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control 
 	l->set_text(p_label);
 	add_child(l);
 	MarginContainer *mc = memnew(MarginContainer);
-	mc->add_theme_constant_override("margin_left", 0);
 	mc->add_child(p_control, true);
 	add_child(mc);
 	if (p_expand) {

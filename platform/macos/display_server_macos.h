@@ -37,8 +37,6 @@
 #include "gl_manager_macos_legacy.h"
 #endif // GLES3_ENABLED
 
-#import "native_menu_macos.h"
-
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
 
@@ -64,14 +62,23 @@
 @class GodotContentView;
 @class GodotWindowDelegate;
 @class GodotButtonView;
+@class GodotProgressView;
+#ifdef TOOLS_ENABLED
 @class GodotEmbeddedView;
 @class CALayerHost;
+#endif
 
 #undef BitMap
 #undef CursorShape
 #undef FontVariation
 
+#ifdef TOOLS_ENABLED
 class EmbeddedProcessMacOS;
+#endif
+
+class InputEvent;
+class InputEventWithModifiers;
+class NativeMenuMacOS;
 
 class DisplayServerMacOS : public DisplayServerMacOSBase {
 	GDSOFTCLASS(DisplayServerMacOS, DisplayServerMacOSBase);
@@ -150,6 +157,8 @@ public:
 	List<WindowID> popup_list;
 	uint64_t time_since_popup = 0;
 
+	GodotProgressView *dock_progress = nullptr;
+
 private:
 #if defined(GLES3_ENABLED)
 	GLManagerLegacy_MacOS *gl_manager_legacy = nullptr;
@@ -188,14 +197,6 @@ private:
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;
 
-	struct LayoutInfo {
-		String name;
-		String code;
-	};
-	mutable Vector<LayoutInfo> kbd_layouts;
-	mutable int current_layout = 0;
-	mutable bool keyboard_layout_dirty = true;
-
 	WindowID window_mouseover_id = INVALID_WINDOW_ID;
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 	WindowID window_id_counter = MAIN_WINDOW_ID;
@@ -229,8 +230,6 @@ private:
 	};
 	List<MenuCall> deferred_menu_calls;
 
-	Callable system_theme_changed;
-
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
 	void _update_window_style(WindowData p_wd, WindowID p_window);
 
@@ -242,25 +241,23 @@ private:
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 	void _push_input(const Ref<InputEvent> &p_event);
 	void _process_key_events();
-	void _update_keyboard_layouts() const;
-	static void _keyboard_layout_changed(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef user_info);
 
 	static NSCursor *_cursor_from_selector(SEL p_selector, SEL p_fallback = nil);
 
 	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, WindowID p_window_id);
 
+#ifdef TOOLS_ENABLED
 	struct EmbeddedProcessData {
-		EmbeddedProcessMacOS *process;
+		EmbeddedProcessMacOS *process = nullptr;
 		WindowData *wd = nullptr;
 		CALayer *layer_host = nil;
 	};
 	HashMap<OS::ProcessID, EmbeddedProcessData> embedded_processes;
+#endif
 	void _window_update_display_id(WindowData *p_wd);
 
 public:
 	void menu_callback(id p_sender);
-
-	void emit_system_theme_changed();
 
 	bool has_window(WindowID p_window) const;
 	WindowData &get_window(WindowID p_window);
@@ -308,12 +305,6 @@ public:
 	virtual void help_set_search_callbacks(const Callable &p_search_callback = Callable(), const Callable &p_action_callback = Callable()) override;
 	Callable _help_get_search_callback() const;
 	Callable _help_get_action_callback() const;
-
-	virtual bool is_dark_mode_supported() const override;
-	virtual bool is_dark_mode() const override;
-	virtual Color get_accent_color() const override;
-	virtual Color get_base_color() const override;
-	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
@@ -400,6 +391,8 @@ public:
 	virtual bool window_get_flag(WindowFlags p_flag, WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_taskbar_progress_value(float p_value, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const override;
 
@@ -450,18 +443,9 @@ public:
 	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
 #ifdef TOOLS_ENABLED
 	Error embed_process_update(WindowID p_window, EmbeddedProcessMacOS *p_process);
-#endif
 	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
 	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
-
-	virtual int keyboard_get_layout_count() const override;
-	virtual int keyboard_get_current_layout() const override;
-	virtual void keyboard_set_current_layout(int p_index) override;
-	virtual String keyboard_get_layout_language(int p_index) const override;
-	virtual String keyboard_get_layout_name(int p_index) const override;
-	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
-	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
-	virtual void show_emoji_and_symbol_picker() const override;
+#endif
 
 	void _process_events(bool p_pump);
 	virtual void process_events() override;

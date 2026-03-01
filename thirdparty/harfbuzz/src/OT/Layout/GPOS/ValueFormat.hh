@@ -56,9 +56,14 @@ struct ValueFormat : HBUINT16
                                          * PosTable (may be NULL) */
 #endif
 
-  IntType& operator = (uint16_t i) { v = i; return *this; }
+  NumType& operator = (uint16_t i) { v = i; return *this; }
 
-  unsigned int get_len () const  { return hb_popcount ((unsigned int) *this); }
+  // Note: spec says skip 2 bytes per bit in the valueformat. But reports
+  // from Microsoft developers indicate that only the fields that are
+  // currently defined are counted. We don't expect any new fields to
+  // be added to ValueFormat. As such, we use the faster hb_popcount8
+  // that only processes the lowest 8 bits.
+  unsigned int get_len () const  { return hb_popcount8 ((uint8_t) *this); }
   unsigned int get_size () const { return get_len () * Value::static_size; }
 
   hb_vector_t<unsigned> get_device_table_indices () const {
@@ -111,8 +116,8 @@ struct ValueFormat : HBUINT16
 
     if (!has_device ()) return ret;
 
-    bool use_x_device = font->x_ppem || font->num_coords;
-    bool use_y_device = font->y_ppem || font->num_coords;
+    bool use_x_device = font->x_ppem || font->has_nonzero_coords;
+    bool use_y_device = font->y_ppem || font->has_nonzero_coords;
 
     if (!use_x_device && !use_y_device) return ret;
 

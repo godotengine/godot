@@ -30,15 +30,18 @@
 
 #include "csg_shape.h"
 
+#include "core/math/geometry_2d.h"
+#include "core/object/class_db.h"
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
+#include "scene/resources/navigation_mesh.h"
+#include "servers/rendering/rendering_server.h"
+
 #ifdef DEV_ENABLED
 #include "core/io/json.h"
 #endif // DEV_ENABLED
-#include "core/math/geometry_2d.h"
-#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
-#include "scene/resources/navigation_mesh.h"
-#include "scene/resources/surface_tool.h"
+
 #ifndef NAVIGATION_3D_DISABLED
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 #endif // NAVIGATION_3D_DISABLED
 
 #include <manifold/manifold.h>
@@ -107,7 +110,7 @@ void CSGShape3D::set_use_collision(bool p_enable) {
 		set_collision_priority(collision_priority);
 		_make_dirty(); //force update
 	} else {
-		PhysicsServer3D::get_singleton()->free(root_collision_instance);
+		PhysicsServer3D::get_singleton()->free_rid(root_collision_instance);
 		root_collision_instance = RID();
 		root_collision_shape.unref();
 	}
@@ -737,19 +740,7 @@ void CSGShape3D::update_shape() {
 Ref<ArrayMesh> CSGShape3D::bake_static_mesh() {
 	Ref<ArrayMesh> baked_mesh;
 	if (is_root_shape() && root_mesh.is_valid()) {
-		Ref<SurfaceTool> st;
-		st.instantiate();
-
-		int surface_count = root_mesh->get_surface_count();
-		for (int i = 0; i < surface_count; i++) {
-			st->append_from(root_mesh, i, Transform3D());
-		}
-		st->generate_normals();
-		st->generate_tangents();
-		st->index();
-		st->optimize_indices_for_cache();
-
-		baked_mesh = st->commit();
+		baked_mesh = root_mesh;
 	}
 	return baked_mesh;
 }
@@ -822,7 +813,7 @@ void CSGShape3D::_update_debug_collision_shape() {
 
 void CSGShape3D::_clear_debug_collision_shape() {
 	if (root_collision_debug_instance.is_valid()) {
-		RS::get_singleton()->free(root_collision_debug_instance);
+		RS::get_singleton()->free_rid(root_collision_debug_instance);
 		root_collision_debug_instance = RID();
 	}
 }
@@ -926,7 +917,7 @@ void CSGShape3D::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
-				PhysicsServer3D::get_singleton()->free(root_collision_instance);
+				PhysicsServer3D::get_singleton()->free_rid(root_collision_instance);
 				root_collision_instance = RID();
 				root_collision_shape.unref();
 				_clear_debug_collision_shape();
@@ -2286,7 +2277,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 		}
 
 		if (mode == MODE_PATH) {
-			if (!path_local) {
+			if (!path_local && path->is_inside_tree()) {
 				base_xform = path->get_global_transform();
 			}
 

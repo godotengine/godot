@@ -31,10 +31,15 @@
 #include "world_3d.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/rendering/rendering_server.h"
+
+#ifndef NAVIGATION_3D_DISABLED
+#include "servers/navigation_3d/navigation_server_3d.h"
+#endif // NAVIGATION_3D_DISABLED
 
 void World3D::_register_camera(Camera3D *p_camera) {
 	cameras.insert(p_camera);
@@ -58,6 +63,7 @@ RID World3D::get_space() const {
 	return space;
 }
 
+#ifndef NAVIGATION_3D_DISABLED
 RID World3D::get_navigation_map() const {
 	if (navigation_map.is_null()) {
 		navigation_map = NavigationServer3D::get_singleton()->map_create();
@@ -72,6 +78,7 @@ RID World3D::get_navigation_map() const {
 	}
 	return navigation_map;
 }
+#endif // NAVIGATION_3D_DISABLED
 
 RID World3D::get_scenario() const {
 	return scenario;
@@ -149,7 +156,9 @@ PhysicsDirectSpaceState3D *World3D::get_direct_space_state() {
 
 void World3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_space"), &World3D::get_space);
+#ifndef NAVIGATION_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_navigation_map"), &World3D::get_navigation_map);
+#endif // NAVIGATION_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_scenario"), &World3D::get_scenario);
 	ClassDB::bind_method(D_METHOD("set_environment", "env"), &World3D::set_environment);
 	ClassDB::bind_method(D_METHOD("get_environment"), &World3D::get_environment);
@@ -160,14 +169,16 @@ void World3D::_bind_methods() {
 #ifndef PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_direct_space_state"), &World3D::get_direct_space_state);
 #endif // PHYSICS_3D_DISABLED
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_fallback_environment", "get_fallback_environment");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, Environment::get_class_static()), "set_environment", "get_environment");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_environment", PROPERTY_HINT_RESOURCE_TYPE, Environment::get_class_static()), "set_fallback_environment", "get_fallback_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_camera_attributes", "get_camera_attributes");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_space");
+#ifndef NAVIGATION_3D_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "navigation_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_navigation_map");
+#endif // NAVIGATION_3D_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "scenario", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_scenario");
 #ifndef PHYSICS_3D_DISABLED
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "direct_space_state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectSpaceState3D", PROPERTY_USAGE_NONE), "", "get_direct_space_state");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "direct_space_state", PROPERTY_HINT_RESOURCE_TYPE, PhysicsDirectSpaceState3D::get_class_static(), PROPERTY_USAGE_NONE), "", "get_direct_space_state");
 #endif // PHYSICS_3D_DISABLED
 }
 
@@ -186,17 +197,17 @@ World3D::~World3D() {
 	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
 #endif // NAVIGATION_3D_DISABLED
 
-	RenderingServer::get_singleton()->free(scenario);
+	RenderingServer::get_singleton()->free_rid(scenario);
 
 #ifndef PHYSICS_3D_DISABLED
 	if (space.is_valid()) {
-		PhysicsServer3D::get_singleton()->free(space);
+		PhysicsServer3D::get_singleton()->free_rid(space);
 	}
 #endif // PHYSICS_3D_DISABLED
 
 #ifndef NAVIGATION_3D_DISABLED
 	if (navigation_map.is_valid()) {
-		NavigationServer3D::get_singleton()->free(navigation_map);
+		NavigationServer3D::get_singleton()->free_rid(navigation_map);
 	}
 #endif // NAVIGATION_3D_DISABLED
 }

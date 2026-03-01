@@ -31,33 +31,36 @@
 #pragma once
 
 #include "core/io/resource_uid.h"
-#include "core/object/class_db.h"
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/self_list.h"
 
 class Node;
+class RWLock;
 
-#define RES_BASE_EXTENSION(m_ext)                                        \
-public:                                                                  \
-	static void register_custom_data_to_otdb() {                         \
-		ClassDB::add_resource_base_extension(m_ext, get_class_static()); \
-	}                                                                    \
-	virtual String get_base_extension() const override {                 \
-		return m_ext;                                                    \
-	}                                                                    \
-                                                                         \
+#define RES_BASE_EXTENSION(m_ext) \
+public: \
+	static void register_custom_data_to_otdb() { \
+		Resource::_add_resource_base_extension_to_classdb(m_ext, get_class_static()); \
+	} \
+	virtual String get_base_extension() const override { \
+		return m_ext; \
+	} \
+\
 private:
 
 class Resource : public RefCounted {
 	GDCLASS(Resource, RefCounted);
 
 public:
-	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension("res", get_class_static()); }
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::RESOURCE;
+
+	static void register_custom_data_to_otdb();
 	virtual String get_base_extension() const { return "res"; }
 
 protected:
+	static void _add_resource_base_extension_to_classdb(const String &p_extension, const String &p_class);
 	struct DuplicateParams {
 		bool deep = false;
 		ResourceDeepDuplicateMode subres_mode = RESOURCE_DEEP_DUPLICATE_MAX;
@@ -92,9 +95,15 @@ private:
 
 	using DuplicateRemapCacheT = HashMap<Ref<Resource>, Ref<Resource>>;
 	static thread_local inline DuplicateRemapCacheT *thread_duplicate_remap_cache = nullptr;
+	static thread_local inline bool thread_duplicate_remap_cache_needs_deallocation = true;
 
 	Variant _duplicate_recursive(const Variant &p_variant, const DuplicateParams &p_params, uint32_t p_usage = 0) const;
 	void _find_sub_resources(const Variant &p_variant, HashSet<Ref<Resource>> &p_resources_found);
+
+	// Only for binding the deep duplicate method, so it doesn't need actual members.
+	enum DeepDuplicateMode : int;
+
+	_ALWAYS_INLINE_ Ref<Resource> _duplicate_deep_bind(DeepDuplicateMode p_deep_subresources_mode) const;
 
 protected:
 	virtual void _resource_path_changed();
@@ -115,14 +124,15 @@ protected:
 	GDVIRTUAL0(_reset_state);
 
 	virtual Ref<Resource> _duplicate(const DuplicateParams &p_params) const;
+	virtual String _to_string() override;
 
 public:
-	static Node *(*_get_local_scene_func)(); //used by editor
-	static void (*_update_configuration_warning)(); //used by editor
+	static Node *(*_get_local_scene_func)(); // Used by the editor.
+	static void (*_update_configuration_warning)(); // Used by the editor.
 
 	void update_configuration_warning();
 	virtual bool editor_can_reload_from_file();
-	virtual void reset_state(); //for resources that use variable amount of properties, either via _validate_property or _get_property_list, this function needs to be implemented to correctly clear state
+	virtual void reset_state(); // For resources that store state in non-exposed properties, such as via _validate_property or _get_property_list, this function must be implemented to clear them.
 	virtual Error copy_from(const Ref<Resource> &p_resource);
 	virtual void reload_from_file();
 
@@ -173,21 +183,22 @@ public:
 
 	void set_as_translation_remapped(bool p_remapped);
 
-	virtual RID get_rid() const; // some resources may offer conversion to RID
+	virtual RID get_rid() const; // Some resources may offer conversion to RID.
 
-	//helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
-	void set_id_for_path(const String &p_path, const String &p_id);
-	String get_id_for_path(const String &p_path) const;
+	// Helps keep IDs the same when loading/saving scenes. An empty ID clears the entry, and an empty ID is returned when not found.
+	static void set_resource_id_for_path(const String &p_referrer_path, const String &p_resource_path, const String &p_id);
+	void set_id_for_path(const String &p_referrer_path, const String &p_id) { set_resource_id_for_path(p_referrer_path, get_path(), p_id); }
+	String get_id_for_path(const String &p_referrer_path) const;
 
 	Resource();
 	~Resource();
 };
 
-VARIANT_ENUM_CAST(ResourceDeepDuplicateMode);
+VARIANT_ENUM_CAST(Resource::DeepDuplicateMode);
 
 class ResourceCache {
 	friend class Resource;
-	friend class ResourceLoader; //need the lock
+	friend class ResourceLoader; // Need the lock.
 	static Mutex lock;
 	static HashMap<String, Resource *> resources;
 #ifdef TOOLS_ENABLED

@@ -31,7 +31,9 @@
 #include "base_button.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "scene/gui/label.h"
+#include "scene/main/timer.h"
 #include "scene/main/window.h"
 
 void BaseButton::_unpress_group() {
@@ -266,6 +268,10 @@ void BaseButton::set_disabled(bool p_disabled) {
 		}
 		status.press_attempt = false;
 		status.pressing_inside = false;
+		if (status.pressed_down_with_focus) {
+			status.pressed_down_with_focus = false;
+			emit_signal(SNAME("button_up"));
+		}
 	}
 	queue_accessibility_update();
 	queue_redraw();
@@ -468,11 +474,21 @@ Control *BaseButton::make_custom_tooltip(const String &p_text) const {
 	if (control) {
 		return control;
 	}
-	if (!shortcut_in_tooltip || shortcut.is_null() || !shortcut->has_valid_event()) {
+
+	if (!shortcut_in_tooltip || shortcut.is_null()) {
 		return nullptr; // Use the default tooltip label.
 	}
 
-	String text = atr(shortcut->get_name()) + " (" + shortcut->get_as_text() + ")";
+	bool shortcut_has_events = shortcut->has_valid_event();
+	if (!shortcut_has_events && shortcut->get_name().is_empty()) {
+		return nullptr;
+	}
+
+	String text = atr(shortcut->get_name());
+	if (shortcut_has_events) {
+		text += " (" + shortcut->get_as_text() + ")";
+	}
+
 	if (!p_text.is_empty() && shortcut->get_name().nocasecmp_to(p_text) != 0) {
 		text += "\n" + atr(p_text);
 	}
@@ -565,10 +581,10 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press,Button Release"), "set_action_mode", "get_action_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left, Mouse Right, Mouse Middle"), "set_button_mask", "get_button_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_pressed_outside"), "set_keep_pressed_outside", "is_keep_pressed_outside");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "button_group", PROPERTY_HINT_RESOURCE_TYPE, "ButtonGroup"), "set_button_group", "get_button_group");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "button_group", PROPERTY_HINT_RESOURCE_TYPE, ButtonGroup::get_class_static()), "set_button_group", "get_button_group");
 
 	ADD_GROUP("Shortcut", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, Shortcut::get_class_static()), "set_shortcut", "get_shortcut");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_feedback"), "set_shortcut_feedback", "is_shortcut_feedback");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_in_tooltip"), "set_shortcut_in_tooltip", "is_shortcut_in_tooltip_enabled");
 
@@ -634,7 +650,7 @@ void ButtonGroup::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_unpress"), "set_allow_unpress", "is_allow_unpress");
 
-	ADD_SIGNAL(MethodInfo("pressed", PropertyInfo(Variant::OBJECT, "button", PROPERTY_HINT_RESOURCE_TYPE, "BaseButton")));
+	ADD_SIGNAL(MethodInfo("pressed", PropertyInfo(Variant::OBJECT, "button", PROPERTY_HINT_RESOURCE_TYPE, BaseButton::get_class_static())));
 }
 
 ButtonGroup::ButtonGroup() {

@@ -4,7 +4,8 @@
 		A class information repository.
 	</brief_description>
 	<description>
-		Provides access to metadata stored for every available class.
+		Provides access to metadata stored for every available engine class.
+		[b]Note:[/b] Script-defined classes with [code]class_name[/code] are not part of [ClassDB], so they will not return reflection data such as a method or property list. However, [GDExtension]-defined classes [i]are[/i] part of [ClassDB], so they will return reflection data.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -200,14 +201,15 @@
 		<method name="get_class_list" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				Returns the names of all the classes available.
+				Returns the names of all engine classes available.
+				[b]Note:[/b] Script-defined classes with [code]class_name[/code] are not included in this list. Use [method ProjectSettings.get_global_class_list] to get a list of script-defined classes instead.
 			</description>
 		</method>
 		<method name="get_inheriters_from_class" qualifiers="const">
 			<return type="PackedStringArray" />
 			<param index="0" name="class" type="StringName" />
 			<description>
-				Returns the names of all the classes that directly or indirectly inherit from [param class].
+				Returns the names of all engine classes that directly or indirectly inherit from [param class].
 			</description>
 		</method>
 		<method name="get_parent_class" qualifiers="const">

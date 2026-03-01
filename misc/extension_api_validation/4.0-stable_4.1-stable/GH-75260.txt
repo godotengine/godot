@@ -1,0 +1,6 @@
+GH-75260
+--------
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/collide_shape/return_value': type changed value in new API, from "typedarray::PackedVector2Array" to "typedarray::Vector2".
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/collide_shape/return_value': type changed value in new API, from "typedarray::PackedVector3Array" to "typedarray::Vector3".
+
+The previous type declaration was simply wrong and the method did actually already return objects of the new type.

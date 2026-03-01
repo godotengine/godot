@@ -32,6 +32,7 @@
 
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 
@@ -88,7 +89,7 @@ bool InputEvent::is_echo() const {
 	return false;
 }
 
-Ref<InputEvent> InputEvent::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEvent::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	return Ref<InputEvent>(const_cast<InputEvent *>(this));
 }
 
@@ -131,6 +132,8 @@ void InputEvent::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "device"), "set_device", "get_device");
 
 	BIND_CONSTANT(DEVICE_ID_EMULATION);
+	BIND_CONSTANT(DEVICE_ID_KEYBOARD);
+	BIND_CONSTANT(DEVICE_ID_MOUSE);
 }
 
 ///////////////////////////////////
@@ -153,9 +156,12 @@ int64_t InputEventFromWindow::get_window_id() const {
 ///////////////////////////////////
 
 void InputEventWithModifiers::set_command_or_control_autoremap(bool p_enabled) {
+	if (command_or_control_autoremap == p_enabled) {
+		return;
+	}
 	command_or_control_autoremap = p_enabled;
 	if (command_or_control_autoremap) {
-		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+		if (OS::prefer_meta_over_ctrl()) {
 			ctrl_pressed = false;
 			meta_pressed = true;
 		} else {
@@ -166,6 +172,7 @@ void InputEventWithModifiers::set_command_or_control_autoremap(bool p_enabled) {
 		ctrl_pressed = false;
 		meta_pressed = false;
 	}
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -174,7 +181,7 @@ bool InputEventWithModifiers::is_command_or_control_autoremap() const {
 }
 
 bool InputEventWithModifiers::is_command_or_control_pressed() const {
-	if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+	if (OS::prefer_meta_over_ctrl()) {
 		return meta_pressed;
 	} else {
 		return ctrl_pressed;
@@ -241,7 +248,7 @@ BitField<KeyModifierMask> InputEventWithModifiers::get_modifiers_mask() const {
 		mask.set_flag(KeyModifierMask::META);
 	}
 	if (is_command_or_control_autoremap()) {
-		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+		if (OS::prefer_meta_over_ctrl()) {
 			mask.set_flag(KeyModifierMask::META);
 		} else {
 			mask.set_flag(KeyModifierMask::CTRL);
@@ -256,11 +263,11 @@ String InputEventWithModifiers::as_text() const {
 	if (is_ctrl_pressed()) {
 		mod_names.push_back(find_keycode_name(Key::CTRL));
 	}
-	if (is_shift_pressed()) {
-		mod_names.push_back(find_keycode_name(Key::SHIFT));
-	}
 	if (is_alt_pressed()) {
 		mod_names.push_back(find_keycode_name(Key::ALT));
+	}
+	if (is_shift_pressed()) {
+		mod_names.push_back(find_keycode_name(Key::SHIFT));
 	}
 	if (is_meta_pressed()) {
 		mod_names.push_back(find_keycode_name(Key::META));
@@ -273,7 +280,7 @@ String InputEventWithModifiers::as_text() const {
 	}
 }
 
-String InputEventWithModifiers::to_string() {
+String InputEventWithModifiers::_to_string() {
 	return as_text();
 }
 
@@ -309,9 +316,10 @@ void InputEventWithModifiers::_validate_property(PropertyInfo &p_property) const
 		// Cannot be used with Meta/Command or Control!
 		if (p_property.name == "meta_pressed") {
 			p_property.usage ^= PROPERTY_USAGE_STORAGE;
-		}
-		if (p_property.name == "ctrl_pressed") {
+			p_property.usage ^= PROPERTY_USAGE_EDITOR;
+		} else if (p_property.name == "ctrl_pressed") {
 			p_property.usage ^= PROPERTY_USAGE_STORAGE;
+			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
 	} else {
 		if (p_property.name == "command_or_control_autoremap") {
@@ -399,7 +407,7 @@ String InputEventKey::as_text_physical_keycode() const {
 	if (physical_keycode != Key::NONE) {
 		kc = keycode_get_string(physical_keycode);
 	} else {
-		kc = "(" + RTR("Unset") + ")";
+		kc = "(" + RTR("unset") + ")";
 	}
 
 	if (kc.is_empty()) {
@@ -416,7 +424,7 @@ String InputEventKey::as_text_keycode() const {
 	if (keycode != Key::NONE) {
 		kc = keycode_get_string(keycode);
 	} else {
-		kc = "(" + RTR("Unset") + ")";
+		kc = "(" + RTR("unset") + ")";
 	}
 
 	if (kc.is_empty()) {
@@ -433,7 +441,7 @@ String InputEventKey::as_text_key_label() const {
 	if (key_label != Key::NONE) {
 		kc = keycode_get_string(key_label);
 	} else {
-		kc = "(" + RTR("Unset") + ")";
+		kc = "(" + RTR("unset") + ")";
 	}
 
 	if (kc.is_empty()) {
@@ -465,13 +473,16 @@ String InputEventKey::as_text() const {
 	String kc;
 
 	if (keycode == Key::NONE && physical_keycode == Key::NONE && key_label != Key::NONE) {
-		kc = keycode_get_string(key_label) + " (Unicode)";
+		kc = keycode_get_string(key_label) + " - Unicode";
 	} else if (keycode != Key::NONE) {
 		kc = keycode_get_string(keycode);
 	} else if (physical_keycode != Key::NONE) {
-		kc = keycode_get_string(physical_keycode) + " (" + RTR("Physical") + ")";
+		kc = keycode_get_string(physical_keycode);
+		if ((physical_keycode & Key::SPECIAL) != Key::SPECIAL) {
+			kc += " - " + RTR("Physical");
+		}
 	} else {
-		kc = "(" + RTR("Unset") + ")";
+		kc = "(" + RTR("unset") + ")";
 	}
 
 	if (kc.is_empty()) {
@@ -482,7 +493,7 @@ String InputEventKey::as_text() const {
 	return mods_text.is_empty() ? kc : mods_text + "+" + kc;
 }
 
-String InputEventKey::to_string() {
+String InputEventKey::_to_string() {
 	String p = is_pressed() ? "true" : "false";
 	String e = is_echo() ? "true" : "false";
 
@@ -502,7 +513,7 @@ String InputEventKey::to_string() {
 		kc = itos((int64_t)physical_keycode) + " (" + keycode_get_string(physical_keycode) + ")";
 		physical = "true";
 	} else {
-		kc = "(" + RTR("Unset") + ")";
+		kc = "(" + RTR("unset") + ")";
 	}
 
 	String mods = InputEventWithModifiers::as_text();
@@ -653,6 +664,10 @@ void InputEventKey::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "echo"), "set_echo", "is_echo");
 }
 
+InputEventKey::InputEventKey() {
+	set_device(DEVICE_ID_KEYBOARD);
+}
+
 ///////////////////////////////////
 
 void InputEventMouse::set_button_mask(BitField<MouseButtonMask> p_mask) {
@@ -695,6 +710,10 @@ void InputEventMouse::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "suffix:px"), "set_global_position", "get_global_position");
 }
 
+InputEventMouse::InputEventMouse() {
+	set_device(DEVICE_ID_MOUSE);
+}
+
 ///////////////////////////////////
 
 void InputEventMouseButton::set_factor(float p_factor) {
@@ -730,7 +749,7 @@ bool InputEventMouseButton::is_double_click() const {
 	return double_click;
 }
 
-Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Vector2 g = get_global_position();
 	Vector2 l = p_xform.xform(get_position() + p_local_ofs);
 
@@ -842,7 +861,7 @@ String InputEventMouseButton::as_text() const {
 	return full_string;
 }
 
-String InputEventMouseButton::to_string() {
+String InputEventMouseButton::_to_string() {
 	String p = is_pressed() ? "true" : "false";
 	String canceled_state = is_canceled() ? "true" : "false";
 	String d = double_click ? "true" : "false";
@@ -952,7 +971,7 @@ Vector2 InputEventMouseMotion::get_screen_velocity() const {
 	return screen_velocity;
 }
 
-Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventMouseMotion> mm;
 	mm.instantiate();
 
@@ -982,7 +1001,7 @@ String InputEventMouseMotion::as_text() const {
 	return vformat(RTR("Mouse motion at position (%s) with velocity (%s)"), String(get_position()), String(get_velocity()));
 }
 
-String InputEventMouseMotion::to_string() {
+String InputEventMouseMotion::_to_string() {
 	BitField<MouseButtonMask> mouse_button_mask = get_button_mask();
 	String button_mask_string = itos((int64_t)mouse_button_mask);
 
@@ -1178,15 +1197,16 @@ String InputEventJoypadMotion::as_text() const {
 	return vformat(RTR("Joypad Motion on Axis %d (%s) with Value %.2f"), axis, desc, axis_value);
 }
 
-String InputEventJoypadMotion::to_string() {
+String InputEventJoypadMotion::_to_string() {
 	return vformat("InputEventJoypadMotion: axis=%d, axis_value=%.2f", axis, axis_value);
 }
 
-Ref<InputEventJoypadMotion> InputEventJoypadMotion::create_reference(JoyAxis p_axis, float p_value) {
+Ref<InputEventJoypadMotion> InputEventJoypadMotion::create_reference(JoyAxis p_axis, float p_value, int p_device) {
 	Ref<InputEventJoypadMotion> ie;
 	ie.instantiate();
 	ie->set_axis(p_axis);
 	ie->set_axis_value(p_value);
+	ie->set_device(p_device);
 
 	return ie;
 }
@@ -1296,15 +1316,16 @@ String InputEventJoypadButton::as_text() const {
 	return text;
 }
 
-String InputEventJoypadButton::to_string() {
+String InputEventJoypadButton::_to_string() {
 	String p = is_pressed() ? "true" : "false";
 	return vformat("InputEventJoypadButton: button_index=%d, pressed=%s, pressure=%.2f", button_index, p, pressure);
 }
 
-Ref<InputEventJoypadButton> InputEventJoypadButton::create_reference(JoyButton p_btn_index) {
+Ref<InputEventJoypadButton> InputEventJoypadButton::create_reference(JoyButton p_btn_index, int p_device) {
 	Ref<InputEventJoypadButton> ie;
 	ie.instantiate();
 	ie->set_button_index(p_btn_index);
+	ie->set_device(p_device);
 
 	return ie;
 }
@@ -1356,7 +1377,7 @@ bool InputEventScreenTouch::is_double_tap() const {
 	return double_tap;
 }
 
-Ref<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventScreenTouch> st;
 	st.instantiate();
 	st->set_device(get_device());
@@ -1378,7 +1399,7 @@ String InputEventScreenTouch::as_text() const {
 	return vformat(RTR("Screen %s at (%s) with %s touch points"), status, String(get_position()), itos(index));
 }
 
-String InputEventScreenTouch::to_string() {
+String InputEventScreenTouch::_to_string() {
 	String p = pressed ? "true" : "false";
 	String canceled_state = canceled ? "true" : "false";
 	String double_tap_string = double_tap ? "true" : "false";
@@ -1479,7 +1500,7 @@ Vector2 InputEventScreenDrag::get_screen_velocity() const {
 	return screen_velocity;
 }
 
-Ref<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventScreenDrag> sd;
 
 	sd.instantiate();
@@ -1506,7 +1527,7 @@ String InputEventScreenDrag::as_text() const {
 	return vformat(RTR("Screen dragged with %s touch points at position (%s) with velocity of (%s)"), itos(index), String(get_position()), String(get_velocity()));
 }
 
-String InputEventScreenDrag::to_string() {
+String InputEventScreenDrag::_to_string() {
 	return vformat("InputEventScreenDrag: index=%d, position=(%s), relative=(%s), velocity=(%s), pressure=%.2f, tilt=(%s), pen_inverted=(%s)", index, String(get_position()), String(get_relative()), String(get_velocity()), get_pressure(), String(get_tilt()), get_pen_inverted());
 }
 
@@ -1648,7 +1669,7 @@ String InputEventAction::as_text() const {
 	return String();
 }
 
-String InputEventAction::to_string() {
+String InputEventAction::_to_string() {
 	String p = is_pressed() ? "true" : "false";
 	return vformat("InputEventAction: action=\"%s\", pressed=%s", action, p);
 }
@@ -1698,7 +1719,7 @@ real_t InputEventMagnifyGesture::get_factor() const {
 	return factor;
 }
 
-Ref<InputEvent> InputEventMagnifyGesture::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEventMagnifyGesture::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventMagnifyGesture> ev;
 	ev.instantiate();
 
@@ -1719,7 +1740,7 @@ String InputEventMagnifyGesture::as_text() const {
 	return vformat(RTR("Magnify Gesture at (%s) with factor %s"), String(get_position()), rtos(get_factor()));
 }
 
-String InputEventMagnifyGesture::to_string() {
+String InputEventMagnifyGesture::_to_string() {
 	return vformat("InputEventMagnifyGesture: factor=%.2f, position=(%s)", factor, String(get_position()));
 }
 
@@ -1740,7 +1761,7 @@ Vector2 InputEventPanGesture::get_delta() const {
 	return delta;
 }
 
-Ref<InputEvent> InputEventPanGesture::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEventPanGesture::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventPanGesture> ev;
 	ev.instantiate();
 
@@ -1761,7 +1782,7 @@ String InputEventPanGesture::as_text() const {
 	return vformat(RTR("Pan Gesture at (%s) with delta (%s)"), String(get_position()), String(get_delta()));
 }
 
-String InputEventPanGesture::to_string() {
+String InputEventPanGesture::_to_string() {
 	return vformat("InputEventPanGesture: delta=(%s), position=(%s)", String(get_delta()), String(get_position()));
 }
 
@@ -1842,7 +1863,7 @@ String InputEventMIDI::as_text() const {
 	return vformat(RTR("MIDI Input on Channel=%s Message=%s"), itos(channel), itos((int64_t)message));
 }
 
-String InputEventMIDI::to_string() {
+String InputEventMIDI::_to_string() {
 	String ret;
 	switch (message) {
 		case MIDIMessage::NOTE_ON:
@@ -1909,7 +1930,7 @@ void InputEventShortcut::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shortcut", "shortcut"), &InputEventShortcut::set_shortcut);
 	ClassDB::bind_method(D_METHOD("get_shortcut"), &InputEventShortcut::get_shortcut);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, Shortcut::get_class_static()), "set_shortcut", "get_shortcut");
 }
 
 String InputEventShortcut::as_text() const {
@@ -1918,7 +1939,7 @@ String InputEventShortcut::as_text() const {
 	return vformat(RTR("Input Event with Shortcut=%s"), shortcut->get_as_text());
 }
 
-String InputEventShortcut::to_string() {
+String InputEventShortcut::_to_string() {
 	ERR_FAIL_COND_V(shortcut.is_null(), "None");
 
 	return vformat("InputEventShortcut: shortcut=%s", shortcut->get_as_text());

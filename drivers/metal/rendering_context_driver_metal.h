@@ -35,35 +35,18 @@
 #include "servers/rendering/rendering_context_driver.h"
 #include "servers/rendering/rendering_device_driver.h"
 
-#import <CoreGraphics/CGGeometry.h>
+#include <Metal/Metal.hpp>
+#include <QuartzCore/QuartzCore.hpp>
 
-#ifdef __OBJC__
-#import "metal_objects.h"
-
-#import <Metal/Metal.h>
-#import <QuartzCore/CALayer.h>
-
-@class CAMetalLayer;
-@protocol CAMetalDrawable;
-#else
-typedef enum MTLPixelFormat {
-	MTLPixelFormatBGRA8Unorm = 80,
-} MTLPixelFormat;
+namespace MTL3 {
 class MDCommandBuffer;
-#endif
-
-class PixelFormats;
-class MDResourceCache;
+}
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingContextDriverMetal : public RenderingContextDriver {
 	bool capture_available = false;
 
 protected:
-#ifdef __OBJC__
-	id<MTLDevice> metal_device = nullptr;
-#else
-	void *metal_device = nullptr;
-#endif
+	MTL::Device *metal_device = nullptr;
 	Device device; // There is only one device on Apple Silicon.
 
 public:
@@ -77,6 +60,15 @@ public:
 	void surface_set_size(SurfaceID p_surface, uint32_t p_width, uint32_t p_height) final override;
 	void surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) final override;
 	DisplayServer::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const final override;
+	virtual void surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) final override;
+	virtual bool surface_get_hdr_output_enabled(SurfaceID p_surface) const final override;
+	virtual void surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) final override;
+	virtual float surface_get_hdr_output_reference_luminance(SurfaceID p_surface) const final override;
+	virtual void surface_set_hdr_output_max_luminance(SurfaceID p_surface, float p_max_luminance) final override;
+	virtual float surface_get_hdr_output_max_luminance(SurfaceID p_surface) const final override;
+	virtual void surface_set_hdr_output_linear_luminance_scale(SurfaceID p_surface, float p_linear_luminance_scale) final override;
+	virtual float surface_get_hdr_output_linear_luminance_scale(SurfaceID p_surface) const final override;
+	virtual float surface_get_hdr_output_max_value(SurfaceID p_surface) const final override;
 	uint32_t surface_get_width(SurfaceID p_surface) const final override;
 	uint32_t surface_get_height(SurfaceID p_surface) const final override;
 	void surface_set_needs_resize(SurfaceID p_surface, bool p_needs_resize) final override;
@@ -88,20 +80,12 @@ public:
 
 	// Platform-specific data for the Windows embedded in this driver.
 	struct WindowPlatformData {
-#ifdef __OBJC__
-		CAMetalLayer *__unsafe_unretained layer;
-#else
-		void *layer;
-#endif
+		CA::MetalLayer *layer;
 	};
 
 	class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) Surface {
 	protected:
-#ifdef __OBJC__
-		id<MTLDevice> device;
-#else
-		void *device;
-#endif
+		MTL::Device *device;
 
 	public:
 		uint32_t width = 0;
@@ -110,30 +94,28 @@ public:
 		bool needs_resize = false;
 		double present_minimum_duration = 0.0;
 
-		Surface(
-#ifdef __OBJC__
-				id<MTLDevice> p_device
-#else
-				void *p_device
-#endif
-				) :
-				device(p_device) {
-		}
+		bool hdr_output = false;
+		// BT.2408 recommendation of 203 nits for HDR Reference White, rounded to 200
+		// to be a more pleasant player-facing value.
+		float hdr_reference_luminance = 200.0f;
+		float hdr_max_luminance = 1000.0f;
+		float hdr_linear_luminance_scale = 100.0f;
+
+		Surface(MTL::Device *p_device) :
+				device(p_device) {}
 		virtual ~Surface() = default;
 
-		MTLPixelFormat get_pixel_format() const { return MTLPixelFormatBGRA8Unorm; }
+		MTL::PixelFormat get_pixel_format() const { return MTL::PixelFormatBGRA8Unorm; }
 		virtual Error resize(uint32_t p_desired_framebuffer_count) = 0;
 		virtual RDD::FramebufferID acquire_next_frame_buffer() = 0;
-		virtual void present(MDCommandBuffer *p_cmd_buffer) = 0;
+		virtual void present(MTL3::MDCommandBuffer *p_cmd_buffer) = 0;
+		virtual MTL::Drawable *next_drawable() = 0;
+		API_AVAILABLE(macos(26.0), ios(26.0))
+		virtual MTL::ResidencySet *get_residency_set() const = 0;
 		void set_max_fps(int p_max_fps) { present_minimum_duration = p_max_fps ? 1.0 / p_max_fps : 0.0; }
 	};
 
-#ifdef __OBJC__
-	id<MTLDevice>
-#else
-	void *
-#endif
-	get_metal_device() const {
+	MTL::Device *get_metal_device() const {
 		return metal_device;
 	}
 

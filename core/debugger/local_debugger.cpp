@@ -31,6 +31,7 @@
 #include "local_debugger.h"
 
 #include "core/debugger/script_debugger.h"
+#include "core/os/main_loop.h"
 #include "core/os/os.h"
 
 struct LocalDebugger::ScriptsProfiler {
@@ -114,6 +115,10 @@ struct LocalDebugger::ScriptsProfiler {
 };
 
 void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
+	if (script_debugger->is_ignoring_error_breaks() && p_is_error_breakpoint) {
+		return;
+	}
+
 	ScriptLanguage *script_lang = script_debugger->get_break_language();
 
 	if (!target_function.is_empty()) {
@@ -222,6 +227,10 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			break;
 		} else if (line == "n" || line == "next") {
 			script_debugger->set_depth(0);
+			script_debugger->set_lines_left(1);
+			break;
+		} else if (line == "o" || line == "out") {
+			script_debugger->set_depth(1);
 			script_debugger->set_lines_left(1);
 			break;
 		} else if (line == "fin" || line == "finish") {

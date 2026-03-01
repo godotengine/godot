@@ -30,14 +30,15 @@
 
 #pragma once
 
-#include "core/io/file_access.h"
-#include "core/object/script_backtrace.h"
+#include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
 
 #include <cstdarg>
 
+class FileAccess;
 class RegEx;
+class ScriptBacktrace;
 
 class Logger {
 protected:

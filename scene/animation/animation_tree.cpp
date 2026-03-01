@@ -32,6 +32,7 @@
 #include "animation_tree.compat.inc"
 
 #include "animation_blend_tree.h"
+#include "core/object/class_db.h"
 #include "scene/animation/animation_player.h"
 
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
@@ -139,7 +140,7 @@ void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
 
 void AnimationNode::blend_animation(const StringName &p_animation, AnimationMixer::PlaybackInfo p_playback_info) {
 	ERR_FAIL_NULL(process_state);
-	p_playback_info.track_weights = node_state.track_weights;
+	p_playback_info.track_weights = Vector<real_t>(node_state.track_weights);
 	process_state->tree->make_animation_instance(p_animation, p_playback_info);
 }
 
@@ -739,7 +740,8 @@ void AnimationTree::_animation_node_renamed(const ObjectID &p_oid, const String 
 	for (const PropertyInfo &E : properties) {
 		if (E.name.begins_with(old_base)) {
 			String new_name = E.name.replace_first(old_base, new_base);
-			property_map[new_name] = property_map[E.name];
+			const Pair<Variant, bool> temp_copy = property_map[E.name];
+			property_map[new_name] = temp_copy;
 			property_map.erase(E.name);
 		}
 	}
@@ -899,14 +901,22 @@ void AnimationTree::_setup_animation_player() {
 	clear_caches();
 }
 
-void AnimationTree::_validate_property(PropertyInfo &p_property) const {
+// `libraries` is a dynamic property, so we can't use `_validate_property` to change it.
+uint32_t AnimationTree::_get_libraries_property_usage() const {
 	if (!animation_player.is_empty()) {
-		if (Engine::get_singleton()->is_editor_hint() && (p_property.name == "root_node" || p_property.name.begins_with("libraries"))) {
-			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
-		}
+		return PROPERTY_USAGE_READ_ONLY;
+	}
+	return PROPERTY_USAGE_STORAGE;
+}
 
-		if (p_property.name.begins_with("libraries")) {
-			p_property.usage &= ~PROPERTY_USAGE_STORAGE;
+void AnimationTree::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+
+	if (!animation_player.is_empty()) {
+		if (p_property.name == "root_node") {
+			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 		}
 	}
 }
@@ -982,6 +992,20 @@ real_t AnimationTree::get_connection_activity(const StringName &p_path, int p_co
 	return activity[p_connection].activity;
 }
 
+#ifdef TOOLS_ENABLED
+String AnimationTree::get_editor_error_message() const {
+	if (!is_active()) {
+		return TTR("The AnimationTree is inactive.\nActivate it in the inspector to enable playback; check node warnings if activation fails.");
+	} else if (!is_enabled()) {
+		return TTR("The AnimationTree node (or one of its parents) has its process mode set to Disabled.\nChange the process mode in the inspector to allow playback.");
+	} else if (is_state_invalid()) {
+		return get_invalid_state_reason();
+	}
+
+	return "";
+}
+#endif
+
 void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tree_root", "animation_node"), &AnimationTree::set_root_animation_node);
 	ClassDB::bind_method(D_METHOD("get_tree_root"), &AnimationTree::get_root_animation_node);
@@ -992,7 +1016,7 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation_player", "path"), &AnimationTree::set_animation_player);
 	ClassDB::bind_method(D_METHOD("get_animation_player"), &AnimationTree::get_animation_player);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode"), "set_tree_root", "get_tree_root");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, AnimationRootNode::get_class_static()), "set_tree_root", "get_tree_root");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
 

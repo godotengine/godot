@@ -32,7 +32,7 @@
 
 #include "../gdscript.h"
 #include "../gdscript_analyzer.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "gdscript_language_protocol.h"
 #include "gdscript_workspace.h"
 
@@ -135,18 +135,12 @@ void ExtendGDScriptParser::update_diagnostics() {
 		diagnostic.severity = LSP::DiagnosticSeverity::Error;
 		diagnostic.message = error.message;
 		diagnostic.source = "gdscript";
-		diagnostic.code = -1;
-		LSP::Range range;
-		LSP::Position pos;
-		const PackedStringArray line_array = get_lines();
-		int line = CLAMP(LINE_NUMBER_TO_INDEX(error.line), 0, line_array.size() - 1);
-		const String &line_text = line_array[line];
-		pos.line = line;
-		pos.character = line_text.length() - line_text.strip_edges(true, false).length();
-		range.start = pos;
-		range.end = range.start;
-		range.end.character = line_text.strip_edges(false).length();
-		diagnostic.range = range;
+
+		GodotRange godot_range(
+				GodotPosition(error.start_line, error.start_column),
+				GodotPosition(error.end_line, error.end_column));
+
+		diagnostic.range = godot_range.to_lsp(get_lines());
 		diagnostics.push_back(diagnostic);
 	}
 
@@ -156,17 +150,12 @@ void ExtendGDScriptParser::update_diagnostics() {
 		diagnostic.severity = LSP::DiagnosticSeverity::Warning;
 		diagnostic.message = "(" + warning.get_name() + "): " + warning.get_message();
 		diagnostic.source = "gdscript";
-		diagnostic.code = warning.code;
-		LSP::Range range;
-		LSP::Position pos;
-		int line = LINE_NUMBER_TO_INDEX(warning.start_line);
-		const String &line_text = get_lines()[line];
-		pos.line = line;
-		pos.character = line_text.length() - line_text.strip_edges(true, false).length();
-		range.start = pos;
-		range.end = pos;
-		range.end.character = line_text.strip_edges(false).length();
-		diagnostic.range = range;
+
+		GodotRange godot_range(
+				GodotPosition(warning.start_line, warning.start_column),
+				GodotPosition(warning.end_line, warning.end_column));
+
+		diagnostic.range = godot_range.to_lsp(get_lines());
 		diagnostics.push_back(diagnostic);
 	}
 }
@@ -344,8 +333,9 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					if (res.is_valid() && !res->get_path().is_empty()) {
 						value_text = "preload(\"" + res->get_path() + "\")";
 						if (symbol.documentation.is_empty()) {
-							if (HashMap<String, ExtendGDScriptParser *>::Iterator S = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(res->get_path())) {
-								symbol.documentation = S->value->class_symbol.documentation;
+							ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(res->get_path());
+							if (parser) {
+								symbol.documentation = parser->class_symbol.documentation;
 							}
 						}
 					} else {
@@ -667,6 +657,12 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const LSP::Position &p_c
 	int len = lines.size();
 	for (int i = 0; i < len; i++) {
 		if (i == p_cursor.line) {
+			// This code tries to insert the symbol into the preexisting code. Due to using a simple
+			// algorithm, the results might not always match the option semantically (e.g. different
+			// identifier name). This is fine because symbol lookup will prioritize the provided
+			// symbol name over the actual code. Establishing a syntactic target (e.g. identifier)
+			// is usually sufficient.
+
 			String line = lines[i];
 			String first_part = line.substr(0, p_cursor.character);
 			String last_part = line.substr(p_cursor.character, lines[i].length());
@@ -678,6 +674,9 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const LSP::Position &p_c
 						first_part = line.substr(0, c);
 						first_part += p_symbol;
 						break;
+					} else if (c == 0) {
+						// No preexisting code that matches the option. Insert option in place.
+						first_part += p_symbol;
 					}
 				}
 			}
@@ -860,33 +859,9 @@ const List<LSP::DocumentLink> &ExtendGDScriptParser::get_document_links() const 
 	return document_links;
 }
 
-const Array &ExtendGDScriptParser::get_member_completions() {
-	if (member_completions.is_empty()) {
-		for (const KeyValue<String, const LSP::DocumentSymbol *> &E : members) {
-			const LSP::DocumentSymbol *symbol = E.value;
-			LSP::CompletionItem item = symbol->make_completion_item();
-			item.data = JOIN_SYMBOLS(path, E.key);
-			member_completions.push_back(item.to_json());
-		}
-
-		for (const KeyValue<String, ClassMembers> &E : inner_classes) {
-			const ClassMembers *inner_class = &E.value;
-
-			for (const KeyValue<String, const LSP::DocumentSymbol *> &F : *inner_class) {
-				const LSP::DocumentSymbol *symbol = F.value;
-				LSP::CompletionItem item = symbol->make_completion_item();
-				item.data = JOIN_SYMBOLS(path, JOIN_SYMBOLS(E.key, F.key));
-				member_completions.push_back(item.to_json());
-			}
-		}
-	}
-
-	return member_completions;
-}
-
 Dictionary ExtendGDScriptParser::dump_function_api(const GDScriptParser::FunctionNode *p_func) const {
+	ERR_FAIL_NULL_V(p_func, Dictionary());
 	Dictionary func;
-	ERR_FAIL_NULL_V(p_func, func);
 	func["name"] = p_func->identifier->name;
 	func["return_type"] = p_func->get_datatype().to_string();
 	func["rpc_config"] = p_func->rpc_config;
@@ -909,9 +884,8 @@ Dictionary ExtendGDScriptParser::dump_function_api(const GDScriptParser::Functio
 }
 
 Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode *p_class) const {
+	ERR_FAIL_NULL_V(p_class, Dictionary());
 	Dictionary class_api;
-
-	ERR_FAIL_NULL_V(p_class, class_api);
 
 	class_api["name"] = p_class->identifier != nullptr ? String(p_class->identifier->name) : String();
 	class_api["path"] = path;
@@ -1039,18 +1013,17 @@ Dictionary ExtendGDScriptParser::generate_api() const {
 	return api;
 }
 
-Error ExtendGDScriptParser::parse(const String &p_code, const String &p_path) {
+void ExtendGDScriptParser::parse(const String &p_code, const String &p_path) {
 	path = p_path;
 	lines = p_code.split("\n");
 
-	Error err = GDScriptParser::parse(p_code, p_path, false);
+	parse_result = GDScriptParser::parse(p_code, p_path, false);
 	GDScriptAnalyzer analyzer(this);
 
-	if (err == OK) {
-		err = analyzer.analyze();
+	if (parse_result == OK) {
+		parse_result = analyzer.analyze();
 	}
 	update_diagnostics();
 	update_symbols();
 	update_document_links(p_code);
-	return err;
 }
