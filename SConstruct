@@ -365,6 +365,9 @@ opts.Update(env)
 # Setup caching logic early to catch everything.
 methods.prepare_cache(env)
 
+# Write CACHEDIR.TAG file to bin directory
+methods.prepare_bin_dir(env)
+
 # Copy custom environment variables if set.
 if env["import_env_vars"]:
     for env_var in str(env["import_env_vars"]).split(","):
