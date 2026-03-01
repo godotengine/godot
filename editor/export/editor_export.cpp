@@ -111,8 +111,13 @@ void EditorExport::_save() {
 			PropertyInfo *prop = preset->properties.getptr(E.key);
 			if (prop && prop->usage & PROPERTY_USAGE_SECRET) {
 				credentials->set_value(option_section, E.key, E.value);
-			} else {
+			} 
+			else if(prop){
 				config->set_value(option_section, E.key, E.value);
+			}
+			else{
+				//Set every property that doesnt exist anymore to be secret so the value can be save for future use but not exposed in export_presets.cfg 
+				credentials->set_value(option_section, E.key, E.value);
 			}
 		}
 	}
@@ -430,11 +435,8 @@ void EditorExport::load_config() {
 			options = credentials->get_section_keys(option_section);
 
 			for (const String &E : options) {
-				// Drop values for secret properties that no longer exist, or during the next save they would end up in the regular config file.
-				if (preset->get_properties().has(E)) {
-					Variant value = credentials->get_value(option_section, E);
-					preset->set(E, value);
-				}
+				Variant value = credentials->get_value(option_section, E);
+				preset->set(E, value);
 			}
 		}
 
