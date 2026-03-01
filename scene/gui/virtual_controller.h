@@ -59,6 +59,8 @@ private:
 	Button *back_button = nullptr;
 	Button *guide_button = nullptr;
 
+	void _setup_controls();
+
 	void _create_button_event(JoyButton p_button, bool p_pressed);
 	void _create_motion_event(JoyAxis p_axis, float p_value);
 
