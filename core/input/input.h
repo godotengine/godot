@@ -39,7 +39,6 @@
 #include "core/variant/typed_array.h"
 
 class GamepadMotion;
-class VirtualController;
 
 namespace InputClassEnums {
 // Keep synced with DisplayServerEnums::MouseMode enum.
@@ -131,7 +130,6 @@ private:
 	bool application_focused = true;
 	bool embedder_focused = false;
 	bool virtual_controller_enabled = false;
-	VirtualController *virtual_controller = nullptr;
 
 	struct ActionState {
 		uint64_t pressed_physics_frame = UINT64_MAX;

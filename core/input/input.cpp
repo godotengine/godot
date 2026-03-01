@@ -43,10 +43,6 @@
 #include "core/os/thread.h"
 #endif
 
-#include "scene/gui/virtual_controller.h"
-#include "scene/main/scene_tree.h"
-#include "scene/main/window.h"
-
 #include "thirdparty/gamepadmotionhelpers/GamepadMotion.hpp"
 
 #define STANDARD_GRAVITY 9.80665f
@@ -1346,21 +1342,6 @@ bool Input::is_ignoring_joypad_on_unfocused_application() const {
 
 void Input::set_virtual_controller_enabled(bool p_enabled) {
 	virtual_controller_enabled = p_enabled;
-
-	if (Engine::get_singleton()->is_editor_hint()) {
-		return;
-	}
-
-	if (!virtual_controller_enabled && virtual_controller != nullptr) {
-		virtual_controller->queue_free();
-		virtual_controller = nullptr;
-	}
-
-	if (virtual_controller_enabled && virtual_controller == nullptr) {
-		virtual_controller = memnew(VirtualController);
-		SceneTree::get_singleton()->get_root()->add_child(virtual_controller, false, Node::INTERNAL_MODE_FRONT);
-		virtual_controller->set_name("_VirtualController");
-	}
 }
 
 bool Input::is_virtual_controller_enabled() const {
