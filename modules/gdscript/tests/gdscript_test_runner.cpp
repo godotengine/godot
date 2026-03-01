@@ -137,6 +137,8 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_print_
 	print_filenames = p_print_filenames;
 	binary_tokens = p_use_binary_tokens;
 
+	ResourceUID::get_singleton()->add_id(ResourceUID::get_singleton()->text_to_id("uid://ctry33e7r06jr"), "res://analyzer/features/extend_using_uid_base.notest.gd");
+
 	source_dir = p_source_dir;
 	if (!source_dir.ends_with("/")) {
 		source_dir += "/";
