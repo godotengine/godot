@@ -1,0 +1,16 @@
+# We lack a convenient means of gathering *all* the changes when specializations are passed, so
+#  a catch-all variable is the easiest workaround.
+everything:
+  - "**"
+
+# Determines if build actions should occur after static checks are ran. Broadly speaking, these
+#  files changing would result in SCons rebuilding the engine, or are otherwise pertinent to the
+#  buildsystem itself.
+sources:
+  - .github/{actions,workflows}/*.yml
+  - "**/{SConstruct,SCsub,*.py}"
+  - "**/*.{h,hpp,hh,hxx,c,cpp,cc,cxx,m,mm,inc,glsl}"
+  - modules/mono/**/*.{cs,csproj,sln,props,targets}
+  - platform/android/java/{gradle*,**/*.{jar,java,kt,gradle}}
+  - platform/web/{package{,-lock}.json,js/**/*.js}
+  - tests/**
