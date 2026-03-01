@@ -277,6 +277,7 @@ VirtualController::VirtualController() {
 	}
 
 	set_process(true);
+	set_focus_mode(FOCUS_NONE);
 	set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
 	int margin = 20;
@@ -305,6 +306,7 @@ VirtualController::VirtualController() {
 
 	left_joystick_button = memnew(Button);
 	left_joystick_button->set_text("L3");
+	left_joystick_button->set_focus_mode(FOCUS_NONE);
 	left_joystick_button->set_h_grow_direction(Control::GROW_DIRECTION_END);
 	left_joystick_button->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	left_joystick_button->set_custom_minimum_size(button_size);
@@ -315,6 +317,7 @@ VirtualController::VirtualController() {
 
 	right_joystick_button = memnew(Button);
 	right_joystick_button->set_text("R3");
+	right_joystick_button->set_focus_mode(FOCUS_NONE);
 	right_joystick_button->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	right_joystick_button->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	right_joystick_button->set_custom_minimum_size(button_size);
@@ -325,6 +328,7 @@ VirtualController::VirtualController() {
 
 	dpad_down = memnew(Button);
 	dpad_down->set_text("D");
+	dpad_down->set_focus_mode(FOCUS_NONE);
 	dpad_down->set_h_grow_direction(Control::GROW_DIRECTION_END);
 	dpad_down->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	dpad_down->set_custom_minimum_size(button_size);
@@ -335,6 +339,7 @@ VirtualController::VirtualController() {
 
 	dpad_up = memnew(Button);
 	dpad_up->set_text("U");
+	dpad_up->set_focus_mode(FOCUS_NONE);
 	dpad_up->set_h_grow_direction(Control::GROW_DIRECTION_END);
 	dpad_up->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	dpad_up->set_custom_minimum_size(button_size);
@@ -345,6 +350,7 @@ VirtualController::VirtualController() {
 
 	dpad_left = memnew(Button);
 	dpad_left->set_text("L");
+	dpad_left->set_focus_mode(FOCUS_NONE);
 	dpad_left->set_h_grow_direction(Control::GROW_DIRECTION_END);
 	dpad_left->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	dpad_left->set_custom_minimum_size(button_size);
@@ -355,6 +361,7 @@ VirtualController::VirtualController() {
 
 	dpad_right = memnew(Button);
 	dpad_right->set_text("R");
+	dpad_right->set_focus_mode(FOCUS_NONE);
 	dpad_right->set_h_grow_direction(Control::GROW_DIRECTION_END);
 	dpad_right->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	dpad_right->set_custom_minimum_size(button_size);
@@ -365,6 +372,7 @@ VirtualController::VirtualController() {
 
 	button_a = memnew(Button);
 	button_a->set_text("A");
+	button_a->set_focus_mode(FOCUS_NONE);
 	button_a->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	button_a->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	button_a->set_custom_minimum_size(button_size);
@@ -375,6 +383,7 @@ VirtualController::VirtualController() {
 
 	button_y = memnew(Button);
 	button_y->set_text("Y");
+	button_y->set_focus_mode(FOCUS_NONE);
 	button_y->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	button_y->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	button_y->set_custom_minimum_size(button_size);
@@ -385,6 +394,7 @@ VirtualController::VirtualController() {
 
 	button_b = memnew(Button);
 	button_b->set_text("B");
+	button_b->set_focus_mode(FOCUS_NONE);
 	button_b->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	button_b->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	button_b->set_custom_minimum_size(button_size);
@@ -395,6 +405,7 @@ VirtualController::VirtualController() {
 
 	button_x = memnew(Button);
 	button_x->set_text("X");
+	button_x->set_focus_mode(FOCUS_NONE);
 	button_x->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	button_x->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	button_x->set_custom_minimum_size(button_size);
@@ -405,6 +416,7 @@ VirtualController::VirtualController() {
 
 	left_trigger = memnew(Button);
 	left_trigger->set_text("LT");
+	left_trigger->set_focus_mode(FOCUS_NONE);
 	left_trigger->set_h_grow_direction(Control::GROW_DIRECTION_END);
 	left_trigger->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	left_trigger->set_custom_minimum_size(button_size);
@@ -415,6 +427,7 @@ VirtualController::VirtualController() {
 
 	left_shoulder = memnew(Button);
 	left_shoulder->set_text("LB");
+	left_shoulder->set_focus_mode(FOCUS_NONE);
 	left_shoulder->set_h_grow_direction(Control::GROW_DIRECTION_END);
 	left_shoulder->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	left_shoulder->set_custom_minimum_size(button_size);
@@ -425,6 +438,7 @@ VirtualController::VirtualController() {
 
 	right_trigger = memnew(Button);
 	right_trigger->set_text("RT");
+	right_trigger->set_focus_mode(FOCUS_NONE);
 	right_trigger->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	right_trigger->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	right_trigger->set_custom_minimum_size(button_size);
@@ -435,6 +449,7 @@ VirtualController::VirtualController() {
 
 	right_shoulder = memnew(Button);
 	right_shoulder->set_text("RB");
+	right_shoulder->set_focus_mode(FOCUS_NONE);
 	right_shoulder->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	right_shoulder->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	right_shoulder->set_custom_minimum_size(button_size);
@@ -445,6 +460,7 @@ VirtualController::VirtualController() {
 
 	guide_button = memnew(Button);
 	guide_button->set_text("G");
+	guide_button->set_focus_mode(FOCUS_NONE);
 	guide_button->set_h_grow_direction(Control::GROW_DIRECTION_BOTH);
 	guide_button->set_v_grow_direction(Control::GROW_DIRECTION_END);
 	guide_button->set_custom_minimum_size(button_size);
@@ -454,6 +470,7 @@ VirtualController::VirtualController() {
 
 	back_button = memnew(Button);
 	back_button->set_text("<-");
+	back_button->set_focus_mode(FOCUS_NONE);
 	back_button->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
 	back_button->set_v_grow_direction(Control::GROW_DIRECTION_END);
 	back_button->set_custom_minimum_size(button_size);
@@ -464,6 +481,7 @@ VirtualController::VirtualController() {
 
 	start_button = memnew(Button);
 	start_button->set_text("->");
+	start_button->set_focus_mode(FOCUS_NONE);
 	start_button->set_h_grow_direction(Control::GROW_DIRECTION_END);
 	start_button->set_v_grow_direction(Control::GROW_DIRECTION_END);
 	start_button->set_custom_minimum_size(button_size);
