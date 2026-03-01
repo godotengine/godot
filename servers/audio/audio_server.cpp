@@ -611,21 +611,23 @@ void AudioServer::_mix_step() {
 
 			AudioFrame peak = AudioFrame(0, 0);
 
-			float volume = Math::db_to_linear(bus->volume_db);
+			float current_vol = Math::db_to_linear(bus->prev_volume_db);
+			float target_vol = Math::db_to_linear(bus->volume_db);
 
 			if (solo_mode) {
 				if (!bus->soloed) {
-					volume = 0.0;
+					target_vol = 0.0;
 				}
 			} else {
 				if (bus->mute) {
-					volume = 0.0;
+					target_vol = 0.0;
 				}
 			}
 
-			// Apply volume and compute peak.
+			float vol_inc = (target_vol - current_vol) / float(buffer_size);
+
 			for (uint32_t j = 0; j < buffer_size; j++) {
-				buf[j] *= volume;
+				buf[j] *= current_vol;
 
 				float l = Math::abs(buf[j].left);
 				if (l > peak.left) {
@@ -635,6 +637,8 @@ void AudioServer::_mix_step() {
 				if (r > peak.right) {
 					peak.right = r;
 				}
+
+				current_vol += vol_inc;
 			}
 
 			bus->channels.write[k].peak_volume = AudioFrame(Math::linear_to_db(peak.left + AUDIO_PEAK_OFFSET), Math::linear_to_db(peak.right + AUDIO_PEAK_OFFSET));
@@ -659,6 +663,8 @@ void AudioServer::_mix_step() {
 				}
 			}
 		}
+
+		bus->prev_volume_db = bus->volume_db;
 	}
 
 	mix_frames += buffer_size;
@@ -829,6 +835,7 @@ void AudioServer::set_bus_count(int p_count) {
 		buses[i]->mute = false;
 		buses[i]->bypass = false;
 		buses[i]->volume_db = 0;
+		buses[i]->prev_volume_db = 0;
 		if (i > 0) {
 			buses[i]->send = SceneStringName(Master);
 		}
@@ -902,6 +909,7 @@ void AudioServer::add_bus(int p_at_pos) {
 	bus->mute = false;
 	bus->bypass = false;
 	bus->volume_db = 0;
+	bus->prev_volume_db = 0;
 
 	bus_map[attempt] = bus;
 
@@ -1767,6 +1775,7 @@ void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 		bus->mute = p_bus_layout->buses[i].mute;
 		bus->bypass = p_bus_layout->buses[i].bypass;
 		bus->volume_db = p_bus_layout->buses[i].volume_db;
+		bus->prev_volume_db = bus->volume_db;
 
 		AudioDriver::get_singleton()->set_sample_bus_solo(i, bus->solo);
 		AudioDriver::get_singleton()->set_sample_bus_mute(i, bus->mute);

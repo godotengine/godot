@@ -266,6 +266,7 @@ private:
 
 		Vector<Effect> effects;
 		float volume_db = 0.0f;
+		float prev_volume_db = 0.0f;
 		StringName send;
 		int index_cache = 0;
 	};
