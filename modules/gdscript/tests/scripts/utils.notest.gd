@@ -3,6 +3,10 @@
 class_name Utils
 
 
+static func _static_init():
+	ResourceUID.add_id(ResourceUID.text_to_id("uid://ctry33e7r06jr"), "res://analyzer/features/extend_using_uid_base.notest.gd")
+
+
 # `assert()` is not evaluated in non-debug builds. Do not use `assert()`
 # for anything other than testing the `assert()` itself.
 static func check(condition: Variant) -> void:
