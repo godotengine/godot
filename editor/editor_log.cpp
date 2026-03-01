@@ -204,6 +204,11 @@ void EditorLog::_load_state() {
 }
 
 void EditorLog::_meta_clicked(const String &p_meta) {
+	if (p_meta.begins_with("file://") || p_meta.begins_with("http://") || p_meta.begins_with("https://")) {
+		OS::get_singleton()->shell_open(p_meta);
+		return;
+	}
+
 	if (!p_meta.contains_char(':')) {
 		return;
 	}

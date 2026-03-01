@@ -2074,7 +2074,23 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 
 	String platform_name = get_platform_name();
 
-	String archive_path = p_path.get_basename() + ".xcarchive";
+	// Determine Xcode Archive path based on standard Xcode user locations
+	// Typically: ~/Library/Developer/Xcode/Archives/YYYY-MM-DD/YourApp_YYYYMMDDHHMMSS.xcarchive
+	OS::DateTime dt = OS::get_singleton()->get_datetime();
+	String archive_date = vformat("%04d-%02d-%02d", dt.year, (uint8_t)dt.month, dt.day);
+	// Format: YYYYMMDDHHMMSS
+	String archive_timestamp = vformat("%04d%02d%02d%02d%02d%02d", dt.year, (uint8_t)dt.month, dt.day, dt.hour, dt.minute, dt.second);
+	String archive_dir = OS::get_singleton()->get_environment("HOME").path_join("Library/Developer/Xcode/Archives").path_join(archive_date);
+	String archive_name = vformat("%s_%s.xcarchive", binary_name, archive_timestamp);
+	String archive_path = archive_dir.path_join(archive_name);
+
+	// Ensure the directory exists
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	if (!da->dir_exists(archive_dir)) {
+		da->make_dir_recursive(archive_dir);
+	}
+
+	// Update archive command arguments
 	List<String> archive_args;
 	archive_args.push_back("-project");
 	archive_args.push_back(binary_dir + ".xcodeproj");
@@ -2109,6 +2125,8 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Xcode Build"), TTR("Xcode project build failed, see editor log for details."));
 		return FAILED;
 	}
+
+	print_line_rich(vformat("[b]Xcode Build:[/b] Archive saved to [url=file://%s]%s[/url]", archive_path, archive_path));
 
 	if (!p_oneclick) {
 		if (ep.step("Making .ipa", 4)) {
