@@ -37,7 +37,6 @@
 #include "scene/debugger/view_3d_controller.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/rich_text_label.h"
 #include "scene/gui/spin_box.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/immediate_mesh.h"
@@ -58,6 +57,7 @@ class Node3DEditorViewport;
 class OptionButton;
 class PanelContainer;
 class ProceduralSkyMaterial;
+class RichTextLabel;
 class SubViewport;
 class SubViewportContainer;
 class VSeparator;
@@ -238,9 +238,7 @@ private:
 	Label *locked_label = nullptr;
 	Label *zoom_limit_label = nullptr;
 
-	PanelContainer *tooltip_panel = nullptr;
-	Label *tooltip_label = nullptr;
-	RichTextLabel *tooltip_label_desc = nullptr;
+	RichTextLabel *tooltip_panel = nullptr;
 
 	VBoxContainer *top_right_vbox = nullptr;
 	VBoxContainer *bottom_center_vbox = nullptr;
@@ -289,6 +287,8 @@ private:
 	float get_znear() const;
 	float get_zfar() const;
 	float get_fov() const;
+
+	void _show_tooltip(const String &p_title, const String &p_description) const;
 
 	ObjectID clicked;
 	ObjectID material_target;
