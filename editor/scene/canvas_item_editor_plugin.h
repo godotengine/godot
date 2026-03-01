@@ -45,6 +45,7 @@ class HScrollBar;
 class HSplitContainer;
 class MenuButton;
 class PanelContainer;
+class RichTextLabel;
 class StyleBoxTexture;
 class ViewPanner;
 class VScrollBar;
@@ -652,8 +653,7 @@ class CanvasItemEditorViewport : public Control {
 	Control *preview_node = nullptr;
 	AcceptDialog *accept = nullptr;
 	AcceptDialog *texture_node_type_selector = nullptr;
-	Label *dropping_tooltip_label = nullptr;
-	Label *dropping_tooltip_label_desc = nullptr;
+	RichTextLabel *tooltip_panel = nullptr;
 	Ref<ButtonGroup> button_group;
 
 	void _on_mouse_exit();
@@ -672,6 +672,8 @@ class CanvasItemEditorViewport : public Control {
 	void _perform_drop_data();
 	void _show_texture_node_type_selector();
 	void _update_theme();
+
+	void _show_tooltip(const String &p_title, const String &p_description) const;
 
 protected:
 	void _notification(int p_what);

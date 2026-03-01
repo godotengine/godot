@@ -98,6 +98,7 @@
 #include "scene/gui/center_container.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
@@ -3582,7 +3583,6 @@ void Node3DEditorViewport::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			tooltip_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 			surface->connect(SceneStringName(draw), callable_mp(this, &Node3DEditorViewport::_draw));
 			surface->connect(SceneStringName(gui_input), callable_mp(this, &Node3DEditorViewport::_sinput));
 			surface->connect(SceneStringName(mouse_entered), callable_mp(this, &Node3DEditorViewport::_surface_mouse_enter));
@@ -3620,9 +3620,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			info_panel->add_theme_style_override(SceneStringName(panel), information_3d_stylebox);
 			override_label_colors(info_label);
-			tooltip_panel->add_theme_style_override(SceneStringName(panel), information_3d_stylebox);
-			tooltip_label->add_theme_font_size_override(SceneStringName(font_size), get_theme_default_font_size()+2);
-			tooltip_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
+			tooltip_panel->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
+
 			frame_time_panel->add_theme_style_override(SceneStringName(panel), information_3d_stylebox);
 			// Set a minimum width to prevent the width from changing all the time
 			// when numbers vary rapidly. This minimum width is set based on a
@@ -5093,9 +5092,8 @@ void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) con
 	}
 	if (add_preview) {
 		EditorNode::get_singleton()->get_scene_root()->add_child(preview_node);
+		*preview_bounds = _calculate_spatial_bounds(preview_node);
 	}
-
-	*preview_bounds = _calculate_spatial_bounds(preview_node);
 }
 
 void Node3DEditorViewport::_remove_preview_node() {
@@ -5402,6 +5400,15 @@ void Node3DEditorViewport::_perform_drop_data() {
 	}
 }
 
+void Node3DEditorViewport::_show_tooltip(const String &p_title, const String &p_description) const {
+	tooltip_panel->set_text(
+			vformat("[font_size=%s][b][color=%s]%s[/color][/b][/font_size]\n%s",
+					get_theme_default_font_size() + 2,
+					get_theme_color(SNAME("accent_color"), EditorStringName(Editor)).to_html(false),
+					p_title, p_description));
+	tooltip_panel->show();
+}
+
 bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	if (p_point == Vector2(Math::INF, Math::INF)) {
 		tooltip_panel->hide();
@@ -5432,7 +5439,6 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 	// If we don't already have a preview material or preview node,
 	// it means that this is the first time we are visiting this function.
 	// In that case, we need to check that the file(s) are droppable.
-	bool can_instantiate = false;
 	bool is_cyclical_dep = false;
 	String error_file;
 
@@ -5475,7 +5481,6 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 				Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
 				if (edited_scene && !edited_scene->get_scene_file_path().is_empty() && _cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
 					memdelete(instantiated_scene);
-					can_instantiate = false;
 					is_cyclical_dep = true;
 					error_file = files[i].get_file();
 					break;
@@ -5513,30 +5518,38 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 			} else {
 				continue;
 			}
-			can_instantiate = true;
 		}
 	}
 
+	String title = TTRN("Can't drop the file...", "Can't drop the files...", files.size());
 	if (is_cyclical_dep) {
-		set_message(vformat(TTR("Can't instantiate: %s."), vformat(TTR("Circular dependency found at %s"), error_file)));
+		_show_tooltip(title, vformat(TTR("Circular dependency found at %s."), error_file));
 		return false;
 	}
 
-	if (can_instantiate) {
-		// Only droppable file(s), on first frame, will make it to this point.
-		// Hence it is a good place to create the previews and tooltips.
-		_create_preview_node(files);
-		preview_node->hide();
+	if (instantiate_type == 0) {
+		_show_tooltip(title, TTR("File format is not supported."));
+		return false;
 	}
 
-	String title = "Dropping Unrecognized File(s)";
-	String desc = "File format is not supported...";
+	// Only droppable file(s), on first frame, will make it to this point.
+	// Hence it is a good place to create the previews and tooltips.
+	_create_preview_node(files);
+	preview_node->hide();
 
-	if (instantiate_type != 0) {
-		desc = TTR("[ul][b]Default:[/b] Added as sibling of selected node (except when root is selected).") +
-				"\n" + TTR("[b]Hold Shift:[/b] Added as child of selected node.") +
-				"\n" + TTR("[b]Hold Alt:[/b] Added as child of root node.[/ul]");
-	}
+	String desc = "[ul]" +
+			TTRN("[b]Default:[/b] Add as sibling of selected node (except when root is selected).",
+					"[b]Default:[/b] Add as siblings of selected node (except when root is selected).",
+					files.size()) +
+			"\n" +
+			TTRN("[b]Hold Shift:[/b] Add as child of selected node.",
+					"[b]Hold Shift:[/b] Add as children of selected node.",
+					files.size()) +
+			"\n" +
+			TTRN("[b]Hold Alt:[/b] Add as child of root node.",
+					"[b]Hold Alt:[/b] Add as children of root node.",
+					files.size());
+
 	if (files.size() > 1) {
 		title = TTR("Dropping multiple files...");
 	} else if (instantiate_type & SCENE) {
@@ -5547,21 +5560,16 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 		title = TTR("Dropping an Audio file...");
 	} else if (instantiate_type & MATERIAL || instantiate_type & TEXTURE) {
 		title = TTR("Dropping a Material...");
-		Key ctrl_key = (OS::get_singleton()->has_feature("macos") ||
-							   OS::get_singleton()->has_feature("web_macos") ||
-							   OS::get_singleton()->has_feature("web_ios"))
-				? Key::META
-				: Key::CTRL;
-		desc = vformat(TTR("[ul][b]Default:[/b] Placed in Geometry's Material Override slot.") +
-						"\n" + TTR("[b]Hold %s:[/b] Placed in Mesh's Surface Material Override slot.[/ul]"),
-				find_keycode_name(ctrl_key));
+		desc = "[ul]";
+		desc += vformat(TTR("[b]Default:[/b] Place in Geometry's Material Override slot.") +
+						"\n" + TTR("[b]Hold %s:[/b] Place in Mesh's Surface Material Override slot."),
+				keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL));
 	}
+	desc += "[/ul]";
 
-	tooltip_label->set_text(title);
-	tooltip_label_desc->set_text(desc);
-	tooltip_panel->show();
+	_show_tooltip(title, desc);
 
-	return false;
+	return true;
 }
 
 void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
@@ -6359,39 +6367,22 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	zoom_limit_label->hide();
 	bottom_center_vbox->add_child(zoom_limit_label);
 
-	tooltip_panel = memnew(PanelContainer);
+	tooltip_panel = memnew(RichTextLabel);
+	vbox->add_child(tooltip_panel);
+	tooltip_panel->hide();
 	tooltip_panel->set_h_grow_direction(GROW_DIRECTION_BEGIN);
 	tooltip_panel->set_v_grow_direction(GROW_DIRECTION_BEGIN);
 	tooltip_panel->set_mouse_filter(MOUSE_FILTER_IGNORE);
-	vbox->add_child(tooltip_panel);
-	tooltip_panel->hide();
+	tooltip_panel->set_focus_mode(FOCUS_ACCESSIBILITY);
+	tooltip_panel->set_use_bbcode(true);
+	tooltip_panel->set_fit_content(true);
+	tooltip_panel->set_scroll_active(false);
+	tooltip_panel->set_tab_size(1);
+	tooltip_panel->set_autowrap_mode(TextServer::AUTOWRAP_OFF);
+	tooltip_panel->set_anchors_and_offsets_preset(LayoutPreset::PRESET_TOP_LEFT);
+	tooltip_panel->add_theme_color_override(SceneStringName(font_color), Color(0.8f, 0.8f, 0.8f, 1));
+	tooltip_panel->add_theme_constant_override("paragraph_separation", 5);
 
-	VBoxContainer *tooltip_vbox = memnew(VBoxContainer);
-	tooltip_panel->add_child(tooltip_vbox);
-	tooltip_label = memnew(Label);
-	// tooltip_label->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1));
-	// tooltip_label->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
-	tooltip_label->set_anchors_and_offsets_preset(LayoutPreset::PRESET_TOP_LEFT);
-	tooltip_label->set_text(TTRC("Overriding material..."));
-	tooltip_label->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1, 1));
-	tooltip_vbox->add_child(tooltip_label);
-
-	tooltip_label_desc = memnew(RichTextLabel);
-	tooltip_label_desc->set_focus_mode(FOCUS_ACCESSIBILITY);
-	tooltip_label_desc->set_use_bbcode(true);
-	tooltip_label_desc->set_fit_content(true);
-	tooltip_label_desc->set_scroll_active(false);
-	tooltip_label_desc->set_autowrap_mode(TextServer::AUTOWRAP_OFF);
-	tooltip_label_desc->set_anchors_and_offsets_preset(LayoutPreset::PRESET_TOP_LEFT);
-	tooltip_label_desc->add_theme_color_override(SceneStringName(font_color), Color(0.8f, 0.8f, 0.8f, 1));
-	StyleBoxEmpty *empty_stylebox = memnew(StyleBoxEmpty);
-	empty_stylebox->set_content_margin(SIDE_LEFT, 5.0);
-	tooltip_label_desc->add_theme_style_override("normal", empty_stylebox);
-	// tooltip_label_desc->add_theme_color_override("font_shadow_color", Color(0.2f, 0.2f, 0.2f, 1));
-	// tooltip_label_desc->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
-	tooltip_label_desc->add_theme_constant_override("paragraph_separation", 5);
-	tooltip_vbox->add_child(tooltip_label_desc);
-	
 	frame_time_gradient = memnew(Gradient);
 	// The color is set when the theme changes.
 	frame_time_gradient->add_point(0.5, Color());
