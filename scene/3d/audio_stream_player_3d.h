@@ -126,7 +126,7 @@ private:
 
 	/// Hash map storing the bus volumes during the panning update.
 	/// This hash map is stored as member for efficiency reasons.
-	HashMap<StringName, Vector<AudioFrame>> bus_volumes{};
+	HashMap<StringName, Vector<AudioFrame>> bus_volumes;
 
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
