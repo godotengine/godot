@@ -167,7 +167,7 @@ void AudioStreamPlaybackMP3::set_sample_playback(const Ref<AudioSamplePlayback> 
 }
 
 void AudioStreamPlaybackMP3::set_parameter(const StringName &p_name, const Variant &p_value) {
-	if (p_name == SNAME("looping")) {
+	if (p_name == SNAME("loop_override")) {
 		if (p_value == Variant()) {
 			looping_override = false;
 			looping = false;
@@ -179,7 +179,7 @@ void AudioStreamPlaybackMP3::set_parameter(const StringName &p_name, const Varia
 }
 
 Variant AudioStreamPlaybackMP3::get_parameter(const StringName &p_name) const {
-	if (looping_override && p_name == SNAME("looping")) {
+	if (looping_override && p_name == SNAME("loop_override")) {
 		return looping;
 	}
 	return Variant();
@@ -269,7 +269,7 @@ bool AudioStreamMP3::is_monophonic() const {
 }
 
 void AudioStreamMP3::get_parameter_list(List<Parameter> *r_parameters) {
-	r_parameters->push_back(Parameter(PropertyInfo(Variant::BOOL, "looping", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CHECKABLE), Variant()));
+	r_parameters->push_back(Parameter(PropertyInfo(Variant::BOOL, "loop_override", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CHECKABLE), Variant()));
 }
 
 void AudioStreamMP3::set_bpm(double p_bpm) {

@@ -259,7 +259,7 @@ void AudioStreamPlaybackOggVorbis::tag_used_streams() {
 }
 
 void AudioStreamPlaybackOggVorbis::set_parameter(const StringName &p_name, const Variant &p_value) {
-	if (p_name == SNAME("looping")) {
+	if (p_name == SNAME("loop_override")) {
 		if (p_value == Variant()) {
 			looping_override = false;
 			looping = false;
@@ -271,7 +271,7 @@ void AudioStreamPlaybackOggVorbis::set_parameter(const StringName &p_name, const
 }
 
 Variant AudioStreamPlaybackOggVorbis::get_parameter(const StringName &p_name) const {
-	if (looping_override && p_name == SNAME("looping")) {
+	if (looping_override && p_name == SNAME("loop_override")) {
 		return looping;
 	}
 	return Variant();
@@ -563,7 +563,7 @@ bool AudioStreamOggVorbis::is_monophonic() const {
 }
 
 void AudioStreamOggVorbis::get_parameter_list(List<Parameter> *r_parameters) {
-	r_parameters->push_back(Parameter(PropertyInfo(Variant::BOOL, "looping", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CHECKABLE), Variant()));
+	r_parameters->push_back(Parameter(PropertyInfo(Variant::BOOL, "loop_override", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CHECKABLE), Variant()));
 }
 
 Ref<AudioSample> AudioStreamOggVorbis::generate_sample() const {
