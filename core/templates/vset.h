@@ -33,6 +33,16 @@
 #include "core/templates/vector.h"
 #include "core/typedefs.h"
 
+/**
+ * @brief An unordered collection of items, roughly equivalent to `std::flat_set`.
+ *
+ * Unlike `RBSet`, `VSet` uses copy-on-write (COW) semantics. As a result, it is
+ * generally slower but can be copied around almost for free.
+ *
+ * The performance benefits of `VSet` aren't well-established, so prefer using other
+ * types such as `RBSet`.
+ * @tparam T The data type to store.
+ */
 template <typename T>
 class VSet {
 	Vector<T> _data;

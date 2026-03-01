@@ -39,6 +39,20 @@
 // based on the very nice implementation of rb-trees by:
 // https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
 
+/**
+ * @brief An implementation of a map that uses a red-black tree to find keys,
+ * roughly equivalent to `std::map`.
+ *
+ * It uses a very nice implementation of red-black trees based on
+ * https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html.
+ *
+ * The performance benefits of `RBMap` aren't well-established, so prefer using other
+ * types such as `AHashMap`.
+ * @tparam K The data type of keys.
+ * @tparam V The data type of values.
+ * @tparam C (optional) The comparator to use for locating and placing items in the tree.
+ * @tparam A (Optional) The allocator to use.
+ */
 template <typename K, typename V, typename C = Comparator<K>, typename A = DefaultAllocator>
 class RBMap {
 	enum Color {
