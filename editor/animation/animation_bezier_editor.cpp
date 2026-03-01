@@ -918,6 +918,9 @@ Ref<Animation> AnimationBezierTrackEdit::get_animation() const {
 }
 
 void AnimationBezierTrackEdit::set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only) {
+	if (p_animation != animation) {
+		selection.clear();
+	}
 	animation = p_animation;
 	read_only = p_read_only;
 	selected_track = p_track;
