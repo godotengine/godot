@@ -149,6 +149,9 @@ protected:
 		String modules_fileref;
 		String modules_buildphase;
 		String modules_buildgrp;
+		String spm_packages;
+		String spm_package_refs;
+		String spm_package_products;
 		Vector<String> capabilities;
 	};
 

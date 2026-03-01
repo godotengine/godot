@@ -44,6 +44,7 @@ The `dependencies` and fields are optional.
 - **system**: system dependencies that should be linked.
 - **capabilities**: capabilities that would be used for `UIRequiredDeviceCapabilities` options in Info.plist file.
 - **files**: files that would be copied into application
+- **spm_packages**: array of Swift Package Manager dependencies (url, version, products).
 
 The `plist` section are optional.
 - **key**: key and value that would be added in Info.plist file.
@@ -65,6 +66,7 @@ struct PluginConfigAppleEmbedded {
 	inline static const char *DEPENDENCIES_CAPABILITIES_KEY = "capabilities";
 	inline static const char *DEPENDENCIES_FILES_KEY = "files";
 	inline static const char *DEPENDENCIES_LINKER_FLAGS = "linker_flags";
+	inline static const char *DEPENDENCIES_SPM_PACKAGES_KEY = "spm_packages";
 
 	inline static const char *PLIST_SECTION = "plist";
 
@@ -80,6 +82,12 @@ struct PluginConfigAppleEmbedded {
 	struct PlistItem {
 		PlistItemType type;
 		String value;
+	};
+
+	struct SPMPackage {
+		String url;
+		String version;
+		Vector<String> products;
 	};
 
 	// Set to true when the config file is properly loaded.
@@ -103,6 +111,9 @@ struct PluginConfigAppleEmbedded {
 	Vector<String> capabilities;
 
 	Vector<String> linker_flags;
+
+	// Optional spm_dependencies section
+	Vector<SPMPackage> spm_packages;
 
 	// Optional plist section
 	// String value is default value.

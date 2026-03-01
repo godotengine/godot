@@ -405,6 +405,12 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		strnew += p_line.replace("$modules_buildphase", p_config.modules_buildphase) + "\n";
 	} else if (p_line.contains("$modules_buildgrp")) {
 		strnew += p_line.replace("$modules_buildgrp", p_config.modules_buildgrp) + "\n";
+	} else if (p_line.contains("$spm_packages")) {
+		strnew += p_line.replace("$spm_packages", p_config.spm_packages) + "\n";
+	} else if (p_line.contains("$spm_package_refs")) {
+		strnew += p_line.replace("$spm_package_refs", p_config.spm_package_refs) + "\n";
+	} else if (p_line.contains("$spm_package_products")) {
+		strnew += p_line.replace("$spm_package_products", p_config.spm_package_products) + "\n";
 	} else if (p_line.contains("$name")) {
 		strnew += p_line.replace("$name", p_config.pkg_name.xml_escape(true)) + "\n";
 	} else if (p_line.contains("$bundle_identifier")) {
@@ -1617,6 +1623,67 @@ Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Re
 		p_config_data.linker_flags += result_linker_flags;
 	}
 
+	// SPM Packages
+	{
+		PbxId pbx_id;
+		pbx_id.high_bits = 0xDEB00000;
+		pbx_id.mid_bits = 0;
+		pbx_id.low_bits = 0;
+
+		HashMap<String, PluginConfigAppleEmbedded::SPMPackage> unique_packages;
+		for (int i = 0; i < enabled_plugins.size(); i++) {
+			for (const PluginConfigAppleEmbedded::SPMPackage &package : enabled_plugins[i].spm_packages) {
+				if (!unique_packages.has(package.url)) {
+					unique_packages[package.url] = package;
+				} else {
+					for (const String &product : package.products) {
+						if (unique_packages[package.url].products.find(product) == -1) {
+							unique_packages[package.url].products.push_back(product);
+						}
+					}
+				}
+			}
+		}
+
+		Vector<String> sorted_package_urls;
+		for (const KeyValue<String, PluginConfigAppleEmbedded::SPMPackage> &E : unique_packages) {
+			sorted_package_urls.push_back(E.key);
+		}
+		sorted_package_urls.sort();
+
+		for (const String &url : sorted_package_urls) {
+			const PluginConfigAppleEmbedded::SPMPackage &package = unique_packages[url];
+			String package_id = (++pbx_id).str();
+			String package_name = package.url.get_file().get_basename();
+
+			p_config_data.spm_packages += vformat("\t\t\t\t%s /* %s */,\n", package_id, package_name);
+
+			p_config_data.spm_package_refs += vformat("\t\t%s /* %s */ = {\n", package_id, package_name);
+			p_config_data.spm_package_refs += "\t\t\tisa = XCRemoteSwiftPackageReference;\n";
+			p_config_data.spm_package_refs += vformat("\t\t\trepositoryURL = \"%s\";\n", package.url);
+			p_config_data.spm_package_refs += "\t\t\trequirement = {\n";
+			p_config_data.spm_package_refs += "\t\t\t\tkind = exactVersion;\n";
+			p_config_data.spm_package_refs += vformat("\t\t\t\tversion = %s;\n", package.version);
+			p_config_data.spm_package_refs += "\t\t\t};\n";
+			p_config_data.spm_package_refs += "\t\t};\n";
+
+			for (const String &product : package.products) {
+				String product_id = (++pbx_id).str();
+				String build_file_id = (++pbx_id).str();
+
+				p_config_data.spm_package_products += vformat("\t\t%s /* %s */ = {\n", product_id, product);
+				p_config_data.spm_package_products += "\t\t\tisa = XCSwiftPackageProductDependency;\n";
+				p_config_data.spm_package_products += vformat("\t\t\tpackage = %s /* %s */;\n", package_id, package_name);
+				p_config_data.spm_package_products += vformat("\t\t\tproductName = \"%s\";\n", product);
+				p_config_data.spm_package_products += "\t\t};\n";
+
+				p_config_data.modules_buildfile += vformat("\t\t%s /* %s in Frameworks */ = {isa = PBXBuildFile; productRef = %s /* %s */; };\n", build_file_id, product, product_id, product);
+
+				p_config_data.modules_buildphase += vformat("\t\t\t\t%s /* %s in Frameworks */,\n", build_file_id, product);
+			}
+		}
+	}
+
 	return OK;
 }
 
@@ -1787,11 +1854,14 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		String(" ").join(_get_preset_architectures(p_preset)),
 		_get_linker_flags(),
 		_get_cpp_code(),
-		"",
-		"",
-		"",
-		"",
-		Vector<String>(),
+		"", // modules_buildfile
+		"", // modules_fileref
+		"", // modules_buildphase
+		"", // modules_buildgrp
+		"", // spm_packages
+		"", // spm_package_refs
+		"", // spm_package_products
+		Vector<String>(), // capabilities
 	};
 
 	config_data.plist_content += p_preset->get("application/additional_plist_content").operator String() + "\n";
