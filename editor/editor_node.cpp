@@ -722,8 +722,6 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 
 	// Update styles.
 	{
-		bool dark_mode = DisplayServer::get_singleton()->is_dark_mode_supported() && DisplayServer::get_singleton()->is_dark_mode();
-
 		gui_base->add_theme_style_override(SceneStringName(panel), theme->get_stylebox(SNAME("Background"), EditorStringName(EditorStyles)));
 		main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, theme->get_constant(SNAME("window_border_margin"), EditorStringName(Editor)));
 		main_vbox->add_theme_constant_override("separation", theme->get_constant(SNAME("top_bar_separation"), EditorStringName(Editor)));
@@ -731,18 +729,6 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 		if (main_menu_button != nullptr) {
 			main_menu_button->set_button_icon(theme->get_icon(SNAME("TripleBar"), EditorStringName(EditorIcons)));
 		}
-
-		editor_main_screen->add_theme_style_override(SceneStringName(panel), theme->get_stylebox(SNAME("Content"), EditorStringName(EditorStyles)));
-		bottom_panel->_theme_changed();
-		distraction_free->set_button_icon(theme->get_icon(SNAME("DistractionFree"), EditorStringName(EditorIcons)));
-		update_distraction_free_button_theme();
-
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_SEARCH), get_editor_theme_native_menu_icon(SNAME("HelpSearch"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), get_editor_theme_native_menu_icon(SNAME("ActionCopy"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_ABOUT), get_editor_theme_native_menu_icon(SNAME("Godot"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), get_editor_theme_native_menu_icon(SNAME("Heart"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
-
-		_update_renderer_color();
 	}
 
 	Ref<Texture2D> thumbnail_icon = gui_base->get_theme_icon(SNAME("file_thumbnail"), SNAME("FileDialog"));
@@ -852,18 +838,6 @@ void EditorNode::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_update_title();
 			callable_mp(this, &EditorNode::_titlebar_resized).call_deferred();
-
-			// The rendering method selector.
-			const String current_renderer_ps = String(GLOBAL_GET("rendering/renderer/rendering_method")).to_lower();
-			const String current_renderer_os = OS::get_singleton()->get_current_rendering_method().to_lower();
-			if (current_renderer_ps == current_renderer_os) {
-				for (int i = 0; i < renderer->get_item_count(); i++) {
-					renderer->set_item_text(i, _to_rendering_method_display_name(renderer->get_item_metadata(i)));
-				}
-			} else {
-				// TRANSLATORS: The placeholder is the rendering method that has overridden the default one.
-				renderer->set_item_text(0, vformat(TTR("%s (Overridden)"), _to_rendering_method_display_name(current_renderer_os)));
-			}
 		} break;
 
 		case NOTIFICATION_POSTINITIALIZE: {
@@ -7648,85 +7622,6 @@ Vector<Ref<EditorResourceConversionPlugin>> EditorNode::find_resource_conversion
 	return ret;
 }
 
-void EditorNode::_update_renderer_color() {
-	String rendering_method = renderer->get_selected_metadata();
-
-	const Color renderer_normal_color = theme->get_color(rendering_method + "_color", EditorStringName(Editor));
-	const Color mono_color = theme->get_color(SNAME("mono_color"), EditorStringName(Editor));
-
-	renderer->add_theme_color_override(SceneStringName(font_color), renderer_normal_color);
-	renderer->add_theme_color_override("font_hover_color", renderer_normal_color.lerp(mono_color, 0.3));
-	renderer->add_theme_color_override("font_pressed_color", renderer_normal_color.lerp(mono_color, 0.4));
-	renderer->add_theme_color_override("font_hover_pressed_color", renderer_normal_color.lerp(mono_color, 0.5));
-}
-
-void EditorNode::_renderer_selected(int p_index) {
-	const String rendering_method = renderer->get_item_metadata(p_index);
-	const String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method");
-	if (rendering_method == current_renderer) {
-		return;
-	}
-
-	// Don't change selection.
-	for (int i = 0; i < renderer->get_item_count(); i++) {
-		if (renderer->get_item_metadata(i) == current_renderer) {
-			renderer->select(i);
-			break;
-		}
-	}
-
-	if (video_restart_dialog == nullptr) {
-		video_restart_dialog = memnew(ConfirmationDialog);
-		video_restart_dialog->set_ok_button_text(TTRC("Save & Restart"));
-		video_restart_dialog->get_label()->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-		gui_base->add_child(video_restart_dialog);
-	} else {
-		video_restart_dialog->disconnect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_set_renderer_name_save_and_restart));
-	}
-
-	const String mobile_rendering_method = rendering_method == "forward_plus" ? "mobile" : rendering_method;
-	const String web_rendering_method = "gl_compatibility";
-	video_restart_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_set_renderer_name_save_and_restart).bind(rendering_method));
-	video_restart_dialog->set_text(
-			vformat(TTR("Changing the renderer requires restarting the editor.\n\nChoosing Save & Restart will change the renderer to:\n- Desktop platforms: %s\n- Mobile platforms: %s\n- Web platform: %s"),
-					_to_rendering_method_display_name(rendering_method), _to_rendering_method_display_name(mobile_rendering_method), _to_rendering_method_display_name(web_rendering_method)));
-	video_restart_dialog->popup_centered();
-
-	_update_renderer_color();
-}
-
-String EditorNode::_to_rendering_method_display_name(const String &p_rendering_method) const {
-	if (p_rendering_method == "forward_plus") {
-		return TTR("Forward+");
-	}
-	if (p_rendering_method == "mobile") {
-		return TTR("Mobile");
-	}
-	if (p_rendering_method == "gl_compatibility") {
-		return TTR("Compatibility");
-	}
-	return p_rendering_method;
-}
-
-void EditorNode::_set_renderer_name_save_and_restart(const String &p_rendering_method) {
-	ProjectSettings::get_singleton()->set("rendering/renderer/rendering_method", p_rendering_method);
-
-	if (p_rendering_method == "mobile" || p_rendering_method == "gl_compatibility") {
-		// Also change the mobile override if changing to a compatible renderer.
-		// This prevents visual discrepancies between desktop and mobile platforms.
-		ProjectSettings::get_singleton()->set("rendering/renderer/rendering_method.mobile", p_rendering_method);
-	} else if (p_rendering_method == "forward_plus") {
-		// Use the equivalent mobile renderer. This prevents the renderer from staying
-		// on its old choice if moving from `gl_compatibility` to `forward_plus`.
-		ProjectSettings::get_singleton()->set("rendering/renderer/rendering_method.mobile", "mobile");
-	}
-
-	ProjectSettings::get_singleton()->save();
-
-	save_all_scenes();
-	restart_editor();
-}
-
 void EditorNode::_resource_saved(Ref<Resource> p_resource, const String &p_path) {
 	if (singleton->saving_resources_in_path.has(p_resource)) {
 		// This is going to be handled by save_resource_in_path when the time is right.
@@ -8982,52 +8877,12 @@ EditorNode::EditorNode() {
 	right_menu_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(right_menu_hb);
 
-	renderer = memnew(OptionButton);
-	renderer->set_visible(true);
-	renderer->set_flat(true);
-	renderer->set_theme_type_variation("TopBarOptionButton");
-	renderer->set_fit_to_longest_item(false);
-	renderer->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	renderer->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	renderer->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
-	renderer->set_tooltip_text(TTRC("Choose a renderer.\n\nNotes:\n- On mobile platforms, the Mobile renderer is used if Forward+ is selected here.\n- On the web platform, the Compatibility renderer is always used."));
-	renderer->set_accessibility_name(TTRC("Renderer"));
-
-	right_menu_hb->add_child(renderer);
-
 	if (can_expand) {
 		// Add spacer to avoid other controls under the window minimize/maximize/close buttons (right side).
 		right_menu_spacer = memnew(Control);
 		right_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 		title_bar->add_child(right_menu_spacer);
 	}
-
-	const String current_renderer_ps = String(GLOBAL_GET("rendering/renderer/rendering_method")).to_lower();
-	const String current_renderer_os = OS::get_singleton()->get_current_rendering_method().to_lower();
-
-	// Add the renderers name to the UI.
-	if (current_renderer_ps == current_renderer_os) {
-		renderer->connect(SceneStringName(item_selected), callable_mp(this, &EditorNode::_renderer_selected));
-		// As we are doing string comparisons, keep in standard case to prevent problems with capitals
-		// "vulkan" in particular uses lowercase "v" in the code, and uppercase in the UI.
-		PackedStringArray renderers = ProjectSettings::get_singleton()->get_custom_property_info().get(StringName("rendering/renderer/rendering_method")).hint_string.split(",", false);
-		for (int i = 0; i < renderers.size(); i++) {
-			const String rendering_method = renderers[i].to_lower();
-			if (rendering_method == "dummy") {
-				continue;
-			}
-			renderer->add_item(String()); // Set in NOTIFICATION_TRANSLATION_CHANGED.
-			renderer->set_item_metadata(-1, rendering_method);
-			if (current_renderer_ps == rendering_method) {
-				renderer->select(i);
-			}
-		}
-	} else {
-		// It's an CLI-overridden rendering method.
-		renderer->add_item(String()); // Set in NOTIFICATION_TRANSLATION_CHANGED.
-		renderer->set_item_metadata(-1, current_renderer_os);
-	}
-	_update_renderer_color();
 
 	progress_hb = memnew(BackgroundProgress);
 
