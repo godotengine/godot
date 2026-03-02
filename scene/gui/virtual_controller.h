@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include "scene/gui/button.h"
+#include "scene/gui/control.h"
 
+class Button;
 class VirtualJoystick;
 
 class VirtualController : public Control {
