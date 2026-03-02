@@ -582,16 +582,7 @@ Vector2 RaycastOcclusionCull::_get_jitter(const Rect2 &p_viewport_rect, const Si
 	return jitter;
 }
 
-Rect2 _get_viewport_rect(const Projection &p_cam_projection) {
-	// NOTE: This assumes a rectangular projection plane, i.e. that:
-	// - the matrix is a projection across z-axis (i.e. is invertible and columns[0][1], [0][3], [1][0] and [1][3] == 0)
-	// - the projection plane is rectangular (i.e. columns[0][2] and [1][2] == 0 if columns[2][3] != 0)
-	Size2 half_extents = p_cam_projection.get_viewport_half_extents();
-	Point2 bottom_left = -half_extents * Vector2(p_cam_projection.columns[3][0] * p_cam_projection.columns[3][3] + p_cam_projection.columns[2][0] * p_cam_projection.columns[2][3] + 1, p_cam_projection.columns[3][1] * p_cam_projection.columns[3][3] + p_cam_projection.columns[2][1] * p_cam_projection.columns[2][3] + 1);
-	return Rect2(bottom_left, 2 * half_extents);
-}
-
-void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal) {
+void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const Frustum &p_cam_frustum, bool p_cam_orthogonal) {
 	if (!buffers.has(p_buffer)) {
 		return;
 	}
@@ -605,12 +596,12 @@ void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_
 	Scenario &scenario = scenarios[buffer.scenario_rid];
 	scenario.update();
 
-	Rect2 vp_rect = _get_viewport_rect(p_cam_projection);
+	Rect2 vp_rect = p_cam_frustum.get_viewport_rect();
 	Vector2 bottom_left = vp_rect.position;
 	bottom_left += _get_jitter(vp_rect, buffer.get_occlusion_buffer_size());
-	Vector3 near_bottom_left = Vector3(bottom_left.x, bottom_left.y, -p_cam_projection.get_z_near());
+	Vector3 near_bottom_left = Vector3(bottom_left.x, bottom_left.y, -p_cam_frustum.get_z_near());
 
-	buffer.update_camera_rays(p_cam_transform, near_bottom_left, vp_rect.get_size(), p_cam_projection.get_z_far(), p_cam_orthogonal);
+	buffer.update_camera_rays(p_cam_transform, near_bottom_left, vp_rect.get_size(), p_cam_frustum.get_z_far(), p_cam_orthogonal);
 
 	scenario.raycast(buffer.camera_rays, buffer.camera_ray_masks.ptr(), buffer.camera_rays_tile_count);
 	buffer.sort_rays(-p_cam_transform.basis.get_column(2), p_cam_orthogonal);

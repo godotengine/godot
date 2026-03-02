@@ -44,11 +44,12 @@ public:
 
 	Transform3D cam_transform;
 	Projection cam_projection;
+	Frustum cam_frustum;
 	Vector2 taa_jitter;
 	float taa_frame_count = 0.0f;
 	uint32_t camera_visible_layers;
-	bool cam_orthogonal = false;
-	bool cam_frustum = false;
+	bool cam_is_orthogonal = false;
+	bool cam_is_frustum = false;
 	bool flip_y = false;
 
 	// For billboards to cast correct shadows.
@@ -87,6 +88,7 @@ public:
 	float time;
 	float time_step;
 
+	virtual Plane get_cam_frustum_plane(Projection::Planes p_plane) const override;
 	virtual Transform3D get_cam_transform() const override;
 	virtual Projection get_cam_projection() const override;
 
