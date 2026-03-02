@@ -148,6 +148,8 @@ class SceneTreeEditor : public Control {
 
 	void _update_node_path(Node *p_node, bool p_recursive = true);
 	void _update_exposed_nodes(Node *p_node, TreeItem *p_parent, bool p_force, TreeItem *&p_last_inserted);
+	static int get_visible_exposed_node_count(Node *p_node);
+	static TreeItem *get_last_exposed_tree_item(TreeItem *p_parent);
 	void _update_node_subtree(Node *p_node, TreeItem *p_parent, bool p_force = false);
 	void _update_node(Node *p_node, TreeItem *p_item, bool p_part_of_subscene);
 	void _update_if_clean();

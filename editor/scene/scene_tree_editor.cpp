@@ -345,6 +345,57 @@ void SceneTreeEditor::_update_exposed_nodes(Node *p_node, TreeItem *p_parent, bo
 	}
 }
 
+int SceneTreeEditor::get_visible_exposed_node_count(Node *p_node) {
+	if (!p_node) {
+		return 0;
+	}
+
+	int count = 0;
+	const int child_count = p_node->get_child_count(false);
+
+	for (int i = 0; i < child_count; i++) {
+		Node *child = p_node->get_child(i, false);
+		if (!child) {
+			continue;
+		}
+
+		const bool is_exposed = child->has_meta(META_EXPOSED_IN_OWNER) || child->has_meta(META_EXPOSED_IN_INSTANCE);
+
+		if (is_exposed) {
+			count++;
+		}
+
+		if (child->has_exposed_nodes()) {
+			count += get_visible_exposed_node_count(child);
+		}
+	}
+
+	return count;
+}
+
+TreeItem *SceneTreeEditor::get_last_exposed_tree_item(TreeItem *p_parent) {
+	if (!p_parent) {
+		return nullptr;
+	}
+
+	TreeItem *last = nullptr;
+	const int child_count = p_parent->get_child_count();
+	for (int i = 0; i < child_count; i++) {
+		TreeItem *child = p_parent->get_child(i);
+		if (!child) {
+			continue;
+		}
+
+		const bool is_exposed = child->has_meta(META_EXPOSED_IN_OWNER) || child->has_meta(META_EXPOSED_IN_INSTANCE);
+
+		if (is_exposed) {
+			last = child;
+		}
+	}
+
+	return last;
+}
+
 void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, bool p_force) {
 	if (!p_node) {
 		return;
@@ -364,7 +415,8 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 			if (!I) {
 				node_cache.add(p_node, tree->create_item(p_parent, 0));
 			}
-			TreeItem *last_inserted = nullptr;
+			TreeItem *last_inserted = get_last_exposed_tree_item(p_parent);
+			;
 			_update_exposed_nodes(p_node, p_parent, p_force, last_inserted);
 			node_cache.remove(p_node, p_node->get_parent() && p_node->get_parent()->get_scene_instance_load_placeholder());
 			return;
@@ -394,7 +446,11 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 			p_parent->add_child(item);
 			I->value.removed = false;
 			// Fix index of exposed nodes.
+			if (p_node->has_meta(META_EXPOSED_IN_OWNER)) {
+				item->set_meta(META_EXPOSED_IN_OWNER, true);
+			}
 			if (p_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
+				item->set_meta(META_EXPOSED_IN_INSTANCE, true);
 				int final_idx = 0;
 				for (int i = 0; i < p_parent->get_child_count(); i++) {
 					if (p_parent->get_child(i)->has_meta(META_EXPOSED_IN_INSTANCE) && p_parent->get_child(i) != I->value.item) {
@@ -424,7 +480,7 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 			index = p_node->get_index(false);
 
 			// Offset index if there are exposed nodes
-			int exposed_nodes = p_node->get_parent()->get_exposed_node_count(p_node->get_parent());
+			const int exposed_nodes = get_visible_exposed_node_count(p_node->get_parent());
 			index += exposed_nodes;
 
 			item = tree->create_item(p_parent, index);
