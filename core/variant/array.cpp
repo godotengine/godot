@@ -646,6 +646,82 @@ Array Array::map(const Callable &p_callable) const {
 		}
 	}
 
+	// Keep typed array metadata if all mapped values can share one typed container.
+	const int mapped_size = new_arr._p->array.size();
+	Variant::Type inferred_type = Variant::NIL;
+	StringName inferred_class_name;
+	Ref<Script> inferred_script;
+	const Variant *read = new_arr._p->array.ptr();
+
+	for (int i = 0; i < mapped_size; i++) {
+		const Variant &value = read[i];
+		const Variant::Type value_type = value.get_type();
+		if (value_type == Variant::NIL) {
+			continue;
+		}
+
+		if (inferred_type == Variant::NIL) {
+			inferred_type = value_type;
+			if (inferred_type == Variant::OBJECT) {
+				Object *object = value;
+				if (object) {
+					inferred_class_name = object->get_class_name();
+					inferred_script = object->get_script();
+				}
+			}
+			continue;
+		}
+
+		if (value_type != inferred_type) {
+			return new_arr;
+		}
+
+		if (inferred_type == Variant::OBJECT) {
+			Object *object = value;
+			if (!object) {
+				continue;
+			}
+
+			const StringName &object_class_name = object->get_class_name();
+			// Reduce to a common native base class for all mapped objects.
+			while (inferred_class_name != StringName() && !ClassDB::is_parent_class(object_class_name, inferred_class_name)) {
+				inferred_class_name = ClassDB::get_parent_class(inferred_class_name);
+			}
+
+			Ref<Script> object_script = object->get_script();
+			if (inferred_script.is_valid()) {
+				if (object_script.is_null()) {
+					inferred_script.unref();
+				} else if (inferred_script != object_script) {
+					// Keep whichever script is a common base. Drop script typing if unrelated.
+					if (object_script->inherits_script(inferred_script)) {
+						// Keep current base script.
+					} else if (inferred_script->inherits_script(object_script)) {
+						inferred_script = object_script;
+					} else {
+						inferred_script.unref();
+					}
+				}
+			}
+		}
+	}
+
+	if (inferred_type == Variant::NIL) {
+		return new_arr;
+	}
+	if (inferred_type != Variant::OBJECT) {
+		inferred_class_name = StringName();
+		inferred_script.unref();
+	}
+	if (inferred_class_name == StringName()) {
+		inferred_script.unref();
+	}
+
+	new_arr._p->typed.type = inferred_type;
+	new_arr._p->typed.class_name = inferred_class_name;
+	new_arr._p->typed.script = inferred_script;
+	new_arr._p->typed.where = "TypedArray";
+
 	return new_arr;
 }
 
