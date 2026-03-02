@@ -80,6 +80,7 @@
 #include "editor/gui/editor_about.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_icon_manager.h"
 #include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/gui/editor_toaster.h"
@@ -8552,6 +8553,9 @@ EditorNode::EditorNode() {
 
 	gui_base = memnew(Panel);
 	add_child(gui_base);
+
+	icon_manager = memnew(EditorIconManager);
+	gui_base->add_child(icon_manager);
 
 	// Take up all screen.
 	gui_base->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
