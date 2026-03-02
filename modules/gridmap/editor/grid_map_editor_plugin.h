@@ -250,6 +250,8 @@ class GridMapEditor : public EditorDock {
 	bool _has_selection() const;
 	Array _get_selected_cells() const;
 
+	String _get_cursor_coordinates() const;
+
 	void _floor_changed(float p_value);
 	void _floor_mouse_exited();
 
@@ -280,11 +282,14 @@ class GridMapEditorPlugin : public EditorPlugin {
 
 	GridMapEditor *grid_map_editor = nullptr;
 
+	void _overlay_update_requested();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	virtual void forward_3d_draw_over_viewport(Control *p_overlay) override;
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return grid_map_editor->forward_spatial_input_event(p_camera, p_event); }
 	virtual String get_plugin_name() const override { return "GridMap"; }
 	bool has_main_screen() const override { return false; }
