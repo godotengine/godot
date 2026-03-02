@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
+#include "core/object/class_db.h"
 #include "core/string/translation_server.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
@@ -3972,7 +3973,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				Vector<String> options;
 				Vector<String> option_names;
 				if (p_hint_text.begins_with(";")) {
-					// This is not supported officially. Only for `interface/editor/editor_language`.
+					// This is not supported officially. Only for `interface/editor/localization/editor_language`.
 					for (const String &option : p_hint_text.split(";", false)) {
 						options.append(option.get_slicec('/', 0));
 						option_names.append(option.get_slicec('/', 1));

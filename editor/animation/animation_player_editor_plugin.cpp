@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/animation/animation_tree_editor_plugin.h"
 #include "editor/docks/editor_dock_manager.h"
@@ -1037,6 +1038,7 @@ void AnimationPlayerEditor::_update_player() {
 	player->get_animation_library_list(&libraries);
 
 	int active_idx = -1;
+	int reset_index = -1;
 	bool no_anims_found = true;
 	bool global_animation_library_is_readonly = false;
 	bool all_animation_libraries_are_readonly = libraries.size() > 0;
@@ -1066,6 +1068,9 @@ void AnimationPlayerEditor::_update_player() {
 				path += "/";
 			}
 			path += E;
+			if (E == SceneStringName(RESET)) {
+				reset_index = animation->get_item_count();
+			}
 			animation->add_item(path);
 			if (player->get_assigned_animation() == path) {
 				active_idx = animation->get_selectable_item(true);
@@ -1085,7 +1090,10 @@ void AnimationPlayerEditor::_update_player() {
 		autoplay->set_pressed(animation->get_item_text(active_idx) == player->get_autoplay());
 		_animation_selected(active_idx);
 	} else if (animation->has_selectable_items()) {
-		int item = animation->get_selectable_item();
+		int item = reset_index;
+		if (item == -1) {
+			item = animation->get_selectable_item();
+		}
 		animation->select(item);
 		autoplay->set_pressed(animation->get_item_text(item) == player->get_autoplay());
 		_animation_selected(item);

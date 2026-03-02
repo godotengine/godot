@@ -32,6 +32,7 @@
 
 #include "tiles_editor_plugin.h"
 
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"

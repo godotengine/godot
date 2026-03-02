@@ -32,6 +32,7 @@
 #include "font.compat.inc"
 
 #include "core/io/image_loader.h"
+#include "core/object/class_db.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hashfuncs.h"
 #include "scene/resources/image_texture.h"

@@ -31,6 +31,7 @@
 #include "editor_file_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/dependency_editor.h"
@@ -68,7 +69,7 @@ bool EditorFileDialog::_should_use_native_popup() const {
 	// Native file dialog on Android, returns a file URI instead of a path and does not support res://, user://, or options. This requires editor-side changes to handle properly, so disabling it for now.
 	return false;
 #else
-	return _can_use_native_popup() && (OS::get_singleton()->is_sandboxed() || EDITOR_GET("interface/editor/use_native_file_dialogs").operator bool());
+	return _can_use_native_popup() && (OS::get_singleton()->is_sandboxed() || EDITOR_GET("interface/editor/appearance/use_native_file_dialogs").operator bool());
 #endif
 }
 

@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/zip_io.h"
+#include "core/object/class_db.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"

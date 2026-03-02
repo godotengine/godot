@@ -31,6 +31,7 @@
 #include "performance.h"
 #include "performance.compat.inc"
 
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/variant/typed_array.h"
 #include "scene/main/node.h"

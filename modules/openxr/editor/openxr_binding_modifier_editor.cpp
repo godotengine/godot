@@ -30,6 +30,7 @@
 
 #include "openxr_binding_modifier_editor.h"
 
+#include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
 #include "scene/gui/option_button.h"
 

@@ -30,6 +30,8 @@
 
 #include "render_data.h"
 
+#include "core/object/class_db.h"
+
 void RenderData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_render_scene_buffers"), &RenderData::get_render_scene_buffers);
 	ClassDB::bind_method(D_METHOD("get_render_scene_data"), &RenderData::get_render_scene_data);

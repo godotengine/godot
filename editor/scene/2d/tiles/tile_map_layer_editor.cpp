@@ -30,6 +30,7 @@
 
 #include "tile_map_layer_editor.h"
 
+#include "core/object/class_db.h"
 #include "tiles_editor_plugin.h"
 
 #include "editor/editor_node.h"

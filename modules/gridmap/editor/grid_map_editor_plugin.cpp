@@ -32,6 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_main_screen.h"
@@ -831,10 +832,14 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 		}
 
 		if (mb->is_pressed()) {
-			Node3DEditorViewport::NavigationScheme nav_scheme = (Node3DEditorViewport::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
-			if ((nav_scheme == Node3DEditorViewport::NAVIGATION_MAYA || nav_scheme == Node3DEditorViewport::NAVIGATION_MODO) && mb->is_alt_pressed()) {
-				input_action = INPUT_NONE;
-			} else if (mb->get_button_index() == MouseButton::LEFT) {
+			if (mb->get_button_index() == MouseButton::LEFT) {
+				Node3DEditorViewport::NavigationScheme nav_scheme = (Node3DEditorViewport::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
+				if ((nav_scheme == Node3DEditorViewport::NAVIGATION_MAYA || nav_scheme == Node3DEditorViewport::NAVIGATION_MODO) && mb->is_alt_pressed()) {
+					return EditorPlugin::AFTER_GUI_INPUT_PASS;
+				}
+
+				valid_mb_press = true;
+
 				bool can_edit = (node && node->get_mesh_library().is_valid());
 				if (input_action == INPUT_PASTE) {
 					_do_paste();
@@ -861,6 +866,9 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				} else if (selection.active) {
 					_set_selection(false);
+					if (input_action == INPUT_SELECT) {
+						input_action = INPUT_NONE;
+					}
 					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				}
 			} else {
@@ -895,22 +903,21 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 				return EditorPlugin::AFTER_GUI_INPUT_PASS;
 			}
 
-			if (mb->get_button_index() == MouseButton::LEFT && input_action == INPUT_SELECT) {
-				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-				undo_redo->create_action(TTR("GridMap Selection"));
-				undo_redo->add_do_method(this, "_set_selection", selection.active, selection.begin, selection.end);
-				undo_redo->add_undo_method(this, "_set_selection", last_selection.active, last_selection.begin, last_selection.end);
-				undo_redo->commit_action();
-			}
+			if (valid_mb_press && mb->get_button_index() == MouseButton::LEFT) {
+				valid_mb_press = false;
 
-			if (mb->get_button_index() == MouseButton::LEFT && input_action != INPUT_NONE) {
-				set_items.clear();
-				input_action = INPUT_NONE;
-				return EditorPlugin::AFTER_GUI_INPUT_STOP;
-			}
-			if (mb->get_button_index() == MouseButton::RIGHT && (input_action == INPUT_ERASE || input_action == INPUT_PASTE)) {
-				input_action = INPUT_NONE;
-				return EditorPlugin::AFTER_GUI_INPUT_STOP;
+				if (input_action == INPUT_SELECT) {
+					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+					undo_redo->create_action(TTR("GridMap Selection"));
+					undo_redo->add_do_method(this, "_set_selection", selection.active, selection.begin, selection.end);
+					undo_redo->add_undo_method(this, "_set_selection", last_selection.active, last_selection.begin, last_selection.end);
+					undo_redo->commit_action();
+				}
+				if (input_action != INPUT_NONE) {
+					set_items.clear();
+					input_action = INPUT_NONE;
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
+				}
 			}
 		}
 	}
@@ -962,7 +969,7 @@ void GridMapEditor::_set_display_mode(int p_mode) {
 	if (p_mode == DISPLAY_LIST) {
 		mode_list->set_pressed(true);
 		mode_thumbnail->set_pressed(false);
-	} else if (p_mode == DISPLAY_THUMBNAIL) {
+	} else { // DISPLAY_THUMBNAIL
 		mode_list->set_pressed(false);
 		mode_thumbnail->set_pressed(true);
 	}
@@ -1300,6 +1307,13 @@ void GridMapEditor::_notification(int p_what) {
 			_update_theme();
 		} break;
 
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			floor->set_tooltip_text(
+					vformat(TTR("Change Grid Floor:\nPrevious Plane (%s)\nNext Plane (%s)"),
+							ED_GET_SHORTCUT("grid_map/previous_floor")->get_as_text(),
+							ED_GET_SHORTCUT("grid_map/next_floor")->get_as_text()));
+		} break;
+
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
 			if (input_action == INPUT_PAINT) {
 				// Simulate mouse released event to stop drawing when editor focus exists.
@@ -1413,7 +1427,6 @@ GridMapEditor::GridMapEditor() {
 
 	options = memnew(MenuButton);
 	options->set_theme_type_variation(SceneStringName(FlatButton));
-	options->get_popup()->add_separator();
 	options->get_popup()->add_radio_check_shortcut(ED_GET_SHORTCUT("grid_map/edit_x_axis"), MENU_OPTION_X_AXIS);
 	options->get_popup()->add_radio_check_shortcut(ED_GET_SHORTCUT("grid_map/edit_y_axis"), MENU_OPTION_Y_AXIS);
 	options->get_popup()->add_radio_check_shortcut(ED_GET_SHORTCUT("grid_map/edit_z_axis"), MENU_OPTION_Z_AXIS);
@@ -1424,10 +1437,10 @@ GridMapEditor::GridMapEditor() {
 	options->get_popup()->add_check_shortcut(ED_GET_SHORTCUT("grid_map/keep_selected"), MENU_OPTION_PASTE_SELECTS);
 	options->get_popup()->set_item_checked(options->get_popup()->get_item_index(MENU_OPTION_PASTE_SELECTS), true);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Settings..."), MENU_OPTION_GRIDMAP_SETTINGS);
+	options->get_popup()->add_item(TTRC("Settings..."), MENU_OPTION_GRIDMAP_SETTINGS);
 
 	settings_dialog = memnew(ConfirmationDialog);
-	settings_dialog->set_title(TTR("GridMap Settings"));
+	settings_dialog->set_title(TTRC("GridMap Settings"));
 	add_child(settings_dialog);
 	settings_vbc = memnew(VBoxContainer);
 	settings_vbc->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
@@ -1439,7 +1452,7 @@ GridMapEditor::GridMapEditor() {
 	settings_pick_distance->set_step(1.0f);
 	settings_pick_distance->set_value(EDITOR_GET("editors/grid_map/pick_distance"));
 	settings_pick_distance->set_accessibility_name(TTRC("Pick Distance:"));
-	settings_vbc->add_margin_child(TTR("Pick Distance:"), settings_pick_distance);
+	settings_vbc->add_margin_child(TTRC("Pick Distance:"), settings_pick_distance);
 
 	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &GridMapEditor::_menu_option));
 
@@ -1599,10 +1612,6 @@ GridMapEditor::GridMapEditor() {
 	floor->set_max(32767);
 	floor->set_step(1);
 	floor->set_accessibility_name(TTRC("Change Grid Floor:"));
-	floor->set_tooltip_text(
-			vformat(TTR("Change Grid Floor:\nPrevious Plane (%s)\nNext Plane (%s)"),
-					ED_GET_SHORTCUT("grid_map/previous_floor")->get_as_text(),
-					ED_GET_SHORTCUT("grid_map/next_floor")->get_as_text()));
 	toolbar->add_child(floor);
 	floor->get_line_edit()->add_theme_constant_override("minimum_character_width", 2);
 	floor->get_line_edit()->set_context_menu_enabled(false);
@@ -1613,7 +1622,7 @@ GridMapEditor::GridMapEditor() {
 	search_box = memnew(FilterLineEdit);
 	search_box->add_theme_constant_override("minimum_character_width", 10);
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	search_box->set_placeholder(TTR("Filter Meshes"));
+	search_box->set_placeholder(TTRC("Filter Meshes"));
 	search_box->set_accessibility_name(TTRC("Filter Meshes"));
 	toolbar->add_child(search_box);
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &GridMapEditor::_text_changed));
@@ -1626,11 +1635,15 @@ GridMapEditor::GridMapEditor() {
 	zoom_widget->connect("zoom_changed", callable_mp(this, &GridMapEditor::_icon_size_changed));
 	zoom_widget->set_shortcut_context(this);
 
+	Ref<ButtonGroup> view_mode;
+	view_mode.instantiate();
+
 	mode_thumbnail = memnew(Button);
 	mode_thumbnail->set_theme_type_variation(SceneStringName(FlatButton));
 	mode_thumbnail->set_toggle_mode(true);
 	mode_thumbnail->set_accessibility_name(TTRC("View as Thumbnails"));
 	mode_thumbnail->set_pressed(true);
+	mode_thumbnail->set_button_group(view_mode);
 	toolbar->add_child(mode_thumbnail);
 	mode_thumbnail->connect(SceneStringName(pressed), callable_mp(this, &GridMapEditor::_set_display_mode).bind(DISPLAY_THUMBNAIL));
 
@@ -1638,7 +1651,7 @@ GridMapEditor::GridMapEditor() {
 	mode_list->set_theme_type_variation(SceneStringName(FlatButton));
 	mode_list->set_toggle_mode(true);
 	mode_list->set_accessibility_name(TTRC("View as List"));
-	mode_list->set_pressed(false);
+	mode_list->set_button_group(view_mode);
 	toolbar->add_child(mode_list);
 	mode_list->connect(SceneStringName(pressed), callable_mp(this, &GridMapEditor::_set_display_mode).bind(DISPLAY_LIST));
 
@@ -1655,7 +1668,7 @@ GridMapEditor::GridMapEditor() {
 
 	info_message = memnew(Label);
 	info_message->set_focus_mode(FOCUS_ACCESSIBILITY);
-	info_message->set_text(TTR("Give a MeshLibrary resource to this GridMap to use its meshes."));
+	info_message->set_text(TTRC("Give a MeshLibrary resource to this GridMap to use its meshes."));
 	info_message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	info_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	info_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);

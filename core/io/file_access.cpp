@@ -38,6 +38,7 @@
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_uid.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
 

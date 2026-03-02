@@ -30,6 +30,7 @@
 
 #include "translation.h"
 
+#include "core/object/class_db.h"
 #include "core/os/thread.h"
 #include "core/string/plural_rules.h"
 #include "core/string/translation_server.h"

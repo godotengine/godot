@@ -30,6 +30,8 @@
 
 #include "label_settings.h"
 
+#include "core/object/class_db.h"
+
 void LabelSettings::_font_changed() {
 	emit_changed();
 }

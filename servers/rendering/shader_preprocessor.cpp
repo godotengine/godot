@@ -636,11 +636,16 @@ void ShaderPreprocessor::process_if(Tokenizer *p_tokenizer) {
 
 void ShaderPreprocessor::process_ifdef(Tokenizer *p_tokenizer) {
 	const int line = p_tokenizer->get_line();
+	bool is_cursor = false;
 
-	String label = p_tokenizer->get_identifier();
+	String label = p_tokenizer->get_identifier(&is_cursor);
 	if (label.is_empty()) {
 		set_error(RTR("Invalid macro name."), line);
 		return;
+	}
+
+	if (is_cursor) {
+		state->completion_show_defines = true;
 	}
 
 	if (!p_tokenizer->consume_empty_line()) {
@@ -876,6 +881,7 @@ Error ShaderPreprocessor::expand_condition(const String &p_string, int p_line, S
 			switch (p_string[i]) {
 				case CURSOR:
 					state->completion_type = COMPLETION_TYPE_CONDITION;
+					state->completion_show_defines = true;
 					break;
 				case '(':
 					bracket_start_count++;
@@ -1414,6 +1420,13 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 			} break;
 			default: {
 			}
+		}
+	}
+
+	if (state->completion_show_defines) {
+		for (const KeyValue<String, Define *> &E : state->defines) {
+			ScriptLanguage::CodeCompletionOption option(E.key, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
+			r_completion_options->push_back(option);
 		}
 	}
 

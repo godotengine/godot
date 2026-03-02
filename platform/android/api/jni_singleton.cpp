@@ -1,0 +1,77 @@
+/**************************************************************************/
+/*  jni_singleton.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
+#include "jni_singleton.h"
+
+#include "core/object/class_db.h"
+
+void JNISingleton::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("has_java_method", "method"), &JNISingleton::has_java_method);
+}
+
+Variant JNISingleton::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	// Godot methods take precedence.
+	Variant ret = Object::callp(p_method, p_args, p_argcount, r_error);
+	if (r_error.error == Callable::CallError::CALL_OK) {
+		return ret;
+	}
+
+	// Check the method we're looking for is in the JNISingleton map.
+	// This is done because JNISingletons register methods differently than wrapped JavaClass / JavaObject to allow
+	// for access to private methods annotated with the @UsedByGodot annotation.
+	// In the future, we should remove access to private methods and require that JNISingletons' methods exposed to
+	// GDScript be all public, similarly to what we do for wrapped JavaClass / JavaObject methods. Doing so will
+	// also allow dropping and deprecating the @UsedByGodot annotation.
+	RBMap<StringName, MethodData>::Element *E = method_map.find(p_method);
+	if (E) {
+		if (wrapped_object.is_valid()) {
+			return wrapped_object->callp(p_method, p_args, p_argcount, r_error);
+		} else {
+			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		}
+	}
+	return Variant();
+}
+
+void JNISingleton::add_method(const StringName &p_name, const Vector<Variant::Type> &p_args, Variant::Type p_ret_type) {
+	MethodData md;
+	md.argtypes = p_args;
+	md.ret_type = p_ret_type;
+	method_map[p_name] = md;
+}
+
+void JNISingleton::add_signal(const StringName &p_name, const Vector<Variant::Type> &p_args) {
+	MethodInfo mi;
+	mi.name = p_name;
+	for (int i = 0; i < p_args.size(); i++) {
+		mi.arguments.push_back(PropertyInfo(p_args[i], "arg" + itos(i + 1)));
+	}
+	ADD_SIGNAL(mi);
+}

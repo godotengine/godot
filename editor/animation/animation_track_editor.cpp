@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "core/string/translation_server.h"
 #include "editor/animation/animation_bezier_editor.h"
 #include "editor/animation/animation_player_editor_plugin.h"

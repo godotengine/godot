@@ -30,6 +30,7 @@
 
 #include "texture_progress_bar.h"
 
+#include "core/object/class_db.h"
 #include "servers/rendering/rendering_server.h"
 
 void TextureProgressBar::set_under_texture(const Ref<Texture2D> &p_texture) {

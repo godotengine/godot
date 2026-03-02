@@ -37,6 +37,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
 #include "core/profiling/profiling.h"
 #include "core/templates/fixed_vector.h"
 #include "modules/modules_enabled.gen.h"
@@ -2200,6 +2201,14 @@ uint32_t RenderingDevice::_texture_vrs_method_to_usage_bits() const {
 			return RDD::TEXTURE_USAGE_VRS_FRAGMENT_DENSITY_MAP_BIT;
 		default:
 			return 0;
+	}
+}
+
+void RenderingDevice::_texture_ensure_shareable_format(RID p_texture, const DataFormat &p_shareable_format) {
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL(texture);
+	if (!texture->allowed_shared_formats.has(p_shareable_format)) {
+		texture->allowed_shared_formats.push_back(p_shareable_format);
 	}
 }
 

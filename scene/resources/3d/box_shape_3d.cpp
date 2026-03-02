@@ -30,6 +30,7 @@
 
 #include "box_shape_3d.h"
 
+#include "core/object/class_db.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "servers/physics_3d/physics_server_3d.h"
 

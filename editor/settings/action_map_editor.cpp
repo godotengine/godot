@@ -30,6 +30,7 @@
 
 #include "action_map_editor.h"
 
+#include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_event_search_bar.h"
 #include "editor/settings/editor_settings.h"
@@ -170,7 +171,7 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 			current_action_name = item->get_meta("__name");
 			current_action_event_index = -1;
 
-			event_config_dialog->popup_and_configure(Ref<InputEvent>(), current_action_name);
+			event_config_dialog->popup_and_configure(Ref<InputEvent>(), current_action_name, current_action);
 		} break;
 		case ActionMapEditor::BUTTON_EDIT_EVENT: {
 			// Action and Action name is located on the parent of the event.
@@ -181,7 +182,7 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 
 			Ref<InputEvent> ie = item->get_meta("__event");
 			if (ie.is_valid()) {
-				event_config_dialog->popup_and_configure(ie, current_action_name);
+				event_config_dialog->popup_and_configure(ie, current_action_name, current_action);
 			}
 		} break;
 		case ActionMapEditor::BUTTON_REMOVE_ACTION: {

@@ -30,6 +30,7 @@
 
 #include "flow_container.h"
 
+#include "core/object/class_db.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/theme/theme_db.h"
 

@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "skeleton_modification_2d_physicalbones.h"
+
+#include "core/object/class_db.h"
 #include "scene/2d/physics/physical_bone_2d.h"
 #include "scene/2d/skeleton_2d.h"
 

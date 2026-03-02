@@ -34,6 +34,7 @@ TEST_FORCE_LINK(test_udp_server)
 
 #include "core/io/packet_peer_udp.h"
 #include "core/io/udp_server.h"
+#include "core/os/os.h"
 
 #include <functional>
 

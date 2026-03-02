@@ -31,6 +31,7 @@
 #include "multi_node_edit.h"
 
 #include "core/math/math_fieldwise.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 

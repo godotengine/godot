@@ -50,7 +50,7 @@ EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_settings_sty
 	if (!EditorSettings::get_singleton()) {
 		return STYLE_LOCALIZED;
 	}
-	const bool translate = EDITOR_GET("interface/editor/localize_settings");
+	const bool translate = EDITOR_GET("interface/editor/localization/localize_settings");
 	return translate ? STYLE_LOCALIZED : STYLE_CAPITALIZED;
 }
 

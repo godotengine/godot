@@ -31,6 +31,7 @@
 #include "event_listener_line_edit.h"
 
 #include "core/input/input_map.h"
+#include "core/object/class_db.h"
 #include "scene/gui/dialogs.h"
 
 // Maps to 2*axis if value is neg, or 2*axis+1 if value is pos.

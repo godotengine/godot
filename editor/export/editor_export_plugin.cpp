@@ -31,6 +31,7 @@
 #include "editor_export_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "editor/export/editor_export_platform.h"
 
 void EditorExportPlugin::set_export_base_path(const String &p_export_base_path) {
@@ -330,6 +331,16 @@ void EditorExportPlugin::_export_begin(const HashSet<String> &p_features, bool p
 
 void EditorExportPlugin::_export_end() {}
 
+void EditorExportPlugin::_end_generate_apple_embedded_project(const String &p_path, bool p_p_will_build_archive) {}
+
+void EditorExportPlugin::end_generate_apple_embedded_project(const String &p_path, bool p_will_build_archive) {
+	if (GDVIRTUAL_IS_OVERRIDDEN(_end_generate_apple_embedded_project)) {
+		GDVIRTUAL_CALL(_end_generate_apple_embedded_project, p_path, p_will_build_archive);
+	} else {
+		_end_generate_apple_embedded_project(p_path, p_will_build_archive);
+	}
+}
+
 void EditorExportPlugin::skip() {
 	skipped = true;
 }
@@ -366,6 +377,7 @@ void EditorExportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_export_file, "path", "type", "features");
 	GDVIRTUAL_BIND(_export_begin, "features", "is_debug", "path", "flags");
 	GDVIRTUAL_BIND(_export_end);
+	GDVIRTUAL_BIND(_end_generate_apple_embedded_project, "path", "will_build_archive");
 
 	GDVIRTUAL_BIND(_begin_customize_resources, "platform", "features");
 	GDVIRTUAL_BIND(_customize_resource, "resource", "path");

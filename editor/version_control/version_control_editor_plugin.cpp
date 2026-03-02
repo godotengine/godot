@@ -31,6 +31,7 @@
 #include "version_control_editor_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/time.h"
 #include "editor/docks/editor_dock.h"

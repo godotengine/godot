@@ -30,6 +30,7 @@
 
 #include "editor_help_search.h"
 
+#include "core/object/class_db.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"

@@ -30,6 +30,7 @@
 
 #include "check_box.h"
 
+#include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
 
 Size2 CheckBox::get_icon_size() const {

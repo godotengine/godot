@@ -31,6 +31,7 @@
 #include "shape_cast_2d.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/2d/physics/collision_object_2d.h"
 #include "scene/resources/world_2d.h"
 #include "servers/physics_2d/physics_server_2d.h"

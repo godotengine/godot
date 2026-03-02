@@ -93,9 +93,14 @@ void JoltSpace3D::_pre_step(float p_step) {
 		JoltObject3D *object = reinterpret_cast<JoltObject3D *>(jolt_body->GetUserData());
 		object->pre_step(p_step, *jolt_body);
 	}
+
+	physics_system->SetBodyActivationListener(body_activation_listener);
 }
 
 void JoltSpace3D::_post_step(float p_step) {
+	// We only want a listener during the step, as it will otherwise be called when pending bodies are flushed, which causes issues (e.g. GH-115322).
+	physics_system->SetBodyActivationListener(nullptr);
+
 	contact_listener->post_step();
 
 	while (shapes_changed_list.first()) {
@@ -189,8 +194,6 @@ void JoltSpace3D::step(float p_step) {
 
 	_pre_step(p_step);
 
-	physics_system->SetBodyActivationListener(body_activation_listener);
-
 	const JPH::EPhysicsUpdateError update_error = physics_system->Update(p_step, 1, temp_allocator, job_system);
 
 	if ((update_error & JPH::EPhysicsUpdateError::ManifoldCacheFull) != JPH::EPhysicsUpdateError::None) {
@@ -213,9 +216,6 @@ void JoltSpace3D::step(float p_step) {
 								"Maximum number of contact constraints is currently set to %d.",
 				JoltProjectSettings::max_contact_constraints));
 	}
-
-	// We only want a listener during the step, as it will otherwise be called when pending bodies are flushed, which causes issues (e.g. GH-115322).
-	physics_system->SetBodyActivationListener(nullptr);
 
 	_post_step(p_step);
 

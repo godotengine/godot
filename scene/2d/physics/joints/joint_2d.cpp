@@ -30,6 +30,7 @@
 
 #include "joint_2d.h"
 
+#include "core/object/class_db.h"
 #include "scene/2d/physics/physics_body_2d.h"
 
 void Joint2D::_disconnect_signals() {

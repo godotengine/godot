@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_log.h"
@@ -297,7 +298,7 @@ void EditorSettingsDialog::_notification(int p_what) {
 				inspector->get_inspector()->update_tree();
 			}
 
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localization/localize_settings")) {
 				inspector->update_category_list();
 			}
 		} break;

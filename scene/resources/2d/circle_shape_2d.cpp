@@ -30,6 +30,7 @@
 
 #include "circle_shape_2d.h"
 
+#include "core/object/class_db.h"
 #include "servers/physics_2d/physics_server_2d.h"
 #include "servers/rendering/rendering_server.h"
 

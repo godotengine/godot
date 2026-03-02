@@ -30,6 +30,7 @@
 
 #include "window_wrapper.h"
 
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/progress_dialog.h"

@@ -30,6 +30,7 @@
 
 #include "bone_map_editor_plugin.h"
 
+#include "core/object/class_db.h"
 #include "editor/import/3d/post_import_plugin_skeleton_renamer.h"
 #include "editor/import/3d/post_import_plugin_skeleton_rest_fixer.h"
 #include "editor/import/3d/post_import_plugin_skeleton_track_organizer.h"

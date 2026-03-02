@@ -30,6 +30,8 @@
 
 #include "limit_angular_velocity_modifier_3d.h"
 
+#include "core/object/class_db.h"
+
 bool LimitAngularVelocityModifier3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 

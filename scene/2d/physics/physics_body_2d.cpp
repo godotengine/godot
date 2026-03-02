@@ -30,6 +30,8 @@
 
 #include "physics_body_2d.h"
 
+#include "core/object/class_db.h"
+
 void PhysicsBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "motion", "test_only", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::_move, DEFVAL(false), DEFVAL(0.08), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("test_move", "from", "motion", "collision", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::test_move, DEFVAL(Variant()), DEFVAL(0.08), DEFVAL(false));

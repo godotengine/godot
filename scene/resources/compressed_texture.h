@@ -88,7 +88,7 @@ public:
 	static TextureFormatRoughnessRequestCallback request_roughness_callback;
 	static TextureFormatRequestCallback request_normal_callback;
 
-	Image::Format get_format() const;
+	virtual Image::Format get_format() const override;
 	Error load(const String &p_path);
 	String get_load_path() const;
 

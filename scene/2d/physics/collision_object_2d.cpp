@@ -30,6 +30,7 @@
 
 #include "collision_object_2d.h"
 
+#include "core/object/class_db.h"
 #include "scene/resources/world_2d.h"
 
 void CollisionObject2D::_notification(int p_what) {

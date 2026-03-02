@@ -1,0 +1,34 @@
+diff --git a/thirdparty/d3d12ma/D3D12MemAlloc.cpp b/thirdparty/d3d12ma/D3D12MemAlloc.cpp
+index 61e9e4a34d..94c646b5fc 100644
+--- a/thirdparty/d3d12ma/D3D12MemAlloc.cpp
++++ b/thirdparty/d3d12ma/D3D12MemAlloc.cpp
+@@ -33,24 +33,11 @@
+     #include <shared_mutex>
+ #endif
+ 
+-// On older mingw versions, using the Agility SDK will cause linker errors unless dxguids.h is included.
+-// But on newer mingw versions, the includes aren't necessary thus no need to grab DirectX-Headers.
+-// Release cycles are slow for LTS distros on Linux, so this codeblock will need to stay for a few years.
+-#if defined(__MINGW64_VERSION_MAJOR) && defined(__MINGW64_VERSION_MINOR) && \
+-	defined(__MINGW64_VERSION_BUGFIX) && defined(__ID3D12Device8_INTERFACE_DEFINED__)
+-    #define D3D12MA_MAKE_MINGW_VERSION(x, y, z) ((x << 20u) | (y << 10u) | (z))
+-    #if D3D12MA_MAKE_MINGW_VERSION(__MINGW64_VERSION_MAJOR, __MINGW64_VERSION_MINOR, \
+-								  __MINGW64_VERSION_BUGFIX) <= D3D12MA_MAKE_MINGW_VERSION(11, 0, 1)
+-        #if defined(__has_include)
+-            #if !__has_include(<dxguids.h>)
+-                #error "mingw or gcc detected. dxguids.h is needed. You can grab it from https://github.com/microsoft/DirectX-Headers or if you're on Ubuntu just run sudo apt install directx-headers-dev"
+-            #endif
+-        #endif
+-        #include <guiddef.h>
+-        // // guiddef.h must be included first.
+-        #include <dxguids.h>
+-    #endif
+-    #undef D3D12MA_MAKE_MINGW_VERSION
++// Includes needed for MinGW - see #71.
++#ifndef _MSC_VER
++    #include <guiddef.h>
++    // guiddef.h must be included first.
++    #include <dxguids.h>
+ #endif
+ 
+ ////////////////////////////////////////////////////////////////////////////////

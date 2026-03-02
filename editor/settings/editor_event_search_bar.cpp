@@ -30,6 +30,7 @@
 
 #include "editor_event_search_bar.h"
 
+#include "core/object/class_db.h"
 #include "editor/settings/event_listener_line_edit.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"

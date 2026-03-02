@@ -523,6 +523,7 @@ public:
 	void move_lines_up();
 	void move_lines_down();
 	void delete_lines();
+	void join_lines(const String &p_line_ending = " ");
 	void duplicate_selection();
 	void duplicate_lines();
 
