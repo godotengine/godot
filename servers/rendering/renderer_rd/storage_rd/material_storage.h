@@ -58,16 +58,6 @@ public:
 	};
 
 	struct ShaderData {
-		enum BlendMode {
-			BLEND_MODE_MIX,
-			BLEND_MODE_ADD,
-			BLEND_MODE_SUB,
-			BLEND_MODE_MUL,
-			BLEND_MODE_ALPHA_TO_COVERAGE,
-			BLEND_MODE_PREMULTIPLIED_ALPHA,
-			BLEND_MODE_DISABLED
-		};
-
 		String path;
 		HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 		HashMap<StringName, HashMap<int, RID>> default_texture_params;
@@ -86,9 +76,6 @@ public:
 		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const = 0;
 
 		virtual ~ShaderData() {}
-
-		static RD::PipelineColorBlendState::Attachment blend_mode_to_blend_attachment(BlendMode p_mode);
-		static bool blend_mode_uses_blend_alpha(BlendMode p_mode);
 	};
 
 	struct MaterialData {
@@ -151,7 +138,7 @@ public:
 
 		String code;
 
-		BlendMode blend_mode;
+		StringName blend_mode;
 
 		virtual void set_code(const String &p_Code);
 		virtual bool is_animated() const;

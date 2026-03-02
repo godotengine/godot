@@ -62,6 +62,15 @@ static ShaderLanguage::BuiltInInfo constvt(ShaderLanguage::DataType p_type, cons
 	return ShaderLanguage::BuiltInInfo(p_type, true, p_values);
 }
 
+void ShaderTypes::add_blend_mode(RSE::ShaderMode p_mode, StringName p_blend) {
+	for (ShaderLanguage::ModeInfo &info : shader_modes[p_mode].modes) {
+		if (info.name == "blend") {
+			info.options.insert(p_blend);
+			break;
+		}
+	}
+}
+
 ShaderTypes::ShaderTypes() {
 	singleton = this;
 

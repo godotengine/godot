@@ -1498,22 +1498,16 @@ void RendererCanvasRenderRD::CanvasShaderData::_create_pipeline(PipelineKey p_pi
 			"SPEC PACKED #0:", p_pipeline_key.shader_specialization.packed_0,
 			"LCD:", p_pipeline_key.lcd_blend);
 #endif
-
-	RendererRD::MaterialStorage::ShaderData::BlendMode blend_mode_rd = RendererRD::MaterialStorage::ShaderData::BlendMode(blend_mode);
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+	StringName blend_mode_rd = blend_mode;
 	RD::PipelineColorBlendState blend_state;
 	RD::PipelineColorBlendState::Attachment attachment;
 	uint32_t dynamic_state_flags = 0;
 	if (p_pipeline_key.lcd_blend) {
-		attachment.enable_blend = true;
-		attachment.alpha_blend_op = RD::BLEND_OP_ADD;
-		attachment.color_blend_op = RD::BLEND_OP_ADD;
-		attachment.src_color_blend_factor = RD::BLEND_FACTOR_CONSTANT_COLOR;
-		attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
-		attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-		attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+		attachment = material_storage->get_blend_attachment(RSE::SHADER_CANVAS_ITEM, RenderingServerTypes::blend_mode_name(RSE::BLEND_MODE_LCD));
 		dynamic_state_flags = RD::DYNAMIC_STATE_BLEND_CONSTANTS;
 	} else {
-		attachment = RendererRD::MaterialStorage::ShaderData::blend_mode_to_blend_attachment(blend_mode_rd);
+		attachment = material_storage->get_blend_attachment(RSE::SHADER_CANVAS_ITEM, blend_mode_rd);
 	}
 
 	blend_state.attachments.push_back(attachment);
@@ -1539,6 +1533,7 @@ void RendererCanvasRenderRD::CanvasShaderData::_create_pipeline(PipelineKey p_pi
 }
 
 void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	//compile
 
 	code = p_code;
@@ -1556,19 +1551,19 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 
 	ShaderCompiler::GeneratedCode gen_code;
 
-	blend_mode = BLEND_MODE_MIX;
-
 	ShaderCompiler::IdentifierActions actions;
 	actions.entry_point_stages["vertex"] = ShaderCompiler::STAGE_VERTEX;
 	actions.entry_point_stages["fragment"] = ShaderCompiler::STAGE_FRAGMENT;
 	actions.entry_point_stages["light"] = ShaderCompiler::STAGE_FRAGMENT;
 
-	actions.render_mode_values["blend_add"] = Pair<int *, int>(&blend_mode, BLEND_MODE_ADD);
-	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MIX);
-	actions.render_mode_values["blend_sub"] = Pair<int *, int>(&blend_mode, BLEND_MODE_SUB);
-	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MUL);
-	actions.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&blend_mode, BLEND_MODE_PREMULTIPLIED_ALPHA);
-	actions.render_mode_values["blend_disabled"] = Pair<int *, int>(&blend_mode, BLEND_MODE_DISABLED);
+	blend_mode = RenderingServerTypes::blend_mode_name(RSE::BLEND_MODE_MIX);
+
+	int blend_modei = -1;
+	auto modes = material_storage->get_blend_modes(RSE::SHADER_CANVAS_ITEM);
+	for (int i = 0; i < modes.size(); i++) {
+		StringName name = modes[i];
+		actions.render_mode_values[name] = Pair<int *, int>(&blend_modei, i);
+	}
 
 	actions.usage_flag_pointers["texture_sdf"] = &uses_sdf;
 	actions.usage_flag_pointers["TIME"] = &uses_time;
@@ -1585,6 +1580,10 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 			version = RID();
 		}
 		ERR_FAIL_MSG("Shader compilation failed.");
+	}
+
+	if (blend_modei >= 0) {
+		blend_mode = modes[blend_modei];
 	}
 
 	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
@@ -1760,7 +1759,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 
 		shader.default_version_data = memnew(CanvasShaderData);
 		shader.default_version_data->version = shader.canvas_shader.version_create();
-		shader.default_version_data->blend_mode = RendererRD::MaterialStorage::ShaderData::BLEND_MODE_MIX;
+		shader.default_version_data->blend_mode = RenderingServerTypes::blend_mode_name(RSE::BLEND_MODE_MIX);
 		shader.default_version_rd_shader = shader.default_version_data->get_shader(SHADER_VARIANT_QUAD, false);
 	}
 

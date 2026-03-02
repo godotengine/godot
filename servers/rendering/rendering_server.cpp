@@ -2318,6 +2318,10 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(RSE::TEXTURE_DRAWABLE_FORMAT_RGBAH);
 	BIND_ENUM_CONSTANT(RSE::TEXTURE_DRAWABLE_FORMAT_RGBAF);
 
+	/* BLEND REGISTRY */
+
+	ClassDB::bind_method(D_METHOD("register_blend_mode", "shader_type", "name", "attachment"), &RenderingServer::register_blend_mode);
+
 	/* SHADER */
 
 	ClassDB::bind_method(D_METHOD("shader_create"), &RenderingServer::shader_create);

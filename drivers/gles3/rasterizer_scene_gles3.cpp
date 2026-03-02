@@ -2268,6 +2268,7 @@ void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, 
 
 void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, float p_window_output_max_value, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingServerTypes::RenderInfo *r_render_info) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	GLES3::Config *config = GLES3::Config::get_singleton();
 	RENDER_TIMESTAMP("Setup 3D Scene");
 
@@ -2377,7 +2378,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	// Fill Light lists here
 	//////////
 
-	GLuint global_buffer = GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_uniform_buffer();
+	GLuint global_buffer = material_storage->global_shader_parameters_get_uniform_buffer();
 	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_GLOBALS_UNIFORM_LOCATION, global_buffer);
 
 	Color clear_color;
@@ -2485,7 +2486,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 				clear_color.b *= bg_energy_multiplier;
 				if (!render_data.transparent_bg && environment_get_fog_enabled(render_data.environment)) {
 					draw_sky_fog_only = true;
-					GLES3::MaterialStorage::get_singleton()->material_set_param(sky_globals.fog_material, "clear_color", Variant(clear_color));
+					material_storage->material_set_param(sky_globals.fog_material, "clear_color", Variant(clear_color));
 				}
 			} break;
 			case RSE::ENV_BG_COLOR: {
@@ -2495,7 +2496,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 				clear_color.b *= bg_energy_multiplier;
 				if (!render_data.transparent_bg && environment_get_fog_enabled(render_data.environment)) {
 					draw_sky_fog_only = true;
-					GLES3::MaterialStorage::get_singleton()->material_set_param(sky_globals.fog_material, "clear_color", Variant(clear_color));
+					material_storage->material_set_param(sky_globals.fog_material, "clear_color", Variant(clear_color));
 				}
 			} break;
 			case RSE::ENV_BG_SKY: {
@@ -2653,7 +2654,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
 		scene_state.enable_gl_blend(false);
 	}
-	scene_state.current_blend_mode = GLES3::SceneShaderData::BLEND_MODE_MIX;
+	scene_state.current_blend_mode = RenderingServerTypes::blend_mode_name(RSE::BLEND_MODE_MIX);
 
 	scene_state.enable_gl_scissor_test(false);
 	scene_state.enable_gl_depth_test(true);
@@ -2734,7 +2735,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 		if (feed.is_valid()) {
 			RID camera_YCBCR = feed->get_texture(CameraServer::FEED_YCBCR_IMAGE);
-			GLES3::TextureStorage::get_singleton()->texture_bind(camera_YCBCR, 0);
+			texture_storage->texture_bind(camera_YCBCR, 0);
 
 			GLES3::FeedEffects *feed_effects = GLES3::FeedEffects::get_singleton();
 			feed_effects->draw();
@@ -3256,51 +3257,25 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			}
 
 			if constexpr (p_pass_mode == PASS_MODE_COLOR || p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
-				GLES3::SceneShaderData::BlendMode desired_blend_mode;
+				StringName desired_blend_mode;
 				if (pass > 0) {
-					desired_blend_mode = GLES3::SceneShaderData::BLEND_MODE_ADD;
+					desired_blend_mode = RenderingServerTypes::blend_mode_name(RSE::BLEND_MODE_ADD);
 				} else {
 					desired_blend_mode = shader->blend_mode;
 				}
 
 				if (desired_blend_mode != scene_state.current_blend_mode) {
-					switch (desired_blend_mode) {
-						case GLES3::SceneShaderData::BLEND_MODE_MIX: {
-							glBlendEquation(GL_FUNC_ADD);
-							if (p_render_data->transparent_bg) {
-								glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-							} else {
-								glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
-							}
+					auto attachment = material_storage->get_blend_attachment(RSE::SHADER_SPATIAL, desired_blend_mode, p_render_data->transparent_bg);
 
-						} break;
-						case GLES3::SceneShaderData::BLEND_MODE_ADD: {
-							glBlendEquation(GL_FUNC_ADD);
-							glBlendFunc(p_pass_mode == PASS_MODE_COLOR_TRANSPARENT ? GL_SRC_ALPHA : GL_ONE, GL_ONE);
-
-						} break;
-						case GLES3::SceneShaderData::BLEND_MODE_SUB: {
-							glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-							glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-						} break;
-						case GLES3::SceneShaderData::BLEND_MODE_MUL: {
-							glBlendEquation(GL_FUNC_ADD);
-							if (p_render_data->transparent_bg) {
-								glBlendFuncSeparate(GL_DST_COLOR, GL_ZERO, GL_DST_ALPHA, GL_ZERO);
-							} else {
-								glBlendFuncSeparate(GL_DST_COLOR, GL_ZERO, GL_ZERO, GL_ONE);
-							}
-
-						} break;
-						case GLES3::SceneShaderData::BLEND_MODE_PREMULT_ALPHA: {
-							glBlendEquation(GL_FUNC_ADD);
-							glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-						} break;
-						case GLES3::SceneShaderData::BLEND_MODE_ALPHA_TO_COVERAGE: {
-							// Do nothing for now.
-						} break;
+					if (attachment.enable_blend) {
+						glBlendEquationSeparate(
+								RasterizerUtilGLES3::RD_TO_GL_BLEND_FUNC(attachment.color_blend_op),
+								RasterizerUtilGLES3::RD_TO_GL_BLEND_FUNC(attachment.alpha_blend_op));
+						glBlendFuncSeparate(
+								RasterizerUtilGLES3::RD_TO_GL_BLEND_FACTOR(attachment.src_color_blend_factor),
+								RasterizerUtilGLES3::RD_TO_GL_BLEND_FACTOR(attachment.src_alpha_blend_factor),
+								RasterizerUtilGLES3::RD_TO_GL_BLEND_FACTOR(attachment.dst_color_blend_factor),
+								RasterizerUtilGLES3::RD_TO_GL_BLEND_FACTOR(attachment.dst_alpha_blend_factor));
 					}
 					scene_state.current_blend_mode = desired_blend_mode;
 				}
