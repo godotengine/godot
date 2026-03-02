@@ -382,7 +382,7 @@ bool ScriptTextEditor::_warning_clicked(const Variant &p_line) {
 		return true;
 	} else if (p_line.get_type() == Variant::DICTIONARY) {
 		Dictionary meta = p_line.operator Dictionary();
-		const int line = meta["line"].operator int64_t() - 1;
+		const int line = meta["line"].operator int64_t();
 		const String code = meta["code"].operator String();
 		const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 
@@ -424,16 +424,7 @@ void ScriptTextEditor::_error_clicked(const Variant &p_line) {
 			if (scr.is_null()) {
 				EditorNode::get_singleton()->show_warning(TTR("Could not load file at:") + "\n\n" + path, TTR("Error!"));
 			} else {
-				int corrected_column = column;
-
-				const String line_text = code_editor->get_text_editor()->get_line(line);
-				const int indent_size = code_editor->get_text_editor()->get_indent_size();
-				if (indent_size > 1) {
-					const int tab_count = line_text.length() - line_text.lstrip("\t").length();
-					corrected_column -= tab_count * (indent_size - 1);
-				}
-
-				ScriptEditor::get_singleton()->edit(scr, line, corrected_column);
+				ScriptEditor::get_singleton()->edit(scr, line, column);
 			}
 		}
 	}
@@ -873,12 +864,11 @@ void ScriptTextEditor::_validate_script() {
 		}
 
 		if (errors.size() > 0) {
-			const int line = errors.front()->get().line;
-			const int column = errors.front()->get().column;
+			code_editor->set_error_pos(errors.front()->get().line - 1, errors.front()->get().column - 1);
 			const String message = errors.front()->get().message.replace("[", "[lb]");
-			const String error_text = vformat(TTR("Error at ([hint=Line %d, column %d]%d, %d[/hint]):"), line, column, line, column) + " " + message;
+			const Point2i display_pos = code_editor->get_pos_for_display(code_editor->get_error_pos());
+			const String error_text = vformat(TTR("Error at ([hint=Line %d, column %d]%d, %d[/hint]):"), display_pos.x, display_pos.y, display_pos.x, display_pos.y) + " " + message;
 			code_editor->set_error(error_text);
-			code_editor->set_error_pos(line - 1, column - 1);
 		}
 		script_is_valid = false;
 	} else {
@@ -945,7 +935,7 @@ void ScriptTextEditor::_update_warnings() {
 	warnings_panel->push_table(3);
 	for (const ScriptLanguage::Warning &w : warnings) {
 		Dictionary ignore_meta;
-		ignore_meta["line"] = w.start_line;
+		ignore_meta["line"] = w.start_line - 1;
 		ignore_meta["code"] = w.string_code.to_lower();
 		warnings_panel->push_cell();
 		warnings_panel->push_meta(ignore_meta);
@@ -978,10 +968,6 @@ void ScriptTextEditor::_update_errors() {
 	errors_panel->clear();
 	errors_panel->push_table(2);
 	for (const ScriptLanguage::ScriptError &err : errors) {
-		Dictionary click_meta;
-		click_meta["line"] = err.line;
-		click_meta["column"] = err.column;
-
 		errors_panel->push_cell();
 		errors_panel->push_meta(err.line - 1);
 		errors_panel->push_color(warnings_panel->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
@@ -998,13 +984,13 @@ void ScriptTextEditor::_update_errors() {
 	errors_panel->pop(); // Table
 
 	for (const KeyValue<String, List<ScriptLanguage::ScriptError>> &KV : depended_errors) {
-		Dictionary click_meta;
-		click_meta["path"] = KV.key;
-		click_meta["line"] = 1;
+		Dictionary click_meta_script;
+		click_meta_script["path"] = KV.key;
+		click_meta_script["line"] = 0;
 
 		errors_panel->add_newline();
 		errors_panel->add_newline();
-		errors_panel->push_meta(click_meta);
+		errors_panel->push_meta(click_meta_script);
 		errors_panel->add_text(vformat(R"(%s:)", KV.key));
 		errors_panel->pop(); // Meta goto.
 		errors_panel->add_newline();
@@ -1013,8 +999,10 @@ void ScriptTextEditor::_update_errors() {
 		errors_panel->push_table(2);
 		String filename = KV.key.get_file();
 		for (const ScriptLanguage::ScriptError &err : KV.value) {
-			click_meta["line"] = err.line;
-			click_meta["column"] = err.column;
+			Dictionary click_meta;
+			click_meta["path"] = KV.key;
+			click_meta["line"] = err.line - 1;
+			click_meta["column"] = err.column - 1;
 
 			errors_panel->push_cell();
 			errors_panel->push_meta(click_meta);
