@@ -791,7 +791,7 @@ void EditorAssetLibrary::shortcut_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventKey> key = p_event;
 
 	if (key.is_valid() && key->is_pressed()) {
-		if (key->is_match(InputEventKey::create_reference(KeyModifierMask::CMD_OR_CTRL | Key::F)) && is_visible_in_tree()) {
+		if (ED_IS_SHORTCUT("editor/open_search", p_event) && is_visible_in_tree()) {
 			filter->grab_focus();
 			filter->select_all();
 			accept_event();
