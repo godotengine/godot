@@ -40,7 +40,7 @@ const GodotDisplayVK = {
 			return GodotConfig.virtual_keyboard && 'ontouchstart' in window;
 		},
 
-		init: function (input_cb) {
+		init: function (input_cb, submit_cb) {
 			function create(what) {
 				const elem = document.createElement(what);
 				elem.style.display = 'none';
@@ -77,7 +77,18 @@ const GodotDisplayVK = {
 					elem.readonly = true;
 					elem.disabled = true;
 				}, false);
-				GodotConfig.canvas.insertAdjacentElement('beforebegin', elem);
+				const form = document.createElement('form');
+				form.method = 'POST'; // avoids having `?` added to the URL
+				form.appendChild(elem);
+				const submit = document.createElement('input');
+				submit.type = 'submit';
+				submit.style.overflow = 'hidden';
+				form.appendChild(submit);
+				GodotEventListeners.add(form, 'submit', function (evt) {
+					evt.preventDefault();
+					submit_cb();
+				}, false);
+				GodotConfig.canvas.insertAdjacentElement('beforebegin', form);
 				return elem;
 			}
 			GodotDisplayVK.textinput = create('input');
@@ -800,10 +811,11 @@ const GodotDisplay = {
 
 	godot_js_display_vk_cb__proxy: 'sync',
 	godot_js_display_vk_cb__sig: 'vi',
-	godot_js_display_vk_cb: function (p_input_cb) {
+	godot_js_display_vk_cb: function (p_input_cb, p_submit_cb) {
 		const input_cb = GodotRuntime.get_func(p_input_cb);
+		const submit_cb = GodotRuntime.get_func(p_submit_cb);
 		if (GodotDisplayVK.available()) {
-			GodotDisplayVK.init(input_cb);
+			GodotDisplayVK.init(input_cb, submit_cb);
 		}
 	},
 };
