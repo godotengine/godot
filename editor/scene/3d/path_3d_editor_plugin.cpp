@@ -577,7 +577,6 @@ Path3DGizmo::Path3DGizmo(Path3D *p_path) {
 
 	// Connecting to a signal once, rather than plaguing the implementation with calls to `Node3DEditor::update_transform_gizmo`.
 	path->connect("curve_changed", callable_mp(this, &Path3DGizmo::_update_transform_gizmo));
-	path->connect("curve_changed", callable_mp(Path3DEditorPlugin::singleton, &Path3DEditorPlugin::_update_toolbar));
 	path->connect("debug_color_changed", callable_mp(this, &Path3DGizmo::redraw));
 
 	Path3DEditorPlugin::singleton->curve_edit->connect(SceneStringName(pressed), callable_mp(this, &Path3DGizmo::redraw));
@@ -778,7 +777,16 @@ void Path3DEditorPlugin::update_handles() {
 }
 
 void Path3DEditorPlugin::edit(Object *p_object) {
+	if (path) {
+		path->disconnect("curve_changed", callable_mp(this, &Path3DEditorPlugin::_update_toolbar));
+	}
+
 	path = Object::cast_to<Path3D>(p_object);
+
+	if (path) {
+		path->connect("curve_changed", callable_mp(this, &Path3DEditorPlugin::_update_toolbar));
+	}
+
 	_update_toolbar();
 	update_overlays();
 }
@@ -792,7 +800,10 @@ void Path3DEditorPlugin::make_visible(bool p_visible) {
 		topmenu_bar->show();
 	} else {
 		topmenu_bar->hide();
-		path = nullptr;
+		if (path) {
+			path->disconnect("curve_changed", callable_mp(this, &Path3DEditorPlugin::_update_toolbar));
+			path = nullptr;
+		}
 	}
 	set_physics_process(p_visible);
 }
