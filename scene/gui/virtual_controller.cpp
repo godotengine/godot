@@ -31,7 +31,7 @@
 #include "virtual_controller.h"
 
 #include "core/input/input.h"
-#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
 #include "scene/gui/virtual_joystick.h"
 #include "scene/theme/theme_db.h"
 
