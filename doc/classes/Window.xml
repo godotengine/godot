@@ -851,6 +851,11 @@
 				Emitted when a go back request is sent (e.g. pressing the "Back" button on Android), right after [constant Node.NOTIFICATION_WM_GO_BACK_REQUEST].
 			</description>
 		</signal>
+		<signal name="hdr_output_changed">
+			<description>
+				Emitted when the HDR output state of the [Window] changes (when HDR output is enabled or disabled, display capabilities change, or system settings are modified).
+			</description>
+		</signal>
 		<signal name="mouse_entered">
 			<description>
 				Emitted when the mouse cursor enters the [Window]'s visible area, that is not occluded behind other [Control]s or windows, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
