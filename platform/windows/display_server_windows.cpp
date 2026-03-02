@@ -5309,7 +5309,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_ERASEBKGND: {
 			Color early_color;
 			if (!_get_window_early_clear_override(early_color)) {
-				break;
+				// Even without an early clear color, suppress default erase to
+				// prevent black flashes when windows are first shown or resized,
+				// especially in virtualized GPU environments.
+				return 1;
 			}
 			bool must_recreate_brush = !window_bkg_brush || window_bkg_brush_color != early_color.to_argb32();
 			if (must_recreate_brush) {
@@ -7942,6 +7945,18 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			return;
 		}
 		RasterizerGLES3::make_current(false);
+	}
+#endif
+
+#ifdef GLES3_ENABLED
+	// In virtualized environments (e.g., Hyper-V GPU-PV), OpenGL multi-window rendering
+	// causes flickering due to GPU driver limitations with wglMakeCurrent context switching.
+	// Auto-enable single-window mode to avoid these rendering artifacts.
+	if ((rendering_driver == "opengl3" || rendering_driver == "opengl3_angle") &&
+			rendering_context == nullptr &&
+			IsProcessorFeaturePresent(PF_VIRT_FIRMWARE_ENABLED)) {
+		WARN_PRINT("Virtualized GPU detected without Vulkan support. Recommending single-window mode to avoid rendering artifacts.");
+		embedding_subwindows_recommended = true;
 	}
 #endif
 

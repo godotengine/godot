@@ -126,6 +126,8 @@ private:
 protected:
 	static void _bind_methods();
 
+	bool embedding_subwindows_recommended = false;
+
 #ifndef DISABLE_DEPRECATED
 	static void _bind_compatibility_methods();
 #endif
@@ -901,6 +903,8 @@ public:
 
 	virtual void release_rendering_thread();
 	virtual void swap_buffers();
+
+	bool is_embedding_subwindows_recommended() const { return embedding_subwindows_recommended; }
 
 	virtual void set_native_icon(const String &p_filename);
 	virtual void set_icon(const Ref<Image> &p_icon);
