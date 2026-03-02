@@ -117,6 +117,7 @@ class FindReplaceBar : public HBoxContainer {
 	void _search_text_changed(const String &p_text);
 	void _search_text_submitted(const String &p_text);
 	void _replace_text_submitted(const String &p_text);
+	void _replace_button_pressed();
 	void _toggle_replace_pressed();
 
 protected:
