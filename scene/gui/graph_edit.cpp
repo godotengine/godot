@@ -421,6 +421,14 @@ Vector2 GraphEdit::get_scroll_offset() const {
 	return scroll_offset;
 }
 
+Vector2 GraphEdit::screen_to_graph_point(const Vector2 &p_screen_position) const {
+	return (p_screen_position + scroll_offset) / zoom;
+}
+
+Vector2 GraphEdit::graph_to_screen_point(const Vector2 &p_graph_position) const {
+	return p_graph_position * zoom - scroll_offset;
+}
+
 void GraphEdit::_scrollbar_moved(double) {
 	scroll_offset.x = h_scrollbar->get_value();
 	scroll_offset.y = v_scrollbar->get_value();
@@ -3063,6 +3071,9 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("arrange_nodes"), &GraphEdit::arrange_nodes);
 
 	ClassDB::bind_method(D_METHOD("set_selected", "node"), &GraphEdit::set_selected);
+
+	ClassDB::bind_method(D_METHOD("screen_to_graph_point", "screen_position"), &GraphEdit::screen_to_graph_point);
+	ClassDB::bind_method(D_METHOD("graph_to_screen_point", "graph_position"), &GraphEdit::graph_to_screen_point);
 
 	GDVIRTUAL_BIND(_get_connection_line, "from_position", "to_position")
 	GDVIRTUAL_BIND(_is_node_hover_valid, "from_node", "from_port", "to_node", "to_port");
