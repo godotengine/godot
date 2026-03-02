@@ -138,6 +138,8 @@ public:
 	void accessibility_update_set_name(const RID &p_id, const String &p_name) override;
 	void accessibility_update_set_extra_info(const RID &p_id, const String &p_name_extra_info) override;
 	void accessibility_update_set_description(const RID &p_id, const String &p_description) override;
+	void accessibility_update_set_braille_label(const RID &p_id, const String &p_name) override;
+	void accessibility_update_set_braille_role_description(const RID &p_id, const String &p_description) override;
 	void accessibility_update_set_value(const RID &p_id, const String &p_value) override;
 	void accessibility_update_set_tooltip(const RID &p_id, const String &p_tooltip) override;
 	void accessibility_update_set_bounds(const RID &p_id, const Rect2 &p_rect) override;
@@ -179,7 +181,7 @@ public:
 	void accessibility_update_set_scroll_x_range(const RID &p_id, double p_min, double p_max) override;
 	void accessibility_update_set_scroll_y(const RID &p_id, double p_position) override;
 	void accessibility_update_set_scroll_y_range(const RID &p_id, double p_min, double p_max) override;
-	void accessibility_update_set_text_decorations(const RID &p_id, bool p_underline, bool p_strikethrough, bool p_overline) override;
+	void accessibility_update_set_text_decorations(const RID &p_id, bool p_underline, bool p_strikethrough, bool p_overline, const Color &p_color) override;
 	void accessibility_update_set_text_align(const RID &p_id, HorizontalAlignment p_align) override;
 	void accessibility_update_set_text_selection(const RID &p_id, const RID &p_text_start_id, int p_start_char, const RID &p_text_end_id, int p_end_char) override;
 	void accessibility_update_set_flag(const RID &p_id, DisplayServer::AccessibilityFlags p_flag, bool p_value) override;

@@ -743,6 +743,8 @@ public:
 	virtual void accessibility_update_set_name(const RID &p_id, const String &p_name);
 	virtual void accessibility_update_set_extra_info(const RID &p_id, const String &p_name_extra_info);
 	virtual void accessibility_update_set_description(const RID &p_id, const String &p_description);
+	virtual void accessibility_update_set_braille_label(const RID &p_id, const String &p_name);
+	virtual void accessibility_update_set_braille_role_description(const RID &p_id, const String &p_description);
 	virtual void accessibility_update_set_value(const RID &p_id, const String &p_value);
 	virtual void accessibility_update_set_tooltip(const RID &p_id, const String &p_tooltip);
 	virtual void accessibility_update_set_bounds(const RID &p_id, const Rect2 &p_rect);
@@ -784,7 +786,7 @@ public:
 	virtual void accessibility_update_set_scroll_x_range(const RID &p_id, double p_min, double p_max);
 	virtual void accessibility_update_set_scroll_y(const RID &p_id, double p_position);
 	virtual void accessibility_update_set_scroll_y_range(const RID &p_id, double p_min, double p_max);
-	virtual void accessibility_update_set_text_decorations(const RID &p_id, bool p_underline, bool p_strikethrough, bool p_overline);
+	virtual void accessibility_update_set_text_decorations(const RID &p_id, bool p_underline, bool p_strikethrough, bool p_overline, const Color &p_color);
 	virtual void accessibility_update_set_text_align(const RID &p_id, HorizontalAlignment p_align);
 	virtual void accessibility_update_set_text_selection(const RID &p_id, const RID &p_text_start_id, int p_start_char, const RID &p_text_end_id, int p_end_char);
 	virtual void accessibility_update_set_flag(const RID &p_id, DisplayServer::AccessibilityFlags p_flag, bool p_value);
@@ -876,6 +878,7 @@ public:
 #ifndef DISABLE_DEPRECATED
 	Error _file_dialog_show_bind_compat_98194(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback);
 	Error _file_dialog_with_options_show_bind_compat_98194(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback);
+	void _accessibility_update_set_text_decorations_bind_compat_114596(const RID &p_id, bool p_underline, bool p_strikethrough, bool p_overline);
 #endif
 
 	virtual void beep() const;
@@ -978,6 +981,8 @@ public:
 	virtual void accessibility_update_set_name(const RID &p_id, const String &p_name) = 0;
 	virtual void accessibility_update_set_extra_info(const RID &p_id, const String &p_name_extra_info) = 0;
 	virtual void accessibility_update_set_description(const RID &p_id, const String &p_description) = 0;
+	virtual void accessibility_update_set_braille_label(const RID &p_id, const String &p_name) = 0;
+	virtual void accessibility_update_set_braille_role_description(const RID &p_id, const String &p_description) = 0;
 	virtual void accessibility_update_set_value(const RID &p_id, const String &p_value) = 0;
 	virtual void accessibility_update_set_tooltip(const RID &p_id, const String &p_tooltip) = 0;
 	virtual void accessibility_update_set_bounds(const RID &p_id, const Rect2 &p_rect) = 0;
@@ -1019,7 +1024,7 @@ public:
 	virtual void accessibility_update_set_scroll_x_range(const RID &p_id, double p_min, double p_max) = 0;
 	virtual void accessibility_update_set_scroll_y(const RID &p_id, double p_position) = 0;
 	virtual void accessibility_update_set_scroll_y_range(const RID &p_id, double p_min, double p_max) = 0;
-	virtual void accessibility_update_set_text_decorations(const RID &p_id, bool p_underline, bool p_strikethrough, bool p_overline) = 0;
+	virtual void accessibility_update_set_text_decorations(const RID &p_id, bool p_underline, bool p_strikethrough, bool p_overline, const Color &p_color = Color(0, 0, 0, 1)) = 0;
 	virtual void accessibility_update_set_text_align(const RID &p_id, HorizontalAlignment p_align) = 0;
 	virtual void accessibility_update_set_text_selection(const RID &p_id, const RID &p_text_start_id, int p_start_char, const RID &p_text_end_id, int p_end_char) = 0;
 	virtual void accessibility_update_set_flag(const RID &p_id, DisplayServer::AccessibilityFlags p_flag, bool p_value) = 0;

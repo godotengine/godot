@@ -763,6 +763,17 @@ void DisplayServer::accessibility_update_set_description(const RID &p_id, const 
 	}
 }
 
+void DisplayServer::accessibility_update_set_braille_label(const RID &p_id, const String &p_name) {
+	if (accessibility_driver) {
+		accessibility_driver->accessibility_update_set_braille_label(p_id, p_name);
+	}
+}
+void DisplayServer::accessibility_update_set_braille_role_description(const RID &p_id, const String &p_description) {
+	if (accessibility_driver) {
+		accessibility_driver->accessibility_update_set_braille_role_description(p_id, p_description);
+	}
+}
+
 void DisplayServer::accessibility_update_set_extra_info(const RID &p_id, const String &p_name_extra_info) {
 	if (accessibility_driver) {
 		accessibility_driver->accessibility_update_set_extra_info(p_id, p_name_extra_info);
@@ -1015,9 +1026,9 @@ void DisplayServer::accessibility_update_set_scroll_y_range(const RID &p_id, dou
 	}
 }
 
-void DisplayServer::accessibility_update_set_text_decorations(const RID &p_id, bool p_underline, bool p_strikethrough, bool p_overline) {
+void DisplayServer::accessibility_update_set_text_decorations(const RID &p_id, bool p_underline, bool p_strikethrough, bool p_overline, const Color &p_color) {
 	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_text_decorations(p_id, p_underline, p_strikethrough, p_overline);
+		accessibility_driver->accessibility_update_set_text_decorations(p_id, p_underline, p_strikethrough, p_overline, p_color);
 	}
 }
 
@@ -1597,6 +1608,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_name", "id", "name"), &DisplayServer::accessibility_update_set_name);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_extra_info", "id", "name"), &DisplayServer::accessibility_update_set_extra_info);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_description", "id", "description"), &DisplayServer::accessibility_update_set_description);
+	ClassDB::bind_method(D_METHOD("accessibility_update_set_braille_label", "id", "name"), &DisplayServer::accessibility_update_set_braille_label);
+	ClassDB::bind_method(D_METHOD("accessibility_update_set_braille_role_description", "id", "description"), &DisplayServer::accessibility_update_set_braille_role_description);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_value", "id", "value"), &DisplayServer::accessibility_update_set_value);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_tooltip", "id", "tooltip"), &DisplayServer::accessibility_update_set_tooltip);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_bounds", "id", "p_rect"), &DisplayServer::accessibility_update_set_bounds);
@@ -1638,7 +1651,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_scroll_x_range", "id", "min", "max"), &DisplayServer::accessibility_update_set_scroll_x_range);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_scroll_y", "id", "position"), &DisplayServer::accessibility_update_set_scroll_y);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_scroll_y_range", "id", "min", "max"), &DisplayServer::accessibility_update_set_scroll_y_range);
-	ClassDB::bind_method(D_METHOD("accessibility_update_set_text_decorations", "id", "underline", "strikethrough", "overline"), &DisplayServer::accessibility_update_set_text_decorations);
+	ClassDB::bind_method(D_METHOD("accessibility_update_set_text_decorations", "id", "underline", "strikethrough", "overline", "color"), &DisplayServer::accessibility_update_set_text_decorations, DEFVAL(Color(0, 0, 0, 1)));
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_text_align", "id", "align"), &DisplayServer::accessibility_update_set_text_align);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_text_selection", "id", "text_start_id", "start_char", "text_end_id", "end_char"), &DisplayServer::accessibility_update_set_text_selection);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_flag", "id", "flag", "value"), &DisplayServer::accessibility_update_set_flag);

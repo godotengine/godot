@@ -129,7 +129,7 @@ void AccessibilityDriverAccessKit::_accessibility_action_callback(struct accessk
 	DisplayServer::WindowID window_id = (DisplayServer::WindowID)(size_t)p_user_data;
 	ERR_FAIL_COND(!singleton->windows.has(window_id));
 
-	RID rid = RID::from_uint64(p_request->target);
+	RID rid = RID::from_uint64(p_request->target_node);
 	AccessibilityElement *ae = singleton->rid_owner.get_or_null(rid);
 	ERR_FAIL_NULL(ae);
 
@@ -390,34 +390,20 @@ RID AccessibilityDriverAccessKit::accessibility_create_sub_text_edit_elements(co
 		accesskit_node_set_value(ae->node, text.ptr());
 		accesskit_node_set_character_lengths(ae->node, char_lengths.size(), char_lengths.ptr());
 
-		// Word sizes.
-		Vector<uint8_t> word_lengths;
+		// Word starts.
+		Vector<uint8_t> word_starts;
+		word_starts.push_back(0);
 
-		int32_t prev = ae->run.x;
-		int32_t total = 0;
 		for (int j = 0; j < words.size(); j += 2) {
-			if (words[j] < ae->run.x) {
+			if (words[j] <= ae->run.x) {
 				continue;
 			}
 			if (words[j] >= ae->run.y) {
 				break;
 			}
-			int32_t wlen = words[j] - prev;
-			while (wlen > 255) {
-				word_lengths.push_back(255);
-				wlen -= 255;
-				total += 255;
-			}
-			if (wlen > 0) {
-				word_lengths.push_back(wlen);
-				total += wlen;
-			}
-			prev = words[j];
+			word_starts.push_back(words[j] - ae->run.x);
 		}
-		if (total < t.length()) {
-			word_lengths.push_back(t.length() - total);
-		}
-		accesskit_node_set_word_lengths(ae->node, word_lengths.size(), word_lengths.ptr());
+		accesskit_node_set_word_starts(ae->node, word_starts.size(), word_starts.ptr());
 
 		// Char widths and positions.
 		Vector<float> char_positions;
@@ -462,9 +448,6 @@ RID AccessibilityDriverAccessKit::accessibility_create_sub_text_edit_elements(co
 			CharString font_name = TS->font_get_name(font_rid).utf8();
 			if (font_name.length() > 0) {
 				accesskit_node_set_font_family(ae->node, font_name.ptr());
-			}
-			if (TS->font_get_style(font_rid).has_flag(TextServer::FONT_BOLD)) {
-				accesskit_node_set_bold(ae->node);
 			}
 			if (TS->font_get_style(font_rid).has_flag(TextServer::FONT_ITALIC)) {
 				accesskit_node_set_italic(ae->node);
@@ -773,6 +756,34 @@ void AccessibilityDriverAccessKit::accessibility_update_set_description(const RI
 		accesskit_node_set_description(ae->node, p_description.utf8().ptr());
 	} else {
 		accesskit_node_clear_description(ae->node);
+	}
+}
+
+void AccessibilityDriverAccessKit::accessibility_update_set_braille_label(const RID &p_id, const String &p_name) {
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility updates are only allowed inside the NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+
+	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
+	ERR_FAIL_NULL(ae);
+	_ensure_node(p_id, ae);
+
+	if (!p_name.is_empty()) {
+		accesskit_node_set_braille_label(ae->node, p_name.utf8().ptr());
+	} else {
+		accesskit_node_clear_braille_label(ae->node);
+	}
+}
+
+void AccessibilityDriverAccessKit::accessibility_update_set_braille_role_description(const RID &p_id, const String &p_description) {
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility updates are only allowed inside the NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+
+	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
+	ERR_FAIL_NULL(ae);
+	_ensure_node(p_id, ae);
+
+	if (!p_description.is_empty()) {
+		accesskit_node_set_braille_role_description(ae->node, p_description.utf8().ptr());
+	} else {
+		accesskit_node_clear_braille_role_description(ae->node);
 	}
 }
 
@@ -1285,25 +1296,31 @@ void AccessibilityDriverAccessKit::accessibility_update_set_scroll_y_range(const
 	accesskit_node_set_scroll_y_max(ae->node, p_max);
 }
 
-void AccessibilityDriverAccessKit::accessibility_update_set_text_decorations(const RID &p_id, bool p_underline, bool p_strikethrough, bool p_overline) {
+void AccessibilityDriverAccessKit::accessibility_update_set_text_decorations(const RID &p_id, bool p_underline, bool p_strikethrough, bool p_overline, const Color &p_color) {
 	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility updates are only allowed inside the NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
+	accesskit_color color;
+	color.red = p_color.get_r8();
+	color.blue = p_color.get_b8();
+	color.green = p_color.get_g8();
+	color.alpha = p_color.get_a8();
+
 	if (p_underline) {
-		accesskit_node_set_underline(ae->node, ACCESSKIT_TEXT_DECORATION_SOLID);
+		accesskit_node_set_underline(ae->node, { ACCESSKIT_TEXT_DECORATION_STYLE_SOLID, color });
 	} else {
 		accesskit_node_clear_underline(ae->node);
 	}
 	if (p_overline) {
-		accesskit_node_set_overline(ae->node, ACCESSKIT_TEXT_DECORATION_SOLID);
+		accesskit_node_set_overline(ae->node, { ACCESSKIT_TEXT_DECORATION_STYLE_SOLID, color });
 	} else {
 		accesskit_node_clear_overline(ae->node);
 	}
 	if (p_strikethrough) {
-		accesskit_node_set_strikethrough(ae->node, ACCESSKIT_TEXT_DECORATION_SOLID);
+		accesskit_node_set_strikethrough(ae->node, { ACCESSKIT_TEXT_DECORATION_STYLE_SOLID, color });
 	} else {
 		accesskit_node_clear_strikethrough(ae->node);
 	}
@@ -1589,7 +1606,13 @@ void AccessibilityDriverAccessKit::accessibility_update_set_color_value(const RI
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_set_color_value(ae->node, p_color.to_rgba32());
+	accesskit_color color;
+	color.red = p_color.get_r8();
+	color.blue = p_color.get_b8();
+	color.green = p_color.get_g8();
+	color.alpha = p_color.get_a8();
+
+	accesskit_node_set_color_value(ae->node, color);
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_background_color(const RID &p_id, const Color &p_color) {
@@ -1599,7 +1622,13 @@ void AccessibilityDriverAccessKit::accessibility_update_set_background_color(con
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_set_background_color(ae->node, p_color.to_rgba32());
+	accesskit_color color;
+	color.red = p_color.get_r8();
+	color.blue = p_color.get_b8();
+	color.green = p_color.get_g8();
+	color.alpha = p_color.get_a8();
+
+	accesskit_node_set_background_color(ae->node, color);
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_foreground_color(const RID &p_id, const Color &p_color) {
@@ -1609,7 +1638,13 @@ void AccessibilityDriverAccessKit::accessibility_update_set_foreground_color(con
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_set_foreground_color(ae->node, p_color.to_rgba32());
+	accesskit_color color;
+	color.red = p_color.get_r8();
+	color.blue = p_color.get_b8();
+	color.green = p_color.get_g8();
+	color.alpha = p_color.get_a8();
+
+	accesskit_node_set_foreground_color(ae->node, color);
 }
 
 Error AccessibilityDriverAccessKit::init() {
