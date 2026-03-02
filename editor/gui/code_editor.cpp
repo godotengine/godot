@@ -698,6 +698,11 @@ void FindReplaceBar::_replace_text_submitted(const String &p_text) {
 	}
 }
 
+void FindReplaceBar::_replace_button_pressed() {
+	_replace();
+	search_next();
+}
+
 void FindReplaceBar::_toggle_replace_pressed() {
 	bool replace_visible = replace_text->is_visible_in_tree();
 	replace_visible ? popup_search(true) : popup_replace();
@@ -841,7 +846,7 @@ FindReplaceBar::FindReplaceBar() {
 	replace = memnew(Button);
 	hbc_button_replace->add_child(replace);
 	replace->set_text(TTRC("Replace"));
-	replace->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::_replace));
+	replace->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::_replace_button_pressed));
 
 	replace_all = memnew(Button);
 	hbc_button_replace->add_child(replace_all);
