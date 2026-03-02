@@ -832,6 +832,7 @@ FindReplaceBar::FindReplaceBar() {
 
 	// Replace toolbar.
 	replace_text = memnew(LineEdit);
+	replace_text->set_keep_editing_on_text_submit(true);
 	vbc_lineedit->add_child(replace_text);
 	replace_text->set_placeholder(TTRC("Replace"));
 	replace_text->set_tooltip_text(TTRC("Replace"));
