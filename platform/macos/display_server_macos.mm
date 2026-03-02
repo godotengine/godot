@@ -55,6 +55,7 @@
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_method_pointer.h"
 #include "core/os/keyboard.h"
 #include "core/os/main_loop.h"
 #include "drivers/png/png_driver_common.h"
@@ -1357,17 +1358,24 @@ bool DisplayServerMacOS::update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, N
 
 		// Confine mouse position to the window, and update delta.
 		NSRect frame = [p_wd.window_view frame];
-		NSPoint conf_pos = r_mpos;
-		conf_pos.x = CLAMP(conf_pos.x + r_delta.x, 0.f, frame.size.width);
-		conf_pos.y = CLAMP(conf_pos.y - r_delta.y, 0.f, frame.size.height);
-		r_delta.x = conf_pos.x - r_mpos.x;
-		r_delta.y = r_mpos.y - conf_pos.y;
-		r_mpos = conf_pos;
+		NSRect frameOnScreen = [[p_wd.window_view window] convertRectToScreen:frame];
+		frameOnScreen.origin.y = CGDisplayBounds(CGMainDisplayID()).size.height - frameOnScreen.origin.y;
+
+		CGEventRef ourEvent = CGEventCreate(nullptr);
+		NSPoint conf_pos = CGEventGetLocation(ourEvent);
+		CFRelease(ourEvent);
+
+		NSPoint prev_conf_pos = conf_pos;
+
+		conf_pos.x = CLAMP(conf_pos.x + r_delta.x, frameOnScreen.origin.x, frameOnScreen.origin.x + frameOnScreen.size.width);
+		conf_pos.y = CLAMP(conf_pos.y + r_delta.y, frameOnScreen.origin.y - frameOnScreen.size.height, frameOnScreen.origin.y);
+		r_delta.x = conf_pos.x - prev_conf_pos.x;
+		r_delta.y = conf_pos.y - prev_conf_pos.y;
+
+		NSPoint wnd_point = NSMakePoint(conf_pos.x, CGDisplayBounds(CGMainDisplayID()).size.height - conf_pos.y);
+		r_mpos = [[p_wd.window_view window] convertPointFromScreen:wnd_point];
 
 		// Move mouse cursor.
-		NSRect point_in_window_rect = NSMakeRect(conf_pos.x, conf_pos.y, 0, 0);
-		conf_pos = [[p_wd.window_view window] convertRectToScreen:point_in_window_rect].origin;
-		conf_pos.y = CGDisplayBounds(CGMainDisplayID()).size.height - conf_pos.y;
 		CGWarpMouseCursorPosition(conf_pos);
 
 		// Save warp data.

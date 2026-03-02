@@ -31,6 +31,7 @@
 #include "csg_shape.h"
 
 #include "core/math/geometry_2d.h"
+#include "core/object/class_db.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
 #include "servers/rendering/rendering_server.h"

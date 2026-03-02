@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
@@ -1608,6 +1609,12 @@ void FileDialog::_select_drive(int p_idx) {
 }
 
 void FileDialog::_change_dir(const String &p_new_dir) {
+	if (access == ACCESS_RESOURCES && p_new_dir.begins_with("user://")) {
+		ERR_FAIL_MSG("Can't change to userdata folder when using ACCESS_RESOURCES.");
+	} else if (access == ACCESS_USERDATA && p_new_dir.begins_with("res://")) {
+		ERR_FAIL_MSG("Can't change to resources folder when using ACCESS_USERDATA.");
+	}
+
 	if (root_prefix.is_empty()) {
 		dir_access->change_dir(p_new_dir);
 	} else {

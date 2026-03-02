@@ -31,6 +31,7 @@
 #include "split_container.h"
 #include "split_container.compat.inc"
 
+#include "core/object/class_db.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/viewport.h"
 #include "scene/theme/theme_db.h"

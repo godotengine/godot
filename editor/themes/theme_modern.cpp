@@ -2651,6 +2651,8 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_color("code_bg_color", "EditorHelp", _get_base_color(p_config, 1.6, 0.8));
 		p_theme->set_color("kbd_bg_color", "EditorHelp", p_config.dark_color_1);
 		p_theme->set_color("param_bg_color", "EditorHelp", p_config.dark_color_1);
+		p_theme->set_color("primary_hr_color", "EditorHelp", p_config.base_color.lerp(p_config.mono_color_font, p_config.dark_theme ? 0.14 : 0.24));
+		p_theme->set_color("secondary_hr_color", "EditorHelp", p_config.base_color.lerp(p_config.mono_color_font, p_config.dark_theme ? 0.12 : 0.22));
 		p_theme->set_constant(SceneStringName(line_separation), "EditorHelp", Math::round(6 * EDSCALE));
 		p_theme->set_constant(SceneStringName(paragraph_separation), "EditorHelp", Math::round(10 * EDSCALE));
 		p_theme->set_constant("table_h_separation", "EditorHelp", 16 * EDSCALE);

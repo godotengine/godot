@@ -31,6 +31,7 @@
 #include "line_2d.h"
 
 #include "core/math/geometry_2d.h"
+#include "core/object/class_db.h"
 #include "line_builder.h"
 #include "servers/rendering/rendering_server.h"
 

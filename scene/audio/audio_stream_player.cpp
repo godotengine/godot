@@ -31,6 +31,7 @@
 #include "audio_stream_player.h"
 #include "audio_stream_player.compat.inc"
 
+#include "core/object/class_db.h"
 #include "scene/audio/audio_stream_player_internal.h"
 #include "servers/audio/audio_stream.h"
 #include "servers/display/display_server.h"

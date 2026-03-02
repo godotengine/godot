@@ -32,6 +32,7 @@
 
 #include "core/io/marshalls.h"
 #include "core/math/random_pcg.h"
+#include "core/object/class_db.h"
 #include "scene/resources/surface_tool.h"
 
 #ifndef PHYSICS_3D_DISABLED

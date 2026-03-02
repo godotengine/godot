@@ -30,6 +30,8 @@
 
 #include "rigid_body_2d.h"
 
+#include "core/object/class_db.h"
+
 void RigidBody2D::_body_enter_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);

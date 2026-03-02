@@ -35,6 +35,7 @@ TEST_FORCE_LINK(test_tcp_server)
 #include "core/config/project_settings.h"
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
+#include "core/os/os.h"
 
 #include <functional>
 

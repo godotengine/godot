@@ -33,6 +33,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "core/string/string_name.h"
 #include "scene/2d/audio_stream_player_2d.h"
 #include "scene/animation/animation_player.h"

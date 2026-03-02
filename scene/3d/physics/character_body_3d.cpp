@@ -31,6 +31,7 @@
 #include "character_body_3d.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 
 #ifndef DISABLE_DEPRECATED
 #include "servers/physics_3d/physics_server_3d_extension.h"

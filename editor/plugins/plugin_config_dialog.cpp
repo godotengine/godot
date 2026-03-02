@@ -32,6 +32,7 @@
 
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"

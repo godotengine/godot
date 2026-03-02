@@ -31,6 +31,7 @@
 #include "soft_body_3d.h"
 #include "soft_body_3d.compat.inc"
 
+#include "core/object/class_db.h"
 #include "scene/3d/physics/physics_body_3d.h"
 #include "servers/rendering/rendering_server.h"
 

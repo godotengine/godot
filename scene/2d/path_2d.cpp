@@ -31,6 +31,7 @@
 #include "path_2d.h"
 
 #include "core/math/geometry_2d.h"
+#include "core/object/class_db.h"
 #include "scene/main/timer.h"
 #include "scene/resources/mesh.h"
 #include "servers/rendering/rendering_server.h"

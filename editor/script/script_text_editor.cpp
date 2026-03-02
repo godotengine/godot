@@ -2586,6 +2586,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/move_up", TTRC("Move Up"), KeyModifierMask::ALT | Key::UP);
 	ED_SHORTCUT("script_text_editor/move_down", TTRC("Move Down"), KeyModifierMask::ALT | Key::DOWN);
 	ED_SHORTCUT("script_text_editor/delete_line", TTRC("Delete Line"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::K);
+	ED_SHORTCUT("script_text_editor/join_lines", TTRC("Join Lines"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::J);
 
 	// Leave these at zero, same can be accomplished with tab/shift-tab, including selection.
 	// The next/previous in history shortcut in this case makes a lot more sense.

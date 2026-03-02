@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "render_scene_buffers_rd.h"
+
+#include "core/object/class_db.h"
+
 RID RenderSceneBuffersRD::_get_color_texture_compat_80214() {
 	return _get_color_texture(msaa_3d != RSE::VIEWPORT_MSAA_DISABLED);
 }

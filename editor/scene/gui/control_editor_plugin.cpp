@@ -30,6 +30,7 @@
 
 #include "control_editor_plugin.h"
 
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/canvas_item_editor_plugin.h"

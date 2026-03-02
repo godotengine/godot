@@ -31,6 +31,7 @@
 #include "scene_tree_editor.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/docks/editor_dock_manager.h"
@@ -1389,7 +1390,7 @@ void SceneTreeEditor::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			// Wait for the node to be inspected before triggering the unfolding.
-			tree->add_theme_constant_override("dragging_unfold_wait_msec", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000 * 2);
+			tree->add_theme_constant_override("dragging_unfold_wait_msec", (float)EDITOR_GET("interface/editor/timers/dragging_hover_wait_seconds") * 1000 * 2);
 			tree->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 			[[fallthrough]];
 		}

@@ -30,6 +30,7 @@
 
 #include "xr_vrs.h"
 
+#include "core/object/class_db.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server.h"

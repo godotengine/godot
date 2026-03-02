@@ -34,6 +34,7 @@
 #include "core/io/config_file.h"
 #include "core/math/delaunay_3d.h"
 #include "core/math/geometry_3d.h"
+#include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_probe.h"

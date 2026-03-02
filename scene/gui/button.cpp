@@ -30,8 +30,8 @@
 
 #include "button.h"
 
+#include "core/object/class_db.h"
 #include "scene/gui/dialogs.h"
-
 #include "scene/theme/theme_db.h"
 
 Size2 Button::get_minimum_size() const {

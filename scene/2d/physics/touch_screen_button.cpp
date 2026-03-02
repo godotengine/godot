@@ -31,6 +31,7 @@
 #include "touch_screen_button.h"
 
 #include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
 
 void TouchScreenButton::set_texture_normal(const Ref<Texture2D> &p_texture) {

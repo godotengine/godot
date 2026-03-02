@@ -30,6 +30,7 @@
 
 #include "world_boundary_shape_3d.h"
 
+#include "core/object/class_db.h"
 #include "scene/resources/mesh.h"
 #include "servers/physics_3d/physics_server_3d.h"
 

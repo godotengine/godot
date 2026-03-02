@@ -1091,10 +1091,10 @@
 		<member name="display/window/subwindows/embed_subwindows" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], subwindows are embedded in the main window (this is also called single-window mode). Single-window mode can be faster as it does not need to create a separate window for every popup and tooltip, which can be a slow operation depending on the operating system and rendering method in use.
 			If [code]false[/code], subwindows are created as separate windows (this is also called multi-window mode). This allows them to be moved outside the main window and use native operating system window decorations.
-			This is equivalent to [member EditorSettings.interface/editor/single_window_mode] in the editor.
+			This is equivalent to [member EditorSettings.interface/editor/display/single_window_mode] in the editor.
 		</member>
 		<member name="display/window/vsync/vsync_mode" type="int" setter="" getter="" default="1" keywords="adaptive, mailbox">
-			Sets the V-Sync mode for the main game window. The editor's own V-Sync mode can be set using [member EditorSettings.interface/editor/vsync_mode].
+			Sets the V-Sync mode for the main game window. The editor's own V-Sync mode can be set using [member EditorSettings.interface/editor/display/vsync_mode].
 			See [enum DisplayServer.VSyncMode] for possible values and how they affect the behavior of your application.
 			Depending on the platform and rendering method, the engine will fall back to [b]Enabled[/b] if the desired mode is not supported.
 			V-Sync can be disabled on the command line using the [code]--disable-vsync[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].

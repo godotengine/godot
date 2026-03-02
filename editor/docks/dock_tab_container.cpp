@@ -30,6 +30,7 @@
 
 #include "dock_tab_container.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
@@ -177,7 +178,7 @@ void DockTabContainer::update_visibility() {
 }
 
 DockTabContainer::TabStyle DockTabContainer::get_tab_style() const {
-	return (TabStyle)EDITOR_GET("interface/editor/dock_tab_style").operator int();
+	return (TabStyle)EDITOR_GET("interface/editor/docks/dock_tab_style").operator int();
 }
 
 bool DockTabContainer::can_switch_dock() const {

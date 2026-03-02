@@ -42,6 +42,10 @@
 #include "servers/display/native_menu.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
+#ifdef PROXY_TO_PTHREAD_ENABLED
+#include "core/object/callable_method_pointer.h"
+#endif
+
 #ifdef GLES3_ENABLED
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif

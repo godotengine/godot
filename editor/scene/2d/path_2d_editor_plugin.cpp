@@ -30,6 +30,7 @@
 
 #include "path_2d_editor_plugin.h"
 
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"

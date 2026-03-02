@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "editor_export_platform.h"
-
 #include "editor_export_platform.compat.inc"
 
 #include "core/config/project_settings.h"
@@ -43,6 +42,7 @@
 #include "core/io/image_loader.h"
 #include "core/io/resource_uid.h"
 #include "core/math/random_pcg.h"
+#include "core/object/class_db.h"
 #include "core/os/shared_object.h"
 #include "core/string/translation_server.h"
 #include "core/version.h"

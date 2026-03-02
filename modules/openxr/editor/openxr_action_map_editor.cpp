@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_command_palette.h"

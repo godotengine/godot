@@ -30,6 +30,7 @@
 
 #include "native_menu.h"
 
+#include "core/object/class_db.h"
 #include "scene/resources/texture.h"
 
 NativeMenu *NativeMenu::singleton = nullptr;

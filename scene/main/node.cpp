@@ -31,6 +31,8 @@
 #include "node.h"
 #include "node.compat.inc"
 
+#include "core/object/class_db.h"
+
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Mesh);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, DisplayServer);

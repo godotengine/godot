@@ -30,6 +30,7 @@
 
 #include "tile_atlas_view.h"
 
+#include "core/object/class_db.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/tile_map_layer.h"
