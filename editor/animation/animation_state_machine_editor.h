@@ -169,19 +169,16 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	StringName connecting_to_node;
 
 	bool reconnecting = false;
-	int hovered_transition_index = -1;
+	Ref<AnimationNodeStateMachineTransition> hovered_transition;
 	bool hovered_transition_start = false;
-	int reconnecting_transition_index = -1;
+	Ref<AnimationNodeStateMachineTransition> reconnecting_transition;
 	bool reconnecting_transition_start = false;
-	int reconnecting_from_node_rect_index = -1;
-	int reconnecting_to_node_rect_index = -1;
 	Vector2 reconnecting_transition_pos;
 	StringName reconnecting_transition_target;
 
 	void _add_menu_type(int p_index);
 	void _add_animation_type(int p_index);
 	void _connect_to(int p_index);
-	void _reconnect_transition();
 	void _select_transition(const StringName &p_from, const StringName &p_to);
 
 	struct NodeRect {
