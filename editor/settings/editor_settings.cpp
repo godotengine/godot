@@ -565,7 +565,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 #endif
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/collapse_main_menu", is_android_editor, "")
 
-	_initial_set("interface/editors/show_scene_tree_root_selection", true);
 	_initial_set("interface/editors/derive_script_globals_by_name", true);
 	_initial_set("docks/scene_tree/ask_before_revoking_unique_name", true);
 
@@ -1259,6 +1258,7 @@ void EditorSettings::_handle_setting_compatibility() {
 	erase("run/output/always_open_output_on_play");
 	erase("run/output/always_close_output_on_stop");
 	erase("text_editor/theme/line_spacing"); // See GH-106137.
+	erase("interface/editors/show_scene_tree_root_selection");
 
 	// Handle renamed settings.
 	_rename_setting("interface/editor/editor_language", "interface/editor/localization/editor_language");

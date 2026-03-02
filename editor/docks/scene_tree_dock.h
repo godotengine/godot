@@ -284,6 +284,7 @@ class SceneTreeDock : public EditorDock {
 	void _local_tree_selected();
 
 	void _update_create_root_dialog(bool p_initializing = false);
+	void _update_create_root_dialog_visibility();
 	void _favorite_root_selected(const String &p_class);
 
 	void _feature_profile_changed();
