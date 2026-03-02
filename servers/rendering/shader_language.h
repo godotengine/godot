@@ -347,10 +347,6 @@ public:
 		REPEAT_DEFAULT,
 	};
 
-	enum {
-		MAX_INSTANCE_UNIFORM_INDICES = 16
-	};
-
 	struct VaryingFunctionNames {
 		StringName fragment;
 		StringName vertex;
@@ -867,6 +863,8 @@ public:
 	static void get_keyword_list(List<String> *r_keywords);
 	static bool is_control_flow_keyword(String p_keyword);
 	static void get_builtin_funcs(List<String> *r_keywords);
+
+	static int get_max_instance_uniform_indices();
 
 	static SafeNumeric<int> instance_counter;
 

@@ -2018,10 +2018,10 @@ RID MaterialStorage::global_shader_uniforms_get_storage_buffer() const {
 
 int32_t MaterialStorage::global_shader_parameters_instance_allocate(RID p_instance) {
 	ERR_FAIL_COND_V(global_shader_uniforms.instance_buffer_pos.has(p_instance), -1);
-	int32_t pos = _global_shader_uniform_allocate(ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES);
+	int32_t pos = _global_shader_uniform_allocate(ShaderLanguage::get_max_instance_uniform_indices());
 	global_shader_uniforms.instance_buffer_pos[p_instance] = pos; //save anyway
 	ERR_FAIL_COND_V_MSG(pos < 0, -1, "Too many instances using shader instance variables. Increase buffer size in Project Settings.");
-	global_shader_uniforms.buffer_usage[pos].elements = ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES;
+	global_shader_uniforms.buffer_usage[pos].elements = ShaderLanguage::get_max_instance_uniform_indices();
 	return pos;
 }
 
@@ -2043,7 +2043,7 @@ void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, i
 	if (pos < 0) {
 		return; //again, not allocated, ignore
 	}
-	ERR_FAIL_INDEX(p_index, ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES);
+	ERR_FAIL_INDEX(p_index, ShaderLanguage::get_max_instance_uniform_indices());
 
 	Variant::Type value_type = p_value.get_type();
 	ERR_FAIL_COND_MSG(p_value.get_type() > Variant::COLOR, "Unsupported variant type for instance parameter: " + Variant::get_type_name(value_type)); //anything greater not supported
