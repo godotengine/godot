@@ -155,6 +155,44 @@ void EventListenerLineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	SceneTree *tree = get_tree();
+	bool accessible_mode = tree && tree->is_accessibility_enabled();
+
+	if (accessible_mode) {
+		// Accessible mode: explicit listening triggered by ui_accept.
+		if (!accessible_listening) {
+			// Not listening: ui_accept starts listening, other keys pass through for navigation.
+			if (p_event->is_action_pressed(SNAME("ui_accept"))) {
+				accessible_listening = true;
+				set_placeholder(TTRC("Listening..."));
+				accept_event();
+				return;
+			}
+			// Let navigation keys pass through to parent.
+			if (p_event->is_action_pressed(SNAME("ui_focus_next")) || p_event->is_action_pressed(SNAME("ui_focus_prev"))) {
+				return;
+			} else {
+				// Ignore event.
+				accept_event();
+				return;
+			}
+		}
+
+		// Listening: capture next allowed input event, then stop listening.
+		accept_event();
+		if (!p_event->is_pressed() || p_event->is_echo() || !_is_event_allowed(p_event)) {
+			return;
+		}
+
+		event = p_event;
+		set_text(get_event_text(event, false));
+		emit_signal("event_changed", event);
+		accessible_listening = false;
+		set_placeholder(vformat(TTRC("Press %s to Listen"), InputMap::get_singleton()->get_action_description("ui_accept")));
+		return;
+	}
+
+	// Non-accessible mode: original behavior.
 	// First event will be an event which is used to focus this control - i.e. a mouse click, or a tab press.
 	// Ignore the first one so that clicking into the LineEdit does not override the current event.
 	// Ignore is reset to true when the control is unfocused.
@@ -233,8 +271,6 @@ void EventListenerLineEdit::_notification(int p_what) {
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
-
-			DisplayServer::get_singleton()->accessibility_update_set_extra_info(ae, vformat(TTR("Listening for Input. Hold %s to release focus."), InputMap::get_singleton()->get_action_description("ui_cancel")));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -247,21 +283,34 @@ void EventListenerLineEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_FOCUS_ENTER: {
-			AcceptDialog *dialog = Object::cast_to<AcceptDialog>(get_window());
-			if (dialog) {
-				dialog->set_close_on_escape(false);
-			}
+			SceneTree *tree = get_tree();
+			bool accessible_mode = tree && tree->is_accessibility_enabled();
 
-			set_placeholder(TTRC("Listening for Input"));
+			if (accessible_mode) {
+				// In accessible mode, don't disable escape-to-close since we don't intercept keys.
+				set_placeholder(vformat(TTRC("Press %s to Listen"), InputMap::get_singleton()->get_action_description("ui_accept")));
+			} else {
+				AcceptDialog *dialog = Object::cast_to<AcceptDialog>(get_window());
+				if (dialog) {
+					dialog->set_close_on_escape(false);
+				}
+				set_placeholder(TTRC("Listening for Input"));
+			}
 		} break;
 
 		case NOTIFICATION_FOCUS_EXIT: {
-			AcceptDialog *dialog = Object::cast_to<AcceptDialog>(get_window());
-			if (dialog) {
-				dialog->set_close_on_escape(true);
-			}
+			SceneTree *tree = get_tree();
+			bool accessible_mode = tree && tree->is_accessibility_enabled();
 
-			ignore_next_event = true;
+			if (accessible_mode) {
+				accessible_listening = false;
+			} else {
+				AcceptDialog *dialog = Object::cast_to<AcceptDialog>(get_window());
+				if (dialog) {
+					dialog->set_close_on_escape(true);
+				}
+				ignore_next_event = true;
+			}
 			set_placeholder(TTRC("Filter by Event"));
 		} break;
 	}
