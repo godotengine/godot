@@ -971,6 +971,8 @@ void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 	undo_redo->add_undo_method(state_machine.ptr(), "remove_node", name);
 	connecting_to_node = name;
 	_add_transition(true);
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
 	updating = false;
 
@@ -998,6 +1000,8 @@ void AnimationNodeStateMachineEditor::_add_animation_type(int p_index) {
 	undo_redo->add_undo_method(state_machine.ptr(), "remove_node", name);
 	connecting_to_node = name;
 	_add_transition(true);
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
 	updating = false;
 
