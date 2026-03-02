@@ -3642,10 +3642,30 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			if (p_call->function_name == SNAME("filter") && base_type.has_container_element_type(0)) {
 				return_type.set_container_element_type(0, base_type.get_container_element_type(0));
 			} else if (p_call->function_name == SNAME("map") && !p_call->arguments.is_empty()) {
-				const GDScriptParser::DataType &callable_type = p_call->arguments[0]->get_datatype();
+				const GDScriptParser::ExpressionNode *callable_argument = p_call->arguments[0];
+				const GDScriptParser::DataType &callable_type = callable_argument->get_datatype();
 				if (callable_type.kind == GDScriptParser::DataType::BUILTIN && callable_type.builtin_type == Variant::CALLABLE) {
-					// Callable signatures resolved by the analyzer are stored in `method_info`.
-					GDScriptParser::DataType mapped_type = type_from_property(callable_type.method_info.return_val);
+					GDScriptParser::DataType mapped_type;
+
+					// Prefer direct function information when available, as PropertyInfo loses
+					// some script-local class identity (e.g. local inner classes).
+					if (callable_argument->type == GDScriptParser::Node::LAMBDA) {
+						const GDScriptParser::LambdaNode *lambda = static_cast<const GDScriptParser::LambdaNode *>(callable_argument);
+						if (lambda->function != nullptr) {
+							mapped_type = lambda->function->get_datatype();
+						}
+					} else if (callable_argument->type == GDScriptParser::Node::IDENTIFIER) {
+						const GDScriptParser::IdentifierNode *identifier = static_cast<const GDScriptParser::IdentifierNode *>(callable_argument);
+						if (identifier->source == GDScriptParser::IdentifierNode::MEMBER_FUNCTION && identifier->function_source != nullptr) {
+							mapped_type = identifier->function_source->get_datatype();
+						}
+					}
+
+					if (!mapped_type.is_hard_type() || mapped_type.is_variant()) {
+						// Callable signatures resolved by the analyzer are stored in `method_info`.
+						mapped_type = type_from_property(callable_type.method_info.return_val);
+					}
+
 					if (mapped_type.is_hard_type() && !(mapped_type.kind == GDScriptParser::DataType::BUILTIN && mapped_type.builtin_type == Variant::NIL) && !mapped_type.is_variant()) {
 						return_type.set_container_element_type(0, mapped_type);
 					}
