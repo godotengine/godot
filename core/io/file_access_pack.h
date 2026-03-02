@@ -50,6 +50,7 @@ enum PackFlags {
 	PACK_DIR_ENCRYPTED = 1 << 0,
 	PACK_REL_FILEBASE = 1 << 1,
 	PACK_SPARSE_BUNDLE = 1 << 2,
+	PACK_ASYNC = 1 << 3,
 };
 
 enum PackFileFlags {
@@ -67,15 +68,22 @@ class PackedData {
 
 public:
 	struct PackedFile {
+		enum PackedFileProperty {
+			PACKED_FILE_PROPERTY_NONE = 0,
+			PACKED_FILE_PROPERTY_ENCRYPTED = 1 << 0,
+			PACKED_FILE_PROPERTY_BUNDLED = 1 << 1,
+			PACKED_FILE_PROPERTY_DELTA = 1 << 2,
+			PACKED_FILE_PROPERTY_ASYNC = 1 << 3,
+			PACKED_FILE_PROPERTY_ALL = (PACKED_FILE_PROPERTY_ASYNC << 1) - 1,
+		};
+
 		String pack;
 		uint64_t offset; //if offset is ZERO, the file was ERASED
 		uint64_t size;
 		uint8_t md5[16];
 		PackSource *src = nullptr;
-		bool encrypted;
-		bool bundle;
-		bool delta;
 		String salt;
+		BitField<PackedFileProperty> properties;
 	};
 
 private:
@@ -108,6 +116,7 @@ private:
 
 	HashMap<PathMD5, PackedFile, PathMD5> files;
 	HashMap<PathMD5, Vector<PackedFile>, PathMD5> delta_patches;
+	HashMap<PathMD5, PackedFile, PathMD5> async_files;
 
 	Vector<PackSource *> sources;
 
@@ -121,11 +130,13 @@ private:
 
 public:
 	void add_pack_source(PackSource *p_source);
-	void add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted = false, bool p_bundle = false, bool p_delta = false, const String &p_salt = String()); // for PackSource
+	void add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, BitField<PackedFile::PackedFileProperty> p_properties = PackedData::PackedFile::PackedFileProperty::PACKED_FILE_PROPERTY_NONE, const String &p_salt = String()); // for PackSource
 	void remove_path(const String &p_path);
 	uint8_t *get_file_hash(const String &p_path);
 	Vector<PackedFile> get_delta_patches(const String &p_path) const;
 	bool has_delta_patches(const String &p_path) const;
+	String get_file_pack_path(const String &p_path);
+	String get_file_async_pack_path(const String &p_path);
 	HashSet<String> get_file_paths() const;
 
 	void set_disabled(bool p_disabled) { disabled = p_disabled; }
@@ -138,6 +149,8 @@ public:
 
 	_FORCE_INLINE_ Ref<FileAccess> try_open_path(const String &p_path, const Vector<uint8_t> &p_decryption_key = Vector<uint8_t>());
 	_FORCE_INLINE_ bool has_path(const String &p_path);
+	_FORCE_INLINE_ bool has_async_path(const String &p_path);
+	_FORCE_INLINE_ String get_async_path(const String &p_path);
 
 	_FORCE_INLINE_ int64_t get_size(const String &p_path);
 
@@ -156,6 +169,12 @@ public:
 };
 
 class PackedSourcePCK : public PackSource {
+public:
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key = Vector<uint8_t>()) override;
+	virtual Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file, const Vector<uint8_t> &p_decryption_key = Vector<uint8_t>()) override;
+};
+
+class PackedSourceAsyncPCK : public PackedSourcePCK {
 public:
 	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key = Vector<uint8_t>()) override;
 	virtual Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file, const Vector<uint8_t> &p_decryption_key = Vector<uint8_t>()) override;
@@ -246,7 +265,39 @@ Ref<FileAccess> PackedData::try_open_path(const String &p_path, const Vector<uin
 }
 
 bool PackedData::has_path(const String &p_path) {
-	return files.has(PathMD5(p_path.simplify_path().trim_prefix("res://").md5_buffer()));
+	String md5_path = p_path.simplify_path().trim_prefix("res://");
+	PathMD5 md5_data(md5_path.md5_buffer());
+	String md5_text = md5_path.md5_text();
+	bool has_file = files.has(md5_data);
+	return has_file;
+}
+
+bool PackedData::has_async_path(const String &p_path) {
+	return !PackedData::get_async_path(p_path).is_empty();
+}
+
+String PackedData::get_async_path(const String &p_path) {
+	const String PREFIX_RES = "res://";
+
+	const String md5_path = p_path.simplify_path().trim_prefix(PREFIX_RES);
+	PathMD5 md5_data(md5_path.md5_buffer());
+	if (async_files.has(md5_data)) {
+		return PREFIX_RES + md5_path;
+	}
+
+	String md5_remap_path = md5_path + ".remap";
+	PathMD5 md5_remap_data(md5_remap_path.md5_buffer());
+	if (async_files.has(md5_remap_data)) {
+		return PREFIX_RES + md5_remap_path;
+	}
+
+	String md5_import_path = md5_path + ".import";
+	PathMD5 md5_import_data(md5_import_path.md5_buffer());
+	if (async_files.has(md5_import_data)) {
+		return PREFIX_RES + md5_import_path;
+	}
+
+	return String();
 }
 
 bool PackedData::has_directory(const String &p_path) {

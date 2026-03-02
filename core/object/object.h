@@ -156,6 +156,10 @@ enum PropertyUsageFlags {
 // PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")
 #define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
 
+// Helper macro to use with PROPERTY_HINT_ARRAY_TYPE for arrays of file paths:
+// PropertyInfo(Variant::PACKED_STRING_ARRAY, "async/initial_load_forced_files", PROPERTY_HINT_ARRAY_TYPE, MAKE_FILE_ARRAY_TYPE_HINT("*"))
+#define MAKE_FILE_ARRAY_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::STRING, PROPERTY_HINT_FILE, m_type)
+
 struct PropertyInfo {
 	Variant::Type type = Variant::NIL;
 	String name;

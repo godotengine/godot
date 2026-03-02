@@ -106,6 +106,7 @@
 				GDScript has a simplified [method @GDScript.load] built-in method which can be used in most situations, leaving the use of [ResourceLoader] for more advanced scenarios.
 				[b]Note:[/b] If [member ProjectSettings.editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to read converted files in an exported project. If you rely on run-time loading of files present within the PCK, set [member ProjectSettings.editor/export/convert_text_resources_to_binary] to [code]false[/code].
 				[b]Note:[/b] Relative paths will be prefixed with [code]"res://"[/code] before loading, to avoid unexpected results make sure your paths are absolute.
+				[b]Note:[/b] On Web, if [member EditorExportPlatformWeb.async/initial_install_mode] is set to "Only Install Required Resources", [method load_threaded_request] needs to be called first for non-initially installed resources. Otherwise, [method @GDScript.load] will fail and return an invalid resource.
 			</description>
 		</method>
 		<method name="load_threaded_get">
@@ -114,6 +115,7 @@
 			<description>
 				Returns the resource loaded by [method load_threaded_request].
 				If this is called before the loading thread is done (i.e. [method load_threaded_get_status] is not [constant THREAD_LOAD_LOADED]), the calling thread will be blocked until the resource has finished loading. However, it's recommended to use [method load_threaded_get_status] to known when the load has actually completed.
+				[b]Note:[/b] On Web, if [member EditorExportPlatformWeb.async/initial_install_mode] is set to "Only Install Required Resources" and [member EditorExportPlatformWeb.variant/thread_support] is [code]false[/code], [method load_threaded_get_status] will return an invalid resource if the file is not downloaded and installed. [method load_threaded_request] needs to be called first for non-initially installed resources. As usual, [method load_threaded_get_status] is recommended to use to know when the load has actually completed.
 			</description>
 		</method>
 		<method name="load_threaded_get_status">
@@ -124,6 +126,8 @@
 				Returns the status of a threaded loading operation started with [method load_threaded_request] for the resource at [param path].
 				An array variable can optionally be passed via [param progress], and will return a one-element array containing the ratio of completion of the threaded loading (between [code]0.0[/code] and [code]1.0[/code]).
 				[b]Note:[/b] The recommended way of using this method is to call it during different frames (e.g., in [method Node._process], instead of a loop).
+				[b]Note:[/b] On Web, if [member EditorExportPlatformWeb.async/initial_install_mode] is set to "Only Install Required Resources" and [member EditorExportPlatformWeb.variant/thread_support] is [code]false[/code], [method load_threaded_get_status] returns the status of the download operation started with [method load_threaded_request] for the resource at [param path]. The array variable that can optionally be passed via [param progress] will return a one-element array containing the ratio of the download completion of resource, including all its dependencies (between [code]0.0[/code] and [code]1.0[/code]).
+				[b]Note:[/b] On Web, if [member EditorExportPlatformWeb.async/initial_install_mode] is set to "Only Install Required Resources" and [member EditorExportPlatformWeb.variant/thread_support] is [code]true[/code], the array variable that can optionally be passed via [param progress] will return a one-element array containing the ratio of the download progress of resource, including all its dependencies, and the completion of the threaded loading, both combined (between [code]0.0[/code] and [code]0.5[/code] for the download phase, and between [code]0.5[/code] and [code]1.0[/code] for the completion of the threaded loading).
 			</description>
 		</method>
 		<method name="load_threaded_request">
@@ -135,6 +139,8 @@
 			<description>
 				Loads the resource using threads. If [param use_sub_threads] is [code]true[/code], multiple threads will be used to load the resource, which makes loading faster, but may affect the main thread (and thus cause game slowdowns).
 				The [param cache_mode] parameter defines whether and how the cache should be used or updated when loading the resource.
+				[b]Note:[/b] On Web, if [member EditorExportPlatformWeb.async/initial_install_mode] is set to "Only Install Required Resources" and [member EditorExportPlatformWeb.variant/thread_support] is [code]false[/code], [method load_threaded_get_status] starts to download and install the resource without using threads. Also, the [param use_sub_threads] parameter is ignored entirely.
+				[b]Note:[/b] On Web, if [member EditorExportPlatformWeb.async/initial_install_mode] is set to "Only Install Required Resources" and [member EditorExportPlatformWeb.variant/thread_support] is [code]true[/code], [method load_threaded_get_status] starts to download and install the resource. After the download is complete, it will load the resource using threads as usual.
 			</description>
 		</method>
 		<method name="remove_resource_format_loader">

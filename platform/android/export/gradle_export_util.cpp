@@ -123,48 +123,6 @@ String _get_app_category_label(int category_index) {
 	}
 }
 
-// Utility method used to create a directory.
-Error create_directory(const String &p_dir) {
-	if (!DirAccess::exists(p_dir)) {
-		Ref<DirAccess> filesystem_da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		ERR_FAIL_COND_V_MSG(filesystem_da.is_null(), ERR_CANT_CREATE, "Cannot create directory '" + p_dir + "'.");
-		Error err = filesystem_da->make_dir_recursive(p_dir);
-		ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Cannot create directory '" + p_dir + "'.");
-	}
-	return OK;
-}
-
-// Writes p_data into a file at p_path, creating directories if necessary.
-// Note: this will overwrite the file at p_path if it already exists.
-Error store_file_at_path(const String &p_path, const Vector<uint8_t> &p_data) {
-	String dir = p_path.get_base_dir();
-	Error err = create_directory(dir);
-	if (err != OK) {
-		return err;
-	}
-	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
-	fa->store_buffer(p_data.ptr(), p_data.size());
-	return OK;
-}
-
-// Writes string p_data into a file at p_path, creating directories if necessary.
-// Note: this will overwrite the file at p_path if it already exists.
-Error store_string_at_path(const String &p_path, const String &p_data) {
-	String dir = p_path.get_base_dir();
-	Error err = create_directory(dir);
-	if (err != OK) {
-		if (OS::get_singleton()->is_stdout_verbose()) {
-			print_error("Unable to write data into " + p_path);
-		}
-		return err;
-	}
-	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
-	fa->store_string(p_data);
-	return OK;
-}
-
 // Implementation of EditorExportSaveFunction.
 // This method will only be called as an input to export_project_files.
 // It is used by the export_project_files method to save all the asset files into the gradle project.
@@ -176,8 +134,8 @@ Error rename_and_store_file_in_gradle_project(const Ref<EditorExportPreset> &p_p
 	const String simplified_path = EditorExportPlatform::simplify_path(p_path);
 
 	Vector<uint8_t> enc_data;
-	EditorExportPlatform::SavedData sd;
-	Error err = _store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, p_delta, enc_data, sd);
+	EditorExportPlatformData::SavedData sd;
+	Error err = EditorExportPlatformUtils::store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, p_delta, enc_data, sd);
 	if (err != OK) {
 		return err;
 	}
@@ -189,7 +147,7 @@ Error rename_and_store_file_in_gradle_project(const Ref<EditorExportPreset> &p_p
 		dst_path = export_data->assets_directory + String("/") + simplified_path.trim_prefix("res://");
 	}
 	print_verbose("Saving project files from " + simplified_path + " into " + dst_path);
-	err = store_file_at_path(dst_path, enc_data);
+	err = EditorExportPlatformUtils::store_file_at_path(dst_path, enc_data);
 
 	export_data->pd.file_ofs.push_back(sd);
 	return err;
@@ -215,7 +173,7 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 	print_verbose("Creating strings resources for supported locales for project " + p_project_name);
 	// Stores the string into the default values directory.
 	String processed_default_xml_string = vformat(GODOT_PROJECT_NAME_XML_STRING, _android_xml_escape(p_project_name));
-	store_string_at_path(p_gradle_build_dir.path_join("res/values/godot_project_name_string.xml"), processed_default_xml_string);
+	EditorExportPlatformUtils::store_string_at_path(p_gradle_build_dir.path_join("res/values/godot_project_name_string.xml"), processed_default_xml_string);
 
 	// Searches the Gradle project res/ directory to find all supported locales
 	Ref<DirAccess> da = DirAccess::open(p_gradle_build_dir.path_join("res"));
@@ -254,10 +212,10 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 		if (locale_project_name != p_project_name) {
 			String processed_xml_string = vformat(GODOT_PROJECT_NAME_XML_STRING, _android_xml_escape(locale_project_name));
 			print_verbose("Storing project name for locale " + locale + " under " + locale_directory);
-			store_string_at_path(locale_directory, processed_xml_string);
+			EditorExportPlatformUtils::store_string_at_path(locale_directory, processed_xml_string);
 		} else {
 			// TODO: Once the legacy build system is deprecated we don't need to have xml files for this else branch
-			store_string_at_path(locale_directory, processed_default_xml_string);
+			EditorExportPlatformUtils::store_string_at_path(locale_directory, processed_default_xml_string);
 		}
 	}
 	da->list_dir_end();
@@ -407,36 +365,4 @@ String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, 
 	manifest_application_text += _get_activity_tag(p_export_platform, p_preset, p_debug);
 	manifest_application_text += "    </application>\n";
 	return manifest_application_text;
-}
-
-Error _store_temp_file(const String &p_simplified_path, const Vector<uint8_t> &p_data, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta, Vector<uint8_t> &r_enc_data, EditorExportPlatform::SavedData &r_sd) {
-	Error err = OK;
-	Ref<FileAccess> ftmp = FileAccess::create_temp(FileAccess::WRITE_READ, "export", "tmp", false, &err);
-	if (err != OK) {
-		return err;
-	}
-	r_sd.path_utf8 = p_simplified_path.trim_prefix("res://").utf8();
-	r_sd.ofs = 0;
-	r_sd.size = p_data.size();
-	r_sd.delta = p_delta;
-	err = EditorExportPlatform::_encrypt_and_store_data(ftmp, p_simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, r_sd.encrypted);
-	if (err != OK) {
-		return err;
-	}
-
-	r_enc_data.resize(ftmp->get_length());
-	ftmp->seek(0);
-	ftmp->get_buffer(r_enc_data.ptrw(), r_enc_data.size());
-	ftmp.unref();
-
-	// Store MD5 of original file.
-	{
-		unsigned char hash[16];
-		CryptoCore::md5(p_data.ptr(), p_data.size(), hash);
-		r_sd.md5.resize(16);
-		for (int i = 0; i < 16; i++) {
-			r_sd.md5.write[i] = hash[i];
-		}
-	}
-	return OK;
 }

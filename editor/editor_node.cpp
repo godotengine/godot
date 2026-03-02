@@ -1395,7 +1395,7 @@ void EditorNode::_fs_changed() {
 				}
 				if (err != OK) {
 					export_error = vformat("Project export for preset \"%s\" failed.", preset_name);
-				} else if (platform->get_worst_message_type() >= EditorExportPlatform::EXPORT_MESSAGE_WARNING) {
+				} else if (platform->get_worst_message_type() >= EditorExportPlatformData::EXPORT_MESSAGE_WARNING) {
 					export_error = vformat("Project export for preset \"%s\" completed with warnings.", preset_name);
 				}
 			}

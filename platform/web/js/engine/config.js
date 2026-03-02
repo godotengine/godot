@@ -53,6 +53,14 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		mainPack: null,
 		/**
+		 * Main scene to preload.
+		 *
+		 * @memberof EngineConfig
+		 * @default
+		 * @type {?Object}
+		 */
+		asyncPckData: null,
+		/**
 		 * Specify a language code to select the proper localization for the game.
 		 *
 		 * The browser locale will be used if none is specified. See complete list of
@@ -271,6 +279,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.fileSizes = parse('fileSizes', this.fileSizes);
 		this.emscriptenPoolSize = parse('emscriptenPoolSize', this.emscriptenPoolSize);
 		this.godotPoolSize = parse('godotPoolSize', this.godotPoolSize);
+		this.asyncPckData = parse('asyncPckData', this.asyncPckData);
 		this.args = parse('args', this.args);
 		this.onExecute = parse('onExecute', this.onExecute);
 		this.onExit = parse('onExit', this.onExit);
@@ -291,16 +300,22 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			'noExitRuntime': false,
 			'dynamicLibraries': [`${loadPath}.side.wasm`].concat(this.gdextensionLibs),
 			'emscriptenPoolSize': this.emscriptenPoolSize,
-			'instantiateWasm': function (imports, onSuccess) {
-				function done(result) {
-					onSuccess(result['instance'], result['module']);
-				}
+			'instantiateWasm': function (pImports, pOnSuccess) {
+				const onResult = (pResult) => {
+					pOnSuccess(pResult['instance'], pResult['module']);
+				};
+				const onError = (pError) => {
+					this.printErr('Could not instantiate streaming of wasm.', pError);
+				};
 				if (typeof (WebAssembly.instantiateStreaming) !== 'undefined') {
-					WebAssembly.instantiateStreaming(Promise.resolve(r), imports).then(done);
+					WebAssembly.instantiateStreaming(r, pImports)
+						.then(onResult)
+						.catch(onError);
 				} else {
-					r.arrayBuffer().then(function (buffer) {
-						WebAssembly.instantiate(buffer, imports).then(done);
-					});
+					r.arrayBuffer()
+						.then((pBuffer) => WebAssembly.instantiate(pBuffer, pImports))
+						.then(onResult)
+						.catch(onError);
 				}
 				r = null;
 				return {};
@@ -360,6 +375,9 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		return {
 			'canvas': this.canvas,
 			'canvasResizePolicy': this.canvasResizePolicy,
+			'mainPack': this.mainPack,
+			'asyncPckData': this.asyncPckData,
+			'fileSizes': this.fileSizes,
 			'locale': locale,
 			'persistentDrops': this.persistentDrops,
 			'virtualKeyboard': this.experimentalVK,
