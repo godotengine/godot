@@ -230,8 +230,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 			parent = p.tree_item;
 			if (!(--p.child_count)) { // If no child left, remove it.
 				parents.pop_front();
-
-				if (hide_filtered_out_parents && !filter.is_subsequence_ofn(parent->get_text(0))) {
+				if (hide_filtered_out_parents && !_item_matches_filter(parent, parent->get_meta("type_name"), filter)) {
 					if (parent == get_root()) {
 						set_hide_root(true);
 					} else {
@@ -276,6 +275,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 			}
 		}
 		item->set_meta("node_path", current_path + "/" + item->get_text(0));
+		item->set_meta("type_name", node.type_name);
 
 		// Select previously selected nodes.
 		if (debugger_id == p_debugger) { // Can use remote id.
@@ -331,15 +331,14 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 				item->set_button_color(0, item->get_button_count(0) - 1, remote_button_color);
 			}
 		}
-
 		// Add in front of the parents stack if children are expected.
 		if (node.child_count) {
-			parents.push_front(ParentItem(item, node.child_count, filter.is_subsequence_ofn(item->get_text(0))));
+			parents.push_front(ParentItem(item, node.child_count, _item_matches_filter(item, item->get_meta("type_name"), filter)));
 		} else {
 			// Apply filters.
 			while (parent) {
 				const bool had_siblings = item->get_prev() || item->get_next();
-				if (filter.is_subsequence_ofn(item->get_text(0))) {
+				if (_item_matches_filter(item, item->get_meta("type_name"), filter)) {
 					break; // Filter matches, must survive.
 				}
 
@@ -410,6 +409,52 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 
 	last_filter = filter;
 	updating_scene_tree = false;
+}
+
+bool EditorDebuggerTree::_item_matches_filter(TreeItem *p_item, const String &p_type_name, const String &p_term) {
+	if (p_term.is_empty()) {
+		return true;
+	}
+
+	// Recognize special filter.
+	if (p_term.contains_char(':') && !p_term.get_slicec(':', 0).is_empty()) {
+		String parameter = p_term.get_slicec(':', 0);
+		String argument = p_term.get_slicec(':', 1);
+
+		if (parameter == "type" || parameter == "t") {
+			// Filter by Type.
+			if (!_node_matches_class_term(p_type_name, argument)) {
+				return false;
+			}
+		} else {
+			WARN_PRINT(vformat("\"%s\" is not a known filter.", parameter));
+			return true;
+		}
+	} else {
+		// Default.
+		if (!p_item->get_text(0).containsn(p_term)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool EditorDebuggerTree::_node_matches_class_term(const String &p_type_name, const String &p_term) {
+	if (p_term.is_empty()) {
+		return true;
+	}
+	String type = p_type_name;
+	// Every Node is a Node, duh!
+	while (type != "Node") {
+		if (type.containsn(p_term)) {
+			return true;
+		}
+
+		type = ClassDB::get_parent_class(type);
+	}
+
+	return false;
 }
 
 void EditorDebuggerTree::select_nodes(const TypedArray<int64_t> &p_ids) {
