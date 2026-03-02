@@ -5401,6 +5401,12 @@ String GDScriptParser::DataType::to_string() const {
 			}
 			return native_type.operator String();
 		}
+
+		///
+		case GENERIC_TYPE: {
+			return generic_param.operator String();
+		}
+
 		case ENUM: {
 			// native_type contains either the native class defining the enum
 			// or the fully qualified class name of the script defining the enum
@@ -5459,6 +5465,8 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 						result.hint_string = String(elem_type.native_type).replace("::", ".");
 						break;
 					case VARIANT:
+					/// [Monarch] Might explode on my face later.
+					case GENERIC_TYPE:
 					case RESOLVING:
 					case UNRESOLVED:
 						break;

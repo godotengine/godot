@@ -139,6 +139,13 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			result.script_type = result.script_type_ref.ptr();
 			result.native_type = p_datatype.native_type;
 		} break;
+
+		/// [Monarch] I've got no idea if this is what I'm supposed to do
+		/// But I'm sure as hell gonna pray it works until it explodes in my face.
+		case GDScriptParser::DataType::GENERIC_TYPE: {
+			return GDScriptDataType(); /// return Variant for now, just type erasure
+		} break;
+
 		case GDScriptParser::DataType::CLASS: {
 			if (p_handle_metatype && p_datatype.is_meta_type) {
 				result.kind = GDScriptDataType::NATIVE;

@@ -42,6 +42,7 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/hash_map.h"
+#include "modules/gdscript/gdscript_parser.h"
 #include "scene/main/node.h"
 
 #if defined(TOOLS_ENABLED) && !defined(DISABLE_DEPRECATED)
@@ -6429,6 +6430,8 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 			}
 			break;
 		case GDScriptParser::DataType::VARIANT:
+		/// [Monarch]
+		case GDScriptParser::DataType::GENERIC_TYPE:
 		case GDScriptParser::DataType::BUILTIN:
 		case GDScriptParser::DataType::ENUM:
 		case GDScriptParser::DataType::RESOLVING:
@@ -6466,6 +6469,8 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 			}
 			return false;
 		case GDScriptParser::DataType::VARIANT:
+		/// [Monarch]
+		case GDScriptParser::DataType::GENERIC_TYPE:
 		case GDScriptParser::DataType::BUILTIN:
 		case GDScriptParser::DataType::ENUM:
 		case GDScriptParser::DataType::RESOLVING:
