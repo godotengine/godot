@@ -859,6 +859,10 @@ void SceneTreeEditor::_update_node_tooltip(Node *p_node, TreeItem *p_item) {
 		}
 	}
 
+	if (p_node->has_meta(META_EXPOSED_IN_OWNER) || p_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
+		tooltip += "\nExposed Path: " + EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_node).get_concatenated_names();
+	}
+
 	p_item->set_tooltip_text(0, tooltip);
 }
 
