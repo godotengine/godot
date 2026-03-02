@@ -664,6 +664,11 @@ Copyright: 2008-2011, Kristian Høgsberg
   2010-2011, Intel Corporation
 License: X11
 
+Files: thirdparty/winrt/*
+Comment: C++/WinRT
+Copyright: Microsoft Corporation
+License: Expat
+
 Files: thirdparty/wslay/*
 Comment: Wslay
 Copyright: 2011, 2012, 2015, Tatsuhiro Tsujikawa

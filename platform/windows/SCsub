@@ -16,7 +16,6 @@ common_win = [
     "os_windows.cpp",
     "display_server_windows.cpp",
     "key_mapping_windows.cpp",
-    "tts_windows.cpp",
     "windows_terminal_logger.cpp",
     "windows_utils.cpp",
     "native_menu_windows.cpp",
@@ -77,8 +76,26 @@ else:
     res_target = "godot_res_template" + env["OBJSUFFIX"]
 res_obj = env.RES(res_target, res_file)
 env.Depends(res_obj, "#core/version_generated.gen.h")
-
 env.add_source_files(sources, common_win)
+
+env_core = env.Clone()
+env_core.Append(CPPPATH=["#thirdparty/winrt"])
+if not env_core.msvc:
+    if "-std=gnu++17" in env_core["CXXFLAGS"]:
+        env_core["CXXFLAGS"].remove("-std=gnu++17")
+    env_core.Append(CXXFLAGS=["-std=gnu++20"])
+    if "-fno-exceptions" in env_core["CXXFLAGS"]:
+        env_core["CXXFLAGS"].remove("-fno-exceptions")
+    env_core.Append(CXXFLAGS=["-fexceptions"])
+else:
+    if "/std:c++17" in env_core["CXXFLAGS"]:
+        env_core["CXXFLAGS"].remove("/std:c++17")
+    env_core.Append(CXXFLAGS=["/std:c++20"])
+    if "_HAS_EXCEPTIONS" in env_core["CPPDEFINES"]:
+        env_core["CPPDEFINES"].remove("_HAS_EXCEPTIONS")
+    env_core.Append(CXXFLAGS=["/EHsc"])
+env_core.add_source_files(sources, ["tts_windows.cpp", "tts_driver_sapi.cpp", "tts_driver_onecore.cpp"])
+
 sources += res_obj
 
 if env["accesskit"] and not env.msvc:
