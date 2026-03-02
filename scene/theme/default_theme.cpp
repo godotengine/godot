@@ -680,6 +680,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("normal_tip", "VirtualJoystick", style_joystick_tip);
 	theme->set_stylebox("pressed_joystick", "VirtualJoystick", style_joystick);
 	theme->set_stylebox("pressed_tip", "VirtualJoystick", style_joystick_tip);
+	
+	// Virtual Controller
+
+	Ref<StyleBoxFlat> style_virtual_controller_button = make_flat_stylebox(style_normal_color, 0, 0, 0, 0, 10000, false, 4 * scale);
+	style_virtual_controller_button->set_corner_detail(24 * scale);
+	theme->set_stylebox("button", "VirtualController", style_virtual_controller_button);
 
 	// Window
 

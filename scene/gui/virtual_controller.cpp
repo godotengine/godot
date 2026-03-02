@@ -31,14 +31,14 @@
 #include "virtual_controller.h"
 
 #include "core/input/input.h"
+#include "core/object/callable_method_pointer.h"
 #include "scene/gui/virtual_joystick.h"
+#include "scene/theme/theme_db.h"
 
 void VirtualController::_setup_controls() {
-	int margin = 20;
-
 	float min_size = MIN(get_size().x, get_size().y);
-
-	Size2 joystick_size(min_size * 0.2f, min_size * 0.2f);
+	int margin = min_size * 0.05f;
+	Size2 joystick_size(min_size * 0.25f, min_size * 0.25f);
 
 	left_joystick = memnew(VirtualJoystick);
 	left_joystick->set_joystick_size(joystick_size.x);
@@ -47,7 +47,7 @@ void VirtualController::_setup_controls() {
 	left_joystick->set_custom_minimum_size(joystick_size);
 	left_joystick->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
 	left_joystick->set_offset(Side::SIDE_BOTTOM, -margin);
-	left_joystick->set_offset(Side::SIDE_LEFT, 200);
+	left_joystick->set_offset(Side::SIDE_LEFT, margin + min_size * 0.3f);
 	add_child(left_joystick, true, Node::INTERNAL_MODE_FRONT);
 
 	right_joystick = memnew(VirtualJoystick);
@@ -57,10 +57,10 @@ void VirtualController::_setup_controls() {
 	right_joystick->set_custom_minimum_size(joystick_size);
 	right_joystick->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT);
 	right_joystick->set_offset(Side::SIDE_BOTTOM, -margin);
-	right_joystick->set_offset(Side::SIDE_RIGHT, -200);
+	right_joystick->set_offset(Side::SIDE_RIGHT, -margin + min_size * -0.3f);
 	add_child(right_joystick, true, Node::INTERNAL_MODE_FRONT);
 
-	Size2 button_size(min_size * 0.1f, min_size * 0.1f);
+	Size2 button_size(min_size * 0.125f, min_size * 0.125f);
 
 	left_joystick_button = memnew(Button);
 	left_joystick_button->set_text("L3");
@@ -72,6 +72,7 @@ void VirtualController::_setup_controls() {
 	left_joystick_button->set_offset(SIDE_BOTTOM, -margin);
 	left_joystick_button->set_offset(SIDE_LEFT, margin);
 	add_child(left_joystick_button, true, Node::INTERNAL_MODE_FRONT);
+	_update_button_style(left_joystick_button);
 
 	right_joystick_button = memnew(Button);
 	right_joystick_button->set_text("R3");
@@ -83,6 +84,7 @@ void VirtualController::_setup_controls() {
 	right_joystick_button->set_offset(SIDE_BOTTOM, -margin);
 	right_joystick_button->set_offset(SIDE_RIGHT, -margin);
 	add_child(right_joystick_button, true, Node::INTERNAL_MODE_FRONT);
+	_update_button_style(right_joystick_button);
 
 	float start_bottom_offset = min_size * -0.25f;
 
@@ -96,6 +98,7 @@ void VirtualController::_setup_controls() {
 	dpad_down->set_offset(SIDE_BOTTOM, start_bottom_offset);
 	dpad_down->set_offset(SIDE_LEFT, margin + button_size.x);
 	add_child(dpad_down, true, Node::INTERNAL_MODE_FRONT);
+	_update_button_style(dpad_down);
 
 	dpad_up = memnew(Button);
 	dpad_up->set_text("U");
@@ -107,6 +110,7 @@ void VirtualController::_setup_controls() {
 	dpad_up->set_offset(SIDE_BOTTOM, start_bottom_offset - 2 * button_size.y);
 	dpad_up->set_offset(SIDE_LEFT, margin + button_size.x);
 	add_child(dpad_up, true, Node::INTERNAL_MODE_FRONT);
+	_update_button_style(dpad_up);
 
 	dpad_left = memnew(Button);
 	dpad_left->set_text("L");
@@ -118,6 +122,7 @@ void VirtualController::_setup_controls() {
 	dpad_left->set_offset(SIDE_BOTTOM, start_bottom_offset - button_size.y);
 	dpad_left->set_offset(SIDE_LEFT, margin);
 	add_child(dpad_left, true, Node::INTERNAL_MODE_FRONT);
+	_update_button_style(dpad_left);
 
 	dpad_right = memnew(Button);
 	dpad_right->set_text("R");
@@ -129,6 +134,7 @@ void VirtualController::_setup_controls() {
 	dpad_right->set_offset(SIDE_BOTTOM, start_bottom_offset - button_size.y);
 	dpad_right->set_offset(SIDE_LEFT, margin + 2 * button_size.x);
 	add_child(dpad_right, true, Node::INTERNAL_MODE_FRONT);
+	_update_button_style(dpad_right);
 
 	button_a = memnew(Button);
 	button_a->set_text("A");
@@ -140,6 +146,7 @@ void VirtualController::_setup_controls() {
 	button_a->set_offset(SIDE_BOTTOM, start_bottom_offset);
 	button_a->set_offset(SIDE_RIGHT, -margin - button_size.x);
 	add_child(button_a, true, Node::INTERNAL_MODE_FRONT);
+	_update_button_style(button_a);
 
 	button_y = memnew(Button);
 	button_y->set_text("Y");
@@ -151,6 +158,7 @@ void VirtualController::_setup_controls() {
 	button_y->set_offset(SIDE_BOTTOM, start_bottom_offset - 2 * button_size.y);
 	button_y->set_offset(SIDE_RIGHT, -margin - button_size.x);
 	add_child(button_y, true, Node::INTERNAL_MODE_FRONT);
+	_update_button_style(button_y);
 
 	button_b = memnew(Button);
 	button_b->set_text("B");
@@ -162,6 +170,7 @@ void VirtualController::_setup_controls() {
 	button_b->set_offset(SIDE_BOTTOM, start_bottom_offset - button_size.y);
 	button_b->set_offset(SIDE_RIGHT, -margin);
 	add_child(button_b, true, Node::INTERNAL_MODE_FRONT);
+	_update_button_style(button_b);
 
 	button_x = memnew(Button);
 	button_x->set_text("X");
@@ -173,6 +182,7 @@ void VirtualController::_setup_controls() {
 	button_x->set_offset(SIDE_BOTTOM, start_bottom_offset - button_size.y);
 	button_x->set_offset(SIDE_RIGHT, -margin - 2 * button_size.x);
 	add_child(button_x, true, Node::INTERNAL_MODE_FRONT);
+	_update_button_style(button_x);
 
 	left_trigger = memnew(Button);
 	left_trigger->set_text("LT");
@@ -184,6 +194,7 @@ void VirtualController::_setup_controls() {
 	left_trigger->set_offset(SIDE_BOTTOM, start_bottom_offset - 3 * button_size.y - margin);
 	left_trigger->set_offset(SIDE_LEFT, margin);
 	add_child(left_trigger, true, Node::INTERNAL_MODE_FRONT);
+	_update_button_style(left_trigger);
 
 	left_shoulder = memnew(Button);
 	left_shoulder->set_text("LB");
@@ -195,6 +206,7 @@ void VirtualController::_setup_controls() {
 	left_shoulder->set_offset(SIDE_BOTTOM, start_bottom_offset - 3 * button_size.y - margin);
 	left_shoulder->set_offset(SIDE_LEFT, margin + 2 * button_size.x);
 	add_child(left_shoulder, true, Node::INTERNAL_MODE_FRONT);
+	_update_button_style(left_shoulder);
 
 	right_trigger = memnew(Button);
 	right_trigger->set_text("RT");
@@ -206,6 +218,7 @@ void VirtualController::_setup_controls() {
 	right_trigger->set_offset(SIDE_BOTTOM, start_bottom_offset - 3 * button_size.y - margin);
 	right_trigger->set_offset(SIDE_RIGHT, -margin);
 	add_child(right_trigger, true, Node::INTERNAL_MODE_FRONT);
+	_update_button_style(right_trigger);
 
 	right_shoulder = memnew(Button);
 	right_shoulder->set_text("RB");
@@ -217,6 +230,7 @@ void VirtualController::_setup_controls() {
 	right_shoulder->set_offset(SIDE_BOTTOM, start_bottom_offset - 3 * button_size.y - margin);
 	right_shoulder->set_offset(SIDE_RIGHT, -margin - 2 * button_size.x);
 	add_child(right_shoulder, true, Node::INTERNAL_MODE_FRONT);
+	_update_button_style(right_shoulder);
 
 	guide_button = memnew(Button);
 	guide_button->set_text("G");
@@ -227,6 +241,7 @@ void VirtualController::_setup_controls() {
 	guide_button->set_anchors_and_offsets_preset(Control::PRESET_CENTER_TOP);
 	guide_button->set_offset(SIDE_TOP, margin);
 	add_child(guide_button, true, Node::INTERNAL_MODE_FRONT);
+	_update_button_style(guide_button);
 
 	back_button = memnew(Button);
 	back_button->set_text("<-");
@@ -238,6 +253,7 @@ void VirtualController::_setup_controls() {
 	back_button->set_offset(SIDE_TOP, margin);
 	back_button->set_offset(SIDE_RIGHT, -button_size.x - margin);
 	add_child(back_button, true, Node::INTERNAL_MODE_FRONT);
+	_update_button_style(back_button);
 
 	start_button = memnew(Button);
 	start_button->set_text("->");
@@ -249,6 +265,7 @@ void VirtualController::_setup_controls() {
 	start_button->set_offset(SIDE_TOP, margin);
 	start_button->set_offset(SIDE_LEFT, button_size.x + margin);
 	add_child(start_button, true, Node::INTERNAL_MODE_FRONT);
+	_update_button_style(start_button);
 
 	left_joystick->connect("motion", callable_mp(this, &VirtualController::_on_left_joystick_motion));
 	left_joystick_button->connect("button_down", callable_mp(this, &VirtualController::_on_left_joystick_pressed));
@@ -288,6 +305,10 @@ void VirtualController::_setup_controls() {
 	guide_button->connect("button_up", callable_mp(this, &VirtualController::_on_guide_button_released));
 }
 
+void VirtualController::_bind_methods() {
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, VirtualController, button);
+}
+
 void VirtualController::_notification(int p_notification) {
 	ERR_MAIN_THREAD_GUARD;
 	switch (p_notification) {
@@ -317,6 +338,26 @@ void VirtualController::_notification(int p_notification) {
 			}
 			set_visible(Input::get_singleton()->is_virtual_controller_enabled());
 		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_button_style(left_joystick_button);
+			_update_button_style(right_joystick_button);
+			_update_button_style(dpad_up);
+			_update_button_style(dpad_down);
+			_update_button_style(dpad_left);
+			_update_button_style(dpad_right);
+			_update_button_style(button_a);
+			_update_button_style(button_b);
+			_update_button_style(button_x);
+			_update_button_style(button_y);
+			_update_button_style(left_shoulder);
+			_update_button_style(right_shoulder);
+			_update_button_style(left_trigger);
+			_update_button_style(right_trigger);
+			_update_button_style(start_button);
+			_update_button_style(back_button);
+			_update_button_style(guide_button);
+		} break;
 	}
 }
 
@@ -338,6 +379,16 @@ void VirtualController::_create_motion_event(JoyAxis p_axis, float p_value) {
 	motion_event->set_device(device_id);
 
 	Input::get_singleton()->parse_input_event(motion_event);
+}
+
+void VirtualController::_update_button_style(Button *p_button) {
+	if (p_button == nullptr) {
+		return;
+	}
+
+	p_button->add_theme_style_override("normal", theme_cache.button);
+	p_button->add_theme_style_override("hover", theme_cache.button);
+	p_button->add_theme_style_override("pressed", theme_cache.button);
 }
 
 void VirtualController::_on_left_joystick_motion(Vector2 p_value) {
