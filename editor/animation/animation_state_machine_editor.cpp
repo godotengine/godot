@@ -43,6 +43,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/separator.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
@@ -239,7 +240,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	}
 
 	// Select node or push a field inside
-	if (mb.is_valid() && !mb->is_shift_pressed() && !mb->is_command_or_control_pressed() && mb->is_pressed() && tool_select->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+	if (mb.is_valid() && !mb->is_shift_pressed() && mb->is_pressed() && tool_select->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		selected_transition_from = StringName();
 		selected_transition_to = StringName();
 		selected_transition_index = -1;
@@ -300,6 +301,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				dragging_selected_attempt = true;
 				dragging_selected = false;
 				drag_from = mb->get_position();
+				drag_copy = mb->is_command_or_control_pressed();
 				snap_x = StringName();
 				snap_y = StringName();
 				_update_mode();
@@ -364,24 +366,28 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	if (mb.is_valid() && dragging_selected_attempt && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
 		if (dragging_selected) {
 			Ref<AnimationNode> an = state_machine->get_node(selected_node);
-			updating = true;
+			if (!drag_copy) {
+				updating = true;
 
-			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-			undo_redo->create_action(TTR("Move Node"));
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+				undo_redo->create_action(TTR("Move Node"));
 
-			for (int i = 0; i < node_rects.size(); i++) {
-				if (!selected_nodes.has(node_rects[i].node_name)) {
-					continue;
+				for (int i = 0; i < node_rects.size(); i++) {
+					if (!selected_nodes.has(node_rects[i].node_name)) {
+						continue;
+					}
+
+					undo_redo->add_do_method(state_machine.ptr(), "set_node_position", node_rects[i].node_name, state_machine->get_node_position(node_rects[i].node_name) + drag_ofs / EDSCALE);
+					undo_redo->add_undo_method(state_machine.ptr(), "set_node_position", node_rects[i].node_name, state_machine->get_node_position(node_rects[i].node_name));
 				}
 
-				undo_redo->add_do_method(state_machine.ptr(), "set_node_position", node_rects[i].node_name, state_machine->get_node_position(node_rects[i].node_name) + drag_ofs / EDSCALE);
-				undo_redo->add_undo_method(state_machine.ptr(), "set_node_position", node_rects[i].node_name, state_machine->get_node_position(node_rects[i].node_name));
+				undo_redo->add_do_method(this, "_update_graph");
+				undo_redo->add_undo_method(this, "_update_graph");
+				undo_redo->commit_action();
+				updating = false;
+			} else {
+				_duplicate_nodes();
 			}
-
-			undo_redo->add_do_method(this, "_update_graph");
-			undo_redo->add_undo_method(this, "_update_graph");
-			undo_redo->commit_action();
-			updating = false;
 		}
 		snap_x = StringName();
 		snap_y = StringName();
@@ -493,7 +499,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	}
 
 	// Start box selecting
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && tool_select->is_pressed()) {
+	if (selected_node == StringName() && mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && tool_select->is_pressed()) {
 		box_selecting = true;
 		box_selecting_from = box_selecting_to = state_machine_draw->get_local_mouse_position();
 		box_selecting_rect = Rect2(box_selecting_from.min(box_selecting_to), (box_selecting_from - box_selecting_to).abs());
@@ -812,6 +818,37 @@ String AnimationNodeStateMachineEditor::get_tooltip(const Point2 &p_pos) const {
 	return tooltip_text;
 }
 
+void AnimationNodeStateMachineEditor::shortcut_input(const Ref<InputEvent> &p_event) {
+	if (!is_visible_in_tree()) {
+		return;
+	}
+
+	if (!is_focus_owner_in_shortcut_context()) {
+		return;
+	}
+
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed() && !k->is_echo()) {
+		if (ED_IS_SHORTCUT("blend_tree_editor/cut", p_event)) {
+			accept_event();
+			_copy_nodes(true);
+		} else if (ED_IS_SHORTCUT("blend_tree_editor/copy", p_event)) {
+			accept_event();
+			_copy_nodes(false);
+		} else if (ED_IS_SHORTCUT("blend_tree_editor/paste", p_event)) {
+			accept_event();
+			_paste_nodes(_map_to_state_machine(state_machine_draw->get_local_mouse_position()));
+		} else if (ED_IS_SHORTCUT("blend_tree_editor/duplicate", p_event)) {
+			accept_event();
+			_duplicate_nodes();
+		}
+	}
+}
+
+Vector2 AnimationNodeStateMachineEditor::_map_to_state_machine(const Vector2 &p_position) {
+	return p_position / EDSCALE + state_machine->get_graph_offset();
+}
+
 void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
 	if (!tree) {
@@ -847,18 +884,20 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 		menu->add_item(vformat(TTR("Add %s"), name), idx);
 		menu->set_item_metadata(idx, class_name);
 	}
-	Ref<AnimationNode> clipb = EditorSettings::get_singleton()->get_resource_clipboard();
 
-	if (clipb.is_valid()) {
-		menu->add_separator();
-		menu->add_item(TTR("Paste"), MENU_PASTE);
-	}
+	bool can_copy = !selected_nodes.is_empty();
+	bool can_paste = !copy_items_buffer.is_empty();
+
+	_add_standard_context_menu_items(menu, can_copy, can_paste);
+
 	menu->add_separator();
 	menu->add_item(TTR("Load..."), MENU_LOAD_FILE);
 
 	menu->set_position(state_machine_draw->get_screen_transform().xform(p_position));
+	menu->reset_size();
 	menu->popup();
-	add_node_pos = p_position / EDSCALE + state_machine->get_graph_offset();
+
+	add_node_pos = _map_to_state_machine(p_position);
 }
 
 bool AnimationNodeStateMachineEditor::_create_submenu(PopupMenu *p_menu, Ref<AnimationNodeStateMachine> p_nodesm, const StringName &p_name, const StringName &p_path) {
@@ -917,6 +956,131 @@ void AnimationNodeStateMachineEditor::_file_opened(const String &p_file) {
 	}
 }
 
+void AnimationNodeStateMachineEditor::_dup_copy_nodes(List<CopyItem> &r_items, List<CopyTransition> &r_transitions) {
+	Vector2 top_left = {
+		std::numeric_limits<real_t>::max(),
+		std::numeric_limits<real_t>::max()
+	};
+
+	for (const StringName &node_name : selected_nodes) {
+		if (node_name == "Start" || node_name == "End") {
+			continue;
+		}
+
+		Vector2 position = state_machine->get_node_position(node_name);
+		if (position.x < top_left.x) {
+			top_left.x = position.x;
+		}
+		if (position.y < top_left.y) {
+			top_left.y = position.y;
+		}
+	}
+
+	for (const StringName &node_name : selected_nodes) {
+		if (node_name == "Start" || node_name == "End") {
+			continue;
+		}
+
+		Vector2 position = state_machine->get_node_position(node_name);
+		r_items.push_back({
+				node_name,
+				position - top_left,
+				state_machine->get_node(node_name)->duplicate(),
+		});
+
+		Vector<int> transitions = state_machine->find_transition_from(node_name);
+		for (int index : transitions) {
+			StringName to = state_machine->get_transition_to(index);
+			if (selected_nodes.has(to)) {
+				Ref<AnimationNodeStateMachineTransition> transition = state_machine->get_transition(index)->duplicate();
+				r_transitions.push_back({ node_name, to, transition });
+			}
+		}
+	}
+}
+
+void AnimationNodeStateMachineEditor::_dup_paste_nodes(const List<CopyItem> &p_items, const List<CopyTransition> &p_transitions, const Vector2 &p_position) {
+	updating = true;
+
+	HashMap<StringName, StringName> remap;
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+	for (const CopyItem &item : p_items) {
+		String name = _deduplicate_node_name(item.name);
+		remap[item.name] = name;
+		// must duplicate node again for multiple pastes
+		if (item.node.is_valid()) {
+			undo_redo->add_do_method(state_machine.ptr(), "add_node", name, item.node->duplicate(), p_position + item.position);
+			undo_redo->add_undo_method(state_machine.ptr(), "remove_node", name);
+		}
+	}
+
+	for (const CopyTransition &item : p_transitions) {
+		StringName from = remap[item.from];
+		StringName to = remap[item.to];
+		// must duplicate node again for multiple pastes
+		if (item.transition.is_valid()) {
+			undo_redo->add_do_method(state_machine.ptr(), "add_transition", from, to, item.transition->duplicate());
+			undo_redo->add_undo_method(state_machine.ptr(), "remove_transition", from, to);
+		}
+	}
+
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
+
+	updating = false;
+}
+
+void AnimationNodeStateMachineEditor::_duplicate_nodes() {
+	// don't destroy copy state, use separate buffer
+	List<CopyItem> items;
+	List<CopyTransition> transitions;
+	_dup_copy_nodes(items, transitions);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Duplicate State Machine Node(s) and Transition(s)"));
+
+	_dup_paste_nodes(items, transitions, _map_to_state_machine(state_machine_draw->get_local_mouse_position()));
+
+	undo_redo->commit_action();
+}
+
+void AnimationNodeStateMachineEditor::_copy_nodes(bool p_cut) {
+	_clear_copy_buffer();
+	_dup_copy_nodes(copy_items_buffer, copy_transitions_buffer);
+
+	if (p_cut) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Cut State Machine Node(s)"));
+
+		_erase_selected(true);
+
+		undo_redo->commit_action();
+	}
+}
+
+void AnimationNodeStateMachineEditor::_paste_nodes(const Vector2 &p_position) {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Paste State Machine Node(s) and Transition(s)"));
+	_dup_paste_nodes(copy_items_buffer, copy_transitions_buffer, p_position);
+	undo_redo->commit_action();
+}
+
+void AnimationNodeStateMachineEditor::_clear_copy_buffer() {
+	copy_items_buffer.clear();
+	copy_transitions_buffer.clear();
+}
+
+String AnimationNodeStateMachineEditor::_deduplicate_node_name(const String &p_base_name) {
+	int base = 1;
+	String name = p_base_name;
+	while (state_machine->has_node(name)) {
+		base++;
+		name = p_base_name + " " + itos(base);
+	}
+	return name;
+}
+
 void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 	String base_name;
 	Ref<AnimationRootNode> node;
@@ -933,9 +1097,23 @@ void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 	} else if (p_index == MENU_LOAD_FILE_CONFIRM) {
 		node = file_loaded;
 		file_loaded.unref();
+	} else if (p_index == MENU_CUT) {
+		_copy_nodes(true);
+		return;
+	} else if (p_index == MENU_COPY) {
+		_copy_nodes(false);
+		return;
 	} else if (p_index == MENU_PASTE) {
-		node = EditorSettings::get_singleton()->get_resource_clipboard();
-
+		_paste_nodes(add_node_pos);
+		return;
+	} else if (p_index == MENU_DELETE) {
+		if (!read_only) {
+			_erase_selected(false);
+		}
+		return;
+	} else if (p_index == MENU_DUPLICATE) {
+		_duplicate_nodes();
+		return;
 	} else {
 		String type = menu->get_item_metadata(p_index);
 
@@ -957,24 +1135,7 @@ void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 		base_name = node->get_class().replace_first("AnimationNode", "");
 	}
 
-	int base = 1;
-	String name = base_name;
-	while (state_machine->has_node(name)) {
-		base++;
-		name = base_name + " " + itos(base);
-	}
-
-	updating = true;
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Add Node and Transition"));
-	undo_redo->add_do_method(state_machine.ptr(), "add_node", name, node, add_node_pos);
-	undo_redo->add_undo_method(state_machine.ptr(), "remove_node", name);
-	connecting_to_node = name;
-	_add_transition(true);
-	undo_redo->commit_action();
-	updating = false;
-
-	state_machine_draw->queue_redraw();
+	_add_node_and_transition(base_name, node);
 }
 
 void AnimationNodeStateMachineEditor::_add_animation_type(int p_index) {
@@ -983,25 +1144,23 @@ void AnimationNodeStateMachineEditor::_add_animation_type(int p_index) {
 
 	anim->set_animation(animations_to_add[p_index]);
 
-	String base_name = animations_to_add[p_index].validate_node_name();
-	int base = 1;
-	String name = base_name;
-	while (state_machine->has_node(name)) {
-		base++;
-		name = base_name + " " + itos(base);
-	}
+	_add_node_and_transition(animations_to_add[p_index].validate_node_name(), anim);
+}
+
+void AnimationNodeStateMachineEditor::_add_node_and_transition(const String &p_base_name, Ref<AnimationNode> node) {
+	String name = _deduplicate_node_name(p_base_name);
 
 	updating = true;
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Node and Transition"));
-	undo_redo->add_do_method(state_machine.ptr(), "add_node", name, anim, add_node_pos);
+	undo_redo->add_do_method(state_machine.ptr(), "add_node", name, node, add_node_pos);
+	undo_redo->add_do_method(state_machine_draw, "queue_redraw");
 	undo_redo->add_undo_method(state_machine.ptr(), "remove_node", name);
+	undo_redo->add_undo_method(state_machine_draw, "queue_redraw");
 	connecting_to_node = name;
 	_add_transition(true);
 	undo_redo->commit_action();
 	updating = false;
-
-	state_machine_draw->queue_redraw();
 }
 
 void AnimationNodeStateMachineEditor::_connect_to(int p_index) {
