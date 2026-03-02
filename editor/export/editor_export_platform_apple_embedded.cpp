@@ -273,6 +273,7 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/export_project_only"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/export_to_xcode_organizer"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/delete_old_export_files_unconditionally"), false));
 
 	Vector<PluginConfigAppleEmbedded> found_plugins = get_plugins(get_platform_name());
@@ -2074,20 +2075,44 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 
 	String platform_name = get_platform_name();
 
-	// Determine Xcode Archive path based on standard Xcode user locations
-	// Typically: ~/Library/Developer/Xcode/Archives/YYYY-MM-DD/YourApp_YYYYMMDDHHMMSS.xcarchive
-	OS::DateTime dt = OS::get_singleton()->get_datetime();
-	String archive_date = vformat("%04d-%02d-%02d", dt.year, (uint8_t)dt.month, dt.day);
-	// Format: YYYYMMDDHHMMSS
-	String archive_timestamp = vformat("%04d%02d%02d%02d%02d%02d", dt.year, (uint8_t)dt.month, dt.day, dt.hour, dt.minute, dt.second);
-	String archive_dir = OS::get_singleton()->get_environment("HOME").path_join("Library/Developer/Xcode/Archives").path_join(archive_date);
-	String archive_name = vformat("%s_%s.xcarchive", binary_name, archive_timestamp);
-	String archive_path = archive_dir.path_join(archive_name);
+	String archive_path = p_path.get_basename() + ".xcarchive";
 
-	// Ensure the directory exists
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	if (!da->dir_exists(archive_dir)) {
-		da->make_dir_recursive(archive_dir);
+	if (p_preset->get("application/export_to_xcode_organizer")) {
+		// Determine Xcode Archive path based on standard Xcode user locations
+		// Typically: ~/Library/Developer/Xcode/Archives/YYYY-MM-DD/YourApp_YYYYMMDDHHMMSS.xcarchive
+		OS::DateTime dt = OS::get_singleton()->get_datetime();
+		String archive_date = vformat("%04d-%02d-%02d", dt.year, (uint8_t)dt.month, dt.day);
+		// Format: YYYYMMDDHHMMSS
+		String archive_timestamp = vformat("%04d%02d%02d%02d%02d%02d", dt.year, (uint8_t)dt.month, dt.day, dt.hour, dt.minute, dt.second);
+		String archive_name = vformat("%s_%s.xcarchive", binary_name, archive_timestamp);
+
+		String archive_dir;
+
+		// Try to read custom archive path from Xcode preferences
+		List<String> defaults_args;
+		defaults_args.push_back("read");
+		defaults_args.push_back("com.apple.dt.Xcode");
+		defaults_args.push_back("IDECustomDistributionArchivesLocation");
+		String defaults_out;
+		if (OS::get_singleton()->execute("defaults", defaults_args, &defaults_out) == OK && !defaults_out.strip_edges().is_empty()) {
+			archive_dir = defaults_out.strip_edges().path_join(archive_date);
+		} else {
+			// Fallback to default Xcode archive path
+			archive_dir = OS::get_singleton()->get_environment("HOME").path_join("Library/Developer/Xcode/Archives").path_join(archive_date);
+		}
+
+		archive_path = archive_dir.path_join(archive_name);
+
+		// Ensure the directory exists
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		ERR_FAIL_COND_V_MSG(da.is_null(), ERR_CANT_CREATE, "Cannot create DirAccess object to create the Xcode archive directory.");
+		if (!da->dir_exists(archive_dir)) {
+			Error err = da->make_dir_recursive(archive_dir);
+			if (err != OK) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Xcode Build"), vformat(TTR("Failed to create Xcode archive directory at %s."), archive_dir));
+				return err;
+			}
+		}
 	}
 
 	// Update archive command arguments
@@ -2126,7 +2151,13 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		return FAILED;
 	}
 
-	print_line_rich(vformat("[b]Xcode Build:[/b] Archive saved to [url=file://%s]%s[/url]", archive_path, archive_path));
+	String abs_archive_path = archive_path;
+	if (!abs_archive_path.is_absolute_path()) {
+		abs_archive_path = ProjectSettings::get_singleton()->globalize_path("res://").path_join(abs_archive_path);
+	}
+	abs_archive_path = abs_archive_path.simplify_path();
+
+	print_line_rich(vformat("[b]Xcode Build:[/b] Archive saved to [url=file://%s]%s[/url]", abs_archive_path, abs_archive_path));
 
 	if (!p_oneclick) {
 		if (ep.step("Making .ipa", 4)) {
