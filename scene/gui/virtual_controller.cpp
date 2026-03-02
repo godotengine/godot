@@ -288,9 +288,6 @@ void VirtualController::_setup_controls() {
 	guide_button->connect("button_up", callable_mp(this, &VirtualController::_on_guide_button_released));
 }
 
-void VirtualController::_bind_methods() {
-}
-
 void VirtualController::_notification(int p_notification) {
 	ERR_MAIN_THREAD_GUARD;
 	switch (p_notification) {
