@@ -193,6 +193,7 @@ void register_server_types() {
 		GDREGISTER_CLASS(AudioEffectHighPassFilter);
 		GDREGISTER_CLASS(AudioEffectBandPassFilter);
 		GDREGISTER_CLASS(AudioEffectNotchFilter);
+		GDREGISTER_CLASS(AudioEffectPeakFilter);
 		GDREGISTER_CLASS(AudioEffectBandLimitFilter);
 		GDREGISTER_CLASS(AudioEffectLowShelfFilter);
 		GDREGISTER_CLASS(AudioEffectHighShelfFilter);

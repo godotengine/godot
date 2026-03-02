@@ -97,6 +97,7 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 			p_coeffs->b2 = (1.0 - cos_v) / 2.0;
 			p_coeffs->a1 = -2.0 * cos_v;
 			p_coeffs->a2 = 1.0 - alpha;
+
 		} break;
 
 		case HIGHPASS: {
@@ -105,6 +106,7 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 			p_coeffs->b2 = (1.0 + cos_v) / 2.0;
 			p_coeffs->a1 = -2.0 * cos_v;
 			p_coeffs->a2 = 1.0 - alpha;
+
 		} break;
 
 		case BANDPASS: {
@@ -113,6 +115,7 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 			p_coeffs->b2 = -alpha * std::sqrt(Q + 1);
 			p_coeffs->a1 = -2.0 * cos_v;
 			p_coeffs->a2 = 1.0 - alpha;
+
 		} break;
 
 		case NOTCH: {
@@ -121,14 +124,18 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 			p_coeffs->b2 = 1.0;
 			p_coeffs->a1 = -2.0 * cos_v;
 			p_coeffs->a2 = 1.0 - alpha;
+
 		} break;
+					
 		case PEAK: {
 			p_coeffs->b0 = (1.0 + alpha * tmpgain);
 			p_coeffs->b1 = (-2.0 * cos_v);
 			p_coeffs->b2 = (1.0 - alpha * tmpgain);
 			p_coeffs->a1 = -2 * cos_v;
 			p_coeffs->a2 = (1 - alpha / tmpgain);
+
 		} break;
+
 		case BANDLIMIT: {
 			//this one is extra tricky
 			double hicutoff = resonance;
@@ -145,6 +152,7 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 			p_coeffs->a2 = 1 - alpha;
 
 		} break;
+
 		case LOWSHELF: {
 			double tmpq = Math::sqrt(Q);
 			if (tmpq <= 0) {
@@ -160,6 +168,7 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 			p_coeffs->a2 = ((tmpgain + 1.0) + (tmpgain - 1.0) * cos_v - beta * sin_v);
 
 		} break;
+
 		case HIGHSHELF: {
 			double tmpq = Math::sqrt(Q);
 			if (tmpq <= 0) {
