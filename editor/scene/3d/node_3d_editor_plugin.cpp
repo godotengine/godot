@@ -4979,17 +4979,18 @@ void Node3DEditorViewport::focus_selection() {
 
 		if (se->gizmo.is_valid()) {
 			for (const KeyValue<int, Transform3D> &GE : se->subgizmos) {
-				const Vector3 pos = se->gizmo->get_subgizmo_transform(GE.key).origin;
+				const Vector3 pos = node_3d->get_global_gizmo_transform().xform(se->gizmo->get_subgizmo_transform(GE.key).origin);
 				if (pos.is_finite()) {
 					center += pos;
 					count++;
 				}
 			}
-		}
-		const Vector3 pos = node_3d->get_global_gizmo_transform().origin;
-		if (pos.is_finite()) {
-			center += pos;
-			count++;
+		} else {
+			const Vector3 pos = node_3d->get_global_gizmo_transform().origin;
+			if (pos.is_finite()) {
+				center += pos;
+				count++;
+			}
 		}
 	}
 
