@@ -5577,6 +5577,7 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 			}
 			break;
 		case VARIANT:
+		case GENERIC_TYPE:
 		case RESOLVING:
 		case UNRESOLVED:
 			result.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
