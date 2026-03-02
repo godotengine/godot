@@ -44,10 +44,6 @@
 #include "servers/text/text_server.h"
 #endif
 
-#ifdef TOOLS_ENABLED
-#include "editor/settings/editor_settings.h"
-#endif
-
 // This function is used to determine that a type is "built-in" as opposed to native
 // and custom classes. So `Variant::NIL` and `Variant::OBJECT` are excluded:
 // `Variant::NIL` - `null` is literal, not a type.
@@ -448,13 +444,6 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 	for_completion = p_for_completion;
 	parse_body = p_parse_body;
 
-	int tab_size = 4;
-#ifdef TOOLS_ENABLED
-	if (EditorSettings::get_singleton()) {
-		tab_size = EditorSettings::get_singleton()->get_setting("text_editor/behavior/indent/size");
-	}
-#endif // TOOLS_ENABLED
-
 	if (p_for_completion) {
 		// Remove cursor sentinel char.
 		const Vector<String> lines = p_source_code.split("\n");
@@ -467,8 +456,6 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 				if (line[j] == char32_t(0xFFFF)) {
 					found = true;
 					break;
-				} else if (line[j] == '\t') {
-					cursor_column += tab_size - 1;
 				}
 				cursor_column++;
 			}
@@ -510,7 +497,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 		// Create a dummy Node for the warning, pointing to the very beginning of the file
 		Node *nd = alloc_node<PassNode>();
 		nd->start_line = 1;
-		nd->start_column = 0;
+		nd->start_column = 1;
 		nd->end_line = 1;
 		push_warning(nd, GDScriptWarning::EMPTY_FILE);
 	}
