@@ -479,6 +479,34 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 void EditorSpinSlider::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SPIN_BUTTON);
+			// Combine accessibility_name (property label) with label (component name) if both exist.
+			String name = get_accessibility_name();
+			if (!name.is_empty() && !label.is_empty()) {
+				name = vformat("%s %s", name, label);
+			} else if (name.is_empty()) {
+				name = label;
+			}
+			DisplayServer::get_singleton()->accessibility_update_set_name(ae, name);
+			DisplayServer::get_singleton()->accessibility_update_set_description(ae, get_accessibility_description());
+			DisplayServer::get_singleton()->accessibility_update_set_num_value(ae, get_value());
+			DisplayServer::get_singleton()->accessibility_update_set_num_range(ae, get_min(), get_max());
+			if (get_step() > 0) {
+				DisplayServer::get_singleton()->accessibility_update_set_num_step(ae, get_step());
+			} else {
+				DisplayServer::get_singleton()->accessibility_update_set_num_step(ae, 1);
+			}
+
+			// Propagate accessibility name to internal LineEdit if it doesn't have its own.
+			if (value_input && !name.is_empty() && value_input->get_accessibility_name().is_empty()) {
+				value_input->set_accessibility_name(name);
+			}
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			grabbing_spinner_speed = editing_integer ? EDITOR_GET("interface/inspector/integer_drag_speed") : EDITOR_GET("interface/inspector/float_drag_speed");
 			_update_value_input_stylebox();
@@ -794,6 +822,17 @@ void EditorSpinSlider::_ensure_value_input() {
 	value_input->connect(SceneStringName(text_submitted), callable_mp(this, &EditorSpinSlider::_value_input_submitted));
 	value_input->connect(SceneStringName(focus_exited), callable_mp(this, &EditorSpinSlider::_value_focus_exited));
 	value_input->connect(SceneStringName(gui_input), callable_mp(this, &EditorSpinSlider::_value_input_gui_input));
+
+	// Propagate accessibility name to the LineEdit.
+	String name = get_accessibility_name();
+	if (!name.is_empty() && !label.is_empty()) {
+		name = vformat("%s %s", name, label);
+	} else if (name.is_empty()) {
+		name = label;
+	}
+	if (!name.is_empty()) {
+		value_input->set_accessibility_name(name);
+	}
 
 	if (is_inside_tree()) {
 		_update_value_input_stylebox();

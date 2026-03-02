@@ -296,8 +296,10 @@ void EditorProperty::_notification(int p_what) {
 
 			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
 
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, vformat(TTR("Property: %s"), label));
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, vformat(TTR("Property: %s"), label));
+			if (!label.is_empty()) {
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, vformat(TTR("Property: %s"), label));
+				DisplayServer::get_singleton()->accessibility_update_set_value(ae, vformat(TTR("Property: %s"), label));
+			}
 
 			DisplayServer::get_singleton()->accessibility_update_set_popup_type(ae, DisplayServer::AccessibilityPopupType::POPUP_MENU);
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &EditorProperty::_accessibility_action_menu));
@@ -722,6 +724,28 @@ void EditorProperty::_notification(int p_what) {
 void EditorProperty::set_label(const String &p_label) {
 	label = p_label;
 	queue_redraw();
+
+	// Propagate label to focusable child controls for accessibility.
+	// Only set if the child doesn't already have its own accessibility name.
+	// Also propagate to child EditorProperty nodes (e.g., wrapper -> inner property).
+	if (!label.is_empty()) {
+		for (Control *focusable : focusables) {
+			if (focusable->get_accessibility_name().is_empty()) {
+				focusable->set_accessibility_name(label);
+			}
+		}
+		// Propagate to child EditorProperty focusables.
+		for (int i = 0; i < get_child_count(); i++) {
+			EditorProperty *child_ep = Object::cast_to<EditorProperty>(get_child(i));
+			if (child_ep && child_ep->get_label().is_empty()) {
+				for (Control *focusable : child_ep->focusables) {
+					if (focusable->get_accessibility_name().is_empty()) {
+						focusable->set_accessibility_name(label);
+					}
+				}
+			}
+		}
+	}
 }
 
 String EditorProperty::get_label() const {
@@ -985,6 +1009,12 @@ void EditorProperty::_focusable_focused(int p_index) {
 void EditorProperty::add_focusable(Control *p_control) {
 	p_control->connect(SceneStringName(focus_entered), callable_mp(this, &EditorProperty::_focusable_focused).bind(focusables.size()));
 	focusables.push_back(p_control);
+
+	// If property has focusable children, make the property itself not focusable
+	// to avoid duplicate tab stops.
+	if (get_focus_mode() != FOCUS_NONE) {
+		set_focus_mode(FOCUS_NONE);
+	}
 }
 
 void EditorProperty::grab_focus(int p_focusable) {
@@ -1736,14 +1766,16 @@ void EditorInspectorCategory::_notification(int p_what) {
 			connect(SceneStringName(theme_changed), callable_mp(this, &EditorInspectorCategory::_theme_changed));
 		} break;
 
+		case NOTIFICATION_POST_ENTER_TREE: {
+			queue_accessibility_update();
+		} break;
+
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
-
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, vformat(TTR("Category: %s"), label));
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, vformat(TTR("Category: %s"), label));
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
+			DisplayServer::get_singleton()->accessibility_update_set_value(ae, label);
 
 			DisplayServer::get_singleton()->accessibility_update_set_popup_type(ae, DisplayServer::AccessibilityPopupType::POPUP_MENU);
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &EditorInspectorCategory::_accessibility_action_menu));
@@ -1752,8 +1784,8 @@ void EditorInspectorCategory::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (is_favorite) {
 				label = TTR("Favorites");
+				queue_accessibility_update();
 			}
-			queue_accessibility_update();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -1823,6 +1855,7 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 
 void EditorInspectorCategory::set_as_favorite() {
 	is_favorite = true;
+	label = TTR("Favorites");
 	_update_icon();
 }
 
@@ -2131,16 +2164,24 @@ int EditorInspectorSection::_get_header_height() {
 
 void EditorInspectorSection::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_POST_ENTER_TREE: {
+			queue_accessibility_update();
+		} break;
+
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_DISCLOSURE_TRIANGLE);
 
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, vformat(TTR("Section: %s"), label));
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, vformat(TTR("Section: %s"), label));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_COLLAPSE, callable_mp(this, &EditorInspectorSection::_accessibility_action_collapse));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_EXPAND, callable_mp(this, &EditorInspectorSection::_accessibility_action_expand));
+			if (foldable) {
+				bool is_expanded = object && object->editor_is_section_unfolded(section);
+				DisplayServer::get_singleton()->accessibility_update_set_list_item_expanded(ae, is_expanded);
+				// Set toggled state as workaround for AccessKit not translating expanded to AT-SPI pressed state.
+				DisplayServer::get_singleton()->accessibility_update_set_checked(ae, is_expanded);
+				DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_COLLAPSE, callable_mp(this, &EditorInspectorSection::_accessibility_action_collapse));
+				DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_EXPAND, callable_mp(this, &EditorInspectorSection::_accessibility_action_expand));
+			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -2471,6 +2512,8 @@ void EditorInspectorSection::setup(const String &p_inspector_path, const String 
 	indent_depth = p_indent_depth;
 	level = p_level;
 
+	set_accessibility_name(label);
+
 	_test_unfold();
 
 	if (foldable) {
@@ -2595,6 +2638,7 @@ void EditorInspectorSection::unfold() {
 
 	vbox->show();
 	queue_redraw();
+	queue_accessibility_update();
 }
 
 void EditorInspectorSection::fold() {
@@ -2605,6 +2649,7 @@ void EditorInspectorSection::fold() {
 	object->editor_set_section_unfold(section, false);
 	vbox->hide();
 	queue_redraw();
+	queue_accessibility_update();
 }
 
 void EditorInspectorSection::set_bg_color(const Color &p_bg_color) {
@@ -6238,10 +6283,11 @@ EditorInspector::EditorInspector() {
 	search_box = nullptr;
 	_prop_edited = "property_edited";
 	set_process(false);
-	set_focus_mode(FocusMode::FOCUS_ALL);
+	set_focus_mode(FocusMode::FOCUS_NONE);
 	property_focusable = -1;
 
 	get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &EditorInspector::_vscroll_changed));
+	get_v_scroll_bar()->set_accessibility_name(TTRC("Properties"));
 	update_scroll_request = -1;
 	if (EditorSettings::get_singleton()) {
 		refresh_countdown = float(EDITOR_GET("docks/property_editor/auto_refresh_interval"));
