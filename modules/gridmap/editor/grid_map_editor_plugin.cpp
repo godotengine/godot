@@ -49,10 +49,8 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/label.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
-#include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/main/window.h"
 #include "servers/rendering/rendering_server.h"
@@ -297,6 +295,10 @@ void GridMapEditor::_validate_selection() {
 }
 
 void GridMapEditor::_set_selection(bool p_active, const Vector3 &p_begin, const Vector3 &p_end) {
+	bool was_active = selection.active;
+	Vector3 begin_old = selection.begin;
+	Vector3 end_old = selection.end;
+
 	selection.active = p_active;
 	selection.begin = p_begin;
 	selection.end = p_end;
@@ -305,6 +307,10 @@ void GridMapEditor::_set_selection(bool p_active, const Vector3 &p_begin, const 
 
 	if (is_visible_in_tree()) {
 		_update_selection_transform();
+
+		if (was_active != selection.active || begin_old != selection.begin || end_old != selection.end) {
+			emit_signal(SNAME("overlay_update_requested"));
+		}
 	}
 }
 
@@ -341,6 +347,25 @@ Array GridMapEditor::_get_selected_cells() const {
 		}
 	}
 	return ret;
+}
+
+String GridMapEditor::_get_cursor_coordinates() const {
+	String text;
+	if (cursor_visible || !set_items.is_empty() || !clipboard_items.is_empty()) {
+		if (selection.active) {
+			if (selection.begin == selection.end) {
+				text = vformat(String::utf8(u8"(%d, %d, %d)  \u2317  (%d, %d, %d)"),
+						(int)cursor_gridpos.x, (int)cursor_gridpos.y, (int)cursor_gridpos.z, (int)selection.begin.x, (int)selection.begin.y, (int)selection.begin.z);
+			} else {
+				text = vformat(String::utf8(u8"(%d, %d, %d)  \u2317  (%d, %d, %d) \u2192 (%d, %d, %d)"),
+						(int)cursor_gridpos.x, (int)cursor_gridpos.y, (int)cursor_gridpos.z, (int)selection.begin.x, (int)selection.begin.y, (int)selection.begin.z, (int)selection.end.x, (int)selection.end.y, (int)selection.end.z);
+			}
+		} else {
+			text = vformat("(%d, %d, %d)",
+					(int)cursor_gridpos.x, (int)cursor_gridpos.y, (int)cursor_gridpos.z);
+		}
+	}
+	return text;
 }
 
 bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, bool p_click) {
@@ -386,6 +411,7 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 		}
 	}
 
+	Vector3 old_cursor_gridpos = cursor_gridpos;
 	Vector3 cell_size = node->get_cell_size();
 
 	for (int i = 0; i < 3; i++) {
@@ -398,6 +424,10 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 			}
 			grid_ofs[i] = cursor_gridpos[i] * cell_size[i];
 		}
+	}
+
+	if (old_cursor_gridpos != cursor_gridpos) {
+		emit_signal(SNAME("overlay_update_requested"));
 	}
 
 	RS::get_singleton()->instance_set_transform(grid_instance[edit_axis], node->get_global_transform() * edit_grid_xform);
@@ -1282,6 +1312,7 @@ void GridMapEditor::_notification(int p_what) {
 			RenderingServer::get_singleton()->free_rid(selection_instance);
 			RenderingServer::get_singleton()->free_rid(paste_instance);
 			cursor_instance = RID();
+			cursor_visible = false;
 			selection_instance = RID();
 			paste_instance = RID();
 		} break;
@@ -1368,10 +1399,20 @@ void GridMapEditor::_update_cursor_instance() {
 		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
 	}
 
+	bool was_visible = cursor_visible;
+
 	if (cursor_instance.is_valid()) {
 		// Make the cursor translucent so that it can be distinguished from already-placed tiles.
 		RenderingServer::get_singleton()->instance_geometry_set_transparency(cursor_instance, 0.5);
+		cursor_visible = true;
+	} else {
+		cursor_visible = false;
 	}
+
+	if (was_visible != cursor_visible) {
+		emit_signal(SNAME("overlay_update_requested"));
+	}
+
 	_update_cursor_transform();
 }
 
@@ -1404,6 +1445,8 @@ void GridMapEditor::_floor_mouse_exited() {
 void GridMapEditor::_bind_methods() {
 	ClassDB::bind_method("_configure", &GridMapEditor::_configure);
 	ClassDB::bind_method("_set_selection", &GridMapEditor::_set_selection);
+
+	ADD_SIGNAL(MethodInfo("overlay_update_requested"));
 }
 
 GridMapEditor::GridMapEditor() {
@@ -1877,6 +1920,7 @@ void GridMapEditorPlugin::_notification(int p_what) {
 			grid_map_editor = memnew(GridMapEditor);
 			EditorDockManager::get_singleton()->add_dock(grid_map_editor);
 			grid_map_editor->close();
+			grid_map_editor->connect(SNAME("overlay_update_requested"), callable_mp((EditorPlugin *)this, &EditorPlugin::update_overlays));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			EditorDockManager::get_singleton()->remove_dock(grid_map_editor);
@@ -1895,6 +1939,21 @@ void GridMapEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_selected_cells"), &GridMapEditorPlugin::get_selected_cells);
 	ClassDB::bind_method(D_METHOD("set_selected_palette_item", "item"), &GridMapEditorPlugin::set_selected_palette_item);
 	ClassDB::bind_method(D_METHOD("get_selected_palette_item"), &GridMapEditorPlugin::get_selected_palette_item);
+}
+
+void GridMapEditorPlugin::forward_3d_draw_over_viewport(Control *p_overlay) {
+	Point2 msgpos = Point2(20 * EDSCALE, p_overlay->get_size().y - 20 * EDSCALE);
+	String text = grid_map_editor->_get_cursor_coordinates();
+	if (text.is_empty()) {
+		return;
+	}
+
+	Ref<Font> font = p_overlay->get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = p_overlay->get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+
+	p_overlay->draw_string(font, msgpos + Point2(1, 1), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
+	p_overlay->draw_string(font, msgpos + Point2(-1, -1), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
+	p_overlay->draw_string(font, msgpos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 1));
 }
 
 void GridMapEditorPlugin::edit(Object *p_object) {
