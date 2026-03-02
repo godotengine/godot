@@ -31,7 +31,8 @@
 #pragma once
 
 #include "scene/gui/button.h"
-#include "scene/gui/virtual_joystick.h"
+
+class VirtualJoystick;
 
 class VirtualController : public Control {
 	GDCLASS(VirtualController, Control);
@@ -102,7 +103,6 @@ private:
 	void _on_guide_button_released();
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
