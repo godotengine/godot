@@ -580,14 +580,18 @@ Array ScriptTextEditor::_inline_object_parse(const String &p_text) {
 }
 
 void ScriptTextEditor::_inline_object_draw(const Dictionary &p_info, const Rect2 &p_rect) {
+	// Note: this method uses pre-sorted draw, draw call order is ignored, use `canvas_item_set_presort_level` to specify draw order. See TextEdit::DrawStep.
 	if (_is_valid_color_info(p_info)) {
 		Rect2 col_rect = p_rect.grow(-4);
 		if (color_alpha_texture.is_null()) {
 			color_alpha_texture = inline_color_picker->get_theme_icon("sample_bg", "ColorPicker");
 		}
 		RID text_ci = code_editor->get_text_editor()->get_text_canvas_item();
+		RenderingServer::get_singleton()->canvas_item_set_presort_level(text_ci, TextEdit::DrawStep::DRAW_STEP_TEXT_OUTLINE);
 		RS::get_singleton()->canvas_item_add_rect(text_ci, p_rect.grow(-3), Color(1, 1, 1));
+		RenderingServer::get_singleton()->canvas_item_set_presort_level(text_ci, TextEdit::DrawStep::DRAW_STEP_TEXT);
 		color_alpha_texture->draw_rect(text_ci, col_rect);
+		RenderingServer::get_singleton()->canvas_item_set_presort_level(text_ci, TextEdit::DrawStep::DRAW_STEP_TEXT_OVERLAY);
 		RS::get_singleton()->canvas_item_add_rect(text_ci, col_rect, Color(p_info["color"]));
 	}
 }

@@ -3339,6 +3339,9 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_item_set_copy_to_backbuffer", "item", "enabled", "rect"), &RenderingServer::canvas_item_set_copy_to_backbuffer);
 	ClassDB::bind_method(D_METHOD("canvas_item_attach_skeleton", "item", "skeleton"), &RenderingServer::canvas_item_attach_skeleton);
 
+	ClassDB::bind_method(D_METHOD("canvas_item_set_presort_level", "item", "order"), &RenderingServer::canvas_item_set_presort_level);
+	ClassDB::bind_method(D_METHOD("canvas_item_flush_presort", "item"), &RenderingServer::canvas_item_flush_presort);
+
 	ClassDB::bind_method(D_METHOD("canvas_item_clear", "item"), &RenderingServer::canvas_item_clear);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_draw_index", "item", "index"), &RenderingServer::canvas_item_set_draw_index);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_material", "item", "material"), &RenderingServer::canvas_item_set_material);

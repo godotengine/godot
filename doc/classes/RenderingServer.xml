@@ -448,6 +448,13 @@
 				[b]Note:[/b] The equivalent node is [CanvasItem].
 			</description>
 		</method>
+		<method name="canvas_item_flush_presort">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<description>
+				Ends draw call pre-sorting. See [method canvas_item_set_presort_level].
+			</description>
+		</method>
 		<method name="canvas_item_get_instance_shader_parameter" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="instance" type="RID" />
@@ -607,6 +614,14 @@
 			<param index="1" name="parent" type="RID" />
 			<description>
 				Sets a parent [CanvasItem] to the [CanvasItem]. The item will inherit transform, modulation and visibility from its parent, like [CanvasItem] nodes in the scene tree.
+			</description>
+		</method>
+		<method name="canvas_item_set_presort_level">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="order" type="int" />
+			<description>
+				Starts draw call pre-sorting, or changes pre-sorting level. All subsequent draw calls until [method canvas_item_flush_presort] is called are sorted according to level and texture use in the call, to ensure draw call batching. Original call order is not preserved. If [method canvas_item_flush_presort] is not called, this method has no effect. This call has no effect on draw calls before the first [method canvas_item_set_presort_level] call and after the call to [method canvas_item_flush_presort].
 			</description>
 		</method>
 		<method name="canvas_item_set_self_modulate">

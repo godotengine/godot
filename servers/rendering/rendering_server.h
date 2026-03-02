@@ -830,6 +830,9 @@ public:
 	virtual void canvas_item_add_clip_ignore(RID p_item, bool p_ignore) = 0;
 	virtual void canvas_item_add_animation_slice(RID p_item, double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset) = 0;
 
+	virtual void canvas_item_set_presort_level(RID p_item, int64_t p_order) = 0;
+	virtual void canvas_item_flush_presort(RID p_item) = 0;
+
 	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) = 0;
 	virtual void canvas_item_set_z_index(RID p_item, int p_z) = 0;
 	virtual void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable) = 0;

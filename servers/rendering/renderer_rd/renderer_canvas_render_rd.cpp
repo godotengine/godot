@@ -794,7 +794,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 		}
 
 		if (ci->skeleton.is_valid()) {
-			const Item::Command *c = ci->commands;
+			const Item::Command *c = ci->first_command;
 
 			while (c) {
 				if (c->type == Item::Command::TYPE_MESH) {
@@ -2395,7 +2395,7 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 		r_current_batch->use_lighting = use_lighting;
 	}
 
-	const Item::Command *c = p_item->commands;
+	const Item::Command *c = p_item->first_command;
 	while (c) {
 		if (skipping && c->type != Item::Command::TYPE_ANIMATION_SLICE) {
 			c = c->next;
