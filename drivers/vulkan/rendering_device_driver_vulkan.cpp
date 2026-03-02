@@ -1413,7 +1413,19 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		ERR_FAIL_COND_V(!device_created, ERR_CANT_CREATE);
 	} else {
 		VkResult err = vkCreateDevice(physical_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DEVICE), &vk_device);
-		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+		if (err != VK_SUCCESS) {
+			String ext_list;
+			for (uint32_t i = 0; i < enabled_extension_names.size(); i++) {
+				if (i > 0) {
+					ext_list += ", ";
+				}
+				ext_list += String(enabled_extension_names[i]);
+			}
+			ERR_FAIL_V_MSG(ERR_CANT_CREATE,
+					vformat("vkCreateDevice failed with error %s (%d). Requested %d extension(s): [%s].",
+							get_vulkan_result(err), (int)err,
+							enabled_extension_names.size(), ext_list));
+		}
 	}
 
 	for (uint32_t i = 0; i < queue_families.size(); i++) {
@@ -1784,7 +1796,74 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 	ERR_FAIL_COND_V(err != OK, err);
 
 	err = _initialize_device(queue_create_info);
-	ERR_FAIL_COND_V(err != OK, err);
+	if (err != OK) {
+		// Device creation failed — possibly a paravirtualized GPU (e.g., Hyper-V GPU-PV) that
+		// advertises extensions it cannot actually support. Retry with non-essential extensions
+		// stripped, which may allow device creation to succeed with reduced functionality.
+		static const char *non_essential_extensions[] = {
+			VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+			VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+			VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+			VK_NV_RAY_TRACING_VALIDATION_EXTENSION_NAME,
+			VK_EXT_DEVICE_FAULT_EXTENSION_NAME,
+			VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
+			VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
+			VK_KHR_VULKAN_MEMORY_MODEL_EXTENSION_NAME,
+			nullptr,
+		};
+
+		bool any_removed = false;
+		for (int i = 0; non_essential_extensions[i] != nullptr; i++) {
+			CharString ext(non_essential_extensions[i]);
+			if (enabled_device_extension_names.has(ext)) {
+				enabled_device_extension_names.erase(ext);
+				any_removed = true;
+			}
+		}
+
+		if (any_removed) {
+			WARN_PRINT("Vulkan device creation failed. Retrying with reduced extensions (ray tracing, VRS, and other advanced features disabled).");
+
+			// Re-derive features and capabilities from the reduced extension set.
+			err = _check_device_features();
+			ERR_FAIL_COND_V(err != OK, err);
+
+			err = _check_device_capabilities();
+			ERR_FAIL_COND_V(err != OK, err);
+
+			queue_create_info.clear();
+			err = _add_queue_create_info(queue_create_info);
+			ERR_FAIL_COND_V(err != OK, err);
+
+			err = _initialize_device(queue_create_info);
+		}
+
+		if (err != OK) {
+			// Still failing — try with only the required extension (swapchain).
+			WARN_PRINT("Vulkan device creation still failed. Retrying with minimum extensions (swapchain only).");
+			HashSet<CharString> minimal_extensions;
+			for (const KeyValue<CharString, bool> &requested_extension : requested_device_extensions) {
+				if (requested_extension.value) {
+					// Only keep required extensions.
+					minimal_extensions.insert(requested_extension.key);
+				}
+			}
+			enabled_device_extension_names = minimal_extensions;
+
+			err = _check_device_features();
+			ERR_FAIL_COND_V(err != OK, err);
+
+			err = _check_device_capabilities();
+			ERR_FAIL_COND_V(err != OK, err);
+
+			queue_create_info.clear();
+			err = _add_queue_create_info(queue_create_info);
+			ERR_FAIL_COND_V(err != OK, err);
+
+			err = _initialize_device(queue_create_info);
+			ERR_FAIL_COND_V(err != OK, err);
+		}
+	}
 
 	err = _initialize_allocator();
 	ERR_FAIL_COND_V(err != OK, err);
@@ -7048,8 +7127,16 @@ inline String RenderingDeviceDriverVulkan::get_vulkan_result(VkResult err) {
 		return "VK_ERROR_OUT_OF_HOST_MEMORY";
 	} else if (err == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
 		return "VK_ERROR_OUT_OF_DEVICE_MEMORY";
+	} else if (err == VK_ERROR_INITIALIZATION_FAILED) {
+		return "VK_ERROR_INITIALIZATION_FAILED";
 	} else if (err == VK_ERROR_DEVICE_LOST) {
 		return "VK_ERROR_DEVICE_LOST";
+	} else if (err == VK_ERROR_EXTENSION_NOT_PRESENT) {
+		return "VK_ERROR_EXTENSION_NOT_PRESENT";
+	} else if (err == VK_ERROR_FEATURE_NOT_PRESENT) {
+		return "VK_ERROR_FEATURE_NOT_PRESENT";
+	} else if (err == VK_ERROR_INCOMPATIBLE_DRIVER) {
+		return "VK_ERROR_INCOMPATIBLE_DRIVER";
 	} else if (err == VK_ERROR_SURFACE_LOST_KHR) {
 		return "VK_ERROR_SURFACE_LOST_KHR";
 	} else if (err == VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT) {
