@@ -32,6 +32,7 @@
 
 #include "core/object/class_db.h"
 #include "scene/main/window.h"
+#include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"
 
 void MenuButton::shortcut_input(const Ref<InputEvent> &p_event) {
@@ -143,8 +144,8 @@ void MenuButton::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
-			DisplayServer::get_singleton()->accessibility_update_set_popup_type(ae, DisplayServer::AccessibilityPopupType::POPUP_MENU);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
+			AccessibilityServer::get_singleton()->update_set_popup_type(ae, AccessibilityServerEnums::AccessibilityPopupType::POPUP_MENU);
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED:

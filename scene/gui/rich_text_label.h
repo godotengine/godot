@@ -184,13 +184,7 @@ private:
 		Line() {
 			text_buf.instantiate();
 		}
-		~Line() {
-			if (accessibility_line_element.is_valid()) {
-				DisplayServer::get_singleton()->accessibility_free_element(accessibility_line_element);
-				accessibility_line_element = RID();
-				accessibility_text_element = RID();
-			}
-		}
+		~Line();
 
 		_FORCE_INLINE_ float get_height(float p_line_separation, float p_paragraph_separation) const {
 			return offset.y + text_buf->get_size().y + text_buf->get_line_count() * p_line_separation + p_paragraph_separation;

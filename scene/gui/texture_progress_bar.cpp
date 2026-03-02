@@ -31,6 +31,7 @@
 #include "texture_progress_bar.h"
 
 #include "core/object/class_db.h"
+#include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"
 
 void TextureProgressBar::set_under_texture(const Ref<Texture2D> &p_texture) {
@@ -436,7 +437,7 @@ void TextureProgressBar::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_PROGRESS_INDICATOR);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_PROGRESS_INDICATOR);
 		} break;
 
 		case NOTIFICATION_DRAW: {

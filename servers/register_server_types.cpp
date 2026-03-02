@@ -56,6 +56,7 @@
 #include "camera/camera_feed.h"
 #include "camera/camera_server.h"
 #include "debugger/servers_debugger.h"
+#include "display/accessibility_server.h"
 #include "display/display_server.h"
 #include "display/native_menu.h"
 #include "movie_writer/movie_writer.h"
@@ -157,6 +158,7 @@ void register_server_types() {
 
 	OS::get_singleton()->set_has_server_feature_callback(has_server_feature_callback);
 
+	GDREGISTER_ABSTRACT_CLASS(AccessibilityServer);
 	GDREGISTER_ABSTRACT_CLASS(DisplayServer);
 	GDREGISTER_ABSTRACT_CLASS(RenderingServer);
 	GDREGISTER_CLASS(AudioServer);
@@ -385,6 +387,7 @@ void unregister_server_types() {
 void register_server_singletons() {
 	OS::get_singleton()->benchmark_begin_measure("Servers", "Register Singletons");
 
+	Engine::get_singleton()->add_singleton(Engine::Singleton("AccessibilityServer", AccessibilityServer::get_singleton(), "AccessibilityServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("AudioServer", AudioServer::get_singleton(), "AudioServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("CameraServer", CameraServer::get_singleton(), "CameraServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("DisplayServer", DisplayServer::get_singleton(), "DisplayServer"));
