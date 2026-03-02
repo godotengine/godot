@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  tts_windows.cpp                                                       */
+/*  winrt_utils.h                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,94 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "tts_windows.h"
+#pragma once
 
-#include "tts_driver_sapi.h"
-
-#ifdef WINRT_ENABLED
-#include "tts_driver_onecore.h"
-#endif
-
-TTS_Windows *TTS_Windows::singleton = nullptr;
-
-TTS_Windows *TTS_Windows::get_singleton() {
-	return singleton;
-}
-
-bool TTS_Windows::is_speaking() const {
-	if (driver) {
-		return driver->is_speaking();
-	}
-	return false;
-}
-
-bool TTS_Windows::is_paused() const {
-	if (driver) {
-		return driver->is_paused();
-	}
-	return false;
-}
-
-Array TTS_Windows::get_voices() const {
-	if (driver) {
-		return driver->get_voices();
-	}
-	return Array();
-}
-
-void TTS_Windows::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
-	if (driver) {
-		driver->speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
-	}
-}
-
-void TTS_Windows::pause() {
-	if (driver) {
-		driver->pause();
-	}
-}
-
-void TTS_Windows::resume() {
-	if (driver) {
-		driver->resume();
-	}
-}
-
-void TTS_Windows::stop() {
-	if (driver) {
-		driver->stop();
-	}
-}
-
-void TTS_Windows::process_events() {
-	if (driver) {
-		driver->process_events();
-	}
-}
-
-TTS_Windows::TTS_Windows() {
-#ifdef WINRT_ENABLED
-	// Try OneCore driver.
-	if (!driver) {
-		driver = memnew(TTSDriverOneCore);
-		if (!driver->init()) {
-			memdelete(driver);
-			driver = nullptr;
-		}
-	}
-#endif
-	// Try SAPI driver.
-	if (!driver) {
-		driver = memnew(TTSDriverSAPI);
-		if (!driver->init()) {
-			memdelete(driver);
-			driver = nullptr;
-		}
-	}
-}
-
-TTS_Windows::~TTS_Windows() {
-	if (driver) {
-		memdelete(driver);
-	}
-}
+class WinRTUtils {
+public:
+	static bool try_show_onecore_emoji_picker();
+};
