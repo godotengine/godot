@@ -2894,6 +2894,9 @@
 		<constant name="ROLE_REGION" value="46" enum="AccessibilityRole">
 			Region/landmark element. Screen readers can navigate between regions using landmark navigation.
 		</constant>
+		<constant name="ROLE_TREE_GRID" value="47" enum="AccessibilityRole">
+			Tree grid element (tree with multiple columns).
+		</constant>
 		<constant name="POPUP_MENU" value="0" enum="AccessibilityPopupType">
 			Popup menu.
 		</constant>

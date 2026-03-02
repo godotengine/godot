@@ -787,6 +787,7 @@ private:
 	void _go_right();
 	void _go_down();
 	void _go_up();
+	bool _go_to_next_focusable_in_row(bool p_forward);
 	void _shift_select_range(TreeItem *new_item);
 
 	bool _scroll(bool p_horizontal, float p_pages);
