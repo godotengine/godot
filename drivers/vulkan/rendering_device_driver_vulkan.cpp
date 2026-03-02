@@ -3454,12 +3454,16 @@ bool RenderingDeviceDriverVulkan::_determine_swap_chain_format(RenderingContextD
 	bool hdr_output_requested = context_driver->surface_get_hdr_output_enabled(p_surface);
 
 	// Determine which formats to prefer based on the requested capabilities.
-	FixedVector<FormatCandidate, 3> preferred_formats;
+	FixedVector<FormatCandidate, 4> preferred_formats;
 
 	// If the surface requests HDR output, try to get an HDR format.
 	if (hdr_output_requested && colorspace_supported) {
-		// This format is preferred for HDR output.
+#ifdef ANDROID_ENABLED
+		preferred_formats.push_back({ VK_FORMAT_A2R10G10B10_UNORM_PACK32, VK_COLOR_SPACE_HDR10_ST2084_EXT });
+		preferred_formats.push_back({ VK_FORMAT_A2B10G10R10_UNORM_PACK32, VK_COLOR_SPACE_HDR10_ST2084_EXT });
+#else
 		preferred_formats.push_back({ VK_FORMAT_R16G16B16A16_SFLOAT, VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT });
+#endif
 	}
 
 	// These formats are always considered for SDR.
@@ -3974,6 +3978,8 @@ RDD::ColorSpace RenderingDeviceDriverVulkan::swap_chain_get_color_space(SwapChai
 	switch (swap_chain->color_space) {
 		case VK_COLOR_SPACE_SRGB_NONLINEAR_KHR:
 			return COLOR_SPACE_REC709_NONLINEAR_SRGB;
+		case VK_COLOR_SPACE_HDR10_ST2084_EXT:
+			return COLOR_SPACE_REC2020_NONLINEAR_ST2084;
 		case VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT:
 			return COLOR_SPACE_REC709_LINEAR;
 		default:
