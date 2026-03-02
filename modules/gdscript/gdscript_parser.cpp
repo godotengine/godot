@@ -5611,6 +5611,19 @@ bool GDScriptParser::DataType::can_reference(const GDScriptParser::DataType &p_o
 	return true;
 }
 
+bool GDScriptParser::DataType::can_be_constant_expression() const {
+	if (is_typed_container_type()) {
+		return false;
+	} else {
+		for (const GDScriptParser::DataType &param_type : container_element_types) {
+			if (param_type.is_typed_container_type()) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 void GDScriptParser::complete_extents(Node *p_node) {
 	while (!nodes_in_progress.is_empty() && nodes_in_progress.back()->get() != p_node) {
 		ERR_PRINT("Parser bug: Mismatch in extents tracking stack.");

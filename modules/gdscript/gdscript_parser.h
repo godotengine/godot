@@ -193,6 +193,8 @@ public:
 
 		bool can_reference(const DataType &p_other) const;
 
+		bool can_be_constant_expression() const;
+
 		bool operator==(const DataType &p_other) const {
 			if (type_source == UNDETECTED || p_other.type_source == UNDETECTED) {
 				return true; // Can be considered equal for parsing purposes.
