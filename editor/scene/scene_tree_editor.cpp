@@ -349,27 +349,20 @@ int SceneTreeEditor::get_visible_exposed_node_count(Node *p_node) {
 	if (!p_node) {
 		return 0;
 	}
-
 	int count = 0;
-	const int child_count = p_node->get_child_count(false);
-
-	for (int i = 0; i < child_count; i++) {
-		Node *child = p_node->get_child(i, false);
-		if (!child) {
+	for (Variant &child : p_node->get_children()) {
+		Node *node = Object::cast_to<Node>(child);
+		if (!node) {
 			continue;
 		}
-
-		const bool is_exposed = child->has_meta(META_EXPOSED_IN_OWNER) || child->has_meta(META_EXPOSED_IN_INSTANCE);
-
-		if (is_exposed) {
+		if (node->has_meta(META_EXPOSED_IN_OWNER) || node->has_meta(META_EXPOSED_IN_INSTANCE)) {
 			count++;
 		}
 
-		if (child->has_exposed_nodes()) {
-			count += get_visible_exposed_node_count(child);
+		if (node->has_exposed_nodes()) {
+			count += get_visible_exposed_node_count(node);
 		}
 	}
-
 	return count;
 }
 
@@ -379,17 +372,13 @@ TreeItem *SceneTreeEditor::get_last_exposed_tree_item(TreeItem *p_parent) {
 	}
 
 	TreeItem *last = nullptr;
-	const int child_count = p_parent->get_child_count();
-	for (int i = 0; i < child_count; i++) {
-		TreeItem *child = p_parent->get_child(i);
-		if (!child) {
+	for (Variant &item : p_parent->get_children()) {
+		TreeItem *ti = Object::cast_to<TreeItem>(item);
+		if (!ti) {
 			continue;
 		}
-
-		const bool is_exposed = child->has_meta(META_EXPOSED_IN_OWNER) || child->has_meta(META_EXPOSED_IN_INSTANCE);
-
-		if (is_exposed) {
-			last = child;
+		if (ti->has_meta(META_EXPOSED_IN_OWNER) || ti->has_meta(META_EXPOSED_IN_INSTANCE)) {
+			last = ti;
 		}
 	}
 
