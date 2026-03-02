@@ -95,10 +95,10 @@ Error ResourceImporterSVG::import(ResourceUID::ID p_source_id, const String &p_s
 		flg |= ResourceSaver::SaverFlags::FLAG_COMPRESS;
 	}
 
-	print_verbose("Saving to: " + p_save_path + ".dpitex");
+	PRINT_VERBOSE("Saving to: " + p_save_path + ".dpitex");
 	Error err = ResourceSaver::save(dpi_tex, p_save_path + ".dpitex", flg);
 	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot save DPI texture to file \"%s.dpitex\".", p_save_path));
-	print_verbose("Done saving to: " + p_save_path + ".dpitex");
+	PRINT_VERBOSE("Done saving to: " + p_save_path + ".dpitex");
 
 	return OK;
 }

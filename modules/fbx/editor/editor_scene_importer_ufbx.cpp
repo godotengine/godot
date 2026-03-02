@@ -57,7 +57,7 @@ Node *EditorSceneFormatImporterUFBX::import_scene(const String &p_path, uint32_t
 	fbx.instantiate();
 	Ref<FBXState> state;
 	state.instantiate();
-	print_verbose(vformat("FBX path: %s", p_path));
+	PRINT_VERBOSE(vformat("FBX path: %s", p_path));
 	String path = ProjectSettings::get_singleton()->globalize_path(p_path);
 	if (p_options.has("fbx/naming_version")) {
 		int naming_version = p_options["fbx/naming_version"];

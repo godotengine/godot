@@ -130,7 +130,7 @@ Error RenderingDeviceDriverMetal::initialize(uint32_t p_device_index, uint32_t p
 	} else {
 		if (barriers_enabled) {
 			// Application or user has requested barriers, but the OS doesn't support them.
-			print_verbose("Metal 3: Resource barriers are not supported on this OS version.");
+			PRINT_VERBOSE("Metal 3: Resource barriers are not supported on this OS version.");
 			barriers_enabled = false;
 		}
 	}

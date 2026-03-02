@@ -73,7 +73,7 @@ bool AccessibilityDriverAccessKit::window_create(DisplayServer::WindowID p_windo
 #ifdef LINUXBSD_ENABLED
 	wd.adapter = accesskit_unix_adapter_new(&_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, &_accessibility_action_callback, (void *)(size_t)p_window_id, &_accessibility_deactivation_callback, (void *)(size_t)p_window_id);
 #endif
-	print_verbose(vformat("Accessibility: window %d adapter created.", p_window_id));
+	PRINT_VERBOSE(vformat("Accessibility: window %d adapter created.", p_window_id));
 
 	if (wd.adapter == nullptr) {
 		memdelete(ae);
@@ -90,7 +90,7 @@ void AccessibilityDriverAccessKit::window_destroy(DisplayServer::WindowID p_wind
 	WindowData *wd = windows.getptr(p_window_id);
 	ERR_FAIL_NULL(wd);
 
-	print_verbose(vformat("Accessibility: window %d adapter destroyed.", p_window_id));
+	PRINT_VERBOSE(vformat("Accessibility: window %d adapter destroyed.", p_window_id));
 
 #ifdef WINDOWS_ENABLED
 	accesskit_windows_subclassing_adapter_free(wd->adapter);
@@ -111,7 +111,7 @@ void AccessibilityDriverAccessKit::_accessibility_deactivation_callback(void *p_
 	WindowData *wd = singleton->windows.getptr(window_id);
 	ERR_FAIL_NULL(wd);
 
-	print_verbose(vformat("Accessibility: window %d adapter deactivated.", window_id));
+	PRINT_VERBOSE(vformat("Accessibility: window %d adapter deactivated.", window_id));
 
 	if (singleton->focus.is_valid()) {
 		AccessibilityElement *ae = singleton->rid_owner.get_or_null(singleton->focus);
@@ -233,7 +233,7 @@ accesskit_tree_update *AccessibilityDriverAccessKit::_accessibility_initial_tree
 	accesskit_tree_update_set_tree(tree_update, accesskit_tree_new(win_id));
 	accesskit_tree_update_push_node(tree_update, win_id, win_node);
 
-	print_verbose(vformat("Accessibility: window %d adapter activated.", window_id));
+	PRINT_VERBOSE(vformat("Accessibility: window %d adapter activated.", window_id));
 
 	if (wd->activate.is_valid()) {
 		wd->activate.call_deferred(); // Should be called on main thread only.
@@ -256,7 +256,7 @@ void AccessibilityDriverAccessKit::accessibility_window_activation_completed(Dis
 		return;
 	}
 
-	print_verbose(vformat("Accessibility: window %d adapter initial update completed.", p_window_id));
+	PRINT_VERBOSE(vformat("Accessibility: window %d adapter initial update completed.", p_window_id));
 
 	wd->initial_update_completed = true;
 }
@@ -267,7 +267,7 @@ void AccessibilityDriverAccessKit::accessibility_window_deactivation_completed(D
 		return;
 	}
 
-	print_verbose(vformat("Accessibility: window %d adapter deactivation completed.", p_window_id));
+	PRINT_VERBOSE(vformat("Accessibility: window %d adapter deactivation completed.", p_window_id));
 
 #ifdef DEV_ENABLED
 	LocalVector<RID> to_delete;
@@ -1664,7 +1664,7 @@ Error AccessibilityDriverAccessKit::init() {
 
 	Error err = OS::get_singleton()->open_dynamic_library(path, library_handle);
 	if (err == OK && initialize_libaccesskit(dylibloader_verbose, library_handle) == 0) {
-		print_verbose("AccessKit loaded.");
+		PRINT_VERBOSE("AccessKit loaded.");
 	} else {
 		return ERR_CANT_CREATE;
 	}
