@@ -669,6 +669,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("scroll_hint_vertical_color", "ScrollContainer", Color(0, 0, 0));
 	theme->set_color("scroll_hint_horizontal_color", "ScrollContainer", Color(0, 0, 0));
 
+	// Virtual Controller
+
+	Ref<StyleBoxFlat> style_virtual_controller_button = make_flat_stylebox(style_normal_color, 0, 0, 0, 0, 10000, false, 4 * scale);
+	style_virtual_controller_button->set_corner_detail(24 * scale);
+	theme->set_stylebox("button", "VirtualController", style_virtual_controller_button);
+
 	// Window
 
 	theme->set_stylebox("embedded_border", "Window", sb_expand(make_flat_stylebox(style_popup_color, 10, 28, 10, 8), 8, 32, 8, 6));

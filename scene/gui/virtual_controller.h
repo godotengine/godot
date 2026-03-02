@@ -40,6 +40,10 @@ class VirtualController : public Control {
 private:
 	int device_id = -1;
 
+	struct ThemeCache {
+		Ref<StyleBox> button;
+	} theme_cache;
+
 	VirtualJoystick *left_joystick = nullptr;
 	VirtualJoystick *right_joystick = nullptr;
 	Button *left_joystick_button = nullptr;
@@ -64,6 +68,7 @@ private:
 
 	void _create_button_event(JoyButton p_button, bool p_pressed);
 	void _create_motion_event(JoyAxis p_axis, float p_value);
+	void _update_button_style(Button *p_button);
 
 	void _on_left_joystick_motion(Vector2 p_value);
 	void _on_right_joystick_motion(Vector2 p_value);
@@ -103,6 +108,7 @@ private:
 	void _on_guide_button_released();
 
 protected:
+	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
