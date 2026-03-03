@@ -8528,6 +8528,7 @@ void Node3DEditor::_init_grid() {
 	if (primary_grid_steps != 10) { // Log10 of 10 is 1.
 		// Change of base rule, divide by ln(10).
 		real_t div = Math::log((real_t)primary_grid_steps) / (real_t)2.302585092994045901094;
+		print_line(div);
 		// Truncation (towards zero) is intentional.
 		division_level_max = (int)(division_level_max / div);
 		division_level_min = (int)(division_level_min / div);
@@ -8727,9 +8728,11 @@ void Node3DEditor::update_grid() {
 
 	if (!grid_init_draw || grid_camera_last_update_position.distance_squared_to(camera_position) >= 100.0f) {
 		_finish_grid();
-		_init_grid();
-		grid_init_draw = true;
-		grid_camera_last_update_position = camera_position;
+		if (camera_position.y > -0.1f) {
+			_init_grid();
+			grid_init_draw = true;
+			grid_camera_last_update_position = camera_position;
+		}
 	}
 }
 
