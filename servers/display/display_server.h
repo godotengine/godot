@@ -34,7 +34,7 @@
 #include "core/io/resource.h"
 #include "core/object/object.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/process_id.h"
 #include "core/variant/callable.h"
 #include "core/variant/typed_array.h"
 #include "servers/display/display_server_enums.h"
@@ -486,12 +486,12 @@ public:
 
 	/* PROCESS */
 
-	virtual void enable_for_stealing_focus(OS::ProcessID pid);
+	virtual void enable_for_stealing_focus(ProcessID pid);
 
-	virtual Error embed_process(DisplayServerEnums::WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus);
-	virtual Error request_close_embedded_process(OS::ProcessID p_pid);
-	virtual Error remove_embedded_process(OS::ProcessID p_pid);
-	virtual OS::ProcessID get_focused_process_id();
+	virtual Error embed_process(DisplayServerEnums::WindowID p_window, ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus);
+	virtual Error request_close_embedded_process(ProcessID p_pid);
+	virtual Error remove_embedded_process(ProcessID p_pid);
+	virtual ProcessID get_focused_process_id();
 
 	/* DIALOGS */
 

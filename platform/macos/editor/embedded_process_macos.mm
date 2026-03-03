@@ -35,6 +35,7 @@
 
 #include "core/input/input_event_codec.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -79,7 +80,7 @@ void EmbeddedProcessMacOS::set_script_debugger(ScriptEditorDebugger *p_debugger)
 	_try_embed_process();
 }
 
-void EmbeddedProcessMacOS::embed_process(OS::ProcessID p_pid) {
+void EmbeddedProcessMacOS::embed_process(ProcessID p_pid) {
 	if (!window) {
 		return;
 	}

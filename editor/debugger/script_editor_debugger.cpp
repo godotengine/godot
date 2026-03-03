@@ -34,6 +34,7 @@
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/remote_debugger.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/string/ustring.h"
 #include "core/variant/typed_dictionary.h"
 #include "core/version.h"

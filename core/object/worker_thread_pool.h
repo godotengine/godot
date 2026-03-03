@@ -30,9 +30,9 @@
 
 #pragma once
 
+#include "core/object/object.h"
 #include "core/os/condition_variable.h"
 #include "core/os/memory.h"
-#include "core/os/os.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/templates/local_vector.h"
@@ -40,6 +40,7 @@
 #include "core/templates/rid.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/self_list.h"
+#include "core/variant/callable.h"
 
 class WorkerThreadPool : public Object {
 	GDCLASS(WorkerThreadPool, Object)

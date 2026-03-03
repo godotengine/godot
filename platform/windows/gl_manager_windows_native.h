@@ -32,7 +32,6 @@
 
 #if defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
 
-#include "core/os/os.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rb_map.h"
 #include "servers/display/display_server_enums.h"

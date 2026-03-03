@@ -35,7 +35,6 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "core/os/os.h"
 #include "editor/import/3d/resource_importer_scene.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/skeleton_3d.h"

@@ -46,7 +46,6 @@ using namespace godot;
 #include "core/error/error_macros.h"
 #include "core/io/xml_parser.h"
 #include "core/os/memory.h"
-#include "core/os/os.h"
 #include "core/string/ustring.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"

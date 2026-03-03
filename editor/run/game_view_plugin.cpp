@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/object/class_db.h"
+#include "core/os/process_id.h"
 #include "core/string/translation_server.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
@@ -461,7 +462,7 @@ void GameView::_play_pressed() {
 		return;
 	}
 
-	OS::ProcessID current_process_id = EditorRunBar::get_singleton()->get_current_process();
+	ProcessID current_process_id = EditorRunBar::get_singleton()->get_current_process();
 	if (current_process_id == 0) {
 		return;
 	}

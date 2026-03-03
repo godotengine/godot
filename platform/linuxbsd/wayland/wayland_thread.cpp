@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/io/image.h"
+#include "core/os/os.h"
 
 #ifdef WAYLAND_ENABLED
 
@@ -5497,7 +5498,7 @@ struct godot_embedding_compositor *WaylandThread::get_embedding_compositor() {
 	return registry.godot_embedding_compositor;
 }
 
-OS::ProcessID WaylandThread::embedded_compositor_get_focused_pid() {
+ProcessID WaylandThread::embedded_compositor_get_focused_pid() {
 	EmbeddingCompositorState *ecomp_state = godot_embedding_compositor_get_state(registry.godot_embedding_compositor);
 	ERR_FAIL_NULL_V(ecomp_state, -1);
 

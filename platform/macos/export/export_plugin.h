@@ -36,7 +36,7 @@
 #include "core/io/image.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
-#include "core/os/os.h"
+#include "core/os/process_id.h"
 #include "editor/export/editor_export.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/resources/image_texture.h"
@@ -82,7 +82,7 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 	Ref<ImageTexture> stop_icon;
 
 	Vector<SSHCleanupCommand> cleanup_commands;
-	OS::ProcessID ssh_pid = 0;
+	ProcessID ssh_pid = 0;
 	int menu_options = 0;
 
 	void _fix_privacy_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist);
