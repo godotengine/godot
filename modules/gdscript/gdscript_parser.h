@@ -263,6 +263,7 @@ public:
 			enum_values = p_other.enum_values;
 			container_element_types = p_other.container_element_types;
 			generic_param = p_other.generic_param;
+			generic_type_bindings = p_other.generic_type_bindings;
 		}
 
 		DataType() = default;

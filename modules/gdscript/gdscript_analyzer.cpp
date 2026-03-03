@@ -1014,6 +1014,17 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 		}
 	}
 
+	/// [Monarch] Reginleif: if the resolved type is a generic class but no type arguments
+	/// were provided (container_types was empty so the binding block above was skipped),
+	/// that means the user wrote e.g. `var x: Box` instead of `var x: Box[int]`.
+	if (result.kind == GDScriptParser::DataType::GENERIC_TYPE &&
+			result.generic_type_bindings.is_empty() &&
+			result.class_type != nullptr &&
+			result.class_type->has_generic_parameters()) {
+		push_error(vformat(R"([Reginleif] Generic class "%s" requires type arguments. Use "%s[T]" syntax.)", first, first), p_type);
+		return bad_type;
+	}
+
 	p_type->set_datatype(result);
 	return result;
 }
@@ -3755,6 +3766,14 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			}
 		}
 #endif // DEBUG_ENABLED
+
+		/// [Monarch] Reginleif: if the base is a concretely instantiated generic type (like var x: Option[int])
+		/// subtitute the GENERIC_TYPE placeholders in the return type with the bound concrete types, before
+		/// committing it to the call_type. Without it, option.unwrap() returns the raw GENERIC_TYPE even though
+		/// the binding is known at the call site.
+		if (!base_type.generic_type_bindings.is_empty()) {
+			return_type = resolve_generic_type(return_type, base_type.generic_type_bindings);
+		}
 
 		call_type = return_type;
 	} else {
