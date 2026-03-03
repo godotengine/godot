@@ -4,9 +4,11 @@
 		A class representing an Ogg Vorbis audio stream.
 	</brief_description>
 	<description>
-		The AudioStreamOggVorbis class is a specialized [AudioStream] for handling Ogg Vorbis file formats. It offers functionality for loading and playing back Ogg Vorbis files, as well as managing looping and other playback properties. This class is part of the audio stream system, which also supports WAV files through the [AudioStreamWAV] class.
+		The AudioStreamOggVorbis class is a specialized [AudioStream] for handling Ogg Vorbis file formats. It offers functionality for loading and playing back Ogg Vorbis files, as well as managing looping and other playback properties. More info can be found in [ResourceImporterOggVorbis].
+		This class is part of the audio stream system, which also supports WAV files through the [AudioStreamWAV] class, and MP3 files through the [AudioStreamMP3] class.
 	</description>
 	<tutorials>
+		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
 		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
 	<methods>
@@ -27,13 +29,16 @@
 	</methods>
 	<members>
 		<member name="bar_beats" type="int" setter="set_bar_beats" getter="get_bar_beats" default="4">
+			The number of beats within a single bar in the audio track.
 		</member>
 		<member name="beat_count" type="int" setter="set_beat_count" getter="get_beat_count" default="0">
+			The length of the audio track, in beats. The actual duration of the audio file might be longer than what is indicated by this property. It defines the end of the audio for looping, [AudioStreamPlaylist], and [AudioStreamInteractive].
 		</member>
 		<member name="bpm" type="float" setter="set_bpm" getter="get_bpm" default="0.0">
+			The tempo of the audio track, measured in beats per minute.
 		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">
-			If [code]true[/code], the audio will play again from the specified [member loop_offset] once it is done playing. Useful for ambient sounds and background music.
+			If [code]true[/code], the stream will play again from the specified [member loop_offset] once it reaches the end of the audio track, or once it reaches the end of the last beat according to the amount specified in [member beat_count]. Useful for ambient sounds and background music.
 		</member>
 		<member name="loop_offset" type="float" setter="set_loop_offset" getter="get_loop_offset" default="0.0">
 			Time in seconds at which the stream starts after being looped.

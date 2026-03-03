@@ -2330,6 +2330,9 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 						for (const KeyValue<Node *, NodePath> &rename : *p_renames) {
 							NodePath old_path = rename.key->get_path();
 							NodePath new_path = rename.value;
+							if (new_path.is_empty()) {
+								continue;
+							}
 							Vector<StringName> rel_path = old_path.rel_path_to(new_path).get_names();
 
 							StringName old_node_name = rename.key->get_name();
