@@ -234,6 +234,32 @@ static GDScriptParser::DataType make_builtin_meta_type(Variant::Type p_type) {
 	return type;
 }
 
+/// [Monarch] Reginleif addition. Substitutes GENERIC_TYPE placeholders with concrete types wherever possible 
+/// with their proper bounds. Also handles recursive types.
+static GDScriptParser::DataType resolve_generic_type(const GDScriptParser::DataType& p_type_to_resolve, const HashMap<StringName, GDScriptParser::DataType>& p_bindings) {
+	
+	///case 1,the type to resolve IS, by itself, a generic type
+	if (p_type_to_resolve.kind == GDScriptParser::DataType::GENERIC_TYPE) {
+		const GDScriptParser::DataType* bound = p_bindings.getptr(p_type_to_resolve.generic_param);
+		if(bound) {return *bound;}
+
+		///not a declared generic type, error will (probably) be caught downstream, just leave it
+		return p_type_to_resolve;
+	}
+
+	///case 2, the type to resolve is not a generic type, BUT, holds generic types inside it
+	if (p_type_to_resolve.has_container_element_types()) {
+		GDScriptParser::DataType result = p_type_to_resolve;
+		for(int i = 0; i < result.container_element_types.size(); i++) {
+			result.container_element_types.write[i] = resolve_generic_type(result.container_element_types[i], p_bindings);
+		}	
+		return result;
+	}
+
+	return p_type_to_resolve;
+
+} 
+
 bool GDScriptAnalyzer::has_member_name_conflict_in_script_class(const StringName &p_member_name, const GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_member) {
 	if (p_class->members_indices.has(p_member_name)) {
 		int index = p_class->members_indices[p_member_name];
@@ -4244,6 +4270,15 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 						p_identifier->source = member.variable->is_static ? GDScriptParser::IdentifierNode::STATIC_VARIABLE : GDScriptParser::IdentifierNode::MEMBER_VARIABLE;
 						p_identifier->variable_source = member.variable;
 						member.variable->usages += 1;
+
+						/// [Monarch] Inject generic params with resolved concrete types.
+						if (!base.generic_type_bindings.is_empty()) {
+							p_identifier->set_datatype(resolve_generic_type(
+								p_identifier->get_datatype(), 
+								base.generic_type_bindings
+							));
+						}
+
 						return;
 					}
 				} break;
@@ -4264,6 +4299,15 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 						p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_FUNCTION;
 						p_identifier->function_source = member.function;
 						p_identifier->function_source_is_static = member.function->is_static;
+
+						/// [Monarch] Inject generic params with resolved concrete types.
+						if (!base.generic_type_bindings.is_empty()) {
+							p_identifier->set_datatype(resolve_generic_type(
+								p_identifier->get_datatype(), 
+								base.generic_type_bindings
+							));
+						}
+						
 						return;
 					}
 				} break;
