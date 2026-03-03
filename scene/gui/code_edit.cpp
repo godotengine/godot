@@ -2452,6 +2452,22 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 		int pre_brace_pair = get_caret_column(i) > 0 ? _get_auto_brace_pair_open_at_pos(caret_line, get_caret_column(i)) : -1;
 		int post_brace_pair = get_caret_column(i) < get_line(caret_line).length() ? _get_auto_brace_pair_close_at_pos(caret_line, get_caret_column(i)) : -1;
 
+		String to_find = "\\1";
+		if (insert_text.contains(to_find)) {
+			// move the cursor backward to the desired spot in the snippet
+			int current_position = get_caret_column(i);
+			String line_content = get_line(caret_line);
+			while (current_position >= 0) {
+				String found = line_content.substr(current_position, to_find.length());
+				if (found == to_find) {
+					set_caret_column(current_position, i == 0, i);
+					remove_text(caret_line, get_caret_column(i), caret_line, get_caret_column(i) + to_find.length());
+					break;
+				}
+				current_position--;
+			}
+		}
+
 		// Strings do not nest like brackets, so ensure we don't add an additional closing pair.
 		if (has_string_delimiter(String::chr(last_completion_char))) {
 			if (post_brace_pair != -1 && last_char_matches) {

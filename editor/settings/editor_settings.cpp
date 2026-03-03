@@ -866,6 +866,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/completion/add_node_path_literals", false, true);
 	_initial_set("text_editor/completion/use_single_quotes", false, true);
 	_initial_set("text_editor/completion/colorize_suggestions", true);
+	EDITOR_SETTING_BASIC(Variant::ARRAY, PROPERTY_HINT_ARRAY_TYPE, "text_editor/completion/snippets", TypedArray<String>({ "await get_tree().process_frame", "await get_tree().create_timer(\\1).timeout" }), "String")
 
 	// External editor (ScriptEditorPlugin)
 	_initial_set("text_editor/external/use_external_editor", false, true);
