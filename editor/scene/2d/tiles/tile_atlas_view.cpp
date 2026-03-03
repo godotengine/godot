@@ -30,6 +30,7 @@
 
 #include "tile_atlas_view.h"
 
+#include "core/object/class_db.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/tile_map_layer.h"
@@ -37,6 +38,8 @@
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/view_panner.h"
+#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
 	if (panner->gui_input(p_event, get_global_rect())) {
@@ -308,7 +311,7 @@ RID TileAtlasView::_get_canvas_item_to_draw(const TileData *p_for_data, const Ca
 		RID ci_rid = RS::get_singleton()->canvas_item_create();
 		RS::get_singleton()->canvas_item_set_parent(ci_rid, p_base_item->get_canvas_item());
 		RS::get_singleton()->canvas_item_set_material(ci_rid, mat->get_rid());
-		RS::get_singleton()->canvas_item_set_default_texture_filter(ci_rid, RS::CanvasItemTextureFilter(p_base_item->get_texture_filter_in_tree()));
+		RS::get_singleton()->canvas_item_set_default_texture_filter(ci_rid, RSE::CanvasItemTextureFilter(p_base_item->get_texture_filter_in_tree()));
 		p_material_map[mat] = ci_rid;
 		return ci_rid;
 	}
@@ -648,7 +651,7 @@ TileAtlasView::TileAtlasView() {
 	button_center_view->connect(SceneStringName(pressed), callable_mp(this, &TileAtlasView::_center_view));
 	button_center_view->set_flat(true);
 	button_center_view->set_disabled(true);
-	button_center_view->set_tooltip_text(TTR("Center View"));
+	button_center_view->set_tooltip_text(TTRC("Center View"));
 	add_child(button_center_view);
 
 	panner.instantiate();
@@ -665,7 +668,7 @@ TileAtlasView::TileAtlasView() {
 
 	missing_source_label = memnew(Label);
 	missing_source_label->set_focus_mode(FOCUS_ACCESSIBILITY);
-	missing_source_label->set_text(TTR("The selected atlas source has no valid texture. Assign a texture in the TileSet bottom tab."));
+	missing_source_label->set_text(TTRC("The selected atlas source has no valid texture. Assign a texture in the TileSet bottom tab."));
 	center_container->add_child(missing_source_label);
 
 	margin_container = memnew(MarginContainer);
@@ -689,7 +692,7 @@ TileAtlasView::TileAtlasView() {
 	// Base tiles.
 	Label *base_tile_label = memnew(Label);
 	base_tile_label->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-	base_tile_label->set_text(TTR("Base Tiles"));
+	base_tile_label->set_text(TTRC("Base Tiles"));
 	base_tile_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	left_vbox->add_child(base_tile_label);
 
@@ -732,7 +735,7 @@ TileAtlasView::TileAtlasView() {
 	// Alternative tiles.
 	Label *alternative_tiles_label = memnew(Label);
 	alternative_tiles_label->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	alternative_tiles_label->set_text(TTR("Alternative Tiles"));
+	alternative_tiles_label->set_text(TTRC("Alternative Tiles"));
 	alternative_tiles_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	right_vbox->add_child(alternative_tiles_label);
 

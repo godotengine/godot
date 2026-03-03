@@ -35,7 +35,6 @@
 #include "servers/display/display_server.h"
 
 class Font;
-class Shortcut;
 class StyleBox;
 class ThemeOwner;
 class ThemeContext;
@@ -170,6 +169,9 @@ private:
 	void _update_from_window();
 	void _accessibility_notify_enter(Node *p_node);
 	void _accessibility_notify_exit(Node *p_node);
+
+	void _accessibility_activate();
+	void _accessibility_deactivate();
 
 	bool _try_parent_dialog(Node *p_from_node);
 
@@ -346,6 +348,8 @@ public:
 	bool is_maximize_allowed() const;
 
 	void request_attention();
+	void set_taskbar_progress_value(float p_value);
+	void set_taskbar_progress_state(DisplayServer::ProgressState p_state);
 #ifndef DISABLE_DEPRECATED
 	void move_to_foreground();
 #endif // DISABLE_DEPRECATED
@@ -411,7 +415,7 @@ public:
 	void child_controls_changed();
 
 	Window *get_exclusive_child() const { return exclusive_child; }
-	HashSet<Window *> get_transient_children() const { return transient_children; }
+	const HashSet<Window *> &get_transient_children() const { return transient_children; }
 	Window *get_parent_visible_window() const;
 	Window *get_non_popup_window() const;
 	Viewport *get_parent_viewport() const;

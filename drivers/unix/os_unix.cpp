@@ -40,7 +40,6 @@
 #include "drivers/unix/file_access_unix_pipe.h"
 #include "drivers/unix/net_socket_unix.h"
 #include "drivers/unix/thread_posix.h"
-#include "servers/rendering/rendering_server.h"
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
@@ -87,7 +86,7 @@
 #define RTLD_DEEPBIND 0
 #endif
 
-#ifndef SANITIZERS_ENABLED
+#ifndef ASAN_ENABLED
 #define GODOT_DLOPEN_MODE RTLD_NOW | RTLD_DEEPBIND
 #else
 #define GODOT_DLOPEN_MODE RTLD_NOW

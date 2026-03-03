@@ -34,6 +34,7 @@
 #include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/version_generated.gen.h"
 #include "editor/docks/filesystem_dock.h"
@@ -74,6 +75,7 @@
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/visual_shader_particle_nodes.h"
 #include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
 
@@ -3405,6 +3407,7 @@ void VisualShaderEditor::_edit_port_default_input(Object *p_button, int p_node, 
 	// TODO: Define these properties with actual PropertyInfo and feed it to the property editor widget.
 	property_editor = EditorInspector::instantiate_property_editor(edited_property_holder.ptr(), value.get_type(), "edited_property", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, true);
 	ERR_FAIL_NULL_MSG(property_editor, "Failed to create property editor for type: " + Variant::get_type_name(value.get_type()));
+	property_editor->set_deferred_drag_mode_enabled();
 
 	// Determine the best size for the popup based on the property type.
 	// This is done here, since the property editors are also used in the inspector where they have different layout requirements, so we can't just change their default minimum size.
@@ -6387,7 +6390,7 @@ void VisualShaderEditor::_preview_close_requested() {
 }
 
 static ShaderLanguage::DataType _visual_shader_editor_get_global_shader_uniform_type(const StringName &p_variable) {
-	RS::GlobalShaderParameterType gvt = RS::get_singleton()->global_shader_parameter_get_type(p_variable);
+	RSE::GlobalShaderParameterType gvt = RS::get_singleton()->global_shader_parameter_get_type(p_variable);
 	return (ShaderLanguage::DataType)RS::global_shader_uniform_type_get_shader_datatype(gvt);
 }
 
@@ -6402,9 +6405,9 @@ void VisualShaderEditor::_update_preview() {
 	preview_text->set_text(code);
 
 	ShaderLanguage::ShaderCompileInfo info;
-	info.functions = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(visual_shader->get_mode()));
-	info.render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(visual_shader->get_mode()));
-	info.stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(visual_shader->get_mode()));
+	info.functions = ShaderTypes::get_singleton()->get_functions(RSE::ShaderMode(visual_shader->get_mode()));
+	info.render_modes = ShaderTypes::get_singleton()->get_modes(RSE::ShaderMode(visual_shader->get_mode()));
+	info.stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(RSE::ShaderMode(visual_shader->get_mode()));
 	info.shader_types = ShaderTypes::get_singleton()->get_types();
 	info.global_shader_uniform_type_func = _visual_shader_editor_get_global_shader_uniform_type;
 
@@ -8237,6 +8240,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 		if (!prop) {
 			return nullptr;
 		}
+		prop->set_deferred_drag_mode_enabled();
 
 		if (Object::cast_to<EditorPropertyResource>(prop)) {
 			Object::cast_to<EditorPropertyResource>(prop)->set_use_sub_inspector(false);

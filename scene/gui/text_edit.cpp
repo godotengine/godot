@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -42,6 +43,9 @@
 #include "scene/gui/label.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 ///                            TEXT                                         ///
@@ -244,7 +248,7 @@ void TextEdit::Text::update_accessibility(int p_line, RID p_root) {
 	if (l.accessibility_text_root_element.is_empty()) {
 		for (int i = 0; i < l.data_buf->get_line_count(); i++) {
 			bool is_last_line = (p_line == text.size() - 1) && (i == l.data_buf->get_line_count() - 1);
-			RID rid = DisplayServer::get_singleton()->accessibility_create_sub_text_edit_elements(p_root, l.data_buf->get_line_rid(i), max_line_height, p_line, is_last_line);
+			RID rid = AccessibilityServer::get_singleton()->create_sub_text_edit_elements(p_root, l.data_buf->get_line_rid(i), max_line_height, p_line, is_last_line);
 			l.accessibility_text_root_element.push_back(rid);
 		}
 	}
@@ -267,7 +271,7 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 	Line &l = text.write[p_line];
 	for (const RID rid : l.accessibility_text_root_element) {
 		if (rid.is_valid()) {
-			DisplayServer::get_singleton()->accessibility_free_element(rid);
+			AccessibilityServer::get_singleton()->free_element(rid);
 		}
 	}
 	l.accessibility_text_root_element.clear();
@@ -646,11 +650,11 @@ String TextEdit::Text::get_enabled_word_separators() const {
 void TextEdit::_accessibility_action_set_selection(const Variant &p_data) {
 	Dictionary new_selection = p_data;
 	RID sel_start = new_selection["start_element"];
-	Vector2i sel_start_line = DisplayServer::get_singleton()->accessibility_element_get_meta(sel_start);
+	Vector2i sel_start_line = AccessibilityServer::get_singleton()->element_get_meta(sel_start);
 	int sel_start_pos = new_selection["start_char"];
 
 	RID sel_end = new_selection["end_element"];
-	Vector2i sel_end_line = DisplayServer::get_singleton()->accessibility_element_get_meta(sel_end);
+	Vector2i sel_end_line = AccessibilityServer::get_singleton()->element_get_meta(sel_end);
 	int sel_end_pos = new_selection["end_char"];
 
 	remove_secondary_carets();
@@ -679,7 +683,7 @@ void TextEdit::_accessibility_action_menu(const Variant &p_data) {
 }
 
 void TextEdit::_accessibility_scroll_down(const Variant &p_data) {
-	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+	if ((AccessibilityServerEnums::AccessibilityScrollUnit)p_data == AccessibilityServerEnums::SCROLL_UNIT_ITEM) {
 		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() / 4);
 	} else {
 		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page());
@@ -688,7 +692,7 @@ void TextEdit::_accessibility_scroll_down(const Variant &p_data) {
 }
 
 void TextEdit::_accessibility_scroll_left(const Variant &p_data) {
-	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+	if ((AccessibilityServerEnums::AccessibilityScrollUnit)p_data == AccessibilityServerEnums::SCROLL_UNIT_ITEM) {
 		h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() / 4);
 	} else {
 		h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page());
@@ -697,7 +701,7 @@ void TextEdit::_accessibility_scroll_left(const Variant &p_data) {
 }
 
 void TextEdit::_accessibility_scroll_right(const Variant &p_data) {
-	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+	if ((AccessibilityServerEnums::AccessibilityScrollUnit)p_data == AccessibilityServerEnums::SCROLL_UNIT_ITEM) {
 		h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() / 4);
 	} else {
 		h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page());
@@ -706,7 +710,7 @@ void TextEdit::_accessibility_scroll_right(const Variant &p_data) {
 }
 
 void TextEdit::_accessibility_scroll_up(const Variant &p_data) {
-	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+	if ((AccessibilityServerEnums::AccessibilityScrollUnit)p_data == AccessibilityServerEnums::SCROLL_UNIT_ITEM) {
 		v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() / 4);
 	} else {
 		v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page());
@@ -745,24 +749,24 @@ void TextEdit::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_MULTILINE_TEXT_FIELD);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_MULTILINE_TEXT_FIELD);
 			if (text.size() == 1 && text[0].is_empty()) {
-				DisplayServer::get_singleton()->accessibility_update_set_placeholder(ae, atr(placeholder_text));
+				AccessibilityServer::get_singleton()->update_set_placeholder(ae, atr(placeholder_text));
 			}
 			if (!placeholder_text.is_empty() && get_accessibility_name().is_empty()) {
-				DisplayServer::get_singleton()->accessibility_update_set_name(ae, atr(placeholder_text));
+				AccessibilityServer::get_singleton()->update_set_name(ae, atr(placeholder_text));
 			}
-			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_READONLY, !editable);
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SET_TEXT_SELECTION, callable_mp(this, &TextEdit::_accessibility_action_set_selection));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_REPLACE_SELECTED_TEXT, callable_mp(this, &TextEdit::_accessibility_action_replace_selected));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SET_VALUE, callable_mp(this, &TextEdit::_accessibility_action_set_value));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &TextEdit::_accessibility_action_menu));
+			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_READONLY, !editable);
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SET_TEXT_SELECTION, callable_mp(this, &TextEdit::_accessibility_action_set_selection));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_REPLACE_SELECTED_TEXT, callable_mp(this, &TextEdit::_accessibility_action_replace_selected));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SET_VALUE, callable_mp(this, &TextEdit::_accessibility_action_set_value));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &TextEdit::_accessibility_action_menu));
 
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_DOWN, callable_mp(this, &TextEdit::_accessibility_scroll_down));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_LEFT, callable_mp(this, &TextEdit::_accessibility_scroll_left));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_RIGHT, callable_mp(this, &TextEdit::_accessibility_scroll_right));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_UP, callable_mp(this, &TextEdit::_accessibility_scroll_up));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SET_SCROLL_OFFSET, callable_mp(this, &TextEdit::_accessibility_scroll_set));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_DOWN, callable_mp(this, &TextEdit::_accessibility_scroll_down));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_LEFT, callable_mp(this, &TextEdit::_accessibility_scroll_left));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_RIGHT, callable_mp(this, &TextEdit::_accessibility_scroll_right));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_UP, callable_mp(this, &TextEdit::_accessibility_scroll_up));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SET_SCROLL_OFFSET, callable_mp(this, &TextEdit::_accessibility_scroll_set));
 
 			int first_vis_line = get_first_visible_line();
 			int row_height = get_line_height();
@@ -797,13 +801,13 @@ void TextEdit::_notification(int p_what) {
 						char_margin += wrap_indent;
 					}
 
-					DisplayServer::get_singleton()->accessibility_update_set_flag(text_aes[j], DisplayServer::AccessibilityFlags::FLAG_HIDDEN, _is_line_hidden(i));
+					AccessibilityServer::get_singleton()->update_set_flag(text_aes[j], AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, _is_line_hidden(i));
 					Transform2D tr;
 					tr.set_origin(Point2(char_margin, text_off_y));
-					DisplayServer::get_singleton()->accessibility_update_set_transform(text_aes[j], tr);
-					DisplayServer::get_singleton()->accessibility_update_set_name(text_aes[j], vformat(RTR("Line %d"), i));
-					DisplayServer::get_singleton()->accessibility_element_set_meta(text_aes[j], Vector2i(i, j));
-					DisplayServer::get_singleton()->accessibility_update_add_action(text_aes[j], DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &TextEdit::_accessibility_action_scroll_into_view).bind(i, j));
+					AccessibilityServer::get_singleton()->update_set_transform(text_aes[j], tr);
+					AccessibilityServer::get_singleton()->update_set_name(text_aes[j], vformat(RTR("Line %d"), i));
+					AccessibilityServer::get_singleton()->element_set_meta(text_aes[j], Vector2i(i, j));
+					AccessibilityServer::get_singleton()->update_add_action(text_aes[j], AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &TextEdit::_accessibility_action_scroll_into_view).bind(i, j));
 				}
 				lines_drawn += ac_buf->get_line_count();
 			}
@@ -816,11 +820,11 @@ void TextEdit::_notification(int p_what) {
 
 					int end_wrap = get_line_wrap_index_at_column(carets[0].line, carets[0].column);
 					RID end_rid = text.get_accessibility_elements(carets[0].line)[end_wrap];
-					DisplayServer::get_singleton()->accessibility_update_set_text_selection(ae, start_rid, carets[0].selection.origin_column, end_rid, carets[0].column);
+					AccessibilityServer::get_singleton()->update_set_text_selection(ae, start_rid, carets[0].selection.origin_column, end_rid, carets[0].column);
 				} else {
 					int caret_wrap = get_line_wrap_index_at_column(carets[0].line, carets[0].column);
 					RID caret_rid = text.get_accessibility_elements(carets[0].line)[caret_wrap];
-					DisplayServer::get_singleton()->accessibility_update_set_text_selection(ae, caret_rid, carets[0].column, caret_rid, carets[0].column);
+					AccessibilityServer::get_singleton()->update_set_text_selection(ae, caret_rid, carets[0].column, caret_rid, carets[0].column);
 				}
 			}
 		} break;
@@ -933,7 +937,7 @@ void TextEdit::_notification(int p_what) {
 			RS::get_singleton()->canvas_item_set_custom_rect(text_ci, !is_visibility_clip_disabled(), Rect2(Point2(0, 0), size));
 			RS::get_singleton()->canvas_item_set_clip(text_ci, true);
 			RS::get_singleton()->canvas_item_set_visibility_layer(text_ci, get_visibility_layer());
-			RS::get_singleton()->canvas_item_set_default_texture_filter(text_ci, RS::CanvasItemTextureFilter(get_texture_filter_in_tree()));
+			RS::get_singleton()->canvas_item_set_default_texture_filter(text_ci, RSE::CanvasItemTextureFilter(get_texture_filter_in_tree()));
 
 			int left_margin = Math::ceil(style->get_margin(SIDE_LEFT));
 			int xmargin_beg = left_margin + gutters_width + gutter_padding;
@@ -2456,7 +2460,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					menu->set_position(get_screen_transform().xform(mpos));
 					menu->reset_size();
 					menu->popup();
-					grab_focus();
+					grab_focus(true);
 				}
 			}
 		} else {
@@ -3576,7 +3580,7 @@ void TextEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 		insert_text_at_caret(p_data);
 
 		select(drop_at_line, drop_at_column, get_caret_line(), get_caret_column());
-		grab_focus();
+		grab_focus(true);
 		adjust_viewport_to_caret();
 		end_multicaret_edit();
 		end_complex_operation();
@@ -4894,6 +4898,11 @@ Point2i TextEdit::search(const String &p_key, uint32_t p_search_flags, int p_fro
 	// We'll auto-wrap through the start / end to search every line.
 	int current_line = p_from_line;
 	int current_column = p_from_column;
+
+	if (p_search_flags & SEARCH_BACKWARDS) {
+		// `rfind` requires the from index to be within the bounds of the last possible match position.
+		current_column = MIN(current_column, text[p_from_line].length() - p_key.length());
+	}
 
 	// + 1 because we'll search p_from_line twice - starting from p_from_column, and then again at the very end.
 	for (int i = 0; i < text.size() + 1; i++) {

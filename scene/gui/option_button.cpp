@@ -30,7 +30,9 @@
 
 #include "option_button.h"
 
+#include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
 
 static const int NONE_SELECTED = -1;
 
@@ -77,8 +79,8 @@ void OptionButton::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
-			DisplayServer::get_singleton()->accessibility_update_set_popup_type(ae, DisplayServer::AccessibilityPopupType::POPUP_LIST);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
+			AccessibilityServer::get_singleton()->update_set_popup_type(ae, AccessibilityServerEnums::AccessibilityPopupType::POPUP_LIST);
 		} break;
 
 		case NOTIFICATION_POSTINITIALIZE: {

@@ -31,18 +31,19 @@
 #pragma once
 
 #include "core/input/input_event.h"
-#include "core/io/resource.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
 #include "core/string/node_path.h"
 #include "core/templates/iterable.h"
 #include "core/variant/typed_array.h"
 #include "scene/main/scene_tree.h"
 #include "scene/scene_string_names.h"
 
-class Viewport;
-class Window;
+class Resource;
 class SceneState;
 class Tween;
-class PropertyTweener;
+class Viewport;
+class Window;
 
 SAFE_FLAG_TYPE_PUN_GUARANTEES
 SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
@@ -304,8 +305,6 @@ private:
 	void _validate_child_name(Node *p_child, bool p_force_human_readable = false);
 	void _generate_serial_child_name(const Node *p_child, StringName &name) const;
 
-	void _propagate_reverse_notification(int p_notification);
-	void _propagate_deferred_notification(int p_notification, bool p_reverse);
 	void _propagate_enter_tree();
 	void _propagate_ready();
 	void _propagate_exit_tree();

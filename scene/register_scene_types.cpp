@@ -164,6 +164,8 @@
 #include "scene/resources/visual_shader_particle_nodes.h"
 #include "scene/resources/visual_shader_sdf_nodes.h"
 #include "scene/theme/theme_db.h"
+#include "servers/rendering/rendering_server.h"
+
 #ifndef DISABLE_DEPRECATED
 #include "scene/resources/animated_texture.h"
 #endif
@@ -582,6 +584,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CallbackTweener);
 	GDREGISTER_CLASS(MethodTweener);
 	GDREGISTER_CLASS(SubtweenTweener);
+	GDREGISTER_CLASS(AwaitTweener);
 
 	GDREGISTER_ABSTRACT_CLASS(AnimationMixer);
 	GDREGISTER_CLASS(AnimationPlayer);

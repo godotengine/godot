@@ -774,6 +774,19 @@ Node *EditorPropertyArray::get_base_node() {
 
 void EditorPropertyArray::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			for (Slot &slot : slots) {
+				if (slot.edit_button) {
+					slot.edit_button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
+				}
+				if (slot.reorder_button) {
+					slot.reorder_button->set_button_icon(get_editor_theme_icon(SNAME("TripleBar")));
+				}
+				if (slot.remove_button) {
+					slot.remove_button->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+				}
+			}
+		} break;
 		case NOTIFICATION_DRAG_BEGIN: {
 			if (is_visible_in_tree()) {
 				if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
@@ -1500,6 +1513,15 @@ void EditorPropertyDictionary::_resource_selected(const String &p_path, Ref<Reso
 void EditorPropertyDictionary::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
+			for (Slot &slot : slots) {
+				if (slot.edit_button) {
+					slot.edit_button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
+				}
+				if (slot.remove_button) {
+					slot.remove_button->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+				}
+			}
+
 			if (button_add_item) {
 				add_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DictionaryAddItem")));
 			}

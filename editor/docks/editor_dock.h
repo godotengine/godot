@@ -59,12 +59,15 @@ public:
 		DOCK_SLOT_RIGHT_UR,
 		DOCK_SLOT_RIGHT_BR,
 		DOCK_SLOT_BOTTOM,
+		DOCK_SLOT_BOTTOM_L,
+		DOCK_SLOT_BOTTOM_R,
 		DOCK_SLOT_MAX
 	};
 
 private:
 	friend class EditorDockManager;
 	friend class DockContextPopup;
+	friend class DockSlotGrid;
 	friend class DockShortcutHandler;
 
 	String title;

@@ -44,6 +44,7 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
+class AcceptDialog;
 class CreateDialog;
 class DependencyEditor;
 class DependencyEditorOwners;
@@ -210,6 +211,8 @@ private:
 	ScriptCreateDialog *make_script_dialog = nullptr;
 	ShaderCreateDialog *make_shader_dialog = nullptr;
 	CreateDialog *new_resource_dialog = nullptr;
+
+	AcceptDialog *unrecognized_ext_dialog = nullptr;
 
 	String confirm_move_to_dir;
 	bool confirm_to_copy = false;
@@ -380,6 +383,8 @@ private:
 	void _project_settings_changed();
 	static Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
 
+	void _on_open_editor_settings_file_exts();
+
 private:
 	inline static FileSystemDock *singleton = nullptr;
 
@@ -439,6 +444,7 @@ public:
 	FileListDisplayMode get_file_list_display_mode() const { return file_list_display_mode; }
 
 	Tree *get_tree_control() { return tree; }
+	ItemList *get_list_control() { return files; }
 
 	void add_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);
 	void remove_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);

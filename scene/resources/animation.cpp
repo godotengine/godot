@@ -32,6 +32,7 @@
 #include "animation.compat.inc"
 
 #include "core/io/marshalls.h"
+#include "core/object/class_db.h"
 
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 	String prop_name = p_name;
@@ -4578,7 +4579,7 @@ struct AnimationCompressionDataState {
 				return 1;
 			}
 		}
-		return nearest_shift((uint32_t)p_delta);
+		return Math::nearest_shift((uint32_t)p_delta);
 	}
 
 	void _compute_max_shifts(uint32_t p_from, uint32_t p_to, uint32_t *max_shifts, uint32_t &max_frame_delta_shift) const {
@@ -4589,7 +4590,7 @@ struct AnimationCompressionDataState {
 
 		for (uint32_t i = p_from + 1; i <= p_to; i++) {
 			int32_t frame_delta = temp_packets[i].frame - temp_packets[i - 1].frame;
-			max_frame_delta_shift = MAX(max_frame_delta_shift, nearest_shift((uint32_t)frame_delta));
+			max_frame_delta_shift = MAX(max_frame_delta_shift, Math::nearest_shift((uint32_t)frame_delta));
 			for (uint32_t j = 0; j < components; j++) {
 				int32_t diff = _compute_delta16_signed(temp_packets[i - 1].data[j], temp_packets[i].data[j]);
 				uint32_t shift = _compute_shift_bits_signed(diff);

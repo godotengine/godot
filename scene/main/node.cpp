@@ -31,6 +31,8 @@
 #include "node.h"
 #include "node.compat.inc"
 
+#include "core/object/class_db.h"
+
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Mesh);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, DisplayServer);
@@ -39,17 +41,22 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, OS);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Engine);
 
 #include "core/config/project_settings.h"
+#include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
 #include "core/string/print_string.h"
-#include "instance_placeholder.h"
 #include "scene/animation/tween.h"
-#include "scene/debugger/scene_debugger.h"
+#include "scene/main/instance_placeholder.h"
 #include "scene/main/multiplayer_api.h"
+#include "scene/main/viewport.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
-#include "viewport.h"
+#include "servers/display/accessibility_server.h"
+
+#ifdef DEBUG_ENABLED
+#include "scene/debugger/scene_debugger.h"
+#endif
 
 #ifdef DEBUG_ENABLED
 SafeNumeric<uint64_t> Node::total_node_count{ 0 };
@@ -61,7 +68,7 @@ void Node::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
 			if (data.accessibility_element.is_valid()) {
-				DisplayServer::get_singleton()->accessibility_free_element(data.accessibility_element);
+				AccessibilityServer::get_singleton()->free_element(data.accessibility_element);
 				data.accessibility_element = RID();
 			}
 		} break;
@@ -70,7 +77,7 @@ void Node::_notification(int p_notification) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, get_name());
+			AccessibilityServer::get_singleton()->update_set_name(ae, get_name());
 
 			// Node children.
 			if (!accessibility_override_tree_hierarchy()) {
@@ -83,7 +90,7 @@ void Node::_notification(int p_notification) {
 					if (child_node->is_part_of_edited_scene()) {
 						continue;
 					}
-					DisplayServer::get_singleton()->accessibility_update_add_child(ae, child_node->get_accessibility_element());
+					AccessibilityServer::get_singleton()->update_add_child(ae, child_node->get_accessibility_element());
 				}
 			}
 		} break;
@@ -189,7 +196,7 @@ void Node::_notification(int p_notification) {
 
 			if (data.tree->is_accessibility_supported() && !is_part_of_edited_scene()) {
 				if (data.accessibility_element.is_valid()) {
-					DisplayServer::get_singleton()->accessibility_free_element(data.accessibility_element);
+					AccessibilityServer::get_singleton()->free_element(data.accessibility_element);
 					data.accessibility_element = RID();
 				}
 				data.tree->_accessibility_notify_change(this, true);
@@ -2562,37 +2569,6 @@ String Node::get_tree_string() {
 	return _get_tree_string(this);
 }
 
-void Node::_propagate_reverse_notification(int p_notification) {
-	data.blocked++;
-
-	for (HashMap<StringName, Node *>::Iterator I = data.children.last(); I; --I) {
-		I->value->_propagate_reverse_notification(p_notification);
-	}
-
-	notification(p_notification, true);
-	data.blocked--;
-}
-
-void Node::_propagate_deferred_notification(int p_notification, bool p_reverse) {
-	ERR_FAIL_COND(!is_inside_tree());
-
-	data.blocked++;
-
-	if (!p_reverse) {
-		MessageQueue::get_singleton()->push_notification(this, p_notification);
-	}
-
-	for (KeyValue<StringName, Node *> &K : data.children) {
-		K.value->_propagate_deferred_notification(p_notification, p_reverse);
-	}
-
-	if (p_reverse) {
-		MessageQueue::get_singleton()->push_notification(this, p_notification);
-	}
-
-	data.blocked--;
-}
-
 void Node::propagate_notification(int p_notification) {
 	ERR_THREAD_GUARD
 	data.blocked++;
@@ -3211,7 +3187,7 @@ void Node::replace_by(RequiredParam<Node> rp_node, bool p_keep_groups) {
 	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
 	ERR_FAIL_COND(p_node->data.parent);
 
-	List<Node *> owned = data.owned;
+	List<Node *> owned(data.owned);
 	List<Node *> owned_by_owner;
 	Node *owner = (data.owner == this) ? p_node : data.owner;
 
@@ -3611,7 +3587,7 @@ void Node::_call_unhandled_key_input(const Ref<InputEvent> &p_event) {
 
 void Node::_validate_property(PropertyInfo &p_property) const {
 	if ((p_property.name == "process_thread_group_order" || p_property.name == "process_thread_messages") && data.process_thread_group == PROCESS_THREAD_GROUP_INHERIT) {
-		p_property.usage = 0;
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -3746,7 +3722,7 @@ RID Node::get_accessibility_element() const {
 	if (unlikely(data.accessibility_element.is_null())) {
 		Window *w = get_non_popup_window();
 		if (w && w->get_window_id() != DisplayServer::INVALID_WINDOW_ID && get_window()->is_visible()) {
-			data.accessibility_element = DisplayServer::get_singleton()->accessibility_create_element(w->get_window_id(), DisplayServer::ROLE_CONTAINER);
+			data.accessibility_element = AccessibilityServer::get_singleton()->create_element(w->get_window_id(), AccessibilityServerEnums::ROLE_CONTAINER);
 		}
 	}
 	return data.accessibility_element;

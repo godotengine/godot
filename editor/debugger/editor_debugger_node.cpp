@@ -31,6 +31,7 @@
 #include "editor_debugger_node.h"
 
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/object/undo_redo.h"
 #include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/debugger/editor_debugger_tree.h"

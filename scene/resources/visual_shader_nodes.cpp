@@ -31,6 +31,9 @@
 #include "visual_shader_nodes.h"
 #include "visual_shader_nodes.compat.inc"
 
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
+
 ////////////// Vector Base
 
 VisualShaderNodeVectorBase::PortType VisualShaderNodeVectorBase::get_input_port_type(int p_port) const {
@@ -3260,7 +3263,7 @@ String VisualShaderNodeColorFunc::generate_code(Shader::Mode p_mode, VisualShade
 				code += "		vec3 c = " + p_input_vars[0] + ";\n";
 				code += "		" + p_output_vars[0] + " = max(vec3(1.055) * pow(c, vec3(0.416666667)) - vec3(0.055), vec3(0.0));\n";
 			} else {
-				code += "		vec3 c = clamp(" + p_input_vars[0] + ", vec3(0.0), vec3(1.0));\n";
+				code += "		vec3 c = " + p_input_vars[0] + ";\n";
 				code += "		const vec3 a = vec3(0.055f);\n";
 				code += "		" + p_output_vars[0] + " = mix((vec3(1.0f) + a) * pow(c.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * c.rgb, lessThan(c.rgb, vec3(0.0031308f)));\n";
 			}

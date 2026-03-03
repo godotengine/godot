@@ -31,11 +31,13 @@
 #include "gpu_particles_3d.h"
 #include "gpu_particles_3d.compat.inc"
 
+#include "core/object/class_db.h"
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/particle_process_material.h"
+#include "servers/rendering/rendering_server.h"
 
 AABB GPUParticles3D::get_aabb() const {
 	return AABB();
@@ -235,7 +237,7 @@ real_t GPUParticles3D::get_collision_base_size() const {
 
 void GPUParticles3D::set_draw_order(DrawOrder p_order) {
 	draw_order = p_order;
-	RS::get_singleton()->particles_set_draw_order(particles, RS::ParticlesDrawOrder(p_order));
+	RS::get_singleton()->particles_set_draw_order(particles, RSE::ParticlesDrawOrder(p_order));
 }
 
 void GPUParticles3D::set_trail_enabled(bool p_enabled) {
@@ -457,16 +459,13 @@ AABB GPUParticles3D::capture_aabb() const {
 void GPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "emitting") {
 		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
-	}
-
-	if (p_property.name.begins_with("draw_pass_")) {
+	} else if (p_property.name.begins_with("draw_pass_")) {
 		int index = p_property.name.get_slicec('_', 2).to_int() - 1;
 		if (index >= draw_passes.size()) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
-	}
-	if (p_property.name == "seed" && !use_fixed_seed) {
+	} else if (p_property.name == "seed" && !use_fixed_seed) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
@@ -629,7 +628,7 @@ Ref<Skin> GPUParticles3D::get_skin() const {
 void GPUParticles3D::set_transform_align(TransformAlign p_align) {
 	ERR_FAIL_INDEX(uint32_t(p_align), 4);
 	transform_align = p_align;
-	RS::get_singleton()->particles_set_transform_align(particles, RS::ParticlesTransformAlign(transform_align));
+	RS::get_singleton()->particles_set_transform_align(particles, RSE::ParticlesTransformAlign(transform_align));
 }
 
 GPUParticles3D::TransformAlign GPUParticles3D::get_transform_align() const {
@@ -877,7 +876,7 @@ void GPUParticles3D::_bind_methods() {
 
 GPUParticles3D::GPUParticles3D() {
 	particles = RS::get_singleton()->particles_create();
-	RS::get_singleton()->particles_set_mode(particles, RS::PARTICLES_MODE_3D);
+	RS::get_singleton()->particles_set_mode(particles, RSE::PARTICLES_MODE_3D);
 	set_base(particles);
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
 	set_emitting(true);

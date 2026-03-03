@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "graph_edit.h"
+
+#include "core/object/class_db.h"
+
 bool GraphEdit::_is_arrange_nodes_button_hidden_bind_compat_81582() const {
 	return !is_showing_arrange_button();
 }
@@ -53,4 +57,4 @@ void GraphEdit::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("connect_node", "from_node", "from_port", "to_node", "to_port"), &GraphEdit::_connect_node_bind_compat_97449);
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

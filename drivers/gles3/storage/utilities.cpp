@@ -28,17 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef GLES3_ENABLED
-
 #include "utilities.h"
 
-#include "../rasterizer_gles3.h"
-#include "config.h"
-#include "light_storage.h"
-#include "material_storage.h"
-#include "mesh_storage.h"
-#include "particles_storage.h"
-#include "texture_storage.h"
+#ifdef GLES3_ENABLED
+
+#include "drivers/gles3/rasterizer_util_gles3.h"
+#include "drivers/gles3/storage/config.h"
+#include "drivers/gles3/storage/light_storage.h"
+#include "drivers/gles3/storage/material_storage.h"
+#include "drivers/gles3/storage/mesh_storage.h"
+#include "drivers/gles3/storage/particles_storage.h"
+#include "drivers/gles3/storage/texture_storage.h"
 
 using namespace GLES3;
 
@@ -145,25 +145,25 @@ Vector<uint8_t> Utilities::buffer_get_data(GLenum p_target, GLuint p_buffer, uin
 
 /* INSTANCES */
 
-RS::InstanceType Utilities::get_base_type(RID p_rid) const {
+RSE::InstanceType Utilities::get_base_type(RID p_rid) const {
 	if (GLES3::MeshStorage::get_singleton()->owns_mesh(p_rid)) {
-		return RS::INSTANCE_MESH;
+		return RSE::INSTANCE_MESH;
 	} else if (GLES3::MeshStorage::get_singleton()->owns_multimesh(p_rid)) {
-		return RS::INSTANCE_MULTIMESH;
+		return RSE::INSTANCE_MULTIMESH;
 	} else if (GLES3::LightStorage::get_singleton()->owns_light(p_rid)) {
-		return RS::INSTANCE_LIGHT;
+		return RSE::INSTANCE_LIGHT;
 	} else if (GLES3::LightStorage::get_singleton()->owns_lightmap(p_rid)) {
-		return RS::INSTANCE_LIGHTMAP;
+		return RSE::INSTANCE_LIGHTMAP;
 	} else if (GLES3::ParticlesStorage::get_singleton()->owns_particles(p_rid)) {
-		return RS::INSTANCE_PARTICLES;
+		return RSE::INSTANCE_PARTICLES;
 	} else if (GLES3::LightStorage::get_singleton()->owns_reflection_probe(p_rid)) {
-		return RS::INSTANCE_REFLECTION_PROBE;
+		return RSE::INSTANCE_REFLECTION_PROBE;
 	} else if (GLES3::ParticlesStorage::get_singleton()->owns_particles_collision(p_rid)) {
-		return RS::INSTANCE_PARTICLES_COLLISION;
+		return RSE::INSTANCE_PARTICLES_COLLISION;
 	} else if (owns_visibility_notifier(p_rid)) {
-		return RS::INSTANCE_VISIBLITY_NOTIFIER;
+		return RSE::INSTANCE_VISIBLITY_NOTIFIER;
 	}
-	return RS::INSTANCE_NONE;
+	return RSE::INSTANCE_NONE;
 }
 
 bool Utilities::free(RID p_rid) {
@@ -325,7 +325,7 @@ void Utilities::capture_timestamp(const String &p_name) {
 	ERR_FAIL_COND(frames[frame].timestamp_count >= max_timestamp_query_elements);
 
 #ifdef GL_API_ENABLED
-	if (RasterizerGLES3::is_gles_over_gl()) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		glQueryCounter(frames[frame].queries[frames[frame].timestamp_count], GL_TIMESTAMP);
 	}
 #endif // GL_API_ENABLED
@@ -339,7 +339,7 @@ void Utilities::_capture_timestamps_begin() {
 	// frame is incremented at the end of the frame so this gives us the queries for frame - 2. By then they should be ready.
 	if (frames[frame].timestamp_count) {
 #ifdef GL_API_ENABLED
-		if (RasterizerGLES3::is_gles_over_gl()) {
+		if (RasterizerUtilGLES3::is_gles_over_gl()) {
 			for (uint32_t i = 0; i < frames[frame].timestamp_count; i++) {
 				uint64_t temp = 0;
 				glGetQueryObjectui64v(frames[frame].queries[i], GL_QUERY_RESULT, &temp);
@@ -431,12 +431,12 @@ bool Utilities::has_os_feature(const String &p_feature) const {
 void Utilities::update_memory_info() {
 }
 
-uint64_t Utilities::get_rendering_info(RS::RenderingInfo p_info) {
-	if (p_info == RS::RENDERING_INFO_TEXTURE_MEM_USED) {
+uint64_t Utilities::get_rendering_info(RSE::RenderingInfo p_info) {
+	if (p_info == RSE::RENDERING_INFO_TEXTURE_MEM_USED) {
 		return texture_mem_cache + render_buffer_mem_cache; // Add render buffer memory to our texture mem.
-	} else if (p_info == RS::RENDERING_INFO_BUFFER_MEM_USED) {
+	} else if (p_info == RSE::RENDERING_INFO_BUFFER_MEM_USED) {
 		return buffer_mem_cache;
-	} else if (p_info == RS::RENDERING_INFO_VIDEO_MEM_USED) {
+	} else if (p_info == RSE::RENDERING_INFO_VIDEO_MEM_USED) {
 		return texture_mem_cache + buffer_mem_cache + render_buffer_mem_cache;
 	}
 	return 0;

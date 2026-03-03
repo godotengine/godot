@@ -1119,7 +1119,7 @@ uint32_t RenderingDeviceDriverD3D12::_find_max_common_supported_sample_count(Vec
 				msql.SampleCount = (UINT)samples;
 				HRESULT res = device->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &msql, sizeof(msql));
 				if (SUCCEEDED(res) && msql.NumQualityLevels) {
-					int bit = get_shift_from_power_of_2((uint32_t)samples);
+					int bit = Math::get_shift_from_power_of_2((uint32_t)samples);
 					ERR_FAIL_COND_V(bit == -1, 1);
 					mask |= (uint32_t)(1 << bit);
 				}
@@ -1131,7 +1131,7 @@ uint32_t RenderingDeviceDriverD3D12::_find_max_common_supported_sample_count(Vec
 	if (common == UINT32_MAX) {
 		return 1;
 	} else {
-		return ((uint32_t)1 << nearest_shift(common));
+		return ((uint32_t)1 << Math::nearest_shift(common));
 	}
 }
 
@@ -5799,9 +5799,11 @@ uint64_t RenderingDeviceDriverD3D12::get_resource_native_handle(DriverResource p
 }
 
 uint64_t RenderingDeviceDriverD3D12::get_total_memory_used() {
-	D3D12MA::TotalStatistics stats;
-	allocator->CalculateStatistics(&stats);
-	return stats.Total.Stats.BlockBytes;
+	D3D12MA::Budget local_budget;
+	D3D12MA::Budget non_local_budget;
+	allocator->GetBudget(&local_budget, &non_local_budget);
+
+	return local_budget.Stats.AllocationBytes + non_local_budget.Stats.AllocationBytes;
 }
 
 uint64_t RenderingDeviceDriverD3D12::get_lazily_memory_used() {
@@ -6323,7 +6325,7 @@ Error RenderingDeviceDriverD3D12::_initialize_allocator() {
 	D3D12MA::ALLOCATOR_DESC allocator_desc = {};
 	allocator_desc.pDevice = device.Get();
 	allocator_desc.pAdapter = adapter.Get();
-	allocator_desc.Flags = D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED | D3D12MA::ALLOCATOR_FLAG_DONT_PREFER_SMALL_BUFFERS_COMMITTED;
+	allocator_desc.Flags = D3D12MA_RECOMMENDED_ALLOCATOR_FLAGS | D3D12MA::ALLOCATOR_FLAG_DONT_PREFER_SMALL_BUFFERS_COMMITTED;
 
 	HRESULT res = D3D12MA::CreateAllocator(&allocator_desc, &allocator);
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "D3D12MA::CreateAllocator failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");

@@ -34,6 +34,7 @@
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/control.h"
+#include "scene/main/node.h"
 
 class Node3D;
 class Button;

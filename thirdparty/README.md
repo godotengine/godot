@@ -153,7 +153,7 @@ Patches:
 ## d3d12ma
 
 - Upstream: https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator
-- Version: 2.1.0-development (4d16e802e0b9451c9d3c27cd308928c13b73acd6, 2023)
+- Version: 3.1.0 (0fa62ed3a0a69b73230a8ec1faa752d4061c8dc8, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -170,7 +170,7 @@ Patches:
 ## directx_headers
 
 - Upstream: https://github.com/microsoft/DirectX-Headers
-- Version: 1.618.2 (dde59d560da2760fec612d6634124edc2a26b82f, 2025)
+- Version: main (25411c74bb9cc7c416b2ff01b3ad8a306811dfdd, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -510,13 +510,20 @@ Files generated from upstream source:
 ## jolt_physics
 
 - Upstream: https://github.com/jrouwe/JoltPhysics
-- Version: 5.4.0 (036ea7b1d717b3e713ac9d8cbd47118fb9cd5d60, 2025)
+- Version: 5.5.0 (23dadd0e603f1b321142d4c74df07fce85064989, 2025)
 - License: MIT
 
 Files extracted from upstream source:
 
 - All files in `Jolt/`, except `Jolt/Jolt.cmake` and any files dependent on `ENABLE_OBJECT_STREAM`, as seen in `Jolt/Jolt.cmake`
 - `LICENSE`
+
+Patches:
+
+- `0001-backport-upstream-commit-ee3725250.patch` (GH-115089)
+- `0002-backport-upstream-commit-bc7f1fb8c.patch` (GH-115305)
+- `0003-backport-upstream-commit-365a15367.patch` (GH-115305)
+- `0004-backport-upstream-commit-e0a6a9a16.patch` (GH-115327)
 
 
 ## libbacktrace
@@ -1218,6 +1225,8 @@ Files extracted from upstream source:
 - `staging/xdg-activation/README`
 - `staging/xdg-activation/xdg-activation-v1.xml`
 - `staging/xdg-system-bell/xdg-system-bell-v1.xml`
+- `staging/pointer-warp/pointer-warp-v1.xml`
+- `staging/pointer-warp/README`
 - `unstable/idle-inhibit/README`
 - `unstable/idle-inhibit/idle-inhibit-unstable-v1.xml`
 - `unstable/pointer-constraints/README`

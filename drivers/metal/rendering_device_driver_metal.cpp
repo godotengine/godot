@@ -530,7 +530,7 @@ void RenderingDeviceDriverMetal::texture_free(TextureID p_texture) {
 
 uint64_t RenderingDeviceDriverMetal::texture_get_allocation_size(TextureID p_texture) {
 	MTL::Texture *obj = reinterpret_cast<MTL::Texture *>(p_texture.id);
-	return obj->allocatedSize();
+	return NS::Object::sendMessageSafe<NS::UInteger>(obj, _MTL_PRIVATE_SEL(allocatedSize));
 }
 
 void RenderingDeviceDriverMetal::texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) {
@@ -721,9 +721,26 @@ RDD::SamplerID RenderingDeviceDriverMetal::sampler_create(const SamplerState &p_
 	desc->setMinFilter(p_state.min_filter == SAMPLER_FILTER_LINEAR ? MTL::SamplerMinMagFilterLinear : MTL::SamplerMinMagFilterNearest);
 	desc->setMipFilter(p_state.mip_filter == SAMPLER_FILTER_LINEAR ? MTL::SamplerMipFilterLinear : MTL::SamplerMipFilterNearest);
 
-	desc->setSAddressMode(ADDRESS_MODES[p_state.repeat_u]);
-	desc->setTAddressMode(ADDRESS_MODES[p_state.repeat_v]);
-	desc->setRAddressMode(ADDRESS_MODES[p_state.repeat_w]);
+	MTL::SamplerAddressMode address_u = ADDRESS_MODES[p_state.repeat_u];
+	MTL::SamplerAddressMode address_v = ADDRESS_MODES[p_state.repeat_v];
+	MTL::SamplerAddressMode address_w = ADDRESS_MODES[p_state.repeat_w];
+
+	if (!device_properties->features.supports_border_color) {
+		// Default to clamp to edge if border color is not supported.
+		if (address_u == MTL::SamplerAddressModeClampToBorderColor) {
+			address_u = MTL::SamplerAddressModeClampToEdge;
+		}
+		if (address_v == MTL::SamplerAddressModeClampToBorderColor) {
+			address_v = MTL::SamplerAddressModeClampToEdge;
+		}
+		if (address_w == MTL::SamplerAddressModeClampToBorderColor) {
+			address_w = MTL::SamplerAddressModeClampToEdge;
+		}
+	}
+
+	desc->setSAddressMode(address_u);
+	desc->setTAddressMode(address_v);
+	desc->setRAddressMode(address_w);
 
 	if (p_state.use_anisotropy) {
 		desc->setMaxAnisotropy(p_state.anisotropy_max);
@@ -734,7 +751,9 @@ RDD::SamplerID RenderingDeviceDriverMetal::sampler_create(const SamplerState &p_
 	desc->setLodMinClamp(p_state.min_lod);
 	desc->setLodMaxClamp(p_state.max_lod);
 
-	desc->setBorderColor(SAMPLER_BORDER_COLORS[p_state.border_color]);
+	if (device_properties->features.supports_border_color) {
+		desc->setBorderColor(SAMPLER_BORDER_COLORS[p_state.border_color]);
+	}
 
 	desc->setNormalizedCoordinates(!p_state.unnormalized_uvw);
 
@@ -862,6 +881,11 @@ void RenderingDeviceDriverMetal::command_buffer_execute_secondary(CommandBufferI
 
 void RenderingDeviceDriverMetal::_swap_chain_release(SwapChain *p_swap_chain) {
 	_swap_chain_release_buffers(p_swap_chain);
+
+	if (p_swap_chain->render_pass.id != 0) {
+		render_pass_free(p_swap_chain->render_pass);
+		p_swap_chain->render_pass = RenderPassID();
+	}
 }
 
 void RenderingDeviceDriverMetal::_swap_chain_release_buffers(SwapChain *p_swap_chain) {
@@ -875,9 +899,15 @@ RDD::SwapChainID RenderingDeviceDriverMetal::swap_chain_create(RenderingContextD
 		GODOT_CLANG_WARNING_POP
 	}
 
+	SwapChain *swap_chain = memnew(SwapChain);
+	swap_chain->surface = p_surface;
+	return SwapChainID(swap_chain);
+}
+
+RDD::RenderPassID RenderingDeviceDriverMetal::_swap_chain_create_render_pass(RDD::DataFormat p_format) {
 	// Create the render pass that will be used to draw to the swap chain's framebuffers.
 	RDD::Attachment attachment;
-	attachment.format = pixel_formats->getDataFormat(surface->get_pixel_format());
+	attachment.format = p_format;
 	attachment.samples = RDD::TEXTURE_SAMPLES_1;
 	attachment.load_op = RDD::ATTACHMENT_LOAD_OP_CLEAR;
 	attachment.store_op = RDD::ATTACHMENT_STORE_OP_STORE;
@@ -888,15 +918,7 @@ RDD::SwapChainID RenderingDeviceDriverMetal::swap_chain_create(RenderingContextD
 	color_ref.aspect.set_flag(RDD::TEXTURE_ASPECT_COLOR_BIT);
 	subpass.color_references.push_back(color_ref);
 
-	RenderPassID render_pass = render_pass_create(attachment, subpass, {}, 1, RDD::AttachmentReference());
-	ERR_FAIL_COND_V(!render_pass, SwapChainID());
-
-	// Create the empty swap chain until it is resized.
-	SwapChain *swap_chain = memnew(SwapChain);
-	swap_chain->surface = p_surface;
-	swap_chain->data_format = attachment.format;
-	swap_chain->render_pass = render_pass;
-	return SwapChainID(swap_chain);
+	return render_pass_create(attachment, subpass, {}, 1, RDD::AttachmentReference());
 }
 
 Error RenderingDeviceDriverMetal::swap_chain_resize(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, uint32_t p_desired_framebuffer_count) {
@@ -905,7 +927,24 @@ Error RenderingDeviceDriverMetal::swap_chain_resize(CommandQueueID p_cmd_queue, 
 
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
 	RenderingContextDriverMetal::Surface *surface = (RenderingContextDriverMetal::Surface *)(swap_chain->surface);
-	surface->resize(p_desired_framebuffer_count);
+
+	DataFormat new_data_format = DATA_FORMAT_MAX;
+	ColorSpace new_color_space = COLOR_SPACE_MAX;
+	Error err = surface->resize(p_desired_framebuffer_count, new_data_format, new_color_space);
+	if (err != OK) {
+		return err;
+	}
+
+	if (new_data_format != swap_chain->data_format) {
+		_swap_chain_release(swap_chain);
+		swap_chain->render_pass = _swap_chain_create_render_pass(new_data_format);
+		if (!swap_chain->render_pass) {
+			return ERR_INVALID_DATA;
+		}
+	}
+
+	swap_chain->data_format = new_data_format;
+	swap_chain->color_space = new_color_space;
 
 	// Once everything's been created correctly, indicate the surface no longer needs to be resized.
 	context_driver->surface_set_needs_resize(swap_chain->surface, false);
@@ -938,7 +977,8 @@ RDD::DataFormat RenderingDeviceDriverMetal::swap_chain_get_format(SwapChainID p_
 }
 
 RDD::ColorSpace RenderingDeviceDriverMetal::swap_chain_get_color_space(SwapChainID p_swap_chain) {
-	return RDD::COLOR_SPACE_REC709_NONLINEAR_SRGB;
+	const SwapChain *swap_chain = (const SwapChain *)(p_swap_chain.id);
+	return swap_chain->color_space;
 }
 
 void RenderingDeviceDriverMetal::swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) {
@@ -956,7 +996,6 @@ void RenderingDeviceDriverMetal::swap_chain_free(SwapChainID p_swap_chain) {
 		GODOT_CLANG_WARNING_POP
 	}
 	_swap_chain_release(swap_chain);
-	render_pass_free(swap_chain->render_pass);
 	memdelete(swap_chain);
 }
 
@@ -2626,6 +2665,8 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 			return device_properties->features.metal_fx_spatial;
 		case SUPPORTS_METALFX_TEMPORAL:
 			return device_properties->features.metal_fx_temporal;
+		case SUPPORTS_HDR_OUTPUT:
+			return true;
 		case SUPPORTS_IMAGE_ATOMIC_32_BIT:
 			return device_properties->features.supports_native_image_atomics;
 		case SUPPORTS_VULKAN_MEMORY_MODEL:

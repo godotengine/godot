@@ -33,6 +33,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_main_screen.h"
@@ -61,6 +62,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/theme.h"
+#include "servers/rendering/rendering_server.h"
 
 EditorInterface *EditorInterface::singleton = nullptr;
 
@@ -148,7 +150,7 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 	RID scenario = RS::get_singleton()->scenario_create();
 
 	RID viewport = RS::get_singleton()->viewport_create();
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ALWAYS);
+	RS::get_singleton()->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_ALWAYS);
 	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
 	RS::get_singleton()->viewport_set_size(viewport, size, size);
 	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
@@ -724,10 +726,19 @@ PackedStringArray EditorInterface::get_open_scenes() const {
 	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
 
 	for (EditorData::EditedScene &edited_scene : scenes) {
-		if (edited_scene.root == nullptr) {
-			continue;
+		ret.push_back(edited_scene.path);
+	}
+	return ret;
+}
+
+PackedStringArray EditorInterface::get_unsaved_scenes() const {
+	PackedStringArray ret;
+	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
+
+	for (int i = 0; i < scenes.size(); i++) {
+		if (EditorNode::get_singleton()->is_scene_unsaved(i)) {
+			ret.push_back(scenes[i].path);
 		}
-		ret.push_back(edited_scene.root->get_scene_file_path());
 	}
 	return ret;
 }
@@ -909,6 +920,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_object_edited", "object"), &EditorInterface::is_object_edited);
 
 	ClassDB::bind_method(D_METHOD("get_open_scenes"), &EditorInterface::get_open_scenes);
+	ClassDB::bind_method(D_METHOD("get_unsaved_scenes"), &EditorInterface::get_unsaved_scenes);
 	ClassDB::bind_method(D_METHOD("get_open_scene_roots"), &EditorInterface::get_open_scene_roots);
 	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &EditorInterface::get_edited_scene_root);
 

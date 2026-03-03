@@ -37,6 +37,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/input/input_event.h"
+#include "servers/display/native_menu.h"
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
@@ -69,11 +71,6 @@ bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
 		} break;
 #endif
-		case FEATURE_NATIVE_DIALOG_FILE: {
-			String sdk_version = OS::get_singleton()->get_version().get_slicec('.', 0);
-			return sdk_version.to_int() >= 29;
-		} break;
-
 		case FEATURE_CURSOR_SHAPE:
 		//case FEATURE_CUSTOM_CURSOR_SHAPE:
 		//case FEATURE_HIDPI:
@@ -83,6 +80,7 @@ bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 		//case FEATURE_MOUSE_WARP:
 		case FEATURE_NATIVE_DIALOG:
 		case FEATURE_NATIVE_DIALOG_INPUT:
+		case FEATURE_NATIVE_DIALOG_FILE:
 		//case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
 		case FEATURE_NATIVE_DIALOG_FILE_MIME:
 		//case FEATURE_NATIVE_ICON:

@@ -29,9 +29,12 @@
 /**************************************************************************/
 
 #include "movie_writer.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/object/class_db.h"
 #include "core/os/time.h"
+#include "core/templates/rb_set.h"
 #include "scene/main/window.h"
 #include "servers/audio/audio_driver_dummy.h"
 #include "servers/display/display_server.h"
