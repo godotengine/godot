@@ -46,6 +46,7 @@
 #include "core/templates/hash_map.h"
 #include "modules/gdscript/gdscript_parser.h"
 #include "scene/main/node.h"
+#include <cstddef>
 
 #if defined(TOOLS_ENABLED) && !defined(DISABLE_DEPRECATED)
 #define SUGGEST_GODOT4_RENAMES
@@ -991,7 +992,12 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			}
 
 		/// [Monarch] Bind those type arguments to the generic parameters.
-		} else if(result.kind == GDScriptParser::DataType::GENERIC_TYPE) {
+		} else if(
+			(result.kind == GDScriptParser::DataType::CLASS ||
+			 result.kind == GDScriptParser::DataType::SCRIPT) &&
+			 result.class_type != nullptr &&
+			 result.class_type->has_generic_parameters() ) {
+
 			int expected_arg_count = result.class_type->generic_parameters.size();
 			int got = p_type -> container_types.size();
 
