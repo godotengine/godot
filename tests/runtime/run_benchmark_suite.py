@@ -949,6 +949,10 @@ def _lane_uses_forbidden_cpu_sort_route(report: dict[str, Any]) -> tuple[bool, s
     return False, ""
 
 
+def _lane_supports_asset_override(lane: LaneDefinition) -> bool:
+    return lane.lane_id != "unified_composite"
+
+
 def _compute_aggregate(profile: str, lane_results: list[dict[str, Any]]) -> float:
     weighted_sum = 0.0
     weight_sum = 0.0
@@ -1117,6 +1121,11 @@ def main() -> int:
         asset_override = asset_manifest.get(lane.lane_id, generated_assets.get(lane.lane_id, ""))
         lane_base_duration = lane.durations.get(args.profile, lane.durations.get("performance", 20.0))
         lane_duration = max(5.0, lane_base_duration * duration_scale)
+        if asset_override and not _lane_supports_asset_override(lane):
+            print(
+                f"[suite] lane={lane.lane_id} ignores --benchmark-asset; skipping asset override."
+            )
+            asset_override = ""
         print(f"[suite] running lane={lane.lane_id} scene={lane.scene} duration={lane_duration:.1f}s")
         result = _run_lane(
             godot_binary=godot_binary,
