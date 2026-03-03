@@ -573,7 +573,6 @@ def _generate_dummy_assets(project_path: Path, lanes: list[LaneDefinition], outp
         "integrity_sentinel": 100_000,
     }
     DEFAULT_SPLAT_COUNT = 100_000
-
     for lane in lanes:
         lane_index = LANE_INDEX_BY_ID.get(lane.lane_id)
         if lane_index is None:
