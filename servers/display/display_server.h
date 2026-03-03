@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/input/input_enums.h"
 #include "core/io/image.h"
 #include "core/io/resource.h"
 #include "core/object/object.h"

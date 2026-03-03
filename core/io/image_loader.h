@@ -36,7 +36,7 @@
 #include "core/object/gdvirtual.gen.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
-#include "core/variant/binder_common.h"
+#include "core/variant/type_info.h"
 
 class ImageLoader;
 
