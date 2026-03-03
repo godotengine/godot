@@ -260,7 +260,74 @@ static GDScriptParser::DataType resolve_generic_type(const GDScriptParser::DataT
 
 	return p_type_to_resolve;
 
-} 
+}
+
+bool is_script_or_class(const GDScriptParser::DataType p_datatype) {
+	return p_datatype.kind == GDScriptParser::DataType::CLASS || p_datatype.kind == GDScriptParser::DataType::SCRIPT;
+}
+
+/// [Monarch] Given a binding parameter to infer, `Stuff[T]`, 
+/// match it against a given provided argument `Stuff[int]` to infer its proper binding.
+static bool infer_generic_bindings_from_types(
+	const GDScriptParser::DataType& p_param_to_infer, 
+	const GDScriptParser::DataType& p_provided_arg, 
+	HashMap<StringName, GDScriptParser::DataType>& p_bindings
+) {
+
+	/// case 1, a direct generic parameter T is given
+	if (p_param_to_infer.kind == GDScriptParser::DataType::GENERIC_TYPE) {
+
+		if (!p_provided_arg.is_set() || p_provided_arg.has_no_type()) {
+			return true; /// don't bind from a weak type, throw this downstream for further inferrence
+		}
+
+		if (const GDScriptParser::DataType* existing_binding = p_bindings.getptr(p_param_to_infer.generic_param)) {
+			return *existing_binding == p_provided_arg; /// to make sure multiple occurences of the same generic are consistent
+		}
+
+		p_bindings[p_param_to_infer.generic_param] = p_provided_arg;
+		return true;
+
+	}
+
+	/// case 2, a container is given 
+	if (p_param_to_infer.has_container_element_types()) {
+
+		if (!p_provided_arg.has_container_element_types() || (p_param_to_infer.container_element_types.size() != p_provided_arg.container_element_types.size())) {
+			return true; ///uninferrable from this pair, but don't hard fail
+		}
+
+		/// recurse to infer
+		for (int i = 0; i < p_param_to_infer.container_element_types.size(); i++) {
+			if(!infer_generic_bindings_from_types(
+				p_param_to_infer.container_element_types[i], 
+				p_provided_arg.container_element_types[i], 
+				p_bindings)
+			) { return false; }
+		}
+	}
+
+	/// case 3, generic class matching, like a Stuff[T] tried against Stuff[int]
+	if ((is_script_or_class(p_param_to_infer) && is_script_or_class(p_provided_arg)) &&
+		(p_param_to_infer.class_type != nullptr && p_provided_arg.class_type != nullptr) &&
+		(p_param_to_infer.class_type == p_provided_arg.class_type) &&
+		(!p_param_to_infer.generic_type_bindings.is_empty())
+	) {
+		for (const KeyValue<StringName, GDScriptParser::DataType>& E : p_param_to_infer.generic_type_bindings) {
+			const GDScriptParser::DataType* arg_bound = p_provided_arg.generic_type_bindings.getptr(E.key);
+
+			if(arg_bound == nullptr) { continue; }
+
+			if(!infer_generic_bindings_from_types(E.value, *arg_bound, p_bindings)) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+
+}
+
 
 bool GDScriptAnalyzer::has_member_name_conflict_in_script_class(const StringName &p_member_name, const GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_member) {
 	if (p_class->members_indices.has(p_member_name)) {
@@ -3803,15 +3870,31 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		}
 #endif // DEBUG_ENABLED
 
-		/// [Monarch] Reginleif: if the base is a concretely instantiated generic type (like var x: Option[int])
-		/// subtitute the GENERIC_TYPE placeholders in the return type with the bound concrete types, before
-		/// committing it to the call_type. Without it, option.unwrap() returns the raw GENERIC_TYPE even though
-		/// the binding is known at the call site.
-		if (!base_type.generic_type_bindings.is_empty()) {
-			return_type = resolve_generic_type(return_type, base_type.generic_type_bindings);
+		/// [Monarch] Infer generic bindings from call arguments (Stuff.from(3) => T = int resolution chain)
+		HashMap<StringName, GDScriptParser::DataType> call_generic_bindings(base_type.generic_type_bindings);
+
+		List<GDScriptParser::DataType>::ConstIterator par_itr = par_types.begin();
+		for (int i = 0; i < p_call->arguments.size() && i < par_types.size(); ++i, ++par_itr) {
+			GDScriptParser::DataType param_type = *par_itr;
+			
+			/// First resolve parameter with known bindings from base
+			if (!call_generic_bindings.is_empty()) {
+				param_type = resolve_generic_type(param_type, call_generic_bindings);
+			}
+
+			GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
+			if (!infer_generic_bindings_from_types(param_type, arg_type, call_generic_bindings)) {
+				push_error(vformat(
+						R"( [Reginleif] Conflicting generic type inference for call '%s()'. )",
+						p_call->function_name),
+						p_call->arguments[i]);
+				p_call->set_datatype(call_type);
+				return;
+			}
 		}
 
 		call_type = return_type;
+
 	} else {
 		bool found = false;
 
