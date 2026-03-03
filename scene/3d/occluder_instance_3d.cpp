@@ -30,6 +30,8 @@
 
 #include "occluder_instance_3d.h"
 
+#include "modules/modules_enabled.gen.h" // For raycast.
+
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
@@ -695,6 +697,15 @@ OccluderInstance3D::BakeError OccluderInstance3D::bake_scene(Node *p_from_node, 
 PackedStringArray OccluderInstance3D::get_configuration_warnings() const {
 	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
+#ifndef MODULE_RAYCAST_ENABLED
+#ifdef WEB_ENABLED
+	warnings.push_back(RTR("Occlusion culling support is disabled on the web platform due to binary size and memory usage constraints."));
+#else
+	warnings.push_back(RTR("Occlusion culling is disabled at build-time.\nTo resolve this, use the `module_raycast_enabled=yes` SCons option when compiling Godot."));
+#endif // WEB_ENABLED
+	return warnings;
+#else
+
 	if (!bool(GLOBAL_GET_CACHED(bool, "rendering/occlusion_culling/use_occlusion_culling"))) {
 		warnings.push_back(RTR("Occlusion culling is disabled in the Project Settings, which means occlusion culling won't be performed in the root viewport.\nTo resolve this, open the Project Settings and enable Rendering > Occlusion Culling > Use Occlusion Culling."));
 	}
@@ -719,6 +730,7 @@ PackedStringArray OccluderInstance3D::get_configuration_warnings() const {
 	}
 
 	return warnings;
+#endif // !MODULE_RAYCAST_ENABLED
 }
 
 bool OccluderInstance3D::_is_editable_3d_polygon() const {
