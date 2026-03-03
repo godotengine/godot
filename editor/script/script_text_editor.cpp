@@ -838,6 +838,7 @@ void ScriptTextEditor::_validate_script() {
 	errors.clear();
 	depended_errors.clear();
 	safe_lines.clear();
+	executable_lines.clear();
 
 	Ref<Script> script = edited_res;
 	if (!script->get_language()->validate(text, script->get_path(), &fnc, &errors, &warnings, &safe_lines)) {
@@ -873,6 +874,7 @@ void ScriptTextEditor::_validate_script() {
 			functions.push_back(E);
 		}
 		script_is_valid = true;
+		script->get_language()->get_breakable_lines(script, executable_lines);
 	}
 	_update_connected_methods();
 	_update_warnings();
@@ -1150,10 +1152,30 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	}
 }
 
+int ScriptTextEditor::_resolve_breakpoint_line(int p_row) const {
+	if (executable_lines.is_empty()) {
+		return p_row;
+	}
+	if (executable_lines.has(p_row + 1)) {
+		return p_row;
+	}
+	const int line_count = code_editor->get_text_editor()->get_line_count();
+	for (int i = p_row + 1; i < line_count; i++) {
+		if (executable_lines.has(i + 1)) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 void ScriptTextEditor::_breakpoint_toggled(int p_row) {
 	const CodeEdit *ce = code_editor->get_text_editor();
 	bool enabled = p_row < ce->get_line_count() && ce->is_line_breakpointed(p_row);
-	EditorDebuggerNode::get_singleton()->set_breakpoint(edited_res->get_path(), p_row + 1, enabled);
+	int debugger_row = _resolve_breakpoint_line(p_row);
+	if (debugger_row == -1) {
+		return;
+	}
+	EditorDebuggerNode::get_singleton()->set_breakpoint(edited_res->get_path(), debugger_row + 1, enabled);
 }
 
 void ScriptTextEditor::_on_caret_moved() {
@@ -1898,7 +1920,15 @@ Control *ScriptTextEditor::get_edit_menu() {
 }
 
 PackedInt32Array ScriptTextEditor::get_breakpoints() {
-	return code_editor->get_text_editor()->get_breakpointed_lines();
+	const PackedInt32Array bpoints = code_editor->get_text_editor()->get_breakpointed_lines();
+	PackedInt32Array resolved;
+	for (int32_t row : bpoints) {
+		int target = _resolve_breakpoint_line(row);
+		if (target != -1 && !resolved.has(target)) {
+			resolved.push_back(target);
+		}
+	}
+	return resolved;
 }
 
 void ScriptTextEditor::set_breakpoint(int p_line, bool p_enabled) {

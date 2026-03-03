@@ -270,6 +270,7 @@ public:
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) { return Vector<ScriptTemplate>(); }
 	virtual bool is_using_templates() { return false; }
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const = 0;
+	virtual void get_breakable_lines(const Ref<Script> &p_script, HashSet<int> &r_lines) const {}
 	virtual String validate_path(const String &p_path) const { return ""; }
 	virtual bool supports_builtin_mode() const = 0;
 	virtual bool supports_documentation() const { return false; }

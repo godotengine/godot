@@ -69,6 +69,7 @@ class ScriptTextEditor : public CodeEditorBase {
 	List<ScriptLanguage::ScriptError> errors;
 	HashMap<String, List<ScriptLanguage::ScriptError>> depended_errors;
 	HashSet<int> safe_lines;
+	HashSet<int> executable_lines;
 
 	List<Connection> missing_connections;
 
@@ -159,6 +160,7 @@ class ScriptTextEditor : public CodeEditorBase {
 	static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource);
 
 protected:
+	int _resolve_breakpoint_line(int p_row) const;
 	void _breakpoint_toggled(int p_row);
 
 	void _on_caret_moved();
