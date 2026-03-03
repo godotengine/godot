@@ -7699,6 +7699,15 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(p_option), grid_enabled);
 
 		} break;
+		case MENU_VIEW_GRID_BOTTOM: {
+			bool is_checked = view_layout_menu->get_popup()->is_item_checked(view_layout_menu->get_popup()->get_item_index(p_option));
+			grid_bottom_enabled = !is_checked;
+
+			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(p_option), grid_bottom_enabled);
+
+			grid_init_draw = false; // redraw
+			update_grid();
+		} break;
 		case MENU_VIEW_CAMERA_SETTINGS: {
 			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size() + Size2(50, 50));
 		} break;
@@ -8725,10 +8734,13 @@ void Node3DEditor::update_grid() {
 	// Gets a orthogonal or perspective position correctly (for the grid comparison)
 	const Vector3 camera_position = get_editor_viewport(0)->camera->get_position();
 
-	if (!grid_init_draw || grid_camera_last_update_position.distance_squared_to(camera_position) >= 100.0f) {
+	bool changed_y_signature = ((grid_camera_last_update_position.y >= 0.0f && camera_position.y <= 0.0f) || (grid_camera_last_update_position.y <= 0.0f && camera_position.y >= 0.0f));
+	if (!grid_init_draw || grid_camera_last_update_position.distance_squared_to(camera_position) >= 100.0f ||  changed_y_signature)  {
 		_finish_grid();
-		_init_grid();
-		grid_init_draw = true;
+		if (camera_position.y >= 0.0f || grid_bottom_enabled) {
+			_init_grid();
+			grid_init_draw = true;
+		}
 		grid_camera_last_update_position = camera_position;
 	}
 }
@@ -10221,6 +10233,7 @@ Node3DEditor::Node3DEditor() {
 	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_origin", TTRC("View Origin")), MENU_VIEW_ORIGIN);
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid", TTRC("View Grid"), Key::NUMBERSIGN), MENU_VIEW_GRID);
+	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid_bottom", TTRC("View Grid Bottom")), MENU_VIEW_GRID_BOTTOM);
 
 	p->add_separator();
 	p->add_submenu_node_item(TTRC("Preview Translation"), memnew(EditorTranslationPreviewMenu));
@@ -10230,6 +10243,7 @@ Node3DEditor::Node3DEditor() {
 
 	p->set_item_checked(p->get_item_index(MENU_VIEW_ORIGIN), true);
 	p->set_item_checked(p->get_item_index(MENU_VIEW_GRID), true);
+	p->set_item_checked(p->get_item_index(MENU_VIEW_GRID_BOTTOM), true);
 
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed));
 
