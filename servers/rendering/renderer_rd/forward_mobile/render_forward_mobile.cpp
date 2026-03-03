@@ -2172,6 +2172,11 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 		}
 
 		while (surf) {
+			if ((p_pass_mode == PASS_MODE_COLOR || p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) && !(surf->material->layer_mask & p_render_data->scene_data->camera_visible_layers)) {
+				surf = surf->next;
+				continue;
+			}
+
 			surf->sort.uses_lightmap = 0;
 
 			// LOD
