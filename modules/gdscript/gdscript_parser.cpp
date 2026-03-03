@@ -4514,72 +4514,72 @@ bool GDScriptParser::deprecated_annotation(AnnotationNode *p_annotation, Node *p
 	}
 	switch (p_target->type) {
 		case Node::CLASS: {
-			ClassNode *n = static_cast<ClassNode *>(p_target);
-			if (n->is_deprecated) {
+			ClassNode *class_node = static_cast<ClassNode *>(p_target);
+			if (class_node->is_deprecated) {
 				push_error(R"("@deprecated" annotation can only be used once per class.)", p_annotation);
 				return false;
 			}
-			n->is_deprecated = true;
-			n->deprecated_message = message;
+			class_node->is_deprecated = true;
+			class_node->deprecated_message = message;
 #ifdef TOOLS_ENABLED
-			n->doc_data.is_deprecated = true;
-			n->doc_data.deprecated_message = message;
+			class_node->doc_data.is_deprecated = true;
+			class_node->doc_data.deprecated_message = message;
 #endif
 			return true;
 		}
 		case Node::FUNCTION: {
-			FunctionNode *n = static_cast<FunctionNode *>(p_target);
-			if (n->is_deprecated) {
+			FunctionNode *function_node = static_cast<FunctionNode *>(p_target);
+			if (function_node->is_deprecated) {
 				push_error(R"("@deprecated" annotation can only be used once per function.)", p_annotation);
 				return false;
 			}
-			n->is_deprecated = true;
-			n->deprecated_message = message;
+			function_node->is_deprecated = true;
+			function_node->deprecated_message = message;
 #ifdef TOOLS_ENABLED
-			n->doc_data.is_deprecated = true;
-			n->doc_data.deprecated_message = message;
+			function_node->doc_data.is_deprecated = true;
+			function_node->doc_data.deprecated_message = message;
 #endif
 			return true;
 		}
 		case Node::VARIABLE: {
-			VariableNode *n = static_cast<VariableNode *>(p_target);
-			if (n->is_deprecated) {
+			VariableNode *variable_node = static_cast<VariableNode *>(p_target);
+			if (variable_node->is_deprecated) {
 				push_error(R"("@deprecated" annotation can only be used once per variable.)", p_annotation);
 				return false;
 			}
-			n->is_deprecated = true;
-			n->deprecated_message = message;
+			variable_node->is_deprecated = true;
+			variable_node->deprecated_message = message;
 #ifdef TOOLS_ENABLED
-			n->doc_data.is_deprecated = true;
-			n->doc_data.deprecated_message = message;
+			variable_node->doc_data.is_deprecated = true;
+			variable_node->doc_data.deprecated_message = message;
 #endif
 			return true;
 		}
 		case Node::CONSTANT: {
-			ConstantNode *n = static_cast<ConstantNode *>(p_target);
-			if (n->is_deprecated) {
+			ConstantNode *constant_node = static_cast<ConstantNode *>(p_target);
+			if (constant_node->is_deprecated) {
 				push_error(R"("@deprecated" annotation can only be used once per constant.)", p_annotation);
 				return false;
 			}
-			n->is_deprecated = true;
-			n->deprecated_message = message;
+			constant_node->is_deprecated = true;
+			constant_node->deprecated_message = message;
 #ifdef TOOLS_ENABLED
-			n->doc_data.is_deprecated = true;
-			n->doc_data.deprecated_message = message;
+			constant_node->doc_data.is_deprecated = true;
+			constant_node->doc_data.deprecated_message = message;
 #endif
 			return true;
 		}
 		case Node::SIGNAL: {
-			SignalNode *n = static_cast<SignalNode *>(p_target);
-			if (n->is_deprecated) {
+			SignalNode *signal_node = static_cast<SignalNode *>(p_target);
+			if (signal_node->is_deprecated) {
 				push_error(R"("@deprecated" annotation can only be used once per signal.)", p_annotation);
 				return false;
 			}
-			n->is_deprecated = true;
-			n->deprecated_message = message;
+			signal_node->is_deprecated = true;
+			signal_node->deprecated_message = message;
 #ifdef TOOLS_ENABLED
-			n->doc_data.is_deprecated = true;
-			n->doc_data.deprecated_message = message;
+			signal_node->doc_data.is_deprecated = true;
+			signal_node->doc_data.deprecated_message = message;
 #endif
 			return true;
 		}
@@ -4596,72 +4596,72 @@ bool GDScriptParser::experimental_annotation(AnnotationNode *p_annotation, Node 
 	}
 	switch (p_target->type) {
 		case Node::CLASS: {
-			ClassNode *n = static_cast<ClassNode *>(p_target);
-			if (n->is_experimental) {
+			ClassNode *class_node = static_cast<ClassNode *>(p_target);
+			if (class_node->is_experimental) {
 				push_error(R"("@experimental" annotation can only be used once per class.)", p_annotation);
 				return false;
 			}
-			n->is_experimental = true;
-			n->experimental_message = message;
+			class_node->is_experimental = true;
+			class_node->experimental_message = message;
 #ifdef TOOLS_ENABLED
-			n->doc_data.is_experimental = true;
-			n->doc_data.experimental_message = message;
+			class_node->doc_data.is_experimental = true;
+			class_node->doc_data.experimental_message = message;
 #endif
 			return true;
 		}
 		case Node::FUNCTION: {
-			FunctionNode *n = static_cast<FunctionNode *>(p_target);
-			if (n->is_experimental) {
+			FunctionNode *function_node = static_cast<FunctionNode *>(p_target);
+			if (function_node->is_experimental) {
 				push_error(R"("@experimental" annotation can only be used once per function.)", p_annotation);
 				return false;
 			}
-			n->is_experimental = true;
-			n->experimental_message = message;
+			function_node->is_experimental = true;
+			function_node->experimental_message = message;
 #ifdef TOOLS_ENABLED
-			n->doc_data.is_experimental = true;
-			n->doc_data.experimental_message = message;
+			function_node->doc_data.is_experimental = true;
+			function_node->doc_data.experimental_message = message;
 #endif
 			return true;
 		}
 		case Node::VARIABLE: {
-			VariableNode *n = static_cast<VariableNode *>(p_target);
-			if (n->is_experimental) {
+			VariableNode *variable_node = static_cast<VariableNode *>(p_target);
+			if (variable_node->is_experimental) {
 				push_error(R"("@experimental" annotation can only be used once per variable.)", p_annotation);
 				return false;
 			}
-			n->is_experimental = true;
-			n->experimental_message = message;
+			variable_node->is_experimental = true;
+			variable_node->experimental_message = message;
 #ifdef TOOLS_ENABLED
-			n->doc_data.is_experimental = true;
-			n->doc_data.experimental_message = message;
+			variable_node->doc_data.is_experimental = true;
+			variable_node->doc_data.experimental_message = message;
 #endif
 			return true;
 		}
 		case Node::CONSTANT: {
-			ConstantNode *n = static_cast<ConstantNode *>(p_target);
-			if (n->is_experimental) {
+			ConstantNode *constant_node = static_cast<ConstantNode *>(p_target);
+			if (constant_node->is_experimental) {
 				push_error(R"("@experimental" annotation can only be used once per constant.)", p_annotation);
 				return false;
 			}
-			n->is_experimental = true;
-			n->experimental_message = message;
+			constant_node->is_experimental = true;
+			constant_node->experimental_message = message;
 #ifdef TOOLS_ENABLED
-			n->doc_data.is_experimental = true;
-			n->doc_data.experimental_message = message;
+			constant_node->doc_data.is_experimental = true;
+			constant_node->doc_data.experimental_message = message;
 #endif
 			return true;
 		}
 		case Node::SIGNAL: {
-			SignalNode *n = static_cast<SignalNode *>(p_target);
-			if (n->is_experimental) {
+			SignalNode *signal_node = static_cast<SignalNode *>(p_target);
+			if (signal_node->is_experimental) {
 				push_error(R"("@experimental" annotation can only be used once per signal.)", p_annotation);
 				return false;
 			}
-			n->is_experimental = true;
-			n->experimental_message = message;
+			signal_node->is_experimental = true;
+			signal_node->experimental_message = message;
 #ifdef TOOLS_ENABLED
-			n->doc_data.is_experimental = true;
-			n->doc_data.experimental_message = message;
+			signal_node->doc_data.is_experimental = true;
+			signal_node->doc_data.experimental_message = message;
 #endif
 			return true;
 		}
