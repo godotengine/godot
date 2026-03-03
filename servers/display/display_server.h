@@ -60,6 +60,7 @@ class DisplayServer : public Object {
 #endif
 
 	LocalVector<ObjectID> additional_outputs;
+	String session_path;
 
 public:
 	_FORCE_INLINE_ static DisplayServer *get_singleton() {
@@ -251,6 +252,9 @@ public:
 
 	virtual Dictionary global_menu_get_system_menu_roots() const;
 #endif // DISABLE_DEPRECATED
+
+	virtual void set_session_path(const String &p_path);
+	virtual String get_session_path();
 
 	struct TTSUtterance {
 		String text;
@@ -487,6 +491,8 @@ public:
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual Size2i window_get_title_size(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) const { return Size2i(); }
+
+	virtual void window_set_session_id(const String &p_session_id, WindowID p_window = MAIN_WINDOW_ID);
 
 	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID);
 
