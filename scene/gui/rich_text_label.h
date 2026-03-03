@@ -387,6 +387,7 @@ private:
 		int align_to_row = -1;
 		int total_width = 0;
 		int total_height = 0;
+		int char_count = 0;
 		InlineAlignment inline_align = INLINE_ALIGNMENT_TOP;
 		ItemTable() { type = ITEM_TABLE; }
 	};
