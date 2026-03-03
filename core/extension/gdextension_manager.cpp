@@ -37,6 +37,7 @@
 #include "core/io/file_access.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
+#include "core/os/os.h"
 
 GDExtensionManager::LoadStatus GDExtensionManager::_load_extension_internal(const Ref<GDExtension> &p_extension, bool p_first_load) {
 	if (level >= 0) { // Already initialized up to some level.

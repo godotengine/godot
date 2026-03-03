@@ -38,6 +38,7 @@
 #include "data_viewers/summary_view.h"
 
 #include "core/config/project_settings.h"
+#include "core/os/os.h"
 #include "core/os/time.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"

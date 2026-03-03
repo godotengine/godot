@@ -35,6 +35,7 @@
 #include "core/debugger/engine_profiler.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
+#include "core/os/os.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 

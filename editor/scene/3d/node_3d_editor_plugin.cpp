@@ -38,6 +38,7 @@
 #include "core/math/projection.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/debugger/editor_debugger_node.h"

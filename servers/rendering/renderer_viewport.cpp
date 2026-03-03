@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/math/transform_interpolator.h"
 #include "core/object/worker_thread_pool.h"
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/renderer_canvas_cull.h"

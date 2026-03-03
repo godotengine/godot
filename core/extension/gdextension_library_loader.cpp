@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/os/os.h"
 #include "core/version.h"
 #include "gdextension.h"
 

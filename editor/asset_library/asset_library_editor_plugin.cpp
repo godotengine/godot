@@ -35,6 +35,7 @@
 #include "core/io/stream_peer_tls.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/version.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
