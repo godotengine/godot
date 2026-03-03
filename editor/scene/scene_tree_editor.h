@@ -67,7 +67,6 @@ class SceneTreeEditor : public Control {
 		bool dirty = true;
 		bool has_moved_children = false;
 		bool removed = false;
-		bool hidden = false;
 
 		// Store the iterator for faster removal. This is safe as
 		// HashMap never moves elements.
@@ -91,7 +90,6 @@ class SceneTreeEditor : public Control {
 		NodeCache(SceneTreeEditor *p_editor) :
 				editor(p_editor) {}
 
-		HashMap<Node *, CachedNode>::Iterator add(Node *p_node);
 		HashMap<Node *, CachedNode>::Iterator add(Node *p_node, TreeItem *p_item);
 		HashMap<Node *, CachedNode>::Iterator get(Node *p_node, bool p_deleted_ok = true);
 		HashMap<Node *, CachedNode>::Iterator find_by_item(TreeItem *p_item);
