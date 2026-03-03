@@ -1127,7 +1127,7 @@ void SpriteFramesEditor::_animation_multi_selected(TreeItem *p_item, int p_colum
 
 	// Update FPS field
 	anim_speed->set_value_no_signal(frames->get_animation_speed(selected_anims[0]));
-	anim_speed->get_line_edit()->set_placeholder(TTR(""));
+	anim_speed->get_line_edit()->set_placeholder("");
 
 	// Update loop button
 	bool all_same_loop = true;
@@ -1140,7 +1140,7 @@ void SpriteFramesEditor::_animation_multi_selected(TreeItem *p_item, int p_colum
 		}
 	}
 
-	anim_loop->set_pressed_no_signal(all_same_loop ? first_loop : false);
+	anim_loop->set_pressed_no_signal(all_same_loop && first_loop);
 
 	updating = false;
 }
@@ -1899,6 +1899,7 @@ void SpriteFramesEditor::_update_library_impl() {
 	anim_speed->set_value_no_signal(frames->get_animation_speed(edited_anim));
 	anim_loop->set_pressed_no_signal(frames->get_animation_loop(edited_anim));
 
+	_sync_selected_anims();
 	updating = false;
 }
 
